@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** sessions.compression JSONB storage shape (no legacy anchor_id) */
+/** conversations.compression JSONB storage shape (no legacy anchor_id) */
 export const compressionJsonSchema = z.object({
   l2: z.number(),
   l3: z.number(),

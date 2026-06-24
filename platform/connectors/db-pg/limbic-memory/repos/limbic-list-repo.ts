@@ -7,7 +7,7 @@ import { mapLimbicMemoryRow } from "../mappers/limbic-mapper.ts";
 
 function normalizeListOpts(opts?: LimbicListOpts) {
   const query = opts?.query?.trim() ?? "";
-  const sessionId = opts?.session_id?.trim() ?? "";
+  const conversationId = opts?.conversation_id?.trim() ?? "";
   const kindRaw = opts?.kind;
   const kind =
     kindRaw !== undefined
@@ -15,13 +15,13 @@ function normalizeListOpts(opts?: LimbicListOpts) {
         ? limbicKindSchema.parse(String(kindRaw).trim())
         : null
       : null;
-  return { query, sessionId, kind };
+  return { query, conversationId, kind };
 }
 
 function buildLimbicConditions(opts?: Omit<LimbicListOpts, "offset" | "limit">): SQL[] {
-  const { query, sessionId, kind } = normalizeListOpts(opts);
+  const { query, conversationId, kind } = normalizeListOpts(opts);
   const conditions: SQL[] = [];
-  if (sessionId) conditions.push(eq(limbicMemory.sessionId, sessionId));
+  if (conversationId) conditions.push(eq(limbicMemory.conversationId, conversationId));
   if (kind) conditions.push(eq(limbicMemory.kind, kind));
   if (query) {
     conditions.push(drizzleSql`strpos(lower(${limbicMemory.content}), lower(${query})) > 0`);

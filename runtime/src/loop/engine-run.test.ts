@@ -1,7 +1,7 @@
 import { describe, expect, it, spyOn, afterEach } from "bun:test";
 import * as engine from "./loop-engine.ts";
 import type { StreamEvent } from "./loop-engine.ts";
-import type { SessionMessage } from "@freeanima/core/db/domain";
+import type { StoredMessage } from "@freeanima/core/db/domain";
 
 describe("engine.run", () => {
   let streamSpy: ReturnType<typeof spyOn<typeof engine, "runStream">> | null = null;
@@ -20,7 +20,7 @@ describe("engine.run", () => {
       ];
       for (const ev of events) yield ev;
     });
-    const msgs: SessionMessage[] = [{ role: "user", content: "hi", pos: 1 }];
+    const msgs: StoredMessage[] = [{ role: "user", content: "hi", pos: 1 }];
     await expect(engine.run(msgs)).resolves.toBe("hello world");
   });
 

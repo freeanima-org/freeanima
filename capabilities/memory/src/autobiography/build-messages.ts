@@ -2,7 +2,7 @@ import type {
   AutobiographicalMemoryRow,
   LimbicMemoryRow,
   SemanticMemoryRow,
-  SessionStorePort,
+  ConversationStorePort,
 } from "@freeanima/core/repos";
 
 import { getAutobiographicalMemoryStore } from "../autobiographical-port.ts";
@@ -10,7 +10,7 @@ import { getLimbicMemoryStore } from "../limbic-port.ts";
 import { getSemanticMemoryStore } from "../semantic-port.ts";
 import {
   collectLimbicMemoriesForSessions,
-  collectSessionBlocks,
+  collectConversationBlocks,
   formatDialogueMessage,
   formatLimbicMemoriesMessage,
 } from "../light-sleep/build-messages.ts";
@@ -22,7 +22,7 @@ function rowToJsonCompact(row: SemanticMemoryRow): string {
     id: row.id,
     type: row.type,
     content: row.content,
-    sources: row.source_sessions,
+    sources: row.source_conversations,
     observed: row.observed_at?.slice(0, 19) ?? null,
     occurred: row.occurred_at ?? null,
   });
@@ -122,17 +122,17 @@ Using "Today's dialogue", semantic memories, and limbic memories above, decide w
 
 ## Requirements
 - Prefer experience/imprint semantic memories and turning_point/spike limbic anchors
-- Link source_semantic_memory / source_sessions as needed
+- Link source_semantic_memory / source_conversations as needed
 - significance: turning_point (self turning point) > milestone > normal; strong emotional turns may raise significance
 - period_start/period_end may be fuzzy (e.g. "2026-05")`;
 
 async function mergeSemanticRowsForSessions(
-  sessionIds: string[],
+  conversationIds: string[],
   stageSemanticIds: string[],
 ): Promise<SemanticMemoryRow[]> {
   const store = getSemanticMemoryStore();
   const byId = new Map<string, SemanticMemoryRow>();
-  for (const row of await store.listBySourceSessions(sessionIds, { status: "active" })) {
+  for (const row of await store.listBySourceConversations(conversationIds, { status: "active" })) {
     byId.set(row.id, row);
   }
   for (const id of stageSemanticIds) {
@@ -146,11 +146,11 @@ async function mergeSemanticRowsForSessions(
 }
 
 async function mergeLimbicRowsForSessions(
-  sessionIds: string[],
+  conversationIds: string[],
   stageLimbicIds: string[],
 ): Promise<LimbicMemoryRow[]> {
   const byId = new Map<string, LimbicMemoryRow>();
-  for (const row of await collectLimbicMemoriesForSessions(sessionIds)) {
+  for (const row of await collectLimbicMemoriesForSessions(conversationIds)) {
     byId.set(row.id, row);
   }
   const store = getLimbicMemoryStore();
@@ -175,15 +175,15 @@ export function buildAutobiographyUserMessages(
 }
 
 export async function buildLightSleepAutobiographyUserMessages(
-  sessionStore: SessionStorePort,
-  sessionIds: string[],
+  conversationStore: ConversationStorePort,
+  conversationIds: string[],
   stageSemanticIds: string[],
   stageLimbicIds: string[],
 ): Promise<string[]> {
-  const blocks = await collectSessionBlocks(sessionStore, sessionIds);
+  const blocks = await collectConversationBlocks(conversationStore, conversationIds);
   const dialogue = formatDialogueMessage(blocks);
-  const semanticRows = await mergeSemanticRowsForSessions(sessionIds, stageSemanticIds);
-  const limbicRows = await mergeLimbicRowsForSessions(sessionIds, stageLimbicIds);
+  const semanticRows = await mergeSemanticRowsForSessions(conversationIds, stageSemanticIds);
+  const limbicRows = await mergeLimbicRowsForSessions(conversationIds, stageLimbicIds);
   const existing = await getAutobiographicalMemoryStore().listActive({ limit: 200 });
 
   return [

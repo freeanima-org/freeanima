@@ -85,7 +85,7 @@ Scene awareness is **soft** — it adjusts tone, distance, memory recall bias, a
 
 **Question: what tools and data can I use right now?**
 
-The capability mask is **hard** — it binds tool sets, data scope, and credential permissions. The same digital life may wear different masks per session or task to prevent permission leaks and tool pollution.
+The capability mask is **hard** — it binds tool sets, data scope, and credential permissions. The same digital life may wear different masks per conversation or task to prevent permission leaks and tool pollution.
 
 **Example masks:**
 
@@ -96,7 +96,7 @@ The capability mask is **hard** — it binds tool sets, data scope, and credenti
 - Role-play: dialogue context only, no external tools
 - Default: basic chat + limited lookup
 
-**Operation:** Switches at session boundaries, explicit commands, or scene-awareness triggers. Each mask is a declared tool/data scope, not a separate identity.
+**Operation:** Switches at conversation boundaries, explicit commands, or scene-awareness triggers. Each mask is a declared tool/data scope, not a separate identity.
 
 ### How They Interact
 
@@ -134,7 +134,7 @@ Pipeline: nightly **sleep-cycle** pipeline (`builtin-sleep-cycle` cron) extracts
 - [pass](https://www.passwordstore.org/) (GPG) is the sole credential store; the deployer's pass repo is a first-class runtime asset
 - The LLM **never sees credential values** — only paths and metadata
 - Runtime injection: credentials available only in code execution / terminal environments
-- Credential values are not written to session archives or logs
+- Credential values are not written to conversation archives or logs
 - Platform adapters (Discord, etc.) read tokens from pass at startup
 - CLI: `anima credential {list,get,add}`
 
@@ -222,22 +222,22 @@ Layers can be mixed; the LLM chooses order; FreeAnima registers and routes.
 | -------------------- | ------------- | --------------------------------------------------- | --------------- | --------------------------------------- |
 | **Conversation**     | yes           | `sessions` + `messages` (code still says `session`) | message archive | participates (light sleep, dream input) |
 | **AutoLlmRun**       | no            | `auto_llm_runs` via `runAutoLlm()`                  | audit row, TTL  | excluded                                |
-| **Delegation (ACP)** | no (external) | parent session + `acp_tasks`                        | optional        | result via parent conversation          |
+| **Delegation (ACP)** | no (external) | parent conversation + `acp_tasks`                   | optional        | result via parent conversation          |
 | **Script cron**      | no            | `cron_log` only                                     | stdout file     | excluded                                |
 
-AutoLlmRun covers: cron agent branch, sleep LLM stages, future internal subagents. Tool context uses `contextKind: auto_llm` so `memory_remember` does not attach `source_sessions`. Cron `no_agent` shell scripts are **not** AutoLlmRun.
+AutoLlmRun covers: cron agent branch, sleep LLM stages, future internal subagents. Tool context uses `contextKind: auto_llm` so `memory_remember` does not attach `source_conversations`. Cron `no_agent` shell scripts are **not** AutoLlmRun.
 
 ## Session Goal
 
-**Question: should this session keep working toward a stated outcome?**
+**Question: should this conversation keep working toward a stated outcome?**
 
 Session Goal is an **in-process autonomous loop** at the Estate / orchestration layer — distinct from ACP async delegation:
 
 | Dimension    | Session Goal                    | ACP                                   |
 | ------------ | ------------------------------- | ------------------------------------- |
-| Scope        | Single session                  | External agent task                   |
+| Scope        | Single conversation             | External agent task                   |
 | Trigger      | `/goal` slash + post-turn judge | Tool call + callback turn             |
-| Persistence  | `sessions.goal` JSONB           | `sessions.acp_tasks`                  |
+| Persistence  | `conversations.goal` JSONB      | `conversations.acp_tasks`             |
 | Continuation | Same SSE stream, turn budget    | Independent message after task update |
 
 Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User messages preempt the loop; `/goal pause` stops auto-continue without clearing state. See [`goal.md`](../features/goal.md).

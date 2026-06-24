@@ -289,7 +289,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/architecture.md:100
 #, no-wrap
-msgid "**Operation:** Switches at session boundaries, explicit commands, or scene-awareness triggers. Each mask is a declared tool/data scope, not a separate identity.\n"
+msgid "**Operation:** Switches at conversation boundaries, explicit commands, or scene-awareness triggers. Each mask is a declared tool/data scope, not a separate identity.\n"
 msgstr ""
 
 #. type: Title ###
@@ -391,7 +391,7 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/architecture.md:140
-msgid "Credential values are not written to session archives or logs"
+msgid "Credential values are not written to conversation archives or logs"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -594,7 +594,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/architecture.md:220
 #, no-wrap
-msgid "**Question: should this session keep working toward a stated outcome?**\n"
+msgid "**Question: should this conversation keep working toward a stated outcome?**\n"
 msgstr ""
 
 #. type: Plain text
@@ -610,9 +610,9 @@ msgstr ""
 msgid ""
 "| Dimension    | Session Goal                    | ACP                                   |\n"
 "| ------------ | ------------------------------- | ------------------------------------- |\n"
-"| Scope        | Single session                  | External agent task                   |\n"
+"| Scope        | Single conversation                  | External agent task                   |\n"
 "| Trigger      | `/goal` slash + post-turn judge | Tool call + callback turn             |\n"
-"| Persistence  | `sessions.goal` JSONB           | `sessions.acp_tasks`                  |\n"
+"| Persistence  | `conversations.goal` JSONB           | `conversations.acp_tasks`                  |\n"
 "| Continuation | Same SSE stream, turn budget    | Independent message after task update |\n"
 msgstr ""
 

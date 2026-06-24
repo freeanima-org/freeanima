@@ -400,7 +400,7 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:66
 #, no-wrap
-msgid "Terminal session does not exist or has closed"
+msgid "Terminal conversation does not exist or has closed"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -466,7 +466,7 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:77
 #, no-wrap
-msgid "Connect only completes the ACP initialize handshake; no session is created."
+msgid "Connect only completes the ACP initialize handshake; no conversation is created."
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -520,7 +520,7 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:86 messages/po4a/en.xml:291
 #, no-wrap
-msgid "Source session (optional)"
+msgid "Source conversation (optional)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -574,7 +574,7 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:95
 #, no-wrap
-msgid "Current session"
+msgid "Current conversation"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -1343,7 +1343,7 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:231
 #, no-wrap
-msgid "Filters session messages only; semantic, limbic, and autobiographical sources are unaffected."
+msgid "Filters conversation messages only; semantic, limbic, and autobiographical sources are unaffected."
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -1919,7 +1919,7 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:338
 #, no-wrap
-msgid "View system prompt breakdown, full text, and effective tool schemas. Global template by default; optional session compares PG stored vs live rebuild."
+msgid "View system prompt breakdown, full text, and effective tool schemas. Global template by default; optional conversation compares PG stored vs live rebuild."
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -1931,7 +1931,7 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:340
 #, no-wrap
-msgid "session_meta.tools: {count} names"
+msgid "conversation_meta.tools: {count} names"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -2069,7 +2069,7 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:366
 #, no-wrap
-msgid "ToolSets auto-injected into new sessions (toolsets loaded on-demand via toolset_load are not listed here)."
+msgid "ToolSets auto-injected into new conversations (toolsets loaded on-demand via toolset_load are not listed here)."
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -2195,7 +2195,7 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:387
 #, no-wrap
-msgid "Select a session to start"
+msgid "Select a conversation to start"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -2447,7 +2447,7 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:432
 #, no-wrap
-msgid "New session"
+msgid "New conversation"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -2909,19 +2909,19 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:530
 #, no-wrap
-msgid "Collapse session list"
+msgid "Collapse conversation list"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:531
 #, no-wrap
-msgid "Expand session list"
+msgid "Expand conversation list"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:532
 #, no-wrap
-msgid "Toggle session panel"
+msgid "Toggle conversation panel"
 msgstr ""
 
 #. type: Content of: <messages><msg>

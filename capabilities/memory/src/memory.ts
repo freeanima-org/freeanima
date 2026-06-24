@@ -29,7 +29,7 @@ export function registerMemoryCoreTools(toolSets: ToolSetRegistry): void {
           name: "memory_remember",
           description:
             "Manage persistent semantic memories: create, update, or delete.\n" +
-            "- Default action=create: add a memory (auto-infers source_sessions / observed_at)\n" +
+            "- Default action=create: add a memory (auto-infers source_conversations / observed_at)\n" +
             "- action=update: update by semantic_memory_id\n" +
             "- action=delete: physical delete by semantic_memory_id\n" +
             "pinned=true memories appear first in resident context.",
@@ -68,9 +68,9 @@ export function registerMemoryCoreTools(toolSets: ToolSetRegistry): void {
         {
           name: "memory_recall",
           description:
-            "Unified memory search: semantic memories, session messages, limbic memories, autobiographical narratives.\n" +
+            "Unified memory search: semantic memories, conversation messages, limbic memories, autobiographical narratives.\n" +
             "Cross-type reranking returns top N (default 10) in results; use memory_type to distinguish.\n" +
-            "Session hits return snippets only; full context via session_scroll; in-session search via session_search.\n" +
+            "Session hits return snippets only; full context via conversation_scroll; in-conversation search via conversation_search.\n" +
             "Structured semantic filters via memory_semantic_search.\n\n" +
             FTS_SYNTAX +
             "\n\n" +

@@ -25,7 +25,7 @@
     "./provider": "./src/provider/index.ts",
     "./provider/*": "./src/provider/*.ts",
     "./tool": "./src/tool/index.ts",
-    "./tool/session-conversation-port": "./src/tool/session-conversation-port.ts",
+    "./tool/conversation-port": "./src/tool/conversation-port.ts",
     "./tool/*": "./src/tool/*.ts",
     "./llm": "./src/llm/index.ts",
     "./llm/*": "./src/llm/*.ts",

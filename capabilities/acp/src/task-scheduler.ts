@@ -8,7 +8,7 @@ export type AsyncLaunchSpec = {
   context: string;
   animaSessionId: string;
   acpSessionId?: string;
-  newSession?: boolean;
+  newConversation?: boolean;
   mode?: "agent" | "plan" | "ask";
   timeoutMinutes: number;
   enqueuedAt: number;

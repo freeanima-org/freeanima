@@ -13,9 +13,12 @@ export type SapRelayBrowserClient = {
   whenReady(): Promise<SapClient>;
   getClient(): SapClient | null;
   stop(): void;
-  subscribeSessionEvents(sessionId: string, onUpdate: () => void): { unsubscribe: () => void };
+  subscribeConversationEvents(
+    conversationId: string,
+    onUpdate: () => void,
+  ): { unsubscribe: () => void };
   sendMessageStream(
-    input: { sessionId: string; message: string },
+    input: { conversationId: string; message: string },
     callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
   ): { unsubscribe: () => void };
 };
@@ -26,28 +29,28 @@ export function createSapRelayBrowserClient(
   let relay: SapRelayClient | null = null;
   let ws: WebSocket | null = null;
   let initPromise: Promise<void> | null = null;
-  const subscribedSessions = new Set<string>();
-  const sessionListeners = new Map<string, Set<() => void>>();
-  let sessionUpdatedOff: (() => void) | null = null;
+  const subscribedConversations = new Set<string>();
+  const conversationListeners = new Map<string, Set<() => void>>();
+  let conversationUpdatedOff: (() => void) | null = null;
 
-  const notifySession = (sessionId: string): void => {
-    for (const listener of sessionListeners.get(sessionId) ?? []) {
+  const notifyConversation = (conversationId: string): void => {
+    for (const listener of conversationListeners.get(conversationId) ?? []) {
       listener();
     }
   };
 
   const resubscribeSessions = async (client: SapClient): Promise<void> => {
-    for (const sessionId of subscribedSessions) {
-      await client.request("session.subscribe", { session_id: sessionId });
+    for (const conversationId of subscribedConversations) {
+      await client.request("conversation.subscribe", { conversation_id: conversationId });
     }
   };
 
   const attachSessionUpdated = (client: SapClient): void => {
-    sessionUpdatedOff?.();
-    sessionUpdatedOff = client.onEvent("session.updated", (payload) => {
-      const record = payload as { session_id?: string };
-      if (typeof record.session_id === "string") {
-        notifySession(record.session_id);
+    conversationUpdatedOff?.();
+    conversationUpdatedOff = client.onEvent("conversation.updated", (payload) => {
+      const record = payload as { conversation_id?: string };
+      if (typeof record.conversation_id === "string") {
+        notifyConversation(record.conversation_id);
       }
     });
   };
@@ -98,32 +101,32 @@ export function createSapRelayBrowserClient(
       return relay;
     },
     stop(): void {
-      sessionUpdatedOff?.();
-      sessionUpdatedOff = null;
+      conversationUpdatedOff?.();
+      conversationUpdatedOff = null;
       relay?.close();
       relay = null;
       ws = null;
       initPromise = null;
     },
-    subscribeSessionEvents(sessionId, onUpdate) {
-      subscribedSessions.add(sessionId);
-      let set = sessionListeners.get(sessionId);
+    subscribeConversationEvents(conversationId, onUpdate) {
+      subscribedConversations.add(conversationId);
+      let set = conversationListeners.get(conversationId);
       if (!set) {
         set = new Set();
-        sessionListeners.set(sessionId, set);
+        conversationListeners.set(conversationId, set);
       }
       set.add(onUpdate);
 
       void ensureRelay().then((client) =>
-        client.request("session.subscribe", { session_id: sessionId }),
+        client.request("conversation.subscribe", { conversation_id: conversationId }),
       );
 
       return {
         unsubscribe: () => {
           set?.delete(onUpdate);
           if (set && set.size === 0) {
-            sessionListeners.delete(sessionId);
-            subscribedSessions.delete(sessionId);
+            conversationListeners.delete(conversationId);
+            subscribedConversations.delete(conversationId);
           }
         },
       };
@@ -143,7 +146,7 @@ export function createSapRelayBrowserClient(
         try {
           const client = await ensureRelay();
           const { stream_id: streamId } = await client.request("message.send", {
-            session_id: input.sessionId,
+            conversation_id: input.conversationId,
             message: input.message,
           });
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import {
   buildTextSearchSnippet,
   extractSearchTerms,
-  formatSessionMessageSearchHit,
+  formatStoredMessageSearchHit,
 } from "./snippet.ts";
 
 describe("search-snippet", () => {
@@ -19,9 +19,9 @@ describe("search-snippet", () => {
     expect(snippet.length).toBeLessThan(content.length);
   });
 
-  it("formatSessionMessageSearchHit omits content", () => {
-    const hit = formatSessionMessageSearchHit("hello", {
-      session_id: "s1",
+  it("formatStoredMessageSearchHit omits content", () => {
+    const hit = formatStoredMessageSearchHit("hello", {
+      conversation_id: "s1",
       message_id: "m1",
       role: "user",
       timestamp: "2026-01-01",

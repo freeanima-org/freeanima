@@ -2,8 +2,8 @@ import { randomBytes } from "node:crypto";
 import * as loopEngine from "@freeanima/runtime/loop";
 import { isTransientNetworkError } from "@freeanima/runtime/loop";
 import { runWithToolContext } from "@freeanima/core/tool";
-import type { SessionGoal, SessionMessage } from "@freeanima/core/db/domain";
-import { sessionGoalSchema } from "@freeanima/core/db/domain";
+import type { ConversationGoal, StoredMessage } from "@freeanima/core/db/domain";
+import { conversationGoalSchema } from "@freeanima/core/db/domain";
 import { CST_OFFSET_MS, formatCstIso } from "@freeanima/core/util";
 import { judgeGoal } from "@freeanima/core/llm/goal-judge";
 import { getProfileHopModel } from "@freeanima/core/config";
@@ -27,7 +27,7 @@ export type AutoLlmRunInput = {
   model?: string;
   toolNames: string[];
   maxTurns: number;
-  goal?: SessionGoal;
+  goal?: ConversationGoal;
   metadata?: Record<string, unknown>;
   toolMask?: ResolvedMask;
   onToolResult?: (name: string, content: string) => void;
@@ -62,9 +62,9 @@ function isAutoLlmRetryable(err: unknown): boolean {
   return false;
 }
 
-function buildAutoLlmMessages(input: AutoLlmRunInput): SessionMessage[] {
+function buildAutoLlmMessages(input: AutoLlmRunInput): StoredMessage[] {
   const now = formatCstIso();
-  const messages: SessionMessage[] = [{ role: "system", content: input.systemPrompt }];
+  const messages: StoredMessage[] = [{ role: "system", content: input.systemPrompt }];
   for (const content of input.userMessages) {
     messages.push({ role: "user", content, timestamp: now });
   }
@@ -77,7 +77,7 @@ function summarizeInput(input: AutoLlmRunInput): string {
   return joined.slice(0, INPUT_SUMMARY_MAX);
 }
 
-function lastAssistantText(msgs: SessionMessage[]): string {
+function lastAssistantText(msgs: StoredMessage[]): string {
   for (let i = msgs.length - 1; i >= 0; i--) {
     const m = msgs[i];
     if (m?.role === "assistant") {
@@ -88,7 +88,7 @@ function lastAssistantText(msgs: SessionMessage[]): string {
   return "";
 }
 
-function buildRecentContext(msgs: SessionMessage[], limit = 4): string {
+function buildRecentContext(msgs: StoredMessage[], limit = 4): string {
   const lines: string[] = [];
   for (const msg of msgs.slice(-limit)) {
     if (msg.role === "user" || msg.role === "assistant") {
@@ -101,11 +101,11 @@ function buildRecentContext(msgs: SessionMessage[], limit = 4): string {
 
 async function evaluateGoalForAutoLlm(
   deps: FullRuntimeDeps,
-  goal: SessionGoal,
-  msgs: SessionMessage[],
+  goal: ConversationGoal,
+  msgs: StoredMessage[],
 ): Promise<
-  | { action: "stop"; goal: SessionGoal }
-  | { action: "continue"; goal: SessionGoal; continuePrompt: string }
+  | { action: "stop"; goal: ConversationGoal }
+  | { action: "continue"; goal: ConversationGoal; continuePrompt: string }
 > {
   if (goal.status === "paused" || goal.status === "completed" || goal.status === "exhausted") {
     return { action: "stop", goal };
@@ -113,7 +113,7 @@ async function evaluateGoalForAutoLlm(
   if (goal.turn_count >= goal.max_turns) {
     return {
       action: "stop",
-      goal: sessionGoalSchema.parse({
+      goal: conversationGoalSchema.parse({
         ...goal,
         status: "exhausted",
         last_judge_reason: formatGoalExhaustedMessage(goal.max_turns),
@@ -136,7 +136,7 @@ async function evaluateGoalForAutoLlm(
   if (judge.ok && judge.done) {
     return {
       action: "stop",
-      goal: sessionGoalSchema.parse({
+      goal: conversationGoalSchema.parse({
         ...goal,
         status: "completed",
         last_judge_reason: reason,
@@ -146,7 +146,7 @@ async function evaluateGoalForAutoLlm(
   }
 
   const nextCount = goal.turn_count + 1;
-  const updated = sessionGoalSchema.parse({
+  const updated = conversationGoalSchema.parse({
     ...goal,
     turn_count: nextCount,
     last_judge_reason: reason,
@@ -154,7 +154,7 @@ async function evaluateGoalForAutoLlm(
   if (nextCount >= goal.max_turns) {
     return {
       action: "stop",
-      goal: sessionGoalSchema.parse({ ...updated, status: "exhausted" }),
+      goal: conversationGoalSchema.parse({ ...updated, status: "exhausted" }),
     };
   }
 
@@ -169,7 +169,7 @@ async function runEngineOnce(
   deps: FullRuntimeDeps,
   runId: string,
   input: AutoLlmRunInput,
-  messages: SessionMessage[],
+  messages: StoredMessage[],
   model: string,
 ): Promise<{ output: string; toolCalls: number }> {
   const tools = deps.engine.catalog.toolSets.openaiSchemasFromNames(input.toolNames);
@@ -270,7 +270,7 @@ export async function runAutoLlm(
 
   const inputSummary = summarizeInput(input);
   let messages = buildAutoLlmMessages(input);
-  let goal = input.goal ? sessionGoalSchema.parse(input.goal) : undefined;
+  let goal = input.goal ? conversationGoalSchema.parse(input.goal) : undefined;
   let output = "";
   let toolCalls = 0;
   let lastErr: unknown;

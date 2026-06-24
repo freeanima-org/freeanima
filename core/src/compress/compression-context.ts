@@ -1,30 +1,30 @@
 import {
-  isSessionMeta,
+  isConversationMeta,
   type OpenAiToolSchema,
-  type SessionMetaLoadResult,
+  type ConversationMetaLoadResult,
   type CompressionState,
 } from "@freeanima/core/db/domain";
 import { getCompressionConfig } from "./compression-config.ts";
 import type { CompressOptions } from "./compressor.ts";
 
-export type SessionCompressionFields = {
+export type ConversationCompressionFields = {
   model: string;
   systemPrompt: string;
 };
 
-/** Parse compression/analysis shared fields from session meta (or defaults) */
-export function resolveSessionCompressionFields(
-  meta: SessionMetaLoadResult,
+/** Parse compression/analysis shared fields from conversation meta (or defaults) */
+export function resolveConversationCompressionFields(
+  meta: ConversationMetaLoadResult,
   fallbackModel: string,
-): SessionCompressionFields {
-  const model = isSessionMeta(meta) ? meta.model : fallbackModel;
-  const systemPrompt = isSessionMeta(meta) ? (meta.system_prompt ?? "") : "";
+): ConversationCompressionFields {
+  const model = isConversationMeta(meta) ? meta.model : fallbackModel;
+  const systemPrompt = isConversationMeta(meta) ? (meta.system_prompt ?? "") : "";
   return { model, systemPrompt };
 }
 
 /** Build shared options for compress / analyzeCompression */
 export function buildCompressOptions(
-  meta: SessionMetaLoadResult,
+  meta: ConversationMetaLoadResult,
   state: CompressionState | null,
   fallbackModel: string,
   overrides?: {
@@ -34,7 +34,7 @@ export function buildCompressOptions(
   },
 ): CompressOptions {
   const cfg = getCompressionConfig();
-  const { model, systemPrompt } = resolveSessionCompressionFields(meta, fallbackModel);
+  const { model, systemPrompt } = resolveConversationCompressionFields(meta, fallbackModel);
   return {
     maxRounds: cfg.maxRounds,
     model,

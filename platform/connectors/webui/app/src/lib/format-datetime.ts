@@ -38,11 +38,14 @@ export function formatDisplayDate(value: unknown): string {
   return space > 0 ? formatted.slice(0, space) : formatted;
 }
 
-/** Session ID `YYYYMMDD_HHMMSS_…` → CST display when parseable */
-export function formatSessionIdDateTime(sessionId: string, opts?: FormatCstDisplayOpts): string {
-  const parts = sessionId.split("_");
+/** Conversation ID `YYYYMMDD_HHMMSS_…` → CST display when parseable */
+export function formatConversationIdDateTime(
+  conversationId: string,
+  opts?: FormatCstDisplayOpts,
+): string {
+  const parts = conversationId.split("_");
   if (parts.length < 2 || parts[0]!.length < 8 || parts[1]!.length < 4) {
-    return sessionId;
+    return conversationId;
   }
   const y = parts[0]!.slice(0, 4);
   const mo = parts[0]!.slice(4, 6);

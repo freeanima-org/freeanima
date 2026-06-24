@@ -21,7 +21,7 @@ describe("chat browser SAP client", () => {
       httpUrl: "http://127.0.0.1:4174",
     });
     expect(client.getClient()).toBeNull();
-    expect(typeof client.subscribeSessionEvents).toBe("function");
+    expect(typeof client.subscribeConversationEvents).toBe("function");
     expect(typeof client.sendMessageStream).toBe("function");
     client.stop();
   });

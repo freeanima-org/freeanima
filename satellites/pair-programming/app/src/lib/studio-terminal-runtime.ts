@@ -35,7 +35,7 @@ class StudioTerminalRuntime {
   private ro: ResizeObserver | null = null;
   private onDataDisposable: { dispose: () => void } | null = null;
   private unsubRef: (() => void) | null = null;
-  private sessionId: string | null = null;
+  private conversationId: string | null = null;
   private onStatus: StatusHandler = () => {};
   private statusMsg = "";
 
@@ -69,9 +69,9 @@ class StudioTerminalRuntime {
     this.onDataDisposable = null;
     this.unsubRef?.();
     this.unsubRef = null;
-    if (this.sessionId) {
-      void terminalClose(this.sessionId);
-      this.sessionId = null;
+    if (this.conversationId) {
+      void terminalClose(this.conversationId);
+      this.conversationId = null;
     }
     this.moveToStash();
     this.container = null;
@@ -124,8 +124,8 @@ class StudioTerminalRuntime {
   private bindInput(): void {
     this.onDataDisposable?.dispose();
     this.onDataDisposable = this.term!.onData((data) => {
-      if (!this.alive || !this.sessionId) return;
-      void terminalWrite(this.sessionId, data);
+      if (!this.alive || !this.conversationId) return;
+      void terminalWrite(this.conversationId, data);
     });
   }
 
@@ -165,8 +165,8 @@ class StudioTerminalRuntime {
     if (clientWidth <= 0 || clientHeight <= 0) return;
     try {
       fitAddon.fit();
-      if (this.sessionId) {
-        void terminalResize(this.sessionId, term.cols, term.rows);
+      if (this.conversationId) {
+        void terminalResize(this.conversationId, term.cols, term.rows);
       }
     } catch {
       /* 容器尺寸为 0 时忽略 */
@@ -181,14 +181,14 @@ class StudioTerminalRuntime {
   private connect(): void {
     this.unsubRef?.();
     this.unsubRef = null;
-    this.sessionId = null;
+    this.conversationId = null;
     this.setStatus("");
 
     const sub = subscribeTerminalStream({
       onData: (msg) => {
         if (!this.alive) return;
-        if (msg.type === "ready" && msg.sessionId) {
-          this.sessionId = msg.sessionId;
+        if (msg.type === "ready" && msg.conversationId) {
+          this.conversationId = msg.conversationId;
           this.scheduleFit();
         } else if (msg.type === "output" && msg.data !== undefined) {
           this.term?.write(msg.data);

@@ -8,7 +8,7 @@ import { safeParseOrNull } from "@freeanima/core/util";
 const stateSchema = z.object({
   last_run_at: z.string().optional(),
   last_day: z.string().optional(),
-  session_ids: z.array(z.string()).default([]),
+  conversation_ids: z.array(z.string()).default([]),
   stats: z
     .object({
       sessions: z.number().optional(),
@@ -30,12 +30,12 @@ function statePath(): string {
 
 export function readLightSleepState(): LightSleepState {
   const p = statePath();
-  if (!existsSync(p)) return { session_ids: [] };
+  if (!existsSync(p)) return { conversation_ids: [] };
   try {
     const raw: unknown = JSON.parse(readFileSync(p, "utf-8"));
-    return safeParseOrNull(stateSchema, raw) ?? { session_ids: [] };
+    return safeParseOrNull(stateSchema, raw) ?? { conversation_ids: [] };
   } catch {
-    return { session_ids: [] };
+    return { conversation_ids: [] };
   }
 }
 
@@ -46,8 +46,8 @@ export function writeLightSleepState(state: LightSleepState): void {
 
 export function recordLightSleepRun(input: {
   day: string;
-  sessionIds: string[];
-  truncatedSessions: number;
+  conversationIds: string[];
+  truncatedConversations: number;
   toolCalls: number;
   limbicToolCalls: number;
   autobiographyToolCalls: number;
@@ -57,10 +57,10 @@ export function recordLightSleepRun(input: {
   writeLightSleepState({
     last_run_at: formatCstIso(),
     last_day: input.day,
-    session_ids: input.sessionIds,
+    conversation_ids: input.conversationIds,
     stats: {
-      sessions: input.sessionIds.length,
-      truncated_sessions: input.truncatedSessions,
+      sessions: input.conversationIds.length,
+      truncated_sessions: input.truncatedConversations,
       tool_calls: input.toolCalls,
       limbic_tool_calls: input.limbicToolCalls,
       autobiography_tool_calls: input.autobiographyToolCalls,

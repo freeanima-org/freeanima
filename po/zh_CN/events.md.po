@@ -195,16 +195,16 @@ msgstr "会话事件"
 msgid ""
 "| Method            | When                      | Payload      |\n"
 "| ----------------- | ------------------------- | ------------ |\n"
-"| `session.updated` | After `session.subscribe` | `session_id` |\n"
+"| `conversation.updated` | After `conversation.subscribe` | `conversation_id` |\n"
 msgstr ""
 "| 方法              | 时机                      | Payload      |\n"
 "| ----------------- | ------------------------- | ------------ |\n"
-"| `session.updated` | `session.subscribe` 之后  | `session_id` |\n"
+"| `conversation.updated` | `conversation.subscribe` 之后  | `conversation_id` |\n"
 
 #. type: Plain text
 #: docs/sap/events.md:76
 msgid ""
-"Bridged from runtime session watch in [`platform/src/sap/stream-bridge.ts`]"
+"Bridged from runtime conversation watch in [`platform/src/sap/stream-bridge.ts`]"
 "(../../platform/src/sap/stream-bridge.ts)."
 msgstr ""
 "由 [`platform/src/sap/stream-bridge.ts`](../../platform/src/sap/stream-"
@@ -266,11 +266,11 @@ msgstr ""
 msgid ""
 "Payload schema: `toolCallPayloadSchema` in [`frames/tool.ts`](../../packages/"
 "sap-contract/src/frames/tool.ts) — includes `call_id`, `tool_name`, "
-"`local_name`, `args`, `session_id`, optional `workspace_root`."
+"`local_name`, `args`, `conversation_id`, optional `workspace_root`."
 msgstr ""
 "载荷 schema：[`frames/tool.ts`](../../packages/sap-contract/src/frames/"
 "tool.ts)  中的 `toolCallPayloadSchema` — 包含 `call_id`、`tool_name`、"
-"`local_name`、`args`、`session_id`，以及可选的 `workspace_root`。"
+"`local_name`、`args`、`conversation_id`，以及可选的 `workspace_root`。"
 
 #. type: Plain text
 #: docs/sap/events.md:97

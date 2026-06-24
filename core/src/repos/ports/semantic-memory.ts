@@ -10,7 +10,7 @@ export type SemanticMemoryRow = {
   type: string;
   pinned: boolean;
   content: string;
-  source_sessions: string[];
+  source_conversations: string[];
   observed_at: string | null;
   occurred_at: string | null;
   status: string;
@@ -29,7 +29,7 @@ export type SemanticMemoryCreateInput = {
   type?: string;
   pinned?: boolean;
   id?: string;
-  source_sessions?: string[];
+  source_conversations?: string[];
   observed_at?: string | null;
   occurred_at?: string | null;
   status?: string;
@@ -37,13 +37,13 @@ export type SemanticMemoryCreateInput = {
   updated?: string;
 };
 
-/** Overlay update: only passed fields change; source_sessions [] clears */
+/** Overlay update: only passed fields change; source_conversations [] clears */
 export type SemanticMemoryUpdateInput = {
   id: string;
   content?: string;
   type?: string;
   pinned?: boolean;
-  source_sessions?: string[];
+  source_conversations?: string[];
   observed_at?: string | null;
   occurred_at?: string | null;
   status?: string;
@@ -57,7 +57,7 @@ export type SemanticMemorySearchOpts = {
   limit?: number;
   types?: string[];
   status?: "active" | "deprecated" | "all";
-  source_sessions?: string[];
+  source_conversations?: string[];
   sort_by?: SemanticMemorySortBy;
 };
 
@@ -73,8 +73,8 @@ export interface SemanticMemoryStorePort {
   listResident(topN?: number): Promise<SemanticMemoryRow[]>;
   listAll(): Promise<SemanticMemoryRow[]>;
   listActive(): Promise<SemanticMemoryRow[]>;
-  listBySourceSessions(
-    sessionIds: string[],
+  listBySourceConversations(
+    conversationIds: string[],
     opts?: { status?: "active" | "deprecated" | "all" },
   ): Promise<SemanticMemoryRow[]>;
   searchFts(query: string, opts?: { limit?: number; types?: string[] }): Promise<SemanticFtsHit[]>;

@@ -3,7 +3,7 @@ import { describe, expect, it } from "bun:test";
 import type {
   LimbicListByCreatedOpts,
   LimbicMemoryRow,
-  SessionStorePort,
+  ConversationStorePort,
 } from "@freeanima/core/repos";
 
 import {
@@ -13,12 +13,15 @@ import {
   limbicCreatedRange,
 } from "./gather-input.ts";
 import { registerLimbicMemoryStore, resetLimbicMemoryStoreForTests } from "../limbic-port.ts";
-import { registerMemorySessionStore, resetMemorySessionStoreForTests } from "../session-port.ts";
+import {
+  registerMemoryConversationStore,
+  resetMemoryConversationStoreForTests,
+} from "../conversation-port.ts";
 
-function limbicRow(id: string, intensity: number, sessionId = "s1"): LimbicMemoryRow {
+function limbicRow(id: string, intensity: number, conversationId = "s1"): LimbicMemoryRow {
   return {
     id,
-    session_id: sessionId,
+    conversation_id: conversationId,
     kind: "turning_point",
     valence: -0.2,
     arousal: 0.7,
@@ -45,7 +48,7 @@ describe("limbicCreatedRange", () => {
 describe("gatherDreamInput", () => {
   it("returns top limbic rows above intensity threshold by created_at window", async () => {
     resetLimbicMemoryStoreForTests();
-    resetMemorySessionStoreForTests();
+    resetMemoryConversationStoreForTests();
 
     const limbicRows = [
       limbicRow("a", 0.9),
@@ -66,8 +69,8 @@ describe("gatherDreamInput", () => {
       },
     } as never);
 
-    registerMemorySessionStore({
-      async listSessionIdsUpdatedBetween() {
+    registerMemoryConversationStore({
+      async listConversationIdsUpdatedBetween() {
         return ["s1"];
       },
       async listMessages() {
@@ -79,7 +82,7 @@ describe("gatherDreamInput", () => {
           },
         ];
       },
-    } as unknown as SessionStorePort);
+    } as unknown as ConversationStorePort);
 
     const input = await gatherDreamInput({ day: "2026-06-14" });
     expect(input.limbicMemories.map((r) => r.id)).toEqual(["a", "b", "c"]);
@@ -89,7 +92,7 @@ describe("gatherDreamInput", () => {
 
   it("has no dream fuel when limbic below threshold", async () => {
     resetLimbicMemoryStoreForTests();
-    resetMemorySessionStoreForTests();
+    resetMemoryConversationStoreForTests();
 
     registerLimbicMemoryStore({
       async listByCreatedBetween(_fromIso: string, _toIso: string, opts?: LimbicListByCreatedOpts) {
@@ -99,14 +102,14 @@ describe("gatherDreamInput", () => {
       },
     } as never);
 
-    registerMemorySessionStore({
-      async listSessionIdsUpdatedBetween() {
+    registerMemoryConversationStore({
+      async listConversationIdsUpdatedBetween() {
         return ["s1"];
       },
       async listMessages() {
         return [];
       },
-    } as unknown as SessionStorePort);
+    } as unknown as ConversationStorePort);
 
     const input = await gatherDreamInput({ day: "2026-06-14" });
     expect(input.limbicMemories).toEqual([]);
@@ -115,7 +118,7 @@ describe("gatherDreamInput", () => {
 
   it("loads limbic even when no sessions updated that day", async () => {
     resetLimbicMemoryStoreForTests();
-    resetMemorySessionStoreForTests();
+    resetMemoryConversationStoreForTests();
 
     registerLimbicMemoryStore({
       async listByCreatedBetween() {
@@ -123,17 +126,17 @@ describe("gatherDreamInput", () => {
       },
     } as never);
 
-    registerMemorySessionStore({
-      async listSessionIdsUpdatedBetween() {
+    registerMemoryConversationStore({
+      async listConversationIdsUpdatedBetween() {
         return [];
       },
       async listMessages() {
         return [];
       },
-    } as unknown as SessionStorePort);
+    } as unknown as ConversationStorePort);
 
     const input = await gatherDreamInput({ day: "2026-06-14" });
-    expect(input.sessionIds).toEqual([]);
+    expect(input.conversationIds).toEqual([]);
     expect(input.limbicMemories).toHaveLength(1);
     expect(input.episodicSnippets).toEqual([]);
     expect(hasDreamFuel(input)).toBe(true);

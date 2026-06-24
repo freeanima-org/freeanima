@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import type { SessionMessage } from "@freeanima/core/db/domain";
+import type { StoredMessage } from "@freeanima/core/db/domain";
 import {
   FRIDGE_CONTEXT_ASSISTANT_NAME,
   FRIDGE_MAGNET_BOARD_FRAME,
@@ -102,7 +102,7 @@ describe("isFridgeContextAssistant", () => {
 
 describe("manifestFridgeMagnetBoard", () => {
   it("inserts fridge_context assistant before last user message", () => {
-    const messages: SessionMessage[] = [
+    const messages: StoredMessage[] = [
       { role: "user", content: "First message" },
       { role: "assistant", content: "Reply" },
       { role: "user", content: "Second message" },
@@ -118,7 +118,7 @@ describe("manifestFridgeMagnetBoard", () => {
   });
 
   it("does not manifest when last message is not user", () => {
-    const messages: SessionMessage[] = [
+    const messages: StoredMessage[] = [
       { role: "user", content: "Hello" },
       { role: "assistant", content: "Reply" },
     ];
@@ -127,7 +127,7 @@ describe("manifestFridgeMagnetBoard", () => {
   });
 
   it("does not manifest when magnets are empty", () => {
-    const messages: SessionMessage[] = [{ role: "user", content: "Hello" }];
+    const messages: StoredMessage[] = [{ role: "user", content: "Hello" }];
     manifestFridgeMagnetBoard(messages, []);
     expect(messages).toHaveLength(1);
   });
@@ -135,7 +135,7 @@ describe("manifestFridgeMagnetBoard", () => {
 
 describe("stripFridgeContextFromMessages", () => {
   it("removes fridge_context assistant messages", () => {
-    const messages: SessionMessage[] = [
+    const messages: StoredMessage[] = [
       {
         role: "assistant",
         name: FRIDGE_CONTEXT_ASSISTANT_NAME,
@@ -149,7 +149,7 @@ describe("stripFridgeContextFromMessages", () => {
   });
 
   it("preserves other assistant messages", () => {
-    const messages: SessionMessage[] = [
+    const messages: StoredMessage[] = [
       { role: "assistant", content: "Reply" },
       {
         role: "assistant",
@@ -166,7 +166,7 @@ describe("stripFridgeContextFromMessages", () => {
 
 describe("stripLegacyUserFridgeBlocks", () => {
   it("strips fridge magnet blocks from all user messages", () => {
-    const messages: SessionMessage[] = [
+    const messages: StoredMessage[] = [
       { role: "user", content: "```fridge-magnet\na: 1\n```\nFirst message" },
       { role: "assistant", content: "```fridge-magnet\nb: 2\n```\nReply" },
       { role: "user", content: "```fridge\nc: 3\n```\nSecond message" },
@@ -180,7 +180,7 @@ describe("stripLegacyUserFridgeBlocks", () => {
 
 describe("manifest idempotency via strip + remanifest", () => {
   it("leaves exactly one fridge_context assistant after two rounds", () => {
-    const messages: SessionMessage[] = [{ role: "user", content: "Hello" }];
+    const messages: StoredMessage[] = [{ role: "user", content: "Hello" }];
     manifestFridgeMagnetBoard(messages, sampleMagnets);
     stripFridgeContextFromMessages(messages);
     manifestFridgeMagnetBoard(messages, sampleMagnets);

@@ -46,8 +46,8 @@ export { validateFtsQueryInput, assertValidTsQueryString } from "./fts/query-val
 export {
   buildTextSearchSnippet,
   extractSearchTerms,
-  formatSessionMessageSearchHit,
-  type SessionMessageSearchFields,
-  type SessionMessageSearchHit,
+  formatStoredMessageSearchHit,
+  type StoredMessageSearchFields,
+  type StoredMessageSearchHit,
   type TextSearchSnippetOpts,
 } from "./search/snippet.ts";

@@ -1,7 +1,7 @@
 import { compress } from "@freeanima/core/compress";
-import type { SessionMessage } from "@freeanima/core/db/domain";
+import type { StoredMessage } from "@freeanima/core/db/domain";
 import { describe, it, expect } from "bun:test";
-import { aa, assistantToolCall, toolMsg, ua } from "./test-helpers/session-fixtures.ts";
+import { aa, assistantToolCall, toolMsg, ua } from "./test-helpers/conversation-fixtures.ts";
 import { installCompressionConfigForTests } from "./test-helpers/config-bind.ts";
 
 const testBoundary = { rawMinMessages: 3, slimMinMessages: 4 };
@@ -17,7 +17,7 @@ describe("compressor", () => {
   });
 
   it("triggers compression and sets l2/l3", () => {
-    const msgs: SessionMessage[] = [];
+    const msgs: StoredMessage[] = [];
     for (let i = 0; i < 6; i++) {
       msgs.push(ua(i * 2 + 1, `u${i}`), aa(i * 2 + 2, `a${i}`));
     }
@@ -37,7 +37,7 @@ describe("compressor", () => {
   });
 
   it("keeps boundaries frozen until recompress threshold", () => {
-    const msgs: SessionMessage[] = [];
+    const msgs: StoredMessage[] = [];
     for (let i = 0; i < 6; i++) {
       msgs.push(ua(i * 2 + 1, `u${i}`), aa(i * 2 + 2, `a${i}`));
     }
@@ -58,7 +58,7 @@ describe("compressor", () => {
   });
 
   it("raw segment starts at user after advancing l3", () => {
-    const msgs: SessionMessage[] = [];
+    const msgs: StoredMessage[] = [];
     for (let i = 0; i < 54; i++) {
       msgs.push(ua(i * 2 + 1, `u${i}`), aa(i * 2 + 2, `a${i}`));
     }

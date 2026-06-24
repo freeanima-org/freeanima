@@ -4,8 +4,8 @@ import { m } from "@/lib/i18n.ts";
 export type FridgeMagnetItem = {
   key: string;
   value: string;
-  module: "session" | "tasks" | "other";
-  session_id?: string;
+  module: "conversation" | "tasks" | "other";
+  conversation_id?: string;
   label?: string;
   ttl_seconds: number | null;
 };
@@ -46,24 +46,24 @@ export function FridgeMagnetDetailList({ magnets, redisConfigured }: FridgeMagne
                 <span className="badge badge-info badge-sm">
                   {m.webui_chamber_fridge_badge_task()}
                 </span>
-              ) : magnet.module === "session" ? (
+              ) : magnet.module === "conversation" ? (
                 <span className="badge badge-primary badge-sm">
-                  {m.webui_chamber_fridge_badge_session()}
+                  {m.webui_chamber_fridge_badge_conversation()}
                 </span>
               ) : null}
               <span className="text-xs text-base-content/60">
                 {formatFridgeTtl(magnet.ttl_seconds)}
               </span>
             </div>
-            {magnet.session_id ? (
+            {magnet.conversation_id ? (
               <div className="text-xs">
-                {m.webui_common_session_label()}{" "}
+                {m.webui_common_conversation_label()}{" "}
                 <Link
-                  to="/chamber/sessions/$sessionId"
-                  params={{ sessionId: magnet.session_id }}
+                  to="/chamber/conversations/$conversationId"
+                  params={{ conversationId: magnet.conversation_id }}
                   className="link link-primary font-mono"
                 >
-                  {magnet.session_id}
+                  {magnet.conversation_id}
                 </Link>
               </div>
             ) : null}

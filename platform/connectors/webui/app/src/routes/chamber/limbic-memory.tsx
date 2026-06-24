@@ -7,11 +7,11 @@ import { m } from "@/lib/i18n.ts";
 
 const PAGE_SIZE = 20;
 
-const LIMBIC_KINDS = ["session_mood", "turning_point", "spike"] as const;
+const LIMBIC_KINDS = ["conversation_mood", "turning_point", "spike"] as const;
 
 type LimbicRow = {
   id: string;
-  session_id: string;
+  conversation_id: string;
   kind: string;
   valence: number | null;
   arousal: number | null;
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/chamber/limbic-memory")({
 
 function LimbicMemoryPage() {
   const [query, setQuery] = useState("");
-  const [sessionId, setSessionId] = useState("");
+  const [conversationId, setSessionId] = useState("");
   const [kindFilter, setKindFilter] = useState("");
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -46,7 +46,7 @@ function LimbicMemoryPage() {
           query: query.trim() || undefined,
           offset: nextOffset,
           limit: PAGE_SIZE,
-          session_id: sessionId.trim() || undefined,
+          conversation_id: conversationId.trim() || undefined,
           kind: kindFilter || undefined,
         })) as { items: LimbicRow[]; total: number };
         setItems(data.items ?? []);
@@ -63,7 +63,7 @@ function LimbicMemoryPage() {
         setLoading(false);
       }
     },
-    [query, sessionId, kindFilter],
+    [query, conversationId, kindFilter],
   );
 
   const runSearch = () => {
@@ -102,10 +102,10 @@ function LimbicMemoryPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="form-control">
               <label className="label py-0">
-                <span className="label-text text-xs">session_id</span>
+                <span className="label-text text-xs">conversation_id</span>
               </label>
               <input
-                value={sessionId}
+                value={conversationId}
                 onChange={(e) => setSessionId(e.target.value)}
                 type="text"
                 className="input input-bordered input-sm font-mono"
@@ -166,7 +166,7 @@ function LimbicMemoryPage() {
                         {formatDisplayDateTime(row.created)}
                       </td>
                       <td className="text-xs">{row.kind}</td>
-                      <td className="font-mono text-xs max-w-32 truncate">{row.session_id}</td>
+                      <td className="font-mono text-xs max-w-32 truncate">{row.conversation_id}</td>
                       <td className="text-xs">{row.intensity.toFixed(2)}</td>
                       <td className="text-sm max-w-md whitespace-pre-wrap">{row.content}</td>
                     </tr>

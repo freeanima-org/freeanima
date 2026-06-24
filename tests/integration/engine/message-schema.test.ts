@@ -24,11 +24,11 @@ describePg("schemas/message", () => {
     await endIntegrationCase();
   });
 
-  it("updateSessionMetaField preserves acp_tasks", async () => {
+  it("updateConversationMetaField preserves acp_tasks", async () => {
     const c = testConv();
     const sid = "schema_test";
-    await c.initSession(sid, "m", { platform: TEST_SAP_CHAT_PLATFORM });
-    await c.updateSessionMetaField(sid, {
+    await c.initConversation(sid, "m", { platform: TEST_SAP_CHAT_PLATFORM });
+    await c.updateConversationMetaField(sid, {
       acp_tasks: {
         "uuid-1": {
           status: "running",
@@ -38,9 +38,9 @@ describePg("schemas/message", () => {
         },
       },
     });
-    const meta = await c.loadSessionMeta(sid);
-    expect(meta.role).toBe("session_meta");
-    if (meta.role !== "session_meta") return;
+    const meta = await c.loadConversationMeta(sid);
+    expect(meta.role).toBe("conversation_meta");
+    if (meta.role !== "conversation_meta") return;
     expect(meta.acp_tasks).toEqual({
       "uuid-1": {
         status: "running",

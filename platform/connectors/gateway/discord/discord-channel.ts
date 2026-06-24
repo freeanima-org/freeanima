@@ -31,7 +31,7 @@ function splitDiscordMessage(text: string, limit = DISCORD_MAX_LEN): string[] {
 
 export type DiscordStreamChannelOptions = RunStreamChannelOptions & {
   toolDisplayMode?: ToolDisplayMode;
-  sessionId?: string;
+  conversationId?: string;
   clarifyPending?: ClarifyPendingRegistry;
 };
 
@@ -63,8 +63,8 @@ export async function streamReplyToChannel(
     const message = await withDiscordRetry(
       async (): Promise<Message> => channelSend({ content, components }),
     );
-    if (opts?.sessionId && opts.clarifyPending) {
-      opts.clarifyPending.register(opts.sessionId, message, timeoutSec);
+    if (opts?.conversationId && opts.clarifyPending) {
+      opts.clarifyPending.register(opts.conversationId, message, timeoutSec);
     }
   };
 
@@ -92,7 +92,7 @@ export async function streamReplyToChannel(
       await sendClarifyWithComponents(content, rows, timeoutSec);
     },
     toolDisplayMode,
-    opts?.sessionId,
+    opts?.conversationId,
   );
 
   const answerStrategy = createDiscordAnswerStrategy({ io: answerIo });

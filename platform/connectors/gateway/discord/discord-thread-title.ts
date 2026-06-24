@@ -16,7 +16,7 @@ export function discordThreadNameFromUserMessage(text: string): string {
   return preview.slice(0, DISCORD_THREAD_TITLE_MAX) || "…";
 }
 
-/** Skip rename when thread already shows the session title (Discord rate-limits renames). */
+/** Skip rename when thread already shows the conversation title (Discord rate-limits renames). */
 export function shouldRenameDiscordThread(currentName: string, sessionTitle: string): boolean {
   const desired = discordThreadTitleFromSession(sessionTitle);
   if (!desired) return false;

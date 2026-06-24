@@ -1,4 +1,4 @@
-import { getToolSessionId } from "@freeanima/core/tool";
+import { getToolConversationId } from "@freeanima/core/tool";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
 import { TASKS_TOOL_RETURNS } from "./return-schemas.ts";
@@ -51,7 +51,7 @@ function taskPayload(task: TaskRow) {
       created_at: task.created_at,
       updated_at: task.updated_at,
       completed_at: task.completed_at,
-      source_session_id: task.source_session_id,
+      source_conversation_id: task.source_conversation_id,
     },
   };
 }
@@ -105,7 +105,7 @@ async function handleCreateTask(args: Record<string, unknown>): Promise<string> 
       description,
       priority,
       due_at: dueAt,
-      source_session_id: getToolSessionId() ?? null,
+      source_conversation_id: getToolConversationId() ?? null,
     });
     await afterMutation(store);
     return toolResult({ ...taskPayload(task), action: "create" });
@@ -226,7 +226,7 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
       [
         {
           name: "task_create",
-          description: "Create a cross-session persistent todo task",
+          description: "Create a cross-conversation persistent todo task",
           parameters: {
             type: "object",
             properties: {

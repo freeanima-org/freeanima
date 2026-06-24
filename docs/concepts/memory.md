@@ -25,7 +25,7 @@ External input / real-time message stream
 ① Instant memory ─── Internal activation state during LLM token inference
         │ (attention filtering)
         ▼
-② Working memory ─── LLM context window (current session)
+② Working memory ─── LLM context window (current conversation)
         │ (deep sleep consolidation)
         ▼
 ③ Long-term memory ─── Persistent storage
@@ -40,7 +40,7 @@ Internal activation state during a single LLM token inference pass. Dissipates t
 The current LLM context window, containing:
 
 - System prompt (self layer six blocks + resident memory + project context; see [`self-layer.md`](self-layer.md))
-- Recent messages in the current session
+- Recent messages in the current conversation
 - Relevant fragments recalled from long-term memory
 - Real-time tool call results
 
@@ -62,7 +62,7 @@ Long-term memory (LTM)
 │   │   ├── Conversation log
 │   │   └── Emotional anchors
 │   │
-│   ├── Semantic memory ── "how the world is" (cross-session, updatable)
+│   ├── Semantic memory ── "how the world is" (cross-conversation, updatable)
 │   │   ├── Rational facts    (type=world)
 │   │   ├── Personal preferences    (type=preference/opinion)
 │   │   └── Self experiences    (type=experience)
@@ -83,7 +83,7 @@ Definition: Memory of "when, where, and what I experienced"—with a distinct te
 
 **Conversation log** — the most raw, high-fidelity objective runtime trace. Only **user-facing conversations** (`sessions` without `platform_info.platform = cron`) feed light sleep and dream. Background LLM (cron agent, sleep stages) runs as **AutoLlmRun** — audited in `auto_llm_runs`, not copied into the conversation archive.
 
-**Emotional anchors** — session-level mood snapshots written during light sleep; not injected into system prompt.
+**Emotional anchors** — conversation-level mood snapshots written during light sleep; not injected into system prompt.
 
 **Lifecycle: append-only, no updates.** Faithfully preserves historical continuity of the digital life's growth.
 
@@ -115,7 +115,7 @@ Definition: Memory of "what I felt"—not objective fact, not behavioral record,
 | Lifecycle     | Updatable, mergeable       | Immutable (emotions have inviolable dignity)                |
 | Retrieval use | Decision basis             | Emotional resonance, continuity of existence                |
 
-**Three forms:** emotional anchor (session mood), emotional imprint (cross-session moment), sentiment tendency (long-term trends — not yet implemented, see Issue #38).
+**Three forms:** emotional anchor (session mood), emotional imprint (cross-conversation moment), sentiment tendency (long-term trends — not yet implemented, see Issue #38).
 
 ### 4. Procedural Memory
 

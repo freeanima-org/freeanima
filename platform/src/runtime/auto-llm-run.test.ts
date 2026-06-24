@@ -81,7 +81,7 @@ describe("runAutoLlm", () => {
     appendCalls.length = 0;
   });
 
-  it("does not write session or messages; persists auto_llm_runs", async () => {
+  it("does not write conversation or messages; persists auto_llm_runs", async () => {
     async function* fakeStream() {
       yield { event: "token" as const, data: { content: "cron done" } };
     }

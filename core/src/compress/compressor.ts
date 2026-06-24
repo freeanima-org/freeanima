@@ -1,13 +1,13 @@
 import { getCompressionConfig, getEffectiveTokenBudget } from "./compression-config.ts";
 import { isInToolLoop } from "./compression-tool-loop.ts";
 import { estimateMessagesTokens, estimateTokens, estimateToolsTokens } from "./token-estimate.ts";
-import type { OpenAiToolSchema, SessionMessage } from "@freeanima/core/db/domain";
+import type { OpenAiToolSchema, StoredMessage } from "@freeanima/core/db/domain";
 import { type CompressionState, parseCompressionState } from "@freeanima/core/db/domain";
 
 export type { CompressionState };
 export { parseCompressionState };
 
-export const SUMMARY_USER_PREFIX = "[session summary]";
+export const SUMMARY_USER_PREFIX = "[conversation summary]";
 /** Runtime synthetic summary user pos (≠ l4) */
 export const SUMMARY_SYNTHETIC_POS = 1;
 
@@ -16,26 +16,26 @@ export function isCompressed(state: CompressionState | null | undefined): boolea
   return state.l2 > 0 || state.l3 > 0;
 }
 
-function messagePos(msg: SessionMessage): number {
-  if (msg.role === "session_meta") return 0;
+function messagePos(msg: StoredMessage): number {
+  if (msg.role === "conversation_meta") return 0;
   return msg.pos ?? 0;
 }
 
-export function getL4(messages: SessionMessage[]): number {
+export function getL4(messages: StoredMessage[]): number {
   let max = 0;
   for (const m of messages) {
-    if (m.role === "system" || m.role === "session_meta") continue;
+    if (m.role === "system" || m.role === "conversation_meta") continue;
     const pos = messagePos(m);
     if (pos > max) max = pos;
   }
   return max;
 }
 
-function restMessages(messages: SessionMessage[]): SessionMessage[] {
-  return messages.filter((m) => m.role !== "system" && m.role !== "session_meta");
+function restMessages(messages: StoredMessage[]): StoredMessage[] {
+  return messages.filter((m) => m.role !== "system" && m.role !== "conversation_meta");
 }
 
-export function findLastUserIndex(rest: SessionMessage[]): number {
+export function findLastUserIndex(rest: StoredMessage[]): number {
   for (let i = rest.length - 1; i >= 0; i--) {
     if (rest[i]?.role === "user") return i;
   }
@@ -43,11 +43,11 @@ export function findLastUserIndex(rest: SessionMessage[]): number {
 }
 
 /** Single slim-segment message; tool dropped, returns null */
-export function slimMessage(msg: SessionMessage): SessionMessage | null {
+export function slimMessage(msg: StoredMessage): StoredMessage | null {
   const role = msg.role;
   if (role === "tool") return null;
   if (role === "user") {
-    const out: Extract<SessionMessage, { role: "user" }> = { role: "user", content: msg.content };
+    const out: Extract<StoredMessage, { role: "user" }> = { role: "user", content: msg.content };
     if (msg.pos !== undefined) out.pos = msg.pos;
     if (msg.timestamp !== undefined) out.timestamp = msg.timestamp;
     if (msg.name !== undefined) out.name = msg.name;
@@ -66,7 +66,7 @@ export function slimMessage(msg: SessionMessage): SessionMessage | null {
       text = names.length ? `[tools executed: ${names.join(", ")}]` : "[tool call executed]";
     }
     if (!text) return null;
-    const out: Extract<SessionMessage, { role: "assistant" }> = {
+    const out: Extract<StoredMessage, { role: "assistant" }> = {
       role: "assistant",
       content: text,
     };
@@ -77,19 +77,19 @@ export function slimMessage(msg: SessionMessage): SessionMessage | null {
   return { ...msg };
 }
 
-function rawSegment(rest: SessionMessage[], l3: number, l4: number): SessionMessage[] {
+function rawSegment(rest: StoredMessage[], l3: number, l4: number): StoredMessage[] {
   return rest.filter((m) => {
     const pos = messagePos(m);
     return pos > l3 && pos <= l4;
   });
 }
 
-function slimSegment(rest: SessionMessage[], l2: number, l3: number): SessionMessage[] {
+function slimSegment(rest: StoredMessage[], l2: number, l3: number): StoredMessage[] {
   const seg = rest.filter((m) => {
     const pos = messagePos(m);
     return pos > l2 && pos <= l3;
   });
-  const out: SessionMessage[] = [];
+  const out: StoredMessage[] = [];
   for (const m of seg) {
     const s = slimMessage(m);
     if (s) out.push(s);
@@ -97,7 +97,7 @@ function slimSegment(rest: SessionMessage[], l2: number, l3: number): SessionMes
   return out;
 }
 
-function rawSegmentValid(seg: SessionMessage[], rawMinMessages: number): boolean {
+function rawSegmentValid(seg: StoredMessage[], rawMinMessages: number): boolean {
   if (seg.length < rawMinMessages) return false;
   if (!seg.some((m) => m.role === "user")) return false;
   let minPos = Infinity;
@@ -122,7 +122,7 @@ export type DeriveBoundariesResult = { l2: number; l3: number };
  * Returns null when no valid boundary.
  */
 export function deriveBoundariesFromL4(
-  messages: SessionMessage[],
+  messages: StoredMessage[],
   l4: number,
   prev: CompressionState | null,
   cfg: DeriveBoundariesConfig,
@@ -206,9 +206,9 @@ export function shouldAdvance(opts: {
 
 /** Four-segment runtime view (no persisted system; summary synthetic pos=1) */
 export function buildRuntimeFromLPoints(
-  messages: SessionMessage[],
+  messages: StoredMessage[],
   state: CompressionState | null,
-): SessionMessage[] {
+): StoredMessage[] {
   const rest = restMessages(messages);
   const l4 = getL4(messages);
   const l2 = state?.l2 ?? 0;
@@ -218,7 +218,7 @@ export function buildRuntimeFromLPoints(
     return [...rest];
   }
 
-  const out: SessionMessage[] = [];
+  const out: StoredMessage[] = [];
   if (state?.summary?.trim()) {
     out.push({
       role: "user",
@@ -232,7 +232,7 @@ export function buildRuntimeFromLPoints(
 }
 
 function buildRuntimeEstimate(
-  runtimeBody: SessionMessage[],
+  runtimeBody: StoredMessage[],
   systemPrompt: string,
   tools: OpenAiToolSchema[] | undefined,
   model?: string,
@@ -284,7 +284,7 @@ function messageThreshold(maxRounds: number): { threshold: number; recompressAt:
 }
 
 export function analyzeCompression(
-  messages: SessionMessage[],
+  messages: StoredMessage[],
   opts?: CompressOptions,
 ): CompressionAnalysis {
   const cfg = getCompressionConfig();
@@ -346,10 +346,7 @@ export function analyzeCompression(
 }
 
 /** Whether this turn will advance compression boundary (does not run deriveBoundariesFromL4) */
-export function willAdvanceCompression(
-  messages: SessionMessage[],
-  opts?: CompressOptions,
-): boolean {
+export function willAdvanceCompression(messages: StoredMessage[], opts?: CompressOptions): boolean {
   const cfg = getCompressionConfig();
   const maxRounds = opts?.maxRounds ?? cfg.maxRounds;
   const state = opts?.state ?? null;
@@ -393,9 +390,9 @@ export function willAdvanceCompression(
  * Stateful compression: archive unchanged; runtime four-segment view + meta l2/l3.
  */
 export function compress(
-  messages: SessionMessage[],
+  messages: StoredMessage[],
   opts?: CompressOptions,
-): [SessionMessage[], CompressionState | null] {
+): [StoredMessage[], CompressionState | null] {
   const cfg = getCompressionConfig();
   const state = opts?.state ?? null;
 
@@ -431,10 +428,10 @@ export function compress(
 
 /** Summary incremental range (old l2, new l2] */
 export function sliceForSummary(
-  messages: SessionMessage[],
+  messages: StoredMessage[],
   prevL2: number | null,
   newL2: number,
-): SessionMessage[] {
+): StoredMessage[] {
   const rest = restMessages(messages);
   const lo = prevL2 ?? 0;
   return rest.filter((m) => {
@@ -443,7 +440,7 @@ export function sliceForSummary(
   });
 }
 
-export function formatMessagesForSummary(msgs: SessionMessage[]): string {
+export function formatMessagesForSummary(msgs: StoredMessage[]): string {
   const lines: string[] = [];
   for (const m of msgs) {
     switch (m.role) {

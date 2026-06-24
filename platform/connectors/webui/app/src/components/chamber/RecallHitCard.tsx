@@ -6,33 +6,35 @@ import type { MemoryRecallHit } from "./memory-recall-types.ts";
 
 function memoryTypeBadgeClass(type: string): string {
   if (type === "semantic") return "badge-primary";
-  if (type === "session") return "badge-secondary";
+  if (type === "conversation") return "badge-secondary";
   if (type === "limbic") return "badge-warning";
   if (type === "autobiographical") return "badge-accent";
   return "badge-ghost";
 }
 
-function SessionLink({ sessionId }: { sessionId: string }) {
+function ConversationLink({ conversationId }: { conversationId: string }) {
   return (
     <Link
-      to="/chamber/sessions/$sessionId"
-      params={{ sessionId }}
+      to="/chamber/conversations/$conversationId"
+      params={{ conversationId }}
       className="link link-hover font-mono"
     >
-      {sessionId}
+      {conversationId}
     </Link>
   );
 }
 
-function SessionLinks({ sessionIds }: { sessionIds: string[] }) {
-  if (!sessionIds.length) return null;
+function ConversationLinks({ conversationIds }: { conversationIds: string[] }) {
+  if (!conversationIds.length) return null;
   return (
     <p className="text-xs text-base-content/60">
-      <span className="text-base-content/50">{m.webui_chamber_semantic_source_session()}: </span>
-      {sessionIds.map((id, i) => (
+      <span className="text-base-content/50">
+        {m.webui_chamber_semantic_source_conversation()}:{" "}
+      </span>
+      {conversationIds.map((id, i) => (
         <span key={id}>
           {i > 0 ? ", " : null}
-          <SessionLink sessionId={id} />
+          <ConversationLink conversationId={id} />
         </span>
       ))}
     </p>
@@ -58,10 +60,10 @@ export function RecallHitCard({ hit, index }: { hit: MemoryRecallHit; index: num
               {hit.pinned ? <span className="badge badge-warning badge-xs">pinned</span> : null}
             </>
           ) : null}
-          {hit.memory_type === "session" && hit.session_id ? (
+          {hit.memory_type === "conversation" && hit.conversation_id ? (
             <>
               <span className="badge badge-outline badge-xs">{hit.role}</span>
-              <SessionLink sessionId={hit.session_id} />
+              <ConversationLink conversationId={hit.conversation_id} />
               <span className="font-mono text-base-content/60">{hit.message_id}</span>
               {hit.timestamp ? (
                 <span className="text-base-content/50">{formatDisplayDateTime(hit.timestamp)}</span>
@@ -72,7 +74,9 @@ export function RecallHitCard({ hit, index }: { hit: MemoryRecallHit; index: num
             <>
               <span className="font-mono">{hit.limbic_memory_id}</span>
               <span className="badge badge-outline badge-xs">{hit.kind}</span>
-              {hit.session_id ? <SessionLink sessionId={hit.session_id} /> : null}
+              {hit.conversation_id ? (
+                <ConversationLink conversationId={hit.conversation_id} />
+              ) : null}
               <span className="text-base-content/50">
                 {m.webui_chamber_limbic_intensity()} {hit.intensity}
                 {hit.valence != null ? ` · v ${hit.valence}` : null}
@@ -90,7 +94,7 @@ export function RecallHitCard({ hit, index }: { hit: MemoryRecallHit; index: num
         {hit.memory_type === "semantic" ? (
           <>
             <p className="text-sm whitespace-pre-wrap">{hit.content}</p>
-            <SessionLinks sessionIds={hit.source_sessions ?? []} />
+            <ConversationLinks conversationIds={hit.source_conversations ?? []} />
             {hit.observed_at || hit.occurred_at ? (
               <p className="text-xs text-base-content/60 font-mono">
                 {hit.observed_at ? `observed ${formatDisplayDateTime(hit.observed_at)}` : null}
@@ -100,7 +104,7 @@ export function RecallHitCard({ hit, index }: { hit: MemoryRecallHit; index: num
             ) : null}
           </>
         ) : null}
-        {hit.memory_type === "session" ? (
+        {hit.memory_type === "conversation" ? (
           <p className="text-sm whitespace-pre-wrap">{hit.snippet}</p>
         ) : null}
         {hit.memory_type === "limbic" ? (

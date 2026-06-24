@@ -15,7 +15,7 @@ title: Installation
 | **Docker Compose** | Quick trial, minimal host setup            | Bundled     | Bundled                | `.env` env vars                                      |
 | **Source**         | Contributors, bleeding-edge, custom builds | You install | Optional (recommended) | pass (recommended)                                   |
 
-All paths run the same `anima service` runtime (WebUI + tRPC + Gateway + engine). PostgreSQL with **pgvector** is **required**. Redis powers fridge/tasks cross-session context and **degrades silently** when unavailable — Docker and production setups should still run it.
+All paths run the same `anima service` runtime (WebUI + tRPC + Gateway + engine). PostgreSQL with **pgvector** is **required**. Redis powers fridge/tasks cross-conversation context and **degrades silently** when unavailable — Docker and production setups should still run it.
 
 ## Shared prerequisites
 

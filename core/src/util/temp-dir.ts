@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve, sep } from "node:path";
 
-/** Runtime session cwd / execute_code dirs under os.tmpdir() */
+/** Runtime conversation cwd / execute_code dirs under os.tmpdir() */
 const RUNTIME_TMP_PREFIXES = ["anima-cwd-", "anima-exec-"] as const;
 
 /** Common test-suite mkdtemp prefixes (integration + unit) */

@@ -16,7 +16,7 @@ type AutobiographicalRow = {
   significance: string;
   status: string;
   updated: string;
-  source_sessions: string[];
+  source_conversations: string[];
 };
 
 export const Route = createFileRoute("/chamber/autobiographical-memory")({
@@ -48,7 +48,7 @@ function AutobiographicalMemoryPage() {
           limit: PAGE_SIZE,
           status: statusFilter || undefined,
           significance: significanceFilter || undefined,
-          source_session: sourceSession.trim() || undefined,
+          source_conversation: sourceSession.trim() || undefined,
         })) as { items: AutobiographicalRow[]; total: number };
         setItems(data.items ?? []);
         setTotal(data.total ?? 0);
@@ -134,7 +134,7 @@ function AutobiographicalMemoryPage() {
             <div className="form-control">
               <label className="label py-0">
                 <span className="label-text text-xs">
-                  {m.webui_chamber_autobio_source_session()}
+                  {m.webui_chamber_autobio_source_conversation()}
                 </span>
               </label>
               <input
@@ -142,7 +142,7 @@ function AutobiographicalMemoryPage() {
                 onChange={(e) => setSourceSession(e.target.value)}
                 type="text"
                 className="input input-bordered input-sm font-mono"
-                placeholder="session id"
+                placeholder="conversation id"
               />
             </div>
           </div>
@@ -178,9 +178,9 @@ function AutobiographicalMemoryPage() {
                       </span>
                     </div>
                     <p className="text-sm whitespace-pre-wrap">{row.content}</p>
-                    {row.source_sessions?.length ? (
+                    {row.source_conversations?.length ? (
                       <p className="text-xs text-base-content/50 font-mono">
-                        sessions: {row.source_sessions.join(", ")}
+                        conversations: {row.source_conversations.join(", ")}
                       </p>
                     ) : null}
                   </div>

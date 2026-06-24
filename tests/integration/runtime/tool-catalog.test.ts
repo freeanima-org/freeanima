@@ -1,6 +1,6 @@
 import { expect, it, beforeEach, afterEach, afterAll, spyOn } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
-import type { SessionMessage } from "@freeanima/core/db/domain";
+import type { StoredMessage } from "@freeanima/core/db/domain";
 import {
   beginIntegrationCase,
   endIntegrationCase,
@@ -8,8 +8,8 @@ import {
 } from "../../helpers/integration-case.ts";
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
 import { registerServiceTools } from "@freeanima/platform";
-import { isSessionMeta } from "@freeanima/core/db/domain";
-import { DEFAULT_SESSION_TOOLSETS } from "@freeanima/core/tool";
+import { isConversationMeta } from "@freeanima/core/db/domain";
+import { DEFAULT_CONVERSATION_TOOLSETS } from "@freeanima/core/tool";
 import { runWithToolContext } from "@freeanima/runtime/loop";
 import * as engine from "@freeanima/runtime/loop";
 import * as llm from "@freeanima/core/llm";
@@ -37,33 +37,33 @@ describePg("tool catalog lazy load", () => {
     await endIntegrationCase();
   });
 
-  it("new session system_prompt lists ToolSets compactly", async () => {
+  it("new conversation system_prompt lists ToolSets compactly", async () => {
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
-    const meta = await c.loadSessionMeta(sid);
-    expect(isSessionMeta(meta)).toBe(true);
-    if (!isSessionMeta(meta)) return;
+    const sid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
+    const meta = await c.loadConversationMeta(sid);
+    expect(isConversationMeta(meta)).toBe(true);
+    if (!isConversationMeta(meta)) return;
     const sp = meta.system_prompt ?? "";
     expect(sp).toContain("## ToolSets");
     expect(sp).toContain("- file —");
     expect(sp).toContain("toolset_load");
   });
 
-  it("new session meta stores default cached toolsets", async () => {
+  it("new conversation meta stores default cached toolsets", async () => {
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
-    const meta = await c.loadSessionMeta(sid);
-    expect(isSessionMeta(meta)).toBe(true);
-    if (!isSessionMeta(meta)) return;
+    const sid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
+    const meta = await c.loadConversationMeta(sid);
+    expect(isConversationMeta(meta)).toBe(true);
+    if (!isConversationMeta(meta)) return;
 
-    for (const expected of DEFAULT_SESSION_TOOLSETS) {
+    for (const expected of DEFAULT_CONVERSATION_TOOLSETS) {
       if (getTestEngine().toolSets.getToolSet(expected)) {
         expect(meta.cached_toolsets).toContain(expected);
       }
     }
     expect(meta.staged_toolsets ?? []).toEqual([]);
 
-    const schemas = await c.loadSessionTools(sid, meta);
+    const schemas = await c.loadConversationTools(sid, meta);
     const names = schemas.map((t) => t.function.name);
     expect(names).toContain("toolset_search");
     expect(names).not.toContain("file_read");
@@ -71,7 +71,7 @@ describePg("tool catalog lazy load", () => {
 
   it("toolset_load writes staged_toolsets without extending API schema", async () => {
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
+    const sid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
     const toolLoad = getTestEngine().toolSets.getTool("toolset_load");
     expect(toolLoad).toBeDefined();
 
@@ -86,23 +86,23 @@ describePg("tool catalog lazy load", () => {
       { repos: c.repos, tools: getTestEngine().toolSets },
     );
 
-    const meta = await c.loadSessionMeta(sid);
-    expect(isSessionMeta(meta)).toBe(true);
-    if (!isSessionMeta(meta)) return;
+    const meta = await c.loadConversationMeta(sid);
+    expect(isConversationMeta(meta)).toBe(true);
+    if (!isConversationMeta(meta)) return;
     expect(meta.staged_toolsets).toContain("file");
 
-    const schemas = await c.loadSessionTools(sid, meta);
+    const schemas = await c.loadConversationTools(sid, meta);
     expect(schemas.map((t) => t.function.name)).not.toContain("file_read");
   });
 
   it("unloaded tools are blocked by executableTools gate", async () => {
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
-    const meta = await c.loadSessionMeta(sid);
-    expect(isSessionMeta(meta)).toBe(true);
-    if (!isSessionMeta(meta)) return;
+    const sid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
+    const meta = await c.loadConversationMeta(sid);
+    expect(isConversationMeta(meta)).toBe(true);
+    if (!isConversationMeta(meta)) return;
 
-    const tools = await c.loadSessionTools(sid, meta);
+    const tools = await c.loadConversationTools(sid, meta);
     const executableTools = resolveExecutableToolNames(meta, getTestEngine().toolSets);
 
     getTestEngine().toolSets.registerToolSet("__gate_test__", "test", [
@@ -133,7 +133,7 @@ describePg("tool catalog lazy load", () => {
       yield { type: "done", finish_reason: "stop", usage: null, reasoning: null };
     });
 
-    const msgs: SessionMessage[] = [
+    const msgs: StoredMessage[] = [
       {
         role: "user",
         content: "test",
@@ -158,7 +158,7 @@ describePg("tool catalog lazy load", () => {
 
   it("toolset_search requires query and returns hits", async () => {
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
+    const sid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
     const searchDef = getTestEngine().toolSets.getTool("toolset_search");
     expect(searchDef).toBeDefined();
 

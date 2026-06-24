@@ -39,7 +39,7 @@ msgstr ""
 #: docs/features/pair-programming-v1.md:9
 #, no-wrap
 msgid ""
-"> **Phase 1 ✅ shipped**: three-column layout, syntax-highlighted viewer, file tree/search, terminal, dedicated session platform id.\n"
+"> **Phase 1 ✅ shipped**: three-column layout, syntax-highlighted viewer, file tree/search, terminal, dedicated conversation platform id.\n"
 "> Future work: [Issue #37](https://github.com/freeanima-org/freeanima/issues/37).\n"
 msgstr ""
 
@@ -91,7 +91,7 @@ msgid ""
 "│          │   file view            │  │  Chat area     │  │\n"
 "└──────────┴────────────────────────┴──────────────────────┘\n"
 "   Left              Center                  Right\n"
-"  file tree        code viewer           session + chat\n"
+"  file tree        code viewer           conversation + chat\n"
 msgstr ""
 
 #. type: Plain text
@@ -135,12 +135,12 @@ msgstr ""
 
 #. type: Bullet: '5. '
 #: docs/features/pair-programming-v1.md:48
-msgid "Create or select a session on the right; discuss code with the agent"
+msgid "Create or select a conversation on the right; discuss code with the agent"
 msgstr ""
 
 #. type: Bullet: '6. '
 #: docs/features/pair-programming-v1.md:48
-msgid "Bottom terminal for debug/ops (isolated from chat session)"
+msgid "Bottom terminal for debug/ops (isolated from chat conversation)"
 msgstr ""
 
 #. type: Title ##
@@ -153,7 +153,7 @@ msgstr ""
 #: docs/features/pair-programming-v1.md:52
 msgid ""
 "Pair programming uses platform `studio-pair-programming`, separate from chat "
-"(`chat`) and other platform session lists."
+"(`chat`) and other platform conversation lists."
 msgstr ""
 
 #. type: Title ##

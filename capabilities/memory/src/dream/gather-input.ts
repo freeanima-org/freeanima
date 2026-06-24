@@ -1,12 +1,12 @@
 import { randomInt } from "node:crypto";
 
 import type { DreamEpisodicSnippet } from "@freeanima/core/db/schema";
-import type { LimbicMemoryRow, SessionStorePort } from "@freeanima/core/repos";
+import type { LimbicMemoryRow, ConversationStorePort } from "@freeanima/core/repos";
 import { CST_OFFSET_MS } from "@freeanima/core/util";
 
 import { filterRecallableMessages } from "../message-filter.ts";
 import { getLimbicMemoryStore } from "../limbic-port.ts";
-import { getMemorySessionStore } from "../session-port.ts";
+import { getMemoryConversationStore } from "../conversation-port.ts";
 import { cstDayRange, type LightSleepDayRange } from "../light-sleep/build-messages.ts";
 
 export const DREAM_MIN_INTENSITY = 0.5;
@@ -20,7 +20,7 @@ export type DreamGatherInput = {
   day: string;
   fromIso: string;
   toIso: string;
-  sessionIds: string[];
+  conversationIds: string[];
   limbicMemories: LimbicMemoryRow[];
   episodicSnippets: DreamEpisodicSnippet[];
 };
@@ -53,22 +53,22 @@ function shuffleInPlace<T>(items: T[]): void {
 }
 
 function sampleEpisodicSnippets(
-  sessionStore: SessionStorePort,
-  sessionIds: string[],
+  conversationStore: ConversationStorePort,
+  conversationIds: string[],
 ): Promise<DreamEpisodicSnippet[]> {
-  return sampleEpisodicSnippetsAsync(sessionStore, sessionIds);
+  return sampleEpisodicSnippetsAsync(conversationStore, conversationIds);
 }
 
 async function sampleEpisodicSnippetsAsync(
-  sessionStore: SessionStorePort,
-  sessionIds: string[],
+  conversationStore: ConversationStorePort,
+  conversationIds: string[],
 ): Promise<DreamEpisodicSnippet[]> {
   const pool: DreamEpisodicSnippet[] = [];
-  for (const sessionId of sessionIds) {
-    const messages = filterRecallableMessages(await sessionStore.listMessages(sessionId));
+  for (const conversationId of conversationIds) {
+    const messages = filterRecallableMessages(await conversationStore.listMessages(conversationId));
     for (const msg of messages) {
       pool.push({
-        session_id: sessionId,
+        conversation_id: conversationId,
         role: msg.role,
         content: msg.content,
         timestamp: msg.t || undefined,
@@ -81,9 +81,9 @@ async function sampleEpisodicSnippetsAsync(
 
   const bySession = new Map<string, DreamEpisodicSnippet[]>();
   for (const item of pool) {
-    const list = bySession.get(item.session_id) ?? [];
+    const list = bySession.get(item.conversation_id) ?? [];
     list.push(item);
-    bySession.set(item.session_id, list);
+    bySession.set(item.conversation_id, list);
   }
 
   const sessionKeys = [...bySession.keys()];
@@ -94,9 +94,9 @@ async function sampleEpisodicSnippetsAsync(
   let round = 0;
 
   while (picked.length < DREAM_EPISODIC_TARGET && round < sessionKeys.length * 4) {
-    const sessionId = sessionKeys[round % sessionKeys.length];
-    if (!sessionId) break;
-    const list = bySession.get(sessionId) ?? [];
+    const conversationId = sessionKeys[round % sessionKeys.length];
+    if (!conversationId) break;
+    const list = bySession.get(conversationId) ?? [];
     if (!list.length) {
       round += 1;
       continue;
@@ -119,15 +119,18 @@ async function sampleEpisodicSnippetsAsync(
 
 export type GatherDreamInputOpts = {
   day?: string;
-  sessionStore?: SessionStorePort;
+  conversationStore?: ConversationStorePort;
 };
 
 /** Collect dream inputs for a CST calendar day (after light sleep limbic writes). */
 export async function gatherDreamInput(opts?: GatherDreamInputOpts): Promise<DreamGatherInput> {
-  const sessionStore = opts?.sessionStore ?? getMemorySessionStore();
+  const conversationStore = opts?.conversationStore ?? getMemoryConversationStore();
   const range = cstDayRange(opts?.day);
   const limbicRange = limbicCreatedRange(range);
-  const sessionIds = await sessionStore.listSessionIdsUpdatedBetween(range.fromIso, range.toIso);
+  const conversationIds = await conversationStore.listConversationIdsUpdatedBetween(
+    range.fromIso,
+    range.toIso,
+  );
   const limbicMemories = await getLimbicMemoryStore().listByCreatedBetween(
     limbicRange.fromIso,
     limbicRange.toIso,
@@ -137,15 +140,15 @@ export async function gatherDreamInput(opts?: GatherDreamInputOpts): Promise<Dre
       orderBy: "intensity_desc",
     },
   );
-  const episodicSnippets = sessionIds.length
-    ? await sampleEpisodicSnippets(sessionStore, sessionIds)
+  const episodicSnippets = conversationIds.length
+    ? await sampleEpisodicSnippets(conversationStore, conversationIds)
     : [];
 
   return {
     day: range.day,
     fromIso: range.fromIso,
     toIso: range.toIso,
-    sessionIds,
+    conversationIds,
     limbicMemories,
     episodicSnippets,
   };

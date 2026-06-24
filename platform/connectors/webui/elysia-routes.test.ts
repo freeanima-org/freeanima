@@ -8,8 +8,8 @@ describe("elysia apiApp", () => {
     expect(res.status).not.toBe(404);
   });
 
-  it("GET /api/sessions 路由已注册", async () => {
-    const res = await apiApp.handle(new Request("http://127.0.0.1/api/sessions"));
+  it("GET /api/conversations 路由已注册", async () => {
+    const res = await apiApp.handle(new Request("http://127.0.0.1/api/conversations"));
     expect(res.status).not.toBe(404);
   });
 

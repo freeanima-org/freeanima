@@ -17,7 +17,7 @@ flowchart TB
   end
   subgraph hub [Hub ws-server]
     Router[SAP_METHODS router]
-    Sessions[service-sessions]
+    Sessions[service-conversations]
     Runtime[AppRuntime]
     Terminals[terminal-session]
     SatMgr[SatelliteManager]
@@ -32,19 +32,19 @@ flowchart TB
 
 ## Session
 
-| Method               | Schema                                                            | Hub behavior                                                                                                |
-| -------------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `session.create`     | [`session.ts`](../../packages/sap-contract/src/frames/session.ts) | Creates session; sets `platform_extra.satellite_app_id`, `satellite_instance_id`, optional workspace fields |
-| `session.list`       | `session.ts`                                                      | Lists sessions, optional `platform` filter                                                                  |
-| `session.messages`   | `session.ts`                                                      | Message history with `offset` / `limit`                                                                     |
-| `session.patchTitle` | `session.ts`                                                      | Updates session title                                                                                       |
-| `session.subscribe`  | `session.ts`                                                      | Subscribes to `session.updated` events for one session                                                      |
-| `session.commands`   | `session.ts`                                                      | Lists slash commands for a platform                                                                         |
-| `session.acpDock`    | [`acp.ts`](../../packages/sap-contract/src/frames/acp.ts)         | ACP dock operations for a session                                                                           |
+| Method                    | Schema                                                                 | Hub behavior                                                                                                |
+| ------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `conversation.create`     | [`session.ts`](../../packages/sap-contract/src/frames/conversation.ts) | Creates session; sets `platform_extra.satellite_app_id`, `satellite_instance_id`, optional workspace fields |
+| `conversation.list`       | `session.ts`                                                           | Lists conversations, optional `platform` filter                                                             |
+| `conversation.messages`   | `session.ts`                                                           | Message history with `offset` / `limit`                                                                     |
+| `conversation.patchTitle` | `session.ts`                                                           | Updates conversation title                                                                                  |
+| `conversation.subscribe`  | `session.ts`                                                           | Subscribes to `conversation.updated` events for one conversation                                            |
+| `conversation.commands`   | `session.ts`                                                           | Lists slash commands for a platform                                                                         |
+| `conversation.acpDock`    | [`acp.ts`](../../packages/sap-contract/src/frames/acp.ts)              | ACP dock operations for a conversation                                                                      |
 
-### `session.create` platform binding
+### `conversation.create` platform binding
 
-Hub resolves `platform` from input or `formatSapPlatform(app_id, instance_id)` → `sap:{app_slug}:{instance_id}` (e.g. `sap:pairprogramming:k7m`). Writes into session `platform_extra`:
+Hub resolves `platform` from input or `formatSapPlatform(app_id, instance_id)` → `sap:{app_slug}:{instance_id}` (e.g. `sap:pairprogramming:k7m`). Writes into conversation `platform_extra`:
 
 - `satellite_app_id` — normalized app slug
 - `satellite_instance_id` — instance id from connect context
@@ -58,7 +58,7 @@ This binding is required for [strict tool routing](tools.md).
 | -------------- | ----------------------------------------------------------------- | ---------------------------------------------- |
 | `message.send` | [`message.ts`](../../packages/sap-contract/src/frames/message.ts) | `{ stream_id }`; stream events follow on `evt` |
 
-Payload: `session_id`, `message` (user text). Hub bridges runtime stream to SAP `stream.*` events — see [events.md](events.md).
+Payload: `conversation_id`, `message` (user text). Hub bridges runtime stream to SAP `stream.*` events — see [events.md](events.md).
 
 ## Fridge
 

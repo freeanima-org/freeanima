@@ -29,7 +29,7 @@ export type LlmProfileDef = {
 };
 
 export type ProfileBindOptions = {
-  /** Override chain[0].model (e.g. session meta.model) */
+  /** Override chain[0].model (e.g. conversation meta.model) */
   model?: string;
   requestParams?: Partial<LlmCallParams>;
 };

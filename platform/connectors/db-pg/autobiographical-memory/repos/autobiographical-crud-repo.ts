@@ -49,7 +49,7 @@ function normalizeAutobiographicalListOpts(opts?: AutobiographicalListOpts) {
         ? autobiographicalSignificanceSchema.parse(String(significanceRaw).trim())
         : null
       : null;
-  const sourceSession = opts?.source_session?.trim() ?? "";
+  const sourceSession = opts?.source_conversation?.trim() ?? "";
   return { query, status, significance, sourceSession };
 }
 
@@ -62,7 +62,7 @@ function buildAutobiographicalConditions(
     conditions.push(eq(autobiographicalMemory.significance, significance));
   }
   if (sourceSession) {
-    conditions.push(arrayOverlaps(autobiographicalMemory.sourceSessions, [sourceSession]));
+    conditions.push(arrayOverlaps(autobiographicalMemory.sourceConversations, [sourceSession]));
   }
   if (query) {
     const pattern = `%${escapeIlikePattern(query)}%`;
@@ -98,7 +98,7 @@ export async function createAutobiographicalMemory(
     periodStart: row.period_start ?? null,
     periodEnd: row.period_end ?? null,
     sourceFacts: normalizeStringArray(row.source_semantic_memory),
-    sourceSessions: normalizeStringArray(row.source_sessions),
+    sourceConversations: normalizeStringArray(row.source_conversations),
     status: "active",
     createdAt: new Date(now),
     updatedAt: new Date(now),
@@ -220,15 +220,15 @@ export async function listAutobiographicalMemoryBySourceSemanticMemory(
 }
 
 export async function listAutobiographicalMemoryBySourceSessions(
-  sessionIds: string[],
+  conversationIds: string[],
   opts?: { status?: AutobiographicalStatus },
 ): Promise<AutobiographicalMemoryRow[]> {
-  const ids = sessionIds.map((s) => s.trim()).filter(Boolean);
+  const ids = conversationIds.map((s) => s.trim()).filter(Boolean);
   if (!ids.length) return [];
 
   const status = opts?.status ?? "active";
   const conditions = [
-    arrayOverlaps(autobiographicalMemory.sourceSessions, ids),
+    arrayOverlaps(autobiographicalMemory.sourceConversations, ids),
     eq(autobiographicalMemory.status, status),
   ];
 

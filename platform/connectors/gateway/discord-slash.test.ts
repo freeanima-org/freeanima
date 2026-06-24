@@ -9,7 +9,7 @@ describe("discord slash commands", () => {
   it("buildDiscordSlashCommands includes cwd options", () => {
     const body = buildDiscordSlashCommands([
       { name: "help", description: "List all available commands" },
-      { name: "cwd", description: "View or set current session working directory" },
+      { name: "cwd", description: "View or set current conversation working directory" },
     ]);
     const cwd = body.find((c) => c.name === "cwd");
     expect(cwd?.options?.some((o) => o.name === "path")).toBe(true);

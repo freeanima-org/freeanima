@@ -69,7 +69,7 @@ auto_llm:
   per_run_kind_keep: 100
 ```
 
-Purged during sleep-cycle step `session-cleanup` (after stale session cleanup). Cron script runs (`no_agent`) use `cron_log` only.
+Purged during sleep-cycle step `conversation-cleanup` (after stale conversation cleanup). Cron script runs (`no_agent`) use `cron_log` only.
 
 ## Backups
 

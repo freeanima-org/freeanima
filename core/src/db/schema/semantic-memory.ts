@@ -58,11 +58,11 @@ export const semanticMemory = pgTable(
           ELSE message_fts_input(${semanticMemory.content})
         END)`,
     ),
-    sourceSessions: text("source_sessions").array().notNull().default([]),
+    sourceConversations: text("source_conversations").array().notNull().default([]),
     observedAt: timestamp("observed_at", { withTimezone: true }),
     occurredAt: text("occurred_at"),
     status: text("status").notNull().default("active"),
-    /** Reference weight sum after per-session dedupe + 30-day decay (periodic full sync calibration) */
+    /** Reference weight sum after per-conversation dedupe + 30-day decay (periodic full sync calibration) */
     referenceCount: real("reference_count").notNull().default(0),
     created: timestamp("created", { withTimezone: true }).notNull().defaultNow(),
     updated: timestamp("updated", { withTimezone: true }).notNull().defaultNow(),
@@ -71,7 +71,7 @@ export const semanticMemory = pgTable(
     index("idx_semantic_memory_fts").using("gin", t.contentFts),
     index("idx_semantic_memory_type").on(t.type),
     index("idx_semantic_memory_pinned").on(t.pinned),
-    index("idx_semantic_memory_source_sessions").using("gin", t.sourceSessions),
+    index("idx_semantic_memory_source_conversations").using("gin", t.sourceConversations),
     index("idx_semantic_memory_status").on(t.status),
   ],
 );

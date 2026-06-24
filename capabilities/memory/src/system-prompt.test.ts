@@ -21,7 +21,7 @@ function createMockSemanticStore(resident: Array<{ content: string; pinned?: boo
         type: "fact",
         pinned: row.pinned ?? false,
         reference_count: 0,
-        source_sessions: [],
+        source_conversations: [],
         observed_at: null,
         occurred_at: null,
         status: "active",

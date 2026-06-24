@@ -1,27 +1,27 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getSessionAcpDock, subscribeSessionEvents } from "@/lib/api.ts";
-import type { SessionAcpDockSnapshot } from "@/lib/types.ts";
+import { getConversationAcpDock, subscribeConversationEvents } from "@/lib/api.ts";
+import type { ConversationAcpDockSnapshot } from "@/lib/types.ts";
 
 export type AcpProgressDockOptions = {
   patchProgress?: (text: string, progressMessageId?: string) => void;
-  onDecision?: (sessionId: string) => void | Promise<void>;
+  onDecision?: (conversationId: string) => void | Promise<void>;
 };
 
 export function useAcpProgressDock(
-  sessionId: string | null | undefined,
+  conversationId: string | null | undefined,
   opts?: AcpProgressDockOptions,
-): SessionAcpDockSnapshot | null {
-  const [dock, setDock] = useState<SessionAcpDockSnapshot | null>(null);
+): ConversationAcpDockSnapshot | null {
+  const [dock, setDock] = useState<ConversationAcpDockSnapshot | null>(null);
   const optsRef = useRef(opts);
   optsRef.current = opts;
 
   const refresh = useCallback(async () => {
-    if (!sessionId) {
+    if (!conversationId) {
       setDock(null);
       return;
     }
     try {
-      const snap = await getSessionAcpDock(sessionId);
+      const snap = await getConversationAcpDock(conversationId);
       if (!snap.tasks.length) {
         setDock(null);
         return;
@@ -29,7 +29,7 @@ export function useAcpProgressDock(
       setDock(snap);
       const { patchProgress, onDecision } = optsRef.current ?? {};
       if (snap.highlight_decision) {
-        await onDecision?.(sessionId);
+        await onDecision?.(conversationId);
       } else if (snap.progress_text) {
         const pmid = snap.tasks.find((t) => t.progress_message_id)?.progress_message_id;
         patchProgress?.(snap.progress_text, pmid);
@@ -37,19 +37,19 @@ export function useAcpProgressDock(
     } catch {
       setDock(null);
     }
-  }, [sessionId]);
+  }, [conversationId]);
 
   useEffect(() => {
-    if (!sessionId) {
+    if (!conversationId) {
       setDock(null);
       return;
     }
     void refresh();
-    const sub = subscribeSessionEvents(sessionId, () => {
+    const sub = subscribeConversationEvents(conversationId, () => {
       void refresh();
     });
     return () => sub.unsubscribe();
-  }, [sessionId, refresh]);
+  }, [conversationId, refresh]);
 
   return dock?.tasks.length ? dock : null;
 }

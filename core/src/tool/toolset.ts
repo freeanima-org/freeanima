@@ -14,7 +14,7 @@ export type ToolSet = {
   name: string;
   description: string;
   tools: readonly ToolDef[];
-  /** When true, excluded from toolset_search and default session injection */
+  /** When true, excluded from toolset_search and default conversation injection */
   private?: boolean;
 };
 

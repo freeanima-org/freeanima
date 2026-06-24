@@ -3,8 +3,6 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./session": "./src/session/index.ts",
-    "./session/*": "./src/session/*.ts",
     "./turn": "./src/turn/index.ts",
     "./turn/*": "./src/turn/*.ts",
     "./loop": "./src/loop/index.ts",

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const messageSendInputSchema = z.object({
-  session_id: z.string().min(1),
+  conversation_id: z.string().min(1),
   message: z.string().min(1),
 });
 
@@ -14,7 +14,7 @@ export const messageSendOutputSchema = z.object({
 export type MessageSendOutput = z.infer<typeof messageSendOutputSchema>;
 
 export const messageInterruptInputSchema = z.object({
-  session_id: z.string().min(1),
+  conversation_id: z.string().min(1),
 });
 
 export type MessageInterruptInput = z.infer<typeof messageInterruptInputSchema>;

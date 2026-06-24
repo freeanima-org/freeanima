@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { nullPgRepositories } from "./null.ts";
-import { nullSessionStore } from "./null-session.ts";
+import { nullConversationStore } from "./null-conversation.ts";
 import { nullSemanticMemoryStore } from "./null-semantic-memory.ts";
 
 describe("nullPgRepositories", () => {
@@ -9,20 +9,20 @@ describe("nullPgRepositories", () => {
   });
 
   it("aggregates null ports", () => {
-    expect(nullPgRepositories.session).toBe(nullSessionStore);
+    expect(nullPgRepositories.conversation).toBe(nullConversationStore);
     expect(nullPgRepositories.semanticMemory).toBe(nullSemanticMemoryStore);
   });
 });
 
-describe("nullSessionStore", () => {
+describe("nullConversationStore", () => {
   it("read operations return empty", async () => {
-    expect(await nullSessionStore.getSessionMeta("s")).toBeNull();
-    expect(await nullSessionStore.listMessages("s")).toEqual([]);
+    expect(await nullConversationStore.getConversationMeta("s")).toBeNull();
+    expect(await nullConversationStore.listMessages("s")).toEqual([]);
   });
 
   it("write operations throw database.url not configured", async () => {
     await expect(
-      nullSessionStore.appendMessage("s", { role: "user", content: "x", pos: 1 }),
+      nullConversationStore.appendMessage("s", { role: "user", content: "x", pos: 1 }),
     ).rejects.toThrow(/database\.url/);
   });
 });

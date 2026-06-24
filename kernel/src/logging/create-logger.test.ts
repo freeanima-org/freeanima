@@ -63,14 +63,14 @@ describe("createLogger", () => {
       sinks: [sink],
     });
     const discord = root.with({ component: "gateway.discord" });
-    const session = discord.with({ sessionId: "abc" });
-    session.info("received", { requestId: "r1" });
+    const conversation = discord.with({ conversationId: "abc" });
+    conversation.info("received", { requestId: "r1" });
 
     expect(sink.records).toHaveLength(1);
     expect(sink.records[0]?.attributes).toEqual({
       service: "anima",
       component: "gateway.discord",
-      sessionId: "abc",
+      conversationId: "abc",
       requestId: "r1",
     });
     expect(sink.records[0]?.message).toBe("received");
@@ -80,7 +80,7 @@ describe("createLogger", () => {
   it("with throws without component and empty scope", () => {
     const sink = createMemorySink();
     const root = createLogger({ sinks: [sink] });
-    expect(() => root.with({ sessionId: "x" })).toThrow("component");
+    expect(() => root.with({ conversationId: "x" })).toThrow("component");
   });
 
   it("with throws when component cleared", () => {
@@ -101,17 +101,17 @@ describe("createLogger", () => {
     const sink = createMemorySink();
     const root = createLogger({ sinks: [sink] });
     const discord = root.with({ component: "gateway.discord" });
-    const session = discord.with({ sessionId: "abc" });
-    session.info("ok");
+    const conversation = discord.with({ conversationId: "abc" });
+    conversation.info("ok");
     expect(sink.records[0]?.attributes.component).toBe("gateway.discord");
-    expect(sink.records[0]?.attributes.sessionId).toBe("abc");
+    expect(sink.records[0]?.attributes.conversationId).toBe("abc");
   });
 
   it("with returns new logger; parent scope unchanged", () => {
     const sink = createMemorySink();
     const root = createLogger({ sinks: [sink] });
     const discord = root.with({ component: "gateway.discord" });
-    discord.with({ sessionId: "abc" });
+    discord.with({ conversationId: "abc" });
     root.with({ component: "bootstrap" }).info("boot");
     expect(sink.records).toHaveLength(1);
     expect(sink.records[0]?.attributes).toEqual({ component: "bootstrap" });

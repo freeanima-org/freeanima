@@ -20,7 +20,7 @@ describe("printServiceRunningStatus", () => {
             discord: { status: "connected", bot_name: "bot#1" },
             weixin: { status: "connected" },
           },
-          sessions: { total: 10 },
+          conversations: { total: 10 },
           tools: 64,
           cron_jobs: 3,
           memory_kb: 512000,
@@ -54,7 +54,7 @@ describe("printServiceRunningStatus", () => {
     expect(text).toContain("gateways (2)");
     expect(text).toContain("discord     connected · bot#1");
     expect(text).toContain("workload");
-    expect(text).toContain("10 sessions · 64 tools · 3 cron");
+    expect(text).toContain("10 conversations · 64 tools · 3 cron");
     expect(text).toContain("memory");
     expect(text).toContain("rss (phys)");
     expect(text).toContain("heap (jsc)");

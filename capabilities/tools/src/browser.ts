@@ -1,4 +1,4 @@
-import { getToolSessionId } from "@freeanima/core/tool";
+import { getToolConversationId } from "@freeanima/core/tool";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolError } from "@freeanima/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
@@ -18,7 +18,7 @@ import {
 } from "./browser-camofox.ts";
 
 function sessionKey(): string {
-  return getToolSessionId() ?? "default";
+  return getToolConversationId() ?? "default";
 }
 
 export function registerBrowserTools(toolSets: ToolSetRegistry): void {

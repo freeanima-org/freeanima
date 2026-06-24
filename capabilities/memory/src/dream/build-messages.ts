@@ -20,7 +20,7 @@ function formatEpisodicBlock(snippets: DreamEpisodicSnippet[]): string {
   return snippets
     .map((s, i) => {
       const ts = s.timestamp?.slice(0, 19) ?? "?";
-      return `## 片段 ${i + 1} (${ts}, ${s.role}, session=${s.session_id})\n${s.content.trim()}`;
+      return `## 片段 ${i + 1} (${ts}, ${s.role}, session=${s.conversation_id})\n${s.content.trim()}`;
     })
     .join("\n\n");
 }

@@ -20,21 +20,21 @@ export type { ParsedToolResult, ToolErrorResult } from "./json-util.ts";
 export type { ToolArgsRecord } from "./tool-json.ts";
 export { ToolSetRegistry, mcpToolSetId, acpToolSetId } from "./toolset.ts";
 export {
-  loadToolSetsIntoSession,
+  loadToolSetsIntoConversation,
   resolveExecutableToolNames,
-  resetSessionToolSetsToDefault,
-  type LoadToolSetsIntoSessionResult,
-} from "./session-tools.ts";
-export { handleSessionTodo } from "./session-todos.ts";
+  resetConversationToolsetsToDefault,
+  type LoadToolSetsIntoConversationResult,
+} from "./conversation-tools.ts";
+export { handleConversationTodo } from "./conversation-todos.ts";
 export {
-  registerSessionToolMaskFilter,
-  applySessionToolMaskFilter,
-  sessionHasCapabilityMask,
-  type SessionToolMaskFilter,
+  registerConversationToolMaskFilter,
+  applyConversationToolMaskFilter,
+  conversationHasCapabilityMask,
+  type ConversationToolMaskFilter,
 } from "./mask-port.ts";
 export {
   runWithToolContext,
-  getToolSessionId,
+  getToolConversationId,
   getToolContextKind,
   getToolContextId,
   getToolParentConversationId,
@@ -46,13 +46,13 @@ export {
 export type { RunWithToolContextOpts, ToolContextKind } from "./tool-context.ts";
 export type { ToolSet, ToolSetView } from "./toolset.ts";
 export {
-  DEFAULT_SESSION_TOOLSETS,
+  DEFAULT_CONVERSATION_TOOLSETS,
   TOOL_SET_DISCOVERY_TOOL_SET,
-  resolveDefaultSessionToolSets,
-  resolveDefaultSessionToolSetsForMeta,
+  resolveDefaultConversationToolSets,
+  resolveDefaultConversationToolSetsForMeta,
   filterToolSetsByAllowedTools,
-} from "./default-session-toolsets.ts";
-export type { DefaultSessionToolSetName } from "./default-session-toolsets.ts";
+} from "./default-conversation-toolsets.ts";
+export type { DefaultConversationToolSetName } from "./default-conversation-toolsets.ts";
 export {
   TOOL_SET_LOAD_TOOL_NAME,
   TOOL_SET_SEARCH_TOOL_NAME,

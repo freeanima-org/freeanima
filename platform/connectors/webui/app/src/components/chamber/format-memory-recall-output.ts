@@ -5,8 +5,8 @@ import type { MemoryRecallHit, MemoryRecallResult } from "./memory-recall-types.
 
 function formatSemanticLines(hit: MemoryRecallHit): string[] {
   const lines = [`  ${hit.semantic_memory_id} (${hit.type}) status=${hit.status} ${hit.content}`];
-  if (hit.source_sessions?.length) {
-    lines.push(`  source_sessions: ${hit.source_sessions.join(", ")}`);
+  if (hit.source_conversations?.length) {
+    lines.push(`  source_conversations: ${hit.source_conversations.join(", ")}`);
   }
   if (hit.observed_at || hit.occurred_at) {
     const parts: string[] = [];
@@ -19,13 +19,13 @@ function formatSemanticLines(hit: MemoryRecallHit): string[] {
 
 function formatSessionLines(hit: MemoryRecallHit): string[] {
   const ts = hit.timestamp ? formatDisplayDateTime(hit.timestamp) : "—";
-  return [`  ${hit.session_id} / ${hit.message_id} ${hit.role} @ ${ts}: ${hit.snippet}`];
+  return [`  ${hit.conversation_id} / ${hit.message_id} ${hit.role} @ ${ts}: ${hit.snippet}`];
 }
 
 function formatLimbicLines(hit: MemoryRecallHit): string[] {
   const emotion = `intensity=${hit.intensity} valence=${hit.valence ?? "—"} arousal=${hit.arousal ?? "—"}`;
   return [
-    `  ${hit.limbic_memory_id} (${hit.kind}) session=${hit.session_id} ${emotion}`,
+    `  ${hit.limbic_memory_id} (${hit.kind}) conversation=${hit.conversation_id} ${emotion}`,
     `  ${hit.content}`,
   ];
 }
@@ -44,7 +44,7 @@ export function formatMemoryRecallOutput(data: MemoryRecallResult): string {
     lines.push(`${idx + 1}. [${label}] score ${hit.score.toFixed(4)}`);
     if (hit.memory_type === "semantic") {
       lines.push(...formatSemanticLines(hit));
-    } else if (hit.memory_type === "session") {
+    } else if (hit.memory_type === "conversation") {
       lines.push(...formatSessionLines(hit));
     } else if (hit.memory_type === "limbic") {
       lines.push(...formatLimbicLines(hit));

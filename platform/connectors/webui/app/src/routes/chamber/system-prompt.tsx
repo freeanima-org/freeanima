@@ -1,10 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import type {
   PromptDebugResponse,
-  SessionListItem,
+  ConversationListItem,
 } from "@freeanima/platform/connectors/webui/api";
 import { useEffect, useMemo, useState } from "react";
-import { getPromptDebug, listSessions } from "@/lib/api.ts";
+import { getPromptDebug, listConversations } from "@/lib/api.ts";
 import { MemoryListPagination } from "@/components/chamber/MemoryListPagination.tsx";
 import { m } from "@/lib/i18n.ts";
 
@@ -41,8 +41,11 @@ function estimateChars(text: string): number {
 }
 
 export const Route = createFileRoute("/chamber/system-prompt")({
-  validateSearch: (search: Record<string, unknown>): { session?: string } => ({
-    session: typeof search.session === "string" && search.session ? search.session : undefined,
+  validateSearch: (search: Record<string, unknown>): { conversation?: string } => ({
+    conversation:
+      typeof search.conversation === "string" && search.conversation
+        ? search.conversation
+        : undefined,
   }),
   component: SystemPromptPage,
 });
@@ -146,9 +149,9 @@ function BreakdownBar({ data }: { data: PromptDebugResponse["system"]["breakdown
 }
 
 function SystemPromptPage() {
-  const { session: sessionFromUrl } = Route.useSearch();
+  const { conversation: conversationFromUrl } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const [recentSessions, setRecentSessions] = useState<SessionListItem[]>([]);
+  const [recentConversations, setRecentConversations] = useState<ConversationListItem[]>([]);
   const [tab, setTab] = useState<TabId>("parts");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -157,14 +160,16 @@ function SystemPromptPage() {
   const [toolsPage, setToolsPage] = useState(1);
   const [copyHint, setCopyHint] = useState("");
 
-  const selectedSession = sessionFromUrl ?? "";
+  const selectedConversation = conversationFromUrl ?? "";
 
   useEffect(() => {
-    void listSessions({ offset: 0, limit: 100 })
+    void listConversations({ offset: 0, limit: 100 })
       .then((resp) => {
-        setRecentSessions((resp as { sessions?: SessionListItem[] }).sessions ?? []);
+        setRecentConversations(
+          (resp as { conversations?: ConversationListItem[] }).conversations ?? [],
+        );
       })
-      .catch(() => setRecentSessions([]));
+      .catch(() => setRecentConversations([]));
   }, []);
 
   useEffect(() => {
@@ -175,7 +180,7 @@ function SystemPromptPage() {
     let cancelled = false;
     setLoading(true);
     setError("");
-    void getPromptDebug(selectedSession || undefined)
+    void getPromptDebug(selectedConversation || undefined)
       .then((result) => {
         if (!cancelled) setData(result as PromptDebugResponse);
       })
@@ -191,9 +196,9 @@ function SystemPromptPage() {
     return () => {
       cancelled = true;
     };
-  }, [selectedSession]);
+  }, [selectedConversation]);
 
-  const sortedSessions = recentSessions;
+  const sortedConversations = recentConversations;
 
   const filteredTools = useMemo(() => {
     const items = data?.tools.items ?? [];
@@ -212,9 +217,9 @@ function SystemPromptPage() {
     return filteredTools.slice(start, start + TOOLS_PAGE_SIZE);
   }, [filteredTools, toolsPage]);
 
-  const handleSessionChange = (value: string) => {
+  const handleConversationChange = (value: string) => {
     void navigate({
-      search: value ? { session: value } : {},
+      search: value ? { conversation: value } : {},
     });
   };
 
@@ -242,28 +247,28 @@ function SystemPromptPage() {
       <div className="flex flex-wrap items-end gap-3 mb-4">
         <label className="form-control w-full max-w-xl">
           <span className="label-text text-xs mb-1">
-            {m.webui_chamber_system_prompt_session_optional()}
+            {m.webui_chamber_system_prompt_conversation_optional()}
           </span>
           <select
             className="select select-bordered select-sm w-full font-mono text-xs"
-            value={selectedSession}
-            onChange={(e) => handleSessionChange(e.target.value)}
+            value={selectedConversation}
+            onChange={(e) => handleConversationChange(e.target.value)}
           >
             <option value="">{m.webui_common_global_template()}</option>
-            {sortedSessions.map((s) => (
+            {sortedConversations.map((s) => (
               <option key={s.id} value={s.id}>
                 {(s.title || m.webui_common_no_title()).slice(0, 24)} · {s.id.slice(0, 20)}…
               </option>
             ))}
           </select>
         </label>
-        {selectedSession ? (
+        {selectedConversation ? (
           <Link
-            to="/chamber/sessions/$sessionId"
-            params={{ sessionId: selectedSession }}
+            to="/chamber/conversations/$conversationId"
+            params={{ conversationId: selectedConversation }}
             className="btn btn-ghost btn-xs"
           >
-            {m.webui_chamber_system_prompt_session_detail()}
+            {m.webui_chamber_system_prompt_conversation_detail()}
           </Link>
         ) : null}
         <Link to="/chamber/self-layer" className="btn btn-ghost btn-xs">
@@ -285,7 +290,7 @@ function SystemPromptPage() {
             <span className="badge badge-ghost badge-sm">
               {data.mode === "global"
                 ? m.webui_chamber_system_prompt_mode_global()
-                : m.webui_chamber_system_prompt_mode_session()}
+                : m.webui_chamber_system_prompt_mode_conversation()}
             </span>
             <span className="badge badge-ghost badge-sm">
               {m.webui_chamber_system_prompt_tools_count({
@@ -293,7 +298,7 @@ function SystemPromptPage() {
                 mode: toolsMode,
               })}
             </span>
-            {data.mode === "session" && data.system.in_sync !== undefined ? (
+            {data.mode === "conversation" && data.system.in_sync !== undefined ? (
               <span
                 className={`badge badge-sm ${data.system.in_sync ? "badge-success" : "badge-warning"}`}
               >
@@ -397,7 +402,7 @@ function SystemPromptPage() {
                   </button>
                 ) : null}
               </div>
-              {data.mode === "session" && data.system.stored != null ? (
+              {data.mode === "conversation" && data.system.stored != null ? (
                 <div className="grid lg:grid-cols-2 gap-4">
                   <section>
                     <h3 className="text-sm font-semibold mb-2">

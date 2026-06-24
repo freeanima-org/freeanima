@@ -117,7 +117,7 @@ const credentialEntrySchema = z.object({
 });
 
 const sessionSearchHitSchema = z.object({
-  session_id: z.string(),
+  conversation_id: z.string(),
   message_id: z.string(),
   role: z.string(),
   timestamp: z.string(),
@@ -245,7 +245,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
     example: { ok: true, path: "/home/user/project/src/app.ts" },
   }),
   terminal_run: defineTextToolReturn({
-    hint: "Command stdout/stderr plain text; non-zero exit appends --- exit code: N ---; background mode returns session_id hint",
+    hint: "Command stdout/stderr plain text; non-zero exit appends --- exit code: N ---; background mode returns conversation_id hint",
     example: "hello world\n--- exit code: 0 ---",
   }),
   terminal_process: defineTextToolReturn({
@@ -441,7 +441,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       ],
     },
   }),
-  session_search: defineToolReturn({
+  conversation_search: defineToolReturn({
     schema: z.object({
       query: z.string(),
       hits: z.array(sessionSearchHitSchema),
@@ -451,7 +451,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       query: "compression",
       hits: [
         {
-          session_id: "sess-001",
+          conversation_id: "sess-001",
           message_id: "msg-001",
           role: "user",
           timestamp: "2026-06-10T10:00:00+08:00",
@@ -461,16 +461,16 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       summary: "Found 1 historical conversation",
     },
   }),
-  session_scroll: defineToolReturn({
+  conversation_scroll: defineToolReturn({
     schema: z.object({
-      session_id: z.string(),
+      conversation_id: z.string(),
       messages: z.array(sessionMessageRowSchema),
       total: z.number(),
       offset: z.number(),
       limit: z.number(),
     }),
     example: {
-      session_id: "sess-001",
+      conversation_id: "sess-001",
       messages: [
         {
           id: "msg-001",

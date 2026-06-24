@@ -12,7 +12,7 @@ import {
 
 describe("magnetRedisKey", () => {
   it("three-part namespace", () => {
-    expect(magnetRedisKey("session", "abc:r1a2")).toBe("fridge-magnet:session:abc:r1a2");
+    expect(magnetRedisKey("conversation", "abc:r1a2")).toBe("fridge-magnet:conversation:abc:r1a2");
     expect(magnetRedisKey("tasks", "summary")).toBe("fridge-magnet:tasks:summary");
     expect(magnetRedisKey("dream", "reminder:2026-06-14")).toBe(
       "fridge-magnet:dream:reminder:2026-06-14",
@@ -38,9 +38,9 @@ describe("clampTtl", () => {
 
 describe("silent degradation when Redis is not initialized", () => {
   it("setMagnet/getMagnet/deleteMagnet/scanMagnets do not throw", async () => {
-    await expect(setMagnet("session", "x:y", "v")).resolves.toBeUndefined();
-    await expect(getMagnet("session", "x:y")).resolves.toBeNull();
-    await expect(deleteMagnet("session", "x:y")).resolves.toBeUndefined();
+    await expect(setMagnet("conversation", "x:y", "v")).resolves.toBeUndefined();
+    await expect(getMagnet("conversation", "x:y")).resolves.toBeNull();
+    await expect(deleteMagnet("conversation", "x:y")).resolves.toBeUndefined();
     await expect(
       scanMagnets(`${FRIDGE_MAGNET_SCAN_PATTERN.slice(0, -1)}session:*`),
     ).resolves.toEqual([]);

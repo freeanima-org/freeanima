@@ -27,7 +27,7 @@ export function getDatabaseConfig(): DatabaseConfig | null {
   return { url };
 }
 
-/** database.url configured (Slice A conversation sessions use PostgreSQL) */
+/** database.url configured (Slice A conversations use PostgreSQL) */
 export function isPostgresPrimary(): boolean {
   return getDatabaseConfig() != null;
 }

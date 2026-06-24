@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { FileTreePanel } from "@/components/FileTreePanel.tsx";
 import { CodeViewerPanel } from "@/components/CodeViewerPanel.tsx";
 import { TerminalPanel } from "@/components/TerminalPanel.tsx";
-import { SessionPanel } from "@/components/SessionPanel.tsx";
+import { ConversationPanel } from "@/components/ConversationPanel.tsx";
 import { useMediaQuery } from "@/hooks/useMediaQuery.ts";
 import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
 import { getAppLocale, initAppLocale, m, setLocale } from "@/lib/i18n.ts";
@@ -35,9 +35,9 @@ function App() {
   useEffect(() => {
     void (async () => {
       await store.fetchConfig();
-      const sessions = await store.fetchSessions();
-      if (sessions.length && !usePairProgrammingStore.getState().currentSessionId) {
-        await store.selectSession(sessions[0]!.id);
+      const conversations = await store.fetchConversations();
+      if (conversations.length && !usePairProgrammingStore.getState().currentConversationId) {
+        await store.selectConversation(conversations[0]!.id);
       }
       if (usePairProgrammingStore.getState().config.workspace?.trim()) {
         await store.fetchTree();
@@ -143,7 +143,7 @@ function App() {
           type="button"
           className={`btn btn-ghost btn-xs gap-1 ${rightVisible ? "" : "opacity-40"}`}
           onClick={() => setRightVisible((v) => !v)}
-          title={m.webui_studio_toggle_session_panel()}
+          title={m.webui_studio_toggle_conversation_panel()}
         >
           💬
         </button>
@@ -199,7 +199,7 @@ function App() {
             className={["shrink-0 min-h-0", isMobile ? "mobile-panel-overlay" : ""].join(" ")}
             style={isMobile ? undefined : { width: rightWidth }}
           >
-            <SessionPanel />
+            <ConversationPanel />
           </div>
         ) : null}
       </div>

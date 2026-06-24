@@ -4,7 +4,7 @@ import type { CommandRetryData } from "./retry-data.ts";
 import type { CommandUpgradeData } from "./upgrade-data.ts";
 
 export type CommandContext = {
-  sessionId: string;
+  conversationId: string;
   platform: string;
   args: string[];
   raw: string;
@@ -26,8 +26,8 @@ export type CommandHandler = (
   ctx: CommandContext,
 ) => string | CommandResult | Promise<string | CommandResult>;
 
-/** session: affects current session; global: cross-session / platform-level (e.g. help, new) */
-export type CommandScope = "session" | "global";
+/** conversation-scoped: affects current conversation; global: cross-conversation / platform-level (e.g. help, new) */
+export type CommandScope = "conversation" | "global";
 
 export type CommandDef = {
   name: string;
@@ -35,7 +35,7 @@ export type CommandDef = {
   handler: CommandHandler;
   aliases?: string[];
   hidden?: boolean;
-  /** default session */
+  /** default conversation */
   scope?: CommandScope;
   /** whitelist; unset means all platforms; entries may use `*` glob (e.g. `sap:chat:*`) */
   platforms?: string[];

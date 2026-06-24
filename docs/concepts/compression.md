@@ -11,7 +11,7 @@ title: Compression
 
 | Principle           | Description                                                                    |
 | ------------------- | ------------------------------------------------------------------------------ |
-| No message deletion | History is kept; compression only changes runtime view and session meta        |
+| No message deletion | History is kept; compression only changes runtime view and conversation meta   |
 | Four segments       | LLM context = system + summary + slim + raw                                    |
 | On-demand trigger   | Compress when usage nears window limits; higher thresholds in tool loops       |
 | Memory-independent  | Compression does not trigger semantic extraction; light sleep cron is separate |
@@ -62,4 +62,4 @@ Force compression in chat: `/compress` (`--force` ignores hysteresis).
 
 ## Relationship to Memory Pipeline
 
-Compression and light/deep sleep run **independently**: compression manages the current session's LLM window; memory extraction runs nightly from the full conversation archive.
+Compression and light/deep sleep run **independently**: compression manages the current conversation's LLM window; memory extraction runs nightly from the full conversation archive.

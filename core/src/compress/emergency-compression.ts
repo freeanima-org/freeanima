@@ -1,20 +1,20 @@
 import type { PgRepositories } from "@freeanima/core/repos";
-import type { OpenAiToolSchema, SessionMessage } from "@freeanima/core/db/domain";
-import { isSessionMeta, parseCompressionState } from "@freeanima/core/db/domain";
+import type { OpenAiToolSchema, StoredMessage } from "@freeanima/core/db/domain";
+import { isConversationMeta, parseCompressionState } from "@freeanima/core/db/domain";
 import { getCompressionConfig } from "./compression-config.ts";
 import { analyzeCompression, compress } from "./compressor.ts";
 import { isInToolLoop } from "./compression-tool-loop.ts";
 import { scheduleCompressionSummary } from "./compression-summary-scheduler.ts";
 
-async function loadSessionMetaForEmergency(
+async function loadConversationMetaForEmergency(
   repos: PgRepositories,
-  session: string,
+  conversationId: string,
 ): Promise<{ compression: ReturnType<typeof parseCompressionState>; systemPrompt: string }> {
   if (!repos.pgAvailable) {
     return { compression: null, systemPrompt: "" };
   }
-  const meta = await repos.session.getSessionMeta(session);
-  if (!meta || !isSessionMeta(meta)) {
+  const meta = await repos.conversation.getConversationMeta(conversationId);
+  if (!meta || !isConversationMeta(meta)) {
     return { compression: null, systemPrompt: "" };
   }
   return {
@@ -26,15 +26,18 @@ async function loadSessionMetaForEmergency(
 /** Tool-loop single-turn emergency: in-place trim in-memory messages */
 export async function maybeApplyEmergencyCompression(
   repos: PgRepositories,
-  session: string,
-  runtimeMessages: SessionMessage[],
+  conversationId: string,
+  runtimeMessages: StoredMessage[],
   opts: { model: string; tools: OpenAiToolSchema[] },
 ): Promise<boolean> {
   const cfg = getCompressionConfig();
   if (!cfg.enabled) return false;
   if (isInToolLoop(runtimeMessages)) return false;
 
-  const { compression: state, systemPrompt } = await loadSessionMetaForEmergency(repos, session);
+  const { compression: state, systemPrompt } = await loadConversationMetaForEmergency(
+    repos,
+    conversationId,
+  );
   const compressOpts = {
     maxRounds: cfg.maxRounds,
     model: opts.model,
@@ -55,8 +58,8 @@ export async function maybeApplyEmergencyCompression(
   runtimeMessages.push(...compressed);
   if (newState && repos.pgAvailable) {
     const prev = state;
-    await repos.session.patchSessionMeta(session, { compression: newState });
-    scheduleCompressionSummary(repos, session, prev, newState, systemPrompt, opts.model);
+    await repos.conversation.patchConversationMeta(conversationId, { compression: newState });
+    scheduleCompressionSummary(repos, conversationId, prev, newState, systemPrompt, opts.model);
   }
   return true;
 }

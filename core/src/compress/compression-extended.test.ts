@@ -1,7 +1,7 @@
 import { compress, SUMMARY_USER_PREFIX } from "@freeanima/core/compress";
-import { parseCompressionState, type SessionMessage } from "@freeanima/core/db/domain";
+import { parseCompressionState, type StoredMessage } from "@freeanima/core/db/domain";
 import { describe, it, expect } from "bun:test";
-import { aa, ua } from "./test-helpers/session-fixtures.ts";
+import { aa, ua } from "./test-helpers/conversation-fixtures.ts";
 import { installTokenizerMockForTests } from "./test-helpers/tokenizer-mock.ts";
 import { installCompressionConfigForTests } from "./test-helpers/config-bind.ts";
 
@@ -25,7 +25,7 @@ describe("compression extended", () => {
 
   it("token mode triggers on estimated tokens", () => {
     const big = "x".repeat(400_000);
-    const msgs: SessionMessage[] = [
+    const msgs: StoredMessage[] = [
       ...Array.from({ length: 12 }, (_, i) => [ua(i * 2 + 1, "u"), aa(i * 2 + 2)]).flat(),
       ua(25, big),
       aa(26),
@@ -46,12 +46,12 @@ describe("compression extended", () => {
   });
 
   it("SUMMARY_USER_PREFIX is stable for injection", () => {
-    expect(SUMMARY_USER_PREFIX).toBe("[session summary]");
+    expect(SUMMARY_USER_PREFIX).toBe("[conversation summary]");
   });
 
   it("token mode does not re-compress when runtime view is below trigger after compress", () => {
     const history = "h".repeat(300_000);
-    const msgs: SessionMessage[] = [
+    const msgs: StoredMessage[] = [
       ua(1, history),
       aa(2),
       ua(3, "old turn"),

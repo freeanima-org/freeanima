@@ -52,7 +52,7 @@ describePg("server memory API", () => {
       getTestEngine(),
       sid,
       {
-        role: "session_meta",
+        role: "conversation_meta",
         model: "test-model",
         cached_toolsets: [],
         functions: [],
@@ -73,13 +73,15 @@ describePg("server memory API", () => {
     const out = await getAppRuntime().memorySearch({ query: "compression" });
     expect(out.results.length).toBeGreaterThan(0);
     const semantic = out.results.find((r: { memory_type: string }) => r.memory_type === "semantic");
-    const session = out.results.find((r: { memory_type: string }) => r.memory_type === "session");
+    const conversation = out.results.find(
+      (r: { memory_type: string }) => r.memory_type === "conversation",
+    );
     expect(semantic).toBeDefined();
-    expect(session).toBeDefined();
+    expect(conversation).toBeDefined();
     expect(semantic!.score).toBeGreaterThan(0);
-    if (session?.memory_type === "session") {
-      expect(session.session_id).toBe(sid);
-      expect(session.snippet.length).toBeGreaterThan(0);
+    if (conversation?.memory_type === "conversation") {
+      expect(conversation.conversation_id).toBe(sid);
+      expect(conversation.snippet.length).toBeGreaterThan(0);
     }
   });
 
@@ -177,21 +179,21 @@ describePg("server memory API", () => {
     }
   });
 
-  it("listLimbicMemories supports session and kind filter", async () => {
+  it("listLimbicMemories supports conversation and kind filter", async () => {
     const sid = "20260526_130000_limbic";
     await getTestEngine().repos.limbicMemory.create({
-      session_id: sid,
+      conversation_id: sid,
       kind: "spike",
       content: "limbic probe spike content",
     });
     await getTestEngine().repos.limbicMemory.create({
-      session_id: sid,
-      kind: "session_mood",
+      conversation_id: sid,
+      kind: "conversation_mood",
       content: "limbic probe mood content",
     });
 
     const spikes = await getAppRuntime().listLimbicMemories({
-      session_id: sid,
+      conversation_id: sid,
       kind: "spike",
     });
     expect(spikes.total).toBe(1);
@@ -199,7 +201,7 @@ describePg("server memory API", () => {
 
     const searched = await getAppRuntime().listLimbicMemories({
       query: "spike",
-      session_id: sid,
+      conversation_id: sid,
     });
     expect(searched.total).toBe(1);
     expect(searched.items[0]?.content).toContain("spike");

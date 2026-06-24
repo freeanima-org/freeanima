@@ -112,9 +112,9 @@ if (url) {
       parts.push(`status_memory_kb=${status.memory_kb}`);
     }
     appendMemoryDetail(parts, status.memory_detail as MemoryDetail | undefined, stage);
-    const sessions = status.sessions as { total?: number } | undefined;
-    if (sessions?.total != null) {
-      parts.push(`sessions=${sessions.total}`);
+    const conversations = status.conversations as { total?: number } | undefined;
+    if (conversations?.total != null) {
+      parts.push(`conversations=${conversations.total}`);
     }
     if (typeof status.tools === "number") {
       parts.push(`tools=${status.tools}`);

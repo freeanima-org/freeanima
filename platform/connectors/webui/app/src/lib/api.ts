@@ -35,9 +35,13 @@ export async function unwrap<T>(promise: Promise<TreatyResult<T>>): Promise<T> {
   return result.data;
 }
 
-export async function listSessions(opts?: { platform?: string; offset?: number; limit?: number }) {
+export async function listConversations(opts?: {
+  platform?: string;
+  offset?: number;
+  limit?: number;
+}) {
   return unwrap(
-    apiClient.api.sessions.get({
+    apiClient.api.conversations.get({
       query: {
         platform: opts?.platform,
         offset: opts?.offset?.toString(),
@@ -47,24 +51,24 @@ export async function listSessions(opts?: { platform?: string; offset?: number; 
   );
 }
 
-/** @deprecated 使用 listSessions({ offset, limit }) */
-export async function listAllSessions() {
-  return listSessions({ offset: 0, limit: 10_000 });
+/** @deprecated 使用 listConversations({ offset, limit }) */
+export async function listAllConversations() {
+  return listConversations({ offset: 0, limit: 10_000 });
 }
 
-export async function getSessionInfo(sessionId: string) {
-  return unwrap(apiClient.api.sessions({ sessionId }).get());
+export async function getConversationInfo(conversationId: string) {
+  return unwrap(apiClient.api.conversations({ conversationId }).get());
 }
 
-export async function createSession(platform: string) {
+export async function createConversation(platform: string) {
   const p = platform.trim();
   if (!p) throw new Error("platform is required");
-  return unwrap(apiClient.api.sessions.post({ platform: p }));
+  return unwrap(apiClient.api.conversations.post({ platform: p }));
 }
 
-export async function getSessionMessages(sessionId: string, offset?: number, limit?: number) {
+export async function getStoredMessages(conversationId: string, offset?: number, limit?: number) {
   return unwrap(
-    apiClient.api.sessions({ sessionId }).messages.get({
+    apiClient.api.conversations({ conversationId }).messages.get({
       query: {
         offset: offset?.toString(),
         limit: limit?.toString(),
@@ -73,58 +77,62 @@ export async function getSessionMessages(sessionId: string, offset?: number, lim
   );
 }
 
-export type SessionAcpDockTask = {
-  acp_session_id: string;
+export type ConversationAcpDockTask = {
+  acp_conversation_id: string;
   task_id: string;
   agent_name: string;
   status: string;
   progress_message_id?: string;
 };
 
-export type SessionAcpDockSnapshot = {
-  session_id: string;
-  tasks: SessionAcpDockTask[];
+export type ConversationAcpDockSnapshot = {
+  conversation_id: string;
+  tasks: ConversationAcpDockTask[];
   progress_text: string;
   task_progress: Record<string, string>;
   highlight_decision: boolean;
 };
 
-export async function getSessionAcpDock(sessionId: string): Promise<SessionAcpDockSnapshot> {
-  const res = await fetch(apiPath(`/api/sessions/${encodeURIComponent(sessionId)}/acp-dock`));
+export async function getConversationAcpDock(
+  conversationId: string,
+): Promise<ConversationAcpDockSnapshot> {
+  const res = await fetch(
+    apiPath(`/api/conversations/${encodeURIComponent(conversationId)}/acp-dock`),
+  );
   if (!res.ok) {
     throw new Error(`HTTP ${res.status}`);
   }
-  return (await res.json()) as SessionAcpDockSnapshot;
+  return (await res.json()) as ConversationAcpDockSnapshot;
 }
 
-export function subscribeSessionEvents(
-  sessionId: string,
+export function subscribeConversationEvents(
+  conversationId: string,
   onUpdate: () => void,
 ): { unsubscribe: () => void } {
-  const url = apiPath(`/api/sessions/${encodeURIComponent(sessionId)}/events`);
+  const url = apiPath(`/api/conversations/${encodeURIComponent(conversationId)}/events`);
   const es = new EventSource(url);
   const handler = () => onUpdate();
-  es.addEventListener("session_updated", handler);
+  es.addEventListener("conversation_updated", handler);
   es.addEventListener("ready", handler);
   es.addEventListener("error", () => {
     /* EventSource 会自动重连 */
   });
   return {
     unsubscribe: () => {
-      es.removeEventListener("session_updated", handler);
+      es.removeEventListener("conversation_updated", handler);
       es.removeEventListener("ready", handler);
       es.close();
     },
   };
 }
 
-export async function setSessionTitle(sessionId: string, title: string) {
-  return unwrap(apiClient.api.sessions({ sessionId }).title.patch({ title }));
+export async function setConversationTitle(conversationId: string, title: string) {
+  return unwrap(apiClient.api.conversations({ conversationId }).title.patch({ title }));
 }
 
-export async function listSessionCommands(opts?: { all?: boolean; platform?: string }) {
+export async function listConversationCommands(opts?: { all?: boolean; platform?: string }) {
   return unwrap(
-    apiClient.api.sessions.commands.get({
+    apiClient.api.conversations.commands.get({
       query: {
         all: opts?.all ? "true" : undefined,
         platform: opts?.platform,
@@ -149,10 +157,10 @@ export async function getToolsStatus(scope?: "default" | "all") {
   );
 }
 
-export async function getPromptDebug(sessionId?: string) {
+export async function getPromptDebug(conversationId?: string) {
   return unwrap(
     apiClient.api.prompt.debug.get({
-      query: sessionId ? { session_id: sessionId } : {},
+      query: conversationId ? { conversation_id: conversationId } : {},
     }),
   );
 }
@@ -303,7 +311,7 @@ export async function listSemanticMemories(input: {
   limit?: number;
   types?: string[];
   status?: string;
-  source_session?: string;
+  source_conversation?: string;
   sort_by?: "created" | "updated" | "reference_count" | "rank";
 }) {
   return unwrap(apiClient.api.memory.semantic.list.post(input));
@@ -317,7 +325,7 @@ export async function listLimbicMemories(input: {
   query?: string;
   offset?: number;
   limit?: number;
-  session_id?: string;
+  conversation_id?: string;
   kind?: string;
 }) {
   return unwrap(apiClient.api.memory.limbic.list.post(input));
@@ -329,7 +337,7 @@ export async function listAutobiographicalMemories(input: {
   limit?: number;
   status?: string;
   significance?: string;
-  source_session?: string;
+  source_conversation?: string;
 }) {
   return unwrap(apiClient.api.memory.autobiographical.list.post(input));
 }

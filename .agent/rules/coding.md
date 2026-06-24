@@ -15,17 +15,17 @@
 
 **Pluralization (layered — do not mix):**
 
-| Layer                              | Singular              | Plural              | Example                                       |
-| ---------------------------------- | --------------------- | ------------------- | --------------------------------------------- |
-| ToolSet registry id                | yes                   | no                  | `file`, `memory`, `toolset`, `session`        |
-| Tool `function.name` first segment | yes (= ToolSet id)    | no                  | `file_read`, `session_search`, `toolset_load` |
-| Action segment                     | verb / singular sense | no                  | `_read`, `_search` (not `_reads`)             |
-| Meta fields holding id lists       | no                    | yes                 | `cached_toolsets`, `staged_toolsets`          |
-| TS types                           | `ToolSet`             | property `toolSets` | unrelated to id strings                       |
+| Layer                              | Singular              | Plural              | Example                                            |
+| ---------------------------------- | --------------------- | ------------------- | -------------------------------------------------- |
+| ToolSet registry id                | yes                   | no                  | `file`, `memory`, `toolset`, `session`             |
+| Tool `function.name` first segment | yes (= ToolSet id)    | no                  | `file_read`, `conversation_search`, `toolset_load` |
+| Action segment                     | verb / singular sense | no                  | `_read`, `_search` (not `_reads`)                  |
+| Meta fields holding id lists       | no                    | yes                 | `cached_toolsets`, `staged_toolsets`               |
+| TS types                           | `ToolSet`             | property `toolSets` | unrelated to id strings                            |
 
 **Multi-segment tool names:** `_` is standard (`mcp_{server}_{local}`, `acp_{agent}_{action}`, `sap_{app}_{instance}_{local}`). `:` only for SAP alias. `-` only in ToolSet ids (e.g. `fridge-magnet`), not in tool names. `/` forbidden.
 
-**Module files:** one ToolSet per register module — `capabilities/**/src/{toolset-id}.ts` matching `registerToolSet("…")` (composite ids: `memory_semantic` → `memory-semantic.ts`). Plural filenames allowed only for multi-id config (`default-session-toolsets.ts`).
+**Module files:** one ToolSet per register module — `capabilities/**/src/{toolset-id}.ts` matching `registerToolSet("…")` (composite ids: `memory_semantic` → `memory-semantic.ts`). Plural filenames allowed only for multi-id config (`default-conversation-toolsets.ts`).
 
 ## Type ownership
 

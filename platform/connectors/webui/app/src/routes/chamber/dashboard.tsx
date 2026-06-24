@@ -78,12 +78,12 @@ function DashboardPage() {
   const semanticMemoryCount = svc?.memory?.semantic_memory_count ?? 0;
   const dialogueMessageCount = svc?.memory?.dialogue_message_count ?? 0;
 
-  const sessionByPlatform = svc?.sessions?.by_platform ?? {};
+  const conversationsByPlatform = svc?.conversations?.by_platform ?? {};
   const platforms = svc?.platforms ?? {};
   const postgres = svc?.dependencies?.postgres;
   const redis = svc?.dependencies?.redis;
 
-  const sessionPlatformRows = Object.entries(sessionByPlatform)
+  const conversationPlatformRows = Object.entries(conversationsByPlatform)
     .map(([platform, count]) => ({ platform, count: count as number }))
     .toSorted((a, b) => b.count - a.count);
 
@@ -159,10 +159,13 @@ function DashboardPage() {
 
         <section>
           <h3 className="text-sm font-semibold text-base-content/60 mb-1.5">
-            {m.webui_chamber_dashboard_sessions_tools()}
+            {m.webui_chamber_dashboard_conversations_tools()}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-stretch">
-            <SessionStatCard total={svc.sessions?.total ?? 0} platformRows={sessionPlatformRows} />
+            <ConversationStatCard
+              total={svc.conversations?.total ?? 0}
+              platformRows={conversationPlatformRows}
+            />
             <CompactExtensionCard title="ACP" href="/chamber/acp" summary={acpSummary} />
             <StatCard title={m.webui_common_tools()}>
               <p className="text-xl font-mono mt-1">{toolCount}</p>
@@ -377,7 +380,7 @@ function PlatformConnectionsCard({ platforms }: { platforms: Record<string, unkn
   );
 }
 
-function SessionStatCard({
+function ConversationStatCard({
   total,
   platformRows,
 }: {
@@ -386,7 +389,7 @@ function SessionStatCard({
 }) {
   return (
     <div className="group/session relative h-full">
-      <StatCard title={m.webui_chamber_dashboard_sessions()}>
+      <StatCard title={m.webui_chamber_dashboard_conversations()}>
         <p className="text-xl font-mono mt-1">{total}</p>
         <p className="text-xs text-base-content/50">
           {m.webui_chamber_dashboard_hover_platforms()}

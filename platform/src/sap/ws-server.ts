@@ -7,11 +7,11 @@ import {
   parseSapEnvelope,
   SAP_VERSION,
   serializeSapEnvelope,
-  sessionCreateInputSchema,
-  sessionListInputSchema,
-  sessionMessagesInputSchema,
-  sessionPatchTitleInputSchema,
-  sessionSubscribeInputSchema,
+  conversationCreateInputSchema,
+  conversationListInputSchema,
+  conversationMessagesInputSchema,
+  conversationPatchTitleInputSchema,
+  conversationSubscribeInputSchema,
   sessionAcpDockInputSchema,
   sessionCommandsInputSchema,
   fridgeListInputSchema,
@@ -33,9 +33,9 @@ import {
   type SapServerHandlers,
   type SapRouterOutputs,
 } from "@freeanima/sap-contract";
-import { isSessionMeta } from "@freeanima/core/db/domain";
+import { isConversationMeta } from "@freeanima/core/db/domain";
 import { bridgeMessageStream, bridgeSessionUpdates } from "./stream-bridge.ts";
-import * as serviceSessions from "../runtime/service-sessions.ts";
+import * as serviceSessions from "../runtime/service-conversations.ts";
 import * as serviceAcpDock from "../runtime/service-acp-dock.ts";
 import * as serviceStatus from "../runtime/service-status.ts";
 import * as serviceFridge from "../runtime/service-fridge.ts";
@@ -112,8 +112,8 @@ export function createSapServerHandlers(
       }
 
       switch (method) {
-        case "session.create": {
-          const input = sessionCreateInputSchema.parse(payload);
+        case "conversation.create": {
+          const input = conversationCreateInputSchema.parse(payload);
           const platform = input.platform ?? formatSapPlatform(ctx.app_id, ctx.instance_id);
           const platformExtra: Record<string, unknown> = {
             satellite_app_id: normalizeAppSlug(ctx.app_id),
@@ -129,69 +129,71 @@ export function createSapServerHandlers(
           if (input.capability_mask) {
             platformExtra.capability_mask = input.capability_mask;
           }
-          const sid = await deps.runtime.conversation.newSession(
+          const sid = await deps.runtime.conversation.newConversation(
             platform,
             undefined,
             platformExtra,
           );
           if (input.title?.trim()) {
-            await deps.runtime.setSessionTitle(sid, input.title.trim(), platform);
+            await deps.runtime.setConversationTitle(sid, input.title.trim(), platform);
           }
-          return { session_id: sid };
+          return { conversation_id: sid };
         }
-        case "session.list": {
-          const input = sessionListInputSchema.parse(payload);
+        case "conversation.list": {
+          const input = conversationListInputSchema.parse(payload);
           const platform = input.platform ?? formatSapPlatform(ctx.app_id, ctx.instance_id);
-          const result = await serviceSessions.listSessions(
+          const result = await serviceSessions.listConversations(
             deps.runtime.runtimeDeps(),
             platform ?? null,
           );
           return {
-            sessions: result.sessions.map((s) => ({
-              session_id: s.id,
+            conversations: result.conversations.map((s) => ({
+              conversation_id: s.id,
               title: s.title,
               platform: s.platform,
               updated_at: s.created,
             })),
           };
         }
-        case "session.messages": {
-          const input = sessionMessagesInputSchema.parse(payload);
-          const platform = await resolveSessionPlatform(deps, input.session_id);
-          const messages = await deps.runtime.getMessages(input.session_id, platform, {
+        case "conversation.messages": {
+          const input = conversationMessagesInputSchema.parse(payload);
+          const platform = await resolveConversationPlatform(deps, input.conversation_id);
+          const messages = await deps.runtime.getMessages(input.conversation_id, platform, {
             offset: input.offset,
             limit: input.limit,
           });
-          return messages as SapRouterOutputs["session.messages"];
+          return messages as SapRouterOutputs["conversation.messages"];
         }
-        case "session.patchTitle": {
-          const input = sessionPatchTitleInputSchema.parse(payload);
-          const platform = await resolveSessionPlatform(deps, input.session_id);
-          await deps.runtime.setSessionTitle(input.session_id, input.title, platform);
+        case "conversation.patchTitle": {
+          const input = conversationPatchTitleInputSchema.parse(payload);
+          const platform = await resolveConversationPlatform(deps, input.conversation_id);
+          await deps.runtime.setConversationTitle(input.conversation_id, input.title, platform);
           return { ok: true as const };
         }
-        case "session.subscribe": {
-          const input = sessionSubscribeInputSchema.parse(payload);
-          const pumpKey = `${ctx.app_id}:${ctx.instance_id}:${input.session_id}`;
+        case "conversation.subscribe": {
+          const input = conversationSubscribeInputSchema.parse(payload);
+          const pumpKey = `${ctx.app_id}:${ctx.instance_id}:${input.conversation_id}`;
           if (!sessionPumps.has(pumpKey)) {
             const controller = new AbortController();
             sessionPumps.set(pumpKey, controller);
-            void pumpSessionUpdates(deps, ctx, input.session_id, controller.signal).finally(() => {
-              sessionPumps.delete(pumpKey);
-            });
+            void pumpSessionUpdates(deps, ctx, input.conversation_id, controller.signal).finally(
+              () => {
+                sessionPumps.delete(pumpKey);
+              },
+            );
           }
           return { ok: true as const };
         }
-        case "session.acpDock": {
+        case "conversation.acpDock": {
           const input = sessionAcpDockInputSchema.parse(payload);
-          const platform = await resolveSessionPlatform(deps, input.session_id);
-          return serviceAcpDock.getSessionAcpDock(
+          const platform = await resolveConversationPlatform(deps, input.conversation_id);
+          return serviceAcpDock.getConversationAcpDock(
             deps.runtime.runtimeDeps(),
-            input.session_id,
+            input.conversation_id,
             platform,
           );
         }
-        case "session.commands": {
+        case "conversation.commands": {
           const input = sessionCommandsInputSchema.parse(payload);
           const platform = input.platform ?? formatSapPlatform(ctx.app_id, ctx.instance_id);
           return serviceStatus.listCommands({
@@ -206,27 +208,34 @@ export function createSapServerHandlers(
         case "message.send": {
           const input = messageSendInputSchema.parse(payload);
           const streamId = crypto.randomUUID();
-          const platform = await resolveSessionPlatform(deps, input.session_id);
-          void pumpMessageStream(deps, ctx, streamId, input.session_id, input.message, platform);
+          const platform = await resolveConversationPlatform(deps, input.conversation_id);
+          void pumpMessageStream(
+            deps,
+            ctx,
+            streamId,
+            input.conversation_id,
+            input.message,
+            platform,
+          );
           return { stream_id: streamId };
         }
         case "message.interrupt": {
           const input = messageInterruptInputSchema.parse(payload);
-          deps.runtime.interruptSessionStream(input.session_id);
+          deps.runtime.interruptSessionStream(input.conversation_id);
           return { ok: true as const };
         }
         case "terminal.attach": {
           const input = terminalAttachInputSchema.parse(payload);
-          const { sessionId, pty } = createTerminalSession(input.cwd);
+          const { conversationId, pty } = createTerminalSession(input.cwd);
           pty.onData((data) => {
-            ctx.sendEvent("terminal.output", { terminal_id: sessionId, data });
+            ctx.sendEvent("terminal.output", { terminal_id: conversationId, data });
           });
           pty.onExit((code) => {
-            ctx.sendEvent("terminal.exit", { terminal_id: sessionId, code });
-            closeTerminalSession(sessionId);
+            ctx.sendEvent("terminal.exit", { terminal_id: conversationId, code });
+            closeTerminalSession(conversationId);
           });
-          ctx.sendEvent("terminal.ready", { terminal_id: sessionId, sessionId });
-          return { terminal_id: sessionId };
+          ctx.sendEvent("terminal.ready", { terminal_id: conversationId, conversationId });
+          return { terminal_id: conversationId };
         }
         case "terminal.write": {
           const input = terminalWriteInputSchema.parse(payload);
@@ -283,12 +292,15 @@ export function createSapServerHandlers(
   return handlers;
 }
 
-async function resolveSessionPlatform(deps: SapServerDeps, sessionId: string): Promise<string> {
-  const meta = await deps.runtime.conversation.loadSessionMeta(sessionId);
-  const p = isSessionMeta(meta) ? meta.platform : undefined;
+async function resolveConversationPlatform(
+  deps: SapServerDeps,
+  conversationId: string,
+): Promise<string> {
+  const meta = await deps.runtime.conversation.loadConversationMeta(conversationId);
+  const p = isConversationMeta(meta) ? meta.platform : undefined;
   const platform = typeof p === "string" ? p.trim() : "";
   if (!platform) {
-    throw new Error(`session ${sessionId.slice(0, 16)} has no platform`);
+    throw new Error(`conversation ${conversationId.slice(0, 16)} has no platform`);
   }
   return platform;
 }
@@ -297,14 +309,14 @@ async function pumpMessageStream(
   deps: SapServerDeps,
   ctx: SapRequestContext,
   streamId: string,
-  sessionId: string,
+  conversationId: string,
   message: string,
   platform: string,
 ): Promise<void> {
   try {
     for await (const mapped of bridgeMessageStream(
       streamId,
-      deps.runtime.sendMessageStream(sessionId, message, platform),
+      deps.runtime.sendMessageStream(conversationId, message, platform),
     )) {
       ctx.sendEvent(mapped.method, mapped.payload);
     }
@@ -320,12 +332,12 @@ async function pumpMessageStream(
 async function pumpSessionUpdates(
   deps: SapServerDeps,
   ctx: SapRequestContext,
-  sessionId: string,
+  conversationId: string,
   signal: AbortSignal,
 ): Promise<void> {
   for await (const mapped of bridgeSessionUpdates(
-    sessionId,
-    (cb) => deps.runtime.watchSession(sessionId, cb),
+    conversationId,
+    (cb) => deps.runtime.watchConversation(conversationId, cb),
     signal,
   )) {
     if (signal.aborted) break;

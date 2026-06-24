@@ -3,7 +3,7 @@ import { formatCstIso } from "@freeanima/core/util";
 import {
   clarifyToolAwaitingResultSchema,
   clarifyToolResolvedResultSchema,
-  isSessionMeta,
+  isConversationMeta,
   parseAwaitingClarify,
   type AwaitingClarify,
   type ClarifyItem,
@@ -12,7 +12,7 @@ import {
 } from "@freeanima/core/db/domain";
 import { safeParseOrNull } from "@freeanima/core/util";
 import { parseToolResult } from "@freeanima/core/tool";
-import type { SessionConversationPort } from "@freeanima/core/tool/session-conversation-port";
+import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
 
 export type { ClarifyItem, AwaitingClarify };
 export type ClarifyAwaitingResult = ClarifyToolAwaitingResult;
@@ -63,17 +63,17 @@ export function getClarifyConfig(): { timeout_sec: number; max_items: number } {
 }
 
 export async function readAwaitingClarify(
-  conversation: SessionConversationPort,
-  session: string,
+  conversation: ConversationPort,
+  conversationId: string,
 ): Promise<AwaitingClarify | null> {
-  const meta = await conversation.loadSessionMeta(session);
-  if (!isSessionMeta(meta)) return null;
+  const meta = await conversation.loadConversationMeta(conversationId);
+  if (!isConversationMeta(meta)) return null;
   return parseAwaiting(meta.awaiting_clarify);
 }
 
 export async function setAwaitingClarify(
-  conversation: SessionConversationPort,
-  session: string,
+  conversation: ConversationPort,
+  conversationId: string,
   payload: { items: ClarifyItem[]; timeout_sec: number },
   opts?: { asked_at?: string },
 ): Promise<void> {
@@ -83,14 +83,14 @@ export async function setAwaitingClarify(
     asked_at: opts?.asked_at ?? formatCstIso(),
     timeout_sec: payload.timeout_sec,
   };
-  await conversation.updateSessionMetaField(session, { awaiting_clarify: awaiting });
+  await conversation.updateConversationMetaField(conversationId, { awaiting_clarify: awaiting });
 }
 
 export async function clearAwaitingClarify(
-  conversation: SessionConversationPort,
-  session: string,
+  conversation: ConversationPort,
+  conversationId: string,
 ): Promise<void> {
-  await conversation.updateSessionMetaField(session, { awaiting_clarify: undefined });
+  await conversation.updateConversationMetaField(conversationId, { awaiting_clarify: undefined });
 }
 
 export function isAwaitingClarifyExpired(awaiting: AwaitingClarify): boolean {
@@ -100,13 +100,13 @@ export function isAwaitingClarifyExpired(awaiting: AwaitingClarify): boolean {
 }
 
 export async function expireIfNeeded(
-  conversation: SessionConversationPort,
-  session: string,
+  conversation: ConversationPort,
+  conversationId: string,
 ): Promise<{ expired: boolean; hint?: string }> {
-  const awaiting = await readAwaitingClarify(conversation, session);
+  const awaiting = await readAwaitingClarify(conversation, conversationId);
   if (!awaiting) return { expired: false };
   if (!isAwaitingClarifyExpired(awaiting)) return { expired: false };
-  await clearAwaitingClarify(conversation, session);
+  await clearAwaitingClarify(conversation, conversationId);
   return { expired: true, hint: "Previous questions have expired." };
 }
 
@@ -134,16 +134,16 @@ export function formatClarifyText(items: ClarifyItem[]): string {
 }
 
 export async function guardAwaitingClarify(
-  conversation: SessionConversationPort,
-  session: string,
+  conversation: ConversationPort,
+  conversationId: string,
   message: string,
 ): Promise<GuardAwaitingResult> {
-  const expiry = await expireIfNeeded(conversation, session);
+  const expiry = await expireIfNeeded(conversation, conversationId);
   if (expiry.expired) {
     return { ok: true, expired: true, hint: expiry.hint ?? "Previous questions have expired." };
   }
 
-  const awaiting = await readAwaitingClarify(conversation, session);
+  const awaiting = await readAwaitingClarify(conversation, conversationId);
   if (!awaiting) return { ok: true };
 
   const trimmed = message.trim();
@@ -218,18 +218,18 @@ export function findAwaitingClarifyInMessages(
 }
 
 export async function resolveUserContent(
-  conversation: SessionConversationPort,
-  session: string,
+  conversation: ConversationPort,
+  conversationId: string,
   userText: string,
 ): Promise<string> {
-  const expiry = await expireIfNeeded(conversation, session);
+  const expiry = await expireIfNeeded(conversation, conversationId);
   if (expiry.expired) {
     return `${expiry.hint ?? "Previous questions have expired."}\n\n${userText}`;
   }
 
-  const awaiting = await readAwaitingClarify(conversation, session);
+  const awaiting = await readAwaitingClarify(conversation, conversationId);
   if (awaiting) {
-    await clearAwaitingClarify(conversation, session);
+    await clearAwaitingClarify(conversation, conversationId);
     return mergeClarifyResponse(awaiting.items, userText);
   }
   return userText;

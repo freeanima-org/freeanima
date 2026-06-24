@@ -105,22 +105,22 @@ async function route(req: Request, server: Bun.Server<ServerWsData>): Promise<Re
 
   const termWrite = /^\/api\/studio\/terminal\/([^/]+)\/write$/.exec(url.pathname);
   if (termWrite && req.method === "POST") {
-    const sessionId = decodeURIComponent(termWrite[1] ?? "");
+    const conversationId = decodeURIComponent(termWrite[1] ?? "");
     const body = (await req.json()) as { data?: string };
-    await terminalWrite(sessionId, body.data ?? "");
+    await terminalWrite(conversationId, body.data ?? "");
     return jsonResponse({ ok: true });
   }
   const termResize = /^\/api\/studio\/terminal\/([^/]+)\/resize$/.exec(url.pathname);
   if (termResize && req.method === "POST") {
-    const sessionId = decodeURIComponent(termResize[1] ?? "");
+    const conversationId = decodeURIComponent(termResize[1] ?? "");
     const body = (await req.json()) as { cols?: number; rows?: number };
-    await terminalResize(sessionId, body.cols ?? 80, body.rows ?? 24);
+    await terminalResize(conversationId, body.cols ?? 80, body.rows ?? 24);
     return jsonResponse({ ok: true });
   }
   const termClose = /^\/api\/studio\/terminal\/([^/]+)\/close$/.exec(url.pathname);
   if (termClose && req.method === "POST") {
-    const sessionId = decodeURIComponent(termClose[1] ?? "");
-    await terminalClose(sessionId);
+    const conversationId = decodeURIComponent(termClose[1] ?? "");
+    await terminalClose(conversationId);
     return jsonResponse({ ok: true });
   }
 

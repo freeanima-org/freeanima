@@ -2,7 +2,7 @@ import type { LlmTurnMessage } from "@freeanima/core/provider";
 import {
   assistantReasoningText,
   type AssistantMessage,
-  type SessionMessage,
+  type StoredMessage,
 } from "@freeanima/core/db/domain";
 import { cleanToolCallsForApi } from "@freeanima/core/provider/stream-tools";
 import { repairToolLoopMessages } from "./tool-loop-integrity.ts";
@@ -28,15 +28,15 @@ export type InvokeMessageInput = {
   systemPrompt?: string;
 };
 
-/** SessionMessage[] → LlmTurnMessage + separate systemPrompt (strip leading system) */
-export function sessionMessagesToInvokeInput(messages: SessionMessage[]): InvokeMessageInput {
+/** StoredMessage[] → LlmTurnMessage + separate systemPrompt (strip leading system) */
+export function storedMessagesToInvokeInput(messages: StoredMessage[]): InvokeMessageInput {
   const repaired = repairToolLoopMessages(messages);
   const systemParts: string[] = [];
   const turns: LlmTurnMessage[] = [];
   let pastLeadingSystem = false;
 
   for (const msg of repaired) {
-    if (msg.role === "session_meta") continue;
+    if (msg.role === "conversation_meta") continue;
     if (!pastLeadingSystem && msg.role === "system") {
       systemParts.push(msg.content);
       continue;

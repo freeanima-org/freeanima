@@ -67,7 +67,7 @@ msgstr ""
 #: docs/concepts/sleep.md:19
 msgid ""
 "**Internal mechanism, no trace** — Sleep runs in background, does not write "
-"to sessions, does not affect conversation flow"
+"to conversations, does not affect conversation flow"
 msgstr ""
 
 #. type: Bullet: '2. '
@@ -104,7 +104,7 @@ msgid ""
 "| Mechanism              | Status         | Notes                                                          |\n"
 "| ---------------------- | -------------- | -------------------------------------------------------------- |\n"
 "| Sleep cycle pipeline   | ✅ Implemented | Single cron `builtin-sleep-cycle` @ 02:00                      |\n"
-"| Session cleanup        | ✅ Implemented | Step `session-cleanup` before light-sleep in sleep-cycle DAG   |\n"
+"| Session cleanup        | ✅ Implemented | Step `conversation-cleanup` before light-sleep in sleep-cycle DAG   |\n"
 "| Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                          |\n"
 "| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep                      |\n"
 "| Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on deep-sleep                  |\n"
@@ -162,7 +162,7 @@ msgid ""
 "| ------------- | ------------------------------------------------------------------------------- |\n"
 "| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Chamber diagnostics)            |\n"
 "| Scope         | Sessions with activity in previous calendar day                                 |\n"
-"| Input         | Full day's conversations (user+assistant, tools stripped), segmented by session |\n"
+"| Input         | Full day's conversations (user+assistant, tools stripped), segmented by conversation |\n"
 "| Orchestration | Three stages sequential (separate LLM calls each)                               |\n"
 msgstr ""
 
@@ -179,7 +179,7 @@ msgid ""
 "| Stage              | Target                       | Purpose                                                                                  |\n"
 "| ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------- |\n"
 "| 1 Semantic         | Semantic memory              | Extract facts, preferences, experiences from dialogue                                    |\n"
-"| 2 Limbic           | Emotional anchors            | Capture session mood and emotional turning points                                        |\n"
+"| 2 Limbic           | Emotional anchors            | Capture conversation mood and emotional turning points                                        |\n"
 "| 3 Autobiographical | Autobiographical narrative   | Record what experiences meant to the digital life                                        |\n"
 "| 3b                 | Autobiography summary (self) | Compress narratives into grouped self-layer outline (title-only bullets by significance) |\n"
 msgstr ""
@@ -285,7 +285,7 @@ msgstr ""
 #. type: Fenced code block (cron)
 #: docs/concepts/sleep.md:98
 #, no-wrap
-msgid "0 2 * * *  sleep-cycle   # builtin-sleep-cycle: session-cleanup → light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync\n"
+msgid "0 2 * * *  sleep-cycle   # builtin-sleep-cycle: conversation-cleanup → light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync\n"
 msgstr ""
 
 #. type: Plain text
@@ -297,7 +297,7 @@ msgstr ""
 #: docs/concepts/sleep.md:104
 #, no-wrap
 msgid ""
-"session-cleanup\n"
+"conversation-cleanup\n"
 "  └─► light-sleep\n"
 "        ├─► deep-sleep ──► memory-ref-sync (optional step)\n"
 "        ├─► dream (optional step)\n"
@@ -333,7 +333,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/sleep.md:125
 #, no-wrap
-msgid "**Stale** means `sessions.updated_at` older than **24 hours** (wall-clock `timestamptz`, not CST day boundary). Recent empty sessions (e.g. satellite \"new session\" without a first message) are kept until the next night's run.\n"
+msgid "**Stale** means `conversations.updated_at` older than **24 hours** (wall-clock `timestamptz`, not CST day boundary). Recent empty sessions (e.g. satellite \"new conversation\" without a first message) are kept until the next night's run.\n"
 msgstr ""
 
 #. type: Plain text
@@ -344,7 +344,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/sleep.md:129
 #, no-wrap
-msgid "**Compression** stays session-scoped (turn-time `advanceCompressionMeta`); it is **not** a sleep-cycle step. Nightly consolidation does not replace per-session compression.\n"
+msgid "**Compression** stays session-scoped (turn-time `advanceCompressionMeta`); it is **not** a sleep-cycle step. Nightly consolidation does not replace per-conversation compression.\n"
 msgstr ""
 
 #. type: Title ##

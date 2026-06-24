@@ -6,7 +6,7 @@ import {
 } from "./discord/discord-thread-title.ts";
 
 describe("discord thread title", () => {
-  it("truncates session title to Discord limit", () => {
+  it("truncates conversation title to Discord limit", () => {
     expect(discordThreadTitleFromSession("  hello  ")).toBe("hello");
     expect(discordThreadTitleFromSession("x".repeat(120)).length).toBe(100);
   });

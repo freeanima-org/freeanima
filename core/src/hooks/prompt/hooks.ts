@@ -1,10 +1,10 @@
-import type { SessionMetaMessage } from "@freeanima/core/db/domain";
+import type { ConversationMetaMessage } from "@freeanima/core/db/domain";
 import { createHook } from "@freeanima/kernel/hooks";
 
 export type SystemPromptBuildContext = {
   functionNames: string[];
   cwd?: string | null;
-  meta?: SessionMetaMessage;
+  meta?: ConversationMetaMessage;
 };
 
 export type SystemPromptSection = {

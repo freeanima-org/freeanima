@@ -136,11 +136,12 @@ export function printServiceRunningStatus(opts: {
     }
   }
 
-  const sessions = api.sessions as Record<string, unknown> | undefined;
+  const conversations = api.conversations as Record<string, unknown> | undefined;
   const tools = api.tools;
   const cronJobs = api.cron_jobs;
   const workload: string[] = [];
-  if (sessions && "total" in sessions) workload.push(`${sessions.total} sessions`);
+  if (conversations && "total" in conversations)
+    workload.push(`${conversations.total} conversations`);
   if (typeof tools === "number") workload.push(`${tools} tools`);
   if (typeof cronJobs === "number" && cronJobs > 0) workload.push(`${cronJobs} cron`);
   if (workload.length) {

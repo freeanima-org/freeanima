@@ -22,14 +22,14 @@ describePg("acp acp_tasks binding", () => {
   beforeEach(async () => {
     await beginIntegrationCase("freeanima-acp-bind-");
     animaSid = "20260527_test_bind";
-    await testConv().initSession(animaSid, "test-model", { platform: TEST_SAP_CHAT_PLATFORM });
+    await testConv().initConversation(animaSid, "test-model", { platform: TEST_SAP_CHAT_PLATFORM });
   });
 
   afterEach(async () => {
     await restoreIntegrationHome(prev);
   });
 
-  it("bind / read / unbind acp_tasks on session_meta", async () => {
+  it("bind / read / unbind acp_tasks on conversation_meta", async () => {
     const c = testConv();
     expect(await readAcpTasks(c, animaSid)).toEqual({});
     await bindAcpTaskRunning(c, animaSid, "cursor", "acp-uuid-1", "task-1");

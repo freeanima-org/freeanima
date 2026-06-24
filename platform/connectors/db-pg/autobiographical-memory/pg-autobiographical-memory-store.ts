@@ -12,7 +12,7 @@ export const pgAutobiographicalMemoryStore: AutobiographicalMemoryStorePort = {
   listActive: crudRepo.listActiveAutobiographicalMemory,
   listCreatedSince: crudRepo.listAutobiographicalMemoryCreatedSince,
   listBySourceSemanticMemory: crudRepo.listAutobiographicalMemoryBySourceSemanticMemory,
-  listBySourceSessions: crudRepo.listAutobiographicalMemoryBySourceSessions,
+  listBySourceConversations: crudRepo.listAutobiographicalMemoryBySourceSessions,
   list: crudRepo.listAutobiographicalMemory,
   searchFts: ftsRepo.searchAutobiographicalMemoryFts,
 };

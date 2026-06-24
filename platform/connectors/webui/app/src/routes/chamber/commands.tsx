@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { listSessionCommands } from "@/lib/api.ts";
+import { listConversationCommands } from "@/lib/api.ts";
 import { m } from "@/lib/i18n.ts";
 
 export const Route = createFileRoute("/chamber/commands")({
-  loader: () => listSessionCommands({ all: true }).catch(() => ({ commands: [] })),
+  loader: () => listConversationCommands({ all: true }).catch(() => ({ commands: [] })),
   staleTime: 5 * 60_000,
   component: CommandsPage,
 });
@@ -19,7 +19,7 @@ function CommandsPage() {
   const data = Route.useLoaderData() as { commands?: CommandRow[] };
   const commands = (data.commands ?? []) as CommandRow[];
 
-  const sessionCommands = commands.filter((c) => c.scope === "session");
+  const conversationCommands = commands.filter((c) => c.scope === "conversation");
   const globalCommands = commands.filter((c) => c.scope === "global");
 
   const formatPlatforms = (platforms?: string[]) => {
@@ -32,11 +32,15 @@ function CommandsPage() {
       <h2 className="text-lg font-bold mb-1">{m.webui_chamber_nav_commands()}</h2>
       <p className="text-sm text-base-content/60 mb-4">{m.webui_chamber_commands_desc()}</p>
 
-      {sessionCommands.length > 0 ? (
+      {conversationCommands.length > 0 ? (
         <section className="mb-6">
-          <h3 className="text-sm font-semibold mb-2">{m.webui_chamber_commands_session_scope()}</h3>
+          <h3 className="text-sm font-semibold mb-2">
+            {m.webui_chamber_commands_conversation_scope()}
+          </h3>
           <p className="text-xs text-base-content/50 mb-2">
-            {m.webui_chamber_commands_session_hint({ count: String(sessionCommands.length) })}
+            {m.webui_chamber_commands_conversation_hint({
+              count: String(conversationCommands.length),
+            })}
           </p>
           <div className="overflow-x-auto">
             <table className="table table-sm">
@@ -47,7 +51,7 @@ function CommandsPage() {
                 </tr>
               </thead>
               <tbody>
-                {sessionCommands.map((cmd) => (
+                {conversationCommands.map((cmd) => (
                   <tr key={cmd.name}>
                     <td className="font-mono text-sm">/{cmd.name}</td>
                     <td className="text-sm text-base-content/80">{cmd.description}</td>
@@ -90,7 +94,7 @@ function CommandsPage() {
         </section>
       ) : null}
 
-      {!sessionCommands.length && !globalCommands.length ? (
+      {!conversationCommands.length && !globalCommands.length ? (
         <div className="alert alert-info text-sm">{m.webui_chamber_commands_empty()}</div>
       ) : null}
     </div>

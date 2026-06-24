@@ -7,9 +7,9 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { isSessionMeta } from "@freeanima/core/db/domain";
+import { isConversationMeta } from "@freeanima/core/db/domain";
 import { existsSync } from "node:fs";
-import { DEFAULT_SESSION_TOOLSETS } from "@freeanima/core/tool";
+import { DEFAULT_CONVERSATION_TOOLSETS } from "@freeanima/core/tool";
 import { registerServiceTools } from "@freeanima/platform";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
@@ -28,37 +28,37 @@ describePg("conversation", () => {
     await endIntegrationCase();
   });
 
-  it("creates session and appends user message", async () => {
+  it("creates conversation and appends user message", async () => {
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
-    expect(await c.sessionExists(sid)).toBe(true);
+    const sid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
+    expect(await c.conversationExists(sid)).toBe(true);
     await c.beginTurn(sid, "hello");
     const msgs = await c.load(sid);
     expect(msgs.some((m) => m.role === "user" && m.content === "hello")).toBe(true);
   });
 
-  it("new session cwd is isolated temp dir, not process.cwd()", async () => {
+  it("new conversation cwd is isolated temp dir, not process.cwd()", async () => {
     const c = testConv();
-    const sid = await c.newSession("weixin");
-    const meta = await c.loadSessionMeta(sid);
-    const cwd = isSessionMeta(meta) ? String(meta.cwd ?? "") : "";
+    const sid = await c.newConversation("weixin");
+    const meta = await c.loadConversationMeta(sid);
+    const cwd = isConversationMeta(meta) ? String(meta.cwd ?? "") : "";
     expect(cwd).toMatch(/^\/tmp\/anima-cwd-/);
     expect(cwd).not.toBe(process.cwd());
     expect(cwd).toContain(sid.slice(0, 8));
   });
 
-  it("restoreIntegrationHome removes session cwd temp dir", async () => {
+  it("restoreIntegrationHome removes conversation cwd temp dir", async () => {
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
-    const meta = await c.loadSessionMeta(sid);
-    const cwd = isSessionMeta(meta) ? String(meta.cwd ?? "") : "";
+    const sid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
+    const meta = await c.loadConversationMeta(sid);
+    const cwd = isConversationMeta(meta) ? String(meta.cwd ?? "") : "";
     expect(cwd).not.toBe("");
     expect(existsSync(cwd)).toBe(true);
     await restoreIntegrationHome(prev);
     expect(existsSync(cwd)).toBe(false);
   });
 
-  it("new session writes default cached toolsets and loadSessionTools resolves schemas", async () => {
+  it("new conversation writes default cached toolsets and loadConversationTools resolves schemas", async () => {
     const engine = getTestEngine();
     registerServiceTools({
       toolSets: engine.toolSets,
@@ -66,20 +66,20 @@ describePg("conversation", () => {
       config: getActivePgTestContext()!.config,
     });
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
-    const meta = await c.loadSessionMeta(sid);
-    expect(isSessionMeta(meta)).toBe(true);
-    if (!isSessionMeta(meta)) return;
+    const sid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
+    const meta = await c.loadConversationMeta(sid);
+    expect(isConversationMeta(meta)).toBe(true);
+    if (!isConversationMeta(meta)) return;
 
-    const storedToolsets = await c.repos.session.getSessionTools(sid);
+    const storedToolsets = await c.repos.conversation.getConversationTools(sid);
     expect(storedToolsets.length).toBeGreaterThan(0);
     expect(storedToolsets.length).toBeLessThan(engine.toolSets.listToolSets().length);
     for (const name of storedToolsets) {
-      expect(DEFAULT_SESSION_TOOLSETS.includes(name as never)).toBe(true);
+      expect(DEFAULT_CONVERSATION_TOOLSETS.includes(name as never)).toBe(true);
     }
     expect(meta.staged_toolsets ?? []).toEqual([]);
 
-    const tools = await c.loadSessionTools(sid);
+    const tools = await c.loadConversationTools(sid);
     expect(tools.length).toBeGreaterThan(storedToolsets.length);
     expect(tools[0]).toHaveProperty("type", "function");
     expect(tools.some((t) => t.function.name === "toolset_search")).toBe(true);
@@ -106,7 +106,7 @@ describePg("conversation compression", () => {
 
   it("finishTurn keeps full history under compression", async () => {
     const c = testConv();
-    const sid = await c.newSession("test");
+    const sid = await c.newConversation("test");
     for (let i = 0; i < 55; i++) {
       await c.appendMessage({ role: "user", content: `u${i}`, pos: i * 2 + 1 }, sid);
       await c.appendMessage({ role: "assistant", content: `a${i}`, pos: i * 2 + 2 }, sid);
@@ -116,8 +116,8 @@ describePg("conversation compression", () => {
     expect(countBefore).toBeGreaterThanOrEqual(100);
 
     const [msgs, functions, effective] = await c.beginTurn(sid, "new question");
-    const meta = await c.loadSessionMeta(sid);
-    expect(isSessionMeta(meta) && meta.compression).toBeTruthy();
+    const meta = await c.loadConversationMeta(sid);
+    expect(isConversationMeta(meta) && meta.compression).toBeTruthy();
 
     msgs.push({ role: "assistant", content: "new reply" });
     await c.finishTurn(sid, msgs, effective, "m", functions);
@@ -125,28 +125,28 @@ describePg("conversation compression", () => {
     expect((await c.load(sid)).length).toBe(countBefore + 2);
   });
 
-  it("beginTurn on compressed session uses pos-range load instead of full listMessages", async () => {
+  it("beginTurn on compressed conversation uses pos-range load instead of full listMessages", async () => {
     const c = testConv();
-    const sid = await c.newSession("test");
+    const sid = await c.newConversation("test");
     for (let i = 0; i < 55; i++) {
       await c.appendMessage({ role: "user", content: `u${i}`, pos: i * 2 + 1 }, sid);
       await c.appendMessage({ role: "assistant", content: `a${i}`, pos: i * 2 + 2 }, sid);
     }
     await c.beginTurn(sid, "trigger compression");
 
-    const session = c.repos.session;
+    const conversation = c.repos.conversation;
     let fullListCalls = 0;
     let rangeListCalls = 0;
-    const origList = session.listMessages.bind(session);
-    const origRange = session.listMessagesByPosRange.bind(session);
-    spyOn(session, "listMessages").mockImplementation(async (sessionId) => {
+    const origList = conversation.listMessages.bind(conversation);
+    const origRange = conversation.listMessagesByPosRange.bind(conversation);
+    spyOn(conversation, "listMessages").mockImplementation(async (conversationId) => {
       fullListCalls++;
-      return origList(sessionId);
+      return origList(conversationId);
     });
-    spyOn(session, "listMessagesByPosRange").mockImplementation(
-      async (sessionId, fromPos, toPos) => {
+    spyOn(conversation, "listMessagesByPosRange").mockImplementation(
+      async (conversationId, fromPos, toPos) => {
         rangeListCalls++;
-        return origRange(sessionId, fromPos, toPos);
+        return origRange(conversationId, fromPos, toPos);
       },
     );
 

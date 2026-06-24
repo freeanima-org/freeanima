@@ -1,8 +1,8 @@
 export type {
   PgRepositories,
-  SessionStorePort,
-  SessionSummaryRow,
-  SessionCleanupResult,
+  ConversationStorePort,
+  ConversationSummaryRow,
+  ConversationCleanupResult,
   MessageFtsHit,
   MessageRowView,
   SemanticMemoryRow,
@@ -29,7 +29,7 @@ export type {
   LimbicMemoryRow,
   LimbicMemoryCreateInput,
   LimbicListOpts,
-  LimbicListBySessionsOpts,
+  LimbicListByConversationsOpts,
   LimbicListByCreatedOpts,
   LimbicFtsHit,
   LimbicMemoryStorePort,
@@ -80,16 +80,16 @@ export {
 export type {
   CompressionState,
   ConversationMessage,
-  SessionMessage,
-  SessionMetaMessage,
-  SessionTodoStore,
+  StoredMessage,
+  ConversationMetaMessage,
+  ConversationTodoStore,
 } from "@freeanima/core/db/domain";
 export {
   isAssistantMessage,
-  isSessionMeta,
+  isConversationMeta,
   isSystemMessage,
   isToolMessage,
   isUserMessage,
 } from "@freeanima/core/db/domain";
 export { nullPgRepositories } from "./adapters/null.ts";
-export { nullSessionStore } from "./adapters/null-session.ts";
+export { nullConversationStore } from "./adapters/null-conversation.ts";

@@ -12,7 +12,7 @@ export type PtyProcess = {
 };
 
 export type TerminalEvent =
-  | { type: "ready"; sessionId: string }
+  | { type: "ready"; conversationId: string }
   | { type: "output"; data: string }
   | { type: "exit"; code: number }
   | { type: "error"; message: string };
@@ -63,7 +63,7 @@ function createScriptTerminal(cwd: string): PtyProcess {
 export class TerminalSessionError extends Error {
   readonly code = "terminal_session_not_found";
 
-  constructor(message = "Terminal session does not exist or has closed") {
+  constructor(message = "Terminal conversation does not exist or has closed") {
     super(message);
     this.name = "TerminalSessionError";
   }
@@ -71,7 +71,7 @@ export class TerminalSessionError extends Error {
 
 const sessions = new Map<string, PtyProcess>();
 
-export function createTerminalSession(cwd?: string): { sessionId: string; pty: PtyProcess } {
+export function createTerminalSession(cwd?: string): { conversationId: string; pty: PtyProcess } {
   let workDir: string;
   const trimmed = cwd?.trim();
   if (trimmed) {
@@ -83,24 +83,24 @@ export function createTerminalSession(cwd?: string): { sessionId: string; pty: P
     workDir = process.cwd();
   }
 
-  const sessionId = crypto.randomUUID();
+  const conversationId = crypto.randomUUID();
   const pty = createScriptTerminal(workDir);
-  sessions.set(sessionId, pty);
-  return { sessionId, pty };
+  sessions.set(conversationId, pty);
+  return { conversationId, pty };
 }
 
-export function getTerminalSession(sessionId: string): PtyProcess | undefined {
-  return sessions.get(sessionId);
+export function getTerminalSession(conversationId: string): PtyProcess | undefined {
+  return sessions.get(conversationId);
 }
 
-export function closeTerminalSession(sessionId: string): void {
-  const pty = sessions.get(sessionId);
+export function closeTerminalSession(conversationId: string): void {
+  const pty = sessions.get(conversationId);
   pty?.kill();
-  sessions.delete(sessionId);
+  sessions.delete(conversationId);
 }
 
 export async function* streamTerminalEvents(
-  sessionId: string,
+  conversationId: string,
   pty: PtyProcess,
   signal: AbortSignal | undefined,
 ): AsyncGenerator<TerminalEvent> {
@@ -108,7 +108,7 @@ export async function* streamTerminalEvents(
   const offData = pty.onData((data) => ee.emit("output", data));
   const offExit = pty.onExit((code) => ee.emit("exit", code));
 
-  yield { type: "ready", sessionId };
+  yield { type: "ready", conversationId };
 
   try {
     while (!signal?.aborted) {
@@ -145,7 +145,7 @@ export async function* streamTerminalEvents(
   } finally {
     offData();
     offExit();
-    closeTerminalSession(sessionId);
+    closeTerminalSession(conversationId);
   }
 }
 

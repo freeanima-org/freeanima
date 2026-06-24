@@ -20,7 +20,7 @@ export function createDiscordGatewayToolRoundStrategy(
   sendText: (text: string) => Promise<void>,
   sendClarifyWithComponents: DiscordClarifySend,
   mode: ToolDisplayMode,
-  sessionId?: string,
+  conversationId?: string,
 ): StreamStrategy {
   const base = createToolRoundStrategy();
   const baseHandle = base.handle.bind(base);
@@ -37,7 +37,7 @@ export function createDiscordGatewayToolRoundStrategy(
       }
       if (effect.kind === "clarify") {
         if (
-          sessionId &&
+          conversationId &&
           canRenderClarifyButtons({ items: effect.items, timeout_sec: effect.timeout_sec })
         ) {
           const item = effect.items[0]!;
@@ -45,7 +45,7 @@ export function createDiscordGatewayToolRoundStrategy(
             items: effect.items,
             timeout_sec: effect.timeout_sec,
           });
-          const rows = buildClarifyActionRows(sessionId, item);
+          const rows = buildClarifyActionRows(conversationId, item);
           await sendClarifyWithComponents(content, rows, effect.timeout_sec);
           return [];
         }

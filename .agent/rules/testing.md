@@ -28,7 +28,7 @@ Unit tests **must not** `import` `tests/helpers/log-isolation.ts` or write `conf
 
 - Prefer `@freeanima/core/util` helpers: `createTempDir(prefix)` + `removeTempDir(path)` (or `removeManagedAnimaTmpPath` for `anima-cwd-*` / `anima-exec-*`).
 - Any `mkdtemp` / `createTempDir` in unit tests **must** pair with `afterEach` / `afterAll` / `try/finally` cleanup via `removeTempDir`.
-- Integration tests **must** use `beginIntegrationCase` + `restoreIntegrationHome`; do not call `beginLogIsolation` alone without teardown. `restoreIntegrationHome` deletes the temp `FREEANIMA_HOME` and session `anima-cwd-*` dirs under `/tmp`.
+- Integration tests **must** use `beginIntegrationCase` + `restoreIntegrationHome`; do not call `beginLogIsolation` alone without teardown. `restoreIntegrationHome` deletes the temp `FREEANIMA_HOME` and conversation `anima-cwd-*` dirs under `/tmp`.
 
 ## Integration isolation
 

@@ -187,7 +187,7 @@ describe("browser tools", () => {
     expect(out.error).toContain("browser_navigate");
   });
 
-  it("browser tools bind to tool session context", async () => {
+  it("browser tools bind to tool conversation context", async () => {
     const fetchMock = vi.fn(async (input: string | URL, init?: RequestInit) => {
       const url = String(input);
       if (url.endsWith("/tabs") && init?.method === "POST") {

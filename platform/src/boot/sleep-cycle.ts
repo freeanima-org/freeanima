@@ -5,7 +5,7 @@ export const SLEEP_CYCLE_PIPELINE_ID = "sleep-cycle";
 
 /** 睡眠 DAG 节点 id */
 export const SLEEP_STEP_IDS = {
-  sessionCleanup: "session-cleanup",
+  conversationCleanup: "conversation-cleanup",
   lightSleep: "light-sleep",
   deepSleep: "deep-sleep",
   dream: "dream",
@@ -21,13 +21,13 @@ export const sleepCycleDefinition: PipelineDefinition = {
   id: SLEEP_CYCLE_PIPELINE_ID,
   nodes: [
     {
-      id: SLEEP_STEP_IDS.sessionCleanup,
-      handler: SLEEP_STEP_IDS.sessionCleanup,
+      id: SLEEP_STEP_IDS.conversationCleanup,
+      handler: SLEEP_STEP_IDS.conversationCleanup,
     },
     {
       id: SLEEP_STEP_IDS.lightSleep,
       handler: SLEEP_STEP_IDS.lightSleep,
-      dependsOn: [SLEEP_STEP_IDS.sessionCleanup],
+      dependsOn: [SLEEP_STEP_IDS.conversationCleanup],
     },
     {
       id: SLEEP_STEP_IDS.deepSleep,

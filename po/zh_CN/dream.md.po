@@ -79,7 +79,7 @@ msgid ""
 "Trigger is **purely emotion-driven** (no random dice). Session activity is "
 "**not** required; episodic fragments may be empty."
 msgstr ""
-"触发**纯由情绪驱动**（无随机掷骰）。**不要求** session 活动；情景片段可为空。"
+"触发**纯由情绪驱动**（无随机掷骰）。**不要求** conversation 活动；情景片段可为空。"
 
 #. type: Title ##
 #: docs/concepts/dream.md:24
@@ -107,7 +107,7 @@ msgid ""
 "sessions were updated that day."
 msgstr ""
 "**情景片段** — 从当日 session（对话存档）的 user/assistant 消息中随机抽样，上"
-"限约 4k 字符；当日无 session 更新时省略。"
+"限约 4k 字符；当日无 conversation 更新时省略。"
 
 #. type: Plain text
 #: docs/concepts/dream.md:30

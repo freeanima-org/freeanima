@@ -23,7 +23,7 @@ function makeRow(
     type: "world",
     pinned: false,
     content: `memory ${id}`,
-    source_sessions: [],
+    source_conversations: [],
     observed_at: now,
     occurred_at: null,
     status,
@@ -61,7 +61,7 @@ function createMockStore(rows: SemanticMemoryRow[]): SemanticMemoryStorePort {
     async listActive() {
       return rows.filter((r) => r.status === "active");
     },
-    async listBySourceSessions() {
+    async listBySourceConversations() {
       return [];
     },
     async searchFts() {

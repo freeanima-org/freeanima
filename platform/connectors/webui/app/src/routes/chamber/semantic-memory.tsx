@@ -25,7 +25,7 @@ type SemanticRow = {
   type: string;
   pinned: boolean;
   content: string;
-  source_sessions: string[];
+  source_conversations: string[];
   status: string;
   reference_count: number;
   created: string;
@@ -41,7 +41,7 @@ function SemanticMemoryPage() {
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("active");
-  const [sourceSession, setSourceSession] = useState("");
+  const [sourceConversation, setSourceConversation] = useState("");
   const [sortBy, setSortBy] = useState<BrowseSortBy>("updated");
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -67,7 +67,7 @@ function SemanticMemoryPage() {
           limit: PAGE_SIZE,
           types: typeFilter ? [typeFilter] : undefined,
           status: statusFilter === "all" ? "all" : statusFilter,
-          source_session: sourceSession.trim() || undefined,
+          source_conversation: sourceConversation.trim() || undefined,
           sort_by: effectiveSortBy,
         })) as { items: SemanticRow[]; total: number };
         setItems(data.items ?? []);
@@ -85,7 +85,7 @@ function SemanticMemoryPage() {
         setLoading(false);
       }
     },
-    [query, typeFilter, statusFilter, sourceSession, sortBy],
+    [query, typeFilter, statusFilter, sourceConversation, sortBy],
   );
 
   const runSearch = () => {
@@ -180,15 +180,15 @@ function SemanticMemoryPage() {
             <div className="form-control">
               <label className="label py-0">
                 <span className="label-text text-xs">
-                  {m.webui_chamber_semantic_source_session()}
+                  {m.webui_chamber_semantic_source_conversation()}
                 </span>
               </label>
               <input
-                value={sourceSession}
-                onChange={(e) => setSourceSession(e.target.value)}
+                value={sourceConversation}
+                onChange={(e) => setSourceConversation(e.target.value)}
                 type="text"
                 className="input input-bordered input-sm font-mono"
-                placeholder="session id"
+                placeholder="conversation id"
               />
             </div>
             <div className="form-control">
@@ -238,7 +238,7 @@ function SemanticMemoryPage() {
                     <th>{m.webui_chamber_semantic_updated()}</th>
                     <th>{m.webui_chamber_semantic_reference_count()}</th>
                     <th>{m.webui_chamber_limbic_content()}</th>
-                    <th>sessions</th>
+                    <th>conversations</th>
                     {hasSearchQuery ? <th>{m.webui_chamber_semantic_rank()}</th> : null}
                   </tr>
                 </thead>
@@ -277,7 +277,9 @@ function SemanticMemoryPage() {
                       <td className="text-xs">{Number(row.reference_count).toFixed(2)}</td>
                       <td className="text-sm max-w-md whitespace-pre-wrap">{row.content}</td>
                       <td className="font-mono text-xs max-w-32 truncate">
-                        {row.source_sessions?.length ? row.source_sessions.join(", ") : "-"}
+                        {row.source_conversations?.length
+                          ? row.source_conversations.join(", ")
+                          : "-"}
                       </td>
                       {hasSearchQuery ? (
                         <td className="text-xs whitespace-nowrap">

@@ -12,7 +12,7 @@ import {
 
 import type { MessagePayload } from "./jsonb/message-payload.ts";
 import { SEMANTIC_EMBEDDING_DIMENSIONS } from "./embedding.ts";
-import { sessions } from "./sessions.ts";
+import { conversations } from "./conversations.ts";
 
 const tsvector = customType<{ data: string }>({
   dataType() {
@@ -25,10 +25,10 @@ export const messages = pgTable(
   {
     /** Globally unique row id (PG PK; compression points to pos, not this column) */
     id: text("id").primaryKey(),
-    sessionId: text("session_id")
+    conversationId: text("conversation_id")
       .notNull()
-      .references(() => sessions.id, { onDelete: "cascade" }),
-    /** Monotonic in-session sequence (compression l2/l3 point here; domain Message.pos) */
+      .references(() => conversations.id, { onDelete: "cascade" }),
+    /** Monotonic in-conversation sequence (compression l2/l3 point here; domain Message.pos) */
     pos: bigint("pos", { mode: "number" }).notNull(),
     payload: jsonb("payload").$type<MessagePayload>().notNull(),
     ftsSegmented: text("fts_segmented"),
@@ -48,7 +48,7 @@ export const messages = pgTable(
     ),
   },
   (t) => [
-    uniqueIndex("messages_session_id_pos_uidx").on(t.sessionId, t.pos),
+    uniqueIndex("messages_conversation_id_pos_uidx").on(t.conversationId, t.pos),
     index("messages_content_fts_gin").using("gin", t.contentFts),
   ],
 );

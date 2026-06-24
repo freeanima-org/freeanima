@@ -7,9 +7,9 @@ import {
 } from "../../helpers/integration-case.ts";
 import { getTestEngine } from "../../helpers/pg-test.ts";
 
-async function seedSessionMeta(sessionId: string): Promise<void> {
-  await getTestEngine().repos.session.upsertSessionMeta(sessionId, {
-    role: "session_meta",
+async function seedSessionMeta(conversationId: string): Promise<void> {
+  await getTestEngine().repos.conversation.upsertConversationMeta(conversationId, {
+    role: "conversation_meta",
     model: "test-model",
     cached_toolsets: [],
     functions: [],
@@ -29,24 +29,24 @@ describePg("memory_references PG", () => {
     await restoreIntegrationHome(prev);
   });
 
-  it("message references write, session dedup count, and full sync", async () => {
-    const { semanticMemory, memoryReference, session } = getTestEngine().repos;
+  it("message references write, conversation dedup count, and full sync", async () => {
+    const { semanticMemory, memoryReference, conversation } = getTestEngine().repos;
 
     const memoryId = await semanticMemory.create({
       content: "reference count probe memory",
       type: "world",
     });
 
-    const sessionId = "memref-session-1";
-    await seedSessionMeta(sessionId);
+    const conversationId = "memref-session-1";
+    await seedSessionMeta(conversationId);
 
-    await session.appendMessage(sessionId, {
+    await conversation.appendMessage(conversationId, {
       role: "assistant",
       content: `See [[${memoryId}]] for details`,
       pos: 1,
       timestamp: "2026-06-09T12:00:00+08:00",
     });
-    await session.appendMessage(sessionId, {
+    await conversation.appendMessage(conversationId, {
       role: "assistant",
       content: `Again [[${memoryId}]]`,
       pos: 2,
@@ -64,15 +64,15 @@ describePg("memory_references PG", () => {
   });
 
   it("listResident returns pinned + reference-count top N", async () => {
-    const { semanticMemory, session } = getTestEngine().repos;
+    const { semanticMemory, conversation } = getTestEngine().repos;
 
     const pinnedId = await semanticMemory.create({ content: "pinned memory", pinned: true });
     const hotId = await semanticMemory.create({ content: "hot memory" });
     await semanticMemory.create({ content: "cold memory" });
 
-    const sessionId = "memref-resident";
-    await seedSessionMeta(sessionId);
-    await session.appendMessage(sessionId, {
+    const conversationId = "memref-resident";
+    await seedSessionMeta(conversationId);
+    await conversation.appendMessage(conversationId, {
       role: "assistant",
       content: `[[${hotId}]]`,
       pos: 1,
@@ -118,12 +118,12 @@ describePg("memory_references PG", () => {
   });
 
   it("session delete invalidates references and full sync zeroes counts", async () => {
-    const { semanticMemory, memoryReference, session } = getTestEngine().repos;
+    const { semanticMemory, memoryReference, conversation } = getTestEngine().repos;
 
     const memoryId = await semanticMemory.create({ content: "session reference pending delete" });
-    const sessionId = "memref-delete";
-    await seedSessionMeta(sessionId);
-    await session.appendMessage(sessionId, {
+    const conversationId = "memref-delete";
+    await seedSessionMeta(conversationId);
+    await conversation.appendMessage(conversationId, {
       role: "user",
       content: `[[${memoryId}]]`,
       pos: 1,
@@ -131,7 +131,7 @@ describePg("memory_references PG", () => {
 
     expect((await semanticMemory.get(memoryId))?.reference_count).toBe(2);
 
-    await session.deleteSession(sessionId);
+    await conversation.deleteConversation(conversationId);
     await memoryReference.syncAllReferenceCounts();
 
     expect(await memoryReference.countBySemanticMemory(memoryId)).toBe(0);

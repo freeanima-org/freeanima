@@ -1,0 +1,35 @@
+import {
+  generateConversationSummary,
+  getL4,
+  type GenerateSummaryResult,
+} from "@freeanima/core/compress";
+import { isConversationMeta, parseCompressionState } from "@freeanima/core/db/domain";
+import type { PgRepositories } from "@freeanima/core/repos";
+import { load, loadConversationMeta } from "./conversation.ts";
+
+/** /new etc.: read-only old conversation; generate handoff summary for new conversation (does not write old conversation) */
+export async function generateConversationHandoffSummary(
+  repos: PgRepositories,
+  conversationId: string,
+): Promise<GenerateSummaryResult> {
+  const msgs = await load(repos, conversationId);
+  const l4 = getL4(msgs);
+  if (l4 === 0) {
+    return { ok: false, error: "No conversation content" };
+  }
+
+  const meta = await loadConversationMeta(repos, conversationId);
+  if (!isConversationMeta(meta)) {
+    return { ok: false, error: "conversation does not exist" };
+  }
+
+  const prevState = parseCompressionState(meta.compression);
+  const prevL2 = prevState?.l2 ?? 0;
+  if (prevL2 >= l4 && prevState?.summary?.trim()) {
+    return { ok: true, summary: prevState.summary.trim() };
+  }
+
+  const systemPrompt = meta.system_prompt ?? "";
+  const model = meta.model;
+  return generateConversationSummary(msgs, prevState, { l2: l4, l3: l4 }, systemPrompt, model);
+}

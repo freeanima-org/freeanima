@@ -22,7 +22,7 @@ function makeRow(
     period_start: null,
     period_end: null,
     source_semantic_memory: [],
-    source_sessions: [],
+    source_conversations: [],
     status: "active",
     created: updated,
     updated,

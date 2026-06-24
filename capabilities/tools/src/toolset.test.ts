@@ -4,7 +4,7 @@ import { registerToolsetTools } from "./toolset.ts";
 import { runWithToolContext } from "@freeanima/core/tool";
 
 const sessionMeta = {
-  role: "session_meta" as const,
+  role: "conversation_meta" as const,
   model: "test",
   cached_toolsets: ["toolset"],
   staged_toolsets: [] as string[],
@@ -12,19 +12,19 @@ const sessionMeta = {
   timestamp: "2026-01-01T00:00:00+08:00",
 };
 
-const getSessionMeta = mock(async () => sessionMeta);
+const getConversationMeta = mock(async () => sessionMeta);
 
-const patchSessionMeta = mock(async () => {});
+const patchConversationMeta = mock(async () => {});
 
 const repos = {
   pgAvailable: true,
-  session: { getSessionMeta, patchSessionMeta },
+  conversation: { getConversationMeta, patchConversationMeta },
 } as never;
 
 describe("registerToolsetTools", () => {
   beforeEach(() => {
-    getSessionMeta.mockClear();
-    patchSessionMeta.mockClear();
+    getConversationMeta.mockClear();
+    patchConversationMeta.mockClear();
   });
 
   it("toolset_load returns schema for staged toolset", async () => {
@@ -49,7 +49,7 @@ describe("registerToolsetTools", () => {
         expect(parsed.tools).toHaveLength(1);
         expect(parsed.tools[0].name).toBe("file_read");
         expect(parsed.loaded).toEqual(["file"]);
-        expect(patchSessionMeta).toHaveBeenCalled();
+        expect(patchConversationMeta).toHaveBeenCalled();
       },
       {
         tools: toolSets,

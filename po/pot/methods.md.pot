@@ -54,7 +54,7 @@ msgid ""
 "  end\n"
 "  subgraph hub [Hub ws-server]\n"
 "    Router[SAP_METHODS router]\n"
-"    Sessions[service-sessions]\n"
+"    Sessions[service-conversations]\n"
 "    Runtime[AppRuntime]\n"
 "    Terminals[terminal-session]\n"
 "    SatMgr[SatelliteManager]\n"
@@ -79,19 +79,19 @@ msgstr ""
 msgid ""
 "| Method               | Schema                                                            | Hub behavior                                                                                                |\n"
 "| -------------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
-"| `session.create`     | [`session.ts`](../../packages/sap-contract/src/frames/session.ts) | Creates session; sets `platform_extra.satellite_app_id`, `satellite_instance_id`, optional workspace fields |\n"
-"| `session.list`       | `session.ts`                                                      | Lists sessions, optional `platform` filter                                                                  |\n"
-"| `session.messages`   | `session.ts`                                                      | Message history with `offset` / `limit`                                                                     |\n"
-"| `session.patchTitle` | `session.ts`                                                      | Updates session title                                                                                       |\n"
-"| `session.subscribe`  | `session.ts`                                                      | Subscribes to `session.updated` events for one session                                                      |\n"
-"| `session.commands`   | `session.ts`                                                      | Lists slash commands for a platform                                                                         |\n"
-"| `session.acpDock`    | [`acp.ts`](../../packages/sap-contract/src/frames/acp.ts)         | ACP dock operations for a session                                                                           |\n"
+"| `conversation.create`     | [`session.ts`](../../packages/sap-contract/src/frames/conversation.ts) | Creates session; sets `platform_extra.satellite_app_id`, `satellite_instance_id`, optional workspace fields |\n"
+"| `conversation.list`       | `session.ts`                                                      | Lists conversations, optional `platform` filter                                                                  |\n"
+"| `conversation.messages`   | `session.ts`                                                      | Message history with `offset` / `limit`                                                                     |\n"
+"| `conversation.patchTitle` | `session.ts`                                                      | Updates conversation title                                                                                       |\n"
+"| `conversation.subscribe`  | `session.ts`                                                      | Subscribes to `conversation.updated` events for one conversation                                                      |\n"
+"| `conversation.commands`   | `session.ts`                                                      | Lists slash commands for a platform                                                                         |\n"
+"| `conversation.acpDock`    | [`acp.ts`](../../packages/sap-contract/src/frames/acp.ts)         | ACP dock operations for a conversation                                                                           |\n"
 msgstr ""
 
 #. type: Title ###
 #: docs/sap/methods.md:45
 #, no-wrap
-msgid "`session.create` platform binding"
+msgid "`conversation.create` platform binding"
 msgstr ""
 
 #. type: Plain text
@@ -99,7 +99,7 @@ msgstr ""
 msgid ""
 "Hub resolves `platform` from input or `formatSapPlatform(app_id, "
 "instance_id)` → `sap:{app_slug}:{instance_id}` (e.g. "
-"`sap:pairprogramming:k7m`). Writes into session `platform_extra`:"
+"`sap:pairprogramming:k7m`). Writes into conversation `platform_extra`:"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -142,7 +142,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/methods.md:62
 msgid ""
-"Payload: `session_id`, `message` (user text). Hub bridges runtime stream to "
+"Payload: `conversation_id`, `message` (user text). Hub bridges runtime stream to "
 "SAP `stream.*` events — see [events.md](events.md)."
 msgstr ""
 

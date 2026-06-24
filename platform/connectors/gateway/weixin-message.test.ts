@@ -137,7 +137,7 @@ describe("weixin-message", () => {
     expect(text).toBe("Speech to text");
   });
 
-  it("buildWeixinOrigin for session routing", () => {
+  it("buildWeixinOrigin for conversation routing", () => {
     const parsed = parseUserTextMessage(
       {
         message_type: MSG_TYPE_USER,

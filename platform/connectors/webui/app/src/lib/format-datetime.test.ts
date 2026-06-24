@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   formatDisplayDate,
   formatDisplayDateTime,
-  formatSessionIdDateTime,
+  formatConversationIdDateTime,
 } from "./format-datetime.ts";
 
 describe("format-datetime", () => {
@@ -18,9 +18,9 @@ describe("format-datetime", () => {
     expect(formatDisplayDateTime(null)).toBe("—");
   });
 
-  test("formatSessionIdDateTime", () => {
-    expect(formatSessionIdDateTime("20260615_123456_abc")).toBe("2026/06/15 12:34");
-    expect(formatSessionIdDateTime("20260615_123456_abc", { seconds: true })).toBe(
+  test("formatConversationIdDateTime", () => {
+    expect(formatConversationIdDateTime("20260615_123456_abc")).toBe("2026/06/15 12:34");
+    expect(formatConversationIdDateTime("20260615_123456_abc", { seconds: true })).toBe(
       "2026/06/15 12:34:56",
     );
   });

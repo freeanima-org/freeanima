@@ -7,10 +7,10 @@ import {
 import type {
   MaskRegistryLookup,
   ResolvedMask,
-  SessionCapabilityMask,
+  ConversationCapabilityMask,
 } from "@freeanima/capabilities-tasks/mask";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
-import { isSessionMeta, type SessionMetaMessage } from "@freeanima/core/db/domain";
+import { isConversationMeta, type ConversationMetaMessage } from "@freeanima/core/db/domain";
 import { parseYaml, PATHS } from "@freeanima/platform/config";
 import { logComponent } from "@freeanima/platform/logging";
 import { z } from "zod";
@@ -91,9 +91,9 @@ function catalogFromDeps(deps: FullRuntimeDeps): {
   return { masks: deps.masks, toolSets: deps.engine.catalog.toolSets };
 }
 
-export function resolveSessionCapabilityMask(
+export function resolveConversationCapabilityMask(
   deps: FullRuntimeDeps,
-  capabilityMask: SessionCapabilityMask | undefined,
+  capabilityMask: ConversationCapabilityMask | undefined,
 ): ResolvedMask | null {
   const presets = capabilityMask?.presets ?? [];
   if (!presets.length) return null;
@@ -101,12 +101,12 @@ export function resolveSessionCapabilityMask(
   return resolveMaskPresets(presets, masks, toolSets);
 }
 
-export function resolveSessionMaskFromMeta(
+export function resolveConversationMaskFromMeta(
   deps: FullRuntimeDeps,
-  meta: SessionMetaMessage | Record<string, never>,
+  meta: ConversationMetaMessage | Record<string, never>,
 ): ResolvedMask | null {
-  if (!isSessionMeta(meta)) return null;
-  return resolveSessionCapabilityMask(deps, meta.capability_mask);
+  if (!isConversationMeta(meta)) return null;
+  return resolveConversationCapabilityMask(deps, meta.capability_mask);
 }
 
 export function resolveSleepMask(deps: FullRuntimeDeps): ResolvedMask {

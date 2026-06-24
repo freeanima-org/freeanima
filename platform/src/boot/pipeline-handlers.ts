@@ -7,10 +7,10 @@ import {
   loadSelfLayerPrompt,
 } from "@freeanima/capabilities-identity";
 import { getPipelineRunner, type PipelineStepTrigger } from "@freeanima/runtime/pipeline";
-import { cleanupStaleSessions } from "@freeanima/runtime/session";
+import { cleanupStaleConversations } from "@freeanima/runtime/conversation";
 import type { Engine } from "@freeanima/runtime";
 
-import { purgeCronSessions } from "../../connectors/db-pg/session/repos/purge-cron-sessions.ts";
+import { purgeCronConversations } from "../../connectors/db-pg/conversation/repos/purge-cron-conversations.ts";
 import { createDreamFridgePort } from "../dream-fridge-factory.ts";
 import { resolveDeepSleepMode } from "./deep-sleep-mode.ts";
 import { sleepCycleDefinition, SLEEP_CYCLE_PIPELINE_ID, SLEEP_STEP_IDS } from "./sleep-cycle.ts";
@@ -20,9 +20,9 @@ export function registerSleepPipeline(engine: Engine): void {
   const runner = getPipelineRunner();
   runner.registerDefinition(sleepCycleDefinition);
 
-  runner.registerStep(SLEEP_STEP_IDS.sessionCleanup, async () => {
-    const result = await cleanupStaleSessions(engine.repos);
-    const cronPurge = await purgeCronSessions(engine.repos);
+  runner.registerStep(SLEEP_STEP_IDS.conversationCleanup, async () => {
+    const result = await cleanupStaleConversations(engine.repos);
+    const cronPurge = await purgeCronConversations(engine.repos);
 
     const autoLlmCfg = engine.config.data.auto_llm;
     const retentionDays = autoLlmCfg?.retention_days ?? 30;
@@ -52,7 +52,7 @@ export function registerSleepPipeline(engine: Engine): void {
     const selfContent = await loadSelfLayerPrompt();
     const result = await runLightSleep({
       day: ctx.day,
-      sessionStore: engine.repos.session,
+      conversationStore: engine.repos.conversation,
       semanticStore: engine.repos.semanticMemory,
       autoStore: engine.repos.autobiographicalMemory,
       selfStore: engine.repos.selfLayer,
@@ -83,7 +83,7 @@ export function registerSleepPipeline(engine: Engine): void {
     const result = await runDream({
       day: ctx.day,
       selfContent,
-      sessionStore: engine.repos.session,
+      conversationStore: engine.repos.conversation,
       dreamStore: engine.repos.dreamMemory,
       fridge: createDreamFridgePort(),
     });

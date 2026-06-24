@@ -3,7 +3,7 @@ import { pollUntilAssistantReply } from "@/lib/display-recovery.ts";
 import { marked } from "marked";
 import { create } from "zustand";
 import { m } from "@/lib/i18n.ts";
-import { subscribeMessageStream, subscribeSessionEvents } from "@/lib/api.ts";
+import { subscribeMessageStream, subscribeConversationEvents } from "@/lib/api.ts";
 
 type SendDoneOptions = {
   recovered?: boolean;
@@ -18,16 +18,16 @@ type SendCallbacks = {
   onRecovering?: (active: boolean) => void;
   onError?: (msg: string) => void;
   onDone?: (opts?: SendDoneOptions) => void;
-  recoverDisplay?: (sessionId: string) => Promise<boolean>;
+  recoverDisplay?: (conversationId: string) => Promise<boolean>;
 };
 
 type ChatState = {
   streaming: boolean;
   recovering: boolean;
-  streamingSessionId: string | null;
+  streamingConversationId: string | null;
   streamText: string;
   renderMd: (text: string) => string;
-  send: (sessionId: string, text: string, callbacks?: SendCallbacks) => Promise<void>;
+  send: (conversationId: string, text: string, callbacks?: SendCallbacks) => Promise<void>;
   abortStream: () => void;
 };
 
@@ -98,8 +98,8 @@ function renderMd(text: string): string {
 }
 
 async function waitForAssistantViaSessionEvents(
-  sessionId: string,
-  recoverDisplay: (sessionId: string) => Promise<boolean>,
+  conversationId: string,
+  recoverDisplay: (conversationId: string) => Promise<boolean>,
   maxDurationMs: number,
 ): Promise<boolean> {
   return new Promise((resolve) => {
@@ -116,14 +116,14 @@ async function waitForAssistantViaSessionEvents(
     };
 
     const tryRefresh = async (): Promise<boolean> => {
-      if (await recoverDisplay(sessionId)) {
+      if (await recoverDisplay(conversationId)) {
         finish(true);
         return true;
       }
       return false;
     };
 
-    const sub = subscribeSessionEvents(sessionId, () => {
+    const sub = subscribeConversationEvents(conversationId, () => {
       void tryRefresh();
     });
 
@@ -148,15 +148,15 @@ async function waitForAssistantViaSessionEvents(
 }
 
 async function tryRecoverDisplay(
-  sessionId: string,
-  recoverDisplay?: (sessionId: string) => Promise<boolean>,
+  conversationId: string,
+  recoverDisplay?: (conversationId: string) => Promise<boolean>,
   onRecovering?: (active: boolean) => void,
 ): Promise<boolean> {
   if (!recoverDisplay) return false;
   onRecovering?.(true);
   try {
-    if (await pollUntilAssistantReply(sessionId, recoverDisplay)) return true;
-    return await waitForAssistantViaSessionEvents(sessionId, recoverDisplay, 60_000);
+    if (await pollUntilAssistantReply(conversationId, recoverDisplay)) return true;
+    return await waitForAssistantViaSessionEvents(conversationId, recoverDisplay, 60_000);
   } finally {
     onRecovering?.(false);
   }
@@ -165,7 +165,7 @@ async function tryRecoverDisplay(
 export const useChatStore = create<ChatState>(() => ({
   streaming: false,
   recovering: false,
-  streamingSessionId: null,
+  streamingConversationId: null,
   streamText: "",
   renderMd,
 
@@ -177,17 +177,17 @@ export const useChatStore = create<ChatState>(() => ({
     useChatStore.setState({
       streaming: false,
       recovering: false,
-      streamingSessionId: null,
+      streamingConversationId: null,
     });
   },
 
-  async send(sessionId, text, callbacks = {}) {
+  async send(conversationId, text, callbacks = {}) {
     useChatStore.getState().abortStream();
 
     useChatStore.setState({
       streaming: true,
       recovering: false,
-      streamingSessionId: sessionId,
+      streamingConversationId: conversationId,
       streamText: "",
     });
 
@@ -207,10 +207,14 @@ export const useChatStore = create<ChatState>(() => ({
 
     const finishWithRecovery = async (fallbackError?: string) => {
       if (receivedDone) return;
-      const recovered = await tryRecoverDisplay(sessionId, callbacks.recoverDisplay, (active) => {
-        useChatStore.setState({ recovering: active });
-        callbacks.onRecovering?.(active);
-      });
+      const recovered = await tryRecoverDisplay(
+        conversationId,
+        callbacks.recoverDisplay,
+        (active) => {
+          useChatStore.setState({ recovering: active });
+          callbacks.onRecovering?.(active);
+        },
+      );
       if (recovered) {
         notifyDone({ recovered: true });
         return;
@@ -225,7 +229,7 @@ export const useChatStore = create<ChatState>(() => ({
     try {
       await new Promise<void>((resolve, reject) => {
         const sub = subscribeMessageStream(
-          { sessionId, message: text },
+          { conversationId, message: text },
           {
             onData: (ev) => {
               const result = handleStreamEvent(ev, streamText, callbacks);
@@ -259,10 +263,14 @@ export const useChatStore = create<ChatState>(() => ({
     } catch (e) {
       if (e instanceof Error && e.name === "AbortError") return;
       console.error("send error:", e);
-      const recovered = await tryRecoverDisplay(sessionId, callbacks.recoverDisplay, (active) => {
-        useChatStore.setState({ recovering: active });
-        callbacks.onRecovering?.(active);
-      });
+      const recovered = await tryRecoverDisplay(
+        conversationId,
+        callbacks.recoverDisplay,
+        (active) => {
+          useChatStore.setState({ recovering: active });
+          callbacks.onRecovering?.(active);
+        },
+      );
       if (recovered) {
         notifyDone({ recovered: true });
       } else if (!receivedError || transportErrorMsg) {
@@ -272,7 +280,7 @@ export const useChatStore = create<ChatState>(() => ({
       useChatStore.setState({
         streaming: false,
         recovering: false,
-        streamingSessionId: null,
+        streamingConversationId: null,
       });
       _unsubscribe = null;
     }

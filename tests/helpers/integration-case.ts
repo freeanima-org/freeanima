@@ -13,13 +13,13 @@ import { MaskRegistry } from "@freeanima/capabilities-tasks/mask";
 import { initMaskSystem } from "@freeanima/platform/runtime/mask-wire";
 import { registerServiceTools, resetRegisterServiceToolsForTest } from "@freeanima/platform";
 import {
-  registerMemorySessionStore,
+  registerMemoryConversationStore,
   registerSemanticMemoryStore,
   registerAutobiographicalMemoryStore,
   registerDreamMemoryStore,
   registerLimbicMemoryStore,
   resetSemanticMemoryStoreForTests,
-  resetMemorySessionStoreForTests,
+  resetMemoryConversationStoreForTests,
   resetAutobiographicalMemoryStoreForTests,
   resetDreamMemoryStoreForTests,
   resetLimbicMemoryStoreForTests,
@@ -33,7 +33,7 @@ import {
 } from "@freeanima/capabilities-identity";
 
 import { removeManagedAnimaTmpPath, removeTempDir } from "@freeanima/core/util";
-import { sessions } from "@freeanima/core/db/schema";
+import { conversations } from "@freeanima/core/db/schema";
 import { isNotNull } from "drizzle-orm";
 
 import { bindHomeChannelConfig } from "@freeanima/platform/ports/home-channel";
@@ -48,7 +48,10 @@ async function cleanupIntegrationSessionCwds(): Promise<void> {
   const ctx = getActivePgTestContext();
   if (!ctx) return;
   const db = getDb();
-  const rows = await db.select({ cwd: sessions.cwd }).from(sessions).where(isNotNull(sessions.cwd));
+  const rows = await db
+    .select({ cwd: conversations.cwd })
+    .from(conversations)
+    .where(isNotNull(conversations.cwd));
   for (const row of rows) {
     if (row.cwd) removeManagedAnimaTmpPath(row.cwd);
   }
@@ -99,13 +102,13 @@ export function wireIntegrationRuntimeContext(pg: PgTestContext): void {
     getToolRegistry: () => pg.engine.catalog.toolSets,
   });
   resetSemanticMemoryStoreForTests();
-  resetMemorySessionStoreForTests();
+  resetMemoryConversationStoreForTests();
   resetAutobiographicalMemoryStoreForTests();
   resetDreamMemoryStoreForTests();
   resetLimbicMemoryStoreForTests();
   resetDreamFridgeForTests();
   resetSelfLayerStoreForTests();
-  registerMemorySessionStore(pg.engine.repos.session);
+  registerMemoryConversationStore(pg.engine.repos.conversation);
   registerSemanticMemoryStore(pg.engine.repos.semanticMemory);
   registerAutobiographicalMemoryStore(pg.engine.repos.autobiographicalMemory);
   registerLimbicMemoryStore(pg.engine.repos.limbicMemory);

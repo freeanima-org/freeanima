@@ -2,9 +2,9 @@ import { PROFILE_GOAL_JUDGE } from "@freeanima/core/provider";
 import { chat } from "./llm.ts";
 import type { LlmRuntime } from "./llm-stack.ts";
 
-export const GOAL_JUDGE_SYSTEM_PROMPT = `You are a strict goal-completion judge for an AI agent session.
+export const GOAL_JUDGE_SYSTEM_PROMPT = `You are a strict goal-completion judge for an AI agent conversation.
 
-Given the session goal, optional subgoals, recent conversation excerpt, and the agent's latest assistant reply, decide whether the goal is DONE.
+Given the conversation goal, optional subgoals, recent conversation excerpt, and the agent's latest assistant reply, decide whether the goal is DONE.
 
 Conservative rules — only mark done when there is clear evidence:
 - PASS (done=true): the assistant explicitly confirms completion, clearly presents final deliverables, or states the goal is blocked / impossible / needs user input (explain the blocker in reason).

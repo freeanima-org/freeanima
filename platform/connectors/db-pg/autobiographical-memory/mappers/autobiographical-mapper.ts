@@ -19,8 +19,8 @@ export type AutobiographicalMemoryDbRow = {
   source_facts?: string[] | null;
   sourceFacts?: string[] | null;
   source_semantic_memory?: string[] | null;
-  source_sessions?: string[] | null;
-  sourceSessions?: string[] | null;
+  source_conversations?: string[] | null;
+  sourceConversations?: string[] | null;
   status: string;
   created_at?: Date | string;
   createdAt?: Date | string;
@@ -54,7 +54,7 @@ export function mapAutobiographicalMemoryRow(
     period_start: row.period_start ?? row.periodStart ?? null,
     period_end: row.period_end ?? row.periodEnd ?? null,
     source_semantic_memory: row.source_facts ?? row.sourceFacts ?? row.source_semantic_memory ?? [],
-    source_sessions: row.source_sessions ?? row.sourceSessions ?? [],
+    source_conversations: row.source_conversations ?? row.sourceConversations ?? [],
     status: normalizeStatus(row.status),
     created: created != null ? normalizePgTimestamp(created) : "",
     updated: updated != null ? normalizePgTimestamp(updated) : "",

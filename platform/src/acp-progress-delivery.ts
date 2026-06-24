@@ -7,11 +7,11 @@ import {
   deliverToTargets,
   type CronDeliverTarget,
 } from "@freeanima/platform/connectors/cron/deliver";
-import { isSessionMeta } from "@freeanima/runtime/conversation";
+import { isConversationMeta } from "@freeanima/runtime/conversation";
 import type { ConversationService } from "@freeanima/runtime/conversation";
-import type { SessionMetaLoadResult } from "@freeanima/core/db/domain";
+import type { ConversationMetaLoadResult } from "@freeanima/core/db/domain";
 import type { EventBus } from "@freeanima/kernel/eventbus";
-import { sessionUpdated } from "@freeanima/capabilities-memory";
+import { conversationUpdated } from "@freeanima/capabilities-memory";
 import { logComponent } from "@freeanima/platform/logging";
 
 const DISCORD_PROGRESS_PREFIX = "discord:";
@@ -33,9 +33,9 @@ function isInSessionProgressId(stored?: string): boolean {
 const RESULT_MAX_LEN = 4000;
 
 export function resolveSessionDeliverTargets(
-  meta: SessionMetaLoadResult | null | undefined,
+  meta: ConversationMetaLoadResult | null | undefined,
 ): CronDeliverTarget[] {
-  if (!meta || !isSessionMeta(meta)) return [];
+  if (!meta || !isConversationMeta(meta)) return [];
   const platform = meta.platform;
   const extra = meta.platform_extra ?? {};
 
@@ -67,7 +67,7 @@ function formatConversationResult(task: AcpAsyncTaskSnapshot, result: AcpPromptR
       kind: "result",
       agent: task.agentName,
       task_id: task.taskId,
-      acp_session_id: task.acpSessionId,
+      acp_conversation_id: task.acpSessionId,
       mode: task.mode,
       output: result.output,
       pending: result.pending ?? [],
@@ -107,15 +107,15 @@ async function appendAcpAssistantMessage(
 export function createAcpProgressDelivery(opts: {
   conversation: ConversationService;
   bus: EventBus | null;
-  onSessionUpdated?: ((sid: string) => void) | null;
+  onConversationUpdated?: ((sid: string) => void) | null;
 }): AcpProgressDeliveryPort {
-  const notifySession = (sessionId: string): void => {
-    opts.bus?.emit(sessionUpdated, { session_id: sessionId });
-    opts.onSessionUpdated?.(sessionId);
+  const notifyConversation = (conversationId: string): void => {
+    opts.bus?.emit(conversationUpdated, { conversation_id: conversationId });
+    opts.onConversationUpdated?.(conversationId);
   };
 
   const loadTargets = async (animaSessionId: string): Promise<CronDeliverTarget[]> => {
-    const meta = await opts.conversation.loadSessionMeta(animaSessionId);
+    const meta = await opts.conversation.loadConversationMeta(animaSessionId);
     return resolveSessionDeliverTargets(meta);
   };
 
@@ -145,20 +145,20 @@ export function createAcpProgressDelivery(opts: {
 
       const existingId = task.progressMessageId;
       if (existingId && isInSessionProgressId(existingId)) {
-        await opts.conversation.repos.session.updateMessageContent(
+        await opts.conversation.repos.conversation.updateMessageContent(
           task.animaSessionId,
           existingId,
           body,
         );
-        notifySession(task.animaSessionId);
+        notifyConversation(task.animaSessionId);
         return { progressMessageId: existingId };
       }
 
-      const { messageId } = await opts.conversation.repos.session.appendMessageReturningId(
+      const { messageId } = await opts.conversation.repos.conversation.appendMessageReturningId(
         task.animaSessionId,
         { role: "assistant", content: body },
       );
-      notifySession(task.animaSessionId);
+      notifyConversation(task.animaSessionId);
       return { progressMessageId: messageId };
     },
 
@@ -174,11 +174,11 @@ export function createAcpProgressDelivery(opts: {
         await deliverToTargets(targets, body);
       } else {
         logComponent("acp-deliver").debug("ACP result appended to conversation", {
-          sessionId: task.animaSessionId,
+          conversationId: task.animaSessionId,
           taskId: task.taskId,
         });
       }
-      notifySession(task.animaSessionId);
+      notifyConversation(task.animaSessionId);
     },
 
     async deliverError(task, message) {
@@ -190,7 +190,7 @@ export function createAcpProgressDelivery(opts: {
             kind: "error",
             agent: task.agentName,
             task_id: task.taskId,
-            acp_session_id: task.acpSessionId,
+            acp_conversation_id: task.acpSessionId,
             message,
           },
           null,
@@ -202,7 +202,7 @@ export function createAcpProgressDelivery(opts: {
       if (targets.length) {
         await deliverToTargets(targets, body);
       }
-      notifySession(task.animaSessionId);
+      notifyConversation(task.animaSessionId);
     },
   };
 }

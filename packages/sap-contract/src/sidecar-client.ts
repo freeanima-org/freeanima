@@ -1,7 +1,10 @@
 import type { SapClient } from "./router.ts";
 import type { StreamApiLikeEvent } from "./frames/message.ts";
 import { createSapRelayClient, type SapRelayClient } from "./relay-client.ts";
-import { createSapSessionStreamClient, type SubscribeCallbacks } from "./session-stream-core.ts";
+import {
+  createSapConversationStreamClient,
+  type SubscribeCallbacks,
+} from "./conversation-stream-core.ts";
 import type { SapReconnectPolicy } from "./transport.ts";
 import { resolveRelayWsUrl } from "./urls.ts";
 
@@ -21,9 +24,12 @@ export type SapSidecarClient = {
   getConnectionState(): SapConnectionState;
   reconnect(): Promise<SapRelayClient>;
   stop(): void;
-  subscribeSessionEvents(sessionId: string, onUpdate: () => void): { unsubscribe: () => void };
+  subscribeConversationEvents(
+    conversationId: string,
+    onUpdate: () => void,
+  ): { unsubscribe: () => void };
   sendMessageStream(
-    input: { sessionId: string; message: string },
+    input: { conversationId: string; message: string },
     callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
   ): { unsubscribe: () => void };
 };
@@ -209,7 +215,7 @@ export function createSapSidecarClient(options: SapSidecarClientOptions = {}): S
 
   startLoop();
 
-  const stream = createSapSessionStreamClient(() => ensureRelay());
+  const stream = createSapConversationStreamClient(() => ensureRelay());
 
   return {
     whenReady: whenReadyInternal,
@@ -237,7 +243,7 @@ export function createSapSidecarClient(options: SapSidecarClientOptions = {}): S
       rejectReadyWaiters(new Error("SAP sidecar client stopped"));
       setState("disconnected");
     },
-    subscribeSessionEvents: stream.subscribeSessionEvents.bind(stream),
+    subscribeConversationEvents: stream.subscribeConversationEvents.bind(stream),
     sendMessageStream: stream.sendMessageStream.bind(stream),
   };
 }

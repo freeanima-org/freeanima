@@ -1,18 +1,18 @@
 const KEY_PREFIX = "chat:input-draft:";
 
-export function loadInputDraft(sessionId: string | null): string {
-  if (!sessionId) return "";
+export function loadInputDraft(conversationId: string | null): string {
+  if (!conversationId) return "";
   try {
-    return sessionStorage.getItem(`${KEY_PREFIX}${sessionId}`) ?? "";
+    return sessionStorage.getItem(`${KEY_PREFIX}${conversationId}`) ?? "";
   } catch {
     return "";
   }
 }
 
-export function saveInputDraft(sessionId: string | null, text: string): void {
-  if (!sessionId) return;
+export function saveInputDraft(conversationId: string | null, text: string): void {
+  if (!conversationId) return;
   try {
-    const key = `${KEY_PREFIX}${sessionId}`;
+    const key = `${KEY_PREFIX}${conversationId}`;
     if (text) sessionStorage.setItem(key, text);
     else sessionStorage.removeItem(key);
   } catch {

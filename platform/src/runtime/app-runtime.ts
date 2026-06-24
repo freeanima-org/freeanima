@@ -4,10 +4,10 @@ import type {
   PlatformStatusSnapshot,
   SafeConfigSnapshot,
   ServiceSnapshot,
-  SessionSummary,
+  ConversationSummary,
 } from "@freeanima/platform/schemas/snapshot";
 import type { StreamEvent } from "@freeanima/runtime/loop";
-import type { SessionMessage as Message } from "@freeanima/core/db/domain";
+import type { StoredMessage as Message } from "@freeanima/core/db/domain";
 import type { ConversationService } from "@freeanima/runtime/conversation";
 import type { CronJobData } from "@freeanima/platform/connectors/cron";
 import type { Kernel } from "@freeanima/kernel";
@@ -20,10 +20,10 @@ import type { ServiceEnginePort } from "@freeanima/platform/ports/ports/service-
 import { collectStreamReply } from "@freeanima/runtime/loop";
 import { createTurnMessageCallbacks, type StreamTurnHost } from "./turn-lifecycle.ts";
 import { EngineRunControl } from "./engine-run-control.ts";
-import { SessionManager } from "./session-manager.ts";
+import { ConversationManager } from "./conversation-manager.ts";
 import type { FullRuntimeDeps, RuntimeDeps } from "./runtime-deps.ts";
 import * as status from "./service-status.ts";
-import * as sessions from "./service-sessions.ts";
+import * as conversations from "./service-conversations.ts";
 import * as acpDock from "./service-acp-dock.ts";
 import * as memory from "./service-memory.ts";
 import * as selfLayer from "./service-self.ts";
@@ -37,7 +37,7 @@ import * as messaging from "./service-messaging.ts";
 
 export type { MemoryFileEntry } from "./service-memory.ts";
 export type { StreamEvent } from "@freeanima/runtime/loop";
-export { SessionManager } from "./session-manager.ts";
+export { ConversationManager } from "./conversation-manager.ts";
 
 export type CreateAppRuntimeInput = FullRuntimeDeps;
 
@@ -45,10 +45,10 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
   private startTime = 0;
   private platformStatus: Record<string, PlatformStatusSnapshot> = {};
   private readonly runControl = new EngineRunControl();
-  private readonly sessionManager = new SessionManager();
+  private readonly conversationManager = new ConversationManager();
   private bus: EventBus | null = null;
-  private onSessionUpdated: ((sid: string) => void) | null = null;
-  private readonly sessionWatchers = new Map<string, Set<() => void>>();
+  private onConversationUpdated: ((sid: string) => void) | null = null;
+  private readonly conversationWatchers = new Map<string, Set<() => void>>();
 
   readonly kernel: Kernel;
   readonly engine: ServiceEnginePort;
@@ -97,23 +97,23 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
   private messagingDeps(): messaging.MessagingDeps {
     return {
       runControl: this.runControl,
-      sessionManager: this.sessionManager,
+      conversationManager: this.conversationManager,
       bus: this.bus,
-      onSessionUpdated: this.onSessionUpdated,
+      onConversationUpdated: this.onConversationUpdated,
       streamHost: this,
     };
   }
 
-  runExclusive<T>(sessionId: string, fn: () => Promise<T>): Promise<T> {
-    return this.sessionManager.runExclusive(sessionId, fn);
+  runExclusive<T>(conversationId: string, fn: () => Promise<T>): Promise<T> {
+    return this.conversationManager.runExclusive(conversationId, fn);
   }
 
-  beginEngineRun(sessionId: string): { signal: AbortSignal; controller: AbortController } {
-    return this.runControl.beginEngineRun(sessionId);
+  beginEngineRun(conversationId: string): { signal: AbortSignal; controller: AbortController } {
+    return this.runControl.beginEngineRun(conversationId);
   }
 
-  endEngineRun(sessionId: string, controller: AbortController): void {
-    this.runControl.endEngineRun(sessionId, controller);
+  endEngineRun(conversationId: string, controller: AbortController): void {
+    this.runControl.endEngineRun(conversationId, controller);
   }
 
   acquireInFlight(): void {
@@ -124,38 +124,42 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     this.runControl.releaseInFlight();
   }
 
-  engineStreamOpts(sessionId: string, signal: AbortSignal) {
+  engineStreamOpts(conversationId: string, signal: AbortSignal) {
     return {
       hookRegistry: this.kernel.hookRegistry,
-      ...createTurnMessageCallbacks(this.fullDeps(), sessionId),
+      ...createTurnMessageCallbacks(this.fullDeps(), conversationId),
       signal,
       shouldStop: () => this.runControl.isShuttingDown(),
     };
   }
 
-  async reloadRuntimeAfterRepair(sessionId: string): Promise<[Message[], string[]]> {
+  async reloadRuntimeAfterRepair(conversationId: string): Promise<[Message[], string[]]> {
     await this.conversation.repairAndPersistToolLoop(
-      sessionId,
-      await this.conversation.load(sessionId),
+      conversationId,
+      await this.conversation.load(conversationId),
     );
-    return this.conversation.buildRuntimeMessages(sessionId);
+    return this.conversation.buildRuntimeMessages(conversationId);
   }
 
-  async onTurnAfterComplete(sessionId: string, msgs: Message[], reply: string): Promise<string> {
-    return messaging.runTurnAfterCompleteHooks(this.fullDeps(), sessionId, msgs, reply);
+  async onTurnAfterComplete(
+    conversationId: string,
+    msgs: Message[],
+    reply: string,
+  ): Promise<string> {
+    return messaging.runTurnAfterCompleteHooks(this.fullDeps(), conversationId, msgs, reply);
   }
 
-  emitSessionUpdated(sessionId: string): void {
+  emitSessionUpdated(conversationId: string): void {
     messaging.emitSessionUpdated(
-      { bus: this.bus, onSessionUpdated: this.onSessionUpdated },
-      sessionId,
+      { bus: this.bus, onConversationUpdated: this.onConversationUpdated },
+      conversationId,
     );
-    this.pokeSessionWatchers(sessionId);
+    this.pokeSessionWatchers(conversationId);
   }
 
-  /** WebUI SSE: wake watchers without re-running onSessionUpdated (ACP progress already notified). */
-  pokeSessionWatchers(sessionId: string): void {
-    const set = this.sessionWatchers.get(sessionId);
+  /** WebUI SSE: wake watchers without re-running onConversationUpdated (ACP progress already notified). */
+  pokeSessionWatchers(conversationId: string): void {
+    const set = this.conversationWatchers.get(conversationId);
     if (set) {
       for (const cb of set) {
         try {
@@ -167,17 +171,17 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     }
   }
 
-  /** WebUI SSE: notify when session messages/meta change (ACP progress, callbacks). */
-  watchSession(sessionId: string, cb: () => void): () => void {
-    let set = this.sessionWatchers.get(sessionId);
+  /** WebUI SSE: notify when conversation messages/meta change (ACP progress, callbacks). */
+  watchConversation(conversationId: string, cb: () => void): () => void {
+    let set = this.conversationWatchers.get(conversationId);
     if (!set) {
       set = new Set();
-      this.sessionWatchers.set(sessionId, set);
+      this.conversationWatchers.set(conversationId, set);
     }
     set.add(cb);
     return () => {
       set?.delete(cb);
-      if (set && !set.size) this.sessionWatchers.delete(sessionId);
+      if (set && !set.size) this.conversationWatchers.delete(conversationId);
     };
   }
 
@@ -206,7 +210,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
   }
 
   setOnSessionUpdated(cb: (sid: string) => void): void {
-    this.onSessionUpdated = cb;
+    this.onConversationUpdated = cb;
   }
 
   markStarted(): void {
@@ -249,34 +253,39 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     );
   }
 
-  listSessions(
+  listConversations(
     platform?: string | null,
     opts?: { offset?: number; limit?: number },
-  ): Promise<{ sessions: SessionSummary[]; total: number }> {
-    return sessions.listSessions(this.runtimeDeps(), platform, opts);
+  ): Promise<{ conversations: ConversationSummary[]; total: number }> {
+    return conversations.listConversations(this.runtimeDeps(), platform, opts);
   }
 
-  createSession(platform: string): Promise<{ session_id: string }> {
-    return sessions.createSession(this.runtimeDeps(), platform);
+  createConversation(platform: string): Promise<{ conversation_id: string }> {
+    return conversations.createConversation(this.runtimeDeps(), platform);
   }
 
-  findOrCreateSession(
+  findOrCreateConversation(
     platform: string,
     platform_extra: Record<string, unknown> = {},
-  ): Promise<{ session_id: string }> {
-    return sessions.findOrCreateSession(this.runtimeDeps(), platform, platform_extra);
+  ): Promise<{ conversation_id: string }> {
+    return conversations.findOrCreateConversation(this.runtimeDeps(), platform, platform_extra);
   }
 
-  patchSessionOrigin(
-    session_id: string,
+  patchConversationOrigin(
+    conversation_id: string,
     platform: string,
     platform_extra?: Record<string, unknown>,
   ): Promise<{ ok: boolean }> {
-    return sessions.patchSessionOrigin(this.runtimeDeps(), session_id, platform, platform_extra);
+    return conversations.patchConversationOrigin(
+      this.runtimeDeps(),
+      conversation_id,
+      platform,
+      platform_extra,
+    );
   }
 
   executeCommand(params: {
-    session_id: string;
+    conversation_id: string;
     text: string;
     platform?: string;
     origin_extra?: Record<string, unknown>;
@@ -284,55 +293,63 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return messaging.executeCommand(this.fullDeps(), this.messagingDeps(), params);
   }
 
-  getSessionInfo(sessionId: string, platform = ""): Promise<Record<string, unknown>> {
-    return sessions.getSessionInfo(this.runtimeDeps(), sessionId, platform);
+  getConversationInfo(conversationId: string, platform = ""): Promise<Record<string, unknown>> {
+    return conversations.getConversationInfo(this.runtimeDeps(), conversationId, platform);
   }
 
-  getSessionAcpDock(sessionId: string, platform = "") {
-    return acpDock.getSessionAcpDock(this.runtimeDeps(), sessionId, platform);
+  getConversationAcpDock(conversationId: string, platform = "") {
+    return acpDock.getConversationAcpDock(this.runtimeDeps(), conversationId, platform);
   }
 
-  getMessages(sessionId: string, platform = "", opts?: { offset?: number; limit?: number | null }) {
-    return sessions.getMessages(this.runtimeDeps(), sessionId, platform, opts);
+  getMessages(
+    conversationId: string,
+    platform = "",
+    opts?: { offset?: number; limit?: number | null },
+  ) {
+    return conversations.getMessages(this.runtimeDeps(), conversationId, platform, opts);
   }
 
-  setSessionTitle(sessionId: string, title: string, platform = ""): Promise<{ ok: boolean }> {
-    return sessions.setSessionTitle(this.runtimeDeps(), sessionId, title, platform);
+  setConversationTitle(
+    conversationId: string,
+    title: string,
+    platform = "",
+  ): Promise<{ ok: boolean }> {
+    return conversations.setConversationTitle(this.runtimeDeps(), conversationId, title, platform);
   }
 
   async sendMessage(
-    sessionId: string,
+    conversationId: string,
     message: string,
     platform?: string,
-  ): Promise<{ session_id: string; content: string }> {
+  ): Promise<{ conversation_id: string; content: string }> {
     const content = await collectStreamReply(
       messaging.sendMessageStream(
         this.fullDeps(),
         this.messagingDeps(),
-        sessionId,
+        conversationId,
         message,
         platform,
       ),
     );
-    return { session_id: sessionId, content };
+    return { conversation_id: conversationId, content };
   }
 
   sendMessageStream(
-    sessionId: string,
+    conversationId: string,
     message: string,
     platform?: string,
   ): AsyncGenerator<StreamEvent> {
     return messaging.sendMessageStream(
       this.fullDeps(),
       this.messagingDeps(),
-      sessionId,
+      conversationId,
       message,
       platform,
     );
   }
 
-  interruptSessionStream(sessionId: string): void {
-    messaging.interruptSessionStream(this.messagingDeps(), sessionId);
+  interruptSessionStream(conversationId: string): void {
+    messaging.interruptSessionStream(this.messagingDeps(), conversationId);
   }
 
   memorySearch(args: { query: string; limit?: number }) {
@@ -395,8 +412,8 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return fridge.listFridgeMagnets();
   }
 
-  getPromptDebug(sessionId?: string | null): Promise<promptDebug.PromptDebugResponse> {
-    return promptDebug.getPromptDebug(this.runtimeDeps(), sessionId);
+  getPromptDebug(conversationId?: string | null): Promise<promptDebug.PromptDebugResponse> {
+    return promptDebug.getPromptDebug(this.runtimeDeps(), conversationId);
   }
 
   getConfig(): SafeConfigSnapshot {
@@ -472,9 +489,9 @@ export function createAppRuntime(input: CreateAppRuntimeInput): AppRuntime {
   return new AppRuntime(input);
 }
 
-export async function appendSessionMetaForEngine(
+export async function appendConversationMetaForEngine(
   deps: RuntimeDeps,
-  session: string,
+  conversationId: string,
 ): Promise<void> {
-  return sessions.appendSessionMetaForEngine(deps, session);
+  return conversations.appendConversationMetaForEngine(deps, conversationId);
 }

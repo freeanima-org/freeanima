@@ -1,4 +1,9 @@
-export type { CredentialPermission, Mask, ResolvedMask, SessionCapabilityMask } from "./types.ts";
+export type {
+  CredentialPermission,
+  Mask,
+  ResolvedMask,
+  ConversationCapabilityMask,
+} from "./types.ts";
 export { MaskRegistry } from "./registry.ts";
 export type { MaskRegistryLookup } from "./resolve.ts";
 export { expandToolSets } from "./expand.ts";

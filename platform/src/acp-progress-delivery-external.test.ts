@@ -19,8 +19,8 @@ describe("createAcpProgressDelivery external progress", () => {
     deliverToTargets.mockResolvedValueOnce({ messageId: "1234567890" });
 
     const conversation = {
-      loadSessionMeta: async () => ({
-        role: "session_meta" as const,
+      loadConversationMeta: async () => ({
+        role: "conversation_meta" as const,
         model: "test",
         cached_toolsets: [],
         functions: [],
@@ -59,8 +59,8 @@ describe("createAcpProgressDelivery external progress", () => {
     deliverToTargets.mockReset();
 
     const conversation = {
-      loadSessionMeta: async () => ({
-        role: "session_meta" as const,
+      loadConversationMeta: async () => ({
+        role: "conversation_meta" as const,
         model: "test",
         cached_toolsets: [],
         functions: [],
@@ -95,8 +95,8 @@ describe("createAcpProgressDelivery external progress", () => {
     deliverToTargets.mockResolvedValueOnce(undefined);
 
     const conversation = {
-      loadSessionMeta: async () => ({
-        role: "session_meta" as const,
+      loadConversationMeta: async () => ({
+        role: "conversation_meta" as const,
         model: "test",
         cached_toolsets: [],
         functions: [],

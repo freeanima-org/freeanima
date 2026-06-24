@@ -37,7 +37,7 @@ describe("isDiscordRetryableError", () => {
 
   it("4xx business errors not retried", () => {
     expect(isDiscordRetryableError({ status: 403 })).toBe(false);
-    expect(isDiscordRetryableError(new Error("Session not found"))).toBe(false);
+    expect(isDiscordRetryableError(new Error("Conversation not found"))).toBe(false);
   });
 });
 

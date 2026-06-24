@@ -74,7 +74,7 @@ msgid ""
 "① Instant memory ─── Internal activation state during LLM token inference\n"
 "        │ (attention filtering)\n"
 "        ▼\n"
-"② Working memory ─── LLM context window (current session)\n"
+"② Working memory ─── LLM context window (current conversation)\n"
 "        │ (deep sleep consolidation)\n"
 "        ▼\n"
 "③ Long-term memory ─── Persistent storage\n"
@@ -85,7 +85,7 @@ msgstr ""
 "① Instant memory ─── Internal activation state during LLM token inference\n"
 "        │ (attention filtering)\n"
 "        ▼\n"
-"② Working memory ─── LLM context window (current session)\n"
+"② Working memory ─── LLM context window (current conversation)\n"
 "        │ (deep sleep consolidation)\n"
 "        ▼\n"
 "③ Long-term memory ─── Persistent storage\n"
@@ -126,8 +126,8 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/memory.md:46
-msgid "Recent messages in the current session"
-msgstr "当前 session 近期消息"
+msgid "Recent messages in the current conversation"
+msgstr "当前 conversation 近期消息"
 
 #. type: Bullet: '- '
 #: docs/concepts/memory.md:46
@@ -174,7 +174,7 @@ msgid ""
 "│   │   ├── Conversation log\n"
 "│   │   └── Emotional anchors\n"
 "│   │\n"
-"│   ├── Semantic memory ── \"how the world is\" (cross-session, updatable)\n"
+"│   ├── Semantic memory ── \"how the world is\" (cross-conversation, updatable)\n"
 "│   │   ├── Rational facts    (type=world)\n"
 "│   │   ├── Personal preferences    (type=preference/opinion)\n"
 "│   │   └── Self experiences    (type=experience)\n"
@@ -195,7 +195,7 @@ msgstr ""
 "│   │   ├── Conversation log\n"
 "│   │   └── Emotional anchors\n"
 "│   │\n"
-"│   ├── Semantic memory ── \"how the world is\" (cross-session, updatable)\n"
+"│   ├── Semantic memory ── \"how the world is\" (cross-conversation, updatable)\n"
 "│   │   ├── Rational facts    (type=world)\n"
 "│   │   ├── Personal preferences    (type=preference/opinion)\n"
 "│   │   └── Self experiences    (type=experience)\n"
@@ -231,8 +231,8 @@ msgstr "**对话记录** — 最原始、高保真的客观运行轨迹。\n"
 #. type: Plain text
 #: docs/concepts/memory.md:87
 #, no-wrap
-msgid "**Emotional anchors** — session-level mood snapshots written during light sleep; not injected into system prompt.\n"
-msgstr "**情感锚点** — 浅睡时写入的 session 级情绪快照；不注入 system prompt。\n"
+msgid "**Emotional anchors** — conversation-level mood snapshots written during light sleep; not injected into system prompt.\n"
+msgstr "**情感锚点** — 浅睡时写入的 conversation 级情绪快照；不注入 system prompt。\n"
 
 #. type: Plain text
 #: docs/concepts/memory.md:89
@@ -323,8 +323,8 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/memory.md:119
 #, no-wrap
-msgid "**Three forms:** emotional anchor (session mood), emotional imprint (cross-session moment), sentiment tendency (long-term trends — not yet implemented, see Issue #38).\n"
-msgstr "**三种形态：** 情感锚点（session 情绪）、情感印记（跨 session 时刻）、情感倾向（长期趋势 — 尚未实现，见 Issue #38）。\n"
+msgid "**Three forms:** emotional anchor (session mood), emotional imprint (cross-conversation moment), sentiment tendency (long-term trends — not yet implemented, see Issue #38).\n"
+msgstr "**三种形态：** 情感锚点（session 情绪）、情感印记（跨 conversation 时刻）、情感倾向（长期趋势 — 尚未实现，见 Issue #38）。\n"
 
 #. type: Title ###
 #: docs/concepts/memory.md:120

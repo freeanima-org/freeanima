@@ -84,7 +84,7 @@ function createTransport(serverName: string, cfg: McpServerConfig): Transport {
   });
 }
 
-/** Single MCP Server session (SDK Client + Transport) */
+/** Single MCP Server conversation (SDK Client + Transport) */
 export class McpClientSession {
   readonly name: string;
   private readonly client: Client;

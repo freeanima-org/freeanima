@@ -181,7 +181,7 @@ export class WeixinAdapter implements PlatformAdapter {
     const errcode = Number(resp.errcode ?? 0);
     if (errcode === SESSION_EXPIRED_ERRCODE) {
       pauseWeixinSession(this.creds.account_id);
-      logComponent("weixin").warn("WeChat session expired (errcode -14), pausing poll 1h", {
+      logComponent("weixin").warn("WeChat conversation expired (errcode -14), pausing poll 1h", {
         account_id: safeId(this.creds.account_id),
       });
       this.service.updatePlatformStatus("weixin", "backoff", { reason: "session_expired" });
@@ -273,11 +273,14 @@ export class WeixinAdapter implements PlatformAdapter {
     let sid = "";
 
     try {
-      const session = await this.service.findOrCreateSession("weixin", origin.platform_extra);
-      sid = session.session_id;
+      const conversation = await this.service.findOrCreateConversation(
+        "weixin",
+        origin.platform_extra,
+      );
+      sid = conversation.conversation_id;
 
       const cmdResult = await this.service.executeCommand({
-        session_id: sid,
+        conversation_id: sid,
         text: parsed.text,
         platform: "weixin",
         origin_extra: origin.platform_extra,
@@ -298,7 +301,7 @@ export class WeixinAdapter implements PlatformAdapter {
         ).catch(() => undefined);
 
       const toolDisplayMode = resolveToolDisplayMode(
-        await getAppRuntime().conversation.loadSessionMeta(sid),
+        await getAppRuntime().conversation.loadConversationMeta(sid),
         getAppRuntime().engine.config.data,
       );
       const { answerSent, progressSent } = await streamReplyToWeixin(
@@ -311,14 +314,14 @@ export class WeixinAdapter implements PlatformAdapter {
       );
       if (!answerSent && !progressSent) {
         logComponent("weixin").warn("WeChat empty reply, skip send", {
-          session_id: safeId(sid),
+          conversation_id: safeId(sid),
           peer_id: safeId(parsed.peerId),
         });
       }
     } catch (e) {
-      logComponent("weixin").error(`WeChat session ${safeId(sid)} routing error`, {
+      logComponent("weixin").error(`WeChat conversation ${safeId(sid)} routing error`, {
         err: e,
-        session_id: sid || undefined,
+        conversation_id: sid || undefined,
       });
       await this.sendReply(parsed.peerId, "⚠️ Engine error, please try again later");
     }

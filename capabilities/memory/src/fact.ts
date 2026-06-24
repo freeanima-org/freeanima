@@ -10,7 +10,7 @@ export function createSemanticMemory(partial: {
   type?: string;
   pinned?: boolean;
   id?: string;
-  source_sessions?: string[];
+  source_conversations?: string[];
   observed_at?: string | null;
   occurred_at?: string | null;
   status?: string;
@@ -23,7 +23,7 @@ export function createSemanticMemory(partial: {
     type: normalizeSemanticMemoryType(partial.type),
     pinned: partial.pinned ?? false,
     content: partial.content.trim(),
-    source_sessions: partial.source_sessions ?? [],
+    source_conversations: partial.source_conversations ?? [],
     observed_at: partial.observed_at ?? now,
     occurred_at: partial.occurred_at ?? null,
     status: partial.status === "deprecated" ? "deprecated" : "active",

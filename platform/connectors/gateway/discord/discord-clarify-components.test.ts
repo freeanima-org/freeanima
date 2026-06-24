@@ -63,12 +63,12 @@ describe("discord-clarify-components", () => {
 
   it("parseClarifyButtonCustomId round-trips choice and cancel", () => {
     expect(parseClarifyButtonCustomId(choiceButtonCustomId(SESSION_ID, 2))).toEqual({
-      sessionId: SESSION_ID,
+      conversationId: SESSION_ID,
       kind: "choice",
       choiceIndex: 2,
     });
     expect(parseClarifyButtonCustomId(cancelButtonCustomId(SESSION_ID))).toEqual({
-      sessionId: SESSION_ID,
+      conversationId: SESSION_ID,
       kind: "cancel",
     });
     expect(parseClarifyButtonCustomId("other:prefix")).toBeNull();

@@ -35,9 +35,9 @@ import { Route as ChamberCommandsRouteImport } from "./routes/chamber/commands";
 import { Route as ChamberAutobiographicalMemoryRouteImport } from "./routes/chamber/autobiographical-memory";
 import { Route as ChamberAutoLlmRunsRouteImport } from "./routes/chamber/auto-llm-runs";
 import { Route as ChamberAcpRouteImport } from "./routes/chamber/acp";
-import { Route as ChamberSessionsRouteRouteImport } from "./routes/chamber/sessions/route";
-import { Route as ChamberSessionsIndexRouteImport } from "./routes/chamber/sessions/index";
-import { Route as ChamberSessionsSessionIdRouteImport } from "./routes/chamber/sessions/$sessionId";
+import { Route as ChamberConversationsRouteRouteImport } from "./routes/chamber/conversations/route";
+import { Route as ChamberConversationsIndexRouteImport } from "./routes/chamber/conversations/index";
+import { Route as ChamberConversationsConversationIdRouteImport } from "./routes/chamber/conversations/$conversationId";
 
 const WorkshopRoute = WorkshopRouteImport.update({
   id: "/workshop",
@@ -169,27 +169,28 @@ const ChamberAcpRoute = ChamberAcpRouteImport.update({
   path: "/acp",
   getParentRoute: () => ChamberRouteRoute,
 } as any);
-const ChamberSessionsRouteRoute = ChamberSessionsRouteRouteImport.update({
-  id: "/sessions",
-  path: "/sessions",
+const ChamberConversationsRouteRoute = ChamberConversationsRouteRouteImport.update({
+  id: "/conversations",
+  path: "/conversations",
   getParentRoute: () => ChamberRouteRoute,
 } as any);
-const ChamberSessionsIndexRoute = ChamberSessionsIndexRouteImport.update({
+const ChamberConversationsIndexRoute = ChamberConversationsIndexRouteImport.update({
   id: "/",
   path: "/",
-  getParentRoute: () => ChamberSessionsRouteRoute,
+  getParentRoute: () => ChamberConversationsRouteRoute,
 } as any);
-const ChamberSessionsSessionIdRoute = ChamberSessionsSessionIdRouteImport.update({
-  id: "/$sessionId",
-  path: "/$sessionId",
-  getParentRoute: () => ChamberSessionsRouteRoute,
-} as any);
+const ChamberConversationsConversationIdRoute =
+  ChamberConversationsConversationIdRouteImport.update({
+    id: "/$conversationId",
+    path: "/$conversationId",
+    getParentRoute: () => ChamberConversationsRouteRoute,
+  } as any);
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
   "/chamber": typeof ChamberRouteRouteWithChildren;
   "/workshop": typeof WorkshopRouteWithChildren;
-  "/chamber/sessions": typeof ChamberSessionsRouteRouteWithChildren;
+  "/chamber/conversations": typeof ChamberConversationsRouteRouteWithChildren;
   "/chamber/acp": typeof ChamberAcpRoute;
   "/chamber/auto-llm-runs": typeof ChamberAutoLlmRunsRoute;
   "/chamber/autobiographical-memory": typeof ChamberAutobiographicalMemoryRoute;
@@ -213,8 +214,8 @@ export interface FileRoutesByFullPath {
   "/chamber/tasks": typeof ChamberTasksRoute;
   "/chamber/tools": typeof ChamberToolsRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
-  "/chamber/sessions/$sessionId": typeof ChamberSessionsSessionIdRoute;
-  "/chamber/sessions/": typeof ChamberSessionsIndexRoute;
+  "/chamber/conversations/$conversationId": typeof ChamberConversationsConversationIdRoute;
+  "/chamber/conversations/": typeof ChamberConversationsIndexRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
@@ -243,15 +244,15 @@ export interface FileRoutesByTo {
   "/chamber/tasks": typeof ChamberTasksRoute;
   "/chamber/tools": typeof ChamberToolsRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
-  "/chamber/sessions/$sessionId": typeof ChamberSessionsSessionIdRoute;
-  "/chamber/sessions": typeof ChamberSessionsIndexRoute;
+  "/chamber/conversations/$conversationId": typeof ChamberConversationsConversationIdRoute;
+  "/chamber/conversations": typeof ChamberConversationsIndexRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/": typeof IndexRoute;
   "/chamber": typeof ChamberRouteRouteWithChildren;
   "/workshop": typeof WorkshopRouteWithChildren;
-  "/chamber/sessions": typeof ChamberSessionsRouteRouteWithChildren;
+  "/chamber/conversations": typeof ChamberConversationsRouteRouteWithChildren;
   "/chamber/acp": typeof ChamberAcpRoute;
   "/chamber/auto-llm-runs": typeof ChamberAutoLlmRunsRoute;
   "/chamber/autobiographical-memory": typeof ChamberAutobiographicalMemoryRoute;
@@ -275,8 +276,8 @@ export interface FileRoutesById {
   "/chamber/tasks": typeof ChamberTasksRoute;
   "/chamber/tools": typeof ChamberToolsRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
-  "/chamber/sessions/$sessionId": typeof ChamberSessionsSessionIdRoute;
-  "/chamber/sessions/": typeof ChamberSessionsIndexRoute;
+  "/chamber/conversations/$conversationId": typeof ChamberConversationsConversationIdRoute;
+  "/chamber/conversations/": typeof ChamberConversationsIndexRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
@@ -284,7 +285,7 @@ export interface FileRouteTypes {
     | "/"
     | "/chamber"
     | "/workshop"
-    | "/chamber/sessions"
+    | "/chamber/conversations"
     | "/chamber/acp"
     | "/chamber/auto-llm-runs"
     | "/chamber/autobiographical-memory"
@@ -308,8 +309,8 @@ export interface FileRouteTypes {
     | "/chamber/tasks"
     | "/chamber/tools"
     | "/workshop/$path"
-    | "/chamber/sessions/$sessionId"
-    | "/chamber/sessions/";
+    | "/chamber/conversations/$conversationId"
+    | "/chamber/conversations/";
   fileRoutesByTo: FileRoutesByTo;
   to:
     | "/"
@@ -338,14 +339,14 @@ export interface FileRouteTypes {
     | "/chamber/tasks"
     | "/chamber/tools"
     | "/workshop/$path"
-    | "/chamber/sessions/$sessionId"
-    | "/chamber/sessions";
+    | "/chamber/conversations/$conversationId"
+    | "/chamber/conversations";
   id:
     | "__root__"
     | "/"
     | "/chamber"
     | "/workshop"
-    | "/chamber/sessions"
+    | "/chamber/conversations"
     | "/chamber/acp"
     | "/chamber/auto-llm-runs"
     | "/chamber/autobiographical-memory"
@@ -369,8 +370,8 @@ export interface FileRouteTypes {
     | "/chamber/tasks"
     | "/chamber/tools"
     | "/workshop/$path"
-    | "/chamber/sessions/$sessionId"
-    | "/chamber/sessions/";
+    | "/chamber/conversations/$conversationId"
+    | "/chamber/conversations/";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
@@ -563,46 +564,46 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof ChamberAcpRouteImport;
       parentRoute: typeof ChamberRouteRoute;
     };
-    "/chamber/sessions": {
-      id: "/chamber/sessions";
-      path: "/sessions";
-      fullPath: "/chamber/sessions";
-      preLoaderRoute: typeof ChamberSessionsRouteRouteImport;
+    "/chamber/conversations": {
+      id: "/chamber/conversations";
+      path: "/conversations";
+      fullPath: "/chamber/conversations";
+      preLoaderRoute: typeof ChamberConversationsRouteRouteImport;
       parentRoute: typeof ChamberRouteRoute;
     };
-    "/chamber/sessions/": {
-      id: "/chamber/sessions/";
+    "/chamber/conversations/": {
+      id: "/chamber/conversations/";
       path: "/";
-      fullPath: "/chamber/sessions/";
-      preLoaderRoute: typeof ChamberSessionsIndexRouteImport;
-      parentRoute: typeof ChamberSessionsRouteRoute;
+      fullPath: "/chamber/conversations/";
+      preLoaderRoute: typeof ChamberConversationsIndexRouteImport;
+      parentRoute: typeof ChamberConversationsRouteRoute;
     };
-    "/chamber/sessions/$sessionId": {
-      id: "/chamber/sessions/$sessionId";
-      path: "/$sessionId";
-      fullPath: "/chamber/sessions/$sessionId";
-      preLoaderRoute: typeof ChamberSessionsSessionIdRouteImport;
-      parentRoute: typeof ChamberSessionsRouteRoute;
+    "/chamber/conversations/$conversationId": {
+      id: "/chamber/conversations/$conversationId";
+      path: "/$conversationId";
+      fullPath: "/chamber/conversations/$conversationId";
+      preLoaderRoute: typeof ChamberConversationsConversationIdRouteImport;
+      parentRoute: typeof ChamberConversationsRouteRoute;
     };
   }
 }
 
-interface ChamberSessionsRouteRouteChildren {
-  ChamberSessionsSessionIdRoute: typeof ChamberSessionsSessionIdRoute;
-  ChamberSessionsIndexRoute: typeof ChamberSessionsIndexRoute;
+interface ChamberConversationsRouteRouteChildren {
+  ChamberConversationsConversationIdRoute: typeof ChamberConversationsConversationIdRoute;
+  ChamberConversationsIndexRoute: typeof ChamberConversationsIndexRoute;
 }
 
-const ChamberSessionsRouteRouteChildren: ChamberSessionsRouteRouteChildren = {
-  ChamberSessionsSessionIdRoute: ChamberSessionsSessionIdRoute,
-  ChamberSessionsIndexRoute: ChamberSessionsIndexRoute,
+const ChamberConversationsRouteRouteChildren: ChamberConversationsRouteRouteChildren = {
+  ChamberConversationsConversationIdRoute: ChamberConversationsConversationIdRoute,
+  ChamberConversationsIndexRoute: ChamberConversationsIndexRoute,
 };
 
-const ChamberSessionsRouteRouteWithChildren = ChamberSessionsRouteRoute._addFileChildren(
-  ChamberSessionsRouteRouteChildren,
+const ChamberConversationsRouteRouteWithChildren = ChamberConversationsRouteRoute._addFileChildren(
+  ChamberConversationsRouteRouteChildren,
 );
 
 interface ChamberRouteRouteChildren {
-  ChamberSessionsRouteRoute: typeof ChamberSessionsRouteRouteWithChildren;
+  ChamberConversationsRouteRoute: typeof ChamberConversationsRouteRouteWithChildren;
   ChamberAcpRoute: typeof ChamberAcpRoute;
   ChamberAutoLlmRunsRoute: typeof ChamberAutoLlmRunsRoute;
   ChamberAutobiographicalMemoryRoute: typeof ChamberAutobiographicalMemoryRoute;
@@ -628,7 +629,7 @@ interface ChamberRouteRouteChildren {
 }
 
 const ChamberRouteRouteChildren: ChamberRouteRouteChildren = {
-  ChamberSessionsRouteRoute: ChamberSessionsRouteRouteWithChildren,
+  ChamberConversationsRouteRoute: ChamberConversationsRouteRouteWithChildren,
   ChamberAcpRoute: ChamberAcpRoute,
   ChamberAutoLlmRunsRoute: ChamberAutoLlmRunsRoute,
   ChamberAutobiographicalMemoryRoute: ChamberAutobiographicalMemoryRoute,

@@ -15,8 +15,8 @@ import {
   networkErrorUserHint,
 } from "@freeanima/runtime/loop";
 import { getAppRuntime } from "@freeanima/platform/ports";
-import { sessionUpdated } from "@freeanima/capabilities-memory";
-import { isSessionMeta } from "@freeanima/core/db/domain";
+import { conversationUpdated } from "@freeanima/capabilities-memory";
+import { isConversationMeta } from "@freeanima/core/db/domain";
 import type { EventBus } from "@freeanima/kernel/eventbus";
 import { KeyedRateLimiter } from "@freeanima/core/util/backoff";
 import { logComponent } from "@freeanima/platform/logging";
@@ -125,14 +125,14 @@ async function finalizeUserReaction(
 
 function logDiscordSessionError(sid: string, e: unknown): void {
   const short = sid.slice(0, 12);
-  const context = { session_id: sid };
+  const context = { conversation_id: sid };
   if (isTransientNetworkError(e) && !isEngineStreamError(e)) {
-    logComponent("discord").error(`Discord session ${short} network error`, {
+    logComponent("discord").error(`Discord conversation ${short} network error`, {
       err: e,
       ...context,
     });
   } else {
-    logComponent("discord").error(`Discord session ${short} engine error`, {
+    logComponent("discord").error(`Discord conversation ${short} engine error`, {
       err: e,
       ...context,
     });
@@ -146,7 +146,7 @@ export class DiscordAdapter implements PlatformAdapter {
   private started = false;
   private loginRetryTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly shardErrorLogLimiter = new KeyedRateLimiter();
-  private sessionUpdatedOff: (() => void) | null = null;
+  private conversationUpdatedOff: (() => void) | null = null;
   private readonly slashInteractionInflight = new Map<string, Promise<void>>();
   private readonly buttonInteractionInflight = new Map<string, Promise<void>>();
   private readonly clarifyPending: ClarifyPendingRegistry;
@@ -253,14 +253,14 @@ export class DiscordAdapter implements PlatformAdapter {
   }
 
   private attachSessionTitleListener(): void {
-    this.sessionUpdatedOff?.();
-    this.sessionUpdatedOff = null;
+    this.conversationUpdatedOff?.();
+    this.conversationUpdatedOff = null;
     try {
       const kernel = (getAppRuntime() as { kernel?: { eventBus: EventBus } }).kernel;
       const bus = kernel?.eventBus;
       if (!bus) return;
-      this.sessionUpdatedOff = bus.on(sessionUpdated, (payload) => {
-        void this.onSessionTitleUpdated(payload.session_id);
+      this.conversationUpdatedOff = bus.on(conversationUpdated, (payload) => {
+        void this.onSessionTitleUpdated(payload.conversation_id);
       });
     } catch {
       /* AppRuntime not ready yet; skip */
@@ -307,8 +307,8 @@ export class DiscordAdapter implements PlatformAdapter {
     logComponent("shutdown").debug("Discord disconnecting gateway…");
     this.started = false;
     this.clearLoginRetry();
-    this.sessionUpdatedOff?.();
-    this.sessionUpdatedOff = null;
+    this.conversationUpdatedOff?.();
+    this.conversationUpdatedOff = null;
     unregisterDiscordCronDeliverer();
     this.clarifyPending.disposeAll();
     this.client.destroy();
@@ -340,17 +340,17 @@ export class DiscordAdapter implements PlatformAdapter {
     if (!parsed) return;
 
     const origin = originFromButtonInteraction(interaction);
-    const { session_id: channelSid } = await this.service.findOrCreateSession(
+    const { conversation_id: channelSid } = await this.service.findOrCreateConversation(
       "discord",
       origin.platform_extra,
     );
-    if (channelSid !== parsed.sessionId) {
+    if (channelSid !== parsed.conversationId) {
       await this.rejectClarifyButton(interaction, "This button does not belong to this channel.");
       return;
     }
 
     const conversation = getAppRuntime().conversation;
-    const expiry = await expireIfNeeded(conversation, parsed.sessionId);
+    const expiry = await expireIfNeeded(conversation, parsed.conversationId);
     if (expiry.expired) {
       await this.rejectClarifyButton(
         interaction,
@@ -359,9 +359,9 @@ export class DiscordAdapter implements PlatformAdapter {
       return;
     }
 
-    const awaiting = await readAwaitingClarify(conversation, parsed.sessionId);
+    const awaiting = await readAwaitingClarify(conversation, parsed.conversationId);
     if (!awaiting) {
-      await this.rejectClarifyButton(interaction, "No pending confirmation for this session.");
+      await this.rejectClarifyButton(interaction, "No pending confirmation for this conversation.");
       return;
     }
 
@@ -369,11 +369,11 @@ export class DiscordAdapter implements PlatformAdapter {
     if (!channel?.isTextBased()) return;
 
     await interaction.deferUpdate();
-    await this.clarifyPending.clear(parsed.sessionId);
+    await this.clarifyPending.clear(parsed.conversationId);
 
     if (parsed.kind === "cancel") {
       const cmdResult = await this.service.executeCommand({
-        session_id: parsed.sessionId,
+        conversation_id: parsed.conversationId,
         text: "/cancel",
         platform: "discord",
         origin_extra: origin.platform_extra,
@@ -396,18 +396,18 @@ export class DiscordAdapter implements PlatformAdapter {
     try {
       await streamReplyToChannel(
         channel,
-        this.service.sendMessageStream(parsed.sessionId, choice, "discord"),
+        this.service.sendMessageStream(parsed.conversationId, choice, "discord"),
         {
-          sessionId: parsed.sessionId,
+          conversationId: parsed.conversationId,
           clarifyPending: this.clarifyPending,
           toolDisplayMode: resolveToolDisplayMode(
-            await getAppRuntime().conversation.loadSessionMeta(parsed.sessionId),
+            await getAppRuntime().conversation.loadConversationMeta(parsed.conversationId),
             getAppRuntime().engine.config.data,
           ),
         },
       );
     } catch (e) {
-      logDiscordSessionError(parsed.sessionId, e);
+      logDiscordSessionError(parsed.conversationId, e);
       try {
         await this.sendToChannel(channel, networkErrorUserHint(e));
       } catch {
@@ -425,7 +425,7 @@ export class DiscordAdapter implements PlatformAdapter {
       await interaction.deferUpdate();
     }
     if (parsed) {
-      await this.clarifyPending.clear(parsed.sessionId);
+      await this.clarifyPending.clear(parsed.conversationId);
     } else if ("edit" in interaction.message && typeof interaction.message.edit === "function") {
       const components = disabledActionRowsFromMessage(interaction.message);
       try {
@@ -450,14 +450,14 @@ export class DiscordAdapter implements PlatformAdapter {
     }
 
     const origin = originFromInteraction(interaction);
-    const { session_id: sid } = await this.service.findOrCreateSession(
+    const { conversation_id: sid } = await this.service.findOrCreateConversation(
       "discord",
       origin.platform_extra,
     );
 
     const text = interactionToCommandText(interaction);
     const cmdResult = await this.service.executeCommand({
-      session_id: sid,
+      conversation_id: sid,
       text,
       platform: "discord",
       origin_extra: origin.platform_extra,
@@ -492,7 +492,7 @@ export class DiscordAdapter implements PlatformAdapter {
     const channel = await this.ensureThread(message, ctx, cleanContent);
     const threadOrigin = this.resolveThreadOrigin(message, channel.id, ctx);
 
-    const { session_id: sid } = await this.service.findOrCreateSession(
+    const { conversation_id: sid } = await this.service.findOrCreateConversation(
       "discord",
       threadOrigin.platform_extra,
     );
@@ -500,7 +500,7 @@ export class DiscordAdapter implements PlatformAdapter {
     await this.clarifyPending.clear(sid);
 
     const cmdResult = await this.service.executeCommand({
-      session_id: sid,
+      conversation_id: sid,
       text: cleanContent,
       platform: "discord",
       origin_extra: threadOrigin.platform_extra,
@@ -528,10 +528,10 @@ export class DiscordAdapter implements PlatformAdapter {
         channel,
         this.service.sendMessageStream(sid, cleanContent, "discord"),
         {
-          sessionId: sid,
+          conversationId: sid,
           clarifyPending: this.clarifyPending,
           toolDisplayMode: resolveToolDisplayMode(
-            await getAppRuntime().conversation.loadSessionMeta(sid),
+            await getAppRuntime().conversation.loadConversationMeta(sid),
             getAppRuntime().engine.config.data,
           ),
         },
@@ -578,23 +578,25 @@ export class DiscordAdapter implements PlatformAdapter {
     });
   }
 
-  private async onSessionTitleUpdated(sessionId: string): Promise<void> {
+  private async onSessionTitleUpdated(conversationId: string): Promise<void> {
     try {
-      const meta = await getAppRuntime().conversation.loadSessionMeta(sessionId);
-      if (!isSessionMeta(meta) || meta.platform !== "discord") return;
+      const meta = await getAppRuntime().conversation.loadConversationMeta(conversationId);
+      if (!isConversationMeta(meta) || meta.platform !== "discord") return;
       const threadId = meta.platform_extra?.thread_id;
       if (!threadId) return;
 
-      const title = (await getAppRuntime().conversation.getSessionTitle(sessionId)).trim();
+      const title = (
+        await getAppRuntime().conversation.getConversationTitle(conversationId)
+      ).trim();
       if (!title) return;
 
       const channel = await withDiscordRetry(() => this.client.channels.fetch(String(threadId)));
       if (!channel?.isThread()) return;
 
-      await this.maybeApplySessionTitleToThread(channel, sessionId);
+      await this.maybeApplySessionTitleToThread(channel, conversationId);
     } catch (e) {
-      logComponent("discord").debug("Discord session title thread rename skipped", {
-        session_id: sessionId,
+      logComponent("discord").debug("Discord conversation title thread rename skipped", {
+        conversation_id: conversationId,
         err: e,
       });
     }
@@ -606,11 +608,13 @@ export class DiscordAdapter implements PlatformAdapter {
       name?: string;
       setName(name: string): Promise<unknown>;
     },
-    sessionId: string,
+    conversationId: string,
   ): Promise<void> {
     if (!channel.isThread()) return;
     try {
-      const title = (await getAppRuntime().conversation.getSessionTitle(sessionId)).trim();
+      const title = (
+        await getAppRuntime().conversation.getConversationTitle(conversationId)
+      ).trim();
       if (!title || !shouldRenameDiscordThread(String(channel.name ?? ""), title)) return;
       await channel.setName(discordThreadTitleFromSession(title));
     } catch {

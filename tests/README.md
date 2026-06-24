@@ -58,4 +58,4 @@ describePg("...", () => {
 });
 ```
 
-`restoreIntegrationHome` waits for async compression, removes session `anima-cwd-*` directories referenced in PG, deletes the temp `FREEANIMA_HOME` tree, then restores the prior env.
+`restoreIntegrationHome` waits for async compression, removes conversation `anima-cwd-*` directories referenced in PG, deletes the temp `FREEANIMA_HOME` tree, then restores the prior env.

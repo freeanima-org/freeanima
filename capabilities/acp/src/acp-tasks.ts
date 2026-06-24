@@ -1,5 +1,5 @@
-import type { SessionConversationPort } from "@freeanima/core/tool/session-conversation-port";
-import { isSessionMeta } from "@freeanima/core/db/domain";
+import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
+import { isConversationMeta } from "@freeanima/core/db/domain";
 import type { AcpTaskEntryJson, AcpTaskStatusJson, AcpTasksJson } from "@freeanima/core/db/schema";
 import type { CursorPendingInteraction } from "./cursor-decision.ts";
 
@@ -7,7 +7,7 @@ export type AcpTaskEntry = AcpTaskEntryJson;
 export type AcpTaskStatus = AcpTaskStatusJson;
 export type AcpTasksMeta = AcpTasksJson;
 
-export type UnhandledAcpTask = AcpTaskEntry & { acp_session_id: string };
+export type UnhandledAcpTask = AcpTaskEntry & { acp_conversation_id: string };
 
 const CALLBACK_STATUSES = new Set<AcpTaskStatus>(["completed", "awaiting_decision"]);
 
@@ -16,47 +16,49 @@ export function acpTasksNowIso(): string {
 }
 
 export async function readAcpTasks(
-  conversation: SessionConversationPort,
+  conversation: ConversationPort,
   animaSessionId: string,
 ): Promise<AcpTasksMeta> {
-  const meta = await conversation.loadSessionMeta(animaSessionId);
-  if (!isSessionMeta(meta)) return {};
+  const meta = await conversation.loadConversationMeta(animaSessionId);
+  if (!isConversationMeta(meta)) return {};
   const raw = meta.acp_tasks;
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
   return { ...(raw as AcpTasksMeta) };
 }
 
 export async function readAcpTasksHandledAt(
-  conversation: SessionConversationPort,
+  conversation: ConversationPort,
   animaSessionId: string,
 ): Promise<string> {
-  const meta = await conversation.loadSessionMeta(animaSessionId);
-  if (!isSessionMeta(meta)) return "";
+  const meta = await conversation.loadConversationMeta(animaSessionId);
+  if (!isConversationMeta(meta)) return "";
   return typeof meta.acp_tasks_handled_at === "string" ? meta.acp_tasks_handled_at : "";
 }
 
 export async function setAcpTasksHandledAt(
-  conversation: SessionConversationPort,
+  conversation: ConversationPort,
   animaSessionId: string,
   handledAt: string,
 ): Promise<void> {
-  await conversation.updateSessionMetaField(animaSessionId, { acp_tasks_handled_at: handledAt });
+  await conversation.updateConversationMetaField(animaSessionId, {
+    acp_tasks_handled_at: handledAt,
+  });
 }
 
 export async function upsertAcpTaskEntry(
-  conversation: SessionConversationPort,
+  conversation: ConversationPort,
   animaSessionId: string,
   acpSessionId: string,
   entry: AcpTaskEntry,
 ): Promise<void> {
   const prev = await readAcpTasks(conversation, animaSessionId);
-  await conversation.updateSessionMetaField(animaSessionId, {
+  await conversation.updateConversationMetaField(animaSessionId, {
     acp_tasks: { ...prev, [acpSessionId]: entry },
   });
 }
 
 export async function patchAcpTaskEntry(
-  conversation: SessionConversationPort,
+  conversation: ConversationPort,
   animaSessionId: string,
   acpSessionId: string,
   patch: Partial<AcpTaskEntry>,
@@ -71,9 +73,9 @@ export async function patchAcpTaskEntry(
   });
 }
 
-/** Most recently updated ACP session for agent (e.g. new_session cleanup) */
+/** Most recently updated ACP conversation for agent (e.g. new_session cleanup) */
 export async function getBoundAcpSession(
-  conversation: SessionConversationPort,
+  conversation: ConversationPort,
   animaSessionId: string,
   agentName: string,
 ): Promise<string | undefined> {
@@ -91,7 +93,7 @@ export async function getBoundAcpSession(
 }
 
 export async function bindAcpTaskRunning(
-  conversation: SessionConversationPort,
+  conversation: ConversationPort,
   animaSessionId: string,
   agentName: string,
   acpSessionId: string,
@@ -106,7 +108,7 @@ export async function bindAcpTaskRunning(
 }
 
 export async function bindAcpTaskQueued(
-  conversation: SessionConversationPort,
+  conversation: ConversationPort,
   animaSessionId: string,
   agentName: string,
   taskId: string,
@@ -121,7 +123,7 @@ export async function bindAcpTaskQueued(
 }
 
 export async function promoteQueuedTaskToRunning(
-  conversation: SessionConversationPort,
+  conversation: ConversationPort,
   animaSessionId: string,
   agentName: string,
   taskId: string,
@@ -137,11 +139,11 @@ export async function promoteQueuedTaskToRunning(
     agent_name: agentName,
     updated_at: acpTasksNowIso(),
   };
-  await conversation.updateSessionMetaField(animaSessionId, { acp_tasks: next });
+  await conversation.updateConversationMetaField(animaSessionId, { acp_tasks: next });
 }
 
 export async function updateAcpTaskStatus(
-  conversation: SessionConversationPort,
+  conversation: ConversationPort,
   animaSessionId: string,
   acpSessionId: string,
   status: AcpTaskStatus,
@@ -156,7 +158,7 @@ export async function updateAcpTaskStatus(
 }
 
 export async function removeAcpTaskEntry(
-  conversation: SessionConversationPort,
+  conversation: ConversationPort,
   animaSessionId: string,
   acpSessionId: string,
 ): Promise<void> {
@@ -164,7 +166,7 @@ export async function removeAcpTaskEntry(
   if (!(acpSessionId in prev)) return;
   const next = { ...prev };
   delete next[acpSessionId];
-  await conversation.updateSessionMetaField(animaSessionId, { acp_tasks: next });
+  await conversation.updateConversationMetaField(animaSessionId, { acp_tasks: next });
 }
 
 export function findUnhandledAcpTasks(tasks: AcpTasksMeta, handledAt: string): UnhandledAcpTask[] {
@@ -172,7 +174,7 @@ export function findUnhandledAcpTasks(tasks: AcpTasksMeta, handledAt: string): U
   for (const [acpSessionId, entry] of Object.entries(tasks)) {
     if (!CALLBACK_STATUSES.has(entry.status)) continue;
     if (handledAt && entry.updated_at <= handledAt) continue;
-    out.push({ ...entry, acp_session_id: acpSessionId });
+    out.push({ ...entry, acp_conversation_id: acpSessionId });
   }
   out.sort((a, b) => a.updated_at.localeCompare(b.updated_at));
   return out;

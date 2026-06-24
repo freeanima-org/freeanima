@@ -12,7 +12,7 @@ import { satellitesRoutes } from "./routes/satellites.ts";
 import { memoryRoutes } from "./routes/memory.ts";
 import { promptRoutes } from "./routes/prompt.ts";
 import { selfRoutes } from "./routes/self.ts";
-import { sessionsRoutes } from "./routes/sessions.ts";
+import { conversationsRoutes } from "./routes/conversations.ts";
 import { cronLogRoutes, sleepRoutes } from "./routes/sleep.ts";
 import { statusRoutes } from "./routes/status.ts";
 import { TerminalSessionError } from "./terminal-session.ts";
@@ -23,7 +23,7 @@ import { autoLlmRunRoutes } from "./routes/auto-llm-runs.ts";
 /** API 路由（Eden Treaty 类型真源） */
 export const apiApp = new Elysia({ prefix: "/api" })
   .use(healthRoutes)
-  .use(sessionsRoutes)
+  .use(conversationsRoutes)
   .use(statusRoutes)
   .use(sleepRoutes)
   .use(cronLogRoutes)

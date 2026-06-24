@@ -1,31 +1,31 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  getSessionAcpDock,
-  subscribeSessionEvents,
-  type SessionAcpDockSnapshot,
+  getConversationAcpDock,
+  subscribeConversationEvents,
+  type ConversationAcpDockSnapshot,
 } from "@/lib/api.ts";
 
 export type AcpProgressDockOptions = {
   patchProgress?: (text: string, progressMessageId?: string) => void;
-  onDecision?: (sessionId: string) => void | Promise<void>;
+  onDecision?: (conversationId: string) => void | Promise<void>;
 };
 
 export function useAcpProgressDock(
-  sessionId: string | null | undefined,
+  conversationId: string | null | undefined,
   opts?: AcpProgressDockOptions,
-): SessionAcpDockSnapshot | null {
-  const [dock, setDock] = useState<SessionAcpDockSnapshot | null>(null);
+): ConversationAcpDockSnapshot | null {
+  const [dock, setDock] = useState<ConversationAcpDockSnapshot | null>(null);
   const optsRef = useRef(opts);
   optsRef.current = opts;
   const decisionHandledRef = useRef(false);
 
   const refresh = useCallback(async () => {
-    if (!sessionId) {
+    if (!conversationId) {
       setDock(null);
       return;
     }
     try {
-      const snap = await getSessionAcpDock(sessionId);
+      const snap = await getConversationAcpDock(conversationId);
       if (!snap.tasks.length) {
         setDock(null);
         decisionHandledRef.current = false;
@@ -36,7 +36,7 @@ export function useAcpProgressDock(
       if (snap.highlight_decision) {
         if (!decisionHandledRef.current) {
           decisionHandledRef.current = true;
-          await onDecision?.(sessionId);
+          await onDecision?.(conversationId);
         }
       } else {
         decisionHandledRef.current = false;
@@ -49,23 +49,23 @@ export function useAcpProgressDock(
       setDock(null);
       decisionHandledRef.current = false;
     }
-  }, [sessionId]);
+  }, [conversationId]);
 
   useEffect(() => {
-    if (!sessionId) {
+    if (!conversationId) {
       setDock(null);
       decisionHandledRef.current = false;
       return;
     }
     void refresh();
-    const sub = subscribeSessionEvents(sessionId, () => {
+    const sub = subscribeConversationEvents(conversationId, () => {
       void refresh();
     });
     return () => {
       sub.unsubscribe();
       decisionHandledRef.current = false;
     };
-  }, [sessionId, refresh]);
+  }, [conversationId, refresh]);
 
   return dock?.tasks.length ? dock : null;
 }

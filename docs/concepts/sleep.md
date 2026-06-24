@@ -12,22 +12,22 @@ Sleep is the digital life's memory consolidation mechanism—analogous to human 
 
 ## Design Principles
 
-1. **Internal mechanism, no trace** — Sleep runs in background, does not write to sessions, does not affect conversation flow
+1. **Internal mechanism, no trace** — Sleep runs in background, does not write to conversations, does not affect conversation flow
 2. **Do not copy human rhythm literally** — Triggered by system need (cron), not real-time
 3. **Two-tier layering** — Light sleep (incremental writes), deep sleep (semantic inventory optimization)
 4. **Identity context** — All memory processing must carry **self layer six blocks** + resident memory (see [`self-layer.md`](self-layer.md))
 
 ## Current State
 
-| Mechanism              | Status         | Notes                                                          |
-| ---------------------- | -------------- | -------------------------------------------------------------- |
-| Sleep cycle pipeline   | ✅ Implemented | Single cron `builtin-sleep-cycle` @ 02:00                      |
-| Session cleanup        | ✅ Implemented | Step `session-cleanup` before light-sleep in sleep-cycle DAG   |
-| Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                          |
-| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep                      |
-| Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on deep-sleep                  |
-| Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh`, after light-sleep                   |
-| Dream (in-cycle)       | ✅ Implemented | Step `dream`, depends on light-sleep; parallel with deep-sleep |
+| Mechanism              | Status         | Notes                                                             |
+| ---------------------- | -------------- | ----------------------------------------------------------------- |
+| Sleep cycle pipeline   | ✅ Implemented | Single cron `builtin-sleep-cycle` @ 02:00                         |
+| Session cleanup        | ✅ Implemented | Step `conversation-cleanup` before light-sleep in sleep-cycle DAG |
+| Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                             |
+| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep                         |
+| Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on deep-sleep                     |
+| Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh`, after light-sleep                      |
+| Dream (in-cycle)       | ✅ Implemented | Step `dream`, depends on light-sleep; parallel with deep-sleep    |
 
 ## Orchestration
 
@@ -43,19 +43,19 @@ Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.js
 
 ## Light Sleep
 
-| Attribute     | Value                                                                                    |
-| ------------- | ---------------------------------------------------------------------------------------- |
-| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Chamber diagnostics)                     |
-| Scope         | Sessions with activity in previous calendar day (**excludes cron-platform sessions**)    |
-| Input         | Full day's **user conversations** (user+assistant, tools stripped), segmented by session |
-| Orchestration | Three stages sequential (separate LLM calls each)                                        |
+| Attribute     | Value                                                                                         |
+| ------------- | --------------------------------------------------------------------------------------------- |
+| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Chamber diagnostics)                          |
+| Scope         | Sessions with activity in previous calendar day (**excludes cron-platform sessions**)         |
+| Input         | Full day's **user conversations** (user+assistant, tools stripped), segmented by conversation |
+| Orchestration | Three stages sequential (separate LLM calls each)                                             |
 
 ### Three Stages
 
 | Stage              | Target                       | Purpose                                                                                  |
 | ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------- |
 | 1 Semantic         | Semantic memory              | Extract facts, preferences, experiences from dialogue                                    |
-| 2 Limbic           | Emotional anchors            | Capture session mood and emotional turning points                                        |
+| 2 Limbic           | Emotional anchors            | Capture conversation mood and emotional turning points                                   |
 | 3 Autobiographical | Autobiographical narrative   | Record what experiences meant to the digital life                                        |
 | 3b                 | Autobiography summary (self) | Compress narratives into grouped self-layer outline (title-only bullets by significance) |
 
@@ -96,13 +96,13 @@ Two memories semantically negate each other and cannot be explained by temporal 
 ## Trigger Mechanism
 
 ```cron
-0 2 * * *  sleep-cycle   # builtin-sleep-cycle: session-cleanup → light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync
+0 2 * * *  sleep-cycle   # builtin-sleep-cycle: conversation-cleanup → light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync
 ```
 
 DAG (macro layer):
 
 ```text
-session-cleanup
+conversation-cleanup
   └─► light-sleep
         ├─► deep-sleep ──► memory-ref-sync (optional step)
         ├─► dream (optional step)
@@ -121,11 +121,11 @@ Runs as the first sleep-cycle step before light-sleep scans yesterday's sessions
 | Has `assistant` and ≥2 messages              | Keep                          |
 | `debug = true`                               | Keep (separate debug cleanup) |
 
-**Stale** means `sessions.updated_at` older than **24 hours** (wall-clock `timestamptz`, not CST day boundary). Recent empty sessions (e.g. satellite "new session" without a first message) are kept until the next night's run.
+**Stale** means `conversations.updated_at` older than **24 hours** (wall-clock `timestamptz`, not CST day boundary). Recent empty sessions (e.g. satellite "new conversation" without a first message) are kept until the next night's run.
 
 After downtime, the next scheduled run catches up.
 
-**Compression** stays session-scoped (turn-time `advanceCompressionMeta`); it is **not** a sleep-cycle step. Nightly consolidation does not replace per-session compression.
+**Compression** stays session-scoped (turn-time `advanceCompressionMeta`); it is **not** a sleep-cycle step. Nightly consolidation does not replace per-conversation compression.
 
 ## Historical Day (Chamber WebUI)
 

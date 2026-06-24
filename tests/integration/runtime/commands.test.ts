@@ -8,7 +8,7 @@ import {
 } from "../../helpers/integration-case.ts";
 import type { PgTestContext } from "../../helpers/pg-test.ts";
 
-import { isSessionMeta } from "@freeanima/core/db/domain";
+import { isConversationMeta } from "@freeanima/core/db/domain";
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createTempDir, removeTempDir } from "@freeanima/core/util";
@@ -30,8 +30,11 @@ import { getAppRuntime } from "@freeanima/platform";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 import * as engineConversation from "@freeanima/runtime/conversation";
 
-async function patchMetaForTest(sessionId: string, patch: Record<string, unknown>): Promise<void> {
-  await getTestEngine().repos.session.patchSessionMeta(sessionId, patch as never);
+async function patchMetaForTest(
+  conversationId: string,
+  patch: Record<string, unknown>,
+): Promise<void> {
+  await getTestEngine().repos.conversation.patchConversationMeta(conversationId, patch as never);
 }
 
 describePg("slash commands", () => {
@@ -54,7 +57,7 @@ describePg("slash commands", () => {
     expect(cmd?.name).toBe("help");
     const text = (
       await executeCommand(cmd!, {
-        sessionId: "x",
+        conversationId: "x",
         platform: TEST_SAP_CHAT_PLATFORM,
         args: [],
         raw: "/help",
@@ -63,7 +66,7 @@ describePg("slash commands", () => {
     expect(text).toContain("/retry");
     expect(text).toContain("/goal");
     expect(text).toContain("/help");
-    expect(text).toContain("Current session");
+    expect(text).toContain("Current conversation");
     expect(text).not.toContain("/new");
   });
 
@@ -71,7 +74,7 @@ describePg("slash commands", () => {
     const [cmd] = findCommand("/regenerate");
     expect(cmd?.name).toBe("retry");
     const result = await executeCommand(cmd!, {
-      sessionId: "x",
+      conversationId: "x",
       platform: TEST_SAP_CHAT_PLATFORM,
       args: [],
       raw: "/retry",
@@ -85,7 +88,7 @@ describePg("slash commands", () => {
       getTestEngine(),
       sid,
       {
-        role: "session_meta",
+        role: "conversation_meta",
         model: "test-model",
         cached_toolsets: [],
         functions: [],
@@ -112,7 +115,7 @@ describePg("slash commands", () => {
       .commands.map((c) => c.name);
     expect(chatCommands).toContain("help");
     expect(chatCommands).toContain("retry");
-    expect(chatCommands).toContain("rebuild_session_cache");
+    expect(chatCommands).toContain("rebuild_conversation_cache");
     expect(chatCommands).not.toContain("reload_tools");
     expect(chatCommands).not.toContain("reload_system_prompt");
     expect(chatCommands).not.toContain("new");
@@ -128,29 +131,30 @@ describePg("slash commands", () => {
     expect(resolveCommand("/new", "weixin")[0]?.name).toBe("new");
   });
 
-  it("/new creates session and returns new_session_id", async () => {
-    const sid = await testConv().newSession("discord");
+  it("/new creates conversation and returns new_conversation_id", async () => {
+    const sid = await testConv().newConversation("discord");
     const [cmd] = findCommand("/new");
     const result = await executeCommand(cmd!, {
-      sessionId: sid,
+      conversationId: sid,
       platform: "discord",
       args: [],
       raw: "/new",
     });
-    expect(result.text).toContain("New session");
-    const data = result.data as { new_session_id?: string } | undefined;
-    expect(data?.new_session_id).toBeTruthy();
-    expect(String(data?.new_session_id)).not.toBe(sid);
-    expect(await testConv().sessionExists(String(data?.new_session_id))).toBe(true);
+    expect(result.text).toContain("New conversation");
+    const data = result.data as { new_conversation_id?: string } | undefined;
+    expect(data?.new_conversation_id).toBeTruthy();
+    expect(String(data?.new_conversation_id)).not.toBe(sid);
+    expect(await testConv().conversationExists(String(data?.new_conversation_id))).toBe(true);
   });
 
   it("/new writes handoff summary as first assistant message without mutating old session", async () => {
-    const handoffSpy = spyOn(engineConversation, "generateSessionHandoffSummary").mockResolvedValue(
-      {
-        ok: true,
-        summary: "Previous conversation summary",
-      },
-    );
+    const handoffSpy = spyOn(
+      engineConversation,
+      "generateConversationHandoffSummary",
+    ).mockResolvedValue({
+      ok: true,
+      summary: "Previous conversation summary",
+    });
 
     try {
       const sid = "20260609_120000_handoff";
@@ -158,7 +162,7 @@ describePg("slash commands", () => {
         getTestEngine(),
         sid,
         {
-          role: "session_meta",
+          role: "conversation_meta",
           model: "test-model",
           cached_toolsets: [],
           staged_toolsets: [],
@@ -175,7 +179,7 @@ describePg("slash commands", () => {
       const oldCount = await testConv().countMessages(sid);
       const [cmd] = findCommand("/new");
       const result = await executeCommand(cmd!, {
-        sessionId: sid,
+        conversationId: sid,
         platform: "discord",
         args: [],
         raw: "/new",
@@ -184,7 +188,7 @@ describePg("slash commands", () => {
       expect(handoffSpy).toHaveBeenCalled();
       expect(await testConv().countMessages(sid)).toBe(oldCount);
 
-      const newSid = String((result.data as { new_session_id?: string })?.new_session_id);
+      const newSid = String((result.data as { new_conversation_id?: string })?.new_conversation_id);
       const msgs = await testConv().load(newSid);
       expect(msgs).toHaveLength(1);
       expect(msgs[0]?.role).toBe("assistant");
@@ -194,12 +198,12 @@ describePg("slash commands", () => {
     }
   });
 
-  it("rebuild_session_cache promotes staged toolsets and rebuilds system_prompt", async () => {
+  it("rebuild_conversation_cache promotes staged toolsets and rebuilds system_prompt", async () => {
     const selfModel = "You are a test agent.";
     await syncIntegrationSelfLayer(pg, selfModel);
 
-    const sid = await testConv().newSession(TEST_SAP_CHAT_PLATFORM);
-    const metaBefore = await testConv().loadSessionMeta(sid);
+    const sid = await testConv().newConversation(TEST_SAP_CHAT_PLATFORM);
+    const metaBefore = await testConv().loadConversationMeta(sid);
     const preservedCwd = "/tmp/freeanima-preserved-cwd";
     await patchMetaForTest(sid, {
       cwd: preservedCwd,
@@ -209,20 +213,20 @@ describePg("slash commands", () => {
       title: "preserved title",
     });
 
-    const [cmd] = findCommand("/rebuild_session_cache");
+    const [cmd] = findCommand("/rebuild_conversation_cache");
     const result = await executeCommand(cmd!, {
-      sessionId: sid,
+      conversationId: sid,
       platform: TEST_SAP_CHAT_PLATFORM,
       args: [],
-      raw: "/rebuild_session_cache",
+      raw: "/rebuild_conversation_cache",
     });
-    expect(result.text).toContain("Rebuilt session cache");
+    expect(result.text).toContain("Rebuilt conversation cache");
     expect(result.text).toContain("cached_toolsets:");
     expect(result.text).toContain("promoted: file");
 
-    const metaAfter = await testConv().loadSessionMeta(sid);
-    expect(isSessionMeta(metaAfter)).toBe(true);
-    if (!isSessionMeta(metaAfter)) return;
+    const metaAfter = await testConv().loadConversationMeta(sid);
+    expect(isConversationMeta(metaAfter)).toBe(true);
+    if (!isConversationMeta(metaAfter)) return;
     expect(metaAfter.cached_toolsets).toContain("file");
     expect(metaAfter.staged_toolsets ?? []).toEqual([]);
     expect(metaAfter.cwd).toBe(preservedCwd);
@@ -234,19 +238,19 @@ describePg("slash commands", () => {
     expect(sp).not.toBe("old prompt");
   });
 
-  it("rebuild_session_cache on missing session returns warning", async () => {
+  it("rebuild_conversation_cache on missing conversation returns warning", async () => {
     const [cmd] = findCommand("/rebuild-session-cache");
     const result = await executeCommand(cmd!, {
-      sessionId: "nonexistent_session_abc",
+      conversationId: "nonexistent_session_abc",
       platform: TEST_SAP_CHAT_PLATFORM,
       args: [],
-      raw: "/rebuild_session_cache",
+      raw: "/rebuild_conversation_cache",
     });
     expect(result.text).toContain("does not exist");
   });
 
-  it("rebuild_session_cache seeds default toolsets filtered by capability mask when cached is empty", async () => {
-    const sid = await testConv().newSession(TEST_SAP_CHAT_PLATFORM);
+  it("rebuild_conversation_cache seeds default toolsets filtered by capability mask when cached is empty", async () => {
+    const sid = await testConv().newConversation(TEST_SAP_CHAT_PLATFORM);
     await patchMetaForTest(sid, {
       cached_toolsets: [],
       staged_toolsets: [],
@@ -255,18 +259,18 @@ describePg("slash commands", () => {
       capability_mask: { presets: ["sleep"] },
     });
 
-    const [cmd] = findCommand("/rebuild_session_cache");
+    const [cmd] = findCommand("/rebuild_conversation_cache");
     const result = await executeCommand(cmd!, {
-      sessionId: sid,
+      conversationId: sid,
       platform: TEST_SAP_CHAT_PLATFORM,
       args: [],
-      raw: "/rebuild_session_cache",
+      raw: "/rebuild_conversation_cache",
     });
-    expect(result.text).toContain("Rebuilt session cache");
+    expect(result.text).toContain("Rebuilt conversation cache");
 
-    const metaAfter = await testConv().loadSessionMeta(sid);
-    expect(isSessionMeta(metaAfter)).toBe(true);
-    if (!isSessionMeta(metaAfter)) return;
+    const metaAfter = await testConv().loadConversationMeta(sid);
+    expect(isConversationMeta(metaAfter)).toBe(true);
+    if (!isConversationMeta(metaAfter)) return;
     expect(metaAfter.cached_toolsets).toContain("memory");
     expect(metaAfter.cached_toolsets).not.toContain("toolset");
     expect(metaAfter.cached_toolsets).not.toContain("session");
@@ -274,32 +278,32 @@ describePg("slash commands", () => {
     expect(metaAfter.staged_toolsets ?? []).toEqual([]);
   });
 
-  it("stats command reports session", async () => {
-    const sid = await testConv().newSession(TEST_SAP_CHAT_PLATFORM);
+  it("stats command reports conversation", async () => {
+    const sid = await testConv().newConversation(TEST_SAP_CHAT_PLATFORM);
     const [cmd] = findCommand("/stats");
     expect(cmd?.name).toBe("stats");
     const result = await executeCommand(cmd!, {
-      sessionId: sid,
+      conversationId: sid,
       platform: TEST_SAP_CHAT_PLATFORM,
       args: [],
       raw: "/stats",
     });
-    expect(result.text).toContain("Session:");
+    expect(result.text).toContain("Conversation:");
   });
 
   it("title command get and set", async () => {
-    const sid = await testConv().newSession(TEST_SAP_CHAT_PLATFORM);
+    const sid = await testConv().newConversation(TEST_SAP_CHAT_PLATFORM);
     const [setCmd] = findCommand("/title");
     await executeCommand(setCmd!, {
-      sessionId: sid,
+      conversationId: sid,
       platform: TEST_SAP_CHAT_PLATFORM,
       args: ["my title"],
       raw: "/title my title",
     });
-    expect(await testConv().getSessionTitle(sid)).toBe("my title");
+    expect(await testConv().getConversationTitle(sid)).toBe("my title");
     const [getCmd] = findCommand("/title");
     const result = await executeCommand(getCmd!, {
-      sessionId: sid,
+      conversationId: sid,
       platform: TEST_SAP_CHAT_PLATFORM,
       args: [],
       raw: "/title",
@@ -308,11 +312,11 @@ describePg("slash commands", () => {
   });
 
   it("compress command reports compression state", async () => {
-    const sid = await testConv().newSession(TEST_SAP_CHAT_PLATFORM);
+    const sid = await testConv().newConversation(TEST_SAP_CHAT_PLATFORM);
     const [cmd] = findCommand("/compress");
     expect(cmd?.name).toBe("compress");
     const result = await executeCommand(cmd!, {
-      sessionId: sid,
+      conversationId: sid,
       platform: TEST_SAP_CHAT_PLATFORM,
       args: [],
       raw: "/compress",
@@ -322,16 +326,16 @@ describePg("slash commands", () => {
   });
 
   it("cwd command uses existing directory", async () => {
-    const sid = await testConv().newSession(TEST_SAP_CHAT_PLATFORM);
+    const sid = await testConv().newConversation(TEST_SAP_CHAT_PLATFORM);
     const [cmd] = findCommand("/cwd");
     const result = await executeCommand(cmd!, {
-      sessionId: sid,
+      conversationId: sid,
       platform: TEST_SAP_CHAT_PLATFORM,
       args: [home],
       raw: `/cwd ${home}`,
     });
     expect(result.text).toContain("Working directory switched");
-    expect(await testConv().getSessionCwd(sid)).toBe(home);
+    expect(await testConv().getConversationCwd(sid)).toBe(home);
   });
 
   it("/sethome writes discord home_channel to config", async () => {
@@ -339,7 +343,7 @@ describePg("slash commands", () => {
     const [cmd] = findCommand("/sethome");
     expect(cmd?.name).toBe("sethome");
     const result = await executeCommand(cmd!, {
-      sessionId: "x",
+      conversationId: "x",
       platform: "discord",
       args: [],
       raw: "/sethome",
@@ -355,7 +359,7 @@ describePg("slash commands", () => {
     appendIntegrationConfig(home, "model: test\n");
     const [cmd] = findCommand("/sethome");
     const result = await executeCommand(cmd!, {
-      sessionId: "x",
+      conversationId: "x",
       platform: "weixin",
       args: [],
       raw: "/sethome",
@@ -366,11 +370,11 @@ describePg("slash commands", () => {
     expect(cfg).toContain("home_channel: peer@im.wechat");
   });
 
-  it("/tooldisplay sets and resets session override", async () => {
-    const sid = await testConv().newSession("discord");
+  it("/tooldisplay sets and resets conversation override", async () => {
+    const sid = await testConv().newConversation("discord");
     const [cmd] = findCommand("/tooldisplay");
     const show = await executeCommand(cmd!, {
-      sessionId: sid,
+      conversationId: sid,
       platform: "discord",
       args: [],
       raw: "/tooldisplay",
@@ -378,18 +382,18 @@ describePg("slash commands", () => {
     expect(show.text).toContain("name");
 
     const set = await executeCommand(cmd!, {
-      sessionId: sid,
+      conversationId: sid,
       platform: "discord",
       args: ["hidden"],
       raw: "/tooldisplay hidden",
     });
     expect(set.text).toContain("hidden");
 
-    const meta = await testConv().loadSessionMeta(sid);
-    expect(isSessionMeta(meta) && meta.gateway_tool_display).toBe("hidden");
+    const meta = await testConv().loadConversationMeta(sid);
+    expect(isConversationMeta(meta) && meta.gateway_tool_display).toBe("hidden");
 
     const reset = await executeCommand(cmd!, {
-      sessionId: sid,
+      conversationId: sid,
       platform: "discord",
       args: ["reset"],
       raw: "/tooldisplay reset",
@@ -408,7 +412,7 @@ describePg("slash commands", () => {
     const [cmd] = findCommand("/restart");
     expect(cmd?.name).toBe("restart");
     const result = await executeCommand(cmd!, {
-      sessionId: "x",
+      conversationId: "x",
       platform: TEST_SAP_CHAT_PLATFORM,
       args: [],
       raw: "/restart",
@@ -429,7 +433,7 @@ describePg("slash commands", () => {
     getAppRuntime().startShutdown();
     const [cmd] = findCommand("/restart");
     const result = await executeCommand(cmd!, {
-      sessionId: "x",
+      conversationId: "x",
       platform: TEST_SAP_CHAT_PLATFORM,
       args: [],
       raw: "/restart",
@@ -467,7 +471,7 @@ describePg("slash commands", () => {
     try {
       const [cmd] = findCommand("/upgrade");
       const result = await executeCommand(cmd!, {
-        sessionId: "x",
+        conversationId: "x",
         platform: TEST_SAP_CHAT_PLATFORM,
         args: [],
         raw: "/upgrade",
@@ -492,7 +496,7 @@ describePg("slash commands", () => {
     try {
       const [cmd] = findCommand("/upgrade");
       const result = await executeCommand(cmd!, {
-        sessionId: "x",
+        conversationId: "x",
         platform: TEST_SAP_CHAT_PLATFORM,
         args: [],
         raw: "/upgrade",

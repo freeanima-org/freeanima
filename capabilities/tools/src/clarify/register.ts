@@ -1,7 +1,7 @@
 import type { Kernel } from "@freeanima/kernel";
 import type { Config } from "@freeanima/core/config";
 import { bindClarifyConfig } from "./clarify.ts";
-import type { SessionConversationPort } from "@freeanima/core/tool/session-conversation-port";
+import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
 import {
   messageIncoming,
   turnAfterComplete,
@@ -20,7 +20,7 @@ import {
 
 export function registerClarifyHooks(opts: {
   kernel: Kernel;
-  conversation: SessionConversationPort;
+  conversation: ConversationPort;
   config: Config;
 }): void {
   const { kernel, conversation, config } = opts;
@@ -28,12 +28,12 @@ export function registerClarifyHooks(opts: {
   const registry = kernel.hookRegistry;
 
   registry.on(messageIncoming, async (ctx) => {
-    const guard = await guardAwaitingClarify(conversation, ctx.sessionId, ctx.message);
+    const guard = await guardAwaitingClarify(conversation, ctx.conversationId, ctx.message);
     if (!guard.ok) {
       return { status: "ok", blocked: true, message: guard.reason };
     }
     const data: MessageIncomingEffect = {
-      transformedMessage: await resolveUserContent(conversation, ctx.sessionId, ctx.message),
+      transformedMessage: await resolveUserContent(conversation, ctx.conversationId, ctx.message),
     };
     if (guard.expired) {
       data.expiredHint = guard.hint;
@@ -63,7 +63,7 @@ export function registerClarifyHooks(opts: {
   registry.on(turnAfterComplete, async (ctx) => {
     const pending = findAwaitingClarifyInMessages(ctx.messages);
     if (!pending) return;
-    await setAwaitingClarify(conversation, ctx.sessionId, {
+    await setAwaitingClarify(conversation, ctx.conversationId, {
       items: pending.items,
       timeout_sec: pending.timeout_sec,
     });
@@ -74,12 +74,12 @@ export function registerClarifyHooks(opts: {
   });
 }
 
-/** Stream path: write to session meta on awaiting_clarify event */
+/** Stream path: write to conversation meta on awaiting_clarify event */
 export async function applyClarifyStreamAwaiting(
-  conversation: SessionConversationPort,
-  sessionId: string,
+  conversation: ConversationPort,
+  conversationId: string,
   items: { question: string; choices?: string[]; default?: string }[],
   timeoutSec: number,
 ): Promise<void> {
-  await setAwaitingClarify(conversation, sessionId, { items, timeout_sec: timeoutSec });
+  await setAwaitingClarify(conversation, conversationId, { items, timeout_sec: timeoutSec });
 }

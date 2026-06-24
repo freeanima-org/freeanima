@@ -1,6 +1,6 @@
 import type { JsonSchemaObject, ToolDef, ToolHandler, ToolSetRegistry } from "@freeanima/core/tool";
 import { toolError, toolResult } from "@freeanima/core/tool";
-import { getToolSessionId } from "@freeanima/core/tool/tool-context";
+import { getToolConversationId } from "@freeanima/core/tool/tool-context";
 import {
   formatSapPlatform,
   formatSapToolName,
@@ -252,7 +252,7 @@ export class SatelliteManager {
   }
 
   resolveToolCall(
-    sessionId: string,
+    conversationId: string,
     name: string,
     platformExtra: Record<string, unknown> | undefined,
   ):
@@ -304,19 +304,19 @@ export class SatelliteManager {
         tool_name: parsed.value.canonical,
         local_name: parsed.value.local_name,
         args: {},
-        session_id: sessionId,
+        conversation_id: conversationId,
         workspace_root: workspaceRoot,
       },
     };
   }
 
   async callToolViaSatellite(
-    sessionId: string,
+    conversationId: string,
     name: string,
     args: Record<string, unknown>,
     platformExtra: Record<string, unknown> | undefined,
   ): Promise<string> {
-    const route = this.resolveToolCall(sessionId, name, platformExtra);
+    const route = this.resolveToolCall(conversationId, name, platformExtra);
     if (route.kind === "hub_local") {
       throw new Error(`expected sap tool, got hub_local: ${name}`);
     }
@@ -380,13 +380,13 @@ export class SatelliteManager {
     fullName: string,
     args: Record<string, unknown>,
   ): Promise<string> {
-    const sessionId = getToolSessionId() ?? "";
-    if (!sessionId) {
-      return toolError("sap tool requires active session context");
+    const conversationId = getToolConversationId() ?? "";
+    if (!conversationId) {
+      return toolError("sap tool requires active conversation context");
     }
 
-    const meta = await this.loadSessionPlatformExtra(sessionId);
-    const route = this.resolveToolCall(sessionId, fullName, meta);
+    const meta = await this.loadSessionPlatformExtra(conversationId);
+    const route = this.resolveToolCall(conversationId, fullName, meta);
     if (route.kind === "reject") {
       return toolError(route.error);
     }
@@ -394,18 +394,19 @@ export class SatelliteManager {
       return toolError(`unexpected hub_local for sap tool: ${fullName}`);
     }
 
-    return this.callToolViaSatellite(sessionId, fullName, args, meta);
+    return this.callToolViaSatellite(conversationId, fullName, args, meta);
   }
 
   private rejectUnregisteredSapTool(name: string): string {
-    const sessionId = getToolSessionId() ?? "";
-    logComponent("satellite").warn("reject unregistered sap tool", { name, sessionId });
+    const conversationId = getToolConversationId() ?? "";
+    logComponent("satellite").warn("reject unregistered sap tool", { name, conversationId });
     return toolError(`sap tool not registered: ${name}`);
   }
 
   /** Injected by platform composition root */
-  loadSessionPlatformExtra: (sessionId: string) => Promise<Record<string, unknown> | undefined> =
-    async () => undefined;
+  loadSessionPlatformExtra: (
+    conversationId: string,
+  ) => Promise<Record<string, unknown> | undefined> = async () => undefined;
 }
 
 export { toolResult };

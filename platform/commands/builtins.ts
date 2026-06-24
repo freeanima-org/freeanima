@@ -8,14 +8,14 @@ import { clearAwaitingClarify, readAwaitingClarify } from "@freeanima/capabiliti
 import { resolveMaskPresets } from "@freeanima/capabilities-tasks/mask";
 import { statsReport } from "@freeanima/platform/ports/conversation-stats";
 import { CHAT_PLATFORM_PATTERN } from "@freeanima/platform/ports/constants";
-import { onSessionCloseBeforeNew } from "@freeanima/platform/ports/session-close";
-import { isSessionMeta } from "@freeanima/core/db/domain";
+import { onConversationCloseBeforeNew } from "@freeanima/platform/ports/conversation-close";
+import { isConversationMeta } from "@freeanima/core/db/domain";
 import { setHomeChannel } from "@freeanima/platform/ports/home-channel";
 import { getAppRuntime } from "@freeanima/platform/ports";
 import {
   formatToolDisplayHelp,
   parseToolDisplayMode,
-  resolveSessionHandoffOnNew,
+  resolveConversationHandoffOnNew,
   resolveToolDisplayMode,
 } from "../connectors/gateway/tool-display.ts";
 import {
@@ -31,11 +31,11 @@ import {
   formatGoalStartPrompt,
   formatGoalStatus,
   formatSubgoalList,
-  pauseSessionGoal,
-  readSessionGoal,
+  pauseConversationGoal,
+  readConversationGoal,
   removeSubgoal,
-  resumeSessionGoal,
-  setSessionGoal,
+  resumeConversationGoal,
+  setConversationGoal,
 } from "@freeanima/runtime/goal";
 
 function conv() {
@@ -44,13 +44,13 @@ function conv() {
 
 function cmdHelp(ctx: CommandContext): string {
   const available = listCommandDefsForPlatform(ctx.platform);
-  const sessionCmds = available.filter((c) => (c.scope ?? "session") === "session");
+  const conversationCmds = available.filter((c) => (c.scope ?? "conversation") === "conversation");
   const globalCmds = available.filter((c) => c.scope === "global");
 
   const lines = ["**Available commands:**"];
-  if (sessionCmds.length) {
-    lines.push("", "**Current session:**");
-    for (const cmd of sessionCmds) {
+  if (conversationCmds.length) {
+    lines.push("", "**Current conversation:**");
+    for (const cmd of conversationCmds) {
       lines.push(`  • \`/${cmd.name}\` — ${cmd.description}`);
     }
   }
@@ -65,37 +65,39 @@ function cmdHelp(ctx: CommandContext): string {
 
 async function cmdNew(ctx: CommandContext): Promise<CommandResult> {
   const cfg = getAppRuntime().engine.config.data;
-  const summary = resolveSessionHandoffOnNew(ctx.platform, cfg)
-    ? await onSessionCloseBeforeNew(ctx.sessionId)
+  const summary = resolveConversationHandoffOnNew(ctx.platform, cfg)
+    ? await onConversationCloseBeforeNew(ctx.conversationId)
     : null;
-  const sid = await conv().newSession(ctx.platform);
+  const sid = await conv().newConversation(ctx.platform);
   if (summary) {
     await conv().appendMessage({ role: "assistant", content: summary }, sid);
   }
   return {
-    text: `🆕 New session created (${sid.slice(0, 8)}...)`,
-    data: { new_session_id: sid },
+    text: `🆕 New conversation created (${sid.slice(0, 8)}...)`,
+    data: { new_conversation_id: sid },
   };
 }
 
 async function cmdToolDisplay(ctx: CommandContext): Promise<string> {
   const cfg = getAppRuntime().engine.config.data;
-  const meta = await conv().loadSessionMeta(ctx.sessionId);
-  if (!isSessionMeta(meta)) {
-    return "⚠️ Current session does not exist.";
+  const meta = await conv().loadConversationMeta(ctx.conversationId);
+  if (!isConversationMeta(meta)) {
+    return "⚠️ Current conversation does not exist.";
   }
 
   const sub = ctx.args[0]?.trim();
   if (!sub) {
     const effective = resolveToolDisplayMode(meta, cfg);
     const source =
-      typeof meta.gateway_tool_display === "string" ? "session override" : "global default";
+      typeof meta.gateway_tool_display === "string" ? "conversation override" : "global default";
     return `🔧 Tool display: \`${effective}\` (${source})`;
   }
 
   if (sub.toLowerCase() === "reset") {
-    await conv().updateSessionMetaField(ctx.sessionId, { gateway_tool_display: undefined });
-    return `✅ Cleared session tool display override (using global default: \`name\`)`;
+    await conv().updateConversationMetaField(ctx.conversationId, {
+      gateway_tool_display: undefined,
+    });
+    return `✅ Cleared conversation tool display override (using global default: \`name\`)`;
   }
 
   const mode = parseToolDisplayMode(sub);
@@ -103,8 +105,8 @@ async function cmdToolDisplay(ctx: CommandContext): Promise<string> {
     return `⚠️ Unknown level. Available: ${formatToolDisplayHelp()}`;
   }
 
-  await conv().updateSessionMetaField(ctx.sessionId, { gateway_tool_display: mode });
-  return `✅ Tool display set to \`${mode}\` for this session`;
+  await conv().updateConversationMetaField(ctx.conversationId, { gateway_tool_display: mode });
+  return `✅ Tool display set to \`${mode}\` for this conversation`;
 }
 
 function cmdRetry(_ctx: CommandContext): CommandResult {
@@ -114,22 +116,22 @@ function cmdRetry(_ctx: CommandContext): CommandResult {
 async function cmdGoal(ctx: CommandContext): Promise<string | CommandResult> {
   const sub = ctx.args[0]?.trim().toLowerCase();
   if (sub === "status") {
-    const goal = await readSessionGoal(conv(), ctx.sessionId);
+    const goal = await readConversationGoal(conv(), ctx.conversationId);
     if (!goal) return "No active goal. Use `/goal <description>` to set one.";
     return formatGoalStatus(goal);
   }
   if (sub === "pause") {
-    const goal = await pauseSessionGoal(conv(), ctx.sessionId);
+    const goal = await pauseConversationGoal(conv(), ctx.conversationId);
     if (!goal) return "No goal to pause.";
     return "⏸ Goal paused (state preserved). Use `/goal resume` to continue auto-run.";
   }
   if (sub === "resume") {
-    const goal = await resumeSessionGoal(conv(), ctx.sessionId);
+    const goal = await resumeConversationGoal(conv(), ctx.conversationId);
     if (!goal) return "No paused goal to resume.";
     return "▶ Goal resumed.";
   }
   if (sub === "clear") {
-    await clearGoal(conv(), ctx.sessionId);
+    await clearGoal(conv(), ctx.conversationId);
     return "🗑 Goal cleared.";
   }
 
@@ -138,7 +140,7 @@ async function cmdGoal(ctx: CommandContext): Promise<string | CommandResult> {
     return "Usage: `/goal <description>` | `/goal status` | `/goal pause` | `/goal resume` | `/goal clear`";
   }
 
-  const goal = await setSessionGoal(conv(), ctx.sessionId, description);
+  const goal = await setConversationGoal(conv(), ctx.conversationId, description);
   const prompt = formatGoalStartPrompt(description);
   return {
     text: formatGoalSetMessage(goal.max_turns),
@@ -148,14 +150,14 @@ async function cmdGoal(ctx: CommandContext): Promise<string | CommandResult> {
 
 async function cmdSubgoal(ctx: CommandContext): Promise<string> {
   const sub = ctx.args[0]?.trim().toLowerCase();
-  const goal = await readSessionGoal(conv(), ctx.sessionId);
+  const goal = await readConversationGoal(conv(), ctx.conversationId);
   if (!goal) return "No active goal. Set one with `/goal <description>` first.";
 
   if (!sub) {
     return formatSubgoalList(goal);
   }
   if (sub === "clear") {
-    await clearSubgoals(conv(), ctx.sessionId);
+    await clearSubgoals(conv(), ctx.conversationId);
     return "🗑 Subgoals cleared.";
   }
   if (sub === "remove") {
@@ -163,7 +165,7 @@ async function cmdSubgoal(ctx: CommandContext): Promise<string> {
     if (!Number.isFinite(idx) || idx < 1) {
       return "Usage: `/subgoal remove <N>` (1-based index)";
     }
-    const updated = await removeSubgoal(conv(), ctx.sessionId, idx);
+    const updated = await removeSubgoal(conv(), ctx.conversationId, idx);
     if (!updated) return "No goal.";
     return formatSubgoalList(updated);
   }
@@ -172,53 +174,53 @@ async function cmdSubgoal(ctx: CommandContext): Promise<string> {
   if (!condition) {
     return "Usage: `/subgoal <condition>` | `/subgoal remove <N>` | `/subgoal clear`";
   }
-  const updated = await addSubgoal(conv(), ctx.sessionId, condition);
+  const updated = await addSubgoal(conv(), ctx.conversationId, condition);
   return `➕ Subgoal added.\n\n${formatSubgoalList(updated!)}`;
 }
 
 async function cmdCancel(ctx: CommandContext): Promise<string> {
-  const pending = await readAwaitingClarify(conv(), ctx.sessionId);
+  const pending = await readAwaitingClarify(conv(), ctx.conversationId);
   if (!pending) return "No pending questions to answer.";
-  await clearAwaitingClarify(conv(), ctx.sessionId);
+  await clearAwaitingClarify(conv(), ctx.conversationId);
   return "Question cancelled, you can continue the conversation.";
 }
 
-async function cmdRebuildSessionCache(ctx: CommandContext): Promise<string> {
-  const meta = await conv().loadSessionMeta(ctx.sessionId);
-  if (!isSessionMeta(meta)) {
-    return "⚠️ Current session does not exist, cannot rebuild session cache.";
+async function cmdRebuildConversationCache(ctx: CommandContext): Promise<string> {
+  const meta = await conv().loadConversationMeta(ctx.conversationId);
+  if (!isConversationMeta(meta)) {
+    return "⚠️ Current conversation does not exist, cannot rebuild conversation cache.";
   }
   try {
-    const { cachedCount, promoted, systemPromptLength } = await conv().rebuildSessionCache(
-      ctx.sessionId,
+    const { cachedCount, promoted, systemPromptLength } = await conv().rebuildConversationCache(
+      ctx.conversationId,
     );
     const promotedText =
       promoted.length > 0 ? ` (+${promoted.length} promoted: ${promoted.join(", ")})` : "";
     return (
-      `✅ Rebuilt session cache\n` +
+      `✅ Rebuilt conversation cache\n` +
       `cached_toolsets: ${cachedCount}${promotedText}\n` +
       `system_prompt: ${systemPromptLength} chars`
     );
   } catch (e) {
-    return `⚠️ Failed to rebuild session cache: ${String(e)}`;
+    return `⚠️ Failed to rebuild conversation cache: ${String(e)}`;
   }
 }
 
 async function cmdStats(ctx: CommandContext): Promise<string> {
   if (ctx.args[0] === "--all" || ctx.args[0] === "-a") {
-    return statsReport(null, { allSessions: true });
+    return statsReport(null, { allConversations: true });
   }
-  return statsReport(ctx.sessionId);
+  return statsReport(ctx.conversationId);
 }
 
 async function cmdCwd(ctx: CommandContext): Promise<string> {
   if (!ctx.args.length) {
-    const cwd = await conv().getSessionCwd(ctx.sessionId);
+    const cwd = await conv().getConversationCwd(ctx.conversationId);
     return `📁 Current working directory: ${cwd ?? "(not set)"}`;
   }
   const newCwd = ctx.args.join(" ");
   try {
-    const resolved = await conv().setSessionCwd(ctx.sessionId, newCwd);
+    const resolved = await conv().setConversationCwd(ctx.conversationId, newCwd);
     return `✅ Working directory switched to: ${resolved}\n(if AGENTS.md exists, content injected into system prompt)`;
   } catch (e) {
     return `❌ ${e instanceof Error ? e.message : String(e)}`;
@@ -227,11 +229,11 @@ async function cmdCwd(ctx: CommandContext): Promise<string> {
 
 async function cmdTitle(ctx: CommandContext): Promise<string> {
   if (!ctx.args.length) {
-    const title = await conv().getSessionTitle(ctx.sessionId);
+    const title = await conv().getConversationTitle(ctx.conversationId);
     return `📝 Current title: ${title || "(empty)"}`;
   }
   const newTitle = ctx.args.join(" ").slice(0, 50);
-  await conv().setSessionTitle(ctx.sessionId, newTitle);
+  await conv().setConversationTitle(ctx.conversationId, newTitle);
   return `✅ Title updated: ${newTitle}`;
 }
 
@@ -266,7 +268,7 @@ function cmdSethome(ctx: CommandContext): string {
 
 async function cmdCompress(ctx: CommandContext): Promise<string> {
   const force = ctx.args.includes("--force") || ctx.args.includes("-f");
-  const r = await conv().recompressSession(ctx.sessionId, { force });
+  const r = await conv().recompressConversation(ctx.conversationId, { force });
   if (!r.enabled) {
     return "Session compression not enabled (config.yaml → compression.enabled)";
   }
@@ -284,16 +286,16 @@ async function cmdCompress(ctx: CommandContext): Promise<string> {
   return lines.join("\n");
 }
 
-async function reloadMaskSideEffects(sessionId: string): Promise<void> {
-  await conv().recompressSession(sessionId, { force: true });
-  await conv().rebuildSessionCache(sessionId);
+async function reloadMaskSideEffects(conversationId: string): Promise<void> {
+  await conv().recompressConversation(conversationId, { force: true });
+  await conv().rebuildConversationCache(conversationId);
 }
 
 async function cmdMask(ctx: CommandContext): Promise<string> {
   const sub = ctx.args[0]?.toLowerCase();
-  const meta = await conv().loadSessionMeta(ctx.sessionId);
-  if (!isSessionMeta(meta)) {
-    return "⚠️ Current session does not exist, cannot set capability mask.";
+  const meta = await conv().loadConversationMeta(ctx.conversationId);
+  if (!isConversationMeta(meta)) {
+    return "⚠️ Current conversation does not exist, cannot set capability mask.";
   }
 
   if (sub === "set") {
@@ -309,24 +311,24 @@ async function cmdMask(ctx: CommandContext): Promise<string> {
         .join(", ");
       return `⚠️ Unknown mask '${preset}'. Available: ${known || "(none)"}`;
     }
-    await conv().updateSessionMetaField(ctx.sessionId, {
+    await conv().updateConversationMetaField(ctx.conversationId, {
       capability_mask: { presets: [preset] },
     });
-    await reloadMaskSideEffects(ctx.sessionId);
+    await reloadMaskSideEffects(ctx.conversationId);
     const resolved = resolveMaskPresets([preset], masks, engine.catalog.toolSets);
-    return `✅ Set capability mask '${preset}' (${resolved.allowed_tools.length} tools). Compressed and rebuilt session cache.`;
+    return `✅ Set capability mask '${preset}' (${resolved.allowed_tools.length} tools). Compressed and rebuilt conversation cache.`;
   }
 
   if (sub === "clear") {
-    await conv().updateSessionMetaField(ctx.sessionId, { capability_mask: undefined });
-    await reloadMaskSideEffects(ctx.sessionId);
-    return "✅ Removed capability mask, restored full capabilities. Compressed and rebuilt session cache.";
+    await conv().updateConversationMetaField(ctx.conversationId, { capability_mask: undefined });
+    await reloadMaskSideEffects(ctx.conversationId);
+    return "✅ Removed capability mask, restored full capabilities. Compressed and rebuilt conversation cache.";
   }
 
   if (sub === "show") {
     const presets = meta.capability_mask?.presets ?? [];
     if (!presets.length) {
-      return "ℹ️ Current session has no capability mask (full capabilities).";
+      return "ℹ️ Current conversation has no capability mask (full capabilities).";
     }
     const { masks, engine } = getAppRuntime();
     const resolved = resolveMaskPresets(presets, masks, engine.catalog.toolSets);
@@ -384,7 +386,7 @@ export function registerBuiltins(): void {
   });
   registerCommand({
     name: "new",
-    description: "Create new session (carries over previous session summary)",
+    description: "Create new conversation (carries over previous conversation summary)",
     handler: cmdNew,
     scope: "global",
     platforms: ["discord", "weixin"],
@@ -394,51 +396,51 @@ export function registerBuiltins(): void {
     description: "Replay last partner message and regenerate reply",
     handler: cmdRetry,
     aliases: ["regenerate"],
-    scope: "session",
+    scope: "conversation",
   });
   registerCommand({
     name: "goal",
-    description: "Set or manage session goal (auto-continue until done or budget exhausted)",
+    description: "Set or manage conversation goal (auto-continue until done or budget exhausted)",
     handler: cmdGoal,
-    scope: "session",
+    scope: "conversation",
   });
   registerCommand({
     name: "subgoal",
-    description: "Add or manage subgoals for the current session goal",
+    description: "Add or manage subgoals for the current conversation goal",
     handler: cmdSubgoal,
-    scope: "session",
+    scope: "conversation",
   });
   registerCommand({
     name: "cancel",
     description: "Cancel current pending clarify question",
     handler: cmdCancel,
-    scope: "session",
+    scope: "conversation",
   });
   registerCommand({
-    name: "rebuild_session_cache",
+    name: "rebuild_conversation_cache",
     description:
       "Promote staged ToolSets to cached_toolsets, clear staged_toolsets, and rebuild system_prompt",
-    handler: cmdRebuildSessionCache,
-    aliases: ["rebuild-session-cache"],
-    scope: "session",
+    handler: cmdRebuildConversationCache,
+    aliases: ["rebuild-conversation-cache", "rebuild-session-cache"],
+    scope: "conversation",
   });
   registerCommand({
     name: "stats",
-    description: "View current session conversation usage stats (--all aggregates all sessions)",
+    description: "View current conversation usage stats (--all aggregates all conversations)",
     handler: cmdStats,
-    scope: "session",
+    scope: "conversation",
   });
   registerCommand({
     name: "cwd",
-    description: "View or set current session working directory",
+    description: "View or set current conversation working directory",
     handler: cmdCwd,
-    scope: "session",
+    scope: "conversation",
   });
   registerCommand({
     name: "title",
-    description: "View or modify current session title",
+    description: "View or modify current conversation title",
     handler: cmdTitle,
-    scope: "session",
+    scope: "conversation",
   });
   registerCommand({
     name: "sethome",
@@ -451,23 +453,24 @@ export function registerBuiltins(): void {
   });
   registerCommand({
     name: "compress",
-    description: "Recalculate current session runtime compression (--force ignores hysteresis)",
+    description:
+      "Recalculate current conversation runtime compression (--force ignores hysteresis)",
     handler: cmdCompress,
-    scope: "session",
+    scope: "conversation",
   });
   registerCommand({
     name: "mask",
-    description: "Set / view / clear current session capability mask (chat only)",
+    description: "Set / view / clear current conversation capability mask (chat only)",
     handler: cmdMask,
-    scope: "session",
+    scope: "conversation",
     platforms: [CHAT_PLATFORM_PATTERN],
   });
   registerCommand({
     name: "tooldisplay",
-    description: "View or set gateway tool call display level for this session",
+    description: "View or set gateway tool call display level for this conversation",
     handler: cmdToolDisplay,
     aliases: ["tool-display"],
-    scope: "session",
+    scope: "conversation",
     platforms: ["discord", "weixin"],
   });
   registerCommand({

@@ -1,20 +1,20 @@
 import { logSseError } from "../api-logging.ts";
 import { mapStreamEventToApi } from "../api-mappers.ts";
 import { webuiCtx } from "./runtime.ts";
-import { resolveSessionPlatform } from "./sessions.ts";
+import { resolveConversationPlatform } from "./conversations.ts";
 
 export async function* iterateMessageStream(
-  sessionId: string,
+  conversationId: string,
   message: string,
-  streamPath = "/api/sessions/messages/stream",
+  streamPath = "/api/conversations/messages/stream",
 ): AsyncGenerator<{ event: string; data: string }> {
-  const platform = await resolveSessionPlatform(sessionId);
+  const platform = await resolveConversationPlatform(conversationId);
   let sawDone = false;
   try {
-    for await (const event of webuiCtx().sendMessageStream(sessionId, message, platform)) {
+    for await (const event of webuiCtx().sendMessageStream(conversationId, message, platform)) {
       const apiEvent = mapStreamEventToApi(event);
       if (apiEvent.event === "error") {
-        logSseError(streamPath, apiEvent.data.error, { session_id: sessionId });
+        logSseError(streamPath, apiEvent.data.error, { conversation_id: conversationId });
       }
       if (apiEvent.event === "done") sawDone = true;
       yield { event: apiEvent.event, data: JSON.stringify(apiEvent.data) };
@@ -23,7 +23,7 @@ export async function* iterateMessageStream(
       yield { event: "done", data: JSON.stringify({}) };
     }
   } catch (e) {
-    logSseError(streamPath, e, { session_id: sessionId });
+    logSseError(streamPath, e, { conversation_id: conversationId });
     yield { event: "error", data: JSON.stringify({ error: String(e) }) };
     yield { event: "done", data: JSON.stringify({}) };
   }

@@ -18,7 +18,7 @@ describe("sap-contract envelopes", () => {
     const frame = {
       kind: "req" as const,
       id: "abc",
-      method: "session.create",
+      method: "conversation.create",
       payload: { platform: "sap:chat:k7m" },
     };
     const parsed = parseSapEnvelope(serializeSapEnvelope(frame));
@@ -37,7 +37,7 @@ describe("sap-contract envelopes", () => {
   });
 
   it("validates chat SAP procedure schemas", () => {
-    sessionAcpDockInputSchema.parse({ session_id: "sid" });
+    sessionAcpDockInputSchema.parse({ conversation_id: "sid" });
     sessionCommandsInputSchema.parse({ platform: "sap:chat:k7m" });
     fridgeListInputSchema.parse({});
   });
@@ -53,7 +53,7 @@ describe("sap-contract envelopes", () => {
         },
       ],
     });
-    messageSendInputSchema.parse({ session_id: "s1", message: "hi" });
+    messageSendInputSchema.parse({ conversation_id: "s1", message: "hi" });
   });
 
   it("formats sap tool names", () => {

@@ -2,9 +2,12 @@ import type { PgRepositories } from "@freeanima/core/repos";
 import { formatCstIso } from "@freeanima/core/util";
 import type { CompressionState } from "@freeanima/core/db/domain";
 import { getRuntimeLogger } from "@freeanima/core/config";
-import { generateSessionSummary } from "./compression-summary.ts";
+import { generateConversationSummary } from "./compression-summary.ts";
 
-export type CompressionSummaryPostCut = (repos: PgRepositories, session: string) => Promise<void>;
+export type CompressionSummaryPostCut = (
+  repos: PgRepositories,
+  conversationId: string,
+) => Promise<void>;
 
 let postCutRebuild: CompressionSummaryPostCut | null = null;
 
@@ -18,31 +21,31 @@ export function resetCompressionSummaryPostCutForTests(): void {
 
 const pendingCompressionSummaries = new Map<string, Promise<void>>();
 
-/** Await in-flight async session summaries (integration teardown must call before restoring FREEANIMA_HOME) */
+/** Await in-flight async conversation summaries (integration teardown must call before restoring FREEANIMA_HOME) */
 export async function flushCompressionSummaries(
   _repos: PgRepositories,
-  session?: string,
+  conversationId?: string,
 ): Promise<void> {
-  if (session !== undefined) {
-    const p = pendingCompressionSummaries.get(session);
+  if (conversationId !== undefined) {
+    const p = pendingCompressionSummaries.get(conversationId);
     if (p) await p;
     return;
   }
   await Promise.all([...pendingCompressionSummaries.values()]);
 }
 
-async function patchSessionCompression(
+async function patchConversationCompression(
   repos: PgRepositories,
-  session: string,
+  conversationId: string,
   compression: CompressionState,
 ): Promise<void> {
   if (!repos.pgAvailable) return;
-  await repos.session.patchSessionMeta(session, { compression });
+  await repos.conversation.patchConversationMeta(conversationId, { compression });
 }
 
 async function finalizeCompressionSummary(
   repos: PgRepositories,
-  session: string,
+  conversationId: string,
   prevState: CompressionState | null,
   cutState: CompressionState,
   systemPromptSnapshot: string,
@@ -52,16 +55,16 @@ async function finalizeCompressionSummary(
   if ((process.env.FREEANIMA_HOME ?? "") !== homeAtSchedule) {
     getRuntimeLogger()
       .with({ component: "compression" })
-      .warn(`Skipping session summary (FREEANIMA_HOME changed): ${session}`);
+      .warn(`Skipping conversation summary (FREEANIMA_HOME changed): ${conversationId}`);
     return;
   }
   const prevL2 = prevState?.l2 ?? null;
   const fromPos = (prevL2 ?? 0) + 1;
   const slice = repos.pgAvailable
-    ? await repos.session.listMessagesByPosRange(session, fromPos, cutState.l2)
+    ? await repos.conversation.listMessagesByPosRange(conversationId, fromPos, cutState.l2)
     : [];
 
-  const gen = await generateSessionSummary(
+  const gen = await generateConversationSummary(
     slice,
     prevState,
     cutState,
@@ -79,19 +82,21 @@ async function finalizeCompressionSummary(
   } else {
     getRuntimeLogger()
       .with({ component: "compression" })
-      .error(`Session summary generation failed: ${session}`, {
+      .error(`Conversation summary generation failed: ${conversationId}`, {
         err: gen.error,
       });
   }
 
-  await patchSessionCompression(repos, session, merged);
+  await patchConversationCompression(repos, conversationId, merged);
   if (postCutRebuild) {
     try {
-      await postCutRebuild(repos, session);
+      await postCutRebuild(repos, conversationId);
     } catch (e) {
       getRuntimeLogger()
         .with({ component: "compression" })
-        .error(`Failed to rebuild system_prompt after compression: ${session}`, { err: String(e) });
+        .error(`Failed to rebuild system_prompt after compression: ${conversationId}`, {
+          err: String(e),
+        });
     }
   }
 }
@@ -99,19 +104,19 @@ async function finalizeCompressionSummary(
 /** Schedule async summary generation when compression boundaries change */
 export function scheduleCompressionSummary(
   repos: PgRepositories,
-  session: string,
+  conversationId: string,
   prevState: CompressionState | null,
   cutState: CompressionState,
   systemPromptSnapshot: string,
   model: string,
 ): void {
   const homeAtSchedule = process.env.FREEANIMA_HOME ?? "";
-  const prev = pendingCompressionSummaries.get(session);
+  const prev = pendingCompressionSummaries.get(conversationId);
   const run = async (): Promise<void> => {
     if (prev) await prev;
     await finalizeCompressionSummary(
       repos,
-      session,
+      conversationId,
       prevState,
       cutState,
       systemPromptSnapshot,
@@ -123,14 +128,14 @@ export function scheduleCompressionSummary(
     .catch((e) => {
       getRuntimeLogger()
         .with({ component: "compression" })
-        .error(`Session summary pipeline error: ${session}`, {
+        .error(`Conversation summary pipeline error: ${conversationId}`, {
           err: String(e),
         });
     })
     .finally(() => {
-      if (pendingCompressionSummaries.get(session) === p) {
-        pendingCompressionSummaries.delete(session);
+      if (pendingCompressionSummaries.get(conversationId) === p) {
+        pendingCompressionSummaries.delete(conversationId);
       }
     });
-  pendingCompressionSummaries.set(session, p);
+  pendingCompressionSummaries.set(conversationId, p);
 }

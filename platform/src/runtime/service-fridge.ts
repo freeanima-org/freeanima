@@ -10,8 +10,8 @@ import type { FridgeMagnet } from "@freeanima/capabilities-tasks/fridge-magnet";
 export type FridgeMagnetDisplay = {
   key: string;
   value: string;
-  module: "session" | "tasks" | "other";
-  session_id?: string;
+  module: "conversation" | "tasks" | "other";
+  conversation_id?: string;
   label?: string;
   ttl_seconds: number | null;
 };
@@ -24,13 +24,13 @@ export type ListFridgeMagnetsResult = {
 
 function parseDisplayKey(
   displayKey: string,
-): Pick<FridgeMagnetDisplay, "module" | "session_id" | "label"> {
+): Pick<FridgeMagnetDisplay, "module" | "conversation_id" | "label"> {
   const parts = displayKey.split(":");
   const module = parts[0];
-  if (module === "session" && parts.length >= 3) {
+  if (module === "conversation" && parts.length >= 3) {
     return {
-      module: "session",
-      session_id: parts[1],
+      module: "conversation",
+      conversation_id: parts[1],
       label: parts.slice(2).join(":"),
     };
   }

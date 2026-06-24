@@ -3,13 +3,16 @@ import { afterEach, describe, expect, it, mock } from "bun:test";
 import type {
   DreamMemoryCreateInput,
   DreamMemoryStorePort,
-  SessionStorePort,
+  ConversationStorePort,
 } from "@freeanima/core/repos";
 
 import { registerDreamEngine, resetDreamEngineForTests } from "../dream-engine-port.ts";
 import { registerDreamMemoryStore, resetDreamMemoryStoreForTests } from "../dream-port.ts";
 import { registerLimbicMemoryStore, resetLimbicMemoryStoreForTests } from "../limbic-port.ts";
-import { registerMemorySessionStore, resetMemorySessionStoreForTests } from "../session-port.ts";
+import {
+  registerMemoryConversationStore,
+  resetMemoryConversationStoreForTests,
+} from "../conversation-port.ts";
 import { runDream, type DreamFridgePort } from "./run.ts";
 
 const DAY = "2026-06-14";
@@ -35,7 +38,7 @@ function setupStores(opts: {
           dream_day: DAY,
           content: "old dream",
           source_limbic_ids: [],
-          source_session_ids: [],
+          source_conversation_ids: [],
           episodic_snippets: [],
           created: "2026-06-15T02:00:00+08:00",
         };
@@ -61,7 +64,7 @@ function setupStores(opts: {
       return [
         {
           id: "limbic-1",
-          session_id: "s1",
+          conversation_id: "s1",
           kind: "spike",
           valence: 0.1,
           arousal: 0.8,
@@ -75,8 +78,8 @@ function setupStores(opts: {
     },
   } as never);
 
-  registerMemorySessionStore({
-    async listSessionIdsUpdatedBetween() {
+  registerMemoryConversationStore({
+    async listConversationIdsUpdatedBetween() {
       return opts.noSessions ? [] : ["s1"];
     },
     async listMessages() {
@@ -88,7 +91,7 @@ function setupStores(opts: {
         },
       ];
     },
-  } as unknown as SessionStorePort);
+  } as unknown as ConversationStorePort);
 
   registerDreamEngine(async () => ({ content: "A surreal corridor of light…" }));
 
@@ -105,7 +108,7 @@ function setupStores(opts: {
 afterEach(() => {
   resetDreamMemoryStoreForTests();
   resetLimbicMemoryStoreForTests();
-  resetMemorySessionStoreForTests();
+  resetMemoryConversationStoreForTests();
   resetDreamEngineForTests();
 });
 
@@ -125,7 +128,7 @@ describe("runDream", () => {
     expect(getSetReminderCalled()).toBe(true);
   });
 
-  it("creates dream without sessions when limbic fuel exists", async () => {
+  it("creates dream without conversations when limbic fuel exists", async () => {
     const { created } = setupStores({ noSessions: true });
     const result = await runDream({
       day: DAY,
@@ -135,7 +138,7 @@ describe("runDream", () => {
     expect(result.ok).toBe(true);
     expect(result.dream_id).toBe("dream-1");
     expect(created).toHaveLength(1);
-    expect(created[0]?.source_session_ids).toEqual([]);
+    expect(created[0]?.source_conversation_ids).toEqual([]);
     expect(created[0]?.episodic_snippets).toEqual([]);
   });
 

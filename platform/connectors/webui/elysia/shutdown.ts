@@ -2,7 +2,7 @@ import type { ServerWebSocket } from "bun";
 import { closeAllTerminalSessions } from "./terminal-session.ts";
 
 export type TerminalWsData = {
-  sessionId?: string;
+  conversationId?: string;
 };
 
 type TerminalSocket = Pick<ServerWebSocket<TerminalWsData>, "send">;

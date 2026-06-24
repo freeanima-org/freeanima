@@ -35,38 +35,49 @@ export {
 export type { ConnectPayload, ConnectedPayload, HeartbeatPayload } from "./frames/lifecycle.ts";
 
 export {
-  sessionCreateInputSchema,
+  conversationCreateInputSchema,
+  conversationCreateOutputSchema,
+  conversationListInputSchema,
+  conversationListOutputSchema,
+  conversationMessagesInputSchema,
+  conversationPatchTitleInputSchema,
+  conversationSubscribeInputSchema,
+  conversationUpdatedPayloadSchema,
+  conversationCommandsInputSchema,
+  conversationCommandsOutputSchema,
+  conversationCommandItemSchema,
   sessionCreateOutputSchema,
-  sessionListInputSchema,
-  sessionListOutputSchema,
-  sessionMessagesInputSchema,
-  sessionPatchTitleInputSchema,
-  sessionSubscribeInputSchema,
   sessionUpdatedPayloadSchema,
   sessionCommandsInputSchema,
   sessionCommandsOutputSchema,
   sessionCommandItemSchema,
-} from "./frames/session.ts";
+} from "./frames/conversation.ts";
 export type {
-  SessionCreateInput,
-  SessionCreateOutput,
-  SessionListInput,
-  SessionListOutput,
-  SessionMessagesInput,
-  SessionPatchTitleInput,
-  SessionSubscribeInput,
+  ConversationCreateInput,
+  ConversationCreateOutput,
+  ConversationListInput,
+  ConversationListOutput,
+  StoredMessagesInput,
+  ConversationPatchTitleInput,
+  ConversationSubscribeInput,
+  ConversationUpdatedPayload,
+  ConversationCommandsInput,
+  ConversationCommandsOutput,
+  ConversationCommandItem,
   SessionUpdatedPayload,
-  SessionCommandsInput,
-  SessionCommandsOutput,
   SessionCommandItem,
-} from "./frames/session.ts";
+} from "./frames/conversation.ts";
 
 export {
   sessionAcpDockInputSchema,
   sessionAcpDockOutputSchema,
   acpDockTaskSchema,
 } from "./frames/acp.ts";
-export type { SessionAcpDockInput, SessionAcpDockOutput, AcpDockTask } from "./frames/acp.ts";
+export type {
+  ConversationAcpDockInput,
+  ConversationAcpDockOutput,
+  AcpDockTask,
+} from "./frames/acp.ts";
 
 export {
   fridgeListInputSchema,
@@ -152,14 +163,14 @@ export type {
 export { resolveHubHttpUrl, resolveHubWsUrl, hubHttpFromWsUrl, resolveRelayWsUrl } from "./urls.ts";
 
 export {
-  createSapSessionStreamClient,
-  sapListSessions,
-  sapCreateSession,
-  sapGetSessionMessages,
-  sapPatchSessionTitle,
+  createSapConversationStreamClient,
+  sapListConversations,
+  sapCreateConversation,
+  sapGetStoredMessages,
+  sapPatchConversationTitle,
   type SubscribeCallbacks,
   type SapSessionStreamClient,
-} from "./session-stream-core.ts";
+} from "./conversation-stream-core.ts";
 
 export {
   createSapDirectClient,

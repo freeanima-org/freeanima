@@ -1,4 +1,4 @@
-import { resolveDefaultSessionToolSets } from "./default-session-toolsets.ts";
+import { resolveDefaultConversationToolSets } from "./default-conversation-toolsets.ts";
 import { globalToolErrorContract, resolveToolReturnFields } from "./return-contract.ts";
 import {
   openaiFunctionSchema,
@@ -104,8 +104,8 @@ export function buildToolsStatus(
     });
 
   const defaultToolSetNames = filterNames
-    ? resolveDefaultSessionToolSets(registry).filter((n) => filterNames.has(n))
-    : resolveDefaultSessionToolSets(registry);
+    ? resolveDefaultConversationToolSets(registry).filter((n) => filterNames.has(n))
+    : resolveDefaultConversationToolSets(registry);
 
   const listedToolSets = registry
     .listToolSets()

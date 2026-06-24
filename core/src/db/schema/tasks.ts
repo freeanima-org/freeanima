@@ -1,7 +1,7 @@
 import { index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
-import { sessions } from "./sessions.ts";
+import { conversations } from "./conversations.ts";
 
 export const taskStatusSchema = z.enum(["pending", "in_progress", "completed", "cancelled"]);
 export type TaskStatus = z.infer<typeof taskStatusSchema>;
@@ -25,7 +25,7 @@ export const tasks = pgTable(
       .notNull()
       .defaultNow(),
     completedAt: timestamp("completed_at", { withTimezone: true, mode: "string" }),
-    sourceSessionId: text("source_session_id").references(() => sessions.id, {
+    sourceConversationId: text("source_conversation_id").references(() => conversations.id, {
       onDelete: "set null",
     }),
   },

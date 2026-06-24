@@ -24,7 +24,7 @@ export const autobiographicalMemoryToolDefs: ToolDef[] = [
   {
     name: "memory_autobiographical_create",
     description:
-      "Create an autobiographical narrative (append-only; body immutable after write). Requires title and content; optional significance/period/source_semantic_memory/source_sessions.",
+      "Create an autobiographical narrative (append-only; body immutable after write). Requires title and content; optional significance/period/source_semantic_memory/source_conversations.",
     parameters: {
       type: "object",
       properties: {
@@ -47,10 +47,10 @@ export const autobiographicalMemoryToolDefs: ToolDef[] = [
           items: { type: "string" },
           description: "Alias for source_semantic_memory",
         },
-        source_sessions: {
+        source_conversations: {
           type: "array",
           items: { type: "string" },
-          description: "Linked session ids",
+          description: "Linked conversation ids",
         },
       },
       required: ["title", "content"],
@@ -74,7 +74,7 @@ export const autobiographicalMemoryToolDefs: ToolDef[] = [
         period_start: args.period_start !== undefined ? String(args.period_start) : undefined,
         period_end: args.period_end !== undefined ? String(args.period_end) : undefined,
         source_semantic_memory: parseSourceSemanticMemory(args),
-        source_sessions: parseStringArray(args.source_sessions),
+        source_conversations: parseStringArray(args.source_conversations),
       };
 
       try {

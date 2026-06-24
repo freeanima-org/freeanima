@@ -1,14 +1,14 @@
 import { join } from "node:path";
 import type { SkillRegistry } from "@freeanima/core/skill";
 import { registerSkillsFromDirectory } from "@freeanima/core/skill";
-import { getToolSessionId } from "@freeanima/core/tool";
+import { getToolConversationId } from "@freeanima/core/tool";
 import type { ToolDef, ToolSetRegistry } from "@freeanima/core/tool";
 import { acpToolSetId, toolError, toolResult } from "@freeanima/core/tool";
 import type { Config } from "@freeanima/core/config";
 import { logCapability as logComponent } from "@freeanima/core/config";
 
-import type { SessionConversationPort } from "@freeanima/core/tool/session-conversation-port";
-import { isSessionMeta } from "@freeanima/core/db/domain";
+import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
+import { isConversationMeta } from "@freeanima/core/db/domain";
 import {
   AcpAsyncTaskStore,
   appendProgressNote,
@@ -63,7 +63,7 @@ const ACP_SKILLS_SOURCE = "acp";
 type AcpPromptOptions = {
   animaSessionId?: string;
   acpSessionId?: string;
-  newSession?: boolean;
+  newConversation?: boolean;
   mode?: AcpCursorMode;
   isAsync?: boolean;
 };
@@ -76,21 +76,21 @@ type SessionMeta = {
 class ACPSessionStore {
   private sessions = new Map<string, SessionMeta>();
 
-  add(sessionId: string, agentName: string): void {
-    this.sessions.set(sessionId, { agent: agentName, lastUsed: Date.now() });
+  add(conversationId: string, agentName: string): void {
+    this.sessions.set(conversationId, { agent: agentName, lastUsed: Date.now() });
   }
 
-  touch(sessionId: string): void {
-    const row = this.sessions.get(sessionId);
+  touch(conversationId: string): void {
+    const row = this.sessions.get(conversationId);
     if (row) row.lastUsed = Date.now();
   }
 
-  getAgent(sessionId: string): string | undefined {
-    return this.sessions.get(sessionId)?.agent;
+  getAgent(conversationId: string): string | undefined {
+    return this.sessions.get(conversationId)?.agent;
   }
 
-  remove(sessionId: string): void {
-    this.sessions.delete(sessionId);
+  remove(conversationId: string): void {
+    this.sessions.delete(conversationId);
   }
 
   removeByAgent(agentName: string): void {
@@ -111,8 +111,8 @@ class ACPSessionStore {
     return this.sessions.size;
   }
 
-  has(sessionId: string, agentName: string): boolean {
-    return this.sessions.get(sessionId)?.agent === agentName;
+  has(conversationId: string, agentName: string): boolean {
+    return this.sessions.get(conversationId)?.agent === agentName;
   }
 
   pruneExpired(ttlMs: number): string[] {
@@ -151,10 +151,10 @@ function defaultCursorDescription(agentName: string): string {
       "Can search the codebase, analyze code, run tests, and apply changes. " +
       "When async=true, runs in the background and periodically pushes progress to the message channel. " +
       "When Cursor asks questions or submits a plan for approval, results include a pending field; decide autonomously or use clarify to ask your partner, " +
-      "then continue the same session with acp_session_id from the prior result."
+      "then continue the same conversation with acp_conversation_id from the prior result."
     );
   }
-  return `ACP agent: ${agentName} (pass acp_session_id to reuse a Cursor session; omit to start a new session)`;
+  return `ACP agent: ${agentName} (pass acp_conversation_id to reuse a Cursor session; omit to start a new conversation)`;
 }
 
 function parseTimeoutMinutes(raw: unknown): number {
@@ -166,12 +166,12 @@ function parseTimeoutMinutes(raw: unknown): number {
 function buildPromptText(
   prompt: string,
   context: string,
-  resolved: { newSession: boolean },
+  resolved: { newConversation: boolean },
   mode: AcpCursorMode,
 ): string {
   let promptText = prompt;
   if (context) promptText += `\n\nContext: ${context}`;
-  if (resolved.newSession && mode === "plan") {
+  if (resolved.newConversation && mode === "plan") {
     promptText =
       `## Goal\n${promptText}\n\n## Instructions\n` +
       "First, analyze and create a detailed plan. " +
@@ -195,7 +195,7 @@ function registerAcpBuiltinSkills(skills: SkillRegistry): void {
 export class AcpManager {
   private readonly clientPools = new Map<string, AcpClientPool>();
   private readonly schedulers = new Map<string, AcpTaskScheduler>();
-  private readonly sessionStore = new ACPSessionStore();
+  private readonly conversationStore = new ACPSessionStore();
   private readonly agentQueues = new Map<string, AcpAgentQueue>();
   private readonly agentErrors = new Map<string, string>();
   private readonly starting = new Set<string>();
@@ -203,7 +203,7 @@ export class AcpManager {
   private toolsRegistered = false;
   private closed = false;
   private startTask: Promise<void> | null = null;
-  private conversation: SessionConversationPort | null = null;
+  private conversationPort: ConversationPort | null = null;
   private progressDelivery: AcpProgressDeliveryPort | null = null;
   private taskQuery: AcpTaskQueryPort | null = null;
   private readonly taskStore = new AcpAsyncTaskStore();
@@ -227,8 +227,8 @@ export class AcpManager {
     return this.config;
   }
 
-  wireConversation(conversation: SessionConversationPort): void {
-    this.conversation = conversation;
+  wireConversation(conversationPort: ConversationPort): void {
+    this.conversationPort = conversationPort;
   }
 
   wireProgressDelivery(port: AcpProgressDeliveryPort): void {
@@ -252,11 +252,11 @@ export class AcpManager {
     this.progressTicker = null;
   }
 
-  private conv(): SessionConversationPort {
-    if (!this.conversation) {
+  private conv(): ConversationPort {
+    if (!this.conversationPort) {
       throw new Error("AcpManager: conversation not wired; call wireConversation first");
     }
-    return this.conversation;
+    return this.conversationPort;
   }
 
   private queueFor(agentName: string): AcpAgentQueue {
@@ -312,16 +312,16 @@ export class AcpManager {
                 "Cursor mode: agent=direct edits, plan=plan first, ask=read-only analysis. Default agent.",
               default: "agent",
             },
-            acp_session_id: {
+            acp_conversation_id: {
               type: "string",
               description:
-                "ACP session ID to reuse (from a prior acp_cursor result). Omit to start a new session.",
+                "ACP conversation ID to reuse (from a prior acp_cursor result). Omit to start a new conversation.",
               default: "",
             },
             new_session: {
               type: "boolean",
               description:
-                "When true, forces a new ACP session and updates the current Free Anima session binding for this agent.",
+                "When true, forces a new ACP conversation and updates the current Free Anima conversation binding for this agent.",
               default: false,
             },
             async: {
@@ -350,12 +350,12 @@ export class AcpManager {
           const prompt = String(args.prompt ?? args.goal ?? "").trim();
           if (!prompt) return toolError("prompt (or goal) cannot be empty");
           const context = String(args.context ?? "");
-          const explicitSid = String(args.acp_session_id ?? "").trim() || undefined;
-          const newSession = args.new_session === true || args.new_session === "true";
+          const explicitSid = String(args.acp_conversation_id ?? "").trim() || undefined;
+          const newConversation = args.new_session === true || args.new_session === "true";
           const mode = parseMode(args.mode) ?? "agent";
           const isAsync = args.async !== false && args.async !== "false";
           const timeoutMinutes = parseTimeoutMinutes(args.timeout_minutes);
-          const animaSid = getToolSessionId();
+          const animaSid = getToolConversationId();
 
           if (isAsync) {
             return this.launchAsync(
@@ -365,7 +365,7 @@ export class AcpManager {
               {
                 animaSessionId: animaSid,
                 acpSessionId: explicitSid,
-                newSession,
+                newConversation,
                 mode,
                 isAsync: true,
               },
@@ -377,7 +377,7 @@ export class AcpManager {
             this.handleAcpPrompt(agentName, prompt, context, {
               animaSessionId: animaSid,
               acpSessionId: explicitSid,
-              newSession,
+              newConversation,
               mode,
             }),
           );
@@ -401,20 +401,20 @@ export class AcpManager {
       name: "acp_cursor_task_status",
       description:
         "Read-only query for ACP async task status, latest progress text, and final result when available. " +
-        "Does not send any message to Cursor. Omit task_id to query the latest task in the current session.",
+        "Does not send any message to Cursor. Omit task_id to query the latest task in the current conversation.",
       parameters: {
         type: "object",
         properties: {
           task_id: {
             type: "string",
             description:
-              "Optional task_id. When omitted, returns the most recently updated ACP task for this session.",
+              "Optional task_id. When omitted, returns the most recently updated ACP task for this conversation.",
             default: "",
           },
           list_all: {
             type: "boolean",
             description:
-              "When true, returns all active/recent ACP tasks for this session instead of a single task.",
+              "When true, returns all active/recent ACP tasks for this conversation instead of a single task.",
             default: false,
           },
         },
@@ -425,9 +425,9 @@ export class AcpManager {
   }
 
   private async handleTaskStatusQuery(args: Record<string, unknown>): Promise<string> {
-    const animaSid = getToolSessionId();
+    const animaSid = getToolConversationId();
     if (!animaSid)
-      return toolError("No active session; acp_cursor_task_status requires a session context");
+      return toolError("No active session; acp_cursor_task_status requires a conversation context");
     const listAll = args.list_all === true || args.list_all === "true";
     const taskId = String(args.task_id ?? "").trim() || undefined;
 
@@ -450,7 +450,9 @@ export class AcpManager {
     });
     if (!view) {
       return toolError(
-        taskId ? `No ACP task found for task_id: ${taskId}` : "No ACP task found for this session",
+        taskId
+          ? `No ACP task found for task_id: ${taskId}`
+          : "No ACP task found for this conversation",
       );
     }
     return toolResult(view);
@@ -526,7 +528,7 @@ export class AcpManager {
       else if (this.agentErrors.has(name)) status = "error";
 
       const registered = this.toolSets!.getTool(`acp_${name}`);
-      const sessionIds = this.sessionStore.listForAgent(name);
+      const conversationIds = this.conversationStore.listForAgent(name);
 
       views.push({
         name,
@@ -534,9 +536,9 @@ export class AcpManager {
         status,
         error: this.agentErrors.get(name),
         tool: registered ? { name: registered.name, description: registered.description } : null,
-        sessions: sessionIds.map((session_id) => ({
-          session_id,
-          session_id_short: shortSessionId(session_id),
+        sessions: conversationIds.map((conversation_id) => ({
+          conversation_id,
+          conversation_id_short: shortSessionId(conversation_id),
           agent: name,
         })),
       });
@@ -546,7 +548,7 @@ export class AcpManager {
     return {
       agent_count: views.length,
       connected_count,
-      session_count: this.sessionStore.count(),
+      session_count: this.conversationStore.count(),
       tool_count: this.toolSets!.listToolSets().filter((ts) => ts.name.startsWith("acp_")).length,
       agents: views,
     };
@@ -608,7 +610,7 @@ export class AcpManager {
     }
     this.syncLeases.delete(name);
     this.agentErrors.delete(name);
-    this.sessionStore.removeByAgent(name);
+    this.conversationStore.removeByAgent(name);
     return { ok: true, agent: name, action: "stop" };
   }
 
@@ -731,7 +733,7 @@ export class AcpManager {
 
     const ttl = agentCfg.session_ttl_ms ?? 0;
     if (ttl > 0) {
-      const expired = this.sessionStore.pruneExpired(ttl);
+      const expired = this.conversationStore.pruneExpired(ttl);
       for (const sid of expired) {
         for (const client of pool.listClients()) {
           try {
@@ -756,7 +758,7 @@ export class AcpManager {
 
     try {
       await pool.prewarm();
-      const sessions = this.sessionStore.listForAgent(name);
+      const sessions = this.conversationStore.listForAgent(name);
       if (sessions.length) {
         logComponent("acp").info(
           `ACP '${name}' restarted, ${sessions.length} session(s) pending reuse verification`,
@@ -777,12 +779,12 @@ export class AcpManager {
     agentName: string,
     agentCfg: AcpAgentConfig,
     opts: AcpPromptOptions,
-  ): Promise<{ id: string; newSession: boolean; reusedBinding: boolean; explicit: boolean }> {
+  ): Promise<{ id: string; newConversation: boolean; reusedBinding: boolean; explicit: boolean }> {
     if (opts.acpSessionId) {
       const id = opts.acpSessionId;
-      if (this.sessionStore.has(id, agentName)) {
-        this.sessionStore.touch(id);
-        return { id, newSession: false, reusedBinding: false, explicit: true };
+      if (this.conversationStore.has(id, agentName)) {
+        this.conversationStore.touch(id);
+        return { id, newConversation: false, reusedBinding: false, explicit: true };
       }
       const retried = await this.tryContinueOrRecreate(
         client,
@@ -796,17 +798,17 @@ export class AcpManager {
       return { ...retried, reusedBinding: false, explicit: true };
     }
 
-    if (opts.newSession) {
+    if (opts.newConversation) {
       const id = await this.createAcpSession(client, agentName, agentCfg, opts.animaSessionId, {
         skipMetaBind: opts.isAsync,
       });
-      return { id, newSession: true, reusedBinding: false, explicit: false };
+      return { id, newConversation: true, reusedBinding: false, explicit: false };
     }
 
     const id = await this.createAcpSession(client, agentName, agentCfg, opts.animaSessionId, {
       skipMetaBind: opts.isAsync,
     });
-    return { id, newSession: true, reusedBinding: false, explicit: false };
+    return { id, newConversation: true, reusedBinding: false, explicit: false };
   }
 
   /** Bound in meta but not registered in-process (e.g. after restart) — try reuse first, create new on failure */
@@ -818,11 +820,11 @@ export class AcpManager {
     boundId: string,
     mode: AcpCursorMode,
     isAsync?: boolean,
-  ): Promise<{ id: string; newSession: boolean }> {
+  ): Promise<{ id: string; newConversation: boolean }> {
     try {
       await client.setMode(boundId, mode);
-      this.sessionStore.add(boundId, agentName);
-      return { id: boundId, newSession: false };
+      this.conversationStore.add(boundId, agentName);
+      return { id: boundId, newConversation: false };
     } catch {
       /* Session may have expired */
     }
@@ -834,7 +836,7 @@ export class AcpManager {
     const id = await this.createAcpSession(client, agentName, agentCfg, animaSessionId, {
       skipMetaBind: isAsync,
     });
-    return { id, newSession: true };
+    return { id, newConversation: true };
   }
 
   private async createAcpSession(
@@ -845,7 +847,7 @@ export class AcpManager {
     opts?: { skipMetaBind?: boolean },
   ): Promise<string> {
     const sid = await client.createSession(agentCfg.cwd);
-    this.sessionStore.add(sid, agentName);
+    this.conversationStore.add(sid, agentName);
     if (animaSessionId && !opts?.skipMetaBind) {
       await bindAcpTaskRunning(this.conv(), animaSessionId, agentName, sid, `sync-${Date.now()}`);
     }
@@ -859,19 +861,19 @@ export class AcpManager {
     opts: AcpPromptOptions,
   ): Promise<{
     sid: string;
-    resolved: { id: string; newSession: boolean; reusedBinding: boolean; explicit: boolean };
+    resolved: { id: string; newConversation: boolean; reusedBinding: boolean; explicit: boolean };
     mode: AcpCursorMode;
   }> {
     const mode = opts.mode ?? "agent";
 
     const previousBound =
-      opts.newSession && opts.animaSessionId
+      opts.newConversation && opts.animaSessionId
         ? await getBoundAcpSession(this.conv(), opts.animaSessionId, agentName)
         : undefined;
 
     const resolved = await this.resolveAcpSession(client, agentName, agentCfg, opts);
     const sid = resolved.id;
-    this.sessionStore.touch(sid);
+    this.conversationStore.touch(sid);
 
     if (previousBound && previousBound !== sid) {
       try {
@@ -879,7 +881,7 @@ export class AcpManager {
       } catch {
         /* ignore */
       }
-      this.sessionStore.remove(previousBound);
+      this.conversationStore.remove(previousBound);
       if (opts.animaSessionId) {
         await removeAcpTaskEntry(this.conv(), opts.animaSessionId, previousBound);
       }
@@ -897,7 +899,7 @@ export class AcpManager {
     client: ACPClient;
     lease: ClientLease;
     sid: string;
-    resolved: { id: string; newSession: boolean; reusedBinding: boolean; explicit: boolean };
+    resolved: { id: string; newConversation: boolean; reusedBinding: boolean; explicit: boolean };
     mode: AcpCursorMode;
   }> {
     const pool = this.ensurePool(agentName, agentCfg);
@@ -962,7 +964,7 @@ export class AcpManager {
       context,
       animaSessionId: opts.animaSessionId,
       acpSessionId: opts.acpSessionId,
-      newSession: opts.newSession,
+      newConversation: opts.newConversation,
       mode: opts.mode,
       timeoutMinutes,
       enqueuedAt: now,
@@ -1005,7 +1007,7 @@ export class AcpManager {
       const promptOpts: AcpPromptOptions = {
         animaSessionId: spec.animaSessionId,
         acpSessionId: spec.acpSessionId,
-        newSession: spec.newSession,
+        newConversation: spec.newConversation,
         mode: spec.mode,
         isAsync: true,
       };
@@ -1072,7 +1074,7 @@ export class AcpManager {
     task: AcpAsyncTask,
     lease: ClientLease,
     promptText: string,
-    resolved: { newSession: boolean; reusedBinding: boolean; explicit: boolean },
+    resolved: { newConversation: boolean; reusedBinding: boolean; explicit: boolean },
     mode: AcpCursorMode,
   ): Promise<void> {
     const { taskId, agentName, acpSessionId } = task;
@@ -1093,9 +1095,9 @@ export class AcpManager {
       task.decisionNotified = true;
       debouncer.flush();
       const partialResult: AcpPromptResult = {
-        session_id: acpSessionId,
+        conversation_id: acpSessionId,
         output: notes.join("\n") || "[awaiting decision]",
-        new_session: resolved.newSession,
+        new_session: resolved.newConversation,
         reused_binding: resolved.reusedBinding,
         explicit_session: resolved.explicit,
         mode,
@@ -1125,9 +1127,9 @@ export class AcpManager {
       debouncer.flush();
       const capture = client.takeLastPromptCapture();
       const result: AcpPromptResult = {
-        session_id: acpSessionId,
+        conversation_id: acpSessionId,
         output: output.trim() || "[empty response]",
-        new_session: resolved.newSession,
+        new_session: resolved.newConversation,
         reused_binding: resolved.reusedBinding,
         explicit_session: resolved.explicit,
         mode,
@@ -1251,8 +1253,8 @@ export class AcpManager {
   }
 
   private async sessionPlatform(animaSessionId: string): Promise<string> {
-    const meta = await this.conv().loadSessionMeta(animaSessionId);
-    return isSessionMeta(meta) && typeof meta.platform === "string" ? meta.platform : "";
+    const meta = await this.conv().loadConversationMeta(animaSessionId);
+    return isConversationMeta(meta) && typeof meta.platform === "string" ? meta.platform : "";
   }
 
   private async deliverProgressForTask(
@@ -1352,9 +1354,9 @@ export class AcpManager {
       const capture = prepared.client.takeLastPromptCapture();
 
       const result: AcpPromptResult = {
-        session_id: sid,
+        conversation_id: sid,
         output: output.trim() || "[empty response]",
-        new_session: resolved.newSession,
+        new_session: resolved.newConversation,
         reused_binding: resolved.reusedBinding,
         explicit_session: resolved.explicit,
         mode,

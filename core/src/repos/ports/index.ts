@@ -1,14 +1,14 @@
 import type { MemoryReferenceStorePort } from "./memory-reference.ts";
 import type { SemanticMemoryStorePort } from "./semantic-memory.ts";
-import type { SessionStorePort } from "./session.ts";
+import type { ConversationStorePort } from "./conversation.ts";
 
 export type {
-  SessionStorePort,
-  SessionSummaryRow,
-  SessionCleanupResult,
+  ConversationStorePort,
+  ConversationSummaryRow,
+  ConversationCleanupResult,
   MessageFtsHit,
   MessageRowView,
-} from "./session.ts";
+} from "./conversation.ts";
 export { RESIDENT_PINNED_MAX, RESIDENT_TOP_N } from "./semantic-memory.ts";
 export type {
   SemanticMemoryRow,
@@ -84,7 +84,7 @@ export type {
   LimbicMemoryRow,
   LimbicMemoryCreateInput,
   LimbicListOpts,
-  LimbicListBySessionsOpts,
+  LimbicListByConversationsOpts,
   LimbicListByCreatedOpts,
   LimbicFtsHit,
   LimbicMemoryStorePort,
@@ -115,7 +115,7 @@ import type { TaskStorePort } from "./task.ts";
 /** PG repository aggregate mounted on Engine */
 export interface PgRepositories {
   readonly pgAvailable: boolean;
-  session: SessionStorePort;
+  conversation: ConversationStorePort;
   semanticMemory: SemanticMemoryStorePort;
   memoryReference: MemoryReferenceStorePort;
   selfLayer: SelfLayerStorePort;

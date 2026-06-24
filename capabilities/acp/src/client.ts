@@ -101,8 +101,8 @@ export class ACPClient {
     return this.lastStderrDiagnosis;
   }
 
-  getSessionCwd(sessionId: string): string {
-    return this.sessionCwds.get(sessionId) ?? this.defaultCwd ?? process.cwd();
+  getConversationCwd(conversationId: string): string {
+    return this.sessionCwds.get(conversationId) ?? this.defaultCwd ?? process.cwd();
   }
 
   takeLastPromptCapture(): PromptCapture | null {
@@ -226,30 +226,30 @@ export class ACPClient {
       cwd: sessionCwd,
       mcpServers: [],
     });
-    const sessionId = result.sessionId;
-    if (typeof sessionId !== "string" || !sessionId) {
-      throw new ACPError(-1, "session/new did not return sessionId");
+    const conversationId = result.conversationId;
+    if (typeof conversationId !== "string" || !conversationId) {
+      throw new ACPError(-1, "session/new did not return conversationId");
     }
-    this.sessionCwds.set(sessionId, sessionCwd);
+    this.sessionCwds.set(conversationId, sessionCwd);
 
     const modelId = resolveAcpModelId(this.agentCfg?.model, this.adapterId);
     if (modelId) {
-      await this.setModel(sessionId, modelId);
+      await this.setModel(conversationId, modelId);
     }
 
-    return sessionId;
+    return conversationId;
   }
 
-  async setModel(sessionId: string, modelId: string): Promise<void> {
+  async setModel(conversationId: string, modelId: string): Promise<void> {
     try {
-      await this.call("session/set_model", { sessionId, modelId });
+      await this.call("session/set_model", { conversationId, modelId });
       return;
     } catch {
       /* some agents only support set_config_option */
     }
     try {
       await this.call("session/set_config_option", {
-        sessionId,
+        conversationId,
         configId: "model",
         value: modelId,
       });
@@ -258,29 +258,32 @@ export class ACPClient {
     }
   }
 
-  async setMode(sessionId: string, modeId: string): Promise<void> {
+  async setMode(conversationId: string, modeId: string): Promise<void> {
     try {
-      await this.call("session/set_mode", { sessionId, modeId });
+      await this.call("session/set_mode", { conversationId, modeId });
     } catch {
       /* some agents do not support set_mode */
     }
   }
 
-  async sendPrompt(sessionId: string, text: string): Promise<string> {
+  async sendPrompt(conversationId: string, text: string): Promise<string> {
     const retryOnce = this.agentCfg?.prompt_retry_once !== false;
     try {
-      return await this.runPrompt(sessionId, text);
+      return await this.runPrompt(conversationId, text);
     } catch (e) {
       if (!retryOnce || !(e instanceof ACPError) || !e.message.includes("timed out")) {
         throw e;
       }
-      logComponent("acp").warn(`prompt timed out, retrying once`, { agent: this.name, sessionId });
-      return await this.runPrompt(sessionId, text);
+      logComponent("acp").warn(`prompt timed out, retrying once`, {
+        agent: this.name,
+        conversationId,
+      });
+      return await this.runPrompt(conversationId, text);
     }
   }
 
   async sendPromptWithOptions(
-    sessionId: string,
+    conversationId: string,
     text: string,
     opts?: RunPromptOptions,
   ): Promise<string> {
@@ -292,7 +295,7 @@ export class ACPClient {
     };
     opts?.abortSignal?.addEventListener("abort", onAbort, { once: true });
     try {
-      return await this.runPrompt(sessionId, text, opts);
+      return await this.runPrompt(conversationId, text, opts);
     } finally {
       opts?.abortSignal?.removeEventListener("abort", onAbort);
     }
@@ -312,12 +315,12 @@ export class ACPClient {
   }
 
   private async runPrompt(
-    sessionId: string,
+    conversationId: string,
     text: string,
     opts?: RunPromptOptions,
   ): Promise<string> {
     this.notificationQueue = [];
-    this.activePromptSessionId = sessionId;
+    this.activePromptSessionId = conversationId;
     this.activeCapture = createPromptCapture();
     this.activeNotificationHandler = opts?.onNotification ?? null;
     this.activeDecisionHandler = opts?.onDecisionNeeded ?? null;
@@ -325,7 +328,7 @@ export class ACPClient {
     const result = await this.request(
       "session/prompt",
       {
-        sessionId,
+        conversationId,
         prompt: [{ type: "text", text }],
       },
       opts?.promptTimeoutMs,
@@ -350,13 +353,13 @@ export class ACPClient {
     return parts.join("");
   }
 
-  async closeSession(sessionId: string): Promise<void> {
+  async closeSession(conversationId: string): Promise<void> {
     try {
-      await this.call("session/close", { sessionId });
+      await this.call("session/close", { conversationId });
     } catch {
       /* ignore */
     }
-    this.sessionCwds.delete(sessionId);
+    this.sessionCwds.delete(conversationId);
   }
 
   private parseNotification(note: JsonRpcMessage): string | null {
@@ -391,12 +394,12 @@ export class ACPClient {
       const method = String(msg.method ?? "");
       if (method) {
         const params = (msg.params as Record<string, unknown>) ?? {};
-        const sessionId =
-          typeof params.sessionId === "string"
-            ? params.sessionId
+        const conversationId =
+          typeof params.conversationId === "string"
+            ? params.conversationId
             : (this.activePromptSessionId ?? undefined);
-        const projectCwd = sessionId
-          ? this.getSessionCwd(sessionId)
+        const projectCwd = conversationId
+          ? this.getConversationCwd(conversationId)
           : (this.defaultCwd ?? process.cwd());
 
         const clientResult = handleClientMethod(method, params, { projectCwd });

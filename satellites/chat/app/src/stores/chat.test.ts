@@ -7,12 +7,12 @@ describe("useChatStore queue", () => {
     useChatStore.setState({
       queue: [],
       streaming: false,
-      streamingSessionId: null,
+      streamingConversationId: null,
       streamText: "",
     });
   });
 
-  test("enqueue 与 peekQueue 按 session 隔离", () => {
+  test("enqueue 与 peekQueue 按 conversation 隔离", () => {
     useChatStore.getState().enqueue("s1", "hello");
     useChatStore.getState().enqueue("s2", "world");
     expect(useChatStore.getState().peekQueue("s1")?.text).toBe("hello");

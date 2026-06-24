@@ -11,7 +11,7 @@ const taskRowSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
   completed_at: z.string().nullable(),
-  source_session_id: z.string().nullable(),
+  source_conversation_id: z.string().nullable(),
 });
 
 const taskMutationSchema = z.object({
@@ -30,7 +30,7 @@ const exampleTask = {
   created_at: "2026-06-10T10:00:00+08:00",
   updated_at: "2026-06-10T10:00:00+08:00",
   completed_at: null,
-  source_session_id: "sess-001",
+  source_conversation_id: "sess-001",
 };
 
 export const TASKS_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {

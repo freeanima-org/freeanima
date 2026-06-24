@@ -401,7 +401,7 @@ msgstr "studio.workspace 未配置或不存在"
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:66
 #, no-wrap
-msgid "Terminal session does not exist or has closed"
+msgid "Terminal conversation does not exist or has closed"
 msgstr "终端会话不存在或已关闭"
 
 #. type: Content of: <messages><msg>
@@ -444,7 +444,7 @@ msgstr "全部连接"
 #: messages/po4a/en.xml:73
 #, no-wrap
 msgid "Agent Client Protocol agents: config, connection status, and active sessions on this instance."
-msgstr "Agent Client Protocol 代理：配置、连接状态与逸灵风侧活跃 session。"
+msgstr "Agent Client Protocol 代理：配置、连接状态与逸灵风侧活跃对话。"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:74
@@ -467,7 +467,7 @@ msgstr "逸灵风启动时会自动连接 enabled !== false 的 agent（与 MCP 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:77
 #, no-wrap
-msgid "Connect only completes the ACP initialize handshake; no session is created."
+msgid "Connect only completes the ACP initialize handshake; no conversation is created."
 msgstr "「连接」仅完成 ACP initialize 握手，不创建 session。"
 
 #. type: Content of: <messages><msg>
@@ -521,8 +521,8 @@ msgstr "搜索词（可选，标题/内容 ILIKE）"
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:86 messages/po4a/en.xml:291
 #, no-wrap
-msgid "Source session (optional)"
-msgstr "来源 session（可选）"
+msgid "Source conversation (optional)"
+msgstr "来源对话（可选）"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:87
@@ -552,7 +552,7 @@ msgstr "暂无已注册的 slash 命令。"
 #: messages/po4a/en.xml:91
 #, no-wrap
 msgid "Cross-session or platform-level actions ({count} total)."
-msgstr "跨 session 或平台级操作（共 {count} 个）。"
+msgstr "跨 conversation 或平台级操作（共 {count} 个）。"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:92
@@ -575,7 +575,7 @@ msgstr "所有平台默认可用（共 {count} 个）。"
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:95
 #, no-wrap
-msgid "Current session"
+msgid "Current conversation"
 msgstr "当前会话"
 
 #. type: Content of: <messages><msg>
@@ -882,7 +882,7 @@ msgstr "sessions"
 #: messages/po4a/en.xml:151
 #, no-wrap
 msgid "Sessions &amp; tools"
-msgstr "sessions 与工具"
+msgstr "conversations 与工具"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:152
@@ -1339,12 +1339,12 @@ msgstr "召回结果"
 #: messages/po4a/en.xml:230
 #, no-wrap
 msgid "Session filter (messages only)"
-msgstr "session 过滤（仅会话消息）"
+msgstr "对话过滤（仅会话消息）"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:231
 #, no-wrap
-msgid "Filters session messages only; semantic, limbic, and autobiographical sources are unaffected."
+msgid "Filters conversation messages only; semantic, limbic, and autobiographical sources are unaffected."
 msgstr "仅筛选会话消息；语义、感性与自传体来源不受影响。"
 
 #. type: Content of: <messages><msg>
@@ -1921,8 +1921,8 @@ msgstr "复制 stored 全文"
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:338
 #, no-wrap
-msgid "View system prompt breakdown, full text, and effective tool schemas. Global template by default; optional session compares PG stored vs live rebuild."
-msgstr "查看系统提示词分解、完整文本与会话有效工具 schema。默认全局模板；可选 session 对比 PG 持久化与实时重建结果。"
+msgid "View system prompt breakdown, full text, and effective tool schemas. Global template by default; optional conversation compares PG stored vs live rebuild."
+msgstr "查看系统提示词分解、完整文本与会话有效工具 schema。默认全局模板；可选 conversation 对比 PG 持久化与实时重建结果。"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:339
@@ -1933,8 +1933,8 @@ msgstr "Live（实时重建）"
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:340
 #, no-wrap
-msgid "session_meta.tools: {count} names"
-msgstr "session_meta.tools: {count} 个名称"
+msgid "conversation_meta.tools: {count} names"
+msgstr "conversation_meta.tools: {count} 个名称"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:341
@@ -1946,7 +1946,7 @@ msgstr "全局模板"
 #: messages/po4a/en.xml:342
 #, no-wrap
 msgid "Session compare"
-msgstr "Session 对比"
+msgstr "对话对比"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:343
@@ -1976,7 +1976,7 @@ msgstr "会话详情 →"
 #: messages/po4a/en.xml:347
 #, no-wrap
 msgid "Session (optional)"
-msgstr "Session（可选）"
+msgstr "对话（可选）"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:348
@@ -2071,7 +2071,7 @@ msgstr "默认加载工具集"
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:366
 #, no-wrap
-msgid "ToolSets auto-injected into new sessions (toolsets loaded on-demand via toolset_load are not listed here)."
+msgid "ToolSets auto-injected into new conversations (toolsets loaded on-demand via toolset_load are not listed here)."
 msgstr "新会话自动注入 LLM tools 参数的默认工具集（通过 toolset_load 按需加载的工具集不在此列）。"
 
 #. type: Content of: <messages><msg>
@@ -2198,7 +2198,7 @@ msgstr "立即运行"
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:387
 #, no-wrap
-msgid "Select a session to start"
+msgid "Select a conversation to start"
 msgstr "选择一个会话开始对话"
 
 #. type: Content of: <messages><msg>
@@ -2450,7 +2450,7 @@ msgstr "网络错误"
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:432
 #, no-wrap
-msgid "New session"
+msgid "New conversation"
 msgstr "＋ 新会话"
 
 #. type: Content of: <messages><msg>
@@ -2912,19 +2912,19 @@ msgstr "切换左侧面板"
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:530
 #, no-wrap
-msgid "Collapse session list"
+msgid "Collapse conversation list"
 msgstr "收起会话列表"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:531
 #, no-wrap
-msgid "Expand session list"
+msgid "Expand conversation list"
 msgstr "展开会话列表"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:532
 #, no-wrap
-msgid "Toggle session panel"
+msgid "Toggle conversation panel"
 msgstr "切换会话面板"
 
 #. type: Content of: <messages><msg>

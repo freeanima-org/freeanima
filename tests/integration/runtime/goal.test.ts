@@ -7,7 +7,7 @@ import { findCommand, executeCommand, isGoalStartResult } from "@freeanima/platf
 import { seedSession, getTestEngine } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 
-function newSessionId(): string {
+function newConversationId(): string {
   return `20260623_${Date.now()}_goal`;
 }
 
@@ -37,9 +37,9 @@ describePg("goal commands", () => {
   });
 
   it("/goal sets goal and returns goal_start action", async () => {
-    const sid = newSessionId();
+    const sid = newConversationId();
     await seedSession(getTestEngine(), sid, {
-      role: "session_meta",
+      role: "conversation_meta",
       model: "test-model",
       cached_toolsets: [],
       functions: [],
@@ -48,7 +48,7 @@ describePg("goal commands", () => {
     });
     const [cmd] = findCommand("/goal");
     const result = await executeCommand(cmd!, {
-      sessionId: sid,
+      conversationId: sid,
       platform: TEST_SAP_CHAT_PLATFORM,
       args: ["完成", "单元测试"],
       raw: "/goal 完成 单元测试",
@@ -58,14 +58,14 @@ describePg("goal commands", () => {
     if (isGoalStartResult(result)) {
       expect(result.data.prompt).toContain("完成 单元测试");
     }
-    const meta = await getTestEngine().repos.session.getSessionMeta(sid);
+    const meta = await getTestEngine().repos.conversation.getConversationMeta(sid);
     expect(meta && "goal" in meta && meta.goal).toBeTruthy();
   });
 
   it("/goal status shows goal", async () => {
-    const sid = newSessionId();
+    const sid = newConversationId();
     await seedSession(getTestEngine(), sid, {
-      role: "session_meta",
+      role: "conversation_meta",
       model: "test-model",
       cached_toolsets: [],
       functions: [],
@@ -74,7 +74,7 @@ describePg("goal commands", () => {
     });
     const [setCmd] = findCommand("/goal");
     await executeCommand(setCmd!, {
-      sessionId: sid,
+      conversationId: sid,
       platform: TEST_SAP_CHAT_PLATFORM,
       args: ["demo goal"],
       raw: "/goal demo goal",
@@ -82,7 +82,7 @@ describePg("goal commands", () => {
     const [statusCmd] = findCommand("/goal status");
     expect(statusCmd).not.toBeNull();
     const status = await executeCommand(statusCmd!, {
-      sessionId: sid,
+      conversationId: sid,
       platform: TEST_SAP_CHAT_PLATFORM,
       args: ["status"],
       raw: "/goal status",
@@ -91,9 +91,9 @@ describePg("goal commands", () => {
   });
 
   it("/subgoal append and list", async () => {
-    const sid = newSessionId();
+    const sid = newConversationId();
     await seedSession(getTestEngine(), sid, {
-      role: "session_meta",
+      role: "conversation_meta",
       model: "test-model",
       cached_toolsets: [],
       functions: [],
@@ -102,21 +102,21 @@ describePg("goal commands", () => {
     });
     const [setCmd] = findCommand("/goal");
     await executeCommand(setCmd!, {
-      sessionId: sid,
+      conversationId: sid,
       platform: TEST_SAP_CHAT_PLATFORM,
       args: ["main"],
       raw: "/goal main",
     });
     const [subCmd] = findCommand("/subgoal");
     const add = await executeCommand(subCmd!, {
-      sessionId: sid,
+      conversationId: sid,
       platform: TEST_SAP_CHAT_PLATFORM,
       args: ["step", "one"],
       raw: "/subgoal step one",
     });
     expect(add.text).toContain("step one");
     const list = await executeCommand(subCmd!, {
-      sessionId: sid,
+      conversationId: sid,
       platform: TEST_SAP_CHAT_PLATFORM,
       args: [],
       raw: "/subgoal",

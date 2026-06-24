@@ -180,11 +180,11 @@ function buildSemanticMemoryBasic(): Record<string, unknown>[] {
 
 function buildSemanticMemoryProvenanceExtras(full: Snapshot): Record<string, unknown>[] {
   const chunk = keepTables(full, ["semantic_memory"]);
-  const names = new Set(["source_sessions", "observed_at", "occurred_at", "status"]);
+  const names = new Set(["source_conversations", "observed_at", "occurred_at", "status"]);
   return chunk.ddl.filter((e) => {
     if (e.entityType === "columns") return names.has(String(e.name));
     if (e.entityType === "indexes") {
-      return ["idx_semantic_memory_source_sessions", "idx_semantic_memory_status"].includes(
+      return ["idx_semantic_memory_source_conversations", "idx_semantic_memory_status"].includes(
         String(e.name),
       );
     }

@@ -7,11 +7,11 @@ import {
   compressionJsonSchema,
   messagePayloadSchema,
   platformInfoSchema,
-  sessionCachedToolsetsSchema,
-  sessionFunctionsSchema,
-  sessionGoalSchema,
-  sessionStagedToolsetsSchema,
-  sessionTodoStoreSchema,
+  conversationCachedToolsetsSchema,
+  conversationFunctionsSchema,
+  conversationGoalSchema,
+  conversationStagedToolsetsSchema,
+  conversationTodoStoreSchema,
 } from "./jsonb/index.ts";
 import {
   autobiographicalMemory,
@@ -22,22 +22,22 @@ import { limbicKindSchema, limbicMemory } from "./limbic-memory.ts";
 import { messages } from "./messages.ts";
 import { semanticMemory, semanticMemoryTypeSchema } from "./semantic-memory.ts";
 import { selfBlockKeySchema, selfBlocks } from "./self-layer.ts";
-import { sessions } from "./sessions.ts";
+import { conversations } from "./conversations.ts";
 
-const sessionJsonbRefine = {
+const conversationJsonbRefine = {
   platformInfo: platformInfoSchema.nullable(),
   compression: compressionJsonSchema.nullable(),
-  todos: sessionTodoStoreSchema,
+  todos: conversationTodoStoreSchema,
   awaitingClarify: awaitingClarifySchema.nullable(),
   acpTasks: acpTasksSchema.nullable(),
-  goal: sessionGoalSchema.nullable(),
-  cachedToolsets: sessionCachedToolsetsSchema,
-  stagedToolsets: sessionStagedToolsetsSchema,
-  functions: sessionFunctionsSchema,
+  goal: conversationGoalSchema.nullable(),
+  cachedToolsets: conversationCachedToolsetsSchema,
+  stagedToolsets: conversationStagedToolsetsSchema,
+  functions: conversationFunctionsSchema,
 };
 
-export const sessionSelectSchema = createSelectSchema(sessions, sessionJsonbRefine);
-export const sessionInsertSchema = createInsertSchema(sessions, sessionJsonbRefine);
+export const conversationSelectSchema = createSelectSchema(conversations, conversationJsonbRefine);
+export const conversationInsertSchema = createInsertSchema(conversations, conversationJsonbRefine);
 
 const messageJsonbRefine = {
   payload: messagePayloadSchema,
@@ -46,8 +46,8 @@ const messageJsonbRefine = {
 export const messageSelectSchema = createSelectSchema(messages, messageJsonbRefine);
 export const messageInsertSchema = createInsertSchema(messages, messageJsonbRefine);
 
-export type SessionSelect = z.infer<typeof sessionSelectSchema>;
-export type SessionInsert = z.infer<typeof sessionInsertSchema>;
+export type ConversationSelect = z.infer<typeof conversationSelectSchema>;
+export type ConversationInsert = z.infer<typeof conversationInsertSchema>;
 export type MessageSelect = z.infer<typeof messageSelectSchema>;
 export type MessageInsert = z.infer<typeof messageInsertSchema>;
 

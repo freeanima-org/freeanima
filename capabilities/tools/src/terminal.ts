@@ -9,10 +9,10 @@ const MAX_FOREGROUND_TIMEOUT = 600;
 const backgroundProcs = new Map<string, ChildProcess>();
 const backgroundOutput = new Map<string, string>();
 
-function appendOutput(sessionId: string, chunk: Buffer): void {
-  const prev = backgroundOutput.get(sessionId) ?? "";
+function appendOutput(conversationId: string, chunk: Buffer): void {
+  const prev = backgroundOutput.get(conversationId) ?? "";
   const next = prev + chunk.toString("utf-8");
-  backgroundOutput.set(sessionId, next.length > MAX_OUTPUT ? next.slice(0, MAX_OUTPUT) : next);
+  backgroundOutput.set(conversationId, next.length > MAX_OUTPUT ? next.slice(0, MAX_OUTPUT) : next);
 }
 
 function runForeground(command: string, timeout: number, workdir?: string | null): string {
@@ -51,15 +51,15 @@ function runBackground(command: string, workdir?: string | null): string {
       cwd: workdir ?? undefined,
       stdio: ["ignore", "pipe", "pipe"],
     });
-    const sessionId = String(proc.pid ?? Date.now());
-    backgroundOutput.set(sessionId, "");
-    proc.stdout?.on("data", (c: Buffer) => appendOutput(sessionId, c));
-    proc.stderr?.on("data", (c: Buffer) => appendOutput(sessionId, c));
-    backgroundProcs.set(sessionId, proc);
+    const conversationId = String(proc.pid ?? Date.now());
+    backgroundOutput.set(conversationId, "");
+    proc.stdout?.on("data", (c: Buffer) => appendOutput(conversationId, c));
+    proc.stderr?.on("data", (c: Buffer) => appendOutput(conversationId, c));
+    backgroundProcs.set(conversationId, proc);
     return (
-      `[background PID ${proc.pid}, session_id=${sessionId}]\n` +
-      `Use \`process('poll', session_id='${sessionId}')\` to check status.\n` +
-      `Use \`process('kill', session_id='${sessionId}')\` to terminate.`
+      `[background PID ${proc.pid}, conversation_id=${conversationId}]\n` +
+      `Use \`process('poll', conversation_id='${conversationId}')\` to check status.\n` +
+      `Use \`process('kill', conversation_id='${conversationId}')\` to terminate.`
     );
   } catch (e) {
     const err = e as NodeJS.ErrnoException;
@@ -68,13 +68,13 @@ function runBackground(command: string, workdir?: string | null): string {
   }
 }
 
-function getBgOutput(sessionId: string): string {
-  return backgroundOutput.get(sessionId) ?? "";
+function getBgOutput(conversationId: string): string {
+  return backgroundOutput.get(conversationId) ?? "";
 }
 
 async function handleProcess(
   action: string,
-  sessionId?: string | null,
+  conversationId?: string | null,
   timeout = 30,
 ): Promise<string> {
   if (action === "list") {
@@ -88,11 +88,11 @@ async function handleProcess(
     return lines.join("\n");
   }
 
-  if (!sessionId) return toolError("session_id required");
-  const proc = backgroundProcs.get(sessionId);
-  if (!proc) return toolError(`process ${sessionId} not found`);
+  if (!conversationId) return toolError("conversation_id required");
+  const proc = backgroundProcs.get(conversationId);
+  if (!proc) return toolError(`process ${conversationId} not found`);
 
-  const output = getBgOutput(sessionId);
+  const output = getBgOutput(conversationId);
 
   if (action === "poll") {
     const ret = proc.exitCode;
@@ -113,7 +113,7 @@ async function handleProcess(
         resolve(c);
       });
     });
-    const out = getBgOutput(sessionId);
+    const out = getBgOutput(conversationId);
     if (code === null) return toolError(`timeout after ${timeout}s, process still running`);
     return out ? `exited (${code})\n${out}` : `exited (${code})`;
   }
@@ -123,9 +123,9 @@ async function handleProcess(
     setTimeout(() => {
       if (proc.exitCode === null) proc.kill("SIGKILL");
     }, 5000);
-    backgroundProcs.delete(sessionId);
-    backgroundOutput.delete(sessionId);
-    return `killed (${sessionId})`;
+    backgroundProcs.delete(conversationId);
+    backgroundOutput.delete(conversationId);
+    return `killed (${conversationId})`;
   }
 
   return toolError(`unsupported action '${action}'`);
@@ -174,7 +174,7 @@ export function registerTerminalTools(toolSets: ToolSetRegistry): void {
                 type: "string",
                 enum: ["list", "poll", "log", "wait", "kill"],
               },
-              session_id: { type: "string" },
+              conversation_id: { type: "string" },
               timeout: { type: "integer", default: 30 },
             },
             required: ["action"],
@@ -182,7 +182,7 @@ export function registerTerminalTools(toolSets: ToolSetRegistry): void {
           handler: (a) =>
             handleProcess(
               String(a.action),
-              a.session_id != null ? String(a.session_id) : null,
+              a.conversation_id != null ? String(a.conversation_id) : null,
               Number(a.timeout ?? 30),
             ),
         },

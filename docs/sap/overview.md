@@ -10,7 +10,7 @@ Schemas and client SDK live in [`packages/sap-contract/`](../../packages/sap-con
 
 ## Design goals
 
-- **One Hub WS per instance**: each satellite instance opens exactly one `/sap/v1` connection to the Hub (multiplex sessions, streams, tools).
+- **One Hub WS per instance**: each satellite instance opens exactly one `/sap/v1` connection to the Hub (multiplex conversations, streams, tools).
 - **Origin isolation**: browsers load Satellite HTTP UI; Chat and pair-programming use a local SAP relay (`/sap/relay/v1`) instead of browser-direct Hub WS.
 - **Local execution**: pair-programming workspace, terminal PTY, and registered tools run on the Satellite process.
 - **Shared contract**: both sides import `@freeanima/sap-contract` for envelopes, RPC types, `runSapTransport`, `createSapBrowserClient`, and `createSapRelayBrowserClient`.
@@ -57,8 +57,8 @@ sequenceDiagram
   Hub->>Sat: connected
   Sat->>Hub: req tool.register
   Hub->>Sat: res ok
-  Sat->>Hub: req session.create
-  Hub->>Sat: res session_id
+  Sat->>Hub: req conversation.create
+  Hub->>Sat: res conversation_id
   Sat->>Hub: req message.send
   Hub->>Sat: res stream_id
   Hub-->>Sat: evt stream.accepted
