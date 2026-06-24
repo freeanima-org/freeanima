@@ -12,6 +12,8 @@ export type RecordMessageReferencesInput = {
   session_id: string;
   content: string;
   created_at?: string;
+  /** cron platform session：跳过引用计数与 memory_references 写入 */
+  skip_reference_count?: boolean;
 };
 
 /** Persist `[[f-xxx]]` references in message body and sync counts */

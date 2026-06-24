@@ -7,6 +7,7 @@ import { messages } from "@freeanima/core/db/schema";
 import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { scheduleMessageEmbedding } from "../../embedding/schedule.ts";
 import { recordMessageReferences } from "../../memory-reference/repos/memory-reference-repo.ts";
+import { isCronSession } from "./session-repo.ts";
 import { getDb } from "../../client.ts";
 import { messageToInsert, rowToMessage } from "../mappers/message-mapper.ts";
 
@@ -56,11 +57,13 @@ export async function appendMessage(
       scheduleMessageEmbedding(row.id, content);
       const createdAt =
         typeof row.payload.timestamp === "string" ? row.payload.timestamp : undefined;
+      const skipRefs = await isCronSession(sessionId);
       await recordMessageReferences({
         message_id: row.id,
         session_id: sessionId,
         content,
         created_at: createdAt,
+        skip_reference_count: skipRefs,
       });
     }
     return rowToMessage(row);

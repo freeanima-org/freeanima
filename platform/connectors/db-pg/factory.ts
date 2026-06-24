@@ -1,5 +1,6 @@
 import type { PgRepositories } from "@freeanima/core/repos";
 import type { Db } from "./client.ts";
+import { pgAutoLlmRunStore } from "./auto-llm-run/pg-auto-llm-run-store.ts";
 import { pgAutobiographicalMemoryStore } from "./autobiographical-memory/pg-autobiographical-memory-store.ts";
 import { pgCronJobStore } from "./cron/pg-cron-job-store.ts";
 import { pgCronLogStore } from "./cron/pg-cron-log-store.ts";
@@ -26,6 +27,7 @@ export function createPgRepositories(_opts: { getDb: () => Db }): PgRepositories
     cron: pgCronJobStore,
     cronLog: pgCronLogStore,
     pipelineStepRun: pgPipelineStepRunStore,
+    autoLlmRun: pgAutoLlmRunStore,
     tasks: pgTaskStore,
     sapInstance: pgSapInstanceStore,
   };

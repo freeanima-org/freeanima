@@ -238,6 +238,24 @@ export async function listCronLogs(opts?: {
   );
 }
 
+export async function listAutoLlmRuns(opts?: {
+  run_kind?: string;
+  status?: "ok" | "error";
+  limit?: number;
+  offset?: number;
+}) {
+  return unwrap(
+    apiClient.api["auto-llm-runs"].get({
+      query: {
+        run_kind: opts?.run_kind,
+        status: opts?.status,
+        limit: opts?.limit,
+        offset: opts?.offset,
+      },
+    }),
+  );
+}
+
 export async function restartService() {
   return unwrap(apiClient.api.status.restart.post());
 }

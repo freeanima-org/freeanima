@@ -22,6 +22,7 @@ export function chamberNavItems(): { to: string; label: string }[] {
     { to: "/chamber/acp", label: m.webui_chamber_nav_acp() },
     { to: "/chamber/credentials", label: m.webui_chamber_nav_credentials() },
     { to: "/chamber/cron", label: m.webui_chamber_nav_cron() },
+    { to: "/chamber/auto-llm-runs", label: m.webui_chamber_nav_auto_llm_runs() },
     { to: "/chamber/sleep", label: m.webui_chamber_nav_sleep() },
     { to: "/chamber/email", label: m.webui_chamber_nav_email() },
   ];

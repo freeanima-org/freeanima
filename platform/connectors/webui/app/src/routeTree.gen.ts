@@ -33,6 +33,7 @@ import { Route as ChamberCredentialsRouteImport } from "./routes/chamber/credent
 import { Route as ChamberConfigRouteImport } from "./routes/chamber/config";
 import { Route as ChamberCommandsRouteImport } from "./routes/chamber/commands";
 import { Route as ChamberAutobiographicalMemoryRouteImport } from "./routes/chamber/autobiographical-memory";
+import { Route as ChamberAutoLlmRunsRouteImport } from "./routes/chamber/auto-llm-runs";
 import { Route as ChamberAcpRouteImport } from "./routes/chamber/acp";
 import { Route as ChamberSessionsRouteRouteImport } from "./routes/chamber/sessions/route";
 import { Route as ChamberSessionsIndexRouteImport } from "./routes/chamber/sessions/index";
@@ -158,6 +159,11 @@ const ChamberAutobiographicalMemoryRoute = ChamberAutobiographicalMemoryRouteImp
   path: "/autobiographical-memory",
   getParentRoute: () => ChamberRouteRoute,
 } as any);
+const ChamberAutoLlmRunsRoute = ChamberAutoLlmRunsRouteImport.update({
+  id: "/auto-llm-runs",
+  path: "/auto-llm-runs",
+  getParentRoute: () => ChamberRouteRoute,
+} as any);
 const ChamberAcpRoute = ChamberAcpRouteImport.update({
   id: "/acp",
   path: "/acp",
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   "/workshop": typeof WorkshopRouteWithChildren;
   "/chamber/sessions": typeof ChamberSessionsRouteRouteWithChildren;
   "/chamber/acp": typeof ChamberAcpRoute;
+  "/chamber/auto-llm-runs": typeof ChamberAutoLlmRunsRoute;
   "/chamber/autobiographical-memory": typeof ChamberAutobiographicalMemoryRoute;
   "/chamber/commands": typeof ChamberCommandsRoute;
   "/chamber/config": typeof ChamberConfigRoute;
@@ -214,6 +221,7 @@ export interface FileRoutesByTo {
   "/chamber": typeof ChamberRouteRouteWithChildren;
   "/workshop": typeof WorkshopRouteWithChildren;
   "/chamber/acp": typeof ChamberAcpRoute;
+  "/chamber/auto-llm-runs": typeof ChamberAutoLlmRunsRoute;
   "/chamber/autobiographical-memory": typeof ChamberAutobiographicalMemoryRoute;
   "/chamber/commands": typeof ChamberCommandsRoute;
   "/chamber/config": typeof ChamberConfigRoute;
@@ -245,6 +253,7 @@ export interface FileRoutesById {
   "/workshop": typeof WorkshopRouteWithChildren;
   "/chamber/sessions": typeof ChamberSessionsRouteRouteWithChildren;
   "/chamber/acp": typeof ChamberAcpRoute;
+  "/chamber/auto-llm-runs": typeof ChamberAutoLlmRunsRoute;
   "/chamber/autobiographical-memory": typeof ChamberAutobiographicalMemoryRoute;
   "/chamber/commands": typeof ChamberCommandsRoute;
   "/chamber/config": typeof ChamberConfigRoute;
@@ -277,6 +286,7 @@ export interface FileRouteTypes {
     | "/workshop"
     | "/chamber/sessions"
     | "/chamber/acp"
+    | "/chamber/auto-llm-runs"
     | "/chamber/autobiographical-memory"
     | "/chamber/commands"
     | "/chamber/config"
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | "/chamber"
     | "/workshop"
     | "/chamber/acp"
+    | "/chamber/auto-llm-runs"
     | "/chamber/autobiographical-memory"
     | "/chamber/commands"
     | "/chamber/config"
@@ -336,6 +347,7 @@ export interface FileRouteTypes {
     | "/workshop"
     | "/chamber/sessions"
     | "/chamber/acp"
+    | "/chamber/auto-llm-runs"
     | "/chamber/autobiographical-memory"
     | "/chamber/commands"
     | "/chamber/config"
@@ -537,6 +549,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof ChamberAutobiographicalMemoryRouteImport;
       parentRoute: typeof ChamberRouteRoute;
     };
+    "/chamber/auto-llm-runs": {
+      id: "/chamber/auto-llm-runs";
+      path: "/auto-llm-runs";
+      fullPath: "/chamber/auto-llm-runs";
+      preLoaderRoute: typeof ChamberAutoLlmRunsRouteImport;
+      parentRoute: typeof ChamberRouteRoute;
+    };
     "/chamber/acp": {
       id: "/chamber/acp";
       path: "/acp";
@@ -585,6 +604,7 @@ const ChamberSessionsRouteRouteWithChildren = ChamberSessionsRouteRoute._addFile
 interface ChamberRouteRouteChildren {
   ChamberSessionsRouteRoute: typeof ChamberSessionsRouteRouteWithChildren;
   ChamberAcpRoute: typeof ChamberAcpRoute;
+  ChamberAutoLlmRunsRoute: typeof ChamberAutoLlmRunsRoute;
   ChamberAutobiographicalMemoryRoute: typeof ChamberAutobiographicalMemoryRoute;
   ChamberCommandsRoute: typeof ChamberCommandsRoute;
   ChamberConfigRoute: typeof ChamberConfigRoute;
@@ -610,6 +630,7 @@ interface ChamberRouteRouteChildren {
 const ChamberRouteRouteChildren: ChamberRouteRouteChildren = {
   ChamberSessionsRouteRoute: ChamberSessionsRouteRouteWithChildren,
   ChamberAcpRoute: ChamberAcpRoute,
+  ChamberAutoLlmRunsRoute: ChamberAutoLlmRunsRoute,
   ChamberAutobiographicalMemoryRoute: ChamberAutobiographicalMemoryRoute,
   ChamberCommandsRoute: ChamberCommandsRoute,
   ChamberConfigRoute: ChamberConfigRoute,

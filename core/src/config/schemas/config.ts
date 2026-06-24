@@ -195,6 +195,15 @@ const gatewayConfigSchema = z
   })
   .optional();
 
+const autoLlmConfigSchema = z
+  .object({
+    retention_days: z.number().int().positive().optional(),
+    per_run_kind_keep: z.number().int().nonnegative().optional(),
+  })
+  .optional();
+
+export type AutoLlmConfigInput = z.infer<typeof autoLlmConfigSchema>;
+
 export const animaConfigSchema = z
   .object({
     llm: llmConfigSchema,
@@ -217,6 +226,7 @@ export const animaConfigSchema = z
     redis: redisConfigSchema,
     email: emailConfigSchema.optional(),
     gateway: gatewayConfigSchema,
+    auto_llm: autoLlmConfigSchema,
     discord: sectionSchema.optional(),
     weixin: sectionSchema.optional(),
     push: sectionSchema.optional(),

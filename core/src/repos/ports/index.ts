@@ -39,6 +39,14 @@ export type {
   PipelineStepRunStorePort,
 } from "./pipeline-step-run.ts";
 export type {
+  AutoLlmRunRow,
+  AutoLlmRunAppendInput,
+  PurgeStaleAutoLlmRunsOpts,
+  AutoLlmRunListOpts,
+  AutoLlmRunCountOpts,
+  AutoLlmRunStorePort,
+} from "./auto-llm-run.ts";
+export type {
   TaskStorePort,
   TaskRow,
   TaskCreateInput,
@@ -92,6 +100,7 @@ export type {
   SapInstanceStorePort,
 } from "./sap-instance.ts";
 
+import type { AutoLlmRunStorePort } from "./auto-llm-run.ts";
 import type { AutobiographicalMemoryStorePort } from "./autobiographical-memory.ts";
 import type { CronJobStorePort } from "./cron.ts";
 import type { CronLogStorePort } from "./cron-log.ts";
@@ -115,6 +124,7 @@ export interface PgRepositories {
   cron: CronJobStorePort;
   cronLog: CronLogStorePort;
   pipelineStepRun: PipelineStepRunStorePort;
+  autoLlmRun: AutoLlmRunStorePort;
   tasks: TaskStorePort;
   sapInstance: SapInstanceStorePort;
 }

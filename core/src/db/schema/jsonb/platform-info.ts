@@ -198,3 +198,12 @@ export function splitPlatformInfo(info: PlatformInfo | null | undefined): {
     platform_extra: Object.keys(rest).length > 0 ? rest : undefined,
   };
 }
+
+/** sessions.platform_info 标记为 cron agent 遗留会话（浅睡/梦境应排除） */
+export function isCronPlatformInfo(info: PlatformInfo | null | undefined): boolean {
+  return info?.platform === "cron";
+}
+
+export function isCronPlatformString(platform: string | null | undefined): boolean {
+  return platform === "cron";
+}
