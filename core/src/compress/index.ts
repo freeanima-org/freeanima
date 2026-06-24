@@ -1,6 +1,7 @@
 export * from "./compressor.ts";
 export * from "./compression-config.ts";
 export * from "./compression-context.ts";
+export * from "./compression-diagnostics.ts";
 export * from "./compression-summary.ts";
 export * from "./compression-summary-scheduler.ts";
 export * from "./compression-tool-loop.ts";

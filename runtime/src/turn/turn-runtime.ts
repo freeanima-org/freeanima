@@ -8,7 +8,7 @@ import {
   compress,
   isCompressed,
   parseCompressionState,
-  buildCompressOptions,
+  buildCompressOptionsResolved,
   willAdvanceCompression,
 } from "@freeanima/core/compress";
 import { persistToolLoopRepair, REPAIR_REASON_LOST } from "@freeanima/core/llm";
@@ -59,22 +59,22 @@ async function ensureSessionToolIntegrity(
   return repaired ? load(repos, conversationId) : msgs;
 }
 
-function buildRuntimeMessagesFrom(
+async function buildRuntimeMessagesFrom(
   _conversationId: string,
   meta: ConversationMetaLoadResult,
   msgs: Message[],
   tools: OpenAiToolSchema[],
-): [StoredMessage[], string[]] {
+): Promise<[StoredMessage[], string[]]> {
   const functions = isConversationMeta(meta) ? meta.functions : [];
   let runtimeMsgs = msgs;
   const systemPrompt = isConversationMeta(meta) ? (meta.system_prompt ?? "") : "";
 
   if (compressionEnabled()) {
     const state = isConversationMeta(meta) ? parseCompressionState(meta.compression) : null;
-    const [compressed] = compress(
-      runtimeMsgs,
-      buildCompressOptions(meta, state, defaultChatModel(), { tools }),
-    );
+    const compressOpts = await buildCompressOptionsResolved(meta, state, defaultChatModel(), {
+      tools,
+    });
+    const [compressed] = compress(runtimeMsgs, compressOpts);
     runtimeMsgs = compressed;
   }
 
@@ -97,7 +97,7 @@ export async function buildRuntimeMessages(
   const meta = await loadConversationMeta(repos, conversationId);
   const msgs = await loadForRuntime(repos, conversationId, meta);
   const toolSchemas = await loadConversationTools(repos, registry, conversationId, meta);
-  return buildRuntimeMessagesFrom(conversationId, meta, msgs, toolSchemas);
+  return await buildRuntimeMessagesFrom(conversationId, meta, msgs, toolSchemas);
 }
 
 async function loadMessagesForTurn(
@@ -114,7 +114,9 @@ async function loadMessagesForTurn(
     return load(repos, conversationId);
   }
   const windowed = await loadForRuntime(repos, conversationId, meta);
-  const compressOpts = buildCompressOptions(meta, state, defaultChatModel(), { tools });
+  const compressOpts = await buildCompressOptionsResolved(meta, state, defaultChatModel(), {
+    tools,
+  });
   if (willAdvanceCompression(windowed, compressOpts)) {
     return load(repos, conversationId);
   }
@@ -133,7 +135,9 @@ async function prepareTurnMessages(
   const total = await countMessages(repos, conversationId);
   if (msgs.length < total) {
     const state = isConversationMeta(meta) ? parseCompressionState(meta.compression) : null;
-    const compressOpts = buildCompressOptions(meta, state, defaultChatModel(), { tools });
+    const compressOpts = await buildCompressOptionsResolved(meta, state, defaultChatModel(), {
+      tools,
+    });
     if (willAdvanceCompression(msgs, compressOpts)) {
       msgs = await load(repos, conversationId);
       msgs = await ensureSessionToolIntegrity(repos, conversationId, msgs);
@@ -161,7 +165,7 @@ export async function beginTurnPrepare(
   const meta = await loadConversationMeta(repos, conversationId);
   const { msgs, tools } = await prepareTurnMessages(repos, registry, conversationId, meta);
   await advanceCompressionMeta(repos, registry, conversationId, { meta, msgs });
-  return buildRuntimeMessagesFrom(conversationId, meta, msgs, tools);
+  return await buildRuntimeMessagesFrom(conversationId, meta, msgs, tools);
 }
 
 export async function beginTurn(
@@ -216,6 +220,11 @@ export async function retryTurn(
   const meta = await loadConversationMeta(repos, conversationId);
   const { msgs, tools } = await prepareTurnMessages(repos, registry, conversationId, meta);
   await advanceCompressionMeta(repos, registry, conversationId, { meta, msgs });
-  const [runtimeMsgs, functions] = buildRuntimeMessagesFrom(conversationId, meta, msgs, tools);
+  const [runtimeMsgs, functions] = await buildRuntimeMessagesFrom(
+    conversationId,
+    meta,
+    msgs,
+    tools,
+  );
   return [runtimeMsgs, functions, effective];
 }

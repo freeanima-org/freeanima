@@ -56,7 +56,18 @@ compression:
 | `raw_min_messages`  | 5       | Minimum messages in raw segment     |
 | `slim_min_messages` | 50      | Minimum messages in slim after trim |
 
-Without `context_window`, falls back to message-count triggers.
+### Context window resolution (token mode)
+
+Priority when estimating compression budget:
+
+1. `models.<model>.context_window` in `config.yaml`
+2. `compression.default_context_window` (applies to all models)
+3. Provider `/models` catalog `contextWindow` (when Hub has registered lookup)
+4. Message-count fallback (`max_rounds` thresholds) when none of the above apply
+
+Per-model config always wins over dynamically fetched catalog values; catalog is read-only and never written back to `config.yaml`.
+
+Without any context window source, compression falls back to message-count triggers.
 
 Force compression in chat: `/compress` (`--force` ignores hysteresis).
 
