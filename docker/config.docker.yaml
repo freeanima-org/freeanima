@@ -32,3 +32,6 @@ redis:
 compression:
   enabled: true
   max_rounds: 50
+
+remote_auth:
+  token: ${REMOTE_AUTH_TOKEN:-changeme-remote-auth-token}

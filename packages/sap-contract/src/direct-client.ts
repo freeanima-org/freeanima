@@ -12,6 +12,7 @@ import {
   type SapInstanceStore,
 } from "./instance-store.ts";
 import { hubHttpFromWsUrl, resolveHubWsUrl } from "./urls.ts";
+import { resolveShellConnectAuthToken } from "./remote-auth-client.ts";
 import { createSharedWorkerSapClient } from "./shared-worker.ts";
 
 export type DirectSatelliteConfig = {
@@ -32,6 +33,8 @@ export type SapDirectClientOptions = {
   sharedWorkerUrl?: string;
   /** Use SharedWorker for multi-tab single Hub connection (default true in browser) */
   useSharedWorker?: boolean;
+  /** Hub remote_auth token for non-loopback SAP connect */
+  remoteAuthToken?: string;
 };
 
 export type SapDirectClient = {
@@ -111,6 +114,10 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
           ...(storedId ? { instance_id: storedId } : {}),
           features_requested: options.featuresRequested ?? ["server_info"],
           ...(httpUrl ? { http_url: httpUrl } : {}),
+          ...((): { auth_token?: string } => {
+            const authToken = options.remoteAuthToken ?? resolveShellConnectAuthToken(hubHttp);
+            return authToken ? { auth_token: authToken } : {};
+          })(),
         };
 
         if (useSharedWorker) {

@@ -23,6 +23,7 @@ export type CreateSatelliteHubOptions = {
     ctx: { workspace_root?: string },
   ) => Promise<string>;
   onConnected?: (client: SapClient, instanceId: string) => void | Promise<void>;
+  remoteAuthToken?: string;
 };
 
 export type SatelliteHubHandle = {
@@ -88,6 +89,7 @@ export function createSatelliteHub(options: CreateSatelliteHubOptions): Satellit
         app_id: options.appId,
         features_requested: options.featuresRequested ?? ["server_info", "capability_mask"],
         ...(currentHttpUrl ? { http_url: currentHttpUrl } : {}),
+        ...(options.remoteAuthToken ? { auth_token: options.remoteAuthToken } : {}),
       },
       onConnected: async (sap, connected) => {
         instanceId = connected.instance_id;

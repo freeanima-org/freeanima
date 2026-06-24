@@ -6,7 +6,12 @@ import * as esbuild from "esbuild";
 import { buildChamberApp } from "@freeanima/frontend-chamber/build";
 import { buildChatApp } from "@freeanima/satellite-chat/build";
 import { buildCompanionApp } from "@freeanima/satellite-companion/build";
-import { getElectronMainBundleOptions, getElectronPreloadBundleOptions } from "./build-electron.ts";
+import {
+  getElectronMainBundleOptions,
+  getElectronPreloadBundleOptions,
+  getHubSettingsPageBundleOptions,
+  getHubSettingsPreloadBundleOptions,
+} from "./build-electron.ts";
 
 const SHELL_ROOT = import.meta.dir;
 
@@ -21,12 +26,29 @@ async function stageVendor(): Promise<void> {
 async function bundleElectron(watch: boolean): Promise<void> {
   const mainCtx = await esbuild.context(getElectronMainBundleOptions());
   const preloadCtx = await esbuild.context(getElectronPreloadBundleOptions());
-  await Promise.all([mainCtx.rebuild(), preloadCtx.rebuild()]);
+  const hubPreloadCtx = await esbuild.context(getHubSettingsPreloadBundleOptions());
+  const hubPageCtx = await esbuild.context(getHubSettingsPageBundleOptions());
+  await Promise.all([
+    mainCtx.rebuild(),
+    preloadCtx.rebuild(),
+    hubPreloadCtx.rebuild(),
+    hubPageCtx.rebuild(),
+  ]);
   if (watch) {
-    await Promise.all([mainCtx.watch(), preloadCtx.watch()]);
+    await Promise.all([
+      mainCtx.watch(),
+      preloadCtx.watch(),
+      hubPreloadCtx.watch(),
+      hubPageCtx.watch(),
+    ]);
     return;
   }
-  await Promise.all([mainCtx.dispose(), preloadCtx.dispose()]);
+  await Promise.all([
+    mainCtx.dispose(),
+    preloadCtx.dispose(),
+    hubPreloadCtx.dispose(),
+    hubPageCtx.dispose(),
+  ]);
 }
 
 await stageVendor();

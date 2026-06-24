@@ -10,10 +10,14 @@ import {
   createAccessJwtVerifier,
   type AccessJwtVerifier,
 } from "./access-jwt.ts";
+import { createRemoteAuthVerifier, type RemoteAuthVerifier } from "./remote-auth.ts";
+import { applyHttpAuth, attachRemoteAddressToRequest, isHubApiPath } from "./http-dispatch.ts";
 import type { TunnelAccessConfig } from "@freeanima/core/config";
 
 export type ApiServerOptions = {
   accessJwt?: AccessJwtVerifier | null;
+  remoteAuth?: RemoteAuthVerifier | null;
+  remoteAuthToken?: string;
   tunnelTeamName?: string;
   tunnelAccess?: TunnelAccessConfig;
 };
@@ -29,23 +33,6 @@ export type ApiServerHandle = {
 /** @deprecated 使用 ApiServerHandle */
 export type WebuiServerHandle = ApiServerHandle;
 
-type RouteHandler = (req: Request) => Response | Promise<Response>;
-
-function apiRouteHandler(apiApp: {
-  fetch: (req: Request) => Response | Promise<Response>;
-}): RouteHandler {
-  return (req) => apiApp.fetch(req);
-}
-
-function buildRoutes(apiApp: {
-  fetch: (req: Request) => Response | Promise<Response>;
-}): Record<string, RouteHandler> {
-  return {
-    "/": apiRouteHandler(apiApp),
-    "/api/*": apiRouteHandler(apiApp),
-  };
-}
-
 function dispatchFetch(
   req: Request,
   bunServer: unknown,
@@ -56,6 +43,17 @@ function dispatchFetch(
     if (sapRes !== undefined) return sapRes;
   }
   return new Response("Not Found", { status: 404 });
+}
+
+function resolveRemoteAddress(bunServer: unknown, req: Request): string | undefined {
+  if (
+    typeof (bunServer as { requestIP?: (r: Request) => { address: string } | null }).requestIP !==
+    "function"
+  ) {
+    return undefined;
+  }
+  return (bunServer as { requestIP: (r: Request) => { address: string } | null }).requestIP(req)
+    ?.address;
 }
 
 export async function startApiHttpServer(
@@ -79,25 +77,29 @@ export async function startApiHttpServer(
     await accessJwt.preload();
   }
 
+  const remoteAuth =
+    options.remoteAuth ??
+    createRemoteAuthVerifier({
+      token: options.remoteAuthToken,
+    });
+
   const server = Bun.serve({
     hostname: host,
     port,
     development: false,
-    routes: buildRoutes(apiApp),
     fetch(req, bunServer) {
-      const remoteAddress =
-        typeof (bunServer as { requestIP?: (r: Request) => { address: string } | null })
-          .requestIP === "function"
-          ? (bunServer as { requestIP: (r: Request) => { address: string } | null }).requestIP(req)
-              ?.address
-          : undefined;
+      const remoteAddress = resolveRemoteAddress(bunServer, req);
+      const run = async (): Promise<Response> => {
+        const blocked = await applyHttpAuth(req, remoteAddress, remoteAuth, accessJwt);
+        if (blocked) return blocked;
 
-      const run = async (): Promise<Response | undefined> => {
-        if (accessJwt) {
-          const blocked = await accessJwt.verifyRequest(req, remoteAddress);
-          if (blocked) return blocked;
+        const pathname = new URL(req.url).pathname;
+        if (isHubApiPath(pathname)) {
+          return apiApp.fetch(attachRemoteAddressToRequest(req, remoteAddress));
         }
-        return dispatchFetch(req, bunServer, sapHandlers);
+
+        const sapRes = dispatchFetch(req, bunServer, sapHandlers);
+        return sapRes ?? new Response("Not Found", { status: 404 });
       };
       return run();
     },

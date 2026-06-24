@@ -32,6 +32,10 @@ function sanitizeRecord(obj: Record<string, unknown>, parentKey = ""): Record<st
     }
 
     if (isSecretKey(key)) {
+      if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+        out[key] = sanitizeRecord(value as Record<string, unknown>, key);
+        continue;
+      }
       out[key] = typeof value === "string" && value.length > 0 ? "***" : value;
       continue;
     }

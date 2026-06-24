@@ -1,15 +1,15 @@
-import { resolveHubWsUrl } from "@freeanima/sap-contract/urls";
-
 import {
   buildMobileShell,
   loadHubUrl,
+  loadRemoteAuthToken,
   normalizeHubUrl,
-  saveHubUrl,
+  saveShellClientPrefs,
   testHubConnection,
 } from "../mobile-shell.ts";
 import { HOME_PAGE } from "../paths.ts";
 
 const hubInput = document.getElementById("hub-url") as HTMLInputElement;
+const tokenInput = document.getElementById("remote-auth-token") as HTMLInputElement;
 const statusEl = document.getElementById("status") as HTMLParagraphElement;
 const btnTest = document.getElementById("btn-test") as HTMLButtonElement;
 const btnSave = document.getElementById("btn-save") as HTMLButtonElement;
@@ -24,13 +24,17 @@ function setStatus(message: string, kind: "ok" | "err" | "hidden"): void {
   statusEl.className = `status ${kind}`;
 }
 
-function currentHubUrl(): string {
-  return normalizeHubUrl(hubInput.value);
+function currentValues(): { hubUrl: string; remoteAuthToken: string } {
+  return {
+    hubUrl: normalizeHubUrl(hubInput.value),
+    remoteAuthToken: tokenInput.value.trim(),
+  };
 }
 
 async function init(): Promise<void> {
-  const saved = await loadHubUrl();
-  if (saved) hubInput.value = saved;
+  const [savedHub, savedToken] = await Promise.all([loadHubUrl(), loadRemoteAuthToken()]);
+  if (savedHub) hubInput.value = savedHub;
+  if (savedToken) tokenInput.value = savedToken;
 }
 
 btnTest.addEventListener("click", () => {
@@ -38,9 +42,8 @@ btnTest.addEventListener("click", () => {
     btnTest.disabled = true;
     setStatus("正在测试连接…", "ok");
     try {
-      const hubUrl = currentHubUrl();
-      const wsUrl = resolveHubWsUrl(hubUrl);
-      await testHubConnection(wsUrl);
+      const { hubUrl, remoteAuthToken } = currentValues();
+      await testHubConnection(hubUrl, remoteAuthToken);
       setStatus("连接成功", "ok");
     } catch (e) {
       setStatus(e instanceof Error ? e.message : "连接失败", "err");
@@ -55,9 +58,9 @@ btnSave.addEventListener("click", () => {
     btnSave.disabled = true;
     setStatus("正在保存…", "ok");
     try {
-      const hubUrl = currentHubUrl();
-      await saveHubUrl(hubUrl);
-      await buildMobileShell(hubUrl);
+      const { hubUrl, remoteAuthToken } = currentValues();
+      await saveShellClientPrefs(hubUrl, remoteAuthToken);
+      await buildMobileShell(hubUrl, remoteAuthToken);
       window.location.replace(HOME_PAGE);
     } catch (e) {
       setStatus(e instanceof Error ? e.message : "保存失败", "err");

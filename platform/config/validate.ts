@@ -21,7 +21,7 @@ function validateTunnelConfig(cfg: AnimaConfig): void {
       warnings.push("tunnel.access.allowed_emails 为空");
     }
   } else {
-    warnings.push("tunnel.access.enabled=false — 公网暴露无 Access 保护，仅限测试");
+    warnings.push("tunnel.access.enabled=false — 公网暴露依赖 remote_auth.token，请确认已配置");
   }
 
   if (!tunnel.credentials?.tunnel_credentials) {
@@ -61,4 +61,11 @@ export async function validateConfigOnStartup(): Promise<void> {
   }
 
   validateTunnelConfig(parsed.data);
+
+  const token = parsed.data.remote_auth?.token?.trim();
+  if (parsed.data.tunnel?.enabled && (!token || token.length < 16)) {
+    console.warn(
+      "[tunnel] remote_auth.token 未配置 — 非本地连接将一律返回 401，远程客户端无法接入",
+    );
+  }
 }

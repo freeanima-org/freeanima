@@ -2,102 +2,106 @@
 title: Remote access
 ---
 
-# Remote access (Cloudflare Tunnel + Access)
+# Remote access（Tunnel + 应用 Token）
 
-> Expose Chamber WebUI to the public internet safely for **single-user** personal use.
-> Prerequisites: domain on Cloudflare, Zero Trust team, Google (or other IdP) for Access login.
-> Security context: [`security.md`](security.md) · install: [`install.md`](install.md)
+> 通过 **Cloudflare Tunnel** 将家里 PC 上的 Hub 暴露到公网时，由 Hub **`remote_auth`** Bearer Token 保护非本地连接。
+> 安全上下文：[`security.md`](security.md) · 安装：[`install.md`](install.md)
 
-## Overview
+## 概览
 
-FreeAnima can publish `127.0.0.1:2658` via **Cloudflare Tunnel** (`cloudflared`) with **Cloudflare Access** authentication at the edge. Login happens on Cloudflare (e.g. Google), not in FreeAnima.
+| 层                    | 作用                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| **Hub `remote_auth`** | `config.yaml` 明文 token；REST `Authorization: Bearer`；SAP `connect` 帧 `auth_token` |
+| **cloudflared**       | 出站隧道，把公网 HTTPS/WSS 转到 `127.0.0.1:2658`                                      |
+| **客户端设置**        | desktop-shell / app-mobile 在 **Hub 设置页**填写同一 Hub 地址与 token                 |
 
-| Layer                    | Role                                                                    |
-| ------------------------ | ----------------------------------------------------------------------- |
-| Cloudflare Access        | User login, Allow policy (your email)                                   |
-| cloudflared              | Outbound tunnel to local Hub                                            |
-| FreeAnima JWT middleware | Validates `Cf-Access-Jwt-Assertion`; loopback direct access still works |
+仅当 **Host 为 loopback**（`127.0.0.1` / `localhost` / `::1`）**且 TCP 对端也为 loopback** 时 **不验 token**（本地开发、CLI/systemd 探活）。公网域名（经 Tunnel）、局域网 IP 等访问时须带 token；与 `tunnel.enabled` 无关。
 
-## Quick start
+可选：仍可在 Cloudflare 配置 Access（浏览器 IdP 登录）；bundled 客户端走应用 Token，不依赖 Access。
 
-One command (interactive wizard includes cloudflared install):
+## 1. Hub 配置
+
+在 `~/.anima/config.yaml` 中设置（**仅本地使用可省略**；暴露到局域网或公网前必须配置）：
+
+```yaml
+remote_auth:
+  token: "请替换为 openssl rand -base64 32 生成的随机串"
+```
+
+生成示例：
 
 ```bash
-anima tunnel setup
+openssl rand -base64 32
+```
+
+`.gitignore` 已忽略 `config.yaml`；请勿提交到 git。WebUI/API 读配置时会对 `remote_auth.token` 脱敏显示。
+
+## 2. Tunnel（可选）
+
+```bash
+anima tunnel setup   # 可跳过 Access API 步骤
 anima service start
 ```
 
-Open `https://<your-hostname>/chamber/dashboard` from PC or mobile browser → sign in with Google (or configured IdP).
+`tunnel.enabled: true` 时随服务启动 cloudflared。Ingress 指向本机 Hub 端口（默认 `2658`）。
 
-## Setup wizard
+若不使用 Tunnel，仅在局域网用 `http://<PC-IP>:2658` 亦可；客户端同样需在设置页填写 token。
 
-`anima tunnel setup` saves each answer to `~/.anima/config.yaml` as you go (`tunnel.enabled` stays `false` until success). Re-run the wizard to resume with saved values.
+### Cloudflare 凭证（pass）
 
-1. Public hostname (e.g. `anima.example.com`)
-2. Zero Trust team name (e.g. `myteam` → `myteam.cloudflareaccess.com`)
-3. Allowed email (single-user Allow policy)
-4. Optional Cloudflare API Token — auto-creates Tunnel, DNS, and Access App
-5. Session duration (default 7 days)
+| pass 路径                                | 用途                     |
+| ---------------------------------------- | ------------------------ |
+| `services/cloudflare/api-token`          | 创建 Tunnel / DNS        |
+| `services/cloudflare/tunnel-credentials` | `cloudflared` 连接器凭证 |
 
-Secrets are stored in **pass**:
+详见向导 `anima tunnel setup`。
 
-| pass 路径                                | 是什么                                                                | 谁提供                                             |
-| ---------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------- |
-| `services/cloudflare/api-token`          | **Cloudflare API Token** — 调用 Cloudflare API 创建 Tunnel/DNS/Access | 你在 Dashboard → 我的个人资料 → API 令牌 创建      |
-| `services/cloudflare/tunnel-credentials` | **隧道连接器凭证** — `cloudflared` 连接 Cloudflare 用                 | setup 通过 API 自动生成，**不要**与 API Token 混淆 |
+## 3. 客户端配置
 
-**不是** Zero Trust 控制台里「隧道 → 安装连接器」复制的那段令牌（那是旧版手动安装方式；本向导用 API Token 自动换取隧道凭证）。
+**desktop-shell** 与 **app-mobile** 均视为远端客户端，**不读取** Hub 的 `config.yaml`。
 
-Config is written to `~/.anima/config.yaml` under `tunnel:`.
+| 客户端        | 存储位置                     |
+| ------------- | ---------------------------- |
+| desktop-shell | `~/.anima/shell-client.json` |
+| app-mobile    | Capacitor Preferences        |
 
-Tunnel ingress targets the Hub at `127.0.0.1:<port>` where `<port>` comes from the running service (`server.status.json`) or defaults to `2658` — it is **not** a `tunnel:` config field. Use `anima service --port` for the Hub; `anima tunnel setup --port` only overrides during setup.
+设置项（两端一致）：
 
-### Non-interactive
+1. **Hub 地址** — 如 `https://anima.example.com` 或 `http://192.168.1.10:2658`
+2. **远程 Token** — 与 Hub `remote_auth.token` 相同
 
-```bash
-anima tunnel setup --non-interactive \
-  --hostname anima.example.com \
-  --team myteam \
-  --email you@gmail.com \
-  --access-api \
-  --yes
+操作：打开 Hub 设置 → 填写 → **测试连接** → 保存。桌面端保存后需 **重启 desktop-shell**。
+
+## 4. 认证行为
+
+```text
+REST:  Authorization: Bearer <token>
+SAP:   WebSocket /sap/v1 → connect 帧含 auth_token 字段
 ```
 
-Provide API Token via pass before running, or paste during interactive setup.
+缺少或错误 token → HTTP `401` 或 SAP 连接关闭。
 
-### Manual Access (no API Token)
+判定依据为请求 URL 的 **Host**（经 Tunnel 时为公网域名，如 `anima.example.com`）与 **TCP 对端地址**；Hub 不读取 `tunnel.enabled` 决定是否验 token。
 
-If you skip the API Token, the wizard prints numbered Dashboard steps: create self-hosted Access App, Allow-by-email policy, copy **AUD** tag into `tunnel.access.audience`.
+## 运维命令
 
-## Operations
+| 命令                          | 说明                      |
+| ----------------------------- | ------------------------- |
+| `anima tunnel status`         | Tunnel / cloudflared 状态 |
+| `anima tunnel start` / `stop` | 侧车启停                  |
+| `anima service status`        | Hub 是否运行              |
 
-| Command                | Description                                               |
-| ---------------------- | --------------------------------------------------------- |
-| `anima tunnel status`  | Tunnel / Access / cloudflared state                       |
-| `anima tunnel start`   | Start cloudflared sidecar                                 |
-| `anima tunnel stop`    | Stop sidecar                                              |
-| `anima tunnel install` | Download cloudflared only (optional; setup includes this) |
+## 故障排查
 
-When `tunnel.enabled: true`, `anima service start` also starts the tunnel sidecar (systemd user unit or foreground with `--foreground`).
+| 现象                   | 检查                                                       |
+| ---------------------- | ---------------------------------------------------------- |
+| 公网 502               | Hub 是否运行？`anima service status`                       |
+| 公网 1033              | `anima tunnel status` 中 `connected: no`                   |
+| 401                    | 客户端 token 是否与 `remote_auth.token` 一致               |
+| 本机开发正常、远程失败 | 远程请求是否带 Bearer / SAP auth_token；公网 Host 须 token |
+| 改 token 后仍 401      | 更新 Hub config **并** 各客户端设置页                      |
 
-## API Token permissions
+## 相关文档
 
-创建 **API Token**（非隧道连接器令牌）时建议权限：
-
-- Account — Cloudflare Tunnel: Edit
-- Zone — DNS: Edit (auto CNAME)
-- Account — Access: Apps and Policies: Edit (optional `--access-api`)
-
-## Troubleshooting
-
-| Symptom              | Check                                                                                                                                                      |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public URL 502       | Hub running? `anima service status`                                                                                                                        |
-| Public URL 1033      | `connected: no` in `anima tunnel status`? cloudflared 未连上 CF 边缘；查 `journalctl --user -u anima-tunnel`；本机代理 fake-ip 可能劫持 `*.argotunnel.com` |
-| Access login loop    | IdP enabled in Access App; email in Allow policy                                                                                                           |
-| 401 from Hub         | `tunnel.access.audience` matches Access App AUD                                                                                                            |
-| Local Chamber broken | Loopback bypass — use `http://127.0.0.1:2658` without CF headers                                                                                           |
-
-## PC vs mobile
-
-Each browser keeps its own Access conversation cookie. First visit on PC and phone each require one Google login; sessions renew per configured duration.
+- 移动端：[`mobile-app.md`](../features/mobile-app.md)
+- 桌面伴侣 Hub 来源：[`companion.md`](../features/companion.md)

@@ -1,4 +1,5 @@
 import type { TunnelAccessConfig } from "@freeanima/core/config";
+import { isAuthExemptPath, isLocalDirectConnection } from "./remote-auth.ts";
 
 export type AccessJwtConfig = {
   teamName: string;
@@ -13,7 +14,6 @@ export type AccessJwtVerifier = {
 };
 
 const CF_JWT_HEADER = "cf-access-jwt-assertion";
-const CF_CONNECTING_IP = "cf-connecting-ip";
 
 type CachedCert = {
   kid: string;
@@ -29,27 +29,6 @@ const CERT_CACHE_TTL_MS = 60 * 60 * 1000;
 
 function normalizeHeader(req: Request, name: string): string | null {
   return req.headers.get(name) ?? req.headers.get(name.toLowerCase()) ?? null;
-}
-
-function isLoopbackAddress(addr: string | undefined): boolean {
-  if (!addr) return false;
-  const normalized = addr.replace(/^::ffff:/, "");
-  return normalized === "127.0.0.1" || normalized === "::1" || normalized === "localhost";
-}
-
-function hasCloudflareHeaders(req: Request): boolean {
-  return (
-    normalizeHeader(req, CF_JWT_HEADER) !== null ||
-    normalizeHeader(req, CF_CONNECTING_IP) !== null ||
-    normalizeHeader(req, "cf-ray") !== null
-  );
-}
-
-function shouldBypass(req: Request, remoteAddress?: string): boolean {
-  if (!hasCloudflareHeaders(req) && isLoopbackAddress(remoteAddress)) {
-    return true;
-  }
-  return false;
 }
 
 function parseJwtParts(token: string): {
@@ -223,7 +202,8 @@ export function createAccessJwtVerifier(config: AccessJwtConfig): AccessJwtVerif
     },
     async verifyRequest(req, remoteAddress) {
       if (!config.enabled) return null;
-      if (shouldBypass(req, remoteAddress)) return null;
+      if (isAuthExemptPath(req)) return null;
+      if (isLocalDirectConnection(req, remoteAddress)) return null;
 
       const token = normalizeHeader(req, CF_JWT_HEADER);
       if (!token) {

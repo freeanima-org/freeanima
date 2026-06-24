@@ -1,6 +1,6 @@
 import { COMPANION_APP_ID } from "../shared/constants.ts";
 import { getSapInstanceId, isSapConnected } from "./sap/hub.ts";
-import { activeModelPath, loadConfig, type CompanionConfig } from "./config.ts";
+import { activeModelPath, hubUrlFromConfig, loadConfig, type CompanionConfig } from "./config.ts";
 import { isModelPathAvailable } from "./model-path.ts";
 import { listModels, scanModelsOnDisk } from "./model-registry.ts";
 import { listMotionLibrary, syncLibraryFromDisk } from "./motion-library.ts";
@@ -23,6 +23,7 @@ export function clientCompanionConfig(cfg: CompanionConfig = loadConfig()): Clie
     app_id: COMPANION_APP_ID,
     instance_id: getSapInstanceId(),
     ...cfg,
+    hub_url: hubUrlFromConfig(),
     models: listModels(),
     motion_library: listMotionLibrary(),
     model_path,

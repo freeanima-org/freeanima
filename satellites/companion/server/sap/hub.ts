@@ -6,6 +6,7 @@ import {
   fileSapInstanceStore,
   type SatelliteHubHandle,
 } from "@freeanima/sap-contract";
+import { remoteAuthTokenFromShell } from "../config.ts";
 import { executeCompanionTool } from "../tools/executor.ts";
 
 const APP_ID = "companion";
@@ -49,6 +50,7 @@ function ensureHub(hubUrl: string, httpUrl?: string): SatelliteHubHandle {
       appId: APP_ID,
       hubUrl,
       httpUrl,
+      remoteAuthToken: remoteAuthTokenFromShell(),
       instanceStore: fileSapInstanceStore(instanceStorePath()),
       relay: false,
       tools: REGISTERED_TOOLS,

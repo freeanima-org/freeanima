@@ -28,6 +28,12 @@ llm:
         - provider: main
           model: deepseek-v4-flash
 
+# 远程访问认证（仅本地可省略）：非 loopback 无 token 配置时一律 401
+# 暴露到局域网/公网前必填；生成：openssl rand -base64 32
+# 桌面/手机客户端在设置页填写相同 token（不读此文件）
+# remote_auth:
+#   token: "请替换为 openssl rand -base64 32 生成的随机串"
+
 # Firecrawl（web_search / web_extract）
 # API Key 走 pass：anima credential add services/firecrawl token=xxx
 firecrawl:

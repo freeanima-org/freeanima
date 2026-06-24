@@ -80,6 +80,7 @@ const minimalConfig = Config.fromSnapshot({
     },
     profiles: { chat: { chain: [{ provider: "main", model: "gpt-4" }] } },
   },
+  remote_auth: { token: "test-remote-auth-token-min16" },
 });
 
 let testDeps: RuntimeDeps;

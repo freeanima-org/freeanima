@@ -13,7 +13,7 @@ FreeAnima is designed for **single-user local / intranet** deployment:
 
 - HTTP / WebUI **has no auth by default**; binding `127.0.0.1` is not security—any process or user that can reach the port can read conversations, send messages, start/stop MCP/ACP.
 - Default bind is `127.0.0.1`; for LAN access, assess CORS and network isolation yourself.
-- **Do not** expose the service to the public internet without reverse-proxy authentication (built-in option: [`remote-access.md`](remote-access.md) — Cloudflare Tunnel + Access).
+- **Do not** expose the service to the public internet without `remote_auth` (see [`remote-access.md`](remote-access.md) — Tunnel + Bearer token).
 
 ## Credential Responsibilities
 
@@ -67,15 +67,15 @@ Disk backup = data access. Protect backup media accordingly.
 
 The following are planned in code or docs—**deployers must not assume implemented**:
 
-| Priority | Item                                                  | Status                                                                                                |
-| -------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                                                                                               |
-| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                                                                                       |
-| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                                                                                       |
-| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                                                                                       |
-| P2       | HTTP API auth                                         | None by default; Cloudflare Access JWT when `tunnel.enabled` ([`remote-access.md`](remote-access.md)) |
-| P3       | IPC / LLM rate limiting                               | None                                                                                                  |
-| P3       | Session disk encryption                               | None                                                                                                  |
+| Priority | Item                                                  | Status                                                                                                                       |
+| -------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                                                                                                                      |
+| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                                                                                                              |
+| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                                                                                                              |
+| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                                                                                                              |
+| P2       | HTTP API auth                                         | 非 loopback Host 或 TCP 对端非 loopback 时须 `remote_auth` 或 401；双 loopback 免验 ([`remote-access.md`](remote-access.md)) |
+| P3       | IPC / LLM rate limiting                               | None                                                                                                                         |
+| P3       | Session disk encryption                               | None                                                                                                                         |
 
 ## Threat Sources
 

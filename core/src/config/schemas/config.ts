@@ -2,6 +2,7 @@ import { z } from "zod";
 import { llmConfigSchema } from "./llm-config.ts";
 import { embeddingConfigSchema } from "./embedding.ts";
 import { tunnelConfigSchema } from "./tunnel.ts";
+import { remoteAuthConfigSchema } from "./remote-auth.ts";
 
 export const mcpServerSchema = z
   .object({
@@ -231,6 +232,7 @@ export const animaConfigSchema = z
     weixin: sectionSchema.optional(),
     push: sectionSchema.optional(),
     tunnel: tunnelConfigSchema,
+    remote_auth: remoteAuthConfigSchema.optional(),
   })
   .passthrough();
 

@@ -6,6 +6,7 @@ export const connectPayloadSchema = z.object({
   app_id: z.string().min(1),
   /** Omitted on first register; present on reconnect/login */
   instance_id: z.string().min(1).optional(),
+  auth_token: z.string().min(1).optional(),
   instance_label: z.string().optional(),
   protocol: z.literal(SAP_VERSION),
   features_requested: z.array(z.string()).default([]),

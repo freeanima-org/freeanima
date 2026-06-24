@@ -95,11 +95,9 @@ export async function route(req: Request): Promise<Response> {
 
   if (url.pathname === "/api/config" && req.method === "POST") {
     const body = (await req.json()) as Partial<CompanionConfig>;
-    const prev = hubUrlFromConfig();
-    const next = saveConfig(body);
-    if (body.hub_url?.trim() && body.hub_url.trim() !== prev) {
-      reconnectSap(next.hub_url.replace(/\/$/, ""), activeHttpUrl);
-    }
+    const { hub_url: _ignoredHub, ...rest } = body;
+    const next = saveConfig(rest);
+    reconnectSap(hubUrlFromConfig(), activeHttpUrl);
     return jsonResponse(clientCompanionConfig(next));
   }
 

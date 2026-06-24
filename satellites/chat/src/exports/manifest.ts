@@ -1,5 +1,5 @@
 import type { FrontendManifest } from "@freeanima/satellite-sdk";
-import { readMonorepoVersion } from "@freeanima/satellite-sdk";
+import { readMonorepoVersion } from "@freeanima/satellite-sdk/version";
 
 const APP_ID = "chat";
 
