@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
+import { buildSapSharedWorker } from "@freeanima/sap-contract/build-shared-worker";
 
 const REPO_ROOT = join(import.meta.dir, "..", "..");
 const APP_DIR = join(import.meta.dir, "app");
@@ -81,6 +82,9 @@ export async function buildChatApp(opts?: { watch?: boolean; minify?: boolean })
   if (!content.includes("root")) {
     throw new Error("invalid build output");
   }
+
+  await buildSapSharedWorker(DIST_DIR);
+
   return DIST_DIR;
 }
 

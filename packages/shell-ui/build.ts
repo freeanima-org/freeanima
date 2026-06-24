@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { compileParaglideToDir } from "@freeanima/admin-frontend/paraglide-compile";
+import { buildSapSharedWorker } from "@freeanima/sap-contract/build-shared-worker";
 
 const PKG_DIR = import.meta.dir;
 const REPO_ROOT = join(PKG_DIR, "..", "..");
@@ -79,6 +80,9 @@ export async function buildShellUi(opts?: { watch?: boolean; minify?: boolean })
   if (!existsSync(html)) throw new Error("build did not produce index.html");
   const content = readFileSync(html, "utf-8");
   if (!content.includes("root")) throw new Error("invalid build output");
+
+  await buildSapSharedWorker(DIST_DIR);
+
   return DIST_DIR;
 }
 
