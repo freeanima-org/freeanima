@@ -60,8 +60,15 @@ async function bundleBrowserEntry(entry: string, outdir: string, outfile: string
   }
 }
 
+function assertNoDoubleWebuiPrefix(html: string, label: string): void {
+  if (html.includes("/webui/webui/")) {
+    throw new Error(`${label}: webui 资源路径出现 /webui/webui/ 双前缀`);
+  }
+}
+
 function injectWebuiBridge(htmlRaw: string, entryPath: string, bridgeFile: string): string {
-  return rewriteAssetPaths(htmlRaw, "/webui/")
+  // chamber dist 已设 publicPath=/webui/，无需再 rewrite，否则 CSS href 会变成 /webui/webui/…
+  return htmlRaw
     .replace(
       /content="width=device-width, initial-scale=1\.0"/,
       'content="width=device-width, initial-scale=1.0, viewport-fit=cover"',
@@ -127,6 +134,7 @@ export async function buildAppMobile(): Promise<string> {
   writeFileSync(join(CHAT_WWW, "index.html"), chatHtml);
 
   const webuiHtml = injectWebuiBridge(webuiHtmlRaw, webuiEntryPath, "/webui/bridge-init.js");
+  assertNoDoubleWebuiPrefix(webuiHtml, "www/webui/index.html");
   writeFileSync(join(WEBUI_WWW, "index.html"), webuiHtml);
 
   mkdirSync(CHAMBER_ENTRY_WWW, { recursive: true });
@@ -135,6 +143,7 @@ export async function buildAppMobile(): Promise<string> {
     webuiEntryPath,
     "/webui/bridge-init.js",
   );
+  assertNoDoubleWebuiPrefix(chamberDashboardHtml, "www/webui/chamber/dashboard/index.html");
   writeFileSync(join(CHAMBER_ENTRY_WWW, "index.html"), chamberDashboardHtml);
 
   const bootstrapHtml = `<!doctype html>
