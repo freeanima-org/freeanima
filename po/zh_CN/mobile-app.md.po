@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 17:27+0800\n"
+"POT-Creation-Date: 2026-06-24 18:53+0800\n"
 "PO-Revision-Date: 2026-06-24 17:13+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -15,11 +15,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Yaml Front Matter Hash Value: title
-#: docs/features/mobile-app.md:1
+#. type: Content of: <messages><msg>
+#: docs/features/mobile-app.md:1 messages/po4a/en.xml:512
 #, no-wrap
 msgid "Mobile app (Android)"
-msgstr ""
+msgstr "移动端 APP（Android）"
 
 #. type: Title #
 #: docs/features/mobile-app.md:5
@@ -30,7 +30,7 @@ msgstr ""
 #. type: Plain text
 #: docs/features/mobile-app.md:7
 #, no-wrap
-msgid "> Capacitor 壳 + 聊天室 / 管理台 bundled SPA。  \n"
+msgid "> Capacitor 壳 + 统一 shell-ui SPA（聊天室 / 管理台 / 设置）。  \n"
 msgstr ""
 
 #. type: Plain text
@@ -68,72 +68,100 @@ msgstr ""
 #, no-wrap
 msgid ""
 "flowchart LR\n"
-"  Phone[Android APP WebView]\n"
-"  Home[主页]\n"
-"  Chat[chat bundled]\n"
-"  Admin[admin bundled]\n"
+"  Phone[Android WebView]\n"
+"  Shell[shell-ui SPA]\n"
+"  Chat[\"/chat\"]\n"
+"  Admin[\"/admin\"]\n"
+"  Settings[\"/settings\"]\n"
 "  Hub[Anima Service]\n"
 "\n"
-"  Phone --> Home\n"
-"  Home --> Chat\n"
-"  Home --> Admin\n"
+"  Phone --> Shell\n"
+"  Shell --> Chat\n"
+"  Shell --> Admin\n"
+"  Shell --> Settings\n"
 "  Chat -->|SAP auth_token| Hub\n"
 "  Admin -->|REST Bearer| Hub\n"
 msgstr ""
 
+#. type: Plain text
+#: docs/features/mobile-app.md:39
+msgid ""
+"移动端 REST **直连** Hub（无桌面 Electron 的 `/api` 本地代理）；须配置 "
+"`remote_auth.token` 且 Hub 允许 Capacitor Origin（`http://localhost`）。"
+msgstr ""
+
 #. type: Title ##
-#: docs/features/mobile-app.md:36
+#: docs/features/mobile-app.md:40
 #, no-wrap
 msgid "Hub 设置"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/features/mobile-app.md:44
+#: docs/features/mobile-app.md:48
 msgid ""
-"家里 PC：`anima service start`，并在 `~/.anima/config.yaml` 配置 "
-"`remote_auth.token`（见 [`remote-access.md`](../guide/remote-access.md)）。"
+"家里 PC：`anima service start --host 0.0.0.0`，并在 `~/.anima/config.yaml` 配"
+"置 `remote_auth.token`（见 [`remote-access.md`](../guide/remote-"
+"access.md)）。"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/features/mobile-app.md:44
+#: docs/features/mobile-app.md:48
 msgid "（可选）`anima tunnel setup`，手机使用 `https://<your-hostname>`。"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/features/mobile-app.md:44
-msgid "APP → **Hub 设置**："
+#: docs/features/mobile-app.md:48
+msgid "APP → **Hub 设置**（`/settings`）："
 msgstr ""
 
 #. type: Bullet: '   - '
-#: docs/features/mobile-app.md:44
-msgid "Hub 地址（Tunnel 域名或 `http://<PC-IP>:2658`）"
+#: docs/features/mobile-app.md:48
+msgid "Hub 地址（Tunnel 域名或 `http://<PC-IP>:2658`；勿用 `127.0.0.1`）"
 msgstr ""
 
 #. type: Bullet: '   - '
-#: docs/features/mobile-app.md:44
-msgid "远程 Token（与 Hub `config.yaml` 中 `remote_auth.token` 相同）"
+#: docs/features/mobile-app.md:48
+msgid ""
+"远程 Token（与 Hub `config.yaml` 中 `remote_auth.token` 相同，≥16 字符）"
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/features/mobile-app.md:44
-msgid "**测试连接** → **保存并进入** → 聊天室 / 管理台。"
+#: docs/features/mobile-app.md:48
+msgid "**测试连接** → **保存并进入** → 顶栏切换 **聊天室** / **管理台**。"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:46
+#: docs/features/mobile-app.md:50
 msgid ""
 "非 loopback Hub 地址必须填写 token；REST 使用 `Authorization: Bearer`，SAP "
 "在 `connect` 帧携带 `auth_token`。"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:47
+#: docs/features/mobile-app.md:51
+#, no-wrap
+msgid "排障"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/mobile-app.md:58
+#, no-wrap
+msgid ""
+"| 现象 | 常见原因 |\n"
+"| ---- | -------- |\n"
+"| 聊天输入无反应 | 无选中会话（首装应自动建会话）；或 SAP 未连接 |\n"
+"| 管理台 load failed / Failed to fetch | Hub 未 `--host 0.0.0.0`、Token 错误、防火墙；Chrome Remote Debugging 看请求是否带 Bearer |\n"
+"| Not Found | 勿访问旧路径如 `/admin/dashboard/index.html`；应走 SPA `/admin/dashboard` |\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/features/mobile-app.md:59
 #, no-wrap
 msgid "构建与 sideload"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/features/mobile-app.md:49
+#: docs/features/mobile-app.md:61
 #, no-wrap
 msgid ""
 "bun run app/mobile:build\n"
@@ -142,24 +170,25 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:56
+#: docs/features/mobile-app.md:68
 msgid "包内 README：[`app/mobile/README.md`](../../app/mobile/README.md)"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:57
+#: docs/features/mobile-app.md:69
 #, no-wrap
 msgid "与桌面壳对比"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:64
+#: docs/features/mobile-app.md:77
 #, no-wrap
 msgid ""
 "|             | Electron `app/desktop`                  | Capacitor `app/mobile` |\n"
 "| ----------- | --------------------------------------- | ---------------------- |\n"
-"| 注入        | preload → `window.satelliteShell`       | bridge-init → 同形 API |\n"
+"| 注入        | preload → `window.satelliteShell`       | `shell-bridge.js` → 同形 API |\n"
 "| Hub 配置    | Hub 设置 → `~/.anima/shell-client.json` | Hub 设置 → Preferences |\n"
+"| REST        | 本地静态服代理 `/api`（同源）           | 直连 `hubUrl/api/*`（CORS + Bearer） |\n"
 "| instance_id | 文件 `~/.anima/satellites/chat/`        | Preferences            |\n"
-"| 内容        | chat + admin + companion              | chat + admin         |\n"
+"| 内容        | chat + admin + companion                | chat + admin           |\n"
 msgstr ""

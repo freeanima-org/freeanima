@@ -43,7 +43,7 @@ export const starlightSidebar = [
       {
         ...t("sidebar_features"),
         collapsed: true,
-        items: [{ ...t("sidebar_pair_programming"), link: "/docs/features/pair-programming-v1/" }],
+        items: [{ ...t("sidebar_mobile_app"), link: "/docs/features/mobile-app/" }],
       },
       {
         ...t("sidebar_sap"),

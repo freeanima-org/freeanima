@@ -246,12 +246,10 @@ Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User message
 
 聊天室与管理台 UI 由 **app/desktop** / **app/mobile** 打进客户端；`anima service` 仅提供 Hub 后端。
 
-| 模块  | 连接方式                          | 说明                          |
-| ----- | --------------------------------- | ----------------------------- |
-| Chat  | SAP WebSocket `/sap/v1`           | 桌面 :4174 / 移动 `www/chat`  |
-| Admin | Hub REST `/api/*`（CORS + shell） | 桌面 :4175 / 移动 `www/admin` |
-
-Pair-programming studio 仍为可选 satellite 进程（`http://127.0.0.1:4173`），与 Hub bundled UI 无关。
+| 模块  | 连接方式                          | 说明                         |
+| ----- | --------------------------------- | ---------------------------- |
+| Chat  | SAP WebSocket `/sap/v1`           | 桌面 / 移动 bundled `/chat`  |
+| Admin | Hub REST `/api/*`（CORS + shell） | 桌面 / 移动 bundled `/admin` |
 
 ## Events and Hooks (Summary)
 

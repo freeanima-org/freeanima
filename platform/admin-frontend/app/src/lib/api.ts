@@ -4,6 +4,7 @@ import type { App } from "@freeanima/admin-api/elysia";
 import { m } from "./i18n.ts";
 import { translateApiErrorValue } from "./api-errors.ts";
 import { apiPath } from "./api-path.ts";
+import { hubApiFetch, subscribeHubSse } from "./hub-fetch.ts";
 import { resolveApiOrigin } from "./hub-origin.ts";
 
 let cachedClient: Treaty.Create<App> | null = null;
@@ -108,8 +109,8 @@ export type ConversationAcpDockSnapshot = {
 export async function getConversationAcpDock(
   conversationId: string,
 ): Promise<ConversationAcpDockSnapshot> {
-  const res = await fetch(
-    apiPath(`/api/conversations/${encodeURIComponent(conversationId)}/acp-dock`),
+  const res = await hubApiFetch(
+    `/api/conversations/${encodeURIComponent(conversationId)}/acp-dock`,
   );
   if (!res.ok) {
     throw new Error(`HTTP ${res.status}`);
@@ -121,7 +122,19 @@ export function subscribeConversationEvents(
   conversationId: string,
   onUpdate: () => void,
 ): { unsubscribe: () => void } {
-  const url = apiPath(`/api/conversations/${encodeURIComponent(conversationId)}/events`);
+  const path = `/api/conversations/${encodeURIComponent(conversationId)}/events`;
+  const shell = (typeof window !== "undefined" ? window.satelliteShell : undefined) as
+    | { hubFetch?: typeof fetch }
+    | undefined;
+
+  if (shell?.hubFetch) {
+    return subscribeHubSse(path, {
+      conversation_updated: onUpdate,
+      ready: onUpdate,
+    });
+  }
+
+  const url = apiPath(path);
   const es = new EventSource(url);
   const handler = () => onUpdate();
   es.addEventListener("conversation_updated", handler);

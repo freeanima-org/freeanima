@@ -30,9 +30,9 @@ For **FreeAnima users** — self-hosted deployment, talking to a digital life, c
 
 ## Features — Major Capabilities
 
-| Topic            | File                                                               |
-| ---------------- | ------------------------------------------------------------------ |
-| Pair programming | [features/pair-programming-v1.md](features/pair-programming-v1.md) |
+| Topic      | File                                             |
+| ---------- | ------------------------------------------------ |
+| Mobile app | [features/mobile-app.md](features/mobile-app.md) |
 
 ## SAP — Satellite Application Protocol
 

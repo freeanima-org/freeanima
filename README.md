@@ -29,7 +29,7 @@ The technical stack (layered memory, self layer, flat tool registry, Gateway, pa
 | **Memory**      | Conversation archive → light-sleep → semantic / episodic / procedural + limbic; PG FTS / hybrid recall |
 | **Self layer**  | Six-block persistent identity (`self_blocks`)                                                          |
 | **Tools**       | Flat registry: local / MCP / ACP; capability masks                                                     |
-| **Gateway**     | Discord · WeChat · Admin (Admin / Chat / Studio)                                                       |
+| **Gateway**     | Discord · WeChat · Chat                                                                                |
 | **Credentials** | pass (GPG) injection; LLM sees paths, not values                                                       |
 | **Runtime**     | Bun service: tRPC + EventBus async indexing                                                            |
 
@@ -86,8 +86,6 @@ Then configure `~/.anima/config.yaml` (or `.env` for Docker) and run `anima serv
 
 - API：`http://127.0.0.1:2658/api`
 - Admin 开发：`bun run dev:admin` → `http://127.0.0.1:4175/admin/dashboard?embed=1`
-
-Pair-programming studio（可选 satellite）：`http://127.0.0.1:4173`
 
 ## First-deploy security checklist
 

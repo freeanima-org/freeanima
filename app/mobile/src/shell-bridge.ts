@@ -7,6 +7,20 @@ import {
 } from "./mobile-shell.ts";
 import { CHAT_PAGE, SETTINGS_PAGE } from "./paths.ts";
 
+type ShellBridgeWindow = Window & {
+  __freeanimaShellBridge?: { ready: Promise<void> };
+};
+
+function installShellBridgeReady(): () => void {
+  let resolveReady!: () => void;
+  (window as ShellBridgeWindow).__freeanimaShellBridge = {
+    ready: new Promise<void>((resolve) => {
+      resolveReady = resolve;
+    }),
+  };
+  return resolveReady;
+}
+
 function installSettingsShellClientApi(): void {
   window.settingsShellClientApi = {
     async load() {
@@ -25,24 +39,31 @@ function installSettingsShellClientApi(): void {
 }
 
 async function bootstrapShellBridge(): Promise<void> {
+  const finish = installShellBridgeReady();
   installSettingsShellClientApi();
   document.documentElement.dataset.shellUi = "1";
 
-  const path = window.location.pathname;
-  if (path.startsWith("/settings")) return;
+  try {
+    const path = window.location.pathname;
+    const hubUrl = await loadHubUrl();
+    const remoteAuthToken = await loadRemoteAuthToken();
 
-  const hubUrl = await loadHubUrl();
-  const remoteAuthToken = await loadRemoteAuthToken();
-  if (!hubUrl || !remoteAuthToken) {
-    if (path !== SETTINGS_PAGE) window.location.replace(SETTINGS_PAGE);
-    return;
-  }
+    if (hubUrl && remoteAuthToken) {
+      window.satelliteShell = await buildMobileShell(hubUrl, remoteAuthToken);
+    }
 
-  const shell = await buildMobileShell(hubUrl, remoteAuthToken);
-  window.satelliteShell = shell;
+    if (path.startsWith("/settings")) return;
 
-  if (path === "/" || path.endsWith("/index.html")) {
-    window.location.replace(CHAT_PAGE);
+    if (!hubUrl || !remoteAuthToken) {
+      if (path !== SETTINGS_PAGE) window.location.replace(SETTINGS_PAGE);
+      return;
+    }
+
+    if (path === "/" || path.endsWith("/index.html")) {
+      window.location.replace(CHAT_PAGE);
+    }
+  } finally {
+    finish();
   }
 }
 

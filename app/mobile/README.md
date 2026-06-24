@@ -49,21 +49,18 @@ Debug APK：`android/app/build/outputs/apk/debug/app-debug.apk`
 
 ## 使用
 
-1. 首次启动进入 **Hub 设置**，填写 PC 局域网地址，如 `http://192.168.1.10:2658`
+1. 首次启动进入 **Hub 设置**，填写 PC 局域网地址，如 `http://192.168.1.10:2658`，以及 Hub `remote_auth.token`
 2. **测试连接** → **保存并进入**
-3. 主页选择 **聊天室** 或 **管理台**
+3. 顶栏切换 **聊天室** / **管理台**
 
 ## 架构
 
-| 路径                       | 作用                                            |
-| -------------------------- | ----------------------------------------------- |
-| `src/mobile-shell.ts`      | Preferences 持久化、`window.satelliteShell`     |
-| `src/settings/`            | Hub 设置 UI                                     |
-| `src/home/`                | 聊天室 / 管理台入口                             |
-| `src/bridge-init.ts`       | chat 页加载前注入壳层                           |
-| `src/bridge-init-admin.ts` | 管理台 Admin 壳层注入                           |
-| `www/chat/`                | 构建时从 `satellites/chat/dist` 复制            |
-| `www/admin/`               | 构建时由 `@freeanima/admin-frontend/build` 产出 |
-| `android/`                 | Capacitor Android 工程                          |
+| 路径                  | 作用                                        |
+| --------------------- | ------------------------------------------- |
+| `src/mobile-shell.ts` | Preferences 持久化、`window.satelliteShell` |
+| `src/shell-bridge.ts` | 启动时注入壳层 API，阻塞 SPA 直至 Hub 就绪  |
+| `build.ts`            | 构建 shell-ui → `www/` + shell-bridge       |
+| `www/`                | 统一 SPA（`/chat`、`/admin`、`/settings`）  |
+| `android/`            | Capacitor Android 工程                      |
 
 详见 [`docs/features/mobile-app.md`](../../docs/features/mobile-app.md)。

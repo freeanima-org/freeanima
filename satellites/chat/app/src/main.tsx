@@ -186,6 +186,8 @@ function ChatApp() {
             const id = list[0]!.id;
             await selectConversation(id);
             writeConversationToUrl(id);
+          } else {
+            await newConversationFn();
           }
           void listConversationCommands()
             .then((raw) => setCommandList((raw as { commands?: CommandItem[] }).commands ?? []))
@@ -200,7 +202,7 @@ function ChatApp() {
         setError(e instanceof Error ? e.message : String(e));
       }
     })();
-  }, [fetchConversations, selectConversation]);
+  }, [fetchConversations, newConversationFn, selectConversation]);
 
   useEffect(() => {
     if (sapConnection !== "connected") return;
@@ -301,8 +303,24 @@ function ChatApp() {
 
   const newConversation = async () => {
     const id = await newConversationFn();
-    if (id) writeConversationToUrl(id);
+    if (id) {
+      writeConversationToUrl(id);
+      requestAnimationFrame(() => {
+        msgInputRef.current?.focus();
+        resizeInput();
+      });
+    }
   };
+
+  const ensureConversation = async (): Promise<string | null> => {
+    const existing = useConversationsStore.getState().currentId;
+    if (existing) return existing;
+    const id = await newConversationFn();
+    if (id) writeConversationToUrl(id);
+    return id;
+  };
+
+  const startConversation = () => void newConversation();
 
   const startRename = () => {
     const s = conversations.find((x) => x.id === contextMenu.conversationId);
@@ -403,19 +421,27 @@ function ChatApp() {
     }
   };
 
+  const sapDisconnected = sapConnection !== "connected";
+
   const sendMessage = async () => {
     const text = inputText.trim();
-    if (!text || !currentId || sendingRef.current) return;
+    if (!text || sendingRef.current || sapDisconnected) return;
+
+    let conversationId = currentId;
+    if (!conversationId) {
+      conversationId = await ensureConversation();
+      if (!conversationId) return;
+    }
 
     if (streamVisible) {
-      useChatStore.getState().enqueue(currentId, text);
+      useChatStore.getState().enqueue(conversationId, text);
       setInputText("");
-      saveInputDraft(currentId, "");
+      saveInputDraft(conversationId, "");
       requestAnimationFrame(resizeInput);
       return;
     }
 
-    const originConversationId = currentId;
+    const originConversationId = conversationId;
     sendingRef.current = true;
     setInputText("");
     saveInputDraft(originConversationId, "");
@@ -484,11 +510,9 @@ function ChatApp() {
     void sendMessage();
   };
 
-  const sapDisconnected = sapConnection !== "connected";
-
   if (!ready && !error) {
     return (
-      <div className="h-screen flex items-center justify-center">
+      <div className="h-full flex items-center justify-center">
         <span className="loading loading-spinner loading-md" />
       </div>
     );
@@ -496,7 +520,7 @@ function ChatApp() {
 
   if (error) {
     return (
-      <div className="h-screen flex items-center justify-center p-8">
+      <div className="h-full flex items-center justify-center p-8">
         <div className="max-w-md text-center space-y-3">
           <h2 className="text-lg font-bold">{m.admin_chat_title()}</h2>
           <p className="text-sm text-error">{error}</p>
@@ -522,7 +546,7 @@ function ChatApp() {
   }
 
   return (
-    <div className="chat-app h-screen flex flex-col min-h-0">
+    <div className="chat-app h-full flex flex-col min-h-0">
       {sapDisconnected ? (
         <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2 bg-warning/15 border-b border-warning/30 text-sm">
           <span className="text-warning-content/90">
@@ -561,6 +585,13 @@ function ChatApp() {
         </button>
         <span className="text-sm font-medium">{m.admin_chat_title()}</span>
         <span className="flex-1" />
+        <button
+          type="button"
+          className="btn btn-primary btn-xs lg:hidden"
+          onClick={startConversation}
+        >
+          {m.admin_common_new_conversation()}
+        </button>
         {nativeShell ? (
           <button
             type="button"
@@ -636,8 +667,16 @@ function ChatApp() {
 
           <div ref={msgAreaRef} className="flex-1 overflow-y-auto p-4 space-y-4">
             {!currentId ? (
-              <div className="flex items-center justify-center h-full text-base-content/40 text-sm">
-                {m.admin_chat_select_conversation()}
+              <div className="flex flex-col items-center justify-center h-full gap-3 text-base-content/40 text-sm">
+                <p>{m.admin_chat_select_conversation()}</p>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  disabled={sapDisconnected}
+                  onClick={startConversation}
+                >
+                  {m.admin_common_new_conversation()}
+                </button>
               </div>
             ) : display.length === 0 && !streamVisible && !recovering ? (
               <div className="flex items-center justify-center h-full text-base-content/40 text-sm">
@@ -799,23 +838,19 @@ function ChatApp() {
                   rows={1}
                   className="textarea textarea-bordered w-full min-h-[2.75rem] max-h-48 resize-none leading-normal py-2.5"
                   placeholder={m.admin_chat_message_placeholder()}
-                  disabled={!currentId || sapDisconnected}
+                  disabled={sapDisconnected}
                   onKeyDown={onInputKeydown}
                 />
               </div>
               {streamVisible ? (
-                <button
-                  type="submit"
-                  className="btn btn-error"
-                  disabled={!currentId || sapDisconnected}
-                >
+                <button type="submit" className="btn btn-error" disabled={sapDisconnected}>
                   {m.admin_common_stop()}
                 </button>
               ) : (
                 <button
                   type="submit"
                   className="btn btn-primary"
-                  disabled={!currentId || !inputText.trim() || sapDisconnected}
+                  disabled={!inputText.trim() || sapDisconnected}
                 >
                   {m.admin_common_send()}
                 </button>

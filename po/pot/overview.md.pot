@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 17:27+0800\n"
+"POT-Creation-Date: 2026-06-24 18:53+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,7 +25,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/overview.md:8
 #, no-wrap
-msgid "**SAP** (Satellite Application Protocol, version `SAP/1.0`) is the WebSocket JSON protocol between the FreeAnima **Hub** (`anima service`) and **Satellite** processes. Satellites are standalone apps (Chat, pair-programming Studio) that expose their own HTTP UI while delegating agent runtime to the Hub.\n"
+msgid "**SAP** (Satellite Application Protocol, version `SAP/1.0`) is the WebSocket JSON protocol between the FreeAnima **Hub** (`anima service`) and **Satellite** processes. Satellites are standalone apps (e.g. Chat) that expose their own HTTP UI while delegating agent runtime to the Hub.\n"
 msgstr ""
 
 #. type: Plain text
@@ -43,29 +43,21 @@ msgid "Design goals"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/overview.md:17
+#: docs/sap/overview.md:16
 msgid ""
 "**One Hub WS per instance**: each satellite instance opens exactly one `/sap/"
 "v1` connection to the Hub (multiplex conversations, streams, tools)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/overview.md:17
+#: docs/sap/overview.md:16
 msgid ""
-"**Origin isolation**: browsers load Satellite HTTP UI; Chat and pair-"
-"programming use a local SAP relay (`/sap/relay/v1`) instead of browser-"
-"direct Hub WS."
+"**Origin isolation**: bundled clients may use browser-direct Hub WS (`sap-"
+"direct`) or a local SAP relay (`/sap/relay/v1`) depending on deployment."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/overview.md:17
-msgid ""
-"**Local execution**: pair-programming workspace, terminal PTY, and "
-"registered tools run on the Satellite process."
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/sap/overview.md:17
+#: docs/sap/overview.md:16
 msgid ""
 "**Shared contract**: both sides import `@freeanima/sap-contract` for "
 "envelopes, RPC types, `runSapTransport`, `createSapBrowserClient`, and "
@@ -73,26 +65,18 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/overview.md:18
+#: docs/sap/overview.md:17
 #, no-wrap
 msgid "Topology"
 msgstr ""
 
 #. type: Fenced code block (mermaid)
-#: docs/sap/overview.md:20
+#: docs/sap/overview.md:19
 #, no-wrap
 msgid ""
 "flowchart LR\n"
 "  subgraph chat [Chat satellite]\n"
-"    B1[Browser] -->|relay WS| Relay1[\"/sap/relay/v1\"]\n"
-"    Relay1 --> Proc1[Process SAP client]\n"
-"    Proc1 -->|唯一 SAP WS| Hub\n"
-"  end\n"
-"  subgraph ppy [Pair-programming satellite]\n"
-"    B2[Browser] -->|relay WS| Relay2[\"/sap/relay/v1\"]\n"
-"    Relay2 --> Proc2[Process SAP client]\n"
-"    Proc2 -->|唯一 SAP WS| Hub\n"
-"    B2 --> Local[Local FS + PTY]\n"
+"    B1[Browser] -->|SAP WS or relay| Hub\n"
 "  end\n"
 "  Hub --> Runtime[AgentRuntime]\n"
 "  subgraph hubAdmin [Hub Admin]\n"
@@ -101,32 +85,31 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/overview.md:45
+#: docs/sap/overview.md:35
 #, no-wrap
 msgid ""
-"| Role      | Default                 | Responsibility                                   |\n"
-"| --------- | ----------------------- | ------------------------------------------------ |\n"
-"| Hub       | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1` |\n"
-"| Chat      | `http://127.0.0.1:4174` | Chat UI; process gateway + relay (Type B)        |\n"
-"| Pair-prog | `http://127.0.0.1:4173` | Studio UI; process gateway + relay (Type B)      |\n"
-"| Admin   | Hub `/admin/*`          | Memory, config, tools, satellite status          |\n"
+"| Role  | Default                 | Responsibility                                   |\n"
+"| ----- | ----------------------- | ------------------------------------------------ |\n"
+"| Hub   | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1` |\n"
+"| Chat  | bundled `/chat`         | Chat UI; SAP direct or relay                     |\n"
+"| Admin | Hub `/admin/*`          | Memory, config, tools, satellite status          |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/overview.md:47
+#: docs/sap/overview.md:37
 msgid ""
 "See also: [architecture Client UI section](../concepts/"
 "architecture.md#client-uibundled)."
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/overview.md:48
+#: docs/sap/overview.md:38
 #, no-wrap
 msgid "End-to-end happy path"
 msgstr ""
 
 #. type: Fenced code block (mermaid)
-#: docs/sap/overview.md:50
+#: docs/sap/overview.md:40
 #, no-wrap
 msgid ""
 "sequenceDiagram\n"
@@ -152,49 +135,41 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/sap/overview.md:79
+#: docs/sap/overview.md:68
 msgid "Satellite process opens `ws://{hub}/sap/v1` and sends `connect`."
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/sap/overview.md:79
+#: docs/sap/overview.md:68
 msgid ""
 "Hub replies `connected` and registers the instance in `SatelliteManager`."
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/sap/overview.md:79
-msgid "Satellite registers local tools via `tool.register`."
+#: docs/sap/overview.md:68
+msgid "Satellite registers local tools via `tool.register` (if any)."
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/sap/overview.md:79
-msgid ""
-"UI traffic (Type B) goes Browser → `/sap/relay/v1` → same process SAP client."
+#: docs/sap/overview.md:68
+msgid "`message.send` returns a `stream_id`; Hub pushes `stream.*` events."
 msgstr ""
 
 #. type: Bullet: '5. '
-#: docs/sap/overview.md:79
-msgid ""
-"`message.send` returns a `stream_id`; Hub pushes `stream.*` events (fan-out "
-"on relay)."
-msgstr ""
-
-#. type: Bullet: '6. '
-#: docs/sap/overview.md:79
+#: docs/sap/overview.md:68
 msgid ""
 "When the agent calls a Satellite tool, Hub sends `tool.call`; Satellite "
 "replies with `tool.result` or `tool.error`."
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/overview.md:80
+#: docs/sap/overview.md:69
 #, no-wrap
 msgid "Document map"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/overview.md:89
+#: docs/sap/overview.md:78
 #, no-wrap
 msgid ""
 "| Topic                           | File                                     |\n"

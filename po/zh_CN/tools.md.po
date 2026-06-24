@@ -100,7 +100,7 @@ msgstr "示例：`sap_pairprogramming_a1b2c3d4e5f6789012345678abcdef01_scan_code
 #, fuzzy, no-wrap
 #| msgid "Chamber visibility"
 msgid "ToolSet visibility"
-msgstr "卧室可见性"
+msgstr "管理台可见性"
 
 #. type: Plain text
 #: docs/sap/tools.md:34

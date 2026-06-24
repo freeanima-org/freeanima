@@ -36,7 +36,9 @@ export function translateApiPayload(payload: ApiWirePayload | null | undefined):
 
 export function translateApiErrorValue(value: unknown): string {
   if (value == null) return m.admin_common_request_failed();
-  if (typeof value === "string") return value;
+  if (typeof value === "string") {
+    return normalizeNetworkErrorMessage(value);
+  }
   if (typeof value === "object") {
     const obj = value as Record<string, unknown>;
     if (typeof obj.code === "string" || typeof obj.error === "string") {
@@ -50,8 +52,21 @@ export function translateApiErrorValue(value: unknown): string {
             : undefined,
       });
     }
-    if (typeof obj.message === "string") return obj.message;
-    if (typeof obj.value === "string") return obj.value;
+    if (typeof obj.message === "string") return normalizeNetworkErrorMessage(obj.message);
+    if (typeof obj.value === "string") return normalizeNetworkErrorMessage(obj.value);
   }
-  return String(value);
+  return normalizeNetworkErrorMessage(String(value));
+}
+
+function normalizeNetworkErrorMessage(message: string): string {
+  const lower = message.trim().toLowerCase();
+  if (
+    lower === "failed to fetch" ||
+    lower === "networkerror when attempting to fetch resource." ||
+    lower.includes("network error") ||
+    lower === "load failed"
+  ) {
+    return m.admin_common_network_error();
+  }
+  return message;
 }

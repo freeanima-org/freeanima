@@ -422,7 +422,7 @@ msgstr "3. 访问 Admin"
 #, fuzzy, no-wrap
 #| msgid "http://127.0.0.1:4174\n"
 msgid "http://127.0.0.1:2658/api/health\n"
-msgstr "http://127.0.0.1:4174（会客厅）\n"
+msgstr "http://127.0.0.1:4174（聊天室）\n"
 
 #. type: Plain text
 #: docs/guide/install.md:151
@@ -434,7 +434,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Hub Chamber: `http://127.0.0.1:2658/chamber/dashboard`"
 msgid "Hub Admin: `http://127.0.0.1:2658/admin/dashboard`"
-msgstr "Hub 卧室：`http://127.0.0.1:2658/chamber/dashboard`"
+msgstr "Hub 管理台：`http://127.0.0.1:2658/chamber/dashboard`"
 
 #. type: Plain text
 #: docs/guide/install.md:155

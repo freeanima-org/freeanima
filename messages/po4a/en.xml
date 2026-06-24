@@ -47,7 +47,7 @@
   <msg id="admin_chat_queue_send_now">Send now</msg>
   <msg id="admin_chat_select_conversation">Select a conversation to start</msg>
   <msg id="admin_chat_send_first_message">Send the first message</msg>
-  <msg id="admin_chat_title">Chat</msg>
+  <msg id="admin_chat_title">Chat room</msg>
   <msg id="admin_commands_command">Command</msg>
   <msg id="admin_commands_conversation_hint">Available on all platforms by default ({count} total).</msg>
   <msg id="admin_commands_conversation_scope">Current conversation</msg>
@@ -300,7 +300,6 @@
   <msg id="admin_message_waiting_result">Waiting for result…</msg>
   <msg id="admin_mode">Admin</msg>
   <msg id="admin_mode_chat">Chat</msg>
-  <msg id="admin_mode_studio">Studio</msg>
   <msg id="admin_nav">Admin</msg>
   <msg id="admin_nav_acp">🤝 ACP</msg>
   <msg id="admin_nav_auto_llm_runs">🤖 Auto LLM Runs</msg>
@@ -326,7 +325,6 @@
   <msg id="admin_nav_self_layer">🪞 Self Layer</msg>
   <msg id="admin_nav_semantic">📝 Semantic Memory</msg>
   <msg id="admin_nav_sleep">Sleep</msg>
-  <msg id="admin_nav_studio">Studio</msg>
   <msg id="admin_nav_system_prompt">System Prompt</msg>
   <msg id="admin_nav_tasks">Tasks</msg>
   <msg id="admin_nav_tools">Tools</msg>
@@ -413,7 +411,6 @@
   <msg id="admin_studio_short_video_desc">Short video creation workspace is planned.</msg>
   <msg id="admin_studio_show_header">Show header</msg>
   <msg id="admin_studio_terminal">Terminal</msg>
-  <msg id="admin_studio_title">Studio</msg>
   <msg id="admin_studio_toggle_conversation_list_hide">Collapse conversation list</msg>
   <msg id="admin_studio_toggle_conversation_list_show">Expand conversation list</msg>
   <msg id="admin_studio_toggle_conversation_panel">Toggle conversation panel</msg>
@@ -512,8 +509,8 @@ Digital Humans</msg>
   <msg id="sidebar_install">Installation</msg>
   <msg id="sidebar_memory">Memory</msg>
   <msg id="sidebar_migration_plan">Migration Plan</msg>
+  <msg id="sidebar_mobile_app">Mobile app (Android)</msg>
   <msg id="sidebar_overview">Overview</msg>
-  <msg id="sidebar_pair_programming">Pair Programming v1</msg>
   <msg id="sidebar_probe_architecture">Probe Architecture</msg>
   <msg id="sidebar_recall_flow">Recall Flow</msg>
   <msg id="sidebar_runtimes">Runtimes</msg>
