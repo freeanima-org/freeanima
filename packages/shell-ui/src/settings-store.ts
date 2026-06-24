@@ -2,7 +2,10 @@
 export type SettingsStore<T = unknown> = {
   load(): Promise<T>;
   save(value: T): Promise<void>;
+  test?(value: T): Promise<void>;
 };
+
+type ShellClientApi = NonNullable<Window["settingsShellClientApi"]>;
 
 declare global {
   interface Window {
@@ -14,15 +17,22 @@ declare global {
   }
 }
 
-export function createShellClientStore(): SettingsStore {
-  const api = window.settingsShellClientApi;
-  if (!api) throw new Error("settingsShellClientApi 不可用");
+export function createShellClientStore(api?: ShellClientApi): SettingsStore {
+  const resolved = api ?? window.settingsShellClientApi;
+  if (!resolved) throw new Error("settingsShellClientApi 不可用");
   return {
     async load() {
-      return api.load();
+      return resolved.load();
     },
     async save(value) {
-      await api.save(value);
+      await resolved.save(value);
     },
+    ...(resolved.test
+      ? {
+          async test(value: unknown) {
+            await resolved.test!(value);
+          },
+        }
+      : {}),
   };
 }

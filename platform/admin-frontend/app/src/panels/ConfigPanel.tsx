@@ -109,24 +109,51 @@ function ConfigBlock({ name, value }: { name: string; value: unknown }) {
 export default function ConfigPanel(_props: SettingsPanelProps) {
   const [config, setConfig] = useState<Record<string, unknown> | null>(null);
   const [failed, setFailed] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
+    setFailed(false);
     void (async () => {
       try {
         const data = await getStatusConfig();
-        if (!cancelled) setConfig((data ?? {}) as Record<string, unknown>);
+        if (!cancelled) {
+          setConfig((data ?? {}) as Record<string, unknown>);
+          setFailed(false);
+        }
       } catch {
-        if (!cancelled) setFailed(true);
+        if (!cancelled) {
+          setFailed(true);
+          setConfig(null);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [retryKey]);
+
+  if (loading) {
+    return <p className="text-sm text-base-content/60">{m.admin_common_loading()}</p>;
+  }
 
   if (failed || config === null) {
-    return <div className="alert alert-error text-sm">{m.admin_common_load_failed_short()}</div>;
+    return (
+      <div className="space-y-2">
+        <div className="alert alert-error text-sm">{m.admin_common_load_failed_short()}</div>
+        <button
+          type="button"
+          className="btn btn-sm btn-outline"
+          onClick={() => setRetryKey((k) => k + 1)}
+        >
+          重试
+        </button>
+      </div>
+    );
   }
 
   const blocks = Object.entries(config);

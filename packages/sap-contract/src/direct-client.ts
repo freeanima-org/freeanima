@@ -7,6 +7,7 @@ import {
   type SubscribeCallbacks,
 } from "./conversation-stream-core.ts";
 import { runSapTransport, type SapTransportHandle } from "./transport.ts";
+import type { SapConnectionState } from "./sidecar-client.ts";
 import {
   browserSapInstanceStore,
   browserSapInstanceStoreKey,
@@ -39,6 +40,8 @@ export type SapDirectClientOptions = {
   useSharedWorker?: boolean;
   /** Hub remote_auth token for non-loopback SAP connect */
   remoteAuthToken?: string;
+  /** 连接状态变化（含 SharedWorker / 直连 transport 断线） */
+  onConnectionStateChange?: (state: SapConnectionState) => void;
 };
 
 export type SapDirectClient = {
@@ -147,6 +150,9 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
                 : {}),
               connect,
             },
+            onStateChange: (connected) => {
+              options.onConnectionStateChange?.(connected ? "connected" : "disconnected");
+            },
           });
           const connected = await sharedClient.connect(connect);
           instanceId = connected.instance_id;
@@ -160,6 +166,10 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
           connect,
           onConnected: async (_client, connected) => {
             instanceId = connected.instance_id;
+            options.onConnectionStateChange?.("connected");
+          },
+          onDisconnected: () => {
+            options.onConnectionStateChange?.("disconnected");
           },
         });
       })();
