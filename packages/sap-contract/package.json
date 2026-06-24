@@ -3,7 +3,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./*": "./src/*.ts"
+    "./*": "./src/*.ts",
+    "./build-shared-worker": "./build-shared-worker.ts"
   },
   "dependencies": {
     "zod": "catalog:"
