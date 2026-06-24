@@ -35,9 +35,12 @@ cd satellites/app-mobile
 bun run android:apk
 bun run android:install
 
-# 或一步：构建 www + cap run android（编译并安装）
+# 或一步：构建 www + sync + Gradle 编译 + 安装 + 启动
 bun run android
 ```
+
+从仓库根目录也可：`bun run app-mobile:android`（经 Bun filter 包装）。  
+**注意**：Gradle 编译阶段可能持续数分钟；经 filter 运行时 sync 之后可能长时间无新输出，属正常现象。调试时推荐在本目录直接 `bun run android`（可看到 `--console=plain` 流式日志），或分步 `android:apk` + `android:install`。
 
 脚本会自动 `source scripts/android-env.sh`（`ANDROID_HOME=~/Android/Sdk`）。  
 `~/.bashrc.local` 也已写入 SDK 环境变量，新开终端可直接用 `adb`。
