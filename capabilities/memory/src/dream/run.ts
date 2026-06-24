@@ -4,6 +4,7 @@ import type { DreamMemoryStorePort, SessionStorePort } from "@freeanima/core/rep
 import { getDreamMemoryStore } from "../dream-port.ts";
 import { buildDreamEngineInput } from "./build-messages.ts";
 import { runDreamEngine } from "../dream-engine-port.ts";
+import { cstDayRange } from "../light-sleep/build-messages.ts";
 import { gatherDreamInput, hasDreamFuel } from "./gather-input.ts";
 import { recordDreamRun } from "./state.ts";
 
@@ -32,35 +33,26 @@ const DREAM_REMINDER_TEASER = "昨晚做了一个梦，想聊聊吗？";
 
 export async function runDream(opts: RunDreamOpts): Promise<DreamResult> {
   const dreamStore = opts.dreamStore ?? getDreamMemoryStore();
-  const input = await gatherDreamInput({ day: opts.day, sessionStore: opts.sessionStore });
+  const day = cstDayRange(opts.day).day;
 
-  if (!input.sessionIds.length) {
-    const result: DreamResult = {
-      ok: true,
-      day: input.day,
-      summary: "No session activity today; skipping dream",
-      skipped: "no_sessions",
-    };
-    recordDreamRun({ last_day: input.day, last_skipped: result.skipped });
-    return result;
-  }
-
-  const existing = await dreamStore.getByDay(input.day);
+  const existing = await dreamStore.getByDay(day);
   if (existing) {
     const result: DreamResult = {
       ok: true,
-      day: input.day,
+      day,
       dream_id: existing.id,
-      summary: `Dream already exists for ${input.day}`,
+      summary: `Dream already exists for ${day}`,
       skipped: "already_dreamed",
     };
     recordDreamRun({
-      last_day: input.day,
+      last_day: day,
       last_skipped: result.skipped,
       last_dream_id: existing.id,
     });
     return result;
   }
+
+  const input = await gatherDreamInput({ day: opts.day, sessionStore: opts.sessionStore });
 
   if (!hasDreamFuel(input)) {
     const result: DreamResult = {

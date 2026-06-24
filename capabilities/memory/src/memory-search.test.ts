@@ -282,6 +282,9 @@ describe("memory search", () => {
       async listBySessions() {
         return [];
       },
+      async listByCreatedBetween() {
+        return [];
+      },
       async list() {
         return [];
       },

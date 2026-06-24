@@ -1,12 +1,17 @@
 import { describe, expect, it } from "bun:test";
 
 import type {
-  LimbicListBySessionsOpts,
+  LimbicListByCreatedOpts,
   LimbicMemoryRow,
   SessionStorePort,
 } from "@freeanima/core/repos";
 
-import { DREAM_MIN_INTENSITY, gatherDreamInput, hasDreamFuel } from "./gather-input.ts";
+import {
+  DREAM_MIN_INTENSITY,
+  gatherDreamInput,
+  hasDreamFuel,
+  limbicCreatedRange,
+} from "./gather-input.ts";
 import { registerLimbicMemoryStore, resetLimbicMemoryStoreForTests } from "../limbic-port.ts";
 import { registerMemorySessionStore, resetMemorySessionStoreForTests } from "../session-port.ts";
 
@@ -25,8 +30,20 @@ function limbicRow(id: string, intensity: number, sessionId = "s1"): LimbicMemor
   };
 }
 
+describe("limbicCreatedRange", () => {
+  it("extends conversation-day end by 6 hours for light-sleep writes", () => {
+    const range = limbicCreatedRange({
+      day: "2026-06-14",
+      fromIso: "2026-06-14T00:00:00+08:00",
+      toIso: "2026-06-15T00:00:00+08:00",
+    });
+    expect(range.fromIso).toBe("2026-06-14T00:00:00+08:00");
+    expect(range.toIso).toBe("2026-06-15T06:00:00+08:00");
+  });
+});
+
 describe("gatherDreamInput", () => {
-  it("returns top limbic rows above intensity threshold", async () => {
+  it("returns top limbic rows above intensity threshold by created_at window", async () => {
     resetLimbicMemoryStoreForTests();
     resetMemorySessionStoreForTests();
 
@@ -38,7 +55,9 @@ describe("gatherDreamInput", () => {
     ];
 
     registerLimbicMemoryStore({
-      async listBySessions(_sessionIds: string[], opts?: LimbicListBySessionsOpts) {
+      async listByCreatedBetween(fromIso: string, toIso: string, opts?: LimbicListByCreatedOpts) {
+        expect(fromIso).toBe("2026-06-14T00:00:00+08:00");
+        expect(toIso).toBe("2026-06-15T06:00:00+08:00");
         expect(opts?.minIntensity).toBe(DREAM_MIN_INTENSITY);
         return limbicRows
           .filter((r) => r.intensity > (opts?.minIntensity ?? 0))
@@ -73,7 +92,7 @@ describe("gatherDreamInput", () => {
     resetMemorySessionStoreForTests();
 
     registerLimbicMemoryStore({
-      async listBySessions(_sessionIds: string[], opts?: LimbicListBySessionsOpts) {
+      async listByCreatedBetween(_fromIso: string, _toIso: string, opts?: LimbicListByCreatedOpts) {
         const min = opts?.minIntensity ?? 0;
         const row = limbicRow("low", 0.3);
         return row.intensity > min ? [row] : [];
@@ -92,5 +111,31 @@ describe("gatherDreamInput", () => {
     const input = await gatherDreamInput({ day: "2026-06-14" });
     expect(input.limbicMemories).toEqual([]);
     expect(hasDreamFuel(input)).toBe(false);
+  });
+
+  it("loads limbic even when no sessions updated that day", async () => {
+    resetLimbicMemoryStoreForTests();
+    resetMemorySessionStoreForTests();
+
+    registerLimbicMemoryStore({
+      async listByCreatedBetween() {
+        return [limbicRow("a", 0.8)];
+      },
+    } as never);
+
+    registerMemorySessionStore({
+      async listSessionIdsUpdatedBetween() {
+        return [];
+      },
+      async listMessages() {
+        return [];
+      },
+    } as unknown as SessionStorePort);
+
+    const input = await gatherDreamInput({ day: "2026-06-14" });
+    expect(input.sessionIds).toEqual([]);
+    expect(input.limbicMemories).toHaveLength(1);
+    expect(input.episodicSnippets).toEqual([]);
+    expect(hasDreamFuel(input)).toBe(true);
   });
 });

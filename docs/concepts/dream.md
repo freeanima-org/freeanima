@@ -12,19 +12,18 @@ Dreaming is the digital life's **imaginative** counterpart to memory consolidati
 
 ## Trigger
 
-| Condition                                                 | Result                     |
-| --------------------------------------------------------- | -------------------------- |
-| No session activity on the CST day                        | Skip (`no_sessions`)       |
-| No limbic memory with `intensity > 0.5` after light sleep | Skip (`no_strong_emotion`) |
-| Dream already exists for that day                         | Skip (`already_dreamed`)   |
-| At least one strong limbic anchor                         | Generate dream             |
+| Condition                                                            | Result                     |
+| -------------------------------------------------------------------- | -------------------------- |
+| No limbic memory with `intensity > 0.5` in the day's creation window | Skip (`no_strong_emotion`) |
+| Dream already exists for that day                                    | Skip (`already_dreamed`)   |
+| At least one strong limbic anchor produced that day                  | Generate dream             |
 
-Trigger is **purely emotion-driven** (no random dice).
+Trigger is **purely emotion-driven** (no random dice). Session activity is **not** required; episodic fragments may be empty.
 
 ## Input
 
-1. **Emotional tone** — top 3 `limbic_memory` rows for the day's sessions where `intensity > 0.5`, ordered by intensity descending.
-2. **Episodic fragments** — random sample of user/assistant messages from the day's sessions (conversation archive), capped ~4k chars.
+1. **Emotional tone** — top 3 `limbic_memory` rows whose `created_at` falls in `[conversation day 00:00 CST, next day 06:00 CST)` (covers daytime writes and ~02:00 light-sleep extraction), where `intensity > 0.5`, ordered by intensity descending.
+2. **Episodic fragments** — random sample of user/assistant messages from the day's sessions (conversation archive), capped ~4k chars; omitted when no sessions were updated that day.
 
 Light sleep stage 2 must complete first so limbic anchors exist.
 

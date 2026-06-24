@@ -219,6 +219,9 @@ function createMockLimbicStore(
     async listBySessions() {
       return [];
     },
+    async listByCreatedBetween() {
+      return [];
+    },
     async list(opts) {
       const q = opts?.query?.toLowerCase() ?? "";
       const limit = opts?.limit ?? 20;

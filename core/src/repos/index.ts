@@ -30,6 +30,7 @@ export type {
   LimbicMemoryCreateInput,
   LimbicListOpts,
   LimbicListBySessionsOpts,
+  LimbicListByCreatedOpts,
   LimbicFtsHit,
   LimbicMemoryStorePort,
   DreamEpisodicSnippet,

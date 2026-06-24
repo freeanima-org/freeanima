@@ -42,6 +42,12 @@ export type LimbicListBySessionsOpts = {
   orderBy?: "intensity_desc";
 };
 
+export type LimbicListByCreatedOpts = {
+  minIntensity?: number;
+  limit?: number;
+  orderBy?: "intensity_desc";
+};
+
 export type LimbicFtsHit = LimbicMemoryRow & {
   rank: number;
 };
@@ -52,6 +58,11 @@ export interface LimbicMemoryStorePort {
   get(id: string): Promise<LimbicMemoryRow | null>;
   listBySession(sessionId: string, opts?: { limit?: number }): Promise<LimbicMemoryRow[]>;
   listBySessions(sessionIds: string[], opts?: LimbicListBySessionsOpts): Promise<LimbicMemoryRow[]>;
+  listByCreatedBetween(
+    fromIso: string,
+    toIso: string,
+    opts?: LimbicListByCreatedOpts,
+  ): Promise<LimbicMemoryRow[]>;
   list(opts?: LimbicListOpts): Promise<LimbicMemoryRow[]>;
   count(opts?: Omit<LimbicListOpts, "offset" | "limit">): Promise<number>;
   searchFts(query: string, opts?: { limit?: number }): Promise<LimbicFtsHit[]>;
