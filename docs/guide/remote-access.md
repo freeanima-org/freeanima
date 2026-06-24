@@ -90,12 +90,13 @@ When `tunnel.enabled: true`, `anima service start` also starts the tunnel sideca
 
 ## Troubleshooting
 
-| Symptom              | Check                                                            |
-| -------------------- | ---------------------------------------------------------------- |
-| Public URL 502       | Hub running? `anima service status`                              |
-| Access login loop    | IdP enabled in Access App; email in Allow policy                 |
-| 401 from Hub         | `tunnel.access.audience` matches Access App AUD                  |
-| Local Chamber broken | Loopback bypass — use `http://127.0.0.1:2658` without CF headers |
+| Symptom              | Check                                                                                                                                                      |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public URL 502       | Hub running? `anima service status`                                                                                                                        |
+| Public URL 1033      | `connected: no` in `anima tunnel status`? cloudflared 未连上 CF 边缘；查 `journalctl --user -u anima-tunnel`；本机代理 fake-ip 可能劫持 `*.argotunnel.com` |
+| Access login loop    | IdP enabled in Access App; email in Allow policy                                                                                                           |
+| 401 from Hub         | `tunnel.access.audience` matches Access App AUD                                                                                                            |
+| Local Chamber broken | Loopback bypass — use `http://127.0.0.1:2658` without CF headers                                                                                           |
 
 ## PC vs mobile
 

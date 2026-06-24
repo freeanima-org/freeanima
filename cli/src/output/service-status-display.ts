@@ -1,4 +1,5 @@
 import { parseBindHosts } from "@freeanima/platform/bind-hosts";
+import { formatTunnelConnectedLabel } from "../tunnel-supervisor.ts";
 import { prettyDuration, writeStatusLine } from "./status.ts";
 
 type MemoryDetail = {
@@ -68,6 +69,8 @@ export function printServiceRunningStatus(opts: {
   pidOverride?: number | null;
   tunnel?: {
     running: boolean;
+    connected: boolean | null;
+    haConnections: number | null;
     publicUrl: string | null;
     chamberUrl: string | null;
   } | null;
@@ -105,6 +108,13 @@ export function printServiceRunningStatus(opts: {
     printSection("tunnel");
     if (opts.tunnel) {
       printField("running", opts.tunnel.running ? "yes" : "no — run: anima tunnel start");
+      printField(
+        "connected",
+        formatTunnelConnectedLabel({
+          connected: opts.tunnel.connected,
+          haConnections: opts.tunnel.haConnections,
+        }),
+      );
     }
     printField("public", tunnelPublic);
     if (tunnelChamber) printField("chamber", tunnelChamber);
