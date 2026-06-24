@@ -70,7 +70,13 @@ html[data-companion-view="settings"] #root {
 .motion-preview-canvas {
   display: block;
   flex-shrink: 0;
+  cursor: grab;
+  touch-action: none;
   @apply rounded-lg bg-base-300;
+}
+
+.motion-preview-canvas:active {
+  cursor: grabbing;
 }
 
 .motion-preview-frame {
