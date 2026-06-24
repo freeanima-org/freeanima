@@ -13,5 +13,5 @@ async function bootstrap(): Promise<void> {
 void bootstrap().catch((err) => {
   console.error("[bootstrap]", err);
   document.body.innerHTML =
-    '<div style="padding:2rem;font-family:sans-serif;color:#f88">启动失败，请重装 APP</div>';
+    '<div style="padding:max(2rem,env(safe-area-inset-top)) max(2rem,env(safe-area-inset-right)) max(2rem,env(safe-area-inset-bottom)) max(2rem,env(safe-area-inset-left));font-family:sans-serif;color:#f88">启动失败，请重装 APP</div>';
 });

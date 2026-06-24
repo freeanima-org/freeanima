@@ -13,5 +13,5 @@ void main().catch((err) => {
   if (String(err).includes("redirect settings")) return;
   console.error("[bridge-init]", err);
   document.body.innerHTML =
-    '<div style="padding:2rem;font-family:sans-serif;color:#f88">壳层初始化失败</div>';
+    '<div style="padding:max(2rem,env(safe-area-inset-top)) max(2rem,env(safe-area-inset-right)) max(2rem,env(safe-area-inset-bottom)) max(2rem,env(safe-area-inset-left));font-family:sans-serif;color:#f88">壳层初始化失败</div>';
 });
