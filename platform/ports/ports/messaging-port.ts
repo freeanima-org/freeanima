@@ -16,6 +16,7 @@ export type MessagingPort = {
     conversationId: string,
     message: string,
     platform?: string,
+    origin_extra?: Record<string, unknown>,
   ): AsyncGenerator<StreamEvent>;
   registerPlatform(name: string): void;
   updatePlatformStatus(name: string, status: string, extra?: Record<string, unknown>): void;

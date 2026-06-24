@@ -338,6 +338,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     conversationId: string,
     message: string,
     platform?: string,
+    origin_extra?: Record<string, unknown>,
   ): AsyncGenerator<StreamEvent> {
     return messaging.sendMessageStream(
       this.fullDeps(),
@@ -345,6 +346,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
       conversationId,
       message,
       platform,
+      origin_extra,
     );
   }
 

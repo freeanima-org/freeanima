@@ -3,6 +3,7 @@ import { safeParseOrNull } from "@freeanima/core/util";
 import { PATHS } from "@freeanima/platform/config";
 import { logComponent } from "@freeanima/platform/logging";
 import { getAppRuntime } from "@freeanima/platform/ports";
+import { resolveCommand } from "@freeanima/platform/commands";
 import type { MessagingPort } from "@freeanima/platform/ports/ports/messaging-port";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
@@ -279,15 +280,35 @@ export class WeixinAdapter implements PlatformAdapter {
       );
       sid = conversation.conversation_id;
 
-      const cmdResult = await this.service.executeCommand({
-        conversation_id: sid,
-        text: parsed.text,
-        platform: "weixin",
-        origin_extra: origin.platform_extra,
-      });
+      const [cmd] = resolveCommand(parsed.text, "weixin");
+      if (cmd || parsed.text.trim().startsWith("/")) {
+        const contextToken = this.contextTokens[parsed.peerId];
+        const refreshTyping = (): Promise<void> =>
+          sendTypingIndicator(
+            this.creds.base_url,
+            this.creds.token,
+            parsed.peerId,
+            contextToken,
+          ).catch(() => undefined);
 
-      if (cmdResult.found) {
-        if (cmdResult.text) await this.sendReply(parsed.peerId, cmdResult.text);
+        const toolDisplayMode = resolveToolDisplayMode(
+          await getAppRuntime().conversation.loadConversationMeta(sid),
+          getAppRuntime().engine.config.data,
+        );
+        const { answerSent, progressSent } = await streamReplyToWeixin(
+          this.service.sendMessageStream(sid, parsed.text, "weixin", origin.platform_extra),
+          {
+            send: (text) => this.sendReply(parsed.peerId, text),
+            refreshTyping,
+          },
+          { toolDisplayMode },
+        );
+        if (!answerSent && !progressSent) {
+          logComponent("weixin").warn("WeChat slash command empty reply", {
+            conversation_id: safeId(sid),
+            peer_id: safeId(parsed.peerId),
+          });
+        }
         return;
       }
 

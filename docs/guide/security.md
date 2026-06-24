@@ -51,17 +51,17 @@ Disk backup = data access. Protect backup media accordingly.
 
 ## Measures in Place
 
-| Measure                 | Description                                                                                                        |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Same-origin RPC         | TanStack Start server functions same-origin by default, no CORS whitelist needed                                   |
-| Config secret redaction | `AppRuntime.getConfig()` → `sanitizeConfigForApi()` (`api_key`, `database.url`, nested `pushkey`, `mcp env`, etc.) |
-| MCP config redaction    | `sanitizeMcpConfig`: `env` exposes only `env_keys`                                                                 |
-| Write path safety       | `file_write_file` deny list (partial `/etc/*`, `.ssh` private keys, etc.)                                          |
-| Slash commands          | Whitelist routing                                                                                                  |
-| MCP default stdio       | Reduces port exposure                                                                                              |
-| Credential isolation    | LLM sees pass paths only, not values                                                                               |
-| CI secret scanning      | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)      |
-| `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                      |
+| Measure                 | Description                                                                                                                            |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Same-origin RPC         | TanStack Start server functions same-origin by default, no CORS whitelist needed                                                       |
+| Config secret redaction | `AppRuntime.getConfig()` → `sanitizeConfigForApi()` (`api_key`, `database.url`, nested `pushkey`, `mcp env`, etc.)                     |
+| MCP config redaction    | `sanitizeMcpConfig`: `env` exposes only `env_keys`                                                                                     |
+| Write path safety       | `file_write_file` deny list (partial `/etc/*`, `.ssh` private keys, etc.)                                                              |
+| Slash commands          | Whitelist routing; every command must produce user-visible feedback; long-running commands send an immediate ack then the final result |
+| MCP default stdio       | Reduces port exposure                                                                                                                  |
+| Credential isolation    | LLM sees pass paths only, not values                                                                                                   |
+| CI secret scanning      | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)                          |
+| `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                                          |
 
 ## Known Gaps (Documentation ≠ Fully Implemented)
 

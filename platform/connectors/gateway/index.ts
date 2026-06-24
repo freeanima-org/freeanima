@@ -6,6 +6,7 @@ export {
   ensureSlashInteractionDeferred,
   interactionToCommandText,
   originFromInteraction,
+  streamReplyToInteraction,
 } from "./discord/discord-slash.ts";
 export { createDiscordAdapter, streamReplyToChannel } from "./discord/discord-adapter.ts";
 export { streamReplyToChannel as streamReplyToDiscordChannel } from "./discord/discord-channel.ts";

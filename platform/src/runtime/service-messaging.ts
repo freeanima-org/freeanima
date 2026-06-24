@@ -5,6 +5,10 @@ import {
   isGoalStartResult,
   isRestartResult,
   isUpgradeResult,
+  commandNeedsPreAck,
+  formatCommandPreAck,
+  formatCommandStreamPreAck,
+  ensureCommandResultText,
 } from "@freeanima/platform/commands";
 import type { CommandDef } from "@freeanima/platform/commands";
 import { messageIncoming, turnAfterComplete } from "@freeanima/core/hooks/conversation";
@@ -121,8 +125,14 @@ export async function executeCommand(
 
   if (isRetryResult(result)) {
     try {
+      const preAck = result.text.trim() ? "" : formatCommandStreamPreAck(cmd);
       const reply = await collectStreamReply(runRetryStream(deps, msgDeps, conversationId));
-      return { text: reply, data: result.data, found: true };
+      const combined = [preAck, reply].filter(Boolean).join("\n\n").trim();
+      return {
+        text: combined || ensureCommandResultText("", cmd),
+        data: result.data,
+        found: true,
+      };
     } catch (e) {
       return { text: `⚠️ ${e}`, data: result.data, found: true };
     }
@@ -134,7 +144,11 @@ export async function executeCommand(
         runGoalStartStream(deps, msgDeps, conversationId, result.data.prompt),
       );
       const combined = result.text ? `${result.text}\n\n${reply}`.trim() : reply;
-      return { text: combined, data: result.data, found: true };
+      return {
+        text: combined || ensureCommandResultText("", cmd),
+        data: result.data,
+        found: true,
+      };
     } catch (e) {
       return { text: `⚠️ ${e}`, data: result.data, found: true };
     }
@@ -144,10 +158,18 @@ export async function executeCommand(
     scheduleGracefulRestart(msgDeps.runControl, {
       beforeRestart: isUpgradeResult(result) ? runAnimaCliUpgrade : undefined,
     });
-    return { text: result.text, data: result.data, found: true };
+    return {
+      text: ensureCommandResultText(result.text, cmd),
+      data: result.data,
+      found: true,
+    };
   }
 
-  return { text: result.text, data: result.data ?? null, found: true };
+  return {
+    text: ensureCommandResultText(result.text, cmd),
+    data: result.data ?? null,
+    found: true,
+  };
 }
 
 export async function* sendMessageStream(
@@ -156,6 +178,7 @@ export async function* sendMessageStream(
   conversationId: string,
   message: string,
   platform?: string,
+  origin_extra?: Record<string, unknown>,
 ): AsyncGenerator<StreamEvent> {
   message = message.trim();
   if (msgDeps.runControl.isShuttingDown()) {
@@ -189,6 +212,7 @@ export async function* sendMessageStream(
       message,
       cmd,
       args,
+      origin_extra,
     );
     return;
   }
@@ -224,6 +248,7 @@ async function* dispatchCommandStream(
   raw: string,
   cmd: CommandDef,
   args: string[],
+  origin_extra?: Record<string, unknown>,
 ): AsyncGenerator<StreamEvent> {
   if (cmd.name !== "cancel") {
     const guard = await runIncomingMessageHooks(deps, conversationId, raw, platform);
@@ -233,13 +258,24 @@ async function* dispatchCommandStream(
       return;
     }
   }
+
+  if (commandNeedsPreAck(cmd, args)) {
+    yield { event: "token", data: { content: formatCommandPreAck(cmd, args, raw) } };
+  }
+
   const result = await runSlashCommand(cmd, {
     conversationId,
     platform,
     args,
     raw,
+    origin_extra,
   });
+  await applyCommandConversationEffects(deps, result, conversationId, platform, origin_extra);
+
   if (isRetryResult(result)) {
+    if (!result.text.trim()) {
+      yield { event: "token", data: { content: formatCommandStreamPreAck(cmd) } };
+    }
     try {
       yield* runRetryStream(deps, msgDeps, conversationId);
     } catch (e) {
@@ -261,18 +297,14 @@ async function* dispatchCommandStream(
     return;
   }
   if (isRestartResult(result) || isUpgradeResult(result)) {
-    if (result.text) {
-      yield { event: "token", data: { content: result.text } };
-    }
+    yield { event: "token", data: { content: ensureCommandResultText(result.text, cmd) } };
     yield { event: "done", data: {} };
     scheduleGracefulRestart(msgDeps.runControl, {
       beforeRestart: isUpgradeResult(result) ? runAnimaCliUpgrade : undefined,
     });
     return;
   }
-  if (result.text) {
-    yield { event: "token", data: { content: result.text } };
-  }
+  yield { event: "token", data: { content: ensureCommandResultText(result.text, cmd) } };
   yield { event: "done", data: {} };
 }
 
