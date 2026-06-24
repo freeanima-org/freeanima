@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 17:27+0800\n"
+"POT-Creation-Date: 2026-06-24 18:53+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/architecture.md:1 messages/po4a/en.xml:503
+#: docs/concepts/architecture.md:1 messages/po4a/en.xml:500
 #, no-wrap
 msgid "Architecture"
 msgstr ""
@@ -676,27 +676,20 @@ msgstr ""
 #: docs/concepts/architecture.md:253
 #, no-wrap
 msgid ""
-"| 模块    | 连接方式                          | 说明                          |\n"
-"| ------- | --------------------------------- | ----------------------------- |\n"
-"| Chat    | SAP WebSocket `/sap/v1`           | 桌面 :4174 / 移动 `www/chat`  |\n"
-"| Admin | Hub REST `/api/*`（CORS + shell） | 桌面 :4175 / 移动 `www/admin` |\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/architecture.md:255
-msgid ""
-"Pair-programming studio 仍为可选 satellite 进程（`http://127.0.0.1:4173`），"
-"与 Hub bundled UI 无关。"
+"| 模块  | 连接方式                          | 说明                          |\n"
+"| ----- | --------------------------------- | ----------------------------- |\n"
+"| Chat  | SAP WebSocket `/sap/v1`           | 桌面 / 移动 bundled `/chat`   |\n"
+"| Admin | Hub REST `/api/*`（CORS + shell） | 桌面 / 移动 bundled `/admin`  |\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:256
+#: docs/concepts/architecture.md:254
 #, no-wrap
 msgid "Events and Hooks (Summary)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:261
+#: docs/concepts/architecture.md:259
 msgid ""
 "**EventBus**: async notification transport (Redis queue); production code "
 "currently emits topics such as `session:updated` with **no registered "
@@ -705,7 +698,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:261
+#: docs/concepts/architecture.md:259
 msgid ""
 "**Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: light "
 "→ deep → cross-domain maintenance steps). State in `~/.anima/runtime/"
@@ -713,14 +706,14 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:261
+#: docs/concepts/architecture.md:259
 msgid ""
 "**Hooks**: sync interceptors — validation or clarification at message "
 "ingress, turn end, tool return, etc."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:263
+#: docs/concepts/architecture.md:261
 msgid ""
 "Complementary: Pipeline Runner handles scheduled multi-step background work; "
 "Hooks handle \"may this proceed before/during\"; EventBus remains available "
@@ -728,13 +721,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:264
+#: docs/concepts/architecture.md:262
 #, no-wrap
 msgid "Direction"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:267
+#: docs/concepts/architecture.md:265
 msgid ""
 "Capability vision and discussions: [GitHub Issues](https://github.com/"
 "freeanima-org/freeanima/issues) (labels `enhancement`, `discussion`, "
@@ -742,22 +735,22 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:268
+#: docs/concepts/architecture.md:266
 #, no-wrap
 msgid "Constraints"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:272
+#: docs/concepts/architecture.md:270
 msgid "Principles and structure live here; no concrete task lists"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:272
+#: docs/concepts/architecture.md:270
 msgid "Fast-changing behavior follows the running service, not stale prose"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:272
+#: docs/concepts/architecture.md:270
 msgid "Actionable work goes in GitHub Issues; close when done"
 msgstr ""

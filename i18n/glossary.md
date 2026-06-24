@@ -6,9 +6,8 @@
 | ------------------- | --------- | -------------------------------------- |
 | Free Anima          | 逸灵风    | Product / brand                        |
 | digital human       | 数字人类  | Not “digital life” as a loose metaphor |
-| Chat                | 聊天      | Admin mode                             |
+| Chat                | 聊天室    | Chat room UI                           |
 | Admin               | 管理台    | Admin console / configuration area     |
-| Studio              | 创作室    | Pair programming workspace             |
 | Self layer          | 自我层    | Architecture layer                     |
 | Memory layer        | 记忆层    | Architecture layer                     |
 | Perception layer    | 感知层    | Architecture layer                     |

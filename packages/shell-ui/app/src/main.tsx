@@ -5,8 +5,19 @@ import { ShellRouterProvider } from "./router.tsx";
 
 document.documentElement.dataset.shellUi = "1";
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <ShellRouterProvider />
-  </StrictMode>,
-);
+type ShellBridgeWindow = Window & {
+  __freeanimaShellBridge?: { ready: Promise<void> };
+};
+
+async function mountShellUi(): Promise<void> {
+  const bridge = (window as ShellBridgeWindow).__freeanimaShellBridge;
+  if (bridge) await bridge.ready;
+
+  createRoot(document.getElementById("root")!).render(
+    <StrictMode>
+      <ShellRouterProvider />
+    </StrictMode>,
+  );
+}
+
+void mountShellUi();

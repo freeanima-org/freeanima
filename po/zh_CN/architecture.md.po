@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 17:27+0800\n"
+"POT-Creation-Date: 2026-06-24 18:53+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/architecture.md:1 messages/po4a/en.xml:503
+#: docs/concepts/architecture.md:1 messages/po4a/en.xml:500
 #, no-wrap
 msgid "Architecture"
 msgstr "架构"
@@ -503,7 +503,8 @@ msgid ""
 "**service**: long-running — Hub HTTP (`/api`, `/sap/v1`), Discord / WeChat "
 "Gateway, cron"
 msgstr ""
-"**service**：长期运行——HTTP（Admin / 卧室 API）、Discord / 微信 Gateway、cron"
+"**service**：长期运行——HTTP（Admin / 管理台 API）、Discord / 微信 Gateway、"
+"cron"
 
 #. type: Bullet: '- '
 #: docs/concepts/architecture.md:150
@@ -818,31 +819,24 @@ msgstr ""
 #| "| Parlor  | `http://127.0.0.1:4174` (satellite) | Chat with the agent                       |\n"
 #| "| Chamber | `/chamber/*` on Hub                 | Memory, config, tools, system maintenance |\n"
 msgid ""
-"| 模块    | 连接方式                          | 说明                          |\n"
-"| ------- | --------------------------------- | ----------------------------- |\n"
-"| Chat    | SAP WebSocket `/sap/v1`           | 桌面 :4174 / 移动 `www/chat`  |\n"
-"| Admin | Hub REST `/api/*`（CORS + shell） | 桌面 :4175 / 移动 `www/admin` |\n"
+"| 模块  | 连接方式                          | 说明                          |\n"
+"| ----- | --------------------------------- | ----------------------------- |\n"
+"| Chat  | SAP WebSocket `/sap/v1`           | 桌面 / 移动 bundled `/chat`   |\n"
+"| Admin | Hub REST `/api/*`（CORS + shell） | 桌面 / 移动 bundled `/admin`  |\n"
 msgstr ""
 "| 模式     | 路由 / URL                          | 角色                                      |\n"
 "| -------- | ----------------------------------- | ----------------------------------------- |\n"
-"| 会客厅   | `http://127.0.0.1:4174`（satellite） | 与 Agent 对话                             |\n"
-"| 卧室     | Hub 上 `/chamber/*`                 | 记忆、配置、工具与系统维护                |\n"
-
-#. type: Plain text
-#: docs/concepts/architecture.md:255
-msgid ""
-"Pair-programming studio 仍为可选 satellite 进程（`http://127.0.0.1:4173`），"
-"与 Hub bundled UI 无关。"
-msgstr ""
+"| 聊天室   | `http://127.0.0.1:4174`（satellite） | 与 Agent 对话                             |\n"
+"| 管理台     | Hub 上 `/chamber/*`                 | 记忆、配置、工具与系统维护                |\n"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:256
+#: docs/concepts/architecture.md:254
 #, no-wrap
 msgid "Events and Hooks (Summary)"
 msgstr "事件与 Hooks（摘要）"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:261
+#: docs/concepts/architecture.md:259
 msgid ""
 "**EventBus**: async notification transport (Redis queue); production code "
 "currently emits topics such as `session:updated` with **no registered "
@@ -854,7 +848,7 @@ msgstr ""
 "`onSessionUpdated`。**不**用于睡眠编排。"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:261
+#: docs/concepts/architecture.md:259
 #, fuzzy
 #| msgid ""
 #| "**Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: "
@@ -866,10 +860,11 @@ msgid ""
 "pipeline_*_run.json`; Admin API for diagnostics."
 msgstr ""
 "**Pipeline Runner**：后台周期的显式 DAG（sleep-cycle：浅睡 → 深睡 → 跨域维护"
-"步骤）。状态位于 `~/.anima/runtime/pipeline_*_run.json`；卧室 API 用于诊断。"
+"步骤）。状态位于 `~/.anima/runtime/pipeline_*_run.json`；管理台 API 用于诊"
+"断。"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:261
+#: docs/concepts/architecture.md:259
 msgid ""
 "**Hooks**: sync interceptors — validation or clarification at message "
 "ingress, turn end, tool return, etc."
@@ -877,7 +872,7 @@ msgstr ""
 "**Hooks**：同步拦截器——在消息入口、回合结束、工具返回等节点做校验或澄清"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:263
+#: docs/concepts/architecture.md:261
 msgid ""
 "Complementary: Pipeline Runner handles scheduled multi-step background work; "
 "Hooks handle \"may this proceed before/during\"; EventBus remains available "
@@ -887,13 +882,13 @@ msgstr ""
 "否允许」；EventBus 保留供未来跨进程扇出，但不在睡眠路径上。"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:264
+#: docs/concepts/architecture.md:262
 #, no-wrap
 msgid "Direction"
 msgstr "方向"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:267
+#: docs/concepts/architecture.md:265
 msgid ""
 "Capability vision and discussions: [GitHub Issues](https://github.com/"
 "freeanima-org/freeanima/issues) (labels `enhancement`, `discussion`, "
@@ -903,22 +898,22 @@ msgstr ""
 "issues)（标签 `enhancement`、`discussion`、`security`）。本文不跟踪待办。"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:268
+#: docs/concepts/architecture.md:266
 #, no-wrap
 msgid "Constraints"
 msgstr "约束"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:272
+#: docs/concepts/architecture.md:270
 msgid "Principles and structure live here; no concrete task lists"
 msgstr "原则与结构写在这里；不含具体任务清单"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:272
+#: docs/concepts/architecture.md:270
 msgid "Fast-changing behavior follows the running service, not stale prose"
 msgstr "快速变化的行为以运行中的服务为准，而非过时的文字"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:272
+#: docs/concepts/architecture.md:270
 msgid "Actionable work goes in GitHub Issues; close when done"
 msgstr "可执行工作放在 GitHub Issues；完成后关闭"

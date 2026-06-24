@@ -50,7 +50,7 @@ The open-source repository provides architecture and mechanisms only; **who exac
 
 At runtime, the six self blocks are written in first person. When injected into the system prompt, a second-person outer skeleton wraps them so the LLM clearly understands "this is self-layer content you must follow" while preserving first-person narrative texture.
 
-Maintenance: Admin bedroom self-layer editor, self-layer tools, or direct database edits.
+Maintenance: Admin self-layer editor, self-layer tools, or direct database edits.
 
 ---
 

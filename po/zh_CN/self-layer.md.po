@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 18:02+0800\n"
+"POT-Creation-Date: 2026-06-24 18:53+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:5
-#: messages/po4a/en.xml:53
+#: messages/po4a/en.xml:526
 #, no-wrap
 msgid "Self Layer"
 msgstr "自我层"
@@ -207,10 +207,14 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/self-layer.md:79
+#, fuzzy
+#| msgid ""
+#| "Maintenance: self-layer tools in Admin bedroom, or direct edits via CLI / "
+#| "bedroom UI."
 msgid ""
-"Maintenance: self-layer tools in Admin bedroom, or direct edits via CLI / "
-"bedroom UI."
-msgstr "维护方式：Admin 卧室中的自我层工具，或通过 CLI / 卧室 UI 直接编辑。"
+"Maintenance: self-layer tools in Admin, or direct edits via CLI / Admin UI."
+msgstr ""
+"维护方式：Admin 管理台中的自我层工具，或通过 CLI / 管理台 UI 直接编辑。"
 
 #. type: Title ##
 #: docs/concepts/self-layer.md:82

@@ -92,7 +92,7 @@
   opacity: 0;
 }
 
-/* 侧栏导航：卧室 / 创作室 router-link、会客厅会话项 */
+/* 侧栏导航：管理台 router-link、聊天室会话项 */
 .nav-link,
 .session-item {
   @apply block px-3 py-2 rounded-lg text-sm text-base-content/65 transition-colors;

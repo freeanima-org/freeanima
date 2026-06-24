@@ -153,7 +153,7 @@ msgid ""
 "SAP WebSocket. Instances appear on Admin → Satellites after connect."
 msgstr ""
 "配置中不写 `command`。自行启动卫星；它通过 SAP WebSocket 连接 Hub。连接后实例"
-"会出现在卧室 → 卫星中。"
+"会出现在管理台 → 卫星中。"
 
 #. type: Plain text
 #: docs/sap/satellite-guide.md:50
@@ -168,14 +168,14 @@ msgstr "`config.yaml` 中**没有**全局 `studio:` 段。"
 #| "typically:"
 msgid ""
 "Open managed satellite UI at the URL from Admin (SAP `http_url`), typically:"
-msgstr "在卧室提供的 URL（SAP `http_url`）打开托管卫星 UI，通常为："
+msgstr "在管理台提供的 URL（SAP `http_url`）打开托管卫星 UI，通常为："
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:55
 #, fuzzy
 #| msgid "Parlor: `http://127.0.0.1:4174`"
 msgid "Chat: `http://127.0.0.1:4174`"
-msgstr "会客厅：`http://127.0.0.1:4174`"
+msgstr "聊天室：`http://127.0.0.1:4174`"
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:55
@@ -417,7 +417,7 @@ msgstr "**已弃用：** HTTP hub-api REST→SAP 代理（已移除）。\n"
 #, fuzzy, no-wrap
 #| msgid "Parlor satellite"
 msgid "Chat satellite"
-msgstr "会客厅卫星"
+msgstr "聊天室卫星"
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:133
@@ -636,7 +636,7 @@ msgstr ""
 #, fuzzy, no-wrap
 #| msgid "Chamber visibility"
 msgid "Admin visibility"
-msgstr "卧室可见性"
+msgstr "管理台可见性"
 
 #. type: Plain text
 #: docs/sap/satellite-guide.md:191
@@ -650,7 +650,7 @@ msgid ""
 "`SatelliteManager.getStatus()`: connected instances, `http_url`, registered "
 "tools, heartbeat timestamps."
 msgstr ""
-"`GET /api/satellites/status`（卧室 → 卫星）读取 "
+"`GET /api/satellites/status`（管理台 → 卫星）读取 "
 "`SatelliteManager.getStatus()`：已连接实例、`http_url`、已注册工具、心跳时间"
 "戳。"
 
@@ -693,4 +693,4 @@ msgid ""
 "[pair-programming v1](../features/pair-programming-v1.md) — Studio product "
 "docs"
 msgstr ""
-"[pair-programming v1](../features/pair-programming-v1.md) — 创作室产品文档"
+"[pair-programming v1](../features/pair-programming-v1.md) — 管理台产品文档"

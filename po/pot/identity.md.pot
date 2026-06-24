@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:52+0800\n"
+"POT-Creation-Date: 2026-06-24 18:53+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/identity.md:1 messages/po4a/en.xml:35
+#: docs/concepts/identity.md:1 messages/po4a/en.xml:508
 #, no-wrap
 msgid "Identity"
 msgstr ""
@@ -157,8 +157,8 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/identity.md:54
 msgid ""
-"Maintenance: Admin bedroom self-layer editor, self-layer tools, or direct "
-"database edits."
+"Maintenance: Admin self-layer editor, self-layer tools, or direct database "
+"edits."
 msgstr ""
 
 #. type: Plain text

@@ -73,7 +73,7 @@ export function ShellRouterProvider() {
 
 function ChatRoute() {
   return (
-    <Suspense fallback={<p className="p-4 text-sm text-base-content/60">加载会客厅…</p>}>
+    <Suspense fallback={<p className="p-4 text-sm text-base-content/60">加载聊天室…</p>}>
       <ChatApp />
     </Suspense>
   );

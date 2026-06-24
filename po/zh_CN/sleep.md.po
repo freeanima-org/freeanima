@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 17:27+0800\n"
+"POT-Creation-Date: 2026-06-24 18:53+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,14 +17,14 @@ msgstr ""
 
 #. type: Title ##
 #: docs/concepts/compression.md:10 docs/concepts/sleep.md:13
-#: docs/concepts/time-perception.md:21 docs/features/pair-programming-v1.md:10
+#: docs/concepts/time-perception.md:21
 #, no-wrap
 msgid "Design Principles"
 msgstr "设计原则"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9 messages/po4a/en.xml:515
-#: messages/po4a/en.xml:523
+#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9 messages/po4a/en.xml:513
+#: messages/po4a/en.xml:520
 #, no-wrap
 msgid "Overview"
 msgstr "概述"
@@ -36,7 +36,7 @@ msgid "Orchestration"
 msgstr "编排"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/sleep.md:1 messages/po4a/en.xml:328 messages/po4a/en.xml:531
+#: docs/concepts/sleep.md:1 messages/po4a/en.xml:327 messages/po4a/en.xml:528
 #, no-wrap
 msgid "Sleep"
 msgstr "睡眠机制"
@@ -200,14 +200,14 @@ msgstr "浅睡"
 msgid ""
 "| Attribute     | Value                                                                                         |\n"
 "| ------------- | --------------------------------------------------------------------------------------------- |\n"
-"| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Admin diagnostics)                          |\n"
+"| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Admin diagnostics)                            |\n"
 "| Scope         | Sessions with activity in previous calendar day (**excludes cron-platform sessions**)         |\n"
 "| Input         | Full day's **user conversations** (user+assistant, tools stripped), segmented by conversation |\n"
 "| Orchestration | Three stages sequential (separate LLM calls each)                                             |\n"
 msgstr ""
 "| 属性     | 值                                                                           |\n"
 "| ------------- | ------------------------------------------------------------------------------- |\n"
-"| 触发       | sleep-cycle 步骤 `light-sleep`（cron @ 02:00 或卧室诊断）            |\n"
+"| 触发       | sleep-cycle 步骤 `light-sleep`（cron @ 02:00 或管理台诊断）            |\n"
 "| 范围         | 前一自然日有活动的 conversation                                 |\n"
 "| 输入         | 全天对话（user+assistant，剥离 tools），按 conversation 分段 |\n"
 "| 编排 | 三阶段顺序（每阶段独立 LLM 调用）                               |\n"
@@ -459,7 +459,7 @@ msgstr "**压缩**保持会话级（回合时 `advanceCompressionMeta`）；**�
 #, fuzzy, no-wrap
 #| msgid "Historical Day (Chamber Admin)"
 msgid "Historical Day (Admin)"
-msgstr "历史单日（卧室 Admin）"
+msgstr "历史单日（管理台 Admin）"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:133
@@ -471,7 +471,7 @@ msgid ""
 "For a single past CST calendar day (e.g. before go-live or after migration), "
 "use **Admin → Sleep** (`/admin/dashboard/sleep`):"
 msgstr ""
-"对单个过去 CST 自然日（如上线前或迁移后），使用 **卧室 → 睡眠**（`/admin/"
+"对单个过去 CST 自然日（如上线前或迁移后），使用 **管理台 → 睡眠**（`/admin/"
 "chamber/sleep`）："
 
 #. type: Bullet: '1. '

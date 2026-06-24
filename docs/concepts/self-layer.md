@@ -75,7 +75,7 @@ Assembly order:
 
 Self layer and resident memory use a second-person instruction skeleton wrapping first-person self-statement content, so the LLM clearly understands "this is self-layer content you must follow."
 
-Maintenance: self-layer tools in Admin bedroom, or direct edits via CLI / bedroom UI.
+Maintenance: self-layer tools in Admin, or direct edits via CLI / Admin UI.
 
 ---
 

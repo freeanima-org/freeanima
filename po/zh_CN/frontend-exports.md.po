@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 17:27+0800\n"
+"POT-Creation-Date: 2026-06-24 18:53+0800\n"
 "PO-Revision-Date: 2026-06-24 17:13+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -34,19 +34,27 @@ msgid ""
 "档导出注册。"
 msgstr ""
 
+#. type: Plain text
+#: docs/sap/frontend-exports.md:10
+msgid ""
+"统一设置窗由 [`packages/shell-ui/`](../../packages/shell-ui/) 的 registry 聚"
+"合，契约见 [`packages/shell-ui/src/settings.ts`](../../packages/shell-ui/src/"
+"settings.ts)（与 SAP 无关）。"
+msgstr ""
+
 #. type: Title ##
-#: docs/sap/frontend-exports.md:9
+#: docs/sap/frontend-exports.md:11
 #, no-wrap
 msgid "Manifest（必选）"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:12
+#: docs/sap/frontend-exports.md:14
 msgid "路径：`./manifest` — 可 `JSON.stringify` 的元信息。"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:22
+#: docs/sap/frontend-exports.md:24
 #, no-wrap
 msgid ""
 "| 字段              | 说明                                    |\n"
@@ -61,25 +69,25 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/sap/frontend-exports.md:23
+#: docs/sap/frontend-exports.md:25
 #, fuzzy, no-wrap
 #| msgid "Connecting"
 msgid "connectionKind"
 msgstr "连接中"
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:30
+#: docs/sap/frontend-exports.md:32
 #, no-wrap
 msgid ""
 "| 值                 | 代表                          | 是否需要 sidecar                   |\n"
 "| ------------------ | ----------------------------- | ---------------------------------- |\n"
 "| `embedded-sidecar` | companion（VRM + 工具）       | **是**（同进程 embedded）          |\n"
 "| `sap-direct`       | chat（renderer 直连 Hub SAP） | **否**（仅需持久化 `instance_id`） |\n"
-"| `hub-rest`         | 管理台 Admin（Hub REST）        | **否**                             |\n"
+"| `hub-rest`         | 管理台 Admin（Hub REST）      | **否**                             |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:32
+#: docs/sap/frontend-exports.md:34
 #, fuzzy
 #| msgid ""
 #| "Implementation: [`capabilities/satellite/src/manager.ts`](../../"
@@ -92,36 +100,36 @@ msgstr ""
 "src/manager.ts)。"
 
 #. type: Title ##
-#: docs/sap/frontend-exports.md:33
+#: docs/sap/frontend-exports.md:35
 #, no-wrap
 msgid "Desktop / Mobile（可选）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/frontend-exports.md:37
+#: docs/sap/frontend-exports.md:39
 msgid "`./desktop` — 桌面壳编译期 import 的 profile（窗口规格、启动方式）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/frontend-exports.md:37
+#: docs/sap/frontend-exports.md:39
 msgid "`./mobile` — 移动端 profile；不支持时 `embedMode: \"unsupported\"`"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:39
+#: docs/sap/frontend-exports.md:41
 msgid ""
 "`embedMode: \"bundled-spa\"` — UI 打进客户端安装包，本地静态托管；Hub 仅提供 "
 "`/api` 与 `/sap/v1`。"
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/frontend-exports.md:40
+#: docs/sap/frontend-exports.md:42
 #, no-wrap
 msgid "当前前端包"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:47
+#: docs/sap/frontend-exports.md:49
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Path                            | Content             | Encryption                      |\n"
@@ -129,11 +137,11 @@ msgstr ""
 #| "| PostgreSQL conversation archive | sessions / messages | No application-layer encryption |\n"
 #| "| `~/.anima/weixin/`              | WeChat sync state   | None                            |\n"
 msgid ""
-"| 包                                  | appId       | connectionKind     | embedMode     |\n"
-"| ----------------------------------- | ----------- | ------------------ | ------------- |\n"
-"| `@freeanima/satellite-companion`    | `companion` | `embedded-sidecar` | sidecar       |\n"
-"| `@freeanima/satellite-chat`         | `chat`      | `sap-direct`       | `bundled-spa` |\n"
-"| Admin 管理台（`app/desktop` profile） | `admin`   | `hub-rest`         | `bundled-spa` |\n"
+"| 包                                    | appId       | connectionKind     | embedMode     |\n"
+"| ------------------------------------- | ----------- | ------------------ | ------------- |\n"
+"| `@freeanima/satellite-companion`      | `companion` | `embedded-sidecar` | sidecar       |\n"
+"| `@freeanima/satellite-chat`           | `chat`      | `sap-direct`       | `bundled-spa` |\n"
+"| Admin 管理台（`app/desktop` profile） | `admin`     | `hub-rest`         | `bundled-spa` |\n"
 msgstr ""
 "| 路径                | 内容                | 加密         |\n"
 "| ------------------- | ------------------- | ------------ |\n"
@@ -141,63 +149,63 @@ msgstr ""
 "| `~/.anima/weixin/`  | 微信同步状态        | 无           |\n"
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:49
+#: docs/sap/frontend-exports.md:51
 msgid ""
 "壳应用：[`app/desktop/`](../../app/desktop/) · [`app/mobile/`](../../app/"
-"mobile/)"
+"mobile/) · [`packages/shell-ui/`](../../packages/shell-ui/)"
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/frontend-exports.md:50
+#: docs/sap/frontend-exports.md:52
 #, no-wrap
 msgid "Chat：SAP 直连与 instance_id"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:53
+#: docs/sap/frontend-exports.md:55
 msgid ""
 "桌面/移动 chat 使用 [`createSapDirectClient`](../../packages/sap-contract/"
 "src/direct-client.ts) 直连 Hub `/sap/v1`。"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:55
+#: docs/sap/frontend-exports.md:57
 msgid "`instance_id` 持久化："
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/frontend-exports.md:58
+#: docs/sap/frontend-exports.md:60
 msgid ""
 "Electron 壳：preload 提供 `createFileInstanceStore(\"chat\")` → `~/.anima/"
 "satellites/chat/instance.json`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/frontend-exports.md:58
+#: docs/sap/frontend-exports.md:60
 msgid "Capacitor：Preferences"
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/frontend-exports.md:59
+#: docs/sap/frontend-exports.md:61
 #, no-wrap
 msgid "Admin 管理台：Hub REST + bundled SPA"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:62
+#: docs/sap/frontend-exports.md:64
 msgid ""
 "管理台 UI 由 [`@freeanima/admin-frontend`](../../platform/admin-frontend/) 构"
 "建，打进 desktop / mobile。"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:64
+#: docs/sap/frontend-exports.md:66
 msgid ""
 "REST 基址：bundled 页通过 `window.satelliteShell.hubUrl` 访问 Hub **`/api/"
 "*`**。Hub 对 localhost / Capacitor origin 启用 CORS。"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:65
+#: docs/sap/frontend-exports.md:67
 msgid "本地 Admin 开发：`bun run dev:admin`（Hub 须已运行）。"
 msgstr ""

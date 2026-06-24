@@ -2,7 +2,7 @@ import { Link, Outlet } from "@tanstack/react-router";
 import { detectPlatform } from "../platform.ts";
 
 const NAV = [
-  { to: "/chat", label: "会客厅" },
+  { to: "/chat", label: "聊天室" },
   { to: "/admin", label: "管理台" },
   { to: "/settings", label: "设置" },
 ] as const;

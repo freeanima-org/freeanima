@@ -135,4 +135,4 @@ msgstr "**启动顺序：** 托管卫星仅在 Hub 通过 `GET /api/health`（`s
 #| "Admin chamber dashboard: `http://127.0.0.1:2658/admin/chamber/dashboard`"
 msgid ""
 "Admin dashboard dashboard: `http://127.0.0.1:2658/admin/dashboard/dashboard`"
-msgstr "Admin 卧室控制台：`http://127.0.0.1:2658/admin/chamber/dashboard`"
+msgstr "Admin 管理台控制台：`http://127.0.0.1:2658/admin/chamber/dashboard`"
