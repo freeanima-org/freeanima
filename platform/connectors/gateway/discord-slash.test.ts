@@ -3,7 +3,9 @@ import {
   buildDiscordSlashCommands,
   ensureSlashInteractionDeferred,
   interactionToCommandText,
+  streamReplyToInteraction,
 } from "@freeanima/platform/connectors/gateway";
+import type { StreamEvent } from "@freeanima/runtime/loop";
 
 describe("discord slash commands", () => {
   it("buildDiscordSlashCommands includes cwd options", () => {
@@ -67,5 +69,23 @@ describe("discord slash commands", () => {
 
     await expect(ensureSlashInteractionDeferred(interaction)).resolves.toBe(true);
     expect(deferReply).not.toHaveBeenCalled();
+  });
+
+  it("streamReplyToInteraction delivers empty stream as no output", async () => {
+    const editReply = vi.fn(async () => undefined);
+    const followUp = vi.fn(async () => undefined);
+    const interaction = {
+      deferred: true,
+      replied: false,
+      editReply,
+      followUp,
+    } as unknown as Parameters<typeof streamReplyToInteraction>[0];
+
+    async function* events(): AsyncGenerator<StreamEvent> {
+      yield { event: "done", data: {} };
+    }
+
+    await streamReplyToInteraction(interaction, events());
+    expect(editReply).toHaveBeenCalled();
   });
 });

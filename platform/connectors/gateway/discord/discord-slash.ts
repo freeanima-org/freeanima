@@ -1,5 +1,6 @@
 import { logComponent } from "@freeanima/platform/logging";
 import type { MessagingPort } from "@freeanima/platform/ports/ports/messaging-port";
+import type { StreamEvent } from "@freeanima/runtime/loop";
 import {
   REST,
   Routes,
@@ -9,10 +10,22 @@ import {
   type Client,
 } from "discord.js";
 
+import { chunkText } from "../chunk-text.ts";
+import {
+  createDiscordAnswerStrategy,
+  createDiscordCleanupStrategy,
+  createDiscordGatewayToolRoundStrategy,
+  createStreamChannelComposer,
+  DISCORD_ANSWER_SPLIT_AT,
+} from "../stream-strategies/index.ts";
+import type { ToolDisplayMode } from "../tool-display.ts";
+import { DEFAULT_TOOL_DISPLAY_MODE } from "../tool-display.ts";
+import { runStreamChannel } from "../stream-state/run-channel.ts";
 import {
   deliverDiscordFinalContent,
   isDiscordDeliveryDegraded,
   isDiscordInteractionAlreadyAcked,
+  tryDiscordInterimEdit,
   withDiscordRetry,
 } from "./discord-retry.ts";
 import type { DiscordConfig } from "./discord-policy.ts";
@@ -233,4 +246,160 @@ export async function replyDiscordInteraction(
       }
     }
   }
+}
+
+const DISCORD_MAX_LEN = 2000;
+
+function splitDiscordInteractionMessage(text: string, limit = DISCORD_MAX_LEN): string[] {
+  return chunkText(text, limit, { maxChunkLength: DISCORD_MAX_LEN });
+}
+
+export type DiscordStreamInteractionOptions = {
+  toolDisplayMode?: ToolDisplayMode;
+  conversationId?: string;
+};
+
+/** Stream slash command output to a deferred Discord interaction (ack → final). */
+export async function streamReplyToInteraction(
+  interaction: ChatInputCommandInteraction,
+  events: AsyncIterable<StreamEvent>,
+  opts?: DiscordStreamInteractionOptions,
+): Promise<void> {
+  let answerOpen = false;
+  let delivered = false;
+
+  const markDelivered = (text: string): void => {
+    if (text.trim()) delivered = true;
+  };
+
+  const sendFollowUpChunked = async (text: string): Promise<void> => {
+    for (const chunk of splitDiscordInteractionMessage(text)) {
+      await withDiscordRetry(() => interaction.followUp({ content: chunk }));
+    }
+  };
+
+  const answerIo = {
+    send: async (text: string): Promise<void> => {
+      markDelivered(text);
+      const chunks = splitDiscordInteractionMessage(text);
+      const first = chunks[0] ?? "(no output)";
+      await deliverDiscordFinalContent(
+        async () => {
+          await interaction.editReply({ content: first });
+          answerOpen = true;
+        },
+        async () => {
+          await sendFollowUpChunked(first);
+        },
+        { kind: "slash", chunk: 0 },
+      );
+      for (const chunk of chunks.slice(1)) {
+        await withDiscordRetry(() => interaction.followUp({ content: chunk }));
+      }
+    },
+    edit: async (text: string): Promise<void> => {
+      markDelivered(text);
+      if (!answerOpen) {
+        await withDiscordRetry(() => interaction.editReply({ content: text }));
+        answerOpen = true;
+        return;
+      }
+      await tryDiscordInterimEdit(async () => {
+        await interaction.editReply({ content: text });
+      });
+    },
+  };
+
+  const toolDisplayMode = opts?.toolDisplayMode ?? DEFAULT_TOOL_DISPLAY_MODE;
+  const toolStrategy = createDiscordGatewayToolRoundStrategy(
+    async (text) => {
+      markDelivered(text);
+      await sendFollowUpChunked(text);
+    },
+    async (content, rows, _timeoutSec) => {
+      await withDiscordRetry(() => interaction.followUp({ content, components: rows }));
+    },
+    toolDisplayMode,
+    opts?.conversationId,
+  );
+
+  const answerStrategy = createDiscordAnswerStrategy({ io: answerIo });
+  const finalizeHandle = answerStrategy.handle.bind(answerStrategy);
+  answerStrategy.handle = async (effect, ctx) => {
+    if (effect.kind === "answer_finalize") {
+      clearInteractionThrottle(ctx);
+      const text = effect.content.trim();
+      if (!text) {
+        clearInteractionAnswerBag(ctx);
+        return [];
+      }
+      const chunks = splitDiscordInteractionMessage(text, DISCORD_ANSWER_SPLIT_AT);
+      if (!answerOpen) {
+        await answerIo.send(text);
+        clearInteractionAnswerBag(ctx);
+        return [];
+      }
+      const first = chunks[0] ?? "\u3164";
+      await deliverDiscordFinalContent(
+        async () => {
+          await interaction.editReply({ content: first });
+        },
+        async () => {
+          await sendFollowUpChunked(first);
+        },
+        { phase: "finalize" },
+      );
+      for (let i = 1; i < chunks.length; i++) {
+        await withDiscordRetry(() => interaction.followUp({ content: chunks[i]! }));
+      }
+      answerOpen = false;
+      clearInteractionAnswerBag(ctx);
+      return [];
+    }
+    if (effect.kind === "answer_commit") {
+      const result = await finalizeHandle(effect, ctx);
+      if (effect.content.trim()) {
+        answerOpen = false;
+      }
+      return result;
+    }
+    return finalizeHandle(effect, ctx);
+  };
+
+  const composer = createStreamChannelComposer({
+    strategies: [toolStrategy, answerStrategy, createDiscordCleanupStrategy(answerIo)],
+    io: {},
+  });
+
+  await runStreamChannel(events, composer, {
+    platform: "discord",
+    toolDisplayMode,
+  });
+
+  if (!delivered) {
+    await deliverDiscordFinalContent(
+      async () => {
+        await interaction.editReply({ content: "(no output)" });
+      },
+      async () => {
+        await sendFollowUpChunked("(no output)");
+      },
+      { kind: "slash", chunk: 0 },
+    );
+  }
+}
+
+function clearInteractionThrottle(ctx: { bag: Map<string, unknown> }): void {
+  const key = "discord.throttleTimer";
+  const timer = ctx.bag.get(key) as ReturnType<typeof setTimeout> | undefined;
+  if (timer) {
+    clearTimeout(timer);
+    ctx.bag.delete(key);
+  }
+}
+
+function clearInteractionAnswerBag(ctx: { bag: Map<string, unknown> }): void {
+  ctx.bag.delete("discord.answerOpen");
+  ctx.bag.delete("discord.answerBuffer");
+  ctx.bag.delete("discord.firstFlushGate");
 }

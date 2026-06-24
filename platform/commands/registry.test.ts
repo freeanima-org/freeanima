@@ -1,6 +1,10 @@
 import { describe, expect, it } from "bun:test";
 import {
   commandAvailableForPlatform,
+  commandNeedsPreAck,
+  ensureCommandResultText,
+  formatCommandPreAck,
+  formatCommandStreamPreAck,
   platformMatchesCommandPattern,
   type CommandDef,
 } from "./registry.ts";
@@ -34,5 +38,47 @@ describe("commandAvailableForPlatform", () => {
     expect(commandAvailableForPlatform(cmd, "sap:chat:web")).toBe(true);
     expect(commandAvailableForPlatform(cmd, "sap:chat:custom")).toBe(true);
     expect(commandAvailableForPlatform(cmd, "discord")).toBe(false);
+  });
+});
+
+describe("command response ack helpers", () => {
+  const retryCmd: CommandDef = {
+    name: "retry",
+    description: "retry",
+    handler: () => "",
+  };
+  const helpCmd: CommandDef = {
+    name: "help",
+    description: "help",
+    handler: () => "",
+  };
+  const compressCmd: CommandDef = {
+    name: "compress",
+    description: "compress",
+    handler: () => "",
+  };
+  const maskCmd: CommandDef = {
+    name: "mask",
+    description: "mask",
+    handler: () => "",
+  };
+
+  it("commandNeedsPreAck marks slow sync commands", () => {
+    expect(commandNeedsPreAck(compressCmd, [])).toBe(true);
+    expect(commandNeedsPreAck(maskCmd, ["set", "coding"])).toBe(true);
+    expect(commandNeedsPreAck(helpCmd, [])).toBe(false);
+  });
+
+  it("formatCommandPreAck returns Chinese pending text", () => {
+    expect(formatCommandPreAck(compressCmd, [], "/compress")).toContain("压缩");
+  });
+
+  it("formatCommandStreamPreAck covers retry", () => {
+    expect(formatCommandStreamPreAck(retryCmd)).toContain("重新生成");
+  });
+
+  it("ensureCommandResultText fills empty output", () => {
+    expect(ensureCommandResultText("", helpCmd)).toBe("✅ /help 已完成");
+    expect(ensureCommandResultText("ok", helpCmd)).toBe("ok");
   });
 });

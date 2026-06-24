@@ -30,6 +30,7 @@ export type AppRuntimePort = {
     conversationId: string,
     message: string,
     platform?: string,
+    origin_extra?: Record<string, unknown>,
   ): AsyncGenerator<StreamEvent>;
   listCommands(opts?: { platform?: string; all?: boolean }): {
     commands: ServiceCommandInfo[];

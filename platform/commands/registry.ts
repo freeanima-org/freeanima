@@ -131,3 +131,53 @@ export function isUpgradeResult(result: CommandResult): result is CommandResult 
 } {
   return result.data?.action === "upgrade";
 }
+
+const DEFERRED_SYNC_COMMANDS = new Set([
+  "rebuild_conversation_cache",
+  "rebuild-conversation-cache",
+  "rebuild-session-cache",
+  "compress",
+  "new",
+]);
+
+const PRE_ACK_MESSAGES: Record<string, string> = {
+  rebuild_conversation_cache: "⏳ 正在重建会话缓存…",
+  "rebuild-conversation-cache": "⏳ 正在重建会话缓存…",
+  "rebuild-session-cache": "⏳ 正在重建会话缓存…",
+  compress: "⏳ 正在重新计算会话压缩…",
+  new: "⏳ 正在创建新会话…",
+  mask: "⏳ 正在更新能力面具并重建缓存…",
+  stats: "⏳ 正在汇总全部会话统计…",
+  retry: "⏳ 正在重新生成回复…",
+  regenerate: "⏳ 正在重新生成回复…",
+};
+
+/** Whether to yield an ack before the handler runs (blocking sync work). */
+export function commandNeedsPreAck(cmd: CommandDef, args: string[]): boolean {
+  if (DEFERRED_SYNC_COMMANDS.has(cmd.name)) return true;
+  if (cmd.name === "mask") {
+    const sub = args[0]?.trim().toLowerCase();
+    return sub === "set" || sub === "clear";
+  }
+  if (cmd.name === "stats") {
+    const flag = args[0]?.trim();
+    return flag === "--all" || flag === "-a";
+  }
+  return false;
+}
+
+/** Ack text before handler execution for deferred sync commands. */
+export function formatCommandPreAck(cmd: CommandDef, _args: string[], _raw: string): string {
+  return PRE_ACK_MESSAGES[cmd.name] ?? `⏳ 正在执行 /${cmd.name}…`;
+}
+
+/** Ack text before streaming continuation (retry / regenerate). */
+export function formatCommandStreamPreAck(cmd: CommandDef): string {
+  return PRE_ACK_MESSAGES[cmd.name] ?? `⏳ 正在执行 /${cmd.name}…`;
+}
+
+/** Ensure slash commands never return empty user-visible text. */
+export function ensureCommandResultText(text: string, cmd: CommandDef): string {
+  if (text.trim()) return text;
+  return `✅ /${cmd.name} 已完成`;
+}

@@ -15,6 +15,7 @@ import {
   networkErrorUserHint,
 } from "@freeanima/runtime/loop";
 import { getAppRuntime } from "@freeanima/platform/ports";
+import { resolveCommand } from "@freeanima/platform/commands";
 import { conversationUpdated } from "@freeanima/capabilities-memory";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import type { EventBus } from "@freeanima/kernel/eventbus";
@@ -46,7 +47,7 @@ import {
   interactionToCommandText,
   originFromButtonInteraction,
   originFromInteraction,
-  replyDiscordInteraction,
+  streamReplyToInteraction,
   syncDiscordSlashCommands,
 } from "./discord-slash.ts";
 
@@ -456,23 +457,32 @@ export class DiscordAdapter implements PlatformAdapter {
     );
 
     const text = interactionToCommandText(interaction);
-    const cmdResult = await this.service.executeCommand({
-      conversation_id: sid,
-      text,
-      platform: "discord",
-      origin_extra: origin.platform_extra,
-    });
-
-    if (cmdResult.found) {
-      await replyDiscordInteraction(interaction, cmdResult.text, splitDiscordMessage);
-      return;
+    try {
+      await streamReplyToInteraction(
+        interaction,
+        this.service.sendMessageStream(sid, text, "discord", origin.platform_extra),
+        {
+          conversationId: sid,
+          toolDisplayMode: resolveToolDisplayMode(
+            await getAppRuntime().conversation.loadConversationMeta(sid),
+            getAppRuntime().engine.config.data,
+          ),
+        },
+      );
+    } catch (e) {
+      logDiscordSessionError(sid, e);
+      try {
+        await streamReplyToInteraction(
+          interaction,
+          (async function* (): AsyncGenerator<import("@freeanima/runtime/loop").StreamEvent> {
+            yield { event: "token", data: { content: networkErrorUserHint(e) } };
+            yield { event: "done", data: {} };
+          })(),
+        );
+      } catch {
+        /* May fail to reply on network errors */
+      }
     }
-
-    await replyDiscordInteraction(
-      interaction,
-      `❌ Unknown command: /${interaction.commandName}`,
-      splitDiscordMessage,
-    );
   }
 
   private async onMessage(message: Message): Promise<void> {
@@ -499,14 +509,40 @@ export class DiscordAdapter implements PlatformAdapter {
 
     await this.clarifyPending.clear(sid);
 
-    const cmdResult = await this.service.executeCommand({
-      conversation_id: sid,
-      text: cleanContent,
-      platform: "discord",
-      origin_extra: threadOrigin.platform_extra,
-    });
-    if (cmdResult.found) {
-      if (cmdResult.text) await this.sendToChannel(channel, cmdResult.text);
+    const [cmd] = resolveCommand(cleanContent, "discord");
+    if (cmd || cleanContent.startsWith("/")) {
+      let eyeReaction: import("discord.js").MessageReaction | undefined;
+      try {
+        eyeReaction = await message.react("👀");
+      } catch {
+        /* Reaction failure does not affect main flow */
+      }
+      try {
+        if ("sendTyping" in channel && typeof channel.sendTyping === "function") {
+          await withDiscordRetry(() => channel.sendTyping());
+        }
+        await streamReplyToChannel(
+          channel,
+          this.service.sendMessageStream(sid, cleanContent, "discord", threadOrigin.platform_extra),
+          {
+            conversationId: sid,
+            clarifyPending: this.clarifyPending,
+            toolDisplayMode: resolveToolDisplayMode(
+              await getAppRuntime().conversation.loadConversationMeta(sid),
+              getAppRuntime().engine.config.data,
+            ),
+          },
+        );
+        await finalizeUserReaction(message, eyeReaction, true);
+      } catch (e) {
+        logDiscordSessionError(sid, e);
+        await finalizeUserReaction(message, eyeReaction, false);
+        try {
+          await this.sendToChannel(channel, networkErrorUserHint(e));
+        } catch {
+          /* May fail to reply on network errors */
+        }
+      }
       return;
     }
 
