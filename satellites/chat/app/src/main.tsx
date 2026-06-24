@@ -582,7 +582,7 @@ function App() {
       <div className="flex flex-1 min-h-0 relative">
         {sidebarOpen ? (
           <div
-            className="lg:hidden fixed inset-0 z-30 bg-black/50"
+            className="lg:hidden safe-fixed-overlay z-30 bg-black/50"
             onClick={() => setSidebarOpen(false)}
           />
         ) : null}
@@ -590,7 +590,7 @@ function App() {
         <aside
           className={[
             "shrink-0 w-64 flex flex-col border-r border-base-300 bg-base-200/30 min-h-0",
-            sidebarOpen ? "fixed inset-y-0 left-0 z-40 lg:static" : "hidden lg:flex",
+            sidebarOpen ? "safe-fixed-sidebar z-40 lg:static" : "hidden lg:flex",
           ].join(" ")}
         >
           <div className="p-2">
@@ -841,7 +841,7 @@ function App() {
 
       {showRenameDialog ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          className="safe-fixed-overlay z-50 flex items-center justify-center bg-black/40 p-4"
           onClick={() => setShowRenameDialog(false)}
         >
           <div

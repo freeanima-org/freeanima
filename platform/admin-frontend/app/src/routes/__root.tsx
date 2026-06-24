@@ -16,7 +16,7 @@ function AppShell() {
   const embedded = isEmbeddedShell();
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col safe-area-pt safe-area-px">
       {embedded ? null : (
         <header className="app-header shrink-0 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2 sm:px-4 sm:py-0 sm:h-10 sm:flex-nowrap border-b border-base-300 bg-base-200">
           <span className="text-sm font-medium text-base-content/70 shrink-0">FreeAnima</span>

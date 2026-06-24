@@ -1,6 +1,39 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
+@media (max-width: 1023px) {
+  .safe-area-pt {
+    padding-top: var(--sat);
+  }
+  .safe-area-pb {
+    padding-bottom: var(--sab);
+  }
+  .safe-area-px {
+    padding-left: var(--sal);
+    padding-right: var(--sar);
+  }
+  .safe-fixed-overlay {
+    position: fixed;
+    top: var(--sat);
+    right: var(--sar);
+    bottom: var(--sab);
+    left: var(--sal);
+  }
+  .safe-fixed-sidebar {
+    position: fixed;
+    top: var(--sat);
+    bottom: var(--sab);
+    left: var(--sal);
+  }
+}
+
 .md-content {
   line-height: 1.6;
 }
@@ -43,13 +76,13 @@
 
 @media (max-width: 1023px) {
   .chat-app {
-    padding-top: env(safe-area-inset-top);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+    padding-top: var(--sat);
+    padding-left: var(--sal);
+    padding-right: var(--sar);
     box-sizing: border-box;
   }
   .chat-compose {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-bottom: max(1rem, var(--sab));
   }
   .chat .chat-bubble {
     max-width: min(92vw, 100%);

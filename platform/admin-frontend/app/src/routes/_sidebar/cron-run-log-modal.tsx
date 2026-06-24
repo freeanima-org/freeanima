@@ -48,7 +48,7 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
   }, [reload]);
 
   return (
-    <dialog className="modal modal-open">
+    <dialog className="modal modal-open safe-area-pt safe-area-pb">
       <div className="modal-box max-w-3xl">
         <h3 className="font-bold text-lg mb-1">
           {m.admin_cron_run_history_title({ name: jobName })}

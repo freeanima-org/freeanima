@@ -51,7 +51,7 @@ export function ResponsiveSidebarLayout({
 
       {sidebarOpen ? (
         <div
-          className="lg:hidden fixed inset-0 z-30 bg-black/50"
+          className="lg:hidden safe-fixed-overlay z-30 bg-black/50"
           onClick={closeSidebar}
           aria-hidden
         />
@@ -62,7 +62,7 @@ export function ResponsiveSidebarLayout({
           "bg-base-200 flex flex-col shrink-0 border-base-300 z-40",
           "lg:relative lg:w-56 lg:border-r lg:translate-x-0",
           sidebarOpen
-            ? "fixed inset-y-0 left-0 w-[min(85vw,16rem)] border-r shadow-xl"
+            ? "safe-fixed-sidebar w-[min(85vw,16rem)] border-r shadow-xl"
             : "max-lg:hidden",
         ].join(" ")}
       >
