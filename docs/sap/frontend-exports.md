@@ -22,11 +22,11 @@ title: Frontend Exports
 
 ### connectionKind
 
-| 值                 | 代表                          | 是否需要 sidecar                   |
-| ------------------ | ----------------------------- | ---------------------------------- |
-| `embedded-sidecar` | companion（VRM + 工具）       | **是**（同进程 embedded）          |
-| `sap-direct`       | chat（renderer 直连 Hub SAP） | **否**（仅需持久化 `instance_id`） |
-| `hub-rest`         | 卧室 Chamber（Hub REST）      | **否**                             |
+| 值                 | 代表                          | 是否需要 sidecar                       |
+| ------------------ | ----------------------------- | -------------------------------------- |
+| `embedded-sidecar` | companion（VRM + 工具）       | **是**（同进程 embedded）              |
+| `sap-direct`       | chat（renderer 直连 Hub SAP） | **否**（singleton 固定 `instance_id`） |
+| `hub-rest`         | 卧室 Chamber（Hub REST）      | **否**                                 |
 
 实现 SSOT：[`packages/satellite-sdk/src/manifest.ts`](../../packages/satellite-sdk/src/manifest.ts)
 
@@ -51,10 +51,7 @@ title: Frontend Exports
 
 桌面/移动 chat 使用 [`createSapDirectClient`](../../packages/sap-contract/src/direct-client.ts) 直连 Hub `/sap/v1`。
 
-`instance_id` 持久化：
-
-- Electron 壳：preload 提供 `createFileInstanceStore("chat")` → `~/.anima/satellites/chat/instance.json`
-- Capacitor：Preferences
+Chat 采用 **singleton** 策略：所有客户端共享固定 `CHAT_INSTANCE_ID`（`def`），`connect` 始终携带该 id，无需 per-device 持久化。
 
 ## Chamber：Hub REST + bundled WebUI
 

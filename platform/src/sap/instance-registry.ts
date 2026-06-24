@@ -25,7 +25,7 @@ export type ResolveConnectInstanceResult =
 
 /**
  * SAP instance registry with optional PG backing.
- * Hub assigns 3-char globally unique ids; survives hub restarts when store is wired.
+ * Hub assigns 3-char globally unique ids on omit; client-provided ids are provisioned when unused.
  */
 export class SapInstanceRegistry {
   private readonly byInstanceId = new Map<string, SapInstanceRecord>();
@@ -65,7 +65,15 @@ export class SapInstanceRegistry {
       }
 
       if (!record) {
-        return { ok: false, error: `unknown instance_id: ${norm}` };
+        record = {
+          instanceId: norm,
+          appId,
+          httpUrl: input.httpUrl?.trim() ?? null,
+          createdAt: new Date().toISOString(),
+        };
+        this.byInstanceId.set(norm, record);
+        await this.persist(record);
+        return { ok: true, instanceId: norm, isNew: true };
       }
       if (normalizeAppSlug(record.appId) !== normalizeAppSlug(appId)) {
         return { ok: false, error: `instance_id app mismatch: ${norm}` };

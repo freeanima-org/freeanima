@@ -18,6 +18,7 @@ export {
 export type { ParsedSapToolName, ParsedSapPlatform } from "./naming.ts";
 
 export { generateSapInstanceIdCandidate, assertSapInstanceId } from "./instance-id.ts";
+export { CHAT_INSTANCE_ID } from "./satellite-instance.ts";
 
 export {
   browserSapInstanceStore,

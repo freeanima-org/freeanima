@@ -72,14 +72,14 @@ sequenceDiagram
 
 Schema: [`frames/lifecycle.ts`](../../packages/sap-contract/src/frames/lifecycle.ts) `connectPayloadSchema`.
 
-| Field                | Required | Role                                                                 |
-| -------------------- | -------- | -------------------------------------------------------------------- |
-| `app_id`             | yes      | Satellite app id (e.g. `pair-programming`)                           |
-| `instance_id`        | no       | Hub-assigned 3-char id; omit on first register, include on reconnect |
-| `protocol`           | yes      | Must be `SAP/1.0`                                                    |
-| `features_requested` | no       | Feature flags (Hub echoes as `features_enabled`)                     |
-| `http_url`           | no       | Satellite UI URL for Chamber → Satellites                            |
-| `instance_label`     | no       | Display label                                                        |
+| Field                | Required | Role                                                                                                                                    |
+| -------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `app_id`             | yes      | Satellite app id (e.g. `pair-programming`)                                                                                              |
+| `instance_id`        | no       | 3-char id; omit on first **machine** register; include on reconnect; **singleton** apps send a fixed id (Hub auto-provisions if unused) |
+| `protocol`           | yes      | Must be `SAP/1.0`                                                                                                                       |
+| `features_requested` | no       | Feature flags (Hub echoes as `features_enabled`)                                                                                        |
+| `http_url`           | no       | Satellite UI URL for Chamber → Satellites                                                                                               |
+| `instance_label`     | no       | Display label                                                                                                                           |
 
 ### `connected` payload
 

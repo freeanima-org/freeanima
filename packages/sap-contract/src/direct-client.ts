@@ -26,6 +26,8 @@ export type SapDirectClientOptions = {
   httpUrl?: string;
   appId?: string;
   hubWsUrl?: string;
+  /** 固定 instance_id（singleton 策略）；优先于 instanceStore / config */
+  instanceId?: string;
   featuresRequested?: string[];
   instanceStore?: SapInstanceStore;
   signal?: AbortSignal;
@@ -102,13 +104,17 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
           options.httpUrl ?? (typeof window !== "undefined" ? window.location.origin : undefined);
 
         const hubOrigin = hubHttpFromWsUrl(resolveHubWsUrl(hubHttp));
+        const fixedInstanceId = options.instanceId?.trim() || null;
         const store =
-          options.instanceStore ??
-          (typeof window !== "undefined"
-            ? browserSapInstanceStore(hubOrigin, options.appId ?? loaded.app_id)
-            : undefined);
+          fixedInstanceId !== null
+            ? undefined
+            : (options.instanceStore ??
+              (typeof window !== "undefined"
+                ? browserSapInstanceStore(hubOrigin, options.appId ?? loaded.app_id)
+                : undefined));
 
-        const storedId = (await loadSapInstanceId(store)) ?? loaded.instance_id ?? null;
+        const storedId =
+          fixedInstanceId ?? (await loadSapInstanceId(store)) ?? loaded.instance_id ?? null;
         const connect = {
           app_id: options.appId ?? loaded.app_id,
           ...(storedId ? { instance_id: storedId } : {}),
@@ -129,10 +135,14 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
             worker,
             initConfig: {
               hubUrl: hubHttp,
-              instanceStoreKey: browserSapInstanceStoreKey(
-                hubOrigin,
-                options.appId ?? loaded.app_id,
-              ),
+              ...(store
+                ? {
+                    instanceStoreKey: browserSapInstanceStoreKey(
+                      hubOrigin,
+                      options.appId ?? loaded.app_id,
+                    ),
+                  }
+                : {}),
               connect,
             },
           });

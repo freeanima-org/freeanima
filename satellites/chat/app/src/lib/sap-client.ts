@@ -1,11 +1,11 @@
 import {
+  CHAT_INSTANCE_ID,
   createSapDirectClient,
   formatSapPlatform,
   resolveHubWsUrl,
   type SapClient,
   type SapConnectionState,
   type SapDirectClient,
-  type SapInstanceStore,
 } from "@freeanima/sap-contract";
 
 const APP_ID = "chat";
@@ -29,22 +29,13 @@ function resolveHubWsUrlFromEnv(): string {
   return resolveHubWsUrl("http://127.0.0.1:2658");
 }
 
-function resolveInstanceStore(): SapInstanceStore | undefined {
-  const shell = window.satelliteShell ?? window.companionShell;
-  if (shell?.createFileInstanceStore) {
-    return shell.createFileInstanceStore(APP_ID);
-  }
-  return undefined;
-}
-
 export function getSapDirectClient(): SapDirectClient {
   if (!directClient) {
     notifyConnection("connecting");
     directClient = createSapDirectClient({
       appId: APP_ID,
       hubWsUrl: resolveHubWsUrlFromEnv(),
-      instanceStore: resolveInstanceStore(),
-      useSharedWorker: resolveInstanceStore() === undefined,
+      instanceId: CHAT_INSTANCE_ID,
     });
     void directClient
       .whenReady()
@@ -78,22 +69,12 @@ export async function reconnectSap(): Promise<void> {
   notifyConnection("connected");
 }
 
-export async function loadChatInstanceId(): Promise<string | null> {
-  const client = getSapDirectClient();
-  try {
-    await client.whenReady();
-    return client.getInstanceId();
-  } catch {
-    return client.getInstanceId();
-  }
+export function loadChatInstanceId(): string {
+  return CHAT_INSTANCE_ID;
 }
 
-export async function chatPlatform(): Promise<string> {
-  const instanceId = await loadChatInstanceId();
-  if (!instanceId) {
-    throw new Error("Chat instance_id 未就绪；请确认 Hub 已运行且 SAP 已连接");
-  }
-  return formatSapPlatform(APP_ID, instanceId);
+export function chatPlatform(): string {
+  return formatSapPlatform(APP_ID, CHAT_INSTANCE_ID);
 }
 
 export async function whenSapClientReady(): Promise<SapClient> {
