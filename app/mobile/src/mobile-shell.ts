@@ -77,6 +77,12 @@ export function readShellSnapshot(): ShellSnapshot | null {
   return null;
 }
 
+export const SHELL_CONFIG_CHANGED_EVENT = "freeanima:shell-config-changed";
+
+function notifyShellConfigChanged(): void {
+  window.dispatchEvent(new CustomEvent(SHELL_CONFIG_CHANGED_EVENT));
+}
+
 function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
   const apiFields = buildShellApiFields(
     snapshot.hubUrl,
@@ -92,6 +98,28 @@ function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
     createFileInstanceStore: createPreferencesInstanceStore,
     openHubSettings(): void {
       window.location.href = SETTINGS_PAGE;
+    },
+    async emitConfigChanged(): Promise<void> {
+      notifyShellConfigChanged();
+    },
+  };
+}
+
+/** Hub 未配置时的 minimal 壳层标记（供设置页正确识别 mobile 平台） */
+export function createMobileShellStub(): SatelliteShellApi {
+  return {
+    isElectron: false,
+    isNativeShell: true,
+    hubUrl: "",
+    hubWsUrl: "",
+    windowRole: null,
+    apiOrigin: null,
+    createFileInstanceStore: createPreferencesInstanceStore,
+    openHubSettings(): void {
+      window.location.href = SETTINGS_PAGE;
+    },
+    async emitConfigChanged(): Promise<void> {
+      notifyShellConfigChanged();
     },
   };
 }

@@ -9,6 +9,7 @@ import {
 } from "@freeanima/sap-contract";
 
 const APP_ID = "chat";
+const SHELL_CONFIG_CHANGED_EVENT = "freeanima:shell-config-changed";
 
 let directClient: SapDirectClient | null = null;
 let connectionState: SapConnectionState = "connecting";
@@ -36,6 +37,7 @@ export function getSapDirectClient(): SapDirectClient {
       appId: APP_ID,
       hubWsUrl: resolveHubWsUrlFromEnv(),
       instanceId: CHAT_INSTANCE_ID,
+      onConnectionStateChange: notifyConnection,
     });
     void directClient
       .whenReady()
@@ -76,6 +78,16 @@ export function chatPlatform(): string {
 
 export async function whenSapClientReady(): Promise<SapClient> {
   return getSapDirectClient().whenReady();
+}
+
+/** Hub 配置变更后重建 SAP 连接（移动端 settings save） */
+export function subscribeShellConfigChanges(): () => void {
+  if (typeof window === "undefined") return () => {};
+  const handler = (): void => {
+    void reconnectSap().catch(() => notifyConnection("disconnected"));
+  };
+  window.addEventListener(SHELL_CONFIG_CHANGED_EVENT, handler);
+  return () => window.removeEventListener(SHELL_CONFIG_CHANGED_EVENT, handler);
 }
 
 /** 测试用：重置 module 级缓存 */

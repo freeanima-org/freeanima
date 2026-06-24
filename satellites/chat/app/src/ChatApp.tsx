@@ -14,7 +14,12 @@ import {
 import type { SapConnectionState } from "@freeanima/sap-contract";
 import { getAppLocale, initAppLocale, m, toggleAppLocale } from "@/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@/lib/input-draft.ts";
-import { getSapDirectClient, reconnectSap, subscribeSapConnection } from "@/lib/sap-client.ts";
+import {
+  getSapDirectClient,
+  reconnectSap,
+  subscribeSapConnection,
+  subscribeShellConfigChanges,
+} from "@/lib/sap-client.ts";
 import type { ConversationListItem } from "@/lib/types.ts";
 import { useChatStore } from "@/stores/chat.ts";
 import { useConversationsStore } from "@/stores/conversations.ts";
@@ -151,6 +156,8 @@ export function ChatApp() {
   useEffect(() => {
     return subscribeSapConnection(setSapConnection);
   }, []);
+
+  useEffect(() => subscribeShellConfigChanges(), []);
 
   useEffect(() => {
     const vv = window.visualViewport;

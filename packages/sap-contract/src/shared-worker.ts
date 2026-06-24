@@ -136,6 +136,7 @@ export function installSapSharedWorkerHost(): void {
 export type CreateSharedWorkerSapClientOptions = {
   worker: SharedWorker;
   initConfig: WorkerConfig;
+  onStateChange?: (connected: boolean) => void;
 };
 
 export function createSharedWorkerSapClient(
@@ -161,6 +162,7 @@ export function createSharedWorkerSapClient(
     const msg = ev.data;
     if (msg.type === "state") {
       instanceId = msg.instanceId;
+      options.onStateChange?.(msg.connected);
       return;
     }
     if (msg.type === "res") {

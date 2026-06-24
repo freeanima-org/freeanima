@@ -1,8 +1,10 @@
 import {
   buildMobileShell,
+  createMobileShellStub,
   loadHubUrl,
   loadRemoteAuthToken,
   saveShellClientPrefs,
+  SHELL_CONFIG_CHANGED_EVENT,
   testHubConnection,
 } from "./mobile-shell.ts";
 import { CHAT_PAGE, SETTINGS_PAGE } from "./paths.ts";
@@ -21,6 +23,10 @@ function installShellBridgeReady(): () => void {
   return resolveReady;
 }
 
+function notifyShellConfigChanged(): void {
+  window.dispatchEvent(new CustomEvent(SHELL_CONFIG_CHANGED_EVENT));
+}
+
 function installSettingsShellClientApi(): void {
   window.settingsShellClientApi = {
     async load() {
@@ -30,7 +36,8 @@ function installSettingsShellClientApi(): void {
     },
     async save(cfg) {
       await saveShellClientPrefs(cfg.hubUrl, cfg.remoteAuthToken);
-      await buildMobileShell(cfg.hubUrl, cfg.remoteAuthToken);
+      window.satelliteShell = await buildMobileShell(cfg.hubUrl, cfg.remoteAuthToken);
+      notifyShellConfigChanged();
     },
     async test(cfg) {
       await testHubConnection(cfg.hubUrl, cfg.remoteAuthToken);
@@ -42,6 +49,7 @@ async function bootstrapShellBridge(): Promise<void> {
   const finish = installShellBridgeReady();
   installSettingsShellClientApi();
   document.documentElement.dataset.shellUi = "1";
+  window.satelliteShell = createMobileShellStub();
 
   try {
     const path = window.location.pathname;

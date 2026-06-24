@@ -21,9 +21,11 @@ export function FormRenderer({ fields, store, platform, onDirty }: Props) {
   const [values, setValues] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
 
+  const canTest = Boolean(store.test);
   const grouped = useMemo(() => groupFields(fields.items), [fields.items]);
 
   useEffect(() => {
@@ -56,7 +58,7 @@ export function FormRenderer({ fields, store, platform, onDirty }: Props) {
     [onDirty],
   );
 
-  const save = useCallback(async () => {
+  const persist = useCallback(async (): Promise<boolean> => {
     setSaving(true);
     setError(null);
     setStatus(null);
@@ -67,16 +69,45 @@ export function FormRenderer({ fields, store, platform, onDirty }: Props) {
       if (window.satelliteShell?.emitConfigChanged) {
         await window.satelliteShell.emitConfigChanged();
       }
+      return true;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }, [fields.zodSchema, store, values]);
+
+  const save = useCallback(async () => {
+    await persist();
+  }, [persist]);
+
+  const saveAndEnter = useCallback(async () => {
+    const ok = await persist();
+    if (ok) window.location.href = "/chat";
+  }, [persist]);
+
+  const testConnection = useCallback(async () => {
+    if (!store.test) return;
+    setTesting(true);
+    setError(null);
+    setStatus(null);
+    try {
+      const parsed = fields.zodSchema.parse(values);
+      await store.test(parsed);
+      setStatus("连接成功");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
-      setSaving(false);
+      setTesting(false);
     }
   }, [fields.zodSchema, store, values]);
 
   if (loading) {
     return <p className="text-sm text-base-content/60">加载中…</p>;
   }
+
+  const fieldWidthClass = platform === "mobile" ? "w-full" : "w-full max-w-xl";
 
   return (
     <div className={`space-y-4 ${platform === "mobile" ? "pb-8" : ""}`}>
@@ -93,20 +124,42 @@ export function FormRenderer({ fields, store, platform, onDirty }: Props) {
               item={item}
               value={readFieldValue(values, item.key)}
               platform={platform}
+              widthClass={fieldWidthClass}
               onChange={(v) => setField(item.key, v)}
             />
           ))}
         </section>
       ))}
-      <div className="flex gap-2 pt-2">
-        <button
-          type="button"
-          className="btn btn-primary btn-sm"
-          disabled={saving}
-          onClick={() => void save()}
-        >
-          {saving ? "保存中…" : "保存"}
-        </button>
+      <div className="flex flex-wrap gap-2 pt-2">
+        {canTest ? (
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            disabled={testing || saving}
+            onClick={() => void testConnection()}
+          >
+            {testing ? "测试中…" : "测试连接"}
+          </button>
+        ) : null}
+        {platform === "mobile" ? (
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            disabled={saving || testing}
+            onClick={() => void saveAndEnter()}
+          >
+            {saving ? "保存中…" : "保存并进入"}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            disabled={saving || testing}
+            onClick={() => void save()}
+          >
+            {saving ? "保存中…" : "保存"}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -126,11 +179,13 @@ function FieldInput({
   item,
   value,
   platform,
+  widthClass,
   onChange,
 }: {
   item: FormFieldDescriptor;
   value: unknown;
   platform: SettingsPlatform;
+  widthClass: string;
   onChange: (value: unknown) => void;
 }) {
   const inputClass =
@@ -140,7 +195,7 @@ function FieldInput({
 
   if (item.type === "boolean") {
     return (
-      <label className="label cursor-pointer justify-start gap-3 max-w-xl">
+      <label className={`label cursor-pointer justify-start gap-3 ${widthClass}`}>
         <input
           type="checkbox"
           className="checkbox checkbox-sm"
@@ -154,7 +209,7 @@ function FieldInput({
 
   if (item.type === "select" && item.options) {
     return (
-      <label className="form-control w-full max-w-xl">
+      <label className={`form-control ${widthClass}`}>
         <span className="label-text text-sm">{item.label}</span>
         <select
           className={inputClass}
@@ -173,7 +228,7 @@ function FieldInput({
 
   if (item.type === "textarea") {
     return (
-      <label className="form-control w-full max-w-xl">
+      <label className={`form-control ${widthClass}`}>
         <span className="label-text text-sm">{item.label}</span>
         <textarea
           className="textarea textarea-bordered w-full"
@@ -187,7 +242,7 @@ function FieldInput({
   }
 
   return (
-    <label className="form-control w-full max-w-xl">
+    <label className={`form-control ${widthClass}`}>
       <span className="label-text text-sm">{item.label}</span>
       <input
         type={item.type === "password" ? "password" : item.type === "number" ? "number" : "text"}

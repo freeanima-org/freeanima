@@ -72,12 +72,14 @@ function CredentialDetailModal({
   loading,
   error,
   onClose,
+  onRetry,
 }: {
   path: string;
   detail: CredentialDetail | null;
   loading: boolean;
   error: string;
   onClose: () => void;
+  onRetry: () => void;
 }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -105,7 +107,12 @@ function CredentialDetailModal({
               <span className="loading loading-dots loading-md" />
             </div>
           ) : error ? (
-            <div className="alert alert-error text-sm">{error}</div>
+            <div className="space-y-2">
+              <div className="alert alert-error text-sm">{error}</div>
+              <button type="button" className="btn btn-sm btn-outline" onClick={onRetry}>
+                重试
+              </button>
+            </div>
           ) : detail?.yaml ? (
             <div className="space-y-3">
               {Object.entries(detail.fields).map(([field, value]) => {
@@ -159,6 +166,9 @@ function CredentialDetailModal({
 
 export default function CredentialsPanel(_props: SettingsPanelProps) {
   const [credentials, setCredentials] = useState<CredentialMeta[]>([]);
+  const [listFailed, setListFailed] = useState(false);
+  const [listLoading, setListLoading] = useState(true);
+  const [listRetryKey, setListRetryKey] = useState(0);
   const [modalPath, setModalPath] = useState<string | null>(null);
   const [detail, setDetail] = useState<CredentialDetail | null>(null);
   const [loading, setLoading] = useState(false);
@@ -166,18 +176,28 @@ export default function CredentialsPanel(_props: SettingsPanelProps) {
 
   useEffect(() => {
     let cancelled = false;
+    setListLoading(true);
+    setListFailed(false);
     void (async () => {
       try {
         const data = await listCredentials();
-        if (!cancelled) setCredentials(data.credentials ?? []);
+        if (!cancelled) {
+          setCredentials(data.credentials ?? []);
+          setListFailed(false);
+        }
       } catch {
-        if (!cancelled) setCredentials([]);
+        if (!cancelled) {
+          setCredentials([]);
+          setListFailed(true);
+        }
+      } finally {
+        if (!cancelled) setListLoading(false);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [listRetryKey]);
 
   const openDetail = async (path: string) => {
     setModalPath(path);
@@ -211,6 +231,25 @@ export default function CredentialsPanel(_props: SettingsPanelProps) {
 
   const categories = [...byCategory.entries()].toSorted(([a], [b]) => a.localeCompare(b));
 
+  if (listLoading) {
+    return <p className="text-sm text-base-content/60">{m.admin_common_loading()}</p>;
+  }
+
+  if (listFailed) {
+    return (
+      <div className="space-y-2">
+        <div className="alert alert-error text-sm">{m.admin_common_load_failed_short()}</div>
+        <button
+          type="button"
+          className="btn btn-sm btn-outline"
+          onClick={() => setListRetryKey((k) => k + 1)}
+        >
+          重试
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div>
       {credentials.length === 0 ? (
@@ -243,6 +282,7 @@ export default function CredentialsPanel(_props: SettingsPanelProps) {
           loading={loading}
           error={error}
           onClose={closeModal}
+          onRetry={() => void openDetail(modalPath)}
         />
       ) : null}
     </div>

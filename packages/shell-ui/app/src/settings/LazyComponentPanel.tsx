@@ -7,22 +7,35 @@ type Props = {
 };
 
 export function LazyComponentPanel({ load, platform }: Props) {
-  const LazyPanel = useMemo(() => lazy(load), [load]);
+  const [retryKey, setRetryKey] = useState(0);
+  const LazyPanel = useMemo(() => lazy(load), [load, retryKey]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setError(null);
     load().catch((e: unknown) => {
       setError(e instanceof Error ? e.message : String(e));
     });
-  }, [load]);
+  }, [load, retryKey]);
 
   if (error) {
-    return <div className="alert alert-error text-sm">{error}</div>;
+    return (
+      <div className="space-y-2">
+        <div className="alert alert-error text-sm">{error}</div>
+        <button
+          type="button"
+          className="btn btn-sm btn-outline"
+          onClick={() => setRetryKey((k) => k + 1)}
+        >
+          重试
+        </button>
+      </div>
+    );
   }
 
   return (
     <Suspense fallback={<p className="text-sm text-base-content/60">加载组件…</p>}>
-      <LazyPanel platform={platform} />
+      <LazyPanel key={retryKey} platform={platform} />
     </Suspense>
   );
 }

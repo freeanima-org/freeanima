@@ -10,6 +10,11 @@ import { resolveApiOrigin } from "./hub-origin.ts";
 let cachedClient: Treaty.Create<App> | null = null;
 let cachedOrigin = "";
 
+export function resetApiClientCache(): void {
+  cachedClient = null;
+  cachedOrigin = "";
+}
+
 export function resolveApiClient(): Treaty.Create<App> {
   const origin = resolveApiOrigin();
   const shell = (typeof window !== "undefined" ? window.satelliteShell : undefined) as
