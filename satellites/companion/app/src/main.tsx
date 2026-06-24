@@ -128,15 +128,6 @@ function CompanionWindow() {
   return (
     <div className="companion-overlay">
       <ClickThroughManager />
-      {isCompanionOverlay() ? (
-        <button
-          type="button"
-          className="absolute top-1 right-1 z-30 text-[10px] px-2 py-0.5 rounded bg-black/40 text-white/70 hover:text-white"
-          onClick={() => void openSettings()}
-        >
-          设置
-        </button>
-      ) : null}
       <div className="relative w-full h-full">
         <TextBubbleOverlay />
         <CharacterViewport
@@ -149,7 +140,7 @@ function CompanionWindow() {
 
       {!characterReady && !modelPath ? (
         <div className="absolute inset-x-2 top-1/3 z-10 startup-panel text-center text-xs leading-relaxed">
-          未加载 VRM 模型。请打开「设置」导入模型。
+          未加载 VRM 模型。请从托盘菜单打开「设置…」导入模型。
         </div>
       ) : null}
 
