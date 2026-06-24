@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/satellite-app-mobile",
+  "name": "@freeanima/app-mobile",
   "description": "FreeAnima 移动端壳（Capacitor + 聊天室 chat）",
   "private": true,
   "type": "module",
@@ -16,9 +16,9 @@
     "@capacitor/android": "^7.4.2",
     "@capacitor/core": "^7.4.2",
     "@capacitor/preferences": "^7.0.1",
-    "@freeanima/admin-frontend": "workspace:*",
     "@freeanima/sap-contract": "workspace:*",
-    "@freeanima/satellite-sdk": "workspace:*"
+    "@freeanima/satellite-sdk": "workspace:*",
+    "@freeanima/shell-ui": "workspace:*"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.4.2",

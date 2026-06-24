@@ -67,15 +67,6 @@ export function registerCompanionHostIpc(
     }
   });
 
-  ipcMain.handle("shell:open-settings", () => {
-    const win = state.getSettingsWindow();
-    if (!win || win.isDestroyed()) {
-      throw new Error("settings window not found");
-    }
-    win.show();
-    win.focus();
-  });
-
   ipcMain.handle("shell:emit-config-changed", () => {
     handlers.broadcast("shell:config-changed");
   });

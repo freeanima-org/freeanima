@@ -1,0 +1,34 @@
+{
+  "name": "@freeanima/shell-ui",
+  "description": "FreeAnima 桌面/移动统一壳层 SPA",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./build": "./build.ts"
+  },
+  "scripts": {
+    "build": "bun build.ts",
+    "dev": "bun build.ts --watch"
+  },
+  "dependencies": {
+    "@freeanima/admin-frontend": "workspace:*",
+    "@freeanima/sap-contract": "workspace:*",
+    "@freeanima/satellite-chat": "workspace:*",
+    "@freeanima/satellite-companion": "workspace:*",
+    "@freeanima/satellite-sdk": "workspace:*",
+    "@tanstack/react-router": "^1.170.11",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "bun-plugin-tailwind": "catalog:",
+    "daisyui": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
+  }
+}

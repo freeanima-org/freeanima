@@ -45,3 +45,25 @@ export {
   connectAuthTokenForHub,
   hubRequiresRemoteAuth,
 } from "./shell-api-fields.ts";
+
+export type {
+  FormFieldDescriptor,
+  FormFieldType,
+  FrontendSettingsExport,
+  SettingsComponentEntry,
+  SettingsComponentLoader,
+  SettingsFormEntry,
+  SettingsFormFields,
+  SettingsPanelProps,
+  SettingsPlatformEntry,
+  SettingsSection,
+} from "./settings.ts";
+export { defineSettingsForm, listSettingsSectionsForPlatform } from "./settings.ts";
+
+export type {
+  SettingsContext,
+  SettingsPlatform,
+  SettingsStorageRef,
+  SettingsStore,
+  SettingsStoreFactory,
+} from "./settings-store.ts";

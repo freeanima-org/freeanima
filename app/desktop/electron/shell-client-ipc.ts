@@ -58,6 +58,10 @@ export function registerShellClientIpc(showHubSettings: () => void): void {
   ipcMain.handle("shell:show-hub-settings", () => {
     showHubSettings();
   });
+
+  ipcMain.handle("shell:open-settings", () => {
+    showHubSettings();
+  });
 }
 
 export function hubSettingsDir(): string {

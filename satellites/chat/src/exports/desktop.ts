@@ -13,18 +13,6 @@ export const chatDesktopExport: FrontendDesktopExport = {
     distSubdir: "chat",
     entryPath: "index.html",
     defaultPort: CHAT_STATIC_PORT,
-    windows: [
-      {
-        id: "main",
-        kind: "browser",
-        width: 960,
-        height: 720,
-        minWidth: 640,
-        minHeight: 480,
-        title: "FreeAnima 聊天室",
-        frame: true,
-        resizable: true,
-      },
-    ],
+    windows: [],
   },
 };

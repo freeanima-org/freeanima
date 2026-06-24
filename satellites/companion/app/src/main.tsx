@@ -1,14 +1,12 @@
 import { StrictMode, useCallback, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { CharacterViewport } from "@/components/CharacterViewport.tsx";
-import { SettingsPanel } from "@/components/SettingsPanel.tsx";
 import { TextBubbleOverlay } from "@/components/TextBubbleOverlay.tsx";
 import { useCompanionStore } from "@/stores/companion.ts";
 import { onCharacterModelReady, startPatrolWatcher } from "@/stores/character.ts";
 import { useSidecarError } from "@/hooks/useSidecarError.ts";
 import {
   isCompanionOverlay,
-  isSettingsView,
   listenConfigChanged,
   listenCursorPosition,
   openSettings,
@@ -56,24 +54,6 @@ function ClickThroughManager() {
   return null;
 }
 
-function SettingsModal() {
-  const open = useCompanionStore((s) => s.settingsOpen);
-  const setOpen = useCompanionStore((s) => s.setSettingsOpen);
-  if (!open) return null;
-  return (
-    <dialog className="modal modal-open">
-      <div className="modal-box w-[800px] max-w-[800px] p-0 bg-transparent border-0 shadow-none overflow-hidden">
-        <SettingsPanel onClose={() => setOpen(false)} />
-      </div>
-      <form method="dialog" className="modal-backdrop">
-        <button type="button" onClick={() => setOpen(false)}>
-          关闭
-        </button>
-      </form>
-    </dialog>
-  );
-}
-
 function CompanionWindow() {
   const {
     loading,
@@ -86,7 +66,6 @@ function CompanionWindow() {
     refreshConfig,
     clearError,
     setCharacterReady,
-    setSettingsOpen,
   } = useCompanionStore();
 
   useSidecarError();
@@ -149,11 +128,11 @@ function CompanionWindow() {
   return (
     <div className="companion-overlay">
       <ClickThroughManager />
-      {!isCompanionOverlay() ? (
+      {isCompanionOverlay() ? (
         <button
           type="button"
           className="absolute top-1 right-1 z-30 text-[10px] px-2 py-0.5 rounded bg-black/40 text-white/70 hover:text-white"
-          onClick={() => setSettingsOpen(true)}
+          onClick={() => void openSettings()}
         >
           设置
         </button>
@@ -188,58 +167,12 @@ function CompanionWindow() {
           </button>
         </div>
       ) : null}
-
-      {!isCompanionOverlay() ? <SettingsModal /> : null}
     </div>
   );
-}
-
-function SettingsApp() {
-  const { loading, init, refreshConfig } = useCompanionStore();
-
-  useSidecarError();
-
-  useEffect(() => {
-    void init();
-    void listenConfigChanged(() => {
-      void refreshConfig();
-    });
-  }, [init, refreshConfig]);
-
-  if (loading) {
-    return (
-      <div className="settings-app-shell flex h-full w-full items-center justify-center bg-base-300">
-        <p className="text-base-content/70 text-sm">正在连接本地后台…</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="settings-app-shell h-full w-full bg-base-100">
-      <SettingsPanel standalone />
-    </div>
-  );
-}
-
-function AppRouter() {
-  useEffect(() => {
-    if (isCompanionOverlay()) {
-      document.documentElement.removeAttribute("data-companion-view");
-      document.title = "";
-    } else if (isSettingsView()) {
-      document.documentElement.setAttribute("data-companion-view", "settings");
-      document.title = "FreeAnima Companion 设置";
-    }
-  }, []);
-
-  if (isSettingsView()) {
-    return <SettingsApp />;
-  }
-  return <CompanionWindow />;
 }
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <AppRouter />
+    <CompanionWindow />
   </StrictMode>,
 );

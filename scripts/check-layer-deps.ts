@@ -32,6 +32,7 @@ const ADMIN_FRONTEND_ALLOWED = new Set([
   "satellite-sdk",
   "kernel",
   "kernel-logging",
+  "shell-ui",
 ]);
 
 type Layer = (typeof LAYER_DIRS)[number] | null;
@@ -110,6 +111,17 @@ function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
     }
     if (relPath.startsWith("packages/satellite-sdk")) {
       return root === "kernel" || root.startsWith("kernel-");
+    }
+    if (relPath.startsWith("packages/shell-ui")) {
+      return (
+        root === "sap-contract" ||
+        root === "satellite-sdk" ||
+        root === "satellite-chat" ||
+        root === "satellite-companion" ||
+        root === "admin-frontend" ||
+        root.startsWith("kernel-") ||
+        root === "kernel"
+      );
     }
     return false;
   }

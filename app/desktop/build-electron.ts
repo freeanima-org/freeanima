@@ -4,8 +4,7 @@ import { dirname, join } from "node:path";
 import * as esbuild from "esbuild";
 import { build as runElectronBuilder, type CliOptions } from "electron-builder";
 
-import { buildAdminApp } from "@freeanima/admin-frontend/build";
-import { buildChatApp } from "@freeanima/satellite-chat/build";
+import { buildShellUi } from "@freeanima/shell-ui/build";
 import { buildCompanionApp } from "@freeanima/satellite-companion/build";
 
 const SHELL_ROOT = import.meta.dir;
@@ -21,6 +20,7 @@ const BUNDLED_WORKSPACE_PACKAGES = new Set([
   "@freeanima/satellite-companion",
   "@freeanima/satellite-chat",
   "@freeanima/admin-frontend",
+  "@freeanima/shell-ui",
 ]);
 
 /** 纯 JS 依赖打进 main bundle，避免 electron-builder 复制 node_modules */
@@ -64,31 +64,6 @@ export function getElectronPreloadBundleOptions(): esbuild.BuildOptions {
     format: "cjs",
     outfile: join(ELECTRON_DIST, "preload.cjs"),
     external: ["electron"],
-    logLevel: "info",
-  };
-}
-
-export function getHubSettingsPreloadBundleOptions(): esbuild.BuildOptions {
-  return {
-    entryPoints: { preload: join(SHELL_ROOT, "electron", "hub-settings-preload.ts") },
-    bundle: true,
-    platform: "node",
-    target: "node20",
-    format: "cjs",
-    outfile: join(ELECTRON_DIST, "hub-settings-preload.cjs"),
-    external: ["electron"],
-    logLevel: "info",
-  };
-}
-
-export function getHubSettingsPageBundleOptions(): esbuild.BuildOptions {
-  return {
-    entryPoints: { settings: join(SHELL_ROOT, "hub-settings", "settings.ts") },
-    bundle: true,
-    platform: "browser",
-    target: "es2022",
-    format: "esm",
-    outfile: join(SHELL_ROOT, "hub-settings", "settings.js"),
     logLevel: "info",
   };
 }
@@ -138,11 +113,9 @@ function copyDist(src: string, dest: string): void {
 
 async function buildVendorAssets(minify: boolean): Promise<void> {
   const companionDist = await buildCompanionApp({ minify });
-  const chatDist = await buildChatApp({ minify });
-  const adminDist = await buildAdminApp({ minify });
+  const shellUiDist = await buildShellUi({ minify });
   copyDist(companionDist, join(SHELL_ROOT, "vendor", "companion", "dist"));
-  copyDist(chatDist, join(SHELL_ROOT, "vendor", "chat", "dist"));
-  copyDist(adminDist, join(SHELL_ROOT, "vendor", "admin", "dist"));
+  copyDist(shellUiDist, join(SHELL_ROOT, "vendor", "shell-ui", "dist"));
 }
 
 async function bundleElectronMain(): Promise<void> {
@@ -150,8 +123,6 @@ async function bundleElectronMain(): Promise<void> {
   mkdirSync(ELECTRON_DIST, { recursive: true });
   await esbuild.build(getElectronMainBundleOptions());
   await esbuild.build(getElectronPreloadBundleOptions());
-  await esbuild.build(getHubSettingsPreloadBundleOptions());
-  await esbuild.build(getHubSettingsPageBundleOptions());
 }
 
 /** 清除 companion 本地构建/缓存残留，避免 electron-builder 误打进 desktop-shell */

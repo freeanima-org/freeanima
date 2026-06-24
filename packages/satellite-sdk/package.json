@@ -9,6 +9,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/bun": "catalog:"
+    "@types/bun": "catalog:",
+    "@types/react": "catalog:"
   }
 }

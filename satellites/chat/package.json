@@ -7,7 +7,8 @@
     "./manifest": "./src/exports/manifest.ts",
     "./build": "./src/exports/build.ts",
     "./desktop": "./src/exports/desktop.ts",
-    "./mobile": "./src/exports/mobile.ts"
+    "./mobile": "./src/exports/mobile.ts",
+    "./app": "./src/exports/app.tsx"
   },
   "scripts": {
     "dev": "bun dev.ts",
