@@ -299,6 +299,7 @@
         "@elysiajs/eden": "^1.4.9",
         "@freeanima/admin-api": "workspace:*",
         "@freeanima/satellite-sdk": "workspace:*",
+        "@freeanima/shell-ui": "workspace:*",
         "@tanstack/react-router": "^1.170.11",
         "elysia": "^1.4.28",
         "highlight.js": "^11.11.1",

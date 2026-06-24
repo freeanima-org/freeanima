@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import type { SettingsPanelProps } from "@freeanima/satellite-sdk";
-import { getCredentialDetail } from "@/lib/api.ts";
+import type { SettingsPanelProps } from "@freeanima/shell-ui/settings";
+import { getCredentialDetail, listCredentials } from "@/lib/api.ts";
 import { m } from "@/lib/i18n.ts";
 
 type CredentialMeta = {
@@ -17,10 +17,6 @@ type CredentialMeta = {
 type CredentialDetail =
   | { yaml: true; fields: Record<string, unknown> }
   | { yaml: false; value: string };
-
-type CredentialsLoaderData = {
-  credentials: CredentialMeta[];
-};
 
 function formatFieldValue(value: unknown): string {
   if (value === null || value === undefined) return "";
@@ -161,7 +157,7 @@ function CredentialDetailModal({
   );
 }
 
-export default function CredentialsPanel({ store }: SettingsPanelProps) {
+export default function CredentialsPanel(_props: SettingsPanelProps) {
   const [credentials, setCredentials] = useState<CredentialMeta[]>([]);
   const [modalPath, setModalPath] = useState<string | null>(null);
   const [detail, setDetail] = useState<CredentialDetail | null>(null);
@@ -172,7 +168,7 @@ export default function CredentialsPanel({ store }: SettingsPanelProps) {
     let cancelled = false;
     void (async () => {
       try {
-        const data = (await store.load()) as CredentialsLoaderData;
+        const data = await listCredentials();
         if (!cancelled) setCredentials(data.credentials ?? []);
       } catch {
         if (!cancelled) setCredentials([]);
@@ -181,7 +177,7 @@ export default function CredentialsPanel({ store }: SettingsPanelProps) {
     return () => {
       cancelled = true;
     };
-  }, [store]);
+  }, []);
 
   const openDetail = async (path: string) => {
     setModalPath(path);

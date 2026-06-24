@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import type { SettingsPanelProps } from "@freeanima/satellite-sdk";
+import type { SettingsPanelProps } from "@freeanima/shell-ui/settings";
+import { getStatusConfig } from "@/lib/api.ts";
 import { m } from "@/lib/i18n.ts";
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -105,7 +106,7 @@ function ConfigBlock({ name, value }: { name: string; value: unknown }) {
   );
 }
 
-export default function ConfigPanel({ store }: SettingsPanelProps) {
+export default function ConfigPanel(_props: SettingsPanelProps) {
   const [config, setConfig] = useState<Record<string, unknown> | null>(null);
   const [failed, setFailed] = useState(false);
 
@@ -113,7 +114,7 @@ export default function ConfigPanel({ store }: SettingsPanelProps) {
     let cancelled = false;
     void (async () => {
       try {
-        const data = await store.load();
+        const data = await getStatusConfig();
         if (!cancelled) setConfig((data ?? {}) as Record<string, unknown>);
       } catch {
         if (!cancelled) setFailed(true);
@@ -122,7 +123,7 @@ export default function ConfigPanel({ store }: SettingsPanelProps) {
     return () => {
       cancelled = true;
     };
-  }, [store]);
+  }, []);
 
   if (failed || config === null) {
     return <div className="alert alert-error text-sm">{m.admin_common_load_failed_short()}</div>;

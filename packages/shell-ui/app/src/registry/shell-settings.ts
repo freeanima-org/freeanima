@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { defineSettingsForm, type FrontendSettingsExport } from "@freeanima/satellite-sdk";
+import { defineSettingsForm, type SettingsSection } from "../../../src/settings.ts";
 
 const hubFields = defineSettingsForm({
   zodSchema: z.object({
@@ -23,13 +23,11 @@ const hubFields = defineSettingsForm({
   ],
 });
 
-export const shellSettingsExport: FrontendSettingsExport = {
-  appId: "shell",
+export const shellSettingsSection: SettingsSection = {
   id: "hub",
   order: 0,
   title: "Hub 连接",
   description: "配置客户端如何连接 FreeAnima Hub",
-  storage: { kind: "shell-client" },
   platforms: {
     desktop: { kind: "form", fields: hubFields },
     mobile: { kind: "form", fields: hubFields },

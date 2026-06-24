@@ -1,10 +1,10 @@
-import type { FrontendSettingsExport } from "@freeanima/satellite-sdk";
-import { companionSettingsExport } from "@freeanima/satellite-companion/settings";
+import type { SettingsSection } from "../../../src/settings.ts";
 
-import { adminSettingsExports } from "./admin-settings.ts";
-import { shellSettingsExport } from "./shell-settings.ts";
+import { adminSettingsSections } from "./admin-settings.ts";
+import { companionSettingsSection } from "./companion-settings.ts";
+import { shellSettingsSection } from "./shell-settings.ts";
 
-/** 编译期聚合各模块 settings 导出 */
-export function getSettingsRegistry(): FrontendSettingsExport[] {
-  return [shellSettingsExport, companionSettingsExport, ...adminSettingsExports];
+/** 编译期聚合各模块设置 section */
+export function getSettingsRegistry(): SettingsSection[] {
+  return [shellSettingsSection, companionSettingsSection, ...adminSettingsSections];
 }

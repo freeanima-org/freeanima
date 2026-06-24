@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@freeanima/admin-api": "workspace:*",
+    "@freeanima/shell-ui": "workspace:*",
     "@freeanima/satellite-sdk": "workspace:*",
     "@elysiajs/eden": "^1.4.9",
     "@tanstack/react-router": "^1.170.11",

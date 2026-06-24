@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { z } from "zod";
 
 import { defineSettingsForm, listSettingsSectionsForPlatform } from "./settings.ts";
-import type { FrontendSettingsExport } from "./settings.ts";
+import type { SettingsSection } from "./settings.ts";
 
 describe("defineSettingsForm", () => {
   test("accepts matching keys", () => {
@@ -27,13 +27,11 @@ describe("defineSettingsForm", () => {
 });
 
 describe("listSettingsSectionsForPlatform", () => {
-  const exports: FrontendSettingsExport[] = [
+  const sections: SettingsSection[] = [
     {
-      appId: "shell",
       id: "hub",
       order: 0,
       title: "Hub",
-      storage: { kind: "shell-client" },
       platforms: {
         desktop: {
           kind: "form",
@@ -45,11 +43,9 @@ describe("listSettingsSectionsForPlatform", () => {
       },
     },
     {
-      appId: "companion",
       id: "companion",
       order: 10,
       title: "Companion",
-      storage: { kind: "sidecar-http", path: "/api/config" },
       platforms: {
         desktop: { kind: "component", load: async () => ({ default: () => null }) },
       },
@@ -57,14 +53,14 @@ describe("listSettingsSectionsForPlatform", () => {
   ];
 
   test("filters by platform", () => {
-    const desktop = listSettingsSectionsForPlatform(exports, "desktop");
+    const desktop = listSettingsSectionsForPlatform(sections, "desktop");
     expect(desktop).toHaveLength(2);
-    const mobile = listSettingsSectionsForPlatform(exports, "mobile");
+    const mobile = listSettingsSectionsForPlatform(sections, "mobile");
     expect(mobile).toHaveLength(0);
   });
 
   test("sorts by order", () => {
-    const rows = listSettingsSectionsForPlatform(exports, "desktop");
+    const rows = listSettingsSectionsForPlatform(sections, "desktop");
     expect(rows[0]?.id).toBe("hub");
     expect(rows[1]?.id).toBe("companion");
   });
