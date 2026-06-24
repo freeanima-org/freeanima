@@ -29,7 +29,8 @@ node_modules/
 .pnpm-store/
 .turbo/
 **/dist/
-**/.tsbuildinfo
+**/*.tsbuildinfo
+**/.tsout/
 pnpm-debug.log*
 bun-debug.log*
 
@@ -61,6 +62,11 @@ satellites/*/release/
 satellites/*/build-resources/
 satellites/*/.cache/
 satellites/*/companion-config.json
+satellites/app-mobile/www/
+satellites/app-mobile/android/.gradle/
+satellites/app-mobile/android/app/build/
+satellites/app-mobile/android/build/
+satellites/app-mobile/android/local.properties
 
 # Misc
 /tmp/

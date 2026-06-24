@@ -1,9 +1,10 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../tsconfig.composite.base.json",
   "compilerOptions": {
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "types": ["node"],
+    "outDir": ".tsout",
     "paths": {
       "@/*": ["./app/src/*"],
       "@shared/*": ["./shared/*"]
@@ -16,6 +17,8 @@
     "shared/**/*.ts",
     "shared/**/*.json",
     "src/**/*.ts",
+    "build.ts",
+    "dev.ts",
     "../../types/**/*.d.ts"
   ],
   "exclude": ["**/*.test.ts", "electron-dist/**", "release/**", "electron/**"]

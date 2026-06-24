@@ -1,9 +1,10 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../tsconfig.composite.base.json",
   "compilerOptions": {
     "lib": ["ES2023", "DOM"],
     "types": ["node"],
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "outDir": ".tsout"
   },
   "include": ["electron/**/*.ts", "build-electron.ts", "dev-electron.ts"],
   "exclude": ["electron-dist/**", "release/**", "vendor/**"]

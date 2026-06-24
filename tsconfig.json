@@ -23,7 +23,9 @@
     "platform/connectors/webui/app/**/*.tsx",
     "platform/connectors/webui/app/index.html",
     "scripts/**/*.ts",
-    "tests/**/*.ts"
+    "tests/**/*.ts",
+    "messages/**/*.json",
+    "satellites/companion/shared/**/*.json"
   ],
   "exclude": [
     "node_modules",

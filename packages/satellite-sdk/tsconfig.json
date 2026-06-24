@@ -1,8 +1,9 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../tsconfig.composite.base.json",
   "compilerOptions": {
     "lib": ["ES2023"],
-    "types": ["bun"]
+    "types": ["bun"],
+    "outDir": ".tsout"
   },
   "include": ["src/**/*.ts"]
 }

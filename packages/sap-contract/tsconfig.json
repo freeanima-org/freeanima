@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.composite.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["bun"],
+    "outDir": ".tsout"
+  },
+  "include": ["src/**/*.ts"]
+}

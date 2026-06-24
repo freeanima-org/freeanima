@@ -44,6 +44,14 @@ function writeSessionToUrl(sessionId: string | null) {
   window.history.replaceState(null, "", url);
 }
 
+function getSatelliteShell() {
+  return window.satelliteShell ?? window.companionShell;
+}
+
+function openHubSettingsIfAvailable(): void {
+  getSatelliteShell()?.openHubSettings?.();
+}
+
 function App() {
   const sessions = useSessionsStore((s) => s.sessions);
   const currentId = useSessionsStore((s) => s.currentId);
@@ -98,7 +106,9 @@ function App() {
     inject_text: "",
   });
   const [fridgeLoading, setFridgeLoading] = useState(false);
+  const [keyboardInset, setKeyboardInset] = useState(0);
   const pendingRecoveryKeyRef = useRef<string | null>(null);
+  const nativeShell = Boolean(getSatelliteShell()?.isNativeShell);
 
   const streamVisible = streaming && streamingSessionId === currentId;
 
@@ -139,6 +149,22 @@ function App() {
 
   useEffect(() => {
     return subscribeSapConnection(setSapConnection);
+  }, []);
+
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => {
+      const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      setKeyboardInset(inset);
+    };
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+    };
   }, []);
 
   useEffect(() => {
@@ -472,17 +498,28 @@ function App() {
           <h2 className="text-lg font-bold">{m.webui_chat_title()}</h2>
           <p className="text-sm text-error">{error}</p>
           <p className="text-xs text-base-content/60">
-            {(window.satelliteShell ?? window.companionShell)?.hubWsUrl
-              ? "请确认 Hub 已运行（anima service start）。"
+            {getSatelliteShell()?.hubWsUrl
+              ? nativeShell
+                ? "请确认 Hub 已运行，或在设置中检查 Hub 地址。"
+                : "请确认 Hub 已运行（anima service start）。"
               : "请确认 Hub 已运行，且 chat dev server 提供 /config.json。"}
           </p>
+          {nativeShell ? (
+            <button
+              type="button"
+              className="btn btn-sm btn-primary"
+              onClick={openHubSettingsIfAvailable}
+            >
+              Hub 设置
+            </button>
+          ) : null}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex flex-col min-h-0">
+    <div className="chat-app h-screen flex flex-col min-h-0">
       {sapDisconnected ? (
         <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2 bg-warning/15 border-b border-warning/30 text-sm">
           <span className="text-warning-content/90">
@@ -490,14 +527,25 @@ function App() {
               ? m.webui_common_connecting()
               : m.webui_studio_disconnected()}
           </span>
-          <button
-            type="button"
-            className="btn btn-xs btn-warning"
-            disabled={sapConnection === "connecting"}
-            onClick={() => void reconnectSap()}
-          >
-            {m.webui_common_reconnect()}
-          </button>
+          <div className="flex items-center gap-1">
+            {nativeShell ? (
+              <button
+                type="button"
+                className="btn btn-xs btn-ghost"
+                onClick={openHubSettingsIfAvailable}
+              >
+                Hub 设置
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="btn btn-xs btn-warning"
+              disabled={sapConnection === "connecting"}
+              onClick={() => void reconnectSap()}
+            >
+              {m.webui_common_reconnect()}
+            </button>
+          </div>
         </div>
       ) : null}
       <header className="shrink-0 flex items-center gap-2 px-3 py-2 border-b border-base-300 bg-base-200">
@@ -510,6 +558,15 @@ function App() {
         </button>
         <span className="text-sm font-medium">{m.webui_chat_title()}</span>
         <span className="flex-1" />
+        {nativeShell ? (
+          <button
+            type="button"
+            className="btn btn-xs btn-ghost"
+            onClick={openHubSettingsIfAvailable}
+          >
+            Hub
+          </button>
+        ) : null}
         <button
           type="button"
           className="btn btn-xs btn-ghost"
@@ -668,7 +725,10 @@ function App() {
             onRefresh={() => void refreshFridgeMagnets()}
           />
 
-          <div className="border-t border-base-300 p-4 bg-base-100 relative">
+          <div
+            className="border-t border-base-300 p-4 bg-base-100 relative chat-compose"
+            style={keyboardInset > 0 ? { paddingBottom: `${keyboardInset + 16}px` } : undefined}
+          >
             {messageQueue.length > 0 ? (
               <ul className="mb-2 space-y-1">
                 {messageQueue.map((item) => (
