@@ -35,8 +35,7 @@ export function registerMotionEntry(entry: MotionLibraryEntry): MotionLibraryEnt
   return entry;
 }
 
-/** @deprecated 请用 registerMotionEntry；保留供 manifest 同步 */
-export function addMotionToLibrary(file: string, name?: string): MotionLibraryEntry {
+function addMotionToLibrary(file: string, name?: string): MotionLibraryEntry {
   const cfg = loadConfig();
   const existing = cfg.motion_library.find((e) => e.file === file);
   if (existing) return existing;

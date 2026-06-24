@@ -13,7 +13,7 @@ export const MOTION_SLOT_LABELS: Record<MotionSlotId, string> = {
   in_place: "原地动作",
 };
 
-/** @deprecated 旧版按部位拆分的槽位前缀；加载配置时合并到 in_place */
+/** 旧版按部位拆分的槽位前缀；加载配置时合并到 in_place */
 export const LEGACY_IN_PLACE_SLOT_PREFIX = "in_place_";
 
 export type MotionLibraryEntry = {

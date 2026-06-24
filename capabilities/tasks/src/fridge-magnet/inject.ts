@@ -53,17 +53,14 @@ export function stripFridgeMagnets(content: string): string {
   return content.replace(FRIDGE_BLOCK_RE, "");
 }
 
-/** @deprecated Legacy user prepend — use stripFridgeMagnets on user messages */
-export function stripLegacyUserFridgeBlocks(messages: StoredMessage[]): void {
+/** 从 user 消息中剥离旧版 prepend 冰箱贴块（数据迁移） */
+export function stripLegacyFridgeBlocksFromMessages(messages: StoredMessage[]): void {
   for (const msg of messages) {
     if (msg.role === "user" && "content" in msg && msg.content !== null) {
       msg.content = stripFridgeMagnets(msg.content);
     }
   }
 }
-
-/** @deprecated Alias for stripLegacyUserFridgeBlocks */
-export const stripAllFromMessages = stripLegacyUserFridgeBlocks;
 
 /**
  * Manifest fridge board as assistant(name=fridge_context) immediately before the last user message.

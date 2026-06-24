@@ -36,7 +36,7 @@ import { MOTION_SLOT_IDS, type MotionSlotId } from "../shared/companion-schema.t
 import { fbxImportAvailable } from "./fbx-converter-kit.ts";
 import { serveStatic, setStaticDistDir } from "./static.ts";
 import { SATELLITE_PORT_ATTEMPTS, SATELLITE_PORT_START } from "../shared/constants.ts";
-import { advanceBubble, runtimeState, bubbleState } from "./runtime-state.ts";
+import { advanceBubble, bubbleState } from "./runtime-state.ts";
 import { handleRuntimeWsClose, handleRuntimeWsOpen, runtimeWsPayload } from "./runtime-ws.ts";
 import type { LocomotionSlot } from "../shared/constants.ts";
 import { handleLocomotionImport } from "./locomotion.ts";
@@ -99,10 +99,6 @@ export async function route(req: Request): Promise<Response> {
     const next = saveConfig(rest);
     reconnectSap(hubUrlFromConfig(), activeHttpUrl);
     return jsonResponse(clientCompanionConfig(next));
-  }
-
-  if (url.pathname === "/api/runtime" && req.method === "GET") {
-    return jsonResponse({ ...runtimeState(), play: [] });
   }
 
   if (url.pathname === "/api/bubbles/advance" && req.method === "POST") {

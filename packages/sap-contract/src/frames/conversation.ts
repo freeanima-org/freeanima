@@ -19,9 +19,6 @@ export const conversationCreateOutputSchema = z.object({
   conversation_id: z.string(),
 });
 
-/** @deprecated 使用 conversationCreateOutputSchema */
-export const sessionCreateOutputSchema = conversationCreateOutputSchema;
-
 export type ConversationCreateOutput = z.infer<typeof conversationCreateOutputSchema>;
 
 export const conversationListInputSchema = z.object({
@@ -70,21 +67,12 @@ export const conversationUpdatedPayloadSchema = z.object({
   conversation_id: z.string(),
 });
 
-/** @deprecated 使用 conversationUpdatedPayloadSchema */
-export const sessionUpdatedPayloadSchema = conversationUpdatedPayloadSchema;
-
 export type ConversationUpdatedPayload = z.infer<typeof conversationUpdatedPayloadSchema>;
-
-/** @deprecated 使用 ConversationUpdatedPayload */
-export type SessionUpdatedPayload = ConversationUpdatedPayload;
 
 export const conversationCommandsInputSchema = z.object({
   platform: z.string().optional(),
   all: z.boolean().optional(),
 });
-
-/** @deprecated 使用 conversationCommandsInputSchema */
-export const sessionCommandsInputSchema = conversationCommandsInputSchema;
 
 export type ConversationCommandsInput = z.infer<typeof conversationCommandsInputSchema>;
 
@@ -95,20 +83,11 @@ export const conversationCommandItemSchema = z.object({
   platforms: z.array(z.string()).nullable(),
 });
 
-/** @deprecated 使用 conversationCommandItemSchema */
-export const sessionCommandItemSchema = conversationCommandItemSchema;
-
 export type ConversationCommandItem = z.infer<typeof conversationCommandItemSchema>;
-
-/** @deprecated 使用 ConversationCommandItem */
-export type SessionCommandItem = ConversationCommandItem;
 
 export const conversationCommandsOutputSchema = z.object({
   commands: z.array(conversationCommandItemSchema),
   platform: z.string().optional(),
 });
-
-/** @deprecated 使用 conversationCommandsOutputSchema */
-export const sessionCommandsOutputSchema = conversationCommandsOutputSchema;
 
 export type ConversationCommandsOutput = z.infer<typeof conversationCommandsOutputSchema>;

@@ -2,7 +2,7 @@ import type { DisplayItem, ConversationListItem } from "@/lib/types.ts";
 import { hasNewAssistantReply } from "@/lib/display-recovery.ts";
 import { create } from "zustand";
 import {
-  createSession,
+  createConversation,
   getStoredMessages,
   listConversations,
   setConversationTitle,
@@ -53,7 +53,7 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
 
   async newConversation() {
     try {
-      const d = await createSession();
+      const d = await createConversation();
       await get().fetchConversations();
       const conversationId = d.conversation_id;
       await get().selectConversation(conversationId);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import {
-  createSapBrowserClient,
+  createSapDirectClient,
   mapSapStreamMethodToApi,
   streamEventMethods,
 } from "@freeanima/sap-contract";
@@ -15,8 +15,8 @@ describe("chat browser SAP client", () => {
     expect(streamEventMethods).toContain("stream.done");
   });
 
-  it("createSapBrowserClient exposes subscribe and stream helpers", () => {
-    const client = createSapBrowserClient({
+  it("createSapDirectClient exposes subscribe and stream helpers", () => {
+    const client = createSapDirectClient({
       hubWsUrl: "ws://127.0.0.1:2658/sap/v1",
       httpUrl: "http://127.0.0.1:4174",
     });

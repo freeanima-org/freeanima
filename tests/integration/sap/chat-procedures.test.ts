@@ -3,7 +3,7 @@ import {
   SAP_METHODS,
   fridgeListInputSchema,
   sessionAcpDockInputSchema,
-  sessionCommandsInputSchema,
+  conversationCommandsInputSchema,
 } from "@freeanima/sap-contract";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 
@@ -16,7 +16,7 @@ describe("chat SAP procedures", () => {
 
   it("validates chat procedure inputs", () => {
     sessionAcpDockInputSchema.parse({ conversation_id: "20260101_120000_abc" });
-    sessionCommandsInputSchema.parse({ platform: TEST_SAP_CHAT_PLATFORM, all: false });
+    conversationCommandsInputSchema.parse({ platform: TEST_SAP_CHAT_PLATFORM, all: false });
     fridgeListInputSchema.parse({});
   });
 });

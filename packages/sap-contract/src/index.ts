@@ -47,11 +47,6 @@ export {
   conversationCommandsInputSchema,
   conversationCommandsOutputSchema,
   conversationCommandItemSchema,
-  sessionCreateOutputSchema,
-  sessionUpdatedPayloadSchema,
-  sessionCommandsInputSchema,
-  sessionCommandsOutputSchema,
-  sessionCommandItemSchema,
 } from "./frames/conversation.ts";
 export type {
   ConversationCreateInput,
@@ -65,8 +60,6 @@ export type {
   ConversationCommandsInput,
   ConversationCommandsOutput,
   ConversationCommandItem,
-  SessionUpdatedPayload,
-  SessionCommandItem,
 } from "./frames/conversation.ts";
 
 export {
@@ -176,8 +169,6 @@ export {
 export {
   createSapDirectClient,
   loadDirectSatelliteConfig,
-  createSapBrowserClient,
-  loadChatSatelliteConfig,
   formatDirectPlatform,
   type DirectSatelliteConfig,
   type SapDirectClient,
@@ -186,12 +177,9 @@ export {
 
 export {
   createSapSidecarClient,
-  createSapRelayBrowserClient,
   type SapConnectionState,
   type SapSidecarClient,
   type SapSidecarClientOptions,
-  type SapRelayBrowserClient,
-  type SapRelayBrowserClientOptions,
 } from "./sidecar-client.ts";
 
 export {
@@ -233,9 +221,3 @@ export {
   RECOVERY_MAX_DURATION_MS,
   type DisplayRecoveryItem,
 } from "./display-recovery.ts";
-
-/** @deprecated Use sidecar-client.ts */
-export { createSapRelayBrowserClient as createSapRelayBrowserClientLegacy } from "./sidecar-client.ts";
-
-/** @deprecated Use direct-client.ts */
-export { createSapBrowserClient as createSapBrowserClientLegacy } from "./direct-client.ts";

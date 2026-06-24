@@ -23,5 +23,4 @@ export async function pairPlatform(): Promise<string> {
   return "sap:pairprogramming:web";
 }
 
-/** @deprecated Use pairPlatform() after sidecar connect */
 export const STUDIO_PAIR_PLATFORM = "sap:pairprogramming:web";

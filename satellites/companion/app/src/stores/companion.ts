@@ -203,8 +203,3 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
     set({ settingsOpen: open });
   },
 }));
-
-/** @deprecated 使用 characterReady */
-export function useModelReady(): boolean {
-  return useCompanionStore((s) => s.characterReady);
-}

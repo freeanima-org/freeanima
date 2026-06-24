@@ -134,9 +134,6 @@ export async function uploadMotionFile(file: File) {
   };
 }
 
-/** @deprecated 使用 uploadMotionFile */
-export const uploadMotionZip = uploadMotionFile;
-
 export type { LocomotionSlot } from "@shared/constants.ts";
 
 export type LocomotionStatus = {
@@ -209,11 +206,6 @@ export function runtimeWsUrl(httpOrigin: string): string {
   return `${httpOrigin.replace(/^http/, "ws")}/api/runtime/ws`;
 }
 
-/** @deprecated 使用 WebSocket /api/runtime/ws */
-export async function fetchRuntimeState(): Promise<RuntimeState> {
-  return apiJson<RuntimeState>("/api/runtime");
-}
-
 export async function advanceBubble() {
   return apiJson<{ current: { id: string; text: string } | null }>("/api/bubbles/advance", {
     method: "POST",
@@ -222,4 +214,4 @@ export async function advanceBubble() {
 
 export type { PlaySlotCommand, RuntimeState, RuntimeWsMessage, MotionLibraryEntry, MotionSlotId };
 
-export { isElectron, isElectron as isTauri };
+export { isElectron };

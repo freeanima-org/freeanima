@@ -35,7 +35,6 @@ export const SETTINGS_WINDOW_HEIGHT_WIN = 820;
 export const FBX_IMPORT_UNAVAILABLE_MSG =
   "未找到 FBX2glTF 转换器，请直接导入 .vrma；或在 satellites/companion 执行 bun run setup:fbx 下载。";
 
-/** @deprecated 使用 MotionSlotId walk/climb */
 export const LOCOMOTION_SLOTS = ["walk", "climb"] as const;
 export type LocomotionSlot = (typeof LOCOMOTION_SLOTS)[number];
 

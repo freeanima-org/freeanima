@@ -85,11 +85,6 @@ export function enqueuePlaySlot(slot: string, motionId?: string): PlaySlotComman
   return cmd;
 }
 
-/** @deprecated 播放指令改由 WebSocket 即时推送 */
-export function drainPlayQueue(): PlaySlotCommand[] {
-  return [];
-}
-
 export function runtimeState(): {
   bubble: ReturnType<typeof bubbleState>;
   playVersion: number;

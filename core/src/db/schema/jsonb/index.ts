@@ -15,10 +15,11 @@ export {
   type ToolCall,
 } from "./message-payload.ts";
 export {
-  PLATFORMS,
-  platformSchema,
-  type Platform,
-  isPlatform,
+  GATEWAY_PLATFORMS,
+  gatewayPlatformSchema,
+  type GatewayPlatform,
+  isGatewayPlatform,
+  isSapPlatformString,
   platformInfoSchema,
   type PlatformInfo,
   buildPlatformInfo,

@@ -3,7 +3,7 @@ import { FRIDGE_MAGNET_SCAN_PATTERN, scanMagnets, stripMagnetRedisKeyPrefix } fr
 import {
   manifestFridgeMagnetBoard,
   stripFridgeContextFromMessages,
-  stripLegacyUserFridgeBlocks,
+  stripLegacyFridgeBlocksFromMessages,
 } from "./inject.ts";
 import type { FridgeMagnet } from "./types.ts";
 
@@ -17,7 +17,7 @@ function toDisplayMagnets(hits: { key: string; value: string }[]): FridgeMagnet[
 export function createFridgeMagnetHandler() {
   return async (ctx: BeforeLlmCallContext): Promise<void> => {
     stripFridgeContextFromMessages(ctx.messages);
-    stripLegacyUserFridgeBlocks(ctx.messages);
+    stripLegacyFridgeBlocksFromMessages(ctx.messages);
 
     const lastMsg = ctx.messages[ctx.messages.length - 1];
     if (!lastMsg || lastMsg.role !== "user") return;

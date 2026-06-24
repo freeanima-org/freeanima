@@ -7,19 +7,7 @@ export const GATEWAY_PLATFORMS = ["discord", "weixin", "cron"] as const;
 
 export type GatewayPlatform = (typeof GATEWAY_PLATFORMS)[number];
 
-/** @deprecated Use GATEWAY_PLATFORMS; SAP platforms use `sap:{slug}:{inst}` strings */
-export const PLATFORMS = GATEWAY_PLATFORMS;
-
 export const gatewayPlatformSchema = z.enum(GATEWAY_PLATFORMS);
-
-/** @deprecated Use gatewayPlatformSchema or sap platform string validation */
-export const platformSchema = z.union([
-  gatewayPlatformSchema,
-  z.string().refine((p) => isSapPlatformString(p), { message: "invalid sap platform" }),
-]);
-
-/** @deprecated Use GatewayPlatform or sap platform string */
-export type Platform = GatewayPlatform | string;
 
 export function isGatewayPlatform(value: string): value is GatewayPlatform {
   return (GATEWAY_PLATFORMS as readonly string[]).includes(value);
@@ -38,11 +26,6 @@ export function parseSapPlatformString(platform: string): {
   if (!isSapPlatformString(platform)) return null;
   const parts = platform.split(":");
   return { app_slug: parts[1]!, instance_id_norm: parts[2]! };
-}
-
-/** @deprecated Use isGatewayPlatform or isSapPlatformString */
-export function isPlatform(value: string): boolean {
-  return isGatewayPlatform(value) || isSapPlatformString(value);
 }
 
 const sapPlatformInfoSchema = z.looseObject({

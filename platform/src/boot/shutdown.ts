@@ -21,15 +21,13 @@ export type ShutdownParams = {
   platforms: PlatformAdapter[];
   cronInitialized: boolean;
   http?: HttpHooks;
-  /** @deprecated 使用 http */
-  webui?: HttpHooks;
   servers: HttpServerHandle[];
   waitForDrain: (app: AppRuntime, maxMs: number) => Promise<void>;
 };
 
 export async function gracefulShutdown(params: ShutdownParams): Promise<void> {
   const { signal, runtime, kernel, mcp, acp, platforms, cronInitialized, servers } = params;
-  const http = params.http ?? params.webui;
+  const http = params.http;
   const t0 = Date.now();
   const step = (label: string, ms: number) => {
     logComponent("shutdown").debug(label, { ms, elapsed_ms: Date.now() - t0 });
