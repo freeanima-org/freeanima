@@ -2,13 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   FormFieldDescriptor,
   SettingsFormFields,
-  SettingsStore,
-} from "@freeanima/satellite-sdk";
+  SettingsPlatform,
+} from "../../../src/settings.ts";
+import type { SettingsStore } from "../../../src/settings-store.ts";
 
 type Props = {
   fields: SettingsFormFields;
   store: SettingsStore<unknown>;
-  platform: "desktop" | "mobile";
+  platform: SettingsPlatform;
   onDirty?: () => void;
 };
 
@@ -129,7 +130,7 @@ function FieldInput({
 }: {
   item: FormFieldDescriptor;
   value: unknown;
-  platform: "desktop" | "mobile";
+  platform: SettingsPlatform;
   onChange: (value: unknown) => void;
 }) {
   const inputClass =

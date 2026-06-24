@@ -1,24 +1,24 @@
 import { useMemo, useState } from "react";
-import type { FrontendSettingsExport, SettingsPlatform } from "@freeanima/satellite-sdk";
-import { listSettingsSectionsForPlatform } from "@freeanima/satellite-sdk";
+import type { SettingsSection, SettingsPlatform } from "../../../src/settings.ts";
+import { listSettingsSectionsForPlatform } from "../../../src/settings.ts";
 
 import { SettingsSectionPanel } from "./SettingsSectionPanel.tsx";
 
 type Props = {
-  exports: FrontendSettingsExport[];
+  sections: SettingsSection[];
   platform: SettingsPlatform;
 };
 
-export function SettingsHost({ exports, platform }: Props) {
-  const sections = useMemo(
-    () => listSettingsSectionsForPlatform(exports, platform),
-    [exports, platform],
+export function SettingsHost({ sections, platform }: Props) {
+  const visible = useMemo(
+    () => listSettingsSectionsForPlatform(sections, platform),
+    [sections, platform],
   );
-  const [activeId, setActiveId] = useState<string>(() => sections[0]?.id ?? "");
+  const [activeId, setActiveId] = useState<string>(() => visible[0]?.id ?? "");
 
-  const active = sections.find((s) => s.id === activeId) ?? sections[0];
+  const active = visible.find((s) => s.id === activeId) ?? visible[0];
 
-  if (sections.length === 0) {
+  if (visible.length === 0) {
     return <p className="p-6 text-sm text-base-content/60">暂无可用设置</p>;
   }
 
@@ -26,13 +26,11 @@ export function SettingsHost({ exports, platform }: Props) {
     <div className="flex h-full min-h-0">
       <nav className="w-52 shrink-0 border-r border-base-300 bg-base-200/40 p-3 overflow-y-auto">
         <ul className="menu menu-sm gap-0.5">
-          {sections.map((section) => (
-            <li key={`${section.appId}:${section.id}`}>
+          {visible.map((section) => (
+            <li key={section.id}>
               <button
                 type="button"
-                className={
-                  active?.id === section.id && active?.appId === section.appId ? "active" : ""
-                }
+                className={active?.id === section.id ? "active" : ""}
                 onClick={() => setActiveId(section.id)}
               >
                 {section.title}

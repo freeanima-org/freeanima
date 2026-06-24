@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 import type { ZodType } from "zod";
 
-import type { SettingsPlatform, SettingsStorageRef, SettingsStore } from "./settings-store.ts";
+export type SettingsPlatform = "desktop" | "mobile";
 
 export type FormFieldType = "text" | "password" | "number" | "boolean" | "select" | "textarea";
 
@@ -26,8 +26,8 @@ export type SettingsFormEntry = {
   fields: SettingsFormFields;
 };
 
+/** component 自行读写（IPC / sidecar HTTP / Hub REST 等） */
 export type SettingsPanelProps = {
-  store: SettingsStore<unknown>;
   platform: SettingsPlatform;
   onDirty?: () => void;
 };
@@ -43,21 +43,16 @@ export type SettingsComponentEntry = {
 
 export type SettingsPlatformEntry = SettingsFormEntry | SettingsComponentEntry;
 
+/** 统一设置窗侧栏的一项；由 shell-ui registry 聚合 */
 export type SettingsSection = {
   id: string;
   order: number;
   title: string;
   description?: string;
-  /** 整 section 共用；form 与 component 均通过壳层注入的 store 读写 */
-  storage: SettingsStorageRef;
   platforms: {
     desktop?: SettingsPlatformEntry;
     mobile?: SettingsPlatformEntry;
   };
-};
-
-export type FrontendSettingsExport = SettingsSection & {
-  appId: string;
 };
 
 /** 校验 fields.items 的 key 均被 zodSchema 覆盖 */
@@ -85,10 +80,10 @@ function getZodObjectKeys(schema: ZodType): Set<string> {
 
 /** 按 order 排序，过滤当前平台无入口的 section */
 export function listSettingsSectionsForPlatform(
-  exports: FrontendSettingsExport[],
+  sections: SettingsSection[],
   platform: SettingsPlatform,
-): FrontendSettingsExport[] {
-  const rows = exports.filter((exp) => exp.platforms[platform] != null);
+): SettingsSection[] {
+  const rows = sections.filter((section) => section.platforms[platform] != null);
   rows.sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
   return rows;
 }

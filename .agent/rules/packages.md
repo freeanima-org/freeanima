@@ -2,12 +2,12 @@
 
 Workspace package names reflect the five-layer model:
 
-| Shape           | Pattern                          | Example                                       |
-| --------------- | -------------------------------- | --------------------------------------------- |
-| Layer aggregate | `@freeanima/{layer}`             | `kernel`, `core`, `runtime`, `platform`       |
-| Capability pack | `@freeanima/capabilities-{slug}` | `capabilities-memory`, `capabilities-tools`   |
-| Entry           | `@freeanima/cli`                 | CLI only                                      |
-| Shell UI        | `@freeanima/shell-ui`            | 桌面/移动统一壳层 SPA（`packages/shell-ui/`） |
+| Shape           | Pattern                          | Example                                                                |
+| --------------- | -------------------------------- | ---------------------------------------------------------------------- |
+| Layer aggregate | `@freeanima/{layer}`             | `kernel`, `core`, `runtime`, `platform`                                |
+| Capability pack | `@freeanima/capabilities-{slug}` | `capabilities-memory`, `capabilities-tools`                            |
+| Entry           | `@freeanima/cli`                 | CLI only                                                               |
+| Shell UI        | `@freeanima/shell-ui`            | 桌面/移动统一壳层 SPA；统一设置窗 registry 与契约（`src/settings.ts`） |
 
 ## Valid layer packages
 

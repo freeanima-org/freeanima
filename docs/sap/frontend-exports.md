@@ -2,9 +2,11 @@
 title: Frontend Exports
 ---
 
-# 前端四档导出约定
+# 前端三档导出约定
 
-可嵌入 desktop / mobile 壳的前端内容包通过 **manifest / desktop / mobile / settings** 四档导出注册。
+可嵌入 desktop / mobile 壳的前端内容包通过 **manifest / desktop / mobile** 三档导出注册。
+
+统一设置窗由 [`packages/shell-ui/`](../../packages/shell-ui/) 的 registry 聚合，契约见 [`packages/shell-ui/src/settings.ts`](../../packages/shell-ui/src/settings.ts)（与 SAP 无关）。
 
 ## Manifest（必选）
 
@@ -36,21 +38,6 @@ title: Frontend Exports
 - `./mobile` — 移动端 profile；不支持时 `embedMode: "unsupported"`
 
 `embedMode: "bundled-spa"` — UI 打进客户端安装包，本地静态托管；Hub 仅提供 `/api` 与 `/sap/v1`。
-
-## Settings（可选）
-
-路径：`./settings` — `FrontendSettingsExport`（= `SettingsSection` + `appId`），供统一设置窗聚合。
-
-**每个 `./settings` 导出对应一个 section**（`id`、`order`、`title`、`description?`、`storage`、`platforms`）。多 section 模块在壳层 registry 用数组展开（如 Admin 的 runtime-config / credentials），不要在内层再包 `sections: [...]`。
-
-| `platforms.*.kind` | 说明                                                             |
-| ------------------ | ---------------------------------------------------------------- |
-| `form`             | `fields: { zodSchema, items }`；壳层按平台渲染表单               |
-| `component`        | `load()` 懒加载 React 组件；通过 `SettingsPanelProps.store` 读写 |
-
-每个 section 含 **一份 `storage`**（`SettingsStorageRef`）与 **`platforms.desktop` / `platforms.mobile`** 渲染入口。
-
-运行时存储 SSOT：[`packages/satellite-sdk/src/settings-store.ts`](../../packages/satellite-sdk/src/settings-store.ts)。
 
 ## 当前前端包
 

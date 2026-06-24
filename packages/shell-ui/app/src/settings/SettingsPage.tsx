@@ -6,7 +6,7 @@ export function SettingsPage() {
   const platform = detectPlatform();
   return (
     <div className="h-full min-h-0 bg-base-100">
-      <SettingsHost exports={getSettingsRegistry()} platform={platform} />
+      <SettingsHost sections={getSettingsRegistry()} platform={platform} />
     </div>
   );
 }

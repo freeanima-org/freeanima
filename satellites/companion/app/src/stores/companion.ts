@@ -1,4 +1,3 @@
-import type { SettingsStore } from "@freeanima/satellite-sdk";
 import { create } from "zustand";
 import {
   fetchCompanionConfig,
@@ -17,13 +16,6 @@ import type { MotionLibraryEntry } from "@shared/constants.ts";
 import { DEFAULT_BEHAVIOR } from "@shared/companion-schema.ts";
 
 type SettingsTabId = "general" | "behavior" | "models" | "slots" | "library";
-
-let boundSettingsStore: SettingsStore | null = null;
-
-/** 统一设置窗注入；有绑定时 init/updateSettings 走 store 而非直连 API */
-export function bindCompanionSettingsStore(store: SettingsStore | null): void {
-  boundSettingsStore = store;
-}
 
 type CompanionState = {
   loading: boolean;
@@ -166,9 +158,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   async init() {
     set({ loading: true, error: null });
     try {
-      const cfg = boundSettingsStore
-        ? ((await boundSettingsStore.load()) as CompanionConfig)
-        : await fetchCompanionConfig();
+      const cfg = await fetchCompanionConfig();
       get().applyConfig(cfg);
     } catch (e) {
       set({
@@ -180,9 +170,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
 
   async refreshConfig() {
     try {
-      const cfg = boundSettingsStore
-        ? ((await boundSettingsStore.load()) as CompanionConfig)
-        : await fetchCompanionConfig();
+      const cfg = await fetchCompanionConfig();
       get().applyConfig(cfg);
     } catch (e) {
       set({ error: e instanceof Error ? e.message : String(e) });
@@ -190,14 +178,9 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   },
 
   async updateSettings(patch) {
-    if (boundSettingsStore) {
-      await boundSettingsStore.save(patch);
-      await get().refreshConfig();
-    } else {
-      const next = await saveSettings(patch);
-      get().applyConfig(next);
-      await get().refreshConfig();
-    }
+    const next = await saveSettings(patch);
+    get().applyConfig(next);
+    await get().refreshConfig();
     await emitConfigChanged();
   },
 
