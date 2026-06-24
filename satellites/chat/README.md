@@ -25,4 +25,4 @@ bun satellites/chat/dev.ts
 | `GET /config.json`       | `hub_ws_url`, `app_id` |
 | `GET /health`            | Liveness               |
 
-`instance_id` 由客户端持久化：Electron 壳 → `~/.anima/satellites/chat/instance.json`；Capacitor → Preferences。
+Chat 使用 **singleton** 固定 `instance_id`（`def`，见 `@freeanima/sap-contract` 的 `CHAT_INSTANCE_ID`），无需 per-device 持久化。

@@ -53,9 +53,39 @@ Open managed satellite UI at the URL from Chamber (SAP `http_url`), typically:
 - Chat: `http://127.0.0.1:4174`
 - Pair-programming: `http://127.0.0.1:4173`
 
+## Instance allocation strategies
+
+`instance_id` is a 3-character lowercase alphanumeric id (see [`packages/sap-contract/src/naming.ts`](../../packages/sap-contract/src/naming.ts)). It appears in platform strings (`sap:{app_slug}:{instance_id}`), session `platform_extra`, and SAP tool names. **Do not remove it from the protocol** — but each satellite app picks an **allocation strategy** suited to its product model:
+
+| Strategy      | Meaning                                | Apps                                        | Client behavior                                                                 |
+| ------------- | -------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------- |
+| **singleton** | One fixed id per Hub for the whole app | **Chat** (`def`)                            | Always send `instance_id` on `connect`; Hub auto-provisions if missing          |
+| **machine**   | One id per physical device / install   | **Companion**, **pair-programming** (today) | Omit `instance_id` on first connect; Hub assigns randomly; persist locally      |
+| **workspace** | One id per open workspace / project    | **Pair-programming** (future)               | Switch workspace → switch `instance_id` and reconnect — **not implemented yet** |
+
+```mermaid
+flowchart TB
+  subgraph policies [Allocation strategies]
+    Singleton["singleton: chat → def"]
+    Machine["machine: companion → per machine"]
+    Workspace["workspace: pair-programming → per project future"]
+  end
+  Singleton --> Platform1["platform = sap:chat:def"]
+  Machine --> Platform2["platform = sap:companion:{machineId}"]
+  Workspace --> Platform3["platform = sap:pairprogramming:{projectId}"]
+```
+
+**Chat (singleton):** all desktop / mobile clients share `CHAT_INSTANCE_ID` (`def`) so `conversation.list` is unified across devices. Chat registers no satellite tools; multiple devices may connect with the same id (Chamber shows the last `http_url`).
+
+**Companion (machine):** `~/.anima/companion/instance.json` — one id per computer.
+
+**Pair-programming (machine today):** single sidecar + `STUDIO_WORKSPACE` at startup → one `~/.anima/satellites/pair-programming/instance.json`. When runtime workspace switching ships, migrate to **workspace** strategy (separate instance per project).
+
+Hub [`SapInstanceRegistry`](../../platform/src/sap/instance-registry.ts): omit `instance_id` → random allocation; send known id → reconnect or **auto-provision** if the id is valid and unused.
+
 ## Satellite access modes
 
-**Rule:** each `app_id + instance_id` has **at most one** Hub WebSocket (`/sap/v1`).
+**Rule:** each `app_id + instance_id` has **at most one** active entry in `SatelliteManager` (last connect wins). Multiple WebSockets with the same id are not rejected but stream events follow each socket's own context.
 
 ### Type B — Process gateway + local relay (pair-programming)
 
@@ -67,7 +97,7 @@ Open managed satellite UI at the URL from Chamber (SAP `http_url`), typically:
 ### SAP direct — browser/renderer 直连 Hub（chat 嵌入 desktop-shell）
 
 - Renderer 使用 [`createSapDirectClient`](../../packages/sap-contract/src/direct-client.ts) 直连 Hub `/sap/v1`。
-- **无需** relay sidecar；仅需持久化 `instance_id`（Electron：`~/.anima/satellites/chat/instance.json`；浏览器 dev：localStorage）。
+- **无需** relay sidecar；Chat 使用 **singleton** 固定 `instance_id`（`CHAT_INSTANCE_ID` = `def`），无需 per-device 持久化。
 - 详见 [`frontend-exports.md`](frontend-exports.md)。
 
 ### Type B + tools, no relay (companion)
@@ -133,7 +163,9 @@ const hub = createSatelliteHub({
 });
 ```
 
-On first connect omit `instance_id`; Hub assigns a 3-char id and returns it in `connected.instance_id`. Persist via `SapInstanceStore.save`.
+**Machine strategy (companion, pair-programming):** omit `instance_id` on first connect; Hub assigns a 3-char id and returns it in `connected.instance_id`. Persist via `SapInstanceStore.save`.
+
+**Singleton strategy (chat):** pass fixed `instance_id` (or `instanceId` option on `createSapDirectClient`); Hub auto-provisions on first sight.
 
 Browser UI on Type B relay satellites uses `createSapRelayBrowserClient()` instead of talking to Hub directly.
 
