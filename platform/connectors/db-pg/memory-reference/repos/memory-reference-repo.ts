@@ -1,5 +1,5 @@
 import { and, eq, ne, sql as drizzleSql } from "drizzle-orm";
-import { memoryReferences, messages, semanticMemory } from "@freeanima/core/db/schema";
+import { memoryReferences, messages, semanticMemory, sessions } from "@freeanima/core/db/schema";
 import { formatCstIso } from "@freeanima/core/util";
 import type { RecordMessageReferencesInput } from "@freeanima/core/repos";
 import {
@@ -14,6 +14,7 @@ export async function recordMessageReferences(
 ): Promise<string[]> {
   const semanticMemoryIds = parseMemoryReferenceMarkers(input.content);
   if (!semanticMemoryIds.length) return [];
+  if (input.skip_reference_count) return [];
 
   const createdAt = input.created_at ? new Date(input.created_at) : new Date(formatCstIso());
   const db = getDb();
@@ -82,10 +83,12 @@ export async function rebuildMemoryReferencesFromMessages(): Promise<number> {
       timestamp: drizzleSql<string | null>`(${messages.payload})->>'timestamp'`,
     })
     .from(messages)
+    .innerJoin(sessions, eq(messages.sessionId, sessions.id))
     .where(
       and(
         drizzleSql`(${messages.payload})->>'role' IN ('user', 'assistant')`,
         drizzleSql`length(btrim((${messages.payload})->>'content')) > 0`,
+        drizzleSql`COALESCE(${sessions.platformInfo}->>'platform', '') <> 'cron'`,
       ),
     );
 

@@ -39,6 +39,29 @@ export async function getSessionMeta(sessionId: string): Promise<SessionMetaMess
   return rowToSessionMeta(rows[0]!);
 }
 
+/** 是否为历史 cron agent 创建的 session（platform_info.platform = cron） */
+export async function isCronSession(sessionId: string): Promise<boolean> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      platform: sql<string | null>`${sessions.platformInfo}->>'platform'`,
+    })
+    .from(sessions)
+    .where(eq(sessions.id, sessionId))
+    .limit(1);
+  return rows[0]?.platform === "cron";
+}
+
+/** 列出 platform_info.platform = cron 的 session id */
+export async function listCronSessionIds(): Promise<string[]> {
+  const db = getDb();
+  const rows = await db
+    .select({ id: sessions.id })
+    .from(sessions)
+    .where(sql`COALESCE(${sessions.platformInfo}->>'platform', '') = 'cron'`);
+  return rows.map((r) => r.id);
+}
+
 /** Hot-path meta: keep cached/staged toolsets for runtime */
 export async function getSessionMetaLite(sessionId: string): Promise<SessionMetaMessage | null> {
   const db = getDb();
@@ -472,7 +495,8 @@ export async function listSessionIdsUpdatedBetween(
     .where(
       sql`${sessions.updatedAt} >= ${fromIso}::timestamptz
         AND ${sessions.updatedAt} < ${toIso}::timestamptz
-        AND ${sessions.debug} = false`,
+        AND ${sessions.debug} = false
+        AND COALESCE(${sessions.platformInfo}->>'platform', '') <> 'cron'`,
     )
     .orderBy(desc(sessions.updatedAt));
   return rows.map((r) => r.id);

@@ -108,6 +108,10 @@ email:
       default_sender: true
 
 # 运行时压缩（PG messages 不删，仅裁切发给 LLM 的视图）
+# AutoLlmRun 审计（无用户 LLM：cron agent、睡眠管线）；cron 脚本 no_agent 不走此表
+# auto_llm:
+#   retention_days: 30
+#   per_run_kind_keep: 100
 compression:
   enabled: true
   max_rounds: 50

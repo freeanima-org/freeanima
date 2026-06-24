@@ -43,12 +43,12 @@ Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.js
 
 ## Light Sleep
 
-| Attribute     | Value                                                                           |
-| ------------- | ------------------------------------------------------------------------------- |
-| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Chamber diagnostics)            |
-| Scope         | Sessions with activity in previous calendar day                                 |
-| Input         | Full day's conversations (user+assistant, tools stripped), segmented by session |
-| Orchestration | Three stages sequential (separate LLM calls each)                               |
+| Attribute     | Value                                                                                    |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Chamber diagnostics)                     |
+| Scope         | Sessions with activity in previous calendar day (**excludes cron-platform sessions**)    |
+| Input         | Full day's **user conversations** (user+assistant, tools stripped), segmented by session |
+| Orchestration | Three stages sequential (separate LLM calls each)                                        |
 
 ### Three Stages
 

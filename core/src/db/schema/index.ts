@@ -14,6 +14,7 @@ export * from "./tasks.ts";
 export * from "./cron-jobs.ts";
 export * from "./cron-log.ts";
 export * from "./pipeline-step-run.ts";
+export * from "./auto-llm-runs.ts";
 export * from "./sap-instances.ts";
 export * from "./zod-schemas.ts";
 

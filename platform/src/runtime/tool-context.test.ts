@@ -1,10 +1,19 @@
-import { runWithToolContext, getToolSessionId } from "@freeanima/core/tool";
+import { runWithToolContext, getToolSessionId, getToolContextKind } from "@freeanima/core/tool";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { describe, it, expect } from "bun:test";
 
 const tools = new ToolSetRegistry();
 
 describe("runWithToolContext", () => {
+  it("returns undefined session id in auto_llm context", () => {
+    const sid = runWithToolContext("autollm_1", () => getToolSessionId(), {
+      tools,
+      contextKind: "auto_llm",
+    });
+    expect(sid).toBeUndefined();
+    expect(getToolContextKind()).toBeUndefined();
+  });
+
   it("propagates session through async generator iteration", async () => {
     async function* inner() {
       await Promise.resolve();

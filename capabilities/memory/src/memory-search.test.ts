@@ -15,7 +15,7 @@ import {
 } from "@freeanima/capabilities-memory";
 import { registerToolSessionResolver } from "@freeanima/capabilities-memory/tool-session-port";
 import { ToolSetRegistry } from "@freeanima/core/tool";
-import { runWithToolContext } from "@freeanima/core/tool";
+import { runWithToolContext, getToolSessionId } from "@freeanima/core/tool";
 
 let toolSets: ToolSetRegistry;
 
@@ -361,6 +361,30 @@ describe("memory search", () => {
     );
     const results = await searchSemanticMemory("beta", 5);
     expect(results.length).toBe(1);
+  });
+
+  it("remember in auto_llm context omits source_sessions", async () => {
+    const store = createMockSemanticStore();
+    registerSemanticMemoryStore(store);
+    registerToolSessionResolver(getToolSessionId);
+    let createdSources: string[] | undefined;
+    const origCreate = store.create.bind(store);
+    store.create = async (row) => {
+      createdSources = row.source_sessions;
+      return origCreate(row);
+    };
+
+    await runWithToolContext(
+      "autollm_probe",
+      async () => {
+        await toolSets.getTool("memory_remember")!.handler({
+          content: "auto llm memory probe",
+          type: "world",
+        });
+      },
+      { tools: toolSets, contextKind: "auto_llm" },
+    );
+    expect(createdSources).toEqual([]);
   });
 
   it("memory_semantic_update clears source_sessions with empty array", async () => {

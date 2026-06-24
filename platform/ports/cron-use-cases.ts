@@ -1,4 +1,6 @@
 export type CronEngineJobInput = {
+  id?: string;
+  name?: string;
   model_name?: string | null;
   skills: string[];
 };

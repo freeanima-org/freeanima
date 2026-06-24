@@ -1,4 +1,5 @@
 import type { PgRepositories } from "../ports/index.ts";
+import { nullAutoLlmRunStore } from "./null-auto-llm-run.ts";
 import { nullAutobiographicalMemoryStore } from "./null-autobiographical-memory.ts";
 import { nullCronJobStore } from "./null-cron.ts";
 import { nullCronLogStore } from "./null-cron-log.ts";
@@ -24,6 +25,7 @@ export const nullPgRepositories: PgRepositories = {
   cron: nullCronJobStore,
   cronLog: nullCronLogStore,
   pipelineStepRun: nullPipelineStepRunStore,
+  autoLlmRun: nullAutoLlmRunStore,
   tasks: nullTaskStore,
   sapInstance: nullSapInstanceStore,
 };

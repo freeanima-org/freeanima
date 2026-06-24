@@ -59,6 +59,18 @@ DATABASE_URL="$(anima credential get services/postgres/anima url)" \
 
 Run after extensions are installed, or restart `anima service`.
 
+## `auto_llm_runs` (audit)
+
+Background LLM without user turns (cron agent, sleep pipeline stages) writes to `auto_llm_runs` instead of creating `sessions`. Retention (optional `config.yaml`):
+
+```yaml
+auto_llm:
+  retention_days: 30
+  per_run_kind_keep: 100
+```
+
+Purged during sleep-cycle step `session-cleanup` (after stale session cleanup). Cron script runs (`no_agent`) use `cron_log` only.
+
 ## Backups
 
 - **Migrations do not replace backups** — schedule regular full backups (e.g. `pg_dump`).

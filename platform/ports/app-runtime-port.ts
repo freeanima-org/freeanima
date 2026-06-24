@@ -103,4 +103,10 @@ export type AppRuntimePort = {
     force?: boolean;
     deep_sleep_mode?: "full" | "incremental";
   }): Promise<{ ok: true; result: unknown } | { ok: false; error: string }>;
+  listAutoLlmRuns(opts?: {
+    run_kind?: string;
+    status?: "ok" | "error";
+    limit?: number;
+    offset?: number;
+  }): Promise<any>;
 };

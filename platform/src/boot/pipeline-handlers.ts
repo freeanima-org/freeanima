@@ -10,6 +10,7 @@ import { getPipelineRunner, type PipelineStepTrigger } from "@freeanima/runtime/
 import { cleanupStaleSessions } from "@freeanima/runtime/session";
 import type { Engine } from "@freeanima/runtime";
 
+import { purgeCronSessions } from "../../connectors/db-pg/session/repos/purge-cron-sessions.ts";
 import { createDreamFridgePort } from "../dream-fridge-factory.ts";
 import { resolveDeepSleepMode } from "./deep-sleep-mode.ts";
 import { sleepCycleDefinition, SLEEP_CYCLE_PIPELINE_ID, SLEEP_STEP_IDS } from "./sleep-cycle.ts";
@@ -21,8 +22,30 @@ export function registerSleepPipeline(engine: Engine): void {
 
   runner.registerStep(SLEEP_STEP_IDS.sessionCleanup, async () => {
     const result = await cleanupStaleSessions(engine.repos);
+    const cronPurge = await purgeCronSessions(engine.repos);
+
+    const autoLlmCfg = engine.config.data.auto_llm;
+    const retentionDays = autoLlmCfg?.retention_days ?? 30;
+    const perRunKindKeep = autoLlmCfg?.per_run_kind_keep ?? 100;
+    let autoLlmPurged = { deleted: 0 };
+    if (engine.repos.pgAvailable && retentionDays > 0) {
+      const olderThan = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
+      autoLlmPurged = await engine.repos.autoLlmRun.purgeStale({
+        olderThan,
+        perRunKindKeep,
+      });
+    }
+
     const sample_ids = result.ids.slice(0, 20);
-    return { ok: true, output: { deleted: result.deleted, sample_ids } };
+    return {
+      ok: true,
+      output: {
+        deleted: result.deleted,
+        sample_ids,
+        cron_sessions_purged: cronPurge.deleted,
+        auto_llm_runs_purged: autoLlmPurged.deleted,
+      },
+    };
   });
 
   runner.registerStep(SLEEP_STEP_IDS.lightSleep, async (ctx) => {

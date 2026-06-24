@@ -2,8 +2,12 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import type { PgRepositories } from "@freeanima/core/repos";
 import type { ToolSetRegistry } from "./toolset.ts";
 
+export type ToolContextKind = "session" | "auto_llm";
+
 type ToolContextStore = {
-  sessionId: string;
+  contextId: string;
+  contextKind: ToolContextKind;
+  parentConversationId?: string;
   repos?: PgRepositories;
   tools: ToolSetRegistry;
   /** Mutable execution allowlist; no loaded gate when unset */
@@ -34,17 +38,23 @@ async function* bindToolContext<T>(
   }
 }
 
+export type RunWithToolContextOpts = {
+  tools: ToolSetRegistry;
+  repos?: PgRepositories;
+  executableTools?: readonly string[];
+  contextKind?: ToolContextKind;
+  parentConversationId?: string;
+};
+
 export function runWithToolContext<T>(
-  sessionId: string,
+  contextId: string,
   fn: () => T,
-  opts: {
-    tools: ToolSetRegistry;
-    repos?: PgRepositories;
-    executableTools?: readonly string[];
-  },
+  opts: RunWithToolContextOpts,
 ): T {
   const store: ToolContextStore = {
-    sessionId,
+    contextId,
+    contextKind: opts.contextKind ?? "session",
+    parentConversationId: opts.parentConversationId,
     repos: opts.repos,
     tools: opts.tools,
     executableTools: opts.executableTools ? new Set(opts.executableTools) : undefined,
@@ -56,8 +66,23 @@ export function runWithToolContext<T>(
   return result;
 }
 
+export function getToolContextKind(): ToolContextKind | undefined {
+  return storage.getStore()?.contextKind;
+}
+
+/** Session id for memory attribution; undefined in auto_llm context */
 export function getToolSessionId(): string | undefined {
-  return storage.getStore()?.sessionId;
+  const store = storage.getStore();
+  if (!store || store.contextKind === "auto_llm") return undefined;
+  return store.contextId;
+}
+
+export function getToolContextId(): string | undefined {
+  return storage.getStore()?.contextId;
+}
+
+export function getToolParentConversationId(): string | undefined {
+  return storage.getStore()?.parentConversationId;
 }
 
 export function getToolRepos(): PgRepositories | undefined {

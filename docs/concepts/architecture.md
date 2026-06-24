@@ -214,6 +214,19 @@ acp_agents:
 
 Layers can be mixed; the LLM chooses order; FreeAnima registers and routes.
 
+## Conversation vs AutoLlmRun vs Delegation
+
+**Axis:** whether the execution has a **user turn** during the run (not who triggered it).
+
+| Kind                 | User turn     | PG persistence                                      | Process trace   | Sleep pipeline                          |
+| -------------------- | ------------- | --------------------------------------------------- | --------------- | --------------------------------------- |
+| **Conversation**     | yes           | `sessions` + `messages` (code still says `session`) | message archive | participates (light sleep, dream input) |
+| **AutoLlmRun**       | no            | `auto_llm_runs` via `runAutoLlm()`                  | audit row, TTL  | excluded                                |
+| **Delegation (ACP)** | no (external) | parent session + `acp_tasks`                        | optional        | result via parent conversation          |
+| **Script cron**      | no            | `cron_log` only                                     | stdout file     | excluded                                |
+
+AutoLlmRun covers: cron agent branch, sleep LLM stages, future internal subagents. Tool context uses `contextKind: auto_llm` so `memory_remember` does not attach `source_sessions`. Cron `no_agent` shell scripts are **not** AutoLlmRun.
+
 ## Session Goal
 
 **Question: should this session keep working toward a stated outcome?**

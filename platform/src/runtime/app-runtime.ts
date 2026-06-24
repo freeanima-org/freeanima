@@ -30,6 +30,7 @@ import * as selfLayer from "./service-self.ts";
 import * as fts from "./service-fts.ts";
 import * as promptDebug from "./service-prompt-debug.ts";
 import * as sleep from "./service-sleep.ts";
+import * as autoLlmRuns from "./service-auto-llm-runs.ts";
 import * as tasks from "./service-tasks.ts";
 import * as fridge from "./service-fridge.ts";
 import * as messaging from "./service-messaging.ts";
@@ -448,6 +449,10 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
 
   startSleepPipelineStep(opts: Parameters<typeof sleep.startSleepPipelineStep>[1]) {
     return sleep.startSleepPipelineStep(this.runtimeDeps(), opts);
+  }
+
+  listAutoLlmRuns(opts?: Parameters<typeof autoLlmRuns.listAutoLlmRuns>[1]) {
+    return autoLlmRuns.listAutoLlmRuns(this.runtimeDeps(), opts);
   }
 
   ensureBuiltinCronJobs(): Promise<void> {

@@ -35,11 +35,15 @@ export {
 export {
   runWithToolContext,
   getToolSessionId,
+  getToolContextKind,
+  getToolContextId,
+  getToolParentConversationId,
   getToolRepos,
   getToolRegistry,
   grantExecutableTools,
   isExecutableTool,
 } from "./tool-context.ts";
+export type { RunWithToolContextOpts, ToolContextKind } from "./tool-context.ts";
 export type { ToolSet, ToolSetView } from "./toolset.ts";
 export {
   DEFAULT_SESSION_TOOLSETS,
