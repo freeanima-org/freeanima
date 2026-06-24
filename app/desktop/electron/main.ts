@@ -19,7 +19,7 @@ import {
   startCompanionCursorPoll,
 } from "./companion-host.ts";
 import { registerInstanceStoreIpc } from "./instance-store-ipc.ts";
-import { attachWindowDevTools, toggleDevToolsForFocusedWindow } from "./devtools.ts";
+import { attachWindowDevTools } from "./devtools.ts";
 import { logLine } from "./log.ts";
 import { defaultHubUrl } from "./paths.ts";
 import { readShellClientConfig } from "./shell-client-store.ts";
@@ -270,7 +270,6 @@ function createTray(): void {
     { label: "打开主窗口", click: () => openMainWindow() },
     { label: "设置…", click: () => openSettingsWindow() },
     { label: "显示/隐藏伴侣", click: () => toggleCompanionVisibility() },
-    { label: "开发者工具…", click: () => toggleDevToolsForFocusedWindow() },
     { type: "separator" },
     { label: "退出", click: () => app.quit() },
   ]);
