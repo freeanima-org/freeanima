@@ -17,9 +17,11 @@ export type PatrolScreenInfo = {
 
 export type CompanionWindowRole = "overlay" | "settings";
 
-/** 通用壳层桥接（Electron preload 注入 window.satelliteShell） */
+/** 通用壳层桥接（Electron preload / Capacitor 注入 window.satelliteShell） */
 export type SatelliteShellApi = {
-  isElectron: true;
+  isElectron: boolean;
+  /** Capacitor 等原生壳 */
+  isNativeShell?: boolean;
   hubUrl: string;
   hubWsUrl: string;
   /** companion overlay/settings；其他前端为 null */
@@ -27,6 +29,8 @@ export type SatelliteShellApi = {
   /** companion sidecar HTTP 根；其他前端为 null */
   apiOrigin?: string | null;
   createFileInstanceStore(appId: string): SapInstanceStore;
+  /** 移动端：打开 Hub 设置页 */
+  openHubSettings?: () => void;
   setClickThrough?: (ignore: boolean) => Promise<void>;
   setPointerActive?: (active: boolean) => Promise<void>;
   moveWindow?: (x: number, y: number) => Promise<void>;

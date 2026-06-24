@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>FreeAnima</title>
+    <link rel="stylesheet" href="./settings.css" />
+  </head>
+  <body class="settings-page">
+    <main class="settings-card">
+      <h1>Hub 设置</h1>
+      <p class="hint">填写运行 Anima Service 的 PC 地址（局域网 IP 或远程域名）。</p>
+      <label class="field">
+        <span>Hub 地址</span>
+        <input
+          id="hub-url"
+          type="url"
+          inputmode="url"
+          autocomplete="off"
+          placeholder="http://192.168.1.10:2658"
+        />
+      </label>
+      <p id="status" class="status" hidden></p>
+      <div class="actions">
+        <button type="button" id="btn-test" class="btn secondary">测试连接</button>
+        <button type="button" id="btn-save" class="btn primary">保存并进入会客厅</button>
+      </div>
+      <p class="footnote">
+        手机无法使用 127.0.0.1。PC 上请运行
+        <code>anima service start --host 0.0.0.0</code>
+        以便局域网访问。
+      </p>
+    </main>
+    <script type="module" src="./settings.js"></script>
+  </body>
+</html>

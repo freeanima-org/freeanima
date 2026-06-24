@@ -1,0 +1,14 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.monorepo.json" },
+    { "path": "./satellites/pair-programming" },
+    { "path": "./satellites/chat" },
+    { "path": "./satellites/companion" },
+    { "path": "./satellites/desktop-shell" },
+    { "path": "./packages/satellite-sdk" },
+    { "path": "./packages/sap-contract" },
+    { "path": "./satellites/app-mobile" },
+    { "path": "./frontends/chamber" }
+  ]
+}

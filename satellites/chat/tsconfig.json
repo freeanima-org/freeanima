@@ -1,8 +1,9 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../tsconfig.composite.base.json",
   "compilerOptions": {
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
+    "outDir": ".tsout",
     "paths": {
       "@/*": ["./app/src/*"]
     }
@@ -12,6 +13,8 @@
     "app/src/**/*.tsx",
     "server/**/*.ts",
     "src/**/*.ts",
+    "build.ts",
+    "dev.ts",
     "../../types/**/*.d.ts"
   ],
   "exclude": ["**/*.test.ts", "dist/**"]

@@ -1,11 +1,11 @@
-import { treaty } from "@elysiajs/eden";
+import { treaty, type Treaty } from "@elysiajs/eden";
 import type { FridgeMagnetsResponse } from "@freeanima/platform/connectors/webui/api";
 import type { App } from "@freeanima/platform/connectors/webui/elysia";
 import { m } from "./i18n.ts";
 import { translateApiErrorValue } from "./api-errors.ts";
 import { apiPath } from "./api-path.ts";
 
-export const apiClient = treaty<App>(
+export const apiClient: Treaty.Create<App> = treaty<App>(
   typeof window !== "undefined" ? window.location.origin : "http://127.0.0.1:2658",
 );
 

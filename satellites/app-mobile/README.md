@@ -1,0 +1,63 @@
+# FreeAnima 移动端（Android）
+
+Capacitor 壳 + 会客厅（`satellites/chat`）SAP 直连。Hub 地址在 APP 内 UI 配置。
+
+## 前置条件
+
+- [Bun](https://bun.sh)（与 monorepo 一致）
+- JDK 17+（本机已装 OpenJDK 21）
+- Android SDK（首次可运行 `bun run setup:sdk`，默认装到 `~/Android/Sdk`）
+- PC 上运行 Anima Service，并允许局域网访问：
+
+```bash
+anima service start --host 0.0.0.0
+```
+
+默认仅绑定 `127.0.0.1` 时，手机无法连接。
+
+## 构建
+
+```bash
+# 从仓库根目录
+bun run app-mobile:build
+
+# 或在本目录
+bun run build
+bun run sync          # 复制 www 并 sync 到 android/
+```
+
+## 安装到真机（sideload）
+
+```bash
+cd satellites/app-mobile
+
+# 构建 APK 并安装（手机 USB 调试已开、adb devices 可见 device）
+bun run android:apk
+bun run android:install
+
+# 或一步：构建 www + cap run android（编译并安装）
+bun run android
+```
+
+脚本会自动 `source scripts/android-env.sh`（`ANDROID_HOME=~/Android/Sdk`）。  
+`~/.bashrc.local` 也已写入 SDK 环境变量，新开终端可直接用 `adb`。
+
+Debug APK：`android/app/build/outputs/apk/debug/app-debug.apk`
+
+## 使用
+
+1. 首次启动进入 **Hub 设置**，填写 PC 局域网地址，如 `http://192.168.1.10:2658`
+2. **测试连接** → **保存并进入会客厅**
+3. 会话列表与桌面会客厅相同（SAP direct）
+
+## 架构
+
+| 路径                  | 作用                                        |
+| --------------------- | ------------------------------------------- |
+| `src/mobile-shell.ts` | Preferences 持久化、`window.satelliteShell` |
+| `src/settings/`       | Hub 设置 UI                                 |
+| `src/bridge-init.ts`  | chat 页加载前注入壳层                       |
+| `www/chat/`           | 构建时从 `satellites/chat/dist` 复制        |
+| `android/`            | Capacitor Android 工程                      |
+
+详见 [`docs/features/mobile-app.md`](../../docs/features/mobile-app.md)。

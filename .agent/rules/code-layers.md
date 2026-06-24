@@ -35,18 +35,19 @@ Readable mirror of [`scripts/check-layer-deps.ts`](../../scripts/check-layer-dep
 
 Dependency direction (high → low): `platform` → `capabilities` → `runtime` → `core` → `kernel`. Lower layers must not import higher layers.
 
-| Source directory              | Allowed `@freeanima/*` (package root)                                  | Explicitly forbidden                                      |
-| ----------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------- |
-| `kernel/`                     | `kernel`, `kernel-*`                                                   | all other workspace packages                              |
-| `core/`                       | `kernel`, `kernel-*`, `core`                                           | `runtime`, `capabilities-*`, `platform`, …                |
-| `runtime/`                    | `kernel`, `kernel-*`, `core`, `runtime`                                | **`platform`**, **`capabilities-*`**                      |
-| `capabilities/<pkg>/`         | `kernel`, `kernel-*`, `core`, own `capabilities-<pkg>`, `sap-contract` | **`runtime`**, **`platform`**, **other `capabilities-*`** |
-| `platform/`, `cli/`, `tests/` | all workspace packages                                                 | —                                                         |
-| `satellites/<name>/`          | `sap-contract`, `satellite-sdk`, `kernel`, `kernel-*`                  | all other workspace packages                              |
-| `satellites/desktop-shell/`   | above + `satellite-companion`, `satellite-chat`, `frontend-chamber`    | other workspace packages                                  |
-| `frontends/<name>/`           | `sap-contract`, `satellite-sdk`, `kernel`, `kernel-*`                  | all other workspace packages                              |
-| `packages/sap-contract/`      | `kernel`, `kernel-*`, `sap-contract`                                   | all other workspace packages                              |
-| `packages/satellite-sdk/`     | `kernel`, `kernel-*`                                                   | all other workspace packages                              |
+| Source directory              | Allowed `@freeanima/*` (package root)                                  | Explicitly forbidden                                                         |
+| ----------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `kernel/`                     | `kernel`, `kernel-*`                                                   | all other workspace packages                                                 |
+| `core/`                       | `kernel`, `kernel-*`, `core`                                           | `runtime`, `capabilities-*`, `platform`, …                                   |
+| `runtime/`                    | `kernel`, `kernel-*`, `core`, `runtime`                                | **`platform`**, **`capabilities-*`**                                         |
+| `capabilities/<pkg>/`         | `kernel`, `kernel-*`, `core`, own `capabilities-<pkg>`, `sap-contract` | **`runtime`**, **`platform`**, **other `capabilities-*`**                    |
+| `platform/`, `cli/`, `tests/` | all workspace packages                                                 | —                                                                            |
+| `satellites/<name>/`          | `sap-contract`, `satellite-sdk`, `kernel`, `kernel-*`                  | all other workspace packages                                                 |
+| `satellites/desktop-shell/`   | above + `satellite-companion`, `satellite-chat`, `frontend-chamber`    | other workspace packages                                                     |
+| `satellites/app-mobile/`      | `sap-contract`, `satellite-sdk`, `kernel`, `kernel-*`                  | other workspace packages（构建时 shell 复制 chat dist，不 import chat 源码） |
+| `frontends/<name>/`           | `sap-contract`, `satellite-sdk`, `kernel`, `kernel-*`                  | all other workspace packages                                                 |
+| `packages/sap-contract/`      | `kernel`, `kernel-*`, `sap-contract`                                   | all other workspace packages                                                 |
+| `packages/satellite-sdk/`     | `kernel`, `kernel-*`                                                   | all other workspace packages                                                 |
 
 Notes aligned with the checker:
 

@@ -33,7 +33,7 @@
     "format:fix": "oxfmt .",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
-    "typecheck": "bunx tsgo -p tsconfig.json --noEmit && bunx tsgo -p satellites/pair-programming/tsconfig.json --noEmit && bunx tsgo -p satellites/chat/tsconfig.json --noEmit && bunx tsgo -p satellites/companion/tsconfig.json --noEmit && bunx tsgo -p satellites/desktop-shell/tsconfig.json --noEmit && bunx tsgo -p frontends/chamber/tsconfig.json --noEmit && bunx tsgo -p packages/satellite-sdk/tsconfig.json --noEmit",
+    "typecheck": "bunx tsgo -b tsconfig.check.json",
     "build:cli": "bun scripts/build-cli.ts",
     "install:cli:local": "bun scripts/install-cli-local.ts",
     "build:webui": "bun scripts/build-webui.ts",
@@ -61,6 +61,8 @@
     "coverage:check-threshold": "bun scripts/check-coverage-threshold.ts",
     "service": "bun cli/src/cli.ts service",
     "anima": "bun cli/src/cli.ts",
+    "app-mobile:build": "bun run --filter @freeanima/satellite-app-mobile build",
+    "app-mobile:android": "bun run --filter @freeanima/satellite-app-mobile android",
     "link:global": "mkdir -p \"${BUN_INSTALL:-$HOME/.bun}/bin\" && ln -sf \"$PWD/cli/src/cli.ts\" \"${BUN_INSTALL:-$HOME/.bun}/bin/anima\" && chmod +x cli/src/cli.ts",
     "prepare": "husky"
   },
