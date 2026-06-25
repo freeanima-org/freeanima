@@ -214,7 +214,13 @@ export async function pgListConversationSummaries(
   platform?: string | null,
   opts?: { includeArchived?: boolean },
 ): Promise<
-  Array<{ id: string; title: string; created: string; platform: string; archived_at?: string | null }>
+  Array<{
+    id: string;
+    title: string;
+    created: string;
+    platform: string;
+    archived_at?: string | null;
+  }>
 > {
   return store(repos).listConversationSummaries(platform, opts);
 }
