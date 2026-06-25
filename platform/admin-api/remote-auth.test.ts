@@ -42,16 +42,31 @@ describe("remote-auth", () => {
     expect(await verifier.verifyRequest(req, "127.0.0.1")).toBeNull();
   });
 
-  test("public host via tunnel (loopback peer) requires auth", async () => {
+  test("public host via tunnel (loopback peer) requires auth for non-health", async () => {
     const verifier = createRemoteAuthVerifier({ token: "secret-token-min-16" });
-    const req = new Request("https://anima.freetrace.me/api/health");
+    const req = new Request("https://anima.freetrace.me/api/status");
     const res = await verifier.verifyRequest(req, "127.0.0.1");
     expect(res?.status).toBe(401);
   });
 
-  test("public host with CF headers on loopback peer requires auth", async () => {
+  test("public host GET /api/health bypasses middleware", async () => {
+    const verifier = createRemoteAuthVerifier({ token: "secret-token-min-16" });
+    const req = new Request("https://anima.freetrace.me/api/health");
+    expect(await verifier.verifyRequest(req, "127.0.0.1")).toBeNull();
+  });
+
+  test("OPTIONS /api/health bypasses middleware for CORS preflight", async () => {
     const verifier = createRemoteAuthVerifier({ token: "secret-token-min-16" });
     const req = new Request("https://anima.freetrace.me/api/health", {
+      method: "OPTIONS",
+      headers: { Origin: "https://localhost" },
+    });
+    expect(await verifier.verifyRequest(req, "10.0.0.1")).toBeNull();
+  });
+
+  test("public host with CF headers on loopback peer requires auth for status", async () => {
+    const verifier = createRemoteAuthVerifier({ token: "secret-token-min-16" });
+    const req = new Request("https://anima.freetrace.me/api/status", {
       headers: { "cf-ray": "abc123" },
     });
     const res = await verifier.verifyRequest(req, "127.0.0.1");
@@ -68,12 +83,14 @@ describe("remote-auth", () => {
 
   test("shouldBypassRemoteAuth", () => {
     const plain = new Request("http://127.0.0.1:2658/api/health");
-    const publicHost = new Request("https://anima.freetrace.me/api/health");
+    const publicHostHealth = new Request("https://anima.freetrace.me/api/health");
+    const publicStatus = new Request("https://anima.freetrace.me/api/status");
     const tunneledLoopbackHost = new Request("http://127.0.0.1:2658/api/health", {
       headers: { "cf-connecting-ip": "203.0.113.1" },
     });
     expect(shouldBypassRemoteAuth(plain, "127.0.0.1")).toBe(true);
-    expect(shouldBypassRemoteAuth(publicHost, "127.0.0.1")).toBe(false);
+    expect(shouldBypassRemoteAuth(publicHostHealth, "127.0.0.1")).toBe(true);
+    expect(shouldBypassRemoteAuth(publicStatus, "127.0.0.1")).toBe(false);
     expect(shouldBypassRemoteAuth(tunneledLoopbackHost, "127.0.0.1")).toBe(true);
     expect(
       shouldBypassRemoteAuth(new Request("http://127.0.0.1:2658/api/status"), "127.0.0.1"),
@@ -90,17 +107,17 @@ describe("remote-auth", () => {
     expect(res?.status).toBe(401);
   });
 
-  test("non-loopback without Bearer returns 401", async () => {
+  test("non-loopback without Bearer returns 401 for status", async () => {
     const verifier = createRemoteAuthVerifier({ token: "secret-token-min-16" });
-    const req = new Request("http://example.com/api/health");
+    const req = new Request("http://example.com/api/status");
     const res = await verifier.verifyRequest(req, "10.0.0.1");
     expect(res?.status).toBe(401);
     expect(await res?.text()).toBe("Unauthorized");
   });
 
-  test("non-loopback without remote_auth configured returns 401", async () => {
+  test("non-loopback without remote_auth configured returns 401 for status", async () => {
     const verifier = createRemoteAuthVerifier();
-    const req = new Request("http://example.com/api/health", {
+    const req = new Request("http://example.com/api/status", {
       headers: { Authorization: "Bearer any-token" },
     });
     const res = await verifier.verifyRequest(req, "10.0.0.1");

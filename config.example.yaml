@@ -163,19 +163,12 @@ compression:
 #   model: bge-m3
 #   dimensions: 1024
 
-# Cloudflare Tunnel + Access 远程访问（单人自用）
+# Cloudflare Tunnel 远程访问（认证见 remote_auth.token）
 # 一条命令完成：anima tunnel setup
 # API Token / Tunnel 凭证存 pass，见 anima credential
 # tunnel:
 #   enabled: true
 #   hostname: anima.example.com
-#   team_name: myteam
-#   access:
-#     enabled: true
-#     allowed_emails:
-#       - you@gmail.com
-#     audience: <Access App AUD tag>
-#     session_duration: 168h
 #   cloudflare:
 #     account_id: ...
 #     tunnel_id: ...

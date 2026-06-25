@@ -9,7 +9,7 @@ export {
   resolveConversationPlatform,
 } from "./conversations.ts";
 export {
-  getHealth,
+  getHealthProbe,
   getStatus,
   getConfig,
   listTools,

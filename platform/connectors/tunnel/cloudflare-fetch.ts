@@ -43,8 +43,6 @@ const OPERATION_HINTS: Record<string, readonly string[]> = {
   "配置 Tunnel ingress": ["需要权限：Account · Cloudflare Tunnel · Edit。"],
   "列出 DNS Zone": ["需要权限：Zone · Zone · Read（或 All zones）。"],
   "创建 DNS CNAME 记录": ["需要权限：Zone · DNS · Edit，且 Zone 范围包含目标域名。"],
-  "创建 Access Application": ["需要权限：Account · Access: Apps and Policies · Edit。"],
-  "创建 Access Allow Policy": ["需要权限：Account · Access: Apps and Policies · Edit。"],
 };
 
 function isAuthenticationError(errors: CloudflareApiErrorBody[]): boolean {

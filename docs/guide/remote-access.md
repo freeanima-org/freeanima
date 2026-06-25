@@ -17,8 +17,6 @@ title: Remote access
 
 仅当 **Host 为 loopback**（`127.0.0.1` / `localhost` / `::1`）**且 TCP 对端也为 loopback** 时 **不验 token**（本地开发、CLI/systemd 探活）。公网域名（经 Tunnel）、局域网 IP 等访问时须带 token；与 `tunnel.enabled` 无关。
 
-可选：仍可在 Cloudflare 配置 Access（浏览器 IdP 登录）；bundled 客户端走应用 Token，不依赖 Access。
-
 ## 1. Hub 配置
 
 在 `~/.anima/config.yaml` 中设置（**仅本地使用可省略**；暴露到局域网或公网前必须配置）：
@@ -39,7 +37,7 @@ openssl rand -base64 32
 ## 2. Tunnel（可选）
 
 ```bash
-anima tunnel setup   # 可跳过 Access API 步骤
+anima tunnel setup
 anima service start
 ```
 

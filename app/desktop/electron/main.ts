@@ -97,6 +97,13 @@ function applyClickthrough(win: BrowserWindow): void {
   win.setIgnoreMouseEvents(ignore, { forward: true });
 }
 
+function reloadHubClientAndMainWindow(): void {
+  hubClient = resolveHubClient();
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.reload();
+  }
+}
+
 function broadcast(channel: string, ...args: unknown[]): void {
   for (const win of BrowserWindow.getAllWindows()) {
     if (!win.isDestroyed()) {
@@ -273,7 +280,6 @@ async function startShellStatic(): Promise<void> {
     dist,
     SHELL_STATIC_PORT,
     SHELL_STATIC_PORT_ATTEMPTS,
-    { hubOrigin: hubClient.hubUrl },
   );
   shellStaticServer = server;
   shellStaticUrl = url;
@@ -287,7 +293,7 @@ async function bootstrap(): Promise<void> {
   logLine("desktop-shell main enter");
 
   registerInstanceStoreIpc();
-  registerShellClientIpc(openSettingsWindow);
+  registerShellClientIpc(openSettingsWindow, reloadHubClientAndMainWindow);
   registerCompanionHostIpc(
     {
       getCompanionWindow: () => companionWindow,

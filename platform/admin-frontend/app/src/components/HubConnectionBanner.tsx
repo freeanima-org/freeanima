@@ -14,6 +14,7 @@ export function HubConnectionBanner({ state, onRetry }: Props) {
   if (state === "connected") return null;
 
   const nativeShell = Boolean(window.satelliteShell?.isNativeShell);
+  const electronShell = Boolean(window.satelliteShell?.isElectron);
 
   return (
     <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2 bg-warning/15 border-b border-warning/30 text-sm">
@@ -21,7 +22,7 @@ export function HubConnectionBanner({ state, onRetry }: Props) {
         {state === "connecting" ? m.admin_common_connecting() : m.admin_studio_disconnected()}
       </span>
       <div className="flex items-center gap-1">
-        {nativeShell ? (
+        {nativeShell || electronShell ? (
           <button
             type="button"
             className="btn btn-xs btn-ghost"

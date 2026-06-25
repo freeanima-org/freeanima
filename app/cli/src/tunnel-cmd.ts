@@ -17,11 +17,7 @@ export type TunnelCommandArgs = {
   skipInstall?: boolean;
   nonInteractive?: boolean;
   hostname?: string;
-  team?: string;
-  email?: string;
   apiToken?: string;
-  accessApi?: boolean;
-  sessionDuration?: string;
   port?: number;
   yes?: boolean;
   force?: boolean;
@@ -51,11 +47,7 @@ export async function runTunnelCommand(args: TunnelCommandArgs): Promise<void> {
       skipInstall: args.skipInstall,
       nonInteractive: args.nonInteractive,
       hostname: args.hostname,
-      team: args.team,
-      email: args.email,
       apiToken: args.apiToken,
-      accessApi: args.accessApi,
-      sessionDuration: args.sessionDuration,
       port: args.port,
       yes: args.yes,
     };
@@ -109,7 +101,6 @@ export async function runTunnelCommand(args: TunnelCommandArgs): Promise<void> {
     console.log(`  public URL:        ${s.publicUrl ?? "(未配置)"}`);
     console.log(`  cloudflared:       ${s.cloudflaredInstalled ? "已安装" : "未安装"}`);
     console.log(`  config:            ${s.configExists ? "存在" : "缺失"}`);
-    console.log(`  access configured: ${s.accessConfigured}`);
     return;
   }
 

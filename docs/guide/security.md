@@ -89,13 +89,13 @@ The following are planned in code or docs—**deployers must not assume implemen
 
 ## Security Matrix
 
-| Module           | A External                                      | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |
-| ---------------- | ----------------------------------------------- | ------------------------------------------------------------------- | ------------------------- | ------------------ | ---------------------------------- |
-| **Runtime**      | Default 127.0.0.1 bind                          | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |
-| **Gateway**      | Token in pass                                   | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |
-| **CLI / Tools**  | Local shell compromised                         | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |
-| **HTTP / Admin** | No auth by default; tunnel mode uses Access JWT | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |
-| **MCP / ACP**    | SSE auth undefined                              | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |
+| Module           | A External                                | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |
+| ---------------- | ----------------------------------------- | ------------------------------------------------------------------- | ------------------------- | ------------------ | ---------------------------------- |
+| **Runtime**      | Default 127.0.0.1 bind                    | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |
+| **Gateway**      | Token in pass                             | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |
+| **CLI / Tools**  | Local shell compromised                   | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |
+| **HTTP / Admin** | `remote_auth` Bearer token（非 loopback） | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |
+| **MCP / ACP**    | SSE auth undefined                        | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |
 
 ## Proposals Pending Review
 

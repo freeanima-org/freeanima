@@ -40,18 +40,43 @@ export function isAuthExemptPath(req: Request): boolean {
   return new URL(req.url).pathname === "/api/echo";
 }
 
-/** loopback 探活：CLI / systemd 无 token 轮询 */
+/** loopback 探活：CLI / systemd 无 token 轮询（保留供测试与语义说明） */
 export function isLoopbackHealthProbe(req: Request, remoteAddress?: string): boolean {
   if (req.method !== "GET") return false;
   if (!isLocalDirectConnection(req, remoteAddress)) return false;
   return new URL(req.url).pathname === "/api/health";
 }
 
-/** 跳过 remote_auth：豁免路径、loopback 探活、或 Host+peer 均为 loopback 的本机直连 */
+/** GET /api/health：任意来源均不拦截，认证结果由响应体 authed 报告 */
+export function isHealthProbePath(req: Request): boolean {
+  return req.method === "GET" && new URL(req.url).pathname === "/api/health";
+}
+
+/** bundled 客户端跨域 REST 预检：不带 Authorization，须在 remote_auth 之前放行 */
+export function isHubApiCorsPreflight(req: Request): boolean {
+  if (req.method !== "OPTIONS") return false;
+  const pathname = new URL(req.url).pathname;
+  return pathname === "/" || pathname === "/api" || pathname.startsWith("/api/");
+}
+
+/** 跳过 remote_auth：豁免路径、health 探活、CORS 预检、或 Host+peer 均为 loopback 的本机直连 */
 export function shouldBypassRemoteAuth(req: Request, remoteAddress?: string): boolean {
   if (isAuthExemptPath(req)) return true;
-  if (isLoopbackHealthProbe(req, remoteAddress)) return true;
+  if (isHealthProbePath(req)) return true;
+  if (isHubApiCorsPreflight(req)) return true;
   return isLocalDirectConnection(req, remoteAddress);
+}
+
+/** health 探活：模拟正常 REST 路径的 remote_auth 是否通过（不含 health 中间件豁免） */
+export function evaluateRemoteAuthAuthed(
+  req: Request,
+  remoteAddress: string | undefined,
+  expectedToken: string | null | undefined,
+): boolean {
+  if (isLocalDirectConnection(req, remoteAddress)) return true;
+  const expected = expectedToken?.trim() || null;
+  if (!expected) return false;
+  return verifyRemoteAuthToken(expected, parseBearerToken(req));
 }
 
 function normalizeHeader(req: Request, name: string): string | null {

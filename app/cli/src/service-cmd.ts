@@ -258,15 +258,12 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
         const { startApiHttpServers, closeHttpServers, waitForDrainWithTimeout } =
           await import("@freeanima/admin-api");
         const fileConfig = FileConfig.open();
-        const tunnelCfg = fileConfig.data.tunnel;
         const remoteAuthToken = fileConfig.data.remote_auth?.token;
         await serve(args.host, args.port, {
           foreground: true,
           http: {
             start: (hosts, port) =>
               startApiHttpServers(hosts, port, {
-                tunnelTeamName: tunnelCfg?.team_name,
-                tunnelAccess: tunnelCfg?.access,
                 remoteAuthToken,
               }),
             close: closeHttpServers,

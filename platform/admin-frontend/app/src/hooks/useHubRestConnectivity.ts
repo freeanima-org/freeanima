@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { isHubHealthConnected, HUB_HEALTH_PROBE_TIMEOUT_MS } from "@freeanima/satellite-sdk";
 import { hubApiFetch } from "@/lib/hub-fetch.ts";
 import { resetApiClientCache } from "@/lib/api.ts";
 
@@ -9,12 +10,13 @@ const POLL_MS = 30_000;
 
 export async function probeHubHealth(
   fetchFn: (path: string, init?: RequestInit) => Promise<Response> = hubApiFetch,
+  timeoutMs = HUB_HEALTH_PROBE_TIMEOUT_MS,
 ): Promise<boolean> {
   try {
-    const res = await fetchFn("/api/health");
+    const res = await fetchFn("/api/health", { signal: AbortSignal.timeout(timeoutMs) });
     if (!res.ok) return false;
-    const body = (await res.json()) as { status?: string };
-    return body.status === "ok";
+    const body = (await res.json()) as { status?: string; authed?: boolean };
+    return isHubHealthConnected(body);
   } catch {
     return false;
   }

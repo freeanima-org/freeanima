@@ -2,8 +2,8 @@ import { Preferences } from "@capacitor/preferences";
 import { resolveHubWsUrl } from "@freeanima/sap-contract/urls";
 import {
   buildShellApiFields,
-  hubRequiresRemoteAuth,
   normalizeShellClientConfig,
+  testHubHealthConnection,
   type SapInstanceStore,
   type SatelliteShellApi,
 } from "@freeanima/satellite-sdk";
@@ -103,6 +103,11 @@ function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
     async emitConfigChanged(): Promise<void> {
       notifyShellConfigChanged();
     },
+    listenConfigChanged(handler: () => void): () => void {
+      const listener = (): void => handler();
+      window.addEventListener(SHELL_CONFIG_CHANGED_EVENT, listener);
+      return () => window.removeEventListener(SHELL_CONFIG_CHANGED_EVENT, listener);
+    },
   };
 }
 
@@ -121,6 +126,11 @@ export function createMobileShellStub(): SatelliteShellApi {
     },
     async emitConfigChanged(): Promise<void> {
       notifyShellConfigChanged();
+    },
+    listenConfigChanged(handler: () => void): () => void {
+      const listener = (): void => handler();
+      window.addEventListener(SHELL_CONFIG_CHANGED_EVENT, listener);
+      return () => window.removeEventListener(SHELL_CONFIG_CHANGED_EVENT, listener);
     },
   };
 }
@@ -173,45 +183,9 @@ export async function ensureMobileShellForChat(): Promise<SatelliteShellApi> {
   return shell;
 }
 
-/** 测试 Hub REST 是否可达 */
+/** 测试 Hub REST 是否可达且认证通过 */
 export async function testHubConnection(hubUrl: string, remoteAuthToken: string): Promise<void> {
   const normalized = normalizeHubUrl(hubUrl);
   const token = remoteAuthToken.trim();
-  if (hubRequiresRemoteAuth(normalized, token)) {
-    const res = await fetch(`${normalized}/api/health`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
-    }
-    return;
-  }
-  const wsUrl = resolveHubWsUrl(normalized);
-  await testHubWebSocket(wsUrl);
-}
-
-function testHubWebSocket(hubWsUrl: string, timeoutMs = 5000): Promise<void> {
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    const ws = new WebSocket(hubWsUrl);
-    const timer = setTimeout(() => {
-      if (settled) return;
-      settled = true;
-      ws.close();
-      reject(new Error("连接超时"));
-    }, timeoutMs);
-    ws.onopen = () => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      ws.close();
-      resolve();
-    };
-    ws.onerror = () => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      reject(new Error("无法连接 Hub WebSocket"));
-    };
-  });
+  await testHubHealthConnection(normalized, token || undefined);
 }

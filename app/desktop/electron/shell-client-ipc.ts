@@ -2,8 +2,7 @@ import { ipcMain } from "electron";
 import { join } from "node:path";
 
 import { resolveHubWsUrl } from "@freeanima/sap-contract";
-import { buildBearerHeaders } from "@freeanima/satellite-sdk";
-import type { ShellDebugConfig } from "@freeanima/satellite-sdk";
+import { testHubHealthConnection } from "@freeanima/satellite-sdk";
 
 import { readShellClientConfig, writeShellClientConfig } from "./shell-client-store.ts";
 import { readShellDebugConfig, writeShellDebugConfig } from "./shell-debug-store.ts";
@@ -24,7 +23,10 @@ export function resolveHubClientConfig(): HubClientConfigPayload | null {
   };
 }
 
-export function registerShellClientIpc(showHubSettings: () => void): void {
+export function registerShellClientIpc(
+  showHubSettings: () => void,
+  onConfigSaved?: () => void,
+): void {
   ipcMain.handle("shell:get-client-config", () => resolveHubClientConfig());
 
   ipcMain.handle(
@@ -34,6 +36,7 @@ export function registerShellClientIpc(showHubSettings: () => void): void {
         hubUrl: String(raw.hubUrl ?? ""),
         remoteAuthToken: String(raw.remoteAuthToken ?? ""),
       });
+      onConfigSaved?.();
       return resolveHubClientConfig();
     },
   );
@@ -46,13 +49,7 @@ export function registerShellClientIpc(showHubSettings: () => void): void {
         .replace(/\/$/, "");
       const token = String(raw.remoteAuthToken ?? "").trim();
       if (!hubUrl) throw new Error("Hub 地址不能为空");
-      if (!token) throw new Error("远程 Token 不能为空");
-      const res = await fetch(`${hubUrl}/api/health`, {
-        headers: buildBearerHeaders(token),
-      });
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
+      await testHubHealthConnection(hubUrl, token || undefined);
       return true;
     },
   );
@@ -67,9 +64,12 @@ export function registerShellClientIpc(showHubSettings: () => void): void {
 
   ipcMain.handle("shell:get-debug-config", () => readShellDebugConfig());
 
-  ipcMain.handle("shell:save-debug-config", (_event, raw: ShellDebugConfig) => {
-    return writeShellDebugConfig(raw);
-  });
+  ipcMain.handle(
+    "shell:save-debug-config",
+    (_event, raw: import("@freeanima/satellite-sdk").ShellDebugConfig) => {
+      return writeShellDebugConfig(raw);
+    },
+  );
 }
 
 export function hubSettingsDir(): string {

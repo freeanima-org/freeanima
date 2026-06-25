@@ -138,7 +138,6 @@ export type TunnelStatus = {
   publicUrl: string | null;
   cloudflaredInstalled: boolean;
   configExists: boolean;
-  accessConfigured: boolean;
 };
 
 function tunnelProcessPid(): number | null {
@@ -171,7 +170,6 @@ export function getTunnelStatus(): TunnelStatus {
   } else if (foregroundChild.current && !foregroundChild.current.killed) {
     running = true;
   }
-  const access = cfg?.access;
   const edge = getTunnelEdgeStatus(running);
   return {
     enabled,
@@ -181,7 +179,6 @@ export function getTunnelStatus(): TunnelStatus {
     publicUrl: cfg?.hostname ? `https://${cfg.hostname}` : null,
     cloudflaredInstalled: isCloudflaredInstalled(),
     configExists: existsSync(PATHS.cloudflaredConfigFile),
-    accessConfigured: Boolean(access?.enabled && access.audience && access.allowed_emails?.length),
   };
 }
 

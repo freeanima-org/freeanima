@@ -3,6 +3,8 @@
 export type HealthSnapshot = {
   status: "ok";
   version: string;
+  /** GET /api/health：Bearer 是否足以访问其余 REST API */
+  authed?: boolean;
 };
 
 export type PlatformStatusSnapshot = {
