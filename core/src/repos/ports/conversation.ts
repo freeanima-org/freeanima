@@ -106,10 +106,12 @@ export interface ConversationStorePort {
     platform?: string | null,
     opts?: Pick<ConversationListOpts, "includeArchived">,
   ): Promise<ConversationSummaryRow[]>;
-  listConversationSummariesPage(opts?: ConversationListOpts & {
-    offset?: number;
-    limit?: number;
-  }): Promise<{ items: ConversationSummaryRow[]; total: number }>;
+  listConversationSummariesPage(
+    opts?: ConversationListOpts & {
+      offset?: number;
+      limit?: number;
+    },
+  ): Promise<{ items: ConversationSummaryRow[]; total: number }>;
   getMessageContentsByIds(
     conversationId: string,
     messageIds: string[],
