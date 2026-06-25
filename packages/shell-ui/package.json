@@ -18,6 +18,7 @@
     "@freeanima/satellite-chat": "workspace:*",
     "@freeanima/satellite-companion": "workspace:*",
     "@freeanima/satellite-sdk": "workspace:*",
+    "@sentry/react": "^9.47.1",
     "@tanstack/react-router": "^1.170.11",
     "react": "catalog:",
     "react-dom": "catalog:",

@@ -31,6 +31,19 @@ export type {
 export { UnsupportedMobileError } from "./mobile-errors.ts";
 export type { ShellClientConfig } from "./shell-client-config.ts";
 export { normalizeShellClientConfig, parseShellClientConfig } from "./shell-client-config.ts";
+export type { ShellDebugConfig } from "./shell-debug-config.ts";
+export {
+  DEFAULT_SHELL_DEBUG,
+  normalizeShellDebugConfig,
+  parseShellDebugConfig,
+} from "./shell-debug-config.ts";
+export type { ShellSettings } from "./shell-settings.ts";
+export {
+  DEFAULT_SHELL_SETTINGS,
+  mergeShellSettings,
+  parseShellSettings,
+} from "./shell-settings.ts";
+export { desktopSettingsPath, getDesktopHomeDir } from "./desktop-settings-paths.ts";
 export type { RemoteAuthCredentials } from "./remote-auth.ts";
 export {
   buildBearerHeaders,

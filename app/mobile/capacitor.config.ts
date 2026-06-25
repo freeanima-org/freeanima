@@ -9,7 +9,7 @@ const config: CapacitorConfig = {
     adjustMarginsForEdgeToEdge: "auto",
   },
   server: {
-    androidScheme: "http",
+    androidScheme: "https",
   },
 };
 

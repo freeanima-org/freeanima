@@ -35,7 +35,7 @@ flowchart LR
   Admin -->|REST Bearer| Hub
 ```
 
-移动端 REST **直连** Hub（无桌面 Electron 的 `/api` 本地代理）；须配置 `remote_auth.token` 且 Hub 允许 Capacitor Origin（`http://localhost`）。
+移动端 REST **直连** Hub（无桌面 Electron 的 `/api` 本地代理）；须配置 `remote_auth.token` 且 Hub 允许 Capacitor Origin（`https://localhost`）。路由使用 hash（`#/chat`），便于 WebView 调试。
 
 ## Hub 设置
 
@@ -56,22 +56,37 @@ flowchart LR
 | 管理台 load failed / Failed to fetch | Hub 未 `--host 0.0.0.0`、Token 错误、防火墙；Chrome Remote Debugging 看请求是否带 Bearer |
 | Not Found                            | 勿访问旧路径如 `/admin/dashboard/index.html`；应走 SPA `/admin/dashboard`                |
 
+## 调试
+
+设置 → **调试**（桌面与移动共用 shell-ui 面板）：
+
+| 能力     | 桌面                 | 移动                                        |
+| -------- | -------------------- | ------------------------------------------- |
+| Sentry   | 设置页填 DSN 并启用  | 同左                                        |
+| DevTools | F12 / 开发包自动打开 | Debug APK + USB → Chrome `chrome://inspect` |
+| 控制台   | Electron DevTools    | vConsole（设置页开关）                      |
+
+移动 debug 构建：`cd app/mobile && bun run android:debug`（不压缩 + sourcemap，便于 inspect）。
+
 ## 构建与 sideload
 
 ```bash
-bun run app/mobile:build
+bun run --filter @freeanima/app-mobile build
 cd app/mobile && bun run sync
 cd android && ./gradlew assembleDebug
 ```
+
+Debug 全流程：`cd app/mobile && bun run android:debug`
 
 包内 README：[`app/mobile/README.md`](../../app/mobile/README.md)
 
 ## 与桌面壳对比
 
-|             | Electron `app/desktop`                  | Capacitor `app/mobile`               |
-| ----------- | --------------------------------------- | ------------------------------------ |
-| 注入        | preload → `window.satelliteShell`       | `shell-bridge.js` → 同形 API         |
-| Hub 配置    | Hub 设置 → `~/.anima/shell-client.json` | Hub 设置 → Preferences               |
-| REST        | 本地静态服代理 `/api`（同源）           | 直连 `hubUrl/api/*`（CORS + Bearer） |
-| instance_id | 文件 `~/.anima/satellites/chat/`        | Preferences                          |
-| 内容        | chat + admin + companion                | chat + admin                         |
+|             | Electron `app/desktop`                      | Capacitor `app/mobile`               |
+| ----------- | ------------------------------------------- | ------------------------------------ |
+| 注入        | preload → `window.satelliteShell`           | `shell-bridge.js` → 同形 API         |
+| Hub 配置    | Hub 设置 → `~/.anima-desktop/settings.json` | Hub 设置 → Preferences               |
+| 调试/Sentry | 设置 → 调试 → 同上文件 `debug` 段           | 设置 → 调试 → Preferences            |
+| REST        | 本地静态服代理 `/api`（同源）               | 直连 `hubUrl/api/*`（CORS + Bearer） |
+| instance_id | 文件 `~/.anima/satellites/chat/`            | Preferences                          |
+| 内容        | chat + admin + companion                    | chat + admin                         |
