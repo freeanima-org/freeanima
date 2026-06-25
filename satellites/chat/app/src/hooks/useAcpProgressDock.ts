@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getConversationAcpDock, subscribeConversationEvents } from "@/lib/api.ts";
-import type { ConversationAcpDockSnapshot } from "@/lib/types.ts";
+import { getConversationAcpDock, subscribeConversationEvents } from "@chat/lib/api.ts";
+import type { ConversationAcpDockSnapshot } from "@chat/lib/types.ts";
 
 export type AcpProgressDockOptions = {
   patchProgress?: (text: string, progressMessageId?: string) => void;

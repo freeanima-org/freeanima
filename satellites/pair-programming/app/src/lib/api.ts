@@ -1,7 +1,7 @@
 import type { StreamApiEvent } from "./types.ts";
 import { m } from "./i18n.ts";
 import { createSapSidecarClient, type SapSidecarClient } from "@freeanima/sap-contract";
-import { pairPlatform, STUDIO_PAIR_PLATFORM } from "@/lib/sap-client.ts";
+import { pairPlatform, STUDIO_PAIR_PLATFORM } from "@pair/lib/sap-client.ts";
 
 type SubscribeCallbacks<T> = {
   onData?: (data: T) => void;

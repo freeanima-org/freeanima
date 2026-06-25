@@ -6,13 +6,17 @@ import {
   getEmailOverview,
   listAccountMessages,
   markEmailRead,
-} from "@/lib/api.ts";
-import { m } from "@/lib/i18n.ts";
-import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
-import { translateApiPayload } from "@/lib/api-errors.ts";
+} from "@admin/lib/api.ts";
+import { m } from "@admin/lib/i18n.ts";
+import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
+import { translateApiPayload } from "@admin/lib/api-errors.ts";
+import { catchWithFallback, logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/email")({
-  loader: () => getEmailOverview().catch(() => ({ accounts: [], messages: [], errors: {} })),
+  loader: () =>
+    getEmailOverview().catch(
+      catchWithFallback("email/getEmailOverview", { accounts: [], messages: [], errors: {} }),
+    ),
   component: EmailPage,
 });
 
@@ -80,6 +84,7 @@ function EmailPage() {
       setAccounts(data.accounts ?? []);
       setErrors(data.errors ?? {});
     } catch (e) {
+      logCaughtError("routes/_sidebar/email", e);
       setError(
         m.admin_common_load_failed({
           detail: e instanceof Error ? e.message : String(e),
@@ -116,6 +121,7 @@ function EmailPage() {
       });
       setMessages(data.messages ?? []);
     } catch (e) {
+      logCaughtError("routes/_sidebar/email", e);
       setError(
         m.admin_email_list_load_failed({
           detail: e instanceof Error ? e.message : String(e),
@@ -180,6 +186,7 @@ function EmailPage() {
         setDetail(null);
       }
     } catch (e) {
+      logCaughtError("routes/_sidebar/email", e);
       setError(
         m.admin_email_fetch_failed({
           detail: e instanceof Error ? e.message : String(e),
@@ -220,6 +227,7 @@ function EmailPage() {
         }
       }
     } catch (e) {
+      logCaughtError("routes/_sidebar/email", e);
       setError(
         m.admin_email_read_failed({
           detail: e instanceof Error ? e.message : String(e),

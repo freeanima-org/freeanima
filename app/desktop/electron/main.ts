@@ -36,6 +36,31 @@ let shellStaticUrl = "";
 
 let clickthrough = false;
 let pointerActive = false;
+let quitInProgress = false;
+
+async function releaseInstallLocks(): Promise<void> {
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (win.isDestroyed()) continue;
+    win.removeAllListeners();
+    win.destroy();
+  }
+  mainWindow = null;
+  companionWindow = null;
+  if (tray) {
+    tray.destroy();
+    tray = null;
+  }
+  const closeServers = Promise.all([
+    serverHandle?.close() ?? Promise.resolve(),
+    new Promise<void>((resolve) => {
+      if (shellStaticServer) shellStaticServer.close(() => resolve());
+      else resolve();
+    }),
+  ]);
+  await Promise.race([closeServers, new Promise<void>((resolve) => setTimeout(resolve, 2000))]);
+  serverHandle = null;
+  shellStaticServer = null;
+}
 
 function resolveHubClient(): { hubUrl: string; remoteAuthToken: string } {
   const saved = readShellClientConfig();
@@ -45,7 +70,17 @@ function resolveHubClient(): { hubUrl: string; remoteAuthToken: string } {
   return { hubUrl: defaultHubUrl(), remoteAuthToken: "" };
 }
 
+function syncHubEnv(client: { hubUrl: string; remoteAuthToken: string }): void {
+  process.env.FREEANIMA_URL = client.hubUrl;
+  if (client.remoteAuthToken) {
+    process.env.FREEANIMA_REMOTE_AUTH_TOKEN = client.remoteAuthToken;
+  } else {
+    delete process.env.FREEANIMA_REMOTE_AUTH_TOKEN;
+  }
+}
+
 let hubClient = resolveHubClient();
+syncHubEnv(hubClient);
 
 const devToolsOnStart = !app.isPackaged || process.env.DESKTOP_SHELL_DEVTOOLS === "1";
 
@@ -99,9 +134,8 @@ function applyClickthrough(win: BrowserWindow): void {
 
 function reloadHubClientAndMainWindow(): void {
   hubClient = resolveHubClient();
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.reload();
-  }
+  syncHubEnv(hubClient);
+  broadcast("shell:config-changed");
 }
 
 function broadcast(channel: string, ...args: unknown[]): void {
@@ -353,12 +387,16 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
-  // 托盘应用
+  // 托盘应用：窗口全关也不退出，除非正在安装/更新或用户主动退出
 });
 
-app.on("before-quit", () => {
-  void serverHandle?.close();
-  shellStaticServer?.close();
+app.on("before-quit", (event) => {
+  if (quitInProgress) return;
+  event.preventDefault();
+  quitInProgress = true;
+  void releaseInstallLocks().finally(() => {
+    app.exit(0);
+  });
 });
 
 process.on("uncaughtException", (error) => {

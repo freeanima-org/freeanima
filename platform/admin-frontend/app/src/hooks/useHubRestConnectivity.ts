@@ -1,8 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { isHubHealthConnected, HUB_HEALTH_PROBE_TIMEOUT_MS } from "@freeanima/satellite-sdk";
-import { hubApiFetch } from "@/lib/hub-fetch.ts";
-import { resetApiClientCache } from "@/lib/api.ts";
+import {
+  isHubHealthConnected,
+  HUB_HEALTH_PROBE_TIMEOUT_MS,
+  probeHubHealthUrl,
+} from "@freeanima/satellite-sdk";
+import { hubApiFetch } from "@admin/lib/hub-fetch.ts";
+import { resetApiClientCache } from "@admin/lib/api.ts";
+import { resolveApiOrigin } from "@admin/lib/hub-origin.ts";
+import { logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 export type HubRestConnectionState = "connecting" | "connected" | "disconnected";
 
@@ -17,13 +23,26 @@ export async function probeHubHealth(
     if (!res.ok) return false;
     const body = (await res.json()) as { status?: string; authed?: boolean };
     return isHubHealthConnected(body);
-  } catch {
+  } catch (err) {
+    logCaughtError("hub-rest/probeHubHealth", err);
     return false;
   }
 }
 
 async function probeHubHealthDefault(): Promise<boolean> {
-  return probeHubHealth();
+  try {
+    const origin = resolveApiOrigin();
+    const token =
+      typeof window !== "undefined" ? window.satelliteShell?.remoteAuth?.token : undefined;
+    const body = await probeHubHealthUrl(origin, {
+      token,
+      timeoutMs: HUB_HEALTH_PROBE_TIMEOUT_MS,
+    });
+    return isHubHealthConnected(body);
+  } catch (err) {
+    logCaughtError("hub-rest/probeHubHealthDefault", err);
+    return false;
+  }
 }
 
 export function useHubRestConnectivity(enabled: boolean): {

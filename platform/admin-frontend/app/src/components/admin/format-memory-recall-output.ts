@@ -1,6 +1,6 @@
-import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
-import { m } from "@/lib/i18n.ts";
-import { memoryTypeLabel } from "@/lib/admin-status.ts";
+import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
+import { m } from "@admin/lib/i18n.ts";
+import { memoryTypeLabel } from "@admin/lib/admin-status.ts";
 import type { MemoryRecallHit, MemoryRecallResult } from "./memory-recall-types.ts";
 
 function formatSemanticLines(hit: MemoryRecallHit): string[] {

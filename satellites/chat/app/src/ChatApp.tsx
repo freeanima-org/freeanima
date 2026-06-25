@@ -1,29 +1,29 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AcpProgressDock } from "@/components/AcpProgressDock.tsx";
-import { FridgeMagnetInjectPreview } from "@/components/FridgeMagnetInjectPreview.tsx";
-import { ToolBlockBubble } from "@/components/ToolBlockBubble.tsx";
-import { useAcpProgressDock } from "@/hooks/useAcpProgressDock.ts";
-import { useKeyboardInset } from "@/hooks/useKeyboardInset.ts";
-import { formatConversationIdDateTime } from "@/lib/format-datetime.ts";
-import { displayAwaitingReply, pollUntilAssistantReply } from "@/lib/display-recovery.ts";
+import { AcpProgressDock } from "@chat/components/AcpProgressDock.tsx";
+import { FridgeMagnetInjectPreview } from "@chat/components/FridgeMagnetInjectPreview.tsx";
+import { ToolBlockBubble } from "@chat/components/ToolBlockBubble.tsx";
+import { useAcpProgressDock } from "@chat/hooks/useAcpProgressDock.ts";
+import { useKeyboardInset } from "@chat/hooks/useKeyboardInset.ts";
+import { formatConversationIdDateTime } from "@chat/lib/format-datetime.ts";
+import { displayAwaitingReply, pollUntilAssistantReply } from "@chat/lib/display-recovery.ts";
 import {
   getFridgeMagnets,
   listConversationCommands,
   loadConfig,
   subscribeConversationEvents,
-} from "@/lib/api.ts";
+} from "@chat/lib/api.ts";
 import type { SapConnectionState } from "@freeanima/sap-contract";
-import { getAppLocale, initAppLocale, m, toggleAppLocale } from "@/lib/i18n.ts";
-import { loadInputDraft, saveInputDraft } from "@/lib/input-draft.ts";
+import { getAppLocale, initAppLocale, m, toggleAppLocale } from "@chat/lib/i18n.ts";
+import { loadInputDraft, saveInputDraft } from "@chat/lib/input-draft.ts";
 import {
   getSapDirectClient,
   reconnectSap,
   subscribeSapConnection,
   subscribeShellConfigChanges,
-} from "@/lib/sap-client.ts";
-import type { ConversationListItem } from "@/lib/types.ts";
-import { useChatStore } from "@/stores/chat.ts";
-import { useConversationsStore } from "@/stores/conversations.ts";
+} from "@chat/lib/sap-client.ts";
+import type { ConversationListItem } from "@chat/lib/types.ts";
+import { useChatStore } from "@chat/stores/chat.ts";
+import { useConversationsStore } from "@chat/stores/conversations.ts";
 
 initAppLocale();
 

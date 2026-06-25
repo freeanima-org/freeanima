@@ -6,22 +6,9 @@ declare module "@freeanima/satellite-chat/app" {
 
 declare module "@freeanima/satellite-companion/settings-panel" {
   import type { ComponentType } from "react";
-  const CompanionSettingsSection: ComponentType<{ platform: "desktop" | "mobile" }>;
+  import type { SettingsPanelProps } from "@freeanima/satellite-sdk/settings";
+  const CompanionSettingsSection: ComponentType<SettingsPanelProps>;
   export default CompanionSettingsSection;
-}
-
-declare module "@freeanima/admin-frontend/panels/ConfigPanel.tsx" {
-  import type { ComponentType } from "react";
-  import type { SettingsPanelProps } from "@freeanima/shell-ui/settings";
-  const ConfigPanel: ComponentType<SettingsPanelProps>;
-  export default ConfigPanel;
-}
-
-declare module "@freeanima/admin-frontend/panels/CredentialsPanel.tsx" {
-  import type { ComponentType } from "react";
-  import type { SettingsPanelProps } from "@freeanima/shell-ui/settings";
-  const CredentialsPanel: ComponentType<SettingsPanelProps>;
-  export default CredentialsPanel;
 }
 
 declare module "@freeanima/admin-frontend/router" {
@@ -44,4 +31,9 @@ declare module "@freeanima/admin-frontend/paraglide-compile" {
     outdir: string;
     clean?: boolean;
   }): string;
+}
+
+declare module "@freeanima/shell-ui/bootstrap/sentry" {
+  export function sendSentryTestEvent(): Promise<void>;
+  export function notifyDebugConfigChanged(): void;
 }

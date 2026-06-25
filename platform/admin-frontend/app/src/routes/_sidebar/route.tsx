@@ -1,11 +1,11 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { HubConnectionBanner } from "@/components/HubConnectionBanner.tsx";
-import { ResponsiveSidebarLayout } from "@/components/ResponsiveSidebarLayout.tsx";
-import { useHubRestConnectivity } from "@/hooks/useHubRestConnectivity.ts";
-import { adminNavItems } from "@/lib/admin-nav.ts";
-import { resetApiClientCache } from "@/lib/api.ts";
-import { m } from "@/lib/i18n.ts";
+import { HubConnectionBanner } from "@admin/components/HubConnectionBanner.tsx";
+import { ResponsiveSidebarLayout } from "@admin/components/ResponsiveSidebarLayout.tsx";
+import { useHubRestConnectivity } from "@admin/hooks/useHubRestConnectivity.ts";
+import { adminNavItems } from "@admin/lib/admin-nav.ts";
+import { resetApiClientCache } from "@admin/lib/api.ts";
+import { m } from "@admin/lib/i18n.ts";
 
 export const Route = createFileRoute("/_sidebar")({
   component: AdminLayout,

@@ -24,6 +24,7 @@
     "@types/ws": "^8.18.1",
     "electron": "^42.4.1",
     "electron-builder": "^26.15.3",
+    "electron-store": "^10.1.0",
     "esbuild": "^0.25.12",
     "fbx2vrma-converter": "^1.0.2",
     "ws": "^8.21.0",

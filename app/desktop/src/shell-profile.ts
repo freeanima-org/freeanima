@@ -8,11 +8,3 @@ export const SHELL_MAIN_WINDOW = {
   minHeight: 560,
   title: "FreeAnima",
 };
-
-export const SHELL_SETTINGS_WINDOW = {
-  width: 900,
-  height: 720,
-  minWidth: 720,
-  minHeight: 560,
-  title: "FreeAnima 设置",
-};

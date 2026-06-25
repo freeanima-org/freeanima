@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Fragment, useCallback, useState } from "react";
-import { MemoryListPagination } from "@/components/admin/MemoryListPagination.tsx";
-import { listAutoLlmRuns } from "@/lib/api.ts";
-import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
-import { m } from "@/lib/i18n.ts";
+import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
+import { listAutoLlmRuns } from "@admin/lib/api.ts";
+import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
+import { m } from "@admin/lib/i18n.ts";
+import { logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 const PAGE_SIZE = 20;
 
@@ -74,6 +75,7 @@ function AutoLlmRunsPage() {
         setOffset(nextOffset);
         setLoaded(true);
       } catch (e) {
+        logCaughtError("routes/_sidebar/auto-llm-runs", e);
         setError(
           m.admin_common_load_failed({
             detail: e instanceof Error ? e.message : String(e),

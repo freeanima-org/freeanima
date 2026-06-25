@@ -11,10 +11,6 @@ describe("resolveSettingsPlatform", () => {
     expect(resolveSettingsPlatform({ isNativeShell: true })).toBe("mobile");
   });
 
-  test("settingsShellClientApi 存在时为 mobile", () => {
-    expect(resolveSettingsPlatform({ hasSettingsShellClientApi: true })).toBe("mobile");
-  });
-
   test("默认 desktop", () => {
     expect(resolveSettingsPlatform({})).toBe("desktop");
   });

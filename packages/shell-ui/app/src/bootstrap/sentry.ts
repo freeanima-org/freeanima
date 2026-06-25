@@ -1,10 +1,15 @@
-import * as Sentry from "@sentry/react";
 import { DEFAULT_SHELL_DEBUG, type ShellDebugConfig } from "@freeanima/satellite-sdk";
+import type { SettingsBinding } from "@freeanima/satellite-sdk/settings";
 
-import {
-  DEBUG_CONFIG_CHANGED_EVENT,
-  loadDebugSettingsFromApi,
-} from "../debug/debug-settings-api.ts";
+import { findDebugStore } from "../shell-app-context.tsx";
+
+export const DEBUG_CONFIG_CHANGED_EVENT = "freeanima:debug-config-changed";
+
+export function notifyDebugConfigChanged(): void {
+  window.dispatchEvent(new CustomEvent(DEBUG_CONFIG_CHANGED_EVENT));
+}
+
+import * as Sentry from "@sentry/react";
 
 let sentryInitialized = false;
 
@@ -40,18 +45,26 @@ function applySentryConfig(config: ShellDebugConfig): void {
   sentryInitialized = true;
 }
 
-export async function bootstrapSentryFromSettings(): Promise<void> {
+async function loadDebugConfig(bindings: SettingsBinding[]): Promise<ShellDebugConfig> {
+  const store = findDebugStore(bindings);
+  if (!store) return { ...DEFAULT_SHELL_DEBUG };
   try {
-    const config = (await loadDebugSettingsFromApi()) ?? { ...DEFAULT_SHELL_DEBUG };
-    applySentryConfig(config);
+    return (await store.load()) as ShellDebugConfig;
   } catch {
-    /* 设置 API 不可用时跳过 */
+    return { ...DEFAULT_SHELL_DEBUG };
+  }
+}
+
+export async function bootstrapSentryFromSettings(bindings: SettingsBinding[]): Promise<void> {
+  try {
+    applySentryConfig(await loadDebugConfig(bindings));
+  } catch {
+    /* skip */
   }
 
   window.addEventListener(DEBUG_CONFIG_CHANGED_EVENT, () => {
     void (async () => {
-      const config = (await loadDebugSettingsFromApi()) ?? { ...DEFAULT_SHELL_DEBUG };
-      applySentryConfig(config);
+      applySentryConfig(await loadDebugConfig(bindings));
     })();
   });
 }

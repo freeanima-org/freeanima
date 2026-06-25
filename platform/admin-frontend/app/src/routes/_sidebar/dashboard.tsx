@@ -1,15 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { DependencyStatus, ServiceStatus } from "@freeanima/admin-api/api";
 import { useState } from "react";
-import { getStatus, restartService } from "@/lib/api.ts";
-import { m } from "@/lib/i18n.ts";
-import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
-import { translateApiPayload } from "@/lib/api-errors.ts";
-import { dependencyStatusLabel } from "@/lib/admin-status.ts";
+import { getStatus, restartService } from "@admin/lib/api.ts";
+import { m } from "@admin/lib/i18n.ts";
+import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
+import { translateApiPayload } from "@admin/lib/api-errors.ts";
+import { dependencyStatusLabel } from "@admin/lib/admin-status.ts";
+import { catchWithFallback, logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/dashboard")({
   loader: async () => {
-    const status = await getStatus().catch(() => null);
+    const status = await getStatus().catch(catchWithFallback("dashboard/getStatus", null));
     return { status };
   },
   component: DashboardPage,
@@ -116,6 +117,7 @@ function DashboardPage() {
       const res = await restartService();
       alert(translateApiPayload(res as { code?: string; message?: string }));
     } catch (err) {
+      logCaughtError("dashboard/restartService", err);
       alert(
         m.admin_dashboard_restart_failed({
           detail: err instanceof Error ? err.message : String(err),

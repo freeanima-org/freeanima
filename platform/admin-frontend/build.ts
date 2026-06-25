@@ -196,13 +196,19 @@ function resolveParaglideDir(repoRoot: string): string {
   return compileParaglideToDir({ projectRoot: repoRoot, outdir: paraglideBuildDir() });
 }
 
-function createParaglideResolvePlugin(paraglideDir: string): import("bun").BunPlugin {
+function createParaglideResolvePlugin(
+  paraglideDir: string,
+  adminAppSrc: string,
+): import("bun").BunPlugin {
   return {
     name: "paraglide-runtime-cache",
     setup(build) {
       build.onResolve({ filter: /messages\/paraglide\// }, (args) => {
         const rel = args.path.replace(/^.*messages\/paraglide\//, "");
         return { path: join(paraglideDir, rel) };
+      });
+      build.onResolve({ filter: /^@admin\// }, (args) => {
+        return { path: join(adminAppSrc, args.path.slice("@admin/".length)) };
       });
     },
   };
@@ -223,7 +229,7 @@ export async function buildAdminToDir(
     minify: opts.minify,
     outdir: opts.outdir,
     publicPath: ADMIN_PUBLIC_PATH,
-    plugins: [createParaglideResolvePlugin(paraglideDir), tailwind],
+    plugins: [createParaglideResolvePlugin(paraglideDir, join(appDir, "src")), tailwind],
     ...(opts.sourcemap ? { sourcemap: "linked" as const } : {}),
     ...(opts.watch
       ? {

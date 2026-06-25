@@ -184,12 +184,16 @@ export function saveConfig(patch: Partial<CompanionConfig>): CompanionConfig {
 }
 
 export function hubUrlFromConfig(): string {
+  const fromEnv = process.env.FREEANIMA_URL?.trim();
+  if (fromEnv) return fromEnv.replace(/\/$/, "");
   const shell = loadShellClientConfig();
   if (shell?.hubUrl?.trim()) return shell.hubUrl.trim().replace(/\/$/, "");
   return loadConfig().hub_url.replace(/\/$/, "");
 }
 
 export function remoteAuthTokenFromShell(): string | undefined {
+  const fromEnv = process.env.FREEANIMA_REMOTE_AUTH_TOKEN?.trim();
+  if (fromEnv) return fromEnv;
   const shell = loadShellClientConfig();
   const token = shell?.remoteAuthToken?.trim();
   return token || undefined;

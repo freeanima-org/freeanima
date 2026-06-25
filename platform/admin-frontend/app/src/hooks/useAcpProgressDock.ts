@@ -3,7 +3,8 @@ import {
   getConversationAcpDock,
   subscribeConversationEvents,
   type ConversationAcpDockSnapshot,
-} from "@/lib/api.ts";
+} from "@admin/lib/api.ts";
+import { logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 export type AcpProgressDockOptions = {
   patchProgress?: (text: string, progressMessageId?: string) => void;
@@ -45,7 +46,8 @@ export function useAcpProgressDock(
           patchProgress?.(snap.progress_text, pmid);
         }
       }
-    } catch {
+    } catch (err) {
+      logCaughtError("hooks/useAcpProgressDock/refresh", err);
       setDock(null);
       decisionHandledRef.current = false;
     }

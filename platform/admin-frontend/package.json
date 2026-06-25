@@ -8,8 +8,6 @@
     "./paraglide-compile": "./paraglide-compile.ts",
     "./router": "./app/src/router.tsx",
     "./i18n": "./app/src/lib/i18n.ts",
-    "./panels/ConfigPanel.tsx": "./app/src/panels/ConfigPanel.tsx",
-    "./panels/CredentialsPanel.tsx": "./app/src/panels/CredentialsPanel.tsx",
     "./styles.css": "./app/src/styles.css"
   },
   "dependencies": {

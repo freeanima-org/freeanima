@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import type { PromptDebugResponse, ConversationListItem } from "@freeanima/admin-api/api";
 import { useEffect, useMemo, useState } from "react";
-import { getPromptDebug, listConversations } from "@/lib/api.ts";
-import { MemoryListPagination } from "@/components/admin/MemoryListPagination.tsx";
-import { m } from "@/lib/i18n.ts";
+import { getPromptDebug, listConversations } from "@admin/lib/api.ts";
+import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
+import { m } from "@admin/lib/i18n.ts";
+import { logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 type TabId = "parts" | "full" | "tools";
 
@@ -156,7 +157,10 @@ function SystemPromptPage() {
           (resp as { conversations?: ConversationListItem[] }).conversations ?? [],
         );
       })
-      .catch(() => setRecentConversations([]));
+      .catch((err) => {
+        logCaughtError("system-prompt/listConversations", err);
+        setRecentConversations([]);
+      });
   }, []);
 
   useEffect(() => {
@@ -172,6 +176,7 @@ function SystemPromptPage() {
         if (!cancelled) setData(result as PromptDebugResponse);
       })
       .catch((e) => {
+        logCaughtError("system-prompt/getPromptDebug", e);
         if (!cancelled) {
           setData(null);
           setError(String(e));
@@ -215,7 +220,8 @@ function SystemPromptPage() {
       await navigator.clipboard.writeText(text);
       setCopyHint(m.admin_common_copied({ label }));
       setTimeout(() => setCopyHint(""), 2000);
-    } catch {
+    } catch (err) {
+      logCaughtError("system-prompt/copyText", err);
       setCopyHint(m.admin_common_copy_failed({ label: "" }));
       setTimeout(() => setCopyHint(""), 2000);
     }

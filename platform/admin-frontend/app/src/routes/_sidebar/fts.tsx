@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getFtsStatus, getRebuildFtsJobStatus, startRebuildFtsIndex } from "@/lib/api.ts";
-import { m } from "@/lib/i18n.ts";
+import { getFtsStatus, getRebuildFtsJobStatus, startRebuildFtsIndex } from "@admin/lib/api.ts";
+import { m } from "@admin/lib/i18n.ts";
+import { catchWithFallback, logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/fts")({
-  loader: () => getFtsStatus().catch(() => null),
+  loader: () => getFtsStatus().catch(catchWithFallback("fts/getFtsStatus", null)),
   component: FtsPage,
 });
 
@@ -168,6 +169,7 @@ function FtsPage() {
       setStatus(data);
       if (data.rebuild) setJob(data.rebuild);
     } catch (e) {
+      logCaughtError("routes/_sidebar/fts", e);
       setError(
         m.admin_common_load_failed({
           detail: e instanceof Error ? e.message : String(e),
@@ -187,8 +189,8 @@ function FtsPage() {
         }
         await reload();
       }
-    } catch {
-      /* poll failure ignored */
+    } catch (err) {
+      logCaughtError("fts/pollRebuildJob", err);
     }
   }, [reload]);
 
@@ -216,6 +218,7 @@ function FtsPage() {
         pollRef.current = setInterval(() => void pollJob(), 2000);
       }
     } catch (e) {
+      logCaughtError("routes/_sidebar/fts", e);
       setError(
         m.admin_common_operation_failed({
           detail: e instanceof Error ? e.message : String(e),

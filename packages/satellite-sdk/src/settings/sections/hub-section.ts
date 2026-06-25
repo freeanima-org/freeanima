@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { defineSettingsForm, type SettingsSection } from "../../../src/settings.ts";
+
+import { defineSettingsForm, type SettingsSection } from "../types.ts";
 
 const hubFields = defineSettingsForm({
   zodSchema: z.object({
@@ -23,11 +24,12 @@ const hubFields = defineSettingsForm({
   ],
 });
 
-export const shellSettingsSection: SettingsSection = {
+export const hubSettingsSection: SettingsSection = {
   id: "hub",
   order: 0,
   title: "Hub 连接",
-  description: "配置客户端如何连接 FreeAnima Hub",
+  description:
+    "配置客户端如何连接 FreeAnima Hub。PC 上运行 anima service；远程访问需配置 remote_auth.token（见 docs/guide/remote-access.md）。",
   platforms: {
     desktop: { kind: "form", fields: hubFields },
     mobile: { kind: "form", fields: hubFields },

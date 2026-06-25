@@ -1,9 +1,9 @@
-import type { StreamApiEvent } from "@/lib/types.ts";
-import { pollUntilAssistantReply } from "@/lib/display-recovery.ts";
+import type { StreamApiEvent } from "@pair/lib/types.ts";
+import { pollUntilAssistantReply } from "@pair/lib/display-recovery.ts";
 import { marked } from "marked";
 import { create } from "zustand";
-import { m } from "@/lib/i18n.ts";
-import { subscribeMessageStream, subscribeConversationEvents } from "@/lib/api.ts";
+import { m } from "@pair/lib/i18n.ts";
+import { subscribeMessageStream, subscribeConversationEvents } from "@pair/lib/api.ts";
 
 type SendDoneOptions = {
   recovered?: boolean;

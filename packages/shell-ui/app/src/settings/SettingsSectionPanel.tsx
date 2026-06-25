@@ -1,27 +1,38 @@
-import { useMemo } from "react";
-import type { SettingsSection, SettingsPlatform } from "../../../src/settings.ts";
-import { createShellClientStore } from "../../../src/settings-store.ts";
-import "@freeanima/admin-frontend/styles.css";
+import type { SettingsBinding, SettingsPlatform } from "@freeanima/satellite-sdk/settings";
 
 import { FormRenderer } from "../form/FormRenderer.tsx";
 import { LazyComponentPanel } from "./LazyComponentPanel.tsx";
 
 type Props = {
-  section: SettingsSection;
+  binding: SettingsBinding;
   platform: SettingsPlatform;
 };
 
-export function SettingsSectionPanel({ section, platform }: Props) {
+export function SettingsSectionPanel({ binding, platform }: Props) {
+  const { section, store, deps } = binding;
   const entry = section.platforms[platform];
-  const shellStore = useMemo(() => createShellClientStore(), []);
 
   if (!entry) {
     return <p className="text-sm text-base-content/60">此平台暂无设置项</p>;
   }
 
   if (entry.kind === "form") {
-    return <FormRenderer fields={entry.fields} store={shellStore} platform={platform} />;
+    if (!store) {
+      return <p className="text-sm text-error">缺少 settings store 注入</p>;
+    }
+    return (
+      <FormRenderer
+        fields={entry.fields}
+        store={store}
+        platform={platform}
+        sectionId={section.id}
+      />
+    );
   }
 
-  return <LazyComponentPanel load={entry.load} platform={platform} />;
+  if (!store) {
+    return <p className="text-sm text-error">缺少 settings store 注入</p>;
+  }
+
+  return <LazyComponentPanel load={entry.load} platform={platform} store={store} deps={deps} />;
 }

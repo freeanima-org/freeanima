@@ -1,7 +1,7 @@
 import { marked } from "marked";
 import { useMemo } from "react";
 import type { DisplayItem } from "@freeanima/admin-api/api";
-import { m } from "@/lib/i18n.ts";
+import { m } from "@admin/lib/i18n.ts";
 import { ToolBlockBubble } from "./ToolBlockBubble.tsx";
 
 type StoredMessagePanelProps = {

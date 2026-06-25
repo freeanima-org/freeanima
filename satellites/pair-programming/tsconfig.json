@@ -5,7 +5,7 @@
     "jsx": "react-jsx",
     "outDir": ".tsout",
     "paths": {
-      "@/*": ["./app/src/*"]
+      "@pair/*": ["./app/src/*"]
     }
   },
   "include": [

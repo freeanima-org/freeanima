@@ -1,9 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { listConversationCommands } from "@/lib/api.ts";
-import { m } from "@/lib/i18n.ts";
+import { listConversationCommands } from "@admin/lib/api.ts";
+import { m } from "@admin/lib/i18n.ts";
+import { catchWithFallback } from "@admin/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/commands")({
-  loader: () => listConversationCommands({ all: true }).catch(() => ({ commands: [] })),
+  loader: () =>
+    listConversationCommands({ all: true }).catch(
+      catchWithFallback("commands/listConversationCommands", { commands: [] }),
+    ),
   staleTime: 5 * 60_000,
   component: CommandsPage,
 });

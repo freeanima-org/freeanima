@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { m } from "@/lib/i18n.ts";
-import { getMcpStatus, startAllMcp, startMcp, stopAllMcp, stopMcp } from "@/lib/api.ts";
-import { mcpStatusLabel } from "@/lib/admin-status.ts";
+import { m } from "@admin/lib/i18n.ts";
+import { getMcpStatus, startAllMcp, startMcp, stopAllMcp, stopMcp } from "@admin/lib/api.ts";
+import { mcpStatusLabel } from "@admin/lib/admin-status.ts";
+import { catchWithFallback, logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/mcp")({
-  loader: () => getMcpStatus().catch(() => null),
+  loader: () => getMcpStatus().catch(catchWithFallback("mcp/getMcpStatus", null)),
   component: McpPage,
 });
 
@@ -56,6 +57,7 @@ function McpPage() {
       const result = action === "start" ? await startMcp(name) : await stopMcp(name);
       setStatus(result as McpStatus);
     } catch (e) {
+      logCaughtError("routes/_sidebar/mcp", e);
       setError(
         m.admin_mcp_action_failed({
           name,
@@ -79,6 +81,7 @@ function McpPage() {
       const result = action === "start-all" ? await startAllMcp() : await stopAllMcp();
       setStatus(result as McpStatus);
     } catch (e) {
+      logCaughtError("routes/_sidebar/mcp", e);
       const detail = e instanceof Error ? e.message : String(e);
       setError(
         action === "start-all"

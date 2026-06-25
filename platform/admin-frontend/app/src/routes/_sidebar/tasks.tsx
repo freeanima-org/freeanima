@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
-import { MemoryListPagination } from "@/components/admin/MemoryListPagination.tsx";
-import { m } from "@/lib/i18n.ts";
-import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
-import { listTasks } from "@/lib/api.ts";
+import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
+import { m } from "@admin/lib/i18n.ts";
+import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
+import { listTasks } from "@admin/lib/api.ts";
+import { logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 const PAGE_SIZE = 20;
 
@@ -98,6 +99,7 @@ function TasksPage() {
         setOffset(nextOffset);
         setLoaded(true);
       } catch (e) {
+        logCaughtError("routes/_sidebar/tasks", e);
         setError(
           m.admin_common_load_failed({
             detail: e instanceof Error ? e.message : String(e),

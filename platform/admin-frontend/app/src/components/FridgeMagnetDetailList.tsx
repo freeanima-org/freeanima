@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { m } from "@/lib/i18n.ts";
+import { m } from "@admin/lib/i18n.ts";
 
 export type FridgeMagnetItem = {
   key: string;

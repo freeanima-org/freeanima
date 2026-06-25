@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { StoredMessagePanel } from "@/components/admin/ConversationMessagePanel.tsx";
-import { AcpProgressDock } from "@/components/AcpProgressDock.tsx";
-import { useAcpProgressDock } from "@/hooks/useAcpProgressDock.ts";
-import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
-import { m } from "@/lib/i18n.ts";
-import { useAdminConversationsStore } from "@/stores/admin-conversations.ts";
+import { StoredMessagePanel } from "@admin/components/admin/ConversationMessagePanel.tsx";
+import { AcpProgressDock } from "@admin/components/AcpProgressDock.tsx";
+import { useAcpProgressDock } from "@admin/hooks/useAcpProgressDock.ts";
+import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
+import { m } from "@admin/lib/i18n.ts";
+import { useAdminConversationsStore } from "@admin/stores/admin-conversations.ts";
 
 export const Route = createFileRoute("/_sidebar/conversations/$conversationId")({
   component: ConversationDetailPage,

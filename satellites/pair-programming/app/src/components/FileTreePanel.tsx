@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { m } from "@/lib/i18n.ts";
-import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
+import { m } from "@pair/lib/i18n.ts";
+import { usePairProgrammingStore } from "@pair/stores/pair-programming.ts";
 import { TreeNode, type TreeNodeData } from "./TreeNode.tsx";
 
 function nodePath(node: TreeNodeData, parentPath: string) {

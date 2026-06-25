@@ -1,0 +1,136 @@
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
+
+import Store from "electron-store";
+
+import {
+  DEBUG_SENTRY_DSN_KEY,
+  DEBUG_SENTRY_ENABLED_KEY,
+  DEBUG_VCONSOLE_ENABLED_KEY,
+  HUB_URL_KEY,
+  REMOTE_AUTH_TOKEN_KEY,
+} from "@freeanima/satellite-sdk/settings";
+import {
+  normalizeShellDebugConfig,
+  parseShellDebugConfig,
+  parseShellClientConfig,
+  type ShellDebugConfig,
+  type ShellClientConfig,
+} from "@freeanima/satellite-sdk";
+import {
+  desktopSettingsPath,
+  legacyShellClientConfigPath,
+} from "@freeanima/satellite-sdk/desktop-settings-paths";
+import { parseShellSettings } from "@freeanima/satellite-sdk/shell-settings";
+
+import { dirname, join } from "node:path";
+
+type ScopedStore = Store<Record<string, string>>;
+
+let store: ScopedStore | null = null;
+
+function getStore(): ScopedStore {
+  if (!store) {
+    store = new Store<Record<string, string>>({ name: "freeanima-shell" });
+    migrateLegacySettings(store);
+  }
+  return store;
+}
+
+function migrateLegacySettings(kv: ScopedStore): void {
+  if (kv.get(HUB_URL_KEY)) return;
+
+  const legacyPath = desktopSettingsPath();
+  if (existsSync(legacyPath)) {
+    try {
+      const raw = JSON.parse(readFileSync(legacyPath, "utf-8")) as unknown;
+      const parsed = parseShellSettings(raw);
+      applyHubToStore(kv, parsed.hub);
+      applyDebugToStore(kv, parsed.debug);
+      renameSync(legacyPath, `${legacyPath}.migrated`);
+      return;
+    } catch {
+      /* fall through */
+    }
+  }
+
+  const legacyHubPath = legacyShellClientConfigPath();
+  if (existsSync(legacyHubPath)) {
+    try {
+      const raw = JSON.parse(readFileSync(legacyHubPath, "utf-8")) as unknown;
+      const hub = parseShellClientConfig(raw);
+      applyHubToStore(kv, hub);
+      renameSync(legacyHubPath, `${legacyHubPath}.migrated`);
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+function applyHubToStore(kv: ScopedStore, hub: ShellClientConfig | null): void {
+  if (!hub) return;
+  kv.set(HUB_URL_KEY, hub.hubUrl);
+  kv.set(REMOTE_AUTH_TOKEN_KEY, hub.remoteAuthToken);
+}
+
+function applyDebugToStore(kv: ScopedStore, debug: ShellDebugConfig): void {
+  kv.set(DEBUG_SENTRY_ENABLED_KEY, debug.sentryEnabled ? "1" : "0");
+  kv.set(DEBUG_SENTRY_DSN_KEY, debug.sentryDsn);
+  kv.set(DEBUG_VCONSOLE_ENABLED_KEY, debug.vConsoleEnabled ? "1" : "0");
+}
+
+export function loadHubConfigFromStore(): ShellClientConfig | null {
+  const kv = getStore();
+  const hubUrl = kv.get(HUB_URL_KEY)?.trim() ?? "";
+  const remoteAuthToken = kv.get(REMOTE_AUTH_TOKEN_KEY)?.trim() ?? "";
+  if (!hubUrl && !remoteAuthToken) return null;
+  return parseShellClientConfig({ hubUrl, remoteAuthToken });
+}
+
+export function saveHubConfigToStore(config: ShellClientConfig): ShellClientConfig {
+  const normalized = parseShellClientConfig(config);
+  if (!normalized) throw new Error("Hub 配置无效");
+  const kv = getStore();
+  kv.set(HUB_URL_KEY, normalized.hubUrl);
+  kv.set(REMOTE_AUTH_TOKEN_KEY, normalized.remoteAuthToken);
+  return normalized;
+}
+
+export function loadDebugConfigFromStore(): ShellDebugConfig {
+  const kv = getStore();
+  return parseShellDebugConfig({
+    sentryEnabled: kv.get(DEBUG_SENTRY_ENABLED_KEY) === "1",
+    sentryDsn: kv.get(DEBUG_SENTRY_DSN_KEY) ?? "",
+    vConsoleEnabled: kv.get(DEBUG_VCONSOLE_ENABLED_KEY) === "1",
+  });
+}
+
+export function saveDebugConfigToStore(config: ShellDebugConfig): ShellDebugConfig {
+  const normalized = normalizeShellDebugConfig(config);
+  const kv = getStore();
+  kv.set(DEBUG_SENTRY_ENABLED_KEY, normalized.sentryEnabled ? "1" : "0");
+  kv.set(DEBUG_SENTRY_DSN_KEY, normalized.sentryDsn);
+  kv.set(DEBUG_VCONSOLE_ENABLED_KEY, normalized.vConsoleEnabled ? "1" : "0");
+  return normalized;
+}
+
+export function companionConfigPath(): string {
+  const animaHome = process.env.FREEANIMA_HOME?.trim() || join(homedir(), ".anima");
+  return join(animaHome, "companion", "config.json");
+}
+
+export function loadCompanionConfigFromFile(): unknown {
+  const path = companionConfigPath();
+  if (!existsSync(path)) return null;
+  try {
+    return JSON.parse(readFileSync(path, "utf-8")) as unknown;
+  } catch {
+    return null;
+  }
+}
+
+export function saveCompanionConfigToFile(value: unknown): void {
+  const path = companionConfigPath();
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`, "utf-8");
+}

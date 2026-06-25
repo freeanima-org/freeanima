@@ -3,7 +3,7 @@ productName: FreeAnima Desktop
 artifactName: FreeAnima-Desktop-${version}.${ext}
 executableName: FreeAnima-Desktop
 forceCodeSigning: false
-# Linux/macOS 交叉打 Windows NSIS 时优先用 UninstallerReader（见 build-electron.ts patch）；
+# Linux/macOS 交叉打 Windows NSIS 时优先用 UninstallerReader（见 electron-builder-linux-patch.cjs）；
 # 若仍走 Wine 路径，1.0.1 使用 electron-builder 自带 Wine 11。
 toolsets:
   wine: "1.0.1"
@@ -52,3 +52,4 @@ linux:
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
+  include: build-resources/installer.nsh
