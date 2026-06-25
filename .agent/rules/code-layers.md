@@ -13,7 +13,7 @@ app → platform → capabilities → runtime → core → kernel
 | **kernel**       | `kernel/`       | `@freeanima/kernel`   | Hook, EventBus, logging                           |
 | **core**         | `core/`         | `@freeanima/core`     | PG schema, repos, config, tool/LLM/compress/hooks |
 | **runtime**      | `runtime/`      | `@freeanima/runtime`  | Session, turn, loop, Engine factory               |
-| **capabilities** | `capabilities/` | `capabilities-*` (7)  | Identity, memory, tools, MCP/ACP, tasks, …        |
+| **capabilities** | `capabilities/` | `capabilities-*` (8)  | Identity, memory, tools, MCP client/server, ACP, tasks, …        |
 | **platform**     | `platform/`     | `@freeanima/platform` | Composition root, ports, connectors, CLI wiring   |
 | **app**          | `app/`          | `@freeanima/cli`, …   | CLI、desktop/mobile 壳等用户交付入口              |
 

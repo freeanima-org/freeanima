@@ -1,5 +1,4 @@
 export { MCPManager } from "./manager.ts";
-export { extractMcpResult, mcpToolParameters } from "./schema.ts";
 export {
   sanitizeMcpConfig,
   isMcpServerEnabled,

@@ -1,3 +1,4 @@
+import { createMcpBunHandler, isMcpPath } from "@freeanima/capabilities-mcp-server";
 import { ADMIN_BASE_PATH } from "@freeanima/platform/ports/constants";
 import { createApiApp } from "./elysia/app.ts";
 import { bindAdminApiLogging } from "./api-logging.ts";
@@ -63,6 +64,11 @@ export async function startApiHttpServer(
       token: options.remoteAuthToken,
     });
 
+  const mcpHandler = createMcpBunHandler({
+    toolSets: adminCtx().engine.catalog.toolSets,
+    repos: adminCtx().engine.repos,
+  });
+
   const server = Bun.serve({
     hostname: host,
     port,
@@ -79,6 +85,11 @@ export async function startApiHttpServer(
         const pathname = new URL(req.url).pathname;
         if (isHubApiPath(pathname)) {
           return apiApp.fetch(attachRemoteAddressToRequest(req, remoteAddress));
+        }
+
+        if (isMcpPath(pathname)) {
+          const mcpRes = await mcpHandler(req);
+          if (mcpRes !== undefined) return mcpRes;
         }
 
         const sapRes = dispatchFetch(req, bunServer, sapHandlers);

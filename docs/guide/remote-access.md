@@ -11,7 +11,7 @@ title: Remote access
 
 | 层                    | 作用                                                                                  |
 | --------------------- | ------------------------------------------------------------------------------------- |
-| **Hub `remote_auth`** | `config.yaml` 明文 token；REST `Authorization: Bearer`；SAP `connect` 帧 `auth_token` |
+| **Hub `remote_auth`** | `config.yaml` 明文 token；REST `Authorization: Bearer`；SAP `connect` 帧 `auth_token`；MCP `/mcp` 同样 Bearer |
 | **cloudflared**       | 出站隧道，把公网 HTTPS/WSS 转到 `127.0.0.1:2658`                                      |
 | **客户端设置**        | app/desktop / app/mobile 在 **Hub 设置页**填写同一 Hub 地址与 token                   |
 
@@ -77,7 +77,25 @@ anima service start
 ```text
 REST:  Authorization: Bearer <token>
 SAP:   WebSocket /sap/v1 → connect 帧含 auth_token 字段
+MCP:   POST/GET /mcp → Authorization: Bearer <token>
 ```
+
+## 5. MCP 出站（外部 Agent 查询 Hub 数据）
+
+Hub 在 **`/mcp`** 提供 Streamable HTTP MCP Server，暴露 ToolSet 中 `expose_mcp: true` 的只读查询工具（如 `memory_recall`、`conversation_search`）。外部 MCP Client（Cursor、Claude Desktop 等）可连接并调用，**不经 LLM 中转**。
+
+```yaml
+# 外部 agent 配置示例（Cursor mcp.json 等）
+mcpServers:
+  freeanima:
+    url: http://127.0.0.1:2658/mcp
+    headers:
+      Authorization: "Bearer <remote_auth.token>"
+```
+
+- **入站**（Hub 连接外部 MCP Server 并注册工具）：仍用 `config.yaml` 的 `mcp_servers`（`capabilities/mcp-client`）
+- **出站**（外部 agent 调用 Hub 工具）：`/mcp` 端点（`capabilities/mcp-server`）
+- 公网 / 局域网访问须与 REST 相同携带 `remote_auth` token；loopback 直连可省略
 
 缺少或错误 token → HTTP `401` 或 SAP 连接关闭。
 

@@ -1,10 +1,9 @@
 import type { ToolDef, ToolSetRegistry } from "@freeanima/core/tool";
-import { mcpToolSetId, toolError } from "@freeanima/core/tool";
+import { extractMcpResult, mcpToolParameters, mcpToolSetId, toolError } from "@freeanima/core/tool";
 import type { Config } from "@freeanima/core/config";
 import { logCapability as logComponent } from "@freeanima/core/config";
 
 import { McpClientSession, type McpServerConfig } from "./client.ts";
-import { extractMcpResult, mcpToolParameters } from "./schema.ts";
 import {
   isMcpServerEnabled,
   sanitizeMcpConfig,

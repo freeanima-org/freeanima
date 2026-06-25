@@ -67,6 +67,7 @@ export function registerMemoryCoreTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "memory_recall",
+          exposeMcp: true,
           description:
             "Unified memory search: semantic memories, conversation messages, limbic memories, autobiographical narratives.\n" +
             "Cross-type reranking returns top N (default 10) in results; use memory_type to distinguish.\n" +

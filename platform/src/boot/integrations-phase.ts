@@ -8,7 +8,7 @@ import { startAcpProgressTicker } from "../register.ts";
 import type { AppRuntime } from "../runtime/app-runtime.ts";
 import type { Engine } from "@freeanima/runtime";
 import { getAcpManager } from "@freeanima/capabilities-acp";
-import type { MCPManager } from "@freeanima/capabilities-mcp";
+import type { MCPManager } from "@freeanima/capabilities-mcp-client";
 
 import { startupLog } from "./status.ts";
 

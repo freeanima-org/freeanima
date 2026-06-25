@@ -106,8 +106,8 @@
         "@types/bun": "catalog:",
       },
     },
-    "capabilities/mcp": {
-      "name": "@freeanima/capabilities-mcp",
+    "capabilities/mcp-client": {
+      "name": "@freeanima/capabilities-mcp-client",
       "dependencies": {
         "@freeanima/core": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.29.0",
@@ -115,6 +115,16 @@
       },
       "devDependencies": {
         "@freeanima/platform": "workspace:*",
+        "@types/bun": "catalog:",
+      },
+    },
+    "capabilities/mcp-server": {
+      "name": "@freeanima/capabilities-mcp-server",
+      "dependencies": {
+        "@freeanima/core": "workspace:*",
+        "@modelcontextprotocol/sdk": "^1.29.0",
+      },
+      "devDependencies": {
         "@types/bun": "catalog:",
       },
     },
@@ -234,7 +244,7 @@
         "@elysiajs/static": "^1.4.10",
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-identity": "workspace:*",
-        "@freeanima/capabilities-mcp": "workspace:*",
+        "@freeanima/capabilities-mcp-client": "workspace:*",
         "@freeanima/capabilities-memory": "workspace:*",
         "@freeanima/capabilities-satellite": "workspace:*",
         "@freeanima/capabilities-tasks": "workspace:*",
@@ -277,7 +287,8 @@
       "dependencies": {
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-identity": "workspace:*",
-        "@freeanima/capabilities-mcp": "workspace:*",
+        "@freeanima/capabilities-mcp-client": "workspace:*",
+        "@freeanima/capabilities-mcp-server": "workspace:*",
         "@freeanima/capabilities-memory": "workspace:*",
         "@freeanima/capabilities-satellite": "workspace:*",
         "@freeanima/capabilities-tasks": "workspace:*",
@@ -754,7 +765,9 @@
 
     "@freeanima/capabilities-llm-openai": ["@freeanima/capabilities-llm-openai@workspace:capabilities/llm-openai"],
 
-    "@freeanima/capabilities-mcp": ["@freeanima/capabilities-mcp@workspace:capabilities/mcp"],
+    "@freeanima/capabilities-mcp-client": ["@freeanima/capabilities-mcp-client@workspace:capabilities/mcp-client"],
+
+    "@freeanima/capabilities-mcp-server": ["@freeanima/capabilities-mcp-server@workspace:capabilities/mcp-server"],
 
     "@freeanima/capabilities-memory": ["@freeanima/capabilities-memory@workspace:capabilities/memory"],
 
