@@ -2,5 +2,8 @@
 include ':capacitor-android'
 project(':capacitor-android').projectDir = new File('../../../node_modules/.bun/@capacitor+android@7.6.7+d8a2320436209c74/node_modules/@capacitor/android/capacitor')
 
+include ':capacitor-keyboard'
+project(':capacitor-keyboard').projectDir = new File('../../../node_modules/.bun/@capacitor+keyboard@7.0.6+d8a2320436209c74/node_modules/@capacitor/keyboard/android')
+
 include ':capacitor-preferences'
 project(':capacitor-preferences').projectDir = new File('../../../node_modules/.bun/@capacitor+preferences@7.0.4+d8a2320436209c74/node_modules/@capacitor/preferences/android')

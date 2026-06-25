@@ -82,6 +82,9 @@
     box-sizing: border-box;
   }
   .chat-compose {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
     padding-bottom: max(1rem, var(--sab));
   }
   .chat .chat-bubble {

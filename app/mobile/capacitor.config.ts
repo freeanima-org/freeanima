@@ -4,6 +4,11 @@ const config: CapacitorConfig = {
   appId: "org.freeanima.app",
   appName: "FreeAnima",
   webDir: "www",
+  plugins: {
+    Keyboard: {
+      resizeOnFullScreen: true,
+    },
+  },
   android: {
     allowMixedContent: true,
     adjustMarginsForEdgeToEdge: "auto",

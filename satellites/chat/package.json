@@ -16,6 +16,7 @@
     "start": "bun build.ts && bun server/index.ts"
   },
   "dependencies": {
+    "@capacitor/keyboard": "^7.0.1",
     "@freeanima/sap-contract": "workspace:*",
     "@freeanima/satellite-sdk": "workspace:*",
     "marked": "^18.0.4",
