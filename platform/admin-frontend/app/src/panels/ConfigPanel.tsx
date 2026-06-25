@@ -108,24 +108,24 @@ function ConfigBlock({ name, value }: { name: string; value: unknown }) {
 
 export default function ConfigPanel(_props: SettingsPanelProps) {
   const [config, setConfig] = useState<Record<string, unknown> | null>(null);
-  const [failed, setFailed] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    setFailed(false);
+    setErrorMessage(null);
     void (async () => {
       try {
         const data = await getStatusConfig();
         if (!cancelled) {
           setConfig((data ?? {}) as Record<string, unknown>);
-          setFailed(false);
+          setErrorMessage(null);
         }
-      } catch {
+      } catch (e) {
         if (!cancelled) {
-          setFailed(true);
+          setErrorMessage(e instanceof Error ? e.message : String(e));
           setConfig(null);
         }
       } finally {
@@ -141,10 +141,15 @@ export default function ConfigPanel(_props: SettingsPanelProps) {
     return <p className="text-sm text-base-content/60">{m.admin_common_loading()}</p>;
   }
 
-  if (failed || config === null) {
+  if (errorMessage || config === null) {
     return (
       <div className="space-y-2">
-        <div className="alert alert-error text-sm">{m.admin_common_load_failed_short()}</div>
+        <div className="alert alert-error text-sm">
+          {errorMessage ?? m.admin_common_load_failed_short()}
+        </div>
+        <p className="text-xs text-base-content/60">
+          请确认 Hub 已运行（anima service start），且客户端 Hub 地址配置正确。
+        </p>
         <button
           type="button"
           className="btn btn-sm btn-outline"

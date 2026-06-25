@@ -3,7 +3,7 @@ import { detectPlatform } from "../platform.ts";
 
 const NAV = [
   { to: "/chat", label: "聊天室" },
-  { to: "/admin", label: "管理台" },
+  { to: "/admin/dashboard", label: "管理台" },
   { to: "/settings", label: "设置" },
 ] as const;
 
@@ -12,7 +12,7 @@ export function ModuleShell() {
 
   return (
     <div className="h-full flex flex-col bg-base-100 text-base-content">
-      <header className="navbar bg-base-200 border-b border-base-300 min-h-12 px-3 shrink-0">
+      <header className="navbar bg-base-200 border-b border-base-300 min-h-12 px-3 shrink-0 relative z-50">
         <div className="font-semibold text-sm">FreeAnima</div>
         <nav className="flex gap-1 ml-4">
           {NAV.map((item) => (
