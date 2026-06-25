@@ -96,6 +96,7 @@
 .nav-link,
 .session-item {
   @apply block px-3 py-2 rounded-lg text-sm text-base-content/65 transition-colors;
+  font-family: system-ui, "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
 }
 .nav-link:hover,
 .session-item:hover {

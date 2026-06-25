@@ -3,6 +3,7 @@ import { AcpProgressDock } from "@/components/AcpProgressDock.tsx";
 import { FridgeMagnetInjectPreview } from "@/components/FridgeMagnetInjectPreview.tsx";
 import { ToolBlockBubble } from "@/components/ToolBlockBubble.tsx";
 import { useAcpProgressDock } from "@/hooks/useAcpProgressDock.ts";
+import { useKeyboardInset } from "@/hooks/useKeyboardInset.ts";
 import { formatConversationIdDateTime } from "@/lib/format-datetime.ts";
 import { displayAwaitingReply, pollUntilAssistantReply } from "@/lib/display-recovery.ts";
 import {
@@ -113,9 +114,9 @@ export function ChatApp() {
     inject_text: "",
   });
   const [fridgeLoading, setFridgeLoading] = useState(false);
-  const [keyboardInset, setKeyboardInset] = useState(0);
   const pendingRecoveryKeyRef = useRef<string | null>(null);
   const nativeShell = Boolean(getSatelliteShell()?.isNativeShell);
+  const keyboardInset = useKeyboardInset(nativeShell);
 
   const streamVisible = streaming && streamingConversationId === currentId;
 
@@ -175,22 +176,6 @@ export function ChatApp() {
   }, []);
 
   useEffect(() => subscribeShellConfigChanges(), []);
-
-  useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-    const update = () => {
-      const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-      setKeyboardInset(inset);
-    };
-    update();
-    vv.addEventListener("resize", update);
-    vv.addEventListener("scroll", update);
-    return () => {
-      vv.removeEventListener("resize", update);
-      vv.removeEventListener("scroll", update);
-    };
-  }, []);
 
   useEffect(() => {
     void (async () => {
@@ -796,7 +781,7 @@ export function ChatApp() {
 
           <div
             className="border-t border-base-300 p-4 bg-base-100 relative chat-compose"
-            style={keyboardInset > 0 ? { paddingBottom: `${keyboardInset + 16}px` } : undefined}
+            style={keyboardInset > 0 ? { transform: `translateY(-${keyboardInset}px)` } : undefined}
           >
             {messageQueue.length > 0 ? (
               <ul className="mb-2 space-y-1">
@@ -865,6 +850,11 @@ export function ChatApp() {
                   className="textarea textarea-bordered w-full min-h-[2.75rem] max-h-48 resize-none leading-normal py-2.5"
                   placeholder={m.admin_chat_message_placeholder()}
                   disabled={sapDisconnected}
+                  onFocus={() => {
+                    requestAnimationFrame(() => {
+                      msgInputRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+                    });
+                  }}
                   onKeyDown={onInputKeydown}
                 />
               </div>

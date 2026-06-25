@@ -52,6 +52,7 @@ flowchart LR
 
 | 现象                                 | 常见原因                                                                                 |
 | ------------------------------------ | ---------------------------------------------------------------------------------------- |
+| 键盘遮挡聊天输入框                   | WebView 未随键盘收缩；需 `adjustResize` + `@capacitor/keyboard`；改 Web 后须 `cap sync`  |
 | 聊天输入无反应                       | 无选中会话（首装应自动建会话）；或 SAP 未连接                                            |
 | 管理台 load failed / Failed to fetch | Hub 未 `--host 0.0.0.0`、Token 错误、防火墙；Chrome Remote Debugging 看请求是否带 Bearer |
 | Not Found                            | 勿访问旧路径如 `/admin/dashboard/index.html`；应走 SPA `/admin/dashboard`                |
@@ -77,6 +78,8 @@ cd android && ./gradlew assembleDebug
 ```
 
 Debug 全流程：`cd app/mobile && bun run android:debug`
+
+**纪律**：修改 shell-ui / chat / admin 前端后须 `bun run build`（或 `build:debug`）再 `cap sync`，否则真机仍是旧 Web 资源。
 
 包内 README：[`app/mobile/README.md`](../../app/mobile/README.md)
 

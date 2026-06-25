@@ -18,6 +18,7 @@
   "dependencies": {
     "@capacitor/android": "^7.4.2",
     "@capacitor/core": "^7.4.2",
+    "@capacitor/keyboard": "^7.0.1",
     "@capacitor/preferences": "^7.0.1",
     "@freeanima/sap-contract": "workspace:*",
     "@freeanima/satellite-sdk": "workspace:*",
