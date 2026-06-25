@@ -60,6 +60,7 @@ export function ChatApp() {
   const conversations = useConversationsStore((s) => s.conversations);
   const currentId = useConversationsStore((s) => s.currentId);
   const display = useConversationsStore((s) => s.display);
+  const messagesLoading = useConversationsStore((s) => s.loading);
   const fetchConversations = useConversationsStore((s) => s.fetchConversations);
   const selectConversation = useConversationsStore((s) => s.selectConversation);
   const newConversationFn = useConversationsStore((s) => s.newConversation);
@@ -117,6 +118,22 @@ export function ChatApp() {
   const nativeShell = Boolean(getSatelliteShell()?.isNativeShell);
 
   const streamVisible = streaming && streamingConversationId === currentId;
+
+  const currentConversation = useMemo(
+    () => conversations.find((s) => s.id === currentId),
+    [conversations, currentId],
+  );
+
+  const headerTitle = currentId
+    ? conversationLabel(
+        currentConversation ?? {
+          id: currentId,
+          title: "",
+          created: "",
+          platform: "",
+        },
+      )
+    : m.admin_chat_title();
 
   const acpDock = useAcpProgressDock(currentId, {
     patchProgress: patchProgressLine,
@@ -589,7 +606,7 @@ export function ChatApp() {
         >
           ☰
         </button>
-        <span className="text-sm font-medium">{m.admin_chat_title()}</span>
+        <span className="text-sm font-medium truncate">{headerTitle}</span>
         <span className="flex-1" />
         <button
           type="button"
@@ -643,10 +660,9 @@ export function ChatApp() {
             {conversations.map((s) => (
               <div
                 key={s.id}
-                className={[
-                  "conversation-item",
-                  s.id === currentId ? "sidebar-nav-active" : "",
-                ].join(" ")}
+                className={["session-item", s.id === currentId ? "sidebar-nav-active" : ""].join(
+                  " ",
+                )}
                 onClick={() => void navigateToConversation(s.id)}
                 onContextMenu={(e) => {
                   e.preventDefault();
@@ -683,6 +699,10 @@ export function ChatApp() {
                 >
                   {m.admin_common_new_conversation()}
                 </button>
+              </div>
+            ) : messagesLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <span className="loading loading-spinner loading-md" />
               </div>
             ) : display.length === 0 && !streamVisible && !recovering ? (
               <div className="flex items-center justify-center h-full text-base-content/40 text-sm">

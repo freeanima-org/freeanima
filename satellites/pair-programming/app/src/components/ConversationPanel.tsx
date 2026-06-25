@@ -334,7 +334,7 @@ export function ConversationPanel() {
               <div
                 key={s.id}
                 className={[
-                  "conversation-item cursor-pointer truncate text-sm",
+                  "session-item truncate",
                   s.id === store.currentConversationId ? "sidebar-nav-active" : "",
                 ].join(" ")}
                 onClick={() => selectConversation(s)}

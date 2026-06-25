@@ -4,7 +4,6 @@ import { join } from "node:path";
 
 import {
   SHELL_MAIN_WINDOW,
-  SHELL_SETTINGS_WINDOW,
   SHELL_STATIC_PORT,
   SHELL_STATIC_PORT_ATTEMPTS,
 } from "../src/shell-profile.ts";
@@ -29,7 +28,6 @@ import { startShellStaticServer } from "./static-server.ts";
 const SHELL_ROOT = join(__dirname, "..");
 
 let mainWindow: BrowserWindow | null = null;
-let settingsWindow: BrowserWindow | null = null;
 let companionWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let serverHandle: CompanionServerHandle | null = null;
@@ -174,42 +172,27 @@ function createShellBrowserWindow(opts: {
   return win;
 }
 
-function createMainWindow(): BrowserWindow {
-  return createShellBrowserWindow({
-    ...SHELL_MAIN_WINDOW,
-    path: "/chat",
-  });
-}
-
-function createSettingsShellWindow(): BrowserWindow {
-  return createShellBrowserWindow({
-    ...SHELL_SETTINGS_WINDOW,
-    path: "/settings",
-  });
-}
-
-function openMainWindow(): void {
+function openMainWindow(path = "/chat"): void {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.show();
     mainWindow.focus();
+    const target = `${shellStaticUrl}${path}`;
+    if (mainWindow.webContents.getURL() !== target) {
+      void mainWindow.loadURL(target);
+    }
     return;
   }
-  mainWindow = createMainWindow();
+  mainWindow = createShellBrowserWindow({
+    ...SHELL_MAIN_WINDOW,
+    path,
+  });
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
 }
 
 function openSettingsWindow(): void {
-  if (settingsWindow && !settingsWindow.isDestroyed()) {
-    settingsWindow.show();
-    settingsWindow.focus();
-    return;
-  }
-  settingsWindow = createSettingsShellWindow();
-  settingsWindow.on("closed", () => {
-    settingsWindow = null;
-  });
+  openMainWindow("/settings");
 }
 
 function createCompanionOverlay(url: string): BrowserWindow {
@@ -268,7 +251,6 @@ function createTray(): void {
   tray.setToolTip("FreeAnima Desktop");
   const menu = Menu.buildFromTemplate([
     { label: "打开主窗口", click: () => openMainWindow() },
-    { label: "设置…", click: () => openSettingsWindow() },
     { label: "显示/隐藏伴侣", click: () => toggleCompanionVisibility() },
     { type: "separator" },
     { label: "退出", click: () => app.quit() },
@@ -309,7 +291,7 @@ async function bootstrap(): Promise<void> {
   registerCompanionHostIpc(
     {
       getCompanionWindow: () => companionWindow,
-      getSettingsWindow: () => settingsWindow,
+      getSettingsWindow: () => mainWindow,
     },
     {
       setClickthrough: (ignore) => {

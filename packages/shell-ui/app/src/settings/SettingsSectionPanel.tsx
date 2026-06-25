@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import type { SettingsSection, SettingsPlatform } from "../../../src/settings.ts";
 import { createShellClientStore } from "../../../src/settings-store.ts";
+import "@freeanima/admin-frontend/styles.css";
 
 import { FormRenderer } from "../form/FormRenderer.tsx";
 import { LazyComponentPanel } from "./LazyComponentPanel.tsx";

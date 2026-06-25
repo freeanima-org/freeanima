@@ -6,14 +6,11 @@ import {
   createRouter,
   redirect,
 } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
-import { loadChatApp } from "./chat/load-chat-app.ts";
 
+import { ChatApp } from "./chat/load-chat-app.ts";
 import { AdminShell } from "./main/AdminShell.tsx";
 import { ModuleShell } from "./main/ModuleShell.tsx";
 import { SettingsPage } from "./settings/SettingsPage.tsx";
-
-const ChatApp = lazy(() => loadChatApp());
 
 const rootRoute = createRootRoute({
   component: Outlet,
@@ -36,7 +33,15 @@ const indexRoute = createRoute({
 const chatRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/chat",
-  component: ChatRoute,
+  component: ChatApp,
+});
+
+const adminIndexRoute = createRoute({
+  getParentRoute: () => mainLayoutRoute,
+  path: "/admin",
+  beforeLoad: () => {
+    throw redirect({ to: "/admin/dashboard" });
+  },
 });
 
 const adminRoute = createRoute({
@@ -46,14 +51,13 @@ const adminRoute = createRoute({
 });
 
 const settingsRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => mainLayoutRoute,
   path: "/settings",
   component: SettingsPage,
 });
 
 const routeTree = rootRoute.addChildren([
-  mainLayoutRoute.addChildren([indexRoute, chatRoute, adminRoute]),
-  settingsRoute,
+  mainLayoutRoute.addChildren([indexRoute, chatRoute, adminIndexRoute, adminRoute, settingsRoute]),
 ]);
 
 export function getShellRouter() {
@@ -69,12 +73,4 @@ declare module "@tanstack/react-router" {
 export function ShellRouterProvider() {
   const router = getShellRouter();
   return <RouterProvider router={router} />;
-}
-
-function ChatRoute() {
-  return (
-    <Suspense fallback={<p className="p-4 text-sm text-base-content/60">加载聊天室…</p>}>
-      <ChatApp />
-    </Suspense>
-  );
 }

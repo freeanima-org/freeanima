@@ -42,12 +42,13 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
   },
 
   async selectConversation(id) {
-    set({ currentId: id, display: [] });
+    set({ currentId: id, loading: true });
     try {
       const resp = await getStoredMessages(id);
-      set({ display: (resp as { display?: DisplayItem[] }).display ?? [] });
+      set({ display: (resp as { display?: DisplayItem[] }).display ?? [], loading: false });
     } catch (e) {
       console.error("selectSession messages:", e);
+      set({ loading: false });
     }
   },
 

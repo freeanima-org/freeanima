@@ -140,7 +140,7 @@ function CompanionWindow() {
 
       {!characterReady && !modelPath ? (
         <div className="absolute inset-x-2 top-1/3 z-10 startup-panel text-center text-xs leading-relaxed">
-          未加载 VRM 模型。请从托盘菜单打开「设置…」导入模型。
+          未加载 VRM 模型。请从主窗口顶栏打开「设置」导入模型。
         </div>
       ) : null}
 

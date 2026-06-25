@@ -2,6 +2,7 @@ import { RouterProvider } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { getRouter } from "@freeanima/admin-frontend/router";
 import { initAdminLocale } from "@freeanima/admin-frontend/i18n";
+import "@freeanima/admin-frontend/styles.css";
 
 initAdminLocale();
 

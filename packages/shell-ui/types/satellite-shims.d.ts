@@ -33,6 +33,11 @@ declare module "@freeanima/admin-frontend/i18n" {
   export function initAdminLocale(): string;
 }
 
+declare module "@freeanima/admin-frontend/styles.css" {
+  const href: string;
+  export default href;
+}
+
 declare module "@freeanima/admin-frontend/paraglide-compile" {
   export function compileParaglideToDir(opts: {
     projectRoot: string;

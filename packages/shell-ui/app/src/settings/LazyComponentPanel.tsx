@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { initAdminLocale } from "@freeanima/admin-frontend/i18n";
 import type { SettingsComponentLoader, SettingsPlatform } from "../../../src/settings.ts";
 
 type Props = {
@@ -10,6 +11,10 @@ export function LazyComponentPanel({ load, platform }: Props) {
   const [retryKey, setRetryKey] = useState(0);
   const LazyPanel = useMemo(() => lazy(load), [load, retryKey]);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    initAdminLocale();
+  }, []);
 
   useEffect(() => {
     setError(null);
