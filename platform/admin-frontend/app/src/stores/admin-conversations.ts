@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { DisplayItem, ConversationListItem } from "@freeanima/admin-api/api";
-import { getConversationInfo, getStoredMessages, listConversations } from "@/lib/api.ts";
+import { getConversationInfo, getStoredMessages, listConversations } from "@admin/lib/api.ts";
+import { logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 const CONVERSATIONS_PAGE_SIZE = 10;
 const MESSAGES_PAGE_SIZE = 100;
@@ -102,6 +103,7 @@ export const useAdminConversationsStore = create<AdminConversationsState>((set, 
         conversationsFetchedAt: Date.now(),
       });
     } catch (e) {
+      logCaughtError("stores/admin-conversations", e);
       set({
         error: e instanceof Error ? e.message : String(e),
         conversations: [],
@@ -132,7 +134,8 @@ export const useAdminConversationsStore = create<AdminConversationsState>((set, 
       set((state) => ({
         headlineById: { ...state.headlineById, [id]: item },
       }));
-    } catch {
+    } catch (err) {
+      logCaughtError("stores/admin-conversations/fetchHeadline", err);
       /* headline optional */
     }
   },
@@ -167,6 +170,7 @@ export const useAdminConversationsStore = create<AdminConversationsState>((set, 
         limit: resp.limit ?? limit,
       });
     } catch (e) {
+      logCaughtError("stores/admin-conversations", e);
       set({
         error: e instanceof Error ? e.message : String(e),
         display: [],

@@ -1,13 +1,20 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { initAdminLocale } from "@freeanima/admin-frontend/i18n";
-import type { SettingsComponentLoader, SettingsPlatform } from "../../../src/settings.ts";
+import type {
+  SettingsComponentLoader,
+  SettingsPlatform,
+  SettingsSectionDeps,
+  SettingsStore,
+} from "@freeanima/satellite-sdk/settings";
 
 type Props = {
   load: SettingsComponentLoader;
   platform: SettingsPlatform;
+  store: SettingsStore;
+  deps?: SettingsSectionDeps;
 };
 
-export function LazyComponentPanel({ load, platform }: Props) {
+export function LazyComponentPanel({ load, platform, store, deps }: Props) {
   const [retryKey, setRetryKey] = useState(0);
   const LazyPanel = useMemo(() => lazy(load), [load, retryKey]);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +47,7 @@ export function LazyComponentPanel({ load, platform }: Props) {
 
   return (
     <Suspense fallback={<p className="text-sm text-base-content/60">加载组件…</p>}>
-      <LazyPanel key={retryKey} platform={platform} />
+      <LazyPanel key={retryKey} platform={platform} store={store} deps={deps} />
     </Suspense>
   );
 }

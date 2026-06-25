@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { getSatellitesStatus } from "@/lib/api.ts";
-import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
-import { m } from "@/lib/i18n.ts";
+import { getSatellitesStatus } from "@admin/lib/api.ts";
+import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
+import { m } from "@admin/lib/i18n.ts";
+import { catchWithFallback, logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/satellites")({
-  loader: () => getSatellitesStatus().catch(() => null),
+  loader: () =>
+    getSatellitesStatus().catch(catchWithFallback("satellites/getSatellitesStatus", null)),
   component: SatellitesPage,
 });
 
@@ -41,6 +43,7 @@ function SatellitesPage() {
     try {
       setStatus((await getSatellitesStatus()) as SatellitesStatus);
     } catch (e) {
+      logCaughtError("routes/_sidebar/satellites", e);
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setRefreshing(false);

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "xterm/css/xterm.css";
-import { m } from "@/lib/i18n.ts";
-import { getStudioTerminalRuntime } from "@/lib/studio-terminal-runtime.ts";
+import { m } from "@pair/lib/i18n.ts";
+import { getStudioTerminalRuntime } from "@pair/lib/studio-terminal-runtime.ts";
 
 export function TerminalPanel() {
   const termElRef = useRef<HTMLDivElement>(null);

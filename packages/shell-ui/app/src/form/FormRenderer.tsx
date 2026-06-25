@@ -3,13 +3,16 @@ import type {
   FormFieldDescriptor,
   SettingsFormFields,
   SettingsPlatform,
-} from "../../../src/settings.ts";
-import type { SettingsStore } from "../../../src/settings-store.ts";
+  SettingsStore,
+} from "@freeanima/satellite-sdk/settings";
+
+import { notifyDebugConfigChanged } from "../bootstrap/sentry.ts";
 
 type Props = {
   fields: SettingsFormFields;
   store: SettingsStore<unknown>;
   platform: SettingsPlatform;
+  sectionId?: string;
   onDirty?: () => void;
 };
 
@@ -17,7 +20,7 @@ function readFieldValue(data: Record<string, unknown>, key: string): unknown {
   return data[key];
 }
 
-export function FormRenderer({ fields, store, platform, onDirty }: Props) {
+export function FormRenderer({ fields, store, platform, sectionId, onDirty }: Props) {
   const [values, setValues] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -66,6 +69,7 @@ export function FormRenderer({ fields, store, platform, onDirty }: Props) {
       const parsed = fields.zodSchema.parse(values);
       await store.save(parsed);
       setStatus("已保存");
+      if (sectionId === "debug") notifyDebugConfigChanged();
       if (window.satelliteShell?.emitConfigChanged) {
         await window.satelliteShell.emitConfigChanged();
       }
@@ -95,7 +99,7 @@ export function FormRenderer({ fields, store, platform, onDirty }: Props) {
     try {
       const parsed = fields.zodSchema.parse(values);
       await store.test(parsed);
-      setStatus("连接成功");
+      setStatus(sectionId === "debug" ? "测试事件已发送" : "连接成功");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -109,8 +113,24 @@ export function FormRenderer({ fields, store, platform, onDirty }: Props) {
 
   const fieldWidthClass = platform === "mobile" ? "w-full" : "w-full max-w-xl";
 
+  const testLabel =
+    sectionId === "debug"
+      ? testing
+        ? "发送中…"
+        : "发送测试事件"
+      : testing
+        ? "测试中…"
+        : "测试连接";
+
   return (
     <div className={`space-y-4 ${platform === "mobile" ? "pb-8" : ""}`}>
+      {sectionId === "hub" && error?.includes("连接") ? (
+        <div className="alert alert-info text-sm">
+          请确认 Hub 已启动（<code className="text-xs">anima service start --host 0.0.0.0</code>
+          ）、远程 Token 与 <code className="text-xs">~/.anima/config.yaml</code> 中{" "}
+          <code className="text-xs">remote_auth.token</code> 一致；详见项目文档 remote-access。
+        </div>
+      ) : null}
       {error ? <div className="alert alert-error text-sm">{error}</div> : null}
       {status ? <div className="alert alert-success text-sm">{status}</div> : null}
       {Object.entries(grouped).map(([group, items]) => (
@@ -138,7 +158,7 @@ export function FormRenderer({ fields, store, platform, onDirty }: Props) {
             disabled={testing || saving}
             onClick={() => void testConnection()}
           >
-            {testing ? "测试中…" : "测试连接"}
+            {testLabel}
           </button>
         ) : null}
         {platform === "mobile" ? (

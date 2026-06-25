@@ -6,7 +6,10 @@
   "exports": {
     ".": "./src/index.ts",
     "./build": "./build.ts",
-    "./settings": "./src/settings.ts"
+    "./settings": "./src/settings.ts",
+    "./mount": "./app/src/mount.tsx",
+    "./bootstrap/sentry": "./app/src/bootstrap/sentry.ts",
+    "./sentry-test": "./src/sentry-test.ts"
   },
   "scripts": {
     "build": "bun build.ts",

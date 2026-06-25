@@ -1,19 +1,25 @@
 import { create } from "zustand";
+import type { CompanionSettingsApi, SettingsStore } from "@freeanima/satellite-sdk/settings";
 import {
   fetchCompanionConfig,
   resetSidecarOriginCache,
   saveSettings,
   uploadModel as uploadModelApi,
   type CompanionConfig,
-} from "@/lib/api.ts";
+} from "../lib/api.ts";
 import {
   emitConfigChanged,
   isCompanionOverlay,
   setPointerActive as setShellPointerActive,
-} from "@/lib/electron.ts";
-import type { CompanionBehavior, ModelEntry, MotionSlotsConfig } from "@shared/companion-schema.ts";
-import type { MotionLibraryEntry } from "@shared/constants.ts";
-import { DEFAULT_BEHAVIOR } from "@shared/companion-schema.ts";
+} from "../lib/electron.ts";
+import type {
+  CompanionBehavior,
+  ModelEntry,
+  MotionSlotsConfig,
+} from "../../../shared/companion-schema.ts";
+import type { MotionLibraryEntry } from "../../../shared/constants.ts";
+import { DEFAULT_BEHAVIOR } from "../../../shared/companion-schema.ts";
+import type { VrmBackend } from "../renderer/VrmBackend.ts";
 
 type SettingsTabId = "general" | "behavior" | "models" | "slots" | "library";
 
@@ -37,17 +43,21 @@ type CompanionState = {
   behavior: CompanionBehavior;
   hitTestFn: ((x: number, y: number) => boolean) | null;
   pointerActive: boolean;
-  backendRef: { current: import("@/renderer/VrmBackend.ts").VrmBackend | null };
+  backendRef: { current: VrmBackend | null };
   runtimeBubble: { id: string; text: string } | null;
   runtimeBubblePending: number;
   setHitTestFn: (fn: ((x: number, y: number) => boolean) | null) => void;
   setPointerActive: (active: boolean) => void;
   setCharacterReady: (ready: boolean) => void;
   setModelLoading: (loading: boolean) => void;
-  setBackend: (backend: import("@/renderer/VrmBackend.ts").VrmBackend | null) => void;
+  setBackend: (backend: VrmBackend | null) => void;
   setRuntimeBubble: (current: { id: string; text: string } | null, pending: number) => void;
   applyConfig: (cfg: CompanionConfig) => void;
   init: () => Promise<void>;
+  initFromStore: (
+    store: SettingsStore<CompanionConfig>,
+    api?: CompanionSettingsApi,
+  ) => Promise<void>;
   refreshConfig: () => Promise<void>;
   updateSettings: (patch: {
     hub_url?: string;
@@ -88,6 +98,9 @@ function applyConfigToState(cfg: CompanionConfig, prev?: CompanionState): Partia
     configRevision: bumpRevision ? (prev?.configRevision ?? 0) + 1 : (prev?.configRevision ?? 0),
   };
 }
+
+let configStore: SettingsStore<CompanionConfig> | null = null;
+let companionApi: CompanionSettingsApi | null = null;
 
 export const useCompanionStore = create<CompanionState>((set, get) => ({
   loading: true,
@@ -158,7 +171,14 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   async init() {
     set({ loading: true, error: null });
     try {
-      const cfg = await fetchCompanionConfig();
+      let cfg: CompanionConfig;
+      if (configStore) {
+        const raw = (await configStore.load()) as CompanionConfig;
+        cfg =
+          raw && typeof raw === "object" && "hub_url" in raw ? raw : await fetchCompanionConfig();
+      } else {
+        cfg = await fetchCompanionConfig();
+      }
       get().applyConfig(cfg);
     } catch (e) {
       set({
@@ -168,9 +188,17 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
     }
   },
 
+  async initFromStore(store, api) {
+    configStore = store;
+    companionApi = api ?? null;
+    await get().init();
+  },
+
   async refreshConfig() {
     try {
-      const cfg = await fetchCompanionConfig();
+      const cfg = configStore
+        ? ((await configStore.load()) as CompanionConfig)
+        : await fetchCompanionConfig();
       get().applyConfig(cfg);
     } catch (e) {
       set({ error: e instanceof Error ? e.message : String(e) });
@@ -180,13 +208,19 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   async updateSettings(patch) {
     const next = await saveSettings(patch);
     get().applyConfig(next);
+    if (configStore) await configStore.save(next);
     await get().refreshConfig();
     await emitConfigChanged();
   },
 
   async uploadModel(file) {
-    const result = await uploadModelApi(file);
-    get().applyConfig(result.config);
+    if (companionApi) {
+      await companionApi.uploadModel(file);
+      await get().refreshConfig();
+    } else {
+      const result = await uploadModelApi(file);
+      get().applyConfig(result.config);
+    }
     set({ characterReady: false, modelLoading: true, error: null });
     await emitConfigChanged();
   },

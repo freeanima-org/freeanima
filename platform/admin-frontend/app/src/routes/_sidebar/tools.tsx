@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { ToolsStatusResponse, ToolsStatusToolItem } from "@freeanima/admin-api/api";
 import { useMemo, useState } from "react";
-import { getToolsStatus } from "@/lib/api.ts";
-import { MemoryListPagination } from "@/components/admin/MemoryListPagination.tsx";
-import { m } from "@/lib/i18n.ts";
+import { getToolsStatus } from "@admin/lib/api.ts";
+import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
+import { m } from "@admin/lib/i18n.ts";
+import { catchWithFallback } from "@admin/lib/log-caught-error.ts";
 
 type ToolsLoaderData = ToolsStatusResponse;
 
@@ -59,7 +60,10 @@ async function copyText(text: string, label: string): Promise<void> {
 }
 
 export const Route = createFileRoute("/_sidebar/tools")({
-  loader: () => getToolsStatus().catch(() => EMPTY_LOADER_DATA) as Promise<ToolsLoaderData>,
+  loader: () =>
+    getToolsStatus().catch(
+      catchWithFallback("tools/getToolsStatus", EMPTY_LOADER_DATA),
+    ) as Promise<ToolsLoaderData>,
   staleTime: LONG_STALE_MS,
   component: ToolsPage,
 });

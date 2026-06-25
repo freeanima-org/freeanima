@@ -1,5 +1,5 @@
-import { m } from "@/lib/i18n.ts";
-import type { HubRestConnectionState } from "@/hooks/useHubRestConnectivity.ts";
+import { m } from "@admin/lib/i18n.ts";
+import type { HubRestConnectionState } from "@admin/hooks/useHubRestConnectivity.ts";
 
 type Props = {
   state: HubRestConnectionState;

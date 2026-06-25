@@ -1,11 +1,17 @@
 import { ipcMain } from "electron";
-import { join } from "node:path";
 
 import { resolveHubWsUrl } from "@freeanima/sap-contract";
 import { testHubHealthConnection } from "@freeanima/satellite-sdk";
+import type { SettingsStorageScope } from "@freeanima/satellite-sdk/settings";
+import {
+  COMPANION_CONFIG_SCOPE,
+  DEBUG_SETTINGS_SCOPE,
+  HUB_SETTINGS_SCOPE,
+} from "@freeanima/satellite-sdk/settings";
 
 import { readShellClientConfig, writeShellClientConfig } from "./shell-client-store.ts";
 import { readShellDebugConfig, writeShellDebugConfig } from "./shell-debug-store.ts";
+import { loadCompanionConfigFromFile, saveCompanionConfigToFile } from "./shell-scoped-prefs.ts";
 
 export type HubClientConfigPayload = {
   hubUrl: string;
@@ -23,55 +29,77 @@ export function resolveHubClientConfig(): HubClientConfigPayload | null {
   };
 }
 
+function assertScope(expected: SettingsStorageScope, actual: SettingsStorageScope): void {
+  if (expected.kind !== actual.kind || expected.id !== actual.id) {
+    throw new Error(`settings scope 不匹配: 期望 ${expected.id}，收到 ${actual.id}`);
+  }
+}
+
 export function registerShellClientIpc(
   showHubSettings: () => void,
   onConfigSaved?: () => void,
 ): void {
-  ipcMain.handle("shell:get-client-config", () => resolveHubClientConfig());
+  ipcMain.handle("shell:settings:load", (_event, scope: SettingsStorageScope) => {
+    if (scope.kind === "kv" && scope.id === "hub") {
+      assertScope(HUB_SETTINGS_SCOPE, scope);
+      const cfg = readShellClientConfig();
+      return cfg ?? null;
+    }
+    if (scope.kind === "kv" && scope.id === "debug") {
+      assertScope(DEBUG_SETTINGS_SCOPE, scope);
+      return readShellDebugConfig();
+    }
+    if (scope.kind === "file" && scope.id === "companion") {
+      assertScope(COMPANION_CONFIG_SCOPE, scope);
+      return loadCompanionConfigFromFile();
+    }
+    throw new Error(`未知 settings scope: ${JSON.stringify(scope)}`);
+  });
 
-  ipcMain.handle(
-    "shell:save-client-config",
-    (_event, raw: { hubUrl: string; remoteAuthToken: string }) => {
-      writeShellClientConfig({
-        hubUrl: String(raw.hubUrl ?? ""),
-        remoteAuthToken: String(raw.remoteAuthToken ?? ""),
-      });
+  ipcMain.handle("shell:settings:save", (_event, scope: SettingsStorageScope, value: unknown) => {
+    if (scope.kind === "kv" && scope.id === "hub") {
+      assertScope(HUB_SETTINGS_SCOPE, scope);
+      writeShellClientConfig(value as { hubUrl: string; remoteAuthToken: string });
       onConfigSaved?.();
       return resolveHubClientConfig();
-    },
-  );
+    }
+    if (scope.kind === "kv" && scope.id === "debug") {
+      assertScope(DEBUG_SETTINGS_SCOPE, scope);
+      return writeShellDebugConfig(value as import("@freeanima/satellite-sdk").ShellDebugConfig);
+    }
+    if (scope.kind === "file" && scope.id === "companion") {
+      assertScope(COMPANION_CONFIG_SCOPE, scope);
+      saveCompanionConfigToFile(value);
+      return loadCompanionConfigFromFile();
+    }
+    throw new Error(`未知 settings scope: ${JSON.stringify(scope)}`);
+  });
 
   ipcMain.handle(
-    "shell:test-hub-connection",
-    async (_event, raw: { hubUrl: string; remoteAuthToken: string }) => {
-      const hubUrl = String(raw.hubUrl ?? "")
-        .trim()
-        .replace(/\/$/, "");
-      const token = String(raw.remoteAuthToken ?? "").trim();
-      if (!hubUrl) throw new Error("Hub 地址不能为空");
-      await testHubHealthConnection(hubUrl, token || undefined);
-      return true;
+    "shell:settings:test",
+    async (_event, scope: SettingsStorageScope, value: unknown) => {
+      if (scope.kind === "kv" && scope.id === "hub") {
+        assertScope(HUB_SETTINGS_SCOPE, scope);
+        const raw = value as { hubUrl: string; remoteAuthToken: string };
+        const hubUrl = String(raw.hubUrl ?? "")
+          .trim()
+          .replace(/\/$/, "");
+        const token = String(raw.remoteAuthToken ?? "").trim();
+        if (!hubUrl) throw new Error("Hub 地址不能为空");
+        await testHubHealthConnection(hubUrl, token || undefined);
+        return true;
+      }
+      throw new Error(`scope ${scope.id} 不支持 test`);
     },
   );
 
-  ipcMain.handle("shell:show-hub-settings", () => {
-    showHubSettings();
+  ipcMain.handle("shell:get-client-config", () => resolveHubClientConfig());
+
+  ipcMain.on("shell:get-client-config-sync", (event) => {
+    event.returnValue = resolveHubClientConfig();
   });
 
   ipcMain.handle("shell:open-settings", () => {
     showHubSettings();
   });
-
-  ipcMain.handle("shell:get-debug-config", () => readShellDebugConfig());
-
-  ipcMain.handle(
-    "shell:save-debug-config",
-    (_event, raw: import("@freeanima/satellite-sdk").ShellDebugConfig) => {
-      return writeShellDebugConfig(raw);
-    },
-  );
-}
-
-export function hubSettingsDir(): string {
-  return join(import.meta.dirname, "..", "hub-settings");
 }

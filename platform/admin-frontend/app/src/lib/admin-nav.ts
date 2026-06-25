@@ -18,6 +18,8 @@ export function adminNavItems(): { to: string; label: string }[] {
     { to: "/commands", label: m.admin_nav_commands() },
     { to: "/mcp", label: m.admin_nav_mcp() },
     { to: "/satellites", label: m.admin_nav_satellites() },
+    { to: "/config", label: m.admin_nav_config() },
+    { to: "/credentials", label: m.admin_nav_credentials() },
     { to: "/acp", label: m.admin_nav_acp() },
     { to: "/cron", label: m.admin_nav_cron() },
     { to: "/auto-llm-runs", label: m.admin_nav_auto_llm_runs() },

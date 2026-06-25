@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { getCronJobs, pauseCronJob, resumeCronJob, runCronJob } from "@/lib/api.ts";
-import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
-import { m } from "@/lib/i18n.ts";
+import { getCronJobs, pauseCronJob, resumeCronJob, runCronJob } from "@admin/lib/api.ts";
+import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
+import { m } from "@admin/lib/i18n.ts";
 import { CronRunLogModal } from "./cron-run-log-modal.tsx";
+import { catchWithFallback, logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/cron")({
-  loader: () => getCronJobs().catch(() => ({ jobs: [] })),
+  loader: () => getCronJobs().catch(catchWithFallback("cron/getCronJobs", { jobs: [] })),
   component: CronPage,
 });
 
@@ -37,6 +38,7 @@ function CronPage() {
       const data = await getCronJobs();
       setJobs(((data as { jobs?: CronJob[] }).jobs ?? []) as CronJob[]);
     } catch (e) {
+      logCaughtError("routes/_sidebar/cron", e);
       setError(
         m.admin_common_load_failed({
           detail: e instanceof Error ? e.message : String(e),
@@ -55,6 +57,7 @@ function CronPage() {
       const data = enable ? await resumeCronJob(job.id) : await pauseCronJob(job.id);
       if ((data as { job?: CronJob }).job) updateJob((data as { job: CronJob }).job);
     } catch (e) {
+      logCaughtError("routes/_sidebar/cron", e);
       setError(
         m.admin_cron_toggle_failed({
           name: String(job.name ?? job.id),
@@ -88,8 +91,9 @@ function CronPage() {
           return next;
         });
       }, 4000);
-      setTimeout(() => void reload().catch(() => {}), 2000);
+      setTimeout(() => void reload().catch(logCaughtError.bind(null, "cron/reloadAfterRun")), 2000);
     } catch (e) {
+      logCaughtError("routes/_sidebar/cron", e);
       setError(
         m.admin_cron_trigger_failed({
           name: String(job.name ?? job.id),

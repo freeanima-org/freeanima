@@ -1,14 +1,15 @@
-import { getSettingsRegistry } from "../registry/index.ts";
-import { SettingsHost } from "../settings/SettingsHost.tsx";
 import { detectPlatform } from "../platform.ts";
+import { useShellAppBindings } from "../shell-app-context.tsx";
+import { SettingsHost } from "./SettingsHost.tsx";
 
 export function SettingsPage() {
   const platform = detectPlatform();
+  const bindings = useShellAppBindings();
 
   return (
     <div className="h-full min-h-0 flex flex-col bg-base-100">
       <div className="flex-1 min-h-0">
-        <SettingsHost sections={getSettingsRegistry()} platform={platform} />
+        <SettingsHost bindings={bindings} platform={platform} />
       </div>
     </div>
   );

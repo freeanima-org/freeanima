@@ -1,13 +1,10 @@
 import type { ShellDebugConfig } from "@freeanima/satellite-sdk";
-import {
-  loadShellDebugConfig,
-  saveShellDebugConfig,
-} from "@freeanima/satellite-sdk/shell-settings-node";
+import { loadDebugConfigFromStore, saveDebugConfigToStore } from "./shell-scoped-prefs.ts";
 
 export function readShellDebugConfig(): ShellDebugConfig {
-  return loadShellDebugConfig();
+  return loadDebugConfigFromStore();
 }
 
 export function writeShellDebugConfig(config: ShellDebugConfig): ShellDebugConfig {
-  return saveShellDebugConfig(config);
+  return saveDebugConfigToStore(config);
 }

@@ -5,7 +5,7 @@ import {
   computeLayoutShrink,
   computeVisualViewportInset,
   mergeKeyboardInset,
-} from "@/lib/keyboard-inset.ts";
+} from "@chat/lib/keyboard-inset.ts";
 
 function readInnerHeight(): number {
   return typeof window !== "undefined" ? window.innerHeight : 0;

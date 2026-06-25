@@ -1,7 +1,8 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { listCronLogs } from "@/lib/api.ts";
-import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
-import { m } from "@/lib/i18n.ts";
+import { listCronLogs } from "@admin/lib/api.ts";
+import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
+import { m } from "@admin/lib/i18n.ts";
+import { logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 type CronLogRow = {
   id: number;
@@ -33,6 +34,7 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
       const data = await listCronLogs({ job_id: jobId, limit: 50 });
       setRows((data as { items?: CronLogRow[] }).items ?? []);
     } catch (e) {
+      logCaughtError("routes/_sidebar/cron-run-log-modal", e);
       setError(
         m.admin_common_load_failed({
           detail: e instanceof Error ? e.message : String(e),

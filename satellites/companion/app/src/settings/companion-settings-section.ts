@@ -1,4 +1,4 @@
-import type { SettingsSection } from "../../../src/settings.ts";
+import type { SettingsSection } from "@freeanima/satellite-sdk/settings";
 
 export const companionSettingsSection: SettingsSection = {
   id: "companion",

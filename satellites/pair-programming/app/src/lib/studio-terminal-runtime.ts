@@ -5,8 +5,8 @@ import {
   terminalClose,
   terminalResize,
   terminalWrite,
-} from "@/lib/api.ts";
-import { m } from "@/lib/i18n.ts";
+} from "@pair/lib/api.ts";
+import { m } from "@pair/lib/i18n.ts";
 
 const STASH_ID = "anima-studio-terminal-stash";
 

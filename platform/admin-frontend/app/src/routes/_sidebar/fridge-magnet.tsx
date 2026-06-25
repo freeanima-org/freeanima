@@ -1,12 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { FridgeMagnetDetailList } from "@/components/FridgeMagnetDetailList.tsx";
-import { m } from "@/lib/i18n.ts";
-import { getFridgeMagnets } from "@/lib/api.ts";
+import { FridgeMagnetDetailList } from "@admin/components/FridgeMagnetDetailList.tsx";
+import { m } from "@admin/lib/i18n.ts";
+import { getFridgeMagnets } from "@admin/lib/api.ts";
+import { catchWithFallback, logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/fridge-magnet")({
   loader: () =>
-    getFridgeMagnets().catch(() => ({ redis_configured: false, magnets: [], inject_text: "" })),
+    getFridgeMagnets().catch(
+      catchWithFallback("fridge-magnet/getFridgeMagnets", {
+        redis_configured: false,
+        magnets: [],
+        inject_text: "",
+      }),
+    ),
   component: FridgePage,
 });
 
@@ -21,7 +28,8 @@ function FridgePage() {
     setLoading(true);
     try {
       setData(await getFridgeMagnets());
-    } catch {
+    } catch (err) {
+      logCaughtError("fridge-magnet/refresh", err);
       setData({ redis_configured: false, magnets: [], inject_text: "" });
     } finally {
       setLoading(false);

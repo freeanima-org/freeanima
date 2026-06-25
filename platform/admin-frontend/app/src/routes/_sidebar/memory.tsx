@@ -1,22 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ServiceStatus } from "@freeanima/admin-api/api";
 import { useMemo, useState } from "react";
-import { formatMemoryRecallOutput } from "@/components/admin/format-memory-recall-output.ts";
+import { formatMemoryRecallOutput } from "@admin/components/admin/format-memory-recall-output.ts";
 import {
   countByMemoryType,
   MEMORY_RECALL_TYPES,
   recallHitKey,
   type MemoryRecallResult,
   type MemoryRecallType,
-} from "@/components/admin/memory-recall-types.ts";
-import { RecallHitCard } from "@/components/admin/RecallHitCard.tsx";
-import { m } from "@/lib/i18n.ts";
-import { getStatus, searchMemory } from "@/lib/api.ts";
-import { memoryTypeLabel } from "@/lib/admin-status.ts";
+} from "@admin/components/admin/memory-recall-types.ts";
+import { RecallHitCard } from "@admin/components/admin/RecallHitCard.tsx";
+import { m } from "@admin/lib/i18n.ts";
+import { getStatus, searchMemory } from "@admin/lib/api.ts";
+import { memoryTypeLabel } from "@admin/lib/admin-status.ts";
+import { catchWithFallback, logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/memory")({
   loader: async () => {
-    const status = await getStatus().catch(() => null);
+    const status = await getStatus().catch(catchWithFallback("memory/getStatus", null));
     return { status };
   },
   component: MemoryPage,
@@ -72,6 +73,7 @@ function MemoryPage() {
       setLastQuery(q);
       setSearched(true);
     } catch (e) {
+      logCaughtError("routes/_sidebar/memory", e);
       setError(
         m.admin_common_search_failed({
           detail: e instanceof Error ? e.message : String(e),

@@ -12,7 +12,7 @@ const SHELL_ROOT = import.meta.dir;
 async function stageVendor(): Promise<void> {
   await Promise.all([
     buildCompanionApp({ watch: true, minify: false }),
-    buildShellUi({ watch: true, minify: false }),
+    buildShellUi({ appDir: join(SHELL_ROOT, "app"), watch: true, minify: false }),
   ]);
 }
 

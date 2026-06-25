@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getSelfBlocks } from "@/lib/api.ts";
-import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
-import { m } from "@/lib/i18n.ts";
+import { getSelfBlocks } from "@admin/lib/api.ts";
+import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
+import { m } from "@admin/lib/i18n.ts";
+import { catchWithFallback } from "@admin/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/self-layer")({
-  loader: () => getSelfBlocks().catch(() => ({ blocks: [] })),
+  loader: () =>
+    getSelfBlocks().catch(catchWithFallback("self-layer/getSelfBlocks", { blocks: [] })),
   staleTime: 2 * 60_000,
   component: SelfLayerPage,
 });

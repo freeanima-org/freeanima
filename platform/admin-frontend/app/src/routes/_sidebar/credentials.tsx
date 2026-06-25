@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { getCredentialDetail, listCredentials } from "@/lib/api.ts";
-import { m } from "@/lib/i18n.ts";
+import { getCredentialDetail, listCredentials } from "@admin/lib/api.ts";
+import { m } from "@admin/lib/i18n.ts";
+import { catchWithFallback, logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 type CredentialMeta = {
   path: string;
@@ -25,7 +26,10 @@ type CredentialsLoaderData = {
 const EMPTY_LOADER_DATA: CredentialsLoaderData = { credentials: [] };
 
 export const Route = createFileRoute("/_sidebar/credentials")({
-  loader: () => listCredentials().catch(() => EMPTY_LOADER_DATA) as Promise<CredentialsLoaderData>,
+  loader: () =>
+    listCredentials().catch(
+      catchWithFallback("credentials/listCredentials", EMPTY_LOADER_DATA),
+    ) as Promise<CredentialsLoaderData>,
   component: CredentialsPage,
 });
 
@@ -185,6 +189,7 @@ function CredentialsPage() {
       const result = (await getCredentialDetail(path)) as CredentialDetail;
       setDetail(result);
     } catch (e) {
+      logCaughtError("routes/_sidebar/credentials", e);
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);

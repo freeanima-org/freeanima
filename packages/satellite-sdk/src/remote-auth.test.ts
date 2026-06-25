@@ -39,4 +39,25 @@ describe("remote-auth helpers", () => {
       globalThis.fetch = originalFetch;
     }
   });
+
+  test("createBearerFetch Request 入参保留 method 并附加 Bearer", async () => {
+    const originalFetch = globalThis.fetch;
+    let seenAuth = "";
+    let seenMethod = "";
+    globalThis.fetch = (async (input) => {
+      if (input instanceof Request) {
+        seenAuth = input.headers.get("Authorization") ?? "";
+        seenMethod = input.method;
+      }
+      return new Response("ok", { status: 200 });
+    }) as typeof fetch;
+    try {
+      const hubFetch = createBearerFetch("secret-token-min-16", "https://hub.example.com");
+      await hubFetch(new Request("https://hub.example.com/api/status", { method: "GET" }));
+      expect(seenAuth).toBe("Bearer secret-token-min-16");
+      expect(seenMethod).toBe("GET");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 });

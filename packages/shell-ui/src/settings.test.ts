@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { z } from "zod";
 
 import { defineSettingsForm, listSettingsSectionsForPlatform } from "./settings.ts";
-import type { SettingsSection } from "./settings.ts";
+import type { SettingsBinding } from "./settings.ts";
 
 describe("defineSettingsForm", () => {
   test("accepts matching keys", () => {
@@ -27,41 +27,45 @@ describe("defineSettingsForm", () => {
 });
 
 describe("listSettingsSectionsForPlatform", () => {
-  const sections: SettingsSection[] = [
+  const bindings: SettingsBinding[] = [
     {
-      id: "hub",
-      order: 0,
-      title: "Hub",
-      platforms: {
-        desktop: {
-          kind: "form",
-          fields: {
-            zodSchema: z.object({ hubUrl: z.string() }),
-            items: [{ key: "hubUrl", type: "text", label: "Hub" }],
+      section: {
+        id: "hub",
+        order: 0,
+        title: "Hub",
+        platforms: {
+          desktop: {
+            kind: "form",
+            fields: {
+              zodSchema: z.object({ hubUrl: z.string() }),
+              items: [{ key: "hubUrl", type: "text", label: "Hub" }],
+            },
           },
         },
       },
     },
     {
-      id: "companion",
-      order: 10,
-      title: "Companion",
-      platforms: {
-        desktop: { kind: "component", load: async () => ({ default: () => null }) },
+      section: {
+        id: "companion",
+        order: 10,
+        title: "Companion",
+        platforms: {
+          desktop: { kind: "component", load: async () => ({ default: () => null }) },
+        },
       },
     },
   ];
 
   test("filters by platform", () => {
-    const desktop = listSettingsSectionsForPlatform(sections, "desktop");
+    const desktop = listSettingsSectionsForPlatform(bindings, "desktop");
     expect(desktop).toHaveLength(2);
-    const mobile = listSettingsSectionsForPlatform(sections, "mobile");
+    const mobile = listSettingsSectionsForPlatform(bindings, "mobile");
     expect(mobile).toHaveLength(0);
   });
 
   test("sorts by order", () => {
-    const rows = listSettingsSectionsForPlatform(sections, "desktop");
-    expect(rows[0]?.id).toBe("hub");
-    expect(rows[1]?.id).toBe("companion");
+    const rows = listSettingsSectionsForPlatform(bindings, "desktop");
+    expect(rows[0]?.section.id).toBe("hub");
+    expect(rows[1]?.section.id).toBe("companion");
   });
 });

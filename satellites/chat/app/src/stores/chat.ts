@@ -1,13 +1,13 @@
-import type { DisplayItem, StreamApiEvent } from "@/lib/types.ts";
-import { pollUntilAssistantReply } from "@/lib/display-recovery.ts";
+import type { DisplayItem, StreamApiEvent } from "@chat/lib/types.ts";
+import { pollUntilAssistantReply } from "@chat/lib/display-recovery.ts";
 import { marked } from "marked";
 import { create } from "zustand";
-import { m } from "@/lib/i18n.ts";
+import { m } from "@chat/lib/i18n.ts";
 import {
   interruptMessageStream,
   subscribeMessageStream,
   subscribeConversationEvents,
-} from "@/lib/api.ts";
+} from "@chat/lib/api.ts";
 
 type SendDoneOptions = {
   recovered?: boolean;

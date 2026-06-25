@@ -53,6 +53,7 @@ async function bundleBrowserEntry(
 export async function buildAppMobile(): Promise<string> {
   const debug = isDebugBuild();
   const shellDist = await buildShellUi({
+    appDir: join(PKG_DIR, "app"),
     minify: !debug,
     sourcemap: debug,
     publicPath: "./",

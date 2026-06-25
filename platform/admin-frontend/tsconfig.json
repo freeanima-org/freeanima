@@ -6,7 +6,7 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "paths": {
-      "@/*": ["./app/src/*"]
+      "@admin/*": ["./app/src/*"]
     }
   },
   "include": ["app/**/*.ts", "app/**/*.tsx", "app/**/*.d.ts", "../../types/paraglide.d.ts"],

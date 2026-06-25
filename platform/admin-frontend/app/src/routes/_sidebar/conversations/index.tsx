@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
-import { m } from "@/lib/i18n.ts";
-import { useAdminConversationsStore } from "@/stores/admin-conversations.ts";
+import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
+import { m } from "@admin/lib/i18n.ts";
+import { useAdminConversationsStore } from "@admin/stores/admin-conversations.ts";
 
 export const Route = createFileRoute("/_sidebar/conversations/")({
   component: AdminConversationsPage,

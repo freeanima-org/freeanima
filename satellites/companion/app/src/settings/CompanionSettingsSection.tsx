@@ -1,15 +1,16 @@
 import { useEffect } from "react";
+import type { SettingsPanelProps, SettingsStore } from "@freeanima/satellite-sdk/settings";
+import type { ClientCompanionConfig } from "@shared/constants.ts";
+
 import { SettingsPanel } from "../components/SettingsPanel.tsx";
 import { useCompanionStore } from "../stores/companion.ts";
 
-type Props = {
-  platform: "desktop" | "mobile";
-};
-
-export default function CompanionSettingsSection({ platform }: Props) {
+export default function CompanionSettingsSection({ platform, store, deps }: SettingsPanelProps) {
   useEffect(() => {
-    void useCompanionStore.getState().init();
-  }, []);
+    void useCompanionStore
+      .getState()
+      .initFromStore(store as SettingsStore<ClientCompanionConfig>, deps?.companion);
+  }, [store, deps]);
 
   if (platform === "mobile") {
     return <p className="text-sm text-base-content/60">伴侣设置仅桌面端可用</p>;

@@ -1,12 +1,12 @@
-import type { DisplayItem, ConversationListItem } from "@/lib/types.ts";
-import { hasNewAssistantReply } from "@/lib/display-recovery.ts";
+import type { DisplayItem, ConversationListItem } from "@chat/lib/types.ts";
+import { hasNewAssistantReply } from "@chat/lib/display-recovery.ts";
 import { create } from "zustand";
 import {
   createConversation,
   getStoredMessages,
   listConversations,
   setConversationTitle,
-} from "@/lib/api.ts";
+} from "@chat/lib/api.ts";
 
 type ConversationsState = {
   conversations: ConversationListItem[];

@@ -22,6 +22,21 @@ function createAliasPlugin(paraglideDir: string): import("bun").BunPlugin {
         const rel = args.path.replace(/^.*messages\/paraglide\//, "");
         return { path: join(paraglideDir, rel) };
       });
+      build.onResolve({ filter: /^@chat\// }, (args) => {
+        return { path: join(CHAT_APP_SRC, args.path.slice("@chat/".length)) };
+      });
+      build.onResolve({ filter: /^@pair\// }, (args) => {
+        return {
+          path: join(
+            REPO_ROOT,
+            "satellites",
+            "pair-programming",
+            "app",
+            "src",
+            args.path.slice("@pair/".length),
+          ),
+        };
+      });
       build.onResolve({ filter: /^@\// }, (args) => {
         const importer = args.importer.replace(/\\/g, "/");
         let base = SHELL_APP_SRC;
@@ -29,6 +44,9 @@ function createAliasPlugin(paraglideDir: string): import("bun").BunPlugin {
         else if (importer.includes("/satellites/companion/")) base = COMPANION_APP_SRC;
         else if (importer.includes("/admin-frontend/")) base = ADMIN_APP_SRC;
         return { path: join(base, args.path.slice(2)) };
+      });
+      build.onResolve({ filter: /^@admin\// }, (args) => {
+        return { path: join(ADMIN_APP_SRC, args.path.slice("@admin/".length)) };
       });
       build.onResolve({ filter: /^@shared\// }, (args) => {
         return {
@@ -50,6 +68,8 @@ export async function buildShellUi(opts?: {
   minify?: boolean;
   sourcemap?: boolean;
   publicPath?: string;
+  /** 应用 composition 目录（含 index.html + main.tsx） */
+  appDir?: string;
 }): Promise<string> {
   const paraglideDir = join(DIST_DIR, ".paraglide");
   compileParaglideToDir({ projectRoot: REPO_ROOT, outdir: paraglideDir });
@@ -59,8 +79,11 @@ export async function buildShellUi(opts?: {
   const tailwindMod = await import("bun-plugin-tailwind");
   const tailwind = tailwindMod.default;
 
+  const appDir = opts?.appDir ?? APP_DIR;
+  const entryHtml = join(appDir, HTML_NAME);
+
   const result = await Bun.build({
-    entrypoints: [join(APP_DIR, HTML_NAME)],
+    entrypoints: [entryHtml],
     outdir: DIST_DIR,
     target: "browser",
     minify: opts?.minify ?? false,

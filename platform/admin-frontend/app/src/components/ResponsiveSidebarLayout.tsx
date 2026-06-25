@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { m } from "@/lib/i18n.ts";
+import { m } from "@admin/lib/i18n.ts";
 
 type ResponsiveSidebarLayoutProps = {
   title: string;

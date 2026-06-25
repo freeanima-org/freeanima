@@ -1,12 +1,12 @@
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { FileTreePanel } from "@/components/FileTreePanel.tsx";
-import { CodeViewerPanel } from "@/components/CodeViewerPanel.tsx";
-import { TerminalPanel } from "@/components/TerminalPanel.tsx";
-import { ConversationPanel } from "@/components/ConversationPanel.tsx";
-import { useMediaQuery } from "@/hooks/useMediaQuery.ts";
-import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
-import { getAppLocale, initAppLocale, m, setLocale } from "@/lib/i18n.ts";
+import { FileTreePanel } from "@pair/components/FileTreePanel.tsx";
+import { CodeViewerPanel } from "@pair/components/CodeViewerPanel.tsx";
+import { TerminalPanel } from "@pair/components/TerminalPanel.tsx";
+import { ConversationPanel } from "@pair/components/ConversationPanel.tsx";
+import { useMediaQuery } from "@pair/hooks/useMediaQuery.ts";
+import { usePairProgrammingStore } from "@pair/stores/pair-programming.ts";
+import { getAppLocale, initAppLocale, m, setLocale } from "@pair/lib/i18n.ts";
 
 initAppLocale();
 

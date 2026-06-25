@@ -1,14 +1,10 @@
-import {
-  loadShellClientConfig,
-  normalizeShellClientConfig,
-  saveShellClientConfig,
-  type ShellClientConfig,
-} from "@freeanima/satellite-sdk/shell-client-config-node";
+import { loadHubConfigFromStore, saveHubConfigToStore } from "./shell-scoped-prefs.ts";
+import { normalizeShellClientConfig, type ShellClientConfig } from "@freeanima/satellite-sdk";
 
 export function readShellClientConfig(): ShellClientConfig | null {
-  return loadShellClientConfig();
+  return loadHubConfigFromStore();
 }
 
 export function writeShellClientConfig(config: ShellClientConfig): void {
-  saveShellClientConfig(normalizeShellClientConfig(config));
+  saveHubConfigToStore(normalizeShellClientConfig(config));
 }

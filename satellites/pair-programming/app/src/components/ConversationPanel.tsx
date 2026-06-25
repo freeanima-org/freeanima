@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import type { ConversationListItem } from "@/lib/types.ts";
-import { formatConversationIdDateTime } from "@/lib/format-datetime.ts";
-import { m } from "@/lib/i18n.ts";
-import { subscribeConversationEvents } from "@/lib/api.ts";
-import { useChatStore } from "@/stores/chat.ts";
-import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
+import type { ConversationListItem } from "@pair/lib/types.ts";
+import { formatConversationIdDateTime } from "@pair/lib/format-datetime.ts";
+import { m } from "@pair/lib/i18n.ts";
+import { subscribeConversationEvents } from "@pair/lib/api.ts";
+import { useChatStore } from "@pair/stores/chat.ts";
+import { usePairProgrammingStore } from "@pair/stores/pair-programming.ts";
 
 function conversationLabel(item: ConversationListItem) {
   const id = item.id;

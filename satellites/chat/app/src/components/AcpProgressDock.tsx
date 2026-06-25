@@ -1,4 +1,4 @@
-import type { ConversationAcpDockSnapshot } from "@/lib/types.ts";
+import type { ConversationAcpDockSnapshot } from "@chat/lib/types.ts";
 
 type AcpProgressDockProps = {
   dock: ConversationAcpDockSnapshot;

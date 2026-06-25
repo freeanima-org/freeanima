@@ -27,24 +27,28 @@ export function resolveConnectAuthToken(hubUrl: string, token?: string | null): 
   return token!.trim();
 }
 
+function resolveFetchUrl(input: string | URL | Request): string {
+  if (typeof input === "string") return input;
+  if (input instanceof URL) return input.href;
+  if (input instanceof Request) return input.url;
+  return String(input);
+}
+
 export function createBearerFetch(token: string, hubOrigin: string): HubFetch {
   const hub = hubOrigin.replace(/\/$/, "");
+  const bearer = `Bearer ${token.trim()}`;
   return async (input, init) => {
-    const url =
-      typeof input === "string"
-        ? input
-        : input instanceof URL
-          ? input.href
-          : input instanceof Request
-            ? input.url
-            : String(input);
+    const url = resolveFetchUrl(input);
     if (!shouldAttachRemoteAuth(hub, token) || !url.startsWith(hub)) {
       return fetch(input, init);
     }
-    const headers = new Headers(
-      init?.headers ?? (input instanceof Request ? input.headers : undefined),
-    );
-    headers.set("Authorization", `Bearer ${token.trim()}`);
+    if (input instanceof Request) {
+      const headers = new Headers(input.headers);
+      headers.set("Authorization", bearer);
+      return fetch(new Request(input, { ...init, headers }));
+    }
+    const headers = new Headers(init?.headers);
+    headers.set("Authorization", bearer);
     return fetch(input, { ...init, headers });
   };
 }

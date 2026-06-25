@@ -1,31 +1,39 @@
 import { treaty, type Treaty } from "@elysiajs/eden";
 import type { FridgeMagnetsResponse } from "@freeanima/admin-api/api";
 import type { App } from "@freeanima/admin-api/elysia";
+import { shouldAttachRemoteAuth } from "@freeanima/satellite-sdk";
 import { m } from "./i18n.ts";
 import { translateApiErrorValue } from "./api-errors.ts";
 import { apiPath } from "./api-path.ts";
-import { hubApiFetch, subscribeHubSse } from "./hub-fetch.ts";
+import {
+  hubApiFetch,
+  resetHubFetchCache,
+  resolveHubFetch,
+  subscribeHubSse,
+  type HubFetchFn,
+} from "./hub-fetch.ts";
 import { resolveApiOrigin } from "./hub-origin.ts";
 
 let cachedClient: Treaty.Create<App> | null = null;
 let cachedOrigin = "";
+let cachedHubFetch: HubFetchFn | undefined;
 
 export function resetApiClientCache(): void {
   cachedClient = null;
   cachedOrigin = "";
+  cachedHubFetch = undefined;
+  resetHubFetchCache();
 }
 
 export function resolveApiClient(): Treaty.Create<App> {
   const origin = resolveApiOrigin();
-  const shell = (typeof window !== "undefined" ? window.satelliteShell : undefined) as
-    | { hubFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response> }
-    | undefined;
-  if (shell?.hubFetch) {
-    return treaty<App>(origin, { fetcher: shell.hubFetch as typeof fetch });
+  const hubFetch = resolveHubFetch();
+  if (cachedClient && cachedOrigin === origin && cachedHubFetch === hubFetch) {
+    return cachedClient;
   }
-  if (cachedClient && cachedOrigin === origin) return cachedClient;
-  cachedClient = treaty<App>(origin);
+  cachedClient = treaty<App>(origin, { fetcher: hubFetch as typeof fetch });
   cachedOrigin = origin;
+  cachedHubFetch = hubFetch;
   return cachedClient;
 }
 
@@ -129,10 +137,13 @@ export function subscribeConversationEvents(
 ): { unsubscribe: () => void } {
   const path = `/api/conversations/${encodeURIComponent(conversationId)}/events`;
   const shell = (typeof window !== "undefined" ? window.satelliteShell : undefined) as
-    | { hubFetch?: typeof fetch }
+    | { hubFetch?: typeof fetch; remoteAuth?: { token?: string } }
     | undefined;
+  const origin = resolveApiOrigin();
+  const token = shell?.remoteAuth?.token?.trim() ?? "";
+  const useAuthFetch = Boolean(shell?.hubFetch || (token && shouldAttachRemoteAuth(origin, token)));
 
-  if (shell?.hubFetch) {
+  if (useAuthFetch) {
     return subscribeHubSse(path, {
       conversation_updated: onUpdate,
       ready: onUpdate,

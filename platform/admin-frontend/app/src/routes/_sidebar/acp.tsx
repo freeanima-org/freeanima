@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { getAcpStatus, startAllAcp, startAcp, stopAllAcp, stopAcp } from "@/lib/api.ts";
-import { m } from "@/lib/i18n.ts";
-import { acpStatusLabel } from "@/lib/admin-status.ts";
+import { getAcpStatus, startAllAcp, startAcp, stopAllAcp, stopAcp } from "@admin/lib/api.ts";
+import { m } from "@admin/lib/i18n.ts";
+import { acpStatusLabel } from "@admin/lib/admin-status.ts";
+import { catchWithFallback, logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 const ACP_START_TIMEOUT_MS = 30_000;
 
@@ -16,7 +17,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promi
 }
 
 export const Route = createFileRoute("/_sidebar/acp")({
-  loader: () => getAcpStatus().catch(() => null),
+  loader: () => getAcpStatus().catch(catchWithFallback("acp/getAcpStatus", null)),
   component: AcpPage,
 });
 
@@ -69,6 +70,7 @@ function AcpPage() {
           : await req;
       setStatus(result as AcpStatus);
     } catch (e) {
+      logCaughtError("routes/_sidebar/acp", e);
       setError(
         m.admin_acp_action_failed({
           name,
@@ -96,6 +98,7 @@ function AcpPage() {
           : await req;
       setStatus(result as AcpStatus);
     } catch (e) {
+      logCaughtError("routes/_sidebar/acp", e);
       setError(
         action === "start-all"
           ? m.admin_acp_start_all_failed({

@@ -5,7 +5,7 @@
     "jsx": "react-jsx",
     "outDir": ".tsout",
     "paths": {
-      "@/*": ["./app/src/*"]
+      "@chat/*": ["./app/src/*"]
     }
   },
   "include": [

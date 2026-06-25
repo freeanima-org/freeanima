@@ -15,8 +15,8 @@ import java from "highlight.js/lib/languages/java";
 import sql from "highlight.js/lib/languages/sql";
 import ini from "highlight.js/lib/languages/ini";
 import "highlight.js/styles/github-dark.css";
-import { m } from "@/lib/i18n.ts";
-import type { StudioFileView } from "@/stores/pair-programming.ts";
+import { m } from "@pair/lib/i18n.ts";
+import type { StudioFileView } from "@pair/stores/pair-programming.ts";
 
 hljs.registerLanguage("typescript", typescript);
 hljs.registerLanguage("javascript", javascript);

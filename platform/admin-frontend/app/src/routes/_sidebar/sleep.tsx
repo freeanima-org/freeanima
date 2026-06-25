@@ -6,9 +6,10 @@ import {
   listPipelineStepRuns,
   startSleepCycle,
   startSleepPipelineStep,
-} from "@/lib/api.ts";
-import { formatDisplayDate, formatDisplayDateTime } from "@/lib/format-datetime.ts";
-import { m } from "@/lib/i18n.ts";
+} from "@admin/lib/api.ts";
+import { formatDisplayDate, formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
+import { m } from "@admin/lib/i18n.ts";
+import { catchWithFallback, logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 type DateField = string | Date | null | undefined;
 
@@ -41,7 +42,9 @@ type DeepSleepRound = {
 
 export const Route = createFileRoute("/_sidebar/sleep")({
   loader: async () => {
-    const runs = await listPipelineStepRuns({ limit: 50 }).catch(() => ({ items: [] }));
+    const runs = await listPipelineStepRuns({ limit: 50 }).catch(
+      catchWithFallback("sleep/listPipelineStepRuns", { items: [] }),
+    );
     return { runs: (runs as { items?: PipelineRunRow[] }).items ?? [] };
   },
   component: SleepPage,
@@ -156,6 +159,7 @@ function SleepPage() {
       const data = await listPipelineStepRuns({ limit: 50 });
       setRuns((data as { items?: PipelineRunRow[] }).items ?? []);
     } catch (e) {
+      logCaughtError("routes/_sidebar/sleep", e);
       setError(
         m.admin_common_load_failed({
           detail: e instanceof Error ? e.message : String(e),
@@ -175,7 +179,8 @@ function SleepPage() {
       const status = (await getSleepPipelineStatus()) as PipelineStatus;
       setPipelineStatus(status);
       return status;
-    } catch {
+    } catch (err) {
+      logCaughtError("sleep/refreshPipelineStatus", err);
       return null;
     }
   }, []);
@@ -228,6 +233,7 @@ function SleepPage() {
       });
       await refreshPipelineStatus();
     } catch (e) {
+      logCaughtError("routes/_sidebar/sleep", e);
       setPipelineError(e instanceof Error ? e.message : String(e));
     } finally {
       setPipelineStarting(false);
@@ -247,6 +253,7 @@ function SleepPage() {
       await refreshPipelineStatus();
       await refreshAfterRun();
     } catch (e) {
+      logCaughtError("routes/_sidebar/sleep", e);
       setPipelineError(e instanceof Error ? e.message : String(e));
     } finally {
       setRunningStepId(null);
@@ -258,7 +265,8 @@ function SleepPage() {
     try {
       const data = (await getDeepSleepRounds(day)) as { rounds?: DeepSleepRound[] };
       setRounds(data.rounds ?? []);
-    } catch {
+    } catch (err) {
+      logCaughtError("sleep/loadDeepSleepRounds", err);
       setRounds([]);
     } finally {
       setRoundsLoading(false);

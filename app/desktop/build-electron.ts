@@ -1,8 +1,9 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import * as esbuild from "esbuild";
-import { build as runElectronBuilder, type CliOptions } from "electron-builder";
+import type { CliOptions } from "electron-builder";
 
 import { buildShellUi } from "@freeanima/shell-ui/build";
 import { buildCompanionApp } from "@freeanima/satellite-companion/build";
@@ -113,7 +114,7 @@ function copyDist(src: string, dest: string): void {
 
 async function buildVendorAssets(minify: boolean): Promise<void> {
   const companionDist = await buildCompanionApp({ minify });
-  const shellUiDist = await buildShellUi({ minify });
+  const shellUiDist = await buildShellUi({ appDir: join(SHELL_ROOT, "app"), minify });
   copyDist(companionDist, join(SHELL_ROOT, "vendor", "companion", "dist"));
   copyDist(shellUiDist, join(SHELL_ROOT, "vendor", "shell-ui", "dist"));
 }
@@ -149,19 +150,6 @@ function stageFbxBinary(platform: string): void {
   }
 }
 
-function patchElectronBuilderForLinuxNsis(): void {
-  if (process.platform !== "linux") return;
-
-  // electron-builder 在 Linux 上默认用 Wine 运行 NSIS 安装包以提取 uninstaller；
-  // 与 macOS 相同，UninstallerReader 可直接解析 PE/NSIS，无需 Wine。
-  const requireShell = createRequire(join(SHELL_ROOT, "package.json"));
-  const requireEb = createRequire(requireShell.resolve("electron-builder"));
-  const macosVersion = requireEb("app-builder-lib/out/util/macosVersion") as {
-    isMacOsCatalina: () => boolean;
-  };
-  macosVersion.isMacOsCatalina = () => true;
-}
-
 function buildElectronBuilderOptions(
   platform: string,
   profile: BuildProfile,
@@ -186,6 +174,57 @@ function buildElectronBuilderOptions(
   return opts;
 }
 
+function buildElectronBuilderCliArgs(opts: CliOptions): string[] {
+  const args: string[] = [];
+  if (opts.dir) args.push("--dir");
+  if (opts.x64) args.push("--x64");
+  if (opts.win !== undefined) {
+    args.push("--win");
+    for (const target of opts.win) {
+      if (target) args.push(String(target));
+    }
+  }
+  if (opts.mac !== undefined) {
+    args.push("--mac");
+    for (const target of opts.mac) {
+      if (target) args.push(String(target));
+    }
+  }
+  if (opts.linux !== undefined) {
+    args.push("--linux");
+    for (const target of opts.linux) {
+      if (target) args.push(String(target));
+    }
+  }
+  const cfg = opts.config;
+  const version =
+    cfg && typeof cfg === "object" && "extraMetadata" in cfg
+      ? (cfg as { extraMetadata?: { version?: string } }).extraMetadata?.version
+      : undefined;
+  if (typeof version === "string" && version.length > 0) {
+    args.push(`-c.extraMetadata.version=${version}`);
+  }
+  return args;
+}
+
+/** Bun fetch 对部分 CDN 会 UNKNOWN_CERTIFICATE_VERIFICATION_ERROR；打包阶段改由 Node 跑 electron-builder */
+function runElectronBuilderViaNode(opts: CliOptions): void {
+  const requireEb = createRequire(join(SHELL_ROOT, "package.json"));
+  const cliPath = requireEb.resolve("electron-builder/cli.js");
+  const patchPath = join(SHELL_ROOT, "electron-builder-linux-patch.cjs");
+  const args = buildElectronBuilderCliArgs(opts);
+  console.log(`[desktop-shell] electron-builder (node): ${args.join(" ")}`);
+  const result = spawnSync("node", ["-r", patchPath, cliPath, ...args], {
+    cwd: SHELL_ROOT,
+    stdio: "inherit",
+    env: process.env,
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    throw new Error(`electron-builder exited with code ${result.status ?? "unknown"}`);
+  }
+}
+
 export async function buildDesktopShellElectron(opts: BuildElectronOptions = {}): Promise<void> {
   const profile = opts.profile ?? resolveProfile();
   const minify = profile === "release";
@@ -198,8 +237,7 @@ export async function buildDesktopShellElectron(opts: BuildElectronOptions = {})
   stageFbxBinary(platform);
 
   const version = resolveBuildVersion(opts.version);
-  patchElectronBuilderForLinuxNsis();
-  await runElectronBuilder(buildElectronBuilderOptions(platform, profile, version));
+  runElectronBuilderViaNode(buildElectronBuilderOptions(platform, profile, version));
   console.log("[desktop-shell] build complete");
 }
 

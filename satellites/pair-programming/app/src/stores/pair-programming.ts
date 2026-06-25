@@ -1,5 +1,5 @@
-import type { DisplayItem, ConversationListItem } from "@/lib/types.ts";
-import { hasNewAssistantReply } from "@/lib/display-recovery.ts";
+import type { DisplayItem, ConversationListItem } from "@pair/lib/types.ts";
+import { hasNewAssistantReply } from "@pair/lib/display-recovery.ts";
 import { create } from "zustand";
 import {
   createConversation,
@@ -10,10 +10,10 @@ import {
   listConversations,
   searchStudio,
   setConversationTitle,
-} from "@/lib/api.ts";
-import { pairPlatform } from "@/lib/sap-client.ts";
+} from "@pair/lib/api.ts";
+import { pairPlatform } from "@pair/lib/sap-client.ts";
 
-export { STUDIO_PAIR_PLATFORM } from "@/lib/sap-client.ts";
+export { STUDIO_PAIR_PLATFORM } from "@pair/lib/sap-client.ts";
 
 export type StudioFileView = Record<string, unknown> & { highlightLine?: number | null };
 

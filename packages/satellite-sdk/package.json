@@ -3,7 +3,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./*": "./src/*.ts"
+    "./*": "./src/*.ts",
+    "./settings": "./src/settings/index.ts"
   },
   "dependencies": {
     "zod": "catalog:"
