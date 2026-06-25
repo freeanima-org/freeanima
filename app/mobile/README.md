@@ -19,11 +19,15 @@ anima service start --host 0.0.0.0
 
 ```bash
 # 从仓库根目录
-bun run app/mobile:build
+bun run --filter @freeanima/app-mobile build
 
 # 或在本目录
 bun run build
 bun run sync          # 复制 www 并 sync 到 android/
+
+# Debug 构建（不压缩 + sourcemap，便于 Chrome inspect）
+bun run build:debug
+bun run android:debug # 构建 + 安装 + 启动
 ```
 
 ## 安装到真机（sideload）
@@ -52,6 +56,7 @@ Debug APK：`android/app/build/outputs/apk/debug/app-debug.apk`
 1. 首次启动进入 **Hub 设置**，填写 PC 局域网地址，如 `http://192.168.1.10:2658`，以及 Hub `remote_auth.token`
 2. **测试连接** → **保存并进入**
 3. 顶栏切换 **聊天室** / **管理台**
+4. **设置 → 调试**：配置 Sentry DSN、移动 vConsole、查看 DevTools 说明
 
 ## 架构
 

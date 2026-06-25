@@ -62,8 +62,8 @@
     "coverage:check-threshold": "bun scripts/check-coverage-threshold.ts",
     "service": "bun app/cli/src/cli.ts service",
     "anima": "bun app/cli/src/cli.ts",
-    "app-desktop:windows": "bun run --filter @freeanima/app-desktop build:windows:installer",
-    "app-mobile:android": "bun run --filter @freeanima/app-mobile android",
+    "debug:windows": "bun run --filter @freeanima/app-desktop build:windows:installer",
+    "debug:android": "bun run --filter @freeanima/app-mobile android:debug",
     "link:global": "mkdir -p \"${BUN_INSTALL:-$HOME/.bun}/bin\" && ln -sf \"$PWD/app/cli/src/cli.ts\" \"${BUN_INSTALL:-$HOME/.bun}/bin/anima\" && chmod +x app/cli/src/cli.ts",
     "prepare": "husky"
   },

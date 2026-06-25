@@ -1,11 +1,13 @@
 import {
   Outlet,
   RouterProvider,
+  createHashHistory,
   createRootRoute,
   createRoute,
   createRouter,
   redirect,
 } from "@tanstack/react-router";
+import { useMemo } from "react";
 
 import { ChatApp } from "./chat/load-chat-app.ts";
 import { AdminShell } from "./main/AdminShell.tsx";
@@ -60,17 +62,25 @@ const routeTree = rootRoute.addChildren([
   mainLayoutRoute.addChildren([indexRoute, chatRoute, adminIndexRoute, adminRoute, settingsRoute]),
 ]);
 
+function createShellRouterInstance() {
+  const native = typeof window !== "undefined" && Boolean(window.satelliteShell?.isNativeShell);
+  return createRouter({
+    routeTree,
+    ...(native ? { history: createHashHistory() } : {}),
+  });
+}
+
 export function getShellRouter() {
-  return createRouter({ routeTree });
+  return createShellRouterInstance();
 }
 
 declare module "@tanstack/react-router" {
   interface Register {
-    router: ReturnType<typeof getShellRouter>;
+    router: ReturnType<typeof createShellRouterInstance>;
   }
 }
 
 export function ShellRouterProvider() {
-  const router = getShellRouter();
+  const router = useMemo(() => createShellRouterInstance(), []);
   return <RouterProvider router={router} />;
 }

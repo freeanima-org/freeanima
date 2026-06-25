@@ -7,6 +7,7 @@ import {
 } from "@freeanima/satellite-sdk";
 
 import { createSettingsShellClientApi } from "./settings-shell-api.ts";
+import { createDebugSettingsApi } from "./debug-settings-api.ts";
 
 const hubUrlArg = process.argv.find((v) => v.startsWith("--hub-url="));
 const hubUrl = hubUrlArg?.slice("--hub-url=".length) ?? "http://127.0.0.1:2658";
@@ -80,5 +81,6 @@ const shell: SatelliteShellApi = {
 
 contextBridge.exposeInMainWorld("satelliteShell", shell);
 contextBridge.exposeInMainWorld("settingsShellClientApi", createSettingsShellClientApi());
+contextBridge.exposeInMainWorld("debugSettingsApi", createDebugSettingsApi());
 
 export type DesktopShellPreloadModule = true;

@@ -60,10 +60,12 @@ anima service start
 
 **app/desktop** 与 **app/mobile** 均视为远端客户端，**不读取** Hub 的 `config.yaml`。
 
-| 客户端      | 存储位置                     |
-| ----------- | ---------------------------- |
-| app/desktop | `~/.anima/shell-client.json` |
-| app/mobile  | Capacitor Preferences        |
+| 客户端      | 存储位置                                     |
+| ----------- | -------------------------------------------- |
+| app/desktop | `~/.anima-desktop/settings.json`（`hub` 段） |
+| app/mobile  | Capacitor Preferences                        |
+
+桌面调试与 Sentry 配置在同一文件的 `debug` 段；可用环境变量 `FREEANIMA_DESKTOP_HOME` 覆盖目录（默认 `~/.anima-desktop`）。若存在旧版 `~/.anima/shell-client.json`，首次启动会自动迁移。
 
 设置项（两端一致）：
 

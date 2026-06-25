@@ -45,7 +45,12 @@ function createAliasPlugin(paraglideDir: string): import("bun").BunPlugin {
   };
 }
 
-export async function buildShellUi(opts?: { watch?: boolean; minify?: boolean }): Promise<string> {
+export async function buildShellUi(opts?: {
+  watch?: boolean;
+  minify?: boolean;
+  sourcemap?: boolean;
+  publicPath?: string;
+}): Promise<string> {
   const paraglideDir = join(DIST_DIR, ".paraglide");
   compileParaglideToDir({ projectRoot: REPO_ROOT, outdir: paraglideDir });
   rmSync(join(DIST_DIR, HTML_NAME), { force: true });
@@ -59,7 +64,8 @@ export async function buildShellUi(opts?: { watch?: boolean; minify?: boolean })
     outdir: DIST_DIR,
     target: "browser",
     minify: opts?.minify ?? false,
-    publicPath: "/",
+    publicPath: opts?.publicPath ?? "/",
+    ...(opts?.sourcemap ? { sourcemap: "linked" as const } : {}),
     plugins: [createAliasPlugin(paraglideDir), tailwind],
     ...(opts?.watch
       ? {

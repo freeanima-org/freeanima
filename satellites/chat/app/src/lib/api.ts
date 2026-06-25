@@ -113,6 +113,10 @@ export async function loadConfig() {
     return { app_id: "chat", hub_ws_url: shell.hubWsUrl };
   }
 
+  if (shell?.isNativeShell) {
+    throw new Error("Hub 未配置，请先在设置中填写 Hub 地址与 Token");
+  }
+
   const res = await fetch("/config.json");
   if (!res.ok) {
     throw new Error(m.admin_common_network_error());

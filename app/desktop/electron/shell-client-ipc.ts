@@ -3,8 +3,10 @@ import { join } from "node:path";
 
 import { resolveHubWsUrl } from "@freeanima/sap-contract";
 import { buildBearerHeaders } from "@freeanima/satellite-sdk";
+import type { ShellDebugConfig } from "@freeanima/satellite-sdk";
 
 import { readShellClientConfig, writeShellClientConfig } from "./shell-client-store.ts";
+import { readShellDebugConfig, writeShellDebugConfig } from "./shell-debug-store.ts";
 
 export type HubClientConfigPayload = {
   hubUrl: string;
@@ -61,6 +63,12 @@ export function registerShellClientIpc(showHubSettings: () => void): void {
 
   ipcMain.handle("shell:open-settings", () => {
     showHubSettings();
+  });
+
+  ipcMain.handle("shell:get-debug-config", () => readShellDebugConfig());
+
+  ipcMain.handle("shell:save-debug-config", (_event, raw: ShellDebugConfig) => {
+    return writeShellDebugConfig(raw);
   });
 }
 

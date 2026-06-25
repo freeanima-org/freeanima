@@ -10,6 +10,7 @@ import {
 
 import { HUB_URL_KEY, REMOTE_AUTH_TOKEN_KEY, sapInstanceKey } from "./prefs-keys.ts";
 import { SETTINGS_PAGE } from "./paths.ts";
+import { replaceShellPath } from "./shell-nav.ts";
 
 const SHELL_SNAPSHOT_KEY = "freeanima.shell.snapshot";
 
@@ -97,7 +98,7 @@ function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
     apiOrigin: null,
     createFileInstanceStore: createPreferencesInstanceStore,
     openHubSettings(): void {
-      window.location.href = SETTINGS_PAGE;
+      replaceShellPath(SETTINGS_PAGE);
     },
     async emitConfigChanged(): Promise<void> {
       notifyShellConfigChanged();
@@ -116,7 +117,7 @@ export function createMobileShellStub(): SatelliteShellApi {
     apiOrigin: null,
     createFileInstanceStore: createPreferencesInstanceStore,
     openHubSettings(): void {
-      window.location.href = SETTINGS_PAGE;
+      replaceShellPath(SETTINGS_PAGE);
     },
     async emitConfigChanged(): Promise<void> {
       notifyShellConfigChanged();
@@ -156,7 +157,7 @@ export async function ensureMobileShellForChat(): Promise<SatelliteShellApi> {
     const hubUrl = await loadHubUrl();
     const remoteAuthToken = await loadRemoteAuthToken();
     if (!hubUrl || !remoteAuthToken) {
-      window.location.replace(SETTINGS_PAGE);
+      replaceShellPath(SETTINGS_PAGE);
       throw new Error("redirect settings");
     }
     const normalized = normalizeShellClientConfig({ hubUrl, remoteAuthToken });

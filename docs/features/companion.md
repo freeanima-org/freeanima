@@ -100,11 +100,11 @@ bun run build:windows:installer   # Windows NSIS
 
 | 变量                     | 默认                    | 说明                                     |
 | ------------------------ | ----------------------- | ---------------------------------------- |
-| `FREEANIMA_URL`          | `http://127.0.0.1:2658` | 无 `shell-client.json` 时的 Hub 回退地址 |
+| `FREEANIMA_URL`          | `http://127.0.0.1:2658` | 无桌面 `settings.json` 时的 Hub 回退地址 |
 | `SATELLITE_PORT`         | `4176`                  | 本地 HTTP 端口                           |
 | `COMPANION_VRMA_ZIP_URL` | （空）                  | 可选；直链 zip 镜像，启动时下载          |
 
-Hub 地址与远程 Token 由桌面壳 **`~/.anima/shell-client.json`** 统一管理（托盘 → **Hub 设置…**）。伴侣设置 → 通用 Tab 只读展示 Hub 地址。
+Hub 地址与远程 Token 由桌面壳 **`~/.anima-desktop/settings.json`**（`hub` 段）统一管理（托盘 → **Hub 设置…**）。伴侣设置 → 通用 Tab 只读展示 Hub 地址。
 
 Hub 在首次 `connect` 时分配 **3 字符** `instance_id`，写入 `~/.anima/companion/instance.json`（非 `satellites/` 子目录）。
 
