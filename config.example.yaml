@@ -55,7 +55,8 @@ firecrawl:
 #     pushkey: xxxxxxxx
 #     api_base: https://api2.pushdeer.com
 
-# MCP 服务器（stdio / SSE，工具名注册为 mcp_{server}_{tool}）
+# MCP 服务器（stdio / SSE，入站：FreeAnima 作 Client 连外部 Server，工具名 mcp_{server}_{tool}）
+# 出站：Hub /mcp 端点暴露 expose_mcp 工具给外部 agent（见 docs/guide/remote-access.md）
 # enabled 默认 true；设为 false 时逸灵风启动不会自动连接，可在管理台手动启动
 # stdio 建议 command: node + args: [脚本路径]
 # mcp_servers:

@@ -16,7 +16,8 @@
   "dependencies": {
     "@freeanima/capabilities-acp": "workspace:*",
     "@freeanima/capabilities-identity": "workspace:*",
-    "@freeanima/capabilities-mcp": "workspace:*",
+    "@freeanima/capabilities-mcp-client": "workspace:*",
+    "@freeanima/capabilities-mcp-server": "workspace:*",
     "@freeanima/capabilities-memory": "workspace:*",
     "@freeanima/capabilities-satellite": "workspace:*",
     "@freeanima/capabilities-tasks": "workspace:*",

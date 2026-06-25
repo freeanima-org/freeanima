@@ -107,6 +107,11 @@ export class ToolSetRegistry {
     return this.toolOrder.map((n) => this.toolIndex.get(n)!).filter(Boolean);
   }
 
+  /** Tools with exposeMcp=true for Hub /mcp outbound */
+  listMcpExposedTools(): ToolDef[] {
+    return this.listTools().filter((t) => t.exposeMcp === true);
+  }
+
   toolNames(): string[] {
     return this.listTools().map((t) => t.name);
   }

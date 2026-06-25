@@ -3,7 +3,7 @@ import { stopCronModule } from "@freeanima/platform/connectors/cron";
 import { stopPlatforms } from "@freeanima/platform/connectors/gateway";
 import { logComponent } from "@freeanima/platform/logging";
 import type { Kernel } from "@freeanima/kernel";
-import type { MCPManager } from "@freeanima/capabilities-mcp";
+import type { MCPManager } from "@freeanima/capabilities-mcp-client";
 import type { AcpManagerPort } from "@freeanima/platform/ports/ports/acp-manager";
 import type { PlatformAdapter } from "@freeanima/platform/connectors/gateway";
 

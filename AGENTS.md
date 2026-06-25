@@ -10,7 +10,7 @@
 | Capability     | Highlights                                                                                                                                          |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md) |
-| Tools          | Local / MCP / ACP flat registration; implemented in `capabilities/tools/`, `capabilities/mcp/`, `capabilities/acp/`                                 |
+| Tools          | Local / MCP / ACP flat registration; MCP client `capabilities/mcp-client/`、MCP server `/mcp` `capabilities/mcp-server/`；tools `capabilities/tools/`、ACP `capabilities/acp/` |
 | Credentials    | pass GPG; injected at runtime; LLM **sees paths, not values**                                                                                       |
 | Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                              |
 | Code layout    | `kernel/` → `core/` → `runtime/` → `capabilities/` → `platform/` (+ `app/`) — see [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md)      |

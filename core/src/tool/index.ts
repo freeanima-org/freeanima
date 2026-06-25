@@ -85,6 +85,14 @@ export {
   defineTextToolReturn,
   globalToolErrorContract,
 } from "./return-contract.ts";
+export {
+  normalizeJsonSchema,
+  mcpToolParameters,
+  toolParametersToMcpInputSchema,
+  handlerResultToMcpContent,
+  extractMcpResult,
+} from "./mcp-schema.ts";
+export type { McpCallToolContent } from "./mcp-schema.ts";
 export { z } from "zod";
 export type { ToolReturnContractFields } from "./return-contract.ts";
 export {

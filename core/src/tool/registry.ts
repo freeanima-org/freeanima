@@ -32,6 +32,8 @@ export type ToolDef = {
   returnExample?: unknown;
   /** Readable format hint for text tools */
   returnTextHint?: string;
+  /** When true, exposed via Hub /mcp Streamable HTTP endpoint */
+  exposeMcp?: boolean;
 };
 
 /** Convert ToolDef to OpenAI Chat Completions `tools[]` entry */

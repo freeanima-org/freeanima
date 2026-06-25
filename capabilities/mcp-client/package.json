@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/capabilities-mcp",
+  "name": "@freeanima/capabilities-mcp-client",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",

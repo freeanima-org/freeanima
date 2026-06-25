@@ -56,7 +56,13 @@ export function isHealthProbePath(req: Request): boolean {
 export function isHubApiCorsPreflight(req: Request): boolean {
   if (req.method !== "OPTIONS") return false;
   const pathname = new URL(req.url).pathname;
-  return pathname === "/" || pathname === "/api" || pathname.startsWith("/api/");
+  return (
+    pathname === "/" ||
+    pathname === "/api" ||
+    pathname.startsWith("/api/") ||
+    pathname === "/mcp" ||
+    pathname === "/mcp/"
+  );
 }
 
 /** 跳过 remote_auth：豁免路径、health 探活、CORS 预检、或 Host+peer 均为 loopback 的本机直连 */

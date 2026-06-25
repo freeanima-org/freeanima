@@ -42,6 +42,7 @@ export function registerConversationTools(toolSets: ToolSetRegistry): void {
       [
         {
           name: "conversation_search",
+          exposeMcp: true,
           description:
             "Search historical conversations (PostgreSQL messages full-text index).\n" +
             "Returns matching keyword snippets, not full message body; optional conversation scope.\n" +
@@ -90,6 +91,7 @@ export function registerConversationTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "conversation_scroll",
+          exposeMcp: true,
           description:
             "Paginated reading of historical messages in specified conversation (user/assistant full content; tool messages truncated).\n" +
             "Use message_id (from memory_recall or conversation_search) as anchor to read forward; otherwise paginate with offset.",
