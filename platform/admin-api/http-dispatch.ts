@@ -1,4 +1,4 @@
-import type { AccessJwtVerifier } from "./access-jwt.ts";
+import { corsPreflightResponse } from "./elysia/cors.ts";
 import type { RemoteAuthVerifier } from "./remote-auth.ts";
 
 /** Bun requestIP 注入，供 /api/echo 等调试接口展示真实 TCP 来源 */
@@ -14,23 +14,25 @@ export function attachRemoteAddressToRequest(
   return new Request(req, { headers });
 }
 
-/** REST API 路径（须先过 remote_auth / Access 中间件） */
+/** REST API 路径（须先过 remote_auth 中间件） */
 export function isHubApiPath(pathname: string): boolean {
   return pathname === "/" || pathname === "/api" || pathname.startsWith("/api/");
+}
+
+/** OPTIONS 预检：在 remote_auth 之前返回 CORS 204（Capacitor / Electron 直连 Hub） */
+export function handleHubCorsPreflight(req: Request): Response | null {
+  if (req.method !== "OPTIONS") return null;
+  if (!isHubApiPath(new URL(req.url).pathname)) return null;
+  return corsPreflightResponse(req.headers.get("Origin"));
 }
 
 export async function applyHttpAuth(
   req: Request,
   remoteAddress: string | undefined,
   remoteAuth: RemoteAuthVerifier | null,
-  accessJwt: AccessJwtVerifier | null,
 ): Promise<Response | null> {
   if (remoteAuth) {
     const blocked = await remoteAuth.verifyRequest(req, remoteAddress);
-    if (blocked) return blocked;
-  }
-  if (accessJwt) {
-    const blocked = await accessJwt.verifyRequest(req, remoteAddress);
     if (blocked) return blocked;
   }
   return null;

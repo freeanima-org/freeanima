@@ -58,3 +58,11 @@ export {
   connectAuthTokenForHub,
   hubRequiresRemoteAuth,
 } from "./shell-api-fields.ts";
+export type { HubHealthBody } from "./hub-health-probe.ts";
+export {
+  HUB_HEALTH_PROBE_TIMEOUT_MS,
+  hubHealthFailureReason,
+  isHubHealthConnected,
+  probeHubHealthUrl,
+  testHubHealthConnection,
+} from "./hub-health-probe.ts";

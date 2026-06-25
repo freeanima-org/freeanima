@@ -257,7 +257,7 @@ If status fails, check PostgreSQL connectivity and that migrations completed ([`
 ## Next steps
 
 1. **Security** — pass-only secrets, `chmod 700 ~/.anima`, do not expose Admin without auth ([`security.md`](security.md))
-2. **Remote access** — optional Cloudflare Tunnel + Access for personal mobile/remote Admin ([`remote-access.md`](remote-access.md))
+2. **Remote access** — optional Cloudflare Tunnel + `remote_auth.token` for personal mobile/remote Admin ([`remote-access.md`](remote-access.md))
 3. **Database** — backups, extensions, manual migrations if needed ([`database.md`](database.md))
 4. **Operations** — start/stop, memory metrics ([`service.md`](service.md))
 5. **Architecture** — memory pipeline, self layer, tools ([`../concepts/architecture.md`](../concepts/architecture.md))

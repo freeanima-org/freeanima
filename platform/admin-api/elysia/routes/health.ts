@@ -1,4 +1,4 @@
 import { Elysia } from "elysia";
-import { getHealth } from "../../handlers/index.ts";
+import { getHealthProbe } from "../../handlers/index.ts";
 
-export const healthRoutes = new Elysia().get("/health", () => getHealth());
+export const healthRoutes = new Elysia().get("/health", ({ request }) => getHealthProbe(request));

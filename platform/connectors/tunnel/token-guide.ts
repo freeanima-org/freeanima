@@ -3,7 +3,6 @@ export const CLOUDFLARE_API_TOKEN_GUIDE = [
   "使用 Cloudflare Dashboard 创建的「API 令牌」，不是 Zero Trust 里隧道的连接器令牌。",
   "路径：我的个人资料 → API 令牌 → 创建令牌 → 自定义令牌",
   "建议权限：Account · Cloudflare Tunnel · Edit；Zone · DNS · Edit（自动 CNAME，必填）；",
-  "若自动创建 Access：Account · Access: Apps and Policies · Edit",
   "文档：https://developers.cloudflare.com/fundamentals/api/get-started/create-token/",
 ] as const;
 
@@ -12,7 +11,7 @@ export const INVALID_API_TOKEN_HINTS = [
   "不是 Zero Trust → 网络 → 连接器 / 隧道 里复制的隧道安装令牌。",
   "创建后只显示一次 — 若丢失需在 Dashboard 重新创建，无法查看旧令牌。",
   "检查首尾无空格、无引号；不要粘贴整段 JSON。",
-  "令牌需包含 Account · Cloudflare Tunnel · Edit 权限（及 DNS / Access 若启用对应步骤）。",
+  "令牌需包含 Account · Cloudflare Tunnel · Edit 与 Zone · DNS · Edit 权限。",
 ] as const;
 
 /** Cloudflare 错误码 10000「Authentication error」（非 verify 成功时的提示消息） */

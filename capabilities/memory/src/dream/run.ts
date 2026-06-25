@@ -29,7 +29,7 @@ export type RunDreamOpts = {
   fridge?: DreamFridgePort;
 };
 
-const DREAM_REMINDER_TEASER = "昨晚做了一个梦，想聊聊吗？";
+const DREAM_REMINDER_TEASER = "我昨晚做了一个梦，想聊聊吗？";
 
 export async function runDream(opts: RunDreamOpts): Promise<DreamResult> {
   const dreamStore = opts.dreamStore ?? getDreamMemoryStore();

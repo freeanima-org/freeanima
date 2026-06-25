@@ -10,20 +10,6 @@ function validateTunnelConfig(cfg: AnimaConfig): void {
 
   const warnings: string[] = [];
   if (!tunnel.hostname) warnings.push("tunnel.hostname 未配置");
-  if (!tunnel.team_name) warnings.push("tunnel.team_name 未配置");
-
-  const access = tunnel.access;
-  if (access?.enabled !== false) {
-    if (!access?.audience) {
-      warnings.push("tunnel.access.audience 未配置 — 请完成 Access App 或运行 anima tunnel setup");
-    }
-    if (!access?.allowed_emails?.length) {
-      warnings.push("tunnel.access.allowed_emails 为空");
-    }
-  } else {
-    warnings.push("tunnel.access.enabled=false — 公网暴露依赖 remote_auth.token，请确认已配置");
-  }
-
   if (!tunnel.credentials?.tunnel_credentials) {
     warnings.push("tunnel.credentials.tunnel_credentials 未配置");
   }

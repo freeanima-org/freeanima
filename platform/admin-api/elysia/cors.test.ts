@@ -5,6 +5,7 @@ describe("isBundledClientOrigin", () => {
   it("allows localhost and 127.0.0.1 with ports", () => {
     expect(isBundledClientOrigin("http://127.0.0.1:4175")).toBe(true);
     expect(isBundledClientOrigin("http://localhost")).toBe(true);
+    expect(isBundledClientOrigin("https://localhost")).toBe(true);
     expect(isBundledClientOrigin("capacitor://localhost")).toBe(true);
   });
 

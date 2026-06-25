@@ -15,10 +15,6 @@ export function mergeTunnelConfig(
   current: TunnelConfigFields | undefined,
   patch: Partial<TunnelConfigFields>,
 ): TunnelConfigFields {
-  const access = mergeNested(
-    current?.access as Record<string, unknown> | undefined,
-    patch.access as Record<string, unknown> | undefined,
-  );
   const cloudflare = mergeNested(
     current?.cloudflare as Record<string, unknown> | undefined,
     patch.cloudflare as Record<string, unknown> | undefined,
@@ -30,7 +26,6 @@ export function mergeTunnelConfig(
   return {
     ...current,
     ...patch,
-    ...(access !== undefined ? { access: access as TunnelConfigFields["access"] } : {}),
     ...(cloudflare !== undefined
       ? { cloudflare: cloudflare as TunnelConfigFields["cloudflare"] }
       : {}),

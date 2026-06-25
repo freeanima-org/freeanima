@@ -16,21 +16,12 @@ import {
   putTunnelConfig,
   verifyApiToken,
 } from "./cloudflare-api.ts";
-import {
-  createAccessApplication,
-  createEmailAllowPolicy,
-  manualAccessDashboardSteps,
-} from "./access-api.ts";
 import { resolveTunnelApiToken } from "./resolve-credential.ts";
 
 export type SetupWizardInput = {
   hostname: string;
-  teamName: string;
-  email: string;
   hubPort: number;
-  sessionDuration: string;
   apiToken?: string;
-  createAccessViaApi: boolean;
   accountId?: string;
   /** 写入 pass 与更新 config.yaml */
   saveApiToken: (token: string) => void;
@@ -43,7 +34,6 @@ export type SetupWizardInput = {
 export type SetupWizardResult = {
   tunnel: TunnelConfig;
   publicUrl: string;
-  manualAccessSteps: string[] | null;
   dnsConfigured: boolean;
   manualDnsSteps: string[] | null;
 };
@@ -81,8 +71,6 @@ export async function runSetupWizard(input: SetupWizardInput): Promise<SetupWiza
   let accountId = input.accountId;
   let tunnelId = "";
   let zoneId: string | undefined;
-  let audience: string | undefined;
-  let manualAccessSteps: string[] | null = null;
   let manualDnsSteps: string[] | null = null;
   let dnsConfigured = false;
 
@@ -114,13 +102,7 @@ export async function runSetupWizard(input: SetupWizardInput): Promise<SetupWiza
     tunnelId = tunnel.id;
     input.patchConfig({
       hostname: input.hostname,
-      team_name: input.teamName,
       cloudflare: { account_id: accountId, tunnel_id: tunnelId, tunnel_name: tunnelName },
-      access: {
-        enabled: true,
-        allowed_emails: [input.email],
-        session_duration: input.sessionDuration,
-      },
     });
 
     input.onProgress("获取 Tunnel 凭证…");
@@ -168,40 +150,11 @@ export async function runSetupWizard(input: SetupWizardInput): Promise<SetupWiza
       ];
       input.onProgress("未找到匹配 Zone — 请手动创建 CNAME 指向 Tunnel");
     }
-
-    if (input.createAccessViaApi) {
-      input.onProgress("创建 Access Application…");
-      const app = await createAccessApplication(apiOpts, {
-        hostname: input.hostname,
-        sessionDuration: input.sessionDuration,
-      });
-      audience = app.aud;
-      input.patchConfig({ access: { audience } });
-      input.onProgress("创建 Allow Policy…");
-      await createEmailAllowPolicy(apiOpts, app.id, input.email);
-    } else {
-      manualAccessSteps = manualAccessDashboardSteps({
-        hostname: input.hostname,
-        teamName: input.teamName,
-        email: input.email,
-      });
-    }
   } else {
-    manualAccessSteps = manualAccessDashboardSteps({
-      hostname: input.hostname,
-      teamName: input.teamName,
-      email: input.email,
-    });
     input.patchConfig({
       hostname: input.hostname,
-      team_name: input.teamName,
-      access: {
-        enabled: true,
-        allowed_emails: [input.email],
-        session_duration: input.sessionDuration,
-      },
     });
-    input.onProgress("无 API Token — 请按 Dashboard 步骤手动创建 Tunnel 与 Access");
+    input.onProgress("无 API Token — 请在 Cloudflare Dashboard 手动创建 Tunnel 与 DNS");
   }
 
   writeCloudflaredConfig(input.hostname, input.hubPort, credentialsFile, tunnelId || undefined);
@@ -209,13 +162,6 @@ export async function runSetupWizard(input: SetupWizardInput): Promise<SetupWiza
   const tunnelConfig: TunnelConfig = {
     enabled: true,
     hostname: input.hostname,
-    team_name: input.teamName,
-    access: {
-      enabled: true,
-      allowed_emails: [input.email],
-      audience,
-      session_duration: input.sessionDuration,
-    },
     cloudflare: {
       account_id: accountId,
       tunnel_id: tunnelId || undefined,
@@ -233,10 +179,9 @@ export async function runSetupWizard(input: SetupWizardInput): Promise<SetupWiza
   return {
     tunnel: tunnelConfig,
     publicUrl: `https://${input.hostname}`,
-    manualAccessSteps,
     dnsConfigured,
     manualDnsSteps,
   };
 }
 
-export { renderCloudflaredConfig, manualAccessDashboardSteps };
+export { renderCloudflaredConfig };

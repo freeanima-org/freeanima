@@ -5,21 +5,17 @@ import { bindAdminRuntimeContext, adminCtx } from "./handlers/runtime.ts";
 import { broadcastWsReconnect, shutdownAdmin } from "./elysia/shutdown.ts";
 import { getSapServerDeps } from "@freeanima/platform/sap/runtime-context";
 import { createSapBunHandlers } from "@freeanima/platform/sap/bun-route";
-import {
-  accessConfigFromTunnel,
-  createAccessJwtVerifier,
-  type AccessJwtVerifier,
-} from "./access-jwt.ts";
 import { createRemoteAuthVerifier, type RemoteAuthVerifier } from "./remote-auth.ts";
-import { applyHttpAuth, attachRemoteAddressToRequest, isHubApiPath } from "./http-dispatch.ts";
-import type { TunnelAccessConfig } from "@freeanima/core/config";
+import {
+  applyHttpAuth,
+  attachRemoteAddressToRequest,
+  handleHubCorsPreflight,
+  isHubApiPath,
+} from "./http-dispatch.ts";
 
 export type ApiServerOptions = {
-  accessJwt?: AccessJwtVerifier | null;
   remoteAuth?: RemoteAuthVerifier | null;
   remoteAuthToken?: string;
-  tunnelTeamName?: string;
-  tunnelAccess?: TunnelAccessConfig;
 };
 
 export type ApiServerHandle = {
@@ -61,16 +57,6 @@ export async function startApiHttpServer(
   const sapDeps = getSapServerDeps();
   const sapHandlers = sapDeps ? createSapBunHandlers(sapDeps) : null;
 
-  const accessJwt =
-    options.accessJwt ??
-    (() => {
-      const cfg = accessConfigFromTunnel(options.tunnelTeamName, options.tunnelAccess);
-      return cfg ? createAccessJwtVerifier(cfg) : null;
-    })();
-  if (accessJwt) {
-    await accessJwt.preload();
-  }
-
   const remoteAuth =
     options.remoteAuth ??
     createRemoteAuthVerifier({
@@ -84,7 +70,10 @@ export async function startApiHttpServer(
     fetch(req, bunServer) {
       const remoteAddress = resolveRemoteAddress(bunServer, req);
       const run = async (): Promise<Response> => {
-        const blocked = await applyHttpAuth(req, remoteAddress, remoteAuth, accessJwt);
+        const preflight = handleHubCorsPreflight(req);
+        if (preflight) return preflight;
+
+        const blocked = await applyHttpAuth(req, remoteAddress, remoteAuth);
         if (blocked) return blocked;
 
         const pathname = new URL(req.url).pathname;

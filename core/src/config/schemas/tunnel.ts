@@ -1,14 +1,5 @@
 import { z } from "zod";
 
-export const tunnelAccessConfigSchema = z
-  .object({
-    enabled: z.boolean().optional(),
-    allowed_emails: z.array(z.string().email()).optional(),
-    audience: z.string().min(1).optional(),
-    session_duration: z.string().optional(),
-  })
-  .optional();
-
 export const tunnelCloudflareConfigSchema = z
   .object({
     account_id: z.string().optional(),
@@ -29,8 +20,6 @@ export const tunnelConfigSchema = z
   .object({
     enabled: z.boolean().optional(),
     hostname: z.string().min(1).optional(),
-    team_name: z.string().min(1).optional(),
-    access: tunnelAccessConfigSchema,
     cloudflare: tunnelCloudflareConfigSchema,
     credentials: tunnelCredentialsConfigSchema,
   })
@@ -39,7 +28,6 @@ export const tunnelConfigSchema = z
 export type TunnelConfig = z.infer<typeof tunnelConfigSchema>;
 /** tunnel 段对象（不含 undefined） */
 export type TunnelConfigFields = NonNullable<TunnelConfig>;
-export type TunnelAccessConfig = z.infer<typeof tunnelAccessConfigSchema>;
 export type TunnelCloudflareConfig = z.infer<typeof tunnelCloudflareConfigSchema>;
 
 /** pass 路径约定（非密钥，供 CLI / 文档引用） */
