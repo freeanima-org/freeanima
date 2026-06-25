@@ -23,6 +23,7 @@ export type ConversationCreateOutput = z.infer<typeof conversationCreateOutputSc
 
 export const conversationListInputSchema = z.object({
   platform: z.string().optional(),
+  include_archived: z.boolean().optional(),
 });
 
 export type ConversationListInput = z.infer<typeof conversationListInputSchema>;
@@ -32,6 +33,7 @@ export const conversationSummarySchema = z.object({
   title: z.string().optional(),
   platform: z.string().optional(),
   updated_at: z.string().optional(),
+  archived_at: z.string().nullable().optional(),
 });
 
 export type ConversationSummary = z.infer<typeof conversationSummarySchema>;
@@ -56,6 +58,30 @@ export const conversationPatchTitleInputSchema = z.object({
 });
 
 export type ConversationPatchTitleInput = z.infer<typeof conversationPatchTitleInputSchema>;
+
+export const conversationArchiveInputSchema = z.object({
+  conversation_id: z.string().min(1),
+});
+
+export type ConversationArchiveInput = z.infer<typeof conversationArchiveInputSchema>;
+
+export const conversationUnarchiveInputSchema = z.object({
+  conversation_id: z.string().min(1),
+});
+
+export type ConversationUnarchiveInput = z.infer<typeof conversationUnarchiveInputSchema>;
+
+export const conversationDeleteInputSchema = z.object({
+  conversation_id: z.string().min(1),
+});
+
+export type ConversationDeleteInput = z.infer<typeof conversationDeleteInputSchema>;
+
+export const conversationMutateOutputSchema = z.object({
+  ok: z.literal(true),
+});
+
+export type ConversationMutateOutput = z.infer<typeof conversationMutateOutputSchema>;
 
 export const conversationSubscribeInputSchema = z.object({
   conversation_id: z.string().min(1),

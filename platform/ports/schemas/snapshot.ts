@@ -112,6 +112,7 @@ export type ConversationSummary = {
   title: string;
   created: string;
   platform: string;
+  archived_at?: string | null;
 };
 
 export type SafeConfigSnapshot = {

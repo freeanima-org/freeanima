@@ -11,6 +11,10 @@ import type {
   ConversationListOutput,
   StoredMessagesInput,
   ConversationPatchTitleInput,
+  ConversationArchiveInput,
+  ConversationUnarchiveInput,
+  ConversationDeleteInput,
+  ConversationMutateOutput,
   ConversationSubscribeInput,
   ConversationCommandsInput,
   ConversationCommandsOutput,
@@ -38,6 +42,9 @@ export const SAP_METHODS = [
   "conversation.list",
   "conversation.messages",
   "conversation.patchTitle",
+  "conversation.archive",
+  "conversation.unarchive",
+  "conversation.delete",
   "conversation.subscribe",
   "conversation.acpDock",
   "conversation.commands",
@@ -61,6 +68,9 @@ export type SapRouterInputs = {
   "conversation.list": ConversationListInput;
   "conversation.messages": StoredMessagesInput;
   "conversation.patchTitle": ConversationPatchTitleInput;
+  "conversation.archive": ConversationArchiveInput;
+  "conversation.unarchive": ConversationUnarchiveInput;
+  "conversation.delete": ConversationDeleteInput;
   "conversation.subscribe": ConversationSubscribeInput;
   "conversation.acpDock": ConversationAcpDockInput;
   "conversation.commands": ConversationCommandsInput;
@@ -82,6 +92,9 @@ export type SapRouterOutputs = {
   "conversation.list": ConversationListOutput;
   "conversation.messages": Record<string, unknown>;
   "conversation.patchTitle": { ok: true };
+  "conversation.archive": ConversationMutateOutput;
+  "conversation.unarchive": ConversationMutateOutput;
+  "conversation.delete": ConversationMutateOutput;
   "conversation.subscribe": { ok: true };
   "conversation.acpDock": ConversationAcpDockOutput;
   "conversation.commands": ConversationCommandsOutput;

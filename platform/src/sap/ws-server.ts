@@ -11,6 +11,9 @@ import {
   conversationListInputSchema,
   conversationMessagesInputSchema,
   conversationPatchTitleInputSchema,
+  conversationArchiveInputSchema,
+  conversationUnarchiveInputSchema,
+  conversationDeleteInputSchema,
   conversationSubscribeInputSchema,
   sessionAcpDockInputSchema,
   conversationCommandsInputSchema,
@@ -147,6 +150,7 @@ export function createSapServerHandlers(
           const result = await serviceSessions.listConversations(
             deps.runtime.runtimeDeps(),
             platform ?? null,
+            { includeArchived: input.include_archived },
           );
           return {
             conversations: result.conversations.map((s) => ({
@@ -154,6 +158,7 @@ export function createSapServerHandlers(
               title: s.title,
               platform: s.platform,
               updated_at: s.created,
+              archived_at: s.archived_at ?? null,
             })),
           };
         }
@@ -170,6 +175,24 @@ export function createSapServerHandlers(
           const input = conversationPatchTitleInputSchema.parse(payload);
           const platform = await resolveConversationPlatform(deps, input.conversation_id);
           await deps.runtime.setConversationTitle(input.conversation_id, input.title, platform);
+          return { ok: true as const };
+        }
+        case "conversation.archive": {
+          const input = conversationArchiveInputSchema.parse(payload);
+          const platform = await resolveConversationPlatform(deps, input.conversation_id);
+          await deps.runtime.archiveConversation(input.conversation_id, platform);
+          return { ok: true as const };
+        }
+        case "conversation.unarchive": {
+          const input = conversationUnarchiveInputSchema.parse(payload);
+          const platform = await resolveConversationPlatform(deps, input.conversation_id);
+          await deps.runtime.unarchiveConversation(input.conversation_id, platform);
+          return { ok: true as const };
+        }
+        case "conversation.delete": {
+          const input = conversationDeleteInputSchema.parse(payload);
+          const platform = await resolveConversationPlatform(deps, input.conversation_id);
+          await deps.runtime.deleteConversation(input.conversation_id, platform);
           return { ok: true as const };
         }
         case "conversation.subscribe": {

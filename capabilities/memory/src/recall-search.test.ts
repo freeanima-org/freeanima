@@ -83,6 +83,8 @@ function mockConversationStore(
       return false;
     },
     async deleteConversation() {},
+    async archiveConversation() {},
+    async unarchiveConversation() {},
     async listConversationIds() {
       return [];
     },

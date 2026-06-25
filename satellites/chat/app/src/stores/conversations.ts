@@ -2,21 +2,31 @@ import type { DisplayItem, ConversationListItem } from "@chat/lib/types.ts";
 import { hasNewAssistantReply } from "@chat/lib/display-recovery.ts";
 import { create } from "zustand";
 import {
+  archiveConversation as archiveConversationApi,
   createConversation,
+  deleteConversation as deleteConversationApi,
   getStoredMessages,
+  interruptMessageStream,
   listConversations,
   setConversationTitle,
+  unarchiveConversation as unarchiveConversationApi,
 } from "@chat/lib/api.ts";
+import { useChatStore } from "@chat/stores/chat.ts";
 
 type ConversationsState = {
   conversations: ConversationListItem[];
   currentId: string | null;
   display: DisplayItem[];
   loading: boolean;
+  showArchived: boolean;
   fetchConversations: () => Promise<ConversationListItem[]>;
+  setShowArchived: (show: boolean) => Promise<ConversationListItem[]>;
   selectConversation: (id: string) => Promise<void>;
   newConversation: () => Promise<string | null>;
   renameConversation: (conversationId: string, newTitle: string) => Promise<void>;
+  archiveConversation: (conversationId: string) => Promise<string | null>;
+  unarchiveConversation: (conversationId: string) => Promise<string | null>;
+  deleteConversation: (conversationId: string) => Promise<string | null>;
   appendItem: (item: DisplayItem) => void;
   appendItemForConversation: (conversationId: string, item: DisplayItem) => void;
   refreshMessages: (conversationId: string, baselineCount: number) => Promise<boolean>;
@@ -24,21 +34,52 @@ type ConversationsState = {
   patchProgressLine: (text: string, messageId?: string) => void;
 };
 
+async function maybeInterruptStream(conversationId: string): Promise<void> {
+  const { streaming, streamingConversationId } = useChatStore.getState();
+  if (streaming && streamingConversationId === conversationId) {
+    await interruptMessageStream(conversationId);
+  }
+}
+
+function activeConversations(conversations: ConversationListItem[]): ConversationListItem[] {
+  return conversations.filter((c) => !c.archivedAt);
+}
+
+async function navigateAfterRemove(
+  get: () => ConversationsState,
+  removedId: string,
+): Promise<string | null> {
+  if (get().currentId !== removedId) return get().currentId;
+  const remaining = activeConversations(get().conversations);
+  if (remaining.length > 0) {
+    await get().selectConversation(remaining[0]!.id);
+    return remaining[0]!.id;
+  }
+  const newId = await get().newConversation();
+  return newId;
+}
+
 export const useConversationsStore = create<ConversationsState>((set, get) => ({
   conversations: [],
   currentId: null,
   display: [],
   loading: false,
+  showArchived: false,
 
   async fetchConversations() {
     try {
-      const resp = await listConversations();
+      const resp = await listConversations({ includeArchived: get().showArchived });
       set({ conversations: resp.conversations });
       return resp.conversations;
     } catch (e) {
       console.error("fetchSessions:", e);
       return [];
     }
+  },
+
+  async setShowArchived(show) {
+    set({ showArchived: show });
+    return get().fetchConversations();
   },
 
   async selectConversation(id) {
@@ -75,6 +116,41 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
       });
     } catch (e) {
       console.error("renameSession:", e);
+    }
+  },
+
+  async archiveConversation(conversationId) {
+    try {
+      await maybeInterruptStream(conversationId);
+      await archiveConversationApi(conversationId);
+      await get().fetchConversations();
+      return navigateAfterRemove(get, conversationId);
+    } catch (e) {
+      console.error("archiveConversation:", e);
+      return get().currentId;
+    }
+  },
+
+  async unarchiveConversation(conversationId) {
+    try {
+      await unarchiveConversationApi(conversationId);
+      await get().fetchConversations();
+      return get().currentId;
+    } catch (e) {
+      console.error("unarchiveConversation:", e);
+      return get().currentId;
+    }
+  },
+
+  async deleteConversation(conversationId) {
+    try {
+      await maybeInterruptStream(conversationId);
+      await deleteConversationApi(conversationId);
+      await get().fetchConversations();
+      return navigateAfterRemove(get, conversationId);
+    } catch (e) {
+      console.error("deleteConversation:", e);
+      return get().currentId;
     }
   },
 

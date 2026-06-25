@@ -66,6 +66,22 @@ export async function pgWriteDeleteConversation(
   await store(repos).deleteConversation(conversationId);
 }
 
+export async function pgArchiveConversation(
+  repos: PgRepositories,
+  conversationId: string,
+): Promise<void> {
+  if (!postgresAvailable(repos)) return;
+  await store(repos).archiveConversation(conversationId);
+}
+
+export async function pgUnarchiveConversation(
+  repos: PgRepositories,
+  conversationId: string,
+): Promise<void> {
+  if (!postgresAvailable(repos)) return;
+  await store(repos).unarchiveConversation(conversationId);
+}
+
 export async function conversationExistsWithRouting(
   repos: PgRepositories,
   conversationId: string,
@@ -169,11 +185,12 @@ export async function loadConversationToolsWithRouting(
 export async function listConversationsWithRouting(
   repos: PgRepositories,
   platform?: string | null,
+  opts?: { includeArchived?: boolean },
 ): Promise<string[]> {
   if (!postgresAvailable(repos)) {
     return [];
   }
-  return store(repos).listConversationIds(platform);
+  return store(repos).listConversationIds(platform, opts);
 }
 
 export async function nextMessagePosWithRouting(
@@ -195,15 +212,24 @@ export async function pgCountConversationsByPlatform(
 export async function pgListConversationSummaries(
   repos: PgRepositories,
   platform?: string | null,
-): Promise<Array<{ id: string; title: string; created: string; platform: string }>> {
-  return store(repos).listConversationSummaries(platform);
+  opts?: { includeArchived?: boolean },
+): Promise<
+  Array<{ id: string; title: string; created: string; platform: string; archived_at?: string | null }>
+> {
+  return store(repos).listConversationSummaries(platform, opts);
 }
 
 export async function pgListConversationSummariesPage(
   repos: PgRepositories,
-  opts?: { platform?: string | null; offset?: number; limit?: number },
+  opts?: { platform?: string | null; offset?: number; limit?: number; includeArchived?: boolean },
 ): Promise<{
-  items: Array<{ id: string; title: string; created: string; platform: string }>;
+  items: Array<{
+    id: string;
+    title: string;
+    created: string;
+    platform: string;
+    archived_at?: string | null;
+  }>;
   total: number;
 }> {
   return store(repos).listConversationSummariesPage(opts);

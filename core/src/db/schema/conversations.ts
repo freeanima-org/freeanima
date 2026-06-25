@@ -34,6 +34,7 @@ export const conversations = pgTable("conversations", {
     .default([]),
   functions: jsonb("functions").$type<ConversationFunctionsJson>().notNull().default([]),
   debug: boolean("debug").notNull().default(false),
+  archivedAt: timestamp("archived_at", { withTimezone: true, mode: "string" }),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).notNull(),
 });

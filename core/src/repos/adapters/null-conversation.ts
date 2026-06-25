@@ -85,6 +85,12 @@ export const nullConversationStore: ConversationStorePort = {
   async deleteConversation() {
     return;
   },
+  async archiveConversation() {
+    return;
+  },
+  async unarchiveConversation() {
+    return;
+  },
   async listConversationIds() {
     return [];
   },
