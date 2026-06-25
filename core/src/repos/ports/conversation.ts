@@ -11,6 +11,12 @@ export type ConversationSummaryRow = {
   title: string;
   created: string;
   platform: string;
+  archived_at?: string | null;
+};
+
+export type ConversationListOpts = {
+  platform?: string | null;
+  includeArchived?: boolean;
 };
 
 /** PG messages FTS hit row (memory_recall / conversation_search; mapped to snippet externally) */
@@ -89,11 +95,18 @@ export interface ConversationStorePort {
   shiftMessagePositions(conversationId: string, afterPos: number, delta: number): Promise<void>;
   conversationExists(conversationId: string): Promise<boolean>;
   deleteConversation(conversationId: string): Promise<void>;
-  listConversationIds(platform?: string | null): Promise<string[]>;
+  archiveConversation(conversationId: string): Promise<void>;
+  unarchiveConversation(conversationId: string): Promise<void>;
+  listConversationIds(
+    platform?: string | null,
+    opts?: Pick<ConversationListOpts, "includeArchived">,
+  ): Promise<string[]>;
   listDebugConversationIds(): Promise<string[]>;
-  listConversationSummaries(platform?: string | null): Promise<ConversationSummaryRow[]>;
-  listConversationSummariesPage(opts?: {
-    platform?: string | null;
+  listConversationSummaries(
+    platform?: string | null,
+    opts?: Pick<ConversationListOpts, "includeArchived">,
+  ): Promise<ConversationSummaryRow[]>;
+  listConversationSummariesPage(opts?: ConversationListOpts & {
     offset?: number;
     limit?: number;
   }): Promise<{ items: ConversationSummaryRow[]; total: number }>;

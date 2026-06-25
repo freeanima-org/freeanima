@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, lt, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, lt, sql } from "drizzle-orm";
 import {
   compressionStateSchema,
   conversationTodoStoreSchema,
@@ -263,24 +263,21 @@ export async function updateTodos(
   await db.update(conversations).set(patchTodos(todos)).where(eq(conversations.id, conversationId));
 }
 
-export async function listConversationIds(platform?: string | null): Promise<string[]> {
+export async function listConversationIds(
+  platform?: string | null,
+  opts?: { includeArchived?: boolean },
+): Promise<string[]> {
   const db = getDb();
+  const where = buildConversationListWhere(platform, opts?.includeArchived);
   const rows = await db
     .select({
       id: conversations.id,
-      platformInfo: conversations.platformInfo,
       updatedAt: conversations.updatedAt,
     })
     .from(conversations)
+    .where(where)
     .orderBy(desc(conversations.updatedAt));
-  return rows
-    .filter((r) => {
-      if (!platform) return true;
-      const p = r.platformInfo?.platform;
-      return p === platform;
-    })
-    .map((r) => r.id)
-    .toReversed();
+  return rows.map((r) => r.id).toReversed();
 }
 
 export async function listDebugConversationIds(): Promise<string[]> {
@@ -304,56 +301,74 @@ export async function countConversationsByPlatform(): Promise<Record<string, num
   return byPlatform;
 }
 
+function sessionPlatformWhere(platform?: string | null) {
+  if (!platform) return undefined;
+  return sql`${conversations.platformInfo}->>'platform' = ${platform}`;
+}
+
+function buildConversationListWhere(platform?: string | null, includeArchived?: boolean) {
+  const conds = [];
+  const platformCond = sessionPlatformWhere(platform);
+  if (platformCond) conds.push(platformCond);
+  if (!includeArchived) conds.push(isNull(conversations.archivedAt));
+  if (conds.length === 0) return undefined;
+  if (conds.length === 1) return conds[0];
+  return and(...conds);
+}
+
+function mapConversationSummaryRow(row: {
+  id: string;
+  title: string | null;
+  platformInfo: { platform?: string } | null;
+  createdAt: string;
+  archivedAt?: string | null;
+}): ConversationSummaryRow {
+  const raw = row.platformInfo?.platform;
+  return {
+    id: row.id,
+    title: row.title ?? "",
+    created: row.createdAt,
+    platform: typeof raw === "string" ? raw : "",
+    archived_at: row.archivedAt ?? null,
+  };
+}
+
 export async function listConversationSummaries(
   platform?: string | null,
+  opts?: { includeArchived?: boolean },
 ): Promise<ConversationSummaryRow[]> {
   const db = getDb();
+  const where = buildConversationListWhere(platform, opts?.includeArchived);
   const rows = await db
     .select({
       id: conversations.id,
       title: conversations.title,
       platformInfo: conversations.platformInfo,
       createdAt: conversations.createdAt,
+      archivedAt: conversations.archivedAt,
     })
     .from(conversations)
+    .where(where)
     .orderBy(desc(conversations.updatedAt));
-  return rows
-    .filter((row) => {
-      if (!platform) return true;
-      return row.platformInfo?.platform === platform;
-    })
-    .map((row) => {
-      const raw = row.platformInfo?.platform;
-      return {
-        id: row.id,
-        title: row.title ?? "",
-        created: row.createdAt,
-        platform: typeof raw === "string" ? raw : "",
-      };
-    })
-    .toReversed();
-}
-
-function sessionPlatformWhere(platform?: string | null) {
-  if (!platform) return undefined;
-  return sql`${conversations.platformInfo}->>'platform' = ${platform}`;
+  return rows.map(mapConversationSummaryRow).toReversed();
 }
 
 export async function listConversationSummariesPage(opts?: {
   platform?: string | null;
   offset?: number;
   limit?: number;
+  includeArchived?: boolean;
 }): Promise<{ items: ConversationSummaryRow[]; total: number }> {
   const offset = Math.max(0, opts?.offset ?? 0);
   const limit = Math.min(100, Math.max(1, opts?.limit ?? 20));
   const platform = opts?.platform;
   const db = getDb();
-  const platformCond = sessionPlatformWhere(platform);
+  const where = buildConversationListWhere(platform, opts?.includeArchived);
 
   const countRows = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(conversations)
-    .where(platformCond);
+    .where(where);
   const total = countRows[0]?.count ?? 0;
 
   const rows = await db
@@ -362,23 +377,16 @@ export async function listConversationSummariesPage(opts?: {
       title: conversations.title,
       platformInfo: conversations.platformInfo,
       createdAt: conversations.createdAt,
+      archivedAt: conversations.archivedAt,
     })
     .from(conversations)
-    .where(platformCond)
+    .where(where)
     .orderBy(desc(conversations.createdAt))
     .limit(limit)
     .offset(offset);
 
   return {
-    items: rows.map((row) => {
-      const raw = row.platformInfo?.platform;
-      return {
-        id: row.id,
-        title: row.title ?? "",
-        created: row.createdAt,
-        platform: typeof raw === "string" ? raw : "",
-      };
-    }),
+    items: rows.map(mapConversationSummaryRow),
     total,
   };
 }
@@ -395,6 +403,23 @@ export async function deleteDebugConversations(): Promise<number> {
 export async function deleteConversation(conversationId: string): Promise<void> {
   const db = getDb();
   await db.delete(conversations).where(eq(conversations.id, conversationId));
+}
+
+export async function archiveConversation(conversationId: string): Promise<void> {
+  const db = getDb();
+  const now = pgNowIso();
+  await db
+    .update(conversations)
+    .set({ archivedAt: now, updatedAt: now })
+    .where(eq(conversations.id, conversationId));
+}
+
+export async function unarchiveConversation(conversationId: string): Promise<void> {
+  const db = getDb();
+  await db
+    .update(conversations)
+    .set({ archivedAt: null, updatedAt: pgNowIso() })
+    .where(eq(conversations.id, conversationId));
 }
 
 const staleSessionCleanupPredicate = sql`(
@@ -421,6 +446,7 @@ export async function listStaleConversationIdsForCleanup(opts: {
     .where(
       and(
         eq(conversations.debug, false),
+        isNull(conversations.archivedAt),
         lt(conversations.updatedAt, olderThanIso),
         staleSessionCleanupPredicate,
       ),

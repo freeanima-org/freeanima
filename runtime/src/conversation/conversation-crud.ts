@@ -41,6 +41,8 @@ import {
   pgFindConversationIdByPlatformInfo,
   pgListConversationIdsMatchingPlatformProbe,
   pgWriteDeleteConversation,
+  pgArchiveConversation,
+  pgUnarchiveConversation,
   pgWriteMessage,
   pgWriteMeta,
   pgWritePatchMeta,
@@ -153,19 +155,27 @@ export async function countConversationsByPlatform(
 export async function listConversationSummaries(
   repos: PgRepositories,
   platform?: string | null,
+  opts?: { includeArchived?: boolean },
 ): Promise<
   Array<{
     id: string;
     title: string;
     created: string;
     platform: string;
+    archived_at?: string | null;
   }>
 > {
   if (postgresAvailable(repos)) {
-    return pgListConversationSummaries(repos, platform);
+    return pgListConversationSummaries(repos, platform, opts);
   }
-  const ids = await listConversations(repos, platform);
-  const out: Array<{ id: string; title: string; created: string; platform: string }> = [];
+  const ids = await listConversations(repos, platform, opts);
+  const out: Array<{
+    id: string;
+    title: string;
+    created: string;
+    platform: string;
+    archived_at?: string | null;
+  }> = [];
   for (const sid of ids) {
     const meta = await loadConversationMeta(repos, sid);
     out.push({
@@ -180,15 +190,23 @@ export async function listConversationSummaries(
 
 export async function listConversationSummariesPage(
   repos: PgRepositories,
-  opts?: { platform?: string | null; offset?: number; limit?: number },
+  opts?: { platform?: string | null; offset?: number; limit?: number; includeArchived?: boolean },
 ): Promise<{
-  items: Array<{ id: string; title: string; created: string; platform: string }>;
+  items: Array<{
+    id: string;
+    title: string;
+    created: string;
+    platform: string;
+    archived_at?: string | null;
+  }>;
   total: number;
 }> {
   if (postgresAvailable(repos)) {
     return pgListConversationSummariesPage(repos, opts);
   }
-  const all = await listConversationSummaries(repos, opts?.platform);
+  const all = await listConversationSummaries(repos, opts?.platform, {
+    includeArchived: opts?.includeArchived,
+  });
   const offset = Math.max(0, opts?.offset ?? 0);
   const limit = Math.min(100, Math.max(1, opts?.limit ?? 20));
   return {
@@ -200,8 +218,9 @@ export async function listConversationSummariesPage(
 export async function listConversations(
   repos: PgRepositories,
   platform?: string | null,
+  opts?: { includeArchived?: boolean },
 ): Promise<string[]> {
-  return listConversationsWithRouting(repos, platform);
+  return listConversationsWithRouting(repos, platform, opts);
 }
 
 /** Whether conversation exists (PostgreSQL) */
@@ -603,6 +622,27 @@ export async function setConversationTitle(
   title: string,
 ): Promise<void> {
   await updateConversationMetaField(repos, conversationId, { title });
+}
+
+export async function archiveConversation(
+  repos: PgRepositories,
+  conversationId: string,
+): Promise<void> {
+  await pgArchiveConversation(repos, conversationId);
+}
+
+export async function unarchiveConversation(
+  repos: PgRepositories,
+  conversationId: string,
+): Promise<void> {
+  await pgUnarchiveConversation(repos, conversationId);
+}
+
+export async function deleteUserConversation(
+  repos: PgRepositories,
+  conversationId: string,
+): Promise<void> {
+  await pgWriteDeleteConversation(repos, conversationId);
 }
 
 export async function getConversationTitle(

@@ -20,6 +20,8 @@ export const pgConversationStore = {
   shiftMessagePositions: messageRepo.shiftMessagePositions,
   conversationExists: conversationRepo.conversationExists,
   deleteConversation: conversationRepo.deleteConversation,
+  archiveConversation: conversationRepo.archiveConversation,
+  unarchiveConversation: conversationRepo.unarchiveConversation,
   listConversationIds: conversationRepo.listConversationIds,
   listDebugConversationIds: conversationRepo.listDebugConversationIds,
   listConversationSummaries: conversationRepo.listConversationSummaries,

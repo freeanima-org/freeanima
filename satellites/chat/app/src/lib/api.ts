@@ -19,6 +19,7 @@ function mapConversationList(raw: {
     title?: string;
     platform?: string;
     updated_at?: string;
+    archived_at?: string | null;
   }>;
 }): { conversations: ConversationListItem[] } {
   return {
@@ -27,6 +28,7 @@ function mapConversationList(raw: {
       title: s.title ?? "",
       platform: s.platform ?? "",
       created: s.updated_at ?? "",
+      archivedAt: s.archived_at ?? null,
     })),
   };
 }
@@ -37,9 +39,11 @@ function sap() {
 
 export type { ConversationAcpDockSnapshot, StreamApiEvent } from "./types.ts";
 
-export async function listConversations() {
+export async function listConversations(opts?: { includeArchived?: boolean }) {
   const client = await sap().whenReady();
-  const result = await client.request("conversation.list", {});
+  const result = await client.request("conversation.list", {
+    include_archived: opts?.includeArchived,
+  });
   return mapConversationList(result);
 }
 
@@ -61,6 +65,24 @@ export async function getStoredMessages(conversationId: string, offset = 0, limi
 export async function setConversationTitle(conversationId: string, title: string) {
   const client = await sap().whenReady();
   await client.request("conversation.patchTitle", { conversation_id: conversationId, title });
+  return { ok: true as const };
+}
+
+export async function archiveConversation(conversationId: string) {
+  const client = await sap().whenReady();
+  await client.request("conversation.archive", { conversation_id: conversationId });
+  return { ok: true as const };
+}
+
+export async function unarchiveConversation(conversationId: string) {
+  const client = await sap().whenReady();
+  await client.request("conversation.unarchive", { conversation_id: conversationId });
+  return { ok: true as const };
+}
+
+export async function deleteConversation(conversationId: string) {
+  const client = await sap().whenReady();
+  await client.request("conversation.delete", { conversation_id: conversationId });
   return { ok: true as const };
 }
 

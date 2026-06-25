@@ -35,7 +35,7 @@ export async function checkPlatform(
 export async function listConversations(
   deps: RuntimeDeps,
   platform?: string | null,
-  opts?: { offset?: number; limit?: number },
+  opts?: { offset?: number; limit?: number; includeArchived?: boolean },
 ): Promise<{ conversations: ConversationSummary[]; total: number }> {
   const p = platform === "" ? null : platform;
   if (opts?.offset != null || opts?.limit != null) {
@@ -43,10 +43,13 @@ export async function listConversations(
       platform: p ?? undefined,
       offset: opts.offset,
       limit: opts.limit,
+      includeArchived: opts.includeArchived,
     });
     return { conversations: page.items, total: page.total };
   }
-  const items = await deps.conversation.listConversationSummaries(p ?? undefined);
+  const items = await deps.conversation.listConversationSummaries(p ?? undefined, {
+    includeArchived: opts?.includeArchived,
+  });
   return { conversations: items, total: items.length };
 }
 
@@ -152,6 +155,45 @@ export async function setConversationTitle(
 ): Promise<{ ok: boolean }> {
   await checkPlatform(deps, { platform }, conversationId);
   await deps.conversation.setConversationTitle(conversationId, title.slice(0, 50));
+  return { ok: true };
+}
+
+export async function archiveConversation(
+  deps: RuntimeDeps,
+  conversationId: string,
+  platform = "",
+): Promise<{ ok: boolean }> {
+  await checkPlatform(deps, { platform }, conversationId);
+  if (!(await deps.conversation.conversationExists(conversationId))) {
+    throw new Error(`Conversation not found: ${conversationId}`);
+  }
+  await deps.conversation.archiveConversation(conversationId);
+  return { ok: true };
+}
+
+export async function unarchiveConversation(
+  deps: RuntimeDeps,
+  conversationId: string,
+  platform = "",
+): Promise<{ ok: boolean }> {
+  await checkPlatform(deps, { platform }, conversationId);
+  if (!(await deps.conversation.conversationExists(conversationId))) {
+    throw new Error(`Conversation not found: ${conversationId}`);
+  }
+  await deps.conversation.unarchiveConversation(conversationId);
+  return { ok: true };
+}
+
+export async function deleteConversation(
+  deps: RuntimeDeps,
+  conversationId: string,
+  platform = "",
+): Promise<{ ok: boolean }> {
+  await checkPlatform(deps, { platform }, conversationId);
+  if (!(await deps.conversation.conversationExists(conversationId))) {
+    throw new Error(`Conversation not found: ${conversationId}`);
+  }
+  await deps.conversation.deleteUserConversation(conversationId);
   return { ok: true };
 }
 

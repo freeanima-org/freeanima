@@ -25,6 +25,7 @@ export type ConversationListItem = {
   title: string;
   created: string;
   platform: string;
+  archivedAt?: string | null;
 };
 
 export type StreamApiEvent =

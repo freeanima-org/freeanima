@@ -66,6 +66,11 @@ export function ChatApp() {
   const selectConversation = useConversationsStore((s) => s.selectConversation);
   const newConversationFn = useConversationsStore((s) => s.newConversation);
   const renameConversation = useConversationsStore((s) => s.renameConversation);
+  const showArchived = useConversationsStore((s) => s.showArchived);
+  const setShowArchived = useConversationsStore((s) => s.setShowArchived);
+  const archiveConversationFn = useConversationsStore((s) => s.archiveConversation);
+  const unarchiveConversationFn = useConversationsStore((s) => s.unarchiveConversation);
+  const deleteConversationFn = useConversationsStore((s) => s.deleteConversation);
   const appendItem = useConversationsStore((s) => s.appendItem);
   const appendItemForConversation = useConversationsStore((s) => s.appendItemForConversation);
   const refreshMessages = useConversationsStore((s) => s.refreshMessages);
@@ -96,6 +101,8 @@ export function ChatApp() {
     conversationId: null as string | null,
   });
   const [showRenameDialog, setShowRenameDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [renameText, setRenameText] = useState("");
   const renameInputRef = useRef<HTMLInputElement>(null);
 
@@ -123,6 +130,21 @@ export function ChatApp() {
   const currentConversation = useMemo(
     () => conversations.find((s) => s.id === currentId),
     [conversations, currentId],
+  );
+
+  const activeConversations = useMemo(
+    () => conversations.filter((s) => !s.archivedAt),
+    [conversations],
+  );
+
+  const archivedConversations = useMemo(
+    () => conversations.filter((s) => s.archivedAt),
+    [conversations],
+  );
+
+  const contextConversation = useMemo(
+    () => conversations.find((s) => s.id === contextMenu.conversationId),
+    [conversations, contextMenu.conversationId],
   );
 
   const headerTitle = currentId
@@ -346,6 +368,62 @@ export function ChatApp() {
     setShowRenameDialog(false);
     setRenameText("");
   };
+
+  const startDelete = () => {
+    setDeleteTargetId(contextMenu.conversationId);
+    setShowDeleteDialog(true);
+    setContextMenu((menu) => ({ ...menu, visible: false }));
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTargetId) return;
+    const nextId = await deleteConversationFn(deleteTargetId);
+    writeConversationToUrl(nextId);
+    setShowDeleteDialog(false);
+    setDeleteTargetId(null);
+  };
+
+  const handleArchive = async () => {
+    const id = contextMenu.conversationId;
+    if (!id) return;
+    setContextMenu((menu) => ({ ...menu, visible: false }));
+    const nextId = await archiveConversationFn(id);
+    writeConversationToUrl(nextId);
+  };
+
+  const handleUnarchive = async () => {
+    const id = contextMenu.conversationId;
+    if (!id) return;
+    setContextMenu((menu) => ({ ...menu, visible: false }));
+    await unarchiveConversationFn(id);
+  };
+
+  const toggleShowArchived = () => {
+    void setShowArchived(!showArchived);
+  };
+
+  const renderConversationItem = (s: ConversationListItem, faded = false) => (
+    <div
+      key={s.id}
+      className={[
+        "session-item",
+        s.id === currentId ? "sidebar-nav-active" : "",
+        faded ? "opacity-60" : "",
+      ].join(" ")}
+      onClick={() => void navigateToConversation(s.id)}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        setContextMenu({
+          visible: true,
+          x: e.clientX,
+          y: e.clientY,
+          conversationId: s.id,
+        });
+      }}
+    >
+      <div className="truncate">{conversationLabel(s)}</div>
+    </div>
+  );
 
   const flushQueueRef = useRef<(conversationId: string) => Promise<void>>(async () => {});
 
@@ -632,7 +710,7 @@ export function ChatApp() {
             sidebarOpen ? "safe-fixed-sidebar z-40 lg:static" : "hidden lg:flex",
           ].join(" ")}
         >
-          <div className="p-2">
+          <div className="p-2 space-y-2">
             <button
               type="button"
               className="btn btn-primary btn-sm w-full"
@@ -640,28 +718,26 @@ export function ChatApp() {
             >
               {m.admin_common_new_conversation()}
             </button>
+            <label className="flex items-center gap-2 px-1 text-xs text-base-content/70 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                className="checkbox checkbox-xs"
+                checked={showArchived}
+                onChange={toggleShowArchived}
+              />
+              {m.chat_show_archived()}
+            </label>
           </div>
           <div className="flex-1 overflow-y-auto px-2 py-1 space-y-1">
-            {conversations.map((s) => (
-              <div
-                key={s.id}
-                className={["session-item", s.id === currentId ? "sidebar-nav-active" : ""].join(
-                  " ",
-                )}
-                onClick={() => void navigateToConversation(s.id)}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  setContextMenu({
-                    visible: true,
-                    x: e.clientX,
-                    y: e.clientY,
-                    conversationId: s.id,
-                  });
-                }}
-              >
-                <div className="truncate">{conversationLabel(s)}</div>
+            {activeConversations.map((s) => renderConversationItem(s))}
+            {showArchived && archivedConversations.length > 0 ? (
+              <div className="pt-2 mt-2 border-t border-base-300/60 space-y-1">
+                <div className="px-1 text-[11px] font-medium text-base-content/50 uppercase tracking-wide">
+                  {m.chat_archived_section()}
+                </div>
+                {archivedConversations.map((s) => renderConversationItem(s, true))}
               </div>
-            ))}
+            ) : null}
           </div>
         </aside>
 
@@ -886,6 +962,58 @@ export function ChatApp() {
             onClick={startRename}
           >
             {m.admin_common_rename()}
+          </div>
+          {contextConversation?.archivedAt ? (
+            <div
+              className="px-3 py-1.5 hover:bg-base-300 cursor-pointer text-sm"
+              onClick={() => void handleUnarchive()}
+            >
+              {m.chat_unarchive()}
+            </div>
+          ) : (
+            <div
+              className="px-3 py-1.5 hover:bg-base-300 cursor-pointer text-sm"
+              onClick={() => void handleArchive()}
+            >
+              {m.chat_archive()}
+            </div>
+          )}
+          <div
+            className="px-3 py-1.5 hover:bg-base-300 cursor-pointer text-sm text-error"
+            onClick={startDelete}
+          >
+            {m.chat_delete()}
+          </div>
+        </div>
+      ) : null}
+
+      {showDeleteDialog ? (
+        <div
+          className="safe-fixed-overlay z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setShowDeleteDialog(false)}
+        >
+          <div
+            className="bg-base-100 rounded-xl p-5 shadow-2xl w-full max-w-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-sm font-bold mb-3">{m.chat_delete()}</h3>
+            <p className="text-sm text-base-content/70 mb-4">{m.chat_delete_confirm()}</p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() => setShowDeleteDialog(false)}
+              >
+                {m.admin_common_cancel()}
+              </button>
+              <button
+                type="button"
+                className="btn btn-error btn-sm"
+                onClick={() => void confirmDelete()}
+              >
+                {m.chat_delete()}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

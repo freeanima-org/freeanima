@@ -255,7 +255,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
 
   listConversations(
     platform?: string | null,
-    opts?: { offset?: number; limit?: number },
+    opts?: { offset?: number; limit?: number; includeArchived?: boolean },
   ): Promise<{ conversations: ConversationSummary[]; total: number }> {
     return conversations.listConversations(this.runtimeDeps(), platform, opts);
   }
@@ -315,6 +315,18 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     platform = "",
   ): Promise<{ ok: boolean }> {
     return conversations.setConversationTitle(this.runtimeDeps(), conversationId, title, platform);
+  }
+
+  archiveConversation(conversationId: string, platform = ""): Promise<{ ok: boolean }> {
+    return conversations.archiveConversation(this.runtimeDeps(), conversationId, platform);
+  }
+
+  unarchiveConversation(conversationId: string, platform = ""): Promise<{ ok: boolean }> {
+    return conversations.unarchiveConversation(this.runtimeDeps(), conversationId, platform);
+  }
+
+  deleteConversation(conversationId: string, platform = ""): Promise<{ ok: boolean }> {
+    return conversations.deleteConversation(this.runtimeDeps(), conversationId, platform);
   }
 
   async sendMessage(
