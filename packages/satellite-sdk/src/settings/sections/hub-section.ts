@@ -51,6 +51,8 @@ export const hubSettingsSection: SettingsSection = {
   description:
     "客户端通用设置与 Hub 连接。远程访问需配置 remote_auth.token（见 docs/guide/remote-access.md）。",
   platforms: {
+    // Web 壳层 detectPlatform() 为 desktop；字段与 mobile 相同（无开机自启动）
+    desktop: { kind: "form", fields: hubFields },
     mobile: { kind: "form", fields: hubFields },
   },
 };
