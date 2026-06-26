@@ -5,7 +5,9 @@ import { toolErrorSchema } from "./tool-json.ts";
 const EMPTY_OBJECT_SCHEMA: JsonSchemaObject = { type: "object", properties: {} };
 
 /** Ensure JSON Schema has object type and properties for MCP / OpenAI interchange */
-export function normalizeJsonSchema(schema?: JsonSchemaObject | Record<string, unknown>): JsonSchemaObject {
+export function normalizeJsonSchema(
+  schema?: JsonSchemaObject | Record<string, unknown>,
+): JsonSchemaObject {
   if (!schema || typeof schema !== "object") return { ...EMPTY_OBJECT_SCHEMA };
   const type = typeof schema.type === "string" ? schema.type : "object";
   const properties =

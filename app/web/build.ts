@@ -33,7 +33,12 @@ function arrangeShellBridgeHtml(html: string): string {
 
 async function bundleShellBridge(
   outdir: string,
-  opts: { minify: boolean; sourcemap: boolean; defaultHubUrl: string; defaultRemoteAuthToken: string },
+  opts: {
+    minify: boolean;
+    sourcemap: boolean;
+    defaultHubUrl: string;
+    defaultRemoteAuthToken: string;
+  },
 ): Promise<void> {
   mkdirSync(outdir, { recursive: true });
   const result = await Bun.build({
@@ -58,11 +63,13 @@ async function bundleShellBridge(
 export async function buildAppWeb(opts?: BuildAppWebOptions): Promise<string> {
   const minify = opts?.minify ?? false;
   const sourcemap = opts?.sourcemap ?? true;
-  const defaultHubUrl = (opts?.defaultHubUrl ?? process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658").replace(
-    /\/$/,
-    "",
-  );
-  const defaultRemoteAuthToken = opts?.defaultRemoteAuthToken ?? process.env.FREEANIMA_REMOTE_AUTH_TOKEN ?? "";
+  const defaultHubUrl = (
+    opts?.defaultHubUrl ??
+    process.env.FREEANIMA_URL ??
+    "http://127.0.0.1:2658"
+  ).replace(/\/$/, "");
+  const defaultRemoteAuthToken =
+    opts?.defaultRemoteAuthToken ?? process.env.FREEANIMA_REMOTE_AUTH_TOKEN ?? "";
 
   await buildShellUi({
     appDir: join(PKG_DIR, "app"),
