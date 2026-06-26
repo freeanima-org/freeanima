@@ -59,6 +59,12 @@ A digital life is structured from the inside out. Each layer answers a different
 - **Self and Memory**: Self answers "who am I"; Memory answers "what do I know". They are peers with different natures.
 - **Estate** is outermost — not "who I am" but "what I have and what I run on". Body and assets meet here as extensions of my boundary.
 
+### Unified entity storage (v0.8)
+
+Structured business data (tasks, notes, future memory migrations) converges on a single **`entities`** PostgreSQL table with component tags (`task_list`, `task_item`, …). Self layer [`self_blocks`](self-layer.md) stays physically separate. See [`entity-model.md`](entity-model.md).
+
+Shell UI **`/tasks`** is the primary task-management entry (TickTick-style lists/items on entities). Legacy `tasks` table + LLM tools remain for backward compatibility.
+
 ### Background
 
 The four-layer model draws on cognitive psychology and the [Hindsight](https://arxiv.org/abs/2512.12818) four-network memory architecture, with two fundamental extensions: limbic (emotional) memory and Estate (assets as first-class citizens), plus Self split out from Memory.

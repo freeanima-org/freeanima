@@ -2,9 +2,7 @@
   "version": "8",
   "dialect": "postgres",
   "id": "7f57bc0f-f2fd-4b47-a3cd-4caa64c9252d",
-  "prevIds": [
-    "149a2dc3-def2-48b2-ba9f-99249e6b4e50"
-  ],
+  "prevIds": ["149a2dc3-def2-48b2-ba9f-99249e6b4e50"],
   "ddl": [
     {
       "isRlsEnabled": false,
@@ -3137,14 +3135,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "conversation_id"
-      ],
+      "columns": ["conversation_id"],
       "schemaTo": "public",
       "tableTo": "conversations",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "messages_conversation_id_conversations_id_fkey",
@@ -3154,14 +3148,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "message_id"
-      ],
+      "columns": ["message_id"],
       "schemaTo": "public",
       "tableTo": "messages",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "memory_references_message_id_messages_id_fkey",
@@ -3171,14 +3161,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "semantic_memory_id"
-      ],
+      "columns": ["semantic_memory_id"],
       "schemaTo": "public",
       "tableTo": "semantic_memory",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "memory_references_semantic_memory_id_semantic_memory_id_fkey",
@@ -3188,14 +3174,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "conversation_id"
-      ],
+      "columns": ["conversation_id"],
       "schemaTo": "public",
       "tableTo": "conversations",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "memory_references_conversation_id_conversations_id_fkey",
@@ -3205,14 +3187,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "source_conversation_id"
-      ],
+      "columns": ["source_conversation_id"],
       "schemaTo": "public",
       "tableTo": "conversations",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "SET NULL",
       "name": "tasks_source_conversation_id_conversations_id_fk",
@@ -3221,9 +3199,7 @@
       "table": "tasks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "conversations_pkey",
       "schema": "public",
@@ -3231,9 +3207,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "messages_pkey",
       "schema": "public",
@@ -3241,9 +3215,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "semantic_memory_pkey",
       "schema": "public",
@@ -3251,9 +3223,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "memory_references_pkey",
       "schema": "public",
@@ -3261,9 +3231,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "block_key"
-      ],
+      "columns": ["block_key"],
       "nameExplicit": false,
       "name": "self_blocks_pkey",
       "schema": "public",
@@ -3271,9 +3239,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "autobiographical_memory_pkey",
       "schema": "public",
@@ -3281,9 +3247,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "limbic_memory_pkey",
       "schema": "public",
@@ -3291,9 +3255,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "dream_memory_pkey",
       "schema": "public",
@@ -3301,9 +3263,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "tasks_pkey",
       "schema": "public",
@@ -3311,9 +3271,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "notifications_pkey",
       "schema": "public",
@@ -3321,9 +3279,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "cron_jobs_pkey",
       "schema": "public",
@@ -3331,9 +3287,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "cron_log_pkey",
       "schema": "public",
@@ -3341,9 +3295,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "pipeline_step_run_pkey",
       "schema": "public",
@@ -3351,9 +3303,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "auto_llm_runs_pkey",
       "schema": "public",
@@ -3361,9 +3311,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "instance_id"
-      ],
+      "columns": ["instance_id"],
       "nameExplicit": false,
       "name": "sap_instances_pkey",
       "schema": "public",
@@ -3372,10 +3320,7 @@
     },
     {
       "nameExplicit": true,
-      "columns": [
-        "job_id",
-        "run_count"
-      ],
+      "columns": ["job_id", "run_count"],
       "nullsNotDistinct": false,
       "name": "cron_log_job_id_run_count_unique",
       "entityType": "uniques",

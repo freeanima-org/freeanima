@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Fragment, useCallback, useEffect, useState } from "react";
+import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/satellite-sdk/form";
 import {
   getDeepSleepRounds,
   getSleepPipelineStatus,
@@ -298,29 +299,32 @@ function SleepPage() {
       <div className="card bg-base-200 p-4 mb-4">
         <h3 className="font-semibold mb-1">{m.admin_sleep_cycle_title()}</h3>
         <p className="text-sm text-base-content/60 mb-3">{m.admin_sleep_cycle_status()}</p>
-        <label className="form-control mb-3 max-w-xs">
-          <span className="label-text text-xs">{m.admin_sleep_cycle_day()}</span>
-          <input
-            type="text"
-            className="input input-sm input-bordered"
-            placeholder="YYYY-MM-DD"
-            value={pipelineDay}
-            onChange={(e) => setPipelineDay(e.target.value)}
-            disabled={pipelineBusy}
-          />
-        </label>
-        <label className="form-control mb-3 max-w-md">
-          <span className="label-text text-xs">{m.admin_sleep_deep_sleep_mode()}</span>
-          <select
-            className="select select-sm select-bordered"
-            value={deepSleepMode}
-            onChange={(e) => setDeepSleepMode(e.target.value as "full" | "incremental")}
-            disabled={pipelineBusy}
-          >
-            <option value="full">{m.admin_sleep_deep_sleep_mode_full()}</option>
-            <option value="incremental">{m.admin_sleep_deep_sleep_mode_incremental()}</option>
-          </select>
-        </label>
+        <FormFieldset bordered={false} className="gap-3 mb-3">
+          <FormField label={m.admin_sleep_cycle_day()} className="max-w-xs text-xs">
+            <input
+              type="text"
+              className="input input-sm input-bordered"
+              placeholder="YYYY-MM-DD"
+              value={pipelineDay}
+              onChange={(e) => setPipelineDay(e.target.value)}
+              disabled={pipelineBusy}
+            />
+          </FormField>
+          <div className="max-w-md">
+            <FormFieldLabel className="text-xs py-0">
+              {m.admin_sleep_deep_sleep_mode()}
+            </FormFieldLabel>
+            <select
+              className="select select-sm select-bordered w-full"
+              value={deepSleepMode}
+              onChange={(e) => setDeepSleepMode(e.target.value as "full" | "incremental")}
+              disabled={pipelineBusy}
+            >
+              <option value="full">{m.admin_sleep_deep_sleep_mode_full()}</option>
+              <option value="incremental">{m.admin_sleep_deep_sleep_mode_incremental()}</option>
+            </select>
+          </div>
+        </FormFieldset>
         <div className="flex items-center gap-2 flex-wrap mb-4">
           <button
             type="button"
@@ -340,7 +344,7 @@ function SleepPage() {
               onChange={(e) => setPipelineForce(e.target.checked)}
               disabled={pipelineBusy}
             />
-            <span className="label-text text-sm">{m.admin_sleep_cycle_force()}</span>
+            <span className="text-sm">{m.admin_sleep_cycle_force()}</span>
           </label>
         </div>
 

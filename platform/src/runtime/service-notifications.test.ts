@@ -126,11 +126,10 @@ describe("service-notifications", () => {
   it("fan-out creates one row per recipient kind", async () => {
     const store = createMemoryNotificationStore();
     const deps = testDeps(store);
-    const rows = await createNotificationForRecipients(
-      deps,
-      { title: "both", body: "hello" },
-      ["user", "agent"],
-    );
+    const rows = await createNotificationForRecipients(deps, { title: "both", body: "hello" }, [
+      "user",
+      "agent",
+    ]);
     expect(rows).toHaveLength(2);
     expect(rows.map((row) => row.recipient_kind).sort()).toEqual(["agent", "user"]);
   });

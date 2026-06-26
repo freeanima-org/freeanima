@@ -1,0 +1,59 @@
+import { z } from "zod";
+
+import { entityTypeSchema, type EntitySelect } from "./entity.ts";
+import {
+  TASK_ITEM_COMPONENT,
+  TASK_LIST_COMPONENT,
+  WORLD_CONFIG_COMPONENT,
+  taskItemBodySchema,
+  taskListBodySchema,
+  worldConfigBodySchema,
+  type TaskItemBody,
+  type TaskListBody,
+  type WorldConfigBody,
+} from "./components/index.ts";
+
+export type EntityRowView = {
+  id: number;
+  type: z.infer<typeof entityTypeSchema>;
+  world_id: number;
+  owner_id: number | null;
+  components: string[];
+  primary_component: string;
+  body: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+};
+
+export function mapEntityRow(row: EntitySelect): EntityRowView {
+  const typeParsed = entityTypeSchema.parse(row.type);
+  return {
+    id: row.id,
+    type: typeParsed,
+    world_id: row.worldId,
+    owner_id: row.ownerId ?? null,
+    components: [...row.components],
+    primary_component: row.primaryComponent,
+    body: (row.body ?? {}) as Record<string, unknown>,
+    created_at: row.createdAt,
+    updated_at: row.updatedAt,
+  };
+}
+
+export function asWorld(row: EntityRowView): WorldConfigBody | null {
+  if (row.type !== "world" || !row.components.includes(WORLD_CONFIG_COMPONENT)) return null;
+  const parsed = worldConfigBodySchema.safeParse(row.body);
+  return parsed.success ? parsed.data : null;
+}
+
+export function asTaskList(row: EntityRowView): (TaskListBody & { id: number }) | null {
+  if (row.primary_component !== TASK_LIST_COMPONENT) return null;
+  const parsed = taskListBodySchema.safeParse(row.body);
+  return parsed.success ? { id: row.id, ...parsed.data } : null;
+}
+
+export function asTaskItem(row: EntityRowView): (TaskItemBody & { id: number }) | null {
+  if (row.primary_component !== TASK_ITEM_COMPONENT) return null;
+  const parsed = taskItemBodySchema.safeParse(row.body);
+  return parsed.success ? { id: row.id, ...parsed.data } : null;
+}

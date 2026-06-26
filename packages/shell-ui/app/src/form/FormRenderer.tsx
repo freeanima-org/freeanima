@@ -5,6 +5,7 @@ import type {
   SettingsPlatform,
   SettingsStore,
 } from "@freeanima/satellite-sdk/settings";
+import { FormField, FormFieldLabel, FormFieldset, FormToggle } from "@freeanima/satellite-sdk/form";
 
 import { notifyDebugConfigChanged } from "../bootstrap/sentry.ts";
 
@@ -133,23 +134,31 @@ export function FormRenderer({ fields, store, platform, sectionId, onDirty }: Pr
       ) : null}
       {error ? <div className="alert alert-error text-sm">{error}</div> : null}
       {status ? <div className="alert alert-success text-sm">{status}</div> : null}
-      {Object.entries(grouped).map(([group, items]) => (
-        <section key={group} className="space-y-3">
-          {group !== "" ? (
-            <h3 className="text-sm font-semibold text-base-content/70">{group}</h3>
-          ) : null}
-          {items.map((item) => (
+      {Object.entries(grouped).map(([group, items]) =>
+        group !== "" ? (
+          <FormFieldset key={group} legend={group} className="gap-3">
+            {items.map((item) => (
+              <GroupedFieldInput
+                key={item.key}
+                item={item}
+                value={readFieldValue(values, item.key)}
+                widthClass={fieldWidthClass}
+                onChange={(v) => setField(item.key, v)}
+              />
+            ))}
+          </FormFieldset>
+        ) : (
+          items.map((item) => (
             <FieldInput
               key={item.key}
               item={item}
               value={readFieldValue(values, item.key)}
-              platform={platform}
               widthClass={fieldWidthClass}
               onChange={(v) => setField(item.key, v)}
             />
-          ))}
-        </section>
-      ))}
+          ))
+        ),
+      )}
       <div className="flex flex-wrap gap-2 pt-2">
         {canTest ? (
           <button
@@ -195,16 +204,14 @@ function groupFields(items: FormFieldDescriptor[]): Record<string, FormFieldDesc
   return out;
 }
 
-function FieldInput({
+function GroupedFieldInput({
   item,
   value,
-  platform,
   widthClass,
   onChange,
 }: {
   item: FormFieldDescriptor;
   value: unknown;
-  platform: SettingsPlatform;
   widthClass: string;
   onChange: (value: unknown) => void;
 }) {
@@ -212,27 +219,20 @@ function FieldInput({
 
   if (item.type === "boolean") {
     return (
-      <label className={`form-control ${widthClass}`}>
-        <span className="label cursor-pointer justify-start gap-3">
-          <input
-            type="checkbox"
-            className="checkbox checkbox-sm"
-            checked={Boolean(value)}
-            onChange={(e) => onChange(e.target.checked)}
-          />
-          <span className="label-text">{item.label}</span>
-        </span>
-        {item.description ? (
-          <span className="label-text-alt text-base-content/50">{item.description}</span>
-        ) : null}
-      </label>
+      <FormToggle
+        className={widthClass}
+        label={item.label}
+        hint={item.description}
+        checked={Boolean(value)}
+        onChange={onChange}
+      />
     );
   }
 
   if (item.type === "select" && item.options) {
     return (
-      <label className={`form-control ${widthClass}`}>
-        <span className="label-text text-sm">{item.label}</span>
+      <div className={widthClass}>
+        <FormFieldLabel>{item.label}</FormFieldLabel>
         <select
           className={inputClass}
           value={String(value ?? "")}
@@ -244,14 +244,14 @@ function FieldInput({
             </option>
           ))}
         </select>
-      </label>
+      </div>
     );
   }
 
   if (item.type === "textarea") {
     return (
-      <label className={`form-control ${widthClass}`}>
-        <span className="label-text text-sm">{item.label}</span>
+      <div className={widthClass}>
+        <FormFieldLabel>{item.label}</FormFieldLabel>
         <textarea
           className="textarea textarea-bordered w-full"
           rows={4}
@@ -259,13 +259,13 @@ function FieldInput({
           value={String(value ?? "")}
           onChange={(e) => onChange(e.target.value)}
         />
-      </label>
+      </div>
     );
   }
 
   return (
-    <label className={`form-control ${widthClass}`}>
-      <span className="label-text text-sm">{item.label}</span>
+    <div className={widthClass}>
+      <FormFieldLabel>{item.label}</FormFieldLabel>
       <input
         type={item.type === "password" ? "password" : item.type === "number" ? "number" : "text"}
         className={inputClass}
@@ -273,9 +273,77 @@ function FieldInput({
         value={String(value ?? "")}
         onChange={(e) => onChange(item.type === "number" ? Number(e.target.value) : e.target.value)}
       />
-      {item.description ? (
-        <span className="label-text-alt text-base-content/50">{item.description}</span>
-      ) : null}
-    </label>
+      {item.description ? <p className="label text-base-content/50">{item.description}</p> : null}
+    </div>
+  );
+}
+
+function FieldInput({
+  item,
+  value,
+  widthClass,
+  onChange,
+}: {
+  item: FormFieldDescriptor;
+  value: unknown;
+  widthClass: string;
+  onChange: (value: unknown) => void;
+}) {
+  const inputClass = "input input-bordered w-full lg:input-sm lg:max-w-xl";
+
+  if (item.type === "boolean") {
+    return (
+      <FormToggle
+        className={widthClass}
+        label={item.label}
+        hint={item.description}
+        checked={Boolean(value)}
+        onChange={onChange}
+      />
+    );
+  }
+
+  if (item.type === "select" && item.options) {
+    return (
+      <FormField className={widthClass} label={item.label}>
+        <select
+          className={inputClass}
+          value={String(value ?? "")}
+          onChange={(e) => onChange(e.target.value)}
+        >
+          {item.options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </FormField>
+    );
+  }
+
+  if (item.type === "textarea") {
+    return (
+      <FormField className={widthClass} label={item.label}>
+        <textarea
+          className="textarea textarea-bordered w-full"
+          rows={4}
+          placeholder={item.placeholder}
+          value={String(value ?? "")}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      </FormField>
+    );
+  }
+
+  return (
+    <FormField className={widthClass} label={item.label} hint={item.description}>
+      <input
+        type={item.type === "password" ? "password" : item.type === "number" ? "number" : "text"}
+        className={inputClass}
+        placeholder={item.placeholder}
+        value={String(value ?? "")}
+        onChange={(e) => onChange(item.type === "number" ? Number(e.target.value) : e.target.value)}
+      />
+    </FormField>
   );
 }

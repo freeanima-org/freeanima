@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import type { PromptDebugResponse, ConversationListItem } from "@freeanima/admin-api/api";
 import { useEffect, useMemo, useState } from "react";
+import { FormField } from "@freeanima/satellite-sdk/form";
 import { getPromptDebug, listConversations } from "@admin/lib/api.ts";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { m } from "@admin/lib/i18n.ts";
@@ -238,10 +239,10 @@ function SystemPromptPage() {
       <p className="text-sm text-base-content/60 mb-4">{m.admin_system_prompt_desc()}</p>
 
       <div className="flex flex-wrap items-end gap-3 mb-4">
-        <label className="form-control w-full max-w-xl">
-          <span className="label-text text-xs mb-1">
-            {m.admin_system_prompt_conversation_optional()}
-          </span>
+        <FormField
+          label={m.admin_system_prompt_conversation_optional()}
+          className="w-full max-w-xl text-xs"
+        >
           <select
             className="select select-bordered select-sm w-full font-mono text-xs"
             value={selectedConversation}
@@ -254,7 +255,7 @@ function SystemPromptPage() {
               </option>
             ))}
           </select>
-        </label>
+        </FormField>
         {selectedConversation ? (
           <Link
             to="/conversations/$conversationId"

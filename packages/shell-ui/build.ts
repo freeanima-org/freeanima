@@ -10,6 +10,7 @@ const DIST_DIR = join(PKG_DIR, "dist");
 const HTML_NAME = "index.html";
 
 const CHAT_APP_SRC = join(REPO_ROOT, "satellites", "chat", "app", "src");
+const TASK_APP_SRC = join(REPO_ROOT, "satellites", "task", "app", "src");
 const COMPANION_APP_SRC = join(REPO_ROOT, "satellites", "companion", "app", "src");
 const ADMIN_APP_SRC = join(REPO_ROOT, "platform", "admin-frontend", "app", "src");
 const SHELL_APP_SRC = join(APP_DIR, "src");
@@ -24,6 +25,9 @@ function createAliasPlugin(paraglideDir: string): import("bun").BunPlugin {
       });
       build.onResolve({ filter: /^@chat\// }, (args) => {
         return { path: join(CHAT_APP_SRC, args.path.slice("@chat/".length)) };
+      });
+      build.onResolve({ filter: /^@task\// }, (args) => {
+        return { path: join(TASK_APP_SRC, args.path.slice("@task/".length)) };
       });
       build.onResolve({ filter: /^@pair\// }, (args) => {
         return {
@@ -41,6 +45,7 @@ function createAliasPlugin(paraglideDir: string): import("bun").BunPlugin {
         const importer = args.importer.replace(/\\/g, "/");
         let base = SHELL_APP_SRC;
         if (importer.includes("/satellites/chat/")) base = CHAT_APP_SRC;
+        else if (importer.includes("/satellites/task/")) base = TASK_APP_SRC;
         else if (importer.includes("/satellites/companion/")) base = COMPANION_APP_SRC;
         else if (importer.includes("/admin-frontend/")) base = ADMIN_APP_SRC;
         return { path: join(base, args.path.slice(2)) };

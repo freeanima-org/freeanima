@@ -163,6 +163,15 @@
         "@types/bun": "catalog:",
       },
     },
+    "capabilities/task": {
+      "name": "@freeanima/capabilities-task",
+      "dependencies": {
+        "@freeanima/core": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "capabilities/tasks": {
       "name": "@freeanima/capabilities-tasks",
       "dependencies": {
@@ -218,6 +227,7 @@
     "packages/satellite-sdk": {
       "name": "@freeanima/satellite-sdk",
       "dependencies": {
+        "react": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -233,6 +243,7 @@
         "@freeanima/satellite-chat": "workspace:*",
         "@freeanima/satellite-companion": "workspace:*",
         "@freeanima/satellite-sdk": "workspace:*",
+        "@freeanima/satellite-task": "workspace:*",
         "@sentry/react": "^9.47.1",
         "@tanstack/react-router": "^1.170.11",
         "react": "catalog:",
@@ -259,6 +270,7 @@
         "@freeanima/capabilities-mcp-client": "workspace:*",
         "@freeanima/capabilities-memory": "workspace:*",
         "@freeanima/capabilities-satellite": "workspace:*",
+        "@freeanima/capabilities-task": "workspace:*",
         "@freeanima/capabilities-tasks": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
         "@freeanima/core": "workspace:*",
@@ -303,6 +315,7 @@
         "@freeanima/capabilities-mcp-server": "workspace:*",
         "@freeanima/capabilities-memory": "workspace:*",
         "@freeanima/capabilities-satellite": "workspace:*",
+        "@freeanima/capabilities-task": "workspace:*",
         "@freeanima/capabilities-tasks": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
         "@freeanima/core": "workspace:*",
@@ -428,6 +441,18 @@
         "tailwindcss": "catalog:",
       },
     },
+    "satellites/task": {
+      "name": "@freeanima/satellite-task",
+      "dependencies": {
+        "@freeanima/satellite-sdk": "workspace:*",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+      },
+      "devDependencies": {
+        "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
+      },
+    },
     "site": {
       "name": "@freeanima/site",
       "dependencies": {
@@ -464,6 +489,7 @@
         "@freeanima/capabilities-llm-openai": "workspace:*",
         "@freeanima/capabilities-memory": "workspace:*",
         "@freeanima/capabilities-satellite": "workspace:*",
+        "@freeanima/capabilities-task": "workspace:*",
         "@freeanima/capabilities-tasks": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
         "@freeanima/kernel": "workspace:*",
@@ -787,6 +813,8 @@
 
     "@freeanima/capabilities-satellite": ["@freeanima/capabilities-satellite@workspace:capabilities/satellite"],
 
+    "@freeanima/capabilities-task": ["@freeanima/capabilities-task@workspace:capabilities/task"],
+
     "@freeanima/capabilities-tasks": ["@freeanima/capabilities-tasks@workspace:capabilities/tasks"],
 
     "@freeanima/capabilities-tools": ["@freeanima/capabilities-tools@workspace:capabilities/tools"],
@@ -812,6 +840,8 @@
     "@freeanima/satellite-pair-programming": ["@freeanima/satellite-pair-programming@workspace:satellites/pair-programming"],
 
     "@freeanima/satellite-sdk": ["@freeanima/satellite-sdk@workspace:packages/satellite-sdk"],
+
+    "@freeanima/satellite-task": ["@freeanima/satellite-task@workspace:satellites/task"],
 
     "@freeanima/shell-ui": ["@freeanima/shell-ui@workspace:packages/shell-ui"],
 

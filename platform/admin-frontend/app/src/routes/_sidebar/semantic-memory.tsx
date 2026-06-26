@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
+import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/satellite-sdk/form";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { m } from "@admin/lib/i18n.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
@@ -136,77 +137,74 @@ function SemanticMemoryPage() {
         }}
       >
         <div className="card-body gap-3">
-          <div className="form-control">
-            <label className="label py-0">
-              <span className="label-text text-xs">{m.admin_semantic_search_fts()}</span>
-            </label>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              type="text"
-              className="input input-bordered input-sm"
-              placeholder={m.admin_common_keyword_placeholder()}
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <div className="form-control">
-              <label className="label py-0">
-                <span className="label-text text-xs">{m.admin_common_type_label()}</span>
-              </label>
-              <select
-                className="select select-bordered select-sm"
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-              >
-                <option value="">{m.admin_common_all()}</option>
-                {SEMANTIC_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="form-control">
-              <label className="label py-0">
-                <span className="label-text text-xs">{m.admin_common_status_label()}</span>
-              </label>
-              <select
-                className="select select-bordered select-sm"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="active">active</option>
-                <option value="deprecated">deprecated</option>
-                <option value="all">{m.admin_common_all()}</option>
-              </select>
-            </div>
-            <div className="form-control">
-              <label className="label py-0">
-                <span className="label-text text-xs">{m.admin_semantic_source_conversation()}</span>
-              </label>
+          <FormFieldset bordered={false} className="gap-3">
+            <FormField label={m.admin_semantic_search_fts()} className="text-xs">
               <input
-                value={sourceConversation}
-                onChange={(e) => setSourceConversation(e.target.value)}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
                 type="text"
-                className="input input-bordered input-sm font-mono"
-                placeholder="conversation id"
+                className="input input-bordered input-sm"
+                placeholder={m.admin_common_keyword_placeholder()}
               />
+            </FormField>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div>
+                <FormFieldLabel className="text-xs py-0">
+                  {m.admin_common_type_label()}
+                </FormFieldLabel>
+                <select
+                  className="select select-bordered select-sm w-full"
+                  value={typeFilter}
+                  onChange={(e) => setTypeFilter(e.target.value)}
+                >
+                  <option value="">{m.admin_common_all()}</option>
+                  {SEMANTIC_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <FormFieldLabel className="text-xs py-0">
+                  {m.admin_common_status_label()}
+                </FormFieldLabel>
+                <select
+                  className="select select-bordered select-sm w-full"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="active">active</option>
+                  <option value="deprecated">deprecated</option>
+                  <option value="all">{m.admin_common_all()}</option>
+                </select>
+              </div>
+              <div>
+                <FormFieldLabel className="text-xs py-0">
+                  {m.admin_semantic_source_conversation()}
+                </FormFieldLabel>
+                <input
+                  value={sourceConversation}
+                  onChange={(e) => setSourceConversation(e.target.value)}
+                  type="text"
+                  className="input input-bordered input-sm font-mono w-full"
+                  placeholder="conversation id"
+                />
+              </div>
+              <div>
+                <FormFieldLabel className="text-xs py-0">{m.admin_semantic_sort()}</FormFieldLabel>
+                <select
+                  className="select select-bordered select-sm w-full"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as BrowseSortBy)}
+                >
+                  <option value="updated">{m.admin_semantic_sort_updated()}</option>
+                  <option value="created">{m.admin_semantic_sort_created()}</option>
+                  <option value="reference_count">{m.admin_semantic_sort_reference_count()}</option>
+                </select>
+              </div>
             </div>
-            <div className="form-control">
-              <label className="label py-0">
-                <span className="label-text text-xs">{m.admin_semantic_sort()}</span>
-              </label>
-              <select
-                className="select select-bordered select-sm"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as BrowseSortBy)}
-              >
-                <option value="updated">{m.admin_semantic_sort_updated()}</option>
-                <option value="created">{m.admin_semantic_sort_created()}</option>
-                <option value="reference_count">{m.admin_semantic_sort_reference_count()}</option>
-              </select>
-            </div>
-          </div>
+          </FormFieldset>
           <button type="submit" className="btn btn-sm btn-primary" disabled={loading}>
             {loading ? <span className="loading loading-spinner loading-xs" /> : null}
             {m.admin_common_query()}
@@ -250,7 +248,7 @@ function SemanticMemoryPage() {
                       <td className="text-xs">
                         {row.status === "active" ? (
                           <label className="label cursor-pointer gap-2 py-0 justify-start">
-                            <span className="label-text text-xs sr-only">
+                            <span className="label sr-only text-xs">
                               {m.admin_semantic_pin_toggle()}
                             </span>
                             <input

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
+import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/satellite-sdk/form";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { listLimbicMemories } from "@admin/lib/api.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
@@ -89,49 +90,44 @@ function LimbicMemoryPage() {
         }}
       >
         <div className="card-body gap-3">
-          <div className="form-control">
-            <label className="label py-0">
-              <span className="label-text text-xs">{m.admin_limbic_search()}</span>
-            </label>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              type="text"
-              className="input input-bordered input-sm"
-              placeholder={m.admin_common_keyword_placeholder()}
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="form-control">
-              <label className="label py-0">
-                <span className="label-text text-xs">conversation_id</span>
-              </label>
+          <FormFieldset bordered={false} className="gap-3">
+            <FormField label={m.admin_limbic_search()} className="text-xs">
               <input
-                value={conversationId}
-                onChange={(e) => setSessionId(e.target.value)}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
                 type="text"
-                className="input input-bordered input-sm font-mono"
-                placeholder={m.admin_common_optional()}
+                className="input input-bordered input-sm"
+                placeholder={m.admin_common_keyword_placeholder()}
               />
+            </FormField>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <FormFieldLabel className="text-xs py-0">conversation_id</FormFieldLabel>
+                <input
+                  value={conversationId}
+                  onChange={(e) => setSessionId(e.target.value)}
+                  type="text"
+                  className="input input-bordered input-sm font-mono w-full"
+                  placeholder={m.admin_common_optional()}
+                />
+              </div>
+              <div>
+                <FormFieldLabel className="text-xs py-0">kind</FormFieldLabel>
+                <select
+                  className="select select-bordered select-sm w-full"
+                  value={kindFilter}
+                  onChange={(e) => setKindFilter(e.target.value)}
+                >
+                  <option value="">{m.admin_common_all()}</option>
+                  {LIMBIC_KINDS.map((k) => (
+                    <option key={k} value={k}>
+                      {k}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div className="form-control">
-              <label className="label py-0">
-                <span className="label-text text-xs">kind</span>
-              </label>
-              <select
-                className="select select-bordered select-sm"
-                value={kindFilter}
-                onChange={(e) => setKindFilter(e.target.value)}
-              >
-                <option value="">{m.admin_common_all()}</option>
-                {LIMBIC_KINDS.map((k) => (
-                  <option key={k} value={k}>
-                    {k}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+          </FormFieldset>
           <button type="submit" className="btn btn-sm btn-primary" disabled={loading}>
             {loading ? <span className="loading loading-spinner loading-xs" /> : null}
             {m.admin_common_query()}

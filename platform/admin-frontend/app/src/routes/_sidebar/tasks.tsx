@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
+import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/satellite-sdk/form";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { m } from "@admin/lib/i18n.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
@@ -134,53 +135,52 @@ function TasksPage() {
         }}
       >
         <div className="card-body gap-3">
-          <div className="form-control">
-            <label className="label py-0">
-              <span className="label-text text-xs">{m.admin_tasks_search_label()}</span>
-            </label>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              type="text"
-              className="input input-bordered input-sm"
-              placeholder={m.admin_common_keyword_placeholder()}
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="form-control">
-              <label className="label py-0">
-                <span className="label-text text-xs">{m.admin_common_status_label()}</span>
-              </label>
-              <select
-                className="select select-bordered select-sm"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                {STATUS_OPTIONS().map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+          <FormFieldset bordered={false} className="gap-3">
+            <FormField label={m.admin_tasks_search_label()} className="text-xs">
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                type="text"
+                className="input input-bordered input-sm"
+                placeholder={m.admin_common_keyword_placeholder()}
+              />
+            </FormField>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <FormFieldLabel className="text-xs py-0">
+                  {m.admin_common_status_label()}
+                </FormFieldLabel>
+                <select
+                  className="select select-bordered select-sm w-full"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  {STATUS_OPTIONS().map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <FormFieldLabel className="text-xs py-0">
+                  {m.admin_common_priority_label()}
+                </FormFieldLabel>
+                <select
+                  className="select select-bordered select-sm w-full"
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
+                >
+                  <option value="">{m.admin_common_all()}</option>
+                  {PRIORITY_OPTIONS.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div className="form-control">
-              <label className="label py-0">
-                <span className="label-text text-xs">{m.admin_common_priority_label()}</span>
-              </label>
-              <select
-                className="select select-bordered select-sm"
-                value={priorityFilter}
-                onChange={(e) => setPriorityFilter(e.target.value)}
-              >
-                <option value="">{m.admin_common_all()}</option>
-                {PRIORITY_OPTIONS.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+          </FormFieldset>
           <button type="submit" className="btn btn-sm btn-primary" disabled={loading}>
             {loading ? <span className="loading loading-spinner loading-xs" /> : null}
             {m.admin_common_query()}

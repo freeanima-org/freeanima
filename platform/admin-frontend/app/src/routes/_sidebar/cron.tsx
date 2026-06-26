@@ -172,7 +172,7 @@ function CronPage() {
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
                       <label className="label cursor-pointer gap-2 py-0">
-                        <span className="label-text text-xs">{m.admin_cron_enable()}</span>
+                        <span className="text-xs">{m.admin_cron_enable()}</span>
                         <input
                           type="checkbox"
                           className="toggle toggle-sm toggle-primary"

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Fragment, useCallback, useState } from "react";
+import { FormField } from "@freeanima/satellite-sdk/form";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { listAutoLlmRuns } from "@admin/lib/api.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
@@ -102,10 +103,9 @@ function AutoLlmRunsPage() {
       <p className="text-sm text-base-content/60 mb-4">{m.admin_auto_llm_runs_desc()}</p>
 
       <div className="flex flex-wrap gap-2 mb-4 items-end">
-        <label className="form-control w-full max-w-xs">
-          <span className="label-text text-xs">{m.admin_auto_llm_runs_run_kind()}</span>
+        <FormField label={m.admin_auto_llm_runs_run_kind()} className="w-full max-w-xs text-xs">
           <select
-            className="select select-bordered select-sm"
+            className="select select-bordered select-sm w-full"
             value={runKind}
             onChange={(e) => setRunKind(e.target.value)}
           >
@@ -116,11 +116,10 @@ function AutoLlmRunsPage() {
               </option>
             ))}
           </select>
-        </label>
-        <label className="form-control w-full max-w-xs">
-          <span className="label-text text-xs">{m.admin_common_status()}</span>
+        </FormField>
+        <FormField label={m.admin_common_status()} className="w-full max-w-xs text-xs">
           <select
-            className="select select-bordered select-sm"
+            className="select select-bordered select-sm w-full"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
@@ -128,7 +127,7 @@ function AutoLlmRunsPage() {
             <option value="ok">{m.admin_common_success()}</option>
             <option value="error">{m.admin_common_failed()}</option>
           </select>
-        </label>
+        </FormField>
         <button
           type="button"
           className="btn btn-primary btn-sm"

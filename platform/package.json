@@ -37,6 +37,7 @@
     "@freeanima/capabilities-mcp-client": "workspace:*",
     "@freeanima/capabilities-memory": "workspace:*",
     "@freeanima/capabilities-satellite": "workspace:*",
+    "@freeanima/capabilities-task": "workspace:*",
     "@freeanima/capabilities-tasks": "workspace:*",
     "@freeanima/capabilities-tools": "workspace:*",
     "@freeanima/sap-contract": "workspace:*",

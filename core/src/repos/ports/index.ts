@@ -111,6 +111,13 @@ export type {
   DreamMemoryStorePort,
 } from "./dream-memory.ts";
 export type {
+  EntityStorePort,
+  EntityRow,
+  EntityCreateInput,
+  EntityUpdateInput,
+  EntityListOpts,
+} from "./entity.ts";
+export type {
   SapInstanceRow,
   SapInstanceUpsertInput,
   SapInstanceStorePort,
@@ -124,6 +131,7 @@ import type { PipelineStepRunStorePort } from "./pipeline-step-run.ts";
 import type { DreamMemoryStorePort } from "./dream-memory.ts";
 import type { LimbicMemoryStorePort } from "./limbic-memory.ts";
 import type { SelfLayerStorePort } from "./self-layer.ts";
+import type { EntityStorePort } from "./entity.ts";
 import type { SapInstanceStorePort } from "./sap-instance.ts";
 import type { TaskStorePort } from "./task.ts";
 import type { NotificationStorePort } from "./notification.ts";
@@ -143,6 +151,7 @@ export interface PgRepositories {
   pipelineStepRun: PipelineStepRunStorePort;
   autoLlmRun: AutoLlmRunStorePort;
   tasks: TaskStorePort;
+  entity: EntityStorePort;
   notifications: NotificationStorePort;
   sapInstance: SapInstanceStorePort;
 }
