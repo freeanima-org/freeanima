@@ -22,6 +22,12 @@ import type {
 import type { ConversationAcpDockInput, ConversationAcpDockOutput } from "./frames/acp.ts";
 import type { FridgeListInput, FridgeListOutput } from "./frames/fridge.ts";
 import type {
+  NotificationListInput,
+  NotificationListOutput,
+  NotificationMarkReadInput,
+  NotificationMarkReadOutput,
+} from "./frames/notification.ts";
+import type {
   ToolErrorInput,
   ToolRegisterInput,
   ToolRegisterOutput,
@@ -51,6 +57,8 @@ export const SAP_METHODS = [
   "message.send",
   "message.interrupt",
   "fridge.list",
+  "notification.list",
+  "notification.markRead",
   "terminal.attach",
   "terminal.write",
   "terminal.resize",
@@ -77,6 +85,8 @@ export type SapRouterInputs = {
   "message.send": MessageSendInput;
   "message.interrupt": MessageInterruptInput;
   "fridge.list": FridgeListInput;
+  "notification.list": NotificationListInput;
+  "notification.markRead": NotificationMarkReadInput;
   "terminal.attach": TerminalAttachInput;
   "terminal.write": TerminalWriteInput;
   "terminal.resize": TerminalResizeInput;
@@ -101,6 +111,8 @@ export type SapRouterOutputs = {
   "message.send": MessageSendOutput;
   "message.interrupt": MessageInterruptOutput;
   "fridge.list": FridgeListOutput;
+  "notification.list": NotificationListOutput;
+  "notification.markRead": NotificationMarkReadOutput;
   "terminal.attach": TerminalAttachOutput;
   "terminal.write": { ok: true };
   "terminal.resize": { ok: true };

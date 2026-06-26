@@ -89,6 +89,27 @@ export {
 export type { FridgeListInput, FridgeListOutput, FridgeMagnetItem } from "./frames/fridge.ts";
 
 export {
+  notificationRecipientKindSchema,
+  notificationReadFilterSchema,
+  notificationSourceKindSchema,
+  notificationRowSchema,
+  notificationListInputSchema,
+  notificationListOutputSchema,
+  notificationMarkReadInputSchema,
+  notificationMarkReadOutputSchema,
+} from "./frames/notification.ts";
+export type {
+  NotificationRecipientKind,
+  NotificationReadFilter,
+  NotificationSourceKind,
+  NotificationRow,
+  NotificationListInput,
+  NotificationListOutput,
+  NotificationMarkReadInput,
+  NotificationMarkReadOutput,
+} from "./frames/notification.ts";
+
+export {
   messageSendInputSchema,
   messageSendOutputSchema,
   messageInterruptInputSchema,

@@ -53,6 +53,7 @@ async function clearPgTables(sql: SqlClient): Promise<void> {
   await sql`DELETE FROM autobiographical_memory`;
   await sql`DELETE FROM limbic_memory`;
   await sql`DELETE FROM tasks`;
+  await sql`DELETE FROM notifications`;
   await sql`DELETE FROM cron_jobs`;
 }
 

@@ -57,6 +57,21 @@ export type {
 } from "./task.ts";
 export { TASK_STATUSES, TASK_PRIORITIES } from "./task.ts";
 export type {
+  NotificationStorePort,
+  NotificationRow,
+  NotificationCreateInput,
+  NotificationListOpts,
+  NotificationRecipientKind,
+  NotificationReadFilter,
+  NotificationSourceKind,
+} from "./notification.ts";
+export {
+  NOTIFICATION_RECIPIENT_KINDS,
+  NOTIFICATION_READ_FILTERS,
+  NOTIFICATION_SOURCE_KINDS,
+  DEFAULT_NOTIFICATION_RECIPIENT_ID,
+} from "./notification.ts";
+export type {
   SelfBlockKey,
   SelfBlockRow,
   SelfBlockUpsertInput,
@@ -111,6 +126,7 @@ import type { LimbicMemoryStorePort } from "./limbic-memory.ts";
 import type { SelfLayerStorePort } from "./self-layer.ts";
 import type { SapInstanceStorePort } from "./sap-instance.ts";
 import type { TaskStorePort } from "./task.ts";
+import type { NotificationStorePort } from "./notification.ts";
 
 /** PG repository aggregate mounted on Engine */
 export interface PgRepositories {
@@ -127,5 +143,6 @@ export interface PgRepositories {
   pipelineStepRun: PipelineStepRunStorePort;
   autoLlmRun: AutoLlmRunStorePort;
   tasks: TaskStorePort;
+  notifications: NotificationStorePort;
   sapInstance: SapInstanceStorePort;
 }

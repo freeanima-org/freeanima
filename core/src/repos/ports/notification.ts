@@ -1,0 +1,49 @@
+export const NOTIFICATION_RECIPIENT_KINDS = ["user", "agent"] as const;
+export type NotificationRecipientKind = (typeof NOTIFICATION_RECIPIENT_KINDS)[number];
+
+export const NOTIFICATION_READ_FILTERS = ["all", "unread"] as const;
+export type NotificationReadFilter = (typeof NOTIFICATION_READ_FILTERS)[number];
+
+export const NOTIFICATION_SOURCE_KINDS = ["system", "cron", "acp", "tool"] as const;
+export type NotificationSourceKind = (typeof NOTIFICATION_SOURCE_KINDS)[number];
+
+export const DEFAULT_NOTIFICATION_RECIPIENT_ID = "default";
+
+export type NotificationRow = {
+  id: string;
+  recipient_kind: NotificationRecipientKind;
+  recipient_id: string;
+  title: string;
+  body: string;
+  payload: Record<string, unknown> | null;
+  read_at: string | null;
+  created_at: string;
+  source_kind: NotificationSourceKind | null;
+  source_ref: string | null;
+};
+
+export type NotificationCreateInput = {
+  recipient_kind: NotificationRecipientKind;
+  recipient_id?: string;
+  title: string;
+  body: string;
+  payload?: Record<string, unknown> | null;
+  source_kind?: NotificationSourceKind | null;
+  source_ref?: string | null;
+};
+
+export type NotificationListOpts = {
+  recipient_kind: NotificationRecipientKind;
+  recipient_id?: string;
+  read_filter?: NotificationReadFilter;
+  offset?: number;
+  limit?: number;
+};
+
+/** Cross-target notification inbox persistence port */
+export interface NotificationStorePort {
+  create(input: NotificationCreateInput): Promise<NotificationRow>;
+  list(opts: NotificationListOpts): Promise<NotificationRow[]>;
+  count(opts: Omit<NotificationListOpts, "offset" | "limit">): Promise<number>;
+  markRead(id: string): Promise<NotificationRow | null>;
+}

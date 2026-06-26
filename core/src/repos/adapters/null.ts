@@ -12,6 +12,7 @@ import { nullSemanticMemoryStore } from "./null-semantic-memory.ts";
 import { nullConversationStore } from "./null-conversation.ts";
 import { nullSapInstanceStore } from "./null-sap-instance.ts";
 import { nullTaskStore } from "./null-task.ts";
+import { nullNotificationStore } from "./null-notification.ts";
 
 export const nullPgRepositories: PgRepositories = {
   pgAvailable: false,
@@ -27,5 +28,6 @@ export const nullPgRepositories: PgRepositories = {
   pipelineStepRun: nullPipelineStepRunStore,
   autoLlmRun: nullAutoLlmRunStore,
   tasks: nullTaskStore,
+  notifications: nullNotificationStore,
   sapInstance: nullSapInstanceStore,
 };
