@@ -12,7 +12,9 @@ function notifyShellConfigChanged(): void {
   window.dispatchEvent(new CustomEvent(SHELL_CONFIG_CHANGED_EVENT));
 }
 
-function shellExtras(hubOrigin: string): Pick<
+function shellExtras(
+  hubOrigin: string,
+): Pick<
   SatelliteShellApi,
   "createFileInstanceStore" | "emitConfigChanged" | "listenConfigChanged"
 > {
@@ -70,16 +72,16 @@ export function buildWebShell(hubUrl: string, remoteAuthToken: string): Satellit
   return buildWebShellFromRaw(normalized.hubUrl, normalized.remoteAuthToken);
 }
 
-export function installWebShellFromPrefs(hubUrl: string, remoteAuthToken: string): SatelliteShellApi {
+export function installWebShellFromPrefs(
+  hubUrl: string,
+  remoteAuthToken: string,
+): SatelliteShellApi {
   const shell = buildWebShellFromRaw(hubUrl, remoteAuthToken);
   window.satelliteShell = shell;
   return shell;
 }
 
-export async function testWebHubConnection(
-  hubUrl: string,
-  remoteAuthToken: string,
-): Promise<void> {
+export async function testWebHubConnection(hubUrl: string, remoteAuthToken: string): Promise<void> {
   const { testHubHealthConnection } = await import("@freeanima/satellite-sdk");
   const normalized = normalizeWebHubUrl(hubUrl);
   const token = remoteAuthToken.trim();

@@ -7,13 +7,13 @@
 
 `freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: `anima service` starts the Bun Hub（REST `/api` + SAP `/sap/v1` + engine）；UI 由 app/desktop / app/mobile bundled 提供。
 
-| Capability     | Highlights                                                                                                                                          |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md) |
+| Capability     | Highlights                                                                                                                                                                     |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md)                            |
 | Tools          | Local / MCP / ACP flat registration; MCP client `capabilities/mcp-client/`、MCP server `/mcp` `capabilities/mcp-server/`；tools `capabilities/tools/`、ACP `capabilities/acp/` |
-| Credentials    | pass GPG; injected at runtime; LLM **sees paths, not values**                                                                                       |
-| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                              |
-| Code layout    | `kernel/` → `core/` → `runtime/` → `capabilities/` → `platform/` (+ `app/`) — see [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md)      |
+| Credentials    | pass GPG; injected at runtime; LLM **sees paths, not values**                                                                                                                  |
+| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                         |
+| Code layout    | `kernel/` → `core/` → `runtime/` → `capabilities/` → `platform/` (+ `app/`) — see [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md)                                 |
 
 **Code is the source of truth**; do not invent tool names, endpoints, or directories from docs alone. Read source or `grep` when needed.
 

@@ -9,11 +9,11 @@ title: Remote access
 
 ## 概览
 
-| 层                    | 作用                                                                                  |
-| --------------------- | ------------------------------------------------------------------------------------- |
+| 层                    | 作用                                                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------------------------------- |
 | **Hub `remote_auth`** | `config.yaml` 明文 token；REST `Authorization: Bearer`；SAP `connect` 帧 `auth_token`；MCP `/mcp` 同样 Bearer |
-| **cloudflared**       | 出站隧道，把公网 HTTPS/WSS 转到 `127.0.0.1:2658`                                      |
-| **客户端设置**        | app/desktop / app/mobile 在 **Hub 设置页**填写同一 Hub 地址与 token                   |
+| **cloudflared**       | 出站隧道，把公网 HTTPS/WSS 转到 `127.0.0.1:2658`                                                              |
+| **客户端设置**        | app/desktop / app/mobile 在 **Hub 设置页**填写同一 Hub 地址与 token                                           |
 
 仅当 **Host 为 loopback**（`127.0.0.1` / `localhost` / `::1`）**且 TCP 对端也为 loopback** 时 **不验 token**（本地开发、CLI/systemd 探活）。公网域名（经 Tunnel）、局域网 IP 等访问时须带 token；与 `tunnel.enabled` 无关。
 

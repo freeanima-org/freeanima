@@ -75,6 +75,18 @@
         "typescript": "catalog:",
       },
     },
+    "app/web": {
+      "name": "@freeanima/app-web",
+      "dependencies": {
+        "@freeanima/sap-contract": "workspace:*",
+        "@freeanima/satellite-sdk": "workspace:*",
+        "@freeanima/shell-ui": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "capabilities/acp": {
       "name": "@freeanima/capabilities-acp",
       "dependencies": {
@@ -758,6 +770,8 @@
     "@freeanima/app-desktop": ["@freeanima/app-desktop@workspace:app/desktop"],
 
     "@freeanima/app-mobile": ["@freeanima/app-mobile@workspace:app/mobile"],
+
+    "@freeanima/app-web": ["@freeanima/app-web@workspace:app/web"],
 
     "@freeanima/capabilities-acp": ["@freeanima/capabilities-acp@workspace:capabilities/acp"],
 

@@ -3,10 +3,7 @@ import type { SettingsStorageScope } from "@freeanima/satellite-sdk/settings";
 import type { ScopedSettingsBackend } from "@freeanima/satellite-sdk/settings";
 import { HUB_SETTINGS_SCOPE } from "@freeanima/satellite-sdk/settings";
 
-import {
-  createWebScopedBackend,
-  seedWebHubPrefsIfEmpty,
-} from "./settings-local-backend.ts";
+import { createWebScopedBackend, seedWebHubPrefsIfEmpty } from "./settings-local-backend.ts";
 import {
   buildWebShellFromRaw,
   createWebShellStub,
