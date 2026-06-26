@@ -117,10 +117,11 @@ function CompanionWindow() {
   if (loading) {
     return (
       <div className="companion-overlay flex items-center justify-center">
-        <div className="startup-panel text-center">
-          <p className="font-medium mb-1">FreeAnima Companion</p>
-          <p className="text-white/70 text-xs">正在连接本地后台…</p>
-        </div>
+        <span
+          className="loading loading-spinner loading-md text-primary"
+          role="status"
+          aria-label="加载中"
+        />
       </div>
     );
   }
@@ -145,8 +146,12 @@ function CompanionWindow() {
       ) : null}
 
       {!characterReady && modelPath && modelLoading ? (
-        <div className="absolute inset-x-2 top-1/3 z-10 startup-panel text-center text-xs leading-relaxed">
-          正在加载 VRM 模型…
+        <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+          <span
+            className="loading loading-spinner loading-md text-primary"
+            role="status"
+            aria-label="加载中"
+          />
         </div>
       ) : null}
 
