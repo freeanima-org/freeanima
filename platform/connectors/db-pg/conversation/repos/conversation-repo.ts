@@ -90,6 +90,7 @@ export async function getConversationMetaLite(
       stagedToolsets: conversations.stagedToolsets,
       functions: conversations.functions,
       debug: conversations.debug,
+      archivedAt: conversations.archivedAt,
       createdAt: conversations.createdAt,
       updatedAt: conversations.updatedAt,
     })

@@ -1,5 +1,6 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { eq } from "drizzle-orm";
+import { isConversationMeta } from "@freeanima/core/db/domain";
 import { conversations, messages } from "@freeanima/core/db/schema";
 import { getDb } from "@freeanima/platform/connectors/db-pg";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
@@ -8,6 +9,7 @@ import {
   cleanupStaleConversations,
   deleteUserConversation,
   listConversationSummaries,
+  loadConversationMeta,
   unarchiveConversation,
 } from "@freeanima/runtime/conversation";
 import { getTestEngine } from "../../helpers/pg-test.ts";
@@ -57,6 +59,22 @@ describePg("conversation archive/delete (PostgreSQL)", () => {
 
   afterAll(async () => {
     await endIntegrationCase();
+  });
+
+  it("loadConversationMeta reads PG lite row after archived_at column exists", async () => {
+    const engine = getTestEngine();
+    const store = engine.repos.conversation;
+    const repos = engine.repos;
+    const conversationId = "archive_meta_lite";
+
+    await seedMeta(store, conversationId);
+
+    const meta = await loadConversationMeta(repos, conversationId);
+    expect(isConversationMeta(meta)).toBe(true);
+
+    const liteMeta = await store.getConversationMetaLite(conversationId);
+    expect(liteMeta).not.toBeNull();
+    expect(liteMeta?.platform).toBe(TEST_SAP_CHAT_PLATFORM);
   });
 
   it("hides archived conversations from default list and restores on unarchive", async () => {
