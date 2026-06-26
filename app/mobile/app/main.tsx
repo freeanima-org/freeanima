@@ -1,4 +1,4 @@
-import { mountShellUi } from "@freeanima/shell-ui/mount";
+import { mountShellUi, renderShellMountFailure } from "@freeanima/shell-ui/mount";
 
 import "../../../packages/shell-ui/app/src/styles.css";
 
@@ -8,4 +8,7 @@ import { createMobileSettingsStores } from "../src/settings-stores.ts";
 const stores = createMobileSettingsStores();
 const bindings = createMobileSettingsBindings(stores);
 
-void mountShellUi({ bindings });
+void mountShellUi({ bindings }).catch((err) => {
+  console.error("[app-mobile]", err);
+  renderShellMountFailure(err);
+});

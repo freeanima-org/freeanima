@@ -9,7 +9,24 @@
     <title>FreeAnima</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div
+        id="shell-boot-placeholder"
+        aria-live="polite"
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+          background: #1d232a;
+          color: #a6adbb;
+          font-family: system-ui, sans-serif;
+          font-size: 14px;
+        "
+      >
+        加载中…
+      </div>
+    </div>
     <script type="module" src="./main.tsx"></script>
   </body>
 </html>

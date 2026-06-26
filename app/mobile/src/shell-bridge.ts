@@ -4,6 +4,7 @@ import {
   loadHubUrl,
   loadRemoteAuthToken,
 } from "./mobile-shell.ts";
+import { waitForCapacitorBridge } from "./capacitor-ready.ts";
 import { loadShellDebugPrefs } from "./mobile-debug-prefs.ts";
 import { applyMobileDebugConsole } from "./debug-console.ts";
 import { CHAT_PAGE, SETTINGS_PAGE } from "./paths.ts";
@@ -11,7 +12,10 @@ import { readShellPath, replaceShellPath } from "./shell-nav.ts";
 
 type ShellBridgeWindow = Window & {
   __freeanimaShellBridge?: { ready: Promise<void> };
+  __freeanimaShellBootError?: string;
 };
+
+export const SHELL_BOOT_ERROR_KEY = "__freeanimaShellBootError";
 
 /** Capacitor 原生桥就绪后再调用 Preferences 等插件 */
 async function waitForNativeBridge(): Promise<void> {
@@ -19,6 +23,7 @@ async function waitForNativeBridge(): Promise<void> {
     if (document.readyState === "complete") resolve();
     else window.addEventListener("load", () => resolve(), { once: true });
   });
+  await waitForCapacitorBridge();
   await new Promise<void>((resolve) => {
     requestAnimationFrame(() => resolve());
   });
@@ -32,6 +37,10 @@ function installShellBridgeReady(): () => void {
     }),
   };
   return resolveReady;
+}
+
+function setShellBootError(message: string): void {
+  (window as ShellBridgeWindow)[SHELL_BOOT_ERROR_KEY] = message;
 }
 
 async function bootstrapDebugConsole(): Promise<void> {
@@ -68,14 +77,21 @@ async function bootstrapShellBridge(): Promise<void> {
     if (path === "/" || path.endsWith("/index.html")) {
       replaceShellPath(CHAT_PAGE);
     }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[shell-bridge]", err);
+    setShellBootError(message);
+    window.satelliteShell = createMobileShellStub();
+    const path = readShellPath();
+    if (!path.startsWith("/settings") && path !== SETTINGS_PAGE) {
+      replaceShellPath(SETTINGS_PAGE);
+    }
   } finally {
     finish();
   }
 }
 
-void bootstrapShellBridge().catch((err) => {
-  console.error("[shell-bridge]", err);
-});
+void bootstrapShellBridge();
 
 declare global {
   const __MOBILE_DEBUG__: boolean | undefined;

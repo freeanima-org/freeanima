@@ -1,4 +1,3 @@
-import { Preferences } from "@capacitor/preferences";
 import {
   DEFAULT_SHELL_DEBUG,
   normalizeShellDebugConfig,
@@ -11,14 +10,15 @@ import {
   DEBUG_SENTRY_ENABLED_KEY,
   DEBUG_VCONSOLE_ENABLED_KEY,
 } from "./prefs-keys.ts";
+import { prefsGet, prefsSet } from "./prefs-safe.ts";
 
 export const DEBUG_CONFIG_CHANGED_EVENT = "freeanima:debug-config-changed";
 
 export async function loadShellDebugPrefs(): Promise<ShellDebugConfig> {
   const [enabled, dsn, vConsole] = await Promise.all([
-    Preferences.get({ key: DEBUG_SENTRY_ENABLED_KEY }),
-    Preferences.get({ key: DEBUG_SENTRY_DSN_KEY }),
-    Preferences.get({ key: DEBUG_VCONSOLE_ENABLED_KEY }),
+    prefsGet({ key: DEBUG_SENTRY_ENABLED_KEY }),
+    prefsGet({ key: DEBUG_SENTRY_DSN_KEY }),
+    prefsGet({ key: DEBUG_VCONSOLE_ENABLED_KEY }),
   ]);
   return parseShellDebugConfig({
     sentryEnabled: enabled.value === "1",
@@ -30,12 +30,12 @@ export async function loadShellDebugPrefs(): Promise<ShellDebugConfig> {
 export async function saveShellDebugPrefs(config: ShellDebugConfig): Promise<ShellDebugConfig> {
   const normalized = normalizeShellDebugConfig(config);
   await Promise.all([
-    Preferences.set({
+    prefsSet({
       key: DEBUG_SENTRY_ENABLED_KEY,
       value: normalized.sentryEnabled ? "1" : "0",
     }),
-    Preferences.set({ key: DEBUG_SENTRY_DSN_KEY, value: normalized.sentryDsn }),
-    Preferences.set({
+    prefsSet({ key: DEBUG_SENTRY_DSN_KEY, value: normalized.sentryDsn }),
+    prefsSet({
       key: DEBUG_VCONSOLE_ENABLED_KEY,
       value: normalized.vConsoleEnabled ? "1" : "0",
     }),
