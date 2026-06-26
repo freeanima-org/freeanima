@@ -74,10 +74,14 @@ export async function buildShellUi(opts?: {
   appDir?: string;
 }): Promise<string> {
   const distDir = opts?.outdir ?? DIST_DIR;
+  if (!opts?.watch) {
+    rmSync(distDir, { recursive: true, force: true });
+  } else {
+    rmSync(join(distDir, HTML_NAME), { force: true });
+  }
+  mkdirSync(distDir, { recursive: true });
   const paraglideDir = join(distDir, ".paraglide");
   compileParaglideToDir({ projectRoot: REPO_ROOT, outdir: paraglideDir });
-  rmSync(join(distDir, HTML_NAME), { force: true });
-  mkdirSync(distDir, { recursive: true });
 
   const tailwindMod = await import("bun-plugin-tailwind");
   const tailwind = tailwindMod.default;

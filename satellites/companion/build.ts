@@ -8,8 +8,13 @@ const HTML_NAME = "index.html";
 export async function buildCompanionApp(opts?: {
   watch?: boolean;
   minify?: boolean;
+  sourcemap?: boolean;
 }): Promise<string> {
-  rmSync(join(DIST_DIR, HTML_NAME), { force: true });
+  if (!opts?.watch) {
+    rmSync(DIST_DIR, { recursive: true, force: true });
+  } else {
+    rmSync(join(DIST_DIR, HTML_NAME), { force: true });
+  }
   mkdirSync(DIST_DIR, { recursive: true });
 
   const tailwindMod = await import("bun-plugin-tailwind");
@@ -21,6 +26,7 @@ export async function buildCompanionApp(opts?: {
     target: "browser",
     minify: opts?.minify ?? false,
     publicPath: "/",
+    ...(opts?.sourcemap ? { sourcemap: "linked" as const } : {}),
     plugins: [tailwind],
     ...(opts?.watch
       ? {
