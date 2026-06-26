@@ -10,21 +10,19 @@ function isDebugBuild(): boolean {
 }
 
 /** shell-bridge 先于主 bundle 在 body 末尾执行；资源用相对路径 */
-function arrangeMobileIndexHtml(html: string): string {
-  const mainScriptRe = /<script type="module" crossorigin src="(\.\/[^"]+\.js)"><\/script>/;
+export function arrangeMobileIndexHtml(html: string): string {
+  const mainScriptRe =
+    /<script type="module" crossorigin src="(\.\/[^"]+\.js)"><\/script>\s*/;
   const match = html.match(mainScriptRe);
+  const bridgeTag = `<script type="module" src="./shell-bridge.js"></script>`;
+
   if (!match) {
-    return html.replace(
-      "</head>",
-      `    <script type="module" src="./shell-bridge.js"></script>\n  </head>`,
-    );
+    return html.replace("</body>", `    ${bridgeTag}\n  </body>`);
   }
-  const mainScriptTag = match[0];
+
+  const mainScriptTag = match[0].trimEnd();
   const withoutMain = html.replace(mainScriptRe, "");
-  return withoutMain.replace(
-    '<div id="root"></div>',
-    `<div id="root"></div>\n    <script type="module" src="./shell-bridge.js"></script>\n    ${mainScriptTag}`,
-  );
+  return withoutMain.replace("</body>", `    ${bridgeTag}\n    ${mainScriptTag}\n  </body>`);
 }
 
 async function bundleBrowserEntry(
