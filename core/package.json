@@ -10,6 +10,7 @@
     "./config/*": "./src/config/*.ts",
     "./db": "./src/db/index.ts",
     "./db/schema": "./src/db/schema/index.ts",
+    "./db/schema/entity": "./src/db/schema/entity/index.ts",
     "./db/domain": "./src/db/domain/index.ts",
     "./db/domain/*": "./src/db/domain/*.ts",
     "./repos": "./src/repos/index.ts",

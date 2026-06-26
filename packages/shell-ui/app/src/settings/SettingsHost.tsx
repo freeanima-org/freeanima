@@ -111,7 +111,9 @@ export function SettingsHost({ bindings, platform }: Props) {
   return (
     <div className="flex h-full min-h-0 flex-col lg:flex-row">
       <div className={showSidebar ? "lg:hidden shrink-0" : "shrink-0"}>{sectionTabs}</div>
-      {showSidebar ? <div className="hidden lg:block shrink-0 min-h-0">{sectionSidebar}</div> : null}
+      {showSidebar ? (
+        <div className="hidden lg:block shrink-0 min-h-0">{sectionSidebar}</div>
+      ) : null}
       {sectionBody}
     </div>
   );

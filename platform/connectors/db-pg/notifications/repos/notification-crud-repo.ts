@@ -44,9 +44,7 @@ export async function createNotification(input: NotificationCreateInput): Promis
 
   const recipientKind = notificationRecipientKindSchema.parse(input.recipient_kind);
   const sourceKind =
-    input.source_kind == null
-      ? null
-      : notificationSourceKindSchema.parse(input.source_kind);
+    input.source_kind == null ? null : notificationSourceKindSchema.parse(input.source_kind);
 
   const now = formatCstIso();
   const db = getDb();

@@ -117,6 +117,7 @@ function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
         root === "sap-contract" ||
         root === "satellite-sdk" ||
         root === "satellite-chat" ||
+        root === "satellite-task" ||
         root === "satellite-companion" ||
         root === "admin-frontend" ||
         root.startsWith("kernel-") ||

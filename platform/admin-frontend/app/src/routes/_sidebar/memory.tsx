@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ServiceStatus } from "@freeanima/admin-api/api";
+import { FormField, FormFieldset } from "@freeanima/satellite-sdk/form";
 import { useMemo, useState } from "react";
 import { formatMemoryRecallOutput } from "@admin/components/admin/format-memory-recall-output.ts";
 import {
@@ -128,32 +129,28 @@ function MemoryPage() {
         }}
       >
         <div className="card-body gap-3">
-          <div className="form-control">
-            <label className="label py-0">
-              <span className="label-text text-xs">{m.admin_memory_query_required()}</span>
-            </label>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              type="text"
-              className="input input-bordered input-sm font-mono"
-              placeholder={m.admin_common_keyword_placeholder()}
-              autoFocus
-            />
-          </div>
-          <div className="form-control max-w-xs">
-            <label className="label py-0">
-              <span className="label-text text-xs">{m.admin_memory_top_n()}</span>
-            </label>
-            <input
-              value={limit}
-              onChange={(e) => setLimit(Number(e.target.value))}
-              type="number"
-              min={1}
-              max={20}
-              className="input input-bordered input-sm"
-            />
-          </div>
+          <FormFieldset bordered={false} className="gap-3">
+            <FormField label={m.admin_memory_query_required()} className="text-xs">
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                type="text"
+                className="input input-bordered input-sm font-mono"
+                placeholder={m.admin_common_keyword_placeholder()}
+                autoFocus
+              />
+            </FormField>
+            <FormField label={m.admin_memory_top_n()} className="max-w-xs text-xs">
+              <input
+                value={limit}
+                onChange={(e) => setLimit(Number(e.target.value))}
+                type="number"
+                min={1}
+                max={20}
+                className="input input-bordered input-sm"
+              />
+            </FormField>
+          </FormFieldset>
           <div className="flex items-center gap-2">
             <button
               type="submit"

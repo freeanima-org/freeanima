@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
+import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/satellite-sdk/form";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { listAutobiographicalMemories } from "@admin/lib/api.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
@@ -90,62 +91,59 @@ function AutobiographicalMemoryPage() {
         }}
       >
         <div className="card-body gap-3">
-          <div className="form-control">
-            <label className="label py-0">
-              <span className="label-text text-xs">{m.admin_autobio_search()}</span>
-            </label>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              type="text"
-              className="input input-bordered input-sm"
-              placeholder={m.admin_common_keyword_placeholder()}
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="form-control">
-              <label className="label py-0">
-                <span className="label-text text-xs">{m.admin_common_status_label()}</span>
-              </label>
-              <select
-                className="select select-bordered select-sm"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="active">active</option>
-                <option value="deprecated">deprecated</option>
-              </select>
-            </div>
-            <div className="form-control">
-              <label className="label py-0">
-                <span className="label-text text-xs">significance</span>
-              </label>
-              <select
-                className="select select-bordered select-sm"
-                value={significanceFilter}
-                onChange={(e) => setSignificanceFilter(e.target.value)}
-              >
-                <option value="">{m.admin_common_all()}</option>
-                {SIGNIFICANCE_OPTIONS.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="form-control">
-              <label className="label py-0">
-                <span className="label-text text-xs">{m.admin_autobio_source_conversation()}</span>
-              </label>
+          <FormFieldset bordered={false} className="gap-3">
+            <FormField label={m.admin_autobio_search()} className="text-xs">
               <input
-                value={sourceSession}
-                onChange={(e) => setSourceSession(e.target.value)}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
                 type="text"
-                className="input input-bordered input-sm font-mono"
-                placeholder="conversation id"
+                className="input input-bordered input-sm"
+                placeholder={m.admin_common_keyword_placeholder()}
               />
+            </FormField>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <FormFieldLabel className="text-xs py-0">
+                  {m.admin_common_status_label()}
+                </FormFieldLabel>
+                <select
+                  className="select select-bordered select-sm w-full"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="active">active</option>
+                  <option value="deprecated">deprecated</option>
+                </select>
+              </div>
+              <div>
+                <FormFieldLabel className="text-xs py-0">significance</FormFieldLabel>
+                <select
+                  className="select select-bordered select-sm w-full"
+                  value={significanceFilter}
+                  onChange={(e) => setSignificanceFilter(e.target.value)}
+                >
+                  <option value="">{m.admin_common_all()}</option>
+                  {SIGNIFICANCE_OPTIONS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <FormFieldLabel className="text-xs py-0">
+                  {m.admin_autobio_source_conversation()}
+                </FormFieldLabel>
+                <input
+                  value={sourceSession}
+                  onChange={(e) => setSourceSession(e.target.value)}
+                  type="text"
+                  className="input input-bordered input-sm font-mono w-full"
+                  placeholder="conversation id"
+                />
+              </div>
             </div>
-          </div>
+          </FormFieldset>
           <button type="submit" className="btn btn-sm btn-primary" disabled={loading}>
             {loading ? <span className="loading loading-spinner loading-xs" /> : null}
             {m.admin_common_query()}

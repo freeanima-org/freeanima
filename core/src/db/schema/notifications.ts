@@ -24,11 +24,7 @@ export const notifications = pgTable(
     sourceRef: text("source_ref"),
   },
   (t) => [
-    index("idx_notifications_recipient_created").on(
-      t.recipientKind,
-      t.recipientId,
-      t.createdAt,
-    ),
+    index("idx_notifications_recipient_created").on(t.recipientKind, t.recipientId, t.createdAt),
     index("idx_notifications_recipient_read").on(t.recipientKind, t.recipientId, t.readAt),
   ],
 );

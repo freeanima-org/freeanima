@@ -47,7 +47,11 @@ function ShellMountError({ message, detail }: { message: string; detail: string 
           {message}
         </pre>
         <div className="flex flex-wrap gap-2">
-          <button type="button" className="btn btn-sm btn-primary" onClick={() => location.reload()}>
+          <button
+            type="button"
+            className="btn btn-sm btn-primary"
+            onClick={() => location.reload()}
+          >
             重新加载
           </button>
           <button
@@ -116,11 +120,7 @@ function ShellAppTree({
 
   return (
     <ShellAppProvider bindings={bindings}>
-      {bootError ? (
-        <div className="h-full min-h-screen flex flex-col">{content}</div>
-      ) : (
-        content
-      )}
+      {bootError ? <div className="h-full min-h-screen flex flex-col">{content}</div> : content}
     </ShellAppProvider>
   );
 }

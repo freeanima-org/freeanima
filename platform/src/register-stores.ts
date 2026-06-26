@@ -1,3 +1,4 @@
+import { registerEntityTaskModule } from "@freeanima/capabilities-task";
 import type { FridgeBridge } from "@freeanima/capabilities-tasks";
 import { registerTasksModule, syncTasksSummary } from "@freeanima/capabilities-tasks";
 import { isRedisConfigured } from "@freeanima/platform/connectors/redis";
@@ -26,6 +27,7 @@ export function registerServiceStores(
     taskStore: repos.tasks,
     fridgeBridge: opts?.fridgeBridge,
   });
+  registerEntityTaskModule({ entityStore: repos.entity });
 }
 
 /** Refresh tasks fridge summary on service startup (due titles + undated count) */

@@ -20,6 +20,7 @@ For **FreeAnima users** — self-hosted deployment, talking to a digital life, c
 | Topic           | File                                                       |
 | --------------- | ---------------------------------------------------------- |
 | Architecture    | [concepts/architecture.md](concepts/architecture.md)       |
+| Entity model    | [concepts/entity-model.md](concepts/entity-model.md)       |
 | Identity        | [concepts/identity.md](concepts/identity.md)               |
 | Self layer      | [concepts/self-layer.md](concepts/self-layer.md)           |
 | Memory          | [concepts/memory.md](concepts/memory.md)                   |

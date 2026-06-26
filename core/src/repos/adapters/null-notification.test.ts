@@ -24,6 +24,8 @@ describe("nullNotificationStore", () => {
         body: "b",
       }),
     ).rejects.toThrow(/NotificationStore not configured/);
-    await expect(nullNotificationStore.markRead("id")).rejects.toThrow(/NotificationStore not configured/);
+    await expect(nullNotificationStore.markRead("id")).rejects.toThrow(
+      /NotificationStore not configured/,
+    );
   });
 });

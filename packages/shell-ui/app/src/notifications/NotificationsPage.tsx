@@ -110,9 +110,7 @@ export function NotificationsPage() {
     setError("");
     try {
       const result = await markNotificationRead(row.id);
-      setItems((prev) =>
-        prev.map((item) => (item.id === row.id ? result.notification : item)),
-      );
+      setItems((prev) => prev.map((item) => (item.id === row.id ? result.notification : item)));
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -203,9 +201,7 @@ export function NotificationsPage() {
                     <span>创建：{formatDateTime(row.created_at)}</span>
                     <span>已读：{formatDateTime(row.read_at)}</span>
                   </div>
-                  {unread ? (
-                    <p className="text-xs text-primary/80">点击标记为已读</p>
-                  ) : null}
+                  {unread ? <p className="text-xs text-primary/80">点击标记为已读</p> : null}
                 </div>
               </button>
             );

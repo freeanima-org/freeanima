@@ -11,8 +11,7 @@ function isDebugBuild(): boolean {
 
 /** shell-bridge 先于主 bundle 在 body 末尾执行；资源用相对路径 */
 export function arrangeMobileIndexHtml(html: string): string {
-  const mainScriptRe =
-    /<script type="module" crossorigin src="(\.\/[^"]+\.js)"><\/script>\s*/;
+  const mainScriptRe = /<script type="module" crossorigin src="(\.\/[^"]+\.js)"><\/script>\s*/;
   const match = html.match(mainScriptRe);
   const bridgeTag = `<script type="module" src="./shell-bridge.js"></script>`;
 

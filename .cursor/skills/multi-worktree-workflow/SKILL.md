@@ -34,11 +34,11 @@ ln -s "$MAIN/node_modules" node_modules
 bun install --frozen-lockfile --ignore-scripts || true
 ```
 
-| 场景 | 做法 |
-| ---- | ---- |
-| `bun.lock` 与主 worktree 一致 | symlink 后 `--frozen-lockfile` 约 **5 秒** 完成 |
-| `bun.lock` 略有差异 | **仍可 symlink**；多数情况下现有依赖够用 |
-| 缺包 / 依赖变更 | 仅在**主 worktree** 执行 `bun install`，所有 symlink 的副 worktree 同步受益 |
+| 场景                          | 做法                                                                        |
+| ----------------------------- | --------------------------------------------------------------------------- |
+| `bun.lock` 与主 worktree 一致 | symlink 后 `--frozen-lockfile` 约 **5 秒** 完成                             |
+| `bun.lock` 略有差异           | **仍可 symlink**；多数情况下现有依赖够用                                    |
+| 缺包 / 依赖变更               | 仅在**主 worktree** 执行 `bun install`，所有 symlink 的副 worktree 同步受益 |
 
 **硬约束**：副 worktree **不要**跑普通 `bun install`（无 `--frozen-lockfile`）——symlink 指向同一份物理目录，会修改主 worktree 的 `node_modules`。依赖变更只在主 worktree 安装。
 
