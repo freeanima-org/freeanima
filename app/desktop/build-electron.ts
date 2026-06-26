@@ -43,7 +43,7 @@ function electronMainExternals(): string[] {
   return [...externals];
 }
 
-export function getElectronMainBundleOptions(): esbuild.BuildOptions {
+export function getElectronMainBundleOptions(opts?: { sourcemap?: boolean }): esbuild.BuildOptions {
   return {
     entryPoints: { main: join(SHELL_ROOT, "electron", "main.ts") },
     bundle: true,
@@ -52,11 +52,14 @@ export function getElectronMainBundleOptions(): esbuild.BuildOptions {
     format: "cjs",
     outfile: join(ELECTRON_DIST, "main.cjs"),
     external: electronMainExternals(),
+    sourcemap: opts?.sourcemap ?? false,
     logLevel: "info",
   };
 }
 
-export function getElectronPreloadBundleOptions(): esbuild.BuildOptions {
+export function getElectronPreloadBundleOptions(opts?: {
+  sourcemap?: boolean;
+}): esbuild.BuildOptions {
   return {
     entryPoints: { preload: join(SHELL_ROOT, "electron", "preload.ts") },
     bundle: true,
@@ -65,6 +68,7 @@ export function getElectronPreloadBundleOptions(): esbuild.BuildOptions {
     format: "cjs",
     outfile: join(ELECTRON_DIST, "preload.cjs"),
     external: ["electron"],
+    sourcemap: opts?.sourcemap ?? false,
     logLevel: "info",
   };
 }
@@ -112,18 +116,39 @@ function copyDist(src: string, dest: string): void {
   cpSync(src, dest, { recursive: true });
 }
 
-async function buildVendorAssets(minify: boolean): Promise<void> {
-  const companionDist = await buildCompanionApp({ minify });
-  const shellUiDist = await buildShellUi({ appDir: join(SHELL_ROOT, "app"), minify });
+async function buildVendorAssets(opts: { minify: boolean; sourcemap: boolean }): Promise<void> {
+  const companionDist = await buildCompanionApp(opts);
+  const shellUiDist = await buildShellUi({
+    appDir: join(SHELL_ROOT, "app"),
+    minify: opts.minify,
+    sourcemap: opts.sourcemap,
+  });
   copyDist(companionDist, join(SHELL_ROOT, "vendor", "companion", "dist"));
   copyDist(shellUiDist, join(SHELL_ROOT, "vendor", "shell-ui", "dist"));
 }
 
-async function bundleElectronMain(): Promise<void> {
+async function bundleElectronMain(sourcemap: boolean): Promise<void> {
   rmSync(ELECTRON_DIST, { recursive: true, force: true });
   mkdirSync(ELECTRON_DIST, { recursive: true });
-  await esbuild.build(getElectronMainBundleOptions());
-  await esbuild.build(getElectronPreloadBundleOptions());
+  const bundleOpts = { sourcemap };
+  await esbuild.build(getElectronMainBundleOptions(bundleOpts));
+  await esbuild.build(getElectronPreloadBundleOptions(bundleOpts));
+}
+
+/** 清除 vendor 残留（如历史 chat/admin 目录），避免 electron-builder 误打进安装包 */
+function cleanVendorDir(): void {
+  const vendorDir = join(SHELL_ROOT, "vendor");
+  if (!existsSync(vendorDir)) return;
+  rmSync(vendorDir, { recursive: true, force: true });
+  console.log("[desktop-shell] cleaned vendor/");
+}
+
+/** 清除 release 输出，避免旧 win-unpacked / 安装包残留 */
+function cleanReleaseDir(): void {
+  const releaseDir = join(SHELL_ROOT, "release");
+  if (!existsSync(releaseDir)) return;
+  rmSync(releaseDir, { recursive: true, force: true });
+  console.log("[desktop-shell] cleaned release/");
 }
 
 /** 清除 companion 本地构建/缓存残留，避免 electron-builder 误打进 desktop-shell */
@@ -232,9 +257,12 @@ export async function buildDesktopShellElectron(opts: BuildElectronOptions = {})
 
   console.log(`[desktop-shell] build profile=${profile} platform=${platform}`);
   cleanCompanionBuildArtifacts();
-  await buildVendorAssets(minify);
-  await bundleElectronMain();
+  cleanVendorDir();
+  const sourcemap = profile !== "release";
+  await buildVendorAssets({ minify, sourcemap });
+  await bundleElectronMain(sourcemap);
   stageFbxBinary(platform);
+  cleanReleaseDir();
 
   const version = resolveBuildVersion(opts.version);
   runElectronBuilderViaNode(buildElectronBuilderOptions(platform, profile, version));

@@ -75,6 +75,7 @@ FreeAnimaWaitDone:
     Goto FreeAnimaRmLoop
   FreeAnimaRmDone:
     Sleep 500
+    CreateDirectory "$INSTDIR"
   ${EndIf}
 !macroend
 
