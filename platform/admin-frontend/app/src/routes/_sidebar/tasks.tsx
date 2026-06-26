@@ -1,56 +1,44 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/satellite-sdk/form";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { m } from "@admin/lib/i18n.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
-import { listTasks } from "@admin/lib/api.ts";
+import { listEntityTaskItems, listEntityTaskLists } from "@admin/lib/api.ts";
 import { logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 const PAGE_SIZE = 20;
 
 const STATUS_OPTIONS = () =>
   [
-    { value: "active", label: m.admin_common_active_filter() },
     { value: "all", label: m.admin_common_all() },
     { value: "pending", label: "pending" },
-    { value: "in_progress", label: "in_progress" },
     { value: "completed", label: "completed" },
-    { value: "cancelled", label: "cancelled" },
   ] as const;
 
 const PRIORITY_OPTIONS = ["high", "medium", "low", "none"] as const;
 
-type TaskRow = {
-  id: string;
+type TaskItemRow = {
+  id: number;
   title: string;
-  description: string | null;
+  content: string;
+  tags: string[];
   status: string;
   priority: string;
   due_at: string | null;
+  list_id: number;
+  completed_at: string | null;
   created_at: string;
   updated_at: string;
-  completed_at: string | null;
-  source_conversation_id: string | null;
 };
 
-function resolveStatusFilter(value: string): "all" | string | string[] | undefined {
-  if (value === "active") return undefined;
-  if (value === "all") return "all";
-  return value;
-}
+type TaskListRow = {
+  id: number;
+  name: string;
+};
 
 function statusBadgeClass(status: string): string {
-  switch (status) {
-    case "completed":
-      return "badge-success";
-    case "cancelled":
-      return "badge-ghost";
-    case "in_progress":
-      return "badge-info";
-    default:
-      return "badge-warning";
-  }
+  return status === "completed" ? "badge-success" : "badge-warning";
 }
 
 function priorityBadgeClass(priority: string): string {
@@ -72,31 +60,46 @@ export const Route = createFileRoute("/_sidebar/tasks")({
 
 function TasksPage() {
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("active");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("");
+  const [listFilter, setListFilter] = useState("");
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [total, setTotal] = useState(0);
-  const [items, setItems] = useState<TaskRow[]>([]);
+  const [lists, setLists] = useState<TaskListRow[]>([]);
+  const [allItems, setAllItems] = useState<TaskItemRow[]>([]);
   const [loaded, setLoaded] = useState(false);
 
+  const listNameById = (id: number) => lists.find((l) => l.id === id)?.name ?? `#${id}`;
+
+  const filteredItems = allItems.filter((row) => {
+    const q = query.trim().toLowerCase();
+    if (q) {
+      const hay = `${row.title}\n${row.content}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    if (priorityFilter && row.priority !== priorityFilter) return false;
+    if (listFilter && String(row.list_id) !== listFilter) return false;
+    return true;
+  });
+
+  const total = filteredItems.length;
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
+  const items = filteredItems.slice(offset, offset + PAGE_SIZE);
 
   const fetchList = useCallback(
     async (nextOffset: number) => {
       setLoading(true);
       setError("");
       try {
-        const data = (await listTasks({
-          query: query.trim() || undefined,
-          offset: nextOffset,
-          limit: PAGE_SIZE,
-          status: resolveStatusFilter(statusFilter),
-          priority: priorityFilter || undefined,
-        })) as { items: TaskRow[]; total: number };
-        setItems(data.items ?? []);
-        setTotal(data.total ?? 0);
+        const [listsData, itemsData] = await Promise.all([
+          listEntityTaskLists() as Promise<{ items: TaskListRow[] }>,
+          listEntityTaskItems({
+            status: statusFilter as "pending" | "completed" | "all",
+          }) as Promise<{ items: TaskItemRow[] }>,
+        ]);
+        setLists(listsData.items ?? []);
+        setAllItems(itemsData.items ?? []);
         setOffset(nextOffset);
         setLoaded(true);
       } catch (e) {
@@ -110,7 +113,7 @@ function TasksPage() {
         setLoading(false);
       }
     },
-    [query, statusFilter, priorityFilter],
+    [statusFilter],
   );
 
   const runSearch = () => {
@@ -118,8 +121,7 @@ function TasksPage() {
   };
 
   const onPageChange = (page: number) => {
-    const nextOffset = (page - 1) * PAGE_SIZE;
-    void fetchList(nextOffset);
+    setOffset((page - 1) * PAGE_SIZE);
   };
 
   return (
@@ -145,7 +147,7 @@ function TasksPage() {
                 placeholder={m.admin_common_keyword_placeholder()}
               />
             </FormField>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
                 <FormFieldLabel className="text-xs py-0">
                   {m.admin_common_status_label()}
@@ -175,6 +177,21 @@ function TasksPage() {
                   {PRIORITY_OPTIONS.map((p) => (
                     <option key={p} value={p}>
                       {p}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <FormFieldLabel className="text-xs py-0">清单</FormFieldLabel>
+                <select
+                  className="select select-bordered select-sm w-full"
+                  value={listFilter}
+                  onChange={(e) => setListFilter(e.target.value)}
+                >
+                  <option value="">{m.admin_common_all()}</option>
+                  {lists.map((l) => (
+                    <option key={l.id} value={String(l.id)}>
+                      {l.name}
                     </option>
                   ))}
                 </select>
@@ -213,11 +230,23 @@ function TasksPage() {
                       >
                         {row.priority}
                       </span>
+                      <span className="badge badge-ghost badge-xs">
+                        {listNameById(row.list_id)}
+                      </span>
                     </div>
-                    {row.description ? (
+                    {row.content ? (
                       <p className="text-sm text-base-content/80 whitespace-pre-wrap">
-                        {row.description}
+                        {row.content}
                       </p>
+                    ) : null}
+                    {row.tags.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {row.tags.map((tag) => (
+                          <span key={tag} className="badge badge-outline badge-xs">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
                     ) : null}
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-base-content/60">
                       <span>
@@ -230,18 +259,6 @@ function TasksPage() {
                         <span>completed: {formatDisplayDateTime(row.completed_at)}</span>
                       ) : null}
                     </div>
-                    {row.source_conversation_id ? (
-                      <p className="text-xs text-base-content/50">
-                        session:{" "}
-                        <Link
-                          to="/conversations/$conversationId"
-                          params={{ conversationId: row.source_conversation_id }}
-                          className="link link-hover font-mono"
-                        >
-                          {row.source_conversation_id}
-                        </Link>
-                      </p>
-                    ) : null}
                   </div>
                 </div>
               ))}

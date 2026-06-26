@@ -1,6 +1,6 @@
 import { registerClarifyTool } from "@freeanima/capabilities-tools/clarify";
+import { registerTaskTools } from "@freeanima/capabilities-task";
 import { registerWriteFridgeMagnetTool } from "@freeanima/capabilities-tasks/fridge-magnet";
-import { registerTaskTools } from "@freeanima/capabilities-tasks";
 import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities-tools";
 import { registerCronjobTool } from "@freeanima/platform/connectors/cron/cronjob-tool";
 import { registerSelfTools } from "@freeanima/capabilities-identity";

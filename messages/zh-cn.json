@@ -457,7 +457,7 @@
   "admin_system_prompt_tools_list": "工具列表 →",
   "admin_system_prompt_tools_registry": "全量注册表",
   "admin_system_prompt_tools_shown": "显示 {shown} / {total} · ~{tokens} tokens",
-  "admin_tasks_desc": "浏览 PG tasks 表，支持关键词搜索与状态/优先级筛选（只读）。",
+  "admin_tasks_desc": "浏览 entity 任务（/api/task/*），支持关键词、状态、优先级与清单筛选（只读）。",
   "admin_tasks_search_label": "搜索词（可选，匹配标题/描述）",
   "admin_title": "管理台",
   "admin_tools_default_loaded": "默认加载工具集",

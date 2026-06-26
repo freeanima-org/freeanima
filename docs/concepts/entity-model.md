@@ -17,16 +17,17 @@ Component fields live in **`body` JSONB** at the top level. **`primary_component
 
 ## `entities` table
 
-| Column                      | Role                                                                 |
-| --------------------------- | -------------------------------------------------------------------- |
-| `id`                        | `bigint` identity — global numeric ID                                |
-| `type`                      | One of four entity types                                             |
-| `world_id`                  | Native owning World (FK → `entities.id`)                             |
-| `owner_id`                  | Owning subject (`agent` / `user` entity), nullable for public worlds |
-| `components`                | `text[]` component tags                                              |
-| `primary_component`         | Main component for module routing                                    |
-| `body`                      | JSONB component payload                                              |
-| `created_at` / `updated_at` | Timestamps                                                           |
+| Column                          | Role                                                                 |
+| ------------------------------- | -------------------------------------------------------------------- |
+| `id`                            | `bigint` identity — global numeric ID                                |
+| `type`                          | One of four entity types                                             |
+| `world_id`                      | Native owning World (FK → `entities.id`)                             |
+| `owner_id`                      | Owning subject (`agent` / `user` entity), nullable for public worlds |
+| `components`                    | `text[]` component tags                                              |
+| `primary_component`             | Main component for module routing                                    |
+| `title` / `summary` / `content` | Shared text columns (all components may use)                         |
+| `body`                          | JSONB component payload                                              |
+| `created_at` / `updated_at`     | Timestamps                                                           |
 
 **Not in v0.8 bootstrap:** relationship table, permission table, World nesting/mount, graph DB (PostgreSQL AGE).
 
@@ -46,11 +47,9 @@ TickTick-style lists and items map to:
 | List (清单) | `type=content` | `task_list`    |
 | Item (任务) | `type=content` | `task_item`    |
 
-Items reference their list via `body.list_id` (entity id).
+Items reference their list via `body.list_id` (entity id). Task items store **title** and **content** on entity columns; **tags** live in `body.tags`. A **default list** (`is_default: true`, seeded id `2`「收件箱」) cannot be deleted but may be renamed.
 
-### Coexistence with legacy `tasks` table
-
-The original cross-conversation todo system (`tasks` table, `@freeanima/capabilities-tasks`, `/api/tasks/*`, LLM tools, fridge summary) **remains unchanged**. Shell UI **`/tasks`** uses the new entity stack (`/api/task/*`, `@freeanima/capabilities-task`).
+LLM tools and fridge summary use `@freeanima/capabilities-task` (`task_*` tools, `exposeMcp: true`). Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration (`scripts/migrate-tasks-to-entities.ts`).
 
 ## Future migration map (not executed yet)
 

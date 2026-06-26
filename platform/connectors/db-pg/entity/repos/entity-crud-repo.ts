@@ -25,11 +25,19 @@ function normalizeCreate(input: EntityCreateInput) {
   const primary = primaryComponentSchema.parse(input.primary_component);
   const components = [...new Set([...input.components, primary])];
   const body = validateEntityBody(components, input.body);
-  return { type, primary, components, body };
+  return {
+    type,
+    primary,
+    components,
+    body,
+    title: input.title?.trim() ?? "",
+    summary: input.summary?.trim() ?? "",
+    content: input.content?.trim() ?? "",
+  };
 }
 
 export async function createEntity(input: EntityCreateInput): Promise<EntityRow> {
-  const { type, primary, components, body } = normalizeCreate(input);
+  const { type, primary, components, body, title, summary, content } = normalizeCreate(input);
   const now = formatCstIso(new Date());
   const db = getDb();
   const [row] = await db
@@ -40,6 +48,9 @@ export async function createEntity(input: EntityCreateInput): Promise<EntityRow>
       ownerId: input.owner_id ?? null,
       components,
       primaryComponent: primary,
+      title,
+      summary,
+      content,
       body,
       createdAt: now,
       updatedAt: now,
@@ -67,16 +78,17 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
   validateEntityBody(components, body);
 
   const now = formatCstIso(new Date());
+  const patch: Partial<typeof entities.$inferInsert> = {
+    components,
+    body,
+    updatedAt: now,
+  };
+  if (input.title !== undefined) patch.title = input.title.trim();
+  if (input.summary !== undefined) patch.summary = input.summary.trim();
+  if (input.content !== undefined) patch.content = input.content.trim();
+
   const db = getDb();
-  const [row] = await db
-    .update(entities)
-    .set({
-      components,
-      body,
-      updatedAt: now,
-    })
-    .where(eq(entities.id, input.id))
-    .returning();
+  const [row] = await db.update(entities).set(patch).where(eq(entities.id, input.id)).returning();
   return row ? mapRow(row) : null;
 }
 

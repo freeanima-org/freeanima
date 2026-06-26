@@ -37,18 +37,20 @@ const updateListBodySchema = z.object({
 const createItemBodySchema = z.object({
   title: z.string().min(1),
   list_id: z.number().int().positive(),
+  content: z.string().optional(),
+  tags: z.array(z.string()).optional(),
   priority: z.enum(["high", "medium", "low", "none"]).optional(),
   due_at: z.string().nullable().optional(),
-  note: z.string().nullable().optional(),
   sort_order: z.number().int().optional(),
 });
 
 const updateItemBodySchema = z.object({
   title: z.string().min(1).optional(),
   list_id: z.number().int().positive().optional(),
+  content: z.string().optional(),
+  tags: z.array(z.string()).optional(),
   priority: z.enum(["high", "medium", "low", "none"]).optional(),
   due_at: z.string().nullable().optional(),
-  note: z.string().nullable().optional(),
   sort_order: z.number().int().optional(),
   status: z.enum(["pending", "completed"]).optional(),
 });
@@ -57,6 +59,7 @@ const listItemsQuerySchema = z.object({
   list_id: z.coerce.number().int().positive().optional(),
   status: z.enum(["pending", "completed", "all"]).optional(),
   due_today: z.coerce.boolean().optional(),
+  tags: z.union([z.string(), z.array(z.string())]).optional(),
 });
 
 export async function getEntityTaskLists() {
@@ -82,9 +85,24 @@ export async function patchEntityTaskList(id: number, body: unknown) {
 
 export async function removeEntityTaskList(id: number, cascade?: boolean) {
   assertPg();
-  const ok = await deleteTaskList(id, { cascade: cascade ?? true });
-  if (!ok) throw new ApiHandlerError(404, "NOT_FOUND");
-  return { ok: true as const };
+  try {
+    const ok = await deleteTaskList(id, { cascade: cascade ?? true });
+    if (!ok) throw new ApiHandlerError(404, "NOT_FOUND");
+    return { ok: true as const };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("default task list")) {
+      throw new ApiHandlerError(400, "DEFAULT_LIST_CANNOT_DELETE");
+    }
+    throw err;
+  }
+}
+
+function parseTagsQuery(raw: string | string[] | undefined): string[] | undefined {
+  if (raw == null) return undefined;
+  const values = Array.isArray(raw) ? raw : raw.split(",");
+  const tags = values.map((v) => v.trim()).filter(Boolean);
+  return tags.length > 0 ? tags : undefined;
 }
 
 export async function getEntityTaskItems(query: unknown) {
@@ -94,6 +112,7 @@ export async function getEntityTaskItems(query: unknown) {
     list_id: parsed.list_id,
     status: parsed.status ?? "all",
     due_today: parsed.due_today,
+    tags: parseTagsQuery(parsed.tags),
   });
   return { items };
 }

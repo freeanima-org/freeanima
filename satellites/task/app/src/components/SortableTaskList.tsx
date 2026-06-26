@@ -1,55 +1,72 @@
-import {
-  DndContext,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  arrayMove,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { MouseEvent } from "react";
+import { useRef, type MouseEvent, type TouchEvent } from "react";
 
 import { formatDue, priorityDot } from "../lib/format-task.ts";
+import { taskDndId } from "../lib/dnd-ids.ts";
 import type { TaskItemRow } from "../lib/api.ts";
 
 type SortableTaskListProps = {
   items: TaskItemRow[];
   useActionSheet: boolean;
+  selectionMode: boolean;
+  selectedIds: ReadonlySet<number>;
   onToggleComplete: (item: TaskItemRow) => void;
   onEdit: (item: TaskItemRow) => void;
   onOpenItemMenu: (item: TaskItemRow) => void;
   onOpenItemContextMenu: (e: MouseEvent, item: TaskItemRow) => void;
-  onReorder: (ordered: TaskItemRow[]) => void;
+  onSelectItem: (itemId: number, shiftKey: boolean) => void;
+  onLongPressSelect: (itemId: number) => void;
 };
 
 function SortableTaskRow({
   item,
   useActionSheet,
+  selectionMode,
+  selected,
   onToggleComplete,
   onEdit,
   onOpenMenu,
   onContextMenu,
+  onSelectItem,
+  onLongPressSelect,
 }: {
   item: TaskItemRow;
   useActionSheet: boolean;
+  selectionMode: boolean;
+  selected: boolean;
   onToggleComplete: () => void;
   onEdit: () => void;
   onOpenMenu: () => void;
   onContextMenu: (e: MouseEvent) => void;
+  onSelectItem: (shiftKey: boolean) => void;
+  onLongPressSelect: () => void;
 }) {
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: item.id,
+    id: taskDndId(item.id),
+    disabled: selectionMode,
   });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+  };
+
+  const clearLongPress = () => {
+    if (longPressTimer.current != null) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const handleTouchStart = (_e: TouchEvent) => {
+    if (!useActionSheet || selectionMode) return;
+    clearLongPress();
+    longPressTimer.current = setTimeout(() => {
+      onLongPressSelect();
+    }, 450);
   };
 
   return (
@@ -58,36 +75,55 @@ function SortableTaskRow({
       style={style}
       className={`hover:bg-base-200 group flex min-h-11 items-center gap-1 rounded-lg px-1 py-1 ${
         isDragging ? "opacity-50" : ""
-      }`}
+      } ${selected ? "bg-primary/10" : ""}`}
       onContextMenu={onContextMenu}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={clearLongPress}
+      onTouchMove={clearLongPress}
+      onTouchCancel={clearLongPress}
     >
-      <button
-        type="button"
-        title="拖拽排序"
-        className="text-base-content/40 hover:text-base-content flex min-h-11 min-w-8 shrink-0 cursor-grab items-center justify-center select-none active:cursor-grabbing"
-        {...attributes}
-        {...listeners}
-      >
-        ⋮⋮
-      </button>
+      {!selectionMode ? (
+        <button
+          type="button"
+          title="拖拽排序或拖到左侧清单"
+          className="text-base-content/40 hover:text-base-content flex min-h-11 min-w-8 shrink-0 cursor-grab items-center justify-center select-none active:cursor-grabbing"
+          {...attributes}
+          {...listeners}
+        >
+          ⋮⋮
+        </button>
+      ) : null}
       <input
         type="checkbox"
         className="checkbox checkbox-sm"
-        checked={false}
-        onChange={onToggleComplete}
+        checked={selectionMode ? selected : false}
+        onClick={(e) => {
+          if (selectionMode) {
+            e.preventDefault();
+            onSelectItem(e.shiftKey);
+          }
+        }}
+        onChange={selectionMode ? undefined : onToggleComplete}
       />
       <button
         type="button"
         className="min-w-0 flex-1 truncate py-2 text-left text-sm"
-        onClick={onEdit}
+        onClick={(e) => {
+          if (selectionMode) onSelectItem(e.shiftKey);
+          else onEdit();
+        }}
       >
         {item.title}
       </button>
-      <span className={`text-xs ${priorityDot(item.priority)}`}>●</span>
-      {item.due_at ? (
-        <span className="text-base-content/50 shrink-0 text-xs">{formatDue(item.due_at)}</span>
+      {!selectionMode ? (
+        <>
+          <span className={`text-xs ${priorityDot(item.priority)}`}>●</span>
+          {item.due_at ? (
+            <span className="text-base-content/50 shrink-0 text-xs">{formatDue(item.due_at)}</span>
+          ) : null}
+        </>
       ) : null}
-      {useActionSheet ? (
+      {useActionSheet && !selectionMode ? (
         <button
           type="button"
           className="btn btn-ghost btn-xs btn-square shrink-0"
@@ -107,42 +143,39 @@ function SortableTaskRow({
 export function SortableTaskList({
   items,
   useActionSheet,
+  selectionMode,
+  selectedIds,
   onToggleComplete,
   onEdit,
   onOpenItemMenu,
   onOpenItemContextMenu,
-  onReorder,
+  onSelectItem,
+  onLongPressSelect,
 }: SortableTaskListProps) {
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    const oldIndex = items.findIndex((i) => i.id === active.id);
-    const newIndex = items.findIndex((i) => i.id === over.id);
-    if (oldIndex < 0 || newIndex < 0) return;
-    onReorder(arrayMove(items, oldIndex, newIndex));
-  };
-
   if (items.length === 0) return null;
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
-        <ul className="space-y-1">
-          {items.map((item) => (
-            <SortableTaskRow
-              key={item.id}
-              item={item}
-              useActionSheet={useActionSheet}
-              onToggleComplete={() => onToggleComplete(item)}
-              onEdit={() => onEdit(item)}
-              onOpenMenu={() => onOpenItemMenu(item)}
-              onContextMenu={(e) => onOpenItemContextMenu(e, item)}
-            />
-          ))}
-        </ul>
-      </SortableContext>
-    </DndContext>
+    <SortableContext
+      items={items.map((i) => taskDndId(i.id))}
+      strategy={verticalListSortingStrategy}
+    >
+      <ul className="space-y-1">
+        {items.map((item) => (
+          <SortableTaskRow
+            key={item.id}
+            item={item}
+            useActionSheet={useActionSheet}
+            selectionMode={selectionMode}
+            selected={selectedIds.has(item.id)}
+            onToggleComplete={() => onToggleComplete(item)}
+            onEdit={() => onEdit(item)}
+            onOpenMenu={() => onOpenItemMenu(item)}
+            onContextMenu={(e) => onOpenItemContextMenu(e, item)}
+            onSelectItem={(shiftKey) => onSelectItem(item.id, shiftKey)}
+            onLongPressSelect={() => onLongPressSelect(item.id)}
+          />
+        ))}
+      </ul>
+    </SortableContext>
   );
 }

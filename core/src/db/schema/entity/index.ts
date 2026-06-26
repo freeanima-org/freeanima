@@ -5,3 +5,6 @@ export * from "./views.ts";
 
 /** Bootstrap world entity id (seeded in migration). */
 export const ENTITY_ROOT_WORLD_ID = 1;
+
+/** 默认任务清单（不可删除，可重命名；seeded in migration）。 */
+export const ENTITY_DEFAULT_TASK_LIST_ID = 2;

@@ -391,14 +391,24 @@ export async function getDreamMemory(day: string) {
   return unwrap(resolveApiClient().api.memory.dream({ day }).get());
 }
 
-export async function listTasks(input: {
-  query?: string;
-  offset?: number;
-  limit?: number;
-  status?: "all" | string | string[];
-  priority?: string;
+export async function listEntityTaskItems(input?: {
+  list_id?: number;
+  status?: "pending" | "completed" | "all";
+  tags?: string;
 }) {
-  return unwrap(resolveApiClient().api.tasks.list.post(input));
+  return unwrap(
+    resolveApiClient().api.task.items.get({
+      query: {
+        list_id: input?.list_id != null ? String(input.list_id) : undefined,
+        status: input?.status,
+        tags: input?.tags,
+      },
+    }),
+  );
+}
+
+export async function listEntityTaskLists() {
+  return unwrap(resolveApiClient().api.task.lists.get());
 }
 
 export async function getFtsStatus() {

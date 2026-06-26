@@ -20,6 +20,9 @@ export type EntityRowView = {
   owner_id: number | null;
   components: string[];
   primary_component: string;
+  title: string;
+  summary: string;
+  content: string;
   body: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -34,6 +37,9 @@ export function mapEntityRow(row: EntitySelect): EntityRowView {
     owner_id: row.ownerId ?? null,
     components: [...row.components],
     primary_component: row.primaryComponent,
+    title: row.title ?? "",
+    summary: row.summary ?? "",
+    content: row.content ?? "",
     body: (row.body ?? {}) as Record<string, unknown>,
     created_at: row.createdAt,
     updated_at: row.updatedAt,
@@ -46,14 +52,20 @@ export function asWorld(row: EntityRowView): WorldConfigBody | null {
   return parsed.success ? parsed.data : null;
 }
 
-export function asTaskList(row: EntityRowView): (TaskListBody & { id: number }) | null {
+export function asTaskList(
+  row: EntityRowView,
+): (TaskListBody & { id: number; name: string }) | null {
   if (row.primary_component !== TASK_LIST_COMPONENT) return null;
   const parsed = taskListBodySchema.safeParse(row.body);
-  return parsed.success ? { id: row.id, ...parsed.data } : null;
+  return parsed.success ? { id: row.id, name: row.title, ...parsed.data } : null;
 }
 
-export function asTaskItem(row: EntityRowView): (TaskItemBody & { id: number }) | null {
+export function asTaskItem(
+  row: EntityRowView,
+): (TaskItemBody & { id: number; title: string; content: string }) | null {
   if (row.primary_component !== TASK_ITEM_COMPONENT) return null;
   const parsed = taskItemBodySchema.safeParse(row.body);
-  return parsed.success ? { id: row.id, ...parsed.data } : null;
+  return parsed.success
+    ? { id: row.id, title: row.title, content: row.content, ...parsed.data }
+    : null;
 }

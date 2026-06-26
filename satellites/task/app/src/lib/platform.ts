@@ -11,6 +11,11 @@ export function isNativeShell(): boolean {
   return typeof window !== "undefined" && Boolean(window.satelliteShell?.isNativeShell);
 }
 
+/** 浏览器 Web 壳（dev:web 等），非 desktop/mobile 原生壳 */
+export function isWebShell(): boolean {
+  return typeof window !== "undefined" && !window.satelliteShell?.isNativeShell;
+}
+
 export function isMobileLayoutViewport(): boolean {
   if (typeof window === "undefined") return false;
   return window.matchMedia(MOBILE_LAYOUT_MQ).matches;

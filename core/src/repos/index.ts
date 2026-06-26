@@ -56,13 +56,6 @@ export type {
   AutoLlmRunListOpts,
   AutoLlmRunCountOpts,
   AutoLlmRunStorePort,
-  TaskStorePort,
-  TaskRow,
-  TaskCreateInput,
-  TaskUpdateInput,
-  TaskListOpts,
-  TaskStatus,
-  TaskPriority,
   NotificationStorePort,
   NotificationRow,
   NotificationCreateInput,
@@ -84,8 +77,6 @@ export type {
 } from "./ports/index.ts";
 export {
   SELF_BLOCK_KEYS,
-  TASK_STATUSES,
-  TASK_PRIORITIES,
   NOTIFICATION_RECIPIENT_KINDS,
   NOTIFICATION_READ_FILTERS,
   NOTIFICATION_SOURCE_KINDS,

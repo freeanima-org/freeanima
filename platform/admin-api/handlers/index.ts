@@ -52,7 +52,6 @@ export {
   listCronLogs,
   getDeepSleepRounds,
 } from "./sleep.ts";
-export { listTasks } from "./tasks.ts";
 export { listAutoLlmRuns } from "./auto-llm-runs.ts";
 export { listFridgeMagnets } from "./fridge.ts";
 export { ApiHandlerError } from "./errors.ts";

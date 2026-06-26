@@ -4,8 +4,6 @@ import {
   limbicKindSchema,
   semanticMemoryStatusSchema,
   semanticMemoryTypeSchema,
-  taskPrioritySchema,
-  taskStatusSchema,
 } from "@freeanima/core/db/schema";
 import { z } from "zod";
 
@@ -48,14 +46,6 @@ export const dreamMemoryDayParamsSchema = z.object({
   day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 });
 
-export const taskListBodySchema = z.object({
-  query: z.string().optional(),
-  offset: z.number().int().min(0).optional(),
-  limit: z.number().int().min(1).max(100).optional(),
-  status: z.union([z.literal("all"), z.array(taskStatusSchema), taskStatusSchema]).optional(),
-  priority: taskPrioritySchema.optional(),
-});
-
 const clarifyItemSchema = z.object({
   question: z.string().min(1),
   choices: z.array(z.string().min(1)).max(4).optional(),
@@ -95,7 +85,6 @@ export type SemanticMemoryPinBody = z.infer<typeof semanticMemoryPinBodySchema>;
 export type LimbicMemoryListBody = z.infer<typeof limbicMemoryListBodySchema>;
 export type AutobiographicalMemoryListBody = z.infer<typeof autobiographicalMemoryListBodySchema>;
 export type DreamMemoryListBody = z.infer<typeof dreamMemoryListBodySchema>;
-export type TaskListBody = z.infer<typeof taskListBodySchema>;
 
 const streamAcceptedEventSchema = z.object({
   event: z.literal("accepted"),

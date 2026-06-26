@@ -367,7 +367,7 @@
   "admin_system_prompt_tools_list": "Tools list →",
   "admin_system_prompt_tools_registry": "full registry",
   "admin_system_prompt_tools_shown": "Showing {shown} / {total} · ~{tokens} tokens",
-  "admin_tasks_desc": "Browse PG tasks with keyword search and status/priority filters (read-only).",
+  "admin_tasks_desc": "Browse entity tasks (/api/task/*) with keyword, status, priority, and list filters (read-only).",
   "admin_tasks_search_label": "Search term (optional, title/description)",
   "admin_title": "Admin",
   "admin_tools_default_loaded": "Default loaded toolsets",

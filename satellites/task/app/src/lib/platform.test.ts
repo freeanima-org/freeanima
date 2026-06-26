@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it } from "bun:test";
 
-import { isMobileLayoutViewport, isNativeShell, isTaskContextMenuEnabled } from "./platform.ts";
+import {
+  isMobileLayoutViewport,
+  isNativeShell,
+  isTaskContextMenuEnabled,
+  isWebShell,
+} from "./platform.ts";
 
 const hasWindow = typeof globalThis.window !== "undefined";
 
@@ -30,6 +35,13 @@ describe("task platform", () => {
     expect(isTaskContextMenuEnabled()).toBe(false);
     window.satelliteShell = { isNativeShell: false } as typeof window.satelliteShell;
     expect(isTaskContextMenuEnabled()).toBe(true);
+  });
+
+  it("isWebShell is inverse of native shell", () => {
+    window.satelliteShell = { isNativeShell: true } as typeof window.satelliteShell;
+    expect(isWebShell()).toBe(false);
+    window.satelliteShell = undefined;
+    expect(isWebShell()).toBe(true);
   });
 
   it("isMobileLayoutViewport uses matchMedia", () => {

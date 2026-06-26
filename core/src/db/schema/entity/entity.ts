@@ -13,6 +13,9 @@ export const entities = pgTable(
     ownerId: bigint("owner_id", { mode: "number" }),
     components: text("components").array().notNull().default([]),
     primaryComponent: text("primary_component").notNull(),
+    title: text("title").notNull().default(""),
+    summary: text("summary").notNull().default(""),
+    content: text("content").notNull().default(""),
     body: jsonb("body").notNull().default({}),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .notNull()

@@ -1,4 +1,5 @@
 import {
+  ENTITY_DEFAULT_TASK_LIST_ID,
   TASK_LIST_COMPONENT,
   asTaskList,
   type TaskListBody,
@@ -18,20 +19,24 @@ async function countItemsForList(listId: number): Promise<number> {
 }
 
 function toListRow(
-  row: ReturnType<typeof asTaskList> extends infer T ? T : never,
+  row: NonNullable<ReturnType<typeof asTaskList>>,
   meta: { created_at: string; updated_at: string; item_count: number },
-): TaskListRow | null {
-  if (!row) return null;
+): TaskListRow {
   return {
     id: row.id,
     name: row.name,
     sort_order: row.sort_order ?? 0,
     closed: row.closed ?? false,
     color: row.color ?? null,
+    is_default: row.is_default ?? false,
     item_count: meta.item_count,
     created_at: meta.created_at,
     updated_at: meta.updated_at,
   };
+}
+
+export function isDefaultTaskListId(id: number): boolean {
+  return id === ENTITY_DEFAULT_TASK_LIST_ID;
 }
 
 export async function listTaskLists(): Promise<TaskListRow[]> {
@@ -47,43 +52,47 @@ export async function listTaskLists(): Promise<TaskListRow[]> {
     const parsed = asTaskList(row);
     if (!parsed) continue;
     const item_count = await countItemsForList(parsed.id);
-    const mapped = toListRow(parsed, {
-      created_at: row.created_at,
-      updated_at: row.updated_at,
-      item_count,
-    });
-    if (mapped) lists.push(mapped);
+    lists.push(
+      toListRow(parsed, {
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        item_count,
+      }),
+    );
   }
   return lists.toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
+}
+
+export async function getDefaultTaskList(): Promise<TaskListRow | null> {
+  const lists = await listTaskLists();
+  return (
+    lists.find((l) => l.is_default || l.id === ENTITY_DEFAULT_TASK_LIST_ID) ?? lists[0] ?? null
+  );
 }
 
 export async function createTaskList(input: TaskListCreateInput): Promise<TaskListRow> {
   const store = getEntityStoreForTask();
   const body: TaskListBody = {
-    name: input.name.trim(),
     sort_order: input.sort_order ?? 0,
     closed: false,
     color: input.color ?? null,
+    is_default: false,
   };
   const row = await store.create({
     type: "content",
     world_id: defaultTaskWorldId(),
     components: [TASK_LIST_COMPONENT],
     primary_component: TASK_LIST_COMPONENT,
+    title: input.name.trim(),
     body,
   });
   const parsed = asTaskList(row);
   if (!parsed) throw new Error("failed to create task list");
-  return {
-    id: parsed.id,
-    name: parsed.name,
-    sort_order: parsed.sort_order ?? 0,
-    closed: parsed.closed ?? false,
-    color: parsed.color ?? null,
-    item_count: 0,
+  return toListRow(parsed, {
     created_at: row.created_at,
     updated_at: row.updated_at,
-  };
+    item_count: 0,
+  });
 }
 
 export async function updateTaskList(input: TaskListUpdateInput): Promise<TaskListRow | null> {
@@ -91,13 +100,16 @@ export async function updateTaskList(input: TaskListUpdateInput): Promise<TaskLi
   const existing = await store.get(input.id);
   if (!existing || existing.primary_component !== TASK_LIST_COMPONENT) return null;
 
-  const patch: Record<string, unknown> = {};
-  if (input.name !== undefined) patch.name = input.name.trim();
-  if (input.sort_order !== undefined) patch.sort_order = input.sort_order;
-  if (input.closed !== undefined) patch.closed = input.closed;
-  if (input.color !== undefined) patch.color = input.color;
+  const bodyPatch: Record<string, unknown> = {};
+  if (input.sort_order !== undefined) bodyPatch.sort_order = input.sort_order;
+  if (input.closed !== undefined) bodyPatch.closed = input.closed;
+  if (input.color !== undefined) bodyPatch.color = input.color;
 
-  const row = await store.update({ id: input.id, body: patch });
+  const row = await store.update({
+    id: input.id,
+    title: input.name?.trim(),
+    body: Object.keys(bodyPatch).length > 0 ? bodyPatch : undefined,
+  });
   if (!row) return null;
   const parsed = asTaskList(row);
   if (!parsed) return null;
@@ -110,7 +122,14 @@ export async function updateTaskList(input: TaskListUpdateInput): Promise<TaskLi
 }
 
 export async function deleteTaskList(id: number, opts?: { cascade?: boolean }): Promise<boolean> {
+  if (isDefaultTaskListId(id)) {
+    throw new Error("default task list cannot be deleted");
+  }
   const store = getEntityStoreForTask();
+  const existing = await store.get(id);
+  if (existing?.body.is_default === true) {
+    throw new Error("default task list cannot be deleted");
+  }
   if (opts?.cascade) {
     const items = await store.list({
       world_id: defaultTaskWorldId(),

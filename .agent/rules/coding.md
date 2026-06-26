@@ -68,6 +68,13 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 
 **Allowed**: after `generate`, **append** SQL Drizzle cannot express in that migration's `migration.sql` (e.g. `CREATE EXTENSION`, `message_fts_input()`, some GIN expression indexes); **do not** use this to replace the whole generate step.
 
+**Data migration (required when DDL drops or renames a populated table)**:
+
+- **Co-locate with schema migration** — backfill / `INSERT … SELECT` / column moves belong in the **same** `core/migrations/{ts}_{name}/migration.sql` as the DDL, appended after `db:generate` output.
+- **Order**: copy/transform data **before** `DROP TABLE` / destructive DDL in that file. Hub startup runs `runMigrations` only; it does **not** run standalone scripts under `scripts/`.
+- **Forbidden**: a migration that `DROP TABLE` legacy data without an in-file backfill in the same migration; a separate manual script as the **only** migration path (scripts may exist for dry-run / repair, but production path must be the migration SQL).
+- One-off repair scripts (`scripts/*.ts`) are for operator recovery or idempotent re-runs after the fact — not a substitute for the migration chain.
+
 Table shapes SSOT: [`core/src/db/schema/`](../../core/src/db/schema/). User ops (install, backup): [`docs/guide/database.md`](../../docs/guide/database.md).
 
 Repository query conventions (ORM vs `db.execute`, DbRow typing): [`drizzle-db.md`](drizzle-db.md).

@@ -27,12 +27,14 @@ export const entityTaskRoutes = new Elysia({ prefix: "/task" })
         list_id: query.list_id,
         status: query.status,
         due_today: query.due_today,
+        tags: query.tags,
       }),
     {
       query: t.Object({
         list_id: t.Optional(t.String()),
         status: t.Optional(t.String()),
         due_today: t.Optional(t.String()),
+        tags: t.Optional(t.String()),
       }),
     },
   )

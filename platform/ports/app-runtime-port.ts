@@ -76,7 +76,6 @@ export type AppRuntimePort = {
   listAutobiographicalMemories(opts?: any): Promise<any>;
   listDreamMemories(opts?: any): Promise<any>;
   getDreamMemoryByDay(day: string): Promise<any>;
-  listTasks(opts?: any): Promise<any>;
   getFtsStatus(): Promise<any>;
   startRebuildFtsIndex(opts?: { onlyMissing?: boolean }): any;
   getRebuildFtsJobStatus(): any;

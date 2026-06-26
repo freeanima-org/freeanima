@@ -31,6 +31,7 @@ export type TaskListRow = {
   sort_order: number;
   closed: boolean;
   color: string | null;
+  is_default: boolean;
   item_count: number;
   created_at: string;
   updated_at: string;
@@ -39,12 +40,13 @@ export type TaskListRow = {
 export type TaskItemRow = {
   id: number;
   title: string;
+  content: string;
+  tags: string[];
   status: "pending" | "completed";
   priority: "high" | "medium" | "low" | "none";
   due_at: string | null;
   list_id: number;
   sort_order: number;
-  note: string | null;
   completed_at: string | null;
   created_at: string;
   updated_at: string;
@@ -86,6 +88,8 @@ export async function fetchTaskItems(listId: number): Promise<TaskItemRow[]> {
 export async function createTaskItem(input: {
   title: string;
   list_id: number;
+  content?: string;
+  tags?: string[];
   priority?: TaskItemRow["priority"];
   due_at?: string | null;
 }): Promise<TaskItemRow> {
@@ -100,7 +104,7 @@ export async function updateTaskItem(
   patch: Partial<
     Pick<
       TaskItemRow,
-      "title" | "priority" | "due_at" | "note" | "list_id" | "status" | "sort_order"
+      "title" | "content" | "tags" | "priority" | "due_at" | "list_id" | "status" | "sort_order"
     >
   >,
 ): Promise<TaskItemRow> {
