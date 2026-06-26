@@ -52,4 +52,6 @@ linux:
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
+  # zip 解压比 7z 更快，减轻点击「安装」后长时间 UI 无响应
+  useZip: true
   include: build-resources/installer.nsh

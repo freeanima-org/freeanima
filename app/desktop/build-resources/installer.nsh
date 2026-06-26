@@ -2,18 +2,42 @@
 ; 勿在 customInit 里 RMDir（会删掉 NSIS SetOutPath → 安装器闪退无窗口）。
 ; 参考 https://github.com/electron-userland/electron-builder/issues/6865
 
-!macro customKillDesktopApp
-  nsExec::Exec `$SYSDIR\cmd.exe /c taskkill /F /T /IM FreeAnima-Desktop.exe /FI "USERNAME eq %USERNAME%" 2>nul`
-  Pop $0
-  Sleep 300
+!macro deleteInstallRegistryKeys
+  DeleteRegKey HKCU "${UNINSTALL_REGISTRY_KEY}"
+  DeleteRegKey HKCU "${INSTALL_REGISTRY_KEY}"
+  DeleteRegKey HKLM "${UNINSTALL_REGISTRY_KEY}"
+  DeleteRegKey HKLM "${INSTALL_REGISTRY_KEY}"
+  !ifdef UNINSTALL_REGISTRY_KEY_2
+    DeleteRegKey HKCU "${UNINSTALL_REGISTRY_KEY_2}"
+    DeleteRegKey HKLM "${UNINSTALL_REGISTRY_KEY_2}"
+  !endif
 !macroend
 
-; 替换默认 CHECK_APP_RUNNING；在点击「安装」时再次结束进程并清注册表，避免 ExecWait 旧 uninstaller 卡死
+!macro customKillDesktopApp
+  IfFileExists "$INSTDIR\FreeAnima-Desktop.exe" 0 FreeAnimaKillForce
+    DetailPrint "Closing FreeAnima Desktop..."
+    ExecWait '"$INSTDIR\FreeAnima-Desktop.exe" --quit-for-install' $0
+    Sleep 1500
+  FreeAnimaKillForce:
+  nsExec::Exec `$SYSDIR\cmd.exe /c taskkill /F /T /IM FreeAnima-Desktop.exe /FI "USERNAME eq %USERNAME%" 2>nul`
+  Pop $0
+  Sleep 500
+!macroend
+
+; 替换默认 CHECK_APP_RUNNING：优雅退出 + 清目录/注册表，避免 ExecWait 旧 uninstaller 与覆盖解压卡死
 !macro customCheckAppRunning
+  StrCpy $R9 0
+  IfFileExists "$INSTDIR\FreeAnima-Desktop.exe" 0 FreeAnimaInstallProceed
+    StrCpy $R9 1
+  FreeAnimaInstallProceed:
   !insertmacro customKillDesktopApp
-  IfFileExists "$INSTDIR\FreeAnima-Desktop.exe" 0 +3
-  DeleteRegKey SHELL_CONTEXT "${UNINSTALL_REGISTRY_KEY}"
-  DeleteRegKey SHELL_CONTEXT "${INSTALL_REGISTRY_KEY}"
+  ${If} $R9 == 1
+    DetailPrint "Removing previous installation..."
+    SetOutPath $TEMP
+    !insertmacro deleteInstallRegistryKeys
+    RMDir /r "$INSTDIR"
+    Sleep 500
+  ${EndIf}
 !macroend
 
 !macro customRemoveFiles
@@ -25,20 +49,4 @@
 !macroend
 
 !macro customUnInstallCheckCurrentUser
-!macroend
-
-; Function 须在宏内定义，${UNINSTALL_REGISTRY_KEY} 等常量仅在主脚本展开后才可用
-!macro customPageAfterChangeDir
-  Function FreeAnimaPreInstallCleanup
-    IfFileExists "$INSTDIR\FreeAnima-Desktop.exe" 0 FreeAnimaPreInstallDone
-    SetOutPath $TEMP
-    nsExec::Exec `$SYSDIR\cmd.exe /c taskkill /F /T /IM FreeAnima-Desktop.exe /FI "USERNAME eq %USERNAME%" 2>nul`
-    Pop $0
-    Sleep 300
-    DeleteRegKey SHELL_CONTEXT "${UNINSTALL_REGISTRY_KEY}"
-    DeleteRegKey SHELL_CONTEXT "${INSTALL_REGISTRY_KEY}"
-  FreeAnimaPreInstallDone:
-    Abort
-  FunctionEnd
-  Page custom FreeAnimaPreInstallCleanup
 !macroend
