@@ -38,6 +38,19 @@ html[data-shell-ui="1"] body {
     padding-left: var(--sal);
     padding-right: var(--sar);
   }
+  .safe-fixed-overlay {
+    position: fixed;
+    top: var(--sat);
+    right: var(--sar);
+    bottom: var(--sab);
+    left: var(--sal);
+  }
+  .safe-fixed-sidebar {
+    position: fixed;
+    top: var(--sat);
+    bottom: var(--sab);
+    left: var(--sal);
+  }
 }
 
 .shell-module-layout .shell-top-nav {

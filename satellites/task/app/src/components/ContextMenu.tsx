@@ -1,10 +1,8 @@
 import { useEffect } from "react";
 
-export type ContextMenuItem = {
-  label: string;
-  danger?: boolean;
-  onClick: () => void;
-};
+import type { TaskMenuItem } from "../lib/menu-types.ts";
+
+export type ContextMenuItem = TaskMenuItem;
 
 type ContextMenuProps = {
   x: number;
