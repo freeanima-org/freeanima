@@ -11,13 +11,32 @@ import {
 
 import { readShellClientConfig, writeShellClientConfig } from "./shell-client-store.ts";
 import { readShellDebugConfig, writeShellDebugConfig } from "./shell-debug-store.ts";
-import { loadCompanionConfigFromFile, saveCompanionConfigToFile } from "./shell-scoped-prefs.ts";
+import { setLaunchAtLogin } from "./launch-at-login.ts";
+import {
+  loadCompanionConfigFromFile,
+  readLaunchAtLoginFromStore,
+  saveCompanionConfigToFile,
+} from "./shell-scoped-prefs.ts";
 
 export type HubClientConfigPayload = {
   hubUrl: string;
   hubWsUrl: string;
   remoteAuthToken: string;
 };
+
+type HubSettingsPayload = {
+  hubUrl: string;
+  remoteAuthToken: string;
+  launchAtLogin?: boolean;
+};
+
+function loadHubSettingsPayload(): HubSettingsPayload | null {
+  const cfg = readShellClientConfig();
+  if (!cfg) {
+    return { hubUrl: "", remoteAuthToken: "", launchAtLogin: readLaunchAtLoginFromStore() };
+  }
+  return { ...cfg, launchAtLogin: readLaunchAtLoginFromStore() };
+}
 
 export function resolveHubClientConfig(): HubClientConfigPayload | null {
   const cfg = readShellClientConfig();
@@ -42,8 +61,7 @@ export function registerShellClientIpc(
   ipcMain.handle("shell:settings:load", (_event, scope: SettingsStorageScope) => {
     if (scope.kind === "kv" && scope.id === "hub") {
       assertScope(HUB_SETTINGS_SCOPE, scope);
-      const cfg = readShellClientConfig();
-      return cfg ?? null;
+      return loadHubSettingsPayload();
     }
     if (scope.kind === "kv" && scope.id === "debug") {
       assertScope(DEBUG_SETTINGS_SCOPE, scope);
@@ -59,9 +77,13 @@ export function registerShellClientIpc(
   ipcMain.handle("shell:settings:save", (_event, scope: SettingsStorageScope, value: unknown) => {
     if (scope.kind === "kv" && scope.id === "hub") {
       assertScope(HUB_SETTINGS_SCOPE, scope);
-      writeShellClientConfig(value as { hubUrl: string; remoteAuthToken: string });
+      const raw = value as HubSettingsPayload;
+      writeShellClientConfig({ hubUrl: raw.hubUrl, remoteAuthToken: raw.remoteAuthToken });
+      if (typeof raw.launchAtLogin === "boolean") {
+        setLaunchAtLogin(raw.launchAtLogin);
+      }
       onConfigSaved?.();
-      return resolveHubClientConfig();
+      return loadHubSettingsPayload();
     }
     if (scope.kind === "kv" && scope.id === "debug") {
       assertScope(DEBUG_SETTINGS_SCOPE, scope);

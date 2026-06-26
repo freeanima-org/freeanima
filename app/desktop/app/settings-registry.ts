@@ -1,6 +1,6 @@
 import {
   debugSettingsSection,
-  hubSettingsSection,
+  desktopGeneralSettingsSection,
   type SettingsBinding,
 } from "@freeanima/satellite-sdk/settings";
 import { companionSettingsSection } from "@freeanima/satellite-companion/settings-section";
@@ -13,7 +13,7 @@ export function createDesktopSettingsBindings(
   apis: DesktopSettingsApis,
 ): SettingsBinding[] {
   return [
-    { section: hubSettingsSection, store: stores.hub },
+    { section: desktopGeneralSettingsSection, store: stores.hub },
     { section: debugSettingsSection, store: stores.debug },
     {
       section: companionSettingsSection,

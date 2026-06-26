@@ -17,11 +17,33 @@ import {
 
 import { createDesktopScopedBackend, testScopedSettings } from "./settings-ipc-backend.ts";
 
+export type DesktopGeneralSettings = ShellClientConfig & {
+  launchAtLogin: boolean;
+};
+
 export type DesktopSettingsStores = {
-  hub: SettingsStore<ShellClientConfig>;
+  hub: SettingsStore<DesktopGeneralSettings>;
   debug: SettingsStore<ShellDebugConfig>;
   companion: SettingsStore<unknown>;
 };
+
+function parseDesktopGeneralSettings(raw: unknown): DesktopGeneralSettings {
+  const launchAtLogin =
+    raw != null &&
+    typeof raw === "object" &&
+    typeof (raw as Record<string, unknown>).launchAtLogin === "boolean"
+      ? ((raw as Record<string, unknown>).launchAtLogin as boolean)
+      : false;
+  if (raw == null) return { hubUrl: "", remoteAuthToken: "", launchAtLogin };
+  const parsed = parseShellClientConfig(raw);
+  if (!parsed) return { hubUrl: "", remoteAuthToken: "", launchAtLogin };
+  return { ...parsed, launchAtLogin };
+}
+
+function normalizeDesktopGeneralSettings(input: DesktopGeneralSettings): DesktopGeneralSettings {
+  const hub = normalizeShellClientConfig(input);
+  return { ...hub, launchAtLogin: Boolean(input.launchAtLogin) };
+}
 
 export function createDesktopSettingsStores(): DesktopSettingsStores {
   const backend = createDesktopScopedBackend();
@@ -34,16 +56,13 @@ export function createDesktopSettingsStores(): DesktopSettingsStores {
     normalizeSave: normalizeShellDebugConfig,
   });
   return {
-    hub: createScopedSettingsStore<ShellClientConfig>({
+    hub: createScopedSettingsStore<DesktopGeneralSettings>({
       scope: HUB_SETTINGS_SCOPE,
       backend,
       parseLoad(raw) {
-        if (raw == null) return { hubUrl: "", remoteAuthToken: "" };
-        const parsed = parseShellClientConfig(raw);
-        if (!parsed) return { hubUrl: "", remoteAuthToken: "" };
-        return parsed;
+        return parseDesktopGeneralSettings(raw);
       },
-      normalizeSave: normalizeShellClientConfig,
+      normalizeSave: normalizeDesktopGeneralSettings,
       async test(value) {
         await testScopedSettings(HUB_SETTINGS_SCOPE, value);
       },

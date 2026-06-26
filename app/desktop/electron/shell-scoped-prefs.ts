@@ -8,6 +8,7 @@ import {
   DEBUG_SENTRY_ENABLED_KEY,
   DEBUG_VCONSOLE_ENABLED_KEY,
   HUB_URL_KEY,
+  LAUNCH_AT_LOGIN_KEY,
   REMOTE_AUTH_TOKEN_KEY,
 } from "@freeanima/satellite-sdk/settings";
 import {
@@ -112,6 +113,14 @@ export function saveDebugConfigToStore(config: ShellDebugConfig): ShellDebugConf
   kv.set(DEBUG_SENTRY_DSN_KEY, normalized.sentryDsn);
   kv.set(DEBUG_VCONSOLE_ENABLED_KEY, normalized.vConsoleEnabled ? "1" : "0");
   return normalized;
+}
+
+export function readLaunchAtLoginFromStore(): boolean {
+  return getStore().get(LAUNCH_AT_LOGIN_KEY) === "1";
+}
+
+export function saveLaunchAtLoginToStore(enabled: boolean): void {
+  getStore().set(LAUNCH_AT_LOGIN_KEY, enabled ? "1" : "0");
 }
 
 export function companionConfigPath(): string {
