@@ -111,7 +111,7 @@ export function FormRenderer({ fields, store, platform, sectionId, onDirty }: Pr
     return <p className="text-sm text-base-content/60">加载中…</p>;
   }
 
-  const fieldWidthClass = platform === "mobile" ? "w-full" : "w-full max-w-xl";
+  const fieldWidthClass = "w-full lg:max-w-xl";
 
   const testLabel =
     sectionId === "debug"
@@ -208,10 +208,7 @@ function FieldInput({
   widthClass: string;
   onChange: (value: unknown) => void;
 }) {
-  const inputClass =
-    platform === "mobile"
-      ? "input input-bordered w-full"
-      : "input input-bordered input-sm w-full max-w-xl";
+  const inputClass = "input input-bordered w-full lg:input-sm lg:max-w-xl";
 
   if (item.type === "boolean") {
     return (
