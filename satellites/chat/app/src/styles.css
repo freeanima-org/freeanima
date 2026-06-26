@@ -87,6 +87,9 @@
     z-index: 10;
     padding-bottom: max(1rem, var(--sab));
   }
+  .shell-module-layout .chat-compose {
+    padding-bottom: 1rem;
+  }
   .chat .chat-bubble {
     max-width: min(92vw, 100%);
   }
