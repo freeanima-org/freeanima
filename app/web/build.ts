@@ -71,6 +71,12 @@ export async function buildAppWeb(opts?: BuildAppWebOptions): Promise<string> {
   const defaultRemoteAuthToken =
     opts?.defaultRemoteAuthToken ?? process.env.FREEANIMA_REMOTE_AUTH_TOKEN ?? "";
 
+  const rearrangeIndexShellBridge = (): void => {
+    const indexPath = join(DIST_DIR, "index.html");
+    const html = readFileSync(indexPath, "utf-8");
+    writeFileSync(indexPath, arrangeShellBridgeHtml(html));
+  };
+
   await buildShellUi({
     appDir: join(PKG_DIR, "app"),
     outdir: DIST_DIR,
@@ -78,6 +84,10 @@ export async function buildAppWeb(opts?: BuildAppWebOptions): Promise<string> {
     minify,
     sourcemap,
     publicPath: "./",
+    onRebuild: async (success) => {
+      if (!success) return;
+      rearrangeIndexShellBridge();
+    },
   });
 
   await bundleShellBridge(DIST_DIR, {
@@ -87,9 +97,7 @@ export async function buildAppWeb(opts?: BuildAppWebOptions): Promise<string> {
     defaultRemoteAuthToken,
   });
 
-  const indexPath = join(DIST_DIR, "index.html");
-  const html = readFileSync(indexPath, "utf-8");
-  writeFileSync(indexPath, arrangeShellBridgeHtml(html));
+  rearrangeIndexShellBridge();
 
   return DIST_DIR;
 }

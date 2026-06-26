@@ -1,4 +1,4 @@
-import { existsSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { join, extname } from "node:path";
 
 import { resolveHubWsUrl } from "@freeanima/sap-contract";
@@ -11,7 +11,7 @@ const HTTP_URL = `http://127.0.0.1:${PORT}`;
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
+  ".js": "application/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".map": "application/json",
   ".svg": "image/svg+xml",
@@ -29,7 +29,29 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
-function serveStatic(pathname: string): Response {
+function staticRelPath(pathname: string): string {
+  return pathname === "/" ? "index.html" : pathname.replace(/^\/+/, "");
+}
+
+function resolveDistFile(pathname: string): string | null {
+  const filePath = join(DIST_DIR, staticRelPath(pathname));
+  if (existsSync(filePath) && statSync(filePath).isFile()) {
+    return filePath;
+  }
+  return null;
+}
+
+function fileResponse(filePath: string, method: string): Response {
+  const ext = extname(filePath);
+  const headers: Record<string, string> = {
+    "Cache-Control": "no-store",
+    ...(MIME[ext] ? { "Content-Type": MIME[ext]! } : {}),
+  };
+  const body = method === "HEAD" ? null : readFileSync(filePath);
+  return new Response(body, { headers });
+}
+
+function serveStatic(pathname: string, method: string): Response {
   if (!existsSync(DIST_DIR)) {
     return jsonResponse(
       { error: "UI not built; run `bun run dev:web` or `bun app/web/build.ts`" },
@@ -37,23 +59,18 @@ function serveStatic(pathname: string): Response {
     );
   }
 
-  const rel = pathname === "/" ? "/index.html" : pathname;
-  const filePath = join(DIST_DIR, rel);
-  if (existsSync(filePath) && statSync(filePath).isFile()) {
-    const ext = extname(filePath);
-    const headers = MIME[ext] ? { "Content-Type": MIME[ext]! } : undefined;
-    return new Response(Bun.file(filePath), { headers });
+  const filePath = resolveDistFile(pathname);
+  if (filePath) {
+    return fileResponse(filePath, method);
   }
 
   if (pathname.endsWith(".js") || pathname.endsWith(".css") || pathname.endsWith(".map")) {
     return jsonResponse({ error: "Not Found" }, 404);
   }
 
-  const indexPath = join(DIST_DIR, "index.html");
-  if (existsSync(indexPath)) {
-    return new Response(Bun.file(indexPath), {
-      headers: { "Content-Type": "text/html; charset=utf-8" },
-    });
+  const indexPath = resolveDistFile("/index.html");
+  if (indexPath) {
+    return fileResponse(indexPath, method);
   }
 
   return jsonResponse({ error: "Not Found" }, 404);
@@ -73,7 +90,7 @@ async function route(req: Request): Promise<Response> {
     return jsonResponse({ ok: true, app: APP_ID, mode: "web-dev" });
   }
 
-  return serveStatic(url.pathname);
+  return serveStatic(url.pathname, req.method);
 }
 
 const server = Bun.serve({
