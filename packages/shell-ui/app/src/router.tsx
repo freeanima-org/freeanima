@@ -12,6 +12,7 @@ import { useMemo } from "react";
 import { ChatApp } from "./chat/load-chat-app.ts";
 import { AdminShell } from "./main/AdminShell.tsx";
 import { ModuleShell } from "./main/ModuleShell.tsx";
+import { NotificationsPage } from "./notifications/NotificationsPage.tsx";
 import { SettingsPage } from "./settings/SettingsPage.tsx";
 
 const rootRoute = createRootRoute({
@@ -38,6 +39,12 @@ const chatRoute = createRoute({
   component: ChatApp,
 });
 
+const notificationsRoute = createRoute({
+  getParentRoute: () => mainLayoutRoute,
+  path: "/notifications",
+  component: NotificationsPage,
+});
+
 const adminIndexRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/admin",
@@ -59,7 +66,14 @@ const settingsRoute = createRoute({
 });
 
 const routeTree = rootRoute.addChildren([
-  mainLayoutRoute.addChildren([indexRoute, chatRoute, adminIndexRoute, adminRoute, settingsRoute]),
+  mainLayoutRoute.addChildren([
+    indexRoute,
+    chatRoute,
+    notificationsRoute,
+    adminIndexRoute,
+    adminRoute,
+    settingsRoute,
+  ]),
 ]);
 
 function createShellRouterInstance() {

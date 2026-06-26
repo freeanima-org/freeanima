@@ -4,6 +4,8 @@ import {
   connectedPayloadSchema,
   formatSapToolName,
   fridgeListInputSchema,
+  notificationListInputSchema,
+  notificationMarkReadInputSchema,
   mapSapStreamMethodToApi,
   messageSendInputSchema,
   parseSapEnvelope,
@@ -40,6 +42,8 @@ describe("sap-contract envelopes", () => {
     sessionAcpDockInputSchema.parse({ conversation_id: "sid" });
     conversationCommandsInputSchema.parse({ platform: "sap:chat:k7m" });
     fridgeListInputSchema.parse({});
+    notificationListInputSchema.parse({ recipient_kind: "user", read_filter: "unread" });
+    notificationMarkReadInputSchema.parse({ id: "n-1" });
   });
 
   it("validates tool register and message send", () => {

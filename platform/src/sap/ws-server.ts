@@ -18,6 +18,8 @@ import {
   sessionAcpDockInputSchema,
   conversationCommandsInputSchema,
   fridgeListInputSchema,
+  notificationListInputSchema,
+  notificationMarkReadInputSchema,
   messageSendInputSchema,
   messageInterruptInputSchema,
   toolRegisterInputSchema,
@@ -42,6 +44,7 @@ import * as serviceSessions from "../runtime/service-conversations.ts";
 import * as serviceAcpDock from "../runtime/service-acp-dock.ts";
 import * as serviceStatus from "../runtime/service-status.ts";
 import * as serviceFridge from "../runtime/service-fridge.ts";
+import * as serviceNotifications from "../runtime/service-notifications.ts";
 import {
   closeTerminalSession,
   createTerminalSession,
@@ -229,6 +232,27 @@ export function createSapServerHandlers(
         case "fridge.list": {
           fridgeListInputSchema.parse(payload);
           return serviceFridge.listFridgeMagnets();
+        }
+        case "notification.list": {
+          const input = notificationListInputSchema.parse(payload);
+          return serviceNotifications.listNotifications(deps.runtime.runtimeDeps(), {
+            recipient_kind: input.recipient_kind,
+            recipient_id: input.recipient_id,
+            read_filter: input.read_filter,
+            offset: input.offset,
+            limit: input.limit,
+          });
+        }
+        case "notification.markRead": {
+          const input = notificationMarkReadInputSchema.parse(payload);
+          const notification = await serviceNotifications.markNotificationRead(
+            deps.runtime.runtimeDeps(),
+            input.id,
+          );
+          if (!notification) {
+            throw new Error(`Notification not found: ${input.id}`);
+          }
+          return { ok: true as const, notification };
         }
         case "message.send": {
           const input = messageSendInputSchema.parse(payload);
