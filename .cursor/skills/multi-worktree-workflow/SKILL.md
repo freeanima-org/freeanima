@@ -18,6 +18,30 @@ description: >-
 
 **硬约束**：同一分支只能在一个 worktree 中 checkout。副 worktree 不能 `git checkout 0.8` 若主 worktree 已占用。
 
+## 0. 副 worktree：依赖安装（symlink node_modules）
+
+每个 worktree 有独立工作目录，`bun install` 会从 cache 重建约 2G 的 `node_modules`，**首次约 9 分钟**；副 worktree 应复用主 worktree 已安装的依赖。
+
+```bash
+MAIN=/home/feng/workspace/freeanima   # 主 worktree 路径
+WT=$(git rev-parse --show-toplevel)
+
+cd "$WT"
+rm -rf node_modules
+ln -s "$MAIN/node_modules" node_modules
+
+# 可选校验（失败可忽略，见下）
+bun install --frozen-lockfile --ignore-scripts || true
+```
+
+| 场景 | 做法 |
+| ---- | ---- |
+| `bun.lock` 与主 worktree 一致 | symlink 后 `--frozen-lockfile` 约 **5 秒** 完成 |
+| `bun.lock` 略有差异 | **仍可 symlink**；多数情况下现有依赖够用 |
+| 缺包 / 依赖变更 | 仅在**主 worktree** 执行 `bun install`，所有 symlink 的副 worktree 同步受益 |
+
+**硬约束**：副 worktree **不要**跑普通 `bun install`（无 `--frozen-lockfile`）——symlink 指向同一份物理目录，会修改主 worktree 的 `node_modules`。依赖变更只在主 worktree 安装。
+
 ## 1. 开工前：确认基准
 
 ```bash
