@@ -5,6 +5,7 @@ export {
   DEBUG_SENTRY_ENABLED_KEY,
   DEBUG_VCONSOLE_ENABLED_KEY,
   HUB_URL_KEY,
+  LAUNCH_AT_LOGIN_KEY,
   REMOTE_AUTH_TOKEN_KEY,
   sapInstanceKey,
 } from "./prefs-keys.ts";
@@ -26,5 +27,5 @@ export type {
   SettingsSectionDeps,
 } from "./types.ts";
 export { defineSettingsForm, listSettingsSectionsForPlatform } from "./types.ts";
-export { hubSettingsSection } from "./sections/hub-section.ts";
+export { desktopGeneralSettingsSection, hubSettingsSection } from "./sections/hub-section.ts";
 export { debugSettingsSection } from "./sections/debug-section.ts";

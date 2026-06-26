@@ -19,6 +19,7 @@ import {
 } from "./companion-host.ts";
 import { registerInstanceStoreIpc } from "./instance-store-ipc.ts";
 import { attachWindowDevTools } from "./devtools.ts";
+import { syncLaunchAtLoginFromStore } from "./launch-at-login.ts";
 import { logLine } from "./log.ts";
 import { defaultHubUrl } from "./paths.ts";
 import { readShellClientConfig } from "./shell-client-store.ts";
@@ -324,6 +325,7 @@ async function startShellStatic(): Promise<void> {
 
 async function bootstrap(): Promise<void> {
   configureCompanionRuntimePaths();
+  syncLaunchAtLoginFromStore();
   logLine("desktop-shell main enter");
 
   registerInstanceStoreIpc();

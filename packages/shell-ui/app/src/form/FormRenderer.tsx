@@ -215,14 +215,19 @@ function FieldInput({
 
   if (item.type === "boolean") {
     return (
-      <label className={`label cursor-pointer justify-start gap-3 ${widthClass}`}>
-        <input
-          type="checkbox"
-          className="checkbox checkbox-sm"
-          checked={Boolean(value)}
-          onChange={(e) => onChange(e.target.checked)}
-        />
-        <span className="label-text">{item.label}</span>
+      <label className={`form-control ${widthClass}`}>
+        <span className="label cursor-pointer justify-start gap-3">
+          <input
+            type="checkbox"
+            className="checkbox checkbox-sm"
+            checked={Boolean(value)}
+            onChange={(e) => onChange(e.target.checked)}
+          />
+          <span className="label-text">{item.label}</span>
+        </span>
+        {item.description ? (
+          <span className="label-text-alt text-base-content/50">{item.description}</span>
+        ) : null}
       </label>
     );
   }

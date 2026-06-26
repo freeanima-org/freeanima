@@ -1,5 +1,5 @@
 /electron-dist/
 /release/
-/build-resources/
+/build-resources/bin/
 /.cache/
 /vendor
