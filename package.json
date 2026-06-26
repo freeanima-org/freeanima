@@ -38,6 +38,7 @@
     "install:cli:local": "bun scripts/install-cli-local.ts",
     "build:admin": "bun scripts/build-admin.ts",
     "dev:admin": "bun scripts/dev-admin.ts",
+    "dev:web": "bun run --filter @freeanima/app-web dev",
     "publish:cli": "bun scripts/build-cli.ts && cd cli/publish && bun pm pack && bun publish --access public",
     "test": "bun scripts/run-all-tests.ts",
     "test:unit": "bun scripts/run-unit-tests.ts",

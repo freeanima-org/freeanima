@@ -68,13 +68,16 @@ export async function buildShellUi(opts?: {
   minify?: boolean;
   sourcemap?: boolean;
   publicPath?: string;
+  /** 构建输出目录（默认 packages/shell-ui/dist） */
+  outdir?: string;
   /** 应用 composition 目录（含 index.html + main.tsx） */
   appDir?: string;
 }): Promise<string> {
-  const paraglideDir = join(DIST_DIR, ".paraglide");
+  const distDir = opts?.outdir ?? DIST_DIR;
+  const paraglideDir = join(distDir, ".paraglide");
   compileParaglideToDir({ projectRoot: REPO_ROOT, outdir: paraglideDir });
-  rmSync(join(DIST_DIR, HTML_NAME), { force: true });
-  mkdirSync(DIST_DIR, { recursive: true });
+  rmSync(join(distDir, HTML_NAME), { force: true });
+  mkdirSync(distDir, { recursive: true });
 
   const tailwindMod = await import("bun-plugin-tailwind");
   const tailwind = tailwindMod.default;
@@ -84,7 +87,7 @@ export async function buildShellUi(opts?: {
 
   const result = await Bun.build({
     entrypoints: [entryHtml],
-    outdir: DIST_DIR,
+    outdir: distDir,
     target: "browser",
     minify: opts?.minify ?? false,
     publicPath: opts?.publicPath ?? "/",
@@ -105,14 +108,14 @@ export async function buildShellUi(opts?: {
     throw new Error(result.logs.map((l) => l.message).join("\n"));
   }
 
-  const html = join(DIST_DIR, HTML_NAME);
+  const html = join(distDir, HTML_NAME);
   if (!existsSync(html)) throw new Error("build did not produce index.html");
   const content = readFileSync(html, "utf-8");
   if (!content.includes("root")) throw new Error("invalid build output");
 
-  await buildSapSharedWorker(DIST_DIR);
+  await buildSapSharedWorker(distDir);
 
-  return DIST_DIR;
+  return distDir;
 }
 
 if (import.meta.main) {

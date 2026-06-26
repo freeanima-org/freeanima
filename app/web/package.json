@@ -1,0 +1,19 @@
+{
+  "name": "@freeanima/app-web",
+  "description": "FreeAnima 浏览器开发壳（聊天室 + 管理台 + 设置，仅本地调试）",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bun build.ts",
+    "dev": "bun dev.ts"
+  },
+  "dependencies": {
+    "@freeanima/sap-contract": "workspace:*",
+    "@freeanima/satellite-sdk": "workspace:*",
+    "@freeanima/shell-ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  }
+}
