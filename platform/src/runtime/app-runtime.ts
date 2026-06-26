@@ -31,7 +31,6 @@ import * as fts from "./service-fts.ts";
 import * as promptDebug from "./service-prompt-debug.ts";
 import * as sleep from "./service-sleep.ts";
 import * as autoLlmRuns from "./service-auto-llm-runs.ts";
-import * as tasks from "./service-tasks.ts";
 import * as fridge from "./service-fridge.ts";
 import * as messaging from "./service-messaging.ts";
 
@@ -400,10 +399,6 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
 
   getDreamMemoryByDay(day: string) {
     return memory.getDreamMemoryByDay(this.runtimeDeps(), day);
-  }
-
-  listTasks(args?: Parameters<typeof tasks.listTasks>[1]) {
-    return tasks.listTasks(this.runtimeDeps(), args);
   }
 
   getFtsStatus(): Promise<fts.FtsStatusSnapshot> {

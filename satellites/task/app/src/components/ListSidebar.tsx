@@ -1,21 +1,11 @@
-import {
-  DndContext,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  arrayMove,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { MouseEvent, RefObject } from "react";
 
+import { listDndId } from "../lib/dnd-ids.ts";
 import type { TaskListRow } from "../lib/api.ts";
+import { useMobileLayout } from "../lib/platform.ts";
+import { useTaskDndUi } from "./TaskDndRoot.tsx";
 
 type ListSidebarProps = {
   lists: TaskListRow[];
@@ -34,7 +24,6 @@ type ListSidebarProps = {
   onOpenListMenu: (list: TaskListRow) => void;
   onOpenListContextMenu: (e: MouseEvent, list: TaskListRow) => void;
   onStartRename: (list: TaskListRow) => void;
-  onReorder: (ordered: TaskListRow[]) => void;
 };
 
 function SortableListRow({
@@ -66,8 +55,11 @@ function SortableListRow({
   onContextMenu: (e: MouseEvent) => void;
   onDoubleClickRename?: () => void;
 }) {
+  const { draggingTask, overListId } = useTaskDndUi();
+  const isDropTarget = draggingTask && overListId === list.id;
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: list.id,
+    id: listDndId(list.id),
   });
 
   const style = {
@@ -79,9 +71,12 @@ function SortableListRow({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex min-h-11 items-center gap-0.5 rounded-lg px-1 py-1 text-sm ${
-        selected ? "bg-primary/15 font-medium" : "hover:bg-base-200"
-      } ${isDragging ? "opacity-50" : ""}`}
+      className={[
+        "group flex min-h-11 items-center gap-0.5 rounded-lg px-1 py-1 text-sm",
+        selected ? "bg-primary/15 font-medium" : "hover:bg-base-200",
+        isDragging ? "opacity-50" : "",
+        isDropTarget ? "ring-primary bg-primary/10 ring-2" : "",
+      ].join(" ")}
       onContextMenu={onContextMenu}
       onDoubleClick={onDoubleClickRename}
     >
@@ -148,48 +143,48 @@ export function ListSidebar({
   onOpenListMenu,
   onOpenListContextMenu,
   onStartRename,
-  onReorder,
 }: ListSidebarProps) {
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    const oldIndex = lists.findIndex((l) => l.id === active.id);
-    const newIndex = lists.findIndex((l) => l.id === over.id);
-    if (oldIndex < 0 || newIndex < 0) return;
-    onReorder(arrayMove(lists, oldIndex, newIndex));
-  };
+  const mobileLayout = useMobileLayout();
+  const { draggingTask } = useTaskDndUi();
 
   return (
     <>
+      {draggingTask && mobileLayout ? (
+        <div className="border-base-300 bg-base-200/80 text-base-content/70 border-b px-3 py-1.5 text-xs lg:hidden">
+          拖放到清单以移动任务
+        </div>
+      ) : null}
       <div className="border-base-300 hidden border-b p-3 lg:block">
         <h2 className="text-sm font-semibold">清单</h2>
+        {draggingTask ? (
+          <p className="text-base-content/50 mt-1 text-xs">拖到清单以移动任务</p>
+        ) : null}
       </div>
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={lists.map((l) => l.id)} strategy={verticalListSortingStrategy}>
-          <div className="flex-1 overflow-y-auto p-2">
-            {lists.map((list) => (
-              <SortableListRow
-                key={list.id}
-                list={list}
-                selected={selectedListId === list.id}
-                editing={editingListId === list.id}
-                editingName={editingListName}
-                renameInputRef={renameInputRef}
-                useActionSheet={useActionSheet}
-                onSelect={() => onSelectList(list.id)}
-                onEditingNameChange={onEditingListNameChange}
-                onCommitRename={onCommitRename}
-                onCancelRename={onCancelRename}
-                onOpenMenu={() => onOpenListMenu(list)}
-                onContextMenu={(e) => onOpenListContextMenu(e, list)}
-                onDoubleClickRename={useActionSheet ? undefined : () => onStartRename(list)}
-              />
-            ))}
-          </div>
-        </SortableContext>
-      </DndContext>
+      <SortableContext
+        items={lists.map((l) => listDndId(l.id))}
+        strategy={verticalListSortingStrategy}
+      >
+        <div className="flex-1 overflow-y-auto p-2">
+          {lists.map((list) => (
+            <SortableListRow
+              key={list.id}
+              list={list}
+              selected={selectedListId === list.id}
+              editing={editingListId === list.id}
+              editingName={editingListName}
+              renameInputRef={renameInputRef}
+              useActionSheet={useActionSheet}
+              onSelect={() => onSelectList(list.id)}
+              onEditingNameChange={onEditingListNameChange}
+              onCommitRename={onCommitRename}
+              onCancelRename={onCancelRename}
+              onOpenMenu={() => onOpenListMenu(list)}
+              onContextMenu={(e) => onOpenListContextMenu(e, list)}
+              onDoubleClickRename={useActionSheet ? undefined : () => onStartRename(list)}
+            />
+          ))}
+        </div>
+      </SortableContext>
       <div className="border-base-300 flex gap-1 border-t p-2">
         <input
           className="input input-sm input-bordered min-w-0 flex-1"

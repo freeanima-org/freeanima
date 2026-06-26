@@ -1,4 +1,4 @@
-import type { TaskItemPriority, TaskItemStatus } from "@freeanima/core/db/schema/entity";
+import type { TaskItemPriority } from "@freeanima/core/db/schema/entity";
 
 export type TaskListRow = {
   id: number;
@@ -6,6 +6,7 @@ export type TaskListRow = {
   sort_order: number;
   closed: boolean;
   color: string | null;
+  is_default: boolean;
   item_count: number;
   created_at: string;
   updated_at: string;
@@ -28,12 +29,13 @@ export type TaskListUpdateInput = {
 export type TaskItemRow = {
   id: number;
   title: string;
-  status: TaskItemStatus;
+  content: string;
+  tags: string[];
+  status: "pending" | "completed";
   priority: TaskItemPriority;
   due_at: string | null;
   list_id: number;
   sort_order: number;
-  note: string | null;
   completed_at: string | null;
   created_at: string;
   updated_at: string;
@@ -41,28 +43,31 @@ export type TaskItemRow = {
 
 export type TaskItemCreateInput = {
   title: string;
+  content?: string;
+  tags?: string[];
   list_id: number;
   priority?: TaskItemPriority;
   due_at?: string | null;
-  note?: string | null;
   sort_order?: number;
 };
 
 export type TaskItemUpdateInput = {
   id: number;
   title?: string;
+  content?: string;
+  tags?: string[];
   list_id?: number;
   priority?: TaskItemPriority;
   due_at?: string | null;
-  note?: string | null;
   sort_order?: number;
-  status?: TaskItemStatus;
+  status?: "pending" | "completed";
 };
 
 export type TaskItemListOpts = {
   list_id?: number;
-  status?: TaskItemStatus | "all";
+  status?: "pending" | "completed" | "all";
   due_today?: boolean;
+  tags?: string[];
   limit?: number;
   offset?: number;
 };

@@ -3,6 +3,8 @@ export {
   getEntityStoreForTask,
   defaultTaskWorldId,
   resetEntityTaskModuleForTests,
+  syncAfterTaskMutation,
+  type FridgeBridge,
 } from "./entity-port.ts";
 
 export type {
@@ -15,7 +17,14 @@ export type {
   TaskItemListOpts,
 } from "./types.ts";
 
-export { listTaskLists, createTaskList, updateTaskList, deleteTaskList } from "./list-store.ts";
+export {
+  listTaskLists,
+  createTaskList,
+  updateTaskList,
+  deleteTaskList,
+  getDefaultTaskList,
+  isDefaultTaskListId,
+} from "./list-store.ts";
 
 export {
   listTaskItems,
@@ -25,3 +34,7 @@ export {
   uncompleteTaskItem,
   deleteTaskItem,
 } from "./item-store.ts";
+
+export { registerTaskTools } from "./tools.ts";
+
+export { buildEntityTasksSummaryContent, syncEntityTasksSummary } from "./fridge-bridge.ts";

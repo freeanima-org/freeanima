@@ -3,7 +3,6 @@ import {
   createConversationBodySchema,
   sendMessageBodySchema,
   memorySearchBodySchema,
-  taskListBodySchema,
 } from "./api/schemas.ts";
 
 describe("api/schemas", () => {
@@ -27,19 +26,5 @@ describe("api/schemas", () => {
     expect(createConversationBodySchema.safeParse({ platform: "sap:chat:test" }).success).toBe(
       true,
     );
-  });
-
-  it("validates task list body", () => {
-    const ok = taskListBodySchema.safeParse({
-      query: "test",
-      offset: 0,
-      limit: 20,
-      status: "all",
-      priority: "high",
-    });
-    expect(ok.success).toBe(true);
-
-    const singleStatus = taskListBodySchema.safeParse({ status: "pending" });
-    expect(singleStatus.success).toBe(true);
   });
 });

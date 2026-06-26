@@ -13,6 +13,19 @@ import type {
   TaskItemUpdateInput,
 } from "./types.ts";
 
+function normalizeTags(tags: string[] | undefined): string[] {
+  if (!tags?.length) return [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of tags) {
+    const tag = raw.trim();
+    if (!tag || seen.has(tag)) continue;
+    seen.add(tag);
+    out.push(tag);
+  }
+  return out;
+}
+
 function toItemRow(
   row: NonNullable<ReturnType<typeof asTaskItem>>,
   meta: { created_at: string; updated_at: string },
@@ -20,12 +33,13 @@ function toItemRow(
   return {
     id: row.id,
     title: row.title,
+    content: row.content,
+    tags: row.tags ?? [],
     status: row.status,
     priority: row.priority,
     due_at: row.due_at ?? null,
     list_id: row.list_id,
     sort_order: row.sort_order ?? 0,
-    note: row.note ?? null,
     completed_at: row.completed_at ?? null,
     created_at: meta.created_at,
     updated_at: meta.updated_at,
@@ -42,6 +56,12 @@ function isDueToday(iso: string | null | undefined): boolean {
     d.getMonth() === now.getMonth() &&
     d.getDate() === now.getDate()
   );
+}
+
+function matchesTags(itemTags: string[], filter: string[] | undefined): boolean {
+  if (!filter?.length) return true;
+  const set = new Set(itemTags);
+  return filter.every((t) => set.has(t));
 }
 
 export async function listTaskItems(opts: TaskItemListOpts = {}): Promise<TaskItemRow[]> {
@@ -71,6 +91,9 @@ export async function listTaskItems(opts: TaskItemListOpts = {}): Promise<TaskIt
   if (opts.due_today) {
     items = items.filter((item) => isDueToday(item.due_at));
   }
+  if (opts.tags?.length) {
+    items = items.filter((item) => matchesTags(item.tags, opts.tags));
+  }
 
   return items.toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
 }
@@ -83,13 +106,12 @@ export async function createTaskItem(input: TaskItemCreateInput): Promise<TaskIt
   }
 
   const body: TaskItemBody = {
-    title: input.title.trim(),
     status: "pending",
     priority: input.priority ?? "none",
     due_at: input.due_at ?? null,
     list_id: input.list_id,
     sort_order: input.sort_order ?? 0,
-    note: input.note ?? null,
+    tags: normalizeTags(input.tags),
     completed_at: null,
   };
 
@@ -98,6 +120,8 @@ export async function createTaskItem(input: TaskItemCreateInput): Promise<TaskIt
     world_id: defaultTaskWorldId(),
     components: [TASK_ITEM_COMPONENT],
     primary_component: TASK_ITEM_COMPONENT,
+    title: input.title.trim(),
+    content: input.content?.trim() ?? "",
     body,
   });
   const parsed = asTaskItem(row);
@@ -110,19 +134,23 @@ export async function updateTaskItem(input: TaskItemUpdateInput): Promise<TaskIt
   const existing = await store.get(input.id);
   if (!existing || existing.primary_component !== TASK_ITEM_COMPONENT) return null;
 
-  const patch: Record<string, unknown> = {};
-  if (input.title !== undefined) patch.title = input.title.trim();
-  if (input.list_id !== undefined) patch.list_id = input.list_id;
-  if (input.priority !== undefined) patch.priority = input.priority;
-  if (input.due_at !== undefined) patch.due_at = input.due_at;
-  if (input.note !== undefined) patch.note = input.note;
-  if (input.sort_order !== undefined) patch.sort_order = input.sort_order;
+  const bodyPatch: Record<string, unknown> = {};
+  if (input.list_id !== undefined) bodyPatch.list_id = input.list_id;
+  if (input.priority !== undefined) bodyPatch.priority = input.priority;
+  if (input.due_at !== undefined) bodyPatch.due_at = input.due_at;
+  if (input.tags !== undefined) bodyPatch.tags = normalizeTags(input.tags);
+  if (input.sort_order !== undefined) bodyPatch.sort_order = input.sort_order;
   if (input.status !== undefined) {
-    patch.status = input.status;
-    patch.completed_at = input.status === "completed" ? formatCstIso(new Date()) : null;
+    bodyPatch.status = input.status;
+    bodyPatch.completed_at = input.status === "completed" ? formatCstIso(new Date()) : null;
   }
 
-  const row = await store.update({ id: input.id, body: patch });
+  const row = await store.update({
+    id: input.id,
+    title: input.title?.trim(),
+    content: input.content !== undefined ? input.content.trim() : undefined,
+    body: Object.keys(bodyPatch).length > 0 ? bodyPatch : undefined,
+  });
   if (!row) return null;
   const parsed = asTaskItem(row);
   return parsed
@@ -131,17 +159,11 @@ export async function updateTaskItem(input: TaskItemUpdateInput): Promise<TaskIt
 }
 
 export async function completeTaskItem(id: number): Promise<TaskItemRow | null> {
-  return updateTaskItem({
-    id,
-    status: "completed",
-  });
+  return updateTaskItem({ id, status: "completed" });
 }
 
 export async function uncompleteTaskItem(id: number): Promise<TaskItemRow | null> {
-  return updateTaskItem({
-    id,
-    status: "pending",
-  });
+  return updateTaskItem({ id, status: "pending" });
 }
 
 export async function deleteTaskItem(id: number): Promise<boolean> {

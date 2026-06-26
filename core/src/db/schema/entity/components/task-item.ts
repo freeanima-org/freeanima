@@ -11,12 +11,11 @@ export const taskItemPrioritySchema = z.enum(["high", "medium", "low", "none"]);
 export type TaskItemPriority = z.infer<typeof taskItemPrioritySchema>;
 
 export const taskItemBodySchema = schedulableBodySchema.extend({
-  title: z.string().min(1),
   status: taskItemStatusSchema.default("pending"),
   priority: taskItemPrioritySchema.default("none"),
   list_id: z.number().int().positive(),
   sort_order: z.number().int().optional(),
-  note: z.string().nullable().optional(),
+  tags: z.array(z.string()).default([]),
   completed_at: z.string().nullable().optional(),
 });
 

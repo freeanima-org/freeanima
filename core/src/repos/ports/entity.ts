@@ -7,6 +7,9 @@ export type EntityRow = {
   owner_id: number | null;
   components: string[];
   primary_component: string;
+  title: string;
+  summary: string;
+  content: string;
   body: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -18,12 +21,18 @@ export type EntityCreateInput = {
   owner_id?: number | null;
   components: string[];
   primary_component: string;
+  title?: string;
+  summary?: string;
+  content?: string;
   body: Record<string, unknown>;
 };
 
 export type EntityUpdateInput = {
   id: number;
   components?: string[];
+  title?: string;
+  summary?: string;
+  content?: string;
   body?: Record<string, unknown>;
 };
 

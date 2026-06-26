@@ -1,6 +1,9 @@
-import { registerEntityTaskModule } from "@freeanima/capabilities-task";
-import type { FridgeBridge } from "@freeanima/capabilities-tasks";
-import { registerTasksModule, syncTasksSummary } from "@freeanima/capabilities-tasks";
+import {
+  registerEntityTaskModule,
+  listTaskItems,
+  syncAfterTaskMutation,
+} from "@freeanima/capabilities-task";
+import type { FridgeBridge } from "@freeanima/capabilities-task";
 import { isRedisConfigured } from "@freeanima/platform/connectors/redis";
 import type { PgRepositories } from "@freeanima/core/repos";
 import { registerMemoryPipeline } from "@freeanima/capabilities-memory";
@@ -23,11 +26,10 @@ export function registerServiceStores(
   });
   registerDreamFridge(createDreamFridgePort());
   registerSelfLayerStore(repos.selfLayer);
-  registerTasksModule({
-    taskStore: repos.tasks,
+  registerEntityTaskModule({
+    entityStore: repos.entity,
     fridgeBridge: opts?.fridgeBridge,
   });
-  registerEntityTaskModule({ entityStore: repos.entity });
 }
 
 /** Refresh tasks fridge summary on service startup (due titles + undated count) */
@@ -36,5 +38,6 @@ export async function bootstrapTasksFridgeSummary(
   fridgeBridge?: FridgeBridge,
 ): Promise<void> {
   if (!repos.pgAvailable || !fridgeBridge || !isRedisConfigured()) return;
-  await syncTasksSummary(repos.tasks, fridgeBridge);
+  const items = await listTaskItems({ status: "pending", limit: 500 });
+  await syncAfterTaskMutation(items);
 }

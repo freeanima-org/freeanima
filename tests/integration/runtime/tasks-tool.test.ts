@@ -10,11 +10,11 @@ import { runWithToolContext } from "@freeanima/runtime/loop";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { getProfileHopModel } from "@freeanima/platform/config";
 import {
+  registerEntityTaskModule,
   registerTaskTools,
-  registerTasksModule,
-  resetTasksModuleForTests,
-} from "@freeanima/capabilities-tasks";
-import { resetTaskStoreForTests } from "@freeanima/capabilities-tasks/task-port";
+  resetEntityTaskModuleForTests,
+  getDefaultTaskList,
+} from "@freeanima/capabilities-task";
 import { getActivePgTestContext, testConv } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 
@@ -35,10 +35,9 @@ describePg("tasks tool", () => {
     await beginIntegrationCase("anima-tasks-");
     summaryWrites.length = 0;
     summaryDeletes.length = 0;
-    resetTaskStoreForTests();
-    resetTasksModuleForTests();
-    registerTasksModule({
-      taskStore: testConv().repos.tasks,
+    resetEntityTaskModuleForTests();
+    registerEntityTaskModule({
+      entityStore: testConv().repos.entity,
       fridgeBridge: {
         setMagnet: async (module: string, id: string, value: string) => {
           summaryWrites.push({ module, id, value });
@@ -52,8 +51,7 @@ describePg("tasks tool", () => {
   });
 
   afterEach(async () => {
-    resetTaskStoreForTests();
-    resetTasksModuleForTests();
+    resetEntityTaskModuleForTests();
     await restoreIntegrationHome(prev);
   });
 
@@ -61,12 +59,15 @@ describePg("tasks tool", () => {
     await endIntegrationCase();
   });
 
-  it("create_task writes to PG and syncs fridge summary", async () => {
+  it("task_create writes entity task_item and syncs fridge summary", async () => {
     const sid = "sess-task-create";
     const repos = testConv().repos;
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
+
+    const defaultList = await getDefaultTaskList();
+    expect(defaultList).not.toBeNull();
 
     let output = "";
     await runWithToolContext(
@@ -77,6 +78,8 @@ describePg("tasks tool", () => {
           tool.handler({
             title: "Discuss UI plan",
             priority: "high",
+            content: "Details here",
+            tags: ["work"],
           }),
         );
       },
@@ -85,52 +88,64 @@ describePg("tasks tool", () => {
 
     const parsed = JSON.parse(output) as {
       ok: boolean;
-      task: {
-        id: string;
+      item: {
+        id: number;
         title: string;
+        content: string;
+        tags: string[];
         status: string;
         priority: string;
-        source_conversation_id: string | null;
+        list_id: number;
       };
     };
     expect(parsed.ok).toBe(true);
-    expect(parsed.task.title).toBe("Discuss UI plan");
-    expect(parsed.task.status).toBe("pending");
-    expect(parsed.task.priority).toBe("high");
-    expect(parsed.task.source_conversation_id).toBe(sid);
+    expect(parsed.item.title).toBe("Discuss UI plan");
+    expect(parsed.item.content).toBe("Details here");
+    expect(parsed.item.tags).toEqual(["work"]);
+    expect(parsed.item.status).toBe("pending");
+    expect(parsed.item.priority).toBe("high");
+    expect(parsed.item.list_id).toBe(defaultList!.id);
 
-    const row = await repos.tasks.get(parsed.task.id);
+    const row = await repos.entity.get(parsed.item.id);
     expect(row?.title).toBe("Discuss UI plan");
+    expect(row?.content).toBe("Details here");
 
     expect(summaryWrites.some((w) => w.module === "tasks" && w.id === "summary")).toBe(true);
     expect(summaryWrites.at(-1)?.value).toBe("1 个待办");
-    expect(summaryWrites.at(-1)?.value).not.toContain("Discuss UI plan");
   });
 
-  it("list_tasks defaults to pending + in_progress only", async () => {
+  it("task_list defaults to pending only", async () => {
     const sid = "sess-task-list";
     const repos = testConv().repos;
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
 
-    const created = await repos.tasks.create({
-      title: "Active task",
-      source_conversation_id: sid,
-    });
-    await repos.tasks.update({
-      id: created.id,
-      status: "completed",
-      completed_at: new Date().toISOString(),
-    });
-    await repos.tasks.create({ title: "Pending task", source_conversation_id: sid });
+    const list = await getDefaultTaskList();
+    expect(list).not.toBeNull();
+
+    let createOut = "";
+    await runWithToolContext(
+      sid,
+      async () => {
+        const create = toolSets.getTool("task_create")!;
+        createOut = await Promise.resolve(
+          create.handler({ title: "Active task", list_id: list!.id }),
+        );
+        const complete = toolSets.getTool("task_complete")!;
+        const created = JSON.parse(createOut) as { item: { id: number } };
+        await Promise.resolve(complete.handler({ id: created.item.id }));
+        await Promise.resolve(create.handler({ title: "Pending task", list_id: list!.id }));
+      },
+      { repos, tools: toolSets },
+    );
 
     let output = "";
     await runWithToolContext(
       sid,
       async () => {
         const tool = toolSets.getTool("task_list")!;
-        output = await Promise.resolve(tool.handler({}));
+        output = await Promise.resolve(tool.handler({ list_id: list!.id }));
       },
       { repos, tools: toolSets },
     );
@@ -138,41 +153,49 @@ describePg("tasks tool", () => {
     const parsed = JSON.parse(output) as {
       ok: boolean;
       count: number;
-      tasks: { title: string }[];
+      items: { title: string }[];
     };
     expect(parsed.count).toBe(1);
-    expect(parsed.tasks[0]?.title).toBe("Pending task");
+    expect(parsed.items[0]?.title).toBe("Pending task");
   });
 
-  it("task_complete updates status", async () => {
+  it("task_complete updates status and clears fridge summary when empty", async () => {
     const sid = "sess-task-complete";
     const repos = testConv().repos;
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
 
-    const created = await repos.tasks.create({
-      title: "Task to complete",
-      source_conversation_id: sid,
-    });
+    let createdId = 0;
+    await runWithToolContext(
+      sid,
+      async () => {
+        const create = toolSets.getTool("task_create")!;
+        const out = await Promise.resolve(create.handler({ title: "Task to complete" }));
+        createdId = (JSON.parse(out) as { item: { id: number } }).item.id;
+      },
+      { repos, tools: toolSets },
+    );
+
+    summaryWrites.length = 0;
+    summaryDeletes.length = 0;
 
     let output = "";
     await runWithToolContext(
       sid,
       async () => {
         const tool = toolSets.getTool("task_complete")!;
-        output = await Promise.resolve(tool.handler({ id: created.id }));
+        output = await Promise.resolve(tool.handler({ id: createdId }));
       },
       { repos, tools: toolSets },
     );
 
     const parsed = JSON.parse(output) as {
       ok: boolean;
-      task: { status: string; completed_at: string | null };
+      item: { status: string; completed_at: string | null };
     };
-    expect(parsed.task.status).toBe("completed");
-    expect(parsed.task.completed_at).not.toBeNull();
-    expect(summaryWrites).toHaveLength(0);
+    expect(parsed.item.status).toBe("completed");
+    expect(parsed.item.completed_at).not.toBeNull();
     expect(summaryDeletes.at(-1)).toEqual({ module: "tasks", id: "summary" });
   });
 });

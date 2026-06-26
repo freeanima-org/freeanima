@@ -55,6 +55,7 @@ Detailed rules: [`.agent/rules/`](.agent/rules/README.md).
 - Layer deps and Registry injection enforced — see [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md) and [`scripts/check-layer-deps.ts`](scripts/check-layer-deps.ts)
 - **Do not manually edit [`CHANGELOG.md`](CHANGELOG.md)** — Release Please only ([`.agent/rules/release.md`](.agent/rules/release.md))
 - PG migrations: `db:generate` then `db:migrate`; never skip `snapshot.json` — [`.agent/rules/coding.md`](.agent/rules/coding.md) § PG migrations
+- **Data + schema migrations stay together**: row backfill / table-to-table moves must live in the **same** Drizzle migration dir as the DDL (append to `migration.sql` after `generate`); do not rely on separate startup scripts or manual one-offs that can run after `DROP TABLE` — [`.agent/rules/coding.md`](.agent/rules/coding.md) § PG migrations
 - PG repository queries: Drizzle ORM only — **`db.execute` forbidden** in `db-pg` / `tests/integration` — [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md)
 - Credentials and secrets never in git / logs / tool returns; memory/self-layer changes need extra care ([`docs/concepts/identity.md`](docs/concepts/identity.md))
 - **Principle maintenance**: corrections or refinements to direction, principles, philosophy, or agent behavior norms must be written to the appropriate doc layer in the same task/PR — not code-only. Triage: product/cognitive → `docs/concepts/`; implementation constraints → `.agent/rules/`; bootstrap summary → `AGENTS.md` (see [Principle & direction maintenance](#principle--direction-maintenance) below)
@@ -145,22 +146,22 @@ Corrections or refinements to direction, principles, philosophy, or agent behavi
 
 ## Docs to update when code changes
 
-| Change type                                                | Update                                                                                                                       |
-| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| PG schema / DDL                                            | [`core/src/db/schema/`](core/src/db/schema/) + [`.agent/rules/coding.md`](.agent/rules/coding.md)                            |
-| PG query conventions (ORM vs execute)                      | [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md)                                                                   |
-| PG ops (install, backup, migrate UX)                       | [`docs/guide/database.md`](docs/guide/database.md) · [`docs/guide/remote-access.md`](docs/guide/remote-access.md) for Tunnel |
-| Layer deps / composition root / Registry                   | [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md) + confirm `check-layer-deps.ts`                                 |
-| Test strategy / mock tiers                                 | [`.agent/rules/testing.md`](.agent/rules/testing.md) + [`tests/README.md`](tests/README.md)                                  |
-| Memory pipeline / retrieval                                | [`docs/concepts/memory.md`](docs/concepts/memory.md) + architecture                                                          |
-| Security / threat surface                                  | [`docs/guide/security.md`](docs/guide/security.md) + architecture                                                            |
-| Architecture principles                                    | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                                                             |
-| Principle / direction / philosophy correction (any source) | Triage per [Principle & direction maintenance](#principle--direction-maintenance); same PR as code                           |
-| New RFC package / rename                                   | [`.agent/rules/packages.md`](.agent/rules/packages.md)                                                                       |
-| Release                                                    | [`.agent/rules/release.md`](.agent/rules/release.md)                                                                         |
-| Compression algorithm                                      | [`.agent/rules/compression.md`](.agent/rules/compression.md)                                                                 |
-| UI / docs i18n (Paraglide, po4a, PO)                       | [`.agent/rules/i18n.md`](.agent/rules/i18n.md)                                                                               |
-| Task done                                                  | close corresponding GitHub Issue; user-visible changes use Conventional Commits                                              |
+| Change type                                                | Update                                                                                                                                                                                   |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PG schema / DDL                                            | [`core/src/db/schema/`](core/src/db/schema/) + [`.agent/rules/coding.md`](.agent/rules/coding.md) — **include data backfill in the same migration SQL when dropping or renaming tables** |
+| PG query conventions (ORM vs execute)                      | [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md)                                                                                                                               |
+| PG ops (install, backup, migrate UX)                       | [`docs/guide/database.md`](docs/guide/database.md) · [`docs/guide/remote-access.md`](docs/guide/remote-access.md) for Tunnel                                                             |
+| Layer deps / composition root / Registry                   | [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md) + confirm `check-layer-deps.ts`                                                                                             |
+| Test strategy / mock tiers                                 | [`.agent/rules/testing.md`](.agent/rules/testing.md) + [`tests/README.md`](tests/README.md)                                                                                              |
+| Memory pipeline / retrieval                                | [`docs/concepts/memory.md`](docs/concepts/memory.md) + architecture                                                                                                                      |
+| Security / threat surface                                  | [`docs/guide/security.md`](docs/guide/security.md) + architecture                                                                                                                        |
+| Architecture principles                                    | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                                                                                                                         |
+| Principle / direction / philosophy correction (any source) | Triage per [Principle & direction maintenance](#principle--direction-maintenance); same PR as code                                                                                       |
+| New RFC package / rename                                   | [`.agent/rules/packages.md`](.agent/rules/packages.md)                                                                                                                                   |
+| Release                                                    | [`.agent/rules/release.md`](.agent/rules/release.md)                                                                                                                                     |
+| Compression algorithm                                      | [`.agent/rules/compression.md`](.agent/rules/compression.md)                                                                                                                             |
+| UI / docs i18n (Paraglide, po4a, PO)                       | [`.agent/rules/i18n.md`](.agent/rules/i18n.md)                                                                                                                                           |
+| Task done                                                  | close corresponding GitHub Issue; user-visible changes use Conventional Commits                                                                                                          |
 
 Tool tables, module trees, API lists **are not maintained in docs** — use registration code and service router as source of truth.
 

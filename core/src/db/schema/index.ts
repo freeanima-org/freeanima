@@ -10,7 +10,6 @@ export * from "./self-layer.ts";
 export * from "./autobiographical-memory.ts";
 export * from "./limbic-memory.ts";
 export * from "./dream-memory.ts";
-export * from "./tasks.ts";
 export * from "./notifications.ts";
 export * from "./cron-jobs.ts";
 export * from "./cron-log.ts";

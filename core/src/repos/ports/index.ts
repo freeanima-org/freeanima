@@ -47,16 +47,6 @@ export type {
   AutoLlmRunStorePort,
 } from "./auto-llm-run.ts";
 export type {
-  TaskStorePort,
-  TaskRow,
-  TaskCreateInput,
-  TaskUpdateInput,
-  TaskListOpts,
-  TaskStatus,
-  TaskPriority,
-} from "./task.ts";
-export { TASK_STATUSES, TASK_PRIORITIES } from "./task.ts";
-export type {
   NotificationStorePort,
   NotificationRow,
   NotificationCreateInput,
@@ -133,7 +123,6 @@ import type { LimbicMemoryStorePort } from "./limbic-memory.ts";
 import type { SelfLayerStorePort } from "./self-layer.ts";
 import type { EntityStorePort } from "./entity.ts";
 import type { SapInstanceStorePort } from "./sap-instance.ts";
-import type { TaskStorePort } from "./task.ts";
 import type { NotificationStorePort } from "./notification.ts";
 
 /** PG repository aggregate mounted on Engine */
@@ -150,7 +139,6 @@ export interface PgRepositories {
   cronLog: CronLogStorePort;
   pipelineStepRun: PipelineStepRunStorePort;
   autoLlmRun: AutoLlmRunStorePort;
-  tasks: TaskStorePort;
   entity: EntityStorePort;
   notifications: NotificationStorePort;
   sapInstance: SapInstanceStorePort;
