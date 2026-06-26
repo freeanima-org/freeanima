@@ -1,0 +1,49 @@
+import { afterEach, describe, expect, it } from "bun:test";
+
+import { isMobileLayoutViewport, isNativeShell, isTaskContextMenuEnabled } from "./platform.ts";
+
+const hasWindow = typeof globalThis.window !== "undefined";
+
+describe("task platform", () => {
+  if (!hasWindow) {
+    it.skip("需要 DOM 环境", () => {});
+    return;
+  }
+
+  const originalShell = window.satelliteShell;
+  const originalMatchMedia = window.matchMedia;
+
+  afterEach(() => {
+    window.satelliteShell = originalShell;
+    window.matchMedia = originalMatchMedia;
+  });
+
+  it("isNativeShell reads satelliteShell flag", () => {
+    window.satelliteShell = { isNativeShell: true } as typeof window.satelliteShell;
+    expect(isNativeShell()).toBe(true);
+    window.satelliteShell = undefined;
+    expect(isNativeShell()).toBe(false);
+  });
+
+  it("isTaskContextMenuEnabled is false on native shell", () => {
+    window.satelliteShell = { isNativeShell: true } as typeof window.satelliteShell;
+    expect(isTaskContextMenuEnabled()).toBe(false);
+    window.satelliteShell = { isNativeShell: false } as typeof window.satelliteShell;
+    expect(isTaskContextMenuEnabled()).toBe(true);
+  });
+
+  it("isMobileLayoutViewport uses matchMedia", () => {
+    window.matchMedia = ((query: string) =>
+      ({
+        matches: query.includes("1023px"),
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      }) satisfies MediaQueryList) as typeof window.matchMedia;
+    expect(isMobileLayoutViewport()).toBe(true);
+  });
+});
