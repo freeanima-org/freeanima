@@ -27,6 +27,8 @@ import { registerShellClientIpc } from "./shell-client-ipc.ts";
 import { startShellStaticServer } from "./static-server.ts";
 
 const SHELL_ROOT = join(__dirname, "..");
+const QUIT_FOR_INSTALL_ARG = "--quit-for-install";
+const quitForInstall = process.argv.includes(QUIT_FOR_INSTALL_ARG);
 
 let mainWindow: BrowserWindow | null = null;
 let companionWindow: BrowserWindow | null = null;
@@ -384,9 +386,25 @@ async function bootstrap(): Promise<void> {
   logLine("desktop-shell setup complete");
 }
 
-app.whenReady().then(() => {
-  void bootstrap();
-});
+const gotSingleInstanceLock = app.requestSingleInstanceLock({ quitForInstall });
+
+if (!gotSingleInstanceLock) {
+  app.quit();
+} else {
+  app.on("second-instance", (_event, argv) => {
+    if (argv.includes(QUIT_FOR_INSTALL_ARG)) {
+      void releaseInstallLocks().finally(() => app.exit(0));
+    }
+  });
+
+  app.whenReady().then(() => {
+    if (quitForInstall) {
+      void releaseInstallLocks().finally(() => app.exit(0));
+      return;
+    }
+    void bootstrap();
+  });
+}
 
 app.on("window-all-closed", () => {
   // 托盘应用：窗口全关也不退出，除非正在安装/更新或用户主动退出
