@@ -16,12 +16,6 @@ Declare a process in `~/.anima/config.yaml`. `anima service start/stop/restart` 
 
 ```yaml
 satellites:
-  chat:
-    enabled: true
-    command: bun
-    args: ["satellites/chat/dev.ts"]
-    env:
-      SATELLITE_PORT: "4174"
   pair-programming:
     enabled: true
     command: bun
@@ -30,6 +24,8 @@ satellites:
       STUDIO_WORKSPACE: /path/to/project
       SATELLITE_PORT: "4173"
 ```
+
+**Chat / Task / Admin** 等已打进 shell-ui（desktop / mobile / web），无需在 `satellites:` 中单独声明 dev 进程；浏览器本地调试见 `bun run dev:web`。
 
 | Field              | Role                                             |
 | ------------------ | ------------------------------------------------ |
@@ -50,8 +46,9 @@ There is **no** global `studio:` section in `config.yaml`.
 
 Open managed satellite UI at the URL from Admin (SAP `http_url`), typically:
 
-- Chat: `http://127.0.0.1:4174`
 - Pair-programming: `http://127.0.0.1:4173`
+
+Shell 内卫星（Chat、Admin 等）在 desktop / mobile / web 壳层路由中打开，无独立端口。
 
 ## Instance allocation strategies
 

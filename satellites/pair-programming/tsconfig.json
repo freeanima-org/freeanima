@@ -8,12 +8,13 @@
       "@pair/*": ["./app/src/*"]
     }
   },
+  "references": [{ "path": "../../packages/shell-ui/vite" }],
   "include": [
     "app/src/**/*.ts",
     "app/src/**/*.tsx",
     "server/**/*.ts",
     "build.ts",
-    "dev.ts",
+    "vite.config.ts",
     "../../types/**/*.d.ts"
   ]
 }

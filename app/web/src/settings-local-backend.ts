@@ -7,7 +7,10 @@ import {
   HUB_URL_KEY,
   REMOTE_AUTH_TOKEN_KEY,
 } from "@freeanima/satellite-sdk/settings";
-import { parseShellDebugConfig, type ShellDebugConfig } from "@freeanima/satellite-sdk";
+import {
+  parseShellDebugConfig,
+  type ShellDebugConfig,
+} from "@freeanima/satellite-sdk/shell-debug-config";
 
 function loadKvScope(scope: SettingsStorageScope): unknown {
   if (scope.kind !== "kv") throw new Error("web 仅支持 kv scope");

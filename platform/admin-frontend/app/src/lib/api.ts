@@ -1,7 +1,7 @@
 import { treaty, type Treaty } from "@elysiajs/eden";
 import type { FridgeMagnetsResponse } from "@freeanima/admin-api/api";
 import type { App } from "@freeanima/admin-api/elysia";
-import { shouldAttachRemoteAuth } from "@freeanima/satellite-sdk";
+import { shouldAttachRemoteAuth } from "@freeanima/satellite-sdk/remote-auth";
 import { m } from "./i18n.ts";
 import { translateApiErrorValue } from "./api-errors.ts";
 import { apiPath } from "./api-path.ts";

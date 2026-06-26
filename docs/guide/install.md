@@ -91,7 +91,7 @@ anima service status
 
 Default bind: `127.0.0.1:2658`（Hub API：`/api`，SAP：`/sap/v1`）。
 
-UI 使用 **app/desktop** 或 **app/mobile**（聊天室 + 管理台 bundled）。Admin 本地开发：`bun run dev:admin`。
+UI 使用 **app/desktop** 或 **app/mobile**（聊天室 + 管理台 bundled）。浏览器本地开发：`bun run dev:web`（Vite HMR，Hub 须已运行）。
 
 Schema migrations run automatically on startup when `database.url` is set.
 

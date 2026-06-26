@@ -4,16 +4,23 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "bun build.ts",
-    "dev": "bun dev.ts"
+    "build": "vite build",
+    "dev": "vite"
   },
   "dependencies": {
     "@freeanima/sap-contract": "workspace:*",
     "@freeanima/satellite-sdk": "workspace:*",
-    "@freeanima/shell-ui": "workspace:*"
+    "@freeanima/shell-ui": "workspace:*",
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "catalog:",
     "@types/bun": "catalog:",
-    "typescript": "catalog:"
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
   }
 }

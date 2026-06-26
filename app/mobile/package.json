@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "bun build.ts",
-    "build:debug": "MOBILE_DEBUG=1 bun build.ts",
-    "sync": "bun build.ts && bunx cap sync android",
-    "sync:debug": "MOBILE_DEBUG=1 bun build.ts && bunx cap sync android",
+    "build": "vite build",
+    "build:debug": "MOBILE_DEBUG=1 vite build --mode development",
+    "sync": "vite build && bunx cap sync android",
+    "sync:debug": "MOBILE_DEBUG=1 vite build --mode development && bunx cap sync android",
     "android": "bash scripts/run-android.sh",
     "android:debug": "MOBILE_DEBUG=1 bash scripts/run-android.sh",
     "android:apk": "bash scripts/build-apk.sh",
@@ -27,7 +27,14 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^7.4.2",
+    "@tailwindcss/vite": "catalog:",
     "@types/bun": "catalog:",
-    "typescript": "catalog:"
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
   }
 }

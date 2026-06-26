@@ -37,6 +37,8 @@
     "satellites/chat/app/**",
     "satellites/companion/app/**",
     "packages/sap-contract/**",
-    "packages/shell-ui/**"
+    "packages/shell-ui/app/**",
+    "packages/shell-ui/src/**",
+    "packages/shell-ui/types/**"
   ]
 }

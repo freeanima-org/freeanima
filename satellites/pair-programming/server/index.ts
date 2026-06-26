@@ -124,13 +124,17 @@ async function route(req: Request, server: Bun.Server<ServerWsData>): Promise<Re
     return jsonResponse({ ok: true });
   }
 
+  if (process.env.SATELLITE_VITE_DEV === "1") {
+    return jsonResponse({ error: "Not Found" }, 404);
+  }
+
   return serveStatic(url.pathname);
 }
 
 function serveStatic(pathname: string): Response {
   if (!existsSync(DIST_DIR)) {
     return jsonResponse(
-      { error: "UI not built; run `bun satellites/pair-programming/dev.ts` or `bun build.ts`" },
+      { error: "UI not built; run `bun run dev` (Vite) or `bun run build`" },
       503,
     );
   }

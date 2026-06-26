@@ -10,7 +10,6 @@ import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { compileParaglideToDir } from "../platform/admin-frontend/paraglide-compile.ts";
-import { buildPublishedAdminDist } from "../platform/admin-frontend/build.ts";
 
 const ROOT = join(import.meta.dir, "..");
 const CLI_DIR = join(ROOT, "app/cli");
@@ -54,7 +53,6 @@ function resolveTiktokenWasmPath(): string {
 async function main(): Promise<void> {
   rmSync(PUBLISH_DIR, { recursive: true, force: true });
   mkdirSync(join(PUBLISH_DIR, "dist"), { recursive: true });
-  mkdirSync(join(PUBLISH_DIR, "admin-frontend"), { recursive: true });
 
   console.log("bundling cli…");
   const bundlePath = join(PUBLISH_DIR, "dist/cli.js");
@@ -69,11 +67,6 @@ async function main(): Promise<void> {
     recursive: true,
   });
 
-  console.log("copying admin app…");
-  cpSync(join(ROOT, "platform/admin-frontend/app"), join(PUBLISH_DIR, "admin-frontend/app"), {
-    recursive: true,
-  });
-
   console.log("compiling paraglide messages…");
   const paraglideDir = join(PUBLISH_DIR, "messages/paraglide");
   compileParaglideToDir({
@@ -83,9 +76,6 @@ async function main(): Promise<void> {
   // paraglide 产出含 `*` 的 .gitignore，会导致 bun pm pack 跳过整个目录
   rmSync(join(paraglideDir, ".gitignore"), { force: true });
   rmSync(join(paraglideDir, ".prettierignore"), { force: true });
-
-  console.log("building admin…");
-  await buildPublishedAdminDist(ROOT, join(PUBLISH_DIR, "admin-frontend/dist"));
 
   const binScript = `#!/usr/bin/env bun
 import { dirname, join } from "node:path";

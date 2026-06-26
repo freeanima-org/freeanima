@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { arrangeMobileIndexHtml } from "./build.ts";
+import { arrangeMobileIndexHtml } from "./mobile-html.ts";
 
 const MAIN_SCRIPT = '<script type="module" crossorigin src="./chunk-main.js"></script>';
 

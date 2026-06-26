@@ -10,7 +10,7 @@ export const chatDesktopExport: FrontendDesktopExport = {
   profile: {
     connectionKind: "sap-direct",
     embedMode: "bundled-spa",
-    distSubdir: "chat",
+    distSubdir: "shell-ui",
     entryPath: "index.html",
     defaultPort: CHAT_STATIC_PORT,
     windows: [],

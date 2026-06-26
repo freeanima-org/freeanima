@@ -4,10 +4,7 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "outDir": ".tsout"
   },
-  "references": [
-    { "path": "../../packages/satellite-sdk" },
-    { "path": "../../packages/sap-contract" }
-  ],
-  "include": ["src/**/*.ts", "build.ts", "capacitor.config.ts", "../../types/**/*.d.ts"],
-  "exclude": ["**/*.test.ts", "www/**", "android/**"]
+  "references": [{ "path": "../../packages/shell-ui/vite" }],
+  "include": ["src/**/*.ts", "mobile-html.ts", "vite.config.ts", "../../types/**/*.d.ts"],
+  "exclude": ["**/*.test.ts", "dist/**"]
 }

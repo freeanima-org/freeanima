@@ -308,10 +308,18 @@ async function startCompanionSidecar(): Promise<CompanionServerHandle> {
     port: Number(process.env.SATELLITE_PORT ?? 4176),
     distDir: companionDistDir(),
     announce: false,
+    viteDev: !app.isPackaged && process.env.DESKTOP_VITE_DEV === "1",
   });
 }
 
 async function startShellStatic(): Promise<void> {
+  const viteUrl = process.env.DESKTOP_SHELL_VITE_URL?.replace(/\/$/, "");
+  if (viteUrl) {
+    shellStaticUrl = viteUrl;
+    logLine(`shell-ui vite dev ${viteUrl}`);
+    return;
+  }
+
   const dist = shellUiDistDir();
   const { server, url, port } = await startShellStaticServer(
     dist,

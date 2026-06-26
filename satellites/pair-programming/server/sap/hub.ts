@@ -1,11 +1,8 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-import {
-  createSatelliteHub,
-  fileSapInstanceStore,
-  type SatelliteHubHandle,
-} from "@freeanima/sap-contract";
+import { createSatelliteHub, type SatelliteHubHandle } from "@freeanima/sap-contract";
+import { fileSapInstanceStore } from "@freeanima/sap-contract/file-instance-store";
 import { executeLocalTool } from "../tools/executor.ts";
 import { getStudioConfig } from "../studio.ts";
 

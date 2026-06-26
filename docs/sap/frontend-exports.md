@@ -64,4 +64,4 @@ title: Frontend Exports
 
 REST 基址：bundled 页通过 `window.satelliteShell.hubUrl` 访问 Hub **`/api/*`**。Hub 对 localhost / Capacitor origin 启用 CORS。
 
-本地 Admin 开发：`bun run dev:admin`（Hub 须已运行）。
+本地壳层开发：`bun run dev:web` → `http://127.0.0.1:4173`（Hub 须已运行；含聊天、Admin、设置）。

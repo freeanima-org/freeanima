@@ -1,4 +1,4 @@
-import type { SettingsPlatform } from "@freeanima/satellite-sdk";
+import type { SettingsPlatform } from "@freeanima/satellite-sdk/settings";
 
 export type PlatformDetectContext = {
   isElectron?: boolean;

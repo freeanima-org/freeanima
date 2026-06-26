@@ -68,7 +68,9 @@ function isExempt(relPath: string): boolean {
   if (relPath.startsWith("tests/")) return true;
   if (relPath.startsWith("app/cli/")) return true;
   if (
-    relPath === "platform/admin-frontend/build.ts" ||
+    relPath === "platform/admin-frontend/build-utils.ts" ||
+    relPath === "packages/shell-ui/vite/run-build.ts" ||
+    relPath === "packages/shell-ui/vite/satellite-vite.ts" ||
     relPath === "platform/admin-frontend/paraglide-compile.ts"
   )
     return true;

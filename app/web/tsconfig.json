@@ -6,8 +6,9 @@
   },
   "references": [
     { "path": "../../packages/satellite-sdk" },
-    { "path": "../../packages/sap-contract" }
+    { "path": "../../packages/sap-contract" },
+    { "path": "../../packages/shell-ui/vite" }
   ],
-  "include": ["src/**/*.ts", "build.ts", "dev.ts", "server.ts", "../../types/**/*.d.ts"],
+  "include": ["src/**/*.ts", "vite.config.ts", "../../types/**/*.d.ts"],
   "exclude": ["**/*.test.ts", "dist/**"]
 }

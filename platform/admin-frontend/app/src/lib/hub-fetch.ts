@@ -1,4 +1,4 @@
-import { createBearerFetch, shouldAttachRemoteAuth } from "@freeanima/satellite-sdk";
+import { createBearerFetch, shouldAttachRemoteAuth } from "@freeanima/satellite-sdk/remote-auth";
 
 import { apiPath } from "./api-path.ts";
 import { isAbortError, logCaughtError } from "./log-caught-error.ts";

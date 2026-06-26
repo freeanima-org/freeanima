@@ -1,4 +1,4 @@
-import { parseShellClientConfig } from "@freeanima/satellite-sdk";
+import { parseShellClientConfig } from "@freeanima/satellite-sdk/shell-client-config";
 import type { SettingsStorageScope } from "@freeanima/satellite-sdk/settings";
 import type { ScopedSettingsBackend } from "@freeanima/satellite-sdk/settings";
 import { HUB_SETTINGS_SCOPE } from "@freeanima/satellite-sdk/settings";

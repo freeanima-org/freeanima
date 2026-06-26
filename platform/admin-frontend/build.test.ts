@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { writeFileSync, mkdirSync, utimesSync } from "node:fs";
 import { join } from "node:path";
 import { createTempDir, removeTempDir } from "@freeanima/core/util";
-import { computeAdminSourceHash, resolveBundledAdminDistDir, resolveAdminAppDir } from "./build.ts";
+import { computeAdminSourceHash, resolveAdminAppDir } from "./build-utils.ts";
 
 describe("computeAdminSourceHash", () => {
   let appDir: string;
@@ -67,20 +67,6 @@ describe("resolveAdminAppDir", () => {
       mkdirSync(monorepo, { recursive: true });
       writeFileSync(join(monorepo, "index.html"), "monorepo\n");
       expect(resolveAdminAppDir(root)).toBe(monorepo);
-    } finally {
-      removeTempDir(root);
-    }
-  });
-});
-
-describe("resolveBundledAdminDistDir", () => {
-  it("returns admin-frontend/dist when index.html is valid", () => {
-    const root = createTempDir("freeanima-admin-dist-");
-    try {
-      const dir = join(root, "admin-frontend", "dist");
-      mkdirSync(dir, { recursive: true });
-      writeFileSync(join(dir, "index.html"), '<script src="/admin/chunk-abc.js"></script>\n');
-      expect(resolveBundledAdminDistDir(root)).toBe(dir);
     } finally {
       removeTempDir(root);
     }

@@ -1,11 +1,17 @@
 {
   "extends": "../../tsconfig.composite.base.json",
   "compilerOptions": {
-    "lib": ["ES2023", "DOM"],
-    "types": ["node"],
-    "moduleResolution": "bundler",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "outDir": ".tsout"
   },
-  "include": ["electron/**/*.ts", "src/**/*.ts", "build-electron.ts", "dev-electron.ts"],
-  "exclude": ["electron-dist/**", "release/**", "vendor/**"]
+  "references": [{ "path": "../../packages/shell-ui/vite" }],
+  "include": [
+    "electron/**/*.ts",
+    "src/**/*.ts",
+    "dev-electron.ts",
+    "build-electron.ts",
+    "vite.config.ts",
+    "../../types/**/*.d.ts"
+  ],
+  "exclude": ["**/*.test.ts", "dist/**", "electron-dist/**", "release/**"]
 }

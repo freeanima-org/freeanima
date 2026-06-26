@@ -35,29 +35,40 @@ function fileResponse(filePath: string): Response {
   return withCors(new Response(body, { headers }));
 }
 
-export function serveStatic(pathname: string): Response {
+/** 模型 / 动作 / public 资源（Vite dev 时仍由 sidecar 提供） */
+export function serveSidecarAsset(pathname: string): Response | null {
   const rel = pathname === "/" ? "/index.html" : pathname;
-  const DIST_DIR = distDir();
 
   if (rel.startsWith("/models/")) {
     const modelFile = resolveModelFile(rel);
-    if (modelFile) {
-      return fileResponse(modelFile);
-    }
+    if (modelFile) return fileResponse(modelFile);
     return jsonResponse({ error: "Not Found" }, 404);
   }
 
   if (rel.startsWith("/motions/")) {
     const motionFile = resolveMotionFile(rel);
-    if (motionFile) {
-      return fileResponse(motionFile);
-    }
+    if (motionFile) return fileResponse(motionFile);
     return jsonResponse({ error: "Not Found" }, 404);
   }
 
+  const publicPath = join(companionPackageRoot(), "public", rel.replace(/^\//, ""));
+  if (existsSync(publicPath) && statSync(publicPath).isFile()) {
+    return fileResponse(publicPath);
+  }
+
+  return null;
+}
+
+export function serveStatic(pathname: string): Response {
+  const rel = pathname === "/" ? "/index.html" : pathname;
+  const DIST_DIR = distDir();
+
+  const sidecar = serveSidecarAsset(pathname);
+  if (sidecar) return sidecar;
+
   if (!existsSync(DIST_DIR)) {
     return jsonResponse(
-      { error: "UI not built; run `bun satellites/companion/dev.ts` or `bun build.ts`" },
+      { error: "UI not built; run `bun run dev` (Vite) or `bun run build`" },
       503,
     );
   }
@@ -65,11 +76,6 @@ export function serveStatic(pathname: string): Response {
   const filePath = join(DIST_DIR, rel);
   if (existsSync(filePath) && statSync(filePath).isFile()) {
     return fileResponse(filePath);
-  }
-
-  const publicPath = join(companionPackageRoot(), "public", rel.replace(/^\//, ""));
-  if (existsSync(publicPath) && statSync(publicPath).isFile()) {
-    return fileResponse(publicPath);
   }
 
   const indexPath = join(DIST_DIR, "index.html");
