@@ -63,7 +63,11 @@ export async function buildChatApp(opts?: { watch?: boolean; minify?: boolean })
             onRebuild(rebuild: { success: boolean }) {
               if (!rebuild.success) {
                 console.error("[chat] rebuild failed");
+                return;
               }
+              void buildSapSharedWorker(DIST_DIR).catch((err) => {
+                console.error("[chat] sap-shared-worker rebuild failed", err);
+              });
             },
           },
         }

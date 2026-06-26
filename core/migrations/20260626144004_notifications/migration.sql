@@ -11,6 +11,5 @@ CREATE TABLE "notifications" (
 	"source_ref" text
 );
 --> statement-breakpoint
-ALTER TABLE "conversations" ADD COLUMN "archived_at" timestamp with time zone;--> statement-breakpoint
 CREATE INDEX "idx_notifications_recipient_created" ON "notifications" ("recipient_kind","recipient_id","created_at");--> statement-breakpoint
 CREATE INDEX "idx_notifications_recipient_read" ON "notifications" ("recipient_kind","recipient_id","read_at");

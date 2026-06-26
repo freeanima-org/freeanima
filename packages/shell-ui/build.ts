@@ -72,6 +72,8 @@ export async function buildShellUi(opts?: {
   outdir?: string;
   /** 应用 composition 目录（含 index.html + main.tsx） */
   appDir?: string;
+  /** watch 模式下每次 Bun 重建成功/失败后回调（含 sap-shared-worker 重建） */
+  onRebuild?: (success: boolean) => void | Promise<void>;
 }): Promise<string> {
   const distDir = opts?.outdir ?? DIST_DIR;
   if (!opts?.watch) {
@@ -101,7 +103,20 @@ export async function buildShellUi(opts?: {
       ? {
           watch: {
             onRebuild(rebuild: { success: boolean }) {
-              if (!rebuild.success) console.error("[shell-ui] rebuild failed");
+              if (!rebuild.success) {
+                console.error("[shell-ui] rebuild failed");
+                void opts.onRebuild?.(false);
+                return;
+              }
+              void (async () => {
+                try {
+                  await buildSapSharedWorker(distDir);
+                  await opts.onRebuild?.(true);
+                } catch (err) {
+                  console.error("[shell-ui] sap-shared-worker rebuild failed", err);
+                  await opts.onRebuild?.(false);
+                }
+              })();
             },
           },
         }

@@ -16,8 +16,12 @@ import type { RuntimeDeps } from "@freeanima/platform/runtime/runtime-deps";
 function testRuntimeDeps(): RuntimeDeps {
   const engine = getTestEngine();
   return {
-    kernel: engine.kernel,
-    engine,
+    kernel: {} as RuntimeDeps["kernel"],
+    engine: {
+      repos: {
+        notifications: engine.repos.notifications,
+      },
+    } as RuntimeDeps["engine"],
     conversation: {} as RuntimeDeps["conversation"],
   };
 }
