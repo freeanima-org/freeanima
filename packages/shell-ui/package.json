@@ -12,8 +12,8 @@
     "./sentry-test": "./src/sentry-test.ts"
   },
   "scripts": {
-    "build": "bun build.ts",
-    "dev": "bun build.ts --watch"
+    "build": "vite build",
+    "dev": "vite build --watch"
   },
   "dependencies": {
     "@freeanima/admin-frontend": "workspace:*",
@@ -29,12 +29,14 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "catalog:",
     "@types/bun": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "bun-plugin-tailwind": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
     "daisyui": "catalog:",
     "tailwindcss": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vite": "catalog:"
   }
 }

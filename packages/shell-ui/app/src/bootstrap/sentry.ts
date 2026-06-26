@@ -1,4 +1,7 @@
-import { DEFAULT_SHELL_DEBUG, type ShellDebugConfig } from "@freeanima/satellite-sdk";
+import {
+  DEFAULT_SHELL_DEBUG,
+  type ShellDebugConfig,
+} from "@freeanima/satellite-sdk/shell-debug-config";
 import type { SettingsBinding } from "@freeanima/satellite-sdk/settings";
 
 import { findDebugStore } from "../shell-app-context.tsx";

@@ -157,7 +157,7 @@ Production: `anima service` (systemd --user). Auto-restarts after crashes; only 
 ```bash
 anima service start              # default: systemd --user
 anima service start --foreground # foreground (logs to stdout)
-bun run dev:admin                # 本地 Admin 开发（Hub API 须已运行）
+bun run dev:web                  # 浏览器壳层（聊天 + Admin + 设置，Vite HMR；Hub 须已运行）
 anima service status
 ```
 

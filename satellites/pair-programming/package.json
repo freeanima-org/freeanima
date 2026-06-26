@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun dev.ts",
-    "build": "bun build.ts",
-    "start": "bun build.ts && bun server/index.ts"
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite build && bun server/index.ts"
   },
   "dependencies": {
     "@freeanima/sap-contract": "workspace:*",
@@ -19,11 +19,14 @@
     "zustand": "catalog:"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "catalog:",
     "@types/bun": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "bun-plugin-tailwind": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
     "daisyui": "catalog:",
-    "tailwindcss": "catalog:"
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
   }
 }

@@ -77,8 +77,7 @@ bun run test:unit # all unit tests
 bun run test:integration # integration (tests/integration/)
 bun run test # unit + integration in parallel
 bun run service start --foreground # Hub API + SAP（:2658）
-bun run dev:admin # 本地 Admin SPA 静态开发（需 Hub 已运行）
-bun run dev:web # 浏览器全壳层开发（Chat + Admin + 设置，需 Hub 已运行）
+bun run dev:web # 浏览器全壳层开发（Chat + Admin + 任务 + 设置，Vite HMR，需 Hub 已运行）
 anima credential list # credential paths; values in pass
 
 # PG schema changes (must generate snapshot.json; see .agent/rules/coding.md)
@@ -88,7 +87,7 @@ DATABASE_URL="…" bun run --filter @freeanima/core db:migrate
 
 - Hub API：`http://127.0.0.1:2658/api`（`anima service` 仅托管后端）
 - 桌面/移动/浏览器开发客户端：聊天室 + 管理台 UI 在 `app/desktop` / `app/mobile` / `app/web`（web 仅本地调试）
-- Admin 本地开发：`bun run dev:admin` → `http://127.0.0.1:4175/admin/dashboard?embed=1`
+- Admin / 任务 本地开发：`bun run dev:web` → `http://127.0.0.1:4173/chat`（Admin：`/admin/dashboard`）
 - Web 全壳层本地开发：`bun run dev:web` → `http://127.0.0.1:4173/chat`
 - Release: [`.agent/rules/release.md`](.agent/rules/release.md)
 - PG ops (install, backup): [`docs/guide/database.md`](docs/guide/database.md)

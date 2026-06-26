@@ -5,14 +5,16 @@ import {
   type SettingsStore,
 } from "@freeanima/satellite-sdk/settings";
 import {
-  DEFAULT_SHELL_DEBUG,
   normalizeShellClientConfig,
-  normalizeShellDebugConfig,
   parseShellClientConfig,
-  parseShellDebugConfig,
   type ShellClientConfig,
+} from "@freeanima/satellite-sdk/shell-client-config";
+import {
+  DEFAULT_SHELL_DEBUG,
+  normalizeShellDebugConfig,
+  parseShellDebugConfig,
   type ShellDebugConfig,
-} from "@freeanima/satellite-sdk";
+} from "@freeanima/satellite-sdk/shell-debug-config";
 
 import { createWebScopedBackend } from "./settings-local-backend.ts";
 import {

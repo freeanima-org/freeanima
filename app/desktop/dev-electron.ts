@@ -1,19 +1,23 @@
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 import { join } from "node:path";
+import { createServer as createViteServer } from "vite";
 import * as esbuild from "esbuild";
 
-import { buildShellUi } from "@freeanima/shell-ui/build";
-import { buildCompanionApp } from "@freeanima/satellite-companion/build";
 import { getElectronMainBundleOptions, getElectronPreloadBundleOptions } from "./build-electron.ts";
 
 const SHELL_ROOT = import.meta.dir;
+const SHELL_VITE_PORT = Number(process.env.DESKTOP_SHELL_VITE_PORT ?? 5173);
 
-async function stageVendor(): Promise<void> {
-  await Promise.all([
-    buildCompanionApp({ watch: true, minify: false }),
-    buildShellUi({ appDir: join(SHELL_ROOT, "app"), watch: true, minify: false }),
-  ]);
+async function startShellViteDev(): Promise<string> {
+  const vite = await createViteServer({
+    configFile: join(SHELL_ROOT, "vite.config.ts"),
+  });
+  await vite.listen(SHELL_VITE_PORT);
+  const url =
+    vite.resolvedUrls?.local[0]?.replace(/\/$/, "") ?? `http://127.0.0.1:${SHELL_VITE_PORT}`;
+  console.log(`[dev:electron] shell-ui Vite ${url}`);
+  return url;
 }
 
 async function bundleElectron(watch: boolean): Promise<void> {
@@ -27,7 +31,9 @@ async function bundleElectron(watch: boolean): Promise<void> {
   await Promise.all([mainCtx.dispose(), preloadCtx.dispose()]);
 }
 
-await stageVendor();
+process.env.DESKTOP_VITE_DEV = "1";
+process.env.DESKTOP_SHELL_VITE_URL = await startShellViteDev();
+
 await bundleElectron(true);
 
 const requireFromShell = createRequire(join(SHELL_ROOT, "package.json"));

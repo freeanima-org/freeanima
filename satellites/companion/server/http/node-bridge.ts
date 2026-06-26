@@ -1,6 +1,9 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import type { WebSocketServer } from "ws";
 
+type ConnectNext = () => void;
+export type DevMiddleware = (req: IncomingMessage, res: ServerResponse, next: ConnectNext) => void;
+
 async function readRequestBody(req: IncomingMessage): Promise<Buffer | undefined> {
   const method = req.method ?? "GET";
   if (method === "GET" || method === "HEAD") {
@@ -48,25 +51,35 @@ export type NodeHttpServerOptions = {
   handler: (req: Request) => Promise<Response>;
   wss: WebSocketServer;
   wsPath?: string;
+  /** Vite middlewareMode（开发 HMR） */
+  devMiddleware?: DevMiddleware;
 };
 
 export function createNodeHttpServer(opts: NodeHttpServerOptions): Server {
   const wsPath = opts.wsPath ?? "/api/runtime/ws";
   const server = createServer((req, res) => {
-    void (async () => {
-      try {
-        const request = await incomingMessageToRequest(req, opts.baseUrl);
-        const response = await opts.handler(request);
-        await writeFetchResponse(res, response);
-      } catch (error) {
-        console.error("companion-http-error:", error);
-        if (!res.headersSent) {
-          res.statusCode = 500;
-          res.setHeader("Content-Type", "application/json");
-          res.end(JSON.stringify({ error: "Internal Server Error" }));
+    const runHandler = (): void => {
+      void (async () => {
+        try {
+          const request = await incomingMessageToRequest(req, opts.baseUrl);
+          const response = await opts.handler(request);
+          await writeFetchResponse(res, response);
+        } catch (error) {
+          console.error("companion-http-error:", error);
+          if (!res.headersSent) {
+            res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ error: "Internal Server Error" }));
+          }
         }
-      }
-    })();
+      })();
+    };
+
+    if (opts.devMiddleware) {
+      opts.devMiddleware(req, res, runHandler);
+      return;
+    }
+    runHandler();
   });
 
   server.on("upgrade", (req, socket, head) => {

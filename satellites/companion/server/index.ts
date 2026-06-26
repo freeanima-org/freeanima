@@ -1,5 +1,6 @@
 import { type Server } from "node:http";
 import { join } from "node:path";
+import type { ViteDevServer } from "vite";
 import { WebSocketServer } from "ws";
 import { companionPackageRoot } from "./companion-root.ts";
 import { connectSap } from "./sap/run.ts";
@@ -34,13 +35,13 @@ import {
 } from "./motion-library.ts";
 import { MOTION_SLOT_IDS, type MotionSlotId } from "../shared/companion-schema.ts";
 import { fbxImportAvailable } from "./fbx-converter-kit.ts";
-import { serveStatic, setStaticDistDir } from "./static.ts";
+import { serveSidecarAsset, serveStatic, setStaticDistDir } from "./static.ts";
 import { SATELLITE_PORT_ATTEMPTS, SATELLITE_PORT_START } from "../shared/constants.ts";
 import { advanceBubble, bubbleState } from "./runtime-state.ts";
 import { handleRuntimeWsClose, handleRuntimeWsOpen, runtimeWsPayload } from "./runtime-ws.ts";
 import type { LocomotionSlot } from "../shared/constants.ts";
 import { handleLocomotionImport } from "./locomotion.ts";
-import { createNodeHttpServer, listenServer } from "./http/node-bridge.ts";
+import { createNodeHttpServer, listenServer, type DevMiddleware } from "./http/node-bridge.ts";
 
 export type StartCompanionServerOptions = {
   port?: number;
@@ -48,6 +49,10 @@ export type StartCompanionServerOptions = {
   distDir?: string;
   host?: string;
   announce?: boolean;
+  /** 启用 Vite middlewareMode（单端口 UI HMR） */
+  viteDev?: boolean;
+  viteConfigPath?: string;
+  devMiddleware?: DevMiddleware;
 };
 
 export type CompanionServerHandle = {
@@ -55,6 +60,7 @@ export type CompanionServerHandle = {
   url: string;
   httpServer: Server;
   wss: WebSocketServer;
+  vite?: ViteDevServer;
   close: () => Promise<void>;
 };
 
@@ -265,6 +271,15 @@ export async function route(req: Request): Promise<Response> {
     return jsonResponse({ ok: true, app: "companion" });
   }
 
+  const sidecarAsset = serveSidecarAsset(url.pathname);
+  if (sidecarAsset) {
+    return sidecarAsset;
+  }
+
+  if (process.env.SATELLITE_VITE_DEV === "1") {
+    return jsonResponse({ error: "Not Found" }, 404);
+  }
+
   return serveStatic(url.pathname);
 }
 
@@ -296,13 +311,36 @@ export async function startCompanionServer(
   for (let i = 0; i < portAttempts; i++) {
     const port = portStart + i;
     const baseUrl = `http://${host}:${port}`;
+    let activeDevMiddleware: DevMiddleware | undefined = opts.devMiddleware;
+    let viteDevServer: ViteDevServer | undefined;
+
     const httpServer = createNodeHttpServer({
       port,
       host,
       baseUrl,
       handler: route,
       wss,
+      devMiddleware: (req, res, next) => {
+        if (activeDevMiddleware) {
+          activeDevMiddleware(req, res, next);
+          return;
+        }
+        next();
+      },
     });
+
+    if (opts.viteDev) {
+      process.env.SATELLITE_VITE_DEV = "1";
+      const { createServer: createViteServer } = await import("vite");
+      viteDevServer = await createViteServer({
+        configFile: opts.viteConfigPath ?? join(companionPackageRoot(), "vite.config.ts"),
+        server: {
+          middlewareMode: true,
+          hmr: { server: httpServer },
+        },
+      });
+      activeDevMiddleware = viteDevServer.middlewares;
+    }
 
     try {
       const boundPort = await listenServer(httpServer, port, host);
@@ -319,7 +357,11 @@ export async function startCompanionServer(
         url: activeHttpUrl,
         httpServer,
         wss,
+        vite: viteDevServer,
         close: async () => {
+          if (viteDevServer) {
+            await viteDevServer.close();
+          }
           await new Promise<void>((resolve, reject) => {
             wss.close((err) => (err ? reject(err) : resolve()));
           });

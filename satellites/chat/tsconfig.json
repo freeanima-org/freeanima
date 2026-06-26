@@ -8,14 +8,6 @@
       "@chat/*": ["./app/src/*"]
     }
   },
-  "include": [
-    "app/src/**/*.ts",
-    "app/src/**/*.tsx",
-    "server/**/*.ts",
-    "src/**/*.ts",
-    "build.ts",
-    "dev.ts",
-    "../../types/**/*.d.ts"
-  ],
+  "include": ["app/src/**/*.ts", "app/src/**/*.tsx", "src/**/*.ts", "../../types/**/*.d.ts"],
   "exclude": ["**/*.test.ts", "dist/**"]
 }

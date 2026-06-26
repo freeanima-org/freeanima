@@ -73,11 +73,15 @@ FreeAnima Desktop（app/desktop）
 
 ### 浏览器开发（无需 Electron）
 
+在 `satellites/companion` 目录：
+
 ```bash
-bun satellites/companion/dev.ts
-# 伴侣：http://127.0.0.1:4176
-# 设置（浏览器 dev）：http://127.0.0.1:4176/?view=settings
+bun run dev
+# 或 bun satellites/companion/dev.ts
 ```
+
+- 伴侣：http://127.0.0.1:4176
+- 设置（浏览器 dev）：http://127.0.0.1:4176/?view=settings
 
 Electron 桌面壳中，伴侣设置通过系统托盘 → **设置…** 打开独立设置窗；overlay 窗上不显示设置按钮。
 

@@ -43,7 +43,6 @@ export {
   mergeShellSettings,
   parseShellSettings,
 } from "./shell-settings.ts";
-export { desktopSettingsPath, getDesktopHomeDir } from "./desktop-settings-paths.ts";
 export type { RemoteAuthCredentials } from "./remote-auth.ts";
 export {
   buildBearerHeaders,

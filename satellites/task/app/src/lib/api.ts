@@ -92,6 +92,7 @@ export async function createTaskItem(input: {
   tags?: string[];
   priority?: TaskItemRow["priority"];
   due_at?: string | null;
+  sort_order?: number;
 }): Promise<TaskItemRow> {
   const data = await parseJson<{ item: TaskItemRow }>(
     await taskFetch("/task/items", { method: "POST", body: JSON.stringify(input) }),

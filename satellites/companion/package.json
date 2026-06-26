@@ -25,8 +25,8 @@
     "postinstall": "bun scripts/ensure-fbx2gltf.ts",
     "setup:fbx": "bun scripts/ensure-fbx2gltf.ts --strict",
     "dev": "bun dev.ts",
-    "build": "bun build.ts",
-    "start": "bun build.ts && bun server/index.ts"
+    "build": "vite build",
+    "start": "vite build && bun server/index.ts"
   },
   "dependencies": {
     "@freeanima/sap-contract": "workspace:*",
@@ -44,13 +44,16 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@types/three": "^0.184.1",
     "@types/ws": "^8.18.1",
-    "bun-plugin-tailwind": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
     "daisyui": "catalog:",
-    "tailwindcss": "catalog:"
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
   }
 }

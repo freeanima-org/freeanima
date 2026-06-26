@@ -1,10 +1,8 @@
 import { browserSapInstanceStore } from "@freeanima/sap-contract";
 import { resolveHubWsUrl } from "@freeanima/sap-contract/urls";
-import {
-  buildShellApiFields,
-  normalizeShellClientConfig,
-  type SatelliteShellApi,
-} from "@freeanima/satellite-sdk";
+import { buildShellApiFields } from "@freeanima/satellite-sdk/shell-api-fields";
+import { normalizeShellClientConfig } from "@freeanima/satellite-sdk/shell-client-config";
+import type { SatelliteShellApi } from "@freeanima/satellite-sdk/shell-api";
 
 export const SHELL_CONFIG_CHANGED_EVENT = "freeanima:shell-config-changed";
 

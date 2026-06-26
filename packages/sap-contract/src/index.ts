@@ -26,8 +26,6 @@ export {
   loadSapInstanceId,
   type SapInstanceStore,
 } from "./instance-store.ts";
-export { fileSapInstanceStore } from "./file-instance-store.ts";
-
 export {
   connectPayloadSchema,
   connectedPayloadSchema,

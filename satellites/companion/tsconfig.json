@@ -10,6 +10,7 @@
       "@shared/*": ["./shared/*"]
     }
   },
+  "references": [{ "path": "../../packages/shell-ui/vite" }],
   "include": [
     "app/src/**/*.ts",
     "app/src/**/*.tsx",
@@ -19,6 +20,7 @@
     "src/**/*.ts",
     "build.ts",
     "dev.ts",
+    "vite.config.ts",
     "../../types/**/*.d.ts"
   ],
   "exclude": ["**/*.test.ts", "electron-dist/**", "release/**", "electron/**"]
