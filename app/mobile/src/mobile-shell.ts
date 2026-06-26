@@ -1,4 +1,3 @@
-import { Preferences } from "@capacitor/preferences";
 import { resolveHubWsUrl } from "@freeanima/sap-contract/urls";
 import {
   buildShellApiFields,
@@ -9,6 +8,7 @@ import {
 } from "@freeanima/satellite-sdk";
 
 import { HUB_URL_KEY, REMOTE_AUTH_TOKEN_KEY, sapInstanceKey } from "./prefs-keys.ts";
+import { prefsGet, prefsSet } from "./prefs-safe.ts";
 import { SETTINGS_PAGE } from "./paths.ts";
 import { replaceShellPath } from "./shell-nav.ts";
 
@@ -32,30 +32,30 @@ export function normalizeHubUrl(raw: string): string {
 }
 
 export async function loadHubUrl(): Promise<string | null> {
-  const { value } = await Preferences.get({ key: HUB_URL_KEY });
+  const { value } = await prefsGet({ key: HUB_URL_KEY });
   return value?.trim() || null;
 }
 
 export async function loadRemoteAuthToken(): Promise<string | null> {
-  const { value } = await Preferences.get({ key: REMOTE_AUTH_TOKEN_KEY });
+  const { value } = await prefsGet({ key: REMOTE_AUTH_TOKEN_KEY });
   return value?.trim() || null;
 }
 
 export async function saveShellClientPrefs(hubUrl: string, remoteAuthToken: string): Promise<void> {
   const normalized = normalizeShellClientConfig({ hubUrl, remoteAuthToken });
-  await Preferences.set({ key: HUB_URL_KEY, value: normalized.hubUrl });
-  await Preferences.set({ key: REMOTE_AUTH_TOKEN_KEY, value: normalized.remoteAuthToken });
+  await prefsSet({ key: HUB_URL_KEY, value: normalized.hubUrl });
+  await prefsSet({ key: REMOTE_AUTH_TOKEN_KEY, value: normalized.remoteAuthToken });
 }
 
 export function createPreferencesInstanceStore(appId: string): SapInstanceStore {
   const key = sapInstanceKey(appId);
   return {
     async load(): Promise<string | null> {
-      const { value } = await Preferences.get({ key });
+      const { value } = await prefsGet({ key });
       return value?.trim() || null;
     },
     async save(instanceId: string): Promise<void> {
-      await Preferences.set({ key, value: instanceId.trim() });
+      await prefsSet({ key, value: instanceId.trim() });
     },
   };
 }
