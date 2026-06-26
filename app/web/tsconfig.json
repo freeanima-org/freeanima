@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.composite.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "outDir": ".tsout"
+  },
+  "references": [
+    { "path": "../../packages/satellite-sdk" },
+    { "path": "../../packages/sap-contract" }
+  ],
+  "include": ["src/**/*.ts", "build.ts", "dev.ts", "server.ts", "../../types/**/*.d.ts"],
+  "exclude": ["**/*.test.ts", "dist/**"]
+}

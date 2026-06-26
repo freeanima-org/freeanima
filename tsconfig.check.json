@@ -9,6 +9,7 @@
     { "path": "./app/desktop" },
     { "path": "./packages/satellite-sdk" },
     { "path": "./app/mobile" },
+    { "path": "./app/web" },
     { "path": "./platform/admin-api" },
     { "path": "./platform/admin-frontend" }
   ]
