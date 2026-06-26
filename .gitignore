@@ -7,7 +7,13 @@
 config.yaml
 *.local.yaml
 
-*.ts.map
+# TypeScript composite emit（声明应落在 .tsout/，勿提交源码旁产物）
+**/*.d.ts.map
+**/*.d.ts
+!types/**/*.d.ts
+!**/global.d.ts
+!packages/shell-ui/types/**/*.d.ts
+
 # Cryptographic keys
 *.pem
 *.key
