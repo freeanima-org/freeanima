@@ -11,18 +11,13 @@ import {
 } from "@freeanima/capabilities-email";
 import { formatCstIso } from "@freeanima/core/util";
 
-import { extractBody, formatAddress, messagePreview, withImapAccount } from "./imap-client.ts";
-
-function parseReferences(raw: unknown): string[] {
-  if (typeof raw === "string") {
-    return raw
-      .split(/\s+/)
-      .map((s) => s.trim())
-      .filter(Boolean);
-  }
-  if (Array.isArray(raw)) return raw.map(String).filter(Boolean);
-  return [];
-}
+import {
+  extractBody,
+  formatAddress,
+  messagePreview,
+  parseImapHeaderBuffer,
+  withImapAccount,
+} from "./imap-client.ts";
 
 export async function syncEmailAccount(
   accountId: number,
@@ -72,10 +67,10 @@ export async function syncEmailAccount(
             if (!msg) continue;
 
             const envelope = msg.envelope;
-            const headers = msg.headers as Map<string, string[]> | undefined;
-            const messageId = headers?.get("message-id")?.[0] ?? envelope?.messageId ?? undefined;
-            const inReplyTo = headers?.get("in-reply-to")?.[0];
-            const references = parseReferences(headers?.get("references")?.[0]);
+            const parsedHeaders = parseImapHeaderBuffer(msg.headers);
+            const messageId = parsedHeaders.messageId ?? envelope?.messageId ?? undefined;
+            const inReplyTo = parsedHeaders.inReplyTo ?? envelope?.inReplyTo;
+            const references = parsedHeaders.references;
             const subject = envelope?.subject ?? "(No subject)";
             const threadKey = deriveThreadKey({
               message_id: messageId,
