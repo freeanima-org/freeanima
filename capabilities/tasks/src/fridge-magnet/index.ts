@@ -15,6 +15,7 @@ export {
   getMagnet,
   deleteMagnet,
   scanMagnets,
+  isExcludedFridgeMagnetDisplayKey,
 } from "./store.ts";
 export {
   FRIDGE_CONTEXT_ASSISTANT_NAME,

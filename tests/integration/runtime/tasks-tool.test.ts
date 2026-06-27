@@ -26,26 +26,14 @@ function testCfg() {
 
 describePg("tasks tool", () => {
   const prev = process.env.FREEANIMA_HOME;
-  const summaryWrites: { module: string; id: string; value: string }[] = [];
-  const summaryDeletes: { module: string; id: string }[] = [];
   let toolSets: ToolSetRegistry;
 
   beforeEach(async () => {
     toolSets = new ToolSetRegistry();
     await beginIntegrationCase("anima-tasks-");
-    summaryWrites.length = 0;
-    summaryDeletes.length = 0;
     resetEntityTaskModuleForTests();
     registerEntityTaskModule({
       entityStore: testConv().repos.entity,
-      fridgeBridge: {
-        setMagnet: async (module: string, id: string, value: string) => {
-          summaryWrites.push({ module, id, value });
-        },
-        deleteMagnet: async (module: string, id: string) => {
-          summaryDeletes.push({ module, id });
-        },
-      },
     });
     registerTaskTools(toolSets);
   });
@@ -59,7 +47,7 @@ describePg("tasks tool", () => {
     await endIntegrationCase();
   });
 
-  it("task_create writes entity task_item and syncs fridge summary", async () => {
+  it("task_create writes entity task_item", async () => {
     const sid = "sess-task-create";
     const repos = testConv().repos;
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
@@ -109,9 +97,6 @@ describePg("tasks tool", () => {
     const row = await repos.entity.get(parsed.item.id);
     expect(row?.title).toBe("Discuss UI plan");
     expect(row?.content).toBe("Details here");
-
-    expect(summaryWrites.some((w) => w.module === "tasks" && w.id === "summary")).toBe(true);
-    expect(summaryWrites.at(-1)?.value).toBe("1 个待办");
   });
 
   it("task_list defaults to pending only", async () => {
@@ -159,7 +144,7 @@ describePg("tasks tool", () => {
     expect(parsed.items[0]?.title).toBe("Pending task");
   });
 
-  it("task_complete updates status and clears fridge summary when empty", async () => {
+  it("task_complete updates status", async () => {
     const sid = "sess-task-complete";
     const repos = testConv().repos;
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
@@ -177,9 +162,6 @@ describePg("tasks tool", () => {
       { repos, tools: toolSets },
     );
 
-    summaryWrites.length = 0;
-    summaryDeletes.length = 0;
-
     let output = "";
     await runWithToolContext(
       sid,
@@ -196,6 +178,5 @@ describePg("tasks tool", () => {
     };
     expect(parsed.item.status).toBe("completed");
     expect(parsed.item.completed_at).not.toBeNull();
-    expect(summaryDeletes.at(-1)).toEqual({ module: "tasks", id: "summary" });
   });
 });

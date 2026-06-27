@@ -247,7 +247,7 @@
   "admin_email_to": "收件人：",
   "admin_fridge_badge_conversation": "会话便签",
   "admin_fridge_badge_task": "待办摘要",
-  "admin_fridge_desc": "Redis 跨轮临时便签（默认 24h TTL）；写入请使用 fridge_magnet_write 工具，待办摘要由 tasks 桥接同步。",
+  "admin_fridge_desc": "Redis 跨轮临时便签（默认 24h TTL）；写入请使用 fridge_magnet_write 工具。",
   "admin_fridge_empty": "当前无冰箱贴便签。",
   "admin_fridge_expiry_hours": "剩余 {hours}h {minutes}m",
   "admin_fridge_expiry_minutes": "剩余 {minutes}m",

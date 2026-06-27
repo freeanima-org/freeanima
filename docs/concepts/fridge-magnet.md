@@ -8,11 +8,11 @@ Cross-turn sticky notes for digital-life working memory. Content lives in Redis 
 
 ## Three layers
 
-| Layer         | Role                                                 | Persistence                   |
-| ------------- | ---------------------------------------------------- | ----------------------------- |
-| Write         | `fridge_magnet_write`, tasks bridge, dream reminders | —                             |
-| Storage       | Redis `fridge-magnet:*` keys                         | Redis (TTL)                   |
-| Consciousness | Runtime message before each LLM call                 | **Not stored** in PG messages |
+| Layer         | Role                                   | Persistence                   |
+| ------------- | -------------------------------------- | ----------------------------- |
+| Write         | `fridge_magnet_write`, dream reminders | —                             |
+| Storage       | Redis `fridge-magnet:*` keys           | Redis (TTL)                   |
+| Consciousness | Runtime message before each LLM call   | **Not stored** in PG messages |
 
 ## Consciousness representation
 

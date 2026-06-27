@@ -4,7 +4,7 @@ import { attachToolReturns, toolResult, toolError, type ToolArgs } from "@freean
 import { FRIDGE_TOOL_RETURNS } from "./return-schemas.ts";
 import { clampTtl, deleteMagnet, magnetRedisKey, randomBase62, setMagnet } from "./store.ts";
 
-const FRIDGE_MODULES = new Set(["conversation", "dream", "tasks"]);
+const FRIDGE_MODULES = new Set(["conversation", "dream"]);
 
 export function registerWriteFridgeMagnetTool(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
@@ -57,8 +57,8 @@ export function registerWriteFridgeMagnetTool(toolSets: ToolSetRegistry): void {
             properties: {
               module: {
                 type: "string",
-                description: "Magnet module: conversation, dream, or tasks",
-                enum: ["conversation", "dream", "tasks"],
+                description: "Magnet module: conversation or dream",
+                enum: ["conversation", "dream"],
               },
               key: {
                 type: "string",
@@ -71,7 +71,7 @@ export function registerWriteFridgeMagnetTool(toolSets: ToolSetRegistry): void {
           handler: async (args: ToolArgs) => {
             const module = String(args.module ?? "").trim();
             if (!FRIDGE_MODULES.has(module)) {
-              return toolError("module must be conversation, dream, or tasks");
+              return toolError("module must be conversation or dream");
             }
             let key = String(args.key ?? "").trim();
             if (!key) return toolError("key is required");

@@ -11,10 +11,8 @@ import { registerSystemPromptHooks } from "../register-prompt-hooks.ts";
 import {
   registerFridgeMagnet,
   registerServiceMemoryBus,
-  bootstrapTasksFridgeSummary,
   registerServiceStores,
 } from "../register.ts";
-import { createFridgeBridge } from "../fridge-bridge-factory.ts";
 import { createAcpSessionUpdatedHandler } from "../acp-conversation-callback.ts";
 import { initRuntimeContext } from "../runtime/runtime-context.ts";
 import { registerMemoryEngineWires } from "../runtime/memory-engines.ts";
@@ -72,10 +70,8 @@ export async function bootRuntimePhase(
   wireServicePorts(runtime.fullDeps());
   initRuntimeContext(runtime);
 
-  const fridgeBridge = createFridgeBridge();
-  registerServiceStores(repos, { fridgeBridge });
+  registerServiceStores(repos);
   registerFridgeMagnet({ kernel });
-  await bootstrapTasksFridgeSummary(repos, fridgeBridge);
   registerServiceMemoryBus({ kernel });
   invalidateSelfLayerPromptCache();
   await loadSelfLayerPrompt();

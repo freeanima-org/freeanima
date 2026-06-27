@@ -187,7 +187,7 @@
   "admin_email_to": "To:",
   "admin_fridge_badge_conversation": "Session note",
   "admin_fridge_badge_task": "Task summary",
-  "admin_fridge_desc": "Redis cross-turn sticky notes (24h TTL by default). Use the fridge_magnet_write tool; task summaries sync via tasks bridge.",
+  "admin_fridge_desc": "Redis cross-turn sticky notes (24h TTL by default). Use the fridge_magnet_write tool.",
   "admin_fridge_empty": "No fridge magnets.",
   "admin_fridge_expiry_hours": "{hours}h {minutes}m left",
   "admin_fridge_expiry_minutes": "{minutes}m left",

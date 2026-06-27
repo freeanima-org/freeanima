@@ -16,6 +16,11 @@ export function stripMagnetRedisKeyPrefix(key: string): string {
     : key;
 }
 
+/** 任务模块已从冰箱贴解绑；扫描/展示时排除 legacy tasks:* 键 */
+export function isExcludedFridgeMagnetDisplayKey(displayKey: string): boolean {
+  return displayKey.startsWith("tasks:");
+}
+
 export function randomBase62(length: number): string {
   let out = "";
   for (let i = 0; i < length; i++) {

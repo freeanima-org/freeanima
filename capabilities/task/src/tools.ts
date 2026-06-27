@@ -11,7 +11,6 @@ import {
   updateTaskItem,
 } from "./item-store.ts";
 import { getDefaultTaskList, listTaskLists } from "./list-store.ts";
-import { getTaskFridgeBridge, syncAfterTaskMutation } from "./entity-port.ts";
 import { TASK_TOOL_RETURNS } from "./return-schemas.ts";
 import type { TaskItemRow } from "./types.ts";
 
@@ -52,11 +51,6 @@ function itemPayload(item: TaskItemRow) {
   };
 }
 
-async function refreshFridge(): Promise<void> {
-  const items = await listTaskItems({ status: "pending", limit: 500 });
-  await syncAfterTaskMutation(items);
-}
-
 async function resolveListId(raw: unknown): Promise<number | null> {
   if (raw == null || raw === "") {
     const list = await getDefaultTaskList();
@@ -91,7 +85,6 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
       priority,
       due_at: dueAt,
     });
-    await refreshFridge();
     return toolResult({ ok: true, action: "create", item: itemPayload(item) });
   } catch (e) {
     return toolError(String(e instanceof Error ? e.message : e));
@@ -124,7 +117,6 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
   try {
     const item = await updateTaskItem(patch);
     if (!item) return toolError(`task not found: ${id}`);
-    await refreshFridge();
     return toolResult({ ok: true, action: "update", item: itemPayload(item) });
   } catch (e) {
     return toolError(String(e instanceof Error ? e.message : e));
@@ -138,7 +130,6 @@ async function handleComplete(args: Record<string, unknown>, uncomplete: boolean
   try {
     const item = uncomplete ? await uncompleteTaskItem(id) : await completeTaskItem(id);
     if (!item) return toolError(`task not found: ${id}`);
-    await refreshFridge();
     return toolResult({
       ok: true,
       action: uncomplete ? "uncomplete" : "complete",
@@ -156,7 +147,6 @@ async function handleDelete(args: Record<string, unknown>): Promise<string> {
   try {
     const ok = await deleteTaskItem(id);
     if (!ok) return toolError(`task not found: ${id}`);
-    await refreshFridge();
     return toolResult({ ok: true, action: "delete", id });
   } catch (e) {
     return toolError(String(e instanceof Error ? e.message : e));
@@ -334,6 +324,4 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
 }
 
 /** 供测试重置 */
-export function resetTaskToolsForTests(): void {
-  void getTaskFridgeBridge();
-}
+export function resetTaskToolsForTests(): void {}

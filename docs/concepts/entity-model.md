@@ -49,7 +49,7 @@ TickTick-style lists and items map to:
 
 Items reference their list via `body.list_id` (entity id). Task items store **title** and **content** on entity columns; **tags** live in `body.tags`. A **default list** (`is_default: true`, seeded id `2`「收件箱」) cannot be deleted but may be renamed.
 
-LLM tools and fridge summary use `@freeanima/capabilities-task` (`task_*` tools, `exposeMcp: true`). Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration (`scripts/migrate-tasks-to-entities.ts`).
+LLM tools use `@freeanima/capabilities-task` (`task_*` tools, `exposeMcp: true`). Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration (`scripts/migrate-tasks-to-entities.ts`).
 
 ## Future migration map (not executed yet)
 

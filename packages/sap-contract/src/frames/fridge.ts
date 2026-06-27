@@ -7,7 +7,7 @@ export type FridgeListInput = z.infer<typeof fridgeListInputSchema>;
 export const fridgeMagnetItemSchema = z.object({
   key: z.string(),
   value: z.string(),
-  module: z.enum(["conversation", "tasks", "other"]),
+  module: z.enum(["conversation", "other"]),
   conversation_id: z.string().optional(),
   label: z.string().optional(),
   ttl_seconds: z.number().nullable(),

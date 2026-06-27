@@ -267,7 +267,7 @@ export type ToolsStatusToolItem = z.infer<typeof toolsStatusToolItemSchema>;
 export type FridgeMagnetItem = {
   key: string;
   value: string;
-  module: "conversation" | "tasks" | "other";
+  module: "conversation" | "other";
   conversation_id?: string;
   label?: string;
   ttl_seconds: number | null;

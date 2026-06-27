@@ -4,7 +4,7 @@ import { m } from "@admin/lib/i18n.ts";
 export type FridgeMagnetItem = {
   key: string;
   value: string;
-  module: "conversation" | "tasks" | "other";
+  module: "conversation" | "other";
   conversation_id?: string;
   label?: string;
   ttl_seconds: number | null;
@@ -42,9 +42,7 @@ export function FridgeMagnetDetailList({ magnets, redisConfigured }: FridgeMagne
           <div className="card-body gap-2 p-4">
             <div className="flex flex-wrap items-center gap-2">
               <span className="badge badge-ghost badge-sm font-mono">{magnet.key}</span>
-              {magnet.module === "tasks" ? (
-                <span className="badge badge-info badge-sm">{m.admin_fridge_badge_task()}</span>
-              ) : magnet.module === "conversation" ? (
+              {magnet.module === "conversation" ? (
                 <span className="badge badge-primary badge-sm">
                   {m.admin_fridge_badge_conversation()}
                 </span>
