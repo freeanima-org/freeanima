@@ -303,7 +303,7 @@ function WorldsPage() {
           <h2 className="text-lg font-bold">{m.admin_nav_worlds()}</h2>
           <p className="text-sm text-base-content/60 mt-1">{m.admin_entities_worlds_desc()}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 admin-page-toolbar">
           <button
             type="button"
             className="btn btn-sm btn-ghost"

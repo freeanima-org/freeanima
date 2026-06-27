@@ -16,6 +16,7 @@ import {
   deleteTaskList,
   fetchTaskItems,
   fetchTaskLists,
+  searchTaskItems,
   uncompleteTaskItem,
   updateTaskItem,
   updateTaskList,
@@ -54,6 +55,9 @@ export function TaskApp() {
   const [error, setError] = useState("");
   const [newListName, setNewListName] = useState("");
   const [quickTitle, setQuickTitle] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchHits, setSearchHits] = useState<TaskItemRow[]>([]);
+  const [searching, setSearching] = useState(false);
   const [editingItem, setEditingItem] = useState<TaskItemRow | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -116,7 +120,41 @@ export function TaskApp() {
     setSelectionMode(false);
     setSelectedItemIds(new Set());
     selectionAnchorRef.current = null;
+    setSearchQuery("");
+    setSearchHits([]);
   }, [selectedListId, loadItems]);
+
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (!q) {
+      setSearchHits([]);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    const timer = setTimeout(() => {
+      void searchTaskItems({ query: q, limit: 30 })
+        .then(setSearchHits)
+        .catch((err) => {
+          setError(err instanceof Error ? err.message : String(err));
+          setSearchHits([]);
+        })
+        .finally(() => setSearching(false));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const refreshSearchHits = useCallback(async () => {
+    const q = searchQuery.trim();
+    if (!q) return;
+    try {
+      setSearchHits(await searchTaskItems({ query: q, limit: 30 }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  }, [searchQuery]);
+
+  const searchActive = searchQuery.trim().length > 0;
 
   useEffect(() => {
     if (editingListId == null) return;
@@ -221,6 +259,7 @@ export function TaskApp() {
       if (selectedListId != null) {
         await Promise.all([loadItems(selectedListId), loadLists()]);
       }
+      if (searchActive) await refreshSearchHits();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
@@ -238,6 +277,7 @@ export function TaskApp() {
       if (selectedListId != null) {
         await Promise.all([loadItems(selectedListId), loadLists()]);
       }
+      if (searchActive) await refreshSearchHits();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
@@ -265,6 +305,7 @@ export function TaskApp() {
         selectedListId != null ? loadItems(selectedListId) : Promise.resolve(),
         loadLists(),
       ]);
+      if (searchActive) await refreshSearchHits();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
@@ -287,18 +328,26 @@ export function TaskApp() {
       });
       setEditingItem(null);
       if (selectedListId != null) await loadItems(selectedListId);
+      if (searchActive) await refreshSearchHits();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
   };
 
   const selectedList = lists.find((l) => l.id === selectedListId) ?? null;
+  const listNameById = useMemo(() => new Map(lists.map((l) => [l.id, l.name])), [lists]);
   const pendingItems = items.filter((i) => i.status === "pending");
   const completedItems = items.filter((i) => i.status === "completed");
-  const selectableOrder = useMemo(
-    () => [...pendingItems, ...completedItems].map((i) => i.id),
-    [pendingItems, completedItems],
+  const searchPending = searchHits.filter((i) => i.status === "pending");
+  const searchCompleted = searchHits.filter((i) => i.status === "completed");
+  const displayPending = searchActive ? searchPending : pendingItems;
+  const displayCompleted = searchActive ? searchCompleted : completedItems;
+  const resolveListName = useCallback(
+    (item: TaskItemRow) => listNameById.get(item.list_id) ?? `#${item.list_id}`,
+    [listNameById],
   );
+  const allVisibleItems = searchActive ? searchHits : items;
+  const selectableOrder = useMemo(() => allVisibleItems.map((i) => i.id), [allVisibleItems]);
 
   const handleSelectItem = (itemId: number, shiftKey: boolean) => {
     if (!selectionMode) return;
@@ -355,7 +404,10 @@ export function TaskApp() {
   );
 
   const menuList = listMenu ? lists.find((l) => l.id === listMenu.listId) : null;
-  const menuItem = itemMenu ? items.find((i) => i.id === itemMenu.itemId) : null;
+  const menuItem = itemMenu
+    ? (items.find((i) => i.id === itemMenu.itemId) ??
+      searchHits.find((i) => i.id === itemMenu.itemId))
+    : null;
 
   const listMenuItems: ContextMenuItem[] = menuList
     ? buildListMenuItems(menuList, menuHandlers)
@@ -416,21 +468,31 @@ export function TaskApp() {
       }}
     >
       <div className="relative flex h-full min-h-0 flex-col lg:flex-row">
-        <header className="border-base-300 flex shrink-0 items-center gap-2 border-b px-3 py-2 lg:hidden">
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm btn-square"
-            aria-expanded={sidebarOpen}
-            aria-label="打开清单"
-            onClick={() => setSidebarOpen((v) => !v)}
-          >
-            ☰
-          </button>
-          <h1 className="min-w-0 flex-1 truncate text-sm font-semibold">
-            {selectedList?.name ?? "任务"}
-          </h1>
-          {selectedList ? selectionToolbar : null}
-          {loading ? <span className="loading loading-spinner loading-sm" /> : null}
+        <header className="border-base-300 flex shrink-0 flex-col gap-2 border-b px-3 py-2 lg:hidden">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm btn-square"
+              aria-expanded={sidebarOpen}
+              aria-label="打开清单"
+              onClick={() => setSidebarOpen((v) => !v)}
+            >
+              ☰
+            </button>
+            <h1 className="min-w-0 flex-1 truncate text-sm font-semibold">
+              {selectedList?.name ?? "任务"}
+            </h1>
+            {selectedList ? selectionToolbar : null}
+            {loading || searching ? <span className="loading loading-spinner loading-sm" /> : null}
+          </div>
+          {selectedList ? (
+            <input
+              className="input input-bordered input-sm w-full"
+              placeholder="搜索全部清单…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          ) : null}
         </header>
 
         {sidebarOpen ? (
@@ -475,12 +537,24 @@ export function TaskApp() {
         </aside>
 
         <main className="flex min-h-0 min-w-0 flex-1 flex-col">
-          <header className="border-base-300 hidden items-center justify-between gap-2 border-b px-4 py-3 lg:flex">
-            <h1 className="text-lg font-semibold">{selectedList?.name ?? "任务"}</h1>
-            <div className="flex items-center gap-2">
-              {selectedList ? selectionToolbar : null}
-              {loading ? <span className="loading loading-spinner loading-sm" /> : null}
+          <header className="border-base-300 hidden flex-col gap-2 border-b px-4 py-3 lg:flex">
+            <div className="flex items-center justify-between gap-2">
+              <h1 className="text-lg font-semibold">{selectedList?.name ?? "任务"}</h1>
+              <div className="flex items-center gap-2">
+                {selectedList ? selectionToolbar : null}
+                {loading || searching ? (
+                  <span className="loading loading-spinner loading-sm" />
+                ) : null}
+              </div>
             </div>
+            {selectedList ? (
+              <input
+                className="input input-bordered input-sm w-full max-w-md"
+                placeholder="搜索全部清单…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            ) : null}
           </header>
 
           {error ? (
@@ -501,12 +575,20 @@ export function TaskApp() {
           {selectedList ? (
             <>
               <div className="flex-1 overflow-y-auto px-2 py-2">
-                {pendingItems.length === 0 && completedItems.length === 0 ? (
-                  <p className="text-base-content/50 px-2 py-6 text-sm">暂无任务，在下方快速添加</p>
+                {displayPending.length === 0 && displayCompleted.length === 0 ? (
+                  <p className="text-base-content/50 px-2 py-6 text-sm">
+                    {searchActive ? "全部清单中无匹配任务" : "暂无任务，在下方快速添加"}
+                  </p>
+                ) : null}
+
+                {searchActive ? (
+                  <p className="text-base-content/50 px-2 pb-2 text-xs">搜索范围：全部清单</p>
                 ) : null}
 
                 <SortableTaskList
-                  items={pendingItems}
+                  items={displayPending}
+                  sortable={!searchActive}
+                  listNameForItem={searchActive ? resolveListName : undefined}
                   useActionSheet={useActionSheet}
                   selectionMode={selectionMode}
                   selectedIds={selectedItemIds}
@@ -519,7 +601,9 @@ export function TaskApp() {
                 />
 
                 <CompletedTaskList
-                  items={completedItems}
+                  items={displayCompleted}
+                  sortable={!searchActive}
+                  listNameForItem={searchActive ? resolveListName : undefined}
                   useActionSheet={useActionSheet}
                   selectionMode={selectionMode}
                   selectedIds={selectedItemIds}
@@ -551,7 +635,7 @@ export function TaskApp() {
                     取消
                   </button>
                 </div>
-              ) : (
+              ) : searchActive ? null : (
                 <div className="border-base-300 safe-area-pb flex gap-2 border-t p-3">
                   <input
                     className="input input-bordered min-w-0 flex-1"

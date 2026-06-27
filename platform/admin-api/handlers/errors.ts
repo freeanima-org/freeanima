@@ -1,10 +1,14 @@
 import { logApiError } from "../api-logging.ts";
 
 export class ApiHandlerError extends Error {
-  readonly status: 400 | 404 | 500 | 503;
+  readonly status: 400 | 403 | 404 | 500 | 503;
   readonly context?: Record<string, unknown>;
 
-  constructor(status: 400 | 404 | 500 | 503, message: string, context?: Record<string, unknown>) {
+  constructor(
+    status: 400 | 403 | 404 | 500 | 503,
+    message: string,
+    context?: Record<string, unknown>,
+  ) {
     super(message);
     this.name = "ApiHandlerError";
     this.status = status;
@@ -40,6 +44,6 @@ export function logHandlerError(
   throw new ApiHandlerError(500, message, context);
 }
 
-export function jsonError(status: 400 | 404 | 500 | 503, message: string): Response {
+export function jsonError(status: 400 | 403 | 404 | 500 | 503, message: string): Response {
   return Response.json({ error: message }, { status });
 }

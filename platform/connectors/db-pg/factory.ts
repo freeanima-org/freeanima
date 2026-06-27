@@ -13,6 +13,7 @@ import { pgSemanticMemoryStore } from "./semantic-memory/pg-semantic-memory-stor
 import { pgConversationStore } from "./conversation/pg-conversation-store.ts";
 import { pgSapInstanceStore } from "./sap/pg-sap-instance-store.ts";
 import { pgEntityStore } from "./entity/pg-entity-store.ts";
+import { pgEntitySearchStore } from "./entity/pg-entity-search-store.ts";
 import { pgNotificationStore } from "./notifications/pg-notification-store.ts";
 
 export function createPgRepositories(_opts: { getDb: () => Db }): PgRepositories {
@@ -30,6 +31,7 @@ export function createPgRepositories(_opts: { getDb: () => Db }): PgRepositories
     pipelineStepRun: pgPipelineStepRunStore,
     autoLlmRun: pgAutoLlmRunStore,
     entity: pgEntityStore,
+    entitySearch: pgEntitySearchStore,
     notifications: pgNotificationStore,
     sapInstance: pgSapInstanceStore,
   };

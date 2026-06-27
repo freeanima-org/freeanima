@@ -8,6 +8,8 @@ import type { TaskItemRow } from "../lib/api.ts";
 
 type SortableTaskListProps = {
   items: TaskItemRow[];
+  sortable?: boolean;
+  listNameForItem?: (item: TaskItemRow) => string | null;
   useActionSheet: boolean;
   selectionMode: boolean;
   selectedIds: ReadonlySet<number>;
@@ -21,6 +23,8 @@ type SortableTaskListProps = {
 
 function SortableTaskRow({
   item,
+  sortable,
+  listName,
   useActionSheet,
   selectionMode,
   selected,
@@ -32,6 +36,8 @@ function SortableTaskRow({
   onLongPressSelect,
 }: {
   item: TaskItemRow;
+  sortable: boolean;
+  listName: string | null;
   useActionSheet: boolean;
   selectionMode: boolean;
   selected: boolean;
@@ -46,7 +52,7 @@ function SortableTaskRow({
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: taskDndId(item.id),
-    disabled: selectionMode,
+    disabled: selectionMode || !sortable,
   });
 
   const style = {
@@ -82,7 +88,7 @@ function SortableTaskRow({
       onTouchMove={clearLongPress}
       onTouchCancel={clearLongPress}
     >
-      {!selectionMode ? (
+      {!selectionMode && sortable ? (
         <button
           type="button"
           title="拖拽排序或拖到左侧清单"
@@ -113,7 +119,10 @@ function SortableTaskRow({
           else onEdit();
         }}
       >
-        {item.title}
+        <span className="block truncate">{item.title}</span>
+        {listName ? (
+          <span className="text-base-content/45 block truncate text-xs">{listName}</span>
+        ) : null}
       </button>
       {!selectionMode ? (
         <>
@@ -142,6 +151,8 @@ function SortableTaskRow({
 
 export function SortableTaskList({
   items,
+  sortable = true,
+  listNameForItem,
   useActionSheet,
   selectionMode,
   selectedIds,
@@ -164,6 +175,8 @@ export function SortableTaskList({
           <SortableTaskRow
             key={item.id}
             item={item}
+            sortable={sortable}
+            listName={listNameForItem?.(item) ?? null}
             useActionSheet={useActionSheet}
             selectionMode={selectionMode}
             selected={selectedIds.has(item.id)}

@@ -34,6 +34,7 @@ describePg("tasks tool", () => {
     resetEntityTaskModuleForTests();
     registerEntityTaskModule({
       entityStore: testConv().repos.entity,
+      entitySearch: testConv().repos.entitySearch,
     });
     registerTaskTools(toolSets);
   });

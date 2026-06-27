@@ -1,10 +1,12 @@
 import { and, asc, eq, gt, isNotNull, isNull, sql as drizzleSql, type SQL } from "drizzle-orm";
 import {
   autobiographicalMemory,
+  entities,
   limbicMemory,
   messages,
   semanticMemory,
 } from "@freeanima/core/db/schema";
+import { entitySearchTextForWrite } from "@freeanima/core/db/schema/entity";
 
 import { getActiveConfig, isCjkJiebaEnabled, isEmbeddingEnabled } from "@freeanima/platform/config";
 import { logComponent } from "@freeanima/platform/logging";
@@ -61,6 +63,11 @@ function autobiographicalIdCursorCondition(_onlyMissing: boolean, lastId: string
   return gt(autobiographicalMemory.id, lastId);
 }
 
+function entityIdCursorCondition(_onlyMissing: boolean, lastId: number): SQL | undefined {
+  if (!lastId) return undefined;
+  return gt(entities.id, lastId);
+}
+
 function assertEmbeddingBatchStored(
   phase: FtsRebuildPhase,
   batchSize: number,
@@ -105,6 +112,25 @@ async function countSemanticMemorySegmentedTargets(onlyMissing: boolean): Promis
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
     .from(semanticMemory)
+    .where(and(...conditions));
+  return Number(rows[0]?.n ?? 0);
+}
+
+async function countEntitiesSegmentedTargets(onlyMissing: boolean): Promise<number> {
+  const db = getDb();
+  const conditions = [
+    drizzleSql`length(btrim(
+      coalesce(${entities.title}, '') || ' ' ||
+      coalesce(${entities.summary}, '') || ' ' ||
+      coalesce(${entities.content}, '')
+    )) > 0`,
+  ];
+  if (onlyMissing) {
+    conditions.push(drizzleSql`nullif(btrim(${entities.ftsSegmented}), '') IS NULL`);
+  }
+  const rows = await db
+    .select({ n: drizzleSql<number>`count(*)::int` })
+    .from(entities)
     .where(and(...conditions));
   return Number(rows[0]?.n ?? 0);
 }
@@ -496,6 +522,71 @@ async function rebuildAutobiographicalMemoryFtsSegmented(
   return updated;
 }
 
+async function rebuildEntitiesFtsSegmented(
+  useJieba: boolean,
+  opts: FtsRebuildOptions,
+): Promise<number> {
+  const onlyMissing = opts.onlyMissing ?? false;
+  const total = useJieba ? await countEntitiesSegmentedTargets(onlyMissing) : 0;
+  if (useJieba) {
+    report(opts.onProgress, "entities_segmented", "entities", 0, total);
+  }
+  if (!useJieba || total === 0) return 0;
+
+  const db = getDb();
+  let updated = 0;
+  let lastId = 0;
+
+  for (;;) {
+    const baseConditions = [
+      drizzleSql`length(btrim(
+        coalesce(${entities.title}, '') || ' ' ||
+        coalesce(${entities.summary}, '') || ' ' ||
+        coalesce(${entities.content}, '')
+      )) > 0`,
+    ];
+    if (onlyMissing) {
+      baseConditions.push(drizzleSql`nullif(btrim(${entities.ftsSegmented}), '') IS NULL`);
+    }
+    const cursorCond = entityIdCursorCondition(onlyMissing, lastId);
+    if (cursorCond) baseConditions.push(cursorCond);
+
+    const rows = await db
+      .select({
+        id: entities.id,
+        title: entities.title,
+        summary: entities.summary,
+        content: entities.content,
+        body: entities.body,
+        primaryComponent: entities.primaryComponent,
+      })
+      .from(entities)
+      .where(and(...baseConditions))
+      .orderBy(asc(entities.id))
+      .limit(REBUILD_DB_PAGE_SIZE);
+    if (!rows.length) break;
+
+    for (const row of rows) {
+      const indexText = entitySearchTextForWrite({
+        title: row.title,
+        summary: row.summary,
+        content: row.content,
+        body: (row.body ?? {}) as Record<string, unknown>,
+        primary_component: row.primaryComponent,
+      });
+      const ftsSegmented = indexText.trim() ? await segmentForFts(indexText) : null;
+      await db.update(entities).set({ ftsSegmented }).where(eq(entities.id, row.id));
+      updated += 1;
+      report(opts.onProgress, "entities_segmented", "entities", updated, total);
+      lastId = row.id;
+    }
+
+    if (!onlyMissing && rows.length < REBUILD_DB_PAGE_SIZE) break;
+  }
+
+  return updated;
+}
+
 async function rebuildLimbicMemoryEmbeddings(opts: FtsRebuildOptions): Promise<number> {
   if (!getEmbedTextFn()) return 0;
 
@@ -598,6 +689,7 @@ export async function rebuildAllFtsSegments(
   const messagesCount = await rebuildMessagesFtsSegmented(useJieba, opts);
   const limbic_memory = await rebuildLimbicMemoryFtsSegmented(useJieba, opts);
   const autobiographical_memory = await rebuildAutobiographicalMemoryFtsSegmented(useJieba, opts);
+  const entitiesCount = await rebuildEntitiesFtsSegmented(useJieba, opts);
 
   const embedding_enabled = isEmbeddingEnabled(getActiveConfig().data) && getEmbedTextFn() != null;
   let embeddings: Record<string, number> | undefined;
@@ -615,7 +707,13 @@ export async function rebuildAllFtsSegments(
   }
 
   return {
-    tables: { semantic_memory, messages: messagesCount, limbic_memory, autobiographical_memory },
+    tables: {
+      semantic_memory,
+      messages: messagesCount,
+      limbic_memory,
+      autobiographical_memory,
+      entities: entitiesCount,
+    },
     cjk_enabled: useJieba,
     embedding_enabled,
     embeddings,

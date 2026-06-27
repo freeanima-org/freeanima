@@ -22,7 +22,7 @@ export {
   messageDocKey,
   limbicDocKey,
   autobiographicalDocKey,
-  type RrfHit,
+  entityDocKey,
   type RrfScoredHit,
 } from "./fts/rrf.ts";
 export {

@@ -1,21 +1,31 @@
-import type { EntityStorePort } from "@freeanima/core/repos";
-import { ENTITY_ROOT_WORLD_ID } from "@freeanima/core/db/schema";
+import type { EntitySearchPort, EntityStorePort } from "@freeanima/core/repos";
 
-let store: EntityStorePort | null = null;
+let entityStore: EntityStorePort | null = null;
+let entitySearch: EntitySearchPort | null = null;
 
-export function registerEntityTaskModule(opts: { entityStore: EntityStorePort }): void {
-  store = opts.entityStore;
+export function registerEntityTaskModule(opts: {
+  entityStore: EntityStorePort;
+  entitySearch: EntitySearchPort;
+}): void {
+  entityStore = opts.entityStore;
+  entitySearch = opts.entitySearch;
 }
 
 export function getEntityStoreForTask(): EntityStorePort {
-  if (!store) throw new Error("entity task module not registered");
-  return store;
+  if (!entityStore) throw new Error("entity task module not registered");
+  return entityStore;
+}
+
+export function getEntitySearchForTask(): EntitySearchPort {
+  if (!entitySearch) throw new Error("entity task module not registered");
+  return entitySearch;
 }
 
 export function defaultTaskWorldId(): number {
-  return ENTITY_ROOT_WORLD_ID;
+  return 1;
 }
 
 export function resetEntityTaskModuleForTests(): void {
-  store = null;
+  entityStore = null;
+  entitySearch = null;
 }

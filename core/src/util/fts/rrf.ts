@@ -48,3 +48,7 @@ export function limbicDocKey(id: string): string {
 export function autobiographicalDocKey(id: string): string {
   return `ab:${id}`;
 }
+
+export function entityDocKey(id: number): string {
+  return `ent:${id}`;
+}

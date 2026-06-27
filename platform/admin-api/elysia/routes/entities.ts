@@ -2,6 +2,8 @@ import { Elysia } from "elysia";
 import {
   entityIdParamsSchema,
   entityListQuerySchema,
+  entitySearchBodySchema,
+  entitySearchQuerySchema,
   subjectEntityCreateBodySchema,
   subjectEntityUpdateBodySchema,
   worldEntityCreateBodySchema,
@@ -14,11 +16,14 @@ import {
   getWorldEntity,
   listSubjectEntities,
   listWorldEntities,
+  searchEntities,
   updateSubjectEntity,
   updateWorldEntity,
 } from "../../handlers/index.ts";
 
 export const entityRoutes = new Elysia({ prefix: "/entities" })
+  .get("/search", ({ query }) => searchEntities(entitySearchQuerySchema.parse(query)))
+  .post("/search", ({ body }) => searchEntities(entitySearchBodySchema.parse(body)))
   .get("/worlds", ({ query }) => listWorldEntities(entityListQuerySchema.parse(query)))
   .post("/worlds", ({ body }) => createWorldEntity(worldEntityCreateBodySchema.parse(body)))
   .get("/worlds/:id", ({ params }) => getWorldEntity(entityIdParamsSchema.parse(params).id))

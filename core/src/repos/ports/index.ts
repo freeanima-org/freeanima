@@ -108,6 +108,13 @@ export type {
   EntityListOpts,
 } from "./entity.ts";
 export type {
+  EntitySearchPort,
+  EntitySearchOpts,
+  EntitySearchHit,
+  EntitySearchResult,
+  EntitySearchMode,
+} from "./entity-search.ts";
+export type {
   SapInstanceRow,
   SapInstanceUpsertInput,
   SapInstanceStorePort,
@@ -122,6 +129,7 @@ import type { DreamMemoryStorePort } from "./dream-memory.ts";
 import type { LimbicMemoryStorePort } from "./limbic-memory.ts";
 import type { SelfLayerStorePort } from "./self-layer.ts";
 import type { EntityStorePort } from "./entity.ts";
+import type { EntitySearchPort } from "./entity-search.ts";
 import type { SapInstanceStorePort } from "./sap-instance.ts";
 import type { NotificationStorePort } from "./notification.ts";
 
@@ -140,6 +148,7 @@ export interface PgRepositories {
   pipelineStepRun: PipelineStepRunStorePort;
   autoLlmRun: AutoLlmRunStorePort;
   entity: EntityStorePort;
+  entitySearch: EntitySearchPort;
   notifications: NotificationStorePort;
   sapInstance: SapInstanceStorePort;
 }

@@ -1,6 +1,7 @@
 import { and, eq, isNotNull, sql } from "drizzle-orm";
 import {
   autobiographicalMemory,
+  entities,
   limbicMemory,
   messages,
   semanticMemory,
@@ -54,11 +55,17 @@ const AUTOBIOGRAPHICAL_MEMORY_META: Pick<FtsTableCoverageRow, "table" | "label" 
     capabilities: { fts: true, segmented: true, trgm: true, embedding: true },
   };
 
+const ENTITIES_META: Pick<FtsTableCoverageRow, "table" | "label" | "capabilities"> = {
+  table: "entities",
+  label: "Entities",
+  capabilities: { fts: true, segmented: true, trgm: true, embedding: true },
+};
+
 /** FTS / segmentation / vector column coverage per table (indexable row base) */
 export async function getFtsCoverageStats(): Promise<FtsCoverageStats> {
   const db = getDb();
 
-  const [smRows, msgRows, lmRows, abRows] = await Promise.all([
+  const [smRows, msgRows, lmRows, abRows, entityRows] = await Promise.all([
     db
       .select({
         total: sql<number>`count(*)::int`,
@@ -102,12 +109,28 @@ export async function getFtsCoverageStats(): Promise<FtsCoverageStats> {
           sql`length(btrim(${autobiographicalMemory.content})) > 0`,
         ),
       ),
+    db
+      .select({
+        total: sql<number>`count(*)::int`,
+        fts: sql<number>`count(*) FILTER (WHERE ${entities.searchFts} IS NOT NULL)::int`,
+        segmented: sql<number>`count(*) FILTER (WHERE nullif(btrim(${entities.ftsSegmented}), '') IS NOT NULL)::int`,
+        embedding: sql<number>`count(*) FILTER (WHERE ${entities.searchEmbedding} IS NOT NULL)::int`,
+      })
+      .from(entities)
+      .where(
+        sql`length(btrim(
+          coalesce(${entities.title}, '') || ' ' ||
+          coalesce(${entities.summary}, '') || ' ' ||
+          coalesce(${entities.content}, '')
+        )) > 0`,
+      ),
   ]);
 
   const sm = smRows[0] ?? { total: 0, fts: 0, segmented: 0, embedding: 0 };
   const msg = msgRows[0] ?? { total: 0, fts: 0, segmented: 0, embedding: 0 };
   const lm = lmRows[0] ?? { total: 0, fts: 0, segmented: 0, embedding: 0 };
   const ab = abRows[0] ?? { total: 0, fts: 0, segmented: 0, embedding: 0 };
+  const ent = entityRows[0] ?? { total: 0, fts: 0, segmented: 0, embedding: 0 };
 
   return {
     tables: [
@@ -115,6 +138,7 @@ export async function getFtsCoverageStats(): Promise<FtsCoverageStats> {
       { ...MESSAGES_META, ...msg },
       { ...LIMBIC_MEMORY_META, ...lm },
       { ...AUTOBIOGRAPHICAL_MEMORY_META, ...ab },
+      { ...ENTITIES_META, ...ent },
     ],
   };
 }
