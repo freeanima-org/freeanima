@@ -1,6 +1,7 @@
 import {
   formatFridgeMagnetManifestPreview,
   FRIDGE_MAGNET_SCAN_PATTERN,
+  isExcludedFridgeMagnetDisplayKey,
   scanMagnets,
   stripMagnetRedisKeyPrefix,
 } from "@freeanima/capabilities-tasks/fridge-magnet";
@@ -10,7 +11,7 @@ import type { FridgeMagnet } from "@freeanima/capabilities-tasks/fridge-magnet";
 export type FridgeMagnetDisplay = {
   key: string;
   value: string;
-  module: "conversation" | "tasks" | "other";
+  module: "conversation" | "other";
   conversation_id?: string;
   label?: string;
   ttl_seconds: number | null;
@@ -34,9 +35,6 @@ function parseDisplayKey(
       label: parts.slice(2).join(":"),
     };
   }
-  if (module === "tasks") {
-    return { module: "tasks", label: parts.slice(1).join(":") || undefined };
-  }
   return { module: "other" };
 }
 
@@ -56,7 +54,9 @@ function toDisplayMagnet(
 /** Admin fridge magnet global read-only list */
 export async function listFridgeMagnets(): Promise<ListFridgeMagnetsResult> {
   const redisConfigured = isRedisConfigured();
-  const hits = await scanMagnets(FRIDGE_MAGNET_SCAN_PATTERN);
+  const hits = (await scanMagnets(FRIDGE_MAGNET_SCAN_PATTERN)).filter(
+    (hit) => !isExcludedFridgeMagnetDisplayKey(stripMagnetRedisKeyPrefix(hit.key)),
+  );
 
   const magnets = await Promise.all(
     hits.map(async (hit) => {

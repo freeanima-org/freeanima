@@ -59,7 +59,7 @@ describe("listFridgeMagnets", () => {
 
     const result = await listFridgeMagnets();
     expect(result.redis_configured).toBe(true);
-    expect(result.magnets).toHaveLength(2);
+    expect(result.magnets).toHaveLength(1);
     expect(result.magnets[0]).toMatchObject({
       key: "conversation:sess-1:note",
       value: "note content",
@@ -68,15 +68,9 @@ describe("listFridgeMagnets", () => {
       label: "note",
       ttl_seconds: 3600,
     });
-    expect(result.magnets[1]).toMatchObject({
-      key: "tasks:summary",
-      module: "tasks",
-      ttl_seconds: -1,
-    });
     expect(result.inject_text).toBe(
       formatFridgeMagnetManifestPreview([
         { key: "conversation:sess-1:note", value: "note content" },
-        { key: "tasks:summary", value: "tasks (2)" },
       ]),
     );
   });

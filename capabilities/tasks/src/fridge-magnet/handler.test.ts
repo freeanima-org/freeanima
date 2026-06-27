@@ -123,7 +123,7 @@ describe("createFridgeMagnetHandler", () => {
   it("strips prior manifest before remanifesting", async () => {
     registerFridgeStore(
       createMemoryFridgeStore({
-        [magnetRedisKey("tasks", "summary")]: "Todos",
+        [magnetRedisKey("conversation", "sess-a:note")]: "Fresh note",
       }),
     );
 
@@ -144,6 +144,24 @@ describe("createFridgeMagnetHandler", () => {
       (m) => m.role === "assistant" && "name" in m && m.name === FRIDGE_CONTEXT_ASSISTANT_NAME,
     );
     expect(manifests).toHaveLength(1);
-    expect(manifests[0]!.role === "assistant" && manifests[0].content).toContain("tasks:summary");
+    expect(manifests[0]!.role === "assistant" && manifests[0].content).toContain(
+      "conversation:sess-a:note: Fresh note",
+    );
+  });
+
+  it("ignores legacy tasks magnets", async () => {
+    registerFridgeStore(
+      createMemoryFridgeStore({
+        [magnetRedisKey("tasks", "summary")]: "Todos",
+      }),
+    );
+
+    const messages = [{ role: "user", content: "Hello" }];
+    await createFridgeMagnetHandler()({
+      conversationId: "sess-a",
+      messages,
+    } as Parameters<ReturnType<typeof createFridgeMagnetHandler>>[0]);
+
+    expect(messages).toHaveLength(1);
   });
 });
