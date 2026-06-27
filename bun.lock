@@ -117,6 +117,16 @@
         "@types/bun": "catalog:",
       },
     },
+    "capabilities/email": {
+      "name": "@freeanima/capabilities-email",
+      "dependencies": {
+        "@freeanima/core": "workspace:*",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "capabilities/identity": {
       "name": "@freeanima/capabilities-identity",
       "dependencies": {
@@ -261,6 +271,7 @@
         "@freeanima/sap-contract": "workspace:*",
         "@freeanima/satellite-chat": "workspace:*",
         "@freeanima/satellite-companion": "workspace:*",
+        "@freeanima/satellite-email": "workspace:*",
         "@freeanima/satellite-sdk": "workspace:*",
         "@freeanima/satellite-task": "workspace:*",
         "@sentry/react": "^9.47.1",
@@ -287,6 +298,7 @@
         "@elysiajs/eden": "^1.4.9",
         "@elysiajs/static": "^1.4.10",
         "@freeanima/capabilities-acp": "workspace:*",
+        "@freeanima/capabilities-email": "workspace:*",
         "@freeanima/capabilities-identity": "workspace:*",
         "@freeanima/capabilities-mcp-client": "workspace:*",
         "@freeanima/capabilities-memory": "workspace:*",
@@ -438,6 +450,19 @@
         "tailwindcss": "catalog:",
         "typescript": "catalog:",
         "vite": "catalog:",
+      },
+    },
+    "satellites/email": {
+      "name": "@freeanima/satellite-email",
+      "dependencies": {
+        "@freeanima/sap-contract": "workspace:*",
+        "@freeanima/satellite-sdk": "workspace:*",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+      },
+      "devDependencies": {
+        "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
       },
     },
     "satellites/pair-programming": {
@@ -840,6 +865,8 @@
 
     "@freeanima/capabilities-acp": ["@freeanima/capabilities-acp@workspace:capabilities/acp"],
 
+    "@freeanima/capabilities-email": ["@freeanima/capabilities-email@workspace:capabilities/email"],
+
     "@freeanima/capabilities-identity": ["@freeanima/capabilities-identity@workspace:capabilities/identity"],
 
     "@freeanima/capabilities-llm-openai": ["@freeanima/capabilities-llm-openai@workspace:capabilities/llm-openai"],
@@ -875,6 +902,8 @@
     "@freeanima/satellite-chat": ["@freeanima/satellite-chat@workspace:satellites/chat"],
 
     "@freeanima/satellite-companion": ["@freeanima/satellite-companion@workspace:satellites/companion"],
+
+    "@freeanima/satellite-email": ["@freeanima/satellite-email@workspace:satellites/email"],
 
     "@freeanima/satellite-pair-programming": ["@freeanima/satellite-pair-programming@workspace:satellites/pair-programming"],
 

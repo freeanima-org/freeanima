@@ -44,6 +44,20 @@ import type {
   TaskDeleteOutput,
 } from "./frames/task.ts";
 import type {
+  EmailAccountListInput,
+  EmailAccountListOutput,
+  EmailMessageListInput,
+  EmailMessageListOutput,
+  EmailMessageMarkReadInput,
+  EmailMessageMarkReadOutput,
+  EmailMessageReadInput,
+  EmailMessageReadOutput,
+  EmailSyncInput,
+  EmailSyncOutput,
+  EmailThreadListInput,
+  EmailThreadListOutput,
+} from "./frames/email.ts";
+import type {
   NotificationListInput,
   NotificationListOutput,
   NotificationMarkReadInput,
@@ -89,6 +103,12 @@ export const SAP_METHODS = [
   "task.complete",
   "task.uncomplete",
   "task.delete",
+  "emailaccount.list",
+  "email.message.list",
+  "email.message.read",
+  "email.message.markRead",
+  "email.sync",
+  "emailthread.list",
   "notification.list",
   "notification.markRead",
   "terminal.attach",
@@ -127,6 +147,12 @@ export type SapRouterInputs = {
   "task.complete": TaskCompleteInput;
   "task.uncomplete": TaskUncompleteInput;
   "task.delete": TaskDeleteInput;
+  "emailaccount.list": EmailAccountListInput;
+  "email.message.list": EmailMessageListInput;
+  "email.message.read": EmailMessageReadInput;
+  "email.message.markRead": EmailMessageMarkReadInput;
+  "email.sync": EmailSyncInput;
+  "emailthread.list": EmailThreadListInput;
   "notification.list": NotificationListInput;
   "notification.markRead": NotificationMarkReadInput;
   "terminal.attach": TerminalAttachInput;
@@ -163,6 +189,12 @@ export type SapRouterOutputs = {
   "task.complete": TaskCompleteOutput;
   "task.uncomplete": TaskUncompleteOutput;
   "task.delete": TaskDeleteOutput;
+  "emailaccount.list": EmailAccountListOutput;
+  "email.message.list": EmailMessageListOutput;
+  "email.message.read": EmailMessageReadOutput;
+  "email.message.markRead": EmailMessageMarkReadOutput;
+  "email.sync": EmailSyncOutput;
+  "emailthread.list": EmailThreadListOutput;
   "notification.list": NotificationListOutput;
   "notification.markRead": NotificationMarkReadOutput;
   "terminal.attach": TerminalAttachOutput;

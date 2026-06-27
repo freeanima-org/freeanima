@@ -1,13 +1,8 @@
-/** Estate capability tools (email); I/O in @freeanima/platform/connectors/email */
+/** Estate capability tools placeholder (email moved to @freeanima/capabilities-email) */
 import type { ToolSetRegistry } from "@freeanima/core/tool";
-import type { EmailApi } from "./email-api.ts";
-import { registerEmailTools } from "./tools.ts";
 
 export const CAPABILITIES_ESTATE_PACKAGE = "@freeanima/capabilities-tools/estate" as const;
 
-export type { EmailApi } from "./email-api.ts";
-export { registerEmailTools };
-
-export function registerEstateTools(toolSets: ToolSetRegistry, email: EmailApi): void {
-  registerEmailTools(toolSets, email);
+export function registerEstateTools(_toolSets: ToolSetRegistry): void {
+  // email tools registered via @freeanima/capabilities-email in register-tools.ts
 }

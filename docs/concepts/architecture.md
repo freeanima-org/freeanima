@@ -61,9 +61,9 @@ A digital life is structured from the inside out. Each layer answers a different
 
 ### Unified entity storage (v0.8)
 
-Structured business data (tasks, notes, future memory migrations) converges on a single **`entities`** PostgreSQL table with component tags (`task_list`, `task_item`, …). Self layer [`self_blocks`](self-layer.md) stays physically separate. See [`entity-model.md`](entity-model.md).
+Structured business data (tasks, notes, email accounts/messages, future memory migrations) converges on a single **`entities`** PostgreSQL table with component tags (`task_list`, `task_item`, `email_account`, …). Self layer [`self_blocks`](self-layer.md) stays physically separate. See [`entity-model.md`](entity-model.md).
 
-Shell UI **`/tasks`** is the primary task-management entry (TickTick-style lists/items on entities). Legacy `tasks` table + LLM tools remain for backward compatibility.
+Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-backed); legacy Admin email route removed.
 
 ### Background
 

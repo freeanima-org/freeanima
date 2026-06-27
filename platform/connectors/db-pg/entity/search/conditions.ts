@@ -1,6 +1,12 @@
 import { and, eq, gte, inArray, lte, sql, type SQL } from "drizzle-orm";
 import {
+  EMAIL_ACCOUNT_COMPONENT,
+  EMAIL_MESSAGE_COMPONENT,
+  EMAIL_THREAD_COMPONENT,
   entities,
+  parseEmailAccountSearchFilters,
+  parseEmailMessageSearchFilters,
+  parseEmailThreadSearchFilters,
   parseTaskItemSearchFilters,
   TASK_ITEM_COMPONENT,
   type EntityType,
@@ -77,6 +83,82 @@ function buildTaskItemBodyConditions(
   return conditions;
 }
 
+function buildEmailAccountBodyConditions(
+  filters: ReturnType<typeof parseEmailAccountSearchFilters>,
+): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.enabled != null) {
+    conditions.push(
+      sql`coalesce((${entities.body}->>'enabled')::boolean, true) = ${filters.enabled}`,
+    );
+  }
+  if (filters.default_sender != null) {
+    conditions.push(
+      sql`coalesce((${entities.body}->>'default_sender')::boolean, false) = ${filters.default_sender}`,
+    );
+  }
+  if (filters.tags?.length) {
+    for (const tag of filters.tags) {
+      conditions.push(sql`${entities.body}->'tags' ? ${tag}`);
+    }
+  }
+  return conditions;
+}
+
+function buildEmailThreadBodyConditions(
+  filters: ReturnType<typeof parseEmailThreadSearchFilters>,
+): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.account_id != null) {
+    conditions.push(sql`${entities.body}->>'account_id' = ${String(filters.account_id)}`);
+  }
+  if (filters.tags?.length) {
+    for (const tag of filters.tags) {
+      conditions.push(sql`${entities.body}->'tags' ? ${tag}`);
+    }
+  }
+  if (filters.has_unread) {
+    conditions.push(sql`coalesce((${entities.body}->>'unread_count')::int, 0) > 0`);
+  }
+  return conditions;
+}
+
+function buildEmailMessageBodyConditions(
+  filters: ReturnType<typeof parseEmailMessageSearchFilters>,
+): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.account_id != null) {
+    conditions.push(sql`${entities.body}->>'account_id' = ${String(filters.account_id)}`);
+  }
+  if (filters.thread_id != null) {
+    conditions.push(sql`${entities.body}->>'thread_id' = ${String(filters.thread_id)}`);
+  }
+  if (filters.unread != null) {
+    conditions.push(
+      sql`coalesce((${entities.body}->>'unread')::boolean, false) = ${filters.unread}`,
+    );
+  }
+  if (filters.direction != null) {
+    conditions.push(sql`${entities.body}->>'direction' = ${filters.direction}`);
+  }
+  if (filters.tags?.length) {
+    for (const tag of filters.tags) {
+      conditions.push(sql`${entities.body}->'tags' ? ${tag}`);
+    }
+  }
+  if (filters.since) {
+    conditions.push(
+      sql`(${entities.body}->>'sent_at')::timestamptz >= ${filters.since}::timestamptz`,
+    );
+  }
+  if (filters.before) {
+    conditions.push(
+      sql`(${entities.body}->>'sent_at')::timestamptz <= ${filters.before}::timestamptz`,
+    );
+  }
+  return conditions;
+}
+
 export function buildComponentFilterConditions(opts: EntitySearchOpts): SQL[] {
   const filters = opts.filters;
   if (!filters || Object.keys(filters).length === 0) return [];
@@ -84,6 +166,15 @@ export function buildComponentFilterConditions(opts: EntitySearchOpts): SQL[] {
   const component = opts.primary_component ?? opts.component;
   if (component === TASK_ITEM_COMPONENT) {
     return buildTaskItemBodyConditions(parseTaskItemSearchFilters(filters));
+  }
+  if (component === EMAIL_ACCOUNT_COMPONENT) {
+    return buildEmailAccountBodyConditions(parseEmailAccountSearchFilters(filters));
+  }
+  if (component === EMAIL_THREAD_COMPONENT) {
+    return buildEmailThreadBodyConditions(parseEmailThreadSearchFilters(filters));
+  }
+  if (component === EMAIL_MESSAGE_COMPONENT) {
+    return buildEmailMessageBodyConditions(parseEmailMessageSearchFilters(filters));
   }
 
   if (component) {

@@ -3,6 +3,7 @@ import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 const NAV = [
   { to: "/chat", label: "聊天室", match: "/chat" },
   { to: "/tasks", label: "任务", match: "/tasks" },
+  { to: "/email", label: "邮箱", match: "/email" },
   { to: "/notifications", label: "通知", match: "/notifications" },
   { to: "/admin/dashboard", label: "管理台", match: "/admin" },
   { to: "/settings", label: "设置", match: "/settings" },

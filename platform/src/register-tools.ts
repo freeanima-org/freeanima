@@ -1,23 +1,16 @@
 import { registerClarifyTool } from "@freeanima/capabilities-tools/clarify";
+import { registerEmailTools } from "@freeanima/capabilities-email";
 import { registerTaskTools } from "@freeanima/capabilities-task";
 import { registerWriteFridgeMagnetTool } from "@freeanima/capabilities-tasks/fridge-magnet";
 import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities-tools";
 import { registerCronjobTool } from "@freeanima/platform/connectors/cron/cronjob-tool";
 import { registerSelfTools } from "@freeanima/capabilities-identity";
 import {
-  bindEmailAccountsConfig,
+  assertEmailPasswordResolvable,
   deleteEmail,
-  deleteEmailAccount,
-  editEmailAccount,
-  fetchEmails,
-  listEmailAccounts,
-  listEmails,
   markAsRead,
-  readEmail,
-  registerEmailAccount,
   sendEmail,
 } from "@freeanima/platform/connectors/email";
-import { registerEstateTools } from "@freeanima/capabilities-tools/estate";
 import type { Config } from "@freeanima/core/config";
 import type { SkillRegistry } from "@freeanima/core/skill";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
@@ -36,22 +29,14 @@ export function registerServiceTools(opts: {
   }
   registerCoreTools(opts.toolSets, opts.config);
   registerSupplementalTools(opts.toolSets, opts.skills, opts.config);
-  bindEmailAccountsConfig(opts.config);
-  const emailApi = {
-    registerEmailAccount,
-    editEmailAccount,
-    listEmailAccounts,
-    deleteEmailAccount,
-    sendEmail,
-    fetchEmails,
-    listEmails,
-    readEmail,
-    markAsRead,
-    deleteEmail,
-  };
   registerMemoryTools(opts.toolSets);
   registerSelfTools(opts.toolSets);
-  registerEstateTools(opts.toolSets, emailApi);
+  registerEmailTools(opts.toolSets, {
+    sendEmail,
+    markAsRead,
+    deleteEmail,
+    assertPasswordResolvable: assertEmailPasswordResolvable,
+  });
   registerClarifyTool(opts.toolSets);
   registerCronjobTool(opts.toolSets);
   registerWriteFridgeMagnetTool(opts.toolSets);

@@ -168,28 +168,6 @@ export const modelsConfigSchema = z.record(z.string(), modelEntrySchema);
 
 const sectionSchema = z.object({}).passthrough();
 
-export const emailAccountSchema = z.object({
-  id: z.string(),
-  password: z.string(),
-  address: z.string().email(),
-  display_name: z.string().optional(),
-  smtp_host: z.string(),
-  smtp_port: z.number().int().positive(),
-  imap_host: z.string(),
-  imap_port: z.number().int().positive(),
-  default_sender: z.boolean().default(false),
-  enabled: z.boolean().default(true),
-  desc: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-});
-
-export const emailConfigSchema = z.object({
-  accounts: z.array(emailAccountSchema).optional(),
-});
-
-export type EmailAccountConfig = z.infer<typeof emailAccountSchema>;
-export type EmailConfig = z.infer<typeof emailConfigSchema>;
-
 const gatewayConfigSchema = z
   .object({
     tool_display: z.string().optional(),
@@ -225,7 +203,6 @@ export const animaConfigSchema = z
     database: databaseConfigSchema.optional(),
     eventbus: eventbusConfigSchema,
     redis: redisConfigSchema,
-    email: emailConfigSchema.optional(),
     gateway: gatewayConfigSchema,
     auto_llm: autoLlmConfigSchema,
     discord: sectionSchema.optional(),

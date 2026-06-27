@@ -25,6 +25,5 @@ export function adminNavItems(): { to: string; label: string }[] {
     { to: "/cron", label: m.admin_nav_cron() },
     { to: "/auto-llm-runs", label: m.admin_nav_auto_llm_runs() },
     { to: "/sleep", label: m.admin_nav_sleep() },
-    { to: "/email", label: m.admin_nav_email() },
   ];
 }

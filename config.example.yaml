@@ -101,18 +101,7 @@ models:
   deepseek-v4-flash:
     context_window: 1000000
 
-# 邮箱（通信资产 —— 一等公民，非通知渠道）
-# password 支持明文、env("KEY") 或 credential("path", "field")
-email:
-  accounts:
-    - id: main-inbox
-      address: you@example.com
-      password: credential("email/example", "password")
-      smtp_host: smtp.example.com
-      smtp_port: 465
-      imap_host: imap.example.com
-      imap_port: 993
-      default_sender: true
+# 邮箱账户已迁入 PostgreSQL entities（email_account 组件）；请用 email_register_account 工具或迁移脚本 scripts/migrate-email-to-entities.ts
 
 # 运行时压缩（PG messages 不删，仅裁切发给 LLM 的视图）
 # AutoLlmRun 审计（无用户 LLM：cron agent、睡眠管线）；cron 脚本 no_agent 不走此表

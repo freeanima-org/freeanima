@@ -2,12 +2,21 @@ import { z } from "zod";
 
 import { entityTypeSchema, type EntitySelect } from "./entity.ts";
 import {
+  EMAIL_ACCOUNT_COMPONENT,
+  EMAIL_MESSAGE_COMPONENT,
+  EMAIL_THREAD_COMPONENT,
   TASK_ITEM_COMPONENT,
   TASK_LIST_COMPONENT,
   WORLD_CONFIG_COMPONENT,
+  emailAccountBodySchema,
+  emailMessageBodySchema,
+  emailThreadBodySchema,
   taskItemBodySchema,
   taskListBodySchema,
   worldConfigBodySchema,
+  type EmailAccountBody,
+  type EmailMessageBody,
+  type EmailThreadBody,
   type TaskItemBody,
   type TaskListBody,
   type WorldConfigBody,
@@ -69,5 +78,39 @@ export function asTaskItem(
   const parsed = taskItemBodySchema.safeParse(row.body);
   return parsed.success
     ? { id: row.id, title: row.title, content: row.content, ...parsed.data }
+    : null;
+}
+
+export function asEmailAccount(
+  row: EntityRowView,
+): (EmailAccountBody & { id: number; display_name: string }) | null {
+  if (row.primary_component !== EMAIL_ACCOUNT_COMPONENT) return null;
+  const parsed = emailAccountBodySchema.safeParse(row.body);
+  return parsed.success ? { id: row.id, display_name: row.title, ...parsed.data } : null;
+}
+
+export function asEmailThread(
+  row: EntityRowView,
+): (EmailThreadBody & { id: number; subject: string; preview: string }) | null {
+  if (row.primary_component !== EMAIL_THREAD_COMPONENT) return null;
+  const parsed = emailThreadBodySchema.safeParse(row.body);
+  return parsed.success
+    ? { id: row.id, subject: row.title, preview: row.summary, ...parsed.data }
+    : null;
+}
+
+export function asEmailMessage(
+  row: EntityRowView,
+): (EmailMessageBody & { id: number; subject: string; preview: string; body: string }) | null {
+  if (row.primary_component !== EMAIL_MESSAGE_COMPONENT) return null;
+  const parsed = emailMessageBodySchema.safeParse(row.body);
+  return parsed.success
+    ? {
+        id: row.id,
+        subject: row.title,
+        preview: row.summary,
+        body: row.content,
+        ...parsed.data,
+      }
     : null;
 }

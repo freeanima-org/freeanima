@@ -74,6 +74,20 @@ Items reference their list via `body.list_id` (entity id). Task items store **ti
 
 LLM tools use `@freeanima/capabilities-task` (`task_*` tools, `exposeMcp: true`). Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration (`scripts/migrate-tasks-to-entities.ts`).
 
+## Email module (Estate)
+
+Email accounts, threads, and mirrored messages map to:
+
+| Concept | Entity         | Component       |
+| ------- | -------------- | --------------- |
+| Account | `type=content` | `email_account` |
+| Thread  | `type=content` | `email_thread`  |
+| Message | `type=content` | `email_message` |
+
+Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. Messages store IMAP UID in `body.imap_uid`; human-readable subject/body use entity columns. IMAP sync upserts threads/messages; UI lives in shell `/email` (SAP `email.*` methods), not Admin REST.
+
+LLM tools: `@freeanima/capabilities-email` (`email_register_account`, `email_sync`, `email_list`, …). Legacy `config.yaml` `email.accounts[]` migrates via `scripts/migrate-email-to-entities.ts`.
+
 ## Search
 
 Entity **list** (deterministic browse) and **search** (relevance ranking) are separate ports:
@@ -95,12 +109,13 @@ See memory hybrid search in [`memory.md`](memory.md) for FTS operator syntax; en
 
 ## Future migration map (not executed yet)
 
-| Legacy table              | Target                                 |
-| ------------------------- | -------------------------------------- |
-| `semantic_memory`         | `content` + memory component           |
-| `autobiographical_memory` | `content` + narrative component        |
-| `limbic_memory`           | `content` + limbic component           |
-| `tasks` (legacy)          | `task_item` (when explicitly migrated) |
-| `memory_references`       | relationship table (future)            |
+| Legacy table                 | Target                                               |
+| ---------------------------- | ---------------------------------------------------- |
+| `semantic_memory`            | `content` + memory component                         |
+| `autobiographical_memory`    | `content` + narrative component                      |
+| `limbic_memory`              | `content` + limbic component                         |
+| `tasks` (legacy)             | `task_item` (when explicitly migrated)               |
+| `config.yaml email.accounts` | `email_account` (see `migrate-email-to-entities.ts`) |
+| `memory_references`          | relationship table (future)                          |
 
 See [`architecture.md`](architecture.md) for cognitive-layer context.
