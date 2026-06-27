@@ -1,29 +1,4 @@
-function resolveHubOrigin(): string {
-  if (typeof window !== "undefined" && window.satelliteShell?.hubUrl) {
-    return window.satelliteShell.hubUrl.replace(/\/$/, "");
-  }
-  return "http://127.0.0.1:2658";
-}
-
-async function taskFetch(path: string, init?: RequestInit): Promise<Response> {
-  const url = `${resolveHubOrigin()}/api${path}`;
-  const fetchFn = window.satelliteShell?.hubFetch ?? fetch;
-  return fetchFn(url, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...init?.headers,
-    },
-  });
-}
-
-async function parseJson<T>(res: Response): Promise<T> {
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || `HTTP ${res.status}`);
-  }
-  return (await res.json()) as T;
-}
+import { whenSapClientReady } from "./sap-client.ts";
 
 export type TaskListRow = {
   id: number;
@@ -52,15 +27,19 @@ export type TaskItemRow = {
   updated_at: string;
 };
 
+async function sap() {
+  return whenSapClientReady();
+}
+
 export async function fetchTaskLists(): Promise<TaskListRow[]> {
-  const data = await parseJson<{ items: TaskListRow[] }>(await taskFetch("/task/lists"));
-  return data.items;
+  const client = await sap();
+  const data = await client.request("tasklist.list", {});
+  return data.lists;
 }
 
 export async function createTaskList(name: string): Promise<TaskListRow> {
-  const data = await parseJson<{ item: TaskListRow }>(
-    await taskFetch("/task/lists", { method: "POST", body: JSON.stringify({ name }) }),
-  );
+  const client = await sap();
+  const data = await client.request("tasklist.create", { name });
   return data.item;
 }
 
@@ -68,20 +47,19 @@ export async function updateTaskList(
   id: number,
   patch: Partial<Pick<TaskListRow, "name" | "sort_order" | "closed" | "color">>,
 ): Promise<TaskListRow> {
-  const data = await parseJson<{ item: TaskListRow }>(
-    await taskFetch(`/task/lists/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
-  );
+  const client = await sap();
+  const data = await client.request("tasklist.patch", { id, ...patch });
   return data.item;
 }
 
 export async function deleteTaskList(id: number): Promise<void> {
-  await parseJson(await taskFetch(`/task/lists/${id}?cascade=true`, { method: "DELETE" }));
+  const client = await sap();
+  await client.request("tasklist.delete", { id, cascade: true });
 }
 
 export async function fetchTaskItems(listId: number): Promise<TaskItemRow[]> {
-  const data = await parseJson<{ items: TaskItemRow[] }>(
-    await taskFetch(`/task/items?list_id=${listId}&status=all`),
-  );
+  const client = await sap();
+  const data = await client.request("task.list", { list_id: listId, status: "all" });
   return data.items;
 }
 
@@ -94,9 +72,8 @@ export async function createTaskItem(input: {
   due_at?: string | null;
   sort_order?: number;
 }): Promise<TaskItemRow> {
-  const data = await parseJson<{ item: TaskItemRow }>(
-    await taskFetch("/task/items", { method: "POST", body: JSON.stringify(input) }),
-  );
+  const client = await sap();
+  const data = await client.request("task.create", input);
   return data.item;
 }
 
@@ -109,26 +86,24 @@ export async function updateTaskItem(
     >
   >,
 ): Promise<TaskItemRow> {
-  const data = await parseJson<{ item: TaskItemRow }>(
-    await taskFetch(`/task/items/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
-  );
+  const client = await sap();
+  const data = await client.request("task.patch", { id, ...patch });
   return data.item;
 }
 
 export async function completeTaskItem(id: number): Promise<TaskItemRow> {
-  const data = await parseJson<{ item: TaskItemRow }>(
-    await taskFetch(`/task/items/${id}/complete`, { method: "POST", body: "{}" }),
-  );
+  const client = await sap();
+  const data = await client.request("task.complete", { id });
   return data.item;
 }
 
 export async function uncompleteTaskItem(id: number): Promise<TaskItemRow> {
-  const data = await parseJson<{ item: TaskItemRow }>(
-    await taskFetch(`/task/items/${id}/uncomplete`, { method: "POST", body: "{}" }),
-  );
+  const client = await sap();
+  const data = await client.request("task.uncomplete", { id });
   return data.item;
 }
 
 export async function deleteTaskItem(id: number): Promise<void> {
-  await parseJson(await taskFetch(`/task/items/${id}`, { method: "DELETE" }));
+  const client = await sap();
+  await client.request("task.delete", { id });
 }

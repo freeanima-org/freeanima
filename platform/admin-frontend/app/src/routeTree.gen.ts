@@ -14,7 +14,6 @@ import { Route as SidebarRouteRouteImport } from './routes/_sidebar/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkshopPathRouteImport } from './routes/workshop/$path'
 import { Route as SidebarToolsRouteImport } from './routes/_sidebar/tools'
-import { Route as SidebarTasksRouteImport } from './routes/_sidebar/tasks'
 import { Route as SidebarSystemPromptRouteImport } from './routes/_sidebar/system-prompt'
 import { Route as SidebarSleepRouteImport } from './routes/_sidebar/sleep'
 import { Route as SidebarSemanticMemoryRouteImport } from './routes/_sidebar/semantic-memory'
@@ -61,11 +60,6 @@ const WorkshopPathRoute = WorkshopPathRouteImport.update({
 const SidebarToolsRoute = SidebarToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
-  getParentRoute: () => SidebarRouteRoute,
-} as any)
-const SidebarTasksRoute = SidebarTasksRouteImport.update({
-  id: '/tasks',
-  path: '/tasks',
   getParentRoute: () => SidebarRouteRoute,
 } as any)
 const SidebarSystemPromptRoute = SidebarSystemPromptRouteImport.update({
@@ -212,7 +206,6 @@ export interface FileRoutesByFullPath {
   '/semantic-memory': typeof SidebarSemanticMemoryRoute
   '/sleep': typeof SidebarSleepRoute
   '/system-prompt': typeof SidebarSystemPromptRoute
-  '/tasks': typeof SidebarTasksRoute
   '/tools': typeof SidebarToolsRoute
   '/workshop/$path': typeof WorkshopPathRoute
   '/conversations/$conversationId': typeof SidebarConversationsConversationIdRoute
@@ -241,7 +234,6 @@ export interface FileRoutesByTo {
   '/semantic-memory': typeof SidebarSemanticMemoryRoute
   '/sleep': typeof SidebarSleepRoute
   '/system-prompt': typeof SidebarSystemPromptRoute
-  '/tasks': typeof SidebarTasksRoute
   '/tools': typeof SidebarToolsRoute
   '/workshop/$path': typeof WorkshopPathRoute
   '/conversations/$conversationId': typeof SidebarConversationsConversationIdRoute
@@ -273,7 +265,6 @@ export interface FileRoutesById {
   '/_sidebar/semantic-memory': typeof SidebarSemanticMemoryRoute
   '/_sidebar/sleep': typeof SidebarSleepRoute
   '/_sidebar/system-prompt': typeof SidebarSystemPromptRoute
-  '/_sidebar/tasks': typeof SidebarTasksRoute
   '/_sidebar/tools': typeof SidebarToolsRoute
   '/workshop/$path': typeof WorkshopPathRoute
   '/_sidebar/conversations/$conversationId': typeof SidebarConversationsConversationIdRoute
@@ -305,7 +296,6 @@ export interface FileRouteTypes {
     | '/semantic-memory'
     | '/sleep'
     | '/system-prompt'
-    | '/tasks'
     | '/tools'
     | '/workshop/$path'
     | '/conversations/$conversationId'
@@ -334,7 +324,6 @@ export interface FileRouteTypes {
     | '/semantic-memory'
     | '/sleep'
     | '/system-prompt'
-    | '/tasks'
     | '/tools'
     | '/workshop/$path'
     | '/conversations/$conversationId'
@@ -365,7 +354,6 @@ export interface FileRouteTypes {
     | '/_sidebar/semantic-memory'
     | '/_sidebar/sleep'
     | '/_sidebar/system-prompt'
-    | '/_sidebar/tasks'
     | '/_sidebar/tools'
     | '/workshop/$path'
     | '/_sidebar/conversations/$conversationId'
@@ -413,13 +401,6 @@ declare module '@tanstack/react-router' {
       path: '/tools'
       fullPath: '/tools'
       preLoaderRoute: typeof SidebarToolsRouteImport
-      parentRoute: typeof SidebarRouteRoute
-    }
-    '/_sidebar/tasks': {
-      id: '/_sidebar/tasks'
-      path: '/tasks'
-      fullPath: '/tasks'
-      preLoaderRoute: typeof SidebarTasksRouteImport
       parentRoute: typeof SidebarRouteRoute
     }
     '/_sidebar/system-prompt': {
@@ -625,7 +606,6 @@ interface SidebarRouteRouteChildren {
   SidebarSemanticMemoryRoute: typeof SidebarSemanticMemoryRoute
   SidebarSleepRoute: typeof SidebarSleepRoute
   SidebarSystemPromptRoute: typeof SidebarSystemPromptRoute
-  SidebarTasksRoute: typeof SidebarTasksRoute
   SidebarToolsRoute: typeof SidebarToolsRoute
 }
 
@@ -651,7 +631,6 @@ const SidebarRouteRouteChildren: SidebarRouteRouteChildren = {
   SidebarSemanticMemoryRoute: SidebarSemanticMemoryRoute,
   SidebarSleepRoute: SidebarSleepRoute,
   SidebarSystemPromptRoute: SidebarSystemPromptRoute,
-  SidebarTasksRoute: SidebarTasksRoute,
   SidebarToolsRoute: SidebarToolsRoute,
 }
 

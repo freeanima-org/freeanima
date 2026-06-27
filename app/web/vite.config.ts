@@ -4,6 +4,7 @@ import { defineConfig, mergeConfig, type Plugin } from "vite";
 import { resolveHubWsUrl } from "@freeanima/sap-contract";
 
 import { shellEntryFileNames } from "../../packages/shell-ui/vite/entry-file-names.ts";
+import { sapSharedWorkerDevPlugin } from "../../packages/shell-ui/vite/sap-shared-worker-dev-plugin.ts";
 import { createShellViteInlineConfig } from "../../packages/shell-ui/vite/run-build.ts";
 
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
@@ -78,7 +79,7 @@ export default defineConfig(({ command, mode }) => {
   }
 
   return mergeConfig(inline, {
-    plugins: [webDevPlugin()],
+    plugins: [sapSharedWorkerDevPlugin(REPO_ROOT), webDevPlugin()],
     server: {
       host: "127.0.0.1",
       port: PORT,

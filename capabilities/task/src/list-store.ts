@@ -15,7 +15,9 @@ async function countItemsForList(listId: number): Promise<number> {
     primary_component: "task_item",
     limit: 500,
   });
-  return items.filter((item) => Number(item.body.list_id) === listId).length;
+  return items.filter(
+    (item) => Number(item.body.list_id) === listId && item.body.status !== "completed",
+  ).length;
 }
 
 function toListRow(

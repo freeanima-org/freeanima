@@ -2,6 +2,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, mergeConfig, type Plugin } from "vite";
 
+import { sapSharedWorkerDevPlugin } from "../../packages/shell-ui/vite/sap-shared-worker-dev-plugin.ts";
 import { createShellViteInlineConfig } from "../../packages/shell-ui/vite/run-build.ts";
 
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
@@ -37,7 +38,7 @@ export default defineConfig(({ command, mode }) => {
   }
 
   return mergeConfig(inline, {
-    plugins: [desktopDevPlugin()],
+    plugins: [sapSharedWorkerDevPlugin(REPO_ROOT), desktopDevPlugin()],
     server: {
       host: "127.0.0.1",
       port: PORT,

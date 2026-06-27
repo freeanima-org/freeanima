@@ -321,7 +321,7 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
           handler: handleList,
         },
         {
-          name: "task_list_lists",
+          name: "tasklist_list",
           description: "List all task lists",
           exposeMcp: true,
           parameters: { type: "object", properties: {} },

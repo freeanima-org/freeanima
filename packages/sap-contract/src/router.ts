@@ -22,6 +22,28 @@ import type {
 import type { ConversationAcpDockInput, ConversationAcpDockOutput } from "./frames/acp.ts";
 import type { FridgeListInput, FridgeListOutput } from "./frames/fridge.ts";
 import type {
+  TasklistListInput,
+  TasklistListOutput,
+  TasklistCreateInput,
+  TasklistCreateOutput,
+  TasklistPatchInput,
+  TasklistPatchOutput,
+  TasklistDeleteInput,
+  TasklistDeleteOutput,
+  TaskListInput,
+  TaskListOutput,
+  TaskCreateInput,
+  TaskCreateOutput,
+  TaskPatchInput,
+  TaskPatchOutput,
+  TaskCompleteInput,
+  TaskCompleteOutput,
+  TaskUncompleteInput,
+  TaskUncompleteOutput,
+  TaskDeleteInput,
+  TaskDeleteOutput,
+} from "./frames/task.ts";
+import type {
   NotificationListInput,
   NotificationListOutput,
   NotificationMarkReadInput,
@@ -57,6 +79,16 @@ export const SAP_METHODS = [
   "message.send",
   "message.interrupt",
   "fridge.list",
+  "tasklist.list",
+  "tasklist.create",
+  "tasklist.patch",
+  "tasklist.delete",
+  "task.list",
+  "task.create",
+  "task.patch",
+  "task.complete",
+  "task.uncomplete",
+  "task.delete",
   "notification.list",
   "notification.markRead",
   "terminal.attach",
@@ -85,6 +117,16 @@ export type SapRouterInputs = {
   "message.send": MessageSendInput;
   "message.interrupt": MessageInterruptInput;
   "fridge.list": FridgeListInput;
+  "tasklist.list": TasklistListInput;
+  "tasklist.create": TasklistCreateInput;
+  "tasklist.patch": TasklistPatchInput;
+  "tasklist.delete": TasklistDeleteInput;
+  "task.list": TaskListInput;
+  "task.create": TaskCreateInput;
+  "task.patch": TaskPatchInput;
+  "task.complete": TaskCompleteInput;
+  "task.uncomplete": TaskUncompleteInput;
+  "task.delete": TaskDeleteInput;
   "notification.list": NotificationListInput;
   "notification.markRead": NotificationMarkReadInput;
   "terminal.attach": TerminalAttachInput;
@@ -111,6 +153,16 @@ export type SapRouterOutputs = {
   "message.send": MessageSendOutput;
   "message.interrupt": MessageInterruptOutput;
   "fridge.list": FridgeListOutput;
+  "tasklist.list": TasklistListOutput;
+  "tasklist.create": TasklistCreateOutput;
+  "tasklist.patch": TasklistPatchOutput;
+  "tasklist.delete": TasklistDeleteOutput;
+  "task.list": TaskListOutput;
+  "task.create": TaskCreateOutput;
+  "task.patch": TaskPatchOutput;
+  "task.complete": TaskCompleteOutput;
+  "task.uncomplete": TaskUncompleteOutput;
+  "task.delete": TaskDeleteOutput;
   "notification.list": NotificationListOutput;
   "notification.markRead": NotificationMarkReadOutput;
   "terminal.attach": TerminalAttachOutput;
