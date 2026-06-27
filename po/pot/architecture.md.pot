@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 18:53+0800\n"
+"POT-Creation-Date: 2026-06-27 14:50+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/architecture.md:1 messages/po4a/en.xml:500
+#: docs/concepts/architecture.md:1 messages/po4a/en.xml:528
 #, no-wrap
 msgid "Architecture"
 msgstr ""
@@ -154,14 +154,37 @@ msgid ""
 "on\". Body and assets meet here as extensions of my boundary."
 msgstr ""
 
+#. type: Title ###
+#: docs/concepts/architecture.md:62
+#, no-wrap
+msgid "Unified entity storage (v0.8)"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:65
+msgid ""
+"Structured business data (tasks, notes, future memory migrations) converges "
+"on a single **`entities`** PostgreSQL table with component tags "
+"(`task_list`, `task_item`, …). Self layer [`self_blocks`](self-layer.md) "
+"stays physically separate. See [`entity-model.md`](entity-model.md)."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:67
+msgid ""
+"Shell UI **`/tasks`** is the primary task-management entry (TickTick-style "
+"lists/items on entities). Legacy `tasks` table + LLM tools remain for "
+"backward compatibility."
+msgstr ""
+
 #. type: Title ##
-#: docs/concepts/architecture.md:62 docs/tools/execute-code-runtimes.md:9
+#: docs/concepts/architecture.md:68 docs/tools/execute-code-runtimes.md:9
 #, no-wrap
 msgid "Background"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:65
+#: docs/concepts/architecture.md:71
 msgid ""
 "The four-layer model draws on cognitive psychology and the [Hindsight]"
 "(https://arxiv.org/abs/2512.12818) four-network memory architecture, with "
@@ -170,80 +193,80 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:66
+#: docs/concepts/architecture.md:72
 #, no-wrap
 msgid "Situational Intelligence"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:69
+#: docs/concepts/architecture.md:75
 msgid ""
 "Where a digital life exists, how it exists, and what it may do — governed by "
 "two independent but cooperating subsystems."
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/architecture.md:70
+#: docs/concepts/architecture.md:76
 #, no-wrap
 msgid "Scene Awareness"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:73
+#: docs/concepts/architecture.md:79
 #, no-wrap
 msgid "**Question: what kind of moment is this?**\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:75
+#: docs/concepts/architecture.md:81
 msgid ""
 "Scene awareness is **soft** — it adjusts tone, distance, memory recall bias, "
 "and proactivity. It is not a permission system; it modulates presence."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:77
+#: docs/concepts/architecture.md:83
 #, no-wrap
 msgid "**Example dimensions (non-exhaustive):**\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:81
+#: docs/concepts/architecture.md:87
 msgid ""
 "Topic: emotional / career / tech / philosophy / history / literature / daily "
 "life"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:81
+#: docs/concepts/architecture.md:87
 msgid "Activity: role-play / games / creation / programming / reading"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:81
+#: docs/concepts/architecture.md:87
 msgid "Atmosphere: relaxed / focused / late night / intimate / urgent"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:83
+#: docs/concepts/architecture.md:89
 #, no-wrap
 msgid "**Operation:** Runs continuously without explicit switch commands. Inferred from dialogue, time, frequency, etc. See [`time-perception.md`](time-perception.md).\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/architecture.md:84
+#: docs/concepts/architecture.md:90
 #, no-wrap
 msgid "Capability Mask"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:87
+#: docs/concepts/architecture.md:93
 #, no-wrap
 msgid "**Question: what tools and data can I use right now?**\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:89
+#: docs/concepts/architecture.md:95
 msgid ""
 "The capability mask is **hard** — it binds tool sets, data scope, and "
 "credential permissions. The same digital life may wear different masks per "
@@ -251,55 +274,55 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:91
+#: docs/concepts/architecture.md:97
 #, no-wrap
 msgid "**Example masks:**\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:98
+#: docs/concepts/architecture.md:104
 msgid "Developer: terminal, code read/write, ACP Cursor"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:98
+#: docs/concepts/architecture.md:104
 msgid "Maintainer: FreeAnima config, deployment, database"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:98
+#: docs/concepts/architecture.md:104
 msgid "Creator: files, notes, media generation"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:98
+#: docs/concepts/architecture.md:104
 msgid "Research: web search, paper retrieval"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:98
+#: docs/concepts/architecture.md:104
 msgid "Role-play: dialogue context only, no external tools"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:98
+#: docs/concepts/architecture.md:104
 msgid "Default: basic chat + limited lookup"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:100
+#: docs/concepts/architecture.md:106
 #, no-wrap
 msgid "**Operation:** Switches at conversation boundaries, explicit commands, or scene-awareness triggers. Each mask is a declared tool/data scope, not a separate identity.\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/architecture.md:101
+#: docs/concepts/architecture.md:107
 #, no-wrap
 msgid "How They Interact"
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/concepts/architecture.md:103
+#: docs/concepts/architecture.md:109
 #, no-wrap
 msgid ""
 "Scene awareness (soft tuning)\n"
@@ -314,38 +337,38 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:118
+#: docs/concepts/architecture.md:124
 msgid ""
 "Scene awareness infers \"what we are doing\" → may suggest mask switches and "
 "presence adjustments"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:118
+#: docs/concepts/architecture.md:124
 msgid ""
 "Capability mask constrains \"what I can do\" → prevents cross-scene tool "
 "misuse"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:118
+#: docs/concepts/architecture.md:124
 msgid "Both converge in final behavior but evolve independently"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:120
+#: docs/concepts/architecture.md:126
 msgid ""
 "For design drafts, open a GitHub Issue (no design-doc directory in docs)."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:121
+#: docs/concepts/architecture.md:127
 #, no-wrap
 msgid "Memory Storage (Summary)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:129
+#: docs/concepts/architecture.md:135
 #, no-wrap
 msgid ""
 "| Cognitive type   | Description                                               |\n"
@@ -357,7 +380,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:131
+#: docs/concepts/architecture.md:137
 msgid ""
 "Pipeline: nightly **sleep-cycle** pipeline (`builtin-sleep-cycle` cron) "
 "extracts and maintains memory; `memory_recall` retrieves on demand during "
@@ -365,107 +388,107 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:132
+#: docs/concepts/architecture.md:138
 #, no-wrap
 msgid "Credential System (Summary)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:140
+#: docs/concepts/architecture.md:146
 msgid ""
 "[pass](https://www.passwordstore.org/) (GPG) is the sole credential store; "
 "the deployer's pass repo is a first-class runtime asset"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:140
+#: docs/concepts/architecture.md:146
 msgid "The LLM **never sees credential values** — only paths and metadata"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:140
+#: docs/concepts/architecture.md:146
 msgid ""
 "Runtime injection: credentials available only in code execution / terminal "
 "environments"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:140
+#: docs/concepts/architecture.md:146
 msgid "Credential values are not written to conversation archives or logs"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:140
+#: docs/concepts/architecture.md:146
 msgid "Platform adapters (Discord, etc.) read tokens from pass at startup"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:140
+#: docs/concepts/architecture.md:146
 msgid "CLI: `anima credential {list,get,add}`"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:142
+#: docs/concepts/architecture.md:148
 msgid "See [`guide/security.md`](../guide/security.md)."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:143
+#: docs/concepts/architecture.md:149
 #, no-wrap
 msgid "Runtime Modes"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:146
+#: docs/concepts/architecture.md:152
 msgid ""
 "Production: `anima service` (systemd --user). Auto-restarts after crashes; "
 "only `systemctl stop` stops the service."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:150
+#: docs/concepts/architecture.md:156
 msgid ""
 "**service**: long-running — Hub HTTP (`/api`, `/sap/v1`), Discord / WeChat "
 "Gateway, cron"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:150
+#: docs/concepts/architecture.md:156
 msgid "**chat**: single non-interactive turn (CLI or piped stdin)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:150
+#: docs/concepts/architecture.md:156
 msgid ""
 "**UI**: app/desktop / app/mobile bundled SPA（聊天室 + 管理台）；Hub 不托管 "
 "`/admin`"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/concepts/architecture.md:151
+#: docs/concepts/architecture.md:157
 #, no-wrap
 msgid ""
 "anima service start              # default: systemd --user\n"
 "anima service start --foreground # foreground (logs to stdout)\n"
-"bun run dev:admin                # 本地 Admin 开发（Hub API 须已运行）\n"
+"bun run dev:web                  # 浏览器壳层（聊天 + Admin + 设置，Vite HMR；Hub 须已运行）\n"
 "anima service status\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:158
+#: docs/concepts/architecture.md:164
 #, no-wrap
 msgid "Tool Architecture (Three Layers)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:161
+#: docs/concepts/architecture.md:167
 msgid ""
 "Tools are registered in three layers but exposed to the LLM as one **flat "
 "tool list**. The LLM cares about names and parameters, not origin."
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/concepts/architecture.md:162
+#: docs/concepts/architecture.md:168
 #, no-wrap
 msgid ""
 "LLM view — flat tool list:\n"
@@ -478,45 +501,45 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/architecture.md:172
+#: docs/concepts/architecture.md:178
 #, no-wrap
 msgid "Layer 1: Local Tools"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:176
+#: docs/concepts/architecture.md:182
 msgid "Execute inside the FreeAnima process; lowest latency"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:176
+#: docs/concepts/architecture.md:182
 msgid "Registered automatically at service startup"
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/architecture.md:177
+#: docs/concepts/architecture.md:183
 #, no-wrap
 msgid "Layer 2: MCP Tools (Model Context Protocol)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:182
+#: docs/concepts/architecture.md:188
 msgid "Connect to external MCP servers (separate processes)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:182
+#: docs/concepts/architecture.md:188
 msgid ""
 "Each server may register many fine-grained tools (single function calls)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:182
+#: docs/concepts/architecture.md:188
 msgid "Configure in `config.yaml` under `mcp_servers`"
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/concepts/architecture.md:183
+#: docs/concepts/architecture.md:189
 #, no-wrap
 msgid ""
 "mcp_servers:\n"
@@ -527,32 +550,32 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/architecture.md:191
+#: docs/concepts/architecture.md:197
 #, no-wrap
 msgid "Layer 3: ACP Tools (Agent Client Protocol)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:196
+#: docs/concepts/architecture.md:202
 msgid ""
 "Each external agent instance registers as **one** task-level tool: "
 "`acp_{name}(goal, context)`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:196
+#: docs/concepts/architecture.md:202
 msgid ""
 "For full task delegation (coding, analysis, booking, etc.); seconds to "
 "minutes latency"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:196
+#: docs/concepts/architecture.md:202
 msgid "Configure in `config.yaml` under `acp_agents`"
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/concepts/architecture.md:197
+#: docs/concepts/architecture.md:203
 #, no-wrap
 msgid ""
 "acp_agents:\n"
@@ -564,13 +587,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/architecture.md:206
+#: docs/concepts/architecture.md:212
 #, no-wrap
 msgid "Comparison"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:214
+#: docs/concepts/architecture.md:220
 #, no-wrap
 msgid ""
 "| Dimension   | Local        | MCP              | ACP            |\n"
@@ -582,25 +605,25 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:216
+#: docs/concepts/architecture.md:222
 msgid ""
 "Layers can be mixed; the LLM chooses order; FreeAnima registers and routes."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:217
+#: docs/concepts/architecture.md:223
 #, no-wrap
 msgid "Conversation vs AutoLlmRun vs Delegation"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:220
+#: docs/concepts/architecture.md:226
 #, no-wrap
 msgid "**Axis:** whether the execution has a **user turn** during the run (not who triggered it).\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:227
+#: docs/concepts/architecture.md:233
 #, no-wrap
 msgid ""
 "| Kind                 | User turn     | PG persistence                                      | Process trace   | Sleep pipeline                          |\n"
@@ -612,7 +635,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:229
+#: docs/concepts/architecture.md:235
 msgid ""
 "AutoLlmRun covers: cron agent branch, sleep LLM stages, future internal "
 "subagents. Tool context uses `contextKind: auto_llm` so `memory_remember` "
@@ -621,26 +644,26 @@ msgid ""
 msgstr ""
 
 #. type: Yaml Front Matter Hash Value: title
-#: docs/concepts/architecture.md:230 docs/features/goal.md:1
+#: docs/concepts/architecture.md:236 docs/features/goal.md:1
 #, no-wrap
 msgid "Session Goal"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:233
+#: docs/concepts/architecture.md:239
 #, no-wrap
 msgid "**Question: should this conversation keep working toward a stated outcome?**\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:235
+#: docs/concepts/architecture.md:241
 msgid ""
 "Session Goal is an **in-process autonomous loop** at the Estate / "
 "orchestration layer — distinct from ACP async delegation:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:242
+#: docs/concepts/architecture.md:248
 #, no-wrap
 msgid ""
 "| Dimension    | Session Goal                    | ACP                                   |\n"
@@ -652,7 +675,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:244
+#: docs/concepts/architecture.md:250
 msgid ""
 "Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User "
 "messages preempt the loop; `/goal pause` stops auto-continue without "
@@ -660,36 +683,36 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:245
+#: docs/concepts/architecture.md:251
 #, no-wrap
 msgid "Client UI（bundled）"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:248
+#: docs/concepts/architecture.md:254
 msgid ""
 "聊天室与管理台 UI 由 **app/desktop** / **app/mobile** 打进客户端；`anima "
 "service` 仅提供 Hub 后端。"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:253
+#: docs/concepts/architecture.md:259
 #, no-wrap
 msgid ""
-"| 模块  | 连接方式                          | 说明                          |\n"
-"| ----- | --------------------------------- | ----------------------------- |\n"
-"| Chat  | SAP WebSocket `/sap/v1`           | 桌面 / 移动 bundled `/chat`   |\n"
-"| Admin | Hub REST `/api/*`（CORS + shell） | 桌面 / 移动 bundled `/admin`  |\n"
+"| 模块  | 连接方式                          | 说明                         |\n"
+"| ----- | --------------------------------- | ---------------------------- |\n"
+"| Chat  | SAP WebSocket `/sap/v1`           | 桌面 / 移动 bundled `/chat`  |\n"
+"| Admin | Hub REST `/api/*`（CORS + shell） | 桌面 / 移动 bundled `/admin` |\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:254
+#: docs/concepts/architecture.md:260
 #, no-wrap
 msgid "Events and Hooks (Summary)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:259
+#: docs/concepts/architecture.md:265
 msgid ""
 "**EventBus**: async notification transport (Redis queue); production code "
 "currently emits topics such as `session:updated` with **no registered "
@@ -698,7 +721,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:259
+#: docs/concepts/architecture.md:265
 msgid ""
 "**Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: light "
 "→ deep → cross-domain maintenance steps). State in `~/.anima/runtime/"
@@ -706,14 +729,14 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:259
+#: docs/concepts/architecture.md:265
 msgid ""
 "**Hooks**: sync interceptors — validation or clarification at message "
 "ingress, turn end, tool return, etc."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:261
+#: docs/concepts/architecture.md:267
 msgid ""
 "Complementary: Pipeline Runner handles scheduled multi-step background work; "
 "Hooks handle \"may this proceed before/during\"; EventBus remains available "
@@ -721,13 +744,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:262
+#: docs/concepts/architecture.md:268
 #, no-wrap
 msgid "Direction"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:265
+#: docs/concepts/architecture.md:271
 msgid ""
 "Capability vision and discussions: [GitHub Issues](https://github.com/"
 "freeanima-org/freeanima/issues) (labels `enhancement`, `discussion`, "
@@ -735,22 +758,22 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:266
+#: docs/concepts/architecture.md:272
 #, no-wrap
 msgid "Constraints"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:270
+#: docs/concepts/architecture.md:276
 msgid "Principles and structure live here; no concrete task lists"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:270
+#: docs/concepts/architecture.md:276
 msgid "Fast-changing behavior follows the running service, not stale prose"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:270
+#: docs/concepts/architecture.md:276
 msgid "Actionable work goes in GitHub Issues; close when done"
 msgstr ""

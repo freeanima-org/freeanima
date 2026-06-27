@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "predev": "cd ../../ && bun run paraglide:compile && rm -rf app/web/node_modules/.vite-app-web/.paraglide app/web/node_modules/.vite",
+    "prebuild": "cd ../../ && bun run paraglide:compile",
     "dev": "vite"
   },
   "dependencies": {

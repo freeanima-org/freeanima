@@ -19,6 +19,7 @@ import { statusRoutes } from "./routes/status.ts";
 import { TerminalSessionError } from "@freeanima/platform/sap/terminal-session";
 import { fridgeMagnetRoutes } from "./routes/fridge-magnet.ts";
 import { autoLlmRunRoutes } from "./routes/auto-llm-runs.ts";
+import { entityRoutes } from "./routes/entities.ts";
 
 /** API 路由（Eden Treaty 类型真源） */
 export const apiApp = new Elysia({ prefix: "/api" })
@@ -38,7 +39,8 @@ export const apiApp = new Elysia({ prefix: "/api" })
   .use(credentialsRoutes)
   .use(emailRoutes)
   .use(fridgeMagnetRoutes)
-  .use(autoLlmRunRoutes);
+  .use(autoLlmRunRoutes)
+  .use(entityRoutes);
 
 export type App = typeof apiApp;
 

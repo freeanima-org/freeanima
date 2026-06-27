@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 17:13+0800\n"
+"POT-Creation-Date: 2026-06-27 15:16+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -89,8 +89,8 @@ msgstr ""
 "  Router --> SatMgr\n"
 "  Router -->|res| Client\n"
 
-#. type: Content of: <messages><msg>
-#: docs/sap/methods.md:33 messages/po4a/en.xml:364
+#. type: Title ##
+#: docs/sap/methods.md:33
 #, no-wrap
 msgid "Session"
 msgstr "会话"
@@ -220,7 +220,7 @@ msgstr ""
 "| `fridge.list` | [`fridge.ts`](../../packages/sap-contract/src/frames/fridge.ts) | 列出 runtime 的 fridge 条目       |\n"
 
 #. type: Content of: <messages><msg>
-#: docs/sap/methods.md:69 messages/po4a/en.xml:480
+#: docs/sap/methods.md:69 messages/po4a/en.xml:436
 #, no-wrap
 msgid "Terminal"
 msgstr "终端"

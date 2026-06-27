@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 17:27+0800\n"
+"POT-Creation-Date: 2026-06-27 14:50+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:512
+#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:537
 #, no-wrap
 msgid "Installation"
 msgstr "安装"
@@ -272,8 +272,8 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:95
 msgid ""
-"UI 使用 **app/desktop** 或 **app/mobile**（聊天室 + 管理台 bundled）。Admin "
-"本地开发：`bun run dev:admin`。"
+"UI 使用 **app/desktop** 或 **app/mobile**（聊天室 + 管理台 bundled）。浏览器"
+"本地开发：`bun run dev:web`（Vite HMR，Hub 须已运行）。"
 msgstr ""
 
 #. type: Plain text
@@ -717,8 +717,8 @@ msgstr ""
 #. type: Bullet: '2. '
 #: docs/guide/install.md:263
 msgid ""
-"**Remote access** — optional Cloudflare Tunnel + Access for personal mobile/"
-"remote Admin ([`remote-access.md`](remote-access.md))"
+"**Remote access** — optional Cloudflare Tunnel + `remote_auth.token` for "
+"personal mobile/remote Admin ([`remote-access.md`](remote-access.md))"
 msgstr ""
 
 #. type: Bullet: '3. '

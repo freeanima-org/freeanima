@@ -1,4 +1,4 @@
-import { and, count, eq, sql } from "drizzle-orm";
+import { and, count, eq, inArray, sql } from "drizzle-orm";
 import { entities, entityTypeSchema } from "@freeanima/core/db/schema";
 import {
   mergeComponentBody,
@@ -86,6 +86,8 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
   if (input.title !== undefined) patch.title = input.title.trim();
   if (input.summary !== undefined) patch.summary = input.summary.trim();
   if (input.content !== undefined) patch.content = input.content.trim();
+  if (input.world_id !== undefined) patch.worldId = input.world_id;
+  if (input.owner_id !== undefined) patch.ownerId = input.owner_id;
 
   const db = getDb();
   const [row] = await db.update(entities).set(patch).where(eq(entities.id, input.id)).returning();
@@ -105,6 +107,12 @@ function buildListConditions(opts?: Omit<EntityListOpts, "offset" | "limit">) {
   const conditions = [];
   if (opts?.world_id != null) {
     conditions.push(eq(entities.worldId, opts.world_id));
+  }
+  if (opts?.type != null) {
+    conditions.push(eq(entities.type, opts.type));
+  }
+  if (opts?.types != null && opts.types.length > 0) {
+    conditions.push(inArray(entities.type, opts.types));
   }
   if (opts?.primary_component) {
     conditions.push(eq(entities.primaryComponent, opts.primary_component));

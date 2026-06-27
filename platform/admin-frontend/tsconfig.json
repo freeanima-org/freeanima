@@ -6,7 +6,9 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "paths": {
-      "@admin/*": ["./app/src/*"]
+      "@admin/*": ["./app/src/*"],
+      "@paraglide/messages": ["../../messages/paraglide/messages.js"],
+      "@paraglide/runtime": ["../../messages/paraglide/runtime.js"]
     }
   },
   "include": ["app/**/*.ts", "app/**/*.tsx", "app/**/*.d.ts", "../../types/paraglide.d.ts"],

@@ -54,4 +54,14 @@ export {
 } from "./sleep.ts";
 export { listAutoLlmRuns } from "./auto-llm-runs.ts";
 export { listFridgeMagnets } from "./fridge.ts";
+export {
+  listWorldEntities,
+  getWorldEntity,
+  createWorldEntity,
+  updateWorldEntity,
+  listSubjectEntities,
+  getSubjectEntity,
+  createSubjectEntity,
+  updateSubjectEntity,
+} from "./entities.ts";
 export { ApiHandlerError } from "./errors.ts";

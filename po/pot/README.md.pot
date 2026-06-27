@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 18:53+0800\n"
+"POT-Creation-Date: 2026-06-27 14:50+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -62,12 +62,13 @@ msgid "Concepts — Core Ideas"
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:30
+#: docs/README.md:31
 #, no-wrap
 msgid ""
 "| Topic           | File                                                       |\n"
 "| --------------- | ---------------------------------------------------------- |\n"
 "| Architecture    | [concepts/architecture.md](concepts/architecture.md)       |\n"
+"| Entity model    | [concepts/entity-model.md](concepts/entity-model.md)       |\n"
 "| Identity        | [concepts/identity.md](concepts/identity.md)               |\n"
 "| Self layer      | [concepts/self-layer.md](concepts/self-layer.md)           |\n"
 "| Memory          | [concepts/memory.md](concepts/memory.md)                   |\n"
@@ -78,28 +79,28 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/README.md:31
+#: docs/README.md:32
 #, no-wrap
 msgid "Features — Major Capabilities"
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:36
+#: docs/README.md:37
 #, no-wrap
 msgid ""
-"| Topic      | File                                     |\n"
-"| ---------- | ---------------------------------------- |\n"
+"| Topic      | File                                             |\n"
+"| ---------- | ------------------------------------------------ |\n"
 "| Mobile app | [features/mobile-app.md](features/mobile-app.md) |\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/README.md:37
+#: docs/README.md:38
 #, no-wrap
 msgid "SAP — Satellite Application Protocol"
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:48
+#: docs/README.md:49
 #, no-wrap
 msgid ""
 "| Topic           | File                                             |\n"
@@ -114,13 +115,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/README.md:49
+#: docs/README.md:50
 #, no-wrap
 msgid "Tools — Built-in Tools"
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:53
+#: docs/README.md:54
 #, no-wrap
 msgid ""
 "| Topic         | File                                                             |\n"

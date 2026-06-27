@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 18:53+0800\n"
+"POT-Creation-Date: 2026-06-27 14:50+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/guide/security.md:1 docs/tools/execute-code-runtimes.md:60
-#: messages/po4a/en.xml:522 messages/po4a/en.xml:525
+#: messages/po4a/en.xml:550 messages/po4a/en.xml:553
 #, no-wrap
 msgid "Security"
 msgstr "安全"
@@ -328,13 +328,13 @@ msgstr "安全矩阵"
 #| "| **HTTP / Admin** | No auth; CORS whitelist | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |\n"
 #| "| **MCP / ACP**    | SSE auth undefined      | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |\n"
 msgid ""
-"| Module           | A External                                      | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |\n"
-"| ---------------- | ----------------------------------------------- | ------------------------------------------------------------------- | ------------------------- | ------------------ | ---------------------------------- |\n"
-"| **Runtime**      | Default 127.0.0.1 bind                          | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |\n"
-"| **Gateway**      | Token in pass                                   | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |\n"
-"| **CLI / Tools**  | Local shell compromised                         | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |\n"
+"| Module           | A External                                | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |\n"
+"| ---------------- | ----------------------------------------- | ------------------------------------------------------------------- | ------------------------- | ------------------ | ---------------------------------- |\n"
+"| **Runtime**      | Default 127.0.0.1 bind                    | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |\n"
+"| **Gateway**      | Token in pass                             | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |\n"
+"| **CLI / Tools**  | Local shell compromised                   | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |\n"
 "| **HTTP / Admin** | `remote_auth` Bearer token（非 loopback） | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |\n"
-"| **MCP / ACP**    | SSE auth undefined                              | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |\n"
+"| **MCP / ACP**    | SSE auth undefined                        | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |\n"
 msgstr ""
 "| 模块             | A 外网              | B LLM 注入                                                      | C Agent 过失     | D 依赖链        | E 数据           |\n"
 "| ---------------- | ------------------- | --------------------------------------------------------------- | ---------------- | --------------- | ---------------- |\n"

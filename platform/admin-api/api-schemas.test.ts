@@ -3,6 +3,8 @@ import {
   createConversationBodySchema,
   sendMessageBodySchema,
   memorySearchBodySchema,
+  worldEntityCreateBodySchema,
+  subjectEntityCreateBodySchema,
 } from "./api/schemas.ts";
 
 describe("api/schemas", () => {
@@ -26,5 +28,27 @@ describe("api/schemas", () => {
     expect(createConversationBodySchema.safeParse({ platform: "sap:chat:test" }).success).toBe(
       true,
     );
+  });
+
+  it("validates world entity create body", () => {
+    const ok = worldEntityCreateBodySchema.safeParse({
+      title: "  My World  ",
+      owner_id: null,
+    });
+    expect(ok.success).toBe(true);
+    if (ok.success) expect(ok.data.title).toBe("My World");
+
+    const bad = worldEntityCreateBodySchema.safeParse({ title: "   " });
+    expect(bad.success).toBe(false);
+  });
+
+  it("validates subject entity create body", () => {
+    const ok = subjectEntityCreateBodySchema.safeParse({
+      type: "agent",
+      title: "Anima",
+      world_id: 1,
+    });
+    expect(ok.success).toBe(true);
+    if (ok.success) expect(ok.data.type).toBe("agent");
   });
 });

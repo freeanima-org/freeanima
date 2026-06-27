@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 17:27+0800\n"
+"POT-Creation-Date: 2026-06-27 14:50+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/sap/satellite-guide.md:1 docs/sap/satellite-guide.md:5
-#: messages/po4a/en.xml:524
+#: messages/po4a/en.xml:549
 #, no-wrap
 msgid "Satellite Guide"
 msgstr "卫星指南"
@@ -70,12 +70,6 @@ msgstr "在 `~/.anima/config.yaml` 中声明进程。`anima service start/stop/r
 #| "      SATELLITE_PORT: \"4173\"\n"
 msgid ""
 "satellites:\n"
-"  chat:\n"
-"    enabled: true\n"
-"    command: bun\n"
-"    args: [\"satellites/chat/dev.ts\"]\n"
-"    env:\n"
-"      SATELLITE_PORT: \"4174\"\n"
 "  pair-programming:\n"
 "    enabled: true\n"
 "    command: bun\n"
@@ -100,7 +94,13 @@ msgstr ""
 "      SATELLITE_PORT: \"4173\"\n"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:38
+#: docs/sap/satellite-guide.md:29
+#, no-wrap
+msgid "**Chat / Task / Admin** 等已打进 shell-ui（desktop / mobile / web），无需在 `satellites:` 中单独声明 dev 进程；浏览器本地调试见 `bun run dev:web`。\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/satellite-guide.md:34
 #, no-wrap
 msgid ""
 "| Field              | Role                                             |\n"
@@ -114,7 +114,7 @@ msgstr ""
 "| `env`              | 额外环境变量                                     |\n"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:40
+#: docs/sap/satellite-guide.md:36
 msgid ""
 "Working directory is derived by anima from the install layout (monorepo root "
 "or CLI package root), not configured here."
@@ -123,13 +123,13 @@ msgstr ""
 "配置。"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:42
+#: docs/sap/satellite-guide.md:38
 #, no-wrap
 msgid "**Startup:** managed satellites start only after Hub `GET /api/health` returns `status: ok`.\n"
 msgstr "**启动：** 托管卫星仅在 Hub `GET /api/health` 返回 `status: ok` 之后才会启动。\n"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:44
+#: docs/sap/satellite-guide.md:40
 msgid ""
 "See [service.md](../guide/service.md) for systemd unit paths and startup "
 "order."
@@ -137,13 +137,13 @@ msgstr ""
 "有关 systemd 单元路径与启动顺序，见 [service.md](../guide/service.md)。"
 
 #. type: Title ###
-#: docs/sap/satellite-guide.md:45
+#: docs/sap/satellite-guide.md:41
 #, no-wrap
 msgid "Dynamic (SAP connect)"
 msgstr "动态（SAP connect）"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:48
+#: docs/sap/satellite-guide.md:44
 #, fuzzy
 #| msgid ""
 #| "No `command` in config. Start the satellite yourself; it connects to Hub "
@@ -156,12 +156,12 @@ msgstr ""
 "会出现在管理台 → 卫星中。"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:50
+#: docs/sap/satellite-guide.md:46
 msgid "There is **no** global `studio:` section in `config.yaml`."
 msgstr "`config.yaml` 中**没有**全局 `studio:` 段。"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:52
+#: docs/sap/satellite-guide.md:48
 #, fuzzy
 #| msgid ""
 #| "Open managed satellite UI at the URL from Chamber (SAP `http_url`), "
@@ -171,25 +171,25 @@ msgid ""
 msgstr "在管理台提供的 URL（SAP `http_url`）打开托管卫星 UI，通常为："
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:55
-#, fuzzy
-#| msgid "Parlor: `http://127.0.0.1:4174`"
-msgid "Chat: `http://127.0.0.1:4174`"
-msgstr "聊天室：`http://127.0.0.1:4174`"
-
-#. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:55
+#: docs/sap/satellite-guide.md:50
 msgid "Pair-programming: `http://127.0.0.1:4173`"
 msgstr "结对编程：`http://127.0.0.1:4173`"
 
+#. type: Plain text
+#: docs/sap/satellite-guide.md:52
+msgid ""
+"Shell 内卫星（Chat、Admin 等）在 desktop / mobile / web 壳层路由中打开，无独"
+"立端口。"
+msgstr ""
+
 #. type: Title ##
-#: docs/sap/satellite-guide.md:56
+#: docs/sap/satellite-guide.md:53
 #, no-wrap
 msgid "Instance allocation strategies"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:59
+#: docs/sap/satellite-guide.md:56
 msgid ""
 "`instance_id` is a 3-character lowercase alphanumeric id (see [`packages/sap-"
 "contract/src/naming.ts`](../../packages/sap-contract/src/naming.ts)). It "
@@ -200,7 +200,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:65
+#: docs/sap/satellite-guide.md:62
 #, no-wrap
 msgid ""
 "| Strategy      | Meaning                                | Apps                                        | Client behavior                                                                 |\n"
@@ -211,7 +211,7 @@ msgid ""
 msgstr ""
 
 #. type: Fenced code block (mermaid)
-#: docs/sap/satellite-guide.md:66
+#: docs/sap/satellite-guide.md:63
 #, no-wrap
 msgid ""
 "flowchart TB\n"
@@ -226,25 +226,25 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:79
+#: docs/sap/satellite-guide.md:76
 #, no-wrap
 msgid "**Chat (singleton):** all desktop / mobile clients share `CHAT_INSTANCE_ID` (`def`) so `conversation.list` is unified across devices. Chat registers no satellite tools; multiple devices may connect with the same id (Admin shows the last `http_url`).\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:81
+#: docs/sap/satellite-guide.md:78
 #, no-wrap
 msgid "**Companion (machine):** `~/.anima/companion/instance.json` — one id per computer.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:83
+#: docs/sap/satellite-guide.md:80
 #, no-wrap
 msgid "**Pair-programming (machine today):** single sidecar + `STUDIO_WORKSPACE` at startup → one `~/.anima/satellites/pair-programming/instance.json`. When runtime workspace switching ships, migrate to **workspace** strategy (separate instance per project).\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:85
+#: docs/sap/satellite-guide.md:82
 msgid ""
 "Hub [`SapInstanceRegistry`](../../platform/src/sap/instance-registry.ts): "
 "omit `instance_id` → random allocation; send known id → reconnect or **auto-"
@@ -252,32 +252,32 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/satellite-guide.md:86
+#: docs/sap/satellite-guide.md:83
 #, no-wrap
 msgid "Satellite access modes"
 msgstr "卫星访问模式"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:89
+#: docs/sap/satellite-guide.md:86
 #, no-wrap
 msgid "**Rule:** each `app_id + instance_id` has **at most one** active entry in `SatelliteManager` (last connect wins). Multiple WebSockets with the same id are not rejected but stream events follow each socket's own context.\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/sap/satellite-guide.md:90
+#: docs/sap/satellite-guide.md:87
 #, fuzzy, no-wrap
 #| msgid "Type B — Process gateway + local relay (pair-programming)"
 msgid "Type B — Process gateway + local relay (pair-programming)"
 msgstr "Type B — 进程网关 + 本地中继（结对编程）"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:96
+#: docs/sap/satellite-guide.md:93
 msgid ""
 "Sidecar `createSatelliteHub({ relay: true, ... })` holds the sole Hub WS."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:96
+#: docs/sap/satellite-guide.md:93
 #, fuzzy
 #| msgid ""
 #| "Browser uses `createSapRelayBrowserClient` → satellite `/sap/relay/v1` "
@@ -288,24 +288,24 @@ msgstr ""
 "透传，**非** REST hub-api）。"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:96
+#: docs/sap/satellite-guide.md:93
 msgid ""
 "`instance_id` persisted under `~/.anima/satellites/{app}/instance.json`."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:96
+#: docs/sap/satellite-guide.md:93
 msgid "**Pair-programming:** relay + `tool.register` + local FS/PTY APIs."
 msgstr ""
 
 #. type: Title ###
-#: docs/sap/satellite-guide.md:97
+#: docs/sap/satellite-guide.md:94
 #, no-wrap
 msgid "SAP direct — browser/renderer 直连 Hub（chat 嵌入 app/desktop）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:102
+#: docs/sap/satellite-guide.md:99
 #, fuzzy
 #| msgid ""
 #| "[`packages/sap-contract/src/relay-browser-client.ts`](../../packages/sap-"
@@ -318,46 +318,46 @@ msgstr ""
 "contract/src/relay-browser-client.ts)"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:102
+#: docs/sap/satellite-guide.md:99
 msgid ""
 "**无需** relay sidecar；Chat 使用 **singleton** 固定 `instance_id`"
 "（`CHAT_INSTANCE_ID` = `def`），无需 per-device 持久化。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:102
+#: docs/sap/satellite-guide.md:99
 msgid "详见 [`frontend-exports.md`](frontend-exports.md)。"
 msgstr ""
 
 #. type: Title ###
-#: docs/sap/satellite-guide.md:103
+#: docs/sap/satellite-guide.md:100
 #, no-wrap
 msgid "Type B + tools, no relay (companion)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:108
+#: docs/sap/satellite-guide.md:105
 msgid ""
 "Sidecar `createSatelliteHub({ relay: false, tools: [...] })` holds the sole "
 "Hub WS."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:108
+#: docs/sap/satellite-guide.md:105
 msgid ""
 "Browser talks to sidecar HTTP only (no SAP relay); tools execute in sidecar "
 "(`bubble`, `play_slot`)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:108
+#: docs/sap/satellite-guide.md:105
 msgid ""
 "`instance_id` in `~/.anima/companion/instance.json`; platform `sap:companion:"
 "{id}`."
 msgstr ""
 
 #. type: Fenced code block (mermaid)
-#: docs/sap/satellite-guide.md:109
+#: docs/sap/satellite-guide.md:106
 #, fuzzy, no-wrap
 #| msgid ""
 #| "flowchart TB\n"
@@ -407,20 +407,20 @@ msgstr ""
 "  end\n"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:128
+#: docs/sap/satellite-guide.md:125
 #, no-wrap
 msgid "**Deprecated:** HTTP hub-api REST→SAP proxy (removed).\n"
 msgstr "**已弃用：** HTTP hub-api REST→SAP 代理（已移除）。\n"
 
 #. type: Title ###
-#: docs/sap/satellite-guide.md:129
+#: docs/sap/satellite-guide.md:126
 #, fuzzy, no-wrap
 #| msgid "Parlor satellite"
 msgid "Chat satellite"
 msgstr "聊天室卫星"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:133
+#: docs/sap/satellite-guide.md:130
 msgid ""
 "**app/desktop / 浏览器 dev（推荐）**：`createSapDirectClient` 直连 Hub；静态 "
 "UI 由 [`satellites/chat/server/index.ts`](../../satellites/chat/server/"
@@ -428,20 +428,20 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:133
+#: docs/sap/satellite-guide.md:130
 msgid ""
 "**Managed 遗留**：若仍用旧 relay sidecar，见 pair-programming 模式；新嵌入以 "
 "direct 为准。"
 msgstr ""
 
 #. type: Title ###
-#: docs/sap/satellite-guide.md:134
+#: docs/sap/satellite-guide.md:131
 #, no-wrap
 msgid "Pair-programming satellite"
 msgstr "结对编程卫星"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:137
+#: docs/sap/satellite-guide.md:134
 msgid ""
 "Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../"
 "satellites/pair-programming/server/index.ts); sidecar uses "
@@ -450,12 +450,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:139
+#: docs/sap/satellite-guide.md:136
 msgid "Reference files:"
 msgstr "参考文件："
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:145
+#: docs/sap/satellite-guide.md:142
 #, fuzzy
 #| msgid ""
 #| "[`satellites/pair-programming/server/sap/hub.ts`](../../satellites/pair-"
@@ -468,7 +468,7 @@ msgstr ""
 "programming/server/sap/hub.ts)"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:145
+#: docs/sap/satellite-guide.md:142
 msgid ""
 "[`satellites/pair-programming/server/sap/hub.ts`](../../satellites/pair-"
 "programming/server/sap/hub.ts)"
@@ -477,7 +477,7 @@ msgstr ""
 "programming/server/sap/hub.ts)"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:145
+#: docs/sap/satellite-guide.md:142
 #, fuzzy
 #| msgid ""
 #| "[`packages/sap-contract/src/relay-browser-client.ts`](../../packages/sap-"
@@ -490,7 +490,7 @@ msgstr ""
 "contract/src/relay-browser-client.ts)"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:145
+#: docs/sap/satellite-guide.md:142
 #, fuzzy
 #| msgid ""
 #| "[`packages/sap-contract/src/relay-browser-client.ts`](../../packages/sap-"
@@ -503,7 +503,7 @@ msgstr ""
 "contract/src/relay-browser-client.ts)"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:145
+#: docs/sap/satellite-guide.md:142
 msgid ""
 "[`satellites/pair-programming/server/http/terminal-bridge.ts`](../../"
 "satellites/pair-programming/server/http/terminal-bridge.ts)"
@@ -512,13 +512,13 @@ msgstr ""
 "satellites/pair-programming/server/http/terminal-bridge.ts)"
 
 #. type: Title ##
-#: docs/sap/satellite-guide.md:146
+#: docs/sap/satellite-guide.md:143
 #, no-wrap
 msgid "Minimal SAP client"
 msgstr "最小 SAP 客户端"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:149
+#: docs/sap/satellite-guide.md:146
 #, fuzzy
 #| msgid "Use `runSapTransport` from `@freeanima/sap-contract`:"
 msgid ""
@@ -526,7 +526,7 @@ msgid ""
 msgstr "使用 `@freeanima/sap-contract` 中的 `runSapTransport`："
 
 #. type: Fenced code block (typescript)
-#: docs/sap/satellite-guide.md:150
+#: docs/sap/satellite-guide.md:147
 #, no-wrap
 msgid ""
 "import { createSatelliteHub, fileSapInstanceStore } from \"@freeanima/sap-contract\";\n"
@@ -545,19 +545,19 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:167
+#: docs/sap/satellite-guide.md:164
 #, no-wrap
 msgid "**Machine strategy (companion, pair-programming):** omit `instance_id` on first connect; Hub assigns a 3-char id and returns it in `connected.instance_id`. Persist via `SapInstanceStore.save`.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:169
+#: docs/sap/satellite-guide.md:166
 #, no-wrap
 msgid "**Singleton strategy (chat):** pass fixed `instance_id` (or `instanceId` option on `createSapDirectClient`); Hub auto-provisions on first sight.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:171
+#: docs/sap/satellite-guide.md:168
 #, fuzzy
 #| msgid ""
 #| "Browser UI on Type B satellites uses `createSapRelayBrowserClient()` "
@@ -570,7 +570,7 @@ msgstr ""
 "Hub 通信。"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:173
+#: docs/sap/satellite-guide.md:170
 msgid ""
 "Transport handles WebSocket open, `connect` handshake, heartbeat, and "
 "reconnect with exponential backoff."
@@ -578,13 +578,13 @@ msgstr ""
 "Transport 负责 WebSocket 打开、`connect` 握手、心跳，以及带指数退避的重连。"
 
 #. type: Title ##
-#: docs/sap/satellite-guide.md:174
+#: docs/sap/satellite-guide.md:171
 #, no-wrap
 msgid "Environment variables"
 msgstr "环境变量"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:183
+#: docs/sap/satellite-guide.md:180
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Variable                                  | Role                                           |\n"
@@ -612,13 +612,13 @@ msgstr ""
 "| `STUDIO_GITIGNORE` / `STUDIO_SHOW_HIDDEN` | 文件树过滤                                     |\n"
 
 #. type: Title ##
-#: docs/sap/satellite-guide.md:184
+#: docs/sap/satellite-guide.md:181
 #, no-wrap
 msgid "Layer dependencies"
 msgstr "层依赖"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:187
+#: docs/sap/satellite-guide.md:184
 msgid ""
 "Per [`.agent/rules/code-layers.md`](../../.agent/rules/code-layers.md) "
 "(Dependency allow/deny matrix): `satellites/*` may depend only on "
@@ -632,14 +632,14 @@ msgstr ""
 "`platform`、`runtime`、`core` 或 `capabilities-*`。"
 
 #. type: Title ##
-#: docs/sap/satellite-guide.md:188
+#: docs/sap/satellite-guide.md:185
 #, fuzzy, no-wrap
 #| msgid "Chamber visibility"
 msgid "Admin visibility"
 msgstr "管理台可见性"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:191
+#: docs/sap/satellite-guide.md:188
 #, fuzzy
 #| msgid ""
 #| "`GET /api/satellites/status` (Chamber → Satellites) reads "
@@ -655,40 +655,40 @@ msgstr ""
 "戳。"
 
 #. type: Title ##
-#: docs/sap/satellite-guide.md:192
+#: docs/sap/satellite-guide.md:189
 #, no-wrap
 msgid "Further reading"
 msgstr "延伸阅读"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:196
+#: docs/sap/satellite-guide.md:193
 msgid ""
 "Frontend manifest / desktop / mobile exports: [`frontend-exports.md`]"
 "(frontend-exports.md)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:196
+#: docs/sap/satellite-guide.md:193
 msgid "Desktop shell: [`app/desktop/`](../../app/desktop/)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:200
+#: docs/sap/satellite-guide.md:197
 msgid "[overview.md](overview.md) — protocol goals"
 msgstr "[overview.md](overview.md) — 协议目标"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:200
+#: docs/sap/satellite-guide.md:197
 msgid "[transport.md](transport.md) — envelopes and handshake"
 msgstr "[transport.md](transport.md) — 信封与握手"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:200
+#: docs/sap/satellite-guide.md:197
 msgid "[tools.md](tools.md) — tool registration and routing"
 msgstr "[tools.md](tools.md) — 工具注册与路由"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:200
+#: docs/sap/satellite-guide.md:197
 msgid ""
 "[pair-programming v1](../features/pair-programming-v1.md) — Studio product "
 "docs"

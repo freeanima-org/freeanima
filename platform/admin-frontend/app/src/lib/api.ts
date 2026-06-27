@@ -466,3 +466,93 @@ export async function listCredentials() {
 export async function getCredentialDetail(path: string) {
   return unwrap(resolveApiClient().api.credentials.detail.get({ query: { path } }));
 }
+
+export type AdminEntityRow = {
+  id: number;
+  type: string;
+  world_id: number;
+  owner_id: number | null;
+  title: string;
+  summary: string;
+  content: string;
+  primary_component: string;
+  components: string[];
+  body: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+};
+
+type EntityListResponse = { items: AdminEntityRow[]; total: number };
+
+export async function listWorldEntities(opts?: { offset?: number; limit?: number }) {
+  return unwrap(
+    resolveApiClient().api.entities.worlds.get({
+      query: {
+        offset: opts?.offset?.toString(),
+        limit: opts?.limit?.toString(),
+      },
+    }),
+  ) as Promise<EntityListResponse>;
+}
+
+export async function createWorldEntity(body: {
+  title: string;
+  summary?: string;
+  content?: string;
+  owner_id?: number | null;
+}) {
+  return unwrap(resolveApiClient().api.entities.worlds.post(body)) as Promise<AdminEntityRow>;
+}
+
+export async function updateWorldEntity(
+  id: number,
+  body: {
+    title?: string;
+    summary?: string;
+    content?: string;
+    owner_id?: number | null;
+  },
+) {
+  return unwrap(
+    resolveApiClient()
+      .api.entities.worlds({ id: String(id) })
+      .patch(body),
+  ) as Promise<AdminEntityRow>;
+}
+
+export async function listSubjectEntities(opts?: { offset?: number; limit?: number }) {
+  return unwrap(
+    resolveApiClient().api.entities.subjects.get({
+      query: {
+        offset: opts?.offset?.toString(),
+        limit: opts?.limit?.toString(),
+      },
+    }),
+  ) as Promise<EntityListResponse>;
+}
+
+export async function createSubjectEntity(body: {
+  type: "agent" | "user";
+  title: string;
+  summary?: string;
+  content?: string;
+  world_id?: number;
+}) {
+  return unwrap(resolveApiClient().api.entities.subjects.post(body)) as Promise<AdminEntityRow>;
+}
+
+export async function updateSubjectEntity(
+  id: number,
+  body: {
+    title?: string;
+    summary?: string;
+    content?: string;
+    world_id?: number;
+  },
+) {
+  return unwrap(
+    resolveApiClient()
+      .api.entities.subjects({ id: String(id) })
+      .patch(body),
+  ) as Promise<AdminEntityRow>;
+}
