@@ -5,12 +5,20 @@ import {
   WORLD_CONFIG_COMPONENT,
   worldConfigBodySchema,
 } from "@freeanima/core/db/schema";
-import type { EntityRow } from "@freeanima/core/repos";
+import type { EntityRow, EntitySearchHit } from "@freeanima/core/repos";
+import {
+  EntitySearchScopeError,
+  resolvePublicAccessibleWorldIds,
+} from "@freeanima/platform/connectors/db-pg";
 
 import { ApiHandlerError } from "./errors.ts";
 import { adminCtx } from "./runtime.ts";
 
 function mapEntity(row: EntityRow): EntityRow {
+  return row;
+}
+
+function mapSearchHit(row: EntitySearchHit): EntitySearchHit {
   return row;
 }
 
@@ -324,4 +332,74 @@ export async function updateSubjectEntity(
     throw new ApiHandlerError(404, "subject not found", { code: "entity_subject_not_found" });
   }
   return mapEntity((await store.get(id)) ?? updated);
+}
+
+export async function searchEntities(input: {
+  query?: string;
+  world_id?: number;
+  global?: boolean;
+  type?: "content" | "world" | "agent" | "user";
+  types?: Array<"content" | "world" | "agent" | "user">;
+  primary_component?: string;
+  component?: string;
+  filters?: Record<string, unknown>;
+  created_after?: string;
+  created_before?: string;
+  updated_after?: string;
+  updated_before?: string;
+  limit?: number;
+  offset?: number;
+  mode?: "hybrid" | "filter_only";
+}) {
+  const search = adminCtx().engine.repos.entitySearch;
+  const entityStore = adminCtx().engine.repos.entity;
+  const global = input.global === true;
+  let accessible_world_ids: number[] | undefined;
+
+  if (global) {
+    accessible_world_ids = await resolvePublicAccessibleWorldIds(entityStore);
+    if (!accessible_world_ids.length) {
+      throw new ApiHandlerError(403, "no accessible worlds for global search", {
+        code: "entity_search_global_forbidden",
+      });
+    }
+  } else if (input.world_id == null || input.world_id <= 0) {
+    throw new ApiHandlerError(400, "world_id is required unless global=true", {
+      code: "entity_search_scope_required",
+    });
+  }
+
+  try {
+    const result = await search.search({
+      query: input.query,
+      world_id: global ? undefined : input.world_id,
+      global,
+      accessible_world_ids,
+      type: input.type,
+      types: input.types,
+      primary_component: input.primary_component,
+      component: input.component,
+      filters: input.filters,
+      created_after: input.created_after,
+      created_before: input.created_before,
+      updated_after: input.updated_after,
+      updated_before: input.updated_before,
+      limit: input.limit,
+      offset: input.offset,
+      mode: input.mode,
+    });
+    return {
+      query: result.query,
+      limit: result.limit,
+      offset: result.offset,
+      count: result.count,
+      results: result.results.map(mapSearchHit),
+    };
+  } catch (err: unknown) {
+    if (err instanceof EntitySearchScopeError) {
+      const status = err.code === "entity_search_global_forbidden" ? 403 : 400;
+      throw new ApiHandlerError(status, err.message, { code: err.code });
+    }
+    throw err;
+  }
 }

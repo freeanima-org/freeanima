@@ -46,6 +46,11 @@ export function scheduleAutobiographicalMemoryEmbedding(id: string, content: str
   runEmbedding({ kind: "autobiographical_memory", id, content });
 }
 
+/** Async write entity search embedding (failure logged only) */
+export function scheduleEntityEmbedding(id: number, content: string): void {
+  runEmbedding({ kind: "entity", id: String(id), content });
+}
+
 /** Unit/integration test: await all in-flight embedding writes */
 export async function awaitPendingEmbeddingsForTest(): Promise<void> {
   await Promise.all([...inFlight]);

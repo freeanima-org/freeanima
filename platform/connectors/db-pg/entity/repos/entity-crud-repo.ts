@@ -5,6 +5,7 @@ import {
   mapEntityRow,
   primaryComponentSchema,
   validateEntityBody,
+  entitySearchTextForWrite,
 } from "@freeanima/core/db/schema/entity";
 import type {
   EntityCreateInput,
@@ -14,6 +15,8 @@ import type {
 } from "@freeanima/core/repos";
 import { formatCstIso } from "@freeanima/core/util";
 
+import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
+import { scheduleEntityEmbedding, clearEntityEmbedding } from "../../embedding/entity-embedding.ts";
 import { getDb } from "../../client.ts";
 
 function mapRow(row: typeof entities.$inferSelect): EntityRow {
@@ -39,6 +42,14 @@ function normalizeCreate(input: EntityCreateInput) {
 export async function createEntity(input: EntityCreateInput): Promise<EntityRow> {
   const { type, primary, components, body, title, summary, content } = normalizeCreate(input);
   const now = formatCstIso(new Date());
+  const indexText = entitySearchTextForWrite({
+    title,
+    summary,
+    content,
+    body,
+    primary_component: primary,
+  });
+  const ftsSegmented = await resolveFtsSegmentedForWrite(indexText);
   const db = getDb();
   const [row] = await db
     .insert(entities)
@@ -51,11 +62,13 @@ export async function createEntity(input: EntityCreateInput): Promise<EntityRow>
       summary,
       content,
       body,
+      ftsSegmented,
       createdAt: now,
       updatedAt: now,
     })
     .returning();
   if (!row) throw new Error("entity insert failed");
+  scheduleEntityEmbedding(row.id, indexText);
   return mapRow(row);
 }
 
@@ -77,18 +90,42 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
   validateEntityBody(components, body);
 
   const now = formatCstIso(new Date());
+  const nextTitle = input.title !== undefined ? input.title.trim() : existing.title;
+  const nextSummary = input.summary !== undefined ? input.summary.trim() : existing.summary;
+  const nextContent = input.content !== undefined ? input.content.trim() : existing.content;
+  const indexText = entitySearchTextForWrite({
+    title: nextTitle,
+    summary: nextSummary,
+    content: nextContent,
+    body,
+    primary_component: existing.primary_component,
+  });
+
   const patch: Partial<typeof entities.$inferInsert> = {
     components,
     body,
     updatedAt: now,
   };
-  if (input.title !== undefined) patch.title = input.title.trim();
-  if (input.summary !== undefined) patch.summary = input.summary.trim();
-  if (input.content !== undefined) patch.content = input.content.trim();
+  if (input.title !== undefined) patch.title = nextTitle;
+  if (input.summary !== undefined) patch.summary = nextSummary;
+  if (input.content !== undefined) patch.content = nextContent;
   if (input.world_id !== undefined) patch.worldId = input.world_id;
+
+  const textChanged =
+    input.title !== undefined ||
+    input.summary !== undefined ||
+    input.content !== undefined ||
+    input.body !== undefined;
+  if (textChanged) {
+    patch.ftsSegmented = await resolveFtsSegmentedForWrite(indexText);
+    await clearEntityEmbedding(input.id);
+  }
 
   const db = getDb();
   const [row] = await db.update(entities).set(patch).where(eq(entities.id, input.id)).returning();
+  if (textChanged && row) {
+    scheduleEntityEmbedding(row.id, indexText);
+  }
   return row ? mapRow(row) : null;
 }
 

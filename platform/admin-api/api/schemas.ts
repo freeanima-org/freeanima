@@ -180,6 +180,32 @@ export type WorldEntityUpdateBody = z.infer<typeof worldEntityUpdateBodySchema>;
 export type SubjectEntityCreateBody = z.infer<typeof subjectEntityCreateBodySchema>;
 export type SubjectEntityUpdateBody = z.infer<typeof subjectEntityUpdateBodySchema>;
 
+export const entitySearchQuerySchema = z.object({
+  query: z.string().optional(),
+  world_id: z.coerce.number().int().positive().optional(),
+  global: z
+    .union([z.boolean(), z.literal("true"), z.literal("false")])
+    .optional()
+    .transform((v) => v === true || v === "true"),
+  type: z.enum(["content", "world", "agent", "user"]).optional(),
+  primary_component: z.string().optional(),
+  component: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(50).optional(),
+  offset: z.coerce.number().int().min(0).optional(),
+  mode: z.enum(["hybrid", "filter_only"]).optional(),
+});
+
+export const entitySearchBodySchema = entitySearchQuerySchema.extend({
+  types: z.array(z.enum(["content", "world", "agent", "user"])).optional(),
+  filters: z.record(z.string(), z.unknown()).optional(),
+  created_after: z.string().optional(),
+  created_before: z.string().optional(),
+  updated_after: z.string().optional(),
+  updated_before: z.string().optional(),
+});
+
+export type EntitySearchBody = z.infer<typeof entitySearchBodySchema>;
+
 const streamAcceptedEventSchema = z.object({
   event: z.literal("accepted"),
   data: z.object({}),

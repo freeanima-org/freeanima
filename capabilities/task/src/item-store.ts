@@ -1,11 +1,11 @@
-import {
-  TASK_ITEM_COMPONENT,
-  asTaskItem,
-  type TaskItemBody,
-} from "@freeanima/core/db/schema/entity";
+import { TASK_ITEM_COMPONENT, asTaskItem } from "@freeanima/core/db/schema/entity";
 import { formatCstIso } from "@freeanima/core/util";
 
-import { defaultTaskWorldId, getEntityStoreForTask } from "./entity-port.ts";
+import {
+  defaultTaskWorldId,
+  getEntityStoreForTask,
+  getEntitySearchForTask,
+} from "./entity-port.ts";
 import type {
   TaskItemCreateInput,
   TaskItemListOpts,
@@ -46,72 +46,44 @@ function toItemRow(
   };
 }
 
-function isDueToday(iso: string | null | undefined): boolean {
-  if (!iso) return false;
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return false;
-  const now = new Date();
-  return (
-    d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth() &&
-    d.getDate() === now.getDate()
-  );
-}
-
-function matchesTags(itemTags: string[], filter: string[] | undefined): boolean {
-  if (!filter?.length) return true;
-  const set = new Set(itemTags);
-  return filter.every((t) => set.has(t));
-}
-
 export async function listTaskItems(opts: TaskItemListOpts = {}): Promise<TaskItemRow[]> {
-  const store = getEntityStoreForTask();
-  const rows = await store.list({
+  const search = getEntitySearchForTask();
+  const filters: Record<string, unknown> = {};
+  if (opts.list_id != null) filters.list_id = opts.list_id;
+  if (opts.status != null) filters.status = opts.status;
+  if (opts.due_today) filters.due_today = true;
+  if (opts.tags?.length) filters.tags = opts.tags;
+
+  const result = await search.search({
     world_id: defaultTaskWorldId(),
     primary_component: TASK_ITEM_COMPONENT,
+    filters: Object.keys(filters).length > 0 ? filters : undefined,
     limit: opts.limit ?? 500,
     offset: opts.offset ?? 0,
+    mode: "filter_only",
   });
 
-  let items = rows
+  return result.results
     .map((row) => {
       const parsed = asTaskItem(row);
       return parsed
         ? toItemRow(parsed, { created_at: row.created_at, updated_at: row.updated_at })
         : null;
     })
-    .filter((row): row is TaskItemRow => row != null);
-
-  if (opts.list_id != null) {
-    items = items.filter((item) => item.list_id === opts.list_id);
-  }
-  if (opts.status && opts.status !== "all") {
-    items = items.filter((item) => item.status === opts.status);
-  }
-  if (opts.due_today) {
-    items = items.filter((item) => isDueToday(item.due_at));
-  }
-  if (opts.tags?.length) {
-    items = items.filter((item) => matchesTags(item.tags, opts.tags));
-  }
-
-  return items.toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
+    .filter((row): row is TaskItemRow => row != null)
+    .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
 }
 
 export async function createTaskItem(input: TaskItemCreateInput): Promise<TaskItemRow> {
   const store = getEntityStoreForTask();
-  const list = await store.get(input.list_id);
-  if (!list || list.primary_component !== "task_list") {
-    throw new Error(`task list not found: ${input.list_id}`);
-  }
-
-  const body: TaskItemBody = {
-    status: "pending",
+  const tags = normalizeTags(input.tags);
+  const body = {
+    status: "pending" as const,
     priority: input.priority ?? "none",
-    due_at: input.due_at ?? null,
     list_id: input.list_id,
     sort_order: input.sort_order ?? 0,
-    tags: normalizeTags(input.tags),
+    tags,
+    due_at: input.due_at ?? null,
     completed_at: null,
   };
 
@@ -124,22 +96,26 @@ export async function createTaskItem(input: TaskItemCreateInput): Promise<TaskIt
     content: input.content?.trim() ?? "",
     body,
   });
+
   const parsed = asTaskItem(row);
-  if (!parsed) throw new Error("failed to create task item");
+  if (!parsed) throw new Error("task item create failed");
   return toItemRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
 }
 
 export async function updateTaskItem(input: TaskItemUpdateInput): Promise<TaskItemRow | null> {
   const store = getEntityStoreForTask();
   const existing = await store.get(input.id);
-  if (!existing || existing.primary_component !== TASK_ITEM_COMPONENT) return null;
+  if (!existing) return null;
+
+  const parsedExisting = asTaskItem(existing);
+  if (!parsedExisting) return null;
 
   const bodyPatch: Record<string, unknown> = {};
   if (input.list_id !== undefined) bodyPatch.list_id = input.list_id;
   if (input.priority !== undefined) bodyPatch.priority = input.priority;
   if (input.due_at !== undefined) bodyPatch.due_at = input.due_at;
-  if (input.tags !== undefined) bodyPatch.tags = normalizeTags(input.tags);
   if (input.sort_order !== undefined) bodyPatch.sort_order = input.sort_order;
+  if (input.tags !== undefined) bodyPatch.tags = normalizeTags(input.tags);
   if (input.status !== undefined) {
     bodyPatch.status = input.status;
     bodyPatch.completed_at = input.status === "completed" ? formatCstIso(new Date()) : null;
@@ -147,11 +123,12 @@ export async function updateTaskItem(input: TaskItemUpdateInput): Promise<TaskIt
 
   const row = await store.update({
     id: input.id,
-    title: input.title?.trim(),
-    content: input.content !== undefined ? input.content.trim() : undefined,
+    title: input.title,
+    content: input.content,
     body: Object.keys(bodyPatch).length > 0 ? bodyPatch : undefined,
   });
   if (!row) return null;
+
   const parsed = asTaskItem(row);
   return parsed
     ? toItemRow(parsed, { created_at: row.created_at, updated_at: row.updated_at })

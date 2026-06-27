@@ -70,3 +70,5 @@ export async function clearSemanticMemoryEmbedding(id: string): Promise<void> {
   const db = getDb();
   await db.update(semanticMemory).set({ contentEmbedding: null }).where(eq(semanticMemory.id, id));
 }
+
+export { setEntityEmbedding, clearEntityEmbedding } from "./entity-embedding.ts";

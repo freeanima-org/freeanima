@@ -63,5 +63,6 @@ export {
   getSubjectEntity,
   createSubjectEntity,
   updateSubjectEntity,
+  searchEntities,
 } from "./entities.ts";
 export { ApiHandlerError } from "./errors.ts";

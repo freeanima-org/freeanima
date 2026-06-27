@@ -6,6 +6,8 @@ import type { TaskItemRow } from "../lib/api.ts";
 
 type CompletedTaskListProps = {
   items: TaskItemRow[];
+  sortable?: boolean;
+  listNameForItem?: (item: TaskItemRow) => string | null;
   useActionSheet: boolean;
   selectionMode: boolean;
   selectedIds: ReadonlySet<number>;
@@ -18,6 +20,8 @@ type CompletedTaskListProps = {
 
 function CompletedTaskRow({
   item,
+  sortable,
+  listName,
   useActionSheet,
   selectionMode,
   selected,
@@ -28,6 +32,8 @@ function CompletedTaskRow({
   onLongPressSelect,
 }: {
   item: TaskItemRow;
+  sortable: boolean;
+  listName: string | null;
   useActionSheet: boolean;
   selectionMode: boolean;
   selected: boolean;
@@ -41,7 +47,7 @@ function CompletedTaskRow({
 
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: taskDndId(item.id),
-    disabled: selectionMode,
+    disabled: selectionMode || !sortable,
   });
 
   const clearLongPress = () => {
@@ -71,7 +77,7 @@ function CompletedTaskRow({
       onTouchMove={clearLongPress}
       onTouchCancel={clearLongPress}
     >
-      {!selectionMode ? (
+      {!selectionMode && sortable ? (
         <button
           type="button"
           title="拖到左侧清单以移动"
@@ -101,7 +107,12 @@ function CompletedTaskRow({
           if (selectionMode) onSelectItem(e.shiftKey);
         }}
       >
-        {item.title}
+        <span className="block truncate">{item.title}</span>
+        {listName ? (
+          <span className="text-base-content/45 block truncate text-xs no-underline">
+            {listName}
+          </span>
+        ) : null}
       </button>
       {useActionSheet && !selectionMode ? (
         <button
@@ -119,6 +130,8 @@ function CompletedTaskRow({
 
 export function CompletedTaskList({
   items,
+  sortable = true,
+  listNameForItem,
   useActionSheet,
   selectionMode,
   selectedIds,
@@ -152,6 +165,8 @@ export function CompletedTaskList({
             <CompletedTaskRow
               key={item.id}
               item={item}
+              sortable={sortable}
+              listName={listNameForItem?.(item) ?? null}
               useActionSheet={useActionSheet}
               selectionMode={selectionMode}
               selected={selectedIds.has(item.id)}

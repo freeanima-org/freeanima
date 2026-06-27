@@ -20,6 +20,7 @@ import {
   updateTaskItem,
 } from "../capabilities/task/src/index.ts";
 import { pgEntityStore } from "../platform/connectors/db-pg/entity/pg-entity-store.ts";
+import { pgEntitySearchStore } from "../platform/connectors/db-pg/entity/pg-entity-search-store.ts";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -182,7 +183,7 @@ async function main(): Promise<void> {
       return;
     }
 
-    registerEntityTaskModule({ entityStore: pgEntityStore });
+    registerEntityTaskModule({ entityStore: pgEntityStore, entitySearch: pgEntitySearchStore });
 
     const existing = await listTaskItems({ status: "all", limit: 5000 });
     const migrated = new Set(

@@ -2,7 +2,9 @@ import { registerMemoryPipeline } from "@freeanima/capabilities-memory";
 import { registerDreamFridge } from "@freeanima/capabilities-memory/dream-fridge-port";
 import { registerSelfLayerStore } from "@freeanima/capabilities-identity";
 import { registerEntityTaskModule } from "@freeanima/capabilities-task";
+import { registerEntitySearchModule } from "@freeanima/capabilities-tools";
 import type { PgRepositories } from "@freeanima/core/repos";
+import { resolvePublicAccessibleWorldIds } from "@freeanima/platform/connectors/db-pg";
 
 import { createDreamFridgePort } from "./dream-fridge-factory.ts";
 
@@ -17,5 +19,9 @@ export function registerServiceStores(repos: PgRepositories): void {
   });
   registerDreamFridge(createDreamFridgePort());
   registerSelfLayerStore(repos.selfLayer);
-  registerEntityTaskModule({ entityStore: repos.entity });
+  registerEntitySearchModule({
+    search: repos.entitySearch,
+    resolveAccessibleWorldIds: () => resolvePublicAccessibleWorldIds(repos.entity),
+  });
+  registerEntityTaskModule({ entityStore: repos.entity, entitySearch: repos.entitySearch });
 }

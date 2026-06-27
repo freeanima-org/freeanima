@@ -122,6 +122,13 @@
 
 /* ── 移动端基础适配（PC 为主，小屏可读可用） ── */
 @media (max-width: 1023px) {
+  .admin-app {
+    padding-top: var(--sat);
+    padding-left: var(--sal);
+    padding-right: var(--sar);
+    box-sizing: border-box;
+  }
+
   .chat .chat-bubble {
     max-width: min(92vw, 100%);
   }
@@ -135,6 +142,31 @@
 
   .table {
     font-size: 0.8125rem;
+  }
+
+  .app-main-padding {
+    @apply p-3;
+  }
+
+  /* 弹窗：小屏占满可用宽度 */
+  .modal-box {
+    width: calc(100vw - 2rem - var(--sal) - var(--sar));
+    max-width: none;
+  }
+
+  /* 页头工具栏：按钮换行时占满行宽 */
+  .admin-page-toolbar {
+    width: 100%;
+  }
+
+  .admin-page-toolbar .btn {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* 卡片内表格横向滚动，避免撑破布局 */
+  .card .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
   }
 
   /* 创作室结对编程：侧栏面板全屏叠层 */

@@ -5,7 +5,8 @@ export type EmbeddingJobKind =
   | "message"
   | "semantic_memory"
   | "limbic_memory"
-  | "autobiographical_memory";
+  | "autobiographical_memory"
+  | "entity";
 
 export type EmbeddingPendingJob = {
   kind: EmbeddingJobKind;

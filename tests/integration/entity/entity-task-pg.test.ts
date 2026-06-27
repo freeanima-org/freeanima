@@ -28,7 +28,10 @@ describePg("entity task PG", () => {
 
   beforeEach(async () => {
     await beginIntegrationCase("freeanima-entity-task-");
-    registerEntityTaskModule({ entityStore: getTestEngine().repos.entity });
+    registerEntityTaskModule({
+      entityStore: getTestEngine().repos.entity,
+      entitySearch: getTestEngine().repos.entitySearch,
+    });
   });
 
   afterEach(async () => {

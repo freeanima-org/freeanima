@@ -11,6 +11,7 @@ import { nullMemoryReferenceStore } from "./null-memory-reference.ts";
 import { nullSemanticMemoryStore } from "./null-semantic-memory.ts";
 import { nullConversationStore } from "./null-conversation.ts";
 import { nullEntityStore } from "./null-entity.ts";
+import { nullEntitySearchStore } from "./null-entity-search.ts";
 import { nullSapInstanceStore } from "./null-sap-instance.ts";
 import { nullNotificationStore } from "./null-notification.ts";
 
@@ -28,6 +29,7 @@ export const nullPgRepositories: PgRepositories = {
   pipelineStepRun: nullPipelineStepRunStore,
   autoLlmRun: nullAutoLlmRunStore,
   entity: nullEntityStore,
+  entitySearch: nullEntitySearchStore,
   notifications: nullNotificationStore,
   sapInstance: nullSapInstanceStore,
 };

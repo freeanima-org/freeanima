@@ -3,6 +3,7 @@ export type FtsRebuildPhase =
   | "messages_segmented"
   | "limbic_memory_segmented"
   | "autobiographical_memory_segmented"
+  | "entities_segmented"
   | "semantic_memory_embedding"
   | "messages_embedding"
   | "limbic_memory_embedding"

@@ -5,6 +5,7 @@ import { expandJobsToUnits } from "./batch-pack.ts";
 import { getEmbedTextFn } from "./runtime.ts";
 import {
   setAutobiographicalMemoryEmbedding,
+  setEntityEmbedding,
   setLimbicMemoryEmbedding,
   setMessageEmbedding,
   setSemanticMemoryEmbedding,
@@ -65,6 +66,8 @@ async function storeJobEmbedding(job: EmbeddingPendingJob, merged: number[]): Pr
       return setAutobiographicalMemoryEmbedding(job.id, job.content, merged);
     case "message":
       return setMessageEmbedding(job.id, job.content, merged);
+    case "entity":
+      return setEntityEmbedding(Number(job.id), job.content, merged);
   }
 }
 

@@ -1,3 +1,4 @@
+import { entitySearchHitToTaskItem } from "./search-hit-mapper.ts";
 import { whenSapClientReady } from "./sap-client.ts";
 
 export type TaskListRow = {
@@ -61,6 +62,48 @@ export async function fetchTaskItems(listId: number): Promise<TaskItemRow[]> {
   const client = await sap();
   const data = await client.request("task.list", { list_id: listId, status: "all" });
   return data.items;
+}
+
+export async function searchTaskItems(input: {
+  query: string;
+  /** 限定单个清单；省略则搜索全部清单 */
+  list_id?: number;
+  status?: "pending" | "completed" | "all";
+  limit?: number;
+}): Promise<TaskItemRow[]> {
+  const filters: Record<string, unknown> = {};
+  if (input.list_id != null) filters.list_id = input.list_id;
+  if (input.status && input.status !== "all") filters.status = input.status;
+
+  const res = await fetch("/api/entities/search", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      query: input.query,
+      world_id: 1,
+      primary_component: "task_item",
+      mode: "hybrid",
+      filters: Object.keys(filters).length > 0 ? filters : undefined,
+      limit: input.limit ?? 30,
+    }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(body.error ?? `search failed: ${res.status}`);
+  }
+  const data = (await res.json()) as {
+    results: Array<{
+      id: number;
+      title: string;
+      content?: string;
+      body?: Record<string, unknown>;
+      created_at?: string;
+      updated_at?: string;
+    }>;
+  };
+  return data.results
+    .map((row) => entitySearchHitToTaskItem(row))
+    .filter((row): row is TaskItemRow => row != null);
 }
 
 export async function createTaskItem(input: {

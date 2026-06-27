@@ -74,6 +74,25 @@ Items reference their list via `body.list_id` (entity id). Task items store **ti
 
 LLM tools use `@freeanima/capabilities-task` (`task_*` tools, `exposeMcp: true`). Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration (`scripts/migrate-tasks-to-entities.ts`).
 
+## Search
+
+Entity **list** (deterministic browse) and **search** (relevance ranking) are separate ports:
+
+| Port                      | Role                                                                  |
+| ------------------------- | --------------------------------------------------------------------- |
+| `EntityStorePort.list`    | Structural filters; stable sort                                       |
+| `EntitySearchPort.search` | Hard filters + optional text query; hybrid FTS/trigram/vector via RRF |
+
+**Scope:** default `world_id`; `global: true` requires an explicit accessible-world allowlist (public worlds only until subject permissions bootstrap).
+
+**Component filters:** whitelisted per `primary_component` (e.g. `task_item`: `status`, `list_id`, `tags`, `due_today`). Arbitrary JSONPath is forbidden.
+
+**Tools / API:** `entity_search` (LLM/MCP) and `GET|POST /api/entities/search` share `EntitySearchPort`. Task UI search box uses the same REST endpoint.
+
+See memory hybrid search in [`memory.md`](memory.md) for FTS operator syntax; entity search reuses the same query builder.
+
+**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run Admin **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.
+
 ## Future migration map (not executed yet)
 
 | Legacy table              | Target                                 |

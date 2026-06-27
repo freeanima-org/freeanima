@@ -8,6 +8,12 @@ export { registerTerminalTools } from "./terminal.ts";
 export { registerWebTools } from "./web.ts";
 export { registerCredentialTools } from "./credential.ts";
 export { registerExecuteCodeTool } from "./execute-code.ts";
+export { registerEntitySearchTools } from "./entity-search.ts";
+export {
+  registerEntitySearchModule,
+  getEntitySearchStore,
+  resetEntitySearchModuleForTests,
+} from "./entity-search-port.ts";
 export { clampTimeout, parseRuntime, runExecuteCode } from "./execute-code-runtimes.ts";
 
 import type { Config } from "@freeanima/core/config";
@@ -24,6 +30,7 @@ import { registerConversationTools } from "./conversation.ts";
 import { registerSkillsTools } from "./skill.ts";
 import { registerTerminalTools } from "./terminal.ts";
 import { registerWebTools } from "./web.ts";
+import { registerEntitySearchTools } from "./entity-search.ts";
 
 /** Core tool sets */
 export function registerCoreTools(toolSets: ToolSetRegistry, config: Config): void {
@@ -35,6 +42,7 @@ export function registerCoreTools(toolSets: ToolSetRegistry, config: Config): vo
   registerExecuteCodeTool(toolSets);
   registerTerminalTools(toolSets);
   registerWebTools(toolSets);
+  registerEntitySearchTools(toolSets);
 }
 
 /** skills + browser */
