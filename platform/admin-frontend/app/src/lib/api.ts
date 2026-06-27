@@ -471,7 +471,6 @@ export type AdminEntityRow = {
   id: number;
   type: string;
   world_id: number;
-  owner_id: number | null;
   title: string;
   summary: string;
   content: string;
@@ -499,7 +498,8 @@ export async function createWorldEntity(body: {
   title: string;
   summary?: string;
   content?: string;
-  owner_id?: number | null;
+  private?: boolean;
+  owner_subject_id?: number;
 }) {
   return unwrap(resolveApiClient().api.entities.worlds.post(body)) as Promise<AdminEntityRow>;
 }
@@ -510,7 +510,8 @@ export async function updateWorldEntity(
     title?: string;
     summary?: string;
     content?: string;
-    owner_id?: number | null;
+    private?: boolean;
+    owner_subject_id?: number | null;
   },
 ) {
   return unwrap(
@@ -536,7 +537,6 @@ export async function createSubjectEntity(body: {
   title: string;
   summary?: string;
   content?: string;
-  world_id?: number;
 }) {
   return unwrap(resolveApiClient().api.entities.subjects.post(body)) as Promise<AdminEntityRow>;
 }
@@ -547,7 +547,7 @@ export async function updateSubjectEntity(
     title?: string;
     summary?: string;
     content?: string;
-    world_id?: number;
+    default_private_world_id?: number;
   },
 ) {
   return unwrap(

@@ -5,6 +5,7 @@ import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
 import { m } from "@admin/lib/i18n.ts";
 import {
   createWorldEntity,
+  listSubjectEntities,
   listWorldEntities,
   updateWorldEntity,
   type AdminEntityRow,
@@ -19,26 +20,47 @@ type WorldFormState = {
   title: string;
   summary: string;
   content: string;
-  owner_id: string;
+  private: boolean;
+  owner_subject_id: string;
 };
 
 const EMPTY_FORM: WorldFormState = {
   title: "",
   summary: "",
   content: "",
-  owner_id: "",
+  private: false,
+  owner_subject_id: "",
 };
 
-function parseOwnerIdInput(value: string): number | null {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  const n = Number(trimmed);
-  return Number.isInteger(n) && n > 0 ? n : null;
+function readWorldBody(row: AdminEntityRow): {
+  private: boolean;
+  owner_subject_id: number | null;
+  default_private: boolean;
+} {
+  const body = row.body ?? {};
+  const isPrivate = body.private === true;
+  const ownerSubjectId =
+    typeof body.owner_subject_id === "number" && body.owner_subject_id > 0
+      ? body.owner_subject_id
+      : null;
+  return {
+    private: isPrivate,
+    owner_subject_id: ownerSubjectId,
+    default_private: body.default_private === true,
+  };
+}
+
+function subjectOptionLabel(row: AdminEntityRow): string {
+  const typeLabel =
+    row.type === "user" ? m.admin_entities_type_user() : m.admin_entities_type_agent();
+  const title = row.title || m.admin_common_no_title();
+  return `#${row.id} — ${title} (${typeLabel})`;
 }
 
 function WorldEditModal({
   mode,
   initial,
+  subjects,
   saving,
   error,
   onClose,
@@ -46,6 +68,7 @@ function WorldEditModal({
 }: {
   mode: "create" | "edit";
   initial: WorldFormState;
+  subjects: AdminEntityRow[];
   saving: boolean;
   error: string;
   onClose: () => void;
@@ -96,18 +119,39 @@ function WorldEditModal({
               onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
             />
           </FormField>
-          <FormField
-            label={`${m.admin_entities_col_owner()} (${m.admin_common_optional()})`}
-            className="text-xs"
-          >
-            <input
-              type="text"
-              className="input input-bordered input-sm w-full font-mono"
-              placeholder={m.admin_entities_owner_public()}
-              value={form.owner_id}
-              onChange={(e) => setForm((f) => ({ ...f, owner_id: e.target.value }))}
-            />
+          <FormField label={m.admin_entities_col_visibility()} className="text-xs">
+            <label className="label cursor-pointer justify-start gap-2 py-0">
+              <input
+                type="checkbox"
+                className="checkbox checkbox-sm"
+                checked={form.private}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    private: e.target.checked,
+                    owner_subject_id: e.target.checked ? f.owner_subject_id : "",
+                  }))
+                }
+              />
+              <span className="label-text">{m.admin_entities_visibility_private()}</span>
+            </label>
           </FormField>
+          {form.private ? (
+            <FormField label={m.admin_entities_col_owner_subject()} className="text-xs">
+              <select
+                className="select select-bordered select-sm w-full"
+                value={form.owner_subject_id}
+                onChange={(e) => setForm((f) => ({ ...f, owner_subject_id: e.target.value }))}
+              >
+                <option value="">{m.admin_entities_owner_subject_placeholder()}</option>
+                {subjects.map((s) => (
+                  <option key={s.id} value={String(s.id)}>
+                    {subjectOptionLabel(s)}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+          ) : null}
         </FormFieldset>
         <div className="modal-action">
           <button
@@ -121,7 +165,9 @@ function WorldEditModal({
           <button
             type="button"
             className="btn btn-primary btn-sm"
-            disabled={saving || !form.title.trim()}
+            disabled={
+              saving || !form.title.trim() || (form.private && !form.owner_subject_id.trim())
+            }
             onClick={() => onSave(form)}
           >
             {saving ? (
@@ -143,6 +189,7 @@ function WorldEditModal({
 
 function WorldsPage() {
   const [items, setItems] = useState<AdminEntityRow[]>([]);
+  const [subjects, setSubjects] = useState<AdminEntityRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -153,13 +200,26 @@ function WorldsPage() {
   const [modalError, setModalError] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const subjectTitleById = useCallback(
+    (id: number | null): string => {
+      if (id == null) return m.admin_common_empty();
+      const subject = subjects.find((s) => s.id === id);
+      return subject?.title || `#${id}`;
+    },
+    [subjects],
+  );
+
   const fetchList = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const data = await listWorldEntities();
-      setItems(data.items);
-      setTotal(data.total);
+      const [worldData, subjectData] = await Promise.all([
+        listWorldEntities(),
+        listSubjectEntities(),
+      ]);
+      setItems(worldData.items);
+      setTotal(worldData.total);
+      setSubjects(subjectData.items);
     } catch (e) {
       logCaughtError("routes/_sidebar/worlds", e);
       setError(
@@ -192,23 +252,30 @@ function WorldsPage() {
 
   const modalInitial: WorldFormState =
     modal?.mode === "edit" && modal.row
-      ? {
-          title: modal.row.title,
-          summary: modal.row.summary,
-          content: modal.row.content,
-          owner_id: modal.row.owner_id != null ? String(modal.row.owner_id) : "",
-        }
+      ? (() => {
+          const access = readWorldBody(modal.row);
+          return {
+            title: modal.row.title,
+            summary: modal.row.summary,
+            content: modal.row.content,
+            private: access.private,
+            owner_subject_id:
+              access.owner_subject_id != null ? String(access.owner_subject_id) : "",
+          };
+        })()
       : EMPTY_FORM;
 
   const onSave = async (form: WorldFormState) => {
     setSaving(true);
     setModalError("");
     try {
+      const ownerSubjectId = form.private ? Number(form.owner_subject_id) : undefined;
       const payload = {
         title: form.title.trim(),
         summary: form.summary.trim(),
         content: form.content.trim(),
-        owner_id: parseOwnerIdInput(form.owner_id),
+        private: form.private,
+        owner_subject_id: ownerSubjectId,
       };
       if (modal?.mode === "edit" && modal.row) {
         await updateWorldEntity(modal.row.id, payload);
@@ -268,38 +335,51 @@ function WorldsPage() {
                   <th>{m.admin_entities_col_id()}</th>
                   <th>{m.admin_entities_col_title()}</th>
                   <th>{m.admin_entities_col_summary()}</th>
-                  <th>{m.admin_entities_col_owner()}</th>
+                  <th>{m.admin_entities_col_visibility()}</th>
+                  <th>{m.admin_entities_col_owner_subject()}</th>
                   <th>{m.admin_common_time()}</th>
                   <th />
                 </tr>
               </thead>
               <tbody>
-                {items.map((row) => (
-                  <tr key={row.id}>
-                    <td className="font-mono text-xs">{row.id}</td>
-                    <td className="max-w-[12rem] truncate">
-                      {row.title || m.admin_common_no_title()}
-                    </td>
-                    <td className="max-w-[16rem] truncate text-base-content/70">
-                      {row.summary || m.admin_common_empty()}
-                    </td>
-                    <td className="font-mono text-xs">
-                      {row.owner_id ?? m.admin_entities_owner_public()}
-                    </td>
-                    <td className="text-xs text-base-content/60">
-                      {formatDisplayDateTime(row.updated_at)}
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        className="btn btn-xs btn-ghost"
-                        onClick={() => openEdit(row)}
-                      >
-                        {m.admin_common_edit()}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {items.map((row) => {
+                  const access = readWorldBody(row);
+                  return (
+                    <tr key={row.id}>
+                      <td className="font-mono text-xs">{row.id}</td>
+                      <td className="max-w-[12rem] truncate">
+                        {row.title || m.admin_common_no_title()}
+                      </td>
+                      <td className="max-w-[16rem] truncate text-base-content/70">
+                        {row.summary || m.admin_common_empty()}
+                      </td>
+                      <td className="text-xs">
+                        {access.private
+                          ? access.default_private
+                            ? m.admin_entities_world_default_private_badge()
+                            : m.admin_entities_visibility_private()
+                          : m.admin_entities_visibility_public()}
+                      </td>
+                      <td className="text-xs max-w-[12rem] truncate">
+                        {access.private
+                          ? subjectTitleById(access.owner_subject_id)
+                          : m.admin_common_empty()}
+                      </td>
+                      <td className="text-xs text-base-content/60">
+                        {formatDisplayDateTime(row.updated_at)}
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="btn btn-xs btn-ghost"
+                          onClick={() => openEdit(row)}
+                        >
+                          {m.admin_common_edit()}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
             <div className="px-4 py-2 text-xs text-base-content/60 border-t border-base-300/50">
@@ -313,6 +393,7 @@ function WorldsPage() {
         <WorldEditModal
           mode={modal.mode}
           initial={modalInitial}
+          subjects={subjects}
           saving={saving}
           error={modalError}
           onClose={closeModal}
