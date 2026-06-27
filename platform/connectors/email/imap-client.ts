@@ -35,6 +35,45 @@ export function extractBody(source: unknown): string {
   return "";
 }
 
+function parseReferencesHeader(raw: string | undefined): string[] {
+  if (!raw?.trim()) return [];
+  return raw
+    .split(/\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function readHeaderLine(text: string, name: string): string | undefined {
+  const re = new RegExp(`^${name}:\\s*(.+)$`, "im");
+  const match = text.match(re);
+  return match?.[1]?.trim();
+}
+
+/** imapflow 的 `headers` 字段是 Buffer，不是 Map。 */
+export function parseImapHeaderBuffer(headers: unknown): {
+  messageId?: string;
+  inReplyTo?: string;
+  references: string[];
+} {
+  if (Buffer.isBuffer(headers)) {
+    const text = headers.toString("utf-8");
+    return {
+      messageId: readHeaderLine(text, "Message-ID"),
+      inReplyTo: readHeaderLine(text, "In-Reply-To"),
+      references: parseReferencesHeader(readHeaderLine(text, "References")),
+    };
+  }
+  if (headers instanceof Map) {
+    const map = headers as Map<string, string[]>;
+    return {
+      messageId: map.get("message-id")?.[0],
+      inReplyTo: map.get("in-reply-to")?.[0],
+      references: parseReferencesHeader(map.get("references")?.[0]),
+    };
+  }
+  return { references: [] };
+}
+
 export async function withImapAccount<T>(
   account: EmailAccountRow,
   fn: (client: ImapFlow, mailbox: string) => Promise<T>,

@@ -38,6 +38,7 @@ export function EmailApp() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState("");
+  const [syncNotice, setSyncNotice] = useState("");
 
   const activeAccount = useMemo(
     () => accounts.find((a) => a.id === activeAccountId) ?? null,
@@ -106,8 +107,11 @@ export function EmailApp() {
     if (activeAccountId == null) return;
     setSyncing(true);
     setError("");
+    setSyncNotice("");
     try {
-      await syncEmailAccount(activeAccountId, 100);
+      const results = await syncEmailAccount(activeAccountId, 100);
+      const synced = results.reduce((sum, row) => sum + row.upserted_messages, 0);
+      setSyncNotice(synced > 0 ? `同步完成，新增 ${synced} 封邮件。` : "同步完成，暂无新邮件。");
       await loadMessages(activeAccountId);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -269,6 +273,7 @@ export function EmailApp() {
         </header>
         <div className="flex-1 overflow-auto">
           {error ? <div className="alert alert-error m-2 text-sm">{error}</div> : null}
+          {syncNotice ? <div className="alert alert-success m-2 text-sm">{syncNotice}</div> : null}
           {listLoading ? (
             <div className="p-4">
               <span className="loading loading-spinner loading-sm" />

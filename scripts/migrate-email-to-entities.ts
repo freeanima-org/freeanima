@@ -8,16 +8,21 @@
 
 import { readFileSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
+import { bindActiveConfig } from "../platform/config/index.ts";
 import {
   createEmailAccount,
   findEmailAccountByAddressAndHost,
   registerEntityEmailModule,
 } from "../capabilities/email/src/index.ts";
+import { FileConfig } from "../platform/config/file-config.ts";
 import { parseYaml } from "../platform/config/yaml.ts";
 import { pgEntityStore } from "../platform/connectors/db-pg/entity/pg-entity-store.ts";
 import { pgEntitySearchStore } from "../platform/connectors/db-pg/entity/pg-entity-search-store.ts";
+
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 type LegacyAccount = {
   id: string;
@@ -58,6 +63,18 @@ function readLegacyAccounts(raw: unknown): LegacyAccount[] {
 
 async function main(): Promise<void> {
   const dryRun = process.argv.includes("--dry-run");
+  const url = process.env.DATABASE_URL?.trim();
+  if (!url) {
+    console.error("DATABASE_URL is required");
+    process.exit(1);
+  }
+
+  const { initDatabase, closeDb } = await import(
+    join(repoRoot, "platform/connectors/db-pg/index.ts")
+  );
+  initDatabase({ getDatabaseUrl: () => url });
+  bindActiveConfig(FileConfig.open());
+
   const configPath = resolveConfigPath();
   if (!existsSync(configPath)) {
     console.log(`config not found: ${configPath}`);
@@ -75,37 +92,44 @@ async function main(): Promise<void> {
     entitySearch: pgEntitySearchStore,
   });
 
-  let migrated = 0;
-  for (const account of accounts) {
-    const existing = await findEmailAccountByAddressAndHost(account.address, account.smtp_host);
-    if (existing) {
-      console.log(`skip existing: ${account.address} (${existing.id})`);
-      continue;
-    }
-    if (dryRun) {
-      console.log(`[dry-run] would migrate: ${account.id} -> ${account.address}`);
+  try {
+    let migrated = 0;
+    for (const account of accounts) {
+      const existing = await findEmailAccountByAddressAndHost(account.address, account.smtp_host);
+      if (existing) {
+        console.log(`skip existing: ${account.address} (${existing.id})`);
+        continue;
+      }
+      if (dryRun) {
+        console.log(`[dry-run] would migrate: ${account.id} -> ${account.address}`);
+        migrated += 1;
+        continue;
+      }
+      const row = await createEmailAccount({
+        password: account.password,
+        address: account.address,
+        display_name: account.display_name,
+        smtp_host: account.smtp_host,
+        smtp_port: account.smtp_port,
+        imap_host: account.imap_host,
+        imap_port: account.imap_port,
+        default_sender: account.default_sender,
+        enabled: account.enabled,
+        desc: account.desc,
+        tags: account.tags,
+        legacy_slug: account.id,
+      });
+      console.log(`migrated ${account.id} -> entity ${row.id} (${row.address})`);
       migrated += 1;
-      continue;
     }
-    const row = await createEmailAccount({
-      password: account.password,
-      address: account.address,
-      display_name: account.display_name,
-      smtp_host: account.smtp_host,
-      smtp_port: account.smtp_port,
-      imap_host: account.imap_host,
-      imap_port: account.imap_port,
-      default_sender: account.default_sender,
-      enabled: account.enabled,
-      desc: account.desc,
-      tags: account.tags,
-      legacy_slug: account.id,
-    });
-    console.log(`migrated ${account.id} -> entity ${row.id} (${row.address})`);
-    migrated += 1;
-  }
 
-  console.log(`done: ${migrated} account(s)${dryRun ? " (dry-run)" : ""}`);
+    console.log(`done: ${migrated} account(s)${dryRun ? " (dry-run)" : ""}`);
+  } finally {
+    await closeDb();
+  }
 }
 
-void main();
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

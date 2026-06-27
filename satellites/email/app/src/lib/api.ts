@@ -57,9 +57,26 @@ export async function markEmailMessageRead(id: number): Promise<void> {
   await client.request("email.message.markRead", { id });
 }
 
-export async function syncEmailAccount(accountId?: number, limit = 100): Promise<void> {
+export type EmailSyncResult = {
+  account_id: number;
+  upserted_messages: number;
+  upserted_threads: number;
+  highest_uid: number | null;
+  error?: string;
+};
+
+export async function syncEmailAccount(
+  accountId?: number,
+  limit = 100,
+): Promise<EmailSyncResult[]> {
   const client = await sap();
-  await client.request("email.sync", { account_id: accountId, limit });
+  const data = await client.request("email.sync", { account_id: accountId, limit });
+  const results = data.results;
+  const failed = results.filter((row) => row.error);
+  if (failed.length > 0) {
+    throw new Error(failed.map((row) => row.error).join("; "));
+  }
+  return results;
 }
 
 export async function searchEmailMessages(input: {
