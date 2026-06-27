@@ -1,5 +1,5 @@
-import * as m from "../../../messages/paraglide/messages.js";
-import { setLocale } from "../../../messages/paraglide/runtime.js";
+import { m } from "@paraglide/messages";
+import { setLocale } from "@paraglide/runtime";
 
 import type { SiteLocale } from "./site.ts";
 

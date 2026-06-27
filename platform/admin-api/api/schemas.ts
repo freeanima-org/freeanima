@@ -86,6 +86,82 @@ export type LimbicMemoryListBody = z.infer<typeof limbicMemoryListBodySchema>;
 export type AutobiographicalMemoryListBody = z.infer<typeof autobiographicalMemoryListBodySchema>;
 export type DreamMemoryListBody = z.infer<typeof dreamMemoryListBodySchema>;
 
+export const entityIdParamsSchema = z.object({
+  id: z.coerce.number().int().positive(),
+});
+
+export const entityListQuerySchema = z.object({
+  offset: z.coerce.number().int().min(0).optional(),
+  limit: z.coerce.number().int().min(1).max(500).optional(),
+});
+
+export const worldEntityCreateBodySchema = z
+  .object({
+    title: z.string(),
+    summary: z.string().optional(),
+    content: z.string().optional(),
+    owner_id: z.number().int().positive().nullable().optional(),
+  })
+  .transform((b) => ({
+    title: b.title.trim(),
+    summary: b.summary?.trim() ?? "",
+    content: b.content?.trim() ?? "",
+    owner_id: b.owner_id ?? null,
+  }))
+  .refine((b) => b.title.length > 0, { message: "title is required" });
+
+export const worldEntityUpdateBodySchema = z
+  .object({
+    title: z.string().optional(),
+    summary: z.string().optional(),
+    content: z.string().optional(),
+    owner_id: z.number().int().positive().nullable().optional(),
+  })
+  .transform((b) => ({
+    title: b.title !== undefined ? b.title.trim() : undefined,
+    summary: b.summary !== undefined ? b.summary.trim() : undefined,
+    content: b.content !== undefined ? b.content.trim() : undefined,
+    owner_id: b.owner_id,
+  }))
+  .refine((b) => b.title === undefined || b.title.length > 0, { message: "title is required" });
+
+export const subjectEntityCreateBodySchema = z
+  .object({
+    type: z.enum(["agent", "user"]),
+    title: z.string(),
+    summary: z.string().optional(),
+    content: z.string().optional(),
+    world_id: z.number().int().positive().optional(),
+  })
+  .transform((b) => ({
+    type: b.type,
+    title: b.title.trim(),
+    summary: b.summary?.trim() ?? "",
+    content: b.content?.trim() ?? "",
+    world_id: b.world_id,
+  }))
+  .refine((b) => b.title.length > 0, { message: "title is required" });
+
+export const subjectEntityUpdateBodySchema = z
+  .object({
+    title: z.string().optional(),
+    summary: z.string().optional(),
+    content: z.string().optional(),
+    world_id: z.number().int().positive().optional(),
+  })
+  .transform((b) => ({
+    title: b.title !== undefined ? b.title.trim() : undefined,
+    summary: b.summary !== undefined ? b.summary.trim() : undefined,
+    content: b.content !== undefined ? b.content.trim() : undefined,
+    world_id: b.world_id,
+  }))
+  .refine((b) => b.title === undefined || b.title.length > 0, { message: "title is required" });
+
+export type WorldEntityCreateBody = z.infer<typeof worldEntityCreateBodySchema>;
+export type WorldEntityUpdateBody = z.infer<typeof worldEntityUpdateBodySchema>;
+export type SubjectEntityCreateBody = z.infer<typeof subjectEntityCreateBodySchema>;
+export type SubjectEntityUpdateBody = z.infer<typeof subjectEntityUpdateBodySchema>;
+
 const streamAcceptedEventSchema = z.object({
   event: z.literal("accepted"),
   data: z.object({}),

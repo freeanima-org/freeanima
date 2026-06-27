@@ -1,0 +1,178 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-27 14:50+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Yaml Front Matter Hash Value: title
+#: docs/concepts/entity-model.md:1
+#, no-wrap
+msgid "Entity Model"
+msgstr ""
+
+#. type: Title #
+#: docs/concepts/entity-model.md:5
+#, no-wrap
+msgid "Unified Entity Model (v0.8)"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:8
+msgid ""
+"FreeAnima stores most structured business data in a single **`entities`** "
+"table. Self layer remains physically isolated in [`self_blocks`](self-"
+"layer.md)."
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/entity-model.md:9
+#, no-wrap
+msgid "Two orthogonal classifications"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:15
+#, no-wrap
+msgid ""
+"| Layer           | Cardinality              | Purpose                                                    |\n"
+"| --------------- | ------------------------ | ---------------------------------------------------------- |\n"
+"| **Entity type** | 4 fixed values           | Architecture boundary: `content`, `world`, `agent`, `user` |\n"
+"| **Components**  | Dynamic, many per entity | Functional markers: `task_list`, `task_item`, …            |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:17
+msgid ""
+"Component fields live in **`body` JSONB** at the top level. "
+"**`primary_component`** records the creation entry (usually immutable); list "
+"views route by primary component."
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/entity-model.md:18
+#, no-wrap
+msgid "`entities` table"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:31
+#, no-wrap
+msgid ""
+"| Column                          | Role                                                                 |\n"
+"| ------------------------------- | -------------------------------------------------------------------- |\n"
+"| `id`                            | `bigint` identity — global numeric ID                                |\n"
+"| `type`                          | One of four entity types                                             |\n"
+"| `world_id`                      | Native owning World (FK → `entities.id`)                             |\n"
+"| `owner_id`                      | Owning subject (`agent` / `user` entity), nullable for public worlds |\n"
+"| `components`                    | `text[]` component tags                                              |\n"
+"| `primary_component`             | Main component for module routing                                    |\n"
+"| `title` / `summary` / `content` | Shared text columns (all components may use)                         |\n"
+"| `body`                          | JSONB component payload                                              |\n"
+"| `created_at` / `updated_at`     | Timestamps                                                           |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:33
+#, no-wrap
+msgid "**Not in v0.8 bootstrap:** relationship table, permission table, World nesting/mount, graph DB (PostgreSQL AGE).\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/entity-model.md:34
+#, no-wrap
+msgid "World namespace"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:39
+msgid ""
+"**`type: world`** entities are logical containers (permission/list boundary)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:39
+msgid "Public world: `owner_id = null`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:39
+msgid ""
+"Do not confuse with semantic memory **`type=world`** (fact classification in "
+"[`memory.md`](memory.md)) — that becomes `body.memory_kind=world` after "
+"future migration."
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/entity-model.md:40
+#, no-wrap
+msgid "Task module (first consumer)"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:43
+msgid "TickTick-style lists and items map to:"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:49
+#, no-wrap
+msgid ""
+"| Concept     | Entity         | Component      |\n"
+"| ----------- | -------------- | -------------- |\n"
+"| Task domain | `type=world`   | `world_config` |\n"
+"| List (清单) | `type=content` | `task_list`    |\n"
+"| Item (任务) | `type=content` | `task_item`    |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:51
+msgid ""
+"Items reference their list via `body.list_id` (entity id). Task items store "
+"**title** and **content** on entity columns; **tags** live in `body.tags`. A "
+"**default list** (`is_default: true`, seeded id `2`「收件箱」) cannot be "
+"deleted but may be renamed."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:53
+msgid ""
+"LLM tools use `@freeanima/capabilities-task` (`task_*` tools, `exposeMcp: "
+"true`). Legacy `tasks` table and `/api/tasks/*` are removed after one-time "
+"migration (`scripts/migrate-tasks-to-entities.ts`)."
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/entity-model.md:54
+#, no-wrap
+msgid "Future migration map (not executed yet)"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:63
+#, no-wrap
+msgid ""
+"| Legacy table              | Target                                 |\n"
+"| ------------------------- | -------------------------------------- |\n"
+"| `semantic_memory`         | `content` + memory component           |\n"
+"| `autobiographical_memory` | `content` + narrative component        |\n"
+"| `limbic_memory`           | `content` + limbic component           |\n"
+"| `tasks` (legacy)          | `task_item` (when explicitly migrated) |\n"
+"| `memory_references`       | relationship table (future)            |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:64
+msgid "See [`architecture.md`](architecture.md) for cognitive-layer context."
+msgstr ""

@@ -5,6 +5,8 @@
     "jsx": "react-jsx",
     "paths": {
       "@admin/*": ["./platform/admin-frontend/app/src/*"],
+      "@paraglide/messages": ["./messages/paraglide/messages.js"],
+      "@paraglide/runtime": ["./messages/paraglide/runtime.js"],
       "@/*": ["./satellites/companion/app/src/*"],
       "@shared/*": ["./satellites/companion/shared/*"],
       "@freeanima/capabilities-satellite": ["./capabilities/satellite/src/index.ts"]

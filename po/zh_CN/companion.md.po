@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 17:27+0800\n"
+"POT-Creation-Date: 2026-06-27 14:50+0800\n"
 "PO-Revision-Date: 2026-06-22 11:28+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -133,7 +133,7 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/features/companion.md:46
-msgid "系统托盘：显示/隐藏伴侣、打开设置、退出"
+msgid "系统托盘：显示/隐藏伴侣、**设置…**（打开伴侣设置窗）、退出"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -236,23 +236,46 @@ msgstr ""
 msgid "浏览器开发（无需 Electron）"
 msgstr ""
 
+#. type: Plain text
+#: docs/features/companion.md:77
+msgid "在 `satellites/companion` 目录："
+msgstr ""
+
 #. type: Fenced code block (bash)
-#: docs/features/companion.md:76
+#: docs/features/companion.md:78
 #, no-wrap
 msgid ""
-"bun satellites/companion/dev.ts\n"
-"# 伴侣：http://127.0.0.1:4176\n"
-"# 设置：页面内「设置」按钮打开面板弹窗（非独立路由）\n"
+"bun run dev\n"
+"# 或 bun satellites/companion/dev.ts\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/companion.md:85
+#, fuzzy
+#| msgid "Parlor: `http://127.0.0.1:4174`"
+msgid "伴侣：http://127.0.0.1:4176"
+msgstr "聊天室：`http://127.0.0.1:4174`"
+
+#. type: Bullet: '- '
+#: docs/features/companion.md:85
+msgid "设置（浏览器 dev）：http://127.0.0.1:4176/?view=settings"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/companion.md:87
+msgid ""
+"Electron 桌面壳中，伴侣设置通过系统托盘 → **设置…** 打开独立设置窗；overlay "
+"窗上不显示设置按钮。"
 msgstr ""
 
 #. type: Title ###
-#: docs/features/companion.md:82
+#: docs/features/companion.md:88
 #, no-wrap
 msgid "Electron 桌面壳（含伴侣 + 聊天室 + 管理台）"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/features/companion.md:84
+#: docs/features/companion.md:90
 #, no-wrap
 msgid ""
 "cd app/desktop\n"
@@ -261,12 +284,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:91
+#: docs/features/companion.md:97
 msgid "打包："
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/features/companion.md:92
+#: docs/features/companion.md:98
 #, no-wrap
 msgid ""
 "cd app/desktop\n"
@@ -274,12 +297,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:98
+#: docs/features/companion.md:104
 msgid "环境变量："
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:104
+#: docs/features/companion.md:110
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Variable                                  | Role                                           |\n"
@@ -292,7 +315,7 @@ msgstr ""
 msgid ""
 "| 变量                     | 默认                    | 说明                                     |\n"
 "| ------------------------ | ----------------------- | ---------------------------------------- |\n"
-"| `FREEANIMA_URL`          | `http://127.0.0.1:2658` | 无 `shell-client.json` 时的 Hub 回退地址 |\n"
+"| `FREEANIMA_URL`          | `http://127.0.0.1:2658` | 无桌面 `settings.json` 时的 Hub 回退地址 |\n"
 "| `SATELLITE_PORT`         | `4176`                  | 本地 HTTP 端口                           |\n"
 "| `COMPANION_VRMA_ZIP_URL` | （空）                  | 可选；直链 zip 镜像，启动时下载          |\n"
 msgstr ""
@@ -305,27 +328,27 @@ msgstr ""
 "| `STUDIO_GITIGNORE` / `STUDIO_SHOW_HIDDEN` | 文件树过滤                                     |\n"
 
 #. type: Plain text
-#: docs/features/companion.md:106
+#: docs/features/companion.md:112
 msgid ""
-"Hub 地址与远程 Token 由桌面壳 **`~/.anima/shell-client.json`** 统一管理（托"
-"盘 → **Hub 设置…**）。伴侣设置 → 通用 Tab 只读展示 Hub 地址。"
+"Hub 地址与远程 Token 由桌面壳 **`~/.anima-desktop/settings.json`**（`hub` "
+"段）统一管理（托盘 → **Hub 设置…**）。伴侣设置 → 通用 Tab 只读展示 Hub 地址。"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:108
+#: docs/features/companion.md:114
 msgid ""
 "Hub 在首次 `connect` 时分配 **3 字符** `instance_id`，写入 `~/.anima/"
 "companion/instance.json`（非 `satellites/` 子目录）。"
 msgstr ""
 
 #. type: Title ###
-#: docs/features/companion.md:109
+#: docs/features/companion.md:115
 #, no-wrap
 msgid "常见问题"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:118
+#: docs/features/companion.md:124
 #, no-wrap
 msgid ""
 "| 现象             | 处理                                                                               |\n"
@@ -338,17 +361,17 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/companion.md:119 docs/guide/remote-access.md:104
+#: docs/features/companion.md:125 docs/guide/remote-access.md:122
 #, no-wrap
 msgid "相关文档"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:122
+#: docs/features/companion.md:128
 msgid "SAP 卫星指南：[`satellite-guide.md`](../sap/satellite-guide.md)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:122
+#: docs/features/companion.md:128
 msgid "SAP 安全模型：[`security-model.md`](../sap/security-model.md)"
 msgstr ""

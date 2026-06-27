@@ -1,5 +1,5 @@
-import * as m from "../../../../../messages/paraglide/messages.js";
-import { getLocale, locales, setLocale } from "../../../../../messages/paraglide/runtime.js";
+import { m } from "@paraglide/messages";
+import { getLocale, locales, setLocale } from "@paraglide/runtime";
 
 export type AdminLocale = (typeof locales)[number];
 

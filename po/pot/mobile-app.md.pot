@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 18:53+0800\n"
+"POT-Creation-Date: 2026-06-27 14:50+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/features/mobile-app.md:1 messages/po4a/en.xml:512
+#: docs/features/mobile-app.md:1 messages/po4a/en.xml:540
 #, no-wrap
 msgid "Mobile app (Android)"
 msgstr ""
@@ -88,7 +88,8 @@ msgstr ""
 #: docs/features/mobile-app.md:39
 msgid ""
 "移动端 REST **直连** Hub（无桌面 Electron 的 `/api` 本地代理）；须配置 "
-"`remote_auth.token` 且 Hub 允许 Capacitor Origin（`http://localhost`）。"
+"`remote_auth.token` 且 Hub 允许 Capacitor Origin（`https://localhost`）。路由"
+"使用 hash（`#/chat`），便于 WebView 调试。"
 msgstr ""
 
 #. type: Title ##
@@ -145,51 +146,93 @@ msgid "排障"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:58
+#: docs/features/mobile-app.md:59
 #, no-wrap
 msgid ""
-"| 现象 | 常见原因 |\n"
-"| ---- | -------- |\n"
-"| 聊天输入无反应 | 无选中会话（首装应自动建会话）；或 SAP 未连接 |\n"
+"| 现象                                 | 常见原因                                                                                 |\n"
+"| ------------------------------------ | ---------------------------------------------------------------------------------------- |\n"
+"| 键盘遮挡聊天输入框                   | WebView 未随键盘收缩；需 `adjustResize` + `@capacitor/keyboard`；改 Web 后须 `cap sync`  |\n"
+"| 聊天输入无反应                       | 无选中会话（首装应自动建会话）；或 SAP 未连接                                            |\n"
 "| 管理台 load failed / Failed to fetch | Hub 未 `--host 0.0.0.0`、Token 错误、防火墙；Chrome Remote Debugging 看请求是否带 Bearer |\n"
-"| Not Found | 勿访问旧路径如 `/admin/dashboard/index.html`；应走 SPA `/admin/dashboard` |\n"
+"| Not Found                            | 勿访问旧路径如 `/admin/dashboard/index.html`；应走 SPA `/admin/dashboard`                |\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:59
+#: docs/features/mobile-app.md:60
+#, no-wrap
+msgid "调试"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/mobile-app.md:63
+msgid "设置 → **调试**（桌面与移动共用 shell-ui 面板）："
+msgstr ""
+
+#. type: Plain text
+#: docs/features/mobile-app.md:69
+#, no-wrap
+msgid ""
+"| 能力     | 桌面                 | 移动                                        |\n"
+"| -------- | -------------------- | ------------------------------------------- |\n"
+"| Sentry   | 设置页填 DSN 并启用  | 同左                                        |\n"
+"| DevTools | F12 / 开发包自动打开 | Debug APK + USB → Chrome `chrome://inspect` |\n"
+"| 控制台   | Electron DevTools    | vConsole（设置页开关）                      |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/mobile-app.md:71
+msgid ""
+"移动 debug 构建：`cd app/mobile && bun run android:debug`（不压缩 + "
+"sourcemap，便于 inspect）。"
+msgstr ""
+
+#. type: Title ##
+#: docs/features/mobile-app.md:72
 #, no-wrap
 msgid "构建与 sideload"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/features/mobile-app.md:61
+#: docs/features/mobile-app.md:74
 #, no-wrap
 msgid ""
-"bun run app/mobile:build\n"
+"bun run --filter @freeanima/app-mobile build\n"
 "cd app/mobile && bun run sync\n"
 "cd android && ./gradlew assembleDebug\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:68
+#: docs/features/mobile-app.md:81
+msgid "Debug 全流程：`cd app/mobile && bun run android:debug`"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/mobile-app.md:83
+#, no-wrap
+msgid "**纪律**：修改 shell-ui / chat / admin 前端后须 `bun run build`（或 `build:debug`）再 `cap sync`，否则真机仍是旧 Web 资源。\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/mobile-app.md:85
 msgid "包内 README：[`app/mobile/README.md`](../../app/mobile/README.md)"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:69
+#: docs/features/mobile-app.md:86
 #, no-wrap
 msgid "与桌面壳对比"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:77
+#: docs/features/mobile-app.md:95
 #, no-wrap
 msgid ""
-"|             | Electron `app/desktop`                  | Capacitor `app/mobile` |\n"
-"| ----------- | --------------------------------------- | ---------------------- |\n"
-"| 注入        | preload → `window.satelliteShell`       | `shell-bridge.js` → 同形 API |\n"
-"| Hub 配置    | Hub 设置 → `~/.anima/shell-client.json` | Hub 设置 → Preferences |\n"
-"| REST        | 本地静态服代理 `/api`（同源）           | 直连 `hubUrl/api/*`（CORS + Bearer） |\n"
-"| instance_id | 文件 `~/.anima/satellites/chat/`        | Preferences            |\n"
-"| 内容        | chat + admin + companion                | chat + admin           |\n"
+"|             | Electron `app/desktop`                      | Capacitor `app/mobile`               |\n"
+"| ----------- | ------------------------------------------- | ------------------------------------ |\n"
+"| 注入        | preload → `window.satelliteShell`           | `shell-bridge.js` → 同形 API         |\n"
+"| Hub 配置    | Hub 设置 → `~/.anima-desktop/settings.json` | Hub 设置 → Preferences               |\n"
+"| 调试/Sentry | 设置 → 调试 → 同上文件 `debug` 段           | 设置 → 调试 → Preferences            |\n"
+"| REST        | 本地静态服代理 `/api`（同源）               | 直连 `hubUrl/api/*`（CORS + Bearer） |\n"
+"| instance_id | 文件 `~/.anima/satellites/chat/`            | Preferences                          |\n"
+"| 内容        | chat + admin + companion                    | chat + admin                         |\n"
 msgstr ""

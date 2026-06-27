@@ -29,6 +29,8 @@ export type EntityCreateInput = {
 
 export type EntityUpdateInput = {
   id: number;
+  world_id?: number;
+  owner_id?: number | null;
   components?: string[];
   title?: string;
   summary?: string;
@@ -38,6 +40,8 @@ export type EntityUpdateInput = {
 
 export type EntityListOpts = {
   world_id?: number;
+  type?: EntityType;
+  types?: EntityType[];
   primary_component?: string;
   component?: string;
   limit?: number;

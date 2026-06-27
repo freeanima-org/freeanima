@@ -13,8 +13,10 @@ import { Route as WorkshopRouteImport } from './routes/workshop'
 import { Route as SidebarRouteRouteImport } from './routes/_sidebar/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkshopPathRouteImport } from './routes/workshop/$path'
+import { Route as SidebarWorldsRouteImport } from './routes/_sidebar/worlds'
 import { Route as SidebarToolsRouteImport } from './routes/_sidebar/tools'
 import { Route as SidebarSystemPromptRouteImport } from './routes/_sidebar/system-prompt'
+import { Route as SidebarSubjectsRouteImport } from './routes/_sidebar/subjects'
 import { Route as SidebarSleepRouteImport } from './routes/_sidebar/sleep'
 import { Route as SidebarSemanticMemoryRouteImport } from './routes/_sidebar/semantic-memory'
 import { Route as SidebarSelfLayerRouteImport } from './routes/_sidebar/self-layer'
@@ -57,6 +59,11 @@ const WorkshopPathRoute = WorkshopPathRouteImport.update({
   path: '/$path',
   getParentRoute: () => WorkshopRoute,
 } as any)
+const SidebarWorldsRoute = SidebarWorldsRouteImport.update({
+  id: '/worlds',
+  path: '/worlds',
+  getParentRoute: () => SidebarRouteRoute,
+} as any)
 const SidebarToolsRoute = SidebarToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
@@ -65,6 +72,11 @@ const SidebarToolsRoute = SidebarToolsRouteImport.update({
 const SidebarSystemPromptRoute = SidebarSystemPromptRouteImport.update({
   id: '/system-prompt',
   path: '/system-prompt',
+  getParentRoute: () => SidebarRouteRoute,
+} as any)
+const SidebarSubjectsRoute = SidebarSubjectsRouteImport.update({
+  id: '/subjects',
+  path: '/subjects',
   getParentRoute: () => SidebarRouteRoute,
 } as any)
 const SidebarSleepRoute = SidebarSleepRouteImport.update({
@@ -205,8 +217,10 @@ export interface FileRoutesByFullPath {
   '/self-layer': typeof SidebarSelfLayerRoute
   '/semantic-memory': typeof SidebarSemanticMemoryRoute
   '/sleep': typeof SidebarSleepRoute
+  '/subjects': typeof SidebarSubjectsRoute
   '/system-prompt': typeof SidebarSystemPromptRoute
   '/tools': typeof SidebarToolsRoute
+  '/worlds': typeof SidebarWorldsRoute
   '/workshop/$path': typeof WorkshopPathRoute
   '/conversations/$conversationId': typeof SidebarConversationsConversationIdRoute
   '/conversations/': typeof SidebarConversationsIndexRoute
@@ -233,8 +247,10 @@ export interface FileRoutesByTo {
   '/self-layer': typeof SidebarSelfLayerRoute
   '/semantic-memory': typeof SidebarSemanticMemoryRoute
   '/sleep': typeof SidebarSleepRoute
+  '/subjects': typeof SidebarSubjectsRoute
   '/system-prompt': typeof SidebarSystemPromptRoute
   '/tools': typeof SidebarToolsRoute
+  '/worlds': typeof SidebarWorldsRoute
   '/workshop/$path': typeof WorkshopPathRoute
   '/conversations/$conversationId': typeof SidebarConversationsConversationIdRoute
   '/conversations': typeof SidebarConversationsIndexRoute
@@ -264,8 +280,10 @@ export interface FileRoutesById {
   '/_sidebar/self-layer': typeof SidebarSelfLayerRoute
   '/_sidebar/semantic-memory': typeof SidebarSemanticMemoryRoute
   '/_sidebar/sleep': typeof SidebarSleepRoute
+  '/_sidebar/subjects': typeof SidebarSubjectsRoute
   '/_sidebar/system-prompt': typeof SidebarSystemPromptRoute
   '/_sidebar/tools': typeof SidebarToolsRoute
+  '/_sidebar/worlds': typeof SidebarWorldsRoute
   '/workshop/$path': typeof WorkshopPathRoute
   '/_sidebar/conversations/$conversationId': typeof SidebarConversationsConversationIdRoute
   '/_sidebar/conversations/': typeof SidebarConversationsIndexRoute
@@ -295,8 +313,10 @@ export interface FileRouteTypes {
     | '/self-layer'
     | '/semantic-memory'
     | '/sleep'
+    | '/subjects'
     | '/system-prompt'
     | '/tools'
+    | '/worlds'
     | '/workshop/$path'
     | '/conversations/$conversationId'
     | '/conversations/'
@@ -323,8 +343,10 @@ export interface FileRouteTypes {
     | '/self-layer'
     | '/semantic-memory'
     | '/sleep'
+    | '/subjects'
     | '/system-prompt'
     | '/tools'
+    | '/worlds'
     | '/workshop/$path'
     | '/conversations/$conversationId'
     | '/conversations'
@@ -353,8 +375,10 @@ export interface FileRouteTypes {
     | '/_sidebar/self-layer'
     | '/_sidebar/semantic-memory'
     | '/_sidebar/sleep'
+    | '/_sidebar/subjects'
     | '/_sidebar/system-prompt'
     | '/_sidebar/tools'
+    | '/_sidebar/worlds'
     | '/workshop/$path'
     | '/_sidebar/conversations/$conversationId'
     | '/_sidebar/conversations/'
@@ -396,6 +420,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkshopPathRouteImport
       parentRoute: typeof WorkshopRoute
     }
+    '/_sidebar/worlds': {
+      id: '/_sidebar/worlds'
+      path: '/worlds'
+      fullPath: '/worlds'
+      preLoaderRoute: typeof SidebarWorldsRouteImport
+      parentRoute: typeof SidebarRouteRoute
+    }
     '/_sidebar/tools': {
       id: '/_sidebar/tools'
       path: '/tools'
@@ -408,6 +439,13 @@ declare module '@tanstack/react-router' {
       path: '/system-prompt'
       fullPath: '/system-prompt'
       preLoaderRoute: typeof SidebarSystemPromptRouteImport
+      parentRoute: typeof SidebarRouteRoute
+    }
+    '/_sidebar/subjects': {
+      id: '/_sidebar/subjects'
+      path: '/subjects'
+      fullPath: '/subjects'
+      preLoaderRoute: typeof SidebarSubjectsRouteImport
       parentRoute: typeof SidebarRouteRoute
     }
     '/_sidebar/sleep': {
@@ -605,8 +643,10 @@ interface SidebarRouteRouteChildren {
   SidebarSelfLayerRoute: typeof SidebarSelfLayerRoute
   SidebarSemanticMemoryRoute: typeof SidebarSemanticMemoryRoute
   SidebarSleepRoute: typeof SidebarSleepRoute
+  SidebarSubjectsRoute: typeof SidebarSubjectsRoute
   SidebarSystemPromptRoute: typeof SidebarSystemPromptRoute
   SidebarToolsRoute: typeof SidebarToolsRoute
+  SidebarWorldsRoute: typeof SidebarWorldsRoute
 }
 
 const SidebarRouteRouteChildren: SidebarRouteRouteChildren = {
@@ -630,8 +670,10 @@ const SidebarRouteRouteChildren: SidebarRouteRouteChildren = {
   SidebarSelfLayerRoute: SidebarSelfLayerRoute,
   SidebarSemanticMemoryRoute: SidebarSemanticMemoryRoute,
   SidebarSleepRoute: SidebarSleepRoute,
+  SidebarSubjectsRoute: SidebarSubjectsRoute,
   SidebarSystemPromptRoute: SidebarSystemPromptRoute,
   SidebarToolsRoute: SidebarToolsRoute,
+  SidebarWorldsRoute: SidebarWorldsRoute,
 }
 
 const SidebarRouteRouteWithChildren = SidebarRouteRoute._addFileChildren(

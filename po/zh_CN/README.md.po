@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 18:53+0800\n"
+"POT-Creation-Date: 2026-06-27 14:50+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -70,12 +70,24 @@ msgid "Concepts — Core Ideas"
 msgstr "概念 — 核心思想"
 
 #. type: Plain text
-#: docs/README.md:30
-#, no-wrap
+#: docs/README.md:31
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Topic           | File                                                       |\n"
+#| "| --------------- | ---------------------------------------------------------- |\n"
+#| "| Architecture    | [concepts/architecture.md](concepts/architecture.md)       |\n"
+#| "| Identity        | [concepts/identity.md](concepts/identity.md)               |\n"
+#| "| Self layer      | [concepts/self-layer.md](concepts/self-layer.md)           |\n"
+#| "| Memory          | [concepts/memory.md](concepts/memory.md)                   |\n"
+#| "| Compression     | [concepts/compression.md](concepts/compression.md)         |\n"
+#| "| Sleep           | [concepts/sleep.md](concepts/sleep.md)                     |\n"
+#| "| Time perception | [concepts/time-perception.md](concepts/time-perception.md) |\n"
+#| "| Recall flow     | [concepts/recall-flow.md](concepts/recall-flow.md)         |\n"
 msgid ""
 "| Topic           | File                                                       |\n"
 "| --------------- | ---------------------------------------------------------- |\n"
 "| Architecture    | [concepts/architecture.md](concepts/architecture.md)       |\n"
+"| Entity model    | [concepts/entity-model.md](concepts/entity-model.md)       |\n"
 "| Identity        | [concepts/identity.md](concepts/identity.md)               |\n"
 "| Self layer      | [concepts/self-layer.md](concepts/self-layer.md)           |\n"
 "| Memory          | [concepts/memory.md](concepts/memory.md)                   |\n"
@@ -96,21 +108,21 @@ msgstr ""
 "| 回忆检索 | [concepts/recall-flow.md](concepts/recall-flow.md)         |\n"
 
 #. type: Title ##
-#: docs/README.md:31
+#: docs/README.md:32
 #, no-wrap
 msgid "Features — Major Capabilities"
 msgstr "功能 — 主要能力"
 
 #. type: Plain text
-#: docs/README.md:36
+#: docs/README.md:37
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Topic            | File                                                               |\n"
 #| "| ---------------- | ------------------------------------------------------------------ |\n"
 #| "| Pair programming | [features/pair-programming-v1.md](features/pair-programming-v1.md) |\n"
 msgid ""
-"| Topic      | File                                     |\n"
-"| ---------- | ---------------------------------------- |\n"
+"| Topic      | File                                             |\n"
+"| ---------- | ------------------------------------------------ |\n"
 "| Mobile app | [features/mobile-app.md](features/mobile-app.md) |\n"
 msgstr ""
 "| 主题     | 文件                                                               |\n"
@@ -118,13 +130,13 @@ msgstr ""
 "| 结对编程 | [features/pair-programming-v1.md](features/pair-programming-v1.md) |\n"
 
 #. type: Title ##
-#: docs/README.md:37
+#: docs/README.md:38
 #, no-wrap
 msgid "SAP — Satellite Application Protocol"
 msgstr "SAP — 卫星应用协议"
 
 #. type: Plain text
-#: docs/README.md:48
+#: docs/README.md:49
 #, no-wrap
 msgid ""
 "| Topic           | File                                             |\n"
@@ -148,13 +160,13 @@ msgstr ""
 "| 安全            | [sap/security-model.md](sap/security-model.md)   |\n"
 
 #. type: Title ##
-#: docs/README.md:49
+#: docs/README.md:50
 #, no-wrap
 msgid "Tools — Built-in Tools"
 msgstr "工具 — 内置工具"
 
 #. type: Plain text
-#: docs/README.md:53
+#: docs/README.md:54
 #, no-wrap
 msgid ""
 "| Topic         | File                                                             |\n"
