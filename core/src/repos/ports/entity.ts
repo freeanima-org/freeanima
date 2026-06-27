@@ -4,7 +4,6 @@ export type EntityRow = {
   id: number;
   type: EntityType;
   world_id: number;
-  owner_id: number | null;
   components: string[];
   primary_component: string;
   title: string;
@@ -18,7 +17,6 @@ export type EntityRow = {
 export type EntityCreateInput = {
   type: EntityType;
   world_id: number;
-  owner_id?: number | null;
   components: string[];
   primary_component: string;
   title?: string;
@@ -30,7 +28,6 @@ export type EntityCreateInput = {
 export type EntityUpdateInput = {
   id: number;
   world_id?: number;
-  owner_id?: number | null;
   components?: string[];
   title?: string;
   summary?: string;

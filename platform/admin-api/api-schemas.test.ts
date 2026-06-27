@@ -33,20 +33,35 @@ describe("api/schemas", () => {
   it("validates world entity create body", () => {
     const ok = worldEntityCreateBodySchema.safeParse({
       title: "  My World  ",
-      owner_id: null,
+      private: false,
     });
     expect(ok.success).toBe(true);
-    if (ok.success) expect(ok.data.title).toBe("My World");
+    if (ok.success) {
+      expect(ok.data.title).toBe("My World");
+      expect(ok.data.private).toBe(false);
+    }
+
+    const privateOk = worldEntityCreateBodySchema.safeParse({
+      title: "Private",
+      private: true,
+      owner_subject_id: 2,
+    });
+    expect(privateOk.success).toBe(true);
 
     const bad = worldEntityCreateBodySchema.safeParse({ title: "   " });
     expect(bad.success).toBe(false);
+
+    const missingOwner = worldEntityCreateBodySchema.safeParse({
+      title: "Private",
+      private: true,
+    });
+    expect(missingOwner.success).toBe(false);
   });
 
   it("validates subject entity create body", () => {
     const ok = subjectEntityCreateBodySchema.safeParse({
       type: "agent",
       title: "Anima",
-      world_id: 1,
     });
     expect(ok.success).toBe(true);
     if (ok.success) expect(ok.data.type).toBe("agent");

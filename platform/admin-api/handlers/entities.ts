@@ -3,6 +3,7 @@ import {
   ENTITY_ROOT_WORLD_ID,
   USER_CONFIG_COMPONENT,
   WORLD_CONFIG_COMPONENT,
+  worldConfigBodySchema,
 } from "@freeanima/core/db/schema";
 import type { EntityRow } from "@freeanima/core/repos";
 
@@ -11,6 +12,128 @@ import { adminCtx } from "./runtime.ts";
 
 function mapEntity(row: EntityRow): EntityRow {
   return row;
+}
+
+function buildWorldConfigBody(input: {
+  private: boolean;
+  owner_subject_id?: number;
+  default_private?: boolean;
+}): Record<string, unknown> {
+  if (!input.private) {
+    const body = { private: false, default_private: false };
+    worldConfigBodySchema.parse(body);
+    return body;
+  }
+  const body = {
+    private: true,
+    owner_subject_id: input.owner_subject_id,
+    default_private: input.default_private ?? false,
+  };
+  worldConfigBodySchema.parse(body);
+  return body;
+}
+
+async function assertSubjectEntity(id: number): Promise<EntityRow> {
+  const row = await adminCtx().engine.repos.entity.get(id);
+  if (!row || (row.type !== "agent" && row.type !== "user")) {
+    throw new ApiHandlerError(400, "owner must be an agent or user subject", {
+      code: "entity_invalid_owner_subject",
+    });
+  }
+  return row;
+}
+
+async function assertNoExistingDefaultPrivateWorld(
+  ownerSubjectId: number,
+  excludeWorldId?: number,
+): Promise<void> {
+  const store = adminCtx().engine.repos.entity;
+  const worlds = await store.list({ type: "world", limit: 500 });
+  const conflict = worlds.find((row) => {
+    if (excludeWorldId != null && row.id === excludeWorldId) return false;
+    const parsed = worldConfigBodySchema.safeParse(row.body);
+    return (
+      parsed.success &&
+      parsed.data.default_private &&
+      parsed.data.owner_subject_id === ownerSubjectId
+    );
+  });
+  if (conflict) {
+    throw new ApiHandlerError(400, "subject already has a default private world", {
+      code: "entity_default_private_world_exists",
+    });
+  }
+}
+
+async function createDefaultPrivateWorldForSubject(subject: EntityRow): Promise<number> {
+  await assertNoExistingDefaultPrivateWorld(subject.id);
+  const store = adminCtx().engine.repos.entity;
+  const worldTitle = subject.title.trim() || `Subject ${subject.id}`;
+  const body = buildWorldConfigBody({
+    private: true,
+    owner_subject_id: subject.id,
+    default_private: true,
+  });
+  const created = await store.create({
+    type: "world",
+    world_id: ENTITY_ROOT_WORLD_ID,
+    components: [WORLD_CONFIG_COMPONENT],
+    primary_component: WORLD_CONFIG_COMPONENT,
+    title: worldTitle,
+    summary: "",
+    content: "",
+    body,
+  });
+  const aligned = await store.update({
+    id: created.id,
+    world_id: created.id,
+  });
+  return aligned?.id ?? created.id;
+}
+
+async function assertPrivateWorldOwnedBySubject(
+  worldId: number,
+  subjectId: number,
+): Promise<EntityRow> {
+  const store = adminCtx().engine.repos.entity;
+  const world = await store.get(worldId);
+  const parsed = worldConfigBodySchema.safeParse(world?.body);
+  if (
+    !world ||
+    world.type !== "world" ||
+    !parsed.success ||
+    !parsed.data.private ||
+    parsed.data.owner_subject_id !== subjectId
+  ) {
+    throw new ApiHandlerError(400, "default private world must be owned by this subject", {
+      code: "entity_invalid_default_private_world",
+    });
+  }
+  return world;
+}
+
+async function applySubjectDefaultPrivateWorld(subjectId: number, worldId: number): Promise<void> {
+  await assertPrivateWorldOwnedBySubject(worldId, subjectId);
+  const store = adminCtx().engine.repos.entity;
+  const worlds = await store.list({ type: "world", limit: 500 });
+  for (const row of worlds) {
+    const parsed = worldConfigBodySchema.safeParse(row.body);
+    if (!parsed.success || parsed.data.owner_subject_id !== subjectId) continue;
+    const shouldBeDefault = row.id === worldId;
+    if (parsed.data.default_private === shouldBeDefault) continue;
+    await store.update({
+      id: row.id,
+      body: buildWorldConfigBody({
+        private: true,
+        owner_subject_id: subjectId,
+        default_private: shouldBeDefault,
+      }),
+    });
+  }
+  await store.update({
+    id: subjectId,
+    body: { default_private_world_id: worldId },
+  });
 }
 
 export async function listWorldEntities(opts?: { offset?: number; limit?: number }) {
@@ -34,19 +157,29 @@ export async function createWorldEntity(input: {
   title: string;
   summary?: string;
   content?: string;
-  owner_id?: number | null;
+  private: boolean;
+  owner_subject_id?: number;
 }) {
+  if (input.private) {
+    if (input.owner_subject_id == null) {
+      throw new ApiHandlerError(400, "private world requires owner_subject_id", {
+        code: "entity_private_world_missing_owner",
+      });
+    }
+    await assertSubjectEntity(input.owner_subject_id);
+  }
+
   const store = adminCtx().engine.repos.entity;
+  const body = buildWorldConfigBody(input);
   const created = await store.create({
     type: "world",
     world_id: ENTITY_ROOT_WORLD_ID,
-    owner_id: input.owner_id ?? null,
     components: [WORLD_CONFIG_COMPONENT],
     primary_component: WORLD_CONFIG_COMPONENT,
     title: input.title,
     summary: input.summary ?? "",
     content: input.content ?? "",
-    body: {},
+    body,
   });
   const aligned = await store.update({
     id: created.id,
@@ -61,7 +194,8 @@ export async function updateWorldEntity(
     title?: string;
     summary?: string;
     content?: string;
-    owner_id?: number | null;
+    private?: boolean;
+    owner_subject_id?: number | null;
   },
 ) {
   const store = adminCtx().engine.repos.entity;
@@ -69,12 +203,46 @@ export async function updateWorldEntity(
   if (!existing || existing.type !== "world") {
     throw new ApiHandlerError(404, "world not found", { code: "entity_world_not_found" });
   }
+
+  const current = worldConfigBodySchema.safeParse(existing.body);
+  const isDefaultPrivate = current.data?.default_private === true;
+
+  let bodyPatch: Record<string, unknown> | undefined;
+  if (input.private !== undefined || input.owner_subject_id !== undefined) {
+    const nextPrivate = input.private ?? current.data?.private ?? false;
+    const nextOwnerSubjectId =
+      input.owner_subject_id !== undefined
+        ? (input.owner_subject_id ?? undefined)
+        : current.data?.owner_subject_id;
+
+    if (isDefaultPrivate && !nextPrivate) {
+      throw new ApiHandlerError(400, "default private world cannot be made public", {
+        code: "entity_default_private_world_immutable",
+      });
+    }
+
+    if (nextPrivate) {
+      if (nextOwnerSubjectId == null) {
+        throw new ApiHandlerError(400, "private world requires owner_subject_id", {
+          code: "entity_private_world_missing_owner",
+        });
+      }
+      await assertSubjectEntity(nextOwnerSubjectId);
+    }
+
+    bodyPatch = buildWorldConfigBody({
+      private: nextPrivate,
+      owner_subject_id: nextPrivate ? nextOwnerSubjectId : undefined,
+      default_private: isDefaultPrivate,
+    });
+  }
+
   const updated = await store.update({
     id,
     title: input.title,
     summary: input.summary,
     content: input.content,
-    owner_id: input.owner_id,
+    body: bodyPatch,
   });
   if (!updated) {
     throw new ApiHandlerError(404, "world not found", { code: "entity_world_not_found" });
@@ -104,14 +272,12 @@ export async function createSubjectEntity(input: {
   title: string;
   summary?: string;
   content?: string;
-  world_id?: number;
 }) {
   const store = adminCtx().engine.repos.entity;
   const primary = input.type === "agent" ? AGENT_CONFIG_COMPONENT : USER_CONFIG_COMPONENT;
   const created = await store.create({
     type: input.type,
-    world_id: input.world_id ?? ENTITY_ROOT_WORLD_ID,
-    owner_id: null,
+    world_id: ENTITY_ROOT_WORLD_ID,
     components: [primary],
     primary_component: primary,
     title: input.title,
@@ -119,11 +285,14 @@ export async function createSubjectEntity(input: {
     content: input.content ?? "",
     body: {},
   });
-  const withOwner = await store.update({
+
+  const defaultPrivateWorldId = await createDefaultPrivateWorldForSubject(created);
+  const withDefaultWorld = await store.update({
     id: created.id,
-    owner_id: created.id,
+    body: { default_private_world_id: defaultPrivateWorldId },
   });
-  return mapEntity(withOwner ?? created);
+
+  return mapEntity(withDefaultWorld ?? created);
 }
 
 export async function updateSubjectEntity(
@@ -132,7 +301,7 @@ export async function updateSubjectEntity(
     title?: string;
     summary?: string;
     content?: string;
-    world_id?: number;
+    default_private_world_id?: number;
   },
 ) {
   const store = adminCtx().engine.repos.entity;
@@ -140,15 +309,19 @@ export async function updateSubjectEntity(
   if (!existing || (existing.type !== "agent" && existing.type !== "user")) {
     throw new ApiHandlerError(404, "subject not found", { code: "entity_subject_not_found" });
   }
+
+  if (input.default_private_world_id != null) {
+    await applySubjectDefaultPrivateWorld(id, input.default_private_world_id);
+  }
+
   const updated = await store.update({
     id,
     title: input.title,
     summary: input.summary,
     content: input.content,
-    world_id: input.world_id,
   });
   if (!updated) {
     throw new ApiHandlerError(404, "subject not found", { code: "entity_subject_not_found" });
   }
-  return mapEntity(updated);
+  return mapEntity((await store.get(id)) ?? updated);
 }

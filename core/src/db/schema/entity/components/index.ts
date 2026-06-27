@@ -35,6 +35,7 @@ export function isKnownComponent(value: string): value is ComponentId {
 }
 
 export * from "./schedulable.ts";
+export * from "./subject-config.ts";
 export * from "./world-config.ts";
 export * from "./agent-config.ts";
 export * from "./user-config.ts";

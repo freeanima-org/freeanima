@@ -17,7 +17,6 @@ export type EntityRowView = {
   id: number;
   type: z.infer<typeof entityTypeSchema>;
   world_id: number;
-  owner_id: number | null;
   components: string[];
   primary_component: string;
   title: string;
@@ -34,7 +33,6 @@ export function mapEntityRow(row: EntitySelect): EntityRowView {
     id: row.id,
     type: typeParsed,
     world_id: row.worldId,
-    owner_id: row.ownerId ?? null,
     components: [...row.components],
     primary_component: row.primaryComponent,
     title: row.title ?? "",
@@ -50,6 +48,10 @@ export function asWorld(row: EntityRowView): WorldConfigBody | null {
   if (row.type !== "world" || !row.components.includes(WORLD_CONFIG_COMPONENT)) return null;
   const parsed = worldConfigBodySchema.safeParse(row.body);
   return parsed.success ? parsed.data : null;
+}
+
+export function worldAccessFromRow(row: EntityRowView): WorldConfigBody | null {
+  return asWorld(row);
 }
 
 export function asTaskList(

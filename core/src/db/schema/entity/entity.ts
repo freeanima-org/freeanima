@@ -10,7 +10,6 @@ export const entities = pgTable(
     id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
     type: text("type").notNull(),
     worldId: bigint("world_id", { mode: "number" }).notNull(),
-    ownerId: bigint("owner_id", { mode: "number" }),
     components: text("components").array().notNull().default([]),
     primaryComponent: text("primary_component").notNull(),
     title: text("title").notNull().default(""),
@@ -26,7 +25,6 @@ export const entities = pgTable(
   },
   (t) => [
     index("idx_entities_world_id").on(t.worldId),
-    index("idx_entities_owner_id").on(t.ownerId),
     index("idx_entities_primary_component").on(t.primaryComponent),
     index("idx_entities_components").using("gin", t.components),
   ],

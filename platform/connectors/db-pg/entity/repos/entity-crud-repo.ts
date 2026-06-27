@@ -45,7 +45,6 @@ export async function createEntity(input: EntityCreateInput): Promise<EntityRow>
     .values({
       type,
       worldId: input.world_id,
-      ownerId: input.owner_id ?? null,
       components,
       primaryComponent: primary,
       title,
@@ -87,7 +86,6 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
   if (input.summary !== undefined) patch.summary = input.summary.trim();
   if (input.content !== undefined) patch.content = input.content.trim();
   if (input.world_id !== undefined) patch.worldId = input.world_id;
-  if (input.owner_id !== undefined) patch.ownerId = input.owner_id;
 
   const db = getDb();
   const [row] = await db.update(entities).set(patch).where(eq(entities.id, input.id)).returning();

@@ -15,6 +15,8 @@ export type ShellViteBuildOptions = {
   outdir: string;
   /** monorepo 根目录（Vite 打包 config 时 import.meta.dir 不可靠） */
   repoRoot?: string;
+  /** Paraglide 编译输出目录；默认 outdir/.paraglide */
+  paraglideOutdir?: string;
   base?: string;
   minify?: boolean;
   sourcemap?: boolean;
@@ -35,7 +37,7 @@ function prepareOutdir(outdir: string, watch: boolean): void {
 }
 
 export function createShellViteInlineConfig(opts: ShellViteBuildOptions): InlineConfig {
-  const paraglideDir = join(opts.outdir, ".paraglide");
+  const paraglideDir = opts.paraglideOutdir ?? join(opts.outdir, ".paraglide");
   const repoRoot = opts.repoRoot;
   const paths = shellSourcePaths(repoRoot);
   const indexHtml = join(opts.appDir, "index.html");

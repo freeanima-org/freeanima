@@ -6,6 +6,16 @@ title: Entity Model
 
 FreeAnima stores most structured business data in a single **`entities`** table. Self layer remains physically isolated in [`self_blocks`](self-layer.md).
 
+## Hierarchy: subject → world → content
+
+| Layer       | Entity type     | Role                                                |
+| ----------- | --------------- | --------------------------------------------------- |
+| **Subject** | `agent`, `user` | Who acts — exists **before** and **outside** worlds |
+| **World**   | `world`         | Logical namespace / permission boundary             |
+| **Content** | `content`       | Business data (tasks, future memory components, …)  |
+
+Subjects do **not** belong to a world. Each subject may have exactly **one default private world** (exclusive, auto-created on subject creation). Content belongs to a world via `world_id` and inherits that world's visibility boundary.
+
 ## Two orthogonal classifications
 
 | Layer           | Cardinality              | Purpose                                                    |
@@ -17,25 +27,38 @@ Component fields live in **`body` JSONB** at the top level. **`primary_component
 
 ## `entities` table
 
-| Column                          | Role                                                                 |
-| ------------------------------- | -------------------------------------------------------------------- |
-| `id`                            | `bigint` identity — global numeric ID                                |
-| `type`                          | One of four entity types                                             |
-| `world_id`                      | Native owning World (FK → `entities.id`)                             |
-| `owner_id`                      | Owning subject (`agent` / `user` entity), nullable for public worlds |
-| `components`                    | `text[]` component tags                                              |
-| `primary_component`             | Main component for module routing                                    |
-| `title` / `summary` / `content` | Shared text columns (all components may use)                         |
-| `body`                          | JSONB component payload                                              |
-| `created_at` / `updated_at`     | Timestamps                                                           |
+| Column                          | Role                                         |
+| ------------------------------- | -------------------------------------------- |
+| `id`                            | `bigint` identity — global numeric ID        |
+| `type`                          | One of four entity types                     |
+| `world_id`                      | Native owning World (FK → `entities.id`)     |
+| `components`                    | `text[]` component tags                      |
+| `primary_component`             | Main component for module routing            |
+| `title` / `summary` / `content` | Shared text columns (all components may use) |
+| `body`                          | JSONB component payload                      |
+| `created_at` / `updated_at`     | Timestamps                                   |
 
 **Not in v0.8 bootstrap:** relationship table, permission table, World nesting/mount, graph DB (PostgreSQL AGE).
+
+## Subject (`agent` / `user`)
+
+- Identity is **`type`** plus `agent_config` or `user_config` primary component.
+- Subjects are **not** scoped by `world_id` in a membership sense; row `world_id` stays at bootstrap root (`ENTITY_ROOT_WORLD_ID`) as a table placeholder.
+- **`agent_config` / `user_config` body**: `default_private_world_id` — the subject's single default private world (auto-created on subject create; configurable from private worlds owned by the subject).
 
 ## World namespace
 
 - **`type: world`** entities are logical containers (permission/list boundary).
-- Public world: `owner_id = null`.
+- Visibility and owner live in **`world_config` body**:
+  - `private: false` — public world
+  - `private: true` + `owner_subject_id` — private world owned by an `agent` or `user` entity
+  - `default_private: true` — marks the subject's **exclusive** default private world (at most one per `owner_subject_id`)
 - Do not confuse with semantic memory **`type=world`** (fact classification in [`memory.md`](memory.md)) — that becomes `body.memory_kind=world` after future migration.
+
+## Content
+
+- **`world_id`** is the sole namespace key; access boundary is inherited from the owning world.
+- Content entities do not store a separate owner column.
 
 ## Task module (first consumer)
 

@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { FormField, FormFieldset } from "@freeanima/satellite-sdk/form";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
 import { m } from "@admin/lib/i18n.ts";
 import {
   createSubjectEntity,
   listSubjectEntities,
+  listWorldEntities,
   updateSubjectEntity,
   type AdminEntityRow,
 } from "@admin/lib/api.ts";
@@ -20,7 +21,7 @@ type SubjectFormState = {
   title: string;
   summary: string;
   content: string;
-  world_id: string;
+  default_private_world_id: string;
 };
 
 const EMPTY_FORM: SubjectFormState = {
@@ -28,25 +29,51 @@ const EMPTY_FORM: SubjectFormState = {
   title: "",
   summary: "",
   content: "",
-  world_id: "1",
+  default_private_world_id: "",
 };
 
-function parsePositiveInt(value: string): number | undefined {
-  const trimmed = value.trim();
-  if (!trimmed) return undefined;
-  const n = Number(trimmed);
-  return Number.isInteger(n) && n > 0 ? n : undefined;
+function readDefaultPrivateWorldId(row: AdminEntityRow): number | null {
+  const id = row.body?.default_private_world_id;
+  return typeof id === "number" && id > 0 ? id : null;
 }
 
-function subjectTypeLabel(type: string): string {
-  if (type === "agent") return m.admin_entities_type_agent();
-  if (type === "user") return m.admin_entities_type_user();
-  return type;
+function isPrivateWorldOwnedBySubject(world: AdminEntityRow, subjectId: number): boolean {
+  const body = world.body ?? {};
+  const ownerId = Number(body.owner_subject_id);
+  return body.private === true && Number.isInteger(ownerId) && ownerId === subjectId;
+}
+
+function resolveDefaultPrivateWorldId(
+  row: AdminEntityRow,
+  candidateWorlds: AdminEntityRow[],
+): string {
+  const fromSubject = readDefaultPrivateWorldId(row);
+  if (fromSubject != null && candidateWorlds.some((w) => w.id === fromSubject)) {
+    return String(fromSubject);
+  }
+  const marked = candidateWorlds.find((w) => w.body?.default_private === true);
+  if (marked) return String(marked.id);
+  if (candidateWorlds.length > 0) return String(candidateWorlds[0].id);
+  return fromSubject != null ? String(fromSubject) : "";
+}
+
+function privateWorldsForSubject(worlds: AdminEntityRow[], subjectId: number): AdminEntityRow[] {
+  return worlds.filter((w) => isPrivateWorldOwnedBySubject(w, subjectId));
+}
+
+function worldOptionLabel(row: AdminEntityRow): string {
+  const title = row.title || m.admin_common_no_title();
+  const suffix =
+    row.body?.default_private === true
+      ? ` (${m.admin_entities_world_default_private_badge()})`
+      : "";
+  return `#${row.id} — ${title}${suffix}`;
 }
 
 function SubjectEditModal({
   mode,
   initial,
+  candidateWorlds,
   saving,
   error,
   onClose,
@@ -54,6 +81,7 @@ function SubjectEditModal({
 }: {
   mode: "create" | "edit";
   initial: SubjectFormState;
+  candidateWorlds: AdminEntityRow[];
   saving: boolean;
   error: string;
   onClose: () => void;
@@ -121,14 +149,31 @@ function SubjectEditModal({
               onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
             />
           </FormField>
-          <FormField label={m.admin_entities_col_world()} className="text-xs">
-            <input
-              type="text"
-              className="input input-bordered input-sm w-full font-mono"
-              value={form.world_id}
-              onChange={(e) => setForm((f) => ({ ...f, world_id: e.target.value }))}
-            />
-          </FormField>
+          {mode === "edit" ? (
+            <FormField label={m.admin_entities_col_default_private_world()} className="text-xs">
+              {candidateWorlds.length === 0 ? (
+                <p className="text-sm text-base-content/60 py-2">
+                  {m.admin_entities_default_private_world_empty()}
+                </p>
+              ) : (
+                <select
+                  className="select select-bordered select-sm w-full"
+                  value={form.default_private_world_id}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, default_private_world_id: e.target.value }))
+                  }
+                >
+                  {candidateWorlds.map((w) => (
+                    <option key={w.id} value={String(w.id)}>
+                      {worldOptionLabel(w)}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </FormField>
+          ) : (
+            <p className="text-xs text-base-content/60">{m.admin_entities_subject_create_hint()}</p>
+          )}
         </FormFieldset>
         <div className="modal-action">
           <button
@@ -162,8 +207,15 @@ function SubjectEditModal({
   );
 }
 
+function subjectTypeLabel(type: string): string {
+  if (type === "agent") return m.admin_entities_type_agent();
+  if (type === "user") return m.admin_entities_type_user();
+  return type;
+}
+
 function SubjectsPage() {
   const [items, setItems] = useState<AdminEntityRow[]>([]);
+  const [worlds, setWorlds] = useState<AdminEntityRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -174,13 +226,26 @@ function SubjectsPage() {
   const [modalError, setModalError] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const worldTitleById = useCallback(
+    (id: number | null): string => {
+      if (id == null) return m.admin_common_empty();
+      const world = worlds.find((w) => w.id === id);
+      return world?.title || `#${id}`;
+    },
+    [worlds],
+  );
+
   const fetchList = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const data = await listSubjectEntities();
-      setItems(data.items);
-      setTotal(data.total);
+      const [subjectData, worldData] = await Promise.all([
+        listSubjectEntities(),
+        listWorldEntities(),
+      ]);
+      setItems(subjectData.items);
+      setTotal(subjectData.total);
+      setWorlds(worldData.items);
     } catch (e) {
       logCaughtError("routes/_sidebar/subjects", e);
       setError(
@@ -211,6 +276,11 @@ function SubjectsPage() {
     if (!saving) setModal(null);
   };
 
+  const modalCandidateWorlds = useMemo(() => {
+    if (modal?.mode !== "edit" || !modal.row) return [];
+    return privateWorldsForSubject(worlds, modal.row.id);
+  }, [modal, worlds]);
+
   const modalInitial: SubjectFormState =
     modal?.mode === "edit" && modal.row
       ? {
@@ -218,7 +288,7 @@ function SubjectsPage() {
           title: modal.row.title,
           summary: modal.row.summary,
           content: modal.row.content,
-          world_id: String(modal.row.world_id),
+          default_private_world_id: resolveDefaultPrivateWorldId(modal.row, modalCandidateWorlds),
         }
       : EMPTY_FORM;
 
@@ -226,13 +296,18 @@ function SubjectsPage() {
     setSaving(true);
     setModalError("");
     try {
-      const worldId = parsePositiveInt(form.world_id);
       if (modal?.mode === "edit" && modal.row) {
+        const defaultWorldId = form.default_private_world_id.trim()
+          ? Number(form.default_private_world_id)
+          : undefined;
         await updateSubjectEntity(modal.row.id, {
           title: form.title.trim(),
           summary: form.summary.trim(),
           content: form.content.trim(),
-          world_id: worldId,
+          default_private_world_id:
+            defaultWorldId != null && Number.isInteger(defaultWorldId) && defaultWorldId > 0
+              ? defaultWorldId
+              : undefined,
         });
       } else {
         await createSubjectEntity({
@@ -240,7 +315,6 @@ function SubjectsPage() {
           title: form.title.trim(),
           summary: form.summary.trim(),
           content: form.content.trim(),
-          world_id: worldId,
         });
       }
       setModal(null);
@@ -296,7 +370,7 @@ function SubjectsPage() {
                   <th>{m.admin_entities_col_id()}</th>
                   <th>{m.admin_entities_col_type()}</th>
                   <th>{m.admin_entities_col_title()}</th>
-                  <th>{m.admin_entities_col_world()}</th>
+                  <th>{m.admin_entities_col_default_private_world()}</th>
                   <th>{m.admin_common_time()}</th>
                   <th />
                 </tr>
@@ -313,7 +387,9 @@ function SubjectsPage() {
                     <td className="max-w-[12rem] truncate">
                       {row.title || m.admin_common_no_title()}
                     </td>
-                    <td className="font-mono text-xs">{row.world_id}</td>
+                    <td className="text-xs max-w-[12rem] truncate">
+                      {worldTitleById(readDefaultPrivateWorldId(row))}
+                    </td>
                     <td className="text-xs text-base-content/60">
                       {formatDisplayDateTime(row.updated_at)}
                     </td>
@@ -341,6 +417,7 @@ function SubjectsPage() {
         <SubjectEditModal
           mode={modal.mode}
           initial={modalInitial}
+          candidateWorlds={modalCandidateWorlds}
           saving={saving}
           error={modalError}
           onClose={closeModal}

@@ -100,30 +100,50 @@ export const worldEntityCreateBodySchema = z
     title: z.string(),
     summary: z.string().optional(),
     content: z.string().optional(),
-    owner_id: z.number().int().positive().nullable().optional(),
+    private: z.boolean().optional().default(false),
+    owner_subject_id: z.number().int().positive().optional(),
   })
   .transform((b) => ({
     title: b.title.trim(),
     summary: b.summary?.trim() ?? "",
     content: b.content?.trim() ?? "",
-    owner_id: b.owner_id ?? null,
+    private: b.private ?? false,
+    owner_subject_id: b.owner_subject_id,
   }))
-  .refine((b) => b.title.length > 0, { message: "title is required" });
+  .refine((b) => b.title.length > 0, { message: "title is required" })
+  .superRefine((b, ctx) => {
+    if (b.private && b.owner_subject_id == null) {
+      ctx.addIssue({ code: "custom", message: "private world requires owner_subject_id" });
+    }
+    if (!b.private && b.owner_subject_id != null) {
+      ctx.addIssue({ code: "custom", message: "public world must not have owner_subject_id" });
+    }
+  });
 
 export const worldEntityUpdateBodySchema = z
   .object({
     title: z.string().optional(),
     summary: z.string().optional(),
     content: z.string().optional(),
-    owner_id: z.number().int().positive().nullable().optional(),
+    private: z.boolean().optional(),
+    owner_subject_id: z.number().int().positive().nullable().optional(),
   })
   .transform((b) => ({
     title: b.title !== undefined ? b.title.trim() : undefined,
     summary: b.summary !== undefined ? b.summary.trim() : undefined,
     content: b.content !== undefined ? b.content.trim() : undefined,
-    owner_id: b.owner_id,
+    private: b.private,
+    owner_subject_id: b.owner_subject_id,
   }))
-  .refine((b) => b.title === undefined || b.title.length > 0, { message: "title is required" });
+  .refine((b) => b.title === undefined || b.title.length > 0, { message: "title is required" })
+  .superRefine((b, ctx) => {
+    if (b.private === true && (b.owner_subject_id === undefined || b.owner_subject_id === null)) {
+      ctx.addIssue({ code: "custom", message: "private world requires owner_subject_id" });
+    }
+    if (b.private === false && b.owner_subject_id != null) {
+      ctx.addIssue({ code: "custom", message: "public world must not have owner_subject_id" });
+    }
+  });
 
 export const subjectEntityCreateBodySchema = z
   .object({
@@ -131,14 +151,12 @@ export const subjectEntityCreateBodySchema = z
     title: z.string(),
     summary: z.string().optional(),
     content: z.string().optional(),
-    world_id: z.number().int().positive().optional(),
   })
   .transform((b) => ({
     type: b.type,
     title: b.title.trim(),
     summary: b.summary?.trim() ?? "",
     content: b.content?.trim() ?? "",
-    world_id: b.world_id,
   }))
   .refine((b) => b.title.length > 0, { message: "title is required" });
 
@@ -147,13 +165,13 @@ export const subjectEntityUpdateBodySchema = z
     title: z.string().optional(),
     summary: z.string().optional(),
     content: z.string().optional(),
-    world_id: z.number().int().positive().optional(),
+    default_private_world_id: z.number().int().positive().optional(),
   })
   .transform((b) => ({
     title: b.title !== undefined ? b.title.trim() : undefined,
     summary: b.summary !== undefined ? b.summary.trim() : undefined,
     content: b.content !== undefined ? b.content.trim() : undefined,
-    world_id: b.world_id,
+    default_private_world_id: b.default_private_world_id,
   }))
   .refine((b) => b.title === undefined || b.title.length > 0, { message: "title is required" });
 
