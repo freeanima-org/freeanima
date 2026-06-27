@@ -308,36 +308,6 @@ export async function restartService() {
   return unwrap(resolveApiClient().api.status.restart.post());
 }
 
-export async function getEmailOverview() {
-  return unwrap(resolveApiClient().api.email.get());
-}
-
-export async function fetchEmailAccount(accountId: string) {
-  return unwrap(resolveApiClient().api.email({ accountId }).fetch.post());
-}
-
-export async function listAccountMessages(accountId: string, limit = 50) {
-  return unwrap(resolveApiClient().api.email({ accountId }).messages.get({ query: { limit } }));
-}
-
-export async function getEmailMessage(accountId: string, uid: number) {
-  return unwrap(
-    resolveApiClient()
-      .api.email({ accountId })
-      .messages({ uid: String(uid) })
-      .get(),
-  );
-}
-
-export async function markEmailRead(accountId: string, uid: number) {
-  return unwrap(
-    resolveApiClient()
-      .api.email({ accountId })
-      .messages({ uid: String(uid) })
-      .read.post(),
-  );
-}
-
 export async function searchMemory(input: { query: string; limit?: number }) {
   return unwrap(resolveApiClient().api.memory.search.post(input));
 }

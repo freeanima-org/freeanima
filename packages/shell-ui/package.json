@@ -20,6 +20,7 @@
     "@freeanima/sap-contract": "workspace:*",
     "@freeanima/satellite-chat": "workspace:*",
     "@freeanima/satellite-task": "workspace:*",
+    "@freeanima/satellite-email": "workspace:*",
     "@freeanima/satellite-companion": "workspace:*",
     "@freeanima/satellite-sdk": "workspace:*",
     "@sentry/react": "^9.47.1",

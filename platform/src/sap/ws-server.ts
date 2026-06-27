@@ -28,6 +28,12 @@ import {
   taskCompleteInputSchema,
   taskUncompleteInputSchema,
   taskDeleteInputSchema,
+  emailAccountListInputSchema,
+  emailMessageListInputSchema,
+  emailMessageReadInputSchema,
+  emailMessageMarkReadInputSchema,
+  emailSyncInputSchema,
+  emailThreadListInputSchema,
   notificationListInputSchema,
   notificationMarkReadInputSchema,
   messageSendInputSchema,
@@ -55,6 +61,7 @@ import * as serviceAcpDock from "../runtime/service-acp-dock.ts";
 import * as serviceStatus from "../runtime/service-status.ts";
 import * as serviceFridge from "../runtime/service-fridge.ts";
 import * as serviceEntityTask from "../runtime/service-entity-task.ts";
+import * as serviceEntityEmail from "../runtime/service-entity-email.ts";
 import * as serviceNotifications from "../runtime/service-notifications.ts";
 import {
   closeTerminalSession,
@@ -283,6 +290,33 @@ export function createSapServerHandlers(
         case "task.delete": {
           const input = taskDeleteInputSchema.parse(payload);
           return serviceEntityTask.serviceTaskDelete(deps.runtime.runtimeDeps(), input.id);
+        }
+        case "emailaccount.list": {
+          emailAccountListInputSchema.parse(payload);
+          return serviceEntityEmail.serviceEmailAccountList(deps.runtime.runtimeDeps());
+        }
+        case "email.message.list": {
+          const input = emailMessageListInputSchema.parse(payload);
+          return serviceEntityEmail.serviceEmailMessageList(deps.runtime.runtimeDeps(), input);
+        }
+        case "email.message.read": {
+          const input = emailMessageReadInputSchema.parse(payload);
+          return serviceEntityEmail.serviceEmailMessageRead(deps.runtime.runtimeDeps(), input.id);
+        }
+        case "email.message.markRead": {
+          const input = emailMessageMarkReadInputSchema.parse(payload);
+          return serviceEntityEmail.serviceEmailMessageMarkRead(
+            deps.runtime.runtimeDeps(),
+            input.id,
+          );
+        }
+        case "email.sync": {
+          const input = emailSyncInputSchema.parse(payload);
+          return serviceEntityEmail.serviceEmailSync(deps.runtime.runtimeDeps(), input);
+        }
+        case "emailthread.list": {
+          const input = emailThreadListInputSchema.parse(payload);
+          return serviceEntityEmail.serviceEmailThreadList(deps.runtime.runtimeDeps(), input);
         }
         case "notification.list": {
           const input = notificationListInputSchema.parse(payload);

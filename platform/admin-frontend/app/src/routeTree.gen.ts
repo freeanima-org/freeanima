@@ -26,7 +26,6 @@ import { Route as SidebarMcpRouteImport } from './routes/_sidebar/mcp'
 import { Route as SidebarLimbicMemoryRouteImport } from './routes/_sidebar/limbic-memory'
 import { Route as SidebarFtsRouteImport } from './routes/_sidebar/fts'
 import { Route as SidebarFridgeMagnetRouteImport } from './routes/_sidebar/fridge-magnet'
-import { Route as SidebarEmailRouteImport } from './routes/_sidebar/email'
 import { Route as SidebarDreamRouteImport } from './routes/_sidebar/dream'
 import { Route as SidebarDashboardRouteImport } from './routes/_sidebar/dashboard'
 import { Route as SidebarCronRouteImport } from './routes/_sidebar/cron'
@@ -124,11 +123,6 @@ const SidebarFridgeMagnetRoute = SidebarFridgeMagnetRouteImport.update({
   path: '/fridge-magnet',
   getParentRoute: () => SidebarRouteRoute,
 } as any)
-const SidebarEmailRoute = SidebarEmailRouteImport.update({
-  id: '/email',
-  path: '/email',
-  getParentRoute: () => SidebarRouteRoute,
-} as any)
 const SidebarDreamRoute = SidebarDreamRouteImport.update({
   id: '/dream',
   path: '/dream',
@@ -207,7 +201,6 @@ export interface FileRoutesByFullPath {
   '/cron': typeof SidebarCronRoute
   '/dashboard': typeof SidebarDashboardRoute
   '/dream': typeof SidebarDreamRoute
-  '/email': typeof SidebarEmailRoute
   '/fridge-magnet': typeof SidebarFridgeMagnetRoute
   '/fts': typeof SidebarFtsRoute
   '/limbic-memory': typeof SidebarLimbicMemoryRoute
@@ -237,7 +230,6 @@ export interface FileRoutesByTo {
   '/cron': typeof SidebarCronRoute
   '/dashboard': typeof SidebarDashboardRoute
   '/dream': typeof SidebarDreamRoute
-  '/email': typeof SidebarEmailRoute
   '/fridge-magnet': typeof SidebarFridgeMagnetRoute
   '/fts': typeof SidebarFtsRoute
   '/limbic-memory': typeof SidebarLimbicMemoryRoute
@@ -270,7 +262,6 @@ export interface FileRoutesById {
   '/_sidebar/cron': typeof SidebarCronRoute
   '/_sidebar/dashboard': typeof SidebarDashboardRoute
   '/_sidebar/dream': typeof SidebarDreamRoute
-  '/_sidebar/email': typeof SidebarEmailRoute
   '/_sidebar/fridge-magnet': typeof SidebarFridgeMagnetRoute
   '/_sidebar/fts': typeof SidebarFtsRoute
   '/_sidebar/limbic-memory': typeof SidebarLimbicMemoryRoute
@@ -303,7 +294,6 @@ export interface FileRouteTypes {
     | '/cron'
     | '/dashboard'
     | '/dream'
-    | '/email'
     | '/fridge-magnet'
     | '/fts'
     | '/limbic-memory'
@@ -333,7 +323,6 @@ export interface FileRouteTypes {
     | '/cron'
     | '/dashboard'
     | '/dream'
-    | '/email'
     | '/fridge-magnet'
     | '/fts'
     | '/limbic-memory'
@@ -365,7 +354,6 @@ export interface FileRouteTypes {
     | '/_sidebar/cron'
     | '/_sidebar/dashboard'
     | '/_sidebar/dream'
-    | '/_sidebar/email'
     | '/_sidebar/fridge-magnet'
     | '/_sidebar/fts'
     | '/_sidebar/limbic-memory'
@@ -511,13 +499,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SidebarFridgeMagnetRouteImport
       parentRoute: typeof SidebarRouteRoute
     }
-    '/_sidebar/email': {
-      id: '/_sidebar/email'
-      path: '/email'
-      fullPath: '/email'
-      preLoaderRoute: typeof SidebarEmailRouteImport
-      parentRoute: typeof SidebarRouteRoute
-    }
     '/_sidebar/dream': {
       id: '/_sidebar/dream'
       path: '/dream'
@@ -633,7 +614,6 @@ interface SidebarRouteRouteChildren {
   SidebarCronRoute: typeof SidebarCronRoute
   SidebarDashboardRoute: typeof SidebarDashboardRoute
   SidebarDreamRoute: typeof SidebarDreamRoute
-  SidebarEmailRoute: typeof SidebarEmailRoute
   SidebarFridgeMagnetRoute: typeof SidebarFridgeMagnetRoute
   SidebarFtsRoute: typeof SidebarFtsRoute
   SidebarLimbicMemoryRoute: typeof SidebarLimbicMemoryRoute
@@ -660,7 +640,6 @@ const SidebarRouteRouteChildren: SidebarRouteRouteChildren = {
   SidebarCronRoute: SidebarCronRoute,
   SidebarDashboardRoute: SidebarDashboardRoute,
   SidebarDreamRoute: SidebarDreamRoute,
-  SidebarEmailRoute: SidebarEmailRoute,
   SidebarFridgeMagnetRoute: SidebarFridgeMagnetRoute,
   SidebarFtsRoute: SidebarFtsRoute,
   SidebarLimbicMemoryRoute: SidebarLimbicMemoryRoute,

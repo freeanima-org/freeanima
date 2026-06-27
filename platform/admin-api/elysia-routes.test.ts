@@ -1,6 +1,5 @@
-import { describe, it, expect, spyOn } from "bun:test";
+import { describe, it, expect } from "bun:test";
 import { apiApp } from "./elysia/app.ts";
-import * as emailHandlers from "./handlers/email.ts";
 
 describe("elysia apiApp", () => {
   it("GET /api/health 路由已注册", async () => {
@@ -38,22 +37,9 @@ describe("elysia apiApp", () => {
     expect(res.status).not.toBe(404);
   });
 
-  it("GET /api/email 路由已注册", async () => {
-    const spy = spyOn(emailHandlers, "getEmailOverview").mockResolvedValue({
-      accounts: [],
-      messages: [],
-      errors: {},
-    });
+  it("GET /api/email 已移除", async () => {
     const res = await apiApp.handle(new Request("http://127.0.0.1/api/email"));
-    expect(res.status).not.toBe(404);
-    spy.mockRestore();
-  });
-
-  it("GET /api/email/:accountId/messages 路由已注册", async () => {
-    const res = await apiApp.handle(
-      new Request("http://127.0.0.1/api/email/test-account/messages"),
-    );
-    expect(res.status).not.toBe(404);
+    expect(res.status).toBe(404);
   });
 
   it("GET /api/credentials/detail 路由已注册", async () => {

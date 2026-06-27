@@ -2,7 +2,7 @@ import { registerCronBuiltinHandler } from "@freeanima/platform/connectors/cron"
 import { registerSleepPipeline, runSleepCycle, resolveSleepCycleDay } from "./pipeline-handlers.ts";
 import type { Engine } from "@freeanima/runtime";
 
-/** 注册内置 cron handler（睡眠周期 pipeline） */
+/** 注册内置 cron handler（睡眠周期 pipeline、邮箱同步） */
 export function registerBootCronHandlers(engine: Engine): void {
   registerSleepPipeline(engine);
 
@@ -19,5 +19,11 @@ export function registerBootCronHandlers(engine: Engine): void {
         ]),
       ),
     });
+  });
+
+  registerCronBuiltinHandler("builtin-email-sync-all", async () => {
+    const { syncAllEmailAccounts } = await import("@freeanima/platform/connectors/email");
+    const results = await syncAllEmailAccounts({ limit: 100 });
+    return JSON.stringify({ ok: true, results });
   });
 }

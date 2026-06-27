@@ -18,7 +18,7 @@ export {
 export type { ParsedSapToolName, ParsedSapPlatform } from "./naming.ts";
 
 export { generateSapInstanceIdCandidate, assertSapInstanceId } from "./instance-id.ts";
-export { CHAT_INSTANCE_ID, TASK_INSTANCE_ID } from "./satellite-instance.ts";
+export { CHAT_INSTANCE_ID, TASK_INSTANCE_ID, EMAIL_INSTANCE_ID } from "./satellite-instance.ts";
 
 export {
   browserSapInstanceStore,
@@ -134,6 +134,41 @@ export type {
   TaskDeleteInput,
   TaskDeleteOutput,
 } from "./frames/task.ts";
+
+export {
+  emailAccountRowSchema,
+  emailMessageRowSchema,
+  emailThreadRowSchema,
+  emailAccountListInputSchema,
+  emailAccountListOutputSchema,
+  emailMessageListInputSchema,
+  emailMessageListOutputSchema,
+  emailMessageReadInputSchema,
+  emailMessageReadOutputSchema,
+  emailMessageMarkReadInputSchema,
+  emailMessageMarkReadOutputSchema,
+  emailSyncInputSchema,
+  emailSyncOutputSchema,
+  emailThreadListInputSchema,
+  emailThreadListOutputSchema,
+} from "./frames/email.ts";
+export type {
+  EmailAccountRowPayload,
+  EmailMessageRowPayload,
+  EmailThreadRowPayload,
+  EmailAccountListInput,
+  EmailAccountListOutput,
+  EmailMessageListInput,
+  EmailMessageListOutput,
+  EmailMessageReadInput,
+  EmailMessageReadOutput,
+  EmailMessageMarkReadInput,
+  EmailMessageMarkReadOutput,
+  EmailSyncInput,
+  EmailSyncOutput,
+  EmailThreadListInput,
+  EmailThreadListOutput,
+} from "./frames/email.ts";
 
 export {
   notificationRecipientKindSchema,

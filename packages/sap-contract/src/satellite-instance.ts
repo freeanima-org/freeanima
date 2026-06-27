@@ -3,3 +3,6 @@ export const CHAT_INSTANCE_ID = "def";
 
 /** Task 使用 singleton 策略 */
 export const TASK_INSTANCE_ID = "tsk";
+
+/** Email 使用 singleton 策略 */
+export const EMAIL_INSTANCE_ID = "eml";

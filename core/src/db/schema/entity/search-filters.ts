@@ -1,10 +1,14 @@
 import { z } from "zod";
 
 import {
+  EMAIL_ACCOUNT_COMPONENT,
+  EMAIL_MESSAGE_COMPONENT,
+  EMAIL_THREAD_COMPONENT,
+  emailDirectionSchema,
   taskItemPrioritySchema,
   taskItemStatusSchema,
   TASK_ITEM_COMPONENT,
-} from "./components/task-item.ts";
+} from "./components/index.ts";
 
 /** task_item 结构化搜索 filters（EntitySearchOpts.filters） */
 export const taskItemSearchFiltersSchema = z
@@ -32,6 +36,76 @@ export function parseTaskItemSearchFilters(
   return parsed.data;
 }
 
+export const emailAccountSearchFiltersSchema = z
+  .object({
+    enabled: z.boolean().optional(),
+    default_sender: z.boolean().optional(),
+    tags: z.array(z.string()).optional(),
+  })
+  .strict();
+
+export type EmailAccountSearchFilters = z.infer<typeof emailAccountSearchFiltersSchema>;
+
+export function parseEmailAccountSearchFilters(
+  raw: Record<string, unknown> | undefined,
+): EmailAccountSearchFilters {
+  if (!raw || Object.keys(raw).length === 0) return {};
+  const parsed = emailAccountSearchFiltersSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(`invalid email_account filters: ${parsed.error.message}`);
+  }
+  return parsed.data;
+}
+
+export const emailThreadSearchFiltersSchema = z
+  .object({
+    account_id: z.number().int().positive().optional(),
+    tags: z.array(z.string()).optional(),
+    has_unread: z.boolean().optional(),
+  })
+  .strict();
+
+export type EmailThreadSearchFilters = z.infer<typeof emailThreadSearchFiltersSchema>;
+
+export function parseEmailThreadSearchFilters(
+  raw: Record<string, unknown> | undefined,
+): EmailThreadSearchFilters {
+  if (!raw || Object.keys(raw).length === 0) return {};
+  const parsed = emailThreadSearchFiltersSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(`invalid email_thread filters: ${parsed.error.message}`);
+  }
+  return parsed.data;
+}
+
+export const emailMessageSearchFiltersSchema = z
+  .object({
+    account_id: z.number().int().positive().optional(),
+    thread_id: z.number().int().positive().optional(),
+    unread: z.boolean().optional(),
+    direction: emailDirectionSchema.optional(),
+    tags: z.array(z.string()).optional(),
+    since: z.string().optional(),
+    before: z.string().optional(),
+  })
+  .strict();
+
+export type EmailMessageSearchFilters = z.infer<typeof emailMessageSearchFiltersSchema>;
+
+export function parseEmailMessageSearchFilters(
+  raw: Record<string, unknown> | undefined,
+): EmailMessageSearchFilters {
+  if (!raw || Object.keys(raw).length === 0) return {};
+  const parsed = emailMessageSearchFiltersSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(`invalid email_message filters: ${parsed.error.message}`);
+  }
+  return parsed.data;
+}
+
 export const ENTITY_SEARCH_FILTER_COMPONENTS = {
   [TASK_ITEM_COMPONENT]: taskItemSearchFiltersSchema,
+  [EMAIL_ACCOUNT_COMPONENT]: emailAccountSearchFiltersSchema,
+  [EMAIL_THREAD_COMPONENT]: emailThreadSearchFiltersSchema,
+  [EMAIL_MESSAGE_COMPONENT]: emailMessageSearchFiltersSchema,
 } as const;

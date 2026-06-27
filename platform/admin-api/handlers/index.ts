@@ -37,13 +37,6 @@ export { getSatellitesStatus } from "./satellites.ts";
 export { getAcpStatus, acpStartAll, acpStopAll, acpStartAgent, acpStopAgent } from "./acp.ts";
 export { iterateMessageStream } from "./message-stream.ts";
 export { fetchConversationAcpDock, iterateConversationEvents } from "./conversation-events.ts";
-export {
-  getEmailOverview,
-  fetchAccountEmails,
-  listAccountMessages,
-  getEmailMessage,
-  markEmailRead,
-} from "./email.ts";
 export { listCredentialMetas, getCredentialDetailHandler } from "./credentials.ts";
 export { getFtsStatus, startRebuildFtsIndex, getRebuildFtsJobStatus } from "./fts.ts";
 export {

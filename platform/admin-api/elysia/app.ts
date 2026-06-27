@@ -4,7 +4,6 @@ import { assertNotShuttingDown } from "./context.ts";
 import { applyCorsHeaders, corsPreflightResponse } from "./cors.ts";
 import { acpRoutes } from "./routes/acp.ts";
 import { credentialsRoutes } from "./routes/credentials.ts";
-import { emailRoutes } from "./routes/email.ts";
 import { ftsRoutes } from "./routes/fts.ts";
 import { healthRoutes } from "./routes/health.ts";
 import { echoRoutes } from "./routes/echo.ts";
@@ -37,7 +36,6 @@ export const apiApp = new Elysia({ prefix: "/api" })
   .use(satellitesRoutes)
   .use(acpRoutes)
   .use(credentialsRoutes)
-  .use(emailRoutes)
   .use(fridgeMagnetRoutes)
   .use(autoLlmRunRoutes)
   .use(entityRoutes);
