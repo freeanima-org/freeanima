@@ -4,7 +4,6 @@ export function adminNavItems(): { to: string; label: string }[] {
   return [
     { to: "/dashboard", label: m.admin_nav_dashboard() },
     { to: "/conversations", label: m.admin_nav_conversations() },
-    { to: "/tasks", label: m.admin_nav_tasks() },
     { to: "/fridge-magnet", label: m.admin_nav_fridge() },
     { to: "/memory", label: m.admin_nav_memory() },
     { to: "/semantic-memory", label: m.admin_nav_semantic() },

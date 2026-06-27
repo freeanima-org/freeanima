@@ -77,7 +77,7 @@ export const TASK_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
     }),
     example: { ok: true, action: "list", count: 1, items: [exampleItem] },
   }),
-  task_list_lists: defineToolReturn({
+  tasklist_list: defineToolReturn({
     schema: z.object({
       ok: z.literal(true),
       action: z.literal("list_lists"),

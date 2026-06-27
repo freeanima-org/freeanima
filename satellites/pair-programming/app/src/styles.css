@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @plugin "daisyui";
+@source "./**/*.{tsx,ts}";
 
 /* 主内容区内边距：移动端略窄 */
 .app-main-padding {

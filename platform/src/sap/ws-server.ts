@@ -18,6 +18,16 @@ import {
   sessionAcpDockInputSchema,
   conversationCommandsInputSchema,
   fridgeListInputSchema,
+  tasklistListInputSchema,
+  tasklistCreateInputSchema,
+  tasklistPatchInputSchema,
+  tasklistDeleteInputSchema,
+  taskListInputSchema,
+  taskCreateInputSchema,
+  taskPatchInputSchema,
+  taskCompleteInputSchema,
+  taskUncompleteInputSchema,
+  taskDeleteInputSchema,
   notificationListInputSchema,
   notificationMarkReadInputSchema,
   messageSendInputSchema,
@@ -44,6 +54,7 @@ import * as serviceSessions from "../runtime/service-conversations.ts";
 import * as serviceAcpDock from "../runtime/service-acp-dock.ts";
 import * as serviceStatus from "../runtime/service-status.ts";
 import * as serviceFridge from "../runtime/service-fridge.ts";
+import * as serviceEntityTask from "../runtime/service-entity-task.ts";
 import * as serviceNotifications from "../runtime/service-notifications.ts";
 import {
   closeTerminalSession,
@@ -232,6 +243,46 @@ export function createSapServerHandlers(
         case "fridge.list": {
           fridgeListInputSchema.parse(payload);
           return serviceFridge.listFridgeMagnets();
+        }
+        case "tasklist.list": {
+          tasklistListInputSchema.parse(payload);
+          return serviceEntityTask.serviceTasklistList(deps.runtime.runtimeDeps());
+        }
+        case "tasklist.create": {
+          const input = tasklistCreateInputSchema.parse(payload);
+          return serviceEntityTask.serviceTasklistCreate(deps.runtime.runtimeDeps(), input);
+        }
+        case "tasklist.patch": {
+          const input = tasklistPatchInputSchema.parse(payload);
+          return serviceEntityTask.serviceTasklistPatch(deps.runtime.runtimeDeps(), input);
+        }
+        case "tasklist.delete": {
+          const input = tasklistDeleteInputSchema.parse(payload);
+          return serviceEntityTask.serviceTasklistDelete(deps.runtime.runtimeDeps(), input);
+        }
+        case "task.list": {
+          const input = taskListInputSchema.parse(payload);
+          return serviceEntityTask.serviceTaskList(deps.runtime.runtimeDeps(), input);
+        }
+        case "task.create": {
+          const input = taskCreateInputSchema.parse(payload);
+          return serviceEntityTask.serviceTaskCreate(deps.runtime.runtimeDeps(), input);
+        }
+        case "task.patch": {
+          const input = taskPatchInputSchema.parse(payload);
+          return serviceEntityTask.serviceTaskPatch(deps.runtime.runtimeDeps(), input);
+        }
+        case "task.complete": {
+          const input = taskCompleteInputSchema.parse(payload);
+          return serviceEntityTask.serviceTaskComplete(deps.runtime.runtimeDeps(), input.id);
+        }
+        case "task.uncomplete": {
+          const input = taskUncompleteInputSchema.parse(payload);
+          return serviceEntityTask.serviceTaskUncomplete(deps.runtime.runtimeDeps(), input.id);
+        }
+        case "task.delete": {
+          const input = taskDeleteInputSchema.parse(payload);
+          return serviceEntityTask.serviceTaskDelete(deps.runtime.runtimeDeps(), input.id);
         }
         case "notification.list": {
           const input = notificationListInputSchema.parse(payload);

@@ -18,7 +18,7 @@ export {
 export type { ParsedSapToolName, ParsedSapPlatform } from "./naming.ts";
 
 export { generateSapInstanceIdCandidate, assertSapInstanceId } from "./instance-id.ts";
-export { CHAT_INSTANCE_ID } from "./satellite-instance.ts";
+export { CHAT_INSTANCE_ID, TASK_INSTANCE_ID } from "./satellite-instance.ts";
 
 export {
   browserSapInstanceStore,
@@ -85,6 +85,55 @@ export {
   fridgeMagnetItemSchema,
 } from "./frames/fridge.ts";
 export type { FridgeListInput, FridgeListOutput, FridgeMagnetItem } from "./frames/fridge.ts";
+
+export {
+  taskListRowSchema,
+  taskItemRowSchema,
+  tasklistListInputSchema,
+  tasklistListOutputSchema,
+  tasklistCreateInputSchema,
+  tasklistCreateOutputSchema,
+  tasklistPatchInputSchema,
+  tasklistPatchOutputSchema,
+  tasklistDeleteInputSchema,
+  tasklistDeleteOutputSchema,
+  taskListInputSchema,
+  taskListOutputSchema,
+  taskCreateInputSchema,
+  taskCreateOutputSchema,
+  taskPatchInputSchema,
+  taskPatchOutputSchema,
+  taskCompleteInputSchema,
+  taskCompleteOutputSchema,
+  taskUncompleteInputSchema,
+  taskUncompleteOutputSchema,
+  taskDeleteInputSchema,
+  taskDeleteOutputSchema,
+} from "./frames/task.ts";
+export type {
+  TaskListRowPayload,
+  TaskItemRowPayload,
+  TasklistListInput,
+  TasklistListOutput,
+  TasklistCreateInput,
+  TasklistCreateOutput,
+  TasklistPatchInput,
+  TasklistPatchOutput,
+  TasklistDeleteInput,
+  TasklistDeleteOutput,
+  TaskListInput,
+  TaskListOutput,
+  TaskCreateInput,
+  TaskCreateOutput,
+  TaskPatchInput,
+  TaskPatchOutput,
+  TaskCompleteInput,
+  TaskCompleteOutput,
+  TaskUncompleteInput,
+  TaskUncompleteOutput,
+  TaskDeleteInput,
+  TaskDeleteOutput,
+} from "./frames/task.ts";
 
 export {
   notificationRecipientKindSchema,

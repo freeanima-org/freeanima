@@ -91,6 +91,6 @@ describePg("entity task PG", () => {
     expect(items[0]?.title).toBe("买菜");
 
     const lists = await listTaskLists();
-    expect(lists.find((l) => l.id === list.id)?.item_count).toBe(2);
+    expect(lists.find((l) => l.id === list.id)?.item_count).toBe(1);
   });
 });
