@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 18:53+0800\n"
+"POT-Creation-Date: 2026-06-28 23:53+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -92,7 +92,7 @@ msgid ""
 "| ----- | ----------------------- | ------------------------------------------------ |\n"
 "| Hub   | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1` |\n"
 "| Chat  | bundled `/chat`         | Chat UI; SAP direct or relay                     |\n"
-"| Admin | Hub `/admin/*`          | Memory, config, tools, satellite status          |\n"
+"| Admin | bundled shell `/admin`  | Memory, config, tools, satellite status (Hub REST `/api/*`) |\n"
 msgstr ""
 
 #. type: Plain text

@@ -68,7 +68,7 @@ FTS / hybrid SELECT use Drizzle `getColumns(table)` or snake_case column refs al
 
 ### Non-trivial transform
 
-Conversation/message assembly lives in [`conversation/transform.ts`](../../platform/connectors/db-pg/conversation/transform.ts) and [`message-transform.ts`](../../platform/connectors/db-pg/conversation/message-transform.ts) — not separate mapper directories.
+Conversation/message assembly lives in [`conversation/transform.ts`](../../core/src/db/pg/conversation/transform.ts) and [`message-transform.ts`](../../core/src/db/pg/conversation/message-transform.ts) — not separate mapper directories.
 
 ---
 

@@ -27,11 +27,11 @@ flowchart LR
   end
 ```
 
-| Role  | Default                 | Responsibility                                   |
-| ----- | ----------------------- | ------------------------------------------------ |
-| Hub   | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1` |
-| Chat  | bundled `/chat`         | Chat UI; SAP direct or relay                     |
-| Admin | Hub `/admin/*`          | Memory, config, tools, satellite status          |
+| Role  | Default                 | Responsibility                                              |
+| ----- | ----------------------- | ----------------------------------------------------------- |
+| Hub   | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1`            |
+| Chat  | bundled `/chat`         | Chat UI; SAP direct or relay                                |
+| Admin | bundled shell `/admin`  | Memory, config, tools, satellite status (Hub REST `/api/*`) |
 
 See also: [architecture Client UI section](../concepts/architecture.md#client-uibundled).
 

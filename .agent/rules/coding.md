@@ -40,7 +40,7 @@ Additional rules:
 - Domain views may `import type` / `z.infer` from `@freeanima/core/db`, but **must not duplicate** storage Zod definitions
 - **HTTP/Admin contracts** → `@freeanima/admin-api/api`; **in-process snapshots/display** → `@freeanima/platform`
 - **EventBus payloads** → publisher's domain package (e.g. memory events → `capabilities-memory`)
-- **Repository row shapes** → `core/src/db/schema/rows/*` → `z.infer`; domain `types.ts` re-export; db-pg **coerce + parse only** — no field rename
+- **Repository row shapes** → [`core/src/db/schema/rows/`](../../core/src/db/schema/rows/) = `typeof table.$inferSelect`；domain `types.ts` re-export；1:1 CRUD **无 mapper**（非平凡 join/transform 见 [`drizzle-db.md`](drizzle-db.md)）
 
 Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 
@@ -49,7 +49,7 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 - **Drizzle TS 属性名 = PG 列名 = snake_case**（例：`block_key: text("block_key")`）；禁止 `blockKey: text("block_key")`
 - **Port 方法名**（`searchFts`、`appendMessageReturningId` 等）与 **tool/REST 计算字段** 保持 camelCase
 - **Row 数据字段** 一律 snake_case；时间戳列统一 `created_at` / `updated_at`（以 [`core/src/db/schema/`](../../core/src/db/schema/) 为准）
-- **db-pg mapper**：`typeof table.$inferSelect` + `xxxRowSchema.parse({ ...row, …normalize })`；禁止 camelCase→snake_case 映射表与 dual-key DbRow
+- **PG row 类型**：`core/src/db/schema/rows/*` 或 `typeof table.$inferSelect`；JSON 边界 `Date`↔ISO（见 drizzle-db）；禁止 camelCase→snake_case 字段改名表与 dual-key DbRow
 - **SAP / satellite wire**：capabilities 从 `@freeanima/sap-contract` re-export Payload；admin-frontend 从 `@freeanima/admin-api/api` 导入 Row 类型
 
 详情：[`drizzle-db.md`](drizzle-db.md) DbRow / FTS 列名约定。

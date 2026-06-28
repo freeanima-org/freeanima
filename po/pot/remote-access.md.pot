@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-27 14:50+0800\n"
+"POT-Creation-Date: 2026-06-28 23:53+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/features/companion.md:125 docs/guide/remote-access.md:122
+#: docs/features/companion.md:125 docs/guide/remote-access.md:138
 #, no-wrap
 msgid "相关文档"
 msgstr ""
@@ -55,8 +55,8 @@ msgid ""
 "| 层                    | 作用                                                                                                          |\n"
 "| --------------------- | ------------------------------------------------------------------------------------------------------------- |\n"
 "| **Hub `remote_auth`** | `config.yaml` 明文 token；REST `Authorization: Bearer`；SAP `connect` 帧 `auth_token`；MCP `/mcp` 同样 Bearer |\n"
-"| **cloudflared**       | 出站隧道，把公网 HTTPS/WSS 转到 `127.0.0.1:2658`                                                              |\n"
-"| **客户端设置**        | app/desktop / app/mobile 在 **Hub 设置页**填写同一 Hub 地址与 token                                           |\n"
+"| **cloudflared**       | 出站隧道；Hub hostname → `127.0.0.1:2658`，Web hostname → `127.0.0.1:2659`（可选）                            |\n"
+"| **客户端设置**        | app/desktop / app/mobile / **浏览器 Web** 在 **Hub 设置页**填写 Hub 地址与 token                              |\n"
 msgstr ""
 
 #. type: Plain text
@@ -123,24 +123,41 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/remote-access.md:45
 msgid ""
-"`tunnel.enabled: true` 时随服务启动 cloudflared。Ingress 指向本机 Hub 端口"
-"（默认 `2658`）。"
+"`tunnel.enabled: true` 时随 **`anima service start`** stack 启动 cloudflared"
+"（不再使用独立 `anima-tunnel.service`）。Ingress 默认指向本机 Hub `:2658`；若"
+"配置 `tunnel.web_hostname` 与 `web.enabled`，第二条 ingress 指向 Web "
+"`:2659`。"
+msgstr ""
+
+#. type: Fenced code block (yaml)
+#: docs/guide/remote-access.md:46
+#, no-wrap
+msgid ""
+"tunnel:\n"
+"  enabled: true\n"
+"  hostname: anima.example.com\n"
+"  web_hostname: app.anima.example.com\n"
+"\n"
+"web:\n"
+"  enabled: true\n"
+"  port: 2659\n"
+"  public_url: https://app.anima.example.com\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:47
+#: docs/guide/remote-access.md:59
 #, no-wrap
-msgid "若不使用 Tunnel，仅在局域网用 `http://<PC-IP>:2658` 亦可；客户端同样需在设置页填写 token。\n"
+msgid "若不使用 Tunnel，局域网可分别访问 `http://<PC-IP>:2658`（Hub）与 `:2659`（Web）；客户端在设置页填写 Hub 地址与 token。\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/remote-access.md:48
+#: docs/guide/remote-access.md:60
 #, no-wrap
 msgid "Cloudflare 凭证（pass）"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:54
+#: docs/guide/remote-access.md:66
 #, no-wrap
 msgid ""
 "| pass 路径                                | 用途                     |\n"
@@ -150,34 +167,35 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:56
+#: docs/guide/remote-access.md:68
 msgid "详见向导 `anima tunnel setup`。"
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/remote-access.md:57
+#: docs/guide/remote-access.md:69
 #, no-wrap
 msgid "3. 客户端配置"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:60
+#: docs/guide/remote-access.md:72
 #, no-wrap
-msgid "**app/desktop** 与 **app/mobile** 均视为远端客户端，**不读取** Hub 的 `config.yaml`。\n"
+msgid "**app/desktop**、**app/mobile** 与 **浏览器 Web**（`web.enabled` + Tunnel 或局域网 `:2659`）均视为远端客户端，**不读取** Hub 的 `config.yaml` token。\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:65
+#: docs/guide/remote-access.md:78
 #, no-wrap
 msgid ""
 "| 客户端      | 存储位置                                     |\n"
 "| ----------- | -------------------------------------------- |\n"
 "| app/desktop | `~/.anima-desktop/settings.json`（`hub` 段） |\n"
 "| app/mobile  | Capacitor Preferences                        |\n"
+"| 浏览器 Web  | localStorage（设置页）                       |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:67
+#: docs/guide/remote-access.md:80
 msgid ""
 "桌面调试与 Sentry 配置在同一文件的 `debug` 段；可用环境变量 "
 "`FREEANIMA_DESKTOP_HOME` 覆盖目录（默认 `~/.anima-desktop`）。若存在旧版 "
@@ -185,36 +203,44 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:69
+#: docs/guide/remote-access.md:82
 msgid "设置项（两端一致）："
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/guide/remote-access.md:72
+#: docs/guide/remote-access.md:85
 msgid ""
-"**Hub 地址** — 如 `https://anima.example.com` 或 `http://192.168.1.10:2658`"
+"**Hub 地址** — 如 `https://anima.example.com`（Web UI 与 Hub 分域名时填 "
+"**Hub** hostname，非 Web UI 域名）"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/guide/remote-access.md:72
+#: docs/guide/remote-access.md:85
 msgid "**远程 Token** — 与 Hub `remote_auth.token` 相同"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:74
+#: docs/guide/remote-access.md:87
+msgid ""
+"浏览器 Web：`/config.json` 可提示默认 Hub（来自 `tunnel.hostname`）；首次访问"
+"仍须在设置页保存 token。"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:89
 msgid ""
 "操作：打开 Hub 设置 → 填写 → **测试连接** → 保存。桌面端保存后需 **重启 app/"
 "desktop**。"
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/remote-access.md:75
+#: docs/guide/remote-access.md:90
 #, no-wrap
 msgid "4. 认证行为"
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/guide/remote-access.md:77
+#: docs/guide/remote-access.md:92
 #, no-wrap
 msgid ""
 "REST:  Authorization: Bearer <token>\n"
@@ -223,13 +249,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/remote-access.md:83
+#: docs/guide/remote-access.md:98
 #, no-wrap
 msgid "5. MCP 出站（外部 Agent 查询 Hub 数据）"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:86
+#: docs/guide/remote-access.md:101
 msgid ""
 "Hub 在 **`/mcp`** 提供 Streamable HTTP MCP Server，暴露 ToolSet 中 "
 "`expose_mcp: true` 的只读查询工具（如 `memory_recall`、"
@@ -238,7 +264,7 @@ msgid ""
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/guide/remote-access.md:87
+#: docs/guide/remote-access.md:102
 #, no-wrap
 msgid ""
 "# 外部 agent 配置示例（Cursor mcp.json 等）\n"
@@ -250,32 +276,32 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:99
+#: docs/guide/remote-access.md:114
 msgid ""
 "**入站**（Hub 连接外部 MCP Server 并注册工具）：仍用 `config.yaml` 的 "
 "`mcp_servers`（`capabilities/mcp-client`）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:99
+#: docs/guide/remote-access.md:114
 msgid ""
 "**出站**（外部 agent 调用 Hub 工具）：`/mcp` 端点（`capabilities/mcp-"
 "server`）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:99
+#: docs/guide/remote-access.md:114
 msgid ""
 "公网 / 局域网访问须与 REST 相同携带 `remote_auth` token；loopback 直连可省略"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:101
+#: docs/guide/remote-access.md:116
 msgid "缺少或错误 token → HTTP `401` 或 SAP 连接关闭。"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:103
+#: docs/guide/remote-access.md:118
 msgid ""
 "判定依据为请求 URL 的 **Host**（经 Tunnel 时为公网域名，如 "
 "`anima.example.com`）与 **TCP 对端地址**；Hub 不读取 `tunnel.enabled` 决定是"
@@ -283,30 +309,31 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/remote-access.md:104
+#: docs/guide/remote-access.md:119
 #, no-wrap
 msgid "运维命令"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:111
+#: docs/guide/remote-access.md:127
 #, no-wrap
 msgid ""
-"| 命令                          | 说明                      |\n"
-"| ----------------------------- | ------------------------- |\n"
-"| `anima tunnel status`         | Tunnel / cloudflared 状态 |\n"
-"| `anima tunnel start` / `stop` | 侧车启停                  |\n"
-"| `anima service status`        | Hub 是否运行              |\n"
+"| 命令                           | 说明                                              |\n"
+"| ------------------------------ | ------------------------------------------------- |\n"
+"| `anima tunnel status`          | Tunnel / cloudflared 状态                         |\n"
+"| `anima tunnel start` / `stop`  | 手动启停 cloudflared（生产由 service stack 托管） |\n"
+"| `anima web start --foreground` | 独立 Web 静态服（调试）                           |\n"
+"| `anima service status`         | Hub / Web / Tunnel stack                          |\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/remote-access.md:112
+#: docs/guide/remote-access.md:128
 #, no-wrap
 msgid "故障排查"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:121
+#: docs/guide/remote-access.md:137
 #, no-wrap
 msgid ""
 "| 现象                   | 检查                                                       |\n"
@@ -319,11 +346,11 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:125
+#: docs/guide/remote-access.md:141
 msgid "移动端：[`mobile-app.md`](../features/mobile-app.md)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:125
+#: docs/guide/remote-access.md:141
 msgid "桌面伴侣 Hub 来源：[`companion.md`](../features/companion.md)"
 msgstr ""

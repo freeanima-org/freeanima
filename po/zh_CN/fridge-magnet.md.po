@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-27 14:50+0800\n"
+"POT-Creation-Date: 2026-06-28 23:53+0800\n"
 "PO-Revision-Date: 2026-06-23 13:57+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -48,11 +48,11 @@ msgstr "三阶段"
 #| "| 3     | Dedup merge similar entries              |\n"
 #| "| 4     | Pin maintenance (keep pinned ≤ 20)       |\n"
 msgid ""
-"| Layer         | Role                                   | Persistence                   |\n"
-"| ------------- | -------------------------------------- | ----------------------------- |\n"
-"| Write         | `fridge_magnet_write`, dream reminders | —                             |\n"
-"| Storage       | Redis `fridge-magnet:*` keys           | Redis (TTL)                   |\n"
-"| Consciousness | Runtime message before each LLM call   | **Not stored** in PG messages |\n"
+"| Layer         | Role                                 | Persistence                   |\n"
+"| ------------- | ------------------------------------ | ----------------------------- |\n"
+"| Write         | `fridge_magnet_write` (conversation) | —                             |\n"
+"| Storage       | Redis `fridge-magnet:*` keys         | Redis (TTL)                   |\n"
+"| Consciousness | Runtime message before each LLM call | **Not stored** in PG messages |\n"
 msgstr ""
 "| 轮次 | 意图                                   |\n"
 "| ----- | ---------------------------------------- |\n"
@@ -61,14 +61,21 @@ msgstr ""
 "| 3     | 去重合并相似条目              |\n"
 "| 4     | 置顶质量审查（解除过时置顶；常驻读仍上限 40 条）       |\n"
 
+#. type: Plain text
+#: docs/concepts/fridge-magnet.md:18
+msgid ""
+"System pipelines (dream, tasks) **no longer** write fridge magnets. Use the "
+"[notification inbox](notifications.md) for task/cron signals instead."
+msgstr ""
+
 #. type: Title ##
-#: docs/concepts/fridge-magnet.md:17
+#: docs/concepts/fridge-magnet.md:19
 #, no-wrap
 msgid "Consciousness representation"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/fridge-magnet.md:20
+#: docs/concepts/fridge-magnet.md:22
 msgid ""
 "When the board has at least one non-empty entry **and** the last message in "
 "the runtime list is `user`, the mechanism materializes **exactly one** "
@@ -76,7 +83,7 @@ msgid ""
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/concepts/fridge-magnet.md:21
+#: docs/concepts/fridge-magnet.md:23
 #, no-wrap
 msgid ""
 "role: assistant\n"
@@ -88,67 +95,67 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/fridge-magnet.md:31
+#: docs/concepts/fridge-magnet.md:33
 msgid ""
 "This is the **standard form** of fridge magnets in consciousness — not a "
 "generic “injection transport” into user or system roles."
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/fridge-magnet.md:32
+#: docs/concepts/fridge-magnet.md:34
 #, fuzzy, no-wrap
 #| msgid "Triggered"
 msgid "Trigger rules"
 msgstr "已触发"
 
 #. type: Bullet: '- '
-#: docs/concepts/fridge-magnet.md:37
+#: docs/concepts/fridge-magnet.md:39
 msgid ""
 "**Manifest**: last message is `user`, Redis has ≥1 magnet with non-"
 "whitespace `value`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/fridge-magnet.md:37
+#: docs/concepts/fridge-magnet.md:39
 msgid ""
 "**Do not manifest**: last message is `assistant`, `tool`, `system`, etc. "
 "(tool-loop middle turns have no board)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/fridge-magnet.md:37
+#: docs/concepts/fridge-magnet.md:39
 msgid "**Empty board**: no manifest message; no placeholder"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/fridge-magnet.md:39
+#: docs/concepts/fridge-magnet.md:41
 msgid ""
 "Each `beforeLlmCall` pass strips any prior `fridge_context` assistant from "
 "the runtime copy, then re-manifests if rules allow."
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/fridge-magnet.md:40
+#: docs/concepts/fridge-magnet.md:42
 #, no-wrap
 msgid "Why not user or system?"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/fridge-magnet.md:44
+#: docs/concepts/fridge-magnet.md:46
 msgid ""
 "Prepending to **user** text caused the model to attribute notes to the human "
 "partner."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/fridge-magnet.md:44
+#: docs/concepts/fridge-magnet.md:46
 msgid ""
 "Appending to **system** would invalidate prefix cache for stable self-layer "
 "content; the board also changes frequently."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/fridge-magnet.md:46
+#: docs/concepts/fridge-magnet.md:48
 msgid ""
 "`assistant(name=fridge_context)` keeps the stable system prefix cacheable, "
 "places notes near the current user turn, and signals “self working memory” "
@@ -156,14 +163,14 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/fridge-magnet.md:47
+#: docs/concepts/fridge-magnet.md:49
 #, fuzzy, no-wrap
 #| msgid "Schema Migrations"
 msgid "Legacy migration"
 msgstr "Schema 迁移"
 
 #. type: Plain text
-#: docs/concepts/fridge-magnet.md:50
+#: docs/concepts/fridge-magnet.md:52
 msgid ""
 "Older builds prepended a fridge-magnet-tagged fenced block inside user "
 "message bodies. Runtime still strips those blocks from user content; new "
@@ -171,24 +178,24 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/fridge-magnet.md:51
+#: docs/concepts/fridge-magnet.md:53 docs/concepts/notifications.md:78
 #, fuzzy, no-wrap
 #| msgid "Related Docs"
 msgid "Related"
 msgstr "相关文档"
 
 #. type: Bullet: '- '
-#: docs/concepts/fridge-magnet.md:55
+#: docs/concepts/fridge-magnet.md:57
 msgid "Tools: `fridge_magnet_write`, `fridge_magnet_dismiss`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/fridge-magnet.md:55
-msgid "Dream reminders: [`dream.md`](dream.md)"
+#: docs/concepts/fridge-magnet.md:57
+msgid "Notifications: [`notifications.md`](notifications.md)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/fridge-magnet.md:55
+#: docs/concepts/fridge-magnet.md:57
 #, fuzzy
 #| msgid "See [`guide/security.md`](../guide/security.md)."
 msgid "Install / Redis: [`guide/install.md`](../guide/install.md)"

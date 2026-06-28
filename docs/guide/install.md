@@ -147,9 +147,10 @@ On first start, `docker/entrypoint.sh` copies `docker/config.docker.yaml` to `$F
 http://127.0.0.1:2658/api/health
 ```
 
-UI 请使用 app/desktop 或 app/mobile 客户端。
+UI 请使用 app/desktop 或 app/mobile 客户端（bundled shell，含 `/chat`、`/tasks`、`/admin` 等模块）。
 
-Hub Admin: `http://127.0.0.1:2658/admin/dashboard`
+- Hub API（health）：`http://127.0.0.1:2658/api/health`（Hub **不**托管 Admin UI）
+- 本地 Web 壳层开发：`bun run dev:web` → Admin：`http://127.0.0.1:4173/admin/dashboard`
 
 (Use `ANIMA_PORT` if you changed the host mapping.)
 

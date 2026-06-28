@@ -138,5 +138,3 @@ export {
   MEMORY_REFERENCE_DECAY_DAYS,
   memoryReferenceWeight,
 } from "./memory-reference/markers.ts";
-
-export { createEntityModuleRegistry } from "./entity-module-registry.ts";

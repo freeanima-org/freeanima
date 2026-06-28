@@ -79,4 +79,4 @@ Single process-wide context after boot (`initRuntimeContext` in [`platform/src/r
 
 **Allowed**: `runWithToolContext` — `@freeanima/core/tool`（经 `@freeanima/runtime/loop` re-export）
 
-**Capabilities register 样板**：多个 capability 需要相同的 `register/get/reset` 模式时，用共享 factory（如 `createEntityModuleRegistry`、`createEnginePort`、`createMemoryPortRegistry`）而非复制 `*-port.ts` 文件。
+**Capabilities 访问 PG**：entity 等域直接 import `@freeanima/core/db/pg/{domain}`（如 task/email 的 `listEntities`）；单测用 `mock.module("@freeanima/core/db/pg/…")`（见 [`testing.md`](testing.md)）。需 runtime 注入 engine 函数时用共享 factory（如 `createEnginePort`），勿复制 `*-port.ts` 文件。

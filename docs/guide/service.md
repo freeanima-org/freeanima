@@ -44,4 +44,4 @@ anima web start --foreground # 独立 Web 静态服（默认 :2659；生产推�
 
 **Startup order:** Hub must pass `GET /api/health` (`status: ok`) before Web/Tunnel sidecars start (`serve()` `onReady` → stack supervisor). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).
 
-Admin dashboard dashboard: `http://127.0.0.1:2658/admin/dashboard/dashboard`
+Admin UI 在 bundled shell 的 `/admin`（非 Hub `:2658`）。本地开发：`bun run dev:web` → `http://127.0.0.1:4173/admin/dashboard`；Hub 仅提供 REST `/api/*` 与 SAP `/sap/v1`。
