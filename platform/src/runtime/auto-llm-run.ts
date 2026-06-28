@@ -11,7 +11,7 @@ import { PROFILE_CHAT, PROFILE_GOAL_JUDGE } from "@freeanima/core/provider";
 import { formatGoalContinuePrompt, formatGoalExhaustedMessage } from "@freeanima/runtime/goal";
 
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
-import type { ResolvedMask } from "@freeanima/capabilities-tasks/mask";
+import type { ResolvedMask } from "@freeanima/capabilities-task/mask";
 import { runtimeToolMaskFromResolved } from "./mask-wire.ts";
 
 const AUTO_LLM_MAX_ATTEMPTS = 3;

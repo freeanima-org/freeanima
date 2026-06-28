@@ -6,6 +6,7 @@ import { listAutobiographicalMemories } from "@admin/lib/api.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
 import { m } from "@admin/lib/i18n.ts";
 import { logCaughtError } from "@admin/lib/log-caught-error.ts";
+import { useAdminOffsetPagination } from "@admin/lib/use-admin-offset-pagination.ts";
 
 const PAGE_SIZE = 20;
 
@@ -30,14 +31,12 @@ function AutobiographicalMemoryPage() {
   const [statusFilter, setStatusFilter] = useState("active");
   const [significanceFilter, setSignificanceFilter] = useState("");
   const [sourceSession, setSourceSession] = useState("");
-  const [offset, setOffset] = useState(0);
+  const { setOffset, currentPage, offsetForPage } = useAdminOffsetPagination(PAGE_SIZE);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [total, setTotal] = useState(0);
   const [items, setItems] = useState<AutobiographicalRow[]>([]);
   const [loaded, setLoaded] = useState(false);
-
-  const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
 
   const fetchList = useCallback(
     async (nextOffset: number) => {
@@ -67,7 +66,7 @@ function AutobiographicalMemoryPage() {
         setLoading(false);
       }
     },
-    [query, statusFilter, significanceFilter, sourceSession],
+    [query, statusFilter, significanceFilter, sourceSession, setOffset],
   );
 
   const runSearch = () => {
@@ -75,7 +74,7 @@ function AutobiographicalMemoryPage() {
   };
 
   const onPageChange = (page: number) => {
-    void fetchList((page - 1) * PAGE_SIZE);
+    void fetchList(offsetForPage(page));
   };
 
   return (

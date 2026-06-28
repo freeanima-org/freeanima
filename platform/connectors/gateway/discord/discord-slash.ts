@@ -1,5 +1,5 @@
 import { logComponent } from "@freeanima/platform/logging";
-import type { MessagingPort } from "@freeanima/platform/ports/ports/messaging-port";
+import type { MessagingPort } from "@freeanima/platform/ports/messaging-port";
 import type { StreamEvent } from "@freeanima/runtime/loop";
 import {
   REST,

@@ -1,24 +1,10 @@
 import { sql, type SQL } from "drizzle-orm";
-import {
-  bigint,
-  customType,
-  index,
-  jsonb,
-  pgTable,
-  text,
-  uniqueIndex,
-  vector,
-} from "drizzle-orm/pg-core";
+import { bigint, index, jsonb, pgTable, text, uniqueIndex, vector } from "drizzle-orm/pg-core";
 
 import type { MessagePayload } from "./jsonb/message-payload.ts";
 import { SEMANTIC_EMBEDDING_DIMENSIONS } from "./embedding.ts";
 import { conversations } from "./conversations.ts";
-
-const tsvector = customType<{ data: string }>({
-  dataType() {
-    return "tsvector";
-  },
-});
+import { tsvector } from "./tsvector.ts";
 
 export const messages = pgTable(
   "messages",

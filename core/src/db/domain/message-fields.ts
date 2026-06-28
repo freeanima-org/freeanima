@@ -1,8 +1,8 @@
 import type { AssistantMessage } from "./message.ts";
 
-/** Read assistant reasoning text (handles legacy `reasoning` / `reasoning_content` field names). */
+/** Read assistant reasoning text from stored payload. */
 export function assistantReasoningText(msg: AssistantMessage): string {
-  return String(msg.reasoning ?? msg.reasoning_content ?? "").trim();
+  return String(msg.reasoning ?? "").trim();
 }
 
 /** Resolve max tool-loop turns from wire (`max_turns`) or runtime (`maxTurns`) opts. */

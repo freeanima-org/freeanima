@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import { runTunnelCommand } from "../tunnel-cmd.ts";
+import { runTunnelCommand } from "../tunnel/tunnel-cmd.ts";
 
 export function registerTunnelCommand(program: Command): void {
   const tunnel = program.command("tunnel").description("Cloudflare Tunnel 远程访问");

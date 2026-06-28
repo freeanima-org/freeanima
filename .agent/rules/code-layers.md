@@ -77,4 +77,4 @@ Single process-wide context after boot (`initRuntimeContext` in [`platform/src/r
 
 **Forbidden**: module-level registry singletons; direct PG connections inside runtime / capabilities.
 
-**Allowed**: `runWithToolContext` — [`runtime/src/loop/tool-context.ts`](../../runtime/src/loop/tool-context.ts)
+**Allowed**: `runWithToolContext` — `@freeanima/core/tool`（经 `@freeanima/runtime/loop` re-export）

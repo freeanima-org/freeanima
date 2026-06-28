@@ -1,20 +1,13 @@
 import {
-  createScopedSettingsStore,
-  DEBUG_SETTINGS_SCOPE,
+  createDebugSettingsStore,
+  createHubSettingsStore,
   HUB_SETTINGS_SCOPE,
   type SettingsStore,
 } from "@freeanima/satellite-sdk/settings";
-import {
-  normalizeShellClientConfig,
-  parseShellClientConfig,
-  type ShellClientConfig,
-} from "@freeanima/satellite-sdk/shell-client-config";
-import {
-  DEFAULT_SHELL_DEBUG,
-  normalizeShellDebugConfig,
-  parseShellDebugConfig,
-  type ShellDebugConfig,
-} from "@freeanima/satellite-sdk/shell-debug-config";
+import type { ShellClientConfig } from "@freeanima/satellite-sdk/shell-client-config";
+import type { ShellDebugConfig } from "@freeanima/satellite-sdk/shell-debug-config";
+import { normalizeShellClientConfig } from "@freeanima/satellite-sdk/shell-client-config";
+import { sendSentryTestEvent } from "@freeanima/shell-ui/sentry-test";
 
 import { createWebScopedBackend } from "./settings-local-backend.ts";
 import {
@@ -34,16 +27,7 @@ function notifyShellConfigChanged(): void {
 
 export function createWebSettingsStores(): WebSettingsStores {
   const backend = createWebScopedBackend();
-  const hubBase = createScopedSettingsStore<ShellClientConfig>({
-    scope: HUB_SETTINGS_SCOPE,
-    backend,
-    parseLoad(raw) {
-      if (raw == null) return { hubUrl: "", remoteAuthToken: "" };
-      const parsed = parseShellClientConfig(raw);
-      if (!parsed) return { hubUrl: "", remoteAuthToken: "" };
-      return parsed;
-    },
-    normalizeSave: normalizeShellClientConfig,
+  const hubBase = createHubSettingsStore(backend, {
     async test(value) {
       await testWebHubConnection(value.hubUrl, value.remoteAuthToken);
     },
@@ -59,14 +43,7 @@ export function createWebSettingsStores(): WebSettingsStores {
       notifyShellConfigChanged();
     },
   };
-  const debugBase = createScopedSettingsStore<ShellDebugConfig>({
-    scope: DEBUG_SETTINGS_SCOPE,
-    backend,
-    parseLoad(raw) {
-      return parseShellDebugConfig(raw ?? DEFAULT_SHELL_DEBUG);
-    },
-    normalizeSave: normalizeShellDebugConfig,
-  });
+  const debugBase = createDebugSettingsStore(backend);
   const debug: SettingsStore<ShellDebugConfig> = {
     scope: debugBase.scope,
     load: () => debugBase.load(),
@@ -74,9 +51,7 @@ export function createWebSettingsStores(): WebSettingsStores {
       await debugBase.save(value);
     },
     async test(value) {
-      const normalized = normalizeShellDebugConfig(value);
-      await debugBase.save(normalized);
-      const { sendSentryTestEvent } = await import("@freeanima/shell-ui/sentry-test");
+      await debugBase.save(value);
       await sendSentryTestEvent();
     },
   };

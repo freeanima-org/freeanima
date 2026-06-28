@@ -21,7 +21,7 @@ import { isConversationMeta } from "@freeanima/core/db/domain";
 import type { EventBus } from "@freeanima/kernel/eventbus";
 import { KeyedRateLimiter } from "@freeanima/core/util/backoff";
 import { logComponent } from "@freeanima/platform/logging";
-import type { MessagingPort } from "@freeanima/platform/ports/ports/messaging-port";
+import type { MessagingPort } from "@freeanima/platform/ports/messaging-port";
 import { registerDiscordCronDeliverer, unregisterDiscordCronDeliverer } from "../cron-deliver.ts";
 import type { PlatformAdapter } from "../platforms.ts";
 import { resolveToolDisplayMode } from "../tool-display.ts";

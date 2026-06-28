@@ -4,7 +4,7 @@ import { stopPlatforms } from "@freeanima/platform/connectors/gateway";
 import { logComponent } from "@freeanima/platform/logging";
 import type { Kernel } from "@freeanima/kernel";
 import type { MCPManager } from "@freeanima/capabilities-mcp-client";
-import type { AcpManagerPort } from "@freeanima/platform/ports/ports/acp-manager";
+import type { AcpManagerPort } from "@freeanima/platform/ports/acp-manager";
 import type { PlatformAdapter } from "@freeanima/platform/connectors/gateway";
 
 import { closeDb } from "./persistence-phase.ts";

@@ -1,9 +1,10 @@
 import { describe, it, expect, spyOn, afterEach } from "bun:test";
 import * as conv from "@freeanima/runtime/conversation";
+import * as turn from "@freeanima/runtime/turn";
 import type { StreamEvent } from "@freeanima/runtime/loop";
 import { createConversationService } from "@freeanima/runtime/conversation";
 import { nullPgRepositories } from "@freeanima/core/repos";
-import { MaskRegistry } from "@freeanima/capabilities-tasks/mask";
+import { MaskRegistry } from "@freeanima/capabilities-task/mask";
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/runtime";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/core/llm";
@@ -89,7 +90,7 @@ describe("sendMessageStream slash commands", () => {
     );
     mockConversationBasics();
     restores.push(
-      spyOn(conv, "retryTurn").mockResolvedValue([
+      spyOn(turn, "retryTurn").mockResolvedValue([
         [{ role: "user", content: "hi" }],
         [],
         "hi",
@@ -123,7 +124,7 @@ describe("sendMessageStream slash commands", () => {
     mockConversationBasics();
     let handlerStarted = false;
     restores.push(
-      spyOn(conv, "recompressConversation").mockImplementation(async () => {
+      spyOn(turn, "recompressConversation").mockImplementation(async () => {
         handlerStarted = true;
         return {
           enabled: true,

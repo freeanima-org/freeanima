@@ -49,7 +49,13 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 - Memory and self-layer changes need extra care — [`docs/concepts/identity.md`](../../docs/concepts/identity.md)
 - Continuity over feature pile-up; simple infra in-house, complex logic via mature third-party libs
 
-## PG migrations
+## 横切审查清单（重构 / 大改后）
+
+| 领域   | 检查项                                                                                                                       |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| 安全   | 凭证路径不入 log / tool 返回；Hub REST 输入校验；memory/self-layer 变更对照 [`identity.md`](../../docs/concepts/identity.md) |
+| 性能   | PG 查询热点（`platform/connectors/db-pg`）；EventBus/Redis；流式 merge（`core/src/provider/stream-tools.ts`）                |
+| 可测性 | colocated 单测 + `tests/integration/` 覆盖 boot / SAP 路径 gaps                                                              |
 
 **New PG domain**: `core/src/db/schema/{domain}` → add port in `@freeanima/core/repos` → implement in `platform/connectors/db-pg` → extend `PgRepositories` → wire in [`serve.ts`](../../platform/src/serve.ts).
 

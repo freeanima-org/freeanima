@@ -3,6 +3,9 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./fridge-magnet": "./src/fridge-magnet/index.ts",
+    "./fridge-magnet/fridge-store-port": "./src/fridge-magnet/fridge-store-port.ts",
+    "./mask": "./src/mask/index.ts",
     "./*": "./src/*.ts"
   },
   "dependencies": {

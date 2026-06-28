@@ -47,7 +47,6 @@ export const assistantPayloadSchema = messageBaseSchema.extend({
   model: z.string().optional(),
   finish_reason: z.string().optional(),
   reasoning: z.string().optional(),
-  reasoning_content: z.string().optional(),
   usage: messageUsageSchema.optional(),
   latency_ms: z.number().optional(),
   name: z.string().optional(),

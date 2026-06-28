@@ -15,8 +15,8 @@ import { persistToolLoopRepair, REPAIR_REASON_LOST } from "@freeanima/core/llm";
 import { injectTimePrefixes } from "./time-perception.ts";
 import { advanceCompressionMeta } from "./compression-orchestration.ts";
 import type { PgRepositories } from "@freeanima/core/repos";
+import { isConversationMeta } from "@freeanima/core/db/domain";
 import {
-  isConversationMeta,
   appendMessage,
   appendUserTurn,
   countMessages,
@@ -26,11 +26,12 @@ import {
   loadConversationTools,
   rollbackToLastUser,
   updateConversationMeta,
-  type Message,
-  type StoredMessage,
-  type ConversationMetaLoadResult,
-  type OpenAiToolSchema,
-} from "@freeanima/runtime/conversation";
+} from "../conversation/conversation-crud.ts";
+import type {
+  StoredMessage,
+  ConversationMetaLoadResult,
+  OpenAiToolSchema,
+} from "@freeanima/core/db/domain";
 
 function compressionEnabled(): boolean {
   return getCompressionConfig().enabled;
@@ -54,7 +55,7 @@ async function ensureSessionToolIntegrity(
   repos: PgRepositories,
   conversationId: string,
   msgs: StoredMessage[],
-): Promise<Message[]> {
+): Promise<StoredMessage[]> {
   const repaired = await repairAndPersistToolLoop(repos, conversationId, msgs);
   return repaired ? load(repos, conversationId) : msgs;
 }
@@ -62,7 +63,7 @@ async function ensureSessionToolIntegrity(
 async function buildRuntimeMessagesFrom(
   _conversationId: string,
   meta: ConversationMetaLoadResult,
-  msgs: Message[],
+  msgs: StoredMessage[],
   tools: OpenAiToolSchema[],
 ): Promise<[StoredMessage[], string[]]> {
   const functions = isConversationMeta(meta) ? meta.functions : [];
@@ -105,7 +106,7 @@ async function loadMessagesForTurn(
   conversationId: string,
   meta: ConversationMetaLoadResult,
   tools: OpenAiToolSchema[],
-): Promise<Message[]> {
+): Promise<StoredMessage[]> {
   if (!compressionEnabled()) {
     return load(repos, conversationId);
   }
@@ -128,7 +129,7 @@ async function prepareTurnMessages(
   registry: ToolSetRegistry,
   conversationId: string,
   meta: ConversationMetaLoadResult,
-): Promise<{ msgs: Message[]; tools: OpenAiToolSchema[] }> {
+): Promise<{ msgs: StoredMessage[]; tools: OpenAiToolSchema[] }> {
   const tools = await loadConversationTools(repos, registry, conversationId, meta);
   let msgs = await loadMessagesForTurn(repos, conversationId, meta, tools);
   msgs = await ensureSessionToolIntegrity(repos, conversationId, msgs);

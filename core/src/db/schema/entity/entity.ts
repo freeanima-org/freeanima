@@ -1,23 +1,9 @@
 import { sql, type SQL } from "drizzle-orm";
-import {
-  bigint,
-  customType,
-  index,
-  jsonb,
-  pgTable,
-  text,
-  timestamp,
-  vector,
-} from "drizzle-orm/pg-core";
+import { bigint, index, jsonb, pgTable, text, timestamp, vector } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
 import { SEMANTIC_EMBEDDING_DIMENSIONS } from "../embedding.ts";
-
-const tsvector = customType<{ data: string }>({
-  dataType() {
-    return "tsvector";
-  },
-});
+import { tsvector } from "../tsvector.ts";
 
 export const entityTypeSchema = z.enum(["content", "world", "agent", "user"]);
 export type EntityType = z.infer<typeof entityTypeSchema>;

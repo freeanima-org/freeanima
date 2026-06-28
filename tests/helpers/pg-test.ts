@@ -44,6 +44,45 @@ export function getActivePgTestContext(): PgTestContext | null {
   return activeCtx;
 }
 
+async function seedIntegrationEntityFixtures(sql: SqlClient): Promise<void> {
+  await sql`
+    INSERT INTO entities (id, type, world_id, components, primary_component, title, summary, content, body)
+    OVERRIDING SYSTEM VALUE
+    VALUES (
+      1,
+      'world',
+      1,
+      ARRAY['world_config']::text[],
+      'world_config',
+      '我的任务',
+      '',
+      '',
+      '{"name":"我的任务","private":false}'::jsonb
+    )
+  `;
+  await sql`
+    INSERT INTO entities (id, type, world_id, components, primary_component, title, summary, content, body)
+    OVERRIDING SYSTEM VALUE
+    VALUES (
+      2,
+      'content',
+      1,
+      ARRAY['task_list']::text[],
+      'task_list',
+      '收件箱',
+      '',
+      '',
+      '{"sort_order":0,"is_default":true,"closed":false}'::jsonb
+    )
+  `;
+  await sql`
+    SELECT setval(
+      pg_get_serial_sequence('entities', 'id'),
+      GREATEST((SELECT MAX(id) FROM entities), 2)
+    )
+  `;
+}
+
 async function clearPgTables(sql: SqlClient): Promise<void> {
   await sql`DELETE FROM memory_references`;
   await sql`DELETE FROM messages`;
@@ -52,7 +91,8 @@ async function clearPgTables(sql: SqlClient): Promise<void> {
   await sql`DELETE FROM self_blocks`;
   await sql`DELETE FROM autobiographical_memory`;
   await sql`DELETE FROM limbic_memory`;
-  await sql`DELETE FROM tasks`;
+  await sql`DELETE FROM entities`;
+  await seedIntegrationEntityFixtures(sql);
   await sql`DELETE FROM notifications`;
   await sql`DELETE FROM cron_jobs`;
 }

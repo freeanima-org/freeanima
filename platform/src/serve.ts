@@ -9,11 +9,9 @@ import {
 import { REPO_ROOT } from "./runtime/index.ts";
 import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.ts";
 import { getAppRuntime } from "./runtime/runtime-context.ts";
-import { bootConfigPhase } from "./boot/config-phase.ts";
-import { bootPersistencePhase } from "./boot/persistence-phase.ts";
+import { BOOT_PHASES, startAsyncIntegrations } from "./boot/phases.ts";
 import { bootEnginePhase } from "./boot/engine-phase.ts";
 import { bootRuntimePhase } from "./boot/runtime-phase.ts";
-import { startAsyncIntegrations } from "./boot/integrations-phase.ts";
 import { gracefulShutdown } from "./boot/shutdown.ts";
 import { startupLog, writeStatusFile } from "./boot/status.ts";
 import type { HttpServerHandle, ServeOptions } from "./boot/types.ts";
@@ -86,8 +84,10 @@ export async function serve(
   } = { list: [] };
 
   try {
-    const { config } = await bootConfigPhase();
-    const { repos } = await bootPersistencePhase(config);
+    const runConfig = BOOT_PHASES.find((p) => p.id === "config")!.run;
+    const runPersistence = BOOT_PHASES.find((p) => p.id === "persistence")!.run;
+    const { config } = await runConfig();
+    const { repos } = await runPersistence(config);
 
     const acpSessionUpdatedRef: { handler: ((sid: string) => void) | null } = { handler: null };
     const runtimeRef: { current: AppRuntime | null } = { current: null };

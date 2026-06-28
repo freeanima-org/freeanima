@@ -1,22 +1,9 @@
 import type { DreamMemoryStorePort } from "@freeanima/core/repos";
 
-let dreamMemoryStore: DreamMemoryStorePort | null = null;
+import { createMemoryPortRegistry } from "./port-registry.ts";
 
-/** Injected by service at startup */
-export function registerDreamMemoryStore(store: DreamMemoryStorePort): void {
-  dreamMemoryStore = store;
-}
+const dream = createMemoryPortRegistry<DreamMemoryStorePort>("dream memory store");
 
-export function getDreamMemoryStore(): DreamMemoryStorePort {
-  if (!dreamMemoryStore) {
-    throw new Error(
-      "dream memory store not configured: call registerDreamMemoryStore() at service startup",
-    );
-  }
-  return dreamMemoryStore;
-}
-
-/** Reset for tests */
-export function resetDreamMemoryStoreForTests(): void {
-  dreamMemoryStore = null;
-}
+export const registerDreamMemoryStore = dream.register;
+export const getDreamMemoryStore = dream.get;
+export const resetDreamMemoryStoreForTests = dream.resetForTests;

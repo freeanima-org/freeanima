@@ -1,10 +1,11 @@
 import { describe, it, expect, spyOn, afterEach } from "bun:test";
 import * as conv from "@freeanima/runtime/conversation";
+import * as turn from "@freeanima/runtime/turn";
 import * as engine from "@freeanima/runtime/loop";
 import type { StreamEvent } from "@freeanima/runtime/loop";
 import { createConversationService } from "@freeanima/runtime/conversation";
 import { nullPgRepositories } from "@freeanima/core/repos";
-import { MaskRegistry } from "@freeanima/capabilities-tasks/mask";
+import { MaskRegistry } from "@freeanima/capabilities-task/mask";
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/runtime";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/core/llm";
@@ -65,8 +66,8 @@ describe("sendMessageStream done order", () => {
     restores.push(
       spyOn(conv, "conversationExists").mockResolvedValue(true),
       spyOn(conv, "assertConversationPlatform").mockResolvedValue(undefined),
-      spyOn(conv, "beginTurnFast").mockResolvedValue("hello"),
-      spyOn(conv, "beginTurnPrepare").mockResolvedValue([[{ role: "user", content: "hello" }], []]),
+      spyOn(turn, "beginTurnFast").mockResolvedValue("hello"),
+      spyOn(turn, "beginTurnPrepare").mockResolvedValue([[{ role: "user", content: "hello" }], []]),
       spyOn(conv, "loadConversationTools").mockResolvedValue([]),
     );
 
@@ -74,7 +75,7 @@ describe("sendMessageStream done order", () => {
     const eventOrder: string[] = [];
 
     restores.push(
-      spyOn(conv, "finishTurn").mockImplementation(async () => {
+      spyOn(turn, "finishTurn").mockImplementation(async () => {
         finishTurnStarted = true;
         await new Promise((r) => setTimeout(r, 50));
       }),

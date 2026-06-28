@@ -10,7 +10,6 @@ export {
   saveShellClientConfig,
   saveShellDebugConfig,
   saveShellSettings,
-  shellClientConfigPath,
 } from "./shell-settings-node.ts";
 export { normalizeShellClientConfig, parseShellClientConfig } from "./shell-client-config.ts";
 export type { ShellClientConfig } from "./shell-client-config.ts";

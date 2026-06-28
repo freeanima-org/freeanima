@@ -1,8 +1,8 @@
 import type { LimbicMemoryStorePort } from "../ports/limbic-memory.ts";
 
-const unavailable = (): never => {
-  throw new Error("database.url not configured");
-};
+import { pgUnavailable } from "./null-helpers.ts";
+
+const unavailable = pgUnavailable;
 
 /** Null limbic memory port when PG unavailable */
 export const nullLimbicMemoryStore: LimbicMemoryStorePort = {

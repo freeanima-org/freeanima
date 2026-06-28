@@ -28,11 +28,11 @@ function mockSessionStorage(): Storage {
 
 describe("input-draft", () => {
   beforeEach(() => {
-    globalThis.sessionStorage = mockSessionStorage();
+    globalThis.localStorage = mockSessionStorage();
   });
 
   afterEach(() => {
-    sessionStorage.clear();
+    localStorage.clear();
   });
 
   test("按 conversation 读写草稿", () => {

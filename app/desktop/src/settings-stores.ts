@@ -1,19 +1,17 @@
 import {
   COMPANION_CONFIG_SCOPE,
+  createDebugSettingsStore,
   createScopedSettingsStore,
-  DEBUG_SETTINGS_SCOPE,
   HUB_SETTINGS_SCOPE,
+  parseHubClientSettings,
   type SettingsStore,
 } from "@freeanima/satellite-sdk/settings";
 import {
-  DEFAULT_SHELL_DEBUG,
   normalizeShellClientConfig,
-  normalizeShellDebugConfig,
-  parseShellClientConfig,
-  parseShellDebugConfig,
   type ShellClientConfig,
   type ShellDebugConfig,
 } from "@freeanima/satellite-sdk";
+import { sendSentryTestEvent } from "@freeanima/shell-ui/sentry-test";
 
 import { createDesktopScopedBackend, testScopedSettings } from "./settings-ipc-backend.ts";
 
@@ -34,10 +32,7 @@ function parseDesktopGeneralSettings(raw: unknown): DesktopGeneralSettings {
     typeof (raw as Record<string, unknown>).launchAtLogin === "boolean"
       ? ((raw as Record<string, unknown>).launchAtLogin as boolean)
       : false;
-  if (raw == null) return { hubUrl: "", remoteAuthToken: "", launchAtLogin };
-  const parsed = parseShellClientConfig(raw);
-  if (!parsed) return { hubUrl: "", remoteAuthToken: "", launchAtLogin };
-  return { ...parsed, launchAtLogin };
+  return { ...parseHubClientSettings(raw), launchAtLogin };
 }
 
 function normalizeDesktopGeneralSettings(input: DesktopGeneralSettings): DesktopGeneralSettings {
@@ -47,21 +42,12 @@ function normalizeDesktopGeneralSettings(input: DesktopGeneralSettings): Desktop
 
 export function createDesktopSettingsStores(): DesktopSettingsStores {
   const backend = createDesktopScopedBackend();
-  const debugBase = createScopedSettingsStore<ShellDebugConfig>({
-    scope: DEBUG_SETTINGS_SCOPE,
-    backend,
-    parseLoad(raw) {
-      return parseShellDebugConfig(raw ?? DEFAULT_SHELL_DEBUG);
-    },
-    normalizeSave: normalizeShellDebugConfig,
-  });
+  const debugBase = createDebugSettingsStore(backend);
   return {
     hub: createScopedSettingsStore<DesktopGeneralSettings>({
       scope: HUB_SETTINGS_SCOPE,
       backend,
-      parseLoad(raw) {
-        return parseDesktopGeneralSettings(raw);
-      },
+      parseLoad: parseDesktopGeneralSettings,
       normalizeSave: normalizeDesktopGeneralSettings,
       async test(value) {
         await testScopedSettings(HUB_SETTINGS_SCOPE, value);
@@ -74,9 +60,7 @@ export function createDesktopSettingsStores(): DesktopSettingsStores {
         await debugBase.save(value);
       },
       async test(value) {
-        const normalized = normalizeShellDebugConfig(value);
-        await debugBase.save(normalized);
-        const { sendSentryTestEvent } = await import("@freeanima/shell-ui/sentry-test");
+        await debugBase.save(value);
         await sendSentryTestEvent();
       },
     },

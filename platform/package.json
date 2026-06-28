@@ -39,7 +39,6 @@
     "@freeanima/capabilities-satellite": "workspace:*",
     "@freeanima/capabilities-email": "workspace:*",
     "@freeanima/capabilities-task": "workspace:*",
-    "@freeanima/capabilities-tasks": "workspace:*",
     "@freeanima/capabilities-tools": "workspace:*",
     "@freeanima/sap-contract": "workspace:*",
     "@freeanima/core": "workspace:*",

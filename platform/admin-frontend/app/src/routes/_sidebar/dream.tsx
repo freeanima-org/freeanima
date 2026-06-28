@@ -5,6 +5,7 @@ import { listDreamMemories } from "@admin/lib/api.ts";
 import { formatDisplayDate, formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
 import { m } from "@admin/lib/i18n.ts";
 import { logCaughtError } from "@admin/lib/log-caught-error.ts";
+import { useAdminOffsetPagination } from "@admin/lib/use-admin-offset-pagination.ts";
 
 const PAGE_SIZE = 20;
 
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/_sidebar/dream")({
 });
 
 function DreamMemoryPage() {
-  const [offset, setOffset] = useState(0);
+  const { setOffset, currentPage, offsetForPage } = useAdminOffsetPagination(PAGE_SIZE);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [total, setTotal] = useState(0);
@@ -30,38 +31,39 @@ function DreamMemoryPage() {
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
 
-  const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
-
-  const fetchList = useCallback(async (nextOffset: number) => {
-    setLoading(true);
-    setError("");
-    try {
-      const data = (await listDreamMemories({
-        offset: nextOffset,
-        limit: PAGE_SIZE,
-      })) as { items: DreamRow[]; total: number };
-      setItems(data.items ?? []);
-      setTotal(data.total ?? 0);
-      setOffset(nextOffset);
-      setLoaded(true);
-    } catch (e) {
-      logCaughtError("routes/_sidebar/dream", e);
-      setError(
-        m.admin_common_load_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const fetchList = useCallback(
+    async (nextOffset: number) => {
+      setLoading(true);
+      setError("");
+      try {
+        const data = (await listDreamMemories({
+          offset: nextOffset,
+          limit: PAGE_SIZE,
+        })) as { items: DreamRow[]; total: number };
+        setItems(data.items ?? []);
+        setTotal(data.total ?? 0);
+        setOffset(nextOffset);
+        setLoaded(true);
+      } catch (e) {
+        logCaughtError("routes/_sidebar/dream", e);
+        setError(
+          m.admin_common_load_failed({
+            detail: e instanceof Error ? e.message : String(e),
+          }),
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [setOffset],
+  );
 
   const runSearch = () => {
     void fetchList(0);
   };
 
   const onPageChange = (page: number) => {
-    void fetchList((page - 1) * PAGE_SIZE);
+    void fetchList(offsetForPage(page));
   };
 
   return (

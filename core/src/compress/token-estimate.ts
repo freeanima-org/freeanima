@@ -4,7 +4,6 @@ export function messageTextForEstimate(msg: Record<string, unknown>): string {
   const parts: string[] = [];
   if (typeof msg.content === "string") parts.push(msg.content);
   if (msg.tool_calls) parts.push(JSON.stringify(msg.tool_calls));
-  if (typeof msg.reasoning_content === "string") parts.push(msg.reasoning_content);
   if (typeof msg.reasoning === "string") parts.push(msg.reasoning);
   if (typeof msg.name === "string") parts.push(msg.name);
   return parts.join("\n");

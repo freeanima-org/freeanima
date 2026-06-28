@@ -89,8 +89,3 @@ export function saveShellDebugConfig(
   saveShellSettings({ debug: normalized }, desktopHome);
   return normalized;
 }
-
-/** @deprecated 使用 desktopSettingsPath */
-export function shellClientConfigPath(desktopHome?: string): string {
-  return desktopSettingsPath(desktopHome);
-}

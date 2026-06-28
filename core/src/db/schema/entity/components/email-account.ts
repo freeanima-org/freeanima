@@ -21,7 +21,6 @@ export const emailAccountBodySchema = z.object({
   desc: z.string().optional(),
   tags: z.array(z.string()).optional(),
   sync: emailAccountSyncSchema.optional(),
-  legacy_slug: z.string().optional(),
 });
 
 export type EmailAccountBody = z.infer<typeof emailAccountBodySchema>;

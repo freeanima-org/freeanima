@@ -123,9 +123,7 @@ export function repairToolLoopMessages(
 
     const cleaned = cleanToolCallsForApi(msg.tool_calls as ToolCall[]);
     if (!cleaned.length) {
-      const text =
-        String(msg.content ?? "").trim() ||
-        String(msg.reasoning ?? msg.reasoning_content ?? "").trim();
+      const text = String(msg.content ?? "").trim() || String(msg.reasoning ?? "").trim();
       if (text) {
         const { tool_calls: _removed, ...rest } = msg;
         out.push({ ...rest, role: "assistant", content: text } as StoredMessage);

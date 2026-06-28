@@ -1,7 +1,7 @@
 import type { Config } from "@freeanima/platform/config";
 import { credential } from "@freeanima/platform/config";
 import { logComponent } from "@freeanima/platform/logging";
-import type { MessagingPort } from "@freeanima/platform/ports/ports/messaging-port";
+import type { MessagingPort } from "@freeanima/platform/ports/messaging-port";
 
 import { loadWeixinCredentials } from "./weixin/weixin-credentials.ts";
 

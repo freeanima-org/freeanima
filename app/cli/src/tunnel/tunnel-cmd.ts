@@ -8,8 +8,8 @@ import {
   stopTunnelForeground,
   stopTunnelViaSystemd,
 } from "./tunnel-supervisor.ts";
-import { writeStatusLine } from "./service-common.ts";
-import { systemdUserAvailable } from "./systemd-unit.ts";
+import { writeStatusLine } from "../service-common.ts";
+import { systemdUserAvailable } from "../systemd-unit.ts";
 import { runTunnelDnsEnsure } from "./tunnel-dns-cmd.ts";
 
 export type TunnelCommandArgs = {

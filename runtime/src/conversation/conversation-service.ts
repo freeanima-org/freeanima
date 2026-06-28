@@ -1,23 +1,17 @@
 import type { PgRepositories } from "@freeanima/core/repos";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
-import type { StoredMessage } from "@freeanima/runtime/conversation";
+import type { StoredMessage } from "@freeanima/core/db/domain";
 import {
-  advanceCompressionMeta,
   appendMessage,
   appendConversationMeta,
   appendUserTurn,
   assertConversationPlatform,
-  beginTurn,
-  beginTurnFast,
-  beginTurnPrepare,
-  buildRuntimeMessages,
   cleanupDebugConversations,
   countMessages,
   countUserMessages,
   countConversationsByPlatform,
   findConversationByOrigin,
   activateConversationOrigin,
-  finishTurn,
   getConversationCwd,
   getConversationTitle,
   initConversation,
@@ -29,15 +23,11 @@ import {
   listConversationSummaries,
   listConversationSummariesPage,
   listConversations,
-  maybeApplyEmergencyCompression,
   newConversation,
   patchConversationOrigin,
   rebuildConversationSystemPrompt,
   refreshSystemPromptOnResume,
   rebuildConversationCache,
-  repairAndPersistToolLoop,
-  recompressConversation,
-  retryTurn,
   rollbackToLastUser,
   conversationExists,
   setConversationCwd,
@@ -48,6 +38,20 @@ import {
   updateConversationMeta,
   updateConversationMetaField,
 } from "./conversation.ts";
+import {
+  advanceCompressionMeta,
+  maybeApplyEmergencyCompression,
+  recompressConversation,
+} from "../turn/compression-orchestration.ts";
+import {
+  beginTurn,
+  beginTurnFast,
+  beginTurnPrepare,
+  buildRuntimeMessages,
+  finishTurn,
+  repairAndPersistToolLoop,
+  retryTurn,
+} from "../turn/turn-runtime.ts";
 
 function bindRepos<A extends unknown[], T>(
   repos: PgRepositories,

@@ -71,85 +71,21 @@ export const acpTaskEntrySchema = z.object({
   progress_message_id: z.string().optional(),
 });
 
-const LEGACY_ACP_TASK_UPDATED_AT = "1970-01-01T00:00:00.000Z";
-
-/**
- * 读路径兼容：存量 conversation JSONB 可能仍用 agent 名键 + 字符串 ACP conversation id。
- * 审计结论（2026-06-16）：保留至显式 PG 数据迁移；不可仅因代码清理删除。
- */
-export function normalizeAcpTasks(raw: unknown): unknown {
-  if (raw === null || raw === undefined) return raw;
-  if (typeof raw !== "object" || Array.isArray(raw)) return raw;
-
-  const obj = raw as Record<string, unknown>;
-  const out: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (value && typeof value === "object" && !Array.isArray(value)) {
-      out[key] = value;
-      continue;
-    }
-    if (typeof value === "string" && value.length > 0) {
-      out[value] = {
-        status: "completed",
-        task_id: "legacy",
-        agent_name: key,
-        updated_at: LEGACY_ACP_TASK_UPDATED_AT,
-      };
-    }
-  }
-  return out;
-}
-
-export const acpTasksSchema = z.preprocess(
-  normalizeAcpTasks,
-  z.record(z.string(), acpTaskEntrySchema),
-);
+export const acpTasksSchema = z.record(z.string(), acpTaskEntrySchema);
 export type AcpTaskStatusJson = z.infer<typeof acpTaskStatusSchema>;
 export type AcpTaskEntryJson = z.infer<typeof acpTaskEntrySchema>;
 export type AcpTasksJson = z.infer<typeof acpTasksSchema>;
 
-/**
- * 读路径兼容：存量 conversation JSONB 可能仍存 OpenAI tool schema 数组而非工具名字符串。
- * 审计结论（2026-06-16）：保留至显式 PG 数据迁移；不可仅因代码清理删除。
- */
-export function normalizeConversationToolNames(raw: unknown): string[] {
-  if (!Array.isArray(raw)) return [];
-  const names: string[] = [];
-  for (const entry of raw) {
-    if (typeof entry === "string" && entry.length > 0) {
-      names.push(entry);
-      continue;
-    }
-    if (entry && typeof entry === "object") {
-      const fn = (entry as { function?: { name?: unknown } }).function;
-      const name = fn && typeof fn === "object" ? fn.name : undefined;
-      if (typeof name === "string" && name.length > 0) {
-        names.push(name);
-      }
-    }
-  }
-  return names;
-}
-
-/** conversations.cached_toolsets — ToolSet names in LLM API tools */
-export const conversationCachedToolsetsSchema = z.preprocess(
-  normalizeConversationToolNames,
-  z.array(z.string()),
-);
+/** conversations.cached_toolsets — ToolSet id strings */
+export const conversationCachedToolsetsSchema = z.array(z.string());
 export type ConversationCachedToolsetsJson = z.infer<typeof conversationCachedToolsetsSchema>;
 
 /** conversations.staged_toolsets — toolset_load pending promote */
-export const conversationStagedToolsetsSchema = z.preprocess(
-  normalizeConversationToolNames,
-  z.array(z.string()),
-);
+export const conversationStagedToolsetsSchema = z.array(z.string());
 export type ConversationStagedToolsetsJson = z.infer<typeof conversationStagedToolsetsSchema>;
 
-/** conversations.functions */
-export const conversationFunctionsSchema = z.preprocess(
-  normalizeConversationToolNames,
-  z.array(z.string()),
-);
+/** conversations.functions — executable tool names */
+export const conversationFunctionsSchema = z.array(z.string());
 export type ConversationFunctionsJson = z.infer<typeof conversationFunctionsSchema>;
 
 export const conversationGoalStatusSchema = z.enum(["active", "paused", "completed", "exhausted"]);

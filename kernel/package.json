@@ -12,8 +12,6 @@
     "./hooks": "./src/hooks/index.ts",
     "./hooks/testing": "./src/hooks/testing.ts",
     "./eventbus": "./src/eventbus/index.ts",
-    "./eventbus/memory": "./src/eventbus/adapters/memory.ts",
-    "./eventbus/null": "./src/eventbus/adapters/null.ts",
     "./eventbus/testing": "./src/eventbus/testing.ts"
   },
   "devDependencies": {

@@ -1,23 +1,9 @@
 import { sql, type SQL } from "drizzle-orm";
-import {
-  boolean,
-  customType,
-  index,
-  pgTable,
-  real,
-  text,
-  timestamp,
-  vector,
-} from "drizzle-orm/pg-core";
+import { boolean, index, pgTable, real, text, timestamp, vector } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
 import { SEMANTIC_EMBEDDING_DIMENSIONS } from "./embedding.ts";
-
-const tsvector = customType<{ data: string }>({
-  dataType() {
-    return "tsvector";
-  },
-});
+import { tsvector } from "./tsvector.ts";
 
 export const semanticMemoryTypeSchema = z.enum([
   "world",

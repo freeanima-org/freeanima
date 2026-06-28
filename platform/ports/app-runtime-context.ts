@@ -1,11 +1,11 @@
 import type { ConversationService } from "@freeanima/runtime/conversation";
 
 import type { AppRuntimePort } from "./app-runtime-port.ts";
-import type { AcpManagerPort } from "./ports/acp-manager.ts";
-import type { MaskRegistryPort } from "./ports/mask-registry.ts";
-import type { McpManagerPort } from "./ports/mcp-manager.ts";
-import type { SatelliteManagerPort } from "./ports/satellite-manager.ts";
-import type { ServiceEnginePort } from "./ports/service-engine.ts";
+import type { AcpManagerPort } from "./acp-manager.ts";
+import type { MaskRegistryPort } from "./mask-registry.ts";
+import type { McpManagerPort } from "./mcp-manager.ts";
+import type { SatelliteManagerPort } from "./satellite-manager.ts";
+import type { ServiceEnginePort } from "./service-engine.ts";
 
 export type AppRuntimeContext = {
   conversation: ConversationService;

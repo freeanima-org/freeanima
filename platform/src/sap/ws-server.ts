@@ -1,6 +1,6 @@
 import type { AppRuntime } from "../runtime/app-runtime.ts";
 import type { SatelliteManager } from "@freeanima/capabilities-satellite";
-import type { MaskRegistryPort } from "../../ports/ports/mask-registry.ts";
+import type { MaskRegistryPort } from "../../ports/mask-registry.ts";
 import {
   connectPayloadSchema,
   defineSapRouter,

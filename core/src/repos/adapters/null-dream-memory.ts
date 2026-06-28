@@ -1,8 +1,8 @@
 import type { DreamMemoryStorePort } from "../ports/dream-memory.ts";
 
-const unavailable = (): never => {
-  throw new Error("database.url not configured");
-};
+import { pgUnavailable } from "./null-helpers.ts";
+
+const unavailable = pgUnavailable;
 
 /** Null dream memory port when PG unavailable */
 export const nullDreamMemoryStore: DreamMemoryStorePort = {

@@ -127,7 +127,6 @@ export async function createEmailAccount(input: EmailAccountCreateInput): Promis
     desc: input.desc,
     tags: normalizeTags(input.tags),
     sync: { mailbox: "INBOX" },
-    legacy_slug: input.legacy_slug,
   };
 
   const row = await store.create({
@@ -169,7 +168,6 @@ export async function updateEmailAccount(
     desc: input.desc ?? existing.desc,
     tags: input.tags != null ? normalizeTags(input.tags) : existing.tags,
     sync: input.sync ?? existing.sync,
-    legacy_slug: undefined,
   };
 
   const row = await store.update({

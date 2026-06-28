@@ -1,8 +1,8 @@
 import type { EntityStorePort } from "../ports/entity.ts";
 
-const unavailable = (): never => {
-  throw new Error("entity store unavailable (PG not configured)");
-};
+import { pgUnavailableStore } from "./null-helpers.ts";
+
+const unavailable = (): never => pgUnavailableStore("entity store");
 
 export const nullEntityStore: EntityStorePort = {
   create: unavailable,

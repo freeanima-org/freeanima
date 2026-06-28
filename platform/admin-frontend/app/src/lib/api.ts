@@ -1,5 +1,10 @@
 import { treaty, type Treaty } from "@elysiajs/eden";
-import type { FridgeMagnetsResponse } from "@freeanima/admin-api/api";
+import type { FridgeMagnetsResponse, ServiceStatus } from "@freeanima/admin-api/api";
+import {
+  readOfflineCache,
+  resolveCacheScope,
+  writeOfflineCache,
+} from "@freeanima/satellite-sdk/offline-cache";
 import type { App } from "@freeanima/admin-api/elysia";
 import { shouldAttachRemoteAuth } from "@freeanima/satellite-sdk/remote-auth";
 import { m } from "./i18n.ts";
@@ -182,8 +187,24 @@ export async function listConversationCommands(opts?: { all?: boolean; platform?
   );
 }
 
-export async function getStatus() {
-  return unwrap(resolveApiClient().api.status.get());
+const ADMIN_STATUS_CACHE_NS = "admin-status";
+const ADMIN_STATUS_CACHE_KEY = "dashboard";
+
+export async function getStatus(): Promise<ServiceStatus> {
+  const scope = resolveCacheScope(resolveApiOrigin());
+  const cached = await readOfflineCache<ServiceStatus>(
+    scope,
+    ADMIN_STATUS_CACHE_NS,
+    ADMIN_STATUS_CACHE_KEY,
+  );
+  try {
+    const status = (await unwrap(resolveApiClient().api.status.get())) as ServiceStatus;
+    void writeOfflineCache(scope, ADMIN_STATUS_CACHE_NS, ADMIN_STATUS_CACHE_KEY, status);
+    return status;
+  } catch (err) {
+    if (cached) return cached;
+    throw err;
+  }
 }
 
 export async function getStatusConfig() {

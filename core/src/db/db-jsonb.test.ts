@@ -2,8 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { buildPlatformInfo, splitPlatformInfo } from "./schema/jsonb/platform-info.ts";
 import {
   acpTasksSchema,
-  normalizeAcpTasks,
-  normalizeConversationToolNames,
+  acpTaskEntrySchema,
   conversationCachedToolsetsSchema,
 } from "./schema/jsonb/conversation-meta-jsonb.ts";
 
@@ -80,67 +79,25 @@ describe("platform_info schema", () => {
 });
 
 describe("conversation tools jsonb", () => {
-  it("normalizeConversationToolNames keeps tool name strings", () => {
-    expect(normalizeConversationToolNames(["file_read", "grep"])).toEqual(["file_read", "grep"]);
-  });
-
-  it("normalizeConversationToolNames extracts function.name from legacy OpenAI schema", () => {
-    const legacy = [
-      { type: "function", function: { name: "file_read", description: "read" } },
-      { type: "function", function: { name: "grep" } },
-    ];
-    expect(normalizeConversationToolNames(legacy)).toEqual(["file_read", "grep"]);
-    expect(conversationCachedToolsetsSchema.parse(legacy)).toEqual(["file_read", "grep"]);
-  });
-
-  it("normalizeConversationToolNames ignores invalid entries", () => {
-    expect(normalizeConversationToolNames([null, "", {}, { function: {} }])).toEqual([]);
+  it("conversationCachedToolsetsSchema accepts tool name strings", () => {
+    expect(conversationCachedToolsetsSchema.parse(["file_read", "grep"])).toEqual([
+      "file_read",
+      "grep",
+    ]);
   });
 });
 
 describe("acp_tasks jsonb", () => {
-  it("normalizeAcpTasks converts legacy agent-keyed string bindings", () => {
-    expect(normalizeAcpTasks({ cursor: "acp-uuid-1" })).toEqual({
-      "acp-uuid-1": {
-        status: "completed",
-        task_id: "legacy",
-        agent_name: "cursor",
-        updated_at: "1970-01-01T00:00:00.000Z",
-      },
-    });
-    expect(acpTasksSchema.parse({ cursor: "acp-uuid-1" })).toEqual({
-      "acp-uuid-1": {
-        status: "completed",
-        task_id: "legacy",
-        agent_name: "cursor",
-        updated_at: "1970-01-01T00:00:00.000Z",
-      },
-    });
-  });
-
-  it("normalizeAcpTasks keeps new-format entries and mixed legacy", () => {
-    const mixed = {
-      cursor: "legacy-session-id",
-      "acp-uuid-2": {
-        status: "running",
-        task_id: "task-2",
-        agent_name: "cursor",
-        updated_at: "2026-06-12T10:00:00.000Z",
-      },
+  it("acpTasksSchema accepts standard entries keyed by ACP conversation id", () => {
+    const entry = {
+      status: "running" as const,
+      task_id: "task-2",
+      agent_name: "cursor",
+      updated_at: "2026-06-12T10:00:00.000Z",
     };
-    expect(acpTasksSchema.parse(mixed)).toEqual({
-      "legacy-session-id": {
-        status: "completed",
-        task_id: "legacy",
-        agent_name: "cursor",
-        updated_at: "1970-01-01T00:00:00.000Z",
-      },
-      "acp-uuid-2": {
-        status: "running",
-        task_id: "task-2",
-        agent_name: "cursor",
-        updated_at: "2026-06-12T10:00:00.000Z",
-      },
+    expect(acpTaskEntrySchema.parse(entry)).toEqual(entry);
+    expect(acpTasksSchema.parse({ "acp-uuid-2": entry })).toEqual({
+      "acp-uuid-2": entry,
     });
   });
 });

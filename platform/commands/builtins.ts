@@ -5,7 +5,7 @@ import {
   registerCommand,
 } from "./registry.ts";
 import { clearAwaitingClarify, readAwaitingClarify } from "@freeanima/capabilities-tools/clarify";
-import { resolveMaskPresets } from "@freeanima/capabilities-tasks/mask";
+import { resolveMaskPresets } from "@freeanima/capabilities-task/mask";
 import { statsReport } from "@freeanima/platform/ports/conversation-stats";
 import { CHAT_PLATFORM_PATTERN } from "@freeanima/platform/ports/constants";
 import { formatCompressionDiagnostics, getCompressionConfig } from "@freeanima/core/compress";

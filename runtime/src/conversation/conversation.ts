@@ -1,5 +1,5 @@
-export type { StoredMessage as Message } from "./stored-message.ts";
-export { isConversationMeta } from "./stored-message.ts";
+export type { StoredMessage as Message } from "@freeanima/core/db/domain";
+export { isConversationMeta } from "@freeanima/core/db/domain";
 
 export {
   allocateConversationCwd,
@@ -42,20 +42,3 @@ export {
   cleanupStaleConversations,
   STALE_SESSION_MIN_AGE_MS,
 } from "./conversation-crud.ts";
-
-export {
-  flushCompressionSummaries,
-  maybeApplyEmergencyCompression,
-  advanceCompressionMeta,
-  recompressConversation,
-} from "@freeanima/runtime/turn";
-
-export {
-  repairAndPersistToolLoop,
-  buildRuntimeMessages,
-  beginTurn,
-  beginTurnFast,
-  beginTurnPrepare,
-  finishTurn,
-  retryTurn,
-} from "@freeanima/runtime/turn";

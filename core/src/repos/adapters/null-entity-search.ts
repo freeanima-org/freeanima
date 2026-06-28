@@ -1,8 +1,8 @@
 import type { EntitySearchPort } from "../ports/entity-search.ts";
 
-const unavailable = (): never => {
-  throw new Error("entity search unavailable (PG not configured)");
-};
+import { pgUnavailableStore } from "./null-helpers.ts";
+
+const unavailable = (): never => pgUnavailableStore("entity search");
 
 export const nullEntitySearchStore: EntitySearchPort = {
   search: unavailable,

@@ -1,8 +1,8 @@
 import type { AutobiographicalMemoryStorePort } from "../ports/autobiographical-memory.ts";
 
-const unavailable = (): never => {
-  throw new Error("database.url not configured");
-};
+import { pgUnavailable } from "./null-helpers.ts";
+
+const unavailable = pgUnavailable;
 
 /** Null autobiographical memory port when PG unavailable */
 export const nullAutobiographicalMemoryStore: AutobiographicalMemoryStorePort = {
