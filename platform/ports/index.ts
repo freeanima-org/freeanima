@@ -1,5 +1,14 @@
-export type { AppRuntimePort, ServiceCommandInfo } from "./anima-service.ts";
-export type { MessagingPort } from "./ports/messaging-port.ts";
+export type {
+  AppRuntimePort,
+  AppRuntimeConversationPort,
+  AppRuntimeLifecyclePort,
+  AppRuntimeMemoryPort,
+  AppRuntimeMessagingPort,
+  AppRuntimeOpsPort,
+  AppRuntimeSleepPort,
+  ServiceCommandInfo,
+} from "./anima-service.ts";
+export type { MessagingPort } from "./messaging-port.ts";
 export { getHomeChannel, setHomeChannel, type HomeChannel } from "./home-channel.ts";
 export {
   runSimpleTurn,
@@ -23,15 +32,15 @@ export {
   assertNotShuttingDown,
   type AppRuntimeContext,
 } from "./app-runtime-context.ts";
-export type { AcpControlResult, AcpManagerPort, AcpStatusResponse } from "./ports/acp-manager.ts";
-export type { Mask, MaskRegistryPort, CredentialPermission } from "./ports/mask-registry.ts";
-export type { McpControlResult, McpManagerPort, McpStatusResponse } from "./ports/mcp-manager.ts";
+export type { AcpControlResult, AcpManagerPort, AcpStatusResponse } from "./acp-manager.ts";
+export type { Mask, MaskRegistryPort, CredentialPermission } from "./mask-registry.ts";
+export type { McpControlResult, McpManagerPort, McpStatusResponse } from "./mcp-manager.ts";
 export type {
   SatelliteInstanceStatus,
   SatelliteManagerPort,
   SatellitesStatusResponse,
-} from "./ports/satellite-manager.ts";
-export type { ServiceEnginePort } from "./ports/service-engine.ts";
+} from "./satellite-manager.ts";
+export type { ServiceEnginePort } from "./service-engine.ts";
 export {
   onConversationCloseBeforeNew,
   registerOnConversationCloseBeforeNew,

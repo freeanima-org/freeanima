@@ -1,19 +1,15 @@
 import {
-  createScopedSettingsStore,
-  DEBUG_SETTINGS_SCOPE,
+  createDebugSettingsStore,
+  createHubSettingsStore,
   HUB_SETTINGS_SCOPE,
   type SettingsStore,
 } from "@freeanima/satellite-sdk/settings";
 import {
-  DEFAULT_SHELL_DEBUG,
   normalizeShellClientConfig,
-  normalizeShellDebugConfig,
-  parseShellClientConfig,
-  parseShellDebugConfig,
   type ShellClientConfig,
   type ShellDebugConfig,
 } from "@freeanima/satellite-sdk";
-
+import { sendSentryTestEvent } from "@freeanima/shell-ui/sentry-test";
 import { buildMobileShell, SHELL_CONFIG_CHANGED_EVENT } from "./mobile-shell.ts";
 import { createMobileScopedBackend, testMobileHubConnection } from "./settings-prefs-backend.ts";
 import { DEBUG_CONFIG_CHANGED_EVENT } from "./shell-bridge.ts";
@@ -33,19 +29,8 @@ function notifyDebugConfigChanged(): void {
 
 export function createMobileSettingsStores(): MobileSettingsStores {
   const backend = createMobileScopedBackend();
-  const hubBase = createScopedSettingsStore<ShellClientConfig>({
-    scope: HUB_SETTINGS_SCOPE,
-    backend,
-    parseLoad(raw) {
-      if (raw == null) return { hubUrl: "", remoteAuthToken: "" };
-      const parsed = parseShellClientConfig(raw);
-      if (!parsed) return { hubUrl: "", remoteAuthToken: "" };
-      return parsed;
-    },
-    normalizeSave: normalizeShellClientConfig,
-    async test(value) {
-      await testMobileHubConnection(value);
-    },
+  const hubBase = createHubSettingsStore(backend, {
+    test: testMobileHubConnection,
   });
   const hub: SettingsStore<ShellClientConfig> = {
     scope: hubBase.scope,
@@ -58,14 +43,7 @@ export function createMobileSettingsStores(): MobileSettingsStores {
       notifyShellConfigChanged();
     },
   };
-  const debugBase = createScopedSettingsStore<ShellDebugConfig>({
-    scope: DEBUG_SETTINGS_SCOPE,
-    backend,
-    parseLoad(raw) {
-      return parseShellDebugConfig(raw ?? DEFAULT_SHELL_DEBUG);
-    },
-    normalizeSave: normalizeShellDebugConfig,
-  });
+  const debugBase = createDebugSettingsStore(backend);
   const debug: SettingsStore<ShellDebugConfig> = {
     scope: debugBase.scope,
     load: () => debugBase.load(),
@@ -74,10 +52,8 @@ export function createMobileSettingsStores(): MobileSettingsStores {
       notifyDebugConfigChanged();
     },
     async test(value) {
-      const normalized = normalizeShellDebugConfig(value);
-      await debugBase.save(normalized);
+      await debugBase.save(value);
       notifyDebugConfigChanged();
-      const { sendSentryTestEvent } = await import("@freeanima/shell-ui/sentry-test");
       await sendSentryTestEvent();
     },
   };

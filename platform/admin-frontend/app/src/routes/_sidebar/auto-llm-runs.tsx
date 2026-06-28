@@ -6,6 +6,7 @@ import { listAutoLlmRuns } from "@admin/lib/api.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
 import { m } from "@admin/lib/i18n.ts";
 import { logCaughtError } from "@admin/lib/log-caught-error.ts";
+import { useAdminOffsetPagination } from "@admin/lib/use-admin-offset-pagination.ts";
 
 const PAGE_SIZE = 20;
 
@@ -50,15 +51,13 @@ export const Route = createFileRoute("/_sidebar/auto-llm-runs")({
 function AutoLlmRunsPage() {
   const [runKind, setRunKind] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [offset, setOffset] = useState(0);
+  const { setOffset, currentPage, offsetForPage } = useAdminOffsetPagination(PAGE_SIZE);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [total, setTotal] = useState(0);
   const [items, setItems] = useState<AutoLlmRunRow[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
-
-  const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
 
   const fetchList = useCallback(
     async (nextOffset: number) => {
@@ -86,7 +85,7 @@ function AutoLlmRunsPage() {
         setLoading(false);
       }
     },
-    [runKind, statusFilter],
+    [runKind, statusFilter, setOffset],
   );
 
   const runSearch = () => {
@@ -94,7 +93,7 @@ function AutoLlmRunsPage() {
   };
 
   const onPageChange = (page: number) => {
-    void fetchList((page - 1) * PAGE_SIZE);
+    void fetchList(offsetForPage(page));
   };
 
   return (

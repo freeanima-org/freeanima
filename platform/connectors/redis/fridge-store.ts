@@ -1,4 +1,4 @@
-import type { FridgeStorePort } from "@freeanima/capabilities-tasks/fridge-magnet/fridge-store-port";
+import type { FridgeStorePort } from "@freeanima/capabilities-task/fridge-magnet/fridge-store-port";
 import { redisDel, redisGet, redisScanEntries, redisSet } from "./kv.ts";
 
 /** FridgeStorePort implementation based on platform/connectors/redis */

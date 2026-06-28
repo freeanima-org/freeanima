@@ -149,7 +149,7 @@ describe("createFridgeMagnetHandler", () => {
     );
   });
 
-  it("ignores legacy tasks magnets", async () => {
+  it("includes tasks module magnets", async () => {
     registerFridgeStore(
       createMemoryFridgeStore({
         [magnetRedisKey("tasks", "summary")]: "Todos",
@@ -162,6 +162,7 @@ describe("createFridgeMagnetHandler", () => {
       messages,
     } as Parameters<ReturnType<typeof createFridgeMagnetHandler>>[0]);
 
-    expect(messages).toHaveLength(1);
+    expect(messages).toHaveLength(2);
+    expect(messages[0]?.role).toBe("assistant");
   });
 });

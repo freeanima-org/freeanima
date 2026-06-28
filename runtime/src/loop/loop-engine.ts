@@ -68,7 +68,7 @@ function withReasoning(
   reasoning: string | null | undefined,
 ): AssistantMessage {
   if (reasoning) {
-    return { ...msg, reasoning, reasoning_content: reasoning };
+    return { ...msg, reasoning };
   }
   return msg;
 }

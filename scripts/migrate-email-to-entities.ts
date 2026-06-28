@@ -117,7 +117,6 @@ async function main(): Promise<void> {
         enabled: account.enabled,
         desc: account.desc,
         tags: account.tags,
-        legacy_slug: account.id,
       });
       console.log(`migrated ${account.id} -> entity ${row.id} (${row.address})`);
       migrated += 1;

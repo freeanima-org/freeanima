@@ -1,5 +1,5 @@
-import type { AnimaConfig } from "@freeanima/core/config";
-import { getActiveConfig } from "@freeanima/core/config";
+import type { AnimaConfig } from "../config/schemas/config.ts";
+import { getActiveConfig } from "../config/config-store.ts";
 import {
   getCompressionConfig as resolveCompressionConfig,
   getContextWindow as resolveContextWindow,
@@ -9,7 +9,7 @@ import {
   type ContextWindowResolveOpts,
   type ModelConfig,
   type ResolvedCompressionConfig,
-} from "@freeanima/core/config";
+} from "../config/compression-config.ts";
 
 export type { ModelConfig, ResolvedCompressionConfig };
 

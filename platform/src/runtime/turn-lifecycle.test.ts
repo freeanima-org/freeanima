@@ -1,9 +1,10 @@
 import { describe, it, expect, spyOn, afterEach } from "bun:test";
 import * as conv from "@freeanima/runtime/conversation";
+import * as turn from "@freeanima/runtime/turn";
 import * as engine from "@freeanima/runtime/loop";
 import { createConversationService } from "@freeanima/runtime/conversation";
 import { nullPgRepositories } from "@freeanima/core/repos";
-import { MaskRegistry } from "@freeanima/capabilities-tasks/mask";
+import { MaskRegistry } from "@freeanima/capabilities-task/mask";
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/runtime";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/core/llm";
@@ -77,7 +78,7 @@ describe("turn-lifecycle", () => {
   });
 
   it("finalizeTurn calls finishTurn with skipMessageAppend", async () => {
-    const finish = spyOn(conv, "finishTurn").mockResolvedValue(undefined);
+    const finish = spyOn(turn, "finishTurn").mockResolvedValue(undefined);
     restores.push(finish);
     const deps = wireTestDeps();
 
@@ -99,9 +100,9 @@ describe("turn-lifecycle", () => {
   it("runSimpleTurn goes beginTurn → run → finishTurn", async () => {
     const msgs = [{ role: "user" as const, content: "cron prompt" }];
     restores.push(
-      spyOn(conv, "beginTurn").mockResolvedValue([msgs, ["tool_a"], "cron prompt"]),
+      spyOn(turn, "beginTurn").mockResolvedValue([msgs, ["tool_a"], "cron prompt"]),
       spyOn(conv, "appendMessage").mockResolvedValue(undefined),
-      spyOn(conv, "finishTurn").mockResolvedValue(undefined),
+      spyOn(turn, "finishTurn").mockResolvedValue(undefined),
       spyOn(engine, "run").mockResolvedValue("done reply"),
     );
     const deps = wireTestDeps();
@@ -113,14 +114,14 @@ describe("turn-lifecycle", () => {
     });
 
     expect(out).toBe("done reply");
-    expect(conv.beginTurn).toHaveBeenCalledWith(
+    expect(turn.beginTurn).toHaveBeenCalledWith(
       nullPgRepositories,
       catalog.toolSets,
       "cron-sid",
       "cron prompt",
     );
     expect(engine.run).toHaveBeenCalled();
-    expect(conv.finishTurn).toHaveBeenCalledWith(
+    expect(turn.finishTurn).toHaveBeenCalledWith(
       nullPgRepositories,
       catalog.toolSets,
       "cron-sid",
@@ -134,12 +135,12 @@ describe("turn-lifecycle", () => {
 
   it("runSimpleTurn catches MaxTurnsExceeded", async () => {
     restores.push(
-      spyOn(conv, "beginTurn").mockResolvedValue([
+      spyOn(turn, "beginTurn").mockResolvedValue([
         [{ role: "user" as const, content: "x" }],
         [],
         "x",
       ]),
-      spyOn(conv, "finishTurn").mockResolvedValue(undefined),
+      spyOn(turn, "finishTurn").mockResolvedValue(undefined),
       spyOn(engine, "run").mockRejectedValue(new engine.MaxTurnsExceeded("max 8")),
     );
     const deps = wireTestDeps();

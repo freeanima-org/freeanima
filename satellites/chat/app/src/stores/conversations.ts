@@ -11,6 +11,13 @@ import {
   setConversationTitle,
   unarchiveConversation as unarchiveConversationApi,
 } from "@chat/lib/api.ts";
+import {
+  readCachedConversations,
+  readCachedMessages,
+  resolveHubCacheScope,
+  writeCachedConversations,
+  writeCachedMessages,
+} from "@chat/lib/offline-cache.ts";
 import { useChatStore } from "@chat/stores/chat.ts";
 
 type ConversationsState = {
@@ -67,13 +74,20 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
   showArchived: false,
 
   async fetchConversations() {
+    const scope = resolveHubCacheScope();
+    const includeArchived = get().showArchived;
+    const cached = await readCachedConversations(scope, includeArchived);
+    if (cached?.length) {
+      set({ conversations: cached });
+    }
     try {
-      const resp = await listConversations({ includeArchived: get().showArchived });
+      const resp = await listConversations({ includeArchived });
       set({ conversations: resp.conversations });
+      void writeCachedConversations(scope, includeArchived, resp.conversations);
       return resp.conversations;
     } catch (e) {
       console.error("fetchSessions:", e);
-      return [];
+      return cached ?? [];
     }
   },
 
@@ -84,9 +98,16 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
 
   async selectConversation(id) {
     set({ currentId: id, loading: true });
+    const scope = resolveHubCacheScope();
+    const cached = await readCachedMessages(scope, id);
+    if (cached) {
+      set({ display: cached });
+    }
     try {
       const resp = await getStoredMessages(id);
-      set({ display: (resp as { display?: DisplayItem[] }).display ?? [], loading: false });
+      const display = (resp as { display?: DisplayItem[] }).display ?? [];
+      set({ display, loading: false });
+      void writeCachedMessages(scope, id, display);
     } catch (e) {
       console.error("selectSession messages:", e);
       set({ loading: false });
@@ -164,6 +185,7 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
   },
 
   async refreshMessages(conversationId, baselineCount) {
+    const scope = resolveHubCacheScope();
     try {
       const resp = await getStoredMessages(conversationId);
       const display = (resp as { display?: DisplayItem[] }).display ?? [];
@@ -171,6 +193,7 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
       if (get().currentId === conversationId) {
         set({ display });
       }
+      void writeCachedMessages(scope, conversationId, display);
       return hasReply;
     } catch (e) {
       console.error("refreshMessages:", e);
@@ -180,9 +203,12 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
 
   async reloadConversationIfCurrent(conversationId) {
     if (get().currentId !== conversationId) return;
+    const scope = resolveHubCacheScope();
     try {
       const resp = await getStoredMessages(conversationId);
-      set({ display: (resp as { display?: DisplayItem[] }).display ?? [] });
+      const display = (resp as { display?: DisplayItem[] }).display ?? [];
+      set({ display });
+      void writeCachedMessages(scope, conversationId, display);
     } catch (e) {
       console.error("reloadSessionIfCurrent:", e);
     }

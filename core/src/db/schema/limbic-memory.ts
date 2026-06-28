@@ -1,23 +1,9 @@
 import { sql, type SQL } from "drizzle-orm";
-import {
-  customType,
-  index,
-  pgTable,
-  real,
-  text,
-  timestamp,
-  uuid,
-  vector,
-} from "drizzle-orm/pg-core";
+import { index, pgTable, real, text, timestamp, uuid, vector } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
 import { SEMANTIC_EMBEDDING_DIMENSIONS } from "./embedding.ts";
-
-const tsvector = customType<{ data: string }>({
-  dataType() {
-    return "tsvector";
-  },
-});
+import { tsvector } from "./tsvector.ts";
 
 export const limbicKindSchema = z.enum(["conversation_mood", "turning_point", "spike"]);
 

@@ -9,7 +9,6 @@
     "@freeanima/capabilities-memory": "workspace:*",
     "@freeanima/capabilities-satellite": "workspace:*",
     "@freeanima/capabilities-task": "workspace:*",
-    "@freeanima/capabilities-tasks": "workspace:*",
     "@freeanima/capabilities-tools": "workspace:*",
     "@freeanima/kernel": "workspace:*",
     "@freeanima/admin-api": "workspace:*",

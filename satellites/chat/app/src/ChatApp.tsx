@@ -207,7 +207,6 @@ export function ChatApp() {
         setReady(true);
 
         const bootstrap = async () => {
-          await getSapDirectClient().whenReady();
           const list = await fetchConversations();
           const fromUrl = readConversationFromUrl();
           if (fromUrl) {
@@ -217,12 +216,24 @@ export function ChatApp() {
             await selectConversation(id);
             writeConversationToUrl(id);
           } else {
-            await newConversationFn();
+            try {
+              await getSapDirectClient().whenReady();
+              await newConversationFn();
+            } catch {
+              /* 离线且无缓存：保持空态 */
+            }
           }
-          void listConversationCommands()
+          void getSapDirectClient()
+            .whenReady()
+            .then(() => listConversationCommands())
             .then((raw) => setCommandList((raw as { commands?: CommandItem[] }).commands ?? []))
             .catch((e) => console.error("commands:", e));
-          void refreshFridgeMagnets();
+          void getSapDirectClient()
+            .whenReady()
+            .then(() => refreshFridgeMagnets())
+            .catch(() => {
+              /* 离线时跳过 fridge */
+            });
         };
 
         void bootstrap().catch((e) => {
@@ -508,6 +519,9 @@ export function ChatApp() {
   };
 
   const sapDisconnected = sapConnection !== "connected";
+  const offlineCachedHint =
+    getAppLocale() === "zh-cn" ? " · 显示缓存数据" : " · Showing cached data";
+  const showOfflineCachedHint = sapDisconnected && (conversations.length > 0 || display.length > 0);
 
   const sendMessage = async () => {
     const text = inputText.trim();
@@ -639,6 +653,7 @@ export function ChatApp() {
             {sapConnection === "connecting"
               ? m.admin_common_connecting()
               : m.admin_studio_disconnected()}
+            {showOfflineCachedHint ? offlineCachedHint : ""}
           </span>
           <div className="flex items-center gap-1">
             {nativeShell ? (

@@ -13,8 +13,8 @@ import {
   TUNNEL_SYSTEMD_UNIT,
 } from "./tunnel-systemd-unit.ts";
 import { cloudflaredRunExecStart } from "./tunnel-run.ts";
-import { serviceUnitDir } from "./service-common.ts";
-import { SYSTEMD_UNIT, systemdUserAvailable } from "./systemd-unit.ts";
+import { serviceUnitDir } from "../service-common.ts";
+import { SYSTEMD_UNIT, systemdUserAvailable } from "../systemd-unit.ts";
 import {
   formatTunnelConnectedLabel,
   probeTunnelEdgeStatus,

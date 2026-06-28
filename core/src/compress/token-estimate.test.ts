@@ -19,7 +19,7 @@ describe("messageTextForEstimate", () => {
     const text = messageTextForEstimate({
       content: "hello",
       tool_calls: [{ id: "1" }],
-      reasoning_content: "think",
+      reasoning: "think",
       name: "fn",
     });
     expect(text).toContain("hello");

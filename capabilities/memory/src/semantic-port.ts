@@ -1,22 +1,9 @@
 import type { SemanticMemoryStorePort } from "@freeanima/core/repos";
 
-let semanticMemoryStore: SemanticMemoryStorePort | null = null;
+import { createMemoryPortRegistry } from "./port-registry.ts";
 
-/** Injected by service at startup */
-export function registerSemanticMemoryStore(store: SemanticMemoryStorePort): void {
-  semanticMemoryStore = store;
-}
+const semantic = createMemoryPortRegistry<SemanticMemoryStorePort>("semantic memory store");
 
-export function getSemanticMemoryStore(): SemanticMemoryStorePort {
-  if (!semanticMemoryStore) {
-    throw new Error(
-      "semantic memory store not configured: call registerSemanticMemoryStore() at service startup",
-    );
-  }
-  return semanticMemoryStore;
-}
-
-/** Reset for tests */
-export function resetSemanticMemoryStoreForTests(): void {
-  semanticMemoryStore = null;
-}
+export const registerSemanticMemoryStore = semantic.register;
+export const getSemanticMemoryStore = semantic.get;
+export const resetSemanticMemoryStoreForTests = semantic.resetForTests;

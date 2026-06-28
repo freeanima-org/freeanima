@@ -1,9 +1,17 @@
 const KEY_PREFIX = "chat:input-draft:";
 
+function storage(): Storage | null {
+  try {
+    return localStorage;
+  } catch {
+    return null;
+  }
+}
+
 export function loadInputDraft(conversationId: string | null): string {
   if (!conversationId) return "";
   try {
-    return sessionStorage.getItem(`${KEY_PREFIX}${conversationId}`) ?? "";
+    return storage()?.getItem(`${KEY_PREFIX}${conversationId}`) ?? "";
   } catch {
     return "";
   }
@@ -12,10 +20,12 @@ export function loadInputDraft(conversationId: string | null): string {
 export function saveInputDraft(conversationId: string | null, text: string): void {
   if (!conversationId) return;
   try {
+    const store = storage();
+    if (!store) return;
     const key = `${KEY_PREFIX}${conversationId}`;
-    if (text) sessionStorage.setItem(key, text);
-    else sessionStorage.removeItem(key);
+    if (text) store.setItem(key, text);
+    else store.removeItem(key);
   } catch {
-    /* sessionStorage 不可用时忽略 */
+    /* localStorage 不可用时忽略 */
   }
 }

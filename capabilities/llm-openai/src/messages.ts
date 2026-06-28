@@ -42,7 +42,7 @@ function sanitizeTurnForApi(
         role: "assistant",
         content: msg.content ?? (cleanedCalls.length ? null : ""),
       };
-      const reasoningText = msg.reasoning_content || msg.reasoning || "";
+      const reasoningText = msg.reasoning || "";
       if (reasoningText) out.reasoning_content = reasoningText;
       if (msg.name) (out as { name?: string }).name = msg.name;
       if (cleanedCalls.length) {

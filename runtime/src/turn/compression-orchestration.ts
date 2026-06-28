@@ -11,15 +11,14 @@ import {
   flushCompressionSummaries,
   maybeApplyEmergencyCompression,
 } from "@freeanima/core/compress";
+import { isConversationMeta } from "@freeanima/core/db/domain";
 import {
-  isConversationMeta,
   load,
   loadConversationMeta,
   loadConversationTools,
   updateConversationMetaField,
-  type Message,
-  type ConversationMetaLoadResult,
-} from "@freeanima/runtime/conversation";
+} from "../conversation/conversation-crud.ts";
+import type { StoredMessage, ConversationMetaLoadResult } from "@freeanima/core/db/domain";
 import type { PgRepositories } from "@freeanima/core/repos";
 
 function defaultChatModel(): string {
@@ -33,7 +32,7 @@ export async function advanceCompressionMeta(
   repos: PgRepositories,
   tools: ToolSetRegistry,
   conversationId: string,
-  preloaded?: { msgs: Message[]; meta: ConversationMetaLoadResult },
+  preloaded?: { msgs: StoredMessage[]; meta: ConversationMetaLoadResult },
 ): Promise<void> {
   await recompressConversation(repos, tools, conversationId, undefined, preloaded);
 }
@@ -44,7 +43,7 @@ export async function recompressConversation(
   registry: ToolSetRegistry,
   conversationId: string,
   opts?: { force?: boolean },
-  preloaded?: { msgs: Message[]; meta: ConversationMetaLoadResult },
+  preloaded?: { msgs: StoredMessage[]; meta: ConversationMetaLoadResult },
 ): Promise<Record<string, unknown>> {
   const cfg = getCompressionConfig();
   const msgs = preloaded?.msgs ?? (await load(repos, conversationId));

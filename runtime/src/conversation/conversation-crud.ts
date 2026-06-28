@@ -15,14 +15,14 @@ import { CST_OFFSET_MS, formatCstIso } from "@freeanima/core/util";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
 import { buildSystemPrompt } from "@freeanima/core/hooks/prompt";
 import { capabilityMaskSchema, stripOriginRoutingMeta } from "@freeanima/core/db/schema";
-import { applyConversationToolMaskFilter } from "./mask-port.ts";
+import { applyConversationToolMaskFilter } from "@freeanima/core/tool";
 import {
   isConversationMeta,
   type StoredMessage,
   type ConversationMetaMessage,
   type ConversationMetaLoadResult,
   type OpenAiToolSchema,
-} from "./stored-message.ts";
+} from "@freeanima/core/db/domain";
 import {
   loadMetaWithRouting,
   loadMessagesForRuntimeWithRouting,

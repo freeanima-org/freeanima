@@ -13,7 +13,7 @@ import { animaConfigSchema } from "@freeanima/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { createConversationService } from "@freeanima/runtime/conversation";
-import { MaskRegistry } from "@freeanima/capabilities-tasks/mask";
+import { MaskRegistry } from "@freeanima/capabilities-task/mask";
 
 import { runAutoLlm } from "./auto-llm-run.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";

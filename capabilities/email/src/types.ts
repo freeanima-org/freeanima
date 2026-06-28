@@ -30,7 +30,6 @@ export type EmailAccountCreateInput = {
   enabled?: boolean;
   desc?: string;
   tags?: string[];
-  legacy_slug?: string;
 };
 
 export type EmailAccountUpdateInput = {

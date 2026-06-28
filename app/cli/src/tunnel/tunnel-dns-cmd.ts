@@ -8,7 +8,7 @@ import {
   normalizeApiToken,
   resolveTunnelApiToken,
 } from "@freeanima/platform/connectors/tunnel";
-import { writeStatusLine } from "./service-common.ts";
+import { writeStatusLine } from "../service-common.ts";
 
 function loadTunnelFromConfig(): TunnelConfigFields {
   const tunnel = FileConfig.open().data.tunnel;

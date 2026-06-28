@@ -295,10 +295,6 @@ export class AcpManager {
               description:
                 "Instruction or reply sent to Cursor. In multi-turn interactions may be a task description, answer to a question, or continuation.",
             },
-            goal: {
-              type: "string",
-              description: "(deprecated, use prompt) Task goal description.",
-            },
             context: {
               type: "string",
               description:
@@ -348,7 +344,7 @@ export class AcpManager {
           if (cancelId) return this.cancelAsyncTask(cancelId);
 
           const prompt = String(args.prompt ?? args.goal ?? "").trim();
-          if (!prompt) return toolError("prompt (or goal) cannot be empty");
+          if (!prompt) return toolError("prompt cannot be empty");
           const context = String(args.context ?? "");
           const explicitSid = String(args.acp_conversation_id ?? "").trim() || undefined;
           const newConversation = args.new_session === true || args.new_session === "true";

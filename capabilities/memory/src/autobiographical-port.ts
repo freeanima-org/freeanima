@@ -1,22 +1,11 @@
 import type { AutobiographicalMemoryStorePort } from "@freeanima/core/repos";
 
-let autobiographicalMemoryStore: AutobiographicalMemoryStorePort | null = null;
+import { createMemoryPortRegistry } from "./port-registry.ts";
 
-/** Injected by service at startup */
-export function registerAutobiographicalMemoryStore(store: AutobiographicalMemoryStorePort): void {
-  autobiographicalMemoryStore = store;
-}
+const autobiographical = createMemoryPortRegistry<AutobiographicalMemoryStorePort>(
+  "autobiographical memory store",
+);
 
-export function getAutobiographicalMemoryStore(): AutobiographicalMemoryStorePort {
-  if (!autobiographicalMemoryStore) {
-    throw new Error(
-      "autobiographical memory store not configured: call registerAutobiographicalMemoryStore() at service startup",
-    );
-  }
-  return autobiographicalMemoryStore;
-}
-
-/** Reset for tests */
-export function resetAutobiographicalMemoryStoreForTests(): void {
-  autobiographicalMemoryStore = null;
-}
+export const registerAutobiographicalMemoryStore = autobiographical.register;
+export const getAutobiographicalMemoryStore = autobiographical.get;
+export const resetAutobiographicalMemoryStoreForTests = autobiographical.resetForTests;

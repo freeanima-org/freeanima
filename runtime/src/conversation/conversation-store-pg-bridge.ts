@@ -1,6 +1,6 @@
 import type { PgRepositories, ConversationStorePort } from "@freeanima/core/repos";
 import { parseCompressionState, isCompressed } from "@freeanima/core/compress";
-import type { StoredMessage, ConversationMetaMessage } from "./stored-message.ts";
+import type { StoredMessage, ConversationMetaMessage } from "@freeanima/core/db/domain";
 
 function store(repos: PgRepositories): ConversationStorePort {
   return repos.conversation;
@@ -10,15 +10,29 @@ export function postgresAvailable(repos: PgRepositories): boolean {
   return repos.pgAvailable;
 }
 
-export const usePostgresRead = postgresAvailable;
+async function whenPg<T>(
+  repos: PgRepositories,
+  fallback: T,
+  fn: (conversation: ConversationStorePort) => Promise<T>,
+): Promise<T> {
+  if (!postgresAvailable(repos)) return fallback;
+  return fn(store(repos));
+}
+
+async function whenPgVoid(
+  repos: PgRepositories,
+  fn: (conversation: ConversationStorePort) => Promise<unknown>,
+): Promise<void> {
+  if (!postgresAvailable(repos)) return;
+  await fn(store(repos));
+}
 
 export async function pgWriteMeta(
   repos: PgRepositories,
   conversationId: string,
   meta: ConversationMetaMessage,
 ): Promise<void> {
-  if (!postgresAvailable(repos)) return;
-  await store(repos).upsertConversationMeta(conversationId, meta);
+  await whenPgVoid(repos, (s) => s.upsertConversationMeta(conversationId, meta));
 }
 
 export async function pgWritePatchMeta(
@@ -26,8 +40,7 @@ export async function pgWritePatchMeta(
   conversationId: string,
   patch: Partial<ConversationMetaMessage> & Record<string, unknown>,
 ): Promise<void> {
-  if (!postgresAvailable(repos)) return;
-  await store(repos).patchConversationMeta(conversationId, patch);
+  await whenPgVoid(repos, (s) => s.patchConversationMeta(conversationId, patch));
 }
 
 export async function pgWriteMessage(
@@ -35,8 +48,7 @@ export async function pgWriteMessage(
   conversationId: string,
   msg: StoredMessage,
 ): Promise<void> {
-  if (!postgresAvailable(repos)) return;
-  await store(repos).appendMessage(conversationId, msg);
+  await whenPgVoid(repos, (s) => s.appendMessage(conversationId, msg));
 }
 
 export async function pgWriteTruncate(
@@ -44,8 +56,7 @@ export async function pgWriteTruncate(
   conversationId: string,
   keepThroughPos: number,
 ): Promise<void> {
-  if (!postgresAvailable(repos)) return;
-  await store(repos).truncateMessagesAfter(conversationId, keepThroughPos);
+  await whenPgVoid(repos, (s) => s.truncateMessagesAfter(conversationId, keepThroughPos));
 }
 
 export async function pgShiftMessagePositions(
@@ -54,60 +65,49 @@ export async function pgShiftMessagePositions(
   afterPos: number,
   delta: number,
 ): Promise<void> {
-  if (!postgresAvailable(repos)) return;
-  await store(repos).shiftMessagePositions(conversationId, afterPos, delta);
+  await whenPgVoid(repos, (s) => s.shiftMessagePositions(conversationId, afterPos, delta));
 }
 
 export async function pgWriteDeleteConversation(
   repos: PgRepositories,
   conversationId: string,
 ): Promise<void> {
-  if (!postgresAvailable(repos)) return;
-  await store(repos).deleteConversation(conversationId);
+  await whenPgVoid(repos, (s) => s.deleteConversation(conversationId));
 }
 
 export async function pgArchiveConversation(
   repos: PgRepositories,
   conversationId: string,
 ): Promise<void> {
-  if (!postgresAvailable(repos)) return;
-  await store(repos).archiveConversation(conversationId);
+  await whenPgVoid(repos, (s) => s.archiveConversation(conversationId));
 }
 
 export async function pgUnarchiveConversation(
   repos: PgRepositories,
   conversationId: string,
 ): Promise<void> {
-  if (!postgresAvailable(repos)) return;
-  await store(repos).unarchiveConversation(conversationId);
+  await whenPgVoid(repos, (s) => s.unarchiveConversation(conversationId));
 }
 
 export async function conversationExistsWithRouting(
   repos: PgRepositories,
   conversationId: string,
 ): Promise<boolean> {
-  if (!postgresAvailable(repos)) return false;
-  return store(repos).conversationExists(conversationId);
+  return whenPg(repos, false, (s) => s.conversationExists(conversationId));
 }
 
 export async function loadMetaWithRouting(
   repos: PgRepositories,
   conversationId: string,
 ): Promise<ConversationMetaMessage | Record<string, never>> {
-  if (!postgresAvailable(repos)) {
-    return {};
-  }
-  return (await store(repos).getConversationMetaLite(conversationId)) ?? {};
+  return whenPg(repos, {}, async (s) => (await s.getConversationMetaLite(conversationId)) ?? {});
 }
 
 export async function loadMessagesWithRouting(
   repos: PgRepositories,
   conversationId: string,
 ): Promise<StoredMessage[]> {
-  if (!postgresAvailable(repos)) {
-    return [];
-  }
-  return store(repos).listMessages(conversationId);
+  return whenPg(repos, [], (s) => s.listMessages(conversationId));
 }
 
 /** When compression boundary exists, runtime loads message window with pos > l2 only */
@@ -134,10 +134,7 @@ export async function loadMessagesByPosRangeWithRouting(
   fromPos: number,
   toPos?: number,
 ): Promise<StoredMessage[]> {
-  if (!postgresAvailable(repos)) {
-    return [];
-  }
-  return store(repos).listMessagesByPosRange(conversationId, fromPos, toPos);
+  return whenPg(repos, [], (s) => s.listMessagesByPosRange(conversationId, fromPos, toPos));
 }
 
 export async function loadMessagesPageWithRouting(
@@ -146,40 +143,28 @@ export async function loadMessagesPageWithRouting(
   offset: number,
   limit: number,
 ): Promise<StoredMessage[]> {
-  if (!postgresAvailable(repos)) {
-    return [];
-  }
-  return store(repos).listMessagesPage(conversationId, offset, limit);
+  return whenPg(repos, [], (s) => s.listMessagesPage(conversationId, offset, limit));
 }
 
 export async function countMessagesWithRouting(
   repos: PgRepositories,
   conversationId: string,
 ): Promise<number> {
-  if (!postgresAvailable(repos)) {
-    return 0;
-  }
-  return store(repos).countMessages(conversationId);
+  return whenPg(repos, 0, (s) => s.countMessages(conversationId));
 }
 
 export async function countUserMessagesWithRouting(
   repos: PgRepositories,
   conversationId: string,
 ): Promise<number> {
-  if (!postgresAvailable(repos)) {
-    return 0;
-  }
-  return store(repos).countUserMessages(conversationId);
+  return whenPg(repos, 0, (s) => s.countUserMessages(conversationId));
 }
 
 export async function loadConversationToolsWithRouting(
   repos: PgRepositories,
   conversationId: string,
 ): Promise<ConversationMetaMessage["cached_toolsets"]> {
-  if (!postgresAvailable(repos)) {
-    return [];
-  }
-  return store(repos).getConversationTools(conversationId);
+  return whenPg(repos, [], (s) => s.getConversationTools(conversationId));
 }
 
 export async function listConversationsWithRouting(
@@ -187,10 +172,7 @@ export async function listConversationsWithRouting(
   platform?: string | null,
   opts?: { includeArchived?: boolean },
 ): Promise<string[]> {
-  if (!postgresAvailable(repos)) {
-    return [];
-  }
-  return store(repos).listConversationIds(platform, opts);
+  return whenPg(repos, [], (s) => s.listConversationIds(platform, opts));
 }
 
 export async function nextMessagePosWithRouting(

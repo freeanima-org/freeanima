@@ -121,7 +121,6 @@
       "name": "@freeanima/capabilities-email",
       "dependencies": {
         "@freeanima/core": "workspace:*",
-        "zod": "catalog:",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -194,15 +193,6 @@
     },
     "capabilities/task": {
       "name": "@freeanima/capabilities-task",
-      "dependencies": {
-        "@freeanima/core": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "capabilities/tasks": {
-      "name": "@freeanima/capabilities-tasks",
       "dependencies": {
         "@freeanima/core": "workspace:*",
       },
@@ -304,7 +294,6 @@
         "@freeanima/capabilities-memory": "workspace:*",
         "@freeanima/capabilities-satellite": "workspace:*",
         "@freeanima/capabilities-task": "workspace:*",
-        "@freeanima/capabilities-tasks": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
         "@freeanima/core": "workspace:*",
         "@freeanima/kernel": "workspace:*",
@@ -349,7 +338,6 @@
         "@freeanima/capabilities-memory": "workspace:*",
         "@freeanima/capabilities-satellite": "workspace:*",
         "@freeanima/capabilities-task": "workspace:*",
-        "@freeanima/capabilities-tasks": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
         "@freeanima/core": "workspace:*",
         "@freeanima/kernel": "workspace:*",
@@ -543,7 +531,6 @@
         "@freeanima/capabilities-memory": "workspace:*",
         "@freeanima/capabilities-satellite": "workspace:*",
         "@freeanima/capabilities-task": "workspace:*",
-        "@freeanima/capabilities-tasks": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
         "@freeanima/kernel": "workspace:*",
         "@freeanima/platform": "workspace:*",
@@ -880,8 +867,6 @@
     "@freeanima/capabilities-satellite": ["@freeanima/capabilities-satellite@workspace:capabilities/satellite"],
 
     "@freeanima/capabilities-task": ["@freeanima/capabilities-task@workspace:capabilities/task"],
-
-    "@freeanima/capabilities-tasks": ["@freeanima/capabilities-tasks@workspace:capabilities/tasks"],
 
     "@freeanima/capabilities-tools": ["@freeanima/capabilities-tools@workspace:capabilities/tools"],
 

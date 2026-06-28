@@ -1,7 +1,7 @@
 import type { StreamEvent } from "@freeanima/runtime/loop";
 import type { ConversationSummary } from "./schemas/snapshot.ts";
 
-export type { MessagingPort } from "./ports/messaging-port.ts";
+export type { MessagingPort } from "./messaging-port.ts";
 
 /** Slash / platform 命令元数据 */
 export type ServiceCommandInfo = {
@@ -12,8 +12,18 @@ export type ServiceCommandInfo = {
   platforms?: string[] | null;
 };
 
-/** Admin / Gateway 完整运行时 API 契约 */
-export type AppRuntimePort = {
+/** 生命周期与并发控制 */
+export type AppRuntimeLifecyclePort = {
+  waitForDrain(): Promise<void>;
+  getInFlightCount(): number;
+  abortAll(): void;
+  isShuttingDown(): boolean;
+  startShutdown(): void;
+  markStarted(): void;
+};
+
+/** 平台注册与 Gateway 消息流 */
+export type AppRuntimeMessagingPort = {
   registerPlatform(name: string): void;
   updatePlatformStatus(name: string, status: string, extra?: Record<string, unknown>): void;
   findOrCreateConversation(
@@ -35,12 +45,10 @@ export type AppRuntimePort = {
   listCommands(opts?: { platform?: string; all?: boolean }): {
     commands: ServiceCommandInfo[];
   };
-  waitForDrain(): Promise<void>;
-  getInFlightCount(): number;
-  abortAll(): void;
-  isShuttingDown(): boolean;
-  startShutdown(): void;
-  markStarted(): void;
+};
+
+/** 健康检查、配置与 cron */
+export type AppRuntimeOpsPort = {
   health(): any;
   buildStatus(host: string, port: number): Promise<any>;
   getConfig(): any;
@@ -49,6 +57,13 @@ export type AppRuntimePort = {
   pauseCronJob(id: string): any;
   resumeCronJob(id: string): any;
   runCronJobNow(id: string): any;
+  getStatus(): Record<string, unknown>;
+  listFridgeMagnets(): Promise<any>;
+  getPromptDebug(conversationId?: string | null): Promise<any>;
+};
+
+/** 会话 CRUD 与消息 */
+export type AppRuntimeConversationPort = {
   listConversations(
     platform?: string | null,
     opts?: { offset?: number; limit?: number },
@@ -63,7 +78,10 @@ export type AppRuntimePort = {
     opts?: { offset?: number; limit?: number },
   ): any;
   setConversationTitle(conversationId: string, title: string, platform: string): Promise<any>;
-  getStatus(): Record<string, unknown>;
+};
+
+/** 语义 /  limbic / 自传 / 梦境记忆 */
+export type AppRuntimeMemoryPort = {
   listMemoryFiles(): any;
   memorySearch(opts: any): Promise<any>;
   countSemanticMemory(): any;
@@ -80,8 +98,10 @@ export type AppRuntimePort = {
   startRebuildFtsIndex(opts?: { onlyMissing?: boolean }): any;
   getRebuildFtsJobStatus(): any;
   listSelfBlocks(): Promise<any>;
-  listFridgeMagnets(): Promise<any>;
-  getPromptDebug(conversationId?: string | null): Promise<any>;
+};
+
+/** 睡眠流水线与 auto-llm 审计 */
+export type AppRuntimeSleepPort = {
   getSleepSummary(): Promise<any>;
   listPipelineStepRuns(opts?: {
     step_id?: string;
@@ -114,3 +134,11 @@ export type AppRuntimePort = {
     offset?: number;
   }): Promise<any>;
 };
+
+/** Admin / Gateway 完整运行时 API 契约（域 port 组合） */
+export type AppRuntimePort = AppRuntimeLifecyclePort &
+  AppRuntimeMessagingPort &
+  AppRuntimeOpsPort &
+  AppRuntimeConversationPort &
+  AppRuntimeMemoryPort &
+  AppRuntimeSleepPort;

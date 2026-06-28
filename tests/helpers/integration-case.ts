@@ -1,5 +1,5 @@
 import type { PgTestContext } from "./pg-test.ts";
-import { flushCompressionSummaries } from "@freeanima/runtime/conversation";
+import { flushCompressionSummaries } from "@freeanima/runtime/turn";
 import { createConversationService } from "@freeanima/runtime/conversation";
 import { createServiceKernel } from "@freeanima/platform/bootstrap";
 import {
@@ -9,7 +9,7 @@ import {
   registerSystemPromptHooks,
 } from "@freeanima/platform";
 import { getAcpManager } from "@freeanima/capabilities-acp";
-import { MaskRegistry } from "@freeanima/capabilities-tasks/mask";
+import { MaskRegistry } from "@freeanima/capabilities-task/mask";
 import { initMaskSystem } from "@freeanima/platform/runtime/mask-wire";
 import { registerServiceTools, resetRegisterServiceToolsForTest } from "@freeanima/platform";
 import {

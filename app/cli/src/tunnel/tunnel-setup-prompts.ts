@@ -13,7 +13,7 @@ import {
   verifyApiToken,
 } from "@freeanima/platform/connectors/tunnel";
 import { installCloudflared, manualDownloadHint } from "./tunnel-install.ts";
-import { checkServerAlive, resolveProbeHost } from "./service-common.ts";
+import { checkServerAlive, resolveProbeHost } from "../service-common.ts";
 import { resolveHubPort } from "./tunnel-hub-port.ts";
 import { loadTunnelDraft, patchTunnelConfig } from "./tunnel-config-patch.ts";
 

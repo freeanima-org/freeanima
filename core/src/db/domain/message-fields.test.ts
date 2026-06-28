@@ -3,28 +3,17 @@ import { describe, expect, it } from "bun:test";
 import { assistantReasoningText, resolveMaxTurns } from "./message-fields.ts";
 
 describe("assistantReasoningText", () => {
-  it("prefers reasoning over reasoning_content", () => {
+  it("reads reasoning field", () => {
     expect(
       assistantReasoningText({
         role: "assistant",
         content: null,
-        reasoning: " primary ",
-        reasoning_content: "secondary",
-      }),
-    ).toBe("primary");
-  });
-
-  it("falls back to reasoning_content", () => {
-    expect(
-      assistantReasoningText({
-        role: "assistant",
-        content: null,
-        reasoning_content: " chain ",
+        reasoning: " chain ",
       }),
     ).toBe("chain");
   });
 
-  it("returns empty when neither field set", () => {
+  it("returns empty when reasoning unset", () => {
     expect(assistantReasoningText({ role: "assistant", content: null })).toBe("");
   });
 });

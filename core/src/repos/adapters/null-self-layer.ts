@@ -2,10 +2,9 @@ import type { SelfBlockKey } from "@freeanima/core/db/schema";
 
 import type { SelfBlockRow, SelfLayerStorePort } from "../ports/self-layer.ts";
 import { SELF_BLOCK_KEYS } from "../ports/self-layer.ts";
+import { pgUnavailable } from "./null-helpers.ts";
 
-const unavailable = (): never => {
-  throw new Error("database.url not configured");
-};
+const unavailable = pgUnavailable;
 
 function emptyBlock(key: SelfBlockKey): SelfBlockRow {
   return {

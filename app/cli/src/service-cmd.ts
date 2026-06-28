@@ -20,9 +20,9 @@ import { REPO_ROOT } from "@freeanima/platform";
 import { renderSystemdUnit, systemdUserAvailable, SYSTEMD_UNIT } from "./systemd-unit.ts";
 import { printServiceRunningStatus } from "./output/service-status-display.ts";
 import { waitForHubReadyOrWarn } from "./wait-hub-ready.ts";
-import { startTunnelSidecar, stopTunnelSidecar } from "./tunnel-cmd.ts";
-import { stopHubStackViaSystemd } from "./tunnel-supervisor.ts";
-import { getTunnelStatus } from "./tunnel-supervisor.ts";
+import { startTunnelSidecar, stopTunnelSidecar } from "./tunnel/tunnel-cmd.ts";
+import { stopHubStackViaSystemd } from "./tunnel/tunnel-supervisor.ts";
+import { getTunnelStatus } from "./tunnel/tunnel-supervisor.ts";
 import { buildTunnelSnapshot } from "@freeanima/platform/connectors/tunnel";
 import { FileConfig, validateConfigOnStartup } from "@freeanima/platform/config";
 

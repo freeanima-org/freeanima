@@ -1,12 +1,11 @@
 import {
   formatFridgeMagnetManifestPreview,
   FRIDGE_MAGNET_SCAN_PATTERN,
-  isExcludedFridgeMagnetDisplayKey,
   scanMagnets,
   stripMagnetRedisKeyPrefix,
-} from "@freeanima/capabilities-tasks/fridge-magnet";
+} from "@freeanima/capabilities-task/fridge-magnet";
 import { isRedisConfigured, redisTtl } from "@freeanima/platform/connectors/redis";
-import type { FridgeMagnet } from "@freeanima/capabilities-tasks/fridge-magnet";
+import type { FridgeMagnet } from "@freeanima/capabilities-task/fridge-magnet";
 
 export type FridgeMagnetDisplay = {
   key: string;
@@ -54,9 +53,7 @@ function toDisplayMagnet(
 /** Admin fridge magnet global read-only list */
 export async function listFridgeMagnets(): Promise<ListFridgeMagnetsResult> {
   const redisConfigured = isRedisConfigured();
-  const hits = (await scanMagnets(FRIDGE_MAGNET_SCAN_PATTERN)).filter(
-    (hit) => !isExcludedFridgeMagnetDisplayKey(stripMagnetRedisKeyPrefix(hit.key)),
-  );
+  const hits = await scanMagnets(FRIDGE_MAGNET_SCAN_PATTERN);
 
   const magnets = await Promise.all(
     hits.map(async (hit) => {

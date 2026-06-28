@@ -11,6 +11,11 @@ export {
 } from "./prefs-keys.ts";
 export type { ScopedSettingsBackend, SettingsStore } from "./settings-store.ts";
 export { createScopedSettingsStore } from "./settings-store.ts";
+export {
+  createDebugSettingsStore,
+  createHubSettingsStore,
+  parseHubClientSettings,
+} from "./hub-debug-stores.ts";
 export type {
   CompanionSettingsApi,
   FormFieldDescriptor,

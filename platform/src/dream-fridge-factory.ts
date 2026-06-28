@@ -1,4 +1,4 @@
-import { deleteMagnet, setMagnet } from "@freeanima/capabilities-tasks/fridge-magnet";
+import { deleteMagnet, setMagnet } from "@freeanima/capabilities-task/fridge-magnet";
 import type { DreamFridgePort } from "@freeanima/capabilities-memory/dream/run";
 
 const DREAM_REMINDER_TTL = 86400;

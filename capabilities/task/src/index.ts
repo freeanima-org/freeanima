@@ -1,3 +1,5 @@
+export { registerWriteFridgeMagnetTool } from "./fridge-magnet/tool.ts";
+
 export {
   registerEntityTaskModule,
   getEntityStoreForTask,

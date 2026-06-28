@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import { hubStackSystemdUnits } from "./tunnel-supervisor.ts";
-import { SYSTEMD_UNIT } from "./systemd-unit.ts";
+import { SYSTEMD_UNIT } from "../systemd-unit.ts";
 import { TUNNEL_SYSTEMD_UNIT } from "./tunnel-systemd-unit.ts";
 
 describe("hubStackSystemdUnits", () => {

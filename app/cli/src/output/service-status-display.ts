@@ -1,5 +1,5 @@
 import { parseBindHosts } from "@freeanima/platform/bind-hosts";
-import { formatTunnelConnectedLabel } from "../tunnel-supervisor.ts";
+import { formatTunnelConnectedLabel } from "../tunnel/tunnel-supervisor.ts";
 import { prettyDuration, writeStatusLine } from "./status.ts";
 
 type MemoryDetail = {

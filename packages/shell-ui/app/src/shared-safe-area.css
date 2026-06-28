@@ -1,0 +1,19 @@
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
+@media (max-width: 1023px) {
+  .safe-area-pt {
+    padding-top: var(--sat);
+  }
+  .safe-area-pb {
+    padding-bottom: var(--sab);
+  }
+  .safe-area-px {
+    padding-left: var(--sal);
+    padding-right: var(--sar);
+  }
+}

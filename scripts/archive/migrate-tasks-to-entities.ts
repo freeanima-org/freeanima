@@ -12,15 +12,15 @@ import { SQL } from "bun";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { ENTITY_DEFAULT_TASK_LIST_ID } from "../core/src/db/schema/entity/index.ts";
+import { ENTITY_DEFAULT_TASK_LIST_ID } from "../../core/src/db/schema/entity/index.ts";
 import {
   createTaskItem,
   listTaskItems,
   registerEntityTaskModule,
   updateTaskItem,
-} from "../capabilities/task/src/index.ts";
-import { pgEntityStore } from "../platform/connectors/db-pg/entity/pg-entity-store.ts";
-import { pgEntitySearchStore } from "../platform/connectors/db-pg/entity/pg-entity-search-store.ts";
+} from "../../capabilities/task/src/index.ts";
+import { pgEntityStore } from "../../platform/connectors/db-pg/entity/pg-entity-store.ts";
+import { pgEntitySearchStore } from "../../platform/connectors/db-pg/entity/pg-entity-search-store.ts";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 

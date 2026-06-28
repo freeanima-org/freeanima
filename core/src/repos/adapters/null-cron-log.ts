@@ -1,8 +1,8 @@
 import type { CronLogStorePort } from "../ports/cron-log.ts";
 
-const unavailable = (): never => {
-  throw new Error("database.url not configured");
-};
+import { pgUnavailable } from "./null-helpers.ts";
+
+const unavailable = pgUnavailable;
 
 export const nullCronLogStore: CronLogStorePort = {
   async append() {

@@ -24,6 +24,13 @@ import {
   type TaskListRow,
 } from "./lib/api.ts";
 import {
+  readCachedTaskItems,
+  readCachedTaskLists,
+  resolveHubCacheScope,
+  writeCachedTaskItems,
+  writeCachedTaskLists,
+} from "./lib/offline-cache.ts";
+import {
   isTaskContextMenuEnabled,
   isWebShell,
   useMobileLayout,
@@ -73,27 +80,43 @@ export function TaskApp() {
   const [movePickerItemIds, setMovePickerItemIds] = useState<number[] | null>(null);
 
   const loadLists = useCallback(async () => {
-    const rows = await fetchTaskLists();
-    setLists(rows);
-    if (rows.length === 0) {
-      setSelectedListId(null);
-      setItems([]);
-      return;
-    }
-    setSelectedListId((prev) => {
-      const next = resolveSelectedListIdWithUrl(rows, {
-        webShell,
-        currentId: prev,
-        urlListId: webShell ? readListIdFromUrl() : null,
+    const scope = resolveHubCacheScope();
+    const cached = await readCachedTaskLists(scope);
+    if (cached?.length) setLists(cached);
+    try {
+      const rows = await fetchTaskLists();
+      setLists(rows);
+      void writeCachedTaskLists(scope, rows);
+      if (rows.length === 0) {
+        setSelectedListId(null);
+        setItems([]);
+        return;
+      }
+      setSelectedListId((prev) => {
+        const next = resolveSelectedListIdWithUrl(rows, {
+          webShell,
+          currentId: prev,
+          urlListId: webShell ? readListIdFromUrl() : null,
+        });
+        if (webShell && next != null) writeListIdToUrl(next);
+        return next;
       });
-      if (webShell && next != null) writeListIdToUrl(next);
-      return next;
-    });
+    } catch {
+      if (!cached?.length) setError("无法加载任务清单");
+    }
   }, [webShell]);
 
   const loadItems = useCallback(async (listId: number) => {
-    const rows = await fetchTaskItems(listId);
-    setItems(rows);
+    const scope = resolveHubCacheScope();
+    const cached = await readCachedTaskItems(scope, listId);
+    if (cached) setItems(cached);
+    try {
+      const rows = await fetchTaskItems(listId);
+      setItems(rows);
+      void writeCachedTaskItems(scope, listId, rows);
+    } catch {
+      if (!cached) setItems([]);
+    }
   }, []);
 
   const refresh = useCallback(async () => {
