@@ -65,6 +65,29 @@ Structured business data (tasks, notes, email accounts/messages, future memory m
 
 Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-backed); legacy Admin email route removed.
 
+### Platform UI layering
+
+| Layer              | Platform-native?             | Location                                                       |
+| ------------------ | ---------------------------- | -------------------------------------------------------------- |
+| Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring             |
+| Shared SPA         | Branch on `detectPlatform()` | `packages/shell-ui`, `satellites/*`, `platform/admin-frontend` |
+
+Nav and primary layouts **must use `detectPlatform()`** (Electron / native shell), not viewport breakpoints alone. Responsive CSS is for desktop window resize only.
+
+### Admin navigation ↔ cognitive layers
+
+Admin sidebar is grouped (not flat storage tables). Map new features onto these user-visible concepts:
+
+| Group        | Cognitive layer | Routes (representative)                             |
+| ------------ | --------------- | --------------------------------------------------- |
+| Runtime      | Estate + ops    | dashboard, config, credentials, cron                |
+| Memory       | Memory          | memory hub, browse sub-routes, sleep, auto-llm-runs |
+| Self         | Self            | self-layer, system-prompt                           |
+| Estate       | Estate          | subjects, worlds, fridge-magnet                     |
+| Capabilities | Estate (tools)  | tools, commands, mcp, acp, satellites               |
+
+FTS index maintenance is under Memory (not top-level). Do not add new flat nav items without mapping to a group above.
+
 ### Background
 
 The four-layer model draws on cognitive psychology and the [Hindsight](https://arxiv.org/abs/2512.12818) four-network memory architecture, with two fundamental extensions: limbic (emotional) memory and Estate (assets as first-class citizens), plus Self split out from Memory.

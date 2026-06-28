@@ -18,11 +18,13 @@ import * as llm from "@freeanima/core/llm";
 import type { LlmRuntime } from "@freeanima/core/llm";
 import { cleanToolCallsForApi } from "@freeanima/core/llm";
 import { markToolLoopActivity, maybeApplyEmergencyCompression } from "@freeanima/core/compress";
+import type { PgRepositories } from "@freeanima/core/repos";
 import {
   getToolRegistry,
   getToolConversationId,
   getToolRepos,
   isExecutableTool,
+  type ToolSetRegistry,
 } from "@freeanima/core/tool";
 import { REPAIR_REASON_INTERRUPT } from "@freeanima/core/llm";
 import {
@@ -49,6 +51,10 @@ type EngineOpts = {
   /** Injected LLM runtime; falls back to initLlmRuntime() singleton when omitted */
   llm?: LlmRuntime;
   tools?: OpenAiToolSchema[];
+  /** Injected tool registry; falls back to getToolRegistry() when omitted */
+  toolRegistry?: ToolSetRegistry;
+  /** Injected PG repos for compression; falls back to getToolRepos() when omitted */
+  toolRepos?: PgRepositories;
   /** Tool names allowed by capability mask (ResolvedMask.allowed_tools); no fallback block when unset */
   toolMask?: { allowedTools: readonly string[] };
   /** Executable tool names (cached + staged toolsets); no loaded gate when unset */
@@ -62,6 +68,14 @@ type EngineOpts = {
 };
 
 export type RuntimeToolMask = NonNullable<EngineOpts["toolMask"]>;
+
+function resolveToolRegistry(opts?: Pick<EngineOpts, "toolRegistry">): ToolSetRegistry {
+  return opts?.toolRegistry ?? getToolRegistry();
+}
+
+function resolveToolRepos(opts?: Pick<EngineOpts, "toolRepos">): PgRepositories | undefined {
+  return opts?.toolRepos ?? getToolRepos();
+}
 
 function withReasoning(
   msg: AssistantMessage,
@@ -102,14 +116,15 @@ function checkShouldStop(opts?: Pick<EngineOpts, "signal" | "shouldStop">): void
 }
 
 function prepareEngine(
-  opts?: Pick<EngineOpts, "model" | "tools" | "config">,
+  opts?: Pick<EngineOpts, "model" | "tools" | "config" | "toolRegistry">,
 ): [OpenAiToolSchema[], string] {
-  const missing = getToolRegistry().checkEnvRequirements();
+  const registry = resolveToolRegistry(opts);
+  const missing = registry.checkEnvRequirements();
   if (missing.length) {
     throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
   }
   const schemas: OpenAiToolSchema[] =
-    opts?.tools && opts.tools.length > 0 ? opts.tools : getToolRegistry().openaiSchemas();
+    opts?.tools && opts.tools.length > 0 ? opts.tools : registry.openaiSchemas();
   const cfg = opts?.config ?? getActiveConfig().data;
   const resolved = opts?.model ?? getProfileHopModel(cfg, PROFILE_CHAT);
   return [schemas, resolved];
@@ -159,11 +174,10 @@ async function persistToolRound(
 async function afterRuntimeMessage(
   messages: StoredMessage[],
   msg: StoredMessage,
-  opts?: {
-    model?: string;
-    tools?: OpenAiToolSchema[];
-    onMessageAppended?: (msg: StoredMessage) => void | Promise<void>;
-  },
+  opts?: Pick<
+    EngineOpts,
+    "model" | "tools" | "toolRepos" | "onMessageAppended" | "onToolRoundComplete"
+  >,
 ): Promise<void> {
   await persistMessages([msg], opts);
   const conversationId = getToolConversationId();
@@ -177,7 +191,7 @@ async function afterRuntimeMessage(
   const model = opts?.model;
   const tools = opts?.tools;
   if (model && tools) {
-    const repos = getToolRepos();
+    const repos = resolveToolRepos(opts);
     if (repos) {
       await maybeApplyEmergencyCompression(repos, conversationId, messages, { model, tools });
     }
@@ -187,7 +201,7 @@ async function afterRuntimeMessage(
 async function afterToolRoundBatch(
   messages: StoredMessage[],
   batch: StoredMessage[],
-  opts?: { model?: string; tools?: OpenAiToolSchema[] },
+  opts?: Pick<EngineOpts, "model" | "tools" | "toolRepos">,
 ): Promise<void> {
   const conversationId = getToolConversationId();
   if (!conversationId) return;
@@ -197,7 +211,7 @@ async function afterToolRoundBatch(
   const model = opts?.model;
   const tools = opts?.tools;
   if (model && tools) {
-    const repos = getToolRepos();
+    const repos = resolveToolRepos(opts);
     if (repos) {
       await maybeApplyEmergencyCompression(repos, conversationId, messages, { model, tools });
     }
@@ -411,7 +425,7 @@ export async function* runStream(
         const argsResult = parseToolArgs(tc.function.arguments);
         const fnArgs = argsResult.ok ? argsResult.data : {};
         yield { event: "tool_begin", data: { name: fnName, args: fnArgs } };
-        const tool = getToolRegistry().getTool(fnName);
+        const tool = resolveToolRegistry(opts).getTool(fnName);
         let result: string;
         if (opts?.toolMask && !opts.toolMask.allowedTools.includes(fnName)) {
           result = toolError("Tool restricted by capability mask");

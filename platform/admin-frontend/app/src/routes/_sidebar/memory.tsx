@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
 import type { ServiceStatus } from "@freeanima/admin-api/api";
 import { FormField, FormFieldset } from "@freeanima/satellite-sdk/form";
 import { useMemo, useState } from "react";
@@ -31,6 +31,35 @@ const QUICK_LINKS = [
   { to: "/fts", label: () => m.admin_nav_fts() },
   { to: "/conversations", label: () => m.admin_nav_conversations() },
 ] as const;
+
+const MEMORY_BROWSE_TABS = [
+  { to: "/memory", label: () => m.admin_nav_memory() },
+  { to: "/semantic-memory", label: () => m.admin_nav_semantic() },
+  { to: "/limbic-memory", label: () => m.admin_nav_limbic() },
+  { to: "/autobiographical-memory", label: () => m.admin_nav_autobio() },
+  { to: "/dream", label: () => m.admin_nav_dream() },
+  { to: "/conversations", label: () => m.admin_nav_conversations() },
+  { to: "/fts", label: () => m.admin_nav_fts() },
+] as const;
+
+function MemoryBrowseTabs() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  return (
+    <div className="tabs tabs-boxed tabs-sm mb-4 flex-wrap h-auto gap-1">
+      {MEMORY_BROWSE_TABS.map((tab) => {
+        const active =
+          tab.to === "/memory"
+            ? pathname === "/memory"
+            : pathname === tab.to || pathname.startsWith(`${tab.to}/`);
+        return (
+          <Link key={tab.to} to={tab.to} className={`tab ${active ? "tab-active" : ""}`}>
+            {tab.label()}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
 
 function MemoryPage() {
   const { status } = Route.useLoaderData();
@@ -87,6 +116,7 @@ function MemoryPage() {
 
   return (
     <div>
+      <MemoryBrowseTabs />
       <div className="mb-4">
         <h2 className="text-lg font-bold">{m.admin_nav_memory()}</h2>
         <p className="text-sm text-base-content/60 mt-1">{m.admin_memory_desc()}</p>

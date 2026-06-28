@@ -30,7 +30,7 @@ export {
   type AcpAsyncTaskStatus,
 } from "./async-task.ts";
 export { ACPClient, ACPError, type RunPromptOptions } from "./client.ts";
-export { AcpManager, getAcpManager, registerAcpTools } from "./manager.ts";
+export { AcpManager, getAcpManager, registerAcpTools, resetAcpManagerForTests } from "./manager.ts";
 export type {
   AcpProgressDeliveryPort,
   AcpProgressDeliveryResult,

@@ -136,6 +136,12 @@ export function getAcpManager(): AcpManager {
   return defaultManager;
 }
 
+/** Tier 2 test injection — resets singleton between unit/integration cases */
+export function resetAcpManagerForTests(): void {
+  defaultManager?.stopProgressTicker();
+  defaultManager = null;
+}
+
 function parseMode(raw: unknown): AcpCursorMode | undefined {
   const s = String(raw ?? "")
     .trim()

@@ -21,7 +21,7 @@
 
 Directional heuristics for _what_ FreeAnima should feel like. Mechanisms and cognitive architecture live in [`docs/concepts/`](docs/concepts/) — related, but not a 1:1 rule list.
 
-- **Platform-native UX** — Mobile and desktop are **separate interaction and layout designs**, not one responsive skin stretched across form factors. Shared contracts (API, SAP, settings keys) may exist; presentation and interaction patterns should fit each platform.
+- **Platform-native UX** — Mobile and desktop are **separate interaction and layout designs**, not one responsive skin stretched across form factors. Shared contracts (API, SAP, settings keys) may exist; presentation and interaction patterns should fit each platform. **Two-layer model:** shell/capability layer (Electron, Capacitor, companion, Hub wiring) is platform-native today; **UI layer** uses a shared SPA (`packages/shell-ui` + satellites) but **must branch on `detectPlatform()`** (not viewport breakpoints alone) for nav, information architecture, and primary layouts. Responsive CSS is allowed only as a **desktop window-resize** aid, not as the mobile layout selector.
 - **Concept convergence over feature sprawl** — As capabilities grow, **resist cognitive overload**: keep a small set of core concepts visible and stable; new features should map onto existing mental models rather than multiplying parallel abstractions in the UI.
 
 ## Code implementation principles

@@ -55,7 +55,7 @@ Debug APK：`android/app/build/outputs/apk/debug/app-debug.apk`
 
 1. 首次启动进入 **Hub 设置**，填写 PC 局域网地址，如 `http://192.168.1.10:2658`，以及 Hub `remote_auth.token`
 2. **测试连接** → **保存并进入**
-3. 顶栏切换 **聊天室** / **管理台**
+3. 底栏切换 **Chat / Tasks / Email / Notifications**；**More** 进入管理台与设置
 4. **设置 → 调试**：配置 Sentry DSN、移动 vConsole、查看 DevTools 说明
 
 ## 架构

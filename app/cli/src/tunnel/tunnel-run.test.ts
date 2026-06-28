@@ -1,7 +1,7 @@
-import { describe, expect, test } from "bun:test";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { describe, expect, test, afterEach } from "bun:test";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { createTempDir, removeTempDir } from "@freeanima/core/util";
 import {
   cloudflaredRunArgv,
   cloudflaredRunExecStart,
@@ -11,16 +11,30 @@ import {
 /** 测试用 connector token（非真实凭证，避免 gitleaks 误报） */
 const TEST_CONNECTOR_TOKEN = "anima-test-connector-token";
 
+const tempDirs: string[] = [];
+
+afterEach(() => {
+  while (tempDirs.length) {
+    removeTempDir(tempDirs.pop()!);
+  }
+});
+
+function tempDir(prefix: string): string {
+  const dir = createTempDir(prefix);
+  tempDirs.push(dir);
+  return dir;
+}
+
 describe("tunnel-run", () => {
   test("readTunnelConnectorToken reads token file", () => {
-    const dir = mkdtempSync(join(tmpdir(), "anima-tunnel-"));
+    const dir = tempDir("anima-tunnel-");
     const path = join(dir, "credentials.json");
     writeFileSync(path, TEST_CONNECTOR_TOKEN, "utf-8");
     expect(readTunnelConnectorToken(path)).toBe(TEST_CONNECTOR_TOKEN);
   });
 
   test("cloudflaredRunArgv uses --token for connector token file", () => {
-    const dir = mkdtempSync(join(tmpdir(), "anima-tunnel-"));
+    const dir = tempDir("anima-tunnel-");
     const creds = join(dir, "credentials.json");
     writeFileSync(creds, TEST_CONNECTOR_TOKEN, "utf-8");
     const argv = cloudflaredRunArgv("/bin/cloudflared", {
@@ -31,7 +45,7 @@ describe("tunnel-run", () => {
   });
 
   test("cloudflaredRunExecStart reads token from file at runtime", () => {
-    const dir = mkdtempSync(join(tmpdir(), "anima-tunnel-exec-"));
+    const dir = tempDir("anima-tunnel-exec-");
     const creds = join(dir, "credentials.json");
     writeFileSync(creds, TEST_CONNECTOR_TOKEN, "utf-8");
     const exec = cloudflaredRunExecStart("/bin/cloudflared", {

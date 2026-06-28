@@ -1,3 +1,4 @@
+import { createEnginePort } from "./engine-port-registry.ts";
 import type { DeepSleepChangeLog } from "./deep-sleep/types.ts";
 
 /** Deep sleep single-round LLM input (similar to light sleep, but userMessages has 4 entries) */
@@ -15,23 +16,8 @@ export type DeepSleepEngineResult = {
 
 export type DeepSleepEngineFn = (input: DeepSleepEngineInput) => Promise<DeepSleepEngineResult>;
 
-let engineFn: DeepSleepEngineFn | null = null;
+const port = createEnginePort<DeepSleepEngineInput, DeepSleepEngineResult>("Deep sleep LLM");
 
-export function registerDeepSleepEngine(fn: DeepSleepEngineFn): void {
-  engineFn = fn;
-}
-
-export function resetDeepSleepEngineForTests(): void {
-  engineFn = null;
-}
-
-export async function runDeepSleepEngine(
-  input: DeepSleepEngineInput,
-): Promise<DeepSleepEngineResult> {
-  if (!engineFn) {
-    throw new Error(
-      "Deep sleep LLM not configured: call registerDeepSleepEngine() at service startup",
-    );
-  }
-  return engineFn(input);
-}
+export const registerDeepSleepEngine = port.register.bind(port);
+export const resetDeepSleepEngineForTests = port.resetForTests.bind(port);
+export const runDeepSleepEngine = port.run.bind(port);

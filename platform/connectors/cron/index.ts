@@ -9,6 +9,7 @@ import {
   initCronModule,
   isCronModuleInitialized,
   loadAllJobs,
+  resetCronModuleForTests,
   stopCronModule,
 } from "./module.ts";
 import { parseSchedule } from "./schedule.ts";
@@ -88,7 +89,13 @@ export async function resumeJob(jobId: string): Promise<boolean> {
   return ok;
 }
 
-export { ensureBuiltinCronJobs, initCronModule, stopCronModule, isCronModuleInitialized };
+export {
+  ensureBuiltinCronJobs,
+  initCronModule,
+  stopCronModule,
+  resetCronModuleForTests,
+  isCronModuleInitialized,
+};
 
 export { cronJobDataSchema, cronJobsFileSchema, type CronJobData } from "./schema.ts";
 export { CronJob } from "./models.ts";
