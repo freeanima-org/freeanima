@@ -14,6 +14,7 @@ export function createSemanticMemory(partial: {
   observed_at?: string | null;
   occurred_at?: string | null;
   status?: string;
+  reference_count?: number;
   created?: string;
   updated?: string;
 }): SemanticMemory {
@@ -27,6 +28,7 @@ export function createSemanticMemory(partial: {
     observed_at: partial.observed_at ?? now,
     occurred_at: partial.occurred_at ?? null,
     status: partial.status === "deprecated" ? "deprecated" : "active",
+    reference_count: partial.reference_count ?? 0,
     created: partial.created ?? now,
     updated: partial.updated ?? now,
   };

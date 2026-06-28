@@ -42,20 +42,24 @@ Do **not** use `drizzleSql.raw` with user-controlled input.
 Derive storage row types from Drizzle schema — do not hand-write column structs in repos:
 
 ```typescript
-export type TaskDbRow = typeof tasks.$inferSelect;
+export type SelfBlockDbRow = typeof selfBlocks.$inferSelect;
 ```
 
-Reference: [`platform/connectors/db-pg/tasks/mappers/task-mapper.ts`](../../platform/connectors/db-pg/tasks/mappers/task-mapper.ts).
+Reference: [`self-mapper.ts`](../../platform/connectors/db-pg/self-layer/mappers/self-mapper.ts).
 
 Patch objects: `Partial<typeof {table}.$inferInsert>`.
+
+### Port row SSOT
+
+Process-internal row types live in [`core/src/repos/schemas/`](../../core/src/repos/schemas/) as Zod schemas; ports re-export `z.infer`. Mappers call `xxxRowSchema.parse()` after timestamp normalization — **no field rename**.
 
 ### Computed columns (FTS rank, aggregates)
 
 ```typescript
-type SemanticMemoryFtsRow = typeof semanticMemory.$inferSelect & { rank: number };
+type SemanticFtsHit = SemanticMemoryRow & { rank: number };
 ```
 
-Prefer quoted SQL aliases aligned with schema camelCase (`AS "referenceCount"`) so raw rows map cleanly; otherwise centralize snake→camel in one mapper — do not duplicate dual-key fields across repos.
+FTS / hybrid SELECT use Drizzle `getColumns(table)` or snake_case column refs aligned with schema — **no camelCase SQL aliases**. Extend port row types with `{ rank }` / `{ docKey }` at search layer, not dual-key DbRow structs.
 
 ---
 
@@ -71,7 +75,7 @@ Link to source — do not maintain function inventories here.
 | PG function in predicate (`ILIKE`, `CASE` order) | [`task-crud-repo.ts`](../../platform/connectors/db-pg/tasks/repos/task-crud-repo.ts) — query / priority sort                                                                                                                                 |
 | Text array overlap                               | Drizzle `arrayOverlaps(column, values)` in `.where()` — verify with integration test on bun-sql driver ([drizzle#4034](https://github.com/drizzle-team/drizzle-orm/issues/4034))                                                             |
 | FTS / hybrid search (sql subquery in ORM)        | [`fts/hybrid-raw.ts`](../../platform/connectors/db-pg/fts/hybrid-raw.ts), [`fts/hybrid-search.ts`](../../platform/connectors/db-pg/fts/hybrid-search.ts)                                                                                     |
-| Domain row mapping                               | [`task-mapper.ts`](../../platform/connectors/db-pg/tasks/mappers/task-mapper.ts)                                                                                                                                                             |
+| Domain row mapping                               | [`self-mapper.ts`](../../platform/connectors/db-pg/self-layer/mappers/self-mapper.ts), [`semantic-mapper.ts`](../../platform/connectors/db-pg/semantic-memory/mappers/semantic-mapper.ts)                                                    |
 
 Table shapes: [`core/src/db/schema/`](../../core/src/db/schema/). Port types: [`core/src/repos/ports/`](../../core/src/repos/ports/).
 

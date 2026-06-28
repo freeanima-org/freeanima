@@ -31,7 +31,7 @@ test("buildSemanticConditions composes filters", () => {
   const conditions = buildSemanticConditions({
     types: ["world"],
     status: "active",
-    sourceConversations: ["sess-a"],
+    source_conversations: ["sess-a"],
   });
   expect(conditions).toHaveLength(3);
   expect(and(...conditions)).toBeDefined();

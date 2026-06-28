@@ -39,30 +39,30 @@ function rowToMessageRowView(row: {
 }
 
 export async function appendMessage(
-  conversationId: string,
+  conversation_id: string,
   msg: StoredMessage,
 ): Promise<ConversationMessage> {
   const db = getDb();
-  const insert = messageToInsert(conversationId, msg);
-  const ftsSegmented = await resolveFtsSegmentedForWrite(extractIndexableContent(insert.payload));
+  const insert = messageToInsert(conversation_id, msg);
+  const fts_segmented = await resolveFtsSegmentedForWrite(extractIndexableContent(insert.payload));
   const inserted = await db
     .insert(messages)
-    .values({ ...insert, ftsSegmented })
-    .onConflictDoNothing({ target: [messages.conversationId, messages.pos] })
+    .values({ ...insert, fts_segmented })
+    .onConflictDoNothing({ target: [messages.conversation_id, messages.pos] })
     .returning();
   if (inserted.length) {
     const row = inserted[0]!;
     const content = extractIndexableContent(row.payload);
     if (content) {
       scheduleMessageEmbedding(row.id, content);
-      const createdAt =
+      const created_at =
         typeof row.payload.timestamp === "string" ? row.payload.timestamp : undefined;
-      const skipRefs = await isCronSession(conversationId);
+      const skipRefs = await isCronSession(conversation_id);
       await recordMessageReferences({
         message_id: row.id,
-        conversation_id: conversationId,
+        conversation_id: conversation_id,
         content,
-        created_at: createdAt,
+        created_at: created_at,
         skip_reference_count: skipRefs,
       });
     }
@@ -72,25 +72,25 @@ export async function appendMessage(
   const rows = await db
     .select()
     .from(messages)
-    .where(and(eq(messages.conversationId, conversationId), eq(messages.pos, insert.pos)))
+    .where(and(eq(messages.conversation_id, conversation_id), eq(messages.pos, insert.pos)))
     .limit(1);
   if (!rows.length) {
     throw new Error(
-      `Row not found after messages write: session=${conversationId} pos=${insert.pos}`,
+      `Row not found after messages write: session=${conversation_id} pos=${insert.pos}`,
     );
   }
   return rowToMessage(rows[0]!);
 }
 
 export async function getMessageContentById(
-  conversationId: string,
-  messageId: string,
+  conversation_id: string,
+  message_id: string,
 ): Promise<string | null> {
   const db = getDb();
   const rows = await db
     .select({ payload: messages.payload })
     .from(messages)
-    .where(and(eq(messages.conversationId, conversationId), eq(messages.id, messageId)))
+    .where(and(eq(messages.conversation_id, conversation_id), eq(messages.id, message_id)))
     .limit(1);
   if (!rows.length) return null;
   const payload = rows[0]!.payload;
@@ -100,7 +100,7 @@ export async function getMessageContentById(
 }
 
 export async function getMessageContentsByIds(
-  conversationId: string,
+  conversation_id: string,
   messageIds: string[],
 ): Promise<Record<string, string>> {
   const uniqueIds = [...new Set(messageIds.filter(Boolean))];
@@ -109,7 +109,7 @@ export async function getMessageContentsByIds(
   const rows = await db
     .select({ id: messages.id, payload: messages.payload })
     .from(messages)
-    .where(and(eq(messages.conversationId, conversationId), inArray(messages.id, uniqueIds)));
+    .where(and(eq(messages.conversation_id, conversation_id), inArray(messages.id, uniqueIds)));
   const out: Record<string, string> = {};
   for (const row of rows) {
     const payload = row.payload;
@@ -123,20 +123,20 @@ export async function getMessageContentsByIds(
 }
 
 export async function appendMessageReturningId(
-  conversationId: string,
+  conversation_id: string,
   msg: StoredMessage,
 ): Promise<{ messageId: string }> {
   const out: StoredMessage = { ...msg };
   if (out.pos === undefined && out.role !== "conversation_meta") {
-    out.pos = await nextMessagePos(conversationId);
+    out.pos = await nextMessagePos(conversation_id);
   }
   const db = getDb();
-  const insert = messageToInsert(conversationId, out);
-  const ftsSegmented = await resolveFtsSegmentedForWrite(extractIndexableContent(insert.payload));
+  const insert = messageToInsert(conversation_id, out);
+  const fts_segmented = await resolveFtsSegmentedForWrite(extractIndexableContent(insert.payload));
   const inserted = await db
     .insert(messages)
-    .values({ ...insert, ftsSegmented })
-    .onConflictDoNothing({ target: [messages.conversationId, messages.pos] })
+    .values({ ...insert, fts_segmented })
+    .onConflictDoNothing({ target: [messages.conversation_id, messages.pos] })
     .returning();
   if (inserted.length) {
     return { messageId: inserted[0]!.id };
@@ -145,68 +145,68 @@ export async function appendMessageReturningId(
   const rows = await db
     .select({ id: messages.id })
     .from(messages)
-    .where(and(eq(messages.conversationId, conversationId), eq(messages.pos, insert.pos)))
+    .where(and(eq(messages.conversation_id, conversation_id), eq(messages.pos, insert.pos)))
     .limit(1);
   if (!rows.length) {
     throw new Error(
-      `Row not found after messages write: session=${conversationId} pos=${insert.pos}`,
+      `Row not found after messages write: session=${conversation_id} pos=${insert.pos}`,
     );
   }
   return { messageId: rows[0]!.id };
 }
 
 export async function updateMessageContent(
-  conversationId: string,
-  messageId: string,
+  conversation_id: string,
+  message_id: string,
   content: string,
 ): Promise<void> {
   const db = getDb();
   const rows = await db
     .select({ id: messages.id, payload: messages.payload })
     .from(messages)
-    .where(and(eq(messages.conversationId, conversationId), eq(messages.id, messageId)))
+    .where(and(eq(messages.conversation_id, conversation_id), eq(messages.id, message_id)))
     .limit(1);
   if (!rows.length) return;
 
   const payload = rows[0]!.payload;
   if (payload.role !== "assistant" && payload.role !== "user") return;
 
-  const ftsSegmented = await resolveFtsSegmentedForWrite(content.trim());
+  const fts_segmented = await resolveFtsSegmentedForWrite(content.trim());
   await db
     .update(messages)
     .set({
       payload: { ...payload, content },
-      ftsSegmented,
+      fts_segmented,
     })
-    .where(eq(messages.id, messageId));
+    .where(eq(messages.id, message_id));
 }
 
-export async function nextMessagePos(conversationId: string): Promise<number> {
+export async function nextMessagePos(conversation_id: string): Promise<number> {
   const db = getDb();
   const rows = await db
     .select({ maxPos: sql<number>`coalesce(max(${messages.pos}), 0)` })
     .from(messages)
-    .where(eq(messages.conversationId, conversationId));
+    .where(eq(messages.conversation_id, conversation_id));
   return Number(rows[0]?.maxPos ?? 0) + 1;
 }
 
-export async function listMessages(conversationId: string): Promise<ConversationMessage[]> {
+export async function listMessages(conversation_id: string): Promise<ConversationMessage[]> {
   const db = getDb();
   const rows = await db
     .select()
     .from(messages)
-    .where(eq(messages.conversationId, conversationId))
+    .where(eq(messages.conversation_id, conversation_id))
     .orderBy(asc(messages.pos));
   return rows.map((r) => rowToMessage(r));
 }
 
 export async function listMessagesByPosRange(
-  conversationId: string,
+  conversation_id: string,
   fromPos: number,
   toPos?: number,
 ): Promise<ConversationMessage[]> {
   const db = getDb();
-  const conditions = [eq(messages.conversationId, conversationId), gte(messages.pos, fromPos)];
+  const conditions = [eq(messages.conversation_id, conversation_id), gte(messages.pos, fromPos)];
   if (toPos !== undefined) {
     conditions.push(lte(messages.pos, toPos));
   }
@@ -218,23 +218,23 @@ export async function listMessagesByPosRange(
   return rows.map((r) => rowToMessage(r));
 }
 
-export async function countMessages(conversationId: string): Promise<number> {
+export async function countMessages(conversation_id: string): Promise<number> {
   const db = getDb();
   const rows = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(messages)
-    .where(eq(messages.conversationId, conversationId));
+    .where(eq(messages.conversation_id, conversation_id));
   return Number(rows[0]?.count ?? 0);
 }
 
-export async function countUserMessages(conversationId: string): Promise<number> {
+export async function countUserMessages(conversation_id: string): Promise<number> {
   const db = getDb();
   const rows = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(messages)
     .where(
       and(
-        eq(messages.conversationId, conversationId),
+        eq(messages.conversation_id, conversation_id),
         sql`(${messages.payload})->>'role' = 'user'`,
       ),
     );
@@ -243,7 +243,7 @@ export async function countUserMessages(conversationId: string): Promise<number>
 
 /** API / history pagination: slice by pos order, avoid full listMessages */
 export async function listMessagesPage(
-  conversationId: string,
+  conversation_id: string,
   offset: number,
   limit: number,
 ): Promise<ConversationMessage[]> {
@@ -253,7 +253,7 @@ export async function listMessagesPage(
   const rows = await db
     .select()
     .from(messages)
-    .where(eq(messages.conversationId, conversationId))
+    .where(eq(messages.conversation_id, conversation_id))
     .orderBy(asc(messages.pos))
     .offset(safeOffset)
     .limit(safeLimit);
@@ -261,21 +261,21 @@ export async function listMessagesPage(
 }
 
 export async function findMessagePos(
-  conversationId: string,
-  messageId: string,
+  conversation_id: string,
+  message_id: string,
 ): Promise<number | null> {
   const db = getDb();
   const rows = await db
     .select({ pos: messages.pos })
     .from(messages)
-    .where(and(eq(messages.conversationId, conversationId), eq(messages.id, messageId)))
+    .where(and(eq(messages.conversation_id, conversation_id), eq(messages.id, message_id)))
     .limit(1);
   if (!rows.length) return null;
   return Number(rows[0]!.pos);
 }
 
 export async function listMessageRowsPage(
-  conversationId: string,
+  conversation_id: string,
   offset: number,
   limit: number,
 ): Promise<MessageRowView[]> {
@@ -289,7 +289,7 @@ export async function listMessageRowsPage(
       payload: messages.payload,
     })
     .from(messages)
-    .where(eq(messages.conversationId, conversationId))
+    .where(eq(messages.conversation_id, conversation_id))
     .orderBy(asc(messages.pos))
     .offset(safeOffset)
     .limit(safeLimit);
@@ -297,7 +297,7 @@ export async function listMessageRowsPage(
 }
 
 export async function listMessageRowsFromPos(
-  conversationId: string,
+  conversation_id: string,
   fromPos: number,
   limit: number,
 ): Promise<MessageRowView[]> {
@@ -310,33 +310,33 @@ export async function listMessageRowsFromPos(
       payload: messages.payload,
     })
     .from(messages)
-    .where(and(eq(messages.conversationId, conversationId), gte(messages.pos, fromPos)))
+    .where(and(eq(messages.conversation_id, conversation_id), gte(messages.pos, fromPos)))
     .orderBy(asc(messages.pos))
     .limit(safeLimit);
   return rows.map((r) => rowToMessageRowView(r));
 }
 
 /** Latest message timestamp (avoids full listMessages load) */
-export async function lastMessageTimestamp(conversationId: string): Promise<string | null> {
+export async function lastMessageTimestamp(conversation_id: string): Promise<string | null> {
   const db = getDb();
   const rows = await db
     .select({
       ts: sql<string | null>`max((${messages.payload}->>'timestamp')::timestamptz)::text`,
     })
     .from(messages)
-    .where(eq(messages.conversationId, conversationId));
+    .where(eq(messages.conversation_id, conversation_id));
   return rows[0]?.ts ?? null;
 }
 
 export async function truncateMessagesAfter(
-  conversationId: string,
+  conversation_id: string,
   keepThroughPos: number,
 ): Promise<void> {
   const db = getDb();
   await db
     .delete(messages)
     .where(
-      and(eq(messages.conversationId, conversationId), sql`${messages.pos} > ${keepThroughPos}`),
+      and(eq(messages.conversation_id, conversation_id), sql`${messages.pos} > ${keepThroughPos}`),
     );
 }
 
@@ -344,7 +344,7 @@ export async function truncateMessagesAfter(
  * Shift message pos > afterPos by delta (avoid unique conflicts: positive delta high-to-low, negative low-to-high).
  */
 export async function shiftMessagePositions(
-  conversationId: string,
+  conversation_id: string,
   afterPos: number,
   delta: number,
 ): Promise<void> {
@@ -354,7 +354,7 @@ export async function shiftMessagePositions(
     const rows = await tx
       .select({ id: messages.id, pos: messages.pos })
       .from(messages)
-      .where(and(eq(messages.conversationId, conversationId), sql`${messages.pos} > ${afterPos}`))
+      .where(and(eq(messages.conversation_id, conversation_id), sql`${messages.pos} > ${afterPos}`))
       .orderBy(delta > 0 ? desc(messages.pos) : asc(messages.pos));
     for (const row of rows) {
       await tx

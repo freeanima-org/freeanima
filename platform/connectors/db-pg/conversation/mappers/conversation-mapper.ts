@@ -51,7 +51,7 @@ const META_KNOWN_KEYS = new Set([
 
 /** conversation_meta → PG insert row */
 export function conversationMetaToInsert(
-  conversationId: string,
+  conversation_id: string,
   meta: ConversationMetaMessage,
 ): ConversationInsert {
   const passthrough: Record<string, unknown> = {};
@@ -76,8 +76,8 @@ export function conversationMetaToInsert(
     delete extra.gateway_tool_display;
   }
 
-  const cachedToolsets = conversationCachedToolsetsSchema.parse(meta.cached_toolsets ?? []);
-  const stagedToolsets = conversationStagedToolsetsSchema.parse(meta.staged_toolsets ?? []);
+  const cached_toolsets = conversationCachedToolsetsSchema.parse(meta.cached_toolsets ?? []);
+  const staged_toolsets = conversationStagedToolsetsSchema.parse(meta.staged_toolsets ?? []);
   const todos = conversationTodoStoreSchema.parse(meta.todos ?? { items: [], next_id: 1 });
   const functions = conversationFunctionsSchema.parse(meta.functions ?? []);
   const compressionRaw = pgJsonbOrNull(meta.compression);
@@ -90,33 +90,33 @@ export function conversationMetaToInsert(
   const goalParsed = goalRaw ? conversationGoalSchema.parse(goalRaw) : null;
 
   return {
-    id: conversationId,
+    id: conversation_id,
     model: meta.model,
     title: pgTextOrNull(meta.title),
     cwd: pgTextOrNull(meta.cwd),
-    systemPrompt: pgTextOrNull(meta.system_prompt),
-    platformInfo: buildPlatformInfo(
+    system_prompt: pgTextOrNull(meta.system_prompt),
+    platform_info: buildPlatformInfo(
       meta.platform,
       Object.keys(extra).length > 0 ? extra : undefined,
     ),
     compression: compressionParsed,
     todos,
-    awaitingClarify: awaitingParsed,
-    acpTasks: acpParsed,
+    awaiting_clarify: awaitingParsed,
+    acp_tasks: acpParsed,
     goal: goalParsed,
-    cachedToolsets,
-    stagedToolsets,
+    cached_toolsets,
+    staged_toolsets,
     functions,
     debug: meta.debug === true,
-    createdAt: normalizePgTimestamp(meta.timestamp),
-    updatedAt: pgNowIso(),
+    created_at: normalizePgTimestamp(meta.timestamp),
+    updated_at: pgNowIso(),
   };
 }
 
 /** PG row → conversation_meta (synthetic role for existing code compatibility) */
 export function rowToConversationMeta(row: unknown): ConversationMetaMessage {
   const parsed = conversationSelectSchema.parse(row);
-  const { platform, platform_extra } = splitPlatformInfo(parsed.platformInfo);
+  const { platform, platform_extra } = splitPlatformInfo(parsed.platform_info);
   const capabilityMaskRaw = platform_extra?.capability_mask;
   const capability_mask =
     capabilityMaskRaw !== undefined ? capabilityMaskSchema.parse(capabilityMaskRaw) : undefined;
@@ -135,20 +135,20 @@ export function rowToConversationMeta(row: unknown): ConversationMetaMessage {
   }
   const base = {
     role: "conversation_meta" as const,
-    timestamp: parsed.createdAt,
+    timestamp: parsed.created_at,
     model: parsed.model,
     platform,
     title: parsed.title ?? undefined,
     cwd: parsed.cwd ?? undefined,
-    system_prompt: parsed.systemPrompt ?? undefined,
+    system_prompt: parsed.system_prompt ?? undefined,
     compression: parsed.compression ?? undefined,
     todos: parsed.todos,
-    awaiting_clarify: parsed.awaitingClarify ?? undefined,
-    acp_tasks: parsed.acpTasks ?? undefined,
+    awaiting_clarify: parsed.awaiting_clarify ?? undefined,
+    acp_tasks: parsed.acp_tasks ?? undefined,
     goal: parsed.goal ?? undefined,
     acp_tasks_handled_at: handledAt,
-    cached_toolsets: parsed.cachedToolsets,
-    staged_toolsets: parsed.stagedToolsets,
+    cached_toolsets: parsed.cached_toolsets,
+    staged_toolsets: parsed.staged_toolsets,
     functions: parsed.functions,
     platform_extra: restExtra && Object.keys(restExtra).length > 0 ? restExtra : undefined,
     capability_mask,
@@ -161,13 +161,13 @@ export function rowToConversationMeta(row: unknown): ConversationMetaMessage {
 export function patchCompression(compression: CompressionState): Partial<ConversationInsert> {
   return {
     compression,
-    updatedAt: pgNowIso(),
+    updated_at: pgNowIso(),
   };
 }
 
 export function patchTodos(todos: ConversationTodoStore): Partial<ConversationInsert> {
   return {
     todos: conversationTodoStoreSchema.parse(todos),
-    updatedAt: pgNowIso(),
+    updated_at: pgNowIso(),
   };
 }

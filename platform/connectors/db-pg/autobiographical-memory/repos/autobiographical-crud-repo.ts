@@ -62,7 +62,7 @@ function buildAutobiographicalConditions(
     conditions.push(eq(autobiographicalMemory.significance, significance));
   }
   if (sourceSession) {
-    conditions.push(arrayOverlaps(autobiographicalMemory.sourceConversations, [sourceSession]));
+    conditions.push(arrayOverlaps(autobiographicalMemory.source_conversations, [sourceSession]));
   }
   if (query) {
     const pattern = `%${escapeIlikePattern(query)}%`;
@@ -87,21 +87,21 @@ export async function createAutobiographicalMemory(
   const id = row.id?.trim() || randomUUID();
   const now = formatCstIso();
   const indexText = autobiographicalIndexText(title, content);
-  const ftsSegmented = await resolveFtsSegmentedForWrite(indexText);
+  const fts_segmented = await resolveFtsSegmentedForWrite(indexText);
   const db = getDb();
   await db.insert(autobiographicalMemory).values({
     id,
     title,
     content,
-    ftsSegmented,
+    fts_segmented,
     significance: normalizeSignificance(row.significance),
-    periodStart: row.period_start ?? null,
-    periodEnd: row.period_end ?? null,
-    sourceFacts: normalizeStringArray(row.source_semantic_memory),
-    sourceConversations: normalizeStringArray(row.source_conversations),
+    period_start: row.period_start ?? null,
+    period_end: row.period_end ?? null,
+    source_facts: normalizeStringArray(row.source_semantic_memory),
+    source_conversations: normalizeStringArray(row.source_conversations),
     status: "active",
-    createdAt: new Date(now),
-    updatedAt: new Date(now),
+    created_at: new Date(now),
+    updated_at: new Date(now),
   });
   scheduleAutobiographicalMemoryEmbedding(id, indexText);
   return id;
@@ -129,7 +129,7 @@ export async function deprecateAutobiographicalMemory(id: string): Promise<boole
     .update(autobiographicalMemory)
     .set({
       status: "deprecated",
-      updatedAt: new Date(now),
+      updated_at: new Date(now),
     })
     .where(eq(autobiographicalMemory.id, trimmed))
     .returning({ id: autobiographicalMemory.id });
@@ -161,7 +161,7 @@ export async function listActiveAutobiographicalMemory(opts?: {
       .select()
       .from(autobiographicalMemory)
       .where(eq(autobiographicalMemory.status, "active"))
-      .orderBy(desc(autobiographicalMemory.updatedAt))
+      .orderBy(desc(autobiographicalMemory.updated_at))
       .limit(limit);
     return rows.map(mapAutobiographicalMemoryRow);
   }
@@ -170,7 +170,7 @@ export async function listActiveAutobiographicalMemory(opts?: {
     .select()
     .from(autobiographicalMemory)
     .where(eq(autobiographicalMemory.status, "active"))
-    .orderBy(asc(significanceOrderSql), desc(autobiographicalMemory.updatedAt))
+    .orderBy(asc(significanceOrderSql), desc(autobiographicalMemory.updated_at))
     .limit(limit);
   return rows.map(mapAutobiographicalMemoryRow);
 }
@@ -189,24 +189,24 @@ export async function listAutobiographicalMemoryCreatedSince(
     .where(
       and(
         eq(autobiographicalMemory.status, "active"),
-        sql`${autobiographicalMemory.createdAt} >= ${since}::timestamptz`,
+        sql`${autobiographicalMemory.created_at} >= ${since}::timestamptz`,
       ),
     )
-    .orderBy(desc(autobiographicalMemory.createdAt))
+    .orderBy(desc(autobiographicalMemory.created_at))
     .limit(limit);
   return rows.map(mapAutobiographicalMemoryRow);
 }
 
 export async function listAutobiographicalMemoryBySourceSemanticMemory(
-  semanticMemoryIds: string[],
+  semantic_memory_ids: string[],
   opts?: { status?: AutobiographicalStatus },
 ): Promise<AutobiographicalMemoryRow[]> {
-  const ids = semanticMemoryIds.map((s) => s.trim()).filter(Boolean);
+  const ids = semantic_memory_ids.map((s) => s.trim()).filter(Boolean);
   if (!ids.length) return [];
 
   const status = opts?.status ?? "active";
   const conditions = [
-    arrayOverlaps(autobiographicalMemory.sourceFacts, ids),
+    arrayOverlaps(autobiographicalMemory.source_facts, ids),
     eq(autobiographicalMemory.status, status),
   ];
 
@@ -215,7 +215,7 @@ export async function listAutobiographicalMemoryBySourceSemanticMemory(
     .select()
     .from(autobiographicalMemory)
     .where(and(...conditions))
-    .orderBy(desc(autobiographicalMemory.updatedAt));
+    .orderBy(desc(autobiographicalMemory.updated_at));
   return rows.map(mapAutobiographicalMemoryRow);
 }
 
@@ -228,7 +228,7 @@ export async function listAutobiographicalMemoryBySourceSessions(
 
   const status = opts?.status ?? "active";
   const conditions = [
-    arrayOverlaps(autobiographicalMemory.sourceConversations, ids),
+    arrayOverlaps(autobiographicalMemory.source_conversations, ids),
     eq(autobiographicalMemory.status, status),
   ];
 
@@ -237,7 +237,7 @@ export async function listAutobiographicalMemoryBySourceSessions(
     .select()
     .from(autobiographicalMemory)
     .where(and(...conditions))
-    .orderBy(desc(autobiographicalMemory.updatedAt));
+    .orderBy(desc(autobiographicalMemory.updated_at));
   return rows.map(mapAutobiographicalMemoryRow);
 }
 
@@ -253,7 +253,7 @@ export async function listAutobiographicalMemory(
     .select()
     .from(autobiographicalMemory)
     .where(and(...conditions))
-    .orderBy(desc(autobiographicalMemory.updatedAt))
+    .orderBy(desc(autobiographicalMemory.updated_at))
     .offset(offset)
     .limit(limit);
   return rows.map(mapAutobiographicalMemoryRow);

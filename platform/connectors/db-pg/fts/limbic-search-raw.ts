@@ -6,10 +6,7 @@ import { limbicMemory } from "@freeanima/core/db/schema";
 import { formatPgVector } from "../embedding/format.ts";
 import { getDb } from "../client.ts";
 import { buildFtsTsQuery } from "./query.ts";
-import {
-  mapLimbicMemoryRow,
-  type LimbicMemoryDbRow,
-} from "../limbic-memory/mappers/limbic-mapper.ts";
+import { type LimbicMemoryDbRow } from "../limbic-memory/mappers/limbic-mapper.ts";
 
 export type LimbicMemoryFtsDbRow = LimbicMemoryDbRow & { rank: number };
 
@@ -26,7 +23,7 @@ export async function searchLimbicMemoryFtsRaw(
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
   const db = getDb();
   const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
-  const rankExpr = sql<number>`ts_rank_cd(${limbicMemory.contentFts}, ${tsqueryExpr}, 32)`.as(
+  const rankExpr = sql<number>`ts_rank_cd(${limbicMemory.content_fts}, ${tsqueryExpr}, 32)`.as(
     "rank",
   );
 
@@ -36,14 +33,14 @@ export async function searchLimbicMemoryFtsRaw(
       rank: rankExpr,
     })
     .from(limbicMemory)
-    .where(sql`${limbicMemory.contentFts} @@ ${tsqueryExpr}`)
+    .where(sql`${limbicMemory.content_fts} @@ ${tsqueryExpr}`)
     .orderBy(desc(rankExpr))
     .limit(limit);
 
-  return rows.map((r) => ({ ...mapLimbicMemoryRow(r), rank: Number(r.rank) }));
+  return rows.map((r) => ({ ...r, rank: Number(r.rank) }));
 }
 
-export type TrgmLimbicHit = ReturnType<typeof mapLimbicMemoryRow> & {
+export type TrgmLimbicHit = LimbicMemoryDbRow & {
   docKey: string;
   rank: number;
 };
@@ -71,13 +68,13 @@ export async function searchLimbicMemoryTrgm(
     .limit(limit);
 
   return rows.map((r) => ({
-    ...mapLimbicMemoryRow(r),
+    ...r,
     docKey: limbicDocKey(r.id),
     rank: Number(r.rank),
   }));
 }
 
-export type VectorLimbicHit = ReturnType<typeof mapLimbicMemoryRow> & {
+export type VectorLimbicHit = LimbicMemoryDbRow & {
   docKey: string;
   rank: number;
 };
@@ -91,7 +88,7 @@ export async function searchLimbicMemoryVector(
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
   const queryVec = formatPgVector(queryEmbedding);
   const db = getDb();
-  const distanceExpr = sql`${limbicMemory.contentEmbedding} <=> ${queryVec}::vector`;
+  const distanceExpr = sql`${limbicMemory.content_embedding} <=> ${queryVec}::vector`;
   const rankExpr = sql<number>`1 - (${distanceExpr})`.as("rank");
 
   const rows = await db
@@ -100,12 +97,12 @@ export async function searchLimbicMemoryVector(
       rank: rankExpr,
     })
     .from(limbicMemory)
-    .where(isNotNull(limbicMemory.contentEmbedding))
+    .where(isNotNull(limbicMemory.content_embedding))
     .orderBy(asc(distanceExpr))
     .limit(limit);
 
   return rows.map((r) => ({
-    ...mapLimbicMemoryRow(r),
+    ...r,
     docKey: limbicDocKey(r.id),
     rank: Number(r.rank),
   }));

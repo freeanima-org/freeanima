@@ -113,10 +113,10 @@ async function createSapInstanceRegistry(repos: PgRepositories): Promise<SapInst
     const rows = await repos.sapInstance.listAll();
     registry.hydrate(
       rows.map((row) => ({
-        instanceId: row.instanceId,
-        appId: row.appId,
-        httpUrl: row.httpUrl,
-        createdAt: row.createdAt,
+        instanceId: row.instance_id,
+        appId: row.app_id,
+        httpUrl: row.http_url,
+        createdAt: row.created_at,
       })),
     );
   }

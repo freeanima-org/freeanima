@@ -88,6 +88,9 @@ export {
   DEFAULT_NOTIFICATION_RECIPIENT_ID,
   RESIDENT_PINNED_MAX,
   RESIDENT_TOP_N,
+  selfBlockRowSchema,
+  semanticFtsHitSchema,
+  semanticMemoryRowSchema,
 } from "./ports/index.ts";
 export type {
   CompressionState,

@@ -7,19 +7,19 @@ const baseRow = {
   model: "test-model",
   title: null,
   cwd: null,
-  systemPrompt: null,
-  platformInfo: null,
+  system_prompt: null,
+  platform_info: null,
   compression: null,
   todos: { items: [], next_id: 1 },
-  awaitingClarify: null,
-  acpTasks: null,
+  awaiting_clarify: null,
+  acp_tasks: null,
   goal: null,
-  cachedToolsets: [],
-  stagedToolsets: [],
+  cached_toolsets: [],
+  staged_toolsets: [],
   functions: [],
   debug: false,
-  createdAt: "2026-01-01T00:00:00Z",
-  updatedAt: "2026-01-01T00:00:00Z",
+  created_at: "2026-01-01T00:00:00Z",
+  updated_at: "2026-01-01T00:00:00Z",
 };
 
 describe("conversationSelectSchema", () => {
@@ -28,12 +28,12 @@ describe("conversationSelectSchema", () => {
   });
 
   it("accepts archivedAt null for active conversations", () => {
-    expect(() => conversationSelectSchema.parse({ ...baseRow, archivedAt: null })).not.toThrow();
+    expect(() => conversationSelectSchema.parse({ ...baseRow, archived_at: null })).not.toThrow();
   });
 
   it("accepts archivedAt string for archived conversations", () => {
     expect(() =>
-      conversationSelectSchema.parse({ ...baseRow, archivedAt: "2026-01-02T00:00:00Z" }),
+      conversationSelectSchema.parse({ ...baseRow, archived_at: "2026-01-02T00:00:00Z" }),
     ).not.toThrow();
   });
 });

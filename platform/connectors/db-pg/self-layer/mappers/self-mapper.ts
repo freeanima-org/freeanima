@@ -1,43 +1,18 @@
-import type { SelfBlockRow } from "@freeanima/core/repos";
-import {
-  normalizePgTimestamp,
-  selfBlockKeySchema,
-  type SelfBlockKey,
-} from "@freeanima/core/db/schema";
+import { selfBlocks, normalizePgTimestamp } from "@freeanima/core/db/schema";
+import { selfBlockRowSchema, type SelfBlockRow } from "@freeanima/core/repos";
 
-export type SelfBlockDbRow = {
-  block_key?: string;
-  blockKey?: string;
-  content: string;
-  locked: boolean;
-  version: number;
-  updated_by?: string | null;
-  updatedBy?: string | null;
-  created_at?: Date | string;
-  createdAt?: Date | string;
-  updated_at?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export function normalizeSelfBlockKey(raw: string): SelfBlockKey {
-  const parsed = selfBlockKeySchema.safeParse(raw.trim());
-  if (!parsed.success) {
-    throw new Error(`invalid self block key: ${raw}`);
-  }
-  return parsed.data;
-}
+export type SelfBlockDbRow = typeof selfBlocks.$inferSelect;
 
 export function mapSelfBlockRow(row: SelfBlockDbRow): SelfBlockRow {
-  const blockKey = normalizeSelfBlockKey(row.block_key ?? row.blockKey ?? "");
-  const created = row.created_at ?? row.createdAt;
-  const updated = row.updated_at ?? row.updatedAt;
-  return {
-    block_key: blockKey,
+  return selfBlockRowSchema.parse({
+    block_key: row.block_key,
     content: row.content,
     locked: row.locked,
     version: row.version,
-    updated_by: row.updated_by ?? row.updatedBy ?? null,
-    created: created != null ? normalizePgTimestamp(created) : "",
-    updated: updated != null ? normalizePgTimestamp(updated) : "",
-  };
+    updated_by: row.updated_by ?? null,
+    created_at: normalizePgTimestamp(row.created_at),
+    updated_at: normalizePgTimestamp(row.updated_at),
+  });
 }
+
+export { normalizeSelfBlockKey } from "./self-block-key.ts";

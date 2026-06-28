@@ -10,6 +10,7 @@ export type {
   MessageRowView,
 } from "./conversation.ts";
 export { RESIDENT_PINNED_MAX, RESIDENT_TOP_N } from "./semantic-memory.ts";
+export { semanticFtsHitSchema, semanticMemoryRowSchema } from "./semantic-memory.ts";
 export type {
   SemanticMemoryRow,
   SemanticFtsHit,
@@ -68,7 +69,7 @@ export type {
   SelfBlockUpdateInput,
   SelfLayerStorePort,
 } from "./self-layer.ts";
-export { SELF_BLOCK_KEYS } from "./self-layer.ts";
+export { SELF_BLOCK_KEYS, selfBlockRowSchema } from "./self-layer.ts";
 export type {
   AutobiographicalSignificance,
   AutobiographicalStatus,

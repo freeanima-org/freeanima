@@ -42,11 +42,11 @@ export async function createSemanticMemory(row: SemanticMemoryCreateInput): Prom
   const now = formatCstIso();
   const created = row.created ?? now;
   const updated = row.updated ?? created;
-  const sourceConversations = normalizeSourceSessions(row.source_conversations);
-  const observedAt = row.observed_at ?? created;
-  const occurredAt = row.occurred_at ?? null;
+  const source_conversations = normalizeSourceSessions(row.source_conversations);
+  const observed_at = row.observed_at ?? created;
+  const occurred_at = row.occurred_at ?? null;
   const status = normalizeStatus(row.status);
-  const ftsSegmented = await resolveFtsSegmentedForWrite(content);
+  const fts_segmented = await resolveFtsSegmentedForWrite(content);
 
   const db = getDb();
   await db
@@ -56,10 +56,10 @@ export async function createSemanticMemory(row: SemanticMemoryCreateInput): Prom
       type,
       pinned,
       content,
-      ftsSegmented,
-      sourceConversations,
-      observedAt: observedAt ? new Date(observedAt) : null,
-      occurredAt,
+      fts_segmented,
+      source_conversations,
+      observed_at: observed_at ? new Date(observed_at) : null,
+      occurred_at,
       status,
       created: new Date(created),
       updated: new Date(updated),
@@ -70,10 +70,10 @@ export async function createSemanticMemory(row: SemanticMemoryCreateInput): Prom
         type,
         pinned,
         content,
-        ftsSegmented,
-        sourceConversations,
-        observedAt: observedAt ? new Date(observedAt) : null,
-        occurredAt,
+        fts_segmented,
+        source_conversations,
+        observed_at: observed_at ? new Date(observed_at) : null,
+        occurred_at,
         status,
         updated: new Date(updated),
       },
@@ -96,18 +96,18 @@ export async function updateSemanticMemory(row: SemanticMemoryUpdateInput): Prom
   };
   if (row.content !== undefined) {
     patch.content = row.content.trim();
-    patch.ftsSegmented = await resolveFtsSegmentedForWrite(patch.content);
+    patch.fts_segmented = await resolveFtsSegmentedForWrite(patch.content);
     await clearSemanticMemoryEmbedding(row.id);
   }
   if (row.type !== undefined) patch.type = normalizeSemanticMemoryType(row.type);
   if (row.pinned !== undefined) patch.pinned = row.pinned;
   if (row.source_conversations !== undefined) {
-    patch.sourceConversations = normalizeSourceSessions(row.source_conversations);
+    patch.source_conversations = normalizeSourceSessions(row.source_conversations);
   }
   if (row.observed_at !== undefined) {
-    patch.observedAt = row.observed_at ? new Date(row.observed_at) : null;
+    patch.observed_at = row.observed_at ? new Date(row.observed_at) : null;
   }
-  if (row.occurred_at !== undefined) patch.occurredAt = row.occurred_at;
+  if (row.occurred_at !== undefined) patch.occurred_at = row.occurred_at;
   if (row.status !== undefined) patch.status = normalizeStatus(row.status);
 
   const db = getDb();
@@ -176,10 +176,10 @@ export async function listResidentSemanticMemory(topN = 20): Promise<SemanticMem
         and(
           eq(semanticMemory.status, "active"),
           eq(semanticMemory.pinned, false),
-          drizzleSql`${semanticMemory.referenceCount} > 0`,
+          drizzleSql`${semanticMemory.reference_count} > 0`,
         ),
       )
-      .orderBy(desc(semanticMemory.referenceCount), desc(semanticMemory.updated))
+      .orderBy(desc(semanticMemory.reference_count), desc(semanticMemory.updated))
       .limit(remaining + pinnedIds.size);
     const filtered = candidates.filter((r) => !pinnedIds.has(r.id)).slice(0, remaining);
     topReferenced = [...pinnedRows, ...filtered];
@@ -212,7 +212,7 @@ export async function listSemanticMemoryBySourceSessions(
   if (!ids.length) return [];
 
   const status = opts?.status ?? "active";
-  const conditions = [arrayOverlaps(semanticMemory.sourceConversations, ids)];
+  const conditions = [arrayOverlaps(semanticMemory.source_conversations, ids)];
   if (status !== "all") {
     conditions.push(eq(semanticMemory.status, status));
   }

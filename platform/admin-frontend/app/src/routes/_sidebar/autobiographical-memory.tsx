@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
+import type { AutobiographicalMemoryRow } from "@freeanima/admin-api/api";
 import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/satellite-sdk/form";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { listAutobiographicalMemories } from "@admin/lib/api.ts";
@@ -12,15 +13,7 @@ const PAGE_SIZE = 20;
 
 const SIGNIFICANCE_OPTIONS = ["normal", "milestone", "turning_point"] as const;
 
-type AutobiographicalRow = {
-  id: string;
-  title: string;
-  content: string;
-  significance: string;
-  status: string;
-  updated: string;
-  source_conversations: string[];
-};
+type AutobiographicalRow = AutobiographicalMemoryRow;
 
 export const Route = createFileRoute("/_sidebar/autobiographical-memory")({
   component: AutobiographicalMemoryPage,

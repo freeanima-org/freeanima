@@ -36,9 +36,9 @@ async function searchEntitiesFtsWithTsquery(
   const limit = Math.max(1, Math.min(100, opts.limit ?? 10));
   const db = getDb();
   const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
-  const rankExpr = sql<number>`ts_rank_cd(${entities.searchFts}, ${tsqueryExpr}, 32)`.as("rank");
+  const rankExpr = sql<number>`ts_rank_cd(${entities.search_fts}, ${tsqueryExpr}, 32)`.as("rank");
   const where = buildEntitySearchWhere(opts);
-  const conditions = [sql`${entities.searchFts} @@ ${tsqueryExpr}`, ...(where ? [where] : [])];
+  const conditions = [sql`${entities.search_fts} @@ ${tsqueryExpr}`, ...(where ? [where] : [])];
 
   const rows = await db
     .select({

@@ -1,12 +1,10 @@
+import type { SemanticFtsHit } from "@freeanima/core/repos";
 import { and, desc, eq, getColumns, notLike, sql } from "drizzle-orm";
 import { messages, semanticMemory } from "@freeanima/core/db/schema";
 
 import { getDb } from "../client.ts";
 import { buildSemanticConditions } from "../semantic-memory/repos/semantic-filters.ts";
-import {
-  mapSemanticMemoryRow,
-  type SemanticMemoryFtsDbRow,
-} from "../semantic-memory/mappers/semantic-mapper.ts";
+import { mapSemanticMemoryRow } from "../semantic-memory/mappers/semantic-mapper.ts";
 import { buildFtsTsQuery } from "./query.ts";
 
 export async function searchSemanticMemoryFtsRaw(
@@ -15,9 +13,9 @@ export async function searchSemanticMemoryFtsRaw(
     limit?: number;
     types?: string[];
     status?: "active" | "deprecated" | "all";
-    sourceConversations?: string[];
+    source_conversations?: string[];
   },
-): Promise<SemanticMemoryFtsDbRow[]> {
+): Promise<SemanticFtsHit[]> {
   const q = query.trim();
   if (!q) return [];
 
@@ -27,16 +25,17 @@ export async function searchSemanticMemoryFtsRaw(
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
   const types = opts?.types?.filter(Boolean) ?? [];
   const status = opts?.status ?? "active";
-  const sourceConversations = opts?.sourceConversations?.map((s) => s.trim()).filter(Boolean) ?? [];
+  const source_conversations =
+    opts?.source_conversations?.map((s) => s.trim()).filter(Boolean) ?? [];
 
   const db = getDb();
   const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
-  const rankExpr = sql<number>`ts_rank_cd(${semanticMemory.contentFts}, ${tsqueryExpr}, 32)`.as(
+  const rankExpr = sql<number>`ts_rank_cd(${semanticMemory.content_fts}, ${tsqueryExpr}, 32)`.as(
     "rank",
   );
   const conditions = [
-    sql`${semanticMemory.contentFts} @@ ${tsqueryExpr}`,
-    ...buildSemanticConditions({ types, status, sourceConversations }),
+    sql`${semanticMemory.content_fts} @@ ${tsqueryExpr}`,
+    ...buildSemanticConditions({ types, status, source_conversations }),
   ];
 
   const rows = await db
@@ -54,7 +53,7 @@ export async function searchSemanticMemoryFtsRaw(
 
 export async function searchMessagesFtsRaw(
   query: string,
-  opts?: { conversationId?: string; limit?: number },
+  opts?: { conversation_id?: string; limit?: number },
 ): Promise<
   Array<{
     id: string;
@@ -72,17 +71,17 @@ export async function searchMessagesFtsRaw(
   if (!tsquery) return [];
 
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));
-  const conversationId = opts?.conversationId?.trim() || null;
+  const conversation_id = opts?.conversation_id?.trim() || null;
 
   const db = getDb();
   const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
-  const rankExpr = sql<number>`ts_rank_cd(${messages.contentFts}, ${tsqueryExpr}, 32)`.as("rank");
+  const rankExpr = sql<number>`ts_rank_cd(${messages.content_fts}, ${tsqueryExpr}, 32)`.as("rank");
   const conditions = [
-    sql`${messages.contentFts} @@ ${tsqueryExpr}`,
-    notLike(messages.conversationId, "debug-%"),
+    sql`${messages.content_fts} @@ ${tsqueryExpr}`,
+    notLike(messages.conversation_id, "debug-%"),
   ];
-  if (conversationId) {
-    conditions.push(eq(messages.conversationId, conversationId));
+  if (conversation_id) {
+    conditions.push(eq(messages.conversation_id, conversation_id));
   }
 
   const rows = await db
@@ -90,7 +89,7 @@ export async function searchMessagesFtsRaw(
       id: messages.id,
       content: sql<string>`${messages.payload}->>'content'`,
       role: sql<string>`${messages.payload}->>'role'`,
-      conversation_id: messages.conversationId,
+      conversation_id: messages.conversation_id,
       timestamp: sql<string>`${messages.payload}->>'timestamp'`,
       rank: rankExpr,
     })

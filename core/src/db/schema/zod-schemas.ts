@@ -25,16 +25,16 @@ import { selfBlockKeySchema, selfBlocks } from "./self-layer.ts";
 import { conversations } from "./conversations.ts";
 
 const conversationJsonbRefine = {
-  platformInfo: platformInfoSchema.nullable(),
+  platform_info: platformInfoSchema.nullable(),
   compression: compressionJsonSchema.nullable(),
   todos: conversationTodoStoreSchema,
-  awaitingClarify: awaitingClarifySchema.nullable(),
-  acpTasks: acpTasksSchema.nullable(),
+  awaiting_clarify: awaitingClarifySchema.nullable(),
+  acp_tasks: acpTasksSchema.nullable(),
   goal: conversationGoalSchema.nullable(),
-  cachedToolsets: conversationCachedToolsetsSchema,
-  stagedToolsets: conversationStagedToolsetsSchema,
+  cached_toolsets: conversationCachedToolsetsSchema,
+  staged_toolsets: conversationStagedToolsetsSchema,
   functions: conversationFunctionsSchema,
-  archivedAt: z.string().nullable().optional(),
+  archived_at: z.string().nullable().optional(),
 };
 
 export const conversationSelectSchema = createSelectSchema(conversations, conversationJsonbRefine);
@@ -63,7 +63,7 @@ export type SemanticMemorySelect = z.infer<typeof semanticMemorySelectSchema>;
 export type SemanticMemoryInsert = z.infer<typeof semanticMemoryInsertSchema>;
 
 const selfBlocksRefine = {
-  blockKey: selfBlockKeySchema,
+  block_key: selfBlockKeySchema,
 };
 
 export const selfBlocksSelectSchema = createSelectSchema(selfBlocks, selfBlocksRefine);

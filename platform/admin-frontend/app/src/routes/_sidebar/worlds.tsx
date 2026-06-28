@@ -8,7 +8,7 @@ import {
   listSubjectEntities,
   listWorldEntities,
   updateWorldEntity,
-  type AdminEntityRow,
+  type EntityRow,
 } from "@admin/lib/api.ts";
 import { logCaughtError } from "@admin/lib/log-caught-error.ts";
 
@@ -32,7 +32,7 @@ const EMPTY_FORM: WorldFormState = {
   owner_subject_id: "",
 };
 
-function readWorldBody(row: AdminEntityRow): {
+function readWorldBody(row: EntityRow): {
   private: boolean;
   owner_subject_id: number | null;
   default_private: boolean;
@@ -50,7 +50,7 @@ function readWorldBody(row: AdminEntityRow): {
   };
 }
 
-function subjectOptionLabel(row: AdminEntityRow): string {
+function subjectOptionLabel(row: EntityRow): string {
   const typeLabel =
     row.type === "user" ? m.admin_entities_type_user() : m.admin_entities_type_agent();
   const title = row.title || m.admin_common_no_title();
@@ -68,7 +68,7 @@ function WorldEditModal({
 }: {
   mode: "create" | "edit";
   initial: WorldFormState;
-  subjects: AdminEntityRow[];
+  subjects: EntityRow[];
   saving: boolean;
   error: string;
   onClose: () => void;
@@ -188,14 +188,14 @@ function WorldEditModal({
 }
 
 function WorldsPage() {
-  const [items, setItems] = useState<AdminEntityRow[]>([]);
-  const [subjects, setSubjects] = useState<AdminEntityRow[]>([]);
+  const [items, setItems] = useState<EntityRow[]>([]);
+  const [subjects, setSubjects] = useState<EntityRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [modal, setModal] = useState<{
     mode: "create" | "edit";
-    row?: AdminEntityRow;
+    row?: EntityRow;
   } | null>(null);
   const [modalError, setModalError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -241,7 +241,7 @@ function WorldsPage() {
     setModal({ mode: "create" });
   };
 
-  const openEdit = (row: AdminEntityRow) => {
+  const openEdit = (row: EntityRow) => {
     setModalError("");
     setModal({ mode: "edit", row });
   };

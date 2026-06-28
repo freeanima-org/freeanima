@@ -13,9 +13,9 @@ describe("db mappers", () => {
       timestamp: "2026-05-17T07:15:24.873+00:00",
       platform: "cron",
     });
-    expect(row.createdAt).toBe("2026-05-17T07:15:24.873Z");
-    expect(row.platformInfo).toEqual({ platform: "cron" });
-    expect(row.stagedToolsets).toEqual([]);
+    expect(row.created_at).toBe("2026-05-17T07:15:24.873Z");
+    expect(row.platform_info).toEqual({ platform: "cron" });
+    expect(row.staged_toolsets).toEqual([]);
   });
 
   it("cron ended_at normalized into platform_info", () => {
@@ -29,7 +29,7 @@ describe("db mappers", () => {
       platform: "cron",
       ended_at: "2026-05-11T04:03:34.574+00:00",
     });
-    expect(row.platformInfo).toEqual({
+    expect(row.platform_info).toEqual({
       platform: "cron",
       ended_at: "2026-05-11T04:03:34.574Z",
     });
@@ -50,10 +50,10 @@ describe("db mappers", () => {
     expect(userInsert.payload).not.toHaveProperty("pos");
     const user = rowToMessage({
       ...userInsert,
-      contentFts: "hi",
-      ftsSegmented: null,
-      contentEmbedding: null,
-      createdAt: "2026-01-01T00:00:00.000Z",
+      content_fts: "hi",
+      fts_segmented: null,
+      content_embedding: null,
+      created_at: "2026-01-01T00:00:00.000Z",
     });
     expect(user.pos).toBe(1);
 
@@ -68,10 +68,10 @@ describe("db mappers", () => {
     expect(toolInsert.payload.role).toBe("tool");
     const tool = rowToMessage({
       ...toolInsert,
-      contentFts: null,
-      ftsSegmented: null,
-      contentEmbedding: null,
-      createdAt: "2026-01-01T00:00:01.000Z",
+      content_fts: null,
+      fts_segmented: null,
+      content_embedding: null,
+      created_at: "2026-01-01T00:00:01.000Z",
     });
     expect(tool.pos).toBe(2);
   });
@@ -85,21 +85,21 @@ describe("db mappers", () => {
     prompt: "",
     skills: [],
     script: null,
-    noAgent: false,
-    modelProvider: null,
-    modelName: null,
+    no_agent: false,
+    model_provider: null,
+    model_name: null,
     workdir: null,
-    contextFrom: [],
+    context_from: [],
     deliver: "local",
-    timeoutSec: 300,
+    timeout_sec: 300,
     builtin: true,
     repeat: null,
-    runCount: 0,
+    run_count: 0,
     paused: false,
-    createdAt: "2026-06-07T06:00:00.000Z",
-    updatedAt: "2026-06-07T06:00:00.000Z",
-    lastRunAt: null,
-    lastOutputRef: null,
+    created_at: "2026-06-07T06:00:00.000Z",
+    updated_at: "2026-06-07T06:00:00.000Z",
+    last_run_at: null,
+    last_output_ref: null,
   };
 
   it("mapCronJobRow full mapping (builtin)", () => {
@@ -119,13 +119,13 @@ describe("db mappers", () => {
   });
 
   it("mapCronJobRow maps last_output_ref", () => {
-    const row = { ...baseCronDbRow, lastOutputRef: "cron/output/light-sleep-0003.txt" };
+    const row = { ...baseCronDbRow, last_output_ref: "cron/output/light-sleep-0003.txt" };
     const result = mapCronJobRow(row);
     expect(result.last_output_ref).toBe("cron/output/light-sleep-0003.txt");
   });
 
   it("mapCronJobRow maps last_run_at timestamp", () => {
-    const row = { ...baseCronDbRow, lastRunAt: "2026-06-06T18:00:01.000Z" };
+    const row = { ...baseCronDbRow, last_run_at: "2026-06-06T18:00:01.000Z" };
     const result = mapCronJobRow(row);
     expect(result.last_run_at).toBe("2026-06-06T18:00:01.000Z");
   });
@@ -137,8 +137,8 @@ describe("db mappers", () => {
       name: "Daily backup",
       builtin: false,
       repeat: 100,
-      modelProvider: "openai",
-      modelName: "gpt-4o",
+      model_provider: "openai",
+      model_name: "gpt-4o",
       workdir: "/tmp",
     };
     const result = mapCronJobRow(row);

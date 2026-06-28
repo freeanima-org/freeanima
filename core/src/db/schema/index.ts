@@ -28,12 +28,12 @@ export const relations = defineRelations({ conversations, messages, semanticMemo
   conversations: {
     messages: r.many.messages({
       from: r.conversations.id,
-      to: r.messages.conversationId,
+      to: r.messages.conversation_id,
     }),
   },
   messages: {
     conversation: r.one.conversations({
-      from: r.messages.conversationId,
+      from: r.messages.conversation_id,
       to: r.conversations.id,
     }),
   },

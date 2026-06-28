@@ -1,20 +1,20 @@
 /** Hub 分配的 SAP 卫星 instance（3 字符 id） */
 export type SapInstanceRow = {
-  instanceId: string;
-  appId: string;
-  httpUrl: string | null;
-  createdAt: string;
+  instance_id: string;
+  app_id: string;
+  http_url: string | null;
+  created_at: string;
 };
 
 export type SapInstanceUpsertInput = {
-  instanceId: string;
-  appId: string;
-  httpUrl?: string | null;
-  createdAt?: string;
+  instance_id: string;
+  app_id: string;
+  http_url?: string | null;
+  created_at?: string;
 };
 
 export interface SapInstanceStorePort {
-  get(instanceId: string): Promise<SapInstanceRow | null>;
+  get(instance_id: string): Promise<SapInstanceRow | null>;
   upsert(row: SapInstanceUpsertInput): Promise<void>;
   listAll(): Promise<SapInstanceRow[]>;
 }

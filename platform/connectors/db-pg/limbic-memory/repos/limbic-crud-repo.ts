@@ -29,9 +29,9 @@ function clampNonNegativeUnit(value: number | null | undefined): number | null {
 }
 
 export async function createLimbicMemory(row: LimbicMemoryCreateInput): Promise<string> {
-  const conversationId = row.conversation_id.trim();
+  const conversation_id = row.conversation_id.trim();
   const content = row.content.trim();
-  if (!conversationId) throw new Error("conversation_id is required");
+  if (!conversation_id) throw new Error("conversation_id is required");
   if (!content) throw new Error("content is required");
 
   const intensity = row.intensity ?? 0.5;
@@ -40,17 +40,17 @@ export async function createLimbicMemory(row: LimbicMemoryCreateInput): Promise<
   }
 
   const db = getDb();
-  const ftsSegmented = await resolveFtsSegmentedForWrite(content);
+  const fts_segmented = await resolveFtsSegmentedForWrite(content);
   const values: typeof limbicMemory.$inferInsert = {
-    conversationId,
+    conversation_id,
     kind: normalizeKind(row.kind),
     content,
-    ftsSegmented,
+    fts_segmented,
     valence: clampUnit(row.valence),
     arousal: clampNonNegativeUnit(row.arousal),
     intensity,
-    sourceSegment: row.source_segment ?? null,
-    semanticMemoryIds: normalizeStringArray(row.semantic_memory_ids),
+    source_segment: row.source_segment ?? null,
+    semantic_memory_ids: normalizeStringArray(row.semantic_memory_ids),
   };
   if (row.id?.trim()) values.id = row.id.trim();
 
@@ -71,18 +71,18 @@ export async function getLimbicMemory(id: string): Promise<LimbicMemoryRow | nul
 }
 
 export async function listLimbicMemoryBySession(
-  conversationId: string,
+  conversation_id: string,
   opts?: { limit?: number },
 ): Promise<LimbicMemoryRow[]> {
-  const sid = conversationId.trim();
+  const sid = conversation_id.trim();
   if (!sid) return [];
   const limit = Math.max(1, Math.min(500, opts?.limit ?? 100));
   const db = getDb();
   const rows = await db
     .select()
     .from(limbicMemory)
-    .where(eq(limbicMemory.conversationId, sid))
-    .orderBy(desc(limbicMemory.createdAt))
+    .where(eq(limbicMemory.conversation_id, sid))
+    .orderBy(desc(limbicMemory.created_at))
     .limit(limit);
   return rows.map(mapLimbicMemoryRow);
 }

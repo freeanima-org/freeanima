@@ -55,10 +55,10 @@ export class SapInstanceRegistry {
         const row = await this.store.get(norm);
         if (row) {
           record = {
-            instanceId: row.instanceId,
-            appId: row.appId,
-            httpUrl: row.httpUrl,
-            createdAt: row.createdAt,
+            instanceId: row.instance_id,
+            appId: row.app_id,
+            httpUrl: row.http_url,
+            createdAt: row.created_at,
           };
           this.byInstanceId.set(norm, record);
         }
@@ -114,10 +114,10 @@ export class SapInstanceRegistry {
   private async persist(record: SapInstanceRecord): Promise<void> {
     if (!this.store) return;
     await this.store.upsert({
-      instanceId: record.instanceId,
-      appId: record.appId,
-      httpUrl: record.httpUrl,
-      createdAt: record.createdAt,
+      instance_id: record.instanceId,
+      app_id: record.appId,
+      http_url: record.httpUrl,
+      created_at: record.createdAt,
     });
   }
 }

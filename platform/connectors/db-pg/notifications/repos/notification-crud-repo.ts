@@ -24,14 +24,14 @@ function normalizeRecipientId(raw?: string): string {
 }
 
 function buildListConditions(opts: Omit<NotificationListOpts, "offset" | "limit">) {
-  const recipientKind = notificationRecipientKindSchema.parse(opts.recipient_kind);
-  const recipientId = normalizeRecipientId(opts.recipient_id);
+  const recipient_kind = notificationRecipientKindSchema.parse(opts.recipient_kind);
+  const recipient_id = normalizeRecipientId(opts.recipient_id);
   const conditions = [
-    eq(notifications.recipientKind, recipientKind),
-    eq(notifications.recipientId, recipientId),
+    eq(notifications.recipient_kind, recipient_kind),
+    eq(notifications.recipient_id, recipient_id),
   ];
   if (opts.read_filter === "unread") {
-    conditions.push(isNull(notifications.readAt));
+    conditions.push(isNull(notifications.read_at));
   }
   return conditions;
 }
@@ -42,8 +42,8 @@ export async function createNotification(input: NotificationCreateInput): Promis
   if (!title) throw new Error("title is required");
   if (!body) throw new Error("body is required");
 
-  const recipientKind = notificationRecipientKindSchema.parse(input.recipient_kind);
-  const sourceKind =
+  const recipient_kind = notificationRecipientKindSchema.parse(input.recipient_kind);
+  const source_kind =
     input.source_kind == null ? null : notificationSourceKindSchema.parse(input.source_kind);
 
   const now = formatCstIso();
@@ -52,15 +52,15 @@ export async function createNotification(input: NotificationCreateInput): Promis
     .insert(notifications)
     .values({
       id: randomUUID(),
-      recipientKind,
-      recipientId: normalizeRecipientId(input.recipient_id),
+      recipient_kind,
+      recipient_id: normalizeRecipientId(input.recipient_id),
       title,
       body,
       payload: input.payload ?? null,
-      readAt: null,
-      createdAt: now,
-      sourceKind,
-      sourceRef: input.source_ref?.trim() || null,
+      read_at: null,
+      created_at: now,
+      source_kind,
+      source_ref: input.source_ref?.trim() || null,
     })
     .returning();
   const row = rows[0];
@@ -78,7 +78,7 @@ export async function listNotifications(opts: NotificationListOpts): Promise<Not
     .select()
     .from(notifications)
     .where(and(...conditions))
-    .orderBy(desc(notifications.createdAt))
+    .orderBy(desc(notifications.created_at))
     .offset(offset)
     .limit(limit);
   return rows.map(mapNotificationRow);
@@ -108,12 +108,12 @@ export async function markNotificationRead(id: string): Promise<NotificationRow 
     .limit(1);
   const row = existing[0];
   if (!row) return null;
-  if (row.readAt != null) return mapNotificationRow(row);
+  if (row.read_at != null) return mapNotificationRow(row);
 
   const now = formatCstIso();
   const updated = await db
     .update(notifications)
-    .set({ readAt: now })
+    .set({ read_at: now })
     .where(eq(notifications.id, trimmed))
     .returning();
   const next = updated[0];

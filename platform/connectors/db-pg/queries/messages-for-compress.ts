@@ -3,11 +3,11 @@ import type { ConversationMessage } from "@freeanima/core/db/domain";
 import { listMessages, listMessagesByPosRange } from "../conversation/repos/message-repo.ts";
 
 export async function messagesForCompress(
-  conversationId: string,
+  conversation_id: string,
   opts?: { fromPos?: number; toPos?: number },
 ): Promise<ConversationMessage[]> {
   if (opts?.fromPos != null) {
-    return listMessagesByPosRange(conversationId, opts.fromPos, opts.toPos);
+    return listMessagesByPosRange(conversation_id, opts.fromPos, opts.toPos);
   }
-  return listMessages(conversationId);
+  return listMessages(conversation_id);
 }

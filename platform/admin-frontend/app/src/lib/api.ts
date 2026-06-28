@@ -458,21 +458,9 @@ export async function getCredentialDetail(path: string) {
   return unwrap(resolveApiClient().api.credentials.detail.get({ query: { path } }));
 }
 
-export type AdminEntityRow = {
-  id: number;
-  type: string;
-  world_id: number;
-  title: string;
-  summary: string;
-  content: string;
-  primary_component: string;
-  components: string[];
-  body: Record<string, unknown>;
-  created_at: string;
-  updated_at: string;
-};
+export type EntityRow = import("@freeanima/admin-api/api").EntityRow;
 
-type EntityListResponse = { items: AdminEntityRow[]; total: number };
+type EntityListResponse = { items: EntityRow[]; total: number };
 
 export async function listWorldEntities(opts?: { offset?: number; limit?: number }) {
   return unwrap(
@@ -492,7 +480,7 @@ export async function createWorldEntity(body: {
   private?: boolean;
   owner_subject_id?: number;
 }) {
-  return unwrap(resolveApiClient().api.entities.worlds.post(body)) as Promise<AdminEntityRow>;
+  return unwrap(resolveApiClient().api.entities.worlds.post(body)) as Promise<EntityRow>;
 }
 
 export async function updateWorldEntity(
@@ -509,7 +497,7 @@ export async function updateWorldEntity(
     resolveApiClient()
       .api.entities.worlds({ id: String(id) })
       .patch(body),
-  ) as Promise<AdminEntityRow>;
+  ) as Promise<EntityRow>;
 }
 
 export async function listSubjectEntities(opts?: { offset?: number; limit?: number }) {
@@ -529,7 +517,7 @@ export async function createSubjectEntity(body: {
   summary?: string;
   content?: string;
 }) {
-  return unwrap(resolveApiClient().api.entities.subjects.post(body)) as Promise<AdminEntityRow>;
+  return unwrap(resolveApiClient().api.entities.subjects.post(body)) as Promise<EntityRow>;
 }
 
 export async function updateSubjectEntity(
@@ -545,5 +533,5 @@ export async function updateSubjectEntity(
     resolveApiClient()
       .api.entities.subjects({ id: String(id) })
       .patch(body),
-  ) as Promise<AdminEntityRow>;
+  ) as Promise<EntityRow>;
 }

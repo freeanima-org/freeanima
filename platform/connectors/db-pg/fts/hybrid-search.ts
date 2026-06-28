@@ -16,7 +16,6 @@ import { buildFtsTsQuery } from "./query.ts";
 import { searchMessagesTrgm, searchSemanticMemoryTrgm } from "./trgm-search.ts";
 import { searchSemanticMemoryFtsRaw, searchMessagesFtsRaw } from "./hybrid-raw.ts";
 import { searchMessagesVector, searchSemanticMemoryVector } from "./vector-search.ts";
-import { mapSemanticMemoryRow } from "../semantic-memory/mappers/semantic-mapper.ts";
 
 function candidateLimit(requested: number, ftsCount: number): number {
   const fallback = getFtsTrgmFallbackWhenHitsLt(getActiveConfig().data);
@@ -34,7 +33,7 @@ export async function hybridSearchSemanticMemory(
     types?: string[];
     status?: "active" | "deprecated" | "all";
     offset?: number;
-    sourceConversations?: string[];
+    source_conversations?: string[];
   },
 ): Promise<SemanticFtsHit[]> {
   const q = query.trim();
@@ -50,7 +49,7 @@ export async function hybridSearchSemanticMemory(
     limit: candidateLimit(fetchLimit, 0),
     types: opts?.types,
     status: opts?.status,
-    sourceConversations: opts?.sourceConversations,
+    source_conversations: opts?.source_conversations,
   });
   const pool = candidateLimit(fetchLimit, ftsHits.length);
   const [trgmHits, vectorHits] = await Promise.all([
@@ -58,14 +57,14 @@ export async function hybridSearchSemanticMemory(
       limit: pool,
       types: opts?.types,
       status: opts?.status,
-      sourceConversations: opts?.sourceConversations,
+      source_conversations: opts?.source_conversations,
     }),
     queryEmbedding
       ? searchSemanticMemoryVector(queryEmbedding, {
           limit: pool,
           types: opts?.types,
           status: opts?.status,
-          sourceConversations: opts?.sourceConversations,
+          source_conversations: opts?.source_conversations,
         })
       : Promise.resolve([]),
   ]);
@@ -75,15 +74,15 @@ export async function hybridSearchSemanticMemory(
   const vectorRanked = vectorHits.map((h) => ({ ...h, docKey: h.docKey }));
 
   const merged = rrfMerge([ftsRanked, trgmRanked, vectorRanked], { limit: pool });
-  return merged.slice(offset, offset + limit).map((row) => ({
-    ...mapSemanticMemoryRow(row),
-    rank: row.score,
+  return merged.slice(offset, offset + limit).map(({ docKey, score, rank: _ftsRank, ...row }) => ({
+    ...row,
+    rank: score,
   }));
 }
 
 export async function hybridSearchMessages(
   query: string,
-  opts?: { conversationId?: string; limit?: number },
+  opts?: { conversation_id?: string; limit?: number },
 ): Promise<MessageFtsHit[]> {
   const q = query.trim();
   if (!q) return [];
@@ -118,7 +117,7 @@ export async function hybridCountSemanticMemory(
   opts?: {
     types?: string[];
     status?: "active" | "deprecated" | "all";
-    sourceConversations?: string[];
+    source_conversations?: string[];
   },
 ): Promise<number> {
   const q = query.trim();
@@ -129,12 +128,13 @@ export async function hybridCountSemanticMemory(
 
   const types = opts?.types?.filter(Boolean) ?? [];
   const status = opts?.status ?? "active";
-  const sourceConversations = opts?.sourceConversations?.map((s) => s.trim()).filter(Boolean) ?? [];
+  const source_conversations =
+    opts?.source_conversations?.map((s) => s.trim()).filter(Boolean) ?? [];
   const minSim = getFtsTrgmMinSimilarity(getActiveConfig().data);
   const queryEmbedding = await embedQueryText(q);
 
   const db = getDb();
-  const semanticConditions = buildSemanticConditions({ types, status, sourceConversations });
+  const semanticConditions = buildSemanticConditions({ types, status, source_conversations });
   const whereSemantic = semanticConditions.length > 0 ? and(...semanticConditions) : undefined;
 
   const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
@@ -143,7 +143,7 @@ export async function hybridCountSemanticMemory(
     .from(semanticMemory)
     .where(
       and(
-        sql`${semanticMemory.contentFts} @@ ${tsqueryExpr}`,
+        sql`${semanticMemory.content_fts} @@ ${tsqueryExpr}`,
         ...(semanticConditions.length > 0 ? semanticConditions : []),
       ),
     );
@@ -160,7 +160,7 @@ export async function hybridCountSemanticMemory(
   const vectorBranch = db
     .select({ id: semanticMemory.id })
     .from(semanticMemory)
-    .where(and(isNotNull(semanticMemory.contentEmbedding), whereSemantic));
+    .where(and(isNotNull(semanticMemory.content_embedding), whereSemantic));
 
   const merged =
     queryEmbedding && queryEmbedding.length > 0

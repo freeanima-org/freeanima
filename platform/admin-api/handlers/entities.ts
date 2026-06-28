@@ -14,10 +14,6 @@ import {
 import { ApiHandlerError } from "./errors.ts";
 import { adminCtx } from "./runtime.ts";
 
-function mapEntity(row: EntityRow): EntityRow {
-  return row;
-}
-
 function mapSearchHit(row: EntitySearchHit): EntitySearchHit {
   return row;
 }
@@ -150,7 +146,7 @@ export async function listWorldEntities(opts?: { offset?: number; limit?: number
   const limit = opts?.limit ?? 100;
   const items = await store.list({ type: "world", offset, limit });
   const total = await store.count({ type: "world" });
-  return { items: items.map(mapEntity), total };
+  return { items, total };
 }
 
 export async function getWorldEntity(id: number) {
@@ -158,7 +154,7 @@ export async function getWorldEntity(id: number) {
   if (!row || row.type !== "world") {
     throw new ApiHandlerError(404, "world not found", { code: "entity_world_not_found" });
   }
-  return mapEntity(row);
+  return row;
 }
 
 export async function createWorldEntity(input: {
@@ -193,7 +189,7 @@ export async function createWorldEntity(input: {
     id: created.id,
     world_id: created.id,
   });
-  return mapEntity(aligned ?? created);
+  return aligned ?? created;
 }
 
 export async function updateWorldEntity(
@@ -255,7 +251,7 @@ export async function updateWorldEntity(
   if (!updated) {
     throw new ApiHandlerError(404, "world not found", { code: "entity_world_not_found" });
   }
-  return mapEntity(updated);
+  return updated;
 }
 
 export async function listSubjectEntities(opts?: { offset?: number; limit?: number }) {
@@ -264,7 +260,7 @@ export async function listSubjectEntities(opts?: { offset?: number; limit?: numb
   const limit = opts?.limit ?? 100;
   const items = await store.list({ types: ["agent", "user"], offset, limit });
   const total = await store.count({ types: ["agent", "user"] });
-  return { items: items.map(mapEntity), total };
+  return { items, total };
 }
 
 export async function getSubjectEntity(id: number) {
@@ -272,7 +268,7 @@ export async function getSubjectEntity(id: number) {
   if (!row || (row.type !== "agent" && row.type !== "user")) {
     throw new ApiHandlerError(404, "subject not found", { code: "entity_subject_not_found" });
   }
-  return mapEntity(row);
+  return row;
 }
 
 export async function createSubjectEntity(input: {
@@ -300,7 +296,7 @@ export async function createSubjectEntity(input: {
     body: { default_private_world_id: defaultPrivateWorldId },
   });
 
-  return mapEntity(withDefaultWorld ?? created);
+  return withDefaultWorld ?? created;
 }
 
 export async function updateSubjectEntity(
@@ -331,7 +327,7 @@ export async function updateSubjectEntity(
   if (!updated) {
     throw new ApiHandlerError(404, "subject not found", { code: "entity_subject_not_found" });
   }
-  return mapEntity((await store.get(id)) ?? updated);
+  return (await store.get(id)) ?? updated;
 }
 
 export async function searchEntities(input: {

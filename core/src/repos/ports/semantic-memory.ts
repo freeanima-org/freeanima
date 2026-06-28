@@ -1,28 +1,13 @@
+import type { SemanticFtsHit, SemanticMemoryRow } from "../schemas/semantic-memory-row.ts";
+
 /** Default resident memory slot count injected into system prompt */
 export const RESIDENT_TOP_N = 20;
 
 /** Max pinned memories included in resident context (excess triggers warn log) */
 export const RESIDENT_PINNED_MAX = 40;
 
-/** PG semantic_memory row (consumed by capabilities-memory / recall / remember) */
-export type SemanticMemoryRow = {
-  id: string;
-  type: string;
-  pinned: boolean;
-  content: string;
-  source_conversations: string[];
-  observed_at: string | null;
-  occurred_at: string | null;
-  status: string;
-  reference_count: number;
-  created: string;
-  updated: string;
-};
-
-/** PG semantic_memory.content_fts hit row */
-export type SemanticFtsHit = SemanticMemoryRow & {
-  rank: number;
-};
+export type { SemanticFtsHit, SemanticMemoryRow };
+export { semanticFtsHitSchema, semanticMemoryRowSchema } from "../schemas/semantic-memory-row.ts";
 
 export type SemanticMemoryCreateInput = {
   content: string;

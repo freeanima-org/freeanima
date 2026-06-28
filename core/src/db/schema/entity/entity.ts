@@ -13,19 +13,19 @@ export const entities = pgTable(
   {
     id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
     type: text("type").notNull(),
-    worldId: bigint("world_id", { mode: "number" }).notNull(),
+    world_id: bigint("world_id", { mode: "number" }).notNull(),
     components: text("components").array().notNull().default([]),
-    primaryComponent: text("primary_component").notNull(),
+    primary_component: text("primary_component").notNull(),
     title: text("title").notNull().default(""),
     summary: text("summary").notNull().default(""),
     content: text("content").notNull().default(""),
     body: jsonb("body").notNull().default({}),
-    ftsSegmented: text("fts_segmented"),
-    searchEmbedding: vector("search_embedding", { dimensions: SEMANTIC_EMBEDDING_DIMENSIONS }),
-    searchFts: tsvector("search_fts").generatedAlwaysAs(
+    fts_segmented: text("fts_segmented"),
+    search_embedding: vector("search_embedding", { dimensions: SEMANTIC_EMBEDDING_DIMENSIONS }),
+    search_fts: tsvector("search_fts").generatedAlwaysAs(
       (): SQL => sql`to_tsvector('simple', CASE
-        WHEN nullif(btrim(${entities.ftsSegmented}), '') IS NOT NULL
-        THEN regexp_replace(btrim(${entities.ftsSegmented}), '\\s+', ' ', 'g')
+        WHEN nullif(btrim(${entities.fts_segmented}), '') IS NOT NULL
+        THEN regexp_replace(btrim(${entities.fts_segmented}), '\\s+', ' ', 'g')
         ELSE message_fts_input(
           btrim(
             coalesce(${entities.title}, '') || ' ' ||
@@ -35,18 +35,18 @@ export const entities = pgTable(
         )
       END)`,
     ),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+    created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
       .notNull()
       .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" })
+    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
       .notNull()
       .defaultNow(),
   },
   (t) => [
-    index("idx_entities_world_id").on(t.worldId),
-    index("idx_entities_primary_component").on(t.primaryComponent),
+    index("idx_entities_world_id").on(t.world_id),
+    index("idx_entities_primary_component").on(t.primary_component),
     index("idx_entities_components").using("gin", t.components),
-    index("idx_entities_search_fts").using("gin", t.searchFts),
+    index("idx_entities_search_fts").using("gin", t.search_fts),
   ],
 );
 

@@ -16,18 +16,18 @@ export const dreamMemory = pgTable(
   "dream_memory",
   {
     id: text("id").primaryKey(),
-    dreamDay: text("dream_day").notNull(),
+    dream_day: text("dream_day").notNull(),
     content: text("content").notNull(),
-    sourceLimbicIds: text("source_limbic_ids").array().notNull().default([]),
-    sourceConversationIds: text("source_conversation_ids").array().notNull().default([]),
-    episodicSnippets: jsonb("episodic_snippets")
+    source_limbic_ids: text("source_limbic_ids").array().notNull().default([]),
+    source_conversation_ids: text("source_conversation_ids").array().notNull().default([]),
+    episodic_snippets: jsonb("episodic_snippets")
       .$type<DreamEpisodicSnippet[]>()
       .notNull()
       .default([]),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    uniqueIndex("idx_dream_memory_dream_day").on(t.dreamDay),
-    index("idx_dream_memory_created_at").on(t.createdAt.desc()),
+    uniqueIndex("idx_dream_memory_dream_day").on(t.dream_day),
+    index("idx_dream_memory_created_at").on(t.created_at.desc()),
   ],
 );

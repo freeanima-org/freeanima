@@ -1,3 +1,4 @@
+import type { SemanticFtsHit } from "@freeanima/core/repos";
 import { and, desc, eq, getColumns, isNotNull, notLike, sql } from "drizzle-orm";
 import { getActiveConfig, getFtsTrgmMinSimilarity } from "@freeanima/platform/config";
 import { messageDocKey, semanticMemoryDocKey } from "@freeanima/core/util";
@@ -5,12 +6,9 @@ import { messages, semanticMemory } from "@freeanima/core/db/schema";
 
 import { getDb } from "../client.ts";
 import { buildSemanticConditions } from "../semantic-memory/repos/semantic-filters.ts";
-import {
-  mapSemanticMemoryRow,
-  type SemanticMemoryFtsDbRow,
-} from "../semantic-memory/mappers/semantic-mapper.ts";
+import { mapSemanticMemoryRow } from "../semantic-memory/mappers/semantic-mapper.ts";
 
-export type TrgmSemanticHit = SemanticMemoryFtsDbRow & { docKey: string };
+export type TrgmSemanticHit = SemanticFtsHit & { docKey: string };
 
 export async function searchSemanticMemoryTrgm(
   query: string,
@@ -18,7 +16,7 @@ export async function searchSemanticMemoryTrgm(
     limit?: number;
     types?: string[];
     status?: "active" | "deprecated" | "all";
-    sourceConversations?: string[];
+    source_conversations?: string[];
   },
 ): Promise<TrgmSemanticHit[]> {
   const q = query.trim();
@@ -28,13 +26,14 @@ export async function searchSemanticMemoryTrgm(
   const minSim = getFtsTrgmMinSimilarity(getActiveConfig().data);
   const types = opts?.types?.filter(Boolean) ?? [];
   const status = opts?.status ?? "active";
-  const sourceConversations = opts?.sourceConversations?.map((s) => s.trim()).filter(Boolean) ?? [];
+  const source_conversations =
+    opts?.source_conversations?.map((s) => s.trim()).filter(Boolean) ?? [];
 
   const db = getDb();
   const rankExpr = sql<number>`similarity(${semanticMemory.content}, ${q})`.as("rank");
   const conditions = [
     sql`word_similarity(${semanticMemory.content}, ${q}) >= ${minSim}`,
-    ...buildSemanticConditions({ types, status, sourceConversations }),
+    ...buildSemanticConditions({ types, status, source_conversations }),
   ];
 
   const rows = await db
@@ -66,25 +65,25 @@ export type TrgmMessageHit = {
 
 export async function searchMessagesTrgm(
   query: string,
-  opts?: { conversationId?: string; limit?: number },
+  opts?: { conversation_id?: string; limit?: number },
 ): Promise<TrgmMessageHit[]> {
   const q = query.trim();
   if (!q) return [];
 
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));
   const minSim = getFtsTrgmMinSimilarity(getActiveConfig().data);
-  const conversationId = opts?.conversationId?.trim() || null;
+  const conversation_id = opts?.conversation_id?.trim() || null;
   const msgContent = sql<string>`${messages.payload}->>'content'`;
 
   const db = getDb();
   const rankExpr = sql<number>`similarity(${msgContent}, ${q})`.as("rank");
   const conditions = [
-    isNotNull(messages.contentFts),
+    isNotNull(messages.content_fts),
     sql`word_similarity(${msgContent}, ${q}) >= ${minSim}`,
-    notLike(messages.conversationId, "debug-%"),
+    notLike(messages.conversation_id, "debug-%"),
   ];
-  if (conversationId) {
-    conditions.push(eq(messages.conversationId, conversationId));
+  if (conversation_id) {
+    conditions.push(eq(messages.conversation_id, conversation_id));
   }
 
   const rows = await db
@@ -92,7 +91,7 @@ export async function searchMessagesTrgm(
       id: messages.id,
       content: msgContent,
       role: sql<string>`${messages.payload}->>'role'`,
-      conversation_id: messages.conversationId,
+      conversation_id: messages.conversation_id,
       timestamp: sql<string>`${messages.payload}->>'timestamp'`,
       rank: rankExpr,
     })

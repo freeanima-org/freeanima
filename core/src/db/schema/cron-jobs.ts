@@ -9,25 +9,25 @@ export const cronJobs = pgTable(
     prompt: text("prompt").notNull().default(""),
     skills: text("skills").array().notNull().default([]),
     script: text("script"),
-    noAgent: boolean("no_agent").notNull().default(false),
-    modelProvider: text("model_provider"),
-    modelName: text("model_name"),
+    no_agent: boolean("no_agent").notNull().default(false),
+    model_provider: text("model_provider"),
+    model_name: text("model_name"),
     workdir: text("workdir"),
-    contextFrom: text("context_from").array().notNull().default([]),
+    context_from: text("context_from").array().notNull().default([]),
     deliver: text("deliver").notNull().default("local"),
-    timeoutSec: integer("timeout_sec").notNull().default(300),
+    timeout_sec: integer("timeout_sec").notNull().default(300),
     builtin: boolean("builtin").notNull().default(false),
     repeat: integer("repeat"),
-    runCount: integer("run_count").notNull().default(0),
+    run_count: integer("run_count").notNull().default(0),
     paused: boolean("paused").notNull().default(false),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+    created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
       .notNull()
       .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" })
+    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
       .notNull()
       .defaultNow(),
-    lastRunAt: timestamp("last_run_at", { withTimezone: true, mode: "string" }),
-    lastOutputRef: text("last_output_ref"),
+    last_run_at: timestamp("last_run_at", { withTimezone: true, mode: "string" }),
+    last_output_ref: text("last_output_ref"),
   },
   (t) => [index("idx_cron_jobs_paused").on(t.paused)],
 );

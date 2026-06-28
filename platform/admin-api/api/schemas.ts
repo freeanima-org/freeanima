@@ -1,6 +1,7 @@
 import {
   autobiographicalSignificanceSchema,
   autobiographicalStatusSchema,
+  clarifyItemSchema,
   limbicKindSchema,
   semanticMemoryStatusSchema,
   semanticMemoryTypeSchema,
@@ -44,12 +45,6 @@ export const dreamMemoryListBodySchema = memoryListPaginationSchema;
 
 export const dreamMemoryDayParamsSchema = z.object({
   day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-});
-
-const clarifyItemSchema = z.object({
-  question: z.string().min(1),
-  choices: z.array(z.string().min(1)).max(4).optional(),
-  default: z.string().optional(),
 });
 
 export const createConversationBodySchema = z.object({

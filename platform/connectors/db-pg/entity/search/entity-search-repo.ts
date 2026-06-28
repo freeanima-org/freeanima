@@ -26,11 +26,11 @@ function candidateLimit(requested: number, ftsCount: number): number {
   return base;
 }
 
-function defaultOrderBy(primaryComponent?: string) {
-  if (primaryComponent === TASK_ITEM_COMPONENT) {
+function defaultOrderBy(primary_component?: string) {
+  if (primary_component === TASK_ITEM_COMPONENT) {
     return [sql`COALESCE((${entities.body}->>'sort_order')::int, 0)`, asc(entities.id)] as const;
   }
-  return [desc(entities.updatedAt), asc(entities.id)] as const;
+  return [desc(entities.updated_at), asc(entities.id)] as const;
 }
 
 function resolveSearchQuery(raw: string | undefined): string {

@@ -33,27 +33,27 @@ import { normalizePgTimestamp, pgJsonbOrNull, pgTextOrNull } from "../../utils/t
 const pgNowIso = (): string => normalizePgTimestamp(new Date());
 
 export async function getConversationMeta(
-  conversationId: string,
+  conversation_id: string,
 ): Promise<ConversationMetaMessage | null> {
   const db = getDb();
   const rows = await db
     .select()
     .from(conversations)
-    .where(eq(conversations.id, conversationId))
+    .where(eq(conversations.id, conversation_id))
     .limit(1);
   if (!rows.length) return null;
   return rowToConversationMeta(rows[0]!);
 }
 
 /** 是否为历史 cron agent 创建的 session（platform_info.platform = cron） */
-export async function isCronSession(conversationId: string): Promise<boolean> {
+export async function isCronSession(conversation_id: string): Promise<boolean> {
   const db = getDb();
   const rows = await db
     .select({
-      platform: sql<string | null>`${conversations.platformInfo}->>'platform'`,
+      platform: sql<string | null>`${conversations.platform_info}->>'platform'`,
     })
     .from(conversations)
-    .where(eq(conversations.id, conversationId))
+    .where(eq(conversations.id, conversation_id))
     .limit(1);
   return rows[0]?.platform === "cron";
 }
@@ -64,13 +64,13 @@ export async function listCronSessionIds(): Promise<string[]> {
   const rows = await db
     .select({ id: conversations.id })
     .from(conversations)
-    .where(sql`COALESCE(${conversations.platformInfo}->>'platform', '') = 'cron'`);
+    .where(sql`COALESCE(${conversations.platform_info}->>'platform', '') = 'cron'`);
   return rows.map((r) => r.id);
 }
 
 /** Hot-path meta: keep cached/staged toolsets for runtime */
 export async function getConversationMetaLite(
-  conversationId: string,
+  conversation_id: string,
 ): Promise<ConversationMetaMessage | null> {
   const db = getDb();
   const rows = await db
@@ -79,52 +79,52 @@ export async function getConversationMetaLite(
       model: conversations.model,
       title: conversations.title,
       cwd: conversations.cwd,
-      systemPrompt: conversations.systemPrompt,
-      platformInfo: conversations.platformInfo,
+      system_prompt: conversations.system_prompt,
+      platform_info: conversations.platform_info,
       compression: conversations.compression,
       todos: conversations.todos,
-      awaitingClarify: conversations.awaitingClarify,
-      acpTasks: conversations.acpTasks,
+      awaiting_clarify: conversations.awaiting_clarify,
+      acp_tasks: conversations.acp_tasks,
       goal: conversations.goal,
-      cachedToolsets: conversations.cachedToolsets,
-      stagedToolsets: conversations.stagedToolsets,
+      cached_toolsets: conversations.cached_toolsets,
+      staged_toolsets: conversations.staged_toolsets,
       functions: conversations.functions,
       debug: conversations.debug,
-      archivedAt: conversations.archivedAt,
-      createdAt: conversations.createdAt,
-      updatedAt: conversations.updatedAt,
+      archived_at: conversations.archived_at,
+      created_at: conversations.created_at,
+      updated_at: conversations.updated_at,
     })
     .from(conversations)
-    .where(eq(conversations.id, conversationId))
+    .where(eq(conversations.id, conversation_id))
     .limit(1);
   if (!rows.length) return null;
   return rowToConversationMeta(rows[0]!);
 }
 
 export async function getConversationTools(
-  conversationId: string,
+  conversation_id: string,
 ): Promise<ConversationMetaMessage["cached_toolsets"]> {
   const db = getDb();
   const rows = await db
-    .select({ cachedToolsets: conversations.cachedToolsets })
+    .select({ cached_toolsets: conversations.cached_toolsets })
     .from(conversations)
-    .where(eq(conversations.id, conversationId))
+    .where(eq(conversations.id, conversation_id))
     .limit(1);
   if (!rows.length) return [];
-  return conversationCachedToolsetsSchema.parse(rows[0]!.cachedToolsets ?? []);
+  return conversationCachedToolsetsSchema.parse(rows[0]!.cached_toolsets ?? []);
 }
 
 export async function upsertConversationMeta(
-  conversationId: string,
+  conversation_id: string,
   meta: ConversationMetaMessage,
 ): Promise<void> {
   const db = getDb();
-  const row = conversationInsertSchema.parse(conversationMetaToInsert(conversationId, meta));
+  const row = conversationInsertSchema.parse(conversationMetaToInsert(conversation_id, meta));
   try {
     const existing = await db
       .select({ id: conversations.id })
       .from(conversations)
-      .where(eq(conversations.id, conversationId))
+      .where(eq(conversations.id, conversation_id))
       .limit(1);
     if (existing.length) {
       await db
@@ -133,20 +133,20 @@ export async function upsertConversationMeta(
           model: row.model,
           title: row.title,
           cwd: row.cwd,
-          systemPrompt: row.systemPrompt,
-          platformInfo: row.platformInfo,
+          system_prompt: row.system_prompt,
+          platform_info: row.platform_info,
           compression: row.compression,
           todos: row.todos,
-          awaitingClarify: row.awaitingClarify,
-          acpTasks: row.acpTasks,
+          awaiting_clarify: row.awaiting_clarify,
+          acp_tasks: row.acp_tasks,
           goal: row.goal,
-          cachedToolsets: row.cachedToolsets,
-          stagedToolsets: row.stagedToolsets,
+          cached_toolsets: row.cached_toolsets,
+          staged_toolsets: row.staged_toolsets,
           functions: row.functions,
           debug: row.debug,
-          updatedAt: row.updatedAt,
+          updated_at: row.updated_at,
         })
-        .where(eq(conversations.id, conversationId));
+        .where(eq(conversations.id, conversation_id));
       return;
     }
     await db.insert(conversations).values(row);
@@ -156,11 +156,11 @@ export async function upsertConversationMeta(
 }
 
 export async function patchConversationMeta(
-  conversationId: string,
+  conversation_id: string,
   patch: Partial<ConversationMetaMessage> & Record<string, unknown>,
 ): Promise<void> {
   const db = getDb();
-  const set: Record<string, unknown> = { updatedAt: pgNowIso() };
+  const set: Record<string, unknown> = { updated_at: pgNowIso() };
   let hasColumnPatch = false;
 
   if (patch.title !== undefined) {
@@ -172,7 +172,7 @@ export async function patchConversationMeta(
     hasColumnPatch = true;
   }
   if (patch.system_prompt !== undefined) {
-    set.systemPrompt = pgTextOrNull(patch.system_prompt);
+    set.system_prompt = pgTextOrNull(patch.system_prompt);
     hasColumnPatch = true;
   }
   if (patch.compression === null) {
@@ -188,11 +188,11 @@ export async function patchConversationMeta(
     hasColumnPatch = true;
   }
   if (patch.cached_toolsets !== undefined) {
-    set.cachedToolsets = conversationCachedToolsetsSchema.parse(patch.cached_toolsets);
+    set.cached_toolsets = conversationCachedToolsetsSchema.parse(patch.cached_toolsets);
     hasColumnPatch = true;
   }
   if (patch.staged_toolsets !== undefined) {
-    set.stagedToolsets = conversationStagedToolsetsSchema.parse(patch.staged_toolsets);
+    set.staged_toolsets = conversationStagedToolsetsSchema.parse(patch.staged_toolsets);
     hasColumnPatch = true;
   }
   if (patch.functions !== undefined) {
@@ -209,12 +209,12 @@ export async function patchConversationMeta(
   }
   if (patch.awaiting_clarify !== undefined) {
     const awaitingRaw = pgJsonbOrNull(patch.awaiting_clarify);
-    set.awaitingClarify = awaitingRaw ? awaitingClarifySchema.parse(awaitingRaw) : null;
+    set.awaiting_clarify = awaitingRaw ? awaitingClarifySchema.parse(awaitingRaw) : null;
     hasColumnPatch = true;
   }
   if (patch.acp_tasks !== undefined) {
     const acpRaw = pgJsonbOrNull(patch.acp_tasks);
-    set.acpTasks = acpRaw ? acpTasksSchema.parse(acpRaw) : null;
+    set.acp_tasks = acpRaw ? acpTasksSchema.parse(acpRaw) : null;
     hasColumnPatch = true;
   }
   if (patch.goal !== undefined) {
@@ -232,36 +232,39 @@ export async function patchConversationMeta(
 
   if (hasColumnPatch && patch.platform === undefined && patch.platform_extra === undefined) {
     try {
-      await db.update(conversations).set(set).where(eq(conversations.id, conversationId));
+      await db.update(conversations).set(set).where(eq(conversations.id, conversation_id));
       return;
     } catch (e) {
       throw new Error(formatDbError(e), { cause: e });
     }
   }
 
-  const existing = await getConversationMeta(conversationId);
+  const existing = await getConversationMeta(conversation_id);
   if (!existing) return;
   const merged: ConversationMetaMessage = { ...existing, ...patch, role: "conversation_meta" };
-  await upsertConversationMeta(conversationId, merged);
+  await upsertConversationMeta(conversation_id, merged);
 }
 
 export async function updateCompression(
-  conversationId: string,
+  conversation_id: string,
   compression: CompressionState,
 ): Promise<void> {
   const db = getDb();
   await db
     .update(conversations)
     .set(patchCompression(compression))
-    .where(eq(conversations.id, conversationId));
+    .where(eq(conversations.id, conversation_id));
 }
 
 export async function updateTodos(
-  conversationId: string,
+  conversation_id: string,
   todos: ConversationTodoStore,
 ): Promise<void> {
   const db = getDb();
-  await db.update(conversations).set(patchTodos(todos)).where(eq(conversations.id, conversationId));
+  await db
+    .update(conversations)
+    .set(patchTodos(todos))
+    .where(eq(conversations.id, conversation_id));
 }
 
 export async function listConversationIds(
@@ -273,11 +276,11 @@ export async function listConversationIds(
   const rows = await db
     .select({
       id: conversations.id,
-      updatedAt: conversations.updatedAt,
+      updated_at: conversations.updated_at,
     })
     .from(conversations)
     .where(where)
-    .orderBy(desc(conversations.updatedAt));
+    .orderBy(desc(conversations.updated_at));
   return rows.map((r) => r.id).toReversed();
 }
 
@@ -292,10 +295,10 @@ export async function listDebugConversationIds(): Promise<string[]> {
 
 export async function countConversationsByPlatform(): Promise<Record<string, number>> {
   const db = getDb();
-  const rows = await db.select({ platformInfo: conversations.platformInfo }).from(conversations);
+  const rows = await db.select({ platform_info: conversations.platform_info }).from(conversations);
   const byPlatform: Record<string, number> = {};
   for (const row of rows) {
-    const raw = row.platformInfo?.platform;
+    const raw = row.platform_info?.platform;
     const platform = typeof raw === "string" && raw.trim() ? raw.trim() : "unknown";
     byPlatform[platform] = (byPlatform[platform] ?? 0) + 1;
   }
@@ -304,14 +307,14 @@ export async function countConversationsByPlatform(): Promise<Record<string, num
 
 function sessionPlatformWhere(platform?: string | null) {
   if (!platform) return undefined;
-  return sql`${conversations.platformInfo}->>'platform' = ${platform}`;
+  return sql`${conversations.platform_info}->>'platform' = ${platform}`;
 }
 
 function buildConversationListWhere(platform?: string | null, includeArchived?: boolean) {
   const conds = [];
   const platformCond = sessionPlatformWhere(platform);
   if (platformCond) conds.push(platformCond);
-  if (!includeArchived) conds.push(isNull(conversations.archivedAt));
+  if (!includeArchived) conds.push(isNull(conversations.archived_at));
   if (conds.length === 0) return undefined;
   if (conds.length === 1) return conds[0];
   return and(...conds);
@@ -320,17 +323,17 @@ function buildConversationListWhere(platform?: string | null, includeArchived?: 
 function mapConversationSummaryRow(row: {
   id: string;
   title: string | null;
-  platformInfo: { platform?: string } | null;
-  createdAt: string;
-  archivedAt?: string | null;
+  platform_info: { platform?: string } | null;
+  created_at: string;
+  archived_at?: string | null;
 }): ConversationSummaryRow {
-  const raw = row.platformInfo?.platform;
+  const raw = row.platform_info?.platform;
   return {
     id: row.id,
     title: row.title ?? "",
-    created: row.createdAt,
+    created: row.created_at,
     platform: typeof raw === "string" ? raw : "",
-    archived_at: row.archivedAt ?? null,
+    archived_at: row.archived_at ?? null,
   };
 }
 
@@ -344,13 +347,13 @@ export async function listConversationSummaries(
     .select({
       id: conversations.id,
       title: conversations.title,
-      platformInfo: conversations.platformInfo,
-      createdAt: conversations.createdAt,
-      archivedAt: conversations.archivedAt,
+      platform_info: conversations.platform_info,
+      created_at: conversations.created_at,
+      archived_at: conversations.archived_at,
     })
     .from(conversations)
     .where(where)
-    .orderBy(desc(conversations.updatedAt));
+    .orderBy(desc(conversations.updated_at));
   return rows.map(mapConversationSummaryRow).toReversed();
 }
 
@@ -376,13 +379,13 @@ export async function listConversationSummariesPage(opts?: {
     .select({
       id: conversations.id,
       title: conversations.title,
-      platformInfo: conversations.platformInfo,
-      createdAt: conversations.createdAt,
-      archivedAt: conversations.archivedAt,
+      platform_info: conversations.platform_info,
+      created_at: conversations.created_at,
+      archived_at: conversations.archived_at,
     })
     .from(conversations)
     .where(where)
-    .orderBy(desc(conversations.createdAt))
+    .orderBy(desc(conversations.created_at))
     .limit(limit)
     .offset(offset);
 
@@ -401,26 +404,26 @@ export async function deleteDebugConversations(): Promise<number> {
   return rows.length;
 }
 
-export async function deleteConversation(conversationId: string): Promise<void> {
+export async function deleteConversation(conversation_id: string): Promise<void> {
   const db = getDb();
-  await db.delete(conversations).where(eq(conversations.id, conversationId));
+  await db.delete(conversations).where(eq(conversations.id, conversation_id));
 }
 
-export async function archiveConversation(conversationId: string): Promise<void> {
+export async function archiveConversation(conversation_id: string): Promise<void> {
   const db = getDb();
   const now = pgNowIso();
   await db
     .update(conversations)
-    .set({ archivedAt: now, updatedAt: now })
-    .where(eq(conversations.id, conversationId));
+    .set({ archived_at: now, updated_at: now })
+    .where(eq(conversations.id, conversation_id));
 }
 
-export async function unarchiveConversation(conversationId: string): Promise<void> {
+export async function unarchiveConversation(conversation_id: string): Promise<void> {
   const db = getDb();
   await db
     .update(conversations)
-    .set({ archivedAt: null, updatedAt: pgNowIso() })
-    .where(eq(conversations.id, conversationId));
+    .set({ archived_at: null, updated_at: pgNowIso() })
+    .where(eq(conversations.id, conversation_id));
 }
 
 const staleSessionCleanupPredicate = sql`(
@@ -447,8 +450,8 @@ export async function listStaleConversationIdsForCleanup(opts: {
     .where(
       and(
         eq(conversations.debug, false),
-        isNull(conversations.archivedAt),
-        lt(conversations.updatedAt, olderThanIso),
+        isNull(conversations.archived_at),
+        lt(conversations.updated_at, olderThanIso),
         staleSessionCleanupPredicate,
       ),
     );
@@ -468,12 +471,12 @@ export async function deleteStaleConversations(opts: {
   return { deleted: deleted.length, ids: deleted.map((r) => r.id) };
 }
 
-export async function conversationExists(conversationId: string): Promise<boolean> {
+export async function conversationExists(conversation_id: string): Promise<boolean> {
   const db = getDb();
   const rows = await db
     .select({ id: conversations.id })
     .from(conversations)
-    .where(eq(conversations.id, conversationId))
+    .where(eq(conversations.id, conversation_id))
     .limit(1);
   return rows.length > 0;
 }
@@ -495,10 +498,10 @@ export async function findConversationIdByPlatformInfo(
     .select({ id: conversations.id })
     .from(conversations)
     .where(
-      sql`${conversations.platformInfo} @> ${probeJson}::jsonb
-        AND (${conversations.platformInfo}->>'origin_active')::boolean IS TRUE`,
+      sql`${conversations.platform_info} @> ${probeJson}::jsonb
+        AND (${conversations.platform_info}->>'origin_active')::boolean IS TRUE`,
     )
-    .orderBy(desc(conversations.updatedAt))
+    .orderBy(desc(conversations.updated_at))
     .limit(1);
   if (activeRows[0]?.id) return activeRows[0].id;
 
@@ -506,11 +509,11 @@ export async function findConversationIdByPlatformInfo(
     .select({ id: conversations.id })
     .from(conversations)
     .where(
-      sql`${conversations.platformInfo} @> ${probeJson}::jsonb
-        AND COALESCE((${conversations.platformInfo}->>'origin_active')::boolean, false) IS NOT TRUE
-        AND (${conversations.platformInfo}->>'origin_active') IS NULL`,
+      sql`${conversations.platform_info} @> ${probeJson}::jsonb
+        AND COALESCE((${conversations.platform_info}->>'origin_active')::boolean, false) IS NOT TRUE
+        AND (${conversations.platform_info}->>'origin_active') IS NULL`,
     )
-    .orderBy(desc(conversations.updatedAt))
+    .orderBy(desc(conversations.updated_at))
     .limit(1);
   return legacyRows[0]?.id ?? null;
 }
@@ -526,8 +529,8 @@ export async function listConversationIdsMatchingPlatformProbe(
   const rows = await db
     .select({ id: conversations.id })
     .from(conversations)
-    .where(sql`${conversations.platformInfo} @> ${JSON.stringify(probe)}::jsonb`)
-    .orderBy(desc(conversations.updatedAt));
+    .where(sql`${conversations.platform_info} @> ${JSON.stringify(probe)}::jsonb`)
+    .orderBy(desc(conversations.updated_at));
   return rows.map((r) => r.id);
 }
 
@@ -541,12 +544,12 @@ export async function listConversationIdsUpdatedBetween(
     .select({ id: conversations.id })
     .from(conversations)
     .where(
-      sql`${conversations.updatedAt} >= ${fromIso}::timestamptz
-        AND ${conversations.updatedAt} < ${toIso}::timestamptz
+      sql`${conversations.updated_at} >= ${fromIso}::timestamptz
+        AND ${conversations.updated_at} < ${toIso}::timestamptz
         AND ${conversations.debug} = false
-        AND COALESCE(${conversations.platformInfo}->>'platform', '') <> 'cron'`,
+        AND COALESCE(${conversations.platform_info}->>'platform', '') <> 'cron'`,
     )
-    .orderBy(desc(conversations.updatedAt));
+    .orderBy(desc(conversations.updated_at));
   return rows.map((r) => r.id);
 }
 
@@ -556,7 +559,7 @@ export async function getEarliestConversationDay(): Promise<string | null> {
   const rows = await db
     .select({
       day: sql<string | null>`to_char(
-        (MIN(${conversations.createdAt}) AT TIME ZONE 'Asia/Shanghai')::date,
+        (MIN(${conversations.created_at}) AT TIME ZONE 'Asia/Shanghai')::date,
         'YYYY-MM-DD'
       )`,
     })

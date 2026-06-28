@@ -121,6 +121,7 @@
       "name": "@freeanima/capabilities-email",
       "dependencies": {
         "@freeanima/core": "workspace:*",
+        "@freeanima/sap-contract": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -195,6 +196,7 @@
       "name": "@freeanima/capabilities-task",
       "dependencies": {
         "@freeanima/core": "workspace:*",
+        "@freeanima/sap-contract": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",

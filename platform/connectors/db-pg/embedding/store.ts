@@ -18,7 +18,7 @@ export async function setSemanticMemoryEmbedding(
   const db = getDb();
   const rows = await db
     .update(semanticMemory)
-    .set({ contentEmbedding: sql`${formatPgVector(embedding)}::vector` })
+    .set({ content_embedding: sql`${formatPgVector(embedding)}::vector` })
     .where(eq(semanticMemory.id, id))
     .returning({ id: semanticMemory.id });
   return rows.length > 0;
@@ -32,7 +32,7 @@ export async function setMessageEmbedding(
   const db = getDb();
   const rows = await db
     .update(messages)
-    .set({ contentEmbedding: sql`${formatPgVector(embedding)}::vector` })
+    .set({ content_embedding: sql`${formatPgVector(embedding)}::vector` })
     .where(eq(messages.id, id))
     .returning({ id: messages.id });
   return rows.length > 0;
@@ -46,7 +46,7 @@ export async function setLimbicMemoryEmbedding(
   const db = getDb();
   const rows = await db
     .update(limbicMemory)
-    .set({ contentEmbedding: sql`${formatPgVector(embedding)}::vector` })
+    .set({ content_embedding: sql`${formatPgVector(embedding)}::vector` })
     .where(eq(limbicMemory.id, id))
     .returning({ id: limbicMemory.id });
   return rows.length > 0;
@@ -60,7 +60,7 @@ export async function setAutobiographicalMemoryEmbedding(
   const db = getDb();
   const rows = await db
     .update(autobiographicalMemory)
-    .set({ contentEmbedding: sql`${formatPgVector(embedding)}::vector` })
+    .set({ content_embedding: sql`${formatPgVector(embedding)}::vector` })
     .where(eq(autobiographicalMemory.id, id))
     .returning({ id: autobiographicalMemory.id });
   return rows.length > 0;
@@ -68,7 +68,7 @@ export async function setAutobiographicalMemoryEmbedding(
 
 export async function clearSemanticMemoryEmbedding(id: string): Promise<void> {
   const db = getDb();
-  await db.update(semanticMemory).set({ contentEmbedding: null }).where(eq(semanticMemory.id, id));
+  await db.update(semanticMemory).set({ content_embedding: null }).where(eq(semanticMemory.id, id));
 }
 
 export { setEntityEmbedding, clearEntityEmbedding } from "./entity-embedding.ts";

@@ -1,3 +1,4 @@
+import type { SemanticFtsHit } from "@freeanima/core/repos";
 import { and, asc, eq, getColumns, isNotNull, notLike, sql } from "drizzle-orm";
 import { messageDocKey, semanticMemoryDocKey } from "@freeanima/core/util";
 import { messages, semanticMemory } from "@freeanima/core/db/schema";
@@ -5,12 +6,9 @@ import { messages, semanticMemory } from "@freeanima/core/db/schema";
 import { formatPgVector } from "../embedding/format.ts";
 import { getDb } from "../client.ts";
 import { buildSemanticConditions } from "../semantic-memory/repos/semantic-filters.ts";
-import {
-  mapSemanticMemoryRow,
-  type SemanticMemoryFtsDbRow,
-} from "../semantic-memory/mappers/semantic-mapper.ts";
+import { mapSemanticMemoryRow } from "../semantic-memory/mappers/semantic-mapper.ts";
 
-export type VectorSemanticHit = SemanticMemoryFtsDbRow & { docKey: string };
+export type VectorSemanticHit = SemanticFtsHit & { docKey: string };
 
 export async function searchSemanticMemoryVector(
   queryEmbedding: number[],
@@ -18,7 +16,7 @@ export async function searchSemanticMemoryVector(
     limit?: number;
     types?: string[];
     status?: "active" | "deprecated" | "all";
-    sourceConversations?: string[];
+    source_conversations?: string[];
   },
 ): Promise<VectorSemanticHit[]> {
   if (!queryEmbedding.length) return [];
@@ -26,15 +24,16 @@ export async function searchSemanticMemoryVector(
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
   const types = opts?.types?.filter(Boolean) ?? [];
   const status = opts?.status ?? "active";
-  const sourceConversations = opts?.sourceConversations?.map((s) => s.trim()).filter(Boolean) ?? [];
+  const source_conversations =
+    opts?.source_conversations?.map((s) => s.trim()).filter(Boolean) ?? [];
   const queryVec = formatPgVector(queryEmbedding);
 
   const db = getDb();
-  const distanceExpr = sql`${semanticMemory.contentEmbedding} <=> ${queryVec}::vector`;
+  const distanceExpr = sql`${semanticMemory.content_embedding} <=> ${queryVec}::vector`;
   const rankExpr = sql<number>`1 - (${distanceExpr})`.as("rank");
   const conditions = [
-    isNotNull(semanticMemory.contentEmbedding),
-    ...buildSemanticConditions({ types, status, sourceConversations }),
+    isNotNull(semanticMemory.content_embedding),
+    ...buildSemanticConditions({ types, status, source_conversations }),
   ];
 
   const rows = await db
@@ -66,24 +65,24 @@ export type VectorMessageHit = {
 
 export async function searchMessagesVector(
   queryEmbedding: number[],
-  opts?: { conversationId?: string; limit?: number },
+  opts?: { conversation_id?: string; limit?: number },
 ): Promise<VectorMessageHit[]> {
   if (!queryEmbedding.length) return [];
 
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));
-  const conversationId = opts?.conversationId?.trim() || null;
+  const conversation_id = opts?.conversation_id?.trim() || null;
   const queryVec = formatPgVector(queryEmbedding);
 
   const db = getDb();
-  const distanceExpr = sql`${messages.contentEmbedding} <=> ${queryVec}::vector`;
+  const distanceExpr = sql`${messages.content_embedding} <=> ${queryVec}::vector`;
   const rankExpr = sql<number>`1 - (${distanceExpr})`.as("rank");
   const conditions = [
-    isNotNull(messages.contentEmbedding),
-    isNotNull(messages.contentFts),
-    notLike(messages.conversationId, "debug-%"),
+    isNotNull(messages.content_embedding),
+    isNotNull(messages.content_fts),
+    notLike(messages.conversation_id, "debug-%"),
   ];
-  if (conversationId) {
-    conditions.push(eq(messages.conversationId, conversationId));
+  if (conversation_id) {
+    conditions.push(eq(messages.conversation_id, conversation_id));
   }
 
   const rows = await db
@@ -91,7 +90,7 @@ export async function searchMessagesVector(
       id: messages.id,
       content: sql<string>`${messages.payload}->>'content'`,
       role: sql<string>`${messages.payload}->>'role'`,
-      conversation_id: messages.conversationId,
+      conversation_id: messages.conversation_id,
       timestamp: sql<string>`${messages.payload}->>'timestamp'`,
       rank: rankExpr,
     })
