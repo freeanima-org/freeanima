@@ -10,9 +10,9 @@ import {
   uncompleteTaskItem,
   updateTaskItem,
 } from "./item-store.ts";
-import { getDefaultTaskList, listTaskLists } from "./list-store.ts";
+import { getDefaultTaskList, listTaskLists, updateTaskList } from "./list-store.ts";
 import { TASK_TOOL_RETURNS } from "./return-schemas.ts";
-import type { TaskItemRow } from "./types.ts";
+import type { TaskItemRow, TaskListUpdateInput } from "./types.ts";
 
 const PRIORITIES: TaskItemPriority[] = ["high", "medium", "low", "none"];
 
@@ -203,6 +203,35 @@ async function handleListLists(): Promise<string> {
   });
 }
 
+async function handleListUpdate(args: Record<string, unknown>): Promise<string> {
+  const id = Number(args.id);
+  if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
+
+  const patch: TaskListUpdateInput = { id };
+  if (args.name !== undefined) patch.name = String(args.name);
+  if (args.sort_order !== undefined) patch.sort_order = Number(args.sort_order);
+  if (args.closed !== undefined) patch.closed = Boolean(args.closed);
+  if (args.color !== undefined) patch.color = String(args.color);
+
+  try {
+    const result = await updateTaskList(patch);
+    if (!result) return toolError("task list not found");
+    return toolResult({
+      ok: true,
+      action: "update_list",
+      list: {
+        id: result.id,
+        name: result.name,
+        sort_order: result.sort_order,
+        closed: result.closed,
+        is_default: result.is_default,
+        item_count: result.item_count,
+      },
+    });
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+}
 export function registerTaskTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "task",
@@ -316,6 +345,23 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
           exposeMcp: true,
           parameters: { type: "object", properties: {} },
           handler: () => handleListLists(),
+        },
+        {
+          name: "tasklist_update",
+          description: "Update task list name or settings",
+          exposeMcp: true,
+          parameters: {
+            type: "object",
+            properties: {
+              id: { type: "integer", description: "Task list id" },
+              name: { type: "string", description: "New list name" },
+              sort_order: { type: "integer" },
+              closed: { type: "boolean" },
+              color: { type: "string" },
+            },
+            required: ["id"],
+          },
+          handler: handleListUpdate,
         },
       ],
       TASK_TOOL_RETURNS,
