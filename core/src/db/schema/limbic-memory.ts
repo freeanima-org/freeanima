@@ -14,31 +14,31 @@ export const limbicMemory = pgTable(
   "limbic_memory",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    conversationId: text("conversation_id").notNull(),
+    conversation_id: text("conversation_id").notNull(),
     kind: text("kind").notNull(),
     valence: real("valence"),
     arousal: real("arousal"),
     content: text("content").notNull(),
-    ftsSegmented: text("fts_segmented"),
-    contentEmbedding: vector("content_embedding", { dimensions: SEMANTIC_EMBEDDING_DIMENSIONS }),
-    contentFts: tsvector("content_fts").generatedAlwaysAs(
+    fts_segmented: text("fts_segmented"),
+    content_embedding: vector("content_embedding", { dimensions: SEMANTIC_EMBEDDING_DIMENSIONS }),
+    content_fts: tsvector("content_fts").generatedAlwaysAs(
       (): SQL =>
         sql`to_tsvector('simple', CASE
-          WHEN nullif(btrim(${limbicMemory.ftsSegmented}), '') IS NOT NULL
-          THEN regexp_replace(btrim(${limbicMemory.ftsSegmented}), '\\s+', ' ', 'g')
+          WHEN nullif(btrim(${limbicMemory.fts_segmented}), '') IS NOT NULL
+          THEN regexp_replace(btrim(${limbicMemory.fts_segmented}), '\\s+', ' ', 'g')
           ELSE message_fts_input(${limbicMemory.content})
         END)`,
     ),
     intensity: real("intensity").notNull().default(0.5),
-    sourceSegment: text("source_segment"),
-    semanticMemoryIds: text("semantic_memory_ids").array().notNull().default([]),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    source_segment: text("source_segment"),
+    semantic_memory_ids: text("semantic_memory_ids").array().notNull().default([]),
+    created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    index("idx_limbic_memory_fts").using("gin", t.contentFts),
-    index("idx_limbic_memory_semantic_memory_ids").using("gin", t.semanticMemoryIds),
-    index("idx_limbic_memory_conversation_id").on(t.conversationId),
-    index("idx_limbic_memory_created_at").on(t.createdAt),
+    index("idx_limbic_memory_fts").using("gin", t.content_fts),
+    index("idx_limbic_memory_semantic_memory_ids").using("gin", t.semantic_memory_ids),
+    index("idx_limbic_memory_conversation_id").on(t.conversation_id),
+    index("idx_limbic_memory_created_at").on(t.created_at),
     index("idx_limbic_memory_kind").on(t.kind),
     index("idx_limbic_memory_intensity").on(t.intensity),
     index("idx_limbic_memory_valence").on(t.valence),

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
+import type { SemanticMemoryRow } from "@freeanima/admin-api/api";
 import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/satellite-sdk/form";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { m } from "@admin/lib/i18n.ts";
@@ -22,18 +23,7 @@ const SEMANTIC_TYPES = [
 const BROWSE_SORT_OPTIONS = ["updated", "created", "reference_count"] as const;
 type BrowseSortBy = (typeof BROWSE_SORT_OPTIONS)[number];
 
-type SemanticRow = {
-  id: string;
-  type: string;
-  pinned: boolean;
-  content: string;
-  source_conversations: string[];
-  status: string;
-  reference_count: number;
-  created: string;
-  updated: string;
-  rank?: number;
-};
+type SemanticRow = SemanticMemoryRow & { rank?: number };
 
 export const Route = createFileRoute("/_sidebar/semantic-memory")({
   component: SemanticMemoryPage,

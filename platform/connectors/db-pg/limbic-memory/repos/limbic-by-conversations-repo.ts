@@ -20,8 +20,10 @@ export async function listLimbicMemoryBySessions(
   const rows = await db
     .select()
     .from(limbicMemory)
-    .where(and(inArray(limbicMemory.conversationId, ids), gt(limbicMemory.intensity, minIntensity)))
-    .orderBy(orderByIntensity ? desc(limbicMemory.intensity) : desc(limbicMemory.createdAt))
+    .where(
+      and(inArray(limbicMemory.conversation_id, ids), gt(limbicMemory.intensity, minIntensity)),
+    )
+    .orderBy(orderByIntensity ? desc(limbicMemory.intensity) : desc(limbicMemory.created_at))
     .limit(limit);
 
   return rows.map((row) => mapLimbicMemoryRow(row as LimbicMemoryDbRow));

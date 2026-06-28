@@ -69,9 +69,9 @@ export async function getFtsCoverageStats(): Promise<FtsCoverageStats> {
     db
       .select({
         total: sql<number>`count(*)::int`,
-        fts: sql<number>`count(*) FILTER (WHERE ${semanticMemory.contentFts} IS NOT NULL)::int`,
-        segmented: sql<number>`count(*) FILTER (WHERE nullif(btrim(${semanticMemory.ftsSegmented}), '') IS NOT NULL)::int`,
-        embedding: sql<number>`count(*) FILTER (WHERE ${semanticMemory.contentEmbedding} IS NOT NULL)::int`,
+        fts: sql<number>`count(*) FILTER (WHERE ${semanticMemory.content_fts} IS NOT NULL)::int`,
+        segmented: sql<number>`count(*) FILTER (WHERE nullif(btrim(${semanticMemory.fts_segmented}), '') IS NOT NULL)::int`,
+        embedding: sql<number>`count(*) FILTER (WHERE ${semanticMemory.content_embedding} IS NOT NULL)::int`,
       })
       .from(semanticMemory)
       .where(
@@ -80,27 +80,27 @@ export async function getFtsCoverageStats(): Promise<FtsCoverageStats> {
     db
       .select({
         total: sql<number>`count(*)::int`,
-        fts: sql<number>`count(*) FILTER (WHERE ${messages.contentFts} IS NOT NULL)::int`,
-        segmented: sql<number>`count(*) FILTER (WHERE nullif(btrim(${messages.ftsSegmented}), '') IS NOT NULL)::int`,
-        embedding: sql<number>`count(*) FILTER (WHERE ${messages.contentEmbedding} IS NOT NULL)::int`,
+        fts: sql<number>`count(*) FILTER (WHERE ${messages.content_fts} IS NOT NULL)::int`,
+        segmented: sql<number>`count(*) FILTER (WHERE nullif(btrim(${messages.fts_segmented}), '') IS NOT NULL)::int`,
+        embedding: sql<number>`count(*) FILTER (WHERE ${messages.content_embedding} IS NOT NULL)::int`,
       })
       .from(messages)
-      .where(isNotNull(messages.contentFts)),
+      .where(isNotNull(messages.content_fts)),
     db
       .select({
         total: sql<number>`count(*)::int`,
-        fts: sql<number>`count(*) FILTER (WHERE ${limbicMemory.contentFts} IS NOT NULL)::int`,
-        segmented: sql<number>`count(*) FILTER (WHERE nullif(btrim(${limbicMemory.ftsSegmented}), '') IS NOT NULL)::int`,
-        embedding: sql<number>`count(*) FILTER (WHERE ${limbicMemory.contentEmbedding} IS NOT NULL)::int`,
+        fts: sql<number>`count(*) FILTER (WHERE ${limbicMemory.content_fts} IS NOT NULL)::int`,
+        segmented: sql<number>`count(*) FILTER (WHERE nullif(btrim(${limbicMemory.fts_segmented}), '') IS NOT NULL)::int`,
+        embedding: sql<number>`count(*) FILTER (WHERE ${limbicMemory.content_embedding} IS NOT NULL)::int`,
       })
       .from(limbicMemory)
       .where(sql`length(btrim(${limbicMemory.content})) > 0`),
     db
       .select({
         total: sql<number>`count(*)::int`,
-        fts: sql<number>`count(*) FILTER (WHERE ${autobiographicalMemory.contentFts} IS NOT NULL)::int`,
-        segmented: sql<number>`count(*) FILTER (WHERE nullif(btrim(${autobiographicalMemory.ftsSegmented}), '') IS NOT NULL)::int`,
-        embedding: sql<number>`count(*) FILTER (WHERE ${autobiographicalMemory.contentEmbedding} IS NOT NULL)::int`,
+        fts: sql<number>`count(*) FILTER (WHERE ${autobiographicalMemory.content_fts} IS NOT NULL)::int`,
+        segmented: sql<number>`count(*) FILTER (WHERE nullif(btrim(${autobiographicalMemory.fts_segmented}), '') IS NOT NULL)::int`,
+        embedding: sql<number>`count(*) FILTER (WHERE ${autobiographicalMemory.content_embedding} IS NOT NULL)::int`,
       })
       .from(autobiographicalMemory)
       .where(
@@ -112,9 +112,9 @@ export async function getFtsCoverageStats(): Promise<FtsCoverageStats> {
     db
       .select({
         total: sql<number>`count(*)::int`,
-        fts: sql<number>`count(*) FILTER (WHERE ${entities.searchFts} IS NOT NULL)::int`,
-        segmented: sql<number>`count(*) FILTER (WHERE nullif(btrim(${entities.ftsSegmented}), '') IS NOT NULL)::int`,
-        embedding: sql<number>`count(*) FILTER (WHERE ${entities.searchEmbedding} IS NOT NULL)::int`,
+        fts: sql<number>`count(*) FILTER (WHERE ${entities.search_fts} IS NOT NULL)::int`,
+        segmented: sql<number>`count(*) FILTER (WHERE nullif(btrim(${entities.fts_segmented}), '') IS NOT NULL)::int`,
+        embedding: sql<number>`count(*) FILTER (WHERE ${entities.search_embedding} IS NOT NULL)::int`,
       })
       .from(entities)
       .where(

@@ -1,46 +1,18 @@
 import type { SemanticMemoryRow } from "@freeanima/core/repos";
-import { semanticMemory, normalizePgTimestamp } from "@freeanima/core/db/schema";
+import { normalizePgTimestamp, semanticMemory } from "@freeanima/core/db/schema";
+import { semanticMemoryRowSchema } from "@freeanima/core/repos";
 
 export type SemanticMemoryDbRow = typeof semanticMemory.$inferSelect;
 
-/** snake_case columns from Tier-3 raw SQL (FTS / vector / trgm). */
-export type SemanticMemoryRawDbRow = {
-  id: string;
-  type: string;
-  pinned: boolean;
-  content: string;
-  source_conversations?: string[] | null;
-  observed_at?: Date | string | null;
-  occurred_at?: string | null;
-  status?: string | null;
-  reference_count?: number | null;
-  created: Date | string;
-  updated: Date | string;
-};
-
-export type SemanticMemoryFtsDbRow = SemanticMemoryRawDbRow & { rank: number };
-
-export function mapSemanticMemoryRow(
-  row: SemanticMemoryDbRow | SemanticMemoryRawDbRow,
-): SemanticMemoryRow {
-  const sourceConversations =
-    "sourceConversations" in row
-      ? (row.sourceConversations ?? [])
-      : (row.source_conversations ?? []);
-  const observedRaw = "observedAt" in row ? row.observedAt : row.observed_at;
-  const occurredAt = "occurredAt" in row ? row.occurredAt : row.occurred_at;
-  const referenceCount = "referenceCount" in row ? row.referenceCount : (row.reference_count ?? 0);
-  return {
-    id: row.id,
-    type: row.type,
-    pinned: row.pinned,
-    content: row.content,
-    source_conversations: sourceConversations,
-    observed_at: observedRaw != null ? normalizePgTimestamp(observedRaw) : null,
-    occurred_at: occurredAt ?? null,
+export function mapSemanticMemoryRow(row: SemanticMemoryDbRow): SemanticMemoryRow {
+  return semanticMemoryRowSchema.parse({
+    ...row,
+    source_conversations: row.source_conversations ?? [],
+    observed_at: row.observed_at != null ? normalizePgTimestamp(row.observed_at) : null,
+    occurred_at: row.occurred_at ?? null,
     status: row.status ?? "active",
-    reference_count: Number(referenceCount ?? 0),
+    reference_count: Number(row.reference_count ?? 0),
     created: normalizePgTimestamp(row.created),
     updated: normalizePgTimestamp(row.updated),
-  };
+  });
 }

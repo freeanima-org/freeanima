@@ -17,10 +17,10 @@ export async function searchEntitiesVector(
   const limit = Math.max(1, Math.min(100, opts.limit ?? 10));
   const db = getDb();
   const queryVec = formatPgVector(queryEmbedding);
-  const distanceExpr = sql`${entities.searchEmbedding} <=> ${queryVec}::vector`;
+  const distanceExpr = sql`${entities.search_embedding} <=> ${queryVec}::vector`;
   const rankExpr = sql<number>`(1 - (${distanceExpr}))`.as("rank");
   const where = buildEntitySearchWhere(opts);
-  const conditions = [isNotNull(entities.searchEmbedding), ...(where ? [where] : [])];
+  const conditions = [isNotNull(entities.search_embedding), ...(where ? [where] : [])];
 
   const rows = await db
     .select({

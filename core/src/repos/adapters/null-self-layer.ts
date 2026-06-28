@@ -13,8 +13,8 @@ function emptyBlock(key: SelfBlockKey): SelfBlockRow {
     locked: key === "existence_anchor",
     version: 0,
     updated_by: null,
-    created: "",
-    updated: "",
+    created_at: "",
+    updated_at: "",
   };
 }
 

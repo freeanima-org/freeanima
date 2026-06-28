@@ -20,33 +20,33 @@ export const autobiographicalMemory = pgTable(
     id: text("id").primaryKey(),
     title: text("title").notNull(),
     content: text("content").notNull(),
-    ftsSegmented: text("fts_segmented"),
-    contentEmbedding: vector("content_embedding", { dimensions: SEMANTIC_EMBEDDING_DIMENSIONS }),
-    contentFts: tsvector("content_fts").generatedAlwaysAs(
+    fts_segmented: text("fts_segmented"),
+    content_embedding: vector("content_embedding", { dimensions: SEMANTIC_EMBEDDING_DIMENSIONS }),
+    content_fts: tsvector("content_fts").generatedAlwaysAs(
       (): SQL =>
         sql`to_tsvector('simple', CASE
-          WHEN nullif(btrim(${autobiographicalMemory.ftsSegmented}), '') IS NOT NULL
-          THEN regexp_replace(btrim(${autobiographicalMemory.ftsSegmented}), '\\s+', ' ', 'g')
+          WHEN nullif(btrim(${autobiographicalMemory.fts_segmented}), '') IS NOT NULL
+          THEN regexp_replace(btrim(${autobiographicalMemory.fts_segmented}), '\\s+', ' ', 'g')
           ELSE message_fts_input(
             btrim(${autobiographicalMemory.title}) || E'\\n' || btrim(${autobiographicalMemory.content})
           )
         END)`,
     ),
     significance: text("significance").notNull().default("normal"),
-    periodStart: text("period_start"),
-    periodEnd: text("period_end"),
-    sourceFacts: text("source_facts").array().notNull().default([]),
-    sourceConversations: text("source_conversations").array().notNull().default([]),
+    period_start: text("period_start"),
+    period_end: text("period_end"),
+    source_facts: text("source_facts").array().notNull().default([]),
+    source_conversations: text("source_conversations").array().notNull().default([]),
     status: text("status").notNull().default("active"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    index("idx_autobiographical_memory_fts").using("gin", t.contentFts),
+    index("idx_autobiographical_memory_fts").using("gin", t.content_fts),
     index("idx_autobiographical_memory_status").on(t.status),
     index("idx_autobiographical_memory_significance").on(t.significance),
-    index("idx_autobiographical_memory_updated").on(t.updatedAt.desc()),
-    index("idx_autobiographical_memory_source_facts").using("gin", t.sourceFacts),
-    index("idx_autobiographical_memory_source_conversations").using("gin", t.sourceConversations),
+    index("idx_autobiographical_memory_updated").on(t.updated_at.desc()),
+    index("idx_autobiographical_memory_source_facts").using("gin", t.source_facts),
+    index("idx_autobiographical_memory_source_conversations").using("gin", t.source_conversations),
   ],
 );

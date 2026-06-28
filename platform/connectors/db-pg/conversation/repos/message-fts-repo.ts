@@ -7,7 +7,7 @@ import { hybridSearchMessages } from "../../fts/hybrid-search.ts";
 
 export async function searchMessagesFts(
   query: string,
-  opts?: { conversationId?: string; limit?: number },
+  opts?: { conversation_id?: string; limit?: number },
 ): Promise<MessageFtsHit[]> {
   return hybridSearchMessages(query, opts);
 }
@@ -17,6 +17,6 @@ export async function countSearchableMessages(): Promise<number> {
   const rows = await db
     .select({ n: sql<number>`count(*)::int` })
     .from(messages)
-    .where(and(isNotNull(messages.contentFts), notLike(messages.conversationId, "debug-%")));
+    .where(and(isNotNull(messages.content_fts), notLike(messages.conversation_id, "debug-%")));
   return Number(rows[0]?.n ?? 0);
 }

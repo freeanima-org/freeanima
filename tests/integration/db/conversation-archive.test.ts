@@ -42,7 +42,7 @@ async function backdateSession(conversationId: string): Promise<void> {
   const db = getDb();
   await db
     .update(conversations)
-    .set({ updatedAt: STALE_UPDATED_AT })
+    .set({ updated_at: STALE_UPDATED_AT })
     .where(eq(conversations.id, conversationId));
 }
 
@@ -129,7 +129,7 @@ describePg("conversation archive/delete (PostgreSQL)", () => {
     const msgRows = await db
       .select({ id: messages.id })
       .from(messages)
-      .where(eq(messages.conversationId, conversationId));
+      .where(eq(messages.conversation_id, conversationId));
     expect(msgRows).toHaveLength(0);
   });
 

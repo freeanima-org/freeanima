@@ -14,7 +14,7 @@ export async function setEntityEmbedding(
   const db = getDb();
   const rows = await db
     .update(entities)
-    .set({ searchEmbedding: sql`${formatPgVector(embedding)}::vector` })
+    .set({ search_embedding: sql`${formatPgVector(embedding)}::vector` })
     .where(eq(entities.id, id))
     .returning({ id: entities.id });
   return rows.length > 0;
@@ -22,5 +22,5 @@ export async function setEntityEmbedding(
 
 export async function clearEntityEmbedding(id: number): Promise<void> {
   const db = getDb();
-  await db.update(entities).set({ searchEmbedding: null }).where(eq(entities.id, id));
+  await db.update(entities).set({ search_embedding: null }).where(eq(entities.id, id));
 }

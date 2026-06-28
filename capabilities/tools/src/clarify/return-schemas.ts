@@ -1,10 +1,5 @@
 import { defineToolReturn, type ToolReturnContractFields, z } from "@freeanima/core/tool";
-
-const clarifyItemSchema = z.object({
-  question: z.string(),
-  choices: z.array(z.string()).optional(),
-  default: z.string().optional(),
-});
+import { clarifyItemSchema } from "@freeanima/core/db/schema";
 
 export const CLARIFY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
   clarify: defineToolReturn({

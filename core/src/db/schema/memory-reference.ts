@@ -9,21 +9,21 @@ export const memoryReferences = pgTable(
   "memory_references",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    messageId: text("message_id")
+    message_id: text("message_id")
       .notNull()
       .references(() => messages.id, { onDelete: "cascade" }),
-    semanticMemoryId: text("semantic_memory_id")
+    semantic_memory_id: text("semantic_memory_id")
       .notNull()
       .references(() => semanticMemory.id, { onDelete: "cascade" }),
-    conversationId: text("conversation_id")
+    conversation_id: text("conversation_id")
       .notNull()
       .references(() => conversations.id, { onDelete: "cascade" }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    index("idx_memory_references_semantic_memory_id").on(t.semanticMemoryId),
-    index("idx_memory_references_conversation_id").on(t.conversationId),
-    index("idx_memory_references_created_at").on(t.createdAt),
-    uniqueIndex("memory_references_message_memory_uidx").on(t.messageId, t.semanticMemoryId),
+    index("idx_memory_references_semantic_memory_id").on(t.semantic_memory_id),
+    index("idx_memory_references_conversation_id").on(t.conversation_id),
+    index("idx_memory_references_created_at").on(t.created_at),
+    uniqueIndex("memory_references_message_memory_uidx").on(t.message_id, t.semantic_memory_id),
   ],
 );

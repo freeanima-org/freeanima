@@ -1,6 +1,9 @@
 import type { SelfBlockKey } from "@freeanima/core/db/schema";
 
-export type { SelfBlockKey };
+import type { SelfBlockRow } from "../schemas/self-block-row.ts";
+
+export type { SelfBlockKey, SelfBlockRow };
+export { selfBlockRowSchema } from "../schemas/self-block-row.ts";
 
 /** Self-layer six blocks fixed order (system prompt injection) */
 export const SELF_BLOCK_KEYS: SelfBlockKey[] = [
@@ -11,17 +14,6 @@ export const SELF_BLOCK_KEYS: SelfBlockKey[] = [
   "metacognition",
   "autobiography_summary",
 ];
-
-/** PG self_blocks row */
-export type SelfBlockRow = {
-  block_key: SelfBlockKey;
-  content: string;
-  locked: boolean;
-  version: number;
-  updated_by: string | null;
-  created: string;
-  updated: string;
-};
 
 export type SelfBlockUpsertInput = {
   block_key: SelfBlockKey;

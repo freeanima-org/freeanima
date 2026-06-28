@@ -22,8 +22,8 @@ function emptyPlaceholderBlocks(): SelfBlockRow[] {
     locked: key === "existence_anchor",
     version: 0,
     updated_by: null,
-    created: now,
-    updated: now,
+    created_at: now,
+    updated_at: now,
   }));
 }
 

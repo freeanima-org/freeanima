@@ -107,7 +107,7 @@ async function countSemanticMemorySegmentedTargets(onlyMissing: boolean): Promis
   const db = getDb();
   const conditions = [drizzleSql`length(btrim(${semanticMemory.content})) > 0`];
   if (onlyMissing) {
-    conditions.push(drizzleSql`nullif(btrim(${semanticMemory.ftsSegmented}), '') IS NULL`);
+    conditions.push(drizzleSql`nullif(btrim(${semanticMemory.fts_segmented}), '') IS NULL`);
   }
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
@@ -126,7 +126,7 @@ async function countEntitiesSegmentedTargets(onlyMissing: boolean): Promise<numb
     )) > 0`,
   ];
   if (onlyMissing) {
-    conditions.push(drizzleSql`nullif(btrim(${entities.ftsSegmented}), '') IS NULL`);
+    conditions.push(drizzleSql`nullif(btrim(${entities.fts_segmented}), '') IS NULL`);
   }
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
@@ -137,9 +137,9 @@ async function countEntitiesSegmentedTargets(onlyMissing: boolean): Promise<numb
 
 async function countMessagesSegmentedTargets(onlyMissing: boolean): Promise<number> {
   const db = getDb();
-  const conditions = [isNotNull(messages.contentFts)];
+  const conditions = [isNotNull(messages.content_fts)];
   if (onlyMissing) {
-    conditions.push(drizzleSql`nullif(btrim(${messages.ftsSegmented}), '') IS NULL`);
+    conditions.push(drizzleSql`nullif(btrim(${messages.fts_segmented}), '') IS NULL`);
   }
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
@@ -154,7 +154,7 @@ async function countSemanticMemoryEmbeddingTargets(onlyMissing: boolean): Promis
     eq(semanticMemory.status, "active"),
     drizzleSql`length(btrim(${semanticMemory.content})) > 0`,
   ];
-  if (onlyMissing) conditions.push(isNull(semanticMemory.contentEmbedding));
+  if (onlyMissing) conditions.push(isNull(semanticMemory.content_embedding));
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
     .from(semanticMemory)
@@ -164,8 +164,8 @@ async function countSemanticMemoryEmbeddingTargets(onlyMissing: boolean): Promis
 
 async function countMessagesEmbeddingTargets(onlyMissing: boolean): Promise<number> {
   const db = getDb();
-  const conditions = [isNotNull(messages.contentFts)];
-  if (onlyMissing) conditions.push(isNull(messages.contentEmbedding));
+  const conditions = [isNotNull(messages.content_fts)];
+  if (onlyMissing) conditions.push(isNull(messages.content_embedding));
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
     .from(messages)
@@ -191,7 +191,7 @@ async function rebuildSemanticMemoryFtsSegmented(
   for (;;) {
     const baseConditions = [drizzleSql`length(btrim(${semanticMemory.content})) > 0`];
     if (onlyMissing) {
-      baseConditions.push(drizzleSql`nullif(btrim(${semanticMemory.ftsSegmented}), '') IS NULL`);
+      baseConditions.push(drizzleSql`nullif(btrim(${semanticMemory.fts_segmented}), '') IS NULL`);
     }
     const cursorCond = idCursorCondition(onlyMissing, lastId);
     if (cursorCond) baseConditions.push(cursorCond);
@@ -205,8 +205,8 @@ async function rebuildSemanticMemoryFtsSegmented(
     if (!rows.length) break;
 
     for (const row of rows) {
-      const ftsSegmented = await segmentForFts(row.content);
-      await db.update(semanticMemory).set({ ftsSegmented }).where(eq(semanticMemory.id, row.id));
+      const fts_segmented = await segmentForFts(row.content);
+      await db.update(semanticMemory).set({ fts_segmented }).where(eq(semanticMemory.id, row.id));
       updated += 1;
       report(opts.onProgress, "semantic_memory_segmented", "semantic_memory", updated, total);
       lastId = row.id;
@@ -234,9 +234,9 @@ async function rebuildMessagesFtsSegmented(
   let lastId = "";
 
   for (;;) {
-    const baseConditions = [isNotNull(messages.contentFts)];
+    const baseConditions = [isNotNull(messages.content_fts)];
     if (onlyMissing) {
-      baseConditions.push(drizzleSql`nullif(btrim(${messages.ftsSegmented}), '') IS NULL`);
+      baseConditions.push(drizzleSql`nullif(btrim(${messages.fts_segmented}), '') IS NULL`);
     }
     const cursorCond = messageIdCursorCondition(onlyMissing, lastId);
     if (cursorCond) baseConditions.push(cursorCond);
@@ -254,8 +254,8 @@ async function rebuildMessagesFtsSegmented(
 
     for (const row of rows) {
       const content = row.content ?? "";
-      const ftsSegmented = content ? await segmentForFts(content) : null;
-      await db.update(messages).set({ ftsSegmented }).where(eq(messages.id, row.id));
+      const fts_segmented = content ? await segmentForFts(content) : null;
+      await db.update(messages).set({ fts_segmented }).where(eq(messages.id, row.id));
       updated += 1;
       report(opts.onProgress, "messages_segmented", "messages", updated, total);
       lastId = row.id;
@@ -284,7 +284,7 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
       eq(semanticMemory.status, "active"),
       drizzleSql`length(btrim(${semanticMemory.content})) > 0`,
     ];
-    if (onlyMissing) baseConditions.push(isNull(semanticMemory.contentEmbedding));
+    if (onlyMissing) baseConditions.push(isNull(semanticMemory.content_embedding));
     const cursorCond = idCursorCondition(onlyMissing, lastId);
     if (cursorCond) baseConditions.push(cursorCond);
 
@@ -323,8 +323,8 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
   let lastId = "";
 
   for (;;) {
-    const baseConditions = [isNotNull(messages.contentFts)];
-    if (onlyMissing) baseConditions.push(isNull(messages.contentEmbedding));
+    const baseConditions = [isNotNull(messages.content_fts)];
+    if (onlyMissing) baseConditions.push(isNull(messages.content_embedding));
     const cursorCond = messageIdCursorCondition(onlyMissing, lastId);
     if (cursorCond) baseConditions.push(cursorCond);
 
@@ -357,7 +357,7 @@ async function countLimbicMemorySegmentedTargets(onlyMissing: boolean): Promise<
   const db = getDb();
   const conditions = [drizzleSql`length(btrim(${limbicMemory.content})) > 0`];
   if (onlyMissing) {
-    conditions.push(drizzleSql`nullif(btrim(${limbicMemory.ftsSegmented}), '') IS NULL`);
+    conditions.push(drizzleSql`nullif(btrim(${limbicMemory.fts_segmented}), '') IS NULL`);
   }
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
@@ -373,7 +373,7 @@ async function countAutobiographicalMemorySegmentedTargets(onlyMissing: boolean)
     drizzleSql`length(btrim(${autobiographicalMemory.content})) > 0`,
   ];
   if (onlyMissing) {
-    conditions.push(drizzleSql`nullif(btrim(${autobiographicalMemory.ftsSegmented}), '') IS NULL`);
+    conditions.push(drizzleSql`nullif(btrim(${autobiographicalMemory.fts_segmented}), '') IS NULL`);
   }
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
@@ -385,7 +385,7 @@ async function countAutobiographicalMemorySegmentedTargets(onlyMissing: boolean)
 async function countLimbicMemoryEmbeddingTargets(onlyMissing: boolean): Promise<number> {
   const db = getDb();
   const conditions = [drizzleSql`length(btrim(${limbicMemory.content})) > 0`];
-  if (onlyMissing) conditions.push(isNull(limbicMemory.contentEmbedding));
+  if (onlyMissing) conditions.push(isNull(limbicMemory.content_embedding));
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
     .from(limbicMemory)
@@ -399,7 +399,7 @@ async function countAutobiographicalMemoryEmbeddingTargets(onlyMissing: boolean)
     eq(autobiographicalMemory.status, "active"),
     drizzleSql`length(btrim(${autobiographicalMemory.content})) > 0`,
   ];
-  if (onlyMissing) conditions.push(isNull(autobiographicalMemory.contentEmbedding));
+  if (onlyMissing) conditions.push(isNull(autobiographicalMemory.content_embedding));
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
     .from(autobiographicalMemory)
@@ -425,7 +425,7 @@ async function rebuildLimbicMemoryFtsSegmented(
   for (;;) {
     const baseConditions = [drizzleSql`length(btrim(${limbicMemory.content})) > 0`];
     if (onlyMissing) {
-      baseConditions.push(drizzleSql`nullif(btrim(${limbicMemory.ftsSegmented}), '') IS NULL`);
+      baseConditions.push(drizzleSql`nullif(btrim(${limbicMemory.fts_segmented}), '') IS NULL`);
     }
     const cursorCond = limbicIdCursorCondition(onlyMissing, lastId);
     if (cursorCond) baseConditions.push(cursorCond);
@@ -439,8 +439,8 @@ async function rebuildLimbicMemoryFtsSegmented(
     if (!rows.length) break;
 
     for (const row of rows) {
-      const ftsSegmented = await segmentForFts(row.content);
-      await db.update(limbicMemory).set({ ftsSegmented }).where(eq(limbicMemory.id, row.id));
+      const fts_segmented = await segmentForFts(row.content);
+      await db.update(limbicMemory).set({ fts_segmented }).where(eq(limbicMemory.id, row.id));
       updated += 1;
       report(opts.onProgress, "limbic_memory_segmented", "limbic_memory", updated, total);
       lastId = row.id;
@@ -480,7 +480,7 @@ async function rebuildAutobiographicalMemoryFtsSegmented(
     ];
     if (onlyMissing) {
       baseConditions.push(
-        drizzleSql`nullif(btrim(${autobiographicalMemory.ftsSegmented}), '') IS NULL`,
+        drizzleSql`nullif(btrim(${autobiographicalMemory.fts_segmented}), '') IS NULL`,
       );
     }
     const cursorCond = autobiographicalIdCursorCondition(onlyMissing, lastId);
@@ -500,10 +500,10 @@ async function rebuildAutobiographicalMemoryFtsSegmented(
 
     for (const row of rows) {
       const indexText = autobiographicalIndexText(row.title, row.content);
-      const ftsSegmented = indexText ? await segmentForFts(indexText) : null;
+      const fts_segmented = indexText ? await segmentForFts(indexText) : null;
       await db
         .update(autobiographicalMemory)
-        .set({ ftsSegmented })
+        .set({ fts_segmented })
         .where(eq(autobiographicalMemory.id, row.id));
       updated += 1;
       report(
@@ -546,7 +546,7 @@ async function rebuildEntitiesFtsSegmented(
       )) > 0`,
     ];
     if (onlyMissing) {
-      baseConditions.push(drizzleSql`nullif(btrim(${entities.ftsSegmented}), '') IS NULL`);
+      baseConditions.push(drizzleSql`nullif(btrim(${entities.fts_segmented}), '') IS NULL`);
     }
     const cursorCond = entityIdCursorCondition(onlyMissing, lastId);
     if (cursorCond) baseConditions.push(cursorCond);
@@ -558,7 +558,7 @@ async function rebuildEntitiesFtsSegmented(
         summary: entities.summary,
         content: entities.content,
         body: entities.body,
-        primaryComponent: entities.primaryComponent,
+        primary_component: entities.primary_component,
       })
       .from(entities)
       .where(and(...baseConditions))
@@ -572,10 +572,10 @@ async function rebuildEntitiesFtsSegmented(
         summary: row.summary,
         content: row.content,
         body: (row.body ?? {}) as Record<string, unknown>,
-        primary_component: row.primaryComponent,
+        primary_component: row.primary_component,
       });
-      const ftsSegmented = indexText.trim() ? await segmentForFts(indexText) : null;
-      await db.update(entities).set({ ftsSegmented }).where(eq(entities.id, row.id));
+      const fts_segmented = indexText.trim() ? await segmentForFts(indexText) : null;
+      await db.update(entities).set({ fts_segmented }).where(eq(entities.id, row.id));
       updated += 1;
       report(opts.onProgress, "entities_segmented", "entities", updated, total);
       lastId = row.id;
@@ -601,7 +601,7 @@ async function rebuildLimbicMemoryEmbeddings(opts: FtsRebuildOptions): Promise<n
 
   for (;;) {
     const baseConditions = [drizzleSql`length(btrim(${limbicMemory.content})) > 0`];
-    if (onlyMissing) baseConditions.push(isNull(limbicMemory.contentEmbedding));
+    if (onlyMissing) baseConditions.push(isNull(limbicMemory.content_embedding));
     const cursorCond = limbicIdCursorCondition(onlyMissing, lastId);
     if (cursorCond) baseConditions.push(cursorCond);
 
@@ -644,7 +644,7 @@ async function rebuildAutobiographicalMemoryEmbeddings(opts: FtsRebuildOptions):
       eq(autobiographicalMemory.status, "active"),
       drizzleSql`length(btrim(${autobiographicalMemory.content})) > 0`,
     ];
-    if (onlyMissing) baseConditions.push(isNull(autobiographicalMemory.contentEmbedding));
+    if (onlyMissing) baseConditions.push(isNull(autobiographicalMemory.content_embedding));
     const cursorCond = autobiographicalIdCursorCondition(onlyMissing, lastId);
     if (cursorCond) baseConditions.push(cursorCond);
 

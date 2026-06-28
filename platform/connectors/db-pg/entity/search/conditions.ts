@@ -33,9 +33,9 @@ export function resolveWorldScope(opts: EntitySearchOpts): SQL[] {
       );
     }
     if (ids.length === 1) {
-      return [eq(entities.worldId, ids[0]!)];
+      return [eq(entities.world_id, ids[0]!)];
     }
-    return [inArray(entities.worldId, ids)];
+    return [inArray(entities.world_id, ids)];
   }
 
   if (opts.world_id == null || opts.world_id <= 0) {
@@ -44,7 +44,7 @@ export function resolveWorldScope(opts: EntitySearchOpts): SQL[] {
       "world_id is required unless global=true",
     );
   }
-  return [eq(entities.worldId, opts.world_id)];
+  return [eq(entities.world_id, opts.world_id)];
 }
 
 function buildTaskItemBodyConditions(
@@ -193,22 +193,22 @@ export function buildEntitySearchConditions(opts: EntitySearchOpts): SQL[] {
     conditions.push(inArray(entities.type, opts.types as EntityType[]));
   }
   if (opts.primary_component) {
-    conditions.push(eq(entities.primaryComponent, opts.primary_component));
+    conditions.push(eq(entities.primary_component, opts.primary_component));
   }
   if (opts.component) {
     conditions.push(sql`${entities.components} @> ARRAY[${opts.component}]::text[]`);
   }
   if (opts.created_after) {
-    conditions.push(gte(entities.createdAt, opts.created_after));
+    conditions.push(gte(entities.created_at, opts.created_after));
   }
   if (opts.created_before) {
-    conditions.push(lte(entities.createdAt, opts.created_before));
+    conditions.push(lte(entities.created_at, opts.created_before));
   }
   if (opts.updated_after) {
-    conditions.push(gte(entities.updatedAt, opts.updated_after));
+    conditions.push(gte(entities.updated_at, opts.updated_after));
   }
   if (opts.updated_before) {
-    conditions.push(lte(entities.updatedAt, opts.updated_before));
+    conditions.push(lte(entities.updated_at, opts.updated_before));
   }
 
   conditions.push(...buildComponentFilterConditions(opts));

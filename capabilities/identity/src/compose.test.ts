@@ -16,8 +16,8 @@ describe("wrapSelfLayerForSystemPrompt", () => {
         locked: false,
         version: 1,
         updated_by: null,
-        created: "",
-        updated: "",
+        created_at: "",
+        updated_at: "",
       },
     ]);
     const wrapped = wrapSelfLayerForSystemPrompt(inner);
@@ -43,8 +43,8 @@ describe("wrapSelfLayerForSystemPrompt", () => {
         locked: false,
         version: 0,
         updated_by: null,
-        created: "",
-        updated: "",
+        created_at: "",
+        updated_at: "",
       })),
     );
     const wrapped = wrapSelfLayerForSystemPrompt(inner);

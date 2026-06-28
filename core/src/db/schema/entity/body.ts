@@ -22,10 +22,10 @@ export function validateEntityBody(components: string[], body: unknown): Record<
 }
 
 export function validatePrimaryComponentBody(
-  primaryComponent: ComponentId,
+  primary_component: ComponentId,
   body: unknown,
 ): Record<string, unknown> {
-  return validateEntityBody([primaryComponent], body);
+  return validateEntityBody([primary_component], body);
 }
 
 export function mergeComponentBody(

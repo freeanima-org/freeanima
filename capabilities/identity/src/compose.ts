@@ -53,8 +53,8 @@ export function composeSelfLayerPromptFromViews(views: SelfBlockView[]): string 
       locked: view.locked,
       version: view.version,
       updated_by: null,
-      created: "",
-      updated: "",
+      created_at: "",
+      updated_at: "",
     })),
   );
 }

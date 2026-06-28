@@ -11,6 +11,14 @@ export type {
 export type { PromptDebugResponse, ToolsStatusResponse, ToolsStatusToolItem } from "./schemas.ts";
 
 export type {
+  AutobiographicalMemoryRow,
+  DreamMemoryRow,
+  EntityRow,
+  LimbicMemoryRow,
+  SemanticMemoryRow,
+} from "@freeanima/core/repos";
+
+export type {
   DependencyStatus,
   HealthSnapshot as HealthResponse,
   PlatformStatusSnapshot as PlatformStatus,

@@ -7,10 +7,7 @@ import type { AutobiographicalStatus } from "@freeanima/core/repos";
 import { formatPgVector } from "../embedding/format.ts";
 import { getDb } from "../client.ts";
 import { buildFtsTsQuery } from "./query.ts";
-import {
-  mapAutobiographicalMemoryRow,
-  type AutobiographicalMemoryDbRow,
-} from "../autobiographical-memory/mappers/autobiographical-mapper.ts";
+import { type AutobiographicalMemoryDbRow } from "../autobiographical-memory/mappers/autobiographical-mapper.ts";
 
 export type AutobiographicalMemoryFtsDbRow = AutobiographicalMemoryDbRow & { rank: number };
 
@@ -35,7 +32,7 @@ export async function searchAutobiographicalMemoryFtsRaw(
   const db = getDb();
   const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
   const rankExpr =
-    sql<number>`ts_rank_cd(${autobiographicalMemory.contentFts}, ${tsqueryExpr}, 32)`.as("rank");
+    sql<number>`ts_rank_cd(${autobiographicalMemory.content_fts}, ${tsqueryExpr}, 32)`.as("rank");
 
   const rows = await db
     .select({
@@ -44,15 +41,15 @@ export async function searchAutobiographicalMemoryFtsRaw(
     })
     .from(autobiographicalMemory)
     .where(
-      and(sql`${autobiographicalMemory.contentFts} @@ ${tsqueryExpr}`, statusCondition(status)),
+      and(sql`${autobiographicalMemory.content_fts} @@ ${tsqueryExpr}`, statusCondition(status)),
     )
     .orderBy(desc(rankExpr))
     .limit(limit);
 
-  return rows.map((r) => ({ ...mapAutobiographicalMemoryRow(r), rank: Number(r.rank) }));
+  return rows.map((r) => ({ ...r, rank: Number(r.rank) }));
 }
 
-export type TrgmAutobiographicalHit = ReturnType<typeof mapAutobiographicalMemoryRow> & {
+export type TrgmAutobiographicalHit = AutobiographicalMemoryDbRow & {
   docKey: string;
   rank: number;
 };
@@ -86,13 +83,13 @@ export async function searchAutobiographicalMemoryTrgm(
     .limit(limit);
 
   return rows.map((r) => ({
-    ...mapAutobiographicalMemoryRow(r),
+    ...r,
     docKey: autobiographicalDocKey(r.id),
     rank: Number(r.rank),
   }));
 }
 
-export type VectorAutobiographicalHit = ReturnType<typeof mapAutobiographicalMemoryRow> & {
+export type VectorAutobiographicalHit = AutobiographicalMemoryDbRow & {
   docKey: string;
   rank: number;
 };
@@ -107,7 +104,7 @@ export async function searchAutobiographicalMemoryVector(
   const status = opts?.status ?? "active";
   const queryVec = formatPgVector(queryEmbedding);
   const db = getDb();
-  const distanceExpr = sql`${autobiographicalMemory.contentEmbedding} <=> ${queryVec}::vector`;
+  const distanceExpr = sql`${autobiographicalMemory.content_embedding} <=> ${queryVec}::vector`;
   const rankExpr = sql<number>`1 - (${distanceExpr})`.as("rank");
 
   const rows = await db
@@ -116,12 +113,12 @@ export async function searchAutobiographicalMemoryVector(
       rank: rankExpr,
     })
     .from(autobiographicalMemory)
-    .where(and(isNotNull(autobiographicalMemory.contentEmbedding), statusCondition(status)))
+    .where(and(isNotNull(autobiographicalMemory.content_embedding), statusCondition(status)))
     .orderBy(asc(distanceExpr))
     .limit(limit);
 
   return rows.map((r) => ({
-    ...mapAutobiographicalMemoryRow(r),
+    ...r,
     docKey: autobiographicalDocKey(r.id),
     rank: Number(r.rank),
   }));

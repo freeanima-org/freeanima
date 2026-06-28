@@ -28,21 +28,21 @@ export async function createCronJob(row: CronJobCreateInput): Promise<void> {
     prompt: row.prompt ?? "",
     skills: normalizeStringArray(row.skills),
     script: row.script ?? null,
-    noAgent: row.no_agent ?? false,
-    modelProvider: row.model_provider ?? null,
-    modelName: row.model_name ?? null,
+    no_agent: row.no_agent ?? false,
+    model_provider: row.model_provider ?? null,
+    model_name: row.model_name ?? null,
     workdir: row.workdir ?? null,
-    contextFrom: normalizeStringArray(row.context_from),
+    context_from: normalizeStringArray(row.context_from),
     deliver: row.deliver ?? "local",
-    timeoutSec: row.timeout_sec ?? 300,
+    timeout_sec: row.timeout_sec ?? 300,
     builtin: row.builtin ?? false,
     repeat: row.repeat ?? null,
-    runCount: row.run_count ?? 0,
+    run_count: row.run_count ?? 0,
     paused: row.paused ?? false,
-    createdAt: created,
-    updatedAt: updated,
-    lastRunAt: row.last_run_at ?? null,
-    lastOutputRef: row.last_output_ref ?? null,
+    created_at: created,
+    updated_at: updated,
+    last_run_at: row.last_run_at ?? null,
+    last_output_ref: row.last_output_ref ?? null,
   });
 }
 
@@ -61,19 +61,19 @@ export async function upsertBuiltinCronJob(row: CronJobBuiltinUpsertInput): Prom
       name: row.name,
       schedule: row.schedule,
       prompt: row.prompt ?? "",
-      noAgent: row.no_agent ?? true,
+      no_agent: row.no_agent ?? true,
       builtin: true,
       deliver: row.deliver ?? "local",
-      timeoutSec: row.timeout_sec ?? 1800,
-      createdAt: now,
-      updatedAt: now,
+      timeout_sec: row.timeout_sec ?? 1800,
+      created_at: now,
+      updated_at: now,
     })
     .onConflictDoUpdate({
       target: cronJobs.id,
       set: {
         name: row.name,
         schedule: row.schedule,
-        updatedAt: now,
+        updated_at: now,
       },
     });
 
@@ -92,27 +92,27 @@ export async function updateCronJob(patch: CronJobUpdateInput): Promise<boolean>
   if (!trimmed) return false;
 
   const set: Partial<typeof cronJobs.$inferInsert> = {
-    updatedAt: patch.updated_at ?? formatCstIso(),
+    updated_at: patch.updated_at ?? formatCstIso(),
   };
   if (patch.name !== undefined) set.name = patch.name;
   if (patch.schedule !== undefined) set.schedule = patch.schedule;
   if (patch.prompt !== undefined) set.prompt = patch.prompt;
   if (patch.skills !== undefined) set.skills = normalizeStringArray(patch.skills);
   if (patch.script !== undefined) set.script = patch.script;
-  if (patch.no_agent !== undefined) set.noAgent = patch.no_agent;
-  if (patch.model_provider !== undefined) set.modelProvider = patch.model_provider;
-  if (patch.model_name !== undefined) set.modelName = patch.model_name;
+  if (patch.no_agent !== undefined) set.no_agent = patch.no_agent;
+  if (patch.model_provider !== undefined) set.model_provider = patch.model_provider;
+  if (patch.model_name !== undefined) set.model_name = patch.model_name;
   if (patch.workdir !== undefined) set.workdir = patch.workdir;
   if (patch.context_from !== undefined) {
-    set.contextFrom = normalizeStringArray(patch.context_from);
+    set.context_from = normalizeStringArray(patch.context_from);
   }
   if (patch.deliver !== undefined) set.deliver = patch.deliver;
-  if (patch.timeout_sec !== undefined) set.timeoutSec = patch.timeout_sec;
+  if (patch.timeout_sec !== undefined) set.timeout_sec = patch.timeout_sec;
   if (patch.repeat !== undefined) set.repeat = patch.repeat;
-  if (patch.run_count !== undefined) set.runCount = patch.run_count;
+  if (patch.run_count !== undefined) set.run_count = patch.run_count;
   if (patch.paused !== undefined) set.paused = patch.paused;
-  if (patch.last_run_at !== undefined) set.lastRunAt = patch.last_run_at;
-  if (patch.last_output_ref !== undefined) set.lastOutputRef = patch.last_output_ref;
+  if (patch.last_run_at !== undefined) set.last_run_at = patch.last_run_at;
+  if (patch.last_output_ref !== undefined) set.last_output_ref = patch.last_output_ref;
 
   const db = getDb();
   const rows = await db.update(cronJobs).set(set).where(eq(cronJobs.id, trimmed)).returning({
@@ -132,6 +132,6 @@ export async function deleteCronJob(id: string): Promise<boolean> {
 
 export async function listAllCronJobs(): Promise<CronJobRow[]> {
   const db = getDb();
-  const rows = await db.select().from(cronJobs).orderBy(asc(cronJobs.createdAt));
+  const rows = await db.select().from(cronJobs).orderBy(asc(cronJobs.created_at));
   return rows.map(mapCronJobRow);
 }

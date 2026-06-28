@@ -17,24 +17,24 @@ export const conversations = pgTable("conversations", {
   model: text("model").notNull(),
   title: text("title"),
   cwd: text("cwd"),
-  systemPrompt: text("system_prompt"),
-  platformInfo: jsonb("platform_info").$type<PlatformInfo | null>(),
+  system_prompt: text("system_prompt"),
+  platform_info: jsonb("platform_info").$type<PlatformInfo | null>(),
   compression: jsonb("compression").$type<CompressionJson | null>(),
   todos: jsonb("todos").$type<ConversationTodosJson>().notNull().default({ items: [], next_id: 1 }),
-  awaitingClarify: jsonb("awaiting_clarify").$type<AwaitingClarifyJson | null>(),
-  acpTasks: jsonb("acp_tasks").$type<AcpTasksJson | null>(),
+  awaiting_clarify: jsonb("awaiting_clarify").$type<AwaitingClarifyJson | null>(),
+  acp_tasks: jsonb("acp_tasks").$type<AcpTasksJson | null>(),
   goal: jsonb("goal").$type<ConversationGoalJson | null>(),
-  cachedToolsets: jsonb("cached_toolsets")
+  cached_toolsets: jsonb("cached_toolsets")
     .$type<ConversationCachedToolsetsJson>()
     .notNull()
     .default([]),
-  stagedToolsets: jsonb("staged_toolsets")
+  staged_toolsets: jsonb("staged_toolsets")
     .$type<ConversationStagedToolsetsJson>()
     .notNull()
     .default([]),
   functions: jsonb("functions").$type<ConversationFunctionsJson>().notNull().default([]),
   debug: boolean("debug").notNull().default(false),
-  archivedAt: timestamp("archived_at", { withTimezone: true, mode: "string" }),
-  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).notNull(),
+  archived_at: timestamp("archived_at", { withTimezone: true, mode: "string" }),
+  created_at: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),
+  updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" }).notNull(),
 });

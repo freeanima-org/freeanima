@@ -15,23 +15,23 @@ export function buildSemanticStatusCondition(
 }
 
 export function buildSemanticSourceConversationsCondition(
-  sourceConversations: readonly string[],
+  source_conversations: readonly string[],
 ): SQL | undefined {
-  if (sourceConversations.length === 0) return undefined;
-  return arrayOverlaps(semanticMemory.sourceConversations, [...sourceConversations]);
+  if (source_conversations.length === 0) return undefined;
+  return arrayOverlaps(semanticMemory.source_conversations, [...source_conversations]);
 }
 
 export function buildSemanticConditions(args: {
   types?: readonly string[];
   status?: "active" | "deprecated" | "all";
-  sourceConversations?: readonly string[];
+  source_conversations?: readonly string[];
 }): SQL[] {
   const conditions: SQL[] = [];
   const typeCond = buildSemanticTypeCondition(args.types ?? []);
   if (typeCond) conditions.push(typeCond);
   const statusCond = buildSemanticStatusCondition(args.status ?? "active");
   if (statusCond) conditions.push(statusCond);
-  const sourceCond = buildSemanticSourceConversationsCondition(args.sourceConversations ?? []);
+  const sourceCond = buildSemanticSourceConversationsCondition(args.source_conversations ?? []);
   if (sourceCond) conditions.push(sourceCond);
   return conditions;
 }

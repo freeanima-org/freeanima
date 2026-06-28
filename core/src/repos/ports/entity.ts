@@ -1,18 +1,7 @@
 import type { EntityType } from "@freeanima/core/db/schema";
+import type { EntityRow } from "@freeanima/core/db/schema/entity";
 
-export type EntityRow = {
-  id: number;
-  type: EntityType;
-  world_id: number;
-  components: string[];
-  primary_component: string;
-  title: string;
-  summary: string;
-  content: string;
-  body: Record<string, unknown>;
-  created_at: string;
-  updated_at: string;
-};
+export type { EntityRow };
 
 export type EntityCreateInput = {
   type: EntityType;

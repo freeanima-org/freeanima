@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
+import type { DreamMemoryRow } from "@freeanima/admin-api/api";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { listDreamMemories } from "@admin/lib/api.ts";
 import { formatDisplayDate, formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
@@ -9,14 +10,7 @@ import { useAdminOffsetPagination } from "@admin/lib/use-admin-offset-pagination
 
 const PAGE_SIZE = 20;
 
-type DreamRow = {
-  id: string;
-  dream_day: string | Date;
-  content: string;
-  source_limbic_ids: string[];
-  source_conversation_ids: string[];
-  created: string | Date;
-};
+type DreamRow = DreamMemoryRow;
 
 export const Route = createFileRoute("/_sidebar/dream")({
   component: DreamMemoryPage,

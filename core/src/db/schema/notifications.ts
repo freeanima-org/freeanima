@@ -11,20 +11,20 @@ export const notifications = pgTable(
   "notifications",
   {
     id: text("id").primaryKey(),
-    recipientKind: text("recipient_kind").notNull(),
-    recipientId: text("recipient_id").notNull().default("default"),
+    recipient_kind: text("recipient_kind").notNull(),
+    recipient_id: text("recipient_id").notNull().default("default"),
     title: text("title").notNull(),
     body: text("body").notNull(),
     payload: jsonb("payload").$type<Record<string, unknown> | null>(),
-    readAt: timestamp("read_at", { withTimezone: true, mode: "string" }),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+    read_at: timestamp("read_at", { withTimezone: true, mode: "string" }),
+    created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
       .notNull()
       .defaultNow(),
-    sourceKind: text("source_kind"),
-    sourceRef: text("source_ref"),
+    source_kind: text("source_kind"),
+    source_ref: text("source_ref"),
   },
   (t) => [
-    index("idx_notifications_recipient_created").on(t.recipientKind, t.recipientId, t.createdAt),
-    index("idx_notifications_recipient_read").on(t.recipientKind, t.recipientId, t.readAt),
+    index("idx_notifications_recipient_created").on(t.recipient_kind, t.recipient_id, t.created_at),
+    index("idx_notifications_recipient_read").on(t.recipient_kind, t.recipient_id, t.read_at),
   ],
 );

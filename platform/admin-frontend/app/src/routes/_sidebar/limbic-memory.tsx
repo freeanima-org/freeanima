@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
+import type { LimbicMemoryRow } from "@freeanima/admin-api/api";
 import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/satellite-sdk/form";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { listLimbicMemories } from "@admin/lib/api.ts";
@@ -12,16 +13,7 @@ const PAGE_SIZE = 20;
 
 const LIMBIC_KINDS = ["conversation_mood", "turning_point", "spike"] as const;
 
-type LimbicRow = {
-  id: string;
-  conversation_id: string;
-  kind: string;
-  valence: number | null;
-  arousal: number | null;
-  content: string;
-  intensity: number;
-  created: string;
-};
+type LimbicRow = LimbicMemoryRow;
 
 export const Route = createFileRoute("/_sidebar/limbic-memory")({
   component: LimbicMemoryPage,

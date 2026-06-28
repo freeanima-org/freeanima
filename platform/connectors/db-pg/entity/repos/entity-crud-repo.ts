@@ -49,22 +49,22 @@ export async function createEntity(input: EntityCreateInput): Promise<EntityRow>
     body,
     primary_component: primary,
   });
-  const ftsSegmented = await resolveFtsSegmentedForWrite(indexText);
+  const fts_segmented = await resolveFtsSegmentedForWrite(indexText);
   const db = getDb();
   const [row] = await db
     .insert(entities)
     .values({
       type,
-      worldId: input.world_id,
+      world_id: input.world_id,
       components,
-      primaryComponent: primary,
+      primary_component: primary,
       title,
       summary,
       content,
       body,
-      ftsSegmented,
-      createdAt: now,
-      updatedAt: now,
+      fts_segmented,
+      created_at: now,
+      updated_at: now,
     })
     .returning();
   if (!row) throw new Error("entity insert failed");
@@ -104,12 +104,12 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
   const patch: Partial<typeof entities.$inferInsert> = {
     components,
     body,
-    updatedAt: now,
+    updated_at: now,
   };
   if (input.title !== undefined) patch.title = nextTitle;
   if (input.summary !== undefined) patch.summary = nextSummary;
   if (input.content !== undefined) patch.content = nextContent;
-  if (input.world_id !== undefined) patch.worldId = input.world_id;
+  if (input.world_id !== undefined) patch.world_id = input.world_id;
 
   const textChanged =
     input.title !== undefined ||
@@ -117,7 +117,7 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
     input.content !== undefined ||
     input.body !== undefined;
   if (textChanged) {
-    patch.ftsSegmented = await resolveFtsSegmentedForWrite(indexText);
+    patch.fts_segmented = await resolveFtsSegmentedForWrite(indexText);
     await clearEntityEmbedding(input.id);
   }
 
@@ -141,7 +141,7 @@ export async function deleteEntity(id: number): Promise<boolean> {
 function buildListConditions(opts?: Omit<EntityListOpts, "offset" | "limit">) {
   const conditions = [];
   if (opts?.world_id != null) {
-    conditions.push(eq(entities.worldId, opts.world_id));
+    conditions.push(eq(entities.world_id, opts.world_id));
   }
   if (opts?.type != null) {
     conditions.push(eq(entities.type, opts.type));
@@ -150,7 +150,7 @@ function buildListConditions(opts?: Omit<EntityListOpts, "offset" | "limit">) {
     conditions.push(inArray(entities.type, opts.types));
   }
   if (opts?.primary_component) {
-    conditions.push(eq(entities.primaryComponent, opts.primary_component));
+    conditions.push(eq(entities.primary_component, opts.primary_component));
   }
   if (opts?.component) {
     conditions.push(sql`${entities.components} @> ARRAY[${opts.component}]::text[]`);
@@ -182,15 +182,15 @@ export async function countEntities(
   return Number(row?.value ?? 0);
 }
 
-export async function countEntitiesByBodyListId(listId: number, worldId: number): Promise<number> {
+export async function countEntitiesByBodyListId(listId: number, world_id: number): Promise<number> {
   const db = getDb();
   const [row] = await db
     .select({ value: count() })
     .from(entities)
     .where(
       and(
-        eq(entities.worldId, worldId),
-        eq(entities.primaryComponent, "task_item"),
+        eq(entities.world_id, world_id),
+        eq(entities.primary_component, "task_item"),
         sql`${entities.body}->>'list_id' = ${String(listId)}`,
       ),
     );

@@ -24,9 +24,9 @@ function normalizeEpisodicSnippets(raw: DreamMemoryCreateInput["episodic_snippet
 }
 
 export async function createDreamMemory(row: DreamMemoryCreateInput): Promise<string> {
-  const dreamDay = row.dream_day.trim();
+  const dream_day = row.dream_day.trim();
   const content = row.content.trim();
-  if (!dreamDay) throw new Error("dream_day is required");
+  if (!dream_day) throw new Error("dream_day is required");
   if (!content) throw new Error("content is required");
 
   const id = row.id?.trim() || randomUUID();
@@ -34,24 +34,24 @@ export async function createDreamMemory(row: DreamMemoryCreateInput): Promise<st
   const db = getDb();
   await db.insert(dreamMemory).values({
     id,
-    dreamDay,
+    dream_day,
     content,
-    sourceLimbicIds: normalizeStringArray(row.source_limbic_ids),
-    sourceConversationIds: normalizeStringArray(row.source_conversation_ids),
-    episodicSnippets: normalizeEpisodicSnippets(row.episodic_snippets),
-    createdAt: new Date(now),
+    source_limbic_ids: normalizeStringArray(row.source_limbic_ids),
+    source_conversation_ids: normalizeStringArray(row.source_conversation_ids),
+    episodic_snippets: normalizeEpisodicSnippets(row.episodic_snippets),
+    created_at: new Date(now),
   });
   return id;
 }
 
 export async function getDreamMemoryByDay(day: string): Promise<DreamMemoryRow | null> {
-  const dreamDay = day.trim();
-  if (!dreamDay) return null;
+  const dream_day = day.trim();
+  if (!dream_day) return null;
   const db = getDb();
   const rows = await db
     .select()
     .from(dreamMemory)
-    .where(eq(dreamMemory.dreamDay, dreamDay))
+    .where(eq(dreamMemory.dream_day, dream_day))
     .limit(1);
   const row = rows[0];
   return row ? mapDreamMemoryRow(row) : null;
@@ -59,7 +59,7 @@ export async function getDreamMemoryByDay(day: string): Promise<DreamMemoryRow |
 
 export async function getLatestDreamMemory(): Promise<DreamMemoryRow | null> {
   const db = getDb();
-  const rows = await db.select().from(dreamMemory).orderBy(desc(dreamMemory.createdAt)).limit(1);
+  const rows = await db.select().from(dreamMemory).orderBy(desc(dreamMemory.created_at)).limit(1);
   const row = rows[0];
   return row ? mapDreamMemoryRow(row) : null;
 }
@@ -74,7 +74,7 @@ export async function listDreamMemory(opts?: {
   const rows = await db
     .select()
     .from(dreamMemory)
-    .orderBy(desc(dreamMemory.createdAt))
+    .orderBy(desc(dreamMemory.created_at))
     .offset(offset)
     .limit(limit);
   return rows.map(mapDreamMemoryRow);

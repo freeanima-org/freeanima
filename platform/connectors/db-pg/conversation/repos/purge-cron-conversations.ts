@@ -35,34 +35,34 @@ export async function purgeCronConversations(
   const idSet = new Set(ids);
   const db = getDb();
 
-  await db.delete(limbicMemory).where(inArray(limbicMemory.conversationId, ids));
+  await db.delete(limbicMemory).where(inArray(limbicMemory.conversation_id, ids));
 
   const semanticRows = await db
-    .select({ id: semanticMemory.id, sourceConversations: semanticMemory.sourceConversations })
+    .select({ id: semanticMemory.id, source_conversations: semanticMemory.source_conversations })
     .from(semanticMemory)
-    .where(arrayOverlaps(semanticMemory.sourceConversations, ids));
+    .where(arrayOverlaps(semanticMemory.source_conversations, ids));
   for (const row of semanticRows) {
-    const next = stripIdsFromArray(row.sourceConversations ?? [], idSet);
-    if (next.length === (row.sourceConversations ?? []).length) continue;
+    const next = stripIdsFromArray(row.source_conversations ?? [], idSet);
+    if (next.length === (row.source_conversations ?? []).length) continue;
     await db
       .update(semanticMemory)
-      .set({ sourceConversations: next })
+      .set({ source_conversations: next })
       .where(eq(semanticMemory.id, row.id));
   }
 
   const autoRows = await db
     .select({
       id: autobiographicalMemory.id,
-      sourceConversations: autobiographicalMemory.sourceConversations,
+      source_conversations: autobiographicalMemory.source_conversations,
     })
     .from(autobiographicalMemory)
-    .where(arrayOverlaps(autobiographicalMemory.sourceConversations, ids));
+    .where(arrayOverlaps(autobiographicalMemory.source_conversations, ids));
   for (const row of autoRows) {
-    const next = stripIdsFromArray(row.sourceConversations ?? [], idSet);
-    if (next.length === (row.sourceConversations ?? []).length) continue;
+    const next = stripIdsFromArray(row.source_conversations ?? [], idSet);
+    if (next.length === (row.source_conversations ?? []).length) continue;
     await db
       .update(autobiographicalMemory)
-      .set({ sourceConversations: next })
+      .set({ source_conversations: next })
       .where(eq(autobiographicalMemory.id, row.id));
   }
 

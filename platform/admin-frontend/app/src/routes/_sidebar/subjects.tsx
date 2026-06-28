@@ -8,7 +8,7 @@ import {
   listSubjectEntities,
   listWorldEntities,
   updateSubjectEntity,
-  type AdminEntityRow,
+  type EntityRow,
 } from "@admin/lib/api.ts";
 import { logCaughtError } from "@admin/lib/log-caught-error.ts";
 
@@ -32,21 +32,18 @@ const EMPTY_FORM: SubjectFormState = {
   default_private_world_id: "",
 };
 
-function readDefaultPrivateWorldId(row: AdminEntityRow): number | null {
+function readDefaultPrivateWorldId(row: EntityRow): number | null {
   const id = row.body?.default_private_world_id;
   return typeof id === "number" && id > 0 ? id : null;
 }
 
-function isPrivateWorldOwnedBySubject(world: AdminEntityRow, subjectId: number): boolean {
+function isPrivateWorldOwnedBySubject(world: EntityRow, subjectId: number): boolean {
   const body = world.body ?? {};
   const ownerId = Number(body.owner_subject_id);
   return body.private === true && Number.isInteger(ownerId) && ownerId === subjectId;
 }
 
-function resolveDefaultPrivateWorldId(
-  row: AdminEntityRow,
-  candidateWorlds: AdminEntityRow[],
-): string {
+function resolveDefaultPrivateWorldId(row: EntityRow, candidateWorlds: EntityRow[]): string {
   const fromSubject = readDefaultPrivateWorldId(row);
   if (fromSubject != null && candidateWorlds.some((w) => w.id === fromSubject)) {
     return String(fromSubject);
@@ -57,11 +54,11 @@ function resolveDefaultPrivateWorldId(
   return fromSubject != null ? String(fromSubject) : "";
 }
 
-function privateWorldsForSubject(worlds: AdminEntityRow[], subjectId: number): AdminEntityRow[] {
+function privateWorldsForSubject(worlds: EntityRow[], subjectId: number): EntityRow[] {
   return worlds.filter((w) => isPrivateWorldOwnedBySubject(w, subjectId));
 }
 
-function worldOptionLabel(row: AdminEntityRow): string {
+function worldOptionLabel(row: EntityRow): string {
   const title = row.title || m.admin_common_no_title();
   const suffix =
     row.body?.default_private === true
@@ -81,7 +78,7 @@ function SubjectEditModal({
 }: {
   mode: "create" | "edit";
   initial: SubjectFormState;
-  candidateWorlds: AdminEntityRow[];
+  candidateWorlds: EntityRow[];
   saving: boolean;
   error: string;
   onClose: () => void;
@@ -214,14 +211,14 @@ function subjectTypeLabel(type: string): string {
 }
 
 function SubjectsPage() {
-  const [items, setItems] = useState<AdminEntityRow[]>([]);
-  const [worlds, setWorlds] = useState<AdminEntityRow[]>([]);
+  const [items, setItems] = useState<EntityRow[]>([]);
+  const [worlds, setWorlds] = useState<EntityRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [modal, setModal] = useState<{
     mode: "create" | "edit";
-    row?: AdminEntityRow;
+    row?: EntityRow;
   } | null>(null);
   const [modalError, setModalError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -267,7 +264,7 @@ function SubjectsPage() {
     setModal({ mode: "create" });
   };
 
-  const openEdit = (row: AdminEntityRow) => {
+  const openEdit = (row: EntityRow) => {
     setModalError("");
     setModal({ mode: "edit", row });
   };

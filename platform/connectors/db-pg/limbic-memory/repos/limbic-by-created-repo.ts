@@ -24,12 +24,12 @@ export async function listLimbicMemoryByCreatedBetween(
     .from(limbicMemory)
     .where(
       and(
-        sql`${limbicMemory.createdAt} >= ${from}::timestamptz`,
-        sql`${limbicMemory.createdAt} < ${to}::timestamptz`,
+        sql`${limbicMemory.created_at} >= ${from}::timestamptz`,
+        sql`${limbicMemory.created_at} < ${to}::timestamptz`,
         gt(limbicMemory.intensity, minIntensity),
       ),
     )
-    .orderBy(orderByIntensity ? desc(limbicMemory.intensity) : desc(limbicMemory.createdAt))
+    .orderBy(orderByIntensity ? desc(limbicMemory.intensity) : desc(limbicMemory.created_at))
     .limit(limit);
 
   return rows.map((row) => mapLimbicMemoryRow(row as LimbicMemoryDbRow));

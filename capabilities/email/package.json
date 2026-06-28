@@ -6,7 +6,8 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "@freeanima/core": "workspace:*"
+    "@freeanima/core": "workspace:*",
+    "@freeanima/sap-contract": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

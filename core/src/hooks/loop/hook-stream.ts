@@ -1,9 +1,7 @@
 /** Hook → engine stream event subset (aligned with engine StreamEvent) */
-export type HookClarifyItem = {
-  question: string;
-  choices?: string[];
-  default?: string;
-};
+import type { ClarifyItem } from "@freeanima/core/db/domain";
+
+export type HookClarifyItem = ClarifyItem;
 
 export type HookStreamEvent =
   | { event: "awaiting_clarify"; data: { items: HookClarifyItem[]; timeout_sec: number } }

@@ -38,11 +38,11 @@ function toPayload(msg: ConversationMessage): MessageInsert["payload"] {
 }
 
 /** Domain message → PG insert row */
-export function messageToInsert(conversationId: string, msg: StoredMessage): MessageInsert {
+export function messageToInsert(conversation_id: string, msg: StoredMessage): MessageInsert {
   const parsed = assertConversationMessage(msg);
   return {
     id: newMessageGlobalId(),
-    conversationId,
+    conversation_id,
     pos: parsed.pos!,
     payload: toPayload(parsed),
   };

@@ -10,8 +10,8 @@ export type SelfBlockDisplay = {
   locked: boolean;
   version: number;
   updated_by: string | null;
-  created: string;
-  updated: string;
+  created_at: string;
+  updated_at: string;
 };
 
 function emptyPlaceholderBlocks(): SelfBlockDisplay[] {
@@ -23,15 +23,15 @@ function emptyPlaceholderBlocks(): SelfBlockDisplay[] {
       locked: key === "existence_anchor",
       version: 0,
       updated_by: null,
-      created: "",
-      updated: "",
+      created_at: "",
+      updated_at: "",
     }).heading,
     content: "",
     locked: key === "existence_anchor",
     version: 0,
     updated_by: null,
-    created: "",
-    updated: "",
+    created_at: "",
+    updated_at: "",
   }));
 }
 
@@ -48,8 +48,8 @@ export async function listSelfBlocks(deps: RuntimeDeps): Promise<{ blocks: SelfB
         locked: view.locked,
         version: view.version,
         updated_by: row.updated_by,
-        created: row.created,
-        updated: row.updated,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
       };
     });
     return { blocks };

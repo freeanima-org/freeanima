@@ -1,16 +1,9 @@
 import type { TaskItemPriority } from "@freeanima/core/db/schema/entity";
 
-export type TaskListRow = {
-  id: number;
-  name: string;
-  sort_order: number;
-  closed: boolean;
-  color: string | null;
-  is_default: boolean;
-  item_count: number;
-  created_at: string;
-  updated_at: string;
-};
+export type {
+  TaskItemRowPayload as TaskItemRow,
+  TaskListRowPayload as TaskListRow,
+} from "@freeanima/sap-contract";
 
 export type TaskListCreateInput = {
   name: string;
@@ -24,21 +17,6 @@ export type TaskListUpdateInput = {
   sort_order?: number;
   closed?: boolean;
   color?: string | null;
-};
-
-export type TaskItemRow = {
-  id: number;
-  title: string;
-  content: string;
-  tags: string[];
-  status: "pending" | "completed";
-  priority: TaskItemPriority;
-  due_at: string | null;
-  list_id: number;
-  sort_order: number;
-  completed_at: string | null;
-  created_at: string;
-  updated_at: string;
 };
 
 export type TaskItemCreateInput = {

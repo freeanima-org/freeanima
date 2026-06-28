@@ -6,12 +6,12 @@ describe("mapRow", () => {
   test("converts bigint id to number", () => {
     const row = mapRow({
       id: 42,
-      jobId: "builtin-light-sleep",
-      runCount: 1,
+      job_id: "builtin-light-sleep",
+      run_count: 1,
       ok: true,
-      finishedAt: "2026-06-10T02:08:50.320+08:00",
+      finished_at: "2026-06-10T02:08:50.320+08:00",
       output: { day: "2026-06-09" },
-      outputText: null,
+      output_text: null,
       error: null,
     });
 
@@ -22,12 +22,12 @@ describe("mapRow", () => {
   test("converts Date finished_at to ISO string", () => {
     const row = mapRow({
       id: 1,
-      jobId: "builtin-deep-sleep",
-      runCount: 2,
+      job_id: "builtin-deep-sleep",
+      run_count: 2,
       ok: false,
-      finishedAt: "2026-06-10T02:08:50.320Z",
+      finished_at: "2026-06-10T02:08:50.320Z",
       output: null,
-      outputText: null,
+      output_text: null,
       error: "timeout",
     });
 
@@ -37,12 +37,12 @@ describe("mapRow", () => {
   test("preserves string finished_at", () => {
     const row = mapRow({
       id: 3,
-      jobId: "builtin-light-sleep",
-      runCount: 3,
+      job_id: "builtin-light-sleep",
+      run_count: 3,
       ok: true,
-      finishedAt: "2026-06-09T18:07:32.000Z",
+      finished_at: "2026-06-09T18:07:32.000Z",
       output: null,
-      outputText: "ok",
+      output_text: "ok",
       error: null,
     });
 
