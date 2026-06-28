@@ -771,7 +771,7 @@ msgid "(missing only)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:109
+#: messages/po4a/en.xml:2
 #, no-wrap
 msgid "Operation failed: {detail}"
 msgstr ""

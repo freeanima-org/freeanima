@@ -2,6 +2,7 @@ export { registerServiceTools, resetRegisterServiceToolsForTest } from "./regist
 export {
   registerServiceIntegrations,
   registerFridgeMagnet,
+  registerNotificationInject,
   startAcpProgressTicker,
 } from "./register-integrations.ts";
 export { registerServiceMemoryBus } from "./register-memory.ts";

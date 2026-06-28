@@ -5,10 +5,8 @@ const deliverToTargets = vi.fn();
 
 vi.mock("@freeanima/platform/connectors/cron/deliver", () => ({
   deliverToTargets: (...args: unknown[]) => deliverToTargets(...args),
-  deliverCronResult: async () => {},
   registerCronDeliverer: () => {},
   unregisterCronDeliverer: () => {},
-  resolveDeliverTargets: () => [],
 }));
 
 const { createAcpProgressDelivery } = await import("./acp-progress-delivery.ts");

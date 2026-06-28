@@ -19,3 +19,12 @@ export function formatDue(due: string | null): string {
   if (Number.isNaN(d.getTime())) return due;
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
+
+/** `<input type="datetime-local">` 需本地年月日时分，不能用 toISOString().slice(0,16)（那是 UTC） */
+export function isoToDatetimeLocalValue(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}

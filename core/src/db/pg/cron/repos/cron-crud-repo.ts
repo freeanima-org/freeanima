@@ -38,7 +38,6 @@ export async function createCronJob(row: CronJobCreateInput): Promise<void> {
     model_name: row.model_name ?? null,
     workdir: row.workdir ?? null,
     context_from: normalizeStringArray(row.context_from),
-    deliver: row.deliver ?? "local",
     timeout_sec: row.timeout_sec ?? 300,
     builtin: row.builtin ?? false,
     repeat: row.repeat ?? null,
@@ -48,6 +47,7 @@ export async function createCronJob(row: CronJobCreateInput): Promise<void> {
     updated_at: coerceDate(updated, now),
     last_run_at: row.last_run_at ?? null,
     last_output_ref: row.last_output_ref ?? null,
+    notify_on_success: row.notify_on_success ?? false,
   });
 }
 
@@ -68,7 +68,6 @@ export async function upsertBuiltinCronJob(row: CronJobBuiltinUpsertInput): Prom
       prompt: row.prompt ?? "",
       no_agent: row.no_agent ?? true,
       builtin: true,
-      deliver: row.deliver ?? "local",
       timeout_sec: row.timeout_sec ?? 1800,
       created_at: now,
       updated_at: now,
@@ -110,13 +109,13 @@ export async function updateCronJob(patch: CronJobUpdateInput): Promise<boolean>
   if (patch.context_from !== undefined) {
     set.context_from = normalizeStringArray(patch.context_from);
   }
-  if (patch.deliver !== undefined) set.deliver = patch.deliver;
   if (patch.timeout_sec !== undefined) set.timeout_sec = patch.timeout_sec;
   if (patch.repeat !== undefined) set.repeat = patch.repeat;
   if (patch.run_count !== undefined) set.run_count = patch.run_count;
   if (patch.paused !== undefined) set.paused = patch.paused;
   if (patch.last_run_at !== undefined) set.last_run_at = patch.last_run_at;
   if (patch.last_output_ref !== undefined) set.last_output_ref = patch.last_output_ref;
+  if (patch.notify_on_success !== undefined) set.notify_on_success = patch.notify_on_success;
 
   const db = getDb();
   const rows = await db.update(cronJobs).set(set).where(eq(cronJobs.id, trimmed)).returning({

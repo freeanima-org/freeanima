@@ -64,18 +64,19 @@ export function rowToPatch(job: CronJob): CronJobUpdateInput {
     model_name: job.model_name,
     workdir: job.workdir,
     context_from: job.context_from,
-    deliver: job.deliver,
     timeout_sec: job.timeout_sec,
     repeat: job.repeat,
     run_count: job.run_count,
     paused: job.paused,
     last_run_at: job.last_run_at > 0 ? new Date(job.last_run_at * 1000) : null,
     last_output_ref: job.last_output_ref,
+    notify_on_success: job.notify_on_success,
   };
 }
 
 export async function ensureBuiltinCronJobs(): Promise<void> {
   await _ensureBuiltinSleepCycleCronJob();
+  await _ensureBuiltinTaskRemindersCronJob();
 }
 
 async function _ensureBuiltinSleepCycleCronJob(): Promise<void> {
@@ -86,8 +87,22 @@ async function _ensureBuiltinSleepCycleCronJob(): Promise<void> {
     schedule: "0 2 * * *",
     prompt: "",
     no_agent: true,
-    deliver: "local",
     timeout_sec: 7200,
+  });
+  const job = await getJob(id);
+  if (!job || !handles) return;
+  if (scheduleChanged) handles.reregister(job);
+}
+
+async function _ensureBuiltinTaskRemindersCronJob(): Promise<void> {
+  const id = "builtin-task-reminders";
+  const scheduleChanged = await upsertBuiltinCronJob({
+    id,
+    name: "task-reminders",
+    schedule: "* * * * *",
+    prompt: "",
+    no_agent: true,
+    timeout_sec: 600,
   });
   const job = await getJob(id);
   if (!job || !handles) return;

@@ -23,6 +23,7 @@ import {
   type TaskItemRow,
   type TaskListRow,
 } from "./lib/api.ts";
+import { isoToDatetimeLocalValue } from "./lib/format-task.ts";
 import {
   readCachedTaskItems,
   readCachedTaskLists,
@@ -757,11 +758,7 @@ export function TaskApp() {
                     <input
                       type="datetime-local"
                       className="input input-bordered w-full"
-                      value={
-                        editingItem.due_at
-                          ? new Date(editingItem.due_at).toISOString().slice(0, 16)
-                          : ""
-                      }
+                      value={isoToDatetimeLocalValue(editingItem.due_at)}
                       onChange={(e) =>
                         setEditingItem({
                           ...editingItem,

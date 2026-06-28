@@ -17,9 +17,8 @@ import {
   pauseJob,
   resumeJob,
   ensureBuiltinCronJobs,
-  resolveDeliverTargets,
   CronJob,
-  deliverCronResult,
+  deliverToTargets,
   registerCronDeliverer,
   unregisterCronDeliverer,
   enqueueRunJob,
@@ -28,8 +27,19 @@ import {
   computeNextRunAt,
   readOutputRef,
 } from "@freeanima/platform/connectors/cron";
-import { FileConfig } from "@freeanima/platform/config";
 import { getActivePgTestContext } from "../../helpers/pg-test.ts";
+import { listNotifications } from "@freeanima/core/db/pg/notifications";
+import { wireServicePorts } from "@freeanima/platform";
+import { FileConfig } from "@freeanima/platform/config";
+import { createServiceKernel } from "@freeanima/platform/bootstrap";
+import { createConversationService } from "@freeanima/runtime/conversation";
+import { MaskRegistry } from "@freeanima/capabilities-task/mask";
+import { getAcpManager } from "@freeanima/capabilities-acp";
+import { createAppRuntime } from "@freeanima/platform/runtime/app-runtime";
+import { initRuntimeContext } from "@freeanima/platform/runtime/runtime-context";
+import { registerServiceStores } from "@freeanima/platform";
+import { registerCronNotify } from "@freeanima/platform/ports/cron-notify";
+import { notifyBothRecipients } from "@freeanima/platform/runtime/notification-helpers";
 
 describePg("cron", () => {
   let home: string;
@@ -69,34 +79,88 @@ describePg("cron", () => {
     await ensureBuiltinCronJobs();
   });
 
-  it("resolveDeliverTargets", () => {
-    expect(resolveDeliverTargets("local")).toEqual([]);
-    expect(resolveDeliverTargets("discord:123")).toEqual([{ platform: "discord", chat_id: "123" }]);
-    expect(resolveDeliverTargets("discord:123:456")).toEqual([
-      { platform: "discord", chat_id: "123", thread_id: "456" },
-    ]);
-    const config = getActivePgTestContext()!.config;
-    if (!(config instanceof FileConfig)) throw new Error("expected FileConfig");
-    config.patchSection("discord", { home_channel: "999", home_thread_id: "888" });
-    expect(resolveDeliverTargets("discord")).toEqual([
-      { platform: "discord", chat_id: "999", thread_id: "888" },
-    ]);
-  });
-
-  it("deliverCronResult invokes registered handler", async () => {
+  it("deliverToTargets invokes registered handler", async () => {
     const delivered: string[] = [];
     registerCronDeliverer("discord", async (_target, text) => {
       delivered.push(text);
     });
-    const job = new CronJob({
-      id: "t1",
-      name: "test-job",
-      schedule: "1h",
-      deliver: "discord:1",
-    });
-    await deliverCronResult(job, { jobName: job.name, success: true, output: "ok" });
+    await deliverToTargets([{ platform: "discord", chat_id: "1" }], "ok");
     expect(delivered).toEqual(["ok"]);
     unregisterCronDeliverer("discord");
+  });
+
+  it("notifyCronResult respects notify_on_success on success", async () => {
+    const pg = getActivePgTestContext()!;
+    if (!(pg.config instanceof FileConfig)) throw new Error("expected FileConfig");
+    pg.config.patchSection("notifications", {
+      user_subject_id: 2,
+      agent_subject_id: 1,
+    });
+
+    const kernel = createServiceKernel(pg.config);
+    const conversation = createConversationService(pg.engine.catalog.toolSets);
+    const fullDeps = {
+      kernel,
+      engine: pg.engine,
+      conversation,
+      masks: new MaskRegistry(),
+      mcp: null,
+      satellite: null,
+      acp: getAcpManager(),
+      host: "127.0.0.1",
+      port: 2658,
+    };
+    const runtime = createAppRuntime(fullDeps);
+    wireServicePorts(fullDeps);
+    initRuntimeContext(runtime);
+    registerServiceStores(fullDeps, pg.config);
+
+    registerCronNotify(async (job, payload) => {
+      const title = payload.success ? `Cron: ${job.name}` : `Cron failed: ${job.name}`;
+      const body = payload.success ? payload.output : (payload.error ?? payload.output);
+      await notifyBothRecipients(fullDeps, pg.config, {
+        title,
+        body,
+        source_kind: "cron",
+        source_ref: `${job.id}:${payload.success ? "ok" : "fail"}`,
+      });
+    });
+
+    const { notifyCronResult, shouldNotifyCronJobResult } =
+      await import("@freeanima/platform/ports/cron-notify");
+    const quiet = new CronJob({
+      id: "t-quiet",
+      name: "quiet-job",
+      schedule: "1h",
+      notify_on_success: false,
+    });
+    const loud = new CronJob({
+      id: "t-loud",
+      name: "loud-job",
+      schedule: "1h",
+      notify_on_success: true,
+    });
+
+    expect(shouldNotifyCronJobResult(quiet, true)).toBe(false);
+    expect(shouldNotifyCronJobResult(loud, true)).toBe(true);
+    expect(shouldNotifyCronJobResult(quiet, false)).toBe(true);
+
+    await notifyCronResult(loud, { jobName: loud.name, success: true, output: "ok" });
+    await notifyCronResult(quiet, {
+      jobName: quiet.name,
+      success: false,
+      output: "err",
+      error: "err",
+    });
+
+    const userRows = await listNotifications({
+      recipient_kind: "user",
+      recipient_id: "2",
+      read_filter: "all",
+    });
+    expect(userRows.some((row) => row.source_ref === "t-loud:ok")).toBe(true);
+    expect(userRows.some((row) => row.source_ref === "t-quiet:ok")).toBe(false);
+    expect(userRows.some((row) => row.source_ref === "t-quiet:fail")).toBe(true);
   });
 
   it("enqueueRunJob returns before spawnSync script finishes", async () => {

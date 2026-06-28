@@ -18,7 +18,6 @@ export class CronJob {
   model_name: string | null;
   workdir: string | null;
   context_from: string[];
-  deliver: string;
   timeout_sec: number;
   builtin: boolean;
   repeat: number | null;
@@ -28,6 +27,7 @@ export class CronJob {
   updated_at: string;
   last_run_at: number;
   last_output_ref: string | null;
+  notify_on_success: boolean;
 
   constructor(init: Partial<CronJobData> & Pick<CronJobData, "id" | "name" | "schedule">) {
     this.id = init.id;
@@ -41,7 +41,6 @@ export class CronJob {
     this.model_name = init.model_name ?? null;
     this.workdir = init.workdir ?? null;
     this.context_from = init.context_from ?? [];
-    this.deliver = init.deliver ?? "local";
     this.timeout_sec = init.timeout_sec ?? 300;
     this.builtin = init.builtin ?? false;
     this.repeat = init.repeat ?? null;
@@ -51,6 +50,7 @@ export class CronJob {
     this.updated_at = init.updated_at ?? "";
     this.last_run_at = init.last_run_at ?? 0;
     this.last_output_ref = init.last_output_ref ?? null;
+    this.notify_on_success = init.notify_on_success ?? false;
   }
 
   static fromRow(row: CronJobRow): CronJob {
@@ -66,7 +66,6 @@ export class CronJob {
       model_name: row.model_name,
       workdir: row.workdir,
       context_from: row.context_from,
-      deliver: row.deliver,
       timeout_sec: row.timeout_sec,
       builtin: row.builtin,
       repeat: row.repeat,
@@ -76,6 +75,7 @@ export class CronJob {
       updated_at: row.updated_at.toISOString(),
       last_run_at: row.last_run_at ? Math.floor(new Date(row.last_run_at).getTime() / 1000) : 0,
       last_output_ref: row.last_output_ref,
+      notify_on_success: row.notify_on_success,
     });
   }
 
@@ -95,7 +95,6 @@ export class CronJob {
       model_name: this.model_name,
       workdir: this.workdir,
       context_from: [...this.context_from],
-      deliver: this.deliver,
       timeout_sec: this.timeout_sec,
       builtin: this.builtin,
       repeat: this.repeat,
@@ -105,6 +104,7 @@ export class CronJob {
       updated_at: this.updated_at,
       last_run_at: this.last_run_at,
       last_output_ref: this.last_output_ref,
+      notify_on_success: this.notify_on_success,
       next_run_at: next,
       last_output: lastOutput.slice(0, 10_000),
     };

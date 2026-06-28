@@ -63,7 +63,7 @@ describe("compressor", () => {
       msgs.push(ua(i * 2 + 1, `u${i}`), aa(i * 2 + 2, `a${i}`));
     }
     msgs.push(
-      ua(109, "u54"),
+      ua(2, "u54"),
       assistantToolCall(110, "c1"),
       toolMsg(111, "c1"),
       ua(112, "u55"),

@@ -371,7 +371,7 @@ msgid "How They Interact"
 msgstr "二者如何交互"
 
 #. type: Fenced code block (text)
-#: docs/concepts/architecture.md:109
+#: docs/concepts/architecture.md:2
 #, no-wrap
 msgid ""
 "Scene awareness (soft tuning)\n"

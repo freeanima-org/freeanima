@@ -21,8 +21,8 @@ const cronJobDetailSchema = z.object({
   next_run_at: z.string().nullable(),
   skills: z.array(z.string()).optional(),
   script: z.string().nullable().optional(),
-  deliver: z.string().optional(),
   last_output: z.string().nullable().optional(),
+  notify_on_success: z.boolean().optional(),
 });
 
 export const CRON_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {

@@ -2,6 +2,7 @@ import { registerClarifyTool } from "@freeanima/capabilities-tools/clarify";
 import { registerEmailTools } from "@freeanima/capabilities-email";
 import { registerTaskTools } from "@freeanima/capabilities-task";
 import { registerWriteFridgeMagnetTool } from "@freeanima/capabilities-task/fridge-magnet";
+import { registerNotificationTools } from "@freeanima/capabilities-tools/notification";
 import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities-tools";
 import { registerCronjobTool } from "@freeanima/platform/connectors/cron/cronjob-tool";
 import { registerSelfTools } from "@freeanima/capabilities-identity";
@@ -40,6 +41,7 @@ export function registerServiceTools(opts: {
   registerClarifyTool(opts.toolSets);
   registerCronjobTool(opts.toolSets);
   registerWriteFridgeMagnetTool(opts.toolSets);
+  registerNotificationTools(opts.toolSets);
   registerTaskTools(opts.toolSets);
   registeredCatalog = opts;
 }

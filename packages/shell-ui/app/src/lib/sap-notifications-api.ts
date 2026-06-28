@@ -38,3 +38,13 @@ export async function markNotificationRead(id: string): Promise<NotificationMark
   const client = await whenSapClientReady();
   return client.request("notification.markRead", { id });
 }
+
+export type NotificationRecipients = {
+  user_subject_id: string;
+  agent_subject_id: string;
+};
+
+export async function getNotificationRecipients(): Promise<NotificationRecipients> {
+  const client = await whenSapClientReady();
+  return client.request("notification.recipients", {});
+}

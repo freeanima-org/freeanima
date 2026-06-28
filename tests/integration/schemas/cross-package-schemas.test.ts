@@ -23,7 +23,6 @@ describe("schemas/cron", () => {
     });
     expect(result.success).toBe(true);
     if (!result.success) return;
-    expect(result.data.deliver).toBe("local");
     expect(result.data.timeout_sec).toBe(300);
   });
 });

@@ -17,7 +17,6 @@ export const cronJobs = pgTable(
     model_name: text("model_name"),
     workdir: text("workdir"),
     context_from: text("context_from").array().notNull().default([]),
-    deliver: text("deliver").notNull().default("local"),
     timeout_sec: integer("timeout_sec").notNull().default(300),
     builtin: boolean("builtin").notNull().default(false),
     repeat: integer("repeat"),
@@ -31,6 +30,8 @@ export const cronJobs = pgTable(
       .default(sql`now()`),
     last_run_at: pgTimestamptz("last_run_at"),
     last_output_ref: text("last_output_ref"),
+    /** 成功时是否将输出写入通知收件箱；失败始终通知 */
+    notify_on_success: boolean("notify_on_success").notNull().default(false),
   },
   (t) => [index("idx_cron_jobs_paused").on(t.paused)],
 );

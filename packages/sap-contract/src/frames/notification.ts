@@ -55,3 +55,10 @@ export const notificationMarkReadOutputSchema = z.object({
 });
 
 export type NotificationMarkReadOutput = z.infer<typeof notificationMarkReadOutputSchema>;
+
+export const notificationRecipientsOutputSchema = z.object({
+  user_subject_id: z.string(),
+  agent_subject_id: z.string(),
+});
+
+export type NotificationRecipientsOutput = z.infer<typeof notificationRecipientsOutputSchema>;

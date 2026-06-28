@@ -3,11 +3,10 @@ import { afterEach, describe, expect, it, mock } from "bun:test";
 import type { DreamMemoryCreateInput } from "@freeanima/core/repos";
 
 import { registerDreamEngine, resetDreamEngineForTests } from "../dream-engine-port.ts";
-import { runDream, type DreamFridgePort } from "./run.ts";
+import { runDream } from "./run.ts";
 
 const DAY = "2026-06-14";
 const created: Array<Record<string, unknown>> = [];
-let setReminderCalled = false;
 
 const createDreamMemoryMock = mock(async (row: DreamMemoryCreateInput) => {
   created.push(row as Record<string, unknown>);
@@ -72,18 +71,8 @@ mock.module("@freeanima/core/db/pg/conversation", () => ({
   listMessages: listMessagesMock,
 }));
 
-function setupFridge(): DreamFridgePort {
-  return {
-    setReminder: mock(async () => {
-      setReminderCalled = true;
-    }),
-    dismissReminder: mock(async () => {}),
-  };
-}
-
 afterEach(() => {
   created.length = 0;
-  setReminderCalled = false;
   existingDream = false;
   limbicIntensity = 0.8;
   noSessions = false;
@@ -93,21 +82,18 @@ afterEach(() => {
 });
 
 describe("runDream", () => {
-  it("creates dream and sets fridge reminder when emotional fuel exists", async () => {
-    const fridge = setupFridge();
+  it("creates dream when emotional fuel exists", async () => {
     registerDreamEngine(async () => ({ content: "A surreal corridor of light…" }));
 
     const result = await runDream({
       day: DAY,
       selfContent: "I am Anima.",
-      fridge,
     });
 
     expect(result.ok).toBe(true);
     expect(result.dream_id).toBe("dream-1");
     expect(created).toHaveLength(1);
     expect(created[0]?.dream_day).toBe(DAY);
-    expect(setReminderCalled).toBe(true);
   });
 
   it("creates dream without conversations when limbic fuel exists", async () => {

@@ -11,7 +11,7 @@ import {
   resolveScriptPath,
   toOutputRef,
 } from "./paths.ts";
-import { deliverCronResult } from "./deliver.ts";
+import { notifyCronResult, shouldNotifyCronJobResult } from "@freeanima/platform/ports/cron-notify";
 import { appendCronRunLog } from "./cron-log.ts";
 import { runCronBuiltinHandler } from "./builtin-handlers.ts";
 import { getCronHandleManager, isCronModuleInitialized, updateCronJobRow } from "./module.ts";
@@ -83,16 +83,17 @@ async function getJobSync(id: string): Promise<CronJob | null> {
   return row ? CronJobClass.fromRow(row) : null;
 }
 
-async function notifyDeliver(
+async function notifyCronJobResult(
   job: CronJob,
   success: boolean,
   output: string,
   error?: string,
 ): Promise<void> {
+  if (!shouldNotifyCronJobResult(job, success)) return;
   try {
-    await deliverCronResult(job, { jobName: job.name, success, output, error });
+    await notifyCronResult(job, { jobName: job.name, success, output, error });
   } catch (e) {
-    logComponent("cron").warn(`Cron deliver error for ${job.id}`, { err: e, job_id: job.id });
+    logComponent("cron").warn(`Cron notification error for ${job.id}`, { err: e, job_id: job.id });
   }
 }
 
@@ -138,7 +139,7 @@ export async function runJob(job: CronJob): Promise<void> {
       outputText: output,
       error: errText,
     });
-    await notifyDeliver(job, false, output, errText);
+    await notifyCronJobResult(job, false, output, errText);
     await finalizeJob(job, false);
   }
 }
@@ -188,7 +189,7 @@ async function runJobInternal(job: CronJob): Promise<void> {
     ok: true,
     outputText,
   });
-  await notifyDeliver(job, true, outputText);
+  await notifyCronJobResult(job, true, outputText);
   await finalizeJob(job, true);
 }
 

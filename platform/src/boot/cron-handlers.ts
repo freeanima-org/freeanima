@@ -26,4 +26,9 @@ export function registerBootCronHandlers(engine: Engine): void {
     const results = await syncAllEmailAccounts({ limit: 100 });
     return JSON.stringify({ ok: true, results });
   });
+
+  registerCronBuiltinHandler("builtin-task-reminders", async () => {
+    const { runTaskReminderScan } = await import("./task-reminder-handler.ts");
+    return runTaskReminderScan();
+  });
 }

@@ -92,7 +92,6 @@ describe("db transforms", () => {
     model_name: null,
     workdir: null,
     context_from: [],
-    deliver: "local",
     timeout_sec: 300,
     builtin: true,
     repeat: null,
@@ -102,6 +101,7 @@ describe("db transforms", () => {
     updated_at: new Date("2026-06-07T06:00:00.000Z"),
     last_run_at: null,
     last_output_ref: null,
+    notify_on_success: false,
   };
 
   it("cron row inferSelect shape (builtin)", () => {

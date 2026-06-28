@@ -55,6 +55,7 @@ import {
   type SapRouterOutputs,
 } from "@freeanima/sap-contract";
 import { isConversationMeta } from "@freeanima/core/db/domain";
+import { resolveNotificationRecipients } from "@freeanima/core/config";
 import { bridgeMessageStream, bridgeSessionUpdates } from "./stream-bridge.ts";
 import * as serviceSessions from "../runtime/service-conversations.ts";
 import * as serviceAcpDock from "../runtime/service-acp-dock.ts";
@@ -338,6 +339,15 @@ export function createSapServerHandlers(
             throw new Error(`Notification not found: ${input.id}`);
           }
           return { ok: true as const, notification };
+        }
+        case "notification.recipients": {
+          const { user, agent } = resolveNotificationRecipients(
+            deps.runtime.runtimeDeps().engine.config.data,
+          );
+          return {
+            user_subject_id: user.id,
+            agent_subject_id: agent.id,
+          };
         }
         case "message.send": {
           const input = messageSendInputSchema.parse(payload);

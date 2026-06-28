@@ -113,3 +113,53 @@ export async function markNotificationRead(id: string): Promise<NotificationRow 
   const next = updated[0];
   return next ? next : null;
 }
+
+export async function notificationExistsBySourceRef(
+  sourceRef: string,
+  opts: Pick<NotificationListOpts, "recipient_kind" | "recipient_id">,
+): Promise<boolean> {
+  const trimmed = sourceRef.trim();
+  if (!trimmed) return false;
+
+  const recipient_kind = notificationRecipientKindSchema.parse(opts.recipient_kind);
+  const recipient_id = normalizeRecipientId(opts.recipient_id);
+  const db = getDb();
+  const rows = await db
+    .select({ id: notifications.id })
+    .from(notifications)
+    .where(
+      and(
+        eq(notifications.source_ref, trimmed),
+        eq(notifications.recipient_kind, recipient_kind),
+        eq(notifications.recipient_id, recipient_id),
+      ),
+    )
+    .limit(1);
+  return rows.length > 0;
+}
+
+export async function markNotificationsReadBySourceRef(
+  sourceRef: string,
+  opts: Pick<NotificationListOpts, "recipient_kind" | "recipient_id">,
+): Promise<number> {
+  const trimmed = sourceRef.trim();
+  if (!trimmed) return 0;
+
+  const recipient_kind = notificationRecipientKindSchema.parse(opts.recipient_kind);
+  const recipient_id = normalizeRecipientId(opts.recipient_id);
+  const now = new Date();
+  const db = getDb();
+  const updated = await db
+    .update(notifications)
+    .set({ read_at: now })
+    .where(
+      and(
+        eq(notifications.source_ref, trimmed),
+        eq(notifications.recipient_kind, recipient_kind),
+        eq(notifications.recipient_id, recipient_id),
+        isNull(notifications.read_at),
+      ),
+    )
+    .returning({ id: notifications.id });
+  return updated.length;
+}

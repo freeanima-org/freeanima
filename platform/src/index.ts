@@ -1,6 +1,7 @@
 export {
   registerServiceIntegrations,
   registerServiceMemoryBus,
+  registerServiceStores,
   registerServiceTools,
   resetRegisterServiceToolsForTest,
 } from "./register.ts";

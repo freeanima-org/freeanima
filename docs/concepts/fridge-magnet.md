@@ -8,11 +8,13 @@ Cross-turn sticky notes for digital-life working memory. Content lives in Redis 
 
 ## Three layers
 
-| Layer         | Role                                   | Persistence                   |
-| ------------- | -------------------------------------- | ----------------------------- |
-| Write         | `fridge_magnet_write`, dream reminders | —                             |
-| Storage       | Redis `fridge-magnet:*` keys           | Redis (TTL)                   |
-| Consciousness | Runtime message before each LLM call   | **Not stored** in PG messages |
+| Layer         | Role                                 | Persistence                   |
+| ------------- | ------------------------------------ | ----------------------------- |
+| Write         | `fridge_magnet_write` (conversation) | —                             |
+| Storage       | Redis `fridge-magnet:*` keys         | Redis (TTL)                   |
+| Consciousness | Runtime message before each LLM call | **Not stored** in PG messages |
+
+System pipelines (dream, tasks) **no longer** write fridge magnets. Use the [notification inbox](notifications.md) for task/cron signals instead.
 
 ## Consciousness representation
 
@@ -51,5 +53,5 @@ Older builds prepended a fridge-magnet-tagged fenced block inside user message b
 ## Related
 
 - Tools: `fridge_magnet_write`, `fridge_magnet_dismiss`
-- Dream reminders: [`dream.md`](dream.md)
+- Notifications: [`notifications.md`](notifications.md)
 - Install / Redis: [`guide/install.md`](../guide/install.md)

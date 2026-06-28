@@ -14,7 +14,6 @@ export type CronJobCreateInput = {
   model_name?: string | null;
   workdir?: string | null;
   context_from?: string[];
-  deliver?: string;
   timeout_sec?: number;
   builtin?: boolean;
   repeat?: number | null;
@@ -24,6 +23,7 @@ export type CronJobCreateInput = {
   updated_at?: Date;
   last_run_at?: Date | null;
   last_output_ref?: string | null;
+  notify_on_success?: boolean;
 };
 
 /** Built-in job upsert: update name/schedule only; do not overwrite runtime fields */
@@ -33,7 +33,6 @@ export type CronJobBuiltinUpsertInput = {
   schedule: string;
   prompt?: string;
   no_agent?: boolean;
-  deliver?: string;
   timeout_sec?: number;
 };
 
@@ -50,13 +49,13 @@ export type CronJobUpdateInput = {
   model_name?: string | null;
   workdir?: string | null;
   context_from?: string[];
-  deliver?: string;
   timeout_sec?: number;
   repeat?: number | null;
   run_count?: number;
   paused?: boolean;
   last_run_at?: Date | null;
   last_output_ref?: string | null;
+  notify_on_success?: boolean;
   updated_at?: Date;
 };
 
