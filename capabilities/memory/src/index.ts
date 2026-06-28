@@ -100,11 +100,6 @@ export {
   type SleepSummary,
 } from "./sleep-records.ts";
 export {
-  registerDreamFridge,
-  getDreamFridge,
-  resetDreamFridgeForTests,
-} from "./dream-fridge-port.ts";
-export {
   registerDreamEngine,
   resetDreamEngineForTests,
   runDreamEngine,
@@ -112,13 +107,7 @@ export {
   type DreamEngineInput,
   type DreamEngineResult,
 } from "./dream-engine-port.ts";
-export {
-  runDream,
-  dismissDreamReminder,
-  type DreamFridgePort,
-  type DreamResult,
-  type RunDreamOpts,
-} from "./dream/run.ts";
+export { runDream, type DreamResult, type RunDreamOpts } from "./dream/run.ts";
 export {
   gatherDreamInput,
   hasDreamFuel,

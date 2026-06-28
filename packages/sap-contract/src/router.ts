@@ -62,6 +62,7 @@ import type {
   NotificationListOutput,
   NotificationMarkReadInput,
   NotificationMarkReadOutput,
+  NotificationRecipientsOutput,
 } from "./frames/notification.ts";
 import type {
   ToolErrorInput,
@@ -111,6 +112,7 @@ export const SAP_METHODS = [
   "emailthread.list",
   "notification.list",
   "notification.markRead",
+  "notification.recipients",
   "terminal.attach",
   "terminal.write",
   "terminal.resize",
@@ -155,6 +157,7 @@ export type SapRouterInputs = {
   "emailthread.list": EmailThreadListInput;
   "notification.list": NotificationListInput;
   "notification.markRead": NotificationMarkReadInput;
+  "notification.recipients": Record<string, never>;
   "terminal.attach": TerminalAttachInput;
   "terminal.write": TerminalWriteInput;
   "terminal.resize": TerminalResizeInput;
@@ -197,6 +200,7 @@ export type SapRouterOutputs = {
   "emailthread.list": EmailThreadListOutput;
   "notification.list": NotificationListOutput;
   "notification.markRead": NotificationMarkReadOutput;
+  "notification.recipients": NotificationRecipientsOutput;
   "terminal.attach": TerminalAttachOutput;
   "terminal.write": { ok: true };
   "terminal.resize": { ok: true };

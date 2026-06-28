@@ -1,11 +1,13 @@
-import { registerDreamFridge } from "@freeanima/capabilities-memory/dream-fridge-port";
 import { registerEmailSyncPort } from "@freeanima/capabilities-email";
+import { registerNotificationPort } from "@freeanima/capabilities-tools/notification";
 import { emailSyncPortImpl } from "@freeanima/platform/connectors/email";
 
-import { createDreamFridgePort } from "./dream-fridge-factory.ts";
+import { createNotificationPort } from "./runtime/notification-helpers.ts";
+import type { FullRuntimeDeps } from "./runtime/runtime-deps.ts";
+import type { Config } from "@freeanima/core/config";
 
-/** Composition root one-shot capability wiring (dream fridge / email sync) */
-export function registerServiceStores(): void {
-  registerDreamFridge(createDreamFridgePort());
+/** Composition root one-shot capability wiring (email sync / notification) */
+export function registerServiceStores(deps: FullRuntimeDeps, config: Config): void {
   registerEmailSyncPort(emailSyncPortImpl);
+  registerNotificationPort(createNotificationPort(deps, config));
 }

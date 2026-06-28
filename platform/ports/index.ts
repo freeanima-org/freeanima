@@ -54,6 +54,15 @@ export {
   type CronEngineJobInput,
   type RunCronEngineTurnFn,
 } from "./cron-use-cases.ts";
+export {
+  notifyCronResult,
+  registerCronNotify,
+  unregisterCronNotify,
+  shouldNotifyCronJobResult,
+  formatCronNotificationText,
+  type CronNotifyFn,
+  type CronNotifyPayload,
+} from "./cron-notify.ts";
 export { CHAT_PLATFORM_PATTERN, ADMIN_BASE_PATH } from "./constants.ts";
 export type {
   AnswerSegment,

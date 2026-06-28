@@ -4,6 +4,7 @@ import { embeddingConfigSchema } from "./embedding.ts";
 import { tunnelConfigSchema } from "./tunnel.ts";
 import { remoteAuthConfigSchema } from "./remote-auth.ts";
 import { webConfigSchema } from "./web.ts";
+import { notificationsConfigSchema } from "./notifications.ts";
 
 export const mcpServerSchema = z
   .object({
@@ -212,6 +213,7 @@ export const animaConfigSchema = z
     tunnel: tunnelConfigSchema,
     web: webConfigSchema,
     remote_auth: remoteAuthConfigSchema.optional(),
+    notifications: notificationsConfigSchema,
   })
   .passthrough();
 

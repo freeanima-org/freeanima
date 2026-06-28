@@ -7,11 +7,6 @@ import { cstDayRange } from "../light-sleep/build-messages.ts";
 import { gatherDreamInput, hasDreamFuel } from "./gather-input.ts";
 import { recordDreamRun } from "./state.ts";
 
-export type DreamFridgePort = {
-  setReminder(day: string, teaser: string): Promise<void>;
-  dismissReminder(day: string): Promise<void>;
-};
-
 export type DreamResult = {
   ok: boolean;
   day: string;
@@ -23,10 +18,7 @@ export type DreamResult = {
 export type RunDreamOpts = {
   day?: string;
   selfContent: string;
-  fridge?: DreamFridgePort;
 };
-
-const DREAM_REMINDER_TEASER = "我昨晚做了一个梦，想聊聊吗？";
 
 export async function runDream(opts: RunDreamOpts): Promise<DreamResult> {
   const day = cstDayRange(opts.day).day;
@@ -88,10 +80,6 @@ export async function runDream(opts: RunDreamOpts): Promise<DreamResult> {
     episodic_snippets: input.episodicSnippets,
   });
 
-  if (opts.fridge) {
-    await opts.fridge.setReminder(input.day, DREAM_REMINDER_TEASER);
-  }
-
   logComponent("memory").info("dream generation completed", {
     day: input.day,
     dream_id: dreamId,
@@ -109,12 +97,4 @@ export async function runDream(opts: RunDreamOpts): Promise<DreamResult> {
     dream_id: dreamId,
     summary: `Dream created for ${input.day}`,
   };
-}
-
-export async function dismissDreamReminder(
-  fridge: DreamFridgePort | undefined,
-  day: string,
-): Promise<void> {
-  if (!fridge) return;
-  await fridge.dismissReminder(day);
 }

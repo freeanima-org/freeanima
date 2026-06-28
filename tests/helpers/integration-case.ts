@@ -11,8 +11,11 @@ import {
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { MaskRegistry } from "@freeanima/capabilities-task/mask";
 import { initMaskSystem } from "@freeanima/platform/runtime/mask-wire";
-import { registerServiceTools, resetRegisterServiceToolsForTest } from "@freeanima/platform";
-import { registerDreamFridge, resetDreamFridgeForTests } from "@freeanima/capabilities-memory";
+import {
+  registerServiceTools,
+  registerServiceStores,
+  resetRegisterServiceToolsForTest,
+} from "@freeanima/platform";
 import { invalidateSelfLayerPromptCache } from "@freeanima/capabilities-identity";
 import { upsertSelfBlock } from "@freeanima/core/db/pg/self-layer";
 
@@ -84,11 +87,7 @@ export function wireIntegrationRuntimeContext(pg: PgTestContext): void {
     hookRegistry: kernel.hookRegistry,
     getToolRegistry: () => pg.engine.catalog.toolSets,
   });
-  resetDreamFridgeForTests();
-  registerDreamFridge({
-    setReminder: async () => {},
-    dismissReminder: async () => {},
-  });
+  registerServiceStores(fullDeps, pg.config);
   invalidateSelfLayerPromptCache();
 }
 

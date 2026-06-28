@@ -3,13 +3,21 @@ import { useCallback, useEffect, useState } from "react";
 import {
   listNotifications,
   markNotificationRead,
+  getNotificationRecipients,
   type NotificationRow,
 } from "../lib/sap-notifications-api.ts";
 
 const PAGE_SIZE = 20;
 
+type RecipientIds = { user: string; agent: string };
 type RecipientKind = "user" | "agent";
 type ReadFilter = "all" | "unread";
+
+async function resolveRecipientIds(cached: RecipientIds | null): Promise<RecipientIds> {
+  if (cached) return cached;
+  const remote = await getNotificationRecipients();
+  return { user: remote.user_subject_id, agent: remote.agent_subject_id };
+}
 
 function formatDateTime(value: string | null): string {
   if (!value) return "—";
@@ -63,7 +71,8 @@ function ListPagination({
 
 export function NotificationsPage() {
   const [recipientKind, setRecipientKind] = useState<RecipientKind>("user");
-  const [readFilter, setReadFilter] = useState<ReadFilter>("all");
+  const [recipientIds, setRecipientIds] = useState<RecipientIds | null>(null);
+  const [readFilter, setReadFilter] = useState<ReadFilter>("unread");
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
   const [markingId, setMarkingId] = useState<string | null>(null);
@@ -78,8 +87,12 @@ export function NotificationsPage() {
       setLoading(true);
       setError("");
       try {
+        const ids = await resolveRecipientIds(recipientIds);
+        if (!recipientIds) setRecipientIds(ids);
+        const recipient_id = recipientKind === "user" ? ids.user : ids.agent;
         const data = await listNotifications({
           recipient_kind: recipientKind,
+          recipient_id,
           read_filter: readFilter,
           offset: nextOffset,
           limit: PAGE_SIZE,
@@ -93,7 +106,7 @@ export function NotificationsPage() {
         setLoading(false);
       }
     },
-    [recipientKind, readFilter],
+    [recipientKind, readFilter, recipientIds],
   );
 
   useEffect(() => {
@@ -110,7 +123,12 @@ export function NotificationsPage() {
     setError("");
     try {
       const result = await markNotificationRead(row.id);
-      setItems((prev) => prev.map((item) => (item.id === row.id ? result.notification : item)));
+      if (readFilter === "unread") {
+        setItems((prev) => prev.filter((item) => item.id !== row.id));
+        setTotal((prev) => Math.max(0, prev - 1));
+      } else {
+        setItems((prev) => prev.map((item) => (item.id === row.id ? result.notification : item)));
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -121,7 +139,7 @@ export function NotificationsPage() {
   return (
     <div className="h-full overflow-y-auto p-4 md:p-6">
       <h2 className="text-lg font-bold mb-1">通知</h2>
-      <p className="text-sm text-base-content/60 mb-4">查看用户与 Agent 收件箱，手动标记已读。</p>
+      <p className="text-sm text-base-content/60 mb-4">默认显示未读；点击「标记已读」确认处理。</p>
 
       <div className="flex flex-wrap gap-2 mb-4">
         <div className="join">
@@ -143,17 +161,17 @@ export function NotificationsPage() {
         <div className="join">
           <button
             type="button"
-            className={`btn btn-sm join-item ${readFilter === "all" ? "btn-primary" : ""}`}
-            onClick={() => setReadFilter("all")}
-          >
-            全部
-          </button>
-          <button
-            type="button"
             className={`btn btn-sm join-item ${readFilter === "unread" ? "btn-primary" : ""}`}
             onClick={() => setReadFilter("unread")}
           >
             未读
+          </button>
+          <button
+            type="button"
+            className={`btn btn-sm join-item ${readFilter === "all" ? "btn-primary" : ""}`}
+            onClick={() => setReadFilter("all")}
+          >
+            全部
           </button>
         </div>
         <button
@@ -179,14 +197,11 @@ export function NotificationsPage() {
           {items.map((row) => {
             const unread = !row.read_at;
             return (
-              <button
+              <div
                 key={row.id}
-                type="button"
-                className={`card bg-base-200 w-full text-left transition-opacity ${
+                className={`card bg-base-200 w-full text-left ${
                   unread ? "ring-1 ring-primary/40" : "opacity-80"
-                } ${markingId === row.id ? "opacity-60" : "hover:bg-base-300/60"}`}
-                disabled={!unread || markingId === row.id}
-                onClick={() => void handleMarkRead(row)}
+                }`}
               >
                 <div className="card-body py-3 px-4 gap-2">
                   <div className="flex flex-wrap items-center gap-2">
@@ -197,13 +212,28 @@ export function NotificationsPage() {
                     ) : null}
                   </div>
                   <p className="text-sm text-base-content/80 whitespace-pre-wrap">{row.body}</p>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-base-content/60">
-                    <span>创建：{formatDateTime(row.created_at)}</span>
-                    <span>已读：{formatDateTime(row.read_at)}</span>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-base-content/60">
+                      <span>创建：{formatDateTime(row.created_at)}</span>
+                      <span>已读：{formatDateTime(row.read_at)}</span>
+                    </div>
+                    {unread ? (
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-primary"
+                        disabled={markingId === row.id}
+                        onClick={() => void handleMarkRead(row)}
+                      >
+                        {markingId === row.id ? (
+                          <span className="loading loading-spinner loading-xs" />
+                        ) : (
+                          "标记已读"
+                        )}
+                      </button>
+                    ) : null}
                   </div>
-                  {unread ? <p className="text-xs text-primary/80">点击标记为已读</p> : null}
                 </div>
-              </button>
+              </div>
             );
           })}
           <ListPagination

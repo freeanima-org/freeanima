@@ -163,6 +163,7 @@ export async function runSimpleTurn(
             llm: deps.engine.llm,
             toolMask,
             executableTools,
+            hookRegistry: deps.kernel.hookRegistry,
             ...createTurnMessageCallbacks(deps, conversationId),
           }),
         { tools: deps.engine.catalog.toolSets, executableTools },

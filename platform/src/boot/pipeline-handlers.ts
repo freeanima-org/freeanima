@@ -13,7 +13,6 @@ import { cleanupStaleConversations } from "@freeanima/runtime/conversation";
 import type { Engine } from "@freeanima/runtime";
 
 import { purgeCronConversations } from "@freeanima/core/db/pg/conversation";
-import { createDreamFridgePort } from "../dream-fridge-factory.ts";
 import { resolveDeepSleepMode } from "./deep-sleep-mode.ts";
 import { sleepCycleDefinition, SLEEP_CYCLE_PIPELINE_ID, SLEEP_STEP_IDS } from "./sleep-cycle.ts";
 
@@ -81,7 +80,6 @@ export function registerSleepPipeline(engine: Engine): void {
     const result = await runDream({
       day: ctx.day,
       selfContent,
-      fridge: createDreamFridgePort(),
     });
     if (result.skipped) {
       return { ok: true, skipped: result.skipped, output: result };

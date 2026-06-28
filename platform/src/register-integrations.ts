@@ -1,4 +1,5 @@
 import { createFridgeMagnetHandler } from "@freeanima/capabilities-task/fridge-magnet";
+import { createNotificationInjectHandler } from "@freeanima/capabilities-tools/notification";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { registerClarifyHooks } from "@freeanima/capabilities-tools/clarify";
 import { createAcpProgressDelivery } from "./acp-progress-delivery.ts";
@@ -41,6 +42,11 @@ export function registerServiceIntegrations(opts: {
 /** Register fridge magnet beforeLlmCall hook (FridgeStore must be available after registerFridgeStore at composition root) */
 export function registerFridgeMagnet(opts: { kernel: Kernel }): void {
   opts.kernel.hookRegistry.on(beforeLlmCall, createFridgeMagnetHandler());
+}
+
+/** Register unread notification inject beforeLlmCall hook (NotificationPort must be registered) */
+export function registerNotificationInject(opts: { kernel: Kernel }): void {
+  opts.kernel.hookRegistry.on(beforeLlmCall, createNotificationInjectHandler());
 }
 
 /** Start ACP progress polling after service startup */

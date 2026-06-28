@@ -45,6 +45,7 @@ Component fields live in **`body` JSONB** at the top level. **`primary_component
 - Identity is **`type`** plus `agent_config` or `user_config` primary component.
 - Subjects are **not** scoped by `world_id` in a membership sense; row `world_id` stays at bootstrap root (`ENTITY_ROOT_WORLD_ID`) as a table placeholder.
 - **`agent_config` / `user_config` body**: `default_private_world_id` — the subject's single default private world (auto-created on subject create; configurable from private worlds owned by the subject).
+- **Notifications** use subject entity ids as `recipient_id` (see [`notifications.md`](notifications.md) and `config.yaml` `notifications.user_subject_id` / `agent_subject_id`).
 
 ## World namespace
 

@@ -10,6 +10,7 @@ import { wireServicePorts } from "../wire-api.ts";
 import { registerSystemPromptHooks } from "../register-prompt-hooks.ts";
 import {
   registerFridgeMagnet,
+  registerNotificationInject,
   registerServiceMemoryBus,
   registerServiceStores,
 } from "../register.ts";
@@ -67,8 +68,9 @@ export async function bootRuntimePhase(
   wireServicePorts(runtime.fullDeps());
   initRuntimeContext(runtime);
 
-  registerServiceStores();
+  registerServiceStores(runtime.fullDeps(), engine.config);
   registerFridgeMagnet({ kernel });
+  registerNotificationInject({ kernel });
   registerServiceMemoryBus({ kernel });
   invalidateSelfLayerPromptCache();
   await loadSelfLayerPrompt();

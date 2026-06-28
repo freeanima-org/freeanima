@@ -5,7 +5,11 @@ import type { ToolSetRegistry } from "./toolset.ts";
 
 export const TOOL_SET_DISCOVERY_TOOL_SET = "toolset" as const;
 
-export const DEFAULT_CONVERSATION_TOOLSETS = [TOOL_SET_DISCOVERY_TOOL_SET, "memory"] as const;
+export const DEFAULT_CONVERSATION_TOOLSETS = [
+  TOOL_SET_DISCOVERY_TOOL_SET,
+  "memory",
+  "notification",
+] as const;
 
 export type DefaultConversationToolSetName = (typeof DEFAULT_CONVERSATION_TOOLSETS)[number];
 

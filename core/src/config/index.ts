@@ -17,3 +17,5 @@ export * from "./cli-install.ts";
 export * from "./fts.ts";
 export * from "./embedding-helpers.ts";
 export * from "./cjk-config.ts";
+export * from "./notifications.ts";
+export * from "./schemas/notifications.ts";

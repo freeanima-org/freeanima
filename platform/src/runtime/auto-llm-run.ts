@@ -190,6 +190,7 @@ async function runEngineOnce(
         llm: deps.engine.llm,
         toolMask,
         max_turns: input.maxTurns,
+        hookRegistry: deps.kernel.hookRegistry,
       })) {
         switch (ev.event) {
           case "token":

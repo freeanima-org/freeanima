@@ -13,7 +13,6 @@ export const cronJobDataSchema = z.object({
   model_name: z.string().nullable().default(null),
   workdir: z.string().nullable().default(null),
   context_from: z.array(z.string()).default([]),
-  deliver: z.string().default("local"),
   timeout_sec: z.number().default(300),
   builtin: z.boolean().default(false),
   repeat: z.number().nullable().default(null),
@@ -23,6 +22,8 @@ export const cronJobDataSchema = z.object({
   updated_at: z.string().default(""),
   last_run_at: z.number().default(0),
   last_output_ref: z.string().nullable().default(null),
+  /** 成功时是否将输出写入通知；失败始终通知 */
+  notify_on_success: z.boolean().default(false),
   /** API view: computed at runtime, not stored in PG */
   next_run_at: z.number().default(0),
   /** API view: lazy-loaded from last_output_ref */

@@ -26,9 +26,9 @@ export async function createJob(opts: {
   model_name?: string | null;
   workdir?: string | null;
   context_from?: string[];
-  deliver?: string;
   timeout_sec?: number;
   repeat?: number | null;
+  notify_on_success?: boolean;
 }): Promise<CronJob> {
   parseSchedule(opts.schedule);
   const now = new Date();
@@ -45,9 +45,9 @@ export async function createJob(opts: {
     model_name: opts.model_name ?? null,
     workdir: opts.workdir ?? null,
     context_from: opts.context_from ?? [],
-    deliver: opts.deliver ?? "local",
     timeout_sec: opts.timeout_sec ?? 300,
     repeat: opts.repeat ?? null,
+    notify_on_success: opts.notify_on_success ?? false,
     created_at: now,
     updated_at: now,
   });
@@ -105,14 +105,11 @@ export { parseSchedule, ScheduleType } from "./schedule.ts";
 export { computeNextRunAt, resolveBunSchedule } from "./bun-schedule.ts";
 export { cstCronToUtc } from "./timezone.ts";
 export {
-  deliverCronResult,
   deliverToTargets,
   registerCronDeliverer,
   unregisterCronDeliverer,
-  resolveDeliverTargets,
   type CronDeliverFn,
   type CronDeliverOptions,
-  type CronDeliverPayload,
   type CronDeliverResult,
   type CronDeliverTarget,
 } from "./deliver.ts";

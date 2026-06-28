@@ -9,9 +9,7 @@ import {
   z,
 } from "@freeanima/core/tool";
 
-import { getDreamFridge } from "./dream-fridge-port.ts";
 import { getDreamMemoryByDay, getLatestDreamMemory } from "@freeanima/core/db/pg/dream-memory";
-import { dismissDreamReminder } from "./dream/run.ts";
 
 const dreamReadReturnSchema = z.object({
   ok: z.literal(true),
@@ -20,7 +18,6 @@ const dreamReadReturnSchema = z.object({
   content: z.string(),
   source_limbic_ids: z.array(z.string()),
   source_conversation_ids: z.array(z.string()),
-  reminder_dismissed: z.boolean(),
 });
 
 const DREAM_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
@@ -33,7 +30,6 @@ const DREAM_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       content: "我在一条没有尽头的走廊里…",
       source_limbic_ids: ["limbic-1"],
       source_conversation_ids: ["sess-1"],
-      reminder_dismissed: true,
     },
   }),
 };
@@ -47,7 +43,7 @@ export function registerDreamTools(toolSets: ToolSetRegistry): void {
         {
           name: "dream_read",
           description:
-            "Read a stored dream narrative. Defaults to the latest dream when day is omitted. Automatically dismisses the dream fridge magnet reminder for that day after reading.",
+            "Read a stored dream narrative. Defaults to the latest dream when day is omitted.",
           parameters: {
             type: "object",
             properties: {
@@ -65,9 +61,6 @@ export function registerDreamTools(toolSets: ToolSetRegistry): void {
               return toolError(dayArg ? `No dream found for ${dayArg}` : "No dream found");
             }
 
-            const fridge = getDreamFridge();
-            await dismissDreamReminder(fridge ?? undefined, row.dream_day);
-
             return toolResult({
               ok: true as const,
               dream_day: row.dream_day,
@@ -75,7 +68,6 @@ export function registerDreamTools(toolSets: ToolSetRegistry): void {
               content: row.content,
               source_limbic_ids: row.source_limbic_ids,
               source_conversation_ids: row.source_conversation_ids,
-              reminder_dismissed: Boolean(fridge),
             });
           },
         },

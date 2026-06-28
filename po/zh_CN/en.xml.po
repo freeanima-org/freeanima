@@ -779,7 +779,7 @@ msgid "(missing only)"
 msgstr "（仅补缺失）"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:109
+#: messages/po4a/en.xml:2
 #, no-wrap
 msgid "Operation failed: {detail}"
 msgstr "操作失败: {detail}"

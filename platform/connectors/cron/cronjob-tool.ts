@@ -61,8 +61,8 @@ async function handleCronjob(args: Record<string, unknown>): Promise<string> {
         next_run_at: json.next_run_at > 0 ? tsHuman(json.next_run_at) : null,
         skills: j.skills,
         script: j.script,
-        deliver: j.deliver,
         last_output: json.last_output ?? null,
+        notify_on_success: j.notify_on_success,
       },
     });
   }
@@ -84,8 +84,8 @@ async function handleCronjob(args: Record<string, unknown>): Promise<string> {
         skills: Array.isArray(args.skills) ? (args.skills as string[]) : undefined,
         script: args.script != null ? String(args.script) : null,
         no_agent: noAgent,
-        deliver: String(args.deliver ?? "local"),
         repeat: typeof args.repeat === "number" ? args.repeat : null,
+        notify_on_success: Boolean(args.notify_on_success),
       });
       const next = computeNextRunAt(j.schedule, j.paused) ?? 0;
       return toolResult({
@@ -177,8 +177,12 @@ export function registerCronjobTool(toolSets: ToolSetRegistry): void {
               skills: { type: "array", items: { type: "string" }, description: "Skills to load" },
               script: { type: "string", description: "Script path (relative to cron/scripts)" },
               no_agent: { type: "boolean", description: "Script-only mode, no LLM" },
-              deliver: { type: "string", description: "Delivery target, default local" },
               repeat: { type: "integer", description: "Max run count" },
+              notify_on_success: {
+                type: "boolean",
+                description:
+                  "Send job output to notification inbox on success (default false; failures always notify)",
+              },
             },
             required: ["action"],
           },
