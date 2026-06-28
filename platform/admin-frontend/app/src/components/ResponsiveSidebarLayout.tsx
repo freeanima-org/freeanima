@@ -2,6 +2,24 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { m } from "@admin/lib/i18n.ts";
 
+const MOBILE_LAYOUT_MQ = "(max-width: 1023px)";
+
+function useMobileLayout(): boolean {
+  const [mobile, setMobile] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia(MOBILE_LAYOUT_MQ).matches : false,
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE_LAYOUT_MQ);
+    const sync = () => setMobile(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  return mobile;
+}
+
 type ResponsiveSidebarLayoutProps = {
   title: string;
   /** 移动端顶栏标题（默认与聊天室一致：当前页名称） */
@@ -23,6 +41,10 @@ export function ResponsiveSidebarLayout({
   mobileActions,
 }: ResponsiveSidebarLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const mobileLayout = useMobileLayout();
+  const nativeShell =
+    typeof window !== "undefined" && Boolean(window.satelliteShell?.isNativeShell);
+  const useDrawerNav = nativeShell || mobileLayout;
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
@@ -34,7 +56,9 @@ export function ResponsiveSidebarLayout({
 
   return (
     <div className="admin-app h-full flex flex-col min-h-0">
-      <header className="shrink-0 flex items-center gap-2 px-3 py-2 border-b border-base-300 bg-base-200 lg:hidden">
+      <header
+        className={`shrink-0 flex items-center gap-2 px-3 py-2 border-b border-base-300 bg-base-200 ${useDrawerNav ? "" : "hidden"}`}
+      >
         <button
           type="button"
           className="btn btn-ghost btn-sm btn-square"
@@ -50,22 +74,24 @@ export function ResponsiveSidebarLayout({
       </header>
 
       <div className="flex flex-1 min-h-0 relative">
-        {sidebarOpen ? (
-          <div
-            className="lg:hidden safe-fixed-overlay z-30 bg-black/50"
-            onClick={closeSidebar}
-            aria-hidden
-          />
+        {sidebarOpen && useDrawerNav ? (
+          <div className="safe-fixed-overlay z-30 bg-black/50" onClick={closeSidebar} aria-hidden />
         ) : null}
 
         <aside
           className={[
             "shrink-0 w-64 flex flex-col border-r border-base-300 bg-base-200/30 min-h-0",
-            sidebarOpen ? "safe-fixed-sidebar z-40 lg:static" : "hidden lg:flex",
+            useDrawerNav
+              ? sidebarOpen
+                ? "safe-fixed-sidebar z-40 flex"
+                : "hidden"
+              : "relative flex",
           ].join(" ")}
         >
           {showSidebarHeader ? (
-            <div className="hidden lg:block p-3 font-semibold text-sm text-base-content/60 uppercase tracking-wide shrink-0">
+            <div
+              className={`p-3 font-semibold text-sm text-base-content/60 uppercase tracking-wide shrink-0 ${useDrawerNav ? "hidden" : ""}`}
+            >
               {title}
               {subtitle ? (
                 <span className="block text-xs font-normal normal-case tracking-normal mt-0.5">

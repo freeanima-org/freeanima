@@ -1,5 +1,10 @@
 import { describe, it, expect } from "bun:test";
-import { corsAllowOrigin, isBundledClientOrigin } from "./cors.ts";
+import {
+  corsAllowOrigin,
+  isBundledClientOrigin,
+  setExtraCorsOriginsForTests,
+  resetCorsOriginCacheForTests,
+} from "./cors.ts";
 
 describe("isBundledClientOrigin", () => {
   it("allows localhost and 127.0.0.1 with ports", () => {
@@ -18,5 +23,11 @@ describe("isBundledClientOrigin", () => {
 describe("corsAllowOrigin", () => {
   it("returns origin when allowed", () => {
     expect(corsAllowOrigin("http://127.0.0.1:4175")).toBe("http://127.0.0.1:4175");
+  });
+
+  it("allows configured web public_url origin", () => {
+    setExtraCorsOriginsForTests(["https://app.anima.example.com"]);
+    expect(corsAllowOrigin("https://app.anima.example.com")).toBe("https://app.anima.example.com");
+    resetCorsOriginCacheForTests();
   });
 });

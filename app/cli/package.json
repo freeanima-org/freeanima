@@ -10,8 +10,10 @@
   "dependencies": {
     "@clack/prompts": "^0.10.0",
     "@freeanima/admin-api": "workspace:*",
+    "@freeanima/app-web": "workspace:*",
     "@freeanima/core": "workspace:*",
     "@freeanima/platform": "workspace:*",
+    "@freeanima/sap-contract": "workspace:*",
     "commander": "^15.0.0"
   },
   "devDependencies": {

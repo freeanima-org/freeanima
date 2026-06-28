@@ -12,7 +12,17 @@ describe("tunnel-urls", () => {
       hostname: "anima.example.com",
       public_url: "https://anima.example.com",
       api_url: "https://anima.example.com/api",
+      web_url: null,
     });
+  });
+
+  test("buildTunnelSnapshot includes web_url when web_hostname set", () => {
+    const snap = buildTunnelSnapshot({
+      enabled: true,
+      hostname: "anima.example.com",
+      web_hostname: "app.anima.example.com",
+    });
+    expect(snap?.web_url).toBe("https://app.anima.example.com");
   });
 
   test("buildTunnelSnapshot returns undefined when disabled", () => {

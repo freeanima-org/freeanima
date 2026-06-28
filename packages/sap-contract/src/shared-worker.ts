@@ -3,6 +3,7 @@
 import type { SapClient, SapMethod, SapRouterInputs, SapRouterOutputs } from "./router.ts";
 import type { ConnectPayload, ConnectedPayload } from "./frames/lifecycle.ts";
 import type { SapReconnectPolicy } from "./transport.ts";
+import { runSapTransport } from "./transport.ts";
 import { sapInstanceStoreFromKey } from "./instance-store.ts";
 
 /** postMessage-safe init payload (no functions / AbortSignal) */
@@ -61,7 +62,6 @@ export function installSapSharedWorkerHost(): void {
   const ensureTransport = async (): Promise<SapClient> => {
     if (!workerConfig) throw new Error("SAP shared worker not initialized");
     if (transport?.getClient()) return transport.whenConnected();
-    const { runSapTransport } = await import("./transport.ts");
     const { instanceStoreKey, ...transportConfig } = workerConfig;
     transport = runSapTransport({
       ...transportConfig,

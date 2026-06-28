@@ -6,6 +6,7 @@ import { registerCredentialCommand } from "./commands/credential.ts";
 import { registerCompletionCommand } from "./commands/completion.ts";
 import { registerUpgradeCommand } from "./commands/upgrade.ts";
 import { registerTunnelCommand } from "./commands/tunnel.ts";
+import { registerWebCommand } from "./commands/web.ts";
 
 /** Build CLI program (shared by parse and completion generation) */
 export function buildProgram(): Command {
@@ -18,6 +19,7 @@ export function buildProgram(): Command {
   registerCredentialCommand(program);
   registerUpgradeCommand(program);
   registerTunnelCommand(program);
+  registerWebCommand(program);
   registerCompletionCommand(program);
 
   return program;

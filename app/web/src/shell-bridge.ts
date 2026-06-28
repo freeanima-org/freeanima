@@ -69,8 +69,20 @@ async function bootstrapShellBridge(): Promise<void> {
   window.satelliteShell = createWebShellStub();
 
   try {
-    const defaultHubUrl = (__WEB_DEFAULT_HUB_URL__ || "http://127.0.0.1:2658").replace(/\/$/, "");
+    let defaultHubUrl = (__WEB_DEFAULT_HUB_URL__ || "http://127.0.0.1:2658").replace(/\/$/, "");
     const defaultToken = __WEB_DEFAULT_REMOTE_AUTH_TOKEN__ || "";
+
+    try {
+      const res = await fetch("/config.json", { cache: "no-store" });
+      if (res.ok) {
+        const cfg = (await res.json()) as { hub_url?: string };
+        const runtimeHub = cfg.hub_url?.trim().replace(/\/$/, "");
+        if (runtimeHub) defaultHubUrl = runtimeHub;
+      }
+    } catch {
+      /* 无 /config.json 时使用构建默认值 */
+    }
+
     seedWebHubPrefsIfEmpty(defaultHubUrl, defaultToken);
 
     const backend = createWebScopedBackend();

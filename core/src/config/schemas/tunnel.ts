@@ -20,6 +20,8 @@ export const tunnelConfigSchema = z
   .object({
     enabled: z.boolean().optional(),
     hostname: z.string().min(1).optional(),
+    /** Web UI 公网 hostname（Tunnel ingress 第二条；可与 hostname 不同） */
+    web_hostname: z.string().min(1).optional(),
     cloudflare: tunnelCloudflareConfigSchema,
     credentials: tunnelCredentialsConfigSchema,
   })

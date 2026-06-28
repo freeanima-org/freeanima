@@ -8,7 +8,7 @@ export function parseShellClientConfig(raw: unknown): ShellClientConfig | null {
   const obj = raw as Record<string, unknown>;
   const hubUrl = typeof obj.hubUrl === "string" ? obj.hubUrl.trim() : "";
   const remoteAuthToken = typeof obj.remoteAuthToken === "string" ? obj.remoteAuthToken.trim() : "";
-  if (!hubUrl || !remoteAuthToken) return null;
+  if (!hubUrl) return null;
   return { hubUrl, remoteAuthToken };
 }
 
@@ -19,6 +19,5 @@ export function normalizeShellClientConfig(input: {
   const hubUrl = input.hubUrl.trim().replace(/\/$/, "");
   const remoteAuthToken = input.remoteAuthToken.trim();
   if (!hubUrl) throw new Error("Hub 地址不能为空");
-  if (!remoteAuthToken) throw new Error("远程 Token 不能为空");
   return { hubUrl, remoteAuthToken };
 }

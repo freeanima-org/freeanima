@@ -35,10 +35,13 @@ anima service start --foreground
 anima service status
 anima service stop
 anima service restart
+anima web start --foreground # 独立 Web 静态服（默认 :2659；生产推荐 web.enabled + service stack）
 ```
 
-Managed satellites get user units `~/.config/systemd/user/anima-satellite-<name>.service`, enabled on `service start` and stopped with `service stop`. See [`satellite-guide.md`](../sap/satellite-guide.md).
+`anima.service` 为 **单 unit stack**：Hub（`:2658`）+ 可选 Web（`:2659`）+ 可选 Tunnel（cloudflared）由同一 foreground supervisor 管理。旧版 `anima-tunnel.service` 在下次 `service start` 时自动停用。
 
-**Startup order:** Hub must pass `GET /api/health` (`status: ok`) before managed satellites are started (foreground uses `serve()` `onReady`; background CLI polls health). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).
+配置 `web.enabled: true` 时 stack 会托管浏览器 Web UI（静态文件，不代理 Hub API）。Hub 与 Web **分端口**；浏览器在设置页填写 Hub 地址与 `remote_auth` token。
+
+**Startup order:** Hub must pass `GET /api/health` (`status: ok`) before Web/Tunnel sidecars start (`serve()` `onReady` → stack supervisor). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).
 
 Admin dashboard dashboard: `http://127.0.0.1:2658/admin/dashboard/dashboard`

@@ -5,6 +5,7 @@ export type TunnelSnapshot = {
   hostname: string;
   public_url: string;
   api_url: string;
+  web_url: string | null;
 };
 
 /** 从 tunnel 配置生成公网 URL（不含运行状态） */
@@ -12,10 +13,12 @@ export function buildTunnelSnapshot(tunnel: TunnelConfig | undefined): TunnelSna
   if (!tunnel?.enabled || !tunnel.hostname?.trim()) return undefined;
   const hostname = tunnel.hostname.trim();
   const publicUrl = `https://${hostname}`;
+  const webHost = tunnel.web_hostname?.trim();
   return {
     enabled: true,
     hostname,
     public_url: publicUrl,
     api_url: `${publicUrl}/api`,
+    web_url: webHost ? `https://${webHost}` : null,
   };
 }

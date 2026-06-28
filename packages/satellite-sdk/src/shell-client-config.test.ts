@@ -21,7 +21,22 @@ describe("shell-client-config", () => {
       hubUrl: "https://a.com",
       remoteAuthToken: "tok",
     });
-    expect(parseShellClientConfig({ hubUrl: "https://a.com" })).toBeNull();
+    expect(parseShellClientConfig({ hubUrl: "https://a.com" })).toEqual({
+      hubUrl: "https://a.com",
+      remoteAuthToken: "",
+    });
+  });
+
+  test("normalizeShellClientConfig allows empty token", () => {
+    expect(
+      normalizeShellClientConfig({
+        hubUrl: "http://192.168.1.10:2658",
+        remoteAuthToken: "",
+      }),
+    ).toEqual({
+      hubUrl: "http://192.168.1.10:2658",
+      remoteAuthToken: "",
+    });
   });
 
   test("normalizeShellClientConfig trims hub url", () => {
