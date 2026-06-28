@@ -100,4 +100,23 @@ export const TASK_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       ],
     },
   }),
+  tasklist_update: defineToolReturn({
+    schema: z.object({
+      ok: z.literal(true),
+      action: z.literal("update_list"),
+      list: taskListSchema,
+    }),
+    example: {
+      ok: true,
+      action: "update_list",
+      list: {
+        id: 2,
+        name: "收件箱",
+        sort_order: 0,
+        closed: false,
+        is_default: true,
+        item_count: 1,
+      },
+    },
+  }),
 };
