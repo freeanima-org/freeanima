@@ -23,7 +23,7 @@ function rowToJsonCompact(row: SemanticMemoryRow): string {
     type: row.type,
     content: row.content,
     sources: row.source_conversations,
-    observed: row.observed_at?.slice(0, 19) ?? null,
+    observed: row.observed_at?.toISOString().slice(0, 19) ?? null,
     occurred: row.occurred_at ?? null,
   });
 }
@@ -83,7 +83,7 @@ export function formatExistingAutobiographical(rows: AutobiographicalMemoryRow[]
         significance: row.significance,
         period_start: row.period_start,
         period_end: row.period_end,
-        source_semantic_memory: row.source_semantic_memory,
+        source_facts: row.source_facts,
         content_preview: row.content.slice(0, 200),
       }),
     );

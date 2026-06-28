@@ -7,9 +7,10 @@ import type { AutobiographicalStatus } from "@freeanima/core/repos";
 import { formatPgVector } from "../embedding/format.ts";
 import { getDb } from "../client.ts";
 import { buildFtsTsQuery } from "./query.ts";
-import { type AutobiographicalMemoryDbRow } from "../autobiographical-memory/mappers/autobiographical-mapper.ts";
 
-export type AutobiographicalMemoryFtsDbRow = AutobiographicalMemoryDbRow & { rank: number };
+export type AutobiographicalMemoryFtsDbRow = typeof autobiographicalMemory.$inferSelect & {
+  rank: number;
+};
 
 const autobiographicalBodySql = sql<string>`btrim(${autobiographicalMemory.title}) || E'\\n' || btrim(${autobiographicalMemory.content})`;
 
@@ -49,7 +50,7 @@ export async function searchAutobiographicalMemoryFtsRaw(
   return rows.map((r) => ({ ...r, rank: Number(r.rank) }));
 }
 
-export type TrgmAutobiographicalHit = AutobiographicalMemoryDbRow & {
+export type TrgmAutobiographicalHit = typeof autobiographicalMemory.$inferSelect & {
   docKey: string;
   rank: number;
 };
@@ -89,7 +90,7 @@ export async function searchAutobiographicalMemoryTrgm(
   }));
 }
 
-export type VectorAutobiographicalHit = AutobiographicalMemoryDbRow & {
+export type VectorAutobiographicalHit = typeof autobiographicalMemory.$inferSelect & {
   docKey: string;
   rank: number;
 };

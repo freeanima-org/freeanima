@@ -23,9 +23,15 @@ import {
   type ConversationInsert,
 } from "@freeanima/core/db/schema";
 
-import { normalizePgTimestamp, pgJsonbOrNull, pgTextOrNull } from "../../utils/timestamp.ts";
+import { pgJsonbOrNull, pgTextOrNull } from "../utils/timestamp.ts";
 
-const pgNowIso = (): string => normalizePgTimestamp(new Date());
+const pgNow = (): Date => new Date();
+
+function metaTimestampToDate(raw: string | undefined): Date {
+  if (!raw?.trim()) return pgNow();
+  const parsed = new Date(raw);
+  return Number.isNaN(parsed.getTime()) ? pgNow() : parsed;
+}
 
 const META_KNOWN_KEYS = new Set([
   "role",
@@ -108,8 +114,8 @@ export function conversationMetaToInsert(
     staged_toolsets,
     functions,
     debug: meta.debug === true,
-    created_at: normalizePgTimestamp(meta.timestamp),
-    updated_at: pgNowIso(),
+    created_at: metaTimestampToDate(meta.timestamp),
+    updated_at: pgNow(),
   };
 }
 
@@ -135,7 +141,10 @@ export function rowToConversationMeta(row: unknown): ConversationMetaMessage {
   }
   const base = {
     role: "conversation_meta" as const,
-    timestamp: parsed.created_at,
+    timestamp:
+      parsed.created_at instanceof Date
+        ? parsed.created_at.toISOString()
+        : String(parsed.created_at ?? ""),
     model: parsed.model,
     platform,
     title: parsed.title ?? undefined,
@@ -161,13 +170,13 @@ export function rowToConversationMeta(row: unknown): ConversationMetaMessage {
 export function patchCompression(compression: CompressionState): Partial<ConversationInsert> {
   return {
     compression,
-    updated_at: pgNowIso(),
+    updated_at: pgNow(),
   };
 }
 
 export function patchTodos(todos: ConversationTodoStore): Partial<ConversationInsert> {
   return {
     todos: conversationTodoStoreSchema.parse(todos),
-    updated_at: pgNowIso(),
+    updated_at: pgNow(),
   };
 }

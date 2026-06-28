@@ -13,7 +13,12 @@ const memoryListPaginationSchema = z.object({
   limit: z.number().int().min(1).max(100).optional(),
 });
 
-export const semanticMemorySortBySchema = z.enum(["created", "updated", "reference_count", "rank"]);
+export const semanticMemorySortBySchema = z.enum([
+  "created_at",
+  "updated_at",
+  "reference_count",
+  "rank",
+]);
 
 export const semanticMemoryListBodySchema = memoryListPaginationSchema.extend({
   query: z.string().optional(),

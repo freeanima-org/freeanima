@@ -79,12 +79,12 @@ export async function listMemoryFiles(deps: RuntimeDeps): Promise<{ files: Memor
     const rows = await deps.engine.repos.semanticMemory.listAll();
     for (const row of rows) {
       const name = `${row.id}.md`;
-      const content = `---\nid: ${row.id}\ntype: ${row.type}\npinned: ${row.pinned}\ncreated: ${row.created}\nupdated: ${row.updated}\n---\n${row.content}`;
+      const content = `---\nid: ${row.id}\ntype: ${row.type}\npinned: ${row.pinned}\ncreated: ${row.created_at}\nupdated: ${row.updated_at}\n---\n${row.content}`;
       files.push({
         name,
         path: `pg:semantic_memory:${row.id}`,
         size: Buffer.byteLength(content, "utf-8"),
-        mtime: Date.parse(row.updated) / 1000 || 0,
+        mtime: row.updated_at.getTime() / 1000 || 0,
         content,
       });
     }

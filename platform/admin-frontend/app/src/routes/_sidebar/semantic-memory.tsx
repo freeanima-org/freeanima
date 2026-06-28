@@ -20,7 +20,7 @@ const SEMANTIC_TYPES = [
   "imprint",
 ] as const;
 
-const BROWSE_SORT_OPTIONS = ["updated", "created", "reference_count"] as const;
+const BROWSE_SORT_OPTIONS = ["updated_at", "created_at", "reference_count"] as const;
 type BrowseSortBy = (typeof BROWSE_SORT_OPTIONS)[number];
 
 type SemanticRow = SemanticMemoryRow & { rank?: number };
@@ -34,7 +34,7 @@ function SemanticMemoryPage() {
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("active");
   const [sourceConversation, setSourceConversation] = useState("");
-  const [sortBy, setSortBy] = useState<BrowseSortBy>("updated");
+  const [sortBy, setSortBy] = useState<BrowseSortBy>("updated_at");
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -188,8 +188,8 @@ function SemanticMemoryPage() {
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as BrowseSortBy)}
                 >
-                  <option value="updated">{m.admin_semantic_sort_updated()}</option>
-                  <option value="created">{m.admin_semantic_sort_created()}</option>
+                  <option value="updated_at">{m.admin_semantic_sort_updated()}</option>
+                  <option value="created_at">{m.admin_semantic_sort_created()}</option>
                   <option value="reference_count">{m.admin_semantic_sort_reference_count()}</option>
                 </select>
               </div>
@@ -256,10 +256,10 @@ function SemanticMemoryPage() {
                         )}
                       </td>
                       <td className="text-xs whitespace-nowrap">
-                        {formatDisplayDateTime(row.created)}
+                        {formatDisplayDateTime(row.created_at)}
                       </td>
                       <td className="text-xs whitespace-nowrap">
-                        {formatDisplayDateTime(row.updated)}
+                        {formatDisplayDateTime(row.updated_at)}
                       </td>
                       <td className="text-xs">{Number(row.reference_count).toFixed(2)}</td>
                       <td className="text-sm max-w-md whitespace-pre-wrap">{row.content}</td>

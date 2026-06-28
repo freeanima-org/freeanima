@@ -6,9 +6,8 @@ import { limbicMemory } from "@freeanima/core/db/schema";
 import { formatPgVector } from "../embedding/format.ts";
 import { getDb } from "../client.ts";
 import { buildFtsTsQuery } from "./query.ts";
-import { type LimbicMemoryDbRow } from "../limbic-memory/mappers/limbic-mapper.ts";
 
-export type LimbicMemoryFtsDbRow = LimbicMemoryDbRow & { rank: number };
+export type LimbicMemoryFtsDbRow = typeof limbicMemory.$inferSelect & { rank: number };
 
 export async function searchLimbicMemoryFtsRaw(
   query: string,
@@ -40,7 +39,7 @@ export async function searchLimbicMemoryFtsRaw(
   return rows.map((r) => ({ ...r, rank: Number(r.rank) }));
 }
 
-export type TrgmLimbicHit = LimbicMemoryDbRow & {
+export type TrgmLimbicHit = typeof limbicMemory.$inferSelect & {
   docKey: string;
   rank: number;
 };
@@ -74,7 +73,7 @@ export async function searchLimbicMemoryTrgm(
   }));
 }
 
-export type VectorLimbicHit = LimbicMemoryDbRow & {
+export type VectorLimbicHit = typeof limbicMemory.$inferSelect & {
   docKey: string;
   rank: number;
 };

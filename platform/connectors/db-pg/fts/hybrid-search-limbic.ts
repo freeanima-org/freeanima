@@ -3,7 +3,6 @@ import { getActiveConfig, getFtsTrgmFallbackWhenHitsLt } from "@freeanima/platfo
 import { limbicDocKey, rrfMerge } from "@freeanima/core/util";
 
 import { embedQueryText } from "../embedding/query.ts";
-import { mapLimbicMemoryRow } from "../limbic-memory/mappers/limbic-mapper.ts";
 import {
   searchLimbicMemoryFtsRaw,
   searchLimbicMemoryTrgm,
@@ -44,7 +43,7 @@ export async function hybridSearchLimbicMemory(
 
   const merged = rrfMerge([ftsRanked, trgmRanked, vectorRanked], { limit: pool });
   return merged.slice(0, limit).map((row) => ({
-    ...mapLimbicMemoryRow(row),
+    ...row,
     rank: row.score,
   }));
 }

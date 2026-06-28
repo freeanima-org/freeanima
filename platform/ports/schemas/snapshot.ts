@@ -110,9 +110,9 @@ export type ServiceSnapshot = {
 export type ConversationSummary = {
   id: string;
   title: string;
-  created: string;
+  created_at: Date;
   platform: string;
-  archived_at?: string | null;
+  archived_at?: Date | null;
 };
 
 export type SafeConfigSnapshot = {

@@ -133,7 +133,7 @@ function mapCandidateToHit(
         pinned: row.pinned,
         content: row.content,
         source_conversations: row.source_conversations,
-        observed_at: row.observed_at,
+        observed_at: row.observed_at?.toISOString() ?? null,
         occurred_at: row.occurred_at,
         status: row.status,
       };

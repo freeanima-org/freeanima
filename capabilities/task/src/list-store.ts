@@ -22,7 +22,7 @@ async function countItemsForList(listId: number): Promise<number> {
 
 function toListRow(
   row: NonNullable<ReturnType<typeof asTaskList>>,
-  meta: { created_at: string; updated_at: string; item_count: number },
+  meta: { created_at: Date; updated_at: Date; item_count: number },
 ): TaskListRow {
   return {
     id: row.id,
@@ -32,8 +32,8 @@ function toListRow(
     color: row.color ?? null,
     is_default: row.is_default ?? false,
     item_count: meta.item_count,
-    created_at: meta.created_at,
-    updated_at: meta.updated_at,
+    created_at: meta.created_at.toISOString(),
+    updated_at: meta.updated_at.toISOString(),
   };
 }
 

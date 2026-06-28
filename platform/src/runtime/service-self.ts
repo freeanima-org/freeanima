@@ -10,9 +10,11 @@ export type SelfBlockDisplay = {
   locked: boolean;
   version: number;
   updated_by: string | null;
-  created_at: string;
-  updated_at: string;
+  created_at: Date;
+  updated_at: Date;
 };
+
+const PLACEHOLDER_EPOCH = new Date(0);
 
 function emptyPlaceholderBlocks(): SelfBlockDisplay[] {
   return SELF_BLOCK_KEYS.map((key) => ({
@@ -23,15 +25,15 @@ function emptyPlaceholderBlocks(): SelfBlockDisplay[] {
       locked: key === "existence_anchor",
       version: 0,
       updated_by: null,
-      created_at: "",
-      updated_at: "",
+      created_at: PLACEHOLDER_EPOCH,
+      updated_at: PLACEHOLDER_EPOCH,
     }).heading,
     content: "",
     locked: key === "existence_anchor",
     version: 0,
     updated_by: null,
-    created_at: "",
-    updated_at: "",
+    created_at: PLACEHOLDER_EPOCH,
+    updated_at: PLACEHOLDER_EPOCH,
   }));
 }
 

@@ -1,5 +1,9 @@
-import { index, jsonb, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { index, jsonb, pgTable, text, uniqueIndex } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+
 import { z } from "zod";
+
+import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
 
 export const dreamEpisodicSnippetSchema = z.object({
   conversation_id: z.string(),
@@ -24,7 +28,9 @@ export const dreamMemory = pgTable(
       .$type<DreamEpisodicSnippet[]>()
       .notNull()
       .default([]),
-    created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    created_at: pgTimestamptz("created_at")
+      .notNull()
+      .default(sql`now()`),
   },
   (t) => [
     uniqueIndex("idx_dream_memory_dream_day").on(t.dream_day),

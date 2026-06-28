@@ -171,7 +171,7 @@ describePg("server memory API", () => {
 
     const forcedRank = await getAppRuntime().listSemanticMemories({
       query: "unique-sort-token",
-      sort_by: "updated",
+      sort_by: "updated_at",
       limit: 10,
     });
     if (forcedRank.items.length >= 2) {

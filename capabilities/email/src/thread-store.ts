@@ -22,7 +22,7 @@ function normalizeTags(tags: string[] | undefined): string[] {
 
 function toThreadRow(
   row: NonNullable<ReturnType<typeof asEmailThread>>,
-  meta: { created_at: string; updated_at: string },
+  meta: { created_at: Date; updated_at: Date },
 ): EmailThreadRow {
   return {
     id: row.id,
@@ -34,8 +34,8 @@ function toThreadRow(
     unread_count: row.unread_count ?? 0,
     message_count: row.message_count ?? 0,
     last_message_at: row.last_message_at ?? null,
-    created_at: meta.created_at,
-    updated_at: meta.updated_at,
+    created_at: meta.created_at.toISOString(),
+    updated_at: meta.updated_at.toISOString(),
   };
 }
 

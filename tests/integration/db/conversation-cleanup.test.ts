@@ -37,7 +37,7 @@ async function backdateSession(conversationId: string): Promise<void> {
   const db = getDb();
   await db
     .update(conversations)
-    .set({ updated_at: STALE_UPDATED_AT })
+    .set({ updated_at: new Date(STALE_UPDATED_AT) })
     .where(eq(conversations.id, conversationId));
 }
 

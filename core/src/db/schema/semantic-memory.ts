@@ -1,5 +1,7 @@
 import { sql, type SQL } from "drizzle-orm";
-import { boolean, index, pgTable, real, text, timestamp, vector } from "drizzle-orm/pg-core";
+import { boolean, index, pgTable, real, text, vector } from "drizzle-orm/pg-core";
+
+import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
 import { z } from "zod";
 
 import { SEMANTIC_EMBEDDING_DIMENSIONS } from "./embedding.ts";
@@ -45,13 +47,17 @@ export const semanticMemory = pgTable(
         END)`,
     ),
     source_conversations: text("source_conversations").array().notNull().default([]),
-    observed_at: timestamp("observed_at", { withTimezone: true }),
+    observed_at: pgTimestamptz("observed_at"),
     occurred_at: text("occurred_at"),
     status: text("status").notNull().default("active"),
     /** Reference weight sum after per-conversation dedupe + 30-day decay (periodic full sync calibration) */
     reference_count: real("reference_count").notNull().default(0),
-    created: timestamp("created", { withTimezone: true }).notNull().defaultNow(),
-    updated: timestamp("updated", { withTimezone: true }).notNull().defaultNow(),
+    created_at: pgTimestamptz("created_at")
+      .notNull()
+      .default(sql`now()`),
+    updated_at: pgTimestamptz("updated_at")
+      .notNull()
+      .default(sql`now()`),
   },
   (t) => [
     index("idx_semantic_memory_fts").using("gin", t.content_fts),

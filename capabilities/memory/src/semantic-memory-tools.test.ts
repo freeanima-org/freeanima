@@ -24,11 +24,11 @@ function createMockSemanticStore(): SemanticMemoryStorePort & {
           pinned: false,
           reference_count: 0,
           source_conversations: ["s-1"],
-          observed_at: "2026-03-01T10:00:00+08:00",
+          observed_at: new Date("2026-03-01T10:00:00+08:00"),
           occurred_at: "2025 Spring",
           status: "active",
-          created: "",
-          updated: "",
+          created_at: new Date("2026-01-01T00:00:00.000Z"),
+          updated_at: new Date("2026-01-01T00:00:00.000Z"),
         };
       }
       if (id === "f-b") {
@@ -39,11 +39,11 @@ function createMockSemanticStore(): SemanticMemoryStorePort & {
           pinned: false,
           reference_count: 0,
           source_conversations: ["s-2"],
-          observed_at: "2026-04-01T10:00:00+08:00",
+          observed_at: new Date("2026-04-01T10:00:00+08:00"),
           occurred_at: "2024 Winter",
           status: "active",
-          created: "",
-          updated: "",
+          created_at: new Date("2026-01-01T00:00:00.000Z"),
+          updated_at: new Date("2026-01-01T00:00:00.000Z"),
         };
       }
       return null;

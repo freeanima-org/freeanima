@@ -5,6 +5,7 @@ import { SELF_BLOCK_KEYS } from "../ports/self-layer.ts";
 import { pgUnavailable } from "./null-helpers.ts";
 
 const unavailable = pgUnavailable;
+const PLACEHOLDER_EPOCH = new Date(0);
 
 function emptyBlock(key: SelfBlockKey): SelfBlockRow {
   return {
@@ -13,8 +14,8 @@ function emptyBlock(key: SelfBlockKey): SelfBlockRow {
     locked: key === "existence_anchor",
     version: 0,
     updated_by: null,
-    created_at: "",
-    updated_at: "",
+    created_at: PLACEHOLDER_EPOCH,
+    updated_at: PLACEHOLDER_EPOCH,
   };
 }
 

@@ -1,5 +1,9 @@
-import { index, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { index, jsonb, pgTable, text } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+
 import { z } from "zod";
+
+import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
 
 export const notificationRecipientKindSchema = z.enum(["user", "agent"]);
 export type NotificationRecipientKind = z.infer<typeof notificationRecipientKindSchema>;
@@ -16,10 +20,10 @@ export const notifications = pgTable(
     title: text("title").notNull(),
     body: text("body").notNull(),
     payload: jsonb("payload").$type<Record<string, unknown> | null>(),
-    read_at: timestamp("read_at", { withTimezone: true, mode: "string" }),
-    created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
+    read_at: pgTimestamptz("read_at"),
+    created_at: pgTimestamptz("created_at")
       .notNull()
-      .defaultNow(),
+      .default(sql`now()`),
     source_kind: text("source_kind"),
     source_ref: text("source_ref"),
   },

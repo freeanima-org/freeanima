@@ -27,7 +27,7 @@ function createMemoryNotificationStore(): NotificationStorePort {
         body: input.body,
         payload: input.payload ?? null,
         read_at: null,
-        created_at: new Date().toISOString(),
+        created_at: new Date(),
         source_kind: input.source_kind ?? null,
         source_ref: input.source_ref ?? null,
       };
@@ -60,7 +60,7 @@ function createMemoryNotificationStore(): NotificationStorePort {
       const row = rows.get(id.trim());
       if (!row) return null;
       if (row.read_at != null) return row;
-      const updated = { ...row, read_at: new Date().toISOString() };
+      const updated = { ...row, read_at: new Date() };
       rows.set(row.id, updated);
       return updated;
     },

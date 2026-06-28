@@ -178,7 +178,7 @@ export function createSapServerHandlers(
               conversation_id: s.id,
               title: s.title,
               platform: s.platform,
-              updated_at: s.created,
+              updated_at: s.created_at,
               archived_at: s.archived_at ?? null,
             })),
           };

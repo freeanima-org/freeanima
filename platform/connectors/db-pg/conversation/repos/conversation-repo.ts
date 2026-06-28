@@ -26,11 +26,12 @@ import {
   patchTodos,
   rowToConversationMeta,
   conversationMetaToInsert,
-} from "../mappers/conversation-mapper.ts";
+} from "../transform.ts";
 import { formatDbError } from "../../utils/db-error.ts";
-import { normalizePgTimestamp, pgJsonbOrNull, pgTextOrNull } from "../../utils/timestamp.ts";
+import { pgJsonbOrNull, pgTextOrNull } from "../../utils/timestamp.ts";
+import type { ConversationInsert } from "@freeanima/core/db/schema";
 
-const pgNowIso = (): string => normalizePgTimestamp(new Date());
+const pgNow = (): Date => new Date();
 
 export async function getConversationMeta(
   conversation_id: string,
@@ -160,7 +161,7 @@ export async function patchConversationMeta(
   patch: Partial<ConversationMetaMessage> & Record<string, unknown>,
 ): Promise<void> {
   const db = getDb();
-  const set: Record<string, unknown> = { updated_at: pgNowIso() };
+  const set: Partial<ConversationInsert> = { updated_at: pgNow() };
   let hasColumnPatch = false;
 
   if (patch.title !== undefined) {
@@ -324,14 +325,14 @@ function mapConversationSummaryRow(row: {
   id: string;
   title: string | null;
   platform_info: { platform?: string } | null;
-  created_at: string;
-  archived_at?: string | null;
+  created_at: Date;
+  archived_at?: Date | null;
 }): ConversationSummaryRow {
   const raw = row.platform_info?.platform;
   return {
     id: row.id,
     title: row.title ?? "",
-    created: row.created_at,
+    created_at: row.created_at,
     platform: typeof raw === "string" ? raw : "",
     archived_at: row.archived_at ?? null,
   };
@@ -411,7 +412,7 @@ export async function deleteConversation(conversation_id: string): Promise<void>
 
 export async function archiveConversation(conversation_id: string): Promise<void> {
   const db = getDb();
-  const now = pgNowIso();
+  const now = pgNow();
   await db
     .update(conversations)
     .set({ archived_at: now, updated_at: now })
@@ -422,7 +423,7 @@ export async function unarchiveConversation(conversation_id: string): Promise<vo
   const db = getDb();
   await db
     .update(conversations)
-    .set({ archived_at: null, updated_at: pgNowIso() })
+    .set({ archived_at: null, updated_at: pgNow() })
     .where(eq(conversations.id, conversation_id));
 }
 
@@ -443,7 +444,6 @@ export async function listStaleConversationIdsForCleanup(opts: {
   olderThan: Date;
 }): Promise<string[]> {
   const db = getDb();
-  const olderThanIso = normalizePgTimestamp(opts.olderThan);
   const rows = await db
     .select({ id: conversations.id })
     .from(conversations)
@@ -451,7 +451,7 @@ export async function listStaleConversationIdsForCleanup(opts: {
       and(
         eq(conversations.debug, false),
         isNull(conversations.archived_at),
-        lt(conversations.updated_at, olderThanIso),
+        lt(conversations.updated_at, opts.olderThan),
         staleSessionCleanupPredicate,
       ),
     );

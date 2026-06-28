@@ -1,4 +1,5 @@
 export { safeParseOrNull, formatZodError } from "./json.ts";
+export { DATE_JSON_KEYS, isPlainIsoDateString, reviveDates } from "./date-json.ts";
 export {
   CST_OFFSET_MS,
   formatCstDisplay,

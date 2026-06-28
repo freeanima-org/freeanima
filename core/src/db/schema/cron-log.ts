@@ -1,14 +1,7 @@
-import {
-  bigint,
-  boolean,
-  index,
-  integer,
-  jsonb,
-  pgTable,
-  text,
-  timestamp,
-  unique,
-} from "drizzle-orm/pg-core";
+import { bigint, boolean, index, integer, jsonb, pgTable, text, unique } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+
+import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
 
 export const cronLog = pgTable(
   "cron_log",
@@ -17,9 +10,9 @@ export const cronLog = pgTable(
     job_id: text("job_id").notNull(),
     run_count: integer("run_count").notNull(),
     ok: boolean("ok").notNull(),
-    finished_at: timestamp("finished_at", { withTimezone: true, mode: "string" })
+    finished_at: pgTimestamptz("finished_at")
       .notNull()
-      .defaultNow(),
+      .default(sql`now()`),
     output: jsonb("output"),
     output_text: text("output_text"),
     error: text("error"),

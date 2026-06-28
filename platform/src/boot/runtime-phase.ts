@@ -116,7 +116,7 @@ async function createSapInstanceRegistry(repos: PgRepositories): Promise<SapInst
         instanceId: row.instance_id,
         appId: row.app_id,
         httpUrl: row.http_url,
-        createdAt: row.created_at,
+        createdAt: row.created_at.toISOString(),
       })),
     );
   }

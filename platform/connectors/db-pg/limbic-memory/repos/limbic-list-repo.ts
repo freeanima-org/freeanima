@@ -3,7 +3,6 @@ import { limbicKindSchema, limbicMemory } from "@freeanima/core/db/schema";
 import type { LimbicListOpts, LimbicMemoryRow } from "@freeanima/core/repos";
 
 import { getDb } from "../../client.ts";
-import { mapLimbicMemoryRow } from "../mappers/limbic-mapper.ts";
 
 function normalizeListOpts(opts?: LimbicListOpts) {
   const query = opts?.query?.trim() ?? "";
@@ -42,7 +41,7 @@ export async function listLimbicMemory(opts?: LimbicListOpts): Promise<LimbicMem
     .orderBy(desc(limbicMemory.created_at))
     .offset(offset)
     .limit(limit);
-  return rows.map(mapLimbicMemoryRow);
+  return rows;
 }
 
 export async function countLimbicMemory(

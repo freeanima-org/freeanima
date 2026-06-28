@@ -164,7 +164,7 @@ function AutobiographicalMemoryPage() {
                       <span className="badge badge-ghost badge-xs">{row.status}</span>
                       <span className="font-mono text-base-content/50">{row.id}</span>
                       <span className="text-base-content/50">
-                        {formatDisplayDateTime(row.updated)}
+                        {formatDisplayDateTime(row.updated_at)}
                       </span>
                     </div>
                     <p className="text-sm whitespace-pre-wrap">{row.content}</p>

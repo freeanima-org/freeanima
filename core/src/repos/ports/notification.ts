@@ -1,3 +1,5 @@
+import type { NotificationRow } from "@freeanima/core/db/schema/rows";
+
 export const NOTIFICATION_RECIPIENT_KINDS = ["user", "agent"] as const;
 export type NotificationRecipientKind = (typeof NOTIFICATION_RECIPIENT_KINDS)[number];
 
@@ -9,18 +11,7 @@ export type NotificationSourceKind = (typeof NOTIFICATION_SOURCE_KINDS)[number];
 
 export const DEFAULT_NOTIFICATION_RECIPIENT_ID = "default";
 
-export type NotificationRow = {
-  id: string;
-  recipient_kind: NotificationRecipientKind;
-  recipient_id: string;
-  title: string;
-  body: string;
-  payload: Record<string, unknown> | null;
-  read_at: string | null;
-  created_at: string;
-  source_kind: NotificationSourceKind | null;
-  source_ref: string | null;
-};
+export type { NotificationRow };
 
 export type NotificationCreateInput = {
   recipient_kind: NotificationRecipientKind;

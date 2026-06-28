@@ -1,4 +1,7 @@
-import { boolean, index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+
+import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
 
 export const cronJobs = pgTable(
   "cron_jobs",
@@ -20,13 +23,13 @@ export const cronJobs = pgTable(
     repeat: integer("repeat"),
     run_count: integer("run_count").notNull().default(0),
     paused: boolean("paused").notNull().default(false),
-    created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
+    created_at: pgTimestamptz("created_at")
       .notNull()
-      .defaultNow(),
-    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .default(sql`now()`),
+    updated_at: pgTimestamptz("updated_at")
       .notNull()
-      .defaultNow(),
-    last_run_at: timestamp("last_run_at", { withTimezone: true, mode: "string" }),
+      .default(sql`now()`),
+    last_run_at: pgTimestamptz("last_run_at"),
     last_output_ref: text("last_output_ref"),
   },
   (t) => [index("idx_cron_jobs_paused").on(t.paused)],

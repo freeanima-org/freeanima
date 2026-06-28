@@ -127,7 +127,7 @@ export function formatExistingMemoriesMessage(rows: SemanticMemoryRow[]): string
   for (const row of rows) {
     const sources =
       row.source_conversations.length > 0 ? `[${row.source_conversations.join(", ")}]` : "[]";
-    const observed = row.observed_at?.slice(0, 19) ?? "?";
+    const observed = row.observed_at?.toISOString().slice(0, 19) ?? "?";
     const occurred = row.occurred_at?.trim() ? ` occurred=${row.occurred_at}` : "";
     lines.push(
       `[${row.id}] (${row.type}) sources=${sources} observed=${observed}${occurred}${row.pinned ? " 📌" : ""}`,

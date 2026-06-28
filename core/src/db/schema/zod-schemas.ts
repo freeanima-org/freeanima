@@ -34,7 +34,9 @@ const conversationJsonbRefine = {
   cached_toolsets: conversationCachedToolsetsSchema,
   staged_toolsets: conversationStagedToolsetsSchema,
   functions: conversationFunctionsSchema,
-  archived_at: z.string().nullable().optional(),
+  archived_at: z.coerce.date().nullable().optional(),
+  created_at: z.coerce.date(),
+  updated_at: z.coerce.date(),
 };
 
 export const conversationSelectSchema = createSelectSchema(conversations, conversationJsonbRefine);

@@ -1,7 +1,6 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { cronLog } from "@freeanima/core/db/schema";
 import type { CronLogAppendInput, CronLogListOpts, CronLogRow } from "@freeanima/core/repos";
-import { formatCstIso } from "@freeanima/core/util";
 
 import { getDb } from "../../client.ts";
 
@@ -13,7 +12,8 @@ export function mapRow(raw: CronLogDbRow): CronLogRow {
     job_id: raw.job_id,
     run_count: raw.run_count,
     ok: raw.ok,
-    finished_at: String(raw.finished_at),
+    finished_at:
+      raw.finished_at instanceof Date ? raw.finished_at.toISOString() : String(raw.finished_at),
     output: raw.output as Record<string, unknown> | null,
     output_text: raw.output_text,
     error: raw.error,
@@ -21,7 +21,7 @@ export function mapRow(raw: CronLogDbRow): CronLogRow {
 }
 
 export async function appendCronLog(row: CronLogAppendInput): Promise<void> {
-  const finished_at = row.finished_at ?? formatCstIso();
+  const finished_at = row.finished_at ? new Date(row.finished_at) : new Date();
   const output_text = row.output_text != null ? row.output_text.slice(0, 10_000) : null;
   const errorText = row.error != null ? row.error.slice(0, 2000) : null;
 

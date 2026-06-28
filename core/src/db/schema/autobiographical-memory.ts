@@ -1,6 +1,8 @@
 import { sql, type SQL } from "drizzle-orm";
-import { index, pgTable, text, timestamp, vector } from "drizzle-orm/pg-core";
+import { index, pgTable, text, vector } from "drizzle-orm/pg-core";
 import { z } from "zod";
+
+import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
 
 import { SEMANTIC_EMBEDDING_DIMENSIONS } from "./embedding.ts";
 import { tsvector } from "./tsvector.ts";
@@ -38,8 +40,12 @@ export const autobiographicalMemory = pgTable(
     source_facts: text("source_facts").array().notNull().default([]),
     source_conversations: text("source_conversations").array().notNull().default([]),
     status: text("status").notNull().default("active"),
-    created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    created_at: pgTimestamptz("created_at")
+      .notNull()
+      .default(sql`now()`),
+    updated_at: pgTimestamptz("updated_at")
+      .notNull()
+      .default(sql`now()`),
   },
   (t) => [
     index("idx_autobiographical_memory_fts").using("gin", t.content_fts),

@@ -4,6 +4,9 @@ import type {
   LimbicMemoryStorePort,
   SemanticMemoryStorePort,
   ConversationStorePort,
+  SemanticMemoryRow,
+  LimbicMemoryRow,
+  AutobiographicalMemoryRow,
 } from "@freeanima/core/repos";
 import {
   registerAutobiographicalMemoryStore,
@@ -131,21 +134,32 @@ function mockConversationStore(
   return { ...base, ...overrides };
 }
 
-type MockSemanticRow = {
-  id: string;
-  type: string;
-  pinned: boolean;
-  content: string;
-  source_conversations: string[];
-  observed_at: string | null;
-  occurred_at: string | null;
-  status: string;
-  reference_count: number;
-  created: string;
-  updated: string;
-};
+const MOCK_DB_NULLS = {
+  content_embedding: null,
+  content_fts: null,
+  fts_segmented: null,
+} as const;
 
-function createMockSemanticStore(rows: MockSemanticRow[]): SemanticMemoryStorePort {
+function toMockSemanticRow(
+  partial: Partial<SemanticMemoryRow> & Pick<SemanticMemoryRow, "id" | "content">,
+): SemanticMemoryRow {
+  const now = new Date();
+  return {
+    type: "world",
+    pinned: false,
+    source_conversations: [],
+    observed_at: now,
+    occurred_at: null,
+    status: "active",
+    reference_count: 0,
+    created_at: now,
+    updated_at: now,
+    ...MOCK_DB_NULLS,
+    ...partial,
+  };
+}
+
+function createMockSemanticStore(rows: SemanticMemoryRow[]): SemanticMemoryStorePort {
   const map = new Map(rows.map((r) => [r.id, r]));
   return {
     async create() {
@@ -196,20 +210,7 @@ function createMockSemanticStore(rows: MockSemanticRow[]): SemanticMemoryStorePo
   };
 }
 
-function createMockLimbicStore(
-  rows: Array<{
-    id: string;
-    conversation_id: string;
-    kind: "spike";
-    content: string;
-    intensity: number;
-    valence: number | null;
-    arousal: number | null;
-    source_segment: string | null;
-    semantic_memory_ids: string[];
-    created: string;
-  }>,
-): LimbicMemoryStorePort {
+function createMockLimbicStore(rows: LimbicMemoryRow[]): LimbicMemoryStorePort {
   return {
     async create() {
       return "lm-new";
@@ -246,19 +247,7 @@ function createMockLimbicStore(
 }
 
 function createMockAutobiographicalStore(
-  rows: Array<{
-    id: string;
-    title: string;
-    content: string;
-    significance: "normal";
-    period_start: string | null;
-    period_end: string | null;
-    source_semantic_memory: string[];
-    source_conversations: string[];
-    status: "active";
-    created: string;
-    updated: string;
-  }>,
+  rows: AutobiographicalMemoryRow[],
 ): AutobiographicalMemoryStorePort {
   return {
     async create() {
@@ -329,22 +318,17 @@ describe("memoryRecallSearch", () => {
   });
 
   it("merges four sources and returns unified results with memory_type", async () => {
-    const now = "2026-05-26T12:00:00+08:00";
+    const now = new Date("2026-05-26T12:00:00+08:00");
     registerSemanticMemoryStore(
       createMockSemanticStore([
-        {
+        toMockSemanticRow({
           id: "f-000001-abcd",
-          type: "world",
-          pinned: false,
           content: "compression semantic probe",
           source_conversations: ["sid"],
           observed_at: now,
-          occurred_at: null,
-          status: "active",
-          reference_count: 0,
-          created: now,
-          updated: now,
-        },
+          created_at: now,
+          updated_at: now,
+        }),
       ]),
     );
     registerMemoryConversationStore(
@@ -357,7 +341,7 @@ describe("memoryRecallSearch", () => {
               role: "user",
               content:
                 "prefix padding text before the important compression conversation message appears here with much more suffix padding text",
-              timestamp: now,
+              timestamp: now.toISOString(),
               rank: 0.2,
             },
           ];
@@ -376,7 +360,10 @@ describe("memoryRecallSearch", () => {
           arousal: 0.6,
           source_segment: "mid",
           semantic_memory_ids: [],
-          created: now,
+          content_embedding: null,
+          content_fts: null,
+          fts_segmented: null,
+          created_at: now,
         },
       ]),
     );
@@ -389,11 +376,14 @@ describe("memoryRecallSearch", () => {
           significance: "normal",
           period_start: null,
           period_end: null,
-          source_semantic_memory: [],
+          source_facts: [],
           source_conversations: ["sid"],
           status: "active",
-          created: now,
-          updated: now,
+          fts_segmented: null,
+          content_embedding: null,
+          content_fts: null,
+          created_at: now,
+          updated_at: now,
         },
       ]),
     );
@@ -419,22 +409,18 @@ describe("memoryRecallSearch", () => {
   });
 
   it("respects limit cap", async () => {
-    const now = "2026-05-26T12:00:00+08:00";
-    const semanticRows: MockSemanticRow[] = [];
+    const now = new Date("2026-05-26T12:00:00+08:00");
+    const semanticRows: SemanticMemoryRow[] = [];
     for (let i = 0; i < 12; i += 1) {
-      semanticRows.push({
-        id: `f-${String(i).padStart(6, "0")}-abcd`,
-        type: "world",
-        pinned: false,
-        content: `compression item ${i}`,
-        source_conversations: [],
-        observed_at: now,
-        occurred_at: null,
-        status: "active",
-        reference_count: 0,
-        created: now,
-        updated: now,
-      });
+      semanticRows.push(
+        toMockSemanticRow({
+          id: `f-${String(i).padStart(6, "0")}-abcd`,
+          content: `compression item ${i}`,
+          observed_at: now,
+          created_at: now,
+          updated_at: now,
+        }),
+      );
     }
     registerSemanticMemoryStore(createMockSemanticStore(semanticRows));
     registerMemoryConversationStore(mockConversationStore());

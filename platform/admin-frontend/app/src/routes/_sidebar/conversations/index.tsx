@@ -63,9 +63,9 @@ function AdminConversationsPage() {
                       <span className="font-mono text-[10px] text-base-content/40 shrink-0 hidden sm:inline">
                         {s.id}
                       </span>
-                      {s.created ? (
+                      {s.created_at ? (
                         <span className="text-[10px] text-base-content/40 shrink-0 hidden md:inline">
-                          {formatDisplayDateTime(s.created)}
+                          {formatDisplayDateTime(s.created_at)}
                         </span>
                       ) : null}
                     </Link>

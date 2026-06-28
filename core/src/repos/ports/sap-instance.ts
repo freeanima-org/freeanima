@@ -1,16 +1,12 @@
-/** Hub 分配的 SAP 卫星 instance（3 字符 id） */
-export type SapInstanceRow = {
-  instance_id: string;
-  app_id: string;
-  http_url: string | null;
-  created_at: string;
-};
+import type { SapInstanceRow } from "@freeanima/core/db/schema/rows";
+
+export type { SapInstanceRow };
 
 export type SapInstanceUpsertInput = {
   instance_id: string;
   app_id: string;
   http_url?: string | null;
-  created_at?: string;
+  created_at?: Date;
 };
 
 export interface SapInstanceStorePort {

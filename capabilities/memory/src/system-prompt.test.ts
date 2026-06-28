@@ -25,8 +25,8 @@ function createMockSemanticStore(resident: Array<{ content: string; pinned?: boo
         observed_at: null,
         occurred_at: null,
         status: "active",
-        created: "",
-        updated: "",
+        created_at: new Date("2026-01-01T00:00:00.000Z"),
+        updated_at: new Date("2026-01-01T00:00:00.000Z"),
       }));
     },
   } as unknown as SemanticMemoryStorePort;

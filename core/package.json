@@ -11,6 +11,8 @@
     "./db": "./src/db/index.ts",
     "./db/schema": "./src/db/schema/index.ts",
     "./db/schema/entity": "./src/db/schema/entity/index.ts",
+    "./db/schema/rows": "./src/db/schema/rows/index.ts",
+    "./db/schema/rows/*": "./src/db/schema/rows/*.ts",
     "./db/domain": "./src/db/domain/index.ts",
     "./db/domain/*": "./src/db/domain/*.ts",
     "./repos": "./src/repos/index.ts",

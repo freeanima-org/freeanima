@@ -1,27 +1,6 @@
-/** PG cron_jobs row (consumed by platform/connectors/cron / API) */
-export type CronJobRow = {
-  id: string;
-  name: string;
-  schedule: string;
-  prompt: string;
-  skills: string[];
-  script: string | null;
-  no_agent: boolean;
-  model_provider: string | null;
-  model_name: string | null;
-  workdir: string | null;
-  context_from: string[];
-  deliver: string;
-  timeout_sec: number;
-  builtin: boolean;
-  repeat: number | null;
-  run_count: number;
-  paused: boolean;
-  created_at: string;
-  updated_at: string;
-  last_run_at: string | null;
-  last_output_ref: string | null;
-};
+import type { CronJobRow } from "@freeanima/core/db/schema/rows";
+
+export type { CronJobRow };
 
 export type CronJobCreateInput = {
   id: string;
@@ -41,9 +20,9 @@ export type CronJobCreateInput = {
   repeat?: number | null;
   run_count?: number;
   paused?: boolean;
-  created_at?: string;
-  updated_at?: string;
-  last_run_at?: string | null;
+  created_at?: Date;
+  updated_at?: Date;
+  last_run_at?: Date | null;
   last_output_ref?: string | null;
 };
 
@@ -76,9 +55,9 @@ export type CronJobUpdateInput = {
   repeat?: number | null;
   run_count?: number;
   paused?: boolean;
-  last_run_at?: string | null;
+  last_run_at?: Date | null;
   last_output_ref?: string | null;
-  updated_at?: string;
+  updated_at?: Date;
 };
 
 /** Cron job persistence port */

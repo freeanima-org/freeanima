@@ -3,7 +3,6 @@ import { limbicMemory } from "@freeanima/core/db/schema";
 import type { LimbicListByConversationsOpts, LimbicMemoryRow } from "@freeanima/core/repos";
 
 import { getDb } from "../../client.ts";
-import { mapLimbicMemoryRow, type LimbicMemoryDbRow } from "../mappers/limbic-mapper.ts";
 
 export async function listLimbicMemoryBySessions(
   conversationIds: string[],
@@ -26,5 +25,5 @@ export async function listLimbicMemoryBySessions(
     .orderBy(orderByIntensity ? desc(limbicMemory.intensity) : desc(limbicMemory.created_at))
     .limit(limit);
 
-  return rows.map((row) => mapLimbicMemoryRow(row as LimbicMemoryDbRow));
+  return rows.map((row) => row);
 }
