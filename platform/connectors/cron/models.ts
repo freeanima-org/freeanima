@@ -72,8 +72,8 @@ export class CronJob {
       repeat: row.repeat,
       run_count: row.run_count,
       paused: row.paused,
-      created_at: row.created_at,
-      updated_at: row.updated_at,
+      created_at: row.created_at.toISOString(),
+      updated_at: row.updated_at.toISOString(),
       last_run_at: row.last_run_at ? Math.floor(new Date(row.last_run_at).getTime() / 1000) : 0,
       last_output_ref: row.last_output_ref,
     });

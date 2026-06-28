@@ -67,7 +67,7 @@ export async function recordMessageReferences(
       .update(semanticMemory)
       .set({
         reference_count: drizzleSql`${semanticMemory.reference_count} + ${weight}`,
-        updated: new Date(formatCstIso()),
+        updated_at: new Date(formatCstIso()),
       })
       .where(eq(semanticMemory.id, semantic_memory_id));
   }
@@ -163,7 +163,7 @@ export async function syncAllReferenceCounts(): Promise<{ updated: number; rebui
   for (const row of rows) {
     await db
       .update(semanticMemory)
-      .set({ reference_count: row.weightedCount, updated: now })
+      .set({ reference_count: row.weightedCount, updated_at: now })
       .where(eq(semanticMemory.id, row.semantic_memory_id));
   }
 

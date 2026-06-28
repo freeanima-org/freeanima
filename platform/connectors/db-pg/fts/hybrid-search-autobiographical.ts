@@ -3,7 +3,6 @@ import { getActiveConfig, getFtsTrgmFallbackWhenHitsLt } from "@freeanima/platfo
 import { autobiographicalDocKey, rrfMerge } from "@freeanima/core/util";
 
 import { embedQueryText } from "../embedding/query.ts";
-import { mapAutobiographicalMemoryRow } from "../autobiographical-memory/mappers/autobiographical-mapper.ts";
 import {
   searchAutobiographicalMemoryFtsRaw,
   searchAutobiographicalMemoryTrgm,
@@ -48,7 +47,7 @@ export async function hybridSearchAutobiographicalMemory(
 
   const merged = rrfMerge([ftsRanked, trgmRanked, vectorRanked], { limit: pool });
   return merged.slice(0, limit).map((row) => ({
-    ...mapAutobiographicalMemoryRow(row),
+    ...row,
     rank: row.score,
   }));
 }

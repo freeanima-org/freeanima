@@ -9,9 +9,9 @@ import type {
 export type ConversationSummaryRow = {
   id: string;
   title: string;
-  created: string;
+  created_at: Date;
   platform: string;
-  archived_at?: string | null;
+  archived_at?: Date | null;
 };
 
 export type ConversationListOpts = {

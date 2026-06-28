@@ -27,6 +27,8 @@ export type {
   ConversationSummary as ConversationListItem,
 } from "@freeanima/platform/ports/schemas/snapshot";
 
+export type { SelfBlockDisplay } from "@freeanima/platform/runtime/service-self";
+
 export type { CronJobData as CronJobApi } from "@freeanima/platform/connectors/cron";
 
 export type CronJobsResponse = {

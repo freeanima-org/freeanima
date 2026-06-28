@@ -11,7 +11,8 @@
     "./server": "./server.ts",
     "./http-shutdown": "./http-shutdown.ts",
     "./service-restart": "./service-restart.ts",
-    "./display-util": "./display-util.ts"
+    "./display-util": "./display-util.ts",
+    "./date-json": "./date-json.ts"
   },
   "dependencies": {
     "@freeanima/capabilities-acp": "workspace:*",

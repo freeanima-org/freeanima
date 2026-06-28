@@ -1,4 +1,7 @@
-import type { SelfBlockKey, SelfBlockRow } from "@freeanima/core/repos";
+import type { SelfBlockKey } from "@freeanima/core/db/schema";
+import { selfBlockKeySchema } from "@freeanima/core/db/schema";
+
+import type { SelfBlockRow } from "@freeanima/core/repos";
 
 import {
   SELF_BLOCK_EMPTY_PLACEHOLDER,
@@ -17,9 +20,10 @@ export type SelfBlockView = {
 };
 
 export function toSelfBlockView(row: SelfBlockRow): SelfBlockView {
+  const block_key = selfBlockKeySchema.parse(row.block_key);
   return {
-    block_key: row.block_key,
-    heading: SELF_BLOCK_HEADINGS[row.block_key],
+    block_key,
+    heading: SELF_BLOCK_HEADINGS[block_key],
     content: row.content.trim(),
     locked: row.locked,
     version: row.version,
@@ -30,7 +34,8 @@ export function toSelfBlockView(row: SelfBlockRow): SelfBlockView {
 export function renderSelfLayerPrompt(blocks: SelfBlockRow[]): string {
   const lines: string[] = [];
   for (const row of blocks) {
-    const heading = SELF_BLOCK_HEADINGS[row.block_key];
+    const block_key = selfBlockKeySchema.parse(row.block_key);
+    const heading = SELF_BLOCK_HEADINGS[block_key];
     const body = row.content.trim() || SELF_BLOCK_EMPTY_PLACEHOLDER;
     lines.push(`## ${heading}`, body);
   }
@@ -53,8 +58,8 @@ export function composeSelfLayerPromptFromViews(views: SelfBlockView[]): string 
       locked: view.locked,
       version: view.version,
       updated_by: null,
-      created_at: "",
-      updated_at: "",
+      created_at: new Date(0),
+      updated_at: new Date(0),
     })),
   );
 }

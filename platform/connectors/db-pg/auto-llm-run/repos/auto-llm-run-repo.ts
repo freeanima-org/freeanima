@@ -7,10 +7,7 @@ import type {
   AutoLlmRunRow,
   PurgeStaleAutoLlmRunsOpts,
 } from "@freeanima/core/repos";
-import { formatCstIso } from "@freeanima/core/util";
-
 import { getDb } from "../../client.ts";
-import { normalizePgTimestamp } from "../../utils/timestamp.ts";
 
 const INPUT_SUMMARY_MAX = 2000;
 const OUTPUT_MAX = 10_000;
@@ -73,8 +70,8 @@ export async function countAutoLlmRuns(opts?: AutoLlmRunCountOpts): Promise<numb
 }
 
 export async function appendAutoLlmRun(row: AutoLlmRunAppendInput): Promise<void> {
-  const created_at = row.created_at ?? formatCstIso();
-  const finished_at = row.finished_at ?? created_at;
+  const created_at = row.created_at ? new Date(row.created_at) : new Date();
+  const finished_at = row.finished_at ? new Date(row.finished_at) : created_at;
   const db = getDb();
   await db.insert(autoLlmRuns).values({
     id: row.id,
@@ -86,8 +83,8 @@ export async function appendAutoLlmRun(row: AutoLlmRunAppendInput): Promise<void
     duration_ms: row.duration_ms,
     error: row.error != null ? row.error.slice(0, ERROR_MAX) : null,
     metadata: row.metadata ?? null,
-    created_at: normalizePgTimestamp(new Date(created_at)),
-    finished_at: normalizePgTimestamp(new Date(finished_at)),
+    created_at,
+    finished_at,
   });
 }
 
@@ -95,12 +92,12 @@ export async function purgeStaleAutoLlmRuns(
   opts: PurgeStaleAutoLlmRunsOpts,
 ): Promise<{ deleted: number }> {
   const db = getDb();
-  const olderThanIso = normalizePgTimestamp(opts.olderThan);
+  const olderThan = opts.olderThan instanceof Date ? opts.olderThan : new Date(opts.olderThan);
   let deleted = 0;
 
   const byAge = await db
     .delete(autoLlmRuns)
-    .where(lt(autoLlmRuns.finished_at, olderThanIso))
+    .where(lt(autoLlmRuns.finished_at, olderThan))
     .returning({ id: autoLlmRuns.id });
   deleted += byAge.length;
 

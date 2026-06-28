@@ -13,7 +13,6 @@ import type {
   EntityRow,
   EntityUpdateInput,
 } from "@freeanima/core/repos";
-import { formatCstIso } from "@freeanima/core/util";
 
 import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { scheduleEntityEmbedding, clearEntityEmbedding } from "../../embedding/entity-embedding.ts";
@@ -41,7 +40,7 @@ function normalizeCreate(input: EntityCreateInput) {
 
 export async function createEntity(input: EntityCreateInput): Promise<EntityRow> {
   const { type, primary, components, body, title, summary, content } = normalizeCreate(input);
-  const now = formatCstIso(new Date());
+  const now = new Date();
   const indexText = entitySearchTextForWrite({
     title,
     summary,
@@ -89,7 +88,7 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
 
   validateEntityBody(components, body);
 
-  const now = formatCstIso(new Date());
+  const now = new Date();
   const nextTitle = input.title !== undefined ? input.title.trim() : existing.title;
   const nextSummary = input.summary !== undefined ? input.summary.trim() : existing.summary;
   const nextContent = input.content !== undefined ? input.content.trim() : existing.content;

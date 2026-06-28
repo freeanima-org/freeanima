@@ -51,12 +51,12 @@ function applyOrder(rows: LimbicMemoryRow[], orderBy: string | undefined): Limbi
       return [...rows].sort((a, b) => (a.valence ?? 0) - (b.valence ?? 0));
     case "created_asc":
       return [...rows].sort(
-        (a, b) => new Date(a.created).getTime() - new Date(b.created).getTime(),
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
       );
     case "created_desc":
     default:
       return [...rows].sort(
-        (a, b) => new Date(b.created).getTime() - new Date(a.created).getTime(),
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       );
   }
 }
@@ -185,7 +185,7 @@ export const limbicSearchToolDefs: ToolDef[] = [
           arousal: r.arousal,
           source_segment: r.source_segment,
           semantic_memory_ids: r.semantic_memory_ids,
-          created_at: r.created,
+          created_at: r.created_at,
         }));
 
         return toolResult({
@@ -231,7 +231,7 @@ export const limbicSearchToolDefs: ToolDef[] = [
           arousal: row.arousal,
           source_segment: row.source_segment,
           semantic_memory_ids: row.semantic_memory_ids,
-          created_at: row.created,
+          created_at: row.created_at,
         });
       } catch (err) {
         return toolError(err instanceof Error ? err.message : String(err));
@@ -272,7 +272,7 @@ export const limbicSearchToolDefs: ToolDef[] = [
           arousal: r.arousal,
           source_segment: r.source_segment,
           semantic_memory_ids: r.semantic_memory_ids,
-          created_at: r.created,
+          created_at: r.created_at,
         }));
 
         return toolResult({ conversation_id: conversationId, count: hits.length, results: hits });

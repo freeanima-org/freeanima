@@ -28,7 +28,7 @@ function normalizeTags(tags: string[] | undefined): string[] {
 
 function toItemRow(
   row: NonNullable<ReturnType<typeof asTaskItem>>,
-  meta: { created_at: string; updated_at: string },
+  meta: { created_at: Date; updated_at: Date },
 ): TaskItemRow {
   return {
     id: row.id,
@@ -41,8 +41,8 @@ function toItemRow(
     list_id: row.list_id,
     sort_order: row.sort_order ?? 0,
     completed_at: row.completed_at ?? null,
-    created_at: meta.created_at,
-    updated_at: meta.updated_at,
+    created_at: meta.created_at.toISOString(),
+    updated_at: meta.updated_at.toISOString(),
   };
 }
 

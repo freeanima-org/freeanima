@@ -7,10 +7,8 @@ import type {
   SelfBlockUpsertInput,
 } from "@freeanima/core/repos";
 import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
-import { formatCstIso } from "@freeanima/core/util";
 
 import { getDb } from "../../client.ts";
-import { mapSelfBlockRow } from "../mappers/self-mapper.ts";
 
 function normalizeBlockKey(raw: string): SelfBlockKey {
   const parsed = selfBlockKeySchema.safeParse(raw.trim());
@@ -20,20 +18,18 @@ function normalizeBlockKey(raw: string): SelfBlockKey {
   return parsed.data;
 }
 
+const PLACEHOLDER_EPOCH = new Date(0);
+
 export async function getSelfBlock(key: SelfBlockKey): Promise<SelfBlockRow | null> {
   const db = getDb();
   const rows = await db.select().from(selfBlocks).where(eq(selfBlocks.block_key, key)).limit(1);
-  const row = rows[0];
-  return row ? mapSelfBlockRow(row) : null;
+  return rows[0] ?? null;
 }
 
 export async function listSelfBlocks(): Promise<SelfBlockRow[]> {
   const db = getDb();
   const rows = await db.select().from(selfBlocks);
-  const byKey = new Map(
-    rows.map((row) => [normalizeBlockKey(row.block_key), mapSelfBlockRow(row)]),
-  );
-  const now = formatCstIso();
+  const byKey = new Map(rows.map((row) => [normalizeBlockKey(row.block_key), row]));
   return SELF_BLOCK_KEYS.map((key) => {
     const existing = byKey.get(key);
     if (existing) return existing;
@@ -43,15 +39,15 @@ export async function listSelfBlocks(): Promise<SelfBlockRow[]> {
       locked: key === "existence_anchor",
       version: 0,
       updated_by: null,
-      created_at: now,
-      updated_at: now,
+      created_at: PLACEHOLDER_EPOCH,
+      updated_at: PLACEHOLDER_EPOCH,
     };
   });
 }
 
 export async function upsertSelfBlock(input: SelfBlockUpsertInput): Promise<void> {
   const block_key = normalizeBlockKey(input.block_key);
-  const now = formatCstIso();
+  const now = new Date();
   const locked = input.locked ?? block_key === "existence_anchor";
 
   const db = getDb();
@@ -66,8 +62,8 @@ export async function upsertSelfBlock(input: SelfBlockUpsertInput): Promise<void
       locked,
       version,
       updated_by: input.updated_by ?? null,
-      created_at: new Date(now),
-      updated_at: new Date(now),
+      created_at: now,
+      updated_at: now,
     })
     .onConflictDoUpdate({
       target: selfBlocks.block_key,
@@ -76,7 +72,7 @@ export async function upsertSelfBlock(input: SelfBlockUpsertInput): Promise<void
         locked,
         version,
         updated_by: input.updated_by ?? null,
-        updated_at: new Date(now),
+        updated_at: now,
       },
     });
 }
@@ -94,9 +90,9 @@ export async function updateSelfBlock(
     throw new Error(`self block is locked: ${block_key}`);
   }
 
-  const now = formatCstIso();
+  const now = new Date();
   const patch: Partial<typeof selfBlocks.$inferInsert> = {
-    updated_at: new Date(now),
+    updated_at: now,
     version: existing.version + 1,
   };
   if (input.content !== undefined) patch.content = input.content;

@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import type { SemanticMemoryStorePort, ConversationStorePort } from "@freeanima/core/repos";
+import type {
+  SemanticMemoryStorePort,
+  ConversationStorePort,
+  SemanticMemoryRow,
+} from "@freeanima/core/repos";
 import { FtsQueryError } from "@freeanima/core/util";
 import {
   registerMemoryTools,
@@ -131,42 +135,56 @@ function mockConversationStore(overrides: Partial<ConversationStorePort>): Conve
   return { ...base, ...overrides };
 }
 
-type MockRow = {
-  id: string;
-  type: string;
-  pinned: boolean;
-  content: string;
-  source_conversations: string[];
-  observed_at: string | null;
-  occurred_at: string | null;
-  status: string;
-  reference_count: number;
-  created: string;
-  updated: string;
-};
+const MOCK_DB_NULLS = {
+  content_embedding: null,
+  content_fts: null,
+  fts_segmented: null,
+} as const;
+
+function toMockSemanticRow(
+  partial: Partial<SemanticMemoryRow> & Pick<SemanticMemoryRow, "id" | "content">,
+): SemanticMemoryRow {
+  const now = new Date();
+  return {
+    type: "world",
+    pinned: false,
+    source_conversations: [],
+    observed_at: now,
+    occurred_at: null,
+    status: "active",
+    reference_count: 0,
+    created_at: now,
+    updated_at: now,
+    ...MOCK_DB_NULLS,
+    ...partial,
+  };
+}
 
 function createMockSemanticStore(): SemanticMemoryStorePort {
-  const rows = new Map<string, MockRow>();
+  const rows = new Map<string, SemanticMemoryRow>();
   let seq = 0;
 
   return {
     async create(row) {
       seq += 1;
       const id = row.id ?? `f-${String(seq).padStart(6, "0")}-abcd`;
-      const now = new Date().toISOString();
-      rows.set(id, {
+      const now = new Date();
+      rows.set(
         id,
-        type: row.type ?? "world",
-        pinned: row.pinned ?? false,
-        content: row.content,
-        source_conversations: row.source_conversations ?? [],
-        observed_at: row.observed_at ?? now,
-        occurred_at: row.occurred_at ?? null,
-        status: row.status ?? "active",
-        reference_count: 0,
-        created: row.created ?? now,
-        updated: row.updated ?? now,
-      });
+        toMockSemanticRow({
+          id,
+          type: row.type ?? "world",
+          pinned: row.pinned ?? false,
+          content: row.content,
+          source_conversations: row.source_conversations ?? [],
+          observed_at: row.observed_at ? new Date(row.observed_at) : now,
+          occurred_at: row.occurred_at ?? null,
+          status: row.status ?? "active",
+          reference_count: 0,
+          created_at: row.created_at ? new Date(row.created_at) : now,
+          updated_at: row.updated_at ? new Date(row.updated_at) : now,
+        }),
+      );
       return id;
     },
     async get(id) {
@@ -184,16 +202,21 @@ function createMockSemanticStore(): SemanticMemoryStorePort {
           row.source_conversations !== undefined
             ? row.source_conversations
             : existing.source_conversations,
-        observed_at: row.observed_at !== undefined ? row.observed_at : existing.observed_at,
+        observed_at:
+          row.observed_at !== undefined
+            ? row.observed_at
+              ? new Date(row.observed_at)
+              : null
+            : existing.observed_at,
         occurred_at: row.occurred_at !== undefined ? row.occurred_at : existing.occurred_at,
         status: row.status ?? existing.status,
-        updated: new Date().toISOString(),
+        updated_at: new Date(),
       });
     },
     async deprecate(id) {
       const existing = rows.get(id);
       if (!existing) return false;
-      rows.set(id, { ...existing, status: "deprecated", updated: new Date().toISOString() });
+      rows.set(id, { ...existing, status: "deprecated", updated_at: new Date() });
       return true;
     },
     async delete(id) {

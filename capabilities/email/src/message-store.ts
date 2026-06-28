@@ -23,7 +23,7 @@ function normalizeTags(tags: string[] | undefined): string[] {
 
 function toMessageRow(
   row: NonNullable<ReturnType<typeof asEmailMessage>>,
-  meta: { created_at: string; updated_at: string },
+  meta: { created_at: Date; updated_at: Date },
 ): EmailMessageRow {
   return {
     id: row.id,
@@ -43,8 +43,8 @@ function toMessageRow(
     unread: row.unread ?? false,
     flags: row.flags ?? [],
     tags: row.tags ?? [],
-    created_at: meta.created_at,
-    updated_at: meta.updated_at,
+    created_at: meta.created_at.toISOString(),
+    updated_at: meta.updated_at.toISOString(),
   };
 }
 

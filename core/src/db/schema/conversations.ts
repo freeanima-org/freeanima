@@ -1,4 +1,6 @@
-import { boolean, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, jsonb, pgTable, text } from "drizzle-orm/pg-core";
+
+import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
 
 import type { PlatformInfo } from "./jsonb/platform-info.ts";
 import type {
@@ -34,7 +36,7 @@ export const conversations = pgTable("conversations", {
     .default([]),
   functions: jsonb("functions").$type<ConversationFunctionsJson>().notNull().default([]),
   debug: boolean("debug").notNull().default(false),
-  archived_at: timestamp("archived_at", { withTimezone: true, mode: "string" }),
-  created_at: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),
-  updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" }).notNull(),
+  archived_at: pgTimestamptz("archived_at"),
+  created_at: pgTimestamptz("created_at").notNull(),
+  updated_at: pgTimestamptz("updated_at").notNull(),
 });

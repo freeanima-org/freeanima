@@ -199,16 +199,16 @@ export function buildEntitySearchConditions(opts: EntitySearchOpts): SQL[] {
     conditions.push(sql`${entities.components} @> ARRAY[${opts.component}]::text[]`);
   }
   if (opts.created_after) {
-    conditions.push(gte(entities.created_at, opts.created_after));
+    conditions.push(gte(entities.created_at, new Date(opts.created_after)));
   }
   if (opts.created_before) {
-    conditions.push(lte(entities.created_at, opts.created_before));
+    conditions.push(lte(entities.created_at, new Date(opts.created_before)));
   }
   if (opts.updated_after) {
-    conditions.push(gte(entities.updated_at, opts.updated_after));
+    conditions.push(gte(entities.updated_at, new Date(opts.updated_after)));
   }
   if (opts.updated_before) {
-    conditions.push(lte(entities.updated_at, opts.updated_before));
+    conditions.push(lte(entities.updated_at, new Date(opts.updated_before)));
   }
 
   conditions.push(...buildComponentFilterConditions(opts));

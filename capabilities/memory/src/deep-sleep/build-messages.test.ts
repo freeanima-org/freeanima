@@ -17,7 +17,7 @@ function makeRow(
   status: "active" | "deprecated",
   overrides?: Partial<SemanticMemoryRow>,
 ): SemanticMemoryRow {
-  const now = "2026-06-12T10:00:00.000Z";
+  const now = new Date("2026-06-12T10:00:00.000Z");
   return {
     id,
     type: "world",
@@ -28,8 +28,11 @@ function makeRow(
     occurred_at: null,
     status,
     reference_count: 0,
-    created: now,
-    updated: now,
+    content_embedding: null,
+    content_fts: null,
+    fts_segmented: null,
+    created_at: now,
+    updated_at: now,
     ...overrides,
   };
 }
@@ -131,7 +134,7 @@ describe("deep sleep build-messages", () => {
     const short = makeRow("a-1", "active", { content: "short fact" });
     const long = makeRow("a-2", "active", {
       content: "Alice lives in Shanghai. She works at Tencent and likes Python very much.",
-      updated: "2026-06-12T10:00:00.000Z",
+      updated_at: new Date("2026-06-12T10:00:00.000Z"),
     });
     const now = new Date("2026-06-12T12:00:00.000Z");
     expect(filterSplitCandidates([short, long], "full", now)).toEqual([long]);
@@ -140,12 +143,12 @@ describe("deep sleep build-messages", () => {
   it("filterSplitCandidates incremental requires recent updated", () => {
     const recent = makeRow("a-1", "active", {
       content: "First fact here. Second fact there. Third fact also included for length.",
-      updated: "2026-06-12T11:00:00.000Z",
+      updated_at: new Date("2026-06-12T11:00:00.000Z"),
     });
     const stale = makeRow("a-2", "active", {
       content: "Old fact one. Old fact two. Old fact three with enough length here.",
-      updated: "2026-06-01T10:00:00.000Z",
-      observed_at: "2026-06-12T11:00:00.000Z",
+      updated_at: new Date("2026-06-01T10:00:00.000Z"),
+      observed_at: new Date("2026-06-12T11:00:00.000Z"),
     });
     const now = new Date("2026-06-12T12:00:00.000Z");
     expect(filterSplitCandidates([recent, stale], "incremental", now)).toEqual([recent]);
@@ -153,10 +156,10 @@ describe("deep sleep build-messages", () => {
 
   it("hasRecentMemoryUpdates uses updated only", () => {
     const now = new Date("2026-06-12T12:00:00.000Z");
-    const recent = makeRow("a-1", "active", { updated: "2026-06-12T11:00:00.000Z" });
+    const recent = makeRow("a-1", "active", { updated_at: new Date("2026-06-12T11:00:00.000Z") });
     const staleObserved = makeRow("a-2", "active", {
-      updated: "2026-06-01T10:00:00.000Z",
-      observed_at: "2026-06-12T11:00:00.000Z",
+      updated_at: new Date("2026-06-01T10:00:00.000Z"),
+      observed_at: new Date("2026-06-12T11:00:00.000Z"),
     });
     expect(hasRecentMemoryUpdates([staleObserved], now)).toBe(false);
     expect(hasRecentMemoryUpdates([recent], now)).toBe(true);

@@ -94,7 +94,7 @@ function DreamMemoryPage() {
                     <div>
                       <span className="font-semibold">{dreamDay}</span>
                       <span className="text-xs text-base-content/50 ml-2">
-                        {formatDisplayDateTime(row.created)}
+                        {formatDisplayDateTime(row.created_at)}
                       </span>
                     </div>
                     <button

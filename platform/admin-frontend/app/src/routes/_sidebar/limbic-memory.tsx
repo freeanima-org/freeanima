@@ -152,7 +152,7 @@ function LimbicMemoryPage() {
                   {items.map((row) => (
                     <tr key={row.id}>
                       <td className="text-xs whitespace-nowrap">
-                        {formatDisplayDateTime(row.created)}
+                        {formatDisplayDateTime(row.created_at)}
                       </td>
                       <td className="text-xs">{row.kind}</td>
                       <td className="font-mono text-xs max-w-32 truncate">{row.conversation_id}</td>

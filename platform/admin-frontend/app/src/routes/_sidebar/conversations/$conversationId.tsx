@@ -43,7 +43,9 @@ function ConversationDetailPage() {
 
       <div className="flex flex-wrap items-center gap-2 mb-4 text-xs text-base-content/60">
         <span className="badge badge-ghost badge-xs">{conversation?.platform || "legacy"}</span>
-        {conversation?.created ? <span>{formatDisplayDateTime(conversation.created)}</span> : null}
+        {conversation?.created_at ? (
+          <span>{formatDisplayDateTime(conversation.created_at)}</span>
+        ) : null}
         <span className="font-mono break-all">{conversationId}</span>
       </div>
 

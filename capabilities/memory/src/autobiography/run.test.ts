@@ -3,10 +3,10 @@ import type { AutobiographicalMemoryRow } from "@freeanima/core/repos";
 
 import { AUTOBIOGRAPHY_SUMMARY_SECTION_HEADINGS, buildAutobiographySummary } from "./run.ts";
 
-function daysAgoIso(days: number): string {
+function daysAgo(days: number): Date {
   const d = new Date();
   d.setUTCDate(d.getUTCDate() - days);
-  return d.toISOString();
+  return d;
 }
 
 function makeRow(
@@ -15,17 +15,20 @@ function makeRow(
     significance: AutobiographicalMemoryRow["significance"];
   },
 ): AutobiographicalMemoryRow {
-  const updated = overrides.updated ?? daysAgoIso(0);
+  const updated = overrides.updated_at ?? daysAgo(0);
   return {
     id: "a-test-1",
     content: `${"Long narrative body ".repeat(20)}should not appear in summary`,
     period_start: null,
     period_end: null,
-    source_semantic_memory: [],
+    source_facts: [],
     source_conversations: [],
     status: "active",
-    created: updated,
-    updated,
+    fts_segmented: null,
+    content_embedding: null,
+    content_fts: null,
+    created_at: updated,
+    updated_at: updated,
     ...overrides,
   };
 }
@@ -69,9 +72,9 @@ describe("buildAutobiographySummary", () => {
         id: "a-1",
         title: "Old normal",
         significance: "normal",
-        updated: daysAgoIso(31),
+        updated_at: daysAgo(31),
       }),
-      makeRow({ id: "a-2", title: "Fresh normal", significance: "normal", updated: daysAgoIso(3) }),
+      makeRow({ id: "a-2", title: "Fresh normal", significance: "normal", updated_at: daysAgo(3) }),
     ]);
 
     expect(summary).toBe(`${AUTOBIOGRAPHY_SUMMARY_SECTION_HEADINGS.normal}\n- Fresh normal`);
@@ -84,13 +87,13 @@ describe("buildAutobiographySummary", () => {
         id: "a-1",
         title: "Old milestone",
         significance: "milestone",
-        updated: daysAgoIso(200),
+        updated_at: daysAgo(200),
       }),
       makeRow({
         id: "a-2",
         title: "Old turning",
         significance: "turning_point",
-        updated: daysAgoIso(200),
+        updated_at: daysAgo(200),
       }),
     ]);
 
@@ -104,19 +107,19 @@ describe("buildAutobiographySummary", () => {
         id: "a-1",
         title: "Stale normal",
         significance: "normal",
-        updated: daysAgoIso(60),
+        updated_at: daysAgo(60),
       }),
       makeRow({
         id: "a-2",
         title: "Stale milestone",
         significance: "milestone",
-        updated: daysAgoIso(200),
+        updated_at: daysAgo(200),
       }),
       makeRow({
         id: "a-3",
         title: "Old turning",
         significance: "turning_point",
-        updated: daysAgoIso(200),
+        updated_at: daysAgo(200),
       }),
     ]);
 
@@ -131,13 +134,13 @@ describe("buildAutobiographySummary", () => {
         id: "a-1",
         title: "Stale normal",
         significance: "normal",
-        updated: daysAgoIso(60),
+        updated_at: daysAgo(60),
       }),
       makeRow({
         id: "a-2",
         title: "Stale milestone",
         significance: "milestone",
-        updated: daysAgoIso(200),
+        updated_at: daysAgo(200),
       }),
     ]);
 

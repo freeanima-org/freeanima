@@ -40,7 +40,7 @@ function setupStores(opts: {
           source_limbic_ids: [],
           source_conversation_ids: [],
           episodic_snippets: [],
-          created: "2026-06-15T02:00:00+08:00",
+          created_at: new Date("2026-06-15T02:00:00+08:00"),
         };
       }
       return null;
@@ -72,7 +72,7 @@ function setupStores(opts: {
           intensity,
           source_segment: null,
           semantic_memory_ids: [],
-          created: "2026-06-14T22:00:00+08:00",
+          created_at: new Date("2026-06-14T22:00:00+08:00"),
         },
       ];
     },

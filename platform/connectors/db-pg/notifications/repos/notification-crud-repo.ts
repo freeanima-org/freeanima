@@ -11,10 +11,8 @@ import type {
   NotificationRow,
 } from "@freeanima/core/repos";
 import { DEFAULT_NOTIFICATION_RECIPIENT_ID } from "@freeanima/core/repos";
-import { formatCstIso } from "@freeanima/core/util";
 
 import { getDb } from "../../client.ts";
-import { mapNotificationRow } from "../mappers/notification-mapper.ts";
 
 const DEFAULT_LIST_LIMIT = 20;
 
@@ -46,7 +44,7 @@ export async function createNotification(input: NotificationCreateInput): Promis
   const source_kind =
     input.source_kind == null ? null : notificationSourceKindSchema.parse(input.source_kind);
 
-  const now = formatCstIso();
+  const now = new Date();
   const db = getDb();
   const rows = await db
     .insert(notifications)
@@ -65,7 +63,7 @@ export async function createNotification(input: NotificationCreateInput): Promis
     .returning();
   const row = rows[0];
   if (!row) throw new Error("failed to create notification");
-  return mapNotificationRow(row);
+  return row;
 }
 
 export async function listNotifications(opts: NotificationListOpts): Promise<NotificationRow[]> {
@@ -81,7 +79,7 @@ export async function listNotifications(opts: NotificationListOpts): Promise<Not
     .orderBy(desc(notifications.created_at))
     .offset(offset)
     .limit(limit);
-  return rows.map(mapNotificationRow);
+  return rows;
 }
 
 export async function countNotifications(
@@ -108,14 +106,14 @@ export async function markNotificationRead(id: string): Promise<NotificationRow 
     .limit(1);
   const row = existing[0];
   if (!row) return null;
-  if (row.read_at != null) return mapNotificationRow(row);
+  if (row.read_at != null) return row;
 
-  const now = formatCstIso();
+  const now = new Date();
   const updated = await db
     .update(notifications)
     .set({ read_at: now })
     .where(eq(notifications.id, trimmed))
     .returning();
   const next = updated[0];
-  return next ? mapNotificationRow(next) : null;
+  return next ? next : null;
 }

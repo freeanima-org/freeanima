@@ -1,4 +1,6 @@
-import { index, integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { index, integer, jsonb, pgTable, text } from "drizzle-orm/pg-core";
+
+import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
 
 export const autoLlmRuns = pgTable(
   "auto_llm_runs",
@@ -12,8 +14,8 @@ export const autoLlmRuns = pgTable(
     duration_ms: integer("duration_ms").notNull(),
     error: text("error"),
     metadata: jsonb("metadata").$type<Record<string, unknown> | null>(),
-    created_at: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),
-    finished_at: timestamp("finished_at", { withTimezone: true, mode: "string" }).notNull(),
+    created_at: pgTimestamptz("created_at").notNull(),
+    finished_at: pgTimestamptz("finished_at").notNull(),
   },
   (t) => [
     index("idx_auto_llm_runs_kind_finished").on(t.run_kind, t.finished_at),

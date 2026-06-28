@@ -13,7 +13,7 @@ function rowToJsonCompact(row: SemanticMemoryRow): string {
     type: row.type,
     content: row.content,
     sources: row.source_conversations,
-    observed: row.observed_at?.slice(0, 19) ?? null,
+    observed: row.observed_at?.toISOString().slice(0, 19) ?? null,
     occurred: row.occurred_at ?? null,
   };
   if (row.pinned) obj.pinned = true;
@@ -66,8 +66,8 @@ function countSentences(content: string): number {
 
 /** Whether a memory row was updated on or after `since` */
 export function isMemoryUpdatedSince(row: SemanticMemoryRow, since: Date): boolean {
-  if (!row.updated) return false;
-  return new Date(row.updated) >= since;
+  if (!row.updated_at) return false;
+  return row.updated_at >= since;
 }
 
 /** Whether any memory in the set was updated within the last 24 hours */

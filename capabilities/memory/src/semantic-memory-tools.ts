@@ -149,7 +149,7 @@ async function handleSearchSemanticMemory(args: Record<string, unknown>): Promis
         content: row.content,
         pinned: row.pinned,
         source_conversations: row.source_conversations,
-        observed_at: row.observed_at,
+        observed_at: row.observed_at?.toISOString() ?? null,
         occurred_at: row.occurred_at,
         status: row.status,
       })),
@@ -189,7 +189,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     sources.push({
       id: row.id,
       source_conversations: row.source_conversations,
-      observed_at: row.observed_at,
+      observed_at: row.observed_at?.toISOString() ?? null,
       occurred_at: row.occurred_at,
     });
   }

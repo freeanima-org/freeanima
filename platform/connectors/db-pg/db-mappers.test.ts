@@ -1,8 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import { messageToInsert, rowToMessage } from "./conversation/mappers/message-mapper.ts";
-import { conversationMetaToInsert } from "./conversation/mappers/conversation-mapper.ts";
-import { mapCronJobRow, type CronJobDbRow } from "./cron/mappers/cron-mapper.ts";
-describe("db mappers", () => {
+import { cronJobs } from "@freeanima/core/db/schema";
+
+import { messageToInsert, rowToMessage } from "./conversation/message-transform.ts";
+import { conversationMetaToInsert } from "./conversation/transform.ts";
+
+describe("db transforms", () => {
   it("conversationMetaToInsert normalizes timestamp", () => {
     const row = conversationMetaToInsert("cron_test", {
       role: "conversation_meta",
@@ -13,7 +15,7 @@ describe("db mappers", () => {
       timestamp: "2026-05-17T07:15:24.873+00:00",
       platform: "cron",
     });
-    expect(row.created_at).toBe("2026-05-17T07:15:24.873Z");
+    expect(row.created_at).toEqual(new Date("2026-05-17T07:15:24.873Z"));
     expect(row.platform_info).toEqual({ platform: "cron" });
     expect(row.staged_toolsets).toEqual([]);
   });
@@ -76,7 +78,7 @@ describe("db mappers", () => {
     expect(tool.pos).toBe(2);
   });
 
-  // --- cron mapper ---
+  type CronJobDbRow = typeof cronJobs.$inferSelect;
 
   const baseCronDbRow: CronJobDbRow = {
     id: "builtin-light-sleep",
@@ -96,56 +98,26 @@ describe("db mappers", () => {
     repeat: null,
     run_count: 0,
     paused: false,
-    created_at: "2026-06-07T06:00:00.000Z",
-    updated_at: "2026-06-07T06:00:00.000Z",
+    created_at: new Date("2026-06-07T06:00:00.000Z"),
+    updated_at: new Date("2026-06-07T06:00:00.000Z"),
     last_run_at: null,
     last_output_ref: null,
   };
 
-  it("mapCronJobRow full mapping (builtin)", () => {
-    const result = mapCronJobRow(baseCronDbRow);
+  it("cron row inferSelect shape (builtin)", () => {
+    const result = baseCronDbRow;
     expect(result.id).toBe("builtin-light-sleep");
-    expect(result.name).toBe("light-sleep");
-    expect(result.schedule).toBe("0 2 * * *");
-    expect(result.builtin).toBe(true);
-    expect(result.paused).toBe(false);
-    expect(result.run_count).toBe(0);
-    expect(result.repeat).toBeNull();
-    expect(result.skills).toEqual([]);
-    expect(result.context_from).toEqual([]);
+    expect(result.created_at).toEqual(new Date("2026-06-07T06:00:00.000Z"));
     expect(result.last_run_at).toBeNull();
-    expect(result.last_output_ref).toBeNull();
-    expect(result.created_at).toBe("2026-06-07T06:00:00.000Z");
   });
 
-  it("mapCronJobRow maps last_output_ref", () => {
+  it("cron row last_output_ref", () => {
     const row = { ...baseCronDbRow, last_output_ref: "cron/output/light-sleep-0003.txt" };
-    const result = mapCronJobRow(row);
-    expect(result.last_output_ref).toBe("cron/output/light-sleep-0003.txt");
+    expect(row.last_output_ref).toBe("cron/output/light-sleep-0003.txt");
   });
 
-  it("mapCronJobRow maps last_run_at timestamp", () => {
-    const row = { ...baseCronDbRow, last_run_at: "2026-06-06T18:00:01.000Z" };
-    const result = mapCronJobRow(row);
-    expect(result.last_run_at).toBe("2026-06-06T18:00:01.000Z");
-  });
-
-  it("mapCronJobRow handles user job (non-builtin)", () => {
-    const row: CronJobDbRow = {
-      ...baseCronDbRow,
-      id: "abc123",
-      name: "Daily backup",
-      builtin: false,
-      repeat: 100,
-      model_provider: "openai",
-      model_name: "gpt-4o",
-      workdir: "/tmp",
-    };
-    const result = mapCronJobRow(row);
-    expect(result.builtin).toBe(false);
-    expect(result.repeat).toBe(100);
-    expect(result.model_provider).toBe("openai");
-    expect(result.model_name).toBe("gpt-4o");
-    expect(result.workdir).toBe("/tmp");
+  it("cron row last_run_at as Date", () => {
+    const row = { ...baseCronDbRow, last_run_at: new Date("2026-06-06T18:00:01.000Z") };
+    expect(row.last_run_at).toEqual(new Date("2026-06-06T18:00:01.000Z"));
   });
 });

@@ -6,7 +6,6 @@ import { messages, semanticMemory } from "@freeanima/core/db/schema";
 
 import { getDb } from "../client.ts";
 import { buildSemanticConditions } from "../semantic-memory/repos/semantic-filters.ts";
-import { mapSemanticMemoryRow } from "../semantic-memory/mappers/semantic-mapper.ts";
 
 export type TrgmSemanticHit = SemanticFtsHit & { docKey: string };
 
@@ -47,7 +46,7 @@ export async function searchSemanticMemoryTrgm(
     .limit(limit);
 
   return rows.map((r) => ({
-    ...mapSemanticMemoryRow(r),
+    ...r,
     docKey: semanticMemoryDocKey(r.id),
     rank: Number(r.rank),
   }));

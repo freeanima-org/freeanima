@@ -7,6 +7,7 @@ import {
 } from "@freeanima/satellite-sdk/offline-cache";
 import type { App } from "@freeanima/admin-api/elysia";
 import { shouldAttachRemoteAuth } from "@freeanima/satellite-sdk/remote-auth";
+import { reviveDates } from "@freeanima/admin-api/date-json";
 import { m } from "./i18n.ts";
 import { translateApiErrorValue } from "./api-errors.ts";
 import { apiPath } from "./api-path.ts";
@@ -66,7 +67,7 @@ export async function unwrap<T>(promise: Promise<TreatyResult<T>>): Promise<T> {
   if (result.data === null || result.data === undefined) {
     throw new Error(m.admin_common_empty_response());
   }
-  return result.data;
+  return reviveDates(result.data);
 }
 
 export async function listConversations(opts?: {
@@ -344,7 +345,7 @@ export async function listSemanticMemories(input: {
   types?: string[];
   status?: string;
   source_conversation?: string;
-  sort_by?: "created" | "updated" | "reference_count" | "rank";
+  sort_by?: "created_at" | "updated_at" | "reference_count" | "rank";
 }) {
   return unwrap(resolveApiClient().api.memory.semantic.list.post(input));
 }

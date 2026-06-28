@@ -1,5 +1,4 @@
 import { randomBytes } from "node:crypto";
-import { formatCstIso } from "@freeanima/core/util";
 import { CronJob } from "./models.ts";
 import {
   ensureBuiltinCronJobs,
@@ -30,7 +29,7 @@ export async function createJob(opts: {
   repeat?: number | null;
 }): Promise<CronJob> {
   parseSchedule(opts.schedule);
-  const now = formatCstIso();
+  const now = new Date();
   const id = randomBytes(8).toString("hex").slice(0, 16);
   await getCronStore().create({
     id,

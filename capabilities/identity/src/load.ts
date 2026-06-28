@@ -15,7 +15,7 @@ import {
 import { getSelfLayerStore } from "./port.ts";
 
 function emptyPlaceholderBlocks(): SelfBlockRow[] {
-  const now = "";
+  const now = new Date(0);
   return SELF_BLOCK_KEYS.map((key) => ({
     block_key: key,
     content: "",

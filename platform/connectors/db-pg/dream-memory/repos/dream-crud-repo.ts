@@ -6,7 +6,6 @@ import type { DreamMemoryCreateInput, DreamMemoryRow } from "@freeanima/core/rep
 import { formatCstIso } from "@freeanima/core/util";
 
 import { getDb } from "../../client.ts";
-import { mapDreamMemoryRow } from "../mappers/dream-mapper.ts";
 
 function normalizeStringArray(raw: string[] | undefined): string[] {
   if (!raw) return [];
@@ -54,14 +53,14 @@ export async function getDreamMemoryByDay(day: string): Promise<DreamMemoryRow |
     .where(eq(dreamMemory.dream_day, dream_day))
     .limit(1);
   const row = rows[0];
-  return row ? mapDreamMemoryRow(row) : null;
+  return row ? row : null;
 }
 
 export async function getLatestDreamMemory(): Promise<DreamMemoryRow | null> {
   const db = getDb();
   const rows = await db.select().from(dreamMemory).orderBy(desc(dreamMemory.created_at)).limit(1);
   const row = rows[0];
-  return row ? mapDreamMemoryRow(row) : null;
+  return row ? row : null;
 }
 
 export async function listDreamMemory(opts?: {
@@ -77,7 +76,7 @@ export async function listDreamMemory(opts?: {
     .orderBy(desc(dreamMemory.created_at))
     .offset(offset)
     .limit(limit);
-  return rows.map(mapDreamMemoryRow);
+  return rows;
 }
 
 export async function countDreamMemory(): Promise<number> {

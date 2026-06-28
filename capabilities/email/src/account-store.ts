@@ -26,7 +26,7 @@ function accountTitle(input: { display_name?: string; address: string }): string
 
 function toAccountRow(
   row: NonNullable<ReturnType<typeof asEmailAccount>>,
-  meta: { created_at: string; updated_at: string },
+  meta: { created_at: Date; updated_at: Date },
 ): EmailAccountRow {
   return {
     id: row.id,
@@ -42,8 +42,8 @@ function toAccountRow(
     desc: row.desc,
     tags: row.tags ?? [],
     sync: row.sync,
-    created_at: meta.created_at,
-    updated_at: meta.updated_at,
+    created_at: meta.created_at.toISOString(),
+    updated_at: meta.updated_at.toISOString(),
   };
 }
 

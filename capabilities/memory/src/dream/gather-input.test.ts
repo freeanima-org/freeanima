@@ -29,7 +29,10 @@ function limbicRow(id: string, intensity: number, conversationId = "s1"): Limbic
     intensity,
     source_segment: null,
     semantic_memory_ids: [],
-    created: "2026-06-14T10:00:00+08:00",
+    content_embedding: null,
+    content_fts: null,
+    fts_segmented: null,
+    created_at: new Date("2026-06-14T10:00:00+08:00"),
   };
 }
 

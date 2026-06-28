@@ -199,9 +199,9 @@ export async function pgListConversationSummaries(
   Array<{
     id: string;
     title: string;
-    created: string;
+    created_at: Date;
     platform: string;
-    archived_at?: string | null;
+    archived_at?: Date | null;
   }>
 > {
   return store(repos).listConversationSummaries(platform, opts);
@@ -214,9 +214,9 @@ export async function pgListConversationSummariesPage(
   items: Array<{
     id: string;
     title: string;
-    created: string;
+    created_at: Date;
     platform: string;
-    archived_at?: string | null;
+    archived_at?: Date | null;
   }>;
   total: number;
 }> {

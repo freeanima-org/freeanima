@@ -1,20 +1,7 @@
 import type { LimbicKind } from "@freeanima/core/db/schema";
+import type { LimbicMemoryRow } from "@freeanima/core/db/schema/rows";
 
-export type { LimbicKind };
-
-/** PG limbic_memory row */
-export type LimbicMemoryRow = {
-  id: string;
-  conversation_id: string;
-  kind: LimbicKind;
-  valence: number | null;
-  arousal: number | null;
-  content: string;
-  intensity: number;
-  source_segment: string | null;
-  semantic_memory_ids: string[];
-  created: string;
-};
+export type { LimbicKind, LimbicMemoryRow };
 
 export type LimbicMemoryCreateInput = {
   conversation_id: string;

@@ -1,9 +1,7 @@
 import type { SelfBlockKey } from "@freeanima/core/db/schema";
-
-import type { SelfBlockRow } from "../schemas/self-block-row.ts";
+import type { SelfBlockRow } from "@freeanima/core/db/schema/rows";
 
 export type { SelfBlockKey, SelfBlockRow };
-export { selfBlockRowSchema } from "../schemas/self-block-row.ts";
 
 /** Self-layer six blocks fixed order (system prompt injection) */
 export const SELF_BLOCK_KEYS: SelfBlockKey[] = [

@@ -1,4 +1,4 @@
-import type { SemanticFtsHit, SemanticMemoryRow } from "../schemas/semantic-memory-row.ts";
+import type { SemanticFtsHit, SemanticMemoryRow } from "@freeanima/core/db/schema/rows";
 
 /** Default resident memory slot count injected into system prompt */
 export const RESIDENT_TOP_N = 20;
@@ -7,7 +7,6 @@ export const RESIDENT_TOP_N = 20;
 export const RESIDENT_PINNED_MAX = 40;
 
 export type { SemanticFtsHit, SemanticMemoryRow };
-export { semanticFtsHitSchema, semanticMemoryRowSchema } from "../schemas/semantic-memory-row.ts";
 
 export type SemanticMemoryCreateInput = {
   content: string;
@@ -15,11 +14,11 @@ export type SemanticMemoryCreateInput = {
   pinned?: boolean;
   id?: string;
   source_conversations?: string[];
-  observed_at?: string | null;
+  observed_at?: string | Date | null;
   occurred_at?: string | null;
   status?: string;
-  created?: string;
-  updated?: string;
+  created_at?: Date;
+  updated_at?: Date;
 };
 
 /** Overlay update: only passed fields change; source_conversations [] clears */
@@ -29,12 +28,12 @@ export type SemanticMemoryUpdateInput = {
   type?: string;
   pinned?: boolean;
   source_conversations?: string[];
-  observed_at?: string | null;
+  observed_at?: string | Date | null;
   occurred_at?: string | null;
   status?: string;
 };
 
-export type SemanticMemorySortBy = "created" | "updated" | "reference_count" | "rank";
+export type SemanticMemorySortBy = "created_at" | "updated_at" | "reference_count" | "rank";
 
 export type SemanticMemorySearchOpts = {
   query?: string;

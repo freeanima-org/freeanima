@@ -5,7 +5,6 @@ import type { LimbicMemoryCreateInput, LimbicMemoryRow } from "@freeanima/core/r
 import { scheduleLimbicMemoryEmbedding } from "../../embedding/schedule.ts";
 import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { getDb } from "../../client.ts";
-import { mapLimbicMemoryRow } from "../mappers/limbic-mapper.ts";
 
 function normalizeKind(raw: string) {
   const parsed = limbicKindSchema.safeParse(String(raw).trim());
@@ -67,7 +66,7 @@ export async function getLimbicMemory(id: string): Promise<LimbicMemoryRow | nul
   const db = getDb();
   const rows = await db.select().from(limbicMemory).where(eq(limbicMemory.id, trimmed)).limit(1);
   const row = rows[0];
-  return row ? mapLimbicMemoryRow(row) : null;
+  return row ? row : null;
 }
 
 export async function listLimbicMemoryBySession(
@@ -84,5 +83,5 @@ export async function listLimbicMemoryBySession(
     .where(eq(limbicMemory.conversation_id, sid))
     .orderBy(desc(limbicMemory.created_at))
     .limit(limit);
-  return rows.map(mapLimbicMemoryRow);
+  return rows;
 }

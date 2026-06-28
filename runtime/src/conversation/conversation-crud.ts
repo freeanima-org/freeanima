@@ -51,7 +51,7 @@ import {
   conversationExistsWithRouting,
   nextMessagePosWithRouting,
 } from "./conversation-store-pg-bridge.ts";
-import type { PgRepositories } from "@freeanima/core/repos";
+import type { PgRepositories, ConversationSummaryRow } from "@freeanima/core/repos";
 
 export type Message = StoredMessage;
 
@@ -156,32 +156,18 @@ export async function listConversationSummaries(
   repos: PgRepositories,
   platform?: string | null,
   opts?: { includeArchived?: boolean },
-): Promise<
-  Array<{
-    id: string;
-    title: string;
-    created: string;
-    platform: string;
-    archived_at?: string | null;
-  }>
-> {
+): Promise<ConversationSummaryRow[]> {
   if (postgresAvailable(repos)) {
     return pgListConversationSummaries(repos, platform, opts);
   }
   const ids = await listConversations(repos, platform, opts);
-  const out: Array<{
-    id: string;
-    title: string;
-    created: string;
-    platform: string;
-    archived_at?: string | null;
-  }> = [];
+  const out: ConversationSummaryRow[] = [];
   for (const sid of ids) {
     const meta = await loadConversationMeta(repos, sid);
     out.push({
       id: sid,
       title: isConversationMeta(meta) ? (meta.title ?? "") : "",
-      created: isConversationMeta(meta) ? meta.timestamp : "",
+      created_at: isConversationMeta(meta) ? new Date(meta.timestamp) : new Date(0),
       platform: isConversationMeta(meta) ? (meta.platform ?? "") : "",
     });
   }
@@ -192,13 +178,7 @@ export async function listConversationSummariesPage(
   repos: PgRepositories,
   opts?: { platform?: string | null; offset?: number; limit?: number; includeArchived?: boolean },
 ): Promise<{
-  items: Array<{
-    id: string;
-    title: string;
-    created: string;
-    platform: string;
-    archived_at?: string | null;
-  }>;
+  items: ConversationSummaryRow[];
   total: number;
 }> {
   if (postgresAvailable(repos)) {

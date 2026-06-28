@@ -80,7 +80,7 @@ export function rowToPatch(job: CronJob): CronJobUpdateInput {
     repeat: job.repeat,
     run_count: job.run_count,
     paused: job.paused,
-    last_run_at: job.last_run_at > 0 ? new Date(job.last_run_at * 1000).toISOString() : null,
+    last_run_at: job.last_run_at > 0 ? new Date(job.last_run_at * 1000) : null,
     last_output_ref: job.last_output_ref,
   };
 }

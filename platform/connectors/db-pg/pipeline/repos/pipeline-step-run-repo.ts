@@ -5,7 +5,6 @@ import type {
   PipelineStepRunListOpts,
   PipelineStepRunRow,
 } from "@freeanima/core/repos";
-import { formatCstIso } from "@freeanima/core/util";
 
 import { getDb } from "../../client.ts";
 
@@ -40,7 +39,8 @@ async function nextAttempt(run_id: string, step_id: string): Promise<number> {
 
 export async function appendPipelineStepRun(row: PipelineStepRunAppendInput): Promise<void> {
   const attempt = await nextAttempt(row.run_id, row.step_id);
-  const finished_at = row.finished_at ?? formatCstIso();
+  const finished_at = row.finished_at ? new Date(row.finished_at) : new Date();
+  const started_at = row.started_at ? new Date(row.started_at) : null;
   const errorText = row.error != null ? row.error.slice(0, 2000) : null;
   const skipped_reason = row.skipped_reason != null ? row.skipped_reason.slice(0, 500) : null;
 
@@ -53,7 +53,7 @@ export async function appendPipelineStepRun(row: PipelineStepRunAppendInput): Pr
     day: row.day,
     trigger: row.trigger,
     status: row.status,
-    started_at: row.started_at ?? null,
+    started_at,
     finished_at,
     output: row.output ?? null,
     error: errorText,

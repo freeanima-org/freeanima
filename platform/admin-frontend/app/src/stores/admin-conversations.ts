@@ -123,13 +123,13 @@ export const useAdminConversationsStore = create<AdminConversationsState>((set, 
         conversation_id?: string;
         title?: string;
         platform?: string;
-        created?: string;
+        created_at?: Date;
       };
       const item: ConversationListItem = {
         id: info.conversation_id ?? id,
         title: info.title ?? "",
         platform: info.platform ?? "",
-        created: info.created ?? "",
+        created_at: info.created_at ?? new Date(0),
       };
       set((state) => ({
         headlineById: { ...state.headlineById, [id]: item },

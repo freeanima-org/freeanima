@@ -1,4 +1,6 @@
-import { bigint, index, integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { bigint, index, integer, jsonb, pgTable, text } from "drizzle-orm/pg-core";
+
+import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
 
 export const pipelineStepRun = pgTable(
   "pipeline_step_run",
@@ -11,8 +13,8 @@ export const pipelineStepRun = pgTable(
     day: text("day").notNull(),
     trigger: text("trigger").notNull(),
     status: text("status").notNull(),
-    started_at: timestamp("started_at", { withTimezone: true, mode: "string" }),
-    finished_at: timestamp("finished_at", { withTimezone: true, mode: "string" }).notNull(),
+    started_at: pgTimestamptz("started_at"),
+    finished_at: pgTimestamptz("finished_at").notNull(),
     output: jsonb("output"),
     error: text("error"),
     skipped_reason: text("skipped_reason"),

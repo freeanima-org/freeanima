@@ -9,7 +9,7 @@ import { scheduleMessageEmbedding } from "../../embedding/schedule.ts";
 import { recordMessageReferences } from "../../memory-reference/repos/memory-reference-repo.ts";
 import { isCronSession } from "./conversation-repo.ts";
 import { getDb } from "../../client.ts";
-import { messageToInsert, rowToMessage } from "../mappers/message-mapper.ts";
+import { messageToInsert, rowToMessage } from "../message-transform.ts";
 
 function extractIndexableContent(payload: { role: string; content?: string | null }): string {
   if (payload.role !== "user" && payload.role !== "assistant") return "";

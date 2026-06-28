@@ -8,7 +8,6 @@ import type {
 
 import { getDb } from "../../client.ts";
 import { hybridCountSemanticMemory, hybridSearchSemanticMemory } from "../../fts/hybrid-search.ts";
-import { mapSemanticMemoryRow } from "../mappers/semantic-mapper.ts";
 import { buildSemanticConditions } from "./semantic-filters.ts";
 
 type SemanticSearchFilterOpts = Omit<SemanticMemorySearchOpts, "limit" | "offset">;
@@ -26,17 +25,17 @@ function resolveEffectiveSort(
   q: string,
   sortBy: SemanticMemorySortBy | undefined,
 ): SemanticMemorySortBy {
-  const resolved = sortBy ?? (q ? "rank" : "updated");
+  const resolved = sortBy ?? (q ? "rank" : "updated_at");
   if (q && resolved !== "rank") return "rank";
-  if (!q && resolved === "rank") return "updated";
+  if (!q && resolved === "rank") return "updated_at";
   return resolved;
 }
 
 function browseOrderBy(sortBy: Exclude<SemanticMemorySortBy, "rank">) {
   const orderBy = {
-    created: [desc(semanticMemory.created)],
-    updated: [desc(semanticMemory.updated)],
-    reference_count: [desc(semanticMemory.reference_count), desc(semanticMemory.updated)],
+    created_at: [desc(semanticMemory.created_at)],
+    updated_at: [desc(semanticMemory.updated_at)],
+    reference_count: [desc(semanticMemory.reference_count), desc(semanticMemory.updated_at)],
   } as const;
   return orderBy[sortBy];
 }
@@ -56,7 +55,7 @@ export async function searchSemanticMemory(
         types,
         status,
         source_conversations,
-        sortBy: "updated",
+        sortBy: "updated_at",
         offset,
         limit,
       });
@@ -101,7 +100,7 @@ async function searchSemanticMemoryBrowse(
     .offset(offset)
     .limit(limit);
   return rows.map((r) => ({
-    ...mapSemanticMemoryRow(r),
+    ...r,
     rank: 1.0,
   }));
 }

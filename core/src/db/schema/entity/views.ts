@@ -32,8 +32,8 @@ export type EntityRow = {
   summary: string;
   content: string;
   body: Record<string, unknown>;
-  created_at: string;
-  updated_at: string;
+  created_at: Date;
+  updated_at: Date;
 };
 
 export function mapEntityRow(row: EntitySelect): EntityRow {

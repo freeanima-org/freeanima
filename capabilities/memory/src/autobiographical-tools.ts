@@ -40,12 +40,7 @@ export const autobiographicalMemoryToolDefs: ToolDef[] = [
         source_semantic_memory: {
           type: "array",
           items: { type: "string" },
-          description: "Linked semantic_memory ids",
-        },
-        source_facts: {
-          type: "array",
-          items: { type: "string" },
-          description: "Alias for source_semantic_memory",
+          description: "Linked semantic_memory ids (alias: source_facts)",
         },
         source_conversations: {
           type: "array",

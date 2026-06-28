@@ -6,18 +6,23 @@ import type {
   CronJobRow,
   CronJobUpdateInput,
 } from "@freeanima/core/repos";
-import { formatCstIso } from "@freeanima/core/util";
 
 import { getDb } from "../../client.ts";
-import { mapCronJobRow } from "../mappers/cron-mapper.ts";
 
 function normalizeStringArray(raw: string[] | undefined | null): string[] {
   if (!raw) return [];
   return raw.map((s) => s.trim()).filter(Boolean);
 }
 
+function coerceDate(value: Date | string | undefined, fallback = new Date()): Date {
+  if (value instanceof Date) return value;
+  if (value == null) return fallback;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? fallback : parsed;
+}
+
 export async function createCronJob(row: CronJobCreateInput): Promise<void> {
-  const now = formatCstIso();
+  const now = new Date();
   const created = row.created_at ?? now;
   const updated = row.updated_at ?? created;
   const db = getDb();
@@ -39,8 +44,8 @@ export async function createCronJob(row: CronJobCreateInput): Promise<void> {
     repeat: row.repeat ?? null,
     run_count: row.run_count ?? 0,
     paused: row.paused ?? false,
-    created_at: created,
-    updated_at: updated,
+    created_at: coerceDate(created, now),
+    updated_at: coerceDate(updated, now),
     last_run_at: row.last_run_at ?? null,
     last_output_ref: row.last_output_ref ?? null,
   });
@@ -48,7 +53,7 @@ export async function createCronJob(row: CronJobCreateInput): Promise<void> {
 
 /** Built-in job upsert: on conflict only updates name/schedule/updated_at; returns whether schedule changed */
 export async function upsertBuiltinCronJob(row: CronJobBuiltinUpsertInput): Promise<boolean> {
-  const now = formatCstIso();
+  const now = new Date();
   const db = getDb();
 
   const existing = await getCronJob(row.id);
@@ -83,8 +88,7 @@ export async function upsertBuiltinCronJob(row: CronJobBuiltinUpsertInput): Prom
 export async function getCronJob(id: string): Promise<CronJobRow | null> {
   const db = getDb();
   const rows = await db.select().from(cronJobs).where(eq(cronJobs.id, id)).limit(1);
-  const row = rows[0];
-  return row ? mapCronJobRow(row) : null;
+  return rows[0] ?? null;
 }
 
 export async function updateCronJob(patch: CronJobUpdateInput): Promise<boolean> {
@@ -92,7 +96,7 @@ export async function updateCronJob(patch: CronJobUpdateInput): Promise<boolean>
   if (!trimmed) return false;
 
   const set: Partial<typeof cronJobs.$inferInsert> = {
-    updated_at: patch.updated_at ?? formatCstIso(),
+    updated_at: patch.updated_at ?? new Date(),
   };
   if (patch.name !== undefined) set.name = patch.name;
   if (patch.schedule !== undefined) set.schedule = patch.schedule;
@@ -132,6 +136,5 @@ export async function deleteCronJob(id: string): Promise<boolean> {
 
 export async function listAllCronJobs(): Promise<CronJobRow[]> {
   const db = getDb();
-  const rows = await db.select().from(cronJobs).orderBy(asc(cronJobs.created_at));
-  return rows.map(mapCronJobRow);
+  return db.select().from(cronJobs).orderBy(asc(cronJobs.created_at));
 }

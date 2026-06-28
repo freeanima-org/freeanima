@@ -57,11 +57,11 @@ function createSemanticStore(): SemanticMemoryStorePort {
         pinned: false,
         reference_count: 0,
         source_conversations: ["s-1"],
-        observed_at: "2026-06-08T10:00:00+08:00",
+        observed_at: new Date("2026-06-08T10:00:00+08:00"),
         occurred_at: null,
         status: "active",
-        created: "",
-        updated: "",
+        created_at: new Date("2026-01-01T00:00:00.000Z"),
+        updated_at: new Date("2026-01-01T00:00:00.000Z"),
       },
     ],
     get: async (id: string) =>
@@ -73,11 +73,11 @@ function createSemanticStore(): SemanticMemoryStorePort {
             pinned: false,
             reference_count: 0,
             source_conversations: ["s-1"],
-            observed_at: "2026-06-08T10:00:00+08:00",
+            observed_at: new Date("2026-06-08T10:00:00+08:00"),
             occurred_at: null,
             status: "active",
-            created: "",
-            updated: "",
+            created_at: new Date("2026-01-01T00:00:00.000Z"),
+            updated_at: new Date("2026-01-01T00:00:00.000Z"),
           }
         : null,
   } as unknown as SemanticMemoryStorePort;
@@ -96,7 +96,7 @@ function createLimbicStore(): LimbicMemoryStorePort {
         intensity: 0.8,
         source_segment: "late",
         semantic_memory_ids: ["f-000001-abcd"],
-        created: "2026-06-08T11:00:00+08:00",
+        created_at: new Date("2026-06-08T11:00:00+08:00"),
       },
     ],
     get: async (id: string) =>
@@ -111,7 +111,7 @@ function createLimbicStore(): LimbicMemoryStorePort {
             intensity: 0.7,
             source_segment: null,
             semantic_memory_ids: [],
-            created: "2026-06-08T12:00:00+08:00",
+            created_at: new Date("2026-06-08T12:00:00+08:00"),
           }
         : null,
   } as unknown as LimbicMemoryStorePort;

@@ -1,6 +1,8 @@
 import { sql, type SQL } from "drizzle-orm";
-import { bigint, index, jsonb, pgTable, text, timestamp, vector } from "drizzle-orm/pg-core";
+import { bigint, index, jsonb, pgTable, text, vector } from "drizzle-orm/pg-core";
 import { z } from "zod";
+
+import { pgTimestamptz } from "../columns/pg-timestamptz.ts";
 
 import { SEMANTIC_EMBEDDING_DIMENSIONS } from "../embedding.ts";
 import { tsvector } from "../tsvector.ts";
@@ -35,12 +37,12 @@ export const entities = pgTable(
         )
       END)`,
     ),
-    created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
+    created_at: pgTimestamptz("created_at")
       .notNull()
-      .defaultNow(),
-    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .default(sql`now()`),
+    updated_at: pgTimestamptz("updated_at")
       .notNull()
-      .defaultNow(),
+      .default(sql`now()`),
   },
   (t) => [
     index("idx_entities_world_id").on(t.world_id),

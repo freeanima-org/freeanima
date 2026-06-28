@@ -1,7 +1,9 @@
 import { defineRelations } from "drizzle-orm";
 
+export * from "./columns/pg-timestamptz.ts";
 export * from "./embedding.ts";
 export * from "./jsonb/index.ts";
+export * from "./rows/index.ts";
 export * from "./conversations.ts";
 export * from "./messages.ts";
 export * from "./semantic-memory.ts";

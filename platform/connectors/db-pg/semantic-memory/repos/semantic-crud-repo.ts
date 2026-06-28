@@ -10,7 +10,6 @@ import type {
   SemanticMemoryUpdateInput,
 } from "@freeanima/core/repos";
 import { RESIDENT_PINNED_MAX } from "@freeanima/core/repos";
-import { formatCstIso } from "@freeanima/core/util";
 import { logComponent } from "@freeanima/platform/logging";
 
 const log = logComponent("memory");
@@ -19,7 +18,6 @@ import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { scheduleSemanticMemoryEmbedding } from "../../embedding/schedule.ts";
 import { clearSemanticMemoryEmbedding } from "../../embedding/store.ts";
 import { getDb } from "../../client.ts";
-import { mapSemanticMemoryRow } from "../mappers/semantic-mapper.ts";
 import { nextSemanticMemoryId } from "./id-gen.ts";
 
 function normalizeStatus(raw: string | undefined | null): string {
@@ -39,9 +37,9 @@ export async function createSemanticMemory(row: SemanticMemoryCreateInput): Prom
   const id = row.id?.trim() || (await nextSemanticMemoryId());
   const type = normalizeSemanticMemoryType(row.type);
   const pinned = row.pinned ?? false;
-  const now = formatCstIso();
-  const created = row.created ?? now;
-  const updated = row.updated ?? created;
+  const now = new Date();
+  const created = row.created_at ?? now;
+  const updated = row.updated_at ?? created;
   const source_conversations = normalizeSourceSessions(row.source_conversations);
   const observed_at = row.observed_at ?? created;
   const occurred_at = row.occurred_at ?? null;
@@ -58,11 +56,12 @@ export async function createSemanticMemory(row: SemanticMemoryCreateInput): Prom
       content,
       fts_segmented,
       source_conversations,
-      observed_at: observed_at ? new Date(observed_at) : null,
+      observed_at:
+        observed_at instanceof Date ? observed_at : observed_at ? new Date(observed_at) : null,
       occurred_at,
       status,
-      created: new Date(created),
-      updated: new Date(updated),
+      created_at: created instanceof Date ? created : new Date(created),
+      updated_at: updated instanceof Date ? updated : new Date(updated),
     })
     .onConflictDoUpdate({
       target: semanticMemory.id,
@@ -72,10 +71,11 @@ export async function createSemanticMemory(row: SemanticMemoryCreateInput): Prom
         content,
         fts_segmented,
         source_conversations,
-        observed_at: observed_at ? new Date(observed_at) : null,
+        observed_at:
+          observed_at instanceof Date ? observed_at : observed_at ? new Date(observed_at) : null,
         occurred_at,
         status,
-        updated: new Date(updated),
+        updated_at: updated instanceof Date ? updated : new Date(updated),
       },
     });
 
@@ -87,12 +87,12 @@ export async function getSemanticMemory(id: string): Promise<SemanticMemoryRow |
   const db = getDb();
   const rows = await db.select().from(semanticMemory).where(eq(semanticMemory.id, id)).limit(1);
   const row = rows[0];
-  return row ? mapSemanticMemoryRow(row) : null;
+  return row ? row : null;
 }
 
 export async function updateSemanticMemory(row: SemanticMemoryUpdateInput): Promise<void> {
   const patch: Partial<typeof semanticMemory.$inferInsert> = {
-    updated: new Date(formatCstIso()),
+    updated_at: new Date(),
   };
   if (row.content !== undefined) {
     patch.content = row.content.trim();
@@ -121,7 +121,7 @@ export async function deprecateSemanticMemory(id: string): Promise<boolean> {
   const db = getDb();
   const updated = await db
     .update(semanticMemory)
-    .set({ status: "deprecated", pinned: false, updated: new Date(formatCstIso()) })
+    .set({ status: "deprecated", pinned: false, updated_at: new Date() })
     .where(eq(semanticMemory.id, id))
     .returning({ id: semanticMemory.id });
   return updated.length > 0;
@@ -152,7 +152,7 @@ export async function listResidentSemanticMemory(topN = 20): Promise<SemanticMem
     .select()
     .from(semanticMemory)
     .where(and(eq(semanticMemory.status, "active"), eq(semanticMemory.pinned, true)))
-    .orderBy(desc(semanticMemory.updated));
+    .orderBy(desc(semanticMemory.updated_at));
 
   if (allPinnedRows.length > RESIDENT_PINNED_MAX) {
     const omitted = allPinnedRows.slice(RESIDENT_PINNED_MAX);
@@ -179,19 +179,19 @@ export async function listResidentSemanticMemory(topN = 20): Promise<SemanticMem
           drizzleSql`${semanticMemory.reference_count} > 0`,
         ),
       )
-      .orderBy(desc(semanticMemory.reference_count), desc(semanticMemory.updated))
+      .orderBy(desc(semanticMemory.reference_count), desc(semanticMemory.updated_at))
       .limit(remaining + pinnedIds.size);
     const filtered = candidates.filter((r) => !pinnedIds.has(r.id)).slice(0, remaining);
     topReferenced = [...pinnedRows, ...filtered];
   }
 
-  return topReferenced.map(mapSemanticMemoryRow);
+  return topReferenced;
 }
 
 export async function listAllSemanticMemory(): Promise<SemanticMemoryRow[]> {
   const db = getDb();
-  const rows = await db.select().from(semanticMemory).orderBy(desc(semanticMemory.updated));
-  return rows.map(mapSemanticMemoryRow);
+  const rows = await db.select().from(semanticMemory).orderBy(desc(semanticMemory.updated_at));
+  return rows;
 }
 
 export async function listActiveSemanticMemory(): Promise<SemanticMemoryRow[]> {
@@ -200,8 +200,8 @@ export async function listActiveSemanticMemory(): Promise<SemanticMemoryRow[]> {
     .select()
     .from(semanticMemory)
     .where(eq(semanticMemory.status, "active"))
-    .orderBy(desc(semanticMemory.updated));
-  return rows.map(mapSemanticMemoryRow);
+    .orderBy(desc(semanticMemory.updated_at));
+  return rows;
 }
 
 export async function listSemanticMemoryBySourceSessions(
@@ -222,8 +222,8 @@ export async function listSemanticMemoryBySourceSessions(
     .select()
     .from(semanticMemory)
     .where(and(...conditions))
-    .orderBy(desc(semanticMemory.updated));
-  return rows.map(mapSemanticMemoryRow);
+    .orderBy(desc(semanticMemory.updated_at));
+  return rows;
 }
 
 export async function findSemanticMemoryByContent(
@@ -244,5 +244,5 @@ export async function findSemanticMemoryByContent(
     )
     .limit(1);
   const row = rows[0];
-  return row ? mapSemanticMemoryRow(row) : null;
+  return row ? row : null;
 }

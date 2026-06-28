@@ -4,7 +4,6 @@ import { messages, semanticMemory } from "@freeanima/core/db/schema";
 
 import { getDb } from "../client.ts";
 import { buildSemanticConditions } from "../semantic-memory/repos/semantic-filters.ts";
-import { mapSemanticMemoryRow } from "../semantic-memory/mappers/semantic-mapper.ts";
 import { buildFtsTsQuery } from "./query.ts";
 
 export async function searchSemanticMemoryFtsRaw(
@@ -48,7 +47,7 @@ export async function searchSemanticMemoryFtsRaw(
     .orderBy(desc(rankExpr))
     .limit(limit);
 
-  return rows.map((r) => ({ ...mapSemanticMemoryRow(r), rank: Number(r.rank) }));
+  return rows.map((r) => ({ ...r, rank: Number(r.rank) }));
 }
 
 export async function searchMessagesFtsRaw(

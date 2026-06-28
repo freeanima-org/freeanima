@@ -17,7 +17,6 @@ import { scheduleAutobiographicalMemoryEmbedding } from "../../embedding/schedul
 import { autobiographicalIndexText } from "../../fts/memory-index-text.ts";
 import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { getDb } from "../../client.ts";
-import { mapAutobiographicalMemoryRow } from "../mappers/autobiographical-mapper.ts";
 
 const significanceOrderSql = sql`CASE ${autobiographicalMemory.significance}
   WHEN 'turning_point' THEN 1
@@ -117,7 +116,7 @@ export async function getAutobiographicalMemory(
     .where(eq(autobiographicalMemory.id, id))
     .limit(1);
   const row = rows[0];
-  return row ? mapAutobiographicalMemoryRow(row) : null;
+  return row ? row : null;
 }
 
 export async function deprecateAutobiographicalMemory(id: string): Promise<boolean> {
@@ -163,7 +162,7 @@ export async function listActiveAutobiographicalMemory(opts?: {
       .where(eq(autobiographicalMemory.status, "active"))
       .orderBy(desc(autobiographicalMemory.updated_at))
       .limit(limit);
-    return rows.map(mapAutobiographicalMemoryRow);
+    return rows;
   }
 
   const rows = await db
@@ -172,7 +171,7 @@ export async function listActiveAutobiographicalMemory(opts?: {
     .where(eq(autobiographicalMemory.status, "active"))
     .orderBy(asc(significanceOrderSql), desc(autobiographicalMemory.updated_at))
     .limit(limit);
-  return rows.map(mapAutobiographicalMemoryRow);
+  return rows;
 }
 
 export async function listAutobiographicalMemoryCreatedSince(
@@ -194,7 +193,7 @@ export async function listAutobiographicalMemoryCreatedSince(
     )
     .orderBy(desc(autobiographicalMemory.created_at))
     .limit(limit);
-  return rows.map(mapAutobiographicalMemoryRow);
+  return rows;
 }
 
 export async function listAutobiographicalMemoryBySourceSemanticMemory(
@@ -216,7 +215,7 @@ export async function listAutobiographicalMemoryBySourceSemanticMemory(
     .from(autobiographicalMemory)
     .where(and(...conditions))
     .orderBy(desc(autobiographicalMemory.updated_at));
-  return rows.map(mapAutobiographicalMemoryRow);
+  return rows;
 }
 
 export async function listAutobiographicalMemoryBySourceSessions(
@@ -238,7 +237,7 @@ export async function listAutobiographicalMemoryBySourceSessions(
     .from(autobiographicalMemory)
     .where(and(...conditions))
     .orderBy(desc(autobiographicalMemory.updated_at));
-  return rows.map(mapAutobiographicalMemoryRow);
+  return rows;
 }
 
 export async function listAutobiographicalMemory(
@@ -256,5 +255,5 @@ export async function listAutobiographicalMemory(
     .orderBy(desc(autobiographicalMemory.updated_at))
     .offset(offset)
     .limit(limit);
-  return rows.map(mapAutobiographicalMemoryRow);
+  return rows;
 }

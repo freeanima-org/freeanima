@@ -5,6 +5,7 @@ import type {
   SelfLayerStorePort,
   SemanticMemoryStorePort,
 } from "@freeanima/core/repos";
+import { autobiographicalSignificanceSchema } from "@freeanima/core/db/schema";
 import { logCapability as logComponent } from "@freeanima/core/config";
 import { formatCstIso } from "@freeanima/core/util";
 
@@ -52,8 +53,8 @@ async function listRecentExperienceImprint(
   });
   const sinceMs = Date.parse(sinceIso);
   return rows.filter((row) => {
-    const ts = Date.parse(row.updated || row.created);
-    return !Number.isNaN(ts) && ts >= sinceMs;
+    const ts = (row.updated_at ?? row.created_at).getTime();
+    return ts >= sinceMs;
   });
 }
 
@@ -71,8 +72,9 @@ const SUMMARY_SECTION_ORDER: AutobiographicalSignificance[] = [
 ];
 
 export function parseRowAgeDays(row: AutobiographicalMemoryRow): number {
-  const raw = row.period_end ?? row.updated ?? row.created;
-  const ms = Date.parse(raw);
+  const ms = row.period_end
+    ? Date.parse(row.period_end)
+    : (row.updated_at ?? row.created_at).getTime();
   if (Number.isNaN(ms)) return 9999;
   return Math.floor((Date.now() - ms) / (24 * 60 * 60 * 1000));
 }
@@ -104,7 +106,8 @@ export function buildAutobiographySummary(rows: AutobiographicalMemoryRow[]): st
   for (const row of rows) {
     const ageDays = parseRowAgeDays(row);
     if (!shouldIncludeInSummary(row, ageDays)) continue;
-    buckets[row.significance].push(row.title);
+    const significance = autobiographicalSignificanceSchema.parse(row.significance);
+    buckets[significance].push(row.title);
   }
 
   const hasAny =

@@ -58,7 +58,7 @@ export class SapInstanceRegistry {
             instanceId: row.instance_id,
             appId: row.app_id,
             httpUrl: row.http_url,
-            createdAt: row.created_at,
+            createdAt: row.created_at.toISOString(),
           };
           this.byInstanceId.set(norm, record);
         }
@@ -117,7 +117,7 @@ export class SapInstanceRegistry {
       instance_id: record.instanceId,
       app_id: record.appId,
       http_url: record.httpUrl,
-      created_at: record.createdAt,
+      created_at: new Date(record.createdAt),
     });
   }
 }

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import type { SelfBlockDisplay } from "@freeanima/admin-api/api";
 import { getSelfBlocks } from "@admin/lib/api.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
 import { m } from "@admin/lib/i18n.ts";
@@ -11,19 +12,8 @@ export const Route = createFileRoute("/_sidebar/self-layer")({
   component: SelfLayerPage,
 });
 
-type SelfBlockRow = {
-  block_key: string;
-  heading: string;
-  content: string;
-  locked: boolean;
-  version: number;
-  updated_by: string | null;
-  created: string;
-  updated: string;
-};
-
 function SelfLayerPage() {
-  const data = Route.useLoaderData() as { blocks?: SelfBlockRow[] };
+  const data = Route.useLoaderData() as { blocks?: SelfBlockDisplay[] };
   const blocks = data.blocks ?? [];
 
   return (
@@ -51,10 +41,10 @@ function SelfLayerPage() {
                   </div>
                   <div className="flex flex-wrap gap-3 text-xs text-base-content/60">
                     <span>version {block.version}</span>
-                    {block.updated ? (
+                    {block.updated_at ? (
                       <span>
                         {m.admin_self_layer_updated({
-                          time: formatDisplayDateTime(block.updated),
+                          time: formatDisplayDateTime(block.updated_at),
                         })}
                       </span>
                     ) : null}

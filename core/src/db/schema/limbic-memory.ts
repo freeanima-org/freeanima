@@ -1,6 +1,8 @@
 import { sql, type SQL } from "drizzle-orm";
-import { index, pgTable, real, text, timestamp, uuid, vector } from "drizzle-orm/pg-core";
+import { index, pgTable, real, text, uuid, vector } from "drizzle-orm/pg-core";
 import { z } from "zod";
+
+import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
 
 import { SEMANTIC_EMBEDDING_DIMENSIONS } from "./embedding.ts";
 import { tsvector } from "./tsvector.ts";
@@ -32,7 +34,9 @@ export const limbicMemory = pgTable(
     intensity: real("intensity").notNull().default(0.5),
     source_segment: text("source_segment"),
     semantic_memory_ids: text("semantic_memory_ids").array().notNull().default([]),
-    created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    created_at: pgTimestamptz("created_at")
+      .notNull()
+      .default(sql`now()`),
   },
   (t) => [
     index("idx_limbic_memory_fts").using("gin", t.content_fts),
