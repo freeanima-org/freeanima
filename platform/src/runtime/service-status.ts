@@ -22,7 +22,9 @@ import {
 import type { CronJobData } from "@freeanima/platform/connectors/cron";
 import { buildToolsStatus, resolveDefaultConversationToolSets } from "@freeanima/core/tool";
 import { listCommandDefs, listCommandDefsForPlatform } from "@freeanima/platform/commands";
-import { pingDatabase, isJiebaLoaded } from "@freeanima/platform/connectors/db-pg";
+import { pingDatabase, isJiebaLoaded } from "@freeanima/core/db/pg";
+import { countSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
+import { countSearchableMessages } from "@freeanima/core/db/pg/conversation";
 import { pingRedis } from "@freeanima/platform/connectors/redis";
 import { listLoadedTokenizerRepos, listTokenizerBindings } from "@freeanima/core/tokenizer";
 import type {
@@ -195,12 +197,12 @@ export async function buildStatus(
   let factsCount = 0;
   let l2IndexRows = 0;
   try {
-    factsCount = await deps.engine.repos.semanticMemory.count();
+    factsCount = await countSemanticMemory();
   } catch {
     factsCount = 0;
   }
   try {
-    l2IndexRows = await deps.conversation.repos.conversation.countSearchableMessages();
+    l2IndexRows = await countSearchableMessages();
   } catch {
     l2IndexRows = 0;
   }

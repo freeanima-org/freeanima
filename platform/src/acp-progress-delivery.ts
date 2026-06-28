@@ -12,6 +12,7 @@ import type { ConversationService } from "@freeanima/runtime/conversation";
 import type { ConversationMetaLoadResult } from "@freeanima/core/db/domain";
 import type { EventBus } from "@freeanima/kernel/eventbus";
 import { conversationUpdated } from "@freeanima/capabilities-memory";
+import { appendMessageReturningId, updateMessageContent } from "@freeanima/core/db/pg/conversation";
 import { logComponent } from "@freeanima/platform/logging";
 
 const DISCORD_PROGRESS_PREFIX = "discord:";
@@ -145,19 +146,15 @@ export function createAcpProgressDelivery(opts: {
 
       const existingId = task.progressMessageId;
       if (existingId && isInSessionProgressId(existingId)) {
-        await opts.conversation.repos.conversation.updateMessageContent(
-          task.animaSessionId,
-          existingId,
-          body,
-        );
+        await updateMessageContent(task.animaSessionId, existingId, body);
         notifyConversation(task.animaSessionId);
         return { progressMessageId: existingId };
       }
 
-      const { messageId } = await opts.conversation.repos.conversation.appendMessageReturningId(
-        task.animaSessionId,
-        { role: "assistant", content: body },
-      );
+      const { messageId } = await appendMessageReturningId(task.animaSessionId, {
+        role: "assistant",
+        content: body,
+      });
       notifyConversation(task.animaSessionId);
       return { progressMessageId: messageId };
     },

@@ -20,7 +20,6 @@ import { createRedisFridgeStore } from "@freeanima/platform/connectors/redis";
 import { wireContextWindowLookup } from "../wire-context-window.ts";
 import type { Kernel } from "@freeanima/kernel";
 import type { FileConfig } from "@freeanima/platform/config";
-import type { PgRepositories } from "@freeanima/core/repos";
 
 import { registerServiceTools } from "../register.ts";
 import { registerServiceIntegrations } from "../register.ts";
@@ -41,7 +40,6 @@ export type EnginePhaseResult = {
 /** Phase 3: catalog、kernel、engine、conversation、MCP/ACP 管理器 */
 export function bootEnginePhase(
   config: FileConfig,
-  repos: PgRepositories,
   onConversationUpdated: (conversationId: string) => void,
 ): EnginePhaseResult {
   startupLog("Registering tools…");
@@ -53,8 +51,8 @@ export function bootEnginePhase(
   initLlmRuntime(config.data);
   wireContextWindowLookup();
   const logger = createServiceLogger();
-  const engine = createEngine({ repos, llm: getLlmRuntime(), catalog, config, logger });
-  const conversation = createConversationService(engine.repos, catalog.toolSets);
+  const engine = createEngine({ llm: getLlmRuntime(), catalog, config, logger });
+  const conversation = createConversationService(catalog.toolSets);
 
   registerServiceIntegrations({
     kernel,

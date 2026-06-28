@@ -47,11 +47,11 @@ import {
   pgWriteMeta,
   pgWritePatchMeta,
   pgWriteTruncate,
-  postgresAvailable,
   conversationExistsWithRouting,
   nextMessagePosWithRouting,
+  deleteStaleConversations,
 } from "./conversation-store-pg-bridge.ts";
-import type { PgRepositories, ConversationSummaryRow } from "@freeanima/core/repos";
+import type { ConversationSummaryRow } from "@freeanima/core/repos";
 
 export type Message = StoredMessage;
 
@@ -72,7 +72,6 @@ export function allocateConversationCwd(sid: string): string {
 
 /** Read cached ToolSets and resolve to OpenAI schema; fallback to defaults and write meta */
 export async function loadConversationTools(
-  repos: PgRepositories,
   tools: ToolSetRegistry,
   conversationId: string,
   cachedMeta?: ConversationMetaLoadResult,
@@ -84,20 +83,15 @@ export async function loadConversationTools(
     cachedMeta.cached_toolsets.length > 0
   ) {
     toolsetNames = cachedMeta.cached_toolsets;
-  } else if (postgresAvailable(repos)) {
-    toolsetNames = await loadConversationToolsWithRouting(repos, conversationId);
   } else {
-    const meta = cachedMeta ?? (await loadConversationMeta(repos, conversationId));
-    if (isConversationMeta(meta) && meta.cached_toolsets.length > 0) {
-      toolsetNames = meta.cached_toolsets;
-    }
+    toolsetNames = await loadConversationToolsWithRouting(conversationId);
   }
   if (toolsetNames.length > 0) {
     const resolved = resolveToolSetNames(tools, toolsetNames);
     const metaForMask =
       cachedMeta != null && isConversationMeta(cachedMeta)
         ? cachedMeta
-        : await loadConversationMeta(repos, conversationId);
+        : await loadConversationMeta(conversationId);
     let names = toolNamesForToolSets(tools, resolved);
     if (isConversationMeta(metaForMask)) {
       names = applyConversationToolMaskFilter(names, metaForMask);
@@ -106,7 +100,7 @@ export async function loadConversationTools(
   }
   const fresh = resolveDefaultConversationToolSets(tools);
   if (fresh.length > 0) {
-    await updateConversationMetaField(repos, conversationId, {
+    await updateConversationMetaField(conversationId, {
       cached_toolsets: fresh,
       staged_toolsets: [],
     });
@@ -115,7 +109,7 @@ export async function loadConversationTools(
   const metaForMask =
     cachedMeta != null && isConversationMeta(cachedMeta)
       ? cachedMeta
-      : await loadConversationMeta(repos, conversationId);
+      : await loadConversationMeta(conversationId);
   if (isConversationMeta(metaForMask)) {
     effective = applyConversationToolMaskFilter(effective, metaForMask);
   }
@@ -123,10 +117,9 @@ export async function loadConversationTools(
 }
 
 export async function loadConversationMeta(
-  repos: PgRepositories,
   conversationId: string,
 ): Promise<ConversationMetaLoadResult> {
-  return loadMetaWithRouting(repos, conversationId);
+  return loadMetaWithRouting(conversationId);
 }
 
 export function generateConversationId(): string {
@@ -136,134 +129,81 @@ export function generateConversationId(): string {
   return `${ts}_${randomBytes(2).toString("hex")}`;
 }
 
-export async function countConversationsByPlatform(
-  repos: PgRepositories,
-): Promise<Record<string, number>> {
-  if (postgresAvailable(repos)) {
-    return pgCountConversationsByPlatform(repos);
-  }
-  const byPlatform: Record<string, number> = {};
-  for (const sid of await listConversations(repos)) {
-    const meta = await loadConversationMeta(repos, sid);
-    const raw = isConversationMeta(meta) ? meta.platform : undefined;
-    const platform = typeof raw === "string" && raw.trim() ? raw.trim() : "unknown";
-    byPlatform[platform] = (byPlatform[platform] ?? 0) + 1;
-  }
-  return byPlatform;
+export async function countConversationsByPlatform(): Promise<Record<string, number>> {
+  return pgCountConversationsByPlatform();
 }
 
 export async function listConversationSummaries(
-  repos: PgRepositories,
   platform?: string | null,
   opts?: { includeArchived?: boolean },
 ): Promise<ConversationSummaryRow[]> {
-  if (postgresAvailable(repos)) {
-    return pgListConversationSummaries(repos, platform, opts);
-  }
-  const ids = await listConversations(repos, platform, opts);
-  const out: ConversationSummaryRow[] = [];
-  for (const sid of ids) {
-    const meta = await loadConversationMeta(repos, sid);
-    out.push({
-      id: sid,
-      title: isConversationMeta(meta) ? (meta.title ?? "") : "",
-      created_at: isConversationMeta(meta) ? new Date(meta.timestamp) : new Date(0),
-      platform: isConversationMeta(meta) ? (meta.platform ?? "") : "",
-    });
-  }
-  return out;
+  return pgListConversationSummaries(platform, opts);
 }
 
-export async function listConversationSummariesPage(
-  repos: PgRepositories,
-  opts?: { platform?: string | null; offset?: number; limit?: number; includeArchived?: boolean },
-): Promise<{
+export async function listConversationSummariesPage(opts?: {
+  platform?: string | null;
+  offset?: number;
+  limit?: number;
+  includeArchived?: boolean;
+}): Promise<{
   items: ConversationSummaryRow[];
   total: number;
 }> {
-  if (postgresAvailable(repos)) {
-    return pgListConversationSummariesPage(repos, opts);
-  }
-  const all = await listConversationSummaries(repos, opts?.platform, {
-    includeArchived: opts?.includeArchived,
-  });
-  const offset = Math.max(0, opts?.offset ?? 0);
-  const limit = Math.min(100, Math.max(1, opts?.limit ?? 20));
-  return {
-    items: all.slice(offset, offset + limit),
-    total: all.length,
-  };
+  return pgListConversationSummariesPage(opts);
 }
 
 export async function listConversations(
-  repos: PgRepositories,
   platform?: string | null,
   opts?: { includeArchived?: boolean },
 ): Promise<string[]> {
-  return listConversationsWithRouting(repos, platform, opts);
+  return listConversationsWithRouting(platform, opts);
 }
 
 /** Whether conversation exists (PostgreSQL) */
-export async function conversationExists(
-  repos: PgRepositories,
-  conversationId: string,
-): Promise<boolean> {
-  return conversationExistsWithRouting(repos, conversationId);
+export async function conversationExists(conversationId: string): Promise<boolean> {
+  return conversationExistsWithRouting(conversationId);
 }
 
-export async function load(repos: PgRepositories, conversationId: string): Promise<Message[]> {
-  return loadMessagesWithRouting(repos, conversationId);
+export async function load(conversationId: string): Promise<Message[]> {
+  return loadMessagesWithRouting(conversationId);
 }
 
 export async function loadMessagePage(
-  repos: PgRepositories,
   conversationId: string,
   offset: number,
   limit: number,
 ): Promise<Message[]> {
-  return loadMessagesPageWithRouting(repos, conversationId, offset, limit);
+  return loadMessagesPageWithRouting(conversationId, offset, limit);
 }
 
-export async function countMessages(
-  repos: PgRepositories,
-  conversationId: string,
-): Promise<number> {
-  return countMessagesWithRouting(repos, conversationId);
+export async function countMessages(conversationId: string): Promise<number> {
+  return countMessagesWithRouting(conversationId);
 }
 
-export async function countUserMessages(
-  repos: PgRepositories,
-  conversationId: string,
-): Promise<number> {
-  return countUserMessagesWithRouting(repos, conversationId);
+export async function countUserMessages(conversationId: string): Promise<number> {
+  return countUserMessagesWithRouting(conversationId);
 }
 
 export async function loadForRuntime(
-  repos: PgRepositories,
   conversationId: string,
   meta?: ConversationMetaLoadResult,
 ): Promise<Message[]> {
-  const m = meta ?? (await loadConversationMeta(repos, conversationId));
-  return loadMessagesForRuntimeWithRouting(repos, conversationId, m);
+  const m = meta ?? (await loadConversationMeta(conversationId));
+  return loadMessagesForRuntimeWithRouting(conversationId, m);
 }
 
-export async function appendMessage(
-  repos: PgRepositories,
-  msg: StoredMessage,
-  conversationId: string,
-): Promise<void> {
+export async function appendMessage(msg: StoredMessage, conversationId: string): Promise<void> {
   const out: StoredMessage & { timestamp?: string; id?: number } = { ...msg };
   if (!out.timestamp) out.timestamp = formatCstIso();
   if (out.pos === undefined && out.role !== "conversation_meta") {
-    out.pos = await nextMessagePosWithRouting(repos, conversationId);
+    out.pos = await nextMessagePosWithRouting(conversationId);
   }
   if (out.role !== "conversation_meta") {
-    await pgWriteMessage(repos, conversationId, out);
+    await pgWriteMessage(conversationId, out);
   }
 }
 
 export async function appendConversationMeta(
-  repos: PgRepositories,
   conversationId: string,
   tools: string[],
   model: string,
@@ -278,11 +218,10 @@ export async function appendConversationMeta(
     timestamp: formatCstIso(),
   };
   if (opts?.platform) meta.platform = opts.platform;
-  await pgWriteMeta(repos, conversationId, meta);
+  await pgWriteMeta(conversationId, meta);
 }
 
 export async function initConversation(
-  repos: PgRepositories,
   tools: ToolSetRegistry,
   sid: string,
   model: string,
@@ -310,11 +249,10 @@ export async function initConversation(
   };
   const systemPrompt = await buildSystemPrompt(opts.functions ?? [], cwd, metaDraft);
   const meta: ConversationMetaMessage = { ...metaDraft, system_prompt: systemPrompt };
-  await pgWriteMeta(repos, sid, meta);
+  await pgWriteMeta(sid, meta);
 }
 
 export async function newConversation(
-  repos: PgRepositories,
   tools: ToolSetRegistry,
   platform: string,
   model?: string,
@@ -322,7 +260,7 @@ export async function newConversation(
 ): Promise<string> {
   const cfg = getActiveConfig().data;
   const sid = generateConversationId();
-  await initConversation(repos, tools, sid, model ?? getProfileHopModel(cfg, PROFILE_CHAT), {
+  await initConversation(tools, sid, model ?? getProfileHopModel(cfg, PROFILE_CHAT), {
     platform,
     platform_extra: platformExtra,
   });
@@ -342,38 +280,32 @@ function originExtraMatches(
   return true;
 }
 
-async function resolveFoundOriginConversation(
-  repos: PgRepositories,
-  conversationId: string,
-): Promise<string | null> {
-  const meta = await loadConversationMeta(repos, conversationId);
+async function resolveFoundOriginConversation(conversationId: string): Promise<string | null> {
+  const meta = await loadConversationMeta(conversationId);
   if (!isConversationMeta(meta)) return null;
   if (meta.platform_extra?.origin_active === false) return null;
   if (meta.platform_extra?.origin_active !== true) {
-    await activateConversationOrigin(repos, conversationId);
+    await activateConversationOrigin(conversationId);
   }
   return conversationId;
 }
 
 /** Mark conversation as the sole active origin; siblings with same identity become inactive. */
-export async function activateConversationOrigin(
-  repos: PgRepositories,
-  conversationId: string,
-): Promise<void> {
-  const meta = await loadConversationMeta(repos, conversationId);
+export async function activateConversationOrigin(conversationId: string): Promise<void> {
+  const meta = await loadConversationMeta(conversationId);
   if (!isConversationMeta(meta)) return;
   const platform = meta.platform ?? "";
   if (!platform) return;
   const identityExtra = stripOriginRoutingMeta(meta.platform_extra ?? {});
 
   let siblingIds: string[] = [];
-  if (postgresAvailable(repos) && Object.keys(identityExtra).length > 0) {
-    siblingIds = await pgListConversationIdsMatchingPlatformProbe(repos, platform, identityExtra);
+  if (Object.keys(identityExtra).length > 0) {
+    siblingIds = await pgListConversationIdsMatchingPlatformProbe(platform, identityExtra);
   }
-  for (const sid of await listConversationsWithRouting(repos, platform)) {
+  for (const sid of await listConversationsWithRouting(platform)) {
     if (siblingIds.includes(sid)) continue;
     try {
-      const siblingMeta = await loadConversationMeta(repos, sid);
+      const siblingMeta = await loadConversationMeta(sid);
       if (!isConversationMeta(siblingMeta)) continue;
       if (Object.keys(identityExtra).length > 0) {
         if (!originExtraMatches(siblingMeta.platform_extra ?? {}, identityExtra)) continue;
@@ -387,24 +319,23 @@ export async function activateConversationOrigin(
   if (!siblingIds.includes(conversationId)) siblingIds.push(conversationId);
 
   for (const sid of siblingIds) {
-    const siblingMeta = await loadConversationMeta(repos, sid);
+    const siblingMeta = await loadConversationMeta(sid);
     if (!isConversationMeta(siblingMeta)) continue;
     const active = sid === conversationId;
     const nextExtra = { ...siblingMeta.platform_extra, origin_active: active };
-    await updateConversationMetaField(repos, sid, { platform_extra: nextExtra });
+    await updateConversationMetaField(sid, { platform_extra: nextExtra });
   }
 }
 
 /** Match existing conversation by platform + platform_extra (each extra item must match meta) */
 export async function findConversationByOrigin(
-  repos: PgRepositories,
   platform: string,
   platformExtra: Record<string, unknown> = {},
 ): Promise<string | null> {
-  if (postgresAvailable(repos) && Object.keys(platformExtra).length > 0) {
+  if (Object.keys(platformExtra).length > 0) {
     try {
-      const sid = await pgFindConversationIdByPlatformInfo(repos, platform, platformExtra);
-      if (sid) return resolveFoundOriginConversation(repos, sid);
+      const sid = await pgFindConversationIdByPlatformInfo(platform, platformExtra);
+      if (sid) return resolveFoundOriginConversation(sid);
     } catch {
       /* fallback scan */
     }
@@ -412,9 +343,9 @@ export async function findConversationByOrigin(
 
   try {
     let bestInactive: string | null = null;
-    for (const sid of await listConversationsWithRouting(repos, platform)) {
+    for (const sid of await listConversationsWithRouting(platform)) {
       try {
-        const meta = await loadConversationMeta(repos, sid);
+        const meta = await loadConversationMeta(sid);
         if (!isConversationMeta(meta)) continue;
         if (Object.keys(platformExtra).length > 0) {
           const stored = meta.platform_extra ?? {};
@@ -430,7 +361,7 @@ export async function findConversationByOrigin(
         continue;
       }
     }
-    if (bestInactive) return resolveFoundOriginConversation(repos, bestInactive);
+    if (bestInactive) return resolveFoundOriginConversation(bestInactive);
   } catch {
     /* empty */
   }
@@ -438,22 +369,20 @@ export async function findConversationByOrigin(
 }
 
 export async function updateConversationMetaField(
-  repos: PgRepositories,
   conversationId: string,
   patch: Partial<ConversationMetaMessage> & Record<string, unknown>,
 ): Promise<void> {
-  const parsed = await loadConversationMeta(repos, conversationId);
+  const parsed = await loadConversationMeta(conversationId);
   if (!isConversationMeta(parsed)) return;
-  await pgWritePatchMeta(repos, conversationId, patch);
+  await pgWritePatchMeta(conversationId, patch);
 }
 
 export async function patchConversationOrigin(
-  repos: PgRepositories,
   conversationId: string,
   platform: string,
   platformExtra?: Record<string, unknown>,
 ): Promise<void> {
-  const parsed = await loadConversationMeta(repos, conversationId);
+  const parsed = await loadConversationMeta(conversationId);
   if (!isConversationMeta(parsed)) return;
   const meta: ConversationMetaMessage = parsed;
   const existing = meta.platform ?? "";
@@ -464,24 +393,20 @@ export async function patchConversationOrigin(
   }
   if (!existing) meta.platform = platform;
   if (platformExtra !== undefined) meta.platform_extra = platformExtra;
-  await pgWriteMeta(repos, conversationId, meta);
+  await pgWriteMeta(conversationId, meta);
 }
 
-export async function rebuildConversationSystemPrompt(
-  repos: PgRepositories,
-  conversationId: string,
-): Promise<void> {
-  const meta = await loadConversationMeta(repos, conversationId);
+export async function rebuildConversationSystemPrompt(conversationId: string): Promise<void> {
+  const meta = await loadConversationMeta(conversationId);
   if (!isConversationMeta(meta)) return;
   const functions = meta.functions ?? [];
   const cwd = meta.cwd;
   const systemPrompt = await buildSystemPrompt(functions, cwd, meta);
-  await updateConversationMetaField(repos, conversationId, { system_prompt: systemPrompt });
+  await updateConversationMetaField(conversationId, { system_prompt: systemPrompt });
 }
 
 /** Promote staged ToolSets to cached and rebuild system_prompt */
 export async function rebuildConversationCache(
-  repos: PgRepositories,
   registry: ToolSetRegistry,
   conversationId: string,
 ): Promise<{
@@ -489,7 +414,7 @@ export async function rebuildConversationCache(
   promoted: string[];
   systemPromptLength: number;
 }> {
-  const meta = await loadConversationMeta(repos, conversationId);
+  const meta = await loadConversationMeta(conversationId);
   if (!isConversationMeta(meta)) {
     throw new Error("conversation does not exist");
   }
@@ -499,13 +424,13 @@ export async function rebuildConversationCache(
   }
   const staged = [...(meta.staged_toolsets ?? [])];
   cached = mergeToolSetNames(cached, staged);
-  await updateConversationMetaField(repos, conversationId, {
+  await updateConversationMetaField(conversationId, {
     cached_toolsets: cached,
     staged_toolsets: [],
     timestamp: formatCstIso(),
   });
-  await rebuildConversationSystemPrompt(repos, conversationId);
-  const after = await loadConversationMeta(repos, conversationId);
+  await rebuildConversationSystemPrompt(conversationId);
+  const after = await loadConversationMeta(conversationId);
   const systemPromptLength = isConversationMeta(after) ? (after.system_prompt ?? "").length : 0;
   return {
     cachedCount: cached.length,
@@ -516,14 +441,11 @@ export async function rebuildConversationCache(
 
 const RESUME_STALE_MS = 7 * 24 * 60 * 60 * 1000;
 
-async function conversationLastActivityMs(
-  repos: PgRepositories,
-  conversationId: string,
-): Promise<number | null> {
-  const meta = await loadConversationMeta(repos, conversationId);
+async function conversationLastActivityMs(conversationId: string): Promise<number | null> {
+  const meta = await loadConversationMeta(conversationId);
   const metaTs = isConversationMeta(meta) ? meta.timestamp : undefined;
   let last: number | null = metaTs ? Date.parse(metaTs) : null;
-  const ts = await pgLastMessageTimestamp(repos, conversationId);
+  const ts = await pgLastMessageTimestamp(conversationId);
   if (ts) {
     const t = Date.parse(ts);
     if (!Number.isNaN(t) && (last === null || t > last)) last = t;
@@ -532,56 +454,47 @@ async function conversationLastActivityMs(
 }
 
 /** Conditionally refresh system_prompt when resuming conversation */
-export async function refreshSystemPromptOnResume(
-  repos: PgRepositories,
-  conversationId: string,
-): Promise<boolean> {
-  const meta = await loadConversationMeta(repos, conversationId);
+export async function refreshSystemPromptOnResume(conversationId: string): Promise<boolean> {
+  const meta = await loadConversationMeta(conversationId);
   if (!isConversationMeta(meta)) return false;
   const cached = (meta.system_prompt ?? "").trim();
   if (!cached) {
-    await rebuildConversationSystemPrompt(repos, conversationId);
+    await rebuildConversationSystemPrompt(conversationId);
     return true;
   }
-  const last = await conversationLastActivityMs(repos, conversationId);
+  const last = await conversationLastActivityMs(conversationId);
   if (last === null) return false;
   if (Date.now() - last > RESUME_STALE_MS) {
-    await rebuildConversationSystemPrompt(repos, conversationId);
+    await rebuildConversationSystemPrompt(conversationId);
     return true;
   }
   return false;
 }
 
 export async function assertConversationPlatform(
-  repos: PgRepositories,
   conversationId: string,
   expected: string,
 ): Promise<void> {
-  const meta = await loadConversationMeta(repos, conversationId);
+  const meta = await loadConversationMeta(conversationId);
   const p = isConversationMeta(meta) ? meta.platform : undefined;
   if (p && p !== expected) {
     throw new Error(`Conversation platform mismatch: expected ${expected}, got ${p}`);
   }
 }
 
-export async function appendUserTurn(
-  repos: PgRepositories,
-  conversationId: string,
-  userText: string,
-): Promise<string> {
+export async function appendUserTurn(conversationId: string, userText: string): Promise<string> {
   const content = userText;
-  await appendMessage(repos, { role: "user", content }, conversationId);
+  await appendMessage({ role: "user", content }, conversationId);
   return content;
 }
 
 export async function updateConversationMeta(
-  repos: PgRepositories,
   registry: ToolSetRegistry,
   conversationId: string,
   model: string,
   opts?: { functions?: string[]; cached_toolsets?: string[] },
 ): Promise<void> {
-  const parsed = await loadConversationMeta(repos, conversationId);
+  const parsed = await loadConversationMeta(conversationId);
   if (!isConversationMeta(parsed)) return;
   const meta: ConversationMetaMessage = parsed;
   meta.model = model;
@@ -593,51 +506,32 @@ export async function updateConversationMeta(
     meta.cached_toolsets = resolveDefaultConversationToolSets(registry);
     meta.staged_toolsets = meta.staged_toolsets ?? [];
   }
-  await pgWriteMeta(repos, conversationId, meta);
+  await pgWriteMeta(conversationId, meta);
 }
 
-export async function setConversationTitle(
-  repos: PgRepositories,
-  conversationId: string,
-  title: string,
-): Promise<void> {
-  await updateConversationMetaField(repos, conversationId, { title });
+export async function setConversationTitle(conversationId: string, title: string): Promise<void> {
+  await updateConversationMetaField(conversationId, { title });
 }
 
-export async function archiveConversation(
-  repos: PgRepositories,
-  conversationId: string,
-): Promise<void> {
-  await pgArchiveConversation(repos, conversationId);
+export async function archiveConversation(conversationId: string): Promise<void> {
+  await pgArchiveConversation(conversationId);
 }
 
-export async function unarchiveConversation(
-  repos: PgRepositories,
-  conversationId: string,
-): Promise<void> {
-  await pgUnarchiveConversation(repos, conversationId);
+export async function unarchiveConversation(conversationId: string): Promise<void> {
+  await pgUnarchiveConversation(conversationId);
 }
 
-export async function deleteUserConversation(
-  repos: PgRepositories,
-  conversationId: string,
-): Promise<void> {
-  await pgWriteDeleteConversation(repos, conversationId);
+export async function deleteUserConversation(conversationId: string): Promise<void> {
+  await pgWriteDeleteConversation(conversationId);
 }
 
-export async function getConversationTitle(
-  repos: PgRepositories,
-  conversationId: string,
-): Promise<string> {
-  const meta = await loadConversationMeta(repos, conversationId);
+export async function getConversationTitle(conversationId: string): Promise<string> {
+  const meta = await loadConversationMeta(conversationId);
   return isConversationMeta(meta) && typeof meta.title === "string" ? meta.title : "";
 }
 
-export async function getConversationCwd(
-  repos: PgRepositories,
-  conversationId: string,
-): Promise<string | null> {
-  const meta = await loadConversationMeta(repos, conversationId);
+export async function getConversationCwd(conversationId: string): Promise<string | null> {
+  const meta = await loadConversationMeta(conversationId);
   const cwd = isConversationMeta(meta) ? meta.cwd : undefined;
   return typeof cwd === "string" && cwd ? cwd : null;
 }
@@ -648,27 +542,20 @@ function expandUserPath(cwd: string): string {
   return cwd;
 }
 
-export async function setConversationCwd(
-  repos: PgRepositories,
-  conversationId: string,
-  cwd: string,
-): Promise<string> {
+export async function setConversationCwd(conversationId: string, cwd: string): Promise<string> {
   const expanded = expandUserPath(cwd.trim());
   const resolved = resolve(expanded);
   if (!existsSync(resolved)) {
     throw new Error(`Path does not exist: ${cwd}`);
   }
-  await updateConversationMetaField(repos, conversationId, { cwd: resolved });
-  await rebuildConversationSystemPrompt(repos, conversationId);
+  await updateConversationMetaField(conversationId, { cwd: resolved });
+  await rebuildConversationSystemPrompt(conversationId);
   return resolved;
 }
 
 /** Delete assistant/tool messages after last user turn; return that user body */
-export async function rollbackToLastUser(
-  repos: PgRepositories,
-  conversationId: string,
-): Promise<string> {
-  const parsed = await load(repos, conversationId);
+export async function rollbackToLastUser(conversationId: string): Promise<string> {
+  const parsed = await load(conversationId);
   if (!parsed.length) throw new Error("No partner message to retry");
 
   let lastUserIdx = -1;
@@ -686,7 +573,7 @@ export async function rollbackToLastUser(
   if (keepThroughPos === undefined) {
     throw new Error("No partner message to retry");
   }
-  await pgWriteTruncate(repos, conversationId, Number(keepThroughPos));
+  await pgWriteTruncate(conversationId, Number(keepThroughPos));
 
   return lastUser.role === "user" ? lastUser.content : "";
 }
@@ -699,28 +586,23 @@ export type CleanupStaleConversationsResult = {
   ids: string[];
 };
 
-export async function cleanupStaleConversations(
-  repos: PgRepositories,
-  opts?: { olderThan?: Date; minAgeMs?: number },
-): Promise<CleanupStaleConversationsResult> {
-  if (!postgresAvailable(repos)) return { deleted: 0, ids: [] };
+export async function cleanupStaleConversations(opts?: {
+  olderThan?: Date;
+  minAgeMs?: number;
+}): Promise<CleanupStaleConversationsResult> {
   const minAgeMs = opts?.minAgeMs ?? STALE_SESSION_MIN_AGE_MS;
   const olderThan = opts?.olderThan ?? new Date(Date.now() - minAgeMs);
-  return await repos.conversation.deleteStaleConversations({ olderThan });
+  return await deleteStaleConversations({ olderThan });
 }
 
-export async function cleanupDebugConversations(
-  repos: PgRepositories,
-  _maxAgeHours = 1,
-): Promise<number> {
-  if (!postgresAvailable(repos)) return 0;
+export async function cleanupDebugConversations(_maxAgeHours = 1): Promise<number> {
   try {
-    return await pgDeleteDebugConversations(repos);
+    return await pgDeleteDebugConversations();
   } catch {
     let removed = 0;
-    for (const sid of await pgListDebugConversationIds(repos)) {
+    for (const sid of await pgListDebugConversationIds()) {
       try {
-        await pgWriteDeleteConversation(repos, sid);
+        await pgWriteDeleteConversation(sid);
         removed++;
       } catch {
         /* skip */

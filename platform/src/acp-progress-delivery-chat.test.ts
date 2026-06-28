@@ -1,12 +1,35 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, mock } from "bun:test";
 import type { AcpAsyncTaskSnapshot } from "@freeanima/capabilities-acp";
+
+const updates: Array<{ messageId: string; content: string }> = [];
+let storedId = "";
+let storedContent = "";
+
+const appendMessageReturningIdMock = mock(async (_sid: string, msg: { content: string }) => {
+  storedContent = msg.content;
+  storedId = "msg-progress-1";
+  return { messageId: storedId };
+});
+
+const updateMessageContentMock = mock(async (_sid: string, messageId: string, content: string) => {
+  updates.push({ messageId, content });
+  storedContent = content;
+});
+
+mock.module("@freeanima/core/db/pg/conversation", () => ({
+  appendMessageReturningId: appendMessageReturningIdMock,
+  updateMessageContent: updateMessageContentMock,
+}));
+
 import { createAcpProgressDelivery } from "./acp-progress-delivery.ts";
 
 describe("createAcpProgressDelivery chat progress", () => {
   it("append then update progress message in place", async () => {
-    const updates: Array<{ messageId: string; content: string }> = [];
-    let storedId = "";
-    let storedContent = "";
+    updates.length = 0;
+    storedId = "";
+    storedContent = "";
+    appendMessageReturningIdMock.mockClear();
+    updateMessageContentMock.mockClear();
 
     const conversation = {
       loadConversationMeta: async () => ({
@@ -17,19 +40,6 @@ describe("createAcpProgressDelivery chat progress", () => {
         timestamp: "",
         platform: "chat",
       }),
-      repos: {
-        conversation: {
-          appendMessageReturningId: async (_sid: string, msg: { content: string }) => {
-            storedContent = msg.content;
-            storedId = "msg-progress-1";
-            return { messageId: storedId };
-          },
-          updateMessageContent: async (_sid: string, messageId: string, content: string) => {
-            updates.push({ messageId, content });
-            storedContent = content;
-          },
-        },
-      },
     };
 
     const port = createAcpProgressDelivery({

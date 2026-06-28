@@ -1,15 +1,17 @@
 import { randomBytes } from "node:crypto";
 import { CronJob } from "./models.ts";
 import {
+  createCronJobRow,
+  deleteCronJobRow,
   ensureBuiltinCronJobs,
   getCronHandleManager,
-  getCronStore,
   getJob,
   initCronModule,
   isCronModuleInitialized,
   loadAllJobs,
   resetCronModuleForTests,
   stopCronModule,
+  updateCronJobRow,
 } from "./module.ts";
 import { parseSchedule } from "./schedule.ts";
 
@@ -31,7 +33,7 @@ export async function createJob(opts: {
   parseSchedule(opts.schedule);
   const now = new Date();
   const id = randomBytes(8).toString("hex").slice(0, 16);
-  await getCronStore().create({
+  await createCronJobRow({
     id,
     name: opts.name,
     schedule: opts.schedule,
@@ -67,14 +69,14 @@ export async function removeJob(jobId: string): Promise<boolean> {
     throw new Error(`'${jobId}' is a built-in task and cannot be removed`);
   }
   getCronHandleManager().unregister(jobId);
-  return getCronStore().delete(jobId);
+  return deleteCronJobRow(jobId);
 }
 
 export async function pauseJob(jobId: string): Promise<boolean> {
   const job = await getJob(jobId);
   if (!job) return false;
   job.paused = true;
-  const ok = await getCronStore().update({ id: jobId, paused: true });
+  const ok = await updateCronJobRow({ id: jobId, paused: true });
   if (ok) getCronHandleManager().pause(jobId);
   return ok;
 }
@@ -83,7 +85,7 @@ export async function resumeJob(jobId: string): Promise<boolean> {
   const job = await getJob(jobId);
   if (!job) return false;
   job.paused = false;
-  const ok = await getCronStore().update({ id: jobId, paused: false });
+  const ok = await updateCronJobRow({ id: jobId, paused: false });
   if (ok) getCronHandleManager().resume(job);
   return ok;
 }

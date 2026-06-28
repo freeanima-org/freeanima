@@ -2,14 +2,12 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import {
-  createPgRepositories,
   closeDb,
-  getDb,
   initDatabase,
   setDbForTest,
   type Db,
   type SqlClient,
-} from "@freeanima/platform/connectors/db-pg";
+} from "@freeanima/core/db/pg";
 import { createEngine } from "@freeanima/runtime";
 import {
   initLlmRuntime,
@@ -21,7 +19,7 @@ import {
   createConversationService,
   type ConversationService,
 } from "@freeanima/runtime/conversation";
-import type { PgRepositories } from "@freeanima/core/repos";
+import { appendMessage, upsertConversationMeta } from "@freeanima/core/db/pg/conversation";
 import { FileConfig, type Config } from "@freeanima/platform/config";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import type { StoredMessage, ConversationMetaMessage } from "@freeanima/core/db/domain";
@@ -97,14 +95,14 @@ async function clearPgTables(sql: SqlClient): Promise<void> {
   await sql`DELETE FROM cron_jobs`;
 }
 
-function createTestEngine(repos: PgRepositories, config: Config): Engine {
+function createTestEngine(config: Config): Engine {
   registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
   const llm = initLlmRuntime(config.data);
-  return createEngine({ repos, llm, config, logger: createTestLogger() });
+  return createEngine({ llm, config, logger: createTestLogger() });
 }
 
 function wireEngine(config: Config): Engine {
-  const engine = createTestEngine(createPgRepositories({ getDb }), config);
+  const engine = createTestEngine(config);
   if (activeCtx) activeCtx.engine = engine;
   return engine;
 }
@@ -121,7 +119,7 @@ export async function setupPgTestDb(url: string, config: Config): Promise<PgTest
   const { sql, db } = createTestSql(url);
   await clearPgTables(sql);
   setDbForTest(db, sql);
-  const engine = createTestEngine(createPgRepositories({ getDb }), config);
+  const engine = createTestEngine(config);
   activeCtx = {
     sql,
     db,
@@ -212,17 +210,16 @@ export function appendIntegrationConfig(home: string, yaml: string): void {
   }
 }
 
-/** Write conversation fixture via Session port */
+/** Write conversation fixture via PG conversation API */
 export async function seedSession(
-  engine: Engine,
+  _engine: Engine,
   conversationId: string,
   meta: ConversationMetaMessage,
   messages: StoredMessage[] = [],
 ): Promise<void> {
-  const conversation = engine.repos.conversation;
-  await conversation.upsertConversationMeta(conversationId, meta);
+  await upsertConversationMeta(conversationId, meta);
   for (const msg of messages) {
-    await conversation.appendMessage(conversationId, msg);
+    await appendMessage(conversationId, msg);
   }
 }
 
@@ -235,5 +232,5 @@ export function getTestEngine(): Engine {
 
 export function testConv(): ConversationService {
   const engine = getTestEngine();
-  return createConversationService(engine.repos, engine.catalog.toolSets);
+  return createConversationService(engine.catalog.toolSets);
 }

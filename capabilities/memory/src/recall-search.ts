@@ -13,9 +13,9 @@ import {
   validateFtsQueryInput,
 } from "@freeanima/core/util";
 
-import { getAutobiographicalMemoryStore } from "./autobiographical-port.ts";
-import { getLimbicMemoryStore } from "./limbic-port.ts";
-import { getSemanticMemoryStore } from "./semantic-port.ts";
+import { searchAutobiographicalMemoryFts } from "@freeanima/core/db/pg/autobiographical-memory";
+import { searchLimbicMemoryFts } from "@freeanima/core/db/pg/limbic-memory";
+import { searchSemanticMemoryFts } from "@freeanima/core/db/pg/semantic-memory";
 import { searchDialogue } from "./search.ts";
 
 export type MemoryRecallHitType = "semantic" | "conversation" | "limbic" | "autobiographical";
@@ -189,14 +189,10 @@ export async function memoryRecallSearch(
   validateFtsQueryInput(q);
 
   const [semanticRows, conversationRows, limbicRows, autobiographicalRows] = await Promise.all([
-    getSemanticMemoryStore().searchFts(q, { limit: pool }),
+    searchSemanticMemoryFts(q, { limit: pool }),
     searchDialogue(q, { limit: pool }).catch(() => []),
-    getLimbicMemoryStore()
-      .searchFts(q, { limit: pool })
-      .catch(() => []),
-    getAutobiographicalMemoryStore()
-      .searchFts(q, { limit: pool, status: "active" })
-      .catch(() => []),
+    searchLimbicMemoryFts(q, { limit: pool }).catch(() => []),
+    searchAutobiographicalMemoryFts(q, { limit: pool, status: "active" }).catch(() => []),
   ]);
 
   const semanticList: RecallCandidate[] = semanticRows.map((row) => ({

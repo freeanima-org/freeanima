@@ -1,67 +1,73 @@
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import type { SemanticMemoryStorePort } from "@freeanima/core/repos";
+import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import type { SemanticMemoryCreateInput } from "@freeanima/core/repos";
 
-import { registerSemanticMemoryStore, resetSemanticMemoryStoreForTests } from "./semantic-port.ts";
+const created: SemanticMemoryCreateInput[] = [];
+
+const createSemanticMemoryMock = mock(async (row: SemanticMemoryCreateInput) => {
+  created.push(row);
+  return "f-new-id";
+});
+
+const getSemanticMemoryMock = mock(async (id: string) => {
+  if (id === "f-a") {
+    return {
+      id: "f-a",
+      content: "A",
+      type: "world",
+      pinned: false,
+      reference_count: 0,
+      source_conversations: ["s-1"],
+      observed_at: new Date("2026-03-01T10:00:00+08:00"),
+      occurred_at: "2025 Spring",
+      status: "active",
+      created_at: new Date("2026-01-01T00:00:00.000Z"),
+      updated_at: new Date("2026-01-01T00:00:00.000Z"),
+    };
+  }
+  if (id === "f-b") {
+    return {
+      id: "f-b",
+      content: "B",
+      type: "world",
+      pinned: false,
+      reference_count: 0,
+      source_conversations: ["s-2"],
+      observed_at: new Date("2026-04-01T10:00:00+08:00"),
+      occurred_at: "2024 Winter",
+      status: "active",
+      created_at: new Date("2026-01-01T00:00:00.000Z"),
+      updated_at: new Date("2026-01-01T00:00:00.000Z"),
+    };
+  }
+  return null;
+});
+
+mock.module("@freeanima/core/db/pg/semantic-memory", () => ({
+  createSemanticMemory: createSemanticMemoryMock,
+  getSemanticMemory: getSemanticMemoryMock,
+  deleteSemanticMemory: mock(async () => true),
+  deprecateSemanticMemory: mock(async () => true),
+  updateSemanticMemory: mock(async () => null),
+  searchSemanticMemory: mock(async () => ({
+    results: [],
+    count: 0,
+    query: "",
+    limit: 10,
+    offset: 0,
+  })),
+  searchSemanticMemoryFts: mock(async () => []),
+}));
+
 import { createSemanticMemoryFromArgs, semanticMemoryToolDefs } from "./semantic-memory-tools.ts";
 
-function createMockSemanticStore(): SemanticMemoryStorePort & {
-  created: SemanticMemoryCreateInput[];
-} {
-  const created: SemanticMemoryCreateInput[] = [];
-  return {
-    created,
-    create: async (row: SemanticMemoryCreateInput) => {
-      created.push(row);
-      return "f-new-id";
-    },
-    get: async (id: string) => {
-      if (id === "f-a") {
-        return {
-          id: "f-a",
-          content: "A",
-          type: "world",
-          pinned: false,
-          reference_count: 0,
-          source_conversations: ["s-1"],
-          observed_at: new Date("2026-03-01T10:00:00+08:00"),
-          occurred_at: "2025 Spring",
-          status: "active",
-          created_at: new Date("2026-01-01T00:00:00.000Z"),
-          updated_at: new Date("2026-01-01T00:00:00.000Z"),
-        };
-      }
-      if (id === "f-b") {
-        return {
-          id: "f-b",
-          content: "B",
-          type: "world",
-          pinned: false,
-          reference_count: 0,
-          source_conversations: ["s-2"],
-          observed_at: new Date("2026-04-01T10:00:00+08:00"),
-          occurred_at: "2024 Winter",
-          status: "active",
-          created_at: new Date("2026-01-01T00:00:00.000Z"),
-          updated_at: new Date("2026-01-01T00:00:00.000Z"),
-        };
-      }
-      return null;
-    },
-    deprecate: async () => true,
-  } as unknown as SemanticMemoryStorePort & { created: SemanticMemoryCreateInput[] };
-}
-
 describe("createSemanticMemoryFromArgs observed_at", () => {
-  let store: ReturnType<typeof createMockSemanticStore>;
-
   beforeEach(() => {
-    store = createMockSemanticStore();
-    registerSemanticMemoryStore(store);
+    created.length = 0;
+    createSemanticMemoryMock.mockClear();
   });
 
   afterEach(() => {
-    resetSemanticMemoryStoreForTests();
+    created.length = 0;
   });
 
   it("prefers args.observed_at when provided", async () => {
@@ -69,7 +75,7 @@ describe("createSemanticMemoryFromArgs observed_at", () => {
       { content: "test", observed_at: "2026-01-15T08:00:00+08:00" },
       { observed_at: "2026-02-01T00:00:00+08:00" },
     );
-    expect(store.created[0]?.observed_at).toBe("2026-01-15T08:00:00+08:00");
+    expect(created[0]?.observed_at).toBe("2026-01-15T08:00:00+08:00");
   });
 
   it("uses defaults when args.observed_at is absent", async () => {
@@ -77,20 +83,14 @@ describe("createSemanticMemoryFromArgs observed_at", () => {
       { content: "test" },
       { observed_at: "2026-02-01T00:00:00+08:00" },
     );
-    expect(store.created[0]?.observed_at).toBe("2026-02-01T00:00:00+08:00");
+    expect(created[0]?.observed_at).toBe("2026-02-01T00:00:00+08:00");
   });
 });
 
 describe("memory_semantic_merge occurred_at", () => {
-  let store: ReturnType<typeof createMockSemanticStore>;
-
   beforeEach(() => {
-    store = createMockSemanticStore();
-    registerSemanticMemoryStore(store);
-  });
-
-  afterEach(() => {
-    resetSemanticMemoryStoreForTests();
+    created.length = 0;
+    createSemanticMemoryMock.mockClear();
   });
 
   it("merge picks earliest non-empty occurred_at from source memories", async () => {
@@ -107,7 +107,7 @@ describe("memory_semantic_merge occurred_at", () => {
     };
 
     expect(parsed.merged_occurred_at).toBe("2024 Winter");
-    expect(store.created[0]?.occurred_at).toBe("2024 Winter");
+    expect(created[0]?.occurred_at).toBe("2024 Winter");
   });
 
   it("target_occurred_at overrides programmatic merge", async () => {
@@ -119,6 +119,6 @@ describe("memory_semantic_merge occurred_at", () => {
     });
     const parsed = JSON.parse(raw) as { merged_occurred_at: string | null };
     expect(parsed.merged_occurred_at).toBe("2026 Summer");
-    expect(store.created[0]?.occurred_at).toBe("2026 Summer");
+    expect(created[0]?.occurred_at).toBe("2026 Summer");
   });
 });

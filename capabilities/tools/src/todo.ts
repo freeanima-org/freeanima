@@ -1,4 +1,4 @@
-import { getToolConversationId, getToolRepos } from "@freeanima/core/tool";
+import { getToolConversationId } from "@freeanima/core/tool";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolError } from "@freeanima/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
@@ -7,15 +7,13 @@ import { handleConversationTodo } from "@freeanima/core/tool";
 async function handleTodo(args: Record<string, unknown>): Promise<string> {
   const conversationId = getToolConversationId();
   if (!conversationId) return toolError("No conversation context");
-  const repos = getToolRepos();
-  if (!repos) return toolError("No repos context");
 
   const action = String(args.action ?? "list");
   const content = args.content != null ? String(args.content) : undefined;
   const id = typeof args.id === "number" ? args.id : args.id != null ? Number(args.id) : undefined;
   const status = args.status != null ? String(args.status) : undefined;
 
-  return handleConversationTodo(repos, conversationId, action, { content, id, status });
+  return handleConversationTodo(conversationId, action, { content, id, status });
 }
 
 export function registerTodoTool(toolSets: ToolSetRegistry): void {

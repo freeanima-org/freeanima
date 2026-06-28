@@ -370,7 +370,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
   }
 
   countSemanticMemory(): Promise<{ index_rows: number }> {
-    return memory.countSemanticMemory(this.runtimeDeps());
+    return memory.countSemanticMemoryRows(this.runtimeDeps());
   }
 
   listMemoryFiles(): Promise<{ files: memory.MemoryFileEntry[] }> {
@@ -398,7 +398,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
   }
 
   getDreamMemoryByDay(day: string) {
-    return memory.getDreamMemoryByDay(this.runtimeDeps(), day);
+    return memory.getDreamMemoryByDayService(this.runtimeDeps(), day);
   }
 
   getFtsStatus(): Promise<fts.FtsStatusSnapshot> {

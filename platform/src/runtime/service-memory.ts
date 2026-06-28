@@ -9,6 +9,24 @@ import type {
   SemanticFtsHit,
   SemanticMemorySearchOpts,
 } from "@freeanima/core/repos";
+import {
+  countAutobiographicalMemory,
+  listAutobiographicalMemory,
+} from "@freeanima/core/db/pg/autobiographical-memory";
+import {
+  countDreamMemory,
+  getDreamMemoryByDay,
+  listDreamMemory,
+} from "@freeanima/core/db/pg/dream-memory";
+import { countLimbicMemory, listLimbicMemory } from "@freeanima/core/db/pg/limbic-memory";
+import {
+  countSemanticMemory,
+  countSemanticMemorySearch,
+  getSemanticMemory,
+  listAllSemanticMemory,
+  searchSemanticMemory,
+  updateSemanticMemory,
+} from "@freeanima/core/db/pg/semantic-memory";
 import { PATHS } from "@freeanima/platform/config";
 import { memoryRecallSearch, type MemoryRecallResult } from "@freeanima/capabilities-memory/search";
 import type { RuntimeDeps } from "./runtime-deps.ts";
@@ -60,12 +78,12 @@ export async function memorySearch(args: {
 }
 
 /** PG STORED content_fts auto-maintained; returns semantic_memory row count */
-export async function countSemanticMemory(deps: RuntimeDeps): Promise<{ index_rows: number }> {
-  const count = await deps.engine.repos.semanticMemory.count();
+export async function countSemanticMemoryRows(_deps: RuntimeDeps): Promise<{ index_rows: number }> {
+  const count = await countSemanticMemory();
   return { index_rows: count };
 }
 
-export async function listMemoryFiles(deps: RuntimeDeps): Promise<{ files: MemoryFileEntry[] }> {
+export async function listMemoryFiles(_deps: RuntimeDeps): Promise<{ files: MemoryFileEntry[] }> {
   const files: MemoryFileEntry[] = [];
   const home = PATHS.home;
 
@@ -76,7 +94,7 @@ export async function listMemoryFiles(deps: RuntimeDeps): Promise<{ files: Memor
   }
 
   try {
-    const rows = await deps.engine.repos.semanticMemory.listAll();
+    const rows = await listAllSemanticMemory();
     for (const row of rows) {
       const name = `${row.id}.md`;
       const content = `---\nid: ${row.id}\ntype: ${row.type}\npinned: ${row.pinned}\ncreated: ${row.created_at}\nupdated: ${row.updated_at}\n---\n${row.content}`;
@@ -96,7 +114,7 @@ export async function listMemoryFiles(deps: RuntimeDeps): Promise<{ files: Memor
 }
 
 export async function listSemanticMemories(
-  deps: RuntimeDeps,
+  _deps: RuntimeDeps,
   args: {
     query?: string;
     offset?: number;
@@ -116,35 +134,33 @@ export async function listSemanticMemories(
     source_conversations: sourceSession ? [sourceSession] : undefined,
     sort_by: args.sort_by,
   };
-  const semantic = deps.engine.repos.semanticMemory;
   const [items, total] = await Promise.all([
-    semantic.search({ ...filterOpts, offset, limit }),
-    semantic.countSearch(filterOpts),
+    searchSemanticMemory({ ...filterOpts, offset, limit }),
+    countSemanticMemorySearch(filterOpts),
   ]);
   return { items, total, offset, limit };
 }
 
 export async function updateSemanticMemoryPinned(
-  deps: RuntimeDeps,
+  _deps: RuntimeDeps,
   id: string,
   pinned: boolean,
 ): Promise<{ ok: true; id: string; pinned: boolean }> {
   const memoryId = id.trim();
   if (!memoryId) throw new Error("id is required");
 
-  const semantic = deps.engine.repos.semanticMemory;
-  const existing = await semantic.get(memoryId);
+  const existing = await getSemanticMemory(memoryId);
   if (!existing) throw new Error(`Memory not found: ${memoryId}`);
   if (existing.status !== "active") {
     throw new Error(`Only active memories can be pinned: ${memoryId}`);
   }
 
-  await semantic.update({ id: memoryId, pinned });
+  await updateSemanticMemory({ id: memoryId, pinned });
   return { ok: true, id: memoryId, pinned };
 }
 
 export async function listLimbicMemories(
-  deps: RuntimeDeps,
+  _deps: RuntimeDeps,
   args: LimbicListOpts = {},
 ): Promise<MemoryListResult<LimbicMemoryRow>> {
   const { offset, limit } = clampPagination(args.offset, args.limit);
@@ -154,14 +170,14 @@ export async function listLimbicMemories(
     kind: args.kind,
   };
   const [items, total] = await Promise.all([
-    deps.engine.repos.limbicMemory.list({ ...filterOpts, offset, limit }),
-    deps.engine.repos.limbicMemory.count(filterOpts),
+    listLimbicMemory({ ...filterOpts, offset, limit }),
+    countLimbicMemory(filterOpts),
   ]);
   return { items, total, offset, limit };
 }
 
 export async function listAutobiographicalMemories(
-  deps: RuntimeDeps,
+  _deps: RuntimeDeps,
   args: AutobiographicalListOpts = {},
 ): Promise<MemoryListResult<AutobiographicalMemoryRow>> {
   const { offset, limit } = clampPagination(args.offset, args.limit);
@@ -172,28 +188,28 @@ export async function listAutobiographicalMemories(
     source_conversation: args.source_conversation,
   };
   const [items, total] = await Promise.all([
-    deps.engine.repos.autobiographicalMemory.list({ ...filterOpts, offset, limit }),
-    deps.engine.repos.autobiographicalMemory.count(filterOpts),
+    listAutobiographicalMemory({ ...filterOpts, offset, limit }),
+    countAutobiographicalMemory(filterOpts),
   ]);
   return { items, total, offset, limit };
 }
 
 export async function listDreamMemories(
-  deps: RuntimeDeps,
+  _deps: RuntimeDeps,
   args: { offset?: number; limit?: number } = {},
 ): Promise<MemoryListResult<DreamMemoryRow>> {
   const { offset, limit } = clampPagination(args.offset, args.limit);
   const [items, total] = await Promise.all([
-    deps.engine.repos.dreamMemory.list({ offset, limit }),
-    deps.engine.repos.dreamMemory.count(),
+    listDreamMemory({ offset, limit }),
+    countDreamMemory(),
   ]);
   return { items, total, offset, limit };
 }
 
-export async function getDreamMemoryByDay(deps: RuntimeDeps, day: string) {
+export async function getDreamMemoryByDayService(_deps: RuntimeDeps, day: string) {
   const dreamDay = day.trim();
   if (!dreamDay) throw new Error("day is required");
-  const row = await deps.engine.repos.dreamMemory.getByDay(dreamDay);
+  const row = await getDreamMemoryByDay(dreamDay);
   if (!row) throw new Error(`No dream found for ${dreamDay}`);
   return row;
 }

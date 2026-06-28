@@ -20,6 +20,35 @@ const runSleepStepMock = mock(async () => ({
   output: { ok: true, day: "2026-06-14", tool_calls: 3, sessions: 1 },
 }));
 
+const pipelineRows: PipelineStepRunRow[] = [];
+const appendPipelineStepRunMock = mock(async (row: PipelineStepRunAppendInput) => {
+  pipelineRows.push({
+    id: pipelineRows.length + 1,
+    pipeline_id: row.pipeline_id,
+    run_id: row.run_id,
+    step_id: row.step_id,
+    attempt: pipelineRows.filter((r) => r.run_id === row.run_id && r.step_id === row.step_id)
+      .length,
+    day: row.day,
+    trigger: row.trigger,
+    status: row.status,
+    started_at: row.started_at ?? null,
+    finished_at: row.finished_at ?? "",
+    output: row.output ?? null,
+    error: row.error ?? null,
+    skipped_reason: row.skipped_reason ?? null,
+  });
+});
+
+mock.module("@freeanima/core/db/pg", () => ({
+  isPostgresPrimary: () => true,
+}));
+
+mock.module("@freeanima/core/db/pg/pipeline", () => ({
+  appendPipelineStepRun: appendPipelineStepRunMock,
+  listPipelineStepRuns: mock(async () => pipelineRows),
+}));
+
 mock.module("../boot/pipeline-handlers.ts", () => ({
   resolveSleepCycleDay: (day?: string) => day?.trim() || "2026-06-14",
   runSleepCycle: runSleepCycleMock,
@@ -28,37 +57,10 @@ mock.module("../boot/pipeline-handlers.ts", () => ({
   registerSleepPipeline: () => {},
 }));
 
-function createDeps(appended: PipelineStepRunAppendInput[]): RuntimeDeps {
-  const rows: PipelineStepRunRow[] = [];
+function createDeps(): RuntimeDeps {
   return {
     kernel: {} as RuntimeDeps["kernel"],
-    engine: {
-      repos: {
-        pgAvailable: true,
-        pipelineStepRun: {
-          append: async (row: PipelineStepRunAppendInput) => {
-            appended.push(row);
-            rows.push({
-              id: rows.length + 1,
-              pipeline_id: row.pipeline_id,
-              run_id: row.run_id,
-              step_id: row.step_id,
-              attempt: rows.filter((r) => r.run_id === row.run_id && r.step_id === row.step_id)
-                .length,
-              day: row.day,
-              trigger: row.trigger,
-              status: row.status,
-              started_at: row.started_at ?? null,
-              finished_at: row.finished_at ?? "",
-              output: row.output ?? null,
-              error: row.error ?? null,
-              skipped_reason: row.skipped_reason ?? null,
-            });
-          },
-          list: async () => rows,
-        },
-      },
-    } as RuntimeDeps["engine"],
+    engine: {} as RuntimeDeps["engine"],
     conversation: {} as RuntimeDeps["conversation"],
   };
 }
@@ -67,11 +69,12 @@ describe("service-sleep pipeline runs", () => {
   afterEach(() => {
     runSleepCycleMock.mockClear();
     runSleepStepMock.mockClear();
+    appendPipelineStepRunMock.mockClear();
+    pipelineRows.length = 0;
   });
 
   it("startSleepPipelineStep does not write cron_log", async () => {
-    const appended: PipelineStepRunAppendInput[] = [];
-    const deps = createDeps(appended);
+    const deps = createDeps();
     const { startSleepPipelineStep } = await import("./service-sleep.ts");
 
     const result = await startSleepPipelineStep(deps, {
@@ -80,13 +83,12 @@ describe("service-sleep pipeline runs", () => {
     });
 
     expect(result.ok).toBe(true);
-    expect(appended).toHaveLength(0);
+    expect(appendPipelineStepRunMock).not.toHaveBeenCalled();
     expect(runSleepStepMock).toHaveBeenCalled();
   });
 
   it("startSleepCycle does not write cron_log", async () => {
-    const appended: PipelineStepRunAppendInput[] = [];
-    const deps = createDeps(appended);
+    const deps = createDeps();
     const { startSleepCycle } = await import("./service-sleep.ts");
 
     const started = await startSleepCycle(deps, { day: "2026-06-14" });
@@ -95,13 +97,13 @@ describe("service-sleep pipeline runs", () => {
     await new Promise((r) => setTimeout(r, 50));
 
     expect(runSleepCycleMock).toHaveBeenCalled();
-    expect(appended).toHaveLength(0);
+    expect(appendPipelineStepRunMock).not.toHaveBeenCalled();
   });
 
   it("listPipelineStepRuns returns rows from store", async () => {
-    const appended: PipelineStepRunAppendInput[] = [];
-    const deps = createDeps(appended);
-    await deps.engine.repos.pipelineStepRun.append({
+    const deps = createDeps();
+    const { appendPipelineStepRun } = await import("@freeanima/core/db/pg/pipeline");
+    await appendPipelineStepRun({
       pipeline_id: "sleep-cycle",
       run_id: "r1",
       step_id: "light-sleep",

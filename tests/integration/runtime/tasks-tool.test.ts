@@ -9,12 +9,8 @@ import {
 import { runWithToolContext } from "@freeanima/runtime/loop";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { getProfileHopModel } from "@freeanima/platform/config";
-import {
-  registerEntityTaskModule,
-  registerTaskTools,
-  resetEntityTaskModuleForTests,
-  getDefaultTaskList,
-} from "@freeanima/capabilities-task";
+import { registerTaskTools, getDefaultTaskList } from "@freeanima/capabilities-task";
+import { getEntity } from "@freeanima/core/db/pg/entity";
 import { getActivePgTestContext, testConv } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 
@@ -31,16 +27,10 @@ describePg("tasks tool", () => {
   beforeEach(async () => {
     toolSets = new ToolSetRegistry();
     await beginIntegrationCase("anima-tasks-");
-    resetEntityTaskModuleForTests();
-    registerEntityTaskModule({
-      entityStore: testConv().repos.entity,
-      entitySearch: testConv().repos.entitySearch,
-    });
     registerTaskTools(toolSets);
   });
 
   afterEach(async () => {
-    resetEntityTaskModuleForTests();
     await restoreIntegrationHome(prev);
   });
 
@@ -50,7 +40,6 @@ describePg("tasks tool", () => {
 
   it("task_create writes entity task_item", async () => {
     const sid = "sess-task-create";
-    const repos = testConv().repos;
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
@@ -72,7 +61,7 @@ describePg("tasks tool", () => {
           }),
         );
       },
-      { repos, tools: toolSets },
+      { tools: toolSets },
     );
 
     const parsed = JSON.parse(output) as {
@@ -95,14 +84,13 @@ describePg("tasks tool", () => {
     expect(parsed.item.priority).toBe("high");
     expect(parsed.item.list_id).toBe(defaultList!.id);
 
-    const row = await repos.entity.get(parsed.item.id);
+    const row = await getEntity(parsed.item.id);
     expect(row?.title).toBe("Discuss UI plan");
     expect(row?.content).toBe("Details here");
   });
 
   it("task_list defaults to pending only", async () => {
     const sid = "sess-task-list";
-    const repos = testConv().repos;
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
@@ -123,7 +111,7 @@ describePg("tasks tool", () => {
         await Promise.resolve(complete.handler({ id: created.item.id }));
         await Promise.resolve(create.handler({ title: "Pending task", list_id: list!.id }));
       },
-      { repos, tools: toolSets },
+      { tools: toolSets },
     );
 
     let output = "";
@@ -133,7 +121,7 @@ describePg("tasks tool", () => {
         const tool = toolSets.getTool("task_list")!;
         output = await Promise.resolve(tool.handler({ list_id: list!.id }));
       },
-      { repos, tools: toolSets },
+      { tools: toolSets },
     );
 
     const parsed = JSON.parse(output) as {
@@ -147,7 +135,6 @@ describePg("tasks tool", () => {
 
   it("task_complete updates status", async () => {
     const sid = "sess-task-complete";
-    const repos = testConv().repos;
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
@@ -160,7 +147,7 @@ describePg("tasks tool", () => {
         const out = await Promise.resolve(create.handler({ title: "Task to complete" }));
         createdId = (JSON.parse(out) as { item: { id: number } }).item.id;
       },
-      { repos, tools: toolSets },
+      { tools: toolSets },
     );
 
     let output = "";
@@ -170,7 +157,7 @@ describePg("tasks tool", () => {
         const tool = toolSets.getTool("task_complete")!;
         output = await Promise.resolve(tool.handler({ id: createdId }));
       },
-      { repos, tools: toolSets },
+      { tools: toolSets },
     );
 
     const parsed = JSON.parse(output) as {

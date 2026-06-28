@@ -5,7 +5,10 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { getTestEngine } from "../../helpers/pg-test.ts";
+import {
+  createSemanticMemory,
+  searchSemanticMemoryFts,
+} from "@freeanima/core/db/pg/semantic-memory";
 
 describePg("recall hybrid PG", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -19,30 +22,26 @@ describePg("recall hybrid PG", () => {
   });
 
   it("pg_trgm always on: typo-tolerant recall", async () => {
-    const store = getTestEngine().repos.semanticMemory;
-
-    const targetId = await store.create({
+    const targetId = await createSemanticMemory({
       content: "Prefers concise direct communication",
       type: "preference",
     });
 
-    const hits = await store.searchFts("Prefers concse direct", { limit: 5 });
+    const hits = await searchSemanticMemoryFts("Prefers concse direct", { limit: 5 });
     expect(hits.some((h) => h.id === targetId)).toBe(true);
   });
 
   it("RRF merge: stable ranking when FTS and trgm both hit", async () => {
-    const store = getTestEngine().repos.semanticMemory;
-
-    const exactId = await store.create({
+    const exactId = await createSemanticMemory({
       content: "Project codename Alpha is live",
       type: "world",
     });
-    await store.create({
+    await createSemanticMemory({
       content: "Beta project still in development",
       type: "world",
     });
 
-    const hits = await store.searchFts("Alpha", { limit: 5 });
+    const hits = await searchSemanticMemoryFts("Alpha", { limit: 5 });
     expect(hits[0]?.id).toBe(exactId);
   });
 

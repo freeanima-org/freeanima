@@ -1,10 +1,4 @@
-export {
-  registerEntityEmailModule,
-  getEntityStoreForEmail,
-  getEntitySearchForEmail,
-  defaultEmailWorldId,
-  resetEntityEmailModuleForTests,
-} from "./entity-port.ts";
+export { defaultEmailWorldId } from "./account-store.ts";
 export type * from "./types.ts";
 export {
   createEmailAccount,

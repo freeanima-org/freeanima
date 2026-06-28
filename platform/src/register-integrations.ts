@@ -27,7 +27,7 @@ export function registerServiceIntegrations(opts: {
   const acp = getAcpManager();
   acp.wireRegistries({ toolSets: opts.toolSets, skills: opts.skills, config: opts.config });
   acp.wireConversation(opts.conversation);
-  acp.wireTaskQuery(createAcpTaskQueryPort(opts.conversation));
+  acp.wireTaskQuery(createAcpTaskQueryPort());
   acp.wireProgressDelivery(
     createAcpProgressDelivery({
       conversation: opts.conversation,

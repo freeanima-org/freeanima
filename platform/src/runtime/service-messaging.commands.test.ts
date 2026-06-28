@@ -3,7 +3,6 @@ import * as conv from "@freeanima/runtime/conversation";
 import * as turn from "@freeanima/runtime/turn";
 import type { StreamEvent } from "@freeanima/runtime/loop";
 import { createConversationService } from "@freeanima/runtime/conversation";
-import { nullPgRepositories } from "@freeanima/core/repos";
 import { MaskRegistry } from "@freeanima/capabilities-task/mask";
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/runtime";
@@ -23,7 +22,6 @@ const testConfig = Config.fromSnapshot(animaConfigSchema.parse(parseYaml(MINIMAL
 registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
 const testEngine = createEngine({
   catalog,
-  repos: nullPgRepositories,
   config: testConfig,
   llm: initLlmRuntime(testConfig.data),
   logger: createTestLogger(),
@@ -34,7 +32,7 @@ async function wireTestRuntime() {
   const { createAppRuntime } = await import("./app-runtime.ts");
   const { initRuntimeContext } = await import("../context.ts");
   const kernel = createServiceKernel(testConfig);
-  const conversation = createConversationService(nullPgRepositories, catalog.toolSets);
+  const conversation = createConversationService(catalog.toolSets);
   getAcpManager().wireRegistries({
     toolSets: catalog.toolSets,
     skills: catalog.skills,

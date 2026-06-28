@@ -26,9 +26,9 @@ export function wireEnginePorts(): void {
     return filterToolNamesByMask(toolNames, resolved);
   });
 
-  registerCompressionSummaryPostCut(async (repos, conversation) => {
+  registerCompressionSummaryPostCut(async (conversation) => {
     const { engine } = getAppRuntime();
-    await rebuildConversationCache(repos, engine.catalog.toolSets, conversation);
+    await rebuildConversationCache(engine.catalog.toolSets, conversation);
   });
 }
 

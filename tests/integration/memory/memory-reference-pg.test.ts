@@ -5,10 +5,24 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { getTestEngine } from "../../helpers/pg-test.ts";
+import {
+  appendMessage,
+  deleteConversation,
+  upsertConversationMeta,
+} from "@freeanima/core/db/pg/conversation";
+import {
+  countReferencesBySemanticMemory,
+  syncAllReferenceCounts,
+} from "@freeanima/core/db/pg/memory-reference";
+import {
+  createSemanticMemory,
+  deprecateSemanticMemory,
+  getSemanticMemory,
+  listResidentSemanticMemory,
+} from "@freeanima/core/db/pg/semantic-memory";
 
 async function seedSessionMeta(conversationId: string): Promise<void> {
-  await getTestEngine().repos.conversation.upsertConversationMeta(conversationId, {
+  await upsertConversationMeta(conversationId, {
     role: "conversation_meta",
     model: "test-model",
     cached_toolsets: [],
@@ -30,9 +44,7 @@ describePg("memory_references PG", () => {
   });
 
   it("message references write, conversation dedup count, and full sync", async () => {
-    const { semanticMemory, memoryReference, conversation } = getTestEngine().repos;
-
-    const memoryId = await semanticMemory.create({
+    const memoryId = await createSemanticMemory({
       content: "reference count probe memory",
       type: "world",
     });
@@ -40,102 +52,95 @@ describePg("memory_references PG", () => {
     const conversationId = "memref-session-1";
     await seedSessionMeta(conversationId);
 
-    await conversation.appendMessage(conversationId, {
+    await appendMessage(conversationId, {
       role: "assistant",
       content: `See [[${memoryId}]] for details`,
       pos: 1,
       timestamp: "2026-06-09T12:00:00+08:00",
     });
-    await conversation.appendMessage(conversationId, {
+    await appendMessage(conversationId, {
       role: "assistant",
       content: `Again [[${memoryId}]]`,
       pos: 2,
       timestamp: "2026-06-09T12:01:00+08:00",
     });
 
-    let row = await semanticMemory.get(memoryId);
+    let row = await getSemanticMemory(memoryId);
     expect(row?.reference_count).toBe(2);
-    expect(await memoryReference.countBySemanticMemory(memoryId)).toBe(2);
+    expect(await countReferencesBySemanticMemory(memoryId)).toBe(2);
 
-    const sync = await memoryReference.syncAllReferenceCounts();
+    const sync = await syncAllReferenceCounts();
     expect(sync.updated).toBe(1);
-    row = await semanticMemory.get(memoryId);
+    row = await getSemanticMemory(memoryId);
     expect(row?.reference_count).toBe(2);
   });
 
   it("listResident returns pinned + reference-count top N", async () => {
-    const { semanticMemory, conversation } = getTestEngine().repos;
-
-    const pinnedId = await semanticMemory.create({ content: "pinned memory", pinned: true });
-    const hotId = await semanticMemory.create({ content: "hot memory" });
-    await semanticMemory.create({ content: "cold memory" });
+    const pinnedId = await createSemanticMemory({ content: "pinned memory", pinned: true });
+    const hotId = await createSemanticMemory({ content: "hot memory" });
+    await createSemanticMemory({ content: "cold memory" });
 
     const conversationId = "memref-resident";
     await seedSessionMeta(conversationId);
-    await conversation.appendMessage(conversationId, {
+    await appendMessage(conversationId, {
       role: "assistant",
       content: `[[${hotId}]]`,
       pos: 1,
     });
 
-    const resident = await semanticMemory.listResident(10);
+    const resident = await listResidentSemanticMemory(10);
     const ids = resident.map((r) => r.id);
     expect(ids).toContain(pinnedId);
     expect(ids).toContain(hotId);
     expect(resident.find((r) => r.id === pinnedId)?.pinned).toBe(true);
-    expect((await semanticMemory.get(hotId))?.reference_count).toBe(2);
+    expect((await getSemanticMemory(hotId))?.reference_count).toBe(2);
   });
 
   it("listResident caps pinned at RESIDENT_PINNED_MAX", async () => {
-    const { semanticMemory } = getTestEngine().repos;
     const { RESIDENT_PINNED_MAX } = await import("@freeanima/core/repos");
 
     for (let i = 0; i < RESIDENT_PINNED_MAX + 2; i++) {
-      await semanticMemory.create({
+      await createSemanticMemory({
         content: `pinned cap probe ${i}`,
         pinned: true,
       });
     }
 
-    const resident = await semanticMemory.listResident(RESIDENT_PINNED_MAX);
+    const resident = await listResidentSemanticMemory(RESIDENT_PINNED_MAX);
     expect(resident.length).toBe(RESIDENT_PINNED_MAX);
     expect(resident.every((r) => r.pinned)).toBe(true);
   });
 
   it("deprecate clears pinned flag", async () => {
-    const { semanticMemory } = getTestEngine().repos;
-
-    const id = await semanticMemory.create({
+    const id = await createSemanticMemory({
       content: "pinned then deprecated",
       pinned: true,
     });
-    expect((await semanticMemory.get(id))?.pinned).toBe(true);
+    expect((await getSemanticMemory(id))?.pinned).toBe(true);
 
-    const ok = await semanticMemory.deprecate(id);
+    const ok = await deprecateSemanticMemory(id);
     expect(ok).toBe(true);
-    expect((await semanticMemory.get(id))?.pinned).toBe(false);
-    expect((await semanticMemory.get(id))?.status).toBe("deprecated");
+    expect((await getSemanticMemory(id))?.pinned).toBe(false);
+    expect((await getSemanticMemory(id))?.status).toBe("deprecated");
   });
 
   it("session delete invalidates references and full sync zeroes counts", async () => {
-    const { semanticMemory, memoryReference, conversation } = getTestEngine().repos;
-
-    const memoryId = await semanticMemory.create({ content: "session reference pending delete" });
+    const memoryId = await createSemanticMemory({ content: "session reference pending delete" });
     const conversationId = "memref-delete";
     await seedSessionMeta(conversationId);
-    await conversation.appendMessage(conversationId, {
+    await appendMessage(conversationId, {
       role: "user",
       content: `[[${memoryId}]]`,
       pos: 1,
     });
 
-    expect((await semanticMemory.get(memoryId))?.reference_count).toBe(2);
+    expect((await getSemanticMemory(memoryId))?.reference_count).toBe(2);
 
-    await conversation.deleteConversation(conversationId);
-    await memoryReference.syncAllReferenceCounts();
+    await deleteConversation(conversationId);
+    await syncAllReferenceCounts();
 
-    expect(await memoryReference.countBySemanticMemory(memoryId)).toBe(0);
-    expect((await semanticMemory.get(memoryId))?.reference_count).toBe(0);
+    expect(await countReferencesBySemanticMemory(memoryId)).toBe(0);
+    expect((await getSemanticMemory(memoryId))?.reference_count).toBe(0);
   });
 
   afterAll(async () => {

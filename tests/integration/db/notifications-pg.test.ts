@@ -1,4 +1,5 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { countNotifications } from "@freeanima/core/db/pg/notifications";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
@@ -14,14 +15,9 @@ import {
 import type { RuntimeDeps } from "@freeanima/platform/runtime/runtime-deps";
 
 function testRuntimeDeps(): RuntimeDeps {
-  const engine = getTestEngine();
   return {
     kernel: {} as RuntimeDeps["kernel"],
-    engine: {
-      repos: {
-        notifications: engine.repos.notifications,
-      },
-    } as RuntimeDeps["engine"],
+    engine: getTestEngine(),
     conversation: {} as RuntimeDeps["conversation"],
   };
 }
@@ -43,7 +39,6 @@ describePg("notifications PG", () => {
 
   it("create, list unread, markRead", async () => {
     const deps = testRuntimeDeps();
-    const store = deps.engine.repos.notifications;
 
     const created = await createNotification(deps, {
       recipient_kind: "user",
@@ -82,7 +77,7 @@ describePg("notifications PG", () => {
     expect(all.total).toBe(1);
     expect(all.items[0]?.read_at).not.toBeNull();
 
-    const agentUnread = await store.count({
+    const agentUnread = await countNotifications({
       recipient_kind: "agent",
       read_filter: "unread",
     });

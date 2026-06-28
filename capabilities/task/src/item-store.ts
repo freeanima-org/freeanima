@@ -1,11 +1,14 @@
 import { TASK_ITEM_COMPONENT, asTaskItem } from "@freeanima/core/db/schema/entity";
 import { formatCstIso } from "@freeanima/core/util";
-
 import {
-  defaultTaskWorldId,
-  getEntityStoreForTask,
-  getEntitySearchForTask,
-} from "./entity-port.ts";
+  createEntity,
+  deleteEntity,
+  getEntity,
+  searchEntities,
+  updateEntity,
+} from "@freeanima/core/db/pg/entity";
+
+import { defaultTaskWorldId } from "./list-store.ts";
 import type {
   TaskItemCreateInput,
   TaskItemListOpts,
@@ -47,14 +50,13 @@ function toItemRow(
 }
 
 export async function listTaskItems(opts: TaskItemListOpts = {}): Promise<TaskItemRow[]> {
-  const search = getEntitySearchForTask();
   const filters: Record<string, unknown> = {};
   if (opts.list_id != null) filters.list_id = opts.list_id;
   if (opts.status != null) filters.status = opts.status;
   if (opts.due_today) filters.due_today = true;
   if (opts.tags?.length) filters.tags = opts.tags;
 
-  const result = await search.search({
+  const result = await searchEntities({
     world_id: defaultTaskWorldId(),
     primary_component: TASK_ITEM_COMPONENT,
     filters: Object.keys(filters).length > 0 ? filters : undefined,
@@ -75,7 +77,6 @@ export async function listTaskItems(opts: TaskItemListOpts = {}): Promise<TaskIt
 }
 
 export async function createTaskItem(input: TaskItemCreateInput): Promise<TaskItemRow> {
-  const store = getEntityStoreForTask();
   const tags = normalizeTags(input.tags);
   const body = {
     status: "pending" as const,
@@ -87,7 +88,7 @@ export async function createTaskItem(input: TaskItemCreateInput): Promise<TaskIt
     completed_at: null,
   };
 
-  const row = await store.create({
+  const row = await createEntity({
     type: "content",
     world_id: defaultTaskWorldId(),
     components: [TASK_ITEM_COMPONENT],
@@ -103,8 +104,7 @@ export async function createTaskItem(input: TaskItemCreateInput): Promise<TaskIt
 }
 
 export async function updateTaskItem(input: TaskItemUpdateInput): Promise<TaskItemRow | null> {
-  const store = getEntityStoreForTask();
-  const existing = await store.get(input.id);
+  const existing = await getEntity(input.id);
   if (!existing) return null;
 
   const parsedExisting = asTaskItem(existing);
@@ -121,7 +121,7 @@ export async function updateTaskItem(input: TaskItemUpdateInput): Promise<TaskIt
     bodyPatch.completed_at = input.status === "completed" ? formatCstIso(new Date()) : null;
   }
 
-  const row = await store.update({
+  const row = await updateEntity({
     id: input.id,
     title: input.title,
     content: input.content,
@@ -144,5 +144,5 @@ export async function uncompleteTaskItem(id: number): Promise<TaskItemRow | null
 }
 
 export async function deleteTaskItem(id: number): Promise<boolean> {
-  return getEntityStoreForTask().delete(id);
+  return deleteEntity(id);
 }

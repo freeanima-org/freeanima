@@ -4,21 +4,19 @@ import {
   type GenerateSummaryResult,
 } from "@freeanima/core/compress";
 import { isConversationMeta, parseCompressionState } from "@freeanima/core/db/domain";
-import type { PgRepositories } from "@freeanima/core/repos";
 import { load, loadConversationMeta } from "./conversation.ts";
 
 /** /new etc.: read-only old conversation; generate handoff summary for new conversation (does not write old conversation) */
 export async function generateConversationHandoffSummary(
-  repos: PgRepositories,
   conversationId: string,
 ): Promise<GenerateSummaryResult> {
-  const msgs = await load(repos, conversationId);
+  const msgs = await load(conversationId);
   const l4 = getL4(msgs);
   if (l4 === 0) {
     return { ok: false, error: "No conversation content" };
   }
 
-  const meta = await loadConversationMeta(repos, conversationId);
+  const meta = await loadConversationMeta(conversationId);
   if (!isConversationMeta(meta)) {
     return { ok: false, error: "conversation does not exist" };
   }

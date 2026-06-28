@@ -1,10 +1,6 @@
-import {
-  getToolRegistry,
-  getToolRepos,
-  getToolConversationId,
-  grantExecutableTools,
-} from "@freeanima/core/tool";
+import { getToolRegistry, getToolConversationId, grantExecutableTools } from "@freeanima/core/tool";
 import { isConversationMeta, type ConversationMetaMessage } from "@freeanima/core/db/domain";
+import { getConversationMeta } from "@freeanima/core/db/pg/conversation";
 import {
   applyConversationToolMaskFilter,
   attachToolReturns,
@@ -21,10 +17,8 @@ async function requireSessionMeta(): Promise<
   { ok: true; meta: ConversationMetaMessage } | { ok: false; error: string }
 > {
   const conversationId = getToolConversationId();
-  const repos = getToolRepos();
   if (!conversationId) return { ok: false, error: "No conversation context" };
-  if (!repos) return { ok: false, error: "No repos context" };
-  const raw = await repos.conversation.getConversationMeta(conversationId);
+  const raw = await getConversationMeta(conversationId);
   if (!raw || !isConversationMeta(raw)) return { ok: false, error: "Session does not exist" };
   const meta = raw;
   return { ok: true, meta };
@@ -101,10 +95,8 @@ export function registerToolsetTools(toolSets: ToolSetRegistry): void {
             const toolsets = raw.map((n) => String(n ?? "").trim()).filter(Boolean);
             if (!toolsets.length) return toolError("toolsets must be a non-empty array");
             const conversationId = getToolConversationId()!;
-            const repos = getToolRepos()!;
             const registry = getToolRegistry();
             const result = await loadToolSetsIntoConversation(
-              repos,
               registry,
               conversationId,
               toolsets,

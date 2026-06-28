@@ -1,6 +1,6 @@
 import type { MessageFtsHit } from "@freeanima/core/repos";
-import { getSemanticMemoryStore } from "./semantic-port.ts";
-import { getMemoryConversationStore } from "./conversation-port.ts";
+import { searchSemanticMemoryFts } from "@freeanima/core/db/pg/semantic-memory";
+import { searchMessagesFts } from "@freeanima/core/db/pg/conversation";
 
 export type SearchResult = {
   content: string;
@@ -21,8 +21,7 @@ async function searchSemanticMemoryInternal(
   query: string,
   limit = DEFAULT_LIMIT,
 ): Promise<SearchResult[]> {
-  const store = getSemanticMemoryStore();
-  const rows = await store.searchFts(query, { limit });
+  const rows = await searchSemanticMemoryFts(query, { limit });
   return rows.map((r) => ({
     content: r.content,
     source: "semantic_memory" as const,
@@ -87,9 +86,8 @@ export async function searchDialogue(
   query: string,
   opts?: { conversationId?: string; limit?: number },
 ): Promise<MessageFtsHit[]> {
-  const store = getMemoryConversationStore();
-  return store.searchMessagesFts(query, {
-    conversationId: opts?.conversationId,
+  return searchMessagesFts(query, {
+    conversation_id: opts?.conversationId,
     limit: opts?.limit,
   });
 }

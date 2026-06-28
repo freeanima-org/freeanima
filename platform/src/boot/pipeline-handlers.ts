@@ -6,11 +6,13 @@ import {
   invalidateSelfLayerPromptCache,
   loadSelfLayerPrompt,
 } from "@freeanima/capabilities-identity";
+import { purgeStaleAutoLlmRuns } from "@freeanima/core/db/pg/auto-llm-run";
+import { isPostgresPrimary } from "@freeanima/core/db/pg";
 import { getPipelineRunner, type PipelineStepTrigger } from "@freeanima/runtime/pipeline";
 import { cleanupStaleConversations } from "@freeanima/runtime/conversation";
 import type { Engine } from "@freeanima/runtime";
 
-import { purgeCronConversations } from "../../connectors/db-pg/conversation/repos/purge-cron-conversations.ts";
+import { purgeCronConversations } from "@freeanima/core/db/pg/conversation";
 import { createDreamFridgePort } from "../dream-fridge-factory.ts";
 import { resolveDeepSleepMode } from "./deep-sleep-mode.ts";
 import { sleepCycleDefinition, SLEEP_CYCLE_PIPELINE_ID, SLEEP_STEP_IDS } from "./sleep-cycle.ts";
@@ -21,16 +23,16 @@ export function registerSleepPipeline(engine: Engine): void {
   runner.registerDefinition(sleepCycleDefinition);
 
   runner.registerStep(SLEEP_STEP_IDS.conversationCleanup, async () => {
-    const result = await cleanupStaleConversations(engine.repos);
-    const cronPurge = await purgeCronConversations(engine.repos);
+    const result = await cleanupStaleConversations();
+    const cronPurge = await purgeCronConversations();
 
     const autoLlmCfg = engine.config.data.auto_llm;
     const retentionDays = autoLlmCfg?.retention_days ?? 30;
     const perRunKindKeep = autoLlmCfg?.per_run_kind_keep ?? 100;
     let autoLlmPurged = { deleted: 0 };
-    if (engine.repos.pgAvailable && retentionDays > 0) {
+    if (isPostgresPrimary() && retentionDays > 0) {
       const olderThan = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
-      autoLlmPurged = await engine.repos.autoLlmRun.purgeStale({
+      autoLlmPurged = await purgeStaleAutoLlmRuns({
         olderThan,
         perRunKindKeep,
       });
@@ -52,10 +54,6 @@ export function registerSleepPipeline(engine: Engine): void {
     const selfContent = await loadSelfLayerPrompt();
     const result = await runLightSleep({
       day: ctx.day,
-      conversationStore: engine.repos.conversation,
-      semanticStore: engine.repos.semanticMemory,
-      autoStore: engine.repos.autobiographicalMemory,
-      selfStore: engine.repos.selfLayer,
       selfContent,
     });
     if (result.skipped) {
@@ -83,8 +81,6 @@ export function registerSleepPipeline(engine: Engine): void {
     const result = await runDream({
       day: ctx.day,
       selfContent,
-      conversationStore: engine.repos.conversation,
-      dreamStore: engine.repos.dreamMemory,
       fridge: createDreamFridgePort(),
     });
     if (result.skipped) {
@@ -100,7 +96,7 @@ export function registerSleepPipeline(engine: Engine): void {
   });
 
   runner.registerStep(SLEEP_STEP_IDS.memoryRefSync, async () => {
-    const result = await syncSemanticMemoryReferenceCounts(engine.repos.memoryReference);
+    const result = await syncSemanticMemoryReferenceCounts();
     return { ok: true, output: result };
   });
 }

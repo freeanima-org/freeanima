@@ -165,7 +165,7 @@ export async function runSimpleTurn(
             executableTools,
             ...createTurnMessageCallbacks(deps, conversationId),
           }),
-        { repos: deps.conversation.repos, tools: deps.engine.catalog.toolSets, executableTools },
+        { tools: deps.engine.catalog.toolSets, executableTools },
       );
     } catch (e) {
       if (e instanceof loopEngine.MaxTurnsExceeded) {
@@ -221,7 +221,7 @@ export async function* yieldEngineStream(
             executableTools,
             ...host.engineStreamOpts(conversationId, signal),
           }),
-        { repos: deps.conversation.repos, tools: deps.engine.catalog.toolSets, executableTools },
+        { tools: deps.engine.catalog.toolSets, executableTools },
       )) {
         if (ev.event === "awaiting_clarify") {
           await applyClarifyStreamAwaiting(

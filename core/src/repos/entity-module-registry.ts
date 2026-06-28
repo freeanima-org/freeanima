@@ -1,4 +1,25 @@
-import type { EntitySearchPort, EntityStorePort } from "./ports/index.ts";
+import type {
+  EntityCreateInput,
+  EntityListOpts,
+  EntityRow,
+  EntitySearchOpts,
+  EntitySearchResult,
+  EntityUpdateInput,
+} from "@freeanima/core/db/pg/entity";
+
+export interface EntityStorePort {
+  create(input: EntityCreateInput): Promise<EntityRow>;
+  get(id: number): Promise<EntityRow | null>;
+  update(input: EntityUpdateInput): Promise<EntityRow | null>;
+  delete(id: number): Promise<boolean>;
+  list(opts?: EntityListOpts): Promise<EntityRow[]>;
+  count(opts?: Omit<EntityListOpts, "offset" | "limit">): Promise<number>;
+}
+
+export interface EntitySearchPort {
+  search(opts?: EntitySearchOpts): Promise<EntitySearchResult>;
+  count(opts?: Omit<EntitySearchOpts, "offset" | "limit">): Promise<number>;
+}
 
 /** Shared register/get/reset for capabilities that need entity store + search */
 export function createEntityModuleRegistry(label: string) {

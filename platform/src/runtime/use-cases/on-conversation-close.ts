@@ -4,10 +4,10 @@ import type { RuntimeDeps } from "../runtime-deps.ts";
 
 /** Before closing old conversation via /new etc.: read-only handoff summary (does not write old conversation) */
 export async function onConversationCloseBeforeNew(
-  deps: RuntimeDeps,
+  _deps: RuntimeDeps,
   conversationId: string,
 ): Promise<string | null> {
-  const result = await generateConversationHandoffSummary(deps.engine.repos, conversationId);
+  const result = await generateConversationHandoffSummary(conversationId);
   if (result.ok) return result.summary;
   if (result.error !== "No conversation content") {
     logComponent("conversation-close").warn(`handoff summary failed: ${conversationId}`, {

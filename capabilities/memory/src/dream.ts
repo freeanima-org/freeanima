@@ -10,7 +10,7 @@ import {
 } from "@freeanima/core/tool";
 
 import { getDreamFridge } from "./dream-fridge-port.ts";
-import { getDreamMemoryStore } from "./dream-port.ts";
+import { getDreamMemoryByDay, getLatestDreamMemory } from "@freeanima/core/db/pg/dream-memory";
 import { dismissDreamReminder } from "./dream/run.ts";
 
 const dreamReadReturnSchema = z.object({
@@ -60,8 +60,7 @@ export function registerDreamTools(toolSets: ToolSetRegistry): void {
           },
           handler: async (args: ToolArgs) => {
             const dayArg = String(args.day ?? "").trim();
-            const store = getDreamMemoryStore();
-            const row = dayArg ? await store.getByDay(dayArg) : await store.getLatest();
+            const row = dayArg ? await getDreamMemoryByDay(dayArg) : await getLatestDreamMemory();
             if (!row) {
               return toolError(dayArg ? `No dream found for ${dayArg}` : "No dream found");
             }

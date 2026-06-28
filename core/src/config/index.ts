@@ -14,3 +14,6 @@ export * from "./context-window-injection.ts";
 export * from "./repo-root.ts";
 export * from "./version.ts";
 export * from "./cli-install.ts";
+export * from "./fts.ts";
+export * from "./embedding-helpers.ts";
+export * from "./cjk-config.ts";

@@ -5,7 +5,10 @@ import type {
   AutobiographicalMemoryCreateInput,
 } from "@freeanima/core/repos";
 
-import { getAutobiographicalMemoryStore } from "./autobiographical-port.ts";
+import {
+  createAutobiographicalMemory,
+  deprecateAutobiographicalMemory,
+} from "@freeanima/core/db/pg/autobiographical-memory";
 
 const SIGNIFICANCE_VALUES = ["normal", "milestone", "turning_point"] as const;
 
@@ -73,7 +76,7 @@ export const autobiographicalMemoryToolDefs: ToolDef[] = [
       };
 
       try {
-        const id = await getAutobiographicalMemoryStore().create(row);
+        const id = await createAutobiographicalMemory(row);
         return toolResult({ ok: true, id, title });
       } catch (err) {
         return toolError(err instanceof Error ? err.message : String(err));
@@ -95,7 +98,7 @@ export const autobiographicalMemoryToolDefs: ToolDef[] = [
       const id = String(args.id ?? "").trim();
       if (!id) return toolError("id is required");
       try {
-        const ok = await getAutobiographicalMemoryStore().deprecate(id);
+        const ok = await deprecateAutobiographicalMemory(id);
         return toolResult({ ok, id });
       } catch (err) {
         return toolError(err instanceof Error ? err.message : String(err));

@@ -228,6 +228,7 @@
       "devDependencies": {
         "@freeanima/capabilities-llm-openai": "workspace:*",
         "@freeanima/runtime": "workspace:*",
+        "@node-rs/jieba": "^2.0.1",
         "@types/bun": "catalog:",
         "drizzle-kit": "catalog:",
       },

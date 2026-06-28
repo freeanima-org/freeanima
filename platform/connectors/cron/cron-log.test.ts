@@ -1,20 +1,21 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test, mock } from "bun:test";
 
-import type { CronLogAppendInput } from "@freeanima/core/repos";
+import type { CronLogAppendInput } from "@freeanima/core/db/pg/cron";
 
-import { setCronLogStore } from "./cron-log.ts";
+const appendCronLogMock = mock(async (row: CronLogAppendInput) => {
+  rows.push(row);
+});
+
+const rows: CronLogAppendInput[] = [];
+
+mock.module("@freeanima/core/db/pg/cron", () => ({
+  appendCronLog: appendCronLogMock,
+}));
 
 describe("appendCronRunLog", () => {
   test("writes parsed JSON on success and error on failure", async () => {
-    const rows: CronLogAppendInput[] = [];
-    setCronLogStore({
-      async append(row) {
-        rows.push(row);
-      },
-      async list() {
-        return [];
-      },
-    });
+    rows.length = 0;
+    appendCronLogMock.mockClear();
 
     const { appendCronRunLog } = await import("./cron-log.ts");
 
@@ -36,7 +37,5 @@ describe("appendCronRunLog", () => {
     expect(rows[0]?.output?.day).toBe("2026-06-08");
     expect(rows[1]?.ok).toBe(false);
     expect(rows[1]?.error).toContain("DrizzleQueryError");
-
-    setCronLogStore(null);
   });
 });

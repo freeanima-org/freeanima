@@ -16,11 +16,9 @@ import { ENTITY_DEFAULT_TASK_LIST_ID } from "../../core/src/db/schema/entity/ind
 import {
   createTaskItem,
   listTaskItems,
-  registerEntityTaskModule,
   updateTaskItem,
 } from "../../capabilities/task/src/index.ts";
-import { pgEntityStore } from "../../platform/connectors/db-pg/entity/pg-entity-store.ts";
-import { pgEntitySearchStore } from "../../platform/connectors/db-pg/entity/pg-entity-search-store.ts";
+import { initDatabase } from "../../core/src/db/pg/index.ts";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -169,9 +167,7 @@ async function main(): Promise<void> {
   const url = await resolveDatabaseUrl();
 
   const sql = new SQL(url);
-  const { initDatabase, closeDb } = await import(
-    join(repoRoot, "platform/connectors/db-pg/index.ts")
-  );
+  const { closeDb } = await import("../../core/src/db/pg/index.ts");
   initDatabase({ getDatabaseUrl: () => url });
 
   try {
@@ -182,8 +178,6 @@ async function main(): Promise<void> {
       console.log("no legacy tasks found in message history");
       return;
     }
-
-    registerEntityTaskModule({ entityStore: pgEntityStore, entitySearch: pgEntitySearchStore });
 
     const existing = await listTaskItems({ status: "all", limit: 5000 });
     const migrated = new Set(

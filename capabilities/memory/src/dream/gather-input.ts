@@ -1,12 +1,15 @@
 import { randomInt } from "node:crypto";
 
 import type { DreamEpisodicSnippet } from "@freeanima/core/db/schema";
-import type { LimbicMemoryRow, ConversationStorePort } from "@freeanima/core/repos";
+import type { LimbicMemoryRow } from "@freeanima/core/repos";
 import { CST_OFFSET_MS } from "@freeanima/core/util";
+import {
+  listConversationIdsUpdatedBetween,
+  listMessages,
+} from "@freeanima/core/db/pg/conversation";
+import { listLimbicMemoryByCreatedBetween } from "@freeanima/core/db/pg/limbic-memory";
 
 import { filterRecallableMessages } from "../message-filter.ts";
-import { getLimbicMemoryStore } from "../limbic-port.ts";
-import { getMemoryConversationStore } from "../conversation-port.ts";
 import { cstDayRange, type LightSleepDayRange } from "../light-sleep/build-messages.ts";
 
 export const DREAM_MIN_INTENSITY = 0.5;
@@ -52,20 +55,10 @@ function shuffleInPlace<T>(items: T[]): void {
   }
 }
 
-function sampleEpisodicSnippets(
-  conversationStore: ConversationStorePort,
-  conversationIds: string[],
-): Promise<DreamEpisodicSnippet[]> {
-  return sampleEpisodicSnippetsAsync(conversationStore, conversationIds);
-}
-
-async function sampleEpisodicSnippetsAsync(
-  conversationStore: ConversationStorePort,
-  conversationIds: string[],
-): Promise<DreamEpisodicSnippet[]> {
+async function sampleEpisodicSnippets(conversationIds: string[]): Promise<DreamEpisodicSnippet[]> {
   const pool: DreamEpisodicSnippet[] = [];
   for (const conversationId of conversationIds) {
-    const messages = filterRecallableMessages(await conversationStore.listMessages(conversationId));
+    const messages = filterRecallableMessages(await listMessages(conversationId));
     for (const msg of messages) {
       pool.push({
         conversation_id: conversationId,
@@ -119,19 +112,14 @@ async function sampleEpisodicSnippetsAsync(
 
 export type GatherDreamInputOpts = {
   day?: string;
-  conversationStore?: ConversationStorePort;
 };
 
 /** Collect dream inputs for a CST calendar day (after light sleep limbic writes). */
 export async function gatherDreamInput(opts?: GatherDreamInputOpts): Promise<DreamGatherInput> {
-  const conversationStore = opts?.conversationStore ?? getMemoryConversationStore();
   const range = cstDayRange(opts?.day);
   const limbicRange = limbicCreatedRange(range);
-  const conversationIds = await conversationStore.listConversationIdsUpdatedBetween(
-    range.fromIso,
-    range.toIso,
-  );
-  const limbicMemories = await getLimbicMemoryStore().listByCreatedBetween(
+  const conversationIds = await listConversationIdsUpdatedBetween(range.fromIso, range.toIso);
+  const limbicMemories = await listLimbicMemoryByCreatedBetween(
     limbicRange.fromIso,
     limbicRange.toIso,
     {
@@ -141,7 +129,7 @@ export async function gatherDreamInput(opts?: GatherDreamInputOpts): Promise<Dre
     },
   );
   const episodicSnippets = conversationIds.length
-    ? await sampleEpisodicSnippets(conversationStore, conversationIds)
+    ? await sampleEpisodicSnippets(conversationIds)
     : [];
 
   return {

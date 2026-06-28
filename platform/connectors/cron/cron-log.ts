@@ -1,15 +1,6 @@
-import type { CronLogAppendInput, CronLogStorePort } from "@freeanima/core/repos";
+import type { CronLogAppendInput } from "@freeanima/core/db/pg/cron";
+import { appendCronLog } from "@freeanima/core/db/pg/cron";
 import { formatCstIso } from "@freeanima/core/util";
-
-let logStore: CronLogStorePort | null = null;
-
-export function setCronLogStore(store: CronLogStorePort | null): void {
-  logStore = store;
-}
-
-export function getCronLogStore(): CronLogStorePort | null {
-  return logStore;
-}
 
 const ERROR_MAX = 2000;
 const OUTPUT_TEXT_MAX = 10_000;
@@ -33,8 +24,6 @@ export async function appendCronRunLog(input: {
   outputText: string;
   error?: string;
 }): Promise<void> {
-  if (!logStore) return;
-
   const row: CronLogAppendInput = {
     job_id: input.job_id,
     run_count: input.run_count,
@@ -54,5 +43,5 @@ export async function appendCronRunLog(input: {
     if (err) row.error = err.slice(0, ERROR_MAX);
   }
 
-  await logStore.append(row);
+  await appendCronLog(row);
 }

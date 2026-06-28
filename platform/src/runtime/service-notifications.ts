@@ -5,6 +5,12 @@ import type {
   NotificationRow,
 } from "@freeanima/core/repos";
 import { DEFAULT_NOTIFICATION_RECIPIENT_ID } from "@freeanima/core/repos";
+import {
+  countNotifications,
+  createNotification as createPgNotification,
+  listNotifications as listPgNotifications,
+  markNotificationRead as markPgNotificationRead,
+} from "@freeanima/core/db/pg/notifications";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 export type NotificationListResult = {
@@ -26,7 +32,7 @@ function resolveRecipientId(recipientId?: string): string {
 }
 
 export async function listNotifications(
-  deps: RuntimeDeps,
+  _deps: RuntimeDeps,
   args: {
     recipient_kind: NotificationRecipientKind;
     recipient_id?: string;
@@ -42,24 +48,24 @@ export async function listNotifications(
     read_filter: args.read_filter ?? "all",
   };
   const [items, total] = await Promise.all([
-    deps.engine.repos.notifications.list({ ...filterOpts, offset, limit }),
-    deps.engine.repos.notifications.count(filterOpts),
+    listPgNotifications({ ...filterOpts, offset, limit }),
+    countNotifications(filterOpts),
   ]);
   return { items, total, offset, limit };
 }
 
 export async function markNotificationRead(
-  deps: RuntimeDeps,
+  _deps: RuntimeDeps,
   id: string,
 ): Promise<NotificationRow | null> {
-  return deps.engine.repos.notifications.markRead(id.trim());
+  return markPgNotificationRead(id.trim());
 }
 
 export async function createNotification(
-  deps: RuntimeDeps,
+  _deps: RuntimeDeps,
   input: NotificationCreateInput,
 ): Promise<NotificationRow> {
-  return deps.engine.repos.notifications.create({
+  return createPgNotification({
     ...input,
     recipient_id: resolveRecipientId(input.recipient_id),
   });

@@ -10,6 +10,11 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { getAppRuntime } from "@freeanima/platform";
 import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
+import { createAutobiographicalMemory } from "@freeanima/core/db/pg/autobiographical-memory";
+import { createLimbicMemory } from "@freeanima/core/db/pg/limbic-memory";
+import { createSemanticMemory, getSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
+import { upsertSelfBlock } from "@freeanima/core/db/pg/self-layer";
+import { countSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
 import { getTestEngine, getActivePgTestContext, seedSession } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 
@@ -28,7 +33,7 @@ describePg("server memory API", () => {
   });
 
   it("listMemoryFiles returns objects with name and content", async () => {
-    await getTestEngine().repos.semanticMemory.create({
+    await createSemanticMemory({
       id: "f-000001-abcd",
       content: "test semantic memory",
     });
@@ -42,7 +47,7 @@ describePg("server memory API", () => {
   });
 
   it("memorySearch returns structured semantic memory and PG dialogue hits", async () => {
-    await getTestEngine().repos.semanticMemory.create({
+    await createSemanticMemory({
       content: "Freeanima memory pipeline uses compression",
       type: "world",
     });
@@ -86,12 +91,12 @@ describePg("server memory API", () => {
   });
 
   it("countSemanticMemory returns semantic memory count", async () => {
-    await getTestEngine().repos.semanticMemory.create({
+    await createSemanticMemory({
       content: "semantic memory count probe gamma",
       type: "world",
     });
 
-    const { index_rows } = await getAppRuntime().countSemanticMemory();
+    const index_rows = await countSemanticMemory();
     expect(index_rows).toBeGreaterThan(0);
     const hits = await getAppRuntime().memorySearch({ query: "gamma" });
     expect(hits.results.some((r: { memory_type: string }) => r.memory_type === "semantic")).toBe(
@@ -100,11 +105,11 @@ describePg("server memory API", () => {
   });
 
   it("listSemanticMemories supports filter offset and total", async () => {
-    await getTestEngine().repos.semanticMemory.create({
+    await createSemanticMemory({
       content: "list probe alpha unique-token",
       type: "preference",
     });
-    await getTestEngine().repos.semanticMemory.create({
+    await createSemanticMemory({
       content: "list probe beta unique-token",
       type: "world",
     });
@@ -130,12 +135,11 @@ describePg("server memory API", () => {
   });
 
   it("listSemanticMemories supports sort_by and reference_count", async () => {
-    const { semanticMemory } = getTestEngine().repos;
-    const lowId = await semanticMemory.create({
+    const lowId = await createSemanticMemory({
       content: "sort probe low refs unique-sort-token",
       type: "world",
     });
-    const highId = await semanticMemory.create({
+    const highId = await createSemanticMemory({
       content: "sort probe high refs unique-sort-token",
       type: "world",
     });
@@ -181,12 +185,12 @@ describePg("server memory API", () => {
 
   it("listLimbicMemories supports conversation and kind filter", async () => {
     const sid = "20260526_130000_limbic";
-    await getTestEngine().repos.limbicMemory.create({
+    await createLimbicMemory({
       conversation_id: sid,
       kind: "spike",
       content: "limbic probe spike content",
     });
-    await getTestEngine().repos.limbicMemory.create({
+    await createLimbicMemory({
       conversation_id: sid,
       kind: "conversation_mood",
       content: "limbic probe mood content",
@@ -208,12 +212,12 @@ describePg("server memory API", () => {
   });
 
   it("listAutobiographicalMemories supports significance filter", async () => {
-    await getTestEngine().repos.autobiographicalMemory.create({
+    await createAutobiographicalMemory({
       title: "Milestone event",
       content: "autobiography list probe milestone",
       significance: "milestone",
     });
-    await getTestEngine().repos.autobiographicalMemory.create({
+    await createAutobiographicalMemory({
       title: "Daily record",
       content: "autobiography list probe normal",
       significance: "normal",
@@ -235,22 +239,22 @@ describePg("server memory API", () => {
   });
 
   it("updateSemanticMemoryPinned toggles pinned on active memory", async () => {
-    const id = await getTestEngine().repos.semanticMemory.create({
+    const id = await createSemanticMemory({
       content: "service pin toggle probe",
       type: "preference",
     });
 
     const pinned = await getAppRuntime().updateSemanticMemoryPinned(id, true);
     expect(pinned).toEqual({ ok: true, id, pinned: true });
-    expect((await getTestEngine().repos.semanticMemory.get(id))?.pinned).toBe(true);
+    expect((await getSemanticMemory(id))?.pinned).toBe(true);
 
     const unpinned = await getAppRuntime().updateSemanticMemoryPinned(id, false);
     expect(unpinned).toEqual({ ok: true, id, pinned: false });
-    expect((await getTestEngine().repos.semanticMemory.get(id))?.pinned).toBe(false);
+    expect((await getSemanticMemory(id))?.pinned).toBe(false);
   });
 
   it("listSelfBlocks returns six blocks in order", async () => {
-    await getTestEngine().repos.selfLayer.upsertBlock({
+    await upsertSelfBlock({
       block_key: "direction",
       content: "self layer list probe",
       updated_by: "test",

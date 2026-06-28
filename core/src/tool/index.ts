@@ -38,7 +38,6 @@ export {
   getToolContextKind,
   getToolContextId,
   getToolParentConversationId,
-  getToolRepos,
   getToolRegistry,
   grantExecutableTools,
   isExecutableTool,

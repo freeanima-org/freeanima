@@ -1,10 +1,8 @@
-import { describe, expect, test } from "bun:test";
-
-import { nullPgRepositories } from "@freeanima/core/repos";
+import { describe, expect, it } from "bun:test";
 import { beginTurnFast } from "./turn-runtime.ts";
 
-describe("turn-runtime", () => {
-  test("beginTurnFast appends user turn when PG unavailable uses in-memory path", async () => {
-    await expect(beginTurnFast(nullPgRepositories, "missing", "hello")).rejects.toThrow();
+describe("beginTurnFast", () => {
+  it("throws when conversation does not exist in PG", async () => {
+    await expect(beginTurnFast("missing-conversation-id", "hello")).rejects.toThrow();
   });
 });

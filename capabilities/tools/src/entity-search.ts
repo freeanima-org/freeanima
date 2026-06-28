@@ -4,7 +4,11 @@ import { formatFtsToolError, isFtsQueryError, validateFtsQueryInput } from "@fre
 import type { EntitySearchMode } from "@freeanima/core/repos";
 import type { EntityType } from "@freeanima/core/db/schema";
 
-import { getEntitySearchStore, resolveGlobalAccessibleWorldIds } from "./entity-search-port.ts";
+import {
+  searchEntities,
+  resolvePublicAccessibleWorldIds,
+  listEntities,
+} from "@freeanima/core/db/pg/entity";
 
 const FTS_SYNTAX =
   "PG search syntax (to_tsquery simple):\n" +
@@ -122,10 +126,12 @@ export function registerEntitySearchTools(toolSets: ToolSetRegistry): void {
 
               let accessible_world_ids = parseStringArray(args.accessible_world_ids)?.map(Number);
               if (global && !accessible_world_ids?.length) {
-                accessible_world_ids = await resolveGlobalAccessibleWorldIds();
+                accessible_world_ids = await resolvePublicAccessibleWorldIds({
+                  list: listEntities,
+                });
               }
 
-              const result = await getEntitySearchStore().search({
+              const result = await searchEntities({
                 query: query || undefined,
                 world_id: global ? undefined : world_id,
                 global,

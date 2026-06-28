@@ -1,4 +1,4 @@
-import type { CronJobRow } from "@freeanima/core/repos";
+import type { CronJobRow } from "@freeanima/core/db/pg/cron";
 import { safeParseOrNull } from "@freeanima/core/util";
 import { computeNextRunAt } from "./bun-schedule.ts";
 import { readOutputRef } from "./paths.ts";

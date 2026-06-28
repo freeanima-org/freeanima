@@ -1,4 +1,3 @@
-import type { PgRepositories } from "@freeanima/core/repos";
 import {
   isConversationMeta,
   parseConversationTodoStore,
@@ -7,6 +6,8 @@ import {
   type TodoItem,
   type TodoStatus,
 } from "@freeanima/core/db/domain";
+import { isPostgresPrimary } from "@freeanima/core/db/pg";
+import { getConversationMeta, patchConversationMeta } from "@freeanima/core/db/pg/conversation";
 import { formatCstIso } from "@freeanima/core/util";
 import { toolError, toolResult } from "./json-util.ts";
 
@@ -14,26 +15,22 @@ export type { TodoStatus, TodoItem, ConversationTodoStore };
 
 const VALID_STATUSES = new Set<TodoStatus>(todoStatusSchema.options);
 
-async function loadSessionTodos(
-  repos: PgRepositories,
-  conversationId: string,
-): Promise<ConversationTodoStore> {
-  if (!repos.pgAvailable) return parseConversationTodoStore(undefined);
-  const meta = await repos.conversation.getConversationMeta(conversationId);
+async function loadSessionTodos(conversationId: string): Promise<ConversationTodoStore> {
+  if (!isPostgresPrimary()) return parseConversationTodoStore(undefined);
+  const meta = await getConversationMeta(conversationId);
   return parseConversationTodoStore(meta && isConversationMeta(meta) ? meta.todos : undefined);
 }
 
 async function saveSessionTodos(
-  repos: PgRepositories,
   conversationId: string,
   store: ConversationTodoStore,
 ): Promise<void> {
-  if (!repos.pgAvailable) return;
-  await repos.conversation.patchConversationMeta(conversationId, { todos: store });
+  if (!isPostgresPrimary()) return;
+  await patchConversationMeta(conversationId, { todos: store });
 }
 
-async function listTodos(repos: PgRepositories, conversationId: string): Promise<string> {
-  const data = await loadSessionTodos(repos, conversationId);
+async function listTodos(conversationId: string): Promise<string> {
+  const data = await loadSessionTodos(conversationId);
   return toolResult({
     ok: true,
     todos: data.items,
@@ -41,13 +38,9 @@ async function listTodos(repos: PgRepositories, conversationId: string): Promise
   });
 }
 
-async function addTodo(
-  repos: PgRepositories,
-  conversationId: string,
-  content: string,
-): Promise<string> {
+async function addTodo(conversationId: string, content: string): Promise<string> {
   if (!content.trim()) return toolError("content is required");
-  const data = await loadSessionTodos(repos, conversationId);
+  const data = await loadSessionTodos(conversationId);
   const item: TodoItem = {
     id: data.next_id,
     content: content.trim(),
@@ -56,7 +49,7 @@ async function addTodo(
   };
   data.items.push(item);
   data.next_id += 1;
-  await saveSessionTodos(repos, conversationId, data);
+  await saveSessionTodos(conversationId, data);
   return toolResult({
     ok: true,
     action: "add",
@@ -65,21 +58,16 @@ async function addTodo(
   });
 }
 
-async function updateTodo(
-  repos: PgRepositories,
-  conversationId: string,
-  id: number,
-  status: TodoStatus,
-): Promise<string> {
+async function updateTodo(conversationId: string, id: number, status: TodoStatus): Promise<string> {
   if (!VALID_STATUSES.has(status)) {
     return toolError(`invalid status ${status}`);
   }
-  const data = await loadSessionTodos(repos, conversationId);
+  const data = await loadSessionTodos(conversationId);
   for (const item of data.items) {
     if (item.id === id) {
       item.status = status;
       item.updated_at = formatCstIso();
-      await saveSessionTodos(repos, conversationId, data);
+      await saveSessionTodos(conversationId, data);
       return toolResult({
         ok: true,
         action: "update",
@@ -92,41 +80,36 @@ async function updateTodo(
   return toolError(`todo #${id} not found`);
 }
 
-async function deleteTodo(
-  repos: PgRepositories,
-  conversationId: string,
-  id: number,
-): Promise<string> {
-  const data = await loadSessionTodos(repos, conversationId);
+async function deleteTodo(conversationId: string, id: number): Promise<string> {
+  const data = await loadSessionTodos(conversationId);
   const before = data.items.length;
   data.items = data.items.filter((item) => item.id !== id);
   if (data.items.length < before) {
-    await saveSessionTodos(repos, conversationId, data);
+    await saveSessionTodos(conversationId, data);
     return toolResult({ ok: true, action: "delete", id, message: `Deleted [#${id}]` });
   }
   return toolError(`todo #${id} not found`);
 }
 
 export async function handleConversationTodo(
-  repos: PgRepositories,
   conversationId: string,
   action: string,
   opts?: { content?: string; id?: number; status?: string },
 ): Promise<string> {
   switch (action) {
     case "list":
-      return listTodos(repos, conversationId);
+      return listTodos(conversationId);
     case "add":
-      return addTodo(repos, conversationId, opts?.content ?? "");
+      return addTodo(conversationId, opts?.content ?? "");
     case "update":
       if (opts?.id == null) return toolError("id is required");
       if (!opts.status || !VALID_STATUSES.has(opts.status as TodoStatus)) {
         return toolError("valid status is required");
       }
-      return updateTodo(repos, conversationId, opts.id, opts.status as TodoStatus);
+      return updateTodo(conversationId, opts.id, opts.status as TodoStatus);
     case "delete":
       if (opts?.id == null) return toolError("id is required");
-      return deleteTodo(repos, conversationId, opts.id);
+      return deleteTodo(conversationId, opts.id);
     default:
       return toolError(`unknown action ${action}`);
   }

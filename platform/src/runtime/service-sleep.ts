@@ -1,4 +1,7 @@
 import type { PipelineStepRunListOpts, PipelineStepRunRow } from "@freeanima/core/repos";
+import { isPostgresPrimary } from "@freeanima/core/db/pg";
+import { listPipelineStepRuns as listPgPipelineStepRuns } from "@freeanima/core/db/pg/pipeline";
+import { listCronLogs as listPgCronLogs } from "@freeanima/core/db/pg/cron";
 import {
   buildSleepSummary,
   listDeepSleepRoundLogs,
@@ -33,7 +36,7 @@ export async function getSleepSummary(): Promise<SleepSummary> {
 }
 
 export async function listPipelineStepRuns(
-  deps: RuntimeDeps,
+  _deps: RuntimeDeps,
   opts?: {
     step_id?: string;
     run_id?: string;
@@ -41,7 +44,7 @@ export async function listPipelineStepRuns(
     offset?: number;
   },
 ): Promise<{ items: PipelineStepRunRow[]; total: number }> {
-  if (!deps.engine.repos.pgAvailable) {
+  if (!isPostgresPrimary()) {
     return { items: [], total: 0 };
   }
 
@@ -52,7 +55,7 @@ export async function listPipelineStepRuns(
     limit: opts?.limit ?? 50,
     offset: opts?.offset ?? 0,
   };
-  const items = await deps.engine.repos.pipelineStepRun.list(listOpts);
+  const items = await listPgPipelineStepRuns(listOpts);
   return { items, total: items.length };
 }
 
@@ -140,7 +143,7 @@ export async function startSleepPipelineStep(
 }
 
 export async function listCronLogs(
-  deps: RuntimeDeps,
+  _deps: RuntimeDeps,
   opts?: {
     job_id?: string;
     limit?: number;
@@ -148,11 +151,11 @@ export async function listCronLogs(
     ok?: boolean;
   },
 ): Promise<{ items: import("@freeanima/core/repos").CronLogRow[]; total: number }> {
-  if (!deps.engine.repos.pgAvailable) {
+  if (!isPostgresPrimary()) {
     return { items: [], total: 0 };
   }
 
-  const items = await deps.engine.repos.cronLog.list({
+  const items = await listPgCronLogs({
     job_id: opts?.job_id,
     limit: opts?.limit ?? 50,
     offset: opts?.offset ?? 0,

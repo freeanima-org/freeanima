@@ -1,13 +1,9 @@
 import { CST_OFFSET_MS } from "@freeanima/core/util";
-import type {
-  LimbicMemoryRow,
-  SemanticMemoryRow,
-  ConversationStorePort,
-} from "@freeanima/core/repos";
-
+import type { LimbicMemoryRow, SemanticMemoryRow } from "@freeanima/core/repos";
+import { getConversationMetaLite, listMessages } from "@freeanima/core/db/pg/conversation";
+import { listLimbicMemoryBySession } from "@freeanima/core/db/pg/limbic-memory";
+import { listSemanticMemoryBySourceSessions } from "@freeanima/core/db/pg/semantic-memory";
 import { filterRecallableMessages } from "../message-filter.ts";
-import { getLimbicMemoryStore } from "../limbic-port.ts";
-import { getSemanticMemoryStore } from "../semantic-port.ts";
 
 export type LightSleepDayRange = {
   day: string;
@@ -59,14 +55,13 @@ function roleLabel(role: string): string {
 }
 
 export async function collectConversationBlocks(
-  conversationStore: ConversationStorePort,
   conversationIds: string[],
 ): Promise<LightSleepConversationBlock[]> {
   const blocks: LightSleepConversationBlock[] = [];
   for (const conversationId of conversationIds) {
-    const meta = await conversationStore.getConversationMetaLite(conversationId);
+    const meta = await getConversationMetaLite(conversationId);
     if (!meta || meta.role !== "conversation_meta") continue;
-    const messages = filterRecallableMessages(await conversationStore.listMessages(conversationId));
+    const messages = filterRecallableMessages(await listMessages(conversationId));
     if (!messages.length) continue;
 
     const lines = [`## Conversation ${conversationId}`];
@@ -190,10 +185,9 @@ Call the tool directly; no JSON summary output needed.`;
 export async function collectLimbicMemoriesForSessions(
   conversationIds: string[],
 ): Promise<LimbicMemoryRow[]> {
-  const store = getLimbicMemoryStore();
   const byId = new Map<string, LimbicMemoryRow>();
   for (const conversationId of conversationIds) {
-    const rows = await store.listByConversation(conversationId);
+    const rows = await listLimbicMemoryBySession(conversationId);
     for (const row of rows) {
       byId.set(row.id, row);
     }
@@ -218,23 +212,17 @@ export function formatLimbicMemoriesMessage(rows: LimbicMemoryRow[]): string {
   return lines.join("\n").trim();
 }
 
-export async function buildLightSleepUserMessages(
-  conversationStore: ConversationStorePort,
-  conversationIds: string[],
-): Promise<string[]> {
-  const blocks = await collectConversationBlocks(conversationStore, conversationIds);
+export async function buildLightSleepUserMessages(conversationIds: string[]): Promise<string[]> {
+  const blocks = await collectConversationBlocks(conversationIds);
   const dialogue = formatDialogueMessage(blocks);
-  const related = await getSemanticMemoryStore().listBySourceConversations(conversationIds, {
+  const related = await listSemanticMemoryBySourceSessions(conversationIds, {
     status: "active",
   });
   return [dialogue.text, formatExistingMemoriesMessage(related), LIGHT_SLEEP_INSTRUCTION_MESSAGE];
 }
 
-export async function buildLimbicUserMessages(
-  conversationStore: ConversationStorePort,
-  conversationIds: string[],
-): Promise<string[]> {
-  const blocks = await collectConversationBlocks(conversationStore, conversationIds);
+export async function buildLimbicUserMessages(conversationIds: string[]): Promise<string[]> {
+  const blocks = await collectConversationBlocks(conversationIds);
   const dialogue = formatDialogueMessage(blocks);
   const related = await collectLimbicMemoriesForSessions(conversationIds);
   return [dialogue.text, formatLimbicMemoriesMessage(related), LIMBIC_INSTRUCTION];

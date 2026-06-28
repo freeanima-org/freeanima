@@ -1,8 +1,11 @@
 import type { ToolDef } from "@freeanima/core/tool";
 import { toolError, toolResult } from "@freeanima/core/tool";
 import type { LimbicKind, LimbicMemoryRow } from "@freeanima/core/repos";
-
-import { getLimbicMemoryStore } from "./limbic-port.ts";
+import {
+  getLimbicMemory,
+  listLimbicMemory,
+  listLimbicMemoryBySession,
+} from "@freeanima/core/db/pg/limbic-memory";
 
 const LIMBIC_KINDS = ["conversation_mood", "turning_point", "spike"] as const;
 
@@ -157,7 +160,7 @@ export const limbicSearchToolDefs: ToolDef[] = [
 
       try {
         // Use the store's list method for query/conversation_id/kind filtering
-        let rows = await getLimbicMemoryStore().list({
+        let rows = await listLimbicMemory({
           query,
           conversation_id: conversationId,
           kind,
@@ -218,7 +221,7 @@ export const limbicSearchToolDefs: ToolDef[] = [
       if (!id) return toolError("id is required");
 
       try {
-        const row = await getLimbicMemoryStore().get(id);
+        const row = await getLimbicMemory(id);
         if (!row) return toolError(`limbic memory not found: ${id}`);
 
         return toolResult({
@@ -262,7 +265,7 @@ export const limbicSearchToolDefs: ToolDef[] = [
       const limit = Math.max(1, Math.min(100, args.limit !== undefined ? Number(args.limit) : 20));
 
       try {
-        const rows = await getLimbicMemoryStore().listByConversation(conversationId, { limit });
+        const rows = await listLimbicMemoryBySession(conversationId, { limit });
         const hits = rows.map((r) => ({
           limbic_memory_id: r.id,
           kind: r.kind,

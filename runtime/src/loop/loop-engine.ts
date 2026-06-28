@@ -18,11 +18,9 @@ import * as llm from "@freeanima/core/llm";
 import type { LlmRuntime } from "@freeanima/core/llm";
 import { cleanToolCallsForApi } from "@freeanima/core/llm";
 import { markToolLoopActivity, maybeApplyEmergencyCompression } from "@freeanima/core/compress";
-import type { PgRepositories } from "@freeanima/core/repos";
 import {
   getToolRegistry,
   getToolConversationId,
-  getToolRepos,
   isExecutableTool,
   type ToolSetRegistry,
 } from "@freeanima/core/tool";
@@ -53,8 +51,6 @@ type EngineOpts = {
   tools?: OpenAiToolSchema[];
   /** Injected tool registry; falls back to getToolRegistry() when omitted */
   toolRegistry?: ToolSetRegistry;
-  /** Injected PG repos for compression; falls back to getToolRepos() when omitted */
-  toolRepos?: PgRepositories;
   /** Tool names allowed by capability mask (ResolvedMask.allowed_tools); no fallback block when unset */
   toolMask?: { allowedTools: readonly string[] };
   /** Executable tool names (cached + staged toolsets); no loaded gate when unset */
@@ -71,10 +67,6 @@ export type RuntimeToolMask = NonNullable<EngineOpts["toolMask"]>;
 
 function resolveToolRegistry(opts?: Pick<EngineOpts, "toolRegistry">): ToolSetRegistry {
   return opts?.toolRegistry ?? getToolRegistry();
-}
-
-function resolveToolRepos(opts?: Pick<EngineOpts, "toolRepos">): PgRepositories | undefined {
-  return opts?.toolRepos ?? getToolRepos();
 }
 
 function withReasoning(
@@ -174,10 +166,7 @@ async function persistToolRound(
 async function afterRuntimeMessage(
   messages: StoredMessage[],
   msg: StoredMessage,
-  opts?: Pick<
-    EngineOpts,
-    "model" | "tools" | "toolRepos" | "onMessageAppended" | "onToolRoundComplete"
-  >,
+  opts?: Pick<EngineOpts, "model" | "tools" | "onMessageAppended" | "onToolRoundComplete">,
 ): Promise<void> {
   await persistMessages([msg], opts);
   const conversationId = getToolConversationId();
@@ -191,17 +180,14 @@ async function afterRuntimeMessage(
   const model = opts?.model;
   const tools = opts?.tools;
   if (model && tools) {
-    const repos = resolveToolRepos(opts);
-    if (repos) {
-      await maybeApplyEmergencyCompression(repos, conversationId, messages, { model, tools });
-    }
+    await maybeApplyEmergencyCompression(conversationId, messages, { model, tools });
   }
 }
 
 async function afterToolRoundBatch(
   messages: StoredMessage[],
   batch: StoredMessage[],
-  opts?: Pick<EngineOpts, "model" | "tools" | "toolRepos">,
+  opts?: Pick<EngineOpts, "model" | "tools">,
 ): Promise<void> {
   const conversationId = getToolConversationId();
   if (!conversationId) return;
@@ -211,10 +197,7 @@ async function afterToolRoundBatch(
   const model = opts?.model;
   const tools = opts?.tools;
   if (model && tools) {
-    const repos = resolveToolRepos(opts);
-    if (repos) {
-      await maybeApplyEmergencyCompression(repos, conversationId, messages, { model, tools });
-    }
+    await maybeApplyEmergencyCompression(conversationId, messages, { model, tools });
   }
 }
 

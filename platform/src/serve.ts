@@ -87,19 +87,18 @@ export async function serve(
     const runConfig = BOOT_PHASES.find((p) => p.id === "config")!.run;
     const runPersistence = BOOT_PHASES.find((p) => p.id === "persistence")!.run;
     const { config } = await runConfig();
-    const { repos } = await runPersistence(config);
+    await runPersistence(config);
 
     const acpSessionUpdatedRef: { handler: ((sid: string) => void) | null } = { handler: null };
     const runtimeRef: { current: AppRuntime | null } = { current: null };
 
-    enginePhase = bootEnginePhase(config, repos, (sid) => {
+    enginePhase = bootEnginePhase(config, (sid) => {
       acpSessionUpdatedRef.handler?.(sid);
       runtimeRef.current?.pokeSessionWatchers(sid);
     });
 
     const { runtime } = await bootRuntimePhase(
       enginePhase,
-      repos,
       statusHost,
       port,
       runtimeRef,

@@ -1,4 +1,12 @@
-import { getToolRepos } from "@freeanima/core/tool";
+import { isPostgresPrimary } from "@freeanima/core/db/pg";
+import {
+  conversationExists,
+  countMessages,
+  findMessagePos,
+  listMessageRowsFromPos,
+  listMessageRowsPage,
+  searchMessagesFts,
+} from "@freeanima/core/db/pg/conversation";
 import {
   attachToolReturns,
   toolError,
@@ -24,14 +32,6 @@ function asInt(value: unknown, defaultVal: number, min: number, max: number): nu
   const n = Number(value);
   if (!Number.isFinite(n)) return defaultVal;
   return Math.max(min, Math.min(max, Math.trunc(n)));
-}
-
-function requireConversationStore():
-  | { ok: true; store: NonNullable<ReturnType<typeof getToolRepos>>["conversation"] }
-  | { ok: false; error: string } {
-  const repos = getToolRepos();
-  if (!repos) return { ok: false, error: "No repos context" };
-  return { ok: true, store: repos.conversation };
 }
 
 export function registerConversationTools(toolSets: ToolSetRegistry): void {
@@ -64,8 +64,7 @@ export function registerConversationTools(toolSets: ToolSetRegistry): void {
             required: ["query"],
           },
           handler: async (args) => {
-            const ctx = requireConversationStore();
-            if (!ctx.ok) return toolError(ctx.error);
+            if (!isPostgresPrimary()) return toolError("PostgreSQL not configured");
 
             const query = String(args.query ?? "").trim();
             if (!query) return toolError("query is required");
@@ -73,7 +72,10 @@ export function registerConversationTools(toolSets: ToolSetRegistry): void {
             const limit = asInt(args.limit, 10, 1, 50);
             const conversationId = String(args.session ?? "").trim() || undefined;
             try {
-              const rows = await ctx.store.searchMessagesFts(query, { conversationId, limit });
+              const rows = await searchMessagesFts(query, {
+                conversation_id: conversationId,
+                limit,
+              });
               const hits = rows.map((r) => formatStoredMessageSearchHit(query, r));
 
               return toolResult({
@@ -112,29 +114,28 @@ export function registerConversationTools(toolSets: ToolSetRegistry): void {
             required: ["conversation_id"],
           },
           handler: async (args) => {
-            const ctx = requireConversationStore();
-            if (!ctx.ok) return toolError(ctx.error);
+            if (!isPostgresPrimary()) return toolError("PostgreSQL not configured");
 
             const conversationId = String(args.conversation_id ?? "").trim();
             if (!conversationId) return toolError("conversation_id is required");
-            if (!(await ctx.store.conversationExists(conversationId))) {
+            if (!(await conversationExists(conversationId))) {
               return toolError(`session not found: ${conversationId}`);
             }
 
             const limit = asInt(args.limit, 20, 1, 100);
             const messageId = String(args.message_id ?? "").trim();
-            const total = await ctx.store.countMessages(conversationId);
+            const total = await countMessages(conversationId);
 
             let messages;
             let offset: number;
             if (messageId) {
-              const pos = await ctx.store.findMessagePos(conversationId, messageId);
+              const pos = await findMessagePos(conversationId, messageId);
               if (pos == null) return toolError(`message not found: ${messageId}`);
-              messages = await ctx.store.listMessageRowsFromPos(conversationId, pos, limit);
+              messages = await listMessageRowsFromPos(conversationId, pos, limit);
               offset = Math.max(0, pos - 1);
             } else {
               offset = asInt(args.offset, 0, 0, Number.MAX_SAFE_INTEGER);
-              messages = await ctx.store.listMessageRowsPage(conversationId, offset, limit);
+              messages = await listMessageRowsPage(conversationId, offset, limit);
             }
 
             return toolResult({

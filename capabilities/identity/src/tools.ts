@@ -3,10 +3,10 @@ import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
 import { SELF_TOOL_RETURNS } from "./return-schemas.ts";
 import type { SelfBlockKey } from "@freeanima/core/repos";
 import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
+import { getSelfBlock, updateSelfBlock, upsertSelfBlock } from "@freeanima/core/db/pg/self-layer";
 
 import { invalidateSelfLayerPromptCache } from "./cache.ts";
 import { loadSelfBlocks, loadSelfLayerPrompt } from "./load.ts";
-import { getSelfLayerStore } from "./port.ts";
 
 function parseBlockKey(raw: unknown): SelfBlockKey | null {
   const key = String(raw ?? "").trim() as SelfBlockKey;
@@ -66,15 +66,14 @@ export function registerSelfTools(toolSets: ToolSetRegistry): void {
             const force = args.force !== undefined ? Boolean(args.force) : false;
 
             try {
-              const store = getSelfLayerStore();
-              const existing = await store.getBlock(blockKey);
+              const existing = await getSelfBlock(blockKey);
               if (existing) {
-                await store.updateBlock(
+                await updateSelfBlock(
                   { block_key: blockKey, content, updated_by: "tool" },
                   { force },
                 );
               } else {
-                await store.upsertBlock({
+                await upsertSelfBlock({
                   block_key: blockKey,
                   content,
                   locked: blockKey === "existence_anchor",

@@ -7,7 +7,6 @@ export {
   type SemanticMemoryUpdatedPayload,
   type TestPingPayload,
 } from "./events.ts";
-export { registerMemoryPipeline, type MemoryPipelineStores } from "./pipeline.ts";
 export {
   formatMemoryReferenceMarker,
   formatResidentMemoryLine,
@@ -17,26 +16,6 @@ export {
   memoryReferenceWeight,
 } from "./memory-reference.ts";
 export { syncSemanticMemoryReferenceCounts } from "./reference-sync.ts";
-export {
-  registerMemoryConversationStore,
-  getMemoryConversationStore,
-  resetMemoryConversationStoreForTests,
-} from "./conversation-port.ts";
-export {
-  registerSemanticMemoryStore,
-  getSemanticMemoryStore,
-  resetSemanticMemoryStoreForTests,
-} from "./semantic-port.ts";
-export {
-  registerAutobiographicalMemoryStore,
-  getAutobiographicalMemoryStore,
-  resetAutobiographicalMemoryStoreForTests,
-} from "./autobiographical-port.ts";
-export {
-  registerLimbicMemoryStore,
-  getLimbicMemoryStore,
-  resetLimbicMemoryStoreForTests,
-} from "./limbic-port.ts";
 export { filterRecallableMessages, type RecallableMessage } from "./message-filter.ts";
 export {
   search,
@@ -120,11 +99,6 @@ export {
   SLEEP_CYCLE_JOB_ID,
   type SleepSummary,
 } from "./sleep-records.ts";
-export {
-  registerDreamMemoryStore,
-  getDreamMemoryStore,
-  resetDreamMemoryStoreForTests,
-} from "./dream-port.ts";
 export {
   registerDreamFridge,
   getDreamFridge,

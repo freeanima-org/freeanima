@@ -1,10 +1,13 @@
 import { EMAIL_MESSAGE_COMPONENT, asEmailMessage } from "@freeanima/core/db/schema/entity";
 
 import {
-  defaultEmailWorldId,
-  getEntitySearchForEmail,
-  getEntityStoreForEmail,
-} from "./entity-port.ts";
+  createEntity,
+  deleteEntity,
+  getEntity,
+  searchEntities,
+  updateEntity,
+} from "@freeanima/core/db/pg/entity";
+import { defaultEmailWorldId } from "./account-store.ts";
 import { refreshThreadAggregates } from "./thread-store.ts";
 import type { EmailMessageListOpts, EmailMessageRow, EmailMessageUpsertInput } from "./types.ts";
 
@@ -53,8 +56,7 @@ export async function findEmailMessageByImapUid(
   imapUid: number,
   mailbox = "INBOX",
 ): Promise<EmailMessageRow | null> {
-  const search = getEntitySearchForEmail();
-  const result = await search.search({
+  const result = await searchEntities({
     world_id: defaultEmailWorldId(),
     primary_component: EMAIL_MESSAGE_COMPONENT,
     filters: { account_id: accountId },
@@ -71,7 +73,6 @@ export async function findEmailMessageByImapUid(
 }
 
 export async function upsertEmailMessage(input: EmailMessageUpsertInput): Promise<EmailMessageRow> {
-  const store = getEntityStoreForEmail();
   const mailbox = input.imap_mailbox ?? "INBOX";
   const existing =
     input.imap_uid != null
@@ -95,7 +96,7 @@ export async function upsertEmailMessage(input: EmailMessageUpsertInput): Promis
   };
 
   if (existing) {
-    const row = await store.update({
+    const row = await updateEntity({
       id: existing.id,
       title: input.subject,
       summary: input.preview,
@@ -109,7 +110,7 @@ export async function upsertEmailMessage(input: EmailMessageUpsertInput): Promis
     return toMessageRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
   }
 
-  const row = await store.create({
+  const row = await createEntity({
     type: "content",
     world_id: defaultEmailWorldId(),
     components: [EMAIL_MESSAGE_COMPONENT],
@@ -126,8 +127,7 @@ export async function upsertEmailMessage(input: EmailMessageUpsertInput): Promis
 }
 
 export async function getEmailMessageRow(id: number): Promise<EmailMessageRow | null> {
-  const store = getEntityStoreForEmail();
-  const row = await store.get(id);
+  const row = await getEntity(id);
   if (!row) return null;
   const parsed = asEmailMessage(row);
   if (!parsed) return null;
@@ -137,7 +137,6 @@ export async function getEmailMessageRow(id: number): Promise<EmailMessageRow | 
 export async function listEmailMessages(
   opts: EmailMessageListOpts = {},
 ): Promise<EmailMessageRow[]> {
-  const search = getEntitySearchForEmail();
   const filters: Record<string, unknown> = {};
   if (opts.account_id != null) filters.account_id = opts.account_id;
   if (opts.thread_id != null) filters.thread_id = opts.thread_id;
@@ -147,7 +146,7 @@ export async function listEmailMessages(
   if (opts.since) filters.since = opts.since;
   if (opts.before) filters.before = opts.before;
 
-  const result = await search.search({
+  const result = await searchEntities({
     world_id: defaultEmailWorldId(),
     primary_component: EMAIL_MESSAGE_COMPONENT,
     filters: Object.keys(filters).length > 0 ? filters : undefined,
@@ -171,12 +170,11 @@ export async function markEmailMessageRead(
   id: number,
   unread = false,
 ): Promise<EmailMessageRow | null> {
-  const store = getEntityStoreForEmail();
-  const row = await store.get(id);
+  const row = await getEntity(id);
   if (!row) return null;
   const parsed = asEmailMessage(row);
   if (!parsed) return null;
-  const updated = await store.update({ id, body: { ...parsed, unread } });
+  const updated = await updateEntity({ id, body: { ...parsed, unread } });
   if (!updated) return null;
   const next = asEmailMessage(updated);
   if (!next) return null;
@@ -185,20 +183,18 @@ export async function markEmailMessageRead(
 }
 
 export async function deleteEmailMessageRow(id: number): Promise<boolean> {
-  const store = getEntityStoreForEmail();
   const existing = await getEmailMessageRow(id);
-  const ok = await store.delete(id);
+  const ok = await deleteEntity(id);
   if (ok && existing) await refreshThreadAggregates(existing.thread_id);
   return ok;
 }
 
 export async function tagEmailMessage(id: number, tags: string[]): Promise<EmailMessageRow | null> {
-  const store = getEntityStoreForEmail();
-  const row = await store.get(id);
+  const row = await getEntity(id);
   if (!row) return null;
   const parsed = asEmailMessage(row);
   if (!parsed) return null;
-  const updated = await store.update({ id, body: { ...parsed, tags: normalizeTags(tags) } });
+  const updated = await updateEntity({ id, body: { ...parsed, tags: normalizeTags(tags) } });
   if (!updated) return null;
   const next = asEmailMessage(updated);
   if (!next) return null;
@@ -212,13 +208,12 @@ export async function searchEmailMessages(input: {
   unread?: boolean;
   limit?: number;
 }): Promise<EmailMessageRow[]> {
-  const search = getEntitySearchForEmail();
   const filters: Record<string, unknown> = {};
   if (input.account_id != null) filters.account_id = input.account_id;
   if (input.thread_id != null) filters.thread_id = input.thread_id;
   if (input.unread != null) filters.unread = input.unread;
 
-  const result = await search.search({
+  const result = await searchEntities({
     world_id: defaultEmailWorldId(),
     primary_component: EMAIL_MESSAGE_COMPONENT,
     query: input.query,

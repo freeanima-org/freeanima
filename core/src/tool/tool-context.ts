@@ -1,5 +1,4 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import type { PgRepositories } from "@freeanima/core/repos";
 import type { ToolSetRegistry } from "./toolset.ts";
 
 export type ToolContextKind = "conversation" | "auto_llm";
@@ -8,7 +7,6 @@ type ToolContextStore = {
   contextId: string;
   contextKind: ToolContextKind;
   parentConversationId?: string;
-  repos?: PgRepositories;
   tools: ToolSetRegistry;
   /** Mutable execution allowlist; no loaded gate when unset */
   executableTools?: Set<string>;
@@ -40,7 +38,6 @@ async function* bindToolContext<T>(
 
 export type RunWithToolContextOpts = {
   tools: ToolSetRegistry;
-  repos?: PgRepositories;
   executableTools?: readonly string[];
   contextKind?: ToolContextKind;
   parentConversationId?: string;
@@ -55,7 +52,6 @@ export function runWithToolContext<T>(
     contextId,
     contextKind: opts.contextKind ?? "conversation",
     parentConversationId: opts.parentConversationId,
-    repos: opts.repos,
     tools: opts.tools,
     executableTools: opts.executableTools ? new Set(opts.executableTools) : undefined,
   };
@@ -83,10 +79,6 @@ export function getToolContextId(): string | undefined {
 
 export function getToolParentConversationId(): string | undefined {
   return storage.getStore()?.parentConversationId;
-}
-
-export function getToolRepos(): PgRepositories | undefined {
-  return storage.getStore()?.repos;
 }
 
 export function getToolRegistry(): ToolSetRegistry {

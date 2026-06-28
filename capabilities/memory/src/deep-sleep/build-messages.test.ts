@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from "bun:test";
-import type { SemanticMemoryRow, SemanticMemoryStorePort } from "@freeanima/core/repos";
+import { afterEach, describe, expect, it, mock } from "bun:test";
+import type { SemanticMemoryRow } from "@freeanima/core/repos";
 
 import {
   fetchAllActiveMemories,
@@ -10,7 +10,12 @@ import {
   hasRecentMemoryUpdates,
   isMemoryUpdatedSince,
 } from "./build-messages.ts";
-import { registerSemanticMemoryStore, resetSemanticMemoryStoreForTests } from "../semantic-port.ts";
+
+const listActiveSemanticMemoryMock = mock(async () => [] as SemanticMemoryRow[]);
+
+mock.module("@freeanima/core/db/pg/semantic-memory", () => ({
+  listActiveSemanticMemory: listActiveSemanticMemoryMock,
+}));
 
 function makeRow(
   id: string,
@@ -37,54 +42,9 @@ function makeRow(
   };
 }
 
-function createMockStore(rows: SemanticMemoryRow[]): SemanticMemoryStorePort {
-  return {
-    async create() {
-      return "new";
-    },
-    async get() {
-      return null;
-    },
-    async update() {},
-    async deprecate() {
-      return false;
-    },
-    async delete() {
-      return false;
-    },
-    async count() {
-      return rows.filter((r) => r.status === "active").length;
-    },
-    async listResident() {
-      return rows.filter((r) => r.status === "active");
-    },
-    async listAll() {
-      return rows;
-    },
-    async listActive() {
-      return rows.filter((r) => r.status === "active");
-    },
-    async listBySourceConversations() {
-      return [];
-    },
-    async searchFts() {
-      return [];
-    },
-    async search() {
-      return [];
-    },
-    async countSearch() {
-      return 0;
-    },
-    async findByContent() {
-      return null;
-    },
-  };
-}
-
 describe("deep sleep build-messages", () => {
   afterEach(() => {
-    resetSemanticMemoryStoreForTests();
+    listActiveSemanticMemoryMock.mockClear();
   });
 
   it("formatAllMemoriesMessage reports active row count in heading", () => {
@@ -95,7 +55,9 @@ describe("deep sleep build-messages", () => {
 
   it("fetchAllActiveMemories uses listActive and excludes deprecated rows", async () => {
     const rows = [makeRow("a-1", "active"), makeRow("a-2", "active"), makeRow("d-1", "deprecated")];
-    registerSemanticMemoryStore(createMockStore(rows));
+    listActiveSemanticMemoryMock.mockImplementation(async () =>
+      rows.filter((r) => r.status === "active"),
+    );
 
     const result = await fetchAllActiveMemories();
     expect(result).toHaveLength(2);

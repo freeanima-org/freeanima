@@ -5,7 +5,7 @@ import {
   registerEmbedTextFn,
   resetEmbedTextFnForTest,
   resetPendingEmbeddingsForTest,
-} from "@freeanima/platform/connectors/db-pg";
+} from "@freeanima/core/db/pg";
 import { SEMANTIC_EMBEDDING_DIMENSIONS } from "@freeanima/core/db/schema";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
@@ -13,7 +13,10 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { getTestEngine } from "../../helpers/pg-test.ts";
+import {
+  createSemanticMemory,
+  searchSemanticMemoryFts,
+} from "@freeanima/core/db/pg/semantic-memory";
 
 function fixedEmbedding(value = 0.25): number[] {
   return Array.from({ length: SEMANTIC_EMBEDDING_DIMENSIONS }, () => value);
@@ -34,9 +37,7 @@ describePg("recall vector PG", () => {
   });
 
   it("vector path: recall when embeddings align (no literal FTS match)", async () => {
-    const store = getTestEngine().repos.semanticMemory;
-
-    const targetId = await store.create({
+    const targetId = await createSemanticMemory({
       content: "Memory consolidation relies on sleep mechanisms running in the background",
       type: "world",
     });
@@ -44,7 +45,7 @@ describePg("recall vector PG", () => {
     await awaitPendingEmbeddingsForTest();
     await rebuildAllFtsSegments();
 
-    const hits = await store.searchFts("sleep mechanism", { limit: 5 });
+    const hits = await searchSemanticMemoryFts("sleep mechanism", { limit: 5 });
     expect(hits.some((h) => h.id === targetId)).toBe(true);
   });
 

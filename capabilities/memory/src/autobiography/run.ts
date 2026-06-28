@@ -1,13 +1,13 @@
+import { logCapability as logComponent } from "@freeanima/core/config";
 import type {
   AutobiographicalMemoryRow,
-  AutobiographicalMemoryStorePort,
   AutobiographicalSignificance,
-  SelfLayerStorePort,
-  SemanticMemoryStorePort,
 } from "@freeanima/core/repos";
 import { autobiographicalSignificanceSchema } from "@freeanima/core/db/schema";
-import { logCapability as logComponent } from "@freeanima/core/config";
 import { formatCstIso } from "@freeanima/core/util";
+import { listActiveAutobiographicalMemory } from "@freeanima/core/db/pg/autobiographical-memory";
+import { searchSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
+import { updateSelfBlock } from "@freeanima/core/db/pg/self-layer";
 
 import { composeSystemPrompt, decomposeSystemPromptParts } from "../system-prompt.ts";
 import { runAutobiographyEngine } from "../autobiography-port.ts";
@@ -21,9 +21,6 @@ const AUTOBIOGRAPHY_TOOL_NAMES = [
 const LOOKBACK_DAYS = 7;
 
 export type RunSelfAutobiographyOpts = {
-  semanticStore: SemanticMemoryStorePort;
-  autoStore: AutobiographicalMemoryStorePort;
-  selfStore: SelfLayerStorePort;
   selfContent: string;
   sinceIso?: string;
 };
@@ -42,11 +39,8 @@ function daysAgoIso(days: number): string {
   return d.toISOString();
 }
 
-async function listRecentExperienceImprint(
-  store: SemanticMemoryStorePort,
-  sinceIso: string,
-): Promise<Awaited<ReturnType<SemanticMemoryStorePort["search"]>>> {
-  const rows = await store.search({
+async function listRecentExperienceImprint(sinceIso: string) {
+  const rows = await searchSemanticMemory({
     types: ["experience", "imprint"],
     status: "active",
     limit: 100,
@@ -130,13 +124,10 @@ export function buildAutobiographySummary(rows: AutobiographicalMemoryRow[]): st
   return sections.length ? sections.join("\n\n") : "(No autobiography summary yet)";
 }
 
-export async function refreshAutobiographySummaryBlock(
-  autoStore: AutobiographicalMemoryStorePort,
-  selfStore: SelfLayerStorePort,
-): Promise<boolean> {
-  const active = await autoStore.listActive({ order: "significance_desc", limit: 200 });
+export async function refreshAutobiographySummaryBlock(): Promise<boolean> {
+  const active = await listActiveAutobiographicalMemory({ order: "significance_desc", limit: 200 });
   const summary = buildAutobiographySummary(active);
-  await selfStore.updateBlock({
+  await updateSelfBlock({
     block_key: "autobiography_summary",
     content: summary,
     updated_by: "autobiography_cron",
@@ -148,8 +139,8 @@ export async function runSelfAutobiography(
   opts: RunSelfAutobiographyOpts,
 ): Promise<SelfAutobiographyResult> {
   const sinceIso = opts.sinceIso ?? daysAgoIso(LOOKBACK_DAYS);
-  const candidates = await listRecentExperienceImprint(opts.semanticStore, sinceIso);
-  const existing = await opts.autoStore.listActive({ limit: 200 });
+  const candidates = await listRecentExperienceImprint(sinceIso);
+  const existing = await listActiveAutobiographicalMemory({ limit: 200 });
 
   let narrativesCreated = 0;
   let toolCalls = 0;
@@ -166,7 +157,7 @@ export async function runSelfAutobiography(
     });
     toolCalls = engineResult.tool_calls;
 
-    const after = await opts.autoStore.listActive({ limit: 200 });
+    const after = await listActiveAutobiographicalMemory({ limit: 200 });
     narrativesCreated = Math.max(0, after.length - existing.length);
 
     logComponent("memory").info("autobiography cron narrative stage completed", {
@@ -182,7 +173,7 @@ export async function runSelfAutobiography(
     });
   }
 
-  const summaryRefreshed = await refreshAutobiographySummaryBlock(opts.autoStore, opts.selfStore);
+  const summaryRefreshed = await refreshAutobiographySummaryBlock();
 
   return {
     ok: true,

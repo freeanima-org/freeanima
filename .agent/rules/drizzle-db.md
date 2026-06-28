@@ -1,28 +1,28 @@
 # Drizzle / PostgreSQL query conventions
 
-Repository query patterns for `@freeanima/platform/connectors/db-pg`. Schema DDL and migrations → [`coding.md`](coding.md) § PG migrations.
+Repository query patterns for `@freeanima/core/db/pg`. Schema DDL and migrations → [`coding.md`](coding.md) § PG migrations.
 
-**Conflict priority**: implementation in `platform/connectors/db-pg/` > this file.
+**Conflict priority**: implementation in `core/src/db/pg/` > this file.
 
 ---
 
 ## Scope
 
-| In scope                                                 | Out of scope                                                                                |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `platform/connectors/db-pg/` repository / FTS query code | Migration DDL (`db:generate`, `snapshot.json`) — see [`coding.md`](coding.md)               |
-| ORM query patterns, type safety, dynamic filters         | Product memory pipeline — see [`docs/concepts/memory.md`](../../docs/concepts/memory.md)    |
-| Repo transform (non-trivial joins)                       | User PG install, backup, ops — see [`docs/guide/database.md`](../../docs/guide/database.md) |
+| In scope                                         | Out of scope                                                                                |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| `core/src/db/pg/` repository / FTS query code    | Migration DDL (`db:generate`, `snapshot.json`) — see [`coding.md`](coding.md)               |
+| ORM query patterns, type safety, dynamic filters | Product memory pipeline — see [`docs/concepts/memory.md`](../../docs/concepts/memory.md)    |
+| Repo transform (non-trivial joins)               | User PG install, backup, ops — see [`docs/guide/database.md`](../../docs/guide/database.md) |
 
-Driver: `drizzle-orm/bun-sql/postgres` via [`platform/connectors/db-pg/client.ts`](../../platform/connectors/db-pg/client.ts).
+Driver: `drizzle-orm/bun-sql/postgres` via [`core/src/db/pg/client.ts`](../../core/src/db/pg/client.ts).
 
-PG repository 实现暂留 `platform/connectors/db-pg/`（依赖 `platform/config`、`platform/logging` 等 boot 层，尚未迁入 `core/src/db/pg`）；schema / row 类型 SSOT 已在 `@freeanima/core/db`。
+PG repository 实现位于 `core/src/db/pg/`（按域分子目录）；schema / row 类型 SSOT 在 `@freeanima/core/db`。`capabilities/*` 可直接 import `@freeanima/core/db/pg/*` 与 `@freeanima/core/db/schema`（见 [`code-layers.md`](code-layers.md)）。`@freeanima/core/repos` 仅保留共享类型与 marker 常量，不再暴露 `PgRepositories` / StorePort。
 
 ---
 
 ## Decision tree: ORM only
 
-All queries in `platform/connectors/db-pg/` and `tests/integration/` use Drizzle ORM — **`db.execute` is forbidden** (enforced by [`scripts/check-no-db-execute.ts`](../../scripts/check-no-db-execute.ts)).
+All queries in `core/src/db/pg/` and `tests/integration/` use Drizzle ORM — **`db.execute` is forbidden** (enforced by [`scripts/check-no-db-execute.ts`](../../scripts/check-no-db-execute.ts)).
 
 | Tier                         | When                                                                              | How                                                                                      |
 | ---------------------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
@@ -76,21 +76,21 @@ Conversation/message assembly lives in [`conversation/transform.ts`](../../platf
 
 Link to source — do not maintain function inventories here.
 
-| Pattern                                         | Reference                                                                                                                                                                                                                                    |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Simple CRUD (select / insert / update / delete) | [`semantic-crud-repo.ts`](../../platform/connectors/db-pg/semantic-memory/repos/semantic-crud-repo.ts) — `getSemanticMemory`, `createSemanticMemory`                                                                                         |
-| Count via ORM                                   | [`message-repo.ts`](../../platform/connectors/db-pg/conversation/repos/message-repo.ts) — `countMessages`                                                                                                                                    |
-| Dynamic filters (`buildListConditions` + `and`) | [`task-crud-repo.ts`](../../platform/connectors/db-pg/tasks/repos/task-crud-repo.ts) — `buildListConditions`; [`semantic-filters.ts`](../../platform/connectors/db-pg/semantic-memory/repos/semantic-filters.ts) — `buildSemanticConditions` |
-| FTS / hybrid search (sql subquery in ORM)       | [`fts/hybrid-raw.ts`](../../platform/connectors/db-pg/fts/hybrid-raw.ts), [`fts/hybrid-search.ts`](../../platform/connectors/db-pg/fts/hybrid-search.ts)                                                                                     |
-| Conversation meta transform                     | [`conversation/transform.ts`](../../platform/connectors/db-pg/conversation/transform.ts)                                                                                                                                                     |
+| Pattern                                         | Reference                                                                                                                                                               |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Simple CRUD (select / insert / update / delete) | [`semantic-crud-repo.ts`](../../core/src/db/pg/semantic-memory/repos/semantic-crud-repo.ts) — `createSemanticMemory`                                                    |
+| Count via ORM                                   | [`message-repo.ts`](../../core/src/db/pg/conversation/repos/message-repo.ts) — `countMessages`                                                                          |
+| Dynamic filters (`buildListConditions` + `and`) | [`entity-crud-repo.ts`](../../core/src/db/pg/entity/repos/entity-crud-repo.ts); [`semantic-filters.ts`](../../core/src/db/pg/semantic-memory/repos/semantic-filters.ts) |
+| FTS / hybrid search (sql subquery in ORM)       | [`fts/hybrid-raw.ts`](../../core/src/db/pg/fts/hybrid-raw.ts), [`fts/hybrid-search.ts`](../../core/src/db/pg/fts/hybrid-search.ts)                                      |
+| Conversation meta transform                     | [`conversation/transform.ts`](../../core/src/db/pg/conversation/transform.ts)                                                                                           |
 
-Table shapes: [`core/src/db/schema/`](../../core/src/db/schema/). Port types: [`core/src/repos/ports/`](../../core/src/repos/ports/) + [`core/src/db/schema/rows/`](../../core/src/db/schema/rows/).
+Table shapes: [`core/src/db/schema/`](../../core/src/db/schema/). Row / input types: [`core/src/db/pg/*/types.ts`](../../core/src/db/pg/) + [`core/src/db/schema/rows/`](../../core/src/db/schema/rows/). `@freeanima/core/repos` re-exports select row types for backward-compatible imports.
 
 ---
 
 ## Forbidden (new code)
 
-- `db.execute` anywhere under `platform/connectors/db-pg/` or `tests/integration/`
+- `db.execute` anywhere under `core/src/db/pg/` or `tests/integration/`
 - `drizzleSql.raw` with user-controlled input
 - `WHERE true ${rawFragment}` string stitching — use `and(...conditions)` (legacy repos may still use fragments; migrate when touched)
 - Hand-written row struct types duplicated across repo files

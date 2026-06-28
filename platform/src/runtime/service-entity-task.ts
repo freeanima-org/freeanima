@@ -11,10 +11,11 @@ import {
   updateTaskList,
 } from "@freeanima/capabilities-task";
 
+import { isPostgresPrimary } from "@freeanima/core/db/pg";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
-function assertPg(deps: RuntimeDeps): void {
-  if (!deps.engine.repos.pgAvailable) {
+function assertPg(_deps: RuntimeDeps): void {
+  if (!isPostgresPrimary()) {
     throw new Error("PostgreSQL unavailable");
   }
 }

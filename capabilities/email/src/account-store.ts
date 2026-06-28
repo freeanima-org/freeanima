@@ -4,8 +4,18 @@ import {
   type EmailAccountBody,
 } from "@freeanima/core/db/schema/entity";
 
-import { defaultEmailWorldId, getEntityStoreForEmail } from "./entity-port.ts";
+import {
+  createEntity,
+  deleteEntity,
+  getEntity,
+  listEntities,
+  updateEntity,
+} from "@freeanima/core/db/pg/entity";
 import type { EmailAccountCreateInput, EmailAccountRow, EmailAccountUpdateInput } from "./types.ts";
+
+export function defaultEmailWorldId(): number {
+  return 1;
+}
 
 function normalizeTags(tags: string[] | undefined): string[] {
   if (!tags?.length) return [];
@@ -48,8 +58,7 @@ function toAccountRow(
 }
 
 async function listAccountEntities() {
-  const store = getEntityStoreForEmail();
-  return store.list({
+  return listEntities({
     world_id: defaultEmailWorldId(),
     primary_component: EMAIL_ACCOUNT_COMPONENT,
     limit: 200,
@@ -57,7 +66,6 @@ async function listAccountEntities() {
 }
 
 async function normalizeDefaultSender(preferredId?: number): Promise<void> {
-  const store = getEntityStoreForEmail();
   const rows = await listAccountEntities();
   const accounts = rows
     .map((row) => {
@@ -79,7 +87,7 @@ async function normalizeDefaultSender(preferredId?: number): Promise<void> {
   for (const { row, parsed } of accounts) {
     const nextDefault = parsed.id === keepId && parsed.enabled !== false;
     if (Boolean(parsed.default_sender) === nextDefault) continue;
-    await store.update({ id: row.id, body: { ...parsed, default_sender: nextDefault } });
+    await updateEntity({ id: row.id, body: { ...parsed, default_sender: nextDefault } });
   }
 }
 
@@ -97,8 +105,7 @@ export async function listEmailAccountRows(): Promise<EmailAccountRow[]> {
 }
 
 export async function getEmailAccountRow(id: number): Promise<EmailAccountRow | null> {
-  const store = getEntityStoreForEmail();
-  const row = await store.get(id);
+  const row = await getEntity(id);
   if (!row) return null;
   const parsed = asEmailAccount(row);
   if (!parsed) return null;
@@ -114,7 +121,6 @@ export async function findEmailAccountByAddressAndHost(
 }
 
 export async function createEmailAccount(input: EmailAccountCreateInput): Promise<EmailAccountRow> {
-  const store = getEntityStoreForEmail();
   const body: EmailAccountBody = {
     address: input.address.trim(),
     password: input.password,
@@ -129,7 +135,7 @@ export async function createEmailAccount(input: EmailAccountCreateInput): Promis
     sync: { mailbox: "INBOX" },
   };
 
-  const row = await store.create({
+  const row = await createEntity({
     type: "content",
     world_id: defaultEmailWorldId(),
     components: [EMAIL_ACCOUNT_COMPONENT],
@@ -152,7 +158,6 @@ export async function createEmailAccount(input: EmailAccountCreateInput): Promis
 export async function updateEmailAccount(
   input: EmailAccountUpdateInput,
 ): Promise<EmailAccountRow | null> {
-  const store = getEntityStoreForEmail();
   const existing = await getEmailAccountRow(input.id);
   if (!existing) return null;
 
@@ -170,7 +175,7 @@ export async function updateEmailAccount(
     sync: input.sync ?? existing.sync,
   };
 
-  const row = await store.update({
+  const row = await updateEntity({
     id: input.id,
     title: accountTitle({
       display_name: input.display_name ?? existing.display_name,
@@ -190,8 +195,7 @@ export async function updateEmailAccount(
 }
 
 export async function deleteEmailAccountRow(id: number): Promise<boolean> {
-  const store = getEntityStoreForEmail();
-  const ok = await store.delete(id);
+  const ok = await deleteEntity(id);
   if (ok) await normalizeDefaultSender();
   return ok;
 }

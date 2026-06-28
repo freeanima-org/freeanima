@@ -1,5 +1,4 @@
 import { readAppVersionForCapability as readAppVersion } from "@freeanima/core/config";
-import type { PgRepositories } from "@freeanima/core/repos";
 import {
   handlerResultToMcpContent,
   runWithToolContext,
@@ -12,7 +11,6 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprot
 
 export type McpHubDeps = {
   toolSets: ToolSetRegistry;
-  repos: PgRepositories;
 };
 
 export const MCP_HTTP_PATH = "/mcp";
@@ -49,7 +47,6 @@ function createMcpServer(deps: McpHubDeps): Server {
     const sessionId = crypto.randomUUID();
     const text = await runWithToolContext(`mcp:${sessionId}`, () => tool.handler(args), {
       tools: deps.toolSets,
-      repos: deps.repos,
       contextKind: "auto_llm",
     });
     return handlerResultToMcpContent(await Promise.resolve(text));

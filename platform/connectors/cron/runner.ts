@@ -14,7 +14,8 @@ import {
 import { deliverCronResult } from "./deliver.ts";
 import { appendCronRunLog } from "./cron-log.ts";
 import { runCronBuiltinHandler } from "./builtin-handlers.ts";
-import { getCronHandleManager, getCronStore, isCronModuleInitialized } from "./module.ts";
+import { getCronHandleManager, isCronModuleInitialized, updateCronJobRow } from "./module.ts";
+import { getCronJob } from "@freeanima/core/db/pg/cron";
 
 function runScript(scriptPath: string, timeoutSec: number): string {
   const path = resolveScriptPath(scriptPath);
@@ -50,7 +51,7 @@ function saveOutput(job: CronJob, content: string): string {
 
 async function persistJob(job: CronJob): Promise<void> {
   if (!isCronModuleInitialized()) return;
-  await getCronStore().update({
+  await updateCronJobRow({
     id: job.id,
     run_count: job.run_count,
     paused: job.paused,
@@ -78,7 +79,7 @@ async function finalizeJob(job: CronJob, success: boolean): Promise<void> {
 
 async function getJobSync(id: string): Promise<CronJob | null> {
   if (!isCronModuleInitialized()) return null;
-  const row = await getCronStore().get(id);
+  const row = await getCronJob(id);
   return row ? CronJobClass.fromRow(row) : null;
 }
 
@@ -111,7 +112,7 @@ export async function runJobById(jobId: string): Promise<void> {
   if (!isCronModuleInitialized()) return;
   let row;
   try {
-    row = await getCronStore().get(jobId);
+    row = await getCronJob(jobId);
   } catch (e) {
     getCronHandleManager().scheduleRetry(jobId);
     throw e;

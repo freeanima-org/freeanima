@@ -3,8 +3,7 @@ import {
   generateSapInstanceIdCandidate,
   normalizeAppSlug,
 } from "@freeanima/sap-contract";
-
-import type { SapInstanceStorePort } from "@freeanima/core/repos";
+import { getSapInstance, upsertSapInstance } from "@freeanima/core/db/pg/sap";
 
 export type SapInstanceRecord = {
   instanceId: string;
@@ -30,7 +29,7 @@ export type ResolveConnectInstanceResult =
 export class SapInstanceRegistry {
   private readonly byInstanceId = new Map<string, SapInstanceRecord>();
 
-  constructor(private readonly store?: SapInstanceStorePort) {}
+  constructor(private readonly persistToPg = false) {}
 
   hydrate(records: SapInstanceRecord[]): void {
     for (const record of records) {
@@ -51,8 +50,8 @@ export class SapInstanceRegistry {
       }
 
       let record = this.byInstanceId.get(norm);
-      if (!record && this.store) {
-        const row = await this.store.get(norm);
+      if (!record && this.persistToPg) {
+        const row = await getSapInstance(norm);
         if (row) {
           record = {
             instanceId: row.instance_id,
@@ -112,8 +111,8 @@ export class SapInstanceRegistry {
   }
 
   private async persist(record: SapInstanceRecord): Promise<void> {
-    if (!this.store) return;
-    await this.store.upsert({
+    if (!this.persistToPg) return;
+    await upsertSapInstance({
       instance_id: record.instanceId,
       app_id: record.appId,
       http_url: record.httpUrl,

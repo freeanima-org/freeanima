@@ -10,7 +10,7 @@ import {
   registerEmbedTextFn,
   resetEmbedTextFnForTest,
   resetPendingEmbeddingsForTest,
-} from "@freeanima/platform/connectors/db-pg";
+} from "@freeanima/core/db/pg";
 import { SEMANTIC_EMBEDDING_DIMENSIONS } from "@freeanima/core/db/schema";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
@@ -18,6 +18,7 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
+import { createSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
 import { getActivePgTestContext, getTestEngine, seedSession } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 
@@ -140,9 +141,8 @@ describePg("FTS rebuild embedding PG", () => {
 
   it("semantic_memory with padded content stores embedding on onlyMissing rebuild", async () => {
     const ctx = getActivePgTestContext();
-    const store = getTestEngine().repos.semanticMemory;
 
-    const id = await store.create({
+    const id = await createSemanticMemory({
       content: "  padded semantic memory content  ",
       type: "world",
     });

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "bun:test";
-import type { EntitySearchPort, EntityStorePort } from "./ports/index.ts";
-import { createEntityModuleRegistry } from "./entity-module-registry.ts";
+import {
+  createEntityModuleRegistry,
+  type EntitySearchPort,
+  type EntityStorePort,
+} from "./entity-module-registry.ts";
 
 describe("createEntityModuleRegistry", () => {
   it("register/get/reset round-trip", () => {

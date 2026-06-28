@@ -7,8 +7,14 @@ import {
   validateFtsQueryInput,
 } from "@freeanima/core/util";
 import type { SemanticMemoryCreateInput, SemanticMemoryUpdateInput } from "@freeanima/core/repos";
-
-import { getSemanticMemoryStore } from "./semantic-port.ts";
+import {
+  createSemanticMemory,
+  deleteSemanticMemory,
+  deprecateSemanticMemory,
+  getSemanticMemory,
+  searchSemanticMemory,
+  updateSemanticMemory,
+} from "@freeanima/core/db/pg/semantic-memory";
 import { MEMORY_SEMANTIC_CITATION_TOOL_HINT } from "./memory-reference.ts";
 import { getToolConversationIdForMemory } from "./tool-conversation-port.ts";
 
@@ -48,7 +54,7 @@ async function handleCreateSemanticMemory(args: Record<string, unknown>): Promis
     status: args.status !== undefined ? String(args.status) : undefined,
   };
 
-  const id = await getSemanticMemoryStore().create(row);
+  const id = await createSemanticMemory(row);
   return toolResult({ ok: true, id, semantic_memory_id: id, action: "create" });
 }
 
@@ -74,7 +80,7 @@ async function handleUpdateSemanticMemory(args: Record<string, unknown>): Promis
   const semanticMemoryId = resolveSemanticMemoryId(args);
   if (!semanticMemoryId) return toolError("semantic_memory_id is required");
 
-  const existing = await getSemanticMemoryStore().get(semanticMemoryId);
+  const existing = await getSemanticMemory(semanticMemoryId);
   if (!existing) return toolError(`Memory not found: ${semanticMemoryId}`);
 
   const patch: SemanticMemoryUpdateInput = { id: semanticMemoryId };
@@ -95,7 +101,7 @@ async function handleUpdateSemanticMemory(args: Record<string, unknown>): Promis
   }
   if (args.status !== undefined) patch.status = String(args.status);
 
-  await getSemanticMemoryStore().update(patch);
+  await updateSemanticMemory(patch);
   return toolResult({
     ok: true,
     id: semanticMemoryId,
@@ -107,7 +113,7 @@ async function handleUpdateSemanticMemory(args: Record<string, unknown>): Promis
 async function handleDeprecateSemanticMemory(args: Record<string, unknown>): Promise<string> {
   const semanticMemoryId = resolveSemanticMemoryId(args);
   if (!semanticMemoryId) return toolError("semantic_memory_id is required");
-  const ok = await getSemanticMemoryStore().deprecate(semanticMemoryId);
+  const ok = await deprecateSemanticMemory(semanticMemoryId);
   if (!ok) return toolError(`Memory not found: ${semanticMemoryId}`);
   return toolResult({
     ok: true,
@@ -131,7 +137,7 @@ async function handleSearchSemanticMemory(args: Record<string, unknown>): Promis
   try {
     if (query) validateFtsQueryInput(query);
 
-    const rows = await getSemanticMemoryStore().search({
+    const rows = await searchSemanticMemory({
       query: query || undefined,
       limit: Number.isFinite(limit) ? limit : 10,
       types,
@@ -174,8 +180,6 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
   const targetContent = String(args.target_content ?? "").trim();
   if (!targetContent) return toolError("target_content is required");
 
-  const store = getSemanticMemoryStore();
-
   // Look up all source memories
   const sources: {
     id: string;
@@ -184,7 +188,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     occurred_at: string | null;
   }[] = [];
   for (const id of sourceIds) {
-    const row = await store.get(id);
+    const row = await getSemanticMemory(id);
     if (!row) continue;
     sources.push({
       id: row.id,
@@ -229,7 +233,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
       : (earliestOccurred ?? undefined);
 
   // Create new memory
-  const newId = await store.create({
+  const newId = await createSemanticMemory({
     content: targetContent,
     type: args.target_type !== undefined ? String(args.target_type) : undefined,
     pinned: args.target_pinned !== undefined ? Boolean(args.target_pinned) : undefined,
@@ -242,7 +246,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
   // Deprecate all source memories
   const deprecatedIds: string[] = [];
   for (const s of sources) {
-    const ok = await store.deprecate(s.id);
+    const ok = await deprecateSemanticMemory(s.id);
     if (ok) deprecatedIds.push(s.id);
   }
 
@@ -280,7 +284,7 @@ export async function createSemanticMemoryFromArgs(
       ? (parseStringArray(args.source_conversations) ?? [])
       : (defaults?.source_conversations ?? []);
 
-  return getSemanticMemoryStore().create({
+  return createSemanticMemory({
     content,
     type: args.type !== undefined ? String(args.type) : undefined,
     pinned: args.pinned !== undefined ? Boolean(args.pinned) : undefined,
@@ -411,12 +415,10 @@ export const semanticMemoryToolDefs: ToolDef[] = [
 
 export async function rememberFromArgs(args: Record<string, unknown>): Promise<string> {
   const action = String(args.action ?? "create").trim() || "create";
-  const store = getSemanticMemoryStore();
-
   if (action === "delete") {
     const semanticMemoryId = resolveSemanticMemoryId(args);
     if (!semanticMemoryId) return toolError("semantic_memory_id is required for delete");
-    const deleted = await store.delete(semanticMemoryId);
+    const deleted = await deleteSemanticMemory(semanticMemoryId);
     return rememberResult("delete", semanticMemoryId, { ok: deleted });
   }
 

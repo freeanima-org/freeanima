@@ -26,10 +26,7 @@ describePg("server cron API", () => {
   beforeEach(async () => {
     const ctx = await beginIntegrationCase("anima-cron-api-");
     home = ctx.home;
-    await initCronModule({
-      store: ctx.pg.engine.repos.cron,
-      logStore: ctx.pg.engine.repos.cronLog,
-    });
+    await initCronModule();
     mkdirSync(join(home, "cron", "scripts"), { recursive: true });
     writeFileSync(join(home, "cron", "scripts", "noop.js"), "console.log('ok');\n", "utf-8");
     const j = await createJob({

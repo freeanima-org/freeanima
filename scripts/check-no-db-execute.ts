@@ -6,7 +6,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const ROOT = join(import.meta.dir, "..");
-const SCAN_DIRS = [join(ROOT, "platform/connectors/db-pg"), join(ROOT, "tests/integration")];
+const SCAN_DIRS = [join(ROOT, "core/src/db/pg"), join(ROOT, "tests/integration")];
 const PATTERNS: Array<{ re: RegExp; label: string }> = [
   { re: /\bdb\.execute\b/, label: "db.execute" },
   { re: /\bdrizzleSql\.raw\b/, label: "drizzleSql.raw" },

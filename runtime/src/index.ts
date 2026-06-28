@@ -17,5 +17,4 @@ export {
   type AnimaConfig,
 } from "@freeanima/core/config";
 export { runMigrations } from "@freeanima/core/db";
-export { nullPgRepositories, type PgRepositories } from "@freeanima/core/repos";
 export { getTokenizerBindingSnapshot } from "@freeanima/core/tokenizer";

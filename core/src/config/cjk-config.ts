@@ -1,0 +1,32 @@
+import type { AnimaConfig } from "./schemas/config.ts";
+import { PATHS, homePath } from "./paths.ts";
+
+/** Whether jieba Chinese tokenization is enabled */
+export function isCjkJiebaEnabled(cfg: AnimaConfig): boolean {
+  return cfg.cjk?.enabled === true;
+}
+
+/** jieba user dictionary path */
+export function cjkJiebaDictPath(cfg: AnimaConfig): string {
+  const raw = cfg.cjk?.dict_path?.trim();
+  if (raw) return raw;
+  return PATHS.cjkUserDict;
+}
+
+export type CjkConfigSnapshot = {
+  enabled: boolean;
+  dict_path: string | null;
+};
+
+export function getCjkConfigSnapshot(cfg: AnimaConfig): CjkConfigSnapshot {
+  const enabled = isCjkJiebaEnabled(cfg);
+  return {
+    enabled,
+    dict_path: enabled ? cjkJiebaDictPath(cfg) : null,
+  };
+}
+
+/** Legacy default path used before PATHS.cjkUserDict consolidation */
+export function legacyJiebaUserDictPath(): string {
+  return homePath("jieba_userdict.txt");
+}

@@ -1,19 +1,15 @@
-import type { PgRepositories } from "@freeanima/core/repos";
 import type { OpenAiToolSchema, StoredMessage } from "@freeanima/core/db/domain";
 import { isConversationMeta, parseCompressionState } from "@freeanima/core/db/domain";
+import { getConversationMeta, patchConversationMeta } from "@freeanima/core/db/pg/conversation";
 import { getCompressionConfig } from "./compression-config.ts";
 import { analyzeCompression, compress } from "./compressor.ts";
 import { isInToolLoop } from "./compression-tool-loop.ts";
 import { scheduleCompressionSummary } from "./compression-summary-scheduler.ts";
 
 async function loadConversationMetaForEmergency(
-  repos: PgRepositories,
   conversationId: string,
 ): Promise<{ compression: ReturnType<typeof parseCompressionState>; systemPrompt: string }> {
-  if (!repos.pgAvailable) {
-    return { compression: null, systemPrompt: "" };
-  }
-  const meta = await repos.conversation.getConversationMeta(conversationId);
+  const meta = await getConversationMeta(conversationId);
   if (!meta || !isConversationMeta(meta)) {
     return { compression: null, systemPrompt: "" };
   }
@@ -25,7 +21,6 @@ async function loadConversationMetaForEmergency(
 
 /** Tool-loop single-turn emergency: in-place trim in-memory messages */
 export async function maybeApplyEmergencyCompression(
-  repos: PgRepositories,
   conversationId: string,
   runtimeMessages: StoredMessage[],
   opts: { model: string; tools: OpenAiToolSchema[] },
@@ -34,10 +29,8 @@ export async function maybeApplyEmergencyCompression(
   if (!cfg.enabled) return false;
   if (isInToolLoop(runtimeMessages)) return false;
 
-  const { compression: state, systemPrompt } = await loadConversationMetaForEmergency(
-    repos,
-    conversationId,
-  );
+  const { compression: state, systemPrompt } =
+    await loadConversationMetaForEmergency(conversationId);
   const compressOpts = {
     maxRounds: cfg.maxRounds,
     model: opts.model,
@@ -56,10 +49,10 @@ export async function maybeApplyEmergencyCompression(
 
   runtimeMessages.length = 0;
   runtimeMessages.push(...compressed);
-  if (newState && repos.pgAvailable) {
+  if (newState) {
     const prev = state;
-    await repos.conversation.patchConversationMeta(conversationId, { compression: newState });
-    scheduleCompressionSummary(repos, conversationId, prev, newState, systemPrompt, opts.model);
+    await patchConversationMeta(conversationId, { compression: newState });
+    scheduleCompressionSummary(conversationId, prev, newState, systemPrompt, opts.model);
   }
   return true;
 }

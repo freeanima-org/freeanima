@@ -19,7 +19,6 @@ import {
   updateConversationMetaField,
 } from "../conversation/conversation-crud.ts";
 import type { StoredMessage, ConversationMetaLoadResult } from "@freeanima/core/db/domain";
-import type { PgRepositories } from "@freeanima/core/repos";
 
 function defaultChatModel(): string {
   return getProfileHopModel(getActiveConfig().data, PROFILE_CHAT);
@@ -29,25 +28,23 @@ export { flushCompressionSummaries, maybeApplyEmergencyCompression };
 
 /** Maintain meta.compression from full history (no message delete; async summary on cut change) */
 export async function advanceCompressionMeta(
-  repos: PgRepositories,
   tools: ToolSetRegistry,
   conversationId: string,
   preloaded?: { msgs: StoredMessage[]; meta: ConversationMetaLoadResult },
 ): Promise<void> {
-  await recompressConversation(repos, tools, conversationId, undefined, preloaded);
+  await recompressConversation(tools, conversationId, undefined, preloaded);
 }
 
 /** Recompute conversation compression (optional force ignores hysteresis) */
 export async function recompressConversation(
-  repos: PgRepositories,
   registry: ToolSetRegistry,
   conversationId: string,
   opts?: { force?: boolean },
   preloaded?: { msgs: StoredMessage[]; meta: ConversationMetaLoadResult },
 ): Promise<Record<string, unknown>> {
   const cfg = getCompressionConfig();
-  const msgs = preloaded?.msgs ?? (await load(repos, conversationId));
-  const meta = preloaded?.meta ?? (await loadConversationMeta(repos, conversationId));
+  const msgs = preloaded?.msgs ?? (await load(conversationId));
+  const meta = preloaded?.meta ?? (await loadConversationMeta(conversationId));
   const prevState = parseCompressionState(isConversationMeta(meta) ? meta.compression : undefined);
   const state = !opts?.force && prevState ? prevState : opts?.force ? null : prevState;
 
@@ -60,7 +57,7 @@ export async function recompressConversation(
     };
   }
 
-  const toolSchemas = await loadConversationTools(repos, registry, conversationId, meta);
+  const toolSchemas = await loadConversationTools(registry, conversationId, meta);
   const compressOpts = await buildCompressOptionsResolved(meta, state, defaultChatModel(), {
     force: opts?.force,
     forceEmergency: opts?.force,
@@ -84,10 +81,10 @@ export async function recompressConversation(
       const model = isConversationMeta(meta)
         ? meta.model
         : getProfileHopModel(getActiveConfig().data, PROFILE_CHAT);
-      await updateConversationMetaField(repos, conversationId, { compression: newState });
-      scheduleCompressionSummary(repos, conversationId, prevState, newState, systemSnapshot, model);
+      await updateConversationMetaField(conversationId, { compression: newState });
+      scheduleCompressionSummary(conversationId, prevState, newState, systemSnapshot, model);
     } else {
-      await updateConversationMetaField(repos, conversationId, { compression: newState });
+      await updateConversationMetaField(conversationId, { compression: newState });
     }
   }
 

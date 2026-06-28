@@ -3,7 +3,7 @@ import {
   invalidateSelfLayerPromptCache,
   loadSelfLayerPrompt,
 } from "@freeanima/capabilities-identity";
-import type { PgRepositories } from "@freeanima/core/repos";
+import { listAllSapInstances } from "@freeanima/core/db/pg/sap";
 
 import { createAppRuntime, type AppRuntime } from "../runtime/app-runtime.ts";
 import { wireServicePorts } from "../wire-api.ts";
@@ -33,7 +33,6 @@ export type RuntimePhaseResult = {
 /** Phase 4: AppRuntime、ports、stores、memory engines、cron */
 export async function bootRuntimePhase(
   phase: EnginePhaseResult,
-  repos: PgRepositories,
   host: string,
   port: number,
   runtimeRef: { current: AppRuntime | null },
@@ -63,14 +62,12 @@ export async function bootRuntimePhase(
   runtime.setOnSessionUpdated(acpHandler);
   runtime.setEventBus(kernel.eventBus);
 
-  // Bridge ACP result delivery → acp callback handler so completed/awaiting_decision
-  // tasks trigger callback turns immediately, not just at next user-turn boundary.
   if (acpSessionUpdatedRef) acpSessionUpdatedRef.handler = acpHandler;
 
   wireServicePorts(runtime.fullDeps());
   initRuntimeContext(runtime);
 
-  registerServiceStores(repos);
+  registerServiceStores();
   registerFridgeMagnet({ kernel });
   registerServiceMemoryBus({ kernel });
   invalidateSelfLayerPromptCache();
@@ -79,9 +76,9 @@ export async function bootRuntimePhase(
   initMaskSystem(masks);
   registerMemoryEngineWires(runtime.fullDeps());
   registerBootCronHandlers(engine);
-  registerSleepPipelineStepRecorder(repos);
+  registerSleepPipelineStepRecorder();
 
-  await initCronModule({ store: repos.cron, logStore: repos.cronLog });
+  await initCronModule();
   startupLog("Cron scheduler started (Bun.cron)");
 
   registerSystemPromptHooks({
@@ -98,7 +95,7 @@ export async function bootRuntimePhase(
   bindSapServerDeps({
     runtime,
     satelliteManager: satellite,
-    instanceRegistry: await createSapInstanceRegistry(repos),
+    instanceRegistry: await createSapInstanceRegistry(),
     animaVersion: ANIMA_VERSION,
     masks,
     remoteAuthToken: phase.remoteAuthToken,
@@ -107,10 +104,10 @@ export async function bootRuntimePhase(
   return { runtime };
 }
 
-async function createSapInstanceRegistry(repos: PgRepositories): Promise<SapInstanceRegistry> {
-  const registry = new SapInstanceRegistry(repos.sapInstance);
-  if (repos.pgAvailable) {
-    const rows = await repos.sapInstance.listAll();
+async function createSapInstanceRegistry(): Promise<SapInstanceRegistry> {
+  const registry = new SapInstanceRegistry(true);
+  try {
+    const rows = await listAllSapInstances();
     registry.hydrate(
       rows.map((row) => ({
         instanceId: row.instance_id,
@@ -119,6 +116,8 @@ async function createSapInstanceRegistry(repos: PgRepositories): Promise<SapInst
         createdAt: row.created_at.toISOString(),
       })),
     );
+  } catch {
+    /* PG unavailable at boot */
   }
   return registry;
 }

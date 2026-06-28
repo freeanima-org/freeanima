@@ -1,7 +1,6 @@
 import { describe, it, expect, spyOn, afterEach } from "bun:test";
 import * as sessionTitleLlm from "@freeanima/core/llm";
 import { createConversationService } from "@freeanima/runtime/conversation";
-import { nullPgRepositories } from "@freeanima/core/repos";
 import { MaskRegistry } from "@freeanima/capabilities-task/mask";
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/runtime";
@@ -24,7 +23,6 @@ const testConfig = Config.fromSnapshot(animaConfigSchema.parse(parseYaml(MINIMAL
 registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
 const testEngine = createEngine({
   catalog,
-  repos: nullPgRepositories,
   config: testConfig,
   llm: initLlmRuntime(testConfig.data),
   logger: createTestLogger(),
@@ -32,7 +30,7 @@ const testEngine = createEngine({
 
 function wireTestDeps(): FullRuntimeDeps {
   const kernel = createServiceKernel(testConfig);
-  const conversation = createConversationService(nullPgRepositories, catalog.toolSets);
+  const conversation = createConversationService(catalog.toolSets);
   getAcpManager().wireRegistries({
     toolSets: catalog.toolSets,
     skills: catalog.skills,
