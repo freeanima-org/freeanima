@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Agent bootstrap
 
-1. Read root [`AGENTS.md`](../../AGENTS.md) for startup order, hard-constraint summary, and doc map.
+1. Read root [`AGENTS.md`](../../AGENTS.md) for startup order, product & code principles, and doc map.
 2. Before changing code, open the relevant file under [`.agent/rules/`](../../.agent/rules/README.md):
    - layers / Registry / composition → `code-layers.md`
    - tests → `testing.md`
