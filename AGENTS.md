@@ -17,54 +17,30 @@
 
 **Code is the source of truth**; do not invent tool names, endpoints, or directories from docs alone. Read source or `grep` when needed.
 
-## Current phase: codebase attitude
+## Product design principles
 
-The repository is in an active reshaping phase (layer migration, structural cleanup). When proposing or implementing changes, optimize for the **end-state codebase**, not for preserving today's layout.
+Directional heuristics for _what_ FreeAnima should feel like. Mechanisms and cognitive architecture live in [`docs/concepts/`](docs/concepts/) — related, but not a 1:1 rule list.
 
-| Priority      | Attitude                                                                                                                                                                                             |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Design goals  | **Elegant, minimal, clear** — prefer the simplest correct structure; readability and coherent boundaries beat cleverness                                                                             |
-| Compatibility | **Breaking changes are fine** — do not optimize for forward compatibility, deprecation shims, or dual-path APIs unless explicitly requested                                                          |
-| Cost model    | **Do not budget by human effort** — large refactors, renames, and file moves are normal; estimate scope in **AI agent turns** (read / search / edit / test cycles), not person-days or team capacity |
+- **Platform-native UX** — Mobile and desktop are **separate interaction and layout designs**, not one responsive skin stretched across form factors. Shared contracts (API, SAP, settings keys) may exist; presentation and interaction patterns should fit each platform.
+- **Concept convergence over feature sprawl** — As capabilities grow, **resist cognitive overload**: keep a small set of core concepts visible and stable; new features should map onto existing mental models rather than multiplying parallel abstractions in the UI.
 
-**Agent implications:**
+## Code implementation principles
 
-- Prefer a clean end state over incremental compromise or patch-on-patch layering
-- Delete and rewrite when that yields clearer structure; do not keep legacy indirection "just in case"
-- Do not reject a better design because the diff is large — size is not a constraint in this phase
-- When comparing options, weight structural clarity and long-term readability above migration effort
+How agents should _shape_ changes. Hard checks and conventions → [`.agent/rules/`](.agent/rules/README.md) — related, but not a 1:1 rule list.
+
+- **Testability by design** — Structure code so behavior can be verified: colocated unit tests for package logic, integration tests when boundaries cross packages or touch real persistence; design for injection and clear seams — see [`.agent/rules/testing.md`](.agent/rules/testing.md).
+- **Elegant, minimal architecture** — Prefer the **simplest correct structure**; readable boundaries beat clever indirection. The repository is in an active reshaping phase — optimize for the **end-state codebase**; large refactors and breaking changes are acceptable when clarity wins.
+- **No speculative layering** — Do not introduce abstractions, extension points, or parallel APIs for **unused or far-future** needs; add structure when a second real consumer exists, not when imagining one.
 
 ---
 
 ## Startup order
 
 1. [GitHub Issues](https://github.com/freeanima-org/freeanima/issues) — actionable tasks and discussions
-2. [Current phase: codebase attitude](#current-phase-codebase-attitude) — design goals, breaking-change policy, agent cost model
-3. [`docs/concepts/architecture.md`](docs/concepts/architecture.md) — read before changing architecture / memory / credentials
-4. Expand `docs/` and [`.agent/rules/`](.agent/rules/README.md) per task (see doc map below)
-
----
-
-## Hard constraints (summary)
-
-Detailed rules: [`.agent/rules/`](.agent/rules/README.md).
-
-- Full type annotations; relative imports **must include `.ts` / `.tsx` suffix**
-- Tool failures: `toolError(msg)`; structured successes: `toolResult(obj)`; LLM-readable tools may return plain-text stdout
-- New features need colocated unit tests; integration in `tests/integration/` — see [`.agent/rules/testing.md`](.agent/rules/testing.md)
-- Layer deps and Registry injection enforced — see [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md) and [`scripts/check-layer-deps.ts`](scripts/check-layer-deps.ts)
-- **Do not manually edit [`CHANGELOG.md`](CHANGELOG.md)** — Release Please only ([`.agent/rules/release.md`](.agent/rules/release.md))
-- PG migrations: `db:generate` then `db:migrate`; never skip `snapshot.json` — [`.agent/rules/coding.md`](.agent/rules/coding.md) § PG migrations
-- **Data + schema migrations stay together**: row backfill / table-to-table moves must live in the **same** Drizzle migration dir as the DDL (append to `migration.sql` after `generate`); do not rely on separate startup scripts or manual one-offs that can run after `DROP TABLE` — [`.agent/rules/coding.md`](.agent/rules/coding.md) § PG migrations
-- PG repository queries: Drizzle ORM only — **`db.execute` forbidden** in `db-pg` / `tests/integration` — [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md)
-- Credentials and secrets never in git / logs / tool returns; memory/self-layer changes need extra care ([`docs/concepts/identity.md`](docs/concepts/identity.md))
-- **Principle maintenance**: corrections or refinements to direction, principles, philosophy, or agent behavior norms must be written to the appropriate doc layer in the same task/PR — not code-only. Triage: product/cognitive → `docs/concepts/`; implementation constraints → `.agent/rules/`; bootstrap summary → `AGENTS.md` (see [Principle & direction maintenance](#principle--direction-maintenance) below)
-
-### Type ownership (decision order only)
-
-1. PG storage (DDL + JSONB Zod) → `@freeanima/core/db` — [`core/src/db/schema/`](core/src/db/schema/)
-2. Repository ports → `@freeanima/core/repos` — [`core/src/repos/ports/`](core/src/repos/ports/)
-3. Domain types → owner package; do not duplicate storage Zod in docs — use source as SSOT
+2. [Product design principles](#product-design-principles) — what to build and how to present it
+3. [Code implementation principles](#code-implementation-principles) — how to shape changes
+4. [`docs/concepts/architecture.md`](docs/concepts/architecture.md) — read before changing architecture / memory / credentials
+5. Open matching files in [`.agent/rules/`](.agent/rules/README.md) per task (see doc map below)
 
 ---
 
@@ -99,7 +75,7 @@ DATABASE_URL="…" bun run --filter @freeanima/core db:migrate
 
 | File                                                               | Role                                                             |
 | ------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| [`AGENTS.md`](AGENTS.md)                                           | Bootstrap protocol, current-phase codebase attitude (this file)  |
+| [`AGENTS.md`](AGENTS.md)                                           | Bootstrap protocol, product & code principles (this file)        |
 | [`.agent/rules/`](.agent/rules/README.md)                          | Implementation constraints (layers, tests, coding, DB, packages) |
 | [GitHub Issues](https://github.com/freeanima-org/freeanima/issues) | Actionable tasks and discussions                                 |
 | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)   | Architecture principles and direction                            |
@@ -121,7 +97,7 @@ Corrections or refinements to direction, principles, philosophy, or agent behavi
 | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
 | Product / cognitive architecture, long-lived design direction       | [`docs/concepts/architecture.md`](docs/concepts/architecture.md) → topic doc when needed (`memory.md`, `identity.md`, etc.) | Four-layer model, memory pipeline principles              |
 | Agent implementation constraints (coding, testing, layers, release) | [`.agent/rules/*.md`](.agent/rules/README.md) — matching topic file                                                         | Drizzle query conventions, layer deps, test mock strategy |
-| Bootstrap summary, hard-constraint list, doc-map-level changes      | [`AGENTS.md`](AGENTS.md) — keep brief; link to detail docs                                                                  | New global hard constraint, conflict-priority adjustment  |
+| Bootstrap summary, high-level principles, doc-map-level changes     | [`AGENTS.md`](AGENTS.md) — keep brief; link to detail docs                                                                  | New product/code principle, conflict-priority adjustment  |
 
 ### Triggers
 
@@ -132,7 +108,7 @@ Corrections or refinements to direction, principles, philosophy, or agent behavi
 ### Agent checklist
 
 - Principle change and doc diff land in the **same PR** (or same commit batch) — not "code now, docs later"
-- After editing `.agent/rules/`, check whether `AGENTS.md` hard-constraint summary needs a one-line update
+- After editing `.agent/rules/`, check whether a new implementation constraint belongs in `.agent/rules/` only, or also warrants a one-line update under [Code implementation principles](#code-implementation-principles)
 - After editing `docs/concepts/`, check whether `AGENTS.md` doc map and conflict priority remain accurate
 
 ---
