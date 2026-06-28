@@ -69,7 +69,7 @@ export function readShellSnapshot(): ShellSnapshot | null {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as ShellSnapshot;
-    if (parsed.hubUrl?.trim() && parsed.hubWsUrl?.trim() && parsed.remoteAuthToken?.trim()) {
+    if (parsed.hubUrl?.trim() && parsed.hubWsUrl?.trim()) {
       return parsed;
     }
   } catch {
@@ -153,8 +153,8 @@ export async function buildMobileShell(
 /** 从 Preferences 加载并注入 window.satelliteShell */
 export async function installMobileShellFromPrefs(): Promise<SatelliteShellApi | null> {
   const hubUrl = await loadHubUrl();
-  const remoteAuthToken = await loadRemoteAuthToken();
-  if (!hubUrl || !remoteAuthToken) return null;
+  if (!hubUrl) return null;
+  const remoteAuthToken = (await loadRemoteAuthToken()) ?? "";
   const shell = await buildMobileShell(hubUrl, remoteAuthToken);
   window.satelliteShell = shell;
   return shell;
@@ -165,11 +165,11 @@ export async function ensureMobileShellForChat(): Promise<SatelliteShellApi> {
   let snapshot = readShellSnapshot();
   if (!snapshot) {
     const hubUrl = await loadHubUrl();
-    const remoteAuthToken = await loadRemoteAuthToken();
-    if (!hubUrl || !remoteAuthToken) {
+    if (!hubUrl) {
       replaceShellPath(SETTINGS_PAGE);
       throw new Error("redirect settings");
     }
+    const remoteAuthToken = (await loadRemoteAuthToken()) ?? "";
     const normalized = normalizeShellClientConfig({ hubUrl, remoteAuthToken });
     snapshot = {
       hubUrl: normalized.hubUrl,

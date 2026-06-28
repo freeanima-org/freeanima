@@ -5,6 +5,7 @@ import { resolveHubWsUrl } from "@freeanima/sap-contract";
 
 import { shellEntryFileNames } from "../../packages/shell-ui/vite/entry-file-names.ts";
 import { sapSharedWorkerDevPlugin } from "../../packages/shell-ui/vite/sap-shared-worker-dev-plugin.ts";
+import { sapSharedWorkerBuildPlugin } from "../../packages/shell-ui/vite/sap-shared-worker-build-plugin.ts";
 import { createShellViteInlineConfig } from "../../packages/shell-ui/vite/run-build.ts";
 
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
@@ -72,6 +73,16 @@ export default defineConfig(({ command, mode }) => {
   });
 
   if (!isServe) {
+    inline.plugins = [
+      ...(inline.plugins ?? []),
+      sapSharedWorkerBuildPlugin({
+        appDir: APP_DIR,
+        repoRoot: REPO_ROOT,
+        outdir: DIST_DIR,
+        minify: mode === "production",
+        sourcemap: mode !== "production",
+      }),
+    ];
     if (inline.build?.rollupOptions?.output && !Array.isArray(inline.build.rollupOptions.output)) {
       inline.build.rollupOptions.output.entryFileNames = (chunkInfo) =>
         shellEntryFileNames(chunkInfo);

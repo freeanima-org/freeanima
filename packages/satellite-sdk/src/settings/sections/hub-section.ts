@@ -2,10 +2,17 @@ import { z } from "zod";
 
 import { defineSettingsForm, type SettingsSection } from "../types.ts";
 
+/** 内网 / loopback 可留空；填写时至少 16 字符 */
+const remoteAuthTokenSchema = z
+  .string()
+  .refine((s) => s.trim().length === 0 || s.trim().length >= 16, {
+    message: "远程 Token 至少 16 字符",
+  });
+
 const hubFields = defineSettingsForm({
   zodSchema: z.object({
     hubUrl: z.string().min(1, "Hub 地址不能为空"),
-    remoteAuthToken: z.string().min(16, "远程 Token 至少 16 字符"),
+    remoteAuthToken: remoteAuthTokenSchema,
   }),
   items: [
     {
@@ -20,7 +27,7 @@ const hubFields = defineSettingsForm({
       key: "remoteAuthToken",
       type: "password",
       label: "远程 Token",
-      description: "非 loopback Hub 时用于 Bearer 认证",
+      description: "公网或非 loopback Hub 时填写；内网可留空",
       group: "Hub 连接",
     },
   ],
@@ -30,7 +37,7 @@ const desktopGeneralFields = defineSettingsForm({
   zodSchema: z.object({
     launchAtLogin: z.boolean(),
     hubUrl: z.string().min(1, "Hub 地址不能为空"),
-    remoteAuthToken: z.string().min(16, "远程 Token 至少 16 字符"),
+    remoteAuthToken: remoteAuthTokenSchema,
   }),
   items: [
     {

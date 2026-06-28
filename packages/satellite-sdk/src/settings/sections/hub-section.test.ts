@@ -24,4 +24,15 @@ describe("hub settings sections", () => {
     expect(keys).toContain("launchAtLogin");
     expect(keys).toContain("hubUrl");
   });
+
+  test("hub zod allows empty remoteAuthToken", () => {
+    const desktop = hubSettingsSection.platforms.desktop;
+    expect(desktop?.kind).toBe("form");
+    if (desktop?.kind !== "form") return;
+    const parsed = desktop.fields.zodSchema.safeParse({
+      hubUrl: "http://192.168.1.10:2658",
+      remoteAuthToken: "",
+    });
+    expect(parsed.success).toBe(true);
+  });
 });

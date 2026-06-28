@@ -4,8 +4,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { join } from "node:path";
 import { cloudflaredBinPath, isCloudflaredInstalled } from "./tunnel-install.ts";
-import { defaultCredentialsFile, writeTunnelIngressConfig } from "./tunnel-config-gen.ts";
-import { resolveHubPort } from "./tunnel-hub-port.ts";
+import { defaultCredentialsFile, refreshTunnelIngressFromConfig } from "./tunnel-config-gen.ts";
 import { cloudflaredRunArgv } from "./tunnel-run.ts";
 import {
   renderTunnelSystemdUnit,
@@ -14,6 +13,7 @@ import {
 } from "./tunnel-systemd-unit.ts";
 import { cloudflaredRunExecStart } from "./tunnel-run.ts";
 import { serviceUnitDir } from "../service-common.ts";
+import { writeStatusLine } from "../service-common.ts";
 import { SYSTEMD_UNIT, systemdUserAvailable } from "../systemd-unit.ts";
 import {
   formatTunnelConnectedLabel,
@@ -36,17 +36,16 @@ export function isTunnelEnabled(): boolean {
   return cfg?.enabled === true;
 }
 
-/** 按当前 Hub 端口（status 文件 / 默认 2658）刷新 cloudflared ingress */
+/** 按当前 Hub/Web 端口刷新 cloudflared ingress */
 export function refreshTunnelIngressFromService(): boolean {
-  const cfg = FileConfig.open().data.tunnel;
-  if (!cfg?.hostname) return false;
-  writeTunnelIngressConfig({
-    hostname: cfg.hostname,
-    hubPort: resolveHubPort(),
-    credentialsFile: defaultCredentialsFile(),
-    tunnelId: cfg.cloudflare?.tunnel_id,
-  });
-  return true;
+  return refreshTunnelIngressFromConfig();
+}
+
+export function migrateLegacyTunnelUnit(): void {
+  if (!systemdUserAvailable()) return;
+  if (!existsSync(tunnelUnitPath())) return;
+  systemctl("disable", "--now", TUNNEL_SYSTEMD_UNIT);
+  writeStatusLine("info", "已停用旧 anima-tunnel.service（Tunnel 现由 anima.service stack 托管）");
 }
 
 export function ensureTunnelUnitFile(): boolean {
@@ -84,13 +83,9 @@ export function stopTunnelViaSystemd(): void {
   systemctl("stop", TUNNEL_SYSTEMD_UNIT);
 }
 
-/** systemd stop 目标：tunnel（若存在）与 hub 一次并行停止 */
+/** systemd stop 目标：单一 anima.service stack */
 export function hubStackSystemdUnits(): string[] {
-  const units = [SYSTEMD_UNIT];
-  if (existsSync(tunnelUnitPath())) {
-    units.unshift(TUNNEL_SYSTEMD_UNIT);
-  }
-  return units;
+  return [SYSTEMD_UNIT];
 }
 
 /**

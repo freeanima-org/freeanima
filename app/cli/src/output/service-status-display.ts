@@ -73,6 +73,13 @@ export function printServiceRunningStatus(opts: {
     haConnections: number | null;
     publicUrl: string | null;
     apiUrl: string | null;
+    webUrl?: string | null;
+  } | null;
+  web?: {
+    running: boolean;
+    host: string;
+    port: number;
+    publicUrl: string | null;
   } | null;
 }): void {
   const api = opts.body ?? {};
@@ -116,6 +123,15 @@ export function printServiceRunningStatus(opts: {
     }
     printField("public", tunnelPublic);
     if (tunnelApi) printField("api", tunnelApi);
+    const tunnelWeb = opts.tunnel?.webUrl;
+    if (tunnelWeb) printField("web", tunnelWeb);
+  }
+
+  if (opts.web) {
+    printSection("web");
+    printField("running", opts.web.running ? "yes" : "no");
+    printField("http", `http://${opts.web.host}:${opts.web.port}/chat`);
+    if (opts.web.publicUrl) printField("public", opts.web.publicUrl);
   }
 
   const config = (api.config as Record<string, unknown>) ?? {};

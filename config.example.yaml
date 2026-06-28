@@ -159,6 +159,7 @@ compression:
 # tunnel:
 #   enabled: true
 #   hostname: anima.example.com
+#   web_hostname: app.anima.example.com
 #   cloudflare:
 #     account_id: ...
 #     tunnel_id: ...
@@ -166,3 +167,10 @@ compression:
 #   credentials:
 #     api_token: credential("services/cloudflare/api-token", "token")
 #     tunnel_credentials: credential("services/cloudflare/tunnel-credentials", "json")
+
+# 浏览器 Web UI（静态托管，默认 :2659；随 anima service stack 启动）
+# web:
+#   enabled: true
+#   host: 127.0.0.1
+#   port: 2659
+#   public_url: https://app.anima.example.com

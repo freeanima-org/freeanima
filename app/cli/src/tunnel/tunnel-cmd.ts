@@ -113,8 +113,6 @@ export function startTunnelSidecar(opts: { foreground: boolean }): void {
   if (!status.enabled || !status.configExists) return;
   if (opts.foreground) {
     startTunnelForeground();
-  } else if (systemdUserAvailable()) {
-    startTunnelViaSystemd();
   }
 }
 

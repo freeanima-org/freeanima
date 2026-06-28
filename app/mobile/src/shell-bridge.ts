@@ -63,13 +63,13 @@ async function bootstrapShellBridge(): Promise<void> {
     const hubUrl = await loadHubUrl();
     const remoteAuthToken = await loadRemoteAuthToken();
 
-    if (hubUrl && remoteAuthToken) {
-      window.satelliteShell = await buildMobileShell(hubUrl, remoteAuthToken);
+    if (hubUrl) {
+      window.satelliteShell = await buildMobileShell(hubUrl, remoteAuthToken ?? "");
     }
 
     if (path.startsWith("/settings")) return;
 
-    if (!hubUrl || !remoteAuthToken) {
+    if (!hubUrl) {
       if (path !== SETTINGS_PAGE) replaceShellPath(SETTINGS_PAGE);
       return;
     }

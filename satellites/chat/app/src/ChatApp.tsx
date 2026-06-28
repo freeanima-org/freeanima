@@ -15,6 +15,7 @@ import {
 import type { SapConnectionState } from "@freeanima/sap-contract";
 import { getAppLocale, initAppLocale, m, toggleAppLocale } from "@chat/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@chat/lib/input-draft.ts";
+import { useMobileLayout } from "@chat/lib/layout.ts";
 import {
   getSapDirectClient,
   reconnectSap,
@@ -123,6 +124,8 @@ export function ChatApp() {
   const [fridgeLoading, setFridgeLoading] = useState(false);
   const pendingRecoveryKeyRef = useRef<string | null>(null);
   const nativeShell = Boolean(getSatelliteShell()?.isNativeShell);
+  const mobileLayout = useMobileLayout();
+  const useDrawerNav = nativeShell || mobileLayout;
   const keyboardInset = useKeyboardInset(nativeShell);
 
   const streamVisible = streaming && streamingConversationId === currentId;
@@ -679,7 +682,7 @@ export function ChatApp() {
       <header className="shrink-0 flex items-center gap-2 px-3 py-2 border-b border-base-300 bg-base-200">
         <button
           type="button"
-          className="btn btn-ghost btn-sm btn-square lg:hidden"
+          className={`btn btn-ghost btn-sm btn-square ${useDrawerNav ? "" : "hidden"}`}
           onClick={() => setSidebarOpen((v) => !v)}
         >
           ☰
@@ -688,7 +691,7 @@ export function ChatApp() {
         <span className="flex-1" />
         <button
           type="button"
-          className="btn btn-primary btn-xs lg:hidden"
+          className={`btn btn-primary btn-xs ${useDrawerNav ? "" : "hidden"}`}
           onClick={startConversation}
         >
           {m.admin_common_new_conversation()}
@@ -712,9 +715,9 @@ export function ChatApp() {
       </header>
 
       <div className="flex flex-1 min-h-0 relative">
-        {sidebarOpen ? (
+        {sidebarOpen && useDrawerNav ? (
           <div
-            className="lg:hidden safe-fixed-overlay z-30 bg-black/50"
+            className="safe-fixed-overlay z-30 bg-black/50"
             onClick={() => setSidebarOpen(false)}
           />
         ) : null}
@@ -722,7 +725,11 @@ export function ChatApp() {
         <aside
           className={[
             "shrink-0 w-64 flex flex-col border-r border-base-300 bg-base-200/30 min-h-0",
-            sidebarOpen ? "safe-fixed-sidebar z-40 lg:static" : "hidden lg:flex",
+            useDrawerNav
+              ? sidebarOpen
+                ? "safe-fixed-sidebar z-40 flex"
+                : "hidden"
+              : "relative flex",
           ].join(" ")}
         >
           <div className="p-2 space-y-2">

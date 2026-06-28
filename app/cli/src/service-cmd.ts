@@ -20,11 +20,12 @@ import { REPO_ROOT } from "@freeanima/platform";
 import { renderSystemdUnit, systemdUserAvailable, SYSTEMD_UNIT } from "./systemd-unit.ts";
 import { printServiceRunningStatus } from "./output/service-status-display.ts";
 import { waitForHubReadyOrWarn } from "./wait-hub-ready.ts";
-import { startTunnelSidecar, stopTunnelSidecar } from "./tunnel/tunnel-cmd.ts";
 import { stopHubStackViaSystemd } from "./tunnel/tunnel-supervisor.ts";
-import { getTunnelStatus } from "./tunnel/tunnel-supervisor.ts";
+import { getTunnelStatus, migrateLegacyTunnelUnit } from "./tunnel/tunnel-supervisor.ts";
 import { buildTunnelSnapshot } from "@freeanima/platform/connectors/tunnel";
 import { FileConfig, validateConfigOnStartup } from "@freeanima/platform/config";
+import { runServiceStack } from "./stack/supervisor.ts";
+import { probeWebHealth, resolveWebHostPort } from "./web/web-runtime.ts";
 
 export type ServiceArgs = {
   action: string;
@@ -172,6 +173,10 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
   if (httpUp) {
     const tunnelStatus = getTunnelStatus();
     const tunnelUrls = buildTunnelSnapshot(FileConfig.open().data.tunnel);
+    const webCfg = FileConfig.open().data.web;
+    const webHostPort = resolveWebHostPort(webCfg);
+    const webUp =
+      webCfg?.enabled === true ? await probeWebHealth(webHostPort.host, webHostPort.port) : false;
     printServiceRunningStatus({
       body,
       statusFile,
@@ -187,6 +192,15 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
             haConnections: tunnelStatus.haConnections,
             publicUrl: tunnelUrls.public_url,
             apiUrl: tunnelUrls.api_url,
+            webUrl: tunnelUrls.web_url,
+          }
+        : null,
+      web: webCfg?.enabled
+        ? {
+            running: webUp,
+            host: webHostPort.host,
+            port: webHostPort.port,
+            publicUrl: webCfg?.public_url ?? null,
           }
         : null,
     });
@@ -248,31 +262,8 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
       }
       console.log("Free Anima · starting in foreground…");
       installErrorLogHandlers();
-      const onStop = (): void => {
-        stopTunnelSidecar();
-      };
-      process.once("SIGINT", onStop);
-      process.once("SIGTERM", onStop);
       try {
-        const { serve } = await import("@freeanima/platform");
-        const { startApiHttpServers, closeHttpServers, waitForDrainWithTimeout } =
-          await import("@freeanima/admin-api");
-        const fileConfig = FileConfig.open();
-        const remoteAuthToken = fileConfig.data.remote_auth?.token;
-        await serve(args.host, args.port, {
-          foreground: true,
-          http: {
-            start: (hosts, port) =>
-              startApiHttpServers(hosts, port, {
-                remoteAuthToken,
-              }),
-            close: closeHttpServers,
-            waitForDrain: waitForDrainWithTimeout,
-          },
-          onReady: () => {
-            startTunnelSidecar({ foreground: true });
-          },
-        });
+        await runServiceStack({ host: args.host, port: args.port });
       } catch (e) {
         logStartupError("Service startup failed", e);
         process.exit(1);
@@ -283,13 +274,12 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
     if (!systemdUserAvailable()) {
       await validateConfigOnStartup();
       await startDetachedWithoutSystemd(args);
-      if (await waitForHubReadyOrWarn(args.host, args.port)) {
-        startTunnelSidecar({ foreground: false });
-      }
+      await waitForHubReadyOrWarn(args.host, args.port);
       return;
     }
 
     await validateConfigOnStartup();
+    migrateLegacyTunnelUnit();
     ensureUnitFile(args.host, args.port);
     systemctl("daemon-reload");
     const r = systemctl("enable", "--now", SYSTEMD_UNIT);
@@ -301,22 +291,18 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
     console.log(`  unit: ${serviceUnitPath()}`);
     console.log(`  address: http://${args.host}:${args.port}`);
     console.log("  status: anima service status");
-    if (await waitForHubReadyOrWarn(args.host, args.port)) {
-      startTunnelSidecar({ foreground: false });
-    }
+    await waitForHubReadyOrWarn(args.host, args.port);
     return;
   }
 
   if (action === "stop") {
     if (systemdUserAvailable() && existsSync(serviceUnitPath())) {
-      writeStatusLine("info", "Stopping hub…");
+      writeStatusLine("info", "Stopping stack…");
       const r = stopHubStackViaSystemd();
       if (r?.status === 0) {
         console.log("Free Anima stopped (systemd)");
         return;
       }
-    } else {
-      stopTunnelSidecar();
     }
     const pid = checkServerAlive();
     if (pid == null) {
@@ -337,13 +323,12 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
 
   if (action === "restart") {
     if (systemdUserAvailable() && existsSync(serviceUnitPath())) {
+      migrateLegacyTunnelUnit();
       ensureUnitFile(args.host, args.port);
       systemctl("daemon-reload");
       const r = systemctl("restart", SYSTEMD_UNIT);
       if (r.status === 0) {
-        if (await waitForHubReadyOrWarn(args.host, args.port)) {
-          startTunnelSidecar({ foreground: false });
-        }
+        await waitForHubReadyOrWarn(args.host, args.port);
         writeStatusLine("ok", "Restarted (systemd)");
         return;
       }

@@ -1,8 +1,11 @@
 {
   "name": "@freeanima/app-web",
-  "description": "FreeAnima 浏览器开发壳（聊天室 + 管理台 + 设置，仅本地调试）",
+  "description": "FreeAnima 浏览器壳（聊天室 + 管理台 + 设置）；生产由 anima web / service stack 托管",
   "private": true,
   "type": "module",
+  "exports": {
+    "./static-server": "./src/static-server.ts"
+  },
   "scripts": {
     "build": "vite build",
     "predev": "cd ../../ && bun run paraglide:compile && rm -rf app/web/node_modules/.vite-app-web/.vite",

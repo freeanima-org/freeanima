@@ -22,7 +22,7 @@ export function renderSystemdUnit(
 ): string {
   const execStart = `${binPath} service start --foreground --host ${host} --port ${port}`;
   return `[Unit]
-Description=Free Anima Free Anima（single-process HTTP service）
+Description=FreeAnima stack（Hub + optional Web + Tunnel）
 After=network.target
 
 [Service]
