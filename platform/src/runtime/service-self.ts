@@ -2,6 +2,7 @@ import type { SelfBlockKey } from "@freeanima/core/repos";
 import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
 import { toSelfBlockView } from "@freeanima/capabilities-identity";
 import type { RuntimeDeps } from "./runtime-deps.ts";
+import { listSelfBlocks as listPgSelfBlocks } from "@freeanima/core/db/pg/self-layer";
 
 export type SelfBlockDisplay = {
   block_key: SelfBlockKey;
@@ -38,9 +39,9 @@ function emptyPlaceholderBlocks(): SelfBlockDisplay[] {
 }
 
 /** Admin self-layer six blocks read-only display */
-export async function listSelfBlocks(deps: RuntimeDeps): Promise<{ blocks: SelfBlockDisplay[] }> {
+export async function listSelfBlocks(_deps: RuntimeDeps): Promise<{ blocks: SelfBlockDisplay[] }> {
   try {
-    const rows = await deps.engine.repos.selfLayer.listBlocks();
+    const rows = await listPgSelfBlocks();
     const blocks = rows.map((row) => {
       const view = toSelfBlockView(row);
       return {

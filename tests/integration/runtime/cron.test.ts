@@ -38,10 +38,7 @@ describePg("cron", () => {
   beforeEach(async () => {
     const ctx = await beginIntegrationCase("anima-cron-");
     home = ctx.home;
-    await initCronModule({
-      store: ctx.pg.engine.repos.cron,
-      logStore: ctx.pg.engine.repos.cronLog,
-    });
+    await initCronModule();
   });
 
   afterEach(async () => {

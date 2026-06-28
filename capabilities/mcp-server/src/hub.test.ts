@@ -13,7 +13,7 @@ describe("isMcpPath", () => {
 describe("createMcpBunHandler", () => {
   it("returns undefined for non-mcp paths", async () => {
     const registry = new ToolSetRegistry();
-    const handler = createMcpBunHandler({ toolSets: registry, repos: {} as never });
+    const handler = createMcpBunHandler({ toolSets: registry });
     expect(await handler(new Request("http://127.0.0.1/api/health"))).toBeUndefined();
   });
 
@@ -34,7 +34,7 @@ describe("createMcpBunHandler", () => {
         handler: () => toolResult({ ok: false }),
       },
     ]);
-    const handler = createMcpBunHandler({ toolSets: registry, repos: {} as never });
+    const handler = createMcpBunHandler({ toolSets: registry });
     const res = await handler(
       new Request("http://127.0.0.1/mcp", {
         method: "POST",
@@ -67,7 +67,7 @@ describe("createMcpBunHandler", () => {
         handler: () => toolResult({ ok: true }),
       },
     ]);
-    const handler = createMcpBunHandler({ toolSets: registry, repos: {} as never });
+    const handler = createMcpBunHandler({ toolSets: registry });
     const initRes = await handler(
       new Request("http://127.0.0.1/mcp", {
         method: "POST",

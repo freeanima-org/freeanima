@@ -2,7 +2,6 @@ export * from "./loop-engine.ts";
 export {
   runWithToolContext,
   getToolConversationId,
-  getToolRepos,
   getToolRegistry,
   grantExecutableTools,
   isExecutableTool,

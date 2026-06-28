@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { RESIDENT_TOP_N } from "@freeanima/core/repos";
+import { listResidentSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
 
-import { getSemanticMemoryStore } from "./semantic-port.ts";
 import { formatResidentMemoryLine } from "./memory-reference.ts";
 
 const MAX_AGENTS_CHARS = 8000;
@@ -38,7 +38,7 @@ function readAgents(cwd: string | null | undefined): string {
 }
 
 async function renderResidentMemory(): Promise<string> {
-  const facts = await getSemanticMemoryStore().listResident(RESIDENT_TOP_N);
+  const facts = await listResidentSemanticMemory(RESIDENT_TOP_N);
   if (!facts.length) return "";
   const lines = facts.map((f) => formatResidentMemoryLine(f.content, f.id, f.pinned));
   return wrapPromptSection("Resident memory", lines.join("\n"), RESIDENT_MEMORY_SYSTEM_FRAME);

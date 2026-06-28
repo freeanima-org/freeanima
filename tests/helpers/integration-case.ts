@@ -12,32 +12,16 @@ import { getAcpManager } from "@freeanima/capabilities-acp";
 import { MaskRegistry } from "@freeanima/capabilities-task/mask";
 import { initMaskSystem } from "@freeanima/platform/runtime/mask-wire";
 import { registerServiceTools, resetRegisterServiceToolsForTest } from "@freeanima/platform";
-import {
-  registerMemoryConversationStore,
-  registerSemanticMemoryStore,
-  registerAutobiographicalMemoryStore,
-  registerDreamMemoryStore,
-  registerLimbicMemoryStore,
-  resetSemanticMemoryStoreForTests,
-  resetMemoryConversationStoreForTests,
-  resetAutobiographicalMemoryStoreForTests,
-  resetDreamMemoryStoreForTests,
-  resetLimbicMemoryStoreForTests,
-  registerDreamFridge,
-  resetDreamFridgeForTests,
-} from "@freeanima/capabilities-memory";
-import {
-  registerSelfLayerStore,
-  resetSelfLayerStoreForTests,
-  invalidateSelfLayerPromptCache,
-} from "@freeanima/capabilities-identity";
+import { registerDreamFridge, resetDreamFridgeForTests } from "@freeanima/capabilities-memory";
+import { invalidateSelfLayerPromptCache } from "@freeanima/capabilities-identity";
+import { upsertSelfBlock } from "@freeanima/core/db/pg/self-layer";
 
 import { removeManagedAnimaTmpPath, removeTempDir } from "@freeanima/core/util";
 import { conversations } from "@freeanima/core/db/schema";
 import { isNotNull } from "drizzle-orm";
 
 import { bindHomeChannelConfig } from "@freeanima/platform/ports/home-channel";
-import { getDb } from "@freeanima/platform/connectors/db-pg";
+import { getDb } from "@freeanima/core/db/pg";
 import { beginLogIsolation, resetServiceLogger } from "./log-isolation.ts";
 import { pgTestUrl } from "./pg-test-gate.ts";
 import { getActivePgTestContext } from "./pg-test.ts";
@@ -58,9 +42,8 @@ async function cleanupIntegrationSessionCwds(): Promise<void> {
 }
 
 async function flushActiveCompressionSummaries(): Promise<void> {
-  const ctx = getActivePgTestContext();
-  if (ctx) {
-    await flushCompressionSummaries(ctx.engine.repos);
+  if (getActivePgTestContext()) {
+    await flushCompressionSummaries();
   }
 }
 
@@ -68,7 +51,7 @@ async function flushActiveCompressionSummaries(): Promise<void> {
 export function wireIntegrationRuntimeContext(pg: PgTestContext): void {
   bindHomeChannelConfig(pg.config);
   const kernel = createServiceKernel(pg.config);
-  const conversation = createConversationService(pg.engine.repos, pg.engine.catalog.toolSets);
+  const conversation = createConversationService(pg.engine.catalog.toolSets);
   const masks = new MaskRegistry();
   initMaskSystem(masks);
   const fullDeps = {
@@ -101,33 +84,21 @@ export function wireIntegrationRuntimeContext(pg: PgTestContext): void {
     hookRegistry: kernel.hookRegistry,
     getToolRegistry: () => pg.engine.catalog.toolSets,
   });
-  resetSemanticMemoryStoreForTests();
-  resetMemoryConversationStoreForTests();
-  resetAutobiographicalMemoryStoreForTests();
-  resetDreamMemoryStoreForTests();
-  resetLimbicMemoryStoreForTests();
   resetDreamFridgeForTests();
-  resetSelfLayerStoreForTests();
-  registerMemoryConversationStore(pg.engine.repos.conversation);
-  registerSemanticMemoryStore(pg.engine.repos.semanticMemory);
-  registerAutobiographicalMemoryStore(pg.engine.repos.autobiographicalMemory);
-  registerLimbicMemoryStore(pg.engine.repos.limbicMemory);
-  registerDreamMemoryStore(pg.engine.repos.dreamMemory);
   registerDreamFridge({
     setReminder: async () => {},
     dismissReminder: async () => {},
   });
-  registerSelfLayerStore(pg.engine.repos.selfLayer);
   invalidateSelfLayerPromptCache();
 }
 
 /** Integration test: optionally write self_model and refresh prompt cache */
 export async function syncIntegrationSelfLayer(
-  pg: PgTestContext,
+  _pg: PgTestContext,
   selfModel?: string,
 ): Promise<void> {
   if (selfModel !== undefined) {
-    await pg.engine.repos.selfLayer.upsertBlock({
+    await upsertSelfBlock({
       block_key: "self_model",
       content: selfModel,
       updated_by: "test",

@@ -5,7 +5,18 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { getTestEngine } from "../../helpers/pg-test.ts";
+import {
+  countSemanticMemory,
+  countSemanticMemorySearch,
+  createSemanticMemory,
+  deleteSemanticMemory,
+  findSemanticMemoryByContent,
+  getSemanticMemory,
+  listResidentSemanticMemory,
+  searchSemanticMemory,
+  searchSemanticMemoryFts,
+  updateSemanticMemory,
+} from "@freeanima/core/db/pg/semantic-memory";
 
 describePg("semantic_memory PG", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -19,74 +30,76 @@ describePg("semantic_memory PG", () => {
   });
 
   it("CRUD + resident + FTS", async () => {
-    const store = getTestEngine().repos.semanticMemory;
-
-    const id = await store.create({
+    const id = await createSemanticMemory({
       content: "Freeanima prefers concise direct communication",
       type: "preference",
       pinned: true,
     });
     expect(id).toMatch(/^f-\d{6}-[0-9a-f]{4}$/);
 
-    const loaded = await store.get(id);
+    const loaded = await getSemanticMemory(id);
     expect(loaded?.content).toContain("Freeanima");
     expect(loaded?.type).toBe("preference");
     expect(loaded?.pinned).toBe(true);
 
-    await store.update({ id, content: "Freeanima prefers concise expression", pinned: false });
-    const updated = await store.get(id);
+    await updateSemanticMemory({
+      id,
+      content: "Freeanima prefers concise expression",
+      pinned: false,
+    });
+    const updated = await getSemanticMemory(id);
     expect(updated?.content).toBe("Freeanima prefers concise expression");
     expect(updated?.pinned).toBe(false);
 
-    const pinnedId = await store.create({
+    const pinnedId = await createSemanticMemory({
       content: "pinned probe memory",
       pinned: true,
     });
-    const resident = await store.listResident(10);
+    const resident = await listResidentSemanticMemory(10);
     expect(resident[0]?.id).toBe(pinnedId);
 
-    const hits = await store.searchFts("Freeanima", { limit: 5 });
+    const hits = await searchSemanticMemoryFts("Freeanima", { limit: 5 });
     expect(hits.length).toBeGreaterThan(0);
     expect(hits.some((h) => h.id === id)).toBe(true);
 
-    const dup = await store.findByContent("  Freeanima prefers concise expression  ");
+    const dup = await findSemanticMemoryByContent("  Freeanima prefers concise expression  ");
     expect(dup?.id).toBe(id);
 
-    expect(await store.count()).toBeGreaterThanOrEqual(2);
+    expect(await countSemanticMemory()).toBeGreaterThanOrEqual(2);
 
-    const deleted = await store.delete(pinnedId);
+    const deleted = await deleteSemanticMemory(pinnedId);
     expect(deleted).toBe(true);
-    expect(await store.get(pinnedId)).toBeNull();
+    expect(await getSemanticMemory(pinnedId)).toBeNull();
   });
 
   it("FTS proximity: prefers does not false-hit nice/deviated", async () => {
-    const store = getTestEngine().repos.semanticMemory;
-
-    const targetId = await store.create({
+    const targetId = await createSemanticMemory({
       content: "Freeanima prefers concise direct communication",
       type: "preference",
     });
-    await store.create({ content: "Weather is nice today, feeling good", type: "world" });
-    await store.create({ content: "Discussion deviated from the original topic", type: "world" });
+    await createSemanticMemory({ content: "Weather is nice today, feeling good", type: "world" });
+    await createSemanticMemory({
+      content: "Discussion deviated from the original topic",
+      type: "world",
+    });
 
-    const hits = await store.searchFts("prefers", { limit: 10 });
+    const hits = await searchSemanticMemoryFts("prefers", { limit: 10 });
     const hitIds = hits.map((h) => h.id);
     expect(hitIds).toContain(targetId);
     expect(hits.every((h) => h.content.includes("prefers"))).toBe(true);
   });
 
   it("search offset and countSearch align", async () => {
-    const store = getTestEngine().repos.semanticMemory;
-    await store.create({ content: "offset probe one", type: "world" });
-    await store.create({ content: "offset probe two", type: "world" });
+    await createSemanticMemory({ content: "offset probe one", type: "world" });
+    await createSemanticMemory({ content: "offset probe two", type: "world" });
 
-    const total = await store.countSearch({ query: "offset probe" });
+    const total = await countSemanticMemorySearch({ query: "offset probe" });
     expect(total).toBeGreaterThanOrEqual(2);
 
-    const page = await store.search({ query: "offset probe", limit: 1, offset: 0 });
+    const page = await searchSemanticMemory({ query: "offset probe", limit: 1, offset: 0 });
     expect(page.length).toBe(1);
 
-    const page2 = await store.search({ query: "offset probe", limit: 1, offset: 1 });
+    const page2 = await searchSemanticMemory({ query: "offset probe", limit: 1, offset: 1 });
     expect(page2.length).toBe(1);
     expect(page2[0]?.id).not.toBe(page[0]?.id);
   });

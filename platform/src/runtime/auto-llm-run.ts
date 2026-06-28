@@ -9,6 +9,8 @@ import { judgeGoal } from "@freeanima/core/llm/goal-judge";
 import { getProfileHopModel } from "@freeanima/core/config";
 import { PROFILE_CHAT, PROFILE_GOAL_JUDGE } from "@freeanima/core/provider";
 import { formatGoalContinuePrompt, formatGoalExhaustedMessage } from "@freeanima/runtime/goal";
+import { isPostgresPrimary } from "@freeanima/core/db/pg";
+import { appendAutoLlmRun } from "@freeanima/core/db/pg/auto-llm-run";
 
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import type { ResolvedMask } from "@freeanima/capabilities-task/mask";
@@ -211,7 +213,6 @@ async function runEngineOnce(
       }
     },
     {
-      repos: deps.conversation.repos,
       tools: deps.engine.catalog.toolSets,
       contextKind: "auto_llm",
       parentConversationId: input.parentConversationId,
@@ -223,7 +224,7 @@ async function runEngineOnce(
 }
 
 async function persistAutoLlmRun(
-  deps: FullRuntimeDeps,
+  _deps: FullRuntimeDeps,
   row: {
     id: string;
     input: AutoLlmRunInput;
@@ -237,8 +238,8 @@ async function persistAutoLlmRun(
     finishedAt: string;
   },
 ): Promise<void> {
-  if (!deps.conversation.repos.pgAvailable) return;
-  await deps.conversation.repos.autoLlmRun.append({
+  if (!isPostgresPrimary()) return;
+  await appendAutoLlmRun({
     id: row.id,
     run_name: row.input.runName,
     run_kind: row.input.runKind,

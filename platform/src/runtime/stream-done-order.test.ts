@@ -4,7 +4,6 @@ import * as turn from "@freeanima/runtime/turn";
 import * as engine from "@freeanima/runtime/loop";
 import type { StreamEvent } from "@freeanima/runtime/loop";
 import { createConversationService } from "@freeanima/runtime/conversation";
-import { nullPgRepositories } from "@freeanima/core/repos";
 import { MaskRegistry } from "@freeanima/capabilities-task/mask";
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/runtime";
@@ -24,7 +23,6 @@ const testConfig = Config.fromSnapshot(animaConfigSchema.parse(parseYaml(MINIMAL
 registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
 const testEngine = createEngine({
   catalog,
-  repos: nullPgRepositories,
   config: testConfig,
   llm: initLlmRuntime(testConfig.data),
   logger: createTestLogger(),
@@ -32,7 +30,7 @@ const testEngine = createEngine({
 
 function wireTestRuntime() {
   const kernel = createServiceKernel(testConfig);
-  const conversation = createConversationService(nullPgRepositories, catalog.toolSets);
+  const conversation = createConversationService(catalog.toolSets);
   getAcpManager().wireRegistries({
     toolSets: catalog.toolSets,
     skills: catalog.skills,
@@ -66,6 +64,14 @@ describe("sendMessageStream done order", () => {
     restores.push(
       spyOn(conv, "conversationExists").mockResolvedValue(true),
       spyOn(conv, "assertConversationPlatform").mockResolvedValue(undefined),
+      spyOn(conv, "loadConversationMeta").mockResolvedValue({
+        role: "conversation_meta",
+        model: "test",
+        cached_toolsets: [],
+        functions: [],
+        timestamp: "",
+        platform: "chat",
+      }),
       spyOn(turn, "beginTurnFast").mockResolvedValue("hello"),
       spyOn(turn, "beginTurnPrepare").mockResolvedValue([[{ role: "user", content: "hello" }], []]),
       spyOn(conv, "loadConversationTools").mockResolvedValue([]),

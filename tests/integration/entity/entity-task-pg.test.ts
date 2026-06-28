@@ -12,37 +12,28 @@ import {
   completeTaskItem,
   listTaskItems,
   listTaskLists,
-  registerEntityTaskModule,
-  resetEntityTaskModuleForTests,
 } from "@freeanima/capabilities-task";
+import { getEntity } from "@freeanima/core/db/pg/entity";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { getTestEngine } from "../../helpers/pg-test.ts";
 
 describePg("entity task PG", () => {
   const prev = process.env.FREEANIMA_HOME;
 
   beforeEach(async () => {
     await beginIntegrationCase("freeanima-entity-task-");
-    registerEntityTaskModule({
-      entityStore: getTestEngine().repos.entity,
-      entitySearch: getTestEngine().repos.entitySearch,
-    });
   });
 
   afterEach(async () => {
-    resetEntityTaskModuleForTests();
     await endIntegrationCase();
     await restoreIntegrationHome(prev);
   });
 
   it("creates task_list and task_item entities with title/content columns", async () => {
-    const store = getTestEngine().repos.entity;
-
     const list = await createTaskList({ name: "工作" });
     expect(list.name).toBe("工作");
     expect(list.item_count).toBe(0);
@@ -59,12 +50,12 @@ describePg("entity task PG", () => {
     expect(item.status).toBe("pending");
     expect(item.list_id).toBe(list.id);
 
-    const listRow = await store.get(list.id);
+    const listRow = await getEntity(list.id);
     expect(listRow?.primary_component).toBe(TASK_LIST_COMPONENT);
     expect(listRow?.title).toBe("工作");
     expect(asTaskList(listRow!)).toMatchObject({ name: "工作" });
 
-    const itemRow = await store.get(item.id);
+    const itemRow = await getEntity(item.id);
     expect(itemRow?.primary_component).toBe(TASK_ITEM_COMPONENT);
     expect(itemRow?.title).toBe("写文档");
     expect(itemRow?.content).toBe("第一章草稿");

@@ -1,21 +1,17 @@
-import type {
-  CronJobRow,
-  CronJobStorePort,
-  CronJobUpdateInput,
-  CronLogStorePort,
-} from "@freeanima/core/repos";
-import { setCronLogStore } from "./cron-log.ts";
+import type { CronJobRow, CronJobUpdateInput } from "@freeanima/core/db/pg/cron";
+import {
+  createCronJob,
+  deleteCronJob,
+  getCronJob,
+  listAllCronJobs,
+  updateCronJob,
+  upsertBuiltinCronJob,
+} from "@freeanima/core/db/pg/cron";
 import { CronHandleManager } from "./handle-manager.ts";
 import { CronJob } from "./models.ts";
 import { runJobById } from "./runner.ts";
 
-let store: CronJobStorePort | null = null;
 let handles: CronHandleManager | null = null;
-
-export function getCronStore(): CronJobStorePort {
-  if (!store) throw new Error("Cron module not initialized");
-  return store;
-}
 
 export function getCronHandleManager(): CronHandleManager {
   if (!handles) throw new Error("Cron module not initialized");
@@ -23,15 +19,11 @@ export function getCronHandleManager(): CronHandleManager {
 }
 
 export function isCronModuleInitialized(): boolean {
-  return store != null && handles != null;
+  return handles != null;
 }
 
-export async function initCronModule(opts: {
-  store: CronJobStorePort;
-  logStore?: CronLogStorePort;
-}): Promise<void> {
-  store = opts.store;
-  setCronLogStore(opts.logStore ?? null);
+export async function initCronModule(): Promise<void> {
+  if (handles) return;
   handles = new CronHandleManager((jobId) => runJobById(jobId));
   await ensureBuiltinCronJobs();
   const jobs = await loadAllJobs();
@@ -41,8 +33,6 @@ export async function initCronModule(opts: {
 export function stopCronModule(): void {
   handles?.stopAll();
   handles = null;
-  store = null;
-  setCronLogStore(null);
 }
 
 /** Tier 2 test injection — clears cron module singleton between cases */
@@ -51,14 +41,13 @@ export function resetCronModuleForTests(): void {
 }
 
 export async function loadAllJobs(): Promise<CronJob[]> {
-  if (!store) return [];
-  const rows = await store.listAll();
-  return rows.map((row) => CronJob.fromRow(row));
+  if (!handles) return [];
+  const rows = await listAllCronJobs();
+  return rows.map((row: CronJobRow) => CronJob.fromRow(row));
 }
 
 export async function getJob(jobId: string): Promise<CronJob | null> {
-  if (!store) return null;
-  const row = await store.get(jobId);
+  const row = await getCronJob(jobId);
   return row ? CronJob.fromRow(row) : null;
 }
 
@@ -91,7 +80,7 @@ export async function ensureBuiltinCronJobs(): Promise<void> {
 
 async function _ensureBuiltinSleepCycleCronJob(): Promise<void> {
   const id = "builtin-sleep-cycle";
-  const scheduleChanged = await getCronStore().upsertBuiltin({
+  const scheduleChanged = await upsertBuiltinCronJob({
     id,
     name: "sleep-cycle",
     schedule: "0 2 * * *",
@@ -107,4 +96,16 @@ async function _ensureBuiltinSleepCycleCronJob(): Promise<void> {
 
 export function cronRowToCreateInput(row: CronJobRow) {
   return { ...row };
+}
+
+export async function createCronJobRow(input: Parameters<typeof createCronJob>[0]): Promise<void> {
+  await createCronJob(input);
+}
+
+export async function updateCronJobRow(patch: CronJobUpdateInput): Promise<boolean> {
+  return updateCronJob(patch);
+}
+
+export async function deleteCronJobRow(id: string): Promise<boolean> {
+  return deleteCronJob(id);
 }

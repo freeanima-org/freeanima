@@ -5,14 +5,19 @@ import {
   WORLD_CONFIG_COMPONENT,
   worldConfigBodySchema,
 } from "@freeanima/core/db/schema";
-import type { EntityRow, EntitySearchHit } from "@freeanima/core/repos";
+import type { EntityRow, EntitySearchHit } from "@freeanima/core/db/pg/entity";
 import {
+  countEntities,
+  createEntity,
   EntitySearchScopeError,
+  getEntity,
+  listEntities,
   resolvePublicAccessibleWorldIds,
-} from "@freeanima/platform/connectors/db-pg";
+  searchEntities as searchEntitiesPg,
+  updateEntity,
+} from "@freeanima/core/db/pg/entity";
 
 import { ApiHandlerError } from "./errors.ts";
-import { adminCtx } from "./runtime.ts";
 
 function mapSearchHit(row: EntitySearchHit): EntitySearchHit {
   return row;
@@ -38,7 +43,7 @@ function buildWorldConfigBody(input: {
 }
 
 async function assertSubjectEntity(id: number): Promise<EntityRow> {
-  const row = await adminCtx().engine.repos.entity.get(id);
+  const row = await getEntity(id);
   if (!row || (row.type !== "agent" && row.type !== "user")) {
     throw new ApiHandlerError(400, "owner must be an agent or user subject", {
       code: "entity_invalid_owner_subject",
@@ -51,9 +56,8 @@ async function assertNoExistingDefaultPrivateWorld(
   ownerSubjectId: number,
   excludeWorldId?: number,
 ): Promise<void> {
-  const store = adminCtx().engine.repos.entity;
-  const worlds = await store.list({ type: "world", limit: 500 });
-  const conflict = worlds.find((row) => {
+  const worlds = await listEntities({ type: "world", limit: 500 });
+  const conflict = worlds.find((row: EntityRow) => {
     if (excludeWorldId != null && row.id === excludeWorldId) return false;
     const parsed = worldConfigBodySchema.safeParse(row.body);
     return (
@@ -71,14 +75,13 @@ async function assertNoExistingDefaultPrivateWorld(
 
 async function createDefaultPrivateWorldForSubject(subject: EntityRow): Promise<number> {
   await assertNoExistingDefaultPrivateWorld(subject.id);
-  const store = adminCtx().engine.repos.entity;
   const worldTitle = subject.title.trim() || `Subject ${subject.id}`;
   const body = buildWorldConfigBody({
     private: true,
     owner_subject_id: subject.id,
     default_private: true,
   });
-  const created = await store.create({
+  const created = await createEntity({
     type: "world",
     world_id: ENTITY_ROOT_WORLD_ID,
     components: [WORLD_CONFIG_COMPONENT],
@@ -88,7 +91,7 @@ async function createDefaultPrivateWorldForSubject(subject: EntityRow): Promise<
     content: "",
     body,
   });
-  const aligned = await store.update({
+  const aligned = await updateEntity({
     id: created.id,
     world_id: created.id,
   });
@@ -99,8 +102,7 @@ async function assertPrivateWorldOwnedBySubject(
   worldId: number,
   subjectId: number,
 ): Promise<EntityRow> {
-  const store = adminCtx().engine.repos.entity;
-  const world = await store.get(worldId);
+  const world = await getEntity(worldId);
   const parsed = worldConfigBodySchema.safeParse(world?.body);
   if (
     !world ||
@@ -118,14 +120,13 @@ async function assertPrivateWorldOwnedBySubject(
 
 async function applySubjectDefaultPrivateWorld(subjectId: number, worldId: number): Promise<void> {
   await assertPrivateWorldOwnedBySubject(worldId, subjectId);
-  const store = adminCtx().engine.repos.entity;
-  const worlds = await store.list({ type: "world", limit: 500 });
+  const worlds = await listEntities({ type: "world", limit: 500 });
   for (const row of worlds) {
     const parsed = worldConfigBodySchema.safeParse(row.body);
     if (!parsed.success || parsed.data.owner_subject_id !== subjectId) continue;
     const shouldBeDefault = row.id === worldId;
     if (parsed.data.default_private === shouldBeDefault) continue;
-    await store.update({
+    await updateEntity({
       id: row.id,
       body: buildWorldConfigBody({
         private: true,
@@ -134,23 +135,22 @@ async function applySubjectDefaultPrivateWorld(subjectId: number, worldId: numbe
       }),
     });
   }
-  await store.update({
+  await updateEntity({
     id: subjectId,
     body: { default_private_world_id: worldId },
   });
 }
 
 export async function listWorldEntities(opts?: { offset?: number; limit?: number }) {
-  const store = adminCtx().engine.repos.entity;
   const offset = opts?.offset ?? 0;
   const limit = opts?.limit ?? 100;
-  const items = await store.list({ type: "world", offset, limit });
-  const total = await store.count({ type: "world" });
+  const items = await listEntities({ type: "world", offset, limit });
+  const total = await countEntities({ type: "world" });
   return { items, total };
 }
 
 export async function getWorldEntity(id: number) {
-  const row = await adminCtx().engine.repos.entity.get(id);
+  const row = await getEntity(id);
   if (!row || row.type !== "world") {
     throw new ApiHandlerError(404, "world not found", { code: "entity_world_not_found" });
   }
@@ -173,9 +173,8 @@ export async function createWorldEntity(input: {
     await assertSubjectEntity(input.owner_subject_id);
   }
 
-  const store = adminCtx().engine.repos.entity;
   const body = buildWorldConfigBody(input);
-  const created = await store.create({
+  const created = await createEntity({
     type: "world",
     world_id: ENTITY_ROOT_WORLD_ID,
     components: [WORLD_CONFIG_COMPONENT],
@@ -185,7 +184,7 @@ export async function createWorldEntity(input: {
     content: input.content ?? "",
     body,
   });
-  const aligned = await store.update({
+  const aligned = await updateEntity({
     id: created.id,
     world_id: created.id,
   });
@@ -202,8 +201,7 @@ export async function updateWorldEntity(
     owner_subject_id?: number | null;
   },
 ) {
-  const store = adminCtx().engine.repos.entity;
-  const existing = await store.get(id);
+  const existing = await getEntity(id);
   if (!existing || existing.type !== "world") {
     throw new ApiHandlerError(404, "world not found", { code: "entity_world_not_found" });
   }
@@ -241,7 +239,7 @@ export async function updateWorldEntity(
     });
   }
 
-  const updated = await store.update({
+  const updated = await updateEntity({
     id,
     title: input.title,
     summary: input.summary,
@@ -255,16 +253,15 @@ export async function updateWorldEntity(
 }
 
 export async function listSubjectEntities(opts?: { offset?: number; limit?: number }) {
-  const store = adminCtx().engine.repos.entity;
   const offset = opts?.offset ?? 0;
   const limit = opts?.limit ?? 100;
-  const items = await store.list({ types: ["agent", "user"], offset, limit });
-  const total = await store.count({ types: ["agent", "user"] });
+  const items = await listEntities({ types: ["agent", "user"], offset, limit });
+  const total = await countEntities({ types: ["agent", "user"] });
   return { items, total };
 }
 
 export async function getSubjectEntity(id: number) {
-  const row = await adminCtx().engine.repos.entity.get(id);
+  const row = await getEntity(id);
   if (!row || (row.type !== "agent" && row.type !== "user")) {
     throw new ApiHandlerError(404, "subject not found", { code: "entity_subject_not_found" });
   }
@@ -277,9 +274,8 @@ export async function createSubjectEntity(input: {
   summary?: string;
   content?: string;
 }) {
-  const store = adminCtx().engine.repos.entity;
   const primary = input.type === "agent" ? AGENT_CONFIG_COMPONENT : USER_CONFIG_COMPONENT;
-  const created = await store.create({
+  const created = await createEntity({
     type: input.type,
     world_id: ENTITY_ROOT_WORLD_ID,
     components: [primary],
@@ -291,7 +287,7 @@ export async function createSubjectEntity(input: {
   });
 
   const defaultPrivateWorldId = await createDefaultPrivateWorldForSubject(created);
-  const withDefaultWorld = await store.update({
+  const withDefaultWorld = await updateEntity({
     id: created.id,
     body: { default_private_world_id: defaultPrivateWorldId },
   });
@@ -308,8 +304,7 @@ export async function updateSubjectEntity(
     default_private_world_id?: number;
   },
 ) {
-  const store = adminCtx().engine.repos.entity;
-  const existing = await store.get(id);
+  const existing = await getEntity(id);
   if (!existing || (existing.type !== "agent" && existing.type !== "user")) {
     throw new ApiHandlerError(404, "subject not found", { code: "entity_subject_not_found" });
   }
@@ -318,7 +313,7 @@ export async function updateSubjectEntity(
     await applySubjectDefaultPrivateWorld(id, input.default_private_world_id);
   }
 
-  const updated = await store.update({
+  const updated = await updateEntity({
     id,
     title: input.title,
     summary: input.summary,
@@ -327,7 +322,7 @@ export async function updateSubjectEntity(
   if (!updated) {
     throw new ApiHandlerError(404, "subject not found", { code: "entity_subject_not_found" });
   }
-  return (await store.get(id)) ?? updated;
+  return (await getEntity(id)) ?? updated;
 }
 
 export async function searchEntities(input: {
@@ -347,13 +342,11 @@ export async function searchEntities(input: {
   offset?: number;
   mode?: "hybrid" | "filter_only";
 }) {
-  const search = adminCtx().engine.repos.entitySearch;
-  const entityStore = adminCtx().engine.repos.entity;
   const global = input.global === true;
   let accessible_world_ids: number[] | undefined;
 
   if (global) {
-    accessible_world_ids = await resolvePublicAccessibleWorldIds(entityStore);
+    accessible_world_ids = await resolvePublicAccessibleWorldIds({ list: listEntities });
     if (!accessible_world_ids.length) {
       throw new ApiHandlerError(403, "no accessible worlds for global search", {
         code: "entity_search_global_forbidden",
@@ -366,7 +359,7 @@ export async function searchEntities(input: {
   }
 
   try {
-    const result = await search.search({
+    const result = await searchEntitiesPg({
       query: input.query,
       world_id: global ? undefined : input.world_id,
       global,
@@ -393,8 +386,9 @@ export async function searchEntities(input: {
     };
   } catch (err: unknown) {
     if (err instanceof EntitySearchScopeError) {
-      const status = err.code === "entity_search_global_forbidden" ? 403 : 400;
-      throw new ApiHandlerError(status, err.message, { code: err.code });
+      const scopeErr = err;
+      const status = scopeErr.code === "entity_search_global_forbidden" ? 403 : 400;
+      throw new ApiHandlerError(status, scopeErr.message, { code: scopeErr.code });
     }
     throw err;
   }

@@ -1,9 +1,6 @@
 import { describe, it, expect, spyOn, afterEach } from "bun:test";
-import * as conv from "@freeanima/runtime/conversation";
-import * as turn from "@freeanima/runtime/turn";
 import * as engine from "@freeanima/runtime/loop";
 import { createConversationService } from "@freeanima/runtime/conversation";
-import { nullPgRepositories } from "@freeanima/core/repos";
 import { MaskRegistry } from "@freeanima/capabilities-task/mask";
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/runtime";
@@ -23,7 +20,6 @@ const testConfig = Config.fromSnapshot(animaConfigSchema.parse(parseYaml(MINIMAL
 registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
 const testEngine = createEngine({
   catalog,
-  repos: nullPgRepositories,
   config: testConfig,
   llm: initLlmRuntime(testConfig.data),
   logger: createTestLogger(),
@@ -31,7 +27,7 @@ const testEngine = createEngine({
 
 function wireTestDeps(): FullRuntimeDeps {
   const kernel = createServiceKernel(testConfig);
-  const conversation = createConversationService(nullPgRepositories, catalog.toolSets);
+  const conversation = createConversationService(catalog.toolSets);
   getAcpManager().wireRegistries({
     toolSets: catalog.toolSets,
     skills: catalog.skills,
@@ -60,52 +56,46 @@ describe("turn-lifecycle", () => {
   });
 
   it("createTurnMessageCallbacks writes appendMessage", async () => {
-    const append = spyOn(conv, "appendMessage").mockResolvedValue(undefined);
-    restores.push(append);
     const deps = wireTestDeps();
+    const append = spyOn(deps.conversation, "appendMessage").mockResolvedValue(undefined);
+    restores.push(append);
 
     const cb = createTurnMessageCallbacks(deps, "sid-1");
     await cb.onMessageAppended({ role: "assistant", content: "hi" });
     await cb.onToolRoundComplete([{ role: "tool", tool_call_id: "1", name: "t", content: "{}" }]);
 
     expect(append).toHaveBeenCalledTimes(2);
-    expect(append).toHaveBeenNthCalledWith(
-      1,
-      nullPgRepositories,
-      { role: "assistant", content: "hi" },
-      "sid-1",
-    );
+    expect(append).toHaveBeenNthCalledWith(1, { role: "assistant", content: "hi" }, "sid-1");
   });
 
   it("finalizeTurn calls finishTurn with skipMessageAppend", async () => {
-    const finish = spyOn(turn, "finishTurn").mockResolvedValue(undefined);
-    restores.push(finish);
     const deps = wireTestDeps();
+    const finish = spyOn(deps.conversation, "finishTurn").mockResolvedValue(undefined);
+    restores.push(finish);
 
     const msgs = [{ role: "user" as const, content: "q" }];
     await finalizeTurn(deps, "sid-2", msgs, "q", "model-x", ["fn"]);
 
-    expect(finish).toHaveBeenCalledWith(
-      nullPgRepositories,
-      catalog.toolSets,
-      "sid-2",
-      msgs,
-      "q",
-      "model-x",
-      ["fn"],
-      true,
-    );
+    expect(finish).toHaveBeenCalledWith("sid-2", msgs, "q", "model-x", ["fn"], true);
   });
 
   it("runSimpleTurn goes beginTurn → run → finishTurn", async () => {
     const msgs = [{ role: "user" as const, content: "cron prompt" }];
+    const deps = wireTestDeps();
     restores.push(
-      spyOn(turn, "beginTurn").mockResolvedValue([msgs, ["tool_a"], "cron prompt"]),
-      spyOn(conv, "appendMessage").mockResolvedValue(undefined),
-      spyOn(turn, "finishTurn").mockResolvedValue(undefined),
+      spyOn(deps.conversation, "beginTurn").mockResolvedValue([msgs, ["tool_a"], "cron prompt"]),
+      spyOn(deps.conversation, "loadConversationTools").mockResolvedValue([]),
+      spyOn(deps.conversation, "loadConversationMeta").mockResolvedValue({
+        role: "conversation_meta",
+        model: "m1",
+        cached_toolsets: [],
+        functions: ["tool_a"],
+        timestamp: "",
+      }),
+      spyOn(deps.conversation, "appendMessage").mockResolvedValue(undefined),
+      spyOn(deps.conversation, "finishTurn").mockResolvedValue(undefined),
       spyOn(engine, "run").mockResolvedValue("done reply"),
     );
-    const deps = wireTestDeps();
 
     const out = await runSimpleTurn(deps, {
       conversationId: "cron-sid",
@@ -114,16 +104,9 @@ describe("turn-lifecycle", () => {
     });
 
     expect(out).toBe("done reply");
-    expect(turn.beginTurn).toHaveBeenCalledWith(
-      nullPgRepositories,
-      catalog.toolSets,
-      "cron-sid",
-      "cron prompt",
-    );
+    expect(deps.conversation.beginTurn).toHaveBeenCalledWith("cron-sid", "cron prompt");
     expect(engine.run).toHaveBeenCalled();
-    expect(turn.finishTurn).toHaveBeenCalledWith(
-      nullPgRepositories,
-      catalog.toolSets,
+    expect(deps.conversation.finishTurn).toHaveBeenCalledWith(
       "cron-sid",
       msgs,
       "cron prompt",
@@ -134,18 +117,29 @@ describe("turn-lifecycle", () => {
   });
 
   it("runSimpleTurn catches MaxTurnsExceeded", async () => {
+    const deps = wireTestDeps();
     restores.push(
-      spyOn(turn, "beginTurn").mockResolvedValue([
+      spyOn(deps.conversation, "beginTurn").mockResolvedValue([
         [{ role: "user" as const, content: "x" }],
         [],
         "x",
       ]),
-      spyOn(turn, "finishTurn").mockResolvedValue(undefined),
-      spyOn(engine, "run").mockRejectedValue(new engine.MaxTurnsExceeded("max 8")),
+      spyOn(deps.conversation, "loadConversationTools").mockResolvedValue([]),
+      spyOn(deps.conversation, "loadConversationMeta").mockResolvedValue({
+        role: "conversation_meta",
+        model: "m",
+        cached_toolsets: [],
+        functions: [],
+        timestamp: "",
+      }),
+      spyOn(engine, "run").mockRejectedValue(new engine.MaxTurnsExceeded()),
     );
-    const deps = wireTestDeps();
 
-    const out = await runSimpleTurn(deps, { conversationId: "s", prompt: "x", model: "m" });
-    expect(out).toBe("[tool loop limit exceeded] max 8");
+    const out = await runSimpleTurn(deps, {
+      conversationId: "sid-max",
+      prompt: "x",
+      model: "m",
+    });
+    expect(out).toContain("tool loop limit exceeded");
   });
 });

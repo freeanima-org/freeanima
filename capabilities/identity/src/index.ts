@@ -7,7 +7,6 @@ export {
   SELF_LAYER_SYSTEM_FRAME,
   SELF_LAYER_PROMPT_HEADING,
 } from "./blocks.ts";
-export { registerSelfLayerStore, getSelfLayerStore, resetSelfLayerStoreForTests } from "./port.ts";
 export {
   renderSelfLayerPrompt,
   wrapSelfLayerForSystemPrompt,

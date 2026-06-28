@@ -1,44 +1,32 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
+import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createTempDir, removeTempDir } from "@freeanima/core/util";
-import type { SemanticMemoryStorePort } from "@freeanima/core/repos";
+import type { SemanticMemoryRow } from "@freeanima/core/repos";
 import {
   composeSystemPrompt,
   decomposeSystemPromptParts,
   RESIDENT_MEMORY_SYSTEM_FRAME,
 } from "./system-prompt.ts";
-import { registerSemanticMemoryStore, resetSemanticMemoryStoreForTests } from "./semantic-port.ts";
 import { MEMORY_REFERENCE_CITATION_RULE } from "./memory-reference.ts";
 import { buildMemorySystemPromptSections } from "./system-prompt-sections.ts";
 
-function createMockSemanticStore(resident: Array<{ content: string; pinned?: boolean }> = []) {
-  return {
-    async listResident() {
-      return resident.map((row, i) => ({
-        id: `f-00000${i}-abcd`,
-        content: row.content,
-        type: "fact",
-        pinned: row.pinned ?? false,
-        reference_count: 0,
-        source_conversations: [],
-        observed_at: null,
-        occurred_at: null,
-        status: "active",
-        created_at: new Date("2026-01-01T00:00:00.000Z"),
-        updated_at: new Date("2026-01-01T00:00:00.000Z"),
-      }));
-    },
-  } as unknown as SemanticMemoryStorePort;
-}
+const listResidentSemanticMemoryMock = mock(
+  async (..._args: unknown[]) => [] as SemanticMemoryRow[],
+);
+
+mock.module("@freeanima/core/db/pg/semantic-memory", () => ({
+  listResidentSemanticMemory: listResidentSemanticMemoryMock,
+}));
 
 describe("system-prompt", () => {
   beforeEach(() => {
-    resetSemanticMemoryStoreForTests();
+    listResidentSemanticMemoryMock.mockClear();
+    listResidentSemanticMemoryMock.mockImplementation(async () => []);
   });
 
   afterEach(() => {
-    resetSemanticMemoryStoreForTests();
+    listResidentSemanticMemoryMock.mockClear();
   });
 
   it("composeSystemPrompt order is self → resident → agents", () => {
@@ -56,9 +44,24 @@ describe("system-prompt", () => {
   });
 
   it("resident memory segment includes second-person frame and code fence", async () => {
-    registerSemanticMemoryStore(
-      createMockSemanticStore([{ content: "I like testing", pinned: true }]),
-    );
+    listResidentSemanticMemoryMock.mockImplementation((async () => [
+      {
+        id: "f-000000-abcd",
+        content: "I like testing",
+        type: "fact",
+        pinned: true,
+        reference_count: 0,
+        source_conversations: [],
+        observed_at: null,
+        occurred_at: null,
+        status: "active",
+        content_embedding: null,
+        content_fts: null,
+        fts_segmented: null,
+        created_at: new Date("2026-01-01T00:00:00.000Z"),
+        updated_at: new Date("2026-01-01T00:00:00.000Z"),
+      },
+    ]) as never);
     const parts = await decomposeSystemPromptParts("self layer content");
     expect(parts.resident).toContain(RESIDENT_MEMORY_SYSTEM_FRAME);
     expect(parts.resident).toContain("## Resident memory");
@@ -68,7 +71,6 @@ describe("system-prompt", () => {
   });
 
   it("memory-citation section is always present even without resident memory", async () => {
-    registerSemanticMemoryStore(createMockSemanticStore());
     const sections = await buildMemorySystemPromptSections("self layer content");
     const citation = sections.find((s) => s.id === "memory-citation");
     expect(citation).toBeDefined();
@@ -84,7 +86,6 @@ describe("system-prompt", () => {
         "# Project conventions\nUse type annotations.",
         "utf-8",
       );
-      registerSemanticMemoryStore(createMockSemanticStore());
 
       const parts = await decomposeSystemPromptParts("self layer", dir);
       expect(parts.agents).toContain("## Project context");
@@ -97,7 +98,6 @@ describe("system-prompt", () => {
   });
 
   it("omits empty resident memory and missing AGENTS.md segments", async () => {
-    registerSemanticMemoryStore(createMockSemanticStore());
     const parts = await decomposeSystemPromptParts("self layer", null);
     expect(parts.resident).toBe("");
     expect(parts.agents).toBe("");

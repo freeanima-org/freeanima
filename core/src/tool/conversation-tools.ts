@@ -1,5 +1,6 @@
-import type { PgRepositories } from "@freeanima/core/repos";
 import type { ConversationMetaMessage } from "@freeanima/core/db/domain";
+import { isPostgresPrimary } from "@freeanima/core/db/pg";
+import { patchConversationMeta } from "@freeanima/core/db/pg/conversation";
 import { applyConversationToolMaskFilter } from "./mask-port.ts";
 import { formatToolsForToolMessage } from "./catalog.ts";
 import { resolveDefaultConversationToolSets } from "./default-conversation-toolsets.ts";
@@ -25,7 +26,6 @@ export function resolveExecutableToolNames(
 }
 
 export async function loadToolSetsIntoConversation(
-  repos: PgRepositories,
   registry: ToolSetRegistry,
   conversationId: string,
   toolsetNames: string[],
@@ -59,8 +59,8 @@ export async function loadToolSetsIntoConversation(
   const toLoad = allowed.filter((name) => !currentStaged.includes(name));
   const nextStaged = mergeToolSetNames(currentStaged, toLoad);
 
-  if (toLoad.length > 0 && repos.pgAvailable) {
-    await repos.conversation.patchConversationMeta(conversationId, { staged_toolsets: nextStaged });
+  if (toLoad.length > 0 && isPostgresPrimary()) {
+    await patchConversationMeta(conversationId, { staged_toolsets: nextStaged });
   }
 
   const expandedNames = toolNamesForToolSets(registry, [...toLoad, ...already_loaded]);
@@ -74,13 +74,12 @@ export async function loadToolSetsIntoConversation(
 }
 
 export async function resetConversationToolsetsToDefault(
-  repos: PgRepositories,
   registry: ToolSetRegistry,
   conversationId: string,
 ): Promise<number> {
   const names = resolveDefaultConversationToolSets(registry);
-  if (repos.pgAvailable) {
-    await repos.conversation.patchConversationMeta(conversationId, {
+  if (isPostgresPrimary()) {
+    await patchConversationMeta(conversationId, {
       cached_toolsets: names,
       staged_toolsets: [],
     });

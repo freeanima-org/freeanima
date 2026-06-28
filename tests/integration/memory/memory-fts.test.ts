@@ -8,8 +8,13 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { filterRecallableMessages } from "@freeanima/capabilities-memory";
-import { buildFtsTsQuery, getDb } from "@freeanima/platform/connectors/db-pg";
-import { getTestEngine, seedSession, testConv } from "../../helpers/pg-test.ts";
+import { buildFtsTsQuery, getDb } from "@freeanima/core/db/pg";
+import {
+  createSemanticMemory,
+  searchSemanticMemoryFts,
+} from "@freeanima/core/db/pg/semantic-memory";
+import { listMessages, searchMessagesFts } from "@freeanima/core/db/pg/conversation";
+import { getTestEngine, seedSession } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 
 describePg("memory PG FTS", () => {
@@ -60,8 +65,7 @@ describePg("memory PG FTS", () => {
       ],
     );
 
-    const store = testConv().repos.conversation;
-    const hits = await store.searchMessagesFts("hello", { limit: 10 });
+    const hits = await searchMessagesFts("hello", { limit: 10 });
     expect(hits.length).toBeGreaterThan(0);
     expect(hits.every((h) => h.role === "user" || h.role === "assistant")).toBe(true);
     expect(hits.some((h) => h.content.includes("hello"))).toBe(true);
@@ -93,7 +97,7 @@ describePg("memory PG FTS", () => {
       ],
     );
 
-    const msgs = await testConv().repos.conversation.listMessages(sid);
+    const msgs = await listMessages(sid);
     const filtered = filterRecallableMessages(msgs);
     expect(filtered).toHaveLength(1);
     expect(filtered[0]!.role).toBe("user");
@@ -133,14 +137,14 @@ describePg("memory PG FTS", () => {
       ],
     );
 
-    const semanticId = await testConv().repos.semanticMemory.create({
+    const semanticId = await createSemanticMemory({
       content: "用户对退烧与注意力方向摇摆相关话题保持热情",
       type: "observation",
     });
     expect(semanticId.length).toBeGreaterThan(0);
 
-    const messageHits = await testConv().repos.conversation.searchMessagesFts(query, { limit: 5 });
-    const semanticHits = await testConv().repos.semanticMemory.searchFts(query, { limit: 5 });
+    const messageHits = await searchMessagesFts(query, { limit: 5 });
+    const semanticHits = await searchSemanticMemoryFts(query, { limit: 5 });
     expect(messageHits.length + semanticHits.length).toBeGreaterThan(0);
   });
 

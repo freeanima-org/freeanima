@@ -11,7 +11,7 @@ app → platform → capabilities → runtime → core → kernel
 | Layer            | Directory       | Package               | Responsibility                                            |
 | ---------------- | --------------- | --------------------- | --------------------------------------------------------- |
 | **kernel**       | `kernel/`       | `@freeanima/kernel`   | Hook, EventBus, logging                                   |
-| **core**         | `core/`         | `@freeanima/core`     | PG schema, repos, config, tool/LLM/compress/hooks         |
+| **core**         | `core/`         | `@freeanima/core`     | PG schema, `db/pg` repos, config, tool/LLM/compress/hooks |
 | **runtime**      | `runtime/`      | `@freeanima/runtime`  | Session, turn, loop, Engine factory                       |
 | **capabilities** | `capabilities/` | `capabilities-*` (8)  | Identity, memory, tools, MCP client/server, ACP, tasks, … |
 | **platform**     | `platform/`     | `@freeanima/platform` | Composition root, ports, connectors, CLI wiring           |
@@ -21,7 +21,7 @@ Admin Hub REST / SPA：`@freeanima/admin-api`、`@freeanima/admin-frontend`（`p
 
 ### `@freeanima/core` subpaths
 
-`db`, `repos`, `config`, `util`, `tokenizer`, `provider`, `tool`, `llm`, `compress`, `hooks`, `skill`
+`db`, `db/pg`, `db/schema`, `repos` (types only), `config`, `util`, `tokenizer`, `provider`, `tool`, `llm`, `compress`, `hooks`, `skill`
 
 ### `@freeanima/runtime` subpaths
 
@@ -37,18 +37,18 @@ Readable mirror of [`scripts/check-layer-deps.ts`](../../scripts/check-layer-dep
 
 Dependency direction (high → low): `app` / `platform` → `capabilities` → `runtime` → `core` → `kernel`. Lower layers must not import higher layers.
 
-| Source directory              | Allowed `@freeanima/*` (package root)                                  | Explicitly forbidden                                            |
-| ----------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `kernel/`                     | `kernel`, `kernel-*`                                                   | all other workspace packages                                    |
-| `core/`                       | `kernel`, `kernel-*`, `core`                                           | `runtime`, `capabilities-*`, `platform`, …                      |
-| `runtime/`                    | `kernel`, `kernel-*`, `core`, `runtime`                                | **`platform`**, **`capabilities-*`**                            |
-| `capabilities/<pkg>/`         | `kernel`, `kernel-*`, `core`, own `capabilities-<pkg>`, `sap-contract` | **`runtime`**, **`platform`**, **other `capabilities-*`**       |
-| `platform/`, `app/`, `tests/` | all workspace packages                                                 | —                                                               |
-| `platform/admin-frontend/`    | `admin-api`, `satellite-sdk`, `sap-contract`, `kernel`, `kernel-*`     | **`platform`**, **`core`**, **`runtime`**, **`capabilities-*`** |
-| `platform/admin-api/`         | same as `platform/`                                                    | —                                                               |
-| `satellites/<name>/`          | `sap-contract`, `satellite-sdk`, `kernel`, `kernel-*`                  | all other workspace packages                                    |
-| `packages/sap-contract/`      | `kernel`, `kernel-*`, `sap-contract`                                   | all other workspace packages                                    |
-| `packages/satellite-sdk/`     | `kernel`, `kernel-*`                                                   | all other workspace packages                                    |
+| Source directory              | Allowed `@freeanima/*` (package root)                                                                          | Explicitly forbidden                                            |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `kernel/`                     | `kernel`, `kernel-*`                                                                                           | all other workspace packages                                    |
+| `core/`                       | `kernel`, `kernel-*`, `core`                                                                                   | `runtime`, `capabilities-*`, `platform`, …                      |
+| `runtime/`                    | `kernel`, `kernel-*`, `core`, `runtime`                                                                        | **`platform`**, **`capabilities-*`**                            |
+| `capabilities/<pkg>/`         | `kernel`, `kernel-*`, `core`, **`core/db/pg`**, **`core/db/schema`**, own `capabilities-<pkg>`, `sap-contract` | **`runtime`**, **`platform`**, **other `capabilities-*`**       |
+| `platform/`, `app/`, `tests/` | all workspace packages                                                                                         | —                                                               |
+| `platform/admin-frontend/`    | `admin-api`, `satellite-sdk`, `sap-contract`, `kernel`, `kernel-*`                                             | **`platform`**, **`core`**, **`runtime`**, **`capabilities-*`** |
+| `platform/admin-api/`         | same as `platform/`                                                                                            | —                                                               |
+| `satellites/<name>/`          | `sap-contract`, `satellite-sdk`, `kernel`, `kernel-*`                                                          | all other workspace packages                                    |
+| `packages/sap-contract/`      | `kernel`, `kernel-*`, `sap-contract`                                                                           | all other workspace packages                                    |
+| `packages/satellite-sdk/`     | `kernel`, `kernel-*`                                                                                           | all other workspace packages                                    |
 
 Notes aligned with the checker:
 
@@ -75,7 +75,7 @@ Single process-wide context after boot (`initRuntimeContext` in [`platform/src/r
 
 ## Runtime Catalog (Registry instances)
 
-**Forbidden**: module-level registry singletons; direct PG connections inside runtime / capabilities.
+**Forbidden**: module-level registry singletons; direct PG connections inside runtime / capabilities (use `@freeanima/core/db/pg/*` functions instead of `engine.repos`).
 
 **Allowed**: `runWithToolContext` — `@freeanima/core/tool`（经 `@freeanima/runtime/loop` re-export）
 

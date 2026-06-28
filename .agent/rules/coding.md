@@ -32,7 +32,7 @@
 When adding or moving types / Zod / ports, decide in this order:
 
 1. **PG storage shape (DDL + JSONB Zod)** → `@freeanima/core/db` (sole SSOT) — [`core/src/db/schema/`](../../core/src/db/schema/)
-2. **Repository ports and aggregates** → `@freeanima/core/repos` (`*StorePort`, `PgRepositories`; includes `null*` adapters) — [`core/src/repos/ports/`](../../core/src/repos/ports/)
+2. **PG 查询 API** → `@freeanima/core/db/pg/{domain}`（函数 + `types.ts`）；共享 marker → `@freeanima/core/repos` — [`core/src/db/pg/`](../../core/src/db/pg/)
 3. **Domain types** → owner package (`{layer}-{slug}` or `@freeanima/core/*` subpath); hoist to kernel pure-type packages only when shared across domains
 
 Additional rules:
@@ -40,7 +40,7 @@ Additional rules:
 - Domain views may `import type` / `z.infer` from `@freeanima/core/db`, but **must not duplicate** storage Zod definitions
 - **HTTP/Admin contracts** → `@freeanima/admin-api/api`; **in-process snapshots/display** → `@freeanima/platform`
 - **EventBus payloads** → publisher's domain package (e.g. memory events → `capabilities-memory`)
-- **Repository row shapes** → `core/src/repos/schemas/*RowSchema` → `z.infer`; port files re-export; db-pg mapper **coerce + parse only** — no field rename
+- **Repository row shapes** → `core/src/db/schema/rows/*` → `z.infer`; domain `types.ts` re-export; db-pg **coerce + parse only** — no field rename
 
 Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 
@@ -65,10 +65,10 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 | 领域   | 检查项                                                                                                                       |
 | ------ | ---------------------------------------------------------------------------------------------------------------------------- |
 | 安全   | 凭证路径不入 log / tool 返回；Hub REST 输入校验；memory/self-layer 变更对照 [`identity.md`](../../docs/concepts/identity.md) |
-| 性能   | PG 查询热点（`platform/connectors/db-pg`）；EventBus/Redis；流式 merge（`core/src/provider/stream-tools.ts`）                |
+| 性能   | PG 查询热点（`core/src/db/pg`）；EventBus/Redis；流式 merge（`core/src/provider/stream-tools.ts`）                           |
 | 可测性 | colocated 单测 + `tests/integration/` 覆盖 boot / SAP 路径 gaps                                                              |
 
-**New PG domain**: `core/src/db/schema/{domain}` → add port in `@freeanima/core/repos` → implement in `platform/connectors/db-pg` → extend `PgRepositories` → wire in [`serve.ts`](../../platform/src/serve.ts).
+**New PG domain**: `core/src/db/schema/{domain}` → repos in `core/src/db/pg/{domain}/` → barrel `index.ts` + `types.ts` → consumers import `@freeanima/core/db/pg/{domain}`。
 
 **Flow**: change `core/src/db/schema/` → **`drizzle-kit generate`** → **`migrate`**.
 

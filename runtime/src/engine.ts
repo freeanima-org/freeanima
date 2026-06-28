@@ -1,7 +1,6 @@
 import type { EngineCatalog } from "./catalog.ts";
 import { createEngineCatalog } from "./catalog.ts";
 import type { BackendRegistry, ProfileRegistry, ProviderRegistry } from "@freeanima/core/provider";
-import type { PgRepositories } from "@freeanima/core/repos";
 import type { Config } from "@freeanima/core/config";
 import {
   bindActiveConfig,
@@ -27,7 +26,6 @@ export type EngineLlm = {
 export type EngineDeps = {
   catalog?: EngineCatalog;
   llm?: EngineLlm;
-  repos: PgRepositories;
   config: Config;
   logger?: Logger;
 };
@@ -48,7 +46,6 @@ export function createEngine(deps: EngineDeps): Engine {
   return new Engine(
     deps.catalog ?? createEngineCatalog(),
     deps.llm ?? defaultLlm(deps.config),
-    deps.repos,
     deps.config,
     logger,
   );
@@ -65,7 +62,6 @@ export class Engine {
   constructor(
     readonly catalog: EngineCatalog,
     readonly llm: EngineLlm,
-    readonly repos: PgRepositories,
     readonly config: Config,
     readonly logger: Logger,
   ) {}

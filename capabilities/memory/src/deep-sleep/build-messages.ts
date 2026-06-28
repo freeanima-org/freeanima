@@ -1,6 +1,5 @@
 import type { SemanticMemoryRow } from "@freeanima/core/repos";
-
-import { getSemanticMemoryStore } from "../semantic-port.ts";
+import { listActiveSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
 import type { DeepSleepRound, DeepSleepChangeLog, DeepSleepMode } from "./types.ts";
 import { formatChangeLogMessage } from "./change-log.ts";
 
@@ -297,8 +296,7 @@ export function buildDeepSleepMessages(
 
 /** Fetch all active memories needed for deep sleep */
 export async function fetchAllActiveMemories(): Promise<SemanticMemoryRow[]> {
-  const store = getSemanticMemoryStore();
-  return store.listActive();
+  return listActiveSemanticMemory();
 }
 
 /** Deep sleep LLM tool allowlist */

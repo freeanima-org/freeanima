@@ -1,13 +1,10 @@
-import type { PgRepositories } from "@freeanima/core/repos";
+import { listMessagesByPosRange, patchConversationMeta } from "@freeanima/core/db/pg/conversation";
 import { formatCstIso } from "@freeanima/core/util";
 import type { CompressionState } from "@freeanima/core/db/domain";
 import { getRuntimeLogger } from "@freeanima/core/config";
 import { generateConversationSummary } from "./compression-summary.ts";
 
-export type CompressionSummaryPostCut = (
-  repos: PgRepositories,
-  conversationId: string,
-) => Promise<void>;
+export type CompressionSummaryPostCut = (conversationId: string) => Promise<void>;
 
 let postCutRebuild: CompressionSummaryPostCut | null = null;
 
@@ -22,10 +19,7 @@ export function resetCompressionSummaryPostCutForTests(): void {
 const pendingCompressionSummaries = new Map<string, Promise<void>>();
 
 /** Await in-flight async conversation summaries (integration teardown must call before restoring FREEANIMA_HOME) */
-export async function flushCompressionSummaries(
-  _repos: PgRepositories,
-  conversationId?: string,
-): Promise<void> {
+export async function flushCompressionSummaries(conversationId?: string): Promise<void> {
   if (conversationId !== undefined) {
     const p = pendingCompressionSummaries.get(conversationId);
     if (p) await p;
@@ -35,16 +29,13 @@ export async function flushCompressionSummaries(
 }
 
 async function patchConversationCompression(
-  repos: PgRepositories,
   conversationId: string,
   compression: CompressionState,
 ): Promise<void> {
-  if (!repos.pgAvailable) return;
-  await repos.conversation.patchConversationMeta(conversationId, { compression });
+  await patchConversationMeta(conversationId, { compression });
 }
 
 async function finalizeCompressionSummary(
-  repos: PgRepositories,
   conversationId: string,
   prevState: CompressionState | null,
   cutState: CompressionState,
@@ -60,9 +51,7 @@ async function finalizeCompressionSummary(
   }
   const prevL2 = prevState?.l2 ?? null;
   const fromPos = (prevL2 ?? 0) + 1;
-  const slice = repos.pgAvailable
-    ? await repos.conversation.listMessagesByPosRange(conversationId, fromPos, cutState.l2)
-    : [];
+  const slice = await listMessagesByPosRange(conversationId, fromPos, cutState.l2);
 
   const gen = await generateConversationSummary(
     slice,
@@ -87,10 +76,10 @@ async function finalizeCompressionSummary(
       });
   }
 
-  await patchConversationCompression(repos, conversationId, merged);
+  await patchConversationCompression(conversationId, merged);
   if (postCutRebuild) {
     try {
-      await postCutRebuild(repos, conversationId);
+      await postCutRebuild(conversationId);
     } catch (e) {
       getRuntimeLogger()
         .with({ component: "compression" })
@@ -103,7 +92,6 @@ async function finalizeCompressionSummary(
 
 /** Schedule async summary generation when compression boundaries change */
 export function scheduleCompressionSummary(
-  repos: PgRepositories,
   conversationId: string,
   prevState: CompressionState | null,
   cutState: CompressionState,
@@ -115,7 +103,6 @@ export function scheduleCompressionSummary(
   const run = async (): Promise<void> => {
     if (prev) await prev;
     await finalizeCompressionSummary(
-      repos,
       conversationId,
       prevState,
       cutState,

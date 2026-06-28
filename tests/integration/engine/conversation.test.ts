@@ -12,6 +12,8 @@ import { existsSync } from "node:fs";
 import { DEFAULT_CONVERSATION_TOOLSETS } from "@freeanima/core/tool";
 import { registerServiceTools } from "@freeanima/platform";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { getConversationTools } from "@freeanima/core/db/pg/conversation";
+import * as conversationPg from "@freeanima/core/db/pg/conversation";
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
 
 describePg("conversation", () => {
@@ -71,7 +73,7 @@ describePg("conversation", () => {
     expect(isConversationMeta(meta)).toBe(true);
     if (!isConversationMeta(meta)) return;
 
-    const storedToolsets = await c.repos.conversation.getConversationTools(sid);
+    const storedToolsets = await getConversationTools(sid);
     expect(storedToolsets.length).toBeGreaterThan(0);
     expect(storedToolsets.length).toBeLessThan(engine.toolSets.listToolSets().length);
     for (const name of storedToolsets) {
@@ -134,25 +136,14 @@ describePg("conversation compression", () => {
     }
     await c.beginTurn(sid, "trigger compression");
 
-    const conversation = c.repos.conversation;
-    let fullListCalls = 0;
-    let rangeListCalls = 0;
-    const origList = conversation.listMessages.bind(conversation);
-    const origRange = conversation.listMessagesByPosRange.bind(conversation);
-    spyOn(conversation, "listMessages").mockImplementation(async (conversationId) => {
-      fullListCalls++;
-      return origList(conversationId);
-    });
-    spyOn(conversation, "listMessagesByPosRange").mockImplementation(
-      async (conversationId, fromPos, toPos) => {
-        rangeListCalls++;
-        return origRange(conversationId, fromPos, toPos);
-      },
-    );
+    const listSpy = spyOn(conversationPg, "listMessages");
+    const rangeSpy = spyOn(conversationPg, "listMessagesByPosRange");
 
     await c.beginTurn(sid, "window load probe");
 
-    expect(rangeListCalls).toBeGreaterThan(0);
-    expect(fullListCalls).toBe(0);
+    expect(rangeSpy.mock.calls.length).toBeGreaterThan(0);
+    expect(listSpy.mock.calls.length).toBe(0);
+    listSpy.mockRestore();
+    rangeSpy.mockRestore();
   });
 });

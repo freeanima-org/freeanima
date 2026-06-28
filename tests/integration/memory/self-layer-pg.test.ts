@@ -5,9 +5,19 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { getTestEngine } from "../../helpers/pg-test.ts";
 import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
 import { buildAutobiographySummary } from "@freeanima/capabilities-memory/autobiography/run";
+import {
+  createAutobiographicalMemory,
+  deprecateAutobiographicalMemory,
+  getAutobiographicalMemory,
+} from "@freeanima/core/db/pg/autobiographical-memory";
+import {
+  getSelfBlock,
+  listSelfBlocks,
+  updateSelfBlock,
+  upsertSelfBlock,
+} from "@freeanima/core/db/pg/self-layer";
 
 describePg("self layer PG", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -21,22 +31,20 @@ describePg("self layer PG", () => {
   });
 
   it("self_blocks CRUD + locked existence_anchor", async () => {
-    const store = getTestEngine().repos.selfLayer;
-
-    await store.upsertBlock({
+    await upsertSelfBlock({
       block_key: "self_model",
       content: "I am a test agent.",
       updated_by: "test",
     });
 
-    const row = await store.getBlock("self_model");
+    const row = await getSelfBlock("self_model");
     expect(row?.content).toBe("I am a test agent.");
     expect(row?.version).toBeGreaterThanOrEqual(1);
 
-    const blocks = await store.listBlocks();
+    const blocks = await listSelfBlocks();
     expect(blocks.map((b) => b.block_key)).toEqual([...SELF_BLOCK_KEYS]);
 
-    await store.upsertBlock({
+    await upsertSelfBlock({
       block_key: "existence_anchor",
       content: "existence anchor content",
       locked: true,
@@ -44,22 +52,19 @@ describePg("self layer PG", () => {
     });
 
     await expect(
-      store.updateBlock({ block_key: "existence_anchor", content: "tamper" }),
+      updateSelfBlock({ block_key: "existence_anchor", content: "tamper" }),
     ).rejects.toThrow(/locked/i);
 
-    await store.updateBlock(
+    await updateSelfBlock(
       { block_key: "existence_anchor", content: "explicit update", updated_by: "test" },
       { force: true },
     );
-    const anchor = await store.getBlock("existence_anchor");
+    const anchor = await getSelfBlock("existence_anchor");
     expect(anchor?.content).toBe("explicit update");
   });
 
   it("autobiographical_memory append-only + summary", async () => {
-    const auto = getTestEngine().repos.autobiographicalMemory;
-    const self = getTestEngine().repos.selfLayer;
-
-    const id = await auto.create({
+    const id = await createAutobiographicalMemory({
       title: "First boundary test",
       content: "I realized that saying no is also a choice.",
       significance: "turning_point",
@@ -67,7 +72,7 @@ describePg("self layer PG", () => {
     });
     expect(id.length).toBeGreaterThan(0);
 
-    const row = await auto.get(id);
+    const row = await getAutobiographicalMemory(id);
     expect(row?.status).toBe("active");
     expect(row?.significance).toBe("turning_point");
 
@@ -75,17 +80,17 @@ describePg("self layer PG", () => {
     expect(summary).toContain("First boundary test");
     expect(summary).toContain("## Turning points");
 
-    await self.upsertBlock({
+    await upsertSelfBlock({
       block_key: "autobiography_summary",
       content: summary,
       updated_by: "test",
     });
-    const block = await self.getBlock("autobiography_summary");
+    const block = await getSelfBlock("autobiography_summary");
     expect(block?.content).toContain("## Turning points");
 
-    const deprecated = await auto.deprecate(id);
+    const deprecated = await deprecateAutobiographicalMemory(id);
     expect(deprecated).toBe(true);
-    expect((await auto.get(id))?.status).toBe("deprecated");
+    expect((await getAutobiographicalMemory(id))?.status).toBe("deprecated");
   });
 
   afterAll(async () => {

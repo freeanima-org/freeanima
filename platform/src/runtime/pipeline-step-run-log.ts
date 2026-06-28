@@ -1,5 +1,6 @@
 import type { PipelineStepFinishedEvent } from "@freeanima/runtime/pipeline";
-import type { PgRepositories } from "@freeanima/core/repos";
+import { isPostgresPrimary } from "@freeanima/core/db/pg";
+import { appendPipelineStepRun } from "@freeanima/core/db/pg/pipeline";
 import { formatCstIso } from "@freeanima/core/util";
 import { getPipelineRunner } from "@freeanima/runtime/pipeline";
 
@@ -14,16 +15,16 @@ function outputToRecord(output: unknown): Record<string, unknown> | null {
 }
 
 /** 注册 sleep-cycle 流水线节点执行持久化 */
-export function registerSleepPipelineStepRecorder(repos: PgRepositories): void {
+export function registerSleepPipelineStepRecorder(): void {
   const runner = getPipelineRunner();
   runner.setStepFinishedListener(async (event: PipelineStepFinishedEvent) => {
     if (event.pipeline_id !== SLEEP_CYCLE_PIPELINE_ID) return;
-    if (!repos.pgAvailable) return;
+    if (!isPostgresPrimary()) return;
 
     const day = event.day?.trim();
     if (!day) return;
 
-    await repos.pipelineStepRun.append({
+    await appendPipelineStepRun({
       pipeline_id: event.pipeline_id,
       run_id: event.run_id,
       step_id: event.step_id,

@@ -1,31 +1,11 @@
-import { registerEntityEmailModule, registerEmailSyncPort } from "@freeanima/capabilities-email";
-import { registerMemoryPipeline } from "@freeanima/capabilities-memory";
 import { registerDreamFridge } from "@freeanima/capabilities-memory/dream-fridge-port";
-import { registerSelfLayerStore } from "@freeanima/capabilities-identity";
-import { registerEntityTaskModule } from "@freeanima/capabilities-task";
-import { registerEntitySearchModule } from "@freeanima/capabilities-tools";
-import type { PgRepositories } from "@freeanima/core/repos";
-import { resolvePublicAccessibleWorldIds } from "@freeanima/platform/connectors/db-pg";
+import { registerEmailSyncPort } from "@freeanima/capabilities-email";
 import { emailSyncPortImpl } from "@freeanima/platform/connectors/email";
 
 import { createDreamFridgePort } from "./dream-fridge-factory.ts";
 
-/** Composition root one-shot PG repository port injection (memory / self-layer / tasks / email) */
-export function registerServiceStores(repos: PgRepositories): void {
-  registerMemoryPipeline({
-    conversationStore: repos.conversation,
-    semanticStore: repos.semanticMemory,
-    autobiographicalStore: repos.autobiographicalMemory,
-    limbicStore: repos.limbicMemory,
-    dreamStore: repos.dreamMemory,
-  });
+/** Composition root one-shot capability wiring (dream fridge / email sync) */
+export function registerServiceStores(): void {
   registerDreamFridge(createDreamFridgePort());
-  registerSelfLayerStore(repos.selfLayer);
-  registerEntitySearchModule({
-    search: repos.entitySearch,
-    resolveAccessibleWorldIds: () => resolvePublicAccessibleWorldIds(repos.entity),
-  });
-  registerEntityTaskModule({ entityStore: repos.entity, entitySearch: repos.entitySearch });
-  registerEntityEmailModule({ entityStore: repos.entity, entitySearch: repos.entitySearch });
   registerEmailSyncPort(emailSyncPortImpl);
 }

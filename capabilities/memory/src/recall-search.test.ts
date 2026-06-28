@@ -1,392 +1,102 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
+import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
 import type {
-  AutobiographicalMemoryStorePort,
-  LimbicMemoryStorePort,
-  SemanticMemoryStorePort,
-  ConversationStorePort,
-  SemanticMemoryRow,
-  LimbicMemoryRow,
-  AutobiographicalMemoryRow,
+  AutobiographicalFtsHit,
+  LimbicFtsHit,
+  MessageFtsHit,
+  SemanticFtsHit,
 } from "@freeanima/core/repos";
-import {
-  registerAutobiographicalMemoryStore,
-  registerLimbicMemoryStore,
-  registerMemoryConversationStore,
-  registerSemanticMemoryStore,
-  resetAutobiographicalMemoryStoreForTests,
-  resetLimbicMemoryStoreForTests,
-  resetMemoryConversationStoreForTests,
-  resetSemanticMemoryStoreForTests,
-} from "./index.ts";
+
+const searchSemanticMemoryFtsMock = mock(async (..._args: unknown[]) => [] as SemanticFtsHit[]);
+const searchMessagesFtsMock = mock(async (..._args: unknown[]) => [] as MessageFtsHit[]);
+const searchLimbicMemoryFtsMock = mock(async (..._args: unknown[]) => [] as LimbicFtsHit[]);
+const searchAutobiographicalMemoryFtsMock = mock(
+  async (..._args: unknown[]) => [] as AutobiographicalFtsHit[],
+);
+
+mock.module("@freeanima/core/db/pg/semantic-memory", () => ({
+  searchSemanticMemoryFts: searchSemanticMemoryFtsMock,
+}));
+mock.module("@freeanima/core/db/pg/conversation", () => ({
+  searchMessagesFts: searchMessagesFtsMock,
+}));
+mock.module("@freeanima/core/db/pg/limbic-memory", () => ({
+  searchLimbicMemoryFts: searchLimbicMemoryFtsMock,
+}));
+mock.module("@freeanima/core/db/pg/autobiographical-memory", () => ({
+  searchAutobiographicalMemoryFts: searchAutobiographicalMemoryFtsMock,
+}));
+
 import { memoryRecallSearch } from "./recall-search.ts";
-
-function mockConversationStore(
-  overrides: Partial<ConversationStorePort> = {},
-): ConversationStorePort {
-  const base: ConversationStorePort = {
-    async getConversationMeta() {
-      return null;
-    },
-    async getConversationMetaLite() {
-      return null;
-    },
-    async getConversationTools() {
-      return [];
-    },
-    async upsertConversationMeta() {},
-    async patchConversationMeta() {},
-    async updateCompression() {},
-    async updateTodos() {},
-    async appendMessage() {
-      throw new Error("not implemented");
-    },
-    async appendMessageReturningId() {
-      throw new Error("not implemented");
-    },
-    async updateMessageContent() {},
-    async getMessageContentById() {
-      return null;
-    },
-    async getMessageContentsByIds() {
-      return {};
-    },
-    async nextMessagePos() {
-      return 1;
-    },
-    async listMessages() {
-      return [];
-    },
-    async listMessagesByPosRange() {
-      return [];
-    },
-    async listMessagesPage() {
-      return [];
-    },
-    async countMessages() {
-      return 0;
-    },
-    async countUserMessages() {
-      return 0;
-    },
-    async findMessagePos() {
-      return null;
-    },
-    async listMessageRowsPage() {
-      return [];
-    },
-    async listMessageRowsFromPos() {
-      return [];
-    },
-    async lastMessageTimestamp() {
-      return null;
-    },
-    async truncateMessagesAfter() {},
-    async shiftMessagePositions() {},
-    async conversationExists() {
-      return false;
-    },
-    async deleteConversation() {},
-    async archiveConversation() {},
-    async unarchiveConversation() {},
-    async listConversationIds() {
-      return [];
-    },
-    async listDebugConversationIds() {
-      return [];
-    },
-    async listConversationSummaries() {
-      return [];
-    },
-    async listConversationSummariesPage() {
-      return { items: [], total: 0 };
-    },
-    async countConversationsByPlatform() {
-      return {};
-    },
-    async deleteDebugConversations() {
-      return 0;
-    },
-    async findConversationIdByPlatformInfo() {
-      return null;
-    },
-    async listConversationIdsMatchingPlatformProbe() {
-      return [];
-    },
-    async searchMessagesFts() {
-      return [];
-    },
-    async countSearchableMessages() {
-      return 0;
-    },
-    async listConversationIdsUpdatedBetween() {
-      return [];
-    },
-    async getEarliestConversationDay() {
-      return null;
-    },
-    async listStaleConversationIdsForCleanup() {
-      return [];
-    },
-    async deleteStaleConversations() {
-      return { deleted: 0, ids: [] };
-    },
-  };
-  return { ...base, ...overrides };
-}
-
-const MOCK_DB_NULLS = {
-  content_embedding: null,
-  content_fts: null,
-  fts_segmented: null,
-} as const;
-
-function toMockSemanticRow(
-  partial: Partial<SemanticMemoryRow> & Pick<SemanticMemoryRow, "id" | "content">,
-): SemanticMemoryRow {
-  const now = new Date();
-  return {
-    type: "world",
-    pinned: false,
-    source_conversations: [],
-    observed_at: now,
-    occurred_at: null,
-    status: "active",
-    reference_count: 0,
-    created_at: now,
-    updated_at: now,
-    ...MOCK_DB_NULLS,
-    ...partial,
-  };
-}
-
-function createMockSemanticStore(rows: SemanticMemoryRow[]): SemanticMemoryStorePort {
-  const map = new Map(rows.map((r) => [r.id, r]));
-  return {
-    async create() {
-      return "new";
-    },
-    async get(id) {
-      return map.get(id) ?? null;
-    },
-    async update() {},
-    async deprecate() {
-      return false;
-    },
-    async delete() {
-      return false;
-    },
-    async count() {
-      return [...map.values()].filter((r) => r.status === "active").length;
-    },
-    async listResident() {
-      return [...map.values()];
-    },
-    async listAll() {
-      return [...map.values()];
-    },
-    async listActive() {
-      return [...map.values()].filter((r) => r.status === "active");
-    },
-    async listBySourceConversations() {
-      return [];
-    },
-    async searchFts(query, opts) {
-      const q = query.toLowerCase();
-      const limit = opts?.limit ?? 10;
-      return [...map.values()]
-        .filter((r) => r.status === "active" && r.content.toLowerCase().includes(q))
-        .slice(0, limit)
-        .map((r, i) => ({ ...r, rank: 1 / (i + 1) }));
-    },
-    async search() {
-      return [];
-    },
-    async countSearch() {
-      return 0;
-    },
-    async findByContent() {
-      return null;
-    },
-  };
-}
-
-function createMockLimbicStore(rows: LimbicMemoryRow[]): LimbicMemoryStorePort {
-  return {
-    async create() {
-      return "lm-new";
-    },
-    async get() {
-      return null;
-    },
-    async listByConversation() {
-      return [];
-    },
-    async listByConversations() {
-      return [];
-    },
-    async listByCreatedBetween() {
-      return [];
-    },
-    async list(opts) {
-      const q = opts?.query?.toLowerCase() ?? "";
-      const limit = opts?.limit ?? 20;
-      return rows.filter((r) => !q || r.content.toLowerCase().includes(q)).slice(0, limit);
-    },
-    async count() {
-      return rows.length;
-    },
-    async searchFts(query, opts) {
-      const q = query.toLowerCase();
-      const limit = opts?.limit ?? 20;
-      return rows
-        .filter((r) => !q || r.content.toLowerCase().includes(q))
-        .slice(0, limit)
-        .map((r, i) => ({ ...r, rank: 1 / (i + 1) }));
-    },
-  };
-}
-
-function createMockAutobiographicalStore(
-  rows: AutobiographicalMemoryRow[],
-): AutobiographicalMemoryStorePort {
-  return {
-    async create() {
-      return "ab-new";
-    },
-    async get() {
-      return null;
-    },
-    async deprecate() {
-      return false;
-    },
-    async count() {
-      return rows.length;
-    },
-    async listActive() {
-      return rows;
-    },
-    async listCreatedSince() {
-      return [];
-    },
-    async listBySourceSemanticMemory() {
-      return [];
-    },
-    async listBySourceConversations() {
-      return [];
-    },
-    async list(opts) {
-      const q = opts?.query?.toLowerCase() ?? "";
-      const limit = opts?.limit ?? 20;
-      const status = opts?.status ?? "active";
-      return rows
-        .filter(
-          (r) =>
-            r.status === status &&
-            (!q || r.title.toLowerCase().includes(q) || r.content.toLowerCase().includes(q)),
-        )
-        .slice(0, limit);
-    },
-    async searchFts(query, opts) {
-      const q = query.toLowerCase();
-      const limit = opts?.limit ?? 20;
-      const status = opts?.status ?? "active";
-      return rows
-        .filter(
-          (r) =>
-            r.status === status &&
-            (!q || r.title.toLowerCase().includes(q) || r.content.toLowerCase().includes(q)),
-        )
-        .slice(0, limit)
-        .map((r, i) => ({ ...r, rank: 1 / (i + 1) }));
-    },
-  };
-}
 
 describe("memoryRecallSearch", () => {
   beforeEach(() => {
-    resetSemanticMemoryStoreForTests();
-    resetMemoryConversationStoreForTests();
-    resetLimbicMemoryStoreForTests();
-    resetAutobiographicalMemoryStoreForTests();
+    searchSemanticMemoryFtsMock.mockClear();
+    searchMessagesFtsMock.mockClear();
+    searchLimbicMemoryFtsMock.mockClear();
+    searchAutobiographicalMemoryFtsMock.mockClear();
   });
 
   afterEach(() => {
-    resetSemanticMemoryStoreForTests();
-    resetMemoryConversationStoreForTests();
-    resetLimbicMemoryStoreForTests();
-    resetAutobiographicalMemoryStoreForTests();
+    searchSemanticMemoryFtsMock.mockClear();
+    searchMessagesFtsMock.mockClear();
+    searchLimbicMemoryFtsMock.mockClear();
+    searchAutobiographicalMemoryFtsMock.mockClear();
   });
 
   it("merges four sources and returns unified results with memory_type", async () => {
     const now = new Date("2026-05-26T12:00:00+08:00");
-    registerSemanticMemoryStore(
-      createMockSemanticStore([
-        toMockSemanticRow({
-          id: "f-000001-abcd",
-          content: "compression semantic probe",
-          source_conversations: ["sid"],
-          observed_at: now,
-          created_at: now,
-          updated_at: now,
-        }),
-      ]),
-    );
-    registerMemoryConversationStore(
-      mockConversationStore({
-        async searchMessagesFts() {
-          return [
-            {
-              message_id: "msg-001",
-              conversation_id: "sid",
-              role: "user",
-              content:
-                "prefix padding text before the important compression conversation message appears here with much more suffix padding text",
-              timestamp: now.toISOString(),
-              rank: 0.2,
-            },
-          ];
-        },
-      }),
-    );
-    registerLimbicMemoryStore(
-      createMockLimbicStore([
-        {
-          id: "lm-1",
-          conversation_id: "sid",
-          kind: "spike",
-          content: "compression limbic feeling",
-          intensity: 0.8,
-          valence: -0.2,
-          arousal: 0.6,
-          source_segment: "mid",
-          semantic_memory_ids: [],
-          content_embedding: null,
-          content_fts: null,
-          fts_segmented: null,
-          created_at: now,
-        },
-      ]),
-    );
-    registerAutobiographicalMemoryStore(
-      createMockAutobiographicalStore([
-        {
-          id: "ab-1",
-          title: "compression milestone",
-          content: "long autobiographical compression narrative",
-          significance: "normal",
-          period_start: null,
-          period_end: null,
-          source_facts: [],
-          source_conversations: ["sid"],
-          status: "active",
-          fts_segmented: null,
-          content_embedding: null,
-          content_fts: null,
-          created_at: now,
-          updated_at: now,
-        },
-      ]),
-    );
+    searchSemanticMemoryFtsMock.mockImplementation((async () => [
+      {
+        id: "f-000001-abcd",
+        content: "compression semantic probe",
+        type: "world",
+        pinned: false,
+        rank: 0.8,
+        source_conversations: ["sid"],
+        observed_at: now,
+        occurred_at: null,
+        status: "active",
+      },
+    ]) as never);
+    searchMessagesFtsMock.mockImplementation((async () => [
+      {
+        message_id: "msg-001",
+        conversation_id: "sid",
+        role: "user",
+        content:
+          "prefix padding text before the important compression conversation message appears here with much more suffix padding text",
+        timestamp: now.toISOString(),
+        rank: 0.2,
+      },
+    ]) as never);
+    searchLimbicMemoryFtsMock.mockImplementation((async () => [
+      {
+        id: "lm-1",
+        conversation_id: "sid",
+        kind: "spike",
+        content: "compression limbic feeling",
+        intensity: 0.8,
+        valence: -0.2,
+        arousal: 0.6,
+        rank: 0.5,
+        semantic_memory_ids: [],
+        created_at: now,
+      },
+    ]) as never);
+    searchAutobiographicalMemoryFtsMock.mockImplementation((async () => [
+      {
+        id: "ab-1",
+        title: "compression milestone",
+        content: "long autobiographical compression narrative",
+        significance: "normal",
+        rank: 0.4,
+        source_facts: [],
+        source_conversations: ["sid"],
+        status: "active",
+        created_at: now,
+        updated_at: now,
+      },
+    ]) as never);
 
     const out = await memoryRecallSearch("compression", { limit: 10 });
     expect(out.results.length).toBeGreaterThan(0);
@@ -410,22 +120,18 @@ describe("memoryRecallSearch", () => {
 
   it("respects limit cap", async () => {
     const now = new Date("2026-05-26T12:00:00+08:00");
-    const semanticRows: SemanticMemoryRow[] = [];
-    for (let i = 0; i < 12; i += 1) {
-      semanticRows.push(
-        toMockSemanticRow({
-          id: `f-${String(i).padStart(6, "0")}-abcd`,
-          content: `compression item ${i}`,
-          observed_at: now,
-          created_at: now,
-          updated_at: now,
-        }),
-      );
-    }
-    registerSemanticMemoryStore(createMockSemanticStore(semanticRows));
-    registerMemoryConversationStore(mockConversationStore());
-    registerLimbicMemoryStore(createMockLimbicStore([]));
-    registerAutobiographicalMemoryStore(createMockAutobiographicalStore([]));
+    searchSemanticMemoryFtsMock.mockImplementation((async () =>
+      Array.from({ length: 12 }, (_, i) => ({
+        id: `f-${String(i).padStart(6, "0")}-abcd`,
+        content: `compression item ${i}`,
+        type: "world",
+        pinned: false,
+        rank: 1 / (i + 1),
+        source_conversations: [],
+        observed_at: now,
+        occurred_at: null,
+        status: "active",
+      }))) as never);
 
     const out = await memoryRecallSearch("compression", { limit: 5 });
     expect(out.limit).toBe(5);

@@ -1,11 +1,5 @@
 export { registerWriteFridgeMagnetTool } from "./fridge-magnet/tool.ts";
-
-export {
-  registerEntityTaskModule,
-  getEntityStoreForTask,
-  defaultTaskWorldId,
-  resetEntityTaskModuleForTests,
-} from "./entity-port.ts";
+export { defaultTaskWorldId } from "./list-store.ts";
 
 export type {
   TaskListRow,

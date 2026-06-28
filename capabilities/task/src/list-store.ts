@@ -4,13 +4,22 @@ import {
   asTaskList,
   type TaskListBody,
 } from "@freeanima/core/db/schema/entity";
+import {
+  createEntity,
+  deleteEntity,
+  getEntity,
+  listEntities,
+  updateEntity,
+} from "@freeanima/core/db/pg/entity";
 
-import { defaultTaskWorldId, getEntityStoreForTask } from "./entity-port.ts";
 import type { TaskListCreateInput, TaskListRow, TaskListUpdateInput } from "./types.ts";
 
+export function defaultTaskWorldId(): number {
+  return 1;
+}
+
 async function countItemsForList(listId: number): Promise<number> {
-  const store = getEntityStoreForTask();
-  const items = await store.list({
+  const items = await listEntities({
     world_id: defaultTaskWorldId(),
     primary_component: "task_item",
     limit: 500,
@@ -42,9 +51,8 @@ export function isDefaultTaskListId(id: number): boolean {
 }
 
 export async function listTaskLists(): Promise<TaskListRow[]> {
-  const store = getEntityStoreForTask();
   const worldId = defaultTaskWorldId();
-  const rows = await store.list({
+  const rows = await listEntities({
     world_id: worldId,
     primary_component: TASK_LIST_COMPONENT,
     limit: 200,
@@ -73,14 +81,13 @@ export async function getDefaultTaskList(): Promise<TaskListRow | null> {
 }
 
 export async function createTaskList(input: TaskListCreateInput): Promise<TaskListRow> {
-  const store = getEntityStoreForTask();
   const body: TaskListBody = {
     sort_order: input.sort_order ?? 0,
     closed: false,
     color: input.color ?? null,
     is_default: false,
   };
-  const row = await store.create({
+  const row = await createEntity({
     type: "content",
     world_id: defaultTaskWorldId(),
     components: [TASK_LIST_COMPONENT],
@@ -98,8 +105,7 @@ export async function createTaskList(input: TaskListCreateInput): Promise<TaskLi
 }
 
 export async function updateTaskList(input: TaskListUpdateInput): Promise<TaskListRow | null> {
-  const store = getEntityStoreForTask();
-  const existing = await store.get(input.id);
+  const existing = await getEntity(input.id);
   if (!existing || existing.primary_component !== TASK_LIST_COMPONENT) return null;
 
   const bodyPatch: Record<string, unknown> = {};
@@ -107,7 +113,7 @@ export async function updateTaskList(input: TaskListUpdateInput): Promise<TaskLi
   if (input.closed !== undefined) bodyPatch.closed = input.closed;
   if (input.color !== undefined) bodyPatch.color = input.color;
 
-  const row = await store.update({
+  const row = await updateEntity({
     id: input.id,
     title: input.name?.trim(),
     body: Object.keys(bodyPatch).length > 0 ? bodyPatch : undefined,
@@ -127,22 +133,21 @@ export async function deleteTaskList(id: number, opts?: { cascade?: boolean }): 
   if (isDefaultTaskListId(id)) {
     throw new Error("default task list cannot be deleted");
   }
-  const store = getEntityStoreForTask();
-  const existing = await store.get(id);
+  const existing = await getEntity(id);
   if (existing?.body.is_default === true) {
     throw new Error("default task list cannot be deleted");
   }
   if (opts?.cascade) {
-    const items = await store.list({
+    const items = await listEntities({
       world_id: defaultTaskWorldId(),
       primary_component: "task_item",
       limit: 500,
     });
     for (const item of items) {
       if (Number(item.body.list_id) === id) {
-        await store.delete(item.id);
+        await deleteEntity(item.id);
       }
     }
   }
-  return store.delete(id);
+  return deleteEntity(id);
 }

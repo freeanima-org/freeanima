@@ -1,8 +1,7 @@
 import type { ToolDef } from "@freeanima/core/tool";
 import { toolError, toolResult } from "@freeanima/core/tool";
 import type { LimbicKind, LimbicMemoryCreateInput } from "@freeanima/core/repos";
-
-import { getLimbicMemoryStore } from "./limbic-port.ts";
+import { createLimbicMemory } from "@freeanima/core/db/pg/limbic-memory";
 
 const LIMBIC_KINDS = ["conversation_mood", "turning_point", "spike"] as const;
 
@@ -89,7 +88,7 @@ export const limbicMemoryToolDefs: ToolDef[] = [
       };
 
       try {
-        const id = await getLimbicMemoryStore().create(row);
+        const id = await createLimbicMemory(row);
         return toolResult({ ok: true, id, kind: kindRaw, intensity });
       } catch (err) {
         return toolError(err instanceof Error ? err.message : String(err));

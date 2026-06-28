@@ -4,6 +4,7 @@ import { beginIntegrationCase, restoreIntegrationHome } from "../../helpers/inte
 
 import * as goalJudge from "@freeanima/core/llm/goal-judge";
 import { findCommand, executeCommand, isGoalStartResult } from "@freeanima/platform/commands";
+import { getConversationMeta } from "@freeanima/core/db/pg/conversation";
 import { seedSession, getTestEngine } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 
@@ -58,7 +59,7 @@ describePg("goal commands", () => {
     if (isGoalStartResult(result)) {
       expect(result.data.prompt).toContain("完成 单元测试");
     }
-    const meta = await getTestEngine().repos.conversation.getConversationMeta(sid);
+    const meta = await getConversationMeta(sid);
     expect(meta && "goal" in meta && meta.goal).toBeTruthy();
   });
 

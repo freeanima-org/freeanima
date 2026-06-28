@@ -1,10 +1,12 @@
 import { EMAIL_THREAD_COMPONENT, asEmailThread } from "@freeanima/core/db/schema/entity";
 
 import {
-  defaultEmailWorldId,
-  getEntitySearchForEmail,
-  getEntityStoreForEmail,
-} from "./entity-port.ts";
+  createEntity,
+  getEntity,
+  searchEntities,
+  updateEntity,
+} from "@freeanima/core/db/pg/entity";
+import { defaultEmailWorldId } from "./account-store.ts";
 import type { EmailThreadListOpts, EmailThreadRow, EmailThreadUpsertInput } from "./types.ts";
 
 function normalizeTags(tags: string[] | undefined): string[] {
@@ -65,8 +67,7 @@ export async function findEmailThreadByKey(
   accountId: number,
   threadKey: string,
 ): Promise<EmailThreadRow | null> {
-  const search = getEntitySearchForEmail();
-  const result = await search.search({
+  const result = await searchEntities({
     world_id: defaultEmailWorldId(),
     primary_component: EMAIL_THREAD_COMPONENT,
     filters: { account_id: accountId },
@@ -83,12 +84,11 @@ export async function findEmailThreadByKey(
 }
 
 export async function upsertEmailThread(input: EmailThreadUpsertInput): Promise<EmailThreadRow> {
-  const store = getEntityStoreForEmail();
   const existing = await findEmailThreadByKey(input.account_id, input.thread_key);
   if (existing) {
     const unreadDelta = input.unread_delta ?? 0;
     const messageDelta = input.message_delta ?? 0;
-    const row = await store.update({
+    const row = await updateEntity({
       id: existing.id,
       title: input.subject,
       summary: input.preview,
@@ -110,7 +110,7 @@ export async function upsertEmailThread(input: EmailThreadUpsertInput): Promise<
     });
   }
 
-  const row = await store.create({
+  const row = await createEntity({
     type: "content",
     world_id: defaultEmailWorldId(),
     components: [EMAIL_THREAD_COMPONENT],
@@ -132,13 +132,12 @@ export async function upsertEmailThread(input: EmailThreadUpsertInput): Promise<
 }
 
 export async function listEmailThreads(opts: EmailThreadListOpts = {}): Promise<EmailThreadRow[]> {
-  const search = getEntitySearchForEmail();
   const filters: Record<string, unknown> = {};
   if (opts.account_id != null) filters.account_id = opts.account_id;
   if (opts.has_unread) filters.has_unread = true;
   if (opts.tags?.length) filters.tags = opts.tags;
 
-  const result = await search.search({
+  const result = await searchEntities({
     world_id: defaultEmailWorldId(),
     primary_component: EMAIL_THREAD_COMPONENT,
     filters: Object.keys(filters).length > 0 ? filters : undefined,
@@ -161,12 +160,11 @@ export async function listEmailThreads(opts: EmailThreadListOpts = {}): Promise<
 }
 
 export async function tagEmailThread(id: number, tags: string[]): Promise<EmailThreadRow | null> {
-  const store = getEntityStoreForEmail();
-  const row = await store.get(id);
+  const row = await getEntity(id);
   if (!row) return null;
   const parsed = asEmailThread(row);
   if (!parsed) return null;
-  const updated = await store.update({ id, body: { ...parsed, tags: normalizeTags(tags) } });
+  const updated = await updateEntity({ id, body: { ...parsed, tags: normalizeTags(tags) } });
   if (!updated) return null;
   const next = asEmailThread(updated);
   if (!next) return null;
@@ -179,12 +177,11 @@ export async function refreshThreadAggregates(threadId: number): Promise<void> {
   );
   const unread_count = messages.filter((m) => m.unread).length;
   const last = messages[0];
-  const store = getEntityStoreForEmail();
-  const row = await store.get(threadId);
+  const row = await getEntity(threadId);
   if (!row) return;
   const parsed = asEmailThread(row);
   if (!parsed) return;
-  await store.update({
+  await updateEntity({
     id: threadId,
     summary: last?.preview ?? parsed.preview,
     body: {

@@ -4,7 +4,7 @@ import {
   startFtsRebuildJob,
   type FtsCoverageStats,
   type FtsRebuildJobStatus,
-} from "@freeanima/platform/connectors/db-pg";
+} from "@freeanima/core/db/pg";
 import {
   getCjkConfigSnapshot,
   getEmbeddingConfigSnapshot,

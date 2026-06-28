@@ -6,18 +6,19 @@ import {
   resetTokenizerForTest,
   setTokenizerEncodeForTest,
 } from "@freeanima/core/tokenizer/testing";
-import type { SemanticMemoryStorePort } from "@freeanima/core/repos";
-import {
-  registerSemanticMemoryStore,
-  resetSemanticMemoryStoreForTests,
-} from "@freeanima/capabilities-memory";
+import type { SemanticMemoryRow } from "@freeanima/core/repos";
+
+const listResidentSemanticMemoryMock = mock(async () => [] as SemanticMemoryRow[]);
+
+mock.module("@freeanima/core/db/pg/semantic-memory", () => ({
+  listResidentSemanticMemory: listResidentSemanticMemoryMock,
+}));
 import { MaskRegistry } from "@freeanima/capabilities-task/mask";
 import { createEngineCatalog } from "@freeanima/runtime";
 import type { Engine } from "@freeanima/runtime";
 import { Config } from "@freeanima/core/config";
 import type { Kernel } from "@freeanima/kernel";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
-import { nullPgRepositories } from "@freeanima/core/repos";
 import { createServiceKernel } from "@freeanima/platform/bootstrap";
 import { wireEnginePorts } from "./wire-engine-ports.ts";
 import { registerSystemPromptHooks } from "./register-prompt-hooks.ts";
@@ -26,12 +27,6 @@ import { initRuntimeContext } from "./context.ts";
 import { createAppRuntime } from "./runtime/app-runtime.ts";
 import type { RuntimeDeps } from "./runtime/runtime-deps.ts";
 import { computeGlobalBreakdown, getPromptDebug } from "./runtime/service-prompt-debug.ts";
-
-const emptySemanticStore = {
-  async listResident() {
-    return [];
-  },
-} as unknown as SemanticMemoryStorePort;
 
 const mockParts = {
   self: "self block",
@@ -91,7 +86,6 @@ function seedContext(catalog: ReturnType<typeof createEngineCatalog>, kernel: Ke
     kernel,
     engine: {
       catalog,
-      repos: nullPgRepositories,
       config: minimalConfig,
       logger: createTestLogger(),
     } as Engine,
@@ -128,7 +122,7 @@ describe("service-prompt-debug", () => {
       skills: catalog.skills,
       config: minimalConfig,
     });
-    registerSemanticMemoryStore(emptySemanticStore);
+    listResidentSemanticMemoryMock.mockClear();
     const kernel = createServiceKernel(minimalConfig);
     registerSystemPromptHooks({
       hookRegistry: kernel.hookRegistry,
@@ -142,7 +136,6 @@ describe("service-prompt-debug", () => {
   });
 
   afterEach(() => {
-    resetSemanticMemoryStoreForTests();
     resetTokenizerForTest();
   });
 

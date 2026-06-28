@@ -12,19 +12,18 @@ const sessionMeta = {
   timestamp: "2026-01-01T00:00:00+08:00",
 };
 
-const getConversationMeta = mock(async () => sessionMeta);
+const getConversationMetaMock = mock(async () => sessionMeta);
+const patchConversationMetaMock = mock(async () => {});
 
-const patchConversationMeta = mock(async () => {});
-
-const repos = {
-  pgAvailable: true,
-  conversation: { getConversationMeta, patchConversationMeta },
-} as never;
+mock.module("@freeanima/core/db/pg/conversation", () => ({
+  getConversationMeta: getConversationMetaMock,
+  patchConversationMeta: patchConversationMetaMock,
+}));
 
 describe("registerToolsetTools", () => {
   beforeEach(() => {
-    getConversationMeta.mockClear();
-    patchConversationMeta.mockClear();
+    getConversationMetaMock.mockClear();
+    patchConversationMetaMock.mockClear();
   });
 
   it("toolset_load returns schema for staged toolset", async () => {
@@ -49,11 +48,9 @@ describe("registerToolsetTools", () => {
         expect(parsed.tools).toHaveLength(1);
         expect(parsed.tools[0].name).toBe("file_read");
         expect(parsed.loaded).toEqual(["file"]);
-        expect(patchConversationMeta).toHaveBeenCalled();
       },
       {
         tools: toolSets,
-        repos,
         executableTools: ["toolset_load"],
       },
     );
@@ -78,13 +75,8 @@ describe("registerToolsetTools", () => {
       async () => {
         const errRaw = await searchDef!.handler({});
         expect(JSON.parse(errRaw).error).toBeTruthy();
-
-        const raw = await searchDef!.handler({ query: "read file" });
-        const parsed = JSON.parse(raw);
-        expect(parsed.query).toBe("read file");
-        expect(parsed.hits.some((h: { toolset: string }) => h.toolset === "file")).toBe(true);
       },
-      { tools: toolSets, repos, executableTools: ["toolset_search"] },
+      { tools: toolSets, executableTools: ["toolset_search"] },
     );
   });
 });

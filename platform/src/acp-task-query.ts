@@ -1,5 +1,5 @@
 import type { AcpPromptResult, AcpTaskQueryPort } from "@freeanima/capabilities-acp";
-import type { ConversationService } from "@freeanima/runtime/conversation";
+import { getMessageContentById, listMessages } from "@freeanima/core/db/pg/conversation";
 
 const ACP_RESULT_PREFIX = "[ACP result]";
 
@@ -28,13 +28,13 @@ function parseAcpResultMessage(content: string, taskId: string): AcpPromptResult
   }
 }
 
-export function createAcpTaskQueryPort(conversation: ConversationService): AcpTaskQueryPort {
+export function createAcpTaskQueryPort(): AcpTaskQueryPort {
   return {
     async getMessageContent(animaSessionId, messageId) {
-      return conversation.repos.conversation.getMessageContentById(animaSessionId, messageId);
+      return getMessageContentById(animaSessionId, messageId);
     },
     async findAcpResultForTask(animaSessionId, taskId) {
-      const messages = await conversation.repos.conversation.listMessages(animaSessionId);
+      const messages = await listMessages(animaSessionId);
       for (let i = messages.length - 1; i >= 0; i--) {
         const msg = messages[i];
         if (!msg || msg.role !== "assistant") continue;

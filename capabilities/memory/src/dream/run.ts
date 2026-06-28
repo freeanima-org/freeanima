@@ -1,7 +1,6 @@
 import { logCapability as logComponent } from "@freeanima/core/config";
-import type { DreamMemoryStorePort, ConversationStorePort } from "@freeanima/core/repos";
+import { createDreamMemory, getDreamMemoryByDay } from "@freeanima/core/db/pg/dream-memory";
 
-import { getDreamMemoryStore } from "../dream-port.ts";
 import { buildDreamEngineInput } from "./build-messages.ts";
 import { runDreamEngine } from "../dream-engine-port.ts";
 import { cstDayRange } from "../light-sleep/build-messages.ts";
@@ -24,18 +23,15 @@ export type DreamResult = {
 export type RunDreamOpts = {
   day?: string;
   selfContent: string;
-  conversationStore?: ConversationStorePort;
-  dreamStore?: DreamMemoryStorePort;
   fridge?: DreamFridgePort;
 };
 
 const DREAM_REMINDER_TEASER = "我昨晚做了一个梦，想聊聊吗？";
 
 export async function runDream(opts: RunDreamOpts): Promise<DreamResult> {
-  const dreamStore = opts.dreamStore ?? getDreamMemoryStore();
   const day = cstDayRange(opts.day).day;
 
-  const existing = await dreamStore.getByDay(day);
+  const existing = await getDreamMemoryByDay(day);
   if (existing) {
     const result: DreamResult = {
       ok: true,
@@ -52,10 +48,7 @@ export async function runDream(opts: RunDreamOpts): Promise<DreamResult> {
     return result;
   }
 
-  const input = await gatherDreamInput({
-    day: opts.day,
-    conversationStore: opts.conversationStore,
-  });
+  const input = await gatherDreamInput({ day: opts.day });
 
   if (!hasDreamFuel(input)) {
     const result: DreamResult = {
@@ -87,7 +80,7 @@ export async function runDream(opts: RunDreamOpts): Promise<DreamResult> {
     return result;
   }
 
-  const dreamId = await dreamStore.create({
+  const dreamId = await createDreamMemory({
     dream_day: input.day,
     content,
     source_limbic_ids: input.limbicMemories.map((r) => r.id),

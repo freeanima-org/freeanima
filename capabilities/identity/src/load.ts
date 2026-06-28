@@ -1,5 +1,6 @@
 import type { SelfBlockRow } from "@freeanima/core/repos";
 import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
+import { listSelfBlocks } from "@freeanima/core/db/pg/self-layer";
 
 import {
   getSelfLayerPromptCache,
@@ -12,7 +13,6 @@ import {
   wrapSelfLayerForSystemPrompt,
   type SelfBlockView,
 } from "./compose.ts";
-import { getSelfLayerStore } from "./port.ts";
 
 function emptyPlaceholderBlocks(): SelfBlockRow[] {
   const now = new Date(0);
@@ -30,7 +30,7 @@ function emptyPlaceholderBlocks(): SelfBlockRow[] {
 /** Load the six self blocks as structured views */
 export async function loadSelfBlocks(): Promise<SelfBlockView[]> {
   try {
-    const rows = await getSelfLayerStore().listBlocks();
+    const rows = await listSelfBlocks();
     return rows.map(toSelfBlockView);
   } catch {
     return emptyPlaceholderBlocks().map(toSelfBlockView);
@@ -43,7 +43,7 @@ export async function loadSelfLayerPrompt(): Promise<string> {
   if (cached) return cached;
 
   try {
-    const rows = await getSelfLayerStore().listBlocks();
+    const rows = await listSelfBlocks();
     const prompt = wrapSelfLayerForSystemPrompt(renderSelfLayerPrompt(rows));
     setSelfLayerPromptCache(prompt);
     return prompt;

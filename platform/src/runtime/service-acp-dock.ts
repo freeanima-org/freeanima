@@ -1,5 +1,6 @@
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import type { AcpTaskStatusJson } from "@freeanima/core/db/schema";
+import { getMessageContentsByIds } from "@freeanima/core/db/pg/conversation";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import { checkPlatform } from "./service-conversations.ts";
 
@@ -82,10 +83,7 @@ export async function getConversationAcpDock(
 
   const contentById =
     progressMessageIds.length > 0
-      ? await deps.conversation.repos.conversation.getMessageContentsByIds(
-          conversationId,
-          progressMessageIds,
-        )
+      ? await getMessageContentsByIds(conversationId, progressMessageIds)
       : {};
 
   for (const task of tasks) {

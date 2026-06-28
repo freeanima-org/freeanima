@@ -10,7 +10,6 @@ import {
 } from "@freeanima/core/provider";
 import { SkillRegistry } from "@freeanima/core/skill";
 import { ToolSetRegistry } from "@freeanima/core/tool";
-import { nullPgRepositories } from "@freeanima/core/repos";
 import { MockBackend } from "@freeanima/core/provider/test-helpers/mock-backend";
 import { Config, type AnimaConfig } from "@freeanima/core/config";
 import { MINIMAL_REMOTE_AUTH } from "@freeanima/core/config/test-helpers/minimal-llm-config";
@@ -54,7 +53,7 @@ describe("Engine", () => {
     );
     const llm = { backends, providers, profiles };
     const config = Config.fromSnapshot(testCfg);
-    const engine = new Engine(catalog, llm, nullPgRepositories, config, createTestLogger());
+    const engine = new Engine(catalog, llm, config, createTestLogger());
     expect(engine.toolSets).toBe(catalog.toolSets);
     expect(engine.catalog.skills).toBe(catalog.skills);
     expect(engine.llm.backends).toBe(backends);

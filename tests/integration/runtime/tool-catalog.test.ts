@@ -83,7 +83,7 @@ describePg("tool catalog lazy load", () => {
         expect(parsed.tools?.[0]?.name).toBe("file_read");
         expect(parsed.tools?.[0]?.parameters).toBeDefined();
       },
-      { repos: c.repos, tools: getTestEngine().toolSets },
+      { tools: getTestEngine().toolSets },
     );
 
     const meta = await c.loadConversationMeta(sid);
@@ -146,7 +146,7 @@ describePg("tool catalog lazy load", () => {
         async () => {
           await engine.run(msgs, { tools, executableTools });
         },
-        { repos: c.repos, tools: getTestEngine().toolSets, executableTools },
+        { tools: getTestEngine().toolSets, executableTools },
       );
     } finally {
       chatStreamSpy.mockRestore();
@@ -171,7 +171,7 @@ describePg("tool catalog lazy load", () => {
         expect(parsed.total).toBeGreaterThan(0);
         expect(parsed.hits.some((h: { toolset: string }) => h.toolset === "file")).toBe(true);
       },
-      { repos: c.repos, tools: getTestEngine().toolSets, executableTools: ["toolset_search"] },
+      { tools: getTestEngine().toolSets, executableTools: ["toolset_search"] },
     );
   });
 });

@@ -1,150 +1,60 @@
-import { describe, expect, it } from "bun:test";
-import type { ConversationStorePort } from "@freeanima/core/repos";
-import { nullPgRepositories } from "@freeanima/core/repos";
+import { describe, expect, it, mock, beforeEach, afterEach, spyOn } from "bun:test";
+import * as pg from "@freeanima/core/db/pg";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { runWithToolContext } from "@freeanima/core/tool";
 import { FtsQueryError } from "@freeanima/core/util";
+
+const searchMessagesFtsMock = mock(async (..._args: unknown[]) => [] as never);
+const conversationExistsMock = mock(async (..._args: unknown[]) => false);
+const countMessagesMock = mock(async (..._args: unknown[]) => 0);
+const findMessagePosMock = mock(async (..._args: unknown[]) => null as number | null);
+const listMessageRowsPageMock = mock(async (..._args: unknown[]) => [] as never);
+const listMessageRowsFromPosMock = mock(async (..._args: unknown[]) => [] as never);
+
+mock.module("@freeanima/core/db/pg/conversation", () => ({
+  searchMessagesFts: searchMessagesFtsMock,
+  conversationExists: conversationExistsMock,
+  countMessages: countMessagesMock,
+  findMessagePos: findMessagePosMock,
+  listMessageRowsPage: listMessageRowsPageMock,
+  listMessageRowsFromPos: listMessageRowsFromPosMock,
+}));
+
 import { registerConversationTools } from "./conversation.ts";
 
-function createMockConversationStore(
-  overrides: Partial<ConversationStorePort> = {},
-): ConversationStorePort {
-  const base: ConversationStorePort = {
-    async getConversationMeta() {
-      return null;
-    },
-    async getConversationMetaLite() {
-      return null;
-    },
-    async getConversationTools() {
-      return [];
-    },
-    async upsertConversationMeta() {},
-    async patchConversationMeta() {},
-    async updateCompression() {},
-    async updateTodos() {},
-    async appendMessage() {
-      throw new Error("not implemented");
-    },
-    async appendMessageReturningId() {
-      throw new Error("not implemented");
-    },
-    async updateMessageContent() {},
-    async getMessageContentById() {
-      return null;
-    },
-    async getMessageContentsByIds() {
-      return {};
-    },
-    async nextMessagePos() {
-      return 1;
-    },
-    async listMessages() {
-      return [];
-    },
-    async listMessagesByPosRange() {
-      return [];
-    },
-    async listMessagesPage() {
-      return [];
-    },
-    async countMessages() {
-      return 0;
-    },
-    async countUserMessages() {
-      return 0;
-    },
-    async findMessagePos() {
-      return null;
-    },
-    async listMessageRowsPage() {
-      return [];
-    },
-    async listMessageRowsFromPos() {
-      return [];
-    },
-    async lastMessageTimestamp() {
-      return null;
-    },
-    async truncateMessagesAfter() {},
-    async shiftMessagePositions() {},
-    async conversationExists() {
-      return false;
-    },
-    async deleteConversation() {},
-    async archiveConversation() {},
-    async unarchiveConversation() {},
-    async listConversationIds() {
-      return [];
-    },
-    async listDebugConversationIds() {
-      return [];
-    },
-    async listConversationSummaries() {
-      return [];
-    },
-    async listConversationSummariesPage() {
-      return { items: [], total: 0 };
-    },
-    async countConversationsByPlatform() {
-      return {};
-    },
-    async deleteDebugConversations() {
-      return 0;
-    },
-    async findConversationIdByPlatformInfo() {
-      return null;
-    },
-    async listConversationIdsMatchingPlatformProbe() {
-      return [];
-    },
-    async searchMessagesFts() {
-      return [];
-    },
-    async countSearchableMessages() {
-      return 0;
-    },
-    async listConversationIdsUpdatedBetween() {
-      return [];
-    },
-    async getEarliestConversationDay() {
-      return null;
-    },
-    async listStaleConversationIdsForCleanup() {
-      return [];
-    },
-    async deleteStaleConversations() {
-      return { deleted: 0, ids: [] };
-    },
-  };
-  return { ...base, ...overrides };
-}
-
-function reposWithSession(conversation: ConversationStorePort) {
-  return { ...nullPgRepositories, conversation };
-}
-
 describe("registerConversationTools", () => {
+  let pgSpy: ReturnType<typeof spyOn>;
+
+  beforeEach(() => {
+    pgSpy = spyOn(pg, "isPostgresPrimary").mockReturnValue(true);
+    searchMessagesFtsMock.mockClear();
+    conversationExistsMock.mockClear();
+    countMessagesMock.mockClear();
+    findMessagePosMock.mockClear();
+    listMessageRowsPageMock.mockClear();
+    listMessageRowsFromPosMock.mockClear();
+  });
+
+  afterEach(() => {
+    pgSpy.mockRestore();
+  });
+
   it("conversation_search returns FTS hits", async () => {
     const toolSets = new ToolSetRegistry();
     registerConversationTools(toolSets);
     const def = toolSets.getTool("conversation_search");
     expect(def).toBeDefined();
 
-    const conversation = createMockConversationStore({
-      async searchMessagesFts() {
-        return [
-          {
-            message_id: "m1",
-            conversation_id: "s1",
-            role: "user",
-            content: "hello world",
-            timestamp: "2026-01-01T00:00:00+08:00",
-            rank: 0.5,
-          },
-        ];
+    searchMessagesFtsMock.mockImplementation((async () => [
+      {
+        message_id: "m1",
+        conversation_id: "s1",
+        role: "user",
+        content: "hello world",
+        timestamp: "2026-01-01T00:00:00+08:00",
+        rank: 0.5,
       },
-    });
+    ]) as never);
 
     await runWithToolContext(
       "sess-1",
@@ -158,7 +68,7 @@ describe("registerConversationTools", () => {
         expect(parsed.hits[0]!.snippet).toContain("hello");
         expect(parsed.hits[0]!.content).toBeUndefined();
       },
-      { tools: toolSets, repos: reposWithSession(conversation) },
+      { tools: toolSets },
     );
   });
 
@@ -173,7 +83,7 @@ describe("registerConversationTools", () => {
         const raw = await def.handler({ query: "  " });
         expect(raw).toContain('"error"');
       },
-      { tools: toolSets, repos: reposWithSession(createMockConversationStore()) },
+      { tools: toolSets },
     );
   });
 
@@ -182,14 +92,8 @@ describe("registerConversationTools", () => {
     registerConversationTools(toolSets);
     const def = toolSets.getTool("conversation_search")!;
 
-    const conversation = createMockConversationStore({
-      async searchMessagesFts() {
-        throw new FtsQueryError(
-          "trailing_operator",
-          "query 不能以 OR 结尾",
-          "示例：退烧 OR 注意力",
-        );
-      },
+    searchMessagesFtsMock.mockImplementation(async () => {
+      throw new FtsQueryError("trailing_operator", "query 不能以 OR 结尾", "示例：退烧 OR 注意力");
     });
 
     await runWithToolContext(
@@ -199,7 +103,7 @@ describe("registerConversationTools", () => {
         expect(raw).toContain("修改建议");
         expect(raw).toContain("不能以 OR 结尾");
       },
-      { tools: toolSets, repos: reposWithSession(conversation) },
+      { tools: toolSets },
     );
   });
 
@@ -208,25 +112,22 @@ describe("registerConversationTools", () => {
     registerConversationTools(toolSets);
     const def = toolSets.getTool("conversation_scroll")!;
 
-    const conversation = createMockConversationStore({
-      async conversationExists(id: string) {
-        return id === "s1";
-      },
-      async countMessages() {
-        return 5;
-      },
-      async listMessageRowsPage(_sid, offset, limit) {
-        return [
-          {
-            message_id: "m2",
-            pos: offset + 2,
-            role: "assistant",
-            content: "reply",
-            timestamp: "2026-01-01T00:00:01+08:00",
-          },
-        ].slice(0, limit);
-      },
-    });
+    conversationExistsMock.mockImplementation((async (id: string) => id === "s1") as never);
+    countMessagesMock.mockImplementation((async () => 5) as never);
+    listMessageRowsPageMock.mockImplementation((async (
+      _sid: string,
+      offset: number,
+      limit: number,
+    ) =>
+      [
+        {
+          message_id: "m2",
+          pos: offset + 2,
+          role: "assistant",
+          content: "reply",
+          timestamp: "2026-01-01T00:00:01+08:00",
+        },
+      ].slice(0, limit)) as never);
 
     await runWithToolContext(
       "sess-1",
@@ -243,7 +144,7 @@ describe("registerConversationTools", () => {
         expect(parsed.offset).toBe(1);
         expect(parsed.messages[0]!.message_id).toBe("m2");
       },
-      { tools: toolSets, repos: reposWithSession(conversation) },
+      { tools: toolSets },
     );
   });
 
@@ -252,28 +153,24 @@ describe("registerConversationTools", () => {
     registerConversationTools(toolSets);
     const def = toolSets.getTool("conversation_scroll")!;
 
-    const conversation = createMockConversationStore({
-      async conversationExists() {
-        return true;
-      },
-      async countMessages() {
-        return 3;
-      },
-      async findMessagePos(_sid, messageId) {
-        return messageId === "anchor" ? 2 : null;
-      },
-      async listMessageRowsFromPos(_sid, fromPos, limit) {
-        return [
-          {
-            message_id: "anchor",
-            pos: fromPos,
-            role: "user",
-            content: "anchor text",
-            timestamp: "2026-01-01T00:00:00+08:00",
-          },
-        ].slice(0, limit);
-      },
-    });
+    conversationExistsMock.mockImplementation((async () => true) as never);
+    countMessagesMock.mockImplementation((async () => 3) as never);
+    findMessagePosMock.mockImplementation((async (_sid: string, messageId: string) =>
+      messageId === "anchor" ? 2 : null) as never);
+    listMessageRowsFromPosMock.mockImplementation((async (
+      _sid: string,
+      fromPos: number,
+      limit: number,
+    ) =>
+      [
+        {
+          message_id: "anchor",
+          pos: fromPos,
+          role: "user",
+          content: "anchor text",
+          timestamp: "2026-01-01T00:00:00+08:00",
+        },
+      ].slice(0, limit)) as never);
 
     await runWithToolContext(
       "sess-1",
@@ -286,7 +183,7 @@ describe("registerConversationTools", () => {
         expect(parsed.messages[0]!.message_id).toBe("anchor");
         expect(parsed.offset).toBe(1);
       },
-      { tools: toolSets, repos: reposWithSession(conversation) },
+      { tools: toolSets },
     );
   });
 
@@ -295,14 +192,16 @@ describe("registerConversationTools", () => {
     registerConversationTools(toolSets);
     const def = toolSets.getTool("conversation_scroll")!;
 
+    conversationExistsMock.mockImplementation(async () => false);
+
     await runWithToolContext(
       "sess-1",
       async () => {
         const raw = await def.handler({ conversation_id: "missing" });
         expect(raw).toContain('"error"');
-        expect(raw).toContain("not found");
+        expect(raw).toContain("session not found");
       },
-      { tools: toolSets, repos: reposWithSession(createMockConversationStore()) },
+      { tools: toolSets },
     );
   });
 });

@@ -29,12 +29,13 @@ import {
 import { getAppRuntime } from "@freeanima/platform";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 import * as engineConversation from "@freeanima/runtime/conversation";
+import { patchConversationMeta } from "@freeanima/core/db/pg/conversation";
 
 async function patchMetaForTest(
   conversationId: string,
   patch: Record<string, unknown>,
 ): Promise<void> {
-  await getTestEngine().repos.conversation.patchConversationMeta(conversationId, patch as never);
+  await patchConversationMeta(conversationId, patch as never);
 }
 
 describePg("slash commands", () => {

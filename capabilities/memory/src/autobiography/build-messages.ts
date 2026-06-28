@@ -2,12 +2,13 @@ import type {
   AutobiographicalMemoryRow,
   LimbicMemoryRow,
   SemanticMemoryRow,
-  ConversationStorePort,
 } from "@freeanima/core/repos";
-
-import { getAutobiographicalMemoryStore } from "../autobiographical-port.ts";
-import { getLimbicMemoryStore } from "../limbic-port.ts";
-import { getSemanticMemoryStore } from "../semantic-port.ts";
+import { getLimbicMemory } from "@freeanima/core/db/pg/limbic-memory";
+import {
+  getSemanticMemory,
+  listSemanticMemoryBySourceSessions,
+} from "@freeanima/core/db/pg/semantic-memory";
+import { listActiveAutobiographicalMemory } from "@freeanima/core/db/pg/autobiographical-memory";
 import {
   collectLimbicMemoriesForSessions,
   collectConversationBlocks,
@@ -130,14 +131,15 @@ async function mergeSemanticRowsForSessions(
   conversationIds: string[],
   stageSemanticIds: string[],
 ): Promise<SemanticMemoryRow[]> {
-  const store = getSemanticMemoryStore();
   const byId = new Map<string, SemanticMemoryRow>();
-  for (const row of await store.listBySourceConversations(conversationIds, { status: "active" })) {
+  for (const row of await listSemanticMemoryBySourceSessions(conversationIds, {
+    status: "active",
+  })) {
     byId.set(row.id, row);
   }
   for (const id of stageSemanticIds) {
     if (byId.has(id)) continue;
-    const row = await store.get(id);
+    const row = await getSemanticMemory(id);
     if (row && row.status === "active") {
       byId.set(id, row);
     }
@@ -153,10 +155,9 @@ async function mergeLimbicRowsForSessions(
   for (const row of await collectLimbicMemoriesForSessions(conversationIds)) {
     byId.set(row.id, row);
   }
-  const store = getLimbicMemoryStore();
   for (const id of stageLimbicIds) {
     if (byId.has(id)) continue;
-    const row = await store.get(id);
+    const row = await getLimbicMemory(id);
     if (row) {
       byId.set(id, row);
     }
@@ -175,16 +176,15 @@ export function buildAutobiographyUserMessages(
 }
 
 export async function buildLightSleepAutobiographyUserMessages(
-  conversationStore: ConversationStorePort,
   conversationIds: string[],
   stageSemanticIds: string[],
   stageLimbicIds: string[],
 ): Promise<string[]> {
-  const blocks = await collectConversationBlocks(conversationStore, conversationIds);
+  const blocks = await collectConversationBlocks(conversationIds);
   const dialogue = formatDialogueMessage(blocks);
   const semanticRows = await mergeSemanticRowsForSessions(conversationIds, stageSemanticIds);
   const limbicRows = await mergeLimbicRowsForSessions(conversationIds, stageLimbicIds);
-  const existing = await getAutobiographicalMemoryStore().listActive({ limit: 200 });
+  const existing = await listActiveAutobiographicalMemory({ limit: 200 });
 
   return [
     dialogue.text,

@@ -1,35 +1,23 @@
 import { afterEach, beforeEach, expect, it } from "bun:test";
 
 import { TASK_ITEM_COMPONENT } from "@freeanima/core/db/schema/entity";
-import {
-  createTaskItem,
-  createTaskList,
-  registerEntityTaskModule,
-  resetEntityTaskModuleForTests,
-} from "@freeanima/capabilities-task";
-import { EntitySearchScopeError } from "@freeanima/platform/connectors/db-pg";
+import { createTaskItem, createTaskList } from "@freeanima/capabilities-task";
+import { EntitySearchScopeError, searchEntities } from "@freeanima/core/db/pg/entity";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { getTestEngine } from "../../helpers/pg-test.ts";
 
 describePg("entity search PG", () => {
   const prev = process.env.FREEANIMA_HOME;
 
   beforeEach(async () => {
     await beginIntegrationCase("freeanima-entity-search-");
-    const engine = getTestEngine();
-    registerEntityTaskModule({
-      entityStore: engine.repos.entity,
-      entitySearch: engine.repos.entitySearch,
-    });
   });
 
   afterEach(async () => {
-    resetEntityTaskModuleForTests();
     await endIntegrationCase();
     await restoreIntegrationHome(prev);
   });
@@ -39,8 +27,7 @@ describePg("entity search PG", () => {
     await createTaskItem({ title: "部署上线", tags: ["工作"], list_id: list.id });
     await createTaskItem({ title: "买菜", tags: ["生活"], list_id: list.id });
 
-    const search = getTestEngine().repos.entitySearch;
-    const hits = await search.search({
+    const hits = await searchEntities({
       world_id: 1,
       primary_component: TASK_ITEM_COMPONENT,
       filters: { tags: ["工作"] },
@@ -58,8 +45,7 @@ describePg("entity search PG", () => {
       list_id: list.id,
     });
 
-    const search = getTestEngine().repos.entitySearch;
-    const hits = await search.search({
+    const hits = await searchEntities({
       world_id: 1,
       primary_component: TASK_ITEM_COMPONENT,
       query: "架构",
@@ -70,9 +56,8 @@ describePg("entity search PG", () => {
   });
 
   it("global search without accessible worlds throws scope error", async () => {
-    const search = getTestEngine().repos.entitySearch;
     await expect(
-      search.search({
+      searchEntities({
         global: true,
         query: "test",
       }),
@@ -80,8 +65,7 @@ describePg("entity search PG", () => {
   });
 
   it("global search with public world ids succeeds", async () => {
-    const search = getTestEngine().repos.entitySearch;
-    const result = await search.search({
+    const result = await searchEntities({
       global: true,
       accessible_world_ids: [1],
       primary_component: TASK_ITEM_COMPONENT,

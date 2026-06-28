@@ -1,8 +1,16 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import type { ConversationMessage } from "@freeanima/core/db/domain";
-import { pingDatabase } from "@freeanima/platform/connectors/db-pg";
+import { pingDatabase } from "@freeanima/core/db/pg";
+import {
+  appendMessage,
+  getConversationMeta,
+  listMessages,
+  nextMessagePos,
+  shiftMessagePositions,
+  updateCompression,
+  upsertConversationMeta,
+} from "@freeanima/core/db/pg/conversation";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
-import { getTestEngine } from "../../helpers/pg-test.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
@@ -31,9 +39,8 @@ describePg("db conversation (PostgreSQL)", () => {
   });
 
   it("append/read conversation meta and messages", async () => {
-    const conversation = getTestEngine().repos.conversation;
     const conversationId = "20260530_test_db";
-    await conversation.upsertConversationMeta(conversationId, {
+    await upsertConversationMeta(conversationId, {
       role: "conversation_meta",
       model: "test-model",
       cached_toolsets: [],
@@ -42,40 +49,39 @@ describePg("db conversation (PostgreSQL)", () => {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
 
-    const meta = await conversation.getConversationMeta(conversationId);
+    const meta = await getConversationMeta(conversationId);
     expect(meta?.model).toBe("test-model");
     expect(meta?.platform).toBe(TEST_SAP_CHAT_PLATFORM);
 
-    await conversation.appendMessage(conversationId, {
+    await appendMessage(conversationId, {
       role: "user",
       content: "hello",
       pos: 1,
       timestamp: new Date().toISOString(),
     });
-    await conversation.appendMessage(conversationId, {
+    await appendMessage(conversationId, {
       role: "assistant",
       content: "hi",
       pos: 2,
       timestamp: new Date().toISOString(),
     });
 
-    const msgs = await conversation.listMessages(conversationId);
+    const msgs = await listMessages(conversationId);
     expect(msgs).toHaveLength(2);
     expect(msgs[0]?.role).toBe("user");
     expect(msgs[1]?.content).toBe("hi");
 
-    const next = await conversation.nextMessagePos(conversationId);
+    const next = await nextMessagePos(conversationId);
     expect(next).toBe(3);
 
-    await conversation.updateCompression(conversationId, { l2: 1, l3: 2 });
-    const meta2 = await conversation.getConversationMeta(conversationId);
+    await updateCompression(conversationId, { l2: 1, l3: 2 });
+    const meta2 = await getConversationMeta(conversationId);
     expect(meta2?.compression).toEqual({ l2: 1, l3: 2 });
   });
 
   it("JSONB assistant tool_calls round-trip", async () => {
-    const conversation = getTestEngine().repos.conversation;
     const conversationId = "db_jsonb_tool_calls";
-    await conversation.upsertConversationMeta(conversationId, {
+    await upsertConversationMeta(conversationId, {
       role: "conversation_meta",
       model: "test-model",
       cached_toolsets: [],
@@ -84,7 +90,7 @@ describePg("db conversation (PostgreSQL)", () => {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
 
-    await conversation.appendMessage(conversationId, {
+    await appendMessage(conversationId, {
       role: "assistant",
       content: "",
       pos: 1,
@@ -98,7 +104,7 @@ describePg("db conversation (PostgreSQL)", () => {
       ],
     });
 
-    const msgs = await conversation.listMessages(conversationId);
+    const msgs = await listMessages(conversationId);
     expect(msgs).toHaveLength(1);
     expect(msgs[0]?.role).toBe("assistant");
     if (msgs[0]?.role === "assistant") {
@@ -107,9 +113,8 @@ describePg("db conversation (PostgreSQL)", () => {
   });
 
   it("concurrent appendMessage", async () => {
-    const conversation = getTestEngine().repos.conversation;
     const conversationId = "db_concurrent_append";
-    await conversation.upsertConversationMeta(conversationId, {
+    await upsertConversationMeta(conversationId, {
       role: "conversation_meta",
       model: "test-model",
       cached_toolsets: [],
@@ -120,7 +125,7 @@ describePg("db conversation (PostgreSQL)", () => {
 
     await Promise.all(
       Array.from({ length: 8 }, (_, i) =>
-        conversation.appendMessage(conversationId, {
+        appendMessage(conversationId, {
           role: "user",
           content: `msg-${i}`,
           pos: i + 1,
@@ -129,14 +134,13 @@ describePg("db conversation (PostgreSQL)", () => {
       ),
     );
 
-    const messages = await conversation.listMessages(conversationId);
+    const messages = await listMessages(conversationId);
     expect(messages).toHaveLength(8);
   });
 
   it("shiftMessagePositions makes room for mid-stream insert", async () => {
-    const conversation = getTestEngine().repos.conversation;
     const conversationId = "20260531_shift_test";
-    await conversation.upsertConversationMeta(conversationId, {
+    await upsertConversationMeta(conversationId, {
       role: "conversation_meta",
       model: "test-model",
       cached_toolsets: [],
@@ -145,13 +149,13 @@ describePg("db conversation (PostgreSQL)", () => {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
 
-    await conversation.appendMessage(conversationId, {
+    await appendMessage(conversationId, {
       role: "user",
       content: "u1",
       pos: 489,
       timestamp: new Date().toISOString(),
     });
-    await conversation.appendMessage(conversationId, {
+    await appendMessage(conversationId, {
       role: "assistant",
       content: null,
       pos: 490,
@@ -160,21 +164,21 @@ describePg("db conversation (PostgreSQL)", () => {
         { id: "call_1", type: "function", function: { name: "file_read", arguments: "{}" } },
       ],
     } as never);
-    await conversation.appendMessage(conversationId, {
+    await appendMessage(conversationId, {
       role: "user",
       content: "u2",
       pos: 491,
       timestamp: new Date().toISOString(),
     });
-    await conversation.appendMessage(conversationId, {
+    await appendMessage(conversationId, {
       role: "assistant",
       content: "done",
       pos: 500,
       timestamp: new Date().toISOString(),
     });
 
-    await conversation.shiftMessagePositions(conversationId, 490, 1);
-    await conversation.appendMessage(conversationId, {
+    await shiftMessagePositions(conversationId, 490, 1);
+    await appendMessage(conversationId, {
       role: "tool",
       tool_call_id: "call_1",
       name: "file_read",
@@ -183,7 +187,7 @@ describePg("db conversation (PostgreSQL)", () => {
       timestamp: new Date().toISOString(),
     });
 
-    const msgs = await conversation.listMessages(conversationId);
+    const msgs = await listMessages(conversationId);
     expect(msgs.map((m: ConversationMessage) => m.pos)).toEqual([489, 490, 491, 492, 501]);
     expect(msgs[2]?.role).toBe("tool");
     expect(msgs[3]?.role).toBe("user");

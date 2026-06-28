@@ -8,21 +8,16 @@
 
 import { readFileSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 
 import { bindActiveConfig } from "../../platform/config/index.ts";
 import {
   createEmailAccount,
   findEmailAccountByAddressAndHost,
-  registerEntityEmailModule,
 } from "../../capabilities/email/src/index.ts";
 import { FileConfig } from "../../platform/config/file-config.ts";
 import { parseYaml } from "../../platform/config/yaml.ts";
-import { pgEntityStore } from "../../platform/connectors/db-pg/entity/pg-entity-store.ts";
-import { pgEntitySearchStore } from "../../platform/connectors/db-pg/entity/pg-entity-search-store.ts";
-
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
+import { initDatabase, closeDb } from "../../core/src/db/pg/index.ts";
 
 type LegacyAccount = {
   id: string;
@@ -69,9 +64,6 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const { initDatabase, closeDb } = await import(
-    join(repoRoot, "platform/connectors/db-pg/index.ts")
-  );
   initDatabase({ getDatabaseUrl: () => url });
   bindActiveConfig(FileConfig.open());
 
@@ -86,11 +78,6 @@ async function main(): Promise<void> {
     console.log("no legacy email.accounts to migrate");
     return;
   }
-
-  registerEntityEmailModule({
-    entityStore: pgEntityStore,
-    entitySearch: pgEntitySearchStore,
-  });
 
   try {
     let migrated = 0;

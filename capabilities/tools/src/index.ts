@@ -9,11 +9,6 @@ export { registerWebTools } from "./web.ts";
 export { registerCredentialTools } from "./credential.ts";
 export { registerExecuteCodeTool } from "./execute-code.ts";
 export { registerEntitySearchTools } from "./entity-search.ts";
-export {
-  registerEntitySearchModule,
-  getEntitySearchStore,
-  resetEntitySearchModuleForTests,
-} from "./entity-search-port.ts";
 export { clampTimeout, parseRuntime, runExecuteCode } from "./execute-code-runtimes.ts";
 
 import type { Config } from "@freeanima/core/config";

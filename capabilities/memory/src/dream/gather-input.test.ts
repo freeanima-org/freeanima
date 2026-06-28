@@ -1,10 +1,6 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it, mock, beforeEach, afterEach } from "bun:test";
 
-import type {
-  LimbicListByCreatedOpts,
-  LimbicMemoryRow,
-  ConversationStorePort,
-} from "@freeanima/core/repos";
+import type { LimbicMemoryRow } from "@freeanima/core/repos";
 
 import {
   DREAM_MIN_INTENSITY,
@@ -12,11 +8,26 @@ import {
   hasDreamFuel,
   limbicCreatedRange,
 } from "./gather-input.ts";
-import { registerLimbicMemoryStore, resetLimbicMemoryStoreForTests } from "../limbic-port.ts";
-import {
-  registerMemoryConversationStore,
-  resetMemoryConversationStoreForTests,
-} from "../conversation-port.ts";
+
+const listLimbicMemoryByCreatedBetweenMock = mock(
+  async (..._args: unknown[]) => [] as LimbicMemoryRow[],
+);
+const listConversationIdsUpdatedBetweenMock = mock(async () => ["s1"]);
+const listMessagesMock = mock(async () => [
+  {
+    role: "user",
+    content: "hello dream",
+    t: "2026-06-14T12:00:00+08:00",
+  },
+]);
+
+mock.module("@freeanima/core/db/pg/limbic-memory", () => ({
+  listLimbicMemoryByCreatedBetween: listLimbicMemoryByCreatedBetweenMock,
+}));
+mock.module("@freeanima/core/db/pg/conversation", () => ({
+  listConversationIdsUpdatedBetween: listConversationIdsUpdatedBetweenMock,
+  listMessages: listMessagesMock,
+}));
 
 function limbicRow(id: string, intensity: number, conversationId = "s1"): LimbicMemoryRow {
   return {
@@ -49,10 +60,19 @@ describe("limbicCreatedRange", () => {
 });
 
 describe("gatherDreamInput", () => {
-  it("returns top limbic rows above intensity threshold by created_at window", async () => {
-    resetLimbicMemoryStoreForTests();
-    resetMemoryConversationStoreForTests();
+  beforeEach(() => {
+    listLimbicMemoryByCreatedBetweenMock.mockClear();
+    listConversationIdsUpdatedBetweenMock.mockClear();
+    listMessagesMock.mockClear();
+  });
 
+  afterEach(() => {
+    listLimbicMemoryByCreatedBetweenMock.mockClear();
+    listConversationIdsUpdatedBetweenMock.mockClear();
+    listMessagesMock.mockClear();
+  });
+
+  it("returns top limbic rows above intensity threshold by created_at window", async () => {
     const limbicRows = [
       limbicRow("a", 0.9),
       limbicRow("b", 0.6),
@@ -60,32 +80,19 @@ describe("gatherDreamInput", () => {
       limbicRow("d", 0.4),
     ];
 
-    registerLimbicMemoryStore({
-      async listByCreatedBetween(fromIso: string, toIso: string, opts?: LimbicListByCreatedOpts) {
-        expect(fromIso).toBe("2026-06-14T00:00:00+08:00");
-        expect(toIso).toBe("2026-06-15T06:00:00+08:00");
-        expect(opts?.minIntensity).toBe(DREAM_MIN_INTENSITY);
-        return limbicRows
-          .filter((r) => r.intensity > (opts?.minIntensity ?? 0))
-          .sort((x, y) => y.intensity - x.intensity)
-          .slice(0, opts?.limit ?? 3);
-      },
-    } as never);
-
-    registerMemoryConversationStore({
-      async listConversationIdsUpdatedBetween() {
-        return ["s1"];
-      },
-      async listMessages() {
-        return [
-          {
-            role: "user",
-            content: "hello dream",
-            timestamp: "2026-06-14T12:00:00+08:00",
-          },
-        ];
-      },
-    } as unknown as ConversationStorePort);
+    listLimbicMemoryByCreatedBetweenMock.mockImplementation((async (
+      fromIso: string,
+      toIso: string,
+      opts?: { minIntensity?: number; limit?: number },
+    ) => {
+      expect(fromIso).toBe("2026-06-14T00:00:00+08:00");
+      expect(toIso).toBe("2026-06-15T06:00:00+08:00");
+      expect(opts?.minIntensity).toBe(DREAM_MIN_INTENSITY);
+      return limbicRows
+        .filter((r) => r.intensity > (opts?.minIntensity ?? 0))
+        .sort((x, y) => y.intensity - x.intensity)
+        .slice(0, opts?.limit ?? 3);
+    }) as never);
 
     const input = await gatherDreamInput({ day: "2026-06-14" });
     expect(input.limbicMemories.map((r) => r.id)).toEqual(["a", "b", "c"]);
@@ -94,25 +101,16 @@ describe("gatherDreamInput", () => {
   });
 
   it("has no dream fuel when limbic below threshold", async () => {
-    resetLimbicMemoryStoreForTests();
-    resetMemoryConversationStoreForTests();
-
-    registerLimbicMemoryStore({
-      async listByCreatedBetween(_fromIso: string, _toIso: string, opts?: LimbicListByCreatedOpts) {
-        const min = opts?.minIntensity ?? 0;
-        const row = limbicRow("low", 0.3);
-        return row.intensity > min ? [row] : [];
-      },
-    } as never);
-
-    registerMemoryConversationStore({
-      async listConversationIdsUpdatedBetween() {
-        return ["s1"];
-      },
-      async listMessages() {
-        return [];
-      },
-    } as unknown as ConversationStorePort);
+    listLimbicMemoryByCreatedBetweenMock.mockImplementation((async (
+      _fromIso: string,
+      _toIso: string,
+      opts?: { minIntensity?: number },
+    ) => {
+      const min = opts?.minIntensity ?? 0;
+      const row = limbicRow("low", 0.3);
+      return row.intensity > min ? [row] : [];
+    }) as never);
+    listMessagesMock.mockImplementation(async () => []);
 
     const input = await gatherDreamInput({ day: "2026-06-14" });
     expect(input.limbicMemories).toEqual([]);
@@ -120,23 +118,9 @@ describe("gatherDreamInput", () => {
   });
 
   it("loads limbic even when no sessions updated that day", async () => {
-    resetLimbicMemoryStoreForTests();
-    resetMemoryConversationStoreForTests();
-
-    registerLimbicMemoryStore({
-      async listByCreatedBetween() {
-        return [limbicRow("a", 0.8)];
-      },
-    } as never);
-
-    registerMemoryConversationStore({
-      async listConversationIdsUpdatedBetween() {
-        return [];
-      },
-      async listMessages() {
-        return [];
-      },
-    } as unknown as ConversationStorePort);
+    listLimbicMemoryByCreatedBetweenMock.mockImplementation(async () => [limbicRow("a", 0.8)]);
+    listConversationIdsUpdatedBetweenMock.mockImplementation(async () => []);
+    listMessagesMock.mockImplementation(async () => []);
 
     const input = await gatherDreamInput({ day: "2026-06-14" });
     expect(input.conversationIds).toEqual([]);

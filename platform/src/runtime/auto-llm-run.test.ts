@@ -1,7 +1,7 @@
-import { describe, it, expect, spyOn, afterEach } from "bun:test";
+import { describe, it, expect, spyOn, afterEach, mock } from "bun:test";
 import * as loopEngine from "@freeanima/runtime/loop";
 import * as conv from "@freeanima/runtime/conversation";
-import { nullPgRepositories, type AutoLlmRunAppendInput } from "@freeanima/core/repos";
+import type { AutoLlmRunAppendInput } from "@freeanima/core/repos";
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/runtime";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/core/llm";
@@ -15,36 +15,30 @@ import { getAcpManager } from "@freeanima/capabilities-acp";
 import { createConversationService } from "@freeanima/runtime/conversation";
 import { MaskRegistry } from "@freeanima/capabilities-task/mask";
 
+const appendCalls: AutoLlmRunAppendInput[] = [];
+
+mock.module("@freeanima/core/db/pg", () => ({
+  isPostgresPrimary: () => true,
+}));
+
+mock.module("@freeanima/core/db/pg/auto-llm-run", () => ({
+  appendAutoLlmRun: mock(async (row: AutoLlmRunAppendInput) => {
+    appendCalls.push(row);
+  }),
+  purgeStaleAutoLlmRuns: mock(async () => ({ deleted: 0 })),
+  listAutoLlmRuns: mock(async () => []),
+  countAutoLlmRuns: mock(async () => 0),
+}));
+
 import { runAutoLlm } from "./auto-llm-run.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 const catalog = createEngineCatalog();
 const testConfig = Config.fromSnapshot(animaConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
 registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
-const appendCalls: AutoLlmRunAppendInput[] = [];
-
-const testRepos = {
-  ...nullPgRepositories,
-  pgAvailable: true,
-  autoLlmRun: {
-    async append(row: AutoLlmRunAppendInput) {
-      appendCalls.push(row);
-    },
-    async purgeStale() {
-      return { deleted: 0 };
-    },
-    async list() {
-      return [];
-    },
-    async count() {
-      return 0;
-    },
-  },
-};
 
 const testEngine = createEngine({
   catalog,
-  repos: testRepos,
   config: testConfig,
   llm: initLlmRuntime(testConfig.data),
   logger: createTestLogger(),
@@ -52,7 +46,7 @@ const testEngine = createEngine({
 
 function wireTestDeps(): FullRuntimeDeps {
   const kernel = createServiceKernel(testConfig);
-  const conversation = createConversationService(testRepos, catalog.toolSets);
+  const conversation = createConversationService(catalog.toolSets);
   getAcpManager().wireRegistries({
     toolSets: catalog.toolSets,
     skills: catalog.skills,

@@ -2,7 +2,12 @@ import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { eq } from "drizzle-orm";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import { conversations, messages } from "@freeanima/core/db/schema";
-import { getDb } from "@freeanima/platform/connectors/db-pg";
+import { getDb } from "@freeanima/core/db/pg";
+import {
+  appendMessage,
+  getConversationMetaLite,
+  upsertConversationMeta,
+} from "@freeanima/core/db/pg/conversation";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 import {
   archiveConversation,
@@ -12,7 +17,6 @@ import {
   loadConversationMeta,
   unarchiveConversation,
 } from "@freeanima/runtime/conversation";
-import { getTestEngine } from "../../helpers/pg-test.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
@@ -22,12 +26,8 @@ import {
 
 const STALE_UPDATED_AT = "2020-01-01T00:00:00+08:00";
 
-async function seedMeta(
-  store: ReturnType<typeof getTestEngine>["repos"]["conversation"],
-  conversationId: string,
-  opts?: { debug?: boolean },
-): Promise<void> {
-  await store.upsertConversationMeta(conversationId, {
+async function seedMeta(conversationId: string, opts?: { debug?: boolean }): Promise<void> {
+  await upsertConversationMeta(conversationId, {
     role: "conversation_meta",
     model: "test-model",
     cached_toolsets: [],
@@ -62,63 +62,53 @@ describePg("conversation archive/delete (PostgreSQL)", () => {
   });
 
   it("loadConversationMeta reads PG lite row after archived_at column exists", async () => {
-    const engine = getTestEngine();
-    const store = engine.repos.conversation;
-    const repos = engine.repos;
     const conversationId = "archive_meta_lite";
 
-    await seedMeta(store, conversationId);
+    await seedMeta(conversationId);
 
-    const meta = await loadConversationMeta(repos, conversationId);
+    const meta = await loadConversationMeta(conversationId);
     expect(isConversationMeta(meta)).toBe(true);
 
-    const liteMeta = await store.getConversationMetaLite(conversationId);
+    const liteMeta = await getConversationMetaLite(conversationId);
     expect(liteMeta).not.toBeNull();
     expect(liteMeta?.platform).toBe(TEST_SAP_CHAT_PLATFORM);
   });
 
   it("hides archived conversations from default list and restores on unarchive", async () => {
-    const engine = getTestEngine();
-    const store = engine.repos.conversation;
-    const repos = engine.repos;
-
     const activeId = "archive_active";
     const archivedId = "archive_hidden";
 
-    await seedMeta(store, activeId);
-    await seedMeta(store, archivedId);
-    await archiveConversation(repos, archivedId);
+    await seedMeta(activeId);
+    await seedMeta(archivedId);
+    await archiveConversation(archivedId);
 
-    const defaultList = await listConversationSummaries(repos, TEST_SAP_CHAT_PLATFORM);
+    const defaultList = await listConversationSummaries(TEST_SAP_CHAT_PLATFORM);
     expect(defaultList.map((s) => s.id)).toEqual([activeId]);
 
-    const fullList = await listConversationSummaries(repos, TEST_SAP_CHAT_PLATFORM, {
+    const fullList = await listConversationSummaries(TEST_SAP_CHAT_PLATFORM, {
       includeArchived: true,
     });
     expect(fullList.map((s) => s.id).sort()).toEqual([activeId, archivedId].sort());
     expect(fullList.find((s) => s.id === archivedId)?.archived_at).toBeTruthy();
 
-    await unarchiveConversation(repos, archivedId);
-    const restored = await listConversationSummaries(repos, TEST_SAP_CHAT_PLATFORM);
+    await unarchiveConversation(archivedId);
+    const restored = await listConversationSummaries(TEST_SAP_CHAT_PLATFORM);
     expect(restored.map((s) => s.id).sort()).toEqual([activeId, archivedId].sort());
   });
 
   it("hard deletes conversation and cascades messages", async () => {
-    const engine = getTestEngine();
-    const store = engine.repos.conversation;
-    const repos = engine.repos;
     const db = getDb();
 
     const conversationId = "archive_delete_me";
-    await seedMeta(store, conversationId);
-    await store.appendMessage(conversationId, {
+    await seedMeta(conversationId);
+    await appendMessage(conversationId, {
       role: "user",
       content: "hello",
       pos: 1,
       timestamp: new Date().toISOString(),
     });
 
-    await deleteUserConversation(repos, conversationId);
+    await deleteUserConversation(conversationId);
 
     const convRows = await db
       .select({ id: conversations.id })
@@ -134,16 +124,12 @@ describePg("conversation archive/delete (PostgreSQL)", () => {
   });
 
   it("skips archived conversations during stale cleanup", async () => {
-    const engine = getTestEngine();
-    const store = engine.repos.conversation;
-    const repos = engine.repos;
-
     const archivedStaleId = "archive_stale";
-    await seedMeta(store, archivedStaleId);
+    await seedMeta(archivedStaleId);
     await backdateSession(archivedStaleId);
-    await archiveConversation(repos, archivedStaleId);
+    await archiveConversation(archivedStaleId);
 
-    const result = await cleanupStaleConversations(repos);
+    const result = await cleanupStaleConversations();
     expect(result.ids).not.toContain(archivedStaleId);
 
     const rows = await getDb()

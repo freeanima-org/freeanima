@@ -1,4 +1,9 @@
 import type { AutoLlmRunRow } from "@freeanima/core/repos";
+import { isPostgresPrimary } from "@freeanima/core/db/pg";
+import {
+  countAutoLlmRuns,
+  listAutoLlmRuns as listPgAutoLlmRuns,
+} from "@freeanima/core/db/pg/auto-llm-run";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 export type AutoLlmRunListResult = {
@@ -15,7 +20,7 @@ function clampPagination(offset?: number, limit?: number) {
 }
 
 export async function listAutoLlmRuns(
-  deps: RuntimeDeps,
+  _deps: RuntimeDeps,
   opts?: {
     run_kind?: string;
     status?: "ok" | "error";
@@ -23,7 +28,7 @@ export async function listAutoLlmRuns(
     limit?: number;
   },
 ): Promise<AutoLlmRunListResult> {
-  if (!deps.engine.repos.pgAvailable) {
+  if (!isPostgresPrimary()) {
     return { items: [], total: 0, offset: 0, limit: opts?.limit ?? 20 };
   }
 
@@ -33,8 +38,8 @@ export async function listAutoLlmRuns(
     status: opts?.status,
   };
   const [items, total] = await Promise.all([
-    deps.engine.repos.autoLlmRun.list({ ...filter, offset, limit }),
-    deps.engine.repos.autoLlmRun.count(filter),
+    listPgAutoLlmRuns({ ...filter, offset, limit }),
+    countAutoLlmRuns(filter),
   ]);
   return { items, total, offset, limit };
 }

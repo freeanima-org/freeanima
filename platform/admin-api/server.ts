@@ -66,7 +66,6 @@ export async function startApiHttpServer(
 
   const mcpHandler = createMcpBunHandler({
     toolSets: adminCtx().engine.catalog.toolSets,
-    repos: adminCtx().engine.repos,
   });
 
   const server = Bun.serve({
