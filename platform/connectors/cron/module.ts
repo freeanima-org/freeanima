@@ -45,6 +45,11 @@ export function stopCronModule(): void {
   setCronLogStore(null);
 }
 
+/** Tier 2 test injection — clears cron module singleton between cases */
+export function resetCronModuleForTests(): void {
+  stopCronModule();
+}
+
 export async function loadAllJobs(): Promise<CronJob[]> {
   if (!store) return [];
   const rows = await store.listAll();

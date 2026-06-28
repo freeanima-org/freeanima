@@ -1,4 +1,9 @@
 import { ToolSetRegistry } from "@freeanima/core/tool";
+import {
+  bindActiveConfig,
+  resetActiveConfigForTest,
+  animaConfigSchema,
+} from "@freeanima/core/config";
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from "bun:test";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -8,7 +13,6 @@ import { createTempDir, removeTempDir } from "@freeanima/core/util";
 import { Config } from "@freeanima/platform/config";
 import { registerCoreTools } from "@freeanima/capabilities-tools";
 import { parseYaml } from "@freeanima/platform/config";
-import { animaConfigSchema } from "@freeanima/core/config";
 
 const MIN_CONFIG = `
 llm:
@@ -44,10 +48,13 @@ describe("local tools", () => {
     home = createTempDir("anima-local-");
     cwd = createTempDir("anima-cwd-");
     process.env.FREEANIMA_HOME = home;
-    writeFileSync(join(home, "config.yaml"), MIN_CONFIG, "utf-8");
+    const parsed = animaConfigSchema.safeParse(parseYaml(MIN_CONFIG));
+    if (!parsed.success) throw new Error(parsed.error.message);
+    bindActiveConfig(Config.fromSnapshot(parsed.data));
   });
 
   afterEach(() => {
+    resetActiveConfigForTest();
     if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
     else process.env.FREEANIMA_HOME = prevHome;
     removeTempDir(home);

@@ -78,3 +78,5 @@ Single process-wide context after boot (`initRuntimeContext` in [`platform/src/r
 **Forbidden**: module-level registry singletons; direct PG connections inside runtime / capabilities.
 
 **Allowed**: `runWithToolContext` — `@freeanima/core/tool`（经 `@freeanima/runtime/loop` re-export）
+
+**Capabilities register 样板**：多个 capability 需要相同的 `register/get/reset` 模式时，用共享 factory（如 `createEntityModuleRegistry`、`createEnginePort`、`createMemoryPortRegistry`）而非复制 `*-port.ts` 文件。

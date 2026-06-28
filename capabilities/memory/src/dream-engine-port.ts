@@ -1,3 +1,5 @@
+import { createEnginePort } from "./engine-port-registry.ts";
+
 export type DreamEngineInput = {
   systemPrompt: string;
   userMessage: string;
@@ -9,19 +11,8 @@ export type DreamEngineResult = {
 
 export type DreamEngineFn = (input: DreamEngineInput) => Promise<DreamEngineResult>;
 
-let engineFn: DreamEngineFn | null = null;
+const port = createEnginePort<DreamEngineInput, DreamEngineResult>("Dream LLM");
 
-export function registerDreamEngine(fn: DreamEngineFn): void {
-  engineFn = fn;
-}
-
-export function resetDreamEngineForTests(): void {
-  engineFn = null;
-}
-
-export async function runDreamEngine(input: DreamEngineInput): Promise<DreamEngineResult> {
-  if (!engineFn) {
-    throw new Error("Dream LLM not configured: call registerDreamEngine() at service startup");
-  }
-  return engineFn(input);
-}
+export const registerDreamEngine = port.register.bind(port);
+export const resetDreamEngineForTests = port.resetForTests.bind(port);
+export const runDreamEngine = port.run.bind(port);

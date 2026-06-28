@@ -1,9 +1,10 @@
 {
   "extends": "../../tsconfig.composite.base.json",
   "compilerOptions": {
-    "lib": ["ES2023"],
+    "lib": ["ES2023", "DOM"],
+    "jsx": "react-jsx",
     "types": ["bun"],
     "outDir": ".tsout"
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

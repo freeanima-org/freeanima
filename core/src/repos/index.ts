@@ -108,3 +108,4 @@ export {
 } from "@freeanima/core/db/domain";
 export { nullPgRepositories } from "./adapters/null.ts";
 export { nullConversationStore } from "./adapters/null-conversation.ts";
+export { createEntityModuleRegistry } from "./entity-module-registry.ts";

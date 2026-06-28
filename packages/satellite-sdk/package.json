@@ -5,7 +5,11 @@
     ".": "./src/index.ts",
     "./*": "./src/*.ts",
     "./form": "./src/form/FormFieldset.tsx",
-    "./settings": "./src/settings/index.ts"
+    "./settings": "./src/settings/index.ts",
+    "./ui/acp": "./src/ui/AcpProgressDock.tsx",
+    "./ui/acp-types": "./src/ui/acp-dock-types.ts",
+    "./ui/use-acp-progress-dock": "./src/ui/useAcpProgressDock.ts",
+    "./ui/fridge-magnet": "./src/ui/FridgeMagnetInjectPreview.tsx"
   },
   "dependencies": {
     "react": "catalog:",
