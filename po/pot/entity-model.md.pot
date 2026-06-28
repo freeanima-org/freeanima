@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-27 14:50+0800\n"
+"POT-Creation-Date: 2026-06-28 23:53+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -39,11 +39,37 @@ msgstr ""
 #. type: Title ##
 #: docs/concepts/entity-model.md:9
 #, no-wrap
+msgid "Hierarchy: subject → world → content"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:16
+#, no-wrap
+msgid ""
+"| Layer       | Entity type     | Role                                                |\n"
+"| ----------- | --------------- | --------------------------------------------------- |\n"
+"| **Subject** | `agent`, `user` | Who acts — exists **before** and **outside** worlds |\n"
+"| **World**   | `world`         | Logical namespace / permission boundary             |\n"
+"| **Content** | `content`       | Business data (tasks, future memory components, …)  |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:18
+msgid ""
+"Subjects do **not** belong to a world. Each subject may have exactly **one "
+"default private world** (exclusive, auto-created on subject creation). "
+"Content belongs to a world via `world_id` and inherits that world's "
+"visibility boundary."
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/entity-model.md:19
+#, no-wrap
 msgid "Two orthogonal classifications"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:15
+#: docs/concepts/entity-model.md:25
 #, no-wrap
 msgid ""
 "| Layer           | Cardinality              | Purpose                                                    |\n"
@@ -53,7 +79,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:17
+#: docs/concepts/entity-model.md:27
 msgid ""
 "Component fields live in **`body` JSONB** at the top level. "
 "**`primary_component`** records the creation entry (usually immutable); list "
@@ -61,72 +87,146 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:18
+#: docs/concepts/entity-model.md:28
 #, no-wrap
 msgid "`entities` table"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:31
+#: docs/concepts/entity-model.md:40
 #, no-wrap
 msgid ""
-"| Column                          | Role                                                                 |\n"
-"| ------------------------------- | -------------------------------------------------------------------- |\n"
-"| `id`                            | `bigint` identity — global numeric ID                                |\n"
-"| `type`                          | One of four entity types                                             |\n"
-"| `world_id`                      | Native owning World (FK → `entities.id`)                             |\n"
-"| `owner_id`                      | Owning subject (`agent` / `user` entity), nullable for public worlds |\n"
-"| `components`                    | `text[]` component tags                                              |\n"
-"| `primary_component`             | Main component for module routing                                    |\n"
-"| `title` / `summary` / `content` | Shared text columns (all components may use)                         |\n"
-"| `body`                          | JSONB component payload                                              |\n"
-"| `created_at` / `updated_at`     | Timestamps                                                           |\n"
+"| Column                          | Role                                         |\n"
+"| ------------------------------- | -------------------------------------------- |\n"
+"| `id`                            | `bigint` identity — global numeric ID        |\n"
+"| `type`                          | One of four entity types                     |\n"
+"| `world_id`                      | Native owning World (FK → `entities.id`)     |\n"
+"| `components`                    | `text[]` component tags                      |\n"
+"| `primary_component`             | Main component for module routing            |\n"
+"| `title` / `summary` / `content` | Shared text columns (all components may use) |\n"
+"| `body`                          | JSONB component payload                      |\n"
+"| `created_at` / `updated_at`     | Timestamps                                   |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:33
+#: docs/concepts/entity-model.md:42
 #, no-wrap
 msgid "**Not in v0.8 bootstrap:** relationship table, permission table, World nesting/mount, graph DB (PostgreSQL AGE).\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:34
+#: docs/concepts/entity-model.md:43
+#, no-wrap
+msgid "Subject (`agent` / `user`)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:49
+msgid ""
+"Identity is **`type`** plus `agent_config` or `user_config` primary "
+"component."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:49
+msgid ""
+"Subjects are **not** scoped by `world_id` in a membership sense; row "
+"`world_id` stays at bootstrap root (`ENTITY_ROOT_WORLD_ID`) as a table "
+"placeholder."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:49
+msgid ""
+"**`agent_config` / `user_config` body**: `default_private_world_id` — the "
+"subject's single default private world (auto-created on subject create; "
+"configurable from private worlds owned by the subject)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:49
+msgid ""
+"**Notifications** use subject entity ids as `recipient_id` (see "
+"[`notifications.md`](notifications.md) and `config.yaml` "
+"`notifications.user_subject_id` / `agent_subject_id`)."
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/entity-model.md:50
 #, no-wrap
 msgid "World namespace"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:39
+#: docs/concepts/entity-model.md:58
 msgid ""
 "**`type: world`** entities are logical containers (permission/list boundary)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:39
-msgid "Public world: `owner_id = null`."
+#: docs/concepts/entity-model.md:58
+msgid "Visibility and owner live in **`world_config` body**:"
+msgstr ""
+
+#. type: Bullet: '  - '
+#: docs/concepts/entity-model.md:58
+msgid "`private: false` — public world"
+msgstr ""
+
+#. type: Bullet: '  - '
+#: docs/concepts/entity-model.md:58
+msgid ""
+"`private: true` + `owner_subject_id` — private world owned by an `agent` or "
+"`user` entity"
+msgstr ""
+
+#. type: Bullet: '  - '
+#: docs/concepts/entity-model.md:58
+msgid ""
+"`default_private: true` — marks the subject's **exclusive** default private "
+"world (at most one per `owner_subject_id`)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:39
+#: docs/concepts/entity-model.md:58
 msgid ""
 "Do not confuse with semantic memory **`type=world`** (fact classification in "
 "[`memory.md`](memory.md)) — that becomes `body.memory_kind=world` after "
 "future migration."
 msgstr ""
 
+#. type: Content of: <messages><msg>
+#: docs/concepts/entity-model.md:59 messages/po4a/en.xml:243
+#: messages/po4a/en.xml:296
+#, no-wrap
+msgid "Content"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:63
+msgid ""
+"**`world_id`** is the sole namespace key; access boundary is inherited from "
+"the owning world."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:63
+msgid "Content entities do not store a separate owner column."
+msgstr ""
+
 #. type: Title ##
-#: docs/concepts/entity-model.md:40
+#: docs/concepts/entity-model.md:64
 #, no-wrap
 msgid "Task module (first consumer)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:43
+#: docs/concepts/entity-model.md:67
 msgid "TickTick-style lists and items map to:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:49
+#: docs/concepts/entity-model.md:73
 #, no-wrap
 msgid ""
 "| Concept     | Entity         | Component      |\n"
@@ -137,7 +237,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:51
+#: docs/concepts/entity-model.md:75
 msgid ""
 "Items reference their list via `body.list_id` (entity id). Task items store "
 "**title** and **content** on entity columns; **tags** live in `body.tags`. A "
@@ -146,7 +246,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:53
+#: docs/concepts/entity-model.md:77
 msgid ""
 "LLM tools use `@freeanima/capabilities-task` (`task_*` tools, `exposeMcp: "
 "true`). Legacy `tasks` table and `/api/tasks/*` are removed after one-time "
@@ -154,25 +254,120 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:54
+#: docs/concepts/entity-model.md:78
+#, no-wrap
+msgid "Email module (Estate)"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:81
+msgid "Email accounts, threads, and mirrored messages map to:"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:87
+#, no-wrap
+msgid ""
+"| Concept | Entity         | Component       |\n"
+"| ------- | -------------- | --------------- |\n"
+"| Account | `type=content` | `email_account` |\n"
+"| Thread  | `type=content` | `email_thread`  |\n"
+"| Message | `type=content` | `email_message` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:89
+msgid ""
+"Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. Messages "
+"store IMAP UID in `body.imap_uid`; human-readable subject/body use entity "
+"columns. IMAP sync upserts threads/messages; UI lives in shell `/email` (SAP "
+"`email.*` methods), not Admin REST."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:91
+msgid ""
+"LLM tools: `@freeanima/capabilities-email` (`email_register_account`, "
+"`email_sync`, `email_list`, …). Legacy `config.yaml` `email.accounts[]` "
+"migrates via `scripts/migrate-email-to-entities.ts`."
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/concepts/entity-model.md:92 messages/po4a/en.xml:116
+#: messages/po4a/en.xml:128 messages/po4a/en.xml:437
+#, no-wrap
+msgid "Search"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:95
+msgid ""
+"Entity **list** (deterministic browse) and **search** (relevance ranking) "
+"are separate ports:"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:100
+#, no-wrap
+msgid ""
+"| Port                      | Role                                                                  |\n"
+"| ------------------------- | --------------------------------------------------------------------- |\n"
+"| `EntityStorePort.list`    | Structural filters; stable sort                                       |\n"
+"| `EntitySearchPort.search` | Hard filters + optional text query; hybrid FTS/trigram/vector via RRF |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:102
+#, no-wrap
+msgid "**Scope:** default `world_id`; `global: true` requires an explicit accessible-world allowlist (public worlds only until subject permissions bootstrap).\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:104
+#, no-wrap
+msgid "**Component filters:** whitelisted per `primary_component` (e.g. `task_item`: `status`, `list_id`, `tags`, `due_today`). Arbitrary JSONPath is forbidden.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:106
+#, no-wrap
+msgid "**Tools / API:** `entity_search` (LLM/MCP) and `GET|POST /api/entities/search` share `EntitySearchPort`. Task UI search box uses the same REST endpoint.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:108
+msgid ""
+"See memory hybrid search in [`memory.md`](memory.md) for FTS operator "
+"syntax; entity search reuses the same query builder."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:110
+#, no-wrap
+msgid "**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run Admin **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/entity-model.md:111
 #, no-wrap
 msgid "Future migration map (not executed yet)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:63
+#: docs/concepts/entity-model.md:121
 #, no-wrap
 msgid ""
-"| Legacy table              | Target                                 |\n"
-"| ------------------------- | -------------------------------------- |\n"
-"| `semantic_memory`         | `content` + memory component           |\n"
-"| `autobiographical_memory` | `content` + narrative component        |\n"
-"| `limbic_memory`           | `content` + limbic component           |\n"
-"| `tasks` (legacy)          | `task_item` (when explicitly migrated) |\n"
-"| `memory_references`       | relationship table (future)            |\n"
+"| Legacy table                 | Target                                               |\n"
+"| ---------------------------- | ---------------------------------------------------- |\n"
+"| `semantic_memory`            | `content` + memory component                         |\n"
+"| `autobiographical_memory`    | `content` + narrative component                      |\n"
+"| `limbic_memory`              | `content` + limbic component                         |\n"
+"| `tasks` (legacy)             | `task_item` (when explicitly migrated)               |\n"
+"| `config.yaml email.accounts` | `email_account` (see `migrate-email-to-entities.ts`) |\n"
+"| `memory_references`          | relationship table (future)                          |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:64
+#: docs/concepts/entity-model.md:122
 msgid "See [`architecture.md`](architecture.md) for cognitive-layer context."
 msgstr ""
