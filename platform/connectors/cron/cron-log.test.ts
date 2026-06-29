@@ -1,6 +1,15 @@
 import { describe, expect, test, mock } from "bun:test";
 
 import type { CronLogAppendInput } from "@freeanima/core/db/pg/cron";
+import {
+  createCronJob,
+  deleteCronJob,
+  getCronJob,
+  listAllCronJobs,
+  updateCronJob,
+  upsertBuiltinCronJob,
+} from "../../../core/src/db/pg/cron/repos/cron-crud-repo.ts";
+import { listCronLogs } from "../../../core/src/db/pg/cron/repos/cron-log-repo.ts";
 
 const appendCronLogMock = mock(async (row: CronLogAppendInput) => {
   rows.push(row);
@@ -9,6 +18,13 @@ const appendCronLogMock = mock(async (row: CronLogAppendInput) => {
 const rows: CronLogAppendInput[] = [];
 
 mock.module("@freeanima/core/db/pg/cron", () => ({
+  createCronJob,
+  upsertBuiltinCronJob,
+  getCronJob,
+  updateCronJob,
+  deleteCronJob,
+  listAllCronJobs,
+  listCronLogs,
   appendCronLog: appendCronLogMock,
 }));
 
