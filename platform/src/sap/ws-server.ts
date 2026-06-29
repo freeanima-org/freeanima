@@ -261,8 +261,8 @@ export function createSapServerHandlers(
           return serviceFridge.listFridgeMagnets();
         }
         case "tasklist.list": {
-          tasklistListInputSchema.parse(payload);
-          return serviceEntityTask.serviceTasklistList(deps.runtime.runtimeDeps());
+          const input = tasklistListInputSchema.parse(payload);
+          return serviceEntityTask.serviceTasklistList(deps.runtime.runtimeDeps(), input);
         }
         case "tasklist.create": {
           const input = tasklistCreateInputSchema.parse(payload);

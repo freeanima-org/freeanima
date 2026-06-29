@@ -10,8 +10,12 @@ import {
   createTaskItem,
   createTaskList,
   completeTaskItem,
+  closeTaskList,
+  getDefaultTaskList,
   listTaskItems,
   listTaskLists,
+  reopenTaskList,
+  updateTaskList,
 } from "@freeanima/capabilities-task";
 import { getEntity } from "@freeanima/core/db/pg/entity";
 import { describePg } from "../../helpers/pg-test-gate.ts";
@@ -86,5 +90,30 @@ describePg("entity task PG", () => {
 
     const lists = await listTaskLists();
     expect(lists.find((l) => l.id === list.id)?.item_count).toBe(1);
+  });
+
+  it("closes and reopens task lists; default list cannot be closed", async () => {
+    const list = await createTaskList({ name: "归档测试" });
+    const defaultList = await getDefaultTaskList();
+    expect(defaultList).not.toBeNull();
+
+    let visible = await listTaskLists();
+    expect(visible.some((l) => l.id === list.id)).toBe(true);
+
+    const closed = await closeTaskList(list.id);
+    expect(closed?.closed).toBe(true);
+
+    visible = await listTaskLists();
+    expect(visible.some((l) => l.id === list.id)).toBe(false);
+
+    const all = await listTaskLists({ includeClosed: true });
+    expect(all.some((l) => l.id === list.id && l.closed)).toBe(true);
+
+    const reopened = await reopenTaskList(list.id);
+    expect(reopened?.closed).toBe(false);
+
+    await expect(updateTaskList({ id: defaultList!.id, closed: true })).rejects.toThrow(
+      "default task list cannot be closed",
+    );
   });
 });

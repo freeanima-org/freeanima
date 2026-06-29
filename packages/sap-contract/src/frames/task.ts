@@ -35,7 +35,11 @@ export const taskItemRowSchema = z.object({
 
 export type TaskItemRowPayload = z.infer<typeof taskItemRowSchema>;
 
-export const tasklistListInputSchema = z.object({}).default({});
+export const tasklistListInputSchema = z
+  .object({
+    include_closed: z.boolean().optional(),
+  })
+  .default({});
 export type TasklistListInput = z.infer<typeof tasklistListInputSchema>;
 export const tasklistListOutputSchema = z.object({
   lists: z.array(taskListRowSchema),

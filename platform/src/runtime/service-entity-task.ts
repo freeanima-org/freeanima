@@ -20,9 +20,9 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
-export async function serviceTasklistList(deps: RuntimeDeps) {
+export async function serviceTasklistList(deps: RuntimeDeps, input?: { include_closed?: boolean }) {
   assertPg(deps);
-  const lists = await listTaskLists();
+  const lists = await listTaskLists({ includeClosed: input?.include_closed });
   return { lists };
 }
 

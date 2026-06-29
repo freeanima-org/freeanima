@@ -71,7 +71,7 @@ TickTick-style lists and items map to:
 | List (清单) | `type=content` | `task_list`    |
 | Item (任务) | `type=content` | `task_item`    |
 
-Items reference their list via `body.list_id` (entity id). Task items store **title** and **content** on entity columns; **tags** live in `body.tags`. A **default list** (`is_default: true`, seeded id `2`「收件箱」) cannot be deleted but may be renamed.
+Items reference their list via `body.list_id` (entity id). Task items store **title** and **content** on entity columns; **tags** live in `body.tags`. A **default list** (`is_default: true`, seeded id `2`「收件箱」) cannot be deleted or archived but may be renamed. List **`body.closed: true`** means archived: hidden from the main sidebar by default (`tasklist.list` unless `include_closed`), restorable via `tasklist.patch({ closed: false })`; contained task items are kept.
 
 LLM ToolSets: `@freeanima/capabilities-task` — `task`（条目 CRUD + `task_search`）与 `tasklist`（清单 CRUD + `tasklist_search`）；按需 `toolset_load`。`task_search` 默认不传 `list_id` 时跨全部清单检索。Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration (`scripts/migrate-tasks-to-entities.ts`).
 

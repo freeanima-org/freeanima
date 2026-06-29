@@ -5,11 +5,19 @@ export function buildListMenuItems(
   list: TaskListRow,
   handlers: {
     onRename: (list: TaskListRow) => void;
+    onClose: (list: TaskListRow) => void;
+    onReopen: (list: TaskListRow) => void;
     onDelete: (list: TaskListRow) => void;
   },
 ): TaskMenuItem[] {
   const items: TaskMenuItem[] = [{ label: "重命名", onClick: () => handlers.onRename(list) }];
-  if (!list.is_default) {
+  if (list.closed) {
+    items.push({ label: "取消归档", onClick: () => void handlers.onReopen(list) });
+    if (!list.is_default) {
+      items.push({ label: "删除", danger: true, onClick: () => void handlers.onDelete(list) });
+    }
+  } else if (!list.is_default) {
+    items.push({ label: "归档", onClick: () => void handlers.onClose(list) });
     items.push({ label: "删除", danger: true, onClick: () => void handlers.onDelete(list) });
   }
   return items;

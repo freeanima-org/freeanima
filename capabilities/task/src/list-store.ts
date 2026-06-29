@@ -56,7 +56,13 @@ export function isDefaultTaskListId(id: number): boolean {
   return id === ENTITY_DEFAULT_TASK_LIST_ID;
 }
 
-export async function listTaskLists(): Promise<TaskListRow[]> {
+function assertCanCloseTaskList(id: number, existing: { body: Record<string, unknown> }): void {
+  if (isDefaultTaskListId(id) || existing.body.is_default === true) {
+    throw new Error("default task list cannot be closed");
+  }
+}
+
+export async function listTaskLists(opts?: { includeClosed?: boolean }): Promise<TaskListRow[]> {
   const worldId = defaultTaskWorldId();
   const rows = await listEntities({
     world_id: worldId,
@@ -67,6 +73,7 @@ export async function listTaskLists(): Promise<TaskListRow[]> {
   for (const row of rows) {
     const parsed = asTaskList(row);
     if (!parsed) continue;
+    if (!opts?.includeClosed && (parsed.closed ?? false)) continue;
     const item_count = await countItemsForList(parsed.id);
     lists.push(
       toListRow(parsed, {
@@ -80,7 +87,7 @@ export async function listTaskLists(): Promise<TaskListRow[]> {
 }
 
 export async function getDefaultTaskList(): Promise<TaskListRow | null> {
-  const lists = await listTaskLists();
+  const lists = await listTaskLists({ includeClosed: true });
   return (
     lists.find((l) => l.is_default || l.id === ENTITY_DEFAULT_TASK_LIST_ID) ?? lists[0] ?? null
   );
@@ -113,6 +120,10 @@ export async function createTaskList(input: TaskListCreateInput): Promise<TaskLi
 export async function updateTaskList(input: TaskListUpdateInput): Promise<TaskListRow | null> {
   const existing = await getEntity(input.id);
   if (!existing || existing.primary_component !== TASK_LIST_COMPONENT) return null;
+
+  if (input.closed === true) {
+    assertCanCloseTaskList(input.id, existing);
+  }
 
   const bodyPatch: Record<string, unknown> = {};
   if (input.sort_order !== undefined) bodyPatch.sort_order = input.sort_order;
@@ -158,6 +169,14 @@ export async function deleteTaskList(id: number, opts?: { cascade?: boolean }): 
   return deleteEntity(id);
 }
 
+export async function closeTaskList(id: number): Promise<TaskListRow | null> {
+  return updateTaskList({ id, closed: true });
+}
+
+export async function reopenTaskList(id: number): Promise<TaskListRow | null> {
+  return updateTaskList({ id, closed: false });
+}
+
 export async function searchTaskLists(opts: TaskListSearchOpts): Promise<TaskListRow[]> {
   const result = await searchEntities({
     world_id: defaultTaskWorldId(),
@@ -171,6 +190,7 @@ export async function searchTaskLists(opts: TaskListSearchOpts): Promise<TaskLis
   for (const row of result.results) {
     const parsed = asTaskList(row);
     if (!parsed) continue;
+    if (!opts.includeClosed && (parsed.closed ?? false)) continue;
     const item_count = await countItemsForList(parsed.id);
     lists.push(
       toListRow(parsed, {

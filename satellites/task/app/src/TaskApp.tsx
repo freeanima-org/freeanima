@@ -13,10 +13,12 @@ import {
   completeTaskItem,
   createTaskItem,
   createTaskList,
+  closeTaskList,
   deleteTaskItem,
   deleteTaskList,
   fetchTaskItems,
   fetchTaskLists,
+  reopenTaskList,
   searchTaskItems,
   uncompleteTaskItem,
   updateTaskItem,
@@ -41,7 +43,7 @@ import {
 import { readListIdFromUrl, writeListIdToUrl } from "./lib/list-url.ts";
 import { moveTaskItemsToList } from "./lib/move-items.ts";
 import { applyShiftRangeSelect } from "./lib/range-select.ts";
-import { resolveSelectedListIdWithUrl } from "./lib/resolve-list.ts";
+import { resolveDefaultListId, resolveSelectedListIdWithUrl } from "./lib/resolve-list.ts";
 import { sortOrderUpdates } from "./lib/reorder.ts";
 import { buildItemMenuItems, buildListMenuItems } from "./lib/task-menus.ts";
 
@@ -80,19 +82,20 @@ export function TaskApp() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedItemIds, setSelectedItemIds] = useState<Set<number>>(() => new Set());
   const [movePickerItemIds, setMovePickerItemIds] = useState<number[] | null>(null);
+  const [showClosed, setShowClosed] = useState(false);
 
-  const loadLists = useCallback(async () => {
+  const loadLists = useCallback(async (): Promise<TaskListRow[]> => {
     const scope = resolveHubCacheScope();
     const cached = await readCachedTaskLists(scope);
     if (cached?.length) setLists(cached);
     try {
-      const rows = await fetchTaskLists();
+      const rows = await fetchTaskLists({ includeClosed: true });
       setLists(rows);
       void writeCachedTaskLists(scope, rows);
       if (rows.length === 0) {
         setSelectedListId(null);
         setItems([]);
-        return;
+        return rows;
       }
       setSelectedListId((prev) => {
         const next = resolveSelectedListIdWithUrl(rows, {
@@ -103,8 +106,10 @@ export function TaskApp() {
         if (webShell && next != null) writeListIdToUrl(next);
         return next;
       });
+      return rows;
     } catch {
       if (!cached?.length) setError("无法加载任务清单");
+      return cached ?? [];
     }
   }, [webShell]);
 
@@ -189,6 +194,7 @@ export function TaskApp() {
 
   const selectList = (id: number) => {
     setSelectedListId(id);
+    if (lists.find((l) => l.id === id)?.closed) setShowClosed(true);
     if (webShell) writeListIdToUrl(id);
     if (useDrawer) setSidebarOpen(false);
   };
@@ -237,9 +243,37 @@ export function TaskApp() {
     }
   };
 
+  const handleCloseList = async (list: TaskListRow) => {
+    if (list.is_default || list.closed) return;
+    const wasSelected = selectedListId === list.id;
+    try {
+      await closeTaskList(list.id);
+      const rows = await loadLists();
+      if (wasSelected) {
+        const nextId = resolveDefaultListId(rows.filter((l) => !l.closed));
+        setSelectedListId(nextId);
+        if (webShell && nextId != null) writeListIdToUrl(nextId);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  const handleReopenList = async (list: TaskListRow) => {
+    if (!list.closed) return;
+    try {
+      await reopenTaskList(list.id);
+      await loadLists();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
   const persistListOrder = async (ordered: TaskListRow[]) => {
-    setLists(ordered.map((list, index) => ({ ...list, sort_order: index })));
-    const updates = sortOrderUpdates(ordered);
+    const closed = lists.filter((l) => l.closed);
+    const nextActive = ordered.map((list, index) => ({ ...list, sort_order: index }));
+    setLists([...nextActive, ...closed]);
+    const updates = sortOrderUpdates(nextActive);
     try {
       await Promise.all(updates.map((u) => updateTaskList(u.id, { sort_order: u.sort_order })));
     } catch (err) {
@@ -360,6 +394,9 @@ export function TaskApp() {
   };
 
   const selectedList = lists.find((l) => l.id === selectedListId) ?? null;
+  const activeLists = useMemo(() => lists.filter((l) => !l.closed), [lists]);
+  const closedLists = useMemo(() => lists.filter((l) => l.closed), [lists]);
+  const moveTargetLists = activeLists;
   const listNameById = useMemo(() => new Map(lists.map((l) => [l.id, l.name])), [lists]);
   const pendingItems = items.filter((i) => i.status === "pending");
   const completedItems = items.filter((i) => i.status === "completed");
@@ -394,6 +431,8 @@ export function TaskApp() {
 
   const menuHandlers = {
     onRename: startRenameList,
+    onClose: handleCloseList,
+    onReopen: handleReopenList,
     onDelete: handleDeleteList,
   };
 
@@ -482,7 +521,7 @@ export function TaskApp() {
 
   return (
     <TaskDndRoot
-      lists={lists}
+      lists={activeLists}
       pendingItems={pendingItems}
       taskItems={items}
       onReorderLists={(ordered) => void persistListOrder(ordered)}
@@ -516,13 +555,16 @@ export function TaskApp() {
         }
         list={() => (
           <ListSidebar
-            lists={lists}
+            activeLists={activeLists}
+            closedLists={closedLists}
+            showClosed={showClosed}
             selectedListId={selectedListId}
             editingListId={editingListId}
             editingListName={editingListName}
             newListName={newListName}
             renameInputRef={renameInputRef}
             useActionSheet={useActionSheet}
+            onToggleShowClosed={() => setShowClosed((v) => !v)}
             onSelectList={selectList}
             onCreateList={() => void handleCreateList()}
             onNewListNameChange={setNewListName}
@@ -552,6 +594,11 @@ export function TaskApp() {
 
         {selectedList ? (
           <>
+            {selectedList.closed ? (
+              <div className="border-base-300 bg-base-200/60 text-base-content/70 m-3 rounded-lg border px-3 py-2 text-sm">
+                此清单已归档，无法添加新任务。可在清单菜单中取消归档。
+              </div>
+            ) : null}
             <div className="flex-1 overflow-y-auto px-2 py-2">
               {displayPending.length === 0 && displayCompleted.length === 0 ? (
                 <p className="text-base-content/50 px-2 py-6 text-sm">
@@ -609,7 +656,7 @@ export function TaskApp() {
                   取消
                 </button>
               </div>
-            ) : searchActive ? null : (
+            ) : searchActive || selectedList.closed ? null : (
               <div className="border-base-300 safe-area-pb flex gap-2 border-t p-3">
                 <input
                   className="input input-bordered min-w-0 flex-1"
@@ -661,7 +708,7 @@ export function TaskApp() {
 
       {movePickerItemIds ? (
         <MoveToListPicker
-          lists={lists}
+          lists={moveTargetLists}
           currentListId={selectedListId}
           title={
             movePickerItemIds.length > 1 ? `移动 ${movePickerItemIds.length} 项到…` : "移动到清单"

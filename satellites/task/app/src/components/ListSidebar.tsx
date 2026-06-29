@@ -8,13 +8,16 @@ import type { TaskListRow } from "../lib/api.ts";
 import { useTaskDndUi } from "./TaskDndRoot.tsx";
 
 type ListSidebarProps = {
-  lists: TaskListRow[];
+  activeLists: TaskListRow[];
+  closedLists: TaskListRow[];
+  showClosed: boolean;
   selectedListId: number | null;
   editingListId: number | null;
   editingListName: string;
   newListName: string;
   renameInputRef: RefObject<HTMLInputElement | null>;
   useActionSheet: boolean;
+  onToggleShowClosed: () => void;
   onSelectList: (id: number) => void;
   onCreateList: () => void;
   onNewListNameChange: (value: string) => void;
@@ -126,14 +129,62 @@ function SortableListRow({
   );
 }
 
+function ClosedListRow({
+  list,
+  selected,
+  useActionSheet,
+  onSelect,
+  onOpenMenu,
+  onContextMenu,
+}: {
+  list: TaskListRow;
+  selected: boolean;
+  useActionSheet: boolean;
+  onSelect: () => void;
+  onOpenMenu: () => void;
+  onContextMenu: (e: MouseEvent) => void;
+}) {
+  return (
+    <div
+      className={[
+        "group flex min-h-11 items-center gap-0.5 rounded-lg px-1 py-1 text-sm opacity-70",
+        selected ? "bg-primary/15 font-medium opacity-100" : "hover:bg-base-200",
+      ].join(" ")}
+      onContextMenu={onContextMenu}
+    >
+      <span className="min-w-8 shrink-0" aria-hidden />
+      <button type="button" className="min-w-0 flex-1 truncate py-2 text-left" onClick={onSelect}>
+        {list.name}
+        <span className="text-base-content/50 ml-1 text-xs">{list.item_count}</span>
+      </button>
+      {useActionSheet ? (
+        <button
+          type="button"
+          className="btn btn-ghost btn-xs btn-square shrink-0"
+          aria-label="清单操作"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenMenu();
+          }}
+        >
+          ⋯
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 export function ListSidebar({
-  lists,
+  activeLists,
+  closedLists,
+  showClosed,
   selectedListId,
   editingListId,
   editingListName,
   newListName,
   renameInputRef,
   useActionSheet,
+  onToggleShowClosed,
   onSelectList,
   onCreateList,
   onNewListNameChange,
@@ -160,11 +211,11 @@ export function ListSidebar({
         </div>
       ) : null}
       <SortableContext
-        items={lists.map((l) => listDndId(l.id))}
+        items={activeLists.map((l) => listDndId(l.id))}
         strategy={verticalListSortingStrategy}
       >
         <div className="flex-1 overflow-y-auto p-2">
-          {lists.map((list) => (
+          {activeLists.map((list) => (
             <SortableListRow
               key={list.id}
               list={list}
@@ -182,6 +233,32 @@ export function ListSidebar({
               onDoubleClickRename={useActionSheet ? undefined : () => onStartRename(list)}
             />
           ))}
+          {closedLists.length > 0 ? (
+            <div className="border-base-300/60 mt-2 space-y-1 border-t pt-2">
+              <label className="text-base-content/70 flex cursor-pointer select-none items-center gap-2 px-1 py-1 text-xs">
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-xs"
+                  checked={showClosed}
+                  onChange={onToggleShowClosed}
+                />
+                显示已归档
+              </label>
+              {showClosed
+                ? closedLists.map((list) => (
+                    <ClosedListRow
+                      key={list.id}
+                      list={list}
+                      selected={selectedListId === list.id}
+                      useActionSheet={useActionSheet}
+                      onSelect={() => onSelectList(list.id)}
+                      onOpenMenu={() => onOpenListMenu(list)}
+                      onContextMenu={(e) => onOpenListContextMenu(e, list)}
+                    />
+                  ))
+                : null}
+            </div>
+          ) : null}
         </div>
       </SortableContext>
       <div className="border-base-300 flex shrink-0 gap-1 border-t p-2">
