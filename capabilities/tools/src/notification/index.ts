@@ -13,7 +13,6 @@ export {
   formatNotificationBlock,
   wrapNotificationContext,
   isNotificationContextAssistant,
-  isNotificationContextSystem,
   stripNotificationContextFromMessages,
   manifestNotificationContext,
 } from "./inject.ts";

@@ -2,18 +2,15 @@
   "name": "freeanima",
   "version": "0.7.0",
   "devDependencies": {
-    "@commitlint/cli": "^21.0.2",
-    "@commitlint/config-conventional": "^21.0.2",
+    "@commitlint/cli": "^21.1.0",
+    "@commitlint/config-conventional": "^21.1.0",
     "@inlang/plugin-m-function-matcher": "^2.2.9",
     "@inlang/plugin-message-format": "^4.4.0",
     "@splicemood/lcov-to-cobertura": "^0.1.1",
-    "@types/bun": "catalog:",
-    "@types/node": "catalog:",
-    "@typescript/native-preview": "^7.0.0-dev.20260621.1",
-    "bun-plugin-tailwind": "catalog:",
+    "@typescript/native-preview": "^7.0.0-dev.20260628.1",
     "husky": "^9.1.7",
     "oxfmt": "^0.55.0",
-    "oxlint": "^1.70.0"
+    "oxlint": "^1.71.0"
   },
   "bin": {
     "anima": "./app/cli/src/cli.ts"
@@ -73,7 +70,6 @@
     "prepare": "husky"
   },
   "patchedDependencies": {
-    "drizzle-orm@1.0.0-rc.3": "patches/drizzle-orm@1.0.0-rc.3.patch",
     "fbx2vrma-converter@1.0.2": "patches/fbx2vrma-converter@1.0.2.patch"
   },
   "overrides": {
@@ -109,10 +105,9 @@
       "@types/react-dom": "^19.2.3",
       "@typescript/native-preview": "^7.0.0-dev.20260602.1",
       "@vitejs/plugin-react": "^4.7.0",
-      "bun-plugin-tailwind": "^0.1.2",
       "daisyui": "^5.5.23",
-      "drizzle-kit": "^1.0.0-rc.3",
-      "drizzle-orm": "^1.0.0-rc.3",
+      "drizzle-kit": "^1.0.0-rc.4",
+      "drizzle-orm": "^1.0.0-rc.4",
       "react": "^19.2.7",
       "react-dom": "^19.2.7",
       "tailwindcss": "^4.3.1",

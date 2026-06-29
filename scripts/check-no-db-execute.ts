@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Fail if platform/connectors/db-pg or tests/integration contain db.execute or drizzleSql.raw.
+ * Fail if core/src/db/pg or tests/integration contain db.execute or drizzleSql.raw.
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";

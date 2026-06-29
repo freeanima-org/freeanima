@@ -50,8 +50,3 @@ export function defaultEntryDateLocal(): string {
 export function titleFromDateLocal(dateLocal: string): string {
   return formatEntryDate(dateLocalToEntryAtIso(dateLocal));
 }
-
-/** @deprecated 使用 formatEntryDate */
-export function formatEntryAt(value: string): string {
-  return formatEntryDate(value);
-}

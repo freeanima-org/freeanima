@@ -10,7 +10,7 @@ export function desktopSettingsPath(home?: string): string {
   return join(getDesktopHomeDir(home), "settings.json");
 }
 
-/** @deprecated 旧路径，仅用于迁移 */
+/** 旧 ~/.anima/shell-client.json 路径（迁移读取用） */
 export function legacyShellClientConfigPath(animaHome = process.env.FREEANIMA_HOME): string {
   const root = animaHome?.trim() || join(homedir(), ".anima");
   return join(root, "shell-client.json");

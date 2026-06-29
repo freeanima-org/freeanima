@@ -43,11 +43,6 @@ export function isNotificationContextAssistant(msg: StoredMessage): msg is Assis
   return msg.role === "assistant" && msg.name === NOTIFICATION_CONTEXT_ASSISTANT_NAME;
 }
 
-/** @deprecated use isNotificationContextAssistant */
-export function isNotificationContextSystem(msg: StoredMessage): boolean {
-  return isNotificationContextAssistant(msg);
-}
-
 export function stripNotificationContextFromMessages(messages: StoredMessage[]): void {
   for (let i = messages.length - 1; i >= 0; i--) {
     if (isNotificationContextAssistant(messages[i]!)) {

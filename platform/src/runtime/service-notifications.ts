@@ -70,20 +70,3 @@ export async function createNotification(
     recipient_id: resolveRecipientId(input.recipient_id),
   });
 }
-
-export async function createNotificationForRecipients(
-  deps: RuntimeDeps,
-  input: Omit<NotificationCreateInput, "recipient_kind">,
-  kinds: NotificationRecipientKind[],
-): Promise<NotificationRow[]> {
-  const rows: NotificationRow[] = [];
-  for (const recipient_kind of kinds) {
-    rows.push(
-      await createNotification(deps, {
-        ...input,
-        recipient_kind,
-      }),
-    );
-  }
-  return rows;
-}
