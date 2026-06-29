@@ -18,6 +18,7 @@ describe("task SAP procedures", () => {
 
   it("validates task procedure inputs", () => {
     tasklistListInputSchema.parse({});
+    tasklistListInputSchema.parse({ include_closed: true });
     taskListInputSchema.parse({ list_id: 1, status: "pending" });
     taskCreateInputSchema.parse({ title: "写文档", list_id: 2 });
   });

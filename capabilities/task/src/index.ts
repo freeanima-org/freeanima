@@ -15,6 +15,8 @@ export {
   listTaskLists,
   createTaskList,
   updateTaskList,
+  closeTaskList,
+  reopenTaskList,
   deleteTaskList,
   getDefaultTaskList,
   isDefaultTaskListId,

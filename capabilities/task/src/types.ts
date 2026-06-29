@@ -50,9 +50,14 @@ export type TaskItemSearchOpts = {
   limit?: number;
 };
 
+export type TaskListListOpts = {
+  includeClosed?: boolean;
+};
+
 export type TaskListSearchOpts = {
   query: string;
   limit?: number;
+  includeClosed?: boolean;
 };
 
 export type TaskItemListOpts = {

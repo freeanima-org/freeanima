@@ -12,8 +12,9 @@ import { TASK_TOOL_RETURNS } from "./return-schemas.ts";
 import { listPayload } from "./task-tool-helpers.ts";
 import type { TaskListUpdateInput } from "./types.ts";
 
-async function handleListLists(): Promise<string> {
-  const lists = await listTaskLists();
+async function handleListLists(args: Record<string, unknown>): Promise<string> {
+  const includeClosed = args.include_closed === true;
+  const lists = await listTaskLists({ includeClosed });
   return toolResult({
     ok: true,
     action: "list_lists",
@@ -115,8 +116,16 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
           name: "tasklist_list",
           description: "List all task lists",
           exposeMcp: true,
-          parameters: { type: "object", properties: {} },
-          handler: () => handleListLists(),
+          parameters: {
+            type: "object",
+            properties: {
+              include_closed: {
+                type: "boolean",
+                description: "Include archived (closed) lists when true",
+              },
+            },
+          },
+          handler: handleListLists,
         },
         {
           name: "tasklist_create",
@@ -143,7 +152,10 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
               id: { type: "integer", description: "Task list id" },
               name: { type: "string", description: "New list name" },
               sort_order: { type: "integer" },
-              closed: { type: "boolean" },
+              closed: {
+                type: "boolean",
+                description: "true to archive (close) the list; false to unarchive",
+              },
               color: { type: "string" },
             },
             required: ["id"],

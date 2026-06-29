@@ -32,9 +32,11 @@ async function sap() {
   return whenSapClientReady();
 }
 
-export async function fetchTaskLists(): Promise<TaskListRow[]> {
+export async function fetchTaskLists(opts?: { includeClosed?: boolean }): Promise<TaskListRow[]> {
   const client = await sap();
-  const data = await client.request("tasklist.list", {});
+  const data = await client.request("tasklist.list", {
+    include_closed: opts?.includeClosed,
+  });
   return data.lists;
 }
 
@@ -51,6 +53,14 @@ export async function updateTaskList(
   const client = await sap();
   const data = await client.request("tasklist.patch", { id, ...patch });
   return data.item;
+}
+
+export async function closeTaskList(id: number): Promise<TaskListRow> {
+  return updateTaskList(id, { closed: true });
+}
+
+export async function reopenTaskList(id: number): Promise<TaskListRow> {
+  return updateTaskList(id, { closed: false });
 }
 
 export async function deleteTaskList(id: number): Promise<void> {
