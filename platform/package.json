@@ -33,6 +33,7 @@
     "@elysiajs/static": "^1.4.10",
     "@freeanima/capabilities-acp": "workspace:*",
     "@freeanima/capabilities-identity": "workspace:*",
+    "@freeanima/capabilities-llm-openai": "workspace:*",
     "@freeanima/capabilities-mcp-client": "workspace:*",
     "@freeanima/capabilities-memory": "workspace:*",
     "@freeanima/capabilities-satellite": "workspace:*",

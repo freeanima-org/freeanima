@@ -38,14 +38,7 @@ msgstr "与记忆体系对比"
 
 #. type: Plain text
 #: docs/features/diary.md:17
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Capability | Diary                                | Autobiographical memory              |\n"
-#| "| ---------- | ------------------------------------ | ------------------------------------ |\n"
-#| "| Source     | User / Agent **writes actively**     | **Extracted** from dialogue in light sleep |\n"
-#| "| Storage    | `entities` + `diary_entry`           | `autobiographical_memory` table      |\n"
-#| "| Editing    | Update and delete allowed            | append-only                          |\n"
-#| "| Namespace  | subject **default private world**    | Digital-life memory pipeline         |\n"
+#, no-wrap
 msgid ""
 "| Capability | Diary                             | Autobiographical memory                    |\n"
 "| ---------- | --------------------------------- | ------------------------------------------ |\n"
@@ -107,16 +100,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/features/diary.md:36
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Tool           | Description                                                                 |\n"
-#| "| -------------- | --------------------------------------------------------------------------- |\n"
-#| "| `diary_append` | Append body for date (`\\n\\n` separator); create shell if missing; `tags` only on shell creation |\n"
-#| "| `diary_update` | Replace full entry or fields by date (not append)                           |\n"
-#| "| `diary_get`    | Read entry for date; error if not found                                     |\n"
-#| "| `diary_delete` | Delete entry for date; returns `{ ok, action, date }`                       |\n"
-#| "| `diary_list`   | List / date filter (unchanged)                                              |\n"
-#| "| `diary_search` | Hybrid search (unchanged)                                                   |\n"
+#, no-wrap
 msgid ""
 "| Tool           | Description                                                                                     |\n"
 "| -------------- | ----------------------------------------------------------------------------------------------- |\n"

@@ -897,12 +897,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/architecture.md:282
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Module | Connection                        | Notes                          |\n"
-#| "| ------ | --------------------------------- | ------------------------------ |\n"
-#| "| Chat   | SAP WebSocket `/sap/v1`           | Desktop / mobile bundled `/chat` |\n"
-#| "| Admin  | Hub REST `/api/*` (CORS + shell)  | Desktop / mobile bundled `/admin` |\n"
+#, no-wrap
 msgid ""
 "| Module | Connection                       | Notes                             |\n"
 "| ------ | -------------------------------- | --------------------------------- |\n"

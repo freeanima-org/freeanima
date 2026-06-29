@@ -88,14 +88,7 @@ msgstr "与聊天室 / 结对编程对比："
 
 #. type: Plain text
 #: docs/features/companion.md:35
-#, fuzzy, no-wrap
-#| msgid ""
-#| "|             | Chat / pair programming        | Companion                                         |\n"
-#| "| ----------- | ------------------------------ | ------------------------------------------------- |\n"
-#| "| UI          | Browser Web UI                 | Native transparent companion window + settings    |\n"
-#| "| Deployment  | Managed (can co-locate with service) | Dynamic (user starts manually)                |\n"
-#| "| SAP         | Type A or Type B + relay       | Type B + tools, no relay                          |\n"
-#| "| Client & UI | Can be separated               | Companion render and settings share one Electron app |\n"
+#, no-wrap
 msgid ""
 "|             | Chat / pair programming              | Companion                                            |\n"
 "| ----------- | ------------------------------------ | ---------------------------------------------------- |\n"
@@ -188,12 +181,7 @@ msgstr "Agent 工具（sidecar 注册）"
 
 #. type: Plain text
 #: docs/features/companion.md:53
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Tool        | Parameters                           | Description                          |\n"
-#| "| ----------- | ------------------------------------ | ------------------------------------ |\n"
-#| "| `bubble`    | `text: string`                       | Enqueue text in speech bubble        |\n"
-#| "| `play_slot` | `slot: string`; `motion_id?: string` | Play motion slot; `motion_id` optional |\n"
+#, no-wrap
 msgid ""
 "| Tool        | Parameters                           | Description                            |\n"
 "| ----------- | ------------------------------------ | -------------------------------------- |\n"
@@ -380,13 +368,7 @@ msgstr "环境变量："
 
 #. type: Plain text
 #: docs/features/companion.md:115
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Variable                 | Default                 | Description                                      |\n"
-#| "| ------------------------ | ----------------------- | ------------------------------------------------ |\n"
-#| "| `FREEANIMA_URL`          | `http://127.0.0.1:2658` | Hub fallback when no desktop `settings.json`     |\n"
-#| "| `SATELLITE_PORT`         | `4176`                  | Local HTTP port                                  |\n"
-#| "| `COMPANION_VRMA_ZIP_URL` | (empty)                 | Optional direct zip mirror; downloaded on start  |\n"
+#, no-wrap
 msgid ""
 "| Variable                 | Default                 | Description                                     |\n"
 "| ------------------------ | ----------------------- | ----------------------------------------------- |\n"
@@ -429,15 +411,7 @@ msgstr "故障排查"
 
 #. type: Plain text
 #: docs/features/companion.md:129
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Symptom              | Action                                                                                  |\n"
-#| "| -------------------- | --------------------------------------------------------------------------------------- |\n"
-#| "| Double-click, no window | Check system tray; tray → **Settings…** → import `.vrm`                              |\n"
-#| "| Click, no motion     | Settings → **Motion library** import VRMA; **Motion slots** bind slot                 |\n"
-#| "| Cannot reach Hub     | Confirm `anima service` and `remote_auth.token`; tray **Hub settings** URL and token  |\n"
-#| "| Import has no effect | Hot reload after import; confirm slot has motion checked                              |\n"
-#| "| Background service fails | See `~/.anima/app/desktop/shell.log`; confirm ports 4176–4185 free                |\n"
+#, no-wrap
 msgid ""
 "| Symptom                  | Action                                                                               |\n"
 "| ------------------------ | ------------------------------------------------------------------------------------ |\n"

@@ -49,14 +49,7 @@ msgstr "范围"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:18
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Item          | Description                                                        |\n"
-#| "| ------------- | ------------------------------------------------------------------ |\n"
-#| "| Platform      | **Android only** sideload (APK); iOS later                         |\n"
-#| "| Modules       | Chat (`sap-direct`) + Admin (`hub-rest`)                           |\n"
-#| "| Hub config    | APP **Hub settings**: URL + `remote_auth.token` (Preferences)      |\n"
-#| "| Hub duties    | `/api` REST + `/sap/v1` WebSocket                                  |\n"
+#, no-wrap
 msgid ""
 "| Item       | Description                                                   |\n"
 "| ---------- | ------------------------------------------------------------- |\n"
@@ -178,14 +171,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/features/mobile-app.md:59
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Symptom                              | Common cause                                                                                 |\n"
-#| "| ------------------------------------ | -------------------------------------------------------------------------------------------- |\n"
-#| "| Keyboard covers chat input           | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes |\n"
-#| "| Chat input unresponsive              | No selected conversation (first install should auto-create); or SAP disconnected             |\n"
-#| "| Admin load failed / Failed to fetch  | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header   |\n"
-#| "| Not Found                            | Avoid legacy paths like `/admin/dashboard/index.html`; use SPA `/admin/dashboard`            |\n"
+#, no-wrap
 msgid ""
 "| Symptom                             | Common cause                                                                                    |\n"
 "| ----------------------------------- | ----------------------------------------------------------------------------------------------- |\n"
@@ -214,13 +200,7 @@ msgstr "设置 → **调试**（桌面与移动端共用 shell-ui 面板）："
 
 #. type: Plain text
 #: docs/features/mobile-app.md:69
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Capability | Desktop              | Mobile                                        |\n"
-#| "| ---------- | -------------------- | --------------------------------------------- |\n"
-#| "| Sentry     | DSN in settings      | Same                                          |\n"
-#| "| DevTools   | F12 / dev package    | Debug APK + USB → Chrome `chrome://inspect`   |\n"
-#| "| Console    | Electron DevTools    | vConsole (settings toggle)                    |\n"
+#, no-wrap
 msgid ""
 "| Capability | Desktop           | Mobile                                      |\n"
 "| ---------- | ----------------- | ------------------------------------------- |\n"
@@ -285,16 +265,7 @@ msgstr "与桌面壳层对比"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:95
-#, fuzzy, no-wrap
-#| msgid ""
-#| "|             | Electron `app/desktop`                      | Capacitor `app/mobile`               |\n"
-#| "| ----------- | ------------------------------------------- | ------------------------------------ |\n"
-#| "| Injection   | preload → `window.satelliteShell`           | `shell-bridge.js` → same-shaped API  |\n"
-#| "| Hub config  | Hub settings → `~/.anima-desktop/settings.json` | Hub settings → Preferences       |\n"
-#| "| Debug/Sentry| Settings → Debug → same file `debug`      | Settings → Debug → Preferences       |\n"
-#| "| REST        | Local static `/api` proxy (same origin)     | Direct `hubUrl/api/*` (CORS + Bearer)|\n"
-#| "| instance_id | File `~/.anima/satellites/chat/`            | Preferences                          |\n"
-#| "| Content     | chat + admin + companion                    | chat + admin                         |\n"
+#, no-wrap
 msgid ""
 "|              | Electron `app/desktop`                          | Capacitor `app/mobile`                |\n"
 "| ------------ | ----------------------------------------------- | ------------------------------------- |\n"

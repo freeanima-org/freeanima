@@ -58,17 +58,7 @@ msgstr "路径：`./manifest` — 可 JSON 序列化的元数据。"
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:24
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Field             | Description                                    |\n"
-#| "| ----------------- | ---------------------------------------------- |\n"
-#| "| `appId`           | Application id                                 |\n"
-#| "| `displayName`     | Display name                                   |\n"
-#| "| `version`         | Version (usually synced with monorepo root package) |\n"
-#| "| `supportsDesktop` | Supports desktop embed                         |\n"
-#| "| `supportsMobile`  | Supports mobile embed                          |\n"
-#| "| `connectionKind`  | See table below                                |\n"
-#| "| `sap`             | Optional; SAP satellites only                  |\n"
+#, no-wrap
 msgid ""
 "| Field             | Description                                         |\n"
 "| ----------------- | --------------------------------------------------- |\n"
@@ -98,13 +88,7 @@ msgstr "connectionKind"
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:32
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Value              | Represents                    | Sidecar required?                          |\n"
-#| "| ------------------ | ----------------------------- | ------------------------------------------ |\n"
-#| "| `embedded-sidecar` | companion (VRM + tools)       | **Yes** (embedded in same process)         |\n"
-#| "| `sap-direct`       | chat (renderer → Hub SAP)     | **No** (persist `instance_id` only)        |\n"
-#| "| `hub-rest`         | Admin console (Hub REST)      | **No**                                     |\n"
+#, no-wrap
 msgid ""
 "| Value              | Represents                | Sidecar required?                   |\n"
 "| ------------------ | ------------------------- | ----------------------------------- |\n"
@@ -163,13 +147,7 @@ msgstr "当前前端 package"
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:49
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Package                               | appId       | connectionKind     | embedMode     |\n"
-#| "| ------------------------------------- | ----------- | ------------------ | ------------- |\n"
-#| "| `@freeanima/satellite-companion`      | `companion` | `embedded-sidecar` | sidecar       |\n"
-#| "| `@freeanima/satellite-chat`           | `chat`      | `sap-direct`       | `bundled-spa` |\n"
-#| "| Admin (`app/desktop` profile)         | `admin`     | `hub-rest`         | `bundled-spa` |\n"
+#, no-wrap
 msgid ""
 "| Package                          | appId       | connectionKind     | embedMode     |\n"
 "| -------------------------------- | ----------- | ------------------ | ------------- |\n"

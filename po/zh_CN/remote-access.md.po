@@ -60,13 +60,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/remote-access.md:17
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Layer                 | Role                                                                                                          |\n"
-#| "| --------------------- | ------------------------------------------------------------------------------------------------------------- |\n"
-#| "| **Hub `remote_auth`** | Plaintext token in `config.yaml`; REST `Authorization: Bearer`; SAP `connect` frame `auth_token`; MCP `/mcp` same Bearer |\n"
-#| "| **cloudflared**       | Outbound tunnel; Hub hostname → `127.0.0.1:2658`, Web hostname → `127.0.0.1:2659` (optional)                  |\n"
-#| "| **Client settings**   | app/desktop / app/mobile / **browser Web** fill Hub URL and token in **Hub settings**                         |\n"
+#, no-wrap
 msgid ""
 "| Layer                 | Role                                                                                                                     |\n"
 "| --------------------- | ------------------------------------------------------------------------------------------------------------------------ |\n"
@@ -202,12 +196,7 @@ msgstr "Cloudflare 凭证（pass）"
 
 #. type: Plain text
 #: docs/guide/remote-access.md:66
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| pass path                                | Purpose                     |\n"
-#| "| ---------------------------------------- | --------------------------- |\n"
-#| "| `services/cloudflare/api-token`          | Create Tunnel / DNS         |\n"
-#| "| `services/cloudflare/tunnel-credentials` | `cloudflared` connector creds |\n"
+#, no-wrap
 msgid ""
 "| pass path                                | Purpose                       |\n"
 "| ---------------------------------------- | ----------------------------- |\n"
@@ -238,13 +227,7 @@ msgstr "**app/desktop**、**app/mobile** 与 **浏览器 Web**（`web.enabled` +
 
 #. type: Plain text
 #: docs/guide/remote-access.md:78
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Client      | Storage                                      |\n"
-#| "| ----------- | -------------------------------------------- |\n"
-#| "| app/desktop | `~/.anima-desktop/settings.json` (`hub` section) |\n"
-#| "| app/mobile  | Capacitor Preferences                        |\n"
-#| "| Browser Web | localStorage (settings page)                 |\n"
+#, no-wrap
 msgid ""
 "| Client      | Storage                                          |\n"
 "| ----------- | ------------------------------------------------ |\n"
@@ -409,14 +392,7 @@ msgstr "运维"
 
 #. type: Plain text
 #: docs/guide/remote-access.md:127
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Command                        | Description                                       |\n"
-#| "| ------------------------------ | ------------------------------------------------- |\n"
-#| "| `anima tunnel status`          | Tunnel / cloudflared status                       |\n"
-#| "| `anima tunnel start` / `stop`  | Manual cloudflared (production: service stack)    |\n"
-#| "| `anima web start --foreground` | Standalone Web static server (debug)              |\n"
-#| "| `anima service status`         | Hub / Web / Tunnel stack                          |\n"
+#, no-wrap
 msgid ""
 "| Command                        | Description                                    |\n"
 "| ------------------------------ | ---------------------------------------------- |\n"
@@ -434,15 +410,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/remote-access.md:137
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Symptom                         | Check                                                      |\n"
-#| "| ------------------------------- | ---------------------------------------------------------- |\n"
-#| "| Public 502                      | Is Hub running? `anima service status`                     |\n"
-#| "| Public 1033                     | `anima tunnel status` shows `connected: no`                |\n"
-#| "| 401                             | Client token matches `remote_auth.token`                   |\n"
-#| "| Local OK, remote fails          | Remote requests need Bearer / SAP auth_token; public Host requires token |\n"
-#| "| 401 after token change        | Update Hub config **and** all client settings pages        |\n"
+#, no-wrap
 msgid ""
 "| Symptom                | Check                                                                    |\n"
 "| ---------------------- | ------------------------------------------------------------------------ |\n"

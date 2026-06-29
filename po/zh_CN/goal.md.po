@@ -48,19 +48,7 @@ msgstr "命令"
 
 #. type: Plain text
 #: docs/features/goal.md:22
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Command               | Description                                              |\n"
-#| "| --------------------- | -------------------------------------------------------- |\n"
-#| "| `/goal <description>` | Set goal and start first run (default 20-turn budget)    |\n"
-#| "| `/goal status`        | View goal, subgoals, turn count, judge reason            |\n"
-#| "| `/goal pause`         | Pause auto-continuation (keep goal state)                |\n"
-#| "| `/goal resume`        | Resume auto-continuation                                 |\n"
-#| "| `/goal clear`         | Clear goal                                               |\n"
-#| "| `/subgoal`            | List subgoals                                            |\n"
-#| "| `/subgoal <condition>`| Append sub-condition                                     |\n"
-#| "| `/subgoal remove <N>` | Remove subgoal N (1-based)                                 |\n"
-#| "| `/subgoal clear`      | Clear all subgoals                                       |\n"
+#, no-wrap
 msgid ""
 "| Command                | Description                                           |\n"
 "| ---------------------- | ----------------------------------------------------- |\n"
