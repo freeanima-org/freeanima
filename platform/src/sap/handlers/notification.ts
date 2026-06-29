@@ -3,8 +3,8 @@ import {
   notificationMarkReadInputSchema,
 } from "@freeanima/sap-contract";
 import { resolveNotificationRecipients } from "@freeanima/core/config";
-import type { SapServerDeps } from "./types.ts";
-import * as serviceNotifications from "../runtime/service-notifications.ts";
+import type { SapServerDeps } from "../types.ts";
+import * as serviceNotifications from "../../runtime/service-notifications.ts";
 
 export async function handleNotificationList(deps: SapServerDeps, payload: unknown) {
   const input = notificationListInputSchema.parse(payload);
@@ -30,7 +30,9 @@ export async function handleNotificationMarkRead(deps: SapServerDeps, payload: u
 }
 
 export function handleNotificationRecipients(deps: SapServerDeps) {
-  const { user, agent } = resolveNotificationRecipients(deps.runtime.runtimeDeps().engine.config.data);
+  const { user, agent } = resolveNotificationRecipients(
+    deps.runtime.runtimeDeps().engine.config.data,
+  );
   return {
     user_subject_id: user.id,
     agent_subject_id: agent.id,
