@@ -1,3 +1,10 @@
+import "@freeanima/satellite-chat/styles.css";
+import { ChatApp } from "@freeanima/satellite-chat/app";
+
+import { DiaryApp } from "@freeanima/satellite-diary/app";
+import { EmailApp } from "@freeanima/satellite-email/app";
+import { NotificationApp } from "@freeanima/satellite-notification/app";
+import { TaskApp } from "@freeanima/satellite-task/app";
 import {
   Outlet,
   RouterProvider,
@@ -9,13 +16,8 @@ import {
 } from "@tanstack/react-router";
 import { useMemo } from "react";
 
-import { ChatApp } from "./chat/load-chat-app.ts";
-import { DiaryApp } from "./diary/load-diary-app.ts";
-import { EmailApp } from "./email/load-email-app.ts";
-import { TaskApp } from "./tasks/load-task-app.ts";
 import { AdminShell } from "./main/AdminShell.tsx";
 import { ModuleShell } from "./main/ModuleShell.tsx";
-import { NotificationsPage } from "./notifications/NotificationsPage.tsx";
 import { SettingsPage } from "./settings/SettingsPage.tsx";
 
 const rootRoute = createRootRoute({
@@ -63,7 +65,7 @@ const diaryRoute = createRoute({
 const notificationsRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/notifications",
-  component: NotificationsPage,
+  component: NotificationApp,
 });
 
 const adminIndexRoute = createRoute({

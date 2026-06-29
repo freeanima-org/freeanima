@@ -11,6 +11,7 @@ Detailed implementation constraints for AI agents working in this repository. St
 | [`testing.md`](testing.md)         | Adding or moving tests; mock strategy; CI tiers                                     |
 | [`packages.md`](packages.md)       | New workspace package or rename (RFC #1)                                            |
 | [`code-layers.md`](code-layers.md) | Five-layer deps, composition root, Registry injection                               |
+| [`frontend-features.md`](frontend-features.md) | 前端功能原型 A/B/C、SAP vs hub-rest 通道、新功能 touch 清单           |
 | [`release.md`](release.md)         | SemVer, Conventional Commits, Release Please, npm/Docker                            |
 | [`compression.md`](compression.md) | l-point compression algorithm and module entry points                               |
 | [`i18n.md`](i18n.md)               | UI/docs i18n: Paraglide, po4a, PO workflow, site/Admin message keys                 |

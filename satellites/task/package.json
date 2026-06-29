@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./app": "./app/src/TaskApp.tsx"
+    "./app": "./src/exports/app.tsx"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

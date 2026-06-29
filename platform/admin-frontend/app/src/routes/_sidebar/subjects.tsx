@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FormField, FormFieldset } from "@freeanima/satellite-sdk/form";
+import { FormField, FormFieldset } from "@freeanima/ui-kit/form";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
 import { m } from "@admin/lib/i18n.ts";
 import {

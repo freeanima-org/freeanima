@@ -257,25 +257,41 @@
     "packages/satellite-sdk": {
       "name": "@freeanima/satellite-sdk",
       "dependencies": {
+        "@freeanima/shell-sdk": "workspace:*",
+        "@freeanima/ui-kit": "workspace:*",
         "react": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
         "@types/react": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
+    "packages/shell-sdk": {
+      "name": "@freeanima/shell-sdk",
+      "dependencies": {
+        "react": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+        "@types/react": "catalog:",
+        "typescript": "catalog:",
       },
     },
     "packages/shell-ui": {
       "name": "@freeanima/shell-ui",
       "dependencies": {
         "@freeanima/admin-frontend": "workspace:*",
-        "@freeanima/sap-contract": "workspace:*",
         "@freeanima/satellite-chat": "workspace:*",
         "@freeanima/satellite-companion": "workspace:*",
         "@freeanima/satellite-diary": "workspace:*",
         "@freeanima/satellite-email": "workspace:*",
-        "@freeanima/satellite-sdk": "workspace:*",
+        "@freeanima/satellite-notification": "workspace:*",
         "@freeanima/satellite-task": "workspace:*",
+        "@freeanima/shell-sdk": "workspace:*",
+        "@freeanima/ui-kit": "workspace:*",
         "@sentry/react": "^9.47.1",
         "@tanstack/react-router": "^1.170.11",
         "react": "catalog:",
@@ -294,6 +310,16 @@
         "vite": "catalog:",
       },
     },
+    "packages/ui-kit": {
+      "name": "@freeanima/ui-kit",
+      "dependencies": {
+        "react": "catalog:",
+      },
+      "devDependencies": {
+        "@types/react": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "platform": {
       "name": "@freeanima/platform",
       "dependencies": {
@@ -303,6 +329,7 @@
         "@freeanima/capabilities-diary": "workspace:*",
         "@freeanima/capabilities-email": "workspace:*",
         "@freeanima/capabilities-identity": "workspace:*",
+        "@freeanima/capabilities-llm-openai": "workspace:*",
         "@freeanima/capabilities-mcp-client": "workspace:*",
         "@freeanima/capabilities-memory": "workspace:*",
         "@freeanima/capabilities-satellite": "workspace:*",
@@ -381,8 +408,8 @@
       "dependencies": {
         "@elysiajs/eden": "^1.4.9",
         "@freeanima/admin-contract": "workspace:*",
-        "@freeanima/satellite-sdk": "workspace:*",
-        "@freeanima/shell-ui": "workspace:*",
+        "@freeanima/shell-sdk": "workspace:*",
+        "@freeanima/ui-kit": "workspace:*",
         "@tanstack/react-router": "^1.170.11",
         "elysia": "^1.4.28",
         "highlight.js": "^11.11.1",
@@ -486,6 +513,18 @@
       "devDependencies": {
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
+      },
+    },
+    "satellites/notification": {
+      "name": "@freeanima/satellite-notification",
+      "dependencies": {
+        "@freeanima/sap-contract": "workspace:*",
+        "@freeanima/shell-sdk": "workspace:*",
+        "react": "catalog:",
+      },
+      "devDependencies": {
+        "@types/react": "catalog:",
+        "typescript": "catalog:",
       },
     },
     "satellites/pair-programming": {
@@ -930,15 +969,21 @@
 
     "@freeanima/satellite-email": ["@freeanima/satellite-email@workspace:satellites/email"],
 
+    "@freeanima/satellite-notification": ["@freeanima/satellite-notification@workspace:satellites/notification"],
+
     "@freeanima/satellite-pair-programming": ["@freeanima/satellite-pair-programming@workspace:satellites/pair-programming"],
 
     "@freeanima/satellite-sdk": ["@freeanima/satellite-sdk@workspace:packages/satellite-sdk"],
 
     "@freeanima/satellite-task": ["@freeanima/satellite-task@workspace:satellites/task"],
 
+    "@freeanima/shell-sdk": ["@freeanima/shell-sdk@workspace:packages/shell-sdk"],
+
     "@freeanima/shell-ui": ["@freeanima/shell-ui@workspace:packages/shell-ui"],
 
     "@freeanima/site": ["@freeanima/site@workspace:site"],
+
+    "@freeanima/ui-kit": ["@freeanima/ui-kit@workspace:packages/ui-kit"],
 
     "@hono/node-server": ["@hono/node-server@1.19.14", "", { "peerDependencies": { "hono": "^4" } }, "sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw=="],
 

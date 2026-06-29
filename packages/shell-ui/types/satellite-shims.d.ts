@@ -6,7 +6,7 @@ declare module "@freeanima/satellite-chat/app" {
 
 declare module "@freeanima/satellite-companion/settings-panel" {
   import type { ComponentType } from "react";
-  import type { SettingsPanelProps } from "@freeanima/satellite-sdk/settings";
+  import type { SettingsPanelProps } from "@freeanima/shell-sdk/settings";
   const CompanionSettingsSection: ComponentType<SettingsPanelProps>;
   export default CompanionSettingsSection;
 }

@@ -1,8 +1,9 @@
 @import "tailwindcss";
 @plugin "daisyui";
 @source "./**/*.{tsx,ts}";
-@source "../../../../packages/satellite-sdk/src/**/*.{tsx,ts}";
-@import "../../../../packages/shell-ui/app/src/shared-safe-area.css";
+@source "../../../../packages/ui-kit/src/**/*.{tsx,ts}";
+@source "../../../../packages/shell-sdk/src/**/*.{tsx,ts}";
+@import "@freeanima/ui-kit/styles.css";
 
 /* 主内容区内边距：移动端略窄 */
 .app-main-padding {

@@ -1,0 +1,20 @@
+{
+  "name": "@freeanima/shell-sdk",
+  "description": "FreeAnima 壳层集成 SDK（manifest/settings/Hub 连通，无 SAP wire）",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts",
+    "./settings": "./src/settings/index.ts"
+  },
+  "dependencies": {
+    "react": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@types/react": "catalog:",
+    "typescript": "catalog:"
+  }
+}

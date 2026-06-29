@@ -4,9 +4,9 @@ import {
   readOfflineCache,
   resolveCacheScope,
   writeOfflineCache,
-} from "@freeanima/satellite-sdk/offline-cache";
+} from "@freeanima/shell-sdk/offline-cache";
 import type { App } from "@freeanima/admin-contract/elysia";
-import { shouldAttachRemoteAuth } from "@freeanima/satellite-sdk/remote-auth";
+import { shouldAttachRemoteAuth } from "@freeanima/shell-sdk/remote-auth";
 import { reviveDates } from "@freeanima/admin-contract/date-json";
 import { m } from "./i18n.ts";
 import { translateApiErrorValue } from "./api-errors.ts";

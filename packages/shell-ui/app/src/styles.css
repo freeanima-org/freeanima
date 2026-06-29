@@ -1,11 +1,12 @@
 @import "tailwindcss";
 @plugin "daisyui";
 @source "./**/*.{tsx,ts}";
-@source "../../../satellite-sdk/src/**/*.{tsx,ts}";
+@source "../../../../packages/ui-kit/src/**/*.{tsx,ts}";
+@source "../../../../packages/shell-sdk/src/**/*.{tsx,ts}";
 @source "../../../satellites/chat/app/src/**/*.{tsx,ts}";
 @source "../../../satellites/task/app/src/**/*.{tsx,ts}";
 @source "../../../satellites/diary/app/src/**/*.{tsx,ts}";
-@import "./shared-safe-area.css";
+@import "@freeanima/ui-kit/styles.css";
 
 :root {
   --shell-bottom-nav-h: 3rem;

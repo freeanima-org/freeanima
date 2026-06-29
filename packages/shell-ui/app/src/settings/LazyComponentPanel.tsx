@@ -5,7 +5,7 @@ import type {
   SettingsPlatform,
   SettingsSectionDeps,
   SettingsStore,
-} from "@freeanima/satellite-sdk/settings";
+} from "@freeanima/shell-sdk/settings";
 
 type Props = {
   load: SettingsComponentLoader;

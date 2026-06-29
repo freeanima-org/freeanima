@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./app": "./app/src/EmailApp.tsx"
+    "./app": "./src/exports/app.tsx"
   },
   "dependencies": {
     "@freeanima/sap-contract": "workspace:*",

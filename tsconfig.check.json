@@ -7,6 +7,8 @@
     { "path": "./satellites/chat" },
     { "path": "./satellites/companion" },
     { "path": "./app/desktop" },
+    { "path": "./packages/ui-kit" },
+    { "path": "./packages/shell-sdk" },
     { "path": "./packages/satellite-sdk" },
     { "path": "./app/mobile" },
     { "path": "./app/web" },

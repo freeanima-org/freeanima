@@ -5,7 +5,7 @@ import {
   markNotificationRead,
   getNotificationRecipients,
   type NotificationRow,
-} from "../lib/sap-notifications-api.ts";
+} from "./lib/api.ts";
 
 const PAGE_SIZE = 20;
 
@@ -69,7 +69,7 @@ function ListPagination({
   );
 }
 
-export function NotificationsPage() {
+export function NotificationApp() {
   const [recipientKind, setRecipientKind] = useState<RecipientKind>("user");
   const [recipientIds, setRecipientIds] = useState<RecipientIds | null>(null);
   const [readFilter, setReadFilter] = useState<ReadFilter>("unread");

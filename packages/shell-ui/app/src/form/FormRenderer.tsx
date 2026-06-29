@@ -4,8 +4,8 @@ import type {
   SettingsFormFields,
   SettingsPlatform,
   SettingsStore,
-} from "@freeanima/satellite-sdk/settings";
-import { FormField, FormFieldLabel, FormFieldset, FormToggle } from "@freeanima/satellite-sdk/form";
+} from "@freeanima/shell-sdk/settings";
+import { FormField, FormFieldLabel, FormFieldset, FormToggle } from "@freeanima/ui-kit/form";
 
 import { notifyDebugConfigChanged } from "../bootstrap/sentry.ts";
 

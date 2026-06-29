@@ -1,5 +1,5 @@
 export { buildShellUi } from "./build.ts";
-export type { SettingsBinding, SettingsStore } from "@freeanima/satellite-sdk/settings";
+export type { SettingsBinding, SettingsStore } from "@freeanima/shell-sdk/settings";
 export {
   defineSettingsForm,
   listSettingsSectionsForPlatform,
@@ -15,4 +15,4 @@ export {
   type SettingsPlatformEntry,
   type SettingsSection,
   type SettingsSectionDeps,
-} from "@freeanima/satellite-sdk/settings";
+} from "@freeanima/shell-sdk/settings";

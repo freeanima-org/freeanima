@@ -23,6 +23,7 @@ export {
   TASK_INSTANCE_ID,
   EMAIL_INSTANCE_ID,
   DIARY_INSTANCE_ID,
+  NOTIFICATION_INSTANCE_ID,
 } from "./satellite-instance.ts";
 
 export {

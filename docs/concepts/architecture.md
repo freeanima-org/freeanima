@@ -67,12 +67,16 @@ Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-backed
 
 ### Platform UI layering
 
-| Layer              | Platform-native?             | Location                                                       |
-| ------------------ | ---------------------------- | -------------------------------------------------------------- |
-| Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring             |
-| Shared SPA         | Branch on `detectPlatform()` | `packages/shell-ui`, `satellites/*`, `platform/admin-frontend` |
+| Layer              | Platform-native?             | Location                                                       | 数据通道        |
+| ------------------ | ---------------------------- | -------------------------------------------------------------- | --------------- |
+| Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring             | preload/IPC     |
+| Shared SPA shell   | Branch on `detectPlatform()` | `packages/shell-ui`                                            | 无 SAP wire     |
+| hub-rest 前端      | Admin embed                  | `platform/admin-frontend` + `ui-kit` + `shell-sdk`             | Eden `/api`     |
+| SAP 产品面         | Satellite apps               | `satellites/*` + `sap-contract` + `ui-kit` + `shell-sdk`       | SAP `/sap/v1`   |
 
 Nav and primary layouts **must use `detectPlatform()`** (Electron / native shell), not viewport breakpoints alone. Responsive CSS is for desktop window resize only.
+
+**边界**：`shell-ui` 与 `admin-frontend` 禁止 import `sap-contract`；SAP wire 仅在 `satellites/*/app` 内。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。
 
 ### Admin navigation ↔ cognitive layers
 

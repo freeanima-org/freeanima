@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/satellite-sdk/form";
+import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form";
 import {
   getDeepSleepRounds,
   getSleepPipelineStatus,

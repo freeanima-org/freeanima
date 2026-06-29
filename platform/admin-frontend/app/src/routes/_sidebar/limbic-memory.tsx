@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import type { LimbicMemoryRow } from "@freeanima/admin-contract/api";
-import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/satellite-sdk/form";
+import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { listLimbicMemories } from "@admin/lib/api.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";

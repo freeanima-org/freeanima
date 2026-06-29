@@ -1,6 +1,22 @@
-import type { AppRuntime } from "../runtime/app-runtime.ts";
-import type { SatelliteManager } from "@freeanima/capabilities-satellite";
-import type { MaskRegistryPort } from "../../ports/mask-registry.ts";
+import type { SapServerDeps } from "./types.ts";
+export type { SapServerDeps } from "./types.ts";
+import {
+  handleNotificationList,
+  handleNotificationMarkRead,
+  handleNotificationRecipients,
+} from "./handlers/notification.ts";
+import {
+  handleTasklistList,
+  handleTasklistCreate,
+  handleTasklistPatch,
+  handleTasklistDelete,
+  handleTaskList,
+  handleTaskCreate,
+  handleTaskPatch,
+  handleTaskComplete,
+  handleTaskUncomplete,
+  handleTaskDelete,
+} from "./handlers/entity-task.ts";
 import {
   connectPayloadSchema,
   defineSapRouter,
@@ -18,16 +34,6 @@ import {
   sessionAcpDockInputSchema,
   conversationCommandsInputSchema,
   fridgeListInputSchema,
-  tasklistListInputSchema,
-  tasklistCreateInputSchema,
-  tasklistPatchInputSchema,
-  tasklistDeleteInputSchema,
-  taskListInputSchema,
-  taskCreateInputSchema,
-  taskPatchInputSchema,
-  taskCompleteInputSchema,
-  taskUncompleteInputSchema,
-  taskDeleteInputSchema,
   diaryListInputSchema,
   diaryCreateInputSchema,
   diaryAppendInputSchema,
@@ -41,8 +47,6 @@ import {
   emailMessageMarkReadInputSchema,
   emailSyncInputSchema,
   emailThreadListInputSchema,
-  notificationListInputSchema,
-  notificationMarkReadInputSchema,
   messageSendInputSchema,
   messageInterruptInputSchema,
   toolRegisterInputSchema,
@@ -62,16 +66,13 @@ import {
   type SapRouterOutputs,
 } from "@freeanima/sap-contract";
 import { isConversationMeta } from "@freeanima/core/db/domain";
-import { resolveNotificationRecipients } from "@freeanima/core/config";
 import { bridgeMessageStream, bridgeSessionUpdates } from "./stream-bridge.ts";
 import * as serviceSessions from "../runtime/service-conversations.ts";
 import * as serviceAcpDock from "../runtime/service-acp-dock.ts";
 import * as serviceStatus from "../runtime/service-status.ts";
 import * as serviceFridge from "../runtime/service-fridge.ts";
-import * as serviceEntityTask from "../runtime/service-entity-task.ts";
 import * as serviceEntityDiary from "../runtime/service-entity-diary.ts";
 import * as serviceEntityEmail from "../runtime/service-entity-email.ts";
-import * as serviceNotifications from "../runtime/service-notifications.ts";
 import {
   closeTerminalSession,
   createTerminalSession,
@@ -79,18 +80,8 @@ import {
   TerminalSessionError,
 } from "./terminal-session.ts";
 import { verifyRemoteAuthToken } from "../../admin-api/remote-auth.ts";
-import type { SapInstanceRegistry } from "./instance-registry.ts";
 
 const HEARTBEAT_INTERVAL_SEC = 30;
-
-export type SapServerDeps = {
-  runtime: AppRuntime;
-  satelliteManager: SatelliteManager;
-  instanceRegistry: SapInstanceRegistry;
-  animaVersion: string;
-  masks: MaskRegistryPort;
-  remoteAuthToken?: string;
-};
 
 type SapWsSend = {
   send: (data: string) => void;
@@ -260,46 +251,26 @@ export function createSapServerHandlers(
           fridgeListInputSchema.parse(payload);
           return serviceFridge.listFridgeMagnets();
         }
-        case "tasklist.list": {
-          const input = tasklistListInputSchema.parse(payload);
-          return serviceEntityTask.serviceTasklistList(deps.runtime.runtimeDeps(), input);
-        }
-        case "tasklist.create": {
-          const input = tasklistCreateInputSchema.parse(payload);
-          return serviceEntityTask.serviceTasklistCreate(deps.runtime.runtimeDeps(), input);
-        }
-        case "tasklist.patch": {
-          const input = tasklistPatchInputSchema.parse(payload);
-          return serviceEntityTask.serviceTasklistPatch(deps.runtime.runtimeDeps(), input);
-        }
-        case "tasklist.delete": {
-          const input = tasklistDeleteInputSchema.parse(payload);
-          return serviceEntityTask.serviceTasklistDelete(deps.runtime.runtimeDeps(), input);
-        }
-        case "task.list": {
-          const input = taskListInputSchema.parse(payload);
-          return serviceEntityTask.serviceTaskList(deps.runtime.runtimeDeps(), input);
-        }
-        case "task.create": {
-          const input = taskCreateInputSchema.parse(payload);
-          return serviceEntityTask.serviceTaskCreate(deps.runtime.runtimeDeps(), input);
-        }
-        case "task.patch": {
-          const input = taskPatchInputSchema.parse(payload);
-          return serviceEntityTask.serviceTaskPatch(deps.runtime.runtimeDeps(), input);
-        }
-        case "task.complete": {
-          const input = taskCompleteInputSchema.parse(payload);
-          return serviceEntityTask.serviceTaskComplete(deps.runtime.runtimeDeps(), input.id);
-        }
-        case "task.uncomplete": {
-          const input = taskUncompleteInputSchema.parse(payload);
-          return serviceEntityTask.serviceTaskUncomplete(deps.runtime.runtimeDeps(), input.id);
-        }
-        case "task.delete": {
-          const input = taskDeleteInputSchema.parse(payload);
-          return serviceEntityTask.serviceTaskDelete(deps.runtime.runtimeDeps(), input.id);
-        }
+        case "tasklist.list":
+          return handleTasklistList(deps, payload);
+        case "tasklist.create":
+          return handleTasklistCreate(deps, payload);
+        case "tasklist.patch":
+          return handleTasklistPatch(deps, payload);
+        case "tasklist.delete":
+          return handleTasklistDelete(deps, payload);
+        case "task.list":
+          return handleTaskList(deps, payload);
+        case "task.create":
+          return handleTaskCreate(deps, payload);
+        case "task.patch":
+          return handleTaskPatch(deps, payload);
+        case "task.complete":
+          return handleTaskComplete(deps, payload);
+        case "task.uncomplete":
+          return handleTaskUncomplete(deps, payload);
+        case "task.delete":
+          return handleTaskDelete(deps, payload);
         case "diary.list": {
           const input = diaryListInputSchema.parse(payload);
           return serviceEntityDiary.serviceDiaryList(deps.runtime.runtimeDeps(), input);
@@ -355,36 +326,12 @@ export function createSapServerHandlers(
           const input = emailThreadListInputSchema.parse(payload);
           return serviceEntityEmail.serviceEmailThreadList(deps.runtime.runtimeDeps(), input);
         }
-        case "notification.list": {
-          const input = notificationListInputSchema.parse(payload);
-          return serviceNotifications.listNotifications(deps.runtime.runtimeDeps(), {
-            recipient_kind: input.recipient_kind,
-            recipient_id: input.recipient_id,
-            read_filter: input.read_filter,
-            offset: input.offset,
-            limit: input.limit,
-          });
-        }
-        case "notification.markRead": {
-          const input = notificationMarkReadInputSchema.parse(payload);
-          const notification = await serviceNotifications.markNotificationRead(
-            deps.runtime.runtimeDeps(),
-            input.id,
-          );
-          if (!notification) {
-            throw new Error(`Notification not found: ${input.id}`);
-          }
-          return { ok: true as const, notification };
-        }
-        case "notification.recipients": {
-          const { user, agent } = resolveNotificationRecipients(
-            deps.runtime.runtimeDeps().engine.config.data,
-          );
-          return {
-            user_subject_id: user.id,
-            agent_subject_id: agent.id,
-          };
-        }
+        case "notification.list":
+          return handleNotificationList(deps, payload);
+        case "notification.markRead":
+          return handleNotificationMarkRead(deps, payload);
+        case "notification.recipients":
+          return handleNotificationRecipients(deps);
         case "message.send": {
           const input = messageSendInputSchema.parse(payload);
           const streamId = crypto.randomUUID();

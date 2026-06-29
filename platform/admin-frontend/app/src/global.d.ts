@@ -1,4 +1,4 @@
-import type { SatelliteShellApi } from "@freeanima/satellite-sdk/shell-api.ts";
+import type { SatelliteShellApi } from "@freeanima/shell-sdk/shell-api";
 
 declare global {
   interface Window {
