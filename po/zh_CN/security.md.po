@@ -219,17 +219,7 @@ msgstr "以下在代码或文档中规划，**部署者请勿假设已实现**�
 
 #. type: Plain text
 #: docs/guide/security.md:79
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Priority | Item                                                  | Status                                                                                                                       |\n"
-#| "| -------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |\n"
-#| "| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                                                                                                                      |\n"
-#| "| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                                                                                                              |\n"
-#| "| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                                                                                                              |\n"
-#| "| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                                                                                                              |\n"
-#| "| P2       | HTTP API auth                                         | Non-loopback Host or non-loopback TCP peer requires `remote_auth` or 401; dual loopback exempt ([`remote-access.md`](remote-access.md)) |\n"
-#| "| P3       | IPC / LLM rate limiting                               | None                                                                                                                         |\n"
-#| "| P3       | Session disk encryption                               | None                                                                                                                         |\n"
+#, no-wrap
 msgid ""
 "| Priority | Item                                                  | Status                                                                                                                                  |\n"
 "| -------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |\n"
