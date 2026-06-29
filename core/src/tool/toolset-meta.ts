@@ -3,6 +3,19 @@ import type { ToolSetRegistry } from "./toolset.ts";
 export const TOOL_SET_LOAD_TOOL_NAME = "toolset_load";
 export const TOOL_SET_SEARCH_TOOL_NAME = "toolset_search";
 
+/** Monolithic ToolSet names from before task/email split — expand when resolving cached meta */
+const LEGACY_TOOLSET_EXPANSION: Record<string, readonly string[]> = {
+  task: ["task", "tasklist"],
+  email: ["email", "email-account"],
+};
+
+function expandLegacyToolSetNames(registry: ToolSetRegistry, toolset: string): string[] {
+  const siblings = LEGACY_TOOLSET_EXPANSION[toolset];
+  if (!siblings) return [toolset];
+  const expanded = siblings.filter((name) => registry.getToolSet(name) != null);
+  return expanded.length > 0 ? expanded : [toolset];
+}
+
 /** Resolve a registry tool name to its owning ToolSet */
 export function toolSetForTool(registry: ToolSetRegistry, toolName: string): string | null {
   const trimmed = toolName.trim();
@@ -38,8 +51,12 @@ export function resolveToolSetNames(registry: ToolSetRegistry, names: readonly s
       toolset = toolSetForTool(registry, item);
     }
     if (!toolset || seen.has(toolset)) continue;
-    seen.add(toolset);
-    out.push(toolset);
+    const expanded = expandLegacyToolSetNames(registry, toolset);
+    for (const name of expanded) {
+      if (seen.has(name)) continue;
+      seen.add(name);
+      out.push(name);
+    }
   }
   return out;
 }

@@ -62,4 +62,20 @@ describe("toolset-meta", () => {
     expect(loadCallFullyCached(["a"], ["b"])).toBe(false);
     expect(loadCallFullyCached([], ["a"])).toBe(false);
   });
+
+  it("resolveToolSetNames expands legacy monolithic task/email cached names", () => {
+    const splitRegistry = new ToolSetRegistry();
+    splitRegistry.registerToolSet("task", "Task items", [sampleTool("task_create")]);
+    splitRegistry.registerToolSet("tasklist", "Task lists", [sampleTool("tasklist_list")]);
+    splitRegistry.registerToolSet("email", "Email mailbox", [sampleTool("email_sync")]);
+    splitRegistry.registerToolSet("email-account", "Email accounts", [
+      sampleTool("email_list_accounts"),
+    ]);
+
+    expect(resolveToolSetNames(splitRegistry, ["task"])).toEqual(["task", "tasklist"]);
+    expect(resolveToolSetNames(splitRegistry, ["email"])).toEqual(["email", "email-account"]);
+    expect(
+      toolNamesForToolSets(splitRegistry, resolveToolSetNames(splitRegistry, ["task"])),
+    ).toEqual(["task_create", "tasklist_list"]);
+  });
 });

@@ -25,6 +25,7 @@ export const taskItemRowSchema = z.object({
   status: taskStatusSchema,
   priority: taskPrioritySchema,
   due_at: z.string().nullable(),
+  remind_at: z.string().nullable(),
   list_id: z.number().int().positive(),
   sort_order: z.number().int(),
   completed_at: z.string().nullable(),

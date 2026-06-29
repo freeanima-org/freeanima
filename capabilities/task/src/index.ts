@@ -18,6 +18,7 @@ export {
   deleteTaskList,
   getDefaultTaskList,
   isDefaultTaskListId,
+  searchTaskLists,
 } from "./list-store.ts";
 
 export {
@@ -27,6 +28,7 @@ export {
   completeTaskItem,
   uncompleteTaskItem,
   deleteTaskItem,
+  searchTaskItems,
 } from "./item-store.ts";
 
 export { registerTaskTools } from "./tools.ts";
