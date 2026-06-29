@@ -22,7 +22,6 @@
     "./settings-api": "./app/src/settings/companion-settings-api.ts"
   },
   "scripts": {
-    "postinstall": "bun scripts/ensure-fbx2gltf.ts",
     "setup:fbx": "bun scripts/ensure-fbx2gltf.ts --strict",
     "dev": "bun dev.ts",
     "build": "vite build",

@@ -1,7 +1,7 @@
-import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { FBX_IMPORT_UNAVAILABLE_MSG } from "../shared/constants.ts";
 import { companionPackageRoot } from "./companion-root.ts";
+import { fbx2gltfCacheDir, platformBinaryNames, verifyFbx2gltfBinary } from "./fbx2gltf-shared.ts";
 
 export { FBX_IMPORT_UNAVAILABLE_MSG };
 
@@ -31,17 +31,15 @@ function kitDirCandidates(): string[] {
 }
 
 function fbx2gltfCandidates(): string[] {
-  const bin = installBinDir();
-  const names: string[] = [];
-  if (process.platform === "win32") {
-    names.push("FBX2glTF-windows-x64.exe");
-  } else if (process.platform === "darwin") {
-    names.push("FBX2glTF-darwin-x64", "FBX2glTF-darwin-arm64");
-  } else {
-    names.push("FBX2glTF-linux-x64");
+  const names = platformBinaryNames();
+  const paths: string[] = [];
+
+  const cacheDir = fbx2gltfCacheDir();
+  for (const name of names) {
+    paths.push(join(cacheDir, name));
   }
 
-  const paths: string[] = [];
+  const bin = installBinDir();
   for (const name of names) {
     paths.push(join(bin, name));
   }
@@ -55,7 +53,7 @@ function fbx2gltfCandidates(): string[] {
 
 export function findFbx2gltfBinary(): string | null {
   for (const path of fbx2gltfCandidates()) {
-    if (existsSync(path)) {
+    if (verifyFbx2gltfBinary(path)) {
       return path;
     }
   }
