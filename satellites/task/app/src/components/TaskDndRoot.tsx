@@ -1,9 +1,9 @@
 import {
   DndContext,
   DragOverlay,
+  MeasuringStrategy,
   PointerSensor,
   TouchSensor,
-  closestCenter,
   useDndMonitor,
   useSensor,
   useSensors,
@@ -14,6 +14,7 @@ import { arrayMove } from "@dnd-kit/sortable";
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 
 import type { TaskItemRow, TaskListRow } from "../lib/api.ts";
+import { taskListCollisionDetection } from "../lib/dnd-collision.ts";
 import { getParentId, getSiblings, isDescendant } from "../lib/list-tree.ts";
 import { isListDndId, isTaskDndId, parseListDndId, parseTaskDndId } from "../lib/dnd-ids.ts";
 
@@ -185,7 +186,10 @@ export function TaskDndRoot({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={taskListCollisionDetection}
+      measuring={{
+        droppable: { strategy: MeasuringStrategy.Always },
+      }}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={() => setActiveTask(null)}
