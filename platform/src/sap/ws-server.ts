@@ -28,6 +28,13 @@ import {
   taskCompleteInputSchema,
   taskUncompleteInputSchema,
   taskDeleteInputSchema,
+  diaryListInputSchema,
+  diaryCreateInputSchema,
+  diaryAppendInputSchema,
+  diaryPatchInputSchema,
+  diaryDeleteInputSchema,
+  diaryGetInputSchema,
+  diarySearchInputSchema,
   emailAccountListInputSchema,
   emailMessageListInputSchema,
   emailMessageReadInputSchema,
@@ -62,6 +69,7 @@ import * as serviceAcpDock from "../runtime/service-acp-dock.ts";
 import * as serviceStatus from "../runtime/service-status.ts";
 import * as serviceFridge from "../runtime/service-fridge.ts";
 import * as serviceEntityTask from "../runtime/service-entity-task.ts";
+import * as serviceEntityDiary from "../runtime/service-entity-diary.ts";
 import * as serviceEntityEmail from "../runtime/service-entity-email.ts";
 import * as serviceNotifications from "../runtime/service-notifications.ts";
 import {
@@ -291,6 +299,34 @@ export function createSapServerHandlers(
         case "task.delete": {
           const input = taskDeleteInputSchema.parse(payload);
           return serviceEntityTask.serviceTaskDelete(deps.runtime.runtimeDeps(), input.id);
+        }
+        case "diary.list": {
+          const input = diaryListInputSchema.parse(payload);
+          return serviceEntityDiary.serviceDiaryList(deps.runtime.runtimeDeps(), input);
+        }
+        case "diary.create": {
+          const input = diaryCreateInputSchema.parse(payload);
+          return serviceEntityDiary.serviceDiaryCreate(deps.runtime.runtimeDeps(), input);
+        }
+        case "diary.append": {
+          const input = diaryAppendInputSchema.parse(payload);
+          return serviceEntityDiary.serviceDiaryAppend(deps.runtime.runtimeDeps(), input);
+        }
+        case "diary.patch": {
+          const input = diaryPatchInputSchema.parse(payload);
+          return serviceEntityDiary.serviceDiaryPatch(deps.runtime.runtimeDeps(), input);
+        }
+        case "diary.delete": {
+          const input = diaryDeleteInputSchema.parse(payload);
+          return serviceEntityDiary.serviceDiaryDelete(deps.runtime.runtimeDeps(), input);
+        }
+        case "diary.get": {
+          const input = diaryGetInputSchema.parse(payload);
+          return serviceEntityDiary.serviceDiaryGet(deps.runtime.runtimeDeps(), input);
+        }
+        case "diary.search": {
+          const input = diarySearchInputSchema.parse(payload);
+          return serviceEntityDiary.serviceDiarySearch(deps.runtime.runtimeDeps(), input);
         }
         case "emailaccount.list": {
           emailAccountListInputSchema.parse(payload);

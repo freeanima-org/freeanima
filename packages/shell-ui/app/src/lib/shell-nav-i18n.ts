@@ -12,6 +12,7 @@ export function shellNavItems(): ShellNavItem[] {
     { to: "/chat", match: "/chat", label: () => m.admin_nav_chat() },
     { to: "/tasks", match: "/tasks", label: () => m.admin_nav_tasks() },
     { to: "/email", match: "/email", label: () => m.admin_nav_email() },
+    { to: "/diary", match: "/diary", label: () => m.admin_nav_diary() },
     {
       to: "/notifications",
       match: "/notifications",
@@ -32,6 +33,7 @@ export function shellMobilePrimaryNavItems(): ShellNavItem[] {
     { to: "/chat", match: "/chat", label: () => m.admin_nav_chat() },
     { to: "/tasks", match: "/tasks", label: () => m.admin_nav_tasks() },
     { to: "/email", match: "/email", label: () => m.admin_nav_email() },
+    { to: "/diary", match: "/diary", label: () => m.admin_nav_diary() },
     {
       to: "/notifications",
       match: "/notifications",

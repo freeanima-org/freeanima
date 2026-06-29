@@ -1,0 +1,15 @@
+{
+  "name": "@freeanima/capabilities-diary",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@freeanima/core": "workspace:*",
+    "@freeanima/sap-contract": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

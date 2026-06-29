@@ -118,6 +118,16 @@
         "@types/bun": "catalog:",
       },
     },
+    "capabilities/diary": {
+      "name": "@freeanima/capabilities-diary",
+      "dependencies": {
+        "@freeanima/core": "workspace:*",
+        "@freeanima/sap-contract": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "capabilities/email": {
       "name": "@freeanima/capabilities-email",
       "dependencies": {
@@ -265,6 +275,7 @@
         "@freeanima/sap-contract": "workspace:*",
         "@freeanima/satellite-chat": "workspace:*",
         "@freeanima/satellite-companion": "workspace:*",
+        "@freeanima/satellite-diary": "workspace:*",
         "@freeanima/satellite-email": "workspace:*",
         "@freeanima/satellite-sdk": "workspace:*",
         "@freeanima/satellite-task": "workspace:*",
@@ -292,6 +303,7 @@
         "@elysiajs/eden": "^1.4.9",
         "@elysiajs/static": "^1.4.10",
         "@freeanima/capabilities-acp": "workspace:*",
+        "@freeanima/capabilities-diary": "workspace:*",
         "@freeanima/capabilities-email": "workspace:*",
         "@freeanima/capabilities-identity": "workspace:*",
         "@freeanima/capabilities-mcp-client": "workspace:*",
@@ -452,6 +464,19 @@
         "tailwindcss": "catalog:",
         "typescript": "catalog:",
         "vite": "catalog:",
+      },
+    },
+    "satellites/diary": {
+      "name": "@freeanima/satellite-diary",
+      "dependencies": {
+        "@freeanima/sap-contract": "workspace:*",
+        "@freeanima/satellite-sdk": "workspace:*",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+      },
+      "devDependencies": {
+        "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
       },
     },
     "satellites/email": {
@@ -868,6 +893,8 @@
 
     "@freeanima/capabilities-acp": ["@freeanima/capabilities-acp@workspace:capabilities/acp"],
 
+    "@freeanima/capabilities-diary": ["@freeanima/capabilities-diary@workspace:capabilities/diary"],
+
     "@freeanima/capabilities-email": ["@freeanima/capabilities-email@workspace:capabilities/email"],
 
     "@freeanima/capabilities-identity": ["@freeanima/capabilities-identity@workspace:capabilities/identity"],
@@ -903,6 +930,8 @@
     "@freeanima/satellite-chat": ["@freeanima/satellite-chat@workspace:satellites/chat"],
 
     "@freeanima/satellite-companion": ["@freeanima/satellite-companion@workspace:satellites/companion"],
+
+    "@freeanima/satellite-diary": ["@freeanima/satellite-diary@workspace:satellites/diary"],
 
     "@freeanima/satellite-email": ["@freeanima/satellite-email@workspace:satellites/email"],
 

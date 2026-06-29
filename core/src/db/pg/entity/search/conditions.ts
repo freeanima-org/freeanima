@@ -4,6 +4,8 @@ import {
   EMAIL_MESSAGE_COMPONENT,
   EMAIL_THREAD_COMPONENT,
   entities,
+  DIARY_ENTRY_COMPONENT,
+  parseDiaryEntrySearchFilters,
   parseEmailAccountSearchFilters,
   parseEmailMessageSearchFilters,
   parseEmailThreadSearchFilters,
@@ -78,6 +80,28 @@ function buildTaskItemBodyConditions(
   if (filters.due_after) {
     conditions.push(
       sql`(${entities.body}->>'due_at')::timestamptz >= ${filters.due_after}::timestamptz`,
+    );
+  }
+  return conditions;
+}
+
+function buildDiaryEntryBodyConditions(
+  filters: ReturnType<typeof parseDiaryEntrySearchFilters>,
+): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.tags?.length) {
+    for (const tag of filters.tags) {
+      conditions.push(sql`${entities.body}->'tags' ? ${tag}`);
+    }
+  }
+  if (filters.entry_after) {
+    conditions.push(
+      sql`(${entities.body}->>'entry_at')::timestamptz >= ${filters.entry_after}::timestamptz`,
+    );
+  }
+  if (filters.entry_before) {
+    conditions.push(
+      sql`(${entities.body}->>'entry_at')::timestamptz <= ${filters.entry_before}::timestamptz`,
     );
   }
   return conditions;
@@ -166,6 +190,9 @@ export function buildComponentFilterConditions(opts: EntitySearchOpts): SQL[] {
   const component = opts.primary_component ?? opts.component;
   if (component === TASK_ITEM_COMPONENT) {
     return buildTaskItemBodyConditions(parseTaskItemSearchFilters(filters));
+  }
+  if (component === DIARY_ENTRY_COMPONENT) {
+    return buildDiaryEntryBodyConditions(parseDiaryEntrySearchFilters(filters));
   }
   if (component === EMAIL_ACCOUNT_COMPONENT) {
     return buildEmailAccountBodyConditions(parseEmailAccountSearchFilters(filters));

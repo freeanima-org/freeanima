@@ -120,6 +120,7 @@ function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
         root === "satellite-sdk" ||
         root === "satellite-chat" ||
         root === "satellite-task" ||
+        root === "satellite-diary" ||
         root === "satellite-companion" ||
         root === "satellite-email" ||
         root === "admin-frontend" ||
