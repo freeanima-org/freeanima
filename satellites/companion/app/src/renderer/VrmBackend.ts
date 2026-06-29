@@ -26,7 +26,7 @@ function attachLookAtQuaternionProxy(vrm: VRM): void {
   if (!vrm.lookAt) return;
   if (vrm.scene.getObjectByName(LOOK_AT_PROXY_NAME)) return;
   const proxy = new VRMLookAtQuaternionProxy(vrm.lookAt);
-  proxy.name = LOOK_AT_PROXY_NAME;
+  (proxy as unknown as THREE.Object3D).name = LOOK_AT_PROXY_NAME;
   vrm.scene.add(proxy);
 }
 
