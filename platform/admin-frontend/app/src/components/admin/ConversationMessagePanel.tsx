@@ -1,6 +1,6 @@
 import { marked } from "marked";
 import { useMemo } from "react";
-import type { DisplayItem } from "@freeanima/admin-api/api";
+import type { DisplayItem } from "@freeanima/admin-contract/api";
 import { m } from "@admin/lib/i18n.ts";
 import { ToolBlockBubble } from "./ToolBlockBubble.tsx";
 

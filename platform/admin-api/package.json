@@ -15,6 +15,7 @@
     "./date-json": "./date-json.ts"
   },
   "dependencies": {
+    "@freeanima/admin-contract": "workspace:*",
     "@freeanima/capabilities-acp": "workspace:*",
     "@freeanima/capabilities-identity": "workspace:*",
     "@freeanima/capabilities-mcp-client": "workspace:*",

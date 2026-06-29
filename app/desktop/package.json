@@ -9,11 +9,12 @@
   "scripts": {
     "dev:electron": "bun dev-electron.ts",
     "build:electron": "bun build-electron.ts",
+    "dev:windows": "bun build-electron.ts --platform win",
+    "package:windows": "DESKTOP_SHELL_BUILD_PROFILE=release bun build-electron.ts --platform win",
     "build:windows": "bun build-electron.ts --platform win",
     "build:windows:installer": "DESKTOP_SHELL_BUILD_PROFILE=release bun build-electron.ts --platform win"
   },
   "dependencies": {
-    "@freeanima/admin-frontend": "workspace:*",
     "@freeanima/sap-contract": "workspace:*",
     "@freeanima/satellite-companion": "workspace:*",
     "@freeanima/satellite-sdk": "workspace:*",

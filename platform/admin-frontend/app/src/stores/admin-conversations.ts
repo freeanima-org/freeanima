@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { DisplayItem, ConversationListItem } from "@freeanima/admin-api/api";
+import type { DisplayItem, ConversationListItem } from "@freeanima/admin-contract/api";
 import { getConversationInfo, getStoredMessages, listConversations } from "@admin/lib/api.ts";
 import { logCaughtError } from "@admin/lib/log-caught-error.ts";
 

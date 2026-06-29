@@ -8,6 +8,7 @@ Workspace package names reflect the five-layer model:
 | Capability pack | `@freeanima/capabilities-{slug}` | `capabilities-memory`, `capabilities-tools`                            |
 | Entry           | `@freeanima/cli`                 | CLI only                                                               |
 | Shell UI        | `@freeanima/shell-ui`            | 桌面/移动统一壳层 SPA；统一设置窗 registry 与契约（`src/settings.ts`） |
+| Admin wire      | `@freeanima/admin-contract`      | Admin Hub wire 类型与边界工具（`platform/admin-contract/`）            |
 
 ## Valid layer packages
 

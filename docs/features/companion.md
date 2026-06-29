@@ -93,12 +93,17 @@ bun install
 bun dev:electron
 ```
 
-打包：
+打包（Linux 交叉打 Windows）：
 
 ```bash
-cd app/desktop
-bun run build:windows:installer   # Windows NSIS
+# 日常：便携目录 win-unpacked（约 20s，拷到 Windows 直接运行 exe）
+bun run dev:windows
+
+# 发安装包 / 测安装流程（NSIS，约 2min+）
+bun run package:windows
 ```
+
+也可在 `app/desktop` 内：`bun run dev:windows` / `bun run package:windows`。fast 路径默认保留 `vendor/` 与 `release/` 以加速二次构建；全量清理加 `DESKTOP_SHELL_CLEAN=1`。
 
 环境变量：
 

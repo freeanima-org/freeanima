@@ -1,13 +1,13 @@
 import { treaty, type Treaty } from "@elysiajs/eden";
-import type { FridgeMagnetsResponse, ServiceStatus } from "@freeanima/admin-api/api";
+import type { FridgeMagnetsResponse, ServiceStatus } from "@freeanima/admin-contract/api";
 import {
   readOfflineCache,
   resolveCacheScope,
   writeOfflineCache,
 } from "@freeanima/satellite-sdk/offline-cache";
-import type { App } from "@freeanima/admin-api/elysia";
+import type { App } from "@freeanima/admin-contract/elysia";
 import { shouldAttachRemoteAuth } from "@freeanima/satellite-sdk/remote-auth";
-import { reviveDates } from "@freeanima/admin-api/date-json";
+import { reviveDates } from "@freeanima/admin-contract/date-json";
 import { m } from "./i18n.ts";
 import { translateApiErrorValue } from "./api-errors.ts";
 import { apiPath } from "./api-path.ts";
@@ -459,7 +459,7 @@ export async function getCredentialDetail(path: string) {
   return unwrap(resolveApiClient().api.credentials.detail.get({ query: { path } }));
 }
 
-export type EntityRow = import("@freeanima/admin-api/api").EntityRow;
+export type EntityRow = import("@freeanima/admin-contract/api").EntityRow;
 
 type EntityListResponse = { items: EntityRow[]; total: number };
 

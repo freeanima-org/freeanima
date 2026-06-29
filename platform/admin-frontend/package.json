@@ -11,7 +11,7 @@
     "./styles.css": "./app/src/styles.css"
   },
   "dependencies": {
-    "@freeanima/admin-api": "workspace:*",
+    "@freeanima/admin-contract": "workspace:*",
     "@freeanima/shell-ui": "workspace:*",
     "@freeanima/satellite-sdk": "workspace:*",
     "@elysiajs/eden": "^1.4.9",

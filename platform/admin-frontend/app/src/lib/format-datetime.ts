@@ -1,4 +1,7 @@
-import { formatCstDisplay, type FormatCstDisplayOpts } from "@freeanima/admin-api/display-util";
+import {
+  formatCstDisplay,
+  type FormatCstDisplayOpts,
+} from "@freeanima/admin-contract/display-util";
 
 const EMPTY = "—";
 

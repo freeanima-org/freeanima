@@ -254,15 +254,20 @@ export async function buildDesktopShellElectron(opts: BuildElectronOptions = {})
   const profile = opts.profile ?? resolveProfile();
   const minify = profile === "release";
   const platform = opts.platform ?? process.platform;
+  const fullClean = profile === "release" || process.env.DESKTOP_SHELL_CLEAN?.trim() === "1";
 
   console.log(`[desktop-shell] build profile=${profile} platform=${platform}`);
   cleanCompanionBuildArtifacts();
-  cleanVendorDir();
+  if (fullClean) {
+    cleanVendorDir();
+  }
   const sourcemap = profile !== "release";
   await buildVendorAssets({ minify, sourcemap });
   await bundleElectronMain(sourcemap);
   stageFbxBinary(platform);
-  cleanReleaseDir();
+  if (fullClean) {
+    cleanReleaseDir();
+  }
 
   const version = resolveBuildVersion(opts.version);
   runElectronBuilderViaNode(buildElectronBuilderOptions(platform, profile, version));

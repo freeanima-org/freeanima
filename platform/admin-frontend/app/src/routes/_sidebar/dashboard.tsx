@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import type { DependencyStatus, ServiceStatus } from "@freeanima/admin-api/api";
+import type { DependencyStatus, ServiceStatus } from "@freeanima/admin-contract/api";
 import { useState } from "react";
 import { getStatus, restartService } from "@admin/lib/api.ts";
 import { m } from "@admin/lib/i18n.ts";
