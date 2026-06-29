@@ -37,6 +37,10 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: ./.github/actions/setup-bun
       - uses: ./.github/actions/setup-anima-home
+      - name: Install gettext and po4a
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext po4a
       - run: bun run typecheck
       - run: bun run lint
       - run: bun run dep-check
