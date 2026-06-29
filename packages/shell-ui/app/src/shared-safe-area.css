@@ -17,3 +17,48 @@
     padding-right: var(--sar);
   }
 }
+
+/** drawer / overlay：不依赖断点，原生壳宽屏也保持 fixed */
+.safe-fixed-overlay {
+  position: fixed;
+  top: var(--sat);
+  right: var(--sar);
+  bottom: var(--sab);
+  left: var(--sal);
+}
+
+.safe-fixed-sidebar {
+  position: fixed;
+  top: var(--sat);
+  bottom: var(--sab);
+  left: var(--sal);
+}
+
+/** ListDetailLayout drawer：不透明面板 + 半透明遮罩（不依赖 Tailwind 扫描 satellite-sdk） */
+.list-detail-drawer-overlay {
+  position: fixed;
+  top: var(--sat);
+  right: var(--sar);
+  bottom: var(--sab);
+  left: var(--sal);
+  z-index: 30;
+  background: rgb(0 0 0 / 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.list-detail-drawer-panel {
+  position: fixed;
+  top: var(--sat);
+  bottom: var(--sab);
+  left: var(--sal);
+  z-index: 40;
+  display: flex;
+  width: min(85vw, 16rem);
+  min-height: 0;
+  flex-direction: column;
+  flex-shrink: 0;
+  border-right: 1px solid color-mix(in oklab, var(--color-base-content) 15%, transparent);
+  background-color: var(--color-base-100, oklch(var(--b1)));
+  box-shadow: 4px 0 24px rgb(0 0 0 / 0.25);
+}

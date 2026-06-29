@@ -13,9 +13,9 @@ import {
   subscribeConversationEvents,
 } from "@chat/lib/api.ts";
 import type { SapConnectionState } from "@freeanima/sap-contract";
+import { ListDetailLayout, useDrawerNav } from "@freeanima/satellite-sdk/layout";
 import { getAppLocale, initAppLocale, m, toggleAppLocale } from "@chat/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@chat/lib/input-draft.ts";
-import { useMobileLayout } from "@chat/lib/layout.ts";
 import {
   getSapDirectClient,
   reconnectSap,
@@ -124,8 +124,7 @@ export function ChatApp() {
   const [fridgeLoading, setFridgeLoading] = useState(false);
   const pendingRecoveryKeyRef = useRef<string | null>(null);
   const nativeShell = Boolean(getSatelliteShell()?.isNativeShell);
-  const mobileLayout = useMobileLayout();
-  const useDrawerNav = nativeShell || mobileLayout;
+  const drawerNav = useDrawerNav();
   const keyboardInset = useKeyboardInset(nativeShell);
 
   const streamVisible = streaming && streamingConversationId === currentId;
@@ -682,7 +681,7 @@ export function ChatApp() {
       <header className="shrink-0 flex items-center gap-2 px-3 py-2 border-b border-base-300 bg-base-200">
         <button
           type="button"
-          className={`btn btn-ghost btn-sm btn-square ${useDrawerNav ? "" : "hidden"}`}
+          className={`btn btn-ghost btn-sm btn-square ${drawerNav ? "" : "hidden"}`}
           onClick={() => setSidebarOpen((v) => !v)}
         >
           ☰
@@ -691,7 +690,7 @@ export function ChatApp() {
         <span className="flex-1" />
         <button
           type="button"
-          className={`btn btn-primary btn-xs ${useDrawerNav ? "" : "hidden"}`}
+          className={`btn btn-primary btn-xs ${drawerNav ? "" : "hidden"}`}
           onClick={startConversation}
         >
           {m.admin_common_new_conversation()}
@@ -714,265 +713,257 @@ export function ChatApp() {
         </button>
       </header>
 
-      <div className="flex flex-1 min-h-0 relative">
-        {sidebarOpen && useDrawerNav ? (
-          <div
-            className="safe-fixed-overlay z-30 bg-black/50"
-            onClick={() => setSidebarOpen(false)}
-          />
+      <ListDetailLayout
+        detailTitle={headerTitle}
+        detailHeaderPlacement="none"
+        showDetailHeader={false}
+        showListHeader={false}
+        listWidthClass="w-64"
+        listAsideClassName="border-base-300 bg-base-200/30"
+        listOpen={sidebarOpen}
+        onListOpenChange={setSidebarOpen}
+        list={() => (
+          <>
+            <div className="shrink-0 space-y-2 p-2">
+              <button
+                type="button"
+                className="btn btn-primary btn-sm w-full"
+                onClick={() => void newConversation()}
+              >
+                {m.admin_common_new_conversation()}
+              </button>
+              <label className="text-base-content/70 flex cursor-pointer select-none items-center gap-2 px-1 text-xs">
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-xs"
+                  checked={showArchived}
+                  onChange={toggleShowArchived}
+                />
+                {m.chat_show_archived()}
+              </label>
+            </div>
+            <div className="flex-1 space-y-1 overflow-y-auto px-2 py-1">
+              {activeConversations.map((s) => renderConversationItem(s))}
+              {showArchived && archivedConversations.length > 0 ? (
+                <div className="border-base-300/60 mt-2 space-y-1 border-t pt-2">
+                  <div className="text-base-content/50 px-1 text-[11px] font-medium tracking-wide uppercase">
+                    {m.chat_archived_section()}
+                  </div>
+                  {archivedConversations.map((s) => renderConversationItem(s, true))}
+                </div>
+              ) : null}
+            </div>
+          </>
+        )}
+      >
+        {acpDock ? (
+          <div className="shrink-0 px-4 pt-3">
+            <AcpProgressDock dock={acpDock} />
+          </div>
         ) : null}
 
-        <aside
-          className={[
-            "shrink-0 w-64 flex flex-col border-r border-base-300 bg-base-200/30 min-h-0",
-            useDrawerNav
-              ? sidebarOpen
-                ? "safe-fixed-sidebar z-40 flex"
-                : "hidden"
-              : "relative flex",
-          ].join(" ")}
-        >
-          <div className="p-2 space-y-2">
-            <button
-              type="button"
-              className="btn btn-primary btn-sm w-full"
-              onClick={() => void newConversation()}
-            >
-              {m.admin_common_new_conversation()}
-            </button>
-            <label className="flex items-center gap-2 px-1 text-xs text-base-content/70 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                className="checkbox checkbox-xs"
-                checked={showArchived}
-                onChange={toggleShowArchived}
-              />
-              {m.chat_show_archived()}
-            </label>
-          </div>
-          <div className="flex-1 overflow-y-auto px-2 py-1 space-y-1">
-            {activeConversations.map((s) => renderConversationItem(s))}
-            {showArchived && archivedConversations.length > 0 ? (
-              <div className="pt-2 mt-2 border-t border-base-300/60 space-y-1">
-                <div className="px-1 text-[11px] font-medium text-base-content/50 uppercase tracking-wide">
-                  {m.chat_archived_section()}
-                </div>
-                {archivedConversations.map((s) => renderConversationItem(s, true))}
-              </div>
-            ) : null}
-          </div>
-        </aside>
-
-        <main className="flex-1 min-w-0 flex flex-col min-h-0">
-          {acpDock ? (
-            <div className="shrink-0 px-4 pt-3">
-              <AcpProgressDock dock={acpDock} />
+        <div ref={msgAreaRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+          {!currentId ? (
+            <div className="flex flex-col items-center justify-center h-full gap-3 text-base-content/40 text-sm">
+              <p>{m.admin_chat_select_conversation()}</p>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                disabled={sapDisconnected}
+                onClick={startConversation}
+              >
+                {m.admin_common_new_conversation()}
+              </button>
+            </div>
+          ) : messagesLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <span className="loading loading-spinner loading-md" />
+            </div>
+          ) : display.length === 0 && !streamVisible && !recovering ? (
+            <div className="flex items-center justify-center h-full text-base-content/40 text-sm">
+              {m.admin_chat_send_first_message()}
             </div>
           ) : null}
 
-          <div ref={msgAreaRef} className="flex-1 overflow-y-auto p-4 space-y-4">
-            {!currentId ? (
-              <div className="flex flex-col items-center justify-center h-full gap-3 text-base-content/40 text-sm">
-                <p>{m.admin_chat_select_conversation()}</p>
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
-                  disabled={sapDisconnected}
-                  onClick={startConversation}
-                >
-                  {m.admin_common_new_conversation()}
-                </button>
-              </div>
-            ) : messagesLoading ? (
-              <div className="flex items-center justify-center h-full">
-                <span className="loading loading-spinner loading-md" />
-              </div>
-            ) : display.length === 0 && !streamVisible && !recovering ? (
-              <div className="flex items-center justify-center h-full text-base-content/40 text-sm">
-                {m.admin_chat_send_first_message()}
-              </div>
-            ) : null}
-
-            {display.map((item, i) => {
-              if (item.type === "message" && item.role === "user") {
-                return (
-                  <div key={`d${i}`} className="chat chat-end">
-                    <div className="chat-bubble chat-bubble-primary whitespace-pre-wrap">
-                      {item.content}
-                    </div>
+          {display.map((item, i) => {
+            if (item.type === "message" && item.role === "user") {
+              return (
+                <div key={`d${i}`} className="chat chat-end">
+                  <div className="chat-bubble chat-bubble-primary whitespace-pre-wrap">
+                    {item.content}
                   </div>
-                );
-              }
-              if (item.type === "message" && item.role === "assistant") {
-                return (
-                  <div key={`d${i}`} className="chat chat-start">
-                    <div className="chat-bubble">
-                      <div
-                        className="md-content"
-                        dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
-                      />
-                    </div>
+                </div>
+              );
+            }
+            if (item.type === "message" && item.role === "assistant") {
+              return (
+                <div key={`d${i}`} className="chat chat-start">
+                  <div className="chat-bubble">
+                    <div
+                      className="md-content"
+                      dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
+                    />
                   </div>
-                );
-              }
-              if (item.type === "tool_block") {
-                return (
-                  <div key={`d${i}`} className="chat chat-start max-w-full">
-                    <ToolBlockBubble calls={item.calls} />
+                </div>
+              );
+            }
+            if (item.type === "tool_block") {
+              return (
+                <div key={`d${i}`} className="chat chat-start max-w-full">
+                  <ToolBlockBubble calls={item.calls} />
+                </div>
+              );
+            }
+            return null;
+          })}
+
+          {clarifyPending ? (
+            <div className="alert alert-info shadow-sm">
+              <div className="w-full space-y-2">
+                <p className="font-medium">{m.admin_chat_clarify_hint()}</p>
+                {clarifyPending.items.map((item, ci) => (
+                  <div key={ci} className="text-sm">
+                    <p>
+                      {ci + 1}. {item.question}
+                    </p>
+                    {item.choices?.length ? (
+                      <ul className="list-disc list-inside ml-2 text-base-content/70">
+                        {item.choices.map((choice, chi) => (
+                          <li key={chi}>{choice}</li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </div>
-                );
-              }
-              return null;
-            })}
-
-            {clarifyPending ? (
-              <div className="alert alert-info shadow-sm">
-                <div className="w-full space-y-2">
-                  <p className="font-medium">{m.admin_chat_clarify_hint()}</p>
-                  {clarifyPending.items.map((item, ci) => (
-                    <div key={ci} className="text-sm">
-                      <p>
-                        {ci + 1}. {item.question}
-                      </p>
-                      {item.choices?.length ? (
-                        <ul className="list-disc list-inside ml-2 text-base-content/70">
-                          {item.choices.map((choice, chi) => (
-                            <li key={chi}>{choice}</li>
-                          ))}
-                        </ul>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {streamVisible && streamText ? (
-              <div className="chat chat-start">
-                <div className="chat-bubble">
-                  <div
-                    className="md-content"
-                    dangerouslySetInnerHTML={{ __html: renderMd(streamText) }}
-                  />
-                  <span className="loading loading-dots loading-xs" />
-                </div>
-              </div>
-            ) : null}
-
-            {recovering ? (
-              <div className="chat chat-start">
-                <div className="chat-bubble text-base-content/60 text-sm flex items-center gap-2">
-                  <span className="loading loading-spinner loading-xs" />
-                  {m.admin_message_waiting_result()}
-                </div>
-              </div>
-            ) : null}
-          </div>
-
-          <FridgeMagnetInjectPreview
-            injectText={fridgeData.inject_text}
-            magnetCount={fridgeData.magnets.length}
-            redisConfigured={fridgeData.redis_configured}
-            loading={fridgeLoading}
-            onRefresh={() => void refreshFridgeMagnets()}
-          />
-
-          <div
-            className="border-t border-base-300 p-4 bg-base-100 relative chat-compose"
-            style={keyboardInset > 0 ? { transform: `translateY(-${keyboardInset}px)` } : undefined}
-          >
-            {messageQueue.length > 0 ? (
-              <ul className="mb-2 space-y-1">
-                {messageQueue.map((item) => (
-                  <li
-                    key={item.id}
-                    className="flex items-center gap-2 text-sm bg-base-200/60 rounded-lg px-2 py-1.5"
-                  >
-                    <span className="flex-1 truncate text-base-content/80">{item.text}</span>
-                    <button
-                      type="button"
-                      className="btn btn-xs btn-primary shrink-0"
-                      onClick={() => void sendQueuedNow(item.id)}
-                    >
-                      {m.admin_chat_queue_send_now()}
-                    </button>
-                  </li>
                 ))}
-              </ul>
-            ) : null}
-            <form
-              className="flex gap-2 items-end"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (streamVisible) {
-                  void stopStreaming();
-                } else {
-                  void sendMessage();
-                }
-              }}
-            >
-              <div className="flex-1 relative">
-                {showCmdMenu ? (
-                  <ul className="absolute bottom-full left-0 right-0 mb-1 max-h-48 overflow-y-auto rounded-lg border border-base-300 bg-base-100 shadow-lg z-10">
-                    {filteredCommands.map((cmd, i) => (
-                      <li
-                        key={cmd.name}
-                        className={[
-                          "px-3 py-2 text-sm cursor-pointer flex items-baseline gap-2 hover:bg-base-200",
-                          i === selectedCmdIdx ? "bg-primary/15" : "",
-                        ].join(" ")}
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          applyCommand(cmd);
-                        }}
-                      >
-                        <span className="font-mono font-medium shrink-0">/{cmd.name}</span>
-                        <span className="text-xs text-base-content/60 truncate">
-                          {cmd.description}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-                <textarea
-                  ref={msgInputRef}
-                  value={inputText}
-                  onChange={(e) => {
-                    const next = e.target.value;
-                    setInputText(next);
-                    saveInputDraft(currentId, next);
-                    setSelectedCmdIdx(0);
-                    resizeInput();
-                  }}
-                  rows={1}
-                  className="textarea textarea-bordered w-full min-h-[2.75rem] max-h-48 resize-none leading-normal py-2.5"
-                  placeholder={m.admin_chat_message_placeholder()}
-                  disabled={sapDisconnected}
-                  onFocus={() => {
-                    requestAnimationFrame(() => {
-                      msgInputRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-                    });
-                  }}
-                  onKeyDown={onInputKeydown}
-                />
               </div>
-              {streamVisible ? (
-                <button type="submit" className="btn btn-error" disabled={sapDisconnected}>
-                  {m.admin_common_stop()}
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={!inputText.trim() || sapDisconnected}
+            </div>
+          ) : null}
+
+          {streamVisible && streamText ? (
+            <div className="chat chat-start">
+              <div className="chat-bubble">
+                <div
+                  className="md-content"
+                  dangerouslySetInnerHTML={{ __html: renderMd(streamText) }}
+                />
+                <span className="loading loading-dots loading-xs" />
+              </div>
+            </div>
+          ) : null}
+
+          {recovering ? (
+            <div className="chat chat-start">
+              <div className="chat-bubble text-base-content/60 text-sm flex items-center gap-2">
+                <span className="loading loading-spinner loading-xs" />
+                {m.admin_message_waiting_result()}
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <FridgeMagnetInjectPreview
+          injectText={fridgeData.inject_text}
+          magnetCount={fridgeData.magnets.length}
+          redisConfigured={fridgeData.redis_configured}
+          loading={fridgeLoading}
+          onRefresh={() => void refreshFridgeMagnets()}
+        />
+
+        <div
+          className="border-t border-base-300 p-4 bg-base-100 relative chat-compose"
+          style={keyboardInset > 0 ? { transform: `translateY(-${keyboardInset}px)` } : undefined}
+        >
+          {messageQueue.length > 0 ? (
+            <ul className="mb-2 space-y-1">
+              {messageQueue.map((item) => (
+                <li
+                  key={item.id}
+                  className="flex items-center gap-2 text-sm bg-base-200/60 rounded-lg px-2 py-1.5"
                 >
-                  {m.admin_common_send()}
-                </button>
-              )}
-            </form>
-          </div>
-        </main>
-      </div>
+                  <span className="flex-1 truncate text-base-content/80">{item.text}</span>
+                  <button
+                    type="button"
+                    className="btn btn-xs btn-primary shrink-0"
+                    onClick={() => void sendQueuedNow(item.id)}
+                  >
+                    {m.admin_chat_queue_send_now()}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <form
+            className="flex gap-2 items-end"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (streamVisible) {
+                void stopStreaming();
+              } else {
+                void sendMessage();
+              }
+            }}
+          >
+            <div className="flex-1 relative">
+              {showCmdMenu ? (
+                <ul className="absolute bottom-full left-0 right-0 mb-1 max-h-48 overflow-y-auto rounded-lg border border-base-300 bg-base-100 shadow-lg z-10">
+                  {filteredCommands.map((cmd, i) => (
+                    <li
+                      key={cmd.name}
+                      className={[
+                        "px-3 py-2 text-sm cursor-pointer flex items-baseline gap-2 hover:bg-base-200",
+                        i === selectedCmdIdx ? "bg-primary/15" : "",
+                      ].join(" ")}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        applyCommand(cmd);
+                      }}
+                    >
+                      <span className="font-mono font-medium shrink-0">/{cmd.name}</span>
+                      <span className="text-xs text-base-content/60 truncate">
+                        {cmd.description}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              <textarea
+                ref={msgInputRef}
+                value={inputText}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setInputText(next);
+                  saveInputDraft(currentId, next);
+                  setSelectedCmdIdx(0);
+                  resizeInput();
+                }}
+                rows={1}
+                className="textarea textarea-bordered w-full min-h-[2.75rem] max-h-48 resize-none leading-normal py-2.5"
+                placeholder={m.admin_chat_message_placeholder()}
+                disabled={sapDisconnected}
+                onFocus={() => {
+                  requestAnimationFrame(() => {
+                    msgInputRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+                  });
+                }}
+                onKeyDown={onInputKeydown}
+              />
+            </div>
+            {streamVisible ? (
+              <button type="submit" className="btn btn-error" disabled={sapDisconnected}>
+                {m.admin_common_stop()}
+              </button>
+            ) : (
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={!inputText.trim() || sapDisconnected}
+              >
+                {m.admin_common_send()}
+              </button>
+            )}
+          </form>
+        </div>
+      </ListDetailLayout>
 
       {contextMenu.visible ? (
         <div

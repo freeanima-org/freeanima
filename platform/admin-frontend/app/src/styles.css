@@ -1,38 +1,8 @@
 @import "tailwindcss";
 @plugin "daisyui";
 @source "./**/*.{tsx,ts}";
+@source "../../../../packages/satellite-sdk/src/**/*.{tsx,ts}";
 @import "../../../../packages/shell-ui/app/src/shared-safe-area.css";
-
-.safe-fixed-overlay {
-  position: fixed;
-  inset: 0;
-}
-
-@media (max-width: 1023px) {
-  .safe-area-pt {
-    padding-top: var(--sat);
-  }
-  .safe-area-pb {
-    padding-bottom: var(--sab);
-  }
-  .safe-area-px {
-    padding-left: var(--sal);
-    padding-right: var(--sar);
-  }
-  .safe-fixed-overlay {
-    position: fixed;
-    top: var(--sat);
-    right: var(--sar);
-    bottom: var(--sab);
-    left: var(--sal);
-  }
-  .safe-fixed-sidebar {
-    position: fixed;
-    top: var(--sat);
-    bottom: var(--sab);
-    left: var(--sal);
-  }
-}
 
 /* 主内容区内边距：移动端略窄 */
 .app-main-padding {

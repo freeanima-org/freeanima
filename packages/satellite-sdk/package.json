@@ -9,7 +9,8 @@
     "./ui/acp": "./src/ui/AcpProgressDock.tsx",
     "./ui/acp-types": "./src/ui/acp-dock-types.ts",
     "./ui/use-acp-progress-dock": "./src/ui/useAcpProgressDock.ts",
-    "./ui/fridge-magnet": "./src/ui/FridgeMagnetInjectPreview.tsx"
+    "./ui/fridge-magnet": "./src/ui/FridgeMagnetInjectPreview.tsx",
+    "./layout": "./src/layout/index.ts"
   },
   "dependencies": {
     "react": "catalog:",

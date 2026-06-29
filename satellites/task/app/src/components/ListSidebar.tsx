@@ -1,10 +1,10 @@
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useDrawerNav } from "@freeanima/satellite-sdk/layout";
 import type { MouseEvent, RefObject } from "react";
 
 import { listDndId } from "../lib/dnd-ids.ts";
 import type { TaskListRow } from "../lib/api.ts";
-import { useMobileLayout } from "../lib/platform.ts";
 import { useTaskDndUi } from "./TaskDndRoot.tsx";
 
 type ListSidebarProps = {
@@ -144,22 +144,21 @@ export function ListSidebar({
   onOpenListContextMenu,
   onStartRename,
 }: ListSidebarProps) {
-  const mobileLayout = useMobileLayout();
+  const useDrawer = useDrawerNav();
   const { draggingTask } = useTaskDndUi();
 
   return (
-    <>
-      {draggingTask && mobileLayout ? (
-        <div className="border-base-300 bg-base-200/80 text-base-content/70 border-b px-3 py-1.5 text-xs lg:hidden">
+    <div className="flex min-h-0 flex-1 flex-col">
+      {draggingTask && useDrawer ? (
+        <div className="border-base-300 bg-base-200/80 text-base-content/70 shrink-0 border-b px-3 py-1.5 text-xs">
           拖放到清单以移动任务
         </div>
       ) : null}
-      <div className="border-base-300 hidden border-b p-3 lg:block">
-        <h2 className="text-sm font-semibold">清单</h2>
-        {draggingTask ? (
-          <p className="text-base-content/50 mt-1 text-xs">拖到清单以移动任务</p>
-        ) : null}
-      </div>
+      {draggingTask && !useDrawer ? (
+        <div className="border-base-300 text-base-content/50 shrink-0 border-b px-3 pb-2 text-xs">
+          拖到清单以移动任务
+        </div>
+      ) : null}
       <SortableContext
         items={lists.map((l) => listDndId(l.id))}
         strategy={verticalListSortingStrategy}
@@ -185,7 +184,7 @@ export function ListSidebar({
           ))}
         </div>
       </SortableContext>
-      <div className="border-base-300 flex gap-1 border-t p-2">
+      <div className="border-base-300 flex shrink-0 gap-1 border-t p-2">
         <input
           className="input input-sm input-bordered min-w-0 flex-1"
           placeholder="新清单"
@@ -199,6 +198,6 @@ export function ListSidebar({
           +
         </button>
       </div>
-    </>
+    </div>
   );
 }
