@@ -67,12 +67,12 @@ Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-backed
 
 ### Platform UI layering
 
-| Layer              | Platform-native?             | Location                                                       | 数据通道        |
-| ------------------ | ---------------------------- | -------------------------------------------------------------- | --------------- |
-| Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring             | preload/IPC     |
-| Shared SPA shell   | Branch on `detectPlatform()` | `packages/shell-ui`                                            | 无 SAP wire     |
-| hub-rest 前端      | Admin embed                  | `platform/admin-frontend` + `ui-kit` + `shell-sdk`             | Eden `/api`     |
-| SAP 产品面         | Satellite apps               | `satellites/*` + `sap-contract` + `ui-kit` + `shell-sdk`       | SAP `/sap/v1`   |
+| Layer              | Platform-native?             | Location                                                 | 数据通道      |
+| ------------------ | ---------------------------- | -------------------------------------------------------- | ------------- |
+| Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring       | preload/IPC   |
+| Shared SPA shell   | Branch on `detectPlatform()` | `packages/shell-ui`                                      | 无 SAP wire   |
+| hub-rest 前端      | Admin embed                  | `platform/admin-frontend` + `ui-kit` + `shell-sdk`       | Eden `/api`   |
+| SAP 产品面         | Satellite apps               | `satellites/*` + `sap-contract` + `ui-kit` + `shell-sdk` | SAP `/sap/v1` |
 
 Nav and primary layouts **must use `detectPlatform()`** (Electron / native shell), not viewport breakpoints alone. Responsive CSS is for desktop window resize only.
 

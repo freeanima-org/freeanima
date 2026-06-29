@@ -4,18 +4,18 @@ Detailed implementation constraints for AI agents working in this repository. St
 
 **Principle maintenance**: when correcting or refining implementation constraints or agent behavior norms, update the matching topic file in this directory in the same task/PR as code — do not leave changes code-only. Product / cognitive architecture principles belong in [`docs/concepts/`](../../docs/concepts/) instead. Full triage → [`AGENTS.md` § Principle & direction maintenance](../../AGENTS.md#principle--direction-maintenance).
 
-| File                               | When to read                                                                        |
-| ---------------------------------- | ----------------------------------------------------------------------------------- |
-| [`coding.md`](coding.md)           | Editing any TypeScript; tool handlers; types / Zod / ports; PG migrations           |
-| [`drizzle-db.md`](drizzle-db.md)   | `core/src/db/pg` repository queries; ORM vs `db.execute`; `$inferSelect` row typing |
-| [`testing.md`](testing.md)         | Adding or moving tests; mock strategy; CI tiers                                     |
-| [`packages.md`](packages.md)       | New workspace package or rename (RFC #1)                                            |
-| [`code-layers.md`](code-layers.md) | Five-layer deps, composition root, Registry injection                               |
-| [`frontend-features.md`](frontend-features.md) | 前端功能原型 A/B/C、SAP vs hub-rest 通道、新功能 touch 清单           |
-| [`release.md`](release.md)         | SemVer, Conventional Commits, Release Please, npm/Docker                            |
-| [`compression.md`](compression.md) | l-point compression algorithm and module entry points                               |
-| [`i18n.md`](i18n.md)               | UI/docs i18n: Paraglide, po4a, PO workflow, site/Admin message keys                 |
-| [`docs-i18n.md`](docs-i18n.md)     | AI rules for `docs/**` authoring and `po/zh_CN/*.po` msgstr                         |
+| File                                           | When to read                                                                        |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------- |
+| [`coding.md`](coding.md)                       | Editing any TypeScript; tool handlers; types / Zod / ports; PG migrations           |
+| [`drizzle-db.md`](drizzle-db.md)               | `core/src/db/pg` repository queries; ORM vs `db.execute`; `$inferSelect` row typing |
+| [`testing.md`](testing.md)                     | Adding or moving tests; mock strategy; CI tiers                                     |
+| [`packages.md`](packages.md)                   | New workspace package or rename (RFC #1)                                            |
+| [`code-layers.md`](code-layers.md)             | Five-layer deps, composition root, Registry injection                               |
+| [`frontend-features.md`](frontend-features.md) | 前端功能原型 A/B/C、SAP vs hub-rest 通道、新功能 touch 清单                         |
+| [`release.md`](release.md)                     | SemVer, Conventional Commits, Release Please, npm/Docker                            |
+| [`compression.md`](compression.md)             | l-point compression algorithm and module entry points                               |
+| [`i18n.md`](i18n.md)                           | UI/docs i18n: Paraglide, po4a, PO workflow, site/Admin message keys                 |
+| [`docs-i18n.md`](docs-i18n.md)                 | AI rules for `docs/**` authoring and `po/zh_CN/*.po` msgstr                         |
 
 **SSOT**: dependency boundaries → [`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts); storage shapes → [`core/src/db/schema/`](../../core/src/db/schema/); ports → [`core/src/repos/ports/`](../../core/src/repos/ports/).
 
