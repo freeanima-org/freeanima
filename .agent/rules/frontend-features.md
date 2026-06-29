@@ -12,14 +12,14 @@
 
 **示例**：chat、task、email、diary、notification
 
-| 层 | 必须改 |
-|----|--------|
-| `core/db` | entity component 或专用表 + migration |
-| `capabilities-*` | `*-store.ts` |
-| `sap-contract` | `frames/<domain>.ts` + `router.ts` |
-| `platform` | `service-*` + `sap/handlers/<domain>.ts` |
-| `satellite-*` | `sap-client.ts` + `api.ts` + UI |
-| `shell-ui` | 路由 + `@freeanima/satellite-*/app`（不写 SAP） |
+| 层               | 必须改                                          |
+| ---------------- | ----------------------------------------------- |
+| `core/db`        | entity component 或专用表 + migration           |
+| `capabilities-*` | `*-store.ts`                                    |
+| `sap-contract`   | `frames/<domain>.ts` + `router.ts`              |
+| `platform`       | `service-*` + `sap/handlers/<domain>.ts`        |
+| `satellite-*`    | `sap-client.ts` + `api.ts` + UI                 |
+| `shell-ui`       | 路由 + `@freeanima/satellite-*/app`（不写 SAP） |
 
 **不要**：在 `shell-ui` 内 `import @freeanima/sap-contract`；在 capabilities 内 import platform。
 
@@ -27,10 +27,10 @@
 
 **示例**：memory、config、cron、MCP、entity worlds
 
-| 层 | 必须改 |
-|----|--------|
-| `admin-contract` | API schema |
-| `admin-api` | Elysia route |
+| 层               | 必须改                              |
+| ---------------- | ----------------------------------- |
+| `admin-contract` | API schema                          |
+| `admin-api`      | Elysia route                        |
 | `admin-frontend` | 页面（`ui-kit` + `admin-contract`） |
 
 **不要**：import `sap-contract`；新建 `satellite-*` 包。
@@ -39,9 +39,9 @@
 
 **示例**：Hub URL、remote auth、debug section
 
-| 层 | 必须改 |
-|----|--------|
-| `shell-sdk/settings` | section 注册 |
+| 层                         | 必须改             |
+| -------------------------- | ------------------ |
+| `shell-sdk/settings`       | section 注册       |
 | `app/desktop\|mobile\|web` | 原生 IPC（若需要） |
 
 ## SAP handler 模块化
@@ -55,10 +55,10 @@
 
 ## 前端包依赖速查
 
-| 包 | 允许 | 禁止 |
-|----|------|------|
-| `ui-kit` | react | sap-contract、workspace |
-| `shell-sdk` | kernel*、zod | sap-contract |
-| `shell-ui` | ui-kit、shell-sdk、satellite-*、admin-frontend | sap-contract、深路径 import satellites |
-| `admin-frontend` | admin-contract、ui-kit、shell-sdk | sap-contract、shell-ui |
-| `satellite-*` | sap-contract、shell-sdk、ui-kit | shell-ui、admin-* |
+| 包               | 允许                                            | 禁止                                   |
+| ---------------- | ----------------------------------------------- | -------------------------------------- |
+| `ui-kit`         | react                                           | sap-contract、workspace                |
+| `shell-sdk`      | kernel\*、zod                                   | sap-contract                           |
+| `shell-ui`       | ui-kit、shell-sdk、satellite-\*、admin-frontend | sap-contract、深路径 import satellites |
+| `admin-frontend` | admin-contract、ui-kit、shell-sdk               | sap-contract、shell-ui                 |
+| `satellite-*`    | sap-contract、shell-sdk、ui-kit                 | shell-ui、admin-\*                     |

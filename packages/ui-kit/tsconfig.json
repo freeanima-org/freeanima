@@ -6,5 +6,5 @@
     "types": ["bun"],
     "outDir": ".tsout"
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.css"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.css", "src/**/*.d.ts"]
 }

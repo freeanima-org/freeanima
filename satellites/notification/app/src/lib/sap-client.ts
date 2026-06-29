@@ -51,6 +51,10 @@ export async function whenSapClientReady() {
   return getSapDirectClient().whenReady();
 }
 
+export function getSapConnectionState(): SapConnectionState {
+  return connectionState;
+}
+
 export function subscribeShellConfigChanges(): () => void {
   if (typeof window === "undefined") return () => {};
   const handler = (): void => {

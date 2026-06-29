@@ -223,7 +223,11 @@ function adminFrontendViolation(relPath: string, pkg: string): string | null {
   return `platform/admin-frontend must not depend on @freeanima/${workspacePkgName(pkg)} (allowed: admin-contract, ui-kit, shell-sdk, kernel*)`;
 }
 
-function shellUiDeepImportViolation(relPath: string, line: string, lineNo: number): Violation | null {
+function shellUiDeepImportViolation(
+  relPath: string,
+  line: string,
+  lineNo: number,
+): Violation | null {
   if (!relPath.startsWith("packages/shell-ui/")) return null;
   if (isExempt(relPath)) return null;
   RELATIVE_DEEP_IMPORT_RE.lastIndex = 0;
@@ -232,7 +236,8 @@ function shellUiDeepImportViolation(relPath: string, line: string, lineNo: numbe
     file: relPath,
     line: lineNo,
     pkg: "relative-import",
-    reason: "packages/shell-ui must not deep-import satellites/ or platform/admin-frontend/app/ (use @freeanima/satellite-*/app)",
+    reason:
+      "packages/shell-ui must not deep-import satellites/ or platform/admin-frontend/app/ (use @freeanima/satellite-*/app)",
   };
 }
 
@@ -243,7 +248,8 @@ function reasonFor(layer: Layer, pkg: string): string {
 function walk(dir: string, out: string[]): void {
   for (const name of readdirSync(dir)) {
     const abs = join(dir, name);
-    if (name === "node_modules" || name === "dist" || name === "coverage" || name === ".tsout") continue;
+    if (name === "node_modules" || name === "dist" || name === "coverage" || name === ".tsout")
+      continue;
     const st = statSync(abs);
     if (st.isDirectory()) walk(abs, out);
     else if (name.endsWith(".ts") || name.endsWith(".tsx")) out.push(abs);
