@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @plugin "daisyui";
 @source "./**/*.{tsx,ts}";
+@source "../../../satellite-sdk/src/**/*.{tsx,ts}";
+@source "../../../satellites/chat/app/src/**/*.{tsx,ts}";
+@source "../../../satellites/task/app/src/**/*.{tsx,ts}";
 @import "./shared-safe-area.css";
 
 :root {
@@ -23,37 +26,6 @@ html[data-shell-ui="1"] {
 
 html[data-shell-ui="1"] body {
   overscroll-behavior-y: none;
-}
-
-.safe-fixed-overlay {
-  position: fixed;
-  inset: 0;
-}
-
-@media (max-width: 1023px) {
-  .safe-area-pt {
-    padding-top: var(--sat);
-  }
-  .safe-area-pb {
-    padding-bottom: var(--sab);
-  }
-  .safe-area-px {
-    padding-left: var(--sal);
-    padding-right: var(--sar);
-  }
-  .safe-fixed-overlay {
-    position: fixed;
-    top: var(--sat);
-    right: var(--sar);
-    bottom: var(--sab);
-    left: var(--sal);
-  }
-  .safe-fixed-sidebar {
-    position: fixed;
-    top: var(--sat);
-    bottom: var(--sab);
-    left: var(--sal);
-  }
 }
 
 .shell-module-layout .shell-top-nav {

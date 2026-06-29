@@ -1,44 +1,9 @@
 @import "tailwindcss";
 @plugin "daisyui";
 @source "./**/*.{tsx,ts}";
+@source "../../../../packages/satellite-sdk/src/**/*.{tsx,ts}";
 
-:root {
-  --sat: env(safe-area-inset-top, 0px);
-  --sar: env(safe-area-inset-right, 0px);
-  --sab: env(safe-area-inset-bottom, 0px);
-  --sal: env(safe-area-inset-left, 0px);
-}
-
-.safe-fixed-overlay {
-  position: fixed;
-  inset: 0;
-}
-
-@media (max-width: 1023px) {
-  .safe-area-pt {
-    padding-top: var(--sat);
-  }
-  .safe-area-pb {
-    padding-bottom: var(--sab);
-  }
-  .safe-area-px {
-    padding-left: var(--sal);
-    padding-right: var(--sar);
-  }
-  .safe-fixed-overlay {
-    position: fixed;
-    top: var(--sat);
-    right: var(--sar);
-    bottom: var(--sab);
-    left: var(--sal);
-  }
-  .safe-fixed-sidebar {
-    position: fixed;
-    top: var(--sat);
-    bottom: var(--sab);
-    left: var(--sal);
-  }
-}
+@import "../../../../packages/shell-ui/app/src/shared-safe-area.css";
 
 .md-content {
   line-height: 1.6;

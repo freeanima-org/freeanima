@@ -1,0 +1,46 @@
+import { afterEach, describe, expect, it } from "bun:test";
+
+import { isMobileLayoutViewport, isNativeShell, MOBILE_LAYOUT_MQ } from "./viewport.ts";
+
+const hasWindow = typeof globalThis.window !== "undefined";
+
+describe("layout viewport", () => {
+  if (!hasWindow) {
+    it.skip("需要 DOM 环境", () => {});
+    return;
+  }
+
+  const originalShell = window.satelliteShell;
+  const originalMatchMedia = window.matchMedia;
+
+  afterEach(() => {
+    window.satelliteShell = originalShell;
+    window.matchMedia = originalMatchMedia;
+  });
+
+  it("MOBILE_LAYOUT_MQ matches task/chat breakpoint", () => {
+    expect(MOBILE_LAYOUT_MQ).toBe("(max-width: 1023px)");
+  });
+
+  it("isNativeShell reads satelliteShell flag", () => {
+    window.satelliteShell = { isNativeShell: true } as typeof window.satelliteShell;
+    expect(isNativeShell()).toBe(true);
+    window.satelliteShell = undefined;
+    expect(isNativeShell()).toBe(false);
+  });
+
+  it("isMobileLayoutViewport uses matchMedia", () => {
+    window.matchMedia = ((query: string) =>
+      ({
+        matches: query.includes("1023px"),
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      }) satisfies MediaQueryList) as typeof window.matchMedia;
+    expect(isMobileLayoutViewport()).toBe(true);
+  });
+});
