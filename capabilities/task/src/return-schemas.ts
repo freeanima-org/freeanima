@@ -22,6 +22,8 @@ const taskListSchema = z.object({
   sort_order: z.number(),
   closed: z.boolean(),
   is_default: z.boolean(),
+  is_folder: z.boolean(),
+  parent_id: z.number().nullable(),
   item_count: z.number(),
 });
 
@@ -47,6 +49,8 @@ const exampleList = {
   sort_order: 0,
   closed: false,
   is_default: true,
+  is_folder: false,
+  parent_id: null,
   item_count: 1,
 };
 

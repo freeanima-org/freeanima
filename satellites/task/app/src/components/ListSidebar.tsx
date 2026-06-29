@@ -1,10 +1,24 @@
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useDrawerNav } from "@freeanima/satellite-sdk/layout";
-import type { MouseEvent, RefObject } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type MouseEvent,
+  type ReactNode,
+  type RefObject,
+} from "react";
 
 import { listDndId } from "../lib/dnd-ids.ts";
 import type { TaskListRow } from "../lib/api.ts";
+import {
+  buildListTree,
+  flattenVisibleTree,
+  readExpandedFolders,
+  writeExpandedFolders,
+  type ListTreeNode,
+} from "../lib/list-tree.ts";
 import { useTaskDndUi } from "./TaskDndRoot.tsx";
 
 type ListSidebarProps = {
@@ -12,15 +26,20 @@ type ListSidebarProps = {
   closedLists: TaskListRow[];
   showClosed: boolean;
   selectedListId: number | null;
+  selectedFolderId: number | null;
   editingListId: number | null;
   editingListName: string;
   newListName: string;
+  newFolderName: string;
   renameInputRef: RefObject<HTMLInputElement | null>;
   useActionSheet: boolean;
   onToggleShowClosed: () => void;
   onSelectList: (id: number) => void;
+  onSelectFolder: (id: number) => void;
   onCreateList: () => void;
+  onCreateFolder: () => void;
   onNewListNameChange: (value: string) => void;
+  onNewFolderNameChange: (value: string) => void;
   onEditingListNameChange: (value: string) => void;
   onCommitRename: () => void;
   onCancelRename: () => void;
@@ -29,14 +48,17 @@ type ListSidebarProps = {
   onStartRename: (list: TaskListRow) => void;
 };
 
-function SortableListRow({
-  list,
+function SortableTreeRow({
+  node,
+  expanded,
   selected,
   editing,
   editingName,
   renameInputRef,
   useActionSheet,
-  onSelect,
+  onToggleExpand,
+  onSelectList,
+  onSelectFolder,
   onEditingNameChange,
   onCommitRename,
   onCancelRename,
@@ -44,13 +66,16 @@ function SortableListRow({
   onContextMenu,
   onDoubleClickRename,
 }: {
-  list: TaskListRow;
+  node: ListTreeNode;
+  expanded: boolean;
   selected: boolean;
   editing: boolean;
   editingName: string;
   renameInputRef: RefObject<HTMLInputElement | null>;
   useActionSheet: boolean;
-  onSelect: () => void;
+  onToggleExpand: () => void;
+  onSelectList: () => void;
+  onSelectFolder: () => void;
   onEditingNameChange: (value: string) => void;
   onCommitRename: () => void;
   onCancelRename: () => void;
@@ -58,8 +83,12 @@ function SortableListRow({
   onContextMenu: (e: MouseEvent) => void;
   onDoubleClickRename?: () => void;
 }) {
-  const { draggingTask, overListId } = useTaskDndUi();
-  const isDropTarget = draggingTask && overListId === list.id;
+  const { list, depth } = node;
+  const { draggingTask, draggingList, overListId } = useTaskDndUi();
+  const isFolder = list.is_folder;
+  const isTaskDropTarget = draggingTask && overListId === list.id && !isFolder;
+  const isFolderDropTarget =
+    draggingList && overListId === list.id && isFolder && list.id !== node.list.id;
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: listDndId(list.id),
@@ -68,6 +97,7 @@ function SortableListRow({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    paddingLeft: `${8 + depth * 16}px`,
   };
 
   return (
@@ -75,14 +105,29 @@ function SortableListRow({
       ref={setNodeRef}
       style={style}
       className={[
-        "group flex min-h-11 items-center gap-0.5 rounded-lg px-1 py-1 text-sm",
+        "group flex min-h-11 items-center gap-0.5 rounded-lg py-1 pr-1 text-sm",
         selected ? "bg-primary/15 font-medium" : "hover:bg-base-200",
         isDragging ? "opacity-50" : "",
-        isDropTarget ? "ring-primary bg-primary/10 ring-2" : "",
+        isTaskDropTarget || isFolderDropTarget ? "ring-primary bg-primary/10 ring-2" : "",
       ].join(" ")}
       onContextMenu={onContextMenu}
       onDoubleClick={onDoubleClickRename}
     >
+      {isFolder ? (
+        <button
+          type="button"
+          className="text-base-content/60 flex min-h-11 min-w-6 shrink-0 items-center justify-center"
+          aria-label={expanded ? "折叠" : "展开"}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleExpand();
+          }}
+        >
+          {expanded ? "▼" : "▶"}
+        </button>
+      ) : (
+        <span className="min-w-6 shrink-0" aria-hidden />
+      )}
       <button
         type="button"
         title="拖拽排序"
@@ -106,8 +151,23 @@ function SortableListRow({
           }}
           onClick={(e) => e.stopPropagation()}
         />
+      ) : isFolder ? (
+        <button
+          type="button"
+          className="min-w-0 flex-1 truncate py-2 text-left"
+          onClick={onSelectFolder}
+        >
+          <span className="mr-1" aria-hidden>
+            📁
+          </span>
+          {list.name}
+        </button>
       ) : (
-        <button type="button" className="min-w-0 flex-1 truncate py-2 text-left" onClick={onSelect}>
+        <button
+          type="button"
+          className="min-w-0 flex-1 truncate py-2 text-left"
+          onClick={onSelectList}
+        >
           {list.name}
           <span className="text-base-content/50 ml-1 text-xs">{list.item_count}</span>
         </button>
@@ -116,7 +176,7 @@ function SortableListRow({
         <button
           type="button"
           className="btn btn-ghost btn-xs btn-square shrink-0"
-          aria-label="清单操作"
+          aria-label="操作"
           onClick={(e) => {
             e.stopPropagation();
             onOpenMenu();
@@ -131,6 +191,7 @@ function SortableListRow({
 
 function ClosedListRow({
   list,
+  depth,
   selected,
   useActionSheet,
   onSelect,
@@ -138,6 +199,7 @@ function ClosedListRow({
   onContextMenu,
 }: {
   list: TaskListRow;
+  depth: number;
   selected: boolean;
   useActionSheet: boolean;
   onSelect: () => void;
@@ -146,22 +208,35 @@ function ClosedListRow({
 }) {
   return (
     <div
+      style={{ paddingLeft: `${8 + depth * 16}px` }}
       className={[
-        "group flex min-h-11 items-center gap-0.5 rounded-lg px-1 py-1 text-sm opacity-70",
+        "group flex min-h-11 items-center gap-0.5 rounded-lg py-1 pr-1 text-sm opacity-70",
         selected ? "bg-primary/15 font-medium opacity-100" : "hover:bg-base-200",
       ].join(" ")}
       onContextMenu={onContextMenu}
     >
+      <span className="min-w-6 shrink-0" aria-hidden />
       <span className="min-w-8 shrink-0" aria-hidden />
       <button type="button" className="min-w-0 flex-1 truncate py-2 text-left" onClick={onSelect}>
-        {list.name}
-        <span className="text-base-content/50 ml-1 text-xs">{list.item_count}</span>
+        {list.is_folder ? (
+          <>
+            <span className="mr-1" aria-hidden>
+              📁
+            </span>
+            {list.name}
+          </>
+        ) : (
+          <>
+            {list.name}
+            <span className="text-base-content/50 ml-1 text-xs">{list.item_count}</span>
+          </>
+        )}
       </button>
       {useActionSheet ? (
         <button
           type="button"
           className="btn btn-ghost btn-xs btn-square shrink-0"
-          aria-label="清单操作"
+          aria-label="操作"
           onClick={(e) => {
             e.stopPropagation();
             onOpenMenu();
@@ -174,20 +249,64 @@ function ClosedListRow({
   );
 }
 
+function ClosedTreeSection({
+  closedLists,
+  selectedListId,
+  useActionSheet,
+  onSelectList,
+  onOpenListMenu,
+  onOpenListContextMenu,
+}: {
+  closedLists: TaskListRow[];
+  selectedListId: number | null;
+  useActionSheet: boolean;
+  onSelectList: (id: number) => void;
+  onOpenListMenu: (list: TaskListRow) => void;
+  onOpenListContextMenu: (e: MouseEvent, list: TaskListRow) => void;
+}) {
+  const nodes = buildListTree(closedLists);
+
+  function renderNodes(treeNodes: ListTreeNode[]): ReactNode {
+    return treeNodes.map((node) => (
+      <div key={node.list.id}>
+        <ClosedListRow
+          list={node.list}
+          depth={node.depth}
+          selected={selectedListId === node.list.id}
+          useActionSheet={useActionSheet}
+          onSelect={() => {
+            if (!node.list.is_folder) onSelectList(node.list.id);
+          }}
+          onOpenMenu={() => onOpenListMenu(node.list)}
+          onContextMenu={(e) => onOpenListContextMenu(e, node.list)}
+        />
+        {node.list.is_folder && node.children.length > 0 ? renderNodes(node.children) : null}
+      </div>
+    ));
+  }
+
+  return <>{renderNodes(nodes)}</>;
+}
+
 export function ListSidebar({
   activeLists,
   closedLists,
   showClosed,
   selectedListId,
+  selectedFolderId,
   editingListId,
   editingListName,
   newListName,
+  newFolderName,
   renameInputRef,
   useActionSheet,
   onToggleShowClosed,
   onSelectList,
+  onSelectFolder,
   onCreateList,
+  onCreateFolder,
   onNewListNameChange,
+  onNewFolderNameChange,
   onEditingListNameChange,
   onCommitRename,
   onCancelRename,
@@ -197,6 +316,28 @@ export function ListSidebar({
 }: ListSidebarProps) {
   const useDrawer = useDrawerNav();
   const { draggingTask } = useTaskDndUi();
+  const [expandedFolderIds, setExpandedFolderIds] = useState<Set<number>>(() =>
+    readExpandedFolders(),
+  );
+
+  useEffect(() => {
+    writeExpandedFolders(expandedFolderIds);
+  }, [expandedFolderIds]);
+
+  const tree = useMemo(() => buildListTree(activeLists), [activeLists]);
+  const visibleNodes = useMemo(
+    () => flattenVisibleTree(tree, expandedFolderIds),
+    [tree, expandedFolderIds],
+  );
+
+  const toggleExpand = (folderId: number) => {
+    setExpandedFolderIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(folderId)) next.delete(folderId);
+      else next.add(folderId);
+      return next;
+    });
+  };
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -211,26 +352,33 @@ export function ListSidebar({
         </div>
       ) : null}
       <SortableContext
-        items={activeLists.map((l) => listDndId(l.id))}
+        items={visibleNodes.map((n) => listDndId(n.list.id))}
         strategy={verticalListSortingStrategy}
       >
         <div className="flex-1 overflow-y-auto p-2">
-          {activeLists.map((list) => (
-            <SortableListRow
-              key={list.id}
-              list={list}
-              selected={selectedListId === list.id}
-              editing={editingListId === list.id}
+          {visibleNodes.map((node) => (
+            <SortableTreeRow
+              key={node.list.id}
+              node={node}
+              expanded={expandedFolderIds.has(node.list.id)}
+              selected={
+                node.list.is_folder
+                  ? selectedFolderId === node.list.id
+                  : selectedListId === node.list.id
+              }
+              editing={editingListId === node.list.id}
               editingName={editingListName}
               renameInputRef={renameInputRef}
               useActionSheet={useActionSheet}
-              onSelect={() => onSelectList(list.id)}
+              onToggleExpand={() => toggleExpand(node.list.id)}
+              onSelectList={() => onSelectList(node.list.id)}
+              onSelectFolder={() => onSelectFolder(node.list.id)}
               onEditingNameChange={onEditingListNameChange}
               onCommitRename={onCommitRename}
               onCancelRename={onCancelRename}
-              onOpenMenu={() => onOpenListMenu(list)}
-              onContextMenu={(e) => onOpenListContextMenu(e, list)}
-              onDoubleClickRename={useActionSheet ? undefined : () => onStartRename(list)}
+              onOpenMenu={() => onOpenListMenu(node.list)}
+              onContextMenu={(e) => onOpenListContextMenu(e, node.list)}
+              onDoubleClickRename={useActionSheet ? undefined : () => onStartRename(node.list)}
             />
           ))}
           {closedLists.length > 0 ? (
@@ -244,36 +392,49 @@ export function ListSidebar({
                 />
                 显示已归档
               </label>
-              {showClosed
-                ? closedLists.map((list) => (
-                    <ClosedListRow
-                      key={list.id}
-                      list={list}
-                      selected={selectedListId === list.id}
-                      useActionSheet={useActionSheet}
-                      onSelect={() => onSelectList(list.id)}
-                      onOpenMenu={() => onOpenListMenu(list)}
-                      onContextMenu={(e) => onOpenListContextMenu(e, list)}
-                    />
-                  ))
-                : null}
+              {showClosed ? (
+                <ClosedTreeSection
+                  closedLists={closedLists}
+                  selectedListId={selectedListId}
+                  useActionSheet={useActionSheet}
+                  onSelectList={onSelectList}
+                  onOpenListMenu={onOpenListMenu}
+                  onOpenListContextMenu={onOpenListContextMenu}
+                />
+              ) : null}
             </div>
           ) : null}
         </div>
       </SortableContext>
-      <div className="border-base-300 flex shrink-0 gap-1 border-t p-2">
-        <input
-          className="input input-sm input-bordered min-w-0 flex-1"
-          placeholder="新清单"
-          value={newListName}
-          onChange={(e) => onNewListNameChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") onCreateList();
-          }}
-        />
-        <button type="button" className="btn btn-primary btn-sm" onClick={onCreateList}>
-          +
-        </button>
+      <div className="border-base-300 flex shrink-0 flex-col gap-1 border-t p-2">
+        <div className="flex gap-1">
+          <input
+            className="input input-sm input-bordered min-w-0 flex-1"
+            placeholder="新清单"
+            value={newListName}
+            onChange={(e) => onNewListNameChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") onCreateList();
+            }}
+          />
+          <button type="button" className="btn btn-primary btn-sm" onClick={onCreateList}>
+            +
+          </button>
+        </div>
+        <div className="flex gap-1">
+          <input
+            className="input input-sm input-bordered min-w-0 flex-1"
+            placeholder="新文件夹"
+            value={newFolderName}
+            onChange={(e) => onNewFolderNameChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") onCreateFolder();
+            }}
+          />
+          <button type="button" className="btn btn-ghost btn-sm" onClick={onCreateFolder}>
+            📁
+          </button>
+        </div>
       </div>
     </div>
   );

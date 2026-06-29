@@ -1,5 +1,4 @@
-import type { TaskMenuItem } from "./menu-types.ts";
-import type { TaskItemRow, TaskListRow } from "./api.ts";
+import type { TaskListRow } from "./api.ts";
 
 export function buildListMenuItems(
   list: TaskListRow,
@@ -8,13 +7,31 @@ export function buildListMenuItems(
     onClose: (list: TaskListRow) => void;
     onReopen: (list: TaskListRow) => void;
     onDelete: (list: TaskListRow) => void;
+    onCreateChildFolder?: (folder: TaskListRow) => void;
+    onCreateChildList?: (folder: TaskListRow) => void;
   },
-): TaskMenuItem[] {
-  const items: TaskMenuItem[] = [{ label: "重命名", onClick: () => handlers.onRename(list) }];
+): import("./menu-types.ts").TaskMenuItem[] {
+  const items: import("./menu-types.ts").TaskMenuItem[] = [
+    { label: "重命名", onClick: () => handlers.onRename(list) },
+  ];
+
+  if (list.is_folder) {
+    if (handlers.onCreateChildList) {
+      items.push({ label: "新建子清单", onClick: () => handlers.onCreateChildList!(list) });
+    }
+    if (handlers.onCreateChildFolder) {
+      items.push({ label: "新建子文件夹", onClick: () => handlers.onCreateChildFolder!(list) });
+    }
+  }
+
   if (list.closed) {
     items.push({ label: "取消归档", onClick: () => void handlers.onReopen(list) });
     if (!list.is_default) {
-      items.push({ label: "删除", danger: true, onClick: () => void handlers.onDelete(list) });
+      items.push({
+        label: "删除",
+        danger: true,
+        onClick: () => void handlers.onDelete(list),
+      });
     }
   } else if (!list.is_default) {
     items.push({ label: "归档", onClick: () => void handlers.onClose(list) });
@@ -24,14 +41,14 @@ export function buildListMenuItems(
 }
 
 export function buildItemMenuItems(
-  item: TaskItemRow,
+  item: import("./api.ts").TaskItemRow,
   handlers: {
-    onEdit: (item: TaskItemRow) => void;
-    onToggleComplete: (item: TaskItemRow) => void;
-    onMoveTo: (item: TaskItemRow) => void;
-    onDelete: (item: TaskItemRow) => void;
+    onEdit: (item: import("./api.ts").TaskItemRow) => void;
+    onToggleComplete: (item: import("./api.ts").TaskItemRow) => void;
+    onMoveTo: (item: import("./api.ts").TaskItemRow) => void;
+    onDelete: (item: import("./api.ts").TaskItemRow) => void;
   },
-): TaskMenuItem[] {
+): import("./menu-types.ts").TaskMenuItem[] {
   return [
     { label: "编辑", onClick: () => handlers.onEdit(item) },
     {

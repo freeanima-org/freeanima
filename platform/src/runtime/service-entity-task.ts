@@ -28,7 +28,13 @@ export async function serviceTasklistList(deps: RuntimeDeps, input?: { include_c
 
 export async function serviceTasklistCreate(
   deps: RuntimeDeps,
-  input: { name: string; sort_order?: number; color?: string | null },
+  input: {
+    name: string;
+    sort_order?: number;
+    color?: string | null;
+    is_folder?: boolean;
+    parent_id?: number | null;
+  },
 ) {
   assertPg(deps);
   const item = await createTaskList(input);
@@ -43,6 +49,8 @@ export async function serviceTasklistPatch(
     sort_order?: number;
     closed?: boolean;
     color?: string | null;
+    is_folder?: boolean;
+    parent_id?: number | null;
   },
 ) {
   assertPg(deps);

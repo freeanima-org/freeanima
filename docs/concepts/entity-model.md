@@ -73,6 +73,8 @@ TickTick-style lists and items map to:
 
 Items reference their list via `body.list_id` (entity id). Task items store **title** and **content** on entity columns; **tags** live in `body.tags`. A **default list** (`is_default: true`, seeded id `2` "Inbox") cannot be deleted or archived but may be renamed. List **`body.closed: true`** means archived: hidden from the main sidebar by default (`tasklist.list` unless `include_closed`), restorable via `tasklist.patch({ closed: false })`; contained task items are kept.
 
+**Folders** (`body.is_folder: true`) are container nodes in the sidebar tree only — they cannot hold tasks directly (`task.create` / `task.patch` reject `list_id` pointing at a folder). Child lists and sub-folders reference a parent folder via `body.parent_id` (entity id of a folder, or omitted/null at root). Nesting must not form cycles. Archiving or deleting a folder cascades to descendants. `sort_order` is scoped among siblings sharing the same `parent_id`.
+
 LLM ToolSets: `@freeanima/capabilities-task` — `task` (item CRUD + `task_search`) and `tasklist` (list CRUD + `tasklist_search`); load via `toolset_load`. `task_search` searches all lists when `list_id` is omitted. Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration (`scripts/migrate-tasks-to-entities.ts`).
 
 ## Email module (Estate)

@@ -11,9 +11,10 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 
 import type { TaskItemRow, TaskListRow } from "../lib/api.ts";
+import { getParentId, getSiblings, isDescendant } from "../lib/list-tree.ts";
 import { isListDndId, isTaskDndId, parseListDndId, parseTaskDndId } from "../lib/dnd-ids.ts";
 
 type TaskDndRootProps = {
@@ -21,7 +22,8 @@ type TaskDndRootProps = {
   pendingItems: TaskItemRow[];
   taskItems: TaskItemRow[];
   children: ReactNode;
-  onReorderLists: (ordered: TaskListRow[]) => void;
+  onReorderSiblings: (ordered: TaskListRow[], parentId: number | null) => void;
+  onMoveListToParent: (listId: number, parentId: number | null) => void;
   onReorderPending: (ordered: TaskItemRow[]) => void;
   onMoveTaskToList: (taskId: number, listId: number) => void;
   onTaskDragStart?: () => void;
@@ -29,11 +31,13 @@ type TaskDndRootProps = {
 
 type TaskDndUiState = {
   draggingTask: boolean;
+  draggingList: boolean;
   overListId: number | null;
 };
 
 const TaskDndUiContext = createContext<TaskDndUiState>({
   draggingTask: false,
+  draggingList: false,
   overListId: null,
 });
 
@@ -43,17 +47,20 @@ export function useTaskDndUi(): TaskDndUiState {
 
 function DragMonitor({
   onTaskDragChange,
+  onListDragChange,
   onOverListChange,
 }: {
   onTaskDragChange: (dragging: boolean) => void;
+  onListDragChange: (dragging: boolean) => void;
   onOverListChange: (listId: number | null) => void;
 }) {
   useDndMonitor({
     onDragStart(event) {
       onTaskDragChange(isTaskDndId(event.active.id));
+      onListDragChange(isListDndId(event.active.id));
     },
     onDragOver(event) {
-      if (!isTaskDndId(event.active.id) || !event.over) {
+      if (!event.over) {
         onOverListChange(null);
         return;
       }
@@ -62,10 +69,12 @@ function DragMonitor({
     },
     onDragEnd() {
       onTaskDragChange(false);
+      onListDragChange(false);
       onOverListChange(null);
     },
     onDragCancel() {
       onTaskDragChange(false);
+      onListDragChange(false);
       onOverListChange(null);
     },
   });
@@ -77,14 +86,18 @@ export function TaskDndRoot({
   pendingItems,
   taskItems,
   children,
-  onReorderLists,
+  onReorderSiblings,
+  onMoveListToParent,
   onReorderPending,
   onMoveTaskToList,
   onTaskDragStart,
 }: TaskDndRootProps) {
   const [activeTask, setActiveTask] = useState<TaskItemRow | null>(null);
   const [draggingTask, setDraggingTask] = useState(false);
+  const [draggingList, setDraggingList] = useState(false);
   const [overListId, setOverListId] = useState<number | null>(null);
+
+  const listById = useMemo(() => new Map(lists.map((l) => [l.id, l])), [lists]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -108,14 +121,40 @@ export function TaskDndRoot({
     const overId = String(over.id);
 
     if (isListDndId(activeId)) {
-      if (!isListDndId(overId) || activeId === overId) return;
       const activeListId = parseListDndId(activeId);
       const overListIdParsed = parseListDndId(overId);
-      if (activeListId == null || overListIdParsed == null) return;
-      const from = lists.findIndex((l) => l.id === activeListId);
-      const to = lists.findIndex((l) => l.id === overListIdParsed);
-      if (from < 0 || to < 0 || from === to) return;
-      onReorderLists(arrayMove(lists, from, to));
+      if (activeListId == null || overListIdParsed == null || activeListId === overListIdParsed) {
+        return;
+      }
+
+      const activeList = listById.get(activeListId);
+      const overList = listById.get(overListIdParsed);
+      if (!activeList || !overList) return;
+
+      if (overList.is_folder && !isDescendant(lists, activeListId, overListIdParsed)) {
+        onMoveListToParent(activeListId, overListIdParsed);
+        return;
+      }
+
+      if (overList.is_folder) return;
+
+      const targetParentId = getParentId(overList);
+      const siblings = getSiblings(lists, targetParentId);
+      const from = siblings.findIndex((l) => l.id === activeListId);
+      const to = siblings.findIndex((l) => l.id === overListIdParsed);
+      if (from < 0 || to < 0) {
+        if (!isDescendant(lists, activeListId, overListIdParsed)) {
+          onMoveListToParent(activeListId, targetParentId);
+        }
+        return;
+      }
+      if (getParentId(activeList) !== targetParentId) {
+        onMoveListToParent(activeListId, targetParentId);
+        return;
+      }
+      if (from !== to) {
+        onReorderSiblings(arrayMove(siblings, from, to), targetParentId);
+      }
       return;
     }
 
@@ -125,7 +164,10 @@ export function TaskDndRoot({
 
       const targetListId = parseListDndId(overId);
       if (targetListId != null) {
-        onMoveTaskToList(taskId, targetListId);
+        const targetList = listById.get(targetListId);
+        if (targetList && !targetList.is_folder) {
+          onMoveTaskToList(taskId, targetListId);
+        }
         return;
       }
 
@@ -148,8 +190,12 @@ export function TaskDndRoot({
       onDragEnd={handleDragEnd}
       onDragCancel={() => setActiveTask(null)}
     >
-      <DragMonitor onTaskDragChange={setDraggingTask} onOverListChange={setOverListId} />
-      <TaskDndUiContext.Provider value={{ draggingTask, overListId }}>
+      <DragMonitor
+        onTaskDragChange={setDraggingTask}
+        onListDragChange={setDraggingList}
+        onOverListChange={setOverListId}
+      />
+      <TaskDndUiContext.Provider value={{ draggingTask, draggingList, overListId }}>
         {children}
       </TaskDndUiContext.Provider>
       <DragOverlay>

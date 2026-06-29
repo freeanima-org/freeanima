@@ -8,7 +8,7 @@ import {
   updateEntity,
 } from "@freeanima/core/db/pg/entity";
 
-import { defaultTaskWorldId } from "./list-store.ts";
+import { defaultTaskWorldId, assertListAcceptsTasks } from "./list-store.ts";
 import type {
   TaskItemCreateInput,
   TaskItemListOpts,
@@ -79,6 +79,7 @@ export async function listTaskItems(opts: TaskItemListOpts = {}): Promise<TaskIt
 }
 
 export async function createTaskItem(input: TaskItemCreateInput): Promise<TaskItemRow> {
+  await assertListAcceptsTasks(input.list_id);
   const tags = normalizeTags(input.tags);
   const body = {
     status: "pending" as const,
@@ -114,7 +115,10 @@ export async function updateTaskItem(input: TaskItemUpdateInput): Promise<TaskIt
   if (!parsedExisting) return null;
 
   const bodyPatch: Record<string, unknown> = {};
-  if (input.list_id !== undefined) bodyPatch.list_id = input.list_id;
+  if (input.list_id !== undefined) {
+    await assertListAcceptsTasks(input.list_id);
+    bodyPatch.list_id = input.list_id;
+  }
   if (input.priority !== undefined) bodyPatch.priority = input.priority;
   if (input.due_at !== undefined) bodyPatch.due_at = input.due_at;
   if (input.remind_at !== undefined) bodyPatch.remind_at = input.remind_at;

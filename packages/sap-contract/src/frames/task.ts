@@ -10,6 +10,8 @@ export const taskListRowSchema = z.object({
   closed: z.boolean(),
   color: z.string().nullable(),
   is_default: z.boolean(),
+  is_folder: z.boolean(),
+  parent_id: z.number().int().positive().nullable(),
   item_count: z.number().int().nonnegative(),
   created_at: z.string(),
   updated_at: z.string(),
@@ -50,6 +52,8 @@ export const tasklistCreateInputSchema = z.object({
   name: z.string().min(1),
   sort_order: z.number().int().optional(),
   color: z.string().nullable().optional(),
+  is_folder: z.boolean().optional(),
+  parent_id: z.number().int().positive().nullable().optional(),
 });
 export type TasklistCreateInput = z.infer<typeof tasklistCreateInputSchema>;
 export const tasklistCreateOutputSchema = z.object({ item: taskListRowSchema });
@@ -61,6 +65,8 @@ export const tasklistPatchInputSchema = z.object({
   sort_order: z.number().int().optional(),
   closed: z.boolean().optional(),
   color: z.string().nullable().optional(),
+  is_folder: z.boolean().optional(),
+  parent_id: z.number().int().positive().nullable().optional(),
 });
 export type TasklistPatchInput = z.infer<typeof tasklistPatchInputSchema>;
 export const tasklistPatchOutputSchema = z.object({ item: taskListRowSchema });

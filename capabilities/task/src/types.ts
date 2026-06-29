@@ -9,6 +9,8 @@ export type TaskListCreateInput = {
   name: string;
   sort_order?: number;
   color?: string | null;
+  is_folder?: boolean;
+  parent_id?: number | null;
 };
 
 export type TaskListUpdateInput = {
@@ -17,6 +19,8 @@ export type TaskListUpdateInput = {
   sort_order?: number;
   closed?: boolean;
   color?: string | null;
+  is_folder?: boolean;
+  parent_id?: number | null;
 };
 
 export type TaskItemCreateInput = {

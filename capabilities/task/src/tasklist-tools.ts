@@ -32,6 +32,13 @@ async function handleListCreate(args: Record<string, unknown>): Promise<string> 
       name,
       sort_order: args.sort_order != null ? Number(args.sort_order) : undefined,
       color: args.color != null ? String(args.color) : undefined,
+      is_folder: args.is_folder === true,
+      parent_id:
+        args.parent_id === null
+          ? null
+          : args.parent_id != null
+            ? Number(args.parent_id)
+            : undefined,
     });
     return toolResult({ ok: true, action: "create_list", list: listPayload(list) });
   } catch (e) {
@@ -48,6 +55,9 @@ async function handleListUpdate(args: Record<string, unknown>): Promise<string> 
   if (args.sort_order !== undefined) patch.sort_order = Number(args.sort_order);
   if (args.closed !== undefined) patch.closed = Boolean(args.closed);
   if (args.color !== undefined) patch.color = String(args.color);
+  if (args.is_folder !== undefined) patch.is_folder = Boolean(args.is_folder);
+  if (args.parent_id === null) patch.parent_id = null;
+  else if (args.parent_id !== undefined) patch.parent_id = Number(args.parent_id);
 
   try {
     const result = await updateTaskList(patch);
@@ -134,9 +144,17 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
-              name: { type: "string", description: "List name" },
+              name: { type: "string", description: "List or folder name" },
               sort_order: { type: "integer" },
               color: { type: "string" },
+              is_folder: {
+                type: "boolean",
+                description: "true to create a folder container (cannot hold tasks directly)",
+              },
+              parent_id: {
+                type: "integer",
+                description: "Parent folder entity id; omit for root level",
+              },
             },
             required: ["name"],
           },
@@ -157,6 +175,14 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
                 description: "true to archive (close) the list; false to unarchive",
               },
               color: { type: "string" },
+              is_folder: {
+                type: "boolean",
+                description: "true for folder container; false to convert empty folder to list",
+              },
+              parent_id: {
+                type: ["integer", "null"],
+                description: "Parent folder id; null to move to root",
+              },
             },
             required: ["id"],
           },
