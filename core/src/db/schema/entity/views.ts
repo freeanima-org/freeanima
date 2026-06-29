@@ -2,18 +2,21 @@ import { z } from "zod";
 
 import { entityTypeSchema, type EntitySelect } from "./entity.ts";
 import {
+  DIARY_ENTRY_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
   EMAIL_MESSAGE_COMPONENT,
   EMAIL_THREAD_COMPONENT,
   TASK_ITEM_COMPONENT,
   TASK_LIST_COMPONENT,
   WORLD_CONFIG_COMPONENT,
+  diaryEntryBodySchema,
   emailAccountBodySchema,
   emailMessageBodySchema,
   emailThreadBodySchema,
   taskItemBodySchema,
   taskListBodySchema,
   worldConfigBodySchema,
+  type DiaryEntryBody,
   type EmailAccountBody,
   type EmailMessageBody,
   type EmailThreadBody,
@@ -76,6 +79,16 @@ export function asTaskItem(
   const parsed = taskItemBodySchema.safeParse(row.body);
   return parsed.success
     ? { id: row.id, title: row.title, content: row.content, ...parsed.data }
+    : null;
+}
+
+export function asDiaryEntry(
+  row: EntityRow,
+): (DiaryEntryBody & { id: number; title: string; content: string; summary: string }) | null {
+  if (row.primary_component !== DIARY_ENTRY_COMPONENT) return null;
+  const parsed = diaryEntryBodySchema.safeParse(row.body);
+  return parsed.success
+    ? { id: row.id, title: row.title, content: row.content, summary: row.summary, ...parsed.data }
     : null;
 }
 

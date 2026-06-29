@@ -89,6 +89,22 @@ Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. Messages store
 
 LLM ToolSets: `@freeanima/capabilities-email` — `email-account`（账号实体）与 `email`（同步、收发、检索）；按需 `toolset_load`。Legacy `config.yaml` `email.accounts[]` migrates via `scripts/migrate-email-to-entities.ts`.
 
+## Diary module
+
+Structured journal entries for **user** and **agent** subjects:
+
+| Concept | Entity         | Component     |
+| ------- | -------------- | ------------- |
+| Entry   | `type=content` | `diary_entry` |
+
+Entries live in each subject's **`default_private_world_id`**. `body.entry_at` is the timeline sort key; `title` / `summary` / `content` use entity columns; optional `body.tags`.
+
+- **SAP:** `diary.*` methods — all take `subject_kind: user | agent` (including `diary.append`).
+- **UI:** shell `/diary` (`@freeanima/satellite-diary`).
+- **LLM:** ToolSet `diary` — agent private world only.
+
+See [`docs/features/diary.md`](../features/diary.md).
+
 ## Search
 
 Entity **list** (deterministic browse) and **search** (relevance ranking) are separate ports:

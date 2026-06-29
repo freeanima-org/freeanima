@@ -4,6 +4,7 @@
 @source "../../../satellite-sdk/src/**/*.{tsx,ts}";
 @source "../../../satellites/chat/app/src/**/*.{tsx,ts}";
 @source "../../../satellites/task/app/src/**/*.{tsx,ts}";
+@source "../../../satellites/diary/app/src/**/*.{tsx,ts}";
 @import "./shared-safe-area.css";
 
 :root {

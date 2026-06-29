@@ -1,4 +1,5 @@
 import { registerClarifyTool } from "@freeanima/capabilities-tools/clarify";
+import { registerDiaryTools } from "@freeanima/capabilities-diary";
 import { registerEmailTools } from "@freeanima/capabilities-email";
 import { registerTaskTools } from "@freeanima/capabilities-task";
 import { registerWriteFridgeMagnetTool } from "@freeanima/capabilities-task/fridge-magnet";
@@ -43,6 +44,7 @@ export function registerServiceTools(opts: {
   registerWriteFridgeMagnetTool(opts.toolSets);
   registerNotificationTools(opts.toolSets);
   registerTaskTools(opts.toolSets);
+  registerDiaryTools(opts.toolSets);
   registeredCatalog = opts;
 }
 

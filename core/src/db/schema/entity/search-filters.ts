@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  DIARY_ENTRY_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
   EMAIL_MESSAGE_COMPONENT,
   EMAIL_THREAD_COMPONENT,
@@ -103,8 +104,30 @@ export function parseEmailMessageSearchFilters(
   return parsed.data;
 }
 
+export const diaryEntrySearchFiltersSchema = z
+  .object({
+    entry_after: z.string().optional(),
+    entry_before: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+  })
+  .strict();
+
+export type DiaryEntrySearchFilters = z.infer<typeof diaryEntrySearchFiltersSchema>;
+
+export function parseDiaryEntrySearchFilters(
+  raw: Record<string, unknown> | undefined,
+): DiaryEntrySearchFilters {
+  if (!raw || Object.keys(raw).length === 0) return {};
+  const parsed = diaryEntrySearchFiltersSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(`invalid diary_entry filters: ${parsed.error.message}`);
+  }
+  return parsed.data;
+}
+
 export const ENTITY_SEARCH_FILTER_COMPONENTS = {
   [TASK_ITEM_COMPONENT]: taskItemSearchFiltersSchema,
+  [DIARY_ENTRY_COMPONENT]: diaryEntrySearchFiltersSchema,
   [EMAIL_ACCOUNT_COMPONENT]: emailAccountSearchFiltersSchema,
   [EMAIL_THREAD_COMPONENT]: emailThreadSearchFiltersSchema,
   [EMAIL_MESSAGE_COMPONENT]: emailMessageSearchFiltersSchema,

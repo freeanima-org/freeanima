@@ -65,6 +65,22 @@ import type {
   NotificationRecipientsOutput,
 } from "./frames/notification.ts";
 import type {
+  DiaryAppendInput,
+  DiaryAppendOutput,
+  DiaryCreateInput,
+  DiaryCreateOutput,
+  DiaryDeleteInput,
+  DiaryDeleteOutput,
+  DiaryGetInput,
+  DiaryGetOutput,
+  DiaryListInput,
+  DiaryListOutput,
+  DiaryPatchInput,
+  DiaryPatchOutput,
+  DiarySearchInput,
+  DiarySearchOutput,
+} from "./frames/diary.ts";
+import type {
   ToolErrorInput,
   ToolRegisterInput,
   ToolRegisterOutput,
@@ -104,6 +120,13 @@ export const SAP_METHODS = [
   "task.complete",
   "task.uncomplete",
   "task.delete",
+  "diary.list",
+  "diary.create",
+  "diary.append",
+  "diary.patch",
+  "diary.delete",
+  "diary.get",
+  "diary.search",
   "emailaccount.list",
   "email.message.list",
   "email.message.read",
@@ -149,6 +172,13 @@ export type SapRouterInputs = {
   "task.complete": TaskCompleteInput;
   "task.uncomplete": TaskUncompleteInput;
   "task.delete": TaskDeleteInput;
+  "diary.list": DiaryListInput;
+  "diary.create": DiaryCreateInput;
+  "diary.append": DiaryAppendInput;
+  "diary.patch": DiaryPatchInput;
+  "diary.delete": DiaryDeleteInput;
+  "diary.get": DiaryGetInput;
+  "diary.search": DiarySearchInput;
   "emailaccount.list": EmailAccountListInput;
   "email.message.list": EmailMessageListInput;
   "email.message.read": EmailMessageReadInput;
@@ -192,6 +222,13 @@ export type SapRouterOutputs = {
   "task.complete": TaskCompleteOutput;
   "task.uncomplete": TaskUncompleteOutput;
   "task.delete": TaskDeleteOutput;
+  "diary.list": DiaryListOutput;
+  "diary.create": DiaryCreateOutput;
+  "diary.append": DiaryAppendOutput;
+  "diary.patch": DiaryPatchOutput;
+  "diary.delete": DiaryDeleteOutput;
+  "diary.get": DiaryGetOutput;
+  "diary.search": DiarySearchOutput;
   "emailaccount.list": EmailAccountListOutput;
   "email.message.list": EmailMessageListOutput;
   "email.message.read": EmailMessageReadOutput;

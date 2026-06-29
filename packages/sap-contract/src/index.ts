@@ -18,7 +18,12 @@ export {
 export type { ParsedSapToolName, ParsedSapPlatform } from "./naming.ts";
 
 export { generateSapInstanceIdCandidate, assertSapInstanceId } from "./instance-id.ts";
-export { CHAT_INSTANCE_ID, TASK_INSTANCE_ID, EMAIL_INSTANCE_ID } from "./satellite-instance.ts";
+export {
+  CHAT_INSTANCE_ID,
+  TASK_INSTANCE_ID,
+  EMAIL_INSTANCE_ID,
+  DIARY_INSTANCE_ID,
+} from "./satellite-instance.ts";
 
 export {
   browserSapInstanceStore,
@@ -192,6 +197,41 @@ export type {
   NotificationMarkReadOutput,
   NotificationRecipientsOutput,
 } from "./frames/notification.ts";
+
+export {
+  diaryEntryRowSchema,
+  diaryListInputSchema,
+  diaryListOutputSchema,
+  diaryCreateInputSchema,
+  diaryCreateOutputSchema,
+  diaryAppendInputSchema,
+  diaryAppendOutputSchema,
+  diaryPatchInputSchema,
+  diaryPatchOutputSchema,
+  diaryDeleteInputSchema,
+  diaryDeleteOutputSchema,
+  diaryGetInputSchema,
+  diaryGetOutputSchema,
+  diarySearchInputSchema,
+  diarySearchOutputSchema,
+} from "./frames/diary.ts";
+export type {
+  DiaryEntryRowPayload,
+  DiaryListInput,
+  DiaryListOutput,
+  DiaryCreateInput,
+  DiaryCreateOutput,
+  DiaryAppendInput,
+  DiaryAppendOutput,
+  DiaryPatchInput,
+  DiaryPatchOutput,
+  DiaryDeleteInput,
+  DiaryDeleteOutput,
+  DiaryGetInput,
+  DiaryGetOutput,
+  DiarySearchInput,
+  DiarySearchOutput,
+} from "./frames/diary.ts";
 
 export {
   messageSendInputSchema,

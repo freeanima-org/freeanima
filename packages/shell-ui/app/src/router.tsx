@@ -10,6 +10,7 @@ import {
 import { useMemo } from "react";
 
 import { ChatApp } from "./chat/load-chat-app.ts";
+import { DiaryApp } from "./diary/load-diary-app.ts";
 import { EmailApp } from "./email/load-email-app.ts";
 import { TaskApp } from "./tasks/load-task-app.ts";
 import { AdminShell } from "./main/AdminShell.tsx";
@@ -53,6 +54,12 @@ const emailRoute = createRoute({
   component: EmailApp,
 });
 
+const diaryRoute = createRoute({
+  getParentRoute: () => mainLayoutRoute,
+  path: "/diary",
+  component: DiaryApp,
+});
+
 const notificationsRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/notifications",
@@ -85,6 +92,7 @@ const routeTree = rootRoute.addChildren([
     chatRoute,
     tasksRoute,
     emailRoute,
+    diaryRoute,
     notificationsRoute,
     adminIndexRoute,
     adminRoute,

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { AGENT_CONFIG_COMPONENT, agentConfigBodySchema } from "./agent-config.ts";
+import { DIARY_ENTRY_COMPONENT, diaryEntryBodySchema } from "./diary-entry.ts";
 import { EMAIL_ACCOUNT_COMPONENT, emailAccountBodySchema } from "./email-account.ts";
 import { EMAIL_MESSAGE_COMPONENT, emailMessageBodySchema } from "./email-message.ts";
 import { EMAIL_THREAD_COMPONENT, emailThreadBodySchema } from "./email-thread.ts";
@@ -15,6 +16,7 @@ export const COMPONENT_IDS = [
   USER_CONFIG_COMPONENT,
   TASK_LIST_COMPONENT,
   TASK_ITEM_COMPONENT,
+  DIARY_ENTRY_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
   EMAIL_THREAD_COMPONENT,
   EMAIL_MESSAGE_COMPONENT,
@@ -30,6 +32,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [USER_CONFIG_COMPONENT]: userConfigBodySchema,
   [TASK_LIST_COMPONENT]: taskListBodySchema,
   [TASK_ITEM_COMPONENT]: taskItemBodySchema,
+  [DIARY_ENTRY_COMPONENT]: diaryEntryBodySchema,
   [EMAIL_ACCOUNT_COMPONENT]: emailAccountBodySchema,
   [EMAIL_THREAD_COMPONENT]: emailThreadBodySchema,
   [EMAIL_MESSAGE_COMPONENT]: emailMessageBodySchema,
@@ -50,6 +53,7 @@ export * from "./agent-config.ts";
 export * from "./user-config.ts";
 export * from "./task-list.ts";
 export * from "./task-item.ts";
+export * from "./diary-entry.ts";
 export * from "./email-account.ts";
 export * from "./email-thread.ts";
 export * from "./email-message.ts";
