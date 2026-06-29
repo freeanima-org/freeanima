@@ -1,6 +1,6 @@
 {
   "name": "freeanima",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "devDependencies": {
     "@commitlint/cli": "^21.1.0",
     "@commitlint/config-conventional": "^21.1.0",

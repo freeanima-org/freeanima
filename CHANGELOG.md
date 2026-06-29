@@ -3,6 +3,172 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.8.0](https://github.com/freeanima-org/freeanima/compare/v0.7.0...v0.8.0) (2026-06-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* 设置契约迁入 shell-ui，form/component 分责
+* 桌面/移动统一壳层与设置窗
+* Admin 架构重组与命名统一
+* **desktop-shell:** 拆分伴侣内容与通用桌面壳
+* **satellite:** 将 parlor 重命名为 chat
+
+### Features
+
+* **admin:** 世界/主体管理页与对话术语统一 ([74257d6](https://github.com/freeanima-org/freeanima/commit/74257d64876aee659a75a7f58ed4044307acbd7a))
+* **app-desktop:** 通用设置面板与开机自启动 ([f2dc9c0](https://github.com/freeanima-org/freeanima/commit/f2dc9c0913dc00617c7fcfc46040b51728f1580b))
+* **app-mobile:** 新增 Android Capacitor 壳与会客厅 SAP 直连 ([eb384b5](https://github.com/freeanima-org/freeanima/commit/eb384b5ceefc8d4279fb5abc0ac262be4a7058c4))
+* **app-web:** 新增浏览器开发壳，支持 dev:web 快速调试 UI ([e408fa9](https://github.com/freeanima-org/freeanima/commit/e408fa9f4f6addc308f96b5ca40d66d022dff0b7))
+* **chat:** 支持会话归档与永久删除 ([8ac5260](https://github.com/freeanima-org/freeanima/commit/8ac526053ff2feaf277a3255b01d1998ed37088f))
+* **cli:** tunnel status 增加 Cloudflare 边缘连接探测 ([fbb3d80](https://github.com/freeanima-org/freeanima/commit/fbb3d80fd366fa41636bcad3825d355bca6346e5))
+* **companion:** change SAP toolset from private to public ([fdf6e9a](https://github.com/freeanima-org/freeanima/commit/fdf6e9abd3733548d8d2f61cdd8859c19a509c0b))
+* **companion:** daisyUI 设置面板、动作导入与 runtime WebSocket ([c55d9ee](https://github.com/freeanima-org/freeanima/commit/c55d9ee04638c8338e06a3934ce617efc178fb03))
+* **companion:** VRMA 交互、边缘巡逻与 Windows FBX 打包 ([ecb0b21](https://github.com/freeanima-org/freeanima/commit/ecb0b2185695f48da916a765861b1a8074bf2d61))
+* **companion:** 修复 VRM 朝向并拆分桌宠/设置双窗口 ([86ecb3e](https://github.com/freeanima-org/freeanima/commit/86ecb3e0d62fd0af3f2d9e21e540dcefea1980d8))
+* **companion:** 动作库预览支持拖拽旋转视角 ([84606d9](https://github.com/freeanima-org/freeanima/commit/84606d93b70bce0e2587c869736ba7e72daffca3))
+* **companion:** 动作槽位体系、设置 Tab 化与 SAP 工具接入 ([df044b6](https://github.com/freeanima-org/freeanima/commit/df044b64660a1d8dce1a12315bedd00fec09bb82))
+* **companion:** 完善桌宠散步动画与浏览器小视口 ([8350056](https://github.com/freeanima-org/freeanima/commit/835005633d29510afba720141a823854903cad94))
+* **companion:** 素材稳定 ID、动作库修复与水平巡逻 ([372250f](https://github.com/freeanima-org/freeanima/commit/372250fd1ab919c1ab8bc72238dfa619c904b8a5))
+* **companion:** 迁移桌面伴侣至 Electron 并修复打包与动画问题 ([3bf0848](https://github.com/freeanima-org/freeanima/commit/3bf08482790bbde093ed86d90a370aea5b600435))
+* **companion:** 重构 sidecar 打包并修复巡逻与后台启动 ([3e39ad6](https://github.com/freeanima-org/freeanima/commit/3e39ad6d23b27368f60d11b0bb03a2ab4faa4720))
+* **compress:** 统一 context_window 解析并优化 slash 展示 ([8435a4e](https://github.com/freeanima-org/freeanima/commit/8435a4e887c70d8f3458dea74d320e62d726da81))
+* **desktop-shell:** 拆分伴侣内容与通用桌面壳 ([7cb3a52](https://github.com/freeanima-org/freeanima/commit/7cb3a523dd36875d26a08acc13c1d988cd5c112c))
+* **desktop:** Admin 契约拆分与 Windows 打包命名优化 ([fa0932d](https://github.com/freeanima-org/freeanima/commit/fa0932d9283acecee1e44f50787a64d8181e812f))
+* **diary:** 添加日记全栈能力与按 date 的 Agent ToolSet ([c87370a](https://github.com/freeanima-org/freeanima/commit/c87370a15404506288fc71ef711022e28a041efc))
+* **email:** 邮箱迁入实体模型并迁至壳层 /email 模块 ([71555df](https://github.com/freeanima-org/freeanima/commit/71555df1004e77208b1cfba14554f7ed88d19345))
+* **entity:** 实体复合搜索与任务跨清单检索 ([c5af266](https://github.com/freeanima-org/freeanima/commit/c5af266391af72fad526632e60e4908d70e954df))
+* **entity:** 重构主体/世界归属模型并优化 Admin 管理 ([d3ae048](https://github.com/freeanima-org/freeanima/commit/d3ae048ebc04e1f6314748c4f9c57a0ddf34cc10))
+* **fridge-magnet:** 以 assistant(fridge_context) 物化冰箱贴意识层 ([8bf90d9](https://github.com/freeanima-org/freeanima/commit/8bf90d927f8f20a360c792df2790bb5c16684d38))
+* **gateway:** Discord clarify 选项渲染为交互按钮 ([b6b6799](https://github.com/freeanima-org/freeanima/commit/b6b6799526107c44637f28beff88240e6c2c4e26))
+* **gateway:** 统一 IM 出站合并、origin_active 路由与工具展示策略 ([b6143f9](https://github.com/freeanima-org/freeanima/commit/b6143f91780e653fe84bc55d3b9bc564d9cc4fde))
+* **goal:** 实现 Session Goal 机制（judge 续跑与斜杠命令） ([1d38d98](https://github.com/freeanima-org/freeanima/commit/1d38d98e91273e6a428596e0887a692b37ebec7f))
+* **hub:** 移除 Tunnel Access，统一 remote_auth 直连与探活 ([a9ec57c](https://github.com/freeanima-org/freeanima/commit/a9ec57c0f8b0b5d9adaa83a9d7c84ac7d8d9b614))
+* **mcp:** Hub /mcp 端点供外部 Agent 查询 FreeAnima 数据 ([6cff65c](https://github.com/freeanima-org/freeanima/commit/6cff65cddedd16ef1beed6ee836b3079521f3963))
+* **memory:** limbic/自传体接入 FTS+向量 hybrid 检索 ([da72bf8](https://github.com/freeanima-org/freeanima/commit/da72bf8535f1e49688a93517a65505ef7312cd70))
+* **notifications:** PG 通知收件箱、Agent 注入与任务提醒扫描 ([8814c98](https://github.com/freeanima-org/freeanima/commit/8814c98a6791719d34b47de81e45cfc5dd10c698))
+* **notifications:** 新增 SAP 通知收件箱与 shell 通知模块 ([c65de85](https://github.com/freeanima-org/freeanima/commit/c65de853775d6ab9f97db6470d75ffb85b6d26e8))
+* **parlor:** SAP 重连、流式队列/停止与会话体验修复 ([b2626f1](https://github.com/freeanima-org/freeanima/commit/b2626f18bfcde1160aacdbdd5fcbe98efbd95f7f))
+* **parlor:** SAP 重连、流式队列/停止与会话体验修复 ([e4da37f](https://github.com/freeanima-org/freeanima/commit/e4da37fc1bc4d28659dcba5f5374fe86652c5f4d))
+* **platform:** Hub remote_auth 与客户端 Hub 配置 ([4eb3fbc](https://github.com/freeanima-org/freeanima/commit/4eb3fbc182769925bc92dffabf4991ea119303bd))
+* **platform:** inject conversation channel info into system prompt ([7507b80](https://github.com/freeanima-org/freeanima/commit/7507b80464d47ce632eb7712940b63b160ed9b68))
+* **platform:** 客户端 bundled UI，Hub 仅保留 API 与 SAP ([c66f44d](https://github.com/freeanima-org/freeanima/commit/c66f44d984c178e3c5837ffd1ba1accf8f2179dc))
+* **runtime:** 拆分 AutoLlmRun 原语并增加卧室审计页 ([7417a11](https://github.com/freeanima-org/freeanima/commit/7417a11822505cc567e4bd811200f9eb4fa574f0))
+* **sap:** Chat 采用 singleton 固定 instance_id ([ede7561](https://github.com/freeanima-org/freeanima/commit/ede75619a3857fadf173aff6b5423f681e18b0fd))
+* **shell-ui:** 统一 web/mobile/desktop 壳层样式与交互 ([ad625e7](https://github.com/freeanima-org/freeanima/commit/ad625e780c980d3ff61f92c5659c953eab82df6f))
+* **shell:** 新增调试面板与桌面 settings.json 配置 ([517abc4](https://github.com/freeanima-org/freeanima/commit/517abc412e751871f7bf434cde74a32d4c26451a))
+* **task:** 任务 SAP 化并修复 web dev 壳层 ([7e6af94](https://github.com/freeanima-org/freeanima/commit/7e6af94b1b0b6f9020bd6ea7678d51275a3b1ca9))
+* **task:** 任务清单复用 closed 实现归档 ([c8a14aa](https://github.com/freeanima-org/freeanima/commit/c8a14aa8590dbda1bbb75fcf1f8ada200c818ba0))
+* **task:** 任务迁至 entity 模型并完善 satellite 交互 ([a366119](https://github.com/freeanima-org/freeanima/commit/a366119ec16fc9659bda366ce33e53d9e99f2b64))
+* **task:** 新增 tasklist_update 工具 ([67bc69c](https://github.com/freeanima-org/freeanima/commit/67bc69c960726fc40fc1f32c84a4b915a7e1757f))
+* **task:** 移动端任务 UI 抽屉导航与触摸拖拽排序 ([ebea7d2](https://github.com/freeanima-org/freeanima/commit/ebea7d26f1c4b839723b3aecffb6eb534a41dcb6))
+* **task:** 统一实体底座、任务模块与 daisyUI fieldset 表单项 ([09e5752](https://github.com/freeanima-org/freeanima/commit/09e575261875580abfeba6e30b0a394079b57e5c))
+* **tunnel:** 内置 Cloudflare Tunnel + Access 远程访问 ([e097126](https://github.com/freeanima-org/freeanima/commit/e097126ff6efec96b4ff67b7f984ed0fbfe51a50))
+* **ui:** 抽象 ListDetailLayout 并修复 drawer 侧栏透明 ([9967857](https://github.com/freeanima-org/freeanima/commit/9967857940cd9c834fb84674ab00287c89a6b2b0))
+* **web:** Web 独立进程 stack 部署与壳层生产修复 ([2d3dbae](https://github.com/freeanima-org/freeanima/commit/2d3dbaef75a3eb7844bf320bca412a4664ad274b))
+
+
+### Bug Fixes
+
+* **admin:** 修复 bundled 管理台 Hub REST 并在控制台输出错误堆栈 ([a37690e](https://github.com/freeanima-org/freeanima/commit/a37690e6dfe5b0cd9d35bc60aeff1fd63c269a57))
+* **app-desktop:** DevTools 改为窗口内嵌并移除托盘入口 ([25682c5](https://github.com/freeanima-org/freeanima/commit/25682c51705b5db6a8d32a090c6370407840230a))
+* **app-desktop:** 修复 Windows 升级时冷启动旧版导致解压失败 ([5567803](https://github.com/freeanima-org/freeanima/commit/556780365a1a967ff6ed2de44a7cfd18b8f0740c))
+* **app-desktop:** 修复 Windows 安装包并优化打包体积 ([5783d9b](https://github.com/freeanima-org/freeanima/commit/5783d9b100923c67212d7fe4013cf2752cb9a816))
+* **app-desktop:** 修复桌面 chat 双重挂载与 SAP worker 404 ([af4f77c](https://github.com/freeanima-org/freeanima/commit/af4f77cd4eab14488daac598c2d73a2ac700e5f5))
+* **app-desktop:** 缓解 Windows 安装器点击安装后系统卡死 ([d9597d3](https://github.com/freeanima-org/freeanima/commit/d9597d31c9e150d5402fb4d5dcde0439f5a80532))
+* **app-mobile:** Android 真机构建改用 Gradle 直装并显示进度 ([e401f7e](https://github.com/freeanima-org/freeanima/commit/e401f7e2575a18febb14f0d8ab28667dafdd6818))
+* **app-mobile:** 修复 Android 状态栏与安全区重叠 ([5a58307](https://github.com/freeanima-org/freeanima/commit/5a583078ace024ef68da5413b65720e7ce8f834f))
+* **app-mobile:** 修复占位符导致 index.html 丢失脚本 ([68150ef](https://github.com/freeanima-org/freeanima/commit/68150ef7cad48305e56f9a46aa4ad67dc4c053cd))
+* **app-mobile:** 修复卧室 WebUI 资源路径双前缀导致样式失效 ([2e288a8](https://github.com/freeanima-org/freeanima/commit/2e288a8611b386d6bd74e70e2d82d043444f77be))
+* **app-mobile:** 修复聊天输入与管理台直连 Hub 网络 ([8341ca6](https://github.com/freeanima-org/freeanima/commit/8341ca6fc424249b40e3cb0f290f9c8fd9c0f231))
+* **app-mobile:** 修复重新打开白屏并补充启动错误提示 ([83265d0](https://github.com/freeanima-org/freeanima/commit/83265d0efa91a889a94bad63cb77827d6b654f9e))
+* **app-mobile:** 移动端设置布局与 Hub 重连能力 ([4e5541d](https://github.com/freeanima-org/freeanima/commit/4e5541df5c0f0a2158ba7eeb7ec824b2617cc0b1))
+* **app-web:** 恢复 Web 壳层通用设置面板 ([1e6f731](https://github.com/freeanima-org/freeanima/commit/1e6f73161d9ae76eab3f771bd88a8d5305eeeb8f))
+* **ci:** Quality 工作流安装 gettext/po4a 以运行 strict PO 检查 ([fd35431](https://github.com/freeanima-org/freeanima/commit/fd3543188d398cd42fac54b615d1f68b71e2d42f))
+* **ci:** 修复 Gitleaks 误报与 CodeQL 告警 ([fa38a0f](https://github.com/freeanima-org/freeanima/commit/fa38a0fdaec47ef464db5e497cd5541c95354e88))
+* **ci:** 修正 CLI pack 路径为 app/cli/publish ([c7ed789](https://github.com/freeanima-org/freeanima/commit/c7ed7893e408244893397814fc18cb86a7a18d2a))
+* **ci:** 清除 PO fuzzy 并恢复 platform llm-openai 依赖 ([326bc43](https://github.com/freeanima-org/freeanima/commit/326bc434d45d27e5d886e891acb5466bc3312f8b))
+* **cli:** 恢复 cli/src/cli.ts 兼容入口供 blackbox 与旧脚本使用 ([4a8aacd](https://github.com/freeanima-org/freeanima/commit/4a8aacd0b43d4f4d94549673599f9446bc5a94b6))
+* **companion:** companion app 导入时 @/ 别名解析到 companion 源码 ([94bfd4f](https://github.com/freeanima-org/freeanima/commit/94bfd4fe2fb91651847648650ebc0c3c092d3593))
+* **companion:** 修复 Windows overlay 失焦后自动出现标题栏 ([6136584](https://github.com/freeanima-org/freeanima/commit/6136584e1c87584e4299307a9397c4df30503f25))
+* **companion:** 启动加载改用 spinner，避免窄窗口文字溢出 ([71723e0](https://github.com/freeanima-org/freeanima/commit/71723e0501b0cb5801508221212d704e886544de))
+* **companion:** 移除 overlay 窗设置按钮 ([c28ad2e](https://github.com/freeanima-org/freeanima/commit/c28ad2eab06f671eab8c137f58e150210e5f819d))
+* **db:** 修复归档列引入后 loadConversationMeta 校验失败 ([3d3d490](https://github.com/freeanima-org/freeanima/commit/3d3d490aa186b79c91626d13c846b13aed539c1a))
+* **deps:** 强制 @sinclair/typebox 0.34 以满足 Elysia 启动 ([42420f4](https://github.com/freeanima-org/freeanima/commit/42420f4f470515ae81252b30aab55bfbe8b3af13))
+* **dev-web:** 修复 Hub 迁移失败与 dev:web 壳层联调 ([805d3bc](https://github.com/freeanima-org/freeanima/commit/805d3bcd0df557aad07e59790eec693b93efbe49))
+* **email:** 修复 IMAP 同步头解析与迁移脚本配置绑定 ([97615c0](https://github.com/freeanima-org/freeanima/commit/97615c0344c57b01870766d81731e3d021aca2f5))
+* **goal:** 避免 goal-judge JSON 解析的正则 ReDoS 告警 ([6b893a7](https://github.com/freeanima-org/freeanima/commit/6b893a739fe0f73615b46975f76eec5c7809b86d))
+* **i18n:** 统一 site/docs 英文 SSOT 并补齐 PO 中文翻译 ([6d40a75](https://github.com/freeanima-org/freeanima/commit/6d40a758d6b9c167d2127ce8e3402e27ca1a7acf))
+* **memory:** 梦境按 created_at 筛选当日情绪记忆 ([234131f](https://github.com/freeanima-org/freeanima/commit/234131f8ba5a3f3f29949c00e64cd05ba1f223e9))
+* **mobile:** Android 脚本改用 Vite 构建替代已移除的 build.ts ([1914cca](https://github.com/freeanima-org/freeanima/commit/1914ccad7b2805cb693903fbb20049051a8518c6))
+* **mobile:** 修复聊天室键盘遮挡与管理台侧栏 emoji ([1d1f14d](https://github.com/freeanima-org/freeanima/commit/1d1f14d849705ccf7a8a50849a2dc6baa61c6386))
+* **parlor:** 修复 SharedWorker 初始化与脚本加载 ([9dd26cc](https://github.com/freeanima-org/freeanima/commit/9dd26cc53efc2d62396311f0edb7127b8bc7d58c))
+* **parlor:** 修复 tool call 分段展示并统一 stream-reply reducer ([640a7f8](https://github.com/freeanima-org/freeanima/commit/640a7f80ec419a4218228e55ac59f68dff07de07))
+* **parlor:** 迁移 sidecar relay 修复会话列表与 instance 持久化 ([3474277](https://github.com/freeanima-org/freeanima/commit/3474277995c17e66ab2f1912f97263ac0d901282))
+* **platform:** slash 命令必有响应，耗时命令先 ack 再出结果 ([8d13231](https://github.com/freeanima-org/freeanima/commit/8d13231d04528ffeb8cc87d6e831ad5eccbee81f))
+* **platform:** 移除 Parlor 默认 platform 并迁移至 sap:parlor:{instance} ([aeda08c](https://github.com/freeanima-org/freeanima/commit/aeda08cf1b232432171b243b74394936bea59751))
+* **shell-ui:** 修复 bundled 模式导航、样式与聊天室 UX ([2c2ea55](https://github.com/freeanima-org/freeanima/commit/2c2ea55fc4cd37d066755627b46405f0911bbd05))
+* **site:** 修复 Paraglide 构建解析与 Mermaid 客户端 i18n ([79fc6b1](https://github.com/freeanima-org/freeanima/commit/79fc6b15782e188214b4e784ba2333654cd0a044))
+* **test:** cron-log mock 保留 getCronJob 等导出避免污染 gateway 测试 ([cfaee89](https://github.com/freeanima-org/freeanima/commit/cfaee893542795d8bb7bc26816b8daa5f9813a19))
+* **test:** 修复 fridge-bridge  flaky 单测并同步依赖与 CI ([2f6a427](https://github.com/freeanima-org/freeanima/commit/2f6a427afb0e8b6e9b23749491a2a490617115e9))
+* **test:** 修复测试套件在 /tmp 下的临时目录泄漏 ([5299240](https://github.com/freeanima-org/freeanima/commit/529924014687415ff443e19f2da0d644c95ad597))
+* **tokenizer:** Hub 下载超时并收窄 Ollama 端点探测范围 ([df044b6](https://github.com/freeanima-org/freeanima/commit/df044b64660a1d8dce1a12315bedd00fec09bb82))
+* **web:** 修复生产构建深路径刷新白屏 ([eed752c](https://github.com/freeanima-org/freeanima/commit/eed752c48b3ec77c3db2b7f39553403a3e0ab943))
+
+
+### Performance
+
+* **webui:** 优化 Chamber WebUI 公网访问性能 ([b532efc](https://github.com/freeanima-org/freeanima/commit/b532efc148664ff21bbe78e46c861b3899739658))
+
+
+### Documentation
+
+* **agents:** 以高层大原则重组 AGENTS.md bootstrap ([dc153dd](https://github.com/freeanima-org/freeanima/commit/dc153dd4ea3dec6a7f5fbaf92dd0e31ea29bec10))
+* **guide:** 修正 Admin URL 并同步 agent 规则 ([e79c0df](https://github.com/freeanima-org/freeanima/commit/e79c0dfa065ffcfcc6ebb586b3a01979bf021d2b))
+* **rules:** 补全分层依赖矩阵文档 ([4ccd5fc](https://github.com/freeanima-org/freeanima/commit/4ccd5fc87161c875e07d3f8a530b64ec0ad36b20))
+* **skill:** 添加多 worktree 开发与 cherry-pick 合入流程 ([e055e01](https://github.com/freeanima-org/freeanima/commit/e055e017ae53047ffd9ecb72adfa3b816d48f503))
+* **worktree:** 副 worktree 通过 symlink 复用 node_modules ([0dfc509](https://github.com/freeanima-org/freeanima/commit/0dfc5097d8cf9f4efbd3615f20e37005b11fb572))
+
+
+### Miscellaneous
+
+* **deps-dev:** bump electron ([630361e](https://github.com/freeanima-org/freeanima/commit/630361eac539c63f6fd214830ef6f1d8261d11a6))
+* **deps:** bump the production-dependencies group across 1 directory with 3 updates ([052c733](https://github.com/freeanima-org/freeanima/commit/052c733fca5af99aadfbeed9239cfdb871ddba19))
+* **deps:** 升级 drizzle rc.4 并清理遗留依赖与 [@deprecated](https://github.com/deprecated) API ([a978f77](https://github.com/freeanima-org/freeanima/commit/a978f7790f3cd88bb1bf1b13e4a2cf3f4d4f39c7))
+* **deps:** 统一 workspace catalog 并同步 lockfile ([86c3d14](https://github.com/freeanima-org/freeanima/commit/86c3d14fe51af84db61d0703f50b9c78cb71d769))
+* **security:** 为 tunnel-run 测试占位凭证添加 gitleaks 白名单 ([9620ae4](https://github.com/freeanima-org/freeanima/commit/9620ae4ee18fd9947baa8fb4ed0cae0426a63614))
+* 忽略 TS composite 声明产物并移除误提交文件 ([776d79f](https://github.com/freeanima-org/freeanima/commit/776d79ff2887c7a6a1027f7c8de93ad1c109b105))
+
+
+### Refactoring
+
+* Admin 架构重组与命名统一 ([03407a8](https://github.com/freeanima-org/freeanima/commit/03407a8b39f18d0075f7286033607cc20ed99e6e))
+* **build:** 前端构建统一迁移至 Vite ([cfb8fd2](https://github.com/freeanima-org/freeanima/commit/cfb8fd2f7976b8e5a23a7baf4d75ae013632b8ca))
+* **core:** Session 领域统一重命名为 Conversation ([5def5c8](https://github.com/freeanima-org/freeanima/commit/5def5c82601c610895c932c18c3e13504b6e5a5d))
+* **db:** PG 扁平化，db-pg 迁入 core 并移除 Port 层 ([8c138f1](https://github.com/freeanima-org/freeanima/commit/8c138f1fe572f3adf7726c7de560cddb923ab116))
+* **db:** 全栈 snake_case 与 Row/Mapper 类型治理 ([1bf8d54](https://github.com/freeanima-org/freeanima/commit/1bf8d54fa84bd42ea79a25cafaf6d9b415438374))
+* **db:** 贯通 Row 类型与 pgTimestamptz 时间语义 ([622406a](https://github.com/freeanima-org/freeanima/commit/622406ad46490d8b624d766a0b0b941adbf5d181))
+* **principles:** 对齐 AGENTS 五条原则的首批落地 ([247abab](https://github.com/freeanima-org/freeanima/commit/247abab218df534954963988fe2a7c4165621e74))
+* **sap:** 统一三段 platform、Hub instance 分配与三卫星客户端策略 ([0503148](https://github.com/freeanima-org/freeanima/commit/0503148eadc90071171c0f8a2a1906249f99ed1a))
+* **satellite:** 将 parlor 重命名为 chat ([819aed7](https://github.com/freeanima-org/freeanima/commit/819aed70926fa6f2f984f5555b45bbc9ef2b04b8))
+* **task:** 解绑冰箱贴与任务待办 ([781b401](https://github.com/freeanima-org/freeanima/commit/781b40193ec676b5c5cbad98d92c3dd7f8837e4d))
+* **tool:** 拆分任务/邮件 ToolSet 并补齐检索与 remind_at ([037f0b1](https://github.com/freeanima-org/freeanima/commit/037f0b1bef7dd3bc866675ac8486427b146b0154))
+* 分层重构与 legacy 清理，合并 task 包并统一壳层基础设施 ([cf6f775](https://github.com/freeanima-org/freeanima/commit/cf6f775cf7d9a525dc11f07c9c27fdecd57fdb67))
+* 桌面/移动统一壳层与设置窗 ([83e0b40](https://github.com/freeanima-org/freeanima/commit/83e0b40b2d4b0f56dedd02bcda02b6502b050959))
+* 清理废弃 API、迁移脚本与 config shim ([0c9cd8f](https://github.com/freeanima-org/freeanima/commit/0c9cd8f95058f16aeaa02fc83744735d9dbf98e7))
+* 清理弃用 API 别名、死代码与兼容层 ([acdff7b](https://github.com/freeanima-org/freeanima/commit/acdff7bbfd470e325fec71b255ef2463ac77de74))
+* 设置契约迁入 shell-ui，form/component 分责 ([edd2e87](https://github.com/freeanima-org/freeanima/commit/edd2e8753326bb758b87c494964f0df98853b4bf))
+
+
+### Tests
+
+* **core:** 补充单元测试提升覆盖率 ([038729a](https://github.com/freeanima-org/freeanima/commit/038729a335e9588421a7665cf7a95a32c00e8163))
+
+
+### CI
+
+* 修复 Dependabot bun lockfile 并优化 Actions 工作流 ([b3ec44f](https://github.com/freeanima-org/freeanima/commit/b3ec44f3c23d2a3c810dc6644a8b30c5b6e06a1f))
+
 ## [0.7.0](https://github.com/freeanima-org/freeanima/compare/v0.6.0...v0.7.0) (2026-06-18)
 
 
