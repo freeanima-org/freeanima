@@ -1,6 +1,25 @@
-import { m } from "@paraglide/messages";
 import mermaid from "mermaid";
 import { faMermaidThemeDark, faMermaidThemeLight } from "./mermaid-theme.ts";
+
+export type MermaidA11yLabels = {
+  dialog: string;
+  zoomIn: string;
+  zoomOut: string;
+  zoomReset: string;
+  close: string;
+  expand: string;
+};
+
+const DEFAULT_A11Y: MermaidA11yLabels = {
+  dialog: "Mermaid diagram",
+  zoomIn: "Zoom in",
+  zoomOut: "Zoom out",
+  zoomReset: "Reset zoom",
+  close: "Close",
+  expand: "Expand diagram",
+};
+
+let a11y: MermaidA11yLabels = DEFAULT_A11Y;
 
 const MERMAID_FLOWCHART = { htmlLabels: true, curve: "basis" } as const;
 
@@ -66,12 +85,12 @@ function ensureLightbox(): HTMLElement {
   root.hidden = true;
   root.innerHTML = `
     <div class="fa-mermaid-lightbox__backdrop" data-fa-mermaid-close></div>
-    <div class="fa-mermaid-lightbox__panel" role="dialog" aria-modal="true" aria-label="${m.docs_mermaid_dialog()}">
+    <div class="fa-mermaid-lightbox__panel" role="dialog" aria-modal="true" aria-label="${a11y.dialog}">
       <div class="fa-mermaid-lightbox__toolbar">
-        <button type="button" class="fa-mermaid-lightbox__btn" data-fa-mermaid-zoom="out" aria-label="${m.docs_mermaid_zoom_out()}">−</button>
-        <button type="button" class="fa-mermaid-lightbox__btn" data-fa-mermaid-zoom="reset" aria-label="${m.docs_mermaid_zoom_reset()}">100%</button>
-        <button type="button" class="fa-mermaid-lightbox__btn" data-fa-mermaid-zoom="in" aria-label="${m.docs_mermaid_zoom_in()}">+</button>
-        <button type="button" class="fa-mermaid-lightbox__btn fa-mermaid-lightbox__btn--close" data-fa-mermaid-close aria-label="${m.docs_mermaid_close()}">×</button>
+        <button type="button" class="fa-mermaid-lightbox__btn" data-fa-mermaid-zoom="out" aria-label="${a11y.zoomOut}">−</button>
+        <button type="button" class="fa-mermaid-lightbox__btn" data-fa-mermaid-zoom="reset" aria-label="${a11y.zoomReset}">100%</button>
+        <button type="button" class="fa-mermaid-lightbox__btn" data-fa-mermaid-zoom="in" aria-label="${a11y.zoomIn}">+</button>
+        <button type="button" class="fa-mermaid-lightbox__btn fa-mermaid-lightbox__btn--close" data-fa-mermaid-close aria-label="${a11y.close}">×</button>
       </div>
       <div class="fa-mermaid-lightbox__viewport">
         <div class="fa-mermaid-lightbox__stage"></div>
@@ -141,7 +160,7 @@ function wrapDiagram(pre: HTMLPreElement): void {
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = "fa-mermaid-zoom-btn";
-  btn.setAttribute("aria-label", m.docs_mermaid_expand());
+  btn.setAttribute("aria-label", a11y.expand);
   btn.textContent = "⤢";
   btn.addEventListener("click", () => {
     const svg = pre.querySelector("svg");
@@ -196,7 +215,8 @@ async function bootInitial(): Promise<void> {
   enhanceDiagrams();
 }
 
-export function initMermaidClient(): void {
+export function initMermaidClient(labels?: MermaidA11yLabels): void {
+  if (labels) a11y = labels;
   if (!document.querySelector("pre.mermaid")) return;
 
   ensureLightbox();
