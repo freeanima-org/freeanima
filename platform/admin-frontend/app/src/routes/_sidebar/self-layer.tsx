@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import type { SelfBlockDisplay } from "@freeanima/admin-api/api";
+import type { SelfBlockDisplay } from "@freeanima/admin-contract/api";
 import { getSelfBlocks } from "@admin/lib/api.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
 import { m } from "@admin/lib/i18n.ts";

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import type { ToolsStatusResponse, ToolsStatusToolItem } from "@freeanima/admin-api/api";
+import type { ToolsStatusResponse, ToolsStatusToolItem } from "@freeanima/admin-contract/api";
 import { useMemo, useState } from "react";
 import { getToolsStatus } from "@admin/lib/api.ts";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";

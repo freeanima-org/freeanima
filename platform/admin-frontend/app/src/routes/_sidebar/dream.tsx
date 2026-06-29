@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
-import type { DreamMemoryRow } from "@freeanima/admin-api/api";
+import type { DreamMemoryRow } from "@freeanima/admin-contract/api";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { listDreamMemories } from "@admin/lib/api.ts";
 import { formatDisplayDate, formatDisplayDateTime } from "@admin/lib/format-datetime.ts";

@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import type { PromptDebugResponse, ConversationListItem } from "@freeanima/admin-api/api";
+import type { PromptDebugResponse, ConversationListItem } from "@freeanima/admin-contract/api";
 import { useEffect, useMemo, useState } from "react";
 import { FormField } from "@freeanima/satellite-sdk/form";
 import { getPromptDebug, listConversations } from "@admin/lib/api.ts";

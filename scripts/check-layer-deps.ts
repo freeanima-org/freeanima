@@ -27,7 +27,7 @@ const LAYER_DIRS = [
 const SATELLITE_ALLOWED = new Set(["sap-contract", "satellite-sdk", "kernel", "kernel-logging"]);
 
 const ADMIN_FRONTEND_ALLOWED = new Set([
-  "admin-api",
+  "admin-contract",
   "sap-contract",
   "satellite-sdk",
   "kernel",
@@ -176,7 +176,7 @@ function satelliteViolation(relPath: string, pkg: string): string | null {
 function adminFrontendViolation(relPath: string, pkg: string): string | null {
   if (!isAdminFrontendPath(relPath)) return null;
   if (isAdminFrontendAllowed(pkg)) return null;
-  return `platform/admin-frontend must not depend on @freeanima/${workspacePkgName(pkg)} (allowed: admin-api, satellite-sdk, sap-contract, kernel*)`;
+  return `platform/admin-frontend must not depend on @freeanima/${workspacePkgName(pkg)} (allowed: admin-contract, satellite-sdk, sap-contract, kernel*)`;
 }
 
 function reasonFor(layer: Layer, pkg: string): string {
@@ -252,7 +252,8 @@ function scanPackageJson(): Violation[] {
       if (!ent.isDirectory()) continue;
       const pkgDir = dir === "tests" || dir === "kernel" ? base : join(base, ent.name);
       const nestedAdmin =
-        dir === "platform" && (ent.name === "admin-api" || ent.name === "admin-frontend")
+        dir === "platform" &&
+        (ent.name === "admin-api" || ent.name === "admin-frontend" || ent.name === "admin-contract")
           ? pkgDir
           : null;
       const pjPath = join(nestedAdmin ?? pkgDir, "package.json");

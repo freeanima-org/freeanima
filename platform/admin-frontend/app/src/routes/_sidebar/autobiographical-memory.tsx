@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
-import type { AutobiographicalMemoryRow } from "@freeanima/admin-api/api";
+import type { AutobiographicalMemoryRow } from "@freeanima/admin-contract/api";
 import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/satellite-sdk/form";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { listAutobiographicalMemories } from "@admin/lib/api.ts";

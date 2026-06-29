@@ -17,7 +17,7 @@ app → platform → capabilities → runtime → core → kernel
 | **platform**     | `platform/`     | `@freeanima/platform` | Composition root, ports, connectors, CLI wiring           |
 | **app**          | `app/`          | `@freeanima/cli`, …   | CLI、desktop/mobile 壳等用户交付入口                      |
 
-Admin Hub REST / SPA：`@freeanima/admin-api`、`@freeanima/admin-frontend`（`platform/admin-api/`、`platform/admin-frontend/`）。
+Admin Hub REST / SPA：`@freeanima/admin-contract`（wire 契约）、`@freeanima/admin-api`（REST 实现）、`@freeanima/admin-frontend`（`platform/admin-contract/`、`platform/admin-api/`、`platform/admin-frontend/`）。
 
 ### `@freeanima/core` subpaths
 
@@ -37,18 +37,19 @@ Readable mirror of [`scripts/check-layer-deps.ts`](../../scripts/check-layer-dep
 
 Dependency direction (high → low): `app` / `platform` → `capabilities` → `runtime` → `core` → `kernel`. Lower layers must not import higher layers.
 
-| Source directory              | Allowed `@freeanima/*` (package root)                                                                          | Explicitly forbidden                                            |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `kernel/`                     | `kernel`, `kernel-*`                                                                                           | all other workspace packages                                    |
-| `core/`                       | `kernel`, `kernel-*`, `core`                                                                                   | `runtime`, `capabilities-*`, `platform`, …                      |
-| `runtime/`                    | `kernel`, `kernel-*`, `core`, `runtime`                                                                        | **`platform`**, **`capabilities-*`**                            |
-| `capabilities/<pkg>/`         | `kernel`, `kernel-*`, `core`, **`core/db/pg`**, **`core/db/schema`**, own `capabilities-<pkg>`, `sap-contract` | **`runtime`**, **`platform`**, **other `capabilities-*`**       |
-| `platform/`, `app/`, `tests/` | all workspace packages                                                                                         | —                                                               |
-| `platform/admin-frontend/`    | `admin-api`, `satellite-sdk`, `sap-contract`, `kernel`, `kernel-*`                                             | **`platform`**, **`core`**, **`runtime`**, **`capabilities-*`** |
-| `platform/admin-api/`         | same as `platform/`                                                                                            | —                                                               |
-| `satellites/<name>/`          | `sap-contract`, `satellite-sdk`, `kernel`, `kernel-*`                                                          | all other workspace packages                                    |
-| `packages/sap-contract/`      | `kernel`, `kernel-*`, `sap-contract`                                                                           | all other workspace packages                                    |
-| `packages/satellite-sdk/`     | `kernel`, `kernel-*`                                                                                           | all other workspace packages                                    |
+| Source directory              | Allowed `@freeanima/*` (package root)                                                                          | Explicitly forbidden                                                             |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `kernel/`                     | `kernel`, `kernel-*`                                                                                           | all other workspace packages                                                     |
+| `core/`                       | `kernel`, `kernel-*`, `core`                                                                                   | `runtime`, `capabilities-*`, `platform`, …                                       |
+| `runtime/`                    | `kernel`, `kernel-*`, `core`, `runtime`                                                                        | **`platform`**, **`capabilities-*`**                                             |
+| `capabilities/<pkg>/`         | `kernel`, `kernel-*`, `core`, **`core/db/pg`**, **`core/db/schema`**, own `capabilities-<pkg>`, `sap-contract` | **`runtime`**, **`platform`**, **other `capabilities-*`**                        |
+| `platform/`, `app/`, `tests/` | all workspace packages                                                                                         | —                                                                                |
+| `platform/admin-frontend/`    | `admin-contract`, `satellite-sdk`, `sap-contract`, `kernel`, `kernel-*`                                        | **`platform`**, **`core`**, **`runtime`**, **`capabilities-*`**, **`admin-api`** |
+| `platform/admin-contract/`    | `kernel`, `kernel-*`（devDeps：`platform`, `core`, `admin-api` 仅类型解析）                                    | **`platform`**, **`core`**, **`admin-api`**                                      |
+| `platform/admin-api/`         | `admin-contract`, same as `platform/`                                                                          | —                                                                                |
+| `satellites/<name>/`          | `sap-contract`, `satellite-sdk`, `kernel`, `kernel-*`                                                          | all other workspace packages                                                     |
+| `packages/sap-contract/`      | `kernel`, `kernel-*`, `sap-contract`                                                                           | all other workspace packages                                                     |
+| `packages/satellite-sdk/`     | `kernel`, `kernel-*`                                                                                           | all other workspace packages                                                     |
 
 Notes aligned with the checker:
 
