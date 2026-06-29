@@ -12,6 +12,3 @@ coveragePathIgnorePatterns = [
   "**/*.spec.ts",
   "**/tests/helpers/**",
 ]
-
-[serve.static]
-plugins = ["bun-plugin-tailwind"]

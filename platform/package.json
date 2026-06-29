@@ -16,7 +16,6 @@
     "./logging/*": "./logging/*.ts",
     "./commands": "./commands/index.ts",
     "./bootstrap": "./bootstrap/index.ts",
-    "./connectors/db-pg": "./connectors/db-pg/index.ts",
     "./connectors/gateway": "./connectors/gateway/index.ts",
     "./connectors/gateway/schemas/*": "./connectors/gateway/schemas/*.ts",
     "./connectors/cron": "./connectors/cron/index.ts",
@@ -68,7 +67,6 @@
     "@types/nodemailer": "^8.0.1",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "bun-plugin-tailwind": "catalog:",
     "daisyui": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"

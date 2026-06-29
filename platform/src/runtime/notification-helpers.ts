@@ -3,7 +3,6 @@ import { resolveNotificationRecipients } from "@freeanima/core/config";
 import type { Config } from "@freeanima/core/config";
 import {
   createNotification,
-  createNotificationForRecipients,
   listNotifications,
   markNotificationRead,
 } from "./service-notifications.ts";
@@ -69,6 +68,3 @@ export async function notifyAgentRecipient(
   const { agent } = resolveNotificationRecipients(config.data);
   await createNotification(deps, { ...input, recipient_kind: agent.kind, recipient_id: agent.id });
 }
-
-/** @deprecated use notifyBothRecipients — kept for tests importing fan-out helper */
-export { createNotificationForRecipients };

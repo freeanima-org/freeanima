@@ -74,7 +74,6 @@ mock.module("@freeanima/core/db/pg/notifications", () => ({
 
 import {
   createNotification,
-  createNotificationForRecipients,
   listNotifications,
   markNotificationRead,
 } from "./service-notifications.ts";
@@ -138,13 +137,15 @@ describe("service-notifications", () => {
     expect(unread.total).toBe(0);
   });
 
-  it("createNotificationForRecipients fans out to kinds", async () => {
+  it("createNotification can fan out to user and agent", async () => {
     const deps = testDeps();
-    const created = await createNotificationForRecipients(deps, { title: "Fanout", body: "both" }, [
-      "user",
-      "agent",
-    ]);
-    expect(created).toHaveLength(2);
-    expect(new Set(created.map((r) => r.recipient_kind))).toEqual(new Set(["user", "agent"]));
+    await createNotification(deps, { recipient_kind: "user", title: "Fanout", body: "both" });
+    await createNotification(deps, { recipient_kind: "agent", title: "Fanout", body: "both" });
+    const userRows = await listNotifications(deps, { recipient_kind: "user" });
+    const agentRows = await listNotifications(deps, { recipient_kind: "agent" });
+    expect(userRows.items).toHaveLength(1);
+    expect(agentRows.items).toHaveLength(1);
+    expect(userRows.items[0]?.title).toBe("Fanout");
+    expect(agentRows.items[0]?.title).toBe("Fanout");
   });
 });

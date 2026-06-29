@@ -1,11 +1,11 @@
 /**
  * Rename Drizzle TS property access / insert keys camelCase → snake_case.
- * Scope: platform/connectors/db-pg only.
+ * Scope: core/src/db/pg only.
  */
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const ROOT = join(import.meta.dir, "..", "platform/connectors/db-pg");
+const ROOT = join(import.meta.dir, "..", "core/src/db/pg");
 
 const RENAMES: [string, string][] = [
   ["sourceConversationIds", "source_conversation_ids"],
