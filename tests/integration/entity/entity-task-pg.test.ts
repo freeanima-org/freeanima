@@ -11,6 +11,7 @@ import {
   createTaskList,
   completeTaskItem,
   closeTaskList,
+  deleteTaskList,
   getDefaultTaskList,
   listTaskItems,
   listTaskLists,
@@ -115,5 +116,75 @@ describePg("entity task PG", () => {
     await expect(updateTaskList({ id: defaultList!.id, closed: true })).rejects.toThrow(
       "default task list cannot be closed",
     );
+  });
+
+  it("creates nested folders and lists; rejects tasks on folders", async () => {
+    const folder = await createTaskList({ name: "工作", is_folder: true });
+    expect(folder.is_folder).toBe(true);
+    expect(folder.parent_id).toBeNull();
+    expect(folder.item_count).toBe(0);
+
+    const childList = await createTaskList({ name: "项目A", parent_id: folder.id });
+    expect(childList.parent_id).toBe(folder.id);
+    expect(childList.is_folder).toBe(false);
+
+    const nestedFolder = await createTaskList({
+      name: "Q2",
+      is_folder: true,
+      parent_id: folder.id,
+    });
+    expect(nestedFolder.parent_id).toBe(folder.id);
+
+    const deepList = await createTaskList({ name: "子项", parent_id: nestedFolder.id });
+    expect(deepList.parent_id).toBe(nestedFolder.id);
+
+    await expect(createTaskItem({ title: "不应成功", list_id: folder.id })).rejects.toThrow(
+      "tasks cannot be assigned to a folder",
+    );
+
+    const item = await createTaskItem({ title: "合法任务", list_id: childList.id });
+    expect(item.list_id).toBe(childList.id);
+
+    const lists = await listTaskLists();
+    expect(lists.find((l) => l.id === folder.id)?.is_folder).toBe(true);
+    expect(lists.find((l) => l.id === childList.id)?.parent_id).toBe(folder.id);
+  });
+
+  it("rejects folder cycle and invalid parent", async () => {
+    const folderA = await createTaskList({ name: "A", is_folder: true });
+    const folderB = await createTaskList({ name: "B", is_folder: true, parent_id: folderA.id });
+
+    await expect(updateTaskList({ id: folderA.id, parent_id: folderB.id })).rejects.toThrow(
+      "cycle",
+    );
+
+    const plainList = await createTaskList({ name: "清单" });
+    await expect(updateTaskList({ id: plainList.id, parent_id: plainList.id })).rejects.toThrow(
+      "own parent",
+    );
+  });
+
+  it("cascade deletes folder children and tasks", async () => {
+    const folder = await createTaskList({ name: "待删文件夹", is_folder: true });
+    const list = await createTaskList({ name: "待删清单", parent_id: folder.id });
+    const item = await createTaskItem({ title: "待删任务", list_id: list.id });
+
+    const ok = await deleteTaskList(folder.id, { cascade: true });
+    expect(ok).toBe(true);
+
+    expect(await getEntity(folder.id)).toBeNull();
+    expect(await getEntity(list.id)).toBeNull();
+    expect(await getEntity(item.id)).toBeNull();
+  });
+
+  it("cascade closes folder descendants", async () => {
+    const folder = await createTaskList({ name: "归档夹", is_folder: true });
+    const list = await createTaskList({ name: "归档清单", parent_id: folder.id });
+
+    await closeTaskList(folder.id);
+
+    const all = await listTaskLists({ includeClosed: true });
+    expect(all.find((l) => l.id === folder.id)?.closed).toBe(true);
+    expect(all.find((l) => l.id === list.id)?.closed).toBe(true);
   });
 });

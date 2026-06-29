@@ -47,6 +47,8 @@ export function listPayload(list: TaskListRow) {
     sort_order: list.sort_order,
     closed: list.closed,
     is_default: list.is_default,
+    is_folder: list.is_folder,
+    parent_id: list.parent_id,
     item_count: list.item_count,
   };
 }

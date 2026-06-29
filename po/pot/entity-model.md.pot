@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-29 13:16+0800\n"
+"POT-Creation-Date: 2026-06-29 16:50+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -250,6 +250,12 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/entity-model.md:77
+#, no-wrap
+msgid "**Folders** (`body.is_folder: true`) are container nodes in the sidebar tree only — they cannot hold tasks directly (`task.create` / `task.patch` reject `list_id` pointing at a folder). Child lists and sub-folders reference a parent folder via `body.parent_id` (entity id of a folder, or omitted/null at root). Nesting must not form cycles. Archiving or deleting a folder cascades to descendants. `sort_order` is scoped among siblings sharing the same `parent_id`.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:79
 msgid ""
 "LLM ToolSets: `@freeanima/capabilities-task` — `task` (item CRUD + "
 "`task_search`) and `tasklist` (list CRUD + `tasklist_search`); load via "
@@ -259,18 +265,18 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:78
+#: docs/concepts/entity-model.md:80
 #, no-wrap
 msgid "Email module (Estate)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:81
+#: docs/concepts/entity-model.md:83
 msgid "Email accounts, threads, and mirrored messages map to:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:87
+#: docs/concepts/entity-model.md:89
 #, no-wrap
 msgid ""
 "| Concept | Entity         | Component       |\n"
@@ -281,7 +287,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:89
+#: docs/concepts/entity-model.md:91
 msgid ""
 "Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. Messages "
 "store IMAP UID in `body.imap_uid`; human-readable subject/body use entity "
@@ -290,7 +296,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:91
+#: docs/concepts/entity-model.md:93
 msgid ""
 "LLM ToolSets: `@freeanima/capabilities-email` — `email-account` (account "
 "entities) and `email` (sync, send/receive, search); load via `toolset_load`. "
@@ -299,18 +305,18 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:92
+#: docs/concepts/entity-model.md:94
 #, no-wrap
 msgid "Diary module"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:95
+#: docs/concepts/entity-model.md:97
 msgid "Structured journal entries for **user** and **agent** subjects:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:99
+#: docs/concepts/entity-model.md:101
 #, no-wrap
 msgid ""
 "| Concept | Entity         | Component     |\n"
@@ -319,7 +325,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:101
+#: docs/concepts/entity-model.md:103
 msgid ""
 "Entries live in each subject's **`default_private_world_id`**. "
 "`body.entry_at` is the timeline sort key; `title` / `summary` / `content` "
@@ -327,43 +333,43 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:105
+#: docs/concepts/entity-model.md:107
 msgid ""
 "**SAP:** `diary.*` methods — all take `subject_kind: user | agent` "
 "(including `diary.append`)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:105
+#: docs/concepts/entity-model.md:107
 msgid "**UI:** shell `/diary` (`@freeanima/satellite-diary`)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:105
+#: docs/concepts/entity-model.md:107
 msgid "**LLM:** ToolSet `diary` — agent private world only."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:107
+#: docs/concepts/entity-model.md:109
 msgid "See [`docs/features/diary.md`](../features/diary.md)."
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/entity-model.md:108 messages/po4a/en.xml:116
+#: docs/concepts/entity-model.md:110 messages/po4a/en.xml:116
 #: messages/po4a/en.xml:128 messages/po4a/en.xml:438
 #, no-wrap
 msgid "Search"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:111
+#: docs/concepts/entity-model.md:113
 msgid ""
 "Entity **list** (deterministic browse) and **search** (relevance ranking) "
 "are separate ports:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:116
+#: docs/concepts/entity-model.md:118
 #, no-wrap
 msgid ""
 "| Port                      | Role                                                                  |\n"
@@ -373,44 +379,44 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:118
+#: docs/concepts/entity-model.md:120
 #, no-wrap
 msgid "**Scope:** default `world_id`; `global: true` requires an explicit accessible-world allowlist (public worlds only until subject permissions bootstrap).\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:120
+#: docs/concepts/entity-model.md:122
 #, no-wrap
 msgid "**Component filters:** whitelisted per `primary_component` (e.g. `task_item`: `status`, `list_id`, `tags`, `due_today`). Arbitrary JSONPath is forbidden.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:122
+#: docs/concepts/entity-model.md:124
 #, no-wrap
 msgid "**Tools / API:** `entity_search` (LLM/MCP) and `GET|POST /api/entities/search` share `EntitySearchPort`. Task UI search box uses the same REST endpoint.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:124
+#: docs/concepts/entity-model.md:126
 msgid ""
 "See memory hybrid search in [`memory.md`](memory.md) for FTS operator "
 "syntax; entity search reuses the same query builder."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:126
+#: docs/concepts/entity-model.md:128
 #, no-wrap
 msgid "**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run Admin **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:127
+#: docs/concepts/entity-model.md:129
 #, no-wrap
 msgid "Future migration map (not executed yet)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:137
+#: docs/concepts/entity-model.md:139
 #, no-wrap
 msgid ""
 "| Legacy table                 | Target                                               |\n"
@@ -424,6 +430,6 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:138
+#: docs/concepts/entity-model.md:140
 msgid "See [`architecture.md`](architecture.md) for cognitive-layer context."
 msgstr ""

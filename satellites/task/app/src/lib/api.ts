@@ -8,6 +8,8 @@ export type TaskListRow = {
   closed: boolean;
   color: string | null;
   is_default: boolean;
+  is_folder: boolean;
+  parent_id: number | null;
   item_count: number;
   created_at: string;
   updated_at: string;
@@ -40,15 +42,23 @@ export async function fetchTaskLists(opts?: { includeClosed?: boolean }): Promis
   return data.lists;
 }
 
-export async function createTaskList(name: string): Promise<TaskListRow> {
+export async function createTaskList(input: {
+  name: string;
+  is_folder?: boolean;
+  parent_id?: number | null;
+  sort_order?: number;
+  color?: string | null;
+}): Promise<TaskListRow> {
   const client = await sap();
-  const data = await client.request("tasklist.create", { name });
+  const data = await client.request("tasklist.create", input);
   return data.item;
 }
 
 export async function updateTaskList(
   id: number,
-  patch: Partial<Pick<TaskListRow, "name" | "sort_order" | "closed" | "color">>,
+  patch: Partial<
+    Pick<TaskListRow, "name" | "sort_order" | "closed" | "color" | "is_folder" | "parent_id">
+  >,
 ): Promise<TaskListRow> {
   const client = await sap();
   const data = await client.request("tasklist.patch", { id, ...patch });

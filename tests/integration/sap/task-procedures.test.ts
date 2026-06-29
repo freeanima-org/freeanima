@@ -1,7 +1,9 @@
 import { describe, expect, it } from "bun:test";
 import {
   SAP_METHODS,
+  tasklistCreateInputSchema,
   tasklistListInputSchema,
+  tasklistPatchInputSchema,
   taskListInputSchema,
   taskCreateInputSchema,
 } from "@freeanima/sap-contract";
@@ -21,5 +23,7 @@ describe("task SAP procedures", () => {
     tasklistListInputSchema.parse({ include_closed: true });
     taskListInputSchema.parse({ list_id: 1, status: "pending" });
     taskCreateInputSchema.parse({ title: "写文档", list_id: 2 });
+    tasklistCreateInputSchema.parse({ name: "工作", is_folder: true, parent_id: 10 });
+    tasklistPatchInputSchema.parse({ id: 3, parent_id: null, is_folder: false });
   });
 });

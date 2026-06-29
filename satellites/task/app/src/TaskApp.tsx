@@ -44,6 +44,7 @@ import { readListIdFromUrl, writeListIdToUrl } from "./lib/list-url.ts";
 import { moveTaskItemsToList } from "./lib/move-items.ts";
 import { applyShiftRangeSelect } from "./lib/range-select.ts";
 import { resolveDefaultListId, resolveSelectedListIdWithUrl } from "./lib/resolve-list.ts";
+import { getParentId, getSiblings, selectableLists } from "./lib/list-tree.ts";
 import { sortOrderUpdates } from "./lib/reorder.ts";
 import { buildItemMenuItems, buildListMenuItems } from "./lib/task-menus.ts";
 
@@ -65,6 +66,8 @@ export function TaskApp() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [newListName, setNewListName] = useState("");
+  const [newFolderName, setNewFolderName] = useState("");
+  const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
   const [quickTitle, setQuickTitle] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchHits, setSearchHits] = useState<TaskItemRow[]>([]);
@@ -194,19 +197,58 @@ export function TaskApp() {
 
   const selectList = (id: number) => {
     setSelectedListId(id);
+    setSelectedFolderId(null);
     if (lists.find((l) => l.id === id)?.closed) setShowClosed(true);
     if (webShell) writeListIdToUrl(id);
     if (useDrawer) setSidebarOpen(false);
   };
 
-  const handleCreateList = async () => {
-    const name = newListName.trim();
+  const selectFolder = (id: number) => {
+    setSelectedFolderId(id);
+  };
+
+  const createParentId = selectedFolderId;
+
+  const handleCreateList = async (opts?: { parentId?: number | null; name?: string }) => {
+    const name = (opts?.name ?? newListName).trim();
     if (!name) return;
+    const parent_id = opts?.parentId !== undefined ? opts.parentId : createParentId;
     try {
-      const list = await createTaskList(name);
-      setNewListName("");
+      const siblings = getSiblings(
+        lists.filter((l) => !l.closed),
+        parent_id ?? null,
+      );
+      const list = await createTaskList({
+        name,
+        parent_id: parent_id ?? null,
+        sort_order: siblings.length,
+      });
+      if (!opts?.name) setNewListName("");
       await loadLists();
       selectList(list.id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  const handleCreateFolder = async (opts?: { parentId?: number | null; name?: string }) => {
+    const name = (opts?.name ?? newFolderName).trim();
+    if (!name) return;
+    const parent_id = opts?.parentId !== undefined ? opts.parentId : createParentId;
+    try {
+      const siblings = getSiblings(
+        lists.filter((l) => !l.closed),
+        parent_id ?? null,
+      );
+      const folder = await createTaskList({
+        name,
+        is_folder: true,
+        parent_id: parent_id ?? null,
+        sort_order: siblings.length,
+      });
+      if (!opts?.name) setNewFolderName("");
+      setSelectedFolderId(folder.id);
+      await loadLists();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
@@ -234,9 +276,12 @@ export function TaskApp() {
 
   const handleDeleteList = async (list: TaskListRow) => {
     if (list.is_default) return;
-    if (!confirm(`删除清单「${list.name}」及其任务？`)) return;
+    const label = list.is_folder ? "文件夹" : "清单";
+    const extra = list.is_folder ? "及其子文件夹、清单和任务" : "及其任务";
+    if (!confirm(`删除${label}「${list.name}」${extra}？`)) return;
     try {
       await deleteTaskList(list.id);
+      if (selectedFolderId === list.id) setSelectedFolderId(null);
       await refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -269,13 +314,36 @@ export function TaskApp() {
     }
   };
 
-  const persistListOrder = async (ordered: TaskListRow[]) => {
+  const persistSiblingOrder = async (ordered: TaskListRow[], parentId: number | null) => {
     const closed = lists.filter((l) => l.closed);
-    const nextActive = ordered.map((list, index) => ({ ...list, sort_order: index }));
-    setLists([...nextActive, ...closed]);
-    const updates = sortOrderUpdates(nextActive);
+    const active = lists.filter((l) => !l.closed);
+    const siblingIds = new Set(ordered.map((l) => l.id));
+    const others = active.filter((l) => getParentId(l) !== parentId || !siblingIds.has(l.id));
+    const nextSiblings = ordered.map((list, index) => ({ ...list, sort_order: index }));
+    const mergedActive = [...others, ...nextSiblings].toSorted(
+      (a, b) => a.sort_order - b.sort_order || a.id - b.id,
+    );
+    setLists([...mergedActive, ...closed]);
+    const updates = sortOrderUpdates(nextSiblings);
     try {
       await Promise.all(updates.map((u) => updateTaskList(u.id, { sort_order: u.sort_order })));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      await loadLists();
+    }
+  };
+
+  const persistMoveListToParent = async (listId: number, parentId: number | null) => {
+    const siblings = getSiblings(
+      lists.filter((l) => !l.closed),
+      parentId,
+    ).filter((l) => l.id !== listId);
+    try {
+      await updateTaskList(listId, {
+        parent_id: parentId,
+        sort_order: siblings.length,
+      });
+      await loadLists();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       await loadLists();
@@ -396,7 +464,7 @@ export function TaskApp() {
   const selectedList = lists.find((l) => l.id === selectedListId) ?? null;
   const activeLists = useMemo(() => lists.filter((l) => !l.closed), [lists]);
   const closedLists = useMemo(() => lists.filter((l) => l.closed), [lists]);
-  const moveTargetLists = activeLists;
+  const moveTargetLists = useMemo(() => selectableLists(lists), [lists]);
   const listNameById = useMemo(() => new Map(lists.map((l) => [l.id, l.name])), [lists]);
   const pendingItems = items.filter((i) => i.status === "pending");
   const completedItems = items.filter((i) => i.status === "completed");
@@ -434,6 +502,14 @@ export function TaskApp() {
     onClose: handleCloseList,
     onReopen: handleReopenList,
     onDelete: handleDeleteList,
+    onCreateChildFolder: (folder: TaskListRow) => {
+      const name = prompt("子文件夹名称");
+      if (name?.trim()) void handleCreateFolder({ parentId: folder.id, name: name.trim() });
+    },
+    onCreateChildList: (folder: TaskListRow) => {
+      const name = prompt("子清单名称");
+      if (name?.trim()) void handleCreateList({ parentId: folder.id, name: name.trim() });
+    },
   };
 
   const itemHandlers = {
@@ -524,7 +600,8 @@ export function TaskApp() {
       lists={activeLists}
       pendingItems={pendingItems}
       taskItems={items}
-      onReorderLists={(ordered) => void persistListOrder(ordered)}
+      onReorderSiblings={(ordered, parentId) => void persistSiblingOrder(ordered, parentId)}
+      onMoveListToParent={(listId, parentId) => void persistMoveListToParent(listId, parentId)}
       onReorderPending={(ordered) => void persistItemOrder(ordered)}
       onMoveTaskToList={(taskId, listId) => void handleMoveItemsToList([taskId], listId)}
       onTaskDragStart={() => {
@@ -559,15 +636,20 @@ export function TaskApp() {
             closedLists={closedLists}
             showClosed={showClosed}
             selectedListId={selectedListId}
+            selectedFolderId={selectedFolderId}
             editingListId={editingListId}
             editingListName={editingListName}
             newListName={newListName}
+            newFolderName={newFolderName}
             renameInputRef={renameInputRef}
             useActionSheet={useActionSheet}
             onToggleShowClosed={() => setShowClosed((v) => !v)}
             onSelectList={selectList}
+            onSelectFolder={selectFolder}
             onCreateList={() => void handleCreateList()}
+            onCreateFolder={() => void handleCreateFolder()}
             onNewListNameChange={setNewListName}
+            onNewFolderNameChange={setNewFolderName}
             onEditingListNameChange={setEditingListName}
             onCommitRename={() => void commitRenameList()}
             onCancelRename={() => setEditingListId(null)}
