@@ -73,7 +73,7 @@ TickTick-style lists and items map to:
 
 Items reference their list via `body.list_id` (entity id). Task items store **title** and **content** on entity columns; **tags** live in `body.tags`. A **default list** (`is_default: true`, seeded id `2`「收件箱」) cannot be deleted but may be renamed.
 
-LLM tools use `@freeanima/capabilities-task` (`task_*` tools, `exposeMcp: true`). Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration (`scripts/migrate-tasks-to-entities.ts`).
+LLM ToolSets: `@freeanima/capabilities-task` — `task`（条目 CRUD + `task_search`）与 `tasklist`（清单 CRUD + `tasklist_search`）；按需 `toolset_load`。`task_search` 默认不传 `list_id` 时跨全部清单检索。Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration (`scripts/migrate-tasks-to-entities.ts`).
 
 ## Email module (Estate)
 
@@ -87,7 +87,7 @@ Email accounts, threads, and mirrored messages map to:
 
 Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. Messages store IMAP UID in `body.imap_uid`; human-readable subject/body use entity columns. IMAP sync upserts threads/messages; UI lives in shell `/email` (SAP `email.*` methods), not Admin REST.
 
-LLM tools: `@freeanima/capabilities-email` (`email_register_account`, `email_sync`, `email_list`, …). Legacy `config.yaml` `email.accounts[]` migrates via `scripts/migrate-email-to-entities.ts`.
+LLM ToolSets: `@freeanima/capabilities-email` — `email-account`（账号实体）与 `email`（同步、收发、检索）；按需 `toolset_load`。Legacy `config.yaml` `email.accounts[]` migrates via `scripts/migrate-email-to-entities.ts`.
 
 ## Search
 

@@ -13,6 +13,7 @@ import type {
   TaskItemCreateInput,
   TaskItemListOpts,
   TaskItemRow,
+  TaskItemSearchOpts,
   TaskItemUpdateInput,
 } from "./types.ts";
 
@@ -41,6 +42,7 @@ function toItemRow(
     status: row.status,
     priority: row.priority,
     due_at: row.due_at ?? null,
+    remind_at: row.remind_at ?? null,
     list_id: row.list_id,
     sort_order: row.sort_order ?? 0,
     completed_at: row.completed_at ?? null,
@@ -85,6 +87,7 @@ export async function createTaskItem(input: TaskItemCreateInput): Promise<TaskIt
     sort_order: input.sort_order ?? 0,
     tags,
     due_at: input.due_at ?? null,
+    remind_at: input.remind_at ?? null,
     completed_at: null,
   };
 
@@ -114,6 +117,7 @@ export async function updateTaskItem(input: TaskItemUpdateInput): Promise<TaskIt
   if (input.list_id !== undefined) bodyPatch.list_id = input.list_id;
   if (input.priority !== undefined) bodyPatch.priority = input.priority;
   if (input.due_at !== undefined) bodyPatch.due_at = input.due_at;
+  if (input.remind_at !== undefined) bodyPatch.remind_at = input.remind_at;
   if (input.sort_order !== undefined) bodyPatch.sort_order = input.sort_order;
   if (input.tags !== undefined) bodyPatch.tags = normalizeTags(input.tags);
   if (input.status !== undefined) {
@@ -145,4 +149,29 @@ export async function uncompleteTaskItem(id: number): Promise<TaskItemRow | null
 
 export async function deleteTaskItem(id: number): Promise<boolean> {
   return deleteEntity(id);
+}
+
+export async function searchTaskItems(opts: TaskItemSearchOpts): Promise<TaskItemRow[]> {
+  const filters: Record<string, unknown> = {};
+  if (opts.list_id != null) filters.list_id = opts.list_id;
+  if (opts.status != null && opts.status !== "all") filters.status = opts.status;
+
+  const result = await searchEntities({
+    world_id: defaultTaskWorldId(),
+    primary_component: TASK_ITEM_COMPONENT,
+    query: opts.query,
+    filters: Object.keys(filters).length > 0 ? filters : undefined,
+    limit: Math.max(1, Math.min(50, opts.limit ?? 30)),
+    mode: "hybrid",
+  });
+
+  return result.results
+    .map((row) => {
+      const parsed = asTaskItem(row);
+      return parsed
+        ? toItemRow(parsed, { created_at: row.created_at, updated_at: row.updated_at })
+        : null;
+    })
+    .filter((row): row is TaskItemRow => row != null)
+    .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
 }

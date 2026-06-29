@@ -9,10 +9,16 @@ import {
   deleteEntity,
   getEntity,
   listEntities,
+  searchEntities,
   updateEntity,
 } from "@freeanima/core/db/pg/entity";
 
-import type { TaskListCreateInput, TaskListRow, TaskListUpdateInput } from "./types.ts";
+import type {
+  TaskListCreateInput,
+  TaskListRow,
+  TaskListSearchOpts,
+  TaskListUpdateInput,
+} from "./types.ts";
 
 export function defaultTaskWorldId(): number {
   return 1;
@@ -150,4 +156,29 @@ export async function deleteTaskList(id: number, opts?: { cascade?: boolean }): 
     }
   }
   return deleteEntity(id);
+}
+
+export async function searchTaskLists(opts: TaskListSearchOpts): Promise<TaskListRow[]> {
+  const result = await searchEntities({
+    world_id: defaultTaskWorldId(),
+    primary_component: TASK_LIST_COMPONENT,
+    query: opts.query,
+    limit: Math.max(1, Math.min(50, opts.limit ?? 30)),
+    mode: "hybrid",
+  });
+
+  const lists: TaskListRow[] = [];
+  for (const row of result.results) {
+    const parsed = asTaskList(row);
+    if (!parsed) continue;
+    const item_count = await countItemsForList(parsed.id);
+    lists.push(
+      toListRow(parsed, {
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        item_count,
+      }),
+    );
+  }
+  return lists.toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
 }

@@ -26,6 +26,7 @@ export type TaskItemCreateInput = {
   list_id: number;
   priority?: TaskItemPriority;
   due_at?: string | null;
+  remind_at?: string | null;
   sort_order?: number;
 };
 
@@ -37,8 +38,21 @@ export type TaskItemUpdateInput = {
   list_id?: number;
   priority?: TaskItemPriority;
   due_at?: string | null;
+  remind_at?: string | null;
   sort_order?: number;
   status?: "pending" | "completed";
+};
+
+export type TaskItemSearchOpts = {
+  query: string;
+  list_id?: number;
+  status?: "pending" | "completed" | "all";
+  limit?: number;
+};
+
+export type TaskListSearchOpts = {
+  query: string;
+  limit?: number;
 };
 
 export type TaskItemListOpts = {

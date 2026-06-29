@@ -57,6 +57,8 @@ For each pending `task_item`:
 
 **Product rule (confirmed)**: one trigger per task per scan — **remind first, else due**; not separate notifications for both when both are set.
 
+Task reminders are delivered via this inbox (ToolSet `task` / cron), not by `notification_send` duplicating the same reminder.
+
 ## Tools
 
 ToolSet `notification`:
