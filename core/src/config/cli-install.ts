@@ -76,7 +76,8 @@ export function isLocalPackDependencySpec(spec: string): boolean {
 export function getCliInstallKind(scriptPath?: string): CliInstallKind {
   if (isDockerInstall()) return "docker";
   const resolved = resolveAnimaScriptPath(scriptPath);
-  if (resolved.endsWith("/cli/src/cli.ts")) return "source";
+  if (resolved.endsWith("/cli/src/cli.ts") || resolved.endsWith("/app/cli/src/cli.ts"))
+    return "source";
   if (resolved.includes(NPM_CLI_MARKER)) {
     const spec = readBunGlobalCliDependencySpec();
     if (spec && isLocalPackDependencySpec(spec)) return "npm-local";
