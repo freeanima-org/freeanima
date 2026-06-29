@@ -12,6 +12,7 @@ export function shellSourcePaths(root = REPO_ROOT) {
     admin: join(root, "platform", "admin-frontend", "app", "src"),
     shell: join(root, "packages", "shell-ui", "app", "src"),
     pair: join(root, "satellites", "pair-programming", "app", "src"),
+    companionApp: join(root, "satellites", "companion", "app", "src"),
     companionShared: join(root, "satellites", "companion", "shared"),
     sapWorkerEntry: join(root, "packages", "sap-contract", "src", "shared-worker-entry.ts"),
   };
