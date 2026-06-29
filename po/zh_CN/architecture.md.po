@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-28 23:53+0800\n"
+"POT-Creation-Date: 2026-06-29 14:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/architecture.md:1 messages/po4a/en.xml:544
+#: docs/concepts/architecture.md:1 docs/features/companion.md:11
+#: messages/po4a/en.xml:560
 #, no-wrap
 msgid "Architecture"
 msgstr "架构"
@@ -194,7 +195,7 @@ msgstr ""
 #: docs/concepts/architecture.md:62
 #, no-wrap
 msgid "Unified entity storage (v0.8)"
-msgstr ""
+msgstr "统一实体存储（v0.8）"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:65
@@ -205,6 +206,10 @@ msgid ""
 "layer [`self_blocks`](self-layer.md) stays physically separate. See [`entity-"
 "model.md`](entity-model.md)."
 msgstr ""
+"结构化业务数据（任务、笔记、邮件账户/消息、未来记忆迁移）收敛于单一 "
+"**`entities`** PostgreSQL 表，以组件标签（`task_list`、`task_item`、"
+"`email_account` 等）区分。自我层 [`self_blocks`](self-layer.md) 在物理上仍独"
+"立。见 [`entity-model.md`](entity-model.md)。"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:67
@@ -212,32 +217,28 @@ msgid ""
 "Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-"
 "backed); legacy Admin email route removed."
 msgstr ""
+"Shell UI **`/tasks`** 与 **`/email`** 是主要模块入口（实体支撑）；旧版 Admin "
+"邮件路由已移除。"
 
 #. type: Title ###
 #: docs/concepts/architecture.md:68
-#, fuzzy, no-wrap
-#| msgid "Platform mapping"
+#, no-wrap
 msgid "Platform UI layering"
-msgstr "平台映射"
+msgstr "平台 UI 分层"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:74
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Layer        | Injection                 | Reason                                            |\n"
-#| "| ------------ | ------------------------- | ------------------------------------------------- |\n"
-#| "| Self layer   | Always in system prompt   | Small, fixed, every conversation needs \"who I am\" |\n"
-#| "| Memory layer | `memory_recall` on demand | Large, dynamic, search when needed                |\n"
+#, no-wrap
 msgid ""
 "| Layer              | Platform-native?             | Location                                                       |\n"
 "| ------------------ | ---------------------------- | -------------------------------------------------------------- |\n"
 "| Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring             |\n"
 "| Shared SPA         | Branch on `detectPlatform()` | `packages/shell-ui`, `satellites/*`, `platform/admin-frontend` |\n"
 msgstr ""
-"| 层        | 注入                 | 原因                                            |\n"
-"| ------------ | ------------------------- | ------------------------------------------------- |\n"
-"| 自我层   | 始终位于 system prompt   | 体量小、固定，每次对话都需要「我是谁」 |\n"
-"| 记忆层 | 按需 `memory_recall` | 体量大、动态，需要时再搜                |\n"
+"| 层                 | 平台原生？                   | 位置                                                           |\n"
+"| ------------------ | ---------------------------- | -------------------------------------------------------------- |\n"
+"| Shell / capability | 是                           | `app/desktop`、`app/mobile`、companion、Hub 接线               |\n"
+"| Shared SPA         | 按 `detectPlatform()` 分支   | `packages/shell-ui`、`satellites/*`、`platform/admin-frontend` |\n"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:76
@@ -246,19 +247,21 @@ msgid ""
 "shell), not viewport breakpoints alone. Responsive CSS is for desktop window "
 "resize only."
 msgstr ""
+"导航与主布局**必须使用 `detectPlatform()`**（Electron / 原生 shell），不能仅"
+"靠视口断点。响应式 CSS 仅用于桌面窗口缩放。"
 
 #. type: Title ###
 #: docs/concepts/architecture.md:77
 #, no-wrap
 msgid "Admin navigation ↔ cognitive layers"
-msgstr ""
+msgstr "管理台导航 ↔ 认知层"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:80
 msgid ""
 "Admin sidebar is grouped (not flat storage tables). Map new features onto "
 "these user-visible concepts:"
-msgstr ""
+msgstr "管理台侧栏分组展示（非扁平存储表）。新功能应映射到以下用户可见概念："
 
 #. type: Plain text
 #: docs/concepts/architecture.md:88
@@ -272,6 +275,13 @@ msgid ""
 "| Estate       | Estate          | subjects, worlds, fridge-magnet                     |\n"
 "| Capabilities | Estate (tools)  | tools, commands, mcp, acp, satellites               |\n"
 msgstr ""
+"| 分组         | 认知层          | 路由（代表）                                        |\n"
+"| ------------ | --------------- | --------------------------------------------------- |\n"
+"| Runtime      | 资源层 + 运维   | dashboard、config、credentials、cron                |\n"
+"| Memory       | 记忆层          | memory hub、browse 子路由、sleep、auto-llm-runs     |\n"
+"| Self         | 自我层          | self-layer、system-prompt                           |\n"
+"| Estate       | 资源层          | subjects、worlds、fridge-magnet                     |\n"
+"| Capabilities | 资源层（工具）  | tools、commands、mcp、acp、satellites               |\n"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:90
@@ -279,6 +289,7 @@ msgid ""
 "FTS index maintenance is under Memory (not top-level). Do not add new flat "
 "nav items without mapping to a group above."
 msgstr ""
+"FTS 索引维护在 Memory 下（非顶级）。勿新增未映射到上述分组的扁平导航项。"
 
 #. type: Title ##
 #: docs/concepts/architecture.md:91 docs/tools/execute-code-runtimes.md:9
@@ -376,11 +387,6 @@ msgstr "**问题：此刻我能使用哪些工具与数据？**\n"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:118
-#, fuzzy
-#| msgid ""
-#| "The capability mask is **hard** — it binds tool sets, data scope, and "
-#| "credential permissions. The same digital life may wear different masks "
-#| "per session or task to prevent permission leaks and tool pollution."
 msgid ""
 "The capability mask is **hard** — it binds tool sets, data scope, and "
 "credential permissions. The same digital life may wear different masks per "
@@ -585,16 +591,12 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/architecture.md:179
-#, fuzzy
-#| msgid ""
-#| "**service**: long-running — HTTP (Admin / chamber API), Discord / WeChat "
-#| "Gateway, cron"
 msgid ""
 "**service**: long-running — Hub HTTP (`/api`, `/sap/v1`), Discord / WeChat "
 "Gateway, cron"
 msgstr ""
-"**service**：长期运行——HTTP（Admin / 管理台 API）、Discord / 微信 Gateway、"
-"cron"
+"**service**：长期运行——Hub HTTP（`/api`、`/sap/v1`）、Discord / 微信 "
+"Gateway、cron"
 
 #. type: Bullet: '- '
 #: docs/concepts/architecture.md:179
@@ -604,22 +606,19 @@ msgstr "**chat**：单次非交互回合（CLI 或管道 stdin）"
 #. type: Bullet: '- '
 #: docs/concepts/architecture.md:179
 msgid ""
-"**UI**: app/desktop / app/mobile bundled SPA（聊天室 + 管理台）；Hub 不托管 "
-"`/admin`"
+"**UI**: app/desktop / app/mobile bundled SPA (Chat + Admin); Hub does not "
+"host `/admin`"
 msgstr ""
+"**UI**：app/desktop / app/mobile bundled SPA（聊天室 + 管理台）；Hub 不托管 "
+"`/admin`"
 
 #. type: Fenced code block (bash)
 #: docs/concepts/architecture.md:180
-#, fuzzy, no-wrap
-#| msgid ""
-#| "anima service start              # default: systemd --user\n"
-#| "anima service start --foreground # foreground (logs to stdout)\n"
-#| "anima service start --dev        # Admin source watch rebuild (refresh page after edits)\n"
-#| "anima service status\n"
+#, no-wrap
 msgid ""
 "anima service start              # default: systemd --user\n"
 "anima service start --foreground # foreground (logs to stdout)\n"
-"bun run dev:web                  # 浏览器壳层（聊天 + Admin + 设置，Vite HMR；Hub 须已运行）\n"
+"bun run dev:web                  # browser shell (Chat + Admin + settings, Vite HMR; Hub must be running)\n"
 "anima service status\n"
 msgstr ""
 "anima service start              # default: systemd --user\n"
@@ -793,24 +792,17 @@ msgstr "三层可混用；LLM 决定调用顺序；逸灵风负责注册与路�
 #: docs/concepts/architecture.md:246
 #, no-wrap
 msgid "Conversation vs AutoLlmRun vs Delegation"
-msgstr ""
+msgstr "Conversation vs AutoLlmRun vs 委托"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:249
 #, no-wrap
 msgid "**Axis:** whether the execution has a **user turn** during the run (not who triggered it).\n"
-msgstr ""
+msgstr "**轴：** 执行期间是否有 **user 轮次**（与谁触发无关）。\n"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:256
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Method            | Schema                                                                                                      |\n"
-#| "| ----------------- | ----------------------------------------------------------------------------------------------------------- |\n"
-#| "| `terminal.attach` | [`terminal.ts`](../../packages/sap-contract/src/frames/terminal.ts) — optional `cwd`; returns `terminal_id` |\n"
-#| "| `terminal.write`  | `terminal_id`, `data`                                                                                       |\n"
-#| "| `terminal.resize` | `terminal_id`, `cols`, `rows`                                                                               |\n"
-#| "| `terminal.close`  | `terminal_id`                                                                                               |\n"
+#, no-wrap
 msgid ""
 "| Kind                 | User turn     | PG persistence                                      | Process trace   | Sleep pipeline                          |\n"
 "| -------------------- | ------------- | --------------------------------------------------- | --------------- | --------------------------------------- |\n"
@@ -819,12 +811,12 @@ msgid ""
 "| **Delegation (ACP)** | no (external) | parent conversation + `acp_tasks`                   | optional        | result via parent conversation          |\n"
 "| **Script cron**      | no            | `cron_log` only                                     | stdout file     | excluded                                |\n"
 msgstr ""
-"| 方法              | Schema                                                                                                      |\n"
-"| ----------------- | ----------------------------------------------------------------------------------------------------------- |\n"
-"| `terminal.attach` | [`terminal.ts`](../../packages/sap-contract/src/frames/terminal.ts) — 可选 `cwd`；返回 `terminal_id`      |\n"
-"| `terminal.write`  | `terminal_id`、`data`                                                                                       |\n"
-"| `terminal.resize` | `terminal_id`、`cols`、`rows`                                                                               |\n"
-"| `terminal.close`  | `terminal_id`                                                                                               |\n"
+"| 类型                 | User 轮次     | PG 持久化                                           | 过程追踪        | 睡眠流水线                              |\n"
+"| -------------------- | ------------- | --------------------------------------------------- | --------------- | --------------------------------------- |\n"
+"| **Conversation**     | 是            | `sessions` + `messages`（代码仍称 `session`）       | 消息归档        | 参与（浅睡、梦境输入）                  |\n"
+"| **AutoLlmRun**       | 否            | `auto_llm_runs`（经 `runAutoLlm()`）                | 审计行、TTL     | 排除                                    |\n"
+"| **Delegation (ACP)** | 否（外部）    | 父 conversation + `acp_tasks`                       | 可选            | 经父 conversation 返回结果              |\n"
+"| **Script cron**      | 否            | 仅 `cron_log`                                       | stdout 文件     | 排除                                    |\n"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:258
@@ -834,10 +826,14 @@ msgid ""
 "does not attach `source_conversations`. Cron `no_agent` shell scripts are "
 "**not** AutoLlmRun."
 msgstr ""
+"AutoLlmRun 涵盖：cron agent 分支、睡眠 LLM 阶段、未来内部 subagent。工具上下"
+"文使用 `contextKind: auto_llm`，故 `memory_remember` 不附加 "
+"`source_conversations`。Cron `no_agent` shell 脚本**不是** AutoLlmRun。"
 
-#. type: Yaml Front Matter Hash Value: title
+#. type: Title #
 #: docs/concepts/architecture.md:259 docs/features/goal.md:1
-#, fuzzy, no-wrap
+#: docs/features/goal.md:5
+#, no-wrap
 msgid "Session Goal"
 msgstr "会话便签"
 
@@ -845,7 +841,7 @@ msgstr "会话便签"
 #: docs/concepts/architecture.md:262
 #, no-wrap
 msgid "**Question: should this conversation keep working toward a stated outcome?**\n"
-msgstr ""
+msgstr "**问题：此 conversation 是否应继续朝既定结果推进？**\n"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:264
@@ -853,17 +849,11 @@ msgid ""
 "Session Goal is an **in-process autonomous loop** at the Estate / "
 "orchestration layer — distinct from ACP async delegation:"
 msgstr ""
+"Session Goal 是资源层/编排层的**进程内自治循环**——区别于 ACP 异步委托："
 
 #. type: Plain text
 #: docs/concepts/architecture.md:271
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Round | Intent                                   |\n"
-#| "| ----- | ---------------------------------------- |\n"
-#| "| 1     | Contradiction detection + expiry marking |\n"
-#| "| 2     | Split multi-fact entries                 |\n"
-#| "| 3     | Dedup merge similar entries              |\n"
-#| "| 4     | Pin maintenance (keep pinned ≤ 20)       |\n"
+#, no-wrap
 msgid ""
 "| Dimension    | Session Goal                    | ACP                                   |\n"
 "| ------------ | ------------------------------- | ------------------------------------- |\n"
@@ -872,12 +862,12 @@ msgid ""
 "| Persistence  | `conversations.goal` JSONB      | `conversations.acp_tasks`             |\n"
 "| Continuation | Same SSE stream, turn budget    | Independent message after task update |\n"
 msgstr ""
-"| 轮次 | 意图                                   |\n"
-"| ----- | ---------------------------------------- |\n"
-"| 1     | 矛盾检测 + 过期标记 |\n"
-"| 2     | 拆分多事实条目                 |\n"
-"| 3     | 去重合并相似条目              |\n"
-"| 4     | 置顶质量审查（解除过时置顶；常驻读仍上限 40 条）       |\n"
+"| 维度         | Session Goal                    | ACP                                   |\n"
+"| ------------ | ------------------------------- | ------------------------------------- |\n"
+"| 范围         | 单个 conversation               | 外部 agent 任务                       |\n"
+"| 触发         | `/goal` slash + 回合后 judge    | 工具调用 + 回调回合                   |\n"
+"| 持久化       | `conversations.goal` JSONB      | `conversations.acp_tasks`             |\n"
+"| 延续         | 同一 SSE 流、回合预算           | 任务更新后的独立消息                  |\n"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:273
@@ -886,38 +876,43 @@ msgid ""
 "messages preempt the loop; `/goal pause` stops auto-continue without "
 "clearing state. See [`goal.md`](../features/goal.md)."
 msgstr ""
+"Judge 使用可选 `llm.profiles.goal_judge`；出错时 fail-open。User 消息抢占循"
+"环；`/goal pause` 停止自动继续但不清状态。见 [`goal.md`](../features/"
+"goal.md)。"
 
 #. type: Title ##
 #: docs/concepts/architecture.md:274
 #, no-wrap
 msgid "Client UI（bundled）"
-msgstr ""
+msgstr "Client UI（bundled）"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:277
 msgid ""
-"聊天室与管理台 UI 由 **app/desktop** / **app/mobile** 打进客户端；`anima "
-"service` 仅提供 Hub 后端。"
+"Chat and Admin UI are bundled in **app/desktop** / **app/mobile**; `anima "
+"service` provides Hub backend only."
 msgstr ""
+"聊天室与管理台 UI 捆绑于 **app/desktop** / **app/mobile**；`anima service` 仅"
+"提供 Hub 后端。"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:282
 #, fuzzy, no-wrap
 #| msgid ""
-#| "| Mode    | Route / URL                         | Role                                      |\n"
-#| "| ------- | ----------------------------------- | ----------------------------------------- |\n"
-#| "| Parlor  | `http://127.0.0.1:4174` (satellite) | Chat with the agent                       |\n"
-#| "| Chamber | `/chamber/*` on Hub                 | Memory, config, tools, system maintenance |\n"
+#| "| Module | Connection                        | Notes                          |\n"
+#| "| ------ | --------------------------------- | ------------------------------ |\n"
+#| "| Chat   | SAP WebSocket `/sap/v1`           | Desktop / mobile bundled `/chat` |\n"
+#| "| Admin  | Hub REST `/api/*` (CORS + shell)  | Desktop / mobile bundled `/admin` |\n"
 msgid ""
-"| 模块  | 连接方式                          | 说明                         |\n"
-"| ----- | --------------------------------- | ---------------------------- |\n"
-"| Chat  | SAP WebSocket `/sap/v1`           | 桌面 / 移动 bundled `/chat`  |\n"
-"| Admin | Hub REST `/api/*`（CORS + shell） | 桌面 / 移动 bundled `/admin` |\n"
+"| Module | Connection                       | Notes                             |\n"
+"| ------ | -------------------------------- | --------------------------------- |\n"
+"| Chat   | SAP WebSocket `/sap/v1`          | Desktop / mobile bundled `/chat`  |\n"
+"| Admin  | Hub REST `/api/*` (CORS + shell) | Desktop / mobile bundled `/admin` |\n"
 msgstr ""
-"| 模式     | 路由 / URL                          | 角色                                      |\n"
-"| -------- | ----------------------------------- | ----------------------------------------- |\n"
-"| 聊天室   | `http://127.0.0.1:4174`（satellite） | 与 Agent 对话                             |\n"
-"| 管理台     | Hub 上 `/chamber/*`                 | 记忆、配置、工具与系统维护                |\n"
+"| 模块   | 连接                              | 说明                           |\n"
+"| ------ | --------------------------------- | ------------------------------ |\n"
+"| 聊天室 | SAP WebSocket `/sap/v1`           | Desktop / mobile bundled `/chat` |\n"
+"| 管理台 | Hub REST `/api/*`（CORS + shell） | Desktop / mobile bundled `/admin` |\n"
 
 #. type: Title ##
 #: docs/concepts/architecture.md:283
@@ -939,11 +934,6 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/architecture.md:288
-#, fuzzy
-#| msgid ""
-#| "**Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: "
-#| "light → deep → cross-domain maintenance steps). State in `~/.anima/"
-#| "runtime/pipeline_*_run.json`; Chamber API for diagnostics."
 msgid ""
 "**Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: light "
 "→ deep → cross-domain maintenance steps). State in `~/.anima/runtime/"

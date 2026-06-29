@@ -2,21 +2,21 @@
 title: Mobile app (Android)
 ---
 
-# 移动端 APP（Android）
+# Mobile app (Android)
 
-> Capacitor 壳 + 统一 shell-ui SPA（聊天室 / 管理台 / 设置）。  
-> 实现包：[`app/mobile/`](../../app/mobile/)
+> Capacitor shell + unified shell-ui SPA (Chat / Admin / settings).  
+> Package: [`app/mobile/`](../../app/mobile/)
 
-## 范围
+## Scope
 
-| 项       | 说明                                                        |
-| -------- | ----------------------------------------------------------- |
-| 平台     | **仅 Android** sideload（APK）；iOS 后续                    |
-| 模块     | 聊天室 chat（`sap-direct`）+ 管理台 admin（`hub-rest`）     |
-| Hub 配置 | APP **Hub 设置**：地址 + `remote_auth.token`（Preferences） |
-| Hub 职责 | `/api` REST + `/sap/v1` WebSocket                           |
+| Item       | Description                                                   |
+| ---------- | ------------------------------------------------------------- |
+| Platform   | **Android only** sideload (APK); iOS later                    |
+| Modules    | Chat (`sap-direct`) + Admin (`hub-rest`)                      |
+| Hub config | APP **Hub settings**: URL + `remote_auth.token` (Preferences) |
+| Hub duties | `/api` REST + `/sap/v1` WebSocket                             |
 
-## 拓扑
+## Topology
 
 ```mermaid
 flowchart LR
@@ -35,41 +35,41 @@ flowchart LR
   Admin -->|REST Bearer| Hub
 ```
 
-移动端 REST **直连** Hub（无桌面 Electron 的 `/api` 本地代理）；须配置 `remote_auth.token` 且 Hub 允许 Capacitor Origin（`https://localhost`）。路由使用 hash（`#/chat`），便于 WebView 调试。
+Mobile REST **connects directly** to Hub (no desktop Electron `/api` proxy); requires `remote_auth.token` and Hub CORS for Capacitor origin (`https://localhost`). Routes use hash (`#/chat`) for WebView debugging.
 
-## Hub 设置
+## Hub settings
 
-1. 家里 PC：`anima service start --host 0.0.0.0`，并在 `~/.anima/config.yaml` 配置 `remote_auth.token`（见 [`remote-access.md`](../guide/remote-access.md)）。
-2. （可选）`anima tunnel setup`，手机使用 `https://<your-hostname>`。
-3. APP → **Hub 设置**（`/settings`）：
-   - Hub 地址（Tunnel 域名或 `http://<PC-IP>:2658`；勿用 `127.0.0.1`）
-   - 远程 Token（与 Hub `config.yaml` 中 `remote_auth.token` 相同，≥16 字符）
-4. **测试连接** → **保存并进入** → 顶栏切换 **聊天室** / **管理台**。
+1. Home PC: `anima service start --host 0.0.0.0`, configure `remote_auth.token` in `~/.anima/config.yaml` (see [`remote-access.md`](../guide/remote-access.md)).
+2. (Optional) `anima tunnel setup`; phone uses `https://<your-hostname>`.
+3. APP → **Hub settings** (`/settings`):
+   - Hub URL (Tunnel domain or `http://<PC-IP>:2658`; not `127.0.0.1`)
+   - Remote token (same as Hub `config.yaml` `remote_auth.token`, ≥16 chars)
+4. **Test connection** → **Save and enter** → top bar switches **Chat** / **Admin**.
 
-非 loopback Hub 地址必须填写 token；REST 使用 `Authorization: Bearer`，SAP 在 `connect` 帧携带 `auth_token`。
+Non-loopback Hub URL requires token; REST uses `Authorization: Bearer`; SAP sends `auth_token` in `connect` frame.
 
-## 排障
+## Troubleshooting
 
-| 现象                                 | 常见原因                                                                                 |
-| ------------------------------------ | ---------------------------------------------------------------------------------------- |
-| 键盘遮挡聊天输入框                   | WebView 未随键盘收缩；需 `adjustResize` + `@capacitor/keyboard`；改 Web 后须 `cap sync`  |
-| 聊天输入无反应                       | 无选中会话（首装应自动建会话）；或 SAP 未连接                                            |
-| 管理台 load failed / Failed to fetch | Hub 未 `--host 0.0.0.0`、Token 错误、防火墙；Chrome Remote Debugging 看请求是否带 Bearer |
-| Not Found                            | 勿访问旧路径如 `/admin/dashboard/index.html`；应走 SPA `/admin/dashboard`                |
+| Symptom                             | Common cause                                                                                    |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Keyboard covers chat input          | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes |
+| Chat input unresponsive             | No selected conversation (first install should auto-create); or SAP disconnected                |
+| Admin load failed / Failed to fetch | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header      |
+| Not Found                           | Avoid legacy paths like `/admin/dashboard/index.html`; use SPA `/admin/dashboard`               |
 
-## 调试
+## Debugging
 
-设置 → **调试**（桌面与移动共用 shell-ui 面板）：
+Settings → **Debug** (desktop and mobile share shell-ui panel):
 
-| 能力     | 桌面                 | 移动                                        |
-| -------- | -------------------- | ------------------------------------------- |
-| Sentry   | 设置页填 DSN 并启用  | 同左                                        |
-| DevTools | F12 / 开发包自动打开 | Debug APK + USB → Chrome `chrome://inspect` |
-| 控制台   | Electron DevTools    | vConsole（设置页开关）                      |
+| Capability | Desktop           | Mobile                                      |
+| ---------- | ----------------- | ------------------------------------------- |
+| Sentry     | DSN in settings   | Same                                        |
+| DevTools   | F12 / dev package | Debug APK + USB → Chrome `chrome://inspect` |
+| Console    | Electron DevTools | vConsole (settings toggle)                  |
 
-移动 debug 构建：`cd app/mobile && bun run android:debug`（不压缩 + sourcemap，便于 inspect）。
+Mobile debug build: `cd app/mobile && bun run android:debug` (no minify + sourcemap for inspect).
 
-## 构建与 sideload
+## Build and sideload
 
 ```bash
 bun run --filter @freeanima/app-mobile build
@@ -77,19 +77,19 @@ cd app/mobile && bun run sync
 cd android && ./gradlew assembleDebug
 ```
 
-Debug 全流程：`cd app/mobile && bun run android:debug`
+Debug full flow: `cd app/mobile && bun run android:debug`
 
-**纪律**：修改 shell-ui / chat / admin 前端后须 `bun run build`（或 `build:debug`）再 `cap sync`，否则真机仍是旧 Web 资源。
+**Discipline**: after shell-ui / chat / admin frontend changes, run `bun run build` (or `build:debug`) then `cap sync`, or device serves stale Web assets.
 
-包内 README：[`app/mobile/README.md`](../../app/mobile/README.md)
+Package README: [`app/mobile/README.md`](../../app/mobile/README.md)
 
-## 与桌面壳对比
+## vs desktop shell
 
-|             | Electron `app/desktop`                      | Capacitor `app/mobile`               |
-| ----------- | ------------------------------------------- | ------------------------------------ |
-| 注入        | preload → `window.satelliteShell`           | `shell-bridge.js` → 同形 API         |
-| Hub 配置    | Hub 设置 → `~/.anima-desktop/settings.json` | Hub 设置 → Preferences               |
-| 调试/Sentry | 设置 → 调试 → 同上文件 `debug` 段           | 设置 → 调试 → Preferences            |
-| REST        | 本地静态服代理 `/api`（同源）               | 直连 `hubUrl/api/*`（CORS + Bearer） |
-| instance_id | 文件 `~/.anima/satellites/chat/`            | Preferences                          |
-| 内容        | chat + admin + companion                    | chat + admin                         |
+|              | Electron `app/desktop`                          | Capacitor `app/mobile`                |
+| ------------ | ----------------------------------------------- | ------------------------------------- |
+| Injection    | preload → `window.satelliteShell`               | `shell-bridge.js` → same-shaped API   |
+| Hub config   | Hub settings → `~/.anima-desktop/settings.json` | Hub settings → Preferences            |
+| Debug/Sentry | Settings → Debug → same file `debug`            | Settings → Debug → Preferences        |
+| REST         | Local static `/api` proxy (same origin)         | Direct `hubUrl/api/*` (CORS + Bearer) |
+| instance_id  | File `~/.anima/satellites/chat/`                | Preferences                           |
+| Content      | chat + admin + companion                        | chat + admin                          |

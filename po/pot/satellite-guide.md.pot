@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-27 14:50+0800\n"
+"POT-Creation-Date: 2026-06-29 13:16+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/sap/satellite-guide.md:1 docs/sap/satellite-guide.md:5
-#: messages/po4a/en.xml:549
+#: messages/po4a/en.xml:581
 #, no-wrap
 msgid "Satellite Guide"
 msgstr ""
@@ -68,7 +68,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/satellite-guide.md:29
 #, no-wrap
-msgid "**Chat / Task / Admin** 等已打进 shell-ui（desktop / mobile / web），无需在 `satellites:` 中单独声明 dev 进程；浏览器本地调试见 `bun run dev:web`。\n"
+msgid "**Chat / Task / Admin** etc. are bundled in shell-ui (desktop / mobile / web); no separate `satellites:` dev process needed; browser local debug: `bun run dev:web`.\n"
 msgstr ""
 
 #. type: Plain text
@@ -133,8 +133,8 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/satellite-guide.md:52
 msgid ""
-"Shell 内卫星（Chat、Admin 等）在 desktop / mobile / web 壳层路由中打开，无独"
-"立端口。"
+"Shell satellites (Chat, Admin, etc.) open in desktop / mobile / web shell "
+"routes; no dedicated port."
 msgstr ""
 
 #. type: Title ##
@@ -249,26 +249,26 @@ msgstr ""
 #. type: Title ###
 #: docs/sap/satellite-guide.md:94
 #, no-wrap
-msgid "SAP direct — browser/renderer 直连 Hub（chat 嵌入 app/desktop）"
+msgid "SAP direct — browser/renderer connects to Hub (chat embedded in app/desktop)"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:99
 msgid ""
-"Renderer 使用 [`createSapDirectClient`](../../packages/sap-contract/src/"
-"direct-client.ts) 直连 Hub `/sap/v1`。"
+"Renderer uses [`createSapDirectClient`](../../packages/sap-contract/src/"
+"direct-client.ts) to connect to Hub `/sap/v1`."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:99
 msgid ""
-"**无需** relay sidecar；Chat 使用 **singleton** 固定 `instance_id`"
-"（`CHAT_INSTANCE_ID` = `def`），无需 per-device 持久化。"
+"**No** relay sidecar; Chat uses **singleton** fixed `instance_id` "
+"(`CHAT_INSTANCE_ID` = `def`), no per-device persistence."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:99
-msgid "详见 [`frontend-exports.md`](frontend-exports.md)。"
+msgid "See [`frontend-exports.md`](frontend-exports.md)."
 msgstr ""
 
 #. type: Title ###
@@ -306,15 +306,15 @@ msgid ""
 "  subgraph chat [Chat Type B relay]\n"
 "    B1[Browser] -->|relay WS| Relay1[\"/sap/relay/v1\"]\n"
 "    Relay1 --> ProcSAP1[createSatelliteHub]\n"
-"    ProcSAP1 -->|唯一 SAP WS| Hub1[Hub]\n"
+"    ProcSAP1 -->|single SAP WS| Hub1[Hub]\n"
 "  end\n"
 "\n"
 "  subgraph ppy [Pair-programming Type B]\n"
 "    B2[Browser] -->|relay WS| Relay2[\"/sap/relay/v1\"]\n"
 "    Relay2 --> ProcSAP2[createSatelliteHub]\n"
-"    ProcSAP2 -->|唯一 SAP WS| Hub2[Hub]\n"
+"    ProcSAP2 -->|single SAP WS| Hub2[Hub]\n"
 "    B2 --> LocalFS[\"/api/studio/*\"]\n"
-"    B2 --> LocalPTY[本地 terminal WS]\n"
+"    B2 --> LocalPTY[local terminal WS]\n"
 "    ProcSAP2 --> ToolExec[tool executor]\n"
 "  end\n"
 msgstr ""
@@ -334,16 +334,16 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:130
 msgid ""
-"**app/desktop / 浏览器 dev（推荐）**：`createSapDirectClient` 直连 Hub；静态 "
-"UI 由 [`satellites/chat/server/index.ts`](../../satellites/chat/server/"
-"index.ts) 仅作静态托管（无 SAP relay）。"
+"**app/desktop / browser dev (recommended)**: `createSapDirectClient` to Hub; "
+"static UI from [`satellites/chat/server/index.ts`](../../satellites/chat/"
+"server/index.ts) for static hosting only (no SAP relay)."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:130
 msgid ""
-"**Managed 遗留**：若仍用旧 relay sidecar，见 pair-programming 模式；新嵌入以 "
-"direct 为准。"
+"**Managed legacy**: old relay sidecar pair-programming mode; new embeds use "
+"direct."
 msgstr ""
 
 #. type: Title ###

@@ -175,12 +175,12 @@ Production: `anima service` (systemd --user). Auto-restarts after crashes; only 
 
 - **service**: long-running — Hub HTTP (`/api`, `/sap/v1`), Discord / WeChat Gateway, cron
 - **chat**: single non-interactive turn (CLI or piped stdin)
-- **UI**: app/desktop / app/mobile bundled SPA（聊天室 + 管理台）；Hub 不托管 `/admin`
+- **UI**: app/desktop / app/mobile bundled SPA (Chat + Admin); Hub does not host `/admin`
 
 ```bash
 anima service start              # default: systemd --user
 anima service start --foreground # foreground (logs to stdout)
-bun run dev:web                  # 浏览器壳层（聊天 + Admin + 设置，Vite HMR；Hub 须已运行）
+bun run dev:web                  # browser shell (Chat + Admin + settings, Vite HMR; Hub must be running)
 anima service status
 ```
 
@@ -273,12 +273,12 @@ Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User message
 
 ## Client UI（bundled）
 
-聊天室与管理台 UI 由 **app/desktop** / **app/mobile** 打进客户端；`anima service` 仅提供 Hub 后端。
+Chat and Admin UI are bundled in **app/desktop** / **app/mobile**; `anima service` provides Hub backend only.
 
-| 模块  | 连接方式                          | 说明                         |
-| ----- | --------------------------------- | ---------------------------- |
-| Chat  | SAP WebSocket `/sap/v1`           | 桌面 / 移动 bundled `/chat`  |
-| Admin | Hub REST `/api/*`（CORS + shell） | 桌面 / 移动 bundled `/admin` |
+| Module | Connection                       | Notes                             |
+| ------ | -------------------------------- | --------------------------------- |
+| Chat   | SAP WebSocket `/sap/v1`          | Desktop / mobile bundled `/chat`  |
+| Admin  | Hub REST `/api/*` (CORS + shell) | Desktop / mobile bundled `/admin` |
 
 ## Events and Hooks (Summary)
 

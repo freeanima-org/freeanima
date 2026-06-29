@@ -1,0 +1,199 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-29 14:22+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Title #
+#: docs/features/diary.md:1 docs/features/diary.md:5
+#, no-wrap
+msgid "Diary"
+msgstr "日记"
+
+#. type: Plain text
+#: docs/features/diary.md:8
+msgid ""
+"Structured diary for users and Agents, based on the [Unified Entity Model]"
+"(../concepts/entity-model.md) `diary_entry` component."
+msgstr ""
+"面向用户与 Agent 的结构化日记，基于[统一实体模型](../concepts/entity-"
+"model.md)的 `diary_entry` 组件。"
+
+#. type: Title ##
+#: docs/features/diary.md:9
+#, no-wrap
+msgid "vs memory system"
+msgstr "与记忆体系对比"
+
+#. type: Plain text
+#: docs/features/diary.md:17
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Capability | Diary                                | Autobiographical memory              |\n"
+#| "| ---------- | ------------------------------------ | ------------------------------------ |\n"
+#| "| Source     | User / Agent **writes actively**     | **Extracted** from dialogue in light sleep |\n"
+#| "| Storage    | `entities` + `diary_entry`           | `autobiographical_memory` table      |\n"
+#| "| Editing    | Update and delete allowed            | append-only                          |\n"
+#| "| Namespace  | subject **default private world**    | Digital-life memory pipeline         |\n"
+msgid ""
+"| Capability | Diary                             | Autobiographical memory                    |\n"
+"| ---------- | --------------------------------- | ------------------------------------------ |\n"
+"| Source     | User / Agent **writes actively**  | **Extracted** from dialogue in light sleep |\n"
+"| Storage    | `entities` + `diary_entry`        | `autobiographical_memory` table            |\n"
+"| Editing    | Update and delete allowed         | append-only                                |\n"
+"| Namespace  | subject **default private world** | Digital-life memory pipeline               |\n"
+msgstr ""
+"| 能力     | 日记                                 | 自传体记忆                           |\n"
+"| -------- | ------------------------------------ | ------------------------------------ |\n"
+"| 来源     | 用户 / Agent **主动写入**            | 浅睡时从对话中**提取**               |\n"
+"| 存储     | `entities` + `diary_entry`           | `autobiographical_memory` 表         |\n"
+"| 编辑     | 允许更新与删除                       | 仅追加                               |\n"
+"| 命名空间 | subject **默认私有 world**           | 数字人类记忆管线                     |\n"
+
+#. type: Title ##
+#: docs/features/diary.md:18
+#, no-wrap
+msgid "User / Agent isolation"
+msgstr "用户 / Agent 隔离"
+
+#. type: Bullet: '- '
+#: docs/features/diary.md:23
+msgid ""
+"User and Agent diaries live in the **default private world** of subjects "
+"from `config.yaml` `notifications.user_subject_id` / `agent_subject_id`."
+msgstr ""
+"用户与 Agent 日记位于 `config.yaml` 中 `notifications.user_subject_id` / "
+"`agent_subject_id` 所对应 subject 的**默认私有 world**。"
+
+#. type: Bullet: '- '
+#: docs/features/diary.md:23
+msgid "Shell `/diary` top bar switches **User / Agent** view."
+msgstr "Shell `/diary` 顶栏切换 **用户 / Agent** 视图。"
+
+#. type: Bullet: '- '
+#: docs/features/diary.md:23
+msgid ""
+"Agent LLM tools (ToolSet `diary`) always write to **Agent** private world."
+msgstr "Agent LLM 工具（ToolSet `diary`）始终写入 **Agent** 私有 world。"
+
+#. type: Title ##
+#: docs/features/diary.md:24
+#, no-wrap
+msgid "Agent tools (ToolSet `diary`)"
+msgstr "Agent 工具（ToolSet `diary`）"
+
+#. type: Plain text
+#: docs/features/diary.md:27
+msgid ""
+"Load via `toolset_load` with `diary`. Agent tools locate entries by **`date` "
+"(YYYY-MM-DD)**; **default today** (CST noon `…T12:00:00+08:00`); **no "
+"`diary_create`** — use `diary_append` (creates empty shell for the day if "
+"missing, then appends)."
+msgstr ""
+"通过 `toolset_load` 加载 `diary`。Agent 工具按 **`date`（YYYY-MM-DD）** 定位"
+"条目；**默认当天**（CST 正午 `…T12:00:00+08:00`）；**无 `diary_create`** — 使"
+"用 `diary_append`（若缺失则为该日创建空壳，再追加）。"
+
+#. type: Plain text
+#: docs/features/diary.md:36
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Tool           | Description                                                                 |\n"
+#| "| -------------- | --------------------------------------------------------------------------- |\n"
+#| "| `diary_append` | Append body for date (`\\n\\n` separator); create shell if missing; `tags` only on shell creation |\n"
+#| "| `diary_update` | Replace full entry or fields by date (not append)                           |\n"
+#| "| `diary_get`    | Read entry for date; error if not found                                     |\n"
+#| "| `diary_delete` | Delete entry for date; returns `{ ok, action, date }`                       |\n"
+#| "| `diary_list`   | List / date filter (unchanged)                                              |\n"
+#| "| `diary_search` | Hybrid search (unchanged)                                                   |\n"
+msgid ""
+"| Tool           | Description                                                                                     |\n"
+"| -------------- | ----------------------------------------------------------------------------------------------- |\n"
+"| `diary_append` | Append body for date (`\\n\\n` separator); create shell if missing; `tags` only on shell creation |\n"
+"| `diary_update` | Replace full entry or fields by date (not append)                                               |\n"
+"| `diary_get`    | Read entry for date; error if not found                                                         |\n"
+"| `diary_delete` | Delete entry for date; returns `{ ok, action, date }`                                           |\n"
+"| `diary_list`   | List / date filter (unchanged)                                                                  |\n"
+"| `diary_search` | Hybrid search (unchanged)                                                                       |\n"
+msgstr ""
+"| 工具           | 说明                                                                 |\n"
+"| -------------- | -------------------------------------------------------------------- |\n"
+"| `diary_append` | 按日期追加正文（`\\n\\n` 分隔）；缺失则创建壳；`tags` 仅在创建壳时生效 |\n"
+"| `diary_update` | 按日期替换整篇或字段（非追加）                                       |\n"
+"| `diary_get`    | 读取指定日期条目；不存在则报错                                       |\n"
+"| `diary_delete` | 删除指定日期条目；返回 `{ ok, action, date }`                        |\n"
+"| `diary_list`   | 列表 / 日期筛选（不变）                                              |\n"
+"| `diary_search` | 混合搜索（不变）                                                     |\n"
+
+#. type: Plain text
+#: docs/features/diary.md:38
+#, no-wrap
+msgid "**vs SAP/UI**: Shell `/diary` and human editing use SAP `diary.create` / `diary.patch` etc., located by entity **`id`**; Agent ToolSet is LLM-only and uses **`date`** uniformly.\n"
+msgstr "**与 SAP/UI 对比**：Shell `/diary` 与人工编辑使用 SAP `diary.create` / `diary.patch` 等，按实体 **`id`** 定位；Agent ToolSet 仅供 LLM 使用，统一按 **`date`**。\n"
+
+#. type: Title ##
+#: docs/features/diary.md:39
+#, no-wrap
+msgid "SAP methods"
+msgstr "SAP 方法"
+
+#. type: Plain text
+#: docs/features/diary.md:42
+msgid "UI satellite `@freeanima/satellite-diary` (`/diary`) calls SAP:"
+msgstr "UI 卫星 `@freeanima/satellite-diary`（`/diary`）调用 SAP："
+
+#. type: Bullet: '- '
+#: docs/features/diary.md:44
+msgid ""
+"`diary.list` / `diary.create` / `diary.append` / `diary.patch` / "
+"`diary.delete` / `diary.get` / `diary.search`"
+msgstr ""
+"`diary.list` / `diary.create` / `diary.append` / `diary.patch` / "
+"`diary.delete` / `diary.get` / `diary.search`"
+
+#. type: Plain text
+#: docs/features/diary.md:46
+msgid "All methods require `subject_kind: user | agent`."
+msgstr "所有方法要求 `subject_kind: user | agent`。"
+
+#. type: Title ##
+#: docs/features/diary.md:47
+#, no-wrap
+msgid "Data shape"
+msgstr "数据形态"
+
+#. type: Plain text
+#: docs/features/diary.md:50
+msgid "`diary_entry` body:"
+msgstr "`diary_entry` body："
+
+#. type: Bullet: '- '
+#: docs/features/diary.md:53
+msgid ""
+"`entry_at` — ISO 8601, when the diary entry occurred (**unique per day** per "
+"subject private world)"
+msgstr ""
+"`entry_at` — ISO 8601，日记条目发生时间（每个 subject 私有 world **每日唯一"
+"**）"
+
+#. type: Bullet: '- '
+#: docs/features/diary.md:53
+msgid "`tags` — optional tags"
+msgstr "`tags` — 可选标签"
+
+#. type: Plain text
+#: docs/features/diary.md:54
+msgid ""
+"Title, summary, body use entity columns `title` / `summary` / `content`."
+msgstr "标题、摘要、正文使用实体列 `title` / `summary` / `content`。"

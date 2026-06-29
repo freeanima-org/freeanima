@@ -1,3 +1,4 @@
+import { m } from "@paraglide/messages";
 import mermaid from "mermaid";
 import { faMermaidThemeDark, faMermaidThemeLight } from "./mermaid-theme.ts";
 
@@ -65,12 +66,12 @@ function ensureLightbox(): HTMLElement {
   root.hidden = true;
   root.innerHTML = `
     <div class="fa-mermaid-lightbox__backdrop" data-fa-mermaid-close></div>
-    <div class="fa-mermaid-lightbox__panel" role="dialog" aria-modal="true" aria-label="Mermaid diagram">
+    <div class="fa-mermaid-lightbox__panel" role="dialog" aria-modal="true" aria-label="${m.docs_mermaid_dialog()}">
       <div class="fa-mermaid-lightbox__toolbar">
-        <button type="button" class="fa-mermaid-lightbox__btn" data-fa-mermaid-zoom="out" aria-label="缩小">−</button>
-        <button type="button" class="fa-mermaid-lightbox__btn" data-fa-mermaid-zoom="reset" aria-label="重置缩放">100%</button>
-        <button type="button" class="fa-mermaid-lightbox__btn" data-fa-mermaid-zoom="in" aria-label="放大">+</button>
-        <button type="button" class="fa-mermaid-lightbox__btn fa-mermaid-lightbox__btn--close" data-fa-mermaid-close aria-label="关闭">×</button>
+        <button type="button" class="fa-mermaid-lightbox__btn" data-fa-mermaid-zoom="out" aria-label="${m.docs_mermaid_zoom_out()}">−</button>
+        <button type="button" class="fa-mermaid-lightbox__btn" data-fa-mermaid-zoom="reset" aria-label="${m.docs_mermaid_zoom_reset()}">100%</button>
+        <button type="button" class="fa-mermaid-lightbox__btn" data-fa-mermaid-zoom="in" aria-label="${m.docs_mermaid_zoom_in()}">+</button>
+        <button type="button" class="fa-mermaid-lightbox__btn fa-mermaid-lightbox__btn--close" data-fa-mermaid-close aria-label="${m.docs_mermaid_close()}">×</button>
       </div>
       <div class="fa-mermaid-lightbox__viewport">
         <div class="fa-mermaid-lightbox__stage"></div>
@@ -140,7 +141,7 @@ function wrapDiagram(pre: HTMLPreElement): void {
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = "fa-mermaid-zoom-btn";
-  btn.setAttribute("aria-label", "放大查看图表");
+  btn.setAttribute("aria-label", m.docs_mermaid_expand());
   btn.textContent = "⤢";
   btn.addEventListener("click", () => {
     const svg = pre.querySelector("svg");

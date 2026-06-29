@@ -41,14 +41,7 @@ msgstr "v1 已实现"
 
 #. type: Plain text
 #: docs/concepts/recall-flow.md:17
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Capability        | Description                                                                                  |\n"
-#| "| ----------------- | -------------------------------------------------------------------------------------------- |\n"
-#| "| `memory_recall`   | Four sources: semantic / conversation / limbic / autobiographical; Top N; conversation returns snippet |\n"
-#| "| `sessions_search` | Session message search; returns snippet (not full content)                                   |\n"
-#| "| `memory_remember` | Semantic memory CRUD during conversation                                                     |\n"
-#| "| Resident memory   | System prompt injection (not recall)                                                         |\n"
+#, no-wrap
 msgid ""
 "| Capability        | Description                                                                                            |\n"
 "| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
@@ -57,12 +50,12 @@ msgid ""
 "| `memory_remember` | Semantic memory CRUD during conversation                                                               |\n"
 "| Resident memory   | System prompt injection (not recall)                                                                   |\n"
 msgstr ""
-"| 能力        | 说明                                                                                  |\n"
-"| ----------------- | -------------------------------------------------------------------------------------------- |\n"
-"| `memory_recall`   | 四源：semantic / conversation / limbic / autobiographical；Top N；session 返回 snippet |\n"
-"| `sessions_search` | 会话消息搜索；返回 snippet（非全文）                                   |\n"
-"| `memory_remember` | 对话中语义记忆 CRUD                                                     |\n"
-"| 常驻记忆   | system prompt 注入（非 recall）                                                         |\n"
+"| 能力              | 说明                                                                                                   |\n"
+"| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
+"| `memory_recall`   | 四源：semantic / conversation / limbic / autobiographical；Top N；conversation 返回 snippet            |\n"
+"| `sessions_search` | 会话消息搜索；返回 snippet（非全文）                                                                   |\n"
+"| `memory_remember` | 对话中语义记忆 CRUD                                                                                    |\n"
+"| Resident memory   | system prompt 注入（非 recall）                                                                        |\n"
 
 #. type: Title ###
 #: docs/concepts/recall-flow.md:18

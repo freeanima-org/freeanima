@@ -46,14 +46,7 @@ msgstr "设计原则"
 
 #. type: Plain text
 #: docs/concepts/compression.md:18
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Principle           | Description                                                                    |\n"
-#| "| ------------------- | ------------------------------------------------------------------------------ |\n"
-#| "| No message deletion | History is kept; compression only changes runtime view and conversation meta        |\n"
-#| "| Four segments       | LLM context = system + summary + slim + raw                                    |\n"
-#| "| On-demand trigger   | Compress when usage nears window limits; higher thresholds in tool loops       |\n"
-#| "| Memory-independent  | Compression does not trigger semantic extraction; light sleep cron is separate |\n"
+#, no-wrap
 msgid ""
 "| Principle           | Description                                                                    |\n"
 "| ------------------- | ------------------------------------------------------------------------------ |\n"
@@ -62,12 +55,12 @@ msgid ""
 "| On-demand trigger   | Compress when usage nears window limits; higher thresholds in tool loops       |\n"
 "| Memory-independent  | Compression does not trigger semantic extraction; light sleep cron is separate |\n"
 msgstr ""
-"| 原则           | 说明                                                                    |\n"
+"| 原则                | 说明                                                                           |\n"
 "| ------------------- | ------------------------------------------------------------------------------ |\n"
-"| 不删消息 | 历史保留；压缩仅改变运行时视图与 conversation meta        |\n"
-"| 四段       | LLM 上下文 = system + summary + slim + raw                                    |\n"
-"| 按需触发   | 用量接近窗口上限时压缩；工具循环内阈值更高       |\n"
-"| 与记忆独立  | 压缩不触发语义提取；浅睡 cron 独立运行 |\n"
+"| 不删消息            | 历史保留；压缩仅改变运行时视图与 conversation meta                             |\n"
+"| 四段                | LLM 上下文 = system + summary + slim + raw                                     |\n"
+"| 按需触发            | 用量接近窗口上限时压缩；工具循环内阈值更高                                     |\n"
+"| 与记忆独立          | 压缩不触发语义提取；浅睡 cron 独立运行                                         |\n"
 
 #. type: Title ##
 #: docs/concepts/compression.md:19
@@ -170,34 +163,34 @@ msgstr ""
 #: docs/concepts/compression.md:59
 #, no-wrap
 msgid "Context window resolution (token mode)"
-msgstr ""
+msgstr "上下文窗口解析（token 模式）"
 
 #. type: Plain text
 #: docs/concepts/compression.md:62
 msgid "Priority when estimating compression budget:"
-msgstr ""
+msgstr "估算压缩预算时的优先级："
 
 #. type: Bullet: '1. '
 #: docs/concepts/compression.md:67
 msgid "`models.<model>.context_window` in `config.yaml`"
-msgstr ""
+msgstr "`config.yaml` 中的 `models.<model>.context_window`"
 
 #. type: Bullet: '2. '
 #: docs/concepts/compression.md:67
 msgid "`compression.default_context_window` (applies to all models)"
-msgstr ""
+msgstr "`compression.default_context_window`（适用于所有模型）"
 
 #. type: Bullet: '3. '
 #: docs/concepts/compression.md:67
 msgid ""
 "Provider `/models` catalog `contextWindow` (when Hub has registered lookup)"
-msgstr ""
+msgstr "Provider `/models` 目录中的 `contextWindow`（Hub 已注册 lookup 时）"
 
 #. type: Bullet: '4. '
 #: docs/concepts/compression.md:67
 msgid ""
 "Message-count fallback (`max_rounds` thresholds) when none of the above apply"
-msgstr ""
+msgstr "以上皆无时的消息数回退（`max_rounds` 阈值）"
 
 #. type: Plain text
 #: docs/concepts/compression.md:69
@@ -205,15 +198,14 @@ msgid ""
 "Per-model config always wins over dynamically fetched catalog values; "
 "catalog is read-only and never written back to `config.yaml`."
 msgstr ""
+"按模型配置始终优先于动态获取的目录值；目录只读，不会写回 `config.yaml`。"
 
 #. type: Plain text
 #: docs/concepts/compression.md:71
-#, fuzzy
-#| msgid "Without `context_window`, falls back to message-count triggers."
 msgid ""
 "Without any context window source, compression falls back to message-count "
 "triggers."
-msgstr "未配置 `context_window` 时，回退到按消息数触发。"
+msgstr "无任何上下文窗口来源时，压缩回退到按消息数触发。"
 
 #. type: Plain text
 #: docs/concepts/compression.md:73

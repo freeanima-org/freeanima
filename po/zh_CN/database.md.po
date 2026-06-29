@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 17:13+0800\n"
+"POT-Creation-Date: 2026-06-29 13:16+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,8 +15,15 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. type: Title ##
+#: docs/features/companion.md:120 docs/features/mobile-app.md:51
+#: docs/guide/database.md:91 docs/guide/remote-access.md:128
+#, no-wrap
+msgid "Troubleshooting"
+msgstr "故障排查"
+
 #. type: Content of: <messages><msg>
-#: docs/guide/database.md:1 messages/po4a/en.xml:517
+#: docs/guide/database.md:1 messages/po4a/en.xml:563
 #, no-wrap
 msgid "Database"
 msgstr "数据库"
@@ -182,7 +189,7 @@ msgstr "安装扩展后执行，或重启 `anima service`。"
 #: docs/guide/database.md:62
 #, no-wrap
 msgid "`auto_llm_runs` (audit)"
-msgstr ""
+msgstr "`auto_llm_runs`（审计）"
 
 #. type: Plain text
 #: docs/guide/database.md:65
@@ -191,6 +198,8 @@ msgid ""
 "to `auto_llm_runs` instead of creating `sessions`. Retention (optional "
 "`config.yaml`):"
 msgstr ""
+"无用户轮次的后台 LLM（cron agent、睡眠流水线阶段）写入 `auto_llm_runs`，而非"
+"创建 `sessions`。保留策略（可选 `config.yaml`）："
 
 #. type: Fenced code block (yaml)
 #: docs/guide/database.md:66
@@ -200,6 +209,9 @@ msgid ""
 "  retention_days: 30\n"
 "  per_run_kind_keep: 100\n"
 msgstr ""
+"auto_llm:\n"
+"  retention_days: 30\n"
+"  per_run_kind_keep: 100\n"
 
 #. type: Plain text
 #: docs/guide/database.md:73
@@ -207,6 +219,8 @@ msgid ""
 "Purged during sleep-cycle step `conversation-cleanup` (after stale "
 "conversation cleanup). Cron script runs (`no_agent`) use `cron_log` only."
 msgstr ""
+"在 sleep-cycle 步骤 `conversation-cleanup`（过期对话清理之后）中清除。Cron 脚"
+"本运行（`no_agent`）仅使用 `cron_log`。"
 
 #. type: Title ##
 #: docs/guide/database.md:74
@@ -262,12 +276,6 @@ msgstr ""
 #: docs/guide/database.md:90
 msgid "pre-commit `test:changed` does **not** run integration tests."
 msgstr "pre-commit 的 `test:changed` **不会**运行集成测试。"
-
-#. type: Title ##
-#: docs/guide/database.md:91
-#, no-wrap
-msgid "Troubleshooting"
-msgstr "故障排查"
 
 #. type: Plain text
 #: docs/guide/database.md:98

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-28 23:53+0800\n"
+"POT-Creation-Date: 2026-06-29 14:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/architecture.md:1 messages/po4a/en.xml:544
+#: docs/concepts/architecture.md:1 docs/features/companion.md:11
+#: messages/po4a/en.xml:560
 #, no-wrap
 msgid "Architecture"
 msgstr ""
@@ -517,8 +518,8 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/concepts/architecture.md:179
 msgid ""
-"**UI**: app/desktop / app/mobile bundled SPA（聊天室 + 管理台）；Hub 不托管 "
-"`/admin`"
+"**UI**: app/desktop / app/mobile bundled SPA (Chat + Admin); Hub does not "
+"host `/admin`"
 msgstr ""
 
 #. type: Fenced code block (bash)
@@ -527,7 +528,7 @@ msgstr ""
 msgid ""
 "anima service start              # default: systemd --user\n"
 "anima service start --foreground # foreground (logs to stdout)\n"
-"bun run dev:web                  # 浏览器壳层（聊天 + Admin + 设置，Vite HMR；Hub 须已运行）\n"
+"bun run dev:web                  # browser shell (Chat + Admin + settings, Vite HMR; Hub must be running)\n"
 "anima service status\n"
 msgstr ""
 
@@ -700,8 +701,9 @@ msgid ""
 "**not** AutoLlmRun."
 msgstr ""
 
-#. type: Yaml Front Matter Hash Value: title
+#. type: Title #
 #: docs/concepts/architecture.md:259 docs/features/goal.md:1
+#: docs/features/goal.md:5
 #, no-wrap
 msgid "Session Goal"
 msgstr ""
@@ -748,18 +750,18 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/architecture.md:277
 msgid ""
-"聊天室与管理台 UI 由 **app/desktop** / **app/mobile** 打进客户端；`anima "
-"service` 仅提供 Hub 后端。"
+"Chat and Admin UI are bundled in **app/desktop** / **app/mobile**; `anima "
+"service` provides Hub backend only."
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/architecture.md:282
 #, no-wrap
 msgid ""
-"| 模块  | 连接方式                          | 说明                         |\n"
-"| ----- | --------------------------------- | ---------------------------- |\n"
-"| Chat  | SAP WebSocket `/sap/v1`           | 桌面 / 移动 bundled `/chat`  |\n"
-"| Admin | Hub REST `/api/*`（CORS + shell） | 桌面 / 移动 bundled `/admin` |\n"
+"| Module | Connection                       | Notes                             |\n"
+"| ------ | -------------------------------- | --------------------------------- |\n"
+"| Chat   | SAP WebSocket `/sap/v1`          | Desktop / mobile bundled `/chat`  |\n"
+"| Admin  | Hub REST `/api/*` (CORS + shell) | Desktop / mobile bundled `/admin` |\n"
 msgstr ""
 
 #. type: Title ##

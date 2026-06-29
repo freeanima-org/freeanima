@@ -19,7 +19,11 @@ export const docsRoot = join(root, "docs");
 export const poRoot = join(root, "po");
 export const potRoot = join(poRoot, "pot");
 export const generatedZhRoot = join(root, "docs/.generated/zh_CN");
-export const zhRefRoot = join(root, "docs/.zh-cn-ref");
+
+/** Skip when walking docs/ for po4a masters (not Starlight content). */
+export function skipDocsDir(name: string): boolean {
+  return name.startsWith(".") || name.startsWith("_");
+}
 
 /** Subdirectories included in Starlight docs collection (see site/src/content.config.ts). */
 export const DOC_COLLECTION_DIRS = ["guide", "concepts", "features", "sap", "tools"] as const;
@@ -37,7 +41,7 @@ export function listDocMasters(dir: string = docsRoot): DocMaster[] {
   const out: DocMaster[] = [];
   if (!existsSync(dir)) return out;
   for (const name of readdirSync(dir).toSorted()) {
-    if (dir === docsRoot && (name === ".zh-cn-ref" || name === ".generated")) {
+    if (dir === docsRoot && skipDocsDir(name)) {
       continue;
     }
     const path = join(dir, name);

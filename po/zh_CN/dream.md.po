@@ -59,13 +59,7 @@ msgstr "触发"
 
 #. type: Plain text
 #: docs/concepts/dream.md:20
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Condition                                                                 | Result                     |\n"
-#| "| ------------------------------------------------------------------------- | -------------------------- |\n"
-#| "| No limbic memory with `intensity > 0.5` in the day's creation window      | Skip (`no_strong_emotion`) |\n"
-#| "| Dream already exists for that day                                         | Skip (`already_dreamed`)   |\n"
-#| "| At least one strong limbic anchor produced that day                       | Generate dream             |\n"
+#, no-wrap
 msgid ""
 "| Condition                                                            | Result                     |\n"
 "| -------------------------------------------------------------------- | -------------------------- |\n"
@@ -189,13 +183,7 @@ msgstr "工具与 UI"
 
 #. type: Plain text
 #: docs/concepts/dream.md:56
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Surface                      | Purpose                                                           |\n"
-#| "| ---------------------------- | ----------------------------------------------------------------- |\n"
-#| "| `dream_read` tool            | Read stored dream; auto-dismisses fridge reminder                 |\n"
-#| "| `fridge_magnet_dismiss` tool | Explicitly tear off any fridge magnet (including dream reminders) |\n"
-#| "| Admin `/admin/chamber/dream` | Browse dream history                                              |\n"
+#, no-wrap
 msgid ""
 "| Surface                        | Purpose                                                           |\n"
 "| ------------------------------ | ----------------------------------------------------------------- |\n"
@@ -203,11 +191,11 @@ msgid ""
 "| `fridge_magnet_dismiss` tool   | Explicitly tear off any fridge magnet (including dream reminders) |\n"
 "| Admin `/admin/dashboard/dream` | Browse dream history                                              |\n"
 msgstr ""
-"| 入口                         | 用途                                                              |\n"
-"| ---------------------------- | ----------------------------------------------------------------- |\n"
-"| `dream_read` 工具            | 读取已存梦境；自动撕掉冰箱贴提醒                                  |\n"
-"| `fridge_magnet_dismiss` 工具 | 显式撕掉任意冰箱贴（含梦境提醒）                                  |\n"
-"| Admin `/admin/chamber/dream` | 浏览梦境历史                                                      |\n"
+"| 入口                           | 用途                                                              |\n"
+"| ------------------------------ | ----------------------------------------------------------------- |\n"
+"| `dream_read` 工具              | 读取已存梦境；自动撕掉冰箱贴提醒                                  |\n"
+"| `fridge_magnet_dismiss` 工具   | 显式撕掉任意冰箱贴（含梦境提醒）                                  |\n"
+"| Admin `/admin/dashboard/dream` | 浏览梦境历史                                                      |\n"
 
 #. type: Title ##
 #: docs/concepts/dream.md:57

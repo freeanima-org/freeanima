@@ -89,18 +89,14 @@ msgstr "`local_name` — Satellite 注册时的工具名称"
 
 #. type: Plain text
 #: docs/sap/tools.md:30
-#, fuzzy
-#| msgid ""
-#| "Example: `sap_pairprogramming_a1b2c3d4e5f6789012345678abcdef01_scan_code`"
 msgid "Example: `sap_pairprogramming_k7m_scan_code`"
-msgstr "示例：`sap_pairprogramming_a1b2c3d4e5f6789012345678abcdef01_scan_code`"
+msgstr "示例：`sap_pairprogramming_k7m_scan_code`"
 
 #. type: Title ##
 #: docs/sap/tools.md:31
-#, fuzzy, no-wrap
-#| msgid "Chamber visibility"
+#, no-wrap
 msgid "ToolSet visibility"
-msgstr "管理台可见性"
+msgstr "ToolSet 可见性"
 
 #. type: Plain text
 #: docs/sap/tools.md:34
@@ -108,18 +104,20 @@ msgid ""
 "SAP satellite toolsets default to **`private: true`** via `tool.register`. "
 "Private toolsets:"
 msgstr ""
+"SAP 卫星 toolset 经 `tool.register` 默认为 **`private: true`**。私有 "
+"toolset："
 
 #. type: Bullet: '- '
 #: docs/sap/tools.md:37
 msgid "Do not appear in system prompt ToolSet lists"
-msgstr ""
+msgstr "不出现在 system prompt 的 ToolSet 列表中"
 
 #. type: Bullet: '- '
 #: docs/sap/tools.md:37
 msgid ""
 "Cannot be found via `toolset_search` or loaded by name without capability "
 "mask"
-msgstr ""
+msgstr "无 capability mask 时无法经 `toolset_search` 找到或按名称加载"
 
 #. type: Plain text
 #: docs/sap/tools.md:39
@@ -127,6 +125,7 @@ msgid ""
 "Set `private: false` on `tool.register` to expose tools like built-in "
 "toolsets."
 msgstr ""
+"在 `tool.register` 上设 `private: false` 可像内置 toolset 一样暴露工具。"
 
 #. type: Title ##
 #: docs/sap/tools.md:40
@@ -170,11 +169,6 @@ msgstr ""
 
 #. type: Plain text
 #: docs/sap/tools.md:60
-#, fuzzy
-#| msgid ""
-#| "Register via `tool.register` with `SapToolDefInput`: `local_name`, "
-#| "`description`, `parameters` (JSON Schema object), optional `return_kind` "
-#| "(`json` | `text`)."
 msgid ""
 "Register via `tool.register` with `SapToolDefInput`: `local_name`, "
 "`description`, `parameters` (JSON Schema object), optional `return_kind` "
@@ -182,7 +176,7 @@ msgid ""
 msgstr ""
 "通过 `tool.register` 注册，参数为 `SapToolDefInput`：`local_name`、"
 "`description`、`parameters`（JSON Schema 对象），可选 `return_kind`（`json` "
-"| `text`）。"
+"| `text`），可选 `private`（默认 `true`）。"
 
 #. type: Plain text
 #: docs/sap/tools.md:62
@@ -289,31 +283,24 @@ msgstr ""
 
 #. type: Title ##
 #: docs/sap/tools.md:100
-#, fuzzy, no-wrap
-#| msgid "Platform mapping"
+#, no-wrap
 msgid "Platform naming"
-msgstr "平台映射"
+msgstr "平台命名"
 
 #. type: Plain text
 #: docs/sap/tools.md:103
 msgid "Session platform for SAP satellites uses three segments:"
-msgstr ""
+msgstr "SAP 卫星的 session platform 使用三段式："
 
 #. type: Fenced code block (text)
 #: docs/sap/tools.md:104
-#, fuzzy, no-wrap
-#| msgid "sap:{app_slug}:{instance_id_norm}:{local_name}\n"
+#, no-wrap
 msgid "sap:{app_slug}:{instance_id}\n"
-msgstr "sap:{app_slug}:{instance_id_norm}:{local_name}\n"
+msgstr "sap:{app_slug}:{instance_id}\n"
 
 #. type: Plain text
 #: docs/sap/tools.md:113
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| `app_id`           | Platform                  |\n"
-#| "| ------------------ | ------------------------- |\n"
-#| "| `pair-programming` | `studio-pair-programming` |\n"
-#| "| `parlor`           | `parlor`                  |\n"
+#, no-wrap
 msgid ""
 "| `app_id`           | Example platform          |\n"
 "| ------------------ | ------------------------- |\n"
@@ -321,10 +308,11 @@ msgid ""
 "| `chat`             | `sap:chat:k7m`            |\n"
 "| `companion`        | `sap:companion:k7m`       |\n"
 msgstr ""
-"| `app_id`           | 平台                      |\n"
+"| `app_id`           | 示例 platform             |\n"
 "| ------------------ | ------------------------- |\n"
-"| `pair-programming` | `studio-pair-programming` |\n"
-"| `parlor`           | `parlor`                  |\n"
+"| `pair-programming` | `sap:pairprogramming:k7m` |\n"
+"| `chat`             | `sap:chat:k7m`            |\n"
+"| `companion`        | `sap:companion:k7m`       |\n"
 
 #. type: Plain text
 #: docs/sap/tools.md:115
@@ -333,6 +321,8 @@ msgid ""
 "unique across all SAP apps. Hub returns the assigned or confirmed id in "
 "`connected.instance_id`."
 msgstr ""
+"`instance_id` 是 Hub 分配的 3 字符 `[a-z0-9]` 字符串，在所有 SAP app 间全局唯"
+"一。Hub 在 `connected.instance_id` 中返回分配或确认的 id。"
 
 #. type: Title ##
 #: docs/sap/tools.md:116

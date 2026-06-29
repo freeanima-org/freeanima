@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-28 23:53+0800\n"
+"POT-Creation-Date: 2026-06-29 13:16+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:553
+#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:569
 #, no-wrap
 msgid "Installation"
 msgstr ""
@@ -219,8 +219,8 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:95
 msgid ""
-"UI 使用 **app/desktop** 或 **app/mobile**（聊天室 + 管理台 bundled）。浏览器"
-"本地开发：`bun run dev:web`（Vite HMR，Hub 须已运行）。"
+"Use **app/desktop** or **app/mobile** for UI (Chat + Admin bundled). Browser "
+"local dev: `bun run dev:web` (Vite HMR; Hub must be running)."
 msgstr ""
 
 #. type: Plain text
@@ -357,21 +357,21 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:151
 msgid ""
-"UI 请使用 app/desktop 或 app/mobile 客户端（bundled shell，含 `/chat`、`/"
-"tasks`、`/admin` 等模块）。"
+"Use app/desktop or app/mobile clients for UI (bundled shell with `/chat`, `/"
+"tasks`, `/admin`, etc.)."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/install.md:154
 msgid ""
-"Hub API（health）：`http://127.0.0.1:2658/api/health`（Hub **不**托管 Admin "
-"UI）"
+"Hub API (health): `http://127.0.0.1:2658/api/health` (Hub does **not** host "
+"Admin UI)"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/install.md:154
 msgid ""
-"本地 Web 壳层开发：`bun run dev:web` → Admin：`http://127.0.0.1:4173/admin/"
+"Local Web shell dev: `bun run dev:web` → Admin: `http://127.0.0.1:4173/admin/"
 "dashboard`"
 msgstr ""
 
@@ -517,8 +517,9 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:217
 msgid ""
-"Bun 的 `bun install -g ./cli/publish` 在仓库根目录不可用；请使用 `bun run "
-"install:cli:local`（会先清理损坏的全局依赖，再 pack + 安装 tarball）。"
+"`bun install -g ./cli/publish` from the repo root is not supported; use `bun "
+"run install:cli:local` (cleans broken global deps, then pack + install "
+"tarball)."
 msgstr ""
 
 #. type: Title ###

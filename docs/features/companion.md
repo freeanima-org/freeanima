@@ -2,90 +2,90 @@
 title: Desktop Companion
 ---
 
-# 桌面伴侣（Companion）
+# Desktop Companion
 
-> **Dynamic SAP 卫星**：单体桌面 GUI 应用，不经 `config.yaml` managed 托管。
+> **Dynamic SAP satellite**: a standalone desktop GUI app, not managed via `config.yaml`.
 
-桌面伴侣是 SAP **Type B** 应用（embedded sidecar 持 Hub WebSocket、`relay: false`）：**内容包**（React + VRM + Node sidecar）由通用 **app/desktop** 嵌入，通过 SAP 向 Hub 注册并向 Agent 暴露本地工具。
+The desktop companion is a SAP **Type B** app (embedded sidecar holds the Hub WebSocket, `relay: false`): the **content pack** (React + VRM + Node sidecar) is embedded by **app/desktop**, registers with the Hub via SAP, and exposes local tools to the Agent.
 
-## 架构
+## Architecture
 
 ```text
-FreeAnima Desktop（app/desktop）
-├── Electron Main — 托盘/多窗 + 内嵌 companion sidecar
-│   ├── companion overlay — 透明置顶，VRM / 气泡
-│   ├── companion settings — 设置窗
-│   ├── chat — 聊天室 SPA（SAP 直连，无 sidecar）
-│   └── admin — 管理台 WebView（Hub REST）
-└── Renderer — preload satelliteShell；companion API 走 localhost sidecar
+FreeAnima Desktop (app/desktop)
+├── Electron Main — tray / multi-window + embedded companion sidecar
+│   ├── companion overlay — transparent always-on-top, VRM / speech bubble
+│   ├── companion settings — settings window
+│   ├── chat — Chat SPA (SAP direct, no sidecar)
+│   └── admin — Admin WebView (Hub REST)
+└── Renderer — preload satelliteShell; companion API via localhost sidecar
          ↕ SAP WS
     anima service Hub
 ```
 
-内容包位于 [`satellites/companion/`](../../satellites/companion/)（`app/` + `server/` + `shared/`），导出约定见 [`frontend-exports.md`](../sap/frontend-exports.md)。
+The content pack lives in [`satellites/companion/`](../../satellites/companion/) (`app/` + `server/` + `shared/`). Export conventions: [`frontend-exports.md`](../sap/frontend-exports.md).
 
-与 Chat / 结对编程的区别：
+Compared with Chat / pair programming:
 
-|             | Chat / 结对编程              | Companion                                    |
-| ----------- | ---------------------------- | -------------------------------------------- |
-| UI          | 浏览器 Web UI                | 原生透明伴侣窗 + 独立设置窗                  |
-| 部署        | Managed（可与 service 同机） | Dynamic（用户自行启动）                      |
-| SAP         | Type A 或 Type B + relay     | Type B + tools，无 relay                     |
-| 客户端与 UI | 可分离                       | 伴侣渲染与设置窗分离，同属一个 Electron 应用 |
+|             | Chat / pair programming              | Companion                                            |
+| ----------- | ------------------------------------ | ---------------------------------------------------- |
+| UI          | Browser Web UI                       | Native transparent companion window + settings       |
+| Deployment  | Managed (can co-locate with service) | Dynamic (user starts manually)                       |
+| SAP         | Type A or Type B + relay             | Type B + tools, no relay                             |
+| Client & UI | Can be separated                     | Companion render and settings share one Electron app |
 
-## 功能
+## Features
 
-- VRM 角色渲染（Three.js + `@pixiv/three-vrm`）；VRM 1.0 与 0.x 自动校正朝向
-- **动作槽位（Motion Slot）**：`idle`、`rest`、`walk`、`climb`、`in_place` 五个槽位；每槽位可绑定 0..n 个 VRMA，播放时指定或随机；槽位为空则不播放动画
-- **文字气泡**：单向文字队列；用户点击切换下一条，不自动消失；由 Hub Agent 通过 `companion.bubble` 工具推送
-- 透明置顶 companion 窗（160×260）+ 角色区域可点、空白穿透
-- **本地交互**：拖拽移动窗口；点击身体任意部位从 `in_place` 槽位随机播放动作
-- **巡逻**（可在设置 → 行为 Tab 配置）：空闲自动巡逻、双击巡逻、角点停顿、巡逻速度、启动归位等
-- 系统托盘：显示/隐藏伴侣、**设置…**（打开伴侣设置窗）、退出
-- 设置窗 Tab：**通用** / **行为** / **模型** / **动作槽位** / **动作库**
+- VRM avatar rendering (Three.js + `@pixiv/three-vrm`); VRM 1.0 and 0.x auto orientation correction
+- **Motion slots**: five slots — `idle`, `rest`, `walk`, `climb`, `in_place`; each slot binds 0..n VRMA clips; play by id or random; empty slot = no animation
+- **Speech bubble**: one-way text queue; user click advances; no auto-dismiss; pushed by Hub Agent via `companion.bubble` tool
+- Transparent always-on-top companion window (160×260); avatar area clickable, empty area click-through
+- **Local interaction**: drag to move window; click body to play random motion from `in_place` slot
+- **Patrol** (Settings → Behavior tab): idle patrol, double-click patrol, corner pause, patrol speed, return-to-start on launch, etc.
+- System tray: show/hide companion, **Settings…** (open settings window), quit
+- Settings tabs: **General** / **Behavior** / **Models** / **Motion slots** / **Motion library**
 
-## Agent 工具（sidecar 注册）
+## Agent tools (sidecar registration)
 
-| 工具        | 参数                                 | 说明                           |
-| ----------- | ------------------------------------ | ------------------------------ |
-| `bubble`    | `text: string`                       | 文字入气泡队列                 |
-| `play_slot` | `slot: string`；`motion_id?: string` | 播放动作槽位；`motion_id` 可选 |
+| Tool        | Parameters                           | Description                            |
+| ----------- | ------------------------------------ | -------------------------------------- |
+| `bubble`    | `text: string`                       | Enqueue text in speech bubble          |
+| `play_slot` | `slot: string`; `motion_id?: string` | Play motion slot; `motion_id` optional |
 
-定时笑话等周期性内容在 **anima service / 定时任务** 侧配置，由 Agent 调用 `bubble` 推送；Companion 不内置定时器。
+Periodic content (e.g. scheduled jokes) is configured on **anima service / scheduled tasks**; the Agent calls `bubble`. Companion has no built-in timer.
 
-## 模型与动作
+## Models and motions
 
-仓库**不捆绑** `.vrm` / `.vrma` 文件。配置持久化在 `~/.anima/companion/config.json`（含 `models`、`motion_library`、`motion_slots`、`behavior`）。
+The repo **does not bundle** `.vrm` / `.vrma` files. Config persists in `~/.anima/companion/config.json` (`models`, `motion_library`, `motion_slots`, `behavior`).
 
-### VRM 模型
+### VRM models
 
-在设置 → **模型** Tab：列表、导入、删除、重命名、切换当前模型。文件保存到 `~/.anima/companion/models/`。
+Settings → **Models** tab: list, import, delete, rename, switch current model. Files saved to `~/.anima/companion/models/`.
 
-开发期可将文件放入 `satellites/companion/public/models/` 作为回退目录。
+During development, files in `satellites/companion/public/models/` serve as fallback.
 
-### VRMA 动作库与槽位
+### VRMA library and slots
 
-在设置 → **动作库** Tab 导入 VRMA 动作包 ZIP 或单个文件；在 **动作槽位** Tab 为各槽位勾选动作。动作库预览区支持鼠标拖拽旋转视角。
+Settings → **Motion library** tab: import VRMA ZIP or single files; **Motion slots** tab: assign motions per slot. Preview supports mouse drag to rotate view.
 
-动作文件目录：`~/.anima/companion/motions/`。未绑定槽位时不播放对应动画；巡逻位移仍会平移窗口，仅在有 `walk` / `climb` VRMA 时播放移动动画。
+Motion files: `~/.anima/companion/motions/`. Unbound slots play no animation; patrol still moves the window; walk/climb VRMA play only when bound.
 
-## 开发与运行
+## Development and run
 
-### 浏览器开发（无需 Electron）
+### Browser dev (no Electron)
 
-在 `satellites/companion` 目录：
+In `satellites/companion`:
 
 ```bash
 bun run dev
-# 或 bun satellites/companion/dev.ts
+# or bun satellites/companion/dev.ts
 ```
 
-- 伴侣：http://127.0.0.1:4176
-- 设置（浏览器 dev）：http://127.0.0.1:4176/?view=settings
+- Companion: http://127.0.0.1:4176
+- Settings (browser dev): http://127.0.0.1:4176/?view=settings
 
-Electron 桌面壳中，伴侣设置通过系统托盘 → **设置…** 打开独立设置窗；overlay 窗上不显示设置按钮。
+In the Electron desktop shell, open settings via tray → **Settings…**; the overlay has no settings button.
 
-### Electron 桌面壳（含伴侣 + 聊天室 + 管理台）
+### Electron desktop shell (companion + Chat + Admin)
 
 ```bash
 cd app/desktop
@@ -93,41 +93,41 @@ bun install
 bun dev:electron
 ```
 
-打包（Linux 交叉打 Windows）：
+Packaging (Linux cross-build for Windows):
 
 ```bash
-# 日常：便携目录 win-unpacked（约 20s，拷到 Windows 直接运行 exe）
+# Daily: portable win-unpacked (~20s; copy exe to Windows)
 bun run dev:windows
 
-# 发安装包 / 测安装流程（NSIS，约 2min+）
+# Installer / install-flow test (NSIS, ~2min+)
 bun run package:windows
 ```
 
-也可在 `app/desktop` 内：`bun run dev:windows` / `bun run package:windows`。fast 路径默认保留 `vendor/` 与 `release/` 以加速二次构建；全量清理加 `DESKTOP_SHELL_CLEAN=1`。
+Or from `app/desktop`: `bun run dev:windows` / `bun run package:windows`. Fast path keeps `vendor/` and `release/` for incremental builds; full clean: `DESKTOP_SHELL_CLEAN=1`.
 
-环境变量：
+Environment variables:
 
-| 变量                     | 默认                    | 说明                                     |
-| ------------------------ | ----------------------- | ---------------------------------------- |
-| `FREEANIMA_URL`          | `http://127.0.0.1:2658` | 无桌面 `settings.json` 时的 Hub 回退地址 |
-| `SATELLITE_PORT`         | `4176`                  | 本地 HTTP 端口                           |
-| `COMPANION_VRMA_ZIP_URL` | （空）                  | 可选；直链 zip 镜像，启动时下载          |
+| Variable                 | Default                 | Description                                     |
+| ------------------------ | ----------------------- | ----------------------------------------------- |
+| `FREEANIMA_URL`          | `http://127.0.0.1:2658` | Hub fallback when no desktop `settings.json`    |
+| `SATELLITE_PORT`         | `4176`                  | Local HTTP port                                 |
+| `COMPANION_VRMA_ZIP_URL` | (empty)                 | Optional direct zip mirror; downloaded on start |
 
-Hub 地址与远程 Token 由桌面壳 **`~/.anima-desktop/settings.json`**（`hub` 段）统一管理（托盘 → **Hub 设置…**）。伴侣设置 → 通用 Tab 只读展示 Hub 地址。
+Hub URL and remote token are managed by the desktop shell in **`~/.anima-desktop/settings.json`** (`hub` section; tray → **Hub settings…**). Companion Settings → General tab shows Hub URL read-only.
 
-Hub 在首次 `connect` 时分配 **3 字符** `instance_id`，写入 `~/.anima/companion/instance.json`（非 `satellites/` 子目录）。
+Hub assigns a **3-character** `instance_id` on first `connect`, stored in `~/.anima/companion/instance.json` (not under `satellites/`).
 
-### 常见问题
+### Troubleshooting
 
-| 现象             | 处理                                                                               |
-| ---------------- | ---------------------------------------------------------------------------------- |
-| 双击无窗口       | 看系统托盘；托盘 → **设置…** 导入 `.vrm`                                           |
-| 点击无动作       | 设置 → **动作库** 导入 VRMA；**动作槽位** 绑定对应槽位                             |
-| 无法连 Hub       | 确认 `anima service` 与 `remote_auth.token`；托盘 **Hub 设置** 中地址与 token 正确 |
-| 动作导入后无变化 | 导入后会热重载；若仍无效，确认槽位已勾选对应动作                                   |
-| 后台服务失败     | 查看 `~/.anima/app/desktop/shell.log`；确认端口 4176–4185 可用                     |
+| Symptom                  | Action                                                                               |
+| ------------------------ | ------------------------------------------------------------------------------------ |
+| Double-click, no window  | Check system tray; tray → **Settings…** → import `.vrm`                              |
+| Click, no motion         | Settings → **Motion library** import VRMA; **Motion slots** bind slot                |
+| Cannot reach Hub         | Confirm `anima service` and `remote_auth.token`; tray **Hub settings** URL and token |
+| Import has no effect     | Hot reload after import; confirm slot has motion checked                             |
+| Background service fails | See `~/.anima/app/desktop/shell.log`; confirm ports 4176–4185 free                   |
 
-## 相关文档
+## Related docs
 
-- SAP 卫星指南：[`satellite-guide.md`](../sap/satellite-guide.md)
-- SAP 安全模型：[`security-model.md`](../sap/security-model.md)
+- SAP satellite guide: [`satellite-guide.md`](../sap/satellite-guide.md)
+- SAP security model: [`security-model.md`](../sap/security-model.md)

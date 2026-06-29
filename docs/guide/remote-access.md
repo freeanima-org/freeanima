@@ -2,46 +2,46 @@
 title: Remote access
 ---
 
-# Remote access（Tunnel + 应用 Token）
+# Remote access (Tunnel + app token)
 
-> 通过 **Cloudflare Tunnel** 将家里 PC 上的 Hub 暴露到公网时，由 Hub **`remote_auth`** Bearer Token 保护非本地连接。
-> 安全上下文：[`security.md`](security.md) · 安装：[`install.md`](install.md)
+> When exposing the home PC Hub via **Cloudflare Tunnel**, Hub **`remote_auth`** Bearer token protects non-local connections.
+> Security context: [`security.md`](security.md) · Install: [`install.md`](install.md)
 
-## 概览
+## Overview
 
-| 层                    | 作用                                                                                                          |
-| --------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Hub `remote_auth`** | `config.yaml` 明文 token；REST `Authorization: Bearer`；SAP `connect` 帧 `auth_token`；MCP `/mcp` 同样 Bearer |
-| **cloudflared**       | 出站隧道；Hub hostname → `127.0.0.1:2658`，Web hostname → `127.0.0.1:2659`（可选）                            |
-| **客户端设置**        | app/desktop / app/mobile / **浏览器 Web** 在 **Hub 设置页**填写 Hub 地址与 token                              |
+| Layer                 | Role                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Hub `remote_auth`** | Plaintext token in `config.yaml`; REST `Authorization: Bearer`; SAP `connect` frame `auth_token`; MCP `/mcp` same Bearer |
+| **cloudflared**       | Outbound tunnel; Hub hostname → `127.0.0.1:2658`, Web hostname → `127.0.0.1:2659` (optional)                             |
+| **Client settings**   | app/desktop / app/mobile / **browser Web** fill Hub URL and token in **Hub settings**                                    |
 
-仅当 **Host 为 loopback**（`127.0.0.1` / `localhost` / `::1`）**且 TCP 对端也为 loopback** 时 **不验 token**（本地开发、CLI/systemd 探活）。公网域名（经 Tunnel）、局域网 IP 等访问时须带 token；与 `tunnel.enabled` 无关。
+Token is **skipped** only when **Host is loopback** (`127.0.0.1` / `localhost` / `::1`) **and TCP peer is loopback** (local dev, CLI/systemd health checks). Public domains (via Tunnel), LAN IPs, etc. require token; independent of `tunnel.enabled`.
 
-## 1. Hub 配置
+## 1. Hub configuration
 
-在 `~/.anima/config.yaml` 中设置（**仅本地使用可省略**；暴露到局域网或公网前必须配置）：
+In `~/.anima/config.yaml` (**omit for local-only**; required before LAN or public exposure):
 
 ```yaml
 remote_auth:
-  token: "请替换为 openssl rand -base64 32 生成的随机串"
+  token: "replace with openssl rand -base64 32 output"
 ```
 
-生成示例：
+Generate:
 
 ```bash
 openssl rand -base64 32
 ```
 
-`.gitignore` 已忽略 `config.yaml`；请勿提交到 git。Admin API 读配置时会对 `remote_auth.token` 脱敏显示。
+`.gitignore` ignores `config.yaml`; do not commit. Admin API redacts `remote_auth.token` on read.
 
-## 2. Tunnel（可选）
+## 2. Tunnel (optional)
 
 ```bash
 anima tunnel setup
 anima service start
 ```
 
-`tunnel.enabled: true` 时随 **`anima service start`** stack 启动 cloudflared（不再使用独立 `anima-tunnel.service`）。Ingress 默认指向本机 Hub `:2658`；若配置 `tunnel.web_hostname` 与 `web.enabled`，第二条 ingress 指向 Web `:2659`。
+When `tunnel.enabled: true`, cloudflared starts with **`anima service start`** stack (no separate `anima-tunnel.service`). Ingress defaults to local Hub `:2658`; with `tunnel.web_hostname` and `web.enabled`, second ingress points to Web `:2659`.
 
 ```yaml
 tunnel:
@@ -55,52 +55,52 @@ web:
   public_url: https://app.anima.example.com
 ```
 
-若不使用 Tunnel，局域网可分别访问 `http://<PC-IP>:2658`（Hub）与 `:2659`（Web）；客户端在设置页填写 Hub 地址与 token。
+Without Tunnel, LAN clients use `http://<PC-IP>:2658` (Hub) and `:2659` (Web); fill Hub URL and token in client settings.
 
-### Cloudflare 凭证（pass）
+### Cloudflare credentials (pass)
 
-| pass 路径                                | 用途                     |
-| ---------------------------------------- | ------------------------ |
-| `services/cloudflare/api-token`          | 创建 Tunnel / DNS        |
-| `services/cloudflare/tunnel-credentials` | `cloudflared` 连接器凭证 |
+| pass path                                | Purpose                       |
+| ---------------------------------------- | ----------------------------- |
+| `services/cloudflare/api-token`          | Create Tunnel / DNS           |
+| `services/cloudflare/tunnel-credentials` | `cloudflared` connector creds |
 
-详见向导 `anima tunnel setup`。
+See wizard `anima tunnel setup`.
 
-## 3. 客户端配置
+## 3. Client configuration
 
-**app/desktop**、**app/mobile** 与 **浏览器 Web**（`web.enabled` + Tunnel 或局域网 `:2659`）均视为远端客户端，**不读取** Hub 的 `config.yaml` token。
+**app/desktop**, **app/mobile**, and **browser Web** (`web.enabled` + Tunnel or LAN `:2659`) are remote clients; they **do not read** Hub `config.yaml` token.
 
-| 客户端      | 存储位置                                     |
-| ----------- | -------------------------------------------- |
-| app/desktop | `~/.anima-desktop/settings.json`（`hub` 段） |
-| app/mobile  | Capacitor Preferences                        |
-| 浏览器 Web  | localStorage（设置页）                       |
+| Client      | Storage                                          |
+| ----------- | ------------------------------------------------ |
+| app/desktop | `~/.anima-desktop/settings.json` (`hub` section) |
+| app/mobile  | Capacitor Preferences                            |
+| Browser Web | localStorage (settings page)                     |
 
-桌面调试与 Sentry 配置在同一文件的 `debug` 段；可用环境变量 `FREEANIMA_DESKTOP_HOME` 覆盖目录（默认 `~/.anima-desktop`）。若存在旧版 `~/.anima/shell-client.json`，首次启动会自动迁移。
+Desktop debug and Sentry config share the same file `debug` section; override dir with `FREEANIMA_DESKTOP_HOME` (default `~/.anima-desktop`). Legacy `~/.anima/shell-client.json` migrates on first launch.
 
-设置项（两端一致）：
+Settings (all clients):
 
-1. **Hub 地址** — 如 `https://anima.example.com`（Web UI 与 Hub 分域名时填 **Hub** hostname，非 Web UI 域名）
-2. **远程 Token** — 与 Hub `remote_auth.token` 相同
+1. **Hub URL** — e.g. `https://anima.example.com` (when Web UI and Hub differ, use **Hub** hostname, not Web UI domain)
+2. **Remote token** — same as Hub `remote_auth.token`
 
-浏览器 Web：`/config.json` 可提示默认 Hub（来自 `tunnel.hostname`）；首次访问仍须在设置页保存 token。
+Browser Web: `/config.json` may suggest default Hub (`tunnel.hostname`); first visit still requires saving token in settings.
 
-操作：打开 Hub 设置 → 填写 → **测试连接** → 保存。桌面端保存后需 **重启 app/desktop**。
+Flow: open Hub settings → fill → **Test connection** → Save. Desktop requires **restart app/desktop** after save.
 
-## 4. 认证行为
+## 4. Authentication behavior
 
 ```text
 REST:  Authorization: Bearer <token>
-SAP:   WebSocket /sap/v1 → connect 帧含 auth_token 字段
+SAP:   WebSocket /sap/v1 → connect frame includes auth_token
 MCP:   POST/GET /mcp → Authorization: Bearer <token>
 ```
 
-## 5. MCP 出站（外部 Agent 查询 Hub 数据）
+## 5. MCP outbound (external agents query Hub data)
 
-Hub 在 **`/mcp`** 提供 Streamable HTTP MCP Server，暴露 ToolSet 中 `expose_mcp: true` 的只读查询工具（如 `memory_recall`、`conversation_search`）。外部 MCP Client（Cursor、Claude Desktop 等）可连接并调用，**不经 LLM 中转**。
+Hub serves Streamable HTTP MCP Server at **`/mcp`**, exposing read-only tools from ToolSets with `expose_mcp: true` (e.g. `memory_recall`, `conversation_search`). External MCP clients (Cursor, Claude Desktop, etc.) connect **without LLM relay**.
 
 ```yaml
-# 外部 agent 配置示例（Cursor mcp.json 等）
+# External agent example (Cursor mcp.json, etc.)
 mcpServers:
   freeanima:
     url: http://127.0.0.1:2658/mcp
@@ -108,34 +108,34 @@ mcpServers:
       Authorization: "Bearer <remote_auth.token>"
 ```
 
-- **入站**（Hub 连接外部 MCP Server 并注册工具）：仍用 `config.yaml` 的 `mcp_servers`（`capabilities/mcp-client`）
-- **出站**（外部 agent 调用 Hub 工具）：`/mcp` 端点（`capabilities/mcp-server`）
-- 公网 / 局域网访问须与 REST 相同携带 `remote_auth` token；loopback 直连可省略
+- **Inbound** (Hub connects to external MCP servers): `config.yaml` `mcp_servers` (`capabilities/mcp-client`)
+- **Outbound** (external agents call Hub tools): `/mcp` endpoint (`capabilities/mcp-server`)
+- Public / LAN access requires same `remote_auth` token as REST; loopback may omit
 
-缺少或错误 token → HTTP `401` 或 SAP 连接关闭。
+Missing or wrong token → HTTP `401` or SAP connection closed.
 
-判定依据为请求 URL 的 **Host**（经 Tunnel 时为公网域名，如 `anima.example.com`）与 **TCP 对端地址**；Hub 不读取 `tunnel.enabled` 决定是否验 token。
+Decision uses request URL **Host** (public domain via Tunnel, e.g. `anima.example.com`) and **TCP peer**; Hub does not use `tunnel.enabled` to decide token enforcement.
 
-## 运维命令
+## Operations
 
-| 命令                           | 说明                                              |
-| ------------------------------ | ------------------------------------------------- |
-| `anima tunnel status`          | Tunnel / cloudflared 状态                         |
-| `anima tunnel start` / `stop`  | 手动启停 cloudflared（生产由 service stack 托管） |
-| `anima web start --foreground` | 独立 Web 静态服（调试）                           |
-| `anima service status`         | Hub / Web / Tunnel stack                          |
+| Command                        | Description                                    |
+| ------------------------------ | ---------------------------------------------- |
+| `anima tunnel status`          | Tunnel / cloudflared status                    |
+| `anima tunnel start` / `stop`  | Manual cloudflared (production: service stack) |
+| `anima web start --foreground` | Standalone Web static server (debug)           |
+| `anima service status`         | Hub / Web / Tunnel stack                       |
 
-## 故障排查
+## Troubleshooting
 
-| 现象                   | 检查                                                       |
-| ---------------------- | ---------------------------------------------------------- |
-| 公网 502               | Hub 是否运行？`anima service status`                       |
-| 公网 1033              | `anima tunnel status` 中 `connected: no`                   |
-| 401                    | 客户端 token 是否与 `remote_auth.token` 一致               |
-| 本机开发正常、远程失败 | 远程请求是否带 Bearer / SAP auth_token；公网 Host 须 token |
-| 改 token 后仍 401      | 更新 Hub config **并** 各客户端设置页                      |
+| Symptom                | Check                                                                    |
+| ---------------------- | ------------------------------------------------------------------------ |
+| Public 502             | Is Hub running? `anima service status`                                   |
+| Public 1033            | `anima tunnel status` shows `connected: no`                              |
+| 401                    | Client token matches `remote_auth.token`                                 |
+| Local OK, remote fails | Remote requests need Bearer / SAP auth_token; public Host requires token |
+| 401 after token change | Update Hub config **and** all client settings pages                      |
 
-## 相关文档
+## Related docs
 
-- 移动端：[`mobile-app.md`](../features/mobile-app.md)
-- 桌面伴侣 Hub 来源：[`companion.md`](../features/companion.md)
+- Mobile: [`mobile-app.md`](../features/mobile-app.md)
+- Desktop companion Hub source: [`companion.md`](../features/companion.md)

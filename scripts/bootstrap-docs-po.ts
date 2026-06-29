@@ -1,7 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Bootstrap po/<lang>/<master>.po from English master + Chinese reference.
- * Prefers docs/.generated/zh_CN/, falls back to docs/.zh-cn-ref/.
+ * Bootstrap po/<lang>/<master>.po from English master + docs/.generated/zh_CN/ reference.
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, unlinkSync, writeFileSync } from "node:fs";
@@ -14,7 +13,6 @@ import {
   poFilePath,
   poPotPath,
   poRoot,
-  zhRefRoot,
 } from "./docs-i18n-lib.ts";
 
 const root = join(import.meta.dir, "..");
@@ -24,8 +22,6 @@ ensurePoLayout();
 function resolveLocalized(relFromDocs: string): string | null {
   const generated = join(generatedZhRoot, relFromDocs);
   if (existsSync(generated)) return generated;
-  const ref = join(zhRefRoot, relFromDocs);
-  if (existsSync(ref)) return ref;
   return null;
 }
 
@@ -34,7 +30,7 @@ for (const { abs: master, master: slug, rel } of listDocMasters()) {
   const relFromDocs = relative(join(root, "docs"), master);
   const localized = resolveLocalized(relFromDocs);
   if (!localized) {
-    console.error(`bootstrap-docs-po: missing zh reference for ${rel}`);
+    console.error(`bootstrap-docs-po: missing zh reference for ${rel} (run i18n:po4a first)`);
     process.exit(1);
   }
 

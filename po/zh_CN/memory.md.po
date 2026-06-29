@@ -226,7 +226,7 @@ msgstr "定义：关于\"我在何时、何地、经历了什么\"的记忆，�
 #: docs/concepts/memory.md:85
 #, no-wrap
 msgid "**Conversation log** — the most raw, high-fidelity objective runtime trace. Only **user-facing conversations** (`sessions` without `platform_info.platform = cron`) feed light sleep and dream. Background LLM (cron agent, sleep stages) runs as **AutoLlmRun** — audited in `auto_llm_runs`, not copied into the conversation archive.\n"
-msgstr ""
+msgstr "**对话日志** — 最原始、高保真的客观运行时轨迹。仅**面向用户的对话**（`platform_info.platform` 不为 cron 的 `sessions`）进入浅睡与梦境。后台 LLM（cron agent、睡眠阶段）以 **AutoLlmRun** 运行——审计于 `auto_llm_runs`，不复制进对话存档。\n"
 
 #. type: Plain text
 #: docs/concepts/memory.md:87
@@ -395,14 +395,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/memory.md:149
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| `memory_type`      | Notes                                 |\n"
-#| "| ------------------ | ------------------------------------- |\n"
-#| "| `semantic`         | Facts, preferences, experiences, etc. |\n"
-#| "| `session`          | Historical conversation snippets      |\n"
-#| "| `limbic`           | Emotional memory body                 |\n"
-#| "| `autobiographical` | Narrative title + content snippet     |\n"
+#, no-wrap
 msgid ""
 "| `memory_type`      | Notes                                                                        |\n"
 "| ------------------ | ---------------------------------------------------------------------------- |\n"
@@ -411,18 +404,18 @@ msgid ""
 "| `limbic`           | Emotional memory body (hybrid FTS + trgm + vector)                           |\n"
 "| `autobiographical` | Narrative title + content snippet (hybrid FTS + trgm + vector on title+body) |\n"
 msgstr ""
-"| `memory_type`      | 说明                                 |\n"
-"| ------------------ | ------------------------------------- |\n"
-"| `semantic`         | 事实、偏好、经历等 |\n"
-"| `session`          | 历史对话片段      |\n"
-"| `limbic`           | 感性记忆正文                 |\n"
-"| `autobiographical` | 叙事标题 + 内容片段     |\n"
+"| `memory_type`      | 说明                                                                         |\n"
+"| ------------------ | ---------------------------------------------------------------------------- |\n"
+"| `semantic`         | 事实、偏好、经历等                                                           |\n"
+"| `session`          | 历史对话片段                                                                 |\n"
+"| `limbic`           | 感性记忆正文（混合 FTS + trgm + vector）                                     |\n"
+"| `autobiographical` | 叙事标题 + 内容片段（title+body 混合 FTS + trgm + vector）                   |\n"
 
 #. type: Plain text
 #: docs/concepts/memory.md:151
 #, no-wrap
 msgid "**Index columns (PG):** `semantic_memory` and `messages` use `fts_segmented` (optional jieba) → generated `content_fts` (tsvector, keyword FTS) plus async `content_embedding` (pgvector, semantic similarity). `limbic_memory` and `autobiographical_memory` follow the same pattern; autobiographical index text is `title + newline + content`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only). `content_fts` is never written by application code — PostgreSQL generates it from `fts_segmented` or raw content.\n"
-msgstr ""
+msgstr "**索引列（PG）：** `semantic_memory` 与 `messages` 使用 `fts_segmented`（可选 jieba）→ 生成的 `content_fts`（tsvector、关键词 FTS）加异步 `content_embedding`（pgvector、语义相似度）。`limbic_memory` 与 `autobiographical_memory` 同模式；自传体索引文本为 `title + newline + content`。jieba 在 insert 前同步运行（失败 → null，行仍写入）；embedding 在 insert 后异步运行（失败仅记日志）。应用代码从不写入 `content_fts`——PostgreSQL 从 `fts_segmented` 或原始 content 生成。\n"
 
 #. type: Plain text
 #: docs/concepts/memory.md:153
@@ -454,11 +447,6 @@ msgstr "**何谓引用：** 仅 **user/assistant** 消息正文中的 `[[f-id]]`
 
 #. type: Plain text
 #: docs/concepts/memory.md:161
-#, fuzzy
-#| msgid ""
-#| "Nightly sleep-cycle step `memory-ref-sync` full-calibrates counts from "
-#| "messages. Excess pinned entries are truncated at read time with a warn "
-#| "log; deep sleep round 4 maintains pin budget in the store."
 msgid ""
 "Nightly sleep-cycle step `memory-ref-sync` full-calibrates counts from "
 "messages. Excess pinned entries are truncated at read time with a warn log; "

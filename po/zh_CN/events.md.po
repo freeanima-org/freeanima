@@ -191,18 +191,14 @@ msgstr "会话事件"
 
 #. type: Plain text
 #: docs/sap/events.md:74
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Method            | When                      | Payload      |\n"
-#| "| ----------------- | ------------------------- | ------------ |\n"
-#| "| `conversation.updated` | After `conversation.subscribe` | `conversation_id` |\n"
+#, no-wrap
 msgid ""
 "| Method                 | When                           | Payload           |\n"
 "| ---------------------- | ------------------------------ | ----------------- |\n"
 "| `conversation.updated` | After `conversation.subscribe` | `conversation_id` |\n"
 msgstr ""
-"| 方法              | 时机                      | Payload      |\n"
-"| ----------------- | ------------------------- | ------------ |\n"
+"| 方法                   | 时机                           | Payload           |\n"
+"| ---------------------- | ------------------------------ | ----------------- |\n"
 "| `conversation.updated` | `conversation.subscribe` 之后  | `conversation_id` |\n"
 
 #. type: Plain text
