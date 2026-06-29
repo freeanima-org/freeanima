@@ -44,7 +44,7 @@ import { readListIdFromUrl, writeListIdToUrl } from "./lib/list-url.ts";
 import { moveTaskItemsToList } from "./lib/move-items.ts";
 import { applyShiftRangeSelect } from "./lib/range-select.ts";
 import { resolveDefaultListId, resolveSelectedListIdWithUrl } from "./lib/resolve-list.ts";
-import { getParentId, getSiblings, selectableLists } from "./lib/list-tree.ts";
+import { getParentId, getSiblings } from "./lib/list-tree.ts";
 import { sortOrderUpdates } from "./lib/reorder.ts";
 import { buildItemMenuItems, buildListMenuItems } from "./lib/task-menus.ts";
 
@@ -464,7 +464,7 @@ export function TaskApp() {
   const selectedList = lists.find((l) => l.id === selectedListId) ?? null;
   const activeLists = useMemo(() => lists.filter((l) => !l.closed), [lists]);
   const closedLists = useMemo(() => lists.filter((l) => l.closed), [lists]);
-  const moveTargetLists = useMemo(() => selectableLists(lists), [lists]);
+  const moveTargetLists = activeLists;
   const listNameById = useMemo(() => new Map(lists.map((l) => [l.id, l.name])), [lists]);
   const pendingItems = items.filter((i) => i.status === "pending");
   const completedItems = items.filter((i) => i.status === "completed");
