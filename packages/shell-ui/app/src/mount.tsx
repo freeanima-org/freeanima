@@ -1,6 +1,6 @@
 import { StrictMode, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
-import type { SettingsBinding } from "@freeanima/satellite-sdk/settings";
+import type { SettingsBinding } from "@freeanima/shell-sdk/settings";
 
 import { bootstrapSentryFromSettings, Sentry } from "./bootstrap/sentry.ts";
 import { ShellRouterProvider } from "./router.tsx";

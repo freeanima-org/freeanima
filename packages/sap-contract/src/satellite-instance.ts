@@ -9,3 +9,6 @@ export const EMAIL_INSTANCE_ID = "eml";
 
 /** Diary 使用 singleton 策略 */
 export const DIARY_INSTANCE_ID = "dly";
+
+/** Notification 使用 singleton 策略 */
+export const NOTIFICATION_INSTANCE_ID = "ntf";

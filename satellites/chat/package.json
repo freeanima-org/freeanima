@@ -7,7 +7,8 @@
     "./manifest": "./src/exports/manifest.ts",
     "./desktop": "./src/exports/desktop.ts",
     "./mobile": "./src/exports/mobile.ts",
-    "./app": "./src/exports/app.tsx"
+    "./app": "./src/exports/app.tsx",
+    "./styles.css": "./app/src/styles.css"
   },
   "dependencies": {
     "@capacitor/keyboard": "^7.0.1",

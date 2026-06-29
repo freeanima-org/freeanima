@@ -4,7 +4,7 @@ import {
   isHubHealthConnected,
   HUB_HEALTH_PROBE_TIMEOUT_MS,
   probeHubHealthUrl,
-} from "@freeanima/satellite-sdk/hub-health-probe";
+} from "@freeanima/shell-sdk/hub-health-probe";
 import { hubApiFetch } from "@admin/lib/hub-fetch.ts";
 import { resetApiClientCache } from "@admin/lib/api.ts";
 import { resolveApiOrigin } from "@admin/lib/hub-origin.ts";

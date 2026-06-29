@@ -1,5 +1,7 @@
 {
   "name": "@freeanima/satellite-sdk",
+  "description": "Deprecated: re-exports @freeanima/ui-kit + @freeanima/shell-sdk",
+  "private": true,
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
@@ -13,11 +15,14 @@
     "./layout": "./src/layout/index.ts"
   },
   "dependencies": {
+    "@freeanima/shell-sdk": "workspace:*",
+    "@freeanima/ui-kit": "workspace:*",
     "react": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:",
-    "@types/react": "catalog:"
+    "@types/react": "catalog:",
+    "typescript": "catalog:"
   }
 }

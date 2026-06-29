@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { ListDetailLayout } from "@freeanima/satellite-sdk/layout";
+import { ListDetailLayout } from "@freeanima/ui-kit/layout";
 
 import { m } from "@admin/lib/i18n.ts";
 

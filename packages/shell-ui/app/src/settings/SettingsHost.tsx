@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
-import type { SettingsBinding, SettingsPlatform } from "@freeanima/satellite-sdk/settings";
-import { listSettingsSectionsForPlatform } from "@freeanima/satellite-sdk/settings";
+import type { SettingsBinding, SettingsPlatform } from "@freeanima/shell-sdk/settings";
+import { listSettingsSectionsForPlatform } from "@freeanima/shell-sdk/settings";
 
 import { SettingsSectionPanel } from "./SettingsSectionPanel.tsx";
 

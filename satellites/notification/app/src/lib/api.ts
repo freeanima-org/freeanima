@@ -2,14 +2,15 @@ import {
   readOfflineCache,
   resolveHubCacheScope,
   writeOfflineCache,
-} from "@freeanima/satellite-sdk/offline-cache";
+} from "@freeanima/shell-sdk/offline-cache";
 import type {
   NotificationListInput,
   NotificationListOutput,
   NotificationMarkReadOutput,
+  NotificationRecipientsOutput,
 } from "@freeanima/sap-contract";
 
-import { whenSapClientReady } from "../../../../../satellites/chat/app/src/lib/sap-client.ts";
+import { whenSapClientReady } from "./sap-client.ts";
 
 export type NotificationRow = NotificationListOutput["items"][number];
 
@@ -39,12 +40,7 @@ export async function markNotificationRead(id: string): Promise<NotificationMark
   return client.request("notification.markRead", { id });
 }
 
-export type NotificationRecipients = {
-  user_subject_id: string;
-  agent_subject_id: string;
-};
-
-export async function getNotificationRecipients(): Promise<NotificationRecipients> {
+export async function getNotificationRecipients(): Promise<NotificationRecipientsOutput> {
   const client = await whenSapClientReady();
   return client.request("notification.recipients", {});
 }

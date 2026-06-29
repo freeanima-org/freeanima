@@ -1,0 +1,67 @@
+export {
+  connectionKindSchema,
+  frontendManifestSchema,
+  parseManifestJson,
+  toManifestJson,
+} from "./manifest.ts";
+export type { ConnectionKind, FrontendManifest } from "./manifest.ts";
+
+import "./shell-api.ts";
+
+export type {
+  CompanionWindowRole,
+  PatrolScreenInfo,
+  SapInstanceStore,
+  SatelliteShellApi,
+  ScreenPoint,
+} from "./shell-api.ts";
+
+export type {
+  DesktopProfile,
+  DesktopWindowSpec,
+  EmbeddedSidecarDesktopProfile,
+  FrontendDesktopExport,
+  FrontendMobileExport,
+  HubRestBundledDesktopProfile,
+  MobileProfile,
+  SapDirectDesktopProfile,
+  WindowKind,
+} from "./profile.ts";
+
+export { UnsupportedMobileError } from "./mobile-errors.ts";
+export type { ShellClientConfig } from "./shell-client-config.ts";
+export { normalizeShellClientConfig, parseShellClientConfig } from "./shell-client-config.ts";
+export type { ShellDebugConfig } from "./shell-debug-config.ts";
+export {
+  DEFAULT_SHELL_DEBUG,
+  normalizeShellDebugConfig,
+  parseShellDebugConfig,
+} from "./shell-debug-config.ts";
+export type { ShellSettings } from "./shell-settings.ts";
+export {
+  DEFAULT_SHELL_SETTINGS,
+  mergeShellSettings,
+  parseShellSettings,
+} from "./shell-settings.ts";
+export type { RemoteAuthCredentials } from "./remote-auth.ts";
+export {
+  buildBearerHeaders,
+  createBearerFetch,
+  isLoopbackHubUrl,
+  resolveConnectAuthToken,
+  shouldAttachRemoteAuth,
+  shellConfigToRemoteAuth,
+} from "./remote-auth.ts";
+export {
+  buildShellApiFields,
+  connectAuthTokenForHub,
+  hubRequiresRemoteAuth,
+} from "./shell-api-fields.ts";
+export type { HubHealthBody } from "./hub-health-probe.ts";
+export {
+  HUB_HEALTH_PROBE_TIMEOUT_MS,
+  hubHealthFailureReason,
+  isHubHealthConnected,
+  probeHubHealthUrl,
+  testHubHealthConnection,
+} from "./hub-health-probe.ts";

@@ -1,0 +1,19 @@
+{
+  "name": "@freeanima/satellite-notification",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./manifest": "./src/exports/manifest.ts",
+    "./app": "./src/exports/app.tsx"
+  },
+  "dependencies": {
+    "@freeanima/sap-contract": "workspace:*",
+    "@freeanima/shell-sdk": "workspace:*",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "typescript": "catalog:"
+  }
+}

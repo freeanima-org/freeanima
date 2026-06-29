@@ -44,19 +44,22 @@ Dependency direction (high → low): `app` / `platform` → `capabilities` → `
 | `runtime/`                    | `kernel`, `kernel-*`, `core`, `runtime`                                                                        | **`platform`**, **`capabilities-*`**                                             |
 | `capabilities/<pkg>/`         | `kernel`, `kernel-*`, `core`, **`core/db/pg`**, **`core/db/schema`**, own `capabilities-<pkg>`, `sap-contract` | **`runtime`**, **`platform`**, **other `capabilities-*`**                        |
 | `platform/`, `app/`, `tests/` | all workspace packages                                                                                         | —                                                                                |
-| `platform/admin-frontend/`    | `admin-contract`, `satellite-sdk`, `sap-contract`, `kernel`, `kernel-*`                                        | **`platform`**, **`core`**, **`runtime`**, **`capabilities-*`**, **`admin-api`** |
+| `platform/admin-frontend/`    | `admin-contract`, `ui-kit`, `shell-sdk`, `kernel`, `kernel-*`                                                  | **`platform`**, **`core`**, **`runtime`**, **`capabilities-*`**, **`admin-api`**, **`sap-contract`**, **`shell-ui`** |
 | `platform/admin-contract/`    | `kernel`, `kernel-*`（devDeps：`platform`, `core`, `admin-api` 仅类型解析）                                    | **`platform`**, **`core`**, **`admin-api`**                                      |
 | `platform/admin-api/`         | `admin-contract`, same as `platform/`                                                                          | —                                                                                |
-| `satellites/<name>/`          | `sap-contract`, `satellite-sdk`, `kernel`, `kernel-*`                                                          | all other workspace packages                                                     |
+| `satellites/<name>/`          | `sap-contract`, `shell-sdk`, `ui-kit`, `satellite-sdk`（过渡）, `kernel`, `kernel-*`                           | **`shell-ui`**, **`admin-*`**, **`platform`**, **`core`**, **`runtime`**, **`capabilities-*`** |
 | `packages/sap-contract/`      | `kernel`, `kernel-*`, `sap-contract`                                                                           | all other workspace packages                                                     |
-| `packages/satellite-sdk/`     | `kernel`, `kernel-*`                                                                                           | all other workspace packages                                                     |
+| `packages/ui-kit/`            | `kernel`, `kernel-*`                                                                                           | **`sap-contract`**, other workspace packages                                     |
+| `packages/shell-sdk/`         | `kernel`, `kernel-*`                                                                                           | **`sap-contract`**, other workspace packages                                     |
+| `packages/shell-ui/`          | `ui-kit`, `shell-sdk`, `satellite-*`, `admin-frontend`, `kernel`, `kernel-*`                                 | **`sap-contract`**；禁止深路径 import `satellites/`、`platform/admin-frontend/app/` |
+| `packages/satellite-sdk/`     | `ui-kit`, `shell-sdk`, `kernel`, `kernel-*`（Deprecated re-export）                                            | other workspace packages                                                         |
 
 Notes aligned with the checker:
 
 - **Scan scope**: `@freeanima/*` imports in `*.ts` / `*.tsx` **and** `dependencies` in each layer's `package.json`.
 - **Exemptions** (import scan only): paths under `tests/` or `test-helpers/`, `*.test.ts` / `*.spec.ts`, and all `app/cli/` source files. Production code in other layers is still checked.
 - **Capabilities isolation**: `capabilities/<src>` must not depend on `@freeanima/capabilities-<other>` where `<other> ≠ <src>`.
-- **Satellites**: do not import `platform`, `runtime`, `core`, or arbitrary `capabilities-*` — use [`sap-contract`](../../packages/sap-contract/) + [`satellite-sdk`](../../packages/satellite-sdk/) + generic `kernel` deps.
+- **Satellites**: do not import `platform`, `runtime`, `core`, or arbitrary `capabilities-*` — use [`sap-contract`](../../packages/sap-contract/) + [`shell-sdk`](../../packages/shell-sdk/) + [`ui-kit`](../../packages/ui-kit/)（`satellite-sdk` 为过渡 re-export）。功能原型见 [`frontend-features.md`](frontend-features.md)。
 - **Tests**: production layers may use `@freeanima/platform` test helpers in test files / devDependencies; the checker skips exempt paths above.
 
 ## Port wiring at composition root

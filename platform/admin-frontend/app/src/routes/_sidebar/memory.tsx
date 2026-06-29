@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
 import type { ServiceStatus } from "@freeanima/admin-contract/api";
-import { FormField, FormFieldset } from "@freeanima/satellite-sdk/form";
+import { FormField, FormFieldset } from "@freeanima/ui-kit/form";
 import { useMemo, useState } from "react";
 import { formatMemoryRecallOutput } from "@admin/components/admin/format-memory-recall-output.ts";
 import {

@@ -11,6 +11,8 @@ const ROOT = join(import.meta.dir, "..");
 type Violation = { file: string; line: number; pkg: string; reason: string };
 
 const IMPORT_RE = /from\s+["']@freeanima\/([^"']+)["']/g;
+const RELATIVE_DEEP_IMPORT_RE =
+  /from\s+["'](\.\.?\/(?:\.\.\/)*)(?:satellites\/|platform\/admin-frontend\/app\/)/g;
 
 const LAYER_DIRS = [
   "kernel",
@@ -24,16 +26,26 @@ const LAYER_DIRS = [
   "tests",
 ] as const;
 
-const SATELLITE_ALLOWED = new Set(["sap-contract", "satellite-sdk", "kernel", "kernel-logging"]);
+const SATELLITE_ALLOWED = new Set([
+  "sap-contract",
+  "satellite-sdk",
+  "shell-sdk",
+  "ui-kit",
+  "kernel",
+  "kernel-logging",
+]);
 
 const ADMIN_FRONTEND_ALLOWED = new Set([
   "admin-contract",
-  "sap-contract",
-  "satellite-sdk",
+  "shell-sdk",
+  "ui-kit",
   "kernel",
   "kernel-logging",
-  "shell-ui",
 ]);
+
+const UI_KIT_ALLOWED = new Set(["kernel", "kernel-logging"]);
+
+const SHELL_SDK_ALLOWED = new Set(["kernel", "kernel-logging"]);
 
 type Layer = (typeof LAYER_DIRS)[number] | null;
 
@@ -71,6 +83,9 @@ function isExempt(relPath: string): boolean {
     relPath === "platform/admin-frontend/build-utils.ts" ||
     relPath === "packages/shell-ui/vite/run-build.ts" ||
     relPath === "packages/shell-ui/vite/satellite-vite.ts" ||
+    relPath === "packages/shell-ui/vite/paths.ts" ||
+    relPath === "packages/shell-ui/vite/sap-shared-worker-build-plugin.ts" ||
+    relPath === "packages/shell-ui/vite/sap-shared-worker-dev-plugin.ts" ||
     relPath === "platform/admin-frontend/paraglide-compile.ts"
   )
     return true;
@@ -88,6 +103,39 @@ function isAdminFrontendAllowed(pkg: string): boolean {
   const root = workspacePkgName(pkg);
   if (ADMIN_FRONTEND_ALLOWED.has(root)) return true;
   if (root.startsWith("kernel-")) return true;
+  return false;
+}
+
+function isUiKitAllowed(pkg: string): boolean {
+  const root = workspacePkgName(pkg);
+  if (UI_KIT_ALLOWED.has(root)) return true;
+  if (root.startsWith("kernel-")) return true;
+  return false;
+}
+
+function isShellSdkAllowed(pkg: string): boolean {
+  const root = workspacePkgName(pkg);
+  if (SHELL_SDK_ALLOWED.has(root)) return true;
+  if (root.startsWith("kernel-")) return true;
+  return false;
+}
+
+function isShellUiAllowed(pkg: string): boolean {
+  const root = workspacePkgName(pkg);
+  if (root === "ui-kit") return true;
+  if (root === "shell-sdk") return true;
+  if (root === "admin-frontend") return true;
+  if (root.startsWith("satellite-")) return true;
+  if (root.startsWith("kernel-")) return true;
+  if (root === "kernel") return true;
+  return false;
+}
+
+function isSatelliteSdkAllowed(pkg: string): boolean {
+  const root = workspacePkgName(pkg);
+  if (root === "ui-kit" || root === "shell-sdk") return true;
+  if (root.startsWith("kernel-")) return true;
+  if (root === "kernel") return true;
   return false;
 }
 
@@ -111,22 +159,17 @@ function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
     if (relPath.startsWith("packages/sap-contract")) {
       return root === "kernel" || root.startsWith("kernel-") || root === "sap-contract";
     }
+    if (relPath.startsWith("packages/ui-kit")) {
+      return isUiKitAllowed(pkg);
+    }
+    if (relPath.startsWith("packages/shell-sdk")) {
+      return isShellSdkAllowed(pkg);
+    }
     if (relPath.startsWith("packages/satellite-sdk")) {
-      return root === "kernel" || root.startsWith("kernel-");
+      return isSatelliteSdkAllowed(pkg);
     }
     if (relPath.startsWith("packages/shell-ui")) {
-      return (
-        root === "sap-contract" ||
-        root === "satellite-sdk" ||
-        root === "satellite-chat" ||
-        root === "satellite-task" ||
-        root === "satellite-diary" ||
-        root === "satellite-companion" ||
-        root === "satellite-email" ||
-        root === "admin-frontend" ||
-        root.startsWith("kernel-") ||
-        root === "kernel"
-      );
+      return isShellUiAllowed(pkg);
     }
     return false;
   }
@@ -171,13 +214,26 @@ function capabilitiesCrossViolation(relPath: string, pkg: string): string | null
 function satelliteViolation(relPath: string, pkg: string): string | null {
   if (layerOf(relPath) !== "satellites") return null;
   if (isSatelliteAllowed(pkg)) return null;
-  return `satellites/* must not depend on @freeanima/${workspacePkgName(pkg)} (allowed: sap-contract, satellite-sdk + generic deps)`;
+  return `satellites/* must not depend on @freeanima/${workspacePkgName(pkg)} (allowed: sap-contract, shell-sdk, ui-kit, satellite-sdk + generic deps)`;
 }
 
 function adminFrontendViolation(relPath: string, pkg: string): string | null {
   if (!isAdminFrontendPath(relPath)) return null;
   if (isAdminFrontendAllowed(pkg)) return null;
-  return `platform/admin-frontend must not depend on @freeanima/${workspacePkgName(pkg)} (allowed: admin-contract, satellite-sdk, sap-contract, kernel*)`;
+  return `platform/admin-frontend must not depend on @freeanima/${workspacePkgName(pkg)} (allowed: admin-contract, ui-kit, shell-sdk, kernel*)`;
+}
+
+function shellUiDeepImportViolation(relPath: string, line: string, lineNo: number): Violation | null {
+  if (!relPath.startsWith("packages/shell-ui/")) return null;
+  if (isExempt(relPath)) return null;
+  RELATIVE_DEEP_IMPORT_RE.lastIndex = 0;
+  if (!RELATIVE_DEEP_IMPORT_RE.test(line)) return null;
+  return {
+    file: relPath,
+    line: lineNo,
+    pkg: "relative-import",
+    reason: "packages/shell-ui must not deep-import satellites/ or platform/admin-frontend/app/ (use @freeanima/satellite-*/app)",
+  };
 }
 
 function reasonFor(layer: Layer, pkg: string): string {
@@ -187,7 +243,7 @@ function reasonFor(layer: Layer, pkg: string): string {
 function walk(dir: string, out: string[]): void {
   for (const name of readdirSync(dir)) {
     const abs = join(dir, name);
-    if (name === "node_modules" || name === "dist" || name === "coverage") continue;
+    if (name === "node_modules" || name === "dist" || name === "coverage" || name === ".tsout") continue;
     const st = statSync(abs);
     if (st.isDirectory()) walk(abs, out);
     else if (name.endsWith(".ts") || name.endsWith(".tsx")) out.push(abs);
@@ -212,6 +268,10 @@ function scanImports(): Violation[] {
     const lines = readFileSync(abs, "utf-8").split("\n");
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i] ?? "";
+      const deep = shellUiDeepImportViolation(rel, line, i + 1);
+      if (deep) {
+        violations.push(deep);
+      }
       IMPORT_RE.lastIndex = 0;
       let m: RegExpExecArray | null;
       while ((m = IMPORT_RE.exec(line)) !== null) {

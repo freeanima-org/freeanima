@@ -1,4 +1,4 @@
-import type { SettingsBinding, SettingsPlatform } from "@freeanima/satellite-sdk/settings";
+import type { SettingsBinding, SettingsPlatform } from "@freeanima/shell-sdk/settings";
 
 import { FormRenderer } from "../form/FormRenderer.tsx";
 import { LazyComponentPanel } from "./LazyComponentPanel.tsx";
