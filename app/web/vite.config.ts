@@ -58,7 +58,7 @@ export default defineConfig(({ command, mode }) => {
     repoRoot: REPO_ROOT,
     outdir: isServe ? join(PKG_DIR, "node_modules", ".vite-app-web") : DIST_DIR,
     paraglideOutdir: isServe ? join(REPO_ROOT, "messages", "paraglide") : undefined,
-    base: isServe ? "/" : "./",
+    base: "/",
     minify: mode === "production",
     sourcemap: mode !== "production",
     extraEntries: {

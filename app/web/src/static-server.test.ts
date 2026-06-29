@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -29,6 +29,32 @@ describe("startWebStaticServer", () => {
     const page = await fetch(`http://127.0.0.1:${port}/chat`);
     expect(page.ok).toBe(true);
     expect(await page.text()).toContain("ok");
+
+    await handle.close();
+  });
+
+  test("falls back to index.html for deep admin routes and serves root assets", async () => {
+    const dist = mkdtempSync(join(tmpdir(), "web-dist-"));
+    const indexHtml =
+      '<html><head><script src="/assets/main.js"></script></head><body>ok</body></html>';
+    writeFileSync(join(dist, "index.html"), indexHtml);
+    mkdirSync(join(dist, "assets"), { recursive: true });
+    writeFileSync(join(dist, "assets", "main.js"), "console.log('ok');");
+
+    const handle = await startWebStaticServer({
+      distDir: dist,
+      host: "127.0.0.1",
+      port: 0,
+    });
+
+    const port = handle.port;
+    const adminPage = await fetch(`http://127.0.0.1:${port}/admin/dashboard`);
+    expect(adminPage.ok).toBe(true);
+    expect(await adminPage.text()).toContain('src="/assets/main.js"');
+
+    const asset = await fetch(`http://127.0.0.1:${port}/assets/main.js`);
+    expect(asset.ok).toBe(true);
+    expect(await asset.text()).toContain("console.log('ok')");
 
     await handle.close();
   });
