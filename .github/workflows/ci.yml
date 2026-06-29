@@ -46,7 +46,7 @@ jobs:
       - run: bun run dep-check
       - run: bun run docs:i18n:check
       - run: bun run build:cli
-      - run: cd cli/publish && bun pm pack
+      - run: cd app/cli/publish && bun pm pack
       - run: bun scripts/run-ci-tests.ts
       - name: Upload coverage report
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
