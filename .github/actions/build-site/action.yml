@@ -28,6 +28,9 @@ runs:
     - name: Check PO health
       shell: bash
       run: bun scripts/check-po-health.ts --strict
+    - name: Compile Paraglide messages
+      shell: bash
+      run: bun run paraglide:compile
     - name: Astro build
       shell: bash
       run: cd site && bun run build

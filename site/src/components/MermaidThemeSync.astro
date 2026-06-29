@@ -1,5 +1,25 @@
-<script>
+---
+import { m } from "../lib/i18n.ts";
+---
+
+<script
+  define:vars={{
+    mermaidDialog: m.docs_mermaid_dialog(),
+    mermaidZoomIn: m.docs_mermaid_zoom_in(),
+    mermaidZoomOut: m.docs_mermaid_zoom_out(),
+    mermaidZoomReset: m.docs_mermaid_zoom_reset(),
+    mermaidClose: m.docs_mermaid_close(),
+    mermaidExpand: m.docs_mermaid_expand(),
+  }}
+>
   import { initMermaidClient } from "../lib/mermaid-client.ts";
 
-  initMermaidClient();
+  initMermaidClient({
+    dialog: mermaidDialog,
+    zoomIn: mermaidZoomIn,
+    zoomOut: mermaidZoomOut,
+    zoomReset: mermaidZoomReset,
+    close: mermaidClose,
+    expand: mermaidExpand,
+  });
 </script>
