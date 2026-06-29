@@ -4,6 +4,7 @@ import { displayNameFromFilename, motionFileNameForId, newMotionId } from "../sh
 import type { MotionLibraryEntry } from "../shared/companion-schema.ts";
 import { companionMotionsDir } from "./paths.ts";
 import { FBX_IMPORT_UNAVAILABLE_MSG, findFbx2gltfBinary } from "./fbx-converter-kit.ts";
+import { ensureFbx2gltf } from "./fbx2gltf-install.ts";
 import { convertFbxToVrmaFiles } from "./fbx2vrma-core.ts";
 import { registerMotionEntry } from "./motion-library.ts";
 import { extractZipArchive, readBytes, removePath, writeBytes } from "./process-utils.ts";
@@ -27,7 +28,15 @@ export function sanitizeMotionBaseName(name: string): string {
   );
 }
 
+async function fbxImportReady(): Promise<boolean> {
+  if (findFbx2gltfBinary()) return true;
+  return ensureFbx2gltf();
+}
+
 async function convertFbxToVrma(inputPath: string, outputPath: string): Promise<void> {
+  if (!(await fbxImportReady())) {
+    throw new Error(FBX_IMPORT_UNAVAILABLE_MSG);
+  }
   const fbx2gltf = findFbx2gltfBinary();
   if (!fbx2gltf) {
     throw new Error(FBX_IMPORT_UNAVAILABLE_MSG);
@@ -96,7 +105,7 @@ export async function importMotionUpload(
   const lower = uploadName.toLowerCase();
   const imported: MotionLibraryEntry[] = [];
   const skippedFbx: string[] = [];
-  const fbxAvailable = findFbx2gltfBinary() !== null;
+  const tryFbxImport = (): Promise<boolean> => fbxImportReady();
 
   if (lower.endsWith(".zip")) {
     const tempDir = join(destDir, ".import-tmp");
@@ -116,7 +125,7 @@ export async function importMotionUpload(
         if (name.toLowerCase().endsWith(".vrma")) {
           const data = await readBytes(src);
           imported.push(await importVrmaBytes(destDir, data, name));
-        } else if (!fbxAvailable) {
+        } else if (!(await tryFbxImport())) {
           skippedFbx.push(name);
         } else {
           imported.push(await importFbxFile(destDir, src, name));
@@ -131,7 +140,7 @@ export async function importMotionUpload(
   } else if (lower.endsWith(".vrma")) {
     imported.push(await importVrmaBytes(destDir, bytes, uploadName));
   } else if (lower.endsWith(".fbx")) {
-    if (!fbxAvailable) {
+    if (!(await tryFbxImport())) {
       throw new Error(FBX_IMPORT_UNAVAILABLE_MSG);
     }
     const tempDir = join(destDir, ".import-tmp");

@@ -1,6 +1,7 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
+import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import * as esbuild from "esbuild";
 import type { CliOptions } from "electron-builder";
@@ -163,14 +164,25 @@ function cleanCompanionBuildArtifacts(): void {
   if (cleaned) console.log("[desktop-shell] cleaned companion build artifacts");
 }
 
+function resolveWindowsFbx2gltfExe(): string {
+  const cacheHome = process.env.FREEANIMA_HOME?.trim() || join(homedir(), ".anima");
+  const candidates = [
+    join(FBX_KIT, "FBX2glTF-windows-x64.exe"),
+    join(cacheHome, "tools", "fbx2gltf", "FBX2glTF-windows-x64.exe"),
+  ];
+  for (const path of candidates) {
+    if (existsSync(path) && statSync(path).size > 1_000_000) return path;
+  }
+  throw new Error(
+    "missing FBX2glTF-windows-x64.exe; run bun run setup:fbx in satellites/companion",
+  );
+}
+
 function stageFbxBinary(platform: string): void {
   const binDir = join(SHELL_ROOT, "build-resources", "bin");
   mkdirSync(binDir, { recursive: true });
   if (platform === "win" || platform === "win32") {
-    const src = join(FBX_KIT, "FBX2glTF-windows-x64.exe");
-    if (!existsSync(src)) {
-      throw new Error(`missing ${src}; run bun run setup:fbx in satellites/companion`);
-    }
+    const src = resolveWindowsFbx2gltfExe();
     cpSync(src, join(binDir, "FBX2glTF-windows-x64.exe"));
   }
 }

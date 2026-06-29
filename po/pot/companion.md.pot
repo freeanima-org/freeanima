@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-29 14:22+0800\n"
+"POT-Creation-Date: 2026-06-29 18:25+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -345,7 +345,7 @@ msgid "Troubleshooting"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:129
+#: docs/features/companion.md:130
 #, no-wrap
 msgid ""
 "| Symptom                  | Action                                                                               |\n"
@@ -355,20 +355,21 @@ msgid ""
 "| Cannot reach Hub         | Confirm `anima service` and `remote_auth.token`; tray **Hub settings** URL and token |\n"
 "| Import has no effect     | Hot reload after import; confirm slot has motion checked                             |\n"
 "| Background service fails | See `~/.anima/app/desktop/shell.log`; confirm ports 4176–4185 free                   |\n"
+"| FBX import unavailable   | Run `bun run --filter @freeanima/satellite-companion setup:fbx` (caches to `~/.anima/tools/fbx2gltf/`) |\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/companion.md:130 docs/guide/remote-access.md:138
+#: docs/features/companion.md:131 docs/guide/remote-access.md:138
 #, no-wrap
 msgid "Related docs"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:133
+#: docs/features/companion.md:134
 msgid "SAP satellite guide: [`satellite-guide.md`](../sap/satellite-guide.md)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:133
+#: docs/features/companion.md:134
 msgid "SAP security model: [`security-model.md`](../sap/security-model.md)"
 msgstr ""

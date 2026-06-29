@@ -1,3 +1,7 @@
+[install]
+linker = "isolated"
+globalStore = true
+
 # 默认：根目录 bun test（单元测试；覆盖率用 bun test --coverage）
 # 勿写 coverage = false：Bun #12216 会导致 --coverage 失效
 [test]
