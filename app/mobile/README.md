@@ -64,7 +64,7 @@ Debug APK：`android/app/build/outputs/apk/debug/app-debug.apk`
 | --------------------- | ------------------------------------------- |
 | `src/mobile-shell.ts` | Preferences 持久化、`window.satelliteShell` |
 | `src/shell-bridge.ts` | 启动时注入壳层 API，阻塞 SPA 直至 Hub 就绪  |
-| `build.ts`            | 构建 shell-ui → `www/` + shell-bridge       |
+| `vite.config.ts`      | 构建 shell-ui → `www/` + shell-bridge       |
 | `www/`                | 统一 SPA（`/chat`、`/admin`、`/settings`）  |
 | `android/`            | Capacitor Android 工程                      |
 

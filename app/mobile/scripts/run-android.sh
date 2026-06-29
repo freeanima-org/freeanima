@@ -4,7 +4,11 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=android-env.sh
 source "$ROOT/scripts/android-env.sh"
 cd "$ROOT"
-bun build.ts
+if [ "${MOBILE_DEBUG:-}" = "1" ]; then
+  bun run build:debug
+else
+  bun run build
+fi
 bunx cap sync android
 
 echo ">>> Gradle assembleDebug（首次可能需数分钟）..."

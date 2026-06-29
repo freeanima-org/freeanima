@@ -4,7 +4,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=android-env.sh
 source "$ROOT/scripts/android-env.sh"
 cd "$ROOT"
-bun build.ts
+bun run build
 bunx cap sync android
 cd android
 ./gradlew assembleDebug
