@@ -25,7 +25,7 @@ satellites:
       SATELLITE_PORT: "4173"
 ```
 
-**Chat / Task / Admin** 等已打进 shell-ui（desktop / mobile / web），无需在 `satellites:` 中单独声明 dev 进程；浏览器本地调试见 `bun run dev:web`。
+**Chat / Task / Admin** etc. are bundled in shell-ui (desktop / mobile / web); no separate `satellites:` dev process needed; browser local debug: `bun run dev:web`.
 
 | Field              | Role                                             |
 | ------------------ | ------------------------------------------------ |
@@ -48,7 +48,7 @@ Open managed satellite UI at the URL from Admin (SAP `http_url`), typically:
 
 - Pair-programming: `http://127.0.0.1:4173`
 
-Shell 内卫星（Chat、Admin 等）在 desktop / mobile / web 壳层路由中打开，无独立端口。
+Shell satellites (Chat, Admin, etc.) open in desktop / mobile / web shell routes; no dedicated port.
 
 ## Instance allocation strategies
 
@@ -91,11 +91,11 @@ Hub [`SapInstanceRegistry`](../../platform/src/sap/instance-registry.ts): omit `
 - `instance_id` persisted under `~/.anima/satellites/{app}/instance.json`.
 - **Pair-programming:** relay + `tool.register` + local FS/PTY APIs.
 
-### SAP direct — browser/renderer 直连 Hub（chat 嵌入 app/desktop）
+### SAP direct — browser/renderer connects to Hub (chat embedded in app/desktop)
 
-- Renderer 使用 [`createSapDirectClient`](../../packages/sap-contract/src/direct-client.ts) 直连 Hub `/sap/v1`。
-- **无需** relay sidecar；Chat 使用 **singleton** 固定 `instance_id`（`CHAT_INSTANCE_ID` = `def`），无需 per-device 持久化。
-- 详见 [`frontend-exports.md`](frontend-exports.md)。
+- Renderer uses [`createSapDirectClient`](../../packages/sap-contract/src/direct-client.ts) to connect to Hub `/sap/v1`.
+- **No** relay sidecar; Chat uses **singleton** fixed `instance_id` (`CHAT_INSTANCE_ID` = `def`), no per-device persistence.
+- See [`frontend-exports.md`](frontend-exports.md).
 
 ### Type B + tools, no relay (companion)
 
@@ -108,15 +108,15 @@ flowchart TB
   subgraph chat [Chat Type B relay]
     B1[Browser] -->|relay WS| Relay1["/sap/relay/v1"]
     Relay1 --> ProcSAP1[createSatelliteHub]
-    ProcSAP1 -->|唯一 SAP WS| Hub1[Hub]
+    ProcSAP1 -->|single SAP WS| Hub1[Hub]
   end
 
   subgraph ppy [Pair-programming Type B]
     B2[Browser] -->|relay WS| Relay2["/sap/relay/v1"]
     Relay2 --> ProcSAP2[createSatelliteHub]
-    ProcSAP2 -->|唯一 SAP WS| Hub2[Hub]
+    ProcSAP2 -->|single SAP WS| Hub2[Hub]
     B2 --> LocalFS["/api/studio/*"]
-    B2 --> LocalPTY[本地 terminal WS]
+    B2 --> LocalPTY[local terminal WS]
     ProcSAP2 --> ToolExec[tool executor]
   end
 ```
@@ -125,8 +125,8 @@ flowchart TB
 
 ### Chat satellite
 
-- **app/desktop / 浏览器 dev（推荐）**：`createSapDirectClient` 直连 Hub；静态 UI 由 [`satellites/chat/server/index.ts`](../../satellites/chat/server/index.ts) 仅作静态托管（无 SAP relay）。
-- **Managed 遗留**：若仍用旧 relay sidecar，见 pair-programming 模式；新嵌入以 direct 为准。
+- **app/desktop / browser dev (recommended)**: `createSapDirectClient` to Hub; static UI from [`satellites/chat/server/index.ts`](../../satellites/chat/server/index.ts) for static hosting only (no SAP relay).
+- **Managed legacy**: old relay sidecar pair-programming mode; new embeds use direct.
 
 ### Pair-programming satellite
 

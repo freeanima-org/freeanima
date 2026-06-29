@@ -207,14 +207,9 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/self-layer.md:79
-#, fuzzy
-#| msgid ""
-#| "Maintenance: self-layer tools in Admin bedroom, or direct edits via CLI / "
-#| "bedroom UI."
 msgid ""
 "Maintenance: self-layer tools in Admin, or direct edits via CLI / Admin UI."
-msgstr ""
-"维护方式：Admin 管理台中的自我层工具，或通过 CLI / 管理台 UI 直接编辑。"
+msgstr "维护方式：管理台中的自我层工具，或通过 CLI / 管理台 UI 直接编辑。"
 
 #. type: Title ##
 #: docs/concepts/self-layer.md:82

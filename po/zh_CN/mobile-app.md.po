@@ -1,67 +1,82 @@
-# Chinese translations for PACKAGE package
-# Copyright (C) 2026 Free Software Foundation, Inc.
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# Automatically generated, 2026.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-27 14:50+0800\n"
-"PO-Revision-Date: 2026-06-24 17:13+0800\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
-"Language: zh_CN\n"
+"POT-Creation-Date: 2026-06-29 14:22+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. type: Title ##
+#: docs/features/companion.md:120 docs/features/mobile-app.md:51
+#: docs/guide/database.md:91 docs/guide/remote-access.md:128
+#, no-wrap
+msgid "Troubleshooting"
+msgstr "故障排查"
+
 #. type: Content of: <messages><msg>
-#: docs/features/mobile-app.md:1 messages/po4a/en.xml:540
+#: docs/features/mobile-app.md:1 docs/features/mobile-app.md:5
+#: messages/po4a/en.xml:572
 #, no-wrap
 msgid "Mobile app (Android)"
 msgstr "移动端 APP（Android）"
 
-#. type: Title #
-#: docs/features/mobile-app.md:5
-#, no-wrap
-msgid "移动端 APP（Android）"
-msgstr ""
-
 #. type: Plain text
 #: docs/features/mobile-app.md:7
 #, no-wrap
-msgid "> Capacitor 壳 + 统一 shell-ui SPA（聊天室 / 管理台 / 设置）。  \n"
-msgstr ""
+msgid "> Capacitor shell + unified shell-ui SPA (Chat / Admin / settings).  \n"
+msgstr "> Capacitor 壳层 + 统一 shell-ui SPA（聊天室 / 管理台 / 设置）。  \n"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:9
 #, no-wrap
-msgid "> 实现包：[`app/mobile/`](../../app/mobile/)\n"
-msgstr ""
+msgid "> Package: [`app/mobile/`](../../app/mobile/)\n"
+msgstr "> 包路径：[`app/mobile/`](../../app/mobile/)\n"
 
 #. type: Title ##
 #: docs/features/mobile-app.md:10
 #, no-wrap
-msgid "范围"
-msgstr ""
+msgid "Scope"
+msgstr "范围"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:18
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Item          | Description                                                        |\n"
+#| "| ------------- | ------------------------------------------------------------------ |\n"
+#| "| Platform      | **Android only** sideload (APK); iOS later                         |\n"
+#| "| Modules       | Chat (`sap-direct`) + Admin (`hub-rest`)                           |\n"
+#| "| Hub config    | APP **Hub settings**: URL + `remote_auth.token` (Preferences)      |\n"
+#| "| Hub duties    | `/api` REST + `/sap/v1` WebSocket                                  |\n"
 msgid ""
-"| 项       | 说明                                                        |\n"
-"| -------- | ----------------------------------------------------------- |\n"
-"| 平台     | **仅 Android** sideload（APK）；iOS 后续                    |\n"
-"| 模块     | 聊天室 chat（`sap-direct`）+ 管理台 admin（`hub-rest`）     |\n"
-"| Hub 配置 | APP **Hub 设置**：地址 + `remote_auth.token`（Preferences） |\n"
-"| Hub 职责 | `/api` REST + `/sap/v1` WebSocket                           |\n"
+"| Item       | Description                                                   |\n"
+"| ---------- | ------------------------------------------------------------- |\n"
+"| Platform   | **Android only** sideload (APK); iOS later                    |\n"
+"| Modules    | Chat (`sap-direct`) + Admin (`hub-rest`)                      |\n"
+"| Hub config | APP **Hub settings**: URL + `remote_auth.token` (Preferences) |\n"
+"| Hub duties | `/api` REST + `/sap/v1` WebSocket                             |\n"
 msgstr ""
+"| 项目          | 说明                                                        |\n"
+"| ------------- | ------------------------------------------------------------------ |\n"
+"| 平台      | **仅 Android** 侧载（APK）；iOS 后续                         |\n"
+"| 模块       | 聊天室（`sap-direct`）+ 管理台（`hub-rest`）                           |\n"
+"| Hub 配置    | APP **Hub 设置**：URL + `remote_auth.token`（Preferences）      |\n"
+"| Hub 职责    | `/api` REST + `/sap/v1` WebSocket                                  |\n"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:19
+#: docs/features/mobile-app.md:19 docs/sap/overview.md:17
 #, no-wrap
-msgid "拓扑"
-msgstr ""
+msgid "Topology"
+msgstr "拓扑"
 
 #. type: Fenced code block (mermaid)
 #: docs/features/mobile-app.md:21
@@ -82,114 +97,157 @@ msgid ""
 "  Chat -->|SAP auth_token| Hub\n"
 "  Admin -->|REST Bearer| Hub\n"
 msgstr ""
+"flowchart LR\n"
+"  Phone[Android WebView]\n"
+"  Shell[shell-ui SPA]\n"
+"  Chat[\"/chat\"]\n"
+"  Admin[\"/admin\"]\n"
+"  Settings[\"/settings\"]\n"
+"  Hub[Anima Service]\n"
+"\n"
+"  Phone --> Shell\n"
+"  Shell --> Chat\n"
+"  Shell --> Admin\n"
+"  Shell --> Settings\n"
+"  Chat -->|SAP auth_token| Hub\n"
+"  Admin -->|REST Bearer| Hub\n"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:39
 msgid ""
-"移动端 REST **直连** Hub（无桌面 Electron 的 `/api` 本地代理）；须配置 "
-"`remote_auth.token` 且 Hub 允许 Capacitor Origin（`https://localhost`）。路由"
-"使用 hash（`#/chat`），便于 WebView 调试。"
+"Mobile REST **connects directly** to Hub (no desktop Electron `/api` proxy); "
+"requires `remote_auth.token` and Hub CORS for Capacitor origin (`https://"
+"localhost`). Routes use hash (`#/chat`) for WebView debugging."
 msgstr ""
+"移动端 REST **直连** Hub（无桌面 Electron `/api` 代理）；需要 "
+"`remote_auth.token` 以及 Hub 对 Capacitor 源（`https://localhost`）的 CORS。"
+"路由使用 hash（`#/chat`）以便 WebView 调试。"
 
 #. type: Title ##
 #: docs/features/mobile-app.md:40
 #, no-wrap
-msgid "Hub 设置"
-msgstr ""
+msgid "Hub settings"
+msgstr "Hub 设置"
 
 #. type: Bullet: '1. '
 #: docs/features/mobile-app.md:48
 msgid ""
-"家里 PC：`anima service start --host 0.0.0.0`，并在 `~/.anima/config.yaml` 配"
+"Home PC: `anima service start --host 0.0.0.0`, configure `remote_auth.token` "
+"in `~/.anima/config.yaml` (see [`remote-access.md`](../guide/remote-"
+"access.md))."
+msgstr ""
+"家用 PC：`anima service start --host 0.0.0.0`，在 `~/.anima/config.yaml` 配"
 "置 `remote_auth.token`（见 [`remote-access.md`](../guide/remote-"
 "access.md)）。"
-msgstr ""
 
 #. type: Bullet: '2. '
 #: docs/features/mobile-app.md:48
-msgid "（可选）`anima tunnel setup`，手机使用 `https://<your-hostname>`。"
-msgstr ""
+msgid "(Optional) `anima tunnel setup`; phone uses `https://<your-hostname>`."
+msgstr "（可选）`anima tunnel setup`；手机使用 `https://<your-hostname>`。"
 
 #. type: Bullet: '3. '
 #: docs/features/mobile-app.md:48
-msgid "APP → **Hub 设置**（`/settings`）："
-msgstr ""
+msgid "APP → **Hub settings** (`/settings`):"
+msgstr "APP → **Hub 设置**（`/settings`）："
 
 #. type: Bullet: '   - '
 #: docs/features/mobile-app.md:48
-msgid "Hub 地址（Tunnel 域名或 `http://<PC-IP>:2658`；勿用 `127.0.0.1`）"
-msgstr ""
+msgid "Hub URL (Tunnel domain or `http://<PC-IP>:2658`; not `127.0.0.1`)"
+msgstr "Hub URL（Tunnel 域名或 `http://<PC-IP>:2658`；勿用 `127.0.0.1`）"
 
 #. type: Bullet: '   - '
 #: docs/features/mobile-app.md:48
-msgid ""
-"远程 Token（与 Hub `config.yaml` 中 `remote_auth.token` 相同，≥16 字符）"
-msgstr ""
+msgid "Remote token (same as Hub `config.yaml` `remote_auth.token`, ≥16 chars)"
+msgstr "远程 token（与 Hub `config.yaml` `remote_auth.token` 相同，≥16 字符）"
 
 #. type: Bullet: '4. '
 #: docs/features/mobile-app.md:48
-msgid "**测试连接** → **保存并进入** → 顶栏切换 **聊天室** / **管理台**。"
-msgstr ""
+msgid ""
+"**Test connection** → **Save and enter** → top bar switches **Chat** / "
+"**Admin**."
+msgstr "**测试连接** → **保存并进入** → 顶栏切换 **聊天室** / **管理台**。"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:50
 msgid ""
-"非 loopback Hub 地址必须填写 token；REST 使用 `Authorization: Bearer`，SAP "
-"在 `connect` 帧携带 `auth_token`。"
+"Non-loopback Hub URL requires token; REST uses `Authorization: Bearer`; SAP "
+"sends `auth_token` in `connect` frame."
 msgstr ""
-
-#. type: Title ##
-#: docs/features/mobile-app.md:51
-#, no-wrap
-msgid "排障"
-msgstr ""
+"非回环 Hub URL 需要 token；REST 使用 `Authorization: Bearer`；SAP 在 "
+"`connect` 帧发送 `auth_token`。"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:59
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Symptom                              | Common cause                                                                                 |\n"
+#| "| ------------------------------------ | -------------------------------------------------------------------------------------------- |\n"
+#| "| Keyboard covers chat input           | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes |\n"
+#| "| Chat input unresponsive              | No selected conversation (first install should auto-create); or SAP disconnected             |\n"
+#| "| Admin load failed / Failed to fetch  | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header   |\n"
+#| "| Not Found                            | Avoid legacy paths like `/admin/dashboard/index.html`; use SPA `/admin/dashboard`            |\n"
 msgid ""
-"| 现象                                 | 常见原因                                                                                 |\n"
-"| ------------------------------------ | ---------------------------------------------------------------------------------------- |\n"
-"| 键盘遮挡聊天输入框                   | WebView 未随键盘收缩；需 `adjustResize` + `@capacitor/keyboard`；改 Web 后须 `cap sync`  |\n"
-"| 聊天输入无反应                       | 无选中会话（首装应自动建会话）；或 SAP 未连接                                            |\n"
-"| 管理台 load failed / Failed to fetch | Hub 未 `--host 0.0.0.0`、Token 错误、防火墙；Chrome Remote Debugging 看请求是否带 Bearer |\n"
-"| Not Found                            | 勿访问旧路径如 `/admin/dashboard/index.html`；应走 SPA `/admin/dashboard`                |\n"
+"| Symptom                             | Common cause                                                                                    |\n"
+"| ----------------------------------- | ----------------------------------------------------------------------------------------------- |\n"
+"| Keyboard covers chat input          | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes |\n"
+"| Chat input unresponsive             | No selected conversation (first install should auto-create); or SAP disconnected                |\n"
+"| Admin load failed / Failed to fetch | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header      |\n"
+"| Not Found                           | Avoid legacy paths like `/admin/dashboard/index.html`; use SPA `/admin/dashboard`               |\n"
 msgstr ""
+"| 现象                              | 常见原因                                                                                 |\n"
+"| ------------------------------------ | -------------------------------------------------------------------------------------------- |\n"
+"| 键盘遮挡聊天输入           | WebView 未调整大小；需 `adjustResize` + `@capacitor/keyboard`；Web 变更后 `cap sync` |\n"
+"| 聊天输入无响应              | 未选中对话（首次安装应自动创建）；或 SAP 已断开             |\n"
+"| 管理台加载失败 / Failed to fetch  | Hub 未 `--host 0.0.0.0`、token 错误、防火墙；Chrome 远程调试查看 Bearer 头   |\n"
+"| Not Found                            | 避免旧路径如 `/admin/dashboard/index.html`；使用 SPA `/admin/dashboard`            |\n"
 
 #. type: Title ##
 #: docs/features/mobile-app.md:60
 #, no-wrap
-msgid "调试"
-msgstr ""
+msgid "Debugging"
+msgstr "调试"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:63
-msgid "设置 → **调试**（桌面与移动共用 shell-ui 面板）："
-msgstr ""
+msgid "Settings → **Debug** (desktop and mobile share shell-ui panel):"
+msgstr "设置 → **调试**（桌面与移动端共用 shell-ui 面板）："
 
 #. type: Plain text
 #: docs/features/mobile-app.md:69
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Capability | Desktop              | Mobile                                        |\n"
+#| "| ---------- | -------------------- | --------------------------------------------- |\n"
+#| "| Sentry     | DSN in settings      | Same                                          |\n"
+#| "| DevTools   | F12 / dev package    | Debug APK + USB → Chrome `chrome://inspect`   |\n"
+#| "| Console    | Electron DevTools    | vConsole (settings toggle)                    |\n"
 msgid ""
-"| 能力     | 桌面                 | 移动                                        |\n"
-"| -------- | -------------------- | ------------------------------------------- |\n"
-"| Sentry   | 设置页填 DSN 并启用  | 同左                                        |\n"
-"| DevTools | F12 / 开发包自动打开 | Debug APK + USB → Chrome `chrome://inspect` |\n"
-"| 控制台   | Electron DevTools    | vConsole（设置页开关）                      |\n"
+"| Capability | Desktop           | Mobile                                      |\n"
+"| ---------- | ----------------- | ------------------------------------------- |\n"
+"| Sentry     | DSN in settings   | Same                                        |\n"
+"| DevTools   | F12 / dev package | Debug APK + USB → Chrome `chrome://inspect` |\n"
+"| Console    | Electron DevTools | vConsole (settings toggle)                  |\n"
 msgstr ""
+"| 能力 | 桌面              | 移动端                                        |\n"
+"| ---------- | -------------------- | --------------------------------------------- |\n"
+"| Sentry     | 设置中的 DSN      | 相同                                          |\n"
+"| DevTools   | F12 / dev 包    | Debug APK + USB → Chrome `chrome://inspect`   |\n"
+"| Console    | Electron DevTools    | vConsole（设置开关）                    |\n"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:71
 msgid ""
-"移动 debug 构建：`cd app/mobile && bun run android:debug`（不压缩 + "
-"sourcemap，便于 inspect）。"
+"Mobile debug build: `cd app/mobile && bun run android:debug` (no minify + "
+"sourcemap for inspect)."
 msgstr ""
+"移动端调试构建：`cd app/mobile && bun run android:debug`（无压缩 + sourcemap "
+"便于 inspect）。"
 
 #. type: Title ##
 #: docs/features/mobile-app.md:72
 #, no-wrap
-msgid "构建与 sideload"
-msgstr ""
+msgid "Build and sideload"
+msgstr "构建与侧载"
 
 #. type: Fenced code block (bash)
 #: docs/features/mobile-app.md:74
@@ -199,39 +257,59 @@ msgid ""
 "cd app/mobile && bun run sync\n"
 "cd android && ./gradlew assembleDebug\n"
 msgstr ""
+"bun run --filter @freeanima/app-mobile build\n"
+"cd app/mobile && bun run sync\n"
+"cd android && ./gradlew assembleDebug\n"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:81
-msgid "Debug 全流程：`cd app/mobile && bun run android:debug`"
-msgstr ""
+msgid "Debug full flow: `cd app/mobile && bun run android:debug`"
+msgstr "调试完整流程：`cd app/mobile && bun run android:debug`"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:83
 #, no-wrap
-msgid "**纪律**：修改 shell-ui / chat / admin 前端后须 `bun run build`（或 `build:debug`）再 `cap sync`，否则真机仍是旧 Web 资源。\n"
-msgstr ""
+msgid "**Discipline**: after shell-ui / chat / admin frontend changes, run `bun run build` (or `build:debug`) then `cap sync`, or device serves stale Web assets.\n"
+msgstr "**纪律**：修改 shell-ui / chat / admin 前端后，须运行 `bun run build`（或 `build:debug`）再 `cap sync`，否则设备会提供过期的 Web 资源。\n"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:85
-msgid "包内 README：[`app/mobile/README.md`](../../app/mobile/README.md)"
-msgstr ""
+msgid "Package README: [`app/mobile/README.md`](../../app/mobile/README.md)"
+msgstr "包 README：[`app/mobile/README.md`](../../app/mobile/README.md)"
 
 #. type: Title ##
 #: docs/features/mobile-app.md:86
 #, no-wrap
-msgid "与桌面壳对比"
-msgstr ""
+msgid "vs desktop shell"
+msgstr "与桌面壳层对比"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:95
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "|             | Electron `app/desktop`                      | Capacitor `app/mobile`               |\n"
+#| "| ----------- | ------------------------------------------- | ------------------------------------ |\n"
+#| "| Injection   | preload → `window.satelliteShell`           | `shell-bridge.js` → same-shaped API  |\n"
+#| "| Hub config  | Hub settings → `~/.anima-desktop/settings.json` | Hub settings → Preferences       |\n"
+#| "| Debug/Sentry| Settings → Debug → same file `debug`      | Settings → Debug → Preferences       |\n"
+#| "| REST        | Local static `/api` proxy (same origin)     | Direct `hubUrl/api/*` (CORS + Bearer)|\n"
+#| "| instance_id | File `~/.anima/satellites/chat/`            | Preferences                          |\n"
+#| "| Content     | chat + admin + companion                    | chat + admin                         |\n"
 msgid ""
+"|              | Electron `app/desktop`                          | Capacitor `app/mobile`                |\n"
+"| ------------ | ----------------------------------------------- | ------------------------------------- |\n"
+"| Injection    | preload → `window.satelliteShell`               | `shell-bridge.js` → same-shaped API   |\n"
+"| Hub config   | Hub settings → `~/.anima-desktop/settings.json` | Hub settings → Preferences            |\n"
+"| Debug/Sentry | Settings → Debug → same file `debug`            | Settings → Debug → Preferences        |\n"
+"| REST         | Local static `/api` proxy (same origin)         | Direct `hubUrl/api/*` (CORS + Bearer) |\n"
+"| instance_id  | File `~/.anima/satellites/chat/`                | Preferences                           |\n"
+"| Content      | chat + admin + companion                        | chat + admin                          |\n"
+msgstr ""
 "|             | Electron `app/desktop`                      | Capacitor `app/mobile`               |\n"
 "| ----------- | ------------------------------------------- | ------------------------------------ |\n"
-"| 注入        | preload → `window.satelliteShell`           | `shell-bridge.js` → 同形 API         |\n"
-"| Hub 配置    | Hub 设置 → `~/.anima-desktop/settings.json` | Hub 设置 → Preferences               |\n"
-"| 调试/Sentry | 设置 → 调试 → 同上文件 `debug` 段           | 设置 → 调试 → Preferences            |\n"
-"| REST        | 本地静态服代理 `/api`（同源）               | 直连 `hubUrl/api/*`（CORS + Bearer） |\n"
+"| 注入   | preload → `window.satelliteShell`           | `shell-bridge.js` → 同形 API  |\n"
+"| Hub 配置  | Hub 设置 → `~/.anima-desktop/settings.json` | Hub 设置 → Preferences       |\n"
+"| 调试/Sentry| 设置 → 调试 → 同文件 `debug`      | 设置 → 调试 → Preferences       |\n"
+"| REST        | 本地静态 `/api` 代理（同源）     | 直连 `hubUrl/api/*`（CORS + Bearer）|\n"
 "| instance_id | 文件 `~/.anima/satellites/chat/`            | Preferences                          |\n"
-"| 内容        | chat + admin + companion                    | chat + admin                         |\n"
-msgstr ""
+"| 内容     | chat + admin + companion                    | chat + admin                         |\n"

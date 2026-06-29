@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 17:13+0800\n"
+"POT-Creation-Date: 2026-06-29 13:16+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,8 +16,15 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. type: Title ##
+#: docs/features/companion.md:120 docs/features/mobile-app.md:51
+#: docs/guide/database.md:91 docs/guide/remote-access.md:128
+#, no-wrap
+msgid "Troubleshooting"
+msgstr ""
+
 #. type: Content of: <messages><msg>
-#: docs/guide/database.md:1 messages/po4a/en.xml:517
+#: docs/guide/database.md:1 messages/po4a/en.xml:563
 #, no-wrap
 msgid "Database"
 msgstr ""
@@ -231,12 +238,6 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/database.md:90
 msgid "pre-commit `test:changed` does **not** run integration tests."
-msgstr ""
-
-#. type: Title ##
-#: docs/guide/database.md:91
-#, no-wrap
-msgid "Troubleshooting"
 msgstr ""
 
 #. type: Plain text

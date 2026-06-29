@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-28 23:53+0800\n"
+"POT-Creation-Date: 2026-06-29 13:16+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -14,6 +14,12 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#. type: Title ##
+#: docs/features/mobile-app.md:19 docs/sap/overview.md:17
+#, no-wrap
+msgid "Topology"
+msgstr "拓扑"
 
 #. type: Title #
 #: docs/sap/overview.md:1 docs/sap/overview.md:5
@@ -23,10 +29,9 @@ msgstr "SAP 概述"
 
 #. type: Plain text
 #: docs/sap/overview.md:8
-#, fuzzy, no-wrap
-#| msgid "**SAP** (Satellite Application Protocol, version `SAP/1.0`) is the WebSocket JSON protocol between the FreeAnima **Hub** (`anima service`) and **Satellite** processes. Satellites are standalone apps (Parlor, pair-programming Studio) that expose their own HTTP UI while delegating agent runtime to the Hub.\n"
+#, no-wrap
 msgid "**SAP** (Satellite Application Protocol, version `SAP/1.0`) is the WebSocket JSON protocol between the FreeAnima **Hub** (`anima service`) and **Satellite** processes. Satellites are standalone apps (e.g. Chat) that expose their own HTTP UI while delegating agent runtime to the Hub.\n"
-msgstr "**SAP**（Satellite Application Protocol，版本 `SAP/1.0`）是 FreeAnima **Hub**（`anima service`）与 **Satellite** 进程之间的 WebSocket JSON 协议。Satellite 是独立应用（聊天室、结对编程管理台），提供各自的 HTTP UI，同时将 agent 运行时委托给 Hub。\n"
+msgstr "**SAP**（Satellite Application Protocol，版本 `SAP/1.0`）是 FreeAnima **Hub**（`anima service`）与 **Satellite** 进程之间的 WebSocket JSON 协议。Satellite 是独立应用（如聊天室），提供各自的 HTTP UI，同时将 agent 运行时委托给 Hub。\n"
 
 #. type: Plain text
 #: docs/sap/overview.md:10
@@ -59,6 +64,8 @@ msgid ""
 "**Origin isolation**: bundled clients may use browser-direct Hub WS (`sap-"
 "direct`) or a local SAP relay (`/sap/relay/v1`) depending on deployment."
 msgstr ""
+"**来源隔离**：捆绑客户端可按部署使用浏览器直连 Hub WS（`sap-direct`）或本地 "
+"SAP 中继（`/sap/relay/v1`）。"
 
 #. type: Bullet: '- '
 #: docs/sap/overview.md:16
@@ -70,12 +77,6 @@ msgstr ""
 "**共享契约**：双方从 `@freeanima/sap-contract` 导入信封、RPC 类型、"
 "`runSapTransport`、`createSapBrowserClient` 与 "
 "`createSapRelayBrowserClient`。"
-
-#. type: Title ##
-#: docs/sap/overview.md:17
-#, no-wrap
-msgid "Topology"
-msgstr "拓扑"
 
 #. type: Fenced code block (mermaid)
 #: docs/sap/overview.md:19
@@ -90,37 +91,33 @@ msgid ""
 "    Admin[Admin console]\n"
 "  end\n"
 msgstr ""
+"flowchart LR\n"
+"  subgraph chat [Chat satellite]\n"
+"    B1[Browser] -->|SAP WS or relay| Hub\n"
+"  end\n"
+"  Hub --> Runtime[AgentRuntime]\n"
+"  subgraph hubAdmin [Hub Admin]\n"
+"    Admin[Admin console]\n"
+"  end\n"
 
 #. type: Plain text
 #: docs/sap/overview.md:35
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Role      | Default                 | Responsibility                                   |\n"
-#| "| --------- | ----------------------- | ------------------------------------------------ |\n"
-#| "| Hub       | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1` |\n"
-#| "| Parlor    | `http://127.0.0.1:4174` | Chat UI; browser-direct SAP (Type A)             |\n"
-#| "| Pair-prog | `http://127.0.0.1:4173` | Studio UI; process gateway + relay (Type B)      |\n"
-#| "| Chamber   | Hub `/chamber/*`        | Memory, config, tools, satellite status          |\n"
+#, no-wrap
 msgid ""
-"| Role  | Default                 | Responsibility                                   |\n"
-"| ----- | ----------------------- | ------------------------------------------------ |\n"
-"| Hub   | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1` |\n"
-"| Chat  | bundled `/chat`         | Chat UI; SAP direct or relay                     |\n"
+"| Role  | Default                 | Responsibility                                              |\n"
+"| ----- | ----------------------- | ----------------------------------------------------------- |\n"
+"| Hub   | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1`            |\n"
+"| Chat  | bundled `/chat`         | Chat UI; SAP direct or relay                                |\n"
 "| Admin | bundled shell `/admin`  | Memory, config, tools, satellite status (Hub REST `/api/*`) |\n"
 msgstr ""
-"| 角色      | 默认值                  | 职责                                             |\n"
-"| --------- | ----------------------- | ------------------------------------------------ |\n"
-"| Hub       | `http://127.0.0.1:2658` | Agent 运行时，SAP WebSocket 服务端 `/sap/v1`     |\n"
-"| 聊天室    | `http://127.0.0.1:4174` | 聊天 UI；浏览器直连 SAP（Type A）                |\n"
-"| 结对编程  | `http://127.0.0.1:4173` | 管理台 UI；进程网关 + 中继（Type B）             |\n"
-"| 管理台      | Hub `/chamber/*`        | 记忆、配置、工具、卫星状态                       |\n"
+"| 角色  | 默认值                  | 职责                                                        |\n"
+"| ----- | ----------------------- | ----------------------------------------------------------- |\n"
+"| Hub   | `http://127.0.0.1:2658` | Agent 运行时，SAP WebSocket 服务端 `/sap/v1`                |\n"
+"| 聊天室| bundled `/chat`         | 聊天 UI；SAP 直连或中继                                     |\n"
+"| 管理台| bundled shell `/admin`  | 记忆、配置、工具、卫星状态（Hub REST `/api/*`）             |\n"
 
 #. type: Plain text
 #: docs/sap/overview.md:37
-#, fuzzy
-#| msgid ""
-#| "See also: [architecture Admin section](../concepts/architecture.md#admin-"
-#| "ui)."
 msgid ""
 "See also: [architecture Client UI section](../concepts/"
 "architecture.md#client-uibundled)."
@@ -193,21 +190,13 @@ msgstr "Hub 回复 `connected`，并在 `SatelliteManager` 中注册该实例。
 
 #. type: Bullet: '3. '
 #: docs/sap/overview.md:68
-#, fuzzy
-#| msgid "Satellite registers local tools via `tool.register`."
 msgid "Satellite registers local tools via `tool.register` (if any)."
-msgstr "Satellite 通过 `tool.register` 注册本地工具。"
+msgstr "Satellite 通过 `tool.register` 注册本地工具（若有）。"
 
 #. type: Bullet: '4. '
 #: docs/sap/overview.md:68
-#, fuzzy
-#| msgid ""
-#| "`message.send` returns a `stream_id`; Hub pushes `stream.*` events (fan-"
-#| "out on relay)."
 msgid "`message.send` returns a `stream_id`; Hub pushes `stream.*` events."
-msgstr ""
-"`message.send` 返回 `stream_id`；Hub 推送 `stream.*` 事件（在中继上分发给各客"
-"户端）。"
+msgstr "`message.send` 返回 `stream_id`；Hub 推送 `stream.*` 事件。"
 
 #. type: Bullet: '5. '
 #: docs/sap/overview.md:68

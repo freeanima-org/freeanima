@@ -27,7 +27,7 @@ runs:
       run: bun scripts/check-paraglide-messages.ts
     - name: Check PO health
       shell: bash
-      run: bun scripts/check-po-health.ts
+      run: bun scripts/check-po-health.ts --strict
     - name: Astro build
       shell: bash
       run: cd site && bun run build

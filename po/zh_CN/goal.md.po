@@ -1,161 +1,199 @@
-# Chinese translations for PACKAGE package
-# Copyright (C) 2026 Free Software Foundation, Inc.
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# Automatically generated, 2026.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-23 13:57+0800\n"
-"PO-Revision-Date: 2026-06-23 13:57+0800\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
-"Language: zh_CN\n"
+"POT-Creation-Date: 2026-06-29 14:22+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Yaml Front Matter Hash Value: title
-#: docs/concepts/architecture.md:217 docs/features/goal.md:1
-#, fuzzy, no-wrap
+#. type: Title #
+#: docs/concepts/architecture.md:259 docs/features/goal.md:1
+#: docs/features/goal.md:5
+#, no-wrap
 msgid "Session Goal"
 msgstr "会话便签"
 
-#. type: Title #
-#: docs/features/goal.md:5
+#. type: Title ##
+#: docs/concepts/compression.md:32 docs/features/goal.md:38
 #, no-wrap
-msgid "Session Goal（会话目标）"
-msgstr ""
+msgid "Configuration"
+msgstr "配置"
 
 #. type: Plain text
 #: docs/features/goal.md:8
 msgid ""
-"Session Goal 允许为单个会话设定持久目标。每轮对话结束后，独立的 **judge 模型"
-"**判定目标是否完成；未完成则自动注入续跑提示，驱动 agent 继续工作，直到目标达"
-"成、turn 预算耗尽、或被用户暂停/清除。"
+"Session Goal lets you set a persistent objective for a single conversation. "
+"After each turn, an independent **judge model** decides whether the goal is "
+"complete; if not, a continuation prompt is injected automatically until the "
+"goal is met, the turn budget is exhausted, or the user pauses/clears."
 msgstr ""
+"会话便签让你为单次对话设定持久目标。每轮结束后，独立的 **judge model（评判模"
+"型）** 判定目标是否完成；若未完成，则自动注入续写提示，直至目标达成、轮次预算"
+"耗尽，或用户暂停/清除。"
 
 #. type: Title ##
 #: docs/features/goal.md:9
 #, no-wrap
-msgid "命令"
-msgstr ""
+msgid "Commands"
+msgstr "命令"
 
 #. type: Plain text
 #: docs/features/goal.md:22
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Command               | Description                                              |\n"
+#| "| --------------------- | -------------------------------------------------------- |\n"
+#| "| `/goal <description>` | Set goal and start first run (default 20-turn budget)    |\n"
+#| "| `/goal status`        | View goal, subgoals, turn count, judge reason            |\n"
+#| "| `/goal pause`         | Pause auto-continuation (keep goal state)                |\n"
+#| "| `/goal resume`        | Resume auto-continuation                                 |\n"
+#| "| `/goal clear`         | Clear goal                                               |\n"
+#| "| `/subgoal`            | List subgoals                                            |\n"
+#| "| `/subgoal <condition>`| Append sub-condition                                     |\n"
+#| "| `/subgoal remove <N>` | Remove subgoal N (1-based)                                 |\n"
+#| "| `/subgoal clear`      | Clear all subgoals                                       |\n"
 msgid ""
-"| 命令                  | 说明                                         |\n"
-"| --------------------- | -------------------------------------------- |\n"
-"| `/goal <描述>`        | 设定目标并开始首轮执行（默认 20 turn 预算）  |\n"
-"| `/goal status`        | 查看当前目标、子目标、turn 计数与 judge 理由 |\n"
-"| `/goal pause`         | 暂停自动续跑（保留目标状态）                 |\n"
-"| `/goal resume`        | 恢复自动续跑                                 |\n"
-"| `/goal clear`         | 清除目标                                     |\n"
-"| `/subgoal`            | 列出子目标                                   |\n"
-"| `/subgoal <条件>`     | 追加子条件                                   |\n"
-"| `/subgoal remove <N>` | 删除第 N 条子目标（1-based）                 |\n"
-"| `/subgoal clear`      | 清空子目标                                   |\n"
+"| Command                | Description                                           |\n"
+"| ---------------------- | ----------------------------------------------------- |\n"
+"| `/goal <description>`  | Set goal and start first run (default 20-turn budget) |\n"
+"| `/goal status`         | View goal, subgoals, turn count, judge reason         |\n"
+"| `/goal pause`          | Pause auto-continuation (keep goal state)             |\n"
+"| `/goal resume`         | Resume auto-continuation                              |\n"
+"| `/goal clear`          | Clear goal                                            |\n"
+"| `/subgoal`             | List subgoals                                         |\n"
+"| `/subgoal <condition>` | Append sub-condition                                  |\n"
+"| `/subgoal remove <N>`  | Remove subgoal N (1-based)                            |\n"
+"| `/subgoal clear`       | Clear all subgoals                                    |\n"
 msgstr ""
+"| 命令                  | 说明                                           |\n"
+"| --------------------- | ---------------------------------------------- |\n"
+"| `/goal <description>` | 设定目标并启动首次运行（默认 20 轮预算）       |\n"
+"| `/goal status`        | 查看目标、子目标、轮次计数、评判理由           |\n"
+"| `/goal pause`         | 暂停自动续写（保留目标状态）                   |\n"
+"| `/goal resume`        | 恢复自动续写                                   |\n"
+"| `/goal clear`         | 清除目标                                       |\n"
+"| `/subgoal`            | 列出子目标                                     |\n"
+"| `/subgoal <condition>`| 追加子条件                                     |\n"
+"| `/subgoal remove <N>` | 移除第 N 个子目标（从 1 起计）                 |\n"
+"| `/subgoal clear`      | 清除全部子目标                                 |\n"
 
 #. type: Title ##
 #: docs/features/goal.md:23
 #, no-wrap
-msgid "工作流程"
-msgstr ""
+msgid "Workflow"
+msgstr "工作流"
 
 #. type: Bullet: '1. '
 #: docs/features/goal.md:31
-msgid "用户执行 `/goal …` → 写入 `conversations.goal` 并触发 engine run。"
-msgstr ""
+msgid ""
+"User runs `/goal …` → writes `conversations.goal` and triggers engine run."
+msgstr "用户执行 `/goal …` → 写入 `conversations.goal` 并触发 engine 运行。"
 
 #. type: Bullet: '2. '
 #: docs/features/goal.md:31
 msgid ""
-"每轮 assistant 回复结束 → **goal judge** 读取目标、子目标、最近对话与末轮回"
-"复。"
+"After each assistant reply → **goal judge** reads goal, subgoals, recent "
+"dialogue, last reply."
 msgstr ""
+"每次助手回复后 → **goal judge（目标评判）** 读取目标、子目标、近期对话与上次"
+"回复。"
 
 #. type: Bullet: '3. '
 #: docs/features/goal.md:31
-msgid "Judge 输出严格 JSON：`{\"done\": boolean, \"reason\": \"...\"}`。"
-msgstr ""
+msgid "Judge outputs strict JSON: `{\"done\": boolean, \"reason\": \"...\"}`."
+msgstr "评判输出严格 JSON：`{\"done\": boolean, \"reason\": \"...\"}`。"
 
 #. type: Bullet: '4. '
 #: docs/features/goal.md:31
 msgid ""
-"`done: false` → 注入 user-role 续跑消息（如 `↻ Continuing toward goal "
-"(3/20): …`），在同一 SSE 流内继续下一轮。"
+"`done: false` → inject user-role continuation (e.g. `↻ Continuing toward "
+"goal (3/20): …`), continue next turn in same SSE stream."
 msgstr ""
+"`done: false` → 注入 user 角色续写（如 `↻ Continuing toward goal (3/20): …"
+"`），在同一 SSE 流中继续下一轮。"
 
 #. type: Bullet: '5. '
 #: docs/features/goal.md:31
-msgid "`done: true` → 标记 completed，停止续跑。"
-msgstr ""
+msgid "`done: true` → mark completed, stop continuation."
+msgstr "`done: true` → 标记完成，停止续写。"
 
 #. type: Bullet: '6. '
 #: docs/features/goal.md:31
 msgid ""
-"用户中途发消息会 preempt 当前续跑；该轮结束后重新 judge，未 pause 则继续。"
-msgstr ""
+"User message mid-run preempts current continuation; after that turn, re-"
+"judge; continues if not paused."
+msgstr "运行中用户消息会抢占当前续写；该轮结束后重新评判；未暂停则继续。"
 
 #. type: Title ##
 #: docs/features/goal.md:32
 #, no-wrap
-msgid "Judge 保守策略"
-msgstr ""
+msgid "Judge conservative policy"
+msgstr "评判保守策略"
 
 #. type: Bullet: '- '
 #: docs/features/goal.md:37
 msgid ""
-"**通过**：assistant 明确确认完成、清楚展示最终产出、或说明不可达成/需用户输入"
-"（reason 说明阻塞点）。"
+"**Pass**: assistant clearly confirms completion, shows final deliverable, or "
+"states blocker needing user input (reason explains)."
 msgstr ""
-
-#. type: Bullet: '- '
-#: docs/features/goal.md:37
-msgid "**不通过**：模糊进展、仅有计划无证据、「暗示已完成」不算。"
-msgstr ""
+"**通过**：助手明确确认完成、展示最终交付物，或说明需用户输入的阻塞（理由中说"
+"明）。"
 
 #. type: Bullet: '- '
 #: docs/features/goal.md:37
 msgid ""
-"**Fail-open**：judge 调用或解析失败时视为未完成，靠 turn 预算兜底，避免卡死。"
-msgstr ""
+"**Fail**: vague progress, plan only without evidence; implied completion "
+"does not count."
+msgstr "**不通过**：进展模糊、仅有计划而无证据；隐含完成不算。"
 
-#. type: Title ##
-#: docs/features/goal.md:38
-#, no-wrap
-msgid "配置"
-msgstr ""
+#. type: Bullet: '- '
+#: docs/features/goal.md:37
+msgid ""
+"**Fail-open**: judge call or parse failure treated as incomplete; turn "
+"budget prevents deadlock."
+msgstr "**Fail-open**：评判调用或解析失败视为未完成；轮次预算防止死锁。"
 
 #. type: Plain text
 #: docs/features/goal.md:41
 msgid ""
-"在 `~/.anima/config.yaml` 的 `llm.profiles` 中可选配置 `goal_judge`（见 "
-"[`config.example.yaml`](../../config.example.yaml)）。未配置时回退 "
-"`llm.default_profile`。"
+"Optional `goal_judge` in `~/.anima/config.yaml` `llm.profiles` (see "
+"[`config.example.yaml`](../../config.example.yaml)). Falls back to "
+"`llm.default_profile` when unset."
 msgstr ""
+"可在 `~/.anima/config.yaml` 的 `llm.profiles` 中配置可选 `goal_judge`（见 "
+"[`config.example.yaml`](../../config.example.yaml)）。未设置时回退到 "
+"`llm.default_profile`。"
 
 #. type: Title ##
 #: docs/features/goal.md:42
 #, no-wrap
-msgid "与 ACP 的区别"
-msgstr ""
+msgid "vs ACP"
+msgstr "与 ACP 对比"
 
 #. type: Bullet: '- '
 #: docs/features/goal.md:46
-msgid "**Goal**：同会话内同步续跑循环，由 platform turn 生命周期编排。"
-msgstr ""
+msgid ""
+"**Goal**: in-conversation synchronous continuation loop; orchestrated by "
+"platform turn lifecycle."
+msgstr "**Goal**：对话内同步续写循环；由平台轮次生命周期编排。"
 
 #. type: Bullet: '- '
 #: docs/features/goal.md:46
-msgid "**ACP**：外部 agent 异步任务，完成后通过 callback 触发独立 turn。"
-msgstr ""
+msgid ""
+"**ACP**: external agent async task; callback triggers separate turn on "
+"completion."
+msgstr "**ACP**：外部 agent 异步任务；回调在完成后触发独立轮次。"
 
 #. type: Plain text
 #: docs/features/goal.md:47
-#, fuzzy
-#| msgid "Admin three modes: [`architecture.md`](../concepts/architecture.md)"
-msgid "详见 [`architecture.md`](../concepts/architecture.md#session-goal)."
-msgstr "Admin 三种模式：[`architecture.md`](../concepts/architecture.md)"
+msgid "See [`architecture.md`](../concepts/architecture.md#session-goal)."
+msgstr "参见 [`architecture.md`](../concepts/architecture.md#session-goal)。"

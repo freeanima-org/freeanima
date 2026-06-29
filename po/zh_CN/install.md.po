@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-28 23:53+0800\n"
+"POT-Creation-Date: 2026-06-29 13:16+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,17 +16,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:553
+#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:569
 #, no-wrap
 msgid "Installation"
 msgstr "安装"
 
 #. type: Plain text
 #: docs/guide/install.md:9
-#, fuzzy, no-wrap
-#| msgid ""
-#| "> Deploy FreeAnima on your machine — npm CLI, Docker Compose, or from source.\n"
-#| "> After install: [`security.md`](security.md) (credentials, bind address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`](service.md) (runtime commands).\n"
+#, no-wrap
 msgid ""
 "> Deploy FreeAnima on your machine — npm CLI, Docker Compose, or from source.\n"
 "> After install: [`security.md`](security.md) (credentials, bind address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`](service.md) (runtime commands) · [`remote-access.md`](remote-access.md) (Cloudflare Tunnel).\n"
@@ -58,12 +55,6 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:19
-#, fuzzy
-#| msgid ""
-#| "All paths run the same `anima service` runtime (Admin + tRPC + Gateway + "
-#| "engine). PostgreSQL with **pgvector** is **required**. Redis powers "
-#| "fridge/tasks cross-conversation context and **degrades silently** when "
-#| "unavailable — Docker and production setups should still run it."
 msgid ""
 "All paths run the same `anima service` runtime (Admin API + tRPC + Gateway + "
 "engine). PostgreSQL with **pgvector** is **required**. Redis powers fridge/"
@@ -267,14 +258,16 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:93
 msgid "Default bind: `127.0.0.1:2658`（Hub API：`/api`，SAP：`/sap/v1`）。"
-msgstr ""
+msgstr "默认绑定：`127.0.0.1:2658`（Hub API：`/api`，SAP：`/sap/v1`）。"
 
 #. type: Plain text
 #: docs/guide/install.md:95
 msgid ""
-"UI 使用 **app/desktop** 或 **app/mobile**（聊天室 + 管理台 bundled）。浏览器"
-"本地开发：`bun run dev:web`（Vite HMR，Hub 须已运行）。"
+"Use **app/desktop** or **app/mobile** for UI (Chat + Admin bundled). Browser "
+"local dev: `bun run dev:web` (Vite HMR; Hub must be running)."
 msgstr ""
+"UI 请用 **app/desktop** 或 **app/mobile**（捆绑聊天室 + 管理台）。浏览器本地"
+"开发：`bun run dev:web`（Vite HMR；需 Hub 已运行）。"
 
 #. type: Plain text
 #: docs/guide/install.md:97
@@ -301,6 +294,8 @@ msgid ""
 "restart the service if needed (`anima service restart` or `/restart` in "
 "chat)."
 msgstr ""
+"从 npm registry 升级全局 `@freeanima/cli`，必要时重启服务（`anima service "
+"restart` 或聊天中 `/restart`）。"
 
 #. type: Title ##
 #: docs/guide/install.md:108
@@ -412,38 +407,42 @@ msgstr ""
 
 #. type: Title ###
 #: docs/guide/install.md:144
-#, fuzzy, no-wrap
-#| msgid "3. Access Admin"
+#, no-wrap
 msgid "3. Access Hub API"
-msgstr "3. 访问 Admin"
+msgstr "3. 访问 Hub API"
 
 #. type: Fenced code block (text)
 #: docs/guide/install.md:146
-#, fuzzy, no-wrap
-#| msgid "http://127.0.0.1:4174\n"
+#, no-wrap
 msgid "http://127.0.0.1:2658/api/health\n"
-msgstr "http://127.0.0.1:4174（聊天室）\n"
+msgstr "http://127.0.0.1:2658/api/health\n"
 
 #. type: Plain text
 #: docs/guide/install.md:151
 msgid ""
-"UI 请使用 app/desktop 或 app/mobile 客户端（bundled shell，含 `/chat`、`/"
-"tasks`、`/admin` 等模块）。"
+"Use app/desktop or app/mobile clients for UI (bundled shell with `/chat`, `/"
+"tasks`, `/admin`, etc.)."
 msgstr ""
+"UI 请用 app/desktop 或 app/mobile 客户端（bundled shell，含 `/chat`、`/"
+"tasks`、`/admin` 等）。"
 
 #. type: Bullet: '- '
 #: docs/guide/install.md:154
 msgid ""
+"Hub API (health): `http://127.0.0.1:2658/api/health` (Hub does **not** host "
+"Admin UI)"
+msgstr ""
 "Hub API（health）：`http://127.0.0.1:2658/api/health`（Hub **不**托管 Admin "
 "UI）"
-msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/install.md:154
 msgid ""
-"本地 Web 壳层开发：`bun run dev:web` → Admin：`http://127.0.0.1:4173/admin/"
+"Local Web shell dev: `bun run dev:web` → Admin: `http://127.0.0.1:4173/admin/"
 "dashboard`"
 msgstr ""
+"本地 Web shell 开发：`bun run dev:web` → 管理台：`http://127.0.0.1:4173/"
+"admin/dashboard`"
 
 #. type: Plain text
 #: docs/guide/install.md:156
@@ -453,7 +452,7 @@ msgstr "（若更改了主机映射，请使用 `ANIMA_PORT`。）"
 #. type: Plain text
 #: docs/guide/install.md:160
 msgid "On the **host** (not inside the container):"
-msgstr ""
+msgstr "在**主机**上（非容器内）："
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:161
@@ -469,7 +468,7 @@ msgstr ""
 #: docs/guide/install.md:167
 msgid ""
 "`anima upgrade` and `/upgrade` inside the container only print this guidance."
-msgstr ""
+msgstr "容器内的 `anima upgrade` 与 `/upgrade` 仅打印此说明。"
 
 #. type: Plain text
 #: docs/guide/install.md:169
@@ -594,23 +593,23 @@ msgstr "若要接近 npm 用户的发布形态本地安装："
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:211
-#, fuzzy, no-wrap
-#| msgid ""
-#| "bun run build:cli\n"
-#| "bun install -g ./cli/publish\n"
+#, no-wrap
 msgid ""
 "bun run install:cli:local\n"
 "# equivalent: bun run build:cli && bun install -g \"$PWD/cli/publish\"\n"
 msgstr ""
-"bun run build:cli\n"
-"bun install -g ./cli/publish\n"
+"bun run install:cli:local\n"
+"# equivalent: bun run build:cli && bun install -g \"$PWD/cli/publish\"\n"
 
 #. type: Plain text
 #: docs/guide/install.md:217
 msgid ""
-"Bun 的 `bun install -g ./cli/publish` 在仓库根目录不可用；请使用 `bun run "
-"install:cli:local`（会先清理损坏的全局依赖，再 pack + 安装 tarball）。"
+"`bun install -g ./cli/publish` from the repo root is not supported; use `bun "
+"run install:cli:local` (cleans broken global deps, then pack + install "
+"tarball)."
 msgstr ""
+"不支持在仓库根目录 `bun install -g ./cli/publish`；请用 `bun run "
+"install:cli:local`（清理损坏的全局依赖后 pack + 安装 tarball）。"
 
 #. type: Title ###
 #: docs/guide/install.md:218
@@ -675,13 +674,13 @@ msgstr ""
 #: docs/guide/install.md:244
 #, no-wrap
 msgid "**link:global** (`bun run link:global`): upgrade manually — `git pull`, `bun install`, then restart the service. `anima upgrade` and `/upgrade` print instructions only.\n"
-msgstr ""
+msgstr "**link:global**（`bun run link:global`）：手动升级——`git pull`、`bun install`，然后重启服务。`anima upgrade` 与 `/upgrade` 仅打印说明。\n"
 
 #. type: Plain text
 #: docs/guide/install.md:246
 #, no-wrap
 msgid "**Local pack** (`bun run install:cli:local`): `anima upgrade` runs `git pull` and reinstalls the local pack from the repo.\n"
-msgstr ""
+msgstr "**Local pack**（`bun run install:cli:local`）：`anima upgrade` 执行 `git pull` 并从仓库重装本地 pack。\n"
 
 #. type: Title ##
 #: docs/guide/install.md:249
@@ -729,6 +728,8 @@ msgid ""
 "**Remote access** — optional Cloudflare Tunnel + `remote_auth.token` for "
 "personal mobile/remote Admin ([`remote-access.md`](remote-access.md))"
 msgstr ""
+"**远程访问** — 可选 Cloudflare Tunnel + `remote_auth.token`，用于个人移动/远"
+"程管理台（[`remote-access.md`](remote-access.md)）"
 
 #. type: Bullet: '3. '
 #: docs/guide/install.md:264

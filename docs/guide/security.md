@@ -67,15 +67,15 @@ Disk backup = data access. Protect backup media accordingly.
 
 The following are planned in code or docs—**deployers must not assume implemented**:
 
-| Priority | Item                                                  | Status                                                                                                                       |
-| -------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                                                                                                                      |
-| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                                                                                                              |
-| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                                                                                                              |
-| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                                                                                                              |
-| P2       | HTTP API auth                                         | 非 loopback Host 或 TCP 对端非 loopback 时须 `remote_auth` 或 401；双 loopback 免验 ([`remote-access.md`](remote-access.md)) |
-| P3       | IPC / LLM rate limiting                               | None                                                                                                                         |
-| P3       | Session disk encryption                               | None                                                                                                                         |
+| Priority | Item                                                  | Status                                                                                                                                  |
+| -------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                                                                                                                                 |
+| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                                                                                                                         |
+| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                                                                                                                         |
+| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                                                                                                                         |
+| P2       | HTTP API auth                                         | Non-loopback Host or non-loopback TCP peer requires `remote_auth` or 401; dual loopback exempt ([`remote-access.md`](remote-access.md)) |
+| P3       | IPC / LLM rate limiting                               | None                                                                                                                                    |
+| P3       | Session disk encryption                               | None                                                                                                                                    |
 
 ## Threat Sources
 
@@ -94,7 +94,7 @@ The following are planned in code or docs—**deployers must not assume implemen
 | **Runtime**      | Default 127.0.0.1 bind                    | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |
 | **Gateway**      | Token in pass                             | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |
 | **CLI / Tools**  | Local shell compromised                   | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |
-| **HTTP / Admin** | `remote_auth` Bearer token（非 loopback） | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |
+| **HTTP / Admin** | `remote_auth` Bearer token (non-loopback) | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |
 | **MCP / ACP**    | SSE auth undefined                        | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |
 
 ## Proposals Pending Review

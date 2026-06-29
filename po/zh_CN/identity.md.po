@@ -175,14 +175,10 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/identity.md:54
-#, fuzzy
-#| msgid ""
-#| "Maintenance: Admin bedroom self-layer editor, self-layer tools, or direct "
-#| "database edits."
 msgid ""
 "Maintenance: Admin self-layer editor, self-layer tools, or direct database "
 "edits."
-msgstr "维护方式：Admin 管理台自我层编辑器、自我层工具，或直接编辑数据库。"
+msgstr "维护方式：管理台自我层编辑器、自我层工具，或直接编辑数据库。"
 
 #. type: Plain text
 #: docs/concepts/identity.md:57

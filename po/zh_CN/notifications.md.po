@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-28 23:53+0800\n"
-"PO-Revision-Date: 2026-06-28 23:53+0800\n"
+"POT-Creation-Date: 2026-06-29 13:16+0800\n"
+"PO-Revision-Date: 2026-06-29 14:00+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
 "Language: zh_CN\n"
@@ -16,19 +16,17 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/concepts/fridge-magnet.md:53 docs/concepts/notifications.md:78
-#, fuzzy, no-wrap
-#| msgid "Related Docs"
+#: docs/concepts/fridge-magnet.md:53 docs/concepts/notifications.md:80
+#, no-wrap
 msgid "Related"
 msgstr "相关文档"
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/notifications.md:1 docs/concepts/notifications.md:5
-#: messages/po4a/en.xml:358
-#, fuzzy, no-wrap
-#| msgid "New conversation"
+#: messages/po4a/en.xml:359
+#, no-wrap
 msgid "Notifications"
-msgstr "＋ 新会话"
+msgstr "通知"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:8
@@ -37,19 +35,19 @@ msgid ""
 "Cron results, task due reminders, and LLM tools write here; Shell UI lists "
 "and marks read via SAP."
 msgstr ""
+"面向 **user** 与 **agent** 主体（实体模型）的 PG 应用内收件箱。Cron 结果、任"
+"务到期提醒与 LLM 工具写入此处；Shell UI 通过 SAP 列出并标记已读。"
 
 #. type: Title ##
 #: docs/concepts/notifications.md:9
 #, no-wrap
 msgid "Recipients"
-msgstr ""
+msgstr "收件人"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:12
-#, fuzzy
-#| msgid "Minimum production settings in `~/.anima/config.yaml`:"
 msgid "Configure subject entity ids in `config.yaml`:"
-msgstr "`~/.anima/config.yaml` 最低生产配置："
+msgstr "在 `config.yaml` 中配置主体实体 id："
 
 #. type: Fenced code block (yaml)
 #: docs/concepts/notifications.md:13
@@ -59,6 +57,9 @@ msgid ""
 "  user_subject_id: 2 type=user entity\n"
 "  agent_subject_id: 1 # type=agent entity\n"
 msgstr ""
+"notifications:\n"
+"  user_subject_id: 2 type=user entity\n"
+"  agent_subject_id: 1 # type=agent entity\n"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:20
@@ -66,6 +67,8 @@ msgid ""
 "Each row stores `recipient_kind` (`user` | `agent`) and `recipient_id` "
 "(entity id string). Unconfigured installs fall back to `\"default\"`."
 msgstr ""
+"每行存储 `recipient_kind`（`user` | `agent`）与 `recipient_id`（实体 id 字符"
+"串）。未配置的安装回退为 `\"default\"`。"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:27
@@ -78,17 +81,23 @@ msgid ""
 "| Task due reminder                       | agent                 |\n"
 "| `notification_send` tool                | user / agent / both   |\n"
 msgstr ""
+"| 写入方                                  | 典型收件人            |\n"
+"| --------------------------------------- | --------------------- |\n"
+"| Cron 成功（当 `notify_on_success`）     | **both** user + agent |\n"
+"| Cron 失败                               | **both** user + agent |\n"
+"| 任务到期提醒                            | agent                 |\n"
+"| `notification_send` 工具                | user / agent / both   |\n"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:29
 msgid "Dream pipeline **does not** create notifications (reminder removed)."
-msgstr ""
+msgstr "梦境流水线**不会**创建通知（提醒已移除）。"
 
 #. type: Title ##
 #: docs/concepts/notifications.md:30
 #, no-wrap
 msgid "Agent consciousness"
-msgstr ""
+msgstr "Agent 意识"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:33
@@ -98,25 +107,29 @@ msgid ""
 "**`assistant(name=notification_context)`** turn immediately before the last "
 "`user` message. They are **not** persisted in conversation messages."
 msgstr ""
+"未读的 agent 通知在推理时注入——与[冰箱贴便签](fridge-magnet.md)相同的拼接点与"
+"传输方式：在最后一条 `user` 消息之前插入仅运行时的 "
+"**`assistant(name=notification_context)`** 轮次。它们**不会**持久化到对话消息"
+"中。"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:35
 msgid ""
 "The inject block includes a **Handling protocol** (three-way triage by "
 "whether action is needed — not by `source_kind`)."
-msgstr ""
+msgstr "注入块包含**处理协议**（按是否需要行动三分流——而非按 `source_kind`）。"
 
 #. type: Title ###
 #: docs/concepts/notifications.md:36
 #, no-wrap
 msgid "Agent handling protocol"
-msgstr ""
+msgstr "Agent 处理协议"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:39
 msgid ""
 "For each injected `[id:…]` line, classify by content (not by writer/source):"
-msgstr ""
+msgstr "对每条注入的 `[id:…]` 行，按内容分类（而非按写入方/来源）："
 
 #. type: Plain text
 #: docs/concepts/notifications.md:45
@@ -128,6 +141,11 @@ msgid ""
 "| **Action needed, quick**          | Handle within ~3 tool rounds    | `notification_mark_read` that id after done     |\n"
 "| **Action needed, slow/uncertain** | Ask the user before a long task | Do **not** mark read until approved and handled |\n"
 msgstr ""
+"| 类别                              | 行动                            | 标记已读                                        |\n"
+"| --------------------------------- | ------------------------------- | ----------------------------------------------- |\n"
+"| **仅信息**                        | 若有帮助则在回复中确认          | 批量 `notification_mark_read({ ids: [...] })`   |\n"
+"| **需行动，可快速完成**            | 约 3 轮工具内处理               | 完成后对该 id 调用 `notification_mark_read`     |\n"
+"| **需行动，耗时/不确定**           | 长任务前先询问用户              | 批准并处理前**不要**标记已读                    |\n"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:47
@@ -136,28 +154,31 @@ msgid ""
 "`notification_list(recipient=agent, read_filter=unread)` if the inject block "
 "is truncated."
 msgstr ""
+"未标记已读的未读项会在下一轮 user 时重新注入。若注入块被截断，使用 "
+"`notification_list(recipient=agent, read_filter=unread)`。"
 
 #. type: Title ##
 #: docs/concepts/notifications.md:48
 #, no-wrap
 msgid "Task reminder scan"
-msgstr ""
+msgstr "任务提醒扫描"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:51
 msgid ""
 "Builtin cron `builtin-task-reminders` runs **every minute** (`* * * * *`)."
-msgstr ""
+msgstr "内置 cron `builtin-task-reminders` **每分钟**运行（`* * * * *`）。"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:53
 msgid "For each pending `task_item`:"
-msgstr ""
+msgstr "对每个待处理的 `task_item`："
 
 #. type: Bullet: '1. '
 #: docs/concepts/notifications.md:57
 msgid "**Trigger time**: `remind_at` if set, else `due_at`; if neither, skip."
 msgstr ""
+"**触发时间**：若设置了 `remind_at` 则用之，否则 `due_at`；两者皆无则跳过。"
 
 #. type: Bullet: '2. '
 #: docs/concepts/notifications.md:57
@@ -165,6 +186,8 @@ msgid ""
 "**Send** when `trigger <= now` and `last_notified_at` is absent or "
 "`last_notified_at < trigger` (entity JSONB field on schedulable body)."
 msgstr ""
+"**发送**条件：`trigger <= now` 且 `last_notified_at` 缺失或 "
+"`last_notified_at < trigger`（可调度 body 上的实体 JSONB 字段）。"
 
 #. type: Bullet: '3. '
 #: docs/concepts/notifications.md:57
@@ -172,82 +195,91 @@ msgid ""
 "**After send**: patch `last_notified_at` on the task entity; do not rely on "
 "day-based `source_ref` dedup alone."
 msgstr ""
+"**发送后**：在任务实体上 patch `last_notified_at`；不要仅依赖基于日的 "
+"`source_ref` 去重。"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:59
 #, no-wrap
 msgid "**Product rule (confirmed)**: one trigger per task per scan — **remind first, else due**; not separate notifications for both when both are set.\n"
+msgstr "**产品规则（已确认）**：每次扫描每个任务仅一次触发——**先 remind，否则 due**；两者皆设时不分别发送两条通知。\n"
+
+#. type: Plain text
+#: docs/concepts/notifications.md:61
+msgid ""
+"Task reminders are delivered via this inbox (ToolSet `task` / cron), not by "
+"`notification_send` duplicating the same reminder."
 msgstr ""
+"任务提醒经此收件箱投递（ToolSet `task` / cron），而非 `notification_send` 重"
+"复同一提醒。"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/notifications.md:60 messages/po4a/en.xml:149
-#: messages/po4a/en.xml:567 messages/po4a/en.xml:574
+#: docs/concepts/notifications.md:62 messages/po4a/en.xml:149
+#: messages/po4a/en.xml:583 messages/po4a/en.xml:590
 #, no-wrap
 msgid "Tools"
 msgstr "工具"
 
 #. type: Plain text
-#: docs/concepts/notifications.md:63
-#, fuzzy
-#| msgid "Toggle navigation"
+#: docs/concepts/notifications.md:65
 msgid "ToolSet `notification`:"
-msgstr "切换导航"
+msgstr "ToolSet `notification`："
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:67
+#: docs/concepts/notifications.md:69
 msgid "`notification_send`"
-msgstr ""
+msgstr "`notification_send`"
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:67
+#: docs/concepts/notifications.md:69
 msgid "`notification_list`"
-msgstr ""
+msgstr "`notification_list`"
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:67
+#: docs/concepts/notifications.md:69
 msgid "`notification_mark_read` — `id` or `ids` (batch, max 20)"
-msgstr ""
+msgstr "`notification_mark_read` — `id` 或 `ids`（批量，最多 20）"
 
 #. type: Plain text
-#: docs/concepts/notifications.md:69
+#: docs/concepts/notifications.md:71
 msgid "Included in default conversation toolsets when registered."
-msgstr ""
+msgstr "注册后包含在默认对话 toolset 中。"
 
 #. type: Title ##
-#: docs/concepts/notifications.md:70
+#: docs/concepts/notifications.md:72
 #, no-wrap
 msgid "SAP (read)"
-msgstr ""
+msgstr "SAP（读）"
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:75
+#: docs/concepts/notifications.md:77
 msgid ""
 "`notification.list` — requires `recipient_kind` + optional `recipient_id`"
-msgstr ""
+msgstr "`notification.list` — 需要 `recipient_kind` + 可选 `recipient_id`"
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:75
+#: docs/concepts/notifications.md:77
 msgid "`notification.markRead`"
-msgstr ""
+msgstr "`notification.markRead`"
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:75
+#: docs/concepts/notifications.md:77
 msgid "`notification.recipients` — configured subject ids for UI tabs"
-msgstr ""
+msgstr "`notification.recipients` — UI 标签页用的已配置主体 id"
 
 #. type: Plain text
-#: docs/concepts/notifications.md:77
+#: docs/concepts/notifications.md:79
 msgid "No SAP create RPC in v1; writes are Hub-internal + tools."
-msgstr ""
+msgstr "v1 无 SAP 创建 RPC；写入由 Hub 内部 + 工具完成。"
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:81
+#: docs/concepts/notifications.md:83
 msgid "Entity subjects: [`entity-model.md`](entity-model.md)"
-msgstr ""
+msgstr "实体主体：[`entity-model.md`](entity-model.md)"
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:81
+#: docs/concepts/notifications.md:83
 msgid ""
 "Fridge magnets (conversation notes only): [`fridge-magnet.md`](fridge-"
 "magnet.md)"
-msgstr ""
+msgstr "冰箱贴便签（仅对话便签）：[`fridge-magnet.md`](fridge-magnet.md)"

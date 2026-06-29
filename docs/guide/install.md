@@ -91,7 +91,7 @@ anima service status
 
 Default bind: `127.0.0.1:2658`（Hub API：`/api`，SAP：`/sap/v1`）。
 
-UI 使用 **app/desktop** 或 **app/mobile**（聊天室 + 管理台 bundled）。浏览器本地开发：`bun run dev:web`（Vite HMR，Hub 须已运行）。
+Use **app/desktop** or **app/mobile** for UI (Chat + Admin bundled). Browser local dev: `bun run dev:web` (Vite HMR; Hub must be running).
 
 Schema migrations run automatically on startup when `database.url` is set.
 
@@ -147,10 +147,10 @@ On first start, `docker/entrypoint.sh` copies `docker/config.docker.yaml` to `$F
 http://127.0.0.1:2658/api/health
 ```
 
-UI 请使用 app/desktop 或 app/mobile 客户端（bundled shell，含 `/chat`、`/tasks`、`/admin` 等模块）。
+Use app/desktop or app/mobile clients for UI (bundled shell with `/chat`, `/tasks`, `/admin`, etc.).
 
-- Hub API（health）：`http://127.0.0.1:2658/api/health`（Hub **不**托管 Admin UI）
-- 本地 Web 壳层开发：`bun run dev:web` → Admin：`http://127.0.0.1:4173/admin/dashboard`
+- Hub API (health): `http://127.0.0.1:2658/api/health` (Hub does **not** host Admin UI)
+- Local Web shell dev: `bun run dev:web` → Admin: `http://127.0.0.1:4173/admin/dashboard`
 
 (Use `ANIMA_PORT` if you changed the host mapping.)
 
@@ -213,7 +213,7 @@ bun run install:cli:local
 # equivalent: bun run build:cli && bun install -g "$PWD/cli/publish"
 ```
 
-Bun 的 `bun install -g ./cli/publish` 在仓库根目录不可用；请使用 `bun run install:cli:local`（会先清理损坏的全局依赖，再 pack + 安装 tarball）。
+`bun install -g ./cli/publish` from the repo root is not supported; use `bun run install:cli:local` (cleans broken global deps, then pack + install tarball).
 
 ### 3. Configure and start
 

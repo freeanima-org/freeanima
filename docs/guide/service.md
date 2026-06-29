@@ -35,13 +35,13 @@ anima service start --foreground
 anima service status
 anima service stop
 anima service restart
-anima web start --foreground # 独立 Web 静态服（默认 :2659；生产推荐 web.enabled + service stack）
+anima web start --foreground # standalone Web static server (default :2659; production: web.enabled + service stack)
 ```
 
-`anima.service` 为 **单 unit stack**：Hub（`:2658`）+ 可选 Web（`:2659`）+ 可选 Tunnel（cloudflared）由同一 foreground supervisor 管理。旧版 `anima-tunnel.service` 在下次 `service start` 时自动停用。
+`anima.service` is a **single-unit stack**: Hub (`:2658`) + optional Web (`:2659`) + optional Tunnel (cloudflared) managed by one foreground supervisor. Legacy `anima-tunnel.service` is disabled on next `service start`.
 
-配置 `web.enabled: true` 时 stack 会托管浏览器 Web UI（静态文件，不代理 Hub API）。Hub 与 Web **分端口**；浏览器在设置页填写 Hub 地址与 `remote_auth` token。
+When `web.enabled: true`, the stack hosts browser Web UI (static files, no Hub API proxy). Hub and Web use **separate ports**; browser settings page stores Hub URL and `remote_auth` token.
 
 **Startup order:** Hub must pass `GET /api/health` (`status: ok`) before Web/Tunnel sidecars start (`serve()` `onReady` → stack supervisor). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).
 
-Admin UI 在 bundled shell 的 `/admin`（非 Hub `:2658`）。本地开发：`bun run dev:web` → `http://127.0.0.1:4173/admin/dashboard`；Hub 仅提供 REST `/api/*` 与 SAP `/sap/v1`。
+Admin UI lives at bundled shell `/admin` (not Hub `:2658`). Local dev: `bun run dev:web` → `http://127.0.0.1:4173/admin/dashboard`; Hub provides REST `/api/*` and SAP `/sap/v1` only.

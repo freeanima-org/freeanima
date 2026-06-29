@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-28 23:53+0800\n"
+"POT-Creation-Date: 2026-06-29 13:16+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,14 +17,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/concepts/fridge-magnet.md:53 docs/concepts/notifications.md:78
+#: docs/concepts/fridge-magnet.md:53 docs/concepts/notifications.md:80
 #, no-wrap
 msgid "Related"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/notifications.md:1 docs/concepts/notifications.md:5
-#: messages/po4a/en.xml:358
+#: messages/po4a/en.xml:359
 #, no-wrap
 msgid "Notifications"
 msgstr ""
@@ -176,72 +176,79 @@ msgstr ""
 msgid "**Product rule (confirmed)**: one trigger per task per scan — **remind first, else due**; not separate notifications for both when both are set.\n"
 msgstr ""
 
+#. type: Plain text
+#: docs/concepts/notifications.md:61
+msgid ""
+"Task reminders are delivered via this inbox (ToolSet `task` / cron), not by "
+"`notification_send` duplicating the same reminder."
+msgstr ""
+
 #. type: Content of: <messages><msg>
-#: docs/concepts/notifications.md:60 messages/po4a/en.xml:149
-#: messages/po4a/en.xml:567 messages/po4a/en.xml:574
+#: docs/concepts/notifications.md:62 messages/po4a/en.xml:149
+#: messages/po4a/en.xml:583 messages/po4a/en.xml:590
 #, no-wrap
 msgid "Tools"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/notifications.md:63
+#: docs/concepts/notifications.md:65
 msgid "ToolSet `notification`:"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:67
+#: docs/concepts/notifications.md:69
 msgid "`notification_send`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:67
+#: docs/concepts/notifications.md:69
 msgid "`notification_list`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:67
+#: docs/concepts/notifications.md:69
 msgid "`notification_mark_read` — `id` or `ids` (batch, max 20)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/notifications.md:69
+#: docs/concepts/notifications.md:71
 msgid "Included in default conversation toolsets when registered."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/notifications.md:70
+#: docs/concepts/notifications.md:72
 #, no-wrap
 msgid "SAP (read)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:75
+#: docs/concepts/notifications.md:77
 msgid ""
 "`notification.list` — requires `recipient_kind` + optional `recipient_id`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:75
+#: docs/concepts/notifications.md:77
 msgid "`notification.markRead`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:75
+#: docs/concepts/notifications.md:77
 msgid "`notification.recipients` — configured subject ids for UI tabs"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/notifications.md:77
+#: docs/concepts/notifications.md:79
 msgid "No SAP create RPC in v1; writes are Hub-internal + tools."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:81
+#: docs/concepts/notifications.md:83
 msgid "Entity subjects: [`entity-model.md`](entity-model.md)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:81
+#: docs/concepts/notifications.md:83
 msgid ""
 "Fridge magnets (conversation notes only): [`fridge-magnet.md`](fridge-"
 "magnet.md)"

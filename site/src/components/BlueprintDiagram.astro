@@ -1,9 +1,31 @@
 ---
+import { m } from "../lib/i18n.ts";
+
 const LAYERS = [
-  { id: "self", zh: "自我层", label: "「我是谁」", en: "IDENTITY" },
-  { id: "memory", zh: "记忆层", label: "「我经历过什么」", en: "MEMORY" },
-  { id: "perception", zh: "感知层", label: "「我如何行动」", en: "PERCEPTION" },
-  { id: "resource", zh: "资源层", label: "「我的身体与资产」", en: "RESOURCE" },
+  {
+    id: "self",
+    name: m.landing_layer_self_name(),
+    tagline: m.landing_layer_self_tagline(),
+    en: "IDENTITY",
+  },
+  {
+    id: "memory",
+    name: m.landing_layer_memory_name(),
+    tagline: m.landing_layer_memory_tagline(),
+    en: "MEMORY",
+  },
+  {
+    id: "perception",
+    name: m.landing_layer_perception_name(),
+    tagline: m.landing_layer_perception_tagline(),
+    en: "PERCEPTION",
+  },
+  {
+    id: "estate",
+    name: m.landing_layer_estate_name(),
+    tagline: m.landing_layer_estate_tagline(),
+    en: "RESOURCE",
+  },
 ];
 
 const LAYER_H = 72;
@@ -17,7 +39,7 @@ const YEAR = String(new Date().getFullYear());
 ---
 
 <div class="blueprint-diagram">
-  <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} aria-label="Free Anima 四层架构示意图">
+  <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} aria-label={m.landing_blueprint_aria()}>
     {
       LAYERS.map((layer, i) => {
         const y = i * LAYER_H;
@@ -118,7 +140,7 @@ const YEAR = String(new Date().getFullYear());
               font-weight="300"
               letter-spacing="0.04em"
             >
-              {layer.zh}
+              {layer.name}
             </text>
 
             <text
@@ -130,7 +152,7 @@ const YEAR = String(new Date().getFullYear());
               font-weight="300"
               letter-spacing="0.02em"
             >
-              {layer.label}
+              {layer.tagline}
             </text>
 
             <text

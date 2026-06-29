@@ -1,0 +1,159 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-29 14:22+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Title #
+#: docs/features/diary.md:1 docs/features/diary.md:5
+#, no-wrap
+msgid "Diary"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/diary.md:8
+msgid ""
+"Structured diary for users and Agents, based on the [Unified Entity Model]"
+"(../concepts/entity-model.md) `diary_entry` component."
+msgstr ""
+
+#. type: Title ##
+#: docs/features/diary.md:9
+#, no-wrap
+msgid "vs memory system"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/diary.md:17
+#, no-wrap
+msgid ""
+"| Capability | Diary                             | Autobiographical memory                    |\n"
+"| ---------- | --------------------------------- | ------------------------------------------ |\n"
+"| Source     | User / Agent **writes actively**  | **Extracted** from dialogue in light sleep |\n"
+"| Storage    | `entities` + `diary_entry`        | `autobiographical_memory` table            |\n"
+"| Editing    | Update and delete allowed         | append-only                                |\n"
+"| Namespace  | subject **default private world** | Digital-life memory pipeline               |\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/features/diary.md:18
+#, no-wrap
+msgid "User / Agent isolation"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/diary.md:23
+msgid ""
+"User and Agent diaries live in the **default private world** of subjects "
+"from `config.yaml` `notifications.user_subject_id` / `agent_subject_id`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/diary.md:23
+msgid "Shell `/diary` top bar switches **User / Agent** view."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/diary.md:23
+msgid ""
+"Agent LLM tools (ToolSet `diary`) always write to **Agent** private world."
+msgstr ""
+
+#. type: Title ##
+#: docs/features/diary.md:24
+#, no-wrap
+msgid "Agent tools (ToolSet `diary`)"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/diary.md:27
+msgid ""
+"Load via `toolset_load` with `diary`. Agent tools locate entries by **`date` "
+"(YYYY-MM-DD)**; **default today** (CST noon `…T12:00:00+08:00`); **no "
+"`diary_create`** — use `diary_append` (creates empty shell for the day if "
+"missing, then appends)."
+msgstr ""
+
+#. type: Plain text
+#: docs/features/diary.md:36
+#, no-wrap
+msgid ""
+"| Tool           | Description                                                                                     |\n"
+"| -------------- | ----------------------------------------------------------------------------------------------- |\n"
+"| `diary_append` | Append body for date (`\\n\\n` separator); create shell if missing; `tags` only on shell creation |\n"
+"| `diary_update` | Replace full entry or fields by date (not append)                                               |\n"
+"| `diary_get`    | Read entry for date; error if not found                                                         |\n"
+"| `diary_delete` | Delete entry for date; returns `{ ok, action, date }`                                           |\n"
+"| `diary_list`   | List / date filter (unchanged)                                                                  |\n"
+"| `diary_search` | Hybrid search (unchanged)                                                                       |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/diary.md:38
+#, no-wrap
+msgid "**vs SAP/UI**: Shell `/diary` and human editing use SAP `diary.create` / `diary.patch` etc., located by entity **`id`**; Agent ToolSet is LLM-only and uses **`date`** uniformly.\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/features/diary.md:39
+#, no-wrap
+msgid "SAP methods"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/diary.md:42
+msgid "UI satellite `@freeanima/satellite-diary` (`/diary`) calls SAP:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/diary.md:44
+msgid ""
+"`diary.list` / `diary.create` / `diary.append` / `diary.patch` / "
+"`diary.delete` / `diary.get` / `diary.search`"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/diary.md:46
+msgid "All methods require `subject_kind: user | agent`."
+msgstr ""
+
+#. type: Title ##
+#: docs/features/diary.md:47
+#, no-wrap
+msgid "Data shape"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/diary.md:50
+msgid "`diary_entry` body:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/diary.md:53
+msgid ""
+"`entry_at` — ISO 8601, when the diary entry occurred (**unique per day** per "
+"subject private world)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/diary.md:53
+msgid "`tags` — optional tags"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/diary.md:54
+msgid ""
+"Title, summary, body use entity columns `title` / `summary` / `content`."
+msgstr ""

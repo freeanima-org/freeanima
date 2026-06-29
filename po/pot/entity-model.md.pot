@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-28 23:53+0800\n"
+"POT-Creation-Date: 2026-06-29 13:16+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -232,8 +232,8 @@ msgid ""
 "| Concept     | Entity         | Component      |\n"
 "| ----------- | -------------- | -------------- |\n"
 "| Task domain | `type=world`   | `world_config` |\n"
-"| List (清单) | `type=content` | `task_list`    |\n"
-"| Item (任务) | `type=content` | `task_item`    |\n"
+"| List        | `type=content` | `task_list`    |\n"
+"| Item (task) | `type=content` | `task_item`    |\n"
 msgstr ""
 
 #. type: Plain text
@@ -241,16 +241,21 @@ msgstr ""
 msgid ""
 "Items reference their list via `body.list_id` (entity id). Task items store "
 "**title** and **content** on entity columns; **tags** live in `body.tags`. A "
-"**default list** (`is_default: true`, seeded id `2`「收件箱」) cannot be "
-"deleted but may be renamed."
+"**default list** (`is_default: true`, seeded id `2` \"Inbox\") cannot be "
+"deleted or archived but may be renamed. List **`body.closed: true`** means "
+"archived: hidden from the main sidebar by default (`tasklist.list` unless "
+"`include_closed`), restorable via `tasklist.patch({ closed: false })`; "
+"contained task items are kept."
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/entity-model.md:77
 msgid ""
-"LLM tools use `@freeanima/capabilities-task` (`task_*` tools, `exposeMcp: "
-"true`). Legacy `tasks` table and `/api/tasks/*` are removed after one-time "
-"migration (`scripts/migrate-tasks-to-entities.ts`)."
+"LLM ToolSets: `@freeanima/capabilities-task` — `task` (item CRUD + "
+"`task_search`) and `tasklist` (list CRUD + `tasklist_search`); load via "
+"`toolset_load`. `task_search` searches all lists when `list_id` is omitted. "
+"Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration "
+"(`scripts/migrate-tasks-to-entities.ts`)."
 msgstr ""
 
 #. type: Title ##
@@ -287,27 +292,78 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/entity-model.md:91
 msgid ""
-"LLM tools: `@freeanima/capabilities-email` (`email_register_account`, "
-"`email_sync`, `email_list`, …). Legacy `config.yaml` `email.accounts[]` "
-"migrates via `scripts/migrate-email-to-entities.ts`."
+"LLM ToolSets: `@freeanima/capabilities-email` — `email-account` (account "
+"entities) and `email` (sync, send/receive, search); load via `toolset_load`. "
+"Legacy `config.yaml` `email.accounts[]` migrates via `scripts/migrate-email-"
+"to-entities.ts`."
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/entity-model.md:92
+#, no-wrap
+msgid "Diary module"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:95
+msgid "Structured journal entries for **user** and **agent** subjects:"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:99
+#, no-wrap
+msgid ""
+"| Concept | Entity         | Component     |\n"
+"| ------- | -------------- | ------------- |\n"
+"| Entry   | `type=content` | `diary_entry` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:101
+msgid ""
+"Entries live in each subject's **`default_private_world_id`**. "
+"`body.entry_at` is the timeline sort key; `title` / `summary` / `content` "
+"use entity columns; optional `body.tags`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:105
+msgid ""
+"**SAP:** `diary.*` methods — all take `subject_kind: user | agent` "
+"(including `diary.append`)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:105
+msgid "**UI:** shell `/diary` (`@freeanima/satellite-diary`)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:105
+msgid "**LLM:** ToolSet `diary` — agent private world only."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:107
+msgid "See [`docs/features/diary.md`](../features/diary.md)."
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/entity-model.md:92 messages/po4a/en.xml:116
-#: messages/po4a/en.xml:128 messages/po4a/en.xml:437
+#: docs/concepts/entity-model.md:108 messages/po4a/en.xml:116
+#: messages/po4a/en.xml:128 messages/po4a/en.xml:438
 #, no-wrap
 msgid "Search"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:95
+#: docs/concepts/entity-model.md:111
 msgid ""
 "Entity **list** (deterministic browse) and **search** (relevance ranking) "
 "are separate ports:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:100
+#: docs/concepts/entity-model.md:116
 #, no-wrap
 msgid ""
 "| Port                      | Role                                                                  |\n"
@@ -317,44 +373,44 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:102
+#: docs/concepts/entity-model.md:118
 #, no-wrap
 msgid "**Scope:** default `world_id`; `global: true` requires an explicit accessible-world allowlist (public worlds only until subject permissions bootstrap).\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:104
+#: docs/concepts/entity-model.md:120
 #, no-wrap
 msgid "**Component filters:** whitelisted per `primary_component` (e.g. `task_item`: `status`, `list_id`, `tags`, `due_today`). Arbitrary JSONPath is forbidden.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:106
+#: docs/concepts/entity-model.md:122
 #, no-wrap
 msgid "**Tools / API:** `entity_search` (LLM/MCP) and `GET|POST /api/entities/search` share `EntitySearchPort`. Task UI search box uses the same REST endpoint.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:108
+#: docs/concepts/entity-model.md:124
 msgid ""
 "See memory hybrid search in [`memory.md`](memory.md) for FTS operator "
 "syntax; entity search reuses the same query builder."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:110
+#: docs/concepts/entity-model.md:126
 #, no-wrap
 msgid "**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run Admin **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:111
+#: docs/concepts/entity-model.md:127
 #, no-wrap
 msgid "Future migration map (not executed yet)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:121
+#: docs/concepts/entity-model.md:137
 #, no-wrap
 msgid ""
 "| Legacy table                 | Target                                               |\n"
@@ -368,6 +424,6 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:122
+#: docs/concepts/entity-model.md:138
 msgid "See [`architecture.md`](architecture.md) for cognitive-layer context."
 msgstr ""

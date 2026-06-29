@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "POT-Creation-Date: 2026-06-28 23:53+0800\n"
-"PO-Revision-Date: 2026-06-23 13:57+0800\n"
+"PO-Revision-Date: 2026-06-29 14:00+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
 "Language: zh_CN\n"
@@ -17,10 +17,9 @@ msgstr ""
 
 #. type: Title #
 #: docs/concepts/fridge-magnet.md:1 docs/concepts/fridge-magnet.md:5
-#, fuzzy, no-wrap
-#| msgid "No fridge magnets."
+#, no-wrap
 msgid "Fridge Magnet"
-msgstr "当前无冰箱贴便签。"
+msgstr "冰箱贴便签"
 
 #. type: Plain text
 #: docs/concepts/fridge-magnet.md:8
@@ -29,24 +28,18 @@ msgid ""
 "Redis with TTL; at inference time it **manifests** in the conversation "
 "stream — not in the persisted system prompt."
 msgstr ""
+"数字生命工作记忆的跨轮便签。内容存于带 TTL 的 Redis；推理时在对话流中**显化**"
+"——不在持久化的 system prompt 中。"
 
 #. type: Title ##
 #: docs/concepts/fridge-magnet.md:9
-#, fuzzy, no-wrap
-#| msgid "Three Stages"
+#, no-wrap
 msgid "Three layers"
-msgstr "三阶段"
+msgstr "三层"
 
 #. type: Plain text
 #: docs/concepts/fridge-magnet.md:16
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Round | Intent                                   |\n"
-#| "| ----- | ---------------------------------------- |\n"
-#| "| 1     | Contradiction detection + expiry marking |\n"
-#| "| 2     | Split multi-fact entries                 |\n"
-#| "| 3     | Dedup merge similar entries              |\n"
-#| "| 4     | Pin maintenance (keep pinned ≤ 20)       |\n"
+#, no-wrap
 msgid ""
 "| Layer         | Role                                 | Persistence                   |\n"
 "| ------------- | ------------------------------------ | ----------------------------- |\n"
@@ -54,12 +47,11 @@ msgid ""
 "| Storage       | Redis `fridge-magnet:*` keys         | Redis (TTL)                   |\n"
 "| Consciousness | Runtime message before each LLM call | **Not stored** in PG messages |\n"
 msgstr ""
-"| 轮次 | 意图                                   |\n"
-"| ----- | ---------------------------------------- |\n"
-"| 1     | 矛盾检测 + 过期标记 |\n"
-"| 2     | 拆分多事实条目                 |\n"
-"| 3     | 去重合并相似条目              |\n"
-"| 4     | 置顶质量审查（解除过时置顶；常驻读仍上限 40 条）       |\n"
+"| 层            | 作用                                 | 持久化                        |\n"
+"| ------------- | ------------------------------------ | ----------------------------- |\n"
+"| 写入          | `fridge_magnet_write`（对话）        | —                             |\n"
+"| 存储          | Redis `fridge-magnet:*` 键           | Redis（TTL）                  |\n"
+"| 意识          | 每次 LLM 调用前的运行时消息          | **不存储**于 PG messages      |\n"
 
 #. type: Plain text
 #: docs/concepts/fridge-magnet.md:18
@@ -67,12 +59,14 @@ msgid ""
 "System pipelines (dream, tasks) **no longer** write fridge magnets. Use the "
 "[notification inbox](notifications.md) for task/cron signals instead."
 msgstr ""
+"系统流水线（梦境、任务）**不再**写入冰箱贴便签。任务/cron 信号请改用[通知收件"
+"箱](notifications.md)。"
 
 #. type: Title ##
 #: docs/concepts/fridge-magnet.md:19
 #, no-wrap
 msgid "Consciousness representation"
-msgstr ""
+msgstr "意识表征"
 
 #. type: Plain text
 #: docs/concepts/fridge-magnet.md:22
@@ -81,6 +75,8 @@ msgid ""
 "the runtime list is `user`, the mechanism materializes **exactly one** "
 "assistant turn:"
 msgstr ""
+"当看板至少有一条非空条目**且**运行时列表最后一条消息为 `user` 时，机制会显化"
+"**恰好一条** assistant 轮次："
 
 #. type: Fenced code block (yaml)
 #: docs/concepts/fridge-magnet.md:23
@@ -93,6 +89,12 @@ msgid ""
 "  ## Fridge magnets\n"
 "  (fridge-magnet block with session:id entries)\n"
 msgstr ""
+"role: assistant\n"
+"name: fridge_context\n"
+"content: |\n"
+"  Below are cross-turn sticky notes you wrote for yourself…\n"
+"  ## Fridge magnets\n"
+"  (fridge-magnet block with session:id entries)\n"
 
 #. type: Plain text
 #: docs/concepts/fridge-magnet.md:33
@@ -100,20 +102,21 @@ msgid ""
 "This is the **standard form** of fridge magnets in consciousness — not a "
 "generic “injection transport” into user or system roles."
 msgstr ""
+"这是冰箱贴便签在意识中的**标准形式**——而非向 user 或 system 角色的通用「注入"
+"传输」。"
 
 #. type: Title ###
 #: docs/concepts/fridge-magnet.md:34
-#, fuzzy, no-wrap
-#| msgid "Triggered"
+#, no-wrap
 msgid "Trigger rules"
-msgstr "已触发"
+msgstr "触发规则"
 
 #. type: Bullet: '- '
 #: docs/concepts/fridge-magnet.md:39
 msgid ""
 "**Manifest**: last message is `user`, Redis has ≥1 magnet with non-"
 "whitespace `value`"
-msgstr ""
+msgstr "**显化**：最后一条消息为 `user`，Redis 中有 ≥1 条 `value` 非空白的便签"
 
 #. type: Bullet: '- '
 #: docs/concepts/fridge-magnet.md:39
@@ -121,11 +124,13 @@ msgid ""
 "**Do not manifest**: last message is `assistant`, `tool`, `system`, etc. "
 "(tool-loop middle turns have no board)"
 msgstr ""
+"**不显化**：最后一条为 `assistant`、`tool`、`system` 等（工具循环中间轮无看"
+"板）"
 
 #. type: Bullet: '- '
 #: docs/concepts/fridge-magnet.md:39
 msgid "**Empty board**: no manifest message; no placeholder"
-msgstr ""
+msgstr "**空看板**：无显化消息；无占位符"
 
 #. type: Plain text
 #: docs/concepts/fridge-magnet.md:41
@@ -133,26 +138,28 @@ msgid ""
 "Each `beforeLlmCall` pass strips any prior `fridge_context` assistant from "
 "the runtime copy, then re-manifests if rules allow."
 msgstr ""
+"每次 `beforeLlmCall` 会从运行时副本剥离先前的 `fridge_context` assistant，若"
+"规则允许则重新显化。"
 
 #. type: Title ###
 #: docs/concepts/fridge-magnet.md:42
 #, no-wrap
 msgid "Why not user or system?"
-msgstr ""
+msgstr "为何不用 user 或 system？"
 
 #. type: Bullet: '- '
 #: docs/concepts/fridge-magnet.md:46
 msgid ""
 "Prepending to **user** text caused the model to attribute notes to the human "
 "partner."
-msgstr ""
+msgstr " prepend 到 **user** 文本会使模型将便签归因于人类伙伴。"
 
 #. type: Bullet: '- '
 #: docs/concepts/fridge-magnet.md:46
 msgid ""
 "Appending to **system** would invalidate prefix cache for stable self-layer "
 "content; the board also changes frequently."
-msgstr ""
+msgstr "追加到 **system** 会使稳定的自我层内容的前缀缓存失效；看板也频繁变化。"
 
 #. type: Plain text
 #: docs/concepts/fridge-magnet.md:48
@@ -161,13 +168,14 @@ msgid ""
 "places notes near the current user turn, and signals “self working memory” "
 "rather than partner speech."
 msgstr ""
+"`assistant(name=fridge_context)` 保持稳定的 system 前缀可缓存，将便签置于当"
+"前 user 轮次附近，并传达「自我工作记忆」而非伙伴发言。"
 
 #. type: Title ##
 #: docs/concepts/fridge-magnet.md:49
-#, fuzzy, no-wrap
-#| msgid "Schema Migrations"
+#, no-wrap
 msgid "Legacy migration"
-msgstr "Schema 迁移"
+msgstr "旧版迁移"
 
 #. type: Plain text
 #: docs/concepts/fridge-magnet.md:52
@@ -176,27 +184,26 @@ msgid ""
 "message bodies. Runtime still strips those blocks from user content; new "
 "manifests use the assistant form only."
 msgstr ""
+"旧版构建会在 user 消息正文内 prepend 带 fridge-magnet 标记的 fenced 块。运行"
+"时仍会从 user 内容剥离这些块；新显化仅使用 assistant 形式。"
 
 #. type: Title ##
 #: docs/concepts/fridge-magnet.md:53 docs/concepts/notifications.md:78
-#, fuzzy, no-wrap
-#| msgid "Related Docs"
+#, no-wrap
 msgid "Related"
 msgstr "相关文档"
 
 #. type: Bullet: '- '
 #: docs/concepts/fridge-magnet.md:57
 msgid "Tools: `fridge_magnet_write`, `fridge_magnet_dismiss`"
-msgstr ""
+msgstr "工具：`fridge_magnet_write`、`fridge_magnet_dismiss`"
 
 #. type: Bullet: '- '
 #: docs/concepts/fridge-magnet.md:57
 msgid "Notifications: [`notifications.md`](notifications.md)"
-msgstr ""
+msgstr "通知：[`notifications.md`](notifications.md)"
 
 #. type: Bullet: '- '
 #: docs/concepts/fridge-magnet.md:57
-#, fuzzy
-#| msgid "See [`guide/security.md`](../guide/security.md)."
 msgid "Install / Redis: [`guide/install.md`](../guide/install.md)"
-msgstr "详见 [`guide/security.md`](../guide/security.md)。"
+msgstr "安装 / Redis：[`guide/install.md`](../guide/install.md)"

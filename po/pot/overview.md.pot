@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-28 23:53+0800\n"
+"POT-Creation-Date: 2026-06-29 13:16+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,6 +15,12 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#. type: Title ##
+#: docs/features/mobile-app.md:19 docs/sap/overview.md:17
+#, no-wrap
+msgid "Topology"
+msgstr ""
 
 #. type: Title #
 #: docs/sap/overview.md:1 docs/sap/overview.md:5
@@ -64,12 +70,6 @@ msgid ""
 "`createSapRelayBrowserClient`."
 msgstr ""
 
-#. type: Title ##
-#: docs/sap/overview.md:17
-#, no-wrap
-msgid "Topology"
-msgstr ""
-
 #. type: Fenced code block (mermaid)
 #: docs/sap/overview.md:19
 #, no-wrap
@@ -88,10 +88,10 @@ msgstr ""
 #: docs/sap/overview.md:35
 #, no-wrap
 msgid ""
-"| Role  | Default                 | Responsibility                                   |\n"
-"| ----- | ----------------------- | ------------------------------------------------ |\n"
-"| Hub   | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1` |\n"
-"| Chat  | bundled `/chat`         | Chat UI; SAP direct or relay                     |\n"
+"| Role  | Default                 | Responsibility                                              |\n"
+"| ----- | ----------------------- | ----------------------------------------------------------- |\n"
+"| Hub   | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1`            |\n"
+"| Chat  | bundled `/chat`         | Chat UI; SAP direct or relay                                |\n"
 "| Admin | bundled shell `/admin`  | Memory, config, tools, satellite status (Hub REST `/api/*`) |\n"
 msgstr ""
 

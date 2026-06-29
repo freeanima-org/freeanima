@@ -102,16 +102,7 @@ msgstr "当前状态"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:31
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Mechanism              | Status         | Notes                                                          |\n"
-#| "| ---------------------- | -------------- | -------------------------------------------------------------- |\n"
-#| "| Sleep cycle pipeline   | ✅ Implemented | Single cron `builtin-sleep-cycle` @ 02:00                      |\n"
-#| "| Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                          |\n"
-#| "| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep                      |\n"
-#| "| Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on deep-sleep                  |\n"
-#| "| Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh`, after light-sleep                   |\n"
-#| "| Dream (in-cycle)       | ✅ Implemented | Step `dream`, depends on light-sleep; parallel with deep-sleep |\n"
+#, no-wrap
 msgid ""
 "| Mechanism              | Status         | Notes                                                             |\n"
 "| ---------------------- | -------------- | ----------------------------------------------------------------- |\n"
@@ -153,24 +144,19 @@ msgstr "**浅睡**与**深睡**在 `runLightSleep()` / `runDeepSleep()` 内部�
 
 #. type: Plain text
 #: docs/concepts/sleep.md:39
-#, fuzzy
-#| msgid ""
-#| "Chamber Admin (`/admin/chamber/sleep`) supports **diagnostic** runs: full "
-#| "cycle or individual steps (`force` skips dependency checks)."
 msgid ""
 "Admin (`/admin/dashboard/sleep`) supports **diagnostic** runs: full cycle or "
 "individual steps (`force` skips dependency checks). **Deep sleep mode** "
 "(full vs incremental) can be selected before manual runs."
 msgstr ""
-"Chamber Admin（`/admin/chamber/sleep`）支持**诊断**运行：完整周期或单步"
-"（`force` 跳过依赖检查）。"
+"管理台（`/admin/dashboard/sleep`）支持**诊断**运行：完整周期或单步（`force` "
+"跳过依赖检查）。"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:41
-#, fuzzy, no-wrap
-#| msgid "**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Chamber → Cron** via each task's **Run history** button.\n"
+#, no-wrap
 msgid "**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Admin → Cron** via each task's **Run history** button.\n"
-msgstr "**流水线步骤历史**持久化于 PG `pipeline_step_run`（每次节点执行一行，含失败与通过 `attempt` 的手动重试）。**Cron 运行历史**（`builtin-sleep-cycle`）位于 `cron_log`，在 **Chamber → Cron** 各任务的**运行历史**按钮查看。\n"
+msgstr "**流水线步骤历史**持久化于 PG `pipeline_step_run`（每次节点执行一行，含失败与通过 `attempt` 的手动重试）。**Cron 运行历史**（`builtin-sleep-cycle`）位于 `cron_log`，在 **管理台 → Cron** 各任务的**运行历史**按钮查看。\n"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:43
@@ -189,14 +175,7 @@ msgstr "浅睡"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:52
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Attribute     | Value                                                                           |\n"
-#| "| ------------- | ------------------------------------------------------------------------------- |\n"
-#| "| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Chamber diagnostics)            |\n"
-#| "| Scope         | Sessions with activity in previous calendar day                                 |\n"
-#| "| Input         | Full day's conversations (user+assistant, tools stripped), segmented by conversation |\n"
-#| "| Orchestration | Three stages sequential (separate LLM calls each)                               |\n"
+#, no-wrap
 msgid ""
 "| Attribute     | Value                                                                                         |\n"
 "| ------------- | --------------------------------------------------------------------------------------------- |\n"
@@ -220,14 +199,7 @@ msgstr "三阶段"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:61
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Stage              | Target                       | Purpose                                                                                  |\n"
-#| "| ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------- |\n"
-#| "| 1 Semantic         | Semantic memory              | Extract facts, preferences, experiences from dialogue                                    |\n"
-#| "| 2 Limbic           | Emotional anchors            | Capture conversation mood and emotional turning points                                        |\n"
-#| "| 3 Autobiographical | Autobiographical narrative   | Record what experiences meant to the digital life                                        |\n"
-#| "| 3b                 | Autobiography summary (self) | Compress narratives into grouped self-layer outline (title-only bullets by significance) |\n"
+#, no-wrap
 msgid ""
 "| Stage              | Target                       | Purpose                                                                                  |\n"
 "| ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------- |\n"
@@ -263,13 +235,7 @@ msgstr "深睡"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:74
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Attribute  | Value                                                                                                |\n"
-#| "| ---------- | ---------------------------------------------------------------------------------------------------- |\n"
-#| "| Trigger    | Sleep-cycle step `deep-sleep` (after light-sleep in DAG)                                             |\n"
-#| "| Target     | All active semantic memory                                                                           |\n"
-#| "| Operations | Contradiction detection + expiry marking, split, dedup merge, pin maintenance—four sequential rounds |\n"
+#, no-wrap
 msgid ""
 "| Attribute  | Value                                                                                                                                                 |\n"
 "| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
@@ -292,14 +258,7 @@ msgstr "四轮"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:83
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Round | Intent                                   |\n"
-#| "| ----- | ---------------------------------------- |\n"
-#| "| 1     | Contradiction detection + expiry marking |\n"
-#| "| 2     | Split multi-fact entries                 |\n"
-#| "| 3     | Dedup merge similar entries              |\n"
-#| "| 4     | Pin maintenance (keep pinned ≤ 20)       |\n"
+#, no-wrap
 msgid ""
 "| Round | Intent                                                                  |\n"
 "| ----- | ----------------------------------------------------------------------- |\n"
@@ -317,16 +276,15 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/sleep.md:85
-#, fuzzy, no-wrap
-#| msgid "**Ordering rationale:** Clean problems first, then refine, then merge, then trim resident pins.\n"
+#, no-wrap
 msgid "**Ordering rationale:** Clean problems first, then refine, then merge, then review pinned quality.\n"
-msgstr "**顺序理由：** 先清理问题，再细化，再合并，最后裁剪常驻置顶。\n"
+msgstr "**顺序理由：** 先清理问题，再细化，再合并，最后审查置顶质量。\n"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:87
 #, no-wrap
 msgid "**Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. Scheduled cron uses incremental Tue–Sun and **full on Mondays**; Admin manual runs default to full but can select incremental.\n"
-msgstr ""
+msgstr "**增量跳过规则：** 增量模式下若 24 小时内无 active 记忆 `updated`，跳过第 1、3 轮。第 2 轮仅对预过滤拆分候选（较长/多句且近期 `updated`）运行。第 4 轮（置顶维护）始终运行。计划 cron 周二至周日增量、**周一全量**；管理台手动运行默认全量但可选增量。\n"
 
 #. type: Title ###
 #: docs/concepts/sleep.md:88
@@ -368,8 +326,7 @@ msgstr "触发机制"
 
 #. type: Fenced code block (cron)
 #: docs/concepts/sleep.md:98
-#, fuzzy, no-wrap
-#| msgid "0 2 * * *  sleep-cycle   # builtin-sleep-cycle: light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync\n"
+#, no-wrap
 msgid "0 2 * * *  sleep-cycle   # builtin-sleep-cycle: conversation-cleanup → light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync\n"
 msgstr "0 2 * * *  sleep-cycle   # builtin-sleep-cycle: light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync\n"
 
@@ -380,12 +337,7 @@ msgstr "DAG（宏观层）："
 
 #. type: Fenced code block (text)
 #: docs/concepts/sleep.md:104
-#, fuzzy, no-wrap
-#| msgid ""
-#| "light-sleep\n"
-#| "  ├─► deep-sleep ──► memory-ref-sync (optional step)\n"
-#| "  ├─► dream (optional step)\n"
-#| "  └─► self-layer-refresh (optional step)\n"
+#, no-wrap
 msgid ""
 "conversation-cleanup\n"
 "  └─► light-sleep\n"
@@ -393,8 +345,9 @@ msgid ""
 "        ├─► dream (optional step)\n"
 "        └─► self-layer-refresh (optional step)\n"
 msgstr ""
-"light-sleep\n"
-"  ├─► deep-sleep ──► memory-ref-sync (optional step)\n"
+"conversation-cleanup\n"
+"  └─► light-sleep\n"
+"        ├─► deep-sleep ──► memory-ref-sync (optional step)\n"
 "  ├─► dream (optional step)\n"
 "  └─► self-layer-refresh (optional step)\n"
 
@@ -402,25 +355,18 @@ msgstr ""
 #: docs/concepts/sleep.md:112
 #, no-wrap
 msgid "Session cleanup (pre-light-sleep)"
-msgstr ""
+msgstr "会话清理（浅睡前）"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:115
 msgid ""
 "Runs as the first sleep-cycle step before light-sleep scans yesterday's "
 "sessions."
-msgstr ""
+msgstr "作为 sleep-cycle 第一步，在浅睡扫描昨日 sessions 之前运行。"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:123
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Condition                                   | Result                                        |\n"
-#| "| ------------------------------------------- | --------------------------------------------- |\n"
-#| "| Session not bound to satellite app/instance | Reject                                        |\n"
-#| "| Instance offline                            | Reject                                        |\n"
-#| "| Tool not registered on connected instance   | Reject                                        |\n"
-#| "| Unregistered `sap_*` name                   | Guard handler returns error (no Hub fallback) |\n"
+#, no-wrap
 msgid ""
 "| Rule                                         | Action                        |\n"
 "| -------------------------------------------- | ----------------------------- |\n"
@@ -441,7 +387,7 @@ msgstr ""
 #: docs/concepts/sleep.md:125
 #, no-wrap
 msgid "**Stale** means `conversations.updated_at` older than **24 hours** (wall-clock `timestamptz`, not CST day boundary). Recent empty sessions (e.g. satellite \"new conversation\" without a first message) are kept until the next night's run.\n"
-msgstr ""
+msgstr "**过期**指 `conversations.updated_at` 早于 **24 小时**（墙钟 `timestamptz`，非 CST 日界）。近期空 session（如 satellite「新对话」尚无首条消息）保留至次夜运行。\n"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:127
@@ -456,17 +402,12 @@ msgstr "**压缩**保持会话级（回合时 `advanceCompressionMeta`）；**�
 
 #. type: Title ##
 #: docs/concepts/sleep.md:130
-#, fuzzy, no-wrap
-#| msgid "Historical Day (Chamber Admin)"
+#, no-wrap
 msgid "Historical Day (Admin)"
 msgstr "历史单日（管理台 Admin）"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:133
-#, fuzzy
-#| msgid ""
-#| "For a single past CST calendar day (e.g. before go-live or after "
-#| "migration), use **Chamber → Sleep** (`/admin/chamber/sleep`):"
 msgid ""
 "For a single past CST calendar day (e.g. before go-live or after migration), "
 "use **Admin → Sleep** (`/admin/dashboard/sleep`):"
@@ -488,12 +429,6 @@ msgstr "运行 **light-sleep** 步骤（如需跳过依赖检查可勾选 **Forc
 
 #. type: Plain text
 #: docs/concepts/sleep.md:138
-#, fuzzy
-#| msgid ""
-#| "Each step run is logged in the **Pipeline history** table on the sleep "
-#| "page. Cross-session merge for that day still relies on a subsequent "
-#| "**deep-sleep** run. Cron-triggered cycle runs appear in **Chamber → Cron "
-#| "→ Run history** on the sleep-cycle task."
 msgid ""
 "Each step run is logged in the **Pipeline history** table on the sleep page. "
 "Cross-session merge for that day still relies on a subsequent **deep-sleep** "
@@ -501,7 +436,7 @@ msgid ""
 "the sleep-cycle task."
 msgstr ""
 "每步运行记录在睡眠页的 **Pipeline history** 表中。该日的跨对话合并仍依赖后续 "
-"**deep-sleep** 运行。Cron 触发的周期运行在 **Chamber → Cron → Run history**"
+"**deep-sleep** 运行。Cron 触发的周期运行在 **管理台 → Cron → Run history**"
 "（sleep-cycle 任务）中查看。"
 
 #. type: Title ##

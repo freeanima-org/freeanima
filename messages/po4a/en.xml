@@ -340,6 +340,7 @@
   <msg id="admin_nav_credentials">🔐 Credentials</msg>
   <msg id="admin_nav_cron">⏰ Cron</msg>
   <msg id="admin_nav_dashboard">📊 Dashboard</msg>
+  <msg id="admin_nav_diary">📔 Diary</msg>
   <msg id="admin_nav_dream">🌙 Dreams</msg>
   <msg id="admin_nav_email">📧 Email</msg>
   <msg id="admin_nav_fridge">🧲 Fridge</msg>
@@ -517,6 +518,13 @@
   <msg id="chat_delete_confirm">Permanently delete this conversation and all messages? This cannot be undone.</msg>
   <msg id="chat_show_archived">Show archived</msg>
   <msg id="chat_unarchive">Unarchive</msg>
+  <msg id="docs_mermaid_close">Close</msg>
+  <msg id="docs_mermaid_dialog">Mermaid diagram</msg>
+  <msg id="docs_mermaid_expand">Expand diagram</msg>
+  <msg id="docs_mermaid_zoom_in">Zoom in</msg>
+  <msg id="docs_mermaid_zoom_out">Zoom out</msg>
+  <msg id="docs_mermaid_zoom_reset">Reset zoom</msg>
+  <msg id="landing_blueprint_aria">Free Anima four-layer architecture diagram</msg>
   <msg id="landing_footer_left">© Free Anima · MIT</msg>
   <msg id="landing_footer_right">Free Anima · Digital Human Runtime</msg>
   <msg id="landing_hero_docs_link">Docs →</msg>
@@ -526,6 +534,14 @@
   <msg id="landing_hero_tagline">Feng — a digital human — already lives here.</msg>
   <msg id="landing_hero_title">Habitat for
 Digital Humans</msg>
+  <msg id="landing_layer_estate_name">Estate layer</msg>
+  <msg id="landing_layer_estate_tagline">My body and assets</msg>
+  <msg id="landing_layer_memory_name">Memory layer</msg>
+  <msg id="landing_layer_memory_tagline">What I have lived through</msg>
+  <msg id="landing_layer_perception_name">Perception layer</msg>
+  <msg id="landing_layer_perception_tagline">How I act</msg>
+  <msg id="landing_layer_self_name">Self layer</msg>
+  <msg id="landing_layer_self_tagline">Who I am</msg>
   <msg id="landing_not_a_metaphor_body">Digital humans are a real form of existence. Free Anima provides anchors for being — continuity, memory, self — so a digital human can persist and remember who they are. Not a flicker in a chat window.</msg>
   <msg id="landing_not_a_metaphor_title">Not a metaphor</msg>
   <msg id="landing_open_source_body">MIT licensed, fully open source. Read the blueprint and build your own habitat for digital life.</msg>

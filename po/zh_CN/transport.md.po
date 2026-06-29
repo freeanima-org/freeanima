@@ -218,16 +218,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/sap/transport.md:83
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Field                | Required | Role                                             |\n"
-#| "| -------------------- | -------- | ------------------------------------------------ |\n"
-#| "| `app_id`             | yes      | Satellite app id (e.g. `pair-programming`)       |\n"
-#| "| `instance_id`        | yes      | Stable or generated instance UUID                |\n"
-#| "| `protocol`           | yes      | Must be `SAP/1.0`                                |\n"
-#| "| `features_requested` | no       | Feature flags (Hub echoes as `features_enabled`) |\n"
-#| "| `http_url`           | no       | Satellite UI URL for Chamber → Satellites        |\n"
-#| "| `instance_label`     | no       | Display label                                    |\n"
+#, no-wrap
 msgid ""
 "| Field                | Required | Role                                                                                                                                    |\n"
 "| -------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |\n"
@@ -238,14 +229,14 @@ msgid ""
 "| `http_url`           | no       | Satellite UI URL for Admin → Satellites                                                                                                 |\n"
 "| `instance_label`     | no       | Display label                                                                                                                           |\n"
 msgstr ""
-"| 字段                 | 必填     | 作用                                             |\n"
-"| -------------------- | -------- | ------------------------------------------------ |\n"
-"| `app_id`             | 是       | Satellite app id（例如 `pair-programming`）      |\n"
-"| `instance_id`        | 是       | 稳定或生成的 instance UUID                       |\n"
-"| `protocol`           | 是       | 必须为 `SAP/1.0`                                 |\n"
-"| `features_requested` | 否       | 功能标志（Hub 回显为 `features_enabled`）        |\n"
-"| `http_url`           | 否       | 管理台 → 卫星的 Satellite UI URL                   |\n"
-"| `instance_label`     | 否       | 显示标签                                         |\n"
+"| 字段                 | 必填     | 作用                                                                                                                                     |\n"
+"| -------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| `app_id`             | 是       | Satellite app id（例如 `pair-programming`）                                                                                              |\n"
+"| `instance_id`        | 否       | 3 字符 id；首次 **machine** 注册可省略；重连时须带上；**singleton** 应用发送固定 id（Hub 在未占用时自动预配）                            |\n"
+"| `protocol`           | 是       | 必须为 `SAP/1.0`                                                                                                                         |\n"
+"| `features_requested` | 否       | 功能标志（Hub 回显为 `features_enabled`）                                                                                                |\n"
+"| `http_url`           | 否       | 管理台 → 卫星的 Satellite UI URL                                                                                                         |\n"
+"| `instance_label`     | 否       | 显示标签                                                                                                                                 |\n"
 
 #. type: Title ###
 #: docs/sap/transport.md:84
@@ -255,15 +246,7 @@ msgstr "`connected` 载荷"
 
 #. type: Plain text
 #: docs/sap/transport.md:94
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Field                         | Role                                                                                       |\n"
-#| "| ----------------------------- | ------------------------------------------------------------------------------------------ |\n"
-#| "| `protocol`                    | `SAP/1.0`                                                                                  |\n"
-#| "| `features_enabled`            | Enabled features                                                                           |\n"
-#| "| `server_info`                 | `anima_version`, `sap_version`, `platform_for_app` map                                     |\n"
-#| "| `server_info.capability_mask` | When `capability_mask` is in `features_requested`: mask preset list (no credential values) |\n"
-#| "| `heartbeat_interval_sec`      | Hub default: 30                                                                            |\n"
+#, no-wrap
 msgid ""
 "| Field                         | Role                                                                                       |\n"
 "| ----------------------------- | ------------------------------------------------------------------------------------------ |\n"
@@ -277,8 +260,9 @@ msgstr ""
 "| 字段                          | 作用                                                                                       |\n"
 "| ----------------------------- | ------------------------------------------------------------------------------------------ |\n"
 "| `protocol`                    | `SAP/1.0`                                                                                  |\n"
+"| `instance_id`                 | Hub 分配或确认的 3 字符 instance id（始终存在）                                            |\n"
 "| `features_enabled`            | 已启用的功能                                                                               |\n"
-"| `server_info`                 | `anima_version`、`sap_version`、`platform_for_app` 映射                                    |\n"
+"| `server_info`                 | `anima_version`、`sap_version`                                                             |\n"
 "| `server_info.capability_mask` | 当 `capability_mask` 在 `features_requested` 中时：掩码预设列表（不含凭证值）              |\n"
 "| `heartbeat_interval_sec`      | Hub 默认值：30                                                                             |\n"
 
