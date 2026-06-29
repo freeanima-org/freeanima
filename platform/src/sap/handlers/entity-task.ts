@@ -10,8 +10,8 @@ import {
   taskUncompleteInputSchema,
   taskDeleteInputSchema,
 } from "@freeanima/sap-contract";
-import type { SapServerDeps } from "./types.ts";
-import * as serviceEntityTask from "../runtime/service-entity-task.ts";
+import type { SapServerDeps } from "../types.ts";
+import * as serviceEntityTask from "../../runtime/service-entity-task.ts";
 
 export async function handleTasklistList(deps: SapServerDeps, payload: unknown) {
   const input = tasklistListInputSchema.parse(payload);
