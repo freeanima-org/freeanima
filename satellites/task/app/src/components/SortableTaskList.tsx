@@ -5,6 +5,7 @@ import { useRef, type MouseEvent, type TouchEvent } from "react";
 import { formatDue, priorityDot } from "../lib/format-task.ts";
 import { taskDndId } from "../lib/dnd-ids.ts";
 import type { TaskItemRow } from "../lib/api.ts";
+import { EntityIdLabel } from "./EntityIdLabel.tsx";
 
 type SortableTaskListProps = {
   items: TaskItemRow[];
@@ -126,6 +127,7 @@ function SortableTaskRow({
       </button>
       {!selectionMode ? (
         <>
+          <EntityIdLabel id={item.id} />
           <span className={`text-xs ${priorityDot(item.priority)}`}>●</span>
           {item.due_at ? (
             <span className="text-base-content/50 shrink-0 text-xs">{formatDue(item.due_at)}</span>

@@ -1,4 +1,12 @@
 import type { TaskListRow } from "./api.ts";
+import { copyText } from "./copy-text.ts";
+
+function copyIdMenuItem(id: number): import("./menu-types.ts").TaskMenuItem {
+  return {
+    label: "复制 ID",
+    onClick: () => void copyText(String(id)),
+  };
+}
 
 export function buildListMenuItems(
   list: TaskListRow,
@@ -13,6 +21,7 @@ export function buildListMenuItems(
 ): import("./menu-types.ts").TaskMenuItem[] {
   const items: import("./menu-types.ts").TaskMenuItem[] = [
     { label: "重命名", onClick: () => handlers.onRename(list) },
+    copyIdMenuItem(list.id),
   ];
 
   if (list.is_folder) {
@@ -51,6 +60,7 @@ export function buildItemMenuItems(
 ): import("./menu-types.ts").TaskMenuItem[] {
   return [
     { label: "编辑", onClick: () => handlers.onEdit(item) },
+    copyIdMenuItem(item.id),
     {
       label: item.status === "completed" ? "标记未完成" : "标记完成",
       onClick: () => void handlers.onToggleComplete(item),

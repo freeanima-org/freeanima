@@ -20,6 +20,7 @@ import {
   type ListTreeNode,
 } from "../lib/list-tree.ts";
 import { useTaskDndUi } from "./TaskDndRoot.tsx";
+import { EntityIdLabel } from "./EntityIdLabel.tsx";
 
 type ListSidebarProps = {
   activeLists: TaskListRow[];
@@ -154,22 +155,24 @@ function SortableTreeRow({
       ) : isFolder ? (
         <button
           type="button"
-          className="min-w-0 flex-1 truncate py-2 text-left"
+          className="flex min-w-0 flex-1 items-center gap-1 truncate py-2 text-left"
           onClick={onSelectFolder}
         >
-          <span className="mr-1" aria-hidden>
+          <span className="mr-1 shrink-0" aria-hidden>
             📁
           </span>
-          {list.name}
+          <span className="truncate">{list.name}</span>
+          <EntityIdLabel id={list.id} />
         </button>
       ) : (
         <button
           type="button"
-          className="min-w-0 flex-1 truncate py-2 text-left"
+          className="flex min-w-0 flex-1 items-center gap-1 truncate py-2 text-left"
           onClick={onSelectList}
         >
-          {list.name}
-          <span className="text-base-content/50 ml-1 text-xs">{list.item_count}</span>
+          <span className="truncate">{list.name}</span>
+          <EntityIdLabel id={list.id} />
+          <span className="text-base-content/50 shrink-0 text-xs">{list.item_count}</span>
         </button>
       )}
       {useActionSheet && !editing ? (
@@ -217,18 +220,24 @@ function ClosedListRow({
     >
       <span className="min-w-6 shrink-0" aria-hidden />
       <span className="min-w-8 shrink-0" aria-hidden />
-      <button type="button" className="min-w-0 flex-1 truncate py-2 text-left" onClick={onSelect}>
+      <button
+        type="button"
+        className="flex min-w-0 flex-1 items-center gap-1 truncate py-2 text-left"
+        onClick={onSelect}
+      >
         {list.is_folder ? (
           <>
-            <span className="mr-1" aria-hidden>
+            <span className="mr-1 shrink-0" aria-hidden>
               📁
             </span>
-            {list.name}
+            <span className="truncate">{list.name}</span>
+            <EntityIdLabel id={list.id} />
           </>
         ) : (
           <>
-            {list.name}
-            <span className="text-base-content/50 ml-1 text-xs">{list.item_count}</span>
+            <span className="truncate">{list.name}</span>
+            <EntityIdLabel id={list.id} />
+            <span className="text-base-content/50 shrink-0 text-xs">{list.item_count}</span>
           </>
         )}
       </button>
