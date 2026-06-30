@@ -84,8 +84,6 @@ function isExempt(relPath: string): boolean {
     relPath === "packages/shell-ui/vite/run-build.ts" ||
     relPath === "packages/shell-ui/vite/satellite-vite.ts" ||
     relPath === "packages/shell-ui/vite/paths.ts" ||
-    relPath === "packages/shell-ui/vite/sap-shared-worker-build-plugin.ts" ||
-    relPath === "packages/shell-ui/vite/sap-shared-worker-dev-plugin.ts" ||
     relPath === "platform/admin-frontend/paraglide-compile.ts"
   )
     return true;

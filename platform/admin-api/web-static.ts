@@ -6,12 +6,6 @@ import { resolveHubWsUrl } from "@freeanima/sap-contract/urls";
 /** Web UI 在 Hub 上的 URL 前缀 */
 export const WEB_URL_PREFIX = "/web";
 
-/**
- * 必须从 Hub 根路径提供的 dist 文件（SharedWorker 等使用绝对 URL `/…`）。
- * 与 `app/cli/src/web/ensure-dist.ts` 中产物清单保持同步。
- */
-export const WEB_ROOT_STATIC_FILES = ["sap-shared-worker.js"] as const;
-
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
@@ -30,10 +24,6 @@ export type WebStaticOptions = {
 
 export function isWebStaticPath(pathname: string): boolean {
   return pathname === WEB_URL_PREFIX || pathname.startsWith(`${WEB_URL_PREFIX}/`);
-}
-
-export function isWebRootStaticPath(pathname: string): boolean {
-  return (WEB_ROOT_STATIC_FILES as readonly string[]).some((name) => pathname === `/${name}`);
 }
 
 function resolveDistFile(distDir: string, rel: string): string | null {
@@ -82,15 +72,6 @@ export function webPathToDistRel(pathname: string): string | null {
   if (!isWebStaticPath(pathname)) return null;
   if (pathname === WEB_URL_PREFIX) return "/";
   return pathname.slice(WEB_URL_PREFIX.length) || "/";
-}
-
-/** Hub 根路径 Web 静态（如 /sap-shared-worker.js） */
-export function serveWebRootStatic(req: Request, options: WebStaticOptions): Response | null {
-  const pathname = new URL(req.url).pathname;
-  if (!isWebRootStaticPath(pathname)) return null;
-  const filePath = resolveDistFile(options.distDir, pathname.slice(1));
-  if (!filePath) return null;
-  return fileResponse(filePath);
 }
 
 /** 按请求读盘返回 Web 静态；/web/config.json 由运行时生成 */

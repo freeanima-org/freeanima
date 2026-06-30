@@ -5,5 +5,5 @@
     "types": [],
     "outDir": ".tsout"
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.d.ts"]
 }
