@@ -38,16 +38,15 @@ describe("ensure-web-dist", () => {
     expect(result.missing).toEqual([...WEB_DIST_REQUIRED_FILES]);
   });
 
-  it("assessMonorepoWebDist 缺少 sap-shared-worker.js 时需要 rebuild", () => {
+  it("assessMonorepoWebDist 缺少 shell-bridge.js 时需要 rebuild", () => {
     const root = tempRoot("web-dist-missing-");
     const dist = join(root, "dist");
     mkdirSync(dist, { recursive: true });
     writeFileSync(join(dist, "index.html"), "<html></html>");
-    writeFileSync(join(dist, "shell-bridge.js"), "export {}");
 
     const result = assessMonorepoWebDist(root, dist);
     expect(result.needsRebuild).toBe(true);
-    expect(result.missing).toContain("sap-shared-worker.js");
+    expect(result.missing).toContain("shell-bridge.js");
   });
 
   it("assessMonorepoWebDist 源码比 dist 新时需要 rebuild", () => {
@@ -56,7 +55,6 @@ describe("ensure-web-dist", () => {
     mkdirSync(dist, { recursive: true });
     const distTime = Date.now() - 60_000;
     touch(join(dist, "index.html"), distTime);
-    touch(join(dist, "sap-shared-worker.js"), distTime);
     touch(join(dist, "shell-bridge.js"), distTime);
 
     const sourceRoot = join(root, "app/web");
@@ -75,7 +73,6 @@ describe("ensure-web-dist", () => {
     mkdirSync(dist, { recursive: true });
     const distTime = Date.now();
     touch(join(dist, "index.html"), distTime);
-    touch(join(dist, "sap-shared-worker.js"), distTime);
     touch(join(dist, "shell-bridge.js"), distTime);
 
     const sourceRoot = join(root, "app/web");

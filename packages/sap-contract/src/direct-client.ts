@@ -34,7 +34,7 @@ export type SapDirectClientOptions = {
   featuresRequested?: string[];
   instanceStore?: SapInstanceStore;
   signal?: AbortSignal;
-  /** SharedWorker script URL; default `/sap-shared-worker.js` in browser */
+  /** 覆盖 Vite 构建注入的 SharedWorker URL（测试或自定义部署） */
   sharedWorkerUrl?: string;
   /** Use SharedWorker for multi-tab single Hub connection (default true in browser) */
   useSharedWorker?: boolean;
@@ -60,6 +60,18 @@ export type SapDirectClient = {
 };
 
 const DEFAULT_CONFIG_URL = "/config.json";
+
+let cachedBundledWorkerUrl: string | null = null;
+
+async function resolveSharedWorkerUrl(override?: string): Promise<string> {
+  const trimmed = override?.trim();
+  if (trimmed) return trimmed;
+  if (cachedBundledWorkerUrl) return cachedBundledWorkerUrl;
+  const mod = await import("./shared-worker-bundled-url.ts");
+  const url = mod.default;
+  cachedBundledWorkerUrl = url;
+  return url;
+}
 
 export async function loadDirectSatelliteConfig(
   configUrl = DEFAULT_CONFIG_URL,
@@ -132,7 +144,8 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
         };
 
         if (useSharedWorker) {
-          const worker = new SharedWorker(options.sharedWorkerUrl ?? "/sap-shared-worker.js", {
+          const workerUrl = await resolveSharedWorkerUrl(options.sharedWorkerUrl);
+          const worker = new SharedWorker(workerUrl, {
             type: "module",
             name: `freeanima-sap-${connect.app_id}`,
           });

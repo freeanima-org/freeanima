@@ -63,9 +63,8 @@ export function withServiceAuthRequest(req: Request, auth: ServiceAuthContext | 
   return attachServiceAuthToRequest(req, auth);
 }
 
-/** health 探活：业务路径是否带有效 service token */
+/** health 探活：请求是否带有效 service token（health 路径豁免拦截，但仍应报告 authed） */
 export async function evaluateServiceAuthAuthed(req: Request): Promise<boolean> {
-  if (shouldSkipServiceAuth(req)) return false;
   const token = parseBearerToken(req);
   if (!token) return false;
   const auth = await verifyServiceApiToken(token);

@@ -1,6 +1,5 @@
 import {
   isWebStaticPath,
-  serveWebRootStatic,
   serveWebStatic,
   WEB_URL_PREFIX,
   type WebStaticOptions,
@@ -14,7 +13,12 @@ import { broadcastWsReconnect, shutdownAdmin } from "./elysia/shutdown.ts";
 import { getSapServerDeps } from "@freeanima/platform/sap/runtime-context";
 import { createSapBunHandlers } from "@freeanima/platform/sap/bun-route";
 import { createServiceAuthVerifier, type ServiceAuthVerifier } from "./service-auth.ts";
-import { applyHttpAuth, handleHubCorsPreflight, isHubApiPath } from "./http-dispatch.ts";
+import {
+  applyHttpAuth,
+  handleHubCorsPreflight,
+  isHubApiPath,
+  trySapWebSocketUpgrade,
+} from "./http-dispatch.ts";
 
 export type ApiServerOptions = {
   serviceAuth?: ServiceAuthVerifier | null;
@@ -74,16 +78,15 @@ export async function startApiHttpServer(
     development: false,
     fetch(req, bunServer) {
       const remoteAddress = resolveRemoteAddress(bunServer, req);
+
+      const sapUpgrade = trySapWebSocketUpgrade(req, bunServer as Bun.Server<unknown>, sapHandlers);
+      if (sapUpgrade !== null) return sapUpgrade;
+
       const run = async (): Promise<Response> => {
         const preflight = handleHubCorsPreflight(req);
         if (preflight) return preflight;
 
         const pathname = new URL(req.url).pathname;
-
-        if (webStatic) {
-          const rootStatic = serveWebRootStatic(req, webStatic);
-          if (rootStatic) return rootStatic;
-        }
 
         if (webStatic && isWebStaticPath(pathname)) {
           const staticRes = serveWebStatic(req, webStatic);

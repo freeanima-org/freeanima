@@ -57,6 +57,12 @@
       "env": {
         "jest": true
       }
+    },
+    {
+      "files": ["packages/sap-contract/src/shared-worker-bundled-url.ts"],
+      "rules": {
+        "import/default": "off"
+      }
     }
   ]
 }

@@ -5,7 +5,6 @@ import { defineConfig, type Plugin } from "vite";
 
 import { createShellViteInlineConfig } from "../../packages/shell-ui/vite/run-build.ts";
 import { shellEntryFileNames } from "../../packages/shell-ui/vite/entry-file-names.ts";
-import { sapSharedWorkerBuildPlugin } from "../../packages/shell-ui/vite/sap-shared-worker-build-plugin.ts";
 
 import { arrangeMobileIndexHtml } from "./mobile-html.ts";
 
@@ -43,17 +42,7 @@ export default defineConfig(() => {
     },
   });
 
-  inline.plugins = [
-    ...(inline.plugins ?? []),
-    mobileHtmlPlugin(DIST_DIR),
-    sapSharedWorkerBuildPlugin({
-      appDir: APP_DIR,
-      repoRoot: REPO_ROOT,
-      outdir: DIST_DIR,
-      minify: !debug,
-      sourcemap: debug,
-    }),
-  ];
+  inline.plugins = [...(inline.plugins ?? []), mobileHtmlPlugin(DIST_DIR)];
 
   if (inline.build?.rollupOptions?.output && !Array.isArray(inline.build.rollupOptions.output)) {
     inline.build.rollupOptions.output.entryFileNames = (chunkInfo) =>

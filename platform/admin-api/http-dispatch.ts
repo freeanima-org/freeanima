@@ -1,5 +1,6 @@
 import { corsPreflightResponse } from "./elysia/cors.ts";
 import { isMcpPath } from "@freeanima/capabilities-mcp-server";
+import { isSapWebSocketUpgrade } from "./remote-auth.ts";
 import type { ServiceAuthVerifier } from "./service-auth.ts";
 import { withServiceAuthRequest } from "./service-auth.ts";
 
@@ -45,4 +46,23 @@ export async function applyHttpAuth(
     return { blocked: null, req: withServiceAuthRequest(withAddress, result.auth) };
   }
   return { blocked: null, req: withAddress };
+}
+
+type SapBunHandlers = {
+  fetch: (req: Request, server: Bun.Server<unknown>) => Response | undefined;
+};
+
+/**
+ * Bun 要求 WebSocket upgrade 在 fetch 内同步完成（不可先 await）。
+ * 成功时返回 undefined，由调用方原样 return 给 Bun.serve。
+ */
+export function trySapWebSocketUpgrade(
+  req: Request,
+  bunServer: Bun.Server<unknown>,
+  sapHandlers: SapBunHandlers | null,
+): Response | undefined | null {
+  if (!sapHandlers || !isSapWebSocketUpgrade(req)) return null;
+  const sapRes = sapHandlers.fetch(req, bunServer);
+  if (sapRes !== undefined) return sapRes;
+  return undefined;
 }

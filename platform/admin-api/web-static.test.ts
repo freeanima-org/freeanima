@@ -3,25 +3,14 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import {
-  isWebRootStaticPath,
-  isWebStaticPath,
-  serveWebRootStatic,
-  serveWebStatic,
-  webPathToDistRel,
-  WEB_URL_PREFIX,
-} from "./web-static.ts";
+import { isWebStaticPath, serveWebStatic, webPathToDistRel, WEB_URL_PREFIX } from "./web-static.ts";
 
 describe("web-static", () => {
   test("isWebStaticPath", () => {
     expect(isWebStaticPath("/web")).toBe(true);
     expect(isWebStaticPath("/web/chat")).toBe(true);
     expect(isWebStaticPath("/api/health")).toBe(false);
-  });
-
-  test("isWebRootStaticPath", () => {
-    expect(isWebRootStaticPath("/sap-shared-worker.js")).toBe(true);
-    expect(isWebRootStaticPath("/web/sap-shared-worker.js")).toBe(false);
+    expect(isWebStaticPath("/sap-shared-worker.js")).toBe(false);
   });
 
   test("webPathToDistRel", () => {
@@ -34,6 +23,7 @@ describe("web-static", () => {
     writeFileSync(join(dist, "index.html"), "<html>ok</html>");
     mkdirSync(join(dist, "assets"), { recursive: true });
     writeFileSync(join(dist, "assets", "main.js"), "ok");
+    writeFileSync(join(dist, "assets", "shared-worker-entry-abc.js"), "/* worker */");
 
     const base = "http://127.0.0.1:2658";
     const opts = { distDir: dist, appId: "chat" };
@@ -56,18 +46,12 @@ describe("web-static", () => {
 
     const asset = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/assets/main.js`), opts);
     expect(await asset!.text()).toBe("ok");
-  });
 
-  test("serveWebRootStatic serves SharedWorker at hub root", async () => {
-    const dist = mkdtempSync(join(tmpdir(), "hub-web-root-"));
-    writeFileSync(join(dist, "sap-shared-worker.js"), "/* worker */");
-
-    const base = "http://127.0.0.1:2658";
-    const opts = { distDir: dist, appId: "chat" };
-
-    const worker = serveWebRootStatic(new Request(`${base}/sap-shared-worker.js`), opts);
+    const worker = serveWebStatic(
+      new Request(`${base}${WEB_URL_PREFIX}/assets/shared-worker-entry-abc.js`),
+      opts,
+    );
     expect(worker?.ok).toBe(true);
     expect(await worker!.text()).toBe("/* worker */");
-    expect(serveWebRootStatic(new Request(`${base}/missing.js`), opts)).toBeNull();
   });
 });

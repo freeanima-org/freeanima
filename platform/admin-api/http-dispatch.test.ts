@@ -1,5 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { applyHttpAuth, handleHubCorsPreflight, isHubApiPath } from "./http-dispatch.ts";
+import {
+  applyHttpAuth,
+  handleHubCorsPreflight,
+  isHubApiPath,
+  trySapWebSocketUpgrade,
+} from "./http-dispatch.ts";
 import { createServiceAuthVerifier } from "./service-auth.ts";
 
 describe("http-dispatch", () => {
@@ -57,5 +62,54 @@ describe("http-dispatch", () => {
     });
     const result = await applyHttpAuth(req, "10.0.0.1", serviceAuth);
     expect(result.blocked).toBeNull();
+  });
+
+  test("trySapWebSocketUpgrade upgrades /sap/v1 synchronously", async () => {
+    const server = Bun.serve({
+      port: 0,
+      fetch(req, bunServer) {
+        const upgraded = trySapWebSocketUpgrade(req, bunServer, {
+          fetch(innerReq, innerServer) {
+            const upgradeServer = innerServer as Bun.Server<unknown>;
+            if (upgradeServer.upgrade(innerReq, { data: {} })) return undefined;
+            return new Response("Expected WebSocket upgrade", { status: 426 });
+          },
+        });
+        if (upgraded !== null) return upgraded;
+        return new Response("not found", { status: 404 });
+      },
+      websocket: {
+        open() {},
+        message() {},
+        close() {},
+      },
+    });
+
+    try {
+      const port = server.port!;
+      const ws = new WebSocket(`ws://127.0.0.1:${port}/sap/v1`);
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error("WebSocket open timeout")), 3000);
+        ws.addEventListener(
+          "open",
+          () => {
+            clearTimeout(timer);
+            resolve();
+          },
+          { once: true },
+        );
+        ws.addEventListener(
+          "error",
+          () => {
+            clearTimeout(timer);
+            reject(new Error("WebSocket upgrade failed"));
+          },
+          { once: true },
+        );
+      });
+      ws.close();
+    } finally {
+      server.stop(true);
+    }
   });
 });

@@ -7,7 +7,6 @@ import { build, type InlineConfig, type Rollup } from "vite";
 import { createShellUiAliases } from "./aliases.ts";
 import { shellEntryFileNames } from "./entry-file-names.ts";
 import { paraglideCompilePlugin } from "./paraglide-plugin.ts";
-import { shellSourcePaths } from "./paths.ts";
 
 export type ShellViteBuildOptions = {
   /** composition 目录（含 index.html） */
@@ -59,6 +58,14 @@ export function createShellViteInlineConfig(opts: ShellViteBuildOptions): Inline
       dedupe: ["react", "react-dom"],
     },
     define: opts.define,
+    worker: {
+      format: "es",
+      rollupOptions: {
+        output: {
+          entryFileNames: "assets/[name]-[hash].js",
+        },
+      },
+    },
     build: {
       outDir: opts.outdir,
       emptyOutDir: !opts.watch,
@@ -78,46 +85,6 @@ export function createShellViteInlineConfig(opts: ShellViteBuildOptions): Inline
     logLevel: "info",
   };
 }
-
-function createSapSharedWorkerBuildConfig(opts: ShellViteBuildOptions): InlineConfig {
-  const paths = shellSourcePaths(opts.repoRoot);
-  return {
-    configFile: false,
-    root: opts.appDir,
-    resolve: {
-      alias: createShellUiAliases(
-        opts.paraglideOutdir ?? join(opts.outdir, ".paraglide"),
-        opts.repoRoot,
-      ),
-    },
-    build: {
-      outDir: opts.outdir,
-      emptyOutDir: false,
-      minify: opts.minify ?? false,
-      sourcemap: opts.sourcemap ?? false,
-      modulePreload: false,
-      rollupOptions: {
-        input: paths.sapWorkerEntry,
-        output: {
-          format: "es",
-          entryFileNames: "sap-shared-worker.js",
-          inlineDynamicImports: true,
-        },
-      },
-    },
-    logLevel: "warn",
-  };
-}
-
-async function buildSapSharedWorkerBundle(opts: ShellViteBuildOptions): Promise<void> {
-  await build(createSapSharedWorkerBuildConfig(opts));
-  const workerPath = join(opts.outdir, "sap-shared-worker.js");
-  if (!existsSync(workerPath)) {
-    throw new Error("shell vite build did not produce sap-shared-worker.js");
-  }
-}
-
-export { buildSapSharedWorkerBundle, createSapSharedWorkerBuildConfig };
 
 /** Vite 生产/ watch 构建 shell-ui 组合应用 */
 export async function runShellViteBuild(opts: ShellViteBuildOptions): Promise<string> {
@@ -139,7 +106,6 @@ export async function runShellViteBuild(opts: ShellViteBuildOptions): Promise<st
   }
 
   await build(config);
-  await buildSapSharedWorkerBundle(opts);
   const html = join(opts.outdir, "index.html");
   if (!existsSync(html)) {
     throw new Error("shell vite build did not produce index.html");
