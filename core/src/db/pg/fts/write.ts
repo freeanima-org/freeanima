@@ -7,7 +7,13 @@ const log = logPgComponent("fts");
 
 /** Write fts_segmented column; returns null when jieba disabled or on failure */
 export async function resolveFtsSegmentedForWrite(content: string): Promise<string | null> {
-  if (!isCjkJiebaEnabled(getActiveConfig().data)) return null;
+  let cfg;
+  try {
+    cfg = getActiveConfig().data;
+  } catch {
+    return null;
+  }
+  if (!isCjkJiebaEnabled(cfg)) return null;
   try {
     const segmented = await segmentForFts(content);
     return segmented || null;
