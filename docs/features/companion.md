@@ -123,7 +123,7 @@ Hub assigns a **3-character** `instance_id` on first `connect`, stored in `~/.an
 | ------------------------ | ------------------------------------------------------------------------------------------------------ |
 | Double-click, no window  | Check system tray; tray → **Settings…** → import `.vrm`                                                |
 | Click, no motion         | Settings → **Motion library** import VRMA; **Motion slots** bind slot                                  |
-| Cannot reach Hub         | Confirm `anima service` and `remote_auth.token`; tray **Hub settings** URL and token                   |
+| Cannot reach Hub         | Confirm `anima service` and Hub settings token (`fa_at_...`); tray **Hub settings** URL and token      |
 | Import has no effect     | Hot reload after import; confirm slot has motion checked                                               |
 | Background service fails | See `~/.anima/app/desktop/shell.log`; confirm ports 4176–4185 free                                     |
 | FBX import unavailable   | Run `bun run --filter @freeanima/satellite-companion setup:fbx` (caches to `~/.anima/tools/fbx2gltf/`) |

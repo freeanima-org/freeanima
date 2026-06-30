@@ -81,7 +81,7 @@ export function CodeViewerPanel({ file }: CodeViewerPanelProps) {
     return (
       <div className="h-full flex flex-col min-h-0 bg-base-100">
         <div className="flex-1 flex items-center justify-center text-base-content/40 text-sm">
-          {m.admin_studio_codeviewer_select_file()}
+          {m.pair_codeviewer_select_file()}
         </div>
       </div>
     );

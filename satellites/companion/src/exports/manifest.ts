@@ -1,5 +1,5 @@
-import type { FrontendManifest } from "@freeanima/satellite-sdk";
-import { readMonorepoVersion } from "@freeanima/satellite-sdk/version";
+import type { FrontendManifest } from "@freeanima/shell-sdk";
+import { readMonorepoVersion } from "@freeanima/shell-sdk/version";
 import { COMPANION_APP_ID } from "../../shared/constants.ts";
 
 export const companionManifest: FrontendManifest = {

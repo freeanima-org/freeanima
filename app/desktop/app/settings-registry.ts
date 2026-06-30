@@ -2,7 +2,7 @@ import {
   debugSettingsSection,
   desktopGeneralSettingsSection,
   type SettingsBinding,
-} from "@freeanima/satellite-sdk/settings";
+} from "@freeanima/shell-sdk/settings";
 import { companionSettingsSection } from "@freeanima/satellite-companion/settings-section";
 
 import type { DesktopSettingsApis } from "./companion-settings-api.ts";

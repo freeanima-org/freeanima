@@ -13,7 +13,7 @@
   "dependencies": {
     "@capacitor/keyboard": "^7.0.1",
     "@freeanima/sap-contract": "workspace:*",
-    "@freeanima/satellite-sdk": "workspace:*",
+    "@freeanima/shell-sdk": "workspace:*",
     "@freeanima/ui-kit": "workspace:*",
     "marked": "^18.0.4",
     "react": "catalog:",

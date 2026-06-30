@@ -7,9 +7,7 @@ import {
   isLocalDirectConnection,
   isLoopbackAddress,
   isSapWebSocketUpgrade,
-  shouldBypassRemoteAuth,
   tokensEqual,
-  verifyRemoteAuthToken,
 } from "./remote-auth.ts";
 
 describe("remote-auth helpers", () => {
@@ -32,12 +30,6 @@ describe("remote-auth helpers", () => {
     expect(tokensEqual("abc", "abc")).toBe(true);
     expect(tokensEqual("abc", "abd")).toBe(false);
     expect(tokensEqual("abc", "ab")).toBe(false);
-  });
-
-  test("verifyRemoteAuthToken", () => {
-    expect(verifyRemoteAuthToken("secret-token-min-16", "secret-token-min-16")).toBe(true);
-    expect(verifyRemoteAuthToken("secret-token-min-16", "wrong")).toBe(false);
-    expect(verifyRemoteAuthToken("secret-token-min-16", null)).toBe(false);
   });
 
   test("isAuthExemptPath", () => {
@@ -71,17 +63,5 @@ describe("remote-auth helpers", () => {
     const req = new Request("http://127.0.0.1:2658/mcp", { method: "POST" });
     expect(isLocalDirectConnection(req, "127.0.0.1")).toBe(true);
     expect(isLocalDirectConnection(req, "192.168.1.1")).toBe(false);
-  });
-
-  test("shouldBypassRemoteAuth only for exempt paths and health", () => {
-    expect(
-      shouldBypassRemoteAuth(new Request("http://127.0.0.1:2658/api/health"), "127.0.0.1"),
-    ).toBe(true);
-    expect(shouldBypassRemoteAuth(new Request("http://127.0.0.1:2658/api/echo"), "10.0.0.1")).toBe(
-      true,
-    );
-    expect(
-      shouldBypassRemoteAuth(new Request("http://127.0.0.1:2658/api/status"), "127.0.0.1"),
-    ).toBe(false);
   });
 });

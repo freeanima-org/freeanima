@@ -1,4 +1,4 @@
-import type { FrontendDesktopExport } from "@freeanima/satellite-sdk";
+import type { FrontendDesktopExport } from "@freeanima/shell-sdk";
 
 import { startCompanionServer } from "../../server/index.ts";
 import {

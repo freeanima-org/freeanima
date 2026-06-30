@@ -28,7 +28,6 @@ const LAYER_DIRS = [
 
 const SATELLITE_ALLOWED = new Set([
   "sap-contract",
-  "satellite-sdk",
   "shell-sdk",
   "ui-kit",
   "kernel",
@@ -129,14 +128,6 @@ function isShellUiAllowed(pkg: string): boolean {
   return false;
 }
 
-function isSatelliteSdkAllowed(pkg: string): boolean {
-  const root = workspacePkgName(pkg);
-  if (root === "ui-kit" || root === "shell-sdk") return true;
-  if (root.startsWith("kernel-")) return true;
-  if (root === "kernel") return true;
-  return false;
-}
-
 function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
   if (!layer) return true;
   const root = workspacePkgName(pkg);
@@ -162,9 +153,6 @@ function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
     }
     if (relPath.startsWith("packages/shell-sdk")) {
       return isShellSdkAllowed(pkg);
-    }
-    if (relPath.startsWith("packages/satellite-sdk")) {
-      return isSatelliteSdkAllowed(pkg);
     }
     if (relPath.startsWith("packages/shell-ui")) {
       return isShellUiAllowed(pkg);
@@ -212,7 +200,7 @@ function capabilitiesCrossViolation(relPath: string, pkg: string): string | null
 function satelliteViolation(relPath: string, pkg: string): string | null {
   if (layerOf(relPath) !== "satellites") return null;
   if (isSatelliteAllowed(pkg)) return null;
-  return `satellites/* must not depend on @freeanima/${workspacePkgName(pkg)} (allowed: sap-contract, shell-sdk, ui-kit, satellite-sdk + generic deps)`;
+  return `satellites/* must not depend on @freeanima/${workspacePkgName(pkg)} (allowed: sap-contract, shell-sdk, ui-kit + generic deps)`;
 }
 
 function adminFrontendViolation(relPath: string, pkg: string): string | null {

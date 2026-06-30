@@ -12,8 +12,6 @@ export const FRIDGE_MAGNET_BOARD_FRAME =
   "Below are cross-turn sticky notes you wrote for yourself on the fridge board.\n" +
   "They are NOT from the user; treat them as your own working memory.";
 
-const FRIDGE_BLOCK_RE = /^```(?:fridge-magnet|fridge)\n[\s\S]*?\n```\n?/;
-
 /** Format fridge magnet list as Markdown code block */
 export function formatFridgeMagnets(magnets: FridgeMagnet[]): string {
   const lines = magnets.filter((m) => m.value.trim().length > 0).map((m) => `${m.key}: ${m.value}`);
@@ -44,20 +42,6 @@ export function stripFridgeContextFromMessages(messages: StoredMessage[]): void 
   for (let i = messages.length - 1; i >= 0; i--) {
     if (isFridgeContextAssistant(messages[i]!)) {
       messages.splice(i, 1);
-    }
-  }
-}
-
-/** Strip legacy user-message prepend blocks (migration) */
-export function stripFridgeMagnets(content: string): string {
-  return content.replace(FRIDGE_BLOCK_RE, "");
-}
-
-/** 从 user 消息中剥离旧版 prepend 冰箱贴块（数据迁移） */
-export function stripLegacyFridgeBlocksFromMessages(messages: StoredMessage[]): void {
-  for (const msg of messages) {
-    if (msg.role === "user" && "content" in msg && msg.content !== null) {
-      msg.content = stripFridgeMagnets(msg.content);
     }
   }
 }

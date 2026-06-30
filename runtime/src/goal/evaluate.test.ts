@@ -29,7 +29,6 @@ const testConfig = Config.fromSnapshot(
         chat: { chain: [{ provider: "main", model: "test-model" }] },
       },
     },
-    remote_auth: { token: "test-remote-auth-token-min16" },
   }),
 );
 const llm = {} as LlmRuntime;

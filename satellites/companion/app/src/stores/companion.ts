@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { CompanionSettingsApi, SettingsStore } from "@freeanima/satellite-sdk/settings";
+import type { CompanionSettingsApi, SettingsStore } from "@freeanima/shell-sdk/settings";
 import {
   fetchCompanionConfig,
   resetSidecarOriginCache,

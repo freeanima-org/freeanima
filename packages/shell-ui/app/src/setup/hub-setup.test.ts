@@ -3,7 +3,9 @@ import type { SatelliteShellApi } from "@freeanima/shell-sdk/shell-api";
 
 import { needsHubSetup } from "./hub-setup.ts";
 
-function stubShell(partial: Partial<SatelliteShellApi> & Pick<SatelliteShellApi, "isElectron">): SatelliteShellApi {
+function stubShell(
+  partial: Partial<SatelliteShellApi> & Pick<SatelliteShellApi, "isElectron">,
+): SatelliteShellApi {
   return {
     hubUrl: "",
     hubWsUrl: "",

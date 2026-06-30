@@ -21,7 +21,7 @@
     "@capacitor/keyboard": "^7.0.1",
     "@capacitor/preferences": "^7.0.1",
     "@freeanima/sap-contract": "workspace:*",
-    "@freeanima/satellite-sdk": "workspace:*",
+    "@freeanima/shell-sdk": "workspace:*",
     "@freeanima/shell-ui": "workspace:*",
     "vconsole": "^3.15.1"
   },

@@ -20,8 +20,6 @@ export const tunnelConfigSchema = z
   .object({
     enabled: z.boolean().optional(),
     hostname: z.string().min(1).optional(),
-    /** @deprecated Web UI 由 Hub /web 托管；勿再用于 Tunnel ingress */
-    web_hostname: z.string().min(1).optional(),
     cloudflare: tunnelCloudflareConfigSchema,
     credentials: tunnelCredentialsConfigSchema,
   })

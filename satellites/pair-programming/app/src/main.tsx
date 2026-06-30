@@ -83,15 +83,15 @@ function App() {
     return (
       <div className="h-screen flex flex-col">
         <header className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-base-300 bg-base-200">
-          <span className="text-sm font-medium">{m.admin_studio_nav_pair()}</span>
+          <span className="text-sm font-medium">{m.pair_nav_pair()}</span>
           <button type="button" className="btn btn-xs btn-ghost" onClick={toggleLocale}>
             {locale === "zh-cn" ? "EN" : "中文"}
           </button>
         </header>
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="max-w-md text-center space-y-4">
-            <h3 className="text-lg font-bold">{m.admin_studio_workdir_title()}</h3>
-            <p className="text-sm text-base-content/60">{m.admin_studio_workdir_lead()}</p>
+            <h3 className="text-lg font-bold">{m.pair_workdir_title()}</h3>
+            <p className="text-sm text-base-content/60">{m.pair_workdir_lead()}</p>
             <p className="text-sm font-mono text-left bg-base-300/40 p-3 rounded">
               satellites:
               <br />
@@ -115,7 +115,7 @@ function App() {
   return (
     <div className="h-screen flex flex-col min-h-0 overflow-hidden relative">
       <header className="shrink-0 flex items-center gap-2 px-2 py-1 border-b border-base-300 bg-base-200/80 text-sm">
-        <span className="font-medium">{m.admin_studio_nav_pair()}</span>
+        <span className="font-medium">{m.pair_nav_pair()}</span>
         <span className="flex-1" />
         <button type="button" className="btn btn-xs btn-ghost" onClick={toggleLocale}>
           {locale === "zh-cn" ? "EN" : "中文"}
@@ -127,7 +127,7 @@ function App() {
           type="button"
           className={`btn btn-ghost btn-xs gap-1 ${leftVisible ? "" : "opacity-40"}`}
           onClick={() => setLeftVisible((v) => !v)}
-          title={m.admin_studio_toggle_left_panel()}
+          title={m.pair_toggle_left_panel()}
         >
           📁
         </button>
@@ -135,7 +135,7 @@ function App() {
           type="button"
           className={`btn btn-ghost btn-xs gap-1 ${terminalVisible ? "" : "opacity-40"}`}
           onClick={() => setTerminalVisible((v) => !v)}
-          title={m.admin_studio_toggle_terminal_panel()}
+          title={m.pair_toggle_terminal_panel()}
         >
           ⬇
         </button>
@@ -143,12 +143,12 @@ function App() {
           type="button"
           className={`btn btn-ghost btn-xs gap-1 ${rightVisible ? "" : "opacity-40"}`}
           onClick={() => setRightVisible((v) => !v)}
-          title={m.admin_studio_toggle_conversation_panel()}
+          title={m.pair_toggle_conversation_panel()}
         >
           💬
         </button>
         <span className="flex-1" />
-        <span className="text-base-content/30 text-xs select-none">{m.admin_studio_panels()}</span>
+        <span className="text-base-content/30 text-xs select-none">{m.pair_panels()}</span>
       </div>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">

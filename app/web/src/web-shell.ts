@@ -1,8 +1,8 @@
 import { browserSapInstanceStore } from "@freeanima/sap-contract";
 import { resolveHubWsUrl } from "@freeanima/sap-contract/urls";
-import { buildShellApiFields } from "@freeanima/satellite-sdk/shell-api-fields";
-import { normalizeShellClientConfig } from "@freeanima/satellite-sdk/shell-client-config";
-import type { SatelliteShellApi } from "@freeanima/satellite-sdk/shell-api";
+import { buildShellApiFields } from "@freeanima/shell-sdk/shell-api-fields";
+import { normalizeShellClientConfig } from "@freeanima/shell-sdk/shell-client-config";
+import type { SatelliteShellApi } from "@freeanima/shell-sdk/shell-api";
 
 export const SHELL_CONFIG_CHANGED_EVENT = "freeanima:shell-config-changed";
 
@@ -80,7 +80,7 @@ export function installWebShellFromPrefs(
 }
 
 export async function testWebHubConnection(hubUrl: string, remoteAuthToken: string): Promise<void> {
-  const { testHubHealthConnection } = await import("@freeanima/satellite-sdk");
+  const { testHubHealthConnection } = await import("@freeanima/shell-sdk");
   const normalized = normalizeWebHubUrl(hubUrl);
   const token = remoteAuthToken.trim();
   await testHubHealthConnection(normalized, token || undefined);

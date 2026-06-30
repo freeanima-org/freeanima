@@ -5,7 +5,7 @@
     "outDir": ".tsout"
   },
   "references": [
-    { "path": "../../packages/satellite-sdk" },
+    { "path": "../../packages/shell-sdk" },
     { "path": "../../packages/sap-contract" },
     { "path": "../../packages/shell-ui/vite" }
   ],

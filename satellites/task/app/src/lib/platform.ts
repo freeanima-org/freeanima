@@ -1,4 +1,4 @@
-import { useMobileLayout } from "@freeanima/satellite-sdk/layout";
+import { useMobileLayout } from "@freeanima/ui-kit/layout";
 
 /** desktop / web 宽屏支持右键菜单 */
 export function isTaskContextMenuEnabled(): boolean {
@@ -15,7 +15,7 @@ export {
   isNativeShell,
   useDrawerNav,
   useMobileLayout,
-} from "@freeanima/satellite-sdk/layout";
+} from "@freeanima/ui-kit/layout";
 
 /** 移动布局下用 ActionSheet；桌面宽屏用右键 ContextMenu */
 export function useTaskActionSheet(): boolean {

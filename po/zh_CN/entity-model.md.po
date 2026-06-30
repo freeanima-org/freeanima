@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-30 16:54+0800\n"
+"POT-Creation-Date: 2026-07-01 00:03+0800\n"
 "PO-Revision-Date: 2026-06-29 14:00+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -146,14 +146,14 @@ msgid "Subject (`agent` / `user`)"
 msgstr "Subject（`agent` / `user`）"
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:49
+#: docs/concepts/entity-model.md:50
 msgid ""
 "Identity is **`type`** plus `agent_config` or `user_config` primary "
 "component."
 msgstr "身份由 **`type`** 加 `agent_config` 或 `user_config` 主组件构成。"
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:49
+#: docs/concepts/entity-model.md:50
 msgid ""
 "Subjects are **not** scoped by `world_id` in a membership sense; row "
 "`world_id` stays at bootstrap root (`ENTITY_ROOT_WORLD_ID`) as a table "
@@ -163,7 +163,7 @@ msgstr ""
 "导根（`ENTITY_ROOT_WORLD_ID`）作为表占位。"
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:49
+#: docs/concepts/entity-model.md:50
 msgid ""
 "**`agent_config` / `user_config` body**: `default_private_world_id` — the "
 "subject's single default private world (auto-created on subject create; "
@@ -174,7 +174,7 @@ msgstr ""
 "有 world 配置）。"
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:49
+#: docs/concepts/entity-model.md:50
 #, fuzzy
 #| msgid ""
 #| "**Notifications** use subject entity ids as `recipient_id` (see "
@@ -189,78 +189,86 @@ msgstr ""
 "(notifications.md) 与 `config.yaml` 的 `notifications.user_subject_id` / "
 "`agent_subject_id`）。"
 
-#. type: Title ###
+#. type: Bullet: '- '
 #: docs/concepts/entity-model.md:50
+msgid ""
+"**Service API Token**（`service_api_tokens` 表）绑定 subject entity id；Hub "
+"REST/SAP/MCP 从 Bearer token 解析调用方身份。见 [`remote-access.md`](../"
+"guide/remote-access.md)。"
+msgstr ""
+
+#. type: Title ###
+#: docs/concepts/entity-model.md:51
 #, no-wrap
 msgid "Boot-time ensure (`worlds` config)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:53
+#: docs/concepts/entity-model.md:54
 msgid ""
 "Hub startup runs **`ensureWorldSubjects()`** once (after migrations, before "
 "engine):"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:58
+#: docs/concepts/entity-model.md:59
 msgid ""
 "Ensures configured (or default `user=1` / `agent=2`) subject entities exist "
 "with correct `type`."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:58
+#: docs/concepts/entity-model.md:59
 msgid ""
 "Ensures each subject has a **default private world** "
 "(`default_private_world_id`); private world ids are **not fixed**."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:58
+#: docs/concepts/entity-model.md:59
 msgid ""
 "Binds **`ResolvedWorldContext`** in memory: `user_subject_id`, "
 "`agent_subject_id`, `user_world_id`, `agent_world_id`."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:58
+#: docs/concepts/entity-model.md:59
 msgid ""
 "Type conflict (configured id exists but wrong `type`) **aborts service "
 "startup**."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:60
+#: docs/concepts/entity-model.md:61
 msgid ""
 "Legacy SQL bootstrap seeds (public world id=1, Inbox id=2) are removed by "
 "migration; default data is **code-owned**, not migration-seeded."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:61
+#: docs/concepts/entity-model.md:62
 #, no-wrap
 msgid "World namespace"
 msgstr "World 命名空间"
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:69
+#: docs/concepts/entity-model.md:70
 msgid ""
 "**`type: world`** entities are logical containers (permission/list boundary)."
 msgstr "**`type: world`** 实体是逻辑容器（权限/列表边界）。"
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:69
+#: docs/concepts/entity-model.md:70
 msgid "Visibility and owner live in **`world_config` body**:"
 msgstr "可见性与所有者位于 **`world_config` body**："
 
 #. type: Bullet: '  - '
-#: docs/concepts/entity-model.md:69
+#: docs/concepts/entity-model.md:70
 msgid "`private: false` — public world"
 msgstr "`private: false` — 公开 world"
 
 #. type: Bullet: '  - '
-#: docs/concepts/entity-model.md:69
+#: docs/concepts/entity-model.md:70
 msgid ""
 "`private: true` + `owner_subject_id` — private world owned by an `agent` or "
 "`user` entity"
@@ -269,7 +277,7 @@ msgstr ""
 "world"
 
 #. type: Bullet: '  - '
-#: docs/concepts/entity-model.md:69
+#: docs/concepts/entity-model.md:70
 msgid ""
 "`default_private: true` — marks the subject's **exclusive** default private "
 "world (at most one per `owner_subject_id`)"
@@ -278,7 +286,7 @@ msgstr ""
 "`owner_subject_id` 至多一个）"
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:69
+#: docs/concepts/entity-model.md:70
 msgid ""
 "Do not confuse with semantic memory **`type=world`** (fact classification in "
 "[`memory.md`](memory.md)) — that becomes `body.memory_kind=world` after "
@@ -288,37 +296,37 @@ msgstr ""
 "未来迁移后将变为 `body.memory_kind=world`。"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/entity-model.md:70 messages/po4a/en.xml:243
-#: messages/po4a/en.xml:296
+#: docs/concepts/entity-model.md:71 messages/po4a/en.xml:261
+#: messages/po4a/en.xml:315
 #, no-wrap
 msgid "Content"
 msgstr "内容"
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:74
+#: docs/concepts/entity-model.md:75
 msgid ""
 "**`world_id`** is the sole namespace key; access boundary is inherited from "
 "the owning world."
 msgstr "**`world_id`** 是唯一命名空间键；访问边界继承自所属 world。"
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:74
+#: docs/concepts/entity-model.md:75
 msgid "Content entities do not store a separate owner column."
 msgstr "Content 实体不单独存储 owner 列。"
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:75
+#: docs/concepts/entity-model.md:76
 #, no-wrap
 msgid "Task module (first consumer)"
 msgstr "任务模块（首个消费者）"
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:78
+#: docs/concepts/entity-model.md:79
 msgid "TickTick-style lists and items map to:"
 msgstr "滴答清单式列表与条目映射为："
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:84
+#: docs/concepts/entity-model.md:85
 #, no-wrap
 msgid ""
 "| Concept     | Entity         | Component      |\n"
@@ -334,7 +342,7 @@ msgstr ""
 "| 条目（任务）| `type=content` | `task_item`    |\n"
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:86
+#: docs/concepts/entity-model.md:87
 #, fuzzy
 #| msgid ""
 #| "Items reference their list via `body.list_id` (entity id). Task items "
@@ -361,20 +369,20 @@ msgstr ""
 "过 `tasklist.patch({ closed: false })` 恢复；所含任务条目保留。"
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:88
+#: docs/concepts/entity-model.md:89
 msgid ""
 "Task/list tools and stores require explicit **`world_id`** (typically "
 "`user_world_id` from system prompt / `GET /api/worlds/context`)."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:90
+#: docs/concepts/entity-model.md:91
 #, no-wrap
 msgid "**Folders** (`body.is_folder: true`) are container nodes in the sidebar tree only — they cannot hold tasks directly (`task.create` / `task.patch` reject `list_id` pointing at a folder). Child lists and sub-folders reference a parent folder via `body.parent_id` (entity id of a folder, or omitted/null at root). Nesting must not form cycles. Archiving or deleting a folder cascades to descendants. `sort_order` is scoped among siblings sharing the same `parent_id`.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:92
+#: docs/concepts/entity-model.md:93
 msgid ""
 "LLM ToolSets: `@freeanima/capabilities-task` — `task` (item CRUD + "
 "`task_search`) and `tasklist` (list CRUD + `tasklist_search`); load via "
@@ -389,13 +397,13 @@ msgstr ""
 "entities.ts`）。"
 
 #. type: Title ###
-#: docs/concepts/entity-model.md:93
+#: docs/concepts/entity-model.md:94
 #, no-wrap
 msgid "Shell UI: global Subject scope"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:96
+#: docs/concepts/entity-model.md:97
 msgid ""
 "Hub startup binds **`ResolvedWorldContext`** (`GET /api/worlds/context`). "
 "The product shell exposes a **single User / Agent toggle** in the module "
@@ -405,7 +413,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:104
+#: docs/concepts/entity-model.md:105
 #, no-wrap
 msgid ""
 "| Surface          | World binding                                    | Control                        |\n"
@@ -418,7 +426,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:106
+#: docs/concepts/entity-model.md:107
 msgid ""
 "SAP task/email methods accept optional `subject_kind` (defaults: task "
 "`user`, email `agent`). Satellites read the shell scope via "
@@ -427,7 +435,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:108
+#: docs/concepts/entity-model.md:109
 msgid ""
 "Future multi-world browse (e.g. diary calendar aggregation across worlds) "
 "should add **module-scoped** filters or Admin tooling — not a speculative "
@@ -435,18 +443,18 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:109
+#: docs/concepts/entity-model.md:110
 #, no-wrap
 msgid "Email module (Estate)"
 msgstr "邮件模块（资源层）"
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:112
+#: docs/concepts/entity-model.md:113
 msgid "Email accounts, threads, and mirrored messages map to:"
 msgstr "邮件账户、线程与镜像消息映射为："
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:118
+#: docs/concepts/entity-model.md:119
 #, no-wrap
 msgid ""
 "| Concept | Entity         | Component       |\n"
@@ -462,7 +470,7 @@ msgstr ""
 "| 消息    | `type=content` | `email_message` |\n"
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:120
+#: docs/concepts/entity-model.md:121
 msgid ""
 "Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. Messages "
 "store IMAP UID in `body.imap_uid`; human-readable subject/body use entity "
@@ -474,7 +482,7 @@ msgstr ""
 "email`（SAP `email.*` 方法），非 Admin REST。"
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:122
+#: docs/concepts/entity-model.md:123
 msgid ""
 "LLM ToolSets: `@freeanima/capabilities-email` — `email-account` (account "
 "entities) and `email` (sync, send/receive, search); load via `toolset_load`. "
@@ -486,18 +494,18 @@ msgstr ""
 "`email.accounts[]` 经 `scripts/migrate-email-to-entities.ts` 迁移。"
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:123
+#: docs/concepts/entity-model.md:124
 #, no-wrap
 msgid "Diary module"
 msgstr "日记模块"
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:126
+#: docs/concepts/entity-model.md:127
 msgid "Structured journal entries for **user** and **agent** subjects:"
 msgstr "**user** 与 **agent** 主体的结构化日记条目："
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:130
+#: docs/concepts/entity-model.md:131
 #, no-wrap
 msgid ""
 "| Concept | Entity         | Component     |\n"
@@ -509,7 +517,7 @@ msgstr ""
 "| 条目    | `type=content` | `diary_entry` |\n"
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:132
+#: docs/concepts/entity-model.md:133
 msgid ""
 "Entries live in each subject's **`default_private_world_id`**. "
 "`body.entry_at` is the timeline sort key; `title` / `summary` / `content` "
@@ -519,7 +527,7 @@ msgstr ""
 "线排序键；`title` / `summary` / `content` 用实体列；可选 `body.tags`。"
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:136
+#: docs/concepts/entity-model.md:137
 msgid ""
 "**SAP:** `diary.*` methods — all take `subject_kind: user | agent` "
 "(including `diary.append`)."
@@ -528,36 +536,36 @@ msgstr ""
 "`diary.append`）。"
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:136
+#: docs/concepts/entity-model.md:137
 msgid "**UI:** shell `/diary` (`@freeanima/satellite-diary`)."
 msgstr "**UI：** shell `/diary`（`@freeanima/satellite-diary`）。"
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:136
+#: docs/concepts/entity-model.md:137
 msgid "**LLM:** ToolSet `diary` — agent private world only."
 msgstr "**LLM：** ToolSet `diary`——仅 agent 私有 world。"
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:138
+#: docs/concepts/entity-model.md:139
 msgid "See [`docs/features/diary.md`](../features/diary.md)."
 msgstr "详见 [`docs/features/diary.md`](../features/diary.md)。"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/entity-model.md:139 messages/po4a/en.xml:116
-#: messages/po4a/en.xml:128 messages/po4a/en.xml:438
+#: docs/concepts/entity-model.md:140 messages/po4a/en.xml:116
+#: messages/po4a/en.xml:128 messages/po4a/en.xml:556
 #, no-wrap
 msgid "Search"
 msgstr "查询"
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:142
+#: docs/concepts/entity-model.md:143
 msgid ""
 "Entity **list** (deterministic browse) and **search** (relevance ranking) "
 "are separate ports:"
 msgstr "实体 **list**（确定性浏览）与 **search**（相关性排序）是独立端口："
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:147
+#: docs/concepts/entity-model.md:148
 #, no-wrap
 msgid ""
 "| Port                      | Role                                                                  |\n"
@@ -571,25 +579,25 @@ msgstr ""
 "| `EntitySearchPort.search` | 硬过滤 + 可选文本查询；经 RRF 混合 FTS/trigram/vector                 |\n"
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:149
+#: docs/concepts/entity-model.md:150
 #, no-wrap
 msgid "**Scope:** default `world_id`; `global: true` requires an explicit accessible-world allowlist (public worlds only until subject permissions bootstrap).\n"
 msgstr "**范围：** 默认 `world_id`；`global: true` 需显式可访问 world 白名单（在 subject 权限引导完成前仅公开 world）。\n"
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:151
+#: docs/concepts/entity-model.md:152
 #, no-wrap
 msgid "**Component filters:** whitelisted per `primary_component` (e.g. `task_item`: `status`, `list_id`, `tags`, `due_today`). Arbitrary JSONPath is forbidden.\n"
 msgstr "**组件过滤：** 按 `primary_component` 白名单（如 `task_item`：`status`、`list_id`、`tags`、`due_today`）。禁止任意 JSONPath。\n"
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:153
+#: docs/concepts/entity-model.md:154
 #, no-wrap
 msgid "**Tools / API:** `entity_search` (LLM/MCP) and `GET|POST /api/entities/search` share `EntitySearchPort`. Task UI search box uses the same REST endpoint.\n"
 msgstr "**工具 / API：** `entity_search`（LLM/MCP）与 `GET|POST /api/entities/search` 共用 `EntitySearchPort`。任务 UI 搜索框使用同一 REST 端点。\n"
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:155
+#: docs/concepts/entity-model.md:156
 msgid ""
 "See memory hybrid search in [`memory.md`](memory.md) for FTS operator "
 "syntax; entity search reuses the same query builder."
@@ -598,19 +606,19 @@ msgstr ""
 "构建器。"
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:157
+#: docs/concepts/entity-model.md:158
 #, no-wrap
 msgid "**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run Admin **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.\n"
 msgstr "**FTS 索引：** 与语义记忆相同的 `fts_segmented` + jieba 写入路径（实体创建/更新时 `resolveFtsSegmentedForWrite`）。此列之前导入的旧行可能缺分词；运行管理台 **FTS** 重建（`onlyMissing`）回填 `entities.fts_segmented`，使 jieba 查询 token 与 GIN 索引对齐。\n"
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:158
+#: docs/concepts/entity-model.md:159
 #, no-wrap
 msgid "Future migration map (not executed yet)"
 msgstr "未来迁移映射（尚未执行）"
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:168
+#: docs/concepts/entity-model.md:169
 #, no-wrap
 msgid ""
 "| Legacy table                 | Target                                               |\n"
@@ -632,6 +640,6 @@ msgstr ""
 "| `memory_references`          | 关系表（未来）                                       |\n"
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:169
+#: docs/concepts/entity-model.md:170
 msgid "See [`architecture.md`](architecture.md) for cognitive-layer context."
 msgstr "认知层上下文见 [`architecture.md`](architecture.md)。"

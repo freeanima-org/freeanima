@@ -26,8 +26,6 @@ export {
   formatFridgeMagnetManifestPreview,
   isFridgeContextAssistant,
   stripFridgeContextFromMessages,
-  stripFridgeMagnets,
-  stripLegacyFridgeBlocksFromMessages,
   manifestFridgeMagnetBoard,
 } from "./inject.ts";
 export { registerWriteFridgeMagnetTool } from "./tool.ts";

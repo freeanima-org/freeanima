@@ -1,6 +1,6 @@
-import type { FrontendDesktopExport } from "@freeanima/satellite-sdk";
-import type { FrontendManifest } from "@freeanima/satellite-sdk";
-import { readMonorepoVersion } from "@freeanima/satellite-sdk/version";
+import type { FrontendDesktopExport } from "@freeanima/shell-sdk";
+import type { FrontendManifest } from "@freeanima/shell-sdk";
+import { readMonorepoVersion } from "@freeanima/shell-sdk/version";
 
 const APP_ID = "admin";
 

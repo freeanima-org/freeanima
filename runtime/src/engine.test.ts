@@ -12,7 +12,6 @@ import { SkillRegistry } from "@freeanima/core/skill";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { MockBackend } from "@freeanima/core/provider/test-helpers/mock-backend";
 import { Config, type AnimaConfig } from "@freeanima/core/config";
-import { MINIMAL_REMOTE_AUTH } from "@freeanima/core/config/test-helpers/minimal-llm-config";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { Engine } from "./engine.ts";
 
@@ -32,7 +31,6 @@ const testCfg = {
       },
     },
   },
-  remote_auth: MINIMAL_REMOTE_AUTH,
 } as AnimaConfig;
 
 describe("Engine", () => {

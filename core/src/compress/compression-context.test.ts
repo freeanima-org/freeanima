@@ -6,7 +6,6 @@ import {
   resetCatalogContextWindowLookupForTest,
   resetActiveConfigForTest,
 } from "@freeanima/core/config";
-import { MINIMAL_REMOTE_AUTH } from "@freeanima/core/config/test-helpers/minimal-llm-config";
 import { buildCompressOptionsResolved } from "./compression-context.ts";
 
 const BASE_CONFIG = {
@@ -21,7 +20,6 @@ const BASE_CONFIG = {
     },
     profiles: { chat: { chain: [{ provider: "main", model: "gpt-x" }] } },
   },
-  remote_auth: MINIMAL_REMOTE_AUTH,
   compression: { enabled: true, reserved_tokens: 8192 },
   models: {},
 };

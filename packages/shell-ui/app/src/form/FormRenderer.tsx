@@ -146,8 +146,8 @@ export function FormRenderer({
       {sectionId === "hub" && error?.includes("连接") ? (
         <div className="alert alert-info text-sm">
           请确认 Hub 已启动（<code className="text-xs">anima service start --host 0.0.0.0</code>
-          ）、远程 Token 与 <code className="text-xs">~/.anima/config.yaml</code> 中{" "}
-          <code className="text-xs">remote_auth.token</code> 一致；详见项目文档 remote-access。
+          ）、客户端 Hub 设置中的 Service API Token（<code className="text-xs">fa_at_...</code>
+          ）有效；详见项目文档 remote-access。
         </div>
       ) : null}
       {error ? <div className="alert alert-error text-sm">{error}</div> : null}

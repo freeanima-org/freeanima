@@ -7,7 +7,6 @@ import {
   getActiveConfig,
   resetActiveConfigForTest,
 } from "./config-store.ts";
-import { MINIMAL_REMOTE_AUTH } from "./test-helpers/minimal-llm-config.ts";
 
 const snapshot = {
   llm: {
@@ -17,7 +16,6 @@ const snapshot = {
     },
     profiles: { chat: { chain: [{ provider: "main", model: "m" }] } },
   },
-  remote_auth: MINIMAL_REMOTE_AUTH,
 } as AnimaConfig;
 
 describe("Config store", () => {

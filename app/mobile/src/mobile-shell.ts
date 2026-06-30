@@ -5,7 +5,7 @@ import {
   testHubHealthConnection,
   type SapInstanceStore,
   type SatelliteShellApi,
-} from "@freeanima/satellite-sdk";
+} from "@freeanima/shell-sdk";
 
 import { HUB_URL_KEY, REMOTE_AUTH_TOKEN_KEY, sapInstanceKey } from "./prefs-keys.ts";
 import { prefsGet, prefsSet } from "./prefs-safe.ts";

@@ -14,7 +14,7 @@ import {
   subscribeConversationEvents,
 } from "@chat/lib/api.ts";
 import type { SapConnectionState } from "@freeanima/sap-contract";
-import { ListDetailLayout, useDrawerNav } from "@freeanima/satellite-sdk/layout";
+import { ListDetailLayout, useDrawerNav } from "@freeanima/ui-kit/layout";
 import { getAppLocale, initAppLocale, m, toggleAppLocale } from "@chat/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@chat/lib/input-draft.ts";
 import {
@@ -655,7 +655,7 @@ export function ChatApp() {
           <span className="text-warning-content/90">
             {sapConnection === "connecting"
               ? m.admin_common_connecting()
-              : m.admin_studio_disconnected()}
+              : m.admin_hub_disconnected()}
             {showOfflineCachedHint ? offlineCachedHint : ""}
           </span>
           <div className="flex items-center gap-1">

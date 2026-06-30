@@ -9,12 +9,12 @@ title: Mobile app (Android)
 
 ## Scope
 
-| Item       | Description                                                   |
-| ---------- | ------------------------------------------------------------- |
-| Platform   | **Android only** sideload (APK); iOS later                    |
-| Modules    | Chat (`sap-direct`) + Admin (`hub-rest`)                      |
-| Hub config | APP **Hub settings**: URL + `remote_auth.token` (Preferences) |
-| Hub duties | `/api` REST + `/sap/v1` WebSocket                             |
+| Item       | Description                                                              |
+| ---------- | ------------------------------------------------------------------------ |
+| Platform   | **Android only** sideload (APK); iOS later                               |
+| Modules    | Chat (`sap-direct`) + Admin (`hub-rest`)                                 |
+| Hub config | APP **Hub settings**: URL + Service API Token (`fa_at_...`, Preferences) |
+| Hub duties | `/api` REST + `/sap/v1` WebSocket                                        |
 
 ## Topology
 
@@ -35,15 +35,15 @@ flowchart LR
   Admin -->|REST Bearer| Hub
 ```
 
-Mobile REST **connects directly** to Hub (no desktop Electron `/api` proxy); requires `remote_auth.token` and Hub CORS for Capacitor origin (`https://localhost`). Routes use hash (`#/chat`) for WebView debugging.
+Mobile REST **connects directly** to Hub (no desktop Electron `/api` proxy); requires a **Service API Token** and Hub CORS for Capacitor origin (`https://localhost`). Routes use hash (`#/chat`) for WebView debugging.
 
 ## Hub settings
 
-1. Home PC: `anima service start --host 0.0.0.0`, configure `remote_auth.token` in `~/.anima/config.yaml` (see [`remote-access.md`](../guide/remote-access.md)).
+1. Home PC: `anima service start --host 0.0.0.0`, create a Service API Token (`anima token create --subject-id 1 --name bootstrap`; see [`remote-access.md`](../guide/remote-access.md)).
 2. (Optional) `anima tunnel setup`; phone uses `https://<your-hostname>`.
 3. APP → **Hub settings** (`/settings`):
    - Hub URL (Tunnel domain or `http://<PC-IP>:2658`; not `127.0.0.1`)
-   - Remote token (same as Hub `config.yaml` `remote_auth.token`, ≥16 chars)
+   - Service API Token (`fa_at_...`, printed once at creation)
 4. **Test connection** → **Save and enter** → top bar switches **Chat** / **Admin**.
 
 Non-loopback Hub URL requires token; REST uses `Authorization: Bearer`; SAP sends `auth_token` in `connect` frame.

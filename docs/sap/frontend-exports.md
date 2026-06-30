@@ -30,7 +30,7 @@ Path: `./manifest` — JSON-serializable metadata.
 | `sap-direct`       | chat (renderer → Hub SAP) | **No** (persist `instance_id` only) |
 | `hub-rest`         | Admin console (Hub REST)  | **No**                              |
 
-Implementation SSOT: [`packages/satellite-sdk/src/manifest.ts`](../../packages/satellite-sdk/src/manifest.ts)
+Implementation SSOT: [`packages/shell-sdk/src/manifest.ts`](../../packages/shell-sdk/src/manifest.ts)
 
 ## Desktop / Mobile (optional)
 

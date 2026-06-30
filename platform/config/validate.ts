@@ -19,14 +19,6 @@ function validateTunnelConfig(cfg: AnimaConfig): void {
   }
 }
 
-function validateHttpConfig(cfg: AnimaConfig): void {
-  if (cfg.tunnel?.web_hostname?.trim()) {
-    console.warn(
-      "[tunnel] tunnel.web_hostname 已废弃 — Web UI 改由 Hub /web 托管，请使用单域名 + https://<hostname>/web",
-    );
-  }
-}
-
 /** Validate config.yaml structure at startup (does not expand env/credential references) */
 export async function validateConfigOnStartup(): Promise<void> {
   if (!existsSync(PATHS.configYaml)) {
@@ -55,12 +47,10 @@ export async function validateConfigOnStartup(): Promise<void> {
   }
 
   validateTunnelConfig(parsed.data);
-  validateHttpConfig(parsed.data);
 
-  const token = parsed.data.remote_auth?.token?.trim();
-  if (parsed.data.tunnel?.enabled && (!token || token.length < 16)) {
+  if (parsed.data.tunnel?.enabled) {
     console.warn(
-      "[tunnel] remote_auth.token 未配置 — 非本地连接将一律返回 401，远程客户端无法接入",
+      "[tunnel] 远程访问需要 Service API Token（anima token create --subject-id <id>）；请在客户端 Hub 设置中配置 fa_at_...",
     );
   }
 }

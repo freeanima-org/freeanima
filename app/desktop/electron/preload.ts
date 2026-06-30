@@ -4,7 +4,7 @@ import {
   buildShellApiFields,
   type CompanionWindowRole,
   type SatelliteShellApi,
-} from "@freeanima/satellite-sdk";
+} from "@freeanima/shell-sdk";
 
 type HubClientConfigPayload = {
   hubUrl: string;
@@ -128,13 +128,13 @@ function bootstrapPreload(): void {
   contextBridge.exposeInMainWorld("satelliteShell", shell);
   contextBridge.exposeInMainWorld("__freeanimaShellBridge", { ready: Promise.resolve() });
   contextBridge.exposeInMainWorld("freeanimaScopedSettings", {
-    load(scope: import("@freeanima/satellite-sdk/settings").SettingsStorageScope) {
+    load(scope: import("@freeanima/shell-sdk/settings").SettingsStorageScope) {
       return ipcRenderer.invoke("shell:settings:load", scope) as Promise<unknown>;
     },
-    save(scope: import("@freeanima/satellite-sdk/settings").SettingsStorageScope, value: unknown) {
+    save(scope: import("@freeanima/shell-sdk/settings").SettingsStorageScope, value: unknown) {
       return ipcRenderer.invoke("shell:settings:save", scope, value) as Promise<unknown>;
     },
-    test(scope: import("@freeanima/satellite-sdk/settings").SettingsStorageScope, value: unknown) {
+    test(scope: import("@freeanima/shell-sdk/settings").SettingsStorageScope, value: unknown) {
       return ipcRenderer.invoke("shell:settings:test", scope, value) as Promise<unknown>;
     },
   });

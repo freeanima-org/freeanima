@@ -1,4 +1,4 @@
-import type { CompanionSettingsApi } from "@freeanima/satellite-sdk/settings";
+import type { CompanionSettingsApi } from "@freeanima/shell-sdk/settings";
 
 import {
   deleteModel,

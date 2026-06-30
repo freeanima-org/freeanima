@@ -2,7 +2,6 @@ import { z } from "zod";
 import { llmConfigSchema } from "./llm-config.ts";
 import { embeddingConfigSchema } from "./embedding.ts";
 import { tunnelConfigSchema } from "./tunnel.ts";
-import { remoteAuthConfigSchema } from "./remote-auth.ts";
 import { httpConfigSchema } from "./http.ts";
 import { webConfigSchema } from "./web.ts";
 import { notificationsConfigSchema } from "./notifications.ts";
@@ -215,7 +214,6 @@ export const animaConfigSchema = z
     tunnel: tunnelConfigSchema,
     http: httpConfigSchema,
     web: webConfigSchema,
-    remote_auth: remoteAuthConfigSchema.optional(),
     notifications: notificationsConfigSchema,
     worlds: worldsConfigSchema,
   })

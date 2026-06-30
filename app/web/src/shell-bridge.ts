@@ -1,7 +1,7 @@
-import { parseShellClientConfig } from "@freeanima/satellite-sdk/shell-client-config";
-import type { SettingsStorageScope } from "@freeanima/satellite-sdk/settings";
-import type { ScopedSettingsBackend } from "@freeanima/satellite-sdk/settings";
-import { HUB_SETTINGS_SCOPE } from "@freeanima/satellite-sdk/settings";
+import { parseShellClientConfig } from "@freeanima/shell-sdk/shell-client-config";
+import type { SettingsStorageScope } from "@freeanima/shell-sdk/settings";
+import type { ScopedSettingsBackend } from "@freeanima/shell-sdk/settings";
+import { HUB_SETTINGS_SCOPE } from "@freeanima/shell-sdk/settings";
 
 import { createWebScopedBackend, seedWebHubPrefsIfEmpty } from "./settings-local-backend.ts";
 import {

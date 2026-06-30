@@ -45,13 +45,6 @@ describe("sanitizeConfigForApi", () => {
     });
   });
 
-  it("sanitizes remote_auth.token", () => {
-    const out = sanitizeConfigForApi({
-      remote_auth: { token: "super-secret-remote-token" },
-    } as never);
-    expect(out.remote_auth).toEqual({ token: "***" });
-  });
-
   it("MCP env keeps env_keys only", () => {
     const out = sanitizeConfigForApi({
       mcp_servers: {

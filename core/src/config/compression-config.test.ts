@@ -5,7 +5,6 @@ import {
   getEffectiveTokenBudget,
   resolveContextWindowWithSource,
 } from "./compression-config.ts";
-import { MINIMAL_REMOTE_AUTH } from "./test-helpers/minimal-llm-config.ts";
 
 const cfg = {
   llm: {
@@ -18,7 +17,6 @@ const cfg = {
     },
     profiles: { chat: { chain: [{ provider: "main", model: "m" }] } },
   },
-  remote_auth: MINIMAL_REMOTE_AUTH,
   compression: { default_context_window: 256_000, reserved_tokens: 8192 },
   models: {
     "deepseek-v4-flash": { context_window: 1_000_000 },

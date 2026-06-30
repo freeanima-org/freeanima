@@ -7,9 +7,7 @@ import {
   formatFridgeMagnets,
   wrapFridgeMagnetBoard,
   formatFridgeMagnetManifestPreview,
-  stripFridgeMagnets,
   stripFridgeContextFromMessages,
-  stripLegacyFridgeBlocksFromMessages,
   manifestFridgeMagnetBoard,
   isFridgeContextAssistant,
 } from "./inject.ts";
@@ -60,27 +58,6 @@ describe("formatFridgeMagnetManifestPreview", () => {
 
   it("returns empty when board is empty", () => {
     expect(formatFridgeMagnetManifestPreview([])).toBe("");
-  });
-});
-
-describe("stripFridgeMagnets", () => {
-  it("strips leading fridge-magnet block", () => {
-    const content = "```fridge-magnet\nuser_mood: Sunny\n```\nHello";
-    expect(stripFridgeMagnets(content)).toBe("Hello");
-  });
-
-  it("strips legacy fridge block", () => {
-    const content = "```fridge\nuser_mood: Sunny\n```\nHello";
-    expect(stripFridgeMagnets(content)).toBe("Hello");
-  });
-
-  it("returns unchanged when no fridge magnet block", () => {
-    expect(stripFridgeMagnets("Plain text")).toBe("Plain text");
-  });
-
-  it("idempotent: repeated strip yields same result", () => {
-    const once = stripFridgeMagnets("```fridge-magnet\na: 1\n```\nContent");
-    expect(stripFridgeMagnets(once)).toBe(once);
   });
 });
 
@@ -161,20 +138,6 @@ describe("stripFridgeContextFromMessages", () => {
     stripFridgeContextFromMessages(messages);
     expect(messages).toHaveLength(2);
     expect(messages[0]).toMatchObject({ role: "assistant", content: "Reply" });
-  });
-});
-
-describe("stripLegacyFridgeBlocksFromMessages", () => {
-  it("strips fridge magnet blocks from all user messages", () => {
-    const messages: StoredMessage[] = [
-      { role: "user", content: "```fridge-magnet\na: 1\n```\nFirst message" },
-      { role: "assistant", content: "```fridge-magnet\nb: 2\n```\nReply" },
-      { role: "user", content: "```fridge\nc: 3\n```\nSecond message" },
-    ];
-    stripLegacyFridgeBlocksFromMessages(messages);
-    expect(messages[0]!.content).toBe("First message");
-    expect(messages[1]!.content).toBe("```fridge-magnet\nb: 2\n```\nReply");
-    expect(messages[2]!.content).toBe("Second message");
   });
 });
 

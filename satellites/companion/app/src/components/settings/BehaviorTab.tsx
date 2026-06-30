@@ -1,4 +1,4 @@
-import { FormFieldLabel, FormFieldset, FormToggle } from "@freeanima/satellite-sdk/form";
+import { FormFieldLabel, FormFieldset, FormToggle } from "@freeanima/ui-kit/form";
 import { useCompanionStore } from "@/stores/companion.ts";
 import type { CompanionBehavior } from "@shared/companion-schema.ts";
 

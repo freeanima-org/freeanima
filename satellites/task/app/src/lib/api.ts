@@ -1,8 +1,4 @@
-import {
-  fetchWorldContext,
-  getSubjectKind,
-  resolveWorldIdForSubject,
-} from "@freeanima/satellite-sdk";
+import { fetchWorldContext, getSubjectKind, resolveWorldIdForSubject } from "@freeanima/shell-sdk";
 
 import { entitySearchHitToTaskItem } from "./search-hit-mapper.ts";
 import { whenSapClientReady } from "./sap-client.ts";

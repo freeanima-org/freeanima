@@ -10,7 +10,6 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@freeanima/sap-contract": "workspace:*",
-    "@freeanima/satellite-sdk": "workspace:*",
     "@freeanima/shell-sdk": "workspace:*",
     "@freeanima/ui-kit": "workspace:*",
     "react": "catalog:",

@@ -1,5 +1,9 @@
 import { useNavigate } from "@tanstack/react-router";
-import type { SettingsBinding, SettingsFormFields, SettingsPlatform } from "@freeanima/shell-sdk/settings";
+import type {
+  SettingsBinding,
+  SettingsFormFields,
+  SettingsPlatform,
+} from "@freeanima/shell-sdk/settings";
 
 import { FormRenderer } from "../form/FormRenderer.tsx";
 import { detectPlatform } from "../platform.ts";
@@ -38,7 +42,9 @@ export function HubSetupPage() {
         <header className="space-y-2 text-center">
           <h1 className="text-xl font-semibold">连接 FreeAnima Hub</h1>
           {section.description ? (
-            <p className="text-sm text-base-content/60 whitespace-pre-line">{section.description}</p>
+            <p className="text-sm text-base-content/60 whitespace-pre-line">
+              {section.description}
+            </p>
           ) : null}
         </header>
         <FormRenderer

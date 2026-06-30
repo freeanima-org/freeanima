@@ -1,4 +1,4 @@
-import { FridgeMagnetInjectPreview as SharedFridgeMagnetInjectPreview } from "@freeanima/satellite-sdk/ui/fridge-magnet";
+import { FridgeMagnetInjectPreview as SharedFridgeMagnetInjectPreview } from "@freeanima/ui-kit/ui/fridge-magnet";
 import { m } from "@chat/lib/i18n.ts";
 
 type FridgeMagnetInjectPreviewProps = {
