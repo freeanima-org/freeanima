@@ -9,5 +9,11 @@
       "@paraglide/messages": ["../../messages/paraglide/messages.js"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.css", "src/**/*.d.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.css",
+    "src/**/*.d.ts",
+    "../../types/paraglide.d.ts"
+  ]
 }

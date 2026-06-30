@@ -16,6 +16,7 @@
     "./styles.css": "./src/styles.css"
   },
   "dependencies": {
+    "daisyui": "catalog:",
     "react": "catalog:"
   },
   "devDependencies": {

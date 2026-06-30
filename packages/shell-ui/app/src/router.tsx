@@ -19,6 +19,7 @@ import { useMemo } from "react";
 import { AdminShell } from "./main/AdminShell.tsx";
 import { ModuleShell } from "./main/ModuleShell.tsx";
 import { SettingsPage } from "./settings/SettingsPage.tsx";
+import { resolveShellRouterBasepath } from "./router-basepath.ts";
 
 const rootRoute = createRootRoute({
   component: Outlet,
@@ -102,15 +103,9 @@ const routeTree = rootRoute.addChildren([
   ]),
 ]);
 
-function resolveRouterBasepath(): string | undefined {
-  const raw = (import.meta.env?.BASE_URL ?? "/").replace(/\/$/, "");
-  if (!raw || raw === "." || !raw.startsWith("/")) return undefined;
-  return raw;
-}
-
 function createShellRouterInstance() {
   const native = typeof window !== "undefined" && Boolean(window.satelliteShell?.isNativeShell);
-  const basepath = resolveRouterBasepath();
+  const basepath = resolveShellRouterBasepath();
   return createRouter({
     routeTree,
     ...(basepath ? { basepath } : {}),
