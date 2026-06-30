@@ -5,6 +5,7 @@ import { tunnelConfigSchema } from "./tunnel.ts";
 import { remoteAuthConfigSchema } from "./remote-auth.ts";
 import { webConfigSchema } from "./web.ts";
 import { notificationsConfigSchema } from "./notifications.ts";
+import { worldsConfigSchema } from "./worlds.ts";
 
 export const mcpServerSchema = z
   .object({
@@ -214,6 +215,7 @@ export const animaConfigSchema = z
     web: webConfigSchema,
     remote_auth: remoteAuthConfigSchema.optional(),
     notifications: notificationsConfigSchema,
+    worlds: worldsConfigSchema,
   })
   .passthrough();
 

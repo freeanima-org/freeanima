@@ -1,5 +1,5 @@
-export { defaultEmailWorldId } from "./account-store.ts";
 export type * from "./types.ts";
+export { resolveEmailWorldId } from "./email-world.ts";
 export {
   createEmailAccount,
   deleteEmailAccountRow,

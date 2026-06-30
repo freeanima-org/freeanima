@@ -4,6 +4,7 @@ import {
   getEmailAccountRow,
   listEnabledEmailAccountRows,
   normalizeEmailSubject,
+  resolveEmailWorldId,
   updateEmailAccount,
   upsertEmailMessage,
   upsertEmailThread,
@@ -121,7 +122,7 @@ export async function syncEmailAccount(
         const status = await client.status(box, { uidValidity: true });
         const nextValidity =
           status.uidValidity != null ? Number(status.uidValidity) : account.sync?.uidvalidity;
-        await updateEmailAccount({
+        await updateEmailAccount(resolveEmailWorldId(), {
           id: account.id,
           sync: {
             mailbox: box,
@@ -154,7 +155,8 @@ export async function syncEmailAccount(
 export async function syncAllEmailAccounts(
   opts: { limit?: number } = {},
 ): Promise<EmailSyncResult[]> {
-  const accounts = await listEnabledEmailAccountRows();
+  const worldId = resolveEmailWorldId();
+  const accounts = await listEnabledEmailAccountRows(worldId);
   const results: EmailSyncResult[] = [];
   for (const account of accounts) {
     results.push(await syncEmailAccount(account.id, opts));

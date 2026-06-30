@@ -12,13 +12,26 @@ import { SQL } from "bun";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { ENTITY_DEFAULT_TASK_LIST_ID } from "../../core/src/db/schema/entity/index.ts";
+import type { AnimaConfig } from "../../core/src/config/schemas/config.ts";
+import { bindResolvedWorldContext } from "../../core/src/config/world-context.ts";
+import { ensureWorldSubjects } from "../../core/src/db/pg/entity/subject-world.ts";
 import {
   createTaskItem,
+  getDefaultTaskList,
   listTaskItems,
   updateTaskItem,
 } from "../../capabilities/task/src/index.ts";
 import { initDatabase } from "../../core/src/db/pg/index.ts";
+
+const MINIMAL_CONFIG = {
+  llm: { default_profile: "chat", providers: {}, profiles: {} },
+} as AnimaConfig;
+
+async function resolveUserTaskWorldId(): Promise<number> {
+  const ctx = await ensureWorldSubjects(MINIMAL_CONFIG);
+  bindResolvedWorldContext(ctx);
+  return ctx.user_world_id;
+}
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -179,7 +192,10 @@ async function main(): Promise<void> {
       return;
     }
 
-    const existing = await listTaskItems({ status: "all", limit: 5000 });
+    const worldId = await resolveUserTaskWorldId();
+    const defaultList = await getDefaultTaskList(worldId);
+
+    const existing = await listTaskItems(worldId, { status: "all", limit: 5000 });
     const migrated = new Set(
       existing.flatMap((item) =>
         item.tags.filter((t) => t.startsWith("legacy:")).map((t) => t.slice("legacy:".length)),
@@ -207,7 +223,7 @@ async function main(): Promise<void> {
         title: row.title.trim(),
         content: row.description?.trim() ?? "",
         tags: [legacyTag(row.id)],
-        list_id: ENTITY_DEFAULT_TASK_LIST_ID,
+        list_id: defaultList.id,
         priority: mapPriority(row.priority),
         due_at: row.due_at,
       };
@@ -218,9 +234,9 @@ async function main(): Promise<void> {
         continue;
       }
 
-      const item = await createTaskItem(payload);
+      const item = await createTaskItem(worldId, payload);
       if (status === "completed") {
-        await updateTaskItem({ id: item.id, status: "completed" });
+        await updateTaskItem(worldId, { id: item.id, status: "completed" });
       }
       console.log(`+ ${item.id} ← ${row.id.slice(0, 8)}… ${payload.title}`);
       created++;

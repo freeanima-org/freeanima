@@ -8,15 +8,17 @@ PG-backed in-app inbox for **user** and **agent** subjects (entity model). Cron 
 
 ## Recipients
 
-Configure subject entity ids in `config.yaml`:
+Configure subject entity ids in `config.yaml` **`worlds`** section (SSOT; legacy `notifications` still read as fallback):
 
 ```yaml
-notifications:
-  user_subject_id: 2 type=user entity
-  agent_subject_id: 1 # type=agent entity
+worlds:
+  user_subject_id: 1 # type=user entity; default 1
+  agent_subject_id: 2 # type=agent entity; default 2
 ```
 
-Each row stores `recipient_kind` (`user` | `agent`) and `recipient_id` (entity id string). Unconfigured installs fall back to `"default"`.
+`user_world_id` / `agent_world_id` are derived at Hub boot from each subject's `default_private_world_id` (see [`entity-model.md`](entity-model.md)).
+
+Each row stores `recipient_kind` (`user` | `agent`) and `recipient_id` (entity id string). Unconfigured installs default to subject ids `1` / `2`.
 
 | Writer                                  | Typical recipient     |
 | --------------------------------------- | --------------------- |

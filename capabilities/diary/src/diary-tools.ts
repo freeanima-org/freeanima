@@ -1,4 +1,3 @@
-import { getActiveConfig } from "@freeanima/core/config";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
 
@@ -14,7 +13,7 @@ import { DIARY_TOOL_RETURNS } from "./return-schemas.ts";
 import { resolveDiaryWorldId } from "./subject-world.ts";
 
 async function agentStoreContext() {
-  const worldId = await resolveDiaryWorldId("agent", getActiveConfig().data);
+  const worldId = await resolveDiaryWorldId("agent");
   return { worldId };
 }
 

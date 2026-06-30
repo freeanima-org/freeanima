@@ -3,6 +3,7 @@ import {
   asEmailAccount,
   type EmailAccountBody,
 } from "@freeanima/core/db/schema/entity";
+import { assertEntityInWorld } from "@freeanima/core/db/pg/entity";
 
 import {
   createEntity,
@@ -12,10 +13,6 @@ import {
   updateEntity,
 } from "@freeanima/core/db/pg/entity";
 import type { EmailAccountCreateInput, EmailAccountRow, EmailAccountUpdateInput } from "./types.ts";
-
-export function defaultEmailWorldId(): number {
-  return 1;
-}
 
 function normalizeTags(tags: string[] | undefined): string[] {
   if (!tags?.length) return [];
@@ -57,16 +54,16 @@ function toAccountRow(
   };
 }
 
-async function listAccountEntities() {
+async function listAccountEntities(worldId: number) {
   return listEntities({
-    world_id: defaultEmailWorldId(),
+    world_id: worldId,
     primary_component: EMAIL_ACCOUNT_COMPONENT,
     limit: 200,
   });
 }
 
-async function normalizeDefaultSender(preferredId?: number): Promise<void> {
-  const rows = await listAccountEntities();
+async function normalizeDefaultSender(worldId: number, preferredId?: number): Promise<void> {
+  const rows = await listAccountEntities(worldId);
   const accounts = rows
     .map((row) => {
       const parsed = asEmailAccount(row);
@@ -91,8 +88,8 @@ async function normalizeDefaultSender(preferredId?: number): Promise<void> {
   }
 }
 
-export async function listEmailAccountRows(): Promise<EmailAccountRow[]> {
-  const rows = await listAccountEntities();
+export async function listEmailAccountRows(worldId: number): Promise<EmailAccountRow[]> {
+  const rows = await listAccountEntities(worldId);
   return rows
     .map((row) => {
       const parsed = asEmailAccount(row);
@@ -113,14 +110,18 @@ export async function getEmailAccountRow(id: number): Promise<EmailAccountRow | 
 }
 
 export async function findEmailAccountByAddressAndHost(
+  worldId: number,
   address: string,
   smtpHost: string,
 ): Promise<EmailAccountRow | null> {
-  const accounts = await listEmailAccountRows();
+  const accounts = await listEmailAccountRows(worldId);
   return accounts.find((a) => a.address === address && a.smtp_host === smtpHost) ?? null;
 }
 
-export async function createEmailAccount(input: EmailAccountCreateInput): Promise<EmailAccountRow> {
+export async function createEmailAccount(
+  worldId: number,
+  input: EmailAccountCreateInput,
+): Promise<EmailAccountRow> {
   const body: EmailAccountBody = {
     address: input.address.trim(),
     password: input.password,
@@ -137,7 +138,7 @@ export async function createEmailAccount(input: EmailAccountCreateInput): Promis
 
   const row = await createEntity({
     type: "content",
-    world_id: defaultEmailWorldId(),
+    world_id: worldId,
     components: [EMAIL_ACCOUNT_COMPONENT],
     primary_component: EMAIL_ACCOUNT_COMPONENT,
     title: accountTitle(input),
@@ -145,9 +146,9 @@ export async function createEmailAccount(input: EmailAccountCreateInput): Promis
   });
 
   if (body.default_sender) {
-    await normalizeDefaultSender(row.id);
+    await normalizeDefaultSender(worldId, row.id);
   } else {
-    await normalizeDefaultSender();
+    await normalizeDefaultSender(worldId);
   }
 
   const refreshed = await getEmailAccountRow(row.id);
@@ -156,10 +157,12 @@ export async function createEmailAccount(input: EmailAccountCreateInput): Promis
 }
 
 export async function updateEmailAccount(
+  worldId: number,
   input: EmailAccountUpdateInput,
 ): Promise<EmailAccountRow | null> {
   const existing = await getEmailAccountRow(input.id);
   if (!existing) return null;
+  await assertEntityInWorld(input.id, worldId);
 
   const merged: EmailAccountBody = {
     address: input.address?.trim() ?? existing.address,
@@ -186,27 +189,31 @@ export async function updateEmailAccount(
   if (!row) return null;
 
   if (merged.default_sender) {
-    await normalizeDefaultSender(input.id);
+    await normalizeDefaultSender(worldId, input.id);
   } else {
-    await normalizeDefaultSender();
+    await normalizeDefaultSender(worldId);
   }
 
   return getEmailAccountRow(input.id);
 }
 
-export async function deleteEmailAccountRow(id: number): Promise<boolean> {
+export async function deleteEmailAccountRow(worldId: number, id: number): Promise<boolean> {
+  await assertEntityInWorld(id, worldId);
   const ok = await deleteEntity(id);
-  if (ok) await normalizeDefaultSender();
+  if (ok) await normalizeDefaultSender(worldId);
   return ok;
 }
 
-export async function getDefaultEmailAccountRow(): Promise<EmailAccountRow | null> {
-  const accounts = (await listEmailAccountRows()).filter((a) => a.enabled);
+export async function getDefaultEmailAccountRow(worldId: number): Promise<EmailAccountRow | null> {
+  const accounts = (await listEmailAccountRows(worldId)).filter((a) => a.enabled);
   return accounts.find((a) => a.default_sender) ?? accounts[0] ?? null;
 }
 
-export async function resolveEmailAccountRow(accountId?: number): Promise<EmailAccountRow> {
-  const accounts = (await listEmailAccountRows()).filter((a) => a.enabled);
+export async function resolveEmailAccountRow(
+  worldId: number,
+  accountId?: number,
+): Promise<EmailAccountRow> {
+  const accounts = (await listEmailAccountRows(worldId)).filter((a) => a.enabled);
   if (accounts.length === 0) throw new Error("No enabled email accounts configured");
 
   if (accountId != null) {
@@ -215,14 +222,17 @@ export async function resolveEmailAccountRow(accountId?: number): Promise<EmailA
     return account;
   }
 
-  const fallback = await getDefaultEmailAccountRow();
+  const fallback = await getDefaultEmailAccountRow(worldId);
   if (!fallback) throw new Error("No default sender account found");
   return fallback;
 }
 
-export async function listEnabledEmailAccountRows(accountId?: number): Promise<EmailAccountRow[]> {
-  if (accountId != null) return [await resolveEmailAccountRow(accountId)];
-  const accounts = (await listEmailAccountRows()).filter((a) => a.enabled);
+export async function listEnabledEmailAccountRows(
+  worldId: number,
+  accountId?: number,
+): Promise<EmailAccountRow[]> {
+  if (accountId != null) return [await resolveEmailAccountRow(worldId, accountId)];
+  const accounts = (await listEmailAccountRows(worldId)).filter((a) => a.enabled);
   if (accounts.length === 0) throw new Error("No enabled email accounts configured");
   return accounts;
 }

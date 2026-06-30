@@ -17,7 +17,7 @@ Structured diary for users and Agents, based on the [Unified Entity Model](../co
 
 ## User / Agent isolation
 
-- User and Agent diaries live in the **default private world** of subjects from `config.yaml` `notifications.user_subject_id` / `agent_subject_id`.
+- User and Agent diaries live in the **default private world** of subjects resolved from `config.yaml` **`worlds.user_subject_id` / `agent_subject_id`** (boot-time `ResolvedWorldContext`).
 - Shell `/diary` top bar switches **User / Agent** view.
 - Agent LLM tools (ToolSet `diary`) always write to **Agent** private world.
 

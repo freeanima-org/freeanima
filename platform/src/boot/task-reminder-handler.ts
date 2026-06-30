@@ -1,7 +1,7 @@
 import { TASK_ITEM_COMPONENT, asTaskItem } from "@freeanima/core/db/schema/entity";
+import { getResolvedWorldContext } from "@freeanima/core/config";
 import { searchEntities, updateEntity } from "@freeanima/core/db/pg/entity";
 import { formatCstIso } from "@freeanima/core/util";
-import { defaultTaskWorldId } from "@freeanima/capabilities-task";
 import { getNotificationPort } from "@freeanima/capabilities-tools/notification";
 
 export type TaskReminderSchedulable = {
@@ -48,8 +48,9 @@ export async function runTaskReminderScan(): Promise<string> {
 
   const agent = port.getAgentRecipient();
   const now = Date.now();
+  const userWorldId = getResolvedWorldContext().user_world_id;
   const search = await searchEntities({
-    world_id: defaultTaskWorldId(),
+    world_id: userWorldId,
     primary_component: TASK_ITEM_COMPONENT,
     filters: { status: "pending" },
     limit: 500,

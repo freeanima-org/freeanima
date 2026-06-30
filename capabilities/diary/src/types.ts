@@ -1,3 +1,5 @@
+export type DiarySubjectKind = "user" | "agent";
+
 export type DiaryEntryRow = {
   id: number;
   title: string;

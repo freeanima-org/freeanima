@@ -7,7 +7,7 @@ import {
   searchEntities,
   updateEntity,
 } from "@freeanima/core/db/pg/entity";
-import { defaultEmailWorldId } from "./account-store.ts";
+import { worldIdForAccount } from "./email-world.ts";
 import { refreshThreadAggregates } from "./thread-store.ts";
 import type { EmailMessageListOpts, EmailMessageRow, EmailMessageUpsertInput } from "./types.ts";
 
@@ -56,8 +56,9 @@ export async function findEmailMessageByImapUid(
   imapUid: number,
   mailbox = "INBOX",
 ): Promise<EmailMessageRow | null> {
+  const worldId = await worldIdForAccount(accountId);
   const result = await searchEntities({
-    world_id: defaultEmailWorldId(),
+    world_id: worldId,
     primary_component: EMAIL_MESSAGE_COMPONENT,
     filters: { account_id: accountId },
     limit: 500,
@@ -110,9 +111,10 @@ export async function upsertEmailMessage(input: EmailMessageUpsertInput): Promis
     return toMessageRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
   }
 
+  const worldId = await worldIdForAccount(input.account_id);
   const row = await createEntity({
     type: "content",
-    world_id: defaultEmailWorldId(),
+    world_id: worldId,
     components: [EMAIL_MESSAGE_COMPONENT],
     primary_component: EMAIL_MESSAGE_COMPONENT,
     title: input.subject,
@@ -135,6 +137,7 @@ export async function getEmailMessageRow(id: number): Promise<EmailMessageRow | 
 }
 
 export async function listEmailMessages(
+  worldId: number,
   opts: EmailMessageListOpts = {},
 ): Promise<EmailMessageRow[]> {
   const filters: Record<string, unknown> = {};
@@ -147,7 +150,7 @@ export async function listEmailMessages(
   if (opts.before) filters.before = opts.before;
 
   const result = await searchEntities({
-    world_id: defaultEmailWorldId(),
+    world_id: worldId,
     primary_component: EMAIL_MESSAGE_COMPONENT,
     filters: Object.keys(filters).length > 0 ? filters : undefined,
     limit: opts.limit ?? 200,
@@ -201,20 +204,23 @@ export async function tagEmailMessage(id: number, tags: string[]): Promise<Email
   return toMessageRow(next, { created_at: updated.created_at, updated_at: updated.updated_at });
 }
 
-export async function searchEmailMessages(input: {
-  query: string;
-  account_id?: number;
-  thread_id?: number;
-  unread?: boolean;
-  limit?: number;
-}): Promise<EmailMessageRow[]> {
+export async function searchEmailMessages(
+  worldId: number,
+  input: {
+    query: string;
+    account_id?: number;
+    thread_id?: number;
+    unread?: boolean;
+    limit?: number;
+  },
+): Promise<EmailMessageRow[]> {
   const filters: Record<string, unknown> = {};
   if (input.account_id != null) filters.account_id = input.account_id;
   if (input.thread_id != null) filters.thread_id = input.thread_id;
   if (input.unread != null) filters.unread = input.unread;
 
   const result = await searchEntities({
-    world_id: defaultEmailWorldId(),
+    world_id: worldId,
     primary_component: EMAIL_MESSAGE_COMPONENT,
     query: input.query,
     filters: Object.keys(filters).length > 0 ? filters : undefined,

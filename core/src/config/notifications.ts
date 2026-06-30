@@ -1,5 +1,6 @@
 import type { NotificationRecipientKind } from "@freeanima/core/repos";
 import type { AnimaConfig } from "./schemas/config.ts";
+import { resolveWorldSubjectIds } from "./worlds.ts";
 
 export type NotificationRecipientRef = {
   kind: NotificationRecipientKind;
@@ -11,17 +12,17 @@ export type ResolvedNotificationRecipients = {
   agent: NotificationRecipientRef;
 };
 
-/** 从 config 解析通知收件主体；未配置时回退 default id */
+/** 从 config 解析通知收件主体（worlds 段 SSOT，兼容旧 notifications 段） */
 export function resolveNotificationRecipients(config: AnimaConfig): ResolvedNotificationRecipients {
-  const section = config.notifications;
+  const { user_subject_id, agent_subject_id } = resolveWorldSubjectIds(config);
   return {
     user: {
       kind: "user",
-      id: section?.user_subject_id != null ? String(section.user_subject_id) : "default",
+      id: String(user_subject_id),
     },
     agent: {
       kind: "agent",
-      id: section?.agent_subject_id != null ? String(section.agent_subject_id) : "default",
+      id: String(agent_subject_id),
     },
   };
 }

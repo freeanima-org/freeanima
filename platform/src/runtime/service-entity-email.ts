@@ -1,4 +1,5 @@
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
+import { getResolvedWorldContext } from "@freeanima/core/config";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 function assertPg(_deps: RuntimeDeps): void {
@@ -77,7 +78,8 @@ function toThreadPayload(
 export async function serviceEmailAccountList(deps: RuntimeDeps) {
   assertPg(deps);
   const { listEmailAccountRows } = await import("@freeanima/capabilities-email");
-  const accounts = await listEmailAccountRows();
+  const { agent_world_id } = getResolvedWorldContext();
+  const accounts = await listEmailAccountRows(agent_world_id);
   return { accounts: accounts.map(toAccountPayload) };
 }
 
@@ -93,7 +95,8 @@ export async function serviceEmailMessageList(
 ) {
   assertPg(deps);
   const { listEmailMessages } = await import("@freeanima/capabilities-email");
-  const messages = await listEmailMessages(input);
+  const { agent_world_id } = getResolvedWorldContext();
+  const messages = await listEmailMessages(agent_world_id, input);
   return { messages: messages.map(toMessagePayload) };
 }
 
@@ -131,6 +134,7 @@ export async function serviceEmailThreadList(
 ) {
   assertPg(deps);
   const { listEmailThreads } = await import("@freeanima/capabilities-email");
-  const threads = await listEmailThreads(input);
+  const { agent_world_id } = getResolvedWorldContext();
+  const threads = await listEmailThreads(agent_world_id, input);
   return { threads: threads.map(toThreadPayload) };
 }

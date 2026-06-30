@@ -9,6 +9,7 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
+import { testUserWorldId } from "../../helpers/world-context.ts";
 
 describePg("entity search PG", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -23,12 +24,13 @@ describePg("entity search PG", () => {
   });
 
   it("filters task_item by status and tags in SQL", async () => {
-    const list = await createTaskList({ name: "搜索测试" });
-    await createTaskItem({ title: "部署上线", tags: ["工作"], list_id: list.id });
-    await createTaskItem({ title: "买菜", tags: ["生活"], list_id: list.id });
+    const worldId = testUserWorldId();
+    const list = await createTaskList(worldId, { name: "搜索测试" });
+    await createTaskItem(worldId, { title: "部署上线", tags: ["工作"], list_id: list.id });
+    await createTaskItem(worldId, { title: "买菜", tags: ["生活"], list_id: list.id });
 
     const hits = await searchEntities({
-      world_id: 1,
+      world_id: worldId,
       primary_component: TASK_ITEM_COMPONENT,
       filters: { tags: ["工作"] },
       mode: "filter_only",
@@ -38,15 +40,16 @@ describePg("entity search PG", () => {
   });
 
   it("hybrid search finds task by query", async () => {
-    const list = await createTaskList({ name: "FTS" });
-    await createTaskItem({
+    const worldId = testUserWorldId();
+    const list = await createTaskList(worldId, { name: "FTS" });
+    await createTaskItem(worldId, {
       title: "架构文档",
       content: "实体复合搜索设计",
       list_id: list.id,
     });
 
     const hits = await searchEntities({
-      world_id: 1,
+      world_id: worldId,
       primary_component: TASK_ITEM_COMPONENT,
       query: "架构",
       mode: "hybrid",
@@ -65,9 +68,10 @@ describePg("entity search PG", () => {
   });
 
   it("global search with public world ids succeeds", async () => {
+    const worldId = testUserWorldId();
     const result = await searchEntities({
       global: true,
-      accessible_world_ids: [1],
+      accessible_world_ids: [worldId],
       primary_component: TASK_ITEM_COMPONENT,
       mode: "filter_only",
       limit: 5,

@@ -10,6 +10,16 @@ export function parsePriority(raw: unknown): TaskItemPriority | undefined {
   return TASK_PRIORITIES.includes(s as TaskItemPriority) ? (s as TaskItemPriority) : undefined;
 }
 
+export function parseWorldId(raw: unknown): number | null {
+  const id = Number(raw);
+  return Number.isFinite(id) && id > 0 ? Math.floor(id) : null;
+}
+
+export const WORLD_ID_TOOL_PROPERTY = {
+  type: "integer",
+  description: "Owning world id (see system prompt: user_world_id / agent_world_id)",
+} as const;
+
 export function parseTags(raw: unknown): string[] | undefined {
   if (raw == null) return undefined;
   if (Array.isArray(raw)) return raw.map((v) => String(v));

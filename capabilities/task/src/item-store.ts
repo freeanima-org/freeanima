@@ -1,4 +1,5 @@
 import { TASK_ITEM_COMPONENT, asTaskItem } from "@freeanima/core/db/schema/entity";
+import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/core/db/pg/entity";
 import { formatCstIso } from "@freeanima/core/util";
 import {
   createEntity,
@@ -8,7 +9,7 @@ import {
   updateEntity,
 } from "@freeanima/core/db/pg/entity";
 
-import { defaultTaskWorldId, assertListAcceptsTasks } from "./list-store.ts";
+import { assertListAcceptsTasks } from "./list-store.ts";
 import type {
   TaskItemCreateInput,
   TaskItemListOpts,
@@ -51,7 +52,10 @@ function toItemRow(
   };
 }
 
-export async function listTaskItems(opts: TaskItemListOpts = {}): Promise<TaskItemRow[]> {
+export async function listTaskItems(
+  worldId: number,
+  opts: TaskItemListOpts = {},
+): Promise<TaskItemRow[]> {
   const filters: Record<string, unknown> = {};
   if (opts.list_id != null) filters.list_id = opts.list_id;
   if (opts.status != null) filters.status = opts.status;
@@ -59,7 +63,7 @@ export async function listTaskItems(opts: TaskItemListOpts = {}): Promise<TaskIt
   if (opts.tags?.length) filters.tags = opts.tags;
 
   const result = await searchEntities({
-    world_id: defaultTaskWorldId(),
+    world_id: worldId,
     primary_component: TASK_ITEM_COMPONENT,
     filters: Object.keys(filters).length > 0 ? filters : undefined,
     limit: opts.limit ?? 500,
@@ -78,8 +82,11 @@ export async function listTaskItems(opts: TaskItemListOpts = {}): Promise<TaskIt
     .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
 }
 
-export async function createTaskItem(input: TaskItemCreateInput): Promise<TaskItemRow> {
-  await assertListAcceptsTasks(input.list_id);
+export async function createTaskItem(
+  worldId: number,
+  input: TaskItemCreateInput,
+): Promise<TaskItemRow> {
+  await assertListAcceptsTasks(input.list_id, worldId);
   const tags = normalizeTags(input.tags);
   const body = {
     status: "pending" as const,
@@ -94,7 +101,7 @@ export async function createTaskItem(input: TaskItemCreateInput): Promise<TaskIt
 
   const row = await createEntity({
     type: "content",
-    world_id: defaultTaskWorldId(),
+    world_id: worldId,
     components: [TASK_ITEM_COMPONENT],
     primary_component: TASK_ITEM_COMPONENT,
     title: input.title.trim(),
@@ -107,16 +114,21 @@ export async function createTaskItem(input: TaskItemCreateInput): Promise<TaskIt
   return toItemRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
 }
 
-export async function updateTaskItem(input: TaskItemUpdateInput): Promise<TaskItemRow | null> {
+export async function updateTaskItem(
+  worldId: number,
+  input: TaskItemUpdateInput,
+): Promise<TaskItemRow | null> {
   const existing = await getEntity(input.id);
   if (!existing) return null;
+  await assertEntityInWorld(input.id, worldId);
 
   const parsedExisting = asTaskItem(existing);
   if (!parsedExisting) return null;
 
   const bodyPatch: Record<string, unknown> = {};
   if (input.list_id !== undefined) {
-    await assertListAcceptsTasks(input.list_id);
+    await assertListAcceptsTasks(input.list_id, worldId);
+    await assertSameWorldReferent(input.id, input.list_id);
     bodyPatch.list_id = input.list_id;
   }
   if (input.priority !== undefined) bodyPatch.priority = input.priority;
@@ -143,25 +155,31 @@ export async function updateTaskItem(input: TaskItemUpdateInput): Promise<TaskIt
     : null;
 }
 
-export async function completeTaskItem(id: number): Promise<TaskItemRow | null> {
-  return updateTaskItem({ id, status: "completed" });
+export async function completeTaskItem(worldId: number, id: number): Promise<TaskItemRow | null> {
+  return updateTaskItem(worldId, { id, status: "completed" });
 }
 
-export async function uncompleteTaskItem(id: number): Promise<TaskItemRow | null> {
-  return updateTaskItem({ id, status: "pending" });
+export async function uncompleteTaskItem(worldId: number, id: number): Promise<TaskItemRow | null> {
+  return updateTaskItem(worldId, { id, status: "pending" });
 }
 
-export async function deleteTaskItem(id: number): Promise<boolean> {
+export async function deleteTaskItem(worldId: number, id: number): Promise<boolean> {
+  const existing = await getEntity(id);
+  if (!existing) return false;
+  await assertEntityInWorld(id, worldId);
   return deleteEntity(id);
 }
 
-export async function searchTaskItems(opts: TaskItemSearchOpts): Promise<TaskItemRow[]> {
+export async function searchTaskItems(
+  worldId: number,
+  opts: TaskItemSearchOpts,
+): Promise<TaskItemRow[]> {
   const filters: Record<string, unknown> = {};
   if (opts.list_id != null) filters.list_id = opts.list_id;
   if (opts.status != null && opts.status !== "all") filters.status = opts.status;
 
   const result = await searchEntities({
-    world_id: defaultTaskWorldId(),
+    world_id: worldId,
     primary_component: TASK_ITEM_COMPONENT,
     query: opts.query,
     filters: Object.keys(filters).length > 0 ? filters : undefined,

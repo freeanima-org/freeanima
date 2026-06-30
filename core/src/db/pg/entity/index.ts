@@ -1,6 +1,7 @@
 export * from "./types.ts";
 export {
   createEntity,
+  createEntityAtId,
   getEntity,
   updateEntity,
   deleteEntity,
@@ -14,3 +15,18 @@ export {
   EntitySearchScopeError,
 } from "./search/entity-search-repo.ts";
 export { resolvePublicAccessibleWorldIds } from "./search/accessible-worlds.ts";
+export {
+  ensureWorldSubjects,
+  createSubjectEntityRecord,
+  createDefaultPrivateWorldForSubject,
+  buildWorldConfigBody,
+  EntitySubjectBootstrapError,
+  type EnsuredWorldSubjects,
+} from "./subject-world.ts";
+export {
+  assertValidWorldId,
+  assertEntityInWorld,
+  assertSameWorldReferent,
+  assertPrivateWorldOwnedBySubject,
+  EntityWorldError,
+} from "./world-assert.ts";

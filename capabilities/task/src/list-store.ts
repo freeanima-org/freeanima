@@ -1,9 +1,9 @@
 import {
-  ENTITY_DEFAULT_TASK_LIST_ID,
   TASK_LIST_COMPONENT,
   asTaskList,
   type TaskListBody,
 } from "@freeanima/core/db/schema/entity";
+import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/core/db/pg/entity";
 import {
   createEntity,
   deleteEntity,
@@ -20,10 +20,6 @@ import type {
   TaskListUpdateInput,
 } from "./types.ts";
 
-export function defaultTaskWorldId(): number {
-  return 1;
-}
-
 function resolveParentId(body: Record<string, unknown>): number | null {
   const v = body.parent_id;
   if (v == null) return null;
@@ -35,9 +31,9 @@ function resolveIsFolder(body: Record<string, unknown>): boolean {
   return body.is_folder === true;
 }
 
-async function countItemsForList(listId: number): Promise<number> {
+async function countItemsForList(listId: number, worldId: number): Promise<number> {
   const items = await listEntities({
-    world_id: defaultTaskWorldId(),
+    world_id: worldId,
     primary_component: "task_item",
     limit: 500,
   });
@@ -66,16 +62,11 @@ function toListRow(
   };
 }
 
-export function isDefaultTaskListId(id: number): boolean {
-  return id === ENTITY_DEFAULT_TASK_LIST_ID;
-}
-
 function assertDefaultListConstraints(
-  id: number,
   existing: { body: Record<string, unknown> },
   patch: { is_folder?: boolean; parent_id?: number | null },
 ): void {
-  const isDefault = isDefaultTaskListId(id) || existing.body.is_default === true;
+  const isDefault = existing.body.is_default === true;
   if (!isDefault) return;
   if (patch.is_folder === true) {
     throw new Error("default task list cannot be a folder");
@@ -85,22 +76,26 @@ function assertDefaultListConstraints(
   }
 }
 
-function assertCanCloseTaskList(id: number, existing: { body: Record<string, unknown> }): void {
-  if (isDefaultTaskListId(id) || existing.body.is_default === true) {
+function assertCanCloseTaskList(existing: { body: Record<string, unknown> }): void {
+  if (existing.body.is_default === true) {
     throw new Error("default task list cannot be closed");
   }
 }
 
-async function getChildListIds(parentId: number): Promise<number[]> {
+async function getChildListIds(parentId: number, worldId: number): Promise<number[]> {
   const rows = await listEntities({
-    world_id: defaultTaskWorldId(),
+    world_id: worldId,
     primary_component: TASK_LIST_COMPONENT,
     limit: 200,
   });
   return rows.filter((row) => resolveParentId(row.body) === parentId).map((row) => row.id);
 }
 
-async function assertValidParent(childId: number, parentId: number | null): Promise<void> {
+async function assertValidParent(
+  childId: number,
+  parentId: number | null,
+  worldId: number,
+): Promise<void> {
   if (parentId == null) return;
   if (parentId === childId) {
     throw new Error("list cannot be its own parent");
@@ -109,13 +104,14 @@ async function assertValidParent(childId: number, parentId: number | null): Prom
   if (!parent || parent.primary_component !== TASK_LIST_COMPONENT) {
     throw new Error("parent folder not found");
   }
+  await assertEntityInWorld(parentId, worldId);
   if (!resolveIsFolder(parent.body)) {
     throw new Error("parent must be a folder");
   }
-  await assertNoCycle(childId, parentId);
+  await assertNoCycle(childId, parentId, worldId);
 }
 
-async function assertNoCycle(childId: number, parentId: number): Promise<void> {
+async function assertNoCycle(childId: number, parentId: number, worldId: number): Promise<void> {
   let current: number | null = parentId;
   const visited = new Set<number>();
   while (current != null) {
@@ -126,20 +122,21 @@ async function assertNoCycle(childId: number, parentId: number): Promise<void> {
     visited.add(current);
     const row = await getEntity(current);
     if (!row || row.primary_component !== TASK_LIST_COMPONENT) break;
+    await assertEntityInWorld(current, worldId);
     current = resolveParentId(row.body);
   }
 }
 
-async function assertFolderHasNoChildren(id: number): Promise<void> {
-  const children = await getChildListIds(id);
+async function assertFolderHasNoChildren(id: number, worldId: number): Promise<void> {
+  const children = await getChildListIds(id, worldId);
   if (children.length > 0) {
     throw new Error("folder has children and cannot be converted to a list");
   }
 }
 
-async function deleteTasksInList(listId: number): Promise<void> {
+async function deleteTasksInList(listId: number, worldId: number): Promise<void> {
   const items = await listEntities({
-    world_id: defaultTaskWorldId(),
+    world_id: worldId,
     primary_component: "task_item",
     limit: 500,
   });
@@ -150,29 +147,63 @@ async function deleteTasksInList(listId: number): Promise<void> {
   }
 }
 
-async function cascadeClosedState(id: number, closed: boolean): Promise<void> {
-  const children = await getChildListIds(id);
+async function cascadeClosedState(id: number, closed: boolean, worldId: number): Promise<void> {
+  const children = await getChildListIds(id, worldId);
   for (const childId of children) {
     await updateEntity({ id: childId, body: { closed } });
     const child = await getEntity(childId);
     if (child && resolveIsFolder(child.body)) {
-      await cascadeClosedState(childId, closed);
+      await cascadeClosedState(childId, closed, worldId);
     }
   }
 }
 
-export async function assertListAcceptsTasks(listId: number): Promise<void> {
+export async function assertListAcceptsTasks(listId: number, worldId: number): Promise<void> {
   const existing = await getEntity(listId);
   if (!existing || existing.primary_component !== TASK_LIST_COMPONENT) {
     throw new Error("task list not found");
   }
+  await assertEntityInWorld(listId, worldId);
   if (resolveIsFolder(existing.body)) {
     throw new Error("tasks cannot be assigned to a folder");
   }
 }
 
-export async function listTaskLists(opts?: { includeClosed?: boolean }): Promise<TaskListRow[]> {
-  const worldId = defaultTaskWorldId();
+/** 按 world 懒创建默认 Inbox（幂等） */
+export async function ensureDefaultTaskListForWorld(worldId: number): Promise<TaskListRow> {
+  const lists = await listTaskLists(worldId, { includeClosed: true });
+  const existing = lists.find((l) => l.is_default);
+  if (existing) return existing;
+
+  const body: TaskListBody = {
+    sort_order: 0,
+    closed: false,
+    color: null,
+    is_default: true,
+    is_folder: false,
+    parent_id: null,
+  };
+  const row = await createEntity({
+    type: "content",
+    world_id: worldId,
+    components: [TASK_LIST_COMPONENT],
+    primary_component: TASK_LIST_COMPONENT,
+    title: "收件箱",
+    body,
+  });
+  const parsed = asTaskList(row);
+  if (!parsed) throw new Error("failed to create default task list");
+  return toListRow(parsed, {
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    item_count: 0,
+  });
+}
+
+export async function listTaskLists(
+  worldId: number,
+  opts?: { includeClosed?: boolean },
+): Promise<TaskListRow[]> {
   const rows = await listEntities({
     world_id: worldId,
     primary_component: TASK_LIST_COMPONENT,
@@ -184,7 +215,7 @@ export async function listTaskLists(opts?: { includeClosed?: boolean }): Promise
     if (!parsed) continue;
     if (!opts?.includeClosed && (parsed.closed ?? false)) continue;
     const is_folder = parsed.is_folder ?? false;
-    const item_count = is_folder ? 0 : await countItemsForList(parsed.id);
+    const item_count = is_folder ? 0 : await countItemsForList(parsed.id, worldId);
     lists.push(
       toListRow(parsed, {
         created_at: row.created_at,
@@ -196,25 +227,22 @@ export async function listTaskLists(opts?: { includeClosed?: boolean }): Promise
   return lists.toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
 }
 
-export async function getDefaultTaskList(): Promise<TaskListRow | null> {
-  const lists = await listTaskLists({ includeClosed: true });
-  return (
-    lists.find((l) => l.is_default || l.id === ENTITY_DEFAULT_TASK_LIST_ID) ?? lists[0] ?? null
-  );
+export async function getDefaultTaskList(worldId: number): Promise<TaskListRow> {
+  return ensureDefaultTaskListForWorld(worldId);
 }
 
-export async function createTaskList(input: TaskListCreateInput): Promise<TaskListRow> {
+export async function createTaskList(
+  worldId: number,
+  input: TaskListCreateInput,
+): Promise<TaskListRow> {
   const is_folder = input.is_folder ?? false;
   const parent_id = input.parent_id ?? null;
 
-  if (is_folder && parent_id != null) {
-    // folders can be nested under other folders
-  }
   if (!is_folder && parent_id != null) {
-    await assertValidParent(-1, parent_id);
+    await assertValidParent(-1, parent_id, worldId);
   }
   if (is_folder && parent_id != null) {
-    await assertValidParent(-1, parent_id);
+    await assertValidParent(-1, parent_id, worldId);
   }
 
   const body: TaskListBody = {
@@ -227,7 +255,7 @@ export async function createTaskList(input: TaskListCreateInput): Promise<TaskLi
   };
   const row = await createEntity({
     type: "content",
-    world_id: defaultTaskWorldId(),
+    world_id: worldId,
     components: [TASK_LIST_COMPONENT],
     primary_component: TASK_LIST_COMPONENT,
     title: input.name.trim(),
@@ -242,25 +270,32 @@ export async function createTaskList(input: TaskListCreateInput): Promise<TaskLi
   });
 }
 
-export async function updateTaskList(input: TaskListUpdateInput): Promise<TaskListRow | null> {
+export async function updateTaskList(
+  worldId: number,
+  input: TaskListUpdateInput,
+): Promise<TaskListRow | null> {
   const existing = await getEntity(input.id);
   if (!existing || existing.primary_component !== TASK_LIST_COMPONENT) return null;
+  await assertEntityInWorld(input.id, worldId);
 
-  assertDefaultListConstraints(input.id, existing, {
+  assertDefaultListConstraints(existing, {
     is_folder: input.is_folder,
     parent_id: input.parent_id,
   });
 
   if (input.closed === true) {
-    assertCanCloseTaskList(input.id, existing);
+    assertCanCloseTaskList(existing);
   }
 
   if (input.is_folder === false && resolveIsFolder(existing.body)) {
-    await assertFolderHasNoChildren(input.id);
+    await assertFolderHasNoChildren(input.id, worldId);
   }
 
   if (input.parent_id !== undefined) {
-    await assertValidParent(input.id, input.parent_id);
+    await assertValidParent(input.id, input.parent_id, worldId);
+    if (input.parent_id != null) {
+      await assertSameWorldReferent(input.id, input.parent_id);
+    }
   }
 
   const bodyPatch: Record<string, unknown> = {};
@@ -278,13 +313,13 @@ export async function updateTaskList(input: TaskListUpdateInput): Promise<TaskLi
   if (!row) return null;
 
   if (input.closed !== undefined && resolveIsFolder(existing.body)) {
-    await cascadeClosedState(input.id, input.closed);
+    await cascadeClosedState(input.id, input.closed, worldId);
   }
 
   const parsed = asTaskList(row);
   if (!parsed) return null;
   const is_folder = parsed.is_folder ?? false;
-  const item_count = is_folder ? 0 : await countItemsForList(parsed.id);
+  const item_count = is_folder ? 0 : await countItemsForList(parsed.id, worldId);
   return toListRow(parsed, {
     created_at: row.created_at,
     updated_at: row.updated_at,
@@ -292,41 +327,46 @@ export async function updateTaskList(input: TaskListUpdateInput): Promise<TaskLi
   });
 }
 
-export async function deleteTaskList(id: number, opts?: { cascade?: boolean }): Promise<boolean> {
-  if (isDefaultTaskListId(id)) {
-    throw new Error("default task list cannot be deleted");
-  }
+export async function deleteTaskList(
+  worldId: number,
+  id: number,
+  opts?: { cascade?: boolean },
+): Promise<boolean> {
   const existing = await getEntity(id);
   if (!existing || existing.primary_component !== TASK_LIST_COMPONENT) return false;
+  await assertEntityInWorld(id, worldId);
   if (existing.body.is_default === true) {
     throw new Error("default task list cannot be deleted");
   }
 
-  const children = await getChildListIds(id);
+  const children = await getChildListIds(id, worldId);
   for (const childId of children) {
-    await deleteTaskList(childId, { cascade: true });
+    await deleteTaskList(worldId, childId, { cascade: true });
   }
 
   if (opts?.cascade !== false) {
     if (!resolveIsFolder(existing.body)) {
-      await deleteTasksInList(id);
+      await deleteTasksInList(id, worldId);
     }
   }
 
   return deleteEntity(id);
 }
 
-export async function closeTaskList(id: number): Promise<TaskListRow | null> {
-  return updateTaskList({ id, closed: true });
+export async function closeTaskList(worldId: number, id: number): Promise<TaskListRow | null> {
+  return updateTaskList(worldId, { id, closed: true });
 }
 
-export async function reopenTaskList(id: number): Promise<TaskListRow | null> {
-  return updateTaskList({ id, closed: false });
+export async function reopenTaskList(worldId: number, id: number): Promise<TaskListRow | null> {
+  return updateTaskList(worldId, { id, closed: false });
 }
 
-export async function searchTaskLists(opts: TaskListSearchOpts): Promise<TaskListRow[]> {
+export async function searchTaskLists(
+  worldId: number,
+  opts: TaskListSearchOpts,
+): Promise<TaskListRow[]> {
   const result = await searchEntities({
-    world_id: defaultTaskWorldId(),
+    world_id: worldId,
     primary_component: TASK_LIST_COMPONENT,
     query: opts.query,
     limit: Math.max(1, Math.min(50, opts.limit ?? 30)),
@@ -339,7 +379,7 @@ export async function searchTaskLists(opts: TaskListSearchOpts): Promise<TaskLis
     if (!parsed) continue;
     if (!opts.includeClosed && (parsed.closed ?? false)) continue;
     const is_folder = parsed.is_folder ?? false;
-    const item_count = is_folder ? 0 : await countItemsForList(parsed.id);
+    const item_count = is_folder ? 0 : await countItemsForList(parsed.id, worldId);
     lists.push(
       toListRow(parsed, {
         created_at: row.created_at,

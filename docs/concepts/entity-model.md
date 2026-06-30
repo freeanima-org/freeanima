@@ -45,7 +45,18 @@ Component fields live in **`body` JSONB** at the top level. **`primary_component
 - Identity is **`type`** plus `agent_config` or `user_config` primary component.
 - Subjects are **not** scoped by `world_id` in a membership sense; row `world_id` stays at bootstrap root (`ENTITY_ROOT_WORLD_ID`) as a table placeholder.
 - **`agent_config` / `user_config` body**: `default_private_world_id` — the subject's single default private world (auto-created on subject create; configurable from private worlds owned by the subject).
-- **Notifications** use subject entity ids as `recipient_id` (see [`notifications.md`](notifications.md) and `config.yaml` `notifications.user_subject_id` / `agent_subject_id`).
+- **Notifications** use subject entity ids as `recipient_id` (see [`notifications.md`](notifications.md) and `config.yaml` `worlds.user_subject_id` / `agent_subject_id`).
+
+### Boot-time ensure (`worlds` config)
+
+Hub startup runs **`ensureWorldSubjects()`** once (after migrations, before engine):
+
+- Ensures configured (or default `user=1` / `agent=2`) subject entities exist with correct `type`.
+- Ensures each subject has a **default private world** (`default_private_world_id`); private world ids are **not fixed**.
+- Binds **`ResolvedWorldContext`** in memory: `user_subject_id`, `agent_subject_id`, `user_world_id`, `agent_world_id`.
+- Type conflict (configured id exists but wrong `type`) **aborts service startup**.
+
+Legacy SQL bootstrap seeds (public world id=1, Inbox id=2) are removed by migration; default data is **code-owned**, not migration-seeded.
 
 ## World namespace
 
@@ -71,7 +82,9 @@ TickTick-style lists and items map to:
 | List        | `type=content` | `task_list`    |
 | Item (task) | `type=content` | `task_item`    |
 
-Items reference their list via `body.list_id` (entity id). Task items store **title** and **content** on entity columns; **tags** live in `body.tags`. A **default list** (`is_default: true`, seeded id `2` "Inbox") cannot be deleted or archived but may be renamed. List **`body.closed: true`** means archived: hidden from the main sidebar by default (`tasklist.list` unless `include_closed`), restorable via `tasklist.patch({ closed: false })`; contained task items are kept.
+Items reference their list via `body.list_id` (entity id). Task items store **title** and **content** on entity columns; **tags** live in `body.tags`. Each world gets a **default list** (`is_default: true`, name e.g.「收件箱」) **lazily** on first task use (`ensureDefaultTaskListForWorld`); it cannot be deleted or archived but may be renamed. List **`body.closed: true`** means archived: hidden from the main sidebar by default (`tasklist.list` unless `include_closed`), restorable via `tasklist.patch({ closed: false })`; contained task items are kept.
+
+Task/list tools and stores require explicit **`world_id`** (typically `user_world_id` from system prompt / `GET /api/worlds/context`).
 
 **Folders** (`body.is_folder: true`) are container nodes in the sidebar tree only — they cannot hold tasks directly (`task.create` / `task.patch` reject `list_id` pointing at a folder). Child lists and sub-folders reference a parent folder via `body.parent_id` (entity id of a folder, or omitted/null at root). Nesting must not form cycles. Archiving or deleting a folder cascades to descendants. `sort_order` is scoped among siblings sharing the same `parent_id`.
 
