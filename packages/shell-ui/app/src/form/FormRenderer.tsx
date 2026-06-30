@@ -16,13 +16,24 @@ type Props = {
   platform: SettingsPlatform;
   sectionId?: string;
   onDirty?: () => void;
+  /** 保存成功后显示「保存并进入」；用于 Web 引导页等独立连接流程 */
+  enterAfterSave?: boolean;
+  onEnterAfterSave?: () => void;
 };
 
 function readFieldValue(data: Record<string, unknown>, key: string): unknown {
   return data[key];
 }
 
-export function FormRenderer({ fields, store, platform, sectionId, onDirty }: Props) {
+export function FormRenderer({
+  fields,
+  store,
+  platform,
+  sectionId,
+  onDirty,
+  enterAfterSave = false,
+  onEnterAfterSave,
+}: Props) {
   const [values, setValues] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -90,11 +101,14 @@ export function FormRenderer({ fields, store, platform, sectionId, onDirty }: Pr
 
   const saveAndEnter = useCallback(async () => {
     const ok = await persist();
-    if (ok) {
-      const base = resolveShellRouterBasepath() ?? "";
-      window.location.href = `${base}/chat`;
+    if (!ok) return;
+    if (onEnterAfterSave) {
+      onEnterAfterSave();
+      return;
     }
-  }, [persist]);
+    const base = resolveShellRouterBasepath() ?? "";
+    window.location.href = `${base}/chat`;
+  }, [onEnterAfterSave, persist]);
 
   const testConnection = useCallback(async () => {
     if (!store.test) return;
@@ -174,7 +188,7 @@ export function FormRenderer({ fields, store, platform, sectionId, onDirty }: Pr
             {testLabel}
           </button>
         ) : null}
-        {platform === "mobile" ? (
+        {platform === "mobile" || enterAfterSave ? (
           <button
             type="button"
             className="btn btn-primary btn-sm"

@@ -9,6 +9,7 @@ import {
   createWebShellStub,
   installWebShellFromPrefs,
   testWebHubConnection,
+  webNeedsHubSetupFromConfig,
 } from "./web-shell.ts";
 
 type ShellBridgeWindow = Window & {
@@ -62,6 +63,16 @@ function installScopedSettingsBridge(): void {
   };
 }
 
+function redirectToHubSetupIfNeeded(): void {
+  if (!webNeedsHubSetupFromConfig()) return;
+  const base = (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
+  const setupPath = base ? `${base}/setup` : "/setup";
+  const path = window.location.pathname.replace(/\/$/, "") || "/";
+  if (path === setupPath || path.endsWith("/setup")) return;
+  const next = `${setupPath}${window.location.search}${window.location.hash}`;
+  window.history.replaceState(null, "", next);
+}
+
 async function bootstrapShellBridge(): Promise<void> {
   const finish = installShellBridgeReady();
   document.documentElement.dataset.shellUi = "1";
@@ -94,6 +105,8 @@ async function bootstrapShellBridge(): Promise<void> {
     } else if (defaultHubUrl) {
       window.satelliteShell = buildWebShellFromRaw(defaultHubUrl, defaultToken);
     }
+
+    redirectToHubSetupIfNeeded();
   } finally {
     finish();
   }
