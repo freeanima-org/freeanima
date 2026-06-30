@@ -168,10 +168,12 @@ compression:
 #   model: bge-m3
 #   dimensions: 1024
 
-# Hub HTTP 跨域（与 tunnel / web 无关；浏览器经 Hub /web 同源访问时通常留空）
+# Hub HTTP（监听地址 + 可选跨域白名单）
 # http:
+#   host: 0.0.0.0                    # 局域网访问；默认 127.0.0.1（仅本机）
+#   # host: [127.0.0.1, 10.244.0.2]  # 或多网卡 / IP + 主机名
 #   cors_origins:
-#     - http://127.0.0.1:4173   # dev:web
+#     - http://127.0.0.1:4173        # 仅 dev:web 等跨域场景需要
 
 # Cloudflare Tunnel 远程访问（认证见 remote_auth.token）
 # 一条命令完成：anima tunnel setup

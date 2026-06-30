@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type { JsonSchemaObject, ToolDef, ToolHandler, ToolSetRegistry } from "@freeanima/core/tool";
 import { toolError, toolResult } from "@freeanima/core/tool";
 import { getToolConversationId } from "@freeanima/core/tool/tool-context";
@@ -300,7 +301,7 @@ export class SatelliteManager {
     return {
       kind: "satellite_proxy",
       payload: {
-        call_id: crypto.randomUUID(),
+        call_id: randomUUID(),
         tool_name: parsed.value.canonical,
         local_name: parsed.value.local_name,
         args: {},

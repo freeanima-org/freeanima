@@ -3,6 +3,9 @@ export const DEFAULT_BIND_HOSTS = ["127.0.0.1"] as const;
 
 export const DEFAULT_BIND_HOST = DEFAULT_BIND_HOSTS.join(",");
 
+const ALL_IPV4 = "0.0.0.0";
+const ALL_IPV6 = "::";
+
 export function parseBindHosts(host: string): string[] {
   const hosts = host
     .split(",")
@@ -10,6 +13,18 @@ export function parseBindHosts(host: string): string[] {
     .filter(Boolean);
   if (!hosts.length) return [...DEFAULT_BIND_HOSTS];
   return hosts;
+}
+
+/**
+ * 合并监听地址：0.0.0.0/:: 覆盖其余；去重。
+ * 多地址会各占一个 socket（同端口不同网卡），勿与 0.0.0.0 混用。
+ */
+export function coalesceBindHosts(hosts: string[]): string[] {
+  const normalized = hosts.map((h) => h.trim()).filter(Boolean);
+  if (!normalized.length) return [...DEFAULT_BIND_HOSTS];
+  if (normalized.includes(ALL_IPV4)) return [ALL_IPV4];
+  if (normalized.includes(ALL_IPV6) || normalized.includes("[::]")) return [ALL_IPV6];
+  return [...new Set(normalized)];
 }
 
 /** For status / health probes: prefer loopback */

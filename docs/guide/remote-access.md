@@ -14,6 +14,7 @@ title: Remote access
 | **Service API Token**   | 绑定 `user` / `agent` subject；REST `Authorization: Bearer`；SAP `connect.auth_token`；MCP `/mcp` 同 Bearer |
 | **CLI bootstrap**       | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                               |
 | **cloudflared**         | Outbound tunnel；single hostname → Hub `127.0.0.1:2658`（API + Web UI at `/web`）                           |
+| **`http.host`**         | Hub listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                     |
 | **`http.cors_origins`** | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel          |
 | **Client settings**     | app/desktop / app/mobile / **browser Web** fill Hub URL and token in **Hub settings**                       |
 
@@ -40,6 +41,28 @@ Admin REST（需已认证 `full` token）：
 - `GET /api/subjects/:id/tokens`
 - `POST /api/subjects/:id/tokens` — body `{ "name": "desktop" }`，响应含一次性 `plaintext`
 - `DELETE /api/tokens/:id`
+
+### Listen address (`http.host`)
+
+Default bind is `127.0.0.1:2658` (loopback only). For LAN access via `http://<PC-IP>:2658/web` or a local hostname such as `http://galaxy:2658/web`, set:
+
+```yaml
+http:
+  host: 0.0.0.0
+```
+
+Multiple binds (distinct interfaces only — not client-facing aliases). Use `0.0.0.0` instead of listing every IP; do not mix `0.0.0.0` with specific addresses. Hostnames must resolve on the Hub machine (`/etc/hosts` or DNS):
+
+```yaml
+http:
+  host:
+    - 127.0.0.1
+    - 10.244.0.2
+```
+
+CLI `--host` overrides config for a single run / systemd unit write. After changing `http.host`, run `anima service restart`.
+
+Without Tunnel, LAN: `http://<PC-IP>:2658/web/chat` with `http.host: 0.0.0.0` (or `anima service start --host 0.0.0.0`); clients set Hub URL to `http://<PC-IP>:2658` (no `/web` suffix).
 
 ### Cross-origin (`http.cors_origins`)
 
@@ -76,7 +99,7 @@ web:
 
 Browser: `https://anima.example.com/web/chat` · Hub API: `https://anima.example.com/api`
 
-Without Tunnel, LAN: `http://<PC-IP>:2658/web/chat` with `anima service start --host 0.0.0.0`; clients set Hub URL to `http://<PC-IP>:2658` (no `/web` suffix).
+Without Tunnel, LAN: `http://<PC-IP>:2658/web/chat` with `http.host: 0.0.0.0` in config (see above); clients set Hub URL to `http://<PC-IP>:2658` (no `/web` suffix).
 
 ### Cloudflare credentials (pass)
 
