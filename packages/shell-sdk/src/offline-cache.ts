@@ -39,14 +39,18 @@ function openDb(): Promise<IDBDatabase | null> {
   }
   return new Promise((resolve) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onerror = () => resolve(null);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains(STORE)) {
-        db.createObjectStore(STORE);
-      }
-    };
-    req.onsuccess = () => resolve(req.result);
+    req.addEventListener("error", () => resolve(null), { once: true });
+    req.addEventListener(
+      "upgradeneeded",
+      () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(STORE)) {
+          db.createObjectStore(STORE);
+        }
+      },
+      { once: true },
+    );
+    req.addEventListener("success", () => resolve(req.result), { once: true });
   });
 }
 
@@ -59,9 +63,9 @@ async function kvGet(key: string): Promise<unknown | null> {
   return new Promise((resolve) => {
     const tx = db.transaction(STORE, "readonly");
     const req = tx.objectStore(STORE).get(key);
-    req.onsuccess = () => resolve(req.result ?? null);
-    req.onerror = () => resolve(null);
-    tx.oncomplete = () => db.close();
+    req.addEventListener("success", () => resolve(req.result ?? null), { once: true });
+    req.addEventListener("error", () => resolve(null), { once: true });
+    tx.addEventListener("complete", () => db.close(), { once: true });
   });
 }
 
@@ -75,14 +79,22 @@ async function kvSet(key: string, value: unknown): Promise<void> {
   await new Promise<void>((resolve) => {
     const tx = db.transaction(STORE, "readwrite");
     tx.objectStore(STORE).put(value, key);
-    tx.oncomplete = () => {
-      db.close();
-      resolve();
-    };
-    tx.onerror = () => {
-      db.close();
-      resolve();
-    };
+    tx.addEventListener(
+      "complete",
+      () => {
+        db.close();
+        resolve();
+      },
+      { once: true },
+    );
+    tx.addEventListener(
+      "error",
+      () => {
+        db.close();
+        resolve();
+      },
+      { once: true },
+    );
   });
 }
 

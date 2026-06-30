@@ -140,7 +140,7 @@ export class SatelliteManager {
       const tools = [...this.toolIndex.values()]
         .filter((t) => t.appSlug === appSlug && t.instanceNorm === instanceNorm)
         .map((t) => t.fullName)
-        .sort();
+        .toSorted();
       toolCount += tools.length;
       instances.push({
         app_id: conn.appId,

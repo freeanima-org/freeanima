@@ -6,23 +6,25 @@ const WORKER_URL = "/sap-shared-worker.js";
 const VIRTUAL_ID = "\0sap-shared-worker-dev";
 
 function serveTransformedWorker(server: ViteDevServer): void {
-  server.middlewares.use(async (req, res, next) => {
-    if (req.url?.split("?")[0] !== WORKER_URL) {
-      next();
-      return;
-    }
-    try {
-      const result = await server.transformRequest(WORKER_URL);
-      if (!result?.code) {
+  server.middlewares.use((req, res, next) => {
+    void (async () => {
+      if (req.url?.split("?")[0] !== WORKER_URL) {
         next();
         return;
       }
-      res.statusCode = 200;
-      res.setHeader("Content-Type", "application/javascript");
-      res.end(result.code);
-    } catch (err) {
-      next(err instanceof Error ? err : new Error(String(err)));
-    }
+      try {
+        const result = await server.transformRequest(WORKER_URL);
+        if (!result?.code) {
+          next();
+          return;
+        }
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/javascript");
+        res.end(result.code);
+      } catch (err) {
+        next(err instanceof Error ? err : new Error(String(err)));
+      }
+    })().catch(next);
   });
 }
 

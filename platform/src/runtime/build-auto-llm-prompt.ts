@@ -9,7 +9,7 @@ export async function buildAutoLlmSystemPrompt(opts?: {
 }): Promise<string> {
   const selfContent = opts?.selfContent ?? (await loadSelfLayerPrompt());
   const sections = await buildMemorySystemPromptSections(selfContent, opts?.cwd ?? null);
-  const chunks = [...sections].sort((a, b) => a.order - b.order).map((s) => s.content.trim());
+  const chunks = [...sections].toSorted((a, b) => a.order - b.order).map((s) => s.content.trim());
   if (opts?.taskSection?.trim()) chunks.push(opts.taskSection.trim());
   return chunks.filter(Boolean).join("\n\n");
 }

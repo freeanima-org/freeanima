@@ -22,7 +22,7 @@ export function useRuntimeSocket(enabled: boolean): void {
         if (cancelled) return;
         ws = new WebSocket(runtimeWsUrl(origin));
 
-        ws.onmessage = (event: MessageEvent<string>): void => {
+        ws.addEventListener("message", (event: MessageEvent<string>): void => {
           let msg: RuntimeWsMessage;
           try {
             msg = JSON.parse(event.data) as RuntimeWsMessage;
@@ -37,13 +37,13 @@ export function useRuntimeSocket(enabled: boolean): void {
           for (const cmd of msg.play) {
             backend?.playSlot(cmd.slot as MotionSlotId, cmd.motionId);
           }
-        };
+        });
 
-        ws.onclose = (): void => {
+        ws.addEventListener("close", (): void => {
           if (!cancelled) {
             retryTimer = setTimeout(() => void connect(), 2000);
           }
-        };
+        });
       } catch {
         if (!cancelled) {
           retryTimer = setTimeout(() => void connect(), 2000);

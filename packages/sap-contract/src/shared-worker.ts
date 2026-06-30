@@ -33,8 +33,6 @@ type WorkerConfig = SapSharedWorkerInitConfig;
 
 /** Runs inside SharedWorker: one Hub transport shared across browser tabs */
 export function installSapSharedWorkerHost(): void {
-  const scope = self as unknown as { onconnect: ((ev: MessageEvent) => void) | null };
-
   let transport: import("./transport.ts").SapTransportHandle | null = null;
   let workerConfig: WorkerConfig | null = null;
   let instanceId: string | null = null;
@@ -80,7 +78,7 @@ export function installSapSharedWorkerHost(): void {
     return client;
   };
 
-  scope.onconnect = (ev: MessageEvent): void => {
+  self.addEventListener("connect", (ev: Event): void => {
     const port = (ev as MessageEvent & { ports: MessagePort[] }).ports[0];
     if (!port) return;
     ports.add(port);
@@ -91,7 +89,7 @@ export function installSapSharedWorkerHost(): void {
       instanceId,
     } satisfies SharedWorkerPortMessage);
 
-    port.onmessage = (messageEv: MessageEvent): void => {
+    port.addEventListener("message", (messageEv: MessageEvent): void => {
       const msg = messageEv.data as SharedWorkerPortMessage;
       if (msg.type === "init") {
         workerConfig = msg.config;
@@ -129,8 +127,8 @@ export function installSapSharedWorkerHost(): void {
           }
         })();
       }
-    };
-  };
+    });
+  });
 }
 
 export type CreateSharedWorkerSapClientOptions = {
@@ -158,7 +156,7 @@ export function createSharedWorkerSapClient(
     } satisfies SharedWorkerPortMessage);
   };
 
-  port.onmessage = (ev: MessageEvent<SharedWorkerPortMessage>): void => {
+  port.addEventListener("message", (ev: MessageEvent<SharedWorkerPortMessage>): void => {
     const msg = ev.data;
     if (msg.type === "state") {
       instanceId = msg.instanceId;
@@ -178,7 +176,7 @@ export function createSharedWorkerSapClient(
       if (!handlers) return;
       for (const handler of handlers) handler(msg.payload);
     }
-  };
+  });
 
   ensureInit();
 

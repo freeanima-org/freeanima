@@ -70,6 +70,6 @@ describe("resolveMotionFile", () => {
 
 describe("REQUIRED_MOTION_FILES", () => {
   test("与 motion-manifest 一致", () => {
-    expect([...REQUIRED_MOTION_FILES].sort()).toEqual([...requiredMotionFiles()].sort());
+    expect([...REQUIRED_MOTION_FILES].toSorted()).toEqual([...requiredMotionFiles()].toSorted());
   });
 });

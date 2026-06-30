@@ -88,12 +88,12 @@ describePg("conversation archive/delete (PostgreSQL)", () => {
     const fullList = await listConversationSummaries(TEST_SAP_CHAT_PLATFORM, {
       includeArchived: true,
     });
-    expect(fullList.map((s) => s.id).sort()).toEqual([activeId, archivedId].sort());
+    expect(fullList.map((s) => s.id).toSorted()).toEqual([activeId, archivedId].toSorted());
     expect(fullList.find((s) => s.id === archivedId)?.archived_at).toBeTruthy();
 
     await unarchiveConversation(archivedId);
     const restored = await listConversationSummaries(TEST_SAP_CHAT_PLATFORM);
-    expect(restored.map((s) => s.id).sort()).toEqual([activeId, archivedId].sort());
+    expect(restored.map((s) => s.id).toSorted()).toEqual([activeId, archivedId].toSorted());
   });
 
   it("hard deletes conversation and cascades messages", async () => {

@@ -45,20 +45,20 @@ function applyOrder(rows: LimbicMemoryRow[], orderBy: string | undefined): Limbi
   const order = orderBy ?? "created_desc";
   switch (order) {
     case "intensity_desc":
-      return [...rows].sort((a, b) => b.intensity - a.intensity);
+      return [...rows].toSorted((a, b) => b.intensity - a.intensity);
     case "intensity_asc":
-      return [...rows].sort((a, b) => a.intensity - b.intensity);
+      return [...rows].toSorted((a, b) => a.intensity - b.intensity);
     case "valence_desc":
-      return [...rows].sort((a, b) => (b.valence ?? 0) - (a.valence ?? 0));
+      return [...rows].toSorted((a, b) => (b.valence ?? 0) - (a.valence ?? 0));
     case "valence_asc":
-      return [...rows].sort((a, b) => (a.valence ?? 0) - (b.valence ?? 0));
+      return [...rows].toSorted((a, b) => (a.valence ?? 0) - (b.valence ?? 0));
     case "created_asc":
-      return [...rows].sort(
+      return [...rows].toSorted(
         (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
       );
     case "created_desc":
     default:
-      return [...rows].sort(
+      return [...rows].toSorted(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       );
   }

@@ -239,7 +239,7 @@ export class AcpAsyncTaskStore {
     return [...this.tasks.values()]
       .filter((t) => t.status === "queued")
       .filter((t) => !agentName || t.agentName === agentName)
-      .sort((a, b) => a.startedAt - b.startedAt);
+      .toSorted((a, b) => a.startedAt - b.startedAt);
   }
 
   listForAgent(agentName: string): AcpAsyncTask[] {

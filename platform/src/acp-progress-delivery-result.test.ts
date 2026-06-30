@@ -20,8 +20,8 @@ describe("createAcpProgressDelivery deliverResult", () => {
     const conversationUpdated: string[] = [];
 
     const conversation = {
-      appendMessage: async (msg: { role: string; content: string }, conversation: string) => {
-        appended.push({ conversation, content: msg.content });
+      appendMessage: async (msg: { role: string; content: string }, sessionId: string) => {
+        appended.push({ conversation: sessionId, content: msg.content });
       },
       loadConversationMeta: async () => ({
         role: "conversation_meta" as const,

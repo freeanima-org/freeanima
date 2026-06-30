@@ -112,10 +112,10 @@ export async function* streamTerminalEvents(
 
   try {
     while (!signal?.aborted) {
-      const event = await new Promise<TerminalEvent | null>((resolve) => {
-        const onOutput = (data: string) => resolve({ type: "output", data });
-        const onExit = (code: number) => resolve({ type: "exit", code });
-        const onAbort = () => resolve(null);
+      const event = await new Promise<TerminalEvent | null>((resolveEvent) => {
+        const onOutput = (data: string) => resolveEvent({ type: "output", data });
+        const onExit = (code: number) => resolveEvent({ type: "exit", code });
+        const onAbort = () => resolveEvent(null);
 
         ee.once("output", onOutput);
         ee.once("exit", onExit);
