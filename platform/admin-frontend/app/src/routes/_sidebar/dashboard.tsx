@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { DependencyStatus, ServiceStatus } from "@freeanima/admin-contract/api";
+import { ConfirmDialog, StatusAlert } from "@freeanima/ui-kit/composite";
 import { useState } from "react";
 import { getStatus, restartService } from "@admin/lib/api.ts";
 import { m } from "@admin/lib/i18n.ts";
@@ -54,6 +55,7 @@ function dependencyBadge(dep: DependencyStatus | undefined, name: string) {
 function DashboardPage() {
   const { status } = Route.useLoaderData();
   const [restarting, setRestarting] = useState(false);
+  const [showRestartConfirm, setShowRestartConfirm] = useState(false);
 
   const svc = status as ServiceStatus | null;
   const extensions = svc?.extensions;
@@ -110,8 +112,8 @@ function DashboardPage() {
     tools: String(acp.tool_count),
   });
 
-  const confirmRestart = async () => {
-    if (!confirm(m.admin_dashboard_restart_confirm())) return;
+  const runRestart = async () => {
+    setShowRestartConfirm(false);
     setRestarting(true);
     try {
       const res = await restartService();
@@ -131,7 +133,7 @@ function DashboardPage() {
     return (
       <div>
         <h2 className="text-lg font-bold mb-2">{m.admin_dashboard_title()}</h2>
-        <div className="alert alert-error text-sm">{m.admin_dashboard_load_failed()}</div>
+        <StatusAlert variant="error">{m.admin_dashboard_load_failed()}</StatusAlert>
       </div>
     );
   }
@@ -152,7 +154,7 @@ function DashboardPage() {
               postgres={postgres}
               redis={redis}
               restarting={restarting}
-              onRestart={() => void confirmRestart()}
+              onRestart={() => setShowRestartConfirm(true)}
             />
             <PlatformConnectionsCard platforms={platforms} />
           </div>
@@ -216,6 +218,16 @@ function DashboardPage() {
           </div>
         </section>
       </div>
+
+      <ConfirmDialog
+        open={showRestartConfirm}
+        title={m.admin_common_restart_service()}
+        description={m.admin_dashboard_restart_confirm()}
+        confirmLabel={m.admin_common_restart_service()}
+        variant="error"
+        onConfirm={() => void runRestart()}
+        onCancel={() => setShowRestartConfirm(false)}
+      />
     </div>
   );
 }

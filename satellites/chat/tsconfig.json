@@ -9,5 +9,6 @@
     }
   },
   "include": ["app/src/**/*.ts", "app/src/**/*.tsx", "src/**/*.ts", "../../types/**/*.d.ts"],
-  "exclude": ["**/*.test.ts", "dist/**"]
+  "exclude": ["**/*.test.ts", "dist/**"],
+  "references": [{ "path": "../../packages/ui-kit" }]
 }

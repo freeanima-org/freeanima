@@ -1,4 +1,5 @@
 import type { DiaryEntryRow } from "../lib/format-diary.ts";
+import { EmptyState } from "@freeanima/ui-kit/composite";
 import {
   dateLocalToEntryAtIso,
   defaultEntryDateLocal,
@@ -54,7 +55,7 @@ export function EntryTimeline({
 }) {
   const groups = groupEntriesByDate(items);
   if (groups.length === 0) {
-    return <p className="text-sm text-base-content/60 px-2 py-4">暂无日记条目</p>;
+    return <EmptyState message="暂无日记条目" className="px-2 text-left items-start" />;
   }
 
   return (

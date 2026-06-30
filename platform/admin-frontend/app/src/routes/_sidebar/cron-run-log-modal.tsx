@@ -1,4 +1,5 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { listCronLogs } from "@admin/lib/api.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
 import { m } from "@admin/lib/i18n.ts";
@@ -68,7 +69,11 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
           </button>
         </div>
 
-        {error ? <p className="text-sm text-error mb-2">{error}</p> : null}
+        {error ? (
+          <StatusAlert variant="error" className="mb-2">
+            {error}
+          </StatusAlert>
+        ) : null}
 
         <div className="overflow-x-auto max-h-[60vh]">
           <table className="table table-sm">

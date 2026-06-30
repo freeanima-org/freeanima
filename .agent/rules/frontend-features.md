@@ -62,3 +62,5 @@
 | `shell-ui`       | ui-kit、shell-sdk、satellite-\*、admin-frontend | sap-contract、深路径 import satellites |
 | `admin-frontend` | admin-contract、ui-kit、shell-sdk               | sap-contract、shell-ui                 |
 | `satellite-*`    | sap-contract、shell-sdk、ui-kit                 | shell-ui、admin-\*                     |
+
+UI 样式与复合组件约定 → [`frontend-ui.md`](frontend-ui.md)。

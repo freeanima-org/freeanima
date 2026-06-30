@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@plugin "daisyui";
+@import "@freeanima/ui-kit/daisyui.css";
 @source "./**/*.{tsx,ts}";
 @source "../../../../packages/satellite-sdk/src/**/*.{tsx,ts}";
 

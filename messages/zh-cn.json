@@ -587,5 +587,8 @@
   "sidebar_sleep": "睡眠机制",
   "sidebar_time_perception": "时间感知",
   "sidebar_tools": "工具",
-  "sidebar_versioning": "发版"
+  "sidebar_versioning": "发版",
+  "ui_common_cancel": "取消",
+  "ui_common_close": "关闭",
+  "ui_common_confirm": "确定"
 }
