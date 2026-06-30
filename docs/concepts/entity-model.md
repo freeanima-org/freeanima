@@ -90,6 +90,22 @@ Task/list tools and stores require explicit **`world_id`** (typically `user_worl
 
 LLM ToolSets: `@freeanima/capabilities-task` — `task` (item CRUD + `task_search`) and `tasklist` (list CRUD + `tasklist_search`); load via `toolset_load`. `task_search` searches all lists when `list_id` is omitted. Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration (`scripts/migrate-tasks-to-entities.ts`).
 
+### Shell UI: global Subject scope
+
+Hub startup binds **`ResolvedWorldContext`** (`GET /api/worlds/context`). The product shell exposes a **single User / Agent toggle** in the module header — not an arbitrary `world_id` picker. Selection maps to `user_world_id` / `agent_world_id` and persists in `sessionStorage` for the tab.
+
+| Surface          | World binding                                    | Control                        |
+| ---------------- | ------------------------------------------------ | ------------------------------ |
+| Shell header     | `user_world_id` or `agent_world_id`              | global **User / Agent** toggle |
+| `/tasks`         | follows shell scope via SAP `subject_kind`       | none (inherits header)         |
+| `/email`         | follows shell scope via SAP `subject_kind`       | none (inherits header)         |
+| `/notifications` | `recipient_kind` + subject entity id             | none (inherits header)         |
+| `/diary`         | subject default private world via `subject_kind` | none (inherits header)         |
+
+SAP task/email methods accept optional `subject_kind` (defaults: task `user`, email `agent`). Satellites read the shell scope via **`useSubjectScope()`** from `@freeanima/shell-sdk`; Hub REST entity search uses **`resolveWorldIdForSubject()`** with the same scope.
+
+Future multi-world browse (e.g. diary calendar aggregation across worlds) should add **module-scoped** filters or Admin tooling — not a speculative arbitrary world picker.
+
 ## Email module (Estate)
 
 Email accounts, threads, and mirrored messages map to:

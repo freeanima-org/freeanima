@@ -1,5 +1,10 @@
+import {
+  fetchWorldContext,
+  getSubjectKind,
+  resolveWorldIdForSubject,
+} from "@freeanima/satellite-sdk";
+
 import { whenSapClientReady } from "./sap-client.ts";
-import { fetchWorldContext } from "./world-context.ts";
 
 export type EmailAccountRow = {
   id: number;
@@ -30,9 +35,13 @@ async function sap() {
   return whenSapClientReady();
 }
 
+function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
+  return { subject_kind: getSubjectKind(), ...payload };
+}
+
 export async function fetchEmailAccounts(): Promise<EmailAccountRow[]> {
   const client = await sap();
-  const data = await client.request("emailaccount.list", {});
+  const data = await client.request("emailaccount.list", withSubjectKind({}));
   return data.accounts;
 }
 
@@ -43,19 +52,19 @@ export async function fetchEmailMessages(input: {
   limit?: number;
 }): Promise<EmailMessageRow[]> {
   const client = await sap();
-  const data = await client.request("email.message.list", input);
+  const data = await client.request("email.message.list", withSubjectKind(input));
   return data.messages;
 }
 
 export async function readEmailMessage(id: number): Promise<EmailMessageRow> {
   const client = await sap();
-  const data = await client.request("email.message.read", { id });
+  const data = await client.request("email.message.read", withSubjectKind({ id }));
   return data.message;
 }
 
 export async function markEmailMessageRead(id: number): Promise<void> {
   const client = await sap();
-  await client.request("email.message.markRead", { id });
+  await client.request("email.message.markRead", withSubjectKind({ id }));
 }
 
 export type EmailSyncResult = {
@@ -71,7 +80,10 @@ export async function syncEmailAccount(
   limit = 100,
 ): Promise<EmailSyncResult[]> {
   const client = await sap();
-  const data = await client.request("email.sync", { account_id: accountId, limit });
+  const data = await client.request(
+    "email.sync",
+    withSubjectKind({ account_id: accountId, limit }),
+  );
   const results = data.results;
   const failed = results.filter((row) => row.error);
   if (failed.length > 0) {
@@ -85,13 +97,14 @@ export async function searchEmailMessages(input: {
   account_id?: number;
   limit?: number;
 }): Promise<EmailMessageRow[]> {
-  const { agent_world_id } = await fetchWorldContext();
+  const ctx = await fetchWorldContext();
+  const world_id = resolveWorldIdForSubject(ctx, getSubjectKind());
   const res = await fetch("/api/entities/search", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       query: input.query,
-      world_id: agent_world_id,
+      world_id,
       primary_component: "email_message",
       mode: "hybrid",
       filters: input.account_id != null ? { account_id: input.account_id } : undefined,

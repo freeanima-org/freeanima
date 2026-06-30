@@ -1,6 +1,11 @@
+import {
+  fetchWorldContext,
+  getSubjectKind,
+  resolveWorldIdForSubject,
+} from "@freeanima/satellite-sdk";
+
 import { entitySearchHitToTaskItem } from "./search-hit-mapper.ts";
 import { whenSapClientReady } from "./sap-client.ts";
-import { fetchWorldContext } from "./world-context.ts";
 
 export type TaskListRow = {
   id: number;
@@ -35,11 +40,16 @@ async function sap() {
   return whenSapClientReady();
 }
 
+function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
+  return { subject_kind: getSubjectKind(), ...payload };
+}
+
 export async function fetchTaskLists(opts?: { includeClosed?: boolean }): Promise<TaskListRow[]> {
   const client = await sap();
-  const data = await client.request("tasklist.list", {
-    include_closed: opts?.includeClosed,
-  });
+  const data = await client.request(
+    "tasklist.list",
+    withSubjectKind({ include_closed: opts?.includeClosed }),
+  );
   return data.lists;
 }
 
@@ -51,7 +61,7 @@ export async function createTaskList(input: {
   color?: string | null;
 }): Promise<TaskListRow> {
   const client = await sap();
-  const data = await client.request("tasklist.create", input);
+  const data = await client.request("tasklist.create", withSubjectKind(input));
   return data.item;
 }
 
@@ -62,7 +72,7 @@ export async function updateTaskList(
   >,
 ): Promise<TaskListRow> {
   const client = await sap();
-  const data = await client.request("tasklist.patch", { id, ...patch });
+  const data = await client.request("tasklist.patch", withSubjectKind({ id, ...patch }));
   return data.item;
 }
 
@@ -76,12 +86,15 @@ export async function reopenTaskList(id: number): Promise<TaskListRow> {
 
 export async function deleteTaskList(id: number): Promise<void> {
   const client = await sap();
-  await client.request("tasklist.delete", { id, cascade: true });
+  await client.request("tasklist.delete", withSubjectKind({ id, cascade: true }));
 }
 
 export async function fetchTaskItems(listId: number): Promise<TaskItemRow[]> {
   const client = await sap();
-  const data = await client.request("task.list", { list_id: listId, status: "all" });
+  const data = await client.request(
+    "task.list",
+    withSubjectKind({ list_id: listId, status: "all" }),
+  );
   return data.items;
 }
 
@@ -96,13 +109,14 @@ export async function searchTaskItems(input: {
   if (input.list_id != null) filters.list_id = input.list_id;
   if (input.status && input.status !== "all") filters.status = input.status;
 
-  const { user_world_id } = await fetchWorldContext();
+  const ctx = await fetchWorldContext();
+  const world_id = resolveWorldIdForSubject(ctx, getSubjectKind());
   const res = await fetch("/api/entities/search", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       query: input.query,
-      world_id: user_world_id,
+      world_id,
       primary_component: "task_item",
       mode: "hybrid",
       filters: Object.keys(filters).length > 0 ? filters : undefined,
@@ -138,7 +152,7 @@ export async function createTaskItem(input: {
   sort_order?: number;
 }): Promise<TaskItemRow> {
   const client = await sap();
-  const data = await client.request("task.create", input);
+  const data = await client.request("task.create", withSubjectKind(input));
   return data.item;
 }
 
@@ -152,23 +166,23 @@ export async function updateTaskItem(
   >,
 ): Promise<TaskItemRow> {
   const client = await sap();
-  const data = await client.request("task.patch", { id, ...patch });
+  const data = await client.request("task.patch", withSubjectKind({ id, ...patch }));
   return data.item;
 }
 
 export async function completeTaskItem(id: number): Promise<TaskItemRow> {
   const client = await sap();
-  const data = await client.request("task.complete", { id });
+  const data = await client.request("task.complete", withSubjectKind({ id }));
   return data.item;
 }
 
 export async function uncompleteTaskItem(id: number): Promise<TaskItemRow> {
   const client = await sap();
-  const data = await client.request("task.uncomplete", { id });
+  const data = await client.request("task.uncomplete", withSubjectKind({ id }));
   return data.item;
 }
 
 export async function deleteTaskItem(id: number): Promise<void> {
   const client = await sap();
-  await client.request("task.delete", { id });
+  await client.request("task.delete", withSubjectKind({ id }));
 }

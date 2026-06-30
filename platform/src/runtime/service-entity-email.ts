@@ -1,11 +1,15 @@
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
-import { getResolvedWorldContext } from "@freeanima/core/config";
+import { resolveSubjectWorldId, type SubjectKind } from "@freeanima/core/config";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 function assertPg(_deps: RuntimeDeps): void {
   if (!isPostgresPrimary()) {
     throw new Error("PostgreSQL unavailable");
   }
+}
+
+function emailWorldId(kind: SubjectKind = "agent"): number {
+  return resolveSubjectWorldId(kind);
 }
 
 function toAccountPayload(
@@ -75,17 +79,20 @@ function toThreadPayload(
   };
 }
 
-export async function serviceEmailAccountList(deps: RuntimeDeps) {
+export async function serviceEmailAccountList(
+  deps: RuntimeDeps,
+  input?: { subject_kind?: SubjectKind },
+) {
   assertPg(deps);
   const { listEmailAccountRows } = await import("@freeanima/capabilities-email");
-  const { agent_world_id } = getResolvedWorldContext();
-  const accounts = await listEmailAccountRows(agent_world_id);
+  const accounts = await listEmailAccountRows(emailWorldId(input?.subject_kind));
   return { accounts: accounts.map(toAccountPayload) };
 }
 
 export async function serviceEmailMessageList(
   deps: RuntimeDeps,
   input: {
+    subject_kind?: SubjectKind;
     account_id?: number;
     thread_id?: number;
     unread?: boolean;
@@ -95,29 +102,35 @@ export async function serviceEmailMessageList(
 ) {
   assertPg(deps);
   const { listEmailMessages } = await import("@freeanima/capabilities-email");
-  const { agent_world_id } = getResolvedWorldContext();
-  const messages = await listEmailMessages(agent_world_id, input);
+  const { subject_kind, ...listInput } = input;
+  const messages = await listEmailMessages(emailWorldId(subject_kind), listInput);
   return { messages: messages.map(toMessagePayload) };
 }
 
-export async function serviceEmailMessageRead(deps: RuntimeDeps, id: number) {
+export async function serviceEmailMessageRead(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number },
+) {
   assertPg(deps);
   const { getEmailMessageRow } = await import("@freeanima/capabilities-email");
-  const message = await getEmailMessageRow(id);
+  const message = await getEmailMessageRow(input.id);
   if (!message) throw new Error("NOT_FOUND");
   return { message: toMessagePayload(message) };
 }
 
-export async function serviceEmailMessageMarkRead(deps: RuntimeDeps, id: number) {
+export async function serviceEmailMessageMarkRead(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number },
+) {
   assertPg(deps);
   const { markAsRead } = await import("@freeanima/platform/connectors/email");
-  await markAsRead(id);
+  await markAsRead(input.id);
   return { ok: true as const };
 }
 
 export async function serviceEmailSync(
   deps: RuntimeDeps,
-  input: { account_id?: number; limit?: number },
+  input: { subject_kind?: SubjectKind; account_id?: number; limit?: number },
 ) {
   assertPg(deps);
   const { syncEmailAccount, syncAllEmailAccounts } =
@@ -130,11 +143,11 @@ export async function serviceEmailSync(
 
 export async function serviceEmailThreadList(
   deps: RuntimeDeps,
-  input: { account_id?: number; has_unread?: boolean; limit?: number },
+  input: { subject_kind?: SubjectKind; account_id?: number; has_unread?: boolean; limit?: number },
 ) {
   assertPg(deps);
   const { listEmailThreads } = await import("@freeanima/capabilities-email");
-  const { agent_world_id } = getResolvedWorldContext();
-  const threads = await listEmailThreads(agent_world_id, input);
+  const { subject_kind, ...listInput } = input;
+  const threads = await listEmailThreads(emailWorldId(subject_kind), listInput);
   return { threads: threads.map(toThreadPayload) };
 }

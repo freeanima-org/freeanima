@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+import { notificationRecipientKindSchema } from "./notification.ts";
+
+const emailSubjectKindSchema = notificationRecipientKindSchema.default("agent");
+
 export const emailAccountRowSchema = z.object({
   id: z.number().int().positive(),
   display_name: z.string(),
@@ -55,7 +59,9 @@ export const emailThreadRowSchema = z.object({
 
 export type EmailThreadRowPayload = z.infer<typeof emailThreadRowSchema>;
 
-export const emailAccountListInputSchema = z.object({}).default({});
+export const emailAccountListInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
+});
 export type EmailAccountListInput = z.infer<typeof emailAccountListInputSchema>;
 export const emailAccountListOutputSchema = z.object({
   accounts: z.array(emailAccountRowSchema),
@@ -63,6 +69,7 @@ export const emailAccountListOutputSchema = z.object({
 export type EmailAccountListOutput = z.infer<typeof emailAccountListOutputSchema>;
 
 export const emailMessageListInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
   account_id: z.number().int().positive().optional(),
   thread_id: z.number().int().positive().optional(),
   unread: z.boolean().optional(),
@@ -76,6 +83,7 @@ export const emailMessageListOutputSchema = z.object({
 export type EmailMessageListOutput = z.infer<typeof emailMessageListOutputSchema>;
 
 export const emailMessageReadInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
   id: z.number().int().positive(),
 });
 export type EmailMessageReadInput = z.infer<typeof emailMessageReadInputSchema>;
@@ -83,6 +91,7 @@ export const emailMessageReadOutputSchema = z.object({ message: emailMessageRowS
 export type EmailMessageReadOutput = z.infer<typeof emailMessageReadOutputSchema>;
 
 export const emailMessageMarkReadInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
   id: z.number().int().positive(),
 });
 export type EmailMessageMarkReadInput = z.infer<typeof emailMessageMarkReadInputSchema>;
@@ -90,6 +99,7 @@ export const emailMessageMarkReadOutputSchema = z.object({ ok: z.literal(true) }
 export type EmailMessageMarkReadOutput = z.infer<typeof emailMessageMarkReadOutputSchema>;
 
 export const emailSyncInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
   account_id: z.number().int().positive().optional(),
   limit: z.number().int().positive().optional(),
 });
@@ -108,6 +118,7 @@ export const emailSyncOutputSchema = z.object({
 export type EmailSyncOutput = z.infer<typeof emailSyncOutputSchema>;
 
 export const emailThreadListInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
   account_id: z.number().int().positive().optional(),
   has_unread: z.boolean().optional(),
   limit: z.number().int().positive().optional(),

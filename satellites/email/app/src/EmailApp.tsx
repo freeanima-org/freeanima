@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSubjectScope } from "@freeanima/shell-sdk/react";
 
 import {
   fetchEmailAccounts,
@@ -24,6 +25,7 @@ function formatWhen(iso: string): string {
 }
 
 export function EmailApp() {
+  const { kind: subjectKind } = useSubjectScope();
   const mobile = useMobileLayout();
   const [accounts, setAccounts] = useState<EmailAccountRow[]>([]);
   const [activeAccountId, setActiveAccountId] = useState<number | null>(null);
@@ -73,8 +75,13 @@ export function EmailApp() {
   }, []);
 
   useEffect(() => {
+    setActiveAccountId(null);
+    setMessages([]);
+    setSelectedMessageId(null);
+    setDetail(null);
+    setView("accounts");
     void loadAccounts();
-  }, [loadAccounts]);
+  }, [subjectKind, loadAccounts]);
 
   const openAccount = async (account: EmailAccountRow) => {
     setActiveAccountId(account.id);

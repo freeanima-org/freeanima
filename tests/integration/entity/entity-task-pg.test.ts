@@ -25,7 +25,7 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { testUserWorldId } from "../../helpers/world-context.ts";
+import { testUserWorldId, testAgentWorldId } from "../../helpers/world-context.ts";
 
 describePg("entity task PG", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -201,5 +201,13 @@ describePg("entity task PG", () => {
     const all = await listTaskLists(worldId, { includeClosed: true });
     expect(all.find((l) => l.id === folder.id)?.closed).toBe(true);
     expect(all.find((l) => l.id === list.id)?.closed).toBe(true);
+  });
+
+  it("creates task_list in agent world when using agent world id", async () => {
+    const worldId = testAgentWorldId();
+    const list = await createTaskList(worldId, { name: "Agent 清单" });
+    expect(list.name).toBe("Agent 清单");
+    const lists = await listTaskLists(worldId);
+    expect(lists.some((l) => l.id === list.id)).toBe(true);
   });
 });

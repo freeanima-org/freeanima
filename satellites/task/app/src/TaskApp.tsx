@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { useSubjectScope } from "@freeanima/shell-sdk/react";
 import { ListDetailLayout } from "@freeanima/satellite-sdk/layout";
 import { FormFieldLabel, FormFieldset } from "@freeanima/satellite-sdk/form";
 
@@ -53,6 +54,7 @@ type ItemMenuState = { x: number; y: number; itemId: number };
 type SheetMenuState = { title?: string; items: ContextMenuItem[] };
 
 export function TaskApp() {
+  const { kind: subjectKind } = useSubjectScope();
   const contextMenuEnabled = isTaskContextMenuEnabled();
   const useActionSheet = useTaskActionSheet();
   const useDrawer = useDrawerNav();
@@ -142,8 +144,12 @@ export function TaskApp() {
   }, [loadLists]);
 
   useEffect(() => {
+    setSelectedListId(null);
+    setItems([]);
+    setSearchQuery("");
+    setSearchHits([]);
     void refresh();
-  }, [refresh]);
+  }, [subjectKind, refresh]);
 
   useEffect(() => {
     if (selectedListId == null) return;

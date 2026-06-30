@@ -5,6 +5,7 @@ import {
   bindResolvedWorldContext,
   getResolvedWorldContext,
   resetResolvedWorldContextForTest,
+  resolveSubjectWorldId,
 } from "./world-context.ts";
 import type { AnimaConfig } from "./schemas/config.ts";
 
@@ -54,5 +55,16 @@ describe("ResolvedWorldContext", () => {
 
   it("throws when unbound", () => {
     expect(() => getResolvedWorldContext()).toThrow(/not bound/);
+  });
+
+  it("resolveSubjectWorldId maps user and agent", () => {
+    bindResolvedWorldContext({
+      user_subject_id: 1,
+      agent_subject_id: 2,
+      user_world_id: 10,
+      agent_world_id: 20,
+    });
+    expect(resolveSubjectWorldId("user")).toBe(10);
+    expect(resolveSubjectWorldId("agent")).toBe(20);
   });
 });

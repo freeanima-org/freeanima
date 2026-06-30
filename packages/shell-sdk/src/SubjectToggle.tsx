@@ -1,17 +1,18 @@
-import type { DiarySubjectKind } from "../lib/format-diary.ts";
+import type { SubjectKind } from "./subject-scope.ts";
 
 export function SubjectToggle({
   value,
   onChange,
 }: {
-  value: DiarySubjectKind;
-  onChange: (kind: DiarySubjectKind) => void;
+  value: SubjectKind;
+  onChange: (kind: SubjectKind) => void;
 }) {
   return (
-    <div className="join">
+    <div className="join" role="group" aria-label="主体切换">
       <button
         type="button"
         className={`btn btn-sm join-item ${value === "user" ? "btn-primary" : "btn-ghost"}`}
+        aria-pressed={value === "user"}
         onClick={() => onChange("user")}
       >
         用户
@@ -19,6 +20,7 @@ export function SubjectToggle({
       <button
         type="button"
         className={`btn btn-sm join-item ${value === "agent" ? "btn-primary" : "btn-ghost"}`}
+        aria-pressed={value === "agent"}
         onClick={() => onChange("agent")}
       >
         Agent

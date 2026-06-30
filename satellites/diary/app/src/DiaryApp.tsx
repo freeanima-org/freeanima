@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSubjectScope } from "@freeanima/shell-sdk/react";
 import { ListDetailLayout } from "@freeanima/satellite-sdk/layout";
 
 import { EntryEditor } from "./components/EntryEditor.tsx";
 import { EntryTimeline, findEntryByDayLocal } from "./components/EntryTimeline.tsx";
-import { SubjectToggle } from "./components/SubjectToggle.tsx";
 import {
   createDiaryEntry,
   deleteDiaryEntry,
@@ -11,12 +11,12 @@ import {
   searchDiaryEntries,
   updateDiaryEntry,
 } from "./lib/api.ts";
-import type { DiaryEntryRow, DiarySubjectKind } from "./lib/format-diary.ts";
+import type { DiaryEntryRow } from "./lib/format-diary.ts";
 import { formatEntryDate, defaultEntryDateLocal, isoToDateLocalValue } from "./lib/format-diary.ts";
 import { subscribeShellConfigChanges } from "./lib/sap-client.ts";
 
 export function DiaryApp() {
-  const [subjectKind, setSubjectKind] = useState<DiarySubjectKind>("user");
+  const { kind: subjectKind } = useSubjectScope();
   const [entries, setEntries] = useState<DiaryEntryRow[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [editorMode, setEditorMode] = useState<"create" | "edit" | null>(null);
@@ -63,8 +63,7 @@ export function DiaryApp() {
 
   const listPane = (
     <div className="flex flex-col gap-3 h-full min-h-0">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <SubjectToggle value={subjectKind} onChange={setSubjectKind} />
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <button
           type="button"
           className="btn btn-primary btn-sm"

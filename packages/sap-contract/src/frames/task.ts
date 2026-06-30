@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+import { notificationRecipientKindSchema } from "./notification.ts";
+
+const taskSubjectKindSchema = notificationRecipientKindSchema.default("user");
+
 const taskPrioritySchema = z.enum(["high", "medium", "low", "none"]);
 const taskStatusSchema = z.enum(["pending", "completed"]);
 
@@ -37,11 +41,10 @@ export const taskItemRowSchema = z.object({
 
 export type TaskItemRowPayload = z.infer<typeof taskItemRowSchema>;
 
-export const tasklistListInputSchema = z
-  .object({
-    include_closed: z.boolean().optional(),
-  })
-  .default({});
+export const tasklistListInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+  include_closed: z.boolean().optional(),
+});
 export type TasklistListInput = z.infer<typeof tasklistListInputSchema>;
 export const tasklistListOutputSchema = z.object({
   lists: z.array(taskListRowSchema),
@@ -49,6 +52,7 @@ export const tasklistListOutputSchema = z.object({
 export type TasklistListOutput = z.infer<typeof tasklistListOutputSchema>;
 
 export const tasklistCreateInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
   name: z.string().min(1),
   sort_order: z.number().int().optional(),
   color: z.string().nullable().optional(),
@@ -60,6 +64,7 @@ export const tasklistCreateOutputSchema = z.object({ item: taskListRowSchema });
 export type TasklistCreateOutput = z.infer<typeof tasklistCreateOutputSchema>;
 
 export const tasklistPatchInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
   id: z.number().int().positive(),
   name: z.string().min(1).optional(),
   sort_order: z.number().int().optional(),
@@ -73,6 +78,7 @@ export const tasklistPatchOutputSchema = z.object({ item: taskListRowSchema });
 export type TasklistPatchOutput = z.infer<typeof tasklistPatchOutputSchema>;
 
 export const tasklistDeleteInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
   id: z.number().int().positive(),
   cascade: z.boolean().optional(),
 });
@@ -81,6 +87,7 @@ export const tasklistDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type TasklistDeleteOutput = z.infer<typeof tasklistDeleteOutputSchema>;
 
 export const taskListInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
   list_id: z.number().int().positive().optional(),
   status: taskStatusSchema.or(z.literal("all")).optional(),
   due_today: z.boolean().optional(),
@@ -93,6 +100,7 @@ export const taskListOutputSchema = z.object({ items: z.array(taskItemRowSchema)
 export type TaskListOutput = z.infer<typeof taskListOutputSchema>;
 
 export const taskCreateInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
   title: z.string().min(1),
   list_id: z.number().int().positive(),
   content: z.string().optional(),
@@ -106,6 +114,7 @@ export const taskCreateOutputSchema = z.object({ item: taskItemRowSchema });
 export type TaskCreateOutput = z.infer<typeof taskCreateOutputSchema>;
 
 export const taskPatchInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
   id: z.number().int().positive(),
   title: z.string().min(1).optional(),
   list_id: z.number().int().positive().optional(),
@@ -121,6 +130,7 @@ export const taskPatchOutputSchema = z.object({ item: taskItemRowSchema });
 export type TaskPatchOutput = z.infer<typeof taskPatchOutputSchema>;
 
 export const taskCompleteInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
   id: z.number().int().positive(),
 });
 export type TaskCompleteInput = z.infer<typeof taskCompleteInputSchema>;
@@ -128,6 +138,7 @@ export const taskCompleteOutputSchema = z.object({ item: taskItemRowSchema });
 export type TaskCompleteOutput = z.infer<typeof taskCompleteOutputSchema>;
 
 export const taskUncompleteInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
   id: z.number().int().positive(),
 });
 export type TaskUncompleteInput = z.infer<typeof taskUncompleteInputSchema>;
@@ -135,6 +146,7 @@ export const taskUncompleteOutputSchema = z.object({ item: taskItemRowSchema });
 export type TaskUncompleteOutput = z.infer<typeof taskUncompleteOutputSchema>;
 
 export const taskDeleteInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
   id: z.number().int().positive(),
 });
 export type TaskDeleteInput = z.infer<typeof taskDeleteInputSchema>;

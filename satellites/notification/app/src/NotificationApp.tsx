@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useSubjectScope } from "@freeanima/shell-sdk/react";
 
 import {
   listNotifications,
@@ -10,7 +11,6 @@ import {
 const PAGE_SIZE = 20;
 
 type RecipientIds = { user: string; agent: string };
-type RecipientKind = "user" | "agent";
 type ReadFilter = "all" | "unread";
 
 async function resolveRecipientIds(cached: RecipientIds | null): Promise<RecipientIds> {
@@ -70,7 +70,7 @@ function ListPagination({
 }
 
 export function NotificationApp() {
-  const [recipientKind, setRecipientKind] = useState<RecipientKind>("user");
+  const { kind: recipientKind } = useSubjectScope();
   const [recipientIds, setRecipientIds] = useState<RecipientIds | null>(null);
   const [readFilter, setReadFilter] = useState<ReadFilter>("unread");
   const [offset, setOffset] = useState(0);
@@ -142,22 +142,6 @@ export function NotificationApp() {
       <p className="text-sm text-base-content/60 mb-4">默认显示未读；点击「标记已读」确认处理。</p>
 
       <div className="flex flex-wrap gap-2 mb-4">
-        <div className="join">
-          <button
-            type="button"
-            className={`btn btn-sm join-item ${recipientKind === "user" ? "btn-primary" : ""}`}
-            onClick={() => setRecipientKind("user")}
-          >
-            用户
-          </button>
-          <button
-            type="button"
-            className={`btn btn-sm join-item ${recipientKind === "agent" ? "btn-primary" : ""}`}
-            onClick={() => setRecipientKind("agent")}
-          >
-            Agent
-          </button>
-        </div>
         <div className="join">
           <button
             type="button"
