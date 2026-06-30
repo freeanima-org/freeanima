@@ -1,5 +1,6 @@
 import { entitySearchHitToTaskItem } from "./search-hit-mapper.ts";
 import { whenSapClientReady } from "./sap-client.ts";
+import { fetchWorldContext } from "./world-context.ts";
 
 export type TaskListRow = {
   id: number;
@@ -95,12 +96,13 @@ export async function searchTaskItems(input: {
   if (input.list_id != null) filters.list_id = input.list_id;
   if (input.status && input.status !== "all") filters.status = input.status;
 
+  const { user_world_id } = await fetchWorldContext();
   const res = await fetch("/api/entities/search", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       query: input.query,
-      world_id: 1,
+      world_id: user_world_id,
       primary_component: "task_item",
       mode: "hybrid",
       filters: Object.keys(filters).length > 0 ? filters : undefined,

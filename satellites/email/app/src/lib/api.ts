@@ -1,4 +1,5 @@
 import { whenSapClientReady } from "./sap-client.ts";
+import { fetchWorldContext } from "./world-context.ts";
 
 export type EmailAccountRow = {
   id: number;
@@ -84,12 +85,13 @@ export async function searchEmailMessages(input: {
   account_id?: number;
   limit?: number;
 }): Promise<EmailMessageRow[]> {
+  const { agent_world_id } = await fetchWorldContext();
   const res = await fetch("/api/entities/search", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       query: input.query,
-      world_id: 1,
+      world_id: agent_world_id,
       primary_component: "email_message",
       mode: "hybrid",
       filters: input.account_id != null ? { account_id: input.account_id } : undefined,

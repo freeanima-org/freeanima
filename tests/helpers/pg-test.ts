@@ -21,6 +21,8 @@ import {
 } from "@freeanima/runtime/conversation";
 import { appendMessage, upsertConversationMeta } from "@freeanima/core/db/pg/conversation";
 import { FileConfig, type Config } from "@freeanima/platform/config";
+import { bindResolvedWorldContext } from "@freeanima/core/config/world-context";
+import { ensureWorldSubjects } from "@freeanima/core/db/pg/entity/subject-world";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import type { StoredMessage, ConversationMetaMessage } from "@freeanima/core/db/domain";
 import { relations } from "@freeanima/core/db/schema";
@@ -42,46 +44,12 @@ export function getActivePgTestContext(): PgTestContext | null {
   return activeCtx;
 }
 
-async function seedIntegrationEntityFixtures(sql: SqlClient): Promise<void> {
-  await sql`
-    INSERT INTO entities (id, type, world_id, components, primary_component, title, summary, content, body)
-    OVERRIDING SYSTEM VALUE
-    VALUES (
-      1,
-      'world',
-      1,
-      ARRAY['world_config']::text[],
-      'world_config',
-      '我的任务',
-      '',
-      '',
-      '{"name":"我的任务","private":false}'::jsonb
-    )
-  `;
-  await sql`
-    INSERT INTO entities (id, type, world_id, components, primary_component, title, summary, content, body)
-    OVERRIDING SYSTEM VALUE
-    VALUES (
-      2,
-      'content',
-      1,
-      ARRAY['task_list']::text[],
-      'task_list',
-      '收件箱',
-      '',
-      '',
-      '{"sort_order":0,"is_default":true,"closed":false}'::jsonb
-    )
-  `;
-  await sql`
-    SELECT setval(
-      pg_get_serial_sequence('entities', 'id'),
-      GREATEST((SELECT MAX(id) FROM entities), 2)
-    )
-  `;
+async function ensureIntegrationWorldContext(config: Config): Promise<void> {
+  const ctx = await ensureWorldSubjects(config.data);
+  bindResolvedWorldContext(ctx);
 }
 
-async function clearPgTables(sql: SqlClient): Promise<void> {
+async function clearPgTables(sql: SqlClient, config: Config): Promise<void> {
   await sql`DELETE FROM memory_references`;
   await sql`DELETE FROM messages`;
   await sql`DELETE FROM conversations`;
@@ -90,7 +58,7 @@ async function clearPgTables(sql: SqlClient): Promise<void> {
   await sql`DELETE FROM autobiographical_memory`;
   await sql`DELETE FROM limbic_memory`;
   await sql`DELETE FROM entities`;
-  await seedIntegrationEntityFixtures(sql);
+  await ensureIntegrationWorldContext(config);
   await sql`DELETE FROM notifications`;
   await sql`DELETE FROM cron_jobs`;
 }
@@ -117,7 +85,7 @@ function createTestSql(url: string): { sql: SqlClient; db: Db } {
 export async function setupPgTestDb(url: string, config: Config): Promise<PgTestContext> {
   initDatabase({ getDatabaseUrl: () => url });
   const { sql, db } = createTestSql(url);
-  await clearPgTables(sql);
+  await clearPgTables(sql, config);
   setDbForTest(db, sql);
   const engine = createTestEngine(config);
   activeCtx = {
@@ -184,7 +152,7 @@ export async function setupIntegrationHome(opts: {
   writeDatabaseConfig(opts.home, opts.url, opts.configYaml);
   const config = FileConfig.open();
   if (activeCtx) {
-    await clearPgTables(activeCtx.sql);
+    await clearPgTables(activeCtx.sql, config);
     activeCtx.config = config;
     wireEngine(config);
     return activeCtx;

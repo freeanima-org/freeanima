@@ -19,8 +19,8 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
-async function storeContext(deps: RuntimeDeps, subjectKind: DiarySubjectKind) {
-  const worldId = await resolveDiaryWorldId(subjectKind, deps.engine.config.data);
+async function storeContext(_deps: RuntimeDeps, subjectKind: DiarySubjectKind) {
+  const worldId = await resolveDiaryWorldId(subjectKind);
   return { worldId };
 }
 

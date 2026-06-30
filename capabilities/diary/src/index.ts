@@ -1,4 +1,4 @@
-export type { DiarySubjectKind } from "./subject-world.ts";
+export type { DiarySubjectKind } from "./types.ts";
 export { resolveDiaryWorldId } from "./subject-world.ts";
 export type * from "./types.ts";
 export {

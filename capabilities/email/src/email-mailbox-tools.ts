@@ -8,6 +8,7 @@ import {
   parseAccountId,
   parseMessageId,
 } from "./email-tool-helpers.ts";
+import { resolveEmailWorldId } from "./email-world.ts";
 import {
   getEmailMessageRow,
   listEmailMessages,
@@ -79,7 +80,8 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           },
           handler: async (args) => {
             try {
-              const messages = await listEmailMessages({
+              const worldId = resolveEmailWorldId();
+              const messages = await listEmailMessages(worldId, {
                 account_id: parseAccountId(args.account_id),
                 thread_id: parseAccountId(args.thread_id),
                 unread: args.unread != null ? Boolean(args.unread) : undefined,
@@ -112,7 +114,8 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
             const query = String(args.query ?? "").trim();
             if (!query) return toolError("query is required");
             try {
-              const messages = await searchEmailMessages({
+              const worldId = resolveEmailWorldId();
+              const messages = await searchEmailMessages(worldId, {
                 query,
                 account_id: parseAccountId(args.account_id),
                 thread_id: parseAccountId(args.thread_id),
@@ -228,7 +231,8 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           },
           handler: async (args) => {
             try {
-              const threads = await listEmailThreads({
+              const worldId = resolveEmailWorldId();
+              const threads = await listEmailThreads(worldId, {
                 account_id: parseAccountId(args.account_id),
                 has_unread: args.has_unread != null ? Boolean(args.has_unread) : undefined,
                 limit: args.limit != null ? Number(args.limit) : undefined,

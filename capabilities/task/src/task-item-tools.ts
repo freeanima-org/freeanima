@@ -12,23 +12,39 @@ import {
 } from "./item-store.ts";
 import { getDefaultTaskList } from "./list-store.ts";
 import { TASK_TOOL_RETURNS } from "./return-schemas.ts";
-import { itemPayload, parsePriority, parseTags, TASK_PRIORITIES } from "./task-tool-helpers.ts";
+import {
+  itemPayload,
+  parsePriority,
+  parseTags,
+  parseWorldId,
+  TASK_PRIORITIES,
+  WORLD_ID_TOOL_PROPERTY,
+} from "./task-tool-helpers.ts";
 import type { TaskItemUpdateInput } from "./types.ts";
 
-async function resolveListId(raw: unknown): Promise<number | null> {
+function requireWorldId(args: Record<string, unknown>): number | string {
+  const worldId = parseWorldId(args.world_id);
+  if (worldId == null) return toolError("world_id is required");
+  return worldId;
+}
+
+async function resolveListId(worldId: number, raw: unknown): Promise<number | null> {
   if (raw == null || raw === "") {
-    const list = await getDefaultTaskList();
-    return list?.id ?? null;
+    const list = await getDefaultTaskList(worldId);
+    return list.id;
   }
   const id = Number(raw);
   return Number.isFinite(id) && id > 0 ? id : null;
 }
 
 async function handleCreate(args: Record<string, unknown>): Promise<string> {
+  const worldId = requireWorldId(args);
+  if (typeof worldId === "string") return worldId;
+
   const title = String(args.title ?? "").trim();
   if (!title) return toolError("title is required");
 
-  const listId = await resolveListId(args.list_id);
+  const listId = await resolveListId(worldId, args.list_id);
   if (listId == null) return toolError("task list not available");
 
   const priority = parsePriority(args.priority);
@@ -43,7 +59,7 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
   const content = args.content != null ? String(args.content) : "";
 
   try {
-    const item = await createTaskItem({
+    const item = await createTaskItem(worldId, {
       title,
       content,
       tags,
@@ -59,6 +75,9 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
 }
 
 async function handleUpdate(args: Record<string, unknown>): Promise<string> {
+  const worldId = requireWorldId(args);
+  if (typeof worldId === "string") return worldId;
+
   const id = Number(args.id);
   if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
 
@@ -86,7 +105,7 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
   if (args.sort_order !== undefined) patch.sort_order = Number(args.sort_order);
 
   try {
-    const item = await updateTaskItem(patch);
+    const item = await updateTaskItem(worldId, patch);
     if (!item) return toolError(`task not found: ${id}`);
     return toolResult({ ok: true, action: "update", item: itemPayload(item) });
   } catch (e) {
@@ -95,11 +114,16 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
 }
 
 async function handleComplete(args: Record<string, unknown>, uncomplete: boolean): Promise<string> {
+  const worldId = requireWorldId(args);
+  if (typeof worldId === "string") return worldId;
+
   const id = Number(args.id);
   if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
 
   try {
-    const item = uncomplete ? await uncompleteTaskItem(id) : await completeTaskItem(id);
+    const item = uncomplete
+      ? await uncompleteTaskItem(worldId, id)
+      : await completeTaskItem(worldId, id);
     if (!item) return toolError(`task not found: ${id}`);
     return toolResult({
       ok: true,
@@ -112,11 +136,14 @@ async function handleComplete(args: Record<string, unknown>, uncomplete: boolean
 }
 
 async function handleDelete(args: Record<string, unknown>): Promise<string> {
+  const worldId = requireWorldId(args);
+  if (typeof worldId === "string") return worldId;
+
   const id = Number(args.id);
   if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
 
   try {
-    const ok = await deleteTaskItem(id);
+    const ok = await deleteTaskItem(worldId, id);
     if (!ok) return toolError(`task not found: ${id}`);
     return toolResult({ ok: true, action: "delete", id });
   } catch (e) {
@@ -125,16 +152,22 @@ async function handleDelete(args: Record<string, unknown>): Promise<string> {
 }
 
 async function handleGet(args: Record<string, unknown>): Promise<string> {
+  const worldId = requireWorldId(args);
+  if (typeof worldId === "string") return worldId;
+
   const id = Number(args.id);
   if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
 
-  const items = await listTaskItems({ status: "all", limit: 500 });
+  const items = await listTaskItems(worldId, { status: "all", limit: 500 });
   const item = items.find((row) => row.id === id);
   if (!item) return toolError(`task not found: ${id}`);
   return toolResult({ ok: true, action: "get", item: itemPayload(item) });
 }
 
 async function handleList(args: Record<string, unknown>): Promise<string> {
+  const worldId = requireWorldId(args);
+  if (typeof worldId === "string") return worldId;
+
   const listId = args.list_id != null && args.list_id !== "" ? Number(args.list_id) : undefined;
   const status =
     args.status === "completed" || args.status === "pending" || args.status === "all"
@@ -143,7 +176,7 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
   const tags = parseTags(args.tags);
   const limit = typeof args.limit === "number" ? args.limit : 50;
 
-  const items = await listTaskItems({
+  const items = await listTaskItems(worldId, {
     list_id: listId,
     status,
     tags,
@@ -158,6 +191,9 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
 }
 
 async function handleSearch(args: Record<string, unknown>): Promise<string> {
+  const worldId = requireWorldId(args);
+  if (typeof worldId === "string") return worldId;
+
   const query = String(args.query ?? "").trim();
   if (!query) return toolError("query is required");
 
@@ -176,7 +212,7 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
       : undefined;
 
   try {
-    const items = await searchTaskItems({
+    const items = await searchTaskItems(worldId, {
       query,
       list_id,
       status,
@@ -193,6 +229,8 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
   }
 }
 
+const WORLD_ID_SCHEMA = { world_id: WORLD_ID_TOOL_PROPERTY };
+
 const TASK_ITEM_TOOL_NAMES = [
   "task_create",
   "task_update",
@@ -207,7 +245,7 @@ const TASK_ITEM_TOOL_NAMES = [
 export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "task",
-    "Task items (CRUD and hybrid search). Load toolset `tasklist` for list management.",
+    "Task items (CRUD and hybrid search). Load toolset `tasklist` for list management. All calls require world_id.",
     attachToolReturns(
       [
         {
@@ -217,6 +255,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_SCHEMA,
               title: { type: "string", description: "Task title" },
               content: { type: "string", description: "Task body / details" },
               tags: {
@@ -229,7 +268,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
               due_at: { type: "string", description: "Due time ISO8601" },
               remind_at: { type: "string", description: "Reminder time ISO8601" },
             },
-            required: ["title"],
+            required: ["world_id", "title"],
           },
           handler: handleCreate,
         },
@@ -240,6 +279,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_SCHEMA,
               id: { type: "integer" },
               title: { type: "string" },
               content: { type: "string" },
@@ -250,7 +290,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
               remind_at: { type: "string" },
               sort_order: { type: "integer" },
             },
-            required: ["id"],
+            required: ["world_id", "id"],
           },
           handler: handleUpdate,
         },
@@ -260,8 +300,8 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
           exposeMcp: true,
           parameters: {
             type: "object",
-            properties: { id: { type: "integer" } },
-            required: ["id"],
+            properties: { ...WORLD_ID_SCHEMA, id: { type: "integer" } },
+            required: ["world_id", "id"],
           },
           handler: (args) => handleComplete(args, false),
         },
@@ -271,8 +311,8 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
           exposeMcp: true,
           parameters: {
             type: "object",
-            properties: { id: { type: "integer" } },
-            required: ["id"],
+            properties: { ...WORLD_ID_SCHEMA, id: { type: "integer" } },
+            required: ["world_id", "id"],
           },
           handler: (args) => handleComplete(args, true),
         },
@@ -282,8 +322,8 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
           exposeMcp: true,
           parameters: {
             type: "object",
-            properties: { id: { type: "integer" } },
-            required: ["id"],
+            properties: { ...WORLD_ID_SCHEMA, id: { type: "integer" } },
+            required: ["world_id", "id"],
           },
           handler: handleDelete,
         },
@@ -293,8 +333,8 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
           exposeMcp: true,
           parameters: {
             type: "object",
-            properties: { id: { type: "integer" } },
-            required: ["id"],
+            properties: { ...WORLD_ID_SCHEMA, id: { type: "integer" } },
+            required: ["world_id", "id"],
           },
           handler: handleGet,
         },
@@ -305,11 +345,13 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_SCHEMA,
               list_id: { type: "integer" },
               status: { type: "string", enum: ["pending", "completed", "all"] },
               tags: { type: "array", items: { type: "string" } },
               limit: { type: "integer" },
             },
+            required: ["world_id"],
           },
           handler: handleList,
         },
@@ -321,6 +363,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_SCHEMA,
               query: { type: "string", description: "Search keywords" },
               list_id: {
                 type: "integer",
@@ -329,7 +372,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
               status: { type: "string", enum: ["pending", "completed", "all"] },
               limit: { type: "integer", description: "Max results, default 30, cap 50" },
             },
-            required: ["query"],
+            required: ["world_id", "query"],
           },
           handler: handleSearch,
         },

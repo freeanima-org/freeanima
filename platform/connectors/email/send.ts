@@ -5,6 +5,7 @@ import {
   getEmailMessageRow,
   markEmailMessageRead,
   resolveEmailAccountRow,
+  resolveEmailWorldId,
   upsertEmailMessage,
   upsertEmailThread,
 } from "@freeanima/capabilities-email";
@@ -27,7 +28,8 @@ export async function sendEmail(input: SendEmailInput): Promise<{
   account_id: number;
   message_entity_id: number;
 }> {
-  const account = await resolveEmailAccountRow(input.account_id);
+  const worldId = resolveEmailWorldId();
+  const account = await resolveEmailAccountRow(worldId, input.account_id);
   const pass = await resolveEmailAccountPassword(account);
 
   const transport = nodemailer.createTransport({
@@ -88,7 +90,8 @@ export async function sendEmail(input: SendEmailInput): Promise<{
 export async function markMessageReadOnImap(messageId: number): Promise<{ ok: true }> {
   const message = await getEmailMessageRow(messageId);
   if (!message) throw new Error(`Email message not found: ${messageId}`);
-  const account = await resolveEmailAccountRow(message.account_id);
+  const worldId = resolveEmailWorldId();
+  const account = await resolveEmailAccountRow(worldId, message.account_id);
 
   if (message.imap_uid != null) {
     await withImapAccount(
@@ -112,7 +115,8 @@ export async function markMessageReadOnImap(messageId: number): Promise<{ ok: tr
 export async function deleteMessageOnImap(messageId: number): Promise<{ ok: true }> {
   const message = await getEmailMessageRow(messageId);
   if (!message) throw new Error(`Email message not found: ${messageId}`);
-  const account = await resolveEmailAccountRow(message.account_id);
+  const worldId = resolveEmailWorldId();
+  const account = await resolveEmailAccountRow(worldId, message.account_id);
 
   if (message.imap_uid != null) {
     await withImapAccount(

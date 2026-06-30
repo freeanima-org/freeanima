@@ -7,6 +7,7 @@ import {
   listEmailAccountRows,
   updateEmailAccount,
 } from "./account-store.ts";
+import { resolveEmailWorldId } from "./email-world.ts";
 import {
   accountCreateSchema,
   accountPatchSchema,
@@ -55,7 +56,8 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
             try {
               const input = accountCreateSchema.parse(args);
               await io.assertPasswordResolvable({ password: input.password });
-              const account = await createEmailAccount(input);
+              const worldId = resolveEmailWorldId();
+              const account = await createEmailAccount(worldId, input);
               return toolResult({ ok: true, account: accountPayload(account) });
             } catch (err) {
               return toolError(errMsg(err));
@@ -89,7 +91,8 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
             try {
               const patch = accountPatchSchema.parse(args);
               if (patch.password) await io.assertPasswordResolvable({ password: patch.password });
-              const account = await updateEmailAccount({ id, ...patch });
+              const worldId = resolveEmailWorldId();
+              const account = await updateEmailAccount(worldId, { id, ...patch });
               if (!account) return toolError(`Email account not found: ${id}`);
               return toolResult({ ok: true, account: accountPayload(account) });
             } catch (err) {
@@ -103,7 +106,8 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
           parameters: { type: "object", properties: {} },
           handler: async () => {
             try {
-              const accounts = await listEmailAccountRows();
+              const worldId = resolveEmailWorldId();
+              const accounts = await listEmailAccountRows(worldId);
               return toolResult({ accounts: accounts.map(accountPayload) });
             } catch (err) {
               return toolError(errMsg(err));
@@ -122,7 +126,8 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
             const id = parseMessageId(args.id);
             if (id == null) return toolError("id is required");
             try {
-              const ok = await deleteEmailAccountRow(id);
+              const worldId = resolveEmailWorldId();
+              const ok = await deleteEmailAccountRow(worldId, id);
               if (!ok) return toolError(`Email account not found: ${id}`);
               return toolResult({ ok: true, id });
             } catch (err) {

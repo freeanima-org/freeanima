@@ -4,12 +4,14 @@ import {
   createTaskList,
   deleteTaskItem,
   deleteTaskList,
+  ensureDefaultTaskListForWorld,
   listTaskItems,
   listTaskLists,
   uncompleteTaskItem,
   updateTaskItem,
   updateTaskList,
 } from "@freeanima/capabilities-task";
+import { getResolvedWorldContext } from "@freeanima/core/config";
 
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
 import type { RuntimeDeps } from "./runtime-deps.ts";
@@ -20,9 +22,15 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
+function userTaskWorldId(): number {
+  return getResolvedWorldContext().user_world_id;
+}
+
 export async function serviceTasklistList(deps: RuntimeDeps, input?: { include_closed?: boolean }) {
   assertPg(deps);
-  const lists = await listTaskLists({ includeClosed: input?.include_closed });
+  const worldId = userTaskWorldId();
+  await ensureDefaultTaskListForWorld(worldId);
+  const lists = await listTaskLists(worldId, { includeClosed: input?.include_closed });
   return { lists };
 }
 
@@ -37,7 +45,7 @@ export async function serviceTasklistCreate(
   },
 ) {
   assertPg(deps);
-  const item = await createTaskList(input);
+  const item = await createTaskList(userTaskWorldId(), input);
   return { item };
 }
 
@@ -55,7 +63,7 @@ export async function serviceTasklistPatch(
 ) {
   assertPg(deps);
   const { id, ...patch } = input;
-  const item = await updateTaskList({ id, ...patch });
+  const item = await updateTaskList(userTaskWorldId(), { id, ...patch });
   if (!item) throw new Error("NOT_FOUND");
   return { item };
 }
@@ -66,7 +74,9 @@ export async function serviceTasklistDelete(
 ) {
   assertPg(deps);
   try {
-    const ok = await deleteTaskList(input.id, { cascade: input.cascade ?? true });
+    const ok = await deleteTaskList(userTaskWorldId(), input.id, {
+      cascade: input.cascade ?? true,
+    });
     if (!ok) throw new Error("NOT_FOUND");
     return { ok: true as const };
   } catch (err) {
@@ -90,7 +100,9 @@ export async function serviceTaskList(
   },
 ) {
   assertPg(deps);
-  const items = await listTaskItems({
+  const worldId = userTaskWorldId();
+  await ensureDefaultTaskListForWorld(worldId);
+  const items = await listTaskItems(worldId, {
     list_id: input.list_id,
     status: input.status ?? "all",
     due_today: input.due_today,
@@ -114,7 +126,7 @@ export async function serviceTaskCreate(
   },
 ) {
   assertPg(deps);
-  const item = await createTaskItem(input);
+  const item = await createTaskItem(userTaskWorldId(), input);
   return { item };
 }
 
@@ -134,28 +146,32 @@ export async function serviceTaskPatch(
 ) {
   assertPg(deps);
   const { id, ...patch } = input;
-  const item = await updateTaskItem({ id, ...patch });
+  const item = await updateTaskItem(userTaskWorldId(), { id, ...patch });
   if (!item) throw new Error("NOT_FOUND");
   return { item };
 }
 
 export async function serviceTaskComplete(deps: RuntimeDeps, id: number) {
   assertPg(deps);
-  const item = await completeTaskItem(id);
+  const item = await completeTaskItem(userTaskWorldId(), id);
   if (!item) throw new Error("NOT_FOUND");
   return { item };
 }
 
 export async function serviceTaskUncomplete(deps: RuntimeDeps, id: number) {
   assertPg(deps);
-  const item = await uncompleteTaskItem(id);
+  const item = await uncompleteTaskItem(userTaskWorldId(), id);
   if (!item) throw new Error("NOT_FOUND");
   return { item };
 }
 
 export async function serviceTaskDelete(deps: RuntimeDeps, id: number) {
   assertPg(deps);
-  const ok = await deleteTaskItem(id);
+  const ok = await deleteTaskItem(userTaskWorldId(), id);
   if (!ok) throw new Error("NOT_FOUND");
   return { ok: true as const };
+}
+
+export function serviceWorldsContext(_deps: RuntimeDeps) {
+  return getResolvedWorldContext();
 }

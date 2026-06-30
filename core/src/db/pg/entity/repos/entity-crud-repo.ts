@@ -66,6 +66,45 @@ export async function createEntity(input: EntityCreateInput): Promise<EntityRow>
   return mapRow(row);
 }
 
+export type EntityCreateAtIdInput = EntityCreateInput & { id: number };
+
+/** 指定 id 插入（bootstrap subject 占位 id）；PG identity OVERRIDING SYSTEM VALUE */
+export async function createEntityAtId(input: EntityCreateAtIdInput): Promise<EntityRow> {
+  const { type, primary, components, body, title, summary, content } = normalizeCreate(input);
+  const now = new Date();
+  const indexText = entitySearchTextForWrite({
+    title,
+    summary,
+    content,
+    body,
+    primary_component: primary,
+  });
+  const fts_segmented = await resolveFtsSegmentedForWrite(indexText);
+  const db = getDb();
+  await db.execute(sql`
+    INSERT INTO entities (
+      id, type, world_id, components, primary_component,
+      title, summary, content, body, fts_segmented, created_at, updated_at
+    )
+    OVERRIDING SYSTEM VALUE
+    VALUES (
+      ${input.id}, ${type}, ${input.world_id}, ${components}, ${primary},
+      ${title}, ${summary}, ${content}, ${JSON.stringify(body)}::jsonb,
+      ${fts_segmented}, ${now}, ${now}
+    )
+  `);
+  await db.execute(sql`
+    SELECT setval(
+      pg_get_serial_sequence('entities', 'id'),
+      GREATEST((SELECT MAX(id) FROM entities), ${input.id})
+    )
+  `);
+  scheduleEntityEmbedding(input.id, indexText);
+  const row = await getEntity(input.id);
+  if (!row) throw new Error("entity insert at id failed");
+  return row;
+}
+
 export async function getEntity(id: number): Promise<EntityRow | null> {
   const db = getDb();
   const [row] = await db.select().from(entities).where(eq(entities.id, id)).limit(1);

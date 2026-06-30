@@ -13,11 +13,16 @@ import { registerTaskTools, getDefaultTaskList } from "@freeanima/capabilities-t
 import { getEntity } from "@freeanima/core/db/pg/entity";
 import { getActivePgTestContext, testConv } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { testUserWorldId, testWorldToolArgs } from "../../helpers/world-context.ts";
 
 function testCfg() {
   const ctx = getActivePgTestContext();
   if (!ctx) throw new Error("PG test context not initialized");
   return ctx.config.data;
+}
+
+function w() {
+  return testWorldToolArgs();
 }
 
 describePg("tasks tool", () => {
@@ -44,8 +49,7 @@ describePg("tasks tool", () => {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
 
-    const defaultList = await getDefaultTaskList();
-    expect(defaultList).not.toBeNull();
+    const defaultList = await getDefaultTaskList(testUserWorldId());
 
     let output = "";
     await runWithToolContext(
@@ -54,6 +58,7 @@ describePg("tasks tool", () => {
         const tool = toolSets.getTool("task_create")!;
         output = await Promise.resolve(
           tool.handler({
+            ...w(),
             title: "Discuss UI plan",
             priority: "high",
             content: "Details here",
@@ -82,7 +87,7 @@ describePg("tasks tool", () => {
     expect(parsed.item.tags).toEqual(["work"]);
     expect(parsed.item.status).toBe("pending");
     expect(parsed.item.priority).toBe("high");
-    expect(parsed.item.list_id).toBe(defaultList!.id);
+    expect(parsed.item.list_id).toBe(defaultList.id);
 
     const row = await getEntity(parsed.item.id);
     expect(row?.title).toBe("Discuss UI plan");
@@ -95,8 +100,7 @@ describePg("tasks tool", () => {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
 
-    const list = await getDefaultTaskList();
-    expect(list).not.toBeNull();
+    const list = await getDefaultTaskList(testUserWorldId());
 
     let createOut = "";
     await runWithToolContext(
@@ -104,12 +108,12 @@ describePg("tasks tool", () => {
       async () => {
         const create = toolSets.getTool("task_create")!;
         createOut = await Promise.resolve(
-          create.handler({ title: "Active task", list_id: list!.id }),
+          create.handler({ ...w(), title: "Active task", list_id: list.id }),
         );
         const complete = toolSets.getTool("task_complete")!;
         const created = JSON.parse(createOut) as { item: { id: number } };
-        await Promise.resolve(complete.handler({ id: created.item.id }));
-        await Promise.resolve(create.handler({ title: "Pending task", list_id: list!.id }));
+        await Promise.resolve(complete.handler({ ...w(), id: created.item.id }));
+        await Promise.resolve(create.handler({ ...w(), title: "Pending task", list_id: list.id }));
       },
       { tools: toolSets },
     );
@@ -119,7 +123,7 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("task_list")!;
-        output = await Promise.resolve(tool.handler({ list_id: list!.id }));
+        output = await Promise.resolve(tool.handler({ ...w(), list_id: list.id }));
       },
       { tools: toolSets },
     );
@@ -144,7 +148,7 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const create = toolSets.getTool("task_create")!;
-        const out = await Promise.resolve(create.handler({ title: "Task to complete" }));
+        const out = await Promise.resolve(create.handler({ ...w(), title: "Task to complete" }));
         createdId = (JSON.parse(out) as { item: { id: number } }).item.id;
       },
       { tools: toolSets },
@@ -155,7 +159,7 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("task_complete")!;
-        output = await Promise.resolve(tool.handler({ id: createdId }));
+        output = await Promise.resolve(tool.handler({ ...w(), id: createdId }));
       },
       { tools: toolSets },
     );
@@ -181,6 +185,7 @@ describePg("tasks tool", () => {
         const tool = toolSets.getTool("task_create")!;
         output = await Promise.resolve(
           tool.handler({
+            ...w(),
             title: "Reminder task",
             remind_at: "2026-07-01T09:00:00+08:00",
           }),
@@ -204,7 +209,7 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const create = toolSets.getTool("tasklist_create")!;
-        const out = await Promise.resolve(create.handler({ name: "项目 Alpha" }));
+        const out = await Promise.resolve(create.handler({ ...w(), name: "项目 Alpha" }));
         createdId = (JSON.parse(out) as { list: { id: number; name: string } }).list.id;
         expect((JSON.parse(out) as { list: { name: string } }).list.name).toBe("项目 Alpha");
       },
@@ -216,7 +221,7 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const del = toolSets.getTool("tasklist_delete")!;
-        deleteOut = await Promise.resolve(del.handler({ id: createdId }));
+        deleteOut = await Promise.resolve(del.handler({ ...w(), id: createdId }));
       },
       { tools: toolSets },
     );
@@ -229,23 +234,27 @@ describePg("tasks tool", () => {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
 
-    const listA = await getDefaultTaskList();
-    expect(listA).not.toBeNull();
+    const listA = await getDefaultTaskList(testUserWorldId());
 
     let listBId = 0;
     await runWithToolContext(
       sid,
       async () => {
         const createList = toolSets.getTool("tasklist_create")!;
-        const listOut = await Promise.resolve(createList.handler({ name: "搜索清单 B" }));
+        const listOut = await Promise.resolve(createList.handler({ ...w(), name: "搜索清单 B" }));
         listBId = (JSON.parse(listOut) as { list: { id: number } }).list.id;
 
         const create = toolSets.getTool("task_create")!;
         await Promise.resolve(
-          create.handler({ title: "独特关键词任务", list_id: listA!.id, content: "alpha" }),
+          create.handler({ ...w(), title: "独特关键词任务", list_id: listA.id, content: "alpha" }),
         );
         await Promise.resolve(
-          create.handler({ title: "另一清单任务", list_id: listBId, content: "独特关键词" }),
+          create.handler({
+            ...w(),
+            title: "另一清单任务",
+            list_id: listBId,
+            content: "独特关键词",
+          }),
         );
       },
       { tools: toolSets },
@@ -256,7 +265,7 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("task_search")!;
-        output = await Promise.resolve(tool.handler({ query: "独特关键词" }));
+        output = await Promise.resolve(tool.handler({ ...w(), query: "独特关键词" }));
       },
       { tools: toolSets },
     );
@@ -273,23 +282,32 @@ describePg("tasks tool", () => {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
 
-    const listA = await getDefaultTaskList();
-    expect(listA).not.toBeNull();
+    const listA = await getDefaultTaskList(testUserWorldId());
 
     let listBId = 0;
     await runWithToolContext(
       sid,
       async () => {
         const createList = toolSets.getTool("tasklist_create")!;
-        const listOut = await Promise.resolve(createList.handler({ name: "限定清单" }));
+        const listOut = await Promise.resolve(createList.handler({ ...w(), name: "限定清单" }));
         listBId = (JSON.parse(listOut) as { list: { id: number } }).list.id;
 
         const create = toolSets.getTool("task_create")!;
         await Promise.resolve(
-          create.handler({ title: "限定范围任务", list_id: listBId, content: "scope-test" }),
+          create.handler({
+            ...w(),
+            title: "限定范围任务",
+            list_id: listBId,
+            content: "scope-test",
+          }),
         );
         await Promise.resolve(
-          create.handler({ title: "默认清单任务", list_id: listA!.id, content: "scope-test" }),
+          create.handler({
+            ...w(),
+            title: "默认清单任务",
+            list_id: listA.id,
+            content: "scope-test",
+          }),
         );
       },
       { tools: toolSets },
@@ -300,7 +318,9 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("task_search")!;
-        output = await Promise.resolve(tool.handler({ query: "scope-test", list_id: listBId }));
+        output = await Promise.resolve(
+          tool.handler({ ...w(), query: "scope-test", list_id: listBId }),
+        );
       },
       { tools: toolSets },
     );
@@ -320,7 +340,7 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const createList = toolSets.getTool("tasklist_create")!;
-        await Promise.resolve(createList.handler({ name: "季度规划清单" }));
+        await Promise.resolve(createList.handler({ ...w(), name: "季度规划清单" }));
       },
       { tools: toolSets },
     );
@@ -330,7 +350,7 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("tasklist_search")!;
-        output = await Promise.resolve(tool.handler({ query: "季度规划" }));
+        output = await Promise.resolve(tool.handler({ ...w(), query: "季度规划" }));
       },
       { tools: toolSets },
     );

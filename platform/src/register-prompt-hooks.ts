@@ -1,6 +1,7 @@
 import type { HookRegistry } from "@freeanima/kernel/hooks";
 import { systemPromptBuild } from "@freeanima/core/hooks/prompt";
 import { registerToolsetSystemPromptHooks } from "@freeanima/capabilities-tools/toolset-prompt-hooks";
+import { registerWorldContextSystemPromptHook } from "@freeanima/capabilities-tools/world-prompt-hooks";
 import { buildMemorySystemPromptSections } from "@freeanima/capabilities-memory/system-prompt-sections";
 import { loadSelfLayerPrompt } from "@freeanima/capabilities-identity";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
@@ -47,6 +48,7 @@ export function registerSystemPromptHooks(opts: {
   getToolRegistry: () => ToolSetRegistry;
 }): void {
   registerMemorySystemPromptHooks(opts.hookRegistry);
+  registerWorldContextSystemPromptHook(opts.hookRegistry);
   registerToolsetSystemPromptHooks(opts.hookRegistry, opts.getToolRegistry);
   registerChannelSystemPromptHook(opts.hookRegistry);
 }

@@ -1,5 +1,4 @@
 export { registerWriteFridgeMagnetTool } from "./fridge-magnet/tool.ts";
-export { defaultTaskWorldId } from "./list-store.ts";
 
 export type {
   TaskListRow,
@@ -19,7 +18,7 @@ export {
   reopenTaskList,
   deleteTaskList,
   getDefaultTaskList,
-  isDefaultTaskListId,
+  ensureDefaultTaskListForWorld,
   searchTaskLists,
 } from "./list-store.ts";
 

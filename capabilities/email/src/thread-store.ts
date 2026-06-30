@@ -6,7 +6,7 @@ import {
   searchEntities,
   updateEntity,
 } from "@freeanima/core/db/pg/entity";
-import { defaultEmailWorldId } from "./account-store.ts";
+import { worldIdForAccount, worldIdForThread } from "./email-world.ts";
 import type { EmailThreadListOpts, EmailThreadRow, EmailThreadUpsertInput } from "./types.ts";
 
 function normalizeTags(tags: string[] | undefined): string[] {
@@ -67,8 +67,9 @@ export async function findEmailThreadByKey(
   accountId: number,
   threadKey: string,
 ): Promise<EmailThreadRow | null> {
+  const worldId = await worldIdForAccount(accountId);
   const result = await searchEntities({
-    world_id: defaultEmailWorldId(),
+    world_id: worldId,
     primary_component: EMAIL_THREAD_COMPONENT,
     filters: { account_id: accountId },
     limit: 500,
@@ -110,9 +111,10 @@ export async function upsertEmailThread(input: EmailThreadUpsertInput): Promise<
     });
   }
 
+  const worldId = await worldIdForAccount(input.account_id);
   const row = await createEntity({
     type: "content",
-    world_id: defaultEmailWorldId(),
+    world_id: worldId,
     components: [EMAIL_THREAD_COMPONENT],
     primary_component: EMAIL_THREAD_COMPONENT,
     title: input.subject,
@@ -131,14 +133,17 @@ export async function upsertEmailThread(input: EmailThreadUpsertInput): Promise<
   return toThreadRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
 }
 
-export async function listEmailThreads(opts: EmailThreadListOpts = {}): Promise<EmailThreadRow[]> {
+export async function listEmailThreads(
+  worldId: number,
+  opts: EmailThreadListOpts = {},
+): Promise<EmailThreadRow[]> {
   const filters: Record<string, unknown> = {};
   if (opts.account_id != null) filters.account_id = opts.account_id;
   if (opts.has_unread) filters.has_unread = true;
   if (opts.tags?.length) filters.tags = opts.tags;
 
   const result = await searchEntities({
-    world_id: defaultEmailWorldId(),
+    world_id: worldId,
     primary_component: EMAIL_THREAD_COMPONENT,
     filters: Object.keys(filters).length > 0 ? filters : undefined,
     limit: opts.limit ?? 200,
@@ -172,8 +177,9 @@ export async function tagEmailThread(id: number, tags: string[]): Promise<EmailT
 }
 
 export async function refreshThreadAggregates(threadId: number): Promise<void> {
+  const worldId = await worldIdForThread(threadId);
   const messages = await import("./message-store.ts").then((m) =>
-    m.listEmailMessages({ thread_id: threadId, limit: 500 }),
+    m.listEmailMessages(worldId, { thread_id: threadId, limit: 500 }),
   );
   const unread_count = messages.filter((m) => m.unread).length;
   const last = messages[0];

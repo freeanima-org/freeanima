@@ -11,6 +11,8 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 import { bindActiveConfig } from "../../platform/config/index.ts";
+import { bindResolvedWorldContext } from "../../core/src/config/world-context.ts";
+import { ensureWorldSubjects } from "../../core/src/db/pg/entity/subject-world.ts";
 import {
   createEmailAccount,
   findEmailAccountByAddressAndHost,
@@ -79,10 +81,19 @@ async function main(): Promise<void> {
     return;
   }
 
+  const config = FileConfig.open();
+  const worldCtx = await ensureWorldSubjects(config.data);
+  bindResolvedWorldContext(worldCtx);
+  const emailWorldId = worldCtx.agent_world_id;
+
   try {
     let migrated = 0;
     for (const account of accounts) {
-      const existing = await findEmailAccountByAddressAndHost(account.address, account.smtp_host);
+      const existing = await findEmailAccountByAddressAndHost(
+        emailWorldId,
+        account.address,
+        account.smtp_host,
+      );
       if (existing) {
         console.log(`skip existing: ${account.address} (${existing.id})`);
         continue;
@@ -92,7 +103,7 @@ async function main(): Promise<void> {
         migrated += 1;
         continue;
       }
-      const row = await createEmailAccount({
+      const row = await createEmailAccount(emailWorldId, {
         password: account.password,
         address: account.address,
         display_name: account.display_name,

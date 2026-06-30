@@ -88,6 +88,8 @@ export async function serve(
     const runPersistence = BOOT_PHASES.find((p) => p.id === "persistence")!.run;
     const { config } = await runConfig();
     await runPersistence(config);
+    const { bootWorldSubjectsPhase } = await import("./boot/world-subjects-phase.ts");
+    await bootWorldSubjectsPhase(config);
 
     const acpSessionUpdatedRef: { handler: ((sid: string) => void) | null } = { handler: null };
     const runtimeRef: { current: AppRuntime | null } = { current: null };

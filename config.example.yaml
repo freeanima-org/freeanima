@@ -34,7 +34,14 @@ llm:
 # remote_auth:
 #   token: "请替换为 openssl rand -base64 32 生成的随机串"
 
-# 通知收件主体（entities 表中 type=user / type=agent 的 id）
+# 实体 subject / world 上下文（通知收件人 SSOT）
+# 省略时默认 user_subject_id=1、agent_subject_id=2
+# user_world_id / agent_world_id 由 subject 的 default_private_world_id 推导，不在此配置
+# worlds:
+#   user_subject_id: 1
+#   agent_subject_id: 2
+
+# 旧版（仍兼容一版，优先读 worlds 段）：
 # notifications:
 #   user_subject_id: 1
 #   agent_subject_id: 2
