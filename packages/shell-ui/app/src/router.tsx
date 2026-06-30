@@ -19,16 +19,29 @@ import { useMemo } from "react";
 import { AdminShell } from "./main/AdminShell.tsx";
 import { ModuleShell } from "./main/ModuleShell.tsx";
 import { SettingsPage } from "./settings/SettingsPage.tsx";
+import { HubSetupPage } from "./setup/HubSetupPage.tsx";
+import { needsHubSetup } from "./setup/hub-setup.ts";
 import { resolveShellRouterBasepath } from "./router-basepath.ts";
 
 const rootRoute = createRootRoute({
   component: Outlet,
 });
 
+const setupRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/setup",
+  component: HubSetupPage,
+});
+
 const mainLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: "main-layout",
   component: ModuleShell,
+  beforeLoad: () => {
+    if (needsHubSetup()) {
+      throw redirect({ to: "/setup" });
+    }
+  },
 });
 
 const indexRoute = createRoute({
@@ -90,6 +103,7 @@ const settingsRoute = createRoute({
 });
 
 const routeTree = rootRoute.addChildren([
+  setupRoute,
   mainLayoutRoute.addChildren([
     indexRoute,
     chatRoute,

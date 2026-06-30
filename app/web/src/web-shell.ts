@@ -85,3 +85,8 @@ export async function testWebHubConnection(hubUrl: string, remoteAuthToken: stri
   const token = remoteAuthToken.trim();
   await testHubHealthConnection(normalized, token || undefined);
 }
+
+/** Web 壳层：localStorage / 构建默认值中均未配置 Hub API Token */
+export function webNeedsHubSetupFromConfig(): boolean {
+  return !window.satelliteShell?.remoteAuth?.token?.trim();
+}
