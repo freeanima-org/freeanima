@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-29 14:22+0800\n"
+"POT-Creation-Date: 2026-06-30 16:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -62,17 +62,24 @@ msgstr "用户 / Agent 隔离"
 
 #. type: Bullet: '- '
 #: docs/features/diary.md:23
+#, fuzzy
+#| msgid ""
+#| "User and Agent diaries live in the **default private world** of subjects "
+#| "from `config.yaml` `notifications.user_subject_id` / `agent_subject_id`."
 msgid ""
 "User and Agent diaries live in the **default private world** of subjects "
-"from `config.yaml` `notifications.user_subject_id` / `agent_subject_id`."
+"resolved from `config.yaml` **`worlds.user_subject_id` / "
+"`agent_subject_id`** (boot-time `ResolvedWorldContext`)."
 msgstr ""
 "用户与 Agent 日记位于 `config.yaml` 中 `notifications.user_subject_id` / "
 "`agent_subject_id` 所对应 subject 的**默认私有 world**。"
 
 #. type: Bullet: '- '
 #: docs/features/diary.md:23
-msgid "Shell `/diary` top bar switches **User / Agent** view."
-msgstr "Shell `/diary` 顶栏切换 **用户 / Agent** 视图。"
+msgid ""
+"Shell header **User / Agent** toggle selects which subject's diary to view "
+"(see [`entity-model.md`](../concepts/entity-model.md) global Subject scope)."
+msgstr ""
 
 #. type: Bullet: '- '
 #: docs/features/diary.md:23

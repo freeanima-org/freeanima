@@ -1,16 +1,22 @@
-import type { TaskMenuItem } from "../lib/menu-types.ts";
+import type { ReactNode } from "react";
 
-type ActionSheetProps = {
-  title?: string;
-  items: TaskMenuItem[];
+import { cn } from "../lib/cn.ts";
+import { m } from "./i18n.ts";
+import type { ActionSheetItem } from "./types.ts";
+
+export type ActionSheetProps = {
+  title?: ReactNode;
+  items: ActionSheetItem[];
+  dismissLabel?: ReactNode;
   onClose: () => void;
+  className?: string;
 };
 
-export function ActionSheet({ title, items, onClose }: ActionSheetProps) {
+export function ActionSheet({ title, items, dismissLabel, onClose, className }: ActionSheetProps) {
   return (
-    <dialog open className="modal modal-open modal-bottom sm:modal-middle">
+    <dialog className={cn("modal modal-open modal-bottom sm:modal-middle", className)} open>
       <div className="modal-box w-full max-w-lg rounded-t-2xl p-0 sm:rounded-box safe-area-pb">
-        {title ? (
+        {title != null && title !== "" ? (
           <div className="border-base-300 border-b px-4 py-3">
             <p className="text-sm font-semibold">{title}</p>
           </div>
@@ -33,7 +39,7 @@ export function ActionSheet({ title, items, onClose }: ActionSheetProps) {
         </ul>
         <div className="border-base-300 border-t p-2">
           <button type="button" className="btn btn-ghost btn-block" onClick={onClose}>
-            取消
+            {dismissLabel ?? m.ui_common_cancel()}
           </button>
         </div>
       </div>

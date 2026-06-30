@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-29 13:16+0800\n"
+"POT-Creation-Date: 2026-06-30 16:54+0800\n"
 "PO-Revision-Date: 2026-06-29 14:00+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/concepts/fridge-magnet.md:53 docs/concepts/notifications.md:80
+#: docs/concepts/fridge-magnet.md:53 docs/concepts/notifications.md:82
 #, no-wrap
 msgid "Related"
 msgstr "相关文档"
@@ -46,16 +46,22 @@ msgstr "收件人"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:12
-msgid "Configure subject entity ids in `config.yaml`:"
-msgstr "在 `config.yaml` 中配置主体实体 id："
+msgid ""
+"Configure subject entity ids in `config.yaml` **`worlds`** section (SSOT; "
+"legacy `notifications` still read as fallback):"
+msgstr ""
 
 #. type: Fenced code block (yaml)
 #: docs/concepts/notifications.md:13
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "notifications:\n"
+#| "  user_subject_id: 2 type=user entity\n"
+#| "  agent_subject_id: 1 # type=agent entity\n"
 msgid ""
-"notifications:\n"
-"  user_subject_id: 2 type=user entity\n"
-"  agent_subject_id: 1 # type=agent entity\n"
+"worlds:\n"
+"  user_subject_id: 1 # type=user entity; default 1\n"
+"  agent_subject_id: 2 # type=agent entity; default 2\n"
 msgstr ""
 "notifications:\n"
 "  user_subject_id: 2 type=user entity\n"
@@ -64,14 +70,26 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/notifications.md:20
 msgid ""
+"`user_world_id` / `agent_world_id` are derived at Hub boot from each "
+"subject's `default_private_world_id` (see [`entity-model.md`](entity-"
+"model.md))."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/notifications.md:22
+#, fuzzy
+#| msgid ""
+#| "Each row stores `recipient_kind` (`user` | `agent`) and `recipient_id` "
+#| "(entity id string). Unconfigured installs fall back to `\"default\"`."
+msgid ""
 "Each row stores `recipient_kind` (`user` | `agent`) and `recipient_id` "
-"(entity id string). Unconfigured installs fall back to `\"default\"`."
+"(entity id string). Unconfigured installs default to subject ids `1` / `2`."
 msgstr ""
 "每行存储 `recipient_kind`（`user` | `agent`）与 `recipient_id`（实体 id 字符"
 "串）。未配置的安装回退为 `\"default\"`。"
 
 #. type: Plain text
-#: docs/concepts/notifications.md:27
+#: docs/concepts/notifications.md:29
 #, no-wrap
 msgid ""
 "| Writer                                  | Typical recipient     |\n"
@@ -89,18 +107,18 @@ msgstr ""
 "| `notification_send` 工具                | user / agent / both   |\n"
 
 #. type: Plain text
-#: docs/concepts/notifications.md:29
+#: docs/concepts/notifications.md:31
 msgid "Dream pipeline **does not** create notifications (reminder removed)."
 msgstr "梦境流水线**不会**创建通知（提醒已移除）。"
 
 #. type: Title ##
-#: docs/concepts/notifications.md:30
+#: docs/concepts/notifications.md:32
 #, no-wrap
 msgid "Agent consciousness"
 msgstr "Agent 意识"
 
 #. type: Plain text
-#: docs/concepts/notifications.md:33
+#: docs/concepts/notifications.md:35
 msgid ""
 "Unread agent notifications are injected at inference time — same splice "
 "point and transport as [fridge magnets](fridge-magnet.md): a runtime-only "
@@ -113,26 +131,26 @@ msgstr ""
 "中。"
 
 #. type: Plain text
-#: docs/concepts/notifications.md:35
+#: docs/concepts/notifications.md:37
 msgid ""
 "The inject block includes a **Handling protocol** (three-way triage by "
 "whether action is needed — not by `source_kind`)."
 msgstr "注入块包含**处理协议**（按是否需要行动三分流——而非按 `source_kind`）。"
 
 #. type: Title ###
-#: docs/concepts/notifications.md:36
+#: docs/concepts/notifications.md:38
 #, no-wrap
 msgid "Agent handling protocol"
 msgstr "Agent 处理协议"
 
 #. type: Plain text
-#: docs/concepts/notifications.md:39
+#: docs/concepts/notifications.md:41
 msgid ""
 "For each injected `[id:…]` line, classify by content (not by writer/source):"
 msgstr "对每条注入的 `[id:…]` 行，按内容分类（而非按写入方/来源）："
 
 #. type: Plain text
-#: docs/concepts/notifications.md:45
+#: docs/concepts/notifications.md:47
 #, no-wrap
 msgid ""
 "| Category                          | Action                          | Mark read                                       |\n"
@@ -148,7 +166,7 @@ msgstr ""
 "| **需行动，耗时/不确定**           | 长任务前先询问用户              | 批准并处理前**不要**标记已读                    |\n"
 
 #. type: Plain text
-#: docs/concepts/notifications.md:47
+#: docs/concepts/notifications.md:49
 msgid ""
 "Unmarked unread items are re-injected on the next user turn. Use "
 "`notification_list(recipient=agent, read_filter=unread)` if the inject block "
@@ -158,30 +176,30 @@ msgstr ""
 "`notification_list(recipient=agent, read_filter=unread)`。"
 
 #. type: Title ##
-#: docs/concepts/notifications.md:48
+#: docs/concepts/notifications.md:50
 #, no-wrap
 msgid "Task reminder scan"
 msgstr "任务提醒扫描"
 
 #. type: Plain text
-#: docs/concepts/notifications.md:51
+#: docs/concepts/notifications.md:53
 msgid ""
 "Builtin cron `builtin-task-reminders` runs **every minute** (`* * * * *`)."
 msgstr "内置 cron `builtin-task-reminders` **每分钟**运行（`* * * * *`）。"
 
 #. type: Plain text
-#: docs/concepts/notifications.md:53
+#: docs/concepts/notifications.md:55
 msgid "For each pending `task_item`:"
 msgstr "对每个待处理的 `task_item`："
 
 #. type: Bullet: '1. '
-#: docs/concepts/notifications.md:57
+#: docs/concepts/notifications.md:59
 msgid "**Trigger time**: `remind_at` if set, else `due_at`; if neither, skip."
 msgstr ""
 "**触发时间**：若设置了 `remind_at` 则用之，否则 `due_at`；两者皆无则跳过。"
 
 #. type: Bullet: '2. '
-#: docs/concepts/notifications.md:57
+#: docs/concepts/notifications.md:59
 msgid ""
 "**Send** when `trigger <= now` and `last_notified_at` is absent or "
 "`last_notified_at < trigger` (entity JSONB field on schedulable body)."
@@ -190,7 +208,7 @@ msgstr ""
 "`last_notified_at < trigger`（可调度 body 上的实体 JSONB 字段）。"
 
 #. type: Bullet: '3. '
-#: docs/concepts/notifications.md:57
+#: docs/concepts/notifications.md:59
 msgid ""
 "**After send**: patch `last_notified_at` on the task entity; do not rely on "
 "day-based `source_ref` dedup alone."
@@ -199,13 +217,13 @@ msgstr ""
 "`source_ref` 去重。"
 
 #. type: Plain text
-#: docs/concepts/notifications.md:59
+#: docs/concepts/notifications.md:61
 #, no-wrap
 msgid "**Product rule (confirmed)**: one trigger per task per scan — **remind first, else due**; not separate notifications for both when both are set.\n"
 msgstr "**产品规则（已确认）**：每次扫描每个任务仅一次触发——**先 remind，否则 due**；两者皆设时不分别发送两条通知。\n"
 
 #. type: Plain text
-#: docs/concepts/notifications.md:61
+#: docs/concepts/notifications.md:63
 msgid ""
 "Task reminders are delivered via this inbox (ToolSet `task` / cron), not by "
 "`notification_send` duplicating the same reminder."
@@ -214,71 +232,71 @@ msgstr ""
 "复同一提醒。"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/notifications.md:62 messages/po4a/en.xml:149
+#: docs/concepts/notifications.md:64 messages/po4a/en.xml:149
 #: messages/po4a/en.xml:583 messages/po4a/en.xml:590
 #, no-wrap
 msgid "Tools"
 msgstr "工具"
 
 #. type: Plain text
-#: docs/concepts/notifications.md:65
+#: docs/concepts/notifications.md:67
 msgid "ToolSet `notification`:"
 msgstr "ToolSet `notification`："
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:69
+#: docs/concepts/notifications.md:71
 msgid "`notification_send`"
 msgstr "`notification_send`"
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:69
+#: docs/concepts/notifications.md:71
 msgid "`notification_list`"
 msgstr "`notification_list`"
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:69
+#: docs/concepts/notifications.md:71
 msgid "`notification_mark_read` — `id` or `ids` (batch, max 20)"
 msgstr "`notification_mark_read` — `id` 或 `ids`（批量，最多 20）"
 
 #. type: Plain text
-#: docs/concepts/notifications.md:71
+#: docs/concepts/notifications.md:73
 msgid "Included in default conversation toolsets when registered."
 msgstr "注册后包含在默认对话 toolset 中。"
 
 #. type: Title ##
-#: docs/concepts/notifications.md:72
+#: docs/concepts/notifications.md:74
 #, no-wrap
 msgid "SAP (read)"
 msgstr "SAP（读）"
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:77
+#: docs/concepts/notifications.md:79
 msgid ""
 "`notification.list` — requires `recipient_kind` + optional `recipient_id`"
 msgstr "`notification.list` — 需要 `recipient_kind` + 可选 `recipient_id`"
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:77
+#: docs/concepts/notifications.md:79
 msgid "`notification.markRead`"
 msgstr "`notification.markRead`"
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:77
+#: docs/concepts/notifications.md:79
 msgid "`notification.recipients` — configured subject ids for UI tabs"
 msgstr "`notification.recipients` — UI 标签页用的已配置主体 id"
 
 #. type: Plain text
-#: docs/concepts/notifications.md:79
+#: docs/concepts/notifications.md:81
 msgid "No SAP create RPC in v1; writes are Hub-internal + tools."
 msgstr "v1 无 SAP 创建 RPC；写入由 Hub 内部 + 工具完成。"
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:83
+#: docs/concepts/notifications.md:85
 msgid "Entity subjects: [`entity-model.md`](entity-model.md)"
 msgstr "实体主体：[`entity-model.md`](entity-model.md)"
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:83
+#: docs/concepts/notifications.md:85
 msgid ""
 "Fridge magnets (conversation notes only): [`fridge-magnet.md`](fridge-"
 "magnet.md)"

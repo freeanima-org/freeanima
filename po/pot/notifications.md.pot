@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-29 13:16+0800\n"
+"POT-Creation-Date: 2026-06-30 16:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/concepts/fridge-magnet.md:53 docs/concepts/notifications.md:80
+#: docs/concepts/fridge-magnet.md:53 docs/concepts/notifications.md:82
 #, no-wrap
 msgid "Related"
 msgstr ""
@@ -45,27 +45,37 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/notifications.md:12
-msgid "Configure subject entity ids in `config.yaml`:"
+msgid ""
+"Configure subject entity ids in `config.yaml` **`worlds`** section (SSOT; "
+"legacy `notifications` still read as fallback):"
 msgstr ""
 
 #. type: Fenced code block (yaml)
 #: docs/concepts/notifications.md:13
 #, no-wrap
 msgid ""
-"notifications:\n"
-"  user_subject_id: 2 type=user entity\n"
-"  agent_subject_id: 1 # type=agent entity\n"
+"worlds:\n"
+"  user_subject_id: 1 # type=user entity; default 1\n"
+"  agent_subject_id: 2 # type=agent entity; default 2\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/notifications.md:20
 msgid ""
-"Each row stores `recipient_kind` (`user` | `agent`) and `recipient_id` "
-"(entity id string). Unconfigured installs fall back to `\"default\"`."
+"`user_world_id` / `agent_world_id` are derived at Hub boot from each "
+"subject's `default_private_world_id` (see [`entity-model.md`](entity-"
+"model.md))."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/notifications.md:27
+#: docs/concepts/notifications.md:22
+msgid ""
+"Each row stores `recipient_kind` (`user` | `agent`) and `recipient_id` "
+"(entity id string). Unconfigured installs default to subject ids `1` / `2`."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/notifications.md:29
 #, no-wrap
 msgid ""
 "| Writer                                  | Typical recipient     |\n"
@@ -77,18 +87,18 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/notifications.md:29
+#: docs/concepts/notifications.md:31
 msgid "Dream pipeline **does not** create notifications (reminder removed)."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/notifications.md:30
+#: docs/concepts/notifications.md:32
 #, no-wrap
 msgid "Agent consciousness"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/notifications.md:33
+#: docs/concepts/notifications.md:35
 msgid ""
 "Unread agent notifications are injected at inference time — same splice "
 "point and transport as [fridge magnets](fridge-magnet.md): a runtime-only "
@@ -97,26 +107,26 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/notifications.md:35
+#: docs/concepts/notifications.md:37
 msgid ""
 "The inject block includes a **Handling protocol** (three-way triage by "
 "whether action is needed — not by `source_kind`)."
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/notifications.md:36
+#: docs/concepts/notifications.md:38
 #, no-wrap
 msgid "Agent handling protocol"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/notifications.md:39
+#: docs/concepts/notifications.md:41
 msgid ""
 "For each injected `[id:…]` line, classify by content (not by writer/source):"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/notifications.md:45
+#: docs/concepts/notifications.md:47
 #, no-wrap
 msgid ""
 "| Category                          | Action                          | Mark read                                       |\n"
@@ -127,7 +137,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/notifications.md:47
+#: docs/concepts/notifications.md:49
 msgid ""
 "Unmarked unread items are re-injected on the next user turn. Use "
 "`notification_list(recipient=agent, read_filter=unread)` if the inject block "
@@ -135,120 +145,120 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/notifications.md:48
+#: docs/concepts/notifications.md:50
 #, no-wrap
 msgid "Task reminder scan"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/notifications.md:51
+#: docs/concepts/notifications.md:53
 msgid ""
 "Builtin cron `builtin-task-reminders` runs **every minute** (`* * * * *`)."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/notifications.md:53
+#: docs/concepts/notifications.md:55
 msgid "For each pending `task_item`:"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/concepts/notifications.md:57
+#: docs/concepts/notifications.md:59
 msgid "**Trigger time**: `remind_at` if set, else `due_at`; if neither, skip."
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/concepts/notifications.md:57
+#: docs/concepts/notifications.md:59
 msgid ""
 "**Send** when `trigger <= now` and `last_notified_at` is absent or "
 "`last_notified_at < trigger` (entity JSONB field on schedulable body)."
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/concepts/notifications.md:57
+#: docs/concepts/notifications.md:59
 msgid ""
 "**After send**: patch `last_notified_at` on the task entity; do not rely on "
 "day-based `source_ref` dedup alone."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/notifications.md:59
+#: docs/concepts/notifications.md:61
 #, no-wrap
 msgid "**Product rule (confirmed)**: one trigger per task per scan — **remind first, else due**; not separate notifications for both when both are set.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/notifications.md:61
+#: docs/concepts/notifications.md:63
 msgid ""
 "Task reminders are delivered via this inbox (ToolSet `task` / cron), not by "
 "`notification_send` duplicating the same reminder."
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/notifications.md:62 messages/po4a/en.xml:149
+#: docs/concepts/notifications.md:64 messages/po4a/en.xml:149
 #: messages/po4a/en.xml:583 messages/po4a/en.xml:590
 #, no-wrap
 msgid "Tools"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/notifications.md:65
+#: docs/concepts/notifications.md:67
 msgid "ToolSet `notification`:"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:69
+#: docs/concepts/notifications.md:71
 msgid "`notification_send`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:69
+#: docs/concepts/notifications.md:71
 msgid "`notification_list`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:69
+#: docs/concepts/notifications.md:71
 msgid "`notification_mark_read` — `id` or `ids` (batch, max 20)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/notifications.md:71
+#: docs/concepts/notifications.md:73
 msgid "Included in default conversation toolsets when registered."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/notifications.md:72
+#: docs/concepts/notifications.md:74
 #, no-wrap
 msgid "SAP (read)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:77
+#: docs/concepts/notifications.md:79
 msgid ""
 "`notification.list` — requires `recipient_kind` + optional `recipient_id`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:77
+#: docs/concepts/notifications.md:79
 msgid "`notification.markRead`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:77
+#: docs/concepts/notifications.md:79
 msgid "`notification.recipients` — configured subject ids for UI tabs"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/notifications.md:79
+#: docs/concepts/notifications.md:81
 msgid "No SAP create RPC in v1; writes are Hub-internal + tools."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:83
+#: docs/concepts/notifications.md:85
 msgid "Entity subjects: [`entity-model.md`](entity-model.md)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:83
+#: docs/concepts/notifications.md:85
 msgid ""
 "Fridge magnets (conversation notes only): [`fridge-magnet.md`](fridge-"
 "magnet.md)"

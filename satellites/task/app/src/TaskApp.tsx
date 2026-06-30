@@ -3,7 +3,7 @@ import { useSubjectScope } from "@freeanima/shell-sdk/react";
 import { ListDetailLayout } from "@freeanima/satellite-sdk/layout";
 import { FormFieldLabel, FormFieldset } from "@freeanima/satellite-sdk/form";
 
-import { ActionSheet } from "./components/ActionSheet.tsx";
+import { ActionSheet, ConfirmDialog, EmptyState } from "@freeanima/ui-kit/composite";
 import { CompletedTaskList } from "./components/CompletedTaskList.tsx";
 import { ContextMenu, type ContextMenuItem } from "./components/ContextMenu.tsx";
 import { ListSidebar } from "./components/ListSidebar.tsx";
@@ -83,6 +83,7 @@ export function TaskApp() {
   const [listMenu, setListMenu] = useState<ListMenuState | null>(null);
   const [itemMenu, setItemMenu] = useState<ItemMenuState | null>(null);
   const [sheetMenu, setSheetMenu] = useState<SheetMenuState | null>(null);
+  const [listToDelete, setListToDelete] = useState<TaskListRow | null>(null);
 
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedItemIds, setSelectedItemIds] = useState<Set<number>>(() => new Set());
@@ -280,11 +281,15 @@ export function TaskApp() {
     }
   };
 
-  const handleDeleteList = async (list: TaskListRow) => {
+  const handleDeleteList = (list: TaskListRow) => {
     if (list.is_default) return;
-    const label = list.is_folder ? "文件夹" : "清单";
-    const extra = list.is_folder ? "及其子文件夹、清单和任务" : "及其任务";
-    if (!confirm(`删除${label}「${list.name}」${extra}？`)) return;
+    setListToDelete(list);
+  };
+
+  const confirmDeleteList = async () => {
+    const list = listToDelete;
+    if (!list) return;
+    setListToDelete(null);
     try {
       await deleteTaskList(list.id);
       if (selectedFolderId === list.id) setSelectedFolderId(null);
@@ -689,9 +694,10 @@ export function TaskApp() {
             ) : null}
             <div className="flex-1 overflow-y-auto px-2 py-2">
               {displayPending.length === 0 && displayCompleted.length === 0 ? (
-                <p className="text-base-content/50 px-2 py-6 text-sm">
-                  {searchActive ? "全部清单中无匹配任务" : "暂无任务，在下方快速添加"}
-                </p>
+                <EmptyState
+                  message={searchActive ? "全部清单中无匹配任务" : "暂无任务，在下方快速添加"}
+                  className="px-2"
+                />
               ) : null}
 
               {searchActive ? (
@@ -793,6 +799,22 @@ export function TaskApp() {
           onClose={() => setSheetMenu(null)}
         />
       ) : null}
+
+      <ConfirmDialog
+        open={listToDelete != null}
+        title="删除确认"
+        description={
+          listToDelete
+            ? `删除${listToDelete.is_folder ? "文件夹" : "清单"}「${listToDelete.name}」${
+                listToDelete.is_folder ? "及其子文件夹、清单和任务" : "及其任务"
+              }？`
+            : undefined
+        }
+        confirmLabel="删除"
+        variant="error"
+        onConfirm={() => void confirmDeleteList()}
+        onCancel={() => setListToDelete(null)}
+      />
 
       {movePickerItemIds ? (
         <MoveToListPicker

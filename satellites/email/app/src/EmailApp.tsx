@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { EmptyState, StatusAlert } from "@freeanima/ui-kit/composite";
 import { useSubjectScope } from "@freeanima/shell-sdk/react";
 
 import {
@@ -180,9 +181,9 @@ export function EmailApp() {
           </p>
         </header>
         <main className="flex-1 overflow-auto p-4 space-y-2">
-          {error ? <div className="alert alert-error text-sm">{error}</div> : null}
+          {error ? <StatusAlert variant="error">{error}</StatusAlert> : null}
           {accounts.length === 0 ? (
-            <div className="text-sm opacity-70">暂无邮件账户。</div>
+            <EmptyState message="暂无邮件账户。" className="text-left items-start" />
           ) : (
             accounts.map((account) => (
               <button
@@ -286,7 +287,10 @@ export function EmailApp() {
               <span className="loading loading-spinner loading-sm" />
             </div>
           ) : messages.length === 0 ? (
-            <div className="p-4 text-sm opacity-70">暂无邮件。点击「同步」从 IMAP 拉取。</div>
+            <EmptyState
+              message="暂无邮件。点击「同步」从 IMAP 拉取。"
+              className="p-4 text-left items-start"
+            />
           ) : (
             <ul className="divide-y divide-base-300">
               {messages.map((message) => (

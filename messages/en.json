@@ -588,5 +588,8 @@
   "admin_studio_toggle_terminal_panel": "Toggle terminal panel",
   "admin_studio_workdir_goto_admin": "Open Admin console config",
   "admin_studio_workdir_lead": "Pair programming requires a working directory. Set",
-  "admin_studio_workdir_title": "Configure working directory"
+  "admin_studio_workdir_title": "Configure working directory",
+  "ui_common_cancel": "Cancel",
+  "ui_common_close": "Close",
+  "ui_common_confirm": "OK"
 }

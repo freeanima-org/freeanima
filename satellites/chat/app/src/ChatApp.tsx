@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ConfirmDialog } from "@freeanima/ui-kit/composite";
 import { AcpProgressDock } from "@chat/components/AcpProgressDock.tsx";
 import { FridgeMagnetInjectPreview } from "@chat/components/FridgeMagnetInjectPreview.tsx";
 import { ToolBlockBubble } from "@chat/components/ToolBlockBubble.tsx";
@@ -1000,36 +1001,15 @@ export function ChatApp() {
         </div>
       ) : null}
 
-      {showDeleteDialog ? (
-        <div
-          className="safe-fixed-overlay z-50 flex items-center justify-center bg-black/40 p-4"
-          onClick={() => setShowDeleteDialog(false)}
-        >
-          <div
-            className="bg-base-100 rounded-xl p-5 shadow-2xl w-full max-w-sm"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-sm font-bold mb-3">{m.chat_delete()}</h3>
-            <p className="text-sm text-base-content/70 mb-4">{m.chat_delete_confirm()}</p>
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                onClick={() => setShowDeleteDialog(false)}
-              >
-                {m.admin_common_cancel()}
-              </button>
-              <button
-                type="button"
-                className="btn btn-error btn-sm"
-                onClick={() => void confirmDelete()}
-              >
-                {m.chat_delete()}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ConfirmDialog
+        open={showDeleteDialog}
+        title={m.chat_delete()}
+        description={m.chat_delete_confirm()}
+        confirmLabel={m.chat_delete()}
+        variant="error"
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => setShowDeleteDialog(false)}
+      />
 
       {showRenameDialog ? (
         <div

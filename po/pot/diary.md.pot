@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-29 14:22+0800\n"
+"POT-Creation-Date: 2026-06-30 16:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -57,12 +57,15 @@ msgstr ""
 #: docs/features/diary.md:23
 msgid ""
 "User and Agent diaries live in the **default private world** of subjects "
-"from `config.yaml` `notifications.user_subject_id` / `agent_subject_id`."
+"resolved from `config.yaml` **`worlds.user_subject_id` / "
+"`agent_subject_id`** (boot-time `ResolvedWorldContext`)."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/features/diary.md:23
-msgid "Shell `/diary` top bar switches **User / Agent** view."
+msgid ""
+"Shell header **User / Agent** toggle selects which subject's diary to view "
+"(see [`entity-model.md`](../concepts/entity-model.md) global Subject scope)."
 msgstr ""
 
 #. type: Bullet: '- '
