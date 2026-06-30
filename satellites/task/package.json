@@ -11,6 +11,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@freeanima/sap-contract": "workspace:*",
     "@freeanima/satellite-sdk": "workspace:*",
+    "@freeanima/shell-sdk": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

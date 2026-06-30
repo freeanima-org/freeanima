@@ -300,8 +300,8 @@ export function createSapServerHandlers(
           return serviceEntityDiary.serviceDiarySearch(deps.runtime.runtimeDeps(), input);
         }
         case "emailaccount.list": {
-          emailAccountListInputSchema.parse(payload);
-          return serviceEntityEmail.serviceEmailAccountList(deps.runtime.runtimeDeps());
+          const input = emailAccountListInputSchema.parse(payload ?? {});
+          return serviceEntityEmail.serviceEmailAccountList(deps.runtime.runtimeDeps(), input);
         }
         case "email.message.list": {
           const input = emailMessageListInputSchema.parse(payload);
@@ -309,14 +309,11 @@ export function createSapServerHandlers(
         }
         case "email.message.read": {
           const input = emailMessageReadInputSchema.parse(payload);
-          return serviceEntityEmail.serviceEmailMessageRead(deps.runtime.runtimeDeps(), input.id);
+          return serviceEntityEmail.serviceEmailMessageRead(deps.runtime.runtimeDeps(), input);
         }
         case "email.message.markRead": {
           const input = emailMessageMarkReadInputSchema.parse(payload);
-          return serviceEntityEmail.serviceEmailMessageMarkRead(
-            deps.runtime.runtimeDeps(),
-            input.id,
-          );
+          return serviceEntityEmail.serviceEmailMessageMarkRead(deps.runtime.runtimeDeps(), input);
         }
         case "email.sync": {
           const input = emailSyncInputSchema.parse(payload);

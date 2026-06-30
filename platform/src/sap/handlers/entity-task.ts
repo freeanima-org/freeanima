@@ -14,7 +14,7 @@ import type { SapServerDeps } from "../types.ts";
 import * as serviceEntityTask from "../../runtime/service-entity-task.ts";
 
 export async function handleTasklistList(deps: SapServerDeps, payload: unknown) {
-  const input = tasklistListInputSchema.parse(payload);
+  const input = tasklistListInputSchema.parse(payload ?? {});
   return serviceEntityTask.serviceTasklistList(deps.runtime.runtimeDeps(), input);
 }
 
@@ -50,15 +50,15 @@ export async function handleTaskPatch(deps: SapServerDeps, payload: unknown) {
 
 export async function handleTaskComplete(deps: SapServerDeps, payload: unknown) {
   const input = taskCompleteInputSchema.parse(payload);
-  return serviceEntityTask.serviceTaskComplete(deps.runtime.runtimeDeps(), input.id);
+  return serviceEntityTask.serviceTaskComplete(deps.runtime.runtimeDeps(), input);
 }
 
 export async function handleTaskUncomplete(deps: SapServerDeps, payload: unknown) {
   const input = taskUncompleteInputSchema.parse(payload);
-  return serviceEntityTask.serviceTaskUncomplete(deps.runtime.runtimeDeps(), input.id);
+  return serviceEntityTask.serviceTaskUncomplete(deps.runtime.runtimeDeps(), input);
 }
 
 export async function handleTaskDelete(deps: SapServerDeps, payload: unknown) {
   const input = taskDeleteInputSchema.parse(payload);
-  return serviceEntityTask.serviceTaskDelete(deps.runtime.runtimeDeps(), input.id);
+  return serviceEntityTask.serviceTaskDelete(deps.runtime.runtimeDeps(), input);
 }

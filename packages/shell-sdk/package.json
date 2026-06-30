@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./*": "./src/*.ts",
+    "./react": "./src/react.tsx",
     "./settings": "./src/settings/index.ts"
   },
   "dependencies": {

@@ -1,5 +1,6 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { SubjectScopeProvider, SubjectToggle, useSubjectScope } from "@freeanima/shell-sdk/react";
 
 import { detectPlatform } from "../platform.ts";
 import {
@@ -12,6 +13,11 @@ import {
 function useNavActive(match: string): boolean {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return pathname.startsWith(match);
+}
+
+function ShellSubjectToggle() {
+  const { kind, setKind } = useSubjectScope();
+  return <SubjectToggle value={kind} onChange={setKind} />;
 }
 
 function ShellNavLink({
@@ -58,11 +64,12 @@ function DesktopModuleShell() {
     <div className="shell-module-layout h-full flex flex-col bg-base-100 text-base-content">
       <header className="shell-top-nav flex navbar bg-base-200 border-b border-base-300 min-h-12 px-3 shrink-0 relative z-50">
         <div className="font-semibold text-sm">FreeAnima</div>
-        <nav className="flex gap-1 ml-4" aria-label="模块导航">
+        <nav className="flex gap-1 ml-4 flex-1" aria-label="模块导航">
           {nav.map((item) => (
             <ShellNavLink key={item.to} {...item} layout="top" />
           ))}
         </nav>
+        <ShellSubjectToggle />
       </header>
       <main className="flex-1 min-h-0 overflow-hidden">
         <Outlet />
@@ -130,6 +137,9 @@ function MobileModuleShell() {
 
   return (
     <div className="shell-module-layout h-full flex flex-col bg-base-100 text-base-content">
+      <header className="shell-top-nav flex items-center justify-end bg-base-200 border-b border-base-300 min-h-10 px-3 shrink-0">
+        <ShellSubjectToggle />
+      </header>
       <main className="flex-1 min-h-0 overflow-hidden">
         <Outlet />
       </main>
@@ -148,8 +158,9 @@ function MobileModuleShell() {
 
 export function ModuleShell() {
   const platform = detectPlatform();
-  if (platform === "mobile") {
-    return <MobileModuleShell />;
-  }
-  return <DesktopModuleShell />;
+  return (
+    <SubjectScopeProvider>
+      {platform === "mobile" ? <MobileModuleShell /> : <DesktopModuleShell />}
+    </SubjectScopeProvider>
+  );
 }

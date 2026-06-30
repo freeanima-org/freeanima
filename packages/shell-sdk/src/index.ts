@@ -65,3 +65,17 @@ export {
   probeHubHealthUrl,
   testHubHealthConnection,
 } from "./hub-health-probe.ts";
+export type { ResolvedWorldContext } from "./world-context.ts";
+export { fetchWorldContext, resetWorldContextCacheForTest } from "./world-context.ts";
+export type { SubjectKind } from "./subject-scope.ts";
+export {
+  SUBJECT_SCOPE_STORAGE_KEY,
+  resolveSubjectId,
+  resolveWorldIdForSubject,
+} from "./subject-scope.ts";
+export {
+  getSubjectKind,
+  resetSubjectScopeForTest,
+  setSubjectKind,
+  subscribeSubjectKind,
+} from "./subject-scope-store.ts";
