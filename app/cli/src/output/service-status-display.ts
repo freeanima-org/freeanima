@@ -130,7 +130,7 @@ export function printServiceRunningStatus(opts: {
   if (opts.web) {
     printSection("web");
     printField("running", opts.web.running ? "yes" : "no");
-    printField("http", `http://${opts.web.host}:${opts.web.port}/chat`);
+    printField("http", `http://${opts.web.host}:${opts.web.port}/web/chat`);
     if (opts.web.publicUrl) printField("public", opts.web.publicUrl);
   }
 

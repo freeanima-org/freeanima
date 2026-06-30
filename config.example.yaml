@@ -165,13 +165,17 @@ compression:
 #   model: bge-m3
 #   dimensions: 1024
 
+# Hub HTTP 跨域（与 tunnel / web 无关；浏览器经 Hub /web 同源访问时通常留空）
+# http:
+#   cors_origins:
+#     - http://127.0.0.1:4173   # dev:web
+
 # Cloudflare Tunnel 远程访问（认证见 remote_auth.token）
 # 一条命令完成：anima tunnel setup
 # API Token / Tunnel 凭证存 pass，见 anima credential
 # tunnel:
 #   enabled: true
 #   hostname: anima.example.com
-#   web_hostname: app.anima.example.com
 #   cloudflare:
 #     account_id: ...
 #     tunnel_id: ...
@@ -180,9 +184,9 @@ compression:
 #     api_token: credential("services/cloudflare/api-token", "token")
 #     tunnel_credentials: credential("services/cloudflare/tunnel-credentials", "json")
 
-# 浏览器 Web UI（静态托管，默认 :2659；随 anima service stack 启动）
+# 浏览器 Web UI（由 Hub :2658/web 托管；web.enabled 时随 anima service stack 挂载静态）
 # web:
 #   enabled: true
 #   host: 127.0.0.1
 #   port: 2659
-#   public_url: https://app.anima.example.com
+#   public_url: https://anima.example.com/web

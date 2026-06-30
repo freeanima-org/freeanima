@@ -12,16 +12,15 @@ describe("setup-wizard", () => {
     expect(yaml).toContain("http_status:404");
   });
 
-  test("renderCloudflaredConfig includes web ingress when configured", () => {
+  test("renderCloudflaredConfig includes hub ingress only", () => {
     const yaml = renderCloudflaredConfig({
       hostname: "anima.example.com",
       hubPort: 2658,
       credentialsFile: "/creds.json",
-      webHostname: "app.anima.example.com",
-      webPort: 2659,
     });
-    expect(yaml).toContain("hostname: app.anima.example.com");
-    expect(yaml).toContain("http://127.0.0.1:2659");
+    expect(yaml).toContain("hostname: anima.example.com");
+    expect(yaml).toContain("http://127.0.0.1:2658");
+    expect(yaml).not.toContain("2659");
   });
 });
 

@@ -8,7 +8,7 @@ export const webConfigSchema = z
     enabled: z.boolean().optional(),
     host: z.string().min(1).optional(),
     port: z.number().int().positive().optional(),
-    /** 公网 Web UI origin，用于 CORS 与设置页默认 Hub 提示 */
+    /** 公网 Web UI 外链（含 /web 前缀），仅文档/展示；不参与 CORS */
     public_url: z.string().url().optional(),
   })
   .optional();

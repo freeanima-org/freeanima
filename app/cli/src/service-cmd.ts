@@ -25,7 +25,7 @@ import { getTunnelStatus, migrateLegacyTunnelUnit } from "./tunnel/tunnel-superv
 import { buildTunnelSnapshot } from "@freeanima/platform/connectors/tunnel";
 import { FileConfig, validateConfigOnStartup } from "@freeanima/platform/config";
 import { runServiceStack } from "./stack/supervisor.ts";
-import { probeWebHealth, resolveWebHostPort } from "./web/web-runtime.ts";
+import { probeWebHealth } from "./web/web-runtime.ts";
 
 export type ServiceArgs = {
   action: string;
@@ -174,9 +174,8 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
     const tunnelStatus = getTunnelStatus();
     const tunnelUrls = buildTunnelSnapshot(FileConfig.open().data.tunnel);
     const webCfg = FileConfig.open().data.web;
-    const webHostPort = resolveWebHostPort(webCfg);
     const webUp =
-      webCfg?.enabled === true ? await probeWebHealth(webHostPort.host, webHostPort.port) : false;
+      webCfg?.enabled === true ? await probeWebHealth(resolveProbeHost(host), port) : false;
     printServiceRunningStatus({
       body,
       statusFile,
@@ -198,9 +197,9 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
       web: webCfg?.enabled
         ? {
             running: webUp,
-            host: webHostPort.host,
-            port: webHostPort.port,
-            publicUrl: webCfg?.public_url ?? null,
+            host: resolveProbeHost(host),
+            port,
+            publicUrl: webCfg?.public_url ?? tunnelUrls?.web_url ?? null,
           }
         : null,
     });

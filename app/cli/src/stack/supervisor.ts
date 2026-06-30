@@ -1,9 +1,9 @@
 import type { ChildProcess } from "node:child_process";
 import { logStartupError } from "@freeanima/platform/logging";
 import { FileConfig } from "@freeanima/platform/config";
-import type { WebStaticServerHandle } from "@freeanima/app-web/static-server";
 
-import { startWebServer } from "../web/web-runtime.ts";
+import { ensureWebDistBuilt } from "../web/ensure-dist.ts";
+import { resolveWebDistDir } from "../web/dist-path.ts";
 import {
   migrateLegacyTunnelUnit,
   startTunnelForeground,
@@ -16,11 +16,10 @@ export type ServiceStackOptions = {
 };
 
 type StackSidecars = {
-  web: WebStaticServerHandle | null;
   tunnel: ChildProcess | null;
 };
 
-let sidecars: StackSidecars = { web: null, tunnel: null };
+let sidecars: StackSidecars = { tunnel: null };
 let shuttingDown = false;
 
 async function stopStackSidecars(): Promise<void> {
@@ -28,27 +27,14 @@ async function stopStackSidecars(): Promise<void> {
   shuttingDown = true;
   stopTunnelForeground();
   sidecars.tunnel = null;
-  if (sidecars.web) {
-    try {
-      await sidecars.web.close();
-    } catch {
-      /* ignore */
-    }
-    sidecars.web = null;
-  }
 }
 
-async function startStackSidecars(): Promise<void> {
+async function startStackSidecars(hubPort: number): Promise<void> {
   migrateLegacyTunnelUnit();
   const cfg = FileConfig.open().data;
 
   if (cfg.web?.enabled) {
-    try {
-      sidecars.web = await startWebServer({ writePid: false });
-      console.log(`[stack] Web UI http://127.0.0.1:${sidecars.web.port}/chat`);
-    } catch (err) {
-      logStartupError("[stack] Web UI 启动失败", err);
-    }
+    console.log(`[stack] Web UI http://127.0.0.1:${hubPort}/web/chat（由 Hub 托管）`);
   }
 
   if (cfg.tunnel?.enabled) {
@@ -66,9 +52,9 @@ async function startStackSidecars(): Promise<void> {
   }
 }
 
-/** Hub foreground + optional Web/Tunnel 侧车（单 systemd unit） */
+/** Hub foreground + optional Tunnel 侧车（Web 静态由 Hub /web 托管） */
 export async function runServiceStack(options: ServiceStackOptions): Promise<void> {
-  sidecars = { web: null, tunnel: null };
+  sidecars = { tunnel: null };
   shuttingDown = false;
 
   const onStop = (): void => {
@@ -78,7 +64,18 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
   process.once("SIGTERM", onStop);
 
   const fileConfig = FileConfig.open();
-  const remoteAuthToken = fileConfig.data.remote_auth?.token;
+  const cfg = fileConfig.data;
+  const remoteAuthToken = cfg.remote_auth?.token;
+
+  let webStatic: { distDir: string; appId?: string } | null = null;
+  if (cfg.web?.enabled) {
+    try {
+      await ensureWebDistBuilt();
+      webStatic = { distDir: resolveWebDistDir(), appId: "chat" };
+    } catch (err) {
+      logStartupError("[stack] Web dist 准备失败", err);
+    }
+  }
 
   const { serve } = await import("@freeanima/platform");
   const { startApiHttpServers, closeHttpServers, waitForDrainWithTimeout } =
@@ -90,12 +87,13 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
       start: (hosts, port) =>
         startApiHttpServers(hosts, port, {
           remoteAuthToken,
+          webStatic,
         }),
       close: closeHttpServers,
       waitForDrain: waitForDrainWithTimeout,
     },
     onReady: () => {
-      void startStackSidecars();
+      void startStackSidecars(options.port);
     },
   });
 
@@ -104,10 +102,6 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
 
 /** 测试用：重置侧车状态 */
 export function resetStackSidecarsForTests(): void {
-  sidecars = { web: null, tunnel: null };
+  sidecars = { tunnel: null };
   shuttingDown = false;
-}
-
-export function getStackWebHandle(): WebStaticServerHandle | null {
-  return sidecars.web;
 }

@@ -63,8 +63,8 @@ DATABASE_URL="…" bun run --filter @freeanima/core db:migrate
 
 - Hub API：`http://127.0.0.1:2658/api`（`anima service` 仅托管后端）
 - 桌面/移动/浏览器开发客户端：聊天室 + 管理台 UI 在 `app/desktop` / `app/mobile` / `app/web`（web 仅本地调试）
-- Admin / 任务 本地开发：`bun run dev:web` → `http://127.0.0.1:4173/chat`（Admin：`/admin/dashboard`）
-- Web 全壳层本地开发：`bun run dev:web` → `http://127.0.0.1:4173/chat`
+- Admin / 任务 本地开发：`bun run dev:web` → `http://127.0.0.1:4173/web/chat`（Admin：`/web/admin/dashboard`）
+- Web 全壳层本地开发：`bun run dev:web` → `http://127.0.0.1:4173/web/chat`
 - Release: [`.agent/rules/release.md`](.agent/rules/release.md)
 - PG ops (install, backup): [`docs/guide/database.md`](docs/guide/database.md)
 - Remote access (Cloudflare Tunnel): [`docs/guide/remote-access.md`](docs/guide/remote-access.md)
