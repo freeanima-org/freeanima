@@ -73,7 +73,8 @@ async function bootstrapShellBridge(): Promise<void> {
     const defaultToken = __WEB_DEFAULT_REMOTE_AUTH_TOKEN__ || "";
 
     try {
-      const res = await fetch("/config.json", { cache: "no-store" });
+      const configPath = `${import.meta.env.BASE_URL}config.json`.replace(/\/{2,}/g, "/");
+      const res = await fetch(configPath, { cache: "no-store" });
       if (res.ok) {
         const cfg = (await res.json()) as { hub_url?: string };
         const runtimeHub = cfg.hub_url?.trim().replace(/\/$/, "");

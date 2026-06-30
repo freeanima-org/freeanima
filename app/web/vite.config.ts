@@ -22,7 +22,7 @@ function webDevPlugin(): Plugin {
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         const path = req.url?.split("?")[0];
-        if (path === "/config.json") {
+        if (path === "/web/config.json") {
           res.setHeader("Content-Type", "application/json; charset=utf-8");
           res.end(
             JSON.stringify({
@@ -32,7 +32,7 @@ function webDevPlugin(): Plugin {
           );
           return;
         }
-        if (path === "/health") {
+        if (path === "/web/health") {
           res.setHeader("Content-Type", "application/json; charset=utf-8");
           res.end(JSON.stringify({ ok: true, app: "chat", mode: "web-dev" }));
           return;
@@ -44,7 +44,7 @@ function webDevPlugin(): Plugin {
         const port =
           addr && typeof addr === "object" ? addr.port : Number(process.env.WEB_DEV_PORT ?? 4173);
         console.log(
-          `[dev:web] Hub ${HUB_URL} · http://127.0.0.1:${port}/chat · Admin /admin/dashboard`,
+          `[dev:web] Hub ${HUB_URL} · http://127.0.0.1:${port}/web/chat · Admin /web/admin/dashboard`,
         );
       });
     },
@@ -58,7 +58,7 @@ export default defineConfig(({ command, mode }) => {
     repoRoot: REPO_ROOT,
     outdir: isServe ? join(PKG_DIR, "node_modules", ".vite-app-web") : DIST_DIR,
     paraglideOutdir: isServe ? join(REPO_ROOT, "messages", "paraglide") : undefined,
-    base: "/",
+    base: "/web/",
     minify: mode === "production",
     sourcemap: mode !== "production",
     extraEntries: {

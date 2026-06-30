@@ -13,12 +13,11 @@ export function buildTunnelSnapshot(tunnel: TunnelConfig | undefined): TunnelSna
   if (!tunnel?.enabled || !tunnel.hostname?.trim()) return undefined;
   const hostname = tunnel.hostname.trim();
   const publicUrl = `https://${hostname}`;
-  const webHost = tunnel.web_hostname?.trim();
   return {
     enabled: true,
     hostname,
     public_url: publicUrl,
     api_url: `${publicUrl}/api`,
-    web_url: webHost ? `https://${webHost}` : null,
+    web_url: `${publicUrl}/web`,
   };
 }

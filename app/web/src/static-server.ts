@@ -2,6 +2,8 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { existsSync, readFileSync, statSync, writeFileSync, unlinkSync } from "node:fs";
 import { extname, join } from "node:path";
 
+const WEB_PREFIX = "/web";
+
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
@@ -63,7 +65,15 @@ function createShellStaticHandler(
 ): (req: IncomingMessage, res: ServerResponse) => void {
   return (req, res) => {
     const pathname = new URL(req.url ?? "/", "http://127.0.0.1").pathname;
-    if (pathname === "/config.json") {
+
+    if (pathname === WEB_PREFIX) {
+      res.statusCode = 302;
+      res.setHeader("Location", `${WEB_PREFIX}/chat`);
+      res.end();
+      return;
+    }
+
+    if (pathname === `${WEB_PREFIX}/config.json`) {
       res.setHeader("Content-Type", "application/json; charset=utf-8");
       res.setHeader("Cache-Control", "no-store");
       res.end(
@@ -75,13 +85,21 @@ function createShellStaticHandler(
       );
       return;
     }
-    if (pathname === "/health") {
+    if (pathname === `${WEB_PREFIX}/health`) {
       res.setHeader("Content-Type", "application/json; charset=utf-8");
       res.end(JSON.stringify({ ok: true, app: "web", mode: "static" }));
       return;
     }
-    const rel = pathname === "/" ? "/index.html" : pathname;
-    if (serveStaticFile(distDir, rel, res)) return;
+
+    if (!pathname.startsWith(`${WEB_PREFIX}/`)) {
+      res.statusCode = 404;
+      res.end("Not Found");
+      return;
+    }
+
+    const rel = pathname.slice(WEB_PREFIX.length) || "/";
+    const fileRel = rel === "/" ? "/index.html" : rel;
+    if (serveStaticFile(distDir, fileRel, res)) return;
     const indexPath = join(distDir, "index.html");
     if (existsSync(indexPath)) {
       res.setHeader("Content-Type", "text/html; charset=utf-8");
@@ -140,7 +158,7 @@ export async function startWebStaticServer(
         process.once("exit", cleanupPid);
       }
       const displayHost = host === "0.0.0.0" ? "127.0.0.1" : host;
-      const url = `http://${displayHost}:${actualPort}`;
+      const url = `http://${displayHost}:${actualPort}${WEB_PREFIX}`;
       return {
         server,
         url,

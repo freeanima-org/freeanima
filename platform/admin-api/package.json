@@ -11,7 +11,7 @@
     "./server": "./server.ts",
     "./http-shutdown": "./http-shutdown.ts",
     "./service-restart": "./service-restart.ts",
-    "./display-util": "./display-util.ts",
+    "./web-static": "./web-static.ts",
     "./date-json": "./date-json.ts"
   },
   "dependencies": {

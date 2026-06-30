@@ -82,6 +82,6 @@ export async function startWebServer(
 
 export async function probeWebHealth(host: string, port: number): Promise<boolean> {
   const probeHost = resolveProbeHost(host);
-  const health = await apiGet(probeHost, port, "/health", 2000);
+  const health = await apiGet(probeHost, port, "/web/health", 2000);
   return health?.ok === true;
 }

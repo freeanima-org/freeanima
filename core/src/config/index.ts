@@ -2,6 +2,8 @@ export * from "./schemas/config.ts";
 export * from "./schemas/llm-config.ts";
 export * from "./schemas/embedding.ts";
 export * from "./schemas/tunnel.ts";
+export * from "./schemas/http.ts";
+export * from "./http-origins.ts";
 export * from "./schemas/web.ts";
 export * from "./schemas/remote-auth.ts";
 export * from "./llm-config.ts";

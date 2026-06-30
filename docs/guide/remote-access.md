@@ -9,11 +9,12 @@ title: Remote access
 
 ## Overview
 
-| Layer                 | Role                                                                                                                     |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **Hub `remote_auth`** | Plaintext token in `config.yaml`; REST `Authorization: Bearer`; SAP `connect` frame `auth_token`; MCP `/mcp` same Bearer |
-| **cloudflared**       | Outbound tunnel; Hub hostname → `127.0.0.1:2658`, Web hostname → `127.0.0.1:2659` (optional)                             |
-| **Client settings**   | app/desktop / app/mobile / **browser Web** fill Hub URL and token in **Hub settings**                                    |
+| Layer                   | Role                                                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Hub `remote_auth`**   | Plaintext token in `config.yaml`; REST `Authorization: Bearer`; SAP `connect` frame `auth_token`; MCP `/mcp` same Bearer |
+| **cloudflared**         | Outbound tunnel; single hostname → Hub `127.0.0.1:2658` (API + Web UI at `/web`)                                         |
+| **`http.cors_origins`** | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel                       |
+| **Client settings**     | app/desktop / app/mobile / **browser Web** fill Hub URL and token in **Hub settings**                                    |
 
 Token is **skipped** only when **Host is loopback** (`127.0.0.1` / `localhost` / `::1`) **and TCP peer is loopback** (local dev, CLI/systemd health checks). Public domains (via Tunnel), LAN IPs, etc. require token; independent of `tunnel.enabled`.
 
@@ -34,6 +35,20 @@ openssl rand -base64 32
 
 `.gitignore` ignores `config.yaml`; do not commit. Admin API redacts `remote_auth.token` on read.
 
+### Cross-origin (`http.cors_origins`)
+
+When the browser UI and Hub API share the same origin (default: `https://anima.example.com/web` + `https://anima.example.com/api`), **no CORS config is needed**.
+
+Add origins only for **cross-origin** cases (e.g. Vite dev server, external reverse proxy splitting UI and API):
+
+```yaml
+http:
+  cors_origins:
+    - http://127.0.0.1:4173
+```
+
+CORS is **not** derived from `tunnel` or `web.public_url`.
+
 ## 2. Tunnel (optional)
 
 ```bash
@@ -41,21 +56,21 @@ anima tunnel setup
 anima service start
 ```
 
-When `tunnel.enabled: true`, cloudflared starts with **`anima service start`** stack (no separate `anima-tunnel.service`). Ingress defaults to local Hub `:2658`; with `tunnel.web_hostname` and `web.enabled`, second ingress points to Web `:2659`.
+When `tunnel.enabled: true`, cloudflared starts with **`anima service start`** stack (no separate `anima-tunnel.service`). Ingress points to Hub `:2658` only; Web UI is served at **`/web`** on the same hostname.
 
 ```yaml
 tunnel:
   enabled: true
   hostname: anima.example.com
-  web_hostname: app.anima.example.com
 
 web:
   enabled: true
-  port: 2659
-  public_url: https://app.anima.example.com
+  public_url: https://anima.example.com/web
 ```
 
-Without Tunnel, LAN clients use `http://<PC-IP>:2658` (Hub) and `:2659` (Web); fill Hub URL and token in client settings.
+Browser: `https://anima.example.com/web/chat` · Hub API: `https://anima.example.com/api`
+
+Without Tunnel, LAN: `http://<PC-IP>:2658/web/chat` with `anima service start --host 0.0.0.0`; clients set Hub URL to `http://<PC-IP>:2658` (no `/web` suffix).
 
 ### Cloudflare credentials (pass)
 
@@ -68,7 +83,7 @@ See wizard `anima tunnel setup`.
 
 ## 3. Client configuration
 
-**app/desktop**, **app/mobile**, and **browser Web** (`web.enabled` + Tunnel or LAN `:2659`) are remote clients; they **do not read** Hub `config.yaml` token.
+**app/desktop**, **app/mobile**, and **browser Web** are remote clients; they **do not read** Hub `config.yaml` token.
 
 | Client      | Storage                                          |
 | ----------- | ------------------------------------------------ |
@@ -76,14 +91,12 @@ See wizard `anima tunnel setup`.
 | app/mobile  | Capacitor Preferences                            |
 | Browser Web | localStorage (settings page)                     |
 
-Desktop debug and Sentry config share the same file `debug` section; override dir with `FREEANIMA_DESKTOP_HOME` (default `~/.anima-desktop`). Legacy `~/.anima/shell-client.json` migrates on first launch.
-
 Settings (all clients):
 
-1. **Hub URL** — e.g. `https://anima.example.com` (when Web UI and Hub differ, use **Hub** hostname, not Web UI domain)
-2. **Remote token** — same as Hub `remote_auth.token`
+1. **Hub URL** — e.g. `https://anima.example.com` or `http://192.168.1.10:2658` (Hub root, **without** `/web`)
+2. **Remote token** — same as Hub `remote_auth.token` (required for LAN IP / domain; only loopback may omit)
 
-Browser Web: `/config.json` may suggest default Hub (`tunnel.hostname`); first visit still requires saving token in settings.
+Browser Web: `/web/config.json` sets default Hub to the page origin; first visit still requires saving token in settings.
 
 Flow: open Hub settings → fill → **Test connection** → Save. Desktop requires **restart app/desktop** after save.
 
@@ -94,6 +107,8 @@ REST:  Authorization: Bearer <token>
 SAP:   WebSocket /sap/v1 → connect frame includes auth_token
 MCP:   POST/GET /mcp → Authorization: Bearer <token>
 ```
+
+`/web/*` static assets skip `remote_auth`; `/api` and `/mcp` do not.
 
 ## 5. MCP outbound (external agents query Hub data)
 
@@ -122,8 +137,8 @@ Decision uses request URL **Host** (public domain via Tunnel, e.g. `anima.exampl
 | ------------------------------ | ---------------------------------------------- |
 | `anima tunnel status`          | Tunnel / cloudflared status                    |
 | `anima tunnel start` / `stop`  | Manual cloudflared (production: service stack) |
-| `anima web start --foreground` | Standalone Web static server (debug)           |
-| `anima service status`         | Hub / Web / Tunnel stack                       |
+| `anima web start --foreground` | Standalone Web static server (debug, `/web`)   |
+| `anima service status`         | Hub / Tunnel stack                             |
 
 ## Troubleshooting
 
@@ -133,6 +148,7 @@ Decision uses request URL **Host** (public domain via Tunnel, e.g. `anima.exampl
 | Public 1033            | `anima tunnel status` shows `connected: no`                              |
 | 401                    | Client token matches `remote_auth.token`                                 |
 | Local OK, remote fails | Remote requests need Bearer / SAP auth_token; public Host requires token |
+| CORS error in browser  | Add UI origin to `http.cors_origins`, or use Hub `/web` same-origin      |
 | 401 after token change | Update Hub config **and** all client settings pages                      |
 
 ## Related docs

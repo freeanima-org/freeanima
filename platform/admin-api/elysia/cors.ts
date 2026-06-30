@@ -1,4 +1,5 @@
 /** bundled 客户端（Electron / Capacitor / 本地 Web dev）跨 origin 访问 Hub REST */
+import { collectHttpCorsOrigins } from "@freeanima/core/config";
 import { FileConfig } from "@freeanima/platform/config";
 
 const ALLOWED_ORIGIN = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$|^capacitor:\/\/localhost$/;
@@ -7,7 +8,7 @@ let extraOriginsCache: { origins: Set<string>; loadedAt: number } | null = null;
 let testExtraOrigins: Set<string> | null = null;
 const CACHE_MS = 5000;
 
-function loadConfiguredWebOrigins(): Set<string> {
+function loadConfiguredHttpOrigins(): Set<string> {
   if (testExtraOrigins) return testExtraOrigins;
   const now = Date.now();
   if (extraOriginsCache && now - extraOriginsCache.loadedAt < CACHE_MS) {
@@ -16,14 +17,8 @@ function loadConfiguredWebOrigins(): Set<string> {
   const origins = new Set<string>();
   try {
     const data = FileConfig.open().data;
-    const publicUrl = data.web?.public_url?.trim();
-    if (publicUrl) {
-      origins.add(new URL(publicUrl).origin);
-    }
-    const webHost = data.tunnel?.web_hostname?.trim();
-    if (webHost) {
-      origins.add(`https://${webHost}`);
-      origins.add(`http://${webHost}`);
+    for (const origin of collectHttpCorsOrigins(data.http)) {
+      origins.add(origin);
     }
   } catch {
     /* config unavailable */
@@ -52,7 +47,7 @@ export function isBundledClientOrigin(origin: string | null): boolean {
 export function isAllowedWebOrigin(origin: string | null): boolean {
   if (!origin) return false;
   if (isBundledClientOrigin(origin)) return true;
-  return loadConfiguredWebOrigins().has(origin);
+  return loadConfiguredHttpOrigins().has(origin);
 }
 
 export function corsAllowOrigin(origin: string | null): string | null {

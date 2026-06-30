@@ -1,3 +1,9 @@
+import {
+  isWebStaticPath,
+  serveWebStatic,
+  WEB_URL_PREFIX,
+  type WebStaticOptions,
+} from "./web-static.ts";
 import { createMcpBunHandler, isMcpPath } from "@freeanima/capabilities-mcp-server";
 import { ADMIN_BASE_PATH } from "@freeanima/platform/ports/constants";
 import { createApiApp } from "./elysia/app.ts";
@@ -17,6 +23,7 @@ import {
 export type ApiServerOptions = {
   remoteAuth?: RemoteAuthVerifier | null;
   remoteAuthToken?: string;
+  webStatic?: WebStaticOptions | null;
 };
 
 export type ApiServerHandle = {
@@ -68,6 +75,8 @@ export async function startApiHttpServer(
     toolSets: adminCtx().engine.catalog.toolSets,
   });
 
+  const webStatic = options.webStatic ?? null;
+
   const server = Bun.serve({
     hostname: host,
     port,
@@ -78,10 +87,20 @@ export async function startApiHttpServer(
         const preflight = handleHubCorsPreflight(req);
         if (preflight) return preflight;
 
+        const pathname = new URL(req.url).pathname;
+
+        if (webStatic && isWebStaticPath(pathname)) {
+          const staticRes = serveWebStatic(req, webStatic);
+          if (staticRes) return staticRes;
+        }
+
+        if (webStatic && pathname === "/" && req.method === "GET") {
+          return Response.redirect(`${new URL(req.url).origin}${WEB_URL_PREFIX}/chat`, 302);
+        }
+
         const blocked = await applyHttpAuth(req, remoteAddress, remoteAuth);
         if (blocked) return blocked;
 
-        const pathname = new URL(req.url).pathname;
         if (isHubApiPath(pathname)) {
           return apiApp.fetch(attachRemoteAddressToRequest(req, remoteAddress));
         }

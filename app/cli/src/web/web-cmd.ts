@@ -42,7 +42,7 @@ export async function runWebCommand(args: WebCommandArgs): Promise<void> {
     });
 
     console.log(
-      `Web UI · http://${handle.host === "0.0.0.0" ? "127.0.0.1" : handle.host}:${handle.port}/chat`,
+      `Web UI · http://${handle.host === "0.0.0.0" ? "127.0.0.1" : handle.host}:${handle.port}/web/chat`,
     );
     writeStatusLine("info", "Hub 地址与 token 请在设置页配置");
     await waitForShutdown(handle);
@@ -69,8 +69,8 @@ async function cmdWebStatus(args: WebCommandArgs): Promise<void> {
   if (up) {
     console.log("Web UI · running");
     if (pid != null) console.log(`  pid:     ${pid}`);
-    console.log(`  http:    http://${bindHost}:${bindPort}/chat`);
-    console.log(`  admin:   http://${bindHost}:${bindPort}/admin/dashboard`);
+    console.log(`  http:    http://${bindHost}:${bindPort}/web/chat`);
+    console.log(`  admin:   http://${bindHost}:${bindPort}/web/admin/dashboard`);
     return;
   }
 

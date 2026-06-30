@@ -25,7 +25,7 @@ describe("corsAllowOrigin", () => {
     expect(corsAllowOrigin("http://127.0.0.1:4175")).toBe("http://127.0.0.1:4175");
   });
 
-  it("allows configured web public_url origin", () => {
+  it("allows configured http.cors_origins", () => {
     setExtraCorsOriginsForTests(["https://app.anima.example.com"]);
     expect(corsAllowOrigin("https://app.anima.example.com")).toBe("https://app.anima.example.com");
     resetCorsOriginCacheForTests();

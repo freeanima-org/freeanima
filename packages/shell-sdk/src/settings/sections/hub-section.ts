@@ -27,7 +27,7 @@ const hubFields = defineSettingsForm({
       key: "remoteAuthToken",
       type: "password",
       label: "远程 Token",
-      description: "公网或非 loopback Hub 时填写；内网可留空",
+      description: "公网或非 loopback Hub 时填写；仅 127.0.0.1/localhost 可留空",
       group: "Hub 连接",
     },
   ],

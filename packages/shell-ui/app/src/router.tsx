@@ -102,10 +102,18 @@ const routeTree = rootRoute.addChildren([
   ]),
 ]);
 
+function resolveRouterBasepath(): string | undefined {
+  const raw = (import.meta.env?.BASE_URL ?? "/").replace(/\/$/, "");
+  if (!raw || raw === "." || !raw.startsWith("/")) return undefined;
+  return raw;
+}
+
 function createShellRouterInstance() {
   const native = typeof window !== "undefined" && Boolean(window.satelliteShell?.isNativeShell);
+  const basepath = resolveRouterBasepath();
   return createRouter({
     routeTree,
+    ...(basepath ? { basepath } : {}),
     ...(native ? { history: createHashHistory() } : {}),
   });
 }
