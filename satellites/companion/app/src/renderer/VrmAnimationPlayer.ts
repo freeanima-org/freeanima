@@ -188,7 +188,7 @@ export class VrmAnimationPlayer {
       slot,
       this.motionConfig.slots,
       this.motionConfig.library,
-      { motionId },
+      motionId !== undefined ? { motionId } : {},
     );
     if (!resolved?.file) {
       companionDebug("playSlot 无解析结果", { slot, motionId });

@@ -1,5 +1,6 @@
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
+import { omitUndefined } from "@freeanima/core/util";
 
 import {
   createEmailAccount,
@@ -57,7 +58,7 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
               const input = accountCreateSchema.parse(args);
               await io.assertPasswordResolvable({ password: input.password });
               const worldId = resolveEmailWorldId();
-              const account = await createEmailAccount(worldId, input);
+              const account = await createEmailAccount(worldId, omitUndefined(input));
               return toolResult({ ok: true, account: accountPayload(account) });
             } catch (err) {
               return toolError(errMsg(err));
@@ -92,7 +93,7 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
               const patch = accountPatchSchema.parse(args);
               if (patch.password) await io.assertPasswordResolvable({ password: patch.password });
               const worldId = resolveEmailWorldId();
-              const account = await updateEmailAccount(worldId, { id, ...patch });
+              const account = await updateEmailAccount(worldId, omitUndefined({ id, ...patch }));
               if (!account) return toolError(`Email account not found: ${id}`);
               return toolResult({ ok: true, account: accountPayload(account) });
             } catch (err) {

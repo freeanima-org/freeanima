@@ -16,7 +16,8 @@ describe("cli-install", () => {
   const tempDirs: string[] = [];
 
   afterEach(() => {
-    process.argv[1] = prevArgv1;
+    if (prevArgv1 !== undefined) process.argv[1] = prevArgv1;
+    else delete (process.argv as { 1?: string })[1];
     if (prevBunInstall === undefined) delete process.env.BUN_INSTALL;
     else process.env.BUN_INSTALL = prevBunInstall;
     for (const dir of tempDirs.splice(0)) removeTempDir(dir);

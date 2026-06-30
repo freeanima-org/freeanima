@@ -27,11 +27,14 @@ export function entryDateKey(value: string): string {
   return entryDayKey(value);
 }
 
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
 export function isoToDateLocalValue(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
 }
 
 /** 日记条目按「日」存储；固定 CST 正午避免时区跨日 */

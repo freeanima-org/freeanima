@@ -65,7 +65,7 @@ export class PipelineRunner {
     const runState: PipelineRunState = {
       pipeline_id: pipelineId,
       run_id: newRunId(),
-      day: ctx.day,
+      ...(ctx.day !== undefined ? { day: ctx.day } : {}),
       started_at: formatCstIso(),
       status: "running",
       steps: pendingSteps(def.nodes),
@@ -101,7 +101,7 @@ export class PipelineRunner {
       ok: !pipelineFailed,
       pipeline_id: pipelineId,
       run_id: runState.run_id,
-      day: runState.day,
+      ...(runState.day !== undefined ? { day: runState.day } : {}),
       status: runState.status,
       steps: runState.steps,
     };
@@ -137,12 +137,12 @@ export class PipelineRunner {
       }
     }
 
-    let runState =
+    let runState: PipelineRunState =
       readPipelineRunState(def.id) ??
       ({
         pipeline_id: def.id,
         run_id: newRunId(),
-        day: ctx.day,
+        ...(ctx.day !== undefined ? { day: ctx.day } : {}),
         started_at: formatCstIso(),
         status: "running",
         steps: pendingSteps(def.nodes),
@@ -159,9 +159,9 @@ export class PipelineRunner {
       ok: result.ok,
       step_id: stepId,
       status: result.status,
-      output: result.output,
-      error: result.error,
-      skipped_reason: result.skipped_reason,
+      ...(result.output !== undefined ? { output: result.output } : {}),
+      ...(result.error !== undefined ? { error: result.error } : {}),
+      ...(result.skipped_reason !== undefined ? { skipped_reason: result.skipped_reason } : {}),
     };
   }
 
@@ -189,7 +189,7 @@ export class PipelineRunner {
     runState: PipelineRunState | null,
   ): string | undefined {
     const deps = node.dependsOn ?? [];
-    if (!deps.length) return undefined;
+    if (deps.length === 0) return undefined;
     if (!runState) {
       return `Dependencies not satisfied: ${deps.join(", ")} (no prior run state)`;
     }
@@ -214,18 +214,21 @@ export class PipelineRunner {
     if (!this.stepFinishedListener) return;
     if (stepState.status === "pending" || stepState.status === "running") return;
 
+    const day = runState.day ?? ctx.day;
     const event: PipelineStepFinishedEvent = {
       pipeline_id: pipelineId,
       run_id: runState.run_id,
       step_id: stepId,
-      day: runState.day ?? ctx.day,
-      trigger: ctx.trigger,
+      ...(day !== undefined ? { day } : {}),
+      ...(ctx.trigger !== undefined ? { trigger: ctx.trigger } : {}),
       status: stepState.status,
-      started_at: stepState.started_at,
+      ...(stepState.started_at !== undefined ? { started_at: stepState.started_at } : {}),
       finished_at: stepState.finished_at ?? formatCstIso(),
-      output: stepState.output,
-      error: stepState.error,
-      skipped_reason: stepState.skipped_reason,
+      ...(stepState.output !== undefined ? { output: stepState.output } : {}),
+      ...(stepState.error !== undefined ? { error: stepState.error } : {}),
+      ...(stepState.skipped_reason !== undefined
+        ? { skipped_reason: stepState.skipped_reason }
+        : {}),
     };
     await this.stepFinishedListener(event);
   }
@@ -280,11 +283,12 @@ export class PipelineRunner {
       const finishedAt = formatCstIso();
 
       if (result.skipped) {
+        const startedAt = runState.steps[node.id]?.started_at;
         runState.steps[node.id] = {
           status: "skipped",
-          started_at: runState.steps[node.id]?.started_at,
+          ...(startedAt !== undefined ? { started_at: startedAt } : {}),
           finished_at: finishedAt,
-          output: result.output,
+          ...(result.output !== undefined ? { output: result.output } : {}),
           skipped_reason: result.skipped,
         };
         await this.emitStepFinished(pipelineId, runState, node.id, ctx, runState.steps[node.id]!);
@@ -297,11 +301,12 @@ export class PipelineRunner {
       }
 
       if (!result.ok) {
+        const startedAt = runState.steps[node.id]?.started_at;
         runState.steps[node.id] = {
           status: "failed",
-          started_at: runState.steps[node.id]?.started_at,
+          ...(startedAt !== undefined ? { started_at: startedAt } : {}),
           finished_at: finishedAt,
-          output: result.output,
+          ...(result.output !== undefined ? { output: result.output } : {}),
           error: result.error ?? "step failed",
         };
         await this.emitStepFinished(pipelineId, runState, node.id, ctx, runState.steps[node.id]!);
@@ -313,19 +318,21 @@ export class PipelineRunner {
         };
       }
 
+      const startedAt = runState.steps[node.id]?.started_at;
       runState.steps[node.id] = {
         status: "completed",
-        started_at: runState.steps[node.id]?.started_at,
+        ...(startedAt !== undefined ? { started_at: startedAt } : {}),
         finished_at: finishedAt,
-        output: result.output,
+        ...(result.output !== undefined ? { output: result.output } : {}),
       };
       await this.emitStepFinished(pipelineId, runState, node.id, ctx, runState.steps[node.id]!);
       return { ok: true, status: "completed", output: result.output };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
+      const startedAt = runState.steps[node.id]?.started_at;
       runState.steps[node.id] = {
         status: "failed",
-        started_at: runState.steps[node.id]?.started_at,
+        ...(startedAt !== undefined ? { started_at: startedAt } : {}),
         finished_at: formatCstIso(),
         error: message,
       };

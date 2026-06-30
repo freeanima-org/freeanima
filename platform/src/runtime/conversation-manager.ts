@@ -6,7 +6,7 @@ export class ConversationManager {
     const next = prev.then(() => fn());
     this.chains.set(
       conversationId,
-      next.catch(() => undefined),
+      next.catch(() => {}),
     );
     return next;
   }

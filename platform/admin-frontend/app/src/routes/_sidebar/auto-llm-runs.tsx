@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { createFileRoute } from "@tanstack/react-router";
 import { Fragment, useCallback, useState } from "react";
 import { FormField } from "@freeanima/ui-kit/form";
@@ -64,12 +65,14 @@ function AutoLlmRunsPage() {
       setLoading(true);
       setError("");
       try {
-        const data = (await listAutoLlmRuns({
-          run_kind: runKind || undefined,
-          status: statusFilter === "ok" || statusFilter === "error" ? statusFilter : undefined,
-          offset: nextOffset,
-          limit: PAGE_SIZE,
-        })) as { items: AutoLlmRunRow[]; total: number };
+        const data = (await listAutoLlmRuns(
+          omitUndefined({
+            run_kind: runKind || undefined,
+            status: statusFilter === "ok" || statusFilter === "error" ? statusFilter : undefined,
+            offset: nextOffset,
+            limit: PAGE_SIZE,
+          }),
+        )) as { items: AutoLlmRunRow[]; total: number };
         setItems(data.items ?? []);
         setTotal(data.total ?? 0);
         setOffset(nextOffset);
@@ -139,7 +142,7 @@ function AutoLlmRunsPage() {
 
       {error ? <div className="alert alert-error text-sm mb-4">{error}</div> : null}
 
-      {loaded && !items.length && !loading ? (
+      {loaded && items.length === 0 && !loading ? (
         <p className="text-sm text-base-content/60">{m.admin_auto_llm_runs_empty()}</p>
       ) : null}
 

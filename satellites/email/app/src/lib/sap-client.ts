@@ -26,12 +26,13 @@ export function getSapDirectClient(): SapDirectClient {
     connectionState = "connecting";
     const nativeShell =
       typeof window !== "undefined" && Boolean(window.satelliteShell?.isNativeShell);
+    const remoteAuthToken = window.satelliteShell?.remoteAuth?.token;
     directClient = createSapDirectClient({
       appId: APP_ID,
       hubWsUrl: resolveHubWsUrlFromEnv(),
       instanceId: EMAIL_INSTANCE_ID,
       useSharedWorker: !nativeShell,
-      remoteAuthToken: window.satelliteShell?.remoteAuth?.token,
+      ...(remoteAuthToken !== undefined ? { remoteAuthToken } : {}),
       onConnectionStateChange: (connected) => {
         connectionState = connected ? "connected" : "disconnected";
       },

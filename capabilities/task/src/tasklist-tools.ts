@@ -1,5 +1,6 @@
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
+import { omitUndefined } from "@freeanima/core/util";
 
 import {
   createTaskList,
@@ -44,18 +45,21 @@ async function handleListCreate(args: Record<string, unknown>): Promise<string> 
   if (!name) return toolError("name is required");
 
   try {
-    const list = await createTaskList(worldId, {
-      name,
-      sort_order: args.sort_order != null ? Number(args.sort_order) : undefined,
-      color: args.color != null ? String(args.color) : undefined,
-      is_folder: args.is_folder === true,
-      parent_id:
-        args.parent_id === null
-          ? null
-          : args.parent_id != null
-            ? Number(args.parent_id)
-            : undefined,
-    });
+    const list = await createTaskList(
+      worldId,
+      omitUndefined({
+        name,
+        sort_order: args.sort_order != null ? Number(args.sort_order) : undefined,
+        color: args.color != null ? String(args.color) : undefined,
+        is_folder: args.is_folder === true,
+        parent_id:
+          args.parent_id == null
+            ? null
+            : args.parent_id != null
+              ? Number(args.parent_id)
+              : undefined,
+      }),
+    );
     return toolResult({ ok: true, action: "create_list", list: listPayload(list) });
   } catch (e) {
     return toolError(String(e instanceof Error ? e.message : e));
@@ -75,7 +79,7 @@ async function handleListUpdate(args: Record<string, unknown>): Promise<string> 
   if (args.closed !== undefined) patch.closed = Boolean(args.closed);
   if (args.color !== undefined) patch.color = String(args.color);
   if (args.is_folder !== undefined) patch.is_folder = Boolean(args.is_folder);
-  if (args.parent_id === null) patch.parent_id = null;
+  if (args.parent_id == null) patch.parent_id = null;
   else if (args.parent_id !== undefined) patch.parent_id = Number(args.parent_id);
 
   try {
@@ -121,7 +125,7 @@ async function handleListSearch(args: Record<string, unknown>): Promise<string> 
       : undefined;
 
   try {
-    const lists = await searchTaskLists(worldId, { query, limit });
+    const lists = await searchTaskLists(worldId, omitUndefined({ query, limit }));
     return toolResult({
       ok: true,
       action: "search_lists",

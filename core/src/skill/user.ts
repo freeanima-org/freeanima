@@ -20,10 +20,13 @@ created: ${created}
 ${content}
 `;
 
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
 function nowDate(): string {
   const d = new Date(Date.now() + CST_OFFSET_MS);
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}`;
+  return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())}`;
 }
 
 export function userSkillsDirectory(): string {

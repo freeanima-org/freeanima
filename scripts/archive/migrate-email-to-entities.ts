@@ -12,6 +12,7 @@ import { join } from "node:path";
 
 import { bindActiveConfig } from "../../platform/config/index.ts";
 import { bindResolvedWorldContext } from "../../core/src/config/world-context.ts";
+import { omitUndefined } from "../../core/src/util/omit-undefined.ts";
 import { ensureWorldSubjects } from "../../core/src/db/pg/entity/subject-world.ts";
 import {
   createEmailAccount,
@@ -103,19 +104,22 @@ async function main(): Promise<void> {
         migrated += 1;
         continue;
       }
-      const row = await createEmailAccount(emailWorldId, {
-        password: account.password,
-        address: account.address,
-        display_name: account.display_name,
-        smtp_host: account.smtp_host,
-        smtp_port: account.smtp_port,
-        imap_host: account.imap_host,
-        imap_port: account.imap_port,
-        default_sender: account.default_sender,
-        enabled: account.enabled,
-        desc: account.desc,
-        tags: account.tags,
-      });
+      const row = await createEmailAccount(
+        emailWorldId,
+        omitUndefined({
+          password: account.password,
+          address: account.address,
+          display_name: account.display_name,
+          smtp_host: account.smtp_host,
+          smtp_port: account.smtp_port,
+          imap_host: account.imap_host,
+          imap_port: account.imap_port,
+          default_sender: account.default_sender,
+          enabled: account.enabled,
+          desc: account.desc,
+          tags: account.tags,
+        }),
+      );
       console.log(`migrated ${account.id} -> entity ${row.id} (${row.address})`);
       migrated += 1;
     }

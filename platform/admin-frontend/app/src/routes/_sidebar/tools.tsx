@@ -69,7 +69,7 @@ export const Route = createFileRoute("/_sidebar/tools")({
 });
 
 function DefaultToolSetsSection({ names }: { names: string[] }) {
-  if (!names.length) return null;
+  if (names.length === 0) return null;
   return (
     <div className="card bg-base-200 mb-4">
       <div className="card-body py-3 px-4 gap-2">
@@ -217,7 +217,7 @@ function ToolsPage() {
     return ungroupedTools.slice(start, start + TOOLS_PAGE_SIZE);
   }, [ungroupedTools, page]);
 
-  if (!toolSets.length) {
+  if (toolSets.length === 0) {
     return (
       <div>
         <h2 className="text-lg font-bold mb-4">{m.admin_nav_tools()}</h2>

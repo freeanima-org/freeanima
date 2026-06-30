@@ -145,7 +145,7 @@ export async function listEmailThreads(
   const result = await searchEntities({
     world_id: worldId,
     primary_component: EMAIL_THREAD_COMPONENT,
-    filters: Object.keys(filters).length > 0 ? filters : undefined,
+    ...(Object.keys(filters).length > 0 ? { filters } : {}),
     limit: opts.limit ?? 200,
     offset: opts.offset ?? 0,
     mode: "filter_only",

@@ -27,6 +27,7 @@ import {
 } from "./service-conversations.ts";
 import { collectStreamReply, type StreamEvent } from "@freeanima/runtime/loop";
 import { scheduleGracefulRestart, runAnimaCliUpgrade } from "./process-restart.ts";
+import { omitUndefined } from "@freeanima/core/util";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 export type MessagingDeps = {
@@ -55,7 +56,7 @@ export async function runIncomingMessageHooks(
   return {
     ok: true,
     message: effect?.transformedMessage ?? message,
-    expiredHint: effect?.expiredHint,
+    ...(effect?.expiredHint ? { expiredHint: effect.expiredHint } : {}),
   };
 }
 
@@ -108,13 +109,16 @@ export async function executeCommand(
     return { text: "", data: null, found: false };
   }
 
-  const result = await runSlashCommand(cmd, {
-    conversationId,
-    platform,
-    args,
-    raw: text,
-    origin_extra: params.origin_extra,
-  });
+  const result = await runSlashCommand(
+    cmd,
+    omitUndefined({
+      conversationId,
+      platform,
+      args,
+      raw: text,
+      origin_extra: params.origin_extra,
+    }),
+  );
   await applyCommandConversationEffects(
     deps,
     result,
@@ -155,9 +159,12 @@ export async function executeCommand(
   }
 
   if (isRestartResult(result) || isUpgradeResult(result)) {
-    scheduleGracefulRestart(msgDeps.runControl, {
-      beforeRestart: isUpgradeResult(result) ? runAnimaCliUpgrade : undefined,
-    });
+    scheduleGracefulRestart(
+      msgDeps.runControl,
+      omitUndefined({
+        beforeRestart: isUpgradeResult(result) ? runAnimaCliUpgrade : undefined,
+      }),
+    );
     return {
       text: ensureCommandResultText(result.text, cmd),
       data: result.data,
@@ -263,13 +270,16 @@ async function* dispatchCommandStream(
     yield { event: "token", data: { content: formatCommandPreAck(cmd, args, raw) } };
   }
 
-  const result = await runSlashCommand(cmd, {
-    conversationId,
-    platform,
-    args,
-    raw,
-    origin_extra,
-  });
+  const result = await runSlashCommand(
+    cmd,
+    omitUndefined({
+      conversationId,
+      platform,
+      args,
+      raw,
+      origin_extra,
+    }),
+  );
   await applyCommandConversationEffects(deps, result, conversationId, platform, origin_extra);
 
   if (isRetryResult(result)) {
@@ -299,9 +309,12 @@ async function* dispatchCommandStream(
   if (isRestartResult(result) || isUpgradeResult(result)) {
     yield { event: "token", data: { content: ensureCommandResultText(result.text, cmd) } };
     yield { event: "done", data: {} };
-    scheduleGracefulRestart(msgDeps.runControl, {
-      beforeRestart: isUpgradeResult(result) ? runAnimaCliUpgrade : undefined,
-    });
+    scheduleGracefulRestart(
+      msgDeps.runControl,
+      omitUndefined({
+        beforeRestart: isUpgradeResult(result) ? runAnimaCliUpgrade : undefined,
+      }),
+    );
     return;
   }
   yield { event: "token", data: { content: ensureCommandResultText(result.text, cmd) } };

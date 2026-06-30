@@ -57,7 +57,7 @@ describe("turn-lifecycle", () => {
 
   it("createTurnMessageCallbacks writes appendMessage", async () => {
     const deps = wireTestDeps();
-    const append = spyOn(deps.conversation, "appendMessage").mockResolvedValue(undefined);
+    const append = spyOn(deps.conversation, "appendMessage").mockResolvedValue();
     restores.push(append);
 
     const cb = createTurnMessageCallbacks(deps, "sid-1");
@@ -70,7 +70,7 @@ describe("turn-lifecycle", () => {
 
   it("finalizeTurn calls finishTurn with skipMessageAppend", async () => {
     const deps = wireTestDeps();
-    const finish = spyOn(deps.conversation, "finishTurn").mockResolvedValue(undefined);
+    const finish = spyOn(deps.conversation, "finishTurn").mockResolvedValue();
     restores.push(finish);
 
     const msgs = [{ role: "user" as const, content: "q" }];
@@ -92,8 +92,8 @@ describe("turn-lifecycle", () => {
         functions: ["tool_a"],
         timestamp: "",
       }),
-      spyOn(deps.conversation, "appendMessage").mockResolvedValue(undefined),
-      spyOn(deps.conversation, "finishTurn").mockResolvedValue(undefined),
+      spyOn(deps.conversation, "appendMessage").mockResolvedValue(),
+      spyOn(deps.conversation, "finishTurn").mockResolvedValue(),
       spyOn(engine, "run").mockResolvedValue("done reply"),
     );
 

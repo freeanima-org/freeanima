@@ -174,13 +174,13 @@ export function mapRuntimeStreamEventToSap(
         event: "interrupted",
         data: { reason: String(ev.data.reason ?? "") },
       });
-    case "done":
+    case "done": {
+      const reason = ev.data.reason as "awaiting_clarify" | "interrupted" | undefined;
       return mapStreamApiEventToSap(streamId, {
         event: "done",
-        data: {
-          reason: ev.data.reason as "awaiting_clarify" | "interrupted" | undefined,
-        },
+        data: reason !== undefined ? { reason } : {},
       });
+    }
     case "error":
       return mapStreamApiEventToSap(streamId, {
         event: "error",
@@ -246,13 +246,13 @@ export function mapSapStreamMethodToApi(
       };
     case "stream.interrupted":
       return { event: "interrupted", data: { reason: String(payload.reason ?? "") } };
-    case "stream.done":
+    case "stream.done": {
+      const reason = payload.reason as "awaiting_clarify" | "interrupted" | undefined;
       return {
         event: "done",
-        data: {
-          reason: payload.reason as "awaiting_clarify" | "interrupted" | undefined,
-        },
+        data: reason !== undefined ? { reason } : {},
       };
+    }
     case "stream.error":
       return { event: "error", data: { error: String(payload.error ?? "error") } };
     case "stream.ping":

@@ -13,7 +13,8 @@ describe("runCliUpgrade", () => {
 
   afterEach(() => {
     mock.restore();
-    process.argv[1] = prevArgv1;
+    if (prevArgv1 !== undefined) process.argv[1] = prevArgv1;
+    else delete (process.argv as { 1?: string })[1];
     process.exit = prevExit;
     if (prevBunInstall === undefined) delete process.env.BUN_INSTALL;
     else process.env.BUN_INSTALL = prevBunInstall;
@@ -36,7 +37,6 @@ describe("runCliUpgrade", () => {
       pid: 0,
       output: [],
       signal: null,
-      error: undefined,
     });
     spyOn(console, "error").mockImplementation((msg: string) => {
       stderr.push(msg);
@@ -79,7 +79,6 @@ describe("runCliUpgrade", () => {
       pid: 0,
       output: [],
       signal: null,
-      error: undefined,
     });
 
     const { runCliUpgrade } = await import("./upgrade.ts");

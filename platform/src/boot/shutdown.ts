@@ -62,7 +62,7 @@ export async function gracefulShutdown(params: ShutdownParams): Promise<void> {
 
   {
     const s = Date.now();
-    if (platforms.length) {
+    if (platforms.length > 0) {
       logComponent("shutdown").debug(`Stopping ${platforms.length} Gateway platform(s)…`, {
         count: platforms.length,
       });

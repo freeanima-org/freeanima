@@ -201,7 +201,7 @@ export async function listAutobiographicalMemoryBySourceSemanticMemory(
   opts?: { status?: AutobiographicalStatus },
 ): Promise<AutobiographicalMemoryRow[]> {
   const ids = semantic_memory_ids.map((s) => s.trim()).filter(Boolean);
-  if (!ids.length) return [];
+  if (ids.length === 0) return [];
 
   const status = opts?.status ?? "active";
   const conditions = [
@@ -223,7 +223,7 @@ export async function listAutobiographicalMemoryBySourceSessions(
   opts?: { status?: AutobiographicalStatus },
 ): Promise<AutobiographicalMemoryRow[]> {
   const ids = conversationIds.map((s) => s.trim()).filter(Boolean);
-  if (!ids.length) return [];
+  if (ids.length === 0) return [];
 
   const status = opts?.status ?? "active";
   const conditions = [

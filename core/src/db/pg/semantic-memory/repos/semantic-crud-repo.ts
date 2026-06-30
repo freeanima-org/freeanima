@@ -209,7 +209,7 @@ export async function listSemanticMemoryBySourceSessions(
   opts?: { status?: "active" | "deprecated" | "all" },
 ): Promise<SemanticMemoryRow[]> {
   const ids = conversationIds.map((s) => s.trim()).filter(Boolean);
-  if (!ids.length) return [];
+  if (ids.length === 0) return [];
 
   const status = opts?.status ?? "active";
   const conditions = [arrayOverlaps(semanticMemory.source_conversations, ids)];

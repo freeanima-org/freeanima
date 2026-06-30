@@ -16,8 +16,8 @@ export function buildShellApiFields(
   return {
     hubUrl,
     hubWsUrl,
-    remoteAuth,
-    hubFetch,
+    ...(remoteAuth !== undefined ? { remoteAuth } : {}),
+    ...(hubFetch !== undefined ? { hubFetch } : {}),
   };
 }
 

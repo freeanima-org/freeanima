@@ -44,7 +44,7 @@ export function sortedMessageKeys(catalog: MessageCatalog): string[] {
 export function catalogToPo4aXml(catalog: MessageCatalog): string {
   const lines = ['<?xml version="1.0" encoding="UTF-8"?>', "<messages>"];
   for (const key of sortedMessageKeys(catalog)) {
-    lines.push(`  <msg id="${key}">${escapeXml(catalog[key])}</msg>`);
+    lines.push(`  <msg id="${key}">${escapeXml(catalog[key] ?? "")}</msg>`);
   }
   lines.push("</messages>");
   return `${lines.join("\n")}\n`;
@@ -132,14 +132,15 @@ function normalizeZhValue(enVal: string, zhVal: string): string {
 export function canonizeZhForPo4a(en: MessageCatalog, zh: MessageCatalog): MessageCatalog {
   const canonical = new Map<string, string>();
   for (const key of sortedMessageKeys(en)) {
-    const enVal = en[key];
+    const enVal = en[key] ?? "";
     if (canonical.has(enVal)) continue;
     const raw = zh[key] ?? "";
     canonical.set(enVal, normalizeZhValue(enVal, raw));
   }
   const out: MessageCatalog = {};
   for (const key of sortedMessageKeys(en)) {
-    out[key] = canonical.get(en[key]) ?? "";
+    const enVal = en[key] ?? "";
+    out[key] = canonical.get(enVal) ?? "";
   }
   return out;
 }

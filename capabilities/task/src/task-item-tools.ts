@@ -1,5 +1,6 @@
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
+import { omitUndefined } from "@freeanima/core/util";
 
 import {
   completeTaskItem,
@@ -59,15 +60,18 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
   const content = args.content != null ? String(args.content) : "";
 
   try {
-    const item = await createTaskItem(worldId, {
-      title,
-      content,
-      tags,
-      list_id: listId,
-      priority,
-      due_at: dueAt,
-      remind_at: remindAt,
-    });
+    const item = await createTaskItem(
+      worldId,
+      omitUndefined({
+        title,
+        content,
+        tags,
+        list_id: listId,
+        priority,
+        due_at: dueAt,
+        remind_at: remindAt,
+      }),
+    );
     return toolResult({ ok: true, action: "create", item: itemPayload(item) });
   } catch (e) {
     return toolError(String(e instanceof Error ? e.message : e));
@@ -84,7 +88,10 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
   const patch: TaskItemUpdateInput = { id };
   if (args.title !== undefined) patch.title = String(args.title);
   if (args.content !== undefined) patch.content = String(args.content);
-  if (args.tags !== undefined) patch.tags = parseTags(args.tags);
+  if (args.tags !== undefined) {
+    const tags = parseTags(args.tags);
+    if (tags !== undefined) patch.tags = tags;
+  }
   if (args.list_id !== undefined) {
     const listId = Number(args.list_id);
     if (!Number.isFinite(listId) || listId <= 0) return toolError("invalid list_id");
@@ -177,9 +184,9 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
   const limit = typeof args.limit === "number" ? args.limit : 50;
 
   const items = await listTaskItems(worldId, {
-    list_id: listId,
+    ...(listId !== undefined ? { list_id: listId } : {}),
     status,
-    tags,
+    ...(tags !== undefined ? { tags } : {}),
     limit,
   });
   return toolResult({
@@ -212,12 +219,15 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
       : undefined;
 
   try {
-    const items = await searchTaskItems(worldId, {
-      query,
-      list_id,
-      status,
-      limit,
-    });
+    const items = await searchTaskItems(
+      worldId,
+      omitUndefined({
+        query,
+        list_id,
+        status,
+        limit,
+      }),
+    );
     return toolResult({
       ok: true,
       action: "search",

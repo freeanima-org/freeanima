@@ -53,7 +53,7 @@ function workspacePkgName(importPath: string): string {
 }
 
 function layerOf(relPath: string): Layer {
-  const top = relPath.split("/")[0];
+  const top = relPath.split("/")[0] ?? "";
   if ((LAYER_DIRS as readonly string[]).includes(top)) return top as Layer;
   return null;
 }
@@ -266,7 +266,7 @@ function scanImports(): Violation[] {
       }
       IMPORT_RE.lastIndex = 0;
       let m: RegExpExecArray | null;
-      while ((m = IMPORT_RE.exec(line)) !== null) {
+      while ((m = IMPORT_RE.exec(line)) != null) {
         const pkg = m[1] ?? "";
         const capCross = capabilitiesCrossViolation(rel, pkg);
         if (capCross) {

@@ -279,7 +279,7 @@ function runTests(
   } else {
     cmd = detectTestCommand(ctx.projectCwd);
   }
-  if (!cmd.length) return { error: "could not detect test command" };
+  if (cmd.length === 0) return { error: "could not detect test command" };
 
   const proc = spawnSync(cmd[0]!, cmd.slice(1), {
     cwd: ctx.projectCwd,

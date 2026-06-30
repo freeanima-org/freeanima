@@ -2,7 +2,7 @@
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "categories": {
     "correctness": "error",
-    "suspicious": "warn"
+    "suspicious": "error"
   },
   "plugins": ["typescript", "oxc", "import", "unicorn"],
   "env": {
@@ -30,15 +30,38 @@
     ],
     "typescript/no-unused-vars": "off",
     "react/react-in-jsx-scope": "off",
-    "unicorn/no-useless-spread": "off",
-    "unicorn/consistent-function-scoping": "off",
+    "unicorn/no-useless-spread": "error",
+    "unicorn/consistent-function-scoping": "error",
     "eslint/no-control-regex": "off",
-    "eslint/no-underscore-dangle": "off",
-    "eslint/no-useless-constructor": "off",
-    "eslint/no-unmodified-loop-condition": "off",
-    "import/no-unassigned-import": "off",
+    "eslint/no-underscore-dangle": [
+      "error",
+      {
+        "allowAfterThis": true,
+        "allow": [
+          "__freeanimaShellBridge",
+          "__freeanimaShellBootError",
+          "__MOBILE_DEBUG__",
+          "__WEB_DEFAULT_HUB_URL__",
+          "__WEB_DEFAULT_REMOTE_AUTH_TOKEN__",
+          "_check",
+          "_exhaustive",
+          "_def",
+          "_unsubscribe",
+          "_streamGeneration",
+          "_resetWeixinSessionPauseForTest",
+          "_ensureBuiltinSleepCycleCronJob",
+          "_ensureBuiltinTaskRemindersCronJob"
+        ]
+      }
+    ],
+    "eslint/no-useless-constructor": "error",
+    "eslint/no-unmodified-loop-condition": "error",
+    "import/no-unassigned-import": "error",
     "unicorn/no-array-sort": "error",
-    "unicorn/prefer-add-event-listener": "error"
+    "unicorn/prefer-add-event-listener": "error",
+    "eslint/eqeqeq": ["error", "always", { "null": "ignore" }],
+    "eslint/no-promise-executor-return": "error",
+    "unicorn/explicit-length-check": "error"
   },
   "overrides": [
     {
@@ -56,6 +79,9 @@
       "files": ["**/*.{test,spec}.ts", "tests/**/*.ts"],
       "env": {
         "jest": true
+      },
+      "rules": {
+        "unicorn/consistent-function-scoping": "off"
       }
     },
     {

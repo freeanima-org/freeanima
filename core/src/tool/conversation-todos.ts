@@ -34,7 +34,7 @@ async function listTodos(conversationId: string): Promise<string> {
   return toolResult({
     ok: true,
     todos: data.items,
-    message: data.items.length ? `Total ${data.items.length} todo item(s)` : "No todos",
+    message: data.items.length > 0 ? `Total ${data.items.length} todo item(s)` : "No todos",
   });
 }
 

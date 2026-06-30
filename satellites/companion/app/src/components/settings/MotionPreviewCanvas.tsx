@@ -125,7 +125,7 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
     return () => {
       disposed = true;
       ro.disconnect();
-      if (animationId !== null) cancelAnimationFrame(animationId);
+      if (animationId != null) cancelAnimationFrame(animationId);
       controls?.dispose();
       revokeModel?.();
       mixer?.stopAllAction();

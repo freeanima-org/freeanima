@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { useCallback, useEffect, useState } from "react";
 
 import {
@@ -34,10 +35,13 @@ async function probeHubHealthDefault(): Promise<boolean> {
     const origin = resolveApiOrigin();
     const token =
       typeof window !== "undefined" ? window.satelliteShell?.remoteAuth?.token : undefined;
-    const body = await probeHubHealthUrl(origin, {
-      token,
-      timeoutMs: HUB_HEALTH_PROBE_TIMEOUT_MS,
-    });
+    const body = await probeHubHealthUrl(
+      origin,
+      omitUndefined({
+        token,
+        timeoutMs: HUB_HEALTH_PROBE_TIMEOUT_MS,
+      }),
+    );
     return isHubHealthConnected(body);
   } catch (err) {
     logCaughtError("hub-rest/probeHubHealthDefault", err);

@@ -99,7 +99,7 @@ export async function searchAutobiographicalMemoryVector(
   queryEmbedding: number[],
   opts?: { limit?: number; status?: AutobiographicalStatus },
 ): Promise<VectorAutobiographicalHit[]> {
-  if (!queryEmbedding.length) return [];
+  if (queryEmbedding.length === 0) return [];
 
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
   const status = opts?.status ?? "active";

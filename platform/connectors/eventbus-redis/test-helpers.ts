@@ -7,7 +7,9 @@ export async function waitFor(predicate: () => boolean, timeoutMs = 400): Promis
     if (Date.now() >= deadline) {
       throw new Error(`waitFor timed out after ${timeoutMs}ms`);
     }
-    await new Promise((r) => setTimeout(r, 10));
+    await new Promise((r) => {
+      setTimeout(r, 10);
+    });
   }
 }
 

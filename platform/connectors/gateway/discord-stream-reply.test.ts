@@ -81,7 +81,7 @@ describe("streamReplyToChannel", () => {
     expect(sends[0]).toContain("test");
     expect(sends[0]).toContain("SECRET");
     expect(sends[1]).toContain("Thinking");
-    const lastEdit = edits[edits.length - 1];
+    const lastEdit = edits.at(-1);
     expect(lastEdit).toBe("final z");
     expect(lastEdit).not.toContain("Thinking");
   });
@@ -175,7 +175,7 @@ describe("streamReplyToChannel", () => {
     }
     await streamReplyToChannel(channel, gen());
     expect(edits.length).toBeGreaterThan(0);
-    expect(edits[edits.length - 1]!.length).toBe(1000);
+    expect(edits.at(-1)!.length).toBe(1000);
     expect(sends.length).toBeGreaterThanOrEqual(2);
   });
 
@@ -215,7 +215,7 @@ describe("streamReplyToChannel", () => {
     expect(sends[0]).toContain("Thinking");
     expect(sends.filter((s) => s === "final answer")).toHaveLength(0);
     expect(sends).toHaveLength(1);
-    const lastEdit = edits[edits.length - 1];
+    const lastEdit = edits.at(-1);
     expect(lastEdit).toBe("final answer");
   });
 
@@ -231,7 +231,7 @@ describe("streamReplyToChannel", () => {
     expect(sends).toHaveLength(1);
     expect(sends[0]).toContain("Thinking");
     expect(edits.filter((e) => e !== "你好世界")).toHaveLength(0);
-    expect(edits[edits.length - 1]).toBe("你好世界");
+    expect(edits.at(-1)).toBe("你好世界");
     const thinkingEditIdx = timeline.findIndex(
       (e) => e.kind === "edit" && e.text.includes("Thinking"),
     );
@@ -277,9 +277,11 @@ describe("streamReplyToChannel", () => {
     const done = streamReplyToChannel(channel, gen());
     await Promise.race([
       done,
-      new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 500)),
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("timeout")), 500);
+      }),
     ]);
-    expect(edits[edits.length - 1]).toBe("quick");
+    expect(edits.at(-1)).toBe("quick");
     hangResolve();
   });
 

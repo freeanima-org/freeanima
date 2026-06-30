@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import {
   deriveThreadKey,
   findEmailMessageByImapUid,
@@ -73,12 +74,14 @@ export async function syncEmailAccount(
             const inReplyTo = parsedHeaders.inReplyTo ?? envelope?.inReplyTo;
             const references = parsedHeaders.references;
             const subject = envelope?.subject ?? "(No subject)";
-            const threadKey = deriveThreadKey({
-              message_id: messageId,
-              in_reply_to: inReplyTo,
-              references,
-              subject,
-            });
+            const threadKey = deriveThreadKey(
+              omitUndefined({
+                message_id: messageId,
+                in_reply_to: inReplyTo,
+                references,
+                subject,
+              }),
+            );
             const bodyText = extractBody(msg.source);
             const preview = messagePreview(bodyText);
             const sentAt = envelope?.date?.toISOString() ?? formatCstIso();

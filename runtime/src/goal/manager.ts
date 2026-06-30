@@ -104,7 +104,7 @@ export function formatGoalStatus(goal: ConversationGoal): string {
     `• Description: ${goal.description}`,
     `• Turns: ${goal.turn_count}/${goal.max_turns}`,
   ];
-  if (goal.subgoals.length) {
+  if (goal.subgoals.length > 0) {
     lines.push("• Subgoals:");
     for (const [i, sg] of goal.subgoals.entries()) {
       lines.push(`  ${i + 1}. ${sg}`);
@@ -117,6 +117,6 @@ export function formatGoalStatus(goal: ConversationGoal): string {
 }
 
 export function formatSubgoalList(goal: ConversationGoal): string {
-  if (!goal.subgoals.length) return "No subgoals.";
+  if (goal.subgoals.length === 0) return "No subgoals.";
   return goal.subgoals.map((sg, i) => `${i + 1}. ${sg}`).join("\n");
 }

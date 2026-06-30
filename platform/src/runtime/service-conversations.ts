@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import { resolveDefaultConversationToolSets } from "@freeanima/core/tool";
 import { getProfileHopModel } from "@freeanima/platform/config";
@@ -39,17 +40,20 @@ export async function listConversations(
 ): Promise<{ conversations: ConversationSummary[]; total: number }> {
   const p = platform === "" ? null : platform;
   if (opts?.offset != null || opts?.limit != null) {
-    const page = await deps.conversation.listConversationSummariesPage({
-      platform: p ?? undefined,
-      offset: opts.offset,
-      limit: opts.limit,
-      includeArchived: opts.includeArchived,
-    });
+    const page = await deps.conversation.listConversationSummariesPage(
+      omitUndefined({
+        platform: p ?? undefined,
+        offset: opts.offset,
+        limit: opts.limit,
+        includeArchived: opts.includeArchived,
+      }),
+    );
     return { conversations: page.items, total: page.total };
   }
-  const items = await deps.conversation.listConversationSummaries(p ?? undefined, {
-    includeArchived: opts?.includeArchived,
-  });
+  const items = await deps.conversation.listConversationSummaries(
+    p ?? undefined,
+    omitUndefined({ includeArchived: opts?.includeArchived }),
+  );
   return { conversations: items, total: items.length };
 }
 

@@ -1,4 +1,5 @@
 import { logCapability as logComponent } from "@freeanima/core/config";
+import { omitUndefined } from "@freeanima/core/util";
 import { createDreamMemory, getDreamMemoryByDay } from "@freeanima/core/db/pg/dream-memory";
 
 import { buildDreamEngineInput } from "./build-messages.ts";
@@ -40,7 +41,7 @@ export async function runDream(opts: RunDreamOpts): Promise<DreamResult> {
     return result;
   }
 
-  const input = await gatherDreamInput({ day: opts.day });
+  const input = await gatherDreamInput(omitUndefined({ day: opts.day }));
 
   if (!hasDreamFuel(input)) {
     const result: DreamResult = {

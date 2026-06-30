@@ -14,7 +14,7 @@ export function createFridgeMagnetHandler() {
   return async (ctx: BeforeLlmCallContext): Promise<void> => {
     stripFridgeContextFromMessages(ctx.messages);
 
-    const lastMsg = ctx.messages[ctx.messages.length - 1];
+    const lastMsg = ctx.messages.at(-1);
     if (!lastMsg || lastMsg.role !== "user") return;
 
     const hits = await scanMagnets(FRIDGE_MAGNET_SCAN_PATTERN);

@@ -9,7 +9,7 @@ import {
 describe("resolveToolDisplayMode", () => {
   it("defaults to name", () => {
     expect(DEFAULT_TOOL_DISPLAY_MODE).toBe("name");
-    expect(resolveToolDisplayMode({}, undefined)).toBe("name");
+    expect(resolveToolDisplayMode({})).toBe("name");
   });
 
   it("conversation override wins over global config", () => {

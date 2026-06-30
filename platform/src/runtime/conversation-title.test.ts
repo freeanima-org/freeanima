@@ -66,7 +66,9 @@ describe("maybeGenerateConversationTitleAsync", () => {
     restores.push(getTitle, gen);
 
     maybeGenerateConversationTitleAsync(deps, "sid", "hello");
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => {
+      setTimeout(r, 0);
+    });
 
     expect(gen).not.toHaveBeenCalled();
   });
@@ -79,7 +81,9 @@ describe("maybeGenerateConversationTitleAsync", () => {
     restores.push(getTitle, userCount, gen);
 
     maybeGenerateConversationTitleAsync(deps, "sid", "hello");
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => {
+      setTimeout(r, 0);
+    });
 
     expect(gen).not.toHaveBeenCalled();
   });
@@ -93,11 +97,13 @@ describe("maybeGenerateConversationTitleAsync", () => {
       ok: true,
       title: "LLM title",
     });
-    const setTitle = spyOn(deps.conversation, "setConversationTitle").mockResolvedValue(undefined);
+    const setTitle = spyOn(deps.conversation, "setConversationTitle").mockResolvedValue();
     restores.push(getTitle, userCount, totalCount, gen, setTitle);
 
     maybeGenerateConversationTitleAsync(deps, "sid", "hello");
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => {
+      setTimeout(r, 0);
+    });
 
     expect(gen).toHaveBeenCalled();
     expect(setTitle).toHaveBeenCalledWith("sid", "LLM title");
@@ -111,7 +117,7 @@ describe("maybeGenerateConversationTitleAsync", () => {
       ok: true,
       title: "LLM title",
     });
-    const setTitle = spyOn(deps.conversation, "setConversationTitle").mockResolvedValue(undefined);
+    const setTitle = spyOn(deps.conversation, "setConversationTitle").mockResolvedValue();
     restores.push(getTitle, userCount, gen, setTitle);
 
     const notified: string[] = [];
@@ -121,7 +127,9 @@ describe("maybeGenerateConversationTitleAsync", () => {
         notified.push(sid);
       },
     });
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => {
+      setTimeout(r, 0);
+    });
 
     expect(setTitle).toHaveBeenCalledWith("sid", "LLM title");
     expect(notified).toEqual(["sid"]);
@@ -135,7 +143,7 @@ describe("maybeGenerateConversationTitleAsync", () => {
       ok: true,
       title: "LLM title",
     });
-    const setTitle = spyOn(deps.conversation, "setConversationTitle").mockResolvedValue(undefined);
+    const setTitle = spyOn(deps.conversation, "setConversationTitle").mockResolvedValue();
     restores.push(getTitle, userCount, gen, setTitle);
 
     const legacy: string[] = [];
@@ -149,7 +157,9 @@ describe("maybeGenerateConversationTitleAsync", () => {
         full.push(sid);
       },
     });
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => {
+      setTimeout(r, 0);
+    });
 
     expect(full).toEqual(["sid"]);
     expect(legacy).toEqual([]);
@@ -166,18 +176,24 @@ describe("maybeGenerateConversationTitleAsync", () => {
     const gen = spyOn(sessionTitleLlm, "generateConversationTitle").mockImplementation(
       () => genPending,
     );
-    const setTitle = spyOn(deps.conversation, "setConversationTitle").mockResolvedValue(undefined);
+    const setTitle = spyOn(deps.conversation, "setConversationTitle").mockResolvedValue();
     restores.push(getTitle, userCount, gen, setTitle);
 
     maybeGenerateConversationTitleAsync(deps, "sid", "hello");
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => {
+      setTimeout(r, 0);
+    });
     maybeGenerateConversationTitleAsync(deps, "sid", "hello");
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => {
+      setTimeout(r, 0);
+    });
 
     expect(gen).toHaveBeenCalledTimes(1);
 
     resolveGen({ ok: true, title: "Once" });
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => {
+      setTimeout(r, 0);
+    });
     expect(setTitle).toHaveBeenCalledTimes(1);
   });
 
@@ -195,11 +211,13 @@ describe("maybeGenerateConversationTitleAsync", () => {
       ok: true,
       title: "LLM title",
     });
-    const setTitle = spyOn(deps.conversation, "setConversationTitle").mockResolvedValue(undefined);
+    const setTitle = spyOn(deps.conversation, "setConversationTitle").mockResolvedValue();
     restores.push(getTitle, userCount, gen, setTitle);
 
     maybeGenerateConversationTitleAsync(deps, "sid", "hello");
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => {
+      setTimeout(r, 0);
+    });
 
     expect(setTitle).not.toHaveBeenCalled();
   });

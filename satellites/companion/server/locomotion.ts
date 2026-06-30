@@ -59,7 +59,7 @@ export function locomotionFileForSlot(slot: LocomotionSlot): string | null {
 export function locomotionSlotStatus(): LocomotionSlotInfo[] {
   return LOCOMOTION_SLOTS.map((slot) => {
     const file = locomotionFileForSlot(slot);
-    const available = file !== null && resolveMotionFile(`/motions/${file}`) !== null;
+    const available = file != null && resolveMotionFile(`/motions/${file}`) != null;
     return {
       slot,
       label: LOCOMOTION_SLOT_LABELS[slot],

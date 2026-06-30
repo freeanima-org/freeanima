@@ -71,11 +71,11 @@ describe("http-dispatch", () => {
         const upgraded = trySapWebSocketUpgrade(req, bunServer, {
           fetch(innerReq, innerServer) {
             const upgradeServer = innerServer as Bun.Server<unknown>;
-            if (upgradeServer.upgrade(innerReq, { data: {} })) return undefined;
+            if (upgradeServer.upgrade(innerReq, { data: {} })) return;
             return new Response("Expected WebSocket upgrade", { status: 426 });
           },
         });
-        if (upgraded !== null) return upgraded;
+        if (upgraded != null) return upgraded;
         return new Response("not found", { status: 404 });
       },
       websocket: {

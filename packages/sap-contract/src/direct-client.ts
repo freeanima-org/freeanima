@@ -84,10 +84,11 @@ export async function loadDirectSatelliteConfig(
   if (!raw.hub_ws_url?.trim()) {
     throw new Error("config.json 缺少 hub_ws_url");
   }
+  const instanceId = raw.instance_id?.trim();
   return {
     hub_ws_url: raw.hub_ws_url.trim(),
     app_id: raw.app_id?.trim() || "chat",
-    instance_id: raw.instance_id?.trim(),
+    ...(instanceId ? { instance_id: instanceId } : {}),
   };
 }
 
@@ -123,7 +124,7 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
         const hubOrigin = hubHttpFromWsUrl(resolveHubWsUrl(hubHttp));
         const fixedInstanceId = options.instanceId?.trim() || null;
         const store =
-          fixedInstanceId !== null
+          fixedInstanceId != null
             ? undefined
             : (options.instanceStore ??
               (typeof window !== "undefined"
@@ -174,8 +175,8 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
 
         transport = runSapTransport({
           hubUrl: hubHttp,
-          signal: options.signal,
-          instanceStore: store,
+          ...(options.signal !== undefined ? { signal: options.signal } : {}),
+          ...(store !== undefined ? { instanceStore: store } : {}),
           connect,
           onConnected: async (_client, connected) => {
             instanceId = connected.instance_id;

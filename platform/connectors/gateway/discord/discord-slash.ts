@@ -105,7 +105,7 @@ export function interactionToCommandText(interaction: ChatInputCommandInteractio
   if (all) parts.push("--all");
   if (toolLevel) parts.push(toolLevel);
 
-  return parts.length ? `/${name} ${parts.join(" ")}` : `/${name}`;
+  return parts.length > 0 ? `/${name} ${parts.join(" ")}` : `/${name}`;
 }
 
 export function originFromInteraction(interaction: ChatInputCommandInteraction): PlatformOrigin {
@@ -210,7 +210,7 @@ export async function replyDiscordInteraction(
     }
   };
 
-  if (!chunks.length) {
+  if (chunks.length === 0) {
     try {
       await withDiscordRetry(() => interaction.editReply({ content: "(no output)" }));
     } catch (e) {

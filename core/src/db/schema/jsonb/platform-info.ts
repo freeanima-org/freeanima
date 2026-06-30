@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { omitUndefined } from "@freeanima/core/util";
+
 import { normalizePgTimestamp } from "./timestamp.ts";
 
 /** Gateway channels (non-SAP) */
@@ -113,7 +115,7 @@ const PLATFORM_EXTRA_DEFAULTS: Partial<Record<string, Record<string, unknown>>> 
 const PLATFORM_EXTRA_TIMESTAMP_KEYS = ["ended_at", "started_at"] as const;
 
 function isMissingExtraValue(value: unknown): boolean {
-  return value === undefined || value === null || value === "";
+  return value === undefined || value == null || value === "";
 }
 
 function normalizePlatformExtra(
@@ -176,10 +178,10 @@ export function splitPlatformInfo(info: PlatformInfo | null | undefined): {
 } {
   if (!info) return {};
   const { platform, ...rest } = info;
-  return {
+  return omitUndefined({
     platform,
     platform_extra: Object.keys(rest).length > 0 ? rest : undefined,
-  };
+  });
 }
 
 /** conversations.platform_info 标记为 cron agent 遗留会话（浅睡/梦境应排除） */

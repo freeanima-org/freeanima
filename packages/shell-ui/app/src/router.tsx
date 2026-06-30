@@ -1,3 +1,4 @@
+// oxlint-disable-next-line import/no-unassigned-import -- Vite side-effect stylesheet
 import "@freeanima/satellite-chat/styles.css";
 import { ChatApp } from "@freeanima/satellite-chat/app";
 

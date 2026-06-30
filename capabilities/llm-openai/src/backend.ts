@@ -17,10 +17,6 @@ import { runOpenAiChat, runOpenAiChatStream } from "./openai-chat.ts";
 export class OpenAiCompatibleBackend extends LlmBackend {
   private readonly catalogCache = new Map<string, ModelInfo[]>();
 
-  constructor(backendId: string) {
-    super(backendId);
-  }
-
   async listModels(context: BackendContext): Promise<ModelInfo[]> {
     const parsed = parseOpenAiCompatibleContext(context);
     const cacheKey = contextCacheKey(parsed);

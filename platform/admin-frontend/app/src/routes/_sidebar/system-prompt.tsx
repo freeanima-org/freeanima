@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import type { PromptDebugResponse, ConversationListItem } from "@freeanima/admin-contract/api";
 import { useEffect, useMemo, useState } from "react";
@@ -40,12 +41,13 @@ function estimateChars(text: string): number {
 }
 
 export const Route = createFileRoute("/_sidebar/system-prompt")({
-  validateSearch: (search: Record<string, unknown>): { conversation?: string } => ({
-    conversation:
-      typeof search.conversation === "string" && search.conversation
-        ? search.conversation
-        : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { conversation?: string } =>
+    omitUndefined({
+      conversation:
+        typeof search.conversation === "string" && search.conversation
+          ? search.conversation
+          : undefined,
+    }),
   component: SystemPromptPage,
 });
 
@@ -450,7 +452,7 @@ function SystemPromptPage() {
                 {pagedTools.map((tool) => (
                   <ToolSchemaCard key={tool.name} tool={tool} />
                 ))}
-                {!filteredTools.length ? (
+                {filteredTools.length === 0 ? (
                   <div className="text-sm text-base-content/50">
                     {m.admin_system_prompt_no_tools()}
                   </div>

@@ -26,5 +26,5 @@ export function resolveModelFile(relPath: string): string | null {
 
 export function isModelPathAvailable(modelPath: string): boolean {
   if (!modelPath.trim()) return false;
-  return resolveModelFile(modelPath) !== null;
+  return resolveModelFile(modelPath) != null;
 }

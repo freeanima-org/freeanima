@@ -91,7 +91,9 @@ describe("createSapSidecarClient", () => {
     expect(sockets.length).toBe(1);
 
     sockets[0]!.close();
-    await new Promise((r) => setTimeout(r, 80));
+    await new Promise((r) => {
+      setTimeout(r, 80);
+    });
 
     await client.whenReady();
     expect(sockets.length).toBeGreaterThanOrEqual(2);

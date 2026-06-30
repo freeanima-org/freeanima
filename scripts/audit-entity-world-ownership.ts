@@ -84,7 +84,7 @@ async function main(): Promise<void> {
     if (list.world_id !== row.world_id) {
       issues.push({
         code: "task_item_cross_world",
-        message: `task_item ${row.id} world_id=${row.world_id} != list ${listId} world_id=${list.world_id}`,
+        message: `task_item ${row.id} world_id=${row.world_id} !== list ${listId} world_id=${list.world_id}`,
         entity_id: row.id,
       });
     }

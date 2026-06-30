@@ -31,6 +31,6 @@ export function resolveHttpBindHost(
   const fromCli = cliHost?.trim();
   if (fromCli) return fromCli;
   const fromConfig = collectHttpBindHosts(http);
-  if (fromConfig.length) return formatHttpBindHosts(fromConfig);
+  if (fromConfig.length > 0) return formatHttpBindHosts(fromConfig);
   return fallback;
 }

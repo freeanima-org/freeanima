@@ -4,6 +4,7 @@ import {
   type TaskListBody,
 } from "@freeanima/core/db/schema/entity";
 import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/core/db/pg/entity";
+import { omitUndefined } from "@freeanima/core/util";
 import {
   createEntity,
   deleteEntity,
@@ -278,10 +279,13 @@ export async function updateTaskList(
   if (!existing || existing.primary_component !== TASK_LIST_COMPONENT) return null;
   await assertEntityInWorld(input.id, worldId);
 
-  assertDefaultListConstraints(existing, {
-    is_folder: input.is_folder,
-    parent_id: input.parent_id,
-  });
+  assertDefaultListConstraints(
+    existing,
+    omitUndefined({
+      is_folder: input.is_folder,
+      parent_id: input.parent_id,
+    }),
+  );
 
   if (input.closed === true) {
     assertCanCloseTaskList(existing);
@@ -305,11 +309,13 @@ export async function updateTaskList(
   if (input.is_folder !== undefined) bodyPatch.is_folder = input.is_folder;
   if (input.parent_id !== undefined) bodyPatch.parent_id = input.parent_id;
 
-  const row = await updateEntity({
-    id: input.id,
-    title: input.name?.trim(),
-    body: Object.keys(bodyPatch).length > 0 ? bodyPatch : undefined,
-  });
+  const row = await updateEntity(
+    omitUndefined({
+      id: input.id,
+      title: input.name?.trim(),
+      body: Object.keys(bodyPatch).length > 0 ? bodyPatch : undefined,
+    }),
+  );
   if (!row) return null;
 
   if (input.closed !== undefined && resolveIsFolder(existing.body)) {

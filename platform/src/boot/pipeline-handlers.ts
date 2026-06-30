@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { runLightSleep } from "@freeanima/capabilities-memory/light-sleep/run";
 import { runDeepSleep } from "@freeanima/capabilities-memory/deep-sleep/run";
 import { runDream } from "@freeanima/capabilities-memory/dream/run";
@@ -51,40 +52,46 @@ export function registerSleepPipeline(engine: Engine): void {
 
   runner.registerStep(SLEEP_STEP_IDS.lightSleep, async (ctx) => {
     const selfContent = await loadSelfLayerPrompt();
-    const result = await runLightSleep({
-      day: ctx.day,
-      selfContent,
-    });
+    const result = await runLightSleep(
+      omitUndefined({
+        day: ctx.day,
+        selfContent,
+      }),
+    );
     if (result.skipped) {
       return { ok: true, skipped: result.skipped, output: result };
     }
-    return { ok: result.ok, output: result, error: result.ok ? undefined : result.summary };
+    return result.ok
+      ? { ok: true, output: result }
+      : { ok: false, output: result, error: result.summary };
   });
 
   runner.registerStep(SLEEP_STEP_IDS.deepSleep, async (ctx) => {
     const selfContent = await loadSelfLayerPrompt();
     const mode = resolveDeepSleepMode(ctx);
-    const result = await runDeepSleep({ day: ctx.day, selfContent, mode });
+    const result = await runDeepSleep(omitUndefined({ day: ctx.day, selfContent, mode }));
     if (result.skipped) {
       return { ok: true, skipped: result.skipped, output: result };
     }
-    return {
-      ok: result.ok,
-      output: result,
-      error: result.ok ? undefined : (result.skipped ?? "deep sleep failed"),
-    };
+    return result.ok
+      ? { ok: true, output: result }
+      : { ok: false, output: result, error: result.skipped ?? "deep sleep failed" };
   });
 
   runner.registerStep(SLEEP_STEP_IDS.dream, async (ctx) => {
     const selfContent = await loadSelfLayerPrompt();
-    const result = await runDream({
-      day: ctx.day,
-      selfContent,
-    });
+    const result = await runDream(
+      omitUndefined({
+        day: ctx.day,
+        selfContent,
+      }),
+    );
     if (result.skipped) {
       return { ok: true, skipped: result.skipped, output: result };
     }
-    return { ok: result.ok, output: result, error: result.ok ? undefined : result.summary };
+    return result.ok
+      ? { ok: true, output: result }
+      : { ok: false, output: result, error: result.summary };
   });
 
   runner.registerStep(SLEEP_STEP_IDS.selfLayerRefresh, async () => {
@@ -112,7 +119,7 @@ export async function runSleepCycle(
   return runner.run(SLEEP_CYCLE_PIPELINE_ID, {
     day: resolvedDay,
     trigger: opts?.trigger ?? "manual_cycle",
-    deep_sleep_mode: opts?.deep_sleep_mode,
+    ...omitUndefined({ deep_sleep_mode: opts?.deep_sleep_mode }),
   });
 }
 
@@ -127,12 +134,15 @@ export async function runSleepStep(
 ) {
   const runner = getPipelineRunner();
   const resolvedDay = opts?.day ? resolveSleepCycleDay(opts.day) : resolveSleepCycleDay();
-  return runner.runStep(stepId, {
-    day: resolvedDay,
-    force: opts?.force,
-    trigger: opts?.trigger ?? "manual_step",
-    deep_sleep_mode: opts?.deep_sleep_mode,
-  });
+  return runner.runStep(
+    stepId,
+    omitUndefined({
+      day: resolvedDay,
+      force: opts?.force,
+      trigger: opts?.trigger ?? "manual_step",
+      deep_sleep_mode: opts?.deep_sleep_mode,
+    }),
+  );
 }
 
 export function getSleepPipelineStatus() {

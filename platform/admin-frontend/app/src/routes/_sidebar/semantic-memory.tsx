@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import type { SemanticMemoryRow } from "@freeanima/admin-contract/api";
@@ -54,13 +55,15 @@ function SemanticMemoryPage() {
       const effectiveSortBy = trimmedQuery ? "rank" : sortBy;
       try {
         const data = (await listSemanticMemories({
-          query: trimmedQuery || undefined,
           offset: nextOffset,
           limit: PAGE_SIZE,
-          types: typeFilter ? [typeFilter] : undefined,
           status: statusFilter === "all" ? "all" : statusFilter,
-          source_conversation: sourceConversation.trim() || undefined,
           sort_by: effectiveSortBy,
+          ...omitUndefined({
+            query: trimmedQuery || undefined,
+            types: typeFilter ? [typeFilter] : undefined,
+            source_conversation: sourceConversation.trim() || undefined,
+          }),
         })) as { items: SemanticRow[]; total: number };
         setItems(data.items ?? []);
         setTotal(data.total ?? 0);

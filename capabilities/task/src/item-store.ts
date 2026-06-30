@@ -1,6 +1,6 @@
 import { TASK_ITEM_COMPONENT, asTaskItem } from "@freeanima/core/db/schema/entity";
 import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/core/db/pg/entity";
-import { formatCstIso } from "@freeanima/core/util";
+import { formatCstIso, omitUndefined } from "@freeanima/core/util";
 import {
   createEntity,
   deleteEntity,
@@ -65,7 +65,7 @@ export async function listTaskItems(
   const result = await searchEntities({
     world_id: worldId,
     primary_component: TASK_ITEM_COMPONENT,
-    filters: Object.keys(filters).length > 0 ? filters : undefined,
+    ...(Object.keys(filters).length > 0 ? { filters } : {}),
     limit: opts.limit ?? 500,
     offset: opts.offset ?? 0,
     mode: "filter_only",
@@ -141,12 +141,14 @@ export async function updateTaskItem(
     bodyPatch.completed_at = input.status === "completed" ? formatCstIso(new Date()) : null;
   }
 
-  const row = await updateEntity({
-    id: input.id,
-    title: input.title,
-    content: input.content,
-    body: Object.keys(bodyPatch).length > 0 ? bodyPatch : undefined,
-  });
+  const row = await updateEntity(
+    omitUndefined({
+      id: input.id,
+      title: input.title,
+      content: input.content,
+      body: Object.keys(bodyPatch).length > 0 ? bodyPatch : undefined,
+    }),
+  );
   if (!row) return null;
 
   const parsed = asTaskItem(row);
@@ -182,7 +184,7 @@ export async function searchTaskItems(
     world_id: worldId,
     primary_component: TASK_ITEM_COMPONENT,
     query: opts.query,
-    filters: Object.keys(filters).length > 0 ? filters : undefined,
+    ...(Object.keys(filters).length > 0 ? { filters } : {}),
     limit: Math.max(1, Math.min(50, opts.limit ?? 30)),
     mode: "hybrid",
   });

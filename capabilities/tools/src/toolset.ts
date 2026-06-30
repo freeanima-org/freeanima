@@ -93,7 +93,7 @@ export function registerToolsetTools(toolSets: ToolSetRegistry): void {
               return toolError("toolsets must be a non-empty array");
             }
             const toolsets = raw.map((n) => String(n ?? "").trim()).filter(Boolean);
-            if (!toolsets.length) return toolError("toolsets must be a non-empty array");
+            if (toolsets.length === 0) return toolError("toolsets must be a non-empty array");
             const conversationId = getToolConversationId()!;
             const registry = getToolRegistry();
             const result = await loadToolSetsIntoConversation(

@@ -418,7 +418,7 @@ export const useCharacterStore = create<CharacterState>((set) => ({
 }));
 
 export function startPatrolWatcher(): () => void {
-  if (journeyFrame !== null) cancelAnimationFrame(journeyFrame);
+  if (journeyFrame != null) cancelAnimationFrame(journeyFrame);
 
   startupWalkPending = true;
   introWalkActive = false;
@@ -438,9 +438,9 @@ export function startPatrolWatcher(): () => void {
   patrolTimer = setInterval(tickPatrolTimer, 1000);
 
   return () => {
-    if (journeyFrame !== null) cancelAnimationFrame(journeyFrame);
+    if (journeyFrame != null) cancelAnimationFrame(journeyFrame);
     journeyFrame = null;
-    if (patrolTimer !== null) clearInterval(patrolTimer);
+    if (patrolTimer != null) clearInterval(patrolTimer);
     patrolTimer = null;
     activeJourney = null;
     introWalkActive = false;

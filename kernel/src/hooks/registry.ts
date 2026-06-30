@@ -83,7 +83,7 @@ export class HookRegistry {
       if (!current) return;
       const idx = current.indexOf(entry);
       if (idx >= 0) current.splice(idx, 1);
-      if (!current.length) this.handlers.delete(hook.id);
+      if (current.length === 0) this.handlers.delete(hook.id);
       this.log.debug("Unregister hook handler", { hook: hook.qualifiedId, priority });
     };
   }
@@ -101,7 +101,7 @@ export class HookRegistry {
     });
 
     const emptyMeta: HookRunMeta = { duration_ms: 0, handlers: 0 };
-    if (!list.length) {
+    if (list.length === 0) {
       this.log.debug("hook run skipped (no handler)", { hook: hook.qualifiedId });
       return buildRunResult<PayloadOf<H>, HookEffectOf<H>>(context, null, false, false, emptyMeta);
     }

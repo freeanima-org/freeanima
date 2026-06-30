@@ -123,7 +123,7 @@ export class RedisEventQueue implements EventQueueAdapter {
 
   private async resetStuck(): Promise<void> {
     const items = await this.redis.lrange(this.keys.processing, 0, -1);
-    if (!items.length) return;
+    if (items.length === 0) return;
     await this.redis.del(this.keys.processing);
     for (const raw of items) {
       const envelope = parseEnvelope(raw);
@@ -142,7 +142,9 @@ export class RedisEventQueue implements EventQueueAdapter {
       );
       if (!this.running || !this.process) continue;
       if (!raw) {
-        await new Promise((r) => setTimeout(r, this.pollMs));
+        await new Promise((r) => {
+          setTimeout(r, this.pollMs);
+        });
         continue;
       }
       await this.dispatch(raw);

@@ -1,6 +1,7 @@
 import { toolError, toolResult } from "@freeanima/core/tool";
 import type { Config } from "@freeanima/core/config";
 import { homePath } from "@freeanima/core/config";
+import { omitUndefined } from "@freeanima/core/util";
 import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 
@@ -45,7 +46,7 @@ function getCamofoxConfigBlock(): Record<string, unknown> {
     const cfg = browserConfig.data as Record<string, unknown>;
     const browser = cfg.browser as Record<string, unknown> | undefined;
     const camofox = browser?.camofox;
-    return typeof camofox === "object" && camofox !== null && !Array.isArray(camofox)
+    return typeof camofox === "object" && camofox != null && !Array.isArray(camofox)
       ? (camofox as Record<string, unknown>)
       : {};
   } catch {
@@ -68,14 +69,14 @@ function resolveConfig(): CamofoxConfig {
   const timeoutRaw = block.timeout_ms;
   const timeoutMs =
     typeof timeoutRaw === "number" && timeoutRaw > 0 ? timeoutRaw : DEFAULT_TIMEOUT_MS;
-  return {
+  return omitUndefined({
     baseUrl: getCamofoxUrl(),
     timeoutMs,
     managedPersistence: Boolean(block.managed_persistence),
     adoptExistingTab: Boolean(block.adopt_existing_tab),
     userId: typeof block.user_id === "string" ? block.user_id.trim() : undefined,
     sessionKey: typeof block.session_key === "string" ? block.session_key.trim() : undefined,
-  };
+  });
 }
 
 function digest(prefix: string, input: string, len: number): string {
@@ -130,12 +131,15 @@ async function postJson(
   body: Record<string, unknown>,
   timeoutMs?: number,
 ): Promise<Record<string, unknown>> {
-  const resp = await camofoxFetch(path, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-    timeoutMs,
-  });
+  const resp = await camofoxFetch(
+    path,
+    omitUndefined({
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      timeoutMs,
+    }),
+  );
   return (await resp.json()) as Record<string, unknown>;
 }
 
@@ -148,12 +152,15 @@ async function getJson(
   if (params) {
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   }
-  const resp = await camofoxFetch(url.pathname + url.search, { method: "GET", timeoutMs });
+  const resp = await camofoxFetch(
+    url.pathname + url.search,
+    omitUndefined({ method: "GET", timeoutMs }),
+  );
   return (await resp.json()) as Record<string, unknown>;
 }
 
 async function deleteJson(path: string, timeoutMs?: number): Promise<Record<string, unknown>> {
-  const resp = await camofoxFetch(path, { method: "DELETE", timeoutMs });
+  const resp = await camofoxFetch(path, omitUndefined({ method: "DELETE", timeoutMs }));
   if (resp.status === 204) return {};
   return (await resp.json()) as Record<string, unknown>;
 }
@@ -167,7 +174,10 @@ async function getRaw(
   if (params) {
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   }
-  const resp = await camofoxFetch(url.pathname + url.search, { method: "GET", timeoutMs });
+  const resp = await camofoxFetch(
+    url.pathname + url.search,
+    omitUndefined({ method: "GET", timeoutMs }),
+  );
   return resp.arrayBuffer();
 }
 
@@ -227,15 +237,15 @@ async function adoptExistingTab(session: CamofoxSession): Promise<CamofoxSession
     if (!Array.isArray(tabs) || tabs.length === 0) return session;
     const matching = tabs.filter(
       (tab): tab is Record<string, unknown> =>
-        typeof tab === "object" && tab !== null && tab.listItemId === session.sessionKey,
+        typeof tab === "object" && tab != null && tab.listItemId === session.sessionKey,
     );
     const candidates =
       matching.length > 0
         ? matching
         : tabs.filter(
-            (tab): tab is Record<string, unknown> => typeof tab === "object" && tab !== null,
+            (tab): tab is Record<string, unknown> => typeof tab === "object" && tab != null,
           );
-    const latest = candidates[candidates.length - 1];
+    const latest = candidates.at(-1);
     const tabId = latest?.tabId;
     if (typeof tabId === "string" && tabId) {
       session.tabId = tabId;

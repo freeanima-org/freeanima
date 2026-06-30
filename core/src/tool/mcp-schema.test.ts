@@ -10,7 +10,7 @@ import {
 describe("normalizeJsonSchema", () => {
   it("defaults empty input to object schema", () => {
     expect(normalizeJsonSchema()).toEqual({ type: "object", properties: {} });
-    expect(normalizeJsonSchema(undefined)).toEqual({ type: "object", properties: {} });
+    expect(normalizeJsonSchema()).toEqual({ type: "object", properties: {} });
   });
 
   it("fills missing type and properties", () => {

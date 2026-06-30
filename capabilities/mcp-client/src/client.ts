@@ -1,4 +1,5 @@
 import { readAppVersionForCapability as readAppVersion } from "@freeanima/core/config";
+import { omitUndefined } from "@freeanima/core/util";
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {
@@ -78,8 +79,8 @@ function createTransport(serverName: string, cfg: McpServerConfig): Transport {
   return new StdioClientTransport({
     command: cfg.command,
     args: cfg.args ?? [],
-    env: cfg.env,
-    cwd: cfg.cwd,
+    ...(cfg.env !== undefined ? { env: cfg.env } : {}),
+    ...(cfg.cwd !== undefined ? { cwd: cfg.cwd } : {}),
     stderr: "inherit",
   });
 }
@@ -120,34 +121,45 @@ export class McpClientSession {
 
   async listTools(): Promise<McpToolDef[]> {
     const { tools } = await this.client.listTools();
-    return tools.map((t) => ({
-      name: t.name,
-      description: t.description,
-      inputSchema: (t.inputSchema ?? { type: "object", properties: {} }) as Record<string, unknown>,
-    }));
+    return tools.map((t) =>
+      omitUndefined({
+        name: t.name,
+        description: t.description,
+        inputSchema: (t.inputSchema ?? { type: "object", properties: {} }) as Record<
+          string,
+          unknown
+        >,
+      }),
+    );
   }
 
   async listResources(): Promise<McpResourceDef[]> {
     const { resources } = await this.client.listResources();
-    return resources.map((r) => ({
-      uri: r.uri,
-      name: r.name,
-      description: r.description,
-      mimeType: r.mimeType,
-    }));
+    return resources.map((r) =>
+      omitUndefined({
+        uri: r.uri,
+        name: r.name,
+        description: r.description,
+        mimeType: r.mimeType,
+      }),
+    );
   }
 
   async listPrompts(): Promise<McpPromptDef[]> {
     const { prompts } = await this.client.listPrompts();
-    return prompts.map((p) => ({
-      name: p.name,
-      description: p.description,
-      arguments: p.arguments?.map((a) => ({
-        name: a.name,
-        description: a.description,
-        required: a.required,
-      })),
-    }));
+    return prompts.map((p) =>
+      omitUndefined({
+        name: p.name,
+        description: p.description,
+        arguments: p.arguments?.map((a) =>
+          omitUndefined({
+            name: a.name,
+            description: a.description,
+            required: a.required,
+          }),
+        ),
+      }),
+    );
   }
 
   async callTool(

@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { readdirSync } from "node:fs";
 import { readSkillDescriptionFromFile } from "./content.ts";
 
@@ -73,12 +74,14 @@ export function registerSkillsFromDirectory(
     const name = file.replace(/\.md$/, "");
     if (!name) continue;
     const description = readSkillDescriptionFromFile(directory, name) || opts?.description || "";
-    skills.register({
-      name,
-      description,
-      directory,
-      source: opts?.source,
-    });
+    skills.register(
+      omitUndefined({
+        name,
+        description,
+        directory,
+        source: opts?.source,
+      }),
+    );
     count += 1;
   }
   return count;

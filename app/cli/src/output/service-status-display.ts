@@ -39,7 +39,7 @@ function formatPlatformLine(ps: Record<string, unknown>): string {
   const status = String(ps.status ?? "unknown");
   const extras: string[] = [];
   if (ps.bot_name) extras.push(String(ps.bot_name));
-  return extras.length ? `${status} · ${extras.join(" · ")}` : status;
+  return extras.length > 0 ? `${status} · ${extras.join(" · ")}` : status;
 }
 
 function formatConnectorSummary(detail: MemoryDetail | undefined): string | null {
@@ -55,7 +55,7 @@ function formatConnectorSummary(detail: MemoryDetail | undefined): string | null
   if (acp && (acp.agent_count ?? 0) > 0) {
     parts.push(`ACP ${acp.connected_count ?? 0}/${acp.agent_count ?? 0}`);
   }
-  return parts.length ? parts.join(" · ") : null;
+  return parts.length > 0 ? parts.join(" · ") : null;
 }
 
 /** Render `anima service status` body when HTTP is up. */
@@ -145,7 +145,7 @@ export function printServiceRunningStatus(opts: {
 
   const platforms = (api.platforms as Record<string, Record<string, unknown>>) ?? {};
   const platformNames = Object.keys(platforms).toSorted();
-  if (platformNames.length) {
+  if (platformNames.length > 0) {
     printSection(`gateways (${platformNames.length})`);
     for (const name of platformNames) {
       printField(name, formatPlatformLine(platforms[name] ?? {}));
@@ -160,7 +160,7 @@ export function printServiceRunningStatus(opts: {
     workload.push(`${conversations.total} conversations`);
   if (typeof tools === "number") workload.push(`${tools} tools`);
   if (typeof cronJobs === "number" && cronJobs > 0) workload.push(`${cronJobs} cron`);
-  if (workload.length) {
+  if (workload.length > 0) {
     printSection("workload");
     printField("counts", workload.join(" · "));
   }
@@ -180,7 +180,7 @@ export function printServiceRunningStatus(opts: {
       printField("virtual", formatVirtualKb(memDetail.vm_size_kb));
     }
     const repos = memDetail?.tokenizer_repos ?? [];
-    if (repos.length) {
+    if (repos.length > 0) {
       const shortNames = repos.map(shortRepo).join(", ");
       printField("tokenizers", `${repos.length} loaded (${shortNames})`);
     }

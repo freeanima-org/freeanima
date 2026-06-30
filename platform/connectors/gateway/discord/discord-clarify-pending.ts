@@ -42,7 +42,7 @@ export class ClarifyPendingRegistry {
   }
 
   disposeAll(): void {
-    for (const conversationId of [...this.pending.keys()]) {
+    for (const conversationId of this.pending.keys()) {
       this.clearTimer(conversationId);
     }
     this.pending.clear();

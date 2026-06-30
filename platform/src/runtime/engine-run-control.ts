@@ -20,7 +20,7 @@ export class EngineRunControl {
 
   releaseInFlight(): void {
     this.inFlightCount--;
-    if (this.inFlightCount === 0 && this.inFlightResolve !== null) {
+    if (this.inFlightCount === 0 && this.inFlightResolve != null) {
       const r = this.inFlightResolve;
       this.inFlightResolve = null;
       r();

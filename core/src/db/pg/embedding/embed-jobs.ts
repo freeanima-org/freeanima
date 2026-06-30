@@ -20,7 +20,7 @@ export type EmbedAndStoreJobsOpts = {
 
 /** L2-normalized mean of chunk vectors (single vector when only one chunk). */
 export function averageEmbeddings(vectors: number[][]): number[] | null {
-  if (!vectors.length) return null;
+  if (vectors.length === 0) return null;
   const dim = vectors[0]!.length;
   if (!dim) return null;
 
@@ -75,7 +75,7 @@ export async function embedAndStoreJobs(
   jobs: EmbeddingPendingJob[],
   opts?: EmbedAndStoreJobsOpts,
 ): Promise<number> {
-  if (!jobs.length) return 0;
+  if (jobs.length === 0) return 0;
 
   const embedSingle = getEmbedTextFn();
   if (!embedSingle) return 0;
@@ -86,7 +86,7 @@ export async function embedAndStoreJobs(
     if (!trimmed) continue;
     validJobs.push({ ...job, content: trimmed });
   }
-  if (!validJobs.length) return 0;
+  if (validJobs.length === 0) return 0;
 
   const embeddingModel = getResolvedEmbeddingConfig(getActiveConfig().data)?.model ?? "";
   let updated = 0;
@@ -98,7 +98,7 @@ export async function embedAndStoreJobs(
       const vec = await embedUnit(unit);
       if (vec) chunkVectors.push(vec);
     }
-    if (!chunkVectors.length) continue;
+    if (chunkVectors.length === 0) continue;
 
     const merged = averageEmbeddings(chunkVectors);
     if (!merged) continue;

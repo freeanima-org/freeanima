@@ -64,7 +64,7 @@ export function registerTokenCommand(program: Command): void {
     .action(async (opts: { subjectId: number }) => {
       try {
         const items = await withDb(async () => listServiceApiTokensBySubject(opts.subjectId));
-        if (!items.length) {
+        if (items.length === 0) {
           console.log("(no tokens)");
           return;
         }

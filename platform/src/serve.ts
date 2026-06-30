@@ -1,4 +1,5 @@
 import { chdir } from "node:process";
+import { omitUndefined } from "@freeanima/core/util";
 import type { ConversationService } from "@freeanima/runtime/conversation";
 import {
   installErrorLogHandlers,
@@ -150,18 +151,20 @@ export async function serve(
   const runtime = getAppRuntime();
 
   const shutdown = async (signal: string) => {
-    await gracefulShutdown({
-      signal,
-      runtime,
-      kernel,
-      mcp,
-      acp,
-      platforms: platformsRef.list,
-      cronInitialized,
-      http: httpHooks,
-      servers,
-      waitForDrain: httpHooks?.waitForDrain ?? defaultWaitForDrain,
-    });
+    await gracefulShutdown(
+      omitUndefined({
+        signal,
+        runtime,
+        kernel,
+        mcp,
+        acp,
+        platforms: platformsRef.list,
+        cronInitialized,
+        http: httpHooks,
+        servers,
+        waitForDrain: httpHooks?.waitForDrain ?? defaultWaitForDrain,
+      }),
+    );
   };
 
   process.on("SIGTERM", () => void shutdown("SIGTERM"));

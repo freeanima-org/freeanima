@@ -4,15 +4,26 @@
 
 - Full type annotations on new and touched code
 - **Relative imports must include `.ts` / `.tsx` suffix** (oxlint `import/extensions`)
+- **Base compiler flags** ([`tsconfig.base.json`](../../tsconfig.base.json)): `strict`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noImplicitOverride`, `allowUnreachableCode: false`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`
+- **Paraglide types**: [`types/paraglide-messages.generated.d.ts`](../../types/paraglide-messages.generated.d.ts) is generated from `messages/en.json` (`bun scripts/gen-paraglide-message-types.ts`; checked in `check-paraglide-messages`)
+- **Optional props**: with `exactOptionalPropertyTypes`, do not pass `prop: undefined` — use `omitUndefined()` from `@freeanima/core/util` or conditional spread
 
 ## Lint (oxlint)
 
 - **Commands**: `bun run lint` (check); `bun run lint:fix` (auto-fix where supported). Included in `bun run check`.
-- **Config**: [`.oxlintrc.json`](../../.oxlintrc.json) — `correctness` category is error; `suspicious` is warn unless overridden per rule.
-- **Error-level unicorn rules** (fix, do not disable):
+- **Config**: [`.oxlintrc.json`](../../.oxlintrc.json) — `correctness` and `suspicious` categories are error unless overridden per rule.
+- **Error-level rules** (fix, do not disable without reason):
   - `unicorn/no-array-sort` — use `Array#toSorted()` when returning a sorted copy; avoid in-place `.sort()` unless mutation is intentional (then use a line-level disable with reason).
   - `unicorn/prefer-add-event-listener` — prefer `addEventListener` over `on*` property handlers (DOM, WebSocket, IDB, SharedWorker).
-- **Exceptions**: line-level `oxlint-disable-next-line` only with a brief comment when the rule is genuinely wrong for that site.
+  - `unicorn/no-useless-spread` — avoid `[...iterable]` when the callee already accepts iterables.
+  - `unicorn/consistent-function-scoping` — hoist inner functions that do not close over locals (off in `*.test.ts` / `tests/**`).
+  - `eslint/no-useless-constructor` — remove empty/redundant constructors (line-level disable only for documented tooling quirks, e.g. Bun coverage).
+  - `eslint/no-unmodified-loop-condition` — loop flags mutated outside the loop body should use `while (true)` + early `break`.
+  - `import/no-unassigned-import` — side-effect imports (CSS, global augmentation) need assignment, `import type {}`, or a one-line disable with reason.
+  - `eslint/no-underscore-dangle` — allowed: `allowAfterThis`, plus named globals in config (`__freeanimaShellBridge`, `_exhaustive`, Zod `_def`, etc.).
+  - `eslint/eqeqeq` — always `===` / `!==` (`null` checks may use `== null` / `!= null`).
+  - `eslint/no-promise-executor-return` — Promise executor must not return a value; use block body (`{ setTimeout(resolve, ms); }`).
+  - `unicorn/explicit-length-check` — use `.length > 0` / `.length === 0`, not truthy `.length`.
 
 - **Failures**: always `toolError(msg)` → JSON `{"error":"..."}`
 - **Successes**: structured tools use `toolResult(obj)`; LLM-readable tools (`file_read`, `terminal_run`, `code_execute`, etc.) may return plain-text stdout

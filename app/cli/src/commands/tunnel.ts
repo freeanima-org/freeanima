@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import type { Command } from "commander";
 import { runTunnelCommand } from "../tunnel/tunnel-cmd.ts";
 
@@ -14,15 +15,17 @@ export function registerTunnelCommand(program: Command): void {
     .option("--port <port>", "Hub 端口（默认读 server.status.json 或 2658）")
     .option("--yes", "非交互模式跳过确认")
     .action(async (opts) => {
-      await runTunnelCommand({
-        action: "setup",
-        skipInstall: opts.skipInstall,
-        nonInteractive: opts.nonInteractive,
-        hostname: opts.hostname,
-        apiToken: opts.apiToken,
-        port: opts.port ? Number(opts.port) : undefined,
-        yes: opts.yes,
-      });
+      await runTunnelCommand(
+        omitUndefined({
+          action: "setup",
+          skipInstall: opts.skipInstall,
+          nonInteractive: opts.nonInteractive,
+          hostname: opts.hostname,
+          apiToken: opts.apiToken,
+          port: opts.port ? Number(opts.port) : undefined,
+          yes: opts.yes,
+        }),
+      );
     });
 
   tunnel

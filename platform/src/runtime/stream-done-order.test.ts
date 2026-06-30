@@ -63,7 +63,7 @@ describe("sendMessageStream done order", () => {
   it("done yields to consumer before finishTurn starts", async () => {
     restores.push(
       spyOn(conv, "conversationExists").mockResolvedValue(true),
-      spyOn(conv, "assertConversationPlatform").mockResolvedValue(undefined),
+      spyOn(conv, "assertConversationPlatform").mockResolvedValue(),
       spyOn(conv, "loadConversationMeta").mockResolvedValue({
         role: "conversation_meta",
         model: "test",
@@ -83,7 +83,9 @@ describe("sendMessageStream done order", () => {
     restores.push(
       spyOn(turn, "finishTurn").mockImplementation(async () => {
         finishTurnStarted = true;
-        await new Promise((r) => setTimeout(r, 50));
+        await new Promise((r) => {
+          setTimeout(r, 50);
+        });
       }),
     );
 

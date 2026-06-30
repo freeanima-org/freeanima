@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { PROFILE_GOAL_JUDGE } from "@freeanima/core/provider";
 import { chat } from "./llm.ts";
 import type { LlmRuntime } from "./llm-stack.ts";
@@ -31,7 +32,7 @@ const GOAL_JUDGE_JSON_SCHEMA = {
 
 function formatGoalJudgeUser(input: GoalJudgeInput): string {
   const lines = [`Goal: ${input.goal}`];
-  if (input.subgoals.length) {
+  if (input.subgoals.length > 0) {
     lines.push("Subgoals:");
     for (const [i, sg] of input.subgoals.entries()) {
       lines.push(`  ${i + 1}. ${sg}`);
@@ -79,12 +80,12 @@ export async function judgeGoal(
         { role: "system", content: GOAL_JUDGE_SYSTEM_PROMPT },
         { role: "user", content: formatGoalJudgeUser(input) },
       ],
-      {
+      omitUndefined({
         profileId: PROFILE_GOAL_JUDGE,
         runtime: opts?.runtime,
         model: opts?.model,
         requestParams: { maxOutputTokens: 256, temperature: 0.2 },
-      },
+      }),
     );
     return parseGoalJudgeOutput(String(resp.content ?? ""));
   } catch (e) {

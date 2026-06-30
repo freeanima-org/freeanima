@@ -80,7 +80,7 @@ export async function startApiHttpServer(
       const remoteAddress = resolveRemoteAddress(bunServer, req);
 
       const sapUpgrade = trySapWebSocketUpgrade(req, bunServer as Bun.Server<unknown>, sapHandlers);
-      if (sapUpgrade !== null) return sapUpgrade;
+      if (sapUpgrade != null) return sapUpgrade;
 
       const run = async (): Promise<Response> => {
         const preflight = handleHubCorsPreflight(req);

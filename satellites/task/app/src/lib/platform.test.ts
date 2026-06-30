@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
+import type { SatelliteShellApi } from "@freeanima/shell-sdk";
 
 import {
   isMobileLayoutViewport,
@@ -8,6 +9,10 @@ import {
 } from "./platform.ts";
 
 const hasWindow = typeof globalThis.window !== "undefined";
+
+function clearSatelliteShell(): void {
+  delete window.satelliteShell;
+}
 
 describe("task platform", () => {
   if (!hasWindow) {
@@ -19,28 +24,32 @@ describe("task platform", () => {
   const originalMatchMedia = window.matchMedia;
 
   afterEach(() => {
-    window.satelliteShell = originalShell;
+    if (originalShell !== undefined) {
+      window.satelliteShell = originalShell;
+    } else {
+      clearSatelliteShell();
+    }
     window.matchMedia = originalMatchMedia;
   });
 
   it("isNativeShell reads satelliteShell flag", () => {
-    window.satelliteShell = { isNativeShell: true } as typeof window.satelliteShell;
+    window.satelliteShell = { isNativeShell: true } as SatelliteShellApi;
     expect(isNativeShell()).toBe(true);
-    window.satelliteShell = undefined;
+    clearSatelliteShell();
     expect(isNativeShell()).toBe(false);
   });
 
   it("isTaskContextMenuEnabled is false on native shell", () => {
-    window.satelliteShell = { isNativeShell: true } as typeof window.satelliteShell;
+    window.satelliteShell = { isNativeShell: true } as SatelliteShellApi;
     expect(isTaskContextMenuEnabled()).toBe(false);
-    window.satelliteShell = { isNativeShell: false } as typeof window.satelliteShell;
+    window.satelliteShell = { isNativeShell: false } as SatelliteShellApi;
     expect(isTaskContextMenuEnabled()).toBe(true);
   });
 
   it("isWebShell is inverse of native shell", () => {
-    window.satelliteShell = { isNativeShell: true } as typeof window.satelliteShell;
+    window.satelliteShell = { isNativeShell: true } as SatelliteShellApi;
     expect(isWebShell()).toBe(false);
-    window.satelliteShell = undefined;
+    clearSatelliteShell();
     expect(isWebShell()).toBe(true);
   });
 

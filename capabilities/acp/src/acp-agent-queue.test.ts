@@ -6,7 +6,9 @@ describe("AcpAgentQueue", () => {
     const q = new AcpAgentQueue();
     const order: number[] = [];
     const a = q.run(async () => {
-      await new Promise((r) => setTimeout(r, 30));
+      await new Promise((r) => {
+        setTimeout(r, 30);
+      });
       order.push(1);
     });
     const b = q.run(async () => {

@@ -180,7 +180,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     set.add(cb);
     return () => {
       set?.delete(cb);
-      if (set && !set.size) this.conversationWatchers.delete(conversationId);
+      if (set && set.size === 0) this.conversationWatchers.delete(conversationId);
     };
   }
 

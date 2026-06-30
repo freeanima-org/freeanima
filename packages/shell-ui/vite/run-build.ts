@@ -57,7 +57,7 @@ export function createShellViteInlineConfig(opts: ShellViteBuildOptions): Inline
       alias: createShellUiAliases(paraglideDir, repoRoot),
       dedupe: ["react", "react-dom"],
     },
-    define: opts.define,
+    ...(opts.define !== undefined ? { define: opts.define } : {}),
     worker: {
       format: "es",
       rollupOptions: {

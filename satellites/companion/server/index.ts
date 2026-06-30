@@ -69,7 +69,7 @@ let activeHttpUrl = "";
 function isAddrInUse(error: unknown): boolean {
   return (
     typeof error === "object" &&
-    error !== null &&
+    error != null &&
     "code" in error &&
     (error as { code?: string }).code === "EADDRINUSE"
   );
@@ -357,7 +357,7 @@ export async function startCompanionServer(
         url: activeHttpUrl,
         httpServer,
         wss,
-        vite: viteDevServer,
+        ...(viteDevServer !== undefined ? { vite: viteDevServer } : {}),
         close: async () => {
           if (viteDevServer) {
             await viteDevServer.close();
@@ -375,7 +375,9 @@ export async function startCompanionServer(
       };
     } catch (error) {
       lastError = error;
-      await new Promise<void>((resolve) => httpServer.close(() => resolve()));
+      await new Promise<void>((resolve) => {
+        httpServer.close(() => resolve());
+      });
       if (isAddrInUse(error) && i < portAttempts - 1) {
         continue;
       }

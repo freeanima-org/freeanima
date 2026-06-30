@@ -104,7 +104,12 @@ export class WeixinAdapter implements PlatformAdapter {
     const loop = this.loopPromise;
     if (loop) {
       try {
-        await Promise.race([loop, new Promise<void>((r) => setTimeout(r, 5000))]);
+        await Promise.race([
+          loop,
+          new Promise<void>((r) => {
+            setTimeout(r, 5000);
+          }),
+        ]);
       } catch {
         /* aborted */
       }
@@ -289,7 +294,7 @@ export class WeixinAdapter implements PlatformAdapter {
             this.creds.token,
             parsed.peerId,
             contextToken,
-          ).catch(() => undefined);
+          ).catch(() => {});
 
         const toolDisplayMode = resolveToolDisplayMode(
           await getAppRuntime().conversation.loadConversationMeta(sid),
@@ -319,7 +324,7 @@ export class WeixinAdapter implements PlatformAdapter {
           this.creds.token,
           parsed.peerId,
           contextToken,
-        ).catch(() => undefined);
+        ).catch(() => {});
 
       const toolDisplayMode = resolveToolDisplayMode(
         await getAppRuntime().conversation.loadConversationMeta(sid),

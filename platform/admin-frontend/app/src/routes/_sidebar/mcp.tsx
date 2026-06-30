@@ -37,6 +37,14 @@ function statusBadgeClass(s: string) {
   return "badge-ghost";
 }
 
+function canStartMcpServer(srv: McpServer): boolean {
+  return srv.config.enabled !== false && srv.status !== "connected" && srv.status !== "connecting";
+}
+
+function canStopMcpServer(srv: McpServer): boolean {
+  return srv.status === "connected" || srv.status === "connecting";
+}
+
 function McpPage() {
   const initial = Route.useLoaderData() as McpStatus | null;
 
@@ -44,11 +52,6 @@ function McpPage() {
   const [bulkActing, setBulkActing] = useState(false);
   const [acting, setActing] = useState<Record<string, string>>({});
   const [error, setError] = useState(initial ? "" : m.admin_common_load_failed_short());
-
-  const canStart = (srv: McpServer) =>
-    srv.config.enabled !== false && srv.status !== "connected" && srv.status !== "connecting";
-
-  const canStop = (srv: McpServer) => srv.status === "connected" || srv.status === "connecting";
 
   const controlServer = async (name: string, action: "start" | "stop") => {
     setError("");
@@ -168,7 +171,7 @@ function McpPage() {
                     <button
                       type="button"
                       className="btn btn-xs btn-primary"
-                      disabled={!canStart(srv) || !!acting[srv.name]}
+                      disabled={!canStartMcpServer(srv) || !!acting[srv.name]}
                       onClick={() => void controlServer(srv.name, "start")}
                     >
                       {m.admin_common_start()}
@@ -176,7 +179,7 @@ function McpPage() {
                     <button
                       type="button"
                       className="btn btn-xs btn-ghost"
-                      disabled={!canStop(srv) || !!acting[srv.name]}
+                      disabled={!canStopMcpServer(srv) || !!acting[srv.name]}
                       onClick={() => void controlServer(srv.name, "stop")}
                     >
                       {m.admin_common_stop()}

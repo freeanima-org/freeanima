@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_sidebar/config")({
 });
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
+  return value != null && typeof value === "object" && !Array.isArray(value);
 }
 
 function maskSecret(key: string, value: unknown): string {
@@ -26,7 +26,7 @@ function maskSecret(key: string, value: unknown): string {
 }
 
 function formatDisplayValue(key: string, value: unknown): string {
-  if (value === null) return "null";
+  if (value == null) return "null";
   if (value === undefined) return m.admin_common_empty();
   if (typeof value === "boolean" || typeof value === "number") return String(value);
   if (typeof value === "string") return maskSecret(key, value);
@@ -115,7 +115,7 @@ function ConfigBlock({ name, value }: { name: string; value: unknown }) {
 function ConfigPage() {
   const config = Route.useLoaderData();
 
-  if (config === null) {
+  if (config == null) {
     return (
       <div>
         <h2 className="text-lg font-bold mb-4">{m.admin_nav_config()}</h2>

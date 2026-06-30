@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { toolResult } from "@freeanima/core/tool";
 import type { StoredMessage, ToolMessage } from "@freeanima/core/db/domain";
 import { cleanToolCallsForApi } from "@freeanima/core/provider/stream-tools";
@@ -37,7 +38,7 @@ export function detectToolLoopCorruption(messages: StoredMessage[]): ToolLoopCor
     if (msg?.role !== "assistant" || !msg.tool_calls?.length) continue;
 
     const cleaned = cleanToolCallsForApi(msg.tool_calls as ToolCall[]);
-    if (!cleaned.length) continue;
+    if (cleaned.length === 0) continue;
 
     const responded = new Set<string>();
     for (let j = i + 1; j < messages.length; j++) {
@@ -55,12 +56,14 @@ export function detectToolLoopCorruption(messages: StoredMessage[]): ToolLoopCor
         missingCalls.push({ id: tc.id, name: tc.function.name });
       }
     }
-    if (missingCalls.length) {
-      out.push({
-        assistantIndex: i,
-        assistantPos: msg.pos,
-        missingCalls,
-      });
+    if (missingCalls.length > 0) {
+      out.push(
+        omitUndefined({
+          assistantIndex: i,
+          assistantPos: msg.pos,
+          missingCalls,
+        }),
+      );
     }
   }
   return out;
@@ -122,7 +125,7 @@ export function repairToolLoopMessages(
     }
 
     const cleaned = cleanToolCallsForApi(msg.tool_calls as ToolCall[]);
-    if (!cleaned.length) {
+    if (cleaned.length === 0) {
       const text = String(msg.content ?? "").trim() || String(msg.reasoning ?? "").trim();
       if (text) {
         const { tool_calls: _removed, ...rest } = msg;

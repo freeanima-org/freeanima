@@ -40,12 +40,12 @@ function sanitizeTurnForApi(
       const cleanedCalls = msg.tool_calls?.length ? cleanToolCallsForApi(msg.tool_calls) : [];
       const out: ChatCompletionMessageParam & { reasoning_content?: string } = {
         role: "assistant",
-        content: msg.content ?? (cleanedCalls.length ? null : ""),
+        content: msg.content ?? (cleanedCalls.length > 0 ? null : ""),
       };
       const reasoningText = msg.reasoning || "";
       if (reasoningText) out.reasoning_content = reasoningText;
       if (msg.name) (out as { name?: string }).name = msg.name;
-      if (cleanedCalls.length) {
+      if (cleanedCalls.length > 0) {
         out.tool_calls = cleanedCalls.map((tc) => ({
           id: tc.id,
           type: "function" as const,

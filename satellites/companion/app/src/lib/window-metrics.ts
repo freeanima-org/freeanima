@@ -136,7 +136,7 @@ export function patrolBoundsFromWaypoints(waypoints: ScreenPoint[]): PatrolBound
   const minX = waypoints[0]!.x;
   const minY = waypoints[0]!.y;
   const maxX = waypoints[1]!.x;
-  const maxY = waypoints[2]?.y ?? waypoints[waypoints.length - 1]!.y;
+  const maxY = waypoints[2]?.y ?? waypoints.at(-1)!.y;
   return { minX, minY, maxX, maxY };
 }
 

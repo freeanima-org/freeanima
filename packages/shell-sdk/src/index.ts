@@ -6,7 +6,9 @@ export {
 } from "./manifest.ts";
 export type { ConnectionKind, FrontendManifest } from "./manifest.ts";
 
-import "./shell-api.ts";
+import * as shellApi from "./shell-api.ts";
+
+void shellApi;
 
 export type {
   CompanionWindowRole,

@@ -5,7 +5,9 @@ const DEFAULT_ATTEMPTS = 5;
 const MAX_BACKOFF_MS = 30_000;
 
 function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 function errorStatus(err: unknown): number | null {

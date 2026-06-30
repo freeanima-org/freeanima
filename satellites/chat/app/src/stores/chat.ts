@@ -136,7 +136,7 @@ async function waitForAssistantViaSessionEvents(
       if (settled) return;
       settled = true;
       sub.unsubscribe();
-      if (pollTimer !== null) clearTimeout(pollTimer);
+      if (pollTimer != null) clearTimeout(pollTimer);
       resolve(ok);
     };
 

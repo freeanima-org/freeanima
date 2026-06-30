@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { omitUndefined } from "@freeanima/core/util";
 import type { SapServerDeps } from "./types.ts";
 export type { SapServerDeps } from "./types.ts";
 import {
@@ -99,11 +100,13 @@ export function createSapServerHandlers(
   const handlers: SapServerHandlers = {
     async onConnect(payload) {
       const parsed = connectPayloadSchema.parse(payload);
-      const resolved = await deps.instanceRegistry.resolveConnect({
-        appId: parsed.app_id,
-        instanceId: parsed.instance_id,
-        httpUrl: parsed.http_url,
-      });
+      const resolved = await deps.instanceRegistry.resolveConnect(
+        omitUndefined({
+          appId: parsed.app_id,
+          instanceId: parsed.instance_id,
+          httpUrl: parsed.http_url,
+        }),
+      );
       if (!resolved.ok) {
         throw new Error(resolved.error);
       }
@@ -173,7 +176,7 @@ export function createSapServerHandlers(
           const result = await serviceSessions.listConversations(
             deps.runtime.runtimeDeps(),
             platform ?? null,
-            { includeArchived: input.include_archived },
+            omitUndefined({ includeArchived: input.include_archived }),
           );
           return {
             conversations: result.conversations.map((s) => ({
@@ -188,10 +191,14 @@ export function createSapServerHandlers(
         case "conversation.messages": {
           const input = conversationMessagesInputSchema.parse(payload);
           const platform = await resolveConversationPlatform(deps, input.conversation_id);
-          const messages = await deps.runtime.getMessages(input.conversation_id, platform, {
-            offset: input.offset,
-            limit: input.limit,
-          });
+          const messages = await deps.runtime.getMessages(
+            input.conversation_id,
+            platform,
+            omitUndefined({
+              offset: input.offset,
+              limit: input.limit,
+            }),
+          );
           return messages as SapRouterOutputs["conversation.messages"];
         }
         case "conversation.patchTitle": {
@@ -244,10 +251,12 @@ export function createSapServerHandlers(
         case "conversation.commands": {
           const input = conversationCommandsInputSchema.parse(payload);
           const platform = input.platform ?? formatSapPlatform(ctx.app_id, ctx.instance_id);
-          return serviceStatus.listCommands({
-            platform: input.all ? undefined : platform,
-            all: input.all,
-          });
+          return serviceStatus.listCommands(
+            omitUndefined({
+              platform: input.all ? undefined : platform,
+              all: input.all,
+            }),
+          );
         }
         case "fridge.list": {
           fridgeListInputSchema.parse(payload);
@@ -275,11 +284,17 @@ export function createSapServerHandlers(
           return handleTaskDelete(deps, payload, ctx);
         case "diary.list": {
           const input = diaryListInputSchema.parse(payload);
-          return serviceEntityDiary.serviceDiaryList(deps.runtime.runtimeDeps(), input);
+          return serviceEntityDiary.serviceDiaryList(
+            deps.runtime.runtimeDeps(),
+            omitUndefined(input),
+          );
         }
         case "diary.create": {
           const input = diaryCreateInputSchema.parse(payload);
-          return serviceEntityDiary.serviceDiaryCreate(deps.runtime.runtimeDeps(), input);
+          return serviceEntityDiary.serviceDiaryCreate(
+            deps.runtime.runtimeDeps(),
+            omitUndefined(input),
+          );
         }
         case "diary.append": {
           const input = diaryAppendInputSchema.parse(payload);
@@ -287,7 +302,10 @@ export function createSapServerHandlers(
         }
         case "diary.patch": {
           const input = diaryPatchInputSchema.parse(payload);
-          return serviceEntityDiary.serviceDiaryPatch(deps.runtime.runtimeDeps(), input);
+          return serviceEntityDiary.serviceDiaryPatch(
+            deps.runtime.runtimeDeps(),
+            omitUndefined(input),
+          );
         }
         case "diary.delete": {
           const input = diaryDeleteInputSchema.parse(payload);
@@ -299,7 +317,10 @@ export function createSapServerHandlers(
         }
         case "diary.search": {
           const input = diarySearchInputSchema.parse(payload);
-          return serviceEntityDiary.serviceDiarySearch(deps.runtime.runtimeDeps(), input);
+          return serviceEntityDiary.serviceDiarySearch(
+            deps.runtime.runtimeDeps(),
+            omitUndefined(input),
+          );
         }
         case "emailaccount.list": {
           const input = emailAccountListInputSchema.parse(payload ?? {});
@@ -307,7 +328,10 @@ export function createSapServerHandlers(
         }
         case "email.message.list": {
           const input = emailMessageListInputSchema.parse(payload);
-          return serviceEntityEmail.serviceEmailMessageList(deps.runtime.runtimeDeps(), input);
+          return serviceEntityEmail.serviceEmailMessageList(
+            deps.runtime.runtimeDeps(),
+            omitUndefined(input),
+          );
         }
         case "email.message.read": {
           const input = emailMessageReadInputSchema.parse(payload);
@@ -319,11 +343,17 @@ export function createSapServerHandlers(
         }
         case "email.sync": {
           const input = emailSyncInputSchema.parse(payload);
-          return serviceEntityEmail.serviceEmailSync(deps.runtime.runtimeDeps(), input);
+          return serviceEntityEmail.serviceEmailSync(
+            deps.runtime.runtimeDeps(),
+            omitUndefined(input),
+          );
         }
         case "emailthread.list": {
           const input = emailThreadListInputSchema.parse(payload);
-          return serviceEntityEmail.serviceEmailThreadList(deps.runtime.runtimeDeps(), input);
+          return serviceEntityEmail.serviceEmailThreadList(
+            deps.runtime.runtimeDeps(),
+            omitUndefined(input),
+          );
         }
         case "notification.list":
           return handleNotificationList(deps, payload);
@@ -544,7 +574,7 @@ export function attachSapWebSocket(
             throw new Error("satellite sendRequest not implemented on hub");
           },
         },
-        { httpUrl: parsed.http_url },
+        omitUndefined({ httpUrl: parsed.http_url }),
       );
       sendEnvelope({ kind: "connected", payload: connectedPayload });
       return;

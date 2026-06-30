@@ -1,5 +1,5 @@
 import { logCapability as logComponent } from "@freeanima/core/config";
-import { formatCstIso } from "@freeanima/core/util";
+import { formatCstIso, omitUndefined } from "@freeanima/core/util";
 
 import { composeSystemPrompt, decomposeSystemPromptParts } from "../system-prompt.ts";
 import { runDeepSleepEngine } from "../deep-sleep-port.ts";
@@ -103,6 +103,7 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
 
   for (let i = 0; i < DEEP_SLEEP_ROUNDS.length; i++) {
     const round = DEEP_SLEEP_ROUNDS[i];
+    if (round === undefined) continue;
     const roundIndex = i + 1;
     const startedAt = formatCstIso();
 
@@ -169,9 +170,14 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
 
     const roundRows = round === "split" ? splitCandidates! : allRows;
 
-    const messages = buildDeepSleepMessages(roundRows, round, changeLog, {
-      splitTotalActive: round === "split" ? allRows.length : undefined,
-    });
+    const messages = buildDeepSleepMessages(
+      roundRows,
+      round,
+      changeLog,
+      omitUndefined({
+        splitTotalActive: round === "split" ? allRows.length : undefined,
+      }),
+    );
 
     const engineResult = await runDeepSleepEngine({
       systemPrompt,
@@ -224,14 +230,14 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
   recordDeepSleepRun({
     day,
     roundsCompleted: roundsExecuted,
-    stats: {
+    stats: omitUndefined({
       total_tool_calls: totalToolCalls,
       rounds_skipped: roundsSkipped,
       contradiction_expiry_calls: roundStats["contradiction_expiry"],
       split_calls: roundStats["split"],
       merge_calls: roundStats["merge"],
       pin_maintenance_calls: roundStats["pin_maintenance"],
-    },
+    }),
   });
 
   const result: DeepSleepResult = {

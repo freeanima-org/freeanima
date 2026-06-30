@@ -9,7 +9,7 @@ describe("formatError", () => {
 
   it("Error without stack falls back to message", () => {
     const err = new Error("boom");
-    err.stack = undefined;
+    delete err.stack;
     expect(formatError(err)).toBe("boom");
   });
 

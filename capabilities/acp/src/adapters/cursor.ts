@@ -52,7 +52,7 @@ export const cursorAcpAdapter: AcpAgentAdapter = {
 };
 
 async function notifyDecisionNeeded(ctx: AcpServerRequestContext | undefined): Promise<void> {
-  if (!ctx?.onDecisionNeeded || !ctx.capture.pending.length) return;
+  if (!ctx?.onDecisionNeeded || ctx.capture.pending.length === 0) return;
   await ctx.onDecisionNeeded([...ctx.capture.pending], [...ctx.capture.notes]);
 }
 
@@ -61,7 +61,7 @@ function handleAskQuestion(
   ctx?: AcpServerRequestContext,
 ): Record<string, unknown> {
   const questions = parseCursorQuestions(params);
-  if (!questions.length) {
+  if (questions.length === 0) {
     return { outcome: { outcome: "skipped", reason: "anima: no questions" } };
   }
 
@@ -85,7 +85,11 @@ function handleCreatePlan(
   const planUri = typeof params.planUri === "string" ? params.planUri : undefined;
 
   if (ctx && plan) {
-    const pending: CursorPendingPlan = { kind: "plan", plan, planUri };
+    const pending: CursorPendingPlan = {
+      kind: "plan",
+      plan,
+      ...(planUri !== undefined ? { planUri } : {}),
+    };
     ctx.capture.pending.push(pending);
     ctx.capture.notes.push(
       "Cursor submitted a plan awaiting approval. Review pending_plan in output, approve autonomously or verify via clarify, then continue with acp_conversation_id from the prior result.",

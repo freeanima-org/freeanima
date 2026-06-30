@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import {
   notificationListInputSchema,
   notificationMarkReadInputSchema,
@@ -8,13 +9,16 @@ import * as serviceNotifications from "../../runtime/service-notifications.ts";
 
 export async function handleNotificationList(deps: SapServerDeps, payload: unknown) {
   const input = notificationListInputSchema.parse(payload);
-  return serviceNotifications.listNotifications(deps.runtime.runtimeDeps(), {
-    recipient_kind: input.recipient_kind,
-    recipient_id: input.recipient_id,
-    read_filter: input.read_filter,
-    offset: input.offset,
-    limit: input.limit,
-  });
+  return serviceNotifications.listNotifications(
+    deps.runtime.runtimeDeps(),
+    omitUndefined({
+      recipient_kind: input.recipient_kind,
+      recipient_id: input.recipient_id,
+      read_filter: input.read_filter,
+      offset: input.offset,
+      limit: input.limit,
+    }),
+  );
 }
 
 export async function handleNotificationMarkRead(deps: SapServerDeps, payload: unknown) {

@@ -32,7 +32,7 @@ export async function buildPairProgrammingApp(opts?: {
     pairViteBuildOptions({
       minify: opts?.minify ?? false,
       sourcemap: opts?.sourcemap ?? false,
-      watch: opts?.watch,
+      ...(opts?.watch !== undefined ? { watch: opts.watch } : {}),
     }),
   );
 }

@@ -11,7 +11,9 @@ export async function mapWithConcurrency<T, R>(
   async function worker(): Promise<void> {
     while (next < items.length) {
       const index = next++;
-      const value = await fn(items[index], index);
+      const item = items[index];
+      if (item === undefined) continue;
+      const value = await fn(item, index);
       results[index] = value;
     }
   }

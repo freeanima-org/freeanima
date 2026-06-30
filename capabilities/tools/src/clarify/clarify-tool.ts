@@ -35,7 +35,7 @@ function normalizeItems(args: ClarifyArgs): ClarifyItemType[] | string {
       }
       items.push(item);
     }
-    if (!items.length) return "items must contain at least one valid question";
+    if (items.length === 0) return "items must contain at least one valid question";
     return items;
   }
 

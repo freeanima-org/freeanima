@@ -61,7 +61,7 @@ export async function searchEntitiesFtsRaw(
   if (!q) return [];
 
   const tsqueries = await collectEntityFtsTsQueries(q);
-  if (!tsqueries.length) return [];
+  if (tsqueries.length === 0) return [];
 
   const limit = Math.max(1, Math.min(100, opts.limit ?? 10));
   const byId = new Map<number, EntityFtsDbRow>();

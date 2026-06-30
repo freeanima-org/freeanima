@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { omitUndefined } from "@freeanima/core/util";
 
 import type { AcpCursorMode, AcpPromptResult } from "./prompt-result.ts";
 
@@ -47,7 +48,7 @@ export function createTaskId(): string {
 }
 
 export function toTaskSnapshot(task: AcpAsyncTask): AcpAsyncTaskSnapshot {
-  return {
+  return omitUndefined({
     taskId: task.taskId,
     agentName: task.agentName,
     acpSessionId: task.acpSessionId,
@@ -56,7 +57,7 @@ export function toTaskSnapshot(task: AcpAsyncTask): AcpAsyncTaskSnapshot {
     status: task.status,
     startedAt: task.startedAt,
     progressMessageId: task.progressMessageId,
-  };
+  });
 }
 
 export function formatElapsed(ms: number): string {
@@ -102,7 +103,7 @@ export function formatDiscordProgressBody(task: AcpAsyncTask): string {
   const tail = outputLines.slice(-2);
 
   const lines = [header];
-  if (tail.length) {
+  if (tail.length > 0) {
     lines.push(...tail);
   } else {
     lines.push("Waiting for Cursor response...");
@@ -111,7 +112,7 @@ export function formatDiscordProgressBody(task: AcpAsyncTask): string {
   let body = lines.join("\n");
   if (body.length <= DISCORD_MAX_LEN) return body;
 
-  const tailOnly = tail.length ? tail.join("\n") : "Waiting for Cursor response...";
+  const tailOnly = tail.length > 0 ? tail.join("\n") : "Waiting for Cursor response...";
   body = `${header}\n${tailOnly}`;
   if (body.length <= DISCORD_MAX_LEN) return body;
 
@@ -122,7 +123,7 @@ export function formatDiscordProgressBody(task: AcpAsyncTask): string {
   ) {
     compactTail.shift();
   }
-  let lastLine = compactTail[compactTail.length - 1] ?? "…";
+  let lastLine = compactTail.at(-1) ?? "…";
   while (`${header}\n${lastLine}`.length > DISCORD_MAX_LEN && lastLine.length > 20) {
     lastLine = `…${lastLine.slice(-(DISCORD_MAX_LEN - header.length - 4))}`;
   }
@@ -184,7 +185,7 @@ export function createProgressDebouncer(
       clearTimeout(timer);
       timer = null;
     }
-    if (!buffer.length) return;
+    if (buffer.length === 0) return;
     const merged = mergeProgressFragments(buffer);
     buffer = [];
     if (merged) onFlush(merged);

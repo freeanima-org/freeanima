@@ -52,3 +52,4 @@ export {
   type StoredMessageSearchHit,
   type TextSearchSnippetOpts,
 } from "./search/snippet.ts";
+export { omitUndefined } from "./omit-undefined.ts";

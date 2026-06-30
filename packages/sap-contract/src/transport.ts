@@ -67,6 +67,15 @@ function waitWebSocketOpen(ws: WebSocket): Promise<void> {
   });
 }
 
+function waitWebSocketClose(ws: WebSocket): Promise<void> {
+  if (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => {
+    ws.addEventListener("close", () => resolve(), { once: true });
+  });
+}
+
 export function runSapTransport(options: RunSapTransportOptions): SapTransportHandle {
   const policy =
     options.reconnect === false
@@ -136,15 +145,6 @@ export function runSapTransport(options: RunSapTransportOptions): SapTransportHa
     return connectedPromise;
   }
 
-  function waitForDisconnect(ws: WebSocket): Promise<void> {
-    if (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
-      return Promise.resolve();
-    }
-    return new Promise((resolve) => {
-      ws.addEventListener("close", () => resolve(), { once: true });
-    });
-  }
-
   async function connectOnce(): Promise<void> {
     const connectBody: Omit<ConnectPayload, "protocol"> = { ...options.connect };
     const storedId = await loadSapInstanceId(options.instanceStore);
@@ -177,7 +177,7 @@ export function runSapTransport(options: RunSapTransportOptions): SapTransportHa
         resolveConnected(sap);
         startHeartbeat(ws, connected);
         await options.onConnected(sap, connected);
-        await waitForDisconnect(ws);
+        await waitWebSocketClose(ws);
         clearHeartbeat();
         currentClient = null;
         notifyDisconnect();
@@ -205,7 +205,8 @@ export function runSapTransport(options: RunSapTransportOptions): SapTransportHa
 
   async function runLoop(): Promise<void> {
     let delay = policy?.initialMs ?? DEFAULT_POLICY.initialMs;
-    while (!stopped && !options.signal?.aborted) {
+    while (true) {
+      if (stopped || options.signal?.aborted) break;
       try {
         await connectOnce();
         if (!policy) return;

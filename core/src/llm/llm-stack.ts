@@ -9,6 +9,7 @@ import {
   ProviderRegistry,
 } from "@freeanima/core/provider";
 
+import { omitUndefined } from "@freeanima/core/util";
 import { applyLlmStackConfigurator } from "./llm-stack-configurator.ts";
 
 export type LlmRuntime = {
@@ -21,15 +22,19 @@ let runtime: LlmRuntime | null = null;
 
 function profileDefsFromConfig(cfg: AnimaConfig): LlmProfileDef[] {
   const llm = getLlmConfig(cfg);
-  return Object.entries(llm.profiles).map(([id, profile]) => ({
-    id,
-    chain: profile.chain.map((hop) => ({
-      provider: hop.provider,
-      model: hop.model,
-      params: hop.params as Partial<LlmCallParams> | undefined,
-    })),
-    params: profile.params as Partial<LlmCallParams> | undefined,
-  }));
+  return Object.entries(llm.profiles).map(([id, profile]) =>
+    omitUndefined({
+      id,
+      chain: profile.chain.map((hop) =>
+        omitUndefined({
+          provider: hop.provider,
+          model: hop.model,
+          params: hop.params as Partial<LlmCallParams> | undefined,
+        }),
+      ),
+      params: profile.params as Partial<LlmCallParams> | undefined,
+    }),
+  );
 }
 
 export function createLlmRuntime(cfg: AnimaConfig): LlmRuntime {

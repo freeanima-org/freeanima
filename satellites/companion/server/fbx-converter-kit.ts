@@ -61,7 +61,7 @@ export function findFbx2gltfBinary(): string | null {
 }
 
 export function fbxImportAvailable(): boolean {
-  return findFbx2gltfBinary() !== null;
+  return findFbx2gltfBinary() != null;
 }
 
 export function resolveFbx2gltfBinary(): string {

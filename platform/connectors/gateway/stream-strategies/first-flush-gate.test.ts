@@ -36,7 +36,9 @@ describe("createFirstFlushGate", () => {
       called = true;
     });
     expect(called).toBe(false);
-    await new Promise<void>((r) => setTimeout(r, 80));
+    await new Promise<void>((r) => {
+      setTimeout(r, 80);
+    });
     expect(called).toBe(true);
     expect(gate.isOpen()).toBe(true);
     gate.dispose();

@@ -37,6 +37,7 @@ export abstract class LlmBackend {
 
 export class BackendRegistry {
   /** Explicit constructor: avoid Bun coverage counting implicit ctor as uncovered (oven-sh/bun#7025) */
+  // oxlint-disable-next-line eslint/no-useless-constructor -- Bun coverage (oven-sh/bun#7025)
   constructor() {}
 
   private readonly backends = new Map<string, LlmBackend>();

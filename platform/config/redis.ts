@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import type { AnimaConfig } from "@freeanima/core/config";
 
 type RedisConfigInput = {
@@ -19,5 +20,5 @@ export function buildRedisUrl(config?: RedisConfigInput): string {
 
 /** Parse Redis URL from config; local default when redis section omitted */
 export function getConfiguredRedisUrl(cfg: AnimaConfig): string {
-  return buildRedisUrl(cfg.redis);
+  return buildRedisUrl(cfg.redis ? omitUndefined(cfg.redis) : undefined);
 }

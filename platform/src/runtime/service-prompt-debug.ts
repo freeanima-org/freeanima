@@ -10,6 +10,7 @@ import {
   decomposeSystemPromptParts,
   type SystemPromptParts,
 } from "@freeanima/capabilities-memory/system-prompt";
+import { omitUndefined } from "@freeanima/core/util";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import {
   computeRuntimeContextBreakdown,
@@ -87,12 +88,14 @@ function registryToolItems(deps: RuntimeDeps): PromptDebugToolItem[] {
   for (const ts of toolSets.listToolSets()) {
     for (const n of ts.tools) toolSetByName.set(n, ts.name);
   }
-  return toolSets.listTools().map((t) => ({
-    name: t.name,
-    description: t.description,
-    toolset: toolSetByName.get(t.name),
-    parameters: t.parameters,
-  }));
+  return toolSets.listTools().map((t) =>
+    omitUndefined({
+      name: t.name,
+      description: t.description,
+      toolset: toolSetByName.get(t.name),
+      parameters: t.parameters,
+    }),
+  );
 }
 
 function conversationToolItems(
@@ -114,13 +117,13 @@ function conversationToolItems(
   }
   return schemas.map((s) => {
     const def = registry.get(s.function.name);
-    return {
+    return omitUndefined({
       name: s.function.name,
       description: s.function.description ?? def?.description ?? "",
       toolset: toolSetByName.get(s.function.name),
       parameters: (s.function.parameters ??
         def?.parameters ?? { type: "object" }) as JsonSchemaObject,
-    };
+    });
   });
 }
 
@@ -182,7 +185,17 @@ export async function getPromptDebug(
   const in_sync = stored === composed;
 
   const toolSchemas = await deps.conversation.loadConversationTools(id, meta);
-  const items = conversationToolItems(deps, toolSchemas);
+  const items = conversationToolItems(
+    deps,
+    toolSchemas.map((s) => ({
+      type: "function" as const,
+      function: omitUndefined({
+        name: s.function.name,
+        description: s.function.description,
+        parameters: s.function.parameters,
+      }),
+    })),
+  );
 
   let breakdown: RuntimeContextBreakdown;
   try {
@@ -207,13 +220,13 @@ export async function getPromptDebug(
       tokens_est: breakdown.tools,
       items,
     },
-    meta: {
+    meta: omitUndefined({
       cwd: cwd ?? null,
       capability_mask: meta.capability_mask
         ? { presets: [...(meta.capability_mask.presets ?? [])] }
         : undefined,
       tool_names: [...(meta.cached_toolsets ?? [])],
       staged_toolsets: [...(meta.staged_toolsets ?? [])],
-    },
+    }),
   };
 }

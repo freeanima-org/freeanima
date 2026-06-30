@@ -52,7 +52,7 @@ export async function listAutoLlmRuns(opts?: AutoLlmRunListOpts): Promise<AutoLl
   const rows = await db
     .select()
     .from(autoLlmRuns)
-    .where(conditions.length ? and(...conditions) : undefined)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(desc(autoLlmRuns.finished_at))
     .offset(offset)
     .limit(limit);
@@ -65,7 +65,7 @@ export async function countAutoLlmRuns(opts?: AutoLlmRunCountOpts): Promise<numb
   const rows = await db
     .select({ value: count() })
     .from(autoLlmRuns)
-    .where(conditions.length ? and(...conditions) : undefined);
+    .where(conditions.length > 0 ? and(...conditions) : undefined);
   return Number(rows[0]?.value ?? 0);
 }
 
@@ -113,14 +113,14 @@ export async function purgeStaleAutoLlmRuns(
       .orderBy(desc(autoLlmRuns.finished_at))
       .limit(perKindKeep);
     const keepIds = keepRows.map((r) => r.id);
-    if (!keepIds.length) continue;
+    if (keepIds.length === 0) continue;
 
     const allRows = await db
       .select({ id: autoLlmRuns.id })
       .from(autoLlmRuns)
       .where(eq(autoLlmRuns.run_kind, run_kind));
     const toDelete = allRows.map((r) => r.id).filter((id) => !keepIds.includes(id));
-    if (!toDelete.length) continue;
+    if (toDelete.length === 0) continue;
 
     const extra = await db
       .delete(autoLlmRuns)

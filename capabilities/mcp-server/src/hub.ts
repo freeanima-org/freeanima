@@ -64,7 +64,6 @@ export function createMcpBunHandler(
     if (!isMcpPath(new URL(req.url).pathname)) return undefined;
 
     const transport = new WebStandardStreamableHTTPServerTransport({
-      sessionIdGenerator: undefined,
       enableJsonResponse: true,
     });
     const server = createMcpServer(deps);

@@ -24,7 +24,9 @@ export async function pollUntilAssistantReply(
   let delay = RECOVERY_INITIAL_DELAY_MS;
   while (Date.now() < deadline) {
     if (await recoverDisplay(conversationId)) return true;
-    await new Promise((resolve) => setTimeout(resolve, delay));
+    await new Promise((resolve) => {
+      setTimeout(resolve, delay);
+    });
     delay = Math.min(delay * 2, RECOVERY_MAX_DELAY_MS);
   }
   return false;

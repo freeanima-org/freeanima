@@ -7,7 +7,7 @@ import { MEMORY_SEMANTIC_CITATION_TOOL_HINT } from "./memory-reference.ts";
 import { memoryRecallSearch } from "./recall-search.ts";
 
 function asFloat(value: unknown, defaultVal: number): number {
-  if (value === null || value === undefined) return defaultVal;
+  if (value == null || value === undefined) return defaultVal;
   const n = Number(value);
   return Number.isNaN(n) ? defaultVal : n;
 }

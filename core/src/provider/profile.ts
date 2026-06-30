@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import type { LlmTurnMessage, OpenAiToolSchema } from "./messages.ts";
 import type { ChatCompletion, ChatRequest, ChatStreamEvent } from "./invoke.ts";
 import type { LlmCallParams } from "./model.ts";
@@ -44,7 +45,7 @@ export function hop(
   model: string,
   params?: Partial<LlmCallParams>,
 ): RouteHopSpec {
-  return { provider, model, params };
+  return omitUndefined({ provider, model, params });
 }
 
 export function profileDef(
@@ -52,7 +53,7 @@ export function profileDef(
   chain: RouteHopSpec[],
   params?: Partial<LlmCallParams>,
 ): LlmProfileDef {
-  return { id, chain, params };
+  return omitUndefined({ id, chain, params });
 }
 
 export function collectProviderIds(profiles: LlmProfileDef[]): string[] {
@@ -83,7 +84,7 @@ export function validateProfiles(
   const issues: ProfileValidationIssue[] = [];
 
   for (const profile of profiles) {
-    if (!profile.chain.length) {
+    if (profile.chain.length === 0) {
       issues.push({ profileId: profile.id, hopIndex: -1, message: "chain cannot be empty" });
       continue;
     }
@@ -169,12 +170,12 @@ export class LlmProfile {
   }
 
   private buildRequest(messages: LlmTurnMessage[], opts?: ProfileChatOptions): ChatRequest {
-    return {
+    return omitUndefined({
       messages,
       systemPrompt: opts?.systemPrompt,
       params: this._params,
       tools: opts?.tools,
-    };
+    });
   }
 
   async chat(messages: LlmTurnMessage[], opts?: ProfileChatOptions): Promise<ChatCompletion> {

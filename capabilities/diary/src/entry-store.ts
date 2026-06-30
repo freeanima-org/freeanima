@@ -3,7 +3,7 @@ import {
   asDiaryEntry,
   type DiaryEntryBody,
 } from "@freeanima/core/db/schema/entity";
-import { formatCstIso } from "@freeanima/core/util";
+import { formatCstIso, omitUndefined } from "@freeanima/core/util";
 import {
   createEntity,
   deleteEntity,
@@ -105,7 +105,7 @@ export async function listDiaryEntries(
   const result = await searchEntities({
     world_id: ctx.worldId,
     primary_component: DIARY_ENTRY_COMPONENT,
-    filters: Object.keys(filters).length > 0 ? filters : undefined,
+    ...(Object.keys(filters).length > 0 ? { filters } : {}),
     limit: opts.limit ?? 500,
     offset: opts.offset ?? 0,
     mode: "filter_only",
@@ -185,13 +185,15 @@ export async function updateDiaryEntry(
   }
   if (input.tags !== undefined) bodyPatch.tags = normalizeTags(input.tags);
 
-  const row = await updateEntity({
-    id: input.id,
-    title: input.title?.trim(),
-    summary: input.summary?.trim(),
-    content: input.content,
-    body: Object.keys(bodyPatch).length > 0 ? bodyPatch : undefined,
-  });
+  const row = await updateEntity(
+    omitUndefined({
+      id: input.id,
+      title: input.title?.trim(),
+      summary: input.summary?.trim(),
+      content: input.content,
+      body: Object.keys(bodyPatch).length > 0 ? bodyPatch : undefined,
+    }),
+  );
   if (!row) return null;
 
   const parsed = asDiaryEntry(row);
@@ -248,7 +250,7 @@ export async function searchDiaryEntries(
     world_id: ctx.worldId,
     primary_component: DIARY_ENTRY_COMPONENT,
     query: opts.query,
-    filters: Object.keys(filters).length > 0 ? filters : undefined,
+    ...(Object.keys(filters).length > 0 ? { filters } : {}),
     limit: Math.max(1, Math.min(50, opts.limit ?? 30)),
     mode: "hybrid",
   });
@@ -307,12 +309,15 @@ export async function appendDiaryEntryByDate(
   const entryAt = parseDiaryDate(input.date);
   let existing = await findDiaryEntryByDay(ctx, entryAt);
   if (!existing) {
-    existing = await createDiaryEntry(ctx, {
-      title: titleFromEntryAt(entryAt),
-      entry_at: entryAt,
-      content: "",
-      tags: input.tags,
-    });
+    existing = await createDiaryEntry(
+      ctx,
+      omitUndefined({
+        title: titleFromEntryAt(entryAt),
+        entry_at: entryAt,
+        content: "",
+        tags: input.tags,
+      }),
+    );
   }
 
   const appended = await appendDiaryEntry(ctx, { id: existing.id, content: fragment });
@@ -328,13 +333,16 @@ export async function updateDiaryEntryByDate(
   const existing = await findDiaryEntryByDay(ctx, entryAt);
   if (!existing) return null;
 
-  return updateDiaryEntry(ctx, {
-    id: existing.id,
-    title: input.title,
-    content: input.content,
-    summary: input.summary,
-    tags: input.tags,
-  });
+  return updateDiaryEntry(
+    ctx,
+    omitUndefined({
+      id: existing.id,
+      title: input.title,
+      content: input.content,
+      summary: input.summary,
+      tags: input.tags,
+    }),
+  );
 }
 
 export async function deleteDiaryEntryByDate(

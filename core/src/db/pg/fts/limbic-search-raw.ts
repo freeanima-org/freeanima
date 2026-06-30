@@ -82,7 +82,7 @@ export async function searchLimbicMemoryVector(
   queryEmbedding: number[],
   opts?: { limit?: number },
 ): Promise<VectorLimbicHit[]> {
-  if (!queryEmbedding.length) return [];
+  if (queryEmbedding.length === 0) return [];
 
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
   const queryVec = formatPgVector(queryEmbedding);

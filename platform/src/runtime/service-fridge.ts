@@ -30,7 +30,7 @@ function parseDisplayKey(
   if (module === "conversation" && parts.length >= 3) {
     return {
       module: "conversation",
-      conversation_id: parts[1],
+      ...(parts[1] ? { conversation_id: parts[1] } : {}),
       label: parts.slice(2).join(":"),
     };
   }

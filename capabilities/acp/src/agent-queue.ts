@@ -5,8 +5,8 @@ export class AcpAgentQueue {
   run<T>(fn: () => Promise<T>): Promise<T> {
     const run = this.tail.then(() => fn());
     this.tail = run.then(
-      () => undefined,
-      () => undefined,
+      () => {},
+      () => {},
     );
     return run;
   }

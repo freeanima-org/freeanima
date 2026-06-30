@@ -21,21 +21,16 @@ function runCommand(command: string, args: string[], opts?: { cwd?: string }): v
 
 export function runCliUpgrade(scriptPath?: string): void {
   const kind = getCliInstallKind(scriptPath);
-  switch (kind) {
-    case "source":
-      console.error(CLI_UPGRADE_HINT_SOURCE);
-      process.exit(1);
-      break;
-    case "docker":
-      console.error(CLI_UPGRADE_HINT_DOCKER);
-      process.exit(1);
-      break;
-    case "npm-registry":
-      runCommand("bun", ["pm", "install", "-g", NPM_PACKAGE]);
-      break;
-    case "npm-local":
-      runNpmLocalUpgrade(scriptPath);
-      break;
+  if (kind === "source") {
+    console.error(CLI_UPGRADE_HINT_SOURCE);
+    process.exit(1);
+  } else if (kind === "docker") {
+    console.error(CLI_UPGRADE_HINT_DOCKER);
+    process.exit(1);
+  } else if (kind === "npm-registry") {
+    runCommand("bun", ["pm", "install", "-g", NPM_PACKAGE]);
+  } else if (kind === "npm-local") {
+    runNpmLocalUpgrade(scriptPath);
   }
 }
 

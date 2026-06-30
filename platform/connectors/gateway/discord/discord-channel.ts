@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import type { ActionRowBuilder, ButtonBuilder, Message, TextBasedChannel } from "discord.js";
 import type { StreamEvent } from "@freeanima/runtime/loop";
 import { chunkText } from "../chunk-text.ts";
@@ -147,7 +148,7 @@ export async function streamReplyToChannel(
   const composer = createStreamChannelComposer({
     strategies: [toolStrategy, answerStrategy, createDiscordCleanupStrategy(answerIo)],
     io: {},
-    signal: opts?.signal,
+    ...omitUndefined({ signal: opts?.signal }),
   });
 
   await runStreamChannel(events, composer, { ...opts, platform: "discord", toolDisplayMode });

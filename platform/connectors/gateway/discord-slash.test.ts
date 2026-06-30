@@ -72,8 +72,8 @@ describe("discord slash commands", () => {
   });
 
   it("streamReplyToInteraction delivers empty stream as no output", async () => {
-    const editReply = vi.fn(async () => undefined);
-    const followUp = vi.fn(async () => undefined);
+    const editReply = vi.fn(async () => {});
+    const followUp = vi.fn(async () => {});
     const interaction = {
       deferred: true,
       replied: false,

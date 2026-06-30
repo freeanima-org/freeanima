@@ -230,7 +230,7 @@ export async function buildStatus(
       model: chatModel,
       api_base: getDefaultProviderBaseUrl(cfg),
     },
-    tokenizer: tokenizerStatus.chat || tokenizerStatus.embedding ? tokenizerStatus : undefined,
+    ...(tokenizerStatus.chat || tokenizerStatus.embedding ? { tokenizer: tokenizerStatus } : {}),
     conversations: { total: sessionCount, by_platform: byPlatform },
     tools: toolCount,
     cron_jobs: cronJobCount,

@@ -152,7 +152,7 @@ export async function listEmailMessages(
   const result = await searchEntities({
     world_id: worldId,
     primary_component: EMAIL_MESSAGE_COMPONENT,
-    filters: Object.keys(filters).length > 0 ? filters : undefined,
+    ...(Object.keys(filters).length > 0 ? { filters } : {}),
     limit: opts.limit ?? 200,
     offset: opts.offset ?? 0,
     mode: "filter_only",
@@ -223,7 +223,7 @@ export async function searchEmailMessages(
     world_id: worldId,
     primary_component: EMAIL_MESSAGE_COMPONENT,
     query: input.query,
-    filters: Object.keys(filters).length > 0 ? filters : undefined,
+    ...(Object.keys(filters).length > 0 ? { filters } : {}),
     limit: input.limit ?? 30,
     mode: "hybrid",
   });

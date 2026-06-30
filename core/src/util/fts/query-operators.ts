@@ -67,7 +67,7 @@ export function parseFtsOperatorQuery(text: string): FtsOperatorSegment[] {
   let pending: string[] = [];
 
   const flushOperands = (): void => {
-    if (!pending.length) return;
+    if (pending.length === 0) return;
     segments.push({ type: "operands", tokens: pending });
     pending = [];
   };
@@ -87,7 +87,7 @@ export function parseFtsOperatorQuery(text: string): FtsOperatorSegment[] {
 
 export function flushOperandGroup(parts: string[]): string {
   const filtered = parts.filter(Boolean);
-  if (!filtered.length) return "";
+  if (filtered.length === 0) return "";
   if (filtered.length === 1) return filtered[0]!;
   return filtered.join(" & ");
 }

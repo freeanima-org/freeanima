@@ -8,7 +8,7 @@ export function hasNewAssistantReply(display: DisplayItem[], baselineCount: numb
 /** 最后一条为 user 且尚无 assistant 回复（含刷新后恢复轮询） */
 export function displayAwaitingReply(display: DisplayItem[]): boolean {
   if (display.length === 0) return false;
-  const last = display[display.length - 1];
+  const last = display.at(-1);
   return last?.type === "message" && last.role === "user";
 }
 
@@ -25,7 +25,9 @@ export async function pollUntilAssistantReply(
   let delay = RECOVERY_INITIAL_DELAY_MS;
   while (Date.now() < deadline) {
     if (await recoverDisplay(conversationId)) return true;
-    await new Promise((resolve) => setTimeout(resolve, delay));
+    await new Promise((resolve) => {
+      setTimeout(resolve, delay);
+    });
     delay = Math.min(delay * 2, RECOVERY_MAX_DELAY_MS);
   }
   return false;

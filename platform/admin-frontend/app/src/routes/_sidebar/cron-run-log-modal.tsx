@@ -127,7 +127,7 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
                   )}
                 </Fragment>
               ))}
-              {!loading && !rows.length && (
+              {!loading && rows.length === 0 && (
                 <tr>
                   <td colSpan={4} className="text-center text-base-content/50">
                     {m.admin_cron_run_history_empty()}

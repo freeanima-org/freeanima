@@ -1,4 +1,6 @@
 /** Deep sleep round intent labels */
+import { omitUndefined } from "@freeanima/core/util";
+
 export type DeepSleepRound = "contradiction_expiry" | "split" | "merge" | "pin_maintenance";
 
 /** Deep sleep mode: full (manual trigger) or incremental (scheduled cron) */
@@ -42,7 +44,7 @@ export function applyChangeLog(
   detail: string,
   mergedTarget?: DeepSleepChangeEntry["mergedTarget"],
 ): void {
-  log.entries[id] = { action, id, detail, mergedTarget };
+  log.entries[id] = omitUndefined({ action, id, detail, mergedTarget });
   switch (action) {
     case "added":
       log.addedIds.push(id);

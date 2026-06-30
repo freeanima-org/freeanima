@@ -68,5 +68,5 @@ export async function evaluateServiceAuthAuthed(req: Request): Promise<boolean> 
   const token = parseBearerToken(req);
   if (!token) return false;
   const auth = await verifyServiceApiToken(token);
-  return auth !== null;
+  return auth != null;
 }

@@ -48,10 +48,10 @@ function printStartupErrorHints(): void {
       l.includes("uncaughtException") ||
       l.includes("unhandledRejection"),
   );
-  if (startupLines.length) {
+  if (startupLines.length > 0) {
     writeStatusLine("warning", "Recent startup errors (error.log):");
     for (const line of startupLines.slice(-4)) console.log(`    ${line}`);
-  } else if (lines.length) {
+  } else if (lines.length > 0) {
     writeStatusLine("warning", "Recent error.log:");
     for (const line of lines.slice(-3)) console.log(`    ${line}`);
   }
@@ -146,7 +146,9 @@ async function startDetachedWithoutSystemd(args: ServiceArgs): Promise<void> {
   child.unref();
 
   for (let i = 0; i < 30; i++) {
-    await new Promise((res) => setTimeout(res, 500));
+    await new Promise((res) => {
+      setTimeout(res, 500);
+    });
     const pid = isServerAlive();
     if (pid != null) {
       writeStatusLine("ok", `Started in background (PID ${pid})`);
@@ -310,7 +312,9 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
     }
     process.kill(pid, "SIGTERM");
     for (let i = 0; i < 10; i++) {
-      await new Promise((res) => setTimeout(res, 300));
+      await new Promise((res) => {
+        setTimeout(res, 300);
+      });
       if (checkServerAlive() == null) {
         console.log(`Free Anima (PID ${pid}) stopped`);
         return;

@@ -49,7 +49,8 @@ describe("createFridgeMagnetHandler", () => {
       role: "assistant",
       name: FRIDGE_CONTEXT_ASSISTANT_NAME,
     });
-    expect(messages[0]!.role === "assistant" && messages[0].content).toContain(
+    const first = messages[0];
+    expect(first?.role === "assistant" && first.content).toContain(
       "conversation:sess-a:note1: Note A",
     );
     expect(messages[1]).toMatchObject({ role: "user", content: "Hello" });
@@ -144,7 +145,8 @@ describe("createFridgeMagnetHandler", () => {
       (m) => m.role === "assistant" && "name" in m && m.name === FRIDGE_CONTEXT_ASSISTANT_NAME,
     );
     expect(manifests).toHaveLength(1);
-    expect(manifests[0]!.role === "assistant" && manifests[0].content).toContain(
+    const manifest = manifests[0];
+    expect(manifest?.role === "assistant" && manifest.content).toContain(
       "conversation:sess-a:note: Fresh note",
     );
   });

@@ -1,3 +1,5 @@
+import { omitUndefined } from "@freeanima/core/util";
+
 import type { SystemPromptBuildContext } from "./hooks.ts";
 
 export type SystemPromptHookRunner = (ctx: SystemPromptBuildContext) => string | Promise<string>;
@@ -19,7 +21,7 @@ export async function buildSystemPrompt(
       "SystemPromptHookRunner not registered: call wireEnginePorts() or registerSystemPromptHookRunner",
     );
   }
-  return runner({ functionNames, cwd, meta });
+  return runner(omitUndefined({ functionNames, cwd, meta }));
 }
 
 /** Unit test reset */

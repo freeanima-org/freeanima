@@ -2,6 +2,7 @@ import type { ToolDef, ToolSetRegistry } from "@freeanima/core/tool";
 import { extractMcpResult, mcpToolParameters, mcpToolSetId, toolError } from "@freeanima/core/tool";
 import type { Config } from "@freeanima/core/config";
 import { logCapability as logComponent } from "@freeanima/core/config";
+import { omitUndefined } from "@freeanima/core/util";
 
 import { McpClientSession, type McpServerConfig } from "./client.ts";
 import {
@@ -114,7 +115,7 @@ export class MCPManager {
       if (!isMcpServerEnabled(serverCfg)) continue;
       if (this.clients.has(name) || this.connecting.has(name)) continue;
       this.serverConfigs.set(name, serverCfg);
-      tasks.push(this.startOneSafe(name, serverCfg).then(() => undefined));
+      tasks.push(this.startOneSafe(name, serverCfg).then(() => {}));
     }
 
     await Promise.allSettled(tasks);
@@ -124,7 +125,7 @@ export class MCPManager {
 
   /** Stop all connected MCP Servers */
   async stopAll(): Promise<McpControlResult> {
-    for (const name of [...this.clients.keys()]) {
+    for (const name of this.clients.keys()) {
       await this.stopServer(name);
     }
     return { ok: true, action: "stop" };
@@ -290,33 +291,39 @@ export class MCPManager {
       if (client) {
         try {
           const listed = await client.listTools();
-          tools = listed.map((t) => ({
-            original_name: t.name,
-            registered_name: `mcp_${name}_${t.name}`,
-            description: t.description,
-            input_schema: t.inputSchema,
-          }));
+          tools = listed.map((t) =>
+            omitUndefined({
+              original_name: t.name,
+              registered_name: `mcp_${name}_${t.name}`,
+              description: t.description,
+              input_schema: t.inputSchema,
+            }),
+          );
         } catch (err) {
           logComponent("mcp").warn(`MCP '${name}': listTools failed`, { err, server: name });
         }
         try {
           const listed = await client.listResources();
-          resources = listed.map((r) => ({
-            uri: r.uri,
-            name: r.name,
-            description: r.description,
-            mime_type: r.mimeType,
-          }));
+          resources = listed.map((r) =>
+            omitUndefined({
+              uri: r.uri,
+              name: r.name,
+              description: r.description,
+              mime_type: r.mimeType,
+            }),
+          );
         } catch {
           /* Some servers do not support resources */
         }
         try {
           const listed = await client.listPrompts();
-          prompts = listed.map((p) => ({
-            name: p.name,
-            description: p.description,
-            arguments: p.arguments,
-          }));
+          prompts = listed.map((p) =>
+            omitUndefined({
+              name: p.name,
+              description: p.description,
+              arguments: p.arguments,
+            }),
+          );
         } catch {
           /* Some servers do not support prompts */
         }
@@ -329,19 +336,21 @@ export class MCPManager {
       else if (!enabled) status = "disabled";
       else status = "not_started";
 
-      servers.push({
-        name,
-        config: sanitizeMcpConfig(rawCfg),
-        status,
-        error,
-        tools,
-        resources,
-        prompts,
-        registered_tools: registeredTools.map((t) => ({
-          name: t.name,
-          description: t.description,
-        })),
-      });
+      servers.push(
+        omitUndefined({
+          name,
+          config: sanitizeMcpConfig(rawCfg),
+          status,
+          error,
+          tools,
+          resources,
+          prompts,
+          registered_tools: registeredTools.map((t) => ({
+            name: t.name,
+            description: t.description,
+          })),
+        }),
+      );
     }
 
     return {
@@ -382,7 +391,7 @@ export class MCPManager {
         logComponent("shutdown").warn(`MCP '${name}' close failed`, { err, server: name });
       }
     }
-    for (const name of [...this.clients.keys()]) {
+    for (const name of this.clients.keys()) {
       this.toolSets.unregisterToolSet(mcpToolSetId(name));
     }
     this.clients.clear();

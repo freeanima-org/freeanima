@@ -133,8 +133,8 @@ export async function apiPost(
 export function assertIlinkOk(resp: Record<string, unknown>, endpoint: string): void {
   const ret = resp.ret;
   const errcode = resp.errcode;
-  const retNum = ret === undefined || ret === null ? 0 : Number(ret);
-  const errNum = errcode === undefined || errcode === null ? 0 : Number(errcode);
+  const retNum = ret === undefined || ret == null ? 0 : Number(ret);
+  const errNum = errcode === undefined || errcode == null ? 0 : Number(errcode);
   if (retNum === 0 && errNum === 0) return;
   const errmsg = String(resp.errmsg ?? resp.err_msg ?? "");
   throw new Error(`iLink ${endpoint} ret=${String(ret)} errcode=${String(errcode)}: ${errmsg}`);
@@ -213,7 +213,9 @@ export async function sendTextChunked(
     const clientId = `${clientIdPrefix}-${randomBytes(4).toString("hex")}`;
     lastRet = await sendText(baseUrl, token, toUserId, parts[i]!, clientId, contextToken);
     if (i + 1 < parts.length) {
-      await new Promise<void>((r) => setTimeout(r, 100));
+      await new Promise<void>((r) => {
+        setTimeout(r, 100);
+      });
     }
   }
   return { chunks: parts.length, lastRet };

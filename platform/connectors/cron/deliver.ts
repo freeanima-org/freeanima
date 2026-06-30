@@ -35,7 +35,7 @@ export async function deliverToTargets(
   text: string,
   opts?: CronDeliverOptions,
 ): Promise<CronDeliverResult | void> {
-  if (!targets.length || !text.trim()) return;
+  if (targets.length === 0 || !text.trim()) return;
   let messageId: string | undefined;
   for (const target of targets) {
     const fn = deliverers.get(target.platform);

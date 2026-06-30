@@ -9,7 +9,7 @@ export async function listLimbicMemoryBySessions(
   opts?: LimbicListByConversationsOpts,
 ): Promise<LimbicMemoryRow[]> {
   const ids = conversationIds.map((s) => s.trim()).filter(Boolean);
-  if (!ids.length) return [];
+  if (ids.length === 0) return [];
 
   const minIntensity = opts?.minIntensity ?? 0;
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 20));

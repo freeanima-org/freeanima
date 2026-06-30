@@ -1,5 +1,6 @@
 import type { ToolDef } from "@freeanima/core/tool";
 import { toolError, toolResult } from "@freeanima/core/tool";
+import { omitUndefined } from "@freeanima/core/util";
 import type { LimbicKind, LimbicMemoryRow } from "@freeanima/core/repos";
 import {
   getLimbicMemory,
@@ -11,7 +12,7 @@ const LIMBIC_KINDS = ["conversation_mood", "turning_point", "spike"] as const;
 
 function parseOptionalFloat(value: unknown): number | null | undefined {
   if (value === undefined) return undefined;
-  if (value === null) return null;
+  if (value == null) return null;
   const n = Number(value);
   return Number.isNaN(n) ? null : n;
 }
@@ -160,15 +161,25 @@ export const limbicSearchToolDefs: ToolDef[] = [
 
       try {
         // Use the store's list method for query/conversation_id/kind filtering
-        let rows = await listLimbicMemory({
-          query,
-          conversation_id: conversationId,
-          kind,
-          limit: 500, // fetch more then filter/order/slice
-        });
+        let rows = await listLimbicMemory(
+          omitUndefined({
+            query,
+            conversation_id: conversationId,
+            kind,
+            limit: 500, // fetch more then filter/order/slice
+          }),
+        );
 
         // Apply range filters client-side
-        rows = clampRange(rows, { minIntensity, maxIntensity, minValence, maxValence });
+        rows = clampRange(
+          rows,
+          omitUndefined({
+            minIntensity,
+            maxIntensity,
+            minValence,
+            maxValence,
+          }),
+        );
 
         const total = rows.length;
 

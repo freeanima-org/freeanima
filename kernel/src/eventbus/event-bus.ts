@@ -25,7 +25,7 @@ export class EventBus {
       if (!current) return;
       const idx = current.indexOf(entry);
       if (idx >= 0) current.splice(idx, 1);
-      if (!current.length) this.handlers.delete(topic.qualifiedId);
+      if (current.length === 0) this.handlers.delete(topic.qualifiedId);
       this.log.debug("Unregister event handler", { topic: topic.qualifiedId });
     };
   }
@@ -47,7 +47,7 @@ export class EventBus {
 
   private async process(event: StoredEvent): Promise<DispatchOutcome> {
     const list = this.handlers.get(event.topicQualifiedId) ?? [];
-    if (!list.length) {
+    if (list.length === 0) {
       this.log.debug("event skipped (no handler)", { topic: event.topicQualifiedId });
       return "ack";
     }

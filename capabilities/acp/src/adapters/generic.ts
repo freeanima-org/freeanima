@@ -33,7 +33,7 @@ export function formatAcpToolLine(
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
-  if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+  if (typeof value === "object" && value != null && !Array.isArray(value)) {
     return value as Record<string, unknown>;
   }
   return null;
@@ -43,13 +43,13 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 export function extractToolArgs(update: Record<string, unknown>): Record<string, unknown> {
   for (const key of ["arguments", "args", "input", "parameters"] as const) {
     const rec = asRecord(update[key]);
-    if (rec && Object.keys(rec).length) return rec;
+    if (rec && Object.keys(rec).length > 0) return rec;
   }
   const content = asRecord(update.content);
   if (content) {
     for (const key of ["arguments", "args", "input", "parameters"] as const) {
       const rec = asRecord(content[key]);
-      if (rec && Object.keys(rec).length) return rec;
+      if (rec && Object.keys(rec).length > 0) return rec;
     }
   }
   return {};
@@ -60,7 +60,7 @@ export function parseSessionUpdateChunk(update: Record<string, unknown>): string
   const kind = normalizeUpdateKind(update);
   if (kind === "agentmessagechunk") {
     const content = update.content;
-    if (typeof content === "object" && content !== null) {
+    if (typeof content === "object" && content != null) {
       const text = (content as Record<string, unknown>).text;
       if (typeof text === "string" && text) return text;
     }

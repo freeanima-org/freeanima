@@ -17,7 +17,7 @@ export async function repairAndPersistToolLoop(
   reason = REPAIR_REASON_LOST,
 ): Promise<boolean> {
   const corruptions = detectToolLoopCorruption(msgs);
-  if (!corruptions.length) return false;
+  if (corruptions.length === 0) return false;
 
   const ordered = [...corruptions].toSorted(
     (a, b) => (b.assistantPos ?? 0) - (a.assistantPos ?? 0),

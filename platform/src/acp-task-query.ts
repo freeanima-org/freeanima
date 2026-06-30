@@ -14,9 +14,9 @@ function parseAcpResultMessage(content: string, taskId: string): AcpPromptResult
     return {
       conversation_id: typeof json.acp_conversation_id === "string" ? json.acp_conversation_id : "",
       output: typeof json.output === "string" ? json.output : "",
-      pending: Array.isArray(json.pending)
-        ? (json.pending as AcpPromptResult["pending"])
-        : undefined,
+      ...(Array.isArray(json.pending)
+        ? { pending: json.pending as NonNullable<AcpPromptResult["pending"]> }
+        : {}),
       new_session: false,
       reused_binding: false,
       explicit_session: false,

@@ -11,6 +11,6 @@ describe("resolveFacingOffsetY", () => {
   });
 
   test("未知版本默认按 1.0 处理", () => {
-    expect(resolveFacingOffsetY(undefined)).toBe(0);
+    expect(resolveFacingOffsetY()).toBe(0);
   });
 });

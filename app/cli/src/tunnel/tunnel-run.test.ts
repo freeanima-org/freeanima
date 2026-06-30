@@ -14,7 +14,7 @@ const TEST_CONNECTOR_TOKEN = "anima-test-connector-token";
 const tempDirs: string[] = [];
 
 afterEach(() => {
-  while (tempDirs.length) {
+  while (tempDirs.length > 0) {
     removeTempDir(tempDirs.pop()!);
   }
 });

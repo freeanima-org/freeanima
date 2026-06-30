@@ -30,9 +30,10 @@ async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
 function mapConversationList(raw: {
   conversations: Array<{
     conversation_id: string;
-    title?: string;
-    platform?: string;
-    updated_at?: string;
+    title?: string | undefined;
+    platform?: string | undefined;
+    updated_at?: string | undefined;
+    archived_at?: string | null | undefined;
   }>;
 }) {
   return {

@@ -54,6 +54,7 @@ class HookToken<
   Payload,
   Effect extends Record<string, unknown> = Record<string, unknown>,
 > extends Hook<Payload, Effect> {
+  // oxlint-disable-next-line eslint/no-useless-constructor -- forwards to protected Hook constructor
   constructor(qualifiedId: string, description?: string) {
     super(qualifiedId, description);
   }

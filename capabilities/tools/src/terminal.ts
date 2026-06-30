@@ -28,7 +28,7 @@ function runForeground(command: string, timeout: number, workdir?: string | null
     const parts: string[] = [];
     if (result.stdout) parts.push(result.stdout);
     if (result.stderr) parts.push(`--- stderr ---\n${result.stderr}`);
-    if (result.status !== 0 && result.status !== null) {
+    if (result.status !== 0 && result.status != null) {
       parts.push(`--- exit code: ${result.status} ---`);
     }
     let output = parts.join("");
@@ -78,11 +78,11 @@ async function handleProcess(
   timeout = 30,
 ): Promise<string> {
   if (action === "list") {
-    if (!backgroundProcs.size) return "No background processes.";
+    if (backgroundProcs.size === 0) return "No background processes.";
     const lines = ["Background processes:"];
     for (const [sid, proc] of backgroundProcs) {
       const ret = proc.exitCode;
-      const status = ret === null ? "running" : `exited (${ret})`;
+      const status = ret == null ? "running" : `exited (${ret})`;
       lines.push(`  ${sid.slice(0, 12)}…  PID ${proc.pid}  ${status}`);
     }
     return lines.join("\n");
@@ -96,14 +96,14 @@ async function handleProcess(
 
   if (action === "poll") {
     const ret = proc.exitCode;
-    if (ret === null) return output ? `running\n${output}` : "running";
+    if (ret == null) return output ? `running\n${output}` : "running";
     return output ? `exited (${ret})\n${output}` : `exited (${ret})`;
   }
 
   if (action === "log") return output || "(no output)";
 
   if (action === "wait") {
-    if (proc.exitCode !== null) {
+    if (proc.exitCode != null) {
       return output ? `exited (${proc.exitCode})\n${output}` : `exited (${proc.exitCode})`;
     }
     const code = await new Promise<number | null>((resolve) => {
@@ -114,14 +114,14 @@ async function handleProcess(
       });
     });
     const out = getBgOutput(conversationId);
-    if (code === null) return toolError(`timeout after ${timeout}s, process still running`);
+    if (code == null) return toolError(`timeout after ${timeout}s, process still running`);
     return out ? `exited (${code})\n${out}` : `exited (${code})`;
   }
 
   if (action === "kill") {
     proc.kill("SIGTERM");
     setTimeout(() => {
-      if (proc.exitCode === null) proc.kill("SIGKILL");
+      if (proc.exitCode == null) proc.kill("SIGKILL");
     }, 5000);
     backgroundProcs.delete(conversationId);
     backgroundOutput.delete(conversationId);

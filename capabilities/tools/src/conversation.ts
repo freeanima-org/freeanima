@@ -18,6 +18,7 @@ import {
   formatStoredMessageSearchHit,
   formatFtsToolError,
   isFtsQueryError,
+  omitUndefined,
 } from "@freeanima/core/util";
 
 const FTS_SYNTAX =
@@ -28,7 +29,7 @@ const FTS_SYNTAX =
   '- **Quotes** for phrases / CJK: `"Free Anima"`, `preference` (CJK matches by character **proximity**)';
 
 function asInt(value: unknown, defaultVal: number, min: number, max: number): number {
-  if (value === null || value === undefined) return defaultVal;
+  if (value == null || value === undefined) return defaultVal;
   const n = Number(value);
   if (!Number.isFinite(n)) return defaultVal;
   return Math.max(min, Math.min(max, Math.trunc(n)));
@@ -72,18 +73,22 @@ export function registerConversationTools(toolSets: ToolSetRegistry): void {
             const limit = asInt(args.limit, 10, 1, 50);
             const conversationId = String(args.session ?? "").trim() || undefined;
             try {
-              const rows = await searchMessagesFts(query, {
-                conversation_id: conversationId,
-                limit,
-              });
+              const rows = await searchMessagesFts(
+                query,
+                omitUndefined({
+                  conversation_id: conversationId,
+                  limit,
+                }),
+              );
               const hits = rows.map((r) => formatStoredMessageSearchHit(query, r));
 
               return toolResult({
                 query,
                 hits,
-                summary: hits.length
-                  ? `Found ${hits.length} historical conversations`
-                  : `No historical conversations matching '${query}'`,
+                summary:
+                  hits.length > 0
+                    ? `Found ${hits.length} historical conversations`
+                    : `No historical conversations matching '${query}'`,
               });
             } catch (e) {
               if (isFtsQueryError(e)) return toolError(formatFtsToolError(e));

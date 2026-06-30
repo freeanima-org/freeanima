@@ -44,7 +44,7 @@ function parseIdList(csv: string): string[] {
 
 function channelInList(channelId: string, parentChannelId: string, csv: string): boolean {
   const ids = parseIdList(csv);
-  if (!ids.length) return false;
+  if (ids.length === 0) return false;
   return ids.includes(channelId) || (parentChannelId !== "" && ids.includes(parentChannelId));
 }
 

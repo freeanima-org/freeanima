@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { ListDetailLayout } from "@freeanima/ui-kit/layout";
@@ -38,7 +39,7 @@ export function ResponsiveSidebarLayout({
       className="admin-app"
       detailTitle={barTitle}
       listTitle={title}
-      listSubtitle={subtitle}
+      {...omitUndefined({ listSubtitle: subtitle })}
       showListHeader={showSidebarHeader}
       showDetailHeader={false}
       listWidthClass="w-64"

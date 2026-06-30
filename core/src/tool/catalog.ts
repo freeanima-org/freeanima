@@ -73,7 +73,7 @@ export function searchToolsetsCatalog(
 ): { query: string; hits: SearchToolsetsCatalogHit[]; total: number } {
   const trimmed = query.trim();
   const tokens = tokenizeFtsQuery(trimmed).filter((t) => t.length > 0);
-  if (!tokens.length) {
+  if (tokens.length === 0) {
     return { query: trimmed, hits: [], total: 0 };
   }
 

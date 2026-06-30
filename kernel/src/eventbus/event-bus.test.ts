@@ -20,7 +20,9 @@ async function waitUntil(predicate: () => boolean, timeoutMs = 1000): Promise<vo
     if (Date.now() >= deadline) {
       throw new Error(`waitUntil timed out after ${timeoutMs}ms`);
     }
-    await new Promise((r) => setTimeout(r, 10));
+    await new Promise((r) => {
+      setTimeout(r, 10);
+    });
   }
 }
 
@@ -43,7 +45,9 @@ describe("EventBus + MemoryEventQueue", () => {
     const bus = newBus(new MemoryEventQueue());
     bus.emit(ping, { n: 1 });
     bus.start();
-    await new Promise((r) => setTimeout(r, 20));
+    await new Promise((r) => {
+      setTimeout(r, 20);
+    });
     bus.stop();
   });
 
@@ -84,7 +88,9 @@ describe("EventBus + MemoryEventQueue", () => {
     off();
     bus.emit(ping, { n: 1 });
     bus.start();
-    await new Promise((r) => setTimeout(r, 30));
+    await new Promise((r) => {
+      setTimeout(r, 30);
+    });
     expect(handler).not.toHaveBeenCalled();
     bus.stop();
   });
@@ -97,7 +103,9 @@ describe("EventBus + NullEventQueue", () => {
     bus.on(ping, handler);
     bus.emit(ping, { n: 1 });
     bus.start();
-    await new Promise((r) => setTimeout(r, 30));
+    await new Promise((r) => {
+      setTimeout(r, 30);
+    });
     expect(handler).not.toHaveBeenCalled();
     bus.stop();
   });

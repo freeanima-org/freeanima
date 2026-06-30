@@ -88,7 +88,7 @@ function MemoryPage() {
     return result.results.filter((hit) => hit.memory_type === typeFilter);
   }, [result.results, typeFilter]);
 
-  const isEmpty = !result.results.length;
+  const isEmpty = result.results.length === 0;
   const toolPreview = useMemo(() => formatMemoryRecallOutput(result), [result]);
 
   const runSearch = async () => {

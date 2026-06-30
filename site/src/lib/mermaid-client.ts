@@ -173,21 +173,21 @@ function enhanceDiagrams(): void {
   document.querySelectorAll<HTMLPreElement>("pre.mermaid[data-processed]").forEach(wrapDiagram);
 }
 
+function astroMermaidReady(): boolean {
+  const nodes = document.querySelectorAll<HTMLPreElement>("pre.mermaid");
+  if (nodes.length === 0) return true;
+  return [...nodes].every((node) => node.hasAttribute("data-processed"));
+}
+
 function waitForAstroMermaid(timeoutMs = 4000): Promise<void> {
   return new Promise((resolve) => {
-    const done = (): boolean => {
-      const nodes = document.querySelectorAll<HTMLPreElement>("pre.mermaid");
-      if (nodes.length === 0) return true;
-      return [...nodes].every((node) => node.hasAttribute("data-processed"));
-    };
-
-    if (done()) {
+    if (astroMermaidReady()) {
       resolve();
       return;
     }
 
     const observer = new MutationObserver(() => {
-      if (done()) {
+      if (astroMermaidReady()) {
         observer.disconnect();
         resolve();
       }

@@ -11,6 +11,12 @@
       "@paraglide/runtime": ["../../messages/paraglide/runtime.js"]
     }
   },
-  "include": ["app/**/*.ts", "app/**/*.tsx", "app/**/*.d.ts", "../../types/paraglide.d.ts"],
+  "include": [
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "app/**/*.d.ts",
+    "../../types/paraglide.d.ts",
+    "../../types/paraglide-messages.generated.d.ts"
+  ],
   "exclude": ["node_modules", "dist", ".tsout"]
 }

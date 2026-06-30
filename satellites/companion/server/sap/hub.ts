@@ -43,11 +43,12 @@ let hub: SatelliteHubHandle | null = null;
 
 function ensureHub(hubUrl: string, httpUrl?: string): SatelliteHubHandle {
   if (!hub) {
+    const remoteAuthToken = remoteAuthTokenFromShell();
     hub = createSatelliteHub({
       appId: APP_ID,
       hubUrl,
-      httpUrl,
-      remoteAuthToken: remoteAuthTokenFromShell(),
+      ...(httpUrl !== undefined ? { httpUrl } : {}),
+      ...(remoteAuthToken !== undefined ? { remoteAuthToken } : {}),
       instanceStore: fileSapInstanceStore(instanceStorePath()),
       relay: false,
       tools: REGISTERED_TOOLS,

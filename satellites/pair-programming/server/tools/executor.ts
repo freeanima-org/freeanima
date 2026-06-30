@@ -19,7 +19,7 @@ function runForeground(command: string, timeout: number, workdir: string): strin
     const parts: string[] = [];
     if (result.stdout) parts.push(result.stdout);
     if (result.stderr) parts.push(`--- stderr ---\n${result.stderr}`);
-    if (result.status !== 0 && result.status !== null) {
+    if (result.status !== 0 && result.status != null) {
       parts.push(`--- exit code: ${result.status} ---`);
     }
     let output = parts.join("");

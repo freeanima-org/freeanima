@@ -36,7 +36,7 @@ function App() {
     void (async () => {
       await store.fetchConfig();
       const conversations = await store.fetchConversations();
-      if (conversations.length && !usePairProgrammingStore.getState().currentConversationId) {
+      if (conversations.length > 0 && !usePairProgrammingStore.getState().currentConversationId) {
         await store.selectConversation(conversations[0]!.id);
       }
       if (usePairProgrammingStore.getState().config.workspace?.trim()) {

@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { PATHS } from "@freeanima/core/config";
 import { renderCloudflaredConfig } from "@freeanima/platform/connectors/tunnel";
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -19,12 +20,14 @@ export function writeTunnelIngressConfig(params: {
   const tunnelId =
     params.tunnelId ?? FileConfig.open().data.tunnel?.cloudflare?.tunnel_id ?? undefined;
   mkdirSync(PATHS.cloudflaredConfigDir, { recursive: true });
-  const content = renderCloudflaredConfig({
-    hostname: params.hostname,
-    hubPort: params.hubPort,
-    credentialsFile,
-    tunnelId,
-  });
+  const content = renderCloudflaredConfig(
+    omitUndefined({
+      hostname: params.hostname,
+      hubPort: params.hubPort,
+      credentialsFile,
+      tunnelId,
+    }),
+  );
   writeFileSync(PATHS.cloudflaredConfigFile, content, "utf-8");
   return PATHS.cloudflaredConfigFile;
 }
@@ -34,11 +37,13 @@ export function refreshTunnelIngressFromConfig(): boolean {
   const fileCfg = FileConfig.open().data;
   const cfg = fileCfg.tunnel;
   if (!cfg?.hostname) return false;
-  writeTunnelIngressConfig({
-    hostname: cfg.hostname,
-    hubPort: resolveHubPort(),
-    credentialsFile: defaultCredentialsFile(),
-    tunnelId: cfg.cloudflare?.tunnel_id,
-  });
+  writeTunnelIngressConfig(
+    omitUndefined({
+      hostname: cfg.hostname,
+      hubPort: resolveHubPort(),
+      credentialsFile: defaultCredentialsFile(),
+      tunnelId: cfg.cloudflare?.tunnel_id,
+    }),
+  );
   return true;
 }

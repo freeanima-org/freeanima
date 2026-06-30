@@ -20,7 +20,7 @@ export function validateFtsQueryInput(raw: string): void {
   }
 
   const tokens = tokenizeFtsQuery(trimmed);
-  if (!tokens.length) {
+  if (tokens.length === 0) {
     throw new FtsQueryError("empty_query", "query 不能为空", "请提供至少一个检索词");
   }
 
@@ -33,7 +33,7 @@ export function validateFtsQueryInput(raw: string): void {
     );
   }
 
-  const last = tokens[tokens.length - 1]!.toUpperCase();
+  const last = tokens.at(-1)!.toUpperCase();
   if (isFtsOperatorToken(last)) {
     throw new FtsQueryError(
       "trailing_operator",

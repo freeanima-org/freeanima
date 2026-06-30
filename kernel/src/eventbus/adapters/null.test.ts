@@ -10,7 +10,9 @@ describe("NullEventQueue", () => {
     expect(() => queue.start(process)).not.toThrow();
     expect(() => queue.stop()).not.toThrow();
 
-    await new Promise((r) => setTimeout(r, 10));
+    await new Promise((r) => {
+      setTimeout(r, 10);
+    });
     expect(process).not.toHaveBeenCalled();
   });
 

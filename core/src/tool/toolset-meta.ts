@@ -29,7 +29,7 @@ export function toolSetForTool(registry: ToolSetRegistry, toolName: string): str
 /** Merge ToolSet names preserving order, deduped */
 export function mergeToolSetNames(current: readonly string[], toAdd: readonly string[]): string[] {
   const seen = new Set(current.map((n) => n.trim()).filter(Boolean));
-  const out = [...current.map((n) => n.trim()).filter(Boolean)];
+  const out = current.map((n) => n.trim()).filter(Boolean);
   for (const raw of toAdd) {
     const name = raw.trim();
     if (!name || seen.has(name)) continue;
@@ -95,7 +95,7 @@ export function loadCallFullyCached(
   loadedToolsets: readonly string[],
   cachedToolsets: readonly string[],
 ): boolean {
-  if (!loadedToolsets.length) return false;
+  if (loadedToolsets.length === 0) return false;
   const cached = new Set(cachedToolsets);
   return loadedToolsets.every((n) => cached.has(n.trim()));
 }

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@freeanima/admin-contract": "workspace:*",
+    "@freeanima/core": "workspace:*",
     "@freeanima/shell-sdk": "workspace:*",
     "@freeanima/ui-kit": "workspace:*",
     "@elysiajs/eden": "^1.4.9",

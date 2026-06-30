@@ -77,7 +77,7 @@ export class CronHandleManager {
       if (existing && existing.schedule === job.schedule) continue;
       this.register(job);
     }
-    for (const id of [...this.entries.keys()]) {
+    for (const id of this.entries.keys()) {
       if (!activeIds.has(id)) this.unregister(id);
     }
   }
@@ -93,14 +93,14 @@ export class CronHandleManager {
     if (entry) {
       entry.retryTimer = retryTimer;
       entry.cronHandle?.stop();
-      entry.cronHandle = undefined;
+      delete entry.cronHandle;
     } else {
       this.entries.set(jobId, { schedule: "", retryTimer });
     }
   }
 
   stopAll(): void {
-    for (const id of [...this.entries.keys()]) {
+    for (const id of this.entries.keys()) {
       this.unregister(id);
     }
   }

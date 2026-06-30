@@ -1,4 +1,5 @@
 import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
+import { omitUndefined } from "@freeanima/core/util";
 import type { AcpTaskStatus } from "./acp-tasks.ts";
 import { readAcpTasks, type AcpTaskEntry, type AcpTasksMeta } from "./acp-tasks.ts";
 import {
@@ -104,19 +105,19 @@ async function resolveResult(
   entry?: AcpTaskEntry,
 ): Promise<Pick<AcpPromptResult, "output" | "pending"> | undefined> {
   if (memoryTask?.result) {
-    return {
+    return omitUndefined({
       output: memoryTask.result.output,
       pending: memoryTask.result.pending,
-    };
+    });
   }
   if (query) {
     const parsed = await query.findAcpResultForTask(animaSessionId, taskId);
     if (parsed) {
-      return { output: parsed.output, pending: parsed.pending };
+      return omitUndefined({ output: parsed.output, pending: parsed.pending });
     }
   }
   if (entry?.pending?.length) {
-    return { output: "", pending: entry.pending };
+    return { output: "", pending: entry.pending.map((p) => omitUndefined(p)) };
   }
   return undefined;
 }
@@ -197,6 +198,10 @@ export async function queryAcpTaskStatus(opts: {
   };
 }
 
+function acpTaskStatusSortOrder(s: AcpTaskStatusViewStatus): number {
+  return s === "awaiting_decision" ? 0 : s === "running" ? 1 : s === "queued" ? 2 : 3;
+}
+
 export async function queryAcpTaskStatusList(opts: {
   conversation: ConversationPort;
   taskStore: AcpAsyncTaskStore;
@@ -218,10 +223,10 @@ export async function queryAcpTaskStatusList(opts: {
     const view = await queryAcpTaskStatus({ ...opts, taskId: id });
     if (view) views.push(view);
   }
-  views.sort((a, b) => {
-    const order = (s: AcpTaskStatusViewStatus) =>
-      s === "awaiting_decision" ? 0 : s === "running" ? 1 : s === "queued" ? 2 : 3;
-    return order(a.status) - order(b.status) || a.task_id.localeCompare(b.task_id);
-  });
+  views.sort(
+    (a, b) =>
+      acpTaskStatusSortOrder(a.status) - acpTaskStatusSortOrder(b.status) ||
+      a.task_id.localeCompare(b.task_id),
+  );
   return views;
 }

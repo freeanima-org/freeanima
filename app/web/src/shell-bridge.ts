@@ -58,7 +58,9 @@ function installScopedSettingsBridge(): void {
         await backend.save(scope, value);
         const { sendSentryTestEvent } = await import("@freeanima/shell-ui/sentry-test");
         await sendSentryTestEvent();
+        return;
       }
+      return;
     },
   };
 }

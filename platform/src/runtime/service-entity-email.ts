@@ -1,4 +1,5 @@
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
+import { omitUndefined } from "@freeanima/core/util";
 import { resolveSubjectWorldId, type SubjectKind } from "@freeanima/core/config";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
@@ -136,9 +137,11 @@ export async function serviceEmailSync(
   const { syncEmailAccount, syncAllEmailAccounts } =
     await import("@freeanima/platform/connectors/email");
   if (input.account_id != null) {
-    return { results: [await syncEmailAccount(input.account_id, { limit: input.limit })] };
+    return {
+      results: [await syncEmailAccount(input.account_id, omitUndefined({ limit: input.limit }))],
+    };
   }
-  return { results: await syncAllEmailAccounts({ limit: input.limit }) };
+  return { results: await syncAllEmailAccounts(omitUndefined({ limit: input.limit })) };
 }
 
 export async function serviceEmailThreadList(

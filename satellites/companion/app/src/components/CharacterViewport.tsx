@@ -210,8 +210,8 @@ export function CharacterViewport({
       <VrmCanvas
         modelPath={modelPath}
         configRevision={configRevision}
-        onModelLoaded={onModelLoaded}
-        onModelError={onModelError}
+        {...(onModelLoaded !== undefined ? { onModelLoaded } : {})}
+        {...(onModelError !== undefined ? { onModelError } : {})}
       />
     </div>
   );

@@ -33,7 +33,9 @@ function mergeLcovFiles(files: string[]): string {
       if (!trimmed) continue;
       const sfMatch = /^SF:(.+)$/m.exec(trimmed);
       if (!sfMatch) continue;
-      records.set(sfMatch[1], `${trimmed}\nend_of_record\n`);
+      const sfPath = sfMatch[1];
+      if (!sfPath) continue;
+      records.set(sfPath, `${trimmed}\nend_of_record\n`);
     }
   }
 

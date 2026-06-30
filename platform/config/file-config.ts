@@ -9,7 +9,7 @@ function loadYamlFile(path: string): Record<string, unknown> {
   try {
     const raw = expandConfigEnv(readFileSync(path, "utf-8"));
     const data = parseYaml(raw);
-    return typeof data === "object" && data !== null && !Array.isArray(data)
+    return typeof data === "object" && data != null && !Array.isArray(data)
       ? (data as Record<string, unknown>)
       : {};
   } catch {
@@ -44,7 +44,7 @@ export class FileConfig extends Config {
   patchSection(section: keyof AnimaConfig | string, patch: Record<string, unknown>): AnimaConfig {
     const raw = loadYamlFile(PATHS.configYaml);
     const existing =
-      typeof raw[section] === "object" && raw[section] !== null && !Array.isArray(raw[section])
+      typeof raw[section] === "object" && raw[section] != null && !Array.isArray(raw[section])
         ? (raw[section] as Record<string, unknown>)
         : {};
     const merged = { ...existing, ...patch };

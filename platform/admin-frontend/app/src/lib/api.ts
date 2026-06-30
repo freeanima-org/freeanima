@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { treaty, type Treaty } from "@elysiajs/eden";
 import type { FridgeMagnetsResponse, ServiceStatus } from "@freeanima/admin-contract/api";
 import {
@@ -56,7 +57,7 @@ export async function unwrap<T>(promise: Promise<TreatyResult<T>>): Promise<T> {
     };
     throw new Error(
       translateApiErrorValue({
-        ...(typeof err.value === "object" && err.value !== null ? (err.value as object) : {}),
+        ...(typeof err.value === "object" && err.value != null ? (err.value as object) : {}),
         error: typeof err.value === "string" ? err.value : undefined,
         message: err.message,
         code: err.code,
@@ -64,7 +65,7 @@ export async function unwrap<T>(promise: Promise<TreatyResult<T>>): Promise<T> {
       }),
     );
   }
-  if (result.data === null || result.data === undefined) {
+  if (result.data == null || result.data === undefined) {
     throw new Error(m.admin_common_empty_response());
   }
   return reviveDates(result.data);
@@ -256,12 +257,12 @@ export async function listPipelineStepRuns(opts?: {
 }) {
   return unwrap(
     resolveApiClient().api.sleep["pipeline-runs"].get({
-      query: {
+      query: omitUndefined({
         step_id: opts?.step_id,
         run_id: opts?.run_id,
         limit: opts?.limit,
         offset: opts?.offset,
-      },
+      }),
     }),
   );
 }
@@ -298,12 +299,12 @@ export async function listCronLogs(opts?: {
 }) {
   return unwrap(
     resolveApiClient().api["cron-logs"].get({
-      query: {
+      query: omitUndefined({
         job_id: opts?.job_id,
         limit: opts?.limit,
         offset: opts?.offset,
         ok: opts?.ok,
-      },
+      }),
     }),
   );
 }
@@ -316,12 +317,12 @@ export async function listAutoLlmRuns(opts?: {
 }) {
   return unwrap(
     resolveApiClient().api["auto-llm-runs"].get({
-      query: {
+      query: omitUndefined({
         run_kind: opts?.run_kind,
         status: opts?.status,
         limit: opts?.limit,
         offset: opts?.offset,
-      },
+      }),
     }),
   );
 }

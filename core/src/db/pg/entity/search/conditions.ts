@@ -244,7 +244,7 @@ export function buildEntitySearchConditions(opts: EntitySearchOpts): SQL[] {
 
 export function buildEntitySearchWhere(opts: EntitySearchOpts): SQL | undefined {
   const conditions = buildEntitySearchConditions(opts);
-  return conditions.length ? and(...conditions) : undefined;
+  return conditions.length > 0 ? and(...conditions) : undefined;
 }
 
 /** 去掉全角括号等装饰符，便于 ILIKE / FTS 匹配正文关键词 */

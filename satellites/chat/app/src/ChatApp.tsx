@@ -179,7 +179,7 @@ export function ChatApp() {
   }, [inputText]);
 
   const filteredCommands = useMemo(() => {
-    if (slashPrefix === null) return [];
+    if (slashPrefix == null) return [];
     return commandList.filter((c) => c.name.toLowerCase().startsWith(slashPrefix));
   }, [commandList, slashPrefix]);
 
@@ -462,7 +462,7 @@ export function ChatApp() {
         },
         onAwaitingClarify: (data) => {
           if (!isViewingOrigin()) return;
-          if (Array.isArray(data.items) && data.items.length) {
+          if (Array.isArray(data.items) && data.items.length > 0) {
             setClarifyPending({
               items: data.items as ClarifyPending["items"],
               timeout_sec: (data.timeout_sec as number | undefined) ?? 1800,

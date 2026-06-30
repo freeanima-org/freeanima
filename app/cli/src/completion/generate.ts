@@ -14,7 +14,7 @@ function optionFlags(cmd: Command): string[] {
   const out: string[] = [];
   for (const opt of cmd.options) {
     const parts = [opt.short, opt.long].filter(Boolean);
-    if (!parts.length) continue;
+    if (parts.length === 0) continue;
     const joined = parts.join(" ");
     if (joined.includes("help") || joined.includes("version")) continue;
     out.push(joined);
@@ -63,7 +63,7 @@ function buildBashFunctions(node: CommandTree, out: string[]): void {
     out.push(`_${name}() {`);
     out.push('    local cur="${COMP_WORDS[COMP_CWORD]}"');
     if (actions) {
-      out.push(`    if (( COMP_CWORD == ${depth} )); then`);
+      out.push(`    if (( COMP_CWORD === ${depth} )); then`);
       const words = [actions, opts].filter(Boolean).join(" ");
       out.push(`        COMPREPLY=( $(compgen -W "${words}" -- "\${cur}") )`);
       out.push("        return");
@@ -98,7 +98,7 @@ function generateBash(root: Command): string {
     "_anima() {",
     '    local first="${COMP_WORDS[1]}"',
     '    local cur="${COMP_WORDS[COMP_CWORD]}"',
-    "    if (( COMP_CWORD == 1 )); then",
+    "    if (( COMP_CWORD === 1 )); then",
     `        COMPREPLY=( $(compgen -W "${rootWords}" -- "\${cur}") )`,
     "        return",
     "    fi",
@@ -124,7 +124,7 @@ function renderZshCase(node: CommandTree, depth: number): string[] {
 
   if (level === 2) {
     const all = [...node.subcommands, ...node.options].join(" ");
-    lines.push(`${indent}if (( CURRENT == ${level} )); then`);
+    lines.push(`${indent}if (( CURRENT === ${level} )); then`);
     if (all) {
       lines.push(`${indent}    _values "command" ${all}`);
     } else {
@@ -139,9 +139,9 @@ function renderZshCase(node: CommandTree, depth: number): string[] {
     const childSubs = child.subcommands.join(" ");
     const childOpts = child.options.join(" ");
 
-    lines.push(`${indent}if [[ "\${words[${level - 1}]}" == "${cmdName}" ]]; then`);
+    lines.push(`${indent}if [[ "\${words[${level - 1}]}" === "${cmdName}" ]]; then`);
     if (childSubs) {
-      lines.push(`${indent}    if (( CURRENT == ${childLevel} )); then`);
+      lines.push(`${indent}    if (( CURRENT === ${childLevel} )); then`);
       const words = [childSubs, childOpts].filter(Boolean).join(" ");
       lines.push(`${indent}        _values "action" ${words}`);
       lines.push(`${indent}        return 0`, `${indent}    fi`);

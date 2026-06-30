@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { FormField, FormFieldset } from "@freeanima/ui-kit/form";
@@ -270,13 +271,13 @@ function WorldsPage() {
     setModalError("");
     try {
       const ownerSubjectId = form.private ? Number(form.owner_subject_id) : undefined;
-      const payload = {
+      const payload = omitUndefined({
         title: form.title.trim(),
         summary: form.summary.trim(),
         content: form.content.trim(),
         private: form.private,
         owner_subject_id: ownerSubjectId,
-      };
+      });
       if (modal?.mode === "edit" && modal.row) {
         await updateWorldEntity(modal.row.id, payload);
       } else {

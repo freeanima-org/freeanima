@@ -1,5 +1,6 @@
 import type { ToolDef } from "@freeanima/core/tool";
 import { toolError, toolResult } from "@freeanima/core/tool";
+import { omitUndefined } from "@freeanima/core/util";
 import type { LimbicKind, LimbicMemoryCreateInput } from "@freeanima/core/repos";
 import { createLimbicMemory } from "@freeanima/core/db/pg/limbic-memory";
 
@@ -13,7 +14,7 @@ function parseStringArray(value: unknown): string[] | undefined {
 
 function parseOptionalFloat(value: unknown): number | null | undefined {
   if (value === undefined) return undefined;
-  if (value === null) return null;
+  if (value == null) return null;
   const n = Number(value);
   return Number.isNaN(n) ? null : n;
 }
@@ -76,7 +77,7 @@ export const limbicMemoryToolDefs: ToolDef[] = [
         );
       }
 
-      const row: LimbicMemoryCreateInput = {
+      const row: LimbicMemoryCreateInput = omitUndefined({
         conversation_id: conversationId,
         kind: kindRaw as LimbicKind,
         content,
@@ -85,7 +86,7 @@ export const limbicMemoryToolDefs: ToolDef[] = [
         intensity,
         source_segment: args.source_segment !== undefined ? String(args.source_segment) : undefined,
         semantic_memory_ids: parseStringArray(args.semantic_memory_ids),
-      };
+      });
 
       try {
         const id = await createLimbicMemory(row);

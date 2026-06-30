@@ -62,7 +62,10 @@ describe("createAcpProgressDelivery chat progress", () => {
     expect(storedContent).toBe("progress v1");
 
     const second = await port.deliverProgress(
-      { ...task, progressMessageId: first?.progressMessageId },
+      {
+        ...task,
+        ...(first?.progressMessageId ? { progressMessageId: first.progressMessageId } : {}),
+      },
       "progress v2",
     );
     expect(second?.progressMessageId).toBe("msg-progress-1");

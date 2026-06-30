@@ -25,7 +25,7 @@ function ConversationLink({ conversationId }: { conversationId: string }) {
 }
 
 function ConversationLinks({ conversationIds }: { conversationIds: string[] }) {
-  if (!conversationIds.length) return null;
+  if (conversationIds.length === 0) return null;
   return (
     <p className="text-xs text-base-content/60">
       <span className="text-base-content/50">{m.admin_semantic_source_conversation()}: </span>

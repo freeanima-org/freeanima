@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import type { AutoLlmRunRow } from "@freeanima/core/repos";
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
 import {
@@ -33,10 +34,10 @@ export async function listAutoLlmRuns(
   }
 
   const { offset, limit } = clampPagination(opts?.offset, opts?.limit);
-  const filter = {
+  const filter = omitUndefined({
     run_kind: opts?.run_kind?.trim() || undefined,
     status: opts?.status,
-  };
+  });
   const [items, total] = await Promise.all([
     listPgAutoLlmRuns({ ...filter, offset, limit }),
     countAutoLlmRuns(filter),

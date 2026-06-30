@@ -5,12 +5,13 @@ import {
   type StoredMessage,
 } from "@freeanima/core/db/domain";
 import { cleanToolCallsForApi } from "@freeanima/core/provider/stream-tools";
+import { omitUndefined } from "@freeanima/core/util";
 import { repairToolLoopMessages } from "./tool-loop-integrity.ts";
 
 /** Ensure assistant has content or valid tool_calls before sending to provider */
 export function normalizeAssistantTurn(msg: AssistantMessage): LlmTurnMessage | null {
   const cleaned = msg.tool_calls?.length ? cleanToolCallsForApi(msg.tool_calls) : [];
-  if (cleaned.length) {
+  if (cleaned.length > 0) {
     return {
       ...msg,
       content: msg.content ?? null,
@@ -51,8 +52,8 @@ export function storedMessagesToInvokeInput(messages: StoredMessage[]): InvokeMe
     turns.push(msg as LlmTurnMessage);
   }
 
-  const systemPrompt = systemParts.length ? systemParts.join("\n") : undefined;
-  return { turns, systemPrompt };
+  const systemPrompt = systemParts.length > 0 ? systemParts.join("\n") : undefined;
+  return omitUndefined({ turns, systemPrompt });
 }
 
 export type SimpleChatMessage = {
@@ -77,5 +78,5 @@ export function simpleMessagesToInvokeInput(messages: SimpleChatMessage[]): Invo
     }
   }
 
-  return { turns, systemPrompt };
+  return omitUndefined({ turns, systemPrompt });
 }

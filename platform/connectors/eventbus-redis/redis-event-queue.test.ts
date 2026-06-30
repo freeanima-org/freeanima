@@ -67,7 +67,9 @@ describe("RedisEventQueue", () => {
     });
     bus.start();
     await waitFor(() => attempts >= 1);
-    await new Promise((r) => setTimeout(r, 50));
+    await new Promise((r) => {
+      setTimeout(r, 50);
+    });
     bus.stop();
     expect(attempts).toBe(1);
     expect(lists.pending).toHaveLength(0);
@@ -92,7 +94,9 @@ describe("RedisEventQueue", () => {
     queue.start(process);
     queue.stop();
     seedPendingEvent(lists, testPing.qualifiedId, { n: 1 });
-    await new Promise((r) => setTimeout(r, 30));
+    await new Promise((r) => {
+      setTimeout(r, 30);
+    });
     expect(process).not.toHaveBeenCalled();
   });
 
@@ -118,7 +122,9 @@ describe("RedisEventQueue", () => {
 
     const process = vi.fn(async () => "ack" as const);
     queue.start(process);
-    await new Promise((r) => setTimeout(r, 30));
+    await new Promise((r) => {
+      setTimeout(r, 30);
+    });
     queue.stop();
     expect(process).not.toHaveBeenCalled();
     expect(lists.processing).toHaveLength(0);

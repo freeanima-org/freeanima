@@ -8,6 +8,7 @@ export abstract class EventTopic<Payload> extends QualifiedToken<Payload> {
 }
 
 class EventTopicToken<Payload> extends EventTopic<Payload> {
+  // oxlint-disable-next-line eslint/no-useless-constructor -- forwards to protected EventTopic constructor
   constructor(qualifiedId: string, description?: string) {
     super(qualifiedId, description);
   }
