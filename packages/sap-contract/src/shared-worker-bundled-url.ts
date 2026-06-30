@@ -1,5 +1,2 @@
-/** Vite 构建时解析为 SharedWorker 产物 URL（随 shell base 落在 /web/assets/… 等路径） */
-// @ts-expect-error Vite 在 shell 构建时解析 ?sharedworker&url
-import sapSharedWorkerUrl from "./shared-worker-entry.ts?sharedworker&url";
-
-export default sapSharedWorkerUrl as string;
+/** Bun/Node 等非 Vite 打包时的占位；Vite shell 构建通过 alias 指向 shared-worker-bundled-url.vite.ts */
+export default "" as string;
