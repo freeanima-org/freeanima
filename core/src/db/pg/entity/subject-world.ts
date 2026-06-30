@@ -112,13 +112,13 @@ function defaultSubjectTitle(type: "user" | "agent"): string {
   return type === "user" ? "用户" : "Agent";
 }
 
-async function createSubjectAtId(
+async function createSubjectRowAtId(
   id: number,
   type: "user" | "agent",
   title: string,
 ): Promise<EntityRow> {
   const primary = type === "agent" ? AGENT_CONFIG_COMPONENT : USER_CONFIG_COMPONENT;
-  const created = await createEntityAtId({
+  return createEntityAtId({
     id,
     type,
     world_id: ENTITY_ROOT_WORLD_ID,
@@ -129,6 +129,14 @@ async function createSubjectAtId(
     content: "",
     body: {},
   });
+}
+
+async function createSubjectAtId(
+  id: number,
+  type: "user" | "agent",
+  title: string,
+): Promise<EntityRow> {
+  const created = await createSubjectRowAtId(id, type, title);
   const worldId = await createDefaultPrivateWorldForSubject(created);
   const withDefault = await updateEntity({
     id: created.id,
@@ -157,7 +165,12 @@ async function createSubjectNextId(type: "user" | "agent", title: string): Promi
   return withDefault ?? created;
 }
 
-async function ensureSubjectAtId(id: number, expectedType: "user" | "agent"): Promise<EntityRow> {
+async function ensureSubjectAtId(
+  id: number,
+  expectedType: "user" | "agent",
+  opts?: { bootstrapWorld?: boolean },
+): Promise<EntityRow> {
+  const bootstrapWorld = opts?.bootstrapWorld ?? true;
   const existing = await getEntity(id);
   if (existing) {
     if (existing.type !== expectedType) {
@@ -165,7 +178,9 @@ async function ensureSubjectAtId(id: number, expectedType: "user" | "agent"): Pr
         `entity id=${id} has type=${existing.type}, expected ${expectedType}`,
       );
     }
-    await ensureDefaultPrivateWorldOnSubject(existing);
+    if (bootstrapWorld) {
+      await ensureDefaultPrivateWorldOnSubject(existing);
+    }
     const refreshed = await getEntity(id);
     if (!refreshed) {
       throw new EntitySubjectBootstrapError(`subject ${id} disappeared after ensure`);
@@ -173,7 +188,10 @@ async function ensureSubjectAtId(id: number, expectedType: "user" | "agent"): Pr
     return refreshed;
   }
 
-  return createSubjectAtId(id, expectedType, defaultSubjectTitle(expectedType));
+  if (bootstrapWorld) {
+    return createSubjectAtId(id, expectedType, defaultSubjectTitle(expectedType));
+  }
+  return createSubjectRowAtId(id, expectedType, defaultSubjectTitle(expectedType));
 }
 
 export type EnsuredWorldSubjects = {
@@ -198,14 +216,25 @@ function readSubjectWorldId(subject: EntityRow): number {
 export async function ensureWorldSubjects(config: AnimaConfig): Promise<EnsuredWorldSubjects> {
   const { user_subject_id, agent_subject_id } = resolveWorldSubjectIds(config);
 
-  const userSubject = await ensureSubjectAtId(user_subject_id, "user");
-  const agentSubject = await ensureSubjectAtId(agent_subject_id, "agent");
+  const userSubject = await ensureSubjectAtId(user_subject_id, "user", { bootstrapWorld: false });
+  const agentSubject = await ensureSubjectAtId(agent_subject_id, "agent", {
+    bootstrapWorld: false,
+  });
+
+  await ensureDefaultPrivateWorldOnSubject(userSubject);
+  await ensureDefaultPrivateWorldOnSubject(agentSubject);
+
+  const userRefreshed = await getEntity(user_subject_id);
+  const agentRefreshed = await getEntity(agent_subject_id);
+  if (!userRefreshed || !agentRefreshed) {
+    throw new EntitySubjectBootstrapError("subject disappeared after default world bootstrap");
+  }
 
   return {
-    user_subject_id: userSubject.id,
-    agent_subject_id: agentSubject.id,
-    user_world_id: readSubjectWorldId(userSubject),
-    agent_world_id: readSubjectWorldId(agentSubject),
+    user_subject_id: userRefreshed.id,
+    agent_subject_id: agentRefreshed.id,
+    user_world_id: readSubjectWorldId(userRefreshed),
+    agent_world_id: readSubjectWorldId(agentRefreshed),
   };
 }
 
