@@ -3,6 +3,7 @@ import { useRef, useState, type MouseEvent, type TouchEvent } from "react";
 
 import { taskDndId } from "../lib/dnd-ids.ts";
 import type { TaskItemRow } from "../lib/api.ts";
+import { EntityIdLabel } from "./EntityIdLabel.tsx";
 
 type CompletedTaskListProps = {
   items: TaskItemRow[];
@@ -114,6 +115,7 @@ function CompletedTaskRow({
           </span>
         ) : null}
       </button>
+      {!selectionMode ? <EntityIdLabel id={item.id} /> : null}
       {useActionSheet && !selectionMode ? (
         <button
           type="button"
