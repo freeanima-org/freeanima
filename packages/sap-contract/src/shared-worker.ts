@@ -1,5 +1,6 @@
 /// <reference lib="dom" />
 /// <reference lib="webworker" />
+import { randomUuid } from "@freeanima/kernel/random-uuid";
 import type { SapClient, SapMethod, SapRouterInputs, SapRouterOutputs } from "./router.ts";
 import type { ConnectPayload, ConnectedPayload } from "./frames/lifecycle.ts";
 import type { SapReconnectPolicy } from "./transport.ts";
@@ -215,7 +216,7 @@ export function createSharedWorkerSapClient(
       payload: SapRouterInputs[K],
     ): Promise<SapRouterOutputs[K]> {
       ensureInit();
-      const id = crypto.randomUUID();
+      const id = randomUuid();
       return new Promise<SapRouterOutputs[K]>((resolve, reject) => {
         pending.set(id, {
           resolve: resolve as (value: unknown) => void,

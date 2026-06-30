@@ -1,3 +1,4 @@
+import { randomUuid } from "@freeanima/kernel/random-uuid";
 import type { SapEnvelope } from "./protocol.ts";
 import { parseSapEnvelope, serializeSapEnvelope } from "./protocol.ts";
 import type { ConnectPayload, ConnectedPayload } from "./frames/lifecycle.ts";
@@ -105,7 +106,7 @@ export function createSapClient(options: CreateSapClientOptions): SapClient {
       method: K,
       payload: SapRouterInputs[K],
     ): Promise<SapRouterOutputs[K]> {
-      const id = crypto.randomUUID();
+      const id = randomUuid();
       return new Promise<SapRouterOutputs[K]>((resolve, reject) => {
         pending.set(id, {
           resolve: resolve as (value: unknown) => void,

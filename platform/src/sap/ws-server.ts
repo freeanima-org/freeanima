@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type { SapServerDeps } from "./types.ts";
 export type { SapServerDeps } from "./types.ts";
 import {
@@ -332,7 +333,7 @@ export function createSapServerHandlers(
           return handleNotificationRecipients(deps);
         case "message.send": {
           const input = messageSendInputSchema.parse(payload);
-          const streamId = crypto.randomUUID();
+          const streamId = randomUUID();
           const platform = await resolveConversationPlatform(deps, input.conversation_id);
           void pumpMessageStream(
             deps,

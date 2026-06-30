@@ -21,6 +21,11 @@ describe("httpConfigSchema", () => {
     });
     expect(parsed.success).toBe(true);
   });
+
+  test("parses host string and array", () => {
+    expect(httpConfigSchema.safeParse({ host: "0.0.0.0" }).success).toBe(true);
+    expect(httpConfigSchema.safeParse({ host: ["127.0.0.1", "galaxy"] }).success).toBe(true);
+  });
 });
 
 describe("collectHttpCorsOrigins", () => {

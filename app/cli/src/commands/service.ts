@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import { Argument } from "commander";
-import { DEFAULT_BIND_HOST } from "@freeanima/platform/bind-hosts";
 import { runServiceCommand, type ServiceArgs } from "../service-cmd.ts";
+import { resolveServiceBindHost } from "../service-bind-host.ts";
 
 const SERVICE_ACTIONS = ["start", "stop", "restart", "status"] as const;
 
@@ -17,8 +17,7 @@ export function registerServiceCommand(program: Command): void {
     .option("--foreground", "Run serve() in foreground (debug)")
     .option(
       "--host <host>",
-      "Listen address (comma-separated for multiple binds)",
-      DEFAULT_BIND_HOST,
+      "Listen address (overrides http.host in config; comma-separated for multiple binds)",
     )
     .option("--port <port>", "Listen port", "2658")
     .addHelpText(
@@ -29,11 +28,11 @@ systemd (default):
   and runs systemctl --user enable --now anima
 `,
     )
-    .action(async (action: string, opts: { foreground?: boolean; host: string; port: string }) => {
+    .action(async (action: string, opts: { foreground?: boolean; host?: string; port: string }) => {
       const args: ServiceArgs = {
         action,
         foreground: Boolean(opts.foreground),
-        host: opts.host,
+        host: resolveServiceBindHost(opts.host),
         port: parseInt(opts.port, 10),
       };
       await runServiceCommand(args);

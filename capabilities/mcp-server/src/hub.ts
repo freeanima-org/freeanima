@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { readAppVersionForCapability as readAppVersion } from "@freeanima/core/config";
 import {
   handlerResultToMcpContent,
@@ -44,7 +45,7 @@ function createMcpServer(deps: McpHubDeps): Server {
         isError: true,
       };
     }
-    const sessionId = crypto.randomUUID();
+    const sessionId = randomUUID();
     const text = await runWithToolContext(`mcp:${sessionId}`, () => tool.handler(args), {
       tools: deps.toolSets,
       contextKind: "auto_llm",

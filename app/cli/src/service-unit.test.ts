@@ -7,6 +7,7 @@ import { ensureUnitFile } from "./service-cmd.ts";
 import * as serviceCommon from "./service-common.ts";
 import {
   parseBindHosts,
+  coalesceBindHosts,
   resolveProbeHost,
   DEFAULT_BIND_HOST,
 } from "@freeanima/platform/bind-hosts";
@@ -17,6 +18,12 @@ describe("bind hosts", () => {
     expect(resolveProbeHost("127.0.0.1,0.0.0.0")).toBe("127.0.0.1");
     expect(resolveProbeHost("0.0.0.0")).toBe("127.0.0.1");
     expect(DEFAULT_BIND_HOST).toBe("127.0.0.1");
+  });
+
+  it("coalesceBindHosts prefers all-interfaces bind", () => {
+    expect(coalesceBindHosts(["127.0.0.1", "0.0.0.0"])).toEqual(["0.0.0.0"]);
+    expect(coalesceBindHosts(["127.0.0.1", "10.244.0.244"])).toEqual(["127.0.0.1", "10.244.0.244"]);
+    expect(coalesceBindHosts(["127.0.0.1", "127.0.0.1"])).toEqual(["127.0.0.1"]);
   });
 });
 

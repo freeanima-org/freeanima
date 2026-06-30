@@ -1,5 +1,6 @@
 import type { DisplayItem, StreamApiEvent } from "@chat/lib/types.ts";
 import { pollUntilAssistantReply } from "@chat/lib/display-recovery.ts";
+import { randomUuid } from "@freeanima/sap-contract";
 import { marked } from "marked";
 import { create } from "zustand";
 import { m } from "@chat/lib/i18n.ts";
@@ -198,7 +199,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const trimmed = text.trim();
     if (!trimmed) return;
     const item: QueuedMessage = {
-      id: crypto.randomUUID(),
+      id: randomUuid(),
       conversationId,
       text: trimmed,
     };

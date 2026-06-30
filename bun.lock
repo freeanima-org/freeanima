@@ -250,6 +250,7 @@
     "packages/sap-contract": {
       "name": "@freeanima/sap-contract",
       "dependencies": {
+        "@freeanima/kernel": "workspace:*",
         "zod": "catalog:",
       },
       "devDependencies": {

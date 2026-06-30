@@ -1,4 +1,5 @@
 /// <reference lib="dom" />
+import { randomUuid } from "@freeanima/kernel/random-uuid";
 import { parseSapEnvelope, serializeSapEnvelope, type SapEnvelope } from "./protocol.ts";
 import type { ConnectPayload, ConnectedPayload } from "./frames/lifecycle.ts";
 import type { SapClient, SapMethod, SapRouterInputs, SapRouterOutputs } from "./router.ts";
@@ -110,7 +111,7 @@ export function createSapRelayClient(options: CreateSapRelayClientOptions): SapR
     method: K,
     payload: SapRouterInputs[K],
   ): Promise<SapRouterOutputs[K]> {
-    const id = crypto.randomUUID();
+    const id = randomUuid();
     return new Promise<SapRouterOutputs[K]>((resolve, reject) => {
       void whenReady()
         .then(() => {

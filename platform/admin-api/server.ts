@@ -142,10 +142,16 @@ export async function startApiHttpServers(
   port: number,
   options: ApiServerOptions = {},
 ): Promise<ApiServerHandle[]> {
-  if (hosts.length === 1) {
-    return [await startApiHttpServer(hosts[0]!, port, options)];
+  const { coalesceBindHosts } = await import("@freeanima/platform/bind-hosts");
+  const bindHosts = coalesceBindHosts(hosts);
+  if (bindHosts.length === 1) {
+    return [await startApiHttpServer(bindHosts[0]!, port, options)];
   }
-  return Promise.all(hosts.map((host) => startApiHttpServer(host, port, options)));
+  const servers: ApiServerHandle[] = [];
+  for (const host of bindHosts) {
+    servers.push(await startApiHttpServer(host, port, options));
+  }
+  return servers;
 }
 
 export { ADMIN_BASE_PATH };

@@ -23,6 +23,7 @@ export { isServerAlive, readStatusFile } from "./alive.ts";
 export {
   DEFAULT_BIND_HOST,
   DEFAULT_BIND_HOSTS,
+  coalesceBindHosts,
   parseBindHosts,
   resolveProbeHost,
 } from "./bind-hosts.ts";

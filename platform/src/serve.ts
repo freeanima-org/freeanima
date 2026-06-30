@@ -7,7 +7,7 @@ import {
   markStartupPhase,
 } from "@freeanima/platform/logging";
 import { REPO_ROOT } from "./runtime/index.ts";
-import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.ts";
+import { DEFAULT_BIND_HOST, coalesceBindHosts, parseBindHosts } from "./bind-hosts.ts";
 import { getAppRuntime } from "./runtime/runtime-context.ts";
 import { BOOT_PHASES, startAsyncIntegrations } from "./boot/phases.ts";
 import { bootEnginePhase } from "./boot/engine-phase.ts";
@@ -69,7 +69,7 @@ export async function serve(
     throw err;
   }
 
-  const bindHosts = parseBindHosts(host);
+  const bindHosts = coalesceBindHosts(parseBindHosts(host));
   const statusHost = bindHosts.join(",");
   installErrorLogHandlers();
   markStartupPhase(true);

@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
@@ -76,7 +77,7 @@ export function createTerminalSession(cwd?: string): { conversationId: string; p
     workDir = process.cwd();
   }
 
-  const conversationId = crypto.randomUUID();
+  const conversationId = randomUUID();
   const pty = createScriptTerminal(workDir);
   sessions.set(conversationId, pty);
   return { conversationId, pty };

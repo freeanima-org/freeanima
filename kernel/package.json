@@ -12,7 +12,8 @@
     "./hooks": "./src/hooks/index.ts",
     "./hooks/testing": "./src/hooks/testing.ts",
     "./eventbus": "./src/eventbus/index.ts",
-    "./eventbus/testing": "./src/eventbus/testing.ts"
+    "./eventbus/testing": "./src/eventbus/testing.ts",
+    "./random-uuid": "./src/random-uuid.ts"
   },
   "devDependencies": {
     "@types/bun": "catalog:"
