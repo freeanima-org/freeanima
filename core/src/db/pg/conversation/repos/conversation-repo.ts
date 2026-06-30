@@ -161,6 +161,27 @@ export async function patchConversationMeta(
   patch: Partial<ConversationMetaMessage> & Record<string, unknown>,
 ): Promise<void> {
   const db = getDb();
+
+  // platform_info 衍生字段（capability_mask / gateway_tool_display）须走全量 upsert
+  if (
+    "capability_mask" in patch ||
+    "gateway_tool_display" in patch ||
+    patch.platform !== undefined ||
+    patch.platform_extra !== undefined
+  ) {
+    const existing = await getConversationMeta(conversation_id);
+    if (!existing) return;
+    const merged: ConversationMetaMessage = { ...existing, ...patch, role: "conversation_meta" };
+    if ("gateway_tool_display" in patch && patch.gateway_tool_display === undefined) {
+      delete merged.gateway_tool_display;
+    }
+    if ("capability_mask" in patch && patch.capability_mask === undefined) {
+      delete merged.capability_mask;
+    }
+    await upsertConversationMeta(conversation_id, merged);
+    return;
+  }
+
   const set: Partial<ConversationInsert> = { updated_at: pgNow() };
   let hasColumnPatch = false;
 
@@ -208,17 +229,17 @@ export async function patchConversationMeta(
     set.debug = patch.debug === true;
     hasColumnPatch = true;
   }
-  if (patch.awaiting_clarify !== undefined) {
+  if ("awaiting_clarify" in patch) {
     const awaitingRaw = pgJsonbOrNull(patch.awaiting_clarify);
     set.awaiting_clarify = awaitingRaw ? awaitingClarifySchema.parse(awaitingRaw) : null;
     hasColumnPatch = true;
   }
-  if (patch.acp_tasks !== undefined) {
+  if ("acp_tasks" in patch) {
     const acpRaw = pgJsonbOrNull(patch.acp_tasks);
     set.acp_tasks = acpRaw ? acpTasksSchema.parse(acpRaw) : null;
     hasColumnPatch = true;
   }
-  if (patch.goal !== undefined) {
+  if ("goal" in patch) {
     const goalRaw = pgJsonbOrNull(patch.goal);
     set.goal = goalRaw ? conversationGoalSchema.parse(goalRaw) : null;
     hasColumnPatch = true;
@@ -227,11 +248,8 @@ export async function patchConversationMeta(
     set.model = String(patch.model);
     hasColumnPatch = true;
   }
-  if (patch.platform !== undefined || patch.platform_extra !== undefined) {
-    hasColumnPatch = false;
-  }
 
-  if (hasColumnPatch && patch.platform === undefined && patch.platform_extra === undefined) {
+  if (hasColumnPatch) {
     try {
       await db.update(conversations).set(set).where(eq(conversations.id, conversation_id));
       return;

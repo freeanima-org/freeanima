@@ -88,8 +88,9 @@ export async function setupPgTestDb(url: string, config: Config): Promise<PgTest
   initDatabase({ getDatabaseUrl: () => url });
   bindActiveConfig(config);
   const { sql, db } = createTestSql(url);
-  await clearPgTables(sql, config);
+  // ensureWorldSubjects（clearPgTables 内）走 getDb()，须先注入测试连接以免泄漏孤儿连接
   setDbForTest(db, sql);
+  await clearPgTables(sql, config);
   const engine = createTestEngine(config);
   activeCtx = {
     sql,
