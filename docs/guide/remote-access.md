@@ -2,38 +2,44 @@
 title: Remote access
 ---
 
-# Remote access (Tunnel + app token)
+# Remote access (Tunnel + Service API Token)
 
-> When exposing the home PC Hub via **Cloudflare Tunnel**, Hub **`remote_auth`** Bearer token protects non-local connections.
+> Hub 业务 API（REST / SAP / MCP）须带 **per-subject Service API Token**（`Authorization: Bearer fa_at_...`）。
 > Security context: [`security.md`](security.md) · Install: [`install.md`](install.md)
 
 ## Overview
 
-| Layer                   | Role                                                                                                                     |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **Hub `remote_auth`**   | Plaintext token in `config.yaml`; REST `Authorization: Bearer`; SAP `connect` frame `auth_token`; MCP `/mcp` same Bearer |
-| **cloudflared**         | Outbound tunnel; single hostname → Hub `127.0.0.1:2658` (API + Web UI at `/web`)                                         |
-| **`http.cors_origins`** | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel                       |
-| **Client settings**     | app/desktop / app/mobile / **browser Web** fill Hub URL and token in **Hub settings**                                    |
+| Layer                   | Role                                                                                                        |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **Service API Token**   | 绑定 `user` / `agent` subject；REST `Authorization: Bearer`；SAP `connect.auth_token`；MCP `/mcp` 同 Bearer |
+| **CLI bootstrap**       | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                               |
+| **cloudflared**         | Outbound tunnel；single hostname → Hub `127.0.0.1:2658`（API + Web UI at `/web`）                           |
+| **`http.cors_origins`** | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel          |
+| **Client settings**     | app/desktop / app/mobile / **browser Web** fill Hub URL and token in **Hub settings**                       |
 
-Token is **skipped** only when **Host is loopback** (`127.0.0.1` / `localhost` / `::1`) **and TCP peer is loopback** (local dev, CLI/systemd health checks). Public domains (via Tunnel), LAN IPs, etc. require token; independent of `tunnel.enabled`.
+仅 `GET /api/health`、CORS 预检、`/api/echo` 豁免认证。
 
-## 1. Hub configuration
-
-In `~/.anima/config.yaml` (**omit for local-only**; required before LAN or public exposure):
-
-```yaml
-remote_auth:
-  token: "replace with openssl rand -base64 32 output"
-```
-
-Generate:
+## 1. 创建 token（冷启动）
 
 ```bash
-openssl rand -base64 32
+anima token create --subject-id 1 --name bootstrap
+# 终端打印 fa_at_...（仅此一次）→ 填入客户端 Hub 设置
 ```
 
-`.gitignore` ignores `config.yaml`; do not commit. Admin API redacts `remote_auth.token` on read.
+列出 / 撤销：
+
+```bash
+anima token list --subject-id 1
+anima token revoke <token_id>
+```
+
+**升级**：若 `config.yaml` 仍有 `remote_auth.token`，Hub 启动时会自动迁移为 `user_subject_id` 的 service token；请删除 `remote_auth` 段并在客户端改用新 token。
+
+Admin REST（需已认证 `full` token）：
+
+- `GET /api/subjects/:id/tokens`
+- `POST /api/subjects/:id/tokens` — body `{ "name": "desktop" }`，响应含一次性 `plaintext`
+- `DELETE /api/tokens/:id`
 
 ### Cross-origin (`http.cors_origins`)
 
@@ -94,7 +100,7 @@ See wizard `anima tunnel setup`.
 Settings (all clients):
 
 1. **Hub URL** — e.g. `https://anima.example.com` or `http://192.168.1.10:2658` (Hub root, **without** `/web`)
-2. **Remote token** — same as Hub `remote_auth.token` (required for LAN IP / domain; only loopback may omit)
+2. **Hub API Token** — `fa_at_...` from `anima token create`
 
 Browser Web: `/web/config.json` sets default Hub to the page origin; first visit still requires saving token in settings.
 
@@ -103,12 +109,14 @@ Flow: open Hub settings → fill → **Test connection** → Save. Desktop requi
 ## 4. Authentication behavior
 
 ```text
-REST:  Authorization: Bearer <token>
+REST:  Authorization: Bearer fa_at_<prefix>_<secret>
 SAP:   WebSocket /sap/v1 → connect frame includes auth_token
 MCP:   POST/GET /mcp → Authorization: Bearer <token>
 ```
 
-`/web/*` static assets skip `remote_auth`; `/api` and `/mcp` do not.
+`/web/*` static assets skip service auth; `/api` and `/mcp` require Bearer token.
+
+Missing or invalid token → HTTP `401` or SAP connection closed.
 
 ## 5. MCP outbound (external agents query Hub data)
 
@@ -120,36 +128,32 @@ mcpServers:
   freeanima:
     url: http://127.0.0.1:2658/mcp
     headers:
-      Authorization: "Bearer <remote_auth.token>"
+      Authorization: "Bearer fa_at_..."
 ```
 
 - **Inbound** (Hub connects to external MCP servers): `config.yaml` `mcp_servers` (`capabilities/mcp-client`)
 - **Outbound** (external agents call Hub tools): `/mcp` endpoint (`capabilities/mcp-server`)
-- Public / LAN access requires same `remote_auth` token as REST; loopback may omit
-
-Missing or wrong token → HTTP `401` or SAP connection closed.
-
-Decision uses request URL **Host** (public domain via Tunnel, e.g. `anima.example.com`) and **TCP peer**; Hub does not use `tunnel.enabled` to decide token enforcement.
 
 ## Operations
 
-| Command                        | Description                                    |
-| ------------------------------ | ---------------------------------------------- |
-| `anima tunnel status`          | Tunnel / cloudflared status                    |
-| `anima tunnel start` / `stop`  | Manual cloudflared (production: service stack) |
-| `anima web start --foreground` | Standalone Web static server (debug, `/web`)   |
-| `anima service status`         | Hub / Tunnel stack                             |
+| Command                          | Description                                    |
+| -------------------------------- | ---------------------------------------------- |
+| `anima token create/list/revoke` | Service API Token 管理（CLI，直连 PG）         |
+| `anima tunnel status`            | Tunnel / cloudflared status                    |
+| `anima tunnel start` / `stop`    | Manual cloudflared (production: service stack) |
+| `anima web start --foreground`   | Standalone Web static server (debug, `/web`)   |
+| `anima service status`           | Hub / Tunnel stack                             |
 
 ## Troubleshooting
 
-| Symptom                | Check                                                                    |
-| ---------------------- | ------------------------------------------------------------------------ |
-| Public 502             | Is Hub running? `anima service status`                                   |
-| Public 1033            | `anima tunnel status` shows `connected: no`                              |
-| 401                    | Client token matches `remote_auth.token`                                 |
-| Local OK, remote fails | Remote requests need Bearer / SAP auth_token; public Host requires token |
-| CORS error in browser  | Add UI origin to `http.cors_origins`, or use Hub `/web` same-origin      |
-| 401 after token change | Update Hub config **and** all client settings pages                      |
+| Symptom                | Check                                                               |
+| ---------------------- | ------------------------------------------------------------------- |
+| Public 502             | Is Hub running? `anima service status`                              |
+| Public 1033            | `anima tunnel status` shows `connected: no`                         |
+| 401                    | Client token valid; run `anima token list --subject-id <id>`        |
+| Local OK, remote fails | Remote requests need Bearer / SAP auth_token                        |
+| CORS error in browser  | Add UI origin to `http.cors_origins`, or use Hub `/web` same-origin |
+| 401 after token change | Update client settings; revoke old tokens if needed                 |
 
 ## Related docs
 

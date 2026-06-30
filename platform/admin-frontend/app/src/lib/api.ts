@@ -536,3 +536,39 @@ export async function updateSubjectEntity(
       .patch(body),
   ) as Promise<EntityRow>;
 }
+
+export type ServiceApiTokenPublic = {
+  id: number;
+  subject_id: number;
+  name: string;
+  prefix: string;
+  scopes: string[];
+  created_at: Date;
+  expires_at: Date | null;
+  last_used_at: Date | null;
+  revoked_at: Date | null;
+};
+
+export async function listSubjectApiTokens(subjectId: number) {
+  return unwrap(
+    resolveApiClient()
+      .api.subjects({ id: String(subjectId) })
+      .tokens.get(),
+  ) as Promise<{ items: ServiceApiTokenPublic[] }>;
+}
+
+export async function createSubjectApiToken(subjectId: number, body: { name: string }) {
+  return unwrap(
+    resolveApiClient()
+      .api.subjects({ id: String(subjectId) })
+      .tokens.post(body),
+  ) as Promise<{ token: ServiceApiTokenPublic; plaintext: string }>;
+}
+
+export async function revokeSubjectApiToken(tokenId: number) {
+  return unwrap(
+    resolveApiClient()
+      .api.tokens({ id: String(tokenId) })
+      .delete(),
+  ) as Promise<{ ok: true }>;
+}

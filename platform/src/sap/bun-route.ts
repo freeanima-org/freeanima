@@ -1,11 +1,9 @@
 import type { ServerWebSocket } from "bun";
 import type { SapServerDeps } from "./ws-server.ts";
 import { attachSapWebSocket } from "./ws-server.ts";
-import { shouldBypassRemoteAuth } from "../../admin-api/remote-auth.ts";
 
 type SapSocketData = {
   handler: ReturnType<typeof attachSapWebSocket>;
-  bypassRemoteAuth: boolean;
 };
 
 export function createSapBunHandlers(deps: SapServerDeps): {
@@ -22,15 +20,10 @@ export function createSapBunHandlers(deps: SapServerDeps): {
       if (url.pathname !== "/sap/v1") {
         return undefined;
       }
-      const remoteAddress =
-        typeof server.requestIP === "function"
-          ? (server.requestIP(req)?.address ?? undefined)
-          : undefined;
       if (
         server.upgrade(req, {
           data: {
             handler: null as unknown as SapSocketData["handler"],
-            bypassRemoteAuth: shouldBypassRemoteAuth(req, remoteAddress),
           },
         })
       ) {
@@ -40,18 +33,14 @@ export function createSapBunHandlers(deps: SapServerDeps): {
     },
     websocket: {
       open(ws) {
-        ws.data.handler = attachSapWebSocket(
-          deps,
-          {
-            send(data) {
-              ws.send(data);
-            },
-            close(code, reason) {
-              ws.close(code, reason);
-            },
+        ws.data.handler = attachSapWebSocket(deps, {
+          send(data) {
+            ws.send(data);
           },
-          { bypassRemoteAuth: ws.data.bypassRemoteAuth },
-        );
+          close(code, reason) {
+            ws.close(code, reason);
+          },
+        });
       },
       message(ws, message) {
         if (typeof message !== "string") return;

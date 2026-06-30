@@ -46,6 +46,7 @@ Component fields live in **`body` JSONB** at the top level. **`primary_component
 - Subjects are **not** scoped by `world_id` in a membership sense; row `world_id` stays at bootstrap root (`ENTITY_ROOT_WORLD_ID`) as a table placeholder.
 - **`agent_config` / `user_config` body**: `default_private_world_id` — the subject's single default private world (auto-created on subject create; configurable from private worlds owned by the subject).
 - **Notifications** use subject entity ids as `recipient_id` (see [`notifications.md`](notifications.md) and `config.yaml` `worlds.user_subject_id` / `agent_subject_id`).
+- **Service API Token**（`service_api_tokens` 表）绑定 subject entity id；Hub REST/SAP/MCP 从 Bearer token 解析调用方身份。见 [`remote-access.md`](../guide/remote-access.md)。
 
 ### Boot-time ensure (`worlds` config)
 

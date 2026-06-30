@@ -14,7 +14,10 @@ export {
   countEntitiesSearch,
   EntitySearchScopeError,
 } from "./search/entity-search-repo.ts";
-export { resolvePublicAccessibleWorldIds } from "./search/accessible-worlds.ts";
+export {
+  resolvePublicAccessibleWorldIds,
+  resolveWorldsAccessibleBySubject,
+} from "./search/accessible-worlds.ts";
 export {
   ensureWorldSubjects,
   createSubjectEntityRecord,

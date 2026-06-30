@@ -258,9 +258,17 @@ export type SapServerHandlers = {
   ): Promise<SapRouterOutputs[SapMethod]> | SapRouterOutputs[SapMethod];
 };
 
+export type SapRequestAuthContext = {
+  subject_id: number;
+  subject_type: "user" | "agent";
+  token_id: number;
+  scopes: string[];
+};
+
 export type SapRequestContext = {
   app_id: string;
   instance_id: string;
+  auth: SapRequestAuthContext;
   sendEvent(method: string, payload: unknown): void;
 };
 

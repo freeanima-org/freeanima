@@ -20,3 +20,24 @@ export async function resolvePublicAccessibleWorldIds(
   }
   return ids;
 }
+
+/** subject 可访问的 world：public + 该 subject 拥有的 private world */
+export async function resolveWorldsAccessibleBySubject(
+  store: EntityWorldListStore,
+  subjectId: number,
+): Promise<number[]> {
+  const worlds = await store.list({ type: "world", limit: 500 });
+  const ids: number[] = [];
+  for (const row of worlds) {
+    const parsed = worldConfigBodySchema.safeParse(row.body);
+    if (!parsed.success) continue;
+    if (!parsed.data.private) {
+      ids.push(row.id);
+      continue;
+    }
+    if (parsed.data.owner_subject_id === subjectId) {
+      ids.push(row.id);
+    }
+  }
+  return ids;
+}

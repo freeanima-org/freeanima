@@ -58,4 +58,9 @@ export {
   updateSubjectEntity,
   searchEntities,
 } from "./entities.ts";
+export {
+  listSubjectApiTokens,
+  createSubjectApiToken,
+  revokeSubjectApiToken,
+} from "./service-api-tokens.ts";
 export { ApiHandlerError } from "./errors.ts";

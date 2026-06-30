@@ -30,6 +30,7 @@
     "./db/pg/sap": "./src/db/pg/sap/index.ts",
     "./db/pg/cron": "./src/db/pg/cron/index.ts",
     "./db/pg/notifications": "./src/db/pg/notifications/index.ts",
+    "./db/pg/service-api-token": "./src/db/pg/service-api-token/index.ts",
     "./repos": "./src/repos/index.ts",
     "./repos/*": "./src/repos/*.ts",
     "./util": "./src/util/index.ts",

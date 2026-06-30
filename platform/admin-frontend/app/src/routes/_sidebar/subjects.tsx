@@ -11,6 +11,7 @@ import {
   type EntityRow,
 } from "@admin/lib/api.ts";
 import { logCaughtError } from "@admin/lib/log-caught-error.ts";
+import { SubjectApiTokensModal } from "./subject-api-tokens-modal.tsx";
 
 export const Route = createFileRoute("/_sidebar/subjects")({
   component: SubjectsPage,
@@ -220,6 +221,7 @@ function SubjectsPage() {
     mode: "create" | "edit";
     row?: EntityRow;
   } | null>(null);
+  const [tokensSubject, setTokensSubject] = useState<EntityRow | null>(null);
   const [modalError, setModalError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -391,13 +393,22 @@ function SubjectsPage() {
                       {formatDisplayDateTime(row.updated_at)}
                     </td>
                     <td>
-                      <button
-                        type="button"
-                        className="btn btn-xs btn-ghost"
-                        onClick={() => openEdit(row)}
-                      >
-                        {m.admin_common_edit()}
-                      </button>
+                      <div className="flex flex-wrap gap-1">
+                        <button
+                          type="button"
+                          className="btn btn-xs btn-ghost"
+                          onClick={() => openEdit(row)}
+                        >
+                          {m.admin_common_edit()}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-xs btn-ghost"
+                          onClick={() => setTokensSubject(row)}
+                        >
+                          {m.admin_entities_api_tokens()}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -420,6 +431,10 @@ function SubjectsPage() {
           onClose={closeModal}
           onSave={(form) => void onSave(form)}
         />
+      ) : null}
+
+      {tokensSubject ? (
+        <SubjectApiTokensModal subject={tokensSubject} onClose={() => setTokensSubject(null)} />
       ) : null}
     </div>
   );

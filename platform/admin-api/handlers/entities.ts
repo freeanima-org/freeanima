@@ -13,10 +13,12 @@ import {
   getEntity,
   listEntities,
   resolvePublicAccessibleWorldIds,
+  resolveWorldsAccessibleBySubject,
   searchEntities as searchEntitiesPg,
   updateEntity,
 } from "@freeanima/core/db/pg/entity";
 
+import { parseServiceAuthFromRequest } from "../auth-context.ts";
 import { ApiHandlerError } from "./errors.ts";
 
 function mapSearchHit(row: EntitySearchHit): EntitySearchHit {
@@ -325,28 +327,34 @@ export async function updateSubjectEntity(
   return (await getEntity(id)) ?? updated;
 }
 
-export async function searchEntities(input: {
-  query?: string;
-  world_id?: number;
-  global?: boolean;
-  type?: "content" | "world" | "agent" | "user";
-  types?: Array<"content" | "world" | "agent" | "user">;
-  primary_component?: string;
-  component?: string;
-  filters?: Record<string, unknown>;
-  created_after?: string;
-  created_before?: string;
-  updated_after?: string;
-  updated_before?: string;
-  limit?: number;
-  offset?: number;
-  mode?: "hybrid" | "filter_only";
-}) {
+export async function searchEntities(
+  input: {
+    query?: string;
+    world_id?: number;
+    global?: boolean;
+    type?: "content" | "world" | "agent" | "user";
+    types?: Array<"content" | "world" | "agent" | "user">;
+    primary_component?: string;
+    component?: string;
+    filters?: Record<string, unknown>;
+    created_after?: string;
+    created_before?: string;
+    updated_after?: string;
+    updated_before?: string;
+    limit?: number;
+    offset?: number;
+    mode?: "hybrid" | "filter_only";
+  },
+  request?: Request,
+) {
   const global = input.global === true;
+  const auth = request ? parseServiceAuthFromRequest(request) : null;
   let accessible_world_ids: number[] | undefined;
 
   if (global) {
-    accessible_world_ids = await resolvePublicAccessibleWorldIds({ list: listEntities });
+    accessible_world_ids = auth
+      ? await resolveWorldsAccessibleBySubject({ list: listEntities }, auth.subject_id)
+      : await resolvePublicAccessibleWorldIds({ list: listEntities });
     if (!accessible_world_ids.length) {
       throw new ApiHandlerError(403, "no accessible worlds for global search", {
         code: "entity_search_global_forbidden",
@@ -356,6 +364,16 @@ export async function searchEntities(input: {
     throw new ApiHandlerError(400, "world_id is required unless global=true", {
       code: "entity_search_scope_required",
     });
+  } else if (auth) {
+    const accessible = await resolveWorldsAccessibleBySubject(
+      { list: listEntities },
+      auth.subject_id,
+    );
+    if (!accessible.includes(input.world_id)) {
+      throw new ApiHandlerError(403, "world not accessible for token subject", {
+        code: "entity_search_world_forbidden",
+      });
+    }
   }
 
   try {

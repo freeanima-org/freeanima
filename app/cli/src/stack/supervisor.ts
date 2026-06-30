@@ -69,7 +69,6 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
 
   const fileConfig = FileConfig.open();
   const cfg = fileConfig.data;
-  const remoteAuthToken = cfg.remote_auth?.token;
 
   let webStatic: { distDir: string; appId?: string } | null = null;
   if (cfg.web?.enabled) {
@@ -88,11 +87,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
   await serve(options.host, options.port, {
     foreground: true,
     http: {
-      start: (hosts, port) =>
-        startApiHttpServers(hosts, port, {
-          remoteAuthToken,
-          webStatic,
-        }),
+      start: (hosts, port) => startApiHttpServers(hosts, port, { webStatic }),
       close: closeHttpServers,
       waitForDrain: waitForDrainWithTimeout,
     },

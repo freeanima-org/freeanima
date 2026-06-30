@@ -60,6 +60,7 @@ import {
   normalizeAppSlug,
   formatSapPlatform,
   type SapMethod,
+  type SapRequestAuthContext,
   type SapRequestContext,
   type SapRouterInputs,
   type SapServerHandlers,
@@ -79,7 +80,7 @@ import {
   getTerminalSession,
   TerminalSessionError,
 } from "./terminal-session.ts";
-import { verifyRemoteAuthToken } from "../../admin-api/remote-auth.ts";
+import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
 
 const HEARTBEAT_INTERVAL_SEC = 30;
 
@@ -252,25 +253,25 @@ export function createSapServerHandlers(
           return serviceFridge.listFridgeMagnets();
         }
         case "tasklist.list":
-          return handleTasklistList(deps, payload);
+          return handleTasklistList(deps, payload, ctx);
         case "tasklist.create":
-          return handleTasklistCreate(deps, payload);
+          return handleTasklistCreate(deps, payload, ctx);
         case "tasklist.patch":
-          return handleTasklistPatch(deps, payload);
+          return handleTasklistPatch(deps, payload, ctx);
         case "tasklist.delete":
-          return handleTasklistDelete(deps, payload);
+          return handleTasklistDelete(deps, payload, ctx);
         case "task.list":
-          return handleTaskList(deps, payload);
+          return handleTaskList(deps, payload, ctx);
         case "task.create":
-          return handleTaskCreate(deps, payload);
+          return handleTaskCreate(deps, payload, ctx);
         case "task.patch":
-          return handleTaskPatch(deps, payload);
+          return handleTaskPatch(deps, payload, ctx);
         case "task.complete":
-          return handleTaskComplete(deps, payload);
+          return handleTaskComplete(deps, payload, ctx);
         case "task.uncomplete":
-          return handleTaskUncomplete(deps, payload);
+          return handleTaskUncomplete(deps, payload, ctx);
         case "task.delete":
-          return handleTaskDelete(deps, payload);
+          return handleTaskDelete(deps, payload, ctx);
         case "diary.list": {
           const input = diaryListInputSchema.parse(payload);
           return serviceEntityDiary.serviceDiaryList(deps.runtime.runtimeDeps(), input);
@@ -472,12 +473,12 @@ async function pumpSessionUpdates(
 export function attachSapWebSocket(
   deps: SapServerDeps,
   ws: SapWsSend,
-  opts: { bypassRemoteAuth?: boolean } = {},
 ): { close: () => void; handleMessage: (raw: string) => Promise<void> } {
   const sessionPumps = new Map<string, AbortController>();
   const handlers = createSapServerHandlers(deps, sessionPumps);
   let connected = false;
   let connState: { appId: string; instanceId: string } | null = null;
+  let connAuth: SapRequestAuthContext | null = null;
   let satelliteConnKey = "";
 
   const sendEnvelope = (envelope: Parameters<typeof serializeSapEnvelope>[0]): void => {
@@ -487,6 +488,7 @@ export function attachSapWebSocket(
   const ctxFor = (): SapRequestContext => ({
     app_id: connState?.appId ?? "",
     instance_id: connState?.instanceId ?? "",
+    auth: connAuth!,
     sendEvent(method, payload) {
       sendEnvelope({ kind: "evt", method, payload });
     },
@@ -507,13 +509,17 @@ export function attachSapWebSocket(
         return;
       }
       const parsed = connectPayloadSchema.parse(envelope.payload);
-      if (
-        !opts.bypassRemoteAuth &&
-        !verifyRemoteAuthToken(deps.remoteAuthToken, parsed.auth_token)
-      ) {
+      const token = parsed.auth_token?.trim();
+      if (!token) {
         ws.close(1008, "unauthorized");
         return;
       }
+      const verified = await verifyServiceApiToken(token);
+      if (!verified) {
+        ws.close(1008, "unauthorized");
+        return;
+      }
+      connAuth = verified;
       let connectedPayload: Awaited<ReturnType<SapServerHandlers["onConnect"]>>;
       try {
         connectedPayload = await handlers.onConnect(parsed);

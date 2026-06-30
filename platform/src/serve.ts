@@ -90,6 +90,8 @@ export async function serve(
     await runPersistence(config);
     const { bootWorldSubjectsPhase } = await import("./boot/world-subjects-phase.ts");
     await bootWorldSubjectsPhase(config);
+    const { bootServiceApiTokensPhase } = await import("./boot/service-api-tokens-phase.ts");
+    await bootServiceApiTokensPhase(config);
 
     const acpSessionUpdatedRef: { handler: ((sid: string) => void) | null } = { handler: null };
     const runtimeRef: { current: AppRuntime | null } = { current: null };
