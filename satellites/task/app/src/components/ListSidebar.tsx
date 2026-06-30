@@ -1,6 +1,6 @@
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useDrawerNav } from "@freeanima/satellite-sdk/layout";
+import { useDrawerNav } from "@freeanima/ui-kit/layout";
 import {
   useEffect,
   useMemo,

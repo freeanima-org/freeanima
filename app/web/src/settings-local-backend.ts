@@ -1,16 +1,16 @@
-import type { SettingsStorageScope } from "@freeanima/satellite-sdk/settings";
-import type { ScopedSettingsBackend } from "@freeanima/satellite-sdk/settings";
+import type { SettingsStorageScope } from "@freeanima/shell-sdk/settings";
+import type { ScopedSettingsBackend } from "@freeanima/shell-sdk/settings";
 import {
   DEBUG_SENTRY_DSN_KEY,
   DEBUG_SENTRY_ENABLED_KEY,
   DEBUG_VCONSOLE_ENABLED_KEY,
   HUB_URL_KEY,
   REMOTE_AUTH_TOKEN_KEY,
-} from "@freeanima/satellite-sdk/settings";
+} from "@freeanima/shell-sdk/settings";
 import {
   parseShellDebugConfig,
   type ShellDebugConfig,
-} from "@freeanima/satellite-sdk/shell-debug-config";
+} from "@freeanima/shell-sdk/shell-debug-config";
 
 function loadKvScope(scope: SettingsStorageScope): unknown {
   if (scope.kind !== "kv") throw new Error("web 仅支持 kv scope");

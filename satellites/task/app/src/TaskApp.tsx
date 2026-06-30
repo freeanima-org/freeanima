@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { useSubjectScope } from "@freeanima/shell-sdk/react";
-import { ListDetailLayout } from "@freeanima/satellite-sdk/layout";
-import { FormFieldLabel, FormFieldset } from "@freeanima/satellite-sdk/form";
+import { ListDetailLayout } from "@freeanima/ui-kit/layout";
+import { FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form";
 
 import { ActionSheet, ConfirmDialog, EmptyState } from "@freeanima/ui-kit/composite";
 import { CompletedTaskList } from "./components/CompletedTaskList.tsx";

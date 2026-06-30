@@ -3,7 +3,7 @@ import {
   normalizeShellDebugConfig,
   parseShellDebugConfig,
   type ShellDebugConfig,
-} from "@freeanima/satellite-sdk";
+} from "@freeanima/shell-sdk";
 
 import {
   DEBUG_SENTRY_DSN_KEY,

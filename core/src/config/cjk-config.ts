@@ -1,5 +1,5 @@
 import type { AnimaConfig } from "./schemas/config.ts";
-import { PATHS, homePath } from "./paths.ts";
+import { PATHS } from "./paths.ts";
 
 /** Whether jieba Chinese tokenization is enabled */
 export function isCjkJiebaEnabled(cfg: AnimaConfig): boolean {
@@ -24,9 +24,4 @@ export function getCjkConfigSnapshot(cfg: AnimaConfig): CjkConfigSnapshot {
     enabled,
     dict_path: enabled ? cjkJiebaDictPath(cfg) : null,
   };
-}
-
-/** Legacy default path used before PATHS.cjkUserDict consolidation */
-export function legacyJiebaUserDictPath(): string {
-  return homePath("jieba_userdict.txt");
 }

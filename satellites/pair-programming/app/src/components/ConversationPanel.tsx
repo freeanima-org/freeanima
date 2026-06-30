@@ -187,7 +187,7 @@ export function ConversationPanel() {
         <div ref={msgAreaRef} className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
           {!store.currentConversationId ? (
             <div className="text-center text-base-content/40 text-sm pt-8">
-              {m.admin_studio_create_or_select()}
+              {m.pair_create_or_select()}
             </div>
           ) : null}
 
@@ -291,7 +291,7 @@ export function ConversationPanel() {
                 onChange={(e) => setInputText(e.target.value)}
                 rows={3}
                 className="textarea textarea-bordered textarea-sm w-full min-h-[2.5rem] resize-none"
-                placeholder={m.admin_studio_chat_placeholder()}
+                placeholder={m.pair_chat_placeholder()}
                 disabled={!store.currentConversationId || streaming}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
@@ -311,8 +311,8 @@ export function ConversationPanel() {
         onClick={() => setConversationListVisible((v) => !v)}
         title={
           conversationListVisible
-            ? m.admin_studio_toggle_conversation_list_hide()
-            : m.admin_studio_toggle_conversation_list_show()
+            ? m.pair_toggle_conversation_list_hide()
+            : m.pair_toggle_conversation_list_show()
         }
       >
         {conversationListVisible ? "▸" : "◂"}

@@ -2,7 +2,6 @@ import { describe, expect, it, beforeEach, afterEach } from "bun:test";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createTempDir, removeTempDir } from "@freeanima/core/util";
-import { MINIMAL_REMOTE_AUTH } from "@freeanima/core/config/test-helpers/minimal-llm-config";
 import { FileConfig, stringifyYaml } from "./index.ts";
 import { getEventbusBackend, getEventbusKeyPrefix } from "./eventbus.ts";
 import { eventbusConfigSchema } from "@freeanima/core/config";
@@ -45,7 +44,6 @@ describe("eventbus config", () => {
             chat: { chain: [{ provider: "main", model: "gpt-4" }] },
           },
         },
-        remote_auth: MINIMAL_REMOTE_AUTH,
       }),
     );
     const config = FileConfig.open();
@@ -70,7 +68,6 @@ describe("eventbus config", () => {
             chat: { chain: [{ provider: "main", model: "gpt-4" }] },
           },
         },
-        remote_auth: MINIMAL_REMOTE_AUTH,
         eventbus: { backend: "redis", key_prefix: "custom:events" },
       }),
     );

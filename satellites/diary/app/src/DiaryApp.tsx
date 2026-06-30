@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSubjectScope } from "@freeanima/shell-sdk/react";
-import { ListDetailLayout } from "@freeanima/satellite-sdk/layout";
+import { ListDetailLayout } from "@freeanima/ui-kit/layout";
 
 import { EntryEditor } from "./components/EntryEditor.tsx";
 import { EntryTimeline, findEntryByDayLocal } from "./components/EntryTimeline.tsx";

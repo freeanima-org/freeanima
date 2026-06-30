@@ -3,7 +3,6 @@ import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-llm-openai";
 import { createLlmRuntime } from "./llm-stack.ts";
 import { registerLlmStackConfigurator } from "./llm-stack-configurator.ts";
 import type { AnimaConfig } from "@freeanima/core/config";
-import { MINIMAL_REMOTE_AUTH } from "@freeanima/core/config/test-helpers/minimal-llm-config";
 
 const testCfg = {
   llm: {
@@ -21,7 +20,6 @@ const testCfg = {
       },
     },
   },
-  remote_auth: MINIMAL_REMOTE_AUTH,
 } as AnimaConfig;
 
 beforeAll(() => {

@@ -18,7 +18,7 @@ const PACKAGE_JSON = join(SHELL_ROOT, "package.json");
 
 const BUNDLED_WORKSPACE_PACKAGES = new Set([
   "@freeanima/sap-contract",
-  "@freeanima/satellite-sdk",
+  "@freeanima/shell-sdk",
   "@freeanima/satellite-companion",
   "@freeanima/satellite-chat",
   "@freeanima/admin-frontend",

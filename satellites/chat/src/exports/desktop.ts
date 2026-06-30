@@ -1,4 +1,4 @@
-import type { FrontendDesktopExport } from "@freeanima/satellite-sdk";
+import type { FrontendDesktopExport } from "@freeanima/shell-sdk";
 
 import { getChatManifest } from "./manifest.ts";
 

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-29 14:22+0800\n"
+"POT-Creation-Date: 2026-07-01 00:03+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/guide/security.md:1 docs/tools/execute-code-runtimes.md:60
-#: messages/po4a/en.xml:582 messages/po4a/en.xml:585
+#: messages/po4a/en.xml:601 messages/po4a/en.xml:604
 #, no-wrap
 msgid "Security"
 msgstr ""
@@ -66,8 +66,8 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/guide/security.md:17
 msgid ""
-"**Do not** expose the service to the public internet without `remote_auth` "
-"(see [`remote-access.md`](remote-access.md) — Tunnel + Bearer token)."
+"**Do not** expose the service to the public internet without a Service API "
+"Token on clients (see [`remote-access.md`](remote-access.md))."
 msgstr ""
 
 #. type: Title ##
@@ -181,15 +181,15 @@ msgstr ""
 #: docs/guide/security.md:79
 #, no-wrap
 msgid ""
-"| Priority | Item                                                  | Status                                                                                                                                  |\n"
-"| -------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                                                                                                                                 |\n"
-"| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                                                                                                                         |\n"
-"| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                                                                                                                         |\n"
-"| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                                                                                                                         |\n"
-"| P2       | HTTP API auth                                         | Non-loopback Host or non-loopback TCP peer requires `remote_auth` or 401; dual loopback exempt ([`remote-access.md`](remote-access.md)) |\n"
-"| P3       | IPC / LLM rate limiting                               | None                                                                                                                                    |\n"
-"| P3       | Session disk encryption                               | None                                                                                                                                    |\n"
+"| Priority | Item                                                  | Status                                                                                                           |\n"
+"| -------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |\n"
+"| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                                                                                                          |\n"
+"| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                                                                                                  |\n"
+"| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                                                                                                  |\n"
+"| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                                                                                                  |\n"
+"| P2       | HTTP API auth                                         | 业务 API 须带 per-subject Service API Token；`GET /api/health` 豁免（见 [`remote-access.md`](remote-access.md)） |\n"
+"| P3       | IPC / LLM rate limiting                               | None                                                                                                             |\n"
+"| P3       | Session disk encryption                               | None                                                                                                             |\n"
 msgstr ""
 
 #. type: Title ##
@@ -221,13 +221,13 @@ msgstr ""
 #: docs/guide/security.md:99
 #, no-wrap
 msgid ""
-"| Module           | A External                                | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |\n"
-"| ---------------- | ----------------------------------------- | ------------------------------------------------------------------- | ------------------------- | ------------------ | ---------------------------------- |\n"
-"| **Runtime**      | Default 127.0.0.1 bind                    | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |\n"
-"| **Gateway**      | Token in pass                             | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |\n"
-"| **CLI / Tools**  | Local shell compromised                   | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |\n"
-"| **HTTP / Admin** | `remote_auth` Bearer token (non-loopback) | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |\n"
-"| **MCP / ACP**    | SSE auth undefined                        | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |\n"
+"| Module           | A External                                                 | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |\n"
+"| ---------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------- | ------------------ | ---------------------------------- |\n"
+"| **Runtime**      | Default 127.0.0.1 bind                                     | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |\n"
+"| **Gateway**      | Token in pass                                              | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |\n"
+"| **CLI / Tools**  | Local shell compromised                                    | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |\n"
+"| **HTTP / Admin** | `service_api_tokens` Bearer token（所有来源，含 loopback） | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |\n"
+"| **MCP / ACP**    | SSE auth undefined                                         | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |\n"
 msgstr ""
 
 #. type: Title ##

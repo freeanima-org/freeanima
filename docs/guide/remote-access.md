@@ -34,8 +34,6 @@ anima token list --subject-id 1
 anima token revoke <token_id>
 ```
 
-**升级**：若 `config.yaml` 仍有 `remote_auth.token`，Hub 启动时会自动迁移为 `user_subject_id` 的 service token；请删除 `remote_auth` 段并在客户端改用新 token。
-
 Admin REST（需已认证 `full` token）：
 
 - `GET /api/subjects/:id/tokens`

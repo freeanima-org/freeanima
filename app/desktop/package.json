@@ -17,7 +17,7 @@
   "dependencies": {
     "@freeanima/sap-contract": "workspace:*",
     "@freeanima/satellite-companion": "workspace:*",
-    "@freeanima/satellite-sdk": "workspace:*",
+    "@freeanima/shell-sdk": "workspace:*",
     "@freeanima/shell-ui": "workspace:*"
   },
   "devDependencies": {

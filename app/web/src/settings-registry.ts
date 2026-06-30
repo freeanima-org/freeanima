@@ -2,7 +2,7 @@ import {
   debugSettingsSection,
   hubSettingsSection,
   type SettingsBinding,
-} from "@freeanima/satellite-sdk/settings";
+} from "@freeanima/shell-sdk/settings";
 
 import type { WebSettingsStores } from "./settings-stores.ts";
 

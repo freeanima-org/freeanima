@@ -10,19 +10,19 @@ import {
   HUB_URL_KEY,
   LAUNCH_AT_LOGIN_KEY,
   REMOTE_AUTH_TOKEN_KEY,
-} from "@freeanima/satellite-sdk/settings";
+} from "@freeanima/shell-sdk/settings";
 import {
   normalizeShellDebugConfig,
   parseShellDebugConfig,
   parseShellClientConfig,
   type ShellDebugConfig,
   type ShellClientConfig,
-} from "@freeanima/satellite-sdk";
+} from "@freeanima/shell-sdk";
 import {
   desktopSettingsPath,
   legacyShellClientConfigPath,
-} from "@freeanima/satellite-sdk/desktop-settings-paths";
-import { parseShellSettings } from "@freeanima/satellite-sdk/shell-settings";
+} from "@freeanima/shell-sdk/desktop-settings-paths";
+import { parseShellSettings } from "@freeanima/shell-sdk/shell-settings";
 
 import { dirname, join } from "node:path";
 

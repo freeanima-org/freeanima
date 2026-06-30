@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-29 13:16+0800\n"
+"POT-Creation-Date: 2026-07-01 00:11+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:569
+#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:588
 #, no-wrap
 msgid "Installation"
 msgstr ""
@@ -498,7 +498,7 @@ msgstr ""
 msgid ""
 "bun run anima -- --help\n"
 "# or\n"
-"./cli/src/cli.ts --help\n"
+"bun app/cli/src/cli.ts --help\n"
 msgstr ""
 
 #. type: Plain text
@@ -595,52 +595,57 @@ msgstr ""
 #: docs/guide/install.md:251
 #, no-wrap
 msgid ""
+"anima service start\n"
+"anima token create --subject-id 1 --name bootstrap\n"
+"# 将输出的 fa_at_... 填入客户端 Hub 设置\n"
+"\n"
 "anima service status\n"
-"curl -s http://127.0.0.1:2658/api/status | jq '.version, .memory_kb'\n"
+"curl -s -H \"Authorization: Bearer <fa_at_...>\" http://127.0.0.1:2658/api/status | jq '.version, .memory_kb'\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:257
+#: docs/guide/install.md:261
 msgid ""
-"If status fails, check PostgreSQL connectivity and that migrations completed "
-"([`database.md`](database.md#troubleshooting))."
+"If status fails, check PostgreSQL connectivity, that migrations completed "
+"([`database.md`](database.md#troubleshooting)), and that a valid Service API "
+"Token is configured."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/install.md:258
+#: docs/guide/install.md:262
 #, no-wrap
 msgid "Next steps"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/guide/install.md:264
+#: docs/guide/install.md:268
 msgid ""
 "**Security** — pass-only secrets, `chmod 700 ~/.anima`, do not expose Admin "
 "without auth ([`security.md`](security.md))"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/guide/install.md:264
+#: docs/guide/install.md:268
 msgid ""
-"**Remote access** — optional Cloudflare Tunnel + `remote_auth.token` for "
+"**Remote access** — optional Cloudflare Tunnel + Service API Token for "
 "personal mobile/remote Admin ([`remote-access.md`](remote-access.md))"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/guide/install.md:264
+#: docs/guide/install.md:268
 msgid ""
 "**Database** — backups, extensions, manual migrations if needed "
 "([`database.md`](database.md))"
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/guide/install.md:264
+#: docs/guide/install.md:268
 msgid ""
 "**Operations** — start/stop, memory metrics ([`service.md`](service.md))"
 msgstr ""
 
 #. type: Bullet: '5. '
-#: docs/guide/install.md:264
+#: docs/guide/install.md:268
 msgid ""
 "**Architecture** — memory pipeline, self layer, tools ([`../concepts/"
 "architecture.md`](../concepts/architecture.md))"

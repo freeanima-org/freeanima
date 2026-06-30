@@ -3,10 +3,10 @@ import {
   createHubSettingsStore,
   HUB_SETTINGS_SCOPE,
   type SettingsStore,
-} from "@freeanima/satellite-sdk/settings";
-import type { ShellClientConfig } from "@freeanima/satellite-sdk/shell-client-config";
-import type { ShellDebugConfig } from "@freeanima/satellite-sdk/shell-debug-config";
-import { normalizeShellClientConfig } from "@freeanima/satellite-sdk/shell-client-config";
+} from "@freeanima/shell-sdk/settings";
+import type { ShellClientConfig } from "@freeanima/shell-sdk/shell-client-config";
+import type { ShellDebugConfig } from "@freeanima/shell-sdk/shell-debug-config";
+import { normalizeShellClientConfig } from "@freeanima/shell-sdk/shell-client-config";
 import { sendSentryTestEvent } from "@freeanima/shell-ui/sentry-test";
 
 import { createWebScopedBackend } from "./settings-local-backend.ts";

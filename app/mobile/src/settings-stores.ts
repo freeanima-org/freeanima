@@ -3,12 +3,12 @@ import {
   createHubSettingsStore,
   HUB_SETTINGS_SCOPE,
   type SettingsStore,
-} from "@freeanima/satellite-sdk/settings";
+} from "@freeanima/shell-sdk/settings";
 import {
   normalizeShellClientConfig,
   type ShellClientConfig,
   type ShellDebugConfig,
-} from "@freeanima/satellite-sdk";
+} from "@freeanima/shell-sdk";
 import { sendSentryTestEvent } from "@freeanima/shell-ui/sentry-test";
 import { buildMobileShell, SHELL_CONFIG_CHANGED_EVENT } from "./mobile-shell.ts";
 import { createMobileScopedBackend, testMobileHubConnection } from "./settings-prefs-backend.ts";

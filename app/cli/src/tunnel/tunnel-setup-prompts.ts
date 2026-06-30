@@ -183,7 +183,7 @@ async function runInteractivePrompts(): Promise<{
     `hostname: ${hostnameValue}`,
     `hub: 127.0.0.1:${hubPort}`,
     apiToken ? "API: 自动 provisioning" : "API: 手动 Dashboard",
-    "认证: Hub remote_auth.token（客户端设置页填写）",
+    "认证: Service API Token（anima token create；客户端 Hub 设置填写 fa_at_...）",
   ].join("\n");
 
   const confirmed = await p.confirm({
@@ -272,7 +272,7 @@ export async function runTunnelSetup(opts: SetupPromptsOptions = {}): Promise<vo
 
     p.log.success(`公网 URL: ${result.publicUrl}`);
     p.log.info("Admin: " + result.publicUrl + "/admin/dashboard");
-    p.log.info("请在 Hub config.yaml 配置 remote_auth.token，并在客户端设置页填写同一 token");
+    p.log.info("请运行 anima token create --subject-id <id> 创建 token，并在客户端 Hub 设置中填写");
 
     if (result.manualDnsSteps) {
       p.log.warn("公网 DNS 未就绪 — 手机/外网无法访问，请完成以下步骤：");

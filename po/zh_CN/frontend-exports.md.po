@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-29 14:22+0800\n"
+"POT-Creation-Date: 2026-07-01 00:03+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -104,9 +104,13 @@ msgstr ""
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:34
+#, fuzzy
+#| msgid ""
+#| "Implementation SSOT: [`packages/satellite-sdk/src/manifest.ts`](../../"
+#| "packages/satellite-sdk/src/manifest.ts)"
 msgid ""
-"Implementation SSOT: [`packages/satellite-sdk/src/manifest.ts`](../../"
-"packages/satellite-sdk/src/manifest.ts)"
+"Implementation SSOT: [`packages/shell-sdk/src/manifest.ts`](../../packages/"
+"shell-sdk/src/manifest.ts)"
 msgstr ""
 "实现 SSOT：[`packages/satellite-sdk/src/manifest.ts`](../../packages/"
 "satellite-sdk/src/manifest.ts)"

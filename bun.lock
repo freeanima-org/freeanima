@@ -42,7 +42,7 @@
       "dependencies": {
         "@freeanima/sap-contract": "workspace:*",
         "@freeanima/satellite-companion": "workspace:*",
-        "@freeanima/satellite-sdk": "workspace:*",
+        "@freeanima/shell-sdk": "workspace:*",
         "@freeanima/shell-ui": "workspace:*",
       },
       "devDependencies": {
@@ -70,7 +70,7 @@
         "@capacitor/keyboard": "^7.0.1",
         "@capacitor/preferences": "^7.0.1",
         "@freeanima/sap-contract": "workspace:*",
-        "@freeanima/satellite-sdk": "workspace:*",
+        "@freeanima/shell-sdk": "workspace:*",
         "@freeanima/shell-ui": "workspace:*",
         "vconsole": "^3.15.1",
       },
@@ -91,7 +91,7 @@
       "name": "@freeanima/app-web",
       "dependencies": {
         "@freeanima/sap-contract": "workspace:*",
-        "@freeanima/satellite-sdk": "workspace:*",
+        "@freeanima/shell-sdk": "workspace:*",
         "@freeanima/shell-ui": "workspace:*",
         "react": "catalog:",
         "react-dom": "catalog:",
@@ -255,20 +255,6 @@
       },
       "devDependencies": {
         "@types/bun": "catalog:",
-      },
-    },
-    "packages/satellite-sdk": {
-      "name": "@freeanima/satellite-sdk",
-      "dependencies": {
-        "@freeanima/shell-sdk": "workspace:*",
-        "@freeanima/ui-kit": "workspace:*",
-        "react": "catalog:",
-        "zod": "catalog:",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-        "@types/react": "catalog:",
-        "typescript": "catalog:",
       },
     },
     "packages/shell-sdk": {
@@ -450,7 +436,7 @@
       "dependencies": {
         "@capacitor/keyboard": "^7.0.1",
         "@freeanima/sap-contract": "workspace:*",
-        "@freeanima/satellite-sdk": "workspace:*",
+        "@freeanima/shell-sdk": "workspace:*",
         "@freeanima/ui-kit": "workspace:*",
         "marked": "^18.0.4",
         "react": "catalog:",
@@ -469,7 +455,8 @@
       "name": "@freeanima/satellite-companion",
       "dependencies": {
         "@freeanima/sap-contract": "workspace:*",
-        "@freeanima/satellite-sdk": "workspace:*",
+        "@freeanima/shell-sdk": "workspace:*",
+        "@freeanima/ui-kit": "workspace:*",
         "@pixiv/three-vrm": "^3.5.4",
         "@pixiv/three-vrm-animation": "^3.5.4",
         "@react-three/drei": "^10.7.7",
@@ -500,7 +487,6 @@
       "name": "@freeanima/satellite-diary",
       "dependencies": {
         "@freeanima/sap-contract": "workspace:*",
-        "@freeanima/satellite-sdk": "workspace:*",
         "@freeanima/shell-sdk": "workspace:*",
         "@freeanima/ui-kit": "workspace:*",
         "react": "catalog:",
@@ -515,7 +501,6 @@
       "name": "@freeanima/satellite-email",
       "dependencies": {
         "@freeanima/sap-contract": "workspace:*",
-        "@freeanima/satellite-sdk": "workspace:*",
         "@freeanima/shell-sdk": "workspace:*",
         "@freeanima/ui-kit": "workspace:*",
         "react": "catalog:",
@@ -570,7 +555,6 @@
         "@dnd-kit/sortable": "^10.0.0",
         "@dnd-kit/utilities": "^3.2.2",
         "@freeanima/sap-contract": "workspace:*",
-        "@freeanima/satellite-sdk": "workspace:*",
         "@freeanima/shell-sdk": "workspace:*",
         "@freeanima/ui-kit": "workspace:*",
         "react": "catalog:",
@@ -985,8 +969,6 @@
     "@freeanima/satellite-notification": ["@freeanima/satellite-notification@workspace:satellites/notification"],
 
     "@freeanima/satellite-pair-programming": ["@freeanima/satellite-pair-programming@workspace:satellites/pair-programming"],
-
-    "@freeanima/satellite-sdk": ["@freeanima/satellite-sdk@workspace:packages/satellite-sdk"],
 
     "@freeanima/satellite-task": ["@freeanima/satellite-task@workspace:satellites/task"],
 

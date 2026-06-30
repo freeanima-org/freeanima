@@ -31,11 +31,6 @@ llm:
 # Service API Token（按 subject 绑定；业务 API 一律需要 Bearer）
 # 冷启动：anima token create --subject-id 1 --name bootstrap
 # 客户端设置页填写输出的 fa_at_... token（字段名仍为 remoteAuthToken）
-# 升级：若仍保留 remote_auth.token，Hub 启动时会自动迁移为 user subject 的 token
-
-# 远程访问认证（legacy，将被 service API token 取代）：
-# remote_auth:
-#   token: "请替换为 openssl rand -base64 32 生成的随机串"
 
 # 实体 subject / world 上下文（通知收件人 SSOT）
 # 省略时默认 user_subject_id=1、agent_subject_id=2
@@ -175,7 +170,7 @@ compression:
 #   cors_origins:
 #     - http://127.0.0.1:4173        # 仅 dev:web 等跨域场景需要
 
-# Cloudflare Tunnel 远程访问（认证见 remote_auth.token）
+# Cloudflare Tunnel 远程访问（认证见 Service API Token，docs/guide/remote-access.md）
 # 一条命令完成：anima tunnel setup
 # API Token / Tunnel 凭证存 pass，见 anima credential
 # tunnel:

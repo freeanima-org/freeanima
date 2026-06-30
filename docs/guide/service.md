@@ -38,10 +38,10 @@ anima service restart
 anima web start --foreground # standalone Web static server (default :2659; production: web.enabled + service stack)
 ```
 
-`anima.service` is a **single-unit stack**: Hub (`:2658`) + optional Web (`:2659`) + optional Tunnel (cloudflared) managed by one foreground supervisor. Legacy `anima-tunnel.service` is disabled on next `service start`.
+`anima.service` is a **single-unit stack**: Hub (`:2658`, REST + SAP + bundled `/web` when `web.enabled`) + optional Tunnel (cloudflared) managed by one foreground supervisor. Legacy `anima-tunnel.service` is disabled on next `service start`.
 
-When `web.enabled: true`, the stack hosts browser Web UI (static files, no Hub API proxy). Hub and Web use **separate ports**; browser settings page stores Hub URL and `remote_auth` token.
+When `web.enabled: true`, the stack serves browser Web UI at `http://<host>:2658/web/*` from Hub (no separate API proxy). Clients store Hub URL and **Service API Token** (`fa_at_...`) in **Hub settings**. For standalone static hosting without the Hub process, use `anima web start --foreground` (default `:2659`).
 
-**Startup order:** Hub must pass `GET /api/health` (`status: ok`) before Web/Tunnel sidecars start (`serve()` `onReady` → stack supervisor). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).
+**Startup order:** Hub must pass `GET /api/health` (`status: ok`) before Tunnel sidecars start (`serve()` `onReady` → stack supervisor). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).
 
 Admin UI lives at bundled shell `/admin` (not Hub `:2658`). Local dev: `bun run dev:web` → `http://127.0.0.1:4173/admin/dashboard`; Hub provides REST `/api/*` and SAP `/sap/v1` only.

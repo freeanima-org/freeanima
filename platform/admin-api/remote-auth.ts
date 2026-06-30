@@ -1,13 +1,3 @@
-export const REMOTE_AUTH_UNAUTHORIZED = "Unauthorized";
-
-export type RemoteAuthVerifier = {
-  verifyRequest(req: Request, remoteAddress?: string): Promise<Response | null>;
-};
-
-export type RemoteAuthConfig = {
-  token?: string;
-};
-
 export function isLoopbackAddress(addr: string | undefined): boolean {
   if (!addr) return false;
   const normalized = addr.replace(/^::ffff:/, "");
@@ -35,16 +25,9 @@ export function isLocalDirectConnection(req: Request, remoteAddress?: string): b
   return isInternalHubHost(host) && isLoopbackAddress(remoteAddress);
 }
 
-/** 调试回显：任意来源均不验 remote_auth */
+/** 调试回显：任意来源均不验 service token */
 export function isAuthExemptPath(req: Request): boolean {
   return new URL(req.url).pathname === "/api/echo";
-}
-
-/** loopback 探活：CLI / systemd 无 token 轮询（保留供测试与语义说明） */
-export function isLoopbackHealthProbe(req: Request, remoteAddress?: string): boolean {
-  if (req.method !== "GET") return false;
-  if (!isLocalDirectConnection(req, remoteAddress)) return false;
-  return new URL(req.url).pathname === "/api/health";
 }
 
 /** GET /api/health：任意来源均不拦截，认证结果由响应体 authed 报告 */
@@ -52,7 +35,7 @@ export function isHealthProbePath(req: Request): boolean {
   return req.method === "GET" && new URL(req.url).pathname === "/api/health";
 }
 
-/** bundled 客户端跨域 REST 预检：不带 Authorization，须在 remote_auth 之前放行 */
+/** bundled 客户端跨域 REST 预检：不带 Authorization，须在 service_auth 之前放行 */
 export function isHubApiCorsPreflight(req: Request): boolean {
   if (req.method !== "OPTIONS") return false;
   const pathname = new URL(req.url).pathname;
@@ -65,35 +48,8 @@ export function isHubApiCorsPreflight(req: Request): boolean {
   );
 }
 
-/** 跳过 service_auth 豁免路径检测（health / echo / CORS 预检 / SAP upgrade） */
-export function shouldBypassRemoteAuth(req: Request, _remoteAddress?: string): boolean {
-  if (isAuthExemptPath(req)) return true;
-  if (isHealthProbePath(req)) return true;
-  if (isHubApiCorsPreflight(req)) return true;
-  if (isSapWebSocketUpgrade(req)) return true;
-  return false;
-}
-
-/** @deprecated 旧 remote_auth 探活语义；health 请用 evaluateServiceAuthAuthed */
-export function evaluateRemoteAuthAuthed(
-  req: Request,
-  _remoteAddress: string | undefined,
-  expectedToken: string | null | undefined,
-): boolean {
-  const expected = expectedToken?.trim() || null;
-  if (!expected) return false;
-  return verifyRemoteAuthToken(expected, parseBearerToken(req));
-}
-
 function normalizeHeader(req: Request, name: string): string | null {
   return req.headers.get(name) ?? req.headers.get(name.toLowerCase()) ?? null;
-}
-
-function parseBearerToken(req: Request): string | null {
-  const auth = normalizeHeader(req, "Authorization");
-  if (!auth) return null;
-  const match = /^Bearer\s+(.+)$/i.exec(auth.trim());
-  return match?.[1]?.trim() || null;
 }
 
 export function isSapWebSocketUpgrade(req: Request): boolean {
@@ -109,30 +65,4 @@ export function tokensEqual(expected: string, provided: string): boolean {
   const b = enc.encode(provided);
   if (a.length !== b.length) return false;
   return crypto.timingSafeEqual(a, b);
-}
-
-export function verifyRemoteAuthToken(
-  expected: string | null | undefined,
-  provided: string | null | undefined,
-): boolean {
-  const exp = expected?.trim();
-  if (!exp) return false;
-  if (!provided?.trim()) return false;
-  return tokensEqual(exp, provided.trim());
-}
-
-export function createRemoteAuthVerifier(config: RemoteAuthConfig = {}): RemoteAuthVerifier {
-  const expected = config.token?.trim() || null;
-  return {
-    async verifyRequest(req, remoteAddress) {
-      if (shouldBypassRemoteAuth(req, remoteAddress)) return null;
-      if (isSapWebSocketUpgrade(req)) return null;
-
-      const token = parseBearerToken(req);
-      if (!verifyRemoteAuthToken(expected, token)) {
-        return new Response(REMOTE_AUTH_UNAUTHORIZED, { status: 401 });
-      }
-      return null;
-    },
-  };
 }

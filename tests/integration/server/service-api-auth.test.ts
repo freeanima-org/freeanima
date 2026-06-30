@@ -1,25 +1,16 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
-import { SERVICE_API_TOKEN_PREFIX } from "@freeanima/core/db/pg/service-api-token";
-import {
-  countServiceApiTokens,
-  createServiceApiTokenWithSecret,
-  listServiceApiTokensBySubject,
-  verifyServiceApiToken,
-} from "@freeanima/core/db/pg/service-api-token";
+import { createServiceApiTokenWithSecret } from "@freeanima/core/db/pg/service-api-token";
 import { getAppRuntime } from "@freeanima/platform/ports";
-import { FileConfig } from "@freeanima/platform/config";
 
 import { createApiApp } from "../../../platform/admin-api/elysia/app.ts";
 import { bindAdminRuntimeContext } from "../../../platform/admin-api/handlers/runtime.ts";
 import { applyHttpAuth } from "../../../platform/admin-api/http-dispatch.ts";
 import { createServiceAuthVerifier } from "../../../platform/admin-api/service-auth.ts";
-import { bootServiceApiTokensPhase } from "../../../platform/src/boot/service-api-tokens-phase.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
-  beginIntegrationCaseWithConfig,
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
@@ -99,41 +90,6 @@ describePg("service API tokens", () => {
       const body = (await res.json()) as { status: string; authed: boolean };
       expect(body.status).toBe("ok");
       expect(body.authed).toBe(true);
-    });
-  });
-
-  describe("boot migration", () => {
-    const legacyToken = "legacy-remote-auth-token-16";
-
-    beforeEach(async () => {
-      await beginIntegrationCaseWithConfig(
-        "freeanima-svc-auth-migrate-",
-        `\nremote_auth:\n  token: ${JSON.stringify(legacyToken)}\n`,
-      );
-    });
-
-    afterEach(async () => {
-      await restoreIntegrationHome(prev);
-    });
-
-    it("migrates remote_auth.token into service_api_tokens when table is empty", async () => {
-      expect(await countServiceApiTokens()).toBe(0);
-
-      await bootServiceApiTokensPhase(FileConfig.open());
-
-      expect(await countServiceApiTokens()).toBe(1);
-      const { user_subject_id } = getResolvedWorldContext();
-      const items = await listServiceApiTokensBySubject(user_subject_id);
-      expect(items).toHaveLength(1);
-      expect(items[0]?.name).toBe("migrated from remote_auth");
-
-      const migratedPlaintext = `${SERVICE_API_TOKEN_PREFIX}${items[0]!.prefix}_${legacyToken}`;
-      expect(await verifyServiceApiToken(migratedPlaintext)).toEqual(
-        expect.objectContaining({
-          subject_id: user_subject_id,
-          scopes: ["full"],
-        }),
-      );
     });
   });
 });

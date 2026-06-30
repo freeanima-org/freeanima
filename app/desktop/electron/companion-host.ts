@@ -1,7 +1,7 @@
 import type { BrowserWindow } from "electron";
 import { ipcMain, screen } from "electron";
 
-import type { PatrolScreenInfo } from "@freeanima/satellite-sdk";
+import type { PatrolScreenInfo } from "@freeanima/shell-sdk";
 
 export type CompanionHostState = {
   getCompanionWindow: () => BrowserWindow | null;

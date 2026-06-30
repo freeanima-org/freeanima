@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-30 16:54+0800\n"
+"POT-Creation-Date: 2026-07-01 00:11+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/architecture.md:1 docs/features/companion.md:11
-#: messages/po4a/en.xml:560
+#: messages/po4a/en.xml:579
 #, no-wrap
 msgid "Architecture"
 msgstr "架构"
@@ -105,7 +105,7 @@ msgstr ""
 "| 客户端与 UI | 可分离               | 伴侣渲染与设置共用同一 Electron 应用 |\n"
 
 #. type: Content of: <messages><msg>
-#: docs/features/companion.md:36 messages/po4a/en.xml:565
+#: docs/features/companion.md:36 messages/po4a/en.xml:584
 #, no-wrap
 msgid "Features"
 msgstr "功能"
@@ -404,7 +404,7 @@ msgstr ""
 
 #. type: Title ##
 #: docs/features/companion.md:120 docs/features/mobile-app.md:51
-#: docs/guide/database.md:91 docs/guide/remote-access.md:128
+#: docs/guide/database.md:91 docs/guide/remote-access.md:168
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
@@ -425,7 +425,7 @@ msgid ""
 "| ------------------------ | ------------------------------------------------------------------------------------------------------ |\n"
 "| Double-click, no window  | Check system tray; tray → **Settings…** → import `.vrm`                                                |\n"
 "| Click, no motion         | Settings → **Motion library** import VRMA; **Motion slots** bind slot                                  |\n"
-"| Cannot reach Hub         | Confirm `anima service` and `remote_auth.token`; tray **Hub settings** URL and token                   |\n"
+"| Cannot reach Hub         | Confirm `anima service` and Hub settings token (`fa_at_...`); tray **Hub settings** URL and token      |\n"
 "| Import has no effect     | Hot reload after import; confirm slot has motion checked                                               |\n"
 "| Background service fails | See `~/.anima/app/desktop/shell.log`; confirm ports 4176–4185 free                                     |\n"
 "| FBX import unavailable   | Run `bun run --filter @freeanima/satellite-companion setup:fbx` (caches to `~/.anima/tools/fbx2gltf/`) |\n"
@@ -439,7 +439,7 @@ msgstr ""
 "| 后台服务失败 | 见 `~/.anima/app/desktop/shell.log`；确认端口 4176–4185 空闲                |\n"
 
 #. type: Title ##
-#: docs/features/companion.md:131 docs/guide/remote-access.md:138
+#: docs/features/companion.md:131 docs/guide/remote-access.md:179
 #, no-wrap
 msgid "Related docs"
 msgstr "相关文档"

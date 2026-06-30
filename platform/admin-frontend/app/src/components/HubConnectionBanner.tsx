@@ -19,7 +19,7 @@ export function HubConnectionBanner({ state, onRetry }: Props) {
   return (
     <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2 bg-warning/15 border-b border-warning/30 text-sm">
       <span className="text-warning-content/90">
-        {state === "connecting" ? m.admin_common_connecting() : m.admin_studio_disconnected()}
+        {state === "connecting" ? m.admin_common_connecting() : m.admin_hub_disconnected()}
       </span>
       <div className="flex items-center gap-1">
         {nativeShell || electronShell ? (
