@@ -15,12 +15,24 @@ export type GeneratedServiceApiToken = {
 };
 
 function randomAlphanumeric(length: number): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(length));
-  let out = "";
-  for (let i = 0; i < length; i++) {
-    out += PREFIX_CHARS[bytes[i]! % PREFIX_CHARS.length];
+  const charsetLen = PREFIX_CHARS.length;
+  const limit = Math.floor(256 / charsetLen) * charsetLen;
+  const out: string[] = [];
+  const bytes = crypto.getRandomValues(new Uint8Array(length * 2));
+  for (const byte of bytes) {
+    if (byte >= limit) continue;
+    out.push(PREFIX_CHARS[byte % charsetLen]!);
+    if (out.length === length) break;
   }
-  return out;
+  while (out.length < length) {
+    const extra = crypto.getRandomValues(new Uint8Array(length));
+    for (const byte of extra) {
+      if (byte >= limit) continue;
+      out.push(PREFIX_CHARS[byte % charsetLen]!);
+      if (out.length === length) break;
+    }
+  }
+  return out.join("");
 }
 
 export function generateServiceApiTokenParts(): GeneratedServiceApiToken {
