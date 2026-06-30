@@ -36,7 +36,9 @@
     "eslint/no-underscore-dangle": "off",
     "eslint/no-useless-constructor": "off",
     "eslint/no-unmodified-loop-condition": "off",
-    "import/no-unassigned-import": "off"
+    "import/no-unassigned-import": "off",
+    "unicorn/no-array-sort": "error",
+    "unicorn/prefer-add-event-listener": "error"
   },
   "overrides": [
     {

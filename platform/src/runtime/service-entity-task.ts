@@ -72,7 +72,7 @@ export async function serviceTasklistDelete(
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     if (msg.includes("default task list")) {
-      throw new Error("DEFAULT_LIST_CANNOT_DELETE");
+      throw new Error("DEFAULT_LIST_CANNOT_DELETE", { cause: err });
     }
     throw err;
   }

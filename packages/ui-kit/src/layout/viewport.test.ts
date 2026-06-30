@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "bun:test";
 
 import { isMobileLayoutViewport, isNativeShell, MOBILE_LAYOUT_MQ } from "./viewport.ts";
+import { windowWithSatelliteShell } from "./window-shell.ts";
 
 const hasWindow = typeof globalThis.window !== "undefined";
 
@@ -10,11 +11,12 @@ describe("layout viewport", () => {
     return;
   }
 
-  const originalShell = window.satelliteShell;
+  const win = windowWithSatelliteShell();
+  const originalShell = win.satelliteShell;
   const originalMatchMedia = window.matchMedia;
 
   afterEach(() => {
-    window.satelliteShell = originalShell;
+    win.satelliteShell = originalShell;
     window.matchMedia = originalMatchMedia;
   });
 
@@ -23,9 +25,9 @@ describe("layout viewport", () => {
   });
 
   it("isNativeShell reads satelliteShell flag", () => {
-    window.satelliteShell = { isNativeShell: true } as typeof window.satelliteShell;
+    win.satelliteShell = { isNativeShell: true };
     expect(isNativeShell()).toBe(true);
-    window.satelliteShell = undefined;
+    win.satelliteShell = undefined;
     expect(isNativeShell()).toBe(false);
   });
 

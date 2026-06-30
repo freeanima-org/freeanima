@@ -1,4 +1,4 @@
-import type WebSocket from "ws";
+import type { WebSocket } from "ws";
 
 export type RuntimeWsBubble = {
   current: { id: string; text: string; createdAt: number } | null;

@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 
+import { windowWithSatelliteShell } from "./window-shell.ts";
+
 /** 与 Chat / Task / Admin 侧栏断点一致 */
 export const MOBILE_LAYOUT_MQ = "(max-width: 1023px)";
 
 export function isNativeShell(): boolean {
-  return typeof window !== "undefined" && Boolean(window.satelliteShell?.isNativeShell);
+  return (
+    typeof window !== "undefined" &&
+    Boolean(windowWithSatelliteShell().satelliteShell?.isNativeShell)
+  );
 }
 
 export function isMobileLayoutViewport(): boolean {

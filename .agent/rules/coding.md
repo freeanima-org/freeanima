@@ -5,7 +5,14 @@
 - Full type annotations on new and touched code
 - **Relative imports must include `.ts` / `.tsx` suffix** (oxlint `import/extensions`)
 
-## Tool returns
+## Lint (oxlint)
+
+- **Commands**: `bun run lint` (check); `bun run lint:fix` (auto-fix where supported). Included in `bun run check`.
+- **Config**: [`.oxlintrc.json`](../../.oxlintrc.json) — `correctness` category is error; `suspicious` is warn unless overridden per rule.
+- **Error-level unicorn rules** (fix, do not disable):
+  - `unicorn/no-array-sort` — use `Array#toSorted()` when returning a sorted copy; avoid in-place `.sort()` unless mutation is intentional (then use a line-level disable with reason).
+  - `unicorn/prefer-add-event-listener` — prefer `addEventListener` over `on*` property handlers (DOM, WebSocket, IDB, SharedWorker).
+- **Exceptions**: line-level `oxlint-disable-next-line` only with a brief comment when the rule is genuinely wrong for that site.
 
 - **Failures**: always `toolError(msg)` → JSON `{"error":"..."}`
 - **Successes**: structured tools use `toolResult(obj)`; LLM-readable tools (`file_read`, `terminal_run`, `code_execute`, etc.) may return plain-text stdout

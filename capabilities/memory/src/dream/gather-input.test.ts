@@ -90,7 +90,7 @@ describe("gatherDreamInput", () => {
       expect(opts?.minIntensity).toBe(DREAM_MIN_INTENSITY);
       return limbicRows
         .filter((r) => r.intensity > (opts?.minIntensity ?? 0))
-        .sort((x, y) => y.intensity - x.intensity)
+        .toSorted((x, y) => y.intensity - x.intensity)
         .slice(0, opts?.limit ?? 3);
     }) as never);
 
