@@ -1,4 +1,4 @@
-import { omitUndefined } from "@freeanima/core/util";
+import { omitUndefined } from "./omit-undefined.ts";
 import { treaty, type Treaty } from "@elysiajs/eden";
 import type { FridgeMagnetsResponse, ServiceStatus } from "@freeanima/admin-contract/api";
 import {

@@ -175,18 +175,13 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/entity-model.md:50
-#, fuzzy
-#| msgid ""
-#| "**Notifications** use subject entity ids as `recipient_id` (see "
-#| "[`notifications.md`](notifications.md) and `config.yaml` "
-#| "`notifications.user_subject_id` / `agent_subject_id`)."
 msgid ""
 "**Notifications** use subject entity ids as `recipient_id` (see "
 "[`notifications.md`](notifications.md) and `config.yaml` "
 "`worlds.user_subject_id` / `agent_subject_id`)."
 msgstr ""
 "**通知**以 subject 实体 id 作为 `recipient_id`（见 [`notifications.md`]"
-"(notifications.md) 与 `config.yaml` 的 `notifications.user_subject_id` / "
+"(notifications.md) 与 `config.yaml` 的 `worlds.user_subject_id` / "
 "`agent_subject_id`）。"
 
 #. type: Bullet: '- '
@@ -343,15 +338,6 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/entity-model.md:87
-#, fuzzy
-#| msgid ""
-#| "Items reference their list via `body.list_id` (entity id). Task items "
-#| "store **title** and **content** on entity columns; **tags** live in "
-#| "`body.tags`. A **default list** (`is_default: true`, seeded id `2` "
-#| "\"Inbox\") cannot be deleted or archived but may be renamed. List "
-#| "**`body.closed: true`** means archived: hidden from the main sidebar by "
-#| "default (`tasklist.list` unless `include_closed`), restorable via "
-#| "`tasklist.patch({ closed: false })`; contained task items are kept."
 msgid ""
 "Items reference their list via `body.list_id` (entity id). Task items store "
 "**title** and **content** on entity columns; **tags** live in `body.tags`. "
@@ -363,10 +349,12 @@ msgid ""
 "contained task items are kept."
 msgstr ""
 "条目通过 `body.list_id`（实体 id）引用列表。任务条目在实体列存 **title** 与 "
-"**content**；**tags** 在 `body.tags`。 **默认列表**（`is_default: true`，种"
-"子 id `2` \"Inbox\"）不可删除或归档但可重命名。列表 **`body.closed: true`** "
-"表示已归档：默认从主侧栏隐藏（`tasklist.list` 除非 `include_closed`），可通"
-"过 `tasklist.patch({ closed: false })` 恢复；所含任务条目保留。"
+"**content**；**tags** 在 `body.tags`。每个 world 在首次使用任务时**惰性**创"
+"建 **默认列表**（`is_default: true`，名称如「收件箱」）"
+"（`ensureDefaultTaskListForWorld`）；不可删除或归档但可重命名。列表 "
+"**`body.closed: true`** 表示已归档：默认从主侧栏隐藏（`tasklist.list` 除非 "
+"`include_closed`），可通过 `tasklist.patch({ closed: false })` 恢复；所含任务"
+"条目保留。"
 
 #. type: Plain text
 #: docs/concepts/entity-model.md:89

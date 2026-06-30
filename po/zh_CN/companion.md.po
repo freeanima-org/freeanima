@@ -411,15 +411,7 @@ msgstr "故障排查"
 
 #. type: Plain text
 #: docs/features/companion.md:130
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Symptom                  | Action                                                                               |\n"
-#| "| ------------------------ | ------------------------------------------------------------------------------------ |\n"
-#| "| Double-click, no window  | Check system tray; tray → **Settings…** → import `.vrm`                              |\n"
-#| "| Click, no motion         | Settings → **Motion library** import VRMA; **Motion slots** bind slot                |\n"
-#| "| Cannot reach Hub         | Confirm `anima service` and `remote_auth.token`; tray **Hub settings** URL and token |\n"
-#| "| Import has no effect     | Hot reload after import; confirm slot has motion checked                             |\n"
-#| "| Background service fails | See `~/.anima/app/desktop/shell.log`; confirm ports 4176–4185 free                   |\n"
+#, no-wrap
 msgid ""
 "| Symptom                  | Action                                                                                                 |\n"
 "| ------------------------ | ------------------------------------------------------------------------------------------------------ |\n"
@@ -430,13 +422,14 @@ msgid ""
 "| Background service fails | See `~/.anima/app/desktop/shell.log`; confirm ports 4176–4185 free                                     |\n"
 "| FBX import unavailable   | Run `bun run --filter @freeanima/satellite-companion setup:fbx` (caches to `~/.anima/tools/fbx2gltf/`) |\n"
 msgstr ""
-"| 现象              | 处理                                                                                  |\n"
-"| -------------------- | --------------------------------------------------------------------------------------- |\n"
-"| 双击无窗口 | 检查系统托盘；托盘 → **设置…** → 导入 `.vrm`                              |\n"
-"| 点击无动作     | 设置 → **动作库** 导入 VRMA；**动作槽位** 绑定槽位                 |\n"
-"| 无法连接 Hub     | 确认 `anima service` 与 `remote_auth.token`；托盘 **Hub 设置** 中的 URL 与 token  |\n"
-"| 导入无效果 | 导入后热重载；确认槽位已勾选动作                              |\n"
-"| 后台服务失败 | 见 `~/.anima/app/desktop/shell.log`；确认端口 4176–4185 空闲                |\n"
+"| 现象                     | 处理                                                                                                 |\n"
+"| ------------------------ | ------------------------------------------------------------------------------------------------------ |\n"
+"| 双击无窗口               | 检查系统托盘；托盘 → **设置…** → 导入 `.vrm`                                                          |\n"
+"| 点击无动作               | 设置 → **动作库** 导入 VRMA；**动作槽位** 绑定槽位                                                    |\n"
+"| 无法连接 Hub             | 确认 `anima service` 与 Hub 设置 token（`fa_at_...`）；托盘 **Hub 设置** 中的 URL 与 token            |\n"
+"| 导入无效果               | 导入后热重载；确认槽位已勾选动作                                                                       |\n"
+"| 后台服务失败             | 见 `~/.anima/app/desktop/shell.log`；确认端口 4176–4185 空闲                                         |\n"
+"| FBX 导入不可用           | 运行 `bun run --filter @freeanima/satellite-companion setup:fbx`（缓存到 `~/.anima/tools/fbx2gltf/`） |\n"
 
 #. type: Title ##
 #: docs/features/companion.md:131 docs/guide/remote-access.md:179

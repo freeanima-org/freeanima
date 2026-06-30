@@ -1,4 +1,4 @@
-import { omitUndefined } from "@freeanima/core/util";
+import { omitUndefined } from "./omit-undefined.ts";
 import { m } from "./i18n.ts";
 
 export type ApiWirePayload = {

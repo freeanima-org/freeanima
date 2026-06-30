@@ -49,14 +49,7 @@ msgstr "范围"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:18
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Item       | Description                                                   |\n"
-#| "| ---------- | ------------------------------------------------------------- |\n"
-#| "| Platform   | **Android only** sideload (APK); iOS later                    |\n"
-#| "| Modules    | Chat (`sap-direct`) + Admin (`hub-rest`)                      |\n"
-#| "| Hub config | APP **Hub settings**: URL + `remote_auth.token` (Preferences) |\n"
-#| "| Hub duties | `/api` REST + `/sap/v1` WebSocket                             |\n"
+#, no-wrap
 msgid ""
 "| Item       | Description                                                              |\n"
 "| ---------- | ------------------------------------------------------------------------ |\n"
@@ -65,12 +58,12 @@ msgid ""
 "| Hub config | APP **Hub settings**: URL + Service API Token (`fa_at_...`, Preferences) |\n"
 "| Hub duties | `/api` REST + `/sap/v1` WebSocket                                        |\n"
 msgstr ""
-"| 项目          | 说明                                                        |\n"
-"| ------------- | ------------------------------------------------------------------ |\n"
-"| 平台      | **仅 Android** 侧载（APK）；iOS 后续                         |\n"
+"| 项目       | 说明                                                                   |\n"
+"| ---------- | ---------------------------------------------------------------------- |\n"
+"| 平台       | **仅 Android** 侧载（APK）；iOS 后续                                   |\n"
 "| 模块       | 聊天室（`sap-direct`）+ 管理台（`hub-rest`）                           |\n"
-"| Hub 配置    | APP **Hub 设置**：URL + `remote_auth.token`（Preferences）      |\n"
-"| Hub 职责    | `/api` REST + `/sap/v1` WebSocket                                  |\n"
+"| Hub 配置   | APP **Hub 设置**：URL + Service API Token（`fa_at_...`，Preferences） |\n"
+"| Hub 职责   | `/api` REST + `/sap/v1` WebSocket                                      |\n"
 
 #. type: Title ##
 #: docs/features/mobile-app.md:19 docs/sap/overview.md:17
@@ -114,19 +107,14 @@ msgstr ""
 
 #. type: Plain text
 #: docs/features/mobile-app.md:39
-#, fuzzy
-#| msgid ""
-#| "Mobile REST **connects directly** to Hub (no desktop Electron `/api` "
-#| "proxy); requires `remote_auth.token` and Hub CORS for Capacitor origin "
-#| "(`https://localhost`). Routes use hash (`#/chat`) for WebView debugging."
 msgid ""
 "Mobile REST **connects directly** to Hub (no desktop Electron `/api` proxy); "
 "requires a **Service API Token** and Hub CORS for Capacitor origin (`https://"
 "localhost`). Routes use hash (`#/chat`) for WebView debugging."
 msgstr ""
-"移动端 REST **直连** Hub（无桌面 Electron `/api` 代理）；需要 "
-"`remote_auth.token` 以及 Hub 对 Capacitor 源（`https://localhost`）的 CORS。"
-"路由使用 hash（`#/chat`）以便 WebView 调试。"
+"移动端 REST **直连** Hub（无桌面 Electron `/api` 代理）；需要 **Service API "
+"Token** 以及 Hub 对 Capacitor 源（`https://localhost`）的 CORS。路由使用 hash"
+"（`#/chat`）以便 WebView 调试。"
 
 #. type: Title ##
 #: docs/features/mobile-app.md:40
@@ -136,19 +124,14 @@ msgstr "Hub 设置"
 
 #. type: Bullet: '1. '
 #: docs/features/mobile-app.md:48
-#, fuzzy
-#| msgid ""
-#| "Home PC: `anima service start --host 0.0.0.0`, configure "
-#| "`remote_auth.token` in `~/.anima/config.yaml` (see [`remote-access.md`]"
-#| "(../guide/remote-access.md))."
 msgid ""
 "Home PC: `anima service start --host 0.0.0.0`, create a Service API Token "
 "(`anima token create --subject-id 1 --name bootstrap`; see [`remote-"
 "access.md`](../guide/remote-access.md))."
 msgstr ""
-"家用 PC：`anima service start --host 0.0.0.0`，在 `~/.anima/config.yaml` 配"
-"置 `remote_auth.token`（见 [`remote-access.md`](../guide/remote-"
-"access.md)）。"
+"家用 PC：`anima service start --host 0.0.0.0`，创建 Service API Token"
+"（`anima token create --subject-id 1 --name bootstrap`；见 [`remote-"
+"access.md`](../guide/remote-access.md)）。"
 
 #. type: Bullet: '2. '
 #: docs/features/mobile-app.md:48

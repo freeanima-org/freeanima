@@ -228,12 +228,7 @@ msgstr "平台 UI 分层"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:76
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Layer              | Platform-native?             | Location                                                       |\n"
-#| "| ------------------ | ---------------------------- | -------------------------------------------------------------- |\n"
-#| "| Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring             |\n"
-#| "| Shared SPA         | Branch on `detectPlatform()` | `packages/shell-ui`, `satellites/*`, `platform/admin-frontend` |\n"
+#, no-wrap
 msgid ""
 "| Layer              | Platform-native?             | Location                                                 | 数据通道      |\n"
 "| ------------------ | ---------------------------- | -------------------------------------------------------- | ------------- |\n"
@@ -242,10 +237,12 @@ msgid ""
 "| hub-rest 前端      | Admin embed                  | `platform/admin-frontend` + `ui-kit` + `shell-sdk`       | Eden `/api`   |\n"
 "| SAP 产品面         | Satellite apps               | `satellites/*` + `sap-contract` + `ui-kit` + `shell-sdk` | SAP `/sap/v1` |\n"
 msgstr ""
-"| 层                 | 平台原生？                   | 位置                                                           |\n"
-"| ------------------ | ---------------------------- | -------------------------------------------------------------- |\n"
-"| Shell / capability | 是                           | `app/desktop`、`app/mobile`、companion、Hub 接线               |\n"
-"| Shared SPA         | 按 `detectPlatform()` 分支   | `packages/shell-ui`、`satellites/*`、`platform/admin-frontend` |\n"
+"| 层                 | 平台原生？                   | 位置                                                     | 数据通道      |\n"
+"| ------------------ | ---------------------------- | -------------------------------------------------------- | ------------- |\n"
+"| Shell / capability | 是                           | `app/desktop`、`app/mobile`、companion、Hub 接线         | preload/IPC   |\n"
+"| Shared SPA shell   | 按 `detectPlatform()` 分支   | `packages/shell-ui`                                      | 无 SAP wire   |\n"
+"| hub-rest 前端      | Admin 嵌入                   | `platform/admin-frontend` + `ui-kit` + `shell-sdk`       | Eden `/api`   |\n"
+"| SAP 产品面         | Satellite 应用               | `satellites/*` + `sap-contract` + `ui-kit` + `shell-sdk` | SAP `/sap/v1` |\n"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:78

@@ -104,16 +104,12 @@ msgstr ""
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:34
-#, fuzzy
-#| msgid ""
-#| "Implementation SSOT: [`packages/satellite-sdk/src/manifest.ts`](../../"
-#| "packages/satellite-sdk/src/manifest.ts)"
 msgid ""
 "Implementation SSOT: [`packages/shell-sdk/src/manifest.ts`](../../packages/"
 "shell-sdk/src/manifest.ts)"
 msgstr ""
-"实现 SSOT：[`packages/satellite-sdk/src/manifest.ts`](../../packages/"
-"satellite-sdk/src/manifest.ts)"
+"实现 SSOT：[`packages/shell-sdk/src/manifest.ts`](../../packages/shell-sdk/"
+"src/manifest.ts)"
 
 #. type: Title ##
 #: docs/sap/frontend-exports.md:35

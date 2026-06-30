@@ -576,11 +576,7 @@ msgstr "或直接使用仓库二进制："
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:203
-#, fuzzy, no-wrap
-#| msgid ""
-#| "bun run anima -- --help\n"
-#| "# or\n"
-#| "./cli/src/cli.ts --help\n"
+#, no-wrap
 msgid ""
 "bun run anima -- --help\n"
 "# or\n"
@@ -588,7 +584,7 @@ msgid ""
 msgstr ""
 "bun run anima -- --help\n"
 "# or\n"
-"./cli/src/cli.ts --help\n"
+"bun app/cli/src/cli.ts --help\n"
 
 #. type: Plain text
 #: docs/guide/install.md:210
@@ -706,17 +702,13 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:261
-#, fuzzy
-#| msgid ""
-#| "If status fails, check PostgreSQL connectivity and that migrations "
-#| "completed ([`database.md`](database.md#troubleshooting))."
 msgid ""
 "If status fails, check PostgreSQL connectivity, that migrations completed "
 "([`database.md`](database.md#troubleshooting)), and that a valid Service API "
 "Token is configured."
 msgstr ""
-"若 status 失败，检查 PostgreSQL 连通性与迁移是否完成（[`database.md`]"
-"(database.md#troubleshooting)）。"
+"若 status 失败，检查 PostgreSQL 连通性、迁移是否完成（[`database.md`]"
+"(database.md#troubleshooting)），以及是否已配置有效的 Service API Token。"
 
 #. type: Title ##
 #: docs/guide/install.md:262
@@ -735,16 +727,12 @@ msgstr ""
 
 #. type: Bullet: '2. '
 #: docs/guide/install.md:268
-#, fuzzy
-#| msgid ""
-#| "**Remote access** — optional Cloudflare Tunnel + `remote_auth.token` for "
-#| "personal mobile/remote Admin ([`remote-access.md`](remote-access.md))"
 msgid ""
 "**Remote access** — optional Cloudflare Tunnel + Service API Token for "
 "personal mobile/remote Admin ([`remote-access.md`](remote-access.md))"
 msgstr ""
-"**远程访问** — 可选 Cloudflare Tunnel + `remote_auth.token`，用于个人移动/远"
-"程管理台（[`remote-access.md`](remote-access.md)）"
+"**远程访问** — 可选 Cloudflare Tunnel + Service API Token，用于个人移动/远程"
+"管理台（[`remote-access.md`](remote-access.md)）"
 
 #. type: Bullet: '3. '
 #: docs/guide/install.md:268
