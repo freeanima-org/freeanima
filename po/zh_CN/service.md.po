@@ -120,12 +120,6 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/service.md:42
-#, fuzzy
-#| msgid ""
-#| "`anima.service` is a **single-unit stack**: Hub (`:2658`) + optional Web "
-#| "(`:2659`) + optional Tunnel (cloudflared) managed by one foreground "
-#| "supervisor. Legacy `anima-tunnel.service` is disabled on next `service "
-#| "start`."
 msgid ""
 "`anima.service` is a **single-unit stack**: Hub (`:2658`, REST + SAP + "
 "bundled `/web` when `web.enabled`) + optional Tunnel (cloudflared) managed "
@@ -144,8 +138,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/service.md:46
-#, fuzzy, no-wrap
-#| msgid "**Startup order:** Hub must pass `GET /api/health` (`status: ok`) before Web/Tunnel sidecars start (`serve()` `onReady` → stack supervisor). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).\n"
+#, no-wrap
 msgid "**Startup order:** Hub must pass `GET /api/health` (`status: ok`) before Tunnel sidecars start (`serve()` `onReady` → stack supervisor). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).\n"
 msgstr "**启动顺序：** Hub 须先通过 `GET /api/health`（`status: ok`），再启动 Web/Tunnel 边车（`serve()` `onReady` → 栈 supervisor）。SAP 断线由 `@freeanima/sap-contract` 传输层自动重试（指数退避）。\n"
 

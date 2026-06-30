@@ -53,19 +53,15 @@ msgstr ""
 
 #. type: Fenced code block (yaml)
 #: docs/concepts/notifications.md:13
-#, fuzzy, no-wrap
-#| msgid ""
-#| "notifications:\n"
-#| "  user_subject_id: 2 type=user entity\n"
-#| "  agent_subject_id: 1 # type=agent entity\n"
+#, no-wrap
 msgid ""
 "worlds:\n"
 "  user_subject_id: 1 # type=user entity; default 1\n"
 "  agent_subject_id: 2 # type=agent entity; default 2\n"
 msgstr ""
-"notifications:\n"
-"  user_subject_id: 2 type=user entity\n"
-"  agent_subject_id: 1 # type=agent entity\n"
+"worlds:\n"
+"  user_subject_id: 1 # type=user entity; default 1\n"
+"  agent_subject_id: 2 # type=agent entity; default 2\n"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:20
@@ -77,16 +73,12 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/notifications.md:22
-#, fuzzy
-#| msgid ""
-#| "Each row stores `recipient_kind` (`user` | `agent`) and `recipient_id` "
-#| "(entity id string). Unconfigured installs fall back to `\"default\"`."
 msgid ""
 "Each row stores `recipient_kind` (`user` | `agent`) and `recipient_id` "
 "(entity id string). Unconfigured installs default to subject ids `1` / `2`."
 msgstr ""
 "每行存储 `recipient_kind`（`user` | `agent`）与 `recipient_id`（实体 id 字符"
-"串）。未配置的安装回退为 `\"default\"`。"
+"串）。未配置的安装默认使用 subject id `1` / `2`。"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:29

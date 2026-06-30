@@ -1548,10 +1548,9 @@ msgstr "收件人："
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:243
-#, fuzzy, no-wrap
-#| msgid "Paused"
+#, no-wrap
 msgid "Last used"
-msgstr "已暂停"
+msgstr "最近使用"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:244
@@ -1567,17 +1566,15 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:246
-#, fuzzy, no-wrap
-#| msgid "Scope"
+#, no-wrap
 msgid "Scopes"
 msgstr "范围"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:248
-#, fuzzy, no-wrap
-#| msgid "Created"
+#, no-wrap
 msgid "Create token"
-msgstr "创建时间"
+msgstr "创建令牌"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:249
@@ -1635,10 +1632,9 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:259
-#, fuzzy, no-wrap
-#| msgid "No runs yet"
+#, no-wrap
 msgid "No tokens yet."
-msgstr "尚无运行记录"
+msgstr "尚无令牌。"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:260
