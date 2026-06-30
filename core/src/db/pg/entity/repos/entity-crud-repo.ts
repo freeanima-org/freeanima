@@ -88,7 +88,12 @@ export async function createEntityAtId(input: EntityCreateAtIdInput): Promise<En
     )
     OVERRIDING SYSTEM VALUE
     VALUES (
-      ${input.id}, ${type}, ${input.world_id}, ${components}, ${primary},
+      ${input.id}, ${type}, ${input.world_id},
+      ARRAY[${sql.join(
+        components.map((c) => sql`${c}`),
+        sql`, `,
+      )}]::text[],
+      ${primary},
       ${title}, ${summary}, ${content}, ${JSON.stringify(body)}::jsonb,
       ${fts_segmented}, ${now}, ${now}
     )

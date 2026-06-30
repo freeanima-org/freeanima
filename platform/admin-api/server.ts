@@ -13,17 +13,11 @@ import { bindAdminRuntimeContext, adminCtx } from "./handlers/runtime.ts";
 import { broadcastWsReconnect, shutdownAdmin } from "./elysia/shutdown.ts";
 import { getSapServerDeps } from "@freeanima/platform/sap/runtime-context";
 import { createSapBunHandlers } from "@freeanima/platform/sap/bun-route";
-import { createRemoteAuthVerifier, type RemoteAuthVerifier } from "./remote-auth.ts";
-import {
-  applyHttpAuth,
-  attachRemoteAddressToRequest,
-  handleHubCorsPreflight,
-  isHubApiPath,
-} from "./http-dispatch.ts";
+import { createServiceAuthVerifier, type ServiceAuthVerifier } from "./service-auth.ts";
+import { applyHttpAuth, handleHubCorsPreflight, isHubApiPath } from "./http-dispatch.ts";
 
 export type ApiServerOptions = {
-  remoteAuth?: RemoteAuthVerifier | null;
-  remoteAuthToken?: string;
+  serviceAuth?: ServiceAuthVerifier | null;
   webStatic?: WebStaticOptions | null;
 };
 
@@ -66,11 +60,7 @@ export async function startApiHttpServer(
   const sapDeps = getSapServerDeps();
   const sapHandlers = sapDeps ? createSapBunHandlers(sapDeps) : null;
 
-  const remoteAuth =
-    options.remoteAuth ??
-    createRemoteAuthVerifier({
-      token: options.remoteAuthToken,
-    });
+  const serviceAuth = options.serviceAuth ?? createServiceAuthVerifier();
 
   const mcpHandler = createMcpBunHandler({
     toolSets: adminCtx().engine.catalog.toolSets,
@@ -104,19 +94,21 @@ export async function startApiHttpServer(
           return Response.redirect(`${new URL(req.url).origin}${WEB_URL_PREFIX}/chat`, 302);
         }
 
-        const blocked = await applyHttpAuth(req, remoteAddress, remoteAuth);
-        if (blocked) return blocked;
+        const authResult = await applyHttpAuth(req, remoteAddress, serviceAuth);
+        if (authResult.blocked) return authResult.blocked;
 
-        if (isHubApiPath(pathname)) {
-          return apiApp.fetch(attachRemoteAddressToRequest(req, remoteAddress));
+        const authedReq = authResult.req;
+        const authedPath = new URL(authedReq.url).pathname;
+        if (isHubApiPath(authedPath)) {
+          return apiApp.fetch(authedReq);
         }
 
-        if (isMcpPath(pathname)) {
-          const mcpRes = await mcpHandler(req);
+        if (isMcpPath(authedPath)) {
+          const mcpRes = await mcpHandler(authedReq);
           if (mcpRes !== undefined) return mcpRes;
         }
 
-        const sapRes = dispatchFetch(req, bunServer, sapHandlers);
+        const sapRes = dispatchFetch(authedReq, bunServer, sapHandlers);
         return sapRes ?? new Response("Not Found", { status: 404 });
       };
       return run();

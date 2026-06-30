@@ -6,3 +6,4 @@ export type { AutobiographicalMemoryRow } from "./autobiographical-memory.ts";
 export type { CronJobRow } from "./cron-job.ts";
 export type { NotificationRow } from "./notification.ts";
 export type { SapInstanceRow } from "./sap-instance.ts";
+export type { ServiceApiTokenRow } from "./service-api-token.ts";

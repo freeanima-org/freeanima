@@ -1,4 +1,4 @@
-import { evaluateHealthAuthed, resolveRemoteAddressFromRequest } from "../health-auth.ts";
+import { evaluateHealthAuthed } from "../health-auth.ts";
 import { adminCtx } from "./runtime.ts";
 import { scheduleServiceRestart } from "../service-restart.ts";
 import { ApiHandlerError } from "./errors.ts";
@@ -6,10 +6,7 @@ import { ApiHandlerError } from "./errors.ts";
 export async function getHealthProbe(request: Request) {
   const ctx = adminCtx();
   const base = ctx.health();
-  const cfg = ctx.engine.config.data;
-  const authed = evaluateHealthAuthed(request, resolveRemoteAddressFromRequest(request), {
-    remoteAuth: cfg.remote_auth,
-  });
+  const authed = await evaluateHealthAuthed(request);
   return { ...base, authed };
 }
 

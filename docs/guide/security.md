@@ -13,7 +13,7 @@ FreeAnima is designed for **single-user local / intranet** deployment:
 
 - HTTP / Admin **has no auth by default**; binding `127.0.0.1` is not security—any process or user that can reach the port can read conversations, send messages, start/stop MCP/ACP.
 - Default bind is `127.0.0.1`; for LAN access, assess CORS and network isolation yourself.
-- **Do not** expose the service to the public internet without `remote_auth` (see [`remote-access.md`](remote-access.md) — Tunnel + Bearer token).
+- **Do not** expose the service to the public internet without a Service API Token on clients (see [`remote-access.md`](remote-access.md)).
 
 ## Credential Responsibilities
 
@@ -67,15 +67,15 @@ Disk backup = data access. Protect backup media accordingly.
 
 The following are planned in code or docs—**deployers must not assume implemented**:
 
-| Priority | Item                                                  | Status                                                                                                                                  |
-| -------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                                                                                                                                 |
-| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                                                                                                                         |
-| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                                                                                                                         |
-| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                                                                                                                         |
-| P2       | HTTP API auth                                         | Non-loopback Host or non-loopback TCP peer requires `remote_auth` or 401; dual loopback exempt ([`remote-access.md`](remote-access.md)) |
-| P3       | IPC / LLM rate limiting                               | None                                                                                                                                    |
-| P3       | Session disk encryption                               | None                                                                                                                                    |
+| Priority | Item                                                  | Status                                                                                                           |
+| -------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                                                                                                          |
+| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                                                                                                  |
+| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                                                                                                  |
+| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                                                                                                  |
+| P2       | HTTP API auth                                         | 业务 API 须带 per-subject Service API Token；`GET /api/health` 豁免（见 [`remote-access.md`](remote-access.md)） |
+| P3       | IPC / LLM rate limiting                               | None                                                                                                             |
+| P3       | Session disk encryption                               | None                                                                                                             |
 
 ## Threat Sources
 
@@ -89,13 +89,13 @@ The following are planned in code or docs—**deployers must not assume implemen
 
 ## Security Matrix
 
-| Module           | A External                                | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |
-| ---------------- | ----------------------------------------- | ------------------------------------------------------------------- | ------------------------- | ------------------ | ---------------------------------- |
-| **Runtime**      | Default 127.0.0.1 bind                    | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |
-| **Gateway**      | Token in pass                             | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |
-| **CLI / Tools**  | Local shell compromised                   | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |
-| **HTTP / Admin** | `remote_auth` Bearer token (non-loopback) | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |
-| **MCP / ACP**    | SSE auth undefined                        | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |
+| Module           | A External                                                 | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |
+| ---------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------- | ------------------ | ---------------------------------- |
+| **Runtime**      | Default 127.0.0.1 bind                                     | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |
+| **Gateway**      | Token in pass                                              | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |
+| **CLI / Tools**  | Local shell compromised                                    | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |
+| **HTTP / Admin** | `service_api_tokens` Bearer token（所有来源，含 loopback） | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |
+| **MCP / ACP**    | SSE auth undefined                                         | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |
 
 ## Proposals Pending Review
 

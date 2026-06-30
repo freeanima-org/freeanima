@@ -100,7 +100,6 @@ export async function bootRuntimePhase(
     instanceRegistry: await createSapInstanceRegistry(),
     animaVersion: ANIMA_VERSION,
     masks,
-    remoteAuthToken: phase.remoteAuthToken,
   });
 
   return { runtime };

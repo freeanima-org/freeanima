@@ -7,6 +7,7 @@ import { registerCompletionCommand } from "./commands/completion.ts";
 import { registerUpgradeCommand } from "./commands/upgrade.ts";
 import { registerTunnelCommand } from "./commands/tunnel.ts";
 import { registerWebCommand } from "./commands/web.ts";
+import { registerTokenCommand } from "./commands/token.ts";
 
 /** Build CLI program (shared by parse and completion generation) */
 export function buildProgram(): Command {
@@ -20,6 +21,7 @@ export function buildProgram(): Command {
   registerUpgradeCommand(program);
   registerTunnelCommand(program);
   registerWebCommand(program);
+  registerTokenCommand(program);
   registerCompletionCommand(program);
 
   return program;

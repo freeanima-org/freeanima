@@ -11,11 +11,11 @@ import {
   updateTaskItem,
   updateTaskList,
 } from "@freeanima/capabilities-task";
-import {
-  getResolvedWorldContext,
-  resolveSubjectWorldId,
-  type SubjectKind,
-} from "@freeanima/core/config";
+import { getResolvedWorldContext, type SubjectKind } from "@freeanima/core/config";
+import { subjectConfigBodySchema } from "@freeanima/core/db/schema";
+import { getEntity } from "@freeanima/core/db/pg/entity";
+import type { VerifiedServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
+import type { SapRequestAuthContext } from "@freeanima/sap-contract";
 
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
 import type { RuntimeDeps } from "./runtime-deps.ts";
@@ -26,16 +26,36 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
-function taskWorldId(kind: SubjectKind = "user"): number {
-  return resolveSubjectWorldId(kind);
+function assertSubjectKindMatches(auth: SapRequestAuthContext, subject_kind?: SubjectKind): void {
+  if (subject_kind && subject_kind !== auth.subject_type) {
+    throw new Error("FORBIDDEN_SUBJECT");
+  }
+}
+
+async function taskWorldIdForAuth(
+  auth: SapRequestAuthContext,
+  subject_kind?: SubjectKind,
+): Promise<number> {
+  assertSubjectKindMatches(auth, subject_kind);
+  const row = await getEntity(auth.subject_id);
+  if (!row || (row.type !== "user" && row.type !== "agent")) {
+    throw new Error("INVALID_AUTH_SUBJECT");
+  }
+  const parsed = subjectConfigBodySchema.safeParse(row.body);
+  const worldId = parsed.success ? parsed.data.default_private_world_id : undefined;
+  if (!worldId) {
+    throw new Error(`subject ${auth.subject_id} has no default_private_world_id`);
+  }
+  return worldId;
 }
 
 export async function serviceTasklistList(
   deps: RuntimeDeps,
-  input?: { subject_kind?: SubjectKind; include_closed?: boolean },
+  input: { subject_kind?: SubjectKind; include_closed?: boolean } | undefined,
+  auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = taskWorldId(input?.subject_kind);
+  const worldId = await taskWorldIdForAuth(auth, input?.subject_kind);
   await ensureDefaultTaskListForWorld(worldId);
   const lists = await listTaskLists(worldId, { includeClosed: input?.include_closed });
   return { lists };
@@ -51,10 +71,11 @@ export async function serviceTasklistCreate(
     is_folder?: boolean;
     parent_id?: number | null;
   },
+  auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
   const { subject_kind, ...createInput } = input;
-  const item = await createTaskList(taskWorldId(subject_kind), createInput);
+  const item = await createTaskList(await taskWorldIdForAuth(auth, subject_kind), createInput);
   return { item };
 }
 
@@ -70,10 +91,11 @@ export async function serviceTasklistPatch(
     is_folder?: boolean;
     parent_id?: number | null;
   },
+  auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
   const { id, subject_kind, ...patch } = input;
-  const item = await updateTaskList(taskWorldId(subject_kind), { id, ...patch });
+  const item = await updateTaskList(await taskWorldIdForAuth(auth, subject_kind), { id, ...patch });
   if (!item) throw new Error("NOT_FOUND");
   return { item };
 }
@@ -81,10 +103,11 @@ export async function serviceTasklistPatch(
 export async function serviceTasklistDelete(
   deps: RuntimeDeps,
   input: { subject_kind?: SubjectKind; id: number; cascade?: boolean },
+  auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
   try {
-    const ok = await deleteTaskList(taskWorldId(input.subject_kind), input.id, {
+    const ok = await deleteTaskList(await taskWorldIdForAuth(auth, input.subject_kind), input.id, {
       cascade: input.cascade ?? true,
     });
     if (!ok) throw new Error("NOT_FOUND");
@@ -109,9 +132,10 @@ export async function serviceTaskList(
     limit?: number;
     offset?: number;
   },
+  auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = taskWorldId(input.subject_kind);
+  const worldId = await taskWorldIdForAuth(auth, input.subject_kind);
   await ensureDefaultTaskListForWorld(worldId);
   const items = await listTaskItems(worldId, {
     list_id: input.list_id,
@@ -136,10 +160,11 @@ export async function serviceTaskCreate(
     due_at?: string | null;
     sort_order?: number;
   },
+  auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
   const { subject_kind, ...createInput } = input;
-  const item = await createTaskItem(taskWorldId(subject_kind), createInput);
+  const item = await createTaskItem(await taskWorldIdForAuth(auth, subject_kind), createInput);
   return { item };
 }
 
@@ -157,10 +182,11 @@ export async function serviceTaskPatch(
     sort_order?: number;
     status?: "pending" | "completed";
   },
+  auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
   const { id, subject_kind, ...patch } = input;
-  const item = await updateTaskItem(taskWorldId(subject_kind), { id, ...patch });
+  const item = await updateTaskItem(await taskWorldIdForAuth(auth, subject_kind), { id, ...patch });
   if (!item) throw new Error("NOT_FOUND");
   return { item };
 }
@@ -168,9 +194,10 @@ export async function serviceTaskPatch(
 export async function serviceTaskComplete(
   deps: RuntimeDeps,
   input: { subject_kind?: SubjectKind; id: number },
+  auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const item = await completeTaskItem(taskWorldId(input.subject_kind), input.id);
+  const item = await completeTaskItem(await taskWorldIdForAuth(auth, input.subject_kind), input.id);
   if (!item) throw new Error("NOT_FOUND");
   return { item };
 }
@@ -178,9 +205,13 @@ export async function serviceTaskComplete(
 export async function serviceTaskUncomplete(
   deps: RuntimeDeps,
   input: { subject_kind?: SubjectKind; id: number },
+  auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const item = await uncompleteTaskItem(taskWorldId(input.subject_kind), input.id);
+  const item = await uncompleteTaskItem(
+    await taskWorldIdForAuth(auth, input.subject_kind),
+    input.id,
+  );
   if (!item) throw new Error("NOT_FOUND");
   return { item };
 }
@@ -188,9 +219,10 @@ export async function serviceTaskUncomplete(
 export async function serviceTaskDelete(
   deps: RuntimeDeps,
   input: { subject_kind?: SubjectKind; id: number },
+  auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const ok = await deleteTaskItem(taskWorldId(input.subject_kind), input.id);
+  const ok = await deleteTaskItem(await taskWorldIdForAuth(auth, input.subject_kind), input.id);
   if (!ok) throw new Error("NOT_FOUND");
   return { ok: true as const };
 }

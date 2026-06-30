@@ -65,21 +65,21 @@ export function isHubApiCorsPreflight(req: Request): boolean {
   );
 }
 
-/** 跳过 remote_auth：豁免路径、health 探活、CORS 预检、或 Host+peer 均为 loopback 的本机直连 */
-export function shouldBypassRemoteAuth(req: Request, remoteAddress?: string): boolean {
+/** 跳过 service_auth 豁免路径检测（health / echo / CORS 预检 / SAP upgrade） */
+export function shouldBypassRemoteAuth(req: Request, _remoteAddress?: string): boolean {
   if (isAuthExemptPath(req)) return true;
   if (isHealthProbePath(req)) return true;
   if (isHubApiCorsPreflight(req)) return true;
-  return isLocalDirectConnection(req, remoteAddress);
+  if (isSapWebSocketUpgrade(req)) return true;
+  return false;
 }
 
-/** health 探活：模拟正常 REST 路径的 remote_auth 是否通过（不含 health 中间件豁免） */
+/** @deprecated 旧 remote_auth 探活语义；health 请用 evaluateServiceAuthAuthed */
 export function evaluateRemoteAuthAuthed(
   req: Request,
-  remoteAddress: string | undefined,
+  _remoteAddress: string | undefined,
   expectedToken: string | null | undefined,
 ): boolean {
-  if (isLocalDirectConnection(req, remoteAddress)) return true;
   const expected = expectedToken?.trim() || null;
   if (!expected) return false;
   return verifyRemoteAuthToken(expected, parseBearerToken(req));
@@ -96,7 +96,7 @@ function parseBearerToken(req: Request): string | null {
   return match?.[1]?.trim() || null;
 }
 
-function isSapWebSocketUpgrade(req: Request): boolean {
+export function isSapWebSocketUpgrade(req: Request): boolean {
   const url = new URL(req.url);
   if (url.pathname !== "/sap/v1") return false;
   const upgrade = normalizeHeader(req, "Upgrade");

@@ -66,6 +66,11 @@ describe("elysia apiApp", () => {
     expect(res.status).toBe(404);
   });
 
+  it("GET /api/subjects/:id/tokens 路由已注册", async () => {
+    const res = await apiApp.handle(new Request("http://127.0.0.1/api/subjects/1/tokens"));
+    expect(res.status).not.toBe(404);
+  });
+
   it("根路径 / 不在 apiApp 内", async () => {
     const res = await apiApp.handle(new Request("http://127.0.0.1/"));
     expect(res.status).toBe(404);

@@ -21,6 +21,7 @@ import {
 } from "@freeanima/runtime/conversation";
 import { appendMessage, upsertConversationMeta } from "@freeanima/core/db/pg/conversation";
 import { FileConfig, type Config } from "@freeanima/platform/config";
+import { bindActiveConfig } from "@freeanima/core/config";
 import { bindResolvedWorldContext } from "@freeanima/core/config/world-context";
 import { ensureWorldSubjects } from "@freeanima/core/db/pg/entity/subject-world";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
@@ -57,6 +58,7 @@ async function clearPgTables(sql: SqlClient, config: Config): Promise<void> {
   await sql`DELETE FROM self_blocks`;
   await sql`DELETE FROM autobiographical_memory`;
   await sql`DELETE FROM limbic_memory`;
+  await sql`DELETE FROM service_api_tokens`;
   await sql`DELETE FROM entities`;
   await ensureIntegrationWorldContext(config);
   await sql`DELETE FROM notifications`;
@@ -84,6 +86,7 @@ function createTestSql(url: string): { sql: SqlClient; db: Db } {
 
 export async function setupPgTestDb(url: string, config: Config): Promise<PgTestContext> {
   initDatabase({ getDatabaseUrl: () => url });
+  bindActiveConfig(config);
   const { sql, db } = createTestSql(url);
   await clearPgTables(sql, config);
   setDbForTest(db, sql);
@@ -151,6 +154,7 @@ export async function setupIntegrationHome(opts: {
 }): Promise<PgTestContext> {
   writeDatabaseConfig(opts.home, opts.url, opts.configYaml);
   const config = FileConfig.open();
+  bindActiveConfig(config);
   if (activeCtx) {
     await clearPgTables(activeCtx.sql, config);
     activeCtx.config = config;

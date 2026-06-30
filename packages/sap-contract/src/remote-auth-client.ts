@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-/** 浏览器壳层 remote_auth：从 window.satelliteShell 解析 SAP connect token */
+/** 浏览器壳层 service API token：从 window.satelliteShell 解析 SAP connect token */
 
 type ShellRemoteAuthSource = {
   remoteAuth?: { token?: string | null } | null;
@@ -10,19 +10,10 @@ function readShellToken(shell: ShellRemoteAuthSource | undefined): string | unde
   return token || undefined;
 }
 
-export function resolveShellConnectAuthToken(hubUrl: string): string | undefined {
+export function resolveShellConnectAuthToken(_hubUrl: string): string | undefined {
   if (typeof window === "undefined") return undefined;
   const win = window as Window & {
     satelliteShell?: ShellRemoteAuthSource;
   };
-  const token = readShellToken(win.satelliteShell);
-  if (!token) return undefined;
-  try {
-    const withScheme = /^https?:\/\//i.test(hubUrl) ? hubUrl : `http://${hubUrl}`;
-    const host = new URL(withScheme).hostname.toLowerCase();
-    if (host === "127.0.0.1" || host === "localhost" || host === "::1") return undefined;
-  } catch {
-    return undefined;
-  }
-  return token;
+  return readShellToken(win.satelliteShell);
 }

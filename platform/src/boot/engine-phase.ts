@@ -34,7 +34,6 @@ export type EnginePhaseResult = {
   mcp: MCPManager;
   satellite: SatelliteManager;
   acp: ReturnType<typeof getAcpManager>;
-  remoteAuthToken?: string;
 };
 
 /** Phase 3: catalog、kernel、engine、conversation、MCP/ACP 管理器 */
@@ -78,6 +77,5 @@ export function bootEnginePhase(
     mcp,
     satellite,
     acp,
-    remoteAuthToken: config.data.remote_auth?.token,
   };
 }

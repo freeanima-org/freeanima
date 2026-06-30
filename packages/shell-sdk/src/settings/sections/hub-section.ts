@@ -2,11 +2,11 @@ import { z } from "zod";
 
 import { defineSettingsForm, type SettingsSection } from "../types.ts";
 
-/** 内网 / loopback 可留空；填写时至少 16 字符 */
+/** Hub API Token：配置了则 REST/SAP 一律附 Bearer */
 const remoteAuthTokenSchema = z
   .string()
   .refine((s) => s.trim().length === 0 || s.trim().length >= 16, {
-    message: "远程 Token 至少 16 字符",
+    message: "Hub API Token 至少 16 字符",
   });
 
 const hubFields = defineSettingsForm({
@@ -26,8 +26,8 @@ const hubFields = defineSettingsForm({
     {
       key: "remoteAuthToken",
       type: "password",
-      label: "远程 Token",
-      description: "公网或非 loopback Hub 时填写；仅 127.0.0.1/localhost 可留空",
+      label: "Hub API Token",
+      description: "anima token create 生成；REST/SAP 访问 Hub 时必填",
       group: "Hub 连接",
     },
   ],
@@ -56,7 +56,7 @@ export const hubSettingsSection: SettingsSection = {
   order: 0,
   title: "通用",
   description:
-    "客户端通用设置与 Hub 连接。远程访问需配置 remote_auth.token（见 docs/guide/remote-access.md）。",
+    "客户端通用设置与 Hub 连接。首次使用请运行 anima token create 并在下方填写 Hub API Token。",
   platforms: {
     // Web 壳层 detectPlatform() 为 desktop；字段与 mobile 相同（无开机自启动）
     desktop: { kind: "form", fields: hubFields },
@@ -69,7 +69,7 @@ export const desktopGeneralSettingsSection: SettingsSection = {
   order: 0,
   title: "通用",
   description:
-    "桌面客户端通用设置与 Hub 连接。PC 上运行 anima service；远程访问需配置 remote_auth.token（见 docs/guide/remote-access.md）。",
+    "桌面客户端通用设置与 Hub 连接。首次使用请运行 anima token create 并在下方填写 Hub API Token。",
   platforms: {
     desktop: { kind: "form", fields: desktopGeneralFields },
   },

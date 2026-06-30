@@ -295,6 +295,7 @@ export type {
   SapRouterInputs,
   SapRouterOutputs,
   SapServerHandlers,
+  SapRequestAuthContext,
   SapRequestContext,
   SapClient,
 } from "./router.ts";

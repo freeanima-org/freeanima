@@ -9,5 +9,4 @@ export type SapServerDeps = {
   instanceRegistry: SapInstanceRegistry;
   animaVersion: string;
   masks: MaskRegistryPort;
-  remoteAuthToken?: string;
 };

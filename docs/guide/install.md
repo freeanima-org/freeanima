@@ -249,11 +249,15 @@ bun run test     # full unit + integration (integration uses Docker for temp PG)
 ## Verify installation
 
 ```bash
+anima service start
+anima token create --subject-id 1 --name bootstrap
+# 将输出的 fa_at_... 填入客户端 Hub 设置
+
 anima service status
-curl -s http://127.0.0.1:2658/api/status | jq '.version, .memory_kb'
+curl -s -H "Authorization: Bearer <fa_at_...>" http://127.0.0.1:2658/api/status | jq '.version, .memory_kb'
 ```
 
-If status fails, check PostgreSQL connectivity and that migrations completed ([`database.md`](database.md#troubleshooting)).
+If status fails, check PostgreSQL connectivity, that migrations completed ([`database.md`](database.md#troubleshooting)), and that a valid Service API Token is configured.
 
 ## Next steps
 
