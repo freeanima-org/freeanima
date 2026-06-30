@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { logApiError } from "../api-logging.ts";
 
 export class ApiHandlerError extends Error {
@@ -12,7 +13,9 @@ export class ApiHandlerError extends Error {
     super(message);
     this.name = "ApiHandlerError";
     this.status = status;
-    this.context = context;
+    if (context !== undefined) {
+      this.context = context;
+    }
   }
 }
 
@@ -26,7 +29,7 @@ export function apiErrorBody(error: ApiHandlerError): {
     error.context?.params && typeof error.context.params === "object"
       ? (error.context.params as Record<string, string>)
       : undefined;
-  return { error: error.message, ...(code ? { code, params } : {}) };
+  return { error: error.message, ...(code ? omitUndefined({ code, params }) : {}) };
 }
 
 export function logHandlerError(

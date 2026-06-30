@@ -28,7 +28,7 @@ export function formatAllMemoriesMessage(rows: SemanticMemoryRow[]): {
   bytes: number;
   truncated: boolean;
 } {
-  if (!rows.length) {
+  if (rows.length === 0) {
     return { text: "(Semantic memory store is empty)", bytes: 0, truncated: false };
   }
   const lines: string[] = [`# All semantic memories (${rows.length} active entries)`];
@@ -106,7 +106,7 @@ export function formatSplitCandidatesMessage(
   bytes: number;
   truncated: boolean;
 } {
-  if (!candidates.length) {
+  if (candidates.length === 0) {
     return {
       text: `(No split candidates among ${totalActive} active entries)`,
       bytes: 0,

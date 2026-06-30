@@ -82,7 +82,7 @@ export async function listPipelineStepRuns(
   const rows = await db
     .select()
     .from(pipelineStepRun)
-    .where(conditions.length ? and(...conditions) : undefined)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(desc(pipelineStepRun.finished_at), desc(pipelineStepRun.id))
     .offset(offset)
     .limit(limit);

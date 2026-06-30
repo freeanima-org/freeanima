@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import {
   getActiveConfig,
   resolveContextWindowWithSource,
@@ -68,7 +69,7 @@ export function slimMessage(msg: StoredMessage): StoredMessage | null {
       const names = calls
         .map((c) => c.function?.name?.trim())
         .filter((n): n is string => Boolean(n));
-      text = names.length ? `[tools executed: ${names.join(", ")}]` : "[tool call executed]";
+      text = names.length > 0 ? `[tools executed: ${names.join(", ")}]` : "[tool call executed]";
     }
     if (!text) return null;
     const out: Extract<StoredMessage, { role: "assistant" }> = {
@@ -303,13 +304,17 @@ function resolveCompressBudget(
     return { budget: null, window: null, source: null };
   }
   const catalogFallback = opts?.catalogContextWindow;
-  const { window, source } = resolveContextWindowWithSource(getActiveConfig().data, model, {
-    catalogFallback,
-  });
+  const { window, source } = resolveContextWindowWithSource(
+    getActiveConfig().data,
+    model,
+    omitUndefined({
+      catalogFallback,
+    }),
+  );
   if (window == null) {
     return { budget: null, window: null, source: null };
   }
-  const budget = getEffectiveTokenBudget(model, undefined, { catalogFallback });
+  const budget = getEffectiveTokenBudget(model, undefined, omitUndefined({ catalogFallback }));
   return { budget, window, source };
 }
 
@@ -410,17 +415,19 @@ export function willAdvanceCompression(messages: StoredMessage[], opts?: Compres
     else if (compressed && rawLen > recompressAt) messageAdvance = true;
   }
 
-  return shouldAdvance({
-    usageRatio,
-    inToolLoop: opts?.force ? false : inToolLoop,
-    hasCompressed: compressed,
-    triggerLow: cfg.triggerLow,
-    triggerHigh: cfg.triggerHigh,
-    emergencyRatio: cfg.emergencyRatio,
-    forceEmergency: opts?.forceEmergency,
-    force: opts?.force,
-    messageAdvance: opts?.force ? true : messageAdvance,
-  }).advance;
+  return shouldAdvance(
+    omitUndefined({
+      usageRatio,
+      inToolLoop: opts?.force ? false : inToolLoop,
+      hasCompressed: compressed,
+      triggerLow: cfg.triggerLow,
+      triggerHigh: cfg.triggerHigh,
+      emergencyRatio: cfg.emergencyRatio,
+      forceEmergency: opts?.forceEmergency,
+      force: opts?.force,
+      messageAdvance: opts?.force ? true : messageAdvance,
+    }),
+  ).advance;
 }
 
 /**

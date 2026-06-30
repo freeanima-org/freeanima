@@ -68,7 +68,7 @@ async function sampleEpisodicSnippets(conversationIds: string[]): Promise<DreamE
       });
     }
   }
-  if (!pool.length) return [];
+  if (pool.length === 0) return [];
 
   shuffleInPlace(pool);
 
@@ -90,7 +90,7 @@ async function sampleEpisodicSnippets(conversationIds: string[]): Promise<DreamE
     const conversationId = sessionKeys[round % sessionKeys.length];
     if (!conversationId) break;
     const list = bySession.get(conversationId) ?? [];
-    if (!list.length) {
+    if (list.length === 0) {
       round += 1;
       continue;
     }
@@ -128,9 +128,8 @@ export async function gatherDreamInput(opts?: GatherDreamInputOpts): Promise<Dre
       orderBy: "intensity_desc",
     },
   );
-  const episodicSnippets = conversationIds.length
-    ? await sampleEpisodicSnippets(conversationIds)
-    : [];
+  const episodicSnippets =
+    conversationIds.length > 0 ? await sampleEpisodicSnippets(conversationIds) : [];
 
   return {
     day: range.day,

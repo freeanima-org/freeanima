@@ -18,7 +18,7 @@ export function renderToolsetsSection(registry: ToolSetRegistry): string {
     .listToolSets()
     .filter((ts) => !ts.private)
     .toSorted((a, b) => a.name.localeCompare(b.name));
-  if (!sets.length) return "";
+  if (sets.length === 0) return "";
   const lines = sets.map((ts) => `- ${ts.name} — ${ts.description.trim() || "(no description)"}`);
   return wrapPromptSection("ToolSets", lines.join("\n"), TOOLSETS_FRAME);
 }

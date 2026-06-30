@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import {
   isWebProcessAlive,
   probeWebHealth,
@@ -33,13 +34,15 @@ export async function runWebCommand(args: WebCommandArgs): Promise<void> {
       process.exit(1);
     }
 
-    const handle = await startWebServer({
-      host: args.host,
-      port: args.port,
-      dist: args.dist,
-      writePid: true,
-      skipBuild: args.skipBuild,
-    });
+    const handle = await startWebServer(
+      omitUndefined({
+        host: args.host,
+        port: args.port,
+        dist: args.dist,
+        writePid: true,
+        skipBuild: args.skipBuild,
+      }),
+    );
 
     console.log(
       `Web UI · http://${handle.host === "0.0.0.0" ? "127.0.0.1" : handle.host}:${handle.port}/web/chat`,

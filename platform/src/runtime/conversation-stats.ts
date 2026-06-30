@@ -242,7 +242,7 @@ export async function computeStats(
   let duration_seconds: number | null = null;
   if (timestamps.length >= 2) {
     duration_seconds = Math.max(
-      (timestamps[timestamps.length - 1]!.getTime() - timestamps[0]!.getTime()) / 1000,
+      (timestamps.at(-1)!.getTime() - timestamps[0]!.getTime()) / 1000,
       0,
     );
   }
@@ -298,7 +298,7 @@ export async function computeStats(
 }
 
 export function mergeStats(items: ConversationStats[], label = "Summary"): ConversationStats {
-  if (!items.length) {
+  if (items.length === 0) {
     const cfg = getCompressionConfig();
     return {
       conversation: label,
@@ -353,9 +353,8 @@ export function mergeStats(items: ConversationStats[], label = "Summary"): Conve
   const duration_values = items
     .map((s) => s.duration_seconds)
     .filter((d): d is number => d != null);
-  const duration_seconds = duration_values.length
-    ? duration_values.reduce((a, b) => a + b, 0)
-    : null;
+  const duration_seconds =
+    duration_values.length > 0 ? duration_values.reduce((a, b) => a + b, 0) : null;
 
   let avg_tps: number | null = null;
   if (output_tokens && output_tokens > 0) {
@@ -454,7 +453,7 @@ function formatNumber(
   const suffixes: string[] = [];
   if (opts?.estimated) suffixes.push("estimated");
   if (opts?.partial) suffixes.push("partial");
-  if (!suffixes.length) return text;
+  if (suffixes.length === 0) return text;
   return `${opts?.estimated ? "~" : ""}${text} (${suffixes.join(", ")})`;
 }
 
@@ -573,7 +572,7 @@ export async function statsReport(
 ): Promise<string> {
   if (opts?.allConversations) {
     const conversations = await deps.conversation.listConversations();
-    if (!conversations.length) return "(no conversations)";
+    if (conversations.length === 0) return "(no conversations)";
     const parts: string[] = [];
     const perConversation: ConversationStats[] = [];
     for (const name of conversations) {

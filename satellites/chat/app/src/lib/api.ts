@@ -16,10 +16,10 @@ type SubscribeCallbacks<T> = {
 function mapConversationList(raw: {
   conversations: Array<{
     conversation_id: string;
-    title?: string;
-    platform?: string;
-    updated_at?: string;
-    archived_at?: string | null;
+    title?: string | undefined;
+    platform?: string | undefined;
+    updated_at?: string | undefined;
+    archived_at?: string | null | undefined;
   }>;
 }): { conversations: ConversationListItem[] } {
   return {
@@ -90,7 +90,19 @@ export async function getConversationAcpDock(
   conversationId: string,
 ): Promise<ConversationAcpDockSnapshot> {
   const client = await sap().whenReady();
-  return client.request("conversation.acpDock", { conversation_id: conversationId });
+  const raw = await client.request("conversation.acpDock", { conversation_id: conversationId });
+  return {
+    ...raw,
+    tasks: raw.tasks.map((task) => ({
+      acp_conversation_id: task.acp_conversation_id,
+      task_id: task.task_id,
+      agent_name: task.agent_name,
+      status: task.status,
+      ...(task.progress_message_id !== undefined
+        ? { progress_message_id: task.progress_message_id }
+        : {}),
+    })),
+  };
 }
 
 export async function listConversationCommands(opts?: { all?: boolean }) {

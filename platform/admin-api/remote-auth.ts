@@ -13,9 +13,9 @@ export function isInternalHubHost(hostname: string): boolean {
 /** cloudflared 连本机时 requestIP 为 loopback，但会带上 CF 代理头（仅供 /api/echo 诊断） */
 export function hasCloudflareProxyHeaders(req: Request): boolean {
   return (
-    normalizeHeader(req, "cf-access-jwt-assertion") !== null ||
-    normalizeHeader(req, "cf-connecting-ip") !== null ||
-    normalizeHeader(req, "cf-ray") !== null
+    normalizeHeader(req, "cf-access-jwt-assertion") != null ||
+    normalizeHeader(req, "cf-connecting-ip") != null ||
+    normalizeHeader(req, "cf-ray") != null
   );
 }
 

@@ -37,7 +37,7 @@ function formatProcessOutput(stdout: string, stderr: string, exitCode: number | 
   const parts: string[] = [];
   if (stdout) parts.push(stdout);
   if (stderr) parts.push(`--- stderr ---\n${stderr}`);
-  if (exitCode !== 0 && exitCode !== null) {
+  if (exitCode !== 0 && exitCode != null) {
     parts.push(`--- exit code: ${exitCode} ---`);
   }
   const output = parts.join("");
@@ -48,7 +48,7 @@ function formatSpawnResult(result: ReturnType<typeof spawnSync>): string {
   const parts: string[] = [];
   if (result.stdout) parts.push(String(result.stdout));
   if (result.stderr) parts.push(`--- stderr ---\n${result.stderr}`);
-  if (result.status !== 0 && result.status !== null) {
+  if (result.status !== 0 && result.status != null) {
     parts.push(`--- exit code: ${result.status} ---`);
   }
   let output = parts.join("");

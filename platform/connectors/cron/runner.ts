@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { existsSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { runCronEngineTurn } from "@freeanima/platform/ports/cron-use-cases";
@@ -91,7 +92,7 @@ async function notifyCronJobResult(
 ): Promise<void> {
   if (!shouldNotifyCronJobResult(job, success)) return;
   try {
-    await notifyCronResult(job, { jobName: job.name, success, output, error });
+    await notifyCronResult(job, omitUndefined({ jobName: job.name, success, output, error }));
   } catch (e) {
     logComponent("cron").warn(`Cron notification error for ${job.id}`, { err: e, job_id: job.id });
   }

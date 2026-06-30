@@ -64,7 +64,9 @@ describePg("server cron API", () => {
     expect(result).not.toBeNull();
     expect(result!.message).toContain("api-test");
     expect(result!.job.id).toBe(jobId);
-    await new Promise((r) => setTimeout(r, 150));
+    await new Promise((r) => {
+      setTimeout(r, 150);
+    });
   });
 
   it("AppRuntime returns null for unknown job id", async () => {

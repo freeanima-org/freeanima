@@ -66,9 +66,11 @@ export function createSatelliteHub(options: CreateSatelliteHubOptions): Satellit
       return;
     }
     try {
-      const content = await options.onToolCall(payload.local_name, payload.args, {
-        workspace_root: payload.workspace_root,
-      });
+      const content = await options.onToolCall(
+        payload.local_name,
+        payload.args,
+        payload.workspace_root !== undefined ? { workspace_root: payload.workspace_root } : {},
+      );
       await sap.request("tool.result", { call_id: payload.call_id, content });
     } catch (e) {
       await sap.request("tool.error", {
@@ -84,7 +86,7 @@ export function createSatelliteHub(options: CreateSatelliteHubOptions): Satellit
 
     transport = runSapTransport({
       hubUrl,
-      instanceStore: options.instanceStore,
+      ...(options.instanceStore !== undefined ? { instanceStore: options.instanceStore } : {}),
       connect: {
         app_id: options.appId,
         features_requested: options.featuresRequested ?? ["server_info", "capability_mask"],
@@ -110,7 +112,7 @@ export function createSatelliteHub(options: CreateSatelliteHubOptions): Satellit
       return instanceId;
     },
     isConnected(): boolean {
-      return transport?.getClient() !== null;
+      return transport?.getClient() != null;
     },
     whenConnected(): Promise<SapClient> {
       return transport!.whenConnected();

@@ -32,7 +32,7 @@ export function useAcpProgressDock(
     }
     try {
       const snap = await adapter.getDock(conversationId);
-      if (!snap.tasks.length) {
+      if (snap.tasks.length === 0) {
         setDock(null);
         decisionHandledRef.current = false;
         return;

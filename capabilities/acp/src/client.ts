@@ -78,7 +78,7 @@ export class ACPClient {
     agentCfg?: AcpAgentConfig,
     adapter?: AcpAgentAdapter,
   ) {
-    this.agentCfg = agentCfg;
+    if (agentCfg !== undefined) this.agentCfg = agentCfg;
     this.adapter = adapter ?? (agentCfg ? resolveAcpAdapter(agentCfg) : genericAcpAdapter);
   }
 
@@ -343,7 +343,7 @@ export class ACPClient {
     const fromResult = extractTextFromResult(result);
     if (fromResult) parts.push(fromResult);
 
-    if (this.activeCapture.notes.length) {
+    if (this.activeCapture.notes.length > 0) {
       parts.push("\n---\n" + this.activeCapture.notes.join("\n"));
     }
 
@@ -403,7 +403,7 @@ export class ACPClient {
           : (this.defaultCwd ?? process.cwd());
 
         const clientResult = handleClientMethod(method, params, { projectCwd });
-        if (clientResult !== null) {
+        if (clientResult != null) {
           this.sendResponse(id, clientResult);
           return;
         }
@@ -413,7 +413,9 @@ export class ACPClient {
             ? {
                 client: this,
                 capture: this.activeCapture,
-                onDecisionNeeded: this.activeDecisionHandler ?? undefined,
+                ...(this.activeDecisionHandler != null
+                  ? { onDecisionNeeded: this.activeDecisionHandler }
+                  : {}),
               }
             : undefined;
         const result =
@@ -466,7 +468,7 @@ export class ACPClient {
   }
 
   private stderrSummary(): string {
-    if (!this.stderrLines.length) return "";
+    if (this.stderrLines.length === 0) return "";
     return ` stderr: ${this.stderrLines.slice(-5).join(" | ")}`;
   }
 

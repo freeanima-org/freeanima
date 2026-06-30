@@ -1,7 +1,7 @@
 import type { DeepSleepChangeLog, DeepSleepChangeEntry } from "./types.ts";
 
 function sourceLabel(sources: string[]): string {
-  if (!sources.length) return "[]";
+  if (sources.length === 0) return "[]";
   return `[${sources.join(", ")}]`;
 }
 

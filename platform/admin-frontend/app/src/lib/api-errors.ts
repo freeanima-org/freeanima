@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { m } from "./i18n.ts";
 
 export type ApiWirePayload = {
@@ -42,15 +43,17 @@ export function translateApiErrorValue(value: unknown): string {
   if (typeof value === "object") {
     const obj = value as Record<string, unknown>;
     if (typeof obj.code === "string" || typeof obj.error === "string") {
-      return translateApiPayload({
-        code: typeof obj.code === "string" ? obj.code : undefined,
-        error: typeof obj.error === "string" ? obj.error : undefined,
-        message: typeof obj.message === "string" ? obj.message : undefined,
-        params:
-          obj.params && typeof obj.params === "object"
-            ? (obj.params as Record<string, string>)
-            : undefined,
-      });
+      return translateApiPayload(
+        omitUndefined({
+          code: typeof obj.code === "string" ? obj.code : undefined,
+          error: typeof obj.error === "string" ? obj.error : undefined,
+          message: typeof obj.message === "string" ? obj.message : undefined,
+          params:
+            obj.params && typeof obj.params === "object"
+              ? (obj.params as Record<string, string>)
+              : undefined,
+        }),
+      );
     }
     if (typeof obj.message === "string") return normalizeNetworkErrorMessage(obj.message);
     if (typeof obj.value === "string") return normalizeNetworkErrorMessage(obj.value);

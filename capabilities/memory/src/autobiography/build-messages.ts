@@ -37,7 +37,7 @@ function sortSemanticForAutobiography(a: SemanticMemoryRow, b: SemanticMemoryRow
 }
 
 export function formatSemanticMemoriesForAutobiography(rows: SemanticMemoryRow[]): string {
-  if (!rows.length) {
+  if (rows.length === 0) {
     return "(No related semantic memories for this day)";
   }
   const sorted = [...rows].toSorted(sortSemanticForAutobiography);
@@ -51,7 +51,7 @@ export function formatSemanticMemoriesForAutobiography(rows: SemanticMemoryRow[]
 }
 
 export function formatLimbicMemoriesForAutobiography(rows: LimbicMemoryRow[]): string {
-  if (!rows.length) {
+  if (rows.length === 0) {
     return "(No related limbic memories for this day)";
   }
   return formatLimbicMemoriesMessage(rows).replace(
@@ -61,7 +61,7 @@ export function formatLimbicMemoriesForAutobiography(rows: LimbicMemoryRow[]): s
 }
 
 export function formatCandidateSemanticMemories(rows: SemanticMemoryRow[]): string {
-  if (!rows.length) {
+  if (rows.length === 0) {
     return "(No recent experience/imprint semantic memories)";
   }
   const lines = [`# Candidate semantic memories (${rows.length} experience/imprint entries)`];
@@ -72,7 +72,7 @@ export function formatCandidateSemanticMemories(rows: SemanticMemoryRow[]): stri
 }
 
 export function formatExistingAutobiographical(rows: AutobiographicalMemoryRow[]): string {
-  if (!rows.length) {
+  if (rows.length === 0) {
     return "(No autobiographical narratives yet)";
   }
   const lines = [`# Existing autobiographical narratives (${rows.length} active entries)`];

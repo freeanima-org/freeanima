@@ -141,7 +141,7 @@ class StudioTerminalRuntime {
   private unbindResizeObserver(): void {
     this.ro?.disconnect();
     this.ro = null;
-    if (this.fitRafId !== null) {
+    if (this.fitRafId != null) {
       cancelAnimationFrame(this.fitRafId);
       this.fitRafId = null;
     }
@@ -149,7 +149,7 @@ class StudioTerminalRuntime {
 
   private scheduleFit(): void {
     if (!this.alive) return;
-    if (this.fitRafId !== null) cancelAnimationFrame(this.fitRafId);
+    if (this.fitRafId != null) cancelAnimationFrame(this.fitRafId);
     this.fitRafId = requestAnimationFrame(() => {
       this.fitRafId = null;
       this.fitTerminal();

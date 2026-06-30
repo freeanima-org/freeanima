@@ -60,7 +60,7 @@ export function expandJobsToUnits(
   const maxChunk = opts.maxChunkTokens ?? MAX_CHUNK_TOKENS;
 
   const units = jobs.flatMap((job) => expandJobToUnits(job, maxChunk, model));
-  if (!units.length) return [];
+  if (units.length === 0) return [];
 
   const result: EmbeddingEmbedUnit[] = [];
   for (const unit of units) {

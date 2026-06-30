@@ -7,8 +7,6 @@ export class MemoryEventQueue implements EventQueueAdapter {
   private draining = false;
   private process: EventQueueProcess | null = null;
 
-  constructor() {}
-
   enqueue(topicQualifiedId: string, payload: unknown): void {
     this.queue.push({ topicQualifiedId, payload });
     if (this.running) {

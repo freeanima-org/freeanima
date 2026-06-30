@@ -11,6 +11,7 @@ import {
   buildCompressOptionsResolved,
   willAdvanceCompression,
 } from "@freeanima/core/compress";
+import { omitUndefined } from "@freeanima/core/util";
 import { persistToolLoopRepair, REPAIR_REASON_LOST } from "@freeanima/core/llm";
 import { injectTimePrefixes } from "./time-perception.ts";
 import { advanceCompressionMeta } from "./compression-orchestration.ts";
@@ -195,7 +196,7 @@ export async function finishTurn(
       await appendMessage(msg, conversationId);
     }
   }
-  await updateConversationMeta(registry, conversationId, model, { functions });
+  await updateConversationMeta(registry, conversationId, model, omitUndefined({ functions }));
 }
 
 /** Retry turn: roll back to last user without appending new user; return runtime messages */

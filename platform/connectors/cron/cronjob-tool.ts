@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
 import { CRON_TOOL_RETURNS } from "./return-schemas.ts";
@@ -12,11 +13,14 @@ import {
   enqueueRunJob,
 } from "./index.ts";
 
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
 function tsHuman(ts: number): string {
   if (!ts) return "";
   const d = new Date(ts * 1000);
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  return `${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
 async function handleCronjob(args: Record<string, unknown>): Promise<string> {
@@ -38,7 +42,7 @@ async function handleCronjob(args: Record<string, unknown>): Promise<string> {
         next_run: tsHuman(computeNextRunAt(j.schedule, j.paused) ?? 0),
         summary: `${j.paused ? "paused" : "active"} · ${j.name} · ${j.schedule}`,
       })),
-      message: jobs.length ? `Total ${jobs.length} scheduled jobs` : "No scheduled jobs",
+      message: jobs.length > 0 ? `Total ${jobs.length} scheduled jobs` : "No scheduled jobs",
     });
   }
 
@@ -77,16 +81,18 @@ async function handleCronjob(args: Record<string, unknown>): Promise<string> {
     if (!prompt && !noAgent)
       return toolError("prompt required to create job (or no_agent=true for script-only mode)");
     try {
-      const j = await createJob({
-        name,
-        schedule,
-        prompt,
-        skills: Array.isArray(args.skills) ? (args.skills as string[]) : undefined,
-        script: args.script != null ? String(args.script) : null,
-        no_agent: noAgent,
-        repeat: typeof args.repeat === "number" ? args.repeat : null,
-        notify_on_success: Boolean(args.notify_on_success),
-      });
+      const j = await createJob(
+        omitUndefined({
+          name,
+          schedule,
+          prompt,
+          skills: Array.isArray(args.skills) ? (args.skills as string[]) : undefined,
+          script: args.script != null ? String(args.script) : null,
+          no_agent: noAgent,
+          repeat: typeof args.repeat === "number" ? args.repeat : null,
+          notify_on_success: Boolean(args.notify_on_success),
+        }),
+      );
       const next = computeNextRunAt(j.schedule, j.paused) ?? 0;
       return toolResult({
         ok: true,

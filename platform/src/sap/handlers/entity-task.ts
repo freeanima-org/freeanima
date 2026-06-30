@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import {
   tasklistListInputSchema,
   tasklistCreateInputSchema,
@@ -21,7 +22,11 @@ export async function handleTasklistList(
   ctx: SapRequestContext,
 ) {
   const input = tasklistListInputSchema.parse(payload ?? {});
-  return serviceEntityTask.serviceTasklistList(deps.runtime.runtimeDeps(), input, ctx.auth);
+  return serviceEntityTask.serviceTasklistList(
+    deps.runtime.runtimeDeps(),
+    omitUndefined(input),
+    ctx.auth,
+  );
 }
 
 export async function handleTasklistCreate(
@@ -30,7 +35,11 @@ export async function handleTasklistCreate(
   ctx: SapRequestContext,
 ) {
   const input = tasklistCreateInputSchema.parse(payload);
-  return serviceEntityTask.serviceTasklistCreate(deps.runtime.runtimeDeps(), input, ctx.auth);
+  return serviceEntityTask.serviceTasklistCreate(
+    deps.runtime.runtimeDeps(),
+    omitUndefined(input),
+    ctx.auth,
+  );
 }
 
 export async function handleTasklistPatch(
@@ -39,7 +48,11 @@ export async function handleTasklistPatch(
   ctx: SapRequestContext,
 ) {
   const input = tasklistPatchInputSchema.parse(payload);
-  return serviceEntityTask.serviceTasklistPatch(deps.runtime.runtimeDeps(), input, ctx.auth);
+  return serviceEntityTask.serviceTasklistPatch(
+    deps.runtime.runtimeDeps(),
+    omitUndefined(input),
+    ctx.auth,
+  );
 }
 
 export async function handleTasklistDelete(
@@ -48,7 +61,11 @@ export async function handleTasklistDelete(
   ctx: SapRequestContext,
 ) {
   const input = tasklistDeleteInputSchema.parse(payload);
-  return serviceEntityTask.serviceTasklistDelete(deps.runtime.runtimeDeps(), input, ctx.auth);
+  return serviceEntityTask.serviceTasklistDelete(
+    deps.runtime.runtimeDeps(),
+    omitUndefined(input),
+    ctx.auth,
+  );
 }
 
 export async function handleTaskList(
@@ -57,7 +74,11 @@ export async function handleTaskList(
   ctx: SapRequestContext,
 ) {
   const input = taskListInputSchema.parse(payload);
-  return serviceEntityTask.serviceTaskList(deps.runtime.runtimeDeps(), input, ctx.auth);
+  return serviceEntityTask.serviceTaskList(
+    deps.runtime.runtimeDeps(),
+    omitUndefined(input),
+    ctx.auth,
+  );
 }
 
 export async function handleTaskCreate(
@@ -66,7 +87,11 @@ export async function handleTaskCreate(
   ctx: SapRequestContext,
 ) {
   const input = taskCreateInputSchema.parse(payload);
-  return serviceEntityTask.serviceTaskCreate(deps.runtime.runtimeDeps(), input, ctx.auth);
+  return serviceEntityTask.serviceTaskCreate(
+    deps.runtime.runtimeDeps(),
+    omitUndefined(input),
+    ctx.auth,
+  );
 }
 
 export async function handleTaskPatch(
@@ -75,7 +100,11 @@ export async function handleTaskPatch(
   ctx: SapRequestContext,
 ) {
   const input = taskPatchInputSchema.parse(payload);
-  return serviceEntityTask.serviceTaskPatch(deps.runtime.runtimeDeps(), input, ctx.auth);
+  return serviceEntityTask.serviceTaskPatch(
+    deps.runtime.runtimeDeps(),
+    omitUndefined(input),
+    ctx.auth,
+  );
 }
 
 export async function handleTaskComplete(
@@ -84,7 +113,11 @@ export async function handleTaskComplete(
   ctx: SapRequestContext,
 ) {
   const input = taskCompleteInputSchema.parse(payload);
-  return serviceEntityTask.serviceTaskComplete(deps.runtime.runtimeDeps(), input, ctx.auth);
+  return serviceEntityTask.serviceTaskComplete(
+    deps.runtime.runtimeDeps(),
+    omitUndefined(input),
+    ctx.auth,
+  );
 }
 
 export async function handleTaskUncomplete(
@@ -93,7 +126,11 @@ export async function handleTaskUncomplete(
   ctx: SapRequestContext,
 ) {
   const input = taskUncompleteInputSchema.parse(payload);
-  return serviceEntityTask.serviceTaskUncomplete(deps.runtime.runtimeDeps(), input, ctx.auth);
+  return serviceEntityTask.serviceTaskUncomplete(
+    deps.runtime.runtimeDeps(),
+    omitUndefined(input),
+    ctx.auth,
+  );
 }
 
 export async function handleTaskDelete(
@@ -102,7 +139,11 @@ export async function handleTaskDelete(
   ctx: SapRequestContext,
 ) {
   const input = taskDeleteInputSchema.parse(payload);
-  return serviceEntityTask.serviceTaskDelete(deps.runtime.runtimeDeps(), input, ctx.auth);
+  return serviceEntityTask.serviceTaskDelete(
+    deps.runtime.runtimeDeps(),
+    omitUndefined(input),
+    ctx.auth,
+  );
 }
 
 export type { SapRequestAuthContext };

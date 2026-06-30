@@ -57,7 +57,7 @@ export function createSatelliteViteInlineConfig(opts: SatelliteViteOptions): Inl
       alias,
       dedupe: ["react", "react-dom"],
     },
-    define: opts.define,
+    ...(opts.define !== undefined ? { define: opts.define } : {}),
     build: {
       outDir: opts.outdir,
       emptyOutDir: !opts.watch,

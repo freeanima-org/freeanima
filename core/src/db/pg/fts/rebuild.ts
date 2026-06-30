@@ -9,6 +9,7 @@ import {
 import { entitySearchTextForWrite } from "@freeanima/core/db/schema/entity";
 
 import { getActiveConfig, isCjkJiebaEnabled, isEmbeddingEnabled } from "@freeanima/core/config";
+import { omitUndefined } from "@freeanima/core/util";
 import { logPgComponent } from "../log.ts";
 
 import { EMBEDDING_QUEUE_FLUSH_THRESHOLD } from "../embedding/batch-pack.ts";
@@ -202,7 +203,7 @@ async function rebuildSemanticMemoryFtsSegmented(
       .where(and(...baseConditions))
       .orderBy(asc(semanticMemory.id))
       .limit(REBUILD_DB_PAGE_SIZE);
-    if (!rows.length) break;
+    if (rows.length === 0) break;
 
     for (const row of rows) {
       const fts_segmented = await segmentForFts(row.content);
@@ -250,7 +251,7 @@ async function rebuildMessagesFtsSegmented(
       .where(and(...baseConditions))
       .orderBy(asc(messages.id))
       .limit(REBUILD_DB_PAGE_SIZE);
-    if (!rows.length) break;
+    if (rows.length === 0) break;
 
     for (const row of rows) {
       const content = row.content ?? "";
@@ -294,7 +295,7 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
       .where(and(...baseConditions))
       .orderBy(asc(semanticMemory.id))
       .limit(REBUILD_EMBEDDING_PAGE_SIZE);
-    if (!rows.length) break;
+    if (rows.length === 0) break;
 
     const row = rows[0]!;
     const stored = await embedRebuildRow("semantic_memory_embedding", {
@@ -337,7 +338,7 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
       .where(and(...baseConditions))
       .orderBy(asc(messages.id))
       .limit(REBUILD_EMBEDDING_PAGE_SIZE);
-    if (!rows.length) break;
+    if (rows.length === 0) break;
 
     const row = rows[0]!;
     const stored = await embedRebuildRow("messages_embedding", {
@@ -436,7 +437,7 @@ async function rebuildLimbicMemoryFtsSegmented(
       .where(and(...baseConditions))
       .orderBy(asc(limbicMemory.id))
       .limit(REBUILD_DB_PAGE_SIZE);
-    if (!rows.length) break;
+    if (rows.length === 0) break;
 
     for (const row of rows) {
       const fts_segmented = await segmentForFts(row.content);
@@ -496,7 +497,7 @@ async function rebuildAutobiographicalMemoryFtsSegmented(
       .where(and(...baseConditions))
       .orderBy(asc(autobiographicalMemory.id))
       .limit(REBUILD_DB_PAGE_SIZE);
-    if (!rows.length) break;
+    if (rows.length === 0) break;
 
     for (const row of rows) {
       const indexText = autobiographicalIndexText(row.title, row.content);
@@ -564,7 +565,7 @@ async function rebuildEntitiesFtsSegmented(
       .where(and(...baseConditions))
       .orderBy(asc(entities.id))
       .limit(REBUILD_DB_PAGE_SIZE);
-    if (!rows.length) break;
+    if (rows.length === 0) break;
 
     for (const row of rows) {
       const indexText = entitySearchTextForWrite({
@@ -611,7 +612,7 @@ async function rebuildLimbicMemoryEmbeddings(opts: FtsRebuildOptions): Promise<n
       .where(and(...baseConditions))
       .orderBy(asc(limbicMemory.id))
       .limit(REBUILD_EMBEDDING_PAGE_SIZE);
-    if (!rows.length) break;
+    if (rows.length === 0) break;
 
     const row = rows[0]!;
     const stored = await embedRebuildRow("limbic_memory_embedding", {
@@ -658,7 +659,7 @@ async function rebuildAutobiographicalMemoryEmbeddings(opts: FtsRebuildOptions):
       .where(and(...baseConditions))
       .orderBy(asc(autobiographicalMemory.id))
       .limit(REBUILD_EMBEDDING_PAGE_SIZE);
-    if (!rows.length) break;
+    if (rows.length === 0) break;
 
     const row = rows[0]!;
     const stored = await embedRebuildRow("autobiographical_memory_embedding", {
@@ -706,7 +707,7 @@ export async function rebuildAllFtsSegments(
     };
   }
 
-  return {
+  return omitUndefined({
     tables: {
       semantic_memory,
       messages: messagesCount,
@@ -717,7 +718,7 @@ export async function rebuildAllFtsSegments(
     cjk_enabled: useJieba,
     embedding_enabled,
     embeddings,
-  };
+  });
 }
 
 export type { FtsRebuildOptions, FtsRebuildPhase, FtsRebuildProgress } from "./rebuild-types.ts";

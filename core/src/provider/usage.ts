@@ -26,5 +26,5 @@ export function normalizeUsage(
   if (completion != null) out.completion_tokens = Number(completion);
   if (cached != null && typeof cached === "number") out.cached_tokens = cached;
   if (raw.total_tokens != null) out.total_tokens = Number(raw.total_tokens);
-  return Object.keys(out).length ? out : null;
+  return Object.keys(out).length > 0 ? out : null;
 }

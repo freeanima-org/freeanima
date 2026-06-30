@@ -7,7 +7,9 @@ async function waitUntil(predicate: () => boolean, timeoutMs = 500): Promise<voi
     if (Date.now() >= deadline) {
       throw new Error(`waitUntil timed out after ${timeoutMs}ms`);
     }
-    await new Promise((r) => setTimeout(r, 5));
+    await new Promise((r) => {
+      setTimeout(r, 5);
+    });
   }
 }
 
@@ -58,7 +60,9 @@ describe("MemoryEventQueue", () => {
     const seen: string[] = [];
     queue.start(async (event) => {
       seen.push(String(event.payload));
-      await new Promise((r) => setTimeout(r, 15));
+      await new Promise((r) => {
+        setTimeout(r, 15);
+      });
       return "ack";
     });
     queue.enqueue("t", "first");
@@ -75,7 +79,9 @@ describe("MemoryEventQueue", () => {
     queue.start(process);
     queue.stop();
     queue.enqueue("t", { n: 1 });
-    await new Promise((r) => setTimeout(r, 30));
+    await new Promise((r) => {
+      setTimeout(r, 30);
+    });
     expect(process).not.toHaveBeenCalled();
   });
 
@@ -85,7 +91,9 @@ describe("MemoryEventQueue", () => {
     queue.start(process);
     queue.enqueue("t", { n: 1 });
     await waitUntil(() => process.mock.calls.length === 1);
-    await new Promise((r) => setTimeout(r, 30));
+    await new Promise((r) => {
+      setTimeout(r, 30);
+    });
     expect(process).toHaveBeenCalledTimes(1);
     queue.stop();
   });

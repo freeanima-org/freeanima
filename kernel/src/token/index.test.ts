@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { createQualifiedToken, PayloadOf } from "./index.ts";
+import { createQualifiedToken, type PayloadOf } from "./index.ts";
 
 describe("createQualifiedToken", () => {
   it("creates stable qualifiedId", () => {

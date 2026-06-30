@@ -1,5 +1,6 @@
 import type { ToolDef } from "@freeanima/core/tool";
 import { toolError, toolResult } from "@freeanima/core/tool";
+import { omitUndefined } from "@freeanima/core/util";
 import type {
   AutobiographicalSignificance,
   AutobiographicalMemoryCreateInput,
@@ -65,7 +66,7 @@ export const autobiographicalMemoryToolDefs: ToolDef[] = [
           ? (sigRaw as AutobiographicalSignificance)
           : undefined;
 
-      const row: AutobiographicalMemoryCreateInput = {
+      const row: AutobiographicalMemoryCreateInput = omitUndefined({
         title,
         content,
         significance,
@@ -73,7 +74,7 @@ export const autobiographicalMemoryToolDefs: ToolDef[] = [
         period_end: args.period_end !== undefined ? String(args.period_end) : undefined,
         source_semantic_memory: parseSourceSemanticMemory(args),
         source_conversations: parseStringArray(args.source_conversations),
-      };
+      });
 
       try {
         const id = await createAutobiographicalMemory(row);

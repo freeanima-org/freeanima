@@ -10,6 +10,20 @@ export type TaskReminderSchedulable = {
   last_notified_at?: string | null;
 };
 
+function taskReminderFields(item: {
+  title: string;
+  due_at?: string | null | undefined;
+  remind_at?: string | null | undefined;
+  last_notified_at?: string | null | undefined;
+}): TaskReminderSchedulable & { title: string } {
+  return {
+    title: item.title,
+    ...(item.due_at !== undefined ? { due_at: item.due_at } : {}),
+    ...(item.remind_at !== undefined ? { remind_at: item.remind_at } : {}),
+    ...(item.last_notified_at !== undefined ? { last_notified_at: item.last_notified_at } : {}),
+  };
+}
+
 /** remind_at 优先；无 remind_at 时用 due_at */
 export function triggerMs(item: TaskReminderSchedulable): number | null {
   const remind = item.remind_at ? Date.parse(item.remind_at) : NaN;
@@ -61,10 +75,11 @@ export async function runTaskReminderScan(): Promise<string> {
   for (const row of search.results) {
     const item = asTaskItem(row);
     if (!item || item.status === "completed") continue;
-    if (!shouldSendTaskReminder(item, now)) continue;
+    const schedulable = taskReminderFields(item);
+    if (!shouldSendTaskReminder(schedulable, now)) continue;
 
-    const at = triggerMs(item)!;
-    const body = buildReminderBody(item);
+    const at = triggerMs(schedulable)!;
+    const body = buildReminderBody(schedulable);
     const sourceRef = taskReminderSourceRef(item.id, at);
 
     await port.create({

@@ -13,6 +13,7 @@ import type { ConversationMetaLoadResult } from "@freeanima/core/db/domain";
 import type { EventBus } from "@freeanima/kernel/eventbus";
 import { conversationUpdated } from "@freeanima/capabilities-memory";
 import { appendMessageReturningId, updateMessageContent } from "@freeanima/core/db/pg/conversation";
+import { omitUndefined } from "@freeanima/core/util";
 import { logComponent } from "@freeanima/platform/logging";
 
 const DISCORD_PROGRESS_PREFIX = "discord:";
@@ -123,16 +124,18 @@ export function createAcpProgressDelivery(opts: {
   return {
     async deliverProgress(task, body, deliverOpts) {
       const targets = await loadTargets(task.animaSessionId);
-      if (targets.length) {
+      if (targets.length > 0) {
         const externalTargets = deliverOpts?.weixinBatch
           ? targets
           : targets.filter((t) => t.platform !== "weixin");
-        if (!externalTargets.length) return;
+        if (externalTargets.length === 0) return;
 
         const discordEditId = parseDiscordProgressId(task.progressMessageId);
-        const res = await deliverToTargets(externalTargets, body, {
-          editMessageId: discordEditId,
-        });
+        const res = await deliverToTargets(
+          externalTargets,
+          body,
+          omitUndefined({ editMessageId: discordEditId }),
+        );
         if (res?.messageId) {
           return { progressMessageId: formatDiscordProgressId(res.messageId) };
         }
@@ -167,7 +170,7 @@ export function createAcpProgressDelivery(opts: {
       );
       const body = formatExternalResultBody(task, result);
       const targets = await loadTargets(task.animaSessionId);
-      if (targets.length) {
+      if (targets.length > 0) {
         await deliverToTargets(targets, body);
       } else {
         logComponent("acp-deliver").debug("ACP result appended to conversation", {
@@ -196,7 +199,7 @@ export function createAcpProgressDelivery(opts: {
       );
       const body = formatErrorBody(task, message);
       const targets = await loadTargets(task.animaSessionId);
-      if (targets.length) {
+      if (targets.length > 0) {
         await deliverToTargets(targets, body);
       }
       notifyConversation(task.animaSessionId);

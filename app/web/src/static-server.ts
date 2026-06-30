@@ -17,7 +17,7 @@ const MIME: Record<string, string> = {
 function isAddrInUse(error: unknown): boolean {
   return (
     typeof error === "object" &&
-    error !== null &&
+    error != null &&
     "code" in error &&
     (error as { code?: string }).code === "EADDRINUSE"
   );

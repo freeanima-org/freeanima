@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { resolveDefaultConversationToolSets } from "./default-conversation-toolsets.ts";
 import { globalToolErrorContract, resolveToolReturnFields } from "./return-contract.ts";
 import {
@@ -78,7 +79,7 @@ export function buildToolsStatus(
       const returnFields = resolveToolReturnFields({ ...t, returnKind });
       const isDynamicRemote = toolset?.startsWith("mcp_") || toolset?.startsWith("acp_");
 
-      const item: ToolsStatusToolItem = {
+      const item: ToolsStatusToolItem = omitUndefined({
         name: t.name,
         description: t.description,
         toolset,
@@ -87,7 +88,7 @@ export function buildToolsStatus(
         return_kind: returnKind,
         error_schema: errorContract.error_schema,
         error_example: errorContract.error_example,
-      };
+      });
       if (t.requiresEnv?.length) item.requires_env = [...t.requiresEnv];
       if (returnFields.return_schema) item.return_schema = returnFields.return_schema;
       if (returnFields.return_example !== undefined)

@@ -7,23 +7,24 @@ const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const SINGLE_PKG_LAYERS = ["kernel", "core", "runtime"] as const;
 const PLATFORM_TEST_SUBDIRS = ["src", "connectors", "config", "bootstrap", "logging"] as const;
 
+function srcDirHasTests(dir: string): boolean {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (srcDirHasTests(full)) return true;
+    } else if (
+      entry.isFile() &&
+      (entry.name.endsWith(".test.ts") || entry.name.endsWith(".spec.ts"))
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function pkgSrcHasTests(srcPath: string): boolean {
   if (!existsSync(srcPath)) return false;
-  function walk(dir: string): boolean {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) {
-        if (walk(full)) return true;
-      } else if (
-        entry.isFile() &&
-        (entry.name.endsWith(".test.ts") || entry.name.endsWith(".spec.ts"))
-      ) {
-        return true;
-      }
-    }
-    return false;
-  }
-  return walk(srcPath);
+  return srcDirHasTests(srcPath);
 }
 
 function pushIfHasTests(roots: string[], absPath: string): void {

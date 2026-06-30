@@ -14,7 +14,7 @@ function filterTreePure(nodes: TreeNodeData[], parentPath: string, q: string) {
     const path = nodePath(node, parentPath);
     if (node.type === "directory") {
       const sub = filterTreePure(node.children || [], path, q);
-      if (sub.tree.length || node.name.toLowerCase().includes(q)) {
+      if (sub.tree.length > 0 || node.name.toLowerCase().includes(q)) {
         tree.push({ ...node, children: sub.tree });
         expand.add(path);
         for (const p of sub.expand) expand.add(p);
@@ -60,14 +60,14 @@ export function FileTreePanel() {
   useEffect(() => {
     const q = filterText.trim().toLowerCase();
     if (!q) {
-      if (treeNodes.length) setExpandedPaths(expandTopLevel(treeNodes));
+      if (treeNodes.length > 0) setExpandedPaths(expandTopLevel(treeNodes));
       return;
     }
     setExpandedPaths(filterTreePure(treeNodes, "", q).expand);
   }, [filterText, treeNodes]);
 
   useEffect(() => {
-    if (treeNodes.length && !filterText.trim()) {
+    if (treeNodes.length > 0 && !filterText.trim()) {
       setExpandedPaths(expandTopLevel(treeNodes));
     }
   }, [treeNodes, filterText]);

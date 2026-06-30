@@ -30,6 +30,6 @@ describe("discord login retry", () => {
     vi.advanceTimersByTime(1);
     expect(fn).toHaveBeenCalledTimes(1);
 
-    if (timer !== null) clearTimeout(timer);
+    if (timer != null) clearTimeout(timer);
   });
 });

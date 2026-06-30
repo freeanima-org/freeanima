@@ -16,7 +16,11 @@ describe("layout viewport", () => {
   const originalMatchMedia = window.matchMedia;
 
   afterEach(() => {
-    win.satelliteShell = originalShell;
+    if (originalShell !== undefined) {
+      win.satelliteShell = originalShell;
+    } else {
+      delete win.satelliteShell;
+    }
     window.matchMedia = originalMatchMedia;
   });
 
@@ -27,7 +31,7 @@ describe("layout viewport", () => {
   it("isNativeShell reads satelliteShell flag", () => {
     win.satelliteShell = { isNativeShell: true };
     expect(isNativeShell()).toBe(true);
-    win.satelliteShell = undefined;
+    delete win.satelliteShell;
     expect(isNativeShell()).toBe(false);
   });
 

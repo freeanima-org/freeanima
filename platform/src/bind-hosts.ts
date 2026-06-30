@@ -11,7 +11,7 @@ export function parseBindHosts(host: string): string[] {
     .split(",")
     .map((h) => h.trim())
     .filter(Boolean);
-  if (!hosts.length) return [...DEFAULT_BIND_HOSTS];
+  if (hosts.length === 0) return [...DEFAULT_BIND_HOSTS];
   return hosts;
 }
 
@@ -21,7 +21,7 @@ export function parseBindHosts(host: string): string[] {
  */
 export function coalesceBindHosts(hosts: string[]): string[] {
   const normalized = hosts.map((h) => h.trim()).filter(Boolean);
-  if (!normalized.length) return [...DEFAULT_BIND_HOSTS];
+  if (normalized.length === 0) return [...DEFAULT_BIND_HOSTS];
   if (normalized.includes(ALL_IPV4)) return [ALL_IPV4];
   if (normalized.includes(ALL_IPV6) || normalized.includes("[::]")) return [ALL_IPV6];
   return [...new Set(normalized)];

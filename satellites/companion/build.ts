@@ -36,7 +36,7 @@ export async function buildCompanionApp(opts?: {
     companionViteBuildOptions({
       minify: opts?.minify ?? false,
       sourcemap: opts?.sourcemap ?? false,
-      watch: opts?.watch,
+      ...(opts?.watch !== undefined ? { watch: opts.watch } : {}),
     }),
   );
 }

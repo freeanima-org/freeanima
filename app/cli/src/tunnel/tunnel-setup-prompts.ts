@@ -1,4 +1,5 @@
 import * as p from "@clack/prompts";
+import { omitUndefined } from "@freeanima/core/util";
 import {
   TUNNEL_CREDENTIAL_REFS,
   TUNNEL_PASS_PATHS,
@@ -104,7 +105,7 @@ async function runInteractivePrompts(): Promise<{
     validate: (v) => {
       if (!v?.trim()) return "必填";
       if (!isValidHostname(v.trim())) return "无效的域名格式";
-      return undefined;
+      return;
     },
   });
   if (p.isCancel(hostname)) process.exit(0);
@@ -196,11 +197,11 @@ async function runInteractivePrompts(): Promise<{
     process.exit(0);
   }
 
-  return {
+  return omitUndefined({
     hostname: hostnameValue,
     apiToken,
     hubPort,
-  };
+  });
 }
 
 export async function runTunnelSetup(opts: SetupPromptsOptions = {}): Promise<void> {
@@ -231,7 +232,7 @@ export async function runTunnelSetup(opts: SetupPromptsOptions = {}): Promise<vo
       p.log.error("非交互模式需要 --hostname");
       process.exit(1);
     }
-    input = {
+    input = omitUndefined({
       hostname: opts.hostname,
       apiToken:
         (opts.apiToken ? resolveApiTokenFromRef(opts.apiToken) : undefined) ??
@@ -240,7 +241,7 @@ export async function runTunnelSetup(opts: SetupPromptsOptions = {}): Promise<vo
           ? resolveApiTokenFromRef(loadTunnelDraft()!.credentials!.api_token!)
           : undefined),
       hubPort,
-    };
+    });
     patchTunnelConfig({
       hostname: input.hostname,
       enabled: false,
@@ -256,17 +257,17 @@ export async function runTunnelSetup(opts: SetupPromptsOptions = {}): Promise<vo
     const result = await runSetupWizard({
       hostname: input.hostname,
       hubPort: input.hubPort,
-      apiToken: input.apiToken,
-      saveApiToken: (token) => {
+      ...omitUndefined({ apiToken: input.apiToken }),
+      saveApiToken: (token: string) => {
         insertCredential(TUNNEL_PASS_PATHS.apiToken, { token });
       },
-      saveTunnelCredentials: (json) => {
+      saveTunnelCredentials: (json: string) => {
         insertCredential(TUNNEL_PASS_PATHS.tunnelCredentials, { json });
       },
-      patchConfig: (patch) => {
+      patchConfig: (patch: Partial<TunnelConfigFields>) => {
         patchTunnelConfig(patch);
       },
-      onProgress: (msg) => s.message(msg),
+      onProgress: (msg: string) => s.message(msg),
     });
     s.stop("Tunnel 配置完成");
 

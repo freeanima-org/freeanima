@@ -2,6 +2,7 @@ import { prependSkillsToPrompt } from "@freeanima/core/skill";
 import { getProfileHopModel } from "@freeanima/platform/config";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
 import { resolveDefaultConversationToolSets, toolNamesForToolSets } from "@freeanima/core/tool";
+import { omitUndefined } from "@freeanima/core/util";
 
 import type { FullRuntimeDeps } from "../runtime-deps.ts";
 import {
@@ -33,16 +34,19 @@ export async function runCronEngineTurn(
   const toolNames = toolNamesForToolSets(deps.engine.catalog.toolSets, toolSetNames);
   const maxTurns = cfg.compression?.max_rounds ?? 50;
 
-  const result = await runAutoLlm(deps, {
-    runName,
-    runKind: "cron",
-    systemPrompt,
-    userMessages: [fullPrompt],
-    model,
-    toolNames,
-    maxTurns,
-    metadata: job.id ? { job_id: job.id } : undefined,
-  });
+  const result = await runAutoLlm(
+    deps,
+    omitUndefined({
+      runName,
+      runKind: "cron",
+      systemPrompt,
+      userMessages: [fullPrompt],
+      model,
+      toolNames,
+      maxTurns,
+      metadata: job.id ? { job_id: job.id } : undefined,
+    }),
+  );
 
   if (result.status === "error") {
     return `[engine error] ${result.error ?? result.output}`;

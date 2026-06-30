@@ -25,13 +25,14 @@ describe("buildMessagesDisplay", () => {
     const display = buildMessagesDisplay(msgs);
     expect(display).toHaveLength(3);
     expect(display[0]).toEqual({ type: "message", role: "user", content: "check the weather" });
-    expect(display[1].type).toBe("tool_block");
-    if (display[1].type === "tool_block") {
-      expect(display[1].calls).toHaveLength(1);
-      expect(display[1].calls[0].name).toBe("web_search");
-      expect(display[1].calls[0].args).toEqual({ query: "Beijing weather" });
-      expect(display[1].calls[0].result).toBe('{"temp": 25}');
-      expect(display[1].calls[0].status).toBe("done");
+    const toolBlock = display[1];
+    expect(toolBlock?.type).toBe("tool_block");
+    if (toolBlock?.type === "tool_block") {
+      expect(toolBlock.calls).toHaveLength(1);
+      expect(toolBlock.calls[0]?.name).toBe("web_search");
+      expect(toolBlock.calls[0]?.args).toEqual({ query: "Beijing weather" });
+      expect(toolBlock.calls[0]?.result).toBe('{"temp": 25}');
+      expect(toolBlock.calls[0]?.status).toBe("done");
     }
     expect(display[2]).toEqual({
       type: "message",

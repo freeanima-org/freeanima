@@ -46,6 +46,14 @@ function statusBadgeClass(s: string) {
   return "badge-ghost";
 }
 
+function canStartAcpAgent(agent: AcpAgent): boolean {
+  return agent.status !== "connected" && agent.status !== "starting" && agent.status !== "disabled";
+}
+
+function canStopAcpAgent(agent: AcpAgent): boolean {
+  return agent.status === "connected" || agent.status === "starting";
+}
+
 function AcpPage() {
   const initial = Route.useLoaderData() as AcpStatus | null;
 
@@ -53,11 +61,6 @@ function AcpPage() {
   const [bulkActing, setBulkActing] = useState(false);
   const [acting, setActing] = useState<Record<string, string>>({});
   const [error, setError] = useState(initial ? "" : m.admin_common_load_failed_short());
-
-  const canStart = (agent: AcpAgent) =>
-    agent.status !== "connected" && agent.status !== "starting" && agent.status !== "disabled";
-
-  const canStop = (agent: AcpAgent) => agent.status === "connected" || agent.status === "starting";
 
   const controlAgent = async (name: string, action: "start" | "stop") => {
     setError("");
@@ -181,7 +184,7 @@ function AcpPage() {
                   </span>
                 </div>
                 <div className="flex gap-2">
-                  {canStart(agent) ? (
+                  {canStartAcpAgent(agent) ? (
                     <button
                       type="button"
                       className="btn btn-xs btn-primary"
@@ -191,7 +194,7 @@ function AcpPage() {
                       {m.admin_acp_connect()}
                     </button>
                   ) : null}
-                  {canStop(agent) ? (
+                  {canStopAcpAgent(agent) ? (
                     <button
                       type="button"
                       className="btn btn-xs btn-outline"

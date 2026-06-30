@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { ToolSetRegistry } from "./toolset.ts";
 
@@ -48,13 +49,13 @@ export function runWithToolContext<T>(
   fn: () => T,
   opts: RunWithToolContextOpts,
 ): T {
-  const store: ToolContextStore = {
+  const store: ToolContextStore = omitUndefined({
     contextId,
     contextKind: opts.contextKind ?? "conversation",
     parentConversationId: opts.parentConversationId,
     tools: opts.tools,
     executableTools: opts.executableTools ? new Set(opts.executableTools) : undefined,
-  };
+  });
   const result = storage.run(store, fn);
   if (isAsyncIterable(result)) {
     return bindToolContext(store, result) as T;

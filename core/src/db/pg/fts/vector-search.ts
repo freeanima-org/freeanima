@@ -18,7 +18,7 @@ export async function searchSemanticMemoryVector(
     source_conversations?: string[];
   },
 ): Promise<VectorSemanticHit[]> {
-  if (!queryEmbedding.length) return [];
+  if (queryEmbedding.length === 0) return [];
 
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
   const types = opts?.types?.filter(Boolean) ?? [];
@@ -66,7 +66,7 @@ export async function searchMessagesVector(
   queryEmbedding: number[],
   opts?: { conversation_id?: string; limit?: number },
 ): Promise<VectorMessageHit[]> {
-  if (!queryEmbedding.length) return [];
+  if (queryEmbedding.length === 0) return [];
 
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));
   const conversation_id = opts?.conversation_id?.trim() || null;

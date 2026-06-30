@@ -108,7 +108,7 @@ function readCredentialMeta(gpgPath: string): CredentialMeta {
   const rel = gpgPath.slice(PATHS.passStore.length + 1).replace(/\.gpg$/, "");
   const parts = rel.split("/");
   const category = parts[0] ?? "";
-  const name = parts[parts.length - 1] ?? rel;
+  const name = parts.at(-1) ?? rel;
   const label = name.replace(/[-_]/g, " ");
   let fields: string[] = [];
   let tags: string[] = [];
@@ -163,7 +163,7 @@ export function clearCredentialCache(): void {
 }
 
 function clearCredentialCacheForPath(path: string): void {
-  for (const k of [...cache.keys()]) {
+  for (const k of cache.keys()) {
     if (k === path || k.startsWith(`${path}:`)) cache.delete(k);
   }
 }
@@ -176,7 +176,7 @@ function credentialNotFound(err: unknown): boolean {
 export function credentialDictToRecord(dict: Record<string, unknown>): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [key, val] of Object.entries(dict)) {
-    if (val === null || val === undefined) continue;
+    if (val == null || val === undefined) continue;
     if (typeof val === "string") out[key] = val;
     else if (typeof val === "number" || typeof val === "boolean") out[key] = String(val);
     else out[key] = JSON.stringify(val);

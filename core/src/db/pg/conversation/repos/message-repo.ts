@@ -2,7 +2,8 @@ import { and, asc, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import type { ConversationMessage, StoredMessage } from "@freeanima/core/db/domain";
 import type { MessageRowView } from "../types.ts";
 
-import { messages } from "@freeanima/core/db/schema";
+import { messages, type MessageSelect } from "@freeanima/core/db/schema";
+import { omitUndefined } from "@freeanima/core/util";
 
 import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { scheduleMessageEmbedding } from "../../embedding/schedule.ts";
@@ -16,11 +17,7 @@ function extractIndexableContent(payload: { role: string; content?: string | nul
   return typeof payload.content === "string" ? payload.content.trim() : "";
 }
 
-function rowToMessageRowView(row: {
-  id: string;
-  pos: number;
-  payload: { role: string; content?: string | null; timestamp?: string | null };
-}): MessageRowView {
+function rowToMessageRowView(row: Pick<MessageSelect, "id" | "pos" | "payload">): MessageRowView {
   const role = row.payload.role ?? "";
   const raw = typeof row.payload.content === "string" ? row.payload.content : "";
   let content = "";
@@ -50,7 +47,7 @@ export async function appendMessage(
     .values({ ...insert, fts_segmented })
     .onConflictDoNothing({ target: [messages.conversation_id, messages.pos] })
     .returning();
-  if (inserted.length) {
+  if (inserted.length > 0) {
     const row = inserted[0]!;
     const content = extractIndexableContent(row.payload);
     if (content) {
@@ -58,13 +55,15 @@ export async function appendMessage(
       const created_at =
         typeof row.payload.timestamp === "string" ? row.payload.timestamp : undefined;
       const skipRefs = await isCronSession(conversation_id);
-      await recordMessageReferences({
-        message_id: row.id,
-        conversation_id: conversation_id,
-        content,
-        created_at: created_at,
-        skip_reference_count: skipRefs,
-      });
+      await recordMessageReferences(
+        omitUndefined({
+          message_id: row.id,
+          conversation_id: conversation_id,
+          content,
+          created_at: created_at,
+          skip_reference_count: skipRefs,
+        }),
+      );
     }
     return rowToMessage(row);
   }
@@ -74,7 +73,7 @@ export async function appendMessage(
     .from(messages)
     .where(and(eq(messages.conversation_id, conversation_id), eq(messages.pos, insert.pos)))
     .limit(1);
-  if (!rows.length) {
+  if (rows.length === 0) {
     throw new Error(
       `Row not found after messages write: session=${conversation_id} pos=${insert.pos}`,
     );
@@ -92,7 +91,7 @@ export async function getMessageContentById(
     .from(messages)
     .where(and(eq(messages.conversation_id, conversation_id), eq(messages.id, message_id)))
     .limit(1);
-  if (!rows.length) return null;
+  if (rows.length === 0) return null;
   const payload = rows[0]!.payload;
   if (payload.role !== "assistant" && payload.role !== "user") return null;
   const raw = payload.content;
@@ -104,7 +103,7 @@ export async function getMessageContentsByIds(
   messageIds: string[],
 ): Promise<Record<string, string>> {
   const uniqueIds = [...new Set(messageIds.filter(Boolean))];
-  if (!uniqueIds.length) return {};
+  if (uniqueIds.length === 0) return {};
   const db = getDb();
   const rows = await db
     .select({ id: messages.id, payload: messages.payload })
@@ -138,7 +137,7 @@ export async function appendMessageReturningId(
     .values({ ...insert, fts_segmented })
     .onConflictDoNothing({ target: [messages.conversation_id, messages.pos] })
     .returning();
-  if (inserted.length) {
+  if (inserted.length > 0) {
     return { messageId: inserted[0]!.id };
   }
 
@@ -147,7 +146,7 @@ export async function appendMessageReturningId(
     .from(messages)
     .where(and(eq(messages.conversation_id, conversation_id), eq(messages.pos, insert.pos)))
     .limit(1);
-  if (!rows.length) {
+  if (rows.length === 0) {
     throw new Error(
       `Row not found after messages write: session=${conversation_id} pos=${insert.pos}`,
     );
@@ -166,7 +165,7 @@ export async function updateMessageContent(
     .from(messages)
     .where(and(eq(messages.conversation_id, conversation_id), eq(messages.id, message_id)))
     .limit(1);
-  if (!rows.length) return;
+  if (rows.length === 0) return;
 
   const payload = rows[0]!.payload;
   if (payload.role !== "assistant" && payload.role !== "user") return;
@@ -270,7 +269,7 @@ export async function findMessagePos(
     .from(messages)
     .where(and(eq(messages.conversation_id, conversation_id), eq(messages.id, message_id)))
     .limit(1);
-  if (!rows.length) return null;
+  if (rows.length === 0) return null;
   return Number(rows[0]!.pos);
 }
 

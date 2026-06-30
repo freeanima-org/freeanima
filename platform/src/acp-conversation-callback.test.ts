@@ -75,16 +75,22 @@ describe("createAcpSessionUpdatedHandler recheck", () => {
         ({
           sendMessage: async () => {
             sendCount++;
-            await new Promise((r) => setTimeout(r, 80));
+            await new Promise((r) => {
+              setTimeout(r, 80);
+            });
             return { conversation_id: "s", content: "ok" };
           },
         }) as never,
     });
 
     handler("sess");
-    await new Promise((r) => setTimeout(r, 10));
+    await new Promise((r) => {
+      setTimeout(r, 10);
+    });
     handler("sess");
-    await new Promise((r) => setTimeout(r, 900));
+    await new Promise((r) => {
+      setTimeout(r, 900);
+    });
     expect(sendCount).toBe(2);
   });
 });

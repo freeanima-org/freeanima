@@ -4,7 +4,7 @@ import type { LimbicMemoryRow } from "@freeanima/core/repos";
 import type { DreamGatherInput } from "./gather-input.ts";
 
 function formatLimbicBlock(rows: LimbicMemoryRow[]): string {
-  if (!rows.length) return "(无情感素材)";
+  if (rows.length === 0) return "(无情感素材)";
   return rows
     .map((row, i) => {
       const parts = [`## 情感 ${i + 1} (intensity=${row.intensity})`, row.content.trim()];
@@ -16,7 +16,7 @@ function formatLimbicBlock(rows: LimbicMemoryRow[]): string {
 }
 
 function formatEpisodicBlock(snippets: DreamEpisodicSnippet[]): string {
-  if (!snippets.length) return "(无情景片段)";
+  if (snippets.length === 0) return "(无情景片段)";
   return snippets
     .map((s, i) => {
       const ts = s.timestamp?.slice(0, 19) ?? "?";

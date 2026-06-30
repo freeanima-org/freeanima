@@ -13,7 +13,9 @@ describe("@freeanima/kernel/eventbus/testing export", () => {
     bus.emit(topic, { n: 42 });
     expect(seen).toBe(0);
     bus.start();
-    await new Promise((r) => setTimeout(r, 20));
+    await new Promise((r) => {
+      setTimeout(r, 20);
+    });
     expect(seen).toBe(42);
     bus.stop();
   });

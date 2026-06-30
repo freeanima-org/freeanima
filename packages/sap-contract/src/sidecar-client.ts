@@ -160,7 +160,8 @@ export function createSapSidecarClient(options: SapSidecarClientOptions = {}): S
 
   const runLoop = async (): Promise<void> => {
     let delay = policy?.initialMs ?? DEFAULT_POLICY.initialMs;
-    while (!stopped && !options.signal?.aborted) {
+    while (true) {
+      if (stopped || options.signal?.aborted) break;
       try {
         await connectOnce();
         await waitWebSocketClose(ws!);

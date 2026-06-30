@@ -49,14 +49,20 @@ describe("AcpTaskScheduler", () => {
     expect(q.status).toBe("queued");
     expect(q.queuePosition).toBe(1);
 
-    await new Promise((r) => setTimeout(r, 10));
+    await new Promise((r) => {
+      setTimeout(r, 10);
+    });
     expect(started).toEqual(["t1"]);
 
     resolveFirst();
-    await new Promise((r) => setTimeout(r, 20));
+    await new Promise((r) => {
+      setTimeout(r, 20);
+    });
     scheduler.onTaskTerminal("t1");
 
-    await new Promise((r) => setTimeout(r, 30));
+    await new Promise((r) => {
+      setTimeout(r, 30);
+    });
     expect(started).toEqual(["t1", "t2"]);
   });
 

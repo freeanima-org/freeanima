@@ -32,7 +32,7 @@ function fileResponse(filePath: string): Response {
   const ext = extname(filePath);
   const headers = MIME[ext] ? { "Content-Type": MIME[ext]! } : undefined;
   const body = readFileSync(filePath);
-  return withCors(new Response(body, { headers }));
+  return withCors(new Response(body, headers ? { headers } : {}));
 }
 
 /** 模型 / 动作 / public 资源（Vite dev 时仍由 sidecar 提供） */

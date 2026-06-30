@@ -8,6 +8,7 @@ import {
   finalizeStreamingToolCalls,
   mergeStreamingToolCalls,
 } from "@freeanima/core/provider/stream-tools";
+import { omitUndefined } from "@freeanima/core/util";
 import { getLlmRuntime, type LlmRuntime } from "./llm-stack.ts";
 import {
   storedMessagesToInvokeInput,
@@ -48,12 +49,15 @@ export async function chat(
     ? simpleMessagesToInvokeInput(messages as SimpleChatMessage[])
     : storedMessagesToInvokeInput(messages as StoredMessage[]);
 
-  return profile.chat(input.turns, {
-    model: opts?.model,
-    systemPrompt: input.systemPrompt,
-    tools: opts?.tools,
-    requestParams: opts?.requestParams,
-  });
+  return profile.chat(
+    input.turns,
+    omitUndefined({
+      model: opts?.model,
+      systemPrompt: input.systemPrompt,
+      tools: opts?.tools,
+      requestParams: opts?.requestParams,
+    }),
+  );
 }
 
 export async function* chatStream(
@@ -73,12 +77,15 @@ export async function* chatStream(
   const profile = resolveRuntime(opts).profiles.resolve(opts?.profileId);
   const input = storedMessagesToInvokeInput(messages);
 
-  for await (const event of profile.chatStream(input.turns, {
-    model: opts?.model,
-    systemPrompt: input.systemPrompt,
-    tools: opts?.tools,
-    requestParams: opts?.requestParams,
-  })) {
+  for await (const event of profile.chatStream(
+    input.turns,
+    omitUndefined({
+      model: opts?.model,
+      systemPrompt: input.systemPrompt,
+      tools: opts?.tools,
+      requestParams: opts?.requestParams,
+    }),
+  )) {
     yield event;
   }
 }

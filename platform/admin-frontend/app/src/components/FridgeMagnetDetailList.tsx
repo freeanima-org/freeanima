@@ -11,7 +11,7 @@ export type FridgeMagnetItem = {
 };
 
 export function formatFridgeTtl(seconds: number | null): string {
-  if (seconds === null) return "—";
+  if (seconds == null) return "—";
   if (seconds < 0) return m.admin_fridge_expiry_none();
   if (seconds < 60) return m.admin_fridge_expiry_seconds({ seconds: String(seconds) });
   const hours = Math.floor(seconds / 3600);

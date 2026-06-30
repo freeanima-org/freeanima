@@ -18,7 +18,7 @@ export type ParsedUserTextMessage = {
 };
 
 function readField(msg: Record<string, unknown>, snake: string, camel: string): unknown {
-  if (msg[snake] !== undefined && msg[snake] !== null) return msg[snake];
+  if (msg[snake] !== undefined && msg[snake] != null) return msg[snake];
   return msg[camel];
 }
 
@@ -29,7 +29,7 @@ function coerceItemType(value: unknown): number | null {
 }
 
 function coerceMessageType(value: unknown): number | null {
-  if (value === undefined || value === null || value === "") return null;
+  if (value === undefined || value == null || value === "") return null;
   if (value === MSG_TYPE_USER || value === "1") return MSG_TYPE_USER;
   if (value === MSG_TYPE_BOT || value === "2") return MSG_TYPE_BOT;
   const n = Number(value);
@@ -40,7 +40,7 @@ function coerceMessageType(value: unknown): number | null {
 export function normalizeInboundMessage(raw: IlinkMessage): IlinkMessage {
   let msg = raw;
   const nested = raw.msg;
-  if (typeof nested === "object" && nested !== null && !Array.isArray(nested)) {
+  if (typeof nested === "object" && nested != null && !Array.isArray(nested)) {
     msg = nested as IlinkMessage;
   }
 
@@ -59,7 +59,7 @@ export function normalizeInboundMessage(raw: IlinkMessage): IlinkMessage {
     ["seq_id", "seqId"],
   ] as const) {
     const v = readField(msg, snake, camel);
-    if (v !== undefined && v !== null) normalized[snake] = v;
+    if (v !== undefined && v != null) normalized[snake] = v;
   }
 
   return safeParseOrNull(ilinkMessageSchema, normalized) ?? normalized;
@@ -71,23 +71,23 @@ export function extractTextFromMessage(msg: IlinkMessage): string {
   if (!Array.isArray(items)) return "";
 
   for (const item of items) {
-    if (typeof item !== "object" || item === null) continue;
+    if (typeof item !== "object" || item == null) continue;
     const rec = item as Record<string, unknown>;
     const itemType = coerceItemType(rec.type ?? rec.item_type);
     if (itemType !== ITEM_TEXT) continue;
 
     const textItem = (rec.text_item ?? rec.textItem) as Record<string, unknown> | undefined;
-    if (typeof textItem === "object" && textItem !== null) {
+    if (typeof textItem === "object" && textItem != null) {
       const text = String(textItem.text ?? textItem.content ?? "");
       if (text) return text;
     }
   }
 
   for (const item of items) {
-    if (typeof item !== "object" || item === null) continue;
+    if (typeof item !== "object" || item == null) continue;
     const rec = item as Record<string, unknown>;
     const voiceItem = (rec.voice_item ?? rec.voiceItem) as Record<string, unknown> | undefined;
-    if (typeof voiceItem === "object" && voiceItem !== null) {
+    if (typeof voiceItem === "object" && voiceItem != null) {
       const voiceText = String(voiceItem.text ?? "");
       if (voiceText) return voiceText;
     }

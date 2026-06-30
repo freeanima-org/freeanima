@@ -11,6 +11,7 @@ import {
   flushCompressionSummaries,
   maybeApplyEmergencyCompression,
 } from "@freeanima/core/compress";
+import { omitUndefined } from "@freeanima/core/util";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import {
   load,
@@ -58,11 +59,16 @@ export async function recompressConversation(
   }
 
   const toolSchemas = await loadConversationTools(registry, conversationId, meta);
-  const compressOpts = await buildCompressOptionsResolved(meta, state, defaultChatModel(), {
-    force: opts?.force,
-    forceEmergency: opts?.force,
-    tools: toolSchemas,
-  });
+  const compressOpts = await buildCompressOptionsResolved(
+    meta,
+    state,
+    defaultChatModel(),
+    omitUndefined({
+      force: opts?.force,
+      forceEmergency: opts?.force,
+      tools: toolSchemas,
+    }),
+  );
   const [, newState] = compress(msgs, compressOpts);
 
   const boundariesChanged =

@@ -25,7 +25,7 @@ function stripIdsFromArray(values: string[], remove: ReadonlySet<string>): strin
  */
 export async function purgeCronConversations(): Promise<PurgeCronConversationsResult> {
   const ids = await listCronSessionIds();
-  if (!ids.length) return { deleted: 0, ids: [] };
+  if (ids.length === 0) return { deleted: 0, ids: [] };
 
   const idSet = new Set<string>(ids);
   const db = getDb();

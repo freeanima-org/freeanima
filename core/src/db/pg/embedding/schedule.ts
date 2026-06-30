@@ -12,7 +12,7 @@ function runEmbedding(job: EmbeddingPendingJob): void {
   if (!trimmed) return;
 
   const promise: Promise<void> = embedAndStoreJobs([{ ...job, content: trimmed }])
-    .then(() => undefined)
+    .then(() => {})
     .catch((err) => {
       log.warn("embedding write failed", {
         kind: job.kind,
@@ -53,7 +53,7 @@ export function scheduleEntityEmbedding(id: number, content: string): void {
 
 /** Unit/integration test: await all in-flight embedding writes */
 export async function awaitPendingEmbeddingsForTest(): Promise<void> {
-  await Promise.all([...inFlight]);
+  await Promise.all(inFlight);
 }
 
 /** Test teardown */

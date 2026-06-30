@@ -17,6 +17,7 @@ export abstract class QualifiedToken<Payload> {
 }
 
 class QualifiedTokenImpl<Payload> extends QualifiedToken<Payload> {
+  // oxlint-disable-next-line eslint/no-useless-constructor -- forwards to protected QualifiedToken constructor
   constructor(qualifiedId: string, description?: string) {
     super(qualifiedId, description);
   }

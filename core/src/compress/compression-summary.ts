@@ -43,7 +43,7 @@ export async function generateConversationSummary(
 ): Promise<GenerateSummaryResult> {
   const prevL2 = prevState?.l2 ?? null;
   const slice = opts?.preSliced ? messages : sliceForSummary(messages, prevL2, newState.l2);
-  if (!slice.length && !prevState?.summary) {
+  if (slice.length === 0 && !prevState?.summary) {
     return { ok: false, error: "No content to summarize" };
   }
 

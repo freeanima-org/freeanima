@@ -1,5 +1,6 @@
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
+import { omitUndefined } from "@freeanima/core/util";
 
 import {
   appendDiaryEntryByDate,
@@ -23,11 +24,14 @@ async function handleAppend(args: Record<string, unknown>): Promise<string> {
 
   try {
     const ctx = await agentStoreContext();
-    const item = await appendDiaryEntryByDate(ctx, {
-      date: args.date != null ? String(args.date) : undefined,
-      content,
-      tags: parseTags(args.tags),
-    });
+    const item = await appendDiaryEntryByDate(
+      ctx,
+      omitUndefined({
+        date: args.date != null ? String(args.date) : undefined,
+        content,
+        tags: parseTags(args.tags),
+      }),
+    );
     return toolResult({ ok: true, action: "append", item: entryPayload(item) });
   } catch (e) {
     return toolError(String(e instanceof Error ? e.message : e));
@@ -47,13 +51,16 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
     const resolved = await requireEntryByDate(ctx, args.date);
     if ("error" in resolved) return toolError(resolved.error);
 
-    const item = await updateDiaryEntryByDate(ctx, {
-      date: resolved.dateKey,
-      title: args.title !== undefined ? String(args.title) : undefined,
-      content: args.content !== undefined ? String(args.content) : undefined,
-      summary: args.summary !== undefined ? String(args.summary) : undefined,
-      tags: parseTags(args.tags),
-    });
+    const item = await updateDiaryEntryByDate(
+      ctx,
+      omitUndefined({
+        date: resolved.dateKey,
+        title: args.title !== undefined ? String(args.title) : undefined,
+        content: args.content !== undefined ? String(args.content) : undefined,
+        summary: args.summary !== undefined ? String(args.summary) : undefined,
+        tags: parseTags(args.tags),
+      }),
+    );
     if (!item) return toolError(`diary entry not found for date ${resolved.dateKey}`);
     return toolResult({ ok: true, action: "update", item: entryPayload(item) });
   } catch (e) {
@@ -97,12 +104,15 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
 
   try {
     const ctx = await agentStoreContext();
-    const items = await listDiaryEntries(ctx, {
-      entry_after,
-      entry_before,
-      tags: parseTags(args.tags),
-      limit,
-    });
+    const items = await listDiaryEntries(
+      ctx,
+      omitUndefined({
+        entry_after,
+        entry_before,
+        tags: parseTags(args.tags),
+        limit,
+      }),
+    );
     return toolResult({
       ok: true,
       action: "list",
@@ -125,15 +135,18 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
 
   try {
     const ctx = await agentStoreContext();
-    const items = await searchDiaryEntries(ctx, {
-      query,
-      entry_after:
-        args.entry_after != null ? String(args.entry_after).trim() || undefined : undefined,
-      entry_before:
-        args.entry_before != null ? String(args.entry_before).trim() || undefined : undefined,
-      tags: parseTags(args.tags),
-      limit,
-    });
+    const items = await searchDiaryEntries(
+      ctx,
+      omitUndefined({
+        query,
+        entry_after:
+          args.entry_after != null ? String(args.entry_after).trim() || undefined : undefined,
+        entry_before:
+          args.entry_before != null ? String(args.entry_before).trim() || undefined : undefined,
+        tags: parseTags(args.tags),
+        limit,
+      }),
+    );
     return toolResult({
       ok: true,
       action: "search",

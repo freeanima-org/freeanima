@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { toolError, toolResult } from "@freeanima/core/tool";
 import { readSkillBody } from "./content.ts";
 import { type SkillDef, type SkillRegistry } from "./registry.ts";
@@ -10,12 +11,12 @@ export type SkillListEntry = {
 };
 
 function toListEntry(def: SkillDef): SkillListEntry {
-  return {
+  return omitUndefined({
     name: def.name,
     description: def.description,
     source: def.source,
     directory: def.directory,
-  };
+  });
 }
 
 /** load_skill tool: put skill body into tool message context */
@@ -36,7 +37,7 @@ export function loadSkillIntoContext(skills: SkillRegistry, name: string): strin
 
 export function listSkillsForTool(skills: SkillRegistry): string {
   const list = skills.list();
-  if (!list.length) {
+  if (list.length === 0) {
     return toolResult({ skills: [], total: 0, message: "No registered skills." });
   }
   return toolResult({

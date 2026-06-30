@@ -50,13 +50,13 @@ function cmdHelp(ctx: CommandContext): string {
   const globalCmds = available.filter((c) => c.scope === "global");
 
   const lines = ["**Available commands:**"];
-  if (conversationCmds.length) {
+  if (conversationCmds.length > 0) {
     lines.push("", "**Current conversation:**");
     for (const cmd of conversationCmds) {
       lines.push(`  • \`/${cmd.name}\` — ${cmd.description}`);
     }
   }
-  if (globalCmds.length) {
+  if (globalCmds.length > 0) {
     lines.push("", "**Other:**");
     for (const cmd of globalCmds) {
       lines.push(`  • \`/${cmd.name}\` — ${cmd.description}`);
@@ -216,7 +216,7 @@ async function cmdStats(ctx: CommandContext): Promise<string> {
 }
 
 async function cmdCwd(ctx: CommandContext): Promise<string> {
-  if (!ctx.args.length) {
+  if (ctx.args.length === 0) {
     const cwd = await conv().getConversationCwd(ctx.conversationId);
     return `📁 Current working directory: ${cwd ?? "(not set)"}`;
   }
@@ -230,7 +230,7 @@ async function cmdCwd(ctx: CommandContext): Promise<string> {
 }
 
 async function cmdTitle(ctx: CommandContext): Promise<string> {
-  if (!ctx.args.length) {
+  if (ctx.args.length === 0) {
     const title = await conv().getConversationTitle(ctx.conversationId);
     return `📝 Current title: ${title || "(empty)"}`;
   }
@@ -328,7 +328,7 @@ async function cmdMask(ctx: CommandContext): Promise<string> {
 
   if (sub === "show") {
     const presets = meta.capability_mask?.presets ?? [];
-    if (!presets.length) {
+    if (presets.length === 0) {
       return "ℹ️ Current conversation has no capability mask (full capabilities).";
     }
     const { masks, engine } = getAppRuntime();

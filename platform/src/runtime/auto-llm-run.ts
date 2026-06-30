@@ -4,7 +4,7 @@ import { isTransientNetworkError } from "@freeanima/runtime/loop";
 import { runWithToolContext } from "@freeanima/core/tool";
 import type { ConversationGoal, StoredMessage } from "@freeanima/core/db/domain";
 import { conversationGoalSchema } from "@freeanima/core/db/domain";
-import { CST_OFFSET_MS, formatCstIso } from "@freeanima/core/util";
+import { CST_OFFSET_MS, formatCstIso, omitUndefined } from "@freeanima/core/util";
 import { judgeGoal } from "@freeanima/core/llm/goal-judge";
 import { getProfileHopModel } from "@freeanima/core/config";
 import { PROFILE_CHAT, PROFILE_GOAL_JUDGE } from "@freeanima/core/provider";
@@ -45,15 +45,20 @@ export type AutoLlmRunResult = {
   durationMs: number;
 };
 
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
 export function generateAutoLlmRunId(): string {
   const d = new Date(Date.now() + CST_OFFSET_MS);
-  const p = (n: number) => String(n).padStart(2, "0");
-  const ts = `${d.getUTCFullYear()}${p(d.getUTCMonth() + 1)}${p(d.getUTCDate())}_${p(d.getUTCHours())}${p(d.getUTCMinutes())}${p(d.getUTCSeconds())}`;
+  const ts = `${d.getUTCFullYear()}${pad2(d.getUTCMonth() + 1)}${pad2(d.getUTCDate())}_${pad2(d.getUTCHours())}${pad2(d.getUTCMinutes())}${pad2(d.getUTCSeconds())}`;
   return `autollm_${ts}_${randomBytes(2).toString("hex")}`;
 }
 
 function sleepMs(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 function isAutoLlmRetryable(err: unknown): boolean {
@@ -188,7 +193,7 @@ async function runEngineOnce(
         config: deps.engine.config.data,
         logger: deps.engine.logger,
         llm: deps.engine.llm,
-        toolMask,
+        ...omitUndefined({ toolMask }),
         max_turns: input.maxTurns,
         hookRegistry: deps.kernel.hookRegistry,
       })) {
@@ -216,7 +221,7 @@ async function runEngineOnce(
     {
       tools: deps.engine.catalog.toolSets,
       contextKind: "auto_llm",
-      parentConversationId: input.parentConversationId,
+      ...omitUndefined({ parentConversationId: input.parentConversationId }),
     },
   );
 

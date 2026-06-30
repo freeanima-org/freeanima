@@ -1,6 +1,7 @@
 import { getToolConversationId } from "@freeanima/core/tool";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolError } from "@freeanima/core/tool";
+import { omitUndefined } from "@freeanima/core/util";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 import { handleConversationTodo } from "@freeanima/core/tool";
 
@@ -13,7 +14,7 @@ async function handleTodo(args: Record<string, unknown>): Promise<string> {
   const id = typeof args.id === "number" ? args.id : args.id != null ? Number(args.id) : undefined;
   const status = args.status != null ? String(args.status) : undefined;
 
-  return handleConversationTodo(conversationId, action, { content, id, status });
+  return handleConversationTodo(conversationId, action, omitUndefined({ content, id, status }));
 }
 
 export function registerTodoTool(toolSets: ToolSetRegistry): void {

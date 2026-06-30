@@ -8,6 +8,7 @@ import {
   type EntityRow,
 } from "@freeanima/core/db/schema/entity";
 import type { AnimaConfig } from "@freeanima/core/config";
+import { omitUndefined } from "@freeanima/core/util";
 import { resolveWorldSubjectIds } from "../../../config/worlds.ts";
 
 import {
@@ -220,11 +221,13 @@ export async function createSubjectEntityRecord(input: {
     input.title.trim() || defaultSubjectTitle(input.type),
   );
   if (input.summary || input.content) {
-    const updated = await updateEntity({
-      id: created.id,
-      summary: input.summary,
-      content: input.content,
-    });
+    const updated = await updateEntity(
+      omitUndefined({
+        id: created.id,
+        summary: input.summary,
+        content: input.content,
+      }),
+    );
     return updated ?? created;
   }
   return created;

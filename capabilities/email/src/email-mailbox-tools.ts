@@ -1,5 +1,6 @@
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
+import { omitUndefined } from "@freeanima/core/util";
 
 import {
   errMsg,
@@ -52,14 +53,19 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
               const sync = getEmailSyncPort();
               const accountId = parseAccountId(args.account_id);
               if (accountId != null) {
-                const result = await sync.syncAccount(accountId, {
-                  limit: args.limit != null ? Number(args.limit) : undefined,
-                });
+                const result = await sync.syncAccount(
+                  accountId,
+                  omitUndefined({
+                    limit: args.limit != null ? Number(args.limit) : undefined,
+                  }),
+                );
                 return toolResult(result);
               }
-              const results = await sync.syncAll({
-                limit: args.limit != null ? Number(args.limit) : undefined,
-              });
+              const results = await sync.syncAll(
+                omitUndefined({
+                  limit: args.limit != null ? Number(args.limit) : undefined,
+                }),
+              );
               return toolResult({ results });
             } catch (err) {
               return toolError(errMsg(err));
@@ -81,12 +87,15 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           handler: async (args) => {
             try {
               const worldId = resolveEmailWorldId();
-              const messages = await listEmailMessages(worldId, {
-                account_id: parseAccountId(args.account_id),
-                thread_id: parseAccountId(args.thread_id),
-                unread: args.unread != null ? Boolean(args.unread) : undefined,
-                limit: args.limit != null ? Number(args.limit) : undefined,
-              });
+              const messages = await listEmailMessages(
+                worldId,
+                omitUndefined({
+                  account_id: parseAccountId(args.account_id),
+                  thread_id: parseAccountId(args.thread_id),
+                  unread: args.unread != null ? Boolean(args.unread) : undefined,
+                  limit: args.limit != null ? Number(args.limit) : undefined,
+                }),
+              );
               return toolResult({
                 messages: messages.map((m) => messagePayload(m)),
                 count: messages.length,
@@ -115,13 +124,16 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
             if (!query) return toolError("query is required");
             try {
               const worldId = resolveEmailWorldId();
-              const messages = await searchEmailMessages(worldId, {
-                query,
-                account_id: parseAccountId(args.account_id),
-                thread_id: parseAccountId(args.thread_id),
-                unread: args.unread != null ? Boolean(args.unread) : undefined,
-                limit: args.limit != null ? Number(args.limit) : undefined,
-              });
+              const messages = await searchEmailMessages(
+                worldId,
+                omitUndefined({
+                  query,
+                  account_id: parseAccountId(args.account_id),
+                  thread_id: parseAccountId(args.thread_id),
+                  unread: args.unread != null ? Boolean(args.unread) : undefined,
+                  limit: args.limit != null ? Number(args.limit) : undefined,
+                }),
+              );
               return toolResult({
                 messages: messages.map((m) => messagePayload(m)),
                 count: messages.length,
@@ -204,14 +216,16 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           },
           handler: async (args) => {
             try {
-              const result = await io.sendEmail({
-                account_id: parseAccountId(args.account_id),
-                to: String(args.to ?? ""),
-                subject: String(args.subject ?? ""),
-                body: String(args.body ?? ""),
-                cc: args.cc != null ? String(args.cc) : undefined,
-                bcc: args.bcc != null ? String(args.bcc) : undefined,
-              });
+              const result = await io.sendEmail(
+                omitUndefined({
+                  account_id: parseAccountId(args.account_id),
+                  to: String(args.to ?? ""),
+                  subject: String(args.subject ?? ""),
+                  body: String(args.body ?? ""),
+                  cc: args.cc != null ? String(args.cc) : undefined,
+                  bcc: args.bcc != null ? String(args.bcc) : undefined,
+                }),
+              );
               return toolResult(result);
             } catch (err) {
               return toolError(errMsg(err));
@@ -232,11 +246,14 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           handler: async (args) => {
             try {
               const worldId = resolveEmailWorldId();
-              const threads = await listEmailThreads(worldId, {
-                account_id: parseAccountId(args.account_id),
-                has_unread: args.has_unread != null ? Boolean(args.has_unread) : undefined,
-                limit: args.limit != null ? Number(args.limit) : undefined,
-              });
+              const threads = await listEmailThreads(
+                worldId,
+                omitUndefined({
+                  account_id: parseAccountId(args.account_id),
+                  has_unread: args.has_unread != null ? Boolean(args.has_unread) : undefined,
+                  limit: args.limit != null ? Number(args.limit) : undefined,
+                }),
+              );
               return toolResult({ threads, count: threads.length });
             } catch (err) {
               return toolError(errMsg(err));

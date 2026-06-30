@@ -142,7 +142,7 @@ export const useAdminConversationsStore = create<AdminConversationsState>((set, 
 
   async selectConversation(id, page = 1) {
     const state = get();
-    if (state.selectedId === id && page === state.currentPage() && state.display.length) return;
+    if (state.selectedId === id && page === state.currentPage() && state.display.length > 0) return;
     set({ selectedId: id, error: "" });
     await get().ensureConversationHeadline(id);
     await get().goToPage(page);

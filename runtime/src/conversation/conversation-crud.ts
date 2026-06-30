@@ -11,7 +11,7 @@ import {
   toolNamesForToolSets,
 } from "@freeanima/core/tool";
 import { getActiveConfig, getProfileHopModel } from "@freeanima/core/config";
-import { CST_OFFSET_MS, formatCstIso } from "@freeanima/core/util";
+import { CST_OFFSET_MS, formatCstIso, omitUndefined } from "@freeanima/core/util";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
 import { buildSystemPrompt } from "@freeanima/core/hooks/prompt";
 import { capabilityMaskSchema, stripOriginRoutingMeta } from "@freeanima/core/db/schema";
@@ -122,10 +122,13 @@ export async function loadConversationMeta(
   return loadMetaWithRouting(conversationId);
 }
 
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
 export function generateConversationId(): string {
   const d = new Date(Date.now() + CST_OFFSET_MS);
-  const p = (n: number) => String(n).padStart(2, "0");
-  const ts = `${d.getUTCFullYear()}${p(d.getUTCMonth() + 1)}${p(d.getUTCDate())}_${p(d.getUTCHours())}${p(d.getUTCMinutes())}${p(d.getUTCSeconds())}`;
+  const ts = `${d.getUTCFullYear()}${pad2(d.getUTCMonth() + 1)}${pad2(d.getUTCDate())}_${pad2(d.getUTCHours())}${pad2(d.getUTCMinutes())}${pad2(d.getUTCSeconds())}`;
   return `${ts}_${randomBytes(2).toString("hex")}`;
 }
 
@@ -193,7 +196,9 @@ export async function loadForRuntime(
 }
 
 export async function appendMessage(msg: StoredMessage, conversationId: string): Promise<void> {
-  const out: StoredMessage & { timestamp?: string; id?: number } = { ...msg };
+  const out: StoredMessage & { timestamp?: string; id?: number } = omitUndefined({
+    ...msg,
+  }) as StoredMessage & { timestamp?: string; id?: number };
   if (!out.timestamp) out.timestamp = formatCstIso();
   if (out.pos === undefined && out.role !== "conversation_meta") {
     out.pos = await nextMessagePosWithRouting(conversationId);
@@ -260,10 +265,15 @@ export async function newConversation(
 ): Promise<string> {
   const cfg = getActiveConfig().data;
   const sid = generateConversationId();
-  await initConversation(tools, sid, model ?? getProfileHopModel(cfg, PROFILE_CHAT), {
-    platform,
-    platform_extra: platformExtra,
-  });
+  await initConversation(
+    tools,
+    sid,
+    model ?? getProfileHopModel(cfg, PROFILE_CHAT),
+    omitUndefined({
+      platform,
+      platform_extra: platformExtra,
+    }),
+  );
   return sid;
 }
 
@@ -448,7 +458,7 @@ async function conversationLastActivityMs(conversationId: string): Promise<numbe
   const ts = await pgLastMessageTimestamp(conversationId);
   if (ts) {
     const t = Date.parse(ts);
-    if (!Number.isNaN(t) && (last === null || t > last)) last = t;
+    if (!Number.isNaN(t) && (last == null || t > last)) last = t;
   }
   return last;
 }
@@ -463,7 +473,7 @@ export async function refreshSystemPromptOnResume(conversationId: string): Promi
     return true;
   }
   const last = await conversationLastActivityMs(conversationId);
-  if (last === null) return false;
+  if (last == null) return false;
   if (Date.now() - last > RESUME_STALE_MS) {
     await rebuildConversationSystemPrompt(conversationId);
     return true;
@@ -502,7 +512,7 @@ export async function updateConversationMeta(
   if (opts?.functions) meta.functions = opts.functions;
   if (opts?.cached_toolsets !== undefined) {
     meta.cached_toolsets = opts.cached_toolsets;
-  } else if (!meta.cached_toolsets.length) {
+  } else if (meta.cached_toolsets.length === 0) {
     meta.cached_toolsets = resolveDefaultConversationToolSets(registry);
     meta.staged_toolsets = meta.staged_toolsets ?? [];
   }
@@ -556,7 +566,7 @@ export async function setConversationCwd(conversationId: string, cwd: string): P
 /** Delete assistant/tool messages after last user turn; return that user body */
 export async function rollbackToLastUser(conversationId: string): Promise<string> {
   const parsed = await load(conversationId);
-  if (!parsed.length) throw new Error("No partner message to retry");
+  if (parsed.length === 0) throw new Error("No partner message to retry");
 
   let lastUserIdx = -1;
   for (let i = parsed.length - 1; i >= 0; i--) {

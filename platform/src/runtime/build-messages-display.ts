@@ -104,7 +104,7 @@ export function paginateMessagesDisplay(
   const offset = Math.max(0, opts?.offset ?? 0);
   const limit = opts?.limit;
 
-  if (limit === undefined || limit === null) {
+  if (limit === undefined || limit == null) {
     return { conversation_id: conversationId, display: full, total, offset: 0, limit: null };
   }
 

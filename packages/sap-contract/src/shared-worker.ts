@@ -64,7 +64,7 @@ export function installSapSharedWorkerHost(): void {
     const { instanceStoreKey, ...transportConfig } = workerConfig;
     transport = runSapTransport({
       ...transportConfig,
-      instanceStore: instanceStoreKey ? sapInstanceStoreFromKey(instanceStoreKey) : undefined,
+      ...(instanceStoreKey ? { instanceStore: sapInstanceStoreFromKey(instanceStoreKey) } : {}),
       onConnected: async (client, connected) => {
         instanceId = connected.instance_id;
         wireEventForwarding(client);
@@ -86,7 +86,7 @@ export function installSapSharedWorkerHost(): void {
     port.start();
     port.postMessage({
       type: "state",
-      connected: transport?.getClient() !== null,
+      connected: transport?.getClient() != null,
       instanceId,
     } satisfies SharedWorkerPortMessage);
 

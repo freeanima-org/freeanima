@@ -4,6 +4,7 @@ import {
   providerErrorFromHttpStatus,
   type ProviderErrorCode,
 } from "@freeanima/core/provider";
+import { omitUndefined } from "@freeanima/core/util";
 
 function mapOpenAiErrorCode(status: number | undefined): ProviderErrorCode {
   if (status === 429) return "rate_limited";
@@ -30,32 +31,51 @@ export function mapOpenAiCompatibleError(
 
   if (err instanceof APIError) {
     const status = err.status ?? 0;
-    return providerErrorFromHttpStatus(status, err.message, {
-      providerId: meta?.providerId,
-      cause: err,
-    });
+    return providerErrorFromHttpStatus(
+      status,
+      err.message,
+      omitUndefined({
+        providerId: meta?.providerId,
+        cause: err,
+      }),
+    );
   }
 
   if (err instanceof Error) {
     const msg = err.message.toLowerCase();
     if (msg.includes("timeout") || msg.includes("timed out")) {
-      return new ProviderError(err.message, "timeout", true, {
-        providerId: meta?.providerId,
-        cause: err,
-      });
+      return new ProviderError(
+        err.message,
+        "timeout",
+        true,
+        omitUndefined({
+          providerId: meta?.providerId,
+          cause: err,
+        }),
+      );
     }
     if (msg.includes("abort") || err.name === "AbortError") {
-      return new ProviderError(err.message, "cancelled", false, {
-        providerId: meta?.providerId,
-        cause: err,
-      });
+      return new ProviderError(
+        err.message,
+        "cancelled",
+        false,
+        omitUndefined({
+          providerId: meta?.providerId,
+          cause: err,
+        }),
+      );
     }
   }
 
   const message = err instanceof Error ? err.message : String(err);
   const code = mapOpenAiErrorCode(undefined);
-  return new ProviderError(message, code, isRetryableCode(code), {
-    providerId: meta?.providerId,
-    cause: err,
-  });
+  return new ProviderError(
+    message,
+    code,
+    isRetryableCode(code),
+    omitUndefined({
+      providerId: meta?.providerId,
+      cause: err,
+    }),
+  );
 }

@@ -144,7 +144,7 @@ function serveStatic(pathname: string): Response {
   if (existsSync(filePath) && statSync(filePath).isFile()) {
     const ext = extname(filePath);
     const headers = MIME[ext] ? { "Content-Type": MIME[ext]! } : undefined;
-    return withCors(new Response(Bun.file(filePath), { headers }));
+    return withCors(new Response(Bun.file(filePath), headers ? { headers } : {}));
   }
 
   const indexPath = join(DIST_DIR, "index.html");

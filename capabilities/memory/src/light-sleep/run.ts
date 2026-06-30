@@ -59,7 +59,7 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
   const range = cstDayRange(opts.day);
   const conversationIds = await listConversationIdsUpdatedBetween(range.fromIso, range.toIso);
 
-  if (!conversationIds.length) {
+  if (conversationIds.length === 0) {
     const result: LightSleepResult = {
       ok: true,
       day: range.day,

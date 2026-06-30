@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import type { StreamEffect } from "../stream-state/types.ts";
 import { chunkChannelActions } from "./chunk.ts";
 import type { ChannelAction, ChannelIo, StreamStrategy, StrategyContext } from "./types.ts";
@@ -28,7 +29,7 @@ export function createStreamChannelComposer(
       nextSegmentId: 0,
       finalAnswer: null,
     },
-    signal: opts.signal,
+    ...omitUndefined({ signal: opts.signal }),
     bag: new Map(),
   };
 

@@ -480,7 +480,8 @@ describePg("slash commands", () => {
       expect(isUpgradeResult(result)).toBe(true);
       expect(result.text).toContain("正在从 npm 升级");
     } finally {
-      process.argv[1] = prevArgv1;
+      if (prevArgv1 !== undefined) process.argv[1] = prevArgv1;
+      else delete (process.argv as { 1?: string })[1];
       if (prevBunInstall === undefined) delete process.env.BUN_INSTALL;
       else process.env.BUN_INSTALL = prevBunInstall;
       removeTempDir(dir);
@@ -505,7 +506,8 @@ describePg("slash commands", () => {
       expect(isUpgradeResult(result)).toBe(false);
       expect(result.text).toContain("源码 link 安装不支持自动 upgrade");
     } finally {
-      process.argv[1] = prevArgv1;
+      if (prevArgv1 !== undefined) process.argv[1] = prevArgv1;
+      else delete (process.argv as { 1?: string })[1];
       removeTempDir(dir);
     }
   });

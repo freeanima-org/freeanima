@@ -58,7 +58,7 @@ export function MotionLibraryTab() {
         }
       }
       if (importedEntries.length > 0) {
-        setPreviewId(importedEntries[importedEntries.length - 1]!.id);
+        setPreviewId(importedEntries.at(-1)!.id);
       }
       await refreshConfig();
       await emitConfigChanged();

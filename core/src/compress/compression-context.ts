@@ -11,6 +11,7 @@ import {
   resolveContextWindowWithSource,
   type ContextWindowSource,
 } from "@freeanima/core/config";
+import { omitUndefined } from "@freeanima/core/util";
 import { getCompressionConfig } from "./compression-config.ts";
 import type { CompressOptions } from "./compressor.ts";
 
@@ -42,7 +43,7 @@ export function buildCompressOptions(
 ): CompressOptions {
   const cfg = getCompressionConfig();
   const { model, systemPrompt } = resolveConversationCompressionFields(meta, fallbackModel);
-  return {
+  return omitUndefined({
     maxRounds: cfg.maxRounds,
     model,
     systemPrompt,
@@ -50,7 +51,7 @@ export function buildCompressOptions(
     state,
     forceEmergency: overrides?.forceEmergency,
     force: overrides?.force,
-  };
+  });
 }
 
 function enrichCompressOptionsWithWindow(
@@ -60,13 +61,13 @@ function enrichCompressOptionsWithWindow(
   catalogContextWindow?: number,
 ): CompressOptions {
   const cfg = getActiveConfig().data;
-  return {
+  return omitUndefined({
     ...base,
     catalogContextWindow,
     contextWindow: window,
     contextWindowSource: source,
     effectiveBudgetOverride: budgetFromContextWindow(cfg, window),
-  };
+  });
 }
 
 /** Async: config > default > Provider catalog; sets effectiveBudgetOverride when token mode applies */

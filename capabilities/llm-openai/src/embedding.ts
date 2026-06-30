@@ -43,7 +43,7 @@ export function createOpenAiEmbeddingBatchClient(cfg: ResolvedEmbeddingConfig): 
   });
 
   return async (texts: string[]): Promise<(number[] | null)[]> => {
-    if (!texts.length) return [];
+    if (texts.length === 0) return [];
 
     const inputs: string[] = [];
     const sourceIndices: number[] = [];
@@ -55,7 +55,7 @@ export function createOpenAiEmbeddingBatchClient(cfg: ResolvedEmbeddingConfig): 
       inputs.push(trimmed);
       sourceIndices.push(i);
     }
-    if (!inputs.length) return result;
+    if (inputs.length === 0) return result;
 
     const res = await client.embeddings.create({
       model: cfg.model,

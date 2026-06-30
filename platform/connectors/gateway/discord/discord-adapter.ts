@@ -269,13 +269,13 @@ export class DiscordAdapter implements PlatformAdapter {
   }
 
   private clearLoginRetry(): void {
-    if (this.loginRetryTimer === null) return;
+    if (this.loginRetryTimer == null) return;
     clearTimeout(this.loginRetryTimer);
     this.loginRetryTimer = null;
   }
 
   private scheduleLoginRetry(): void {
-    if (!this.started || this.loginRetryTimer !== null || this.client.isReady()) return;
+    if (!this.started || this.loginRetryTimer != null || this.client.isReady()) return;
     const retryMin = Math.round(DISCORD_LOGIN_RETRY_MS / 60_000);
     logComponent("discord").warn(`${retryMin} min later, retrying login…`, {
       retry_in_min: retryMin,

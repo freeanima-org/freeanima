@@ -85,7 +85,13 @@ export async function syncEmailAccount(
   if (failed.length > 0) {
     throw new Error(failed.map((row) => row.error).join("; "));
   }
-  return results;
+  return results.map((row) => ({
+    account_id: row.account_id,
+    upserted_messages: row.upserted_messages,
+    upserted_threads: row.upserted_threads,
+    highest_uid: row.highest_uid,
+    ...(row.error !== undefined ? { error: row.error } : {}),
+  }));
 }
 
 export async function searchEmailMessages(input: {

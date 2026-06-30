@@ -96,13 +96,13 @@ export async function* runOpenAiChatStream(
   }
 
   const toolCalls = finalizeStreamingToolCalls(toolCallsAcc);
-  const reasoning = reasoningParts.length ? reasoningParts.join("") : null;
-  if (toolCalls.length) yield { type: "tool_calls", tool_calls: toolCalls };
+  const reasoning = reasoningParts.length > 0 ? reasoningParts.join("") : null;
+  if (toolCalls.length > 0) yield { type: "tool_calls", tool_calls: toolCalls };
   yield {
     type: "done",
     reasoning,
     usage: lastUsage,
-    finish_reason: finishReason ?? (toolCalls.length ? "tool_calls" : "stop"),
+    finish_reason: finishReason ?? (toolCalls.length > 0 ? "tool_calls" : "stop"),
     model: modelName,
   };
 }

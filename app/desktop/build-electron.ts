@@ -287,5 +287,6 @@ export async function buildDesktopShellElectron(opts: BuildElectronOptions = {})
 }
 
 if (import.meta.main) {
-  await buildDesktopShellElectron({ platform: parsePlatformArg() });
+  const platform = parsePlatformArg();
+  await buildDesktopShellElectron(platform ? { platform } : {});
 }

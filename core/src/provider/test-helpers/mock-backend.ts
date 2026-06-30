@@ -7,6 +7,7 @@ import {
   type ChatStreamEvent,
   type ModelInfo,
 } from "../index.ts";
+import { omitUndefined } from "@freeanima/core/util";
 
 export type MockBackendOptions = {
   id?: string;
@@ -55,7 +56,12 @@ export class MockBackend extends LlmBackend {
 
   mapError(err: unknown, _context: BackendContext, meta?: { providerId?: string }): ProviderError {
     if (err instanceof ProviderError) return err;
-    return new ProviderError(String(err), "unknown", false, { providerId: meta?.providerId });
+    return new ProviderError(
+      String(err),
+      "unknown",
+      false,
+      omitUndefined({ providerId: meta?.providerId }),
+    );
   }
 
   async chat(

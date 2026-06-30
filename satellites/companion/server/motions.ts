@@ -18,7 +18,7 @@ export function publicMotionsDir(): string {
 
 export function motionsReady(dir: string): boolean {
   if (!existsSync(dir)) return false;
-  return REQUIRED_MOTION_FILES.every((name) => resolveMotionInDir(dir, name) !== null);
+  return REQUIRED_MOTION_FILES.every((name) => resolveMotionInDir(dir, name) != null);
 }
 
 function resolveMotionInDir(dir: string, name: string): string | null {

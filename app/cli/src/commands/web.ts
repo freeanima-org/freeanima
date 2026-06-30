@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import type { Command } from "commander";
 import { Argument } from "commander";
 import { DEFAULT_WEB_HOST, DEFAULT_WEB_PORT } from "@freeanima/core/config";
@@ -38,14 +39,14 @@ npm 发布包内置 dist；monorepo 下 start 会自动检测并在需要时 bui
           skipBuild?: boolean;
         },
       ) => {
-        const args: WebCommandArgs = {
+        const args: WebCommandArgs = omitUndefined({
           action,
           foreground: Boolean(opts.foreground),
           host: opts.host,
           port: parseInt(opts.port, 10),
           dist: opts.dist,
           skipBuild: Boolean(opts.skipBuild),
-        };
+        });
         await runWebCommand(args);
       },
     );

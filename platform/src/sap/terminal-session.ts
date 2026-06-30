@@ -112,7 +112,8 @@ export async function* streamTerminalEvents(
   yield { type: "ready", conversationId };
 
   try {
-    while (!signal?.aborted) {
+    while (true) {
+      if (signal?.aborted) break;
       const event = await new Promise<TerminalEvent | null>((resolveEvent) => {
         const onOutput = (data: string) => resolveEvent({ type: "output", data });
         const onExit = (code: number) => resolveEvent({ type: "exit", code });
@@ -139,7 +140,7 @@ export async function* streamTerminalEvents(
         );
       });
 
-      if (event === null) break;
+      if (event == null) break;
       yield event;
       if (event.type === "exit") break;
     }

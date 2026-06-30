@@ -43,9 +43,9 @@ export function createAcpSessionUpdatedHandler(opts: {
         const tasks = await readAcpTasks(opts.conversation, conversationId);
         const handledAt = await readAcpTasksHandledAt(opts.conversation, conversationId);
         const unhandled = findUnhandledAcpTasks(tasks, handledAt);
-        if (!unhandled.length) return;
+        if (unhandled.length === 0) return;
 
-        const latestAt = unhandled[unhandled.length - 1]!.updated_at;
+        const latestAt = unhandled.at(-1)!.updated_at;
         await setAcpTasksHandledAt(opts.conversation, conversationId, latestAt);
 
         const app = opts.getRuntime();

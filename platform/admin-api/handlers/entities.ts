@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import {
   AGENT_CONFIG_COMPONENT,
   ENTITY_ROOT_WORLD_ID,
@@ -234,20 +235,24 @@ export async function updateWorldEntity(
       await assertSubjectEntity(nextOwnerSubjectId);
     }
 
-    bodyPatch = buildWorldConfigBody({
-      private: nextPrivate,
-      owner_subject_id: nextPrivate ? nextOwnerSubjectId : undefined,
-      default_private: isDefaultPrivate,
-    });
+    bodyPatch = buildWorldConfigBody(
+      omitUndefined({
+        private: nextPrivate,
+        owner_subject_id: nextPrivate ? nextOwnerSubjectId : undefined,
+        default_private: isDefaultPrivate,
+      }),
+    );
   }
 
-  const updated = await updateEntity({
-    id,
-    title: input.title,
-    summary: input.summary,
-    content: input.content,
-    body: bodyPatch,
-  });
+  const updated = await updateEntity(
+    omitUndefined({
+      id,
+      title: input.title,
+      summary: input.summary,
+      content: input.content,
+      body: bodyPatch,
+    }),
+  );
   if (!updated) {
     throw new ApiHandlerError(404, "world not found", { code: "entity_world_not_found" });
   }
@@ -315,12 +320,14 @@ export async function updateSubjectEntity(
     await applySubjectDefaultPrivateWorld(id, input.default_private_world_id);
   }
 
-  const updated = await updateEntity({
-    id,
-    title: input.title,
-    summary: input.summary,
-    content: input.content,
-  });
+  const updated = await updateEntity(
+    omitUndefined({
+      id,
+      title: input.title,
+      summary: input.summary,
+      content: input.content,
+    }),
+  );
   if (!updated) {
     throw new ApiHandlerError(404, "subject not found", { code: "entity_subject_not_found" });
   }
@@ -355,7 +362,7 @@ export async function searchEntities(
     accessible_world_ids = auth
       ? await resolveWorldsAccessibleBySubject({ list: listEntities }, auth.subject_id)
       : await resolvePublicAccessibleWorldIds({ list: listEntities });
-    if (!accessible_world_ids.length) {
+    if (accessible_world_ids.length === 0) {
       throw new ApiHandlerError(403, "no accessible worlds for global search", {
         code: "entity_search_global_forbidden",
       });
@@ -377,24 +384,26 @@ export async function searchEntities(
   }
 
   try {
-    const result = await searchEntitiesPg({
-      query: input.query,
-      world_id: global ? undefined : input.world_id,
-      global,
-      accessible_world_ids,
-      type: input.type,
-      types: input.types,
-      primary_component: input.primary_component,
-      component: input.component,
-      filters: input.filters,
-      created_after: input.created_after,
-      created_before: input.created_before,
-      updated_after: input.updated_after,
-      updated_before: input.updated_before,
-      limit: input.limit,
-      offset: input.offset,
-      mode: input.mode,
-    });
+    const result = await searchEntitiesPg(
+      omitUndefined({
+        query: input.query,
+        world_id: global ? undefined : input.world_id,
+        global,
+        accessible_world_ids,
+        type: input.type,
+        types: input.types,
+        primary_component: input.primary_component,
+        component: input.component,
+        filters: input.filters,
+        created_after: input.created_after,
+        created_before: input.created_before,
+        updated_after: input.updated_after,
+        updated_before: input.updated_before,
+        limit: input.limit,
+        offset: input.offset,
+        mode: input.mode,
+      }),
+    );
     return {
       query: result.query,
       limit: result.limit,

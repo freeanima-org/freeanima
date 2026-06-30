@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { JsonSchemaObject, ToolDef, ToolHandler, ToolSetRegistry } from "@freeanima/core/tool";
 import { toolError, toolResult } from "@freeanima/core/tool";
+import { omitUndefined } from "@freeanima/core/util";
 import { getToolConversationId } from "@freeanima/core/tool/tool-context";
 import {
   formatSapPlatform,
@@ -96,7 +97,7 @@ export class SatelliteManager {
 
   registerConnection(key: string, conn: SatelliteConnection, opts?: { httpUrl?: string }): void {
     this.connections.set(key, conn);
-    this.noteConnection(conn.appId, conn.instanceId, { httpUrl: opts?.httpUrl });
+    this.noteConnection(conn.appId, conn.instanceId, omitUndefined({ httpUrl: opts?.httpUrl }));
   }
 
   unregisterConnection(key: string): void {
@@ -407,7 +408,7 @@ export class SatelliteManager {
   /** Injected by platform composition root */
   loadSessionPlatformExtra: (
     conversationId: string,
-  ) => Promise<Record<string, unknown> | undefined> = async () => undefined;
+  ) => Promise<Record<string, unknown> | undefined> = async () => {};
 }
 
 export { toolResult };

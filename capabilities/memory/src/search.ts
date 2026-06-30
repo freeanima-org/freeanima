@@ -1,4 +1,5 @@
 import type { MessageFtsHit } from "@freeanima/core/repos";
+import { omitUndefined } from "@freeanima/core/util";
 import { searchSemanticMemoryFts } from "@freeanima/core/db/pg/semantic-memory";
 import { searchMessagesFts } from "@freeanima/core/db/pg/conversation";
 
@@ -86,10 +87,13 @@ export async function searchDialogue(
   query: string,
   opts?: { conversationId?: string; limit?: number },
 ): Promise<MessageFtsHit[]> {
-  return searchMessagesFts(query, {
-    conversation_id: opts?.conversationId,
-    limit: opts?.limit,
-  });
+  return searchMessagesFts(
+    query,
+    omitUndefined({
+      conversation_id: opts?.conversationId,
+      limit: opts?.limit,
+    }),
+  );
 }
 
 export async function searchDialogueOnly(

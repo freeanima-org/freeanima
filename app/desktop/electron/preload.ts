@@ -103,8 +103,12 @@ function applyHubFields(
 ): void {
   shell.hubUrl = hubFields.hubUrl;
   shell.hubWsUrl = hubFields.hubWsUrl;
-  shell.remoteAuth = hubFields.remoteAuth;
-  shell.hubFetch = hubFields.hubFetch;
+  if (hubFields.remoteAuth !== undefined) {
+    shell.remoteAuth = hubFields.remoteAuth;
+  }
+  if (hubFields.hubFetch !== undefined) {
+    shell.hubFetch = hubFields.hubFetch;
+  }
 }
 
 async function loadHubClientConfig(): Promise<HubClientConfigPayload | null> {

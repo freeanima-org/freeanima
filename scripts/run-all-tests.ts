@@ -61,7 +61,13 @@ if (needsPg) {
 }
 
 try {
-  const codes = await Promise.all(suites.map((suite) => runScript(SUITE_SCRIPTS[suite])));
+  const codes = await Promise.all(
+    suites.map((suite) => {
+      const script = SUITE_SCRIPTS[suite];
+      if (!script) throw new Error(`[test] unknown suite: ${suite}`);
+      return runScript(script);
+    }),
+  );
   if (codes.some((code) => code !== 0)) {
     exitCode = 1;
   }

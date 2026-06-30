@@ -18,7 +18,7 @@ export function createSapBunHandlers(deps: SapServerDeps): {
     fetch(req, server) {
       const url = new URL(req.url);
       if (url.pathname !== "/sap/v1") {
-        return undefined;
+        return;
       }
       if (
         server.upgrade(req, {
@@ -27,7 +27,7 @@ export function createSapBunHandlers(deps: SapServerDeps): {
           },
         })
       ) {
-        return undefined;
+        return;
       }
       return new Response("Expected WebSocket upgrade", { status: 426 });
     },

@@ -42,7 +42,7 @@ export async function getConversationMeta(
     .from(conversations)
     .where(eq(conversations.id, conversation_id))
     .limit(1);
-  if (!rows.length) return null;
+  if (rows.length === 0) return null;
   return rowToConversationMeta(rows[0]!);
 }
 
@@ -98,7 +98,7 @@ export async function getConversationMetaLite(
     .from(conversations)
     .where(eq(conversations.id, conversation_id))
     .limit(1);
-  if (!rows.length) return null;
+  if (rows.length === 0) return null;
   return rowToConversationMeta(rows[0]!);
 }
 
@@ -111,7 +111,7 @@ export async function getConversationTools(
     .from(conversations)
     .where(eq(conversations.id, conversation_id))
     .limit(1);
-  if (!rows.length) return [];
+  if (rows.length === 0) return [];
   return conversationCachedToolsetsSchema.parse(rows[0]!.cached_toolsets ?? []);
 }
 
@@ -127,7 +127,7 @@ export async function upsertConversationMeta(
       .from(conversations)
       .where(eq(conversations.id, conversation_id))
       .limit(1);
-    if (existing.length) {
+    if (existing.length > 0) {
       await db
         .update(conversations)
         .set({
@@ -176,12 +176,12 @@ export async function patchConversationMeta(
     set.system_prompt = pgTextOrNull(patch.system_prompt);
     hasColumnPatch = true;
   }
-  if (patch.compression === null) {
+  if (patch.compression == null) {
     set.compression = null;
     hasColumnPatch = true;
   } else if (patch.compression !== undefined) {
     const compression = compressionStateSchema.parse(patch.compression);
-    if (compression === null) {
+    if (compression == null) {
       set.compression = null;
     } else {
       Object.assign(set, patchCompression(compression));
@@ -307,7 +307,7 @@ export async function countConversationsByPlatform(): Promise<Record<string, num
 }
 
 function sessionPlatformWhere(platform?: string | null) {
-  if (!platform) return undefined;
+  if (!platform) return;
   return sql`${conversations.platform_info}->>'platform' = ${platform}`;
 }
 
@@ -316,7 +316,7 @@ function buildConversationListWhere(platform?: string | null, includeArchived?: 
   const platformCond = sessionPlatformWhere(platform);
   if (platformCond) conds.push(platformCond);
   if (!includeArchived) conds.push(isNull(conversations.archived_at));
-  if (conds.length === 0) return undefined;
+  if (conds.length === 0) return;
   if (conds.length === 1) return conds[0];
   return and(...conds);
 }
@@ -462,7 +462,7 @@ export async function deleteStaleConversations(opts: {
   olderThan: Date;
 }): Promise<ConversationCleanupResult> {
   const ids = await listStaleConversationIdsForCleanup(opts);
-  if (!ids.length) return { deleted: 0, ids: [] };
+  if (ids.length === 0) return { deleted: 0, ids: [] };
   const db = getDb();
   const deleted = await db
     .delete(conversations)

@@ -65,7 +65,7 @@ describe("sendMessageStream slash commands", () => {
   function mockConversationBasics(): void {
     restores.push(
       spyOn(conv, "conversationExists").mockResolvedValue(true),
-      spyOn(conv, "assertConversationPlatform").mockResolvedValue(undefined),
+      spyOn(conv, "assertConversationPlatform").mockResolvedValue(),
       spyOn(conv, "loadConversationMeta").mockResolvedValue({
         role: "conversation_meta",
         model: "test-model",

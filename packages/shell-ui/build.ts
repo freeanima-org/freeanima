@@ -30,10 +30,10 @@ export async function buildShellUi(opts?: BuildShellUiOptions): Promise<string> 
     base: opts?.publicPath ?? "/",
     minify: opts?.minify ?? false,
     sourcemap: opts?.sourcemap ?? false,
-    watch: opts?.watch,
-    extraEntries: opts?.extraEntries,
-    define: opts?.define,
-    onRebuild: opts?.onRebuild,
+    ...(opts?.watch !== undefined ? { watch: opts.watch } : {}),
+    ...(opts?.extraEntries !== undefined ? { extraEntries: opts.extraEntries } : {}),
+    ...(opts?.define !== undefined ? { define: opts.define } : {}),
+    ...(opts?.onRebuild !== undefined ? { onRebuild: opts.onRebuild } : {}),
   };
 
   const out = await runShellViteBuild(viteOpts);

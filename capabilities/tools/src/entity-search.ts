@@ -1,6 +1,11 @@
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
-import { formatFtsToolError, isFtsQueryError, validateFtsQueryInput } from "@freeanima/core/util";
+import {
+  formatFtsToolError,
+  isFtsQueryError,
+  omitUndefined,
+  validateFtsQueryInput,
+} from "@freeanima/core/util";
 import type { EntitySearchMode } from "@freeanima/core/repos";
 import type { EntityType } from "@freeanima/core/db/schema";
 
@@ -18,7 +23,7 @@ const FTS_SYNTAX =
   '- **Double quotes** for phrases / CJK tokens: `"部署任务"`';
 
 function asFloat(value: unknown, defaultVal: number): number {
-  if (value === null || value === undefined) return defaultVal;
+  if (value == null || value === undefined) return defaultVal;
   const n = Number(value);
   return Number.isNaN(n) ? defaultVal : n;
 }
@@ -131,20 +136,22 @@ export function registerEntitySearchTools(toolSets: ToolSetRegistry): void {
                 });
               }
 
-              const result = await searchEntities({
-                query: query || undefined,
-                world_id: global ? undefined : world_id,
-                global,
-                accessible_world_ids,
-                type: args.type as EntityType | undefined,
-                primary_component:
-                  args.primary_component != null ? String(args.primary_component) : undefined,
-                component: args.component != null ? String(args.component) : undefined,
-                filters: parseFilters(args.filters),
-                limit,
-                offset,
-                mode: query ? mode : "filter_only",
-              });
+              const result = await searchEntities(
+                omitUndefined({
+                  query: query || undefined,
+                  world_id: global ? undefined : world_id,
+                  global,
+                  accessible_world_ids,
+                  type: args.type as EntityType | undefined,
+                  primary_component:
+                    args.primary_component != null ? String(args.primary_component) : undefined,
+                  component: args.component != null ? String(args.component) : undefined,
+                  filters: parseFilters(args.filters),
+                  limit,
+                  offset,
+                  mode: query ? mode : "filter_only",
+                }),
+              );
 
               return toolResult({
                 query: result.query,

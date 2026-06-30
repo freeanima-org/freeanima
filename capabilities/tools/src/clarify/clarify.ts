@@ -199,7 +199,7 @@ export function parseClarifyToolResult(
       if (typeof q.default === "string") out.default = q.default;
       items.push(out);
     }
-    if (items.length) return { status: "awaiting", items, timeout_sec: timeout };
+    if (items.length > 0) return { status: "awaiting", items, timeout_sec: timeout };
   }
   return null;
 }

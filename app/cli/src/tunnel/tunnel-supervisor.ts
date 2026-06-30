@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { PATHS, TUNNEL_PASS_PATHS, type TunnelConfig } from "@freeanima/core/config";
 import { FileConfig } from "@freeanima/platform/config";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -84,7 +85,7 @@ export function ensureTunnelUnitFile(): boolean {
     cloudflaredRunExecStart(cloudflaredBinPath(), {
       credentialsFile: defaultCredentialsFile(),
       configFile: PATHS.cloudflaredConfigFile,
-      tunnelId: FileConfig.open().data.tunnel?.cloudflare?.tunnel_id,
+      ...omitUndefined({ tunnelId: FileConfig.open().data.tunnel?.cloudflare?.tunnel_id }),
     }),
   );
   const path = tunnelUnitPath();
@@ -184,7 +185,7 @@ export function startTunnelForeground(): ChildProcess | null {
   const argv = cloudflaredRunArgv(cloudflaredBinPath(), {
     credentialsFile: defaultCredentialsFile(),
     configFile: PATHS.cloudflaredConfigFile,
-    tunnelId: cfg?.cloudflare?.tunnel_id,
+    ...omitUndefined({ tunnelId: cfg?.cloudflare?.tunnel_id }),
   });
   const child = spawn(argv[0]!, argv.slice(1), {
     stdio: ["ignore", "inherit", "inherit"],

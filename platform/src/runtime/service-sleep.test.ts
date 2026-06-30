@@ -94,7 +94,9 @@ describe("service-sleep pipeline runs", () => {
     const started = await startSleepCycle(deps, { day: "2026-06-14" });
     expect(started.ok).toBe(true);
 
-    await new Promise((r) => setTimeout(r, 50));
+    await new Promise((r) => {
+      setTimeout(r, 50);
+    });
 
     expect(runSleepCycleMock).toHaveBeenCalled();
     expect(appendPipelineStepRunMock).not.toHaveBeenCalled();

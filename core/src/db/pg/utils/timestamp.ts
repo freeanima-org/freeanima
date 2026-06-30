@@ -1,7 +1,7 @@
 export { normalizePgTimestamp } from "@freeanima/core/db/schema";
 
 function emptyToNull<T>(value: T | null | undefined | ""): T | null {
-  if (value === undefined || value === null || value === "") return null;
+  if (value === undefined || value == null || value === "") return null;
   return value;
 }
 

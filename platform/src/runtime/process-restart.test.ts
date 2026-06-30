@@ -65,7 +65,9 @@ describe("process-restart", () => {
       processRestart.scheduleGracefulRestart(ctrl);
       expect(startSpy).toHaveBeenCalled();
       expect(abortSpy).toHaveBeenCalled();
-      await new Promise<void>((resolve) => setImmediate(resolve));
+      await new Promise<void>((resolve) => {
+        setImmediate(resolve);
+      });
     } finally {
       killSpy.mockRestore();
       startSpy.mockRestore();

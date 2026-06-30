@@ -62,7 +62,7 @@ export async function collectConversationBlocks(
     const meta = await getConversationMetaLite(conversationId);
     if (!meta || meta.role !== "conversation_meta") continue;
     const messages = filterRecallableMessages(await listMessages(conversationId));
-    if (!messages.length) continue;
+    if (messages.length === 0) continue;
 
     const lines = [`## Conversation ${conversationId}`];
     const title = meta.title?.trim();
@@ -92,7 +92,7 @@ export function formatDialogueMessage(blocks: LightSleepConversationBlock[]): {
   text: string;
   truncatedConversations: number;
 } {
-  if (!blocks.length) {
+  if (blocks.length === 0) {
     return { text: "(No valid dialogue for this day)", truncatedConversations: 0 };
   }
 
@@ -115,7 +115,7 @@ export function formatDialogueMessage(blocks: LightSleepConversationBlock[]): {
 }
 
 export function formatExistingMemoriesMessage(rows: SemanticMemoryRow[]): string {
-  if (!rows.length) return "(No existing active memories overlapping these sessions)";
+  if (rows.length === 0) return "(No existing active memories overlapping these sessions)";
   const lines = [
     `# Related existing memories (${rows.length}, pre-filtered by source_conversations)`,
   ];
@@ -196,7 +196,7 @@ export async function collectLimbicMemoriesForSessions(
 }
 
 export function formatLimbicMemoriesMessage(rows: LimbicMemoryRow[]): string {
-  if (!rows.length) {
+  if (rows.length === 0) {
     return "(No existing limbic memories overlapping these sessions)";
   }
   const lines = [`# Existing limbic memories (${rows.length})`];

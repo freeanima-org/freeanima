@@ -1,4 +1,5 @@
 import { getEntity } from "../entity/index.ts";
+import { omitUndefined } from "@freeanima/core/util";
 import {
   generateServiceApiTokenParts,
   hashServiceApiTokenSecret,
@@ -43,14 +44,16 @@ export async function createServiceApiTokenWithSecret(input: {
   }
   const parts = generateServiceApiTokenParts();
   const token_hash = await hashServiceApiTokenSecret(parts.secret);
-  const token = await createServiceApiToken({
-    subject_id: input.subject_id,
-    name: input.name,
-    prefix: parts.prefix,
-    token_hash,
-    scopes: input.scopes,
-    expires_at: input.expires_at,
-  });
+  const token = await createServiceApiToken(
+    omitUndefined({
+      subject_id: input.subject_id,
+      name: input.name,
+      prefix: parts.prefix,
+      token_hash,
+      scopes: input.scopes,
+      expires_at: input.expires_at,
+    }),
+  );
   return { token, plaintext: parts.plaintext };
 }
 
@@ -85,24 +88,28 @@ export async function importServiceApiTokenFromPlaintext(input: {
   const parsed = parseServiceApiToken(trimmed);
   if (parsed) {
     const token_hash = await hashServiceApiTokenSecret(parsed.secret);
-    const token = await createServiceApiToken({
-      subject_id: input.subject_id,
-      name: input.name,
-      prefix: parsed.prefix,
-      token_hash,
-      scopes: input.scopes,
-    });
+    const token = await createServiceApiToken(
+      omitUndefined({
+        subject_id: input.subject_id,
+        name: input.name,
+        prefix: parsed.prefix,
+        token_hash,
+        scopes: input.scopes,
+      }),
+    );
     return { token, plaintext: trimmed };
   }
   const parts = generateServiceApiTokenParts();
   const token_hash = await hashServiceApiTokenSecret(trimmed);
-  const token = await createServiceApiToken({
-    subject_id: input.subject_id,
-    name: input.name,
-    prefix: parts.prefix,
-    token_hash,
-    scopes: input.scopes,
-  });
+  const token = await createServiceApiToken(
+    omitUndefined({
+      subject_id: input.subject_id,
+      name: input.name,
+      prefix: parts.prefix,
+      token_hash,
+      scopes: input.scopes,
+    }),
+  );
   return { token, plaintext: `${SERVICE_API_TOKEN_PREFIX}${parts.prefix}_${trimmed}` };
 }
 

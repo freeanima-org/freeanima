@@ -90,7 +90,7 @@ export async function bootRuntimePhase(
 
   satellite.loadSessionPlatformExtra = async (conversationId) => {
     const meta = await conversation.loadConversationMeta(conversationId);
-    if (!isConversationMeta(meta)) return undefined;
+    if (!isConversationMeta(meta)) return;
     return meta.platform_extra;
   };
 

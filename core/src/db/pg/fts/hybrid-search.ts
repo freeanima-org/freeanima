@@ -7,7 +7,7 @@ import {
 import { and, isNotNull, sql } from "drizzle-orm";
 import { union } from "drizzle-orm/pg-core";
 import { semanticMemory } from "@freeanima/core/db/schema";
-import { rrfMerge, messageDocKey, semanticMemoryDocKey } from "@freeanima/core/util";
+import { omitUndefined, rrfMerge, messageDocKey, semanticMemoryDocKey } from "@freeanima/core/util";
 
 import { embedQueryText } from "../embedding/query.ts";
 import { getDb } from "../client.ts";
@@ -45,26 +45,26 @@ export async function hybridSearchSemanticMemory(
 
   const queryEmbedding = await embedQueryText(q);
 
-  const ftsHits = await searchSemanticMemoryFtsRaw(q, {
-    limit: candidateLimit(fetchLimit, 0),
+  const filterOpts = omitUndefined({
     types: opts?.types,
     status: opts?.status,
     source_conversations: opts?.source_conversations,
   });
+
+  const ftsHits = await searchSemanticMemoryFtsRaw(q, {
+    ...filterOpts,
+    limit: candidateLimit(fetchLimit, 0),
+  });
   const pool = candidateLimit(fetchLimit, ftsHits.length);
   const [trgmHits, vectorHits] = await Promise.all([
     searchSemanticMemoryTrgm(q, {
+      ...filterOpts,
       limit: pool,
-      types: opts?.types,
-      status: opts?.status,
-      source_conversations: opts?.source_conversations,
     }),
     queryEmbedding
       ? searchSemanticMemoryVector(queryEmbedding, {
+          ...filterOpts,
           limit: pool,
-          types: opts?.types,
-          status: opts?.status,
-          source_conversations: opts?.source_conversations,
         })
       : Promise.resolve([]),
   ]);

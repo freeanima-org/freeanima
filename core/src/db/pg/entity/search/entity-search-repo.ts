@@ -1,5 +1,5 @@
 import { getActiveConfig, getFtsTrgmFallbackWhenHitsLt } from "@freeanima/core/config";
-import { entityDocKey, rrfMerge } from "@freeanima/core/util";
+import { entityDocKey, omitUndefined, rrfMerge } from "@freeanima/core/util";
 import type { EntitySearchHit, EntitySearchOpts, EntitySearchResult } from "../types.ts";
 import { mapEntityRow } from "@freeanima/core/db/schema/entity";
 import { entities, TASK_ITEM_COMPONENT } from "@freeanima/core/db/schema";
@@ -46,7 +46,7 @@ async function searchFilterOnly(opts: EntitySearchOpts): Promise<EntitySearchHit
   const where = buildEntitySearchWhere(opts);
   const db = getDb();
 
-  const conditions = [...(where ? [where] : [])];
+  const conditions = where ? [where] : [];
   if (q) {
     conditions.push(buildEntityTextMatchCondition(q));
   }
@@ -55,7 +55,7 @@ async function searchFilterOnly(opts: EntitySearchOpts): Promise<EntitySearchHit
   const rows = await db
     .select(getColumns(entities))
     .from(entities)
-    .where(conditions.length ? and(...conditions) : undefined)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(...orderExprs)
     .limit(limit)
     .offset(offset);
@@ -133,7 +133,7 @@ export async function searchEntities(opts: EntitySearchOpts = {}): Promise<Entit
         ? await searchHybrid({ ...opts, limit, offset })
         : await searchFilterOnly({ ...opts, limit, offset });
 
-    const total = await countEntitiesSearch({ ...opts, query: q || undefined });
+    const total = await countEntitiesSearch(omitUndefined({ ...opts, query: q || undefined }));
 
     return {
       query: q || null,
@@ -154,14 +154,14 @@ export async function countEntitiesSearch(
   const q = resolveSearchQuery(opts.query);
   const where = buildEntitySearchWhere(opts);
   const db = getDb();
-  const conditions = [...(where ? [where] : [])];
+  const conditions = where ? [where] : [];
   if (q && opts.mode !== "hybrid") {
     conditions.push(buildEntityTextMatchCondition(q));
   }
   const [row] = await db
     .select({ value: count() })
     .from(entities)
-    .where(conditions.length ? and(...conditions) : undefined);
+    .where(conditions.length > 0 ? and(...conditions) : undefined);
   return Number(row?.value ?? 0);
 }
 

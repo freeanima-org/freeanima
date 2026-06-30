@@ -60,7 +60,12 @@ async function releaseInstallLocks(): Promise<void> {
       else resolve();
     }),
   ]);
-  await Promise.race([closeServers, new Promise<void>((resolve) => setTimeout(resolve, 2000))]);
+  await Promise.race([
+    closeServers,
+    new Promise<void>((resolve) => {
+      setTimeout(resolve, 2000);
+    }),
+  ]);
   serverHandle = null;
   shellStaticServer = null;
 }
@@ -158,8 +163,10 @@ function redrawOverlayOnWin32Blur(win: BrowserWindow): void {
   if (win.isDestroyed()) return;
   clearOverlayTitle(win);
   const [w, h] = win.getSize();
-  win.setSize(w, h + 1);
-  win.setSize(w, h);
+  const width = w ?? 0;
+  const height = h ?? 0;
+  win.setSize(width, height + 1);
+  win.setSize(width, height);
 }
 
 function attachOverlayTitleGuards(win: BrowserWindow): void {

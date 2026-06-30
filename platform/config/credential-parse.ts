@@ -12,7 +12,7 @@ export function parseCredentialDict(text: string, path: string): Record<string, 
       { cause: err },
     );
   }
-  if (typeof data !== "object" || data === null || Array.isArray(data)) {
+  if (typeof data !== "object" || data == null || Array.isArray(data)) {
     throw new Error(
       `Credential '${path}' must be a YAML dict. Rewrite with 'anima credential add'.`,
     );

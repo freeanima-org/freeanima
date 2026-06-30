@@ -187,7 +187,9 @@ describePg("cron", () => {
         done = true;
         break;
       }
-      await new Promise((r) => setTimeout(r, 25));
+      await new Promise((r) => {
+        setTimeout(r, 25);
+      });
     }
     expect(done).toBe(true);
   });

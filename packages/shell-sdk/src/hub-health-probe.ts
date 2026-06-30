@@ -69,7 +69,10 @@ export async function testHubHealthConnection(
   hubUrl: string,
   remoteAuthToken?: string,
 ): Promise<void> {
-  const body = await probeHubHealthUrl(hubUrl, { token: remoteAuthToken });
+  const body = await probeHubHealthUrl(
+    hubUrl,
+    remoteAuthToken !== undefined ? { token: remoteAuthToken } : {},
+  );
   const reason = hubHealthFailureReason(body);
   if (reason) throw new Error(reason);
 }

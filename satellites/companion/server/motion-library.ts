@@ -23,7 +23,7 @@ export function motionLibraryEntry(id: string): MotionLibraryEntry | undefined {
 }
 
 export function motionFileAvailable(file: string): boolean {
-  return resolveMotionFile(`/motions/${file}`) !== null;
+  return resolveMotionFile(`/motions/${file}`) != null;
 }
 
 export function registerMotionEntry(entry: MotionLibraryEntry): MotionLibraryEntry {

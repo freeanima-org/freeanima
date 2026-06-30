@@ -12,6 +12,7 @@ import { runWithToolContext } from "@freeanima/core/tool";
 import type { StreamEvent } from "@freeanima/runtime/loop";
 import { applyClarifyStreamAwaiting } from "@freeanima/capabilities-tools/clarify";
 import { ProviderError } from "@freeanima/core/provider";
+import { omitUndefined } from "@freeanima/core/util";
 import { getProfileHopModel } from "@freeanima/platform/config";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
 import { isInsufficientToolMessagesError } from "@freeanima/core/llm";
@@ -161,12 +162,11 @@ export async function runSimpleTurn(
             model,
             tools,
             llm: deps.engine.llm,
-            toolMask,
-            executableTools,
+            ...omitUndefined({ toolMask, executableTools }),
             hookRegistry: deps.kernel.hookRegistry,
             ...createTurnMessageCallbacks(deps, conversationId),
           }),
-        { tools: deps.engine.catalog.toolSets, executableTools },
+        { tools: deps.engine.catalog.toolSets, ...omitUndefined({ executableTools }) },
       );
     } catch (e) {
       if (e instanceof loopEngine.MaxTurnsExceeded) {
@@ -218,17 +218,16 @@ export async function* yieldEngineStream(
             config: deps.engine.config.data,
             logger: deps.engine.logger,
             llm: deps.engine.llm,
-            toolMask,
-            executableTools,
+            ...omitUndefined({ toolMask, executableTools }),
             ...host.engineStreamOpts(conversationId, signal),
           }),
-        { tools: deps.engine.catalog.toolSets, executableTools },
+        { tools: deps.engine.catalog.toolSets, ...omitUndefined({ executableTools }) },
       )) {
         if (ev.event === "awaiting_clarify") {
           await applyClarifyStreamAwaiting(
             deps.conversation,
             conversationId,
-            ev.data.items,
+            ev.data.items.map((item) => omitUndefined(item)),
             ev.data.timeout_sec,
           );
         }
@@ -374,7 +373,9 @@ export async function* runExclusiveStreamTurn(
             buffer.push({ event: "done", data: {} });
             signalReady();
           }
-          await new Promise<void>((resolve) => setImmediate(resolve));
+          await new Promise<void>((resolve) => {
+            setImmediate(resolve);
+          });
           await finalizeTurn(deps, conversationId, msgs, effective, model, functions);
 
           if (!(await shouldSkipGoalEvaluate(goalDeps, conversationId, msgs))) {
@@ -414,10 +415,12 @@ export async function* runExclusiveStreamTurn(
     signalReady();
   });
 
-  while (!closed || buffer.length > 0) {
+  while (true) {
     while (buffer.length > 0) {
       yield buffer.shift()!;
-      await new Promise<void>((resolve) => setImmediate(resolve));
+      await new Promise<void>((resolve) => {
+        setImmediate(resolve);
+      });
     }
     if (closed) break;
     await new Promise<void>((resolve) => {

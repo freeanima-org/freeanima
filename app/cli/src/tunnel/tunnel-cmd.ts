@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { installCloudflared, manualDownloadHint } from "./tunnel-install.ts";
 import { runTunnelSetup, type SetupPromptsOptions } from "./tunnel-setup-prompts.ts";
 import {
@@ -29,10 +30,12 @@ export async function runTunnelCommand(args: TunnelCommandArgs): Promise<void> {
 
   if (action === "install") {
     try {
-      await installCloudflared({
-        force: args.force,
-        onProgress: (msg) => console.log(msg),
-      });
+      await installCloudflared(
+        omitUndefined({
+          force: args.force,
+          onProgress: (msg: string) => console.log(msg),
+        }),
+      );
       writeStatusLine("ok", "cloudflared 已安装");
     } catch (err) {
       console.error(err instanceof Error ? err.message : String(err));
@@ -43,14 +46,14 @@ export async function runTunnelCommand(args: TunnelCommandArgs): Promise<void> {
   }
 
   if (action === "setup") {
-    const opts: SetupPromptsOptions = {
+    const opts: SetupPromptsOptions = omitUndefined({
       skipInstall: args.skipInstall,
       nonInteractive: args.nonInteractive,
       hostname: args.hostname,
       apiToken: args.apiToken,
       port: args.port,
       yes: args.yes,
-    };
+    });
     await runTunnelSetup(opts);
     return;
   }

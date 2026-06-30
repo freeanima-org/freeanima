@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { Elysia, t } from "elysia";
 import {
   getDeepSleepRounds,
@@ -14,12 +15,14 @@ export const sleepRoutes = new Elysia({ prefix: "/sleep" })
   .get(
     "/pipeline-runs",
     ({ query }) =>
-      listPipelineStepRuns({
-        step_id: query.step_id,
-        run_id: query.run_id,
-        limit: query.limit,
-        offset: query.offset,
-      }),
+      listPipelineStepRuns(
+        omitUndefined({
+          step_id: query.step_id,
+          run_id: query.run_id,
+          limit: query.limit,
+          offset: query.offset,
+        }),
+      ),
     {
       query: t.Object({
         step_id: t.Optional(t.String()),
@@ -35,7 +38,8 @@ export const sleepRoutes = new Elysia({ prefix: "/sleep" })
   .get("/pipeline/status", () => getSleepPipelineStatus())
   .post(
     "/pipeline/run",
-    ({ body }) => startSleepCycle({ day: body.day, deep_sleep_mode: body.deep_sleep_mode }),
+    ({ body }) =>
+      startSleepCycle(omitUndefined({ day: body.day, deep_sleep_mode: body.deep_sleep_mode })),
     {
       body: t.Object({
         day: t.Optional(t.String()),
@@ -46,12 +50,14 @@ export const sleepRoutes = new Elysia({ prefix: "/sleep" })
   .post(
     "/pipeline/run-step",
     ({ body }) =>
-      startSleepPipelineStep({
-        step_id: body.step_id,
-        day: body.day,
-        force: body.force,
-        deep_sleep_mode: body.deep_sleep_mode,
-      }),
+      startSleepPipelineStep(
+        omitUndefined({
+          step_id: body.step_id,
+          day: body.day,
+          force: body.force,
+          deep_sleep_mode: body.deep_sleep_mode,
+        }),
+      ),
     {
       body: t.Object({
         step_id: t.String(),
@@ -65,12 +71,14 @@ export const sleepRoutes = new Elysia({ prefix: "/sleep" })
 export const cronLogRoutes = new Elysia({ prefix: "/cron-logs" }).get(
   "/",
   ({ query }) =>
-    listCronLogs({
-      job_id: query.job_id,
-      limit: query.limit,
-      offset: query.offset,
-      ok: query.ok,
-    }),
+    listCronLogs(
+      omitUndefined({
+        job_id: query.job_id,
+        limit: query.limit,
+        offset: query.offset,
+        ok: query.ok,
+      }),
+    ),
   {
     query: t.Object({
       job_id: t.Optional(t.String()),

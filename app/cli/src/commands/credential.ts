@@ -53,7 +53,7 @@ export function registerCredentialCommand(
     .description("List credential paths and field metadata")
     .action(() => {
       const creds = deps.listCredentials();
-      if (!creds.length) {
+      if (creds.length === 0) {
         console.log("(no credentials)");
         return;
       }

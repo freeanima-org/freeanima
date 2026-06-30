@@ -43,7 +43,7 @@ function openAnswerSegment(
   state: StreamReplyState,
   effects: StreamReplyEffect[],
 ): StreamReplyState {
-  if (state.activeSegmentId !== null) return state;
+  if (state.activeSegmentId != null) return state;
   const segmentId = state.nextSegmentId;
   effects.push({ kind: "answer_open", segmentId });
   return {

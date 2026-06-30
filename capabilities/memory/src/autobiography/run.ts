@@ -4,7 +4,7 @@ import type {
   AutobiographicalSignificance,
 } from "@freeanima/core/repos";
 import { autobiographicalSignificanceSchema } from "@freeanima/core/db/schema";
-import { formatCstIso } from "@freeanima/core/util";
+import { formatCstIso, omitUndefined } from "@freeanima/core/util";
 import { listActiveAutobiographicalMemory } from "@freeanima/core/db/pg/autobiographical-memory";
 import { searchSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
 import { updateSelfBlock } from "@freeanima/core/db/pg/self-layer";
@@ -89,7 +89,7 @@ function formatSummarySection(
 
 /** Build grouped outline from active autobiographical entries (granularity decreases with age) */
 export function buildAutobiographySummary(rows: AutobiographicalMemoryRow[]): string {
-  if (!rows.length) return "(No autobiography summary yet)";
+  if (rows.length === 0) return "(No autobiography summary yet)";
 
   const buckets: Record<AutobiographicalSignificance, string[]> = {
     turning_point: [],
@@ -117,11 +117,11 @@ export function buildAutobiographySummary(rows: AutobiographicalMemoryRow[]): st
   const sections: string[] = [];
   for (const significance of SUMMARY_SECTION_ORDER) {
     const titles = buckets[significance];
-    if (!titles.length) continue;
+    if (titles.length === 0) continue;
     sections.push(formatSummarySection(significance, titles));
   }
 
-  return sections.length ? sections.join("\n\n") : "(No autobiography summary yet)";
+  return sections.length > 0 ? sections.join("\n\n") : "(No autobiography summary yet)";
 }
 
 export async function refreshAutobiographySummaryBlock(): Promise<boolean> {
@@ -175,7 +175,7 @@ export async function runSelfAutobiography(
 
   const summaryRefreshed = await refreshAutobiographySummaryBlock();
 
-  return {
+  return omitUndefined({
     ok: true,
     skipped:
       candidates.length === 0
@@ -184,7 +184,7 @@ export async function runSelfAutobiography(
     narratives_created: narrativesCreated,
     tool_calls: toolCalls,
     summary_refreshed: summaryRefreshed,
-  };
+  });
 }
 
 export async function runSelfAutobiographyWithLog(

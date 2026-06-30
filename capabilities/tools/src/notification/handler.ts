@@ -11,7 +11,7 @@ export function createNotificationInjectHandler() {
   return async (ctx: BeforeLlmCallContext): Promise<void> => {
     stripNotificationContextFromMessages(ctx.messages);
 
-    const lastMsg = ctx.messages[ctx.messages.length - 1];
+    const lastMsg = ctx.messages.at(-1);
     if (!lastMsg || lastMsg.role !== "user") return;
 
     const port = getNotificationPort();

@@ -73,7 +73,7 @@ export async function listCronLogs(opts?: CronLogListOpts): Promise<CronLogRow[]
   const rows = await db
     .select()
     .from(cronLog)
-    .where(conditions.length ? and(...conditions) : undefined)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(desc(cronLog.finished_at))
     .offset(offset)
     .limit(limit);

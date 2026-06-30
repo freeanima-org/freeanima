@@ -18,7 +18,7 @@ export async function recordMessageReferences(
   input: RecordMessageReferencesInput,
 ): Promise<string[]> {
   const semantic_memory_ids = parseMemoryReferenceMarkers(input.content);
-  if (!semantic_memory_ids.length) return [];
+  if (semantic_memory_ids.length === 0) return [];
   if (input.skip_reference_count) return [];
 
   const created_at = input.created_at ? new Date(input.created_at) : new Date(formatCstIso());
@@ -31,7 +31,7 @@ export async function recordMessageReferences(
       .from(semanticMemory)
       .where(eq(semanticMemory.id, semantic_memory_id))
       .limit(1);
-    if (!exists.length) continue;
+    if (exists.length === 0) continue;
 
     const inserted = await db
       .insert(memoryReferences)
@@ -45,7 +45,7 @@ export async function recordMessageReferences(
         target: [memoryReferences.message_id, memoryReferences.semantic_memory_id],
       })
       .returning({ id: memoryReferences.id });
-    if (!inserted.length) continue;
+    if (inserted.length === 0) continue;
 
     recorded.push(semantic_memory_id);
 
@@ -60,7 +60,7 @@ export async function recordMessageReferences(
         ),
       )
       .limit(1);
-    if (prior.length) continue;
+    if (prior.length > 0) continue;
 
     const weight = memoryReferenceWeight(created_at);
     await db
@@ -100,7 +100,7 @@ export async function rebuildMemoryReferencesFromMessages(): Promise<number> {
   let inserted = 0;
   for (const row of rows) {
     const semantic_memory_ids = parseMemoryReferenceMarkers(row.content);
-    if (!semantic_memory_ids.length) continue;
+    if (semantic_memory_ids.length === 0) continue;
 
     const created_at = row.timestamp ? new Date(row.timestamp) : new Date(formatCstIso());
     for (const semantic_memory_id of semantic_memory_ids) {
@@ -109,7 +109,7 @@ export async function rebuildMemoryReferencesFromMessages(): Promise<number> {
         .from(semanticMemory)
         .where(eq(semanticMemory.id, semantic_memory_id))
         .limit(1);
-      if (!exists.length) continue;
+      if (exists.length === 0) continue;
 
       const refs = await db
         .insert(memoryReferences)
@@ -123,7 +123,7 @@ export async function rebuildMemoryReferencesFromMessages(): Promise<number> {
           target: [memoryReferences.message_id, memoryReferences.semantic_memory_id],
         })
         .returning({ id: memoryReferences.id });
-      if (refs.length) inserted += 1;
+      if (refs.length > 0) inserted += 1;
     }
   }
 

@@ -74,10 +74,11 @@ function newPlayId(): string {
 }
 
 export function enqueuePlaySlot(slot: string, motionId?: string): PlaySlotCommand {
+  const trimmedMotionId = motionId?.trim();
   const cmd: PlaySlotCommand = {
     id: newPlayId(),
     slot: slot.trim(),
-    motionId: motionId?.trim() || undefined,
+    ...(trimmedMotionId ? { motionId: trimmedMotionId } : {}),
   };
   if (!cmd.slot) throw new Error("slot 不能为空");
   playVersion += 1;

@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FormField, FormFieldset } from "@freeanima/ui-kit/form";
@@ -51,7 +52,10 @@ function resolveDefaultPrivateWorldId(row: EntityRow, candidateWorlds: EntityRow
   }
   const marked = candidateWorlds.find((w) => w.body?.default_private === true);
   if (marked) return String(marked.id);
-  if (candidateWorlds.length > 0) return String(candidateWorlds[0].id);
+  if (candidateWorlds.length > 0) {
+    const first = candidateWorlds[0];
+    if (first) return String(first.id);
+  }
   return fromSubject != null ? String(fromSubject) : "";
 }
 
@@ -299,15 +303,18 @@ function SubjectsPage() {
         const defaultWorldId = form.default_private_world_id.trim()
           ? Number(form.default_private_world_id)
           : undefined;
-        await updateSubjectEntity(modal.row.id, {
-          title: form.title.trim(),
-          summary: form.summary.trim(),
-          content: form.content.trim(),
-          default_private_world_id:
-            defaultWorldId != null && Number.isInteger(defaultWorldId) && defaultWorldId > 0
-              ? defaultWorldId
-              : undefined,
-        });
+        await updateSubjectEntity(
+          modal.row.id,
+          omitUndefined({
+            title: form.title.trim(),
+            summary: form.summary.trim(),
+            content: form.content.trim(),
+            default_private_world_id:
+              defaultWorldId != null && Number.isInteger(defaultWorldId) && defaultWorldId > 0
+                ? defaultWorldId
+                : undefined,
+          }),
+        );
       } else {
         await createSubjectEntity({
           type: form.type,

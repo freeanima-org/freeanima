@@ -78,7 +78,7 @@ function DreamMemoryPage() {
 
       {error ? <div className="alert alert-error text-sm mb-4">{error}</div> : null}
 
-      {loaded && !items.length && !loading ? (
+      {loaded && items.length === 0 && !loading ? (
         <p className="text-sm text-base-content/60">{m.admin_dream_empty()}</p>
       ) : null}
 
@@ -108,12 +108,12 @@ function DreamMemoryPage() {
                   {expanded ? (
                     <>
                       <pre className="whitespace-pre-wrap text-sm font-sans">{row.content}</pre>
-                      {row.source_limbic_ids.length ? (
+                      {row.source_limbic_ids.length > 0 ? (
                         <p className="text-xs text-base-content/60">
                           {m.admin_dream_source_limbic()}: {row.source_limbic_ids.join(", ")}
                         </p>
                       ) : null}
-                      {row.source_conversation_ids.length ? (
+                      {row.source_conversation_ids.length > 0 ? (
                         <p className="text-xs text-base-content/60">
                           {m.admin_dream_source_conversations()}:{" "}
                           {row.source_conversation_ids.join(", ")}

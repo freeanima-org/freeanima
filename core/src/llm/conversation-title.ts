@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { PROFILE_SUMMARY } from "@freeanima/core/provider";
 import { chat } from "./llm.ts";
 import type { LlmRuntime } from "./llm-stack.ts";
@@ -48,12 +49,12 @@ export async function generateConversationTitle(
         { role: "system", content: SESSION_TITLE_INSTRUCTION },
         { role: "user", content: trimmed },
       ],
-      {
+      omitUndefined({
         profileId: PROFILE_SUMMARY,
         runtime: opts?.runtime,
         model: opts?.model,
         requestParams: { maxOutputTokens: 64 },
-      },
+      }),
     );
     const title = sanitizeConversationTitle(resp.content ?? "");
     if (!title) return { ok: false, error: "LLM returned empty title" };

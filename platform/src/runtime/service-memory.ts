@@ -28,6 +28,7 @@ import {
   updateSemanticMemory,
 } from "@freeanima/core/db/pg/semantic-memory";
 import { PATHS } from "@freeanima/platform/config";
+import { omitUndefined } from "@freeanima/core/util";
 import { memoryRecallSearch, type MemoryRecallResult } from "@freeanima/capabilities-memory/search";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
@@ -74,7 +75,7 @@ export async function memorySearch(args: {
 }): Promise<MemoryRecallResult> {
   const query = args.query.trim();
   if (!query) throw new Error("query is required");
-  return memoryRecallSearch(query, { limit: args.limit });
+  return memoryRecallSearch(query, omitUndefined({ limit: args.limit }));
 }
 
 /** PG STORED content_fts auto-maintained; returns semantic_memory row count */
@@ -127,13 +128,13 @@ export async function listSemanticMemories(
 ): Promise<MemoryListResult<SemanticFtsHit>> {
   const { offset, limit } = clampPagination(args.offset, args.limit);
   const sourceSession = args.source_conversation?.trim();
-  const filterOpts: Omit<SemanticMemorySearchOpts, "limit" | "offset"> = {
+  const filterOpts: Omit<SemanticMemorySearchOpts, "limit" | "offset"> = omitUndefined({
     query: args.query,
     types: args.types,
     status: args.status,
     source_conversations: sourceSession ? [sourceSession] : undefined,
     sort_by: args.sort_by,
-  };
+  });
   const [items, total] = await Promise.all([
     searchSemanticMemory({ ...filterOpts, offset, limit }),
     countSemanticMemorySearch(filterOpts),
@@ -164,11 +165,11 @@ export async function listLimbicMemories(
   args: LimbicListOpts = {},
 ): Promise<MemoryListResult<LimbicMemoryRow>> {
   const { offset, limit } = clampPagination(args.offset, args.limit);
-  const filterOpts: Omit<LimbicListOpts, "offset" | "limit"> = {
+  const filterOpts: Omit<LimbicListOpts, "offset" | "limit"> = omitUndefined({
     query: args.query,
     conversation_id: args.conversation_id,
     kind: args.kind,
-  };
+  });
   const [items, total] = await Promise.all([
     listLimbicMemory({ ...filterOpts, offset, limit }),
     countLimbicMemory(filterOpts),
@@ -181,12 +182,12 @@ export async function listAutobiographicalMemories(
   args: AutobiographicalListOpts = {},
 ): Promise<MemoryListResult<AutobiographicalMemoryRow>> {
   const { offset, limit } = clampPagination(args.offset, args.limit);
-  const filterOpts: Omit<AutobiographicalListOpts, "offset" | "limit"> = {
+  const filterOpts: Omit<AutobiographicalListOpts, "offset" | "limit"> = omitUndefined({
     query: args.query,
     status: args.status,
     significance: args.significance,
     source_conversation: args.source_conversation,
-  };
+  });
   const [items, total] = await Promise.all([
     listAutobiographicalMemory({ ...filterOpts, offset, limit }),
     countAutobiographicalMemory(filterOpts),

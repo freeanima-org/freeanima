@@ -96,7 +96,7 @@ export function resolveConversationCapabilityMask(
   capabilityMask: ConversationCapabilityMask | undefined,
 ): ResolvedMask | null {
   const presets = capabilityMask?.presets ?? [];
-  if (!presets.length) return null;
+  if (presets.length === 0) return null;
   const { masks, toolSets } = catalogFromDeps(deps);
   return resolveMaskPresets(presets, masks, toolSets);
 }

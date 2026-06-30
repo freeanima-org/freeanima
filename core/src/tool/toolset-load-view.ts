@@ -24,7 +24,7 @@ function parseLoadCallToolsets(call: ToolCall): string[] {
 
 function shouldStripLoadCall(call: ToolCall, cachedToolsets: readonly string[]): boolean {
   const loaded = parseLoadCallToolsets(call);
-  if (!loaded.length) return false;
+  if (loaded.length === 0) return false;
   return loadCallFullyCached(loaded, cachedToolsets);
 }
 
@@ -49,7 +49,7 @@ export function stripCachedToolSetLoadRounds(
     );
     const keptCalls = calls.filter((c) => !stripIds.has(c.id));
 
-    if (!keptCalls.length) {
+    if (keptCalls.length === 0) {
       let j = i + 1;
       while (j < messages.length && messages[j]?.role === "tool") j++;
       i = j;

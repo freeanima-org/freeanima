@@ -6,6 +6,7 @@ import type { ToolDef, ToolSetRegistry } from "@freeanima/core/tool";
 import { acpToolSetId, toolError, toolResult } from "@freeanima/core/tool";
 import type { Config } from "@freeanima/core/config";
 import { logCapability as logComponent } from "@freeanima/core/config";
+import { omitUndefined } from "@freeanima/core/util";
 
 import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
 import { isConversationMeta } from "@freeanima/core/db/domain";
@@ -281,7 +282,7 @@ export class AcpManager {
     }
     const cfg = this.requireConfig().data;
     const agents = agentsCfg ?? cfg.acp_agents ?? {};
-    if (!Object.keys(agents).length) return 0;
+    if (Object.keys(agents).length === 0) return 0;
 
     registerAcpBuiltinSkills(this.skills);
 
@@ -364,24 +365,29 @@ export class AcpManager {
               agentName,
               prompt,
               context,
-              {
+              omitUndefined({
                 animaSessionId: animaSid,
                 acpSessionId: explicitSid,
                 newConversation,
                 mode,
                 isAsync: true,
-              },
+              }),
               timeoutMinutes,
             );
           }
 
           return this.queueFor(agentName).run(() =>
-            this.handleAcpPrompt(agentName, prompt, context, {
-              animaSessionId: animaSid,
-              acpSessionId: explicitSid,
-              newConversation,
-              mode,
-            }),
+            this.handleAcpPrompt(
+              agentName,
+              prompt,
+              context,
+              omitUndefined({
+                animaSessionId: animaSid,
+                acpSessionId: explicitSid,
+                newConversation,
+                mode,
+              }),
+            ),
           );
         },
       };
@@ -443,13 +449,15 @@ export class AcpManager {
       return toolResult({ tasks: views });
     }
 
-    const view = await queryAcpTaskStatus({
-      conversation: this.conv(),
-      taskStore: this.taskStore,
-      taskQuery: this.taskQuery,
-      animaSessionId: animaSid,
-      taskId,
-    });
+    const view = await queryAcpTaskStatus(
+      omitUndefined({
+        conversation: this.conv(),
+        taskStore: this.taskStore,
+        taskQuery: this.taskQuery,
+        animaSessionId: animaSid,
+        taskId,
+      }),
+    );
     if (!view) {
       return toolError(
         taskId
@@ -532,18 +540,20 @@ export class AcpManager {
       const registered = this.toolSets!.getTool(`acp_${name}`);
       const conversationIds = this.conversationStore.listForAgent(name);
 
-      views.push({
-        name,
-        config: sanitizeAcpConfig(agentCfg),
-        status,
-        error: this.agentErrors.get(name),
-        tool: registered ? { name: registered.name, description: registered.description } : null,
-        sessions: conversationIds.map((conversation_id) => ({
-          conversation_id,
-          conversation_id_short: shortSessionId(conversation_id),
-          agent: name,
-        })),
-      });
+      views.push(
+        omitUndefined({
+          name,
+          config: sanitizeAcpConfig(agentCfg),
+          status,
+          error: this.agentErrors.get(name),
+          tool: registered ? { name: registered.name, description: registered.description } : null,
+          sessions: conversationIds.map((conversation_id) => ({
+            conversation_id,
+            conversation_id_short: shortSessionId(conversation_id),
+            agent: name,
+          })),
+        }),
+      );
     }
 
     const connected_count = views.filter((a) => a.status === "connected").length;
@@ -668,7 +678,7 @@ export class AcpManager {
       }),
     );
 
-    if (errors.length) {
+    if (errors.length > 0) {
       return { ok: false, action: "start", error: errors.join("; ") };
     }
     return { ok: true, action: "start" };
@@ -687,7 +697,7 @@ export class AcpManager {
       }
     }
     const names = [...new Set([...this.clientPools.keys(), ...this.schedulers.keys()])];
-    if (names.length) {
+    if (names.length > 0) {
       logComponent("shutdown").debug(
         `ACP stopping ${names.length} agent(s): ${names.join(", ")}…`,
         {
@@ -761,7 +771,7 @@ export class AcpManager {
     try {
       await pool.prewarm();
       const sessions = this.conversationStore.listForAgent(name);
-      if (sessions.length) {
+      if (sessions.length > 0) {
         logComponent("acp").info(
           `ACP '${name}' restarted, ${sessions.length} session(s) pending reuse verification`,
           {
@@ -801,15 +811,23 @@ export class AcpManager {
     }
 
     if (opts.newConversation) {
-      const id = await this.createAcpSession(client, agentName, agentCfg, opts.animaSessionId, {
-        skipMetaBind: opts.isAsync,
-      });
+      const id = await this.createAcpSession(
+        client,
+        agentName,
+        agentCfg,
+        opts.animaSessionId,
+        opts.isAsync !== undefined ? { skipMetaBind: opts.isAsync } : {},
+      );
       return { id, newConversation: true, reusedBinding: false, explicit: false };
     }
 
-    const id = await this.createAcpSession(client, agentName, agentCfg, opts.animaSessionId, {
-      skipMetaBind: opts.isAsync,
-    });
+    const id = await this.createAcpSession(
+      client,
+      agentName,
+      agentCfg,
+      opts.animaSessionId,
+      opts.isAsync !== undefined ? { skipMetaBind: opts.isAsync } : {},
+    );
     return { id, newConversation: true, reusedBinding: false, explicit: false };
   }
 
@@ -835,9 +853,13 @@ export class AcpManager {
     } catch {
       /* ignore */
     }
-    const id = await this.createAcpSession(client, agentName, agentCfg, animaSessionId, {
-      skipMetaBind: isAsync,
-    });
+    const id = await this.createAcpSession(
+      client,
+      agentName,
+      agentCfg,
+      animaSessionId,
+      isAsync !== undefined ? { skipMetaBind: isAsync } : {},
+    );
     return { id, newConversation: true };
   }
 
@@ -959,7 +981,7 @@ export class AcpManager {
       await bindAcpTaskQueued(this.conv(), opts.animaSessionId, agentName, taskId);
     }
 
-    const spec: AsyncLaunchSpec = {
+    const spec: AsyncLaunchSpec = omitUndefined({
       taskId,
       agentName,
       prompt,
@@ -972,11 +994,11 @@ export class AcpManager {
       enqueuedAt: now,
       deadlineAt,
       wasQueued: willQueue,
-    };
+    });
 
     const result = scheduler.enqueue(spec);
     if (result.status === "queued") {
-      task.queuePosition = result.queuePosition;
+      if (result.queuePosition !== undefined) task.queuePosition = result.queuePosition;
       return toolResult({
         task_id: taskId,
         status: "queued",
@@ -1006,13 +1028,13 @@ export class AcpManager {
     this.taskAbortControllers.set(spec.taskId, ac);
 
     try {
-      const promptOpts: AcpPromptOptions = {
+      const promptOpts: AcpPromptOptions = omitUndefined({
         animaSessionId: spec.animaSessionId,
         acpSessionId: spec.acpSessionId,
         newConversation: spec.newConversation,
         mode: spec.mode,
         isAsync: true,
-      };
+      });
       const { sid, resolved, mode } = await this.preparePromptSessionWithClient(
         lease.client,
         spec.agentName,
@@ -1110,9 +1132,9 @@ export class AcpManager {
         task.animaSessionId,
         acpSessionId,
         "awaiting_decision",
-        {
+        omitUndefined({
           pending,
-        },
+        }),
       );
       await this.deliverTaskResult(task, partialResult);
     };
@@ -1120,7 +1142,7 @@ export class AcpManager {
     try {
       const output = await client.sendPromptWithOptions(acpSessionId, promptText, {
         promptTimeoutMs: remainingMs,
-        abortSignal: abort?.signal,
+        ...(abort?.signal !== undefined ? { abortSignal: abort.signal } : {}),
         onNotification: (_note, parsed) => {
           if (parsed) debouncer.push(parsed);
         },
@@ -1143,9 +1165,15 @@ export class AcpManager {
       task.status = "completed";
       task.lastProgressAt = Date.now();
       const metaStatus = result.pending?.length ? "awaiting_decision" : "completed";
-      await updateAcpTaskStatus(this.conv(), task.animaSessionId, acpSessionId, metaStatus, {
-        pending: result.pending,
-      });
+      await updateAcpTaskStatus(
+        this.conv(),
+        task.animaSessionId,
+        acpSessionId,
+        metaStatus,
+        omitUndefined({
+          pending: result.pending,
+        }),
+      );
       if (metaStatus === "completed" || !task.decisionNotified) {
         await this.deliverTaskResult(task, result);
       }

@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import type { LimbicMemoryRow } from "@freeanima/admin-contract/api";
@@ -35,13 +36,15 @@ function LimbicMemoryPage() {
       setLoading(true);
       setError("");
       try {
-        const data = (await listLimbicMemories({
-          query: query.trim() || undefined,
-          offset: nextOffset,
-          limit: PAGE_SIZE,
-          conversation_id: conversationId.trim() || undefined,
-          kind: kindFilter || undefined,
-        })) as { items: LimbicRow[]; total: number };
+        const data = (await listLimbicMemories(
+          omitUndefined({
+            query: query.trim() || undefined,
+            offset: nextOffset,
+            limit: PAGE_SIZE,
+            conversation_id: conversationId.trim() || undefined,
+            kind: kindFilter || undefined,
+          }),
+        )) as { items: LimbicRow[]; total: number };
         setItems(data.items ?? []);
         setTotal(data.total ?? 0);
         setOffset(nextOffset);

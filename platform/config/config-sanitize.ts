@@ -25,14 +25,14 @@ function sanitizeRecord(obj: Record<string, unknown>, parentKey = ""): Record<st
   for (const [key, value] of Object.entries(obj)) {
     if (value === undefined) continue;
 
-    if (key === "env" && value !== null && typeof value === "object" && !Array.isArray(value)) {
+    if (key === "env" && value != null && typeof value === "object" && !Array.isArray(value)) {
       const envKeys = Object.keys(value as Record<string, unknown>);
       if (envKeys.length > 0) out.env_keys = envKeys;
       continue;
     }
 
     if (isSecretKey(key)) {
-      if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+      if (value != null && typeof value === "object" && !Array.isArray(value)) {
         out[key] = sanitizeRecord(value as Record<string, unknown>, key);
         continue;
       }
@@ -45,14 +45,14 @@ function sanitizeRecord(obj: Record<string, unknown>, parentKey = ""): Record<st
       continue;
     }
 
-    if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+    if (value != null && typeof value === "object" && !Array.isArray(value)) {
       out[key] = sanitizeRecord(value as Record<string, unknown>, key);
       continue;
     }
 
     if (Array.isArray(value)) {
       out[key] = value.map((item) =>
-        item !== null && typeof item === "object" && !Array.isArray(item)
+        item != null && typeof item === "object" && !Array.isArray(item)
           ? sanitizeRecord(item as Record<string, unknown>, key)
           : item,
       );

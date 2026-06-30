@@ -25,7 +25,7 @@ export async function flushCompressionSummaries(conversationId?: string): Promis
     if (p) await p;
     return;
   }
-  await Promise.all([...pendingCompressionSummaries.values()]);
+  await Promise.all(pendingCompressionSummaries.values());
 }
 
 async function patchConversationCompression(

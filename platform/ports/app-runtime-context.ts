@@ -47,7 +47,7 @@ export function getAppRuntime(): AppRuntimeContext {
 }
 
 export function isAppRuntimeReady(): boolean {
-  return readGlobalContext() !== null || ctx !== null;
+  return readGlobalContext() != null || ctx != null;
 }
 
 export function assertNotShuttingDown(): void {

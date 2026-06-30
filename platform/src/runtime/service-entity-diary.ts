@@ -11,6 +11,7 @@ import {
 } from "@freeanima/capabilities-diary";
 
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
+import { omitUndefined } from "@freeanima/core/util";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 function assertPg(_deps: RuntimeDeps): void {
@@ -37,13 +38,16 @@ export async function serviceDiaryList(
 ) {
   assertPg(deps);
   const ctx = await storeContext(deps, input.subject_kind);
-  const items = await listDiaryEntries(ctx, {
-    entry_after: input.entry_after,
-    entry_before: input.entry_before,
-    tags: input.tags,
-    limit: input.limit,
-    offset: input.offset,
-  });
+  const items = await listDiaryEntries(
+    ctx,
+    omitUndefined({
+      entry_after: input.entry_after,
+      entry_before: input.entry_before,
+      tags: input.tags,
+      limit: input.limit,
+      offset: input.offset,
+    }),
+  );
   return { items };
 }
 

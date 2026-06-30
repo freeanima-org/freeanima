@@ -1,6 +1,7 @@
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import type { AcpTaskStatusJson } from "@freeanima/core/db/schema";
 import { getMessageContentsByIds } from "@freeanima/core/db/pg/conversation";
+import { omitUndefined } from "@freeanima/core/util";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import { checkPlatform } from "./service-conversations.ts";
 
@@ -68,13 +69,15 @@ export async function getConversationAcpDock(
     const agentName = typeof entry.agent_name === "string" ? entry.agent_name : "cursor";
     const pmid =
       typeof entry.progress_message_id === "string" ? entry.progress_message_id : undefined;
-    tasks.push({
-      acp_conversation_id: acpSessionId,
-      task_id: taskId,
-      agent_name: agentName,
-      status,
-      progress_message_id: pmid,
-    });
+    tasks.push(
+      omitUndefined({
+        acp_conversation_id: acpSessionId,
+        task_id: taskId,
+        agent_name: agentName,
+        status,
+        progress_message_id: pmid,
+      }),
+    );
     if (status === "awaiting_decision") highlightDecision = true;
     if (pmid && isInSessionProgressId(pmid) && taskId) {
       progressMessageIds.push(pmid);

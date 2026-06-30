@@ -1,4 +1,4 @@
-import { isEnabledByDefault } from "@freeanima/core/util";
+import { isEnabledByDefault, omitUndefined } from "@freeanima/core/util";
 import { acpAgentSchema } from "@freeanima/core/config";
 import type { z } from "zod";
 
@@ -60,7 +60,7 @@ export type AcpControlResult = {
 
 /** treated as enabled when enabled is omitted or true */
 export function isAcpAgentEnabled(cfg: AcpAgentConfig): boolean {
-  return isEnabledByDefault(cfg);
+  return isEnabledByDefault(omitUndefined({ enabled: cfg.enabled }));
 }
 
 export function sanitizeAcpConfig(cfg: AcpAgentConfig): AcpAgentConfigView {

@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { ImapFlow } from "imapflow";
 
 import type { EmailAccountRow } from "@freeanima/capabilities-email";
@@ -57,19 +58,19 @@ export function parseImapHeaderBuffer(headers: unknown): {
 } {
   if (Buffer.isBuffer(headers)) {
     const text = headers.toString("utf-8");
-    return {
+    return omitUndefined({
       messageId: readHeaderLine(text, "Message-ID"),
       inReplyTo: readHeaderLine(text, "In-Reply-To"),
       references: parseReferencesHeader(readHeaderLine(text, "References")),
-    };
+    });
   }
   if (headers instanceof Map) {
     const map = headers as Map<string, string[]>;
-    return {
+    return omitUndefined({
       messageId: map.get("message-id")?.[0],
       inReplyTo: map.get("in-reply-to")?.[0],
       references: parseReferencesHeader(map.get("references")?.[0]),
-    };
+    });
   }
   return { references: [] };
 }

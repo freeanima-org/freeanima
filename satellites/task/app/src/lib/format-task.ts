@@ -20,11 +20,14 @@ export function formatDue(due: string | null): string {
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
 /** `<input type="datetime-local">` 需本地年月日时分，不能用 toISOString().slice(0,16)（那是 UTC） */
 export function isoToDatetimeLocalValue(iso: string | null | undefined): string {
   if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }

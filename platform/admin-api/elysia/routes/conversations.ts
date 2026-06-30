@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { Elysia } from "elysia";
 import { z } from "zod";
 import { createConversationBodySchema } from "../../api/schemas.ts";
@@ -24,20 +25,25 @@ const conversationListQuerySchema = z.object({
 export const conversationsRoutes = new Elysia({ prefix: "/conversations" })
   .get("/", ({ query }) => {
     const parsed = conversationListQuerySchema.parse(query);
-    return listConversations(parsed.platform, {
-      offset: parsed.offset ? Number(parsed.offset) : undefined,
-      limit: parsed.limit ? Number(parsed.limit) : undefined,
-    });
+    return listConversations(
+      parsed.platform,
+      omitUndefined({
+        offset: parsed.offset ? Number(parsed.offset) : undefined,
+        limit: parsed.limit ? Number(parsed.limit) : undefined,
+      }),
+    );
   })
   .get("/all", () => listConversations(undefined, { offset: 0, limit: 10_000 }))
   .post("/", ({ body }) => createConversation(createConversationBodySchema.parse(body ?? {})))
   .get(
     "/commands",
     ({ query }) =>
-      listCommands({
-        all: query.all === "true" || query.all === true,
-        platform: typeof query.platform === "string" ? query.platform : undefined,
-      }),
+      listCommands(
+        omitUndefined({
+          all: query.all === "true" || query.all === true,
+          platform: typeof query.platform === "string" ? query.platform : undefined,
+        }),
+      ),
     {
       query: z.object({
         all: z.union([z.string(), z.boolean()]).optional(),
@@ -53,10 +59,13 @@ export const conversationsRoutes = new Elysia({ prefix: "/conversations" })
   .get(
     "/:conversationId/messages",
     ({ params, query }) =>
-      getStoredMessages(params.conversationId, {
-        offset: query.offset ? Number(query.offset) : undefined,
-        limit: query.limit ? Number(query.limit) : undefined,
-      }),
+      getStoredMessages(
+        params.conversationId,
+        omitUndefined({
+          offset: query.offset ? Number(query.offset) : undefined,
+          limit: query.limit ? Number(query.limit) : undefined,
+        }),
+      ),
     {
       query: z.object({
         offset: z.string().optional(),

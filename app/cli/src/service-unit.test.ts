@@ -93,7 +93,8 @@ describe("systemd unit", () => {
       expect(bin).toBe(`${process.execPath} ${realpathSync(cliPath)}`);
       expect(bin).not.toContain(".venv");
     } finally {
-      process.argv[1] = prev;
+      if (prev !== undefined) process.argv[1] = prev;
+      else delete (process.argv as { 1?: string })[1];
       removeTempDir(dir);
     }
   });

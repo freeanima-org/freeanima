@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import type { StreamEvent } from "@freeanima/runtime/loop";
 import {
   createGatewayToolRoundStrategy,
@@ -11,7 +12,9 @@ import { runStreamChannel, type RunStreamChannelOptions } from "../stream-state/
 const SEND_GAP_MS = 80;
 
 function sleep(ms: number): Promise<void> {
-  return new Promise((r) => setTimeout(r, ms));
+  return new Promise((r) => {
+    setTimeout(r, ms);
+  });
 }
 
 export type WeixinStreamDeps = {
@@ -69,7 +72,7 @@ export async function streamReplyToWeixin(
   const composer = createStreamChannelComposer({
     strategies: [toolStrategy, answerStrategy],
     io: {},
-    signal: opts?.signal,
+    ...omitUndefined({ signal: opts?.signal }),
   });
 
   try {

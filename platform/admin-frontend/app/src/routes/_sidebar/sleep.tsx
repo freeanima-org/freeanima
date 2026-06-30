@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { createFileRoute } from "@tanstack/react-router";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form";
@@ -228,10 +229,12 @@ function SleepPage() {
     setPipelineStarting(true);
     setPipelineError("");
     try {
-      await startSleepCycle({
-        day: pipelineDay.trim() || undefined,
-        deep_sleep_mode: deepSleepMode,
-      });
+      await startSleepCycle(
+        omitUndefined({
+          day: pipelineDay.trim() || undefined,
+          deep_sleep_mode: deepSleepMode,
+        }),
+      );
       await refreshPipelineStatus();
     } catch (e) {
       logCaughtError("routes/_sidebar/sleep", e);
@@ -245,12 +248,14 @@ function SleepPage() {
     setRunningStepId(stepId);
     setPipelineError("");
     try {
-      await startSleepPipelineStep({
-        step_id: stepId,
-        day: pipelineDay.trim() || undefined,
-        force: pipelineForce,
-        deep_sleep_mode: stepId === "deep-sleep" ? deepSleepMode : undefined,
-      });
+      await startSleepPipelineStep(
+        omitUndefined({
+          step_id: stepId,
+          day: pipelineDay.trim() || undefined,
+          force: pipelineForce,
+          deep_sleep_mode: stepId === "deep-sleep" ? deepSleepMode : undefined,
+        }),
+      );
       await refreshPipelineStatus();
       await refreshAfterRun();
     } catch (e) {
@@ -505,7 +510,7 @@ function SleepPage() {
                 )}
               </Fragment>
             ))}
-            {!runs.length && (
+            {runs.length === 0 && (
               <tr>
                 <td colSpan={8} className="text-center text-base-content/50">
                   {m.admin_sleep_no_runs()}

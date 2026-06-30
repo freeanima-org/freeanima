@@ -25,7 +25,7 @@ export function registerMemorySystemPromptHooks(registry: HookRegistry): void {
   registry.on(systemPromptBuild, async (ctx) => {
     const selfContent = await loadSelfLayerPrompt();
     const sections = await buildMemorySystemPromptSections(selfContent, ctx.cwd);
-    if (!sections.length) return { status: "ok" };
+    if (sections.length === 0) return { status: "ok" };
     return { status: "ok", data: { sections } };
   });
 }

@@ -21,6 +21,7 @@ import {
   type DreamEngineInput,
   type DreamEngineResult,
 } from "@freeanima/capabilities-memory/dream-engine-port";
+import { omitUndefined } from "@freeanima/core/util";
 
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import { filterToolNamesByMask, resolveSleepMask } from "./mask-wire.ts";
@@ -80,17 +81,20 @@ async function runSleepStream(
   const sleepMask = resolveSleepMask(deps);
   const toolNames = filterToolNamesByMask(input.toolNames, sleepMask);
 
-  const result = await runAutoLlm(deps, {
-    runName: opts.runKind,
-    runKind: opts.runKind,
-    systemPrompt: input.systemPrompt,
-    userMessages: input.userMessages,
-    model,
-    toolNames,
-    maxTurns: opts.maxTurns,
-    toolMask: sleepMask,
-    onToolResult: opts.onToolResult,
-  });
+  const result = await runAutoLlm(
+    deps,
+    omitUndefined({
+      runName: opts.runKind,
+      runKind: opts.runKind,
+      systemPrompt: input.systemPrompt,
+      userMessages: input.userMessages,
+      model,
+      toolNames,
+      maxTurns: opts.maxTurns,
+      toolMask: sleepMask,
+      onToolResult: opts.onToolResult,
+    }),
+  );
 
   if (result.status === "error") {
     throw new Error(result.error ?? result.output);

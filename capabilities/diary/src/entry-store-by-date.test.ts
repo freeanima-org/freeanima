@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { DIARY_ENTRY_COMPONENT } from "@freeanima/core/db/schema/entity";
 import type { EntityRow } from "@freeanima/core/db/schema/entity";
+import { omitUndefined } from "@freeanima/core/util";
 
 const ctx = { worldId: 42 };
 const baseTime = new Date("2026-06-28T04:00:00.000Z");
@@ -62,11 +63,13 @@ mock.module("@freeanima/core/db/pg/entity", () => ({
       content?: string;
       body: { entry_at: string; tags?: string[] };
     }) => {
-      const row = makeDiaryRow({
-        entry_at: input.body.entry_at,
-        content: input.content ?? "",
-        tags: input.body.tags,
-      });
+      const row = makeDiaryRow(
+        omitUndefined({
+          entry_at: input.body.entry_at,
+          content: input.content ?? "",
+          tags: input.body.tags,
+        }),
+      );
       row.title = input.title;
       rows.set(row.id, row);
       return row;

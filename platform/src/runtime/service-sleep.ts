@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import type { PipelineStepRunListOpts, PipelineStepRunRow } from "@freeanima/core/repos";
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
 import { listPipelineStepRuns as listPgPipelineStepRuns } from "@freeanima/core/db/pg/pipeline";
@@ -50,10 +51,12 @@ export async function listPipelineStepRuns(
 
   const listOpts: PipelineStepRunListOpts = {
     pipeline_id: SLEEP_CYCLE_PIPELINE_ID,
-    step_id: opts?.step_id,
-    run_id: opts?.run_id,
     limit: opts?.limit ?? 50,
     offset: opts?.offset ?? 0,
+    ...omitUndefined({
+      step_id: opts?.step_id,
+      run_id: opts?.run_id,
+    }),
   };
   const items = await listPgPipelineStepRuns(listOpts);
   return { items, total: items.length };
@@ -98,7 +101,7 @@ export async function startSleepCycle(
     try {
       lastSleepCycleResult = await runSleepCycle(opts?.day, {
         trigger: "manual_cycle",
-        deep_sleep_mode: opts?.deep_sleep_mode,
+        ...omitUndefined({ deep_sleep_mode: opts?.deep_sleep_mode }),
       });
     } finally {
       sleepCycleRunning = false;
@@ -131,10 +134,12 @@ export async function startSleepPipelineStep(
   sleepStepRunning = true;
   try {
     const result = await runSleepStep(opts.stepId, {
-      day: opts.day,
-      force: opts.force,
+      ...omitUndefined({
+        day: opts.day,
+        force: opts.force,
+        deep_sleep_mode: opts.deep_sleep_mode,
+      }),
       trigger: "manual_step",
-      deep_sleep_mode: opts.deep_sleep_mode,
     });
     return { ok: true, result };
   } finally {
@@ -155,11 +160,13 @@ export async function listCronLogs(
     return { items: [], total: 0 };
   }
 
-  const items = await listPgCronLogs({
-    job_id: opts?.job_id,
-    limit: opts?.limit ?? 50,
-    offset: opts?.offset ?? 0,
-    ok: opts?.ok,
-  });
+  const items = await listPgCronLogs(
+    omitUndefined({
+      job_id: opts?.job_id,
+      limit: opts?.limit ?? 50,
+      offset: opts?.offset ?? 0,
+      ok: opts?.ok,
+    }),
+  );
   return { items, total: items.length };
 }

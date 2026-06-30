@@ -319,7 +319,7 @@ export class VrmBackend implements CharacterBackend {
   }
 
   private stopRenderLoop(): void {
-    if (this.animationId !== null) {
+    if (this.animationId != null) {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
     }

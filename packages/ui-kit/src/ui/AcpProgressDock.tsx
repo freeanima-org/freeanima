@@ -48,7 +48,7 @@ export function AcpProgressDock({ dock }: AcpProgressDockProps) {
         <pre className="whitespace-pre-wrap text-xs opacity-90 max-h-40 overflow-y-auto mt-1 font-mono">
           {dock.progress_text}
         </pre>
-      ) : dock.tasks.length ? (
+      ) : dock.tasks.length > 0 ? (
         <p className="text-xs opacity-70">等待进度…</p>
       ) : null}
     </div>

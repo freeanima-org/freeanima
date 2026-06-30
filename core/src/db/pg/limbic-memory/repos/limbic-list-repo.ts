@@ -37,7 +37,7 @@ export async function listLimbicMemory(opts?: LimbicListOpts): Promise<LimbicMem
   const rows = await db
     .select()
     .from(limbicMemory)
-    .where(conditions.length ? and(...conditions) : undefined)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(desc(limbicMemory.created_at))
     .offset(offset)
     .limit(limit);
@@ -52,6 +52,6 @@ export async function countLimbicMemory(
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
     .from(limbicMemory)
-    .where(conditions.length ? and(...conditions) : undefined);
+    .where(conditions.length > 0 ? and(...conditions) : undefined);
   return Number(rows[0]?.n ?? 0);
 }

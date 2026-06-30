@@ -193,7 +193,7 @@ function buildListConditions(opts?: Omit<EntityListOpts, "offset" | "limit">) {
   if (opts?.component) {
     conditions.push(sql`${entities.components} @> ARRAY[${opts.component}]::text[]`);
   }
-  return conditions.length ? and(...conditions) : undefined;
+  return conditions.length > 0 ? and(...conditions) : undefined;
 }
 
 export async function listEntities(opts?: EntityListOpts): Promise<EntityRow[]> {

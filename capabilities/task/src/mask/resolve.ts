@@ -81,7 +81,7 @@ export function resolveMaskPresets(
     }
     return resolveMask(mask, registry, toolSetRegistry);
   });
-  if (!resolved.length) {
+  if (resolved.length === 0) {
     return {
       allowed_tools: [],
       denied_tools: [],

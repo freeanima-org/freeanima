@@ -18,6 +18,7 @@ import * as llm from "@freeanima/core/llm";
 import type { LlmRuntime } from "@freeanima/core/llm";
 import { cleanToolCallsForApi } from "@freeanima/core/llm";
 import { markToolLoopActivity, maybeApplyEmergencyCompression } from "@freeanima/core/compress";
+import { omitUndefined } from "@freeanima/core/util";
 import {
   getToolRegistry,
   getToolConversationId,
@@ -112,7 +113,7 @@ function prepareEngine(
 ): [OpenAiToolSchema[], string] {
   const registry = resolveToolRegistry(opts);
   const missing = registry.checkEnvRequirements();
-  if (missing.length) {
+  if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
   }
   const schemas: OpenAiToolSchema[] =
@@ -126,7 +127,7 @@ async function persistMessages(
   batch: StoredMessage[],
   opts?: Pick<EngineOpts, "onMessageAppended" | "onToolRoundComplete">,
 ): Promise<void> {
-  if (!batch.length) return;
+  if (batch.length === 0) return;
   if (opts?.onToolRoundComplete) {
     await opts.onToolRoundComplete(batch);
     return;
@@ -283,7 +284,7 @@ export async function* runStream(
 ): AsyncGenerator<StreamEvent> {
   const maxTurns = resolveMaxTurns(opts);
   const [toolSchemas, model] = prepareEngine(opts);
-  const compiled = toolSchemas.length ? toolSchemas : undefined;
+  const compiled = toolSchemas.length > 0 ? toolSchemas : undefined;
   const failureCounts = new Map<string, number>();
   const HARD = 8;
 
@@ -304,11 +305,14 @@ export async function* runStream(
     const turnStarted = performance.now();
 
     try {
-      for await (const chunk of llm.chatStream(messages, {
-        tools: compiled,
-        model,
-        runtime: opts?.llm,
-      })) {
+      for await (const chunk of llm.chatStream(
+        messages,
+        omitUndefined({
+          tools: compiled,
+          model,
+          runtime: opts?.llm,
+        }),
+      )) {
         if (chunk.type === "content") {
           buffer.push(chunk.content);
           yield { event: "token", data: { content: chunk.content } };
@@ -360,7 +364,7 @@ export async function* runStream(
     }
 
     const cleanedCalls = cleanToolCalls(toolCalls);
-    if (!cleanedCalls.length) {
+    if (cleanedCalls.length === 0) {
       const text = buffer.join("");
       const pushed = withStreamMeta(
         withReasoning(

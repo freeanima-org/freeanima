@@ -90,7 +90,8 @@ describe("manifestFridgeMagnetBoard", () => {
       role: "assistant",
       name: FRIDGE_CONTEXT_ASSISTANT_NAME,
     });
-    expect(messages[2]!.role === "assistant" && messages[2].content).toContain("note: Note");
+    const board = messages[2];
+    expect(board?.role === "assistant" && board.content).toContain("note: Note");
     expect(messages[3]).toMatchObject({ role: "user", content: "Second message" });
   });
 

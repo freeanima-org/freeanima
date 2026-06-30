@@ -137,7 +137,7 @@ export const worldEntityUpdateBodySchema = z
   }))
   .refine((b) => b.title === undefined || b.title.length > 0, { message: "title is required" })
   .superRefine((b, ctx) => {
-    if (b.private === true && (b.owner_subject_id === undefined || b.owner_subject_id === null)) {
+    if (b.private === true && (b.owner_subject_id === undefined || b.owner_subject_id == null)) {
       ctx.addIssue({ code: "custom", message: "private world requires owner_subject_id" });
     }
     if (b.private === false && b.owner_subject_id != null) {

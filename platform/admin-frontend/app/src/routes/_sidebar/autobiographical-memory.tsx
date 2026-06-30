@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import type { AutobiographicalMemoryRow } from "@freeanima/admin-contract/api";
@@ -36,14 +37,16 @@ function AutobiographicalMemoryPage() {
       setLoading(true);
       setError("");
       try {
-        const data = (await listAutobiographicalMemories({
-          query: query.trim() || undefined,
-          offset: nextOffset,
-          limit: PAGE_SIZE,
-          status: statusFilter || undefined,
-          significance: significanceFilter || undefined,
-          source_conversation: sourceSession.trim() || undefined,
-        })) as { items: AutobiographicalRow[]; total: number };
+        const data = (await listAutobiographicalMemories(
+          omitUndefined({
+            query: query.trim() || undefined,
+            offset: nextOffset,
+            limit: PAGE_SIZE,
+            status: statusFilter || undefined,
+            significance: significanceFilter || undefined,
+            source_conversation: sourceSession.trim() || undefined,
+          }),
+        )) as { items: AutobiographicalRow[]; total: number };
         setItems(data.items ?? []);
         setTotal(data.total ?? 0);
         setOffset(nextOffset);

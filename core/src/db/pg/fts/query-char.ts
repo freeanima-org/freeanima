@@ -34,7 +34,7 @@ export function buildJiebaModeTsQuery(segmented: string): string {
     .split(/\s+/)
     .map((t) => t.replace(/[^\w\u4e00-\u9fff\u3400-\u4dbf-]/g, ""))
     .filter(Boolean);
-  if (!tokens.length) return "";
+  if (tokens.length === 0) return "";
   if (tokens.length === 1) return escapeTsToken(tokens[0]!);
   return tokens.map((t) => escapeTsToken(t)).join(" & ");
 }
@@ -61,7 +61,7 @@ function tokenToTsqueryPart(tok: string): string {
 
 function cjkProximityChain(text: string): string {
   const chars = [...text].filter((ch) => ch.trim());
-  if (!chars.length) return "";
+  if (chars.length === 0) return "";
   if (chars.length === 1) return escapeTsToken(chars[0]!);
   return chars.map((ch) => escapeTsToken(ch)).join(" <-> ");
 }

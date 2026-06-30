@@ -91,7 +91,7 @@ function ensureHub(hubUrl: string, httpUrl?: string): SatelliteHubHandle {
     hub = createSatelliteHub({
       appId: APP_ID,
       hubUrl,
-      httpUrl,
+      ...(httpUrl !== undefined ? { httpUrl } : {}),
       instanceStore: fileSapInstanceStore(instanceStorePath()),
       relay: true,
       tools: REGISTERED_TOOLS,

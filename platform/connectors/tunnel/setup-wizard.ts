@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import {
   PATHS,
   TUNNEL_CREDENTIAL_REFS,
@@ -155,12 +156,14 @@ export async function runSetupWizard(input: SetupWizardInput): Promise<SetupWiza
     input.onProgress("无 API Token — 请在 Cloudflare Dashboard 手动创建 Tunnel 与 DNS");
   }
 
-  writeCloudflaredConfig({
-    hostname: input.hostname,
-    hubPort: input.hubPort,
-    credentialsFile,
-    tunnelId: tunnelId || undefined,
-  });
+  writeCloudflaredConfig(
+    omitUndefined({
+      hostname: input.hostname,
+      hubPort: input.hubPort,
+      credentialsFile,
+      tunnelId: tunnelId || undefined,
+    }),
+  );
 
   const tunnelConfig: TunnelConfig = {
     enabled: true,

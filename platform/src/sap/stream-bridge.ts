@@ -6,6 +6,7 @@ import {
   type StreamReplyEffect,
 } from "@freeanima/runtime/loop/stream-reply";
 import type { DisplayItem } from "@freeanima/platform/schemas/display";
+import { omitUndefined } from "@freeanima/core/util";
 import { mapRuntimeStreamEventToSap } from "@freeanima/sap-contract";
 
 export type SapStreamEmitter = (method: string, payload: Record<string, unknown>) => void;
@@ -15,14 +16,16 @@ function structuredCallsToDisplay(
 ): DisplayItem {
   return {
     type: "tool_block",
-    calls: calls.map((c) => ({
-      name: c.name,
-      argsPreview: c.argsPreview,
-      tool_call_id: c.tool_call_id,
-      status: c.status,
-      args: c.args,
-      result: c.result,
-    })),
+    calls: calls.map((c) =>
+      omitUndefined({
+        name: c.name,
+        argsPreview: c.argsPreview,
+        tool_call_id: c.tool_call_id,
+        status: c.status,
+        args: c.args,
+        result: c.result,
+      }),
+    ),
   };
 }
 

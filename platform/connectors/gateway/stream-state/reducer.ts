@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import type { StreamEvent } from "@freeanima/runtime/loop";
 import {
   ToolRoundBuffer,
@@ -82,7 +83,7 @@ export function applyStreamEvent(
       activeSegmentId: state.activeSegmentId,
       nextSegmentId: state.nextSegmentId,
       finalAnswer: state.finalAnswer,
-      terminal: state.terminal,
+      ...omitUndefined({ terminal: state.terminal }),
     },
     event,
     buffer,

@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import {
   completeTaskItem,
   createTaskItem,
@@ -57,7 +58,10 @@ export async function serviceTasklistList(
   assertPg(deps);
   const worldId = await taskWorldIdForAuth(auth, input?.subject_kind);
   await ensureDefaultTaskListForWorld(worldId);
-  const lists = await listTaskLists(worldId, { includeClosed: input?.include_closed });
+  const lists = await listTaskLists(
+    worldId,
+    omitUndefined({ includeClosed: input?.include_closed }),
+  );
   return { lists };
 }
 
@@ -137,14 +141,17 @@ export async function serviceTaskList(
   assertPg(deps);
   const worldId = await taskWorldIdForAuth(auth, input.subject_kind);
   await ensureDefaultTaskListForWorld(worldId);
-  const items = await listTaskItems(worldId, {
-    list_id: input.list_id,
-    status: input.status ?? "all",
-    due_today: input.due_today,
-    tags: input.tags,
-    limit: input.limit,
-    offset: input.offset,
-  });
+  const items = await listTaskItems(
+    worldId,
+    omitUndefined({
+      list_id: input.list_id,
+      status: input.status ?? "all",
+      due_today: input.due_today,
+      tags: input.tags,
+      limit: input.limit,
+      offset: input.offset,
+    }),
+  );
   return { items };
 }
 

@@ -58,6 +58,7 @@ export function createApiApp() {
         }
       }
       if (path.startsWith("/api")) assertNotShuttingDown();
+      return;
     })
     .onAfterHandle(({ request, set }) => {
       applyCorsHeaders(set.headers, request.headers.get("Origin"));

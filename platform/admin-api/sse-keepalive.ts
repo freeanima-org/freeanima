@@ -1,7 +1,9 @@
 export const SSE_KEEPALIVE_INTERVAL_MS = 15_000;
 
 function sleep(ms: number): Promise<null> {
-  return new Promise((resolve) => setTimeout(resolve, ms)).then(() => null);
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  }).then(() => null);
 }
 
 export type SseKeepaliveOptions = {
@@ -20,10 +22,11 @@ export async function* withSseKeepalive<T>(
   let pendingNext: Promise<IteratorResult<T>> | null = null;
 
   try {
-    while (!signal?.aborted) {
+    while (true) {
+      if (signal?.aborted) break;
       pendingNext ??= iter.next();
       const raced = await Promise.race([pendingNext, sleep(intervalMs)]);
-      if (raced === null) {
+      if (raced == null) {
         yield keepalive();
         continue;
       }

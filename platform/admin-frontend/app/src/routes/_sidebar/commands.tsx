@@ -19,17 +19,17 @@ type CommandRow = {
   platforms?: string[];
 };
 
+function formatPlatforms(platforms?: string[]) {
+  if (!platforms?.length) return m.admin_common_all();
+  return platforms.join(", ");
+}
+
 function CommandsPage() {
   const data = Route.useLoaderData() as { commands?: CommandRow[] };
   const commands = (data.commands ?? []) as CommandRow[];
 
   const conversationCommands = commands.filter((c) => c.scope === "conversation");
   const globalCommands = commands.filter((c) => c.scope === "global");
-
-  const formatPlatforms = (platforms?: string[]) => {
-    if (!platforms?.length) return m.admin_common_all();
-    return platforms.join(", ");
-  };
 
   return (
     <div>
@@ -96,7 +96,7 @@ function CommandsPage() {
         </section>
       ) : null}
 
-      {!conversationCommands.length && !globalCommands.length ? (
+      {conversationCommands.length === 0 && globalCommands.length === 0 ? (
         <div className="alert alert-info text-sm">{m.admin_commands_empty()}</div>
       ) : null}
     </div>
