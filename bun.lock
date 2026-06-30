@@ -315,6 +315,7 @@
     "packages/ui-kit": {
       "name": "@freeanima/ui-kit",
       "dependencies": {
+        "daisyui": "catalog:",
         "react": "catalog:",
       },
       "devDependencies": {

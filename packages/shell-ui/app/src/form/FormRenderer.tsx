@@ -8,6 +8,7 @@ import type {
 import { FormField, FormFieldLabel, FormFieldset, FormToggle } from "@freeanima/ui-kit/form";
 
 import { notifyDebugConfigChanged } from "../bootstrap/sentry.ts";
+import { resolveShellRouterBasepath } from "../router-basepath.ts";
 
 type Props = {
   fields: SettingsFormFields;
@@ -89,7 +90,10 @@ export function FormRenderer({ fields, store, platform, sectionId, onDirty }: Pr
 
   const saveAndEnter = useCallback(async () => {
     const ok = await persist();
-    if (ok) window.location.href = "/chat";
+    if (ok) {
+      const base = resolveShellRouterBasepath() ?? "";
+      window.location.href = `${base}/chat`;
+    }
   }, [persist]);
 
   const testConnection = useCallback(async () => {

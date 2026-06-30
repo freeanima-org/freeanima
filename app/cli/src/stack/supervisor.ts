@@ -1,12 +1,13 @@
 import type { ChildProcess } from "node:child_process";
 import { logStartupError } from "@freeanima/platform/logging";
 import { FileConfig } from "@freeanima/platform/config";
+import { systemdUserAvailable } from "../systemd-unit.ts";
 
 import { ensureWebDistBuilt } from "../web/ensure-dist.ts";
 import { resolveWebDistDir } from "../web/dist-path.ts";
 import {
-  migrateLegacyTunnelUnit,
-  startTunnelForeground,
+  findCloudflaredPidOnHost,
+  startTunnelForStack,
   stopTunnelForeground,
 } from "../tunnel/tunnel-supervisor.ts";
 
@@ -25,12 +26,13 @@ let shuttingDown = false;
 async function stopStackSidecars(): Promise<void> {
   if (shuttingDown) return;
   shuttingDown = true;
+  // 仅停前台 spawn；systemd tunnel 由 `anima service stop` / stopHubStackViaSystemd 统一关停。
+  // 避免 restart 时旧进程 SIGTERM 误杀新 stack 刚拉起的 anima-tunnel.service。
   stopTunnelForeground();
   sidecars.tunnel = null;
 }
 
 async function startStackSidecars(hubPort: number): Promise<void> {
-  migrateLegacyTunnelUnit();
   const cfg = FileConfig.open().data;
 
   if (cfg.web?.enabled) {
@@ -38,16 +40,18 @@ async function startStackSidecars(hubPort: number): Promise<void> {
   }
 
   if (cfg.tunnel?.enabled) {
-    sidecars.tunnel = startTunnelForeground();
+    sidecars.tunnel = startTunnelForStack();
     if (sidecars.tunnel) {
       sidecars.tunnel.on("exit", (code, signal) => {
         if (shuttingDown) return;
         console.warn(`[stack] cloudflared 退出 code=${code ?? "?"} signal=${signal ?? ""}`);
         sidecars.tunnel = null;
         if (!shuttingDown && cfg.tunnel?.enabled) {
-          sidecars.tunnel = startTunnelForeground();
+          sidecars.tunnel = startTunnelForStack();
         }
       });
+    } else if (findCloudflaredPidOnHost() == null && !systemdUserAvailable()) {
+      console.warn("[stack] cloudflared 侧车未启动（见上方日志或 error.log）");
     }
   }
 }

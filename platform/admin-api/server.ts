@@ -1,5 +1,6 @@
 import {
   isWebStaticPath,
+  serveWebRootStatic,
   serveWebStatic,
   WEB_URL_PREFIX,
   type WebStaticOptions,
@@ -88,6 +89,11 @@ export async function startApiHttpServer(
         if (preflight) return preflight;
 
         const pathname = new URL(req.url).pathname;
+
+        if (webStatic) {
+          const rootStatic = serveWebRootStatic(req, webStatic);
+          if (rootStatic) return rootStatic;
+        }
 
         if (webStatic && isWebStaticPath(pathname)) {
           const staticRes = serveWebStatic(req, webStatic);

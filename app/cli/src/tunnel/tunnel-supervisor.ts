@@ -13,7 +13,6 @@ import {
 } from "./tunnel-systemd-unit.ts";
 import { cloudflaredRunExecStart } from "./tunnel-run.ts";
 import { serviceUnitDir } from "../service-common.ts";
-import { writeStatusLine } from "../service-common.ts";
 import { SYSTEMD_UNIT, systemdUserAvailable } from "../systemd-unit.ts";
 import {
   formatTunnelConnectedLabel,
@@ -41,11 +40,40 @@ export function refreshTunnelIngressFromService(): boolean {
   return refreshTunnelIngressFromConfig();
 }
 
+/** @deprecated 保留兼容；stack 现通过 startTunnelForStack 托管 tunnel */
 export function migrateLegacyTunnelUnit(): void {
-  if (!systemdUserAvailable()) return;
-  if (!existsSync(tunnelUnitPath())) return;
-  systemctl("disable", "--now", TUNNEL_SYSTEMD_UNIT);
-  writeStatusLine("info", "已停用旧 anima-tunnel.service（Tunnel 现由 anima.service stack 托管）");
+  if (!systemdUserAvailable() || !isTunnelEnabled()) return;
+  ensureTunnelUnitFile();
+}
+
+/** Stack 启动 tunnel：systemd 可用时用 anima-tunnel.service，否则前台 spawn */
+export function startTunnelForStack(): ChildProcess | null {
+  if (!isTunnelEnabled()) {
+    console.warn("[stack] cloudflared 未启动：tunnel.enabled=false");
+    return null;
+  }
+  if (systemdUserAvailable()) {
+    startTunnelViaSystemd();
+    if (isSystemdTunnelRunning() || findCloudflaredPidOnHost() != null) {
+      console.log("[stack] cloudflared 已通过 systemd 启动 (anima-tunnel.service)");
+    } else {
+      console.warn(
+        "[stack] cloudflared systemd 启动失败（见 journalctl --user -u anima-tunnel.service）",
+      );
+    }
+    return null;
+  }
+  const existingPid = findCloudflaredPidOnHost();
+  if (existingPid != null) {
+    console.log(`[stack] cloudflared 已在运行 (PID ${existingPid})`);
+    return null;
+  }
+  return startTunnelForeground();
+}
+
+export function stopTunnelForStack(): void {
+  stopTunnelForeground();
+  stopTunnelViaSystemd();
 }
 
 export function ensureTunnelUnitFile(): boolean {
@@ -70,11 +98,16 @@ export function ensureTunnelUnitFile(): boolean {
 
 export function startTunnelViaSystemd(): void {
   if (!systemdUserAvailable() || !isTunnelEnabled()) return;
-  if (!ensureTunnelUnitFile()) {
-    /* unit may already exist */
+  const unitChanged = ensureTunnelUnitFile();
+  if (unitChanged) systemctl("daemon-reload");
+  const active = systemctl("is-active", TUNNEL_SYSTEMD_UNIT);
+  if (String(active.stdout ?? "").trim() === "active") return;
+  const r = systemctl("enable", "--now", TUNNEL_SYSTEMD_UNIT);
+  if (r.status !== 0) {
+    console.warn(
+      `[stack] cloudflared systemd 启动失败: ${String(r.stderr ?? r.stdout ?? "").trim()}`,
+    );
   }
-  systemctl("daemon-reload");
-  systemctl("enable", "--now", TUNNEL_SYSTEMD_UNIT);
 }
 
 export function stopTunnelViaSystemd(): void {
@@ -94,24 +127,83 @@ export function hubStackSystemdUnits(): string[] {
  */
 export function stopHubStackViaSystemd(): ReturnType<typeof systemctl> | null {
   if (!systemdUserAvailable()) return null;
+  stopTunnelViaSystemd();
   return systemctl("stop", ...hubStackSystemdUnits());
 }
 
+export function findCloudflaredPidOnHost(): number | null {
+  const bin = cloudflaredBinPath();
+  const r = spawnSync("pgrep", ["-f", `${bin} tunnel`], { encoding: "utf-8" });
+  if (r.status !== 0) return null;
+  for (const line of String(r.stdout ?? "")
+    .trim()
+    .split("\n")) {
+    const pid = Number(line.trim());
+    if (pid <= 0) continue;
+    const cmd = spawnSync("ps", ["-p", String(pid), "-o", "args="], { encoding: "utf-8" });
+    const args = String(cmd.stdout ?? "").trim();
+    if (args.startsWith(bin)) return pid;
+  }
+  return null;
+}
+
+function isSystemdTunnelRunning(): boolean {
+  if (!systemdUserAvailable()) return false;
+  const r = systemctl("is-active", TUNNEL_SYSTEMD_UNIT);
+  return String(r.stdout ?? "").trim() === "active";
+}
+
+function isForegroundTunnelChildAlive(): boolean {
+  const child = foregroundChild.current;
+  return child != null && !child.killed && child.pid != null && child.pid > 0;
+}
+
 export function startTunnelForeground(): ChildProcess | null {
-  if (!isTunnelEnabled() || !isCloudflaredInstalled()) return null;
+  if (foregroundChild.current && !foregroundChild.current.killed) {
+    return foregroundChild.current;
+  }
+  if (!isTunnelEnabled()) {
+    console.warn("[stack] cloudflared 未启动：tunnel.enabled=false");
+    return null;
+  }
+  if (!isCloudflaredInstalled()) {
+    console.warn(`[stack] cloudflared 未启动：未安装 (${cloudflaredBinPath()})`);
+    return null;
+  }
   refreshTunnelIngressFromService();
-  if (!existsSync(PATHS.cloudflaredConfigFile)) return null;
+  if (!existsSync(PATHS.cloudflaredConfigFile)) {
+    console.warn(`[stack] cloudflared 未启动：缺少配置 ${PATHS.cloudflaredConfigFile}`);
+    return null;
+  }
+  const existingPid = findCloudflaredPidOnHost();
+  if (existingPid != null) {
+    console.log(`[stack] cloudflared 已在运行 (PID ${existingPid})，跳过重复启动`);
+    return null;
+  }
   const cfg = FileConfig.open().data.tunnel;
   const argv = cloudflaredRunArgv(cloudflaredBinPath(), {
     credentialsFile: defaultCredentialsFile(),
     configFile: PATHS.cloudflaredConfigFile,
     tunnelId: cfg?.cloudflare?.tunnel_id,
   });
-  const child = spawn(argv[0]!, argv.slice(1), { stdio: "inherit", detached: false });
+  const child = spawn(argv[0]!, argv.slice(1), {
+    stdio: ["ignore", "inherit", "inherit"],
+    detached: false,
+  });
   foregroundChild.current = child;
-  child.on("exit", () => {
+  child.on("error", (err) => {
+    console.error("[stack] cloudflared spawn 失败", err);
     if (foregroundChild.current === child) foregroundChild.current = null;
   });
+  child.on("exit", (code, signal) => {
+    if (foregroundChild.current === child) foregroundChild.current = null;
+    if (code != null && code !== 0) {
+      console.warn(`[stack] cloudflared 退出 code=${code} signal=${signal ?? ""}`);
+    }
+  });
+  if (child.pid != null) {
+    console.log(`[stack] cloudflared 已启动 (PID ${child.pid})`);
+  }
   return child;
 }
 
@@ -136,16 +228,15 @@ export type TunnelStatus = {
 };
 
 function tunnelProcessPid(): number | null {
-  if (systemdUserAvailable() && existsSync(tunnelUnitPath())) {
+  if (isForegroundTunnelChildAlive()) {
+    return foregroundChild.current!.pid!;
+  }
+  if (isSystemdTunnelRunning()) {
     const r = systemctl("show", TUNNEL_SYSTEMD_UNIT, "-p", "MainPID", "--value");
     const pid = Number(String(r.stdout ?? "").trim());
     if (pid > 0) return pid;
   }
-  const child = foregroundChild.current;
-  if (child && !child.killed && child.pid != null && child.pid > 0) {
-    return child.pid;
-  }
-  return null;
+  return findCloudflaredPidOnHost();
 }
 
 export function getTunnelEdgeStatus(running: boolean): TunnelEdgeStatus {
@@ -158,13 +249,8 @@ export { formatTunnelConnectedLabel };
 export function getTunnelStatus(): TunnelStatus {
   const cfg = FileConfig.open().data.tunnel;
   const enabled = cfg?.enabled === true;
-  let running = false;
-  if (systemdUserAvailable() && existsSync(tunnelUnitPath())) {
-    const r = systemctl("is-active", TUNNEL_SYSTEMD_UNIT);
-    running = String(r.stdout ?? "").trim() === "active";
-  } else if (foregroundChild.current && !foregroundChild.current.killed) {
-    running = true;
-  }
+  const pid = tunnelProcessPid();
+  const running = pid != null;
   const edge = getTunnelEdgeStatus(running);
   return {
     enabled,

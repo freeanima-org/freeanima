@@ -96,7 +96,7 @@ export function formatTunnelConnectedLabel(status: TunnelEdgeStatus): string {
     return n != null ? `yes (${n} edge connections)` : "yes";
   }
   if (status.connected === false) {
-    return "no — 未连上 Cloudflare 边缘（见 journalctl --user -u anima-tunnel）";
+    return "no — 未连上 Cloudflare 边缘（见 journalctl --user -u anima.service）";
   }
   return "unknown — 无法探测 metrics";
 }
