@@ -81,33 +81,36 @@ export async function createEntityAtId(input: EntityCreateAtIdInput): Promise<En
   });
   const fts_segmented = await resolveFtsSegmentedForWrite(indexText);
   const db = getDb();
-  await db.execute(sql`
-    INSERT INTO entities (
-      id, type, world_id, components, primary_component,
-      title, summary, content, body, fts_segmented, created_at, updated_at
-    )
-    OVERRIDING SYSTEM VALUE
-    VALUES (
-      ${input.id}, ${type}, ${input.world_id},
-      ARRAY[${sql.join(
-        components.map((c) => sql`${c}`),
-        sql`, `,
-      )}]::text[],
-      ${primary},
-      ${title}, ${summary}, ${content}, ${JSON.stringify(body)}::jsonb,
-      ${fts_segmented}, ${now}, ${now}
-    )
-  `);
-  await db.execute(sql`
-    SELECT setval(
-      pg_get_serial_sequence('entities', 'id'),
-      GREATEST((SELECT MAX(id) FROM entities), ${input.id})
-    )
-  `);
-  scheduleEntityEmbedding(input.id, indexText);
-  const row = await getEntity(input.id);
+  const [row] = await db
+    .insert(entities)
+    .overridingSystemValue()
+    .values({
+      id: input.id,
+      type,
+      world_id: input.world_id,
+      components,
+      primary_component: primary,
+      title,
+      summary,
+      content,
+      body,
+      fts_segmented,
+      created_at: now,
+      updated_at: now,
+    })
+    .returning();
   if (!row) throw new Error("entity insert at id failed");
-  return row;
+  await db
+    .select({
+      _: sql`setval(
+        pg_get_serial_sequence('entities', 'id'),
+        GREATEST((SELECT MAX(id) FROM entities), ${input.id})
+      )`,
+    })
+    .from(entities)
+    .limit(1);
+  scheduleEntityEmbedding(row.id, indexText);
+  return mapRow(row);
 }
 
 export async function getEntity(id: number): Promise<EntityRow | null> {
