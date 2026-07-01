@@ -1,6 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { useSubjectScope } from "@freeanima/shell-sdk/react";
-import { Alert, AlertDescription, Button, Input, Spinner } from "@freeanima/ui-kit";
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Spinner,
+} from "@freeanima/ui-kit";
 
 import { ActionSheet, ConfirmDialog, EmptyState } from "@freeanima/ui-kit/composite";
 import { CompletedTaskList } from "./components/CompletedTaskList.tsx";
@@ -53,6 +64,7 @@ import { buildItemMenuItems, buildListMenuItems } from "./lib/task-menus.ts";
 type ListMenuState = { x: number; y: number; listId: number };
 type ItemMenuState = { x: number; y: number; itemId: number };
 type SheetMenuState = { title?: string; items: ContextMenuItem[] };
+type ChildNamePromptState = { kind: "list" | "folder"; parentId: number };
 
 export function TaskApp() {
   const { kind: subjectKind } = useSubjectScope();
@@ -88,6 +100,8 @@ export function TaskApp() {
   const [itemMenu, setItemMenu] = useState<ItemMenuState | null>(null);
   const [sheetMenu, setSheetMenu] = useState<SheetMenuState | null>(null);
   const [listToDelete, setListToDelete] = useState<TaskListRow | null>(null);
+  const [childNamePrompt, setChildNamePrompt] = useState<ChildNamePromptState | null>(null);
+  const [childNamePromptValue, setChildNamePromptValue] = useState("");
 
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedItemIds, setSelectedItemIds] = useState<Set<number>>(() => new Set());
@@ -543,19 +557,29 @@ export function TaskApp() {
     }
   };
 
+  const openChildNamePrompt = (kind: ChildNamePromptState["kind"], parentId: number) => {
+    setChildNamePromptValue("");
+    setChildNamePrompt({ kind, parentId });
+  };
+
+  const confirmChildNamePrompt = () => {
+    const name = childNamePromptValue.trim();
+    if (!name || childNamePrompt == null) return;
+    if (childNamePrompt.kind === "folder") {
+      void handleCreateFolder({ parentId: childNamePrompt.parentId, name });
+    } else {
+      void handleCreateList({ parentId: childNamePrompt.parentId, name });
+    }
+    setChildNamePrompt(null);
+  };
+
   const menuHandlers = {
     onRename: startRenameList,
     onClose: handleCloseList,
     onReopen: handleReopenList,
     onDelete: handleDeleteList,
-    onCreateChildFolder: (folder: TaskListRow) => {
-      const name = prompt("子文件夹名称");
-      if (name?.trim()) void handleCreateFolder({ parentId: folder.id, name: name.trim() });
-    },
-    onCreateChildList: (folder: TaskListRow) => {
-      const name = prompt("子清单名称");
-      if (name?.trim()) void handleCreateList({ parentId: folder.id, name: name.trim() });
-    },
+    onCreateChildFolder: (folder: TaskListRow) => openChildNamePrompt("folder", folder.id),
+    onCreateChildList: (folder: TaskListRow) => openChildNamePrompt("list", folder.id),
   };
 
   const itemHandlers = {
@@ -867,6 +891,43 @@ export function TaskApp() {
           onClose={() => setSheetMenu(null)}
         />
       ) : null}
+
+      <Dialog
+        open={childNamePrompt != null}
+        onOpenChange={(open) => {
+          if (!open) setChildNamePrompt(null);
+        }}
+      >
+        <DialogContent className="max-w-sm safe-area-pt safe-area-pb" showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>
+              {childNamePrompt?.kind === "folder" ? "新建子文件夹" : "新建子清单"}
+            </DialogTitle>
+          </DialogHeader>
+          <Input
+            autoFocus
+            value={childNamePromptValue}
+            placeholder={childNamePrompt?.kind === "folder" ? "文件夹名称" : "清单名称"}
+            onChange={(e) => setChildNamePromptValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") confirmChildNamePrompt();
+            }}
+          />
+          <DialogFooter>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setChildNamePrompt(null)}>
+              取消
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={!childNamePromptValue.trim()}
+              onClick={confirmChildNamePrompt}
+            >
+              创建
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <ConfirmDialog
         open={listToDelete != null}
