@@ -1,4 +1,7 @@
 /** 呈现轴：nav IA / settings 侧栏布局，与壳能力（satelliteShell）解耦 */
+import { useEffect, useState } from "react";
+import { MOBILE_LAYOUT_MQ } from "@freeanima/ui-kit/layout";
+
 export type LayoutMode = "compact" | "expanded";
 
 export type LayoutModeContext = {
@@ -9,11 +12,9 @@ export type LayoutModeContext = {
   configLayoutMode?: LayoutMode | null;
   isStandalonePwa?: boolean;
   isCapacitor?: boolean;
-  isCoarsePointer?: boolean;
   isNarrowViewport?: boolean;
 };
 
-const COMPACT_QUERY = "(max-width: 768px) and (pointer: coarse)";
 const STANDALONE_QUERY = "(display-mode: standalone)";
 
 export function parseLayoutModeOverride(raw: string | null | undefined): LayoutMode | null {
@@ -31,7 +32,7 @@ export function resolveLayoutMode(ctx: LayoutModeContext = {}): LayoutMode {
   if (ctx.isElectron) return "expanded";
 
   if (ctx.isStandalonePwa || ctx.isCapacitor) return "compact";
-  if (ctx.isCoarsePointer && ctx.isNarrowViewport) return "compact";
+  if (ctx.isNarrowViewport) return "compact";
 
   return "expanded";
 }
@@ -65,11 +66,29 @@ export function detectLayoutMode(configLayoutMode?: LayoutMode | null): LayoutMo
     configLayoutMode: configLayoutMode ?? fromWindow ?? null,
     isStandalonePwa: readMedia(STANDALONE_QUERY),
     isCapacitor: isCapacitorRuntime(),
-    isCoarsePointer: readMedia("(pointer: coarse)"),
-    isNarrowViewport: readMedia("(max-width: 768px)"),
+    isNarrowViewport: readMedia(MOBILE_LAYOUT_MQ),
   });
 }
 
 export function isCompactLayout(mode: LayoutMode): boolean {
   return mode === "compact";
+}
+
+/** 随视口 / 壳环境变化更新呈现模式（与 useDrawerNav 同断点） */
+export function useLayoutMode(configLayoutMode?: LayoutMode | null): LayoutMode {
+  const [mode, setMode] = useState(() => detectLayoutMode(configLayoutMode));
+
+  useEffect(() => {
+    const sync = () => setMode(detectLayoutMode(configLayoutMode));
+    sync();
+    const mq = window.matchMedia(MOBILE_LAYOUT_MQ);
+    mq.addEventListener("change", sync);
+    window.addEventListener("resize", sync);
+    return () => {
+      mq.removeEventListener("change", sync);
+      window.removeEventListener("resize", sync);
+    };
+  }, [configLayoutMode]);
+
+  return mode;
 }

@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@freeanima/ui-kit";
 import { SubjectScopeProvider, SubjectToggle, useSubjectScope } from "@freeanima/shell-sdk/react";
 
-import { detectLayoutMode, isCompactLayout } from "../layout-mode.ts";
+import { isCompactLayout, useLayoutMode } from "../layout-mode.ts";
 import { navigateShellModule } from "../shell-nav.ts";
 import {
   shellMobileMoreNavItems,
@@ -124,10 +124,12 @@ function MoreNavMenu({ items }: { items: ShellNavItem[] }) {
                 type="button"
                 role="menuitem"
                 className="block w-full px-4 py-2 text-left text-sm hover:bg-muted"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
-                  setOpen(false);
+                onPointerDown={(e) => e.preventDefault()}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   navigateShellModule(navigate, item.to);
+                  setOpen(false);
                 }}
               >
                 {item.label()}
@@ -163,7 +165,7 @@ function MobileModuleShell() {
 }
 
 export function ModuleShell() {
-  const layoutMode = detectLayoutMode();
+  const layoutMode = useLayoutMode();
   return (
     <SubjectScopeProvider>
       {isCompactLayout(layoutMode) ? <MobileModuleShell /> : <DesktopModuleShell />}

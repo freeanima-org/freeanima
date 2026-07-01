@@ -11,12 +11,12 @@ describe("resolveLayoutMode", () => {
     expect(resolveLayoutMode({ isCapacitor: true })).toBe("compact");
   });
 
-  test("手机浏览器触屏窄屏为 compact", () => {
-    expect(resolveLayoutMode({ isCoarsePointer: true, isNarrowViewport: true })).toBe("compact");
+  test("窄视口浏览器为 compact（与 drawer 断点一致）", () => {
+    expect(resolveLayoutMode({ isNarrowViewport: true })).toBe("compact");
   });
 
   test("桌面宽屏默认 expanded", () => {
-    expect(resolveLayoutMode({ isCoarsePointer: false, isNarrowViewport: false })).toBe("expanded");
+    expect(resolveLayoutMode({ isNarrowViewport: false })).toBe("expanded");
   });
 
   test("PWA standalone 为 compact", () => {

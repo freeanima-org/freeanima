@@ -40,7 +40,7 @@
 
 ## 平台布局
 
-- 导航与主布局 IA：**必须** `detectLayoutMode()` / `useDrawerNav()` 分支
+- 导航与主布局 IA：**必须** `detectLayoutMode()` / `useDrawerNav()` 分支（窄视口 ≤1023px 均为 compact + drawer）
 - `ListDetailLayout` drawer 颜色在 TSX 用 `bg-background`、`bg-black/55` 等 class，不在 `shared-safe-area.css` 写背景
 
 ## 禁止

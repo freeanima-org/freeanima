@@ -1,13 +1,15 @@
 import { createRouter } from "@tanstack/react-router";
+import type { RouterHistory } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen.ts";
 
 const DEFAULT_STALE_MS = 60_000;
 const DEFAULT_GC_MS = 5 * 60_000;
 
-export function getRouter(opts?: { basepath?: string }) {
+export function getRouter(opts?: { basepath?: string; history?: RouterHistory }) {
   return createRouter({
     routeTree,
     basepath: opts?.basepath ?? "/admin",
+    ...(opts?.history ? { history: opts.history } : {}),
     scrollRestoration: true,
     defaultStaleTime: DEFAULT_STALE_MS,
     defaultGcTime: DEFAULT_GC_MS,
