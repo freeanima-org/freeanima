@@ -613,8 +613,7 @@ export function ChatApp() {
   };
 
   const sapDisconnected = sapConnection !== "connected";
-  const offlineCachedHint =
-    getAppLocale() === "zh-cn" ? " · 显示缓存数据" : " · Showing cached data";
+  const offlineCachedHint = m.ui_offline_cached_hint();
   const showOfflineCachedHint = sapDisconnected && (conversations.length > 0 || display.length > 0);
 
   const sendMessage = async () => {

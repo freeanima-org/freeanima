@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 00:03+0800\n"
+"POT-Creation-Date: 2026-07-01 17:33+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3379,3 +3379,45 @@ msgstr "传输"
 #, no-wrap
 msgid "Versioning"
 msgstr "发版"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:614
+#, no-wrap
+msgid "You are offline. Live Hub features are unavailable; cached data may still be shown where available."
+msgstr "当前处于离线状态，Hub 实时功能不可用；部分页面可能仍显示已缓存的数据。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:615
+#, no-wrap
+msgid " · Showing cached data"
+msgstr " · 显示缓存数据"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:616
+#, no-wrap
+msgid "Install"
+msgstr "安装"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:617
+#, no-wrap
+msgid "Install FreeAnima on your home screen for quick access."
+msgstr "将 FreeAnima 添加到主屏幕，便于快速访问。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:618
+#, no-wrap
+msgid "App shell is ready for offline use. Hub data still requires a connection."
+msgstr "应用界面已可离线打开；Hub 数据仍需联网。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:619
+#, no-wrap
+msgid "A new version is available."
+msgstr "有新版本可用。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:620
+#, no-wrap
+msgid "Reload"
+msgstr "重新加载"

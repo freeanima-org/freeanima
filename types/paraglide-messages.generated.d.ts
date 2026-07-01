@@ -615,6 +615,13 @@ type ParaglideMessageExports = {
   readonly ui_common_cancel: ParaglideMessageFn;
   readonly ui_common_close: ParaglideMessageFn;
   readonly ui_common_confirm: ParaglideMessageFn;
+  readonly ui_network_offline: ParaglideMessageFn;
+  readonly ui_offline_cached_hint: ParaglideMessageFn;
+  readonly ui_pwa_install_action: ParaglideMessageFn;
+  readonly ui_pwa_install_prompt: ParaglideMessageFn;
+  readonly ui_pwa_shell_offline_ready: ParaglideMessageFn;
+  readonly ui_pwa_update_available: ParaglideMessageFn;
+  readonly ui_pwa_update_reload: ParaglideMessageFn;
 };
 
 declare module "@paraglide/messages" {
@@ -1233,4 +1240,11 @@ declare module "*/messages/paraglide/messages.js" {
   export const ui_common_cancel: ParaglideMessageFn;
   export const ui_common_close: ParaglideMessageFn;
   export const ui_common_confirm: ParaglideMessageFn;
+  export const ui_network_offline: ParaglideMessageFn;
+  export const ui_offline_cached_hint: ParaglideMessageFn;
+  export const ui_pwa_install_action: ParaglideMessageFn;
+  export const ui_pwa_install_prompt: ParaglideMessageFn;
+  export const ui_pwa_shell_offline_ready: ParaglideMessageFn;
+  export const ui_pwa_update_available: ParaglideMessageFn;
+  export const ui_pwa_update_reload: ParaglideMessageFn;
 }

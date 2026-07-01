@@ -609,5 +609,12 @@
   "sidebar_versioning": "Versioning",
   "ui_common_cancel": "Cancel",
   "ui_common_close": "Close",
-  "ui_common_confirm": "OK"
+  "ui_common_confirm": "OK",
+  "ui_network_offline": "You are offline. Live Hub features are unavailable; cached data may still be shown where available.",
+  "ui_offline_cached_hint": " · Showing cached data",
+  "ui_pwa_install_action": "Install",
+  "ui_pwa_install_prompt": "Install FreeAnima on your home screen for quick access.",
+  "ui_pwa_shell_offline_ready": "App shell is ready for offline use. Hub data still requires a connection.",
+  "ui_pwa_update_available": "A new version is available.",
+  "ui_pwa_update_reload": "Reload"
 }
