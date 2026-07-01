@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 18:53+0800\n"
+"POT-Creation-Date: 2026-07-01 16:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/identity.md:1 messages/po4a/en.xml:508
+#: docs/concepts/identity.md:1 messages/po4a/en.xml:587
 #, no-wrap
 msgid "Identity"
 msgstr "身份定位"
@@ -61,27 +61,37 @@ msgstr "**让数字生命可以在其中持续存在，记住自己是谁、经�
 
 #. type: Plain text
 #: docs/concepts/identity.md:27
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Priority | Item                                                  | Status                                                                                                           |\n"
+#| "| -------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |\n"
+#| "| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                                                                                                          |\n"
+#| "| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                                                                                                  |\n"
+#| "| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                                                                                                  |\n"
+#| "| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                                                                                                  |\n"
+#| "| P2       | HTTP API auth                                         | 业务 API 须带 per-subject Service API Token；`GET /api/health` 豁免（见 [`remote-access.md`](remote-access.md)） |\n"
+#| "| P3       | IPC / LLM rate limiting                               | None                                                                                                             |\n"
+#| "| P3       | Session disk encryption                               | None                                                                                                             |\n"
 msgid ""
-"| Structure                                | Role                                            |\n"
-"| ---------------------------------------- | ----------------------------------------------- |\n"
-"| Memory system                            | The digital life's \"home\"                       |\n"
-"| Self layer (six blocks)                  | Persistent definition of \"who I am\"             |\n"
-"| Tools (local / MCP / ACP)                | \"Limbs\" for perception and action               |\n"
-"| pass credentials                         | Lifeline (injected at runtime, never plaintext) |\n"
-"| Gateway                                  | Ears and mouth (Discord / WeChat / Admin)       |\n"
-"| EventBus                                 | Nervous system (memory pipelines auto-trigger)  |\n"
-"| Project narrative files like `AGENTS.md` | Anchor for project context                      |\n"
+"| Structure                                | Role                                                                                                                            |\n"
+"| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| Memory system                            | The digital life's \"home\"                                                                                                       |\n"
+"| Self layer (six blocks)                  | Persistent definition of \"who I am\"                                                                                             |\n"
+"| Tools (local / MCP / ACP)                | \"Limbs\" for perception and action                                                                                               |\n"
+"| pass credentials                         | Lifeline (injected at runtime, never plaintext)                                                                                 |\n"
+"| Gateway                                  | Ears and mouth (Discord / WeChat / Admin)                                                                                       |\n"
+"| EventBus                                 | Async notification transport (Redis queue); sleep uses Pipeline Runner, not EventBus — see [`architecture.md`](architecture.md) |\n"
+"| Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                      |\n"
 msgstr ""
-"| 结构                                | 角色                                            |\n"
-"| ---------------------------------------- | ----------------------------------------------- |\n"
-"| 记忆体系                            | 数字生命的「家」                       |\n"
-"| 自我层（六块）                  | 「我是谁」的持久定义             |\n"
-"| 工具（local / MCP / ACP）                | 感知与行动的「肢体」               |\n"
-"| pass 凭证                         | 生命线（运行时注入，永不明文） |\n"
-"| Gateway                                  | 耳与口（Discord / WeChat / Admin）       |\n"
-"| EventBus                                 | 神经系统（记忆流水线自动触发）  |\n"
-"| 项目叙事文件如 `AGENTS.md` | 项目上下文锚点                      |\n"
+"| 优先级 | 项                                                    | 状态                                                                                                                         |\n"
+"| ------ | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |\n"
+"| P0     | file_read_file 全面 deny（`/etc/` 等）                | 部分                                                                                                                         |\n"
+"| P0     | `terminal_run` / `code_execute` 默认 `shell=False`    | 未实现                                                                                                                       |\n"
+"| P1     | Runtime Unix socket `chmod 600` + 握手 token            | 未实现                                                                                                                       |\n"
+"| P1     | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | 未实现                                                                                                                       |\n"
+"| P2     | HTTP API 鉴权                                         | 非 loopback Host 或非 loopback TCP 对端须 `remote_auth` 否则 401；双 loopback 豁免（[`remote-access.md`](remote-access.md)） |\n"
+"| P3     | IPC / LLM 速率限制                                    | 无                                                                                                                           |\n"
+"| P3     | 会话磁盘加密                                          | 无                                                                                                                           |\n"
 
 #. type: Title ##
 #: docs/concepts/identity.md:30

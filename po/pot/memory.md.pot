@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 17:13+0800\n"
+"POT-Creation-Date: 2026-07-01 16:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,8 +23,8 @@ msgid "Core Principles"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/memory.md:1 messages/po4a/en.xml:93 messages/po4a/en.xml:454
-#: messages/po4a/en.xml:524
+#: docs/concepts/memory.md:1 messages/po4a/en.xml:198 messages/po4a/en.xml:369
+#: messages/po4a/en.xml:589
 #, no-wrap
 msgid "Memory"
 msgstr ""
@@ -190,7 +190,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/memory.md:85
 #, no-wrap
-msgid "**Conversation log** — the most raw, high-fidelity objective runtime trace. Only **user-facing conversations** (`sessions` without `platform_info.platform = cron`) feed light sleep and dream. Background LLM (cron agent, sleep stages) runs as **AutoLlmRun** — audited in `auto_llm_runs`, not copied into the conversation archive.\n"
+msgid "**Conversation log** — the most raw, high-fidelity objective runtime trace. Only **user-facing conversations** (`conversations` without `platform_info.platform = cron`) feed light sleep and dream. Background LLM (cron agent, sleep stages) runs as **AutoLlmRun** — audited in `auto_llm_runs`, not copied into the conversation archive.\n"
 msgstr ""
 
 #. type: Plain text
@@ -283,65 +283,77 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/memory.md:123
-msgid ""
-"Three-stage evolution from declarative knowledge → dynamic skills → "
-"crystallized instincts (CLI / MCP / scripts)."
+#, no-wrap
+msgid "**Storage:** procedural knowledge lives in `semantic_memory` with `memory_type = procedural` (see §2 Semantic Memory table) — not a separate PG table.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/memory.md:125
+#, no-wrap
+msgid "**Evolution path:** three-stage maturation from declarative knowledge → dynamic skills → crystallized instincts (CLI / MCP / automation scripts).\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/memory.md:126
+#: docs/concepts/memory.md:128
 #, no-wrap
 msgid "III. Nightly Consolidation"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:129
+#: docs/concepts/memory.md:131
 msgid ""
 "Conversion from working memory to long-term memory is handled by the sleep "
 "mechanism. See [`sleep.md`](sleep.md)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:132
+#: docs/concepts/memory.md:135
 msgid ""
-"**Light sleep (✅):** daily 02:00; semantic + limbic + autobiographical "
-"extraction"
+"**Sleep cycle (✅):** single cron `builtin-sleep-cycle` @ 02:00; "
+"orchestrates a DAG (see [`sleep.md`](sleep.md))"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:132
+#: docs/concepts/memory.md:135
 msgid ""
-"**Deep sleep (✅):** daily 03:00; contradiction/expiry, split, merge, pin "
-"maintenance"
+"**Light sleep (✅):** step `light-sleep` — semantic + limbic + "
+"autobiographical extraction"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/memory.md:135
+msgid ""
+"**Deep sleep (✅):** step `deep-sleep` (depends on light-sleep) — "
+"contradiction/expiry, split, merge, pin maintenance"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:134
+#: docs/concepts/memory.md:137
 #, no-wrap
 msgid "**All conversions must carry identity context**—self layer six blocks + resident memory, not a generic extraction assistant.\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/memory.md:137
+#: docs/concepts/memory.md:140
 #, no-wrap
 msgid "IV. Retrieval Strategy"
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/memory.md:139
+#: docs/concepts/memory.md:142
 #, no-wrap
 msgid "✅ Implemented (`memory_recall` tool)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:142
+#: docs/concepts/memory.md:145
 msgid ""
 "`memory_recall(query)` parallel four-source recall, returns unified "
 "`results[]` (default Top 10), distinguished by `memory_type`:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:149
+#: docs/concepts/memory.md:152
 #, no-wrap
 msgid ""
 "| `memory_type`      | Notes                                                                        |\n"
@@ -353,13 +365,13 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:151
+#: docs/concepts/memory.md:154
 #, no-wrap
 msgid "**Index columns (PG):** `semantic_memory` and `messages` use `fts_segmented` (optional jieba) → generated `content_fts` (tsvector, keyword FTS) plus async `content_embedding` (pgvector, semantic similarity). `limbic_memory` and `autobiographical_memory` follow the same pattern; autobiographical index text is `title + newline + content`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only). `content_fts` is never written by application code — PostgreSQL generates it from `fts_segmented` or raw content.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:153
+#: docs/concepts/memory.md:156
 msgid ""
 "Resident memory injected via system prompt: **up to 40 pinned** + **most-"
 "referenced top N** (default N=20). Each line carries a citation marker "
@@ -367,25 +379,25 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:155
+#: docs/concepts/memory.md:158
 #, no-wrap
 msgid "**Citation obligation:** whenever an assistant reply uses semantic memory—resident list, `memory_recall` / `memory_semantic_search` semantic hits, or prior message markers—it must append each cited `[[f-id]]` at the **end of the reply body**. Use the inline marker or `semantic_memory_id` from tool results. Session, limbic, and autobiographical hits do not use this marker.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:157
+#: docs/concepts/memory.md:160
 #, no-wrap
 msgid "**Where the rule is communicated:** global system prompt `memory-citation` section; `memory_recall` and `memory_semantic_search` tool descriptions. Tool response JSON is not modified for this.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:159
+#: docs/concepts/memory.md:162
 #, no-wrap
 msgid "**What counts as a reference:** only `[[f-id]]` markers in **user/assistant** message bodies are parsed into `memory_references` and contribute to `reference_count`. Tool returns (including `semantic_memory_id` fields) are **not** references. Bare `f-id` text without `[[ ]]` is also not counted.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:161
+#: docs/concepts/memory.md:164
 msgid ""
 "Nightly sleep-cycle step `memory-ref-sync` full-calibrates counts from "
 "messages. Excess pinned entries are truncated at read time with a warn log; "
@@ -394,13 +406,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/memory.md:164
+#: docs/concepts/memory.md:167
 #, no-wrap
 msgid "V. Relationship to Hindsight"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:174
+#: docs/concepts/memory.md:177
 #, no-wrap
 msgid ""
 "| Dimension         | Hindsight                                  | FreeAnima v3                                       |\n"
@@ -414,7 +426,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:175
+#: docs/concepts/memory.md:178
 #, no-wrap
 msgid "**Our stance:** Do not copy Hindsight, do not connect to Hindsight services. Digest its design ideas into FreeAnima's own memory system. Limbic memory is not an add-on—it is a core need of digital life.\n"
 msgstr ""

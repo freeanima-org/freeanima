@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 00:11+0800\n"
+"POT-Creation-Date: 2026-07-01 16:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -55,11 +55,17 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:19
+#, fuzzy
+#| msgid ""
+#| "All paths run the same `anima service` runtime (Admin API + tRPC + "
+#| "Gateway + engine). PostgreSQL with **pgvector** is **required**. Redis "
+#| "powers fridge/tasks cross-conversation context and **degrades silently** "
+#| "when unavailable — Docker and production setups should still run it."
 msgid ""
-"All paths run the same `anima service` runtime (Admin API + tRPC + Gateway + "
-"engine). PostgreSQL with **pgvector** is **required**. Redis powers fridge/"
-"tasks cross-conversation context and **degrades silently** when unavailable "
-"— Docker and production setups should still run it."
+"All paths run the same `anima service` runtime (Hub REST `/api` + SAP `/sap/"
+"v1` + engine). PostgreSQL with **pgvector** is **required**. Redis powers "
+"EventBus, user fridge magnets, and task context; it **degrades silently** "
+"when unavailable — Docker and production setups should still run it."
 msgstr ""
 "所有路径运行相同的 `anima service` 运行时（Admin + tRPC + Gateway + "
 "engine）。带 **pgvector** 的 PostgreSQL **必需**。Redis 支撑 fridge/tasks 跨 "
@@ -437,9 +443,13 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/install.md:154
+#, fuzzy
+#| msgid ""
+#| "Local Web shell dev: `bun run dev:web` → Admin: `http://127.0.0.1:4173/"
+#| "admin/dashboard`"
 msgid ""
-"Local Web shell dev: `bun run dev:web` → Admin: `http://127.0.0.1:4173/admin/"
-"dashboard`"
+"Local Web shell dev: `bun run dev:web` → Admin: `http://127.0.0.1:4173/web/"
+"admin/dashboard`"
 msgstr ""
 "本地 Web shell 开发：`bun run dev:web` → 管理台：`http://127.0.0.1:4173/"
 "admin/dashboard`"
@@ -593,19 +603,27 @@ msgstr "若要接近 npm 用户的发布形态本地安装："
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:211
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "bun run install:cli:local\n"
+#| "# equivalent: bun run build:cli && bun install -g \"$PWD/cli/publish\"\n"
 msgid ""
 "bun run install:cli:local\n"
-"# equivalent: bun run build:cli && bun install -g \"$PWD/cli/publish\"\n"
+"# equivalent: bun run build:cli && bun install -g \"$PWD/app/cli/publish\"\n"
 msgstr ""
 "bun run install:cli:local\n"
 "# equivalent: bun run build:cli && bun install -g \"$PWD/cli/publish\"\n"
 
 #. type: Plain text
 #: docs/guide/install.md:217
+#, fuzzy
+#| msgid ""
+#| "`bun install -g ./cli/publish` from the repo root is not supported; use "
+#| "`bun run install:cli:local` (cleans broken global deps, then pack + "
+#| "install tarball)."
 msgid ""
-"`bun install -g ./cli/publish` from the repo root is not supported; use `bun "
-"run install:cli:local` (cleans broken global deps, then pack + install "
+"`bun install -g ./app/cli/publish` from the repo root is not supported; use "
+"`bun run install:cli:local` (cleans broken global deps, then pack + install "
 "tarball)."
 msgstr ""
 "不支持在仓库根目录 `bun install -g ./cli/publish`；请用 `bun run "
@@ -643,25 +661,25 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:231
-msgid ""
-"Admin dev mode (source watch rebuild — refresh the page after frontend "
-"edits):"
-msgstr "Admin 开发模式（源码 watch 重建 — 改前端后刷新页面）："
+msgid "Frontend hot reload (Vite HMR — Hub must already be running):"
+msgstr ""
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:232
 #, no-wrap
-msgid "anima service start --dev --foreground\n"
-msgstr "anima service start --dev --foreground\n"
+msgid ""
+"anima service start --foreground   # terminal 1: Hub REST + SAP\n"
+"bun run dev:web                    # terminal 2: http://127.0.0.1:4173/web/chat · Admin /web/admin/dashboard\n"
+msgstr ""
 
 #. type: Title ###
-#: docs/guide/install.md:236
+#: docs/guide/install.md:237
 #, no-wrap
 msgid "4. Development checks"
 msgstr "4. 开发检查"
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:238
+#: docs/guide/install.md:239
 #, no-wrap
 msgid ""
 "bun run check    # typecheck + lint + dep-check + format + changed unit tests\n"
@@ -671,25 +689,25 @@ msgstr ""
 "bun run test     # full unit + integration (integration uses Docker for temp PG)\n"
 
 #. type: Plain text
-#: docs/guide/install.md:244
+#: docs/guide/install.md:245
 #, no-wrap
 msgid "**link:global** (`bun run link:global`): upgrade manually — `git pull`, `bun install`, then restart the service. `anima upgrade` and `/upgrade` print instructions only.\n"
 msgstr "**link:global**（`bun run link:global`）：手动升级——`git pull`、`bun install`，然后重启服务。`anima upgrade` 与 `/upgrade` 仅打印说明。\n"
 
 #. type: Plain text
-#: docs/guide/install.md:246
+#: docs/guide/install.md:247
 #, no-wrap
 msgid "**Local pack** (`bun run install:cli:local`): `anima upgrade` runs `git pull` and reinstalls the local pack from the repo.\n"
 msgstr "**Local pack**（`bun run install:cli:local`）：`anima upgrade` 执行 `git pull` 并从仓库重装本地 pack。\n"
 
 #. type: Title ##
-#: docs/guide/install.md:249
+#: docs/guide/install.md:250
 #, no-wrap
 msgid "Verify installation"
 msgstr "验证安装"
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:251
+#: docs/guide/install.md:252
 #, no-wrap
 msgid ""
 "anima service start\n"
@@ -701,7 +719,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:261
+#: docs/guide/install.md:262
 msgid ""
 "If status fails, check PostgreSQL connectivity, that migrations completed "
 "([`database.md`](database.md#troubleshooting)), and that a valid Service API "
@@ -711,13 +729,13 @@ msgstr ""
 "(database.md#troubleshooting)），以及是否已配置有效的 Service API Token。"
 
 #. type: Title ##
-#: docs/guide/install.md:262
+#: docs/guide/install.md:263
 #, no-wrap
 msgid "Next steps"
 msgstr "后续步骤"
 
 #. type: Bullet: '1. '
-#: docs/guide/install.md:268
+#: docs/guide/install.md:269
 msgid ""
 "**Security** — pass-only secrets, `chmod 700 ~/.anima`, do not expose Admin "
 "without auth ([`security.md`](security.md))"
@@ -726,7 +744,7 @@ msgstr ""
 "（[`security.md`](security.md)）"
 
 #. type: Bullet: '2. '
-#: docs/guide/install.md:268
+#: docs/guide/install.md:269
 msgid ""
 "**Remote access** — optional Cloudflare Tunnel + Service API Token for "
 "personal mobile/remote Admin ([`remote-access.md`](remote-access.md))"
@@ -735,7 +753,7 @@ msgstr ""
 "管理台（[`remote-access.md`](remote-access.md)）"
 
 #. type: Bullet: '3. '
-#: docs/guide/install.md:268
+#: docs/guide/install.md:269
 msgid ""
 "**Database** — backups, extensions, manual migrations if needed "
 "([`database.md`](database.md))"
@@ -743,13 +761,13 @@ msgstr ""
 "**数据库** — 备份、扩展、必要时手动迁移（[`database.md`](database.md)）"
 
 #. type: Bullet: '4. '
-#: docs/guide/install.md:268
+#: docs/guide/install.md:269
 msgid ""
 "**Operations** — start/stop, memory metrics ([`service.md`](service.md))"
 msgstr "**运维** — 启停、内存指标（[`service.md`](service.md)）"
 
 #. type: Bullet: '5. '
-#: docs/guide/install.md:268
+#: docs/guide/install.md:269
 msgid ""
 "**Architecture** — memory pipeline, self layer, tools ([`../concepts/"
 "architecture.md`](../concepts/architecture.md))"

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 17:27+0800\n"
+"POT-Creation-Date: 2026-07-01 16:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:1 messages/po4a/en.xml:387
+#: docs/concepts/dream.md:1 messages/po4a/en.xml:443
 #, no-wrap
 msgid "Dream"
 msgstr "梦境"
@@ -34,8 +34,9 @@ msgid "> Nightly creative narratives generated after light sleep; not factual me
 msgstr "> 浅睡后生成的夜间创意叙事；非事实性记忆。\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9 messages/po4a/en.xml:515
-#: messages/po4a/en.xml:523
+#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9
+#: docs/guide/remote-access.md:10 messages/po4a/en.xml:592
+#: messages/po4a/en.xml:599
 #, no-wrap
 msgid "Overview"
 msgstr "概述"
@@ -52,7 +53,7 @@ msgstr ""
 "是根据当日的情绪基调与随机情景片段，生成超现实的第一人称叙事。"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:13 messages/po4a/en.xml:391
+#: docs/concepts/dream.md:13 messages/po4a/en.xml:447
 #, no-wrap
 msgid "Trigger"
 msgstr "触发"
@@ -137,10 +138,10 @@ msgstr "仅追加；创建后内容不更新。"
 #. type: Bullet: '- '
 #: docs/concepts/dream.md:35
 msgid ""
-"Redis fridge magnet `dream:reminder:{day}` (TTL 24h) with a short teaser "
-"when a dream is created."
+"Does **not** create fridge magnets or notification inbox entries (see "
+"[`fridge-magnet.md`](fridge-magnet.md), [`notifications.md`]"
+"(notifications.md))."
 msgstr ""
-"创建梦境时写入 Redis 冰箱贴 `dream:reminder:{day}`（TTL 24h），附带简短提示。"
 
 #. type: Title ##
 #: docs/concepts/dream.md:36 docs/concepts/sleep.md:32
@@ -182,45 +183,46 @@ msgid "Tools & UI"
 msgstr "工具与 UI"
 
 #. type: Plain text
-#: docs/concepts/dream.md:56
-#, no-wrap
+#: docs/concepts/dream.md:55
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| pass path                                | Purpose                       |\n"
+#| "| ---------------------------------------- | ----------------------------- |\n"
+#| "| `services/cloudflare/api-token`          | Create Tunnel / DNS           |\n"
+#| "| `services/cloudflare/tunnel-credentials` | `cloudflared` connector creds |\n"
 msgid ""
-"| Surface                        | Purpose                                                           |\n"
-"| ------------------------------ | ----------------------------------------------------------------- |\n"
-"| `dream_read` tool              | Read stored dream; auto-dismisses fridge reminder                 |\n"
-"| `fridge_magnet_dismiss` tool   | Explicitly tear off any fridge magnet (including dream reminders) |\n"
-"| Admin `/admin/dashboard/dream` | Browse dream history                                              |\n"
+"| Surface                        | Purpose              |\n"
+"| ------------------------------ | -------------------- |\n"
+"| `dream_read` tool              | Read stored dream    |\n"
+"| Admin `/admin/dashboard/dream` | Browse dream history |\n"
 msgstr ""
-"| 入口                           | 用途                                                              |\n"
-"| ------------------------------ | ----------------------------------------------------------------- |\n"
-"| `dream_read` 工具              | 读取已存梦境；自动撕掉冰箱贴提醒                                  |\n"
-"| `fridge_magnet_dismiss` 工具   | 显式撕掉任意冰箱贴（含梦境提醒）                                  |\n"
-"| Admin `/admin/dashboard/dream` | 浏览梦境历史                                                      |\n"
+"| pass 路径                                | 用途                     |\n"
+"| ---------------------------------------- | --------------------------- |\n"
+"| `services/cloudflare/api-token`          | 创建 Tunnel / DNS         |\n"
+"| `services/cloudflare/tunnel-credentials` | `cloudflared` 连接器凭证 |\n"
 
 #. type: Title ##
-#: docs/concepts/dream.md:57
+#: docs/concepts/dream.md:56
 #, no-wrap
 msgid "Design Notes"
 msgstr "设计说明"
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:62
+#: docs/concepts/dream.md:61
 msgid "Dreams are **not** injected into system prompt or resident memory."
 msgstr "梦境**不会**注入系统提示或常驻记忆。"
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:62
+#: docs/concepts/dream.md:61
 msgid "Accuracy is explicitly **not** a goal; association and metaphor are."
 msgstr "准确性明确**不是**目标；联想与隐喻才是。"
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:62
-msgid ""
-"When Redis is unavailable, dreams still persist in PG; reminders silently "
-"degrade."
-msgstr "Redis 不可用时梦境仍写入 PG；提醒功能静默降级。"
+#: docs/concepts/dream.md:61
+msgid "Dreams persist in PG regardless of Redis availability."
+msgstr ""
 
 #. type: Plain text
-#: docs/concepts/dream.md:63
+#: docs/concepts/dream.md:62
 msgid "See also: [`sleep.md`](sleep.md), [`memory.md`](memory.md)."
 msgstr "另见：[`sleep.md`](sleep.md)、[`memory.md`](memory.md)。"

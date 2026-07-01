@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 00:03+0800\n"
+"POT-Creation-Date: 2026-07-01 16:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,9 +51,11 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/guide/security.md:17
 msgid ""
-"HTTP / Admin **has no auth by default**; binding `127.0.0.1` is not security—"
-"any process or user that can reach the port can read conversations, send "
-"messages, start/stop MCP/ACP."
+"Business HTTP API (`/api/*` except health/CORS/echo) requires a **Service "
+"API Token** (`Authorization: Bearer fa_at_…`); create with `anima token "
+"create`. Binding `127.0.0.1` limits network exposure but does not replace "
+"token auth — any local process that can reach the port still needs a valid "
+"token for business routes."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -66,8 +68,8 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/guide/security.md:17
 msgid ""
-"**Do not** expose the service to the public internet without a Service API "
-"Token on clients (see [`remote-access.md`](remote-access.md))."
+"**Do not** expose the service to the public internet without TLS and token-"
+"protected clients (see [`remote-access.md`](remote-access.md))."
 msgstr ""
 
 #. type: Title ##
@@ -109,10 +111,10 @@ msgstr ""
 #: docs/guide/security.md:37
 #, no-wrap
 msgid ""
-"| Path                            | Content             | Encryption                      |\n"
-"| ------------------------------- | ------------------- | ------------------------------- |\n"
-"| PostgreSQL conversation archive | sessions / messages | No application-layer encryption |\n"
-"| `~/.anima/weixin/`              | WeChat sync state   | None                            |\n"
+"| Path                            | Content                  | Encryption                      |\n"
+"| ------------------------------- | ------------------------ | ------------------------------- |\n"
+"| PostgreSQL conversation archive | conversations / messages | No application-layer encryption |\n"
+"| `~/.anima/weixin/`              | WeChat sync state        | None                            |\n"
 msgstr ""
 
 #. type: Plain text
@@ -130,15 +132,15 @@ msgstr ""
 #: docs/guide/security.md:51
 #, no-wrap
 msgid ""
-"| Capability             | Risk                                                                                                                |\n"
-"| ---------------------- | ------------------------------------------------------------------------------------------------------------------- |\n"
-"| `terminal`             | Default `shell: true`, can run arbitrary shell commands                                                             |\n"
-"| `file_read_file`       | Partial path deny (`.ssh` private keys, `/etc/passwd`, etc.); **not** full `/etc/` deny                             |\n"
-"| `file_write_file`      | deny list + write-protected paths                                                                                   |\n"
-"| MCP tools              | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined               |\n"
-"| Capability mask (Mask) | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `capabilities/mask` |\n"
-"| ACP (Cursor)           | Default **auto-approve** all `session/request_permission` (`allow-once`)                                            |\n"
-"| `credentials_list`     | Returns pass path metadata only, no values                                                                          |\n"
+"| Capability             | Risk                                                                                                                          |\n"
+"| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------- |\n"
+"| `terminal`             | Default `shell: true`, can run arbitrary shell commands                                                                       |\n"
+"| `file_read_file`       | Partial path deny (`.ssh` private keys, `/etc/passwd`, etc.); **not** full `/etc/` deny                                       |\n"
+"| `file_write_file`      | deny list + write-protected paths                                                                                             |\n"
+"| MCP tools              | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined                         |\n"
+"| Capability mask (Mask) | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `capabilities/task/src/mask/` |\n"
+"| ACP (Cursor)           | Default **auto-approve** all `session/request_permission` (`allow-once`)                                                      |\n"
+"| `credentials_list`     | Returns pass path metadata only, no values                                                                                    |\n"
 msgstr ""
 
 #. type: Title ##
@@ -148,7 +150,7 @@ msgid "Measures in Place"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:65
+#: docs/guide/security.md:66
 #, no-wrap
 msgid ""
 "| Measure                 | Description                                                                                                                            |\n"
@@ -160,46 +162,47 @@ msgid ""
 "| Slash commands          | Whitelist routing; every command must produce user-visible feedback; long-running commands send an immediate ack then the final result |\n"
 "| MCP default stdio       | Reduces port exposure                                                                                                                  |\n"
 "| Credential isolation    | LLM sees pass paths only, not values                                                                                                   |\n"
+"| Service API Token       | Business `/api/*` routes require `Authorization: Bearer fa_at_…` (`service_api_tokens` PG table); health/CORS/echo exempt              |\n"
 "| CI secret scanning      | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)                          |\n"
 "| `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                                          |\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/security.md:66
+#: docs/guide/security.md:67
 #, no-wrap
 msgid "Known Gaps (Documentation ≠ Fully Implemented)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:69
+#: docs/guide/security.md:70
 msgid ""
 "The following are planned in code or docs—**deployers must not assume "
 "implemented**:"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:79
+#: docs/guide/security.md:80
 #, no-wrap
 msgid ""
-"| Priority | Item                                                  | Status                                                                                                           |\n"
-"| -------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |\n"
-"| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                                                                                                          |\n"
-"| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                                                                                                  |\n"
-"| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                                                                                                  |\n"
-"| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                                                                                                  |\n"
-"| P2       | HTTP API auth                                         | 业务 API 须带 per-subject Service API Token；`GET /api/health` 豁免（见 [`remote-access.md`](remote-access.md)） |\n"
-"| P3       | IPC / LLM rate limiting                               | None                                                                                                             |\n"
-"| P3       | Session disk encryption                               | None                                                                                                             |\n"
+"| Priority | Item                                                  | Status                              |\n"
+"| -------- | ----------------------------------------------------- | ----------------------------------- |\n"
+"| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                             |\n"
+"| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                     |\n"
+"| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                     |\n"
+"| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                     |\n"
+"| P2       | Config redaction maintenance for new secret fields    | Partial — sync on new config fields |\n"
+"| P3       | IPC / LLM rate limiting                               | None                                |\n"
+"| P3       | Session disk encryption                               | None                                |\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/security.md:80
+#: docs/guide/security.md:81
 #, no-wrap
 msgid "Threat Sources"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:89
+#: docs/guide/security.md:90
 #, no-wrap
 msgid ""
 "| Code  | Name                | Description                                                      |\n"
@@ -212,13 +215,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/security.md:90
+#: docs/guide/security.md:91
 #, no-wrap
 msgid "Security Matrix"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:99
+#: docs/guide/security.md:100
 #, no-wrap
 msgid ""
 "| Module           | A External                                                 | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |\n"
@@ -231,113 +234,113 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/security.md:100
+#: docs/guide/security.md:101
 #, no-wrap
 msgid "Proposals Pending Review"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/security.md:102
+#: docs/guide/security.md:103
 #, no-wrap
 msgid "P0 — file_read_file Path Safety"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:106
+#: docs/guide/security.md:107
 msgid "Read-side deny: `/etc/`, `/proc/`, `~/.ssh/`, etc."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:106
+#: docs/guide/security.md:107
 msgid "Optional `FREEANIMA_READ_SAFE_ROOT`"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/security.md:107
+#: docs/guide/security.md:108
 #, no-wrap
 msgid "P0 — Shell Execution Policy"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:111
+#: docs/guide/security.md:112
 msgid "`terminal_run()` / `code_execute` default `shell=False`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:111
+#: docs/guide/security.md:112
 msgid "`FREEANIMA_ALLOW_SHELL=true` required for shell pipes"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/security.md:112
+#: docs/guide/security.md:113
 #, no-wrap
 msgid "P1 — Runtime / Gateway"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:116
+#: docs/guide/security.md:117
 msgid "Unix socket `chmod 600` + optional handshake token"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:116
+#: docs/guide/security.md:117
 msgid "Write safe root default cwd (`FREEANIMA_WRITE_SAFE_ROOT`)"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/security.md:117
+#: docs/guide/security.md:118
 #, no-wrap
 msgid "P2 — Config Redaction Maintenance"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:120
+#: docs/guide/security.md:121
 msgid ""
 "When adding secret fields, sync [`service/config/src/config-sanitize.ts`]"
 "(../../service/config/src/config-sanitize.ts)"
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/security.md:121
+#: docs/guide/security.md:122
 #, no-wrap
 msgid "First-Deployment Security Checklist"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/guide/security.md:129
+#: docs/guide/security.md:130
 msgid "Install and initialize pass + GPG; all secrets into pass only"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/guide/security.md:129
+#: docs/guide/security.md:130
 msgid ""
 "Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/"
 "config.yaml`; **do not** write plaintext secrets in config"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/guide/security.md:129
+#: docs/guide/security.md:130
 msgid "`chmod 700 ~/.anima`"
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/guide/security.md:129
+#: docs/guide/security.md:130
 msgid "Bind `127.0.0.1` only, or ensure intranet isolation"
 msgstr ""
 
 #. type: Bullet: '5. '
-#: docs/guide/security.md:129
+#: docs/guide/security.md:130
 msgid ""
 "Review `mcp_servers` / `acp_agents` config; set `enabled: false` for "
 "untrusted external Servers"
 msgstr ""
 
 #. type: Bullet: '6. '
-#: docs/guide/security.md:129
+#: docs/guide/security.md:130
 msgid "Regularly backup pass and `~/.anima/`; encrypt backup media"
 msgstr ""
 
 #. type: Bullet: '7. '
-#: docs/guide/security.md:129
+#: docs/guide/security.md:130
 msgid "Do not commit `.env`, `config.yaml` to git"
 msgstr ""

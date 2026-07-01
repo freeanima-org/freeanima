@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 17:27+0800\n"
+"POT-Creation-Date: 2026-07-01 16:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:1 messages/po4a/en.xml:387
+#: docs/concepts/dream.md:1 messages/po4a/en.xml:443
 #, no-wrap
 msgid "Dream"
 msgstr ""
@@ -35,8 +35,9 @@ msgid "> Nightly creative narratives generated after light sleep; not factual me
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9 messages/po4a/en.xml:515
-#: messages/po4a/en.xml:523
+#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9
+#: docs/guide/remote-access.md:10 messages/po4a/en.xml:592
+#: messages/po4a/en.xml:599
 #, no-wrap
 msgid "Overview"
 msgstr ""
@@ -51,7 +52,7 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:13 messages/po4a/en.xml:391
+#: docs/concepts/dream.md:13 messages/po4a/en.xml:447
 #, no-wrap
 msgid "Trigger"
 msgstr ""
@@ -123,8 +124,9 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/concepts/dream.md:35
 msgid ""
-"Redis fridge magnet `dream:reminder:{day}` (TTL 24h) with a short teaser "
-"when a dream is created."
+"Does **not** create fridge magnets or notification inbox entries (see "
+"[`fridge-magnet.md`](fridge-magnet.md), [`notifications.md`]"
+"(notifications.md))."
 msgstr ""
 
 #. type: Title ##
@@ -162,40 +164,37 @@ msgid "Tools & UI"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/dream.md:56
+#: docs/concepts/dream.md:55
 #, no-wrap
 msgid ""
-"| Surface                        | Purpose                                                           |\n"
-"| ------------------------------ | ----------------------------------------------------------------- |\n"
-"| `dream_read` tool              | Read stored dream; auto-dismisses fridge reminder                 |\n"
-"| `fridge_magnet_dismiss` tool   | Explicitly tear off any fridge magnet (including dream reminders) |\n"
-"| Admin `/admin/dashboard/dream` | Browse dream history                                              |\n"
+"| Surface                        | Purpose              |\n"
+"| ------------------------------ | -------------------- |\n"
+"| `dream_read` tool              | Read stored dream    |\n"
+"| Admin `/admin/dashboard/dream` | Browse dream history |\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/dream.md:57
+#: docs/concepts/dream.md:56
 #, no-wrap
 msgid "Design Notes"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:62
+#: docs/concepts/dream.md:61
 msgid "Dreams are **not** injected into system prompt or resident memory."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:62
+#: docs/concepts/dream.md:61
 msgid "Accuracy is explicitly **not** a goal; association and metaphor are."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:62
-msgid ""
-"When Redis is unavailable, dreams still persist in PG; reminders silently "
-"degrade."
+#: docs/concepts/dream.md:61
+msgid "Dreams persist in PG regardless of Redis availability."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/dream.md:63
+#: docs/concepts/dream.md:62
 msgid "See also: [`sleep.md`](sleep.md), [`memory.md`](memory.md)."
 msgstr ""
