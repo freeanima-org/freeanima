@@ -83,12 +83,6 @@
       "rules": {
         "unicorn/consistent-function-scoping": "off"
       }
-    },
-    {
-      "files": ["packages/sap-contract/src/shared-worker-bundled-url.ts"],
-      "rules": {
-        "import/default": "off"
-      }
     }
   ]
 }

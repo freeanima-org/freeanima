@@ -1,5 +1,4 @@
 /// <reference lib="dom" />
-/// <reference lib="webworker" />
 import type { SapClient } from "./router.ts";
 import type { StreamApiLikeEvent } from "./frames/message.ts";
 import {
@@ -10,13 +9,11 @@ import { runSapTransport, type SapTransportHandle } from "./transport.ts";
 import type { SapConnectionState } from "./sidecar-client.ts";
 import {
   browserSapInstanceStore,
-  browserSapInstanceStoreKey,
   loadSapInstanceId,
   type SapInstanceStore,
 } from "./instance-store.ts";
 import { hubHttpFromWsUrl, resolveHubWsUrl } from "./urls.ts";
 import { resolveShellConnectAuthToken } from "./remote-auth-client.ts";
-import { createSharedWorkerSapClient } from "./shared-worker.ts";
 
 export type DirectSatelliteConfig = {
   hub_ws_url: string;
@@ -34,13 +31,9 @@ export type SapDirectClientOptions = {
   featuresRequested?: string[];
   instanceStore?: SapInstanceStore;
   signal?: AbortSignal;
-  /** 覆盖 Vite 构建注入的 SharedWorker URL（测试或自定义部署） */
-  sharedWorkerUrl?: string;
-  /** Use SharedWorker for multi-tab single Hub connection (default true in browser) */
-  useSharedWorker?: boolean;
   /** Hub remote_auth token for non-loopback SAP connect */
   remoteAuthToken?: string;
-  /** 连接状态变化（含 SharedWorker / 直连 transport 断线） */
+  /** 连接状态变化（含 transport 断线） */
   onConnectionStateChange?: (state: SapConnectionState) => void;
 };
 
@@ -60,18 +53,6 @@ export type SapDirectClient = {
 };
 
 const DEFAULT_CONFIG_URL = "/config.json";
-
-let cachedBundledWorkerUrl: string | null = null;
-
-async function resolveSharedWorkerUrl(override?: string): Promise<string> {
-  const trimmed = override?.trim();
-  if (trimmed) return trimmed;
-  if (cachedBundledWorkerUrl) return cachedBundledWorkerUrl;
-  const mod = await import("./shared-worker-bundled-url.ts");
-  const url = mod.default;
-  cachedBundledWorkerUrl = url;
-  return url;
-}
 
 export async function loadDirectSatelliteConfig(
   configUrl = DEFAULT_CONFIG_URL,
@@ -94,17 +75,10 @@ export async function loadDirectSatelliteConfig(
 
 export function createSapDirectClient(options: SapDirectClientOptions = {}): SapDirectClient {
   let transport: SapTransportHandle | null = null;
-  let sharedClient: ReturnType<typeof createSharedWorkerSapClient> | null = null;
   let initPromise: Promise<void> | null = null;
   let instanceId: string | null = null;
-  const useSharedWorker =
-    typeof SharedWorker !== "undefined" &&
-    typeof window !== "undefined" &&
-    options.useSharedWorker !== false &&
-    options.instanceStore === undefined;
 
   const ensureTransport = async (): Promise<SapClient> => {
-    if (sharedClient) return sharedClient;
     if (transport?.getClient()) {
       return transport.whenConnected();
     }
@@ -144,35 +118,6 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
           })(),
         };
 
-        if (useSharedWorker) {
-          const workerUrl = await resolveSharedWorkerUrl(options.sharedWorkerUrl);
-          const worker = new SharedWorker(workerUrl, {
-            type: "module",
-            name: `freeanima-sap-${connect.app_id}`,
-          });
-          sharedClient = createSharedWorkerSapClient({
-            worker,
-            initConfig: {
-              hubUrl: hubHttp,
-              ...(store
-                ? {
-                    instanceStoreKey: browserSapInstanceStoreKey(
-                      hubOrigin,
-                      options.appId ?? loaded.app_id,
-                    ),
-                  }
-                : {}),
-              connect,
-            },
-            onStateChange: (connected) => {
-              options.onConnectionStateChange?.(connected ? "connected" : "disconnected");
-            },
-          });
-          const connected = await sharedClient.connect(connect);
-          instanceId = connected.instance_id;
-          return;
-        }
-
         transport = runSapTransport({
           hubUrl: hubHttp,
           ...(options.signal !== undefined ? { signal: options.signal } : {}),
@@ -189,7 +134,6 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
       })();
     }
     await initPromise;
-    if (sharedClient) return sharedClient;
     return transport!.whenConnected();
   };
 
@@ -198,15 +142,13 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
   return {
     whenReady: ensureTransport,
     getClient(): SapClient | null {
-      return sharedClient ?? transport?.getClient() ?? null;
+      return transport?.getClient() ?? null;
     },
     getInstanceId(): string | null {
-      return sharedClient?.getInstanceId() ?? instanceId;
+      return instanceId;
     },
     stop(): void {
       stream.detach();
-      sharedClient?.close();
-      sharedClient = null;
       transport?.stop();
       transport = null;
       initPromise = null;

@@ -10,7 +10,6 @@ describe("web-static", () => {
     expect(isWebStaticPath("/web")).toBe(true);
     expect(isWebStaticPath("/web/chat")).toBe(true);
     expect(isWebStaticPath("/api/health")).toBe(false);
-    expect(isWebStaticPath("/sap-shared-worker.js")).toBe(false);
   });
 
   test("webPathToDistRel", () => {
@@ -23,7 +22,7 @@ describe("web-static", () => {
     writeFileSync(join(dist, "index.html"), "<html>ok</html>");
     mkdirSync(join(dist, "assets"), { recursive: true });
     writeFileSync(join(dist, "assets", "main.js"), "ok");
-    writeFileSync(join(dist, "assets", "shared-worker-entry-abc.js"), "/* worker */");
+    writeFileSync(join(dist, "assets", "chunk-abc.js"), "/* chunk */");
 
     const base = "http://127.0.0.1:2658";
     const opts = { distDir: dist, appId: "chat" };
@@ -47,11 +46,8 @@ describe("web-static", () => {
     const asset = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/assets/main.js`), opts);
     expect(await asset!.text()).toBe("ok");
 
-    const worker = serveWebStatic(
-      new Request(`${base}${WEB_URL_PREFIX}/assets/shared-worker-entry-abc.js`),
-      opts,
-    );
-    expect(worker?.ok).toBe(true);
-    expect(await worker!.text()).toBe("/* worker */");
+    const chunk = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/assets/chunk-abc.js`), opts);
+    expect(chunk?.ok).toBe(true);
+    expect(await chunk!.text()).toBe("/* chunk */");
   });
 });
