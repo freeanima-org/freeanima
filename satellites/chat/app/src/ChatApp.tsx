@@ -31,7 +31,7 @@ import {
   rollbackBeforeLastUserMessage,
   subscribeConversationEvents,
 } from "@chat/lib/api.ts";
-import { ListDetailLayout, useDrawerNav } from "@freeanima/ui-kit/layout";
+import { ListDetailLayout, useDrawerNav, useMobileLayout } from "@freeanima/ui-kit/layout";
 import { reconnectHub, useHubConnection, useNetworkOnline } from "@freeanima/shell-sdk/react";
 import { getAppLocale, initAppLocale, m, toggleAppLocale } from "@chat/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@chat/lib/input-draft.ts";
@@ -160,6 +160,10 @@ export function ChatApp() {
   const [clarifyPending, setClarifyPending] = useState<ClarifyPending | null>(null);
   const pendingRecoveryKeyRef = useRef<string | null>(null);
   const nativeShell = Boolean(getSatelliteShell()?.isNativeShell);
+  const isElectron = Boolean(getSatelliteShell()?.isElectron);
+  const mobileLayout = useMobileLayout();
+  /** 手机 / 窄视口 / 移动壳：Enter 换行；桌面浏览器与 Electron 仍 Enter 发送 */
+  const enterToSend = !mobileLayout && (!nativeShell || isElectron);
   const drawerNav = useDrawerNav();
   const openSidebar = useCallback(() => setSidebarOpen(true), []);
   const edgeSwipeHandlers = useEdgeSwipeOpen({
@@ -719,6 +723,7 @@ export function ChatApp() {
         return;
       }
     }
+    if (!enterToSend) return;
     if (e.key !== "Enter" || e.shiftKey || e.nativeEvent.isComposing) return;
     e.preventDefault();
     void sendMessage();
