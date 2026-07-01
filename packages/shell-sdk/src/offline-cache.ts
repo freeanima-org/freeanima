@@ -4,8 +4,20 @@ import { resolveHubWsUrl } from "./hub-ws-url.ts";
 const DB_NAME = "freeanima-satellite-cache";
 const DB_VERSION = 1;
 const STORE = "kv";
+const ENVELOPE_VERSION = 1 as const;
 
 type MemoryBackend = Map<string, unknown>;
+
+type OfflineCacheEnvelope<T> = {
+  v: typeof ENVELOPE_VERSION;
+  data: T;
+  cachedAt: string;
+};
+
+export type OfflineCacheEntry<T> = {
+  data: T;
+  cachedAt: Date | null;
+};
 
 let testBackend: MemoryBackend | null = null;
 
@@ -31,6 +43,25 @@ export function resolveHubCacheScope(): string {
 
 function cacheKey(scope: string, namespace: string, id: string): string {
   return `${scope}|${namespace}|${id}`;
+}
+
+function isEnvelope<T>(raw: unknown): raw is OfflineCacheEnvelope<T> {
+  return (
+    typeof raw === "object" &&
+    raw !== null &&
+    "v" in raw &&
+    (raw as OfflineCacheEnvelope<T>).v === ENVELOPE_VERSION &&
+    "data" in raw
+  );
+}
+
+function unwrapStored<T>(raw: unknown): OfflineCacheEntry<T> | null {
+  if (raw == null) return null;
+  if (isEnvelope<T>(raw)) {
+    const at = Date.parse(raw.cachedAt);
+    return { data: raw.data, cachedAt: Number.isFinite(at) ? new Date(at) : null };
+  }
+  return { data: raw as T, cachedAt: null };
 }
 
 function openDb(): Promise<IDBDatabase | null> {
@@ -98,13 +129,22 @@ async function kvSet(key: string, value: unknown): Promise<void> {
   });
 }
 
+export async function readOfflineCacheEntry<T>(
+  scope: string,
+  namespace: string,
+  id: string,
+): Promise<OfflineCacheEntry<T> | null> {
+  const raw = await kvGet(cacheKey(scope, namespace, id));
+  return unwrapStored<T>(raw);
+}
+
 export async function readOfflineCache<T>(
   scope: string,
   namespace: string,
   id: string,
 ): Promise<T | null> {
-  const raw = await kvGet(cacheKey(scope, namespace, id));
-  return (raw ?? null) as T | null;
+  const entry = await readOfflineCacheEntry<T>(scope, namespace, id);
+  return entry?.data ?? null;
 }
 
 export async function writeOfflineCache<T>(
@@ -113,5 +153,14 @@ export async function writeOfflineCache<T>(
   id: string,
   value: T,
 ): Promise<void> {
-  await kvSet(cacheKey(scope, namespace, id), value);
+  const envelope: OfflineCacheEnvelope<T> = {
+    v: ENVELOPE_VERSION,
+    data: value,
+    cachedAt: new Date().toISOString(),
+  };
+  await kvSet(cacheKey(scope, namespace, id), envelope);
+}
+
+export function formatOfflineCacheTime(cachedAt: Date, locale?: string): string {
+  return cachedAt.toLocaleString(locale);
 }

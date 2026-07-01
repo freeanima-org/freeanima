@@ -600,6 +600,8 @@
   "ui_common_confirm": "确定",
   "ui_network_offline": "当前处于离线状态，Hub 实时功能不可用；部分页面可能仍显示已缓存的数据。",
   "ui_offline_cached_hint": " · 显示缓存数据",
+  "ui_offline_readonly_mode": "离线只读模式，恢复联网前无法编辑。",
+  "ui_offline_snapshot_updated": "离线快照 · 更新于 {time}",
   "ui_pwa_install_action": "安装",
   "ui_pwa_install_prompt": "将 FreeAnima 添加到主屏幕，便于快速访问。",
   "ui_pwa_shell_offline_ready": "应用界面已可离线打开；Hub 数据仍需联网。",

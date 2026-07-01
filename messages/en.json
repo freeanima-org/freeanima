@@ -600,6 +600,8 @@
   "ui_common_confirm": "OK",
   "ui_network_offline": "You are offline. Live Hub features are unavailable; cached data may still be shown where available.",
   "ui_offline_cached_hint": " · Showing cached data",
+  "ui_offline_readonly_mode": "Offline read-only — edits are disabled until you're back online.",
+  "ui_offline_snapshot_updated": "Offline snapshot · updated {time}",
   "ui_pwa_install_action": "Install",
   "ui_pwa_install_prompt": "Install FreeAnima on your home screen for quick access.",
   "ui_pwa_shell_offline_ready": "App shell is ready for offline use. Hub data still requires a connection.",

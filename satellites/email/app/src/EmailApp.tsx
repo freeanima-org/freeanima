@@ -6,7 +6,7 @@ import {
   useDrawerNav,
   useThreeColumnLayoutMode,
 } from "@freeanima/ui-kit/layout";
-import { useSubjectScope } from "@freeanima/shell-sdk/react";
+import { useOfflineReadOnly, useSubjectScope } from "@freeanima/shell-sdk/react";
 
 import { EmailMessageDetail } from "./components/EmailMessageDetail.tsx";
 import {
@@ -33,6 +33,7 @@ function formatWhen(iso: string): string {
 
 export function EmailApp() {
   const { kind: subjectKind } = useSubjectScope();
+  const offlineReadOnly = useOfflineReadOnly();
   const layoutMode = useThreeColumnLayoutMode();
   const useDrawer = useDrawerNav();
   const [accounts, setAccounts] = useState<EmailAccountRow[]>([]);
@@ -119,7 +120,7 @@ export function EmailApp() {
     try {
       const row = await readEmailMessage(message.id);
       setDetail(row);
-      if (row.unread) {
+      if (row.unread && !offlineReadOnly) {
         try {
           await markEmailMessageRead(row.id);
           setMessages((prev) => prev.map((m) => (m.id === row.id ? { ...m, unread: false } : m)));
@@ -224,6 +225,11 @@ export function EmailApp() {
           <AlertDescription className="text-sm">{error}</AlertDescription>
         </Alert>
       ) : null}
+      {offlineReadOnly ? (
+        <Alert variant="warning" className="m-2 shrink-0">
+          <AlertDescription className="text-sm">离线只读，同步与标记已读已禁用。</AlertDescription>
+        </Alert>
+      ) : null}
       {syncNotice ? (
         <Alert variant="success" className="m-2 shrink-0">
           <AlertDescription className="text-sm">{syncNotice}</AlertDescription>
@@ -301,7 +307,12 @@ export function EmailApp() {
             activeAccount ? (
               <>
                 {listLoading || searching ? <Spinner className="size-4" /> : null}
-                <Button type="button" size="sm" disabled={syncing} onClick={() => void onSync()}>
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={syncing || offlineReadOnly}
+                  onClick={() => void onSync()}
+                >
                   {syncing ? "同步中…" : "同步"}
                 </Button>
               </>
