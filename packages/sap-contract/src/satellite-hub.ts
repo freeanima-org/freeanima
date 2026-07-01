@@ -1,12 +1,15 @@
+import type { SapAttachOutput } from "./frames/lifecycle.ts";
 import type { SapToolDefInput, ToolCallPayload } from "./frames/tool.ts";
 import type { SapInstanceStore } from "./instance-store.ts";
 import type { SapClient } from "./router.ts";
-import { runSapTransport, type SapTransportHandle } from "./transport.ts";
+import { runHubRpcTransport, type HubRpcTransportHandle } from "@freeanima/hub-rpc";
 import {
   attachHubEventFanout,
   createSapRelayServerState,
   type SapRelayServerState,
 } from "./satellite-relay-server.ts";
+import { sapClientFromRpc } from "./sap-client-from-rpc.ts";
+import { loadSapInstanceId } from "./instance-store.ts";
 
 export type CreateSatelliteHubOptions = {
   appId: string;
@@ -36,30 +39,37 @@ export type SatelliteHubHandle = {
   getSapClient(): Promise<SapClient>;
 };
 
+function isStaleInstanceIdError(error: unknown): boolean {
+  const msg = error instanceof Error ? error.message : String(error);
+  return msg.includes("unknown instance_id");
+}
+
 export function createSatelliteHub(options: CreateSatelliteHubOptions): SatelliteHubHandle {
-  let transport: SapTransportHandle | null = null;
+  let transport: HubRpcTransportHandle | null = null;
+  let sapClient: SapClient | null = null;
   let instanceId: string | null = null;
   const relayState = options.relay ? createSapRelayServerState() : null;
   let currentHttpUrl = options.httpUrl;
+  let currentHubUrl = options.hubUrl;
 
-  async function registerToolsAndHandlers(sap: SapClient): Promise<void> {
+  async function registerToolsAndHandlers(client: SapClient): Promise<void> {
     if (options.tools?.length) {
-      sap.onEvent("tool.call", (payload) => {
-        void handleToolCall(sap, payload as ToolCallPayload);
+      client.onEvent("tool.call", (payload) => {
+        void handleToolCall(client, payload as ToolCallPayload);
       });
-      await sap.request("tool.register", {
+      await client.request("tool.register", {
         tools: options.tools,
         private: options.toolsetPrivate !== false,
       });
     }
     if (relayState) {
-      attachHubEventFanout(relayState, sap);
+      attachHubEventFanout(relayState, client);
     }
   }
 
-  async function handleToolCall(sap: SapClient, payload: ToolCallPayload): Promise<void> {
+  async function handleToolCall(client: SapClient, payload: ToolCallPayload): Promise<void> {
     if (!options.onToolCall) {
-      await sap.request("tool.error", {
+      await client.request("tool.error", {
         call_id: payload.call_id,
         error: "no local tool executor configured",
       });
@@ -71,33 +81,60 @@ export function createSatelliteHub(options: CreateSatelliteHubOptions): Satellit
         payload.args,
         payload.workspace_root !== undefined ? { workspace_root: payload.workspace_root } : {},
       );
-      await sap.request("tool.result", { call_id: payload.call_id, content });
+      await client.request("tool.result", { call_id: payload.call_id, content });
     } catch (e) {
-      await sap.request("tool.error", {
+      await client.request("tool.error", {
         call_id: payload.call_id,
         error: e instanceof Error ? e.message : String(e),
       });
     }
   }
 
-  function startTransport(hubUrl: string, httpUrl?: string): SapTransportHandle {
-    transport?.stop();
-    currentHttpUrl = httpUrl ?? currentHttpUrl;
+  async function sapAttach(client: SapClient, instanceIdHint?: string): Promise<string> {
+    const attachBase = {
+      app_id: options.appId,
+      features_requested: options.featuresRequested ?? ["server_info", "capability_mask"],
+      ...(currentHttpUrl ? { http_url: currentHttpUrl } : {}),
+    };
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const attached = (await client.request("sap.attach", {
+          ...attachBase,
+          ...(instanceIdHint ? { instance_id: instanceIdHint } : {}),
+        })) as SapAttachOutput;
+        return attached.instance_id;
+      } catch (e) {
+        if (attempt === 0 && instanceIdHint && isStaleInstanceIdError(e)) {
+          instanceIdHint = undefined;
+          continue;
+        }
+        throw e;
+      }
+    }
+    throw new Error("sap.attach failed");
+  }
 
-    transport = runSapTransport({
-      hubUrl,
-      ...(options.instanceStore !== undefined ? { instanceStore: options.instanceStore } : {}),
-      connect: {
-        app_id: options.appId,
-        features_requested: options.featuresRequested ?? ["server_info", "capability_mask"],
-        ...(currentHttpUrl ? { http_url: currentHttpUrl } : {}),
-        ...(options.remoteAuthToken ? { auth_token: options.remoteAuthToken } : {}),
-      },
-      onConnected: async (sap, connected) => {
-        instanceId = connected.instance_id;
-        options.instanceStore?.save(connected.instance_id);
-        await registerToolsAndHandlers(sap);
-        await options.onConnected?.(sap, connected.instance_id);
+  function startTransport(hubUrl: string, httpUrl?: string): HubRpcTransportHandle {
+    transport?.stop();
+    currentHubUrl = hubUrl;
+    currentHttpUrl = httpUrl ?? currentHttpUrl;
+    const authToken = options.remoteAuthToken?.trim();
+    if (!authToken) {
+      throw new Error("satellite hub requires remoteAuthToken");
+    }
+
+    transport = runHubRpcTransport({
+      hubUrl: currentHubUrl,
+      authToken,
+      onConnected: async (rpc) => {
+        const client = sapClientFromRpc(rpc);
+        const storedId = (await loadSapInstanceId(options.instanceStore)) ?? undefined;
+        const attachedId = await sapAttach(client, storedId);
+        instanceId = attachedId;
+        options.instanceStore?.save(attachedId);
+        sapClient = client;
+        await registerToolsAndHandlers(client);
+        await options.onConnected?.(client, attachedId);
       },
     });
     return transport;
@@ -112,21 +149,24 @@ export function createSatelliteHub(options: CreateSatelliteHubOptions): Satellit
       return instanceId;
     },
     isConnected(): boolean {
-      return transport?.getClient() != null;
+      return sapClient != null;
     },
     whenConnected(): Promise<SapClient> {
-      return transport!.whenConnected();
+      return transport!.whenConnected().then((rpc) => sapClient ?? sapClientFromRpc(rpc));
     },
     reconnect(hubUrl: string, httpUrl?: string): void {
+      sapClient = null;
+      instanceId = null;
       startTransport(hubUrl, httpUrl);
     },
     stop(): void {
       transport?.stop();
       transport = null;
+      sapClient = null;
     },
     relayState,
     getSapClient(): Promise<SapClient> {
-      return transport!.whenConnected();
+      return this.whenConnected();
     },
   };
 }

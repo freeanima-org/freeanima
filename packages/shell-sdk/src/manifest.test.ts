@@ -10,7 +10,6 @@ describe("frontendManifestSchema", () => {
       version: "0.7.0",
       supportsDesktop: true,
       supportsMobile: true,
-      connectionKind: "sap-direct",
       sap: { relay: false },
     });
     expect(manifest.supportsDesktop).toBe(true);

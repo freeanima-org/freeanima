@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 00:03+0800\n"
+"POT-Creation-Date: 2026-07-01 22:15+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -55,7 +55,7 @@ msgid "Path: `./manifest` — JSON-serializable metadata."
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:24
+#: docs/sap/frontend-exports.md:23
 #, no-wrap
 msgid ""
 "| Field             | Description                                         |\n"
@@ -65,136 +65,142 @@ msgid ""
 "| `version`         | Version (usually synced with monorepo root package) |\n"
 "| `supportsDesktop` | Supports desktop embed                              |\n"
 "| `supportsMobile`  | Supports mobile embed                               |\n"
-"| `connectionKind`  | See table below                                     |\n"
-"| `sap`             | Optional; SAP satellites only                       |\n"
+"| `sap`             | Optional; true satellite metadata (`relay`, `tools`) |\n"
 msgstr ""
 
-#. type: Title ###
+#. type: Plain text
 #: docs/sap/frontend-exports.md:25
-#, no-wrap
-msgid "connectionKind"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/frontend-exports.md:32
-#, no-wrap
-msgid ""
-"| Value              | Represents                | Sidecar required?                   |\n"
-"| ------------------ | ------------------------- | ----------------------------------- |\n"
-"| `embedded-sidecar` | companion (VRM + tools)   | **Yes** (embedded in same process)  |\n"
-"| `sap-direct`       | chat (renderer → Hub SAP) | **No** (persist `instance_id` only) |\n"
-"| `hub-rest`         | Admin console (Hub REST)  | **No**                              |\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/frontend-exports.md:34
 msgid ""
 "Implementation SSOT: [`packages/shell-sdk/src/manifest.ts`](../../packages/"
 "shell-sdk/src/manifest.ts)"
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/frontend-exports.md:35
+#: docs/sap/frontend-exports.md:26
 #, no-wrap
-msgid "Desktop / Mobile (optional)"
+msgid "Desktop / Mobile profile"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/frontend-exports.md:39
+#: docs/sap/frontend-exports.md:30
 msgid ""
 "`./desktop` — desktop shell compile-time import profile (window spec, launch "
 "mode)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/frontend-exports.md:39
+#: docs/sap/frontend-exports.md:30
 msgid ""
 "`./mobile` — mobile profile; when unsupported, `embedMode: \"unsupported\"`"
 msgstr ""
 
+#. type: Title ###
+#: docs/sap/frontend-exports.md:31
+#, no-wrap
+msgid "`embedMode`"
+msgstr ""
+
 #. type: Plain text
-#: docs/sap/frontend-exports.md:41
+#: docs/sap/frontend-exports.md:38
+#, no-wrap
 msgid ""
-"`embedMode: \"bundled-spa\"` — UI bundled in client install; Hub provides `/"
-"api` and `/sap/v1` only."
+"| Value              | Represents                         | Sidecar required?                  |\n"
+"| ------------------ | ---------------------------------- | ---------------------------------- |\n"
+"| `embedded-sidecar` | companion (VRM + tools)            | **Yes** (embedded in same process) |\n"
+"| `bundled-spa`      | shell-ui module (chat, admin, …)   | **No**                             |\n"
+"| `unsupported`      | mobile profile placeholder         | —                                  |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/frontend-exports.md:40
+msgid ""
+"`embedMode` describes **how the shell hosts the UI**, not which Hub wire the "
+"module uses at runtime (that is determined by module code: Hub RPC vs REST)."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/frontend-exports.md:42
+msgid "Bundled SPA: Hub provides `/api` and `/hub/rpc/v1`."
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/frontend-exports.md:42
+#: docs/sap/frontend-exports.md:43
 #, no-wrap
 msgid "Current frontend packages"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:49
+#: docs/sap/frontend-exports.md:50
 #, no-wrap
 msgid ""
-"| Package                          | appId       | connectionKind     | embedMode     |\n"
-"| -------------------------------- | ----------- | ------------------ | ------------- |\n"
-"| `@freeanima/satellite-companion` | `companion` | `embedded-sidecar` | sidecar       |\n"
-"| `@freeanima/satellite-chat`      | `chat`      | `sap-direct`       | `bundled-spa` |\n"
-"| Admin (`app/desktop` profile)    | `admin`     | `hub-rest`         | `bundled-spa` |\n"
+"| Package                          | appId       | embedMode (profile) |\n"
+"| -------------------------------- | ----------- | ------------------- |\n"
+"| `@freeanima/satellite-companion` | `companion` | `embedded-sidecar`  |\n"
+"| `@freeanima/satellite-chat`      | `chat`      | `bundled-spa`       |\n"
+"| Admin (`app/desktop` profile)    | `admin`     | `bundled-spa`       |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:51
+#: docs/sap/frontend-exports.md:52
 msgid ""
 "Shell apps: [`app/desktop/`](../../app/desktop/) · [`app/mobile/`](../../app/"
 "mobile/) · [`packages/shell-ui/`](../../packages/shell-ui/)"
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/frontend-exports.md:52
+#: docs/sap/frontend-exports.md:53
 #, no-wrap
-msgid "Chat: SAP direct and instance_id"
+msgid "Chat: Hub RPC and instance_id"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:55
+#: docs/sap/frontend-exports.md:56
 msgid ""
-"Desktop/mobile chat uses [`createSapDirectClient`](../../packages/sap-"
-"contract/src/direct-client.ts) to connect to Hub `/sap/v1`."
+"Bundled chat uses [`createSapDirectClient`](../../packages/sap-contract/src/"
+"direct-client.ts) on the shared Hub RPC transport "
+"(`getBundledHubRpcClient` / `whenHubRpcReady`). It does **not** call "
+"`sap.attach`."
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:57
+#: docs/sap/frontend-exports.md:58
 msgid "`instance_id` persistence:"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/frontend-exports.md:60
+#: docs/sap/frontend-exports.md:61
 msgid ""
 "Electron shell: preload provides `createFileInstanceStore(\"chat\")` → "
 "`~/.anima/satellites/chat/instance.json`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/frontend-exports.md:60
+#: docs/sap/frontend-exports.md:61
 msgid "Capacitor: Preferences"
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/frontend-exports.md:61
+#: docs/sap/frontend-exports.md:62
 #, no-wrap
 msgid "Admin: Hub REST + bundled SPA"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:64
+#: docs/sap/frontend-exports.md:65
 msgid ""
 "Admin UI is built by [`@freeanima/admin-frontend`](../../platform/admin-"
 "frontend/) and bundled into desktop / mobile."
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:66
+#: docs/sap/frontend-exports.md:67
 msgid ""
 "REST base: bundled pages use `window.satelliteShell.hubUrl` for Hub **`/api/"
 "*`**. Hub enables CORS for localhost / Capacitor origins."
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:67
+#: docs/sap/frontend-exports.md:68
 msgid ""
 "Local shell dev: `bun run dev:web` → `http://127.0.0.1:4173` (Hub must be "
 "running; includes Chat, Admin, settings)."

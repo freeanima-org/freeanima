@@ -21,7 +21,7 @@ describe("needsHubSetup", () => {
         stubShell({
           isElectron: false,
           hubUrl: "http://127.0.0.1:2658",
-          hubWsUrl: "ws://127.0.0.1:2658/sap/v1",
+          hubWsUrl: "ws://127.0.0.1:2658/hub/rpc/v1",
         }),
       ),
     ).toBe(true);
@@ -31,7 +31,7 @@ describe("needsHubSetup", () => {
         stubShell({
           isElectron: false,
           hubUrl: "http://127.0.0.1:2658",
-          hubWsUrl: "ws://127.0.0.1:2658/sap/v1",
+          hubWsUrl: "ws://127.0.0.1:2658/hub/rpc/v1",
           remoteAuth: { token: "a".repeat(16) },
         }),
       ),

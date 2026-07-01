@@ -1,0 +1,163 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-07-01 22:15+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Title #
+#: docs/sap/hub-rpc.md:1 docs/sap/hub-rpc.md:5
+#, no-wrap
+msgid "Hub RPC"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:8
+#, no-wrap
+msgid "**Hub RPC** (`HubRPC/1.0`) is the WebSocket transport between any Hub client and the agent runtime. It is implemented in [`packages/hub-rpc/`](../../packages/hub-rpc/) and served at **`/hub/rpc/v1`**.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:10
+msgid ""
+"SAP (`SAP/1.0`) is a **session layer** on top of Hub RPC: true satellites "
+"call `sap.attach` after connect; bundled SPA modules **never** attach."
+msgstr ""
+
+#. type: Title ##
+#: docs/sap/hub-rpc.md:11 docs/sap/transport.md:14
+#, no-wrap
+msgid "Endpoint"
+msgstr ""
+
+#. type: Fenced code block (text)
+#: docs/sap/hub-rpc.md:13 docs/sap/transport.md:16
+#, no-wrap
+msgid "ws://{hub_host}:{port}/hub/rpc/v1\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:18
+msgid ""
+"Derive from Hub HTTP URL: replace `http` with `ws`, strip trailing slash, "
+"append `/hub/rpc/v1`. Helpers: `resolveHubRpcWsUrl` in `@freeanima/hub-rpc`."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:20
+msgid ""
+"Hub route: [`platform/src/sap/bun-route.ts`](../../platform/src/sap/bun-"
+"route.ts)."
+msgstr ""
+
+#. type: Title ##
+#: docs/sap/hub-rpc.md:21 docs/sap/transport.md:24
+#, no-wrap
+msgid "Envelope kinds"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:30
+#, no-wrap
+msgid ""
+"| `kind`      | Direction | Purpose |\n"
+"| ----------- | --------- | ------- |\n"
+"| `connect`   | Client → Hub | First frame; `protocol: HubRPC/1.0`, `auth_token` |\n"
+"| `connected` | Hub → Client | `session_id`, `heartbeat_interval_sec` |\n"
+"| `req`       | Client → Hub | RPC (`id`, `method`, `payload`) |\n"
+"| `res`       | Hub → Client | RPC reply |\n"
+"| `evt`       | Both      | Async event (incl. `heartbeat`) |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:32
+msgid ""
+"Parse/serialize: `parseHubRpcEnvelope` / `serializeHubRpcEnvelope` in "
+"`@freeanima/hub-rpc`."
+msgstr ""
+
+#. type: Title ##
+#: docs/sap/hub-rpc.md:33
+#, no-wrap
+msgid "Authentication"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:36
+msgid ""
+"Every connection must send a valid **service API token** in the `connect` "
+"payload (`auth_token`). The Hub verifies it with `verifyServiceApiToken` "
+"([`core/src/db/pg/service-api-token/`](../../core/src/db/pg/service-api-"
+"token/))."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:38
+msgid ""
+"Bundled clients read the token from `window.satelliteShell.remoteAuth.token` "
+"(shell bridge). Local web dev may seed via `FREEANIMA_REMOTE_AUTH_TOKEN` or "
+"Hub setup UI."
+msgstr ""
+
+#. type: Title ##
+#: docs/sap/hub-rpc.md:39
+#, no-wrap
+msgid "Client profiles"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:45
+#, no-wrap
+msgid ""
+"| Profile | Package entry | `sap.attach` | Typical consumer |\n"
+"| ------- | ------------- | ------------ | ---------------- |\n"
+"| Bundled SPA | `getBundledHubRpcClient()` / `whenHubRpcReady()` | **No** | Chat, task, notification, diary, email modules |\n"
+"| Satellite process | `createSatelliteHub()` in sap-contract | **Yes** | companion, pair-programming |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:47
+msgid ""
+"Bundled SPA shares **one** Hub RPC WebSocket per page load. Modules call SAP-"
+"shaped RPC methods (`conversation.*`, `task.*`, …) directly on that "
+"transport."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:49
+msgid ""
+"Satellite processes connect with Hub RPC, then `sap.attach` with `app_id` / "
+"`instance_id` before `tool.register` or instance-scoped methods."
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/sap/hub-rpc.md:50 docs/sap/transport.md:99 messages/po4a/en.xml:117
+#, no-wrap
+msgid "Reconnect"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:53
+msgid ""
+"Use `runHubRpcTransport` for connect, heartbeat, and exponential backoff "
+"(default 1s → 30s cap). On satellite detach or socket close, Hub unregisters "
+"tools for that instance."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:54
+msgid ""
+"See also: [transport.md](transport.md) (full state machine), [overview.md]"
+"(overview.md)."
+msgstr ""

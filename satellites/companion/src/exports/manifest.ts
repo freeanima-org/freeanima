@@ -8,7 +8,6 @@ export const companionManifest: FrontendManifest = {
   version: readMonorepoVersion(),
   supportsDesktop: true,
   supportsMobile: false,
-  connectionKind: "embedded-sidecar",
   sap: { relay: false, tools: true },
 };
 

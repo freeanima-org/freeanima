@@ -1,19 +1,26 @@
 /// <reference lib="dom" />
-import type { SapClient } from "./router.ts";
-import type { StreamApiLikeEvent } from "./frames/message.ts";
+export {
+  createBundledSapStreamClient,
+  getBundledSapStreamClient,
+  whenBundledSapClientReady,
+  subscribeShellConfigChanges,
+  type BundledSapStreamClient,
+  type SapConnectionState,
+} from "./bundled-sap-stream.ts";
+
 import {
-  createSapConversationStreamClient,
-  type SubscribeCallbacks,
-} from "./conversation-stream-core.ts";
-import { runSapTransport, type SapTransportHandle } from "./transport.ts";
-import type { SapConnectionState } from "./sidecar-client.ts";
-import {
-  browserSapInstanceStore,
-  loadSapInstanceId,
-  type SapInstanceStore,
-} from "./instance-store.ts";
-import { hubHttpFromWsUrl, resolveHubWsUrl } from "./urls.ts";
-import { resolveShellConnectAuthToken } from "./remote-auth-client.ts";
+  getBundledSapStreamClient,
+  createBundledSapStreamClient,
+  type BundledSapStreamClient,
+} from "./bundled-sap-stream.ts";
+import { resolveHubRpcWsUrl } from "./urls.ts";
+import { CHAT_INSTANCE_ID } from "./satellite-instance.ts";
+import { formatSapPlatform } from "./naming.ts";
+
+/** @deprecated 使用 getBundledSapStreamClient */
+export type SapDirectClient = BundledSapStreamClient;
+
+export type SapDirectClientOptions = Parameters<typeof createBundledSapStreamClient>[0];
 
 export type DirectSatelliteConfig = {
   hub_ws_url: string;
@@ -21,41 +28,12 @@ export type DirectSatelliteConfig = {
   instance_id?: string;
 };
 
-export type SapDirectClientOptions = {
-  configUrl?: string;
-  httpUrl?: string;
-  appId?: string;
-  hubWsUrl?: string;
-  /** 固定 instance_id（singleton 策略）；优先于 instanceStore / config */
-  instanceId?: string;
-  featuresRequested?: string[];
-  instanceStore?: SapInstanceStore;
-  signal?: AbortSignal;
-  /** Hub remote_auth token for non-loopback SAP connect */
-  remoteAuthToken?: string;
-  /** 连接状态变化（含 transport 断线） */
-  onConnectionStateChange?: (state: SapConnectionState) => void;
-};
-
-export type SapDirectClient = {
-  whenReady(): Promise<SapClient>;
-  getClient(): SapClient | null;
-  getInstanceId(): string | null;
-  stop(): void;
-  subscribeConversationEvents(
-    conversationId: string,
-    onUpdate: () => void,
-  ): { unsubscribe: () => void };
-  sendMessageStream(
-    input: { conversationId: string; message: string },
-    callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
-  ): { unsubscribe: () => void };
-};
-
-const DEFAULT_CONFIG_URL = "/config.json";
+export function createSapDirectClient(options: SapDirectClientOptions = {}): SapDirectClient {
+  return getBundledSapStreamClient(options);
+}
 
 export async function loadDirectSatelliteConfig(
-  configUrl = DEFAULT_CONFIG_URL,
+  configUrl = "/config.json",
 ): Promise<DirectSatelliteConfig> {
   const res = await fetch(configUrl);
   if (!res.ok) {
@@ -73,92 +51,12 @@ export async function loadDirectSatelliteConfig(
   };
 }
 
-export function createSapDirectClient(options: SapDirectClientOptions = {}): SapDirectClient {
-  let transport: SapTransportHandle | null = null;
-  let initPromise: Promise<void> | null = null;
-  let instanceId: string | null = null;
-
-  const ensureTransport = async (): Promise<SapClient> => {
-    if (transport?.getClient()) {
-      return transport.whenConnected();
-    }
-    if (!initPromise) {
-      initPromise = (async () => {
-        const loaded = options.hubWsUrl
-          ? {
-              hub_ws_url: options.hubWsUrl,
-              app_id: options.appId ?? "chat",
-            }
-          : await loadDirectSatelliteConfig(options.configUrl);
-
-        const hubHttp = hubHttpFromWsUrl(loaded.hub_ws_url);
-        const httpUrl =
-          options.httpUrl ?? (typeof window !== "undefined" ? window.location.origin : undefined);
-
-        const hubOrigin = hubHttpFromWsUrl(resolveHubWsUrl(hubHttp));
-        const fixedInstanceId = options.instanceId?.trim() || null;
-        const store =
-          fixedInstanceId != null
-            ? undefined
-            : (options.instanceStore ??
-              (typeof window !== "undefined"
-                ? browserSapInstanceStore(hubOrigin, options.appId ?? loaded.app_id)
-                : undefined));
-
-        const storedId =
-          fixedInstanceId ?? (await loadSapInstanceId(store)) ?? loaded.instance_id ?? null;
-        const connect = {
-          app_id: options.appId ?? loaded.app_id,
-          ...(storedId ? { instance_id: storedId } : {}),
-          features_requested: options.featuresRequested ?? ["server_info"],
-          ...(httpUrl ? { http_url: httpUrl } : {}),
-          ...((): { auth_token?: string } => {
-            const authToken = options.remoteAuthToken ?? resolveShellConnectAuthToken(hubHttp);
-            return authToken ? { auth_token: authToken } : {};
-          })(),
-        };
-
-        transport = runSapTransport({
-          hubUrl: hubHttp,
-          ...(options.signal !== undefined ? { signal: options.signal } : {}),
-          ...(store !== undefined ? { instanceStore: store } : {}),
-          connect,
-          onConnected: async (_client, connected) => {
-            instanceId = connected.instance_id;
-            options.onConnectionStateChange?.("connected");
-          },
-          onDisconnected: () => {
-            options.onConnectionStateChange?.("disconnected");
-          },
-        });
-      })();
-    }
-    await initPromise;
-    return transport!.whenConnected();
-  };
-
-  const stream = createSapConversationStreamClient(() => ensureTransport());
-
-  return {
-    whenReady: ensureTransport,
-    getClient(): SapClient | null {
-      return transport?.getClient() ?? null;
-    },
-    getInstanceId(): string | null {
-      return instanceId;
-    },
-    stop(): void {
-      stream.detach();
-      transport?.stop();
-      transport = null;
-      initPromise = null;
-      instanceId = null;
-    },
-    subscribeConversationEvents: stream.subscribeConversationEvents.bind(stream),
-    sendMessageStream: stream.sendMessageStream.bind(stream),
-  };
-}
-
 export function formatDirectPlatform(appId: string, instanceId: string): string {
-  return `sap:${appId.trim().toLowerCase().replace(/[-_]/g, "")}:${instanceId.trim().toLowerCase()}`;
+  return formatSapPlatform(appId, instanceId);
 }
+
+export function defaultChatPlatform(): string {
+  return formatSapPlatform("chat", CHAT_INSTANCE_ID);
+}
+
+export { resolveHubRpcWsUrl };

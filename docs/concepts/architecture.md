@@ -66,12 +66,12 @@ Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-backed
 
 ### Platform UI layering
 
-| Layer              | Platform-native?             | Location                                                 | 数据通道      |
-| ------------------ | ---------------------------- | -------------------------------------------------------- | ------------- |
-| Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring       | preload/IPC   |
-| Shared SPA shell   | Branch on `detectPlatform()` | `packages/shell-ui`                                      | 无 SAP wire   |
-| hub-rest 前端      | Admin embed                  | `platform/admin-frontend` + `ui-kit` + `shell-sdk`       | Eden `/api`   |
-| SAP 产品面         | Satellite apps               | `satellites/*` + `sap-contract` + `ui-kit` + `shell-sdk` | SAP `/sap/v1` |
+| Layer              | Platform-native?             | Location                                                 | 数据通道             |
+| ------------------ | ---------------------------- | -------------------------------------------------------- | -------------------- |
+| Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring       | preload/IPC          |
+| Shared SPA shell   | Branch on `detectPlatform()` | `packages/shell-ui`                                      | 无 SAP wire          |
+| Admin 前端         | Admin embed                  | `platform/admin-frontend` + `ui-kit` + `shell-sdk`       | REST `/api`          |
+| SAP 产品面         | Satellite apps               | `satellites/*` + `sap-contract` + `ui-kit` + `shell-sdk` | Hub RPC + SAP attach |
 
 Nav and primary layouts **must use `detectPlatform()`** (Electron / native shell), not viewport breakpoints alone. Responsive CSS is for desktop window resize only.
 
@@ -176,7 +176,7 @@ See [`guide/security.md`](../guide/security.md).
 
 Production: `anima service` (systemd --user). Auto-restarts after crashes; only `systemctl stop` stops the service.
 
-- **service**: long-running — Hub HTTP (`/api`, `/sap/v1`), Discord / WeChat Gateway, cron
+- **service**: long-running — Hub HTTP (`/api`, `/hub/rpc/v1`), Discord / WeChat Gateway, cron
 - **chat**: single non-interactive turn (CLI or piped stdin)
 - **UI**: app/desktop / app/mobile bundled SPA (Chat + Admin); Hub does not host `/admin`
 
@@ -303,10 +303,10 @@ Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User message
 | Desktop      | 默认 Hub `/web/*`（`DESKTOP_UI_MODE=bundled` 回退本地 static）        | 仅 Electron / 伴侣变更   |
 | Mobile APK   | bootstrap → Hub `/web/*`（`MOBILE_UI_MODE=bundled` 回退 bundled SPA） | 仅 Capacitor 插件变更    |
 
-| Module | Connection                       | Notes                  |
-| ------ | -------------------------------- | ---------------------- |
-| Chat   | SAP WebSocket `/sap/v1`          | `/web/chat`            |
-| Admin  | Hub REST `/api/*` (CORS + shell) | `/web/admin/dashboard` |
+| Module | Connection                                         | Notes                  |
+| ------ | -------------------------------------------------- | ---------------------- |
+| Chat   | Hub RPC `/hub/rpc/v1` (shared WS, no `sap.attach`) | `/web/chat`            |
+| Admin  | Hub REST `/api/*` (CORS + shell)                   | `/web/admin/dashboard` |
 
 `/web/config.json` 提供 `hub_url`、`ui_version`、`min_shell_version`（壳↔UI 版本协商）。
 

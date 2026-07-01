@@ -5,7 +5,7 @@
 
 ## Global view
 
-`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: `anima service` starts the Bun Hub（REST `/api` + SAP `/sap/v1` + engine）；UI 由 app/desktop / app/mobile bundled 提供。
+`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: `anima service` starts the Bun Hub（REST `/api` + Hub RPC `/hub/rpc/v1` + engine）；UI 由 app/desktop / app/mobile bundled 提供。
 
 | Capability     | Highlights                                                                                                                                                                     |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

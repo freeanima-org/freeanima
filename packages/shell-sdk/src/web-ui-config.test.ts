@@ -7,7 +7,7 @@ describe("parseWebUiConfigJson", () => {
     const cfg = parseWebUiConfigJson({
       app_id: "chat",
       hub_url: "http://127.0.0.1:2658",
-      hub_ws_url: "ws://127.0.0.1:2658/sap/v1",
+      hub_ws_url: "ws://127.0.0.1:2658/hub/rpc/v1",
       ui_version: "0.8.1",
       min_shell_version: "0.8.0",
       layout_mode: "compact",

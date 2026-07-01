@@ -17,15 +17,17 @@ describe("offline-cache", () => {
   });
 
   test("resolveCacheScope normalizes hub URL", () => {
-    expect(resolveCacheScope("  WS://127.0.0.1:2658/sap/v1  ")).toBe("ws://127.0.0.1:2658/sap/v1");
+    expect(resolveCacheScope("  WS://127.0.0.1:2658/hub/rpc/v1  ")).toBe(
+      "ws://127.0.0.1:2658/hub/rpc/v1",
+    );
   });
 
   test("resolveHubCacheScope prefers satelliteShell hubWsUrl", () => {
     const prevWindow = globalThis.window;
-    const shell = { hubWsUrl: "ws://hub.example/sap/v1" };
+    const shell = { hubWsUrl: "ws://hub.example/hub/rpc/v1" };
     globalThis.window = { satelliteShell: shell } as Window & typeof globalThis;
     try {
-      expect(resolveHubCacheScope()).toBe("ws://hub.example/sap/v1");
+      expect(resolveHubCacheScope()).toBe("ws://hub.example/hub/rpc/v1");
     } finally {
       globalThis.window = prevWindow;
     }
@@ -33,7 +35,7 @@ describe("offline-cache", () => {
 
   test("read/write conversations round-trip", async () => {
     setOfflineCacheBackendForTests(new Map());
-    const scope = "ws://127.0.0.1:2658/sap/v1";
+    const scope = "ws://127.0.0.1:2658/hub/rpc/v1";
     const items: ConversationListItem[] = [
       { id: "c1", title: "hello", created: "2026-01-01", platform: "chat" },
     ];
@@ -44,7 +46,7 @@ describe("offline-cache", () => {
 
   test("read/write messages round-trip", async () => {
     setOfflineCacheBackendForTests(new Map());
-    const scope = "ws://127.0.0.1:2658/sap/v1";
+    const scope = "ws://127.0.0.1:2658/hub/rpc/v1";
     const display: DisplayItem[] = [{ type: "message", role: "user", content: "hi" }];
     await writeCachedMessages(scope, "c1", display);
     expect(await readCachedMessages(scope, "c1")).toEqual(display);

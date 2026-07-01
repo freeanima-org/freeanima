@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-23 16:18+0800\n"
+"POT-Creation-Date: 2026-07-01 22:15+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,11 +24,11 @@ msgstr "SAP 安全"
 #. type: Plain text
 #: docs/sap/security-model.md:8
 msgid ""
-"Current SAP deployment assumes a **trusted local machine**. There is no "
-"application-layer authentication on the WebSocket."
+"Hub RPC requires a **service API token** on every WebSocket `connect`. SAP "
+"attach still assumes a trusted client once transport auth succeeds."
 msgstr ""
-"当前 SAP 部署假定运行在**受信任的本地机器**上。WebSocket 上没有应用层身份验"
-"证。"
+"Hub RPC 要求每次 WebSocket `connect` 携带**服务 API 令牌**。传输层认证成功"
+"后，SAP attach 仍假定客户端可信。"
 
 #. type: Title ##
 #: docs/sap/security-model.md:9
@@ -41,36 +41,36 @@ msgstr "信任边界"
 #, no-wrap
 msgid ""
 "flowchart TB\n"
-"  subgraph trusted [Trusted local host assumption]\n"
+"  subgraph trusted [Trusted client with service token]\n"
 "    Hub[\"Hub anima service :2658\"]\n"
-"    SapEndpoint[\"/sap/v1 WebSocket\"]\n"
-"    SatA[Satellite pair-programming]\n"
-"    SatB[Satellite chat]\n"
-"    Other[Any local process]\n"
+"    RpcEndpoint[\"/hub/rpc/v1 WebSocket\"]\n"
+"    Bundled[Bundled SPA modules]\n"
+"    SatA[Satellite companion]\n"
+"    SatB[Satellite pair-programming]\n"
 "  end\n"
-"  Browser[Browser loopback]\n"
+"  Browser[Browser]\n"
+"  Browser --> Bundled\n"
 "  Browser --> SatA\n"
-"  Browser --> SatB\n"
-"  SatA --> SapEndpoint\n"
-"  SatB --> SapEndpoint\n"
-"  Other -.->|\"no auth today\"| SapEndpoint\n"
-"  SapEndpoint --> Hub\n"
+"  Bundled -->|\"HubRPC connect + auth_token\"| RpcEndpoint\n"
+"  SatA -->|\"HubRPC + sap.attach\"| RpcEndpoint\n"
+"  SatB --> RpcEndpoint\n"
+"  RpcEndpoint --> Hub\n"
 msgstr ""
 "flowchart TB\n"
-"  subgraph trusted [Trusted local host assumption]\n"
+"  subgraph trusted [Trusted client with service token]\n"
 "    Hub[\"Hub anima service :2658\"]\n"
-"    SapEndpoint[\"/sap/v1 WebSocket\"]\n"
-"    SatA[Satellite pair-programming]\n"
-"    SatB[Satellite chat]\n"
-"    Other[Any local process]\n"
+"    RpcEndpoint[\"/hub/rpc/v1 WebSocket\"]\n"
+"    Bundled[Bundled SPA modules]\n"
+"    SatA[Satellite companion]\n"
+"    SatB[Satellite pair-programming]\n"
 "  end\n"
-"  Browser[Browser loopback]\n"
+"  Browser[Browser]\n"
+"  Browser --> Bundled\n"
 "  Browser --> SatA\n"
-"  Browser --> SatB\n"
-"  SatA --> SapEndpoint\n"
-"  SatB --> SapEndpoint\n"
-"  Other -.->|\"no auth today\"| SapEndpoint\n"
-"  SapEndpoint --> Hub\n"
+"  Bundled -->|\"HubRPC connect + auth_token\"| RpcEndpoint\n"
+"  SatA -->|\"HubRPC + sap.attach\"| RpcEndpoint\n"
+"  SatB --> RpcEndpoint\n"
+"  RpcEndpoint --> Hub\n"
 
 #. type: Title ##
 #: docs/sap/security-model.md:29
@@ -79,55 +79,59 @@ msgid "Current controls"
 msgstr "现有控制"
 
 #. type: Plain text
-#: docs/sap/security-model.md:38
+#: docs/sap/security-model.md:39
 #, no-wrap
 msgid ""
 "| Control                         | Status                                                 |\n"
 "| ------------------------------- | ------------------------------------------------------ |\n"
-"| TLS on SAP                      | Not required; typical bind is loopback                 |\n"
-"| Token / API key on connect      | **None**                                               |\n"
+"| TLS on Hub RPC                  | Optional; remote access via Tunnel + HTTPS/WSS          |\n"
+"| Token on Hub RPC `connect`      | **Yes** — service API token (`verifyServiceApiToken`) |\n"
 "| Origin check on WebSocket       | **None**                                               |\n"
+"| SAP attach for instance scope   | **Yes** — `tool.*` requires `sap.attach`               |\n"
 "| Session-scoped tool routing     | **Yes** — [strict routing](tools.md)                   |\n"
-"| Credential values in SAP frames | **No** — credentials stay in pass; LLM sees paths only |\n"
+"| Credential values in frames     | **No** — credentials stay in pass; LLM sees paths only |\n"
 msgstr ""
 "| 控制项                          | 状态                                                   |\n"
 "| ------------------------------- | ------------------------------------------------------ |\n"
-"| SAP 上的 TLS                    | 非必需；通常绑定到 loopback                            |\n"
-"| connect 时的 Token / API key    | **无**                                                 |\n"
+"| Hub RPC 上的 TLS                | 可选；通过 Tunnel + HTTPS/WSS 远程访问                 |\n"
+"| Hub RPC `connect` 上的 Token    | **有** — 服务 API 令牌（`verifyServiceApiToken`）      |\n"
 "| WebSocket Origin 检查           | **无**                                                 |\n"
+"| 实例范围的 SAP attach           | **有** — `tool.*` 需要 `sap.attach`                    |\n"
 "| 会话范围的工具路由              | **有** — [严格路由](tools.md)                          |\n"
-"| SAP 帧中的凭证值                | **无** — 凭证保留在 pass 中；LLM 仅见路径              |\n"
+"| 帧中的凭证值                    | **无** — 凭证保留在 pass 中；LLM 仅见路径              |\n"
 
 #. type: Plain text
-#: docs/sap/security-model.md:40
+#: docs/sap/security-model.md:41
 msgid ""
-"Any process on the host that can reach `ws://127.0.0.1:2658/sap/v1` can:"
-msgstr "任何能够访问 `ws://127.0.0.1:2658/sap/v1` 的主机进程都可以："
+"Any client that holds a valid service token and can reach `ws://"
+"127.0.0.1:2658/hub/rpc/v1` can:"
+msgstr ""
+"任何持有有效服务令牌且能访问 `ws://127.0.0.1:2658/hub/rpc/v1` 的客户端都可"
+"以："
 
 #. type: Bullet: '- '
 #: docs/sap/security-model.md:44
-msgid "Register tools as any `app_id` / `instance_id`"
-msgstr "以任意 `app_id` / `instance_id` 注册工具"
+msgid ""
+"Call bundled RPC methods (chat, tasks, notifications, …) without `sap.attach`"
+msgstr ""
+"在不调用 `sap.attach` 的情况下调用壳内 bundled RPC 方法（聊天、任务、通知等）"
 
 #. type: Bullet: '- '
 #: docs/sap/security-model.md:44
-msgid "Create sessions and send messages through the Hub runtime"
-msgstr "通过 Hub 运行时创建会话并发送消息"
-
-#. type: Bullet: '- '
-#: docs/sap/security-model.md:44
-msgid "Receive `tool.call` events for registered tools"
-msgstr "接收已注册工具的 `tool.call` 事件"
+msgid ""
+"After `sap.attach`, register tools as the attached `app_id` / `instance_id`"
+msgstr "`sap.attach` 后，以已 attach 的 `app_id` / `instance_id` 注册工具"
 
 #. type: Plain text
 #: docs/sap/security-model.md:46
 msgid ""
-"Operational guidance: bind Hub to loopback; do not expose port 2658 to "
-"untrusted networks without additional controls. See [security guide](../"
-"guide/security.md)."
+"Operational guidance: bind Hub to loopback; rotate service tokens; do not "
+"expose port 2658 to untrusted networks without Tunnel + Access. See "
+"[security guide](../guide/security.md)."
 msgstr ""
-"运维建议：将 Hub 绑定到 loopback；在未添加额外控制措施的情况下，不要将 2658 "
-"端口暴露给不可信网络。参见 [安全指南](../guide/security.md)。"
+"运维建议：将 Hub 绑定到 loopback；轮换服务令牌；在未使用 Tunnel + Access 的情"
+"况下，不要将 2658 端口暴露给不可信网络。参见 [安全指南](../guide/"
+"security.md)。"
 
 #. type: Title ##
 #: docs/sap/security-model.md:47
@@ -139,11 +143,12 @@ msgstr "协议加固（传输层）"
 #: docs/sap/security-model.md:50
 msgid ""
 "Invalid frames close the socket with **1003**. Protocol violations (double "
-"connect, RPC before handshake) close with **1008**. These are integrity "
-"checks, not authentication."
+"connect, RPC before connect, `tool.*` without attach) close with **1008**. "
+"Failed auth closes with **1008** (`unauthorized`)."
 msgstr ""
-"无效帧会以 **1003** 关闭套接字。协议违规（重复连接、握手前 RPC）会以 "
-"**1008** 关闭。这些是完整性检查，而非身份验证。"
+"无效帧会以 **1003** 关闭套接字。协议违规（重复 connect、connect 前 RPC、未 "
+"attach 时调用 `tool.*`）会以 **1008** 关闭。认证失败以 **1008**"
+"（`unauthorized`）关闭。"
 
 #. type: Title ##
 #: docs/sap/security-model.md:51
@@ -153,57 +158,25 @@ msgstr "未来方向（未实现）"
 
 #. type: Plain text
 #: docs/sap/security-model.md:54
-msgid ""
-"Possible hardening items — not committed; track via GitHub Issues if "
-"prioritized:"
-msgstr "可能的加固项 — 尚未承诺；若优先处理则通过 GitHub Issues 跟踪："
+msgid "Possible hardening items — track via GitHub Issues if prioritized:"
+msgstr "可能的加固项 — 若优先处理则通过 GitHub Issues 跟踪："
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:59
-msgid "Shared secret or mTLS on `/sap/v1`"
-msgstr "`/sap/v1` 上的共享密钥或 mTLS"
+#: docs/sap/security-model.md:58
+msgid "mTLS on `/hub/rpc/v1`"
+msgstr "`/hub/rpc/v1` 上的 mTLS"
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:59
+#: docs/sap/security-model.md:58
 msgid "Instance attestation tied to managed satellite systemd units"
 msgstr "与托管 satellite systemd 单元绑定的实例证明"
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:59
+#: docs/sap/security-model.md:58
 msgid "Rate limits on connect and `tool.register`"
 msgstr "对 connect 和 `tool.register` 的速率限制"
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:59
+#: docs/sap/security-model.md:58
 msgid "Explicit disconnect on missed heartbeats"
 msgstr "心跳丢失时显式断开连接"
-
-#. type: Plain text
-#: docs/sap/security-model.md:61
-msgid ""
-"When adding auth, preserve backward compatibility only if explicitly "
-"requested; this codebase phase accepts breaking changes."
-msgstr ""
-"添加身份验证时，仅在明确要求时才保持向后兼容；本代码库阶段接受破坏性变更。"
-
-#. type: Title ##
-#: docs/sap/security-model.md:62
-#, no-wrap
-msgid "Related surfaces"
-msgstr "相关界面"
-
-#. type: Plain text
-#: docs/sap/security-model.md:68
-#, no-wrap
-msgid ""
-"| Surface            | Doc                                                                         |\n"
-"| ------------------ | --------------------------------------------------------------------------- |\n"
-"| Hub HTTP / Admin   | [security.md](../guide/security.md)                                         |\n"
-"| Credentials (pass) | [security.md](../guide/security.md), [identity.md](../concepts/identity.md) |\n"
-"| Tool execution     | [tools.md](tools.md)                                                        |\n"
-msgstr ""
-"| 界面               | 文档                                                                        |\n"
-"| ------------------ | --------------------------------------------------------------------------- |\n"
-"| Hub HTTP / Admin   | [security.md](../guide/security.md)                                         |\n"
-"| 凭证（pass）       | [security.md](../guide/security.md)、[identity.md](../concepts/identity.md) |\n"
-"| 工具执行           | [tools.md](tools.md)                                                        |\n"

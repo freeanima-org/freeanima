@@ -7,5 +7,9 @@
     "declaration": true,
     "outDir": ".tsout"
   },
-  "references": [{ "path": "./packages/sap-contract" }, { "path": "./packages/shell-ui/vite" }]
+  "references": [
+    { "path": "./packages/hub-rpc" },
+    { "path": "./packages/sap-contract" },
+    { "path": "./packages/shell-ui/vite" }
+  ]
 }

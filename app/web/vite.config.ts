@@ -168,7 +168,7 @@ export default defineConfig(({ command, mode }) => {
       strictPort: false,
       proxy: {
         "/api": { target: HUB_URL, changeOrigin: true },
-        "/sap": { target: HUB_URL, changeOrigin: true },
+        "/hub": { target: HUB_URL, changeOrigin: true },
         "/mcp": { target: HUB_URL, changeOrigin: true },
       },
     },

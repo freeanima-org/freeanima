@@ -256,9 +256,20 @@
         "@types/bun": "catalog:",
       },
     },
+    "packages/hub-rpc": {
+      "name": "@freeanima/hub-rpc",
+      "dependencies": {
+        "@freeanima/kernel": "workspace:*",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "packages/sap-contract": {
       "name": "@freeanima/sap-contract",
       "dependencies": {
+        "@freeanima/hub-rpc": "workspace:*",
         "@freeanima/kernel": "workspace:*",
         "zod": "catalog:",
       },
@@ -269,6 +280,7 @@
     "packages/shell-sdk": {
       "name": "@freeanima/shell-sdk",
       "dependencies": {
+        "@freeanima/hub-rpc": "workspace:*",
         "react": "catalog:",
         "zod": "catalog:",
       },
@@ -352,6 +364,7 @@
         "@freeanima/capabilities-task": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
         "@freeanima/core": "workspace:*",
+        "@freeanima/hub-rpc": "workspace:*",
         "@freeanima/kernel": "workspace:*",
         "@freeanima/runtime": "workspace:*",
         "@freeanima/sap-contract": "workspace:*",
@@ -1158,6 +1171,8 @@
     "@freeanima/cli": ["@freeanima/cli@workspace:app/cli"],
 
     "@freeanima/core": ["@freeanima/core@workspace:core"],
+
+    "@freeanima/hub-rpc": ["@freeanima/hub-rpc@workspace:packages/hub-rpc"],
 
     "@freeanima/integration-tests": ["@freeanima/integration-tests@workspace:tests"],
 

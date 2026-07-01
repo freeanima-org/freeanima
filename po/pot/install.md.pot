@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 22:10+0800\n"
+"POT-Creation-Date: 2026-07-01 22:26+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -50,10 +50,10 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:19
 msgid ""
-"All paths run the same `anima service` runtime (Hub REST `/api` + SAP `/sap/"
-"v1` + engine). PostgreSQL with **pgvector** is **required**. Redis powers "
-"EventBus and task context; it **degrades silently** when unavailable — "
-"Docker and production setups should still run it."
+"All paths run the same `anima service` runtime (Hub REST `/api` + Hub RPC `/"
+"hub/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis "
+"powers EventBus and task context; it **degrades silently** when unavailable "
+"— Docker and production setups should still run it."
 msgstr ""
 
 #. type: Title ##
@@ -213,7 +213,8 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:93
-msgid "Default bind: `127.0.0.1:2658`（Hub API：`/api`，SAP：`/sap/v1`）。"
+msgid ""
+"Default bind: `127.0.0.1:2658`（Hub API：`/api`，Hub RPC：`/hub/rpc/v1`）。"
 msgstr ""
 
 #. type: Plain text

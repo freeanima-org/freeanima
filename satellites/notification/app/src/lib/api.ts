@@ -10,7 +10,7 @@ import type {
   NotificationRecipientsOutput,
 } from "@freeanima/sap-contract";
 
-import { whenSapClientReady } from "./sap-client.ts";
+import { whenSapClientReady } from "./hub-rpc.ts";
 
 export type NotificationRow = NotificationListOutput["items"][number];
 

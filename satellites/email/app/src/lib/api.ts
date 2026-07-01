@@ -1,6 +1,6 @@
 import { fetchWorldContext, getSubjectKind, resolveWorldIdForSubject } from "@freeanima/shell-sdk";
 
-import { whenSapClientReady } from "./sap-client.ts";
+import { whenSapClientReady } from "./hub-rpc.ts";
 
 export type EmailAccountRow = {
   id: number;

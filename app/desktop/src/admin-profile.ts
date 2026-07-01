@@ -12,7 +12,6 @@ export const adminManifest: FrontendManifest = {
   version: readMonorepoVersion(),
   supportsDesktop: true,
   supportsMobile: true,
-  connectionKind: "hub-rest",
 };
 
 export function getAdminManifest(): FrontendManifest {
@@ -25,7 +24,6 @@ export const ADMIN_STATIC_PORT_ATTEMPTS = 10;
 export const adminDesktopExport: FrontendDesktopExport = {
   manifest: getAdminManifest(),
   profile: {
-    connectionKind: "hub-rest",
     embedMode: "bundled-spa",
     distSubdir: "admin",
     entryPath: "index.html",

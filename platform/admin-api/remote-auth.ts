@@ -54,7 +54,7 @@ function normalizeHeader(req: Request, name: string): string | null {
 
 export function isSapWebSocketUpgrade(req: Request): boolean {
   const url = new URL(req.url);
-  if (url.pathname !== "/sap/v1") return false;
+  if (url.pathname !== "/hub/rpc/v1") return false;
   const upgrade = normalizeHeader(req, "Upgrade");
   return upgrade?.toLowerCase() === "websocket";
 }

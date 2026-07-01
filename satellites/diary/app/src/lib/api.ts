@@ -1,5 +1,5 @@
 import type { DiaryEntryRow, DiarySubjectKind } from "./format-diary.ts";
-import { whenSapClientReady } from "./sap-client.ts";
+import { whenSapClientReady } from "./hub-rpc.ts";
 
 async function sap() {
   return whenSapClientReady();

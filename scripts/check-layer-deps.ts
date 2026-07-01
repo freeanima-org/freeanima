@@ -44,7 +44,7 @@ const ADMIN_FRONTEND_ALLOWED = new Set([
 
 const UI_KIT_ALLOWED = new Set(["kernel", "kernel-logging"]);
 
-const SHELL_SDK_ALLOWED = new Set(["kernel", "kernel-logging"]);
+const SHELL_SDK_ALLOWED = new Set(["kernel", "kernel-logging", "hub-rpc"]);
 
 type Layer = (typeof LAYER_DIRS)[number] | null;
 
@@ -145,8 +145,16 @@ function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
   }
 
   if (layer === "packages") {
+    if (relPath.startsWith("packages/hub-rpc")) {
+      return root === "kernel" || root.startsWith("kernel-") || root === "hub-rpc";
+    }
     if (relPath.startsWith("packages/sap-contract")) {
-      return root === "kernel" || root.startsWith("kernel-") || root === "sap-contract";
+      return (
+        root === "kernel" ||
+        root.startsWith("kernel-") ||
+        root === "sap-contract" ||
+        root === "hub-rpc"
+      );
     }
     if (relPath.startsWith("packages/ui-kit")) {
       return isUiKitAllowed(pkg);

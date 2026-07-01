@@ -1,7 +1,7 @@
 import { fetchWorldContext, getSubjectKind, resolveWorldIdForSubject } from "@freeanima/shell-sdk";
 
 import { entitySearchHitToTaskItem } from "./search-hit-mapper.ts";
-import { whenSapClientReady } from "./sap-client.ts";
+import { whenSapClientReady } from "./hub-rpc.ts";
 
 export type TaskListRow = {
   id: number;

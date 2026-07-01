@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-23 16:18+0800\n"
+"POT-Creation-Date: 2026-07-01 22:15+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,8 +25,8 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/security-model.md:8
 msgid ""
-"Current SAP deployment assumes a **trusted local machine**. There is no "
-"application-layer authentication on the WebSocket."
+"Hub RPC requires a **service API token** on every WebSocket `connect`. SAP "
+"attach still assumes a trusted client once transport auth succeeds."
 msgstr ""
 
 #. type: Title ##
@@ -40,20 +40,20 @@ msgstr ""
 #, no-wrap
 msgid ""
 "flowchart TB\n"
-"  subgraph trusted [Trusted local host assumption]\n"
+"  subgraph trusted [Trusted client with service token]\n"
 "    Hub[\"Hub anima service :2658\"]\n"
-"    SapEndpoint[\"/sap/v1 WebSocket\"]\n"
-"    SatA[Satellite pair-programming]\n"
-"    SatB[Satellite chat]\n"
-"    Other[Any local process]\n"
+"    RpcEndpoint[\"/hub/rpc/v1 WebSocket\"]\n"
+"    Bundled[Bundled SPA modules]\n"
+"    SatA[Satellite companion]\n"
+"    SatB[Satellite pair-programming]\n"
 "  end\n"
-"  Browser[Browser loopback]\n"
+"  Browser[Browser]\n"
+"  Browser --> Bundled\n"
 "  Browser --> SatA\n"
-"  Browser --> SatB\n"
-"  SatA --> SapEndpoint\n"
-"  SatB --> SapEndpoint\n"
-"  Other -.->|\"no auth today\"| SapEndpoint\n"
-"  SapEndpoint --> Hub\n"
+"  Bundled -->|\"HubRPC connect + auth_token\"| RpcEndpoint\n"
+"  SatA -->|\"HubRPC + sap.attach\"| RpcEndpoint\n"
+"  SatB --> RpcEndpoint\n"
+"  RpcEndpoint --> Hub\n"
 msgstr ""
 
 #. type: Title ##
@@ -63,45 +63,44 @@ msgid "Current controls"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/security-model.md:38
+#: docs/sap/security-model.md:39
 #, no-wrap
 msgid ""
 "| Control                         | Status                                                 |\n"
 "| ------------------------------- | ------------------------------------------------------ |\n"
-"| TLS on SAP                      | Not required; typical bind is loopback                 |\n"
-"| Token / API key on connect      | **None**                                               |\n"
+"| TLS on Hub RPC                  | Optional; remote access via Tunnel + HTTPS/WSS          |\n"
+"| Token on Hub RPC `connect`      | **Yes** — service API token (`verifyServiceApiToken`) |\n"
 "| Origin check on WebSocket       | **None**                                               |\n"
+"| SAP attach for instance scope   | **Yes** — `tool.*` requires `sap.attach`               |\n"
 "| Session-scoped tool routing     | **Yes** — [strict routing](tools.md)                   |\n"
-"| Credential values in SAP frames | **No** — credentials stay in pass; LLM sees paths only |\n"
+"| Credential values in frames     | **No** — credentials stay in pass; LLM sees paths only |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/security-model.md:40
+#: docs/sap/security-model.md:41
 msgid ""
-"Any process on the host that can reach `ws://127.0.0.1:2658/sap/v1` can:"
+"Any client that holds a valid service token and can reach `ws://"
+"127.0.0.1:2658/hub/rpc/v1` can:"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/security-model.md:44
-msgid "Register tools as any `app_id` / `instance_id`"
+msgid ""
+"Call bundled RPC methods (chat, tasks, notifications, …) without `sap.attach`"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/security-model.md:44
-msgid "Create sessions and send messages through the Hub runtime"
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/sap/security-model.md:44
-msgid "Receive `tool.call` events for registered tools"
+msgid ""
+"After `sap.attach`, register tools as the attached `app_id` / `instance_id`"
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/security-model.md:46
 msgid ""
-"Operational guidance: bind Hub to loopback; do not expose port 2658 to "
-"untrusted networks without additional controls. See [security guide](../"
-"guide/security.md)."
+"Operational guidance: bind Hub to loopback; rotate service tokens; do not "
+"expose port 2658 to untrusted networks without Tunnel + Access. See "
+"[security guide](../guide/security.md)."
 msgstr ""
 
 #. type: Title ##
@@ -114,8 +113,8 @@ msgstr ""
 #: docs/sap/security-model.md:50
 msgid ""
 "Invalid frames close the socket with **1003**. Protocol violations (double "
-"connect, RPC before handshake) close with **1008**. These are integrity "
-"checks, not authentication."
+"connect, RPC before connect, `tool.*` without attach) close with **1008**. "
+"Failed auth closes with **1008** (`unauthorized`)."
 msgstr ""
 
 #. type: Title ##
@@ -126,51 +125,25 @@ msgstr ""
 
 #. type: Plain text
 #: docs/sap/security-model.md:54
-msgid ""
-"Possible hardening items — not committed; track via GitHub Issues if "
-"prioritized:"
+msgid "Possible hardening items — track via GitHub Issues if prioritized:"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:59
-msgid "Shared secret or mTLS on `/sap/v1`"
+#: docs/sap/security-model.md:58
+msgid "mTLS on `/hub/rpc/v1`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:59
+#: docs/sap/security-model.md:58
 msgid "Instance attestation tied to managed satellite systemd units"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:59
+#: docs/sap/security-model.md:58
 msgid "Rate limits on connect and `tool.register`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:59
+#: docs/sap/security-model.md:58
 msgid "Explicit disconnect on missed heartbeats"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/security-model.md:61
-msgid ""
-"When adding auth, preserve backward compatibility only if explicitly "
-"requested; this codebase phase accepts breaking changes."
-msgstr ""
-
-#. type: Title ##
-#: docs/sap/security-model.md:62
-#, no-wrap
-msgid "Related surfaces"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/security-model.md:68
-#, no-wrap
-msgid ""
-"| Surface            | Doc                                                                         |\n"
-"| ------------------ | --------------------------------------------------------------------------- |\n"
-"| Hub HTTP / Admin   | [security.md](../guide/security.md)                                         |\n"
-"| Credentials (pass) | [security.md](../guide/security.md), [identity.md](../concepts/identity.md) |\n"
-"| Tool execution     | [tools.md](tools.md)                                                        |\n"
 msgstr ""

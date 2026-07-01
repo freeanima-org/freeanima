@@ -1,6 +1,7 @@
 {
   "files": [],
   "references": [
+    { "path": "./packages/hub-rpc" },
     { "path": "./packages/sap-contract" },
     { "path": "./tsconfig.monorepo.json" },
     { "path": "./satellites/pair-programming" },

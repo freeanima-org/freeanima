@@ -20,10 +20,9 @@ import {
   handleTaskDelete,
 } from "./handlers/entity-task.ts";
 import {
-  connectPayloadSchema,
+  sapAttachPayloadSchema,
   defineSapRouter,
   parseSapEnvelope,
-  SAP_VERSION,
   serializeSapEnvelope,
   conversationCreateInputSchema,
   conversationListInputSchema,
@@ -67,6 +66,7 @@ import {
   type SapServerHandlers,
   type SapRouterOutputs,
 } from "@freeanima/sap-contract";
+import { hubRpcConnectPayloadSchema, HUB_RPC_VERSION } from "@freeanima/hub-rpc";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import { bridgeMessageStream, bridgeSessionUpdates } from "./stream-bridge.ts";
 import * as serviceSessions from "../runtime/service-conversations.ts";
@@ -96,8 +96,8 @@ export function createSapServerHandlers(
   const router = defineSapRouter();
 
   const handlers: SapServerHandlers = {
-    async onConnect(payload) {
-      const parsed = connectPayloadSchema.parse(payload);
+    async onSapAttach(payload) {
+      const parsed = sapAttachPayloadSchema.parse(payload);
       const resolved = await deps.instanceRegistry.resolveConnect(
         omitUndefined({
           appId: parsed.app_id,
@@ -110,12 +110,11 @@ export function createSapServerHandlers(
       }
       const wantsMaskPresets = parsed.features_requested.includes("capability_mask");
       return {
-        protocol: SAP_VERSION,
         instance_id: resolved.instanceId,
         features_enabled: parsed.features_requested,
         server_info: {
           anima_version: deps.animaVersion,
-          sap_version: SAP_VERSION,
+          hub_rpc_version: "HubRPC/1.0",
           ...(wantsMaskPresets
             ? {
                 capability_mask: {
@@ -127,11 +126,10 @@ export function createSapServerHandlers(
               }
             : {}),
         },
-        heartbeat_interval_sec: HEARTBEAT_INTERVAL_SEC,
       };
     },
 
-    async onDisconnect(appId, instanceId) {
+    async onSapDetach(appId, instanceId) {
       deps.satelliteManager.unregisterAllTools(appId, instanceId);
     },
 
@@ -141,6 +139,9 @@ export function createSapServerHandlers(
       }
 
       switch (method) {
+        case "sap.attach":
+        case "sap.detach":
+          throw new Error("sap session methods are handled by Hub RPC transport");
         case "conversation.create": {
           const input = conversationCreateInputSchema.parse(payload);
           const platform = input.platform ?? formatSapPlatform(ctx.app_id, ctx.instance_id);
@@ -507,8 +508,8 @@ export function attachSapWebSocket(
 ): { close: () => void; handleMessage: (raw: string) => Promise<void> } {
   const sessionPumps = new Map<string, AbortController>();
   const handlers = createSapServerHandlers(deps, sessionPumps);
-  let connected = false;
-  let connState: { appId: string; instanceId: string } | null = null;
+  let rpcConnected = false;
+  let connSapState: { appId: string; instanceId: string } | null = null;
   let connAuth: SapRequestAuthContext | null = null;
   let satelliteConnKey = "";
 
@@ -517,13 +518,21 @@ export function attachSapWebSocket(
   };
 
   const ctxFor = (): SapRequestContext => ({
-    app_id: connState?.appId ?? "",
-    instance_id: connState?.instanceId ?? "",
+    app_id: connSapState?.appId ?? "",
+    instance_id: connSapState?.instanceId ?? "",
     auth: connAuth!,
     sendEvent(method, payload) {
       sendEnvelope({ kind: "evt", method, payload });
     },
   });
+
+  const unregisterSapSession = (): void => {
+    if (!connSapState) return;
+    void handlers.onSapDetach(connSapState.appId, connSapState.instanceId);
+    deps.satelliteManager.unregisterConnection(satelliteConnKey);
+    connSapState = null;
+    satelliteConnKey = "";
+  };
 
   const handleMessage = async (raw: string): Promise<void> => {
     let envelope: ReturnType<typeof parseSapEnvelope>;
@@ -535,63 +544,131 @@ export function attachSapWebSocket(
     }
 
     if (envelope.kind === "connect") {
-      if (connected) {
+      if (rpcConnected) {
         ws.close(1008, "already connected");
         return;
       }
-      const parsed = connectPayloadSchema.parse(envelope.payload);
-      const token = parsed.auth_token?.trim();
-      if (!token) {
-        ws.close(1008, "unauthorized");
-        return;
-      }
-      const verified = await verifyServiceApiToken(token);
+      const parsed = hubRpcConnectPayloadSchema.parse(envelope.payload);
+      const verified = await verifyServiceApiToken(parsed.auth_token.trim());
       if (!verified) {
         ws.close(1008, "unauthorized");
         return;
       }
       connAuth = verified;
-      let connectedPayload: Awaited<ReturnType<SapServerHandlers["onConnect"]>>;
-      try {
-        connectedPayload = await handlers.onConnect(parsed);
-      } catch (e) {
-        ws.close(1008, e instanceof Error ? e.message : String(e));
-        return;
-      }
-      const instanceId = connectedPayload.instance_id;
-      connState = { appId: parsed.app_id, instanceId };
-      connected = true;
-      satelliteConnKey = deps.satelliteManager.connectionKey(parsed.app_id, instanceId);
-      deps.satelliteManager.registerConnection(
-        satelliteConnKey,
-        {
-          appId: parsed.app_id,
-          instanceId,
-          sendEvent(method, payload) {
-            sendEnvelope({ kind: "evt", method, payload });
-          },
-          sendRequest: async () => {
-            throw new Error("satellite sendRequest not implemented on hub");
-          },
+      rpcConnected = true;
+      sendEnvelope({
+        kind: "connected",
+        payload: {
+          protocol: HUB_RPC_VERSION,
+          session_id: randomUUID(),
+          heartbeat_interval_sec: HEARTBEAT_INTERVAL_SEC,
         },
-        omitUndefined({ httpUrl: parsed.http_url }),
-      );
-      sendEnvelope({ kind: "connected", payload: connectedPayload });
+      });
       return;
     }
 
-    if (!connected || !connState) {
+    if (!rpcConnected || !connAuth) {
       ws.close(1008, "not connected");
       return;
     }
 
     if (envelope.kind === "evt" && envelope.method === "heartbeat") {
-      deps.satelliteManager.touchHeartbeat(connState.appId, connState.instanceId);
+      if (connSapState) {
+        deps.satelliteManager.touchHeartbeat(connSapState.appId, connSapState.instanceId);
+      }
       sendEnvelope({ kind: "evt", method: "heartbeat", payload: { ts: Date.now() } });
       return;
     }
 
     if (envelope.kind === "req") {
+      if (envelope.method === "sap.attach") {
+        if (connSapState) {
+          sendEnvelope({
+            kind: "res",
+            id: envelope.id,
+            ok: false,
+            error: { code: "sap_already_attached", message: "SAP session already attached" },
+          });
+          return;
+        }
+        try {
+          const attachPayload = sapAttachPayloadSchema.parse(envelope.payload);
+          const attached = await handlers.onSapAttach(attachPayload);
+          connSapState = { appId: attachPayload.app_id, instanceId: attached.instance_id };
+          satelliteConnKey = deps.satelliteManager.connectionKey(
+            attachPayload.app_id,
+            attached.instance_id,
+          );
+          deps.satelliteManager.registerConnection(
+            satelliteConnKey,
+            {
+              appId: attachPayload.app_id,
+              instanceId: attached.instance_id,
+              sendEvent(method, payload) {
+                sendEnvelope({ kind: "evt", method, payload });
+              },
+              sendRequest: async () => {
+                throw new Error("satellite sendRequest not implemented on hub");
+              },
+            },
+            omitUndefined({ httpUrl: attachPayload.http_url }),
+          );
+          sendEnvelope({
+            kind: "res",
+            id: envelope.id,
+            ok: true,
+            payload: attached,
+          });
+        } catch (e) {
+          sendEnvelope({
+            kind: "res",
+            id: envelope.id,
+            ok: false,
+            error: {
+              code: "sap_attach_error",
+              message: e instanceof Error ? e.message : String(e),
+            },
+          });
+        }
+        return;
+      }
+
+      if (envelope.method === "sap.detach") {
+        try {
+          unregisterSapSession();
+          sendEnvelope({
+            kind: "res",
+            id: envelope.id,
+            ok: true,
+            payload: { ok: true as const },
+          });
+        } catch (e) {
+          sendEnvelope({
+            kind: "res",
+            id: envelope.id,
+            ok: false,
+            error: {
+              code: "sap_detach_error",
+              message: e instanceof Error ? e.message : String(e),
+            },
+          });
+        }
+        return;
+      }
+
+      if (envelope.method.startsWith("tool.") && !connSapState) {
+        sendEnvelope({
+          kind: "res",
+          id: envelope.id,
+          ok: false,
+          error: {
+            code: "sap_not_attached",
+            message: "SAP session not attached; call sap.attach first",
+          },
+        });
+        return;
+      }
+
       try {
         const result = await handlers.handle(
           envelope.method as SapMethod,
@@ -610,7 +687,7 @@ export function attachSapWebSocket(
           id: envelope.id,
           ok: false,
           error: {
-            code: "sap_error",
+            code: "hub_rpc_error",
             message: e instanceof Error ? e.message : String(e),
           },
         });
@@ -624,10 +701,7 @@ export function attachSapWebSocket(
         controller.abort();
       }
       sessionPumps.clear();
-      if (connState) {
-        void handlers.onDisconnect(connState.appId, connState.instanceId);
-        deps.satelliteManager.unregisterConnection(satelliteConnKey);
-      }
+      unregisterSapSession();
     },
     handleMessage,
   };

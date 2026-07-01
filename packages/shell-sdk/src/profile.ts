@@ -1,4 +1,4 @@
-import type { ConnectionKind, FrontendManifest } from "./manifest.ts";
+import type { FrontendManifest } from "./manifest.ts";
 
 export type WindowKind = "overlay" | "settings" | "browser";
 
@@ -16,27 +16,16 @@ export type DesktopWindowSpec = {
   resizable?: boolean;
 };
 
-export type HubRestBundledDesktopProfile = {
-  connectionKind: "hub-rest";
+export type BundledSpaDesktopProfile = {
   embedMode: "bundled-spa";
   distSubdir: string;
   entryPath: string;
-  defaultPath: string;
-  windows: DesktopWindowSpec[];
-  defaultPort?: number;
-};
-
-export type SapDirectDesktopProfile = {
-  connectionKind: "sap-direct";
-  embedMode: "bundled-spa";
-  distSubdir: string;
-  entryPath: string;
+  defaultPath?: string;
   windows: DesktopWindowSpec[];
   defaultPort?: number;
 };
 
 export type EmbeddedSidecarDesktopProfile = {
-  connectionKind: "embedded-sidecar";
   embedMode: "embedded-sidecar";
   distSubdir: string;
   windows: DesktopWindowSpec[];
@@ -44,13 +33,9 @@ export type EmbeddedSidecarDesktopProfile = {
   portAttempts: number;
 };
 
-export type DesktopProfile =
-  | HubRestBundledDesktopProfile
-  | SapDirectDesktopProfile
-  | EmbeddedSidecarDesktopProfile;
+export type DesktopProfile = BundledSpaDesktopProfile | EmbeddedSidecarDesktopProfile;
 
 export type MobileProfile = {
-  connectionKind: ConnectionKind;
   embedMode: "bundled-spa" | "unsupported";
   distSubdir?: string;
 };

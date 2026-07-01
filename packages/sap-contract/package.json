@@ -6,6 +6,7 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
+    "@freeanima/hub-rpc": "workspace:*",
     "@freeanima/kernel": "workspace:*",
     "zod": "catalog:"
   },

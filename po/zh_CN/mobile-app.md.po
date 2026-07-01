@@ -6,18 +6,18 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 16:39+0800\n"
+"POT-Creation-Date: 2026-07-01 22:15+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
 #: docs/features/companion.md:120 docs/features/mobile-app.md:52
-#: docs/guide/database.md:91 docs/guide/remote-access.md:170
+#: docs/guide/database.md:91 docs/guide/remote-access.md:178
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
@@ -33,7 +33,7 @@ msgstr "移动端 APP（Android）"
 #: docs/features/mobile-app.md:7
 #, no-wrap
 msgid "> Capacitor **薄壳** + Hub `/web/*` 远程 UI（默认）；`MOBILE_UI_MODE=bundled` 可回退 bundled SPA。  \n"
-msgstr ""
+msgstr "> Capacitor **薄壳** + Hub `/web/*` 远程 UI（默认）；`MOBILE_UI_MODE=bundled` 可回退壳内 bundled SPA。  \n"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:9
@@ -55,17 +55,17 @@ msgid ""
 "| ---------- | -------------------------------------------------------- |\n"
 "| Platform   | **Android only** sideload (APK); iOS later               |\n"
 "| UI         | 默认 bootstrap → Hub `/web/*`（与浏览器/PWA 同一产物）   |\n"
-"| Modules    | Chat (`sap-direct`) + Admin (`hub-rest`)                 |\n"
+"| Modules    | Chat + Admin（bundled shell-ui）                         |\n"
 "| Hub config | APP **Hub settings**（Preferences）或 bootstrap 首次配置 |\n"
-"| Hub duties | `/api` REST + `/sap/v1` WebSocket                        |\n"
+"| Hub duties | `/api` REST + `/hub/rpc/v1` WebSocket                  |\n"
 msgstr ""
 "| 项目       | 说明                                                           |\n"
 "| ---------- | -------------------------------------------------------------- |\n"
 "| 平台       | **仅 Android** 侧载（APK）；iOS 后续                           |\n"
 "| UI         | 默认 bootstrap → Hub `/web/*`（与浏览器/PWA 共用同一产物）     |\n"
-"| 模块       | 聊天室（`sap-direct`）+ 管理台（`hub-rest`）                   |\n"
+"| 模块       | 聊天室 + 管理台（bundled shell-ui）                            |\n"
 "| Hub 配置   | APP **Hub 设置**（Preferences）或 bootstrap 首次配置           |\n"
-"| Hub 职责   | `/api` REST + `/sap/v1` WebSocket                              |\n"
+"| Hub 职责   | `/api` REST + `/hub/rpc/v1` WebSocket                          |\n"
 
 #. type: Title ##
 #: docs/features/mobile-app.md:20 docs/sap/overview.md:17
@@ -153,7 +153,7 @@ msgstr "Hub URL（Tunnel 域名或 `http://<PC-IP>:2658`；勿用 `127.0.0.1`）
 #. type: Bullet: '   - '
 #: docs/features/mobile-app.md:49
 msgid "Service API Token (`fa_at_...`, printed once at creation)"
-msgstr ""
+msgstr "服务 API 令牌（`fa_at_...`，创建时仅打印一次）"
 
 #. type: Bullet: '4. '
 #: docs/features/mobile-app.md:49
@@ -168,7 +168,7 @@ msgid ""
 "Non-loopback Hub URL requires token; REST uses `Authorization: Bearer`; SAP "
 "sends `auth_token` in `connect` frame."
 msgstr ""
-"非回环 Hub URL 需要 token；REST 使用 `Authorization: Bearer`；SAP 在 "
+"非回环 Hub URL 需要 token；REST 使用 `Authorization: Bearer`；Hub RPC 在 "
 "`connect` 帧发送 `auth_token`。"
 
 #. type: Plain text
@@ -247,6 +247,8 @@ msgid ""
 "默认 **remote UI**（`www/` 仅 bootstrap，APK 体积小）。完整 bundled SPA："
 "`MOBILE_UI_MODE=bundled bun run --filter @freeanima/app-mobile build`"
 msgstr ""
+"默认 **remote UI**（`www/` 仅 bootstrap，APK 体积小）。完整壳内 bundled SPA："
+"`MOBILE_UI_MODE=bundled bun run --filter @freeanima/app-mobile build`"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:83

@@ -1,16 +1,15 @@
-/// <reference lib="dom" />
-/** Hub / relay URL helpers */
+export { resolveHubHttpUrl, resolveHubRpcWsUrl, hubHttpFromRpcWsUrl } from "@freeanima/hub-rpc";
 
-export function resolveHubHttpUrl(hubUrl: string): string {
-  return hubUrl.replace(/\/$/, "");
-}
+import { resolveHubRpcWsUrl, hubHttpFromRpcWsUrl } from "@freeanima/hub-rpc";
 
+/** @deprecated 使用 resolveHubRpcWsUrl */
 export function resolveHubWsUrl(hubUrl: string): string {
-  return resolveHubHttpUrl(hubUrl).replace(/^http/, "ws") + "/sap/v1";
+  return resolveHubRpcWsUrl(hubUrl);
 }
 
+/** @deprecated 使用 hubHttpFromRpcWsUrl */
 export function hubHttpFromWsUrl(wsUrl: string): string {
-  return wsUrl.replace(/^ws/, "http").replace(/\/sap\/v1\/?$/, "");
+  return hubHttpFromRpcWsUrl(wsUrl);
 }
 
 export function resolveRelayWsUrl(origin?: string, path = "/sap/relay/v1"): string {

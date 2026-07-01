@@ -13,7 +13,7 @@ describe("http-dispatch", () => {
     expect(isHubApiPath("/api")).toBe(true);
     expect(isHubApiPath("/api/")).toBe(true);
     expect(isHubApiPath("/api/health")).toBe(true);
-    expect(isHubApiPath("/sap/v1")).toBe(false);
+    expect(isHubApiPath("/hub/rpc/v1")).toBe(false);
   });
 
   test("applyHttpAuth allows GET /api/health without token", async () => {
@@ -64,7 +64,7 @@ describe("http-dispatch", () => {
     expect(result.blocked).toBeNull();
   });
 
-  test("trySapWebSocketUpgrade upgrades /sap/v1 synchronously", async () => {
+  test("trySapWebSocketUpgrade upgrades /hub/rpc/v1 synchronously", async () => {
     const server = Bun.serve({
       port: 0,
       fetch(req, bunServer) {
@@ -87,7 +87,7 @@ describe("http-dispatch", () => {
 
     try {
       const port = server.port!;
-      const ws = new WebSocket(`ws://127.0.0.1:${port}/sap/v1`);
+      const ws = new WebSocket(`ws://127.0.0.1:${port}/hub/rpc/v1`);
       await new Promise<void>((resolve, reject) => {
         const timer = setTimeout(() => reject(new Error("WebSocket open timeout")), 3000);
         ws.addEventListener(
