@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-29 13:16+0800\n"
+"POT-Creation-Date: 2026-07-01 22:15+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:19 docs/sap/overview.md:17
+#: docs/features/mobile-app.md:20 docs/sap/overview.md:17
 #, no-wrap
 msgid "Topology"
 msgstr "拓扑"
@@ -52,31 +52,31 @@ msgstr "设计目标"
 #. type: Bullet: '- '
 #: docs/sap/overview.md:16
 msgid ""
-"**One Hub WS per instance**: each satellite instance opens exactly one `/sap/"
-"v1` connection to the Hub (multiplex conversations, streams, tools)."
+"**One Hub WS per client**: each browser tab or satellite process opens one `/"
+"hub/rpc/v1` connection (bundled SPA shares one transport; satellites "
+"multiplex after `sap.attach`)."
 msgstr ""
-"**每个实例一条 Hub WS**：每个 satellite 实例仅向 Hub 打开一条 `/sap/v1` 连接"
-"（多路复用会话、流与工具）。"
+"**每个客户端一条 Hub WS**：每个浏览器标签页或 satellite 进程打开一条 `/hub/"
+"rpc/v1` 连接（壳内 bundled SPA 共享一条传输层；卫星在 `sap.attach` 后多路复"
+"用）。"
 
 #. type: Bullet: '- '
 #: docs/sap/overview.md:16
 msgid ""
-"**Origin isolation**: bundled clients may use browser-direct Hub WS (`sap-"
-"direct`) or a local SAP relay (`/sap/relay/v1`) depending on deployment."
+"**Two layers**: Hub RPC for transport + auth; SAP attach for true satellite "
+"instances only."
 msgstr ""
-"**来源隔离**：捆绑客户端可按部署使用浏览器直连 Hub WS（`sap-direct`）或本地 "
-"SAP 中继（`/sap/relay/v1`）。"
+"**两层模型**：Hub RPC 负责传输与认证；SAP attach 仅用于真正的 satellite 实"
+"例。"
 
 #. type: Bullet: '- '
 #: docs/sap/overview.md:16
 msgid ""
-"**Shared contract**: both sides import `@freeanima/sap-contract` for "
-"envelopes, RPC types, `runSapTransport`, `createSapBrowserClient`, and "
-"`createSapRelayBrowserClient`."
+"**Shared contract**: `@freeanima/hub-rpc` for transport; `@freeanima/sap-"
+"contract` for SAP RPC types, `createSatelliteHub`, bundled stream helpers."
 msgstr ""
-"**共享契约**：双方从 `@freeanima/sap-contract` 导入信封、RPC 类型、"
-"`runSapTransport`、`createSapBrowserClient` 与 "
-"`createSapRelayBrowserClient`。"
+"**共享契约**：传输层用 `@freeanima/hub-rpc`；SAP RPC 类型、"
+"`createSatelliteHub`、壳内 bundled 流式辅助用 `@freeanima/sap-contract`。"
 
 #. type: Fenced code block (mermaid)
 #: docs/sap/overview.md:19
@@ -106,14 +106,14 @@ msgstr ""
 msgid ""
 "| Role  | Default                 | Responsibility                                              |\n"
 "| ----- | ----------------------- | ----------------------------------------------------------- |\n"
-"| Hub   | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1`            |\n"
-"| Chat  | bundled `/chat`         | Chat UI; SAP direct or relay                                |\n"
+"| Hub   | `http://127.0.0.1:2658` | Agent runtime, Hub RPC WebSocket at `/hub/rpc/v1`         |\n"
+"| Chat  | bundled `/chat`         | Chat UI; shared Hub RPC (no `sap.attach`)                 |\n"
 "| Admin | bundled shell `/admin`  | Memory, config, tools, satellite status (Hub REST `/api/*`) |\n"
 msgstr ""
 "| 角色  | 默认值                  | 职责                                                        |\n"
 "| ----- | ----------------------- | ----------------------------------------------------------- |\n"
-"| Hub   | `http://127.0.0.1:2658` | Agent 运行时，SAP WebSocket 服务端 `/sap/v1`                |\n"
-"| 聊天室| bundled `/chat`         | 聊天 UI；SAP 直连或中继                                     |\n"
+"| Hub   | `http://127.0.0.1:2658` | Agent 运行时，Hub RPC WebSocket 端点 `/hub/rpc/v1`          |\n"
+"| 聊天室| bundled `/chat`         | 聊天 UI；共享 Hub RPC（无 `sap.attach`）                    |\n"
 "| 管理台| bundled shell `/admin`  | 记忆、配置、工具、卫星状态（Hub REST `/api/*`）             |\n"
 
 #. type: Plain text
@@ -140,8 +140,10 @@ msgid ""
 "  participant Hub as Hub\n"
 "  participant Agent as AgentRuntime\n"
 "\n"
-"  Sat->>Hub: connect\n"
-"  Hub->>Sat: connected\n"
+"  Sat->>Hub: connect HubRPC/1.0 auth_token\n"
+"  Hub->>Sat: connected session_id\n"
+"  Sat->>Hub: req sap.attach\n"
+"  Hub->>Sat: res instance_id\n"
 "  Sat->>Hub: req tool.register\n"
 "  Hub->>Sat: res ok\n"
 "  Sat->>Hub: req conversation.create\n"
@@ -161,8 +163,10 @@ msgstr ""
 "  participant Hub as Hub\n"
 "  participant Agent as AgentRuntime\n"
 "\n"
-"  Sat->>Hub: connect\n"
-"  Hub->>Sat: connected\n"
+"  Sat->>Hub: connect HubRPC/1.0 auth_token\n"
+"  Hub->>Sat: connected session_id\n"
+"  Sat->>Hub: req sap.attach\n"
+"  Hub->>Sat: res instance_id\n"
 "  Sat->>Hub: req tool.register\n"
 "  Hub->>Sat: res ok\n"
 "  Sat->>Hub: req conversation.create\n"
@@ -178,28 +182,35 @@ msgstr ""
 "  Hub-->>Sat: evt stream.done\n"
 
 #. type: Bullet: '1. '
-#: docs/sap/overview.md:68
-msgid "Satellite process opens `ws://{hub}/sap/v1` and sends `connect`."
-msgstr "Satellite 进程打开 `ws://{hub}/sap/v1` 并发送 `connect`。"
+#: docs/sap/overview.md:70
+msgid ""
+"Client opens `ws://{hub}/hub/rpc/v1` and sends Hub RPC `connect` with "
+"`auth_token`."
+msgstr ""
+"客户端打开 `ws://{hub}/hub/rpc/v1` 并发送带 `auth_token` 的 Hub RPC "
+"`connect`。"
 
 #. type: Bullet: '2. '
-#: docs/sap/overview.md:68
+#: docs/sap/overview.md:70
 msgid ""
-"Hub replies `connected` and registers the instance in `SatelliteManager`."
-msgstr "Hub 回复 `connected`，并在 `SatelliteManager` 中注册该实例。"
+"Satellite process sends `sap.attach`; Hub registers the instance in "
+"`SatelliteManager`. Bundled SPA skips this step."
+msgstr ""
+"Satellite 进程发送 `sap.attach`；Hub 在 `SatelliteManager` 中注册该实例。壳"
+"内 bundled SPA 跳过此步。"
 
 #. type: Bullet: '3. '
-#: docs/sap/overview.md:68
+#: docs/sap/overview.md:70
 msgid "Satellite registers local tools via `tool.register` (if any)."
 msgstr "Satellite 通过 `tool.register` 注册本地工具（若有）。"
 
 #. type: Bullet: '4. '
-#: docs/sap/overview.md:68
+#: docs/sap/overview.md:70
 msgid "`message.send` returns a `stream_id`; Hub pushes `stream.*` events."
 msgstr "`message.send` 返回 `stream_id`；Hub 推送 `stream.*` 事件。"
 
 #. type: Bullet: '5. '
-#: docs/sap/overview.md:68
+#: docs/sap/overview.md:70
 msgid ""
 "When the agent calls a Satellite tool, Hub sends `tool.call`; Satellite "
 "replies with `tool.result` or `tool.error`."
@@ -208,18 +219,18 @@ msgstr ""
 "`tool.result` 或 `tool.error` 回复。"
 
 #. type: Title ##
-#: docs/sap/overview.md:69
+#: docs/sap/overview.md:71
 #, no-wrap
 msgid "Document map"
 msgstr "文档地图"
 
 #. type: Plain text
-#: docs/sap/overview.md:78
+#: docs/sap/overview.md:80
 #, no-wrap
 msgid ""
 "| Topic                           | File                                     |\n"
 "| ------------------------------- | ---------------------------------------- |\n"
-"| Transport, envelopes, heartbeat | [transport.md](transport.md)             |\n"
+"| Transport, Hub RPC, heartbeat | [transport.md](transport.md) · [hub-rpc.md](hub-rpc.md) |\n"
 "| RPC methods                     | [methods.md](methods.md)                 |\n"
 "| Async events                    | [events.md](events.md)                   |\n"
 "| Tool naming and routing         | [tools.md](tools.md)                     |\n"
@@ -228,7 +239,7 @@ msgid ""
 msgstr ""
 "| 主题                            | 文件                                     |\n"
 "| ------------------------------- | ---------------------------------------- |\n"
-"| 传输、信封、心跳                | [transport.md](transport.md)             |\n"
+"| 传输、Hub RPC、心跳             | [transport.md](transport.md) · [hub-rpc.md](hub-rpc.md) |\n"
 "| RPC 方法                        | [methods.md](methods.md)                 |\n"
 "| 异步事件                        | [events.md](events.md)                   |\n"
 "| 工具命名与路由                  | [tools.md](tools.md)                     |\n"

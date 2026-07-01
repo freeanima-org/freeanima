@@ -41,6 +41,7 @@
     "@freeanima/capabilities-task": "workspace:*",
     "@freeanima/capabilities-diary": "workspace:*",
     "@freeanima/capabilities-tools": "workspace:*",
+    "@freeanima/hub-rpc": "workspace:*",
     "@freeanima/sap-contract": "workspace:*",
     "@freeanima/core": "workspace:*",
     "@freeanima/kernel": "workspace:*",

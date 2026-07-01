@@ -52,11 +52,11 @@ describe("remote-auth helpers", () => {
   });
 
   test("isSapWebSocketUpgrade", () => {
-    const upgrade = new Request("http://example.com/sap/v1", {
+    const upgrade = new Request("http://example.com/hub/rpc/v1", {
       headers: { Upgrade: "websocket", Connection: "Upgrade" },
     });
     expect(isSapWebSocketUpgrade(upgrade)).toBe(true);
-    expect(isSapWebSocketUpgrade(new Request("http://example.com/sap/v1"))).toBe(false);
+    expect(isSapWebSocketUpgrade(new Request("http://example.com/hub/rpc/v1"))).toBe(false);
   });
 
   test("isLocalDirectConnection", () => {

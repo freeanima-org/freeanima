@@ -5,7 +5,6 @@ import { getCompanionManifest } from "./manifest.ts";
 export const companionMobileExport: FrontendMobileExport = {
   manifest: getCompanionManifest(),
   profile: {
-    connectionKind: "embedded-sidecar",
     embedMode: "unsupported",
   },
 };

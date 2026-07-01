@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 16:39+0800\n"
+"POT-Creation-Date: 2026-07-01 22:15+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #. type: Title ##
 #: docs/features/companion.md:120 docs/features/mobile-app.md:52
-#: docs/guide/database.md:91 docs/guide/remote-access.md:170
+#: docs/guide/database.md:91 docs/guide/remote-access.md:178
 #, no-wrap
 msgid "Troubleshooting"
 msgstr ""
@@ -56,9 +56,9 @@ msgid ""
 "| ---------- | -------------------------------------------------------- |\n"
 "| Platform   | **Android only** sideload (APK); iOS later               |\n"
 "| UI         | 默认 bootstrap → Hub `/web/*`（与浏览器/PWA 同一产物）   |\n"
-"| Modules    | Chat (`sap-direct`) + Admin (`hub-rest`)                 |\n"
+"| Modules    | Chat + Admin（bundled shell-ui）                         |\n"
 "| Hub config | APP **Hub settings**（Preferences）或 bootstrap 首次配置 |\n"
-"| Hub duties | `/api` REST + `/sap/v1` WebSocket                        |\n"
+"| Hub duties | `/api` REST + `/hub/rpc/v1` WebSocket                  |\n"
 msgstr ""
 
 #. type: Title ##

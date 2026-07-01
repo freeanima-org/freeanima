@@ -1,17 +1,18 @@
+/// <reference lib="dom" />
 import {
   CHAT_INSTANCE_ID,
-  createSapDirectClient,
   formatSapPlatform,
-  resolveHubWsUrl,
+  resolveHubRpcWsUrl,
+  getBundledSapStreamClient,
+  resetBundledSapStreamClientForTests,
+  subscribeShellConfigChanges,
+  whenBundledSapClientReady,
   type SapClient,
   type SapConnectionState,
-  type SapDirectClient,
 } from "@freeanima/sap-contract";
 
 const APP_ID = "chat";
-const SHELL_CONFIG_CHANGED_EVENT = "freeanima:shell-config-changed";
 
-let directClient: SapDirectClient | null = null;
 let connectionState: SapConnectionState = "connecting";
 const connectionListeners = new Set<(state: SapConnectionState) => void>();
 
@@ -22,31 +23,23 @@ function notifyConnection(state: SapConnectionState): void {
   }
 }
 
-function resolveHubWsUrlFromEnv(): string {
+function resolveHubRpcWsUrlFromEnv(): string {
   const shell = window.satelliteShell;
   if (shell?.hubWsUrl) return shell.hubWsUrl;
   const env = (import.meta as ImportMeta & { env?: { VITE_FREEANIMA_HUB_WS?: string } }).env;
   if (env?.VITE_FREEANIMA_HUB_WS?.trim()) return env.VITE_FREEANIMA_HUB_WS.trim();
-  return resolveHubWsUrl("http://127.0.0.1:2658");
+  return resolveHubRpcWsUrl("http://127.0.0.1:2658");
 }
 
-export function getSapDirectClient(): SapDirectClient {
-  if (!directClient) {
-    notifyConnection("connecting");
-    const remoteAuthToken = window.satelliteShell?.remoteAuth?.token;
-    directClient = createSapDirectClient({
-      appId: APP_ID,
-      hubWsUrl: resolveHubWsUrlFromEnv(),
-      instanceId: CHAT_INSTANCE_ID,
-      ...(remoteAuthToken !== undefined ? { remoteAuthToken } : {}),
-      onConnectionStateChange: notifyConnection,
-    });
-    void directClient
-      .whenReady()
-      .then(() => notifyConnection("connected"))
-      .catch(() => notifyConnection("disconnected"));
-  }
-  return directClient;
+function getClient() {
+  return getBundledSapStreamClient({
+    hubRpcWsUrl: resolveHubRpcWsUrlFromEnv(),
+    onConnectionStateChange: notifyConnection,
+  });
+}
+
+export function getSapDirectClient() {
+  return getClient();
 }
 
 export function getSapConnectionState(): SapConnectionState {
@@ -62,11 +55,10 @@ export function subscribeSapConnection(listener: (state: SapConnectionState) => 
 }
 
 export async function reconnectSap(): Promise<void> {
-  directClient?.stop();
-  directClient = null;
+  getClient().stop();
+  resetBundledSapStreamClientForTests();
   notifyConnection("connecting");
-  getSapDirectClient();
-  await getSapDirectClient().whenReady();
+  await getClient().whenReady();
   notifyConnection("connected");
 }
 
@@ -79,23 +71,13 @@ export function chatPlatform(): string {
 }
 
 export async function whenSapClientReady(): Promise<SapClient> {
-  return getSapDirectClient().whenReady();
+  return whenBundledSapClientReady();
 }
 
-/** Hub 配置变更后重建 SAP 连接（移动端 settings save） */
-export function subscribeShellConfigChanges(): () => void {
-  if (typeof window === "undefined") return () => {};
-  const handler = (): void => {
-    void reconnectSap().catch(() => notifyConnection("disconnected"));
-  };
-  window.addEventListener(SHELL_CONFIG_CHANGED_EVENT, handler);
-  return () => window.removeEventListener(SHELL_CONFIG_CHANGED_EVENT, handler);
-}
+export { subscribeShellConfigChanges };
 
-/** 测试用：重置 module 级缓存 */
 export function resetChatInstanceCacheForTests(): void {
-  directClient?.stop();
-  directClient = null;
+  resetBundledSapStreamClientForTests();
   connectionListeners.clear();
   connectionState = "connecting";
 }

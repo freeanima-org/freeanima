@@ -9,7 +9,6 @@ export const chatManifest: FrontendManifest = {
   version: readMonorepoVersion(),
   supportsDesktop: true,
   supportsMobile: true,
-  connectionKind: "sap-direct",
   sap: { relay: false },
 };
 

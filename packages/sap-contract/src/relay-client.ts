@@ -1,7 +1,6 @@
 /// <reference lib="dom" />
 import { randomUuid } from "@freeanima/kernel/random-uuid";
 import { parseSapEnvelope, serializeSapEnvelope, type SapEnvelope } from "./protocol.ts";
-import type { ConnectPayload, ConnectedPayload } from "./frames/lifecycle.ts";
 import type { SapClient, SapMethod, SapRouterInputs, SapRouterOutputs } from "./router.ts";
 
 /** Satellite local relay signals readiness; browser/process clients must wait before req. */
@@ -102,11 +101,6 @@ export function createSapRelayClient(options: CreateSapRelayClientOptions): SapR
     });
   }
 
-  async function connect(_payload: Omit<ConnectPayload, "protocol">): Promise<ConnectedPayload> {
-    await whenReady();
-    throw new Error("SAP relay client: connect is handled by the satellite process gateway");
-  }
-
   function request<K extends SapMethod>(
     method: K,
     payload: SapRouterInputs[K],
@@ -141,5 +135,5 @@ export function createSapRelayClient(options: CreateSapRelayClientOptions): SapR
     ws.close();
   }
 
-  return { whenReady, connect, request, onEvent, close };
+  return { whenReady, request, onEvent, close };
 }

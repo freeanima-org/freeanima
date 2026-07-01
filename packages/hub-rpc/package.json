@@ -1,0 +1,17 @@
+{
+  "name": "@freeanima/hub-rpc",
+  "description": "Hub WebSocket RPC 传输层（connect / req / res / evt）",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@freeanima/kernel": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

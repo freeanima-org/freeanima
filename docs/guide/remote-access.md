@@ -141,13 +141,13 @@ Flow: open Hub settings → fill → **Test connection** → Save. Desktop requi
 
 ```text
 REST:  Authorization: Bearer fa_at_<prefix>_<secret>
-SAP:   WebSocket /sap/v1 → connect frame includes auth_token
+Hub RPC: WebSocket /hub/rpc/v1 → connect frame includes auth_token
 MCP:   POST/GET /mcp → Authorization: Bearer <token>
 ```
 
 `/web/*` static assets skip service auth; `/api` and `/mcp` require Bearer token.
 
-Missing or invalid token → HTTP `401` or SAP connection closed.
+Missing or invalid token → HTTP `401` or Hub RPC connection closed.
 
 ## 5. MCP outbound (external agents query Hub data)
 

@@ -17,7 +17,6 @@ export type { CompanionServerHandle } from "../../server/index.ts";
 export const companionDesktopExport: FrontendDesktopExport = {
   manifest: getCompanionManifest(),
   profile: {
-    connectionKind: "embedded-sidecar",
     embedMode: "embedded-sidecar",
     distSubdir: "companion",
     defaultPort: SATELLITE_PORT_START,

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 00:03+0800\n"
+"POT-Creation-Date: 2026-07-01 22:15+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -57,7 +57,7 @@ msgid "Path: `./manifest` — JSON-serializable metadata."
 msgstr "路径：`./manifest` — 可 JSON 序列化的元数据。"
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:24
+#: docs/sap/frontend-exports.md:23
 #, no-wrap
 msgid ""
 "| Field             | Description                                         |\n"
@@ -67,43 +67,19 @@ msgid ""
 "| `version`         | Version (usually synced with monorepo root package) |\n"
 "| `supportsDesktop` | Supports desktop embed                              |\n"
 "| `supportsMobile`  | Supports mobile embed                               |\n"
-"| `connectionKind`  | See table below                                     |\n"
-"| `sap`             | Optional; SAP satellites only                       |\n"
+"| `sap`             | Optional; true satellite metadata (`relay`, `tools`) |\n"
 msgstr ""
-"| 字段              | 说明                                           |\n"
-"| ----------------- | ---------------------------------------------- |\n"
-"| `appId`           | 应用 id                                        |\n"
-"| `displayName`     | 显示名称                                       |\n"
-"| `version`         | 版本（通常与 monorepo 根 package 同步）        |\n"
-"| `supportsDesktop` | 支持桌面嵌入                                   |\n"
-"| `supportsMobile`  | 支持移动嵌入                                   |\n"
-"| `connectionKind`  | 见下表                                         |\n"
-"| `sap`             | 可选；仅 SAP 卫星                              |\n"
+"| 字段              | 说明                                                |\n"
+"| ----------------- | --------------------------------------------------- |\n"
+"| `appId`           | 应用 id                                             |\n"
+"| `displayName`     | 显示名称                                            |\n"
+"| `version`         | 版本（通常与 monorepo 根 package 同步）             |\n"
+"| `supportsDesktop` | 支持桌面嵌入                                        |\n"
+"| `supportsMobile`  | 支持移动嵌入                                        |\n"
+"| `sap`             | 可选；真卫星元数据（`relay`、`tools`）              |\n"
 
-#. type: Title ###
+#. type: Plain text
 #: docs/sap/frontend-exports.md:25
-#, no-wrap
-msgid "connectionKind"
-msgstr "connectionKind"
-
-#. type: Plain text
-#: docs/sap/frontend-exports.md:32
-#, no-wrap
-msgid ""
-"| Value              | Represents                | Sidecar required?                   |\n"
-"| ------------------ | ------------------------- | ----------------------------------- |\n"
-"| `embedded-sidecar` | companion (VRM + tools)   | **Yes** (embedded in same process)  |\n"
-"| `sap-direct`       | chat (renderer → Hub SAP) | **No** (persist `instance_id` only) |\n"
-"| `hub-rest`         | Admin console (Hub REST)  | **No**                              |\n"
-msgstr ""
-"| 值                 | 表示                          | 是否需要 Sidecar？                         |\n"
-"| ------------------ | ----------------------------- | ------------------------------------------ |\n"
-"| `embedded-sidecar` | 伴侣（VRM + 工具）            | **是**（嵌入同一进程）                     |\n"
-"| `sap-direct`       | 聊天室（渲染器 → Hub SAP）    | **否**（仅持久化 `instance_id`）           |\n"
-"| `hub-rest`         | 管理台（Hub REST）            | **否**                                     |\n"
-
-#. type: Plain text
-#: docs/sap/frontend-exports.md:34
 msgid ""
 "Implementation SSOT: [`packages/shell-sdk/src/manifest.ts`](../../packages/"
 "shell-sdk/src/manifest.ts)"
@@ -112,57 +88,84 @@ msgstr ""
 "src/manifest.ts)"
 
 #. type: Title ##
-#: docs/sap/frontend-exports.md:35
+#: docs/sap/frontend-exports.md:26
 #, no-wrap
-msgid "Desktop / Mobile (optional)"
-msgstr "Desktop / Mobile（可选）"
+msgid "Desktop / Mobile profile"
+msgstr "Desktop / Mobile 配置"
 
 #. type: Bullet: '- '
-#: docs/sap/frontend-exports.md:39
+#: docs/sap/frontend-exports.md:30
 msgid ""
 "`./desktop` — desktop shell compile-time import profile (window spec, launch "
 "mode)"
 msgstr "`./desktop` — 桌面 shell 编译期导入配置（窗口规格、启动模式）"
 
 #. type: Bullet: '- '
-#: docs/sap/frontend-exports.md:39
+#: docs/sap/frontend-exports.md:30
 msgid ""
 "`./mobile` — mobile profile; when unsupported, `embedMode: \"unsupported\"`"
 msgstr "`./mobile` — 移动配置；不支持时 `embedMode: \"unsupported\"`"
 
+#. type: Title ###
+#: docs/sap/frontend-exports.md:31
+#, no-wrap
+msgid "`embedMode`"
+msgstr "`embedMode`"
+
 #. type: Plain text
-#: docs/sap/frontend-exports.md:41
+#: docs/sap/frontend-exports.md:38
+#, no-wrap
 msgid ""
-"`embedMode: \"bundled-spa\"` — UI bundled in client install; Hub provides `/"
-"api` and `/sap/v1` only."
+"| Value              | Represents                         | Sidecar required?                  |\n"
+"| ------------------ | ---------------------------------- | ---------------------------------- |\n"
+"| `embedded-sidecar` | companion (VRM + tools)            | **Yes** (embedded in same process) |\n"
+"| `bundled-spa`      | shell-ui module (chat, admin, …)   | **No**                             |\n"
+"| `unsupported`      | mobile profile placeholder         | —                                  |\n"
 msgstr ""
-"`embedMode: \"bundled-spa\"` — UI 随客户端安装打包；Hub 仅提供 `/api` 与 `/"
-"sap/v1`。"
+"| 值                 | 表示                               | 是否需要 Sidecar？                 |\n"
+"| ------------------ | ---------------------------------- | ---------------------------------- |\n"
+"| `embedded-sidecar` | companion（VRM + 工具）            | **是**（嵌入同一进程）             |\n"
+"| `bundled-spa`      | shell-ui 模块（聊天室、管理台等）  | **否**                             |\n"
+"| `unsupported`      | 移动配置占位符                     | —                                  |\n"
+
+#. type: Plain text
+#: docs/sap/frontend-exports.md:40
+msgid ""
+"`embedMode` describes **how the shell hosts the UI**, not which Hub wire the "
+"module uses at runtime (that is determined by module code: Hub RPC vs REST)."
+msgstr ""
+"`embedMode` 描述**shell 如何托管 UI**，而非模块运行时使用的 Hub 线路（由模块"
+"代码决定：Hub RPC 或 REST）。"
+
+#. type: Plain text
+#: docs/sap/frontend-exports.md:42
+msgid "Bundled SPA: Hub provides `/api` and `/hub/rpc/v1`."
+msgstr "壳内 bundled SPA：Hub 提供 `/api` 与 `/hub/rpc/v1`。"
 
 #. type: Title ##
-#: docs/sap/frontend-exports.md:42
+#: docs/sap/frontend-exports.md:43
 #, no-wrap
 msgid "Current frontend packages"
 msgstr "当前前端 package"
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:49
+#: docs/sap/frontend-exports.md:50
 #, no-wrap
 msgid ""
-"| Package                          | appId       | connectionKind     | embedMode     |\n"
-"| -------------------------------- | ----------- | ------------------ | ------------- |\n"
-"| `@freeanima/satellite-companion` | `companion` | `embedded-sidecar` | sidecar       |\n"
-"| `@freeanima/satellite-chat`      | `chat`      | `sap-direct`       | `bundled-spa` |\n"
-"| Admin (`app/desktop` profile)    | `admin`     | `hub-rest`         | `bundled-spa` |\n"
+"| Package                          | appId       | embedMode (profile) |\n"
+"| -------------------------------- | ----------- | ------------------- |\n"
+"| `@freeanima/satellite-companion` | `companion` | `embedded-sidecar`  |\n"
+"| `@freeanima/satellite-chat`      | `chat`      | `bundled-spa`       |\n"
+"| Admin (`app/desktop` profile)    | `admin`     | `bundled-spa`       |\n"
 msgstr ""
-"| Package                               | appId       | connectionKind     | embedMode     |\n"
-"| ------------------------------------- | ----------- | ------------------ | ------------- |\n"
-"| `@freeanima/satellite-companion`      | `companion` | `embedded-sidecar` | sidecar       |\n"
-"| `@freeanima/satellite-chat`           | `chat`      | `sap-direct`       | `bundled-spa` |\n"
-"| 管理台（`app/desktop` profile）       | `admin`     | `hub-rest`         | `bundled-spa` |\n"
+"| Package                          | appId       | embedMode（配置）   |\n"
+"| -------------------------------- | ----------- | ------------------- |\n"
+"| `@freeanima/satellite-companion` | `companion` | `embedded-sidecar`  |\n"
+"| `@freeanima/satellite-chat`      | `chat`      | `bundled-spa`       |\n"
+"| 管理台（`app/desktop` profile）  | `admin`     | `bundled-spa`       |\n"
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:51
+#: docs/sap/frontend-exports.md:52
 msgid ""
 "Shell apps: [`app/desktop/`](../../app/desktop/) · [`app/mobile/`](../../app/"
 "mobile/) · [`packages/shell-ui/`](../../packages/shell-ui/)"
@@ -171,27 +174,30 @@ msgstr ""
 "mobile/) · [`packages/shell-ui/`](../../packages/shell-ui/)"
 
 #. type: Title ##
-#: docs/sap/frontend-exports.md:52
+#: docs/sap/frontend-exports.md:53
 #, no-wrap
-msgid "Chat: SAP direct and instance_id"
-msgstr "聊天室：SAP 直连与 instance_id"
+msgid "Chat: Hub RPC and instance_id"
+msgstr "聊天室：Hub RPC 与 instance_id"
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:55
+#: docs/sap/frontend-exports.md:56
 msgid ""
-"Desktop/mobile chat uses [`createSapDirectClient`](../../packages/sap-"
-"contract/src/direct-client.ts) to connect to Hub `/sap/v1`."
+"Bundled chat uses [`createSapDirectClient`](../../packages/sap-contract/src/"
+"direct-client.ts) on the shared Hub RPC transport "
+"(`getBundledHubRpcClient` / `whenHubRpcReady`). It does **not** call "
+"`sap.attach`."
 msgstr ""
-"桌面/移动聊天室使用 [`createSapDirectClient`](../../packages/sap-contract/"
-"src/direct-client.ts) 连接 Hub `/sap/v1`。"
+"壳内 bundled 聊天室在共享 Hub RPC 传输层（`getBundledHubRpcClient` / "
+"`whenHubRpcReady`）上使用 [`createSapDirectClient`](../../packages/sap-"
+"contract/src/direct-client.ts)。**不会**调用 `sap.attach`。"
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:57
+#: docs/sap/frontend-exports.md:58
 msgid "`instance_id` persistence:"
 msgstr "`instance_id` 持久化："
 
 #. type: Bullet: '- '
-#: docs/sap/frontend-exports.md:60
+#: docs/sap/frontend-exports.md:61
 msgid ""
 "Electron shell: preload provides `createFileInstanceStore(\"chat\")` → "
 "`~/.anima/satellites/chat/instance.json`"
@@ -200,18 +206,18 @@ msgstr ""
 "satellites/chat/instance.json`"
 
 #. type: Bullet: '- '
-#: docs/sap/frontend-exports.md:60
+#: docs/sap/frontend-exports.md:61
 msgid "Capacitor: Preferences"
 msgstr "Capacitor：Preferences"
 
 #. type: Title ##
-#: docs/sap/frontend-exports.md:61
+#: docs/sap/frontend-exports.md:62
 #, no-wrap
 msgid "Admin: Hub REST + bundled SPA"
 msgstr "管理台：Hub REST + bundled SPA"
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:64
+#: docs/sap/frontend-exports.md:65
 msgid ""
 "Admin UI is built by [`@freeanima/admin-frontend`](../../platform/admin-"
 "frontend/) and bundled into desktop / mobile."
@@ -220,7 +226,7 @@ msgstr ""
 "建并打包进桌面 / 移动客户端。"
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:66
+#: docs/sap/frontend-exports.md:67
 msgid ""
 "REST base: bundled pages use `window.satelliteShell.hubUrl` for Hub **`/api/"
 "*`**. Hub enables CORS for localhost / Capacitor origins."
@@ -229,7 +235,7 @@ msgstr ""
 "*`**。Hub 为 localhost / Capacitor 来源启用 CORS。"
 
 #. type: Plain text
-#: docs/sap/frontend-exports.md:67
+#: docs/sap/frontend-exports.md:68
 msgid ""
 "Local shell dev: `bun run dev:web` → `http://127.0.0.1:4173` (Hub must be "
 "running; includes Chat, Admin, settings)."

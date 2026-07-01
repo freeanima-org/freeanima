@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 22:10+0800\n"
+"POT-Creation-Date: 2026-07-01 22:26+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -226,14 +226,21 @@ msgstr "平台 UI 分层"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:75
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Layer              | Platform-native?             | Location                                                 | 数据通道      |\n"
+#| "| ------------------ | ---------------------------- | -------------------------------------------------------- | ------------- |\n"
+#| "| Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring       | preload/IPC   |\n"
+#| "| Shared SPA shell   | Branch on `detectPlatform()` | `packages/shell-ui`                                      | 无 SAP wire   |\n"
+#| "| hub-rest 前端      | Admin embed                  | `platform/admin-frontend` + `ui-kit` + `shell-sdk`       | Eden `/api`   |\n"
+#| "| SAP 产品面         | Satellite apps               | `satellites/*` + `sap-contract` + `ui-kit` + `shell-sdk` | SAP `/sap/v1` |\n"
 msgid ""
 "| Layer              | Platform-native?             | Location                                                 | 数据通道      |\n"
 "| ------------------ | ---------------------------- | -------------------------------------------------------- | ------------- |\n"
 "| Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring       | preload/IPC   |\n"
 "| Shared SPA shell   | Branch on `detectPlatform()` | `packages/shell-ui`                                      | 无 SAP wire   |\n"
-"| hub-rest 前端      | Admin embed                  | `platform/admin-frontend` + `ui-kit` + `shell-sdk`       | Eden `/api`   |\n"
-"| SAP 产品面         | Satellite apps               | `satellites/*` + `sap-contract` + `ui-kit` + `shell-sdk` | SAP `/sap/v1` |\n"
+"| Admin 前端         | Admin embed                  | `platform/admin-frontend` + `ui-kit` + `shell-sdk`       | REST `/api`   |\n"
+"| SAP 产品面         | Satellite apps               | `satellites/*` + `sap-contract` + `ui-kit` + `shell-sdk` | Hub RPC + SAP attach |\n"
 msgstr ""
 "| 层                 | 平台原生？                   | 位置                                                     | 数据通道      |\n"
 "| ------------------ | ---------------------------- | -------------------------------------------------------- | ------------- |\n"
@@ -599,9 +606,13 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/architecture.md:182
+#, fuzzy
+#| msgid ""
+#| "**service**: long-running — Hub HTTP (`/api`, `/sap/v1`), Discord / "
+#| "WeChat Gateway, cron"
 msgid ""
-"**service**: long-running — Hub HTTP (`/api`, `/sap/v1`), Discord / WeChat "
-"Gateway, cron"
+"**service**: long-running — Hub HTTP (`/api`, `/hub/rpc/v1`), Discord / "
+"WeChat Gateway, cron"
 msgstr ""
 "**service**：长期运行——Hub HTTP（`/api`、`/sap/v1`）、Discord / 微信 "
 "Gateway、cron"
@@ -980,11 +991,16 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/architecture.md:310
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Module | Connection                       | Notes                  |\n"
+#| "| ------ | -------------------------------- | ---------------------- |\n"
+#| "| Chat   | SAP WebSocket `/sap/v1`          | `/web/chat`            |\n"
+#| "| Admin  | Hub REST `/api/*` (CORS + shell) | `/web/admin/dashboard` |\n"
 msgid ""
 "| Module | Connection                       | Notes                  |\n"
 "| ------ | -------------------------------- | ---------------------- |\n"
-"| Chat   | SAP WebSocket `/sap/v1`          | `/web/chat`            |\n"
+"| Chat   | Hub RPC `/hub/rpc/v1` (shared WS, no `sap.attach`) | `/web/chat`            |\n"
 "| Admin  | Hub REST `/api/*` (CORS + shell) | `/web/admin/dashboard` |\n"
 msgstr ""
 "| 模块   | 连接                              | 说明                   |\n"

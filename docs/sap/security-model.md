@@ -4,65 +4,55 @@ title: SAP Security
 
 # SAP Security
 
-Current SAP deployment assumes a **trusted local machine**. There is no application-layer authentication on the WebSocket.
+Hub RPC requires a **service API token** on every WebSocket `connect`. SAP attach still assumes a trusted client once transport auth succeeds.
 
 ## Trust boundary
 
 ```mermaid
 flowchart TB
-  subgraph trusted [Trusted local host assumption]
+  subgraph trusted [Trusted client with service token]
     Hub["Hub anima service :2658"]
-    SapEndpoint["/sap/v1 WebSocket"]
-    SatA[Satellite pair-programming]
-    SatB[Satellite chat]
-    Other[Any local process]
+    RpcEndpoint["/hub/rpc/v1 WebSocket"]
+    Bundled[Bundled SPA modules]
+    SatA[Satellite companion]
+    SatB[Satellite pair-programming]
   end
-  Browser[Browser loopback]
+  Browser[Browser]
+  Browser --> Bundled
   Browser --> SatA
-  Browser --> SatB
-  SatA --> SapEndpoint
-  SatB --> SapEndpoint
-  Other -.->|"no auth today"| SapEndpoint
-  SapEndpoint --> Hub
+  Bundled -->|"HubRPC connect + auth_token"| RpcEndpoint
+  SatA -->|"HubRPC + sap.attach"| RpcEndpoint
+  SatB --> RpcEndpoint
+  RpcEndpoint --> Hub
 ```
 
 ## Current controls
 
-| Control                         | Status                                                 |
-| ------------------------------- | ------------------------------------------------------ |
-| TLS on SAP                      | Not required; typical bind is loopback                 |
-| Token / API key on connect      | **None**                                               |
-| Origin check on WebSocket       | **None**                                               |
-| Session-scoped tool routing     | **Yes** — [strict routing](tools.md)                   |
-| Credential values in SAP frames | **No** — credentials stay in pass; LLM sees paths only |
+| Control                       | Status                                                 |
+| ----------------------------- | ------------------------------------------------------ |
+| TLS on Hub RPC                | Optional; remote access via Tunnel + HTTPS/WSS         |
+| Token on Hub RPC `connect`    | **Yes** — service API token (`verifyServiceApiToken`)  |
+| Origin check on WebSocket     | **None**                                               |
+| SAP attach for instance scope | **Yes** — `tool.*` requires `sap.attach`               |
+| Session-scoped tool routing   | **Yes** — [strict routing](tools.md)                   |
+| Credential values in frames   | **No** — credentials stay in pass; LLM sees paths only |
 
-Any process on the host that can reach `ws://127.0.0.1:2658/sap/v1` can:
+Any client that holds a valid service token and can reach `ws://127.0.0.1:2658/hub/rpc/v1` can:
 
-- Register tools as any `app_id` / `instance_id`
-- Create sessions and send messages through the Hub runtime
-- Receive `tool.call` events for registered tools
+- Call bundled RPC methods (chat, tasks, notifications, …) without `sap.attach`
+- After `sap.attach`, register tools as the attached `app_id` / `instance_id`
 
-Operational guidance: bind Hub to loopback; do not expose port 2658 to untrusted networks without additional controls. See [security guide](../guide/security.md).
+Operational guidance: bind Hub to loopback; rotate service tokens; do not expose port 2658 to untrusted networks without Tunnel + Access. See [security guide](../guide/security.md).
 
 ## Protocol hardening (transport layer)
 
-Invalid frames close the socket with **1003**. Protocol violations (double connect, RPC before handshake) close with **1008**. These are integrity checks, not authentication.
+Invalid frames close the socket with **1003**. Protocol violations (double connect, RPC before connect, `tool.*` without attach) close with **1008**. Failed auth closes with **1008** (`unauthorized`).
 
 ## Future directions (not implemented)
 
-Possible hardening items — not committed; track via GitHub Issues if prioritized:
+Possible hardening items — track via GitHub Issues if prioritized:
 
-- Shared secret or mTLS on `/sap/v1`
+- mTLS on `/hub/rpc/v1`
 - Instance attestation tied to managed satellite systemd units
 - Rate limits on connect and `tool.register`
 - Explicit disconnect on missed heartbeats
-
-When adding auth, preserve backward compatibility only if explicitly requested; this codebase phase accepts breaking changes.
-
-## Related surfaces
-
-| Surface            | Doc                                                                         |
-| ------------------ | --------------------------------------------------------------------------- |
-| Hub HTTP / Admin   | [security.md](../guide/security.md)                                         |
-| Credentials (pass) | [security.md](../guide/security.md), [identity.md](../concepts/identity.md) |
-| Tool execution     | [tools.md](tools.md)                                                        |

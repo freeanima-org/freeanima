@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-29 13:16+0800\n"
+"POT-Creation-Date: 2026-07-01 22:15+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/sap/satellite-guide.md:1 docs/sap/satellite-guide.md:5
-#: messages/po4a/en.xml:581
+#: messages/po4a/en.xml:600
 #, no-wrap
 msgid "Satellite Guide"
 msgstr ""
@@ -249,26 +249,27 @@ msgstr ""
 #. type: Title ###
 #: docs/sap/satellite-guide.md:94
 #, no-wrap
-msgid "SAP direct — browser/renderer connects to Hub (chat embedded in app/desktop)"
+msgid "Bundled Hub RPC — shell modules (chat, task, notification, …)"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:99
 msgid ""
-"Renderer uses [`createSapDirectClient`](../../packages/sap-contract/src/"
-"direct-client.ts) to connect to Hub `/sap/v1`."
+"Modules use shared [`getBundledHubRpcClient`](../../packages/hub-rpc/src/"
+"bundled.ts) / [`createSapDirectClient`](../../packages/sap-contract/src/"
+"direct-client.ts) on `/hub/rpc/v1`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/satellite-guide.md:99
+msgid "**No** `sap.attach`; **no** relay sidecar for these modules."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:99
 msgid ""
-"**No** relay sidecar; Chat uses **singleton** fixed `instance_id` "
-"(`CHAT_INSTANCE_ID` = `def`), no per-device persistence."
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:99
-msgid "See [`frontend-exports.md`](frontend-exports.md)."
+"See [`hub-rpc.md`](hub-rpc.md) and [`frontend-exports.md`](frontend-"
+"exports.md)."
 msgstr ""
 
 #. type: Title ###

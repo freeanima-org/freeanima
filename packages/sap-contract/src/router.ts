@@ -86,7 +86,7 @@ import type {
   ToolResultInput,
   ToolUnregisterInput,
 } from "./frames/tool.ts";
-import type { ConnectPayload, ConnectedPayload } from "./frames/lifecycle.ts";
+import type { SapAttachPayload, SapAttachOutput } from "./frames/lifecycle.ts";
 import type {
   TerminalAttachInput,
   TerminalAttachOutput,
@@ -96,6 +96,8 @@ import type {
 } from "./frames/terminal.ts";
 
 export const SAP_METHODS = [
+  "sap.attach",
+  "sap.detach",
   "conversation.create",
   "conversation.list",
   "conversation.messages",
@@ -148,6 +150,8 @@ export const SAP_METHODS = [
 export type SapMethod = (typeof SAP_METHODS)[number];
 
 export type SapRouterInputs = {
+  "sap.attach": SapAttachPayload;
+  "sap.detach": Record<string, never>;
   "conversation.create": ConversationCreateInput;
   "conversation.list": ConversationListInput;
   "conversation.messages": StoredMessagesInput;
@@ -198,6 +202,8 @@ export type SapRouterInputs = {
 };
 
 export type SapRouterOutputs = {
+  "sap.attach": SapAttachOutput;
+  "sap.detach": { ok: true };
   "conversation.create": ConversationCreateOutput;
   "conversation.list": ConversationListOutput;
   "conversation.messages": Record<string, unknown>;
@@ -248,8 +254,8 @@ export type SapRouterOutputs = {
 };
 
 export type SapServerHandlers = {
-  onConnect(payload: ConnectPayload): ConnectedPayload | Promise<ConnectedPayload>;
-  onDisconnect(appId: string, instanceId: string): void | Promise<void>;
+  onSapAttach(payload: SapAttachPayload): SapAttachOutput | Promise<SapAttachOutput>;
+  onSapDetach(appId: string, instanceId: string): void | Promise<void>;
   handle(
     method: SapMethod,
     payload: SapRouterInputs[SapMethod],
@@ -284,7 +290,6 @@ export function defineSapRouter(): {
 }
 
 export type SapClient = {
-  connect(payload: Omit<ConnectPayload, "protocol">): Promise<ConnectedPayload>;
   request<K extends SapMethod>(
     method: K,
     payload: SapRouterInputs[K],

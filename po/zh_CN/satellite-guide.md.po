@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-29 13:16+0800\n"
+"POT-Creation-Date: 2026-07-01 22:15+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/sap/satellite-guide.md:1 docs/sap/satellite-guide.md:5
-#: messages/po4a/en.xml:581
+#: messages/po4a/en.xml:600
 #, no-wrap
 msgid "Satellite Guide"
 msgstr "卫星指南"
@@ -288,31 +288,33 @@ msgstr "**结对编程：** relay + `tool.register` + 本地 FS/PTY API。"
 #. type: Title ###
 #: docs/sap/satellite-guide.md:94
 #, no-wrap
-msgid "SAP direct — browser/renderer connects to Hub (chat embedded in app/desktop)"
-msgstr "SAP 直连 — 浏览器/渲染进程连接 Hub（app/desktop 内嵌聊天室）"
+msgid "Bundled Hub RPC — shell modules (chat, task, notification, …)"
+msgstr "壳内 Bundled Hub RPC — shell 模块（聊天室、任务、通知等）"
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:99
 msgid ""
-"Renderer uses [`createSapDirectClient`](../../packages/sap-contract/src/"
-"direct-client.ts) to connect to Hub `/sap/v1`."
+"Modules use shared [`getBundledHubRpcClient`](../../packages/hub-rpc/src/"
+"bundled.ts) / [`createSapDirectClient`](../../packages/sap-contract/src/"
+"direct-client.ts) on `/hub/rpc/v1`."
 msgstr ""
-"渲染进程使用 [`createSapDirectClient`](../../packages/sap-contract/src/"
-"direct-client.ts) 连接 Hub `/sap/v1`。"
+"模块在 `/hub/rpc/v1` 上使用共享的 [`getBundledHubRpcClient`](../../packages/"
+"hub-rpc/src/bundled.ts) / [`createSapDirectClient`](../../packages/sap-"
+"contract/src/direct-client.ts)。"
+
+#. type: Bullet: '- '
+#: docs/sap/satellite-guide.md:99
+msgid "**No** `sap.attach`; **no** relay sidecar for these modules."
+msgstr "这些模块**不**调用 `sap.attach`；**无** relay sidecar。"
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:99
 msgid ""
-"**No** relay sidecar; Chat uses **singleton** fixed `instance_id` "
-"(`CHAT_INSTANCE_ID` = `def`), no per-device persistence."
+"See [`hub-rpc.md`](hub-rpc.md) and [`frontend-exports.md`](frontend-"
+"exports.md)."
 msgstr ""
-"**无** relay sidecar；聊天室使用 **singleton** 固定 `instance_id`"
-"（`CHAT_INSTANCE_ID` = `def`），无按设备持久化。"
-
-#. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:99
-msgid "See [`frontend-exports.md`](frontend-exports.md)."
-msgstr "见 [`frontend-exports.md`](frontend-exports.md)。"
+"见 [`hub-rpc.md`](hub-rpc.md) 与 [`frontend-exports.md`](frontend-"
+"exports.md)。"
 
 #. type: Title ###
 #: docs/sap/satellite-guide.md:100

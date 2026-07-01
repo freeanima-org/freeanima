@@ -17,7 +17,7 @@ export function createSapBunHandlers(deps: SapServerDeps): {
   return {
     fetch(req, server) {
       const url = new URL(req.url);
-      if (url.pathname !== "/sap/v1") {
+      if (url.pathname !== "/hub/rpc/v1") {
         return;
       }
       if (

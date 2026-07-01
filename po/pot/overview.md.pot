@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-29 13:16+0800\n"
+"POT-Creation-Date: 2026-07-01 22:15+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:19 docs/sap/overview.md:17
+#: docs/features/mobile-app.md:20 docs/sap/overview.md:17
 #, no-wrap
 msgid "Topology"
 msgstr ""
@@ -51,23 +51,23 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/sap/overview.md:16
 msgid ""
-"**One Hub WS per instance**: each satellite instance opens exactly one `/sap/"
-"v1` connection to the Hub (multiplex conversations, streams, tools)."
+"**One Hub WS per client**: each browser tab or satellite process opens one `/"
+"hub/rpc/v1` connection (bundled SPA shares one transport; satellites "
+"multiplex after `sap.attach`)."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/overview.md:16
 msgid ""
-"**Origin isolation**: bundled clients may use browser-direct Hub WS (`sap-"
-"direct`) or a local SAP relay (`/sap/relay/v1`) depending on deployment."
+"**Two layers**: Hub RPC for transport + auth; SAP attach for true satellite "
+"instances only."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/overview.md:16
 msgid ""
-"**Shared contract**: both sides import `@freeanima/sap-contract` for "
-"envelopes, RPC types, `runSapTransport`, `createSapBrowserClient`, and "
-"`createSapRelayBrowserClient`."
+"**Shared contract**: `@freeanima/hub-rpc` for transport; `@freeanima/sap-"
+"contract` for SAP RPC types, `createSatelliteHub`, bundled stream helpers."
 msgstr ""
 
 #. type: Fenced code block (mermaid)
@@ -90,8 +90,8 @@ msgstr ""
 msgid ""
 "| Role  | Default                 | Responsibility                                              |\n"
 "| ----- | ----------------------- | ----------------------------------------------------------- |\n"
-"| Hub   | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1`            |\n"
-"| Chat  | bundled `/chat`         | Chat UI; SAP direct or relay                                |\n"
+"| Hub   | `http://127.0.0.1:2658` | Agent runtime, Hub RPC WebSocket at `/hub/rpc/v1`         |\n"
+"| Chat  | bundled `/chat`         | Chat UI; shared Hub RPC (no `sap.attach`)                 |\n"
 "| Admin | bundled shell `/admin`  | Memory, config, tools, satellite status (Hub REST `/api/*`) |\n"
 msgstr ""
 
@@ -117,8 +117,10 @@ msgid ""
 "  participant Hub as Hub\n"
 "  participant Agent as AgentRuntime\n"
 "\n"
-"  Sat->>Hub: connect\n"
-"  Hub->>Sat: connected\n"
+"  Sat->>Hub: connect HubRPC/1.0 auth_token\n"
+"  Hub->>Sat: connected session_id\n"
+"  Sat->>Hub: req sap.attach\n"
+"  Hub->>Sat: res instance_id\n"
 "  Sat->>Hub: req tool.register\n"
 "  Hub->>Sat: res ok\n"
 "  Sat->>Hub: req conversation.create\n"
@@ -135,46 +137,49 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/sap/overview.md:68
-msgid "Satellite process opens `ws://{hub}/sap/v1` and sends `connect`."
+#: docs/sap/overview.md:70
+msgid ""
+"Client opens `ws://{hub}/hub/rpc/v1` and sends Hub RPC `connect` with "
+"`auth_token`."
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/sap/overview.md:68
+#: docs/sap/overview.md:70
 msgid ""
-"Hub replies `connected` and registers the instance in `SatelliteManager`."
+"Satellite process sends `sap.attach`; Hub registers the instance in "
+"`SatelliteManager`. Bundled SPA skips this step."
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/sap/overview.md:68
+#: docs/sap/overview.md:70
 msgid "Satellite registers local tools via `tool.register` (if any)."
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/sap/overview.md:68
+#: docs/sap/overview.md:70
 msgid "`message.send` returns a `stream_id`; Hub pushes `stream.*` events."
 msgstr ""
 
 #. type: Bullet: '5. '
-#: docs/sap/overview.md:68
+#: docs/sap/overview.md:70
 msgid ""
 "When the agent calls a Satellite tool, Hub sends `tool.call`; Satellite "
 "replies with `tool.result` or `tool.error`."
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/overview.md:69
+#: docs/sap/overview.md:71
 #, no-wrap
 msgid "Document map"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/overview.md:78
+#: docs/sap/overview.md:80
 #, no-wrap
 msgid ""
 "| Topic                           | File                                     |\n"
 "| ------------------------------- | ---------------------------------------- |\n"
-"| Transport, envelopes, heartbeat | [transport.md](transport.md)             |\n"
+"| Transport, Hub RPC, heartbeat | [transport.md](transport.md) · [hub-rpc.md](hub-rpc.md) |\n"
 "| RPC methods                     | [methods.md](methods.md)                 |\n"
 "| Async events                    | [events.md](events.md)                   |\n"
 "| Tool naming and routing         | [tools.md](tools.md)                     |\n"

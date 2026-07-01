@@ -12,46 +12,47 @@ The unified settings window is aggregated by the registry in [`packages/shell-ui
 
 Path: `./manifest` — JSON-serializable metadata.
 
-| Field             | Description                                         |
-| ----------------- | --------------------------------------------------- |
-| `appId`           | Application id                                      |
-| `displayName`     | Display name                                        |
-| `version`         | Version (usually synced with monorepo root package) |
-| `supportsDesktop` | Supports desktop embed                              |
-| `supportsMobile`  | Supports mobile embed                               |
-| `connectionKind`  | See table below                                     |
-| `sap`             | Optional; SAP satellites only                       |
-
-### connectionKind
-
-| Value              | Represents                | Sidecar required?                   |
-| ------------------ | ------------------------- | ----------------------------------- |
-| `embedded-sidecar` | companion (VRM + tools)   | **Yes** (embedded in same process)  |
-| `sap-direct`       | chat (renderer → Hub SAP) | **No** (persist `instance_id` only) |
-| `hub-rest`         | Admin console (Hub REST)  | **No**                              |
+| Field             | Description                                          |
+| ----------------- | ---------------------------------------------------- |
+| `appId`           | Application id                                       |
+| `displayName`     | Display name                                         |
+| `version`         | Version (usually synced with monorepo root package)  |
+| `supportsDesktop` | Supports desktop embed                               |
+| `supportsMobile`  | Supports mobile embed                                |
+| `sap`             | Optional; true satellite metadata (`relay`, `tools`) |
 
 Implementation SSOT: [`packages/shell-sdk/src/manifest.ts`](../../packages/shell-sdk/src/manifest.ts)
 
-## Desktop / Mobile (optional)
+## Desktop / Mobile profile
 
 - `./desktop` — desktop shell compile-time import profile (window spec, launch mode)
 - `./mobile` — mobile profile; when unsupported, `embedMode: "unsupported"`
 
-`embedMode: "bundled-spa"` — UI bundled in client install; Hub provides `/api` and `/sap/v1` only.
+### `embedMode`
+
+| Value              | Represents                       | Sidecar required?                  |
+| ------------------ | -------------------------------- | ---------------------------------- |
+| `embedded-sidecar` | companion (VRM + tools)          | **Yes** (embedded in same process) |
+| `bundled-spa`      | shell-ui module (chat, admin, …) | **No**                             |
+| `unsupported`      | mobile profile placeholder       | —                                  |
+
+`embedMode` describes **how the shell hosts the UI**, not which Hub wire the module uses at runtime (that is determined by module code: Hub RPC vs REST).
+
+Bundled SPA: Hub provides `/api` and `/hub/rpc/v1`.
 
 ## Current frontend packages
 
-| Package                          | appId       | connectionKind     | embedMode     |
-| -------------------------------- | ----------- | ------------------ | ------------- |
-| `@freeanima/satellite-companion` | `companion` | `embedded-sidecar` | sidecar       |
-| `@freeanima/satellite-chat`      | `chat`      | `sap-direct`       | `bundled-spa` |
-| Admin (`app/desktop` profile)    | `admin`     | `hub-rest`         | `bundled-spa` |
+| Package                          | appId       | embedMode (profile) |
+| -------------------------------- | ----------- | ------------------- |
+| `@freeanima/satellite-companion` | `companion` | `embedded-sidecar`  |
+| `@freeanima/satellite-chat`      | `chat`      | `bundled-spa`       |
+| Admin (`app/desktop` profile)    | `admin`     | `bundled-spa`       |
 
 Shell apps: [`app/desktop/`](../../app/desktop/) · [`app/mobile/`](../../app/mobile/) · [`packages/shell-ui/`](../../packages/shell-ui/)
 
-## Chat: SAP direct and instance_id
+## Chat: Hub RPC and instance_id
 
-Desktop/mobile chat uses [`createSapDirectClient`](../../packages/sap-contract/src/direct-client.ts) to connect to Hub `/sap/v1`.
+Bundled chat uses [`createSapDirectClient`](../../packages/sap-contract/src/direct-client.ts) on the shared Hub RPC transport (`getBundledHubRpcClient` / `whenHubRpcReady`). It does **not** call `sap.attach`.
 
 `instance_id` persistence:
 

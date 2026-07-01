@@ -15,7 +15,7 @@ title: Installation
 | **Docker Compose** | Quick trial, minimal host setup            | Bundled     | Bundled                | `.env` env vars                                      |
 | **Source**         | Contributors, bleeding-edge, custom builds | You install | Optional (recommended) | pass (recommended)                                   |
 
-All paths run the same `anima service` runtime (Hub REST `/api` + SAP `/sap/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis powers EventBus and task context; it **degrades silently** when unavailable — Docker and production setups should still run it.
+All paths run the same `anima service` runtime (Hub REST `/api` + Hub RPC `/hub/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis powers EventBus and task context; it **degrades silently** when unavailable — Docker and production setups should still run it.
 
 ## Shared prerequisites
 
@@ -89,7 +89,7 @@ anima service start --foreground # debug — logs to stdout
 anima service status
 ```
 
-Default bind: `127.0.0.1:2658`（Hub API：`/api`，SAP：`/sap/v1`）。
+Default bind: `127.0.0.1:2658`（Hub API：`/api`，Hub RPC：`/hub/rpc/v1`）。
 
 Use **app/desktop** or **app/mobile** for UI (Chat + Admin bundled). Browser local dev: `bun run dev:web` (Vite HMR; Hub must be running).
 

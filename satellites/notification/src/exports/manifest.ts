@@ -9,7 +9,6 @@ export const notificationManifest: FrontendManifest = {
   version: readMonorepoVersion(),
   supportsDesktop: true,
   supportsMobile: true,
-  connectionKind: "sap-direct",
   sap: { relay: false },
 };
 

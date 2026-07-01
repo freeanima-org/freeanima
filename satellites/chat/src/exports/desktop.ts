@@ -8,7 +8,6 @@ export const CHAT_STATIC_PORT_ATTEMPTS = 10;
 export const chatDesktopExport: FrontendDesktopExport = {
   manifest: getChatManifest(),
   profile: {
-    connectionKind: "sap-direct",
     embedMode: "bundled-spa",
     distSubdir: "shell-ui",
     entryPath: "index.html",

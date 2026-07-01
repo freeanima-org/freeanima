@@ -10,6 +10,7 @@
     "./settings": "./src/settings/index.ts"
   },
   "dependencies": {
+    "@freeanima/hub-rpc": "workspace:*",
     "react": "catalog:",
     "zod": "catalog:"
   },

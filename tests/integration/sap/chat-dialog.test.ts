@@ -17,8 +17,7 @@ describe("chat browser SAP client", () => {
 
   it("createSapDirectClient exposes subscribe and stream helpers", () => {
     const client = createSapDirectClient({
-      hubWsUrl: "ws://127.0.0.1:2658/sap/v1",
-      httpUrl: "http://127.0.0.1:4174",
+      hubRpcWsUrl: "ws://127.0.0.1:2658/hub/rpc/v1",
     });
     expect(client.getClient()).toBeNull();
     expect(typeof client.subscribeConversationEvents).toBe("function");

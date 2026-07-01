@@ -10,9 +10,9 @@ Schemas and client SDK live in [`packages/sap-contract/`](../../packages/sap-con
 
 ## Design goals
 
-- **One Hub WS per instance**: each satellite instance opens exactly one `/sap/v1` connection to the Hub (multiplex conversations, streams, tools).
-- **Origin isolation**: bundled clients may use browser-direct Hub WS (`sap-direct`) or a local SAP relay (`/sap/relay/v1`) depending on deployment.
-- **Shared contract**: both sides import `@freeanima/sap-contract` for envelopes, RPC types, `runSapTransport`, `createSapBrowserClient`, and `createSapRelayBrowserClient`.
+- **One Hub WS per client**: each browser tab or satellite process opens one `/hub/rpc/v1` connection (bundled SPA shares one transport; satellites multiplex after `sap.attach`).
+- **Two layers**: Hub RPC for transport + auth; SAP attach for true satellite instances only.
+- **Shared contract**: `@freeanima/hub-rpc` for transport; `@freeanima/sap-contract` for SAP RPC types, `createSatelliteHub`, bundled stream helpers.
 
 ## Topology
 
@@ -29,8 +29,8 @@ flowchart LR
 
 | Role  | Default                 | Responsibility                                              |
 | ----- | ----------------------- | ----------------------------------------------------------- |
-| Hub   | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1`            |
-| Chat  | bundled `/chat`         | Chat UI; SAP direct or relay                                |
+| Hub   | `http://127.0.0.1:2658` | Agent runtime, Hub RPC WebSocket at `/hub/rpc/v1`           |
+| Chat  | bundled `/chat`         | Chat UI; shared Hub RPC (no `sap.attach`)                   |
 | Admin | bundled shell `/admin`  | Memory, config, tools, satellite status (Hub REST `/api/*`) |
 
 See also: [architecture Client UI section](../concepts/architecture.md#client-uibundled).
@@ -43,8 +43,10 @@ sequenceDiagram
   participant Hub as Hub
   participant Agent as AgentRuntime
 
-  Sat->>Hub: connect
-  Hub->>Sat: connected
+  Sat->>Hub: connect HubRPC/1.0 auth_token
+  Hub->>Sat: connected session_id
+  Sat->>Hub: req sap.attach
+  Hub->>Sat: res instance_id
   Sat->>Hub: req tool.register
   Hub->>Sat: res ok
   Sat->>Hub: req conversation.create
@@ -60,19 +62,19 @@ sequenceDiagram
   Hub-->>Sat: evt stream.done
 ```
 
-1. Satellite process opens `ws://{hub}/sap/v1` and sends `connect`.
-2. Hub replies `connected` and registers the instance in `SatelliteManager`.
+1. Client opens `ws://{hub}/hub/rpc/v1` and sends Hub RPC `connect` with `auth_token`.
+2. Satellite process sends `sap.attach`; Hub registers the instance in `SatelliteManager`. Bundled SPA skips this step.
 3. Satellite registers local tools via `tool.register` (if any).
 4. `message.send` returns a `stream_id`; Hub pushes `stream.*` events.
 5. When the agent calls a Satellite tool, Hub sends `tool.call`; Satellite replies with `tool.result` or `tool.error`.
 
 ## Document map
 
-| Topic                           | File                                     |
-| ------------------------------- | ---------------------------------------- |
-| Transport, envelopes, heartbeat | [transport.md](transport.md)             |
-| RPC methods                     | [methods.md](methods.md)                 |
-| Async events                    | [events.md](events.md)                   |
-| Tool naming and routing         | [tools.md](tools.md)                     |
-| Config and implementation       | [satellite-guide.md](satellite-guide.md) |
-| Security model                  | [security-model.md](security-model.md)   |
+| Topic                         | File                                                    |
+| ----------------------------- | ------------------------------------------------------- |
+| Transport, Hub RPC, heartbeat | [transport.md](transport.md) · [hub-rpc.md](hub-rpc.md) |
+| RPC methods                   | [methods.md](methods.md)                                |
+| Async events                  | [events.md](events.md)                                  |
+| Tool naming and routing       | [tools.md](tools.md)                                    |
+| Config and implementation     | [satellite-guide.md](satellite-guide.md)                |
+| Security model                | [security-model.md](security-model.md)                  |

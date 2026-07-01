@@ -13,9 +13,9 @@ title: Mobile app (Android)
 | ---------- | -------------------------------------------------------- |
 | Platform   | **Android only** sideload (APK); iOS later               |
 | UI         | 默认 bootstrap → Hub `/web/*`（与浏览器/PWA 同一产物）   |
-| Modules    | Chat (`sap-direct`) + Admin (`hub-rest`)                 |
+| Modules    | Chat + Admin（bundled shell-ui）                         |
 | Hub config | APP **Hub settings**（Preferences）或 bootstrap 首次配置 |
-| Hub duties | `/api` REST + `/sap/v1` WebSocket                        |
+| Hub duties | `/api` REST + `/hub/rpc/v1` WebSocket                    |
 
 ## Topology
 

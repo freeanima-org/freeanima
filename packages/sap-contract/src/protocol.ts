@@ -1,50 +1,27 @@
-import { z } from "zod";
+import {
+  HUB_RPC_VERSION,
+  hubRpcErrorSchema,
+  parseHubRpcEnvelope,
+  serializeHubRpcEnvelope,
+  hubRpcConnectPayloadSchema,
+  hubRpcConnectedPayloadSchema,
+} from "@freeanima/hub-rpc";
 
-export const SAP_VERSION = "SAP/1.0";
+export {
+  HUB_RPC_VERSION,
+  hubRpcErrorSchema,
+  parseHubRpcEnvelope,
+  serializeHubRpcEnvelope,
+  hubRpcConnectPayloadSchema,
+  hubRpcConnectedPayloadSchema,
+};
 
-export const sapErrorSchema = z.object({
-  code: z.string(),
-  message: z.string(),
-  details: z.unknown().optional(),
-});
+export type { HubRpcEnvelope, HubRpcError } from "@freeanima/hub-rpc";
 
-export type SapError = z.infer<typeof sapErrorSchema>;
+/** @deprecated 使用 HUB_RPC_VERSION */
+export const SAP_VERSION = HUB_RPC_VERSION;
 
-export const sapEnvelopeSchema = z.union([
-  z.object({ kind: z.literal("connect"), payload: z.record(z.string(), z.unknown()) }),
-  z.object({ kind: z.literal("connected"), payload: z.record(z.string(), z.unknown()) }),
-  z.object({
-    kind: z.literal("req"),
-    id: z.string().min(1),
-    method: z.string().min(1),
-    payload: z.unknown(),
-  }),
-  z.object({
-    kind: z.literal("res"),
-    id: z.string().min(1),
-    ok: z.literal(true),
-    payload: z.unknown(),
-  }),
-  z.object({
-    kind: z.literal("res"),
-    id: z.string().min(1),
-    ok: z.literal(false),
-    error: sapErrorSchema,
-  }),
-  z.object({
-    kind: z.literal("evt"),
-    method: z.string().min(1),
-    payload: z.unknown(),
-  }),
-]);
-
-export type SapEnvelope = z.infer<typeof sapEnvelopeSchema>;
-
-export function parseSapEnvelope(raw: string): SapEnvelope {
-  const parsed = JSON.parse(raw) as unknown;
-  return sapEnvelopeSchema.parse(parsed);
-}
-
-export function serializeSapEnvelope(envelope: SapEnvelope): string {
-  return JSON.stringify(envelope);
-}
+export const parseSapEnvelope = parseHubRpcEnvelope;
+export const serializeSapEnvelope = serializeHubRpcEnvelope;
+export type SapEnvelope = import("@freeanima/hub-rpc").HubRpcEnvelope;
+export type SapError = import("@freeanima/hub-rpc").HubRpcError;

@@ -1,4 +1,11 @@
-export { SAP_VERSION, parseSapEnvelope, serializeSapEnvelope } from "./protocol.ts";
+export {
+  SAP_VERSION,
+  parseSapEnvelope,
+  serializeSapEnvelope,
+  hubRpcConnectPayloadSchema,
+  hubRpcConnectedPayloadSchema,
+  HUB_RPC_VERSION,
+} from "./protocol.ts";
 export type { SapEnvelope, SapError } from "./protocol.ts";
 export { randomUuid } from "@freeanima/kernel/random-uuid";
 
@@ -34,11 +41,19 @@ export {
   type SapInstanceStore,
 } from "./instance-store.ts";
 export {
-  connectPayloadSchema,
-  connectedPayloadSchema,
+  sapAttachPayloadSchema,
+  sapAttachOutputSchema,
+  sapDetachPayloadSchema,
+  sapDetachOutputSchema,
   heartbeatPayloadSchema,
 } from "./frames/lifecycle.ts";
-export type { ConnectPayload, ConnectedPayload, HeartbeatPayload } from "./frames/lifecycle.ts";
+export type {
+  SapAttachPayload,
+  SapAttachOutput,
+  SapDetachPayload,
+  SapDetachOutput,
+  HeartbeatPayload,
+} from "./frames/lifecycle.ts";
 
 export {
   conversationCreateInputSchema,
@@ -296,14 +311,26 @@ export type {
 
 export { createSapClient } from "./client.ts";
 export type { CreateSapClientOptions } from "./client.ts";
-export { runSapTransport } from "./transport.ts";
-export type {
-  RunSapTransportOptions,
-  SapReconnectPolicy,
-  SapTransportHandle,
-} from "./transport.ts";
 
-export { resolveHubHttpUrl, resolveHubWsUrl, hubHttpFromWsUrl, resolveRelayWsUrl } from "./urls.ts";
+export {
+  resolveHubHttpUrl,
+  resolveHubWsUrl,
+  resolveHubRpcWsUrl,
+  hubHttpFromWsUrl,
+  hubHttpFromRpcWsUrl,
+  resolveRelayWsUrl,
+} from "./urls.ts";
+
+export {
+  getBundledSapStreamClient,
+  whenBundledSapClientReady,
+  createBundledSapStreamClient,
+  resetBundledSapStreamClientForTests,
+  subscribeShellConfigChanges,
+} from "./bundled-sap-stream.ts";
+export type { BundledSapStreamClient, SapConnectionState } from "./bundled-sap-stream.ts";
+
+export { sapClientFromRpc } from "./sap-client-from-rpc.ts";
 
 export {
   createSapConversationStreamClient,
@@ -326,7 +353,6 @@ export {
 
 export {
   createSapSidecarClient,
-  type SapConnectionState,
   type SapSidecarClient,
   type SapSidecarClientOptions,
 } from "./sidecar-client.ts";

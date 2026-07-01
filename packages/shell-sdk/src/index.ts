@@ -1,10 +1,5 @@
-export {
-  connectionKindSchema,
-  frontendManifestSchema,
-  parseManifestJson,
-  toManifestJson,
-} from "./manifest.ts";
-export type { ConnectionKind, FrontendManifest } from "./manifest.ts";
+export { frontendManifestSchema, parseManifestJson, toManifestJson } from "./manifest.ts";
+export type { FrontendManifest } from "./manifest.ts";
 
 import * as shellApi from "./shell-api.ts";
 
@@ -19,14 +14,13 @@ export type {
 } from "./shell-api.ts";
 
 export type {
+  BundledSpaDesktopProfile,
   DesktopProfile,
   DesktopWindowSpec,
   EmbeddedSidecarDesktopProfile,
   FrontendDesktopExport,
   FrontendMobileExport,
-  HubRestBundledDesktopProfile,
   MobileProfile,
-  SapDirectDesktopProfile,
   WindowKind,
 } from "./profile.ts";
 

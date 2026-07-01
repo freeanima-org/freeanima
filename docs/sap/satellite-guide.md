@@ -91,11 +91,11 @@ Hub [`SapInstanceRegistry`](../../platform/src/sap/instance-registry.ts): omit `
 - `instance_id` persisted under `~/.anima/satellites/{app}/instance.json`.
 - **Pair-programming:** relay + `tool.register` + local FS/PTY APIs.
 
-### SAP direct — browser/renderer connects to Hub (chat embedded in app/desktop)
+### Bundled Hub RPC — shell modules (chat, task, notification, …)
 
-- Renderer uses [`createSapDirectClient`](../../packages/sap-contract/src/direct-client.ts) to connect to Hub `/sap/v1`.
-- **No** relay sidecar; Chat uses **singleton** fixed `instance_id` (`CHAT_INSTANCE_ID` = `def`), no per-device persistence.
-- See [`frontend-exports.md`](frontend-exports.md).
+- Modules use shared [`getBundledHubRpcClient`](../../packages/hub-rpc/src/bundled.ts) / [`createSapDirectClient`](../../packages/sap-contract/src/direct-client.ts) on `/hub/rpc/v1`.
+- **No** `sap.attach`; **no** relay sidecar for these modules.
+- See [`hub-rpc.md`](hub-rpc.md) and [`frontend-exports.md`](frontend-exports.md).
 
 ### Type B + tools, no relay (companion)
 

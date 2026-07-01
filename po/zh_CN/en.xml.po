@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 22:10+0800\n"
+"POT-Creation-Date: 2026-07-01 22:26+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -159,6 +159,12 @@ msgid "Service"
 msgstr "服务"
 
 #. type: Content of: <messages><msg>
+#: docs/sap/hub-rpc.md:50 docs/sap/transport.md:99 messages/po4a/en.xml:117
+#, no-wrap
+msgid "Reconnect"
+msgstr "重连"
+
+#. type: Content of: <messages><msg>
 #: docs/sap/methods.md:63 messages/po4a/en.xml:558
 #, no-wrap
 msgid "Terminal"
@@ -170,12 +176,6 @@ msgstr "终端"
 #, no-wrap
 msgid "Satellite Guide"
 msgstr "卫星指南"
-
-#. type: Content of: <messages><msg>
-#: docs/sap/transport.md:101 messages/po4a/en.xml:117
-#, no-wrap
-msgid "Reconnect"
-msgstr "重连"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:3 messages/po4a/en.xml:177 messages/po4a/en.xml:308

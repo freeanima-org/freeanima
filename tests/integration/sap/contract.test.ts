@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
-  connectPayloadSchema,
-  connectedPayloadSchema,
+  sapAttachPayloadSchema,
+  sapAttachOutputSchema,
   formatSapToolName,
   notificationListInputSchema,
   notificationMarkReadInputSchema,
@@ -12,6 +12,7 @@ import {
   sessionAcpDockInputSchema,
   conversationCommandsInputSchema,
   toolRegisterInputSchema,
+  hubRpcConnectPayloadSchema,
 } from "@freeanima/sap-contract";
 
 describe("sap-contract envelopes", () => {
@@ -26,18 +27,25 @@ describe("sap-contract envelopes", () => {
     expect(parsed).toEqual(frame);
   });
 
-  it("validates connect payload with http_url", () => {
-    const payload = connectPayloadSchema.parse({
-      app_id: "chat",
+  it("validates Hub RPC connect payload", () => {
+    const payload = hubRpcConnectPayloadSchema.parse({
+      protocol: "HubRPC/1.0",
+      auth_token: "secret",
+    });
+    expect(payload.auth_token).toBe("secret");
+  });
+
+  it("validates sap.attach payload", () => {
+    const payload = sapAttachPayloadSchema.parse({
+      app_id: "companion",
       instance_id: "k7m",
-      protocol: "SAP/1.0",
       features_requested: [],
       http_url: "http://127.0.0.1:4174",
     });
     expect(payload.http_url).toBe("http://127.0.0.1:4174");
   });
 
-  it("validates chat SAP procedure schemas", () => {
+  it("validates chat procedure schemas", () => {
     sessionAcpDockInputSchema.parse({ conversation_id: "sid" });
     conversationCommandsInputSchema.parse({ platform: "sap:chat:k7m" });
     notificationListInputSchema.parse({ recipient_kind: "user", read_filter: "unread" });
@@ -64,19 +72,17 @@ describe("sap-contract envelopes", () => {
     );
   });
 
-  it("validates connected capability_mask presets shape", () => {
-    const parsed = connectedPayloadSchema.parse({
-      protocol: "SAP/1.0",
+  it("validates sap.attach output capability_mask presets shape", () => {
+    const parsed = sapAttachOutputSchema.parse({
       instance_id: "k7m",
       features_enabled: ["capability_mask"],
       server_info: {
         anima_version: "0.5.0",
-        sap_version: "SAP/1.0",
+        hub_rpc_version: "HubRPC/1.0",
         capability_mask: {
           presets: [{ name: "developer", allowed_tools_summary: ["file_read"] }],
         },
       },
-      heartbeat_interval_sec: 30,
     });
     expect(parsed.server_info?.capability_mask?.presets[0]?.name).toBe("developer");
   });

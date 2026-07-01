@@ -46,7 +46,7 @@ describe("web-static", () => {
       ui_version?: string;
     };
     expect(cfg.hub_url).toBe(base);
-    expect(cfg.hub_ws_url).toContain("/sap/v1");
+    expect(cfg.hub_ws_url).toContain("/hub/rpc/v1");
 
     const asset = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/assets/main.js`), {
       ...opts,
