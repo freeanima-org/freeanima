@@ -5,7 +5,6 @@ import tailwindcss from "@tailwindcss/vite";
 import { build, type InlineConfig, type Rollup } from "vite";
 
 import { createShellUiAliases } from "./aliases.ts";
-import { sapSharedWorkerBundledUrlPlugin } from "./sap-shared-worker-alias.ts";
 import { shellEntryFileNames } from "./entry-file-names.ts";
 import { paraglideCompilePlugin } from "./paraglide-plugin.ts";
 
@@ -53,25 +52,12 @@ export function createShellViteInlineConfig(opts: ShellViteBuildOptions): Inline
     configFile: false,
     root: opts.appDir,
     base: opts.base ?? "/",
-    plugins: [
-      paraglideCompilePlugin(paraglideDir, repoRoot),
-      sapSharedWorkerBundledUrlPlugin(repoRoot ?? join(opts.appDir, "..", "..", "..")),
-      react(),
-      tailwindcss(),
-    ],
+    plugins: [paraglideCompilePlugin(paraglideDir, repoRoot), react(), tailwindcss()],
     resolve: {
       alias: createShellUiAliases(paraglideDir, repoRoot),
       dedupe: ["react", "react-dom"],
     },
     ...(opts.define !== undefined ? { define: opts.define } : {}),
-    worker: {
-      format: "es",
-      rollupOptions: {
-        output: {
-          entryFileNames: "assets/[name]-[hash].js",
-        },
-      },
-    },
     build: {
       outDir: opts.outdir,
       emptyOutDir: !opts.watch,

@@ -23,14 +23,11 @@ function resolveHubWsUrlFromEnv(): string {
 export function getSapDirectClient(): SapDirectClient {
   if (!directClient) {
     connectionState = "connecting";
-    const nativeShell =
-      typeof window !== "undefined" && Boolean(window.satelliteShell?.isNativeShell);
     const remoteAuthToken = window.satelliteShell?.remoteAuth?.token;
     directClient = createSapDirectClient({
       appId: APP_ID,
       hubWsUrl: resolveHubWsUrlFromEnv(),
       instanceId: DIARY_INSTANCE_ID,
-      useSharedWorker: !nativeShell,
       ...(remoteAuthToken !== undefined ? { remoteAuthToken } : {}),
       onConnectionStateChange: (connected) => {
         connectionState = connected ? "connected" : "disconnected";

@@ -362,14 +362,6 @@ export {
 } from "./satellite-relay-server.ts";
 
 export {
-  installSapSharedWorkerHost,
-  createSharedWorkerSapClient,
-  type SharedWorkerPortMessage,
-  type SapSharedWorkerInitConfig,
-  type CreateSharedWorkerSapClientOptions,
-} from "./shared-worker.ts";
-
-export {
   hasNewAssistantReply,
   pollUntilAssistantReply,
   RECOVERY_INITIAL_DELAY_MS,

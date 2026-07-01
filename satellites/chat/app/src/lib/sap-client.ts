@@ -33,14 +33,11 @@ function resolveHubWsUrlFromEnv(): string {
 export function getSapDirectClient(): SapDirectClient {
   if (!directClient) {
     notifyConnection("connecting");
-    const nativeShell =
-      typeof window !== "undefined" && Boolean(window.satelliteShell?.isNativeShell);
     const remoteAuthToken = window.satelliteShell?.remoteAuth?.token;
     directClient = createSapDirectClient({
       appId: APP_ID,
       hubWsUrl: resolveHubWsUrlFromEnv(),
       instanceId: CHAT_INSTANCE_ID,
-      useSharedWorker: !nativeShell,
       ...(remoteAuthToken !== undefined ? { remoteAuthToken } : {}),
       onConnectionStateChange: notifyConnection,
     });
