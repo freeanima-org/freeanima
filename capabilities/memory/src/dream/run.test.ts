@@ -1,28 +1,35 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
 
-import type { DreamMemoryCreateInput } from "@freeanima/core/repos";
-
+import type { DreamEntryCreateInput } from "./types.ts";
 import { registerDreamEngine, resetDreamEngineForTests } from "../dream-engine-port.ts";
 import { runDream } from "./run.ts";
 
 const DAY = "2026-06-14";
 const created: Array<Record<string, unknown>> = [];
 
-const createDreamMemoryMock = mock(async (row: DreamMemoryCreateInput) => {
+const createDreamEntryMock = mock(async (_ctx: { worldId: number }, row: DreamEntryCreateInput) => {
   created.push(row as Record<string, unknown>);
-  return "dream-1";
+  return {
+    id: 1,
+    dream_day: row.dream_day,
+    content: row.content,
+    source_limbic_ids: row.source_limbic_ids ?? [],
+    source_conversation_ids: row.source_conversation_ids ?? [],
+    episodic_snippets: row.episodic_snippets ?? [],
+    created_at: "2026-06-15T02:00:00+08:00",
+  };
 });
 
-const getDreamMemoryByDayMock = mock(async (day: string) => {
+const getDreamEntryByDayMock = mock(async (_ctx: { worldId: number }, day: string) => {
   if (day === DAY && existingDream) {
     return {
-      id: "existing",
+      id: 99,
       dream_day: DAY,
       content: "old dream",
       source_limbic_ids: [],
       source_conversation_ids: [],
       episodic_snippets: [],
-      created_at: new Date("2026-06-15T02:00:00+08:00"),
+      created_at: "2026-06-15T02:00:00+08:00",
     };
   }
   return null;
@@ -59,9 +66,12 @@ const listMessagesMock = mock(async () => [
   },
 ]);
 
-mock.module("@freeanima/core/db/pg/dream-memory", () => ({
-  createDreamMemory: createDreamMemoryMock,
-  getDreamMemoryByDay: getDreamMemoryByDayMock,
+mock.module("./entry-store.ts", () => ({
+  createDreamEntry: createDreamEntryMock,
+  getDreamEntryByDay: getDreamEntryByDayMock,
+}));
+mock.module("./subject-world.ts", () => ({
+  resolveDreamWorldId: mock(async () => 100),
 }));
 mock.module("@freeanima/core/db/pg/limbic-memory", () => ({
   listLimbicMemoryByCreatedBetween: listLimbicMemoryByCreatedBetweenMock,
@@ -76,8 +86,8 @@ afterEach(() => {
   existingDream = false;
   limbicIntensity = 0.8;
   noSessions = false;
-  createDreamMemoryMock.mockClear();
-  getDreamMemoryByDayMock.mockClear();
+  createDreamEntryMock.mockClear();
+  getDreamEntryByDayMock.mockClear();
   resetDreamEngineForTests();
 });
 
@@ -91,7 +101,7 @@ describe("runDream", () => {
     });
 
     expect(result.ok).toBe(true);
-    expect(result.dream_id).toBe("dream-1");
+    expect(result.dream_id).toBe(1);
     expect(created).toHaveLength(1);
     expect(created[0]?.dream_day).toBe(DAY);
   });
@@ -106,7 +116,7 @@ describe("runDream", () => {
     });
 
     expect(result.ok).toBe(true);
-    expect(result.dream_id).toBe("dream-1");
+    expect(result.dream_id).toBe(1);
     expect(created).toHaveLength(1);
     expect(created[0]?.source_conversation_ids).toEqual([]);
     expect(created[0]?.episodic_snippets).toEqual([]);

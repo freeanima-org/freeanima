@@ -15,7 +15,6 @@ export {
 
 export type {
   SelfBlockRow,
-  DreamMemoryRow,
   LimbicMemoryRow,
   SemanticMemoryRow,
   SemanticFtsHit,
@@ -67,8 +66,6 @@ export type {
   LimbicListByCreatedOpts,
   LimbicFtsHit,
 } from "../db/pg/limbic-memory/types.ts";
-
-export type { DreamEpisodicSnippet, DreamMemoryCreateInput } from "../db/pg/dream-memory/types.ts";
 
 export type {
   CronJobCreateInput,

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { entityTypeSchema, type EntitySelect } from "./entity.ts";
 import {
   DIARY_ENTRY_COMPONENT,
+  DREAM_ENTRY_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
   EMAIL_MESSAGE_COMPONENT,
   EMAIL_THREAD_COMPONENT,
@@ -10,6 +11,7 @@ import {
   TASK_LIST_COMPONENT,
   WORLD_CONFIG_COMPONENT,
   diaryEntryBodySchema,
+  dreamEntryBodySchema,
   emailAccountBodySchema,
   emailMessageBodySchema,
   emailThreadBodySchema,
@@ -17,6 +19,7 @@ import {
   taskListBodySchema,
   worldConfigBodySchema,
   type DiaryEntryBody,
+  type DreamEntryBody,
   type EmailAccountBody,
   type EmailMessageBody,
   type EmailThreadBody,
@@ -90,6 +93,14 @@ export function asDiaryEntry(
   return parsed.success
     ? { id: row.id, title: row.title, content: row.content, summary: row.summary, ...parsed.data }
     : null;
+}
+
+export function asDreamEntry(
+  row: EntityRow,
+): (DreamEntryBody & { id: number; content: string }) | null {
+  if (row.primary_component !== DREAM_ENTRY_COMPONENT) return null;
+  const parsed = dreamEntryBodySchema.safeParse(row.body);
+  return parsed.success ? { id: row.id, content: row.content, ...parsed.data } : null;
 }
 
 export function asEmailAccount(

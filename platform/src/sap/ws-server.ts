@@ -41,6 +41,8 @@ import {
   diaryDeleteInputSchema,
   diaryGetInputSchema,
   diarySearchInputSchema,
+  dreamListInputSchema,
+  dreamGetInputSchema,
   emailAccountListInputSchema,
   emailMessageListInputSchema,
   emailMessageReadInputSchema,
@@ -73,6 +75,7 @@ import * as serviceSessions from "../runtime/service-conversations.ts";
 import * as serviceAcpDock from "../runtime/service-acp-dock.ts";
 import * as serviceStatus from "../runtime/service-status.ts";
 import * as serviceEntityDiary from "../runtime/service-entity-diary.ts";
+import * as serviceEntityDream from "../runtime/service-entity-dream.ts";
 import * as serviceEntityEmail from "../runtime/service-entity-email.ts";
 import {
   closeTerminalSession,
@@ -322,6 +325,17 @@ export function createSapServerHandlers(
             deps.runtime.runtimeDeps(),
             omitUndefined(input),
           );
+        }
+        case "dream.list": {
+          const input = dreamListInputSchema.parse(payload ?? {});
+          return serviceEntityDream.serviceDreamList(
+            deps.runtime.runtimeDeps(),
+            omitUndefined(input),
+          );
+        }
+        case "dream.get": {
+          const input = dreamGetInputSchema.parse(payload);
+          return serviceEntityDream.serviceDreamGet(deps.runtime.runtimeDeps(), input);
         }
         case "emailaccount.list": {
           const input = emailAccountListInputSchema.parse(payload ?? {});

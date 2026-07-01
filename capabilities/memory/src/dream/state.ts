@@ -8,7 +8,7 @@ const dreamStateSchema = z.object({
   last_day: z.string().optional(),
   last_run_at: z.string().optional(),
   last_skipped: z.string().optional(),
-  last_dream_id: z.string().optional(),
+  last_dream_id: z.union([z.string(), z.number()]).optional(),
 });
 
 export type DreamState = z.infer<typeof dreamStateSchema>;

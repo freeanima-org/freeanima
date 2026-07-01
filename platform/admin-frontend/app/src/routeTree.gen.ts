@@ -25,7 +25,6 @@ import { Route as SidebarMemoryRouteImport } from './routes/_sidebar/memory'
 import { Route as SidebarMcpRouteImport } from './routes/_sidebar/mcp'
 import { Route as SidebarLimbicMemoryRouteImport } from './routes/_sidebar/limbic-memory'
 import { Route as SidebarFtsRouteImport } from './routes/_sidebar/fts'
-import { Route as SidebarDreamRouteImport } from './routes/_sidebar/dream'
 import { Route as SidebarDashboardRouteImport } from './routes/_sidebar/dashboard'
 import { Route as SidebarCronRouteImport } from './routes/_sidebar/cron'
 import { Route as SidebarCredentialsRouteImport } from './routes/_sidebar/credentials'
@@ -117,11 +116,6 @@ const SidebarFtsRoute = SidebarFtsRouteImport.update({
   path: '/fts',
   getParentRoute: () => SidebarRouteRoute,
 } as any)
-const SidebarDreamRoute = SidebarDreamRouteImport.update({
-  id: '/dream',
-  path: '/dream',
-  getParentRoute: () => SidebarRouteRoute,
-} as any)
 const SidebarDashboardRoute = SidebarDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -194,7 +188,6 @@ export interface FileRoutesByFullPath {
   '/credentials': typeof SidebarCredentialsRoute
   '/cron': typeof SidebarCronRoute
   '/dashboard': typeof SidebarDashboardRoute
-  '/dream': typeof SidebarDreamRoute
   '/fts': typeof SidebarFtsRoute
   '/limbic-memory': typeof SidebarLimbicMemoryRoute
   '/mcp': typeof SidebarMcpRoute
@@ -222,7 +215,6 @@ export interface FileRoutesByTo {
   '/credentials': typeof SidebarCredentialsRoute
   '/cron': typeof SidebarCronRoute
   '/dashboard': typeof SidebarDashboardRoute
-  '/dream': typeof SidebarDreamRoute
   '/fts': typeof SidebarFtsRoute
   '/limbic-memory': typeof SidebarLimbicMemoryRoute
   '/mcp': typeof SidebarMcpRoute
@@ -253,7 +245,6 @@ export interface FileRoutesById {
   '/_sidebar/credentials': typeof SidebarCredentialsRoute
   '/_sidebar/cron': typeof SidebarCronRoute
   '/_sidebar/dashboard': typeof SidebarDashboardRoute
-  '/_sidebar/dream': typeof SidebarDreamRoute
   '/_sidebar/fts': typeof SidebarFtsRoute
   '/_sidebar/limbic-memory': typeof SidebarLimbicMemoryRoute
   '/_sidebar/mcp': typeof SidebarMcpRoute
@@ -284,7 +275,6 @@ export interface FileRouteTypes {
     | '/credentials'
     | '/cron'
     | '/dashboard'
-    | '/dream'
     | '/fts'
     | '/limbic-memory'
     | '/mcp'
@@ -312,7 +302,6 @@ export interface FileRouteTypes {
     | '/credentials'
     | '/cron'
     | '/dashboard'
-    | '/dream'
     | '/fts'
     | '/limbic-memory'
     | '/mcp'
@@ -342,7 +331,6 @@ export interface FileRouteTypes {
     | '/_sidebar/credentials'
     | '/_sidebar/cron'
     | '/_sidebar/dashboard'
-    | '/_sidebar/dream'
     | '/_sidebar/fts'
     | '/_sidebar/limbic-memory'
     | '/_sidebar/mcp'
@@ -480,13 +468,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SidebarFtsRouteImport
       parentRoute: typeof SidebarRouteRoute
     }
-    '/_sidebar/dream': {
-      id: '/_sidebar/dream'
-      path: '/dream'
-      fullPath: '/dream'
-      preLoaderRoute: typeof SidebarDreamRouteImport
-      parentRoute: typeof SidebarRouteRoute
-    }
     '/_sidebar/dashboard': {
       id: '/_sidebar/dashboard'
       path: '/dashboard'
@@ -594,7 +575,6 @@ interface SidebarRouteRouteChildren {
   SidebarCredentialsRoute: typeof SidebarCredentialsRoute
   SidebarCronRoute: typeof SidebarCronRoute
   SidebarDashboardRoute: typeof SidebarDashboardRoute
-  SidebarDreamRoute: typeof SidebarDreamRoute
   SidebarFtsRoute: typeof SidebarFtsRoute
   SidebarLimbicMemoryRoute: typeof SidebarLimbicMemoryRoute
   SidebarMcpRoute: typeof SidebarMcpRoute
@@ -619,7 +599,6 @@ const SidebarRouteRouteChildren: SidebarRouteRouteChildren = {
   SidebarCredentialsRoute: SidebarCredentialsRoute,
   SidebarCronRoute: SidebarCronRoute,
   SidebarDashboardRoute: SidebarDashboardRoute,
-  SidebarDreamRoute: SidebarDreamRoute,
   SidebarFtsRoute: SidebarFtsRoute,
   SidebarLimbicMemoryRoute: SidebarLimbicMemoryRoute,
   SidebarMcpRoute: SidebarMcpRoute,

@@ -29,7 +29,8 @@ Light sleep stage 2 must complete first so limbic anchors exist.
 
 ## Output
 
-- Persisted in PG table `dream_memory` (one row per CST calendar day, unique `dream_day`).
+- Persisted as **`dream_entry`** entity in the agent subject's **default private world** (`primary_component=dream_entry`; one row per CST calendar day via `body.dream_day`).
+- Legacy `dream_memory` table is backfilled and dropped in Drizzle migration.
 - Append-only; content is not updated after creation.
 - Does **not** create notification inbox entries (see [`notifications.md`](notifications.md)).
 
@@ -48,10 +49,10 @@ LLM call uses `PROFILE_REFLECT` with elevated temperature (~1.1), **no tools**, 
 
 ## Tools & UI
 
-| Surface                        | Purpose              |
-| ------------------------------ | -------------------- |
-| `dream_read` tool              | Read stored dream    |
-| Admin `/admin/dashboard/dream` | Browse dream history |
+| Surface                                             | Purpose              |
+| --------------------------------------------------- | -------------------- |
+| `dream_read` tool                                   | Read stored dream    |
+| Shell `/dream` (Hub RPC `dream.list` / `dream.get`) | Browse dream history |
 
 ## Design Notes
 

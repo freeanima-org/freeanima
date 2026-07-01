@@ -1,17 +1,18 @@
 import { logCapability as logComponent } from "@freeanima/core/config";
 import { omitUndefined } from "@freeanima/core/util";
-import { createDreamMemory, getDreamMemoryByDay } from "@freeanima/core/db/pg/dream-memory";
 
 import { buildDreamEngineInput } from "./build-messages.ts";
 import { runDreamEngine } from "../dream-engine-port.ts";
 import { cstDayRange } from "../light-sleep/build-messages.ts";
+import { createDreamEntry, getDreamEntryByDay } from "./entry-store.ts";
 import { gatherDreamInput, hasDreamFuel } from "./gather-input.ts";
+import { resolveDreamWorldId } from "./subject-world.ts";
 import { recordDreamRun } from "./state.ts";
 
 export type DreamResult = {
   ok: boolean;
   day: string;
-  dream_id?: string;
+  dream_id?: number;
   summary: string;
   skipped?: string;
 };
@@ -23,8 +24,10 @@ export type RunDreamOpts = {
 
 export async function runDream(opts: RunDreamOpts): Promise<DreamResult> {
   const day = cstDayRange(opts.day).day;
+  const worldId = await resolveDreamWorldId();
+  const ctx = { worldId };
 
-  const existing = await getDreamMemoryByDay(day);
+  const existing = await getDreamEntryByDay(ctx, day);
   if (existing) {
     const result: DreamResult = {
       ok: true,
@@ -73,7 +76,7 @@ export async function runDream(opts: RunDreamOpts): Promise<DreamResult> {
     return result;
   }
 
-  const dreamId = await createDreamMemory({
+  const created = await createDreamEntry(ctx, {
     dream_day: input.day,
     content,
     source_limbic_ids: input.limbicMemories.map((r) => r.id),
@@ -83,19 +86,19 @@ export async function runDream(opts: RunDreamOpts): Promise<DreamResult> {
 
   logComponent("memory").info("dream generation completed", {
     day: input.day,
-    dream_id: dreamId,
+    dream_id: created.id,
   });
 
   recordDreamRun({
     last_day: input.day,
     last_skipped: undefined,
-    last_dream_id: dreamId,
+    last_dream_id: created.id,
   });
 
   return {
     ok: true,
     day: input.day,
-    dream_id: dreamId,
+    dream_id: created.id,
     summary: `Dream created for ${input.day}`,
   };
 }

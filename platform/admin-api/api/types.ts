@@ -5,7 +5,6 @@ export type {
   DisplayToolCall,
   MessagesResponse,
   AutobiographicalMemoryRow,
-  DreamMemoryRow,
   EntityRow,
   LimbicMemoryRow,
   SemanticMemoryRow,

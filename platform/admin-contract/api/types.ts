@@ -10,7 +10,6 @@ export type {
 
 export type {
   AutobiographicalMemoryRow,
-  DreamMemoryRow,
   EntityRow,
   LimbicMemoryRow,
   SemanticMemoryRow,
