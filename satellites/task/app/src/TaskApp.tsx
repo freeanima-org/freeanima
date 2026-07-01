@@ -1,25 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { useSubjectScope } from "@freeanima/shell-sdk/react";
-import {
-  Alert,
-  AlertDescription,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Spinner,
-  Textarea,
-} from "@freeanima/ui-kit";
-import { ListDetailLayout } from "@freeanima/ui-kit/layout";
-import { FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form";
+import { Alert, AlertDescription, Button, Input, Spinner } from "@freeanima/ui-kit";
 
 import { ActionSheet, ConfirmDialog, EmptyState } from "@freeanima/ui-kit/composite";
 import { CompletedTaskList } from "./components/CompletedTaskList.tsx";
@@ -27,7 +8,9 @@ import { ContextMenu, type ContextMenuItem } from "./components/ContextMenu.tsx"
 import { ListSidebar } from "./components/ListSidebar.tsx";
 import { MoveToListPicker } from "./components/MoveToListPicker.tsx";
 import { SortableTaskList } from "./components/SortableTaskList.tsx";
+import { TaskDetailPanel } from "./components/TaskDetailPanel.tsx";
 import { TaskDndRoot } from "./components/TaskDndRoot.tsx";
+import { TaskThreeColumnLayout } from "./components/TaskThreeColumnLayout.tsx";
 import {
   completeTaskItem,
   createTaskItem,
@@ -45,7 +28,6 @@ import {
   type TaskItemRow,
   type TaskListRow,
 } from "./lib/api.ts";
-import { isoToDatetimeLocalValue } from "./lib/format-task.ts";
 import {
   readCachedTaskItems,
   readCachedTaskLists,
@@ -53,6 +35,7 @@ import {
   writeCachedTaskItems,
   writeCachedTaskLists,
 } from "./lib/offline-cache.ts";
+import { useTaskLayoutMode } from "./lib/layout-mode.ts";
 import {
   isTaskContextMenuEnabled,
   isWebShell,
@@ -76,6 +59,7 @@ export function TaskApp() {
   const contextMenuEnabled = isTaskContextMenuEnabled();
   const useActionSheet = useTaskActionSheet();
   const useDrawer = useDrawerNav();
+  const layoutMode = useTaskLayoutMode();
   const webShell = isWebShell();
   const renameInputRef = useRef<HTMLInputElement>(null);
   const selectionAnchorRef = useRef<number | null>(null);
@@ -92,7 +76,9 @@ export function TaskApp() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchHits, setSearchHits] = useState<TaskItemRow[]>([]);
   const [searching, setSearching] = useState(false);
-  const [editingItem, setEditingItem] = useState<TaskItemRow | null>(null);
+  const [detailItem, setDetailItem] = useState<TaskItemRow | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailSaving, setDetailSaving] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [editingListId, setEditingListId] = useState<number | null>(null);
@@ -180,6 +166,8 @@ export function TaskApp() {
     selectionAnchorRef.current = null;
     setSearchQuery("");
     setSearchHits([]);
+    setDetailItem(null);
+    setDetailOpen(false);
   }, [selectedListId, loadItems]);
 
   useEffect(() => {
@@ -472,23 +460,52 @@ export function TaskApp() {
     setMovePickerItemIds(itemIds);
   };
 
-  const saveEditingItem = async () => {
-    if (!editingItem) return;
+  const openTaskDetail = useCallback(
+    (item: TaskItemRow) => {
+      setDetailItem({ ...item });
+      if (layoutMode !== "wide") setDetailOpen(true);
+    },
+    [layoutMode],
+  );
+
+  const closeTaskDetail = useCallback(() => {
+    setDetailItem(null);
+    setDetailOpen(false);
+  }, []);
+
+  const saveDetailItem = async () => {
+    if (!detailItem) return;
+    setDetailSaving(true);
     try {
-      await updateTaskItem(editingItem.id, {
-        title: editingItem.title,
-        content: editingItem.content,
-        tags: editingItem.tags,
-        priority: editingItem.priority,
-        due_at: editingItem.due_at,
+      await updateTaskItem(detailItem.id, {
+        title: detailItem.title,
+        content: detailItem.content,
+        tags: detailItem.tags,
+        priority: detailItem.priority,
+        due_at: detailItem.due_at,
       });
-      setEditingItem(null);
+      closeTaskDetail();
       if (selectedListId != null) await loadItems(selectedListId);
       if (searchActive) await refreshSearchHits();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setDetailSaving(false);
     }
   };
+
+  const handleDetailOpenChange = (open: boolean) => {
+    setDetailOpen(open);
+    if (!open) setDetailItem(null);
+  };
+
+  useEffect(() => {
+    if (layoutMode === "wide") {
+      setDetailOpen(false);
+    } else if (detailItem) {
+      setDetailOpen(true);
+    }
+  }, [layoutMode, detailItem?.id]);
 
   const selectedList = lists.find((l) => l.id === selectedListId) ?? null;
   const activeLists = useMemo(() => lists.filter((l) => !l.closed), [lists]);
@@ -542,7 +559,7 @@ export function TaskApp() {
   };
 
   const itemHandlers = {
-    onEdit: (item: TaskItemRow) => setEditingItem({ ...item }),
+    onEdit: openTaskDetail,
     onToggleComplete: toggleComplete,
     onMoveTo: (item: TaskItemRow) => openMovePickerForItems([item.id]),
     onDelete: handleDeleteItem,
@@ -639,164 +656,191 @@ export function TaskApp() {
         if (useDrawer) setSidebarOpen(true);
       }}
     >
-      <ListDetailLayout
-        detailTitle={selectedList?.name ?? "任务"}
-        listTitle="清单"
-        listOpen={sidebarOpen}
-        onListOpenChange={setSidebarOpen}
-        listToggleAriaLabel="打开清单"
-        detailActions={
-          <>
-            {selectedList ? selectionToolbar : null}
-            {loading || searching ? <Spinner className="size-4" /> : null}
-          </>
-        }
-        detailHeaderExtra={
-          selectedList ? (
-            <Input
-              className="h-8 w-full max-w-md"
-              placeholder="搜索全部清单…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+      <div className="h-full min-h-0">
+        <TaskThreeColumnLayout
+          layoutMode={layoutMode}
+          listTitle="清单"
+          taskListTitle={selectedList?.name ?? "任务"}
+          detailTitle={detailItem?.title ?? "任务详情"}
+          listOpen={sidebarOpen}
+          onListOpenChange={setSidebarOpen}
+          listToggleAriaLabel="打开清单"
+          detailOpen={detailOpen}
+          onDetailOpenChange={handleDetailOpenChange}
+          taskListActions={
+            <>
+              {selectedList ? selectionToolbar : null}
+              {loading || searching ? <Spinner className="size-4" /> : null}
+            </>
+          }
+          taskListHeaderExtra={
+            selectedList ? (
+              <Input
+                className="h-8 w-full max-w-md"
+                placeholder="搜索全部清单…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            ) : null
+          }
+          list={
+            <ListSidebar
+              activeLists={activeLists}
+              closedLists={closedLists}
+              showClosed={showClosed}
+              selectedListId={selectedListId}
+              selectedFolderId={selectedFolderId}
+              editingListId={editingListId}
+              editingListName={editingListName}
+              newListName={newListName}
+              newFolderName={newFolderName}
+              renameInputRef={renameInputRef}
+              useActionSheet={useActionSheet}
+              onToggleShowClosed={() => setShowClosed((v) => !v)}
+              onSelectList={selectList}
+              onSelectFolder={selectFolder}
+              onCreateList={() => void handleCreateList()}
+              onCreateFolder={() => void handleCreateFolder()}
+              onNewListNameChange={setNewListName}
+              onNewFolderNameChange={setNewFolderName}
+              onEditingListNameChange={setEditingListName}
+              onCommitRename={() => void commitRenameList()}
+              onCancelRename={() => setEditingListId(null)}
+              onOpenListMenu={openListMenuSheet}
+              onOpenListContextMenu={openListContextMenu}
+              onStartRename={startRenameList}
             />
-          ) : null
-        }
-        list={() => (
-          <ListSidebar
-            activeLists={activeLists}
-            closedLists={closedLists}
-            showClosed={showClosed}
-            selectedListId={selectedListId}
-            selectedFolderId={selectedFolderId}
-            editingListId={editingListId}
-            editingListName={editingListName}
-            newListName={newListName}
-            newFolderName={newFolderName}
-            renameInputRef={renameInputRef}
-            useActionSheet={useActionSheet}
-            onToggleShowClosed={() => setShowClosed((v) => !v)}
-            onSelectList={selectList}
-            onSelectFolder={selectFolder}
-            onCreateList={() => void handleCreateList()}
-            onCreateFolder={() => void handleCreateFolder()}
-            onNewListNameChange={setNewListName}
-            onNewFolderNameChange={setNewFolderName}
-            onEditingListNameChange={setEditingListName}
-            onCommitRename={() => void commitRenameList()}
-            onCancelRename={() => setEditingListId(null)}
-            onOpenListMenu={openListMenuSheet}
-            onOpenListContextMenu={openListContextMenu}
-            onStartRename={startRenameList}
-          />
-        )}
-      >
-        {error ? (
-          <Alert variant="error" className="m-3">
-            <AlertDescription className="flex items-center justify-between gap-2 text-sm">
-              <span>{error}</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2"
-                onClick={() => setError("")}
-              >
-                关闭
-              </Button>
-            </AlertDescription>
-          </Alert>
-        ) : null}
-
-        {!selectedList && !loading ? (
-          <div className="text-muted-foreground flex flex-1 items-center justify-center p-8 text-sm">
-            创建第一个清单开始使用
-          </div>
-        ) : null}
-
-        {selectedList ? (
-          <>
-            {selectedList.closed ? (
-              <div className="border bg-muted/60 text-muted-foreground m-3 rounded-lg border px-3 py-2 text-sm">
-                此清单已归档，无法添加新任务。可在清单菜单中取消归档。
-              </div>
-            ) : null}
-            <div className="flex-1 overflow-y-auto px-2 py-2">
-              {displayPending.length === 0 && displayCompleted.length === 0 ? (
-                <EmptyState
-                  message={searchActive ? "全部清单中无匹配任务" : "暂无任务，在下方快速添加"}
-                  className="px-2"
-                />
+          }
+          taskList={
+            <div className="flex min-h-0 flex-1 flex-col">
+              {error ? (
+                <Alert variant="error" className="m-3 shrink-0">
+                  <AlertDescription className="flex items-center justify-between gap-2 text-sm">
+                    <span>{error}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2"
+                      onClick={() => setError("")}
+                    >
+                      关闭
+                    </Button>
+                  </AlertDescription>
+                </Alert>
               ) : null}
 
-              {searchActive ? (
-                <p className="text-muted-foreground px-2 pb-2 text-xs">搜索范围：全部清单</p>
+              {!selectedList && !loading ? (
+                <div className="text-muted-foreground flex flex-1 items-center justify-center p-8 text-sm">
+                  创建第一个清单开始使用
+                </div>
               ) : null}
 
-              <SortableTaskList
-                items={displayPending}
-                sortable={!searchActive}
-                listNameForItem={searchActive ? resolveListName : undefined}
-                useActionSheet={useActionSheet}
-                selectionMode={selectionMode}
-                selectedIds={selectedItemIds}
-                onToggleComplete={toggleComplete}
-                onEdit={(item) => setEditingItem({ ...item })}
-                onOpenItemMenu={openItemMenuSheet}
-                onOpenItemContextMenu={openItemContextMenu}
-                onSelectItem={handleSelectItem}
-                onLongPressSelect={enterSelectionWithItem}
-              />
+              {selectedList ? (
+                <>
+                  {selectedList.closed ? (
+                    <div className="border bg-muted/60 text-muted-foreground m-3 shrink-0 rounded-lg border px-3 py-2 text-sm">
+                      此清单已归档，无法添加新任务。可在清单菜单中取消归档。
+                    </div>
+                  ) : null}
+                  <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
+                    {displayPending.length === 0 && displayCompleted.length === 0 ? (
+                      <EmptyState
+                        message={searchActive ? "全部清单中无匹配任务" : "暂无任务，在下方快速添加"}
+                        className="px-2"
+                      />
+                    ) : null}
 
-              <CompletedTaskList
-                items={displayCompleted}
-                sortable={!searchActive}
-                listNameForItem={searchActive ? resolveListName : undefined}
-                useActionSheet={useActionSheet}
-                selectionMode={selectionMode}
-                selectedIds={selectedItemIds}
-                onToggleComplete={toggleComplete}
-                onOpenItemMenu={openItemMenuSheet}
-                onOpenItemContextMenu={openItemContextMenu}
-                onSelectItem={handleSelectItem}
-                onLongPressSelect={enterSelectionWithItem}
-              />
+                    {searchActive ? (
+                      <p className="text-muted-foreground px-2 pb-2 text-xs">搜索范围：全部清单</p>
+                    ) : null}
+
+                    <SortableTaskList
+                      items={displayPending}
+                      sortable={!searchActive}
+                      listNameForItem={searchActive ? resolveListName : undefined}
+                      activeItemId={detailItem?.id}
+                      useActionSheet={useActionSheet}
+                      selectionMode={selectionMode}
+                      selectedIds={selectedItemIds}
+                      onToggleComplete={toggleComplete}
+                      onEdit={openTaskDetail}
+                      onOpenItemMenu={openItemMenuSheet}
+                      onOpenItemContextMenu={openItemContextMenu}
+                      onSelectItem={handleSelectItem}
+                      onLongPressSelect={enterSelectionWithItem}
+                    />
+
+                    <CompletedTaskList
+                      items={displayCompleted}
+                      sortable={!searchActive}
+                      listNameForItem={searchActive ? resolveListName : undefined}
+                      activeItemId={detailItem?.id}
+                      useActionSheet={useActionSheet}
+                      selectionMode={selectionMode}
+                      selectedIds={selectedItemIds}
+                      onToggleComplete={toggleComplete}
+                      onEdit={openTaskDetail}
+                      onOpenItemMenu={openItemMenuSheet}
+                      onOpenItemContextMenu={openItemContextMenu}
+                      onSelectItem={handleSelectItem}
+                      onLongPressSelect={enterSelectionWithItem}
+                    />
+                  </div>
+
+                  {selectionMode && selectedItemIds.size > 0 ? (
+                    <div className="border bg-muted/95 safe-area-pb flex shrink-0 items-center gap-2 border-t p-3">
+                      <span className="text-muted-foreground min-w-0 flex-1 text-sm">
+                        已选 {selectedItemIds.size} 项
+                      </span>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => openMovePickerForItems(Array.from(selectedItemIds))}
+                      >
+                        移动到…
+                      </Button>
+                      <Button type="button" variant="ghost" size="sm" onClick={exitSelectionMode}>
+                        取消
+                      </Button>
+                    </div>
+                  ) : searchActive || selectedList.closed ? null : (
+                    <div className="border safe-area-pb flex shrink-0 gap-2 border-t p-3">
+                      <Input
+                        className="min-w-0 flex-1"
+                        placeholder="添加任务，Enter 确认"
+                        value={quickTitle}
+                        onChange={(e) => setQuickTitle(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") void handleQuickAdd();
+                        }}
+                      />
+                      <Button type="button" onClick={() => void handleQuickAdd()}>
+                        添加
+                      </Button>
+                    </div>
+                  )}
+                </>
+              ) : null}
             </div>
-
-            {selectionMode && selectedItemIds.size > 0 ? (
-              <div className="border bg-muted/95 safe-area-pb flex items-center gap-2 border-t p-3">
-                <span className="text-muted-foreground min-w-0 flex-1 text-sm">
-                  已选 {selectedItemIds.size} 项
-                </span>
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => openMovePickerForItems(Array.from(selectedItemIds))}
-                >
-                  移动到…
-                </Button>
-                <Button type="button" variant="ghost" size="sm" onClick={exitSelectionMode}>
-                  取消
-                </Button>
+          }
+          detail={
+            detailItem ? (
+              <TaskDetailPanel
+                item={detailItem}
+                onChange={setDetailItem}
+                onSave={() => void saveDetailItem()}
+                onCancel={closeTaskDetail}
+                saving={detailSaving}
+              />
+            ) : (
+              <div className="text-muted-foreground flex h-full min-h-0 items-center justify-center p-8 text-sm">
+                选择任务查看详情
               </div>
-            ) : searchActive || selectedList.closed ? null : (
-              <div className="border safe-area-pb flex gap-2 border-t p-3">
-                <Input
-                  className="min-w-0 flex-1"
-                  placeholder="添加任务，Enter 确认"
-                  value={quickTitle}
-                  onChange={(e) => setQuickTitle(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") void handleQuickAdd();
-                  }}
-                />
-                <Button type="button" onClick={() => void handleQuickAdd()}>
-                  添加
-                </Button>
-              </div>
-            )}
-          </>
-        ) : null}
-      </ListDetailLayout>
+            )
+          }
+        />
+      </div>
 
       {listMenu ? (
         <ContextMenu
@@ -851,109 +895,6 @@ export function TaskApp() {
           onClose={() => setMovePickerItemIds(null)}
         />
       ) : null}
-
-      <Dialog open={editingItem != null} onOpenChange={(open) => !open && setEditingItem(null)}>
-        <DialogContent className="flex max-h-[90vh] max-w-md flex-col gap-0 overflow-hidden p-4 sm:rounded-lg">
-          <DialogHeader>
-            <DialogTitle>编辑任务</DialogTitle>
-          </DialogHeader>
-          {editingItem ? (
-            <>
-              <div className="max-h-[70vh] overflow-y-auto">
-                <FormFieldset legend="详情" bordered={false} className="mt-2 gap-3">
-                  <div>
-                    <FormFieldLabel>标题</FormFieldLabel>
-                    <Input
-                      className="w-full"
-                      value={editingItem.title}
-                      onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <FormFieldLabel>优先级</FormFieldLabel>
-                    <Select
-                      value={editingItem.priority}
-                      onValueChange={(value) =>
-                        setEditingItem({
-                          ...editingItem,
-                          priority: value as TaskItemRow["priority"],
-                        })
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">无</SelectItem>
-                        <SelectItem value="low">低</SelectItem>
-                        <SelectItem value="medium">中</SelectItem>
-                        <SelectItem value="high">高</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <FormFieldLabel>截止日期</FormFieldLabel>
-                    <Input
-                      type="datetime-local"
-                      className="w-full"
-                      value={isoToDatetimeLocalValue(editingItem.due_at)}
-                      onChange={(e) =>
-                        setEditingItem({
-                          ...editingItem,
-                          due_at: e.target.value ? new Date(e.target.value).toISOString() : null,
-                        })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <FormFieldLabel>内容</FormFieldLabel>
-                    <Textarea
-                      className="w-full"
-                      rows={3}
-                      value={editingItem.content}
-                      onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <FormFieldLabel>标签</FormFieldLabel>
-                    <Input
-                      className="w-full"
-                      placeholder="逗号分隔，如：工作,紧急"
-                      value={editingItem.tags.join(", ")}
-                      onChange={(e) =>
-                        setEditingItem({
-                          ...editingItem,
-                          tags: e.target.value
-                            .split(",")
-                            .map((s) => s.trim())
-                            .filter(Boolean),
-                        })
-                      }
-                    />
-                  </div>
-                </FormFieldset>
-              </div>
-              <DialogFooter className="mt-4 flex-col gap-2 sm:flex-row">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full sm:min-w-32"
-                  onClick={() => setEditingItem(null)}
-                >
-                  取消
-                </Button>
-                <Button
-                  type="button"
-                  className="w-full sm:min-w-32"
-                  onClick={() => void saveEditingItem()}
-                >
-                  保存
-                </Button>
-              </DialogFooter>
-            </>
-          ) : null}
-        </DialogContent>
-      </Dialog>
     </TaskDndRoot>
   );
 }

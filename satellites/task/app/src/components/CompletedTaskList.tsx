@@ -10,10 +10,12 @@ type CompletedTaskListProps = {
   items: TaskItemRow[];
   sortable?: boolean;
   listNameForItem?: (item: TaskItemRow) => string | null;
+  activeItemId?: number | null;
   useActionSheet: boolean;
   selectionMode: boolean;
   selectedIds: ReadonlySet<number>;
   onToggleComplete: (item: TaskItemRow) => void;
+  onEdit: (item: TaskItemRow) => void;
   onOpenItemMenu: (item: TaskItemRow) => void;
   onOpenItemContextMenu: (e: MouseEvent, item: TaskItemRow) => void;
   onSelectItem: (itemId: number, shiftKey: boolean) => void;
@@ -25,9 +27,11 @@ function CompletedTaskRow({
   sortable,
   listName,
   useActionSheet,
+  active,
   selectionMode,
   selected,
   onToggleComplete,
+  onEdit,
   onOpenMenu,
   onContextMenu,
   onSelectItem,
@@ -37,9 +41,11 @@ function CompletedTaskRow({
   sortable: boolean;
   listName: string | null;
   useActionSheet: boolean;
+  active: boolean;
   selectionMode: boolean;
   selected: boolean;
   onToggleComplete: () => void;
+  onEdit: () => void;
   onOpenMenu: () => void;
   onContextMenu: (e: MouseEvent) => void;
   onSelectItem: (shiftKey: boolean) => void;
@@ -72,7 +78,7 @@ function CompletedTaskRow({
       ref={setNodeRef}
       className={`hover:bg-muted flex min-h-11 items-center gap-1 rounded-lg px-1 py-1 opacity-70 ${
         isDragging ? "opacity-40" : ""
-      } ${selected ? "bg-primary/10 opacity-100" : ""}`}
+      } ${selected ? "bg-primary/10 opacity-100" : ""} ${active && !selected ? "ring-primary/30 opacity-100 ring-1 ring-inset" : ""}`}
       onContextMenu={onContextMenu}
       onTouchStart={handleTouchStart}
       onTouchEnd={clearLongPress}
@@ -106,6 +112,7 @@ function CompletedTaskRow({
         className={`min-w-0 flex-1 truncate py-2 text-left text-sm ${selectionMode ? "" : "line-through"}`}
         onClick={(e) => {
           if (selectionMode) onSelectItem(e.shiftKey);
+          else onEdit();
         }}
       >
         <span className="block truncate">{item.title}</span>
@@ -134,10 +141,12 @@ export function CompletedTaskList({
   items,
   sortable = true,
   listNameForItem,
+  activeItemId,
   useActionSheet,
   selectionMode,
   selectedIds,
   onToggleComplete,
+  onEdit,
   onOpenItemMenu,
   onOpenItemContextMenu,
   onSelectItem,
@@ -169,10 +178,12 @@ export function CompletedTaskList({
               item={item}
               sortable={sortable}
               listName={listNameForItem?.(item) ?? null}
+              active={activeItemId === item.id}
               useActionSheet={useActionSheet}
               selectionMode={selectionMode}
               selected={selectedIds.has(item.id)}
               onToggleComplete={() => onToggleComplete(item)}
+              onEdit={() => onEdit(item)}
               onOpenMenu={() => onOpenItemMenu(item)}
               onContextMenu={(e) => onOpenItemContextMenu(e, item)}
               onSelectItem={(shiftKey) => onSelectItem(item.id, shiftKey)}
