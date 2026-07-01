@@ -9,7 +9,6 @@ import { createAppRuntime, type AppRuntime } from "../runtime/app-runtime.ts";
 import { wireServicePorts } from "../wire-api.ts";
 import { registerSystemPromptHooks } from "../register-prompt-hooks.ts";
 import {
-  registerFridgeMagnet,
   registerNotificationInject,
   registerServiceMemoryBus,
   registerServiceStores,
@@ -69,7 +68,6 @@ export async function bootRuntimePhase(
   initRuntimeContext(runtime);
 
   registerServiceStores(runtime.fullDeps(), engine.config);
-  registerFridgeMagnet({ kernel });
   registerNotificationInject({ kernel });
   registerServiceMemoryBus({ kernel });
   invalidateSelfLayerPromptCache();

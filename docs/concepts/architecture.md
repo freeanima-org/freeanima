@@ -86,7 +86,7 @@ Admin sidebar is grouped (not flat storage tables). Map new features onto these 
 | Runtime      | Estate + ops    | dashboard, config, credentials, cron                |
 | Memory       | Memory          | memory hub, browse sub-routes, sleep, auto-llm-runs |
 | Self         | Self            | self-layer, system-prompt                           |
-| Estate       | Estate          | subjects, worlds, fridge-magnet                     |
+| Estate       | Estate          | subjects, worlds                                    |
 | Capabilities | Estate (tools)  | tools, commands, mcp, acp, satellites               |
 
 FTS index maintenance is under Memory (not top-level). Do not add new flat nav items without mapping to a group above.

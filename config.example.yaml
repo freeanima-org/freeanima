@@ -134,7 +134,7 @@ compression:
 #   url: credential("services/postgres/anima", "url")
 #   # Docker: postgresql://freeanima:${PG_PASSWORD}@postgres:5432/freeanima
 
-# Redis（冰箱贴 / 待办跨 conversation 上下文；不可用时静默降级）
+# Redis（EventBus / 任务上下文；不可用时静默降级）
 # 本地默认 127.0.0.1:6379；Docker Compose 内写 redis
 # redis:
 #   url: redis://127.0.0.1:6379/0

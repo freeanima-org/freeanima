@@ -286,17 +286,6 @@
   <msg id="admin_entities_worlds_count_label">worlds</msg>
   <msg id="admin_entities_worlds_desc">Logical namespaces (type=world). Visibility and owner live in world_config body.</msg>
   <msg id="admin_entities_worlds_empty">No worlds yet. Create one to get started.</msg>
-  <msg id="admin_fridge_badge_conversation">Conversation note</msg>
-  <msg id="admin_fridge_badge_task">Task summary</msg>
-  <msg id="admin_fridge_desc">Redis cross-turn sticky notes (24h TTL by default). Use the fridge_magnet_write tool.</msg>
-  <msg id="admin_fridge_empty">No fridge magnets.</msg>
-  <msg id="admin_fridge_expiry_hours">{hours}h {minutes}m left</msg>
-  <msg id="admin_fridge_expiry_minutes">{minutes}m left</msg>
-  <msg id="admin_fridge_expiry_none">No expiry</msg>
-  <msg id="admin_fridge_expiry_seconds">{seconds}s left</msg>
-  <msg id="admin_fridge_no_notes">No notes.</msg>
-  <msg id="admin_fridge_redis_down">Redis is not configured; fridge magnets are degraded.</msg>
-  <msg id="admin_fridge_redis_unavailable">Redis not configured; fridge unavailable.</msg>
   <msg id="admin_fts_cjk_note">When cjk.enabled is off, empty fts_segmented is expected; rebuild segmented after enabling.</msg>
   <msg id="admin_fts_coverage">Index coverage</msg>
   <msg id="admin_fts_desc">Rebuild runs in the background. Default rebuilds missing rows only; safe to resume after interrupt.</msg>
@@ -362,7 +351,6 @@
   <msg id="admin_nav_diary">📔 Diary</msg>
   <msg id="admin_nav_dream">🌙 Dreams</msg>
   <msg id="admin_nav_email">📧 Email</msg>
-  <msg id="admin_nav_fridge">🧲 Fridge</msg>
   <msg id="admin_nav_fts">🔍 Full-Text Search</msg>
   <msg id="admin_nav_group_capabilities">Capabilities</msg>
   <msg id="admin_nav_group_estate">Estate</msg>

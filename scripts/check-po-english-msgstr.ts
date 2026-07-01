@@ -34,7 +34,6 @@ const ALLOW = new Set([
   "GitHub",
   "English",
   "Admin",
-  "Fridge",
   "Docker Compose",
   "MIT",
   "Gateway",

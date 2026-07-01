@@ -1,18 +1,3 @@
-export type FridgeMagnetItem = {
-  key: string;
-  value: string;
-  module: "conversation" | "other";
-  conversation_id?: string;
-  label?: string;
-  ttl_seconds: number | null;
-};
-
-export type FridgeMagnetsResponse = {
-  redis_configured: boolean;
-  magnets: FridgeMagnetItem[];
-  inject_text: string;
-};
-
 export type ToolsStatusToolItem = {
   name: string;
   description: string;

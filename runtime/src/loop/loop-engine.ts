@@ -290,7 +290,7 @@ export async function* runStream(
 
   for (let turn = 0; turn < maxTurns; turn++) {
     checkShouldStop(opts);
-    // Run beforeLlmCall hook; modules (e.g. fridge magnets) may modify messages before LLM inference
+    // Run beforeLlmCall hook; modules (e.g. notifications) may modify messages before LLM inference
     if (opts?.hookRegistry) {
       await opts.hookRegistry.run(beforeLlmCall, {
         conversationId: getToolConversationId() ?? "",
