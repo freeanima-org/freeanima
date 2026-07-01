@@ -2,6 +2,7 @@ import { formatCstIso } from "@freeanima/core/util";
 
 import {
   deriveThreadKey,
+  getEmailAccountRow,
   getEmailMessageRow,
   markEmailMessageRead,
   resolveEmailAccountRow,
@@ -90,8 +91,10 @@ export async function sendEmail(input: SendEmailInput): Promise<{
 export async function markMessageReadOnImap(messageId: number): Promise<{ ok: true }> {
   const message = await getEmailMessageRow(messageId);
   if (!message) throw new Error(`Email message not found: ${messageId}`);
-  const worldId = resolveEmailWorldId();
-  const account = await resolveEmailAccountRow(worldId, message.account_id);
+  const account = await getEmailAccountRow(message.account_id);
+  if (!account?.enabled) {
+    throw new Error(`Email account not found or disabled: ${message.account_id}`);
+  }
 
   if (message.imap_uid != null) {
     await withImapAccount(
@@ -115,8 +118,10 @@ export async function markMessageReadOnImap(messageId: number): Promise<{ ok: tr
 export async function deleteMessageOnImap(messageId: number): Promise<{ ok: true }> {
   const message = await getEmailMessageRow(messageId);
   if (!message) throw new Error(`Email message not found: ${messageId}`);
-  const worldId = resolveEmailWorldId();
-  const account = await resolveEmailAccountRow(worldId, message.account_id);
+  const account = await getEmailAccountRow(message.account_id);
+  if (!account?.enabled) {
+    throw new Error(`Email account not found or disabled: ${message.account_id}`);
+  }
 
   if (message.imap_uid != null) {
     await withImapAccount(

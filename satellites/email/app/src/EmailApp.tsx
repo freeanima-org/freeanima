@@ -120,8 +120,12 @@ export function EmailApp() {
       const row = await readEmailMessage(message.id);
       setDetail(row);
       if (row.unread) {
-        await markEmailMessageRead(row.id);
-        setMessages((prev) => prev.map((m) => (m.id === row.id ? { ...m, unread: false } : m)));
+        try {
+          await markEmailMessageRead(row.id);
+          setMessages((prev) => prev.map((m) => (m.id === row.id ? { ...m, unread: false } : m)));
+        } catch (markErr) {
+          console.warn("markEmailMessageRead failed:", markErr);
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
