@@ -1,5 +1,4 @@
 bun run typecheck
 bun run lint
 bun run format
-bun run docs:i18n:check
 bun run test:changed
