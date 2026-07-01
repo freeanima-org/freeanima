@@ -60,6 +60,7 @@ import { resolveDefaultListId, resolveSelectedListIdWithUrl } from "./lib/resolv
 import { getParentId, getSiblings } from "./lib/list-tree.ts";
 import { sortOrderUpdates } from "./lib/reorder.ts";
 import { buildItemMenuItems, buildListMenuItems } from "./lib/task-menus.ts";
+import { cloneTaskItem, isTaskItemDirty } from "./lib/task-detail-dirty.ts";
 
 type ListMenuState = { x: number; y: number; listId: number };
 type ItemMenuState = { x: number; y: number; itemId: number };
@@ -75,6 +76,7 @@ export function TaskApp() {
   const webShell = isWebShell();
   const renameInputRef = useRef<HTMLInputElement>(null);
   const selectionAnchorRef = useRef<number | null>(null);
+  const detailDiscardRef = useRef(false);
 
   const [lists, setLists] = useState<TaskListRow[]>([]);
   const [items, setItems] = useState<TaskItemRow[]>([]);
@@ -89,6 +91,7 @@ export function TaskApp() {
   const [searchHits, setSearchHits] = useState<TaskItemRow[]>([]);
   const [searching, setSearching] = useState(false);
   const [detailItem, setDetailItem] = useState<TaskItemRow | null>(null);
+  const [detailBaseline, setDetailBaseline] = useState<TaskItemRow | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailSaving, setDetailSaving] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -181,6 +184,7 @@ export function TaskApp() {
     setSearchQuery("");
     setSearchHits([]);
     setDetailItem(null);
+    setDetailBaseline(null);
     setDetailOpen(false);
   }, [selectedListId, loadItems]);
 
@@ -477,42 +481,77 @@ export function TaskApp() {
 
   const openTaskDetail = useCallback(
     (item: TaskItemRow) => {
-      setDetailItem({ ...item });
+      setDetailItem((prev) => {
+        if (prev?.id === item.id) return prev;
+        const copy = cloneTaskItem(item);
+        setDetailBaseline(copy);
+        return copy;
+      });
       if (layoutMode !== "wide") setDetailOpen(true);
     },
     [layoutMode],
   );
 
-  const closeTaskDetail = useCallback(() => {
+  const closeTaskDetail = useCallback((opts?: { discard?: boolean }) => {
+    if (opts?.discard) detailDiscardRef.current = true;
     setDetailItem(null);
+    setDetailBaseline(null);
     setDetailOpen(false);
   }, []);
 
-  const saveDetailItem = async () => {
-    if (!detailItem) return;
+  const saveDetailItem = useCallback(async () => {
+    const item = detailItem;
+    if (!item) return;
     setDetailSaving(true);
     try {
-      await updateTaskItem(detailItem.id, {
-        title: detailItem.title,
-        content: detailItem.content,
-        tags: detailItem.tags,
-        priority: detailItem.priority,
-        due_at: detailItem.due_at,
+      await updateTaskItem(item.id, {
+        title: item.title,
+        content: item.content,
+        tags: item.tags,
+        priority: item.priority,
+        due_at: item.due_at,
       });
-      closeTaskDetail();
+      detailDiscardRef.current = false;
+      setDetailItem(null);
+      setDetailBaseline(null);
+      setDetailOpen(false);
       if (selectedListId != null) await loadItems(selectedListId);
-      if (searchActive) await refreshSearchHits();
+      if (searchQuery.trim()) await refreshSearchHits();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setDetailSaving(false);
     }
-  };
+  }, [detailItem, loadItems, refreshSearchHits, searchQuery, selectedListId]);
 
-  const handleDetailOpenChange = (open: boolean) => {
-    setDetailOpen(open);
-    if (!open) setDetailItem(null);
-  };
+  const handleDetailOpenChange = useCallback(
+    (open: boolean) => {
+      if (open) {
+        setDetailOpen(true);
+        return;
+      }
+      if (detailDiscardRef.current) {
+        detailDiscardRef.current = false;
+        setDetailItem(null);
+        setDetailBaseline(null);
+        setDetailOpen(false);
+        return;
+      }
+      if (
+        detailItem &&
+        detailBaseline &&
+        isTaskItemDirty(detailItem, detailBaseline) &&
+        !detailSaving
+      ) {
+        void saveDetailItem();
+        return;
+      }
+      setDetailItem(null);
+      setDetailBaseline(null);
+      setDetailOpen(false);
+    },
+    [detailBaseline, detailItem, detailSaving, saveDetailItem],
+  );
 
   useEffect(() => {
     if (layoutMode === "wide") {
@@ -857,7 +896,7 @@ export function TaskApp() {
                 item={detailItem}
                 onChange={setDetailItem}
                 onSave={() => void saveDetailItem()}
-                onCancel={closeTaskDetail}
+                onCancel={() => closeTaskDetail({ discard: true })}
                 saving={detailSaving}
               />
             ) : (
