@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 00:03+0800\n"
+"POT-Creation-Date: 2026-07-01 16:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,12 +52,12 @@ msgstr "逸灵风设计为**单人本地 / 内网**部署："
 #. type: Bullet: '- '
 #: docs/guide/security.md:17
 msgid ""
-"HTTP / Admin **has no auth by default**; binding `127.0.0.1` is not security—"
-"any process or user that can reach the port can read conversations, send "
-"messages, start/stop MCP/ACP."
+"Business HTTP API (`/api/*` except health/CORS/echo) requires a **Service "
+"API Token** (`Authorization: Bearer fa_at_…`); create with `anima token "
+"create`. Binding `127.0.0.1` limits network exposure but does not replace "
+"token auth — any local process that can reach the port still needs a valid "
+"token for business routes."
 msgstr ""
-"HTTP / Admin **默认无鉴权**；绑定 `127.0.0.1` 不等于安全——任何能访问端口的进"
-"程或用户均可读会话、发消息、启停 MCP/ACP。"
 
 #. type: Bullet: '- '
 #: docs/guide/security.md:17
@@ -68,9 +68,13 @@ msgstr "默认 bind 为 `127.0.0.1`；若需局域网访问，请自行评估 CO
 
 #. type: Bullet: '- '
 #: docs/guide/security.md:17
+#, fuzzy
+#| msgid ""
+#| "**Do not** expose the service to the public internet without a Service "
+#| "API Token on clients (see [`remote-access.md`](remote-access.md))."
 msgid ""
-"**Do not** expose the service to the public internet without a Service API "
-"Token on clients (see [`remote-access.md`](remote-access.md))."
+"**Do not** expose the service to the public internet without TLS and token-"
+"protected clients (see [`remote-access.md`](remote-access.md))."
 msgstr ""
 "**不要**在未配置 `remote_auth` 的情况下将服务暴露到公网（见 [`remote-"
 "access.md`](remote-access.md) — Tunnel + Bearer token）。"
@@ -123,12 +127,17 @@ msgstr "数据持久化"
 
 #. type: Plain text
 #: docs/guide/security.md:37
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Path                            | Content             | Encryption                      |\n"
+#| "| ------------------------------- | ------------------- | ------------------------------- |\n"
+#| "| PostgreSQL conversation archive | sessions / messages | No application-layer encryption |\n"
+#| "| `~/.anima/weixin/`              | WeChat sync state   | None                            |\n"
 msgid ""
-"| Path                            | Content             | Encryption                      |\n"
-"| ------------------------------- | ------------------- | ------------------------------- |\n"
-"| PostgreSQL conversation archive | sessions / messages | No application-layer encryption |\n"
-"| `~/.anima/weixin/`              | WeChat sync state   | None                            |\n"
+"| Path                            | Content                  | Encryption                      |\n"
+"| ------------------------------- | ------------------------ | ------------------------------- |\n"
+"| PostgreSQL conversation archive | conversations / messages | No application-layer encryption |\n"
+"| `~/.anima/weixin/`              | WeChat sync state        | None                            |\n"
 msgstr ""
 "| 路径                | 内容                | 加密         |\n"
 "| ------------------- | ------------------- | ------------ |\n"
@@ -148,17 +157,27 @@ msgstr "LLM 工具风险"
 
 #. type: Plain text
 #: docs/guide/security.md:51
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Capability             | Risk                                                                                                                |\n"
+#| "| ---------------------- | ------------------------------------------------------------------------------------------------------------------- |\n"
+#| "| `terminal`             | Default `shell: true`, can run arbitrary shell commands                                                             |\n"
+#| "| `file_read_file`       | Partial path deny (`.ssh` private keys, `/etc/passwd`, etc.); **not** full `/etc/` deny                             |\n"
+#| "| `file_write_file`      | deny list + write-protected paths                                                                                   |\n"
+#| "| MCP tools              | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined               |\n"
+#| "| Capability mask (Mask) | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `capabilities/mask` |\n"
+#| "| ACP (Cursor)           | Default **auto-approve** all `session/request_permission` (`allow-once`)                                            |\n"
+#| "| `credentials_list`     | Returns pass path metadata only, no values                                                                          |\n"
 msgid ""
-"| Capability             | Risk                                                                                                                |\n"
-"| ---------------------- | ------------------------------------------------------------------------------------------------------------------- |\n"
-"| `terminal`             | Default `shell: true`, can run arbitrary shell commands                                                             |\n"
-"| `file_read_file`       | Partial path deny (`.ssh` private keys, `/etc/passwd`, etc.); **not** full `/etc/` deny                             |\n"
-"| `file_write_file`      | deny list + write-protected paths                                                                                   |\n"
-"| MCP tools              | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined               |\n"
-"| Capability mask (Mask) | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `capabilities/mask` |\n"
-"| ACP (Cursor)           | Default **auto-approve** all `session/request_permission` (`allow-once`)                                            |\n"
-"| `credentials_list`     | Returns pass path metadata only, no values                                                                          |\n"
+"| Capability             | Risk                                                                                                                          |\n"
+"| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------- |\n"
+"| `terminal`             | Default `shell: true`, can run arbitrary shell commands                                                                       |\n"
+"| `file_read_file`       | Partial path deny (`.ssh` private keys, `/etc/passwd`, etc.); **not** full `/etc/` deny                                       |\n"
+"| `file_write_file`      | deny list + write-protected paths                                                                                             |\n"
+"| MCP tools              | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined                         |\n"
+"| Capability mask (Mask) | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `capabilities/task/src/mask/` |\n"
+"| ACP (Cursor)           | Default **auto-approve** all `session/request_permission` (`allow-once`)                                                      |\n"
+"| `credentials_list`     | Returns pass path metadata only, no values                                                                                    |\n"
 msgstr ""
 "| 能力               | 风险                                                                                  |\n"
 "| ------------------ | ------------------------------------------------------------------------------------- |\n"
@@ -177,8 +196,20 @@ msgid "Measures in Place"
 msgstr "已有措施"
 
 #. type: Plain text
-#: docs/guide/security.md:65
-#, no-wrap
+#: docs/guide/security.md:66
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Measure                 | Description                                                                                                                            |\n"
+#| "| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |\n"
+#| "| Same-origin RPC         | TanStack Start server functions same-origin by default, no CORS whitelist needed                                                       |\n"
+#| "| Config secret redaction | `AppRuntime.getConfig()` → `sanitizeConfigForApi()` (`api_key`, `database.url`, nested `pushkey`, `mcp env`, etc.)                     |\n"
+#| "| MCP config redaction    | `sanitizeMcpConfig`: `env` exposes only `env_keys`                                                                                     |\n"
+#| "| Write path safety       | `file_write_file` deny list (partial `/etc/*`, `.ssh` private keys, etc.)                                                              |\n"
+#| "| Slash commands          | Whitelist routing; every command must produce user-visible feedback; long-running commands send an immediate ack then the final result |\n"
+#| "| MCP default stdio       | Reduces port exposure                                                                                                                  |\n"
+#| "| Credential isolation    | LLM sees pass paths only, not values                                                                                                   |\n"
+#| "| CI secret scanning      | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)                          |\n"
+#| "| `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                                          |\n"
 msgid ""
 "| Measure                 | Description                                                                                                                            |\n"
 "| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |\n"
@@ -189,6 +220,7 @@ msgid ""
 "| Slash commands          | Whitelist routing; every command must produce user-visible feedback; long-running commands send an immediate ack then the final result |\n"
 "| MCP default stdio       | Reduces port exposure                                                                                                                  |\n"
 "| Credential isolation    | LLM sees pass paths only, not values                                                                                                   |\n"
+"| Service API Token       | Business `/api/*` routes require `Authorization: Bearer fa_at_…` (`service_api_tokens` PG table); health/CORS/echo exempt              |\n"
 "| CI secret scanning      | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)                          |\n"
 "| `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                                          |\n"
 msgstr ""
@@ -205,31 +237,41 @@ msgstr ""
 "| `.gitignore`         | `.env.*`、`config.yaml`、私钥后缀                                                                                   |\n"
 
 #. type: Title ##
-#: docs/guide/security.md:66
+#: docs/guide/security.md:67
 #, no-wrap
 msgid "Known Gaps (Documentation ≠ Fully Implemented)"
 msgstr "已知缺口（文档 ≠ 已完全实现）"
 
 #. type: Plain text
-#: docs/guide/security.md:69
+#: docs/guide/security.md:70
 msgid ""
 "The following are planned in code or docs—**deployers must not assume "
 "implemented**:"
 msgstr "以下在代码或文档中规划，**部署者请勿假设已实现**："
 
 #. type: Plain text
-#: docs/guide/security.md:79
-#, no-wrap
+#: docs/guide/security.md:80
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Priority | Item                                                  | Status                                                                                                           |\n"
+#| "| -------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |\n"
+#| "| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                                                                                                          |\n"
+#| "| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                                                                                                  |\n"
+#| "| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                                                                                                  |\n"
+#| "| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                                                                                                  |\n"
+#| "| P2       | HTTP API auth                                         | 业务 API 须带 per-subject Service API Token；`GET /api/health` 豁免（见 [`remote-access.md`](remote-access.md)） |\n"
+#| "| P3       | IPC / LLM rate limiting                               | None                                                                                                             |\n"
+#| "| P3       | Session disk encryption                               | None                                                                                                             |\n"
 msgid ""
-"| Priority | Item                                                  | Status                                                                                                           |\n"
-"| -------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |\n"
-"| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                                                                                                          |\n"
-"| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                                                                                                  |\n"
-"| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                                                                                                  |\n"
-"| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                                                                                                  |\n"
-"| P2       | HTTP API auth                                         | 业务 API 须带 per-subject Service API Token；`GET /api/health` 豁免（见 [`remote-access.md`](remote-access.md)） |\n"
-"| P3       | IPC / LLM rate limiting                               | None                                                                                                             |\n"
-"| P3       | Session disk encryption                               | None                                                                                                             |\n"
+"| Priority | Item                                                  | Status                              |\n"
+"| -------- | ----------------------------------------------------- | ----------------------------------- |\n"
+"| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                             |\n"
+"| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                     |\n"
+"| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                     |\n"
+"| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                     |\n"
+"| P2       | Config redaction maintenance for new secret fields    | Partial — sync on new config fields |\n"
+"| P3       | IPC / LLM rate limiting                               | None                                |\n"
+"| P3       | Session disk encryption                               | None                                |\n"
 msgstr ""
 "| 优先级 | 项                                                    | 状态                                                                                                                         |\n"
 "| ------ | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |\n"
@@ -242,13 +284,13 @@ msgstr ""
 "| P3     | 会话磁盘加密                                          | 无                                                                                                                           |\n"
 
 #. type: Title ##
-#: docs/guide/security.md:80
+#: docs/guide/security.md:81
 #, no-wrap
 msgid "Threat Sources"
 msgstr "威胁来源"
 
 #. type: Plain text
-#: docs/guide/security.md:89
+#: docs/guide/security.md:90
 #, no-wrap
 msgid ""
 "| Code  | Name                | Description                                                      |\n"
@@ -268,13 +310,13 @@ msgstr ""
 "| **E** | 数据安全   | 对话泄露、密钥泄露、记忆篡改        |\n"
 
 #. type: Title ##
-#: docs/guide/security.md:90
+#: docs/guide/security.md:91
 #, no-wrap
 msgid "Security Matrix"
 msgstr "安全矩阵"
 
 #. type: Plain text
-#: docs/guide/security.md:99
+#: docs/guide/security.md:100
 #, no-wrap
 msgid ""
 "| Module           | A External                                                 | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |\n"
@@ -294,67 +336,67 @@ msgstr ""
 "| **MCP / ACP**    | SSE 认证未定义      | 恶意参数                                                        | 错误委托         | Server 被攻陷   | 上下文含敏感数据 |\n"
 
 #. type: Title ##
-#: docs/guide/security.md:100
+#: docs/guide/security.md:101
 #, no-wrap
 msgid "Proposals Pending Review"
 msgstr "待评审提案"
 
 #. type: Title ###
-#: docs/guide/security.md:102
+#: docs/guide/security.md:103
 #, no-wrap
 msgid "P0 — file_read_file Path Safety"
 msgstr "P0 — file_read_file 路径安全"
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:106
+#: docs/guide/security.md:107
 msgid "Read-side deny: `/etc/`, `/proc/`, `~/.ssh/`, etc."
 msgstr "读侧 deny：`/etc/`、`/proc/`、`~/.ssh/` 等"
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:106
+#: docs/guide/security.md:107
 msgid "Optional `FREEANIMA_READ_SAFE_ROOT`"
 msgstr "可选 `FREEANIMA_READ_SAFE_ROOT`"
 
 #. type: Title ###
-#: docs/guide/security.md:107
+#: docs/guide/security.md:108
 #, no-wrap
 msgid "P0 — Shell Execution Policy"
 msgstr "P0 — Shell 执行策略"
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:111
+#: docs/guide/security.md:112
 msgid "`terminal_run()` / `code_execute` default `shell=False`"
 msgstr "`terminal_run()` / `code_execute` 默认 `shell=False`"
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:111
+#: docs/guide/security.md:112
 msgid "`FREEANIMA_ALLOW_SHELL=true` required for shell pipes"
 msgstr "`FREEANIMA_ALLOW_SHELL=true` 才允许 shell 管道"
 
 #. type: Title ###
-#: docs/guide/security.md:112
+#: docs/guide/security.md:113
 #, no-wrap
 msgid "P1 — Runtime / Gateway"
 msgstr "P1 — 运行时 / Gateway"
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:116
+#: docs/guide/security.md:117
 msgid "Unix socket `chmod 600` + optional handshake token"
 msgstr "Unix socket `chmod 600` + 可选握手 token"
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:116
+#: docs/guide/security.md:117
 msgid "Write safe root default cwd (`FREEANIMA_WRITE_SAFE_ROOT`)"
 msgstr "写安全根默认 cwd（`FREEANIMA_WRITE_SAFE_ROOT`）"
 
 #. type: Title ###
-#: docs/guide/security.md:117
+#: docs/guide/security.md:118
 #, no-wrap
 msgid "P2 — Config Redaction Maintenance"
 msgstr "P2 — 配置脱敏维护"
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:120
+#: docs/guide/security.md:121
 msgid ""
 "When adding secret fields, sync [`service/config/src/config-sanitize.ts`]"
 "(../../service/config/src/config-sanitize.ts)"
@@ -363,18 +405,18 @@ msgstr ""
 "config/src/config-sanitize.ts)"
 
 #. type: Title ##
-#: docs/guide/security.md:121
+#: docs/guide/security.md:122
 #, no-wrap
 msgid "First-Deployment Security Checklist"
 msgstr "首次部署安全清单"
 
 #. type: Bullet: '1. '
-#: docs/guide/security.md:129
+#: docs/guide/security.md:130
 msgid "Install and initialize pass + GPG; all secrets into pass only"
 msgstr "安装并初始化 pass + GPG；所有密钥只进 pass"
 
 #. type: Bullet: '2. '
-#: docs/guide/security.md:129
+#: docs/guide/security.md:130
 msgid ""
 "Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/"
 "config.yaml`; **do not** write plaintext secrets in config"
@@ -383,17 +425,17 @@ msgstr ""
 "config.yaml`；**勿**在 config 中写明文密钥"
 
 #. type: Bullet: '3. '
-#: docs/guide/security.md:129
+#: docs/guide/security.md:130
 msgid "`chmod 700 ~/.anima`"
 msgstr "`chmod 700 ~/.anima`"
 
 #. type: Bullet: '4. '
-#: docs/guide/security.md:129
+#: docs/guide/security.md:130
 msgid "Bind `127.0.0.1` only, or ensure intranet isolation"
 msgstr "仅 bind `127.0.0.1`，或确保内网隔离"
 
 #. type: Bullet: '5. '
-#: docs/guide/security.md:129
+#: docs/guide/security.md:130
 msgid ""
 "Review `mcp_servers` / `acp_agents` config; set `enabled: false` for "
 "untrusted external Servers"
@@ -402,11 +444,11 @@ msgstr ""
 "false`"
 
 #. type: Bullet: '6. '
-#: docs/guide/security.md:129
+#: docs/guide/security.md:130
 msgid "Regularly backup pass and `~/.anima/`; encrypt backup media"
 msgstr "定期备份 pass 与 `~/.anima/`；备份介质加密存储"
 
 #. type: Bullet: '7. '
-#: docs/guide/security.md:129
+#: docs/guide/security.md:130
 msgid "Do not commit `.env`, `config.yaml` to git"
 msgstr "勿将 `.env`、`config.yaml` 提交到 git"

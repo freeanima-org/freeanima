@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 00:11+0800\n"
+"POT-Creation-Date: 2026-07-01 16:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,8 +16,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/features/companion.md:120 docs/features/mobile-app.md:51
-#: docs/guide/database.md:91 docs/guide/remote-access.md:168
+#: docs/features/companion.md:120 docs/features/mobile-app.md:52
+#: docs/guide/database.md:91 docs/guide/remote-access.md:170
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
@@ -32,8 +32,8 @@ msgstr "移动端 APP（Android）"
 #. type: Plain text
 #: docs/features/mobile-app.md:7
 #, no-wrap
-msgid "> Capacitor shell + unified shell-ui SPA (Chat / Admin / settings).  \n"
-msgstr "> Capacitor 壳层 + 统一 shell-ui SPA（聊天室 / 管理台 / 设置）。  \n"
+msgid "> Capacitor **薄壳** + Hub `/web/*` 远程 UI（默认）；`MOBILE_UI_MODE=bundled` 可回退 bundled SPA。  \n"
+msgstr ""
 
 #. type: Plain text
 #: docs/features/mobile-app.md:9
@@ -48,15 +48,23 @@ msgid "Scope"
 msgstr "范围"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:18
-#, no-wrap
+#: docs/features/mobile-app.md:19
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Item       | Description                                                              |\n"
+#| "| ---------- | ------------------------------------------------------------------------ |\n"
+#| "| Platform   | **Android only** sideload (APK); iOS later                               |\n"
+#| "| Modules    | Chat (`sap-direct`) + Admin (`hub-rest`)                                 |\n"
+#| "| Hub config | APP **Hub settings**: URL + Service API Token (`fa_at_...`, Preferences) |\n"
+#| "| Hub duties | `/api` REST + `/sap/v1` WebSocket                                        |\n"
 msgid ""
-"| Item       | Description                                                              |\n"
-"| ---------- | ------------------------------------------------------------------------ |\n"
-"| Platform   | **Android only** sideload (APK); iOS later                               |\n"
-"| Modules    | Chat (`sap-direct`) + Admin (`hub-rest`)                                 |\n"
-"| Hub config | APP **Hub settings**: URL + Service API Token (`fa_at_...`, Preferences) |\n"
-"| Hub duties | `/api` REST + `/sap/v1` WebSocket                                        |\n"
+"| Item       | Description                                              |\n"
+"| ---------- | -------------------------------------------------------- |\n"
+"| Platform   | **Android only** sideload (APK); iOS later               |\n"
+"| UI         | 默认 bootstrap → Hub `/web/*`（与浏览器/PWA 同一产物）   |\n"
+"| Modules    | Chat (`sap-direct`) + Admin (`hub-rest`)                 |\n"
+"| Hub config | APP **Hub settings**（Preferences）或 bootstrap 首次配置 |\n"
+"| Hub duties | `/api` REST + `/sap/v1` WebSocket                        |\n"
 msgstr ""
 "| 项目       | 说明                                                                   |\n"
 "| ---------- | ---------------------------------------------------------------------- |\n"
@@ -66,13 +74,13 @@ msgstr ""
 "| Hub 职责   | `/api` REST + `/sap/v1` WebSocket                                      |\n"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:19 docs/sap/overview.md:17
+#: docs/features/mobile-app.md:20 docs/sap/overview.md:17
 #, no-wrap
 msgid "Topology"
 msgstr "拓扑"
 
 #. type: Fenced code block (mermaid)
-#: docs/features/mobile-app.md:21
+#: docs/features/mobile-app.md:22
 #, no-wrap
 msgid ""
 "flowchart LR\n"
@@ -106,7 +114,7 @@ msgstr ""
 "  Admin -->|REST Bearer| Hub\n"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:39
+#: docs/features/mobile-app.md:40
 msgid ""
 "Mobile REST **connects directly** to Hub (no desktop Electron `/api` proxy); "
 "requires a **Service API Token** and Hub CORS for Capacitor origin (`https://"
@@ -117,13 +125,13 @@ msgstr ""
 "（`#/chat`）以便 WebView 调试。"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:40
+#: docs/features/mobile-app.md:41
 #, no-wrap
 msgid "Hub settings"
 msgstr "Hub 设置"
 
 #. type: Bullet: '1. '
-#: docs/features/mobile-app.md:48
+#: docs/features/mobile-app.md:49
 msgid ""
 "Home PC: `anima service start --host 0.0.0.0`, create a Service API Token "
 "(`anima token create --subject-id 1 --name bootstrap`; see [`remote-"
@@ -134,34 +142,34 @@ msgstr ""
 "access.md`](../guide/remote-access.md)）。"
 
 #. type: Bullet: '2. '
-#: docs/features/mobile-app.md:48
+#: docs/features/mobile-app.md:49
 msgid "(Optional) `anima tunnel setup`; phone uses `https://<your-hostname>`."
 msgstr "（可选）`anima tunnel setup`；手机使用 `https://<your-hostname>`。"
 
 #. type: Bullet: '3. '
-#: docs/features/mobile-app.md:48
+#: docs/features/mobile-app.md:49
 msgid "APP → **Hub settings** (`/settings`):"
 msgstr "APP → **Hub 设置**（`/settings`）："
 
 #. type: Bullet: '   - '
-#: docs/features/mobile-app.md:48
+#: docs/features/mobile-app.md:49
 msgid "Hub URL (Tunnel domain or `http://<PC-IP>:2658`; not `127.0.0.1`)"
 msgstr "Hub URL（Tunnel 域名或 `http://<PC-IP>:2658`；勿用 `127.0.0.1`）"
 
 #. type: Bullet: '   - '
-#: docs/features/mobile-app.md:48
+#: docs/features/mobile-app.md:49
 msgid "Service API Token (`fa_at_...`, printed once at creation)"
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/features/mobile-app.md:48
+#: docs/features/mobile-app.md:49
 msgid ""
 "**Test connection** → **Save and enter** → top bar switches **Chat** / "
 "**Admin**."
 msgstr "**测试连接** → **保存并进入** → 顶栏切换 **聊天室** / **管理台**。"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:50
+#: docs/features/mobile-app.md:51
 msgid ""
 "Non-loopback Hub URL requires token; REST uses `Authorization: Bearer`; SAP "
 "sends `auth_token` in `connect` frame."
@@ -170,7 +178,7 @@ msgstr ""
 "`connect` 帧发送 `auth_token`。"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:59
+#: docs/features/mobile-app.md:60
 #, no-wrap
 msgid ""
 "| Symptom                             | Common cause                                                                                    |\n"
@@ -188,18 +196,18 @@ msgstr ""
 "| Not Found                            | 避免旧路径如 `/admin/dashboard/index.html`；使用 SPA `/admin/dashboard`            |\n"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:60
+#: docs/features/mobile-app.md:61
 #, no-wrap
 msgid "Debugging"
 msgstr "调试"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:63
+#: docs/features/mobile-app.md:64
 msgid "Settings → **Debug** (desktop and mobile share shell-ui panel):"
 msgstr "设置 → **调试**（桌面与移动端共用 shell-ui 面板）："
 
 #. type: Plain text
-#: docs/features/mobile-app.md:69
+#: docs/features/mobile-app.md:70
 #, no-wrap
 msgid ""
 "| Capability | Desktop           | Mobile                                      |\n"
@@ -215,7 +223,7 @@ msgstr ""
 "| Console    | Electron DevTools    | vConsole（设置开关）                    |\n"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:71
+#: docs/features/mobile-app.md:72
 msgid ""
 "Mobile debug build: `cd app/mobile && bun run android:debug` (no minify + "
 "sourcemap for inspect)."
@@ -224,18 +232,21 @@ msgstr ""
 "便于 inspect）。"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:72
+#: docs/features/mobile-app.md:73
 #, no-wrap
 msgid "Build and sideload"
 msgstr "构建与侧载"
 
 #. type: Fenced code block (bash)
-#: docs/features/mobile-app.md:74
-#, no-wrap
+#: docs/features/mobile-app.md:75
+#, fuzzy, no-wrap
+#| msgid ""
+#| "bun run --filter @freeanima/app-mobile build\n"
+#| "cd app/mobile && bun run sync\n"
+#| "cd android && ./gradlew assembleDebug\n"
 msgid ""
 "bun run --filter @freeanima/app-mobile build\n"
 "cd app/mobile && bun run sync\n"
-"cd android && ./gradlew assembleDebug\n"
 msgstr ""
 "bun run --filter @freeanima/app-mobile build\n"
 "cd app/mobile && bun run sync\n"
@@ -243,28 +254,35 @@ msgstr ""
 
 #. type: Plain text
 #: docs/features/mobile-app.md:81
+msgid ""
+"默认 **remote UI**（`www/` 仅 bootstrap，APK 体积小）。完整 bundled SPA："
+"`MOBILE_UI_MODE=bundled bun run --filter @freeanima/app-mobile build`"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/mobile-app.md:83
 msgid "Debug full flow: `cd app/mobile && bun run android:debug`"
 msgstr "调试完整流程：`cd app/mobile && bun run android:debug`"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:83
+#: docs/features/mobile-app.md:85
 #, no-wrap
 msgid "**Discipline**: after shell-ui / chat / admin frontend changes, run `bun run build` (or `build:debug`) then `cap sync`, or device serves stale Web assets.\n"
 msgstr "**纪律**：修改 shell-ui / chat / admin 前端后，须运行 `bun run build`（或 `build:debug`）再 `cap sync`，否则设备会提供过期的 Web 资源。\n"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:85
+#: docs/features/mobile-app.md:87
 msgid "Package README: [`app/mobile/README.md`](../../app/mobile/README.md)"
 msgstr "包 README：[`app/mobile/README.md`](../../app/mobile/README.md)"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:86
+#: docs/features/mobile-app.md:88
 #, no-wrap
 msgid "vs desktop shell"
 msgstr "与桌面壳层对比"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:95
+#: docs/features/mobile-app.md:97
 #, no-wrap
 msgid ""
 "|              | Electron `app/desktop`                          | Capacitor `app/mobile`                |\n"
