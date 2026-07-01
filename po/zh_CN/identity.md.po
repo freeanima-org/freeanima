@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 16:39+0800\n"
+"POT-Creation-Date: 2026-07-01 10:36+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -61,17 +61,7 @@ msgstr "**让数字生命可以在其中持续存在，记住自己是谁、经�
 
 #. type: Plain text
 #: docs/concepts/identity.md:27
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Priority | Item                                                  | Status                                                                                                           |\n"
-#| "| -------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |\n"
-#| "| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                                                                                                          |\n"
-#| "| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                                                                                                  |\n"
-#| "| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                                                                                                  |\n"
-#| "| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                                                                                                  |\n"
-#| "| P2       | HTTP API auth                                         | 业务 API 须带 per-subject Service API Token；`GET /api/health` 豁免（见 [`remote-access.md`](remote-access.md)） |\n"
-#| "| P3       | IPC / LLM rate limiting                               | None                                                                                                             |\n"
-#| "| P3       | Session disk encryption                               | None                                                                                                             |\n"
+#, no-wrap
 msgid ""
 "| Structure                                | Role                                                                                                                            |\n"
 "| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |\n"
@@ -83,15 +73,15 @@ msgid ""
 "| EventBus                                 | Async notification transport (Redis queue); sleep uses Pipeline Runner, not EventBus — see [`architecture.md`](architecture.md) |\n"
 "| Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                      |\n"
 msgstr ""
-"| 优先级 | 项                                                    | 状态                                                                                                                         |\n"
-"| ------ | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |\n"
-"| P0     | file_read_file 全面 deny（`/etc/` 等）                | 部分                                                                                                                         |\n"
-"| P0     | `terminal_run` / `code_execute` 默认 `shell=False`    | 未实现                                                                                                                       |\n"
-"| P1     | Runtime Unix socket `chmod 600` + 握手 token            | 未实现                                                                                                                       |\n"
-"| P1     | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | 未实现                                                                                                                       |\n"
-"| P2     | HTTP API 鉴权                                         | 非 loopback Host 或非 loopback TCP 对端须 `remote_auth` 否则 401；双 loopback 豁免（[`remote-access.md`](remote-access.md)） |\n"
-"| P3     | IPC / LLM 速率限制                                    | 无                                                                                                                           |\n"
-"| P3     | 会话磁盘加密                                          | 无                                                                                                                           |\n"
+"| 结构                           | 角色                                                                                                                          |\n"
+"| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |\n"
+"| Memory system                    | 数字生命的“家”                                                                                                               |\n"
+"| Self layer（六个区块）           | “我是谁”的持久定义                                                                                                           |\n"
+"| Tools（local / MCP / ACP）       | 用于感知与行动的“肢体”                                                                                                       |\n"
+"| pass credentials                 | 生命线（运行时注入，绝不明文）                                                                                               |\n"
+"| Gateway                          | 耳朵与嘴巴（Discord / WeChat / Admin）                                                                                       |\n"
+"| EventBus                         | 异步通知传输（Redis 队列）；睡眠使用 Pipeline Runner，而非 EventBus——见 [`architecture.md`](architecture.md)                |\n"
+"| `AGENTS.md` 等项目叙事文件       | 项目上下文的锚点                                                                                                             |\n"
 
 #. type: Title ##
 #: docs/concepts/identity.md:30
@@ -152,8 +142,8 @@ msgstr "简单基础设施自己写，复杂逻辑用三方库"
 #. type: Plain text
 #: docs/concepts/identity.md:44
 msgid ""
-"Self layer design: [`self-layer.md`](self-layer.md); memory system: "
-"[`memory.md`](memory.md)."
+"Self layer design: [`self-layer.md`](self-layer.md); memory system: [`memory."
+"md`](memory.md)."
 msgstr ""
 "自我层设计见 [`self-layer.md`](self-layer.md)；记忆体系见 [`memory.md`]"
 "(memory.md)。"

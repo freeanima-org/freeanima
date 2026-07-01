@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 16:39+0800\n"
+"POT-Creation-Date: 2026-07-01 10:36+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -139,8 +139,8 @@ msgstr "仅追加；创建后内容不更新。"
 #: docs/concepts/dream.md:35
 msgid ""
 "Does **not** create fridge magnets or notification inbox entries (see "
-"[`fridge-magnet.md`](fridge-magnet.md), [`notifications.md`]"
-"(notifications.md))."
+"[`fridge-magnet.md`](fridge-magnet.md), [`notifications.md`](notifications."
+"md))."
 msgstr ""
 
 #. type: Title ##
@@ -184,22 +184,17 @@ msgstr "工具与 UI"
 
 #. type: Plain text
 #: docs/concepts/dream.md:55
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| pass path                                | Purpose                       |\n"
-#| "| ---------------------------------------- | ----------------------------- |\n"
-#| "| `services/cloudflare/api-token`          | Create Tunnel / DNS           |\n"
-#| "| `services/cloudflare/tunnel-credentials` | `cloudflared` connector creds |\n"
+#, no-wrap
 msgid ""
 "| Surface                        | Purpose              |\n"
 "| ------------------------------ | -------------------- |\n"
 "| `dream_read` tool              | Read stored dream    |\n"
 "| Admin `/admin/dashboard/dream` | Browse dream history |\n"
 msgstr ""
-"| pass 路径                                | 用途                     |\n"
-"| ---------------------------------------- | --------------------------- |\n"
-"| `services/cloudflare/api-token`          | 创建 Tunnel / DNS         |\n"
-"| `services/cloudflare/tunnel-credentials` | `cloudflared` 连接器凭证 |\n"
+"| 界面                           | 用途         |\n"
+"| ------------------------------ | ------------ |\n"
+"| `dream_read` tool              | 读取已存梦境 |\n"
+"| Admin `/admin/dashboard/dream` | 浏览梦境历史 |\n"
 
 #. type: Title ##
 #: docs/concepts/dream.md:56

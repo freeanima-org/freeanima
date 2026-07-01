@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 16:39+0800\n"
+"POT-Creation-Date: 2026-07-01 10:36+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -224,10 +224,9 @@ msgstr "定义：关于\"我在何时、何地、经历了什么\"的记忆，�
 
 #. type: Plain text
 #: docs/concepts/memory.md:85
-#, fuzzy, no-wrap
-#| msgid "**Conversation log** — the most raw, high-fidelity objective runtime trace. Only **user-facing conversations** (`sessions` without `platform_info.platform = cron`) feed light sleep and dream. Background LLM (cron agent, sleep stages) runs as **AutoLlmRun** — audited in `auto_llm_runs`, not copied into the conversation archive.\n"
+#, no-wrap
 msgid "**Conversation log** — the most raw, high-fidelity objective runtime trace. Only **user-facing conversations** (`conversations` without `platform_info.platform = cron`) feed light sleep and dream. Background LLM (cron agent, sleep stages) runs as **AutoLlmRun** — audited in `auto_llm_runs`, not copied into the conversation archive.\n"
-msgstr "**对话日志** — 最原始、高保真的客观运行时轨迹。仅**面向用户的对话**（`platform_info.platform` 不为 cron 的 `sessions`）进入浅睡与梦境。后台 LLM（cron agent、睡眠阶段）以 **AutoLlmRun** 运行——审计于 `auto_llm_runs`，不复制进对话存档。\n"
+msgstr "**对话日志** — 最原始、高保真的客观运行时轨迹。仅**面向用户的对话**（`platform_info.platform` 不为 cron 的 `conversations`）进入浅睡与梦境。后台 LLM（cron agent、睡眠阶段）以 **AutoLlmRun** 运行——审计于 `auto_llm_runs`，不复制进对话存档。\n"
 
 #. type: Plain text
 #: docs/concepts/memory.md:87
@@ -341,10 +340,9 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/memory.md:125
-#, fuzzy, no-wrap
-#| msgid "Three-stage evolution from declarative knowledge → dynamic skills → crystallized instincts (CLI / MCP / scripts)."
+#, no-wrap
 msgid "**Evolution path:** three-stage maturation from declarative knowledge → dynamic skills → crystallized instincts (CLI / MCP / automation scripts).\n"
-msgstr "三阶段演化：陈述性知识 → 动态技能 → 固化本能（CLI / MCP / 脚本）。"
+msgstr "**演化路径：** 从陈述性知识 → 动态技能 → 结晶化本能的三阶段成熟（CLI / MCP / 自动化脚本）。\n"
 
 #. type: Title ##
 #: docs/concepts/memory.md:128
@@ -368,25 +366,19 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/memory.md:135
-#, fuzzy
-#| msgid ""
-#| "**Light sleep (✅):** daily 02:00; semantic + limbic + autobiographical "
-#| "extraction"
 msgid ""
 "**Light sleep (✅):** step `light-sleep` — semantic + limbic + "
 "autobiographical extraction"
-msgstr "**浅睡（✅）：** 每日 02:00；语义 + 感性 + 自传体提取"
+msgstr "**浅睡（✅）：** 步骤 `light-sleep` — 语义 + 感性 + 自传体提取"
 
 #. type: Bullet: '- '
 #: docs/concepts/memory.md:135
-#, fuzzy
-#| msgid ""
-#| "**Deep sleep (✅):** daily 03:00; contradiction/expiry, split, merge, pin "
-#| "maintenance"
 msgid ""
 "**Deep sleep (✅):** step `deep-sleep` (depends on light-sleep) — "
 "contradiction/expiry, split, merge, pin maintenance"
-msgstr "**深睡（✅）：** 每日 03:00；矛盾/过期、拆分、合并、置顶维护"
+msgstr ""
+"**深睡（✅）：** 步骤 `deep-sleep`（依赖 `light-sleep`）— 矛盾/过期、拆分、合"
+"并、置顶维护"
 
 #. type: Plain text
 #: docs/concepts/memory.md:137

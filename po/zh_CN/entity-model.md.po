@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 16:39+0800\n"
+"POT-Creation-Date: 2026-07-01 10:36+0000\n"
 "PO-Revision-Date: 2026-06-29 14:00+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -31,8 +31,8 @@ msgstr "统一实体模型（v0.8）"
 #: docs/concepts/entity-model.md:8
 msgid ""
 "FreeAnima stores most structured business data in a single **`entities`** "
-"table. Self layer remains physically isolated in [`self_blocks`](self-"
-"layer.md)."
+"table. Self layer remains physically isolated in [`self_blocks`](self-layer."
+"md)."
 msgstr ""
 "逸灵风将大部分结构化业务数据存入单一 **`entities`** 表。自我层在物理上仍隔离"
 "于 [`self_blocks`](self-layer.md)。"
@@ -177,8 +177,8 @@ msgstr ""
 #: docs/concepts/entity-model.md:50
 msgid ""
 "**Notifications** use subject entity ids as `recipient_id` (see "
-"[`notifications.md`](notifications.md) and `config.yaml` "
-"`worlds.user_subject_id` / `agent_subject_id`)."
+"[`notifications.md`](notifications.md) and `config.yaml` `worlds."
+"user_subject_id` / `agent_subject_id`)."
 msgstr ""
 "**通知**以 subject 实体 id 作为 `recipient_id`（见 [`notifications.md`]"
 "(notifications.md) 与 `config.yaml` 的 `worlds.user_subject_id` / "
@@ -351,8 +351,8 @@ msgstr ""
 "条目通过 `body.list_id`（实体 id）引用列表。任务条目在实体列存 **title** 与 "
 "**content**；**tags** 在 `body.tags`。每个 world 在首次使用任务时**惰性**创"
 "建 **默认列表**（`is_default: true`，名称如「收件箱」）"
-"（`ensureDefaultTaskListForWorld`）；不可删除或归档但可重命名。列表 "
-"**`body.closed: true`** 表示已归档：默认从主侧栏隐藏（`tasklist.list` 除非 "
+"（`ensureDefaultTaskListForWorld`）；不可删除或归档但可重命名。列表 **`body."
+"closed: true`** 表示已归档：默认从主侧栏隐藏（`tasklist.list` 除非 "
 "`include_closed`），可通过 `tasklist.patch({ closed: false })` 恢复；所含任务"
 "条目保留。"
 
@@ -366,18 +366,11 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/entity-model.md:91
 #, no-wrap
-msgid "**Folders** (`body.is_folder: true`) are container nodes in the sidebar tree only — they cannot hold tasks directly (`task.create` / `task.patch` reject `list_id` pointing at a folder). Child lists and sub-folders reference a parent folder via `body.parent_id` (entity id of a folder, or omitted/null at root). Nesting must not form cycles. Archiving or deleting a folder cascades to descendants. `sort_order` is scoped among siblings sharing the same `parent_id`.\n"
+msgid "**Folders** (`body.is_folder: true`) are container nodes in the sidebar tree only — they cannot hold tasks directly (`task.create` / `task.patch` reject `list_id` pointing at a folder). Child lists and sub-folders reference a parent folder via `body.parent_id` (entity id of a folder, or omitted/null at root). Nesting must not form cycles. **Folders cannot be archived** — only deleted. Deleting a folder recursively removes all sub-folders and moves every contained list to root (`parent_id: null`); list task items are kept. List **`body.closed: true`** means archived (lists only): hidden from the main sidebar by default (`tasklist.list` unless `include_closed`), restorable via `tasklist.patch({ closed: false })` only; **any other mutation on an archived list or its tasks** (rename, move, edit, complete, …) returns `清单已归档`. Deleting a non-folder list removes its task items when `cascade` is true (default). `sort_order` is scoped among siblings sharing the same `parent_id`.\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/entity-model.md:93
-#, fuzzy
-#| msgid ""
-#| "LLM ToolSets: `@freeanima/capabilities-task` — `task` (item CRUD + "
-#| "`task_search`) and `tasklist` (list CRUD + `tasklist_search`); load via "
-#| "`toolset_load`. `task_search` searches all lists when `list_id` is "
-#| "omitted. Legacy `tasks` table and `/api/tasks/*` are removed after one-"
-#| "time migration (`scripts/migrate-tasks-to-entities.ts`)."
 msgid ""
 "LLM ToolSets: `@freeanima/capabilities-task` — `task` (item CRUD + "
 "`task_search`) and `tasklist` (list CRUD + `tasklist_search`); load via "
@@ -386,11 +379,12 @@ msgid ""
 "([`scripts/archive/migrate-tasks-to-entities.ts`](../../scripts/archive/"
 "migrate-tasks-to-entities.ts))."
 msgstr ""
-"LLM ToolSet：`@freeanima/capabilities-task` — `task`（条目 CRUD + "
+"LLM ToolSets：`@freeanima/capabilities-task` — `task`（条目 CRUD + "
 "`task_search`）与 `tasklist`（列表 CRUD + `tasklist_search`）；经 "
-"`toolset_load` 加载。省略 `list_id` 时 `task_search` 搜索所有列表。旧版 "
-"`tasks` 表与 `/api/tasks/*` 在一次迁移后移除（`scripts/migrate-tasks-to-"
-"entities.ts`）。"
+"`toolset_load` 加载。省略 `list_id` 时，`task_search` 搜索所有列表。旧版 "
+"`tasks` 表与 `/api/tasks/*` 在一次迁移后移除（见 [`scripts/archive/migrate-"
+"tasks-to-entities.ts`](../../scripts/archive/migrate-tasks-to-entities."
+"ts)）。"
 
 #. type: Title ###
 #: docs/concepts/entity-model.md:94
@@ -479,12 +473,6 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/entity-model.md:123
-#, fuzzy
-#| msgid ""
-#| "LLM ToolSets: `@freeanima/capabilities-email` — `email-account` (account "
-#| "entities) and `email` (sync, send/receive, search); load via "
-#| "`toolset_load`. Legacy `config.yaml` `email.accounts[]` migrates via "
-#| "`scripts/migrate-email-to-entities.ts`."
 msgid ""
 "LLM ToolSets: `@freeanima/capabilities-email` — `email-account` (account "
 "entities) and `email` (sync, send/receive, search); load via `toolset_load`. "
@@ -492,9 +480,10 @@ msgid ""
 "migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-"
 "entities.ts)."
 msgstr ""
-"LLM ToolSet：`@freeanima/capabilities-email` — `email-account`（账户实体）与 "
-"`email`（同步、收发、搜索）；经 `toolset_load` 加载。旧版 `config.yaml` 的 "
-"`email.accounts[]` 经 `scripts/migrate-email-to-entities.ts` 迁移。"
+"LLM ToolSets：`@freeanima/capabilities-email` — `email-account`（账户实体）"
+"与 `email`（同步、收发、搜索）；经 `toolset_load` 加载。旧版 `config.yaml` "
+"的 `email.accounts[]` 通过 [`scripts/archive/migrate-email-to-entities.ts`]"
+"(../../scripts/archive/migrate-email-to-entities.ts) 迁移。"
 
 #. type: Title ##
 #: docs/concepts/entity-model.md:124
@@ -522,9 +511,9 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/entity-model.md:133
 msgid ""
-"Entries live in each subject's **`default_private_world_id`**. "
-"`body.entry_at` is the timeline sort key; `title` / `summary` / `content` "
-"use entity columns; optional `body.tags`."
+"Entries live in each subject's **`default_private_world_id`**. `body."
+"entry_at` is the timeline sort key; `title` / `summary` / `content` use "
+"entity columns; optional `body.tags`."
 msgstr ""
 "条目位于各 subject 的 **`default_private_world_id`**。`body.entry_at` 为时间"
 "线排序键；`title` / `summary` / `content` 用实体列；可选 `body.tags`。"
@@ -535,8 +524,8 @@ msgid ""
 "**SAP:** `diary.*` methods — all take `subject_kind: user | agent` "
 "(including `diary.append`)."
 msgstr ""
-"**SAP：** `diary.*` 方法——均接受 `subject_kind: user | agent`（含 "
-"`diary.append`）。"
+"**SAP：** `diary.*` 方法——均接受 `subject_kind: user | agent`（含 `diary."
+"append`）。"
 
 #. type: Bullet: '- '
 #: docs/concepts/entity-model.md:137
@@ -622,16 +611,7 @@ msgstr "未来迁移映射（尚未执行）"
 
 #. type: Plain text
 #: docs/concepts/entity-model.md:169
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Legacy table                 | Target                                               |\n"
-#| "| ---------------------------- | ---------------------------------------------------- |\n"
-#| "| `semantic_memory`            | `content` + memory component                         |\n"
-#| "| `autobiographical_memory`    | `content` + narrative component                      |\n"
-#| "| `limbic_memory`              | `content` + limbic component                         |\n"
-#| "| `tasks` (legacy)             | `task_item` (when explicitly migrated)               |\n"
-#| "| `config.yaml email.accounts` | `email_account` (see `migrate-email-to-entities.ts`) |\n"
-#| "| `memory_references`          | relationship table (future)                          |\n"
+#, no-wrap
 msgid ""
 "| Legacy table                 | Target                                                                                                                     |\n"
 "| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |\n"
@@ -642,14 +622,14 @@ msgid ""
 "| `config.yaml email.accounts` | `email_account` (see [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts)) |\n"
 "| `memory_references`          | relationship table (future)                                                                                                |\n"
 msgstr ""
-"| 旧表                         | 目标                                                 |\n"
-"| ---------------------------- | ---------------------------------------------------- |\n"
-"| `semantic_memory`            | `content` + memory 组件                              |\n"
-"| `autobiographical_memory`    | `content` + narrative 组件                           |\n"
-"| `limbic_memory`              | `content` + limbic 组件                              |\n"
-"| `tasks`（旧版）              | `task_item`（显式迁移时）                            |\n"
-"| `config.yaml email.accounts` | `email_account`（见 `migrate-email-to-entities.ts`） |\n"
-"| `memory_references`          | 关系表（未来）                                       |\n"
+"| 旧表                         | 目标                                                                                                                         |\n"
+"| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |\n"
+"| `semantic_memory`            | `content` + memory 组件                                                                                                     |\n"
+"| `autobiographical_memory`    | `content` + narrative 组件                                                                                                  |\n"
+"| `limbic_memory`              | `content` + limbic 组件                                                                                                     |\n"
+"| `tasks`（旧版）              | `task_item`（显式迁移时）                                                                                                   |\n"
+"| `config.yaml email.accounts` | `email_account`（见 [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts)） |\n"
+"| `memory_references`          | relationship table（未来）                                                                                                  |\n"
 
 #. type: Plain text
 #: docs/concepts/entity-model.md:170
