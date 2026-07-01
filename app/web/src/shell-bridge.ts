@@ -53,8 +53,12 @@ function isCapacitorRuntime(): boolean {
 }
 
 function installShellBridgeReady(): () => void {
+  const w = window as ShellBridgeWindow;
+  if (w.__freeanimaShellBridge?.ready) {
+    return () => {};
+  }
   let resolveReady!: () => void;
-  (window as ShellBridgeWindow).__freeanimaShellBridge = {
+  w.__freeanimaShellBridge = {
     ready: new Promise<void>((resolve) => {
       resolveReady = resolve;
     }),
