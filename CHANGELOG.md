@@ -3,6 +3,48 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.8.2](https://github.com/freeanima-org/freeanima/compare/v0.8.1...v0.8.2) (2026-07-01)
+
+
+### Features
+
+* **email:** 邮箱三档响应式三栏布局 ([985c7d3](https://github.com/freeanima-org/freeanima/commit/985c7d3ee918599654125e735e57e8de53fe0531))
+* **mobile:** 优化移动端聊天交互与壳层导航体验 ([3e06bb8](https://github.com/freeanima-org/freeanima/commit/3e06bb8cb3b237934e62282949a87e446ed2635b))
+* **shell:** Hub Web SSOT 薄壳远程 UI 与 PWA 布局收敛 ([c20751f](https://github.com/freeanima-org/freeanima/commit/c20751f508ed6b9b370f02188f0c1942ae4efe97))
+* **task:** 任务页三档响应式三栏布局 ([98302e8](https://github.com/freeanima-org/freeanima/commit/98302e8f1c1af91c27711156988a8d32a064f78a))
+* **task:** 强化清单文件夹删除与归档规则 ([777544b](https://github.com/freeanima-org/freeanima/commit/777544bfcc0b426dba95c79a935ea5fa0f25194d))
+* **web:** 完善 PWA manifest、更新安装 UX 与离线提示 ([098e374](https://github.com/freeanima-org/freeanima/commit/098e37463575ddac18fdbe2095aee2123960c0da))
+
+
+### Bug Fixes
+
+* **chat:** 聊天列表按最后更新时间降序排列 ([46a53c1](https://github.com/freeanima-org/freeanima/commit/46a53c1f02b4eaedd08e90ea1364a1ddf33066cd))
+* **email:** 修复点击邮件时 markRead 因 world 不匹配报错 ([a252b0f](https://github.com/freeanima-org/freeanima/commit/a252b0fe35033c741ca4f518a2e23a1cafb44241))
+* **i18n:** resolve 41 fuzzy PO entries in zh_CN translations ([60172ce](https://github.com/freeanima-org/freeanima/commit/60172cea2170f2bf36ca9f159a0b8a326a1f2363))
+* **shell:** 修复仪表盘导航并统一窄屏浏览器布局 ([e591680](https://github.com/freeanima-org/freeanima/commit/e591680900a963a92b24674b2b727790fbd2e31f))
+* **ui:** 修复 shell-bridge 只读冲突与任务子清单 prompt 不可用 ([94c3b62](https://github.com/freeanima-org/freeanima/commit/94c3b625326d4e7bad7962fb5ed4ea55387378d7))
+
+
+### Performance
+
+* **web:** shell-bridge 内容 hash、协商缓存与 tab 懒加载 ([1030a1c](https://github.com/freeanima-org/freeanima/commit/1030a1c71d1c86c555a5b6973b23be426866b946))
+
+
+### Documentation
+
+* 对齐文档与规范及当前实现 ([2bd479e](https://github.com/freeanima-org/freeanima/commit/2bd479e8ab516ecacb97bb5309badd21ba1e8895))
+
+
+### Miscellaneous
+
+* **css:** 主题色迁出裸 CSS 并统一用 Stylelint 校验 ([deeaa07](https://github.com/freeanima-org/freeanima/commit/deeaa0799ffe5e6a8a5638ad242e9667ac7402a4))
+* **i18n:** 同步文档 pot 与 zh_CN 翻译 ([2cf879c](https://github.com/freeanima-org/freeanima/commit/2cf879c6b38d55d199b47c07214e54408eaa95aa))
+
+
+### Refactoring
+
+* **ui:** 迁移 DaisyUI 至 shadcn/ui 并修复壳层与 Alert 布局 ([7d61f8f](https://github.com/freeanima-org/freeanima/commit/7d61f8f6b76480607528631d65d9063c6eec91f2))
+
 ## [0.8.1](https://github.com/freeanima-org/freeanima/compare/v0.8.0...v0.8.1) (2026-07-01)
 
 
