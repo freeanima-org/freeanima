@@ -23,10 +23,14 @@ title: Remote access
 ### PWA（浏览器 Web）
 
 - **Secure context**：Service Worker 需要 HTTPS 或 `localhost`；Tunnel 终端应使用 HTTPS 域名。
-- **安装**：手机浏览器访问 `/web/chat`，Chrome / Safari 支持「添加到主屏幕」；生产构建会显示安装引导条（compact 布局、非已安装态）。
+- **Service Worker vs 安装**：SW 在普通浏览器标签页访问 `/web/*` 时即注册（生产构建）；**不要求**「添加到主屏幕」。安装仅改变启动方式（独立窗口），离线能力与标签页相同。
+- **安装（可选）**：手机浏览器访问 `/web/chat`，Chrome / Safari 支持「添加到主屏幕」；生产构建会显示安装引导条（compact 布局、非已安装态）。
 - **更新**：Hub 部署新 Web 静态产物后，已安装 PWA 会提示「新版本可用」；点击重新加载后生效。壳层 JS 由 Workbox precache，`/web/config.json` 始终 `no-store`（Hub URL 动态）。
-- **离线边界**：SW 仅缓存壳层静态资源（JS/CSS/HTML）；会话/任务等数据由应用层 IndexedDB（`shell-sdk/offline-cache`）只读回退，**不**缓存 `/api` 或 `/sap`。
-- **存储**：PWA 与 localStorage（Hub 设置）、IndexedDB（业务快照）互不冲突；清除站点数据会同时删除三者。
+- **离线边界（两层）**：
+  - **壳层（SW）**：仅缓存 JS/CSS/HTML 等静态资源，保证断网时页面框架可加载。
+  - **业务快照（IndexedDB）**：Chat / Task / Notification / Diary / Email 及 Admin 部分只读页（dashboard status、status config、semantic memory list 等）由 `shell-sdk/offline-cache` 做 cache-first 展示、在线 refresh 写回；**不**经 SW 缓存 `/api` 或 `/sap`。
+- **离线只读**：浏览器 `offline` 时 shell-ui 显示全局提示并禁用各 satellite 写操作；展示的是**曾在线拉取过的快照**，非 Hub 全量镜像。
+- **存储**：SW 缓存、localStorage（Hub 设置）、IndexedDB（业务快照）互不冲突；清除站点数据会同时删除三者。
 
 仅 `GET /api/health`、CORS 预检、`/api/echo` 豁免认证。
 

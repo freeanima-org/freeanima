@@ -15,6 +15,7 @@ export function EntryEditor({
   mode,
   entry,
   saving,
+  readOnly = false,
   onSave,
   onDelete,
   onCancel,
@@ -22,6 +23,7 @@ export function EntryEditor({
   mode: EntryEditorMode;
   entry: DiaryEntryRow | null;
   saving: boolean;
+  readOnly?: boolean;
   onSave: (draft: {
     title: string;
     summary: string;
@@ -58,6 +60,7 @@ export function EntryEditor({
       className="flex h-full min-h-0 flex-col gap-3"
       onSubmit={(e) => {
         e.preventDefault();
+        if (readOnly) return;
         onSave({
           title: titleFromDateLocal(entryDateLocal),
           summary: "",
@@ -75,6 +78,7 @@ export function EntryEditor({
           value={entryDateLocal}
           onChange={(e) => setEntryDateLocal(e.target.value)}
           required
+          disabled={readOnly}
         />
       </div>
 
@@ -85,6 +89,7 @@ export function EntryEditor({
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="写点什么…"
+          readOnly={readOnly}
         />
       </div>
 
@@ -94,23 +99,28 @@ export function EntryEditor({
           className="h-8 w-full"
           value={tagsText}
           onChange={(e) => setTagsText(e.target.value)}
+          readOnly={readOnly}
         />
       </div>
 
       <div className="flex shrink-0 flex-wrap gap-2 pt-1">
-        <Button type="submit" size="sm" disabled={saving}>
-          {mode === "create" ? "新建" : "保存"}
-        </Button>
-        {mode === "edit" && onDelete ? (
-          <Button
-            type="button"
-            variant="destructive"
-            size="sm"
-            disabled={saving}
-            onClick={onDelete}
-          >
-            删除
-          </Button>
+        {!readOnly ? (
+          <>
+            <Button type="submit" size="sm" disabled={saving}>
+              {mode === "create" ? "新建" : "保存"}
+            </Button>
+            {mode === "edit" && onDelete ? (
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                disabled={saving}
+                onClick={onDelete}
+              >
+                删除
+              </Button>
+            ) : null}
+          </>
         ) : null}
         {onCancel ? (
           <Button type="button" variant="ghost" size="sm" disabled={saving} onClick={onCancel}>

@@ -191,6 +191,9 @@ export async function listConversationCommands(opts?: { all?: boolean; platform?
 
 const ADMIN_STATUS_CACHE_NS = "admin-status";
 const ADMIN_STATUS_CACHE_KEY = "dashboard";
+const ADMIN_CONFIG_CACHE_NS = "admin-config";
+const ADMIN_CONFIG_CACHE_KEY = "status";
+const ADMIN_MEMORY_CACHE_NS = "admin-memory";
 
 export async function getStatus(): Promise<ServiceStatus> {
   const scope = resolveCacheScope(resolveApiOrigin());
@@ -210,7 +213,16 @@ export async function getStatus(): Promise<ServiceStatus> {
 }
 
 export async function getStatusConfig() {
-  return unwrap(resolveApiClient().api.status.config.get());
+  const scope = resolveCacheScope(resolveApiOrigin());
+  const cached = await readOfflineCache(scope, ADMIN_CONFIG_CACHE_NS, ADMIN_CONFIG_CACHE_KEY);
+  try {
+    const config = await unwrap(resolveApiClient().api.status.config.get());
+    void writeOfflineCache(scope, ADMIN_CONFIG_CACHE_NS, ADMIN_CONFIG_CACHE_KEY, config);
+    return config;
+  } catch (err) {
+    if (cached != null) return reviveDates(cached) as Awaited<ReturnType<typeof unwrap>>;
+    throw err;
+  }
 }
 
 export async function getToolsStatus(scope?: "default" | "all") {
@@ -348,7 +360,17 @@ export async function listSemanticMemories(input: {
   source_conversation?: string;
   sort_by?: "created_at" | "updated_at" | "reference_count" | "rank";
 }) {
-  return unwrap(resolveApiClient().api.memory.semantic.list.post(input));
+  const scope = resolveCacheScope(resolveApiOrigin());
+  const cacheId = JSON.stringify(input);
+  const cached = await readOfflineCache(scope, ADMIN_MEMORY_CACHE_NS, cacheId);
+  try {
+    const result = await unwrap(resolveApiClient().api.memory.semantic.list.post(input));
+    void writeOfflineCache(scope, ADMIN_MEMORY_CACHE_NS, cacheId, result);
+    return result;
+  } catch (err) {
+    if (cached != null) return reviveDates(cached) as Awaited<ReturnType<typeof unwrap>>;
+    throw err;
+  }
 }
 
 export async function updateSemanticMemoryPinned(input: { id: string; pinned: boolean }) {
