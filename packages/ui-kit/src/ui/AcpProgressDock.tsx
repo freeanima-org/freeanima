@@ -1,3 +1,4 @@
+import { Badge } from "../components/ui/badge.tsx";
 import type { ConversationAcpDockSnapshot } from "./acp-dock-types.ts";
 
 type AcpProgressDockProps = {
@@ -18,21 +19,21 @@ export function AcpProgressDock({ dock }: AcpProgressDockProps) {
     <div
       className={`rounded-lg border px-3 py-2 text-sm shadow-sm ${
         decision
-          ? "border-warning bg-warning/10 text-warning-content"
-          : "border-primary/30 bg-base-200/80"
+          ? "border-yellow-500/50 bg-yellow-500/10 text-yellow-700 dark:text-yellow-300"
+          : "border-primary/30 bg-muted/80"
       }`}
       data-testid="acp-progress-dock"
     >
       <div className="flex flex-wrap items-center gap-2 mb-1">
         <span className="font-semibold">Cursor ACP</span>
         {dock.tasks.map((t) => (
-          <span key={t.task_id} className="badge badge-sm badge-outline font-mono">
+          <Badge key={t.task_id} variant="outline" className="font-mono text-xs">
             {t.agent_name} · {statusLabel(t.status)}
-          </span>
+          </Badge>
         ))}
       </div>
       {decision ? (
-        <p className="text-warning font-medium">
+        <p className="text-yellow-700 dark:text-yellow-300 font-medium">
           Cursor 等待决策，请查看会话消息并使用 acp_conversation_id 续聊。
         </p>
       ) : null}

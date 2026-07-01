@@ -51,7 +51,6 @@
     "@types/three": "^0.185.0",
     "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "catalog:",
-    "daisyui": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:"

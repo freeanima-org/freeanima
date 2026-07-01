@@ -1,3 +1,4 @@
+import { Button, Card, CardContent } from "@freeanima/ui-kit";
 import { useCompanionStore } from "@/stores/companion.ts";
 import { SettingsTabs } from "./settings/SettingsTabs.tsx";
 import { GeneralTab } from "./settings/GeneralTab.tsx";
@@ -15,20 +16,26 @@ export function SettingsPanel({ standalone = false, onClose }: Props) {
   const tab = useCompanionStore((s) => s.settingsTab);
 
   return (
-    <div
+    <Card
       className={
         standalone
-          ? "card bg-base-100 text-base-content h-full w-full max-w-none shrink-0 rounded-none shadow-none"
-          : "card bg-base-100 text-base-content w-[800px] max-w-[800px] shrink-0 shadow-xl h-[min(720px,90vh)]"
+          ? "h-full w-full max-w-none shrink-0 rounded-none shadow-none gap-0 py-0"
+          : "w-[800px] max-w-[800px] shrink-0 shadow-xl h-[min(720px,90vh)] gap-0 py-0"
       }
     >
-      <div className="card-body flex flex-col gap-0 p-0 min-h-0 h-full">
-        <header className="flex items-center justify-between gap-3 px-5 py-2 border-b border-base-300 shrink-0">
+      <CardContent className="flex flex-col gap-0 p-0 min-h-0 h-full">
+        <header className="flex items-center justify-between gap-3 px-5 py-2 border-b border shrink-0">
           <h2 className="text-base font-semibold leading-none">设置</h2>
           {onClose ? (
-            <button type="button" className="btn btn-ghost btn-xs" onClick={onClose}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={onClose}
+            >
               关闭
-            </button>
+            </Button>
           ) : null}
         </header>
 
@@ -45,7 +52,7 @@ export function SettingsPanel({ standalone = false, onClose }: Props) {
           {tab === "library" ? <MotionLibraryTab /> : null}
           {tab === "slots" ? <MotionSlotsTab /> : null}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

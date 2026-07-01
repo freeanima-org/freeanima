@@ -13,12 +13,12 @@ export function SettingsSectionPanel({ binding, platform }: Props) {
   const entry = section.platforms[platform];
 
   if (!entry) {
-    return <p className="text-sm text-base-content/60">此平台暂无设置项</p>;
+    return <p className="text-sm text-muted-foreground">此平台暂无设置项</p>;
   }
 
   if (entry.kind === "form") {
     if (!store) {
-      return <p className="text-sm text-error">缺少 settings store 注入</p>;
+      return <p className="text-sm text-destructive">缺少 settings store 注入</p>;
     }
     return (
       <FormRenderer
@@ -31,7 +31,7 @@ export function SettingsSectionPanel({ binding, platform }: Props) {
   }
 
   if (!store) {
-    return <p className="text-sm text-error">缺少 settings store 注入</p>;
+    return <p className="text-sm text-destructive">缺少 settings store 注入</p>;
   }
 
   return <LazyComponentPanel load={entry.load} platform={platform} store={store} deps={deps} />;

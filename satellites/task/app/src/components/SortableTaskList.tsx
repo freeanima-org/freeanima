@@ -1,5 +1,6 @@
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Button, Checkbox } from "@freeanima/ui-kit";
 import { useRef, type MouseEvent, type TouchEvent } from "react";
 
 import { formatDue, priorityDot } from "../lib/format-task.ts";
@@ -80,7 +81,7 @@ function SortableTaskRow({
     <li
       ref={setNodeRef}
       style={style}
-      className={`hover:bg-base-200 group flex min-h-11 items-center gap-1 rounded-lg px-1 py-1 ${
+      className={`hover:bg-muted group flex min-h-11 items-center gap-1 rounded-lg px-1 py-1 ${
         isDragging ? "opacity-50" : ""
       } ${selected ? "bg-primary/10" : ""}`}
       onContextMenu={onContextMenu}
@@ -93,16 +94,14 @@ function SortableTaskRow({
         <button
           type="button"
           title="拖拽排序或拖到左侧清单"
-          className="text-base-content/40 hover:text-base-content flex min-h-11 min-w-8 shrink-0 cursor-grab items-center justify-center select-none active:cursor-grabbing"
+          className="text-foreground/40 hover:text-foreground flex min-h-11 min-w-8 shrink-0 cursor-grab items-center justify-center select-none active:cursor-grabbing"
           {...attributes}
           {...listeners}
         >
           ⋮⋮
         </button>
       ) : null}
-      <input
-        type="checkbox"
-        className="checkbox checkbox-sm"
+      <Checkbox
         checked={selectionMode ? selected : false}
         onClick={(e) => {
           if (selectionMode) {
@@ -110,7 +109,7 @@ function SortableTaskRow({
             onSelectItem(e.shiftKey);
           }
         }}
-        onChange={selectionMode ? undefined : onToggleComplete}
+        onCheckedChange={selectionMode ? undefined : () => onToggleComplete()}
       />
       <button
         type="button"
@@ -122,7 +121,7 @@ function SortableTaskRow({
       >
         <span className="block truncate">{item.title}</span>
         {listName ? (
-          <span className="text-base-content/45 block truncate text-xs">{listName}</span>
+          <span className="text-foreground/45 block truncate text-xs">{listName}</span>
         ) : null}
       </button>
       {!selectionMode ? (
@@ -130,14 +129,16 @@ function SortableTaskRow({
           <EntityIdLabel id={item.id} />
           <span className={`text-xs ${priorityDot(item.priority)}`}>●</span>
           {item.due_at ? (
-            <span className="text-base-content/50 shrink-0 text-xs">{formatDue(item.due_at)}</span>
+            <span className="text-muted-foreground shrink-0 text-xs">{formatDue(item.due_at)}</span>
           ) : null}
         </>
       ) : null}
       {useActionSheet && !selectionMode ? (
-        <button
+        <Button
           type="button"
-          className="btn btn-ghost btn-xs btn-square shrink-0"
+          variant="ghost"
+          size="icon-sm"
+          className="shrink-0"
           aria-label="任务操作"
           onClick={(e) => {
             e.stopPropagation();
@@ -145,7 +146,7 @@ function SortableTaskRow({
           }}
         >
           ⋯
-        </button>
+        </Button>
       ) : null}
     </li>
   );

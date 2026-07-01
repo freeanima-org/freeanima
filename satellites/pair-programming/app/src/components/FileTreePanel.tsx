@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Button, Input, Spinner } from "@freeanima/ui-kit";
 import { m } from "@pair/lib/i18n.ts";
 import { usePairProgrammingStore } from "@pair/stores/pair-programming.ts";
 import { TreeNode, type TreeNodeData } from "./TreeNode.tsx";
@@ -101,12 +102,12 @@ export function FileTreePanel() {
 
   return (
     <div className="h-full flex flex-col min-h-0">
-      <div className="flex border-b border-base-300 shrink-0 text-xs">
+      <div className="flex border-b border shrink-0 text-xs">
         <button
           type="button"
           className={[
-            "flex-1 px-2 py-1.5 font-medium text-center hover:bg-base-300/30 transition-colors",
-            leftTab === "tree" ? "bg-base-200 border-b-2 border-primary" : "text-base-content/50",
+            "flex-1 px-2 py-1.5 font-medium text-center hover:bg-muted/30 transition-colors",
+            leftTab === "tree" ? "bg-muted border-b-2 border-primary" : "text-muted-foreground",
           ].join(" ")}
           onClick={() => setLeftTab("tree")}
         >
@@ -115,8 +116,8 @@ export function FileTreePanel() {
         <button
           type="button"
           className={[
-            "flex-1 px-2 py-1.5 font-medium text-center hover:bg-base-300/30 transition-colors",
-            leftTab === "search" ? "bg-base-200 border-b-2 border-primary" : "text-base-content/50",
+            "flex-1 px-2 py-1.5 font-medium text-center hover:bg-muted/30 transition-colors",
+            leftTab === "search" ? "bg-muted border-b-2 border-primary" : "text-muted-foreground",
           ].join(" ")}
           onClick={() => setLeftTab("search")}
         >
@@ -126,20 +127,20 @@ export function FileTreePanel() {
 
       {leftTab === "tree" ? (
         <>
-          <div className="p-2 border-b border-base-300 shrink-0">
-            <input
+          <div className="p-2 border-b border shrink-0">
+            <Input
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
               type="search"
-              className="input input-sm input-bordered w-full"
+              className="h-8"
               placeholder={m.pair_filetree_filter_placeholder()}
               autoComplete="off"
             />
           </div>
           <div className="flex-1 overflow-y-auto p-1 text-sm font-mono min-h-0">
             {loading ? (
-              <div className="p-4 text-center text-base-content/50">
-                <span className="loading loading-spinner loading-sm" />
+              <div className="p-4 text-center text-muted-foreground">
+                <Spinner className="size-4 mx-auto" />
               </div>
             ) : (
               filteredTree.map((node) => (
@@ -155,13 +156,13 @@ export function FileTreePanel() {
               ))
             )}
             {!loading && filteredTree.length === 0 ? (
-              <div className="p-4 text-xs text-base-content/50">{m.pair_filetree_no_files()}</div>
+              <div className="p-4 text-xs text-muted-foreground">{m.pair_filetree_no_files()}</div>
             ) : null}
           </div>
         </>
       ) : (
         <>
-          <div className="p-2 border-b border-base-300 shrink-0">
+          <div className="p-2 border-b border shrink-0">
             <form
               className="flex gap-1"
               onSubmit={(e) => {
@@ -169,21 +170,21 @@ export function FileTreePanel() {
                 void globalSearch(globalQuery);
               }}
             >
-              <input
+              <Input
                 value={globalQuery}
                 onChange={(e) => setGlobalQuery(e.target.value)}
                 type="search"
-                className="input input-sm input-bordered flex-1"
+                className="h-8 flex-1"
                 placeholder={m.pair_filetree_search_placeholder()}
               />
-              <button type="submit" className="btn btn-sm btn-ghost" disabled={!globalQuery.trim()}>
+              <Button type="submit" variant="ghost" size="sm" disabled={!globalQuery.trim()}>
                 {m.pair_filetree_search_btn()}
-              </button>
+              </Button>
             </form>
           </div>
           <div className="flex-1 overflow-y-auto min-h-0">
             {searchResults.length === 0 ? (
-              <div className="p-4 text-xs text-base-content/50 text-center">
+              <div className="p-4 text-xs text-muted-foreground text-center">
                 {m.pair_filetree_search_hint()}
               </div>
             ) : (
@@ -191,13 +192,13 @@ export function FileTreePanel() {
                 <button
                   key={i}
                   type="button"
-                  className="w-full text-left px-2 py-1.5 hover:bg-base-300/50 text-xs border-b border-base-300/30"
+                  className="w-full text-left px-2 py-1.5 hover:bg-muted/50 text-xs border-b border/30"
                   onClick={() => jumpToHit(hit)}
                 >
                   <div className="font-mono text-primary truncate">
                     {String(hit.file)}:{String(hit.line)}
                   </div>
-                  <div className="truncate text-base-content/70">{String(hit.content)}</div>
+                  <div className="truncate text-muted-foreground">{String(hit.content)}</div>
                 </button>
               ))
             )}

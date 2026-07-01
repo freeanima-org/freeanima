@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
+import { Button } from "@freeanima/ui-kit";
 import type { SettingsBinding, SettingsPlatform } from "@freeanima/shell-sdk/settings";
 import { listSettingsSectionsForPlatform } from "@freeanima/shell-sdk/settings";
 
@@ -30,7 +31,7 @@ function SectionContent({
       <header className="mb-4">
         <h2 className="text-lg font-semibold">{section.title}</h2>
         {section.description ? (
-          <p className="text-sm text-base-content/60 mt-1 whitespace-pre-line">
+          <p className="text-sm text-muted-foreground mt-1 whitespace-pre-line">
             {section.description}
           </p>
         ) : null}
@@ -60,36 +61,40 @@ export function SettingsHost({ bindings, platform }: Props) {
   const active = visible.find((b) => b.section.id === activeId) ?? visible[0];
 
   if (visible.length === 0) {
-    return <p className="p-6 text-sm text-base-content/60">暂无可用设置</p>;
+    return <p className="p-6 text-sm text-muted-foreground">暂无可用设置</p>;
   }
 
   const sectionTabs = (
-    <nav className="shrink-0 flex gap-1 overflow-x-auto px-3 py-2 border-b border-base-300 bg-base-200/40">
+    <nav className="shrink-0 flex gap-1 overflow-x-auto px-3 py-2 border-b border bg-muted/40">
       {visible.map((binding) => (
-        <button
+        <Button
           key={binding.section.id}
           type="button"
-          className={`btn btn-sm shrink-0 ${active?.section.id === binding.section.id ? "btn-primary" : "btn-ghost"}`}
+          size="sm"
+          variant={active?.section.id === binding.section.id ? "default" : "ghost"}
+          className="shrink-0"
           onClick={() => setActiveId(binding.section.id)}
         >
           {binding.section.title}
-        </button>
+        </Button>
       ))}
     </nav>
   );
 
   const sectionSidebar = (
-    <nav className="w-52 shrink-0 border-r border-base-300 bg-base-200/40 p-3 overflow-y-auto">
-      <ul className="menu menu-sm gap-0.5">
+    <nav className="w-52 shrink-0 border-r border bg-muted/40 p-3 overflow-y-auto">
+      <ul className="flex flex-col gap-0.5">
         {visible.map((binding) => (
           <li key={binding.section.id}>
-            <button
+            <Button
               type="button"
-              className={active?.section.id === binding.section.id ? "active" : ""}
+              size="sm"
+              variant={active?.section.id === binding.section.id ? "secondary" : "ghost"}
+              className="w-full justify-start"
               onClick={() => setActiveId(binding.section.id)}
             >
               {binding.section.title}
-            </button>
+            </Button>
           </li>
         ))}
       </ul>

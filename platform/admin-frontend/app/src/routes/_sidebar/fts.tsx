@@ -1,5 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Button,
+  Card,
+  CardContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { getFtsStatus, getRebuildFtsJobStatus, startRebuildFtsIndex } from "@admin/lib/api.ts";
 import { m } from "@admin/lib/i18n.ts";
 import { catchWithFallback, logCaughtError } from "@admin/lib/log-caught-error.ts";
@@ -72,25 +84,25 @@ function capabilityCell(enabled: boolean): string {
 function CoverageTable({ rows, cjkEnabled }: { rows: FtsTableCoverageRow[]; cjkEnabled: boolean }) {
   return (
     <div className="overflow-x-auto">
-      <table className="table table-sm font-mono text-xs">
-        <thead>
-          <tr>
-            <th>{m.admin_common_table()}</th>
-            <th>{m.admin_common_capability()}</th>
-            <th>FTS</th>
-            <th>{m.admin_common_segmented()}</th>
-            <th>trgm</th>
-            <th>{m.admin_common_embedding()}</th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table className="font-mono text-xs">
+        <TableHeader>
+          <TableRow>
+            <TableHead>{m.admin_common_table()}</TableHead>
+            <TableHead>{m.admin_common_capability()}</TableHead>
+            <TableHead>FTS</TableHead>
+            <TableHead>{m.admin_common_segmented()}</TableHead>
+            <TableHead>trgm</TableHead>
+            <TableHead>{m.admin_common_embedding()}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {rows.map((row) => (
-            <tr key={row.table}>
-              <td>
+            <TableRow key={row.table}>
+              <TableCell>
                 <div className="font-sans font-medium">{row.label}</div>
-                <div className="text-base-content/50">{row.table}</div>
-              </td>
-              <td className="text-base-content/60 whitespace-nowrap">
+                <div className="text-muted-foreground">{row.table}</div>
+              </TableCell>
+              <TableCell className="text-muted-foreground whitespace-nowrap">
                 {[
                   row.capabilities.fts && "FTS",
                   row.capabilities.segmented && m.admin_common_segmented(),
@@ -99,23 +111,25 @@ function CoverageTable({ rows, cjkEnabled }: { rows: FtsTableCoverageRow[]; cjkE
                 ]
                   .filter(Boolean)
                   .join(" · ")}
-              </td>
-              <td>{row.capabilities.fts ? formatRatio(row.fts, row.total) : "—"}</td>
-              <td>
+              </TableCell>
+              <TableCell>{row.capabilities.fts ? formatRatio(row.fts, row.total) : "—"}</TableCell>
+              <TableCell>
                 {row.capabilities.segmented
                   ? cjkEnabled
                     ? formatRatio(row.segmented, row.total)
                     : `${formatRatio(row.segmented, row.total)}*`
                   : "—"}
-              </td>
-              <td>{row.capabilities.trgm ? capabilityCell(true) : "—"}</td>
-              <td>{row.capabilities.embedding ? formatRatio(row.embedding, row.total) : "—"}</td>
-            </tr>
+              </TableCell>
+              <TableCell>{row.capabilities.trgm ? capabilityCell(true) : "—"}</TableCell>
+              <TableCell>
+                {row.capabilities.embedding ? formatRatio(row.embedding, row.total) : "—"}
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
       {!cjkEnabled ? (
-        <p className="text-xs text-base-content/50 mt-2 font-sans">* {m.admin_fts_cjk_note()}</p>
+        <p className="text-xs text-muted-foreground mt-2 font-sans">* {m.admin_fts_cjk_note()}</p>
       ) : null}
     </div>
   );
@@ -128,8 +142,8 @@ function RebuildProgress({ job }: { job: FtsRebuildJobStatus }) {
   const label = job.phase ? phaseLabel(job.phase) : m.admin_common_preparing();
 
   return (
-    <section className="card bg-base-200 mb-4">
-      <div className="card-body gap-3">
+    <Card className="bg-muted py-0 mb-4">
+      <CardContent className="gap-3 py-4 px-4">
         <h3 className="font-bold text-sm">{m.admin_fts_rebuild_progress()}</h3>
         {job.running ? (
           <>
@@ -137,20 +151,20 @@ function RebuildProgress({ job }: { job: FtsRebuildJobStatus }) {
               {label} · {formatRatio(job.current, job.total)}
               {job.only_missing ? m.admin_common_only_missing() : m.admin_common_full_rebuild()}
             </p>
-            <progress className="progress progress-primary w-full" value={pct} max={100} />
-            <p className="text-xs text-base-content/50 font-sans">
+            <progress className="w-full h-2 accent-primary" value={pct} max={100} />
+            <p className="text-xs text-muted-foreground font-sans">
               {m.admin_common_background_hint()}
             </p>
           </>
         ) : null}
-        {job.error ? <div className="alert alert-error text-sm">{job.error}</div> : null}
+        {job.error ? <StatusAlert variant="error">{job.error}</StatusAlert> : null}
         {job.result ? (
           <pre className="text-xs font-mono whitespace-pre-wrap">
             {JSON.stringify(job.result, null, 2)}
           </pre>
         ) : null}
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -232,72 +246,78 @@ function FtsPage() {
   return (
     <div>
       <h2 className="text-lg font-bold mb-4">{m.admin_fts_title()}</h2>
-      <p className="text-sm text-base-content/60 mb-4">{m.admin_fts_desc()}</p>
+      <p className="text-sm text-muted-foreground mb-4">{m.admin_fts_desc()}</p>
 
-      {error ? <div className="alert alert-error text-sm mb-4">{error}</div> : null}
+      {error ? (
+        <StatusAlert variant="error" className="mb-4">
+          {error}
+        </StatusAlert>
+      ) : null}
 
       {job ? <RebuildProgress job={job} /> : null}
 
-      <section className="card bg-base-200 mb-4">
-        <div className="card-body gap-3">
+      <Card className="bg-muted py-0 mb-4">
+        <CardContent className="gap-3 py-4 px-4">
           <h3 className="font-bold text-sm">{m.admin_fts_coverage()}</h3>
           {status?.coverage?.tables?.length ? (
             <CoverageTable rows={status.coverage.tables} cjkEnabled={status.enabled} />
           ) : (
-            <p className="text-sm text-base-content/50">{m.admin_fts_pg_unavailable()}</p>
+            <p className="text-sm text-muted-foreground">{m.admin_fts_pg_unavailable()}</p>
           )}
-        </div>
-      </section>
+        </CardContent>
+      </Card>
 
-      <section className="card bg-base-200 mb-4">
-        <div className="card-body gap-3">
+      <Card className="bg-muted py-0 mb-4">
+        <CardContent className="gap-3 py-4 px-4">
           <h3 className="font-bold text-sm">{m.admin_common_config()}</h3>
           {status ? (
             <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm font-mono">
-              <dt className="text-base-content/60">cjk.enabled</dt>
+              <dt className="text-muted-foreground">cjk.enabled</dt>
               <dd>{status.enabled ? "true" : "false"}</dd>
-              <dt className="text-base-content/60">dict_path</dt>
+              <dt className="text-muted-foreground">dict_path</dt>
               <dd className="break-all">{status.dict_path}</dd>
-              <dt className="text-base-content/60">dict_exists</dt>
+              <dt className="text-muted-foreground">dict_exists</dt>
               <dd>{status.dict_exists ? "true" : "false"}</dd>
-              <dt className="text-base-content/60">embedding.enabled</dt>
+              <dt className="text-muted-foreground">embedding.enabled</dt>
               <dd>{status.embedding.enabled ? "true" : "false"}</dd>
-              <dt className="text-base-content/60">embedding.model</dt>
+              <dt className="text-muted-foreground">embedding.model</dt>
               <dd>{status.embedding.model ?? "—"}</dd>
-              <dt className="text-base-content/60">embedding.base_url</dt>
+              <dt className="text-muted-foreground">embedding.base_url</dt>
               <dd className="break-all">{status.embedding.base_url ?? "—"}</dd>
             </dl>
           ) : (
-            <p className="text-sm text-base-content/50">{m.admin_common_load_failed_short()}</p>
+            <p className="text-sm text-muted-foreground">{m.admin_common_load_failed_short()}</p>
           )}
           <div className="flex flex-wrap gap-2">
-            <button
+            <Button
               type="button"
-              className="btn btn-primary btn-sm"
+              size="sm"
               disabled={loading || job?.running === true}
               onClick={() => void onRebuild(true)}
             >
               {job?.running ? m.admin_fts_rebuilding() : m.admin_fts_resume()}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="btn btn-outline btn-sm"
+              variant="outline"
+              size="sm"
               disabled={loading || job?.running === true}
               onClick={() => void onRebuild(false)}
             >
               {m.admin_fts_full_rebuild()}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="btn btn-ghost btn-sm"
+              variant="ghost"
+              size="sm"
               disabled={loading}
               onClick={() => void reload()}
             >
               {m.admin_fts_refresh_stats()}
-            </button>
+            </Button>
           </div>
-        </div>
-      </section>
+        </CardContent>
+      </Card>
     </div>
   );
 }

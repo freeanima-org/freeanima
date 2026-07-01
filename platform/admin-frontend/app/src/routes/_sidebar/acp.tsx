@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { getAcpStatus, startAllAcp, startAcp, stopAllAcp, stopAcp } from "@admin/lib/api.ts";
 import { m } from "@admin/lib/i18n.ts";
 import { acpStatusLabel } from "@admin/lib/admin-status.ts";
@@ -38,12 +40,13 @@ type AcpStatus = {
   agents: AcpAgent[];
 };
 
-function statusBadgeClass(s: string) {
-  if (s === "connected") return "badge-success";
-  if (s === "starting") return "badge-warning";
-  if (s === "error") return "badge-error";
-  if (s === "disabled") return "badge-ghost opacity-60";
-  return "badge-ghost";
+type BadgeVariant = "success" | "warning" | "destructive" | "ghost";
+
+function statusBadgeVariant(s: string): BadgeVariant {
+  if (s === "connected") return "success";
+  if (s === "starting") return "warning";
+  if (s === "error") return "destructive";
+  return "ghost";
 }
 
 function canStartAcpAgent(agent: AcpAgent): boolean {
@@ -120,9 +123,9 @@ function AcpPage() {
     return (
       <div>
         <h2 className="text-lg font-bold">{m.admin_nav_acp()}</h2>
-        <div className="alert alert-error text-sm mt-4">
+        <StatusAlert variant="error" className="mt-4">
           {error || m.admin_common_load_failed_short()}
-        </div>
+        </StatusAlert>
       </div>
     );
   }
@@ -132,26 +135,27 @@ function AcpPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
           <h2 className="text-lg font-bold">{m.admin_nav_acp()}</h2>
-          <p className="text-sm text-base-content/60 mt-1">{m.admin_acp_desc()}</p>
+          <p className="text-sm text-muted-foreground mt-1">{m.admin_acp_desc()}</p>
         </div>
         {status.agents.length > 0 ? (
           <div className="flex gap-2">
-            <button
+            <Button
               type="button"
-              className="btn btn-sm btn-primary"
+              size="sm"
               disabled={bulkActing}
               onClick={() => void controlAll("start-all")}
             >
               {m.admin_acp_connect_all()}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="btn btn-sm btn-outline"
+              variant="outline"
+              size="sm"
               disabled={bulkActing}
               onClick={() => void controlAll("stop-all")}
             >
               {m.admin_acp_disconnect_all()}
-            </button>
+            </Button>
           </div>
         ) : null}
       </div>
@@ -164,50 +168,58 @@ function AcpPage() {
             [m.admin_acp_active_sessions(), status.session_count],
             [m.admin_acp_registered_tools(), status.tool_count],
           ].map(([label, value]) => (
-            <div key={String(label)} className="card bg-base-200">
-              <div className="card-body py-4">
-                <h3 className="text-sm text-base-content/60">{label}</h3>
+            <Card key={String(label)} className="bg-muted py-0">
+              <CardContent className="py-4 px-4">
+                <h3 className="text-sm text-muted-foreground">{label}</h3>
                 <p className="text-2xl font-mono">{value}</p>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
 
         {status.agents.map((agent) => (
-          <div key={agent.name} className="card bg-base-200">
-            <div className="card-body">
+          <Card key={agent.name} className="bg-muted py-0">
+            <CardContent className="py-4 px-4">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="font-mono font-bold">{agent.name}</h3>
-                  <span className={`badge badge-sm ${statusBadgeClass(agent.status)}`}>
+                  <Badge
+                    variant={statusBadgeVariant(agent.status)}
+                    className={`text-xs ${agent.status === "disabled" ? "opacity-60" : ""}`}
+                  >
                     {acpStatusLabel(agent.status)}
-                  </span>
+                  </Badge>
                 </div>
                 <div className="flex gap-2">
                   {canStartAcpAgent(agent) ? (
-                    <button
+                    <Button
                       type="button"
-                      className="btn btn-xs btn-primary"
+                      size="sm"
+                      className="h-7 text-xs"
                       disabled={!!acting[agent.name] || bulkActing}
                       onClick={() => void controlAgent(agent.name, "start")}
                     >
                       {m.admin_acp_connect()}
-                    </button>
+                    </Button>
                   ) : null}
                   {canStopAcpAgent(agent) ? (
-                    <button
+                    <Button
                       type="button"
-                      className="btn btn-xs btn-outline"
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs"
                       disabled={!!acting[agent.name] || bulkActing}
                       onClick={() => void controlAgent(agent.name, "stop")}
                     >
                       {m.admin_acp_disconnect()}
-                    </button>
+                    </Button>
                   ) : null}
                 </div>
               </div>
               {agent.error ? (
-                <div className="alert alert-error text-xs py-2 mb-3">{agent.error}</div>
+                <StatusAlert variant="error" className="text-xs py-2 mb-3">
+                  {agent.error}
+                </StatusAlert>
               ) : null}
               <details open>
                 <summary className="text-sm font-medium cursor-pointer mb-2">
@@ -217,20 +229,24 @@ function AcpPage() {
                   {JSON.stringify(agent.config, null, 2)}
                 </pre>
               </details>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
-      <div className="alert alert-warning text-xs mt-6">
+      <StatusAlert variant="warning" className="text-xs mt-6">
         <p className="font-medium">{m.admin_acp_notes_title()}</p>
-        <ul className="list-disc list-inside mt-1 space-y-0.5 text-base-content/70">
+        <ul className="list-disc list-inside mt-1 space-y-0.5 text-muted-foreground">
           <li>{m.admin_acp_note_auto_connect()}</li>
           <li>{m.admin_acp_note_handshake()}</li>
         </ul>
-      </div>
+      </StatusAlert>
 
-      {error ? <div className="alert alert-error text-sm mt-4">{error}</div> : null}
+      {error ? (
+        <StatusAlert variant="error" className="mt-4">
+          {error}
+        </StatusAlert>
+      ) : null}
     </div>
   );
 }

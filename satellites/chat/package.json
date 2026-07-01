@@ -23,7 +23,6 @@
   "devDependencies": {
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "daisyui": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
   }

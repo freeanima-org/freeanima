@@ -13,7 +13,7 @@ export function EmptyState({ message, icon, action, className }: EmptyStateProps
   return (
     <div
       className={cn(
-        "text-sm text-base-content/60 py-4 text-center flex flex-col items-center gap-2",
+        "text-sm text-muted-foreground py-4 text-center flex flex-col items-center gap-2",
         className,
       )}
     >

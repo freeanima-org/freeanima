@@ -24,8 +24,8 @@ function AppShell() {
       ].join(" ")}
     >
       {embedded ? null : (
-        <header className="app-header shrink-0 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2 sm:px-4 sm:py-0 sm:h-10 sm:flex-nowrap border-b border-base-300 bg-base-200">
-          <span className="text-sm font-medium text-base-content/70 shrink-0">FreeAnima</span>
+        <header className="app-header shrink-0 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2 sm:px-4 sm:py-0 sm:h-10 sm:flex-nowrap border-b border bg-muted">
+          <span className="text-sm font-medium text-muted-foreground shrink-0">FreeAnima</span>
         </header>
       )}
       <main className="flex-1 min-h-0 min-w-0 overflow-hidden">

@@ -2,7 +2,26 @@ import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import type { LimbicMemoryRow } from "@freeanima/admin-contract/api";
+import {
+  Button,
+  Card,
+  CardContent,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Spinner,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@freeanima/ui-kit";
 import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { listLimbicMemories } from "@admin/lib/api.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
@@ -11,6 +30,7 @@ import { logCaughtError } from "@admin/lib/log-caught-error.ts";
 import { useAdminOffsetPagination } from "@admin/lib/use-admin-offset-pagination.ts";
 
 const PAGE_SIZE = 20;
+const ALL_VALUE = "__all__";
 
 const LIMBIC_KINDS = ["conversation_mood", "turning_point", "spike"] as const;
 
@@ -74,97 +94,111 @@ function LimbicMemoryPage() {
   return (
     <div>
       <h2 className="text-lg font-bold mb-1">{m.admin_nav_limbic()}</h2>
-      <p className="text-sm text-base-content/60 mb-4">{m.admin_limbic_desc()}</p>
+      <p className="text-sm text-muted-foreground mb-4">{m.admin_limbic_desc()}</p>
 
       <form
-        className="card bg-base-200 mb-4"
+        className="mb-4"
         onSubmit={(e) => {
           e.preventDefault();
           runSearch();
         }}
       >
-        <div className="card-body gap-3">
-          <FormFieldset bordered={false} className="gap-3">
-            <FormField label={m.admin_limbic_search()} className="text-xs">
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                type="text"
-                className="input input-bordered input-sm"
-                placeholder={m.admin_common_keyword_placeholder()}
-              />
-            </FormField>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <FormFieldLabel className="text-xs py-0">conversation_id</FormFieldLabel>
-                <input
-                  value={conversationId}
-                  onChange={(e) => setSessionId(e.target.value)}
+        <Card className="bg-muted py-0">
+          <CardContent className="gap-3 py-4 px-4">
+            <FormFieldset bordered={false} className="gap-3">
+              <FormField label={m.admin_limbic_search()} className="text-xs">
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
                   type="text"
-                  className="input input-bordered input-sm font-mono w-full"
-                  placeholder={m.admin_common_optional()}
+                  className="h-8"
+                  placeholder={m.admin_common_keyword_placeholder()}
                 />
+              </FormField>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <FormFieldLabel className="text-xs py-0">conversation_id</FormFieldLabel>
+                  <Input
+                    value={conversationId}
+                    onChange={(e) => setSessionId(e.target.value)}
+                    type="text"
+                    className="h-8 font-mono w-full"
+                    placeholder={m.admin_common_optional()}
+                  />
+                </div>
+                <div>
+                  <FormFieldLabel className="text-xs py-0">kind</FormFieldLabel>
+                  <Select
+                    value={kindFilter || ALL_VALUE}
+                    onValueChange={(v) => setKindFilter(v === ALL_VALUE ? "" : v)}
+                  >
+                    <SelectTrigger size="sm" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={ALL_VALUE}>{m.admin_common_all()}</SelectItem>
+                      {LIMBIC_KINDS.map((k) => (
+                        <SelectItem key={k} value={k}>
+                          {k}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div>
-                <FormFieldLabel className="text-xs py-0">kind</FormFieldLabel>
-                <select
-                  className="select select-bordered select-sm w-full"
-                  value={kindFilter}
-                  onChange={(e) => setKindFilter(e.target.value)}
-                >
-                  <option value="">{m.admin_common_all()}</option>
-                  {LIMBIC_KINDS.map((k) => (
-                    <option key={k} value={k}>
-                      {k}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </FormFieldset>
-          <button type="submit" className="btn btn-sm btn-primary" disabled={loading}>
-            {loading ? <span className="loading loading-spinner loading-xs" /> : null}
-            {m.admin_common_query()}
-          </button>
-        </div>
+            </FormFieldset>
+            <Button type="submit" size="sm" disabled={loading}>
+              {loading ? <Spinner /> : null}
+              {m.admin_common_query()}
+            </Button>
+          </CardContent>
+        </Card>
       </form>
 
-      {error ? <div className="alert alert-error text-sm mb-4">{error}</div> : null}
+      {error ? (
+        <StatusAlert variant="error" className="mb-4">
+          {error}
+        </StatusAlert>
+      ) : null}
 
       {loaded ? (
         <div className="space-y-3">
           {loading && items.length === 0 ? (
             <div className="flex justify-center py-6">
-              <span className="loading loading-dots loading-sm" />
+              <Spinner />
             </div>
           ) : items.length === 0 ? (
-            <div className="alert alert-info text-sm">{m.admin_common_no_results()}</div>
+            <StatusAlert variant="info">{m.admin_common_no_results()}</StatusAlert>
           ) : (
             <div className="overflow-x-auto">
-              <table className="table table-sm">
-                <thead>
-                  <tr>
-                    <th>{m.admin_common_time()}</th>
-                    <th>kind</th>
-                    <th>session</th>
-                    <th>{m.admin_limbic_intensity()}</th>
-                    <th>{m.admin_limbic_content()}</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{m.admin_common_time()}</TableHead>
+                    <TableHead>kind</TableHead>
+                    <TableHead>session</TableHead>
+                    <TableHead>{m.admin_limbic_intensity()}</TableHead>
+                    <TableHead>{m.admin_limbic_content()}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {items.map((row) => (
-                    <tr key={row.id}>
-                      <td className="text-xs whitespace-nowrap">
+                    <TableRow key={row.id}>
+                      <TableCell className="text-xs whitespace-nowrap">
                         {formatDisplayDateTime(row.created_at)}
-                      </td>
-                      <td className="text-xs">{row.kind}</td>
-                      <td className="font-mono text-xs max-w-32 truncate">{row.conversation_id}</td>
-                      <td className="text-xs">{row.intensity.toFixed(2)}</td>
-                      <td className="text-sm max-w-md whitespace-pre-wrap">{row.content}</td>
-                    </tr>
+                      </TableCell>
+                      <TableCell className="text-xs">{row.kind}</TableCell>
+                      <TableCell className="font-mono text-xs max-w-32 truncate">
+                        {row.conversation_id}
+                      </TableCell>
+                      <TableCell className="text-xs">{row.intensity.toFixed(2)}</TableCell>
+                      <TableCell className="text-sm max-w-md whitespace-pre-wrap">
+                        {row.content}
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           )}
           <MemoryListPagination
@@ -176,7 +210,7 @@ function LimbicMemoryPage() {
           />
         </div>
       ) : (
-        <p className="text-sm text-base-content/50">{m.admin_common_click_query_hint()}</p>
+        <p className="text-sm text-muted-foreground">{m.admin_common_click_query_hint()}</p>
       )}
     </div>
   );

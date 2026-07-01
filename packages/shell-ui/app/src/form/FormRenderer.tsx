@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Alert, Button, Input, Textarea } from "@freeanima/ui-kit";
+import { cn } from "@freeanima/ui-kit/lib/utils";
 import type {
   FormFieldDescriptor,
   SettingsFormFields,
@@ -127,7 +129,7 @@ export function FormRenderer({
   }, [fields.zodSchema, store, values]);
 
   if (loading) {
-    return <p className="text-sm text-base-content/60">加载中…</p>;
+    return <p className="text-sm text-muted-foreground">加载中…</p>;
   }
 
   const fieldWidthClass = "w-full lg:max-w-xl";
@@ -144,14 +146,22 @@ export function FormRenderer({
   return (
     <div className={`space-y-4 ${platform === "mobile" ? "pb-8" : ""}`}>
       {sectionId === "hub" && error?.includes("连接") ? (
-        <div className="alert alert-info text-sm">
+        <Alert variant="info" className="text-sm">
           请确认 Hub 已启动（<code className="text-xs">anima service start --host 0.0.0.0</code>
           ）、客户端 Hub 设置中的 Service API Token（<code className="text-xs">fa_at_...</code>
           ）有效；详见项目文档 remote-access。
-        </div>
+        </Alert>
       ) : null}
-      {error ? <div className="alert alert-error text-sm">{error}</div> : null}
-      {status ? <div className="alert alert-success text-sm">{status}</div> : null}
+      {error ? (
+        <Alert variant="error" className="text-sm">
+          {error}
+        </Alert>
+      ) : null}
+      {status ? (
+        <Alert variant="success" className="text-sm">
+          {status}
+        </Alert>
+      ) : null}
       {Object.entries(grouped).map(([group, items]) =>
         group !== "" ? (
           <FormFieldset key={group} legend={group} className="gap-3">
@@ -179,33 +189,29 @@ export function FormRenderer({
       )}
       <div className="flex flex-wrap gap-2 pt-2">
         {canTest ? (
-          <button
+          <Button
             type="button"
-            className="btn btn-outline btn-sm"
+            size="sm"
+            variant="outline"
             disabled={testing || saving}
             onClick={() => void testConnection()}
           >
             {testLabel}
-          </button>
+          </Button>
         ) : null}
         {platform === "mobile" || enterAfterSave ? (
-          <button
+          <Button
             type="button"
-            className="btn btn-primary btn-sm"
+            size="sm"
             disabled={saving || testing}
             onClick={() => void saveAndEnter()}
           >
             {saving ? "保存中…" : "保存并进入"}
-          </button>
+          </Button>
         ) : (
-          <button
-            type="button"
-            className="btn btn-primary btn-sm"
-            disabled={saving || testing}
-            onClick={() => void save()}
-          >
+          <Button type="button" size="sm" disabled={saving || testing} onClick={() => void save()}>
             {saving ? "保存中…" : "保存"}
-          </button>
+          </Button>
         )}
       </div>
     </div>
@@ -222,6 +228,9 @@ function groupFields(items: FormFieldDescriptor[]): Record<string, FormFieldDesc
   return out;
 }
 
+const selectClassName =
+  "border-input flex h-8 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30";
+
 function GroupedFieldInput({
   item,
   value,
@@ -233,8 +242,6 @@ function GroupedFieldInput({
   widthClass: string;
   onChange: (value: unknown) => void;
 }) {
-  const inputClass = "input input-bordered w-full lg:input-sm lg:max-w-xl";
-
   if (item.type === "boolean") {
     return (
       <FormToggle
@@ -252,7 +259,7 @@ function GroupedFieldInput({
       <div className={widthClass}>
         <FormFieldLabel>{item.label}</FormFieldLabel>
         <select
-          className={inputClass}
+          className={cn(selectClassName, widthClass)}
           value={String(value ?? "")}
           onChange={(e) => onChange(e.target.value)}
         >
@@ -270,8 +277,8 @@ function GroupedFieldInput({
     return (
       <div className={widthClass}>
         <FormFieldLabel>{item.label}</FormFieldLabel>
-        <textarea
-          className="textarea textarea-bordered w-full"
+        <Textarea
+          className="w-full"
           rows={4}
           placeholder={item.placeholder}
           value={String(value ?? "")}
@@ -284,14 +291,16 @@ function GroupedFieldInput({
   return (
     <div className={widthClass}>
       <FormFieldLabel>{item.label}</FormFieldLabel>
-      <input
+      <Input
         type={item.type === "password" ? "password" : item.type === "number" ? "number" : "text"}
-        className={inputClass}
+        className={widthClass}
         placeholder={item.placeholder}
         value={String(value ?? "")}
         onChange={(e) => onChange(item.type === "number" ? Number(e.target.value) : e.target.value)}
       />
-      {item.description ? <p className="label text-base-content/50">{item.description}</p> : null}
+      {item.description ? (
+        <p className="text-sm text-muted-foreground">{item.description}</p>
+      ) : null}
     </div>
   );
 }
@@ -307,8 +316,6 @@ function FieldInput({
   widthClass: string;
   onChange: (value: unknown) => void;
 }) {
-  const inputClass = "input input-bordered w-full lg:input-sm lg:max-w-xl";
-
   if (item.type === "boolean") {
     return (
       <FormToggle
@@ -325,7 +332,7 @@ function FieldInput({
     return (
       <FormField className={widthClass} label={item.label}>
         <select
-          className={inputClass}
+          className={cn(selectClassName, widthClass)}
           value={String(value ?? "")}
           onChange={(e) => onChange(e.target.value)}
         >
@@ -342,8 +349,8 @@ function FieldInput({
   if (item.type === "textarea") {
     return (
       <FormField className={widthClass} label={item.label}>
-        <textarea
-          className="textarea textarea-bordered w-full"
+        <Textarea
+          className="w-full"
           rows={4}
           placeholder={item.placeholder}
           value={String(value ?? "")}
@@ -355,9 +362,9 @@ function FieldInput({
 
   return (
     <FormField className={widthClass} label={item.label} hint={item.description}>
-      <input
+      <Input
         type={item.type === "password" ? "password" : item.type === "number" ? "number" : "text"}
-        className={inputClass}
+        className={widthClass}
         placeholder={item.placeholder}
         value={String(value ?? "")}
         onChange={(e) => onChange(item.type === "number" ? Number(e.target.value) : e.target.value)}

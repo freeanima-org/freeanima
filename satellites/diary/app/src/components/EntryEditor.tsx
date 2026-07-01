@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Button, Input, Label, Textarea } from "@freeanima/ui-kit";
 
 import type { DiaryEntryRow } from "../lib/format-diary.ts";
 import {
@@ -66,59 +67,55 @@ export function EntryEditor({
         });
       }}
     >
-      <label className="form-control w-full shrink-0">
-        <span className="label-text text-xs">日期</span>
-        <input
+      <div className="flex w-full shrink-0 flex-col gap-1.5">
+        <Label className="text-xs">日期</Label>
+        <Input
           type="date"
-          className="input input-bordered input-sm w-full"
+          className="h-8 w-full"
           value={entryDateLocal}
           onChange={(e) => setEntryDateLocal(e.target.value)}
           required
         />
-      </label>
+      </div>
 
-      <label className="form-control flex min-h-0 flex-1 flex-col">
-        <span className="label-text text-xs shrink-0">正文</span>
-        <textarea
-          className="textarea textarea-bordered min-h-0 w-full flex-1 resize-none font-mono text-sm leading-relaxed"
+      <div className="flex min-h-0 flex-1 flex-col gap-1.5">
+        <Label className="shrink-0 text-xs">正文</Label>
+        <Textarea
+          className="min-h-0 w-full flex-1 resize-none font-mono text-sm leading-relaxed"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="写点什么…"
         />
-      </label>
+      </div>
 
-      <label className="form-control w-full shrink-0">
-        <span className="label-text text-xs">标签（逗号分隔，可选）</span>
-        <input
-          className="input input-bordered input-sm w-full"
+      <div className="flex w-full shrink-0 flex-col gap-1.5">
+        <Label className="text-xs">标签（逗号分隔，可选）</Label>
+        <Input
+          className="h-8 w-full"
           value={tagsText}
           onChange={(e) => setTagsText(e.target.value)}
         />
-      </label>
+      </div>
 
       <div className="flex shrink-0 flex-wrap gap-2 pt-1">
-        <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+        <Button type="submit" size="sm" disabled={saving}>
           {mode === "create" ? "新建" : "保存"}
-        </button>
+        </Button>
         {mode === "edit" && onDelete ? (
-          <button
+          <Button
             type="button"
-            className="btn btn-error btn-sm btn-outline"
+            variant="destructive"
+            size="sm"
             disabled={saving}
             onClick={onDelete}
           >
             删除
-          </button>
+          </Button>
         ) : null}
         {onCancel ? (
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            disabled={saving}
-            onClick={onCancel}
-          >
+          <Button type="button" variant="ghost" size="sm" disabled={saving} onClick={onCancel}>
             取消
-          </button>
+          </Button>
         ) : null}
       </div>
     </form>

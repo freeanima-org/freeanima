@@ -1,7 +1,23 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute } from "@tanstack/react-router";
 import { Fragment, useCallback, useState } from "react";
+import {
+  Badge,
+  Button,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@freeanima/ui-kit";
 import { FormField } from "@freeanima/ui-kit/form";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { listAutoLlmRuns } from "@admin/lib/api.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
@@ -21,6 +37,8 @@ const RUN_KIND_OPTIONS = [
   "subagent",
 ] as const;
 
+const ALL_VALUE = "__all__";
+
 type AutoLlmRunRow = {
   id: string;
   run_name: string;
@@ -39,10 +57,6 @@ function formatDurationMs(ms: number): string {
   if (ms < 1000) return `${ms} ms`;
   const sec = (ms / 1000).toFixed(1);
   return `${sec} s`;
-}
-
-function statusBadgeClass(status: string): string {
-  return status === "ok" ? "badge-success" : "badge-error";
 }
 
 export const Route = createFileRoute("/_sidebar/auto-llm-runs")({
@@ -102,96 +116,113 @@ function AutoLlmRunsPage() {
   return (
     <div>
       <h2 className="text-lg font-bold mb-1">{m.admin_nav_auto_llm_runs()}</h2>
-      <p className="text-sm text-base-content/60 mb-4">{m.admin_auto_llm_runs_desc()}</p>
+      <p className="text-sm text-muted-foreground mb-4">{m.admin_auto_llm_runs_desc()}</p>
 
       <div className="flex flex-wrap gap-2 mb-4 items-end">
         <FormField label={m.admin_auto_llm_runs_run_kind()} className="w-full max-w-xs text-xs">
-          <select
-            className="select select-bordered select-sm w-full"
-            value={runKind}
-            onChange={(e) => setRunKind(e.target.value)}
+          <Select
+            value={runKind || ALL_VALUE}
+            onValueChange={(v) => setRunKind(v === ALL_VALUE ? "" : v)}
           >
-            <option value="">{m.admin_common_all()}</option>
-            {RUN_KIND_OPTIONS.filter(Boolean).map((kind) => (
-              <option key={kind} value={kind}>
-                {kind}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger size="sm" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_VALUE}>{m.admin_common_all()}</SelectItem>
+              {RUN_KIND_OPTIONS.filter(Boolean).map((kind) => (
+                <SelectItem key={kind} value={kind}>
+                  {kind}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </FormField>
         <FormField label={m.admin_common_status()} className="w-full max-w-xs text-xs">
-          <select
-            className="select select-bordered select-sm w-full"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+          <Select
+            value={statusFilter || ALL_VALUE}
+            onValueChange={(v) => setStatusFilter(v === ALL_VALUE ? "" : v)}
           >
-            <option value="">{m.admin_common_all()}</option>
-            <option value="ok">{m.admin_common_success()}</option>
-            <option value="error">{m.admin_common_failed()}</option>
-          </select>
+            <SelectTrigger size="sm" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_VALUE}>{m.admin_common_all()}</SelectItem>
+              <SelectItem value="ok">{m.admin_common_success()}</SelectItem>
+              <SelectItem value="error">{m.admin_common_failed()}</SelectItem>
+            </SelectContent>
+          </Select>
         </FormField>
-        <button
-          type="button"
-          className="btn btn-primary btn-sm"
-          onClick={runSearch}
-          disabled={loading}
-        >
+        <Button type="button" size="sm" onClick={runSearch} disabled={loading}>
           {loading ? m.admin_common_loading() : m.admin_common_refresh()}
-        </button>
+        </Button>
       </div>
 
-      {error ? <div className="alert alert-error text-sm mb-4">{error}</div> : null}
+      {error ? (
+        <StatusAlert variant="error" className="mb-4">
+          {error}
+        </StatusAlert>
+      ) : null}
 
       {loaded && items.length === 0 && !loading ? (
-        <p className="text-sm text-base-content/60">{m.admin_auto_llm_runs_empty()}</p>
+        <p className="text-sm text-muted-foreground">{m.admin_auto_llm_runs_empty()}</p>
       ) : null}
 
       {items.length > 0 ? (
         <div className="overflow-x-auto">
-          <table className="table table-sm">
-            <thead>
-              <tr>
-                <th>{m.admin_common_time()}</th>
-                <th>{m.admin_auto_llm_runs_run_name()}</th>
-                <th>{m.admin_auto_llm_runs_run_kind()}</th>
-                <th>{m.admin_common_status()}</th>
-                <th>{m.admin_auto_llm_runs_duration()}</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{m.admin_common_time()}</TableHead>
+                <TableHead>{m.admin_auto_llm_runs_run_name()}</TableHead>
+                <TableHead>{m.admin_auto_llm_runs_run_kind()}</TableHead>
+                <TableHead>{m.admin_common_status()}</TableHead>
+                <TableHead>{m.admin_auto_llm_runs_duration()}</TableHead>
+                <TableHead />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {items.map((row) => (
                 <Fragment key={row.id}>
-                  <tr className={row.status === "ok" ? "" : "bg-error/10"}>
-                    <td className="whitespace-nowrap">{formatDisplayDateTime(row.finished_at)}</td>
-                    <td className="max-w-[12rem] truncate" title={row.run_name}>
+                  <TableRow className={row.status === "ok" ? "" : "bg-destructive/10"}>
+                    <TableCell className="whitespace-nowrap">
+                      {formatDisplayDateTime(row.finished_at)}
+                    </TableCell>
+                    <TableCell className="max-w-[12rem] truncate" title={row.run_name}>
                       {row.run_name}
-                    </td>
-                    <td>
-                      <span className="badge badge-ghost badge-sm font-mono">{row.run_kind}</span>
-                    </td>
-                    <td>
-                      <span className={`badge badge-sm ${statusBadgeClass(row.status)}`}>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="ghost" className="text-xs font-mono">
+                        {row.run_kind}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={row.status === "ok" ? "success" : "destructive"}
+                        className="text-xs"
+                      >
                         {row.status}
-                      </span>
-                    </td>
-                    <td className="font-mono text-xs">{formatDurationMs(row.duration_ms)}</td>
-                    <td>
-                      <button
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {formatDurationMs(row.duration_ms)}
+                    </TableCell>
+                    <TableCell>
+                      <Button
                         type="button"
-                        className="btn btn-xs"
+                        size="sm"
+                        className="h-7 text-xs"
                         onClick={() => setExpandedId(expandedId === row.id ? null : row.id)}
                       >
                         {expandedId === row.id
                           ? m.admin_common_collapse()
                           : m.admin_common_details()}
-                      </button>
-                    </td>
-                  </tr>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                   {expandedId === row.id ? (
-                    <tr>
-                      <td colSpan={6} className="bg-base-200">
-                        <p className="text-xs font-mono text-base-content/50 mb-2 break-all">
+                    <TableRow>
+                      <TableCell colSpan={6} className="bg-muted">
+                        <p className="text-xs font-mono text-muted-foreground mb-2 break-all">
                           {row.id}
                         </p>
                         {row.input_summary ? (
@@ -205,7 +236,7 @@ function AutoLlmRunsPage() {
                           </div>
                         ) : null}
                         {row.status === "error" && row.error ? (
-                          <pre className="text-xs text-error whitespace-pre-wrap break-all mb-2">
+                          <pre className="text-xs text-destructive whitespace-pre-wrap break-all mb-2">
                             {row.error}
                           </pre>
                         ) : null}
@@ -229,13 +260,13 @@ function AutoLlmRunsPage() {
                             </pre>
                           </div>
                         ) : null}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ) : null}
                 </Fragment>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       ) : null}
 

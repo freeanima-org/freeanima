@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { Alert, Button } from "@freeanima/ui-kit";
 import { initAdminLocale } from "@freeanima/admin-frontend/i18n";
 import type {
   SettingsComponentLoader,
@@ -33,20 +34,18 @@ export function LazyComponentPanel({ load, platform, store, deps }: Props) {
   if (error) {
     return (
       <div className="space-y-2">
-        <div className="alert alert-error text-sm">{error}</div>
-        <button
-          type="button"
-          className="btn btn-sm btn-outline"
-          onClick={() => setRetryKey((k) => k + 1)}
-        >
+        <Alert variant="error" className="text-sm">
+          {error}
+        </Alert>
+        <Button type="button" size="sm" variant="outline" onClick={() => setRetryKey((k) => k + 1)}>
           重试
-        </button>
+        </Button>
       </div>
     );
   }
 
   return (
-    <Suspense fallback={<p className="text-sm text-base-content/60">加载组件…</p>}>
+    <Suspense fallback={<p className="text-sm text-muted-foreground">加载组件…</p>}>
       <LazyPanel key={retryKey} platform={platform} store={store} deps={deps} />
     </Suspense>
   );

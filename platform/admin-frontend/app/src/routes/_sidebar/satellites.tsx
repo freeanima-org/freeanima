@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { getSatellitesStatus } from "@admin/lib/api.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
 import { m } from "@admin/lib/i18n.ts";
@@ -54,9 +56,9 @@ function SatellitesPage() {
     return (
       <div>
         <h2 className="text-lg font-bold">{m.admin_nav_satellites()}</h2>
-        <div className="alert alert-error text-sm mt-4">
+        <StatusAlert variant="error" className="mt-4">
           {error || m.admin_common_load_failed_short()}
-        </div>
+        </StatusAlert>
       </div>
     );
   }
@@ -66,19 +68,24 @@ function SatellitesPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
           <h2 className="text-lg font-bold">{m.admin_nav_satellites()}</h2>
-          <p className="text-sm text-base-content/60 mt-1">{m.admin_satellites_desc()}</p>
+          <p className="text-sm text-muted-foreground mt-1">{m.admin_satellites_desc()}</p>
         </div>
-        <button
+        <Button
           type="button"
-          className="btn btn-sm btn-ghost"
+          variant="ghost"
+          size="sm"
           disabled={refreshing}
           onClick={() => void refresh()}
         >
           {refreshing ? m.admin_common_refreshing() : m.admin_common_refresh()}
-        </button>
+        </Button>
       </div>
 
-      {error ? <div className="alert alert-error text-sm mb-4">{error}</div> : null}
+      {error ? (
+        <StatusAlert variant="error" className="mb-4">
+          {error}
+        </StatusAlert>
+      ) : null}
 
       <div className="flex flex-wrap gap-2 mb-4">
         {(
@@ -87,31 +94,35 @@ function SatellitesPage() {
             [m.admin_satellites_registered_tools(), status.tool_count],
           ] as const
         ).map(([label, count]) => (
-          <span key={label} className="badge badge-outline">
+          <Badge key={label} variant="outline">
             {label} {count}
-          </span>
+          </Badge>
         ))}
       </div>
 
       {status.instances.length === 0 ? (
-        <div className="alert alert-info text-sm">{m.admin_satellites_empty_hint()}</div>
+        <StatusAlert variant="info">{m.admin_satellites_empty_hint()}</StatusAlert>
       ) : (
         <div className="space-y-4">
           {status.instances.map((inst) => (
-            <div key={`${inst.app_slug}:${inst.instance_id_norm}`} className="card bg-base-200">
-              <div className="card-body gap-3">
+            <Card key={`${inst.app_slug}:${inst.instance_id_norm}`} className="bg-muted py-0">
+              <CardContent className="gap-3 py-4 px-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold">{inst.app_id}</span>
-                  <span className="badge badge-sm badge-success">{m.admin_common_connected()}</span>
+                  <Badge variant="success" className="text-xs">
+                    {m.admin_common_connected()}
+                  </Badge>
                   {inst.platform ? (
-                    <span className="badge badge-sm badge-outline">{inst.platform}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {inst.platform}
+                    </Badge>
                   ) : null}
                   {inst.http_url ? (
                     <a
                       href={inst.http_url}
                       target="_blank"
                       rel="noreferrer"
-                      className="link link-primary text-xs"
+                      className="text-primary underline-offset-4 hover:underline text-xs"
                     >
                       {inst.http_url}
                     </a>
@@ -120,19 +131,19 @@ function SatellitesPage() {
 
                 <dl className="grid gap-2 text-sm sm:grid-cols-2">
                   <div>
-                    <dt className="text-base-content/60">{m.admin_satellites_app_id()}</dt>
+                    <dt className="text-muted-foreground">{m.admin_satellites_app_id()}</dt>
                     <dd className="font-mono text-xs break-all">{inst.app_id}</dd>
                   </div>
                   <div>
-                    <dt className="text-base-content/60">{m.admin_satellites_instance_id()}</dt>
+                    <dt className="text-muted-foreground">{m.admin_satellites_instance_id()}</dt>
                     <dd className="font-mono text-xs break-all">{inst.instance_id}</dd>
                   </div>
                   <div>
-                    <dt className="text-base-content/60">{m.admin_satellites_connected_at()}</dt>
+                    <dt className="text-muted-foreground">{m.admin_satellites_connected_at()}</dt>
                     <dd>{formatDisplayDateTime(inst.connected_at)}</dd>
                   </div>
                   <div>
-                    <dt className="text-base-content/60">{m.admin_satellites_last_heartbeat()}</dt>
+                    <dt className="text-muted-foreground">{m.admin_satellites_last_heartbeat()}</dt>
                     <dd>{formatDisplayDateTime(inst.last_heartbeat_at)}</dd>
                   </div>
                 </dl>
@@ -147,8 +158,8 @@ function SatellitesPage() {
                     ))}
                   </ul>
                 ) : null}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}

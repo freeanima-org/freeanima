@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 
-function cn(...parts: Array<string | undefined | false>): string {
-  return parts.filter(Boolean).join(" ");
-}
+import { Checkbox } from "../components/ui/checkbox.tsx";
+import { Label } from "../components/ui/label.tsx";
+import { cn } from "../lib/cn.ts";
 
-/** daisyUI fieldset：单字段（legend + control + 可选 hint） */
+/** 单字段表单组（label + control + 可选 hint） */
 export function FormField({
   label,
   hint,
@@ -17,15 +17,15 @@ export function FormField({
   children: ReactNode;
 }) {
   return (
-    <fieldset className={cn("fieldset", className)}>
-      <legend className="fieldset-legend">{label}</legend>
+    <fieldset className={cn("space-y-2", className)}>
+      <legend className="text-sm font-medium">{label}</legend>
       {children}
-      {hint != null && hint !== "" ? <p className="label">{hint}</p> : null}
+      {hint != null && hint !== "" ? <p className="text-muted-foreground text-xs">{hint}</p> : null}
     </fieldset>
   );
 }
 
-/** daisyUI fieldset：多字段分组 */
+/** 多字段分组 */
 export function FormFieldset({
   legend,
   className,
@@ -39,21 +39,17 @@ export function FormFieldset({
 }) {
   return (
     <fieldset
-      className={cn(
-        "fieldset",
-        bordered && "bg-base-200 border-base-300 rounded-box border p-4",
-        className,
-      )}
+      className={cn("space-y-3", bordered && "bg-muted/50 border rounded-lg p-4", className)}
     >
       {legend != null && legend !== "" ? (
-        <legend className="fieldset-legend">{legend}</legend>
+        <legend className="text-sm font-medium px-1">{legend}</legend>
       ) : null}
       {children}
     </fieldset>
   );
 }
 
-/** 分组内字段标签（配合 FormFieldset 多字段布局） */
+/** 分组内字段标签 */
 export function FormFieldLabel({
   htmlFor,
   className,
@@ -64,9 +60,9 @@ export function FormFieldLabel({
   children: ReactNode;
 }) {
   return (
-    <label className={cn("label", className)} htmlFor={htmlFor}>
+    <Label className={cn("text-sm", className)} htmlFor={htmlFor}>
       {children}
-    </label>
+    </Label>
   );
 }
 
@@ -86,21 +82,22 @@ export function FormToggle({
   className?: string;
   onChange: (checked: boolean) => void;
 }) {
+  const id = `form-toggle-${String(label).replace(/\s+/g, "-").toLowerCase()}`;
+
   return (
-    <fieldset className={cn("fieldset", className)}>
-      <label className="label cursor-pointer justify-start gap-3 py-1">
-        <input
-          type="checkbox"
-          className="checkbox checkbox-sm"
-          checked={checked}
-          disabled={disabled}
-          onChange={(e) => onChange(e.target.checked)}
-        />
-        <span>
-          <span className="font-medium">{label}</span>
-          {hint ? <span className="label block py-0 text-base-content/50">{hint}</span> : null}
-        </span>
-      </label>
-    </fieldset>
+    <div className={cn("flex items-start gap-3 py-1", className)}>
+      <Checkbox
+        id={id}
+        checked={checked}
+        disabled={disabled}
+        onCheckedChange={(value) => onChange(value === true)}
+      />
+      <div className="grid gap-0.5">
+        <Label htmlFor={id} className="font-medium cursor-pointer">
+          {label}
+        </Label>
+        {hint ? <span className="text-muted-foreground text-xs">{hint}</span> : null}
+      </div>
+    </div>
   );
 }

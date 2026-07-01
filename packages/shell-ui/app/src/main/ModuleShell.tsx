@@ -1,5 +1,6 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { Button } from "@freeanima/ui-kit";
 import { SubjectScopeProvider, SubjectToggle, useSubjectScope } from "@freeanima/shell-sdk/react";
 
 import { detectPlatform } from "../platform.ts";
@@ -35,13 +36,11 @@ function ShellNavLink({
 
   if (layout === "top") {
     return (
-      <Link
-        to={to}
-        className={`btn btn-ghost btn-sm ${active ? "btn-active" : ""}`}
-        aria-current={active ? "page" : undefined}
-      >
-        {label()}
-      </Link>
+      <Button asChild size="sm" variant={active ? "secondary" : "ghost"}>
+        <Link to={to} aria-current={active ? "page" : undefined}>
+          {label()}
+        </Link>
+      </Button>
     );
   }
 
@@ -49,7 +48,7 @@ function ShellNavLink({
     <Link
       to={to}
       className={`shell-bottom-nav-item flex flex-1 flex-col items-center justify-center gap-0.5 min-h-12 text-xs transition-colors ${
-        active ? "text-primary font-semibold" : "text-base-content/60 hover:text-base-content"
+        active ? "text-primary font-semibold" : "text-muted-foreground hover:text-foreground"
       }`}
       aria-current={active ? "page" : undefined}
     >
@@ -61,8 +60,8 @@ function ShellNavLink({
 function DesktopModuleShell() {
   const nav = shellNavItems();
   return (
-    <div className="shell-module-layout h-full flex flex-col bg-base-100 text-base-content">
-      <header className="shell-top-nav flex navbar bg-base-200 border-b border-base-300 min-h-12 px-3 shrink-0 relative z-50">
+    <div className="shell-module-layout h-full flex flex-col bg-background text-foreground">
+      <header className="shell-top-nav flex items-center bg-muted border-b border min-h-12 px-3 shrink-0 relative z-50">
         <div className="font-semibold text-sm">FreeAnima</div>
         <nav className="flex gap-1 ml-4 flex-1" aria-label="模块导航">
           {nav.map((item) => (
@@ -93,7 +92,7 @@ function MoreNavMenu({ items }: { items: ShellNavItem[] }) {
         className={`shell-bottom-nav-item flex flex-col items-center justify-center gap-0.5 text-xs transition-colors ${
           moreActive || open
             ? "text-primary font-semibold"
-            : "text-base-content/60 hover:text-base-content"
+            : "text-muted-foreground hover:text-foreground"
         }`}
         aria-expanded={open}
         aria-haspopup="menu"
@@ -111,14 +110,14 @@ function MoreNavMenu({ items }: { items: ShellNavItem[] }) {
           />
           <div
             role="menu"
-            className="absolute bottom-full mb-2 right-0 z-50 min-w-40 rounded-lg border border-base-300 bg-base-200 shadow-lg py-1"
+            className="absolute bottom-full mb-2 right-0 z-50 min-w-40 rounded-lg border border bg-muted shadow-lg py-1"
           >
             {items.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
                 role="menuitem"
-                className="block px-4 py-2 text-sm hover:bg-base-300"
+                className="block px-4 py-2 text-sm hover:bg-muted"
                 onClick={() => setOpen(false)}
               >
                 {item.label()}
@@ -136,15 +135,15 @@ function MobileModuleShell() {
   const more = shellMobileMoreNavItems();
 
   return (
-    <div className="shell-module-layout h-full flex flex-col bg-base-100 text-base-content">
-      <header className="shell-top-nav flex items-center justify-end bg-base-200 border-b border-base-300 min-h-10 px-3 shrink-0">
+    <div className="shell-module-layout h-full flex flex-col bg-background text-foreground">
+      <header className="shell-top-nav flex items-center justify-end bg-muted border-b border min-h-10 px-3 shrink-0">
         <ShellSubjectToggle />
       </header>
       <main className="flex-1 min-h-0 overflow-hidden">
         <Outlet />
       </main>
       <nav
-        className="shell-bottom-nav shrink-0 flex border-t border-base-300 bg-base-200/95 backdrop-blur-sm safe-area-pb"
+        className="shell-bottom-nav shrink-0 flex border-t border bg-muted/95 backdrop-blur-sm safe-area-pb"
         aria-label="模块导航"
       >
         {primary.map((item) => (

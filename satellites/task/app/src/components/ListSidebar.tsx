@@ -1,5 +1,6 @@
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Button, Checkbox, Input } from "@freeanima/ui-kit";
 import { useDrawerNav } from "@freeanima/ui-kit/layout";
 import {
   useEffect,
@@ -107,7 +108,7 @@ function SortableTreeRow({
       style={style}
       className={[
         "group flex min-h-11 items-center gap-0.5 rounded-lg py-1 pr-1 text-sm",
-        selected ? "bg-primary/15 font-medium" : "hover:bg-base-200",
+        selected ? "bg-primary/15 font-medium" : "hover:bg-muted",
         isDragging ? "opacity-50" : "",
         isTaskDropTarget || isFolderDropTarget ? "ring-primary bg-primary/10 ring-2" : "",
       ].join(" ")}
@@ -117,7 +118,7 @@ function SortableTreeRow({
       {isFolder ? (
         <button
           type="button"
-          className="text-base-content/60 flex min-h-11 min-w-6 shrink-0 items-center justify-center"
+          className="text-muted-foreground flex min-h-11 min-w-6 shrink-0 items-center justify-center"
           aria-label={expanded ? "折叠" : "展开"}
           onClick={(e) => {
             e.stopPropagation();
@@ -132,7 +133,7 @@ function SortableTreeRow({
       <button
         type="button"
         title="拖拽排序"
-        className="text-base-content/40 hover:text-base-content flex min-h-11 min-w-8 shrink-0 cursor-grab items-center justify-center select-none active:cursor-grabbing"
+        className="text-foreground/40 hover:text-foreground flex min-h-11 min-w-8 shrink-0 cursor-grab items-center justify-center select-none active:cursor-grabbing"
         {...attributes}
         {...listeners}
         onClick={(e) => e.stopPropagation()}
@@ -140,9 +141,9 @@ function SortableTreeRow({
         ⋮⋮
       </button>
       {editing ? (
-        <input
+        <Input
           ref={renameInputRef}
-          className="input input-xs input-bordered min-w-0 flex-1"
+          className="h-7 min-w-0 flex-1 px-2 text-xs"
           value={editingName}
           onChange={(e) => onEditingNameChange(e.target.value)}
           onBlur={() => onCommitRename()}
@@ -172,13 +173,15 @@ function SortableTreeRow({
         >
           <span className="truncate">{list.name}</span>
           <EntityIdLabel id={list.id} />
-          <span className="text-base-content/50 shrink-0 text-xs">{list.item_count}</span>
+          <span className="text-muted-foreground shrink-0 text-xs">{list.item_count}</span>
         </button>
       )}
       {useActionSheet && !editing ? (
-        <button
+        <Button
           type="button"
-          className="btn btn-ghost btn-xs btn-square shrink-0"
+          variant="ghost"
+          size="icon-sm"
+          className="shrink-0"
           aria-label="操作"
           onClick={(e) => {
             e.stopPropagation();
@@ -186,7 +189,7 @@ function SortableTreeRow({
           }}
         >
           ⋯
-        </button>
+        </Button>
       ) : null}
     </div>
   );
@@ -214,7 +217,7 @@ function ClosedListRow({
       style={{ paddingLeft: `${8 + depth * 16}px` }}
       className={[
         "group flex min-h-11 items-center gap-0.5 rounded-lg py-1 pr-1 text-sm opacity-70",
-        selected ? "bg-primary/15 font-medium opacity-100" : "hover:bg-base-200",
+        selected ? "bg-primary/15 font-medium opacity-100" : "hover:bg-muted",
       ].join(" ")}
       onContextMenu={onContextMenu}
     >
@@ -237,14 +240,16 @@ function ClosedListRow({
           <>
             <span className="truncate">{list.name}</span>
             <EntityIdLabel id={list.id} />
-            <span className="text-base-content/50 shrink-0 text-xs">{list.item_count}</span>
+            <span className="text-muted-foreground shrink-0 text-xs">{list.item_count}</span>
           </>
         )}
       </button>
       {useActionSheet ? (
-        <button
+        <Button
           type="button"
-          className="btn btn-ghost btn-xs btn-square shrink-0"
+          variant="ghost"
+          size="icon-sm"
+          className="shrink-0"
           aria-label="操作"
           onClick={(e) => {
             e.stopPropagation();
@@ -252,7 +257,7 @@ function ClosedListRow({
           }}
         >
           ⋯
-        </button>
+        </Button>
       ) : null}
     </div>
   );
@@ -351,12 +356,12 @@ export function ListSidebar({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {draggingTask && useDrawer ? (
-        <div className="border-base-300 bg-base-200/80 text-base-content/70 shrink-0 border-b px-3 py-1.5 text-xs">
+        <div className="border bg-muted/80 text-muted-foreground shrink-0 border-b px-3 py-1.5 text-xs">
           拖放到清单以移动任务
         </div>
       ) : null}
       {draggingTask && !useDrawer ? (
-        <div className="border-base-300 text-base-content/50 shrink-0 border-b px-3 pb-2 text-xs">
+        <div className="border text-muted-foreground shrink-0 border-b px-3 pb-2 text-xs">
           拖到清单以移动任务
         </div>
       ) : null}
@@ -391,13 +396,12 @@ export function ListSidebar({
             />
           ))}
           {closedLists.length > 0 ? (
-            <div className="border-base-300/60 mt-2 space-y-1 border-t pt-2">
-              <label className="text-base-content/70 flex cursor-pointer select-none items-center gap-2 px-1 py-1 text-xs">
-                <input
-                  type="checkbox"
-                  className="checkbox checkbox-xs"
+            <div className="border/60 mt-2 space-y-1 border-t pt-2">
+              <label className="text-muted-foreground flex cursor-pointer select-none items-center gap-2 px-1 py-1 text-xs">
+                <Checkbox
+                  className="size-3.5"
                   checked={showClosed}
-                  onChange={onToggleShowClosed}
+                  onCheckedChange={onToggleShowClosed}
                 />
                 显示已归档
               </label>
@@ -415,10 +419,10 @@ export function ListSidebar({
           ) : null}
         </div>
       </SortableContext>
-      <div className="border-base-300 flex shrink-0 flex-col gap-1 border-t p-2">
+      <div className="border flex shrink-0 flex-col gap-1 border-t p-2">
         <div className="flex gap-1">
-          <input
-            className="input input-sm input-bordered min-w-0 flex-1"
+          <Input
+            className="h-8 min-w-0 flex-1"
             placeholder="新清单"
             value={newListName}
             onChange={(e) => onNewListNameChange(e.target.value)}
@@ -426,13 +430,13 @@ export function ListSidebar({
               if (e.key === "Enter") onCreateList();
             }}
           />
-          <button type="button" className="btn btn-primary btn-sm" onClick={onCreateList}>
+          <Button type="button" size="sm" onClick={onCreateList}>
             +
-          </button>
+          </Button>
         </div>
         <div className="flex gap-1">
-          <input
-            className="input input-sm input-bordered min-w-0 flex-1"
+          <Input
+            className="h-8 min-w-0 flex-1"
             placeholder="新文件夹"
             value={newFolderName}
             onChange={(e) => onNewFolderNameChange(e.target.value)}
@@ -440,9 +444,9 @@ export function ListSidebar({
               if (e.key === "Enter") onCreateFolder();
             }}
           />
-          <button type="button" className="btn btn-ghost btn-sm" onClick={onCreateFolder}>
+          <Button type="button" variant="ghost" size="sm" onClick={onCreateFolder}>
             📁
-          </button>
+          </Button>
         </div>
       </div>
     </div>

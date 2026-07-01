@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "@freeanima/ui-kit/daisyui.css";
+@import "@freeanima/ui-kit/globals.css";
 @source "./**/*.{tsx,ts}";
 
 html,
@@ -16,7 +16,7 @@ body,
 html[data-companion-view="settings"],
 html[data-companion-view="settings"] body,
 html[data-companion-view="settings"] #root {
-  background: var(--color-base-100, #ffffff);
+  background: var(--background);
 }
 
 .settings-app-shell {
@@ -34,7 +34,7 @@ html[data-companion-view="settings"] #root {
   pointer-events: auto;
 }
 
-.chat-bubble {
+.companion-text-bubble {
   @apply rounded-2xl px-3 py-2 text-sm shadow-lg;
   background: rgba(20, 20, 30, 0.85);
   color: #f0f0f5;
@@ -44,7 +44,7 @@ html[data-companion-view="settings"] #root {
 }
 
 .startup-panel {
-  @apply rounded-xl p-4 text-sm shadow-xl bg-base-300/95 text-base-content border border-base-content/10;
+  @apply rounded-xl p-4 text-sm shadow-xl bg-muted/95 text-foreground border border-border;
   min-width: 260px;
   max-width: 320px;
 }
@@ -73,7 +73,7 @@ html[data-companion-view="settings"] #root {
   flex-shrink: 0;
   cursor: grab;
   touch-action: none;
-  @apply rounded-lg bg-base-300;
+  @apply rounded-lg bg-muted;
 }
 
 .motion-preview-canvas:active {
@@ -81,5 +81,5 @@ html[data-companion-view="settings"] #root {
 }
 
 .motion-preview-frame {
-  @apply rounded-lg bg-base-300 border border-base-content/10;
+  @apply rounded-lg bg-muted border border-border;
 }

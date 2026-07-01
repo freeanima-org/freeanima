@@ -1,5 +1,6 @@
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { Alert, AlertDescription, Button } from "@freeanima/ui-kit";
 import { FileTreePanel } from "@pair/components/FileTreePanel.tsx";
 import { CodeViewerPanel } from "@pair/components/CodeViewerPanel.tsx";
 import { TerminalPanel } from "@pair/components/TerminalPanel.tsx";
@@ -82,17 +83,23 @@ function App() {
   if (!configured && !store.loading) {
     return (
       <div className="h-screen flex flex-col">
-        <header className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-base-300 bg-base-200">
+        <header className="shrink-0 flex items-center justify-between px-3 py-2 border-b border bg-muted">
           <span className="text-sm font-medium">{m.pair_nav_pair()}</span>
-          <button type="button" className="btn btn-xs btn-ghost" onClick={toggleLocale}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs"
+            onClick={toggleLocale}
+          >
             {locale === "zh-cn" ? "EN" : "中文"}
-          </button>
+          </Button>
         </header>
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="max-w-md text-center space-y-4">
             <h3 className="text-lg font-bold">{m.pair_workdir_title()}</h3>
-            <p className="text-sm text-base-content/60">{m.pair_workdir_lead()}</p>
-            <p className="text-sm font-mono text-left bg-base-300/40 p-3 rounded">
+            <p className="text-sm text-muted-foreground">{m.pair_workdir_lead()}</p>
+            <p className="text-sm font-mono text-left bg-muted/40 p-3 rounded">
               satellites:
               <br />
               {"  pair-programming:"}
@@ -105,7 +112,7 @@ function App() {
               <br />
               {"      STUDIO_WORKSPACE: /path/to/project"}
             </p>
-            <p className="text-xs text-base-content/50">anima service restart</p>
+            <p className="text-xs text-muted-foreground">anima service restart</p>
           </div>
         </div>
       </div>
@@ -114,48 +121,60 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col min-h-0 overflow-hidden relative">
-      <header className="shrink-0 flex items-center gap-2 px-2 py-1 border-b border-base-300 bg-base-200/80 text-sm">
+      <header className="shrink-0 flex items-center gap-2 px-2 py-1 border-b border bg-muted/80 text-sm">
         <span className="font-medium">{m.pair_nav_pair()}</span>
         <span className="flex-1" />
-        <button type="button" className="btn btn-xs btn-ghost" onClick={toggleLocale}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 text-xs"
+          onClick={toggleLocale}
+        >
           {locale === "zh-cn" ? "EN" : "中文"}
-        </button>
+        </Button>
       </header>
 
-      <div className="shrink-0 flex items-center gap-0.5 px-2 py-1 border-b border-base-300 bg-base-200/40 text-xs">
-        <button
+      <div className="shrink-0 flex items-center gap-0.5 px-2 py-1 border-b border bg-muted/40 text-xs">
+        <Button
           type="button"
-          className={`btn btn-ghost btn-xs gap-1 ${leftVisible ? "" : "opacity-40"}`}
+          variant="ghost"
+          size="sm"
+          className={`h-7 px-2 text-xs gap-1 ${leftVisible ? "" : "opacity-40"}`}
           onClick={() => setLeftVisible((v) => !v)}
           title={m.pair_toggle_left_panel()}
         >
           📁
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          className={`btn btn-ghost btn-xs gap-1 ${terminalVisible ? "" : "opacity-40"}`}
+          variant="ghost"
+          size="sm"
+          className={`h-7 px-2 text-xs gap-1 ${terminalVisible ? "" : "opacity-40"}`}
           onClick={() => setTerminalVisible((v) => !v)}
           title={m.pair_toggle_terminal_panel()}
         >
           ⬇
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          className={`btn btn-ghost btn-xs gap-1 ${rightVisible ? "" : "opacity-40"}`}
+          variant="ghost"
+          size="sm"
+          className={`h-7 px-2 text-xs gap-1 ${rightVisible ? "" : "opacity-40"}`}
           onClick={() => setRightVisible((v) => !v)}
           title={m.pair_toggle_conversation_panel()}
         >
           💬
-        </button>
+        </Button>
         <span className="flex-1" />
-        <span className="text-base-content/30 text-xs select-none">{m.pair_panels()}</span>
+        <span className="text-foreground/30 text-xs select-none">{m.pair_panels()}</span>
       </div>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {leftVisible ? (
           <div
             className={[
-              "shrink-0 flex flex-col min-h-0 border-r border-base-300 bg-base-200/20",
+              "shrink-0 flex flex-col min-h-0 border-r border bg-muted/20",
               isMobile ? "mobile-panel-overlay" : "",
             ].join(" ")}
             style={isMobile ? undefined : { width: leftWidth }}
@@ -205,12 +224,21 @@ function App() {
       </div>
 
       {store.error ? (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 alert alert-warning shadow-lg text-sm max-w-lg z-10">
-          {store.error}
-          <button type="button" className="btn btn-ghost btn-xs" onClick={() => store.clearError()}>
+        <Alert
+          variant="warning"
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 shadow-lg max-w-lg z-10 flex items-center justify-between gap-2 text-sm"
+        >
+          <AlertDescription>{store.error}</AlertDescription>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs shrink-0"
+            onClick={() => store.clearError()}
+          >
             {m.admin_common_close()}
-          </button>
-        </div>
+          </Button>
+        </Alert>
       ) : null}
     </div>
   );

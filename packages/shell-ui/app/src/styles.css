@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "@freeanima/ui-kit/daisyui.css";
+@import "@freeanima/ui-kit/globals.css";
 @source "./**/*.{tsx,ts}";
 @source "../../../../packages/ui-kit/src/**/*.{tsx,ts}";
 @source "../../../../packages/shell-sdk/src/**/*.{tsx,ts}";

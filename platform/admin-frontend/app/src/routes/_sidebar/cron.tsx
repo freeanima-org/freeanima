@@ -1,5 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Label,
+  Spinner,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { getCronJobs, pauseCronJob, resumeCronJob, runCronJob } from "@admin/lib/api.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
 import { m } from "@admin/lib/i18n.ts";
@@ -114,125 +128,131 @@ function CronPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
           <h2 className="text-lg font-bold">{m.admin_nav_cron()}</h2>
-          <p className="text-sm text-base-content/60 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             {m.admin_cron_desc()} <code className="text-xs">cronjob</code>
           </p>
         </div>
-        <button
+        <Button
           type="button"
-          className="btn btn-sm btn-ghost"
+          variant="ghost"
+          size="sm"
           disabled={loading}
           onClick={() => void reload()}
         >
           {m.admin_common_refresh()}
-        </button>
+        </Button>
       </div>
 
       {loading ? (
         <div className="flex justify-center py-8">
-          <span className="loading loading-dots loading-md" />
+          <Spinner />
         </div>
       ) : (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="card bg-base-200">
-              <div className="card-body py-4">
-                <h3 className="text-sm text-base-content/60">{m.admin_cron_total()}</h3>
-                <p className="text-2xl font-mono">{jobs.length}</p>
-              </div>
-            </div>
-            <div className="card bg-base-200">
-              <div className="card-body py-4">
-                <h3 className="text-sm text-base-content/60">{m.admin_cron_active()}</h3>
-                <p className="text-2xl font-mono">{activeCount}</p>
-              </div>
-            </div>
-            <div className="card bg-base-200">
-              <div className="card-body py-4">
-                <h3 className="text-sm text-base-content/60">{m.admin_cron_paused()}</h3>
-                <p className="text-2xl font-mono">{pausedCount}</p>
-              </div>
-            </div>
+            {[
+              [m.admin_cron_total(), jobs.length],
+              [m.admin_cron_active(), activeCount],
+              [m.admin_cron_paused(), pausedCount],
+            ].map(([label, value]) => (
+              <Card key={String(label)} className="bg-muted py-0">
+                <CardContent className="py-4 px-4">
+                  <h3 className="text-sm text-muted-foreground">{label}</h3>
+                  <p className="text-2xl font-mono">{value}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
 
           {jobs.length === 0 ? (
-            <div className="alert alert-info text-sm">{m.admin_cron_empty()}</div>
+            <StatusAlert variant="info">{m.admin_cron_empty()}</StatusAlert>
           ) : (
             jobs.map((job) => (
-              <div key={job.id} className="card bg-base-200">
-                <div className="card-body">
+              <Card key={job.id} className="bg-muted py-0">
+                <CardContent className="py-4 px-4">
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-bold">{job.name}</h3>
-                      <span
-                        className={`badge badge-sm ${job.paused ? "badge-ghost" : "badge-success"}`}
-                      >
+                      <Badge variant={job.paused ? "ghost" : "success"} className="text-xs">
                         {job.paused ? m.admin_cron_status_paused() : m.admin_cron_status_active()}
-                      </span>
+                      </Badge>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
-                      <label className="label cursor-pointer gap-2 py-0">
-                        <span className="text-xs">{m.admin_cron_enable()}</span>
-                        <input
-                          type="checkbox"
-                          className="toggle toggle-sm toggle-primary"
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor={`cron-enable-${job.id}`} className="text-xs">
+                          {m.admin_cron_enable()}
+                        </Label>
+                        <Switch
+                          id={`cron-enable-${job.id}`}
                           checked={!job.paused}
                           disabled={!!toggling[job.id] || !!running[job.id]}
-                          onChange={(e) => void onToggle(job, e.target.checked)}
+                          onCheckedChange={(checked) => void onToggle(job, checked)}
                         />
-                      </label>
-                      <button
+                      </div>
+                      <Button
                         type="button"
-                        className="btn btn-xs btn-ghost"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs"
                         disabled={!!toggling[job.id] || !!running[job.id]}
                         onClick={() => setHistoryJob(job)}
                       >
                         {m.admin_cron_run_history()}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
-                        className="btn btn-xs btn-outline"
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
                         disabled={!!toggling[job.id] || !!running[job.id]}
                         onClick={() => void runNow(job)}
                       >
-                        {running[job.id] ? (
-                          <span className="loading loading-spinner loading-xs" />
-                        ) : null}
+                        {running[job.id] ? <Spinner /> : null}
                         {m.admin_cron_run_now()}
-                      </button>
+                      </Button>
                     </div>
                   </div>
-                  <table className="table table-xs">
-                    <tbody>
-                      <tr>
-                        <td className="text-base-content/50 w-24">ID</td>
-                        <td className="font-mono text-xs break-all">{job.id}</td>
-                      </tr>
-                      <tr>
-                        <td className="text-base-content/50">{m.admin_cron_schedule()}</td>
-                        <td className="font-mono">{String(job.schedule ?? "")}</td>
-                      </tr>
-                      <tr>
-                        <td className="text-base-content/50">{m.admin_cron_next_run()}</td>
-                        <td>
+                  <Table>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="text-muted-foreground w-24">ID</TableCell>
+                        <TableCell className="font-mono text-xs break-all">{job.id}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="text-muted-foreground">
+                          {m.admin_cron_schedule()}
+                        </TableCell>
+                        <TableCell className="font-mono">{String(job.schedule ?? "")}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="text-muted-foreground">
+                          {m.admin_cron_next_run()}
+                        </TableCell>
+                        <TableCell>
                           {job.paused
                             ? "—"
                             : formatDisplayDateTime(Number(job.next_run_at), { seconds: true })}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
                   {toast[job.id] ? (
-                    <p className="text-xs text-success mt-2">{toast[job.id]}</p>
+                    <p className="text-xs text-green-700 dark:text-green-300 mt-2">
+                      {toast[job.id]}
+                    </p>
                   ) : null}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))
           )}
         </div>
       )}
 
-      {error ? <div className="alert alert-error text-sm mt-4">{error}</div> : null}
+      {error ? (
+        <StatusAlert variant="error" className="mt-4">
+          {error}
+        </StatusAlert>
+      ) : null}
 
       {historyJob ? (
         <CronRunLogModal

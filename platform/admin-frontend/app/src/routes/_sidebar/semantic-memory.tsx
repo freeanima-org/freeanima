@@ -2,7 +2,29 @@ import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import type { SemanticMemoryRow } from "@freeanima/admin-contract/api";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Spinner,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@freeanima/ui-kit";
 import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { m } from "@admin/lib/i18n.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
@@ -10,6 +32,7 @@ import { listSemanticMemories, updateSemanticMemoryPinned } from "@admin/lib/api
 import { logCaughtError } from "@admin/lib/log-caught-error.ts";
 
 const PAGE_SIZE = 20;
+const ALL_VALUE = "__all__";
 
 const SEMANTIC_TYPES = [
   "world",
@@ -120,166 +143,189 @@ function SemanticMemoryPage() {
   return (
     <div>
       <h2 className="text-lg font-bold mb-1">{m.admin_nav_semantic()}</h2>
-      <p className="text-sm text-base-content/60 mb-4">{m.admin_semantic_desc()}</p>
+      <p className="text-sm text-muted-foreground mb-4">{m.admin_semantic_desc()}</p>
 
       <form
-        className="card bg-base-200 mb-4"
+        className="mb-4"
         onSubmit={(e) => {
           e.preventDefault();
           runSearch();
         }}
       >
-        <div className="card-body gap-3">
-          <FormFieldset bordered={false} className="gap-3">
-            <FormField label={m.admin_semantic_search_fts()} className="text-xs">
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                type="text"
-                className="input input-bordered input-sm"
-                placeholder={m.admin_common_keyword_placeholder()}
-              />
-            </FormField>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <div>
-                <FormFieldLabel className="text-xs py-0">
-                  {m.admin_common_type_label()}
-                </FormFieldLabel>
-                <select
-                  className="select select-bordered select-sm w-full"
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value)}
-                >
-                  <option value="">{m.admin_common_all()}</option>
-                  {SEMANTIC_TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <FormFieldLabel className="text-xs py-0">
-                  {m.admin_common_status_label()}
-                </FormFieldLabel>
-                <select
-                  className="select select-bordered select-sm w-full"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  <option value="active">active</option>
-                  <option value="deprecated">deprecated</option>
-                  <option value="all">{m.admin_common_all()}</option>
-                </select>
-              </div>
-              <div>
-                <FormFieldLabel className="text-xs py-0">
-                  {m.admin_semantic_source_conversation()}
-                </FormFieldLabel>
-                <input
-                  value={sourceConversation}
-                  onChange={(e) => setSourceConversation(e.target.value)}
+        <Card className="bg-muted py-0">
+          <CardContent className="gap-3 py-4 px-4">
+            <FormFieldset bordered={false} className="gap-3">
+              <FormField label={m.admin_semantic_search_fts()} className="text-xs">
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
                   type="text"
-                  className="input input-bordered input-sm font-mono w-full"
-                  placeholder="conversation id"
+                  className="h-8"
+                  placeholder={m.admin_common_keyword_placeholder()}
                 />
+              </FormField>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                  <FormFieldLabel className="text-xs py-0">
+                    {m.admin_common_type_label()}
+                  </FormFieldLabel>
+                  <Select
+                    value={typeFilter || ALL_VALUE}
+                    onValueChange={(v) => setTypeFilter(v === ALL_VALUE ? "" : v)}
+                  >
+                    <SelectTrigger size="sm" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={ALL_VALUE}>{m.admin_common_all()}</SelectItem>
+                      {SEMANTIC_TYPES.map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {t}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <FormFieldLabel className="text-xs py-0">
+                    {m.admin_common_status_label()}
+                  </FormFieldLabel>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger size="sm" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">active</SelectItem>
+                      <SelectItem value="deprecated">deprecated</SelectItem>
+                      <SelectItem value="all">{m.admin_common_all()}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <FormFieldLabel className="text-xs py-0">
+                    {m.admin_semantic_source_conversation()}
+                  </FormFieldLabel>
+                  <Input
+                    value={sourceConversation}
+                    onChange={(e) => setSourceConversation(e.target.value)}
+                    type="text"
+                    className="h-8 font-mono w-full"
+                    placeholder="conversation id"
+                  />
+                </div>
+                <div>
+                  <FormFieldLabel className="text-xs py-0">
+                    {m.admin_semantic_sort()}
+                  </FormFieldLabel>
+                  <Select value={sortBy} onValueChange={(v) => setSortBy(v as BrowseSortBy)}>
+                    <SelectTrigger size="sm" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="updated_at">{m.admin_semantic_sort_updated()}</SelectItem>
+                      <SelectItem value="created_at">{m.admin_semantic_sort_created()}</SelectItem>
+                      <SelectItem value="reference_count">
+                        {m.admin_semantic_sort_reference_count()}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div>
-                <FormFieldLabel className="text-xs py-0">{m.admin_semantic_sort()}</FormFieldLabel>
-                <select
-                  className="select select-bordered select-sm w-full"
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as BrowseSortBy)}
-                >
-                  <option value="updated_at">{m.admin_semantic_sort_updated()}</option>
-                  <option value="created_at">{m.admin_semantic_sort_created()}</option>
-                  <option value="reference_count">{m.admin_semantic_sort_reference_count()}</option>
-                </select>
-              </div>
-            </div>
-          </FormFieldset>
-          <button type="submit" className="btn btn-sm btn-primary" disabled={loading}>
-            {loading ? <span className="loading loading-spinner loading-xs" /> : null}
-            {m.admin_common_query()}
-          </button>
-        </div>
+            </FormFieldset>
+            <Button type="submit" size="sm" disabled={loading}>
+              {loading ? <Spinner /> : null}
+              {m.admin_common_query()}
+            </Button>
+          </CardContent>
+        </Card>
       </form>
 
-      {error ? <div className="alert alert-error text-sm mb-4">{error}</div> : null}
+      {error ? (
+        <StatusAlert variant="error" className="mb-4">
+          {error}
+        </StatusAlert>
+      ) : null}
 
       {loaded ? (
         <div className="space-y-3">
           {loading && items.length === 0 ? (
             <div className="flex justify-center py-6">
-              <span className="loading loading-dots loading-sm" />
+              <Spinner />
             </div>
           ) : items.length === 0 ? (
-            <div className="alert alert-info text-sm">{m.admin_common_no_results()}</div>
+            <StatusAlert variant="info">{m.admin_common_no_results()}</StatusAlert>
           ) : (
             <div className="overflow-x-auto">
-              <table className="table table-sm">
-                <thead>
-                  <tr>
-                    <th>id</th>
-                    <th>{m.admin_common_type_label()}</th>
-                    <th>{m.admin_common_status_label()}</th>
-                    <th>{m.admin_semantic_pinned()}</th>
-                    <th>{m.admin_semantic_created()}</th>
-                    <th>{m.admin_semantic_updated()}</th>
-                    <th>{m.admin_semantic_reference_count()}</th>
-                    <th>{m.admin_limbic_content()}</th>
-                    <th>conversations</th>
-                    {hasSearchQuery ? <th>{m.admin_semantic_rank()}</th> : null}
-                  </tr>
-                </thead>
-                <tbody>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>id</TableHead>
+                    <TableHead>{m.admin_common_type_label()}</TableHead>
+                    <TableHead>{m.admin_common_status_label()}</TableHead>
+                    <TableHead>{m.admin_semantic_pinned()}</TableHead>
+                    <TableHead>{m.admin_semantic_created()}</TableHead>
+                    <TableHead>{m.admin_semantic_updated()}</TableHead>
+                    <TableHead>{m.admin_semantic_reference_count()}</TableHead>
+                    <TableHead>{m.admin_limbic_content()}</TableHead>
+                    <TableHead>conversations</TableHead>
+                    {hasSearchQuery ? <TableHead>{m.admin_semantic_rank()}</TableHead> : null}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {items.map((row) => (
-                    <tr key={row.id}>
-                      <td className="font-mono text-xs whitespace-nowrap">{row.id}</td>
-                      <td className="text-xs">{row.type}</td>
-                      <td className="text-xs">{row.status}</td>
-                      <td className="text-xs">
+                    <TableRow key={row.id}>
+                      <TableCell className="font-mono text-xs whitespace-nowrap">
+                        {row.id}
+                      </TableCell>
+                      <TableCell className="text-xs">{row.type}</TableCell>
+                      <TableCell className="text-xs">{row.status}</TableCell>
+                      <TableCell className="text-xs">
                         {row.status === "active" ? (
-                          <label className="label cursor-pointer gap-2 py-0 justify-start">
-                            <span className="label sr-only text-xs">
+                          <div className="flex items-center gap-2">
+                            <Label htmlFor={`pin-${row.id}`} className="sr-only">
                               {m.admin_semantic_pin_toggle()}
-                            </span>
-                            <input
-                              type="checkbox"
-                              className="toggle toggle-sm toggle-primary"
+                            </Label>
+                            <Switch
+                              id={`pin-${row.id}`}
                               checked={row.pinned}
                               disabled={Boolean(toggling[row.id])}
-                              onChange={(e) => void onTogglePinned(row, e.target.checked)}
+                              onCheckedChange={(checked) => void onTogglePinned(row, checked)}
                             />
-                          </label>
+                          </div>
                         ) : row.pinned ? (
-                          <span className="badge badge-ghost badge-xs">pinned</span>
+                          <Badge variant="ghost" className="text-xs">
+                            pinned
+                          </Badge>
                         ) : (
                           "-"
                         )}
-                      </td>
-                      <td className="text-xs whitespace-nowrap">
+                      </TableCell>
+                      <TableCell className="text-xs whitespace-nowrap">
                         {formatDisplayDateTime(row.created_at)}
-                      </td>
-                      <td className="text-xs whitespace-nowrap">
+                      </TableCell>
+                      <TableCell className="text-xs whitespace-nowrap">
                         {formatDisplayDateTime(row.updated_at)}
-                      </td>
-                      <td className="text-xs">{Number(row.reference_count).toFixed(2)}</td>
-                      <td className="text-sm max-w-md whitespace-pre-wrap">{row.content}</td>
-                      <td className="font-mono text-xs max-w-32 truncate">
+                      </TableCell>
+                      <TableCell className="text-xs">
+                        {Number(row.reference_count).toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-sm max-w-md whitespace-pre-wrap">
+                        {row.content}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs max-w-32 truncate">
                         {row.source_conversations?.length
                           ? row.source_conversations.join(", ")
                           : "-"}
-                      </td>
+                      </TableCell>
                       {hasSearchQuery ? (
-                        <td className="text-xs whitespace-nowrap">
+                        <TableCell className="text-xs whitespace-nowrap">
                           {row.rank != null ? Number(row.rank).toFixed(4) : "-"}
-                        </td>
+                        </TableCell>
                       ) : null}
-                    </tr>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           )}
           <MemoryListPagination
@@ -291,7 +337,7 @@ function SemanticMemoryPage() {
           />
         </div>
       ) : (
-        <p className="text-sm text-base-content/50">{m.admin_common_click_query_hint()}</p>
+        <p className="text-sm text-muted-foreground">{m.admin_common_click_query_hint()}</p>
       )}
     </div>
   );

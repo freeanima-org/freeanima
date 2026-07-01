@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { m } from "@admin/lib/i18n.ts";
 import { getMcpStatus, startAllMcp, startMcp, stopAllMcp, stopMcp } from "@admin/lib/api.ts";
 import { mcpStatusLabel } from "@admin/lib/admin-status.ts";
@@ -29,12 +31,13 @@ type McpStatus = {
   servers: McpServer[];
 };
 
-function statusBadgeClass(s: string) {
-  if (s === "connected") return "badge-success";
-  if (s === "connecting") return "badge-warning";
-  if (s === "disabled") return "badge-ghost";
-  if (s === "error") return "badge-error";
-  return "badge-ghost";
+type BadgeVariant = "success" | "warning" | "destructive" | "ghost";
+
+function statusBadgeVariant(s: string): BadgeVariant {
+  if (s === "connected") return "success";
+  if (s === "connecting") return "warning";
+  if (s === "error") return "destructive";
+  return "ghost";
 }
 
 function canStartMcpServer(srv: McpServer): boolean {
@@ -100,9 +103,9 @@ function McpPage() {
     return (
       <div>
         <h2 className="text-lg font-bold">{m.admin_nav_mcp()}</h2>
-        <div className="alert alert-error text-sm mt-4">
+        <StatusAlert variant="error" className="mt-4">
           {error || m.admin_common_load_failed_short()}
-        </div>
+        </StatusAlert>
       </div>
     );
   }
@@ -112,31 +115,36 @@ function McpPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
           <h2 className="text-lg font-bold">{m.admin_nav_mcp()}</h2>
-          <p className="text-sm text-base-content/60 mt-1">{m.admin_mcp_desc()}</p>
+          <p className="text-sm text-muted-foreground mt-1">{m.admin_mcp_desc()}</p>
         </div>
         {status.servers.length > 0 ? (
           <div className="flex gap-2">
-            <button
+            <Button
               type="button"
-              className="btn btn-sm btn-primary"
+              size="sm"
               disabled={bulkActing}
               onClick={() => void controlAll("start-all")}
             >
               {m.admin_common_start_all()}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="btn btn-sm btn-ghost"
+              variant="ghost"
+              size="sm"
               disabled={bulkActing}
               onClick={() => void controlAll("stop-all")}
             >
               {m.admin_common_stop_all()}
-            </button>
+            </Button>
           </div>
         ) : null}
       </div>
 
-      {error ? <div className="alert alert-error text-sm mb-4">{error}</div> : null}
+      {error ? (
+        <StatusAlert variant="error" className="mb-4">
+          {error}
+        </StatusAlert>
+      ) : null}
 
       <div className="flex flex-wrap gap-2 mb-4">
         {(
@@ -147,51 +155,54 @@ function McpPage() {
             [m.admin_mcp_registered_tools(), status.tool_count],
           ] as const
         ).map(([label, count]) => (
-          <span key={label} className="badge badge-outline">
+          <Badge key={label} variant="outline">
             {label} {count}
-          </span>
+          </Badge>
         ))}
       </div>
 
       {status.servers.length === 0 ? (
-        <div className="alert alert-info text-sm">{m.admin_mcp_empty_hint()}</div>
+        <StatusAlert variant="info">{m.admin_mcp_empty_hint()}</StatusAlert>
       ) : (
         <div className="space-y-4">
           {status.servers.map((srv) => (
-            <div key={srv.name} className="card bg-base-200">
-              <div className="card-body gap-3">
+            <Card key={srv.name} className="bg-muted py-0">
+              <CardContent className="gap-3 py-4 px-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-semibold">{srv.name}</span>
-                    <span className={`badge badge-sm ${statusBadgeClass(srv.status)}`}>
+                    <Badge variant={statusBadgeVariant(srv.status)} className="text-xs">
                       {mcpStatusLabel(srv.status)}
-                    </span>
+                    </Badge>
                   </div>
                   <div className="flex gap-2">
-                    <button
+                    <Button
                       type="button"
-                      className="btn btn-xs btn-primary"
+                      size="sm"
+                      className="h-7 text-xs"
                       disabled={!canStartMcpServer(srv) || !!acting[srv.name]}
                       onClick={() => void controlServer(srv.name, "start")}
                     >
                       {m.admin_common_start()}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
-                      className="btn btn-xs btn-ghost"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs"
                       disabled={!canStopMcpServer(srv) || !!acting[srv.name]}
                       onClick={() => void controlServer(srv.name, "stop")}
                     >
                       {m.admin_common_stop()}
-                    </button>
+                    </Button>
                   </div>
                 </div>
-                {srv.error ? <p className="text-xs text-error">{srv.error}</p> : null}
+                {srv.error ? <p className="text-xs text-destructive">{srv.error}</p> : null}
                 <details>
                   <summary className="text-sm font-medium cursor-pointer mb-2">
                     {m.admin_common_config()}
                   </summary>
-                  <pre className="text-xs overflow-x-auto bg-base-300 rounded p-2">
+                  <pre className="text-xs overflow-x-auto bg-muted rounded p-2">
                     {JSON.stringify(srv.config, null, 2)}
                   </pre>
                 </details>
@@ -203,8 +214,8 @@ function McpPage() {
                     <li key={i}>{(t as { name?: string }).name ?? JSON.stringify(t)}</li>
                   ))}
                 </ul>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}

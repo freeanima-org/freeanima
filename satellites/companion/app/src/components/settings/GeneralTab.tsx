@@ -1,3 +1,4 @@
+import { Card, CardContent } from "@freeanima/ui-kit";
 import { useCompanionStore } from "@/stores/companion.ts";
 
 export function GeneralTab() {
@@ -6,19 +7,25 @@ export function GeneralTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="card card-border bg-base-300/30">
-        <div className="card-body py-3 px-4 text-xs text-base-content/70 gap-1">
+      <Card className="gap-0 border bg-muted/30 py-0 shadow-none">
+        <CardContent className="flex flex-col gap-1 px-4 py-3 text-xs text-muted-foreground">
           <p>
-            实例 ID：<span className="text-base-content">{instanceId || "—"}</span>
+            实例 ID：<span className="text-foreground">{instanceId || "—"}</span>
           </p>
           <p>
             SAP：
-            <span className={sapConnected ? "text-success" : "text-warning"}>
+            <span
+              className={
+                sapConnected
+                  ? "text-green-700 dark:text-green-300"
+                  : "text-yellow-700 dark:text-yellow-300"
+              }
+            >
               {sapConnected ? "已连接" : "未连接"}
             </span>
           </p>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

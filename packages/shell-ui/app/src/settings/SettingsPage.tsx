@@ -7,7 +7,7 @@ export function SettingsPage() {
   const bindings = useShellAppBindings();
 
   return (
-    <div className="h-full min-h-0 flex flex-col bg-base-100">
+    <div className="h-full min-h-0 flex flex-col bg-background">
       <div className="flex-1 min-h-0">
         <SettingsHost bindings={bindings} platform={platform} />
       </div>

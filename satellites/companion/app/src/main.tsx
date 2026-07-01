@@ -1,5 +1,6 @@
 import { StrictMode, useCallback, useEffect } from "react";
 import { createRoot } from "react-dom/client";
+import { Spinner } from "@freeanima/ui-kit";
 import { CharacterViewport } from "@/components/CharacterViewport.tsx";
 import { TextBubbleOverlay } from "@/components/TextBubbleOverlay.tsx";
 import { useCompanionStore } from "@/stores/companion.ts";
@@ -117,11 +118,7 @@ function CompanionWindow() {
   if (loading) {
     return (
       <div className="companion-overlay flex items-center justify-center">
-        <span
-          className="loading loading-spinner loading-md text-primary"
-          role="status"
-          aria-label="加载中"
-        />
+        <Spinner className="size-6 text-primary" aria-label="加载中" />
       </div>
     );
   }
@@ -147,11 +144,7 @@ function CompanionWindow() {
 
       {!characterReady && modelPath && modelLoading ? (
         <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-          <span
-            className="loading loading-spinner loading-md text-primary"
-            role="status"
-            aria-label="加载中"
-          />
+          <Spinner className="size-6 text-primary" aria-label="加载中" />
         </div>
       ) : null}
 

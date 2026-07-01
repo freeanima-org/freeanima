@@ -43,8 +43,8 @@ export function ResponsiveSidebarLayout({
       showListHeader={showSidebarHeader}
       showDetailHeader={false}
       listWidthClass="w-64"
-      listAsideClassName="border-base-300 bg-base-200/30"
-      listHeaderClassName="p-3 font-semibold text-sm text-base-content/60 uppercase tracking-wide shrink-0"
+      listAsideClassName="border bg-muted/30"
+      listHeaderClassName="p-3 font-semibold text-sm text-muted-foreground uppercase tracking-wide shrink-0"
       detailClassName="overflow-y-auto app-main-padding"
       listOpen={sidebarOpen}
       onListOpenChange={setSidebarOpen}

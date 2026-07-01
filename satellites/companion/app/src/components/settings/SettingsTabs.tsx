@@ -1,4 +1,7 @@
+import { Tabs, TabsList, TabsTrigger } from "@freeanima/ui-kit";
 import { useCompanionStore } from "@/stores/companion.ts";
+
+const TAB_IDS = ["general", "behavior", "models", "library", "slots"] as const;
 
 export function SettingsTabs() {
   const tab = useCompanionStore((s) => s.settingsTab);
@@ -13,22 +16,22 @@ export function SettingsTabs() {
   ];
 
   return (
-    <div
-      role="tablist"
-      className="tabs tabs-boxed bg-base-300/40 mx-5 mt-2 mb-0 shrink-0 flex-wrap h-auto gap-1 p-1"
-      aria-label="设置分类"
+    <Tabs
+      value={tab}
+      onValueChange={(value) => {
+        if ((TAB_IDS as readonly string[]).includes(value)) {
+          setTab(value as (typeof TAB_IDS)[number]);
+        }
+      }}
+      className="mx-5 mt-2 mb-0 shrink-0 gap-0"
     >
-      {tabs.map((t) => (
-        <button
-          key={t.id}
-          type="button"
-          role="tab"
-          className={`tab tab-sm ${tab === t.id ? "tab-active" : ""}`}
-          onClick={() => setTab(t.id)}
-        >
-          {t.label}
-        </button>
-      ))}
-    </div>
+      <TabsList className="h-auto w-full flex-wrap gap-1 bg-muted/40 p-1" aria-label="设置分类">
+        {tabs.map((t) => (
+          <TabsTrigger key={t.id} value={t.id} className="text-xs">
+            {t.label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   );
 }

@@ -1,6 +1,26 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute } from "@tanstack/react-router";
 import { Fragment, useCallback, useEffect, useState } from "react";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Checkbox,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@freeanima/ui-kit";
 import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form";
 import {
   getDeepSleepRounds,
@@ -82,18 +102,20 @@ function triggerLabel(trigger: string): string {
   }
 }
 
-function stepStatusBadgeClass(status: string | undefined): string {
+type BadgeVariant = "success" | "secondary" | "destructive" | "warning" | "ghost";
+
+function stepStatusBadgeVariant(status: string | undefined): BadgeVariant {
   switch (status) {
     case "completed":
-      return "badge-success";
+      return "success";
     case "running":
-      return "badge-info";
+      return "secondary";
     case "failed":
-      return "badge-error";
+      return "destructive";
     case "skipped":
-      return "badge-warning";
+      return "warning";
     default:
-      return "badge-ghost";
+      return "ghost";
   }
 }
 
@@ -299,171 +321,190 @@ function SleepPage() {
   return (
     <div>
       <h2 className="text-lg font-bold mb-1">{m.admin_nav_sleep()}</h2>
-      <p className="text-sm text-base-content/60 mb-4">{m.admin_sleep_desc()}</p>
+      <p className="text-sm text-muted-foreground mb-4">{m.admin_sleep_desc()}</p>
 
-      <div className="card bg-base-200 p-4 mb-4">
-        <h3 className="font-semibold mb-1">{m.admin_sleep_cycle_title()}</h3>
-        <p className="text-sm text-base-content/60 mb-3">{m.admin_sleep_cycle_status()}</p>
-        <FormFieldset bordered={false} className="gap-3 mb-3">
-          <FormField label={m.admin_sleep_cycle_day()} className="max-w-xs text-xs">
-            <input
-              type="text"
-              className="input input-sm input-bordered"
-              placeholder="YYYY-MM-DD"
-              value={pipelineDay}
-              onChange={(e) => setPipelineDay(e.target.value)}
+      <Card className="bg-muted py-0 mb-4">
+        <CardContent className="p-4">
+          <h3 className="font-semibold mb-1">{m.admin_sleep_cycle_title()}</h3>
+          <p className="text-sm text-muted-foreground mb-3">{m.admin_sleep_cycle_status()}</p>
+          <FormFieldset bordered={false} className="gap-3 mb-3">
+            <FormField label={m.admin_sleep_cycle_day()} className="max-w-xs text-xs">
+              <Input
+                type="text"
+                className="h-8"
+                placeholder="YYYY-MM-DD"
+                value={pipelineDay}
+                onChange={(e) => setPipelineDay(e.target.value)}
+                disabled={pipelineBusy}
+              />
+            </FormField>
+            <div className="max-w-md">
+              <FormFieldLabel className="text-xs py-0">
+                {m.admin_sleep_deep_sleep_mode()}
+              </FormFieldLabel>
+              <Select
+                value={deepSleepMode}
+                onValueChange={(v) => setDeepSleepMode(v as "full" | "incremental")}
+                disabled={pipelineBusy}
+              >
+                <SelectTrigger size="sm" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="full">{m.admin_sleep_deep_sleep_mode_full()}</SelectItem>
+                  <SelectItem value="incremental">
+                    {m.admin_sleep_deep_sleep_mode_incremental()}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </FormFieldset>
+          <div className="flex items-center gap-2 flex-wrap mb-4">
+            <Button
+              type="button"
+              size="sm"
               disabled={pipelineBusy}
-            />
-          </FormField>
-          <div className="max-w-md">
-            <FormFieldLabel className="text-xs py-0">
-              {m.admin_sleep_deep_sleep_mode()}
-            </FormFieldLabel>
-            <select
-              className="select select-sm select-bordered w-full"
-              value={deepSleepMode}
-              onChange={(e) => setDeepSleepMode(e.target.value as "full" | "incremental")}
-              disabled={pipelineBusy}
+              onClick={() => void startCycle()}
             >
-              <option value="full">{m.admin_sleep_deep_sleep_mode_full()}</option>
-              <option value="incremental">{m.admin_sleep_deep_sleep_mode_incremental()}</option>
-            </select>
+              {pipelineStatus?.running || pipelineStarting
+                ? m.admin_sleep_cycle_running()
+                : m.admin_sleep_cycle_run()}
+            </Button>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="pipeline-force"
+                checked={pipelineForce}
+                disabled={pipelineBusy}
+                onCheckedChange={(checked) => setPipelineForce(checked === true)}
+              />
+              <Label htmlFor="pipeline-force" className="text-sm">
+                {m.admin_sleep_cycle_force()}
+              </Label>
+            </div>
           </div>
-        </FormFieldset>
-        <div className="flex items-center gap-2 flex-wrap mb-4">
-          <button
-            type="button"
-            className="btn btn-sm btn-primary"
-            disabled={pipelineBusy}
-            onClick={() => void startCycle()}
-          >
-            {pipelineStatus?.running || pipelineStarting
-              ? m.admin_sleep_cycle_running()
-              : m.admin_sleep_cycle_run()}
-          </button>
-          <label className="label cursor-pointer justify-start gap-2">
-            <input
-              type="checkbox"
-              className="checkbox checkbox-sm"
-              checked={pipelineForce}
-              onChange={(e) => setPipelineForce(e.target.checked)}
-              disabled={pipelineBusy}
-            />
-            <span className="text-sm">{m.admin_sleep_cycle_force()}</span>
-          </label>
-        </div>
 
-        {stepNodes.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="table table-sm">
-              <thead>
-                <tr>
-                  <th>{m.admin_sleep_cycle_step()}</th>
-                  <th>{m.admin_common_status()}</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {stepNodes.map((node) => {
-                  const step = stepStates[node.id];
-                  const status = step?.status ?? "pending";
-                  const isRunningThis = runningStepId === node.id;
-                  return (
-                    <tr key={node.id}>
-                      <td className="font-medium">{stepLabel(node.id)}</td>
-                      <td>
-                        <span className={`badge badge-sm ${stepStatusBadgeClass(status)}`}>
-                          {status}
-                        </span>
-                        {step?.skipped_reason ? (
-                          <span className="text-xs text-base-content/60 ml-1">
-                            ({step.skipped_reason})
-                          </span>
-                        ) : null}
-                        {step?.error ? (
-                          <span className="text-xs text-error ml-1">— {step.error}</span>
-                        ) : null}
-                      </td>
-                      <td className="text-right">
-                        <button
-                          type="button"
-                          className="btn btn-xs btn-secondary"
-                          disabled={pipelineBusy}
-                          onClick={() => void startStep(node.id)}
-                        >
-                          {isRunningThis
-                            ? m.admin_sleep_cycle_running()
-                            : m.admin_sleep_cycle_step_run()}
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-        {pipelineError && <p className="text-sm text-error mt-2">{pipelineError}</p>}
-      </div>
+          {stepNodes.length > 0 && (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{m.admin_sleep_cycle_step()}</TableHead>
+                    <TableHead>{m.admin_common_status()}</TableHead>
+                    <TableHead />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {stepNodes.map((node) => {
+                    const step = stepStates[node.id];
+                    const status = step?.status ?? "pending";
+                    const isRunningThis = runningStepId === node.id;
+                    return (
+                      <TableRow key={node.id}>
+                        <TableCell className="font-medium">{stepLabel(node.id)}</TableCell>
+                        <TableCell>
+                          <Badge variant={stepStatusBadgeVariant(status)} className="text-xs">
+                            {status}
+                          </Badge>
+                          {step?.skipped_reason ? (
+                            <span className="text-xs text-muted-foreground ml-1">
+                              ({step.skipped_reason})
+                            </span>
+                          ) : null}
+                          {step?.error ? (
+                            <span className="text-xs text-destructive ml-1">— {step.error}</span>
+                          ) : null}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            className="h-7 text-xs"
+                            disabled={pipelineBusy}
+                            onClick={() => void startStep(node.id)}
+                          >
+                            {isRunningThis
+                              ? m.admin_sleep_cycle_running()
+                              : m.admin_sleep_cycle_step_run()}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+          {pipelineError && <p className="text-sm text-destructive mt-2">{pipelineError}</p>}
+        </CardContent>
+      </Card>
 
       <div className="flex items-center gap-2 mb-3">
         <h3 className="font-semibold flex-1">{m.admin_sleep_pipeline_history_title()}</h3>
-        <button
+        <Button
           type="button"
-          className="btn btn-sm btn-ghost"
+          variant="ghost"
+          size="sm"
           disabled={loading}
           onClick={() => void refreshAfterRun()}
         >
           {loading ? m.admin_common_refreshing() : m.admin_common_refresh_list()}
-        </button>
-        {error && <span className="text-error text-sm">{error}</span>}
+        </Button>
+        {error && <span className="text-destructive text-sm">{error}</span>}
       </div>
 
       <div className="overflow-x-auto">
-        <table className="table table-sm">
-          <thead>
-            <tr>
-              <th>{m.admin_common_time()}</th>
-              <th>{m.admin_sleep_cycle_step()}</th>
-              <th>{m.admin_sleep_trigger()}</th>
-              <th>{m.admin_common_processing_day()}</th>
-              <th>{m.admin_common_status()}</th>
-              <th>{m.admin_sleep_attempt()}</th>
-              <th>{m.admin_common_tools()}</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{m.admin_common_time()}</TableHead>
+              <TableHead>{m.admin_sleep_cycle_step()}</TableHead>
+              <TableHead>{m.admin_sleep_trigger()}</TableHead>
+              <TableHead>{m.admin_common_processing_day()}</TableHead>
+              <TableHead>{m.admin_common_status()}</TableHead>
+              <TableHead>{m.admin_sleep_attempt()}</TableHead>
+              <TableHead>{m.admin_common_tools()}</TableHead>
+              <TableHead />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {runs.map((row) => (
               <Fragment key={row.id}>
-                <tr className={row.status === "failed" ? "bg-error/10" : ""}>
-                  <td className="whitespace-nowrap">{formatDisplayDateTime(row.finished_at)}</td>
-                  <td>{stepLabel(row.step_id)}</td>
-                  <td>{triggerLabel(row.trigger)}</td>
-                  <td>{formatDisplayDate(row.day)}</td>
-                  <td>
-                    <span className={`badge badge-sm ${stepStatusBadgeClass(row.status)}`}>
+                <TableRow className={row.status === "failed" ? "bg-destructive/10" : ""}>
+                  <TableCell className="whitespace-nowrap">
+                    {formatDisplayDateTime(row.finished_at)}
+                  </TableCell>
+                  <TableCell>{stepLabel(row.step_id)}</TableCell>
+                  <TableCell>{triggerLabel(row.trigger)}</TableCell>
+                  <TableCell>{formatDisplayDate(row.day)}</TableCell>
+                  <TableCell>
+                    <Badge variant={stepStatusBadgeVariant(row.status)} className="text-xs">
                       {pipelineStatusLabel(row.status)}
-                    </span>
-                  </td>
-                  <td className="font-mono text-xs">{row.attempt}</td>
-                  <td>{outputToolCalls(row.output)}</td>
-                  <td>
-                    <button type="button" className="btn btn-xs" onClick={() => toggleExpand(row)}>
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">{row.attempt}</TableCell>
+                  <TableCell>{outputToolCalls(row.output)}</TableCell>
+                  <TableCell>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => toggleExpand(row)}
+                    >
                       {expandedId === row.id ? m.admin_common_collapse() : m.admin_common_details()}
-                    </button>
-                  </td>
-                </tr>
+                    </Button>
+                  </TableCell>
+                </TableRow>
                 {expandedId === row.id && (
-                  <tr>
-                    <td colSpan={8} className="bg-base-200">
+                  <TableRow>
+                    <TableCell colSpan={8} className="bg-muted">
                       {row.error && (
-                        <pre className="text-xs text-error whitespace-pre-wrap break-all">
+                        <pre className="text-xs text-destructive whitespace-pre-wrap break-all">
                           {row.error}
                         </pre>
                       )}
                       {row.skipped_reason && (
-                        <p className="text-xs text-base-content/70 mb-2">{row.skipped_reason}</p>
+                        <p className="text-xs text-muted-foreground mb-2">{row.skipped_reason}</p>
                       )}
                       {row.output && (
                         <pre className="text-xs whitespace-pre-wrap break-all max-h-48 overflow-auto">
@@ -480,10 +521,7 @@ function SleepPage() {
                           )}
                           {!roundsLoading &&
                             rounds.map((r) => (
-                              <div
-                                key={r.round_index}
-                                className="mb-2 border-t border-base-300 pt-2"
-                              >
+                              <div key={r.round_index} className="mb-2 border-t border pt-2">
                                 <p className="text-sm font-medium">
                                   {m.admin_sleep_round_tools({
                                     index: String(r.round_index),
@@ -491,7 +529,7 @@ function SleepPage() {
                                     count: String(r.output.tool_calls),
                                   })}
                                 </p>
-                                <p className="text-xs text-base-content/70">
+                                <p className="text-xs text-muted-foreground">
                                   {m.admin_sleep_change_log({
                                     added: String(r.change_log_snapshot.addedIds?.length ?? 0),
                                     updated: String(r.change_log_snapshot.modifiedIds?.length ?? 0),
@@ -505,20 +543,20 @@ function SleepPage() {
                             ))}
                         </div>
                       )}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )}
               </Fragment>
             ))}
             {runs.length === 0 && (
-              <tr>
-                <td colSpan={8} className="text-center text-base-content/50">
+              <TableRow>
+                <TableCell colSpan={8} className="text-center text-muted-foreground">
                   {m.admin_sleep_no_runs()}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

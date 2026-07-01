@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSubjectScope } from "@freeanima/shell-sdk/react";
+import { Button, Input, Spinner } from "@freeanima/ui-kit";
 import { ListDetailLayout } from "@freeanima/ui-kit/layout";
 
 import { EntryEditor } from "./components/EntryEditor.tsx";
@@ -62,11 +63,11 @@ export function DiaryApp() {
   }, [subjectKind]);
 
   const listPane = (
-    <div className="flex flex-col gap-3 h-full min-h-0">
+    <div className="flex h-full min-h-0 flex-col gap-3">
       <div className="flex flex-wrap items-center justify-end gap-2">
-        <button
+        <Button
           type="button"
-          className="btn btn-primary btn-sm"
+          size="sm"
           onClick={() => {
             const todayEntry = findEntryByDayLocal(entries, defaultEntryDateLocal());
             if (todayEntry) {
@@ -79,18 +80,18 @@ export function DiaryApp() {
           }}
         >
           新建
-        </button>
+        </Button>
       </div>
-      <input
+      <Input
         type="search"
-        className="input input-bordered input-sm w-full"
+        className="h-8 w-full"
         placeholder="搜索日记…"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />
-      {error ? <p className="text-error text-xs">{error}</p> : null}
-      {loading ? <span className="loading loading-spinner loading-sm" /> : null}
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      {error ? <p className="text-destructive text-xs">{error}</p> : null}
+      {loading ? <Spinner className="size-4" /> : null}
+      <div className="min-h-0 flex-1 overflow-y-auto">
         <EntryTimeline
           items={entries}
           selectedId={selectedId}
@@ -186,7 +187,7 @@ export function DiaryApp() {
         }}
       />
     ) : (
-      <div className="flex h-full min-h-0 items-center justify-center text-sm text-base-content/50">
+      <div className="text-muted-foreground flex h-full min-h-0 items-center justify-center text-sm">
         选择条目或新建日记
       </div>
     );
@@ -204,12 +205,12 @@ export function DiaryApp() {
       listTitle="日记"
       listWidthClass="md:w-80 lg:w-96"
       list={(ctx) => (
-        <div className="flex flex-col gap-3 h-full min-h-0 p-3">
+        <div className="flex h-full min-h-0 flex-col gap-3 p-3">
           {listPane}
           {ctx.isDrawer ? (
-            <button type="button" className="btn btn-ghost btn-sm" onClick={ctx.close}>
+            <Button type="button" variant="ghost" size="sm" onClick={ctx.close}>
               关闭列表
-            </button>
+            </Button>
           ) : null}
         </div>
       )}
