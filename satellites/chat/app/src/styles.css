@@ -3,7 +3,7 @@
 @source "./**/*.{tsx,ts}";
 @source "../../../../packages/ui-kit/src/**/*.{tsx,ts}";
 
-@import "../../../../packages/shell-ui/app/src/shared-safe-area.css";
+@import "@freeanima/ui-kit/styles.css";
 
 .md-content {
   line-height: 1.6;
@@ -39,8 +39,7 @@
   @apply bg-muted/50 text-foreground;
 }
 .session-item.sidebar-nav-active {
-  @apply bg-primary/20 text-foreground font-semibold;
-  box-shadow: inset 3px 0 0 var(--primary);
+  @apply bg-primary/20 text-foreground font-semibold border-l-[3px] border-l-primary;
 }
 
 .tool-bubble {

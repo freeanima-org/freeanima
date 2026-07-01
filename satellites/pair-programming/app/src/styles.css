@@ -69,8 +69,7 @@ html.studio-chromeless .app-header {
 }
 .nav-link.sidebar-nav-active,
 .session-item.sidebar-nav-active {
-  @apply bg-primary/20 text-foreground font-semibold;
-  box-shadow: inset 3px 0 0 var(--primary);
+  @apply bg-primary/20 text-foreground font-semibold border-l-[3px] border-l-primary;
 }
 
 .tool-bubble {
@@ -79,8 +78,7 @@ html.studio-chromeless .app-header {
 }
 
 .msg-bubble {
-  @apply rounded-2xl px-3 py-2 text-sm max-w-[85%];
-  background: var(--muted);
+  @apply rounded-2xl px-3 py-2 text-sm max-w-[85%] bg-muted;
 }
 
 .msg-bubble-user {
@@ -104,6 +102,6 @@ html.studio-chromeless .app-header {
     z-index: 35;
     width: 100% !important;
     max-width: 100%;
-    background: var(--muted);
+    @apply bg-muted;
   }
 }

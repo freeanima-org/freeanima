@@ -1,72 +1,50 @@
-# 前端 UI 规范（DaisyUI）
+# 前端 UI 规范（shadcn / Tailwind v4）
 
-> 与 [`frontend-features.md`](frontend-features.md) 包边界规则配合。样式栈：**Tailwind CSS v4 + DaisyUI 5**。
+> 与 [`frontend-features.md`](frontend-features.md) 包边界规则配合。样式栈：**Tailwind CSS v4 + shadcn/ui**（`@freeanima/ui-kit`）。
 
 ## 分层
 
-| 层级     | 做法                                          | 位置                               |
-| -------- | --------------------------------------------- | ---------------------------------- |
-| **基元** | 直接使用 daisyUI class，**不封装** React 组件 | 各 satellite / admin / shell-ui    |
-| **结构** | 表单/布局封装                                 | `@freeanima/ui-kit/form`、`layout` |
-| **复合** | 跨域重复交互模式                              | `@freeanima/ui-kit/composite`      |
-| **领域** | 产品专属 UI                                   | 各业务包本地                       |
+| 层级     | 做法                                      | 位置                               |
+| -------- | ----------------------------------------- | ---------------------------------- |
+| **基元** | `@freeanima/ui-kit` shadcn 原语 + variant | 各 satellite / admin / shell-ui    |
+| **结构** | 表单/布局封装                             | `@freeanima/ui-kit/form`、`layout` |
+| **复合** | 跨域重复交互模式                          | `@freeanima/ui-kit/composite`      |
+| **领域** | 产品专属 UI                               | 各业务包本地                       |
 
-## DaisyUI 配置
+## 主题与 CSS
 
-- 共享插件配置：[`packages/ui-kit/src/daisyui.css`](../packages/ui-kit/src/daisyui.css)（`themes: dark --default, light`）
-- 各 SPA `styles.css`：`@import "tailwindcss"` + `@import "@freeanima/ui-kit/daisyui.css"` + `@source`
-- **主题**：壳层/admin/chat 默认 `data-theme="dark"`；companion 为 `data-theme="light"`（产品意图，不强行统一）
+- **主题变量唯一定义处**：[`packages/ui-kit/src/styles/globals.css`](../packages/ui-kit/src/styles/globals.css)（`:root` / `.dark`）
+- 各 SPA `styles.css`：`@import "tailwindcss"` + `@import "@freeanima/ui-kit/globals.css"` + `@source`；需要 safe-area 时 `@import "@freeanima/ui-kit/styles.css"`
+- **禁止**在 `globals.css` 以外用 `var(--background)`、`var(--muted)` 等写背景/边框/文字色；改用 Tailwind class 或 `@apply bg-background` 等
+- **布局类裸 CSS**（`shared-safe-area.css`）只放 position、safe-area（`--sat` 等），**不放主题色**
+- 暗色：根节点 `.dark`（shadcn 约定），不用 `data-theme`
 
 ## 基元约定
 
-| 场景                | 推荐 class                                                                   |
-| ------------------- | ---------------------------------------------------------------------------- |
-| 工具栏按钮          | `btn btn-sm` + `btn-primary` / `btn-ghost`                                   |
-| 表格内按钮          | `btn btn-xs btn-ghost`                                                       |
-| 表单输入            | `input input-bordered input-sm`（或 `textarea-bordered`、`select-bordered`） |
-| 加载                | `loading loading-spinner loading-sm`                                         |
-| 空态（手写时）      | `text-sm text-base-content/60 py-4`；优先用 `EmptyState`                     |
-| 错误/提示（手写时） | `alert alert-error text-sm`；优先用 `StatusAlert`                            |
-
-## Modal
-
-统一使用 daisyUI `<dialog>` 模式（参考 admin `cron-run-log-modal.tsx`）：
-
-```tsx
-<dialog className="modal modal-open safe-area-pt safe-area-pb" open>
-  <div className="modal-box">…</div>
-  <div className="modal-action">…</div>
-  <form method="dialog" className="modal-backdrop">
-    <button type="button" onClick={onClose}>
-      close
-    </button>
-  </form>
-</dialog>
-```
-
-- **禁止**自定义 `bg-black/40` overlay 弹窗；确认类交互用 `ConfirmDialog`
-- 移动端底部 sheet：参考 `ActionSheet`（`modal-bottom sm:modal-middle`）
+| 场景       | 推荐做法                              |
+| ---------- | ------------------------------------- |
+| 按钮       | `<Button variant="…" size="…">`       |
+| 表单输入   | `<Input>` / `<Textarea>` / `<Select>` |
+| 加载       | `<Spinner>`                           |
+| 空态       | `<EmptyState>`                        |
+| 错误/提示  | `<StatusAlert>`                       |
+| 确认对话框 | `<ConfirmDialog>` / `<Dialog>`        |
 
 ## 复合组件
 
-从 `@freeanima/ui-kit/composite` 导入：
+从 `@freeanima/ui-kit/composite` 导入：`ConfirmDialog`、`ActionSheet`、`EmptyState`、`StatusAlert`。
 
-| 组件            | 用途                                                |
-| --------------- | --------------------------------------------------- |
-| `ConfirmDialog` | 确认/删除（替代 `window.confirm` 与自定义 overlay） |
-| `ActionSheet`   | 移动端底部操作菜单                                  |
-| `EmptyState`    | 列表/面板空态                                       |
-| `StatusAlert`   | 内联 info/success/warning/error                     |
+## 静态检查
 
-**i18n**：Cancel/Confirm/Close 等通用按钮文案由组件内置 Paraglide（`ui_common_*`）；`title`、`description`、`items[].label` 等领域文案由调用方传入。详见 [`i18n.md`](i18n.md)。
+- `bun run stylelint`：DaisyUI 遗留 token + 主题色裸 `var()`（见根目录 `stylelint.config.js`）
 
 ## 平台布局
 
-- 导航与主布局 IA：**必须** `detectPlatform()` / `useDrawerNav()` 分支，不靠纯 viewport 响应式替代移动端布局
-- 响应式 CSS 仅作桌面窗口缩放辅助
+- 导航与主布局 IA：**必须** `detectLayoutMode()` / `useDrawerNav()` 分支
+- `ListDetailLayout` drawer 颜色在 TSX 用 `bg-background`、`bg-black/55` 等 class，不在 `shared-safe-area.css` 写背景
 
 ## 禁止
 
-- 为 `btn` / `input` / `modal` 再包一层无行为基元组件
+- DaisyUI class / `--color-base-*` / `data-theme`
 - 在 `ui-kit` 内 import `sap-contract`、Hub API
 - 在 `shell-ui` 内深路径 import satellite 源码（走 package export）
