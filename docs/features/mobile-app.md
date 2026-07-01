@@ -4,17 +4,18 @@ title: Mobile app (Android)
 
 # Mobile app (Android)
 
-> Capacitor shell + unified shell-ui SPA (Chat / Admin / settings).  
+> Capacitor **薄壳** + Hub `/web/*` 远程 UI（默认）；`MOBILE_UI_MODE=bundled` 可回退 bundled SPA。  
 > Package: [`app/mobile/`](../../app/mobile/)
 
 ## Scope
 
-| Item       | Description                                                              |
-| ---------- | ------------------------------------------------------------------------ |
-| Platform   | **Android only** sideload (APK); iOS later                               |
-| Modules    | Chat (`sap-direct`) + Admin (`hub-rest`)                                 |
-| Hub config | APP **Hub settings**: URL + Service API Token (`fa_at_...`, Preferences) |
-| Hub duties | `/api` REST + `/sap/v1` WebSocket                                        |
+| Item       | Description                                              |
+| ---------- | -------------------------------------------------------- |
+| Platform   | **Android only** sideload (APK); iOS later               |
+| UI         | 默认 bootstrap → Hub `/web/*`（与浏览器/PWA 同一产物）   |
+| Modules    | Chat (`sap-direct`) + Admin (`hub-rest`)                 |
+| Hub config | APP **Hub settings**（Preferences）或 bootstrap 首次配置 |
+| Hub duties | `/api` REST + `/sap/v1` WebSocket                        |
 
 ## Topology
 
@@ -74,8 +75,9 @@ Mobile debug build: `cd app/mobile && bun run android:debug` (no minify + source
 ```bash
 bun run --filter @freeanima/app-mobile build
 cd app/mobile && bun run sync
-cd android && ./gradlew assembleDebug
 ```
+
+默认 **remote UI**（`www/` 仅 bootstrap，APK 体积小）。完整 bundled SPA：`MOBILE_UI_MODE=bundled bun run --filter @freeanima/app-mobile build`
 
 Debug full flow: `cd app/mobile && bun run android:debug`
 

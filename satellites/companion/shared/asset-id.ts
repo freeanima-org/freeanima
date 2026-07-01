@@ -1,13 +1,15 @@
-import { randomUUID } from "node:crypto";
+function randomUuid(): string {
+  return globalThis.crypto.randomUUID();
+}
 
 /** 导入素材的稳定 ID 与磁盘路径（显示名称单独存 config，改 name 不影响文件） */
 
 export function newModelId(): string {
-  return `mdl_${randomUUID()}`;
+  return `mdl_${randomUuid()}`;
 }
 
 export function newMotionId(): string {
-  return `mot_${randomUUID()}`;
+  return `mot_${randomUuid()}`;
 }
 
 export function motionFileNameForId(id: string): string {

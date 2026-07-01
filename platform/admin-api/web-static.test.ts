@@ -33,18 +33,26 @@ describe("web-static", () => {
 
     const cfgRes = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/config.json`), opts);
     expect(cfgRes?.ok).toBe(true);
-    const cfg = (await cfgRes!.json()) as { hub_url?: string; hub_ws_url?: string };
+    const cfg = (await cfgRes!.json()) as {
+      hub_url?: string;
+      hub_ws_url?: string;
+      ui_version?: string;
+    };
     expect(cfg.hub_url).toBe(base);
     expect(cfg.hub_ws_url).toContain("/sap/v1");
+
+    const asset = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/assets/main.js`), {
+      ...opts,
+      uiVersion: "0.8.1",
+    });
+    expect(asset?.headers.get("Cache-Control")).toContain("immutable");
+    expect(await asset!.text()).toBe("ok");
 
     const health = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/health`), opts);
     expect(health?.ok).toBe(true);
 
     const page = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/chat`), opts);
     expect(await page!.text()).toContain("ok");
-
-    const asset = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/assets/main.js`), opts);
-    expect(await asset!.text()).toBe("ok");
 
     const chunk = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/assets/chunk-abc.js`), opts);
     expect(chunk?.ok).toBe(true);

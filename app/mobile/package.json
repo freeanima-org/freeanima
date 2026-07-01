@@ -3,6 +3,12 @@
   "description": "FreeAnima 移动端壳（Capacitor + 聊天室 chat）",
   "private": true,
   "type": "module",
+  "exports": {
+    "./capacitor-ready": "./src/capacitor-ready.ts",
+    "./mobile-shell": "./src/mobile-shell.ts",
+    "./settings-registry": "./src/settings-registry.ts",
+    "./settings-stores": "./src/settings-stores.ts"
+  },
   "scripts": {
     "build": "vite build",
     "build:debug": "MOBILE_DEBUG=1 vite build --mode development",

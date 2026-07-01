@@ -20,6 +20,8 @@ const MIME: Record<string, string> = {
 export type WebStaticOptions = {
   distDir: string;
   appId?: string;
+  uiVersion?: string;
+  minShellVersion?: string;
 };
 
 export function isWebStaticPath(pathname: string): boolean {
@@ -39,12 +41,14 @@ function contentTypeForPath(filePath: string): string {
   return MIME[extname(filePath)] ?? "application/octet-stream";
 }
 
-function webConfigJsonResponse(req: Request, appId: string): Response {
+function webConfigJsonResponse(req: Request, options: WebStaticOptions): Response {
   const origin = new URL(req.url).origin;
   const body = JSON.stringify({
-    app_id: appId,
+    app_id: options.appId ?? "chat",
     hub_url: origin,
     hub_ws_url: resolveHubWsUrl(origin),
+    ...(options.uiVersion ? { ui_version: options.uiVersion } : {}),
+    ...(options.minShellVersion ? { min_shell_version: options.minShellVersion } : {}),
   });
   return new Response(body, {
     headers: {
@@ -56,9 +60,12 @@ function webConfigJsonResponse(req: Request, appId: string): Response {
 
 function fileResponse(filePath: string): Response {
   const file = Bun.file(filePath);
-  return new Response(file, {
-    headers: { "Content-Type": contentTypeForPath(filePath) },
-  });
+  const headers: Record<string, string> = { "Content-Type": contentTypeForPath(filePath) };
+  const rel = filePath.replace(/\\/g, "/");
+  if (rel.includes("/assets/")) {
+    headers["Cache-Control"] = "public, max-age=31536000, immutable";
+  }
+  return new Response(file, { headers });
 }
 
 function indexHtmlResponse(distDir: string): Response | null {
@@ -86,7 +93,7 @@ export function serveWebStatic(req: Request, options: WebStaticOptions): Respons
   }
 
   if (pathname === `${WEB_URL_PREFIX}/config.json`) {
-    return webConfigJsonResponse(req, options.appId ?? "chat");
+    return webConfigJsonResponse(req, options);
   }
 
   if (pathname === `${WEB_URL_PREFIX}/health`) {

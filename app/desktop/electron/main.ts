@@ -25,6 +25,11 @@ import { defaultHubUrl } from "./paths.ts";
 import { readShellClientConfig } from "./shell-client-store.ts";
 import { registerShellClientIpc } from "./shell-client-ipc.ts";
 import { startShellStaticServer } from "./static-server.ts";
+import {
+  resolveDesktopUiMode,
+  resolveRemoteShellUiBase,
+  shellUiPathToUrl,
+} from "./shell-ui-origin.ts";
 
 const SHELL_ROOT = join(__dirname, "..");
 const QUIT_FOR_INSTALL_ARG = "--quit-for-install";
@@ -214,7 +219,7 @@ function createShellBrowserWindow(opts: {
       additionalArguments: shellArgs([`--companion-api-origin=${companionApiOrigin()}`]),
     },
   });
-  void win.loadURL(`${shellStaticUrl}${opts.path}`);
+  void win.loadURL(shellUiPathToUrl(shellStaticUrl, opts.path));
   attachWindowDevTools(win, { openOnReady: devToolsOnStart });
   win.once("ready-to-show", () => {
     win.show();
@@ -227,7 +232,7 @@ function openMainWindow(path = "/chat"): void {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.show();
     mainWindow.focus();
-    const target = `${shellStaticUrl}${path}`;
+    const target = shellUiPathToUrl(shellStaticUrl, path);
     if (mainWindow.webContents.getURL() !== target) {
       void mainWindow.loadURL(target);
     }
@@ -324,6 +329,12 @@ async function startShellStatic(): Promise<void> {
   if (viteUrl) {
     shellStaticUrl = viteUrl;
     logLine(`shell-ui vite dev ${viteUrl}`);
+    return;
+  }
+
+  if (resolveDesktopUiMode() === "remote") {
+    shellStaticUrl = resolveRemoteShellUiBase(hubClient.hubUrl);
+    logLine(`shell-ui remote ${shellStaticUrl}`);
     return;
   }
 

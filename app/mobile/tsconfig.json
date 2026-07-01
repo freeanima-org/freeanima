@@ -4,7 +4,17 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "outDir": ".tsout"
   },
-  "references": [{ "path": "../../packages/shell-ui/vite" }],
-  "include": ["src/**/*.ts", "mobile-html.ts", "vite.config.ts", "../../types/**/*.d.ts"],
+  "references": [
+    { "path": "../../packages/shell-sdk" },
+    { "path": "../../packages/shell-ui/vite" }
+  ],
+  "include": [
+    "app/**/*.ts",
+    "bootstrap/**/*.ts",
+    "src/**/*.ts",
+    "mobile-html.ts",
+    "vite.config.ts",
+    "../../types/**/*.d.ts"
+  ],
   "exclude": ["**/*.test.ts", "dist/**"]
 }

@@ -11,6 +11,10 @@ describe("resolveSettingsPlatform", () => {
     expect(resolveSettingsPlatform({ isNativeShell: true })).toBe("mobile");
   });
 
+  test("compact layoutMode 为 mobile settings 平台", () => {
+    expect(resolveSettingsPlatform({ layoutMode: "compact" })).toBe("mobile");
+  });
+
   test("默认 desktop", () => {
     expect(resolveSettingsPlatform({})).toBe("desktop");
   });

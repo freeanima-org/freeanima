@@ -17,6 +17,8 @@ title: Remote access
 | **`http.host`**         | Hub listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                     |
 | **`http.cors_origins`** | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel          |
 | **Client settings**     | app/desktop / app/mobile / **browser Web** fill Hub URL and token in **Hub settings**                       |
+| **Remote UI**           | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |
+| **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                 |
 
 仅 `GET /api/health`、CORS 预检、`/api/echo` 豁免认证。
 
