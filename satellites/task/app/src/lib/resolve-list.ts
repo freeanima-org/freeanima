@@ -8,22 +8,49 @@ export function resolveDefaultListId(rows: TaskListRow[]): number | null {
   return pick?.id ?? null;
 }
 
-/** 解析应选中的清单：当前有效则保留；Web 下 URL 有效则用 URL；否则默认清单 */
-export function resolveSelectedListIdWithUrl(
+function isSelectableList(row: TaskListRow | undefined): row is TaskListRow {
+  return Boolean(row && !row.is_folder);
+}
+
+/** 解析应选中的清单：当前 → storage → URL → 默认 */
+export function resolveSelectedListId(
   rows: TaskListRow[],
-  options: { webShell: boolean; currentId: number | null; urlListId: number | null },
+  options: {
+    currentId: number | null;
+    storedListId: number | null;
+    urlListId: number | null;
+    preferUrl: boolean;
+  },
 ): number | null {
   if (rows.length === 0) return null;
 
   if (options.currentId != null) {
     const current = rows.find((l) => l.id === options.currentId);
-    if (current && !current.is_folder) return options.currentId;
+    if (isSelectableList(current)) return options.currentId;
   }
 
-  if (options.webShell && options.urlListId != null) {
+  if (options.storedListId != null) {
+    const stored = rows.find((l) => l.id === options.storedListId);
+    if (isSelectableList(stored)) return options.storedListId;
+  }
+
+  if (options.preferUrl && options.urlListId != null) {
     const fromUrl = rows.find((l) => l.id === options.urlListId);
-    if (fromUrl && !fromUrl.is_folder) return options.urlListId;
+    if (isSelectableList(fromUrl)) return options.urlListId;
   }
 
   return resolveDefaultListId(rows);
+}
+
+/** @deprecated 使用 resolveSelectedListId */
+export function resolveSelectedListIdWithUrl(
+  rows: TaskListRow[],
+  options: { webShell: boolean; currentId: number | null; urlListId: number | null },
+): number | null {
+  return resolveSelectedListId(rows, {
+    currentId: options.currentId,
+    storedListId: null,
+    urlListId: options.urlListId,
+    preferUrl: options.webShell,
+  });
 }

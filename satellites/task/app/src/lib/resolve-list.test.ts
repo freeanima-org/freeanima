@@ -1,7 +1,11 @@
 import { describe, expect, test } from "bun:test";
 
 import type { TaskListRow } from "./api.ts";
-import { resolveDefaultListId, resolveSelectedListIdWithUrl } from "./resolve-list.ts";
+import {
+  resolveDefaultListId,
+  resolveSelectedListId,
+  resolveSelectedListIdWithUrl,
+} from "./resolve-list.ts";
 
 const lists: TaskListRow[] = [
   {
@@ -65,5 +69,38 @@ describe("resolve-list", () => {
         urlListId: 1,
       }),
     ).toBe(2);
+  });
+
+  test("stored list id used when current invalid", () => {
+    expect(
+      resolveSelectedListId(lists, {
+        currentId: null,
+        storedListId: 1,
+        urlListId: null,
+        preferUrl: false,
+      }),
+    ).toBe(1);
+  });
+
+  test("stored list id preferred over url when current invalid", () => {
+    expect(
+      resolveSelectedListId(lists, {
+        currentId: null,
+        storedListId: 1,
+        urlListId: 2,
+        preferUrl: true,
+      }),
+    ).toBe(1);
+  });
+
+  test("current id kept when still valid", () => {
+    expect(
+      resolveSelectedListId(lists, {
+        currentId: 1,
+        storedListId: 2,
+        urlListId: 2,
+        preferUrl: true,
+      }),
+    ).toBe(1);
   });
 });

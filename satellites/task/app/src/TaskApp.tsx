@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { readModuleSelection, writeModuleSelection } from "@freeanima/shell-sdk";
 import { useSubjectScope } from "@freeanima/shell-sdk/react";
 import {
   Alert,
@@ -56,7 +57,7 @@ import {
 import { readListIdFromUrl, writeListIdToUrl } from "./lib/list-url.ts";
 import { moveTaskItemsToList } from "./lib/move-items.ts";
 import { applyShiftRangeSelect } from "./lib/range-select.ts";
-import { resolveDefaultListId, resolveSelectedListIdWithUrl } from "./lib/resolve-list.ts";
+import { resolveDefaultListId, resolveSelectedListId } from "./lib/resolve-list.ts";
 import { getParentId, getSiblings } from "./lib/list-tree.ts";
 import { sortOrderUpdates } from "./lib/reorder.ts";
 import { buildItemMenuItems, buildListMenuItems } from "./lib/task-menus.ts";
@@ -125,11 +126,13 @@ export function TaskApp() {
         return rows;
       }
       setSelectedListId((prev) => {
-        const next = resolveSelectedListIdWithUrl(rows, {
-          webShell,
+        const next = resolveSelectedListId(rows, {
           currentId: prev,
+          storedListId: readModuleSelection("tasks"),
           urlListId: webShell ? readListIdFromUrl() : null,
+          preferUrl: webShell,
         });
+        if (next != null) writeModuleSelection("tasks", next);
         if (webShell && next != null) writeListIdToUrl(next);
         return next;
       });
@@ -230,6 +233,7 @@ export function TaskApp() {
     setSelectedListId(id);
     setSelectedFolderId(null);
     if (lists.find((l) => l.id === id)?.closed) setShowClosed(true);
+    writeModuleSelection("tasks", id);
     if (webShell) writeListIdToUrl(id);
     if (useDrawer) setSidebarOpen(false);
   };
@@ -333,6 +337,7 @@ export function TaskApp() {
       if (wasSelected) {
         const nextId = resolveDefaultListId(rows.filter((l) => !l.closed));
         setSelectedListId(nextId);
+        if (nextId != null) writeModuleSelection("tasks", nextId);
         if (webShell && nextId != null) writeListIdToUrl(nextId);
       }
     } catch (err) {

@@ -75,3 +75,14 @@ export {
   setSubjectKind,
   subscribeSubjectKind,
 } from "./subject-scope-store.ts";
+export type {
+  EmailModuleSelection,
+  ModuleSelectionContext,
+  ModuleSelectionModule,
+} from "./module-selection.ts";
+export {
+  clearModuleSelection,
+  readModuleSelection,
+  resetModuleSelectionForTest,
+  writeModuleSelection,
+} from "./module-selection.ts";
