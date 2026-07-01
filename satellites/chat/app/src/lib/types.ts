@@ -63,9 +63,3 @@ export type ConversationAcpDockSnapshot = {
   task_progress: Record<string, string>;
   highlight_decision: boolean;
 };
-
-export type FridgeMagnetsResponse = {
-  redis_configured: boolean;
-  magnets: Array<{ key: string; value: string }>;
-  inject_text: string;
-};

@@ -79,6 +79,11 @@
   font-family: inherit;
 }
 
+.shell-layout-compact .admin-app {
+  padding: 0;
+  box-sizing: border-box;
+}
+
 @media (max-width: 1023px) {
   .admin-app {
     padding-top: var(--sat);

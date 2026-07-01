@@ -36,6 +36,14 @@ html[data-shell-ui="1"] body {
   padding-right: var(--sar);
 }
 
+/** 移动端底栏布局：顶栏 safe-area 由 main 统一承担（无独立顶栏时） */
+.shell-module-layout.shell-layout-compact > main {
+  padding-top: var(--sat);
+  padding-left: var(--sal);
+  padding-right: var(--sar);
+  box-sizing: border-box;
+}
+
 .shell-bottom-nav {
   padding-left: var(--sal);
   padding-right: var(--sar);

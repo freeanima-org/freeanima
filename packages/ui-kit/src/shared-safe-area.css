@@ -42,9 +42,7 @@
   bottom: var(--sab);
   left: var(--sal);
   z-index: 30;
-  background: rgb(0 0 0 / 0.5);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgb(0 0 0 / 0.55);
 }
 
 .list-detail-drawer-panel {
@@ -58,7 +56,8 @@
   min-height: 0;
   flex-direction: column;
   flex-shrink: 0;
-  border-right: 1px solid color-mix(in oklab, var(--color-base-content) 15%, transparent);
-  background-color: var(--color-base-100, oklch(var(--b1)));
+  border-right: 1px solid var(--sidebar-border, var(--border));
+  background-color: var(--sidebar, var(--background));
+  opacity: 1;
   box-shadow: 4px 0 24px rgb(0 0 0 / 0.25);
 }

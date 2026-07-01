@@ -37,7 +37,7 @@ export function ListDetailLayout({
   showListHeader = true,
   listHeaderClassName = "border shrink-0 border-b p-3 text-sm font-semibold",
   listWidthClass = "w-56",
-  listAsideClassName = "border bg-muted/95 backdrop-blur-sm",
+  listAsideClassName = "border bg-background",
   list,
   children,
   detailActions,
@@ -54,7 +54,7 @@ export function ListDetailLayout({
   const [listOpenInternal, setListOpenInternal] = useState(false);
   const listOpen = listOpenControlled ?? listOpenInternal;
 
-  const drawerAsideClass = "list-detail-drawer-panel safe-fixed-sidebar";
+  const drawerAsideClass = "list-detail-drawer-panel safe-fixed-sidebar bg-background";
   const desktopAsideClass = [
     "relative flex min-h-0 shrink-0 flex-col border-r",
     listWidthClass,

@@ -1,9 +1,10 @@
-import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Button } from "@freeanima/ui-kit";
 import { SubjectScopeProvider, SubjectToggle, useSubjectScope } from "@freeanima/shell-sdk/react";
 
 import { detectLayoutMode, isCompactLayout } from "../layout-mode.ts";
+import { navigateShellModule } from "../shell-nav.ts";
 import {
   shellMobileMoreNavItems,
   shellMobilePrimaryNavItems,
@@ -79,6 +80,7 @@ function DesktopModuleShell() {
 
 function MoreNavMenu({ items }: { items: ShellNavItem[] }) {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const moreActive = useMemo(
     () => items.some((item) => pathname.startsWith(item.match)),
@@ -104,24 +106,32 @@ function MoreNavMenu({ items }: { items: ShellNavItem[] }) {
         <>
           <button
             type="button"
-            className="fixed inset-0 z-40 cursor-default bg-transparent"
+            className="fixed inset-0 z-[65] cursor-default bg-transparent"
             aria-label="关闭菜单"
             onClick={() => setOpen(false)}
           />
           <div
             role="menu"
-            className="absolute bottom-full mb-2 right-0 z-50 min-w-40 rounded-lg border border bg-muted shadow-lg py-1"
+            className="fixed z-[70] min-w-40 rounded-lg border border bg-background shadow-lg py-1"
+            style={{
+              right: "max(0.75rem, var(--sar))",
+              bottom: "calc(var(--shell-bottom-nav-h) + var(--sab) + 0.5rem)",
+            }}
           >
             {items.map((item) => (
-              <Link
+              <button
                 key={item.to}
-                to={item.to}
+                type="button"
                 role="menuitem"
-                className="block px-4 py-2 text-sm hover:bg-muted"
-                onClick={() => setOpen(false)}
+                className="block w-full px-4 py-2 text-left text-sm hover:bg-muted"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  setOpen(false);
+                  navigateShellModule(navigate, item.to);
+                }}
               >
                 {item.label()}
-              </Link>
+              </button>
             ))}
           </div>
         </>
@@ -135,15 +145,12 @@ function MobileModuleShell() {
   const more = shellMobileMoreNavItems();
 
   return (
-    <div className="shell-module-layout h-full flex flex-col bg-background text-foreground">
-      <header className="shell-top-nav flex items-center justify-end bg-muted border-b border min-h-10 px-3 shrink-0">
-        <ShellSubjectToggle />
-      </header>
+    <div className="shell-module-layout shell-layout-compact h-full flex flex-col bg-background text-foreground">
       <main className="flex-1 min-h-0 overflow-hidden">
         <Outlet />
       </main>
       <nav
-        className="shell-bottom-nav shrink-0 flex border-t border bg-muted/95 backdrop-blur-sm safe-area-pb"
+        className="shell-bottom-nav relative z-[60] shrink-0 flex border-t border bg-background safe-area-pb"
         aria-label="模块导航"
       >
         {primary.map((item) => (

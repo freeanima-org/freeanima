@@ -328,6 +328,10 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return conversations.deleteConversation(this.runtimeDeps(), conversationId, platform);
   }
 
+  rollbackBeforeLastUser(conversationId: string, platform = ""): Promise<{ ok: boolean }> {
+    return conversations.rollbackBeforeLastUser(this.runtimeDeps(), conversationId, platform);
+  }
+
   async sendMessage(
     conversationId: string,
     message: string,

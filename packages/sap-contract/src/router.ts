@@ -104,6 +104,7 @@ export const SAP_METHODS = [
   "conversation.archive",
   "conversation.unarchive",
   "conversation.delete",
+  "conversation.rollbackBeforeLastUser",
   "conversation.subscribe",
   "conversation.acpDock",
   "conversation.commands",
@@ -156,6 +157,7 @@ export type SapRouterInputs = {
   "conversation.archive": ConversationArchiveInput;
   "conversation.unarchive": ConversationUnarchiveInput;
   "conversation.delete": ConversationDeleteInput;
+  "conversation.rollbackBeforeLastUser": ConversationDeleteInput;
   "conversation.subscribe": ConversationSubscribeInput;
   "conversation.acpDock": ConversationAcpDockInput;
   "conversation.commands": ConversationCommandsInput;
@@ -206,6 +208,7 @@ export type SapRouterOutputs = {
   "conversation.archive": ConversationMutateOutput;
   "conversation.unarchive": ConversationMutateOutput;
   "conversation.delete": ConversationMutateOutput;
+  "conversation.rollbackBeforeLastUser": ConversationMutateOutput;
   "conversation.subscribe": { ok: true };
   "conversation.acpDock": ConversationAcpDockOutput;
   "conversation.commands": ConversationCommandsOutput;

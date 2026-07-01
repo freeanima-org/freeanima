@@ -201,6 +201,19 @@ export async function deleteConversation(
   return { ok: true };
 }
 
+export async function rollbackBeforeLastUser(
+  deps: RuntimeDeps,
+  conversationId: string,
+  platform = "",
+): Promise<{ ok: boolean }> {
+  await checkPlatform(deps, { platform }, conversationId);
+  if (!(await deps.conversation.conversationExists(conversationId))) {
+    throw new Error(`Conversation not found: ${conversationId}`);
+  }
+  await deps.conversation.rollbackBeforeLastUser(conversationId);
+  return { ok: true };
+}
+
 export async function appendConversationMetaForEngine(
   deps: RuntimeDeps,
   conversationId: string,

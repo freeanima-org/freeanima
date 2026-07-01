@@ -91,6 +91,12 @@ const adminIndexRoute = createRoute({
   },
 });
 
+const adminDashboardRoute = createRoute({
+  getParentRoute: () => mainLayoutRoute,
+  path: "/admin/dashboard",
+  component: AdminShell,
+});
+
 const adminRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/admin/$",
@@ -113,6 +119,7 @@ const routeTree = rootRoute.addChildren([
     diaryRoute,
     notificationsRoute,
     adminIndexRoute,
+    adminDashboardRoute,
     adminRoute,
     settingsRoute,
   ]),
