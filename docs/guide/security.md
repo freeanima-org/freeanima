@@ -11,9 +11,9 @@ title: Security
 
 FreeAnima is designed for **single-user local / intranet** deployment:
 
-- HTTP / Admin **has no auth by default**; binding `127.0.0.1` is not security—any process or user that can reach the port can read conversations, send messages, start/stop MCP/ACP.
+- Business HTTP API (`/api/*` except health/CORS/echo) requires a **Service API Token** (`Authorization: Bearer fa_at_…`); create with `anima token create`. Binding `127.0.0.1` limits network exposure but does not replace token auth — any local process that can reach the port still needs a valid token for business routes.
 - Default bind is `127.0.0.1`; for LAN access, assess CORS and network isolation yourself.
-- **Do not** expose the service to the public internet without a Service API Token on clients (see [`remote-access.md`](remote-access.md)).
+- **Do not** expose the service to the public internet without TLS and token-protected clients (see [`remote-access.md`](remote-access.md)).
 
 ## Credential Responsibilities
 
@@ -30,24 +30,24 @@ FreeAnima is designed for **single-user local / intranet** deployment:
 
 ## Data Persistence
 
-| Path                            | Content             | Encryption                      |
-| ------------------------------- | ------------------- | ------------------------------- |
-| PostgreSQL conversation archive | sessions / messages | No application-layer encryption |
-| `~/.anima/weixin/`              | WeChat sync state   | None                            |
+| Path                            | Content                  | Encryption                      |
+| ------------------------------- | ------------------------ | ------------------------------- |
+| PostgreSQL conversation archive | conversations / messages | No application-layer encryption |
+| `~/.anima/weixin/`              | WeChat sync state        | None                            |
 
 Disk backup = data access. Protect backup media accordingly.
 
 ## LLM Tool Risks
 
-| Capability             | Risk                                                                                                                |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `terminal`             | Default `shell: true`, can run arbitrary shell commands                                                             |
-| `file_read_file`       | Partial path deny (`.ssh` private keys, `/etc/passwd`, etc.); **not** full `/etc/` deny                             |
-| `file_write_file`      | deny list + write-protected paths                                                                                   |
-| MCP tools              | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined               |
-| Capability mask (Mask) | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `capabilities/mask` |
-| ACP (Cursor)           | Default **auto-approve** all `session/request_permission` (`allow-once`)                                            |
-| `credentials_list`     | Returns pass path metadata only, no values                                                                          |
+| Capability             | Risk                                                                                                                          |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `terminal`             | Default `shell: true`, can run arbitrary shell commands                                                                       |
+| `file_read_file`       | Partial path deny (`.ssh` private keys, `/etc/passwd`, etc.); **not** full `/etc/` deny                                       |
+| `file_write_file`      | deny list + write-protected paths                                                                                             |
+| MCP tools              | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined                         |
+| Capability mask (Mask) | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `capabilities/task/src/mask/` |
+| ACP (Cursor)           | Default **auto-approve** all `session/request_permission` (`allow-once`)                                                      |
+| `credentials_list`     | Returns pass path metadata only, no values                                                                                    |
 
 ## Measures in Place
 
@@ -60,6 +60,7 @@ Disk backup = data access. Protect backup media accordingly.
 | Slash commands          | Whitelist routing; every command must produce user-visible feedback; long-running commands send an immediate ack then the final result |
 | MCP default stdio       | Reduces port exposure                                                                                                                  |
 | Credential isolation    | LLM sees pass paths only, not values                                                                                                   |
+| Service API Token       | Business `/api/*` routes require `Authorization: Bearer fa_at_…` (`service_api_tokens` PG table); health/CORS/echo exempt              |
 | CI secret scanning      | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)                          |
 | `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                                          |
 
@@ -67,15 +68,15 @@ Disk backup = data access. Protect backup media accordingly.
 
 The following are planned in code or docs—**deployers must not assume implemented**:
 
-| Priority | Item                                                  | Status                                                                                                           |
-| -------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                                                                                                          |
-| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                                                                                                  |
-| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                                                                                                  |
-| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                                                                                                  |
-| P2       | HTTP API auth                                         | 业务 API 须带 per-subject Service API Token；`GET /api/health` 豁免（见 [`remote-access.md`](remote-access.md)） |
-| P3       | IPC / LLM rate limiting                               | None                                                                                                             |
-| P3       | Session disk encryption                               | None                                                                                                             |
+| Priority | Item                                                  | Status                              |
+| -------- | ----------------------------------------------------- | ----------------------------------- |
+| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                             |
+| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                     |
+| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                     |
+| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                     |
+| P2       | Config redaction maintenance for new secret fields    | Partial — sync on new config fields |
+| P3       | IPC / LLM rate limiting                               | None                                |
+| P3       | Session disk encryption                               | None                                |
 
 ## Threat Sources
 

@@ -10,7 +10,7 @@ Detailed implementation constraints for AI agents working in this repository. St
 | [`drizzle-db.md`](drizzle-db.md)               | `core/src/db/pg` repository queries; ORM vs `db.execute`; `$inferSelect` row typing |
 | [`testing.md`](testing.md)                     | Adding or moving tests; mock strategy; CI tiers                                     |
 | [`packages.md`](packages.md)                   | New workspace package or rename (RFC #1)                                            |
-| [`code-layers.md`](code-layers.md)             | Five-layer deps, composition root, Registry injection                               |
+| [`code-layers.md`](code-layers.md)             | Six-layer deps, composition root, Registry injection                                |
 | [`frontend-features.md`](frontend-features.md) | 前端功能原型 A/B/C、SAP vs hub-rest 通道、新功能 touch 清单                         |
 | [`frontend-ui.md`](frontend-ui.md)             | DaisyUI 基元约定、`ui-kit/composite` 复合组件、Modal/空态规范                       |
 | [`release.md`](release.md)                     | SemVer, Conventional Commits, Release Please, npm/Docker                            |
@@ -18,6 +18,6 @@ Detailed implementation constraints for AI agents working in this repository. St
 | [`i18n.md`](i18n.md)                           | UI/docs i18n: Paraglide, po4a, PO workflow, site/Admin message keys                 |
 | [`docs-i18n.md`](docs-i18n.md)                 | AI rules for `docs/**` authoring and `po/zh_CN/*.po` msgstr                         |
 
-**SSOT**: dependency boundaries → [`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts); storage shapes → [`core/src/db/schema/`](../../core/src/db/schema/); ports → [`core/src/repos/ports/`](../../core/src/repos/ports/).
+**SSOT**: dependency boundaries → [`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts); storage shapes → [`core/src/db/schema/`](../../core/src/db/schema/); port types and wiring contracts → [`platform/ports/`](../../platform/ports/) (composition root imports `@freeanima/platform/ports`).
 
 Product / cognitive architecture (four storage layers, tools, Gateway) → [`docs/concepts/architecture.md`](../../docs/concepts/architecture.md).

@@ -47,7 +47,7 @@ How agents should _shape_ changes. Hard checks and conventions → [`.agent/rule
 ## Common commands
 
 ```bash
-bun install && bun run check # before PR: typecheck + lint + format + tests
+bun install && bun run check # before PR: typecheck + lint + dep-check + format + test:changed
 bun run test:changed # local / pre-commit (unit changed only)
 bun run test:unit # all unit tests
 bun run test:integration # integration (tests/integration/)
@@ -118,6 +118,8 @@ Corrections or refinements to direction, principles, philosophy, or agent behavi
 1. **Code implementation** > all docs
 2. **`docs/concepts/architecture.md`** > other `docs/**/*.md`
 3. **GitHub Issues** > architecture direction planning
+
+When sources conflict: **implemented behavior** follows code (and topic docs that match code, e.g. [`sleep.md`](docs/concepts/sleep.md) for sleep scheduling). **Open enhancement Issues** may describe future direction that overrides stale planning prose but not shipped code.
 
 ## Docs to update when code changes
 

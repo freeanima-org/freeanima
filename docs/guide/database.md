@@ -54,14 +54,14 @@ Fresh Debian installs via `setup-postgres-debian.sh` handle extensions automatic
 
 ```bash
 DATABASE_URL="$(anima credential get services/postgres/anima url)" \
-  bun run --filter @freeanima/core/db db:migrate
+  bun run --filter @freeanima/core db:migrate
 ```
 
 Run after extensions are installed, or restart `anima service`.
 
 ## `auto_llm_runs` (audit)
 
-Background LLM without user turns (cron agent, sleep pipeline stages) writes to `auto_llm_runs` instead of creating `sessions`. Retention (optional `config.yaml`):
+Background LLM without user turns (cron agent, sleep pipeline stages) writes to `auto_llm_runs` instead of creating `conversations`. Retention (optional `config.yaml`):
 
 ```yaml
 auto_llm:
