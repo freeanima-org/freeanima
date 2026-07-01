@@ -1,8 +1,25 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import type { PromptDebugResponse, ConversationListItem } from "@freeanima/admin-contract/api";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@freeanima/ui-kit";
 import { useEffect, useMemo, useState } from "react";
 import { FormField } from "@freeanima/ui-kit/form";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { getPromptDebug, listConversations } from "@admin/lib/api.ts";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
 import { m } from "@admin/lib/i18n.ts";
@@ -53,27 +70,29 @@ export const Route = createFileRoute("/_sidebar/system-prompt")({
 
 function ToolSchemaCard({ tool }: { tool: PromptDebugResponse["tools"]["items"][number] }) {
   return (
-    <div className="card bg-base-200">
-      <div className="card-body py-3 px-4">
+    <Card className="bg-muted py-0">
+      <CardContent className="py-3 px-4">
         <div className="flex items-center justify-between gap-2">
           <h3 className="font-mono text-sm font-bold break-all">{tool.name}</h3>
           {tool.toolset ? (
-            <span className="badge badge-ghost badge-xs shrink-0">{tool.toolset}</span>
+            <Badge variant="ghost" className="text-xs shrink-0">
+              {tool.toolset}
+            </Badge>
           ) : null}
         </div>
         {tool.description ? (
-          <p className="text-xs text-base-content/60">{tool.description}</p>
+          <p className="text-xs text-muted-foreground">{tool.description}</p>
         ) : null}
         <details className="mt-1">
-          <summary className="text-xs cursor-pointer text-base-content/50">
+          <summary className="text-xs cursor-pointer text-muted-foreground">
             {m.admin_tools_param_schema()}
           </summary>
-          <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
+          <pre className="text-xs mt-1 bg-muted p-2 rounded overflow-x-auto">
             {JSON.stringify(tool.parameters, null, 2)}
           </pre>
         </details>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -81,24 +100,24 @@ function BreakdownBar({ data }: { data: PromptDebugResponse["system"]["breakdown
   const systemTotal =
     data.system_self + data.system_agents + data.system_resident + data.system_toolsets;
   return (
-    <div className="card bg-base-200">
-      <div className="card-body py-3 px-4 gap-2">
+    <Card className="bg-muted py-0">
+      <CardContent className="py-3 px-4 gap-2">
         <h3 className="text-sm font-semibold">{m.admin_system_prompt_token_breakdown()}</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
           <div>
-            <span className="text-base-content/50">{m.admin_system_prompt_token_system()}</span>
+            <span className="text-muted-foreground">{m.admin_system_prompt_token_system()}</span>
             <div className="font-mono">~{formatTokenK(systemTotal)}</div>
           </div>
           <div>
-            <span className="text-base-content/50">{m.admin_system_prompt_token_messages()}</span>
+            <span className="text-muted-foreground">{m.admin_system_prompt_token_messages()}</span>
             <div className="font-mono">~{formatTokenK(data.messages)}</div>
           </div>
           <div>
-            <span className="text-base-content/50">{m.admin_system_prompt_token_tools()}</span>
+            <span className="text-muted-foreground">{m.admin_system_prompt_token_tools()}</span>
             <div className="font-mono">~{formatTokenK(data.tools)}</div>
           </div>
           <div>
-            <span className="text-base-content/50">{m.admin_system_prompt_token_total()}</span>
+            <span className="text-muted-foreground">{m.admin_system_prompt_token_total()}</span>
             <div className="font-mono font-semibold">~{formatTokenK(data.total)}</div>
           </div>
         </div>
@@ -106,7 +125,7 @@ function BreakdownBar({ data }: { data: PromptDebugResponse["system"]["breakdown
           data.system_toolsets > 0 ||
           data.system_agents > 0 ||
           data.system_resident > 0) && (
-          <div className="flex flex-wrap gap-2 text-xs text-base-content/60">
+          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
             {data.system_self > 0 ? (
               <span>
                 {m.admin_system_prompt_block_self()} ~{formatTokenK(data.system_self)}
@@ -134,8 +153,8 @@ function BreakdownBar({ data }: { data: PromptDebugResponse["system"]["breakdown
             ) : null}
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -238,76 +257,81 @@ function SystemPromptPage() {
   return (
     <div>
       <h2 className="text-lg font-bold mb-1">{m.admin_nav_system_prompt()}</h2>
-      <p className="text-sm text-base-content/60 mb-4">{m.admin_system_prompt_desc()}</p>
+      <p className="text-sm text-muted-foreground mb-4">{m.admin_system_prompt_desc()}</p>
 
       <div className="flex flex-wrap items-end gap-3 mb-4">
         <FormField
           label={m.admin_system_prompt_conversation_optional()}
           className="w-full max-w-xl text-xs"
         >
-          <select
-            className="select select-bordered select-sm w-full font-mono text-xs"
-            value={selectedConversation}
-            onChange={(e) => handleConversationChange(e.target.value)}
+          <Select
+            value={selectedConversation || "__global__"}
+            onValueChange={(v) => handleConversationChange(v === "__global__" ? "" : v)}
           >
-            <option value="">{m.admin_common_global_template()}</option>
-            {sortedConversations.map((s) => (
-              <option key={s.id} value={s.id}>
-                {(s.title || m.admin_common_no_title()).slice(0, 24)} · {s.id.slice(0, 20)}…
-              </option>
-            ))}
-          </select>
+            <SelectTrigger size="sm" className="w-full font-mono text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__global__">{m.admin_common_global_template()}</SelectItem>
+              {sortedConversations.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  {(s.title || m.admin_common_no_title()).slice(0, 24)} · {s.id.slice(0, 20)}…
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </FormField>
         {selectedConversation ? (
-          <Link
-            to="/conversations/$conversationId"
-            params={{ conversationId: selectedConversation }}
-            className="btn btn-ghost btn-xs"
-          >
-            {m.admin_system_prompt_conversation_detail()}
-          </Link>
+          <Button variant="ghost" size="sm" className="h-7 text-xs" asChild>
+            <Link
+              to="/conversations/$conversationId"
+              params={{ conversationId: selectedConversation }}
+            >
+              {m.admin_system_prompt_conversation_detail()}
+            </Link>
+          </Button>
         ) : null}
-        <Link to="/self-layer" className="btn btn-ghost btn-xs">
-          {m.admin_system_prompt_self_layer()}
-        </Link>
-        <Link to="/tools" className="btn btn-ghost btn-xs">
-          {m.admin_system_prompt_tools_list()}
-        </Link>
+        <Button variant="ghost" size="sm" className="h-7 text-xs" asChild>
+          <Link to="/self-layer">{m.admin_system_prompt_self_layer()}</Link>
+        </Button>
+        <Button variant="ghost" size="sm" className="h-7 text-xs" asChild>
+          <Link to="/tools">{m.admin_system_prompt_tools_list()}</Link>
+        </Button>
       </div>
 
       {loading ? (
-        <div className="text-sm text-base-content/60">{m.admin_common_loading()}</div>
+        <div className="text-sm text-muted-foreground">{m.admin_common_loading()}</div>
       ) : null}
-      {error ? <div className="alert alert-error text-sm">{error}</div> : null}
+      {error ? <StatusAlert variant="error">{error}</StatusAlert> : null}
 
       {data && !loading ? (
         <>
           <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span className="badge badge-ghost badge-sm">
+            <Badge variant="ghost" className="text-xs">
               {data.mode === "global"
                 ? m.admin_system_prompt_mode_global()
                 : m.admin_system_prompt_mode_conversation()}
-            </span>
-            <span className="badge badge-ghost badge-sm">
+            </Badge>
+            <Badge variant="ghost" className="text-xs">
               {m.admin_system_prompt_tools_count({
                 count: String(data.tools.count),
                 mode: toolsMode,
               })}
-            </span>
+            </Badge>
             {data.mode === "conversation" && data.system.in_sync !== undefined ? (
-              <span
-                className={`badge badge-sm ${data.system.in_sync ? "badge-success" : "badge-warning"}`}
-              >
+              <Badge variant={data.system.in_sync ? "success" : "warning"} className="text-xs">
                 {data.system.in_sync
                   ? m.admin_common_stored_live_sync()
                   : m.admin_common_stored_live_diff()}
-              </span>
+              </Badge>
             ) : null}
-            {copyHint ? <span className="text-xs text-success">{copyHint}</span> : null}
+            {copyHint ? (
+              <span className="text-xs text-green-700 dark:text-green-300">{copyHint}</span>
+            ) : null}
           </div>
 
           {data.meta ? (
-            <div className="text-xs text-base-content/60 mb-4 space-y-1">
+            <div className="text-xs text-muted-foreground mb-4 space-y-1">
               {data.meta.cwd ? (
                 <div>
                   cwd: <code className="text-xs">{data.meta.cwd}</code>
@@ -330,36 +354,30 @@ function SystemPromptPage() {
             <BreakdownBar data={data.system.breakdown} />
           </div>
 
-          <div role="tablist" className="tabs tabs-boxed tabs-sm mb-4 w-fit">
-            {(
-              [
-                ["parts", m.admin_system_prompt_tab_parts()],
-                ["full", m.admin_system_prompt_tab_full()],
-                ["tools", m.admin_system_prompt_tab_tools()],
-              ] as const
-            ).map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                className={`tab ${tab === id ? "tab-active" : ""}`}
-                onClick={() => setTab(id)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <Tabs value={tab} onValueChange={(v) => setTab(v as TabId)} className="mb-4">
+            <TabsList className="w-fit">
+              {(
+                [
+                  ["parts", m.admin_system_prompt_tab_parts()],
+                  ["full", m.admin_system_prompt_tab_full()],
+                  ["tools", m.admin_system_prompt_tab_tools()],
+                ] as const
+              ).map(([id, label]) => (
+                <TabsTrigger key={id} value={id}>
+                  {label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-          {tab === "parts" ? (
-            <div className="space-y-4">
+            <TabsContent value="parts" className="space-y-4 mt-4">
               {PART_KEYS.map((key) => {
                 const text = data.system.parts[key];
                 return (
-                  <details key={key} className="group card bg-base-200" open>
-                    <summary className="cursor-pointer list-none card-body py-3 px-4">
+                  <details key={key} className="group rounded-lg bg-muted" open>
+                    <summary className="cursor-pointer list-none py-3 px-4">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-bold text-sm">{partLabel(key)}</h3>
-                        <span className="text-xs text-base-content/50">
+                        <span className="text-xs text-muted-foreground">
                           {m.admin_common_chars_estimate({
                             chars: String(estimateChars(text)),
                             tokens: formatTokenK(data.system.breakdown[PART_BREAKDOWN_KEY[key]]),
@@ -368,79 +386,81 @@ function SystemPromptPage() {
                       </div>
                     </summary>
                     <div className="px-4 pb-4">
-                      <pre className="text-xs whitespace-pre-wrap bg-base-300 p-3 rounded max-h-96 overflow-auto">
+                      <pre className="text-xs whitespace-pre-wrap bg-muted p-3 rounded max-h-96 overflow-auto">
                         {text.trim() || m.admin_common_empty()}
                       </pre>
                     </div>
                   </details>
                 );
               })}
-            </div>
-          ) : null}
+            </TabsContent>
 
-          {tab === "full" ? (
-            <div className="space-y-4">
+            <TabsContent value="full" className="space-y-4 mt-4">
               <div className="flex flex-wrap gap-2">
-                <button
+                <Button
                   type="button"
-                  className="btn btn-outline btn-xs"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
                   onClick={() => void copyText(data.system.composed, " live prompt")}
                 >
                   {m.admin_system_prompt_copy_live()}
-                </button>
+                </Button>
                 {data.system.stored != null ? (
-                  <button
+                  <Button
                     type="button"
-                    className="btn btn-outline btn-xs"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
                     onClick={() => void copyText(data.system.stored ?? "", " stored prompt")}
                   >
                     {m.admin_system_prompt_copy_stored()}
-                  </button>
+                  </Button>
                 ) : null}
               </div>
               {data.mode === "conversation" && data.system.stored != null ? (
                 <div className="grid lg:grid-cols-2 gap-4">
                   <section>
                     <h3 className="text-sm font-semibold mb-2">{m.admin_system_prompt_live()}</h3>
-                    <pre className="text-xs whitespace-pre-wrap bg-base-300 p-3 rounded max-h-[32rem] overflow-auto">
+                    <pre className="text-xs whitespace-pre-wrap bg-muted p-3 rounded max-h-[32rem] overflow-auto">
                       {data.system.composed || m.admin_common_empty()}
                     </pre>
                   </section>
                   <section>
                     <h3 className="text-sm font-semibold mb-2">{m.admin_system_prompt_stored()}</h3>
-                    <pre className="text-xs whitespace-pre-wrap bg-base-300 p-3 rounded max-h-[32rem] overflow-auto">
+                    <pre className="text-xs whitespace-pre-wrap bg-muted p-3 rounded max-h-[32rem] overflow-auto">
                       {data.system.stored || m.admin_common_empty()}
                     </pre>
                   </section>
                 </div>
               ) : (
-                <pre className="text-xs whitespace-pre-wrap bg-base-300 p-3 rounded max-h-[32rem] overflow-auto">
+                <pre className="text-xs whitespace-pre-wrap bg-muted p-3 rounded max-h-[32rem] overflow-auto">
                   {data.system.composed || m.admin_common_empty()}
                 </pre>
               )}
-            </div>
-          ) : null}
+            </TabsContent>
 
-          {tab === "tools" ? (
-            <div>
+            <TabsContent value="tools" className="mt-4">
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                <input
+                <Input
                   type="search"
-                  className="input input-bordered input-sm w-full max-w-sm"
+                  className="w-full max-w-sm h-8"
                   placeholder={m.admin_system_prompt_search_tools()}
                   value={toolQuery}
                   onChange={(e) => setToolQuery(e.target.value)}
                 />
-                <button
+                <Button
                   type="button"
-                  className="btn btn-outline btn-xs"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
                   onClick={() =>
                     void copyText(JSON.stringify(data.tools.items, null, 2), " tool schema JSON")
                   }
                 >
                   {m.admin_system_prompt_copy_json()}
-                </button>
-                <span className="text-xs text-base-content/50">
+                </Button>
+                <span className="text-xs text-muted-foreground">
                   {m.admin_system_prompt_tools_shown({
                     shown: String(filteredTools.length),
                     total: String(data.tools.count),
@@ -453,7 +473,7 @@ function SystemPromptPage() {
                   <ToolSchemaCard key={tool.name} tool={tool} />
                 ))}
                 {filteredTools.length === 0 ? (
-                  <div className="text-sm text-base-content/50">
+                  <div className="text-sm text-muted-foreground">
                     {m.admin_system_prompt_no_tools()}
                   </div>
                 ) : null}
@@ -464,8 +484,8 @@ function SystemPromptPage() {
                   onPageChange={setToolsPage}
                 />
               </div>
-            </div>
-          ) : null}
+            </TabsContent>
+          </Tabs>
         </>
       ) : null}
     </div>

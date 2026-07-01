@@ -13,7 +13,7 @@ export default function CompanionSettingsSection({ platform, store, deps }: Sett
   }, [store, deps]);
 
   if (platform === "mobile") {
-    return <p className="text-sm text-base-content/60">伴侣设置仅桌面端可用</p>;
+    return <p className="text-sm text-muted-foreground">伴侣设置仅桌面端可用</p>;
   }
 
   return <SettingsPanel standalone />;

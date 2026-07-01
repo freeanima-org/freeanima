@@ -14,9 +14,9 @@ function statusIcon(status: string) {
 }
 
 function statusClass(status: string) {
-  if (status === "error") return "text-error";
-  if (status === "pending" || status === "running") return "text-base-content/40";
-  return "text-success";
+  if (status === "error") return "text-destructive";
+  if (status === "pending" || status === "running") return "text-foreground/40";
+  return "text-green-700 dark:text-green-300";
 }
 
 function formatJson(obj: Record<string, unknown>) {
@@ -39,12 +39,12 @@ export function ToolBlockBubble({ calls }: ToolBlockBubbleProps) {
     <div className="tool-bubble text-xs">
       <button
         type="button"
-        className="w-full text-left px-3 py-2 flex items-start gap-2 hover:bg-base-300/40 rounded-2xl transition-colors"
+        className="w-full text-left px-3 py-2 flex items-start gap-2 hover:bg-muted/40 rounded-2xl transition-colors"
         onClick={() => setExpanded((v) => !v)}
       >
-        <span className="shrink-0 mt-0.5 text-base-content/50">{expanded ? "▼" : "▶"}</span>
+        <span className="shrink-0 mt-0.5 text-muted-foreground">{expanded ? "▼" : "▶"}</span>
         <div className="flex-1 min-w-0 space-y-1">
-          <div className="font-medium text-base-content/70">
+          <div className="font-medium text-muted-foreground">
             {m.admin_message_tool_calls({ count: String(calls.length) })}
           </div>
           {calls.map((c, ci) => (
@@ -62,24 +62,24 @@ export function ToolBlockBubble({ calls }: ToolBlockBubbleProps) {
       </button>
 
       {expanded ? (
-        <div className="border-t border-base-300/50 px-3 py-2 space-y-3">
+        <div className="border-t border/50 px-3 py-2 space-y-3">
           {calls.map((c, ci) => (
             <div
               key={`detail-${c.tool_call_id || ci}`}
-              className="rounded-lg bg-base-100/60 p-2 space-y-1.5"
+              className="rounded-lg bg-background/60 p-2 space-y-1.5"
             >
               <div className="flex items-center gap-2 font-mono font-medium">
                 <span className={statusClass(c.status)}>{statusIcon(c.status)}</span>
                 <span>{c.name}</span>
                 {c.tool_call_id ? (
-                  <span className="text-base-content/40 text-[10px]">
+                  <span className="text-foreground/40 text-[10px]">
                     {c.tool_call_id.slice(0, 8)}
                   </span>
                 ) : null}
               </div>
               {c.args && Object.keys(c.args).length > 0 ? (
                 <div>
-                  <div className="text-base-content/50 mb-0.5">{m.admin_message_args()}</div>
+                  <div className="text-muted-foreground mb-0.5">{m.admin_message_args()}</div>
                   <pre className="text-[11px] overflow-x-auto max-h-40 whitespace-pre-wrap break-all">
                     {formatJson(c.args)}
                   </pre>
@@ -87,15 +87,13 @@ export function ToolBlockBubble({ calls }: ToolBlockBubbleProps) {
               ) : null}
               {c.result ? (
                 <div>
-                  <div className="text-base-content/50 mb-0.5">{m.admin_message_result()}</div>
+                  <div className="text-muted-foreground mb-0.5">{m.admin_message_result()}</div>
                   <pre className="text-[11px] overflow-x-auto max-h-60 whitespace-pre-wrap break-all">
                     {truncateResult(c.result)}
                   </pre>
                 </div>
               ) : c.status === "pending" ? (
-                <div className="text-base-content/40 italic">
-                  {m.admin_message_waiting_result()}
-                </div>
+                <div className="text-foreground/40 italic">{m.admin_message_waiting_result()}</div>
               ) : null}
             </div>
           ))}

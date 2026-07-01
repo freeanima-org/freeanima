@@ -26,7 +26,7 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
 
   return (
     <div
-      className="bg-base-100 border-base-300 fixed z-50 min-w-[140px] rounded-lg border py-1 shadow-xl"
+      className="bg-background border fixed z-50 min-w-[140px] rounded-lg border py-1 shadow-xl"
       style={{ top: y, left: x }}
       onClick={(e) => e.stopPropagation()}
     >
@@ -34,8 +34,8 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
         <button
           key={item.label}
           type="button"
-          className={`hover:bg-base-200 block w-full px-3 py-1.5 text-left text-sm ${
-            item.danger ? "text-error" : ""
+          className={`hover:bg-muted block w-full px-3 py-1.5 text-left text-sm ${
+            item.danger ? "text-destructive" : ""
           }`}
           onClick={() => {
             item.onClick();

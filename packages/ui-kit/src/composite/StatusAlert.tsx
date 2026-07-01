@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 
+import { Alert } from "../components/ui/alert.tsx";
 import { cn } from "../lib/cn.ts";
 import type { StatusAlertVariant } from "./types.ts";
-import { statusAlertClass } from "./variants.ts";
+import { statusAlertVariant } from "./variants.ts";
 
 export type StatusAlertProps = {
   variant: StatusAlertVariant;
@@ -11,5 +12,9 @@ export type StatusAlertProps = {
 };
 
 export function StatusAlert({ variant, children, className }: StatusAlertProps) {
-  return <div className={cn(statusAlertClass(variant), className)}>{children}</div>;
+  return (
+    <Alert variant={statusAlertVariant(variant)} className={cn("text-sm", className)}>
+      {children}
+    </Alert>
+  );
 }

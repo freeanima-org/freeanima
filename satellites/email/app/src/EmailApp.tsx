@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Alert, AlertDescription, Button, Input, Spinner } from "@freeanima/ui-kit";
 import { EmptyState, StatusAlert } from "@freeanima/ui-kit/composite";
 import { useSubjectScope } from "@freeanima/shell-sdk/react";
 
@@ -165,38 +166,39 @@ export function EmailApp() {
 
   if (loading && accounts.length === 0) {
     return (
-      <div className="h-full flex items-center justify-center p-6">
-        <span className="loading loading-spinner loading-md" />
+      <div className="flex h-full items-center justify-center p-6">
+        <Spinner className="size-6" />
       </div>
     );
   }
 
   if (view === "accounts") {
     return (
-      <div className="h-full flex flex-col">
-        <header className="shrink-0 border-b border-base-300 px-4 py-3">
+      <div className="flex h-full flex-col">
+        <header className="shrink-0 border-b px-4 py-3">
           <h1 className="text-lg font-semibold">邮箱</h1>
-          <p className="text-sm opacity-70 mt-1">
+          <p className="mt-1 text-sm opacity-70">
             选择账户查看收件箱；账户注册请通过 Agent 工具完成。
           </p>
         </header>
-        <main className="flex-1 overflow-auto p-4 space-y-2">
+        <main className="flex-1 space-y-2 overflow-auto p-4">
           {error ? <StatusAlert variant="error">{error}</StatusAlert> : null}
           {accounts.length === 0 ? (
-            <EmptyState message="暂无邮件账户。" className="text-left items-start" />
+            <EmptyState message="暂无邮件账户。" className="items-start text-left" />
           ) : (
             accounts.map((account) => (
-              <button
+              <Button
                 key={account.id}
                 type="button"
-                className="btn btn-outline w-full justify-start h-auto py-3"
+                variant="outline"
+                className="h-auto w-full justify-start py-3"
                 onClick={() => void openAccount(account)}
               >
                 <div className="text-left">
                   <div className="font-medium">{accountLabel(account)}</div>
                   <div className="text-xs opacity-70">{account.address}</div>
                 </div>
-              </button>
+              </Button>
             ))
           )}
         </main>
@@ -206,18 +208,18 @@ export function EmailApp() {
 
   if (view === "detail") {
     return (
-      <div className="h-full flex flex-col">
-        <header className="shrink-0 border-b border-base-300 px-3 py-2 flex items-center gap-2">
-          <button type="button" className="btn btn-ghost btn-sm" onClick={backFromDetail}>
+      <div className="flex h-full flex-col">
+        <header className="flex shrink-0 items-center gap-2 border-b px-3 py-2">
+          <Button type="button" variant="ghost" size="sm" onClick={backFromDetail}>
             返回
-          </button>
+          </Button>
           <div className="min-w-0 flex-1">
-            <div className="font-medium truncate">{detail?.subject ?? "邮件"}</div>
+            <div className="truncate font-medium">{detail?.subject ?? "邮件"}</div>
           </div>
         </header>
         <main className="flex-1 overflow-auto p-4">
           {detailLoading ? (
-            <span className="loading loading-spinner loading-md" />
+            <Spinner className="size-6" />
           ) : detail ? (
             <article className="space-y-3 text-sm">
               <div className="opacity-80">
@@ -225,7 +227,7 @@ export function EmailApp() {
                 <div>收件人：{detail.to}</div>
                 <div>时间：{formatWhen(detail.sent_at)}</div>
               </div>
-              <pre className="whitespace-pre-wrap wrap-break-word text-sm">{detail.body}</pre>
+              <pre className="wrap-break-word text-sm whitespace-pre-wrap">{detail.body}</pre>
             </article>
           ) : (
             <div className="opacity-70">无法加载邮件。</div>
@@ -236,32 +238,32 @@ export function EmailApp() {
   }
 
   return (
-    <div className={`h-full flex ${mobile ? "flex-col" : "flex-row"}`}>
+    <div className={`flex h-full ${mobile ? "flex-col" : "flex-row"}`}>
       <section
-        className={`flex flex-col min-h-0 border-base-300 ${
+        className={`flex min-h-0 flex-col border ${
           mobile ? "flex-1 border-b" : "w-96 shrink-0 border-r"
         }`}
       >
-        <header className="shrink-0 border-b border-base-300 px-3 py-2 space-y-2">
+        <header className="shrink-0 space-y-2 border-b px-3 py-2">
           <div className="flex items-center gap-2">
-            <button type="button" className="btn btn-ghost btn-sm" onClick={backFromInbox}>
+            <Button type="button" variant="ghost" size="sm" onClick={backFromInbox}>
               账户
-            </button>
-            <div className="min-w-0 flex-1 font-medium truncate">
+            </Button>
+            <div className="min-w-0 flex-1 truncate font-medium">
               {activeAccount ? accountLabel(activeAccount) : "收件箱"}
             </div>
-            <button
+            <Button
               type="button"
-              className="btn btn-primary btn-sm"
+              size="sm"
               disabled={syncing || activeAccountId == null}
               onClick={() => void onSync()}
             >
               {syncing ? "同步中…" : "同步"}
-            </button>
+            </Button>
           </div>
           <div className="flex gap-2">
-            <input
-              className="input input-sm input-bordered flex-1"
+            <Input
+              className="h-8 flex-1"
               placeholder="搜索邮件"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -269,51 +271,60 @@ export function EmailApp() {
                 if (e.key === "Enter") void onSearch();
               }}
             />
-            <button
+            <Button
               type="button"
-              className="btn btn-sm btn-outline"
+              variant="outline"
+              size="sm"
               disabled={searching}
               onClick={() => void onSearch()}
             >
               搜
-            </button>
+            </Button>
           </div>
         </header>
         <div className="flex-1 overflow-auto">
-          {error ? <div className="alert alert-error m-2 text-sm">{error}</div> : null}
-          {syncNotice ? <div className="alert alert-success m-2 text-sm">{syncNotice}</div> : null}
+          {error ? (
+            <Alert variant="error" className="m-2">
+              <AlertDescription className="text-sm">{error}</AlertDescription>
+            </Alert>
+          ) : null}
+          {syncNotice ? (
+            <Alert variant="success" className="m-2">
+              <AlertDescription className="text-sm">{syncNotice}</AlertDescription>
+            </Alert>
+          ) : null}
           {listLoading ? (
             <div className="p-4">
-              <span className="loading loading-spinner loading-sm" />
+              <Spinner className="size-4" />
             </div>
           ) : messages.length === 0 ? (
             <EmptyState
               message="暂无邮件。点击「同步」从 IMAP 拉取。"
-              className="p-4 text-left items-start"
+              className="items-start p-4 text-left"
             />
           ) : (
-            <ul className="divide-y divide-base-300">
+            <ul className="divide-border divide-y">
               {messages.map((message) => (
                 <li key={message.id}>
                   <button
                     type="button"
-                    className={`w-full text-left px-3 py-3 hover:bg-base-200/60 ${
-                      selectedMessageId === message.id ? "bg-base-200" : ""
+                    className={`hover:bg-muted/60 w-full px-3 py-3 text-left ${
+                      selectedMessageId === message.id ? "bg-muted" : ""
                     }`}
                     onClick={() => void openMessage(message)}
                   >
                     <div className="flex items-start gap-2">
                       {message.unread ? (
-                        <span className="mt-1 inline-block h-2 w-2 rounded-full bg-primary shrink-0" />
+                        <span className="bg-primary mt-1 inline-block h-2 w-2 shrink-0 rounded-full" />
                       ) : (
                         <span className="mt-1 inline-block h-2 w-2 shrink-0" />
                       )}
                       <div className="min-w-0 flex-1">
-                        <div className="font-medium truncate">{message.subject || "(无主题)"}</div>
-                        <div className="text-xs opacity-70 truncate">{message.from}</div>
-                        <div className="text-xs opacity-60 truncate mt-1">{message.preview}</div>
+                        <div className="truncate font-medium">{message.subject || "(无主题)"}</div>
+                        <div className="truncate text-xs opacity-70">{message.from}</div>
+                        <div className="mt-1 truncate text-xs opacity-60">{message.preview}</div>
                       </div>
-                      <div className="text-[10px] opacity-50 shrink-0">
+                      <div className="shrink-0 text-[10px] opacity-50">
                         {formatWhen(message.sent_at)}
                       </div>
                     </div>
@@ -326,13 +337,13 @@ export function EmailApp() {
       </section>
 
       {!mobile ? (
-        <section className="flex-1 min-w-0 flex flex-col">
-          <header className="shrink-0 border-b border-base-300 px-4 py-3 font-medium">
+        <section className="flex min-w-0 flex-1 flex-col">
+          <header className="shrink-0 border-b px-4 py-3 font-medium">
             {detail?.subject ?? "选择一封邮件阅读"}
           </header>
           <main className="flex-1 overflow-auto p-4">
             {detailLoading ? (
-              <span className="loading loading-spinner loading-md" />
+              <Spinner className="size-6" />
             ) : detail ? (
               <article className="space-y-3 text-sm">
                 <div className="opacity-80">
@@ -340,10 +351,10 @@ export function EmailApp() {
                   <div>收件人：{detail.to}</div>
                   <div>时间：{formatWhen(detail.sent_at)}</div>
                 </div>
-                <pre className="whitespace-pre-wrap wrap-break-word">{detail.body}</pre>
+                <pre className="wrap-break-word whitespace-pre-wrap">{detail.body}</pre>
               </article>
             ) : (
-              <div className="opacity-70 text-sm">从左侧选择邮件。</div>
+              <div className="text-sm opacity-70">从左侧选择邮件。</div>
             )}
           </main>
         </section>

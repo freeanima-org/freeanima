@@ -204,8 +204,8 @@ export function TaskDndRoot({
       </TaskDndUiContext.Provider>
       <DragOverlay>
         {activeTask ? (
-          <div className="bg-base-100 border-base-300 flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 shadow-lg">
-            <span className="text-base-content/40">⋮⋮</span>
+          <div className="bg-background border flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 shadow-lg">
+            <span className="text-foreground/40">⋮⋮</span>
             <span className="truncate text-sm">{activeTask.title}</span>
           </div>
         ) : null}

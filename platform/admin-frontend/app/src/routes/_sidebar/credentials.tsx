@@ -1,5 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Spinner,
+} from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { getCredentialDetail, listCredentials } from "@admin/lib/api.ts";
 import { m } from "@admin/lib/i18n.ts";
 import { catchWithFallback, logCaughtError } from "@admin/lib/log-caught-error.ts";
@@ -46,38 +59,48 @@ async function copyText(text: string) {
 
 function CredentialCard({ cred, onView }: { cred: CredentialMeta; onView: () => void }) {
   return (
-    <div className="card bg-base-200">
-      <div className="card-body py-3 px-4">
+    <Card className="bg-muted py-0">
+      <CardContent className="py-3 px-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <h3 className="font-mono text-sm font-bold">{cred.path}</h3>
           <div className="flex gap-1 flex-wrap items-center">
-            {cred.yaml ? <span className="badge badge-info badge-xs">YAML</span> : null}
+            {cred.yaml ? (
+              <Badge variant="secondary" className="text-xs">
+                YAML
+              </Badge>
+            ) : null}
             {cred.tags.map((tag) => (
-              <span key={tag} className="badge badge-ghost badge-xs">
+              <Badge key={tag} variant="ghost" className="text-xs">
                 {tag}
-              </span>
+              </Badge>
             ))}
-            <button type="button" className="btn btn-xs btn-outline" onClick={onView}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={onView}
+            >
               {m.admin_credentials_view_detail()}
-            </button>
+            </Button>
           </div>
         </div>
-        {cred.desc ? <p className="text-xs text-base-content/60 mt-1">{cred.desc}</p> : null}
+        {cred.desc ? <p className="text-xs text-muted-foreground mt-1">{cred.desc}</p> : null}
         {cred.fields.length > 0 ? (
           <div className="mt-2 flex flex-wrap gap-1">
             {cred.fields.map((field) => (
-              <code key={field} className="text-xs bg-base-300 px-1.5 py-0.5 rounded">
+              <code key={field} className="text-xs bg-muted px-1.5 py-0.5 rounded">
                 {field}
               </code>
             ))}
           </div>
         ) : (
-          <p className="text-xs text-base-content/40 mt-1">
+          <p className="text-xs text-foreground/40 mt-1">
             {m.admin_credentials_no_structured_fields()}
           </p>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -103,41 +126,44 @@ function CredentialDetailModal({
   }, [onClose]);
 
   return (
-    <div
-      className="safe-fixed-overlay z-50 flex items-center justify-center bg-black/40 p-4"
-      onClick={onClose}
+    <Dialog
+      open
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
     >
-      <div
-        className="bg-base-100 rounded-xl p-5 shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="text-sm font-bold mb-1">{m.admin_credentials_detail_title()}</h3>
-        <p className="font-mono text-xs text-base-content/60 mb-3 break-all">{path}</p>
+      <DialogContent className="max-w-lg max-h-[80vh] flex flex-col safe-area-pt safe-area-pb">
+        <DialogHeader>
+          <DialogTitle>{m.admin_credentials_detail_title()}</DialogTitle>
+        </DialogHeader>
+        <p className="font-mono text-xs text-muted-foreground mb-3 break-all">{path}</p>
 
         <div className="flex-1 overflow-y-auto min-h-0">
           {loading ? (
             <div className="flex justify-center py-8">
-              <span className="loading loading-dots loading-md" />
+              <Spinner />
             </div>
           ) : error ? (
-            <div className="alert alert-error text-sm">{error}</div>
+            <StatusAlert variant="error">{error}</StatusAlert>
           ) : detail?.yaml ? (
             <div className="space-y-3">
               {Object.entries(detail.fields).map(([field, value]) => {
                 const text = formatFieldValue(value);
                 return (
-                  <div key={field} className="border border-base-300 rounded-lg p-3">
+                  <div key={field} className="border border rounded-lg p-3">
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <code className="text-xs font-bold">{field}</code>
-                      <button
+                      <Button
                         type="button"
-                        className="btn btn-xs btn-ghost"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs"
                         onClick={() => void copyText(text)}
                       >
                         {m.admin_common_copy()}
-                      </button>
+                      </Button>
                     </div>
-                    <pre className="text-xs whitespace-pre-wrap break-all font-mono bg-base-200 p-2 rounded">
+                    <pre className="text-xs whitespace-pre-wrap break-all font-mono bg-muted p-2 rounded">
                       {text}
                     </pre>
                   </div>
@@ -147,28 +173,30 @@ function CredentialDetailModal({
           ) : detail ? (
             <div>
               <div className="flex justify-end mb-1">
-                <button
+                <Button
                   type="button"
-                  className="btn btn-xs btn-ghost"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
                   onClick={() => void copyText(detail.value)}
                 >
                   {m.admin_common_copy()}
-                </button>
+                </Button>
               </div>
-              <pre className="text-xs whitespace-pre-wrap break-all font-mono bg-base-200 p-3 rounded">
+              <pre className="text-xs whitespace-pre-wrap break-all font-mono bg-muted p-3 rounded">
                 {detail.value}
               </pre>
             </div>
           ) : null}
         </div>
 
-        <div className="flex justify-end gap-2 mt-4">
-          <button type="button" className="btn btn-sm" onClick={onClose}>
+        <DialogFooter>
+          <Button type="button" size="sm" onClick={onClose}>
             {m.admin_common_close()}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -217,7 +245,7 @@ function CredentialsPage() {
     <div>
       <div className="mb-4">
         <h2 className="text-lg font-bold">{m.admin_nav_credentials()}</h2>
-        <p className="text-sm text-base-content/60 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           {m.admin_credentials_desc()}
           {credentials.length > 0
             ? ` ${m.admin_credentials_count({ count: String(credentials.length) })}`
@@ -226,12 +254,12 @@ function CredentialsPage() {
       </div>
 
       {credentials.length === 0 ? (
-        <div className="alert alert-info text-sm">{m.admin_credentials_empty()}</div>
+        <StatusAlert variant="info">{m.admin_credentials_empty()}</StatusAlert>
       ) : (
         <div className="space-y-6">
           {categories.map(([category, creds]) => (
             <div key={category}>
-              <h3 className="text-sm font-bold text-base-content/50 mb-2 uppercase tracking-wide">
+              <h3 className="text-sm font-bold text-muted-foreground mb-2 uppercase tracking-wide">
                 📁 {category}
               </h3>
               <div className="space-y-2">

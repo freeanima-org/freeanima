@@ -1,13 +1,11 @@
 @import "tailwindcss";
-@import "@freeanima/ui-kit/daisyui.css";
+@import "@freeanima/ui-kit/globals.css";
 @source "./**/*.{tsx,ts}";
 
-/* 主内容区内边距：移动端略窄 */
 .app-main-padding {
   @apply p-4 lg:p-6;
 }
 
-/* Markdown content inside chat bubbles */
 .md-content {
   line-height: 1.6;
 }
@@ -21,7 +19,7 @@
   margin-bottom: 0;
 }
 .md-content table {
-  @apply table table-sm;
+  @apply w-full text-sm;
   margin: 0.5em 0;
   max-width: 100%;
 }
@@ -30,23 +28,21 @@
   max-width: 100%;
 }
 .md-content code {
-  @apply bg-base-300 rounded px-1;
+  @apply bg-muted rounded px-1;
   font-size: 0.875em;
 }
 .md-content pre code {
-  @apply block p-3 overflow-x-auto;
-  background: oklch(var(--b2));
+  @apply block p-3 overflow-x-auto bg-muted;
 }
 .md-content ul,
 .md-content ol {
   padding-left: 1.5em;
 }
 .md-content blockquote {
-  @apply border-l-4 border-base-300 pl-3 italic;
+  @apply border-l-4 border pl-3 italic;
   opacity: 0.85;
 }
 
-/* 创作室专注模式：隐藏 AppShell 顶栏 */
 html.studio-chromeless .app-header {
   display: none;
 }
@@ -54,7 +50,6 @@ html.studio-chromeless .app-header {
   scroll-behavior: smooth;
 }
 
-/* Transition for mode switch */
 .mode-enter-active,
 .mode-leave-active {
   transition: opacity 0.2s ease;
@@ -64,51 +59,51 @@ html.studio-chromeless .app-header {
   opacity: 0;
 }
 
-/* 侧栏导航：卧室 / 创作室 router-link、会客厅会话项 */
 .nav-link,
 .session-item {
-  @apply block px-3 py-2 rounded-lg text-sm text-base-content/65 transition-colors;
+  @apply block px-3 py-2 rounded-lg text-sm text-muted-foreground transition-colors;
 }
 .nav-link:hover,
 .session-item:hover {
-  @apply bg-base-300/50 text-base-content;
+  @apply bg-muted/50 text-foreground;
 }
 .nav-link.sidebar-nav-active,
 .session-item.sidebar-nav-active {
-  @apply bg-primary/20 text-base-content font-semibold;
-  box-shadow: inset 3px 0 0 oklch(var(--p));
+  @apply bg-primary/20 text-foreground font-semibold;
+  box-shadow: inset 3px 0 0 var(--primary);
 }
 
-/* 工具调用气泡：独立于 user/assistant，不同底色 */
 .tool-bubble {
-  @apply rounded-2xl bg-base-300/60;
+  @apply rounded-2xl bg-muted/60;
   font-family: inherit;
 }
 
-/* ── 移动端基础适配（PC 为主，小屏可读可用） ── */
+.msg-bubble {
+  @apply rounded-2xl px-3 py-2 text-sm max-w-[85%];
+  background: var(--muted);
+}
+
+.msg-bubble-user {
+  @apply bg-primary text-primary-foreground;
+}
+
 @media (max-width: 1023px) {
-  .chat .chat-bubble {
+  .msg-bubble {
     max-width: min(92vw, 100%);
   }
 
-  /* iOS 输入框字号 < 16px 会触发自动缩放 */
-  .input,
-  .textarea,
-  .select {
+  input,
+  textarea,
+  select {
     font-size: 16px;
   }
 
-  .table {
-    font-size: 0.8125rem;
-  }
-
-  /* 创作室结对编程：侧栏面板全屏叠层 */
   .mobile-panel-overlay {
     position: fixed;
     inset: 0;
     z-index: 35;
     width: 100% !important;
     max-width: 100%;
-    background: oklch(var(--b2));
+    background: var(--muted);
   }
 }

@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { StoredMessagePanel } from "@admin/components/admin/ConversationMessagePanel.tsx";
 import { AcpProgressDock } from "@admin/components/AcpProgressDock.tsx";
 import { useAcpProgressDock } from "@admin/hooks/useAcpProgressDock.ts";
@@ -33,24 +35,26 @@ function ConversationDetailPage() {
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        <Link to="/conversations" className="btn btn-ghost btn-xs">
-          {m.admin_conversations_back_list()}
-        </Link>
+        <Button variant="ghost" size="sm" className="h-7 text-xs" asChild>
+          <Link to="/conversations">{m.admin_conversations_back_list()}</Link>
+        </Button>
         <h2 className="text-lg font-bold flex-1 truncate">
           {conversation?.title || m.admin_common_no_title()}
         </h2>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 mb-4 text-xs text-base-content/60">
-        <span className="badge badge-ghost badge-xs">{conversation?.platform || "legacy"}</span>
+      <div className="flex flex-wrap items-center gap-2 mb-4 text-xs text-muted-foreground">
+        <Badge variant="ghost" className="text-xs shrink-0">
+          {conversation?.platform || "legacy"}
+        </Badge>
         {conversation?.created_at ? (
           <span>{formatDisplayDateTime(conversation.created_at)}</span>
         ) : null}
         <span className="font-mono break-all">{conversationId}</span>
       </div>
 
-      <div className="card bg-base-200">
-        <div className="card-body">
+      <Card className="bg-muted py-0">
+        <CardContent>
           {acpDock ? (
             <div className="mb-3">
               <AcpProgressDock dock={acpDock} />
@@ -66,10 +70,14 @@ function ConversationDetailPage() {
             loading={store.loadingMessages}
             onPageChange={(p) => void store.goToPage(p)}
           />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {store.error ? <div className="alert alert-error text-sm mt-4">{store.error}</div> : null}
+      {store.error ? (
+        <StatusAlert variant="error" className="mt-4">
+          {store.error}
+        </StatusAlert>
+      ) : null}
     </div>
   );
 }

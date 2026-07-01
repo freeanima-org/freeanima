@@ -1,3 +1,4 @@
+import { Button } from "@freeanima/ui-kit";
 import { m } from "@admin/lib/i18n.ts";
 import type { HubRestConnectionState } from "@admin/hooks/useHubRestConnectivity.ts";
 
@@ -17,28 +18,32 @@ export function HubConnectionBanner({ state, onRetry }: Props) {
   const electronShell = Boolean(window.satelliteShell?.isElectron);
 
   return (
-    <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2 bg-warning/15 border-b border-warning/30 text-sm">
-      <span className="text-warning-content/90">
+    <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2 bg-warning/15 border-b border-yellow-500/50/30 text-sm">
+      <span className="text-yellow-700 dark:text-yellow-300/90">
         {state === "connecting" ? m.admin_common_connecting() : m.admin_hub_disconnected()}
       </span>
       <div className="flex items-center gap-1">
         {nativeShell || electronShell ? (
-          <button
+          <Button
             type="button"
-            className="btn btn-xs btn-ghost"
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs"
             onClick={openHubSettingsIfAvailable}
           >
             Hub 设置
-          </button>
+          </Button>
         ) : null}
-        <button
+        <Button
           type="button"
-          className="btn btn-xs btn-warning"
+          variant="destructive"
+          size="sm"
+          className="h-7 text-xs"
           disabled={state === "connecting"}
           onClick={() => void onRetry()}
         >
           {m.admin_common_reconnect()}
-        </button>
+        </Button>
       </div>
     </div>
   );

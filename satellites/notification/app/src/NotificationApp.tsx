@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSubjectScope } from "@freeanima/shell-sdk/react";
+import {
+  Alert,
+  AlertDescription,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Spinner,
+} from "@freeanima/ui-kit";
 
 import {
   listNotifications,
@@ -43,27 +52,31 @@ function ListPagination({
   if (total <= pageSize) return null;
 
   return (
-    <div className="flex items-center justify-between gap-2 pt-2 border-t border-base-300/50 text-xs">
-      <span className="text-base-content/60">
+    <div className="border/50 flex items-center justify-between gap-2 border-t pt-2 text-xs">
+      <span className="text-muted-foreground">
         共 {total} 条 · 第 {currentPage} / {pageCount} 页
       </span>
-      <div className="join">
-        <button
+      <div className="inline-flex overflow-hidden rounded-md border shadow-xs">
+        <Button
           type="button"
-          className="btn btn-xs join-item"
+          variant="outline"
+          size="sm"
+          className="h-7 rounded-none border-0 px-2.5 text-xs"
           disabled={currentPage <= 1 || loading}
           onClick={() => onPageChange(currentPage - 1)}
         >
           上一页
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          className="btn btn-xs join-item"
+          variant="outline"
+          size="sm"
+          className="h-7 rounded-none border-0 border-l px-2.5 text-xs"
           disabled={currentPage >= pageCount || loading}
           onClick={() => onPageChange(currentPage + 1)}
         >
           下一页
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -138,86 +151,99 @@ export function NotificationApp() {
 
   return (
     <div className="h-full overflow-y-auto p-4 md:p-6">
-      <h2 className="text-lg font-bold mb-1">通知</h2>
-      <p className="text-sm text-base-content/60 mb-4">默认显示未读；点击「标记已读」确认处理。</p>
+      <h2 className="mb-1 text-lg font-bold">通知</h2>
+      <p className="text-muted-foreground mb-4 text-sm">默认显示未读；点击「标记已读」确认处理。</p>
 
-      <div className="flex flex-wrap gap-2 mb-4">
-        <div className="join">
-          <button
+      <div className="mb-4 flex flex-wrap gap-2">
+        <div className="inline-flex overflow-hidden rounded-md border shadow-xs">
+          <Button
             type="button"
-            className={`btn btn-sm join-item ${readFilter === "unread" ? "btn-primary" : ""}`}
+            variant={readFilter === "unread" ? "default" : "outline"}
+            size="sm"
+            className="rounded-none border-0"
             onClick={() => setReadFilter("unread")}
           >
             未读
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className={`btn btn-sm join-item ${readFilter === "all" ? "btn-primary" : ""}`}
+            variant={readFilter === "all" ? "default" : "outline"}
+            size="sm"
+            className="rounded-none border-0 border-l"
             onClick={() => setReadFilter("all")}
           >
             全部
-          </button>
+          </Button>
         </div>
-        <button
+        <Button
           type="button"
-          className="btn btn-sm btn-ghost"
+          variant="ghost"
+          size="sm"
           disabled={loading}
           onClick={() => void fetchList(offset)}
         >
           刷新
-        </button>
+        </Button>
       </div>
 
-      {error ? <div className="alert alert-error text-sm mb-4">{error}</div> : null}
+      {error ? (
+        <Alert variant="error" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : null}
 
       {loading && items.length === 0 ? (
         <div className="flex justify-center py-8">
-          <span className="loading loading-dots loading-sm" />
+          <Spinner className="size-4" />
         </div>
       ) : items.length === 0 ? (
-        <div className="alert alert-info text-sm">暂无通知</div>
+        <Alert variant="info">
+          <AlertDescription>暂无通知</AlertDescription>
+        </Alert>
       ) : (
         <div className="space-y-2">
           {items.map((row) => {
             const unread = !row.read_at;
             return (
-              <div
+              <Card
                 key={row.id}
-                className={`card bg-base-200 w-full text-left ${
+                className={`bg-muted w-full gap-0 py-0 shadow-none ${
                   unread ? "ring-1 ring-primary/40" : "opacity-80"
                 }`}
               >
-                <div className="card-body py-3 px-4 gap-2">
+                <CardContent className="flex flex-col gap-2 px-4 py-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className={`text-sm ${unread ? "font-semibold" : ""}`}>{row.title}</span>
-                    {unread ? <span className="badge badge-primary badge-xs">未读</span> : null}
+                    {unread ? (
+                      <Badge variant="default" className="text-[10px]">
+                        未读
+                      </Badge>
+                    ) : null}
                     {row.source_kind ? (
-                      <span className="badge badge-ghost badge-xs">{row.source_kind}</span>
+                      <Badge variant="ghost" className="text-[10px]">
+                        {row.source_kind}
+                      </Badge>
                     ) : null}
                   </div>
-                  <p className="text-sm text-base-content/80 whitespace-pre-wrap">{row.body}</p>
+                  <p className="text-muted-foreground text-sm whitespace-pre-wrap">{row.body}</p>
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-base-content/60">
+                    <div className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 text-xs">
                       <span>创建：{formatDateTime(row.created_at)}</span>
                       <span>已读：{formatDateTime(row.read_at)}</span>
                     </div>
                     {unread ? (
-                      <button
+                      <Button
                         type="button"
-                        className="btn btn-sm btn-primary"
+                        size="sm"
                         disabled={markingId === row.id}
                         onClick={() => void handleMarkRead(row)}
                       >
-                        {markingId === row.id ? (
-                          <span className="loading loading-spinner loading-xs" />
-                        ) : (
-                          "标记已读"
-                        )}
-                      </button>
+                        {markingId === row.id ? <Spinner className="size-3.5" /> : "标记已读"}
+                      </Button>
                     ) : null}
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             );
           })}
           <ListPagination

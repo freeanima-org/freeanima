@@ -1,4 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Spinner,
+  Textarea,
+} from "@freeanima/ui-kit";
 import { ConfirmDialog } from "@freeanima/ui-kit/composite";
 import { AcpProgressDock } from "@chat/components/AcpProgressDock.tsx";
 import { FridgeMagnetInjectPreview } from "@chat/components/FridgeMagnetInjectPreview.tsx";
@@ -615,8 +629,8 @@ export function ChatApp() {
 
   if (!ready && !error) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <span className="loading loading-spinner loading-md" />
+      <div className="flex h-full items-center justify-center">
+        <Spinner className="size-6" />
       </div>
     );
   }
@@ -626,8 +640,8 @@ export function ChatApp() {
       <div className="h-full flex items-center justify-center p-8">
         <div className="max-w-md text-center space-y-3">
           <h2 className="text-lg font-bold">{m.admin_chat_title()}</h2>
-          <p className="text-sm text-error">{error}</p>
-          <p className="text-xs text-base-content/60">
+          <p className="text-sm text-destructive">{error}</p>
+          <p className="text-xs text-muted-foreground">
             {getSatelliteShell()?.hubWsUrl
               ? nativeShell
                 ? "请确认 Hub 已运行，或在设置中检查 Hub 地址。"
@@ -635,13 +649,9 @@ export function ChatApp() {
               : "请确认 Hub 已运行，且 chat dev server 提供 /config.json。"}
           </p>
           {nativeShell ? (
-            <button
-              type="button"
-              className="btn btn-sm btn-primary"
-              onClick={openHubSettingsIfAvailable}
-            >
+            <Button type="button" size="sm" onClick={openHubSettingsIfAvailable}>
               Hub 设置
-            </button>
+            </Button>
           ) : null}
         </div>
       </div>
@@ -651,8 +661,8 @@ export function ChatApp() {
   return (
     <div className="chat-app h-full flex flex-col min-h-0">
       {sapDisconnected ? (
-        <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2 bg-warning/15 border-b border-warning/30 text-sm">
-          <span className="text-warning-content/90">
+        <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2 bg-warning/15 border-b border-yellow-500/50/30 text-sm">
+          <span className="text-yellow-700 dark:text-yellow-300/90">
             {sapConnection === "connecting"
               ? m.admin_common_connecting()
               : m.admin_hub_disconnected()}
@@ -660,58 +670,69 @@ export function ChatApp() {
           </span>
           <div className="flex items-center gap-1">
             {nativeShell ? (
-              <button
+              <Button
                 type="button"
-                className="btn btn-xs btn-ghost"
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2"
                 onClick={openHubSettingsIfAvailable}
               >
                 Hub 设置
-              </button>
+              </Button>
             ) : null}
-            <button
+            <Button
               type="button"
-              className="btn btn-xs btn-warning"
+              variant="outline"
+              size="sm"
+              className="h-7 border-yellow-500/50 px-2 text-yellow-700 hover:bg-yellow-500/10 dark:text-yellow-300"
               disabled={sapConnection === "connecting"}
               onClick={() => void reconnectSap()}
             >
               {m.admin_common_reconnect()}
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}
-      <header className="shrink-0 flex items-center gap-2 px-3 py-2 border-b border-base-300 bg-base-200">
-        <button
+      <header className="shrink-0 flex items-center gap-2 px-3 py-2 border-b border bg-muted">
+        <Button
           type="button"
-          className={`btn btn-ghost btn-sm btn-square ${drawerNav ? "" : "hidden"}`}
+          variant="ghost"
+          size="icon-sm"
+          className={drawerNav ? "" : "hidden"}
           onClick={() => setSidebarOpen((v) => !v)}
         >
           ☰
-        </button>
-        <span className="text-sm font-medium truncate">{headerTitle}</span>
+        </Button>
+        <span className="truncate text-sm font-medium">{headerTitle}</span>
         <span className="flex-1" />
-        <button
+        <Button
           type="button"
-          className={`btn btn-primary btn-xs ${drawerNav ? "" : "hidden"}`}
+          size="sm"
+          className={`h-7 px-2 ${drawerNav ? "" : "hidden"}`}
           onClick={startConversation}
         >
           {m.admin_common_new_conversation()}
-        </button>
+        </Button>
         {nativeShell ? (
-          <button
+          <Button
             type="button"
-            className="btn btn-xs btn-ghost"
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2"
             onClick={openHubSettingsIfAvailable}
           >
             Hub
-          </button>
+          </Button>
         ) : null}
-        <button
+        <Button
           type="button"
-          className="btn btn-xs btn-ghost"
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2"
           onClick={() => setLocale(toggleAppLocale())}
         >
           {locale === "zh-cn" ? "EN" : "中文"}
-        </button>
+        </Button>
       </header>
 
       <ListDetailLayout
@@ -720,25 +741,25 @@ export function ChatApp() {
         showDetailHeader={false}
         showListHeader={false}
         listWidthClass="w-64"
-        listAsideClassName="border-base-300 bg-base-200/30"
+        listAsideClassName="border bg-muted/30"
         listOpen={sidebarOpen}
         onListOpenChange={setSidebarOpen}
         list={() => (
           <>
             <div className="shrink-0 space-y-2 p-2">
-              <button
+              <Button
                 type="button"
-                className="btn btn-primary btn-sm w-full"
+                size="sm"
+                className="w-full"
                 onClick={() => void newConversation()}
               >
                 {m.admin_common_new_conversation()}
-              </button>
-              <label className="text-base-content/70 flex cursor-pointer select-none items-center gap-2 px-1 text-xs">
-                <input
-                  type="checkbox"
-                  className="checkbox checkbox-xs"
+              </Button>
+              <label className="text-muted-foreground flex cursor-pointer select-none items-center gap-2 px-1 text-xs">
+                <Checkbox
+                  className="size-3.5"
                   checked={showArchived}
-                  onChange={toggleShowArchived}
+                  onCheckedChange={() => toggleShowArchived()}
                 />
                 {m.chat_show_archived()}
               </label>
@@ -746,8 +767,8 @@ export function ChatApp() {
             <div className="flex-1 space-y-1 overflow-y-auto px-2 py-1">
               {activeConversations.map((s) => renderConversationItem(s))}
               {showArchived && archivedConversations.length > 0 ? (
-                <div className="border-base-300/60 mt-2 space-y-1 border-t pt-2">
-                  <div className="text-base-content/50 px-1 text-[11px] font-medium tracking-wide uppercase">
+                <div className="border/60 mt-2 space-y-1 border-t pt-2">
+                  <div className="text-muted-foreground px-1 text-[11px] font-medium tracking-wide uppercase">
                     {m.chat_archived_section()}
                   </div>
                   {archivedConversations.map((s) => renderConversationItem(s, true))}
@@ -765,23 +786,23 @@ export function ChatApp() {
 
         <div ref={msgAreaRef} className="flex-1 overflow-y-auto p-4 space-y-4">
           {!currentId ? (
-            <div className="flex flex-col items-center justify-center h-full gap-3 text-base-content/40 text-sm">
+            <div className="flex flex-col items-center justify-center h-full gap-3 text-foreground/40 text-sm">
               <p>{m.admin_chat_select_conversation()}</p>
-              <button
+              <Button
                 type="button"
-                className="btn btn-primary btn-sm"
+                size="sm"
                 disabled={sapDisconnected}
                 onClick={startConversation}
               >
                 {m.admin_common_new_conversation()}
-              </button>
+              </Button>
             </div>
           ) : messagesLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <span className="loading loading-spinner loading-md" />
+            <div className="flex h-full items-center justify-center">
+              <Spinner className="size-6" />
             </div>
           ) : display.length === 0 && !streamVisible && !recovering ? (
-            <div className="flex items-center justify-center h-full text-base-content/40 text-sm">
+            <div className="flex items-center justify-center h-full text-foreground/40 text-sm">
               {m.admin_chat_send_first_message()}
             </div>
           ) : null}
@@ -789,8 +810,8 @@ export function ChatApp() {
           {display.map((item, i) => {
             if (item.type === "message" && item.role === "user") {
               return (
-                <div key={`d${i}`} className="chat chat-end">
-                  <div className="chat-bubble chat-bubble-primary whitespace-pre-wrap">
+                <div key={`d${i}`} className="flex justify-end">
+                  <div className="chat-bubble chat-bubble-user whitespace-pre-wrap">
                     {item.content}
                   </div>
                 </div>
@@ -798,8 +819,8 @@ export function ChatApp() {
             }
             if (item.type === "message" && item.role === "assistant") {
               return (
-                <div key={`d${i}`} className="chat chat-start">
-                  <div className="chat-bubble">
+                <div key={`d${i}`} className="flex justify-start">
+                  <div className="chat-bubble chat-bubble-assistant">
                     <div
                       className="md-content"
                       dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
@@ -810,7 +831,7 @@ export function ChatApp() {
             }
             if (item.type === "tool_block") {
               return (
-                <div key={`d${i}`} className="chat chat-start max-w-full">
+                <div key={`d${i}`} className="flex max-w-full justify-start">
                   <ToolBlockBubble calls={item.calls} />
                 </div>
               );
@@ -819,8 +840,8 @@ export function ChatApp() {
           })}
 
           {clarifyPending ? (
-            <div className="alert alert-info shadow-sm">
-              <div className="w-full space-y-2">
+            <Alert variant="info" className="shadow-sm">
+              <AlertDescription className="w-full space-y-2">
                 <p className="font-medium">{m.admin_chat_clarify_hint()}</p>
                 {clarifyPending.items.map((item, ci) => (
                   <div key={ci} className="text-sm">
@@ -828,7 +849,7 @@ export function ChatApp() {
                       {ci + 1}. {item.question}
                     </p>
                     {item.choices?.length ? (
-                      <ul className="list-disc list-inside ml-2 text-base-content/70">
+                      <ul className="text-muted-foreground ml-2 list-inside list-disc">
                         {item.choices.map((choice, chi) => (
                           <li key={chi}>{choice}</li>
                         ))}
@@ -836,26 +857,26 @@ export function ChatApp() {
                     ) : null}
                   </div>
                 ))}
-              </div>
-            </div>
+              </AlertDescription>
+            </Alert>
           ) : null}
 
           {streamVisible && streamText ? (
-            <div className="chat chat-start">
-              <div className="chat-bubble">
+            <div className="flex justify-start">
+              <div className="chat-bubble chat-bubble-assistant">
                 <div
                   className="md-content"
                   dangerouslySetInnerHTML={{ __html: renderMd(streamText) }}
                 />
-                <span className="loading loading-dots loading-xs" />
+                <Spinner className="mt-1 size-3" />
               </div>
             </div>
           ) : null}
 
           {recovering ? (
-            <div className="chat chat-start">
-              <div className="chat-bubble text-base-content/60 text-sm flex items-center gap-2">
-                <span className="loading loading-spinner loading-xs" />
+            <div className="flex justify-start">
+              <div className="chat-bubble chat-bubble-assistant text-muted-foreground flex items-center gap-2 text-sm">
+                <Spinner className="size-3" />
                 {m.admin_message_waiting_result()}
               </div>
             </div>
@@ -871,7 +892,7 @@ export function ChatApp() {
         />
 
         <div
-          className="border-t border-base-300 p-4 bg-base-100 relative chat-compose"
+          className="border-t border p-4 bg-background relative chat-compose"
           style={keyboardInset > 0 ? { transform: `translateY(-${keyboardInset}px)` } : undefined}
         >
           {messageQueue.length > 0 ? (
@@ -879,16 +900,17 @@ export function ChatApp() {
               {messageQueue.map((item) => (
                 <li
                   key={item.id}
-                  className="flex items-center gap-2 text-sm bg-base-200/60 rounded-lg px-2 py-1.5"
+                  className="flex items-center gap-2 text-sm bg-muted/60 rounded-lg px-2 py-1.5"
                 >
-                  <span className="flex-1 truncate text-base-content/80">{item.text}</span>
-                  <button
+                  <span className="flex-1 truncate text-muted-foreground">{item.text}</span>
+                  <Button
                     type="button"
-                    className="btn btn-xs btn-primary shrink-0"
+                    size="sm"
+                    className="h-7 shrink-0 px-2"
                     onClick={() => void sendQueuedNow(item.id)}
                   >
                     {m.admin_chat_queue_send_now()}
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
@@ -906,12 +928,12 @@ export function ChatApp() {
           >
             <div className="flex-1 relative">
               {showCmdMenu ? (
-                <ul className="absolute bottom-full left-0 right-0 mb-1 max-h-48 overflow-y-auto rounded-lg border border-base-300 bg-base-100 shadow-lg z-10">
+                <ul className="absolute bottom-full left-0 right-0 mb-1 max-h-48 overflow-y-auto rounded-lg border border bg-background shadow-lg z-10">
                   {filteredCommands.map((cmd, i) => (
                     <li
                       key={cmd.name}
                       className={[
-                        "px-3 py-2 text-sm cursor-pointer flex items-baseline gap-2 hover:bg-base-200",
+                        "px-3 py-2 text-sm cursor-pointer flex items-baseline gap-2 hover:bg-muted",
                         i === selectedCmdIdx ? "bg-primary/15" : "",
                       ].join(" ")}
                       onMouseDown={(e) => {
@@ -920,14 +942,14 @@ export function ChatApp() {
                       }}
                     >
                       <span className="font-mono font-medium shrink-0">/{cmd.name}</span>
-                      <span className="text-xs text-base-content/60 truncate">
+                      <span className="text-xs text-muted-foreground truncate">
                         {cmd.description}
                       </span>
                     </li>
                   ))}
                 </ul>
               ) : null}
-              <textarea
+              <Textarea
                 ref={msgInputRef}
                 value={inputText}
                 onChange={(e) => {
@@ -938,7 +960,7 @@ export function ChatApp() {
                   resizeInput();
                 }}
                 rows={1}
-                className="textarea textarea-bordered w-full min-h-[2.75rem] max-h-48 resize-none leading-normal py-2.5"
+                className="min-h-[2.75rem] max-h-48 w-full resize-none py-2.5 leading-normal"
                 placeholder={m.admin_chat_message_placeholder()}
                 disabled={sapDisconnected}
                 onFocus={() => {
@@ -950,17 +972,13 @@ export function ChatApp() {
               />
             </div>
             {streamVisible ? (
-              <button type="submit" className="btn btn-error" disabled={sapDisconnected}>
+              <Button type="submit" variant="destructive" disabled={sapDisconnected}>
                 {m.admin_common_stop()}
-              </button>
+              </Button>
             ) : (
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={!inputText.trim() || sapDisconnected}
-              >
+              <Button type="submit" disabled={!inputText.trim() || sapDisconnected}>
                 {m.admin_common_send()}
-              </button>
+              </Button>
             )}
           </form>
         </div>
@@ -968,32 +986,29 @@ export function ChatApp() {
 
       {contextMenu.visible ? (
         <div
-          className="fixed z-50 bg-base-100 border border-base-300 rounded-lg shadow-xl py-1 min-w-[140px]"
+          className="fixed z-50 bg-background border border rounded-lg shadow-xl py-1 min-w-[140px]"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
-          <div
-            className="px-3 py-1.5 hover:bg-base-300 cursor-pointer text-sm"
-            onClick={startRename}
-          >
+          <div className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm" onClick={startRename}>
             {m.admin_common_rename()}
           </div>
           {contextConversation?.archivedAt ? (
             <div
-              className="px-3 py-1.5 hover:bg-base-300 cursor-pointer text-sm"
+              className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm"
               onClick={() => void handleUnarchive()}
             >
               {m.chat_unarchive()}
             </div>
           ) : (
             <div
-              className="px-3 py-1.5 hover:bg-base-300 cursor-pointer text-sm"
+              className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm"
               onClick={() => void handleArchive()}
             >
               {m.chat_archive()}
             </div>
           )}
           <div
-            className="px-3 py-1.5 hover:bg-base-300 cursor-pointer text-sm text-error"
+            className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm text-destructive"
             onClick={startDelete}
           >
             {m.chat_delete()}
@@ -1011,47 +1026,38 @@ export function ChatApp() {
         onCancel={() => setShowDeleteDialog(false)}
       />
 
-      {showRenameDialog ? (
-        <div
-          className="safe-fixed-overlay z-50 flex items-center justify-center bg-black/40 p-4"
-          onClick={() => setShowRenameDialog(false)}
-        >
-          <div
-            className="bg-base-100 rounded-xl p-5 shadow-2xl w-full max-w-sm"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-sm font-bold mb-3">{m.admin_common_edit_title()}</h3>
-            <input
-              ref={renameInputRef}
-              value={renameText}
-              onChange={(e) => setRenameText(e.target.value)}
-              type="text"
-              className="input input-bordered w-full text-sm"
-              placeholder={m.admin_common_title_placeholder()}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") void confirmRename();
-                if (e.key === "Escape") setShowRenameDialog(false);
-              }}
-            />
-            <div className="flex justify-end gap-2 mt-3">
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                onClick={() => setShowRenameDialog(false)}
-              >
-                {m.admin_common_cancel()}
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary btn-sm"
-                onClick={() => void confirmRename()}
-              >
-                {m.admin_common_confirm()}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
+        <DialogContent showCloseButton={false} className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{m.admin_common_edit_title()}</DialogTitle>
+          </DialogHeader>
+          <Input
+            ref={renameInputRef}
+            value={renameText}
+            onChange={(e) => setRenameText(e.target.value)}
+            type="text"
+            className="text-sm"
+            placeholder={m.admin_common_title_placeholder()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") void confirmRename();
+              if (e.key === "Escape") setShowRenameDialog(false);
+            }}
+          />
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowRenameDialog(false)}
+            >
+              {m.admin_common_cancel()}
+            </Button>
+            <Button type="button" size="sm" onClick={() => void confirmRename()}>
+              {m.admin_common_confirm()}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

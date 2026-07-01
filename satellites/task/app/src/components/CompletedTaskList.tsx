@@ -1,4 +1,5 @@
 import { useDraggable } from "@dnd-kit/core";
+import { Badge, Button, Checkbox } from "@freeanima/ui-kit";
 import { useRef, useState, type MouseEvent, type TouchEvent } from "react";
 
 import { taskDndId } from "../lib/dnd-ids.ts";
@@ -69,7 +70,7 @@ function CompletedTaskRow({
   return (
     <li
       ref={setNodeRef}
-      className={`hover:bg-base-200 flex min-h-11 items-center gap-1 rounded-lg px-1 py-1 opacity-70 ${
+      className={`hover:bg-muted flex min-h-11 items-center gap-1 rounded-lg px-1 py-1 opacity-70 ${
         isDragging ? "opacity-40" : ""
       } ${selected ? "bg-primary/10 opacity-100" : ""}`}
       onContextMenu={onContextMenu}
@@ -82,16 +83,15 @@ function CompletedTaskRow({
         <button
           type="button"
           title="拖到左侧清单以移动"
-          className="text-base-content/40 hover:text-base-content flex min-h-11 min-w-8 shrink-0 cursor-grab items-center justify-center select-none active:cursor-grabbing"
+          className="text-foreground/40 hover:text-foreground flex min-h-11 min-w-8 shrink-0 cursor-grab items-center justify-center select-none active:cursor-grabbing"
           {...attributes}
           {...listeners}
         >
           ⋮⋮
         </button>
       ) : null}
-      <input
-        type="checkbox"
-        className="checkbox checkbox-sm"
+      <Checkbox
+        className="size-4"
         checked={selectionMode ? selected : true}
         onClick={(e) => {
           if (selectionMode) {
@@ -99,7 +99,7 @@ function CompletedTaskRow({
             onSelectItem(e.shiftKey);
           }
         }}
-        onChange={selectionMode ? undefined : onToggleComplete}
+        onCheckedChange={selectionMode ? undefined : () => onToggleComplete()}
       />
       <button
         type="button"
@@ -110,21 +110,21 @@ function CompletedTaskRow({
       >
         <span className="block truncate">{item.title}</span>
         {listName ? (
-          <span className="text-base-content/45 block truncate text-xs no-underline">
-            {listName}
-          </span>
+          <span className="text-foreground/45 block truncate text-xs no-underline">{listName}</span>
         ) : null}
       </button>
       {!selectionMode ? <EntityIdLabel id={item.id} /> : null}
       {useActionSheet && !selectionMode ? (
-        <button
+        <Button
           type="button"
-          className="btn btn-ghost btn-xs btn-square shrink-0"
+          variant="ghost"
+          size="icon-sm"
+          className="shrink-0"
           aria-label="任务操作"
           onClick={() => onOpenMenu()}
         >
           ⋯
-        </button>
+        </Button>
       ) : null}
     </li>
   );
@@ -153,13 +153,13 @@ export function CompletedTaskList({
     <div className="mt-4 px-2">
       <button
         type="button"
-        className="text-base-content/50 hover:text-base-content flex w-full items-center gap-2 rounded-lg py-2 text-left text-xs font-medium"
+        className="text-muted-foreground hover:text-foreground flex w-full items-center gap-2 rounded-lg py-2 text-left text-xs font-medium"
         aria-expanded={showList}
         onClick={() => setExpanded((v) => !v)}
       >
-        <span className="text-base-content/40 w-4 shrink-0">{showList ? "▾" : "▸"}</span>
+        <span className="text-foreground/40 w-4 shrink-0">{showList ? "▾" : "▸"}</span>
         <span>已完成</span>
-        <span className="badge badge-ghost badge-sm">{items.length}</span>
+        <Badge variant="ghost">{items.length}</Badge>
       </button>
       {showList ? (
         <ul className="space-y-1">

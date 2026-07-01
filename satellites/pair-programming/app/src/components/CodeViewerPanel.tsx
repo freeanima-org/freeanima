@@ -80,8 +80,8 @@ export function CodeViewerPanel({ file }: CodeViewerPanelProps) {
 
   if (!file) {
     return (
-      <div className="h-full flex flex-col min-h-0 bg-base-100">
-        <div className="flex-1 flex items-center justify-center text-base-content/40 text-sm">
+      <div className="h-full flex flex-col min-h-0 bg-background">
+        <div className="flex-1 flex items-center justify-center text-foreground/40 text-sm">
           {m.pair_codeviewer_select_file()}
         </div>
       </div>
@@ -89,10 +89,10 @@ export function CodeViewerPanel({ file }: CodeViewerPanelProps) {
   }
 
   return (
-    <div className="h-full flex flex-col min-h-0 bg-base-100">
-      <div className="px-3 py-1.5 border-b border-base-300 text-xs font-mono truncate shrink-0 bg-base-200/50">
+    <div className="h-full flex flex-col min-h-0 bg-background">
+      <div className="px-3 py-1.5 border-b border text-xs font-mono truncate shrink-0 bg-muted/50">
         {String(file.path)}
-        <span className="text-base-content/50 ml-2">
+        <span className="text-muted-foreground ml-2">
           {lang} · {formatSize(Number(file.size ?? 0))}
         </span>
       </div>
@@ -105,7 +105,7 @@ export function CodeViewerPanel({ file }: CodeViewerPanelProps) {
                 data-line={i + 1}
                 className={highlightLine === i + 1 ? "code-line-highlight" : undefined}
               >
-                <td className="code-ln w-12 px-3 text-right text-base-content/35 select-none align-top border-r border-base-300 bg-base-200/50">
+                <td className="code-ln w-12 px-3 text-right text-foreground/35 select-none align-top border-r border bg-muted/50">
                   {i + 1}
                 </td>
                 <td className="code-content px-4 whitespace-pre align-top">

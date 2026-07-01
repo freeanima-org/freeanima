@@ -1,4 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
+import {
+  Card,
+  CardContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { getStatusConfig } from "@admin/lib/api.ts";
 import { m } from "@admin/lib/i18n.ts";
 import { catchWithFallback } from "@admin/lib/log-caught-error.ts";
@@ -68,47 +79,47 @@ function ConfigBlock({ name, value }: { name: string; value: unknown }) {
   if (isPlainObject(value)) {
     const rows = flattenConfigEntries(value);
     return (
-      <section className="card bg-base-200">
-        <div className="card-body gap-3">
+      <Card className="bg-muted py-0">
+        <CardContent className="gap-3 py-4 px-4">
           <h3 className="font-bold font-mono text-sm">{name}</h3>
           {rows.length === 0 ? (
-            <p className="text-xs text-base-content/50">{m.admin_common_empty()}</p>
+            <p className="text-xs text-muted-foreground">{m.admin_common_empty()}</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="table table-sm">
-                <thead>
-                  <tr>
-                    <th className="w-48">{m.admin_common_key_label()}</th>
-                    <th>{m.admin_common_value_label()}</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-48">{m.admin_common_key_label()}</TableHead>
+                    <TableHead>{m.admin_common_value_label()}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {rows.map(({ key, value: rowValue }) => (
-                    <tr key={key}>
-                      <td className="font-mono text-xs align-top">{key}</td>
-                      <td className="font-mono text-xs whitespace-pre-wrap break-all">
+                    <TableRow key={key}>
+                      <TableCell className="font-mono text-xs align-top">{key}</TableCell>
+                      <TableCell className="font-mono text-xs whitespace-pre-wrap break-all">
                         {formatDisplayValue(key, rowValue)}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           )}
-        </div>
-      </section>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <section className="card bg-base-200">
-      <div className="card-body gap-2">
+    <Card className="bg-muted py-0">
+      <CardContent className="gap-2 py-4 px-4">
         <h3 className="font-bold font-mono text-sm">{name}</h3>
-        <pre className="text-xs font-mono whitespace-pre-wrap break-all bg-base-300 p-2 rounded">
+        <pre className="text-xs font-mono whitespace-pre-wrap break-all bg-muted p-2 rounded">
           {formatDisplayValue(name, value)}
         </pre>
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -119,7 +130,7 @@ function ConfigPage() {
     return (
       <div>
         <h2 className="text-lg font-bold mb-4">{m.admin_nav_config()}</h2>
-        <div className="alert alert-error text-sm">{m.admin_common_load_failed_short()}</div>
+        <StatusAlert variant="error">{m.admin_common_load_failed_short()}</StatusAlert>
       </div>
     );
   }
@@ -129,9 +140,9 @@ function ConfigPage() {
   return (
     <div>
       <h2 className="text-lg font-bold mb-4">{m.admin_nav_config()}</h2>
-      <p className="text-sm text-base-content/60 mb-4">{m.admin_config_desc()}</p>
+      <p className="text-sm text-muted-foreground mb-4">{m.admin_config_desc()}</p>
       {blocks.length === 0 ? (
-        <div className="alert alert-info text-sm">{m.admin_config_empty()}</div>
+        <StatusAlert variant="info">{m.admin_config_empty()}</StatusAlert>
       ) : (
         <div className="space-y-4">
           {blocks.map(([name, value]) => (

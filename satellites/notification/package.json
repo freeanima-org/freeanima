@@ -10,6 +10,7 @@
   "dependencies": {
     "@freeanima/sap-contract": "workspace:*",
     "@freeanima/shell-sdk": "workspace:*",
+    "@freeanima/ui-kit": "workspace:*",
     "react": "catalog:"
   },
   "devDependencies": {

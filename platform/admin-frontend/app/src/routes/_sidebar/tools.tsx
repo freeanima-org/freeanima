@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { ToolsStatusResponse, ToolsStatusToolItem } from "@freeanima/admin-contract/api";
+import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
 import { useMemo, useState } from "react";
 import { getToolsStatus } from "@admin/lib/api.ts";
 import { MemoryListPagination } from "@admin/components/admin/MemoryListPagination.tsx";
@@ -71,19 +72,19 @@ export const Route = createFileRoute("/_sidebar/tools")({
 function DefaultToolSetsSection({ names }: { names: string[] }) {
   if (names.length === 0) return null;
   return (
-    <div className="card bg-base-200 mb-4">
-      <div className="card-body py-3 px-4 gap-2">
+    <Card className="bg-muted py-0 mb-4">
+      <CardContent className="py-3 px-4 gap-2">
         <h3 className="text-sm font-semibold">{m.admin_tools_default_loaded()}</h3>
-        <p className="text-xs text-base-content/60">{m.admin_tools_default_loaded_hint()}</p>
+        <p className="text-xs text-muted-foreground">{m.admin_tools_default_loaded_hint()}</p>
         <div className="flex flex-wrap gap-1">
           {names.map((name) => (
-            <span key={name} className="badge badge-primary badge-sm font-mono">
+            <Badge key={name} className="text-xs font-mono">
               {name}
-            </span>
+            </Badge>
           ))}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -92,47 +93,49 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
   const missingContract = !tool.return_schema && !isDynamicRemoteTool(tool);
 
   return (
-    <div className="card bg-base-200">
-      <div className="card-body py-3 px-4">
+    <Card className="bg-muted py-0">
+      <CardContent className="py-3 px-4">
         <div className="flex items-center justify-between gap-2">
           <h3 className="font-mono text-sm font-bold break-all">{tool.name}</h3>
           <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
-            <span
-              className={`badge badge-xs ${tool.return_kind === "text" ? "badge-info" : "badge-neutral"}`}
-            >
+            <Badge variant="secondary" className="text-xs">
               {returnKindLabel(tool.return_kind)}
-            </span>
+            </Badge>
             {tool.requires_env?.length ? (
-              <span className="badge badge-warning badge-xs">{m.admin_tools_needs_secret()}</span>
+              <Badge variant="warning" className="text-xs">
+                {m.admin_tools_needs_secret()}
+              </Badge>
             ) : null}
             {missingContract ? (
-              <span className="badge badge-error badge-xs">{m.admin_tools_no_contract()}</span>
+              <Badge variant="destructive" className="text-xs">
+                {m.admin_tools_no_contract()}
+              </Badge>
             ) : null}
           </div>
         </div>
         {tool.description ? (
-          <p className="text-xs text-base-content/60">{tool.description}</p>
+          <p className="text-xs text-muted-foreground">{tool.description}</p>
         ) : null}
-        <p className="text-xs text-base-content/50 mt-1">{returnKindHint(tool.return_kind)}</p>
+        <p className="text-xs text-muted-foreground mt-1">{returnKindHint(tool.return_kind)}</p>
         {tool.return_text_hint ? (
-          <p className="text-xs text-base-content/50 mt-1">{tool.return_text_hint}</p>
+          <p className="text-xs text-muted-foreground mt-1">{tool.return_text_hint}</p>
         ) : null}
 
         <details className="mt-1">
-          <summary className="text-xs cursor-pointer text-base-content/50">
+          <summary className="text-xs cursor-pointer text-muted-foreground">
             {m.admin_tools_param_schema()}
           </summary>
-          <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
+          <pre className="text-xs mt-1 bg-muted p-2 rounded overflow-x-auto">
             {JSON.stringify(tool.parameters, null, 2)}
           </pre>
         </details>
 
         {tool.return_schema ? (
           <details className="mt-1">
-            <summary className="text-xs cursor-pointer text-base-content/50">
+            <summary className="text-xs cursor-pointer text-muted-foreground">
               {m.admin_tools_success_schema()}
             </summary>
-            <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
+            <pre className="text-xs mt-1 bg-muted p-2 rounded overflow-x-auto">
               {JSON.stringify(tool.return_schema, null, 2)}
             </pre>
           </details>
@@ -140,49 +143,51 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
 
         {exampleText ? (
           <details className="mt-1">
-            <summary className="text-xs cursor-pointer text-base-content/50 flex items-center gap-2">
+            <summary className="text-xs cursor-pointer text-muted-foreground flex items-center gap-2">
               <span>{m.admin_tools_fidelity_example()}</span>
-              <button
+              <Button
                 type="button"
-                className="btn btn-ghost btn-xs"
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
                 onClick={(e) => {
                   e.preventDefault();
                   void copyText(exampleText, m.admin_tools_success_example());
                 }}
               >
                 {m.admin_common_copy()}
-              </button>
+              </Button>
             </summary>
-            <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto whitespace-pre-wrap">
+            <pre className="text-xs mt-1 bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap">
               {exampleText}
             </pre>
           </details>
         ) : null}
 
         <details className="mt-1">
-          <summary className="text-xs cursor-pointer text-base-content/50">
+          <summary className="text-xs cursor-pointer text-muted-foreground">
             {m.admin_tools_error_return()}
           </summary>
-          <p className="text-xs text-base-content/50 mt-1">{m.admin_tools_error_unified()}</p>
-          <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
+          <p className="text-xs text-muted-foreground mt-1">{m.admin_tools_error_unified()}</p>
+          <pre className="text-xs mt-1 bg-muted p-2 rounded overflow-x-auto">
             {JSON.stringify(tool.error_schema, null, 2)}
           </pre>
-          <p className="text-xs text-base-content/50 mt-2">{m.admin_tools_example()}</p>
-          <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
+          <p className="text-xs text-muted-foreground mt-2">{m.admin_tools_example()}</p>
+          <pre className="text-xs mt-1 bg-muted p-2 rounded overflow-x-auto">
             {JSON.stringify(tool.error_example, null, 2)}
           </pre>
         </details>
 
         <details className="mt-1">
-          <summary className="text-xs cursor-pointer text-base-content/50">
+          <summary className="text-xs cursor-pointer text-muted-foreground">
             {m.admin_tools_openai_def()}
           </summary>
-          <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
+          <pre className="text-xs mt-1 bg-muted p-2 rounded overflow-x-auto">
             {JSON.stringify(tool.definition, null, 2)}
           </pre>
         </details>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -221,7 +226,7 @@ function ToolsPage() {
     return (
       <div>
         <h2 className="text-lg font-bold mb-4">{m.admin_nav_tools()}</h2>
-        <p className="text-sm text-base-content/60 mb-4">{m.admin_tools_desc()}</p>
+        <p className="text-sm text-muted-foreground mb-4">{m.admin_tools_desc()}</p>
         <DefaultToolSetsSection names={defaultToolSets} />
         <div className="space-y-3">
           {pagedTools.map((tool) => (
@@ -241,7 +246,7 @@ function ToolsPage() {
   return (
     <div>
       <h2 className="text-lg font-bold mb-4">{m.admin_nav_tools()}</h2>
-      <p className="text-sm text-base-content/60 mb-4">{m.admin_tools_desc_grouped()}</p>
+      <p className="text-sm text-muted-foreground mb-4">{m.admin_tools_desc_grouped()}</p>
       <DefaultToolSetsSection names={defaultToolSets} />
 
       <div className="space-y-4">
@@ -253,9 +258,13 @@ function ToolsPage() {
             <details key={ts.name} className="group">
               <summary className="cursor-pointer font-bold list-none flex items-baseline gap-2">
                 <span className="select-none">📦 {ts.name}</span>
-                <span className="badge badge-neutral badge-xs">{groupedTools.length}</span>
+                <Badge variant="ghost" className="text-xs">
+                  {groupedTools.length}
+                </Badge>
                 {ts.description ? (
-                  <span className="text-xs font-normal text-base-content/50">{ts.description}</span>
+                  <span className="text-xs font-normal text-muted-foreground">
+                    {ts.description}
+                  </span>
                 ) : null}
               </summary>
               {groupedTools.length > 0 ? (

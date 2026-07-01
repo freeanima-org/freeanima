@@ -1,4 +1,13 @@
 import { useEffect, useRef, useState } from "react";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  Input,
+  Spinner,
+  Textarea,
+} from "@freeanima/ui-kit";
 import type { ConversationListItem } from "@pair/lib/types.ts";
 import { formatConversationIdDateTime } from "@pair/lib/format-datetime.ts";
 import { m } from "@pair/lib/i18n.ts";
@@ -182,11 +191,11 @@ export function ConversationPanel() {
   };
 
   return (
-    <div className="h-full flex flex-row min-h-0 border-l border-base-300">
+    <div className="h-full flex flex-row min-h-0 border-l border">
       <div className="flex-1 flex flex-col min-h-0 min-w-0">
         <div ref={msgAreaRef} className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
           {!store.currentConversationId ? (
-            <div className="text-center text-base-content/40 text-sm pt-8">
+            <div className="text-center text-foreground/40 text-sm pt-8">
               {m.pair_create_or_select()}
             </div>
           ) : null}
@@ -194,8 +203,8 @@ export function ConversationPanel() {
           {store.display.map((item, i) => {
             if (item.type === "message" && item.role === "user") {
               return (
-                <div key={`d${i}`} className="chat chat-end">
-                  <div className="chat-bubble chat-bubble-primary chat-bubble-sm whitespace-pre-wrap">
+                <div key={`d${i}`} className="flex justify-end">
+                  <div className="msg-bubble msg-bubble-user whitespace-pre-wrap">
                     {item.content}
                   </div>
                 </div>
@@ -203,8 +212,8 @@ export function ConversationPanel() {
             }
             if (item.type === "message" && item.role === "assistant") {
               return (
-                <div key={`d${i}`} className="chat chat-start">
-                  <div className="chat-bubble chat-bubble-sm">
+                <div key={`d${i}`} className="flex justify-start">
+                  <div className="msg-bubble">
                     <div
                       className="md-content text-sm"
                       dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
@@ -215,11 +224,11 @@ export function ConversationPanel() {
             }
             if (item.type === "tool_block") {
               return (
-                <div key={`d${i}`} className="chat chat-start">
+                <div key={`d${i}`} className="flex justify-start">
                   <div className="tool-bubble text-xs px-3 py-2">
                     {item.calls.map((c, ci) => (
                       <div key={ci} className="flex items-center gap-1.5 font-mono">
-                        <span className="text-success shrink-0">✓</span>
+                        <span className="text-green-700 dark:text-green-300 shrink-0">✓</span>
                         <span>{truncatePreview(`${c.name}(${c.argsPreview})`)}</span>
                       </div>
                     ))}
@@ -231,19 +240,19 @@ export function ConversationPanel() {
           })}
 
           {toolCalls.length > 0 ? (
-            <div className="chat chat-start">
+            <div className="flex justify-start">
               <div className="tool-bubble text-xs px-3 py-2">
                 {toolCalls.map((t, ti) => (
                   <div key={ti} className="flex items-center gap-1.5 font-mono">
                     <span className="shrink-0">
                       {t.status === "pending" ? (
-                        <span className="text-base-content/40">◌</span>
+                        <span className="text-foreground/40">◌</span>
                       ) : t.status === "running" ? (
-                        <span className="loading loading-spinner loading-xs text-info" />
+                        <Spinner className="size-3 text-blue-700 dark:text-blue-300" />
                       ) : t.status === "done" ? (
-                        <span className="text-success">✓</span>
+                        <span className="text-green-700 dark:text-green-300">✓</span>
                       ) : (
-                        <span className="text-error">✗</span>
+                        <span className="text-destructive">✗</span>
                       )}
                     </span>
                     <span>{truncatePreview(`${t.name}(${t.argsPreview})`)}</span>
@@ -257,19 +266,19 @@ export function ConversationPanel() {
           streamingConversationId === store.currentConversationId &&
           streamAccumulated &&
           toolCalls.length === 0 ? (
-            <div className="chat chat-start">
-              <div className="chat-bubble chat-bubble-sm">
+            <div className="flex justify-start">
+              <div className="msg-bubble">
                 <div
                   className="md-content text-sm"
                   dangerouslySetInnerHTML={{ __html: renderMd(streamAccumulated) }}
                 />
-                {!streamDone ? <span className="loading loading-dots loading-xs" /> : null}
+                {!streamDone ? <Spinner className="inline size-3 ml-1 align-middle" /> : null}
               </div>
             </div>
           ) : null}
         </div>
 
-        <div className="border-t border-base-300 shrink-0">
+        <div className="border-t border shrink-0">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -277,20 +286,21 @@ export function ConversationPanel() {
             }}
           >
             <div className="flex justify-end px-2 pt-1.5 pb-0">
-              <button
+              <Button
                 type="submit"
-                className="btn btn-primary btn-xs"
+                size="sm"
+                className="h-7 px-2 text-xs"
                 disabled={!store.currentConversationId || streaming || !inputText.trim()}
               >
                 {m.admin_common_send()}
-              </button>
+              </Button>
             </div>
             <div className="p-2 pt-1">
-              <textarea
+              <Textarea
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 rows={3}
-                className="textarea textarea-bordered textarea-sm w-full min-h-[2.5rem] resize-none"
+                className="min-h-[2.5rem] resize-none text-sm"
                 placeholder={m.pair_chat_placeholder()}
                 disabled={!store.currentConversationId || streaming}
                 onKeyDown={(e) => {
@@ -307,7 +317,7 @@ export function ConversationPanel() {
 
       <button
         type="button"
-        className="shrink-0 w-6 flex items-center justify-center border-l border-base-300 bg-base-200/50 hover:bg-base-300/60 cursor-pointer text-xs text-base-content/40 select-none"
+        className="shrink-0 w-6 flex items-center justify-center border-l border bg-muted/50 hover:bg-muted/60 cursor-pointer text-xs text-foreground/40 select-none"
         onClick={() => setConversationListVisible((v) => !v)}
         title={
           conversationListVisible
@@ -319,15 +329,16 @@ export function ConversationPanel() {
       </button>
 
       {conversationListVisible ? (
-        <div className="w-48 shrink-0 flex flex-col min-h-0 bg-base-200/30">
-          <div className="p-2 border-b border-base-300 shrink-0">
-            <button
+        <div className="w-48 shrink-0 flex flex-col min-h-0 bg-muted/30">
+          <div className="p-2 border-b border shrink-0">
+            <Button
               type="button"
-              className="btn btn-primary btn-sm w-full"
+              size="sm"
+              className="w-full"
               onClick={() => void newConversation()}
             >
               {m.admin_common_new_conversation()}
-            </button>
+            </Button>
           </div>
           <div className="flex-1 overflow-y-auto px-2 py-1 space-y-1">
             {store.conversations.map((s) => (
@@ -352,43 +363,32 @@ export function ConversationPanel() {
         </div>
       ) : null}
 
-      {showRename ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setShowRename(false)}
-        >
-          <div
-            className="bg-base-100 rounded-xl p-4 shadow-2xl w-72"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <input
-              value={renameText}
-              onChange={(e) => setRenameText(e.target.value)}
-              className="input input-bordered w-full text-sm"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") void confirmRename();
-                if (e.key === "Escape") setShowRename(false);
-              }}
-            />
-            <div className="flex justify-end gap-2 mt-3">
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                onClick={() => setShowRename(false)}
-              >
-                {m.admin_common_cancel()}
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary btn-sm"
-                onClick={() => void confirmRename()}
-              >
-                {m.admin_common_confirm()}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <Dialog
+        open={showRename}
+        onOpenChange={(open) => {
+          if (!open) setShowRename(false);
+        }}
+      >
+        <DialogContent showCloseButton={false} className="max-w-xs">
+          <Input
+            value={renameText}
+            onChange={(e) => setRenameText(e.target.value)}
+            className="text-sm"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") void confirmRename();
+              if (e.key === "Escape") setShowRename(false);
+            }}
+          />
+          <DialogFooter>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setShowRename(false)}>
+              {m.admin_common_cancel()}
+            </Button>
+            <Button type="button" size="sm" onClick={() => void confirmRename()}>
+              {m.admin_common_confirm()}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

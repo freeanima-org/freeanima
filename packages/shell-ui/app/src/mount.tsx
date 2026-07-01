@@ -1,5 +1,6 @@
 import { StrictMode, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
+import { Button, Card, CardContent } from "@freeanima/ui-kit";
 import type { SettingsBinding } from "@freeanima/shell-sdk/settings";
 
 import { bootstrapSentryFromSettings, Sentry } from "./bootstrap/sentry.ts";
@@ -31,7 +32,7 @@ function ShellBootNotice({ message }: { message: string }): JSX.Element {
   return (
     <div
       role="alert"
-      className="shrink-0 border-b border-warning/40 bg-warning/10 px-4 py-2 text-sm text-warning-content"
+      className="shrink-0 border-b border-yellow-500/40 bg-yellow-500/10 px-4 py-2 text-sm text-yellow-700 dark:text-yellow-300"
     >
       启动异常：{message}。可在「设置」中检查 Hub 配置，或完全关闭应用后重试。
     </div>
@@ -40,29 +41,28 @@ function ShellBootNotice({ message }: { message: string }): JSX.Element {
 
 function ShellMountError({ message, detail }: { message: string; detail: string }): JSX.Element {
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-base-200">
-      <div className="max-w-lg w-full space-y-4 rounded-lg border border-base-300 bg-base-100 p-4">
-        <h1 className="text-lg font-semibold">界面无法启动</h1>
-        <pre className="text-xs whitespace-pre-wrap break-words max-h-48 overflow-y-auto opacity-80">
-          {message}
-        </pre>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className="btn btn-sm btn-primary"
-            onClick={() => location.reload()}
-          >
-            重新加载
-          </button>
-          <button
-            type="button"
-            className="btn btn-sm btn-outline"
-            onClick={() => void navigator.clipboard.writeText(detail)}
-          >
-            复制详情
-          </button>
-        </div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-muted">
+      <Card className="max-w-lg w-full">
+        <CardContent className="space-y-4 pt-6">
+          <h1 className="text-lg font-semibold">界面无法启动</h1>
+          <pre className="text-xs whitespace-pre-wrap break-words max-h-48 overflow-y-auto opacity-80">
+            {message}
+          </pre>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" size="sm" onClick={() => location.reload()}>
+              重新加载
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => void navigator.clipboard.writeText(detail)}
+            >
+              复制详情
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -79,25 +79,28 @@ function ShellErrorFallback({
   const detail = stack ? `${message}\n\n${stack}` : message;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-base-200">
-      <div className="max-w-lg w-full space-y-4 rounded-lg border border-base-300 bg-base-100 p-4">
-        <h1 className="text-lg font-semibold">界面出错</h1>
-        <pre className="text-xs whitespace-pre-wrap break-words max-h-48 overflow-y-auto opacity-80">
-          {message}
-        </pre>
-        <div className="flex flex-wrap gap-2">
-          <button type="button" className="btn btn-sm btn-primary" onClick={resetError}>
-            重试
-          </button>
-          <button
-            type="button"
-            className="btn btn-sm btn-outline"
-            onClick={() => void navigator.clipboard.writeText(detail)}
-          >
-            复制详情
-          </button>
-        </div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-muted">
+      <Card className="max-w-lg w-full">
+        <CardContent className="space-y-4 pt-6">
+          <h1 className="text-lg font-semibold">界面出错</h1>
+          <pre className="text-xs whitespace-pre-wrap break-words max-h-48 overflow-y-auto opacity-80">
+            {message}
+          </pre>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" size="sm" onClick={resetError}>
+              重试
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => void navigator.clipboard.writeText(detail)}
+            >
+              复制详情
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

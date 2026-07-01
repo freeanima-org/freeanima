@@ -1,4 +1,17 @@
 import { useMemo, useState } from "react";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardTitle,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Spinner,
+} from "@freeanima/ui-kit";
 import type { MotionLibraryEntry, MotionSlotId } from "@shared/companion-schema.ts";
 import { MOTION_SLOT_IDS, MOTION_SLOT_LABELS } from "@shared/companion-schema.ts";
 import { setMotionSlot } from "@/lib/api.ts";
@@ -44,28 +57,28 @@ function SlotAddModal({ slot, onClose }: AddModalProps) {
   };
 
   return (
-    <dialog className="modal modal-open">
-      <div className="modal-box max-w-md">
-        <h3 className="font-semibold text-base">添加到 {MOTION_SLOT_LABELS[slot]}</h3>
-        <p className="text-xs text-base-content/55 mt-2 mb-4">
-          从动作库选择尚未关联到此槽位的动作（可多选）
-        </p>
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <DialogContent showCloseButton={false} className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>添加到 {MOTION_SLOT_LABELS[slot]}</DialogTitle>
+        </DialogHeader>
+        <p className="text-xs text-foreground/55">从动作库选择尚未关联到此槽位的动作（可多选）</p>
         {available.length === 0 ? (
-          <p className="text-sm text-base-content/50 py-4">没有可添加的动作</p>
+          <p className="text-sm text-muted-foreground py-4">没有可添加的动作</p>
         ) : (
           <ul className="flex flex-col gap-1 max-h-[40vh] overflow-y-auto pr-1">
             {available.map((m) => (
               <li key={m.id}>
-                <label className="label cursor-pointer justify-start gap-3 py-2 rounded-lg hover:bg-base-300/50">
-                  <input
-                    type="checkbox"
-                    className="checkbox checkbox-sm"
-                    checked={selected.has(m.id)}
-                    onChange={() => toggle(m.id)}
-                  />
+                <label className="flex cursor-pointer items-center gap-3 rounded-lg py-2 hover:bg-muted/50">
+                  <Checkbox checked={selected.has(m.id)} onCheckedChange={() => toggle(m.id)} />
                   <span className="flex-1 min-w-0">
                     <span className="block truncate text-sm">{m.name}</span>
-                    <span className="block truncate text-xs text-base-content/45" title={m.id}>
+                    <span className="block truncate text-xs text-foreground/45" title={m.id}>
                       {m.id}
                     </span>
                   </span>
@@ -74,27 +87,17 @@ function SlotAddModal({ slot, onClose }: AddModalProps) {
             ))}
           </ul>
         )}
-        <div className="modal-action">
-          <button type="button" className="btn btn-ghost" onClick={onClose}>
+        <DialogFooter>
+          <Button type="button" variant="ghost" onClick={onClose}>
             取消
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            disabled={selected.size === 0 || saving}
-            onClick={confirm}
-          >
-            {saving ? <span className="loading loading-spinner loading-sm" /> : null}
+          </Button>
+          <Button type="button" disabled={selected.size === 0 || saving} onClick={confirm}>
+            {saving ? <Spinner className="size-4" /> : null}
             {saving ? "添加中…" : `添加 (${selected.size})`}
-          </button>
-        </div>
-      </div>
-      <form method="dialog" className="modal-backdrop">
-        <button type="button" onClick={onClose}>
-          关闭
-        </button>
-      </form>
-    </dialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -117,7 +120,7 @@ export function MotionSlotsTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-xs text-base-content/55 leading-relaxed">
+      <p className="text-xs text-foreground/55 leading-relaxed">
         每个槽位可绑定多个动作；播放时未指定则随机选取。完整列表在「动作库」Tab（共{" "}
         {motionLibrary.length} 个）；此处只显示已绑定到槽位的动作。
       </p>
@@ -129,44 +132,48 @@ export function MotionSlotsTab() {
             .filter((m): m is MotionLibraryEntry => Boolean(m));
 
           return (
-            <section key={slot} className="card card-border bg-base-300/30">
-              <div className="card-body py-3 px-4 gap-2">
+            <Card key={slot} className="gap-0 border bg-muted/30 py-0 shadow-none">
+              <CardContent className="flex flex-col gap-2 px-4 py-3">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="card-title text-sm">{MOTION_SLOT_LABELS[slot]}</h3>
-                  <button
+                  <CardTitle className="text-sm">{MOTION_SLOT_LABELS[slot]}</CardTitle>
+                  <Button
                     type="button"
-                    className="btn btn-ghost btn-xs"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
                     onClick={() => setAddSlot(slot)}
                     disabled={motionLibrary.length === 0}
                   >
                     添加
-                  </button>
+                  </Button>
                 </div>
                 {entries.length === 0 ? (
-                  <p className="text-xs text-base-content/50 py-1">暂无动作</p>
+                  <p className="text-xs text-muted-foreground py-1">暂无动作</p>
                 ) : (
-                  <ul className="flex flex-col divide-y divide-base-content/5">
+                  <ul className="flex flex-col divide-y divide-border">
                     {entries.map((m) => (
                       <li key={m.id} className="flex items-center gap-3 py-2 first:pt-0 last:pb-0">
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm">{m.name}</p>
-                          <p className="truncate text-xs text-base-content/45" title={m.id}>
+                          <p className="truncate text-xs text-foreground/45" title={m.id}>
                             {m.id}
                           </p>
                         </div>
-                        <button
+                        <Button
                           type="button"
-                          className="btn btn-ghost btn-xs text-error shrink-0"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 shrink-0 px-2 text-xs text-destructive hover:text-destructive"
                           onClick={() => remove(slot, m.id)}
                         >
                           移除
-                        </button>
+                        </Button>
                       </li>
                     ))}
                   </ul>
                 )}
-              </div>
-            </section>
+              </CardContent>
+            </Card>
           );
         })}
       </div>

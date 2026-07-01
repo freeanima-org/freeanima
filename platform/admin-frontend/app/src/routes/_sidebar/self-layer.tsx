@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { SelfBlockDisplay } from "@freeanima/admin-contract/api";
+import { Badge, Card, CardContent } from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { getSelfBlocks } from "@admin/lib/api.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
 import { m } from "@admin/lib/i18n.ts";
@@ -19,27 +21,31 @@ function SelfLayerPage() {
   return (
     <div>
       <h2 className="text-lg font-bold mb-1">{m.admin_nav_self_layer()}</h2>
-      <p className="text-sm text-base-content/60 mb-4">
+      <p className="text-sm text-muted-foreground mb-4">
         {m.admin_self_layer_desc()} <code className="text-xs">update_self_block</code>
       </p>
 
       {blocks.length === 0 ? (
-        <div className="alert alert-info text-sm">{m.admin_self_layer_empty()}</div>
+        <StatusAlert variant="info">{m.admin_self_layer_empty()}</StatusAlert>
       ) : (
         <div className="space-y-4">
           {blocks.map((block) => {
             const body = block.content.trim();
             return (
-              <section key={block.block_key} className="card bg-base-200">
-                <div className="card-body gap-3">
+              <Card key={block.block_key} className="bg-muted py-0">
+                <CardContent className="gap-3 py-4 px-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="font-bold">{block.heading}</h3>
-                    <span className="badge badge-ghost badge-sm font-mono">{block.block_key}</span>
+                    <Badge variant="ghost" className="text-xs font-mono">
+                      {block.block_key}
+                    </Badge>
                     {block.locked ? (
-                      <span className="badge badge-warning badge-sm">🔒 locked</span>
+                      <Badge variant="warning" className="text-xs">
+                        🔒 locked
+                      </Badge>
                     ) : null}
                   </div>
-                  <div className="flex flex-wrap gap-3 text-xs text-base-content/60">
+                  <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                     <span>version {block.version}</span>
                     {block.updated_at ? (
                       <span>
@@ -51,12 +57,12 @@ function SelfLayerPage() {
                     {block.updated_by ? <span>by {block.updated_by}</span> : null}
                   </div>
                   <p
-                    className={`text-sm whitespace-pre-wrap ${body ? "" : "text-base-content/50"}`}
+                    className={`text-sm whitespace-pre-wrap ${body ? "" : "text-muted-foreground"}`}
                   >
                     {body || m.admin_self_layer_not_set()}
                   </p>
-                </div>
-              </section>
+                </CardContent>
+              </Card>
             );
           })}
         </div>

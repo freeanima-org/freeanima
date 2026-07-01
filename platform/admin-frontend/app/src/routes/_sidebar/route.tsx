@@ -16,7 +16,7 @@ function AdminSidebarNav() {
     <nav className="flex-1 overflow-y-auto px-2 py-1 pb-3 min-h-0 space-y-3">
       {adminNavGroups().map((group) => (
         <div key={group.id}>
-          <div className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
+          <div className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {group.label}
           </div>
           <div className="space-y-1">

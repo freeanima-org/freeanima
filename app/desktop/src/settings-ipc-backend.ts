@@ -8,7 +8,9 @@ type ScopedSettingsBridge = ScopedSettingsBackend & {
 function getScopedSettingsBridge(): ScopedSettingsBridge {
   const api = window.freeanimaScopedSettings;
   if (!api) {
-    throw new Error("freeanimaScopedSettings 不可用（需在 Electron preload 中注入）");
+    throw new Error(
+      "freeanimaScopedSettings 不可用：请通过 Electron 启动（bun run --filter @freeanima/app-desktop dev:electron），或确保 shell-bridge 已先于 main 加载",
+    );
   }
   return api;
 }

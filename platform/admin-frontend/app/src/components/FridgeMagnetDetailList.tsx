@@ -1,4 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import { Badge, Card, CardContent } from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { m } from "@admin/lib/i18n.ts";
 
 export type FridgeMagnetItem = {
@@ -28,26 +30,26 @@ type FridgeMagnetDetailListProps = {
 
 export function FridgeMagnetDetailList({ magnets, redisConfigured }: FridgeMagnetDetailListProps) {
   if (!redisConfigured) {
-    return <div className="alert alert-warning text-sm">{m.admin_fridge_redis_down()}</div>;
+    return <StatusAlert variant="warning">{m.admin_fridge_redis_down()}</StatusAlert>;
   }
 
   if (magnets.length === 0) {
-    return <div className="alert alert-info text-sm">{m.admin_fridge_empty()}</div>;
+    return <StatusAlert variant="info">{m.admin_fridge_empty()}</StatusAlert>;
   }
 
   return (
     <div className="space-y-3">
       {magnets.map((magnet) => (
-        <section key={magnet.key} className="card bg-base-200">
-          <div className="card-body gap-2 p-4">
+        <Card key={magnet.key} className="bg-muted py-0">
+          <CardContent className="gap-2 p-4">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="badge badge-ghost badge-sm font-mono">{magnet.key}</span>
+              <Badge variant="ghost" className="text-xs font-mono">
+                {magnet.key}
+              </Badge>
               {magnet.module === "conversation" ? (
-                <span className="badge badge-primary badge-sm">
-                  {m.admin_fridge_badge_conversation()}
-                </span>
+                <Badge className="text-xs">{m.admin_fridge_badge_conversation()}</Badge>
               ) : null}
-              <span className="text-xs text-base-content/60">
+              <span className="text-xs text-muted-foreground">
                 {formatFridgeTtl(magnet.ttl_seconds)}
               </span>
             </div>
@@ -57,15 +59,15 @@ export function FridgeMagnetDetailList({ magnets, redisConfigured }: FridgeMagne
                 <Link
                   to="/conversations/$conversationId"
                   params={{ conversationId: magnet.conversation_id }}
-                  className="link link-primary font-mono"
+                  className="text-primary underline-offset-4 hover:underline text-xs font-mono"
                 >
                   {magnet.conversation_id}
                 </Link>
               </div>
             ) : null}
             <p className="text-sm whitespace-pre-wrap">{magnet.value}</p>
-          </div>
-        </section>
+          </CardContent>
+        </Card>
       ))}
     </div>
   );

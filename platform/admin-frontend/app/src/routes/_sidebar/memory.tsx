@@ -1,6 +1,9 @@
 import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
 import type { ServiceStatus } from "@freeanima/admin-contract/api";
+import { Badge, Button, Card, CardContent, Input, Spinner } from "@freeanima/ui-kit";
 import { FormField, FormFieldset } from "@freeanima/ui-kit/form";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
+import { cn } from "@freeanima/ui-kit/lib/utils";
 import { useMemo, useState } from "react";
 import { formatMemoryRecallOutput } from "@admin/components/admin/format-memory-recall-output.ts";
 import {
@@ -45,14 +48,23 @@ const MEMORY_BROWSE_TABS = [
 function MemoryBrowseTabs() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
-    <div className="tabs tabs-boxed tabs-sm mb-4 flex-wrap h-auto gap-1">
+    <div className="bg-muted text-muted-foreground inline-flex h-auto w-fit flex-wrap items-center justify-center rounded-lg p-[3px] mb-4 gap-1">
       {MEMORY_BROWSE_TABS.map((tab) => {
         const active =
           tab.to === "/memory"
             ? pathname === "/memory"
             : pathname === tab.to || pathname.startsWith(`${tab.to}/`);
         return (
-          <Link key={tab.to} to={tab.to} className={`tab ${active ? "tab-active" : ""}`}>
+          <Link
+            key={tab.to}
+            to={tab.to}
+            className={cn(
+              "inline-flex h-8 items-center justify-center rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow]",
+              active
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
             {tab.label()}
           </Link>
         );
@@ -119,92 +131,92 @@ function MemoryPage() {
       <MemoryBrowseTabs />
       <div className="mb-4">
         <h2 className="text-lg font-bold">{m.admin_nav_memory()}</h2>
-        <p className="text-sm text-base-content/60 mt-1">{m.admin_memory_desc()}</p>
+        <p className="text-sm text-muted-foreground mt-1">{m.admin_memory_desc()}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-        <div className="card bg-base-200">
-          <div className="card-body py-3 px-4">
-            <p className="text-xs text-base-content/60">{m.admin_dashboard_semantic_memory()}</p>
+        <Card className="bg-muted py-0">
+          <CardContent className="py-3 px-4">
+            <p className="text-xs text-muted-foreground">{m.admin_dashboard_semantic_memory()}</p>
             <p className="text-xl font-mono mt-1">{semanticMemoryCount}</p>
-            <p className="text-xs text-base-content/50 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {m.admin_api_semantic_memory_count({ count: String(semanticMemoryCount) })}
             </p>
-          </div>
-        </div>
-        <div className="card bg-base-200">
-          <div className="card-body py-3 px-4">
-            <p className="text-xs text-base-content/60">{m.admin_dashboard_dialogue_messages()}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-muted py-0">
+          <CardContent className="py-3 px-4">
+            <p className="text-xs text-muted-foreground">{m.admin_dashboard_dialogue_messages()}</p>
             <p className="text-xl font-mono mt-1">{dialogueMessageCount}</p>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="mb-4">
-        <p className="text-xs text-base-content/60 mb-1.5">{m.admin_memory_quick_links()}</p>
+        <p className="text-xs text-muted-foreground mb-1.5">{m.admin_memory_quick_links()}</p>
         <div className="flex flex-wrap gap-2">
           {QUICK_LINKS.map((link) => (
-            <Link key={link.to} to={link.to} className="btn btn-xs btn-outline">
-              {link.label()}
-            </Link>
+            <Button key={link.to} variant="outline" size="sm" className="h-7 text-xs" asChild>
+              <Link to={link.to}>{link.label()}</Link>
+            </Button>
           ))}
         </div>
       </div>
 
       <form
-        className="card bg-base-200 mb-4"
+        className="mb-4"
         onSubmit={(e) => {
           e.preventDefault();
           void runSearch();
         }}
       >
-        <div className="card-body gap-3">
-          <FormFieldset bordered={false} className="gap-3">
-            <FormField label={m.admin_memory_query_required()} className="text-xs">
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                type="text"
-                className="input input-bordered input-sm font-mono"
-                placeholder={m.admin_common_keyword_placeholder()}
-                autoFocus
-              />
-            </FormField>
-            <FormField label={m.admin_memory_top_n()} className="max-w-xs text-xs">
-              <input
-                value={limit}
-                onChange={(e) => setLimit(Number(e.target.value))}
-                type="number"
-                min={1}
-                max={20}
-                className="input input-bordered input-sm"
-              />
-            </FormField>
-          </FormFieldset>
-          <div className="flex items-center gap-2">
-            <button
-              type="submit"
-              className="btn btn-sm btn-primary"
-              disabled={searching || !query.trim()}
-            >
-              {searching ? <span className="loading loading-spinner loading-xs" /> : null}
-              {m.admin_common_search()}
-            </button>
-            {searched && !searching ? (
-              <span className="text-xs text-base-content/50">
-                「{lastQuery}」— {result.summary}
-              </span>
-            ) : null}
-          </div>
-        </div>
+        <Card className="bg-muted py-0">
+          <CardContent className="gap-3 py-4 px-4">
+            <FormFieldset bordered={false} className="gap-3">
+              <FormField label={m.admin_memory_query_required()} className="text-xs">
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  type="text"
+                  className="h-8 font-mono"
+                  placeholder={m.admin_common_keyword_placeholder()}
+                  autoFocus
+                />
+              </FormField>
+              <FormField label={m.admin_memory_top_n()} className="max-w-xs text-xs">
+                <Input
+                  value={limit}
+                  onChange={(e) => setLimit(Number(e.target.value))}
+                  type="number"
+                  min={1}
+                  max={20}
+                  className="h-8"
+                />
+              </FormField>
+            </FormFieldset>
+            <div className="flex items-center gap-2">
+              <Button type="submit" size="sm" disabled={searching || !query.trim()}>
+                {searching ? <Spinner /> : null}
+                {m.admin_common_search()}
+              </Button>
+              {searched && !searching ? (
+                <span className="text-xs text-muted-foreground">
+                  「{lastQuery}」— {result.summary}
+                </span>
+              ) : null}
+            </div>
+          </CardContent>
+        </Card>
       </form>
 
-      {error ? <div className="alert alert-error text-sm mb-4">{error}</div> : null}
+      {error ? (
+        <StatusAlert variant="error" className="mb-4">
+          {error}
+        </StatusAlert>
+      ) : null}
 
       {searched && !searching && isEmpty ? (
-        <div className="alert alert-info text-sm">
-          {m.admin_memory_not_found({ query: lastQuery })}
-        </div>
+        <StatusAlert variant="info">{m.admin_memory_not_found({ query: lastQuery })}</StatusAlert>
       ) : null}
 
       {searched && !isEmpty ? (
@@ -213,35 +225,37 @@ function MemoryPage() {
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <h3 className="text-sm font-bold">
                 {m.admin_memory_recall_results()}
-                <span className="badge badge-ghost badge-sm ml-1">{result.results.length}</span>
+                <Badge variant="ghost" className="text-xs ml-1">
+                  {result.results.length}
+                </Badge>
               </h3>
               <div className="flex flex-wrap gap-1">
-                <button
-                  type="button"
-                  className={`badge badge-sm cursor-pointer ${typeFilter === "all" ? "badge-primary" : "badge-ghost"}`}
+                <Badge
+                  variant={typeFilter === "all" ? "default" : "ghost"}
+                  className="text-xs cursor-pointer"
                   onClick={() => setTypeFilter("all")}
                 >
                   {m.admin_memory_type_filter_all()} {result.results.length}
-                </button>
+                </Badge>
                 {MEMORY_RECALL_TYPES.map((type) => {
                   const count = typeCounts[type] ?? 0;
                   if (count === 0) return null;
                   return (
-                    <button
+                    <Badge
                       key={type}
-                      type="button"
-                      className={`badge badge-sm cursor-pointer ${typeFilter === type ? "badge-primary" : "badge-ghost"}`}
+                      variant={typeFilter === type ? "default" : "ghost"}
+                      className="text-xs cursor-pointer"
                       onClick={() => setTypeFilter(type)}
                     >
                       {memoryTypeLabel(type)} {count}
-                    </button>
+                    </Badge>
                   );
                 })}
               </div>
             </div>
             <div className="space-y-2">
               {filteredResults.length === 0 ? (
-                <p className="text-sm text-base-content/50">{m.admin_common_no_results()}</p>
+                <p className="text-sm text-muted-foreground">{m.admin_common_no_results()}</p>
               ) : (
                 filteredResults.map((hit, idx) => (
                   <RecallHitCard key={recallHitKey(hit)} hit={hit} index={idx} />
@@ -250,12 +264,12 @@ function MemoryPage() {
             </div>
           </section>
 
-          <details className="collapse collapse-arrow bg-base-200">
-            <summary className="collapse-title text-xs font-mono text-base-content/60 min-h-0 py-3">
+          <details className="rounded-lg bg-muted">
+            <summary className="text-xs font-mono text-muted-foreground cursor-pointer py-3 px-4">
               {m.admin_memory_raw_preview()}
             </summary>
-            <div className="collapse-content">
-              <pre className="text-xs bg-base-300 p-3 rounded-lg whitespace-pre-wrap overflow-x-auto">
+            <div className="px-4 pb-4">
+              <pre className="text-xs bg-muted p-3 rounded-lg whitespace-pre-wrap overflow-x-auto">
                 {toolPreview}
               </pre>
             </div>

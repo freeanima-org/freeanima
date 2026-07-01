@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import { Card, CardContent } from "@freeanima/ui-kit";
 import type {
   SettingsBinding,
   SettingsFormFields,
@@ -28,8 +29,8 @@ export function HubSetupPage() {
 
   if (!hub) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-base-200">
-        <p className="text-sm text-error">Hub 设置未注入，无法完成引导。</p>
+      <div className="min-h-screen flex items-center justify-center p-6 bg-muted">
+        <p className="text-sm text-destructive">Hub 设置未注入，无法完成引导。</p>
       </div>
     );
   }
@@ -37,25 +38,27 @@ export function HubSetupPage() {
   const { section } = hub.binding;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-base-200 text-base-content">
-      <div className="w-full max-w-md space-y-6 rounded-xl border border-base-300 bg-base-100 p-6 shadow-sm">
-        <header className="space-y-2 text-center">
-          <h1 className="text-xl font-semibold">连接 FreeAnima Hub</h1>
-          {section.description ? (
-            <p className="text-sm text-base-content/60 whitespace-pre-line">
-              {section.description}
-            </p>
-          ) : null}
-        </header>
-        <FormRenderer
-          fields={hub.formFields}
-          store={hub.binding.store!}
-          platform={platform}
-          sectionId={section.id}
-          enterAfterSave
-          onEnterAfterSave={() => void navigate({ to: "/chat" })}
-        />
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-muted text-foreground">
+      <Card className="w-full max-w-md">
+        <CardContent className="space-y-6 pt-6">
+          <header className="space-y-2 text-center">
+            <h1 className="text-xl font-semibold">连接 FreeAnima Hub</h1>
+            {section.description ? (
+              <p className="text-sm text-muted-foreground whitespace-pre-line">
+                {section.description}
+              </p>
+            ) : null}
+          </header>
+          <FormRenderer
+            fields={hub.formFields}
+            store={hub.binding.store!}
+            platform={platform}
+            sectionId={section.id}
+            enterAfterSave
+            onEnterAfterSave={() => void navigate({ to: "/chat" })}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

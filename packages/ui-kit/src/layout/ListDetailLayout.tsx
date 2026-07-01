@@ -1,5 +1,6 @@
 import { useCallback, useState, type ReactNode } from "react";
 
+import { Button } from "../components/ui/button.tsx";
 import { useDrawerNav } from "./viewport.ts";
 
 export type ListDetailListContext = {
@@ -9,30 +10,21 @@ export type ListDetailListContext = {
 };
 
 export type ListDetailLayoutProps = {
-  /** 详情区标题（drawer 顶栏与宽屏 detail header 共用） */
   detailTitle: ReactNode;
-  /** 宽屏 list 栏顶栏标题 */
   listTitle?: string;
   listSubtitle?: string;
   showListHeader?: boolean;
   listHeaderClassName?: string;
   listWidthClass?: string;
   listAsideClassName?: string;
-  /** list 栏内容 */
   list: (ctx: ListDetailListContext) => ReactNode;
-  /** 详情区主体 */
   children: ReactNode;
-  /** 详情顶栏右侧操作 */
   detailActions?: ReactNode;
-  /** 顶栏下方扩展（如搜索框） */
   detailHeaderExtra?: ReactNode;
-  /** 受控 drawer 开关（如 Task 拖拽时 open） */
   listOpen?: boolean;
   onListOpenChange?: (open: boolean) => void;
   listToggleAriaLabel?: string;
-  /** 宽屏时在 main 内渲染 detail header；默认 true */
   showDetailHeader?: boolean;
-  /** auto：layout 渲染顶栏；none：由父级自行渲染（如 Chat） */
   detailHeaderPlacement?: "auto" | "none";
   detailClassName?: string;
   className?: string;
@@ -43,9 +35,9 @@ export function ListDetailLayout({
   listTitle,
   listSubtitle,
   showListHeader = true,
-  listHeaderClassName = "border-base-300 shrink-0 border-b p-3 text-sm font-semibold",
+  listHeaderClassName = "border shrink-0 border-b p-3 text-sm font-semibold",
   listWidthClass = "w-56",
-  listAsideClassName = "border-base-300 bg-base-200/95 backdrop-blur-sm",
+  listAsideClassName = "border bg-muted/95 backdrop-blur-sm",
   list,
   children,
   detailActions,
@@ -62,7 +54,6 @@ export function ListDetailLayout({
   const [listOpenInternal, setListOpenInternal] = useState(false);
   const listOpen = listOpenControlled ?? listOpenInternal;
 
-  /** drawer 模式：不透明侧栏；listAsideClassName 仅作用于宽屏常驻栏 */
   const drawerAsideClass = "list-detail-drawer-panel safe-fixed-sidebar";
   const desktopAsideClass = [
     "relative flex min-h-0 shrink-0 flex-col border-r",
@@ -94,7 +85,7 @@ export function ListDetailLayout({
 
   const detailHeaderBlock =
     renderLayoutHeader && showDetailHeader ? (
-      <header className="border-base-300 flex shrink-0 flex-col gap-2 border-b px-4 py-3">
+      <header className="border flex shrink-0 flex-col gap-2 border-b px-4 py-3">
         <div className="flex items-center justify-between gap-2">
           <h1 className="min-w-0 truncate text-lg font-semibold">{detailTitle}</h1>
           {detailActions ? (
@@ -107,17 +98,18 @@ export function ListDetailLayout({
 
   const drawerHeaderBlock =
     renderLayoutHeader && useDrawer ? (
-      <header className="border-base-300 bg-base-200 flex shrink-0 flex-col gap-2 border-b px-3 py-2">
+      <header className="border bg-muted flex shrink-0 flex-col gap-2 border-b px-3 py-2">
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
-            className="btn btn-ghost btn-sm btn-square"
+            variant="ghost"
+            size="icon-sm"
             aria-expanded={listOpen}
             aria-label={listToggleAriaLabel}
             onClick={() => setListOpen((v) => !v)}
           >
             ☰
-          </button>
+          </Button>
           <h1 className="min-w-0 flex-1 truncate text-sm font-semibold">{detailTitle}</h1>
           {detailActions ? (
             <div className="flex shrink-0 items-center gap-2">{detailActions}</div>
@@ -141,7 +133,7 @@ export function ListDetailLayout({
             <div className={listHeaderClassName}>
               {listTitle}
               {listSubtitle ? (
-                <span className="text-base-content/60 mt-0.5 block text-xs font-normal">
+                <span className="text-muted-foreground mt-0.5 block text-xs font-normal">
                   {listSubtitle}
                 </span>
               ) : null}

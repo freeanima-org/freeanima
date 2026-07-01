@@ -1,4 +1,18 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { listCronLogs } from "@admin/lib/api.ts";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
@@ -51,22 +65,29 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
   }, [reload]);
 
   return (
-    <dialog className="modal modal-open safe-area-pt safe-area-pb">
-      <div className="modal-box max-w-3xl">
-        <h3 className="font-bold text-lg mb-1">
-          {m.admin_cron_run_history_title({ name: jobName })}
-        </h3>
-        <p className="text-xs font-mono text-base-content/60 mb-3 break-all">{jobId}</p>
+    <Dialog
+      open
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+    >
+      <DialogContent className="max-w-3xl safe-area-pt safe-area-pb">
+        <DialogHeader>
+          <DialogTitle>{m.admin_cron_run_history_title({ name: jobName })}</DialogTitle>
+        </DialogHeader>
+        <p className="text-xs font-mono text-muted-foreground mb-3 break-all">{jobId}</p>
 
         <div className="flex justify-end mb-2">
-          <button
+          <Button
             type="button"
-            className="btn btn-xs btn-ghost"
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs"
             disabled={loading}
             onClick={() => void reload()}
           >
             {loading ? m.admin_common_refreshing() : m.admin_common_refresh_list()}
-          </button>
+          </Button>
         </div>
 
         {error ? (
@@ -76,39 +97,44 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
         ) : null}
 
         <div className="overflow-x-auto max-h-[60vh]">
-          <table className="table table-sm">
-            <thead>
-              <tr>
-                <th>{m.admin_common_time()}</th>
-                <th>{m.admin_common_status()}</th>
-                <th>#</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{m.admin_common_time()}</TableHead>
+                <TableHead>{m.admin_common_status()}</TableHead>
+                <TableHead>#</TableHead>
+                <TableHead />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {rows.map((row) => (
                 <Fragment key={row.id}>
-                  <tr className={row.ok ? "" : "bg-error/10"}>
-                    <td className="whitespace-nowrap">{formatDisplayDateTime(row.finished_at)}</td>
-                    <td>{row.ok ? m.admin_common_success() : m.admin_common_failed()}</td>
-                    <td className="font-mono text-xs">{row.run_count}</td>
-                    <td>
-                      <button
+                  <TableRow className={row.ok ? "" : "bg-destructive/10"}>
+                    <TableCell className="whitespace-nowrap">
+                      {formatDisplayDateTime(row.finished_at)}
+                    </TableCell>
+                    <TableCell>
+                      {row.ok ? m.admin_common_success() : m.admin_common_failed()}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">{row.run_count}</TableCell>
+                    <TableCell>
+                      <Button
                         type="button"
-                        className="btn btn-xs"
+                        size="sm"
+                        className="h-7 text-xs"
                         onClick={() => setExpandedId(expandedId === row.id ? null : row.id)}
                       >
                         {expandedId === row.id
                           ? m.admin_common_collapse()
                           : m.admin_common_details()}
-                      </button>
-                    </td>
-                  </tr>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                   {expandedId === row.id && (
-                    <tr>
-                      <td colSpan={4} className="bg-base-200">
+                    <TableRow>
+                      <TableCell colSpan={4} className="bg-muted">
                         {!row.ok && row.error && (
-                          <pre className="text-xs text-error whitespace-pre-wrap break-all">
+                          <pre className="text-xs text-destructive whitespace-pre-wrap break-all">
                             {row.error}
                           </pre>
                         )}
@@ -122,33 +148,28 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
                             {row.output_text}
                           </pre>
                         )}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   )}
                 </Fragment>
               ))}
               {!loading && rows.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="text-center text-base-content/50">
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
                     {m.admin_cron_run_history_empty()}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
 
-        <div className="modal-action">
-          <button type="button" className="btn btn-sm" onClick={onClose}>
+        <DialogFooter>
+          <Button type="button" variant="ghost" size="sm" onClick={onClose}>
             {m.admin_common_close()}
-          </button>
-        </div>
-      </div>
-      <form method="dialog" className="modal-backdrop">
-        <button type="button" onClick={onClose}>
-          close
-        </button>
-      </form>
-    </dialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Button, Input, Sheet, SheetContent } from "@freeanima/ui-kit";
 
 import type { TaskListRow } from "../lib/api.ts";
 import {
@@ -72,7 +73,7 @@ function TreePickerRows({
 
   if (selectable.length === 0) {
     return (
-      <p className="text-base-content/60 px-4 py-6 text-sm">
+      <p className="text-muted-foreground px-4 py-6 text-sm">
         {searching ? "没有匹配的清单" : "没有其它清单可移动"}
       </p>
     );
@@ -85,14 +86,14 @@ function TreePickerRows({
           <li key={list.id}>
             <button
               type="button"
-              className="hover:bg-base-200 flex w-full min-h-11 items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm"
+              className="hover:bg-muted flex w-full min-h-11 items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm"
               onClick={() => {
                 onSelect(list.id);
                 onClose();
               }}
             >
               <span className="min-w-0 flex-1 truncate">{listPathLabel(allLists, list.id)}</span>
-              <span className="text-base-content/50 shrink-0 text-xs">{list.item_count}</span>
+              <span className="text-muted-foreground shrink-0 text-xs">{list.item_count}</span>
             </button>
           </li>
         ))}
@@ -119,7 +120,7 @@ function TreePickerRows({
               >
                 <button
                   type="button"
-                  className="text-base-content/60 flex min-h-11 min-w-6 shrink-0 items-center justify-center"
+                  className="text-muted-foreground flex min-h-11 min-w-6 shrink-0 items-center justify-center"
                   aria-label={expanded ? "折叠" : "展开"}
                   onClick={() => onToggleExpand(list.id)}
                 >
@@ -141,14 +142,14 @@ function TreePickerRows({
             <button
               type="button"
               style={{ paddingLeft: `${8 + depth * 16 + 24}px` }}
-              className="hover:bg-base-200 flex w-full min-h-11 items-center justify-between gap-3 rounded-lg py-2 pr-3 text-left text-sm"
+              className="hover:bg-muted flex w-full min-h-11 items-center justify-between gap-3 rounded-lg py-2 pr-3 text-left text-sm"
               onClick={() => {
                 onSelect(list.id);
                 onClose();
               }}
             >
               <span className="min-w-0 flex-1 truncate">{list.name}</span>
-              <span className="text-base-content/50 shrink-0 text-xs">{list.item_count}</span>
+              <span className="text-muted-foreground shrink-0 text-xs">{list.item_count}</span>
             </button>
           </li>
         );
@@ -193,13 +194,13 @@ export function MoveToListPicker({
   };
 
   return (
-    <dialog open className="modal modal-open modal-bottom sm:modal-middle">
-      <div className="modal-box safe-area-pb w-full max-w-xl rounded-t-2xl p-0 sm:rounded-box">
-        <div className="border-base-300 border-b px-4 py-3">
+    <Sheet open onOpenChange={(open) => !open && onClose()}>
+      <SheetContent side="bottom" className="safe-area-pb max-h-[85vh] gap-0 p-0 sm:max-w-xl">
+        <div className="border-b px-4 py-3">
           <p className="text-sm font-semibold">{title}</p>
-          <input
+          <Input
             type="search"
-            className="input input-sm input-bordered mt-2 w-full"
+            className="mt-2 h-8 w-full"
             placeholder="搜索清单…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -216,17 +217,12 @@ export function MoveToListPicker({
           onSelect={onSelect}
           onClose={onClose}
         />
-        <div className="border-base-300 border-t p-2">
-          <button type="button" className="btn btn-ghost btn-block" onClick={onClose}>
+        <div className="border-t p-2">
+          <Button type="button" variant="ghost" className="w-full" onClick={onClose}>
             取消
-          </button>
+          </Button>
         </div>
-      </div>
-      <form method="dialog" className="modal-backdrop">
-        <button type="button" onClick={onClose}>
-          close
-        </button>
-      </form>
-    </dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

@@ -1,6 +1,7 @@
 import { marked } from "marked";
 import { useMemo } from "react";
 import type { DisplayItem } from "@freeanima/admin-contract/api";
+import { Button, Spinner } from "@freeanima/ui-kit";
 import { m } from "@admin/lib/i18n.ts";
 import { ToolBlockBubble } from "./ToolBlockBubble.tsx";
 
@@ -43,10 +44,10 @@ export function StoredMessagePanel({
     <div className="space-y-3 py-3">
       {loading ? (
         <div className="flex justify-center py-6">
-          <span className="loading loading-dots loading-sm" />
+          <Spinner />
         </div>
       ) : items.length === 0 ? (
-        <div className="text-sm text-base-content/50 text-center py-4">
+        <div className="text-sm text-muted-foreground text-center py-4">
           {m.admin_message_no_messages_on_page()}
         </div>
       ) : (
@@ -54,8 +55,8 @@ export function StoredMessagePanel({
           const key = `${pageOffset}-${i}`;
           if (item.type === "message" && item.role === "user") {
             return (
-              <div key={key} className="chat chat-end">
-                <div className="chat-bubble chat-bubble-primary whitespace-pre-wrap text-sm">
+              <div key={key} className="flex justify-end">
+                <div className="max-w-[85%] rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground whitespace-pre-wrap">
                   {item.content}
                 </div>
               </div>
@@ -63,8 +64,8 @@ export function StoredMessagePanel({
           }
           if (item.type === "message" && item.role === "assistant") {
             return (
-              <div key={key} className="chat chat-start">
-                <div className="chat-bubble text-sm">
+              <div key={key} className="flex justify-start">
+                <div className="max-w-[85%] rounded-lg bg-muted px-3 py-2 text-sm">
                   <AssistantMessageBubble content={item.content} />
                 </div>
               </div>
@@ -72,7 +73,7 @@ export function StoredMessagePanel({
           }
           if (item.type === "tool_block") {
             return (
-              <div key={key} className="chat chat-start max-w-full">
+              <div key={key} className="flex justify-start max-w-full">
                 <ToolBlockBubble calls={item.calls} />
               </div>
             );
@@ -82,31 +83,35 @@ export function StoredMessagePanel({
       )}
 
       {total > pageSize ? (
-        <div className="flex items-center justify-between gap-2 pt-2 border-t border-base-300/50 text-xs">
-          <span className="text-base-content/60">
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border/50 text-xs">
+          <span className="text-muted-foreground">
             {m.admin_common_pagination({
               total: String(total),
               current: String(currentPage),
               pages: String(pageCount),
             })}
           </span>
-          <div className="join">
-            <button
+          <div className="flex items-center gap-1">
+            <Button
               type="button"
-              className="btn btn-xs join-item"
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
               disabled={currentPage <= 1 || loading}
               onClick={() => onPageChange(currentPage - 1)}
             >
               {m.admin_common_previous_page()}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="btn btn-xs join-item"
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
               disabled={currentPage >= pageCount || loading}
               onClick={() => onPageChange(currentPage + 1)}
             >
               {m.admin_common_next_page()}
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}

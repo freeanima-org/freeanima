@@ -67,12 +67,12 @@ export function EntryTimeline({
           className={`w-full text-left rounded-lg px-3 py-2.5 transition-colors ${
             selectedId === group.item.id
               ? "bg-primary/15 ring-1 ring-primary/30"
-              : "hover:bg-base-200/80"
+              : "hover:bg-muted/80"
           }`}
           onClick={() => onSelect(group.item.id)}
         >
-          <div className="text-xs font-semibold text-base-content/50">{group.label}</div>
-          <div className="text-sm text-base-content/80 mt-1 line-clamp-2">
+          <div className="text-xs font-semibold text-muted-foreground">{group.label}</div>
+          <div className="text-sm text-muted-foreground mt-1 line-clamp-2">
             {contentPreview(group.item.content)}
           </div>
         </button>

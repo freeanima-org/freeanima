@@ -1,5 +1,23 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { useSubjectScope } from "@freeanima/shell-sdk/react";
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Spinner,
+  Textarea,
+} from "@freeanima/ui-kit";
 import { ListDetailLayout } from "@freeanima/ui-kit/layout";
 import { FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form";
 
@@ -532,24 +550,26 @@ export function TaskApp() {
 
   const selectionToolbar = (
     <>
-      <button
+      <Button
         type="button"
-        className={`btn btn-ghost btn-sm ${selectionMode ? "btn-active" : ""}`}
+        variant={selectionMode ? "secondary" : "ghost"}
+        size="sm"
         onClick={() => {
           if (selectionMode) exitSelectionMode();
           else setSelectionMode(true);
         }}
       >
         {selectionMode ? "取消" : "选择"}
-      </button>
+      </Button>
       {selectionMode && selectedItemIds.size > 0 ? (
-        <button
+        <Button
           type="button"
-          className="btn btn-ghost btn-sm"
+          variant="ghost"
+          size="sm"
           onClick={() => openMovePickerForItems(Array.from(selectedItemIds))}
         >
           移动
-        </button>
+        </Button>
       ) : null}
     </>
   );
@@ -628,13 +648,13 @@ export function TaskApp() {
         detailActions={
           <>
             {selectedList ? selectionToolbar : null}
-            {loading || searching ? <span className="loading loading-spinner loading-sm" /> : null}
+            {loading || searching ? <Spinner className="size-4" /> : null}
           </>
         }
         detailHeaderExtra={
           selectedList ? (
-            <input
-              className="input input-bordered input-sm w-full max-w-md"
+            <Input
+              className="h-8 w-full max-w-md"
               placeholder="搜索全部清单…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -671,16 +691,24 @@ export function TaskApp() {
         )}
       >
         {error ? (
-          <div className="alert alert-error m-3 text-sm">
-            <span>{error}</span>
-            <button type="button" className="btn btn-ghost btn-xs" onClick={() => setError("")}>
-              关闭
-            </button>
-          </div>
+          <Alert variant="error" className="m-3">
+            <AlertDescription className="flex items-center justify-between gap-2 text-sm">
+              <span>{error}</span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2"
+                onClick={() => setError("")}
+              >
+                关闭
+              </Button>
+            </AlertDescription>
+          </Alert>
         ) : null}
 
         {!selectedList && !loading ? (
-          <div className="text-base-content/60 flex flex-1 items-center justify-center p-8 text-sm">
+          <div className="text-muted-foreground flex flex-1 items-center justify-center p-8 text-sm">
             创建第一个清单开始使用
           </div>
         ) : null}
@@ -688,7 +716,7 @@ export function TaskApp() {
         {selectedList ? (
           <>
             {selectedList.closed ? (
-              <div className="border-base-300 bg-base-200/60 text-base-content/70 m-3 rounded-lg border px-3 py-2 text-sm">
+              <div className="border bg-muted/60 text-muted-foreground m-3 rounded-lg border px-3 py-2 text-sm">
                 此清单已归档，无法添加新任务。可在清单菜单中取消归档。
               </div>
             ) : null}
@@ -701,7 +729,7 @@ export function TaskApp() {
               ) : null}
 
               {searchActive ? (
-                <p className="text-base-content/50 px-2 pb-2 text-xs">搜索范围：全部清单</p>
+                <p className="text-muted-foreground px-2 pb-2 text-xs">搜索范围：全部清单</p>
               ) : null}
 
               <SortableTaskList
@@ -735,25 +763,25 @@ export function TaskApp() {
             </div>
 
             {selectionMode && selectedItemIds.size > 0 ? (
-              <div className="border-base-300 bg-base-200/95 safe-area-pb flex items-center gap-2 border-t p-3">
-                <span className="text-base-content/70 min-w-0 flex-1 text-sm">
+              <div className="border bg-muted/95 safe-area-pb flex items-center gap-2 border-t p-3">
+                <span className="text-muted-foreground min-w-0 flex-1 text-sm">
                   已选 {selectedItemIds.size} 项
                 </span>
-                <button
+                <Button
                   type="button"
-                  className="btn btn-primary btn-sm"
+                  size="sm"
                   onClick={() => openMovePickerForItems(Array.from(selectedItemIds))}
                 >
                   移动到…
-                </button>
-                <button type="button" className="btn btn-ghost btn-sm" onClick={exitSelectionMode}>
+                </Button>
+                <Button type="button" variant="ghost" size="sm" onClick={exitSelectionMode}>
                   取消
-                </button>
+                </Button>
               </div>
             ) : searchActive || selectedList.closed ? null : (
-              <div className="border-base-300 safe-area-pb flex gap-2 border-t p-3">
-                <input
-                  className="input input-bordered min-w-0 flex-1"
+              <div className="border safe-area-pb flex gap-2 border-t p-3">
+                <Input
+                  className="min-w-0 flex-1"
                   placeholder="添加任务，Enter 确认"
                   value={quickTitle}
                   onChange={(e) => setQuickTitle(e.target.value)}
@@ -761,13 +789,9 @@ export function TaskApp() {
                     if (e.key === "Enter") void handleQuickAdd();
                   }}
                 />
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={() => void handleQuickAdd()}
-                >
+                <Button type="button" onClick={() => void handleQuickAdd()}>
                   添加
-                </button>
+                </Button>
               </div>
             )}
           </>
@@ -828,104 +852,108 @@ export function TaskApp() {
         />
       ) : null}
 
-      {editingItem ? (
-        <dialog open className="modal modal-open modal-bottom sm:modal-middle">
-          <div className="modal-box w-full max-w-md rounded-t-2xl p-4 sm:rounded-box">
-            <h3 className="text-lg font-bold">编辑任务</h3>
-            <div className="max-h-[70vh] overflow-y-auto">
-              <FormFieldset legend="详情" bordered={false} className="mt-4 gap-3">
-                <div>
-                  <FormFieldLabel>标题</FormFieldLabel>
-                  <input
-                    className="input input-bordered w-full"
-                    value={editingItem.title}
-                    onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <FormFieldLabel>优先级</FormFieldLabel>
-                  <select
-                    className="select select-bordered w-full"
-                    value={editingItem.priority}
-                    onChange={(e) =>
-                      setEditingItem({
-                        ...editingItem,
-                        priority: e.target.value as TaskItemRow["priority"],
-                      })
-                    }
-                  >
-                    <option value="none">无</option>
-                    <option value="low">低</option>
-                    <option value="medium">中</option>
-                    <option value="high">高</option>
-                  </select>
-                </div>
-                <div>
-                  <FormFieldLabel>截止日期</FormFieldLabel>
-                  <input
-                    type="datetime-local"
-                    className="input input-bordered w-full"
-                    value={isoToDatetimeLocalValue(editingItem.due_at)}
-                    onChange={(e) =>
-                      setEditingItem({
-                        ...editingItem,
-                        due_at: e.target.value ? new Date(e.target.value).toISOString() : null,
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <FormFieldLabel>内容</FormFieldLabel>
-                  <textarea
-                    className="textarea textarea-bordered w-full"
-                    rows={3}
-                    value={editingItem.content}
-                    onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <FormFieldLabel>标签</FormFieldLabel>
-                  <input
-                    className="input input-bordered w-full"
-                    placeholder="逗号分隔，如：工作,紧急"
-                    value={editingItem.tags.join(", ")}
-                    onChange={(e) =>
-                      setEditingItem({
-                        ...editingItem,
-                        tags: e.target.value
-                          .split(",")
-                          .map((s) => s.trim())
-                          .filter(Boolean),
-                      })
-                    }
-                  />
-                </div>
-              </FormFieldset>
-            </div>
-            <div className="modal-action flex-col gap-2 sm:flex-row">
-              <button
-                type="button"
-                className="btn btn-ghost btn-block sm:btn-wide"
-                onClick={() => setEditingItem(null)}
-              >
-                取消
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary btn-block sm:btn-wide"
-                onClick={() => void saveEditingItem()}
-              >
-                保存
-              </button>
-            </div>
-          </div>
-          <form method="dialog" className="modal-backdrop">
-            <button type="button" onClick={() => setEditingItem(null)}>
-              close
-            </button>
-          </form>
-        </dialog>
-      ) : null}
+      <Dialog open={editingItem != null} onOpenChange={(open) => !open && setEditingItem(null)}>
+        <DialogContent className="flex max-h-[90vh] max-w-md flex-col gap-0 overflow-hidden p-4 sm:rounded-lg">
+          <DialogHeader>
+            <DialogTitle>编辑任务</DialogTitle>
+          </DialogHeader>
+          {editingItem ? (
+            <>
+              <div className="max-h-[70vh] overflow-y-auto">
+                <FormFieldset legend="详情" bordered={false} className="mt-2 gap-3">
+                  <div>
+                    <FormFieldLabel>标题</FormFieldLabel>
+                    <Input
+                      className="w-full"
+                      value={editingItem.title}
+                      onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <FormFieldLabel>优先级</FormFieldLabel>
+                    <Select
+                      value={editingItem.priority}
+                      onValueChange={(value) =>
+                        setEditingItem({
+                          ...editingItem,
+                          priority: value as TaskItemRow["priority"],
+                        })
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">无</SelectItem>
+                        <SelectItem value="low">低</SelectItem>
+                        <SelectItem value="medium">中</SelectItem>
+                        <SelectItem value="high">高</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <FormFieldLabel>截止日期</FormFieldLabel>
+                    <Input
+                      type="datetime-local"
+                      className="w-full"
+                      value={isoToDatetimeLocalValue(editingItem.due_at)}
+                      onChange={(e) =>
+                        setEditingItem({
+                          ...editingItem,
+                          due_at: e.target.value ? new Date(e.target.value).toISOString() : null,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <FormFieldLabel>内容</FormFieldLabel>
+                    <Textarea
+                      className="w-full"
+                      rows={3}
+                      value={editingItem.content}
+                      onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <FormFieldLabel>标签</FormFieldLabel>
+                    <Input
+                      className="w-full"
+                      placeholder="逗号分隔，如：工作,紧急"
+                      value={editingItem.tags.join(", ")}
+                      onChange={(e) =>
+                        setEditingItem({
+                          ...editingItem,
+                          tags: e.target.value
+                            .split(",")
+                            .map((s) => s.trim())
+                            .filter(Boolean),
+                        })
+                      }
+                    />
+                  </div>
+                </FormFieldset>
+              </div>
+              <DialogFooter className="mt-4 flex-col gap-2 sm:flex-row">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full sm:min-w-32"
+                  onClick={() => setEditingItem(null)}
+                >
+                  取消
+                </Button>
+                <Button
+                  type="button"
+                  className="w-full sm:min-w-32"
+                  onClick={() => void saveEditingItem()}
+                >
+                  保存
+                </Button>
+              </DialogFooter>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </TaskDndRoot>
   );
 }

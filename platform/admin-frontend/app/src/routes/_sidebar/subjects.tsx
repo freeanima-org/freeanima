@@ -1,7 +1,33 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Spinner,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Textarea,
+} from "@freeanima/ui-kit";
 import { FormField, FormFieldset } from "@freeanima/ui-kit/form";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { formatDisplayDateTime } from "@admin/lib/format-datetime.ts";
 import { m } from "@admin/lib/i18n.ts";
 import {
@@ -104,49 +130,64 @@ function SubjectEditModal({
   }, [onClose]);
 
   return (
-    <dialog className="modal modal-open safe-area-pt safe-area-pb">
-      <div className="modal-box max-w-lg">
-        <h3 className="font-bold text-lg mb-4">
-          {mode === "create" ? m.admin_entities_new_subject() : m.admin_entities_edit_subject()}
-        </h3>
-        {error ? <div className="alert alert-error text-sm mb-3">{error}</div> : null}
+    <Dialog
+      open
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+    >
+      <DialogContent className="max-w-lg safe-area-pt safe-area-pb">
+        <DialogHeader>
+          <DialogTitle>
+            {mode === "create" ? m.admin_entities_new_subject() : m.admin_entities_edit_subject()}
+          </DialogTitle>
+        </DialogHeader>
+        {error ? (
+          <StatusAlert variant="error" className="mb-3">
+            {error}
+          </StatusAlert>
+        ) : null}
         <FormFieldset bordered={false} className="gap-3">
           {mode === "create" ? (
             <FormField label={m.admin_entities_col_type()} className="text-xs">
-              <select
-                className="select select-bordered select-sm w-full"
+              <Select
                 value={form.type}
-                onChange={(e) =>
+                onValueChange={(v) =>
                   setForm((f) => ({
                     ...f,
-                    type: e.target.value === "user" ? "user" : "agent",
+                    type: v === "user" ? "user" : "agent",
                   }))
                 }
               >
-                <option value="agent">{m.admin_entities_type_agent()}</option>
-                <option value="user">{m.admin_entities_type_user()}</option>
-              </select>
+                <SelectTrigger size="sm" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="agent">{m.admin_entities_type_agent()}</SelectItem>
+                  <SelectItem value="user">{m.admin_entities_type_user()}</SelectItem>
+                </SelectContent>
+              </Select>
             </FormField>
           ) : null}
           <FormField label={m.admin_entities_col_title()} className="text-xs">
-            <input
+            <Input
               type="text"
-              className="input input-bordered input-sm w-full"
+              className="w-full h-8"
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
             />
           </FormField>
           <FormField label={m.admin_entities_col_summary()} className="text-xs">
-            <input
+            <Input
               type="text"
-              className="input input-bordered input-sm w-full"
+              className="w-full h-8"
               value={form.summary}
               onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))}
             />
           </FormField>
           <FormField label={m.admin_entities_col_content()} className="text-xs">
-            <textarea
-              className="textarea textarea-bordered textarea-sm w-full min-h-24"
+            <Textarea
+              className="w-full min-h-24"
               value={form.content}
               onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
             />
@@ -154,58 +195,48 @@ function SubjectEditModal({
           {mode === "edit" ? (
             <FormField label={m.admin_entities_col_default_private_world()} className="text-xs">
               {candidateWorlds.length === 0 ? (
-                <p className="text-sm text-base-content/60 py-2">
+                <p className="text-sm text-muted-foreground py-2">
                   {m.admin_entities_default_private_world_empty()}
                 </p>
               ) : (
-                <select
-                  className="select select-bordered select-sm w-full"
+                <Select
                   value={form.default_private_world_id}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, default_private_world_id: e.target.value }))
-                  }
+                  onValueChange={(v) => setForm((f) => ({ ...f, default_private_world_id: v }))}
                 >
-                  {candidateWorlds.map((w) => (
-                    <option key={w.id} value={String(w.id)}>
-                      {worldOptionLabel(w)}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger size="sm" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {candidateWorlds.map((w) => (
+                      <SelectItem key={w.id} value={String(w.id)}>
+                        {worldOptionLabel(w)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             </FormField>
           ) : (
-            <p className="text-xs text-base-content/60">{m.admin_entities_subject_create_hint()}</p>
+            <p className="text-xs text-muted-foreground">
+              {m.admin_entities_subject_create_hint()}
+            </p>
           )}
         </FormFieldset>
-        <div className="modal-action">
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            disabled={saving}
-            onClick={onClose}
-          >
+        <DialogFooter>
+          <Button type="button" variant="ghost" size="sm" disabled={saving} onClick={onClose}>
             {m.admin_common_cancel()}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className="btn btn-primary btn-sm"
+            size="sm"
             disabled={saving || !form.title.trim()}
             onClick={() => onSave(form)}
           >
-            {saving ? (
-              <span className="loading loading-spinner loading-xs" />
-            ) : (
-              m.admin_common_save()
-            )}
-          </button>
-        </div>
-      </div>
-      <form method="dialog" className="modal-backdrop">
-        <button type="button" onClick={onClose}>
-          close
-        </button>
-      </form>
-    </dialog>
+            {saving ? <Spinner /> : m.admin_common_save()}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -342,90 +373,99 @@ function SubjectsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
           <h2 className="text-lg font-bold">{m.admin_nav_subjects()}</h2>
-          <p className="text-sm text-base-content/60 mt-1">{m.admin_entities_subjects_desc()}</p>
+          <p className="text-sm text-muted-foreground mt-1">{m.admin_entities_subjects_desc()}</p>
         </div>
         <div className="flex flex-wrap gap-2 admin-page-toolbar">
-          <button
+          <Button
             type="button"
-            className="btn btn-sm btn-ghost"
+            variant="ghost"
+            size="sm"
             disabled={loading}
             onClick={() => void fetchList()}
           >
             {m.admin_common_refresh()}
-          </button>
-          <button type="button" className="btn btn-sm btn-primary" onClick={openCreate}>
+          </Button>
+          <Button type="button" size="sm" onClick={openCreate}>
             {m.admin_entities_new_subject()}
-          </button>
+          </Button>
         </div>
       </div>
 
-      {error ? <div className="alert alert-error text-sm mb-4">{error}</div> : null}
+      {error ? (
+        <StatusAlert variant="error" className="mb-4">
+          {error}
+        </StatusAlert>
+      ) : null}
 
       {loading ? (
         <div className="flex justify-center py-8">
-          <span className="loading loading-dots loading-md" />
+          <Spinner />
         </div>
       ) : items.length === 0 ? (
-        <div className="alert alert-info text-sm">{m.admin_entities_subjects_empty()}</div>
+        <StatusAlert variant="info">{m.admin_entities_subjects_empty()}</StatusAlert>
       ) : (
-        <div className="card bg-base-200">
-          <div className="card-body p-0 overflow-x-auto">
-            <table className="table table-sm">
-              <thead>
-                <tr>
-                  <th>{m.admin_entities_col_id()}</th>
-                  <th>{m.admin_entities_col_type()}</th>
-                  <th>{m.admin_entities_col_title()}</th>
-                  <th>{m.admin_entities_col_default_private_world()}</th>
-                  <th>{m.admin_common_time()}</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
+        <Card className="bg-muted py-0">
+          <CardContent className="p-0 overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{m.admin_entities_col_id()}</TableHead>
+                  <TableHead>{m.admin_entities_col_type()}</TableHead>
+                  <TableHead>{m.admin_entities_col_title()}</TableHead>
+                  <TableHead>{m.admin_entities_col_default_private_world()}</TableHead>
+                  <TableHead>{m.admin_common_time()}</TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {items.map((row) => (
-                  <tr key={row.id}>
-                    <td className="font-mono text-xs">{row.id}</td>
-                    <td>
-                      <span className="badge badge-ghost badge-sm">
+                  <TableRow key={row.id}>
+                    <TableCell className="font-mono text-xs">{row.id}</TableCell>
+                    <TableCell>
+                      <Badge variant="ghost" className="text-xs">
                         {subjectTypeLabel(row.type)}
-                      </span>
-                    </td>
-                    <td className="max-w-[12rem] truncate">
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="max-w-[12rem] truncate">
                       {row.title || m.admin_common_no_title()}
-                    </td>
-                    <td className="text-xs max-w-[12rem] truncate">
+                    </TableCell>
+                    <TableCell className="text-xs max-w-[12rem] truncate">
                       {worldTitleById(readDefaultPrivateWorldId(row))}
-                    </td>
-                    <td className="text-xs text-base-content/60">
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
                       {formatDisplayDateTime(row.updated_at)}
-                    </td>
-                    <td>
+                    </TableCell>
+                    <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        <button
+                        <Button
                           type="button"
-                          className="btn btn-xs btn-ghost"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs"
                           onClick={() => openEdit(row)}
                         >
                           {m.admin_common_edit()}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           type="button"
-                          className="btn btn-xs btn-ghost"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs"
                           onClick={() => setTokensSubject(row)}
                         >
                           {m.admin_entities_api_tokens()}
-                        </button>
+                        </Button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-            <div className="px-4 py-2 text-xs text-base-content/60 border-t border-base-300/50">
+              </TableBody>
+            </Table>
+            <div className="px-4 py-2 text-xs text-muted-foreground border-t border/50">
               {total} {m.admin_entities_subjects_count_label()}
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
       {modal ? (

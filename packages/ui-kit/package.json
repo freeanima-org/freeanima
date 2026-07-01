@@ -6,7 +6,10 @@
   "exports": {
     ".": "./src/index.ts",
     "./composite": "./src/composite/index.ts",
-    "./daisyui.css": "./src/daisyui.css",
+    "./globals.css": "./src/styles/globals.css",
+    "./components/ui": "./src/components/ui/index.ts",
+    "./components/ui/*": "./src/components/ui/*.tsx",
+    "./lib/utils": "./src/lib/utils.ts",
     "./form": "./src/form/FormFieldset.tsx",
     "./layout": "./src/layout/index.ts",
     "./ui/acp": "./src/ui/AcpProgressDock.tsx",
@@ -16,8 +19,24 @@
     "./styles.css": "./src/styles.css"
   },
   "dependencies": {
-    "daisyui": "catalog:",
-    "react": "catalog:"
+    "@radix-ui/react-checkbox": "catalog:",
+    "@radix-ui/react-collapsible": "catalog:",
+    "@radix-ui/react-dialog": "catalog:",
+    "@radix-ui/react-dropdown-menu": "catalog:",
+    "@radix-ui/react-label": "catalog:",
+    "@radix-ui/react-scroll-area": "catalog:",
+    "@radix-ui/react-select": "catalog:",
+    "@radix-ui/react-separator": "catalog:",
+    "@radix-ui/react-slot": "catalog:",
+    "@radix-ui/react-switch": "catalog:",
+    "@radix-ui/react-tabs": "catalog:",
+    "@radix-ui/react-tooltip": "catalog:",
+    "class-variance-authority": "catalog:",
+    "clsx": "catalog:",
+    "lucide-react": "catalog:",
+    "react": "catalog:",
+    "tailwind-merge": "catalog:",
+    "tailwindcss-animate": "catalog:"
   },
   "devDependencies": {
     "@types/react": "catalog:",
