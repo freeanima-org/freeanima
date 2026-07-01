@@ -70,8 +70,7 @@
 }
 .nav-link.sidebar-nav-active,
 .session-item.sidebar-nav-active {
-  @apply bg-primary/20 text-foreground font-semibold;
-  box-shadow: inset 3px 0 0 var(--primary);
+  @apply bg-primary/20 text-foreground font-semibold border-l-[3px] border-l-primary;
 }
 
 .tool-bubble {
@@ -123,6 +122,6 @@
     z-index: 35;
     width: 100% !important;
     max-width: 100%;
-    background: var(--muted);
+    @apply bg-muted;
   }
 }

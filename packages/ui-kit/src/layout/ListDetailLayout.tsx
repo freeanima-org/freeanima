@@ -54,7 +54,8 @@ export function ListDetailLayout({
   const [listOpenInternal, setListOpenInternal] = useState(false);
   const listOpen = listOpenControlled ?? listOpenInternal;
 
-  const drawerAsideClass = "list-detail-drawer-panel safe-fixed-sidebar bg-background";
+  const drawerAsideClass =
+    "list-detail-drawer-panel safe-fixed-sidebar border-r border-border bg-background shadow-lg";
   const desktopAsideClass = [
     "relative flex min-h-0 shrink-0 flex-col border-r",
     listWidthClass,
@@ -125,7 +126,7 @@ export function ListDetailLayout({
 
       <div className="relative flex min-h-0 flex-1">
         {listOpen && useDrawer ? (
-          <div className="list-detail-drawer-overlay" onClick={closeList} aria-hidden />
+          <div className="list-detail-drawer-overlay bg-black/55" onClick={closeList} aria-hidden />
         ) : null}
 
         <aside className={useDrawer ? (listOpen ? drawerAsideClass : "hidden") : desktopAsideClass}>

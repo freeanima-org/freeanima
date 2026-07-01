@@ -18,7 +18,7 @@
   }
 }
 
-/** drawer / overlay：不依赖断点，原生壳宽屏也保持 fixed */
+/** drawer / overlay：仅布局与安全区；颜色用 Tailwind class（见 ListDetailLayout） */
 .safe-fixed-overlay {
   position: fixed;
   top: var(--sat);
@@ -34,7 +34,6 @@
   left: var(--sal);
 }
 
-/** ListDetailLayout drawer：不透明面板 + 半透明遮罩（不依赖 Tailwind 扫描 satellite-sdk） */
 .list-detail-drawer-overlay {
   position: fixed;
   top: var(--sat);
@@ -42,7 +41,6 @@
   bottom: var(--sab);
   left: var(--sal);
   z-index: 30;
-  background: rgb(0 0 0 / 0.55);
 }
 
 .list-detail-drawer-panel {
@@ -56,8 +54,4 @@
   min-height: 0;
   flex-direction: column;
   flex-shrink: 0;
-  border-right: 1px solid var(--sidebar-border, var(--border));
-  background-color: var(--sidebar, var(--background));
-  opacity: 1;
-  box-shadow: 4px 0 24px rgb(0 0 0 / 0.25);
 }

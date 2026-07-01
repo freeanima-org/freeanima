@@ -16,7 +16,7 @@ body,
 html[data-companion-view="settings"],
 html[data-companion-view="settings"] body,
 html[data-companion-view="settings"] #root {
-  background: var(--background);
+  @apply bg-background;
 }
 
 .settings-app-shell {

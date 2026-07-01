@@ -10,6 +10,7 @@
 
 - pre-commit: `bun run test:changed` (**unit only**, changed)
 - Before PR push: `bun run test` (unit + integration; black-box in freeanima-testing)
+- Before PR push: `bun run check` includes `stylelint`（手写 CSS 主题色规范，见 [frontend-ui.md](frontend-ui.md)）
 - Single-package logic → colocated unit tests; multi-package or real persistence → `tests/integration/`
 - New features need tests (minimal viable); mock external deps; real LLM / network excluded from CI by default
 
