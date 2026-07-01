@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 16:39+0800\n"
+"POT-Creation-Date: 2026-07-01 10:36+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Title ##
 #: docs/features/companion.md:120 docs/features/mobile-app.md:52
-#: docs/guide/database.md:91 docs/guide/remote-access.md:170
+#: docs/guide/database.md:91 docs/guide/remote-access.md:178
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
@@ -75,8 +75,8 @@ msgstr ""
 #: docs/guide/database.md:23
 msgid ""
 "Production **must** set `database.url`. Prefer pass for passwords instead of "
-"plaintext in config. Path conventions: [`security.md`]"
-"(security.md#credential-responsibilities)."
+"plaintext in config. Path conventions: [`security.md`](security."
+"md#credential-responsibilities)."
 msgstr ""
 "生产环境**必须**设置 `database.url`。密码优先使用 pass，避免在配置中明文存"
 "放。路径约定见 [`security.md`](security.md#credential-responsibilities)。"
@@ -172,16 +172,13 @@ msgstr "**手动：**"
 
 #. type: Fenced code block (bash)
 #: docs/guide/database.md:55
-#, fuzzy, no-wrap
-#| msgid ""
-#| "DATABASE_URL=\"$(anima credential get services/postgres/anima url)\" \\\n"
-#| "  bun run --filter @freeanima/core/db db:migrate\n"
+#, no-wrap
 msgid ""
 "DATABASE_URL=\"$(anima credential get services/postgres/anima url)\" \\\n"
 "  bun run --filter @freeanima/core db:migrate\n"
 msgstr ""
 "DATABASE_URL=\"$(anima credential get services/postgres/anima url)\" \\\n"
-"  bun run --filter @freeanima/core/db db:migrate\n"
+"  bun run --filter @freeanima/core db:migrate\n"
 
 #. type: Plain text
 #: docs/guide/database.md:61
@@ -196,18 +193,13 @@ msgstr "`auto_llm_runs`（审计）"
 
 #. type: Plain text
 #: docs/guide/database.md:65
-#, fuzzy
-#| msgid ""
-#| "Background LLM without user turns (cron agent, sleep pipeline stages) "
-#| "writes to `auto_llm_runs` instead of creating `sessions`. Retention "
-#| "(optional `config.yaml`):"
 msgid ""
 "Background LLM without user turns (cron agent, sleep pipeline stages) writes "
 "to `auto_llm_runs` instead of creating `conversations`. Retention (optional "
 "`config.yaml`):"
 msgstr ""
 "无用户轮次的后台 LLM（cron agent、睡眠流水线阶段）写入 `auto_llm_runs`，而非"
-"创建 `sessions`。保留策略（可选 `config.yaml`）："
+"创建 `conversations`。保留策略（可选 `config.yaml`）："
 
 #. type: Fenced code block (yaml)
 #: docs/guide/database.md:66

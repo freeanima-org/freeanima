@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 17:33+0800\n"
+"POT-Creation-Date: 2026-07-01 10:36+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -58,16 +58,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/remote-access.md:22
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Layer                   | Role                                                                                                        |\n"
-#| "| ----------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
-#| "| **Service API Token**   | 绑定 `user` / `agent` subject；REST `Authorization: Bearer`；SAP `connect.auth_token`；MCP `/mcp` 同 Bearer |\n"
-#| "| **CLI bootstrap**       | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                               |\n"
-#| "| **cloudflared**         | Outbound tunnel；single hostname → Hub `127.0.0.1:2658`（API + Web UI at `/web`）                           |\n"
-#| "| **`http.host`**         | Hub listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                     |\n"
-#| "| **`http.cors_origins`** | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel          |\n"
-#| "| **Client settings**     | app/desktop / app/mobile / **browser Web** fill Hub URL and token in **Hub settings**                       |\n"
+#, no-wrap
 msgid ""
 "| Layer                   | Role                                                                                                        |\n"
 "| ----------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
@@ -80,11 +71,16 @@ msgid ""
 "| **Remote UI**           | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |\n"
 "| **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                 |\n"
 msgstr ""
-"| 层级                 | 作用                                                                                                          |\n"
-"| --------------------- | ------------------------------------------------------------------------------------------------------------- |\n"
-"| **Hub `remote_auth`** | `config.yaml` 中的明文 token；REST `Authorization: Bearer`；SAP `connect` 帧 `auth_token`；MCP `/mcp` 同样 Bearer |\n"
-"| **cloudflared**       | 出站隧道；Hub 主机名 → `127.0.0.1:2658`，Web 主机名 → `127.0.0.1:2659`（可选）                  |\n"
-"| **客户端设置**   | app/desktop / app/mobile / **浏览器 Web** 在 **Hub 设置** 中填写 Hub URL 与 token                         |\n"
+"| 层级                   | 作用                                                                                                            |\n"
+"| ----------------------- | --------------------------------------------------------------------------------------------------------------- |\n"
+"| **Service API Token**   | 绑定 `user` / `agent` subject；REST `Authorization: Bearer`；SAP `connect.auth_token`；MCP `/mcp` 同上 |\n"
+"| **CLI bootstrap**       | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                   |\n"
+"| **cloudflared**         | 出站隧道；single hostname → Hub `127.0.0.1:2658`（API + Web UI 位于 `/web`）                                    |\n"
+"| **`http.host`**         | Hub 监听绑定（IP 或可解析主机名）；默认 `127.0.0.1`；局域网用 `0.0.0.0`                                          |\n"
+"| **`http.cors_origins`** | 显式跨源浏览器 origin（dev:web、分离式 UI/API 反向代理）；独立于 Tunnel                                         |\n"
+"| **客户端设置**          | app/desktop / app/mobile / **浏览器 Web** 在 **Hub 设置** 中填写 Hub URL 与 token                               |\n"
+"| **远程 UI**             | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) 的 Client UI |\n"
+"| **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 `compact` 布局                                   |\n"
 
 #. type: Title ###
 #: docs/guide/remote-access.md:23
@@ -323,8 +319,8 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/remote-access.md:109
 msgid ""
-"Browser: `https://anima.example.com/web/chat` · Hub API: `https://"
-"anima.example.com/api`"
+"Browser: `https://anima.example.com/web/chat` · Hub API: `https://anima."
+"example.com/api`"
 msgstr ""
 
 #. type: Plain text
