@@ -31,16 +31,11 @@ import {
   rollbackBeforeLastUserMessage,
   subscribeConversationEvents,
 } from "@chat/lib/api.ts";
-import type { SapConnectionState } from "@freeanima/sap-contract";
 import { ListDetailLayout, useDrawerNav } from "@freeanima/ui-kit/layout";
+import { reconnectHub, useHubConnection, useNetworkOnline } from "@freeanima/shell-sdk/react";
 import { getAppLocale, initAppLocale, m, toggleAppLocale } from "@chat/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@chat/lib/input-draft.ts";
-import {
-  getSapDirectClient,
-  reconnectSap,
-  subscribeSapConnection,
-  subscribeShellConfigChanges,
-} from "@chat/lib/sap-client.ts";
+import { getSapDirectClient, subscribeShellConfigChanges } from "@chat/lib/sap-client.ts";
 import type { ConversationListItem } from "@chat/lib/types.ts";
 import {
   readModuleSelection,
@@ -126,7 +121,9 @@ export function ChatApp() {
 
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sapConnection, setSapConnection] = useState<SapConnectionState>("connecting");
+  const networkOnline = useNetworkOnline();
+  const hubConnection = useHubConnection();
+  const writesDisabled = !networkOnline || hubConnection !== "connected";
   const [locale, setLocale] = useState(getAppLocale());
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [contextMenu, setContextMenu] = useState({
@@ -288,7 +285,7 @@ export function ChatApp() {
 
   const confirmReeditUserMessage = async () => {
     const text = editDraft.trim();
-    if (!currentId || editingUserIndex == null || !text || sendingRef.current || sapDisconnected) {
+    if (!currentId || editingUserIndex == null || !text || sendingRef.current || writesDisabled) {
       return;
     }
     const originConversationId = currentId;
@@ -310,8 +307,8 @@ export function ChatApp() {
     if (refreshing) return;
     setRefreshing(true);
     try {
-      if (sapConnection === "disconnected") {
-        await reconnectSap();
+      if (hubConnection === "disconnected") {
+        await reconnectHub();
       }
       useChatStore.getState().abortStream();
       await fetchConversations();
@@ -321,17 +318,13 @@ export function ChatApp() {
     } finally {
       setRefreshing(false);
     }
-  }, [refreshing, sapConnection, currentId, fetchConversations, selectConversation]);
+  }, [refreshing, hubConnection, currentId, fetchConversations, selectConversation]);
 
   useEffect(() => {
-    return subscribeSapConnection(setSapConnection);
-  }, []);
-
-  useEffect(() => {
-    if (sapConnection === "disconnected") {
+    if (hubConnection === "disconnected") {
       useChatStore.getState().abortStream();
     }
-  }, [sapConnection]);
+  }, [hubConnection]);
 
   useEffect(() => subscribeShellConfigChanges(), []);
 
@@ -358,9 +351,9 @@ export function ChatApp() {
   }, [ready, bootstrapConversation]);
 
   useEffect(() => {
-    if (sapConnection !== "connected") return;
+    if (hubConnection !== "connected") return;
     void fetchConversations();
-  }, [sapConnection, fetchConversations]);
+  }, [hubConnection, fetchConversations]);
 
   useEffect(() => {
     const close = () => {
@@ -641,13 +634,12 @@ export function ChatApp() {
     }
   };
 
-  const sapDisconnected = sapConnection !== "connected";
   const offlineCachedHint = m.ui_offline_cached_hint();
-  const showOfflineCachedHint = sapDisconnected && (conversations.length > 0 || display.length > 0);
+  const showOfflineCachedHint = writesDisabled && (conversations.length > 0 || display.length > 0);
 
   const sendMessage = async () => {
     const text = inputText.trim();
-    if (!text || sendingRef.current || sapDisconnected) return;
+    if (!text || sendingRef.current || writesDisabled) return;
 
     let conversationId = currentId;
     if (!conversationId) {
@@ -765,39 +757,6 @@ export function ChatApp() {
 
   return (
     <div className="chat-app h-full flex flex-col min-h-0" {...edgeSwipeHandlers}>
-      {sapDisconnected ? (
-        <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2 bg-warning/15 border-b border-yellow-500/50/30 text-sm">
-          <span className="text-yellow-700 dark:text-yellow-300/90">
-            {sapConnection === "connecting"
-              ? m.admin_common_connecting()
-              : m.admin_hub_disconnected()}
-            {showOfflineCachedHint ? offlineCachedHint : ""}
-          </span>
-          <div className="flex items-center gap-1">
-            {nativeShell ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2"
-                onClick={openHubSettingsIfAvailable}
-              >
-                Hub 设置
-              </Button>
-            ) : null}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-7 border-yellow-500/50 px-2 text-yellow-700 hover:bg-yellow-500/10 dark:text-yellow-300"
-              disabled={sapConnection === "connecting"}
-              onClick={() => void reconnectSap()}
-            >
-              {m.admin_common_reconnect()}
-            </Button>
-          </div>
-        </div>
-      ) : null}
       <header className="shrink-0 flex items-center gap-2 px-3 py-2 border-b border bg-muted">
         <Button
           type="button"
@@ -850,6 +809,11 @@ export function ChatApp() {
           {locale === "zh-cn" ? "EN" : "中文"}
         </Button>
       </header>
+      {showOfflineCachedHint ? (
+        <p className="shrink-0 border-b border px-3 py-1 text-xs text-muted-foreground">
+          {offlineCachedHint.trim()}
+        </p>
+      ) : null}
 
       <ListDetailLayout
         detailTitle={headerTitle}
@@ -907,12 +871,7 @@ export function ChatApp() {
           {!currentId ? (
             <div className="flex flex-col items-center justify-center h-full gap-3 text-foreground/40 text-sm">
               <p>{m.admin_chat_select_conversation()}</p>
-              <Button
-                type="button"
-                size="sm"
-                disabled={sapDisconnected}
-                onClick={startConversation}
-              >
+              <Button type="button" size="sm" disabled={writesDisabled} onClick={startConversation}>
                 {m.admin_common_new_conversation()}
               </Button>
             </div>
@@ -955,7 +914,7 @@ export function ChatApp() {
                           type="button"
                           size="sm"
                           className="h-7"
-                          disabled={!editDraft.trim() || sapDisconnected}
+                          disabled={!editDraft.trim() || writesDisabled}
                           onClick={() => void confirmReeditUserMessage()}
                         >
                           {m.admin_common_confirm()}
@@ -1120,7 +1079,7 @@ export function ChatApp() {
                 rows={1}
                 className="min-h-[2.75rem] max-h-48 w-full resize-none py-2.5 leading-normal"
                 placeholder={m.admin_chat_message_placeholder()}
-                disabled={sapDisconnected}
+                disabled={writesDisabled}
                 onFocus={() => {
                   requestAnimationFrame(() => {
                     msgInputRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
@@ -1130,11 +1089,11 @@ export function ChatApp() {
               />
             </div>
             {streamVisible ? (
-              <Button type="submit" variant="destructive" disabled={sapDisconnected}>
+              <Button type="submit" variant="destructive" disabled={writesDisabled}>
                 {m.admin_common_stop()}
               </Button>
             ) : (
-              <Button type="submit" disabled={!inputText.trim() || sapDisconnected}>
+              <Button type="submit" disabled={!inputText.trim() || writesDisabled}>
                 {m.admin_common_send()}
               </Button>
             )}

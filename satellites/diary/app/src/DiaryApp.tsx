@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useOfflineReadOnly, useSubjectScope } from "@freeanima/shell-sdk/react";
+import { useHubConnection, useNetworkOnline, useSubjectScope } from "@freeanima/shell-sdk/react";
 import { Button, Input, Spinner } from "@freeanima/ui-kit";
 import { ListDetailLayout } from "@freeanima/ui-kit/layout";
 
@@ -18,7 +18,9 @@ import { subscribeShellConfigChanges } from "./lib/sap-client.ts";
 
 export function DiaryApp() {
   const { kind: subjectKind } = useSubjectScope();
-  const offlineReadOnly = useOfflineReadOnly();
+  const networkOnline = useNetworkOnline();
+  const hubConnection = useHubConnection();
+  const writesDisabled = !networkOnline || hubConnection !== "connected";
   const [entries, setEntries] = useState<DiaryEntryRow[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [editorMode, setEditorMode] = useState<"create" | "edit" | null>(null);
@@ -69,7 +71,7 @@ export function DiaryApp() {
         <Button
           type="button"
           size="sm"
-          disabled={offlineReadOnly}
+          disabled={writesDisabled}
           onClick={() => {
             const todayEntry = findEntryByDayLocal(entries, defaultEntryDateLocal());
             if (todayEntry) {
@@ -92,9 +94,6 @@ export function DiaryApp() {
         onChange={(e) => setSearchQuery(e.target.value)}
       />
       {error ? <p className="text-destructive text-xs">{error}</p> : null}
-      {offlineReadOnly ? (
-        <p className="text-muted-foreground text-xs">离线只读，编辑已禁用。</p>
-      ) : null}
       {loading ? <Spinner className="size-4" /> : null}
       <div className="min-h-0 flex-1 overflow-y-auto">
         <EntryTimeline
@@ -115,7 +114,7 @@ export function DiaryApp() {
         mode="create"
         entry={null}
         saving={saving}
-        readOnly={offlineReadOnly}
+        readOnly={writesDisabled}
         onCancel={() => setEditorMode(null)}
         onSave={async (draft) => {
           setSaving(true);
@@ -150,7 +149,7 @@ export function DiaryApp() {
         mode="edit"
         entry={selectedEntry}
         saving={saving}
-        readOnly={offlineReadOnly}
+        readOnly={writesDisabled}
         onCancel={() => {
           setEditorMode(null);
           setSelectedId(null);

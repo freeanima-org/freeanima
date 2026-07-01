@@ -6,7 +6,7 @@ import {
   useDrawerNav,
   useThreeColumnLayoutMode,
 } from "@freeanima/ui-kit/layout";
-import { useOfflineReadOnly, useSubjectScope } from "@freeanima/shell-sdk/react";
+import { useHubConnection, useNetworkOnline, useSubjectScope } from "@freeanima/shell-sdk/react";
 import { readModuleSelection, writeModuleSelection } from "@freeanima/shell-sdk";
 
 import { EmailMessageDetail } from "./components/EmailMessageDetail.tsx";
@@ -34,7 +34,9 @@ function formatWhen(iso: string): string {
 
 export function EmailApp() {
   const { kind: subjectKind } = useSubjectScope();
-  const offlineReadOnly = useOfflineReadOnly();
+  const networkOnline = useNetworkOnline();
+  const hubConnection = useHubConnection();
+  const writesDisabled = !networkOnline || hubConnection !== "connected";
   const layoutMode = useThreeColumnLayoutMode();
   const useDrawer = useDrawerNav();
   const [accounts, setAccounts] = useState<EmailAccountRow[]>([]);
@@ -68,7 +70,7 @@ export function EmailApp() {
       try {
         const row = await readEmailMessage(message.id);
         setDetail(row);
-        if (row.unread && !offlineReadOnly) {
+        if (row.unread && !writesDisabled) {
           try {
             await markEmailMessageRead(row.id);
             setMessages((prev) => prev.map((m) => (m.id === row.id ? { ...m, unread: false } : m)));
@@ -82,7 +84,7 @@ export function EmailApp() {
         setDetailLoading(false);
       }
     },
-    [layoutMode, offlineReadOnly],
+    [layoutMode, writesDisabled],
   );
 
   const loadAccounts = useCallback(async () => {
@@ -269,11 +271,6 @@ export function EmailApp() {
           <AlertDescription className="text-sm">{error}</AlertDescription>
         </Alert>
       ) : null}
-      {offlineReadOnly ? (
-        <Alert variant="warning" className="m-2 shrink-0">
-          <AlertDescription className="text-sm">离线只读，同步与标记已读已禁用。</AlertDescription>
-        </Alert>
-      ) : null}
       {syncNotice ? (
         <Alert variant="success" className="m-2 shrink-0">
           <AlertDescription className="text-sm">{syncNotice}</AlertDescription>
@@ -354,7 +351,7 @@ export function EmailApp() {
                 <Button
                   type="button"
                   size="sm"
-                  disabled={syncing || offlineReadOnly}
+                  disabled={syncing || writesDisabled}
                   onClick={() => void onSync()}
                 >
                   {syncing ? "同步中…" : "同步"}

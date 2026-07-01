@@ -5,6 +5,7 @@ import { SubjectScopeProvider, SubjectToggle, useSubjectScope } from "@freeanima
 
 import { isCompactLayout, useLayoutMode } from "../layout-mode.ts";
 import { navigateShellModule } from "../shell-nav.ts";
+import { ShellConnectivityBar } from "../ShellConnectivityBar.tsx";
 import {
   shellMobileMoreNavItems,
   shellMobilePrimaryNavItems,
@@ -71,6 +72,7 @@ function DesktopModuleShell() {
         </nav>
         <ShellSubjectToggle />
       </header>
+      <ShellConnectivityBar />
       <main className="flex-1 min-h-0 overflow-hidden">
         <Outlet />
       </main>
@@ -148,8 +150,11 @@ function MobileModuleShell() {
 
   return (
     <div className="shell-module-layout shell-layout-compact h-full flex flex-col bg-background text-foreground">
-      <main className="flex-1 min-h-0 overflow-hidden">
-        <Outlet />
+      <main className="flex-1 min-h-0 overflow-hidden flex flex-col">
+        <ShellConnectivityBar />
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <Outlet />
+        </div>
       </main>
       <nav
         className="shell-bottom-nav relative z-[60] shrink-0 flex border-t border bg-background safe-area-pb"

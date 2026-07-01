@@ -1,0 +1,76 @@
+import { Button } from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
+import { reconnectHub, useHubConnection, useNetworkOnline } from "@freeanima/shell-sdk/react";
+import { useState } from "react";
+
+import * as m from "../../../../messages/paraglide/messages.js";
+import { resolveConnectivityNotice } from "./connectivity-notice.ts";
+
+function openHubSettingsIfAvailable(): void {
+  window.satelliteShell?.openHubSettings?.();
+}
+
+export function ShellConnectivityBar(): JSX.Element | null {
+  const networkOnline = useNetworkOnline();
+  const hubConnection = useHubConnection();
+  const [reconnecting, setReconnecting] = useState(false);
+  const nativeShell = Boolean(window.satelliteShell?.isNativeShell);
+
+  const notice = resolveConnectivityNotice({ networkOnline, hubConnection });
+  if (!notice) return null;
+
+  if (notice.kind === "offline") {
+    return (
+      <div className="shrink-0 border-b border-border px-4 py-2">
+        <StatusAlert variant="warning">
+          <div className="flex flex-col gap-1">
+            <span>{m.ui_network_offline()}</span>
+            <span className="text-xs opacity-90">{m.ui_offline_readonly_mode()}</span>
+          </div>
+        </StatusAlert>
+      </div>
+    );
+  }
+
+  if (notice.kind === "hub-connecting") {
+    return (
+      <div className="shrink-0 border-b border-border px-4 py-2">
+        <StatusAlert variant="info">{m.admin_common_connecting()}</StatusAlert>
+      </div>
+    );
+  }
+
+  return (
+    <div className="shrink-0 border-b border-border px-4 py-2">
+      <StatusAlert variant="warning" className="flex flex-wrap items-center justify-between gap-2">
+        <span>{m.admin_hub_disconnected()}</span>
+        <div className="flex items-center gap-1">
+          {nativeShell ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2"
+              onClick={openHubSettingsIfAvailable}
+            >
+              Hub 设置
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-7 px-2"
+            disabled={reconnecting || hubConnection === "connecting"}
+            onClick={() => {
+              setReconnecting(true);
+              void reconnectHub().finally(() => setReconnecting(false));
+            }}
+          >
+            {m.admin_common_reconnect()}
+          </Button>
+        </div>
+      </StatusAlert>
+    </div>
+  );
+}

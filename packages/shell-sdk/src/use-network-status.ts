@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
-export function useNetworkStatus(): boolean {
+/** 设备/浏览器是否在线（navigator.onLine + online/offline 事件） */
+export function useNetworkOnline(): boolean {
   const [online, setOnline] = useState(() =>
     typeof navigator !== "undefined" ? navigator.onLine : true,
   );
@@ -18,7 +19,7 @@ export function useNetworkStatus(): boolean {
   return online;
 }
 
-/** 浏览器离线或 Hub 实时通道不可用时的只读约束（当前仅检测 navigator.onLine） */
-export function useOfflineReadOnly(): boolean {
-  return !useNetworkStatus();
+/** @deprecated 使用 useNetworkOnline */
+export function useNetworkStatus(): boolean {
+  return useNetworkOnline();
 }
