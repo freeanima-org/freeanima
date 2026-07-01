@@ -11,7 +11,9 @@ const MIME: Record<string, string> = {
   ".map": "application/json",
   ".svg": "image/svg+xml",
   ".png": "image/png",
+  ".ico": "image/x-icon",
   ".woff2": "font/woff2",
+  ".webmanifest": "application/manifest+json",
 };
 
 function isAddrInUse(error: unknown): boolean {

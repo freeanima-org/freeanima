@@ -20,6 +20,14 @@ title: Remote access
 | **Remote UI**           | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |
 | **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                 |
 
+### PWA（浏览器 Web）
+
+- **Secure context**：Service Worker 需要 HTTPS 或 `localhost`；Tunnel 终端应使用 HTTPS 域名。
+- **安装**：手机浏览器访问 `/web/chat`，Chrome / Safari 支持「添加到主屏幕」；生产构建会显示安装引导条（compact 布局、非已安装态）。
+- **更新**：Hub 部署新 Web 静态产物后，已安装 PWA 会提示「新版本可用」；点击重新加载后生效。壳层 JS 由 Workbox precache，`/web/config.json` 始终 `no-store`（Hub URL 动态）。
+- **离线边界**：SW 仅缓存壳层静态资源（JS/CSS/HTML）；会话/任务等数据由应用层 IndexedDB（`shell-sdk/offline-cache`）只读回退，**不**缓存 `/api` 或 `/sap`。
+- **存储**：PWA 与 localStorage（Hub 设置）、IndexedDB（业务快照）互不冲突；清除站点数据会同时删除三者。
+
 仅 `GET /api/health`、CORS 预检、`/api/echo` 豁免认证。
 
 ## 1. 创建 token（冷启动）

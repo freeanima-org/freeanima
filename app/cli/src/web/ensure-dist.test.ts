@@ -43,6 +43,8 @@ describe("ensure-web-dist", () => {
     const dist = join(root, "dist");
     mkdirSync(dist, { recursive: true });
     writeFileSync(join(dist, "index.html"), "<html></html>");
+    writeFileSync(join(dist, "manifest.webmanifest"), "{}");
+    writeFileSync(join(dist, "sw.js"), "// sw");
 
     const result = assessMonorepoWebDist(root, dist);
     expect(result.needsRebuild).toBe(true);
@@ -56,6 +58,8 @@ describe("ensure-web-dist", () => {
     const distTime = Date.now() - 60_000;
     touch(join(dist, "index.html"), distTime);
     touch(join(dist, "shell-bridge.js"), distTime);
+    touch(join(dist, "manifest.webmanifest"), distTime);
+    touch(join(dist, "sw.js"), distTime);
 
     const sourceRoot = join(root, "app/web");
     mkdirSync(sourceRoot, { recursive: true });
@@ -74,6 +78,8 @@ describe("ensure-web-dist", () => {
     const distTime = Date.now();
     touch(join(dist, "index.html"), distTime);
     touch(join(dist, "shell-bridge.js"), distTime);
+    touch(join(dist, "manifest.webmanifest"), distTime);
+    touch(join(dist, "sw.js"), distTime);
 
     const sourceRoot = join(root, "app/web");
     mkdirSync(sourceRoot, { recursive: true });

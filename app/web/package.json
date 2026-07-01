@@ -21,6 +21,7 @@
     "@freeanima/satellite-companion": "workspace:*",
     "@freeanima/shell-sdk": "workspace:*",
     "@freeanima/shell-ui": "workspace:*",
+    "@freeanima/ui-kit": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
@@ -32,6 +33,7 @@
     "@vitejs/plugin-react": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vite-plugin-pwa": "^0.21.1"
+    "vite-plugin-pwa": "^0.21.1",
+    "workbox-window": "^7.4.1"
   }
 }

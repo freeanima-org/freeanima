@@ -4,6 +4,7 @@ import { Button, Card, CardContent } from "@freeanima/ui-kit";
 import type { SettingsBinding } from "@freeanima/shell-sdk/settings";
 
 import { bootstrapSentryFromSettings, Sentry } from "./bootstrap/sentry.ts";
+import { ShellNetworkNotice } from "./ShellNetworkNotice.tsx";
 import { ShellRouterProvider } from "./router.tsx";
 import { setShellAppBindings, ShellAppProvider } from "./shell-app-context.tsx";
 
@@ -105,25 +106,29 @@ function ShellErrorFallback({
   );
 }
 
-export type MountShellUiOptions = { bindings: SettingsBinding[] };
+export type MountShellUiOptions = { bindings: SettingsBinding[]; headerSlot?: ReactNode };
 
 function ShellAppTree({
   bindings,
   bootError,
+  headerSlot,
 }: {
   bindings: SettingsBinding[];
   bootError: string | null;
+  headerSlot?: ReactNode;
 }): JSX.Element {
   const content: ReactNode = (
     <>
       {bootError ? <ShellBootNotice message={bootError} /> : null}
+      <ShellNetworkNotice />
+      {headerSlot}
       <ShellRouterProvider />
     </>
   );
 
   return (
     <ShellAppProvider bindings={bindings}>
-      {bootError ? <div className="h-full min-h-screen flex flex-col">{content}</div> : content}
+      <div className="h-full min-h-screen flex flex-col">{content}</div>
     </ShellAppProvider>
   );
 }
@@ -154,7 +159,7 @@ export async function mountShellUi(opts: MountShellUiOptions): Promise<void> {
   createRoot(rootEl).render(
     <StrictMode>
       <Sentry.ErrorBoundary fallback={ShellErrorFallback} showDialog={false}>
-        <ShellAppTree bindings={opts.bindings} bootError={bootError} />
+        <ShellAppTree bindings={opts.bindings} bootError={bootError} headerSlot={opts.headerSlot} />
       </Sentry.ErrorBoundary>
     </StrictMode>,
   );

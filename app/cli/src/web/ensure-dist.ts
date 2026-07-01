@@ -5,7 +5,12 @@ import { getInstallContext } from "../satellite-launch.ts";
 import { resolveMonorepoWebDistDir } from "./dist-path.ts";
 
 /** npm 发布包内置 dist；monorepo 开发需本地 build */
-export const WEB_DIST_REQUIRED_FILES = ["index.html", "shell-bridge.js"] as const;
+export const WEB_DIST_REQUIRED_FILES = [
+  "index.html",
+  "shell-bridge.js",
+  "manifest.webmanifest",
+  "sw.js",
+] as const;
 
 const SKIP_DIR_NAMES = new Set([".git", ".vite-app-web", "dist", "node_modules"]);
 

@@ -70,11 +70,15 @@ function webDevPlugin(): Plugin {
 
 function webPwaPlugin(): Plugin[] {
   return VitePWA({
-    registerType: "autoUpdate",
-    injectRegister: "auto",
+    registerType: "prompt",
+    injectRegister: false,
     scope: "/web/",
     base: "/web/",
+    devOptions: {
+      enabled: false,
+    },
     manifest: {
+      id: "/web/",
       name: "FreeAnima",
       short_name: "FreeAnima",
       description: "FreeAnima Web UI",
@@ -84,12 +88,38 @@ function webPwaPlugin(): Plugin[] {
       theme_color: "#0a0a0a",
       background_color: "#1d232a",
       icons: [
-        { src: "/web/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-        { src: "/web/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+        { src: "/web/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+        {
+          src: "/web/icons/icon-512.png",
+          sizes: "512x512",
+          type: "image/png",
+          purpose: "any",
+        },
+        {
+          src: "/web/icons/icon-512-maskable.png",
+          sizes: "512x512",
+          type: "image/png",
+          purpose: "maskable",
+        },
+      ],
+      shortcuts: [
+        {
+          name: "Chat",
+          short_name: "Chat",
+          url: "/web/chat",
+          icons: [{ src: "/web/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+        },
+        {
+          name: "Admin",
+          short_name: "Admin",
+          url: "/web/admin/dashboard",
+          icons: [{ src: "/web/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+        },
       ],
     },
     workbox: {
       navigateFallback: "/web/index.html",
+      navigateFallbackDenylist: [/^\/web\/config\.json$/],
       globPatterns: ["**/*.{js,css,html,woff2,svg,png,ico,webmanifest}"],
       runtimeCaching: [],
     },
@@ -118,8 +148,9 @@ export default defineConfig(({ command, mode }) => {
     },
   });
 
+  inline.plugins = [...(inline.plugins ?? []), ...webPwaPlugin()];
+
   if (!isServe) {
-    inline.plugins = [...(inline.plugins ?? []), ...webPwaPlugin()];
     if (inline.build?.rollupOptions?.output && !Array.isArray(inline.build.rollupOptions.output)) {
       inline.build.rollupOptions.output.entryFileNames = (chunkInfo) =>
         shellEntryFileNames(chunkInfo);
