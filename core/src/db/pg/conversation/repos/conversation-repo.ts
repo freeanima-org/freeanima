@@ -300,7 +300,7 @@ export async function listConversationIds(
     .from(conversations)
     .where(where)
     .orderBy(desc(conversations.updated_at));
-  return rows.map((r) => r.id).toReversed();
+  return rows.map((r) => r.id);
 }
 
 export async function listDebugConversationIds(): Promise<string[]> {
@@ -344,6 +344,7 @@ function mapConversationSummaryRow(row: {
   title: string | null;
   platform_info: { platform?: string } | null;
   created_at: Date;
+  updated_at: Date;
   archived_at?: Date | null;
 }): ConversationSummaryRow {
   const raw = row.platform_info?.platform;
@@ -351,9 +352,18 @@ function mapConversationSummaryRow(row: {
     id: row.id,
     title: row.title ?? "",
     created_at: row.created_at,
+    updated_at: row.updated_at,
     platform: typeof raw === "string" ? raw : "",
     archived_at: row.archived_at ?? null,
   };
+}
+
+export async function touchConversationUpdatedAt(conversation_id: string): Promise<void> {
+  const db = getDb();
+  await db
+    .update(conversations)
+    .set({ updated_at: pgNow() })
+    .where(eq(conversations.id, conversation_id));
 }
 
 export async function listConversationSummaries(
@@ -368,12 +378,13 @@ export async function listConversationSummaries(
       title: conversations.title,
       platform_info: conversations.platform_info,
       created_at: conversations.created_at,
+      updated_at: conversations.updated_at,
       archived_at: conversations.archived_at,
     })
     .from(conversations)
     .where(where)
     .orderBy(desc(conversations.updated_at));
-  return rows.map(mapConversationSummaryRow).toReversed();
+  return rows.map(mapConversationSummaryRow);
 }
 
 export async function listConversationSummariesPage(opts?: {
@@ -400,11 +411,12 @@ export async function listConversationSummariesPage(opts?: {
       title: conversations.title,
       platform_info: conversations.platform_info,
       created_at: conversations.created_at,
+      updated_at: conversations.updated_at,
       archived_at: conversations.archived_at,
     })
     .from(conversations)
     .where(where)
-    .orderBy(desc(conversations.created_at))
+    .orderBy(desc(conversations.updated_at))
     .limit(limit)
     .offset(offset);
 
