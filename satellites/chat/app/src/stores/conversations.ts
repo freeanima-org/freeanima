@@ -18,6 +18,7 @@ import {
   writeCachedConversations,
   writeCachedMessages,
 } from "@chat/lib/offline-cache.ts";
+import { sortConversationsByUpdatedAt } from "@chat/lib/sort-conversations.ts";
 import { useChatStore } from "@chat/stores/chat.ts";
 
 type ConversationsState = {
@@ -78,13 +79,14 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
     const includeArchived = get().showArchived;
     const cached = await readCachedConversations(scope, includeArchived);
     if (cached?.length) {
-      set({ conversations: cached });
+      set({ conversations: sortConversationsByUpdatedAt(cached) });
     }
     try {
       const resp = await listConversations({ includeArchived });
-      set({ conversations: resp.conversations });
-      void writeCachedConversations(scope, includeArchived, resp.conversations);
-      return resp.conversations;
+      const conversations = sortConversationsByUpdatedAt(resp.conversations);
+      set({ conversations });
+      void writeCachedConversations(scope, includeArchived, conversations);
+      return conversations;
     } catch (e) {
       console.error("fetchSessions:", e);
       return cached ?? [];

@@ -111,6 +111,7 @@ export type ConversationSummary = {
   id: string;
   title: string;
   created_at: Date;
+  updated_at: Date;
   platform: string;
   archived_at?: Date | null;
 };

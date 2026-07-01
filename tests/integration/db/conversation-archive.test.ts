@@ -74,6 +74,25 @@ describePg("conversation archive/delete (PostgreSQL)", () => {
     expect(liteMeta?.platform).toBe(TEST_SAP_CHAT_PLATFORM);
   });
 
+  it("lists conversations by updated_at descending", async () => {
+    const olderId = "archive_sort_older";
+    const newerId = "archive_sort_newer";
+
+    await seedMeta(olderId);
+    await seedMeta(newerId);
+    await backdateSession(olderId);
+
+    await appendMessage(newerId, {
+      role: "user",
+      content: "bump",
+      pos: 1,
+      timestamp: new Date().toISOString(),
+    });
+
+    const list = await listConversationSummaries(TEST_SAP_CHAT_PLATFORM);
+    expect(list.map((s) => s.id)).toEqual([newerId, olderId]);
+  });
+
   it("hides archived conversations from default list and restores on unarchive", async () => {
     const activeId = "archive_active";
     const archivedId = "archive_hidden";

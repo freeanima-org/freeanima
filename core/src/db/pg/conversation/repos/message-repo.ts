@@ -8,7 +8,7 @@ import { omitUndefined } from "@freeanima/core/util";
 import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { scheduleMessageEmbedding } from "../../embedding/schedule.ts";
 import { recordMessageReferences } from "../../memory-reference/repos/memory-reference-repo.ts";
-import { isCronSession } from "./conversation-repo.ts";
+import { isCronSession, touchConversationUpdatedAt } from "./conversation-repo.ts";
 import { getDb } from "../../client.ts";
 import { messageToInsert, rowToMessage } from "../message-transform.ts";
 
@@ -65,6 +65,7 @@ export async function appendMessage(
         }),
       );
     }
+    await touchConversationUpdatedAt(conversation_id);
     return rowToMessage(row);
   }
 
