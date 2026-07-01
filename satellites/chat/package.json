@@ -11,7 +11,7 @@
     "./styles.css": "./app/src/styles.css"
   },
   "dependencies": {
-    "@capacitor/keyboard": "^7.0.1",
+    "@capacitor/keyboard": "^8.0.5",
     "@freeanima/sap-contract": "workspace:*",
     "@freeanima/shell-sdk": "workspace:*",
     "@freeanima/ui-kit": "workspace:*",
