@@ -8,20 +8,9 @@ import {
   subscribeShellConfigChanges,
   whenBundledSapClientReady,
   type SapClient,
-  type SapConnectionState,
 } from "@freeanima/sap-contract";
 
 const APP_ID = "chat";
-
-let connectionState: SapConnectionState = "connecting";
-const connectionListeners = new Set<(state: SapConnectionState) => void>();
-
-function notifyConnection(state: SapConnectionState): void {
-  connectionState = state;
-  for (const listener of connectionListeners) {
-    listener(state);
-  }
-}
 
 function resolveHubRpcWsUrlFromEnv(): string {
   const shell = window.satelliteShell;
@@ -34,32 +23,11 @@ function resolveHubRpcWsUrlFromEnv(): string {
 function getClient() {
   return getBundledSapStreamClient({
     hubRpcWsUrl: resolveHubRpcWsUrlFromEnv(),
-    onConnectionStateChange: notifyConnection,
   });
 }
 
 export function getSapDirectClient() {
   return getClient();
-}
-
-export function getSapConnectionState(): SapConnectionState {
-  return connectionState;
-}
-
-export function subscribeSapConnection(listener: (state: SapConnectionState) => void): () => void {
-  connectionListeners.add(listener);
-  listener(connectionState);
-  return () => {
-    connectionListeners.delete(listener);
-  };
-}
-
-export async function reconnectSap(): Promise<void> {
-  getClient().stop();
-  resetBundledSapStreamClientForTests();
-  notifyConnection("connecting");
-  await getClient().whenReady();
-  notifyConnection("connected");
 }
 
 export function loadChatInstanceId(): string {
@@ -78,6 +46,4 @@ export { subscribeShellConfigChanges };
 
 export function resetChatInstanceCacheForTests(): void {
   resetBundledSapStreamClientForTests();
-  connectionListeners.clear();
-  connectionState = "connecting";
 }

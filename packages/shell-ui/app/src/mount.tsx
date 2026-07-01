@@ -4,7 +4,6 @@ import { Button, Card, CardContent } from "@freeanima/ui-kit";
 import type { SettingsBinding } from "@freeanima/shell-sdk/settings";
 
 import { bootstrapSentryFromSettings, Sentry } from "./bootstrap/sentry.ts";
-import { ShellNetworkNotice } from "./ShellNetworkNotice.tsx";
 import { ShellRouterProvider } from "./router.tsx";
 import { setShellAppBindings, ShellAppProvider } from "./shell-app-context.tsx";
 
@@ -120,7 +119,6 @@ function ShellAppTree({
   const content: ReactNode = (
     <>
       {bootError ? <ShellBootNotice message={bootError} /> : null}
-      <ShellNetworkNotice />
       {headerSlot}
       <ShellRouterProvider />
     </>

@@ -24,8 +24,44 @@ const SHELL_CONFIG_CHANGED_EVENT = "freeanima:shell-config-changed";
 
 let sharedClient: BundledHubRpcClient | null = null;
 let sharedTransport: HubRpcTransportHandle | null = null;
+let cachedConnectionState: HubRpcConnectionState = "connecting";
+const connectionStateListeners = new Set<(state: HubRpcConnectionState) => void>();
 
 import { readSatelliteShell } from "./shell-bridge.ts";
+
+function broadcastConnectionState(state: HubRpcConnectionState): void {
+  cachedConnectionState = state;
+  for (const listener of connectionStateListeners) {
+    listener(state);
+  }
+}
+
+export function getHubRpcConnectionState(): HubRpcConnectionState {
+  return cachedConnectionState;
+}
+
+export function subscribeHubRpcConnectionState(
+  listener: (state: HubRpcConnectionState) => void,
+): () => void {
+  connectionStateListeners.add(listener);
+  listener(cachedConnectionState);
+  if (!sharedClient && typeof window !== "undefined") {
+    try {
+      void getBundledHubRpcClient()
+        .whenReady()
+        .catch(() => undefined);
+    } catch {
+      // 缺少 auth_token 等配置时保持当前状态
+    }
+  }
+  return () => {
+    connectionStateListeners.delete(listener);
+  };
+}
+
+export async function reconnectHubRpc(): Promise<RpcClient> {
+  return getBundledHubRpcClient().reconnect();
+}
 
 function resolveAuthToken(explicit?: string): string {
   const fromShell = readSatelliteShell()?.remoteAuth?.token?.trim();
@@ -49,6 +85,7 @@ function createBundledHubRpcClient(options: BundledHubRpcClientOptions = {}): Bu
 
   const notify = (state: HubRpcConnectionState): void => {
     options.onConnectionStateChange?.(state);
+    broadcastConnectionState(state);
   };
 
   const startTransport = (): HubRpcTransportHandle => {
@@ -123,6 +160,8 @@ export function resetBundledHubRpcClientForTests(): void {
   sharedClient?.stop();
   sharedClient = null;
   sharedTransport = null;
+  cachedConnectionState = "connecting";
+  connectionStateListeners.clear();
 }
 
 export function subscribeBundledHubRpcConfigChanges(): () => void {

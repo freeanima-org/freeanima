@@ -34,6 +34,9 @@ export {
   whenHubRpcReady,
   resetBundledHubRpcClientForTests,
   subscribeBundledHubRpcConfigChanges,
+  subscribeHubRpcConnectionState,
+  getHubRpcConnectionState,
+  reconnectHubRpc,
 } from "./bundled.ts";
 export type {
   BundledHubRpcClient,
