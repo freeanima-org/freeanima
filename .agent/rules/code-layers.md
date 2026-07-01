@@ -2,20 +2,22 @@
 
 > **Repository** layering (distinct from cognitive Consciousness/Self/Memory/Estate in [`docs/concepts/architecture.md`](../../docs/concepts/architecture.md)). Enforced by [`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts).
 
-## Five-layer model
+## Six-layer model
+
+> Six top-level directories (`app` through `kernel`). Older docs may say "five-layer" when `app` was grouped with delivery — the dependency chain below is authoritative.
 
 ```
 app → platform → capabilities → runtime → core → kernel
 ```
 
-| Layer            | Directory       | Package               | Responsibility                                                          |
-| ---------------- | --------------- | --------------------- | ----------------------------------------------------------------------- |
-| **kernel**       | `kernel/`       | `@freeanima/kernel`   | Hook, EventBus, logging                                                 |
-| **core**         | `core/`         | `@freeanima/core`     | PG schema, `db/pg` repos, config, tool/LLM/compress/hooks               |
-| **runtime**      | `runtime/`      | `@freeanima/runtime`  | Session, turn, loop, Engine factory                                     |
-| **capabilities** | `capabilities/` | `capabilities-*` (8)  | Identity, memory, tools, MCP client/server, ACP, tasks, …               |
-| **platform**     | `platform/`     | `@freeanima/platform` | Composition root, ports, connectors, CLI wiring                         |
-| **app**          | `app/`          | `@freeanima/cli`, …   | CLI、desktop/mobile **薄壳**；UI SSOT 为 `app/web/dist`（Hub `/web/*`） |
+| Layer            | Directory       | Package               | Responsibility                                                                                  |
+| ---------------- | --------------- | --------------------- | ----------------------------------------------------------------------------------------------- |
+| **kernel**       | `kernel/`       | `@freeanima/kernel`   | Hook, EventBus, logging                                                                         |
+| **core**         | `core/`         | `@freeanima/core`     | PG schema, `db/pg` repos, config, tool/LLM/compress/hooks                                       |
+| **runtime**      | `runtime/`      | `@freeanima/runtime`  | Conversation, turn, loop, pipeline, Engine factory                                              |
+| **capabilities** | `capabilities/` | `capabilities-*` (11) | acp, diary, email, identity, llm-openai, mcp-client, mcp-server, memory, satellite, task, tools |
+| **platform**     | `platform/`     | `@freeanima/platform` | Composition root, ports, connectors, CLI wiring                                                 |
+| **app**          | `app/`          | `@freeanima/cli`, …   | CLI、desktop/mobile **薄壳**；UI SSOT 为 `app/web/dist`（Hub `/web/*`）                         |
 
 Admin Hub REST / SPA：`@freeanima/admin-contract`（wire 契约）、`@freeanima/admin-api`（REST 实现）、`@freeanima/admin-frontend`（`platform/admin-contract/`、`platform/admin-api/`、`platform/admin-frontend/`）。
 
@@ -25,7 +27,7 @@ Admin Hub REST / SPA：`@freeanima/admin-contract`（wire 契约）、`@freeanim
 
 ### `@freeanima/runtime` subpaths
 
-`session`, `turn`, `loop`, `conversation`
+`conversation`, `turn`, `loop`, `goal`, `pipeline`
 
 ### `@freeanima/platform` subpaths
 

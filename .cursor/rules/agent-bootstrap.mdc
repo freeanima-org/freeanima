@@ -15,7 +15,9 @@ alwaysApply: true
    - compression algorithm → `compression.md`
    - new packages → `packages.md`
    - i18n / Paraglide / PO / UI strings → `i18n.md`
+   - frontend features / SAP vs hub-rest → `frontend-features.md`
+   - DaisyUI / ui-kit / Modal → `frontend-ui.md`
    - `docs/**` or `po/zh_CN/*.po` → `docs-i18n.md`
-3. Product architecture (cognitive layers, tools, Gateway) → `docs/concepts/architecture.md`.
+3. Product architecture (cognitive layers, tools, Gateway) → [`docs/concepts/architecture.md`](../../docs/concepts/architecture.md).
 4. Code and `scripts/check-layer-deps.ts` override docs when they conflict.
 5. When correcting or refining direction, principles, or philosophy, update the matching doc layer per `AGENTS.md` "Principle & direction maintenance" — same task/PR as code; do not leave changes code-only.

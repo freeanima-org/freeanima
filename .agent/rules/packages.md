@@ -1,6 +1,6 @@
 # Package naming (RFC #1)
 
-Workspace package names reflect the five-layer model:
+Workspace package names reflect the six-layer model:
 
 | Shape           | Pattern                          | Example                                                                |
 | --------------- | -------------------------------- | ---------------------------------------------------------------------- |
@@ -14,17 +14,17 @@ Workspace package names reflect the five-layer model:
 
 ## Valid layer packages
 
-| Package                | Layer        | Notes                                           |
-| ---------------------- | ------------ | ----------------------------------------------- |
-| `@freeanima/kernel`    | kernel       | subpaths: `/logging`, `/hooks`, `/eventbus`     |
-| `@freeanima/core`      | core         | subpaths: `/db`, `/repos`, `/tool`, `/llm`, …   |
-| `@freeanima/runtime`   | runtime      | subpaths: `/session`, `/turn`, `/loop`, …       |
-| `@freeanima/platform`  | platform     | subpaths: `/ports`, `/config`, `/connectors/*`  |
-| `capabilities-*`       | capabilities | 7 packs; see [`code-layers.md`](code-layers.md) |
-| `@freeanima/cli`       | entry        | documented only                                 |
-| `@freeanima/ui-kit`    | packages     | 共享 React UI（shadcn + composite）             |
-| `@freeanima/shell-sdk` | packages     | 壳层 manifest/settings/Hub 连通                 |
-| `@freeanima/shell-ui`  | packages     | 壳层 SPA                                        |
+| Package                | Layer        | Notes                                                             |
+| ---------------------- | ------------ | ----------------------------------------------------------------- |
+| `@freeanima/kernel`    | kernel       | subpaths: `/logging`, `/hooks`, `/eventbus`                       |
+| `@freeanima/core`      | core         | subpaths: `/db`, `/repos`, `/tool`, `/llm`, …                     |
+| `@freeanima/runtime`   | runtime      | subpaths: `/conversation`, `/turn`, `/loop`, `/goal`, `/pipeline` |
+| `@freeanima/platform`  | platform     | subpaths: `/ports`, `/config`, `/connectors/*`                    |
+| `capabilities-*`       | capabilities | 11 packs; see [`code-layers.md`](code-layers.md)                  |
+| `@freeanima/cli`       | entry        | documented only                                                   |
+| `@freeanima/ui-kit`    | packages     | 共享 React UI（shadcn + composite）                               |
+| `@freeanima/shell-sdk` | packages     | 壳层 manifest/settings/Hub 连通                                   |
+| `@freeanima/shell-ui`  | packages     | 壳层 SPA                                                          |
 
 **Deprecated prefixes** (must not appear in new packages): `engine-*`, `life-*`, `storage-*`, `mechanism-*`, `orchestration-*`, `service-*`, `connectors-*`.
 

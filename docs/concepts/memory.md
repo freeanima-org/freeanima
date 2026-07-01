@@ -81,7 +81,7 @@ Long-term memory (LTM)
 
 Definition: Memory of "when, where, and what I experienced"—with a distinct temporal stream property.
 
-**Conversation log** — the most raw, high-fidelity objective runtime trace. Only **user-facing conversations** (`sessions` without `platform_info.platform = cron`) feed light sleep and dream. Background LLM (cron agent, sleep stages) runs as **AutoLlmRun** — audited in `auto_llm_runs`, not copied into the conversation archive.
+**Conversation log** — the most raw, high-fidelity objective runtime trace. Only **user-facing conversations** (`conversations` without `platform_info.platform = cron`) feed light sleep and dream. Background LLM (cron agent, sleep stages) runs as **AutoLlmRun** — audited in `auto_llm_runs`, not copied into the conversation archive.
 
 **Emotional anchors** — conversation-level mood snapshots written during light sleep; not injected into system prompt.
 
@@ -119,7 +119,9 @@ Definition: Memory of "what I felt"—not objective fact, not behavioral record,
 
 ### 4. Procedural Memory
 
-Three-stage evolution from declarative knowledge → dynamic skills → crystallized instincts (CLI / MCP / scripts).
+**Storage:** procedural knowledge lives in `semantic_memory` with `memory_type = procedural` (see §2 Semantic Memory table) — not a separate PG table.
+
+**Evolution path:** three-stage maturation from declarative knowledge → dynamic skills → crystallized instincts (CLI / MCP / automation scripts).
 
 ---
 
@@ -127,8 +129,9 @@ Three-stage evolution from declarative knowledge → dynamic skills → crystall
 
 Conversion from working memory to long-term memory is handled by the sleep mechanism. See [`sleep.md`](sleep.md).
 
-- **Light sleep (✅):** daily 02:00; semantic + limbic + autobiographical extraction
-- **Deep sleep (✅):** daily 03:00; contradiction/expiry, split, merge, pin maintenance
+- **Sleep cycle (✅):** single cron `builtin-sleep-cycle` @ 02:00; orchestrates a DAG (see [`sleep.md`](sleep.md))
+- **Light sleep (✅):** step `light-sleep` — semantic + limbic + autobiographical extraction
+- **Deep sleep (✅):** step `deep-sleep` (depends on light-sleep) — contradiction/expiry, split, merge, pin maintenance
 
 **All conversions must carry identity context**—self layer six blocks + resident memory, not a generic extraction assistant.
 

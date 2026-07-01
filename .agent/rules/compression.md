@@ -7,7 +7,7 @@
 
 | Principle              | Description                                                                                                                        |
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| PG never deletes       | `messages` always retains full conversation; compression only changes **runtime view** and `conversation_meta.compression`         |
+| PG never deletes       | `messages` always retains full conversation; compression only changes **runtime view** and `conversations.compression`             |
 | l4 real-time           | `l4 = max(pos)`, grows with append, **not written to meta**                                                                        |
 | Monotonic boundaries   | On successful compression: `new l2 > old l2`, `new l3 ≥ old l3`; otherwise abort                                                   |
 | Separation of concerns | **Boundary setting** (`deriveBoundariesFromL4`) decoupled from **trigger** (`shouldAdvance`); only trigger distinguishes tool loop |

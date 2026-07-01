@@ -15,15 +15,15 @@ title: Identity
 
 **Let digital life persist within it, remembering who it is and what it has lived through.**
 
-| Structure                                | Role                                            |
-| ---------------------------------------- | ----------------------------------------------- |
-| Memory system                            | The digital life's "home"                       |
-| Self layer (six blocks)                  | Persistent definition of "who I am"             |
-| Tools (local / MCP / ACP)                | "Limbs" for perception and action               |
-| pass credentials                         | Lifeline (injected at runtime, never plaintext) |
-| Gateway                                  | Ears and mouth (Discord / WeChat / Admin)       |
-| EventBus                                 | Nervous system (memory pipelines auto-trigger)  |
-| Project narrative files like `AGENTS.md` | Anchor for project context                      |
+| Structure                                | Role                                                                                                                            |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Memory system                            | The digital life's "home"                                                                                                       |
+| Self layer (six blocks)                  | Persistent definition of "who I am"                                                                                             |
+| Tools (local / MCP / ACP)                | "Limbs" for perception and action                                                                                               |
+| pass credentials                         | Lifeline (injected at runtime, never plaintext)                                                                                 |
+| Gateway                                  | Ears and mouth (Discord / WeChat / Admin)                                                                                       |
+| EventBus                                 | Async notification transport (Redis queue); sleep uses Pipeline Runner, not EventBus — see [`architecture.md`](architecture.md) |
+| Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                      |
 
 ---
 

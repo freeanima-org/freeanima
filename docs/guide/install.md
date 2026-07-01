@@ -15,7 +15,7 @@ title: Installation
 | **Docker Compose** | Quick trial, minimal host setup            | Bundled     | Bundled                | `.env` env vars                                      |
 | **Source**         | Contributors, bleeding-edge, custom builds | You install | Optional (recommended) | pass (recommended)                                   |
 
-All paths run the same `anima service` runtime (Admin API + tRPC + Gateway + engine). PostgreSQL with **pgvector** is **required**. Redis powers fridge/tasks cross-conversation context and **degrades silently** when unavailable — Docker and production setups should still run it.
+All paths run the same `anima service` runtime (Hub REST `/api` + SAP `/sap/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis powers EventBus, user fridge magnets, and task context; it **degrades silently** when unavailable — Docker and production setups should still run it.
 
 ## Shared prerequisites
 
@@ -150,7 +150,7 @@ http://127.0.0.1:2658/api/health
 Use app/desktop or app/mobile clients for UI (bundled shell with `/chat`, `/tasks`, `/admin`, etc.).
 
 - Hub API (health): `http://127.0.0.1:2658/api/health` (Hub does **not** host Admin UI)
-- Local Web shell dev: `bun run dev:web` → Admin: `http://127.0.0.1:4173/admin/dashboard`
+- Local Web shell dev: `bun run dev:web` → Admin: `http://127.0.0.1:4173/web/admin/dashboard`
 
 (Use `ANIMA_PORT` if you changed the host mapping.)
 
@@ -210,10 +210,10 @@ For a publish-shaped local install (closer to npm users):
 
 ```bash
 bun run install:cli:local
-# equivalent: bun run build:cli && bun install -g "$PWD/cli/publish"
+# equivalent: bun run build:cli && bun install -g "$PWD/app/cli/publish"
 ```
 
-`bun install -g ./cli/publish` from the repo root is not supported; use `bun run install:cli:local` (cleans broken global deps, then pack + install tarball).
+`bun install -g ./app/cli/publish` from the repo root is not supported; use `bun run install:cli:local` (cleans broken global deps, then pack + install tarball).
 
 ### 3. Configure and start
 
@@ -227,10 +227,11 @@ cp config.example.yaml ~/.anima/config.yaml
 anima service start --foreground
 ```
 
-Admin dev mode (source watch rebuild — refresh the page after frontend edits):
+Frontend hot reload (Vite HMR — Hub must already be running):
 
 ```bash
-anima service start --dev --foreground
+anima service start --foreground   # terminal 1: Hub REST + SAP
+bun run dev:web                    # terminal 2: http://127.0.0.1:4173/web/chat · Admin /web/admin/dashboard
 ```
 
 ### 4. Development checks

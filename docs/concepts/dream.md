@@ -31,7 +31,7 @@ Light sleep stage 2 must complete first so limbic anchors exist.
 
 - Persisted in PG table `dream_memory` (one row per CST calendar day, unique `dream_day`).
 - Append-only; content is not updated after creation.
-- Redis fridge magnet `dream:reminder:{day}` (TTL 24h) with a short teaser when a dream is created.
+- Does **not** create fridge magnets or notification inbox entries (see [`fridge-magnet.md`](fridge-magnet.md), [`notifications.md`](notifications.md)).
 
 ## Orchestration
 
@@ -48,16 +48,15 @@ LLM call uses `PROFILE_REFLECT` with elevated temperature (~1.1), **no tools**, 
 
 ## Tools & UI
 
-| Surface                        | Purpose                                                           |
-| ------------------------------ | ----------------------------------------------------------------- |
-| `dream_read` tool              | Read stored dream; auto-dismisses fridge reminder                 |
-| `fridge_magnet_dismiss` tool   | Explicitly tear off any fridge magnet (including dream reminders) |
-| Admin `/admin/dashboard/dream` | Browse dream history                                              |
+| Surface                        | Purpose              |
+| ------------------------------ | -------------------- |
+| `dream_read` tool              | Read stored dream    |
+| Admin `/admin/dashboard/dream` | Browse dream history |
 
 ## Design Notes
 
 - Dreams are **not** injected into system prompt or resident memory.
 - Accuracy is explicitly **not** a goal; association and metaphor are.
-- When Redis is unavailable, dreams still persist in PG; reminders silently degrade.
+- Dreams persist in PG regardless of Redis availability.
 
 See also: [`sleep.md`](sleep.md), [`memory.md`](memory.md).

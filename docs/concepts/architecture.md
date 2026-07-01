@@ -37,9 +37,8 @@ A digital life is structured from the inside out. Each layer answers a different
 ├───────────────────────────────────────────────┤
 │ ③ Memory                                       │
 │    "What do I know / remember?"                │
-│    └── Semantic                                │
+│    └── Semantic (incl. `procedural` type)      │
 │    └── Episodic                                │
-│    └── Procedural                              │
 │    └── Limbic / Imprint                        │
 │    See [`memory.md`](memory.md)                │
 ├───────────────────────────────────────────────┤
@@ -153,12 +152,12 @@ For design drafts, open a GitHub Issue (no design-doc directory in docs).
 
 ## Memory Storage (Summary)
 
-| Cognitive type   | Description                                               |
-| ---------------- | --------------------------------------------------------- |
-| Episodic         | Conversation archive; full history retained               |
-| Semantic         | Cross-session facts, preferences, experiences, procedures |
-| Limbic           | Emotional anchors and imprints — "what was felt"          |
-| Autobiographical | Meaning of important experiences; recalled on demand      |
+| Cognitive type   | Description                                                                                 |
+| ---------------- | ------------------------------------------------------------------------------------------- |
+| Episodic         | Conversation archive; full history retained                                                 |
+| Semantic         | Cross-session facts, preferences, experiences; **`procedural` type** for "how-to" knowledge |
+| Limbic           | Emotional anchors and imprints — "what was felt"                                            |
+| Autobiographical | Meaning of important experiences; recalled on demand                                        |
 
 Pipeline: nightly **sleep-cycle** pipeline (`builtin-sleep-cycle` cron) extracts and maintains memory; `memory_recall` retrieves on demand during chat. Details: [`memory.md`](memory.md), [`sleep.md`](sleep.md).
 

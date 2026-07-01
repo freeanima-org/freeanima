@@ -19,10 +19,10 @@ title: Service
 
 On Bun + JavaScriptCore, `heap (jsc)` can be **much larger than** `rss (phys)`. Use RSS for “how much RAM does anima use?” Use heap trends (over time, after GC) for JS pressure — not absolute comparison against RSS.
 
-Verify from the shell:
+Verify from the shell (business API requires a Service API Token — see [`remote-access.md`](remote-access.md)):
 
 ```bash
-curl -s http://127.0.0.1:2658/api/status | jq '.memory_kb, .memory_detail'
+curl -s -H "Authorization: Bearer <fa_at_...>" http://127.0.0.1:2658/api/status | jq '.memory_kb, .memory_detail'
 grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f 'anima service' | head -1)/status
 bun run memory:sample -- --url http://127.0.0.1:2658/api/status --stage full
 ```
@@ -44,4 +44,8 @@ When `web.enabled: true`, the stack serves browser Web UI at `http://<host>:2658
 
 **Startup order:** Hub must pass `GET /api/health` (`status: ok`) before Tunnel sidecars start (`serve()` `onReady` → stack supervisor). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).
 
-Admin UI lives at bundled shell `/admin` (not Hub `:2658`). Local dev: `bun run dev:web` → `http://127.0.0.1:4173/admin/dashboard`; Hub provides REST `/api/*` and SAP `/sap/v1` only.
+**UI access (two modes):**
+
+- **Desktop / mobile bundled shell:** Chat and Admin at `/chat`, `/admin/*` inside the Electron/Capacitor app (not served from Hub `:2658` unless `web.enabled`).
+- **`web.enabled: true`:** browser UI at `http://<host>:2658/web/*` from Hub (see paragraph above).
+- **Local Web dev (`bun run dev:web`):** Vite on `:4173` with base `/web/` — Chat `http://127.0.0.1:4173/web/chat`, Admin `http://127.0.0.1:4173/web/admin/dashboard`; Hub still provides REST `/api/*` and SAP `/sap/v1` only.

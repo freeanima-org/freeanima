@@ -89,7 +89,7 @@ Task/list tools and stores require explicit **`world_id`** (typically `user_worl
 
 **Folders** (`body.is_folder: true`) are container nodes in the sidebar tree only — they cannot hold tasks directly (`task.create` / `task.patch` reject `list_id` pointing at a folder). Child lists and sub-folders reference a parent folder via `body.parent_id` (entity id of a folder, or omitted/null at root). Nesting must not form cycles. Archiving or deleting a folder cascades to descendants. `sort_order` is scoped among siblings sharing the same `parent_id`.
 
-LLM ToolSets: `@freeanima/capabilities-task` — `task` (item CRUD + `task_search`) and `tasklist` (list CRUD + `tasklist_search`); load via `toolset_load`. `task_search` searches all lists when `list_id` is omitted. Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration (`scripts/migrate-tasks-to-entities.ts`).
+LLM ToolSets: `@freeanima/capabilities-task` — `task` (item CRUD + `task_search`) and `tasklist` (list CRUD + `tasklist_search`); load via `toolset_load`. `task_search` searches all lists when `list_id` is omitted. Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration ([`scripts/archive/migrate-tasks-to-entities.ts`](../../scripts/archive/migrate-tasks-to-entities.ts)).
 
 ### Shell UI: global Subject scope
 
@@ -119,7 +119,7 @@ Email accounts, threads, and mirrored messages map to:
 
 Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. Messages store IMAP UID in `body.imap_uid`; human-readable subject/body use entity columns. IMAP sync upserts threads/messages; UI lives in shell `/email` (SAP `email.*` methods), not Admin REST.
 
-LLM ToolSets: `@freeanima/capabilities-email` — `email-account` (account entities) and `email` (sync, send/receive, search); load via `toolset_load`. Legacy `config.yaml` `email.accounts[]` migrates via `scripts/migrate-email-to-entities.ts`.
+LLM ToolSets: `@freeanima/capabilities-email` — `email-account` (account entities) and `email` (sync, send/receive, search); load via `toolset_load`. Legacy `config.yaml` `email.accounts[]` migrates via [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts).
 
 ## Diary module
 
@@ -158,13 +158,13 @@ See memory hybrid search in [`memory.md`](memory.md) for FTS operator syntax; en
 
 ## Future migration map (not executed yet)
 
-| Legacy table                 | Target                                               |
-| ---------------------------- | ---------------------------------------------------- |
-| `semantic_memory`            | `content` + memory component                         |
-| `autobiographical_memory`    | `content` + narrative component                      |
-| `limbic_memory`              | `content` + limbic component                         |
-| `tasks` (legacy)             | `task_item` (when explicitly migrated)               |
-| `config.yaml email.accounts` | `email_account` (see `migrate-email-to-entities.ts`) |
-| `memory_references`          | relationship table (future)                          |
+| Legacy table                 | Target                                                                                                                     |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `semantic_memory`            | `content` + memory component                                                                                               |
+| `autobiographical_memory`    | `content` + narrative component                                                                                            |
+| `limbic_memory`              | `content` + limbic component                                                                                               |
+| `tasks` (legacy)             | `task_item` (when explicitly migrated)                                                                                     |
+| `config.yaml email.accounts` | `email_account` (see [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts)) |
+| `memory_references`          | relationship table (future)                                                                                                |
 
 See [`architecture.md`](architecture.md) for cognitive-layer context.

@@ -10,7 +10,7 @@ The root `tests/` directory is workspace member `@freeanima/integration-tests`, 
 
 | Layer         | Location                                                                | External I/O                                                                        |
 | ------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Unit          | `{pkg}/src/**/*.test.ts`                                                | mock + in-memory only (see [`.agent/rules/testing.md`](../.agent/rules/testing.md)) |
+| Unit          | `{layer}/{pkg}/src/**/*.test.ts` (e.g. `capabilities/memory/src/…`)     | mock + in-memory only (see [`.agent/rules/testing.md`](../.agent/rules/testing.md)) |
 | Integration   | `tests/integration/`                                                    | PG, Redis, temp `FREEANIMA_HOME`, `beginIntegrationCase`                            |
 | Black-box E2E | [freeanima-testing](https://github.com/freeanima-org/freeanima-testing) | Docker PG/Redis + source start + Playwright                                         |
 
@@ -32,7 +32,7 @@ bun run test:unit          # all unit tests
 bun run test:integration   # integration (PG cases skip without Docker)
 bun run test               # unit + integration in parallel
 bun run test:changed       # pre-commit: changed unit tests only
-bun run check              # typecheck + lint + format + test:changed
+bun run check              # typecheck + lint + dep-check + format + test:changed
 ```
 
 - With Docker, [`scripts/integration-pg-setup.ts`](../scripts/integration-pg-setup.ts) injects `ANIMA_TEST_PG_URL` for `test` / `test:integration`.
