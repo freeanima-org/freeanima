@@ -91,8 +91,6 @@ export type AppRuntimeMemoryPort = {
   ): Promise<{ ok: true; id: string; pinned: boolean }>;
   listLimbicMemories(opts?: any): Promise<any>;
   listAutobiographicalMemories(opts?: any): Promise<any>;
-  listDreamMemories(opts?: any): Promise<any>;
-  getDreamMemoryByDay(day: string): Promise<any>;
   getFtsStatus(): Promise<any>;
   startRebuildFtsIndex(opts?: { onlyMissing?: boolean }): any;
   getRebuildFtsJobStatus(): any;

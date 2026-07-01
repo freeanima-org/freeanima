@@ -46,12 +46,6 @@ export const autobiographicalMemoryListBodySchema = memoryListPaginationSchema.e
   source_conversation: z.string().optional(),
 });
 
-export const dreamMemoryListBodySchema = memoryListPaginationSchema;
-
-export const dreamMemoryDayParamsSchema = z.object({
-  day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-});
-
 export const createConversationBodySchema = z.object({
   platform: z.string().min(1),
 });
@@ -84,7 +78,6 @@ export type SemanticMemoryListBody = z.infer<typeof semanticMemoryListBodySchema
 export type SemanticMemoryPinBody = z.infer<typeof semanticMemoryPinBodySchema>;
 export type LimbicMemoryListBody = z.infer<typeof limbicMemoryListBodySchema>;
 export type AutobiographicalMemoryListBody = z.infer<typeof autobiographicalMemoryListBodySchema>;
-export type DreamMemoryListBody = z.infer<typeof dreamMemoryListBodySchema>;
 
 export const entityIdParamsSchema = z.object({
   id: z.coerce.number().int().positive(),

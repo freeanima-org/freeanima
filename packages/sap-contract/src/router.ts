@@ -80,6 +80,12 @@ import type {
   DiarySearchOutput,
 } from "./frames/diary.ts";
 import type {
+  DreamGetInput,
+  DreamGetOutput,
+  DreamListInput,
+  DreamListOutput,
+} from "./frames/dream.ts";
+import type {
   ToolErrorInput,
   ToolRegisterInput,
   ToolRegisterOutput,
@@ -128,6 +134,8 @@ export const SAP_METHODS = [
   "diary.delete",
   "diary.get",
   "diary.search",
+  "dream.list",
+  "dream.get",
   "emailaccount.list",
   "email.message.list",
   "email.message.read",
@@ -182,6 +190,8 @@ export type SapRouterInputs = {
   "diary.delete": DiaryDeleteInput;
   "diary.get": DiaryGetInput;
   "diary.search": DiarySearchInput;
+  "dream.list": DreamListInput;
+  "dream.get": DreamGetInput;
   "emailaccount.list": EmailAccountListInput;
   "email.message.list": EmailMessageListInput;
   "email.message.read": EmailMessageReadInput;
@@ -234,6 +244,8 @@ export type SapRouterOutputs = {
   "diary.delete": DiaryDeleteOutput;
   "diary.get": DiaryGetOutput;
   "diary.search": DiarySearchOutput;
+  "dream.list": DreamListOutput;
+  "dream.get": DreamGetOutput;
   "emailaccount.list": EmailAccountListOutput;
   "email.message.list": EmailMessageListOutput;
   "email.message.read": EmailMessageReadOutput;

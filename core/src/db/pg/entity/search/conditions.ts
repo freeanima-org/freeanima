@@ -5,7 +5,9 @@ import {
   EMAIL_THREAD_COMPONENT,
   entities,
   DIARY_ENTRY_COMPONENT,
+  DREAM_ENTRY_COMPONENT,
   parseDiaryEntrySearchFilters,
+  parseDreamEntrySearchFilters,
   parseEmailAccountSearchFilters,
   parseEmailMessageSearchFilters,
   parseEmailThreadSearchFilters,
@@ -107,6 +109,22 @@ function buildDiaryEntryBodyConditions(
   return conditions;
 }
 
+function buildDreamEntryBodyConditions(
+  filters: ReturnType<typeof parseDreamEntrySearchFilters>,
+): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.dream_day) {
+    conditions.push(sql`${entities.body}->>'dream_day' = ${filters.dream_day}`);
+  }
+  if (filters.dream_after) {
+    conditions.push(sql`${entities.body}->>'dream_day' >= ${filters.dream_after}`);
+  }
+  if (filters.dream_before) {
+    conditions.push(sql`${entities.body}->>'dream_day' <= ${filters.dream_before}`);
+  }
+  return conditions;
+}
+
 function buildEmailAccountBodyConditions(
   filters: ReturnType<typeof parseEmailAccountSearchFilters>,
 ): SQL[] {
@@ -193,6 +211,9 @@ export function buildComponentFilterConditions(opts: EntitySearchOpts): SQL[] {
   }
   if (component === DIARY_ENTRY_COMPONENT) {
     return buildDiaryEntryBodyConditions(parseDiaryEntrySearchFilters(filters));
+  }
+  if (component === DREAM_ENTRY_COMPONENT) {
+    return buildDreamEntryBodyConditions(parseDreamEntrySearchFilters(filters));
   }
   if (component === EMAIL_ACCOUNT_COMPONENT) {
     return buildEmailAccountBodyConditions(parseEmailAccountSearchFilters(filters));

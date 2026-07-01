@@ -102,6 +102,7 @@ Hub startup binds **`ResolvedWorldContext`** (`GET /api/worlds/context`). The pr
 | `/email`         | follows shell scope via SAP `subject_kind`       | none (inherits header)         |
 | `/notifications` | `recipient_kind` + subject entity id             | none (inherits header)         |
 | `/diary`         | subject default private world via `subject_kind` | none (inherits header)         |
+| `/dream`         | agent default private world (fixed)              | none (inherits header)         |
 
 SAP task/email methods accept optional `subject_kind` (defaults: task `user`, email `agent`). Satellites read the shell scope via **`useSubjectScope()`** from `@freeanima/shell-sdk`; Hub REST entity search uses **`resolveWorldIdForSubject()`** with the same scope.
 
@@ -137,6 +138,22 @@ Entries live in each subject's **`default_private_world_id`**. `body.entry_at` i
 
 See [`docs/features/diary.md`](../features/diary.md).
 
+## Dream module
+
+Nightly creative narratives (append-only, one per CST calendar day):
+
+| Concept | Entity         | Component     |
+| ------- | -------------- | ------------- |
+| Entry   | `type=content` | `dream_entry` |
+
+Entries live in the **agent** subject's **`default_private_world_id`**. `body.dream_day` is the unique key per world; narrative text uses entity `content`; optional `body.source_limbic_ids`, `body.source_conversation_ids`, `body.episodic_snippets`.
+
+- **Hub RPC:** `dream.list`, `dream.get` (bundled shell; no `subject_kind` — always agent world).
+- **UI:** shell `/dream` (`@freeanima/satellite-dream`).
+- **LLM:** ToolSet `dream` — `dream_read` only.
+
+See [`docs/concepts/dream.md`](dream.md).
+
 ## Search
 
 Entity **list** (deterministic browse) and **search** (relevance ranking) are separate ports:
@@ -160,6 +177,7 @@ See memory hybrid search in [`memory.md`](memory.md) for FTS operator syntax; en
 
 | Legacy table                 | Target                                                                                                                     |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `dream_memory`               | `dream_entry` (agent world; migration backfill + DROP)                                                                     |
 | `semantic_memory`            | `content` + memory component                                                                                               |
 | `autobiographical_memory`    | `content` + narrative component                                                                                            |
 | `limbic_memory`              | `content` + limbic component                                                                                               |

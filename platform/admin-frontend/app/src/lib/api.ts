@@ -398,14 +398,6 @@ export async function listAutobiographicalMemories(input: {
   return unwrap(resolveApiClient().api.memory.autobiographical.list.post(input));
 }
 
-export async function listDreamMemories(input: { offset?: number; limit?: number }) {
-  return unwrap(resolveApiClient().api.memory.dream.list.post(input));
-}
-
-export async function getDreamMemory(day: string) {
-  return unwrap(resolveApiClient().api.memory.dream({ day }).get());
-}
-
 export async function getFtsStatus() {
   return unwrap(resolveApiClient().api.fts.status.get());
 }

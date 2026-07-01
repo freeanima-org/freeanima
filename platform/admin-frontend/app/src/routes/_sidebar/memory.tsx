@@ -40,7 +40,6 @@ const MEMORY_BROWSE_TABS = [
   { to: "/semantic-memory", label: () => m.admin_nav_semantic() },
   { to: "/limbic-memory", label: () => m.admin_nav_limbic() },
   { to: "/autobiographical-memory", label: () => m.admin_nav_autobio() },
-  { to: "/dream", label: () => m.admin_nav_dream() },
   { to: "/conversations", label: () => m.admin_nav_conversations() },
   { to: "/fts", label: () => m.admin_nav_fts() },
 ] as const;

@@ -297,6 +297,7 @@
         "@freeanima/satellite-chat": "workspace:*",
         "@freeanima/satellite-companion": "workspace:*",
         "@freeanima/satellite-diary": "workspace:*",
+        "@freeanima/satellite-dream": "workspace:*",
         "@freeanima/satellite-email": "workspace:*",
         "@freeanima/satellite-notification": "workspace:*",
         "@freeanima/satellite-task": "workspace:*",
@@ -518,6 +519,20 @@
     },
     "satellites/diary": {
       "name": "@freeanima/satellite-diary",
+      "dependencies": {
+        "@freeanima/sap-contract": "workspace:*",
+        "@freeanima/shell-sdk": "workspace:*",
+        "@freeanima/ui-kit": "workspace:*",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+      },
+      "devDependencies": {
+        "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
+      },
+    },
+    "satellites/dream": {
+      "name": "@freeanima/satellite-dream",
       "dependencies": {
         "@freeanima/sap-contract": "workspace:*",
         "@freeanima/shell-sdk": "workspace:*",
@@ -1189,6 +1204,8 @@
     "@freeanima/satellite-companion": ["@freeanima/satellite-companion@workspace:satellites/companion"],
 
     "@freeanima/satellite-diary": ["@freeanima/satellite-diary@workspace:satellites/diary"],
+
+    "@freeanima/satellite-dream": ["@freeanima/satellite-dream@workspace:satellites/dream"],
 
     "@freeanima/satellite-email": ["@freeanima/satellite-email@workspace:satellites/email"],
 

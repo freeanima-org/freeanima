@@ -1,5 +1,4 @@
 export type { SelfBlockRow } from "./self-block.ts";
-export type { DreamMemoryRow } from "./dream-memory.ts";
 export type { LimbicMemoryRow } from "./limbic-memory.ts";
 export type { SemanticMemoryRow, SemanticFtsHit } from "./semantic-memory.ts";
 export type { AutobiographicalMemoryRow } from "./autobiographical-memory.ts";

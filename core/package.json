@@ -22,7 +22,6 @@
     "./db/pg/semantic-memory": "./src/db/pg/semantic-memory/index.ts",
     "./db/pg/limbic-memory": "./src/db/pg/limbic-memory/index.ts",
     "./db/pg/autobiographical-memory": "./src/db/pg/autobiographical-memory/index.ts",
-    "./db/pg/dream-memory": "./src/db/pg/dream-memory/index.ts",
     "./db/pg/self-layer": "./src/db/pg/self-layer/index.ts",
     "./db/pg/memory-reference": "./src/db/pg/memory-reference/index.ts",
     "./db/pg/pipeline": "./src/db/pg/pipeline/index.ts",

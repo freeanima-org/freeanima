@@ -3,7 +3,6 @@ import { join } from "node:path";
 import type {
   AutobiographicalListOpts,
   AutobiographicalMemoryRow,
-  DreamMemoryRow,
   LimbicListOpts,
   LimbicMemoryRow,
   SemanticFtsHit,
@@ -13,11 +12,6 @@ import {
   countAutobiographicalMemory,
   listAutobiographicalMemory,
 } from "@freeanima/core/db/pg/autobiographical-memory";
-import {
-  countDreamMemory,
-  getDreamMemoryByDay,
-  listDreamMemory,
-} from "@freeanima/core/db/pg/dream-memory";
 import { countLimbicMemory, listLimbicMemory } from "@freeanima/core/db/pg/limbic-memory";
 import {
   countSemanticMemory,
@@ -193,24 +187,4 @@ export async function listAutobiographicalMemories(
     countAutobiographicalMemory(filterOpts),
   ]);
   return { items, total, offset, limit };
-}
-
-export async function listDreamMemories(
-  _deps: RuntimeDeps,
-  args: { offset?: number; limit?: number } = {},
-): Promise<MemoryListResult<DreamMemoryRow>> {
-  const { offset, limit } = clampPagination(args.offset, args.limit);
-  const [items, total] = await Promise.all([
-    listDreamMemory({ offset, limit }),
-    countDreamMemory(),
-  ]);
-  return { items, total, offset, limit };
-}
-
-export async function getDreamMemoryByDayService(_deps: RuntimeDeps, day: string) {
-  const dreamDay = day.trim();
-  if (!dreamDay) throw new Error("day is required");
-  const row = await getDreamMemoryByDay(dreamDay);
-  if (!row) throw new Error(`No dream found for ${dreamDay}`);
-  return row;
 }

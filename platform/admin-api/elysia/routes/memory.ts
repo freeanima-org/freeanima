@@ -1,8 +1,6 @@
 import { Elysia } from "elysia";
 import {
   autobiographicalMemoryListBodySchema,
-  dreamMemoryDayParamsSchema,
-  dreamMemoryListBodySchema,
   limbicMemoryListBodySchema,
   memorySearchBodySchema,
   semanticMemoryListBodySchema,
@@ -10,9 +8,7 @@ import {
 } from "../../api/schemas.ts";
 import {
   countSemanticMemory,
-  getDreamMemory,
   listAutobiographicalMemories,
-  listDreamMemories,
   listLimbicMemories,
   listMemoryFiles,
   listSemanticMemories,
@@ -33,6 +29,4 @@ export const memoryRoutes = new Elysia({ prefix: "/memory" })
   .post("/limbic/list", ({ body }) => listLimbicMemories(limbicMemoryListBodySchema.parse(body)))
   .post("/autobiographical/list", ({ body }) =>
     listAutobiographicalMemories(autobiographicalMemoryListBodySchema.parse(body)),
-  )
-  .post("/dream/list", ({ body }) => listDreamMemories(dreamMemoryListBodySchema.parse(body)))
-  .get("/dream/:day", ({ params }) => getDreamMemory(dreamMemoryDayParamsSchema.parse(params).day));
+  );
