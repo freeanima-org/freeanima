@@ -10,7 +10,7 @@ import { MoveToListPicker } from "./components/MoveToListPicker.tsx";
 import { SortableTaskList } from "./components/SortableTaskList.tsx";
 import { TaskDetailPanel } from "./components/TaskDetailPanel.tsx";
 import { TaskDndRoot } from "./components/TaskDndRoot.tsx";
-import { TaskThreeColumnLayout } from "./components/TaskThreeColumnLayout.tsx";
+import { ThreeColumnLayout } from "@freeanima/ui-kit/layout";
 import {
   completeTaskItem,
   createTaskItem,
@@ -657,23 +657,23 @@ export function TaskApp() {
       }}
     >
       <div className="h-full min-h-0">
-        <TaskThreeColumnLayout
+        <ThreeColumnLayout
           layoutMode={layoutMode}
           listTitle="清单"
-          taskListTitle={selectedList?.name ?? "任务"}
+          middleTitle={selectedList?.name ?? "任务"}
           detailTitle={detailItem?.title ?? "任务详情"}
           listOpen={sidebarOpen}
           onListOpenChange={setSidebarOpen}
           listToggleAriaLabel="打开清单"
           detailOpen={detailOpen}
           onDetailOpenChange={handleDetailOpenChange}
-          taskListActions={
+          middleActions={
             <>
               {selectedList ? selectionToolbar : null}
               {loading || searching ? <Spinner className="size-4" /> : null}
             </>
           }
-          taskListHeaderExtra={
+          middleHeaderExtra={
             selectedList ? (
               <Input
                 className="h-8 w-full max-w-md"
@@ -711,7 +711,7 @@ export function TaskApp() {
               onStartRename={startRenameList}
             />
           }
-          taskList={
+          middle={
             <div className="flex min-h-0 flex-1 flex-col">
               {error ? (
                 <Alert variant="error" className="m-3 shrink-0">
