@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 10:36+0000\n"
+"POT-Creation-Date: 2026-07-01 16:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -217,8 +217,8 @@ msgid ""
 "PostgreSQL setup (Debian helper, extensions, migrations): [`database.md`]"
 "(database.md)."
 msgstr ""
-"PostgreSQL 安装（Debian 辅助脚本、扩展、迁移）：[`database.md`](database."
-"md)。"
+"PostgreSQL 安装（Debian 辅助脚本、扩展、迁移）：[`database.md`]"
+"(database.md)。"
 
 #. type: Plain text
 #: docs/guide/install.md:77
@@ -323,8 +323,8 @@ msgstr "1. 准备环境"
 #. type: Plain text
 #: docs/guide/install.md:115
 msgid ""
-"From the repository root (or any directory with `docker-compose.yml` and `."
-"env.example`):"
+"From the repository root (or any directory with `docker-compose.yml` and "
+"`.env.example`):"
 msgstr ""
 "在仓库根目录（或任何包含 `docker-compose.yml` 与 `.env.example` 的目录）："
 
@@ -402,8 +402,9 @@ msgid ""
 "`$FREEANIMA_HOME/config.yaml` if missing. Persistent volumes: `pgdata`, "
 "`anima_data`."
 msgstr ""
-"首次启动时，`docker/entrypoint.sh` 若缺少配置会将 `docker/config.docker."
-"yaml` 复制到 `$FREEANIMA_HOME/config.yaml`。持久卷：`pgdata`、`anima_data`。"
+"首次启动时，`docker/entrypoint.sh` 若缺少配置会将 `docker/"
+"config.docker.yaml` 复制到 `$FREEANIMA_HOME/config.yaml`。持久卷：`pgdata`、"
+"`anima_data`。"
 
 #. type: Title ###
 #: docs/guide/install.md:144
@@ -506,11 +507,11 @@ msgstr ""
 #: docs/guide/install.md:175
 msgid ""
 "pass is **not** used inside the default Compose stack; LLM and DB "
-"credentials come from environment variable expansion in `docker/config."
-"docker.yaml`."
+"credentials come from environment variable expansion in `docker/"
+"config.docker.yaml`."
 msgstr ""
-"默认 Compose 栈内**不使用** pass；LLM 与 DB 凭证来自 `docker/config.docker."
-"yaml` 中的环境变量展开。"
+"默认 Compose 栈内**不使用** pass；LLM 与 DB 凭证来自 `docker/"
+"config.docker.yaml` 中的环境变量展开。"
 
 #. type: Title ##
 #: docs/guide/install.md:178
@@ -737,8 +738,8 @@ msgstr ""
 #. type: Bullet: '3. '
 #: docs/guide/install.md:269
 msgid ""
-"**Database** — backups, extensions, manual migrations if needed ([`database."
-"md`](database.md))"
+"**Database** — backups, extensions, manual migrations if needed "
+"([`database.md`](database.md))"
 msgstr ""
 "**数据库** — 备份、扩展、必要时手动迁移（[`database.md`](database.md)）"
 

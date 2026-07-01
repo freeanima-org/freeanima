@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 10:36+0000\n"
+"POT-Creation-Date: 2026-07-01 16:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -139,8 +139,8 @@ msgstr "仅追加；创建后内容不更新。"
 #: docs/concepts/dream.md:35
 msgid ""
 "Does **not** create fridge magnets or notification inbox entries (see "
-"[`fridge-magnet.md`](fridge-magnet.md), [`notifications.md`](notifications."
-"md))."
+"[`fridge-magnet.md`](fridge-magnet.md), [`notifications.md`]"
+"(notifications.md))."
 msgstr ""
 
 #. type: Title ##

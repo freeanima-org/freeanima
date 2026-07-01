@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { windowWithSatelliteShell } from "./window-shell.ts";
 
-/** 与 Chat / Task / Admin 侧栏断点一致 */
+/** 与 Chat / Task / Admin 侧栏断点一致（窄档 ≤1023px） */
 export const MOBILE_LAYOUT_MQ = "(max-width: 1023px)";
 
 export function isNativeShell(): boolean {
@@ -32,7 +32,7 @@ export function useMobileLayout(): boolean {
   return mobile;
 }
 
-/** 原生壳或窄视口：list 栏用 drawer；否则 PC 并列常驻 */
+/** 窄视口：list 栏用 drawer；中宽视口并列常驻 */
 export function useDrawerNav(): boolean {
-  return isNativeShell() || useMobileLayout();
+  return useMobileLayout();
 }

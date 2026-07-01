@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 10:36+0000\n"
+"POT-Creation-Date: 2026-07-01 16:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -378,11 +378,11 @@ msgstr "安装并初始化 pass + GPG；所有密钥只进 pass"
 #. type: Bullet: '2. '
 #: docs/guide/security.md:130
 msgid ""
-"Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/config."
-"yaml`; **do not** write plaintext secrets in config"
+"Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/"
+"config.yaml`; **do not** write plaintext secrets in config"
 msgstr ""
-"复制 [`config.example.yaml`](../config.example.yaml) → `~/.anima/config."
-"yaml`；**勿**在 config 中写明文密钥"
+"复制 [`config.example.yaml`](../config.example.yaml) → `~/.anima/"
+"config.yaml`；**勿**在 config 中写明文密钥"
 
 #. type: Bullet: '3. '
 #: docs/guide/security.md:130

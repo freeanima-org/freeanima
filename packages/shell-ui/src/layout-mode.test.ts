@@ -3,28 +3,35 @@ import { describe, expect, test } from "bun:test";
 import { parseLayoutModeOverride, resolveLayoutMode } from "../app/src/layout-mode.ts";
 
 describe("resolveLayoutMode", () => {
-  test("Electron 始终 expanded", () => {
-    expect(resolveLayoutMode({ isElectron: true, isCapacitor: true })).toBe("expanded");
-  });
-
-  test("Capacitor 为 compact", () => {
-    expect(resolveLayoutMode({ isCapacitor: true })).toBe("compact");
-  });
-
-  test("窄视口浏览器为 compact（与 drawer 断点一致）", () => {
+  test("窄视口为 compact（移动布局）", () => {
     expect(resolveLayoutMode({ isNarrowViewport: true })).toBe("compact");
   });
 
-  test("桌面宽屏默认 expanded", () => {
+  test("中宽视口默认 expanded（桌面布局）", () => {
     expect(resolveLayoutMode({ isNarrowViewport: false })).toBe("expanded");
   });
 
-  test("PWA standalone 为 compact", () => {
-    expect(resolveLayoutMode({ isStandalonePwa: true })).toBe("compact");
+  test("Electron 窄窗仍随视口为 compact", () => {
+    expect(resolveLayoutMode({ isNarrowViewport: true })).toBe("compact");
+  });
+
+  test("Capacitor 宽屏随视口为 expanded", () => {
+    expect(resolveLayoutMode({ isNarrowViewport: false })).toBe("expanded");
+  });
+
+  test("configLayoutMode 覆盖视口", () => {
+    expect(resolveLayoutMode({ configLayoutMode: "expanded", isNarrowViewport: true })).toBe(
+      "expanded",
+    );
   });
 
   test("URL layout 覆盖优先", () => {
-    expect(resolveLayoutMode({ layoutOverride: "expanded", isCapacitor: true })).toBe("expanded");
+    expect(resolveLayoutMode({ layoutOverride: "expanded", isNarrowViewport: true })).toBe(
+      "expanded",
+    );
+    expect(resolveLayoutMode({ layoutOverride: "compact", isNarrowViewport: false })).toBe(
+      "compact",
+    );
   });
 });
 

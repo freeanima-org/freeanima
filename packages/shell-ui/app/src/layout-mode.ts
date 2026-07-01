@@ -1,21 +1,16 @@
-/** 呈现轴：nav IA / settings 侧栏布局，与壳能力（satelliteShell）解耦 */
+/** 布局层粗档：移动布局 vs 桌面布局，仅视口断点（与壳能力解耦） */
 import { useEffect, useState } from "react";
 import { MOBILE_LAYOUT_MQ } from "@freeanima/ui-kit/layout";
 
 export type LayoutMode = "compact" | "expanded";
 
 export type LayoutModeContext = {
-  isElectron?: boolean;
   /** URL ?layout=compact|expanded */
   layoutOverride?: string | null;
   /** /web/config.json layout_mode */
   configLayoutMode?: LayoutMode | null;
-  isStandalonePwa?: boolean;
-  isCapacitor?: boolean;
   isNarrowViewport?: boolean;
 };
-
-const STANDALONE_QUERY = "(display-mode: standalone)";
 
 export function parseLayoutModeOverride(raw: string | null | undefined): LayoutMode | null {
   const v = raw?.trim().toLowerCase();
@@ -29,9 +24,6 @@ export function resolveLayoutMode(ctx: LayoutModeContext = {}): LayoutMode {
   if (fromUrl) return fromUrl;
   if (ctx.configLayoutMode) return ctx.configLayoutMode;
 
-  if (ctx.isElectron) return "expanded";
-
-  if (ctx.isStandalonePwa || ctx.isCapacitor) return "compact";
   if (ctx.isNarrowViewport) return "compact";
 
   return "expanded";
@@ -47,13 +39,7 @@ function readMedia(query: string): boolean {
   return window.matchMedia(query).matches;
 }
 
-function isCapacitorRuntime(): boolean {
-  if (typeof window === "undefined") return false;
-  const cap = (window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
-  return Boolean(cap?.isNativePlatform?.() ?? cap);
-}
-
-/** 浏览器 / 远程 UI 运行时解析呈现模式 */
+/** 浏览器 / 远程 UI 运行时解析布局粗档（窄→compact，中宽→expanded） */
 export function detectLayoutMode(configLayoutMode?: LayoutMode | null): LayoutMode {
   const fromWindow =
     typeof window !== "undefined"
@@ -61,11 +47,8 @@ export function detectLayoutMode(configLayoutMode?: LayoutMode | null): LayoutMo
           .__freeanimaWebUiConfig?.layout_mode
       : undefined;
   return resolveLayoutMode({
-    isElectron: window.satelliteShell?.isElectron,
     layoutOverride: readLayoutOverrideFromLocation(),
     configLayoutMode: configLayoutMode ?? fromWindow ?? null,
-    isStandalonePwa: readMedia(STANDALONE_QUERY),
-    isCapacitor: isCapacitorRuntime(),
     isNarrowViewport: readMedia(MOBILE_LAYOUT_MQ),
   });
 }
@@ -74,7 +57,7 @@ export function isCompactLayout(mode: LayoutMode): boolean {
   return mode === "compact";
 }
 
-/** 随视口 / 壳环境变化更新呈现模式（与 useDrawerNav 同断点） */
+/** 随视口变化更新布局粗档（与 useDrawerNav 同断点） */
 export function useLayoutMode(configLayoutMode?: LayoutMode | null): LayoutMode {
   const [mode, setMode] = useState(() => detectLayoutMode(configLayoutMode));
 

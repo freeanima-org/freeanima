@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 10:36+0000\n"
+"POT-Creation-Date: 2026-07-01 16:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Title ##
 #: docs/features/companion.md:120 docs/features/mobile-app.md:52
-#: docs/guide/database.md:91 docs/guide/remote-access.md:178
+#: docs/guide/database.md:91 docs/guide/remote-access.md:170
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
@@ -128,12 +128,12 @@ msgstr "Hub 设置"
 #: docs/features/mobile-app.md:49
 msgid ""
 "Home PC: `anima service start --host 0.0.0.0`, create a Service API Token "
-"(`anima token create --subject-id 1 --name bootstrap`; see [`remote-access."
-"md`](../guide/remote-access.md))."
+"(`anima token create --subject-id 1 --name bootstrap`; see [`remote-"
+"access.md`](../guide/remote-access.md))."
 msgstr ""
 "家用 PC：`anima service start --host 0.0.0.0`，创建 Service API Token"
-"（`anima token create --subject-id 1 --name bootstrap`；见 [`remote-access."
-"md`](../guide/remote-access.md)）。"
+"（`anima token create --subject-id 1 --name bootstrap`；见 [`remote-"
+"access.md`](../guide/remote-access.md)）。"
 
 #. type: Bullet: '2. '
 #: docs/features/mobile-app.md:49
