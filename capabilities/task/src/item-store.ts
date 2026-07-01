@@ -9,7 +9,7 @@ import {
   updateEntity,
 } from "@freeanima/core/db/pg/entity";
 
-import { assertListAcceptsTasks } from "./list-store.ts";
+import { assertListAcceptsTasks, assertTaskListNotArchived } from "./list-store.ts";
 import type {
   TaskItemCreateInput,
   TaskItemListOpts,
@@ -125,6 +125,8 @@ export async function updateTaskItem(
   const parsedExisting = asTaskItem(existing);
   if (!parsedExisting) return null;
 
+  await assertTaskListNotArchived(parsedExisting.list_id, worldId);
+
   const bodyPatch: Record<string, unknown> = {};
   if (input.list_id !== undefined) {
     await assertListAcceptsTasks(input.list_id, worldId);
@@ -169,6 +171,10 @@ export async function deleteTaskItem(worldId: number, id: number): Promise<boole
   const existing = await getEntity(id);
   if (!existing) return false;
   await assertEntityInWorld(id, worldId);
+  const parsed = asTaskItem(existing);
+  if (parsed) {
+    await assertTaskListNotArchived(parsed.list_id, worldId);
+  }
   return deleteEntity(id);
 }
 

@@ -282,6 +282,7 @@ export function TaskApp() {
   };
 
   const startRenameList = (list: TaskListRow) => {
+    if (list.closed) return;
     setEditingListId(list.id);
     setEditingListName(list.name);
   };
@@ -320,7 +321,7 @@ export function TaskApp() {
   };
 
   const handleCloseList = async (list: TaskListRow) => {
-    if (list.is_default || list.closed) return;
+    if (list.is_default || list.closed || list.is_folder) return;
     const wasSelected = selectedListId === list.id;
     try {
       await closeTaskList(list.id);
@@ -626,7 +627,7 @@ export function TaskApp() {
     : [];
 
   const itemMenuItems: ContextMenuItem[] = menuItem
-    ? buildItemMenuItems(menuItem, itemHandlers)
+    ? buildItemMenuItems(menuItem, itemHandlers, { listArchived: selectedList?.closed === true })
     : [];
 
   const openListMenuSheet = (list: TaskListRow) => {
@@ -643,7 +644,9 @@ export function TaskApp() {
     setItemMenu(null);
     setSheetMenu({
       title: item.title,
-      items: buildItemMenuItems(item, itemHandlers),
+      items: buildItemMenuItems(item, itemHandlers, {
+        listArchived: selectedList?.closed === true,
+      }),
     });
   };
 
@@ -934,9 +937,9 @@ export function TaskApp() {
         title="删除确认"
         description={
           listToDelete
-            ? `删除${listToDelete.is_folder ? "文件夹" : "清单"}「${listToDelete.name}」${
-                listToDelete.is_folder ? "及其子文件夹、清单和任务" : "及其任务"
-              }？`
+            ? listToDelete.is_folder
+              ? `删除文件夹「${listToDelete.name}」？子文件夹将被删除，其内清单将升至顶级`
+              : `删除清单「${listToDelete.name}」及其任务？`
             : undefined
         }
         confirmLabel="删除"

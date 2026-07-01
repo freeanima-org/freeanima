@@ -16,6 +16,7 @@ import {
   listTaskItems,
   listTaskLists,
   reopenTaskList,
+  updateTaskItem,
   updateTaskList,
 } from "@freeanima/capabilities-task";
 import { getEntity } from "@freeanima/core/db/pg/entity";
@@ -177,30 +178,73 @@ describePg("entity task PG", () => {
     ).rejects.toThrow("own parent");
   });
 
-  it("cascade deletes folder children and tasks", async () => {
+  it("dissolves nested folders on delete; all lists move to root", async () => {
     const worldId = testUserWorldId();
     const folder = await createTaskList(worldId, { name: "待删文件夹", is_folder: true });
-    const list = await createTaskList(worldId, { name: "待删清单", parent_id: folder.id });
-    const item = await createTaskItem(worldId, { title: "待删任务", list_id: list.id });
+    const nestedFolder = await createTaskList(worldId, {
+      name: "子夹",
+      is_folder: true,
+      parent_id: folder.id,
+    });
+    const list = await createTaskList(worldId, { name: "待留清单", parent_id: folder.id });
+    const deepList = await createTaskList(worldId, {
+      name: "深层清单",
+      parent_id: nestedFolder.id,
+    });
+    const item = await createTaskItem(worldId, { title: "待留任务", list_id: list.id });
 
     const ok = await deleteTaskList(worldId, folder.id, { cascade: true });
     expect(ok).toBe(true);
 
     expect(await getEntity(folder.id)).toBeNull();
+    expect(await getEntity(nestedFolder.id)).toBeNull();
+    expect(asTaskList((await getEntity(list.id))!)?.parent_id).toBeNull();
+    expect(asTaskList((await getEntity(deepList.id))!)?.parent_id).toBeNull();
+    expect(await getEntity(item.id)).not.toBeNull();
+  });
+
+  it("deletes tasks when removing a non-folder list", async () => {
+    const worldId = testUserWorldId();
+    const list = await createTaskList(worldId, { name: "待删清单" });
+    const item = await createTaskItem(worldId, { title: "待删任务", list_id: list.id });
+
+    const ok = await deleteTaskList(worldId, list.id, { cascade: true });
+    expect(ok).toBe(true);
+
     expect(await getEntity(list.id)).toBeNull();
     expect(await getEntity(item.id)).toBeNull();
   });
 
-  it("cascade closes folder descendants", async () => {
+  it("rejects tasks and mutations on archived list", async () => {
     const worldId = testUserWorldId();
-    const folder = await createTaskList(worldId, { name: "归档夹", is_folder: true });
-    const list = await createTaskList(worldId, { name: "归档清单", parent_id: folder.id });
+    const list = await createTaskList(worldId, { name: "归档清单" });
+    const item = await createTaskItem(worldId, { title: "已有", list_id: list.id });
+    await closeTaskList(worldId, list.id);
 
-    await closeTaskList(worldId, folder.id);
+    await expect(createTaskItem(worldId, { title: "新建", list_id: list.id })).rejects.toThrow(
+      "清单已归档",
+    );
 
-    const all = await listTaskLists(worldId, { includeClosed: true });
-    expect(all.find((l) => l.id === folder.id)?.closed).toBe(true);
-    expect(all.find((l) => l.id === list.id)?.closed).toBe(true);
+    await expect(updateTaskList(worldId, { id: list.id, name: "新名" })).rejects.toThrow(
+      "清单已归档",
+    );
+
+    await expect(updateTaskList(worldId, { id: list.id, parent_id: null })).rejects.toThrow(
+      "清单已归档",
+    );
+
+    await expect(updateTaskItem(worldId, { id: item.id, title: "改标题" })).rejects.toThrow(
+      "清单已归档",
+    );
+
+    await expect(completeTaskItem(worldId, item.id)).rejects.toThrow("清单已归档");
+  });
+
+  it("folders cannot be archived", async () => {
+    const worldId = testUserWorldId();
+    const folder = await createTaskList(worldId, { name: "文件夹", is_folder: true });
+
+    await expect(closeTaskList(worldId, folder.id)).rejects.toThrow("folders cannot be archived");
   });
 
   it("creates task_list in agent world when using agent world id", async () => {
