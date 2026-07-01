@@ -275,14 +275,27 @@ Session Goal is an **in-process autonomous loop** at the Estate / orchestration 
 
 Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User messages preempt the loop; `/goal pause` stops auto-continue without clearing state. See [`goal.md`](../features/goal.md).
 
-## Client UI（bundled）
+## Client UI（Hub Web SSOT + 薄壳）
 
-Chat and Admin UI are bundled in **app/desktop** / **app/mobile**; `anima service` provides Hub backend only.
+**UI 唯一发布产物**：`app/web/dist`，Hub 托管于 `/web/*`（`web.enabled` 或 `anima web start`）。Desktop / Mobile / 浏览器 / PWA 共用同一 SPA；壳层只保留原生能力（Electron preload、Capacitor Preferences/Keyboard、伴侣 sidecar 等）。
 
-| Module | Connection                       | Notes                             |
-| ------ | -------------------------------- | --------------------------------- |
-| Chat   | SAP WebSocket `/sap/v1`          | Desktop / mobile bundled `/chat`  |
-| Admin  | Hub REST `/api/*` (CORS + shell) | Desktop / mobile bundled `/admin` |
+| 呈现       | 触发                                              | Nav IA      |
+| ---------- | ------------------------------------------------- | ----------- |
+| `compact`  | 手机浏览器（触屏窄屏）、PWA standalone、Capacitor | 底栏 + More |
+| `expanded` | Electron、桌面浏览器                              | 顶栏全模块  |
+
+| 客户端       | UI 加载                                                               | 壳发版                   |
+| ------------ | --------------------------------------------------------------------- | ------------------------ |
+| 浏览器 / PWA | Hub `/web/*`                                                          | 随 Hub / `anima upgrade` |
+| Desktop      | 默认 Hub `/web/*`（`DESKTOP_UI_MODE=bundled` 回退本地 static）        | 仅 Electron / 伴侣变更   |
+| Mobile APK   | bootstrap → Hub `/web/*`（`MOBILE_UI_MODE=bundled` 回退 bundled SPA） | 仅 Capacitor 插件变更    |
+
+| Module | Connection                       | Notes                  |
+| ------ | -------------------------------- | ---------------------- |
+| Chat   | SAP WebSocket `/sap/v1`          | `/web/chat`            |
+| Admin  | Hub REST `/api/*` (CORS + shell) | `/web/admin/dashboard` |
+
+`/web/config.json` 提供 `hub_url`、`ui_version`、`min_shell_version`（壳↔UI 版本协商）。
 
 ## Events and Hooks (Summary)
 

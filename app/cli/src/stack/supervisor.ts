@@ -1,4 +1,5 @@
 import type { ChildProcess } from "node:child_process";
+import { join } from "node:path";
 import { logStartupError } from "@freeanima/platform/logging";
 import { FileConfig } from "@freeanima/platform/config";
 import { systemdUserAvailable } from "../systemd-unit.ts";
@@ -70,11 +71,25 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
   const fileConfig = FileConfig.open();
   const cfg = fileConfig.data;
 
-  let webStatic: { distDir: string; appId?: string } | null = null;
+  let webStatic: {
+    distDir: string;
+    appId?: string;
+    uiVersion?: string;
+    minShellVersion?: string;
+  } | null = null;
   if (cfg.web?.enabled) {
     try {
       await ensureWebDistBuilt();
-      webStatic = { distDir: resolveWebDistDir(), appId: "chat" };
+      const rootPkg = JSON.parse(
+        await Bun.file(join(import.meta.dir, "..", "..", "..", "..", "package.json")).text(),
+      ) as { version?: string };
+      const uiVersion = rootPkg.version?.trim();
+      webStatic = {
+        distDir: resolveWebDistDir(),
+        appId: "chat",
+        ...(uiVersion ? { uiVersion } : {}),
+        minShellVersion: "0.8.0",
+      };
     } catch (err) {
       logStartupError("[stack] Web dist 准备失败", err);
     }

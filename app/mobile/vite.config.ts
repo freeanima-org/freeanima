@@ -10,7 +10,8 @@ import { arrangeMobileIndexHtml } from "./mobile-html.ts";
 
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(PKG_DIR, "..", "..");
-const APP_DIR = join(PKG_DIR, "app");
+const bundledUi = process.env.MOBILE_UI_MODE?.trim().toLowerCase() === "bundled";
+const APP_DIR = bundledUi ? join(PKG_DIR, "app") : join(PKG_DIR, "bootstrap");
 const DIST_DIR = join(PKG_DIR, "www");
 
 const debug = process.env.MOBILE_DEBUG === "1" || process.argv.includes("--debug");
@@ -34,15 +35,21 @@ export default defineConfig(() => {
     base: "./",
     minify: !debug,
     sourcemap: debug,
-    extraEntries: {
-      "shell-bridge": join(PKG_DIR, "src", "shell-bridge.ts"),
-    },
+    ...(bundledUi
+      ? {
+          extraEntries: {
+            "shell-bridge": join(PKG_DIR, "src", "shell-bridge.ts"),
+          },
+        }
+      : {}),
     define: {
       __MOBILE_DEBUG__: JSON.stringify(debug),
     },
   });
 
-  inline.plugins = [...(inline.plugins ?? []), mobileHtmlPlugin(DIST_DIR)];
+  if (bundledUi) {
+    inline.plugins = [...(inline.plugins ?? []), mobileHtmlPlugin(DIST_DIR)];
+  }
 
   if (inline.build?.rollupOptions?.output && !Array.isArray(inline.build.rollupOptions.output)) {
     inline.build.rollupOptions.output.entryFileNames = (chunkInfo) =>

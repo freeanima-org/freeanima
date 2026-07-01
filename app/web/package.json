@@ -13,7 +13,12 @@
     "dev": "vite"
   },
   "dependencies": {
+    "@capacitor/core": "^8.4.1",
+    "@capacitor/preferences": "^8.0.1",
+    "@freeanima/app-desktop": "workspace:*",
+    "@freeanima/app-mobile": "workspace:*",
     "@freeanima/sap-contract": "workspace:*",
+    "@freeanima/satellite-companion": "workspace:*",
     "@freeanima/shell-sdk": "workspace:*",
     "@freeanima/shell-ui": "workspace:*",
     "react": "catalog:",
@@ -26,6 +31,7 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vite-plugin-pwa": "^0.21.1"
   }
 }

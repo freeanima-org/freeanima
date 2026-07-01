@@ -119,13 +119,23 @@ function copyDist(src: string, dest: string): void {
 
 async function buildVendorAssets(opts: { minify: boolean; sourcemap: boolean }): Promise<void> {
   const companionDist = await buildCompanionApp(opts);
-  const shellUiDist = await buildShellUi({
-    appDir: join(SHELL_ROOT, "app"),
-    minify: opts.minify,
-    sourcemap: opts.sourcemap,
-  });
   copyDist(companionDist, join(SHELL_ROOT, "vendor", "companion", "dist"));
-  copyDist(shellUiDist, join(SHELL_ROOT, "vendor", "shell-ui", "dist"));
+  if (resolveDesktopUiMode() === "bundled") {
+    const shellUiDist = await buildShellUi({
+      appDir: join(SHELL_ROOT, "app"),
+      minify: opts.minify,
+      sourcemap: opts.sourcemap,
+    });
+    copyDist(shellUiDist, join(SHELL_ROOT, "vendor", "shell-ui", "dist"));
+  } else {
+    rmSync(join(SHELL_ROOT, "vendor", "shell-ui"), { recursive: true, force: true });
+    console.log("[desktop-shell] remote UI mode — skip vendor/shell-ui bundle");
+  }
+}
+
+function resolveDesktopUiMode(): "remote" | "bundled" {
+  const raw = process.env.DESKTOP_UI_MODE?.trim().toLowerCase();
+  return raw === "bundled" ? "bundled" : "remote";
 }
 
 async function bundleElectronMain(sourcemap: boolean): Promise<void> {

@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@freeanima/ui-kit";
 import { SubjectScopeProvider, SubjectToggle, useSubjectScope } from "@freeanima/shell-sdk/react";
 
-import { detectPlatform } from "../platform.ts";
+import { detectLayoutMode, isCompactLayout } from "../layout-mode.ts";
 import {
   shellMobileMoreNavItems,
   shellMobilePrimaryNavItems,
@@ -156,10 +156,10 @@ function MobileModuleShell() {
 }
 
 export function ModuleShell() {
-  const platform = detectPlatform();
+  const layoutMode = detectLayoutMode();
   return (
     <SubjectScopeProvider>
-      {platform === "mobile" ? <MobileModuleShell /> : <DesktopModuleShell />}
+      {isCompactLayout(layoutMode) ? <MobileModuleShell /> : <DesktopModuleShell />}
     </SubjectScopeProvider>
   );
 }

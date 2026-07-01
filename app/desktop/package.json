@@ -6,6 +6,11 @@
   "private": true,
   "type": "module",
   "main": "electron-dist/main.cjs",
+  "exports": {
+    "./companion-settings-api": "./app/companion-settings-api.ts",
+    "./settings-registry": "./app/settings-registry.ts",
+    "./settings-stores": "./src/settings-stores.ts"
+  },
   "scripts": {
     "dev:electron": "bun dev-electron.ts",
     "build:electron": "bun build-electron.ts",

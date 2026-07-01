@@ -28,6 +28,8 @@ export type WebStaticRuntimeConfig = {
   /** Hub REST 根 URL，供 /config.json 与设置页默认提示 */
   hubUrl?: string;
   hubWsUrl?: string;
+  uiVersion?: string;
+  minShellVersion?: string;
 };
 
 export type WebStaticServerOptions = {
@@ -53,6 +55,9 @@ function serveStaticFile(distDir: string, rel: string, res: ServerResponse): boo
   if (existsSync(filePath) && statSync(filePath).isFile()) {
     const ext = extname(filePath);
     res.setHeader("Content-Type", MIME[ext] ?? "application/octet-stream");
+    if (normalized.startsWith("assets/")) {
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    }
     res.end(readFileSync(filePath));
     return true;
   }
@@ -81,6 +86,8 @@ function createShellStaticHandler(
           app_id: runtime?.appId ?? "chat",
           hub_url: runtime?.hubUrl ?? "",
           hub_ws_url: runtime?.hubWsUrl ?? "",
+          ui_version: runtime?.uiVersion,
+          min_shell_version: runtime?.minShellVersion,
         }),
       );
       return;
