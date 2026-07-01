@@ -8,12 +8,5 @@ export function navigateShellModule(
   path: string,
 ): void {
   const target = path.startsWith("/") ? path : `/${path}`;
-  if (isNativeShellNavigation()) {
-    const nextHash = `#${target}`;
-    if (window.location.hash !== nextHash) {
-      window.location.hash = nextHash;
-    }
-    return;
-  }
   void navigate({ to: target });
 }
