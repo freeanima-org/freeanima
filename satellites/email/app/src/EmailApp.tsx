@@ -7,6 +7,7 @@ import {
   useThreeColumnLayoutMode,
 } from "@freeanima/ui-kit/layout";
 import { useOfflineReadOnly, useSubjectScope } from "@freeanima/shell-sdk/react";
+import { readModuleSelection, writeModuleSelection } from "@freeanima/shell-sdk";
 
 import { EmailMessageDetail } from "./components/EmailMessageDetail.tsx";
 import {
@@ -57,18 +58,75 @@ export function EmailApp() {
     [accounts, activeAccountId],
   );
 
+  const loadMessageDetail = useCallback(
+    async (message: EmailMessageRow, accountId: number) => {
+      setSelectedMessageId(message.id);
+      setDetailLoading(true);
+      setError("");
+      if (layoutMode !== "wide") setDetailOpen(true);
+      writeModuleSelection("email", { accountId, messageId: message.id });
+      try {
+        const row = await readEmailMessage(message.id);
+        setDetail(row);
+        if (row.unread && !offlineReadOnly) {
+          try {
+            await markEmailMessageRead(row.id);
+            setMessages((prev) => prev.map((m) => (m.id === row.id ? { ...m, unread: false } : m)));
+          } catch (markErr) {
+            console.warn("markEmailMessageRead failed:", markErr);
+          }
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+      } finally {
+        setDetailLoading(false);
+      }
+    },
+    [layoutMode, offlineReadOnly],
+  );
+
   const loadAccounts = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
       const rows = await fetchEmailAccounts();
-      setAccounts(rows.filter((a) => a.enabled));
+      const enabled = rows.filter((a) => a.enabled);
+      setAccounts(enabled);
+      if (enabled.length === 0) return;
+
+      const stored = readModuleSelection("email");
+      const account = enabled.find((a) => a.id === stored?.accountId) ?? enabled[0]!;
+
+      setActiveAccountId(account.id);
+      if (useDrawer) setListOpen(false);
+
+      setListLoading(true);
+      try {
+        const messageRows = await fetchEmailMessages({ account_id: account.id, limit: 100 });
+        setMessages(messageRows);
+
+        const storedMessage =
+          stored?.messageId != null
+            ? messageRows.find((m) => m.id === stored.messageId)
+            : undefined;
+
+        if (storedMessage) {
+          await loadMessageDetail(storedMessage, account.id);
+        } else {
+          writeModuleSelection("email", { accountId: account.id, messageId: null });
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+        setMessages([]);
+      } finally {
+        setListLoading(false);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loadMessageDetail, useDrawer]);
 
   const loadMessages = useCallback(async (accountId: number) => {
     setListLoading(true);
@@ -108,31 +166,14 @@ export function EmailApp() {
     setDetail(null);
     setDetailOpen(false);
     setSearchQuery("");
+    writeModuleSelection("email", { accountId: account.id, messageId: null });
     if (useDrawer) setListOpen(false);
     await loadMessages(account.id);
   };
 
   const openMessage = async (message: EmailMessageRow) => {
-    setSelectedMessageId(message.id);
-    setDetailLoading(true);
-    setError("");
-    if (layoutMode !== "wide") setDetailOpen(true);
-    try {
-      const row = await readEmailMessage(message.id);
-      setDetail(row);
-      if (row.unread && !offlineReadOnly) {
-        try {
-          await markEmailMessageRead(row.id);
-          setMessages((prev) => prev.map((m) => (m.id === row.id ? { ...m, unread: false } : m)));
-        } catch (markErr) {
-          console.warn("markEmailMessageRead failed:", markErr);
-        }
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setDetailLoading(false);
-    }
+    if (activeAccountId == null) return;
+    await loadMessageDetail(message, activeAccountId);
   };
 
   const handleDetailOpenChange = (open: boolean) => {
@@ -140,6 +181,9 @@ export function EmailApp() {
     if (!open) {
       setSelectedMessageId(null);
       setDetail(null);
+      if (activeAccountId != null) {
+        writeModuleSelection("email", { accountId: activeAccountId, messageId: null });
+      }
     }
   };
 

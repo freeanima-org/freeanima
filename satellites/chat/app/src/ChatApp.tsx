@@ -42,6 +42,11 @@ import {
   subscribeShellConfigChanges,
 } from "@chat/lib/sap-client.ts";
 import type { ConversationListItem } from "@chat/lib/types.ts";
+import {
+  readModuleSelection,
+  subscribeSubjectKind,
+  writeModuleSelection,
+} from "@freeanima/shell-sdk";
 import { useChatStore } from "@chat/stores/chat.ts";
 import { useConversationsStore } from "@chat/stores/conversations.ts";
 
@@ -67,6 +72,16 @@ function writeConversationToUrl(conversationId: string | null) {
   if (conversationId) url.searchParams.set("conversation", conversationId);
   else url.searchParams.delete("conversation");
   window.history.replaceState(null, "", url);
+}
+
+function pickConversationId(
+  list: ConversationListItem[],
+  candidates: (string | null | undefined)[],
+): string | undefined {
+  for (const id of candidates) {
+    if (id && list.some((c) => c.id === id)) return id;
+  }
+  return undefined;
 }
 
 function getSatelliteShell() {
@@ -155,6 +170,37 @@ export function ChatApp() {
     onOpen: openSidebar,
   });
   const keyboardInset = useKeyboardInset(nativeShell);
+
+  const bootstrapConversation = useCallback(
+    async (includeMemory = true) => {
+      const list = await fetchConversations();
+      const fromUrl = readConversationFromUrl();
+      const stored = readModuleSelection("chat");
+      const memId = includeMemory ? useConversationsStore.getState().currentId : null;
+      const picked = pickConversationId(list, [fromUrl, stored, memId]);
+      if (picked) {
+        await selectConversation(picked);
+        writeConversationToUrl(picked);
+      } else if (list.length > 0) {
+        const id = list[0]!.id;
+        await selectConversation(id);
+        writeConversationToUrl(id);
+      } else {
+        try {
+          await getSapDirectClient().whenReady();
+          await newConversationFn();
+        } catch {
+          /* 离线且无缓存：保持空态 */
+        }
+      }
+      void getSapDirectClient()
+        .whenReady()
+        .then(() => listConversationCommands())
+        .then((raw) => setCommandList((raw as { commands?: CommandItem[] }).commands ?? []))
+        .catch((e) => console.error("commands:", e));
+    },
+    [fetchConversations, newConversationFn, selectConversation],
+  );
 
   const streamVisible = streaming && streamingConversationId === currentId;
 
@@ -295,39 +341,21 @@ export function ChatApp() {
         await loadConfig();
         getSapDirectClient();
         setReady(true);
-
-        const bootstrap = async () => {
-          const list = await fetchConversations();
-          const fromUrl = readConversationFromUrl();
-          if (fromUrl) {
-            await selectConversation(fromUrl);
-          } else if (list.length > 0) {
-            const id = list[0]!.id;
-            await selectConversation(id);
-            writeConversationToUrl(id);
-          } else {
-            try {
-              await getSapDirectClient().whenReady();
-              await newConversationFn();
-            } catch {
-              /* 离线且无缓存：保持空态 */
-            }
-          }
-          void getSapDirectClient()
-            .whenReady()
-            .then(() => listConversationCommands())
-            .then((raw) => setCommandList((raw as { commands?: CommandItem[] }).commands ?? []))
-            .catch((e) => console.error("commands:", e));
-        };
-
-        void bootstrap().catch((e) => {
+        void bootstrapConversation().catch((e) => {
           console.error("chat bootstrap:", e);
         });
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
       }
     })();
-  }, [fetchConversations, newConversationFn, selectConversation]);
+  }, [bootstrapConversation]);
+
+  useEffect(() => {
+    if (!ready) return;
+    return subscribeSubjectKind(() => {
+      void bootstrapConversation(false).catch((e) => console.error("chat subject bootstrap:", e));
+    });
+  }, [ready, bootstrapConversation]);
 
   useEffect(() => {
     if (sapConnection !== "connected") return;
@@ -357,6 +385,7 @@ export function ChatApp() {
   useEffect(() => {
     if (!currentId) return;
     writeConversationToUrl(currentId);
+    writeModuleSelection("chat", currentId);
     setInputText(loadInputDraft(currentId));
     stickToBottomRef.current = true;
     requestAnimationFrame(() => {
