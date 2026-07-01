@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Button, Input, Textarea } from "@freeanima/ui-kit";
 import { cn } from "@freeanima/ui-kit/lib/utils";
@@ -42,6 +43,7 @@ export function FormRenderer({
   const [testing, setTesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const canTest = Boolean(store.test);
   const grouped = useMemo(() => groupFields(fields.items), [fields.items]);
@@ -108,9 +110,13 @@ export function FormRenderer({
       onEnterAfterSave();
       return;
     }
+    if (platform === "mobile" || window.satelliteShell?.isNativeShell) {
+      await navigate({ to: "/chat" });
+      return;
+    }
     const base = resolveShellRouterBasepath() ?? "";
     window.location.href = `${base}/chat`;
-  }, [onEnterAfterSave, persist]);
+  }, [navigate, onEnterAfterSave, persist, platform]);
 
   const testConnection = useCallback(async () => {
     if (!store.test) return;

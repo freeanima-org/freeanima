@@ -11,7 +11,9 @@ describe("hub-health-probe", () => {
 
   test("hubHealthFailureReason", () => {
     expect(hubHealthFailureReason({ status: "ok", authed: true })).toBeNull();
-    expect(hubHealthFailureReason({ status: "ok", authed: false })).toBe("认证失败");
-    expect(hubHealthFailureReason({ status: "down" })).toBe("服务异常");
+    expect(hubHealthFailureReason({ status: "ok", authed: false })).toBe(
+      "Hub 可达，但认证失败：请检查 Service API Token",
+    );
+    expect(hubHealthFailureReason({ status: "down" })).toBe("Hub 可达，但服务状态异常");
   });
 });

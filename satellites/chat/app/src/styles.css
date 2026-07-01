@@ -7,6 +7,9 @@
 
 .md-content {
   line-height: 1.6;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
 }
 .md-content p {
   margin: 0.3em 0;
@@ -42,16 +45,35 @@
 
 .tool-bubble {
   @apply rounded-2xl bg-muted/60;
+  max-width: 100%;
+}
+
+.tool-bubble-detail {
+  max-height: min(100vh, 100dvh);
+  overflow: auto;
+}
+
+.tool-bubble-scroll {
+  overflow: auto;
+  max-height: min(40vh, 16rem);
+  max-width: 100%;
 }
 
 .chat-bubble {
   @apply rounded-2xl px-4 py-2 max-w-[85%];
+  min-width: 0;
 }
 .chat-bubble-user {
   @apply bg-primary text-primary-foreground ml-auto;
 }
 .chat-bubble-assistant {
   @apply bg-muted text-foreground;
+}
+
+/* 嵌入移动端壳时 safe-area 由 .shell-layout-compact > main 承担 */
+.shell-layout-compact .chat-app {
+  padding: 0;
+  box-sizing: border-box;
 }
 
 @media (max-width: 1023px) {
@@ -64,10 +86,10 @@
   .chat-compose {
     position: sticky;
     bottom: 0;
-    z-index: 10;
+    z-index: 1;
     padding-bottom: max(1rem, var(--sab));
   }
-  .shell-module-layout .chat-compose {
+  .shell-layout-compact .chat-compose {
     padding-bottom: 1rem;
   }
   .chat-bubble {

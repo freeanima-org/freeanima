@@ -15,16 +15,20 @@ import {
 } from "@freeanima/ui-kit";
 import { ConfirmDialog } from "@freeanima/ui-kit/composite";
 import { AcpProgressDock } from "@chat/components/AcpProgressDock.tsx";
-import { FridgeMagnetInjectPreview } from "@chat/components/FridgeMagnetInjectPreview.tsx";
 import { ToolBlockBubble } from "@chat/components/ToolBlockBubble.tsx";
+import {
+  ChatMessageBubble,
+  findLastUserMessageIndex,
+} from "@chat/components/ChatMessageBubble.tsx";
 import { useAcpProgressDock } from "@chat/hooks/useAcpProgressDock.ts";
+import { useEdgeSwipeOpen } from "@chat/hooks/useEdgeSwipeOpen.ts";
 import { useKeyboardInset } from "@chat/hooks/useKeyboardInset.ts";
 import { formatConversationIdDateTime } from "@chat/lib/format-datetime.ts";
 import { displayAwaitingReply, pollUntilAssistantReply } from "@chat/lib/display-recovery.ts";
 import {
-  getFridgeMagnets,
   listConversationCommands,
   loadConfig,
+  rollbackBeforeLastUserMessage,
   subscribeConversationEvents,
 } from "@chat/lib/api.ts";
 import type { SapConnectionState } from "@freeanima/sap-contract";
@@ -121,9 +125,20 @@ export function ChatApp() {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [renameText, setRenameText] = useState("");
   const renameInputRef = useRef<HTMLInputElement>(null);
+  const [messageMenu, setMessageMenu] = useState<{
+    x: number;
+    y: number;
+    index: number;
+    role: "user" | "assistant";
+    content: string;
+  } | null>(null);
+  const [editingUserIndex, setEditingUserIndex] = useState<number | null>(null);
+  const [editDraft, setEditDraft] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
   const sendingRef = useRef(false);
   const msgAreaRef = useRef<HTMLDivElement>(null);
+  const stickToBottomRef = useRef(true);
   const msgInputRef = useRef<HTMLTextAreaElement>(null);
   const [inputText, setInputText] = useState(() =>
     loadInputDraft(readConversationFromUrl() ?? null),
@@ -131,15 +146,14 @@ export function ChatApp() {
   const [commandList, setCommandList] = useState<CommandItem[]>([]);
   const [selectedCmdIdx, setSelectedCmdIdx] = useState(0);
   const [clarifyPending, setClarifyPending] = useState<ClarifyPending | null>(null);
-  const [fridgeData, setFridgeData] = useState({
-    redis_configured: true,
-    magnets: [] as Array<{ key: string; value: string }>,
-    inject_text: "",
-  });
-  const [fridgeLoading, setFridgeLoading] = useState(false);
   const pendingRecoveryKeyRef = useRef<string | null>(null);
   const nativeShell = Boolean(getSatelliteShell()?.isNativeShell);
   const drawerNav = useDrawerNav();
+  const openSidebar = useCallback(() => setSidebarOpen(true), []);
+  const edgeSwipeHandlers = useEdgeSwipeOpen({
+    enabled: drawerNav && !sidebarOpen,
+    onOpen: openSidebar,
+  });
   const keyboardInset = useKeyboardInset(nativeShell);
 
   const streamVisible = streaming && streamingConversationId === currentId;
@@ -198,21 +212,80 @@ export function ChatApp() {
   }, [commandList, slashPrefix]);
 
   const showCmdMenu = filteredCommands.length > 0;
+  const lastUserMessageIndex = useMemo(() => findLastUserMessageIndex(display), [display]);
 
-  const refreshFridgeMagnets = async () => {
-    setFridgeLoading(true);
+  const openMessageMenu = (
+    index: number,
+    role: "user" | "assistant",
+    content: string,
+    clientX: number,
+    clientY: number,
+  ) => {
+    setMessageMenu({ x: clientX, y: clientY, index, role, content });
+  };
+
+  const copyMessageText = async (text: string) => {
     try {
-      setFridgeData(await getFridgeMagnets());
+      await navigator.clipboard.writeText(text);
     } catch {
-      setFridgeData({ redis_configured: false, magnets: [], inject_text: "" });
+      /* ignore */
+    }
+    setMessageMenu(null);
+  };
+
+  const startReeditUserMessage = () => {
+    if (!messageMenu) return;
+    setEditingUserIndex(messageMenu.index);
+    setEditDraft(messageMenu.content);
+    setMessageMenu(null);
+  };
+
+  const confirmReeditUserMessage = async () => {
+    const text = editDraft.trim();
+    if (!currentId || editingUserIndex == null || !text || sendingRef.current || sapDisconnected) {
+      return;
+    }
+    const originConversationId = currentId;
+    sendingRef.current = true;
+    setEditingUserIndex(null);
+    setEditDraft("");
+    try {
+      await rollbackBeforeLastUserMessage(originConversationId);
+      await selectConversation(originConversationId);
+      stickToBottomRef.current = true;
+      appendItem({ type: "message", role: "user", content: text });
+      await dispatchSend(text, originConversationId);
     } finally {
-      setFridgeLoading(false);
+      sendingRef.current = false;
     }
   };
+
+  const handleManualRefresh = useCallback(async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      if (sapConnection === "disconnected") {
+        await reconnectSap();
+      }
+      useChatStore.getState().abortStream();
+      await fetchConversations();
+      if (currentId) {
+        await selectConversation(currentId);
+      }
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshing, sapConnection, currentId, fetchConversations, selectConversation]);
 
   useEffect(() => {
     return subscribeSapConnection(setSapConnection);
   }, []);
+
+  useEffect(() => {
+    if (sapConnection === "disconnected") {
+      useChatStore.getState().abortStream();
+    }
+  }, [sapConnection]);
 
   useEffect(() => subscribeShellConfigChanges(), []);
 
@@ -245,12 +318,6 @@ export function ChatApp() {
             .then(() => listConversationCommands())
             .then((raw) => setCommandList((raw as { commands?: CommandItem[] }).commands ?? []))
             .catch((e) => console.error("commands:", e));
-          void getSapDirectClient()
-            .whenReady()
-            .then(() => refreshFridgeMagnets())
-            .catch(() => {
-              /* 离线时跳过 fridge */
-            });
         };
 
         void bootstrap().catch((e) => {
@@ -268,24 +335,41 @@ export function ChatApp() {
   }, [sapConnection, fetchConversations]);
 
   useEffect(() => {
-    const close = () => setContextMenu((menu) => ({ ...menu, visible: false }));
+    const close = () => {
+      setContextMenu((menu) => ({ ...menu, visible: false }));
+      setMessageMenu(null);
+    };
     document.addEventListener("click", close);
     return () => document.removeEventListener("click", close);
   }, []);
 
   useEffect(() => {
-    if (!currentId) return;
-    writeConversationToUrl(currentId);
-    setInputText(loadInputDraft(currentId));
-    requestAnimationFrame(() => {
-      msgInputRef.current?.focus();
-      resizeInput();
-    });
+    const el = msgAreaRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const threshold = 96;
+      stickToBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
   }, [currentId]);
 
   useEffect(() => {
+    if (!currentId) return;
+    writeConversationToUrl(currentId);
+    setInputText(loadInputDraft(currentId));
+    stickToBottomRef.current = true;
+    requestAnimationFrame(() => {
+      if (!nativeShell) msgInputRef.current?.focus();
+      resizeInput();
+      scrollDown({ force: true });
+    });
+  }, [currentId, nativeShell]);
+
+  useEffect(() => {
+    if (!currentId) return;
     scrollDown();
-  }, [currentId, display.length]);
+  }, [display.length, currentId]);
 
   useEffect(() => {
     if (!currentId) return;
@@ -326,10 +410,12 @@ export function ChatApp() {
     };
   }, [currentId, display, streaming, streamingConversationId, refreshMessages]);
 
-  const scrollDown = () => {
+  const scrollDown = (opts?: { force?: boolean }) => {
     requestAnimationFrame(() => {
       const el = msgAreaRef.current;
-      if (el) el.scrollTop = el.scrollHeight;
+      if (!el) return;
+      if (!opts?.force && !stickToBottomRef.current) return;
+      el.scrollTop = el.scrollHeight;
     });
   };
 
@@ -364,7 +450,7 @@ export function ChatApp() {
     if (id) {
       writeConversationToUrl(id);
       requestAnimationFrame(() => {
-        msgInputRef.current?.focus();
+        if (!nativeShell) msgInputRef.current?.focus();
         resizeInput();
       });
     }
@@ -495,25 +581,16 @@ export function ChatApp() {
         onDone: (opts) => {
           if (opts?.recovered) {
             if (isViewingOrigin()) scrollDown();
-            void refreshFridgeMagnets();
             void flushQueueRef.current(originConversationId);
             return;
           }
           void reloadConversationIfCurrent(originConversationId);
           if (isViewingOrigin()) scrollDown();
-          void refreshFridgeMagnets();
           void flushQueueRef.current(originConversationId);
         },
       });
     },
-    [
-      appendItemForConversation,
-      clarifyPending,
-      refreshFridgeMagnets,
-      refreshMessages,
-      reloadConversationIfCurrent,
-      send,
-    ],
+    [appendItemForConversation, clarifyPending, refreshMessages, reloadConversationIfCurrent, send],
   );
 
   flushQueueRef.current = async (conversationId: string) => {
@@ -659,7 +736,7 @@ export function ChatApp() {
   }
 
   return (
-    <div className="chat-app h-full flex flex-col min-h-0">
+    <div className="chat-app h-full flex flex-col min-h-0" {...edgeSwipeHandlers}>
       {sapDisconnected ? (
         <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2 bg-warning/15 border-b border-yellow-500/50/30 text-sm">
           <span className="text-yellow-700 dark:text-yellow-300/90">
@@ -707,6 +784,17 @@ export function ChatApp() {
         <span className="flex-1" />
         <Button
           type="button"
+          variant="ghost"
+          size="sm"
+          className="h-7 shrink-0 px-2"
+          disabled={refreshing || !ready}
+          aria-label={m.admin_common_refresh()}
+          onClick={() => void handleManualRefresh()}
+        >
+          {refreshing ? <Spinner className="size-3.5" /> : m.admin_common_refresh()}
+        </Button>
+        <Button
+          type="button"
           size="sm"
           className={`h-7 px-2 ${drawerNav ? "" : "hidden"}`}
           onClick={startConversation}
@@ -741,7 +829,7 @@ export function ChatApp() {
         showDetailHeader={false}
         showListHeader={false}
         listWidthClass="w-64"
-        listAsideClassName="border bg-muted/30"
+        listAsideClassName="border bg-background"
         listOpen={sidebarOpen}
         onListOpenChange={setSidebarOpen}
         list={() => (
@@ -784,7 +872,10 @@ export function ChatApp() {
           </div>
         ) : null}
 
-        <div ref={msgAreaRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div
+          ref={msgAreaRef}
+          className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4 space-y-4"
+        >
           {!currentId ? (
             <div className="flex flex-col items-center justify-center h-full gap-3 text-foreground/40 text-sm">
               <p>{m.admin_chat_select_conversation()}</p>
@@ -809,24 +900,71 @@ export function ChatApp() {
 
           {display.map((item, i) => {
             if (item.type === "message" && item.role === "user") {
-              return (
-                <div key={`d${i}`} className="flex justify-end">
-                  <div className="chat-bubble chat-bubble-user whitespace-pre-wrap">
-                    {item.content}
+              if (editingUserIndex === i) {
+                return (
+                  <div key={`d${i}`} className="flex justify-end min-w-0 max-w-full">
+                    <div className="chat-bubble chat-bubble-user w-full max-w-full space-y-2">
+                      <Textarea
+                        value={editDraft}
+                        onChange={(e) => setEditDraft(e.target.value)}
+                        rows={3}
+                        className="min-h-[4rem] w-full resize-y bg-background/10 text-primary-foreground"
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-primary-foreground"
+                          onClick={() => {
+                            setEditingUserIndex(null);
+                            setEditDraft("");
+                          }}
+                        >
+                          {m.admin_common_cancel()}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="h-7"
+                          disabled={!editDraft.trim() || sapDisconnected}
+                          onClick={() => void confirmReeditUserMessage()}
+                        >
+                          {m.admin_common_confirm()}
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                );
+              }
+              return (
+                <ChatMessageBubble
+                  key={`d${i}`}
+                  align="end"
+                  className="chat-bubble-user whitespace-pre-wrap"
+                  onLongPress={(coords) =>
+                    openMessageMenu(i, "user", item.content, coords.x, coords.y)
+                  }
+                >
+                  {item.content}
+                </ChatMessageBubble>
               );
             }
             if (item.type === "message" && item.role === "assistant") {
               return (
-                <div key={`d${i}`} className="flex justify-start">
-                  <div className="chat-bubble chat-bubble-assistant">
-                    <div
-                      className="md-content"
-                      dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
-                    />
-                  </div>
-                </div>
+                <ChatMessageBubble
+                  key={`d${i}`}
+                  align="start"
+                  className="chat-bubble-assistant"
+                  onLongPress={(coords) =>
+                    openMessageMenu(i, "assistant", item.content, coords.x, coords.y)
+                  }
+                >
+                  <div
+                    className="md-content min-w-0 max-w-full"
+                    dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
+                  />
+                </ChatMessageBubble>
               );
             }
             if (item.type === "tool_block") {
@@ -882,14 +1020,6 @@ export function ChatApp() {
             </div>
           ) : null}
         </div>
-
-        <FridgeMagnetInjectPreview
-          injectText={fridgeData.inject_text}
-          magnetCount={fridgeData.magnets.length}
-          redisConfigured={fridgeData.redis_configured}
-          loading={fridgeLoading}
-          onRefresh={() => void refreshFridgeMagnets()}
-        />
 
         <div
           className="border-t border p-4 bg-background relative chat-compose"
@@ -983,6 +1113,29 @@ export function ChatApp() {
           </form>
         </div>
       </ListDetailLayout>
+
+      {messageMenu ? (
+        <div
+          className="fixed z-50 bg-background border border rounded-lg shadow-xl py-1 min-w-[140px]"
+          style={{ top: messageMenu.y, left: messageMenu.x }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div
+            className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm"
+            onClick={() => void copyMessageText(messageMenu.content)}
+          >
+            {m.admin_common_copy()}
+          </div>
+          {messageMenu.role === "user" && messageMenu.index === lastUserMessageIndex ? (
+            <div
+              className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm"
+              onClick={startReeditUserMessage}
+            >
+              {m.admin_common_edit()}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       {contextMenu.visible ? (
         <div

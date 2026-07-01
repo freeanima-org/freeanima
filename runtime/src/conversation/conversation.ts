@@ -38,6 +38,7 @@ export {
   getConversationCwd,
   setConversationCwd,
   rollbackToLastUser,
+  rollbackBeforeLastUser,
   cleanupDebugConversations,
   cleanupStaleConversations,
   STALE_SESSION_MIN_AGE_MS,

@@ -1,9 +1,4 @@
-import type {
-  FridgeMagnetsResponse,
-  ConversationAcpDockSnapshot,
-  ConversationListItem,
-  StreamApiEvent,
-} from "./types.ts";
+import type { ConversationAcpDockSnapshot, ConversationListItem, StreamApiEvent } from "./types.ts";
 import { getSapDirectClient } from "./sap-client.ts";
 import { m } from "./i18n.ts";
 
@@ -86,6 +81,13 @@ export async function deleteConversation(conversationId: string) {
   return { ok: true as const };
 }
 
+/** 重编辑：删除末条用户消息及其后的所有内容 */
+export async function rollbackBeforeLastUserMessage(conversationId: string) {
+  const client = await sap().whenReady();
+  await client.request("conversation.rollbackBeforeLastUser", { conversation_id: conversationId });
+  return { ok: true as const };
+}
+
 export async function getConversationAcpDock(
   conversationId: string,
 ): Promise<ConversationAcpDockSnapshot> {
@@ -110,16 +112,6 @@ export async function listConversationCommands(opts?: { all?: boolean }) {
   return client.request("conversation.commands", {
     all: opts?.all,
   });
-}
-
-export async function getFridgeMagnets(): Promise<FridgeMagnetsResponse> {
-  const client = await sap().whenReady();
-  const result = await client.request("fridge.list", {});
-  return {
-    redis_configured: result.redis_configured,
-    magnets: result.magnets.map((item) => ({ key: item.key, value: item.value })),
-    inject_text: result.inject_text,
-  };
 }
 
 export function subscribeMessageStream(

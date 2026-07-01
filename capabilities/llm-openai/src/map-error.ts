@@ -21,6 +21,49 @@ function isRetryableCode(code: ProviderErrorCode): boolean {
   return code === "rate_limited" || code === "unavailable" || code === "timeout";
 }
 
+const TRANSIENT_CONNECTION = [
+  /connection error/i,
+  /socket connection was closed/i,
+  /socket hang up/i,
+  /econnreset/i,
+  /econnrefused/i,
+  /fetch failed/i,
+  /network error/i,
+];
+
+function errorChainText(err: unknown): string {
+  const parts: string[] = [];
+  let cur: unknown = err;
+  const seen = new Set<unknown>();
+  while (cur && !seen.has(cur)) {
+    seen.add(cur);
+    if (cur instanceof Error) {
+      parts.push(cur.name, cur.message);
+      cur = cur.cause;
+    } else {
+      parts.push(String(cur));
+      break;
+    }
+  }
+  return parts.join(" ");
+}
+
+function isTransientConnectionError(err: unknown): boolean {
+  return TRANSIENT_CONNECTION.some((re) => re.test(errorChainText(err)));
+}
+
+function unavailableFromConnection(err: Error, meta?: { providerId?: string }): ProviderError {
+  return new ProviderError(
+    err.message,
+    "unavailable",
+    true,
+    omitUndefined({
+      providerId: meta?.providerId,
+      cause: err,
+    }),
+  );
+}
+
 export function mapOpenAiCompatibleError(
   err: unknown,
   meta?: { providerId?: string },
@@ -31,6 +74,9 @@ export function mapOpenAiCompatibleError(
 
   if (err instanceof APIError) {
     const status = err.status ?? 0;
+    if ((!status || status === 0) && isTransientConnectionError(err)) {
+      return unavailableFromConnection(err, meta);
+    }
     return providerErrorFromHttpStatus(
       status,
       err.message,
@@ -64,6 +110,9 @@ export function mapOpenAiCompatibleError(
           cause: err,
         }),
       );
+    }
+    if (isTransientConnectionError(err)) {
+      return unavailableFromConnection(err, meta);
     }
   }
 

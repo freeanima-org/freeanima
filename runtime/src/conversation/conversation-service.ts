@@ -28,6 +28,7 @@ import {
   refreshSystemPromptOnResume,
   rebuildConversationCache,
   rollbackToLastUser,
+  rollbackBeforeLastUser,
   conversationExists,
   setConversationCwd,
   setConversationTitle,
@@ -127,6 +128,7 @@ export function createConversationService(tools: ToolSetRegistry) {
     getConversationCwd,
     setConversationCwd,
     rollbackToLastUser,
+    rollbackBeforeLastUser,
     retryTurn: (conversationId: string) => retryTurn(tools, conversationId),
     cleanupDebugConversations,
   };

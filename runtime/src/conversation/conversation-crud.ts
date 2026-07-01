@@ -588,6 +588,33 @@ export async function rollbackToLastUser(conversationId: string): Promise<string
   return lastUser.role === "user" ? lastUser.content : "";
 }
 
+/** Delete last user message and everything after it (re-edit resend). */
+export async function rollbackBeforeLastUser(conversationId: string): Promise<void> {
+  const parsed = await load(conversationId);
+  if (parsed.length === 0) throw new Error("No user message to edit");
+
+  let lastUserIdx = -1;
+  for (let i = parsed.length - 1; i >= 0; i--) {
+    if (parsed[i]?.role === "user") {
+      lastUserIdx = i;
+      break;
+    }
+  }
+  if (lastUserIdx < 0) throw new Error("No user message to edit");
+
+  if (lastUserIdx === 0) {
+    await pgWriteTruncate(conversationId, 0);
+    return;
+  }
+
+  const beforeLastUser = parsed[lastUserIdx - 1]!;
+  const keepThroughPos = beforeLastUser.pos;
+  if (keepThroughPos === undefined) {
+    throw new Error("No user message to edit");
+  }
+  await pgWriteTruncate(conversationId, Number(keepThroughPos));
+}
+
 /** Default minimum age before a stale conversation may be deleted by sleep-cycle cleanup */
 export const STALE_SESSION_MIN_AGE_MS = 24 * 60 * 60 * 1000;
 

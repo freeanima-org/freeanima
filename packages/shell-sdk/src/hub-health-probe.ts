@@ -13,8 +13,8 @@ export function isHubHealthConnected(body: HubHealthBody): boolean {
 }
 
 export function hubHealthFailureReason(body: HubHealthBody): string | null {
-  if (body.status !== "ok") return "服务异常";
-  if (body.authed === false) return "认证失败";
+  if (body.status !== "ok") return "Hub 可达，但服务状态异常";
+  if (body.authed === false) return "Hub 可达，但认证失败：请检查 Service API Token";
   return null;
 }
 

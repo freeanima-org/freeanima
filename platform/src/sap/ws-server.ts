@@ -225,6 +225,12 @@ export function createSapServerHandlers(
           await deps.runtime.deleteConversation(input.conversation_id, platform);
           return { ok: true as const };
         }
+        case "conversation.rollbackBeforeLastUser": {
+          const input = conversationDeleteInputSchema.parse(payload);
+          const platform = await resolveConversationPlatform(deps, input.conversation_id);
+          await deps.runtime.rollbackBeforeLastUser(input.conversation_id, platform);
+          return { ok: true as const };
+        }
         case "conversation.subscribe": {
           const input = conversationSubscribeInputSchema.parse(payload);
           const pumpKey = `${ctx.app_id}:${ctx.instance_id}:${input.conversation_id}`;

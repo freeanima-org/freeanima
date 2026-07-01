@@ -36,59 +36,46 @@ export function ToolBlockBubble({ calls }: ToolBlockBubbleProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="tool-bubble text-xs">
+    <div className="tool-bubble text-xs max-w-full min-w-0">
       <button
         type="button"
-        className="w-full text-left px-3 py-2 flex items-start gap-2 hover:bg-muted/40 rounded-2xl transition-colors"
+        className="w-full text-left px-3 py-2 flex items-center gap-2 hover:bg-muted/40 rounded-2xl transition-colors"
         onClick={() => setExpanded((v) => !v)}
       >
-        <span className="shrink-0 mt-0.5 text-muted-foreground">{expanded ? "▼" : "▶"}</span>
-        <div className="flex-1 min-w-0 space-y-1">
-          <div className="font-medium text-muted-foreground">
-            {m.admin_message_tool_calls({ count: String(calls.length) })}
-          </div>
-          {calls.map((c, ci) => (
-            <div
-              key={c.tool_call_id || ci}
-              className="flex items-center gap-1.5 font-mono truncate"
-            >
-              <span className={`shrink-0 ${statusClass(c.status)}`}>{statusIcon(c.status)}</span>
-              <span className="truncate">
-                {c.name}({c.argsPreview || "…"})
-              </span>
-            </div>
-          ))}
-        </div>
+        <span className="shrink-0 text-muted-foreground">{expanded ? "▼" : "▶"}</span>
+        <span className="font-medium text-muted-foreground truncate">
+          {m.admin_message_tool_calls({ count: String(calls.length) })}
+        </span>
       </button>
 
       {expanded ? (
-        <div className="border-t border/50 px-3 py-2 space-y-3">
+        <div className="tool-bubble-detail border-t border/50 px-3 py-2 space-y-3">
           {calls.map((c, ci) => (
             <div
               key={`detail-${c.tool_call_id || ci}`}
-              className="rounded-lg bg-background/60 p-2 space-y-1.5"
+              className="rounded-lg bg-background p-2 space-y-1.5 min-w-0"
             >
-              <div className="flex items-center gap-2 font-mono font-medium">
-                <span className={statusClass(c.status)}>{statusIcon(c.status)}</span>
-                <span>{c.name}</span>
+              <div className="flex items-center gap-2 font-mono font-medium min-w-0">
+                <span className={`shrink-0 ${statusClass(c.status)}`}>{statusIcon(c.status)}</span>
+                <span className="truncate">{c.name}</span>
                 {c.tool_call_id ? (
-                  <span className="text-foreground/40 text-[10px]">
+                  <span className="text-foreground/40 text-[10px] shrink-0">
                     {c.tool_call_id.slice(0, 8)}
                   </span>
                 ) : null}
               </div>
               {c.args && Object.keys(c.args).length > 0 ? (
-                <div>
+                <div className="min-w-0">
                   <div className="text-muted-foreground mb-0.5">{m.admin_message_args()}</div>
-                  <pre className="text-[11px] overflow-x-auto max-h-40 whitespace-pre-wrap break-all">
+                  <pre className="tool-bubble-scroll text-[11px] whitespace-pre-wrap break-all">
                     {formatJson(c.args)}
                   </pre>
                 </div>
               ) : null}
               {c.result ? (
-                <div>
+                <div className="min-w-0">
                   <div className="text-muted-foreground mb-0.5">{m.admin_message_result()}</div>
-                  <pre className="text-[11px] overflow-x-auto max-h-60 whitespace-pre-wrap break-all">
+                  <pre className="tool-bubble-scroll text-[11px] whitespace-pre-wrap break-all">
                     {truncateResult(c.result)}
                   </pre>
                 </div>

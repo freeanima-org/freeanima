@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { APIError } from "openai";
+import { APIConnectionError, APIError } from "openai";
 import { ProviderError } from "@freeanima/core/provider";
 import { mapOpenAiCompatibleError } from "./map-error.ts";
 
@@ -28,5 +28,21 @@ describe("mapOpenAiCompatibleError", () => {
     const cancelled = mapOpenAiCompatibleError(abort);
     expect(cancelled.code).toBe("cancelled");
     expect(cancelled.retryable).toBe(false);
+  });
+
+  it("maps connection / socket errors to retryable unavailable", () => {
+    const socket = new Error("The socket connection was closed unexpectedly");
+    const conn = new Error("Connection error.", { cause: socket });
+    const err = mapOpenAiCompatibleError(conn);
+    expect(err.code).toBe("unavailable");
+    expect(err.retryable).toBe(true);
+
+    const apiConn = new APIConnectionError({
+      message: "Connection error.",
+      cause: new Error("The socket connection was closed unexpectedly"),
+    });
+    const apiErr = mapOpenAiCompatibleError(apiConn);
+    expect(apiErr.code).toBe("unavailable");
+    expect(apiErr.retryable).toBe(true);
   });
 });
