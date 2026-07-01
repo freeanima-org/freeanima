@@ -17,5 +17,4 @@ export {
   redisTtl,
   type RedisScanEntry,
 } from "./kv.ts";
-export { createRedisFridgeStore } from "./fridge-store.ts";
 export { pingRedis, type RedisPingStatus } from "./health.ts";

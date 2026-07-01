@@ -31,7 +31,7 @@ Dream pipeline **does not** create notifications (reminder removed).
 
 ## Agent consciousness
 
-Unread agent notifications are injected at inference time — same splice point and transport as [fridge magnets](fridge-magnet.md): a runtime-only **`assistant(name=notification_context)`** turn immediately before the last `user` message. They are **not** persisted in conversation messages.
+Unread agent notifications are injected at inference time via a runtime-only **`assistant(name=notification_context)`** turn immediately before the last `user` message. They are **not** persisted in conversation messages.
 
 The inject block includes a **Handling protocol** (three-way triage by whether action is needed — not by `source_kind`).
 
@@ -82,4 +82,3 @@ No SAP create RPC in v1; writes are Hub-internal + tools.
 ## Related
 
 - Entity subjects: [`entity-model.md`](entity-model.md)
-- Fridge magnets (conversation notes only): [`fridge-magnet.md`](fridge-magnet.md)

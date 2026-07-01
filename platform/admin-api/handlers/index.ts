@@ -46,7 +46,6 @@ export {
   getDeepSleepRounds,
 } from "./sleep.ts";
 export { listAutoLlmRuns } from "./auto-llm-runs.ts";
-export { listFridgeMagnets } from "./fridge.ts";
 export {
   listWorldEntities,
   getWorldEntity,

@@ -60,12 +60,6 @@ This binding is required for [strict tool routing](tools.md).
 
 Payload: `conversation_id`, `message` (user text). Hub bridges runtime stream to SAP `stream.*` events — see [events.md](events.md).
 
-## Fridge
-
-| Method        | Schema                                                          | Role                              |
-| ------------- | --------------------------------------------------------------- | --------------------------------- |
-| `fridge.list` | [`fridge.ts`](../../packages/sap-contract/src/frames/fridge.ts) | List fridge items for the runtime |
-
 ## Terminal
 
 Hub-side PTY sessions. Events: `terminal.ready`, `terminal.output`, `terminal.exit`, `terminal.error`.

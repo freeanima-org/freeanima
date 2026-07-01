@@ -15,8 +15,6 @@ import { MaskRegistry } from "@freeanima/capabilities-task/mask";
 import { MCPManager } from "@freeanima/capabilities-mcp-client";
 import { SatelliteManager } from "@freeanima/capabilities-satellite";
 import { getAcpManager } from "@freeanima/capabilities-acp";
-import { registerFridgeStore } from "@freeanima/capabilities-task/fridge-magnet";
-import { createRedisFridgeStore } from "@freeanima/platform/connectors/redis";
 import { wireContextWindowLookup } from "../wire-context-window.ts";
 import type { Kernel } from "@freeanima/kernel";
 import type { FileConfig } from "@freeanima/platform/config";
@@ -62,7 +60,6 @@ export function bootEnginePhase(
     onConversationUpdated,
   });
 
-  registerFridgeStore(createRedisFridgeStore());
   const mcp = new MCPManager(catalog.toolSets, config);
   const satellite = new SatelliteManager(catalog.toolSets);
   satellite.installToolRouting();

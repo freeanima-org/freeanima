@@ -87,13 +87,6 @@ export type {
 } from "./frames/acp.ts";
 
 export {
-  fridgeListInputSchema,
-  fridgeListOutputSchema,
-  fridgeMagnetItemSchema,
-} from "./frames/fridge.ts";
-export type { FridgeListInput, FridgeListOutput, FridgeMagnetItem } from "./frames/fridge.ts";
-
-export {
   taskListRowSchema,
   taskItemRowSchema,
   tasklistListInputSchema,

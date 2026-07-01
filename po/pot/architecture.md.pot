@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 22:04+0800\n"
+"POT-Creation-Date: 2026-07-01 22:10+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/architecture.md:1 docs/features/companion.md:11
-#: messages/po4a/en.xml:579
+#: messages/po4a/en.xml:567
 #, no-wrap
 msgid "Architecture"
 msgstr ""
@@ -231,7 +231,7 @@ msgid ""
 "| Runtime      | Estate + ops    | dashboard, config, credentials, cron                |\n"
 "| Memory       | Memory          | memory hub, browse sub-routes, sleep, auto-llm-runs |\n"
 "| Self         | Self            | self-layer, system-prompt                           |\n"
-"| Estate       | Estate          | subjects, worlds, fridge-magnet                     |\n"
+"| Estate       | Estate          | subjects, worlds                                    |\n"
 "| Capabilities | Estate (tools)  | tools, commands, mcp, acp, satellites               |\n"
 msgstr ""
 

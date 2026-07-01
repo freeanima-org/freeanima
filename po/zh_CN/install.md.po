@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 16:39+0800\n"
+"POT-Creation-Date: 2026-07-01 22:10+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:588
+#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:576
 #, no-wrap
 msgid "Installation"
 msgstr "安装"
@@ -58,13 +58,12 @@ msgstr ""
 msgid ""
 "All paths run the same `anima service` runtime (Hub REST `/api` + SAP `/sap/"
 "v1` + engine). PostgreSQL with **pgvector** is **required**. Redis powers "
-"EventBus, user fridge magnets, and task context; it **degrades silently** "
-"when unavailable — Docker and production setups should still run it."
+"EventBus and task context; it **degrades silently** when unavailable — "
+"Docker and production setups should still run it."
 msgstr ""
 "所有路径运行相同的 `anima service` 运行时（Hub REST `/api` + SAP `/sap/v1` + "
-"engine）。带 **pgvector** 的 PostgreSQL **必需**。Redis 为 EventBus、用户 "
-"fridge magnets 与任务上下文提供支撑；不可用时会**静默降级**——但 Docker 与生产"
-"环境仍应运行 Redis。"
+"engine）。带 **pgvector** 的 PostgreSQL **必需**。Redis 支撑 EventBus 与任务"
+"上下文，不可用时**静默降级** — Docker 与生产环境仍应运行 Redis。"
 
 #. type: Title ##
 #: docs/guide/install.md:20

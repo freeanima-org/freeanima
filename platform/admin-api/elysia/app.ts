@@ -16,7 +16,6 @@ import { conversationsRoutes } from "./routes/conversations.ts";
 import { cronLogRoutes, sleepRoutes } from "./routes/sleep.ts";
 import { statusRoutes } from "./routes/status.ts";
 import { TerminalSessionError } from "@freeanima/platform/sap/terminal-session";
-import { fridgeMagnetRoutes } from "./routes/fridge-magnet.ts";
 import { autoLlmRunRoutes } from "./routes/auto-llm-runs.ts";
 import { entityRoutes } from "./routes/entities.ts";
 import { worldsRoutes } from "./routes/worlds.ts";
@@ -38,7 +37,6 @@ export const apiApp = new Elysia({ prefix: "/api" })
   .use(satellitesRoutes)
   .use(acpRoutes)
   .use(credentialsRoutes)
-  .use(fridgeMagnetRoutes)
   .use(autoLlmRunRoutes)
   .use(worldsRoutes)
   .use(entityRoutes)

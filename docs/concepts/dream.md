@@ -31,7 +31,7 @@ Light sleep stage 2 must complete first so limbic anchors exist.
 
 - Persisted in PG table `dream_memory` (one row per CST calendar day, unique `dream_day`).
 - Append-only; content is not updated after creation.
-- Does **not** create fridge magnets or notification inbox entries (see [`fridge-magnet.md`](fridge-magnet.md), [`notifications.md`](notifications.md)).
+- Does **not** create notification inbox entries (see [`notifications.md`](notifications.md)).
 
 ## Orchestration
 

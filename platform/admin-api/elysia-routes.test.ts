@@ -56,9 +56,9 @@ describe("elysia apiApp", () => {
     expect(res.status).not.toBe(404);
   });
 
-  it("GET /api/fridge-magnet/magnets 路由已注册", async () => {
+  it("GET /api/fridge-magnet/magnets 已移除", async () => {
     const res = await apiApp.handle(new Request("http://127.0.0.1/api/fridge-magnet/magnets"));
-    expect(res.status).not.toBe(404);
+    expect(res.status).toBe(404);
   });
 
   it("GET /api/task/lists 已移除", async () => {

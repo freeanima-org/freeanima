@@ -49,7 +49,6 @@ export function adminNavGroups(): AdminNavGroup[] {
       items: [
         { to: "/subjects", label: m.admin_nav_subjects() },
         { to: "/worlds", label: m.admin_nav_worlds() },
-        { to: "/fridge-magnet", label: m.admin_nav_fridge() },
       ],
     },
     {

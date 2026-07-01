@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-30 16:54+0800\n"
+"POT-Creation-Date: 2026-07-01 22:10+0800\n"
 "PO-Revision-Date: 2026-06-29 14:00+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -15,15 +15,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Title ##
-#: docs/concepts/fridge-magnet.md:53 docs/concepts/notifications.md:82
-#, no-wrap
-msgid "Related"
-msgstr "相关文档"
-
 #. type: Content of: <messages><msg>
 #: docs/concepts/notifications.md:1 docs/concepts/notifications.md:5
-#: messages/po4a/en.xml:359
+#: messages/po4a/en.xml:366
 #, no-wrap
 msgid "Notifications"
 msgstr "通知"
@@ -112,15 +106,13 @@ msgstr "Agent 意识"
 #. type: Plain text
 #: docs/concepts/notifications.md:35
 msgid ""
-"Unread agent notifications are injected at inference time — same splice "
-"point and transport as [fridge magnets](fridge-magnet.md): a runtime-only "
+"Unread agent notifications are injected at inference time via a runtime-only "
 "**`assistant(name=notification_context)`** turn immediately before the last "
 "`user` message. They are **not** persisted in conversation messages."
 msgstr ""
-"未读的 agent 通知在推理时注入——与[冰箱贴便签](fridge-magnet.md)相同的拼接点与"
-"传输方式：在最后一条 `user` 消息之前插入仅运行时的 "
-"**`assistant(name=notification_context)`** 轮次。它们**不会**持久化到对话消息"
-"中。"
+"未读的 agent 通知在推理时通过仅运行时的 "
+"**`assistant(name=notification_context)`** 轮次注入，位置在最后一条 `user` 消"
+"息之前。它们**不会**持久化到对话消息中。"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:37
@@ -225,7 +217,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/notifications.md:64 messages/po4a/en.xml:149
-#: messages/po4a/en.xml:583 messages/po4a/en.xml:590
+#: messages/po4a/en.xml:590 messages/po4a/en.xml:597
 #, no-wrap
 msgid "Tools"
 msgstr "工具"
@@ -282,14 +274,13 @@ msgstr "`notification.recipients` — UI 标签页用的已配置主体 id"
 msgid "No SAP create RPC in v1; writes are Hub-internal + tools."
 msgstr "v1 无 SAP 创建 RPC；写入由 Hub 内部 + 工具完成。"
 
-#. type: Bullet: '- '
-#: docs/concepts/notifications.md:85
-msgid "Entity subjects: [`entity-model.md`](entity-model.md)"
-msgstr "实体主体：[`entity-model.md`](entity-model.md)"
+#. type: Title ##
+#: docs/concepts/notifications.md:82
+#, no-wrap
+msgid "Related"
+msgstr "相关文档"
 
 #. type: Bullet: '- '
-#: docs/concepts/notifications.md:85
-msgid ""
-"Fridge magnets (conversation notes only): [`fridge-magnet.md`](fridge-"
-"magnet.md)"
-msgstr "冰箱贴便签（仅对话便签）：[`fridge-magnet.md`](fridge-magnet.md)"
+#: docs/concepts/notifications.md:84
+msgid "Entity subjects: [`entity-model.md`](entity-model.md)"
+msgstr "实体主体：[`entity-model.md`](entity-model.md)"

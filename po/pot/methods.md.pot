@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-27 15:16+0800\n"
+"POT-Creation-Date: 2026-07-01 22:10+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -146,36 +146,21 @@ msgid ""
 "stream to SAP `stream.*` events — see [events.md](events.md)."
 msgstr ""
 
-#. type: Title ##
-#: docs/sap/methods.md:63
-#, no-wrap
-msgid "Fridge"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/methods.md:68
-#, no-wrap
-msgid ""
-"| Method        | Schema                                                          | Role                              |\n"
-"| ------------- | --------------------------------------------------------------- | --------------------------------- |\n"
-"| `fridge.list` | [`fridge.ts`](../../packages/sap-contract/src/frames/fridge.ts) | List fridge items for the runtime |\n"
-msgstr ""
-
 #. type: Content of: <messages><msg>
-#: docs/sap/methods.md:69 messages/po4a/en.xml:436
+#: docs/sap/methods.md:63 messages/po4a/en.xml:558
 #, no-wrap
 msgid "Terminal"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/methods.md:72
+#: docs/sap/methods.md:66
 msgid ""
 "Hub-side PTY sessions. Events: `terminal.ready`, `terminal.output`, "
 "`terminal.exit`, `terminal.error`."
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/methods.md:79
+#: docs/sap/methods.md:73
 #, no-wrap
 msgid ""
 "| Method            | Schema                                                                                                      |\n"
@@ -187,13 +172,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/methods.md:80
+#: docs/sap/methods.md:74
 #, no-wrap
 msgid "Tool (Satellite → Hub)"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/methods.md:88
+#: docs/sap/methods.md:82
 #, no-wrap
 msgid ""
 "| Method            | Direction       | Role                                          |\n"
@@ -205,35 +190,35 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/methods.md:90
+#: docs/sap/methods.md:84
 msgid ""
 "`tool.call` is an **event**, not RPC — see [tools.md](tools.md) and "
 "[events.md](events.md)."
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/methods.md:91
+#: docs/sap/methods.md:85
 #, no-wrap
 msgid "Request context"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/methods.md:94
+#: docs/sap/methods.md:88
 msgid "Every RPC handler receives `SapRequestContext`:"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/methods.md:97
+#: docs/sap/methods.md:91
 msgid "`app_id`, `instance_id` from the connect handshake"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/methods.md:97
+#: docs/sap/methods.md:91
 msgid "`sendEvent(method, payload)` — push async events on the same WebSocket"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/methods.md:98
+#: docs/sap/methods.md:92
 msgid ""
 "Implementations: [`platform/src/sap/ws-server.ts`](../../platform/src/sap/ws-"
 "server.ts) `createSapServerHandlers`."

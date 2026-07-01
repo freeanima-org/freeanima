@@ -31,7 +31,6 @@ import * as fts from "./service-fts.ts";
 import * as promptDebug from "./service-prompt-debug.ts";
 import * as sleep from "./service-sleep.ts";
 import * as autoLlmRuns from "./service-auto-llm-runs.ts";
-import * as fridge from "./service-fridge.ts";
 import * as messaging from "./service-messaging.ts";
 
 export type { MemoryFileEntry } from "./service-memory.ts";
@@ -419,10 +418,6 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
 
   listSelfBlocks(): Promise<{ blocks: selfLayer.SelfBlockDisplay[] }> {
     return selfLayer.listSelfBlocks(this.runtimeDeps());
-  }
-
-  listFridgeMagnets(): Promise<fridge.ListFridgeMagnetsResult> {
-    return fridge.listFridgeMagnets();
   }
 
   getPromptDebug(conversationId?: string | null): Promise<promptDebug.PromptDebugResponse> {

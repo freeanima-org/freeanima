@@ -35,7 +35,6 @@ import {
   conversationSubscribeInputSchema,
   sessionAcpDockInputSchema,
   conversationCommandsInputSchema,
-  fridgeListInputSchema,
   diaryListInputSchema,
   diaryCreateInputSchema,
   diaryAppendInputSchema,
@@ -73,7 +72,6 @@ import { bridgeMessageStream, bridgeSessionUpdates } from "./stream-bridge.ts";
 import * as serviceSessions from "../runtime/service-conversations.ts";
 import * as serviceAcpDock from "../runtime/service-acp-dock.ts";
 import * as serviceStatus from "../runtime/service-status.ts";
-import * as serviceFridge from "../runtime/service-fridge.ts";
 import * as serviceEntityDiary from "../runtime/service-entity-diary.ts";
 import * as serviceEntityEmail from "../runtime/service-entity-email.ts";
 import {
@@ -263,10 +261,6 @@ export function createSapServerHandlers(
               all: input.all,
             }),
           );
-        }
-        case "fridge.list": {
-          fridgeListInputSchema.parse(payload);
-          return serviceFridge.listFridgeMagnets();
         }
         case "tasklist.list":
           return handleTasklistList(deps, payload, ctx);

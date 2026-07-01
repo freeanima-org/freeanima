@@ -1,5 +1,3 @@
-export { registerWriteFridgeMagnetTool } from "./fridge-magnet/tool.ts";
-
 export type {
   TaskListRow,
   TaskListCreateInput,

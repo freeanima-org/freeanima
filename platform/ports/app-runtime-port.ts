@@ -58,7 +58,6 @@ export type AppRuntimeOpsPort = {
   resumeCronJob(id: string): any;
   runCronJobNow(id: string): any;
   getStatus(): Record<string, unknown>;
-  listFridgeMagnets(): Promise<any>;
   getPromptDebug(conversationId?: string | null): Promise<any>;
 };
 

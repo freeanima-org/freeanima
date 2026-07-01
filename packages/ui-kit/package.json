@@ -15,7 +15,6 @@
     "./ui/acp": "./src/ui/AcpProgressDock.tsx",
     "./ui/acp-types": "./src/ui/acp-dock-types.ts",
     "./ui/use-acp-progress-dock": "./src/ui/useAcpProgressDock.ts",
-    "./ui/fridge-magnet": "./src/ui/FridgeMagnetInjectPreview.tsx",
     "./styles.css": "./src/styles.css"
   },
   "dependencies": {

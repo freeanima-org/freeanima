@@ -20,7 +20,6 @@ import type {
   ConversationCommandsOutput,
 } from "./frames/conversation.ts";
 import type { ConversationAcpDockInput, ConversationAcpDockOutput } from "./frames/acp.ts";
-import type { FridgeListInput, FridgeListOutput } from "./frames/fridge.ts";
 import type {
   TasklistListInput,
   TasklistListOutput,
@@ -110,7 +109,6 @@ export const SAP_METHODS = [
   "conversation.commands",
   "message.send",
   "message.interrupt",
-  "fridge.list",
   "tasklist.list",
   "tasklist.create",
   "tasklist.patch",
@@ -163,7 +161,6 @@ export type SapRouterInputs = {
   "conversation.commands": ConversationCommandsInput;
   "message.send": MessageSendInput;
   "message.interrupt": MessageInterruptInput;
-  "fridge.list": FridgeListInput;
   "tasklist.list": TasklistListInput;
   "tasklist.create": TasklistCreateInput;
   "tasklist.patch": TasklistPatchInput;
@@ -214,7 +211,6 @@ export type SapRouterOutputs = {
   "conversation.commands": ConversationCommandsOutput;
   "message.send": MessageSendOutput;
   "message.interrupt": MessageInterruptOutput;
-  "fridge.list": FridgeListOutput;
   "tasklist.list": TasklistListOutput;
   "tasklist.create": TasklistCreateOutput;
   "tasklist.patch": TasklistPatchOutput;

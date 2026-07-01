@@ -1,6 +1,6 @@
 import { omitUndefined } from "./omit-undefined.ts";
 import { treaty, type Treaty } from "@elysiajs/eden";
-import type { FridgeMagnetsResponse, ServiceStatus } from "@freeanima/admin-contract/api";
+import type { ServiceStatus } from "@freeanima/admin-contract/api";
 import {
   readOfflineCache,
   resolveCacheScope,
@@ -402,10 +402,6 @@ export async function getRebuildFtsJobStatus() {
 
 export async function getSelfBlocks() {
   return unwrap(resolveApiClient().api.self.blocks.get());
-}
-
-export async function getFridgeMagnets(): Promise<FridgeMagnetsResponse> {
-  return unwrap<FridgeMagnetsResponse>(resolveApiClient().api["fridge-magnet"].magnets.get());
 }
 
 export async function getMcpStatus() {

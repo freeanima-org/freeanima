@@ -3,7 +3,6 @@ import {
   connectPayloadSchema,
   connectedPayloadSchema,
   formatSapToolName,
-  fridgeListInputSchema,
   notificationListInputSchema,
   notificationMarkReadInputSchema,
   mapSapStreamMethodToApi,
@@ -41,7 +40,6 @@ describe("sap-contract envelopes", () => {
   it("validates chat SAP procedure schemas", () => {
     sessionAcpDockInputSchema.parse({ conversation_id: "sid" });
     conversationCommandsInputSchema.parse({ platform: "sap:chat:k7m" });
-    fridgeListInputSchema.parse({});
     notificationListInputSchema.parse({ recipient_kind: "user", read_filter: "unread" });
     notificationMarkReadInputSchema.parse({ id: "n-1" });
   });

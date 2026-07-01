@@ -15,7 +15,7 @@ title: Installation
 | **Docker Compose** | Quick trial, minimal host setup            | Bundled     | Bundled                | `.env` env vars                                      |
 | **Source**         | Contributors, bleeding-edge, custom builds | You install | Optional (recommended) | pass (recommended)                                   |
 
-All paths run the same `anima service` runtime (Hub REST `/api` + SAP `/sap/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis powers EventBus, user fridge magnets, and task context; it **degrades silently** when unavailable — Docker and production setups should still run it.
+All paths run the same `anima service` runtime (Hub REST `/api` + SAP `/sap/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis powers EventBus and task context; it **degrades silently** when unavailable — Docker and production setups should still run it.
 
 ## Shared prerequisites
 
