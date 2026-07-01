@@ -12,6 +12,7 @@ type SortableTaskListProps = {
   items: TaskItemRow[];
   sortable?: boolean;
   listNameForItem?: (item: TaskItemRow) => string | null;
+  activeItemId?: number | null;
   useActionSheet: boolean;
   selectionMode: boolean;
   selectedIds: ReadonlySet<number>;
@@ -28,6 +29,7 @@ function SortableTaskRow({
   sortable,
   listName,
   useActionSheet,
+  active,
   selectionMode,
   selected,
   onToggleComplete,
@@ -41,6 +43,7 @@ function SortableTaskRow({
   sortable: boolean;
   listName: string | null;
   useActionSheet: boolean;
+  active: boolean;
   selectionMode: boolean;
   selected: boolean;
   onToggleComplete: () => void;
@@ -83,7 +86,7 @@ function SortableTaskRow({
       style={style}
       className={`hover:bg-muted group flex min-h-11 items-center gap-1 rounded-lg px-1 py-1 ${
         isDragging ? "opacity-50" : ""
-      } ${selected ? "bg-primary/10" : ""}`}
+      } ${selected ? "bg-primary/10" : ""} ${active && !selected ? "ring-primary/30 ring-1 ring-inset" : ""}`}
       onContextMenu={onContextMenu}
       onTouchStart={handleTouchStart}
       onTouchEnd={clearLongPress}
@@ -156,6 +159,7 @@ export function SortableTaskList({
   items,
   sortable = true,
   listNameForItem,
+  activeItemId,
   useActionSheet,
   selectionMode,
   selectedIds,
@@ -180,6 +184,7 @@ export function SortableTaskList({
             item={item}
             sortable={sortable}
             listName={listNameForItem?.(item) ?? null}
+            active={activeItemId === item.id}
             useActionSheet={useActionSheet}
             selectionMode={selectionMode}
             selected={selectedIds.has(item.id)}
