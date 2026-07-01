@@ -38,7 +38,7 @@
     "fbx2vrma-converter": "^1.0.2",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "three": "^0.184.0",
+    "three": "^0.185.0",
     "ws": "^8.21.0",
     "zod": "^4.4.3",
     "zustand": "^5.0.14"
@@ -48,7 +48,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@types/three": "^0.184.1",
+    "@types/three": "^0.185.0",
     "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "catalog:",
     "daisyui": "catalog:",
