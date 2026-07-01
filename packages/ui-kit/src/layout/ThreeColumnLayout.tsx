@@ -132,7 +132,7 @@ export function ThreeColumnLayout({
             side={isCompact ? "bottom" : "right"}
             className={
               isCompact
-                ? "flex max-h-[85vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-full"
+                ? "flex h-[85dvh] max-h-[85dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-full"
                 : "flex w-[min(85vw,28rem)] max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-none"
             }
           >
