@@ -19,6 +19,17 @@ export function buildListMenuItems(
     onCreateChildList?: (folder: TaskListRow) => void;
   },
 ): import("./menu-types.ts").TaskMenuItem[] {
+  if (list.closed && !list.is_folder) {
+    const items: import("./menu-types.ts").TaskMenuItem[] = [
+      { label: "取消归档", onClick: () => void handlers.onReopen(list) },
+      copyIdMenuItem(list.id),
+    ];
+    if (!list.is_default) {
+      items.push({ label: "删除", danger: true, onClick: () => void handlers.onDelete(list) });
+    }
+    return items;
+  }
+
   const items: import("./menu-types.ts").TaskMenuItem[] = [
     { label: "重命名", onClick: () => handlers.onRename(list) },
     copyIdMenuItem(list.id),
@@ -31,18 +42,13 @@ export function buildListMenuItems(
     if (handlers.onCreateChildFolder) {
       items.push({ label: "新建子文件夹", onClick: () => handlers.onCreateChildFolder!(list) });
     }
+    if (!list.is_default) {
+      items.push({ label: "删除", danger: true, onClick: () => void handlers.onDelete(list) });
+    }
+    return items;
   }
 
-  if (list.closed) {
-    items.push({ label: "取消归档", onClick: () => void handlers.onReopen(list) });
-    if (!list.is_default) {
-      items.push({
-        label: "删除",
-        danger: true,
-        onClick: () => void handlers.onDelete(list),
-      });
-    }
-  } else if (!list.is_default) {
+  if (!list.is_default) {
     items.push({ label: "归档", onClick: () => void handlers.onClose(list) });
     items.push({ label: "删除", danger: true, onClick: () => void handlers.onDelete(list) });
   }
@@ -57,7 +63,11 @@ export function buildItemMenuItems(
     onMoveTo: (item: import("./api.ts").TaskItemRow) => void;
     onDelete: (item: import("./api.ts").TaskItemRow) => void;
   },
+  opts?: { listArchived?: boolean },
 ): import("./menu-types.ts").TaskMenuItem[] {
+  if (opts?.listArchived) {
+    return [copyIdMenuItem(item.id)];
+  }
   return [
     { label: "编辑", onClick: () => handlers.onEdit(item) },
     copyIdMenuItem(item.id),

@@ -20,6 +20,8 @@ export {
   getDefaultTaskList,
   ensureDefaultTaskListForWorld,
   searchTaskLists,
+  ARCHIVED_TASK_LIST_ERROR,
+  assertTaskListNotArchived,
 } from "./list-store.ts";
 
 export {

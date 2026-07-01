@@ -205,7 +205,8 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
               sort_order: { type: "integer" },
               closed: {
                 type: "boolean",
-                description: "true to archive (close) the list; false to unarchive",
+                description:
+                  "true to archive (close) the list; false to unarchive. Folders cannot be archived.",
               },
               color: { type: "string" },
               is_folder: {
@@ -223,7 +224,8 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "tasklist_delete",
-          description: "Delete a task list (default inbox cannot be deleted)",
+          description:
+            "Delete a task list (default inbox cannot be deleted). Deleting a folder removes all sub-folders and moves contained lists to root.",
           exposeMcp: true,
           parameters: {
             type: "object",

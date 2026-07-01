@@ -130,7 +130,7 @@ export function TaskDndRoot({
 
       const activeList = listById.get(activeListId);
       const overList = listById.get(overListIdParsed);
-      if (!activeList || !overList) return;
+      if (!activeList || !overList || activeList.closed) return;
 
       if (overList.is_folder && !isDescendant(lists, activeListId, overListIdParsed)) {
         onMoveListToParent(activeListId, overListIdParsed);
@@ -166,6 +166,10 @@ export function TaskDndRoot({
       const targetListId = parseListDndId(overId);
       if (targetListId != null) {
         const targetList = listById.get(targetListId);
+        const taskIdParsed = parseTaskDndId(activeId);
+        const task = taskIdParsed != null ? taskItems.find((i) => i.id === taskIdParsed) : null;
+        const sourceList = task ? listById.get(task.list_id) : null;
+        if (sourceList?.closed || targetList?.closed) return;
         if (targetList && !targetList.is_folder) {
           onMoveTaskToList(taskId, targetListId);
         }

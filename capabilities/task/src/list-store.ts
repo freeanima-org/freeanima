@@ -21,6 +21,8 @@ import type {
   TaskListUpdateInput,
 } from "./types.ts";
 
+export const ARCHIVED_TASK_LIST_ERROR = "清单已归档";
+
 function resolveParentId(body: Record<string, unknown>): number | null {
   const v = body.parent_id;
   if (v == null) return null;
@@ -30,6 +32,10 @@ function resolveParentId(body: Record<string, unknown>): number | null {
 
 function resolveIsFolder(body: Record<string, unknown>): boolean {
   return body.is_folder === true;
+}
+
+function resolveClosed(body: Record<string, unknown>): boolean {
+  return body.closed === true;
 }
 
 async function countItemsForList(listId: number, worldId: number): Promise<number> {
@@ -80,6 +86,40 @@ function assertDefaultListConstraints(
 function assertCanCloseTaskList(existing: { body: Record<string, unknown> }): void {
   if (existing.body.is_default === true) {
     throw new Error("default task list cannot be closed");
+  }
+  if (resolveIsFolder(existing.body)) {
+    throw new Error("folders cannot be archived");
+  }
+}
+
+function isReopenPatch(input: TaskListUpdateInput): boolean {
+  return (
+    input.closed === false &&
+    input.name === undefined &&
+    input.sort_order === undefined &&
+    input.color === undefined &&
+    input.is_folder === undefined &&
+    input.parent_id === undefined
+  );
+}
+
+function assertArchivedListMutationAllowed(
+  existing: { body: Record<string, unknown> },
+  input: TaskListUpdateInput,
+): void {
+  if (!resolveClosed(existing.body) || resolveIsFolder(existing.body)) return;
+  if (isReopenPatch(input)) return;
+  throw new Error(ARCHIVED_TASK_LIST_ERROR);
+}
+
+export async function assertTaskListNotArchived(listId: number, worldId: number): Promise<void> {
+  const existing = await getEntity(listId);
+  if (!existing || existing.primary_component !== TASK_LIST_COMPONENT) {
+    throw new Error("task list not found");
+  }
+  await assertEntityInWorld(listId, worldId);
+  if (resolveClosed(existing.body) && !resolveIsFolder(existing.body)) {
+    throw new Error(ARCHIVED_TASK_LIST_ERROR);
   }
 }
 
@@ -135,6 +175,21 @@ async function assertFolderHasNoChildren(id: number, worldId: number): Promise<v
   }
 }
 
+/** 递归解散文件夹树：子文件夹删除，所有清单升至根级 */
+async function dissolveFolderTree(folderId: number, worldId: number): Promise<void> {
+  const children = await getChildListIds(folderId, worldId);
+  for (const childId of children) {
+    const child = await getEntity(childId);
+    if (!child) continue;
+    if (resolveIsFolder(child.body)) {
+      await dissolveFolderTree(childId, worldId);
+      await deleteEntity(childId);
+    } else {
+      await updateEntity({ id: childId, body: { parent_id: null } });
+    }
+  }
+}
+
 async function deleteTasksInList(listId: number, worldId: number): Promise<void> {
   const items = await listEntities({
     world_id: worldId,
@@ -148,17 +203,6 @@ async function deleteTasksInList(listId: number, worldId: number): Promise<void>
   }
 }
 
-async function cascadeClosedState(id: number, closed: boolean, worldId: number): Promise<void> {
-  const children = await getChildListIds(id, worldId);
-  for (const childId of children) {
-    await updateEntity({ id: childId, body: { closed } });
-    const child = await getEntity(childId);
-    if (child && resolveIsFolder(child.body)) {
-      await cascadeClosedState(childId, closed, worldId);
-    }
-  }
-}
-
 export async function assertListAcceptsTasks(listId: number, worldId: number): Promise<void> {
   const existing = await getEntity(listId);
   if (!existing || existing.primary_component !== TASK_LIST_COMPONENT) {
@@ -167,6 +211,9 @@ export async function assertListAcceptsTasks(listId: number, worldId: number): P
   await assertEntityInWorld(listId, worldId);
   if (resolveIsFolder(existing.body)) {
     throw new Error("tasks cannot be assigned to a folder");
+  }
+  if (resolveClosed(existing.body)) {
+    throw new Error(ARCHIVED_TASK_LIST_ERROR);
   }
 }
 
@@ -279,6 +326,8 @@ export async function updateTaskList(
   if (!existing || existing.primary_component !== TASK_LIST_COMPONENT) return null;
   await assertEntityInWorld(input.id, worldId);
 
+  assertArchivedListMutationAllowed(existing, input);
+
   assertDefaultListConstraints(
     existing,
     omitUndefined({
@@ -318,10 +367,6 @@ export async function updateTaskList(
   );
   if (!row) return null;
 
-  if (input.closed !== undefined && resolveIsFolder(existing.body)) {
-    await cascadeClosedState(input.id, input.closed, worldId);
-  }
-
   const parsed = asTaskList(row);
   if (!parsed) return null;
   const is_folder = parsed.is_folder ?? false;
@@ -345,15 +390,10 @@ export async function deleteTaskList(
     throw new Error("default task list cannot be deleted");
   }
 
-  const children = await getChildListIds(id, worldId);
-  for (const childId of children) {
-    await deleteTaskList(worldId, childId, { cascade: true });
-  }
-
-  if (opts?.cascade !== false) {
-    if (!resolveIsFolder(existing.body)) {
-      await deleteTasksInList(id, worldId);
-    }
+  if (resolveIsFolder(existing.body)) {
+    await dissolveFolderTree(id, worldId);
+  } else if (opts?.cascade !== false) {
+    await deleteTasksInList(id, worldId);
   }
 
   return deleteEntity(id);
