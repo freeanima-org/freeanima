@@ -5,12 +5,13 @@ import { getInstallContext } from "../satellite-launch.ts";
 import { resolveMonorepoWebDistDir } from "./dist-path.ts";
 
 /** npm 发布包内置 dist；monorepo 开发需本地 build */
-export const WEB_DIST_REQUIRED_FILES = [
-  "index.html",
-  "shell-bridge.js",
-  "manifest.webmanifest",
-  "sw.js",
-] as const;
+export const WEB_DIST_REQUIRED_FILES = ["index.html", "manifest.webmanifest", "sw.js"] as const;
+
+/** 与 Vite shellEntryFileNames 产出一致 */
+const SHELL_BRIDGE_ASSET_PREFIX = "shell-bridge-";
+
+/** 缺失 shell-bridge 产物时在 missing 中使用的占位标识 */
+export const SHELL_BRIDGE_DIST_MARKER = "assets/shell-bridge-*.js";
 
 const SKIP_DIR_NAMES = new Set([".git", ".vite-app-web", "dist", "node_modules"]);
 
@@ -37,8 +38,22 @@ export function isMonorepoWebInstall(): boolean {
   return getInstallContext().monorepoRoot != null;
 }
 
+export function hasShellBridgeAsset(distDir: string): boolean {
+  const assetsDir = join(distDir, "assets");
+  if (!existsSync(assetsDir)) return false;
+  return readdirSync(assetsDir).some(
+    (name) => name.startsWith(SHELL_BRIDGE_ASSET_PREFIX) && name.endsWith(".js"),
+  );
+}
+
 function listMissingDistFiles(distDir: string): string[] {
-  return WEB_DIST_REQUIRED_FILES.filter((name) => !existsSync(join(distDir, name)));
+  const missing: string[] = WEB_DIST_REQUIRED_FILES.filter(
+    (name) => !existsSync(join(distDir, name)),
+  );
+  if (!hasShellBridgeAsset(distDir)) {
+    missing.push(SHELL_BRIDGE_DIST_MARKER);
+  }
+  return missing;
 }
 
 /** 目录树内是否存在 mtime 晚于 sinceMs 的源文件 */
@@ -78,7 +93,7 @@ export function assessMonorepoWebDist(
   if (!distDir) {
     return {
       needsRebuild: true,
-      missing: [...WEB_DIST_REQUIRED_FILES],
+      missing: [...WEB_DIST_REQUIRED_FILES, SHELL_BRIDGE_DIST_MARKER],
       stale: false,
       distDir: null,
     };

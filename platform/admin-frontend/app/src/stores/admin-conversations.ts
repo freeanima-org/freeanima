@@ -124,12 +124,14 @@ export const useAdminConversationsStore = create<AdminConversationsState>((set, 
         title?: string;
         platform?: string;
         created_at?: Date;
+        updated_at?: Date;
       };
       const item: ConversationListItem = {
         id: info.conversation_id ?? id,
         title: info.title ?? "",
         platform: info.platform ?? "",
         created_at: info.created_at ?? new Date(0),
+        updated_at: info.updated_at ?? info.created_at ?? new Date(0),
       };
       set((state) => ({
         headlineById: { ...state.headlineById, [id]: item },

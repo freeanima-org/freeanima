@@ -1,11 +1,3 @@
-// oxlint-disable-next-line import/no-unassigned-import -- Vite side-effect stylesheet
-import "@freeanima/satellite-chat/styles.css";
-import { ChatApp } from "@freeanima/satellite-chat/app";
-
-import { DiaryApp } from "@freeanima/satellite-diary/app";
-import { EmailApp } from "@freeanima/satellite-email/app";
-import { NotificationApp } from "@freeanima/satellite-notification/app";
-import { TaskApp } from "@freeanima/satellite-task/app";
 import {
   Outlet,
   RouterProvider,
@@ -17,7 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { useMemo } from "react";
 
-import { AdminShell } from "./main/AdminShell.tsx";
+import { lazyNamedComponent, shellLazyRoute } from "./lazy-route.tsx";
 import { ModuleShell } from "./main/ModuleShell.tsx";
 import { SettingsPage } from "./settings/SettingsPage.tsx";
 import { HubSetupPage } from "./setup/HubSetupPage.tsx";
@@ -56,31 +48,44 @@ const indexRoute = createRoute({
 const chatRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/chat",
-  component: ChatApp,
+  component: shellLazyRoute(() =>
+    import("@freeanima/satellite-chat/app").then(async (mod) => {
+      await import("@freeanima/satellite-chat/styles.css");
+      return { default: mod.ChatApp };
+    }),
+  ),
 });
 
 const tasksRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/tasks",
-  component: TaskApp,
+  component: shellLazyRoute(
+    lazyNamedComponent(() => import("@freeanima/satellite-task/app"), "TaskApp"),
+  ),
 });
 
 const emailRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/email",
-  component: EmailApp,
+  component: shellLazyRoute(
+    lazyNamedComponent(() => import("@freeanima/satellite-email/app"), "EmailApp"),
+  ),
 });
 
 const diaryRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/diary",
-  component: DiaryApp,
+  component: shellLazyRoute(
+    lazyNamedComponent(() => import("@freeanima/satellite-diary/app"), "DiaryApp"),
+  ),
 });
 
 const notificationsRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/notifications",
-  component: NotificationApp,
+  component: shellLazyRoute(
+    lazyNamedComponent(() => import("@freeanima/satellite-notification/app"), "NotificationApp"),
+  ),
 });
 
 const adminIndexRoute = createRoute({
@@ -94,13 +99,17 @@ const adminIndexRoute = createRoute({
 const adminDashboardRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/admin/dashboard",
-  component: AdminShell,
+  component: shellLazyRoute(() =>
+    import("./main/AdminShell.tsx").then(async (mod) => ({ default: mod.AdminShell })),
+  ),
 });
 
 const adminRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/admin/$",
-  component: AdminShell,
+  component: shellLazyRoute(() =>
+    import("./main/AdminShell.tsx").then(async (mod) => ({ default: mod.AdminShell })),
+  ),
 });
 
 const settingsRoute = createRoute({

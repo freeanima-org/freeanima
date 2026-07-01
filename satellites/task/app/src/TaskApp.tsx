@@ -917,7 +917,12 @@ export function TaskApp() {
             }}
           />
           <DialogFooter>
-            <Button type="button" variant="ghost" size="sm" onClick={() => setChildNamePrompt(null)}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setChildNamePrompt(null)}
+            >
               取消
             </Button>
             <Button

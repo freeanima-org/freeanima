@@ -4,7 +4,7 @@ import type { ConversationListItem } from "./types.ts";
 export function sortConversationsByUpdatedAt(
   items: ConversationListItem[],
 ): ConversationListItem[] {
-  return [...items].sort((a, b) => {
+  return [...items].toSorted((a, b) => {
     const ta = Date.parse(a.created) || 0;
     const tb = Date.parse(b.created) || 0;
     if (tb !== ta) return tb - ta;
