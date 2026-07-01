@@ -12,7 +12,6 @@
     "app/**/*.ts",
     "bootstrap/**/*.ts",
     "src/**/*.ts",
-    "mobile-html.ts",
     "vite.config.ts",
     "../../types/**/*.d.ts"
   ],

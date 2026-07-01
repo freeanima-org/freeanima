@@ -6,7 +6,9 @@ import { createTempDir, removeTempDir } from "@freeanima/core/util";
 
 import {
   assessMonorepoWebDist,
+  hasShellBridgeAsset,
   isSourceTreeNewerThan,
+  SHELL_BRIDGE_DIST_MARKER,
   WEB_DIST_REQUIRED_FILES,
 } from "./ensure-dist.ts";
 
@@ -31,14 +33,20 @@ describe("ensure-web-dist", () => {
     utimesSync(path, sec, sec);
   }
 
+  function writeShellBridgeAsset(dist: string, mtimeMs: number): void {
+    const assets = join(dist, "assets");
+    mkdirSync(assets, { recursive: true });
+    touch(join(assets, "shell-bridge-deadbeef.js"), mtimeMs);
+  }
+
   it("assessMonorepoWebDist 无 dist 时需要 rebuild", () => {
     const root = tempRoot("web-dist-none-");
     const result = assessMonorepoWebDist(root, null);
     expect(result.needsRebuild).toBe(true);
-    expect(result.missing).toEqual([...WEB_DIST_REQUIRED_FILES]);
+    expect(result.missing).toEqual([...WEB_DIST_REQUIRED_FILES, SHELL_BRIDGE_DIST_MARKER]);
   });
 
-  it("assessMonorepoWebDist 缺少 shell-bridge.js 时需要 rebuild", () => {
+  it("assessMonorepoWebDist 缺少 shell-bridge 产物时需要 rebuild", () => {
     const root = tempRoot("web-dist-missing-");
     const dist = join(root, "dist");
     mkdirSync(dist, { recursive: true });
@@ -48,7 +56,14 @@ describe("ensure-web-dist", () => {
 
     const result = assessMonorepoWebDist(root, dist);
     expect(result.needsRebuild).toBe(true);
-    expect(result.missing).toContain("shell-bridge.js");
+    expect(result.missing).toContain(SHELL_BRIDGE_DIST_MARKER);
+  });
+
+  it("hasShellBridgeAsset 识别 assets/shell-bridge-*.js", () => {
+    const root = tempRoot("web-dist-bridge-");
+    const dist = join(root, "dist");
+    writeShellBridgeAsset(dist, Date.now());
+    expect(hasShellBridgeAsset(dist)).toBe(true);
   });
 
   it("assessMonorepoWebDist 源码比 dist 新时需要 rebuild", () => {
@@ -57,7 +72,7 @@ describe("ensure-web-dist", () => {
     mkdirSync(dist, { recursive: true });
     const distTime = Date.now() - 60_000;
     touch(join(dist, "index.html"), distTime);
-    touch(join(dist, "shell-bridge.js"), distTime);
+    writeShellBridgeAsset(dist, distTime);
     touch(join(dist, "manifest.webmanifest"), distTime);
     touch(join(dist, "sw.js"), distTime);
 
@@ -77,7 +92,7 @@ describe("ensure-web-dist", () => {
     mkdirSync(dist, { recursive: true });
     const distTime = Date.now();
     touch(join(dist, "index.html"), distTime);
-    touch(join(dist, "shell-bridge.js"), distTime);
+    writeShellBridgeAsset(dist, distTime);
     touch(join(dist, "manifest.webmanifest"), distTime);
     touch(join(dist, "sw.js"), distTime);
 

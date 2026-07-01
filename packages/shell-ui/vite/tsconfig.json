@@ -6,5 +6,5 @@
     "outDir": "../.tsout/vite"
   },
   "include": ["./**/*.ts"],
-  "exclude": ["dist/**"]
+  "exclude": ["**/*.test.ts", "dist/**"]
 }

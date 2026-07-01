@@ -43,6 +43,12 @@ function contentTypeForPath(filePath: string): string {
   return MIME[extname(filePath)] ?? "application/octet-stream";
 }
 
+/** 基于 mtime + size 的弱 ETag，供 index.html 等协商缓存 */
+export function buildFileEtag(filePath: string): string {
+  const stat = statSync(filePath);
+  return `"${stat.mtimeMs.toString(16)}-${stat.size.toString(16)}"`;
+}
+
 function webConfigJsonResponse(req: Request, options: WebStaticOptions): Response {
   const origin = new URL(req.url).origin;
   const body = JSON.stringify({
@@ -60,20 +66,33 @@ function webConfigJsonResponse(req: Request, options: WebStaticOptions): Respons
   });
 }
 
-function fileResponse(filePath: string): Response {
+function fileResponse(req: Request, filePath: string): Response {
   const file = Bun.file(filePath);
   const headers: Record<string, string> = { "Content-Type": contentTypeForPath(filePath) };
   const rel = filePath.replace(/\\/g, "/");
-  if (rel.includes("/assets/")) {
+  const inAssets = rel.includes("/assets/");
+
+  if (inAssets) {
     headers["Cache-Control"] = "public, max-age=31536000, immutable";
+    return new Response(file, { headers });
   }
+
+  const etag = buildFileEtag(filePath);
+  headers.ETag = etag;
+  headers["Cache-Control"] = "no-cache";
+
+  const ifNoneMatch = req.headers.get("If-None-Match");
+  if (ifNoneMatch === etag) {
+    return new Response(null, { status: 304, headers });
+  }
+
   return new Response(file, { headers });
 }
 
-function indexHtmlResponse(distDir: string): Response | null {
+function indexHtmlResponse(req: Request, distDir: string): Response | null {
   const indexPath = join(distDir, "index.html");
   if (!existsSync(indexPath)) return null;
-  return fileResponse(indexPath);
+  return fileResponse(req, indexPath);
 }
 
 /** 将 /web/... 映射为 dist 内相对路径 */
@@ -109,7 +128,7 @@ export function serveWebStatic(req: Request, options: WebStaticOptions): Respons
 
   const normalizedRel = rel === "/" ? "/index.html" : rel;
   const filePath = resolveDistFile(options.distDir, normalizedRel);
-  if (filePath) return fileResponse(filePath);
+  if (filePath) return fileResponse(req, filePath);
 
-  return indexHtmlResponse(options.distDir);
+  return indexHtmlResponse(req, options.distDir);
 }
