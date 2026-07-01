@@ -1,54 +1,55 @@
 import { type ReactNode } from "react";
-import { Button, Sheet, SheetContent, SheetHeader, SheetTitle } from "@freeanima/ui-kit";
 
-import type { TaskLayoutMode } from "../lib/layout-mode.ts";
+import { Button } from "../components/ui/button.tsx";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../components/ui/sheet.tsx";
+import type { ThreeColumnLayoutMode } from "./three-column-mode.ts";
 
-type TaskThreeColumnLayoutProps = {
-  layoutMode: TaskLayoutMode;
+export type ThreeColumnLayoutProps = {
+  layoutMode: ThreeColumnLayoutMode;
   listTitle?: string;
-  taskListTitle: ReactNode;
+  middleTitle: ReactNode;
   detailTitle: ReactNode;
   list: ReactNode;
-  taskList: ReactNode;
+  middle: ReactNode;
   detail: ReactNode;
   detailOpen: boolean;
   onDetailOpenChange: (open: boolean) => void;
   listOpen: boolean;
   onListOpenChange: (open: boolean) => void;
   listToggleAriaLabel?: string;
-  taskListActions?: ReactNode;
-  taskListHeaderExtra?: ReactNode;
+  middleActions?: ReactNode;
+  middleHeaderExtra?: ReactNode;
 };
 
 const listAsideClass =
   "relative flex min-h-0 w-56 shrink-0 flex-col border-r border-border bg-background";
 const listDrawerClass =
   "list-detail-drawer-panel safe-fixed-sidebar flex min-h-0 flex-col border-r border-border bg-background shadow-lg";
-const taskListWideClass =
+const middleWideClass =
   "relative flex min-h-0 w-80 shrink-0 flex-col border-r border-border bg-background";
-const taskListFlexClass = "relative flex min-h-0 min-w-0 flex-1 flex-col bg-background";
+const middleFlexClass = "relative flex min-h-0 min-w-0 flex-1 flex-col bg-background";
 const detailWideClass = "relative flex min-h-0 min-w-0 flex-1 flex-col border-border bg-background";
 
-export function TaskThreeColumnLayout({
+export function ThreeColumnLayout({
   layoutMode,
-  listTitle = "清单",
-  taskListTitle,
+  listTitle = "列表",
+  middleTitle,
   detailTitle,
   list,
-  taskList,
+  middle,
   detail,
   detailOpen,
   onDetailOpenChange,
   listOpen,
   onListOpenChange,
-  listToggleAriaLabel = "打开清单",
-  taskListActions,
-  taskListHeaderExtra,
-}: TaskThreeColumnLayoutProps) {
+  listToggleAriaLabel = "打开侧栏",
+  middleActions,
+  middleHeaderExtra,
+}: ThreeColumnLayoutProps) {
   const isCompact = layoutMode === "compact";
   const isWide = layoutMode === "wide";
 
-  const taskListHeader = (
+  const middleHeader = (
     <header className="border flex shrink-0 flex-col gap-2 border-b px-4 py-3">
       <div className="flex items-center justify-between gap-2">
         {isCompact ? (
@@ -63,12 +64,12 @@ export function TaskThreeColumnLayout({
             ☰
           </Button>
         ) : null}
-        <h1 className="min-w-0 flex-1 truncate text-lg font-semibold">{taskListTitle}</h1>
-        {taskListActions ? (
-          <div className="flex shrink-0 items-center gap-2">{taskListActions}</div>
+        <h1 className="min-w-0 flex-1 truncate text-lg font-semibold">{middleTitle}</h1>
+        {middleActions ? (
+          <div className="flex shrink-0 items-center gap-2">{middleActions}</div>
         ) : null}
       </div>
-      {taskListHeaderExtra}
+      {middleHeaderExtra}
     </header>
   );
 
@@ -83,10 +84,10 @@ export function TaskThreeColumnLayout({
     </>
   );
 
-  const taskListPanel = (
+  const middlePanel = (
     <>
-      {taskListHeader}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{taskList}</div>
+      {middleHeader}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{middle}</div>
     </>
   );
 
@@ -120,9 +121,7 @@ export function TaskThreeColumnLayout({
           <aside className={listOpen ? listDrawerClass : "hidden"}>{listPanel}</aside>
         ) : null}
 
-        <section className={isWide ? taskListWideClass : taskListFlexClass}>
-          {taskListPanel}
-        </section>
+        <section className={isWide ? middleWideClass : middleFlexClass}>{middlePanel}</section>
 
         {isWide ? <aside className={detailWideClass}>{detailPanel}</aside> : null}
       </div>
