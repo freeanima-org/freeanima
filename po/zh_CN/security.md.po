@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 16:39+0800\n"
+"POT-Creation-Date: 2026-07-01 10:36+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -68,16 +68,12 @@ msgstr "默认 bind 为 `127.0.0.1`；若需局域网访问，请自行评估 CO
 
 #. type: Bullet: '- '
 #: docs/guide/security.md:17
-#, fuzzy
-#| msgid ""
-#| "**Do not** expose the service to the public internet without a Service "
-#| "API Token on clients (see [`remote-access.md`](remote-access.md))."
 msgid ""
 "**Do not** expose the service to the public internet without TLS and token-"
 "protected clients (see [`remote-access.md`](remote-access.md))."
 msgstr ""
-"**不要**在未配置 `remote_auth` 的情况下将服务暴露到公网（见 [`remote-"
-"access.md`](remote-access.md) — Tunnel + Bearer token）。"
+"**不要**在未启用 TLS 且客户端未受 token 保护的情况下将服务暴露到公网（见 "
+"[`remote-access.md`](remote-access.md)）。"
 
 #. type: Title ##
 #: docs/guide/security.md:18
@@ -127,22 +123,17 @@ msgstr "数据持久化"
 
 #. type: Plain text
 #: docs/guide/security.md:37
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Path                            | Content             | Encryption                      |\n"
-#| "| ------------------------------- | ------------------- | ------------------------------- |\n"
-#| "| PostgreSQL conversation archive | sessions / messages | No application-layer encryption |\n"
-#| "| `~/.anima/weixin/`              | WeChat sync state   | None                            |\n"
+#, no-wrap
 msgid ""
 "| Path                            | Content                  | Encryption                      |\n"
 "| ------------------------------- | ------------------------ | ------------------------------- |\n"
 "| PostgreSQL conversation archive | conversations / messages | No application-layer encryption |\n"
 "| `~/.anima/weixin/`              | WeChat sync state        | None                            |\n"
 msgstr ""
-"| 路径                | 内容                | 加密         |\n"
-"| ------------------- | ------------------- | ------------ |\n"
-"| PostgreSQL 对话存档 | sessions / messages | 无应用层加密 |\n"
-"| `~/.anima/weixin/`  | 微信同步状态        | 无           |\n"
+"| 路径                | 内容                        | 加密         |\n"
+"| ------------------- | --------------------------- | ------------ |\n"
+"| PostgreSQL 对话存档 | `conversations` / messages | 无应用层加密 |\n"
+"| `~/.anima/weixin/`  | 微信同步状态                | 无           |\n"
 
 #. type: Plain text
 #: docs/guide/security.md:39
@@ -157,17 +148,7 @@ msgstr "LLM 工具风险"
 
 #. type: Plain text
 #: docs/guide/security.md:51
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Capability             | Risk                                                                                                                |\n"
-#| "| ---------------------- | ------------------------------------------------------------------------------------------------------------------- |\n"
-#| "| `terminal`             | Default `shell: true`, can run arbitrary shell commands                                                             |\n"
-#| "| `file_read_file`       | Partial path deny (`.ssh` private keys, `/etc/passwd`, etc.); **not** full `/etc/` deny                             |\n"
-#| "| `file_write_file`      | deny list + write-protected paths                                                                                   |\n"
-#| "| MCP tools              | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined               |\n"
-#| "| Capability mask (Mask) | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `capabilities/mask` |\n"
-#| "| ACP (Cursor)           | Default **auto-approve** all `session/request_permission` (`allow-once`)                                            |\n"
-#| "| `credentials_list`     | Returns pass path metadata only, no values                                                                          |\n"
+#, no-wrap
 msgid ""
 "| Capability             | Risk                                                                                                                          |\n"
 "| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------- |\n"
@@ -179,15 +160,15 @@ msgid ""
 "| ACP (Cursor)           | Default **auto-approve** all `session/request_permission` (`allow-once`)                                                      |\n"
 "| `credentials_list`     | Returns pass path metadata only, no values                                                                                    |\n"
 msgstr ""
-"| 能力               | 风险                                                                                  |\n"
-"| ------------------ | ------------------------------------------------------------------------------------- |\n"
-"| `terminal`         | 默认 `shell: true`，可执行任意 shell 命令                                             |\n"
-"| `file_read_file`   | 部分路径 deny（`.ssh` 私钥、`/etc/passwd` 等）；**未**全面 deny `/etc/`               |\n"
-"| `file_write_file`  | deny list + 写保护路径                                                                |\n"
-"| MCP 工具           | 能力完全由外部 Server 决定；stdio 默认，SSE 认证方案未完整定义                        |\n"
-"| 能力面罩（Mask）   | 对话级工具白名单；`deny` 覆盖 `allow`；LLM 不可见策略细节；见 `capabilities/mask` |\n"
-"| ACP（Cursor）      | 默认 **自动批准** 所有 `session/request_permission`（`allow-once`）                   |\n"
-"| `credentials_list` | 仅返回 pass 路径元数据，不含值                                                        |\n"
+"| 能力               | 风险                                                                                         |\n"
+"| ------------------ | -------------------------------------------------------------------------------------------- |\n"
+"| `terminal`         | 默认 `shell: true`，可执行任意 shell 命令                                                     |\n"
+"| `file_read_file`   | 部分路径 deny（`.ssh` 私钥、`/etc/passwd` 等）；**未**全面 deny `/etc/`                       |\n"
+"| `file_write_file`  | deny list + 写保护路径                                                                        |\n"
+"| MCP 工具           | 能力完全由外部 Server 决定；stdio 默认，SSE 认证方案未完整定义                                |\n"
+"| 能力面罩（Mask）   | 对话级工具白名单；`deny` 覆盖 `allow`；LLM 不可见策略细节；见 `capabilities/task/src/mask/` |\n"
+"| ACP（Cursor）      | 默认 **自动批准** 所有 `session/request_permission`（`allow-once`）                           |\n"
+"| `credentials_list` | 仅返回 pass 路径元数据，不含值                                                                |\n"
 
 #. type: Title ##
 #: docs/guide/security.md:52
@@ -197,19 +178,7 @@ msgstr "已有措施"
 
 #. type: Plain text
 #: docs/guide/security.md:66
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Measure                 | Description                                                                                                                            |\n"
-#| "| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |\n"
-#| "| Same-origin RPC         | TanStack Start server functions same-origin by default, no CORS whitelist needed                                                       |\n"
-#| "| Config secret redaction | `AppRuntime.getConfig()` → `sanitizeConfigForApi()` (`api_key`, `database.url`, nested `pushkey`, `mcp env`, etc.)                     |\n"
-#| "| MCP config redaction    | `sanitizeMcpConfig`: `env` exposes only `env_keys`                                                                                     |\n"
-#| "| Write path safety       | `file_write_file` deny list (partial `/etc/*`, `.ssh` private keys, etc.)                                                              |\n"
-#| "| Slash commands          | Whitelist routing; every command must produce user-visible feedback; long-running commands send an immediate ack then the final result |\n"
-#| "| MCP default stdio       | Reduces port exposure                                                                                                                  |\n"
-#| "| Credential isolation    | LLM sees pass paths only, not values                                                                                                   |\n"
-#| "| CI secret scanning      | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)                          |\n"
-#| "| `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                                          |\n"
+#, no-wrap
 msgid ""
 "| Measure                 | Description                                                                                                                            |\n"
 "| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |\n"
@@ -224,17 +193,18 @@ msgid ""
 "| CI secret scanning      | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)                          |\n"
 "| `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                                          |\n"
 msgstr ""
-"| 措施                 | 说明                                                                                                               |\n"
-"| -------------------- | ------------------------------------------------------------------------------------------------------------------ |\n"
-"| 同源 RPC             | TanStack Start server functions 默认同源，无需 CORS 白名单                                                          |\n"
-"| 配置密钥脱敏         | `AppRuntime.getConfig()` → `sanitizeConfigForApi()`（`api_key`、`database.url`、嵌套 `pushkey`、`mcp env` 等）      |\n"
-"| MCP 配置脱敏         | `sanitizeMcpConfig`：`env` 仅暴露 `env_keys`                                                                        |\n"
-"| 写路径安全           | `file_write_file` deny list（部分 `/etc/*`、`.ssh` 私钥等）                                                         |\n"
-"| 斜杠命令             | 白名单路由；每条命令须产生用户可见反馈；长时命令先立即 ack 再返回最终结果                                            |\n"
-"| MCP 默认 stdio       | 减少端口暴露                                                                                                        |\n"
-"| 凭证隔离             | LLM 仅见 pass 路径，不见值                                                                                          |\n"
-"| CI 密钥扫描          | `.github/workflows/security.yml`（Gitleaks）；GitHub Secret scanning + Push protection（公开仓库免费）                |\n"
-"| `.gitignore`         | `.env.*`、`config.yaml`、私钥后缀                                                                                   |\n"
+"| 措施                 | 说明                                                                                                                      |\n"
+"| -------------------- | ------------------------------------------------------------------------------------------------------------------------- |\n"
+"| 同源 RPC             | TanStack Start server functions 默认同源，无需 CORS 白名单                                                                |\n"
+"| 配置密钥脱敏         | `AppRuntime.getConfig()` → `sanitizeConfigForApi()`（`api_key`、`database.url`、嵌套 `pushkey`、`mcp env` 等）          |\n"
+"| MCP 配置脱敏         | `sanitizeMcpConfig`：`env` 仅暴露 `env_keys`                                                                             |\n"
+"| 写路径安全           | `file_write_file` deny list（部分 `/etc/*`、`.ssh` 私钥等）                                                              |\n"
+"| 斜杠命令             | 白名单路由；每条命令都必须产生用户可见反馈；长时命令先立即 ack，再返回最终结果                                           |\n"
+"| MCP 默认 stdio       | 减少端口暴露                                                                                                              |\n"
+"| 凭证隔离             | LLM 仅见 pass 路径，不见值                                                                                                |\n"
+"| Service API Token    | 业务 `/api/*` 路由要求 `Authorization: Bearer <fa_at_...>`（`service_api_tokens` PG 表）；health/CORS/echo 例外                                   |\n"
+"| CI 密钥扫描          | `.github/workflows/security.yml`（Gitleaks）；GitHub Secret scanning + Push protection（公开仓库免费）                    |\n"
+"| `.gitignore`         | `.env.*`、`config.yaml`、私钥后缀                                                                                         |\n"
 
 #. type: Title ##
 #: docs/guide/security.md:67
@@ -251,17 +221,7 @@ msgstr "以下在代码或文档中规划，**部署者请勿假设已实现**�
 
 #. type: Plain text
 #: docs/guide/security.md:80
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Priority | Item                                                  | Status                                                                                                           |\n"
-#| "| -------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |\n"
-#| "| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                                                                                                          |\n"
-#| "| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                                                                                                  |\n"
-#| "| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                                                                                                  |\n"
-#| "| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                                                                                                  |\n"
-#| "| P2       | HTTP API auth                                         | 业务 API 须带 per-subject Service API Token；`GET /api/health` 豁免（见 [`remote-access.md`](remote-access.md)） |\n"
-#| "| P3       | IPC / LLM rate limiting                               | None                                                                                                             |\n"
-#| "| P3       | Session disk encryption                               | None                                                                                                             |\n"
+#, no-wrap
 msgid ""
 "| Priority | Item                                                  | Status                              |\n"
 "| -------- | ----------------------------------------------------- | ----------------------------------- |\n"
@@ -273,15 +233,15 @@ msgid ""
 "| P3       | IPC / LLM rate limiting                               | None                                |\n"
 "| P3       | Session disk encryption                               | None                                |\n"
 msgstr ""
-"| 优先级 | 项                                                    | 状态                                                                                                                         |\n"
-"| ------ | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |\n"
-"| P0     | file_read_file 全面 deny（`/etc/` 等）                | 部分                                                                                                                         |\n"
-"| P0     | `terminal_run` / `code_execute` 默认 `shell=False`    | 未实现                                                                                                                       |\n"
-"| P1     | Runtime Unix socket `chmod 600` + 握手 token            | 未实现                                                                                                                       |\n"
-"| P1     | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | 未实现                                                                                                                       |\n"
-"| P2     | HTTP API 鉴权                                         | 非 loopback Host 或非 loopback TCP 对端须 `remote_auth` 否则 401；双 loopback 豁免（[`remote-access.md`](remote-access.md)） |\n"
-"| P3     | IPC / LLM 速率限制                                    | 无                                                                                                                           |\n"
-"| P3     | 会话磁盘加密                                          | 无                                                                                                                           |\n"
+"| 优先级 | 项                                                    | 状态                         |\n"
+"| ------ | ----------------------------------------------------- | ---------------------------- |\n"
+"| P0     | file_read_file 全面 deny（`/etc/` 等）                | 部分                         |\n"
+"| P0     | `terminal_run` / `code_execute` 默认 `shell=False`    | 未实现                       |\n"
+"| P1     | Runtime Unix socket `chmod 600` + 握手 token          | 未实现                       |\n"
+"| P1     | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | 未实现                       |\n"
+"| P2     | 新增 secret 字段时维护配置脱敏                        | 部分——新增配置字段时同步     |\n"
+"| P3     | IPC / LLM 速率限制                                    | 无                           |\n"
+"| P3     | 会话磁盘加密                                          | 无                           |\n"
 
 #. type: Title ##
 #: docs/guide/security.md:81
@@ -418,11 +378,11 @@ msgstr "安装并初始化 pass + GPG；所有密钥只进 pass"
 #. type: Bullet: '2. '
 #: docs/guide/security.md:130
 msgid ""
-"Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/"
-"config.yaml`; **do not** write plaintext secrets in config"
+"Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/config."
+"yaml`; **do not** write plaintext secrets in config"
 msgstr ""
-"复制 [`config.example.yaml`](../config.example.yaml) → `~/.anima/"
-"config.yaml`；**勿**在 config 中写明文密钥"
+"复制 [`config.example.yaml`](../config.example.yaml) → `~/.anima/config."
+"yaml`；**勿**在 config 中写明文密钥"
 
 #. type: Bullet: '3. '
 #: docs/guide/security.md:130

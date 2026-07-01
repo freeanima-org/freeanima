@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 16:39+0800\n"
+"POT-Creation-Date: 2026-07-01 10:36+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -79,30 +79,22 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/service.md:23
-#, fuzzy
-#| msgid ""
-#| "**Do not** expose the service to the public internet without a Service "
-#| "API Token on clients (see [`remote-access.md`](remote-access.md))."
 msgid ""
 "Verify from the shell (business API requires a Service API Token — see "
 "[`remote-access.md`](remote-access.md)):"
 msgstr ""
-"**不要**在未配置 `remote_auth` 的情况下将服务暴露到公网（见 [`remote-"
-"access.md`](remote-access.md) — Tunnel + Bearer token）。"
+"请在 shell 中验证（业务 API 需要 Service API Token——见 [`remote-access.md`]"
+"(remote-access.md)）："
 
 #. type: Fenced code block (bash)
 #: docs/guide/service.md:24
-#, fuzzy, no-wrap
-#| msgid ""
-#| "curl -s http://127.0.0.1:2658/api/status | jq '.memory_kb, .memory_detail'\n"
-#| "grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f 'anima service' | head -1)/status\n"
-#| "bun run memory:sample -- --url http://127.0.0.1:2658/api/status --stage full\n"
+#, no-wrap
 msgid ""
 "curl -s -H \"Authorization: Bearer <fa_at_...>\" http://127.0.0.1:2658/api/status | jq '.memory_kb, .memory_detail'\n"
 "grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f 'anima service' | head -1)/status\n"
 "bun run memory:sample -- --url http://127.0.0.1:2658/api/status --stage full\n"
 msgstr ""
-"curl -s http://127.0.0.1:2658/api/status | jq '.memory_kb, .memory_detail'\n"
+"curl -s -H \"Authorization: Bearer <fa_at_...>\" http://127.0.0.1:2658/api/status | jq '.memory_kb, .memory_detail'\n"
 "grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f 'anima service' | head -1)/status\n"
 "bun run memory:sample -- --url http://127.0.0.1:2658/api/status --stage full\n"
 
@@ -164,8 +156,8 @@ msgstr ""
 #: docs/guide/service.md:51
 msgid ""
 "**Desktop / mobile bundled shell:** Chat and Admin at `/chat`, `/admin/*` "
-"inside the Electron/Capacitor app (not served from Hub `:2658` unless "
-"`web.enabled`)."
+"inside the Electron/Capacitor app (not served from Hub `:2658` unless `web."
+"enabled`)."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -177,16 +169,11 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/service.md:51
-#, fuzzy
-#| msgid ""
-#| "Admin UI lives at bundled shell `/admin` (not Hub `:2658`). Local dev: "
-#| "`bun run dev:web` → `http://127.0.0.1:4173/admin/dashboard`; Hub provides "
-#| "REST `/api/*` and SAP `/sap/v1` only."
 msgid ""
 "**Local Web dev (`bun run dev:web`):** Vite on `:4173` with base `/web/` — "
 "Chat `http://127.0.0.1:4173/web/chat`, Admin `http://127.0.0.1:4173/web/"
 "admin/dashboard`; Hub still provides REST `/api/*` and SAP `/sap/v1` only."
 msgstr ""
-"管理台 UI 位于 bundled shell `/admin`（非 Hub `:2658`）。本地开发：`bun run "
-"dev:web` → `http://127.0.0.1:4173/admin/dashboard`；Hub 仅提供 REST `/api/*` "
-"与 SAP `/sap/v1`。"
+"**本地 Web 开发（`bun run dev:web`）：** Vite 运行在 `:4173`，base 为 `/web/`"
+"——聊天室 `http://127.0.0.1:4173/web/chat`，管理台 `http://127.0.0.1:4173/web/"
+"admin/dashboard`；Hub 仍只提供 REST `/api/*` 与 SAP `/sap/v1`。"
