@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 16:39+0800\n"
+"POT-Creation-Date: 2026-07-01 22:04+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -760,18 +760,56 @@ msgstr ""
 msgid "**UI 唯一发布产物**：`app/web/dist`，Hub 托管于 `/web/*`（`web.enabled` 或 `anima web start`）。Desktop / Mobile / 浏览器 / PWA 共用同一 SPA；壳层只保留原生能力（Electron preload、Capacitor Preferences/Keyboard、伴侣 sidecar 等）。\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:285
+#. type: Title ###
+#: docs/concepts/architecture.md:281
 #, no-wrap
-msgid ""
-"| 呈现       | 触发                                              | Nav IA      |\n"
-"| ---------- | ------------------------------------------------- | ----------- |\n"
-"| `compact`  | 手机浏览器（触屏窄屏）、PWA standalone、Capacitor | 底栏 + More |\n"
-"| `expanded` | Electron、桌面浏览器                              | 顶栏全模块  |\n"
+msgid "两层模型"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:291
+#: docs/concepts/architecture.md:287
+#, no-wrap
+msgid ""
+"| 层                   | 驱动                                   | 职责                                                                                     |\n"
+"| -------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------- |\n"
+"| **交互与原生能力层** | 壳运行时（Electron / Capacitor / Web） | 存储、IPC、Hub 连接后端、settings registry **内容**、hash 路由、长按 vs 右键、滑动手势等 |\n"
+"| **布局层**           | **仅视口断点**（壳不锁定底栏/顶栏）    | 窄/中/宽三档；列表 drawer / 并列 / 三栏；settings **chrome**（tabs vs 侧栏）             |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:289
+msgid ""
+"手机端通常只有窄档，但 **手机端 ≠ 窄布局**；Electron / 浏览器窗口可以是窄、"
+"中、宽任意档。"
+msgstr ""
+
+#. type: Title ###
+#: docs/concepts/architecture.md:290
+#, no-wrap
+msgid "布局层断点"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:297
+#, no-wrap
+msgid ""
+"| 档位 | 视口        | 布局粗档            | Nav IA      | 页内     |\n"
+"| ---- | ----------- | ------------------- | ----------- | -------- |\n"
+"| 窄   | ≤1023px     | `compact` 移动布局  | 底栏 + More | drawer   |\n"
+"| 中   | 1024–1279px | `expanded` 桌面布局 | 顶栏全模块  | 两栏并列 |\n"
+"| 宽   | ≥1280px     | `expanded` 桌面布局 | 顶栏全模块  | 三栏并列 |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:299
+msgid ""
+"`resolveLayoutMode()`：窄 → `compact`，中宽 → `expanded`（URL / "
+"`config.json` 可覆盖）。`detectPlatform()` 跟布局粗档（设置页 chrome），"
+"settings 字段差异仍由能力层 `resolveShellBindings()` 决定。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:305
 #, no-wrap
 msgid ""
 "| 客户端       | UI 加载                                                               | 壳发版                   |\n"
@@ -782,7 +820,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:296
+#: docs/concepts/architecture.md:310
 #, no-wrap
 msgid ""
 "| Module | Connection                       | Notes                  |\n"
@@ -792,20 +830,20 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:298
+#: docs/concepts/architecture.md:312
 msgid ""
 "`/web/config.json` 提供 `hub_url`、`ui_version`、`min_shell_version`（壳↔UI "
 "版本协商）。"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:299
+#: docs/concepts/architecture.md:313
 #, no-wrap
 msgid "Events and Hooks (Summary)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:304
+#: docs/concepts/architecture.md:318
 msgid ""
 "**EventBus**: async notification transport (Redis queue); production code "
 "currently emits topics such as `session:updated` with **no registered "
@@ -814,7 +852,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:304
+#: docs/concepts/architecture.md:318
 msgid ""
 "**Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: light "
 "→ deep → cross-domain maintenance steps). State in `~/.anima/runtime/"
@@ -822,14 +860,14 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:304
+#: docs/concepts/architecture.md:318
 msgid ""
 "**Hooks**: sync interceptors — validation or clarification at message "
 "ingress, turn end, tool return, etc."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:306
+#: docs/concepts/architecture.md:320
 msgid ""
 "Complementary: Pipeline Runner handles scheduled multi-step background work; "
 "Hooks handle \"may this proceed before/during\"; EventBus remains available "
@@ -837,13 +875,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:307
+#: docs/concepts/architecture.md:321
 #, no-wrap
 msgid "Direction"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:310
+#: docs/concepts/architecture.md:324
 msgid ""
 "Capability vision and discussions: [GitHub Issues](https://github.com/"
 "freeanima-org/freeanima/issues) (labels `enhancement`, `discussion`, "
@@ -851,22 +889,22 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:311
+#: docs/concepts/architecture.md:325
 #, no-wrap
 msgid "Constraints"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:315
+#: docs/concepts/architecture.md:329
 msgid "Principles and structure live here; no concrete task lists"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:315
+#: docs/concepts/architecture.md:329
 msgid "Fast-changing behavior follows the running service, not stale prose"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:315
+#: docs/concepts/architecture.md:329
 msgid "Actionable work goes in GitHub Issues; close when done"
 msgstr ""

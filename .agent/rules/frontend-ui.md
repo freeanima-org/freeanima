@@ -38,9 +38,21 @@
 
 - `bun run stylelint`：DaisyUI 遗留 token + 主题色裸 `var()`（见根目录 `stylelint.config.js`）
 
-## 平台布局
+## 平台布局（两层模型）
 
-- 导航与主布局 IA：**必须** `detectLayoutMode()` / `useDrawerNav()` 分支（窄视口 ≤1023px 均为 compact + drawer）
+**能力层**（壳 / `satelliteShell`）：存储、IPC、settings registry 内容、长按 vs 右键、滑动手势——**不**决定底栏/顶栏。
+
+**布局层**（仅视口断点，壳不锁定）：
+
+| 档位 | 视口        | API                                                  | 效果            |
+| ---- | ----------- | ---------------------------------------------------- | --------------- |
+| 窄   | ≤1023px     | `useLayoutMode()` → compact、`useDrawerNav()` → true | 底栏 + drawer   |
+| 中   | 1024–1279px | expanded                                             | 顶栏 + 两栏并列 |
+| 宽   | ≥1280px     | `useThreeColumnLayoutMode()` → wide                  | 顶栏 + 三栏     |
+
+- 导航 IA：**必须** `detectLayoutMode()` / `useDrawerNav()` 分支；**禁止**用 `isElectron` / `isNativeShell` 锁布局
+- 设置页 chrome：`detectPlatform()` 跟布局粗档（compact → mobile tabs，expanded → desktop 侧栏）
+- 交互范式（右键/长按/滑动）：能力层分支，**禁止**用 layoutMode 猜测
 - `ListDetailLayout` drawer 颜色在 TSX 用 `bg-background`、`bg-black/55` 等 class，不在 `shared-safe-area.css` 写背景
 
 ## 禁止

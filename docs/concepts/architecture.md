@@ -278,10 +278,24 @@ Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User message
 
 **UI 唯一发布产物**：`app/web/dist`，Hub 托管于 `/web/*`（`web.enabled` 或 `anima web start`）。Desktop / Mobile / 浏览器 / PWA 共用同一 SPA；壳层只保留原生能力（Electron preload、Capacitor Preferences/Keyboard、伴侣 sidecar 等）。
 
-| 呈现       | 触发                                              | Nav IA      |
-| ---------- | ------------------------------------------------- | ----------- |
-| `compact`  | 手机浏览器（触屏窄屏）、PWA standalone、Capacitor | 底栏 + More |
-| `expanded` | Electron、桌面浏览器                              | 顶栏全模块  |
+### 两层模型
+
+| 层                   | 驱动                                   | 职责                                                                                     |
+| -------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **交互与原生能力层** | 壳运行时（Electron / Capacitor / Web） | 存储、IPC、Hub 连接后端、settings registry **内容**、hash 路由、长按 vs 右键、滑动手势等 |
+| **布局层**           | **仅视口断点**（壳不锁定底栏/顶栏）    | 窄/中/宽三档；列表 drawer / 并列 / 三栏；settings **chrome**（tabs vs 侧栏）             |
+
+手机端通常只有窄档，但 **手机端 ≠ 窄布局**；Electron / 浏览器窗口可以是窄、中、宽任意档。
+
+### 布局层断点
+
+| 档位 | 视口        | 布局粗档            | Nav IA      | 页内     |
+| ---- | ----------- | ------------------- | ----------- | -------- |
+| 窄   | ≤1023px     | `compact` 移动布局  | 底栏 + More | drawer   |
+| 中   | 1024–1279px | `expanded` 桌面布局 | 顶栏全模块  | 两栏并列 |
+| 宽   | ≥1280px     | `expanded` 桌面布局 | 顶栏全模块  | 三栏并列 |
+
+`resolveLayoutMode()`：窄 → `compact`，中宽 → `expanded`（URL / `config.json` 可覆盖）。`detectPlatform()` 跟布局粗档（设置页 chrome），settings 字段差异仍由能力层 `resolveShellBindings()` 决定。
 
 | 客户端       | UI 加载                                                               | 壳发版                   |
 | ------------ | --------------------------------------------------------------------- | ------------------------ |

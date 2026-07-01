@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 10:36+0000\n"
+"POT-Creation-Date: 2026-07-01 16:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -156,8 +156,8 @@ msgstr ""
 #: docs/guide/service.md:51
 msgid ""
 "**Desktop / mobile bundled shell:** Chat and Admin at `/chat`, `/admin/*` "
-"inside the Electron/Capacitor app (not served from Hub `:2658` unless `web."
-"enabled`)."
+"inside the Electron/Capacitor app (not served from Hub `:2658` unless "
+"`web.enabled`)."
 msgstr ""
 
 #. type: Bullet: '- '

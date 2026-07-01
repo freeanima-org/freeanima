@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 10:36+0000\n"
+"POT-Creation-Date: 2026-07-01 16:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Title ##
 #: docs/features/companion.md:120 docs/features/mobile-app.md:52
-#: docs/guide/database.md:91 docs/guide/remote-access.md:178
+#: docs/guide/database.md:91 docs/guide/remote-access.md:170
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
@@ -75,8 +75,8 @@ msgstr ""
 #: docs/guide/database.md:23
 msgid ""
 "Production **must** set `database.url`. Prefer pass for passwords instead of "
-"plaintext in config. Path conventions: [`security.md`](security."
-"md#credential-responsibilities)."
+"plaintext in config. Path conventions: [`security.md`]"
+"(security.md#credential-responsibilities)."
 msgstr ""
 "生产环境**必须**设置 `database.url`。密码优先使用 pass，避免在配置中明文存"
 "放。路径约定见 [`security.md`](security.md#credential-responsibilities)。"
