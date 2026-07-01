@@ -3,6 +3,60 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.8.1](https://github.com/freeanima-org/freeanima/compare/v0.8.0...v0.8.1) (2026-07-01)
+
+
+### Features
+
+* **auth:** 实现 Service API Token 按 subject 认证 ([a773b2b](https://github.com/freeanima-org/freeanima/commit/a773b2bf394f8f4ef1cc0e1a35d5c646e8157b37))
+* **entity:** 实体 World 归属显式化与 worlds 配置 ([a387e92](https://github.com/freeanima-org/freeanima/commit/a387e9242a5c4724e69e0a857ec52084152eb97e))
+* **http:** Hub /web 静态托管与 http.cors_origins 解耦 ([35a834b](https://github.com/freeanima-org/freeanima/commit/35a834b716dfe3c34c9628897855e3e6a8720ae2))
+* **hub:** 支持 http.host 配置与局域网 Web UUID 兼容 ([ddc1687](https://github.com/freeanima-org/freeanima/commit/ddc16871b7eed8df8617ba9632ad24fe47091d39))
+* **shell:** 壳层全局 User/Agent Subject 切换 ([7e5e8ad](https://github.com/freeanima-org/freeanima/commit/7e5e8ade39addda29eb2fe2bb1cfd34dc3f27575))
+* **task:** 任务列表显示 ID 并支持右键复制 ([dbc3189](https://github.com/freeanima-org/freeanima/commit/dbc3189e6f761ae56e31d8290f4fbe839b2c57f9))
+* **task:** 任务清单支持嵌套文件夹 ([63d9c05](https://github.com/freeanima-org/freeanima/commit/63d9c055a5f9978823a8c11f2ba8bb6d34f78c92))
+* **ui-kit:** 基于 DaisyUI 统一主题并封装复合组件 ([efb9ba1](https://github.com/freeanima-org/freeanima/commit/efb9ba192f25febc7ed85edd1788c4de745dcc01))
+* **web:** 未配置 Token 时显示 Hub 连接引导页 ([0f55c45](https://github.com/freeanima-org/freeanima/commit/0f55c45550ce906df5b5877f6d6513ea76db67ee))
+
+
+### Bug Fixes
+
+* **ci:** 修复 admin-frontend 分层依赖与 PO fuzzy 条目 ([5eb1232](https://github.com/freeanima-org/freeanima/commit/5eb123264bb25f620dfd8524e90df3d98543a481))
+* **ci:** 修复 CLI bundle 与启动前 FTS 分段 ([171ee4e](https://github.com/freeanima-org/freeanima/commit/171ee4e98ebed5d1659457ab0b4e49223f5a9590))
+* **ci:** 修复 CLI 入口路径与 entity-crud-repo db.execute ([3de81a6](https://github.com/freeanima-org/freeanima/commit/3de81a6cc474600d21f09d38a800db0e20a3fe2b))
+* **ci:** 修复集成测试 PG 连接泄漏与 meta patch 清除 ([3df3ab1](https://github.com/freeanima-org/freeanima/commit/3df3ab142f7bdecb6435da612595149534d8f80d))
+* **ci:** 允许 Dependabot PR 触发 Blackbox dispatch ([757bb95](https://github.com/freeanima-org/freeanima/commit/757bb9561f4722652b9ecda9f3db77fd7174d1bc))
+* **cli:** 修复 tunnel 托管与 Web 静态资源加载 ([0898d65](https://github.com/freeanima-org/freeanima/commit/0898d65779273ca22ea46dd23fd708b40771563e))
+* **companion:** 修复 VRMLookAtQuaternionProxy 的 name 赋值类型错误 ([b79ae2e](https://github.com/freeanima-org/freeanima/commit/b79ae2ec67ca5df895775925393140b6a83c4bc3))
+* **entity:** 先创建 user/agent subject 再分配默认私有 world，避免 id 冲突 ([387ac12](https://github.com/freeanima-org/freeanima/commit/387ac12d6e34f7d7f9b71085740d2885eba4ebc3))
+* **lint:** 清零 oxlint WARN 并收紧 unicorn 规则 ([49ebc13](https://github.com/freeanima-org/freeanima/commit/49ebc13918847526338474920c35bc87603c8181))
+* **sap:** 修正 handlers 子目录下的相对 import 路径 ([c706762](https://github.com/freeanima-org/freeanima/commit/c706762a28d24258e88af7ad8ed4128447867d64))
+* **task:** 修复任务拖到清单失败 ([a8f61bf](https://github.com/freeanima-org/freeanima/commit/a8f61bfcea4647a6e97038aabed3f00f40534b43))
+* **task:** 移动到弹窗支持文件夹树与搜索 ([f9e4f14](https://github.com/freeanima-org/freeanima/commit/f9e4f1482c3e1ac0ba6bca3457d5ca5f298c97bf))
+* **ui-kit:** 补充 satelliteShell 类型并清理 format 遗留 ([f0e57f1](https://github.com/freeanima-org/freeanima/commit/f0e57f1ecbb712a944e54fb6acca12f1b3b24c20))
+* **vite:** 用 resolveId 插件解析 SharedWorker 打包 URL ([0961293](https://github.com/freeanima-org/freeanima/commit/09612934b3d16bcfe1a21f2a75cde0439f460dab))
+* **web:** SharedWorker 内建打包并修复 SAP WebSocket 升级 ([0762800](https://github.com/freeanima-org/freeanima/commit/0762800b5f0b02f7efbd9b79a069900817b5f6ce))
+
+
+### Performance
+
+* **install:** 加速 bun install 并消除 ensure-fbx2gltf 僵尸进程 ([2f8e985](https://github.com/freeanima-org/freeanima/commit/2f8e985d60b2df1257b063fc585decafe3cabbed))
+
+
+### Miscellaneous
+
+* **deps:** bump the production-dependencies group across 1 directory with 15 updates ([77f0cad](https://github.com/freeanima-org/freeanima/commit/77f0cad8c80b54008137c06ae19944026425c7ae))
+* **deps:** 升级 commitlint、oxlint 等 devDependencies ([e3e73ab](https://github.com/freeanima-org/freeanima/commit/e3e73ab9e6c86035f479ce590d5748a8fbd501d7))
+* **lint:** 收紧 TypeScript 与 oxlint 严格检查 ([ff8d07f](https://github.com/freeanima-org/freeanima/commit/ff8d07f9eed1bf533aa7834acbbb43fd7d94eb5b))
+* 删除 multi-worktree-workflow 技能 ([8f39ec9](https://github.com/freeanima-org/freeanima/commit/8f39ec930ba2bcde7c22e2716a879d4d1966bcf7))
+
+
+### Refactoring
+
+* **frontend:** 划分 ui-kit/shell-sdk 并划清 SAP 边界 ([d954f57](https://github.com/freeanima-org/freeanima/commit/d954f57a1b7b5f4b847c1a22115c74e5f728afe1))
+* **sap:** 移除浏览器 SharedWorker SAP 连接链路 ([50dcec7](https://github.com/freeanima-org/freeanima/commit/50dcec7410e03162035ce0f440a873f398d9a17f))
+* 架构变迁遗留代码一次性清理 ([460786a](https://github.com/freeanima-org/freeanima/commit/460786a000b1ee3c4206fc3044727580f5f33e6b))
+
 ## [0.8.0](https://github.com/freeanima-org/freeanima/compare/v0.7.0...v0.8.0) (2026-06-29)
 
 
