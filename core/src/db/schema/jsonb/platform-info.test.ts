@@ -33,6 +33,10 @@ describe("platform-info", () => {
     expect(info).toMatchObject({ platform: "discord", channel_id: "nothing" });
   });
 
+  test("buildPlatformInfo accepts flat chat platform", () => {
+    expect(buildPlatformInfo("chat", {})).toEqual({ platform: "chat" });
+  });
+
   test("stripOriginRoutingMeta removes routing keys", () => {
     expect(stripOriginRoutingMeta({ origin_active: true, ended_at: "x", channel_id: "1" })).toEqual(
       {

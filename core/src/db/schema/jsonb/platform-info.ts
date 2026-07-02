@@ -43,6 +43,11 @@ const cronPlatformInfoSchema = z.looseObject({
   platform: z.literal("cron"),
 });
 
+/** bundled Chat 会话（flat platform，无 SAP instance 段） */
+const chatPlatformInfoSchema = z.looseObject({
+  platform: z.literal("chat"),
+});
+
 /** Keys excluded from origin identity matching / probe construction */
 export const ORIGIN_ROUTING_META_KEYS = new Set(["origin_active", "ended_at"]);
 
@@ -89,6 +94,7 @@ const weixinPlatformInfoSchema = z.looseObject({
  * SAP satellites use platform `sap:{app_slug}:{instance_id}`.
  */
 export const platformInfoSchema = z.union([
+  chatPlatformInfoSchema,
   sapPlatformInfoSchema,
   discordPlatformInfoSchema,
   weixinPlatformInfoSchema,
@@ -148,11 +154,18 @@ export function applyPlatformExtraDefaults(
   return out;
 }
 
+export function isChatPlatformString(platform: string): boolean {
+  return platform === "chat";
+}
+
 export function buildPlatformInfo(
   platform?: string,
   platformExtra?: Record<string, unknown>,
 ): PlatformInfo | null {
   if (!platform) return null;
+  if (isChatPlatformString(platform)) {
+    return chatPlatformInfoSchema.parse({ platform: "chat" });
+  }
   if (!isGatewayPlatform(platform) && !isSapPlatformString(platform)) {
     return null;
   }

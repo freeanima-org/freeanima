@@ -1,7 +1,5 @@
 import { describe, expect, test, afterEach } from "bun:test";
 
-import { CHAT_INSTANCE_ID, formatSapPlatform } from "@freeanima/sap-contract";
-
 import {
   chatPlatform,
   loadChatInstanceId,
@@ -9,16 +7,15 @@ import {
   subscribeShellConfigChanges,
 } from "./sap-client.ts";
 
-describe("chat singleton instance_id", () => {
-  test("loadChatInstanceId 返回固定 CHAT_INSTANCE_ID", () => {
+describe("chat platform", () => {
+  test("loadChatInstanceId 返回 chat", () => {
     resetChatInstanceCacheForTests();
-    expect(loadChatInstanceId()).toBe(CHAT_INSTANCE_ID);
+    expect(loadChatInstanceId()).toBe("chat");
   });
 
-  test("chatPlatform 返回 sap:chat:def", () => {
+  test("chatPlatform 返回 chat", () => {
     resetChatInstanceCacheForTests();
-    expect(chatPlatform()).toBe(formatSapPlatform("chat", CHAT_INSTANCE_ID));
-    expect(chatPlatform()).toBe("sap:chat:def");
+    expect(chatPlatform()).toBe("chat");
   });
 });
 
