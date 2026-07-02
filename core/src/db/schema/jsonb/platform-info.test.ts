@@ -37,6 +37,11 @@ describe("platform-info", () => {
     expect(buildPlatformInfo("chat", {})).toEqual({ platform: "chat" });
   });
 
+  test("buildPlatformInfo preserves extra fields for chat platform", () => {
+    const info = buildPlatformInfo("chat", { capability_mask: { presets: ["sleep"] } });
+    expect(info).toMatchObject({ platform: "chat", capability_mask: { presets: ["sleep"] } });
+  });
+
   test("stripOriginRoutingMeta removes routing keys", () => {
     expect(stripOriginRoutingMeta({ origin_active: true, ended_at: "x", channel_id: "1" })).toEqual(
       {

@@ -167,7 +167,9 @@ export function buildPlatformInfo(
 ): PlatformInfo | null {
   if (!platform) return null;
   if (isChatPlatformString(platform)) {
-    return chatPlatformInfoSchema.parse({ platform: "chat" });
+    const extra = normalizePlatformExtra(platformExtra);
+    const merged: Record<string, unknown> = { platform: "chat", ...extra };
+    return chatPlatformInfoSchema.parse(merged);
   }
   if (!isGatewayPlatform(platform) && !isSapPlatformString(platform)) {
     return null;
