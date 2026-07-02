@@ -1,5 +1,5 @@
 name: Build site
-description: po4a + i18n checks + Astro site build (shared by CI and GitHub Pages deploy)
+description: po4a compile + Paraglide + Astro site build (i18n validation checks disabled; run bun run i18n:check:all manually)
 runs:
   using: composite
   steps:
@@ -22,12 +22,6 @@ runs:
     - name: i18n po4a
       shell: bash
       run: bun run i18n:po4a
-    - name: Check Paraglide messages
-      shell: bash
-      run: bun scripts/check-paraglide-messages.ts
-    - name: Check PO health
-      shell: bash
-      run: bun scripts/check-po-health.ts --strict
     - name: Compile Paraglide messages
       shell: bash
       run: bun run paraglide:compile

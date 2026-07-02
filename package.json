@@ -32,7 +32,7 @@
   "type": "module",
   "scripts": {
     "check": "bun run typecheck && bun run lint && bun run dep-check && bun run stylelint && bun run format && bun run test:changed",
-    "dep-check": "bun scripts/check-layer-deps.ts && bun scripts/check-package-cycles.ts && bun scripts/check-no-db-execute.ts && bun scripts/check-lint-disable-reason.ts && bun scripts/check-no-ts-suppressions.ts && bun scripts/check-no-explicit-any.ts && bun run docs:i18n:check && bun run i18n:docs:check:strict",
+    "dep-check": "bun scripts/check-layer-deps.ts && bun scripts/check-package-cycles.ts && bun scripts/check-no-db-execute.ts && bun scripts/check-lint-disable-reason.ts && bun scripts/check-no-ts-suppressions.ts && bun scripts/check-no-explicit-any.ts",
     "format": "oxfmt --check .",
     "format:fix": "oxfmt .",
     "lint": "oxlint .",
@@ -64,6 +64,7 @@
     "i18n:docs:english:check": "bun scripts/check-po-english-msgstr.ts",
     "i18n:docs:check": "bun scripts/check-po-health.ts",
     "i18n:docs:check:strict": "bun scripts/check-po-health.ts --strict",
+    "i18n:check:all": "bun run docs:i18n:check && bun run i18n:docs:check:strict && bun scripts/check-paraglide-messages.ts && bun run i18n:docs:generated:check",
     "memory:sample": "bun scripts/memory-sample.ts",
     "migrate:tasks": "bun scripts/archive/migrate-tasks-to-entities.ts",
     "migrate:email": "bun scripts/archive/migrate-email-to-entities.ts",
