@@ -148,10 +148,11 @@ export function createSapServerHandlers(
         case "conversation.create": {
           const input = conversationCreateInputSchema.parse(payload);
           const platform = input.platform ?? formatSapPlatform(ctx.app_id, ctx.instance_id);
-          const platformExtra: Record<string, unknown> = {
-            satellite_app_id: normalizeAppSlug(ctx.app_id),
-            satellite_instance_id: ctx.instance_id,
-          };
+          const platformExtra: Record<string, unknown> = {};
+          if (ctx.app_id.trim() && ctx.instance_id.trim()) {
+            platformExtra.satellite_app_id = normalizeAppSlug(ctx.app_id);
+            platformExtra.satellite_instance_id = ctx.instance_id;
+          }
           if (input.workspace_root) platformExtra.workspace_root = input.workspace_root;
           if (input.workspace_gitignore !== undefined) {
             platformExtra.workspace_gitignore = input.workspace_gitignore;

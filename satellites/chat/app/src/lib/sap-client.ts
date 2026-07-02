@@ -1,7 +1,5 @@
 /// <reference lib="dom" />
 import {
-  CHAT_INSTANCE_ID,
-  formatSapPlatform,
   resolveHubRpcWsUrl,
   getBundledSapStreamClient,
   resetBundledSapStreamClientForTests,
@@ -10,7 +8,7 @@ import {
   type SapClient,
 } from "@freeanima/sap-contract";
 
-const APP_ID = "chat";
+const CHAT_PLATFORM = "chat";
 
 function resolveHubRpcWsUrlFromEnv(): string {
   const shell = window.satelliteShell;
@@ -31,11 +29,11 @@ export function getSapDirectClient() {
 }
 
 export function loadChatInstanceId(): string {
-  return CHAT_INSTANCE_ID;
+  return CHAT_PLATFORM;
 }
 
 export function chatPlatform(): string {
-  return formatSapPlatform(APP_ID, CHAT_INSTANCE_ID);
+  return CHAT_PLATFORM;
 }
 
 export async function whenSapClientReady(): Promise<SapClient> {

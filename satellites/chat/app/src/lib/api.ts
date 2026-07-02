@@ -1,5 +1,5 @@
 import type { ConversationAcpDockSnapshot, ConversationListItem, StreamApiEvent } from "./types.ts";
-import { getSapDirectClient } from "./sap-client.ts";
+import { getSapDirectClient, chatPlatform } from "./sap-client.ts";
 import { m } from "./i18n.ts";
 
 type SubscribeCallbacks<T> = {
@@ -37,6 +37,7 @@ export type { ConversationAcpDockSnapshot, StreamApiEvent } from "./types.ts";
 export async function listConversations(opts?: { includeArchived?: boolean }) {
   const client = await sap().whenReady();
   const result = await client.request("conversation.list", {
+    platform: chatPlatform(),
     include_archived: opts?.includeArchived,
   });
   return mapConversationList(result);
@@ -44,7 +45,7 @@ export async function listConversations(opts?: { includeArchived?: boolean }) {
 
 export async function createConversation() {
   const client = await sap().whenReady();
-  const result = await client.request("conversation.create", {});
+  const result = await client.request("conversation.create", { platform: chatPlatform() });
   return { conversation_id: result.conversation_id };
 }
 
@@ -110,6 +111,7 @@ export async function getConversationAcpDock(
 export async function listConversationCommands(opts?: { all?: boolean }) {
   const client = await sap().whenReady();
   return client.request("conversation.commands", {
+    platform: chatPlatform(),
     all: opts?.all,
   });
 }

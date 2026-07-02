@@ -14,7 +14,6 @@ import {
   type BundledSapStreamClient,
 } from "./bundled-sap-stream.ts";
 import { resolveHubRpcWsUrl } from "./urls.ts";
-import { CHAT_INSTANCE_ID } from "./satellite-instance.ts";
 import { formatSapPlatform } from "./naming.ts";
 
 /** @deprecated 使用 getBundledSapStreamClient */
@@ -56,7 +55,7 @@ export function formatDirectPlatform(appId: string, instanceId: string): string 
 }
 
 export function defaultChatPlatform(): string {
-  return formatSapPlatform("chat", CHAT_INSTANCE_ID);
+  return "chat";
 }
 
 export { resolveHubRpcWsUrl };
