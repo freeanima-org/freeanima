@@ -48,7 +48,8 @@ export async function appendMessage(
     .onConflictDoNothing({ target: [messages.conversation_id, messages.pos] })
     .returning();
   if (inserted.length > 0) {
-    const row = inserted[0]!;
+    const row = inserted[0];
+    if (!row) throw new Error(`Row missing after messages insert: session=${conversation_id}`);
     const content = extractIndexableContent(row.payload);
     if (content) {
       scheduleMessageEmbedding(row.id, content);
@@ -74,12 +75,13 @@ export async function appendMessage(
     .from(messages)
     .where(and(eq(messages.conversation_id, conversation_id), eq(messages.pos, insert.pos)))
     .limit(1);
-  if (rows.length === 0) {
+  const existingRow = rows[0];
+  if (!existingRow) {
     throw new Error(
       `Row not found after messages write: session=${conversation_id} pos=${insert.pos}`,
     );
   }
-  return rowToMessage(rows[0]!);
+  return rowToMessage(existingRow);
 }
 
 export async function getMessageContentById(
@@ -92,8 +94,9 @@ export async function getMessageContentById(
     .from(messages)
     .where(and(eq(messages.conversation_id, conversation_id), eq(messages.id, message_id)))
     .limit(1);
-  if (rows.length === 0) return null;
-  const payload = rows[0]!.payload;
+  const row = rows[0];
+  if (!row) return null;
+  const payload = row.payload;
   if (payload.role !== "assistant" && payload.role !== "user") return null;
   const raw = payload.content;
   return typeof raw === "string" ? raw : null;
@@ -139,7 +142,10 @@ export async function appendMessageReturningId(
     .onConflictDoNothing({ target: [messages.conversation_id, messages.pos] })
     .returning();
   if (inserted.length > 0) {
-    return { messageId: inserted[0]!.id };
+    const insertedRow = inserted[0];
+    if (!insertedRow)
+      throw new Error(`Row missing after messages insert: session=${conversation_id}`);
+    return { messageId: insertedRow.id };
   }
 
   const rows = await db
@@ -147,12 +153,13 @@ export async function appendMessageReturningId(
     .from(messages)
     .where(and(eq(messages.conversation_id, conversation_id), eq(messages.pos, insert.pos)))
     .limit(1);
-  if (rows.length === 0) {
+  const idRow = rows[0];
+  if (!idRow) {
     throw new Error(
       `Row not found after messages write: session=${conversation_id} pos=${insert.pos}`,
     );
   }
-  return { messageId: rows[0]!.id };
+  return { messageId: idRow.id };
 }
 
 export async function updateMessageContent(
@@ -166,9 +173,10 @@ export async function updateMessageContent(
     .from(messages)
     .where(and(eq(messages.conversation_id, conversation_id), eq(messages.id, message_id)))
     .limit(1);
-  if (rows.length === 0) return;
+  const contentRow = rows[0];
+  if (!contentRow) return;
 
-  const payload = rows[0]!.payload;
+  const payload = contentRow.payload;
   if (payload.role !== "assistant" && payload.role !== "user") return;
 
   const fts_segmented = await resolveFtsSegmentedForWrite(content.trim());
@@ -270,8 +278,9 @@ export async function findMessagePos(
     .from(messages)
     .where(and(eq(messages.conversation_id, conversation_id), eq(messages.id, message_id)))
     .limit(1);
-  if (rows.length === 0) return null;
-  return Number(rows[0]!.pos);
+  const posRow = rows[0];
+  if (!posRow) return null;
+  return Number(posRow.pos);
 }
 
 export async function listMessageRowsPage(

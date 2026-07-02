@@ -112,9 +112,13 @@ export function renameMotion(id: string, name: string): MotionLibraryEntry {
   const idx = cfg.motion_library.findIndex((e) => e.id === id);
   if (idx < 0) throw new Error("动作不存在");
   const next = [...cfg.motion_library];
-  next[idx] = { ...next[idx]!, name: name.trim() || next[idx]!.name };
+  const current = next[idx];
+  if (!current) throw new Error("动作不存在");
+  next[idx] = { ...current, name: name.trim() || current.name };
   saveConfig({ motion_library: next });
-  return next[idx]!;
+  const updated = next[idx];
+  if (!updated) throw new Error("动作不存在");
+  return updated;
 }
 
 export function deleteMotion(id: string): void {

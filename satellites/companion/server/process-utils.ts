@@ -14,7 +14,12 @@ export async function runCommand(
   opts?: { cwd?: string },
 ): Promise<{ code: number; stderr: string }> {
   return new Promise((resolve, reject) => {
-    const proc = spawn(args[0]!, args.slice(1), {
+    const bin = args[0];
+    if (!bin) {
+      reject(new Error("command args empty"));
+      return;
+    }
+    const proc = spawn(bin, args.slice(1), {
       cwd: opts?.cwd,
       stdio: ["ignore", "ignore", "pipe"],
     });

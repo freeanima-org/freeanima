@@ -19,14 +19,23 @@ export function tokenizeFtsQuery(text: string): string[] {
   let i = 0;
 
   while (i < s.length) {
-    while (i < s.length && /\s/.test(s[i]!)) i += 1;
+    while (i < s.length) {
+      const ws = s[i];
+      if (ws === undefined || !/\s/.test(ws)) break;
+      i += 1;
+    }
     if (i >= s.length) break;
 
-    if (s[i] === '"') {
+    const ch = s[i];
+    if (ch === undefined) break;
+
+    if (ch === '"') {
       i += 1;
       let quoted = '"';
-      while (i < s.length && s[i] !== '"') {
-        quoted += s[i];
+      while (i < s.length) {
+        const inner = s[i];
+        if (inner === undefined || inner === '"') break;
+        quoted += inner;
         i += 1;
       }
       if (i < s.length) {
@@ -38,8 +47,10 @@ export function tokenizeFtsQuery(text: string): string[] {
     }
 
     let plain = "";
-    while (i < s.length && !/\s/.test(s[i]!)) {
-      plain += s[i];
+    while (i < s.length) {
+      const plainCh = s[i];
+      if (plainCh === undefined || /\s/.test(plainCh)) break;
+      plain += plainCh;
       i += 1;
     }
     if (plain) tokens.push(plain);
@@ -88,7 +99,10 @@ export function parseFtsOperatorQuery(text: string): FtsOperatorSegment[] {
 export function flushOperandGroup(parts: string[]): string {
   const filtered = parts.filter(Boolean);
   if (filtered.length === 0) return "";
-  if (filtered.length === 1) return filtered[0]!;
+  if (filtered.length === 1) {
+    const sole = filtered[0];
+    return sole ?? "";
+  }
   return filtered.join(" & ");
 }
 

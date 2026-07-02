@@ -18,7 +18,10 @@ export class SteppedBackoff {
   /** Return current step delay (ms) and increment attempt */
   nextDelayMs(): number {
     const idx = Math.min(this._attempt, this.delaysMs.length - 1);
-    const delay = this.delaysMs[idx]!;
+    const delay = this.delaysMs[idx];
+    if (delay === undefined) {
+      throw new Error("SteppedBackoff: delay index out of range");
+    }
     this._attempt += 1;
     return delay;
   }

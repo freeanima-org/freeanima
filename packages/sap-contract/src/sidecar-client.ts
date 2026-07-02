@@ -164,7 +164,8 @@ export function createSapSidecarClient(options: SapSidecarClientOptions = {}): S
       if (stopped || options.signal?.aborted) break;
       try {
         await connectOnce();
-        await waitWebSocketClose(ws!);
+        const socket = ws;
+        if (socket) await waitWebSocketClose(socket);
         clearRelay();
         if (stopped || options.signal?.aborted) return;
         setState("disconnected");
@@ -206,8 +207,9 @@ export function createSapSidecarClient(options: SapSidecarClientOptions = {}): S
   };
 
   const whenReadyInternal = (): Promise<SapRelayClient> => {
-    if (relay && ws && ws.readyState === WebSocket.OPEN) {
-      return relay.whenReady().then(() => relay!);
+    const client = relay;
+    if (client && ws && ws.readyState === WebSocket.OPEN) {
+      return client.whenReady().then(() => client);
     }
     return new Promise<SapRelayClient>((resolve, reject) => {
       readyWaiters.push({ resolve, reject });

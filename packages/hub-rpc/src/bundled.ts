@@ -115,11 +115,17 @@ function createBundledHubRpcClient(options: BundledHubRpcClientOptions = {}): Bu
     if (!initPromise) {
       initPromise = (async () => {
         startTransport();
-        await transport!.whenConnected();
+        if (transport === null) {
+          throw new Error("hub RPC transport failed to start");
+        }
+        await transport.whenConnected();
       })();
     }
     await initPromise;
-    return transport!.whenConnected();
+    if (transport === null) {
+      throw new Error("hub RPC transport not initialized");
+    }
+    return transport.whenConnected();
   };
 
   return {

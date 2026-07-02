@@ -102,7 +102,9 @@ export async function markMessageReadOnImap(messageId: number): Promise<{ ok: tr
       async (client, mailbox) => {
         const lock = await client.getMailboxLock(mailbox);
         try {
-          await client.messageFlagsAdd(message.imap_uid!, ["\\Seen"], { uid: true });
+          const imapUid = message.imap_uid;
+          if (imapUid == null) return;
+          await client.messageFlagsAdd(imapUid, ["\\Seen"], { uid: true });
         } finally {
           lock.release();
         }
@@ -129,7 +131,9 @@ export async function deleteMessageOnImap(messageId: number): Promise<{ ok: true
       async (client, mailbox) => {
         const lock = await client.getMailboxLock(mailbox);
         try {
-          await client.messageDelete(message.imap_uid!, { uid: true });
+          const imapUid = message.imap_uid;
+          if (imapUid == null) return;
+          await client.messageDelete(imapUid, { uid: true });
         } finally {
           lock.release();
         }

@@ -39,7 +39,8 @@ export async function repairAndPersistToolLoop(
     await shiftMessagePositions(conversationId, insertAtPos - 1, n);
 
     for (let i = 0; i < n; i++) {
-      const call = c.missingCalls[i]!;
+      const call = c.missingCalls[i];
+      if (call === undefined) continue;
       await appendMessage(conversationId, {
         role: "tool",
         pos: insertAtPos + i,

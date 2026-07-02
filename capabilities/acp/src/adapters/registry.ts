@@ -10,7 +10,10 @@ const ADAPTERS: Record<string, AcpAgentAdapter> = {
 
 export function resolveAcpAdapter(agentCfg: AcpAgentConfig): AcpAgentAdapter {
   const explicit = agentCfg.adapter?.trim().toLowerCase();
-  if (explicit && ADAPTERS[explicit]) return ADAPTERS[explicit]!;
+  if (explicit) {
+    const adapter = ADAPTERS[explicit];
+    if (adapter) return adapter;
+  }
 
   const args = agentCfg.args ?? [];
   const cmd = (agentCfg.command ?? "").toLowerCase();

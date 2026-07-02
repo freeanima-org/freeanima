@@ -97,7 +97,9 @@ export function EmailApp() {
       if (enabled.length === 0) return;
 
       const stored = readModuleSelection("email");
-      const account = enabled.find((a) => a.id === stored?.accountId) ?? enabled[0]!;
+      const fallback = enabled[0];
+      const account = enabled.find((a) => a.id === stored?.accountId) ?? fallback;
+      if (!account) return;
 
       setActiveAccountId(account.id);
       if (useDrawer) setListOpen(false);

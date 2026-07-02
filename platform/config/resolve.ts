@@ -25,7 +25,12 @@ export function resolveCredentialRef(value: string, _defaultField: string): stri
   const trimmed = value.trim();
   const credFull = CREDENTIAL_FULL_RE.exec(trimmed);
   if (credFull) {
-    return resolveCredential(credFull[1]!, credFull[2]!);
+    const credPath = credFull[1];
+    const credField = credFull[2];
+    if (credPath === undefined || credField === undefined) {
+      throw new Error(`Invalid credential reference: ${trimmed}`);
+    }
+    return resolveCredential(credPath, credField);
   }
   return trimmed;
 }
@@ -34,12 +39,21 @@ export function resolveCredentialRef(value: string, _defaultField: string): stri
 export async function resolveValue(value: string): Promise<string> {
   const envFull = ENV_FULL_RE.exec(value);
   if (envFull) {
-    return resolveEnvKey(envFull[1]!);
+    const envKey = envFull[1];
+    if (envKey === undefined) {
+      throw new Error(`Invalid env reference: ${value}`);
+    }
+    return resolveEnvKey(envKey);
   }
 
   const credFull = CREDENTIAL_FULL_RE.exec(value);
   if (credFull) {
-    return resolveCredential(credFull[1]!, credFull[2]!);
+    const credPath = credFull[1];
+    const credField = credFull[2];
+    if (credPath === undefined || credField === undefined) {
+      throw new Error(`Invalid credential reference: ${value}`);
+    }
+    return resolveCredential(credPath, credField);
   }
 
   EMBEDDED_RE.lastIndex = 0;
@@ -55,7 +69,12 @@ export async function resolveValue(value: string): Promise<string> {
     if (match[1] !== undefined) {
       result += resolveEnvKey(match[1]);
     } else {
-      result += resolveCredential(match[2]!, match[3]!);
+      const credPath = match[2];
+      const credField = match[3];
+      if (credPath === undefined || credField === undefined) {
+        throw new Error(`Invalid embedded credential reference in: ${value}`);
+      }
+      result += resolveCredential(credPath, credField);
     }
     lastIndex = match.index + match[0].length;
   }

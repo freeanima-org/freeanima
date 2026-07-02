@@ -35,7 +35,14 @@ export function HubSetupPage() {
     );
   }
 
-  const { section } = hub.binding;
+  const { section, store } = hub.binding;
+  if (!store) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 bg-muted">
+        <p className="text-sm text-destructive">Hub 设置未注入，无法完成引导。</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-muted text-foreground">
@@ -51,7 +58,7 @@ export function HubSetupPage() {
           </header>
           <FormRenderer
             fields={hub.formFields}
-            store={hub.binding.store!}
+            store={store}
             platform={platform}
             sectionId={section.id}
             enterAfterSave

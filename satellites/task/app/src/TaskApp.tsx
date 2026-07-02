@@ -834,7 +834,7 @@ export function TaskApp() {
                       useActionSheet={useActionSheet}
                       selectionMode={selectionMode}
                       selectedIds={selectedItemIds}
-                      onToggleComplete={toggleComplete}
+                      onToggleComplete={(item) => void toggleComplete(item)}
                       onEdit={openTaskDetail}
                       onOpenItemMenu={openItemMenuSheet}
                       onOpenItemContextMenu={openItemContextMenu}
@@ -850,7 +850,7 @@ export function TaskApp() {
                       useActionSheet={useActionSheet}
                       selectionMode={selectionMode}
                       selectedIds={selectedItemIds}
-                      onToggleComplete={toggleComplete}
+                      onToggleComplete={(item) => void toggleComplete(item)}
                       onEdit={openTaskDetail}
                       onOpenItemMenu={openItemMenuSheet}
                       onOpenItemContextMenu={openItemContextMenu}

@@ -65,12 +65,13 @@ function buildAutobiographicalConditions(
   }
   if (query) {
     const pattern = `%${escapeIlikePattern(query)}%`;
-    conditions.push(
-      or(
-        sql`${autobiographicalMemory.title} ILIKE ${pattern} ESCAPE '\\'`,
-        sql`${autobiographicalMemory.content} ILIKE ${pattern} ESCAPE '\\'`,
-      )!,
+    const titleOrContent = or(
+      sql`${autobiographicalMemory.title} ILIKE ${pattern} ESCAPE '\\'`,
+      sql`${autobiographicalMemory.content} ILIKE ${pattern} ESCAPE '\\'`,
     );
+    if (titleOrContent) {
+      conditions.push(titleOrContent);
+    }
   }
   return conditions;
 }

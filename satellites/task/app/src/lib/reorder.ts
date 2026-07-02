@@ -7,19 +7,22 @@ export function reorderIds<T extends { id: number }>(
   const from = items.findIndex((item) => item.id === draggedId);
   if (from < 0) return items;
 
+  const dragged = items[from];
+  if (!dragged) return items;
+
   const next = items.filter((item) => item.id !== draggedId);
   if (targetId == null) {
-    next.push(items[from]!);
+    next.push(dragged);
     return next;
   }
 
   const to = next.findIndex((item) => item.id === targetId);
   if (to < 0) {
-    next.push(items[from]!);
+    next.push(dragged);
     return next;
   }
 
-  next.splice(to, 0, items[from]!);
+  next.splice(to, 0, dragged);
   return next;
 }
 

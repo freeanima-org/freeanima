@@ -5,7 +5,8 @@ import type { ClarifyPayload } from "./types.ts";
 export function formatClarifyPlain(items: ClarifyItem[]): string {
   const parts: string[] = [];
   for (let i = 0; i < items.length; i++) {
-    const item = items[i]!;
+    const item = items[i];
+    if (item === undefined) continue;
     parts.push(`❓ ${i + 1}. ${item.question}`);
     if (item.choices?.length) {
       for (let j = 0; j < item.choices.length; j++) {
@@ -22,7 +23,8 @@ function formatClarifyDiscordQuestionLines(
 ): string[] {
   const lines: string[] = [];
   for (let i = 0; i < items.length; i++) {
-    const item = items[i]!;
+    const item = items[i];
+    if (item === undefined) continue;
     lines.push(`**${i + 1}. ${item.question}**`);
     if (includeChoices && item.choices?.length) {
       for (let j = 0; j < item.choices.length; j++) {
@@ -56,7 +58,8 @@ export function formatClarifyDiscord(payload: ClarifyPayload): string {
 export function formatClarifyWeixin(payload: ClarifyPayload): string {
   const lines = ["[Pending confirmation]"];
   for (let i = 0; i < payload.items.length; i++) {
-    const item = payload.items[i]!;
+    const item = payload.items[i];
+    if (item === undefined) continue;
     lines.push(`${i + 1}. ${item.question}`);
     if (item.choices?.length) {
       lines.push(`   Options: ${item.choices.map((c, idx) => `${idx + 1}.${c}`).join(" ")}`);

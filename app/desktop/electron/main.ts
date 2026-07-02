@@ -423,7 +423,7 @@ if (!gotSingleInstanceLock) {
     }
   });
 
-  app.whenReady().then(() => {
+  void app.whenReady().then(() => {
     if (quitForInstall) {
       void releaseInstallLocks().finally(() => app.exit(0));
       return;

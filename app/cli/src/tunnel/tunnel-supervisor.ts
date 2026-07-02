@@ -187,7 +187,11 @@ export function startTunnelForeground(): ChildProcess | null {
     configFile: PATHS.cloudflaredConfigFile,
     ...omitUndefined({ tunnelId: cfg?.cloudflare?.tunnel_id }),
   });
-  const child = spawn(argv[0]!, argv.slice(1), {
+  const bin = argv[0];
+  if (bin === undefined) {
+    throw new Error("cloudflared argv is empty");
+  }
+  const child = spawn(bin, argv.slice(1), {
     stdio: ["ignore", "inherit", "inherit"],
     detached: false,
   });
@@ -230,7 +234,9 @@ export type TunnelStatus = {
 
 function tunnelProcessPid(): number | null {
   if (isForegroundTunnelChildAlive()) {
-    return foregroundChild.current!.pid!;
+    const fg = foregroundChild.current;
+    if (fg === null) return null;
+    return fg.pid ?? null;
   }
   if (isSystemdTunnelRunning()) {
     const r = systemctl("show", TUNNEL_SYSTEMD_UNIT, "-p", "MainPID", "--value");

@@ -417,7 +417,9 @@ export async function* runExclusiveStreamTurn(
 
   while (true) {
     while (buffer.length > 0) {
-      yield buffer.shift()!;
+      const event = buffer.shift();
+      if (event === undefined) break;
+      yield event;
       await new Promise<void>((resolve) => {
         setImmediate(resolve);
       });

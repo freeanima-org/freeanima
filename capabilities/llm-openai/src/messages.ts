@@ -79,7 +79,9 @@ export function messagesForApi(
     apiMessages.push({ role: "system", content: systemPrompt });
   }
   for (let i = 0; i < messages.length; i++) {
-    apiMessages.push(sanitizeTurnForApi(messages, i, messages[i]!));
+    const msg = messages[i];
+    if (msg === undefined) continue;
+    apiMessages.push(sanitizeTurnForApi(messages, i, msg));
   }
   return apiMessages;
 }

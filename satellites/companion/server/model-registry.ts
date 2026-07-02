@@ -64,9 +64,13 @@ export function renameModel(id: string, name: string): ModelEntry {
   const idx = cfg.models.findIndex((m) => m.id === id);
   if (idx < 0) throw new Error("模型不存在");
   const models = [...cfg.models];
-  models[idx] = { ...models[idx]!, name: name.trim() || models[idx]!.name };
+  const current = models[idx];
+  if (!current) throw new Error("模型不存在");
+  models[idx] = { ...current, name: name.trim() || current.name };
   saveConfig({ models });
-  return models[idx]!;
+  const updated = models[idx];
+  if (!updated) throw new Error("模型不存在");
+  return updated;
 }
 
 export function deleteModel(id: string): void {

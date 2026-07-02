@@ -119,7 +119,8 @@ export class ACPClient {
     }
     const shellCmd = this.command.trim();
     const parts = shellCmd.split(/\s+/);
-    const bin = parts[0]!;
+    const bin = parts[0];
+    if (!bin) throw new ACPError(-1, `ACP agent '${this.name}' command is empty`);
     const extraArgs = parts.slice(1);
 
     this.stderrLines.length = 0;

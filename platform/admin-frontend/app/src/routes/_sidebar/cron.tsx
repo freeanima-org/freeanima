@@ -69,7 +69,8 @@ function CronPage() {
     setToggling((t) => ({ ...t, [job.id]: action }));
     try {
       const data = enable ? await resumeCronJob(job.id) : await pauseCronJob(job.id);
-      if ((data as { job?: CronJob }).job) updateJob((data as { job: CronJob }).job);
+      const typed = data as unknown as { job?: CronJob };
+      if (typed.job) updateJob(typed.job);
     } catch (e) {
       logCaughtError("routes/_sidebar/cron", e);
       setError(

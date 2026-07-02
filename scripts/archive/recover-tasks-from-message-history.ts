@@ -245,7 +245,7 @@ async function main(): Promise<void> {
     console.log(`recovery done: ${created} created, ${skipped} skipped`);
   } finally {
     await closeDb();
-    sql.close();
+    void sql.close();
   }
 }
 

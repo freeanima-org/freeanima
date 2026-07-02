@@ -297,7 +297,8 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
       .limit(REBUILD_EMBEDDING_PAGE_SIZE);
     if (rows.length === 0) break;
 
-    const row = rows[0]!;
+    const row = rows[0];
+    if (!row) break;
     const stored = await embedRebuildRow("semantic_memory_embedding", {
       kind: "semantic_memory",
       id: row.id,
@@ -340,7 +341,8 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
       .limit(REBUILD_EMBEDDING_PAGE_SIZE);
     if (rows.length === 0) break;
 
-    const row = rows[0]!;
+    const row = rows[0];
+    if (!row) break;
     const stored = await embedRebuildRow("messages_embedding", {
       kind: "message",
       id: row.id,
@@ -614,7 +616,8 @@ async function rebuildLimbicMemoryEmbeddings(opts: FtsRebuildOptions): Promise<n
       .limit(REBUILD_EMBEDDING_PAGE_SIZE);
     if (rows.length === 0) break;
 
-    const row = rows[0]!;
+    const row = rows[0];
+    if (!row) break;
     const stored = await embedRebuildRow("limbic_memory_embedding", {
       kind: "limbic_memory",
       id: row.id,
@@ -661,7 +664,8 @@ async function rebuildAutobiographicalMemoryEmbeddings(opts: FtsRebuildOptions):
       .limit(REBUILD_EMBEDDING_PAGE_SIZE);
     if (rows.length === 0) break;
 
-    const row = rows[0]!;
+    const row = rows[0];
+    if (!row) break;
     const stored = await embedRebuildRow("autobiographical_memory_embedding", {
       kind: "autobiographical_memory",
       id: row.id,

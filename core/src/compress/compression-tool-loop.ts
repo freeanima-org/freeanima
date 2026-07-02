@@ -33,7 +33,8 @@ export function isInToolLoop(messages: StoredMessage[]): boolean {
   const tail = rest.slice(lastUser + 1);
   if (tail.length === 0) return false;
 
-  const last = tail.at(-1)!;
+  const last = tail.at(-1);
+  if (last === undefined) return false;
   if (last.role === "tool") return true;
 
   if (last.role === "assistant") {

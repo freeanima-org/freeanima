@@ -51,7 +51,8 @@ export async function createJob(opts: {
     created_at: now,
     updated_at: now,
   });
-  const job = (await getJob(id))!;
+  const job = await getJob(id);
+  if (!job) throw new Error(`cron job not found after create: ${id}`);
   getCronHandleManager().register(job);
   return job;
 }

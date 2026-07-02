@@ -143,7 +143,8 @@ function serveStatic(pathname: string): Response {
   const filePath = join(DIST_DIR, rel);
   if (existsSync(filePath) && statSync(filePath).isFile()) {
     const ext = extname(filePath);
-    const headers = MIME[ext] ? { "Content-Type": MIME[ext]! } : undefined;
+    const contentType = MIME[ext];
+    const headers = contentType ? { "Content-Type": contentType } : undefined;
     return withCors(new Response(Bun.file(filePath), headers ? { headers } : {}));
   }
 

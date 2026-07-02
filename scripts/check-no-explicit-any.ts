@@ -1,21 +1,23 @@
 #!/usr/bin/env bun
 /**
- * Fail if core/src/db/pg or tests/integration contain db.execute or drizzleSql.raw.
+ * Forbid explicit `any` in contract / port directories.
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const ROOT = join(import.meta.dir, "..");
-const SCAN_DIRS = [join(ROOT, "core/src/db/pg"), join(ROOT, "tests/integration")];
-const PATTERNS: Array<{ re: RegExp; label: string }> = [
-  { re: /\bdb\.execute\b/, label: "db.execute" },
-  { re: /\bdrizzleSql\.raw\b/, label: "drizzleSql.raw" },
+const SCAN_DIRS = [
+  join(ROOT, "platform/ports"),
+  join(ROOT, "platform/admin-contract"),
+  join(ROOT, "packages/sap-contract"),
 ];
+const ANY_RE = /:\s*any\b|as\s+any\b|<any>|Promise<any>|Record<string,\s*any>/;
 
-type Hit = { file: string; line: number; label: string; text: string };
+type Hit = { file: string; line: number; text: string };
 
 function walk(dir: string, out: string[]): void {
   for (const name of readdirSync(dir)) {
+    if (name === "node_modules") continue;
     const path = join(dir, name);
     const st = statSync(path);
     if (st.isDirectory()) {
@@ -23,6 +25,7 @@ function walk(dir: string, out: string[]): void {
       continue;
     }
     if (!/\.(ts|tsx)$/.test(name)) continue;
+    if (/\.(test|spec)\.ts$/.test(name)) continue;
     out.push(path);
   }
 }
@@ -33,10 +36,8 @@ function scanFile(path: string): Hit[] {
   for (let i = 0; i < lines.length; i++) {
     const text = lines[i];
     if (text === undefined) continue;
-    for (const { re, label } of PATTERNS) {
-      if (re.test(text)) {
-        hits.push({ file: path, line: i + 1, label, text: text.trim() });
-      }
+    if (ANY_RE.test(text)) {
+      hits.push({ file: path, line: i + 1, text: text.trim() });
     }
   }
   return hits;
@@ -50,17 +51,14 @@ function main(): void {
 
   const hits = files.flatMap(scanFile);
   if (hits.length === 0) {
-    console.log("check-no-db-execute: OK (no db.execute or drizzleSql.raw)");
+    console.log("check-no-explicit-any: OK (contract dirs)");
     return;
   }
 
-  console.error("check-no-db-execute: forbidden patterns found:\n");
+  console.error("check-no-explicit-any: explicit any forbidden in contract dirs:\n");
   for (const hit of hits) {
-    console.error(`  ${relative(ROOT, hit.file)}:${hit.line}  [${hit.label}]  ${hit.text}`);
+    console.error(`  ${relative(ROOT, hit.file)}:${hit.line}  ${hit.text}`);
   }
-  console.error(
-    `\n${hits.length} violation(s). Use Drizzle ORM select/insert/update/delete with sql fragments instead.`,
-  );
   process.exit(1);
 }
 

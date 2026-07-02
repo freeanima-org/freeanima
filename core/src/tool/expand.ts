@@ -24,7 +24,11 @@ export function expandToolNames(
       out.push(item);
       continue;
     }
-    const toolSetName = match[1]!.trim();
+    const toolSetName = match[1]?.trim();
+    if (!toolSetName) {
+      out.push(item);
+      continue;
+    }
     const toolSet = registry.getToolSet(toolSetName);
     if (!toolSet) {
       opts?.onUnknownToolSet?.(toolSetName, item);

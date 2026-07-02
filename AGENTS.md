@@ -47,7 +47,9 @@ How agents should _shape_ changes. Hard checks and conventions → [`.agent/rule
 ## Common commands
 
 ```bash
-bun install && bun run check # before PR: typecheck + lint + dep-check + format + test:changed
+bun install && bun run check # before PR: typecheck + lint (type-aware) + dep-check + format + test:changed
+bun run lint # oxlint + oxlint-tsgolint（.oxlintrc.json options.typeAware）
+bun run lint:fix
 bun run test:changed # local / pre-commit (unit changed only)
 bun run test:unit # all unit tests
 bun run test:integration # integration (tests/integration/)

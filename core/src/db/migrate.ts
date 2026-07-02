@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { BunSQLDatabase } from "drizzle-orm/bun-sql/postgres";
+import type { DbRelations } from "@freeanima/core/db/schema";
 import { getRepoRoot } from "../config/repo-root.ts";
 
 /** migrations directory inside @freeanima/core (relative to this module) */
@@ -20,7 +21,7 @@ export type RunMigrationsOptions = {
 };
 
 export async function runMigrations(
-  db: BunSQLDatabase<any>,
+  db: BunSQLDatabase<DbRelations>,
   opts?: RunMigrationsOptions,
 ): Promise<void> {
   const migrationsFolder = opts?.migrationsFolder ?? resolveMigrationsFolder();

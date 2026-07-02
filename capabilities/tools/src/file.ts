@@ -269,8 +269,10 @@ async function handleSearchFiles(
   cmd.push(base);
 
   let proc: ReturnType<typeof spawnSync>;
+  const bin = cmd[0];
+  if (!bin) return toolError("ripgrep (rg) not found");
   try {
-    proc = spawnSync(cmd[0]!, cmd.slice(1), {
+    proc = spawnSync(bin, cmd.slice(1), {
       encoding: "utf-8",
       timeout: 120_000,
       maxBuffer: 10 * 1024 * 1024,

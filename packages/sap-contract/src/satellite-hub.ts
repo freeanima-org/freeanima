@@ -131,7 +131,7 @@ export function createSatelliteHub(options: CreateSatelliteHubOptions): Satellit
         const storedId = (await loadSapInstanceId(options.instanceStore)) ?? undefined;
         const attachedId = await sapAttach(client, storedId);
         instanceId = attachedId;
-        options.instanceStore?.save(attachedId);
+        void options.instanceStore?.save(attachedId);
         sapClient = client;
         await registerToolsAndHandlers(client);
         await options.onConnected?.(client, attachedId);
@@ -152,7 +152,10 @@ export function createSatelliteHub(options: CreateSatelliteHubOptions): Satellit
       return sapClient != null;
     },
     whenConnected(): Promise<SapClient> {
-      return transport!.whenConnected().then((rpc) => sapClient ?? sapClientFromRpc(rpc));
+      if (!transport) {
+        return Promise.reject(new Error("SAP transport not started"));
+      }
+      return transport.whenConnected().then((rpc) => sapClient ?? sapClientFromRpc(rpc));
     },
     reconnect(hubUrl: string, httpUrl?: string): void {
       sapClient = null;

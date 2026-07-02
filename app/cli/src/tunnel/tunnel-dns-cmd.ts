@@ -32,9 +32,14 @@ function resolveApiToken(tunnel: TunnelConfigFields): string {
 export async function runTunnelDnsEnsure(): Promise<void> {
   const tunnel = loadTunnelFromConfig();
   const apiToken = resolveApiToken(tunnel);
-  const apiOpts = { apiToken, accountId: tunnel.cloudflare!.account_id! };
-  const tunnelId = tunnel.cloudflare!.tunnel_id!;
-  const hostname = tunnel.hostname!;
+  const cloudflare = tunnel.cloudflare;
+  const hostname = tunnel.hostname;
+  const accountId = cloudflare?.account_id;
+  const tunnelId = cloudflare?.tunnel_id;
+  if (accountId === undefined || tunnelId === undefined || hostname === undefined) {
+    throw new Error("tunnel 配置不完整 — 先运行 anima tunnel setup");
+  }
+  const apiOpts = { apiToken, accountId };
 
   let zoneId = tunnel.cloudflare?.zone_id;
   let zoneName: string | undefined;

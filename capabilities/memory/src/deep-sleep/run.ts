@@ -168,7 +168,8 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
 
     // ── Run the round ──
 
-    const roundRows = round === "split" ? splitCandidates! : allRows;
+    const roundRows = round === "split" ? splitCandidates : allRows;
+    if (!roundRows) throw new Error("deep sleep split round missing splitCandidates");
 
     const messages = buildDeepSleepMessages(
       roundRows,

@@ -10,11 +10,19 @@
 
 ## Lint (oxlint)
 
-- **Commands**: `bun run lint` (check); `bun run lint:fix` (auto-fix where supported). Included in `bun run check`.
-- **Config**: [`.oxlintrc.json`](../../.oxlintrc.json) — `correctness` and `suspicious` categories are error unless overridden per rule.
-- **Error-level rules** (fix, do not disable without reason):
+- **Commands**: `bun run lint`（含 type-aware，`options.typeAware: true`）；`bun run lint:fix`；纳入 `bun run check`。
+- **依赖**: `oxlint` + `oxlint-tsgolint`（type-aware 规则需 TS 语义）。
+- **Config**: [`.oxlintrc.json`](../../.oxlintrc.json) — `correctness` 与 `suspicious` 为 error；type-aware 下显式启用的 `typescript/*` 见下。
+- **Type-aware error 规则**（勿随意 disable）:
+  - `typescript/no-floating-promises` — 未 await/void/return 的 Promise
+  - `typescript/no-misused-promises` — async 误作 sync 回调（含 React 事件 handler）
+  - `typescript/await-thenable` — await 非 Thenable
+  - `typescript/no-explicit-any` — 显式 `any`（`**/*.{test,spec}.{ts,tsx}`、`tests/**`、`routeTree.gen.ts` 除外）
+  - `typescript/no-non-null-assertion` — 禁止 `!.`（测试文件同上 override off）
+- **Error-level 规则**（fix，do not disable without reason）:
   - `unicorn/no-array-sort` — use `Array#toSorted()` when returning a sorted copy; avoid in-place `.sort()` unless mutation is intentional (then use a line-level disable with reason).
   - `unicorn/prefer-add-event-listener` — prefer `addEventListener` over `on*` property handlers (DOM, WebSocket, IDB, SharedWorker).
+  - `unicorn/prefer-node-protocol` — Node 内置模块用 `node:` 前缀。
   - `unicorn/no-useless-spread` — avoid `[...iterable]` when the callee already accepts iterables.
   - `unicorn/consistent-function-scoping` — hoist inner functions that do not close over locals (off in `*.test.ts` / `tests/**`).
   - `eslint/no-useless-constructor` — remove empty/redundant constructors (line-level disable only for documented tooling quirks, e.g. Bun coverage).
@@ -24,6 +32,11 @@
   - `eslint/eqeqeq` — always `===` / `!==` (`null` checks may use `== null` / `!= null`).
   - `eslint/no-promise-executor-return` — Promise executor must not return a value; use block body (`{ setTimeout(resolve, ms); }`).
   - `unicorn/explicit-length-check` — use `.length > 0` / `.length === 0`, not truthy `.length`.
+- **React**（admin-frontend / ui-kit / satellites override）: `react/rules-of-hooks` error；`react/exhaustive-deps` warn。
+- **Disable 纪律**（`dep-check` 脚本 enforce）:
+  - `oxlint-disable` / `eslint-disable` 行须含 `-- reason`
+  - 禁止 `ts-ignore` / `ts-nocheck`；`ts-expect-error` 须同行说明
+  - 契约目录（`platform/ports/`、`admin-contract/`、`sap-contract/`）禁止显式 `any`（`scripts/check-no-explicit-any.ts`）
 
 - **Failures**: always `toolError(msg)` → JSON `{"error":"..."}`
 - **Successes**: structured tools use `toolResult(obj)`; LLM-readable tools (`file_read`, `terminal_run`, `code_execute`, etc.) may return plain-text stdout

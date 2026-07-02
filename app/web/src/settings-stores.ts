@@ -35,7 +35,12 @@ export function createWebSettingsStores(): WebSettingsStores {
   const hub: SettingsStore<ShellClientConfig> = {
     scope: hubBase.scope,
     load: () => hubBase.load(),
-    test: (value) => hubBase.test!(value),
+    test: (value) => {
+      if (hubBase.test === undefined) {
+        throw new Error("hub settings test handler is not configured");
+      }
+      return hubBase.test(value);
+    },
     async save(value) {
       const normalized = normalizeShellClientConfig(value);
       await backend.save(HUB_SETTINGS_SCOPE, normalized);

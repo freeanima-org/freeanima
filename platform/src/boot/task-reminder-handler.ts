@@ -78,7 +78,8 @@ export async function runTaskReminderScan(): Promise<string> {
     const schedulable = taskReminderFields(item);
     if (!shouldSendTaskReminder(schedulable, now)) continue;
 
-    const at = triggerMs(schedulable)!;
+    const at = triggerMs(schedulable);
+    if (at == null) continue;
     const body = buildReminderBody(schedulable);
     const sourceRef = taskReminderSourceRef(item.id, at);
 

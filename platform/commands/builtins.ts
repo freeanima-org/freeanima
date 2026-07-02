@@ -177,7 +177,8 @@ async function cmdSubgoal(ctx: CommandContext): Promise<string> {
     return "Usage: `/subgoal <condition>` | `/subgoal remove <N>` | `/subgoal clear`";
   }
   const updated = await addSubgoal(conv(), ctx.conversationId, condition);
-  return `➕ Subgoal added.\n\n${formatSubgoalList(updated!)}`;
+  if (!updated) return "➕ Subgoal added.";
+  return `➕ Subgoal added.\n\n${formatSubgoalList(updated)}`;
 }
 
 async function cmdCancel(ctx: CommandContext): Promise<string> {

@@ -133,9 +133,11 @@ async function waitForAssistantViaSessionEvents(
         finish(false);
         return;
       }
-      pollTimer = setTimeout(async () => {
-        await tryRefresh();
-        schedulePoll();
+      pollTimer = setTimeout(() => {
+        void (async () => {
+          await tryRefresh();
+          schedulePoll();
+        })();
       }, 2_000);
     };
 

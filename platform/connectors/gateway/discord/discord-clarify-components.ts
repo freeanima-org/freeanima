@@ -47,7 +47,8 @@ export function parseClarifyButtonCustomId(customId: string): ClarifyButtonCusto
   if (!customId.startsWith(CUSTOM_ID_PREFIX)) return null;
   const parts = customId.slice(CUSTOM_ID_PREFIX.length).split(":");
   if (parts.length < 2) return null;
-  const conversationId = parts[0]!;
+  const conversationId = parts[0];
+  if (conversationId === undefined) return null;
   if (parts[1] === "cancel") {
     return { conversationId, kind: "cancel" };
   }
@@ -69,7 +70,7 @@ export function buildClarifyActionRows(
     row.addComponents(
       new ButtonBuilder()
         .setCustomId(choiceButtonCustomId(conversationId, i))
-        .setLabel(truncateButtonLabel(choices[i]!))
+        .setLabel(truncateButtonLabel(choices[i] ?? ""))
         .setStyle(ButtonStyle.Primary),
     );
   }

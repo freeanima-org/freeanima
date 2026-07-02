@@ -28,16 +28,20 @@ function clampRange(
 ): LimbicMemoryRow[] {
   let out = rows;
   if (opts.minIntensity != null) {
-    out = out.filter((r) => r.intensity >= opts.minIntensity!);
+    const minIntensity = opts.minIntensity;
+    out = out.filter((r) => r.intensity >= minIntensity);
   }
   if (opts.maxIntensity != null) {
-    out = out.filter((r) => r.intensity <= opts.maxIntensity!);
+    const maxIntensity = opts.maxIntensity;
+    out = out.filter((r) => r.intensity <= maxIntensity);
   }
   if (opts.minValence != null) {
-    out = out.filter((r) => r.valence != null && r.valence >= opts.minValence!);
+    const minValence = opts.minValence;
+    out = out.filter((r) => r.valence != null && r.valence >= minValence);
   }
   if (opts.maxValence != null) {
-    out = out.filter((r) => r.valence != null && r.valence <= opts.maxValence!);
+    const maxValence = opts.maxValence;
+    out = out.filter((r) => r.valence != null && r.valence <= maxValence);
   }
   return out;
 }

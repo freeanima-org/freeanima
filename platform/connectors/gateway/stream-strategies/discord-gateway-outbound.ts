@@ -40,7 +40,8 @@ export function createDiscordGatewayToolRoundStrategy(
           conversationId &&
           canRenderClarifyButtons({ items: effect.items, timeout_sec: effect.timeout_sec })
         ) {
-          const item = effect.items[0]!;
+          const item = effect.items[0];
+          if (item === undefined) return [];
           const content = formatClarifyDiscordContentForButtons({
             items: effect.items,
             timeout_sec: effect.timeout_sec,

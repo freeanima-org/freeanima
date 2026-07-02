@@ -45,7 +45,8 @@ export function isNotificationContextAssistant(msg: StoredMessage): msg is Assis
 
 export function stripNotificationContextFromMessages(messages: StoredMessage[]): void {
   for (let i = messages.length - 1; i >= 0; i--) {
-    if (isNotificationContextAssistant(messages[i]!)) {
+    const msg = messages[i];
+    if (msg !== undefined && isNotificationContextAssistant(msg)) {
       messages.splice(i, 1);
     }
   }

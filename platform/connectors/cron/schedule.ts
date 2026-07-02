@@ -13,7 +13,7 @@ export function parseSchedule(expr: string): [ScheduleType, number | string] {
 
   const m = INTERVAL_RE.exec(trimmed);
   if (m) {
-    const number = parseInt(m[1]!, 10);
+    const number = parseInt(m[1] ?? "", 10);
     const unit = (m[2] ?? "m").toLowerCase()[0];
     const seconds = unit === "h" ? number * 3600 : number * 60;
     if (seconds < 60) {

@@ -20,7 +20,8 @@ export function applyShiftRangeSelect(
 
   const [start, end] = from < to ? [from, to] : [to, from];
   for (let i = start; i <= end; i++) {
-    next.add(orderedIds[i]!);
+    const id = orderedIds[i];
+    if (id !== undefined) next.add(id);
   }
   return next;
 }

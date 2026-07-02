@@ -12,17 +12,20 @@ export function renderTable(rows: string[][], headers: string[]): string {
     for (let i = 0; i < colCount; i++) {
       const cell = row[i] ?? "";
       const cmax = COL_MAX[i] ?? 30;
-      widths[i] = Math.max(widths[i]!, Math.min(cell.length, cmax), COL_MIN);
+      const currentWidth = widths[i] ?? COL_MIN;
+      widths[i] = Math.max(currentWidth, Math.min(cell.length, cmax), COL_MIN);
     }
   }
 
   for (let i = 0; i < colCount; i++) {
     const cmax = COL_MAX[i] ?? 30;
-    widths[i] = Math.max(Math.min(widths[i]!, cmax), COL_MIN);
+    const currentWidth = widths[i] ?? COL_MIN;
+    widths[i] = Math.max(Math.min(currentWidth, cmax), COL_MIN);
   }
 
   const cell = (text: string, i: number): string => {
-    const w = widths[i]!;
+    const colWidth = widths[i] ?? COL_MIN;
+    const w = colWidth;
     const clipped = text.length > w ? `${text.slice(0, w - 1)}…` : text;
     return i > 0 ? clipped.padEnd(w) : clipped.padEnd(w);
   };

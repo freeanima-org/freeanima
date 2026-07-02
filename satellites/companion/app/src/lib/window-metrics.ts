@@ -89,10 +89,10 @@ export function buildPerimeterWaypoints(screen: ScreenRect, window: WindowSize):
     { x: minX, y: maxY },
   ];
 
-  return corners.filter(
-    (point, index) =>
-      index === 0 || point.x !== corners[index - 1]!.x || point.y !== corners[index - 1]!.y,
-  );
+  return corners.filter((point, index) => {
+    const prev = corners[index - 1];
+    return index === 0 || !prev || point.x !== prev.x || point.y !== prev.y;
+  });
 }
 
 /** 工作区中心（窗口左上角坐标，物理/逻辑像素与 patrol 一致） */
@@ -130,13 +130,18 @@ export type PatrolBounds = {
 export function patrolBoundsFromWaypoints(waypoints: ScreenPoint[]): PatrolBounds | null {
   if (waypoints.length === 0) return null;
   if (waypoints.length === 1) {
-    const p = waypoints[0]!;
+    const p = waypoints[0];
+    if (!p) return null;
     return { minX: p.x, minY: p.y, maxX: p.x, maxY: p.y };
   }
-  const minX = waypoints[0]!.x;
-  const minY = waypoints[0]!.y;
-  const maxX = waypoints[1]!.x;
-  const maxY = waypoints[2]?.y ?? waypoints.at(-1)!.y;
+  const first = waypoints[0];
+  const second = waypoints[1];
+  const last = waypoints.at(-1);
+  if (!first || !second || !last) return null;
+  const minX = first.x;
+  const minY = first.y;
+  const maxX = second.x;
+  const maxY = waypoints[2]?.y ?? last.y;
   return { minX, minY, maxX, maxY };
 }
 
@@ -161,12 +166,14 @@ export function nearestPerimeterEntry(
     return { entry: { x: 0, y: 0 }, nextIndex: 0 };
   }
   if (waypoints.length === 1) {
-    return { entry: waypoints[0]!, nextIndex: 0 };
+    const only = waypoints[0];
+    return { entry: only ?? { x: 0, y: 0 }, nextIndex: 0 };
   }
 
   const bounds = patrolBoundsFromWaypoints(waypoints);
   if (!bounds) {
-    return { entry: waypoints[0]!, nextIndex: 0 };
+    const fallback = waypoints[0];
+    return { entry: fallback ?? { x: 0, y: 0 }, nextIndex: 0 };
   }
 
   const { minX, minY, maxX, maxY } = bounds;
@@ -189,7 +196,8 @@ export function nearestPerimeterEntry(
     },
   ];
 
-  let best = candidates[0]!;
+  let best = candidates[0];
+  if (!best) return { entry: { x: 0, y: 0 }, nextIndex: 0 };
   let bestDist = Infinity;
   for (const candidate of candidates) {
     const dist = Math.hypot(position.x - candidate.entry.x, position.y - candidate.entry.y);

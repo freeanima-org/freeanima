@@ -79,7 +79,8 @@ export async function streamReplyToChannel(
         return;
       }
       await tryDiscordInterimEdit(async () => {
-        await answerMsg!.edit({ content: text });
+        if (!answerMsg) return;
+        await answerMsg.edit({ content: text });
       });
     },
   };
@@ -119,7 +120,8 @@ export async function streamReplyToChannel(
       const first = chunks[0] ?? "\u3164";
       await deliverDiscordFinalContent(
         async () => {
-          await answerMsg!.edit({ content: first });
+          if (!answerMsg) return;
+          await answerMsg.edit({ content: first });
         },
         async () => {
           await channelSend(first);
@@ -127,8 +129,10 @@ export async function streamReplyToChannel(
         { phase: "finalize" },
       );
       for (let i = 1; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        if (chunk === undefined) continue;
         await withDiscordRetry(async (): Promise<void> => {
-          await channelSend(chunks[i]!);
+          await channelSend(chunk);
         });
       }
       answerMsg = null;

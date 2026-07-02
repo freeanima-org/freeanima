@@ -72,20 +72,29 @@ function stronglyConnectedComponents(graph: PkgGraph): string[][] {
       if (!graph.has(w)) continue;
       if (!index.has(w)) {
         strongconnect(w);
-        lowlink.set(v, Math.min(lowlink.get(v)!, lowlink.get(w)!));
+        const vLow = lowlink.get(v);
+        const wLow = lowlink.get(w);
+        if (vLow !== undefined && wLow !== undefined) {
+          lowlink.set(v, Math.min(vLow, wLow));
+        }
       } else if (onStack.has(w)) {
-        lowlink.set(v, Math.min(lowlink.get(v)!, index.get(w)!));
+        const vLow = lowlink.get(v);
+        const wIndex = index.get(w);
+        if (vLow !== undefined && wIndex !== undefined) {
+          lowlink.set(v, Math.min(vLow, wIndex));
+        }
       }
     }
 
     if (lowlink.get(v) === index.get(v)) {
       const scc: string[] = [];
-      let w: string;
-      do {
-        w = stack.pop()!;
+      for (;;) {
+        const w = stack.pop();
+        if (w === undefined) break;
         onStack.delete(w);
         scc.push(w);
-      } while (w !== v);
+        if (w === v) break;
+      }
       if (scc.length > 1) sccs.push(scc.toSorted());
     }
   }

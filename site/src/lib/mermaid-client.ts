@@ -100,8 +100,9 @@ function ensureLightbox(): HTMLElement {
   document.body.appendChild(root);
 
   let scale = 1;
-  const stage = root.querySelector<HTMLElement>(".fa-mermaid-lightbox__stage")!;
-  const resetBtn = root.querySelector<HTMLButtonElement>('[data-fa-mermaid-zoom="reset"]')!;
+  const stage = root.querySelector<HTMLElement>(".fa-mermaid-lightbox__stage");
+  const resetBtn = root.querySelector<HTMLButtonElement>('[data-fa-mermaid-zoom="reset"]');
+  if (!stage || !resetBtn) throw new Error("mermaid lightbox DOM incomplete");
 
   const applyScale = (): void => {
     stage.style.transform = `scale(${scale})`;
@@ -143,7 +144,8 @@ function ensureLightbox(): HTMLElement {
 
 function openLightbox(svg: SVGElement): void {
   const root = ensureLightbox();
-  const stage = root.querySelector<HTMLElement>(".fa-mermaid-lightbox__stage")!;
+  const stage = root.querySelector<HTMLElement>(".fa-mermaid-lightbox__stage");
+  if (!stage) return;
   stage.innerHTML = "";
   stage.appendChild(svg.cloneNode(true) as SVGElement);
   root.hidden = false;

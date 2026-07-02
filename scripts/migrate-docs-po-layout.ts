@@ -26,7 +26,8 @@ for (const name of readdirSync(poRoot)) {
   const poMatch = name.match(/^(.+)\.([a-z]{2}_[A-Z]{2})\.po$/);
   if (poMatch) {
     const [, master, lang] = poMatch;
-    const langDir = join(poRoot, lang!);
+    if (!master || !lang) continue;
+    const langDir = join(poRoot, lang);
     mkdirSync(langDir, { recursive: true });
     renameSync(src, join(langDir, `${master}.po`));
     movedPo += 1;

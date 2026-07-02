@@ -56,7 +56,10 @@ export function deriveThreadKey(input: {
   subject: string;
 }): string {
   const refs = input.references?.filter(Boolean) ?? [];
-  if (refs.length > 0) return refs[0]!.trim();
+  if (refs.length > 0) {
+    const firstRef = refs[0];
+    if (firstRef) return firstRef.trim();
+  }
   if (input.in_reply_to?.trim()) return input.in_reply_to.trim();
   if (input.message_id?.trim()) return input.message_id.trim();
   const normalized = normalizeEmailSubject(input.subject || "(no subject)");

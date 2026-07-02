@@ -93,7 +93,7 @@ describePg("server cron API", () => {
 
   it("listCronJobs lists jobs", async () => {
     const body = await listCronJobs();
-    expect(body.jobs.some((j: { id: string }) => j.id === jobId)).toBe(true);
+    expect(body.jobs.some((j) => j.id === jobId)).toBe(true);
   });
 
   afterAll(async () => {

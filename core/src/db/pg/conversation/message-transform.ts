@@ -40,10 +40,12 @@ function toPayload(msg: ConversationMessage): MessageInsert["payload"] {
 /** Domain message → PG insert row */
 export function messageToInsert(conversation_id: string, msg: StoredMessage): MessageInsert {
   const parsed = assertConversationMessage(msg);
+  const pos = parsed.pos;
+  if (pos === undefined) throw new Error("message pos is required for insert");
   return {
     id: newMessageGlobalId(),
     conversation_id,
-    pos: parsed.pos!,
+    pos,
     payload: toPayload(parsed),
   };
 }

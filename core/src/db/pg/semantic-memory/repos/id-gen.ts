@@ -8,7 +8,9 @@ const ID_RE = /^f-(\d{6})-[0-9a-f]{4}$/;
 
 function parseSeqFromId(id: string): number | null {
   const m = ID_RE.exec(id);
-  return m ? parseInt(m[1]!, 10) : null;
+  if (m === null) return null;
+  const seqGroup = m[1];
+  return seqGroup === undefined ? null : parseInt(seqGroup, 10);
 }
 
 export function formatSemanticMemoryId(seq: number): string {

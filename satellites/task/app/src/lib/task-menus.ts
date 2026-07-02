@@ -36,11 +36,13 @@ export function buildListMenuItems(
   ];
 
   if (list.is_folder) {
-    if (handlers.onCreateChildList) {
-      items.push({ label: "新建子清单", onClick: () => handlers.onCreateChildList!(list) });
+    const onCreateChildList = handlers.onCreateChildList;
+    const onCreateChildFolder = handlers.onCreateChildFolder;
+    if (onCreateChildList) {
+      items.push({ label: "新建子清单", onClick: () => onCreateChildList(list) });
     }
-    if (handlers.onCreateChildFolder) {
-      items.push({ label: "新建子文件夹", onClick: () => handlers.onCreateChildFolder!(list) });
+    if (onCreateChildFolder) {
+      items.push({ label: "新建子文件夹", onClick: () => onCreateChildFolder(list) });
     }
     if (!list.is_default) {
       items.push({ label: "删除", danger: true, onClick: () => void handlers.onDelete(list) });

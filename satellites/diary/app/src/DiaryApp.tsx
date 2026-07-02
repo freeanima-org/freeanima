@@ -116,32 +116,34 @@ export function DiaryApp() {
         saving={saving}
         readOnly={writesDisabled}
         onCancel={() => setEditorMode(null)}
-        onSave={async (draft) => {
-          setSaving(true);
-          setError("");
-          try {
-            const item = await createDiaryEntry(subjectKind, draft);
-            setEntries((prev) =>
-              [item, ...prev].toSorted((a, b) => b.entry_at.localeCompare(a.entry_at)),
-            );
-            setSelectedId(item.id);
-            setEditorMode("edit");
-          } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
-            if (msg.includes("already exists")) {
-              const day = isoToDateLocalValue(draft.entry_at);
-              const existing = findEntryByDayLocal(entries, day);
-              if (existing) {
-                setSelectedId(existing.id);
-                setEditorMode("edit");
-                setError("该日期已有日记，已打开现有条目");
-                return;
+        onSave={(draft) => {
+          void (async () => {
+            setSaving(true);
+            setError("");
+            try {
+              const item = await createDiaryEntry(subjectKind, draft);
+              setEntries((prev) =>
+                [item, ...prev].toSorted((a, b) => b.entry_at.localeCompare(a.entry_at)),
+              );
+              setSelectedId(item.id);
+              setEditorMode("edit");
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : String(e);
+              if (msg.includes("already exists")) {
+                const day = isoToDateLocalValue(draft.entry_at);
+                const existing = findEntryByDayLocal(entries, day);
+                if (existing) {
+                  setSelectedId(existing.id);
+                  setEditorMode("edit");
+                  setError("该日期已有日记，已打开现有条目");
+                  return;
+                }
               }
+              setError(msg);
+            } finally {
+              setSaving(false);
             }
-            setError(msg);
-          } finally {
-            setSaving(false);
-          }
+          })();
         }}
       />
     ) : editorMode === "edit" && selectedEntry ? (
@@ -154,42 +156,46 @@ export function DiaryApp() {
           setEditorMode(null);
           setSelectedId(null);
         }}
-        onDelete={async () => {
-          if (!selectedEntry) return;
-          setSaving(true);
-          setError("");
-          try {
-            await deleteDiaryEntry(subjectKind, selectedEntry.id);
-            setEntries((prev) => prev.filter((e) => e.id !== selectedEntry.id));
-            setSelectedId(null);
-            setEditorMode(null);
-          } catch (e) {
-            setError(e instanceof Error ? e.message : String(e));
-          } finally {
-            setSaving(false);
-          }
-        }}
-        onSave={async (draft) => {
-          if (!selectedEntry) return;
-          setSaving(true);
-          setError("");
-          try {
-            const item = await updateDiaryEntry(subjectKind, selectedEntry.id, draft);
-            setEntries((prev) =>
-              prev
-                .map((e) => (e.id === item.id ? item : e))
-                .toSorted((a, b) => b.entry_at.localeCompare(a.entry_at)),
-            );
-          } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
-            if (msg.includes("already exists")) {
-              setError("该日期已有其他日记，请选择别的日期");
-            } else {
-              setError(msg);
+        onDelete={() => {
+          void (async () => {
+            if (!selectedEntry) return;
+            setSaving(true);
+            setError("");
+            try {
+              await deleteDiaryEntry(subjectKind, selectedEntry.id);
+              setEntries((prev) => prev.filter((e) => e.id !== selectedEntry.id));
+              setSelectedId(null);
+              setEditorMode(null);
+            } catch (e) {
+              setError(e instanceof Error ? e.message : String(e));
+            } finally {
+              setSaving(false);
             }
-          } finally {
-            setSaving(false);
-          }
+          })();
+        }}
+        onSave={(draft) => {
+          void (async () => {
+            if (!selectedEntry) return;
+            setSaving(true);
+            setError("");
+            try {
+              const item = await updateDiaryEntry(subjectKind, selectedEntry.id, draft);
+              setEntries((prev) =>
+                prev
+                  .map((e) => (e.id === item.id ? item : e))
+                  .toSorted((a, b) => b.entry_at.localeCompare(a.entry_at)),
+              );
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : String(e);
+              if (msg.includes("already exists")) {
+                setError("该日期已有其他日记，请选择别的日期");
+              } else {
+                setError(msg);
+              }
+            } finally {
+              setSaving(false);
+            }
+          })();
         }}
       />
     ) : (

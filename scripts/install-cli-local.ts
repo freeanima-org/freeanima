@@ -53,7 +53,11 @@ function findPackedTarball(): string {
   if (files.length === 0) {
     throw new Error("install-cli-local: bun pm pack did not produce a .tgz in cli/publish");
   }
-  return join(PUBLISH_DIR, files.toSorted().at(-1)!);
+  const tarball = files.toSorted().at(-1);
+  if (!tarball) {
+    throw new Error("install-cli-local: bun pm pack did not produce a .tgz in cli/publish");
+  }
+  return join(PUBLISH_DIR, tarball);
 }
 
 async function main(): Promise<void> {

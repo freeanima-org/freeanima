@@ -119,7 +119,8 @@ export function dnsRecordName(hostname: string, zoneName: string): string {
   if (hostname === zoneName) return "@";
   const suffix = `.${zoneName}`;
   if (hostname.endsWith(suffix)) return hostname.slice(0, -suffix.length);
-  return hostname.includes(".") ? hostname.split(".")[0]! : hostname;
+  const firstLabel = hostname.includes(".") ? hostname.split(".")[0] : hostname;
+  return firstLabel ?? hostname;
 }
 
 export type DnsRecordSnapshot = {

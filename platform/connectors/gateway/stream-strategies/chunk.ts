@@ -27,7 +27,8 @@ export function chunkChannelActions(
     const chunks = chunkText(text, limit, { maxChunkLength });
     if (chunks.length === 0) continue;
     for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i]!;
+      const chunk = chunks[i];
+      if (chunk === undefined) continue;
       if (action.op === "send") {
         out.push({ op: "send", text: chunk });
       } else {

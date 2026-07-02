@@ -178,7 +178,9 @@ function searchCodebase(
   if (typeof fileGlob === "string" && fileGlob) cmd.push("--glob", fileGlob);
   cmd.push(base);
 
-  const proc = spawnSync(cmd[0]!, cmd.slice(1), {
+  const bin = cmd[0];
+  if (!bin) return { error: "ripgrep (rg) not found" };
+  const proc = spawnSync(bin, cmd.slice(1), {
     encoding: "utf-8",
     timeout: 120_000,
     maxBuffer: 10 * 1024 * 1024,
@@ -281,7 +283,9 @@ function runTests(
   }
   if (cmd.length === 0) return { error: "could not detect test command" };
 
-  const proc = spawnSync(cmd[0]!, cmd.slice(1), {
+  const bin = cmd[0];
+  if (!bin) return { error: "ripgrep (rg) not found" };
+  const proc = spawnSync(bin, cmd.slice(1), {
     cwd: ctx.projectCwd,
     encoding: "utf-8",
     timeout: Number(params.timeout_ms ?? 300_000) || 300_000,

@@ -53,13 +53,16 @@ function parseEntries(content: string, file: string): Entry[] {
     const idMultiline = block.match(/^msgid ""\n((?:"[^"]*"\n?)+)/m);
     const strMultiline = block.match(/^msgstr ""\n((?:"[^"]*"\n?)+)/m);
     if (idMultiline) {
-      const msgid = idMultiline[1]!
+      const idBody = idMultiline[1];
+      if (!idBody) continue;
+      const msgid = idBody
         .replace(/^"|"$/gm, "")
         .replace(/\n/g, "")
         .replace(/\\n/g, "\n")
         .replace(/\\"/g, '"');
-      const msgstr = strMultiline
-        ? strMultiline[1]!
+      const strBody = strMultiline?.[1];
+      const msgstr = strBody
+        ? strBody
             .replace(/^"|"$/gm, "")
             .replace(/\n/g, "")
             .replace(/\\n/g, "\n")
@@ -79,8 +82,11 @@ function parseEntries(content: string, file: string): Entry[] {
 
     const single = block.match(/^msgid "((?:[^"\\]|\\.)*)"\nmsgstr "((?:[^"\\]|\\.)*)"/m);
     if (!single) continue;
-    const msgid = single[1]!.replace(/\\n/g, "\n").replace(/\\"/g, '"');
-    const msgstr = single[2]!.replace(/\\n/g, "\n").replace(/\\"/g, '"');
+    const msgidRaw = single[1];
+    const msgstrRaw = single[2];
+    if (msgidRaw === undefined || msgstrRaw === undefined) continue;
+    const msgid = msgidRaw.replace(/\\n/g, "\n").replace(/\\"/g, '"');
+    const msgstr = msgstrRaw.replace(/\\n/g, "\n").replace(/\\"/g, '"');
     if (
       msgid &&
       msgstr === msgid &&
