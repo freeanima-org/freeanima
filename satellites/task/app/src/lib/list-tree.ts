@@ -1,6 +1,8 @@
+import { getSubjectKind } from "@freeanima/shell-sdk";
+
 import type { TaskListRow } from "./api.ts";
 
-const EXPANDED_KEY = "task:folder-expanded";
+const EXPANDED_KEY_PREFIX = "task:folder-expanded";
 
 export type ListTreeNode = {
   list: TaskListRow;
@@ -86,9 +88,13 @@ export function listPathLabel(lists: TaskListRow[], listId: number): string {
   return names.join(" / ");
 }
 
+function expandedFoldersKey(): string {
+  return `${EXPANDED_KEY_PREFIX}:${getSubjectKind()}`;
+}
+
 export function readExpandedFolders(): Set<number> {
   try {
-    const raw = localStorage.getItem(EXPANDED_KEY);
+    const raw = localStorage.getItem(expandedFoldersKey());
     if (!raw) return new Set();
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return new Set();
@@ -100,7 +106,7 @@ export function readExpandedFolders(): Set<number> {
 
 export function writeExpandedFolders(ids: Set<number>): void {
   try {
-    localStorage.setItem(EXPANDED_KEY, JSON.stringify([...ids]));
+    localStorage.setItem(expandedFoldersKey(), JSON.stringify([...ids]));
   } catch {
     // ignore quota errors
   }

@@ -27,7 +27,7 @@ describe("offline-cache", () => {
     const shell = { hubWsUrl: "ws://hub.example/hub/rpc/v1" };
     globalThis.window = { satelliteShell: shell } as Window & typeof globalThis;
     try {
-      expect(resolveHubCacheScope()).toBe("ws://hub.example/hub/rpc/v1");
+      expect(resolveHubCacheScope()).toBe("ws://hub.example/hub/rpc/v1:user");
     } finally {
       globalThis.window = prevWindow;
     }

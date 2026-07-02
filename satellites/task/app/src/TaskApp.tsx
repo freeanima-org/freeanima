@@ -78,6 +78,8 @@ export function TaskApp() {
   const renameInputRef = useRef<HTMLInputElement>(null);
   const selectionAnchorRef = useRef<number | null>(null);
   const detailDiscardRef = useRef(false);
+  const listsLoadGenRef = useRef(0);
+  const itemsLoadGenRef = useRef(0);
 
   const [lists, setLists] = useState<TaskListRow[]>([]);
   const [items, setItems] = useState<TaskItemRow[]>([]);
@@ -113,11 +115,14 @@ export function TaskApp() {
   const [showClosed, setShowClosed] = useState(false);
 
   const loadLists = useCallback(async (): Promise<TaskListRow[]> => {
+    const generation = ++listsLoadGenRef.current;
     const scope = resolveHubCacheScope();
     const cached = await readCachedTaskLists(scope);
+    if (generation !== listsLoadGenRef.current) return cached ?? [];
     if (cached?.length) setLists(cached);
     try {
       const rows = await fetchTaskLists({ includeClosed: true });
+      if (generation !== listsLoadGenRef.current) return rows;
       setLists(rows);
       void writeCachedTaskLists(scope, rows);
       if (rows.length === 0) {
@@ -138,20 +143,25 @@ export function TaskApp() {
       });
       return rows;
     } catch {
+      if (generation !== listsLoadGenRef.current) return cached ?? [];
       if (!cached?.length) setError("无法加载任务清单");
       return cached ?? [];
     }
   }, [webShell]);
 
   const loadItems = useCallback(async (listId: number) => {
+    const generation = ++itemsLoadGenRef.current;
     const scope = resolveHubCacheScope();
     const cached = await readCachedTaskItems(scope, listId);
+    if (generation !== itemsLoadGenRef.current) return;
     if (cached) setItems(cached);
     try {
       const rows = await fetchTaskItems(listId);
+      if (generation !== itemsLoadGenRef.current) return;
       setItems(rows);
       void writeCachedTaskItems(scope, listId, rows);
     } catch {
+      if (generation !== itemsLoadGenRef.current) return;
       if (!cached) setItems([]);
     }
   }, []);
@@ -169,7 +179,11 @@ export function TaskApp() {
   }, [loadLists]);
 
   useEffect(() => {
+    listsLoadGenRef.current += 1;
+    itemsLoadGenRef.current += 1;
+    setLists([]);
     setSelectedListId(null);
+    setSelectedFolderId(null);
     setItems([]);
     setSearchQuery("");
     setSearchHits([]);
@@ -756,6 +770,7 @@ export function TaskApp() {
           }
           list={
             <ListSidebar
+              key={subjectKind}
               activeLists={activeLists}
               closedLists={closedLists}
               showClosed={showClosed}
