@@ -6,7 +6,7 @@ import { ListDetailLayout } from "@freeanima/ui-kit/layout";
 import { m } from "@admin/lib/i18n.ts";
 
 type ResponsiveSidebarLayoutProps = {
-  title: string;
+  title: ReactNode;
   /** 移动端顶栏标题（默认与聊天室一致：当前页名称） */
   headerTitle?: string;
   subtitle?: string;
@@ -44,7 +44,7 @@ export function ResponsiveSidebarLayout({
       showDetailHeader={false}
       listWidthClass="w-64"
       listAsideClassName="border bg-background"
-      listHeaderClassName="p-3 font-semibold text-sm text-muted-foreground uppercase tracking-wide shrink-0"
+      listHeaderClassName="p-3 shrink-0"
       detailClassName="overflow-y-auto app-main-padding"
       listOpen={sidebarOpen}
       onListOpenChange={setSidebarOpen}

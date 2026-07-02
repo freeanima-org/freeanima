@@ -1,3 +1,5 @@
+export { BrandLockup, BrandLogo } from "./brand/BrandLogo.tsx";
+export type { BrandLockupProps, BrandLogoProps } from "./brand/BrandLogo.tsx";
 export { FormField, FormFieldLabel, FormFieldset, FormToggle } from "./form/FormFieldset.tsx";
 export { ListDetailLayout } from "./layout/index.ts";
 export type { ListDetailLayoutProps, ListDetailListContext } from "./layout/index.ts";

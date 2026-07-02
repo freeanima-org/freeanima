@@ -11,7 +11,7 @@ export type ListDetailListContext = {
 
 export type ListDetailLayoutProps = {
   detailTitle: ReactNode;
-  listTitle?: string;
+  listTitle?: ReactNode;
   listSubtitle?: string;
   showListHeader?: boolean;
   listHeaderClassName?: string;

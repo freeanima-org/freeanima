@@ -1,5 +1,6 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { BrandLockup } from "@freeanima/ui-kit";
 import { Button } from "@freeanima/ui-kit";
 import { SubjectScopeProvider, SubjectToggle, useSubjectScope } from "@freeanima/shell-sdk/react";
 
@@ -12,6 +13,7 @@ import {
   shellNavItems,
   type ShellNavItem,
 } from "../lib/shell-nav-i18n.ts";
+import * as shellMessages from "../../../../../messages/paraglide/messages.js";
 
 function useNavActive(match: string): boolean {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -64,7 +66,7 @@ function DesktopModuleShell() {
   return (
     <div className="shell-module-layout h-full flex flex-col bg-background text-foreground">
       <header className="shell-top-nav flex items-center bg-muted border-b border min-h-12 px-3 shrink-0 relative z-50">
-        <div className="font-semibold text-sm">FreeAnima</div>
+        <BrandLockup name={shellMessages.admin_brand()} logoSize={22} className="shrink-0" />
         <nav className="flex gap-1 ml-4 flex-1" aria-label="模块导航">
           {nav.map((item) => (
             <ShellNavLink key={item.to} {...item} layout="top" />
