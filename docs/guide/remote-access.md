@@ -113,14 +113,9 @@ Browser: `https://anima.example.com/web/chat` · Hub API: `https://anima.example
 
 Without Tunnel, LAN: `http://<PC-IP>:2658/web/chat` with `http.host: 0.0.0.0` in config (see above); clients set Hub URL to `http://<PC-IP>:2658` (no `/web` suffix).
 
-### Cloudflare credentials (pass)
+### Cloudflare credentials
 
-| pass path                                | Purpose                       |
-| ---------------------------------------- | ----------------------------- |
-| `services/cloudflare/api-token`          | Create Tunnel / DNS           |
-| `services/cloudflare/tunnel-credentials` | `cloudflared` connector creds |
-
-See wizard `anima tunnel setup`.
+Store API token and tunnel connector JSON via `env("KEY")` or `vault("item_id", "field")` in `config.yaml` tunnel section. See wizard `anima tunnel setup`.
 
 ## 3. Client configuration
 

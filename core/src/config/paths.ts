@@ -47,9 +47,6 @@ export const PATHS = {
   get cjkUserDict() {
     return homePath("cjk", "user.dict");
   },
-  get passStore() {
-    return join(homedir(), ".password-store");
-  },
   get adminBuildDir() {
     return homePath("runtime", "admin-build");
   },

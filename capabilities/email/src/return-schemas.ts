@@ -41,7 +41,7 @@ export const EMAIL_TOOL_RETURNS: Partial<Record<string, ToolReturnContractFields
         imap_port: 993,
         default_sender: true,
         enabled: true,
-        password: 'credential("email/example", "password")',
+        password: 'vault("123", "password")',
       },
     },
   }),

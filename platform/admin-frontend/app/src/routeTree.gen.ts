@@ -27,7 +27,6 @@ import { Route as SidebarLimbicMemoryRouteImport } from './routes/_sidebar/limbi
 import { Route as SidebarFtsRouteImport } from './routes/_sidebar/fts'
 import { Route as SidebarDashboardRouteImport } from './routes/_sidebar/dashboard'
 import { Route as SidebarCronRouteImport } from './routes/_sidebar/cron'
-import { Route as SidebarCredentialsRouteImport } from './routes/_sidebar/credentials'
 import { Route as SidebarConfigRouteImport } from './routes/_sidebar/config'
 import { Route as SidebarCommandsRouteImport } from './routes/_sidebar/commands'
 import { Route as SidebarAutobiographicalMemoryRouteImport } from './routes/_sidebar/autobiographical-memory'
@@ -126,11 +125,6 @@ const SidebarCronRoute = SidebarCronRouteImport.update({
   path: '/cron',
   getParentRoute: () => SidebarRouteRoute,
 } as any)
-const SidebarCredentialsRoute = SidebarCredentialsRouteImport.update({
-  id: '/credentials',
-  path: '/credentials',
-  getParentRoute: () => SidebarRouteRoute,
-} as any)
 const SidebarConfigRoute = SidebarConfigRouteImport.update({
   id: '/config',
   path: '/config',
@@ -185,7 +179,6 @@ export interface FileRoutesByFullPath {
   '/autobiographical-memory': typeof SidebarAutobiographicalMemoryRoute
   '/commands': typeof SidebarCommandsRoute
   '/config': typeof SidebarConfigRoute
-  '/credentials': typeof SidebarCredentialsRoute
   '/cron': typeof SidebarCronRoute
   '/dashboard': typeof SidebarDashboardRoute
   '/fts': typeof SidebarFtsRoute
@@ -212,7 +205,6 @@ export interface FileRoutesByTo {
   '/autobiographical-memory': typeof SidebarAutobiographicalMemoryRoute
   '/commands': typeof SidebarCommandsRoute
   '/config': typeof SidebarConfigRoute
-  '/credentials': typeof SidebarCredentialsRoute
   '/cron': typeof SidebarCronRoute
   '/dashboard': typeof SidebarDashboardRoute
   '/fts': typeof SidebarFtsRoute
@@ -242,7 +234,6 @@ export interface FileRoutesById {
   '/_sidebar/autobiographical-memory': typeof SidebarAutobiographicalMemoryRoute
   '/_sidebar/commands': typeof SidebarCommandsRoute
   '/_sidebar/config': typeof SidebarConfigRoute
-  '/_sidebar/credentials': typeof SidebarCredentialsRoute
   '/_sidebar/cron': typeof SidebarCronRoute
   '/_sidebar/dashboard': typeof SidebarDashboardRoute
   '/_sidebar/fts': typeof SidebarFtsRoute
@@ -272,7 +263,6 @@ export interface FileRouteTypes {
     | '/autobiographical-memory'
     | '/commands'
     | '/config'
-    | '/credentials'
     | '/cron'
     | '/dashboard'
     | '/fts'
@@ -299,7 +289,6 @@ export interface FileRouteTypes {
     | '/autobiographical-memory'
     | '/commands'
     | '/config'
-    | '/credentials'
     | '/cron'
     | '/dashboard'
     | '/fts'
@@ -328,7 +317,6 @@ export interface FileRouteTypes {
     | '/_sidebar/autobiographical-memory'
     | '/_sidebar/commands'
     | '/_sidebar/config'
-    | '/_sidebar/credentials'
     | '/_sidebar/cron'
     | '/_sidebar/dashboard'
     | '/_sidebar/fts'
@@ -482,13 +470,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SidebarCronRouteImport
       parentRoute: typeof SidebarRouteRoute
     }
-    '/_sidebar/credentials': {
-      id: '/_sidebar/credentials'
-      path: '/credentials'
-      fullPath: '/credentials'
-      preLoaderRoute: typeof SidebarCredentialsRouteImport
-      parentRoute: typeof SidebarRouteRoute
-    }
     '/_sidebar/config': {
       id: '/_sidebar/config'
       path: '/config'
@@ -572,7 +553,6 @@ interface SidebarRouteRouteChildren {
   SidebarAutobiographicalMemoryRoute: typeof SidebarAutobiographicalMemoryRoute
   SidebarCommandsRoute: typeof SidebarCommandsRoute
   SidebarConfigRoute: typeof SidebarConfigRoute
-  SidebarCredentialsRoute: typeof SidebarCredentialsRoute
   SidebarCronRoute: typeof SidebarCronRoute
   SidebarDashboardRoute: typeof SidebarDashboardRoute
   SidebarFtsRoute: typeof SidebarFtsRoute
@@ -596,7 +576,6 @@ const SidebarRouteRouteChildren: SidebarRouteRouteChildren = {
   SidebarAutobiographicalMemoryRoute: SidebarAutobiographicalMemoryRoute,
   SidebarCommandsRoute: SidebarCommandsRoute,
   SidebarConfigRoute: SidebarConfigRoute,
-  SidebarCredentialsRoute: SidebarCredentialsRoute,
   SidebarCronRoute: SidebarCronRoute,
   SidebarDashboardRoute: SidebarDashboardRoute,
   SidebarFtsRoute: SidebarFtsRoute,

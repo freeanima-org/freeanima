@@ -45,7 +45,7 @@ llm:
 #   agent_subject_id: 2
 
 # Firecrawl（web_search / web_extract）
-# API Key 走 pass：anima credential add services/firecrawl token=xxx
+# API Key 走 Vault：Shell /vault 或 vault("item_id", "token")
 firecrawl:
   api_url: http://127.0.0.1:3002
 
@@ -181,7 +181,7 @@ compression:
 
 # Cloudflare Tunnel 远程访问（认证见 Service API Token，docs/guide/remote-access.md）
 # 一条命令完成：anima tunnel setup
-# API Token / Tunnel 凭证存 pass，见 anima credential
+# API Token / Tunnel 凭证用 env() 或 vault()，见 docs/guide/remote-access.md
 # tunnel:
 #   enabled: true
 #   hostname: anima.example.com

@@ -1,7 +1,7 @@
 import type { AnimaConfig } from "@freeanima/core/config";
 import { resolveValue } from "./resolve.ts";
 
-/** Expand env/credential references in database.url */
+/** Expand env/vault references in database.url */
 export async function resolveDatabaseUrl(raw: string): Promise<string> {
   return resolveValue(raw);
 }

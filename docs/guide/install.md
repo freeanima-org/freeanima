@@ -9,22 +9,22 @@ title: Installation
 
 ## Choose a path
 
-| Path               | Best for                                   | PostgreSQL  | Redis                  | Credentials                                          |
-| ------------------ | ------------------------------------------ | ----------- | ---------------------- | ---------------------------------------------------- |
-| **npm CLI**        | Day-to-day self-hosting on your OS         | You install | Optional (recommended) | [pass](https://www.passwordstore.org/) (recommended) |
-| **Docker Compose** | Quick trial, minimal host setup            | Bundled     | Bundled                | `.env` env vars                                      |
-| **Source**         | Contributors, bleeding-edge, custom builds | You install | Optional (recommended) | pass (recommended)                                   |
+| Path               | Best for                                   | PostgreSQL  | Redis                  | Secrets                       |
+| ------------------ | ------------------------------------------ | ----------- | ---------------------- | ----------------------------- |
+| **npm CLI**        | Day-to-day self-hosting on your OS         | You install | Optional (recommended) | Vault / `env()` (recommended) |
+| **Docker Compose** | Quick trial, minimal host setup            | Bundled     | Bundled                | `.env` env vars               |
+| **Source**         | Contributors, bleeding-edge, custom builds | You install | Optional (recommended) | Vault / `env()` (recommended) |
 
 All paths run the same `anima service` runtime (Hub REST `/api` + Hub RPC `/hub/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis powers EventBus and task context; it **degrades silently** when unavailable — Docker and production setups should still run it.
 
 ## Shared prerequisites
 
-| Component      | Version / notes                                                                                                                                    |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Bun**        | >= 1.3.14 — required for npm CLI and source installs ([bun.sh](https://bun.sh))                                                                    |
-| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md)                                                               |
-| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                                                      |
-| **pass**       | Optional but recommended for npm/source — API keys and DB URLs stay out of config files ([`security.md`](security.md#credential-responsibilities)) |
+| Component      | Version / notes                                                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **Bun**        | >= 1.3.14 — required for npm CLI and source installs ([bun.sh](https://bun.sh))                                                       |
+| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md)                                                  |
+| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                                         |
+| **Vault**      | Recommended for npm/source — API keys and DB URLs stay out of config files ([`security.md`](security.md#credential-responsibilities)) |
 
 Data directory: `~/.anima/` (override with `FREEANIMA_HOME`). Back it up with your database.
 
@@ -62,14 +62,14 @@ Minimum production settings in `~/.anima/config.yaml`:
 - **`database.url`** — PostgreSQL connection string (required)
 - **`llm.providers.*`** — at least one OpenAI-compatible provider and profile chain
 
-Prefer pass for secrets:
+Prefer Vault or `env()` for secrets:
 
 ```bash
-anima credential add api/openai token=sk-…
-anima credential add services/postgres/anima url=postgresql://… host=… password=… database=anima
+# Shell /vault (User or Agent library), or env vars for headless Hub
+export OPENAI_API_KEY=sk-…
 ```
 
-Then reference them in config, e.g. `api_key: credential("api/openai", "token")` and `database.url: credential("services/postgres/anima", "url")`. See [`security.md`](security.md#credential-responsibilities).
+Then reference them in config, e.g. `api_key: vault("123", "token")` or `api_key: env("OPENAI_API_KEY")`, and `database.url: env("DATABASE_URL")`. See [`security.md`](security.md#credential-responsibilities).
 
 PostgreSQL setup (Debian helper, extensions, migrations): [`database.md`](database.md).
 

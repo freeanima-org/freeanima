@@ -35,7 +35,7 @@ flowchart TB
 | Origin check on WebSocket     | **None**                                               |
 | SAP attach for instance scope | **Yes** — `tool.*` requires `sap.attach`               |
 | Session-scoped tool routing   | **Yes** — [strict routing](tools.md)                   |
-| Credential values in frames   | **No** — credentials stay in pass; LLM sees paths only |
+| Credential values in frames   | **No** — secrets stay in Vault; LLM sees metadata only |
 
 Any client that holds a valid service token and can reach `ws://127.0.0.1:2658/hub/rpc/v1` can:
 

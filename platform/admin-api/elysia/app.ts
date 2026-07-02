@@ -3,7 +3,6 @@ import { ApiHandlerError, apiErrorBody } from "../handlers/errors.ts";
 import { assertNotShuttingDown } from "./context.ts";
 import { applyCorsHeaders, corsPreflightResponse } from "./cors.ts";
 import { acpRoutes } from "./routes/acp.ts";
-import { credentialsRoutes } from "./routes/credentials.ts";
 import { ftsRoutes } from "./routes/fts.ts";
 import { healthRoutes } from "./routes/health.ts";
 import { echoRoutes } from "./routes/echo.ts";
@@ -36,7 +35,6 @@ export const apiApp = new Elysia({ prefix: "/api" })
   .use(mcpRoutes)
   .use(satellitesRoutes)
   .use(acpRoutes)
-  .use(credentialsRoutes)
   .use(autoLlmRunRoutes)
   .use(worldsRoutes)
   .use(entityRoutes)

@@ -24,7 +24,7 @@ export type SetupWizardInput = {
   hubPort: number;
   apiToken?: string;
   accountId?: string;
-  /** 写入 pass 与更新 config.yaml */
+  /** 写入 Vault / config 与更新 config.yaml */
   saveApiToken: (token: string) => void;
   saveTunnelCredentials: (json: string) => void;
   /** 每步合并写入 config.yaml */

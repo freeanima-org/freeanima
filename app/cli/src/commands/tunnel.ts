@@ -11,7 +11,7 @@ export function registerTunnelCommand(program: Command): void {
     .option("--skip-install", "跳过 cloudflared 自动安装")
     .option("--non-interactive", "非交互模式（需配合下方 flags）")
     .option("--hostname <host>", "公网 hostname")
-    .option("--api-token <ref>", 'API Token 明文或 credential("path", "token")')
+    .option("--api-token <ref>", 'API Token 明文或 env("CLOUDFLARE_API_TOKEN")')
     .option("--port <port>", "Hub 端口（默认读 server.status.json 或 2658）")
     .option("--yes", "非交互模式跳过确认")
     .action(async (opts) => {

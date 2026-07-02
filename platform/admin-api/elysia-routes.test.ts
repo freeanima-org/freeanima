@@ -42,15 +42,6 @@ describe("elysia apiApp", () => {
     expect(res.status).toBe(404);
   });
 
-  it("GET /api/credentials/detail 路由已注册", async () => {
-    const res = await apiApp.handle(
-      new Request("http://127.0.0.1/api/credentials/detail?path=test/path"),
-    );
-    expect(res.status).toBe(404);
-    const text = await res.text();
-    expect(text.toLowerCase()).toContain("not found");
-  });
-
   it("GET /api/prompt/debug 路由已注册", async () => {
     const res = await apiApp.handle(new Request("http://127.0.0.1/api/prompt/debug"));
     expect(res.status).not.toBe(404);

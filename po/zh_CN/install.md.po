@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 22:26+0800\n"
+"POT-Creation-Date: 2026-07-02 19:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:576
+#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:571
 #, no-wrap
 msgid "Installation"
 msgstr "安装"
@@ -41,17 +41,17 @@ msgstr "选择安装方式"
 #: docs/guide/install.md:17
 #, no-wrap
 msgid ""
-"| Path               | Best for                                   | PostgreSQL  | Redis                  | Credentials                                          |\n"
-"| ------------------ | ------------------------------------------ | ----------- | ---------------------- | ---------------------------------------------------- |\n"
-"| **npm CLI**        | Day-to-day self-hosting on your OS         | You install | Optional (recommended) | [pass](https://www.passwordstore.org/) (recommended) |\n"
-"| **Docker Compose** | Quick trial, minimal host setup            | Bundled     | Bundled                | `.env` env vars                                      |\n"
-"| **Source**         | Contributors, bleeding-edge, custom builds | You install | Optional (recommended) | pass (recommended)                                   |\n"
+"| Path               | Best for                                   | PostgreSQL  | Redis                  | Secrets                       |\n"
+"| ------------------ | ------------------------------------------ | ----------- | ---------------------- | ----------------------------- |\n"
+"| **npm CLI**        | Day-to-day self-hosting on your OS         | You install | Optional (recommended) | Vault / `env()` (recommended) |\n"
+"| **Docker Compose** | Quick trial, minimal host setup            | Bundled     | Bundled                | `.env` env vars               |\n"
+"| **Source**         | Contributors, bleeding-edge, custom builds | You install | Optional (recommended) | Vault / `env()` (recommended) |\n"
 msgstr ""
-"| 路径               | 适用场景                                   | PostgreSQL  | Redis                  | 凭证                                                 |\n"
-"| ------------------ | ------------------------------------------ | ----------- | ---------------------- | ---------------------------------------------------- |\n"
-"| **npm CLI**        | 日常在自有 OS 上自托管                     | 自行安装    | 可选（推荐）           | [pass](https://www.passwordstore.org/)（推荐）       |\n"
-"| **Docker Compose** | 快速试用、最少主机配置                     | 内置        | 内置                   | `.env` 环境变量                                      |\n"
-"| **Source**         | 贡献者、前沿版本、自定义构建               | 自行安装    | 可选（推荐）           | pass（推荐）                                         |\n"
+"| 路径               | 适用场景                                   | PostgreSQL  | Redis                  | 密钥                          |\n"
+"| ------------------ | ------------------------------------------ | ----------- | ---------------------- | ----------------------------- |\n"
+"| **npm CLI**        | 日常在自有 OS 上自托管                     | 自行安装    | 可选（推荐）           | Vault / `env()`（推荐）       |\n"
+"| **Docker Compose** | 快速试用、最少主机配置                     | 内置        | 内置                   | `.env` 环境变量               |\n"
+"| **Source**         | 贡献者、前沿版本、自定义构建               | 自行安装    | 可选（推荐）           | Vault / `env()`（推荐）       |\n"
 
 #
 #. type: Plain text
@@ -76,19 +76,19 @@ msgstr "共用前置条件"
 #: docs/guide/install.md:28
 #, no-wrap
 msgid ""
-"| Component      | Version / notes                                                                                                                                    |\n"
-"| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| **Bun**        | >= 1.3.14 — required for npm CLI and source installs ([bun.sh](https://bun.sh))                                                                    |\n"
-"| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md)                                                               |\n"
-"| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                                                      |\n"
-"| **pass**       | Optional but recommended for npm/source — API keys and DB URLs stay out of config files ([`security.md`](security.md#credential-responsibilities)) |\n"
+"| Component      | Version / notes                                                                                                                       |\n"
+"| -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| **Bun**        | >= 1.3.14 — required for npm CLI and source installs ([bun.sh](https://bun.sh))                                                       |\n"
+"| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md)                                                  |\n"
+"| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                                         |\n"
+"| **Vault**      | Recommended for npm/source — API keys and DB URLs stay out of config files ([`security.md`](security.md#credential-responsibilities)) |\n"
 msgstr ""
-"| 组件           | 版本 / 说明                                                                                                                                        |\n"
-"| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| **Bun**        | >= 1.3.14 — npm CLI 与源码安装必需（[bun.sh](https://bun.sh)）                                                                                     |\n"
-"| **PostgreSQL** | 推荐 17；扩展：`vector`、FTS 辅助 — 见 [`database.md`](database.md)                                                                                |\n"
-"| **Redis**      | 推荐 7.x；配置后默认 `127.0.0.1:6379`                                                                                                              |\n"
-"| **pass**       | npm/源码可选但推荐 — API 密钥与 DB URL 不写入配置文件（[`security.md`](security.md#credential-responsibilities)）                                  |\n"
+"| 组件           | 版本 / 说明                                                                                                                           |\n"
+"| -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| **Bun**        | >= 1.3.14 — npm CLI 与源码安装必需（[bun.sh](https://bun.sh)）                                                                        |\n"
+"| **PostgreSQL** | 推荐 17；扩展：`vector`、FTS 辅助 — 见 [`database.md`](database.md)                                                                   |\n"
+"| **Redis**      | 推荐 7.x；配置后默认 `127.0.0.1:6379`                                                                                                 |\n"
+"| **Vault**      | npm/源码推荐 — API 密钥与 DB URL 不写入配置文件（[`security.md`](security.md#credential-responsibilities)）                          |\n"
 
 #. type: Plain text
 #: docs/guide/install.md:30
@@ -187,28 +187,29 @@ msgstr "**`llm.providers.*`** — 至少一个 OpenAI 兼容 provider 与 profil
 
 #. type: Plain text
 #: docs/guide/install.md:66
-msgid "Prefer pass for secrets:"
-msgstr "密钥优先使用 pass："
+msgid "Prefer Vault or `env()` for secrets:"
+msgstr "密钥优先使用 Vault 或 `env()`："
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:67
 #, no-wrap
 msgid ""
-"anima credential add api/openai token=sk-…\n"
-"anima credential add services/postgres/anima url=postgresql://… host=… password=… database=anima\n"
+"# Shell /vault (User or Agent library), or env vars for headless Hub\n"
+"export OPENAI_API_KEY=sk-…\n"
 msgstr ""
-"anima credential add api/openai token=sk-…\n"
-"anima credential add services/postgres/anima url=postgresql://… host=… password=… database=anima\n"
+"# Shell /vault（User 或 Agent 库），或无头 Hub 使用环境变量\n"
+"export OPENAI_API_KEY=sk-…\n"
 
 #. type: Plain text
 #: docs/guide/install.md:73
 msgid ""
-"Then reference them in config, e.g. `api_key: credential(\"api/openai\", "
-"\"token\")` and `database.url: credential(\"services/postgres/anima\", "
-"\"url\")`. See [`security.md`](security.md#credential-responsibilities)."
+"Then reference them in config, e.g. `api_key: vault(\"123\", \"token\")` or "
+"`api_key: env(\"OPENAI_API_KEY\")`, and `database.url: "
+"env(\"DATABASE_URL\")`. See [`security.md`](security.md#credential-"
+"responsibilities)."
 msgstr ""
-"然后在配置中引用，例如 `api_key: credential(\"api/openai\", \"token\")` 与 "
-"`database.url: credential(\"services/postgres/anima\", \"url\")`。见 "
+"然后在配置中引用，例如 `api_key: vault(\"123\", \"token\")` 或 `api_key: "
+"env(\"OPENAI_API_KEY\")`，以及 `database.url: env(\"DATABASE_URL\")`。见 "
 "[`security.md`](security.md#credential-responsibilities)。"
 
 #. type: Plain text

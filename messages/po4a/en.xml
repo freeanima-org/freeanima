@@ -154,13 +154,6 @@
   <msg id="admin_config_empty">No config entries</msg>
   <msg id="admin_conversations_back_list">← Back to list</msg>
   <msg id="admin_conversations_empty">No conversations</msg>
-  <msg id="admin_credentials_count">{count} total</msg>
-  <msg id="admin_credentials_desc">Stored credentials (metadata only). Click View detail to read plaintext on the local service.</msg>
-  <msg id="admin_credentials_detail_title">Credential detail</msg>
-  <msg id="admin_credentials_empty">No credentials.</msg>
-  <msg id="admin_credentials_no_structured_fields">No structured fields (plain-text credential)</msg>
-  <msg id="admin_credentials_uncategorized">(uncategorized)</msg>
-  <msg id="admin_credentials_view_detail">View detail</msg>
   <msg id="admin_cron_active">Active</msg>
   <msg id="admin_cron_desc">View scheduled jobs, enable/pause, and trigger manually. Create or delete via the cronjob tool.</msg>
   <msg id="admin_cron_empty">No cron jobs.</msg>
@@ -347,7 +340,6 @@
   <msg id="admin_nav_commands">⌨️ Commands</msg>
   <msg id="admin_nav_config">⚙️ Config</msg>
   <msg id="admin_nav_conversations">💬 Conversations</msg>
-  <msg id="admin_nav_credentials">🔐 Credentials</msg>
   <msg id="admin_nav_cron">⏰ Cron</msg>
   <msg id="admin_nav_dashboard">📊 Dashboard</msg>
   <msg id="admin_nav_diary">📔 Diary</msg>

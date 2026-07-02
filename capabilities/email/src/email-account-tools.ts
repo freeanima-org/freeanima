@@ -35,7 +35,7 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
         {
           name: "email_register_account",
           description:
-            'Register an email account as entity. password supports plaintext, env("KEY"), or credential("path", "field").',
+            'Register an email account as entity. password supports plaintext, env("KEY"), or vault("item_id", "field").',
           parameters: {
             type: "object",
             properties: {

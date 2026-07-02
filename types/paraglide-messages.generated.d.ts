@@ -159,13 +159,6 @@ type ParaglideMessageExports = {
   readonly admin_config_empty: ParaglideMessageFn;
   readonly admin_conversations_back_list: ParaglideMessageFn;
   readonly admin_conversations_empty: ParaglideMessageFn;
-  readonly admin_credentials_count: ParaglideMessageFn;
-  readonly admin_credentials_desc: ParaglideMessageFn;
-  readonly admin_credentials_detail_title: ParaglideMessageFn;
-  readonly admin_credentials_empty: ParaglideMessageFn;
-  readonly admin_credentials_no_structured_fields: ParaglideMessageFn;
-  readonly admin_credentials_uncategorized: ParaglideMessageFn;
-  readonly admin_credentials_view_detail: ParaglideMessageFn;
   readonly admin_cron_active: ParaglideMessageFn;
   readonly admin_cron_desc: ParaglideMessageFn;
   readonly admin_cron_empty: ParaglideMessageFn;
@@ -352,7 +345,6 @@ type ParaglideMessageExports = {
   readonly admin_nav_commands: ParaglideMessageFn;
   readonly admin_nav_config: ParaglideMessageFn;
   readonly admin_nav_conversations: ParaglideMessageFn;
-  readonly admin_nav_credentials: ParaglideMessageFn;
   readonly admin_nav_cron: ParaglideMessageFn;
   readonly admin_nav_dashboard: ParaglideMessageFn;
   readonly admin_nav_diary: ParaglideMessageFn;
@@ -777,13 +769,6 @@ declare module "*/messages/paraglide/messages.js" {
   export const admin_config_empty: ParaglideMessageFn;
   export const admin_conversations_back_list: ParaglideMessageFn;
   export const admin_conversations_empty: ParaglideMessageFn;
-  export const admin_credentials_count: ParaglideMessageFn;
-  export const admin_credentials_desc: ParaglideMessageFn;
-  export const admin_credentials_detail_title: ParaglideMessageFn;
-  export const admin_credentials_empty: ParaglideMessageFn;
-  export const admin_credentials_no_structured_fields: ParaglideMessageFn;
-  export const admin_credentials_uncategorized: ParaglideMessageFn;
-  export const admin_credentials_view_detail: ParaglideMessageFn;
   export const admin_cron_active: ParaglideMessageFn;
   export const admin_cron_desc: ParaglideMessageFn;
   export const admin_cron_empty: ParaglideMessageFn;
@@ -970,7 +955,6 @@ declare module "*/messages/paraglide/messages.js" {
   export const admin_nav_commands: ParaglideMessageFn;
   export const admin_nav_config: ParaglideMessageFn;
   export const admin_nav_conversations: ParaglideMessageFn;
-  export const admin_nav_credentials: ParaglideMessageFn;
   export const admin_nav_cron: ParaglideMessageFn;
   export const admin_nav_dashboard: ParaglideMessageFn;
   export const admin_nav_diary: ParaglideMessageFn;

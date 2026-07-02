@@ -2,9 +2,6 @@ import { listVaultItems, toVaultItemMeta } from "@freeanima/capabilities-vault/i
 import { resolveVaultWorldId } from "@freeanima/capabilities-vault/vault-world";
 import { resolveAgentVaultSecret } from "@freeanima/platform/connectors/vault";
 
-export { importPassToAgentVault } from "./vault-import-pass.ts";
-export type { PassImportResult, PassImportRow, PassImportSkip } from "./vault-import-pass.ts";
-
 export type VaultCliItem = {
   id: number;
   title: string;

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 18:19+0800\n"
+"POT-Creation-Date: 2026-07-02 19:53+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,21 +17,21 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/dream.md:9 docs/concepts/sleep.md:9
-#: docs/guide/remote-access.md:10 messages/po4a/en.xml:580
-#: messages/po4a/en.xml:587
+#: docs/guide/remote-access.md:10 messages/po4a/en.xml:575
+#: messages/po4a/en.xml:582
 #, no-wrap
 msgid "Overview"
 msgstr "概述"
 
 #. type: Title ##
 #: docs/features/companion.md:120 docs/features/mobile-app.md:52
-#: docs/guide/database.md:91 docs/guide/remote-access.md:182
+#: docs/guide/database.md:88 docs/guide/remote-access.md:177
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
 
 #. type: Title ##
-#: docs/features/companion.md:131 docs/guide/remote-access.md:193
+#: docs/features/companion.md:131 docs/guide/remote-access.md:188
 #, no-wrap
 msgid "Related docs"
 msgstr "相关文档"
@@ -360,42 +360,33 @@ msgstr ""
 #. type: Title ###
 #: docs/guide/remote-access.md:116
 #, no-wrap
-msgid "Cloudflare credentials (pass)"
-msgstr "Cloudflare 凭证（pass）"
+msgid "Cloudflare credentials"
+msgstr "Cloudflare 凭证"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:122
-#, no-wrap
+#: docs/guide/remote-access.md:119
 msgid ""
-"| pass path                                | Purpose                       |\n"
-"| ---------------------------------------- | ----------------------------- |\n"
-"| `services/cloudflare/api-token`          | Create Tunnel / DNS           |\n"
-"| `services/cloudflare/tunnel-credentials` | `cloudflared` connector creds |\n"
+"Store API token and tunnel connector JSON via `env(\"KEY\")` or "
+"`vault(\"item_id\", \"field\")` in `config.yaml` tunnel section. See wizard "
+"`anima tunnel setup`."
 msgstr ""
-"| pass 路径                                | 用途                     |\n"
-"| ---------------------------------------- | --------------------------- |\n"
-"| `services/cloudflare/api-token`          | 创建 Tunnel / DNS         |\n"
-"| `services/cloudflare/tunnel-credentials` | `cloudflared` 连接器凭证 |\n"
-
-#. type: Plain text
-#: docs/guide/remote-access.md:124
-msgid "See wizard `anima tunnel setup`."
-msgstr "见向导 `anima tunnel setup`。"
+"在 `config.yaml` 的 tunnel 段使用 `env(\"KEY\")` 或 `vault(\"item_id\", "
+"\"field\")` 保存 API Token 与隧道连接器 JSON。见 `anima tunnel setup` 向导。"
 
 #. type: Title ##
-#: docs/guide/remote-access.md:125
+#: docs/guide/remote-access.md:120
 #, no-wrap
 msgid "3. Client configuration"
 msgstr "3. 客户端配置"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:128
+#: docs/guide/remote-access.md:123
 #, no-wrap
 msgid "**app/desktop**, **app/mobile**, and **browser Web** are remote clients; they **do not read** Hub `config.yaml` token.\n"
 msgstr "**app/desktop**、**app/mobile** 与 **浏览器 Web**（`web.enabled` + Tunnel 或局域网 `:2659`）为远程客户端；它们**不读取** Hub `config.yaml` 中的 token。\n"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:134
+#: docs/guide/remote-access.md:129
 #, no-wrap
 msgid ""
 "| Client      | Storage                                          |\n"
@@ -411,24 +402,24 @@ msgstr ""
 "| Browser Web | localStorage（设置页）                 |\n"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:136
+#: docs/guide/remote-access.md:131
 msgid "Settings (all clients):"
 msgstr "设置（所有客户端）："
 
 #. type: Bullet: '1. '
-#: docs/guide/remote-access.md:139
+#: docs/guide/remote-access.md:134
 msgid ""
 "**Hub URL** — e.g. `https://anima.example.com` or `http://192.168.1.10:2658` "
 "(Hub root, **without** `/web`)"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/guide/remote-access.md:139
+#: docs/guide/remote-access.md:134
 msgid "**Hub API Token** — `fa_at_...` from `anima token create`"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:141
+#: docs/guide/remote-access.md:136
 msgid ""
 "Browser Web: `/web/config.json` sets default Hub to the page origin; first "
 "visit still requires saving token in settings."
@@ -437,7 +428,7 @@ msgstr ""
 "在设置中保存 token。"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:143
+#: docs/guide/remote-access.md:138
 msgid ""
 "Flow: open Hub settings → fill → **Test connection** → Save. Desktop "
 "requires **restart app/desktop** after save."
@@ -446,13 +437,13 @@ msgstr ""
 "desktop**。"
 
 #. type: Title ##
-#: docs/guide/remote-access.md:144
+#: docs/guide/remote-access.md:139
 #, no-wrap
 msgid "4. Authentication behavior"
 msgstr "4. 认证行为"
 
 #. type: Fenced code block (text)
-#: docs/guide/remote-access.md:146
+#: docs/guide/remote-access.md:141
 #, no-wrap
 msgid ""
 "REST:  Authorization: Bearer fa_at_<prefix>_<secret>\n"
@@ -464,7 +455,7 @@ msgstr ""
 "MCP:   POST/GET /mcp → Authorization: Bearer <token>\n"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:153
+#: docs/guide/remote-access.md:148
 msgid ""
 "`/web/*` static assets skip service auth; `/api` and `/mcp` require Bearer "
 "token."
@@ -472,18 +463,18 @@ msgstr ""
 
 #
 #. type: Plain text
-#: docs/guide/remote-access.md:155
+#: docs/guide/remote-access.md:150
 msgid "Missing or invalid token → HTTP `401` or Hub RPC connection closed."
 msgstr "缺少或错误的 token → HTTP `401` 或 SAP 连接关闭。"
 
 #. type: Title ##
-#: docs/guide/remote-access.md:156
+#: docs/guide/remote-access.md:151
 #, no-wrap
 msgid "5. MCP outbound (external agents query Hub data)"
 msgstr "5. MCP 出站（外部 Agent 查询 Hub 数据）"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:159
+#: docs/guide/remote-access.md:154
 msgid ""
 "Hub serves Streamable HTTP MCP Server at **`/mcp`**, exposing read-only "
 "tools from ToolSets with `expose_mcp: true` (e.g. `memory_recall`, "
@@ -495,7 +486,7 @@ msgstr ""
 "MCP 客户端（Cursor、Claude Desktop 等）**无需 LLM relay** 即可连接。"
 
 #. type: Fenced code block (yaml)
-#: docs/guide/remote-access.md:160
+#: docs/guide/remote-access.md:155
 #, no-wrap
 msgid ""
 "# External agent example (Cursor mcp.json, etc.)\n"
@@ -513,7 +504,7 @@ msgstr ""
 "      Authorization: \"Bearer <remote_auth.token>\"\n"
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:171
+#: docs/guide/remote-access.md:166
 msgid ""
 "**Inbound** (Hub connects to external MCP servers): `config.yaml` "
 "`mcp_servers` (`capabilities/mcp-client`)"
@@ -522,7 +513,7 @@ msgstr ""
 "（`capabilities/mcp-client`）"
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:171
+#: docs/guide/remote-access.md:166
 msgid ""
 "**Outbound** (external agents call Hub tools): `/mcp` endpoint "
 "(`capabilities/mcp-server`)"
@@ -531,13 +522,13 @@ msgstr ""
 "server`）"
 
 #. type: Title ##
-#: docs/guide/remote-access.md:172
+#: docs/guide/remote-access.md:167
 #, no-wrap
 msgid "Operations"
 msgstr "运维"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:181
+#: docs/guide/remote-access.md:176
 #, no-wrap
 msgid ""
 "| Command                          | Description                                    |\n"
@@ -556,7 +547,7 @@ msgstr ""
 "| `anima service status`         | Hub / Web / Tunnel 栈                          |\n"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:192
+#: docs/guide/remote-access.md:187
 #, no-wrap
 msgid ""
 "| Symptom                | Check                                                               |\n"
@@ -577,12 +568,12 @@ msgstr ""
 "| 更换 token 后 401        | 更新 Hub 配置**并**所有客户端设置页        |\n"
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:196
+#: docs/guide/remote-access.md:191
 msgid "Mobile: [`mobile-app.md`](../features/mobile-app.md)"
 msgstr "移动端：[`mobile-app.md`](../features/mobile-app.md)"
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:196
+#: docs/guide/remote-access.md:191
 msgid ""
 "Desktop companion Hub source: [`companion.md`](../features/companion.md)"
 msgstr "桌面伴侣 Hub 来源：[`companion.md`](../features/companion.md)"

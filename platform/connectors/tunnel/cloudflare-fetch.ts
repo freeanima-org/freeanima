@@ -21,7 +21,12 @@ export type CfRequestMeta = {
 export function describeApiTokenForLog(token: string): string {
   const t = token.trim();
   if (!t) return "Token: （空）";
-  if (/^credential\s*\(/i.test(t) || /^pass:/i.test(t)) {
+  if (
+    /^credential\s*\(/i.test(t) ||
+    /^vault\s*\(/i.test(t) ||
+    /^env\s*\(/i.test(t) ||
+    /^pass:/i.test(t)
+  ) {
     return `Token: 疑似未解析的 config 引用 → ${t.slice(0, 48)}${t.length > 48 ? "…" : ""}`;
   }
   if (t.length < 12) return `Token: 过短（${t.length} 字符）`;

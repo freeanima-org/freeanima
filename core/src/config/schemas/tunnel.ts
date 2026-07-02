@@ -30,12 +30,6 @@ export type TunnelConfig = z.infer<typeof tunnelConfigSchema>;
 export type TunnelConfigFields = NonNullable<TunnelConfig>;
 export type TunnelCloudflareConfig = z.infer<typeof tunnelCloudflareConfigSchema>;
 
-/** pass 路径约定（非密钥，供 CLI / 文档引用） */
-export const TUNNEL_PASS_PATHS = {
-  apiToken: "services/cloudflare/api-token",
-  tunnelCredentials: "services/cloudflare/tunnel-credentials",
-} as const;
-
 /** Vault / env 引用示例（item_id 因实例而异，请改用 env() 或填写实际 id） */
 export const TUNNEL_CREDENTIAL_REFS = {
   apiToken: 'env("CLOUDFLARE_API_TOKEN")',

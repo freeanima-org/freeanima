@@ -1,4 +1,3 @@
-import { credential } from "./credential.ts";
 import { resolveVaultField } from "./vault-io.ts";
 
 const ENV_FULL_RE = /^env\("([^"]*)"\)$/;
@@ -7,8 +6,8 @@ const CREDENTIAL_FULL_RE = /^credential\("([^"]*)",\s*"([^"]*)"\)$/;
 const EMBEDDED_RE =
   /env\("([^"]*)"\)|vault\("(\d+)",\s*"([^"]*)"\)|credential\("([^"]*)",\s*"([^"]*)"\)/g;
 
-const legacyCredentialRefs = new Set<string>();
-let legacyCredentialWarned = false;
+const LEGACY_CREDENTIAL_HINT =
+  'credential() 已移除；请迁移到 vault("item_id", "field") 或 env("KEY")（Shell /vault）';
 
 function resolveEnvKey(key: string): string {
   const value = process.env[key];
@@ -18,56 +17,25 @@ function resolveEnvKey(key: string): string {
   return value;
 }
 
-function warnLegacyCredential(ref: string): void {
-  legacyCredentialRefs.add(ref);
-  if (legacyCredentialWarned) return;
-  legacyCredentialWarned = true;
-  console.warn(
-    '[freeanima] config 仍使用 credential()（pass 遗留）；请迁移到 vault("item_id", "field") 或 env("KEY")，见 Shell /vault',
+function rejectLegacyCredential(context: string, ref?: string): never {
+  throw new Error(
+    ref
+      ? `${context}: ${LEGACY_CREDENTIAL_HINT} — ${ref}`
+      : `${context}: ${LEGACY_CREDENTIAL_HINT}`,
   );
-}
-
-function resolveLegacyCredential(path: string, field: string, context: string): string {
-  const ref = `credential("${path}", "${field}")`;
-  warnLegacyCredential(ref);
-  try {
-    return credential(path, field);
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    throw new Error(
-      `${msg} (${context}) — migrate to vault("item_id", "field") or env("KEY") via Shell /vault`,
-      { cause: err },
-    );
-  }
-}
-
-/** @internal test reset */
-export function resetLegacyCredentialWarningsForTest(): void {
-  legacyCredentialRefs.clear();
-  legacyCredentialWarned = false;
-}
-
-/** @internal test introspection */
-export function legacyCredentialRefsForTest(): ReadonlySet<string> {
-  return legacyCredentialRefs;
 }
 
 /**
  * 解析 config 中的引用（同步路径）：
  * - vault("id", "field") 不支持（请用 resolveValue）
- * - credential() 遗留 pass 回退（弃用）
+ * - credential() 已移除
  * - 明文（原样返回）
  */
 export function resolveCredentialRef(value: string, _defaultField: string): string {
   const trimmed = value.trim();
   const credFull = CREDENTIAL_FULL_RE.exec(trimmed);
   if (credFull) {
-    const credPath = credFull[1];
-    const credField = credFull[2];
-    if (credPath === undefined || credField === undefined) {
-      throw new Error(`Invalid credential reference: ${trimmed}`);
-    }
-    return resolveLegacyCredential(credPath, credField, "resolveCredentialRef");
+    rejectLegacyCredential("resolveCredentialRef", trimmed);
   }
   if (VAULT_FULL_RE.test(trimmed)) {
     throw new Error('Use resolveValue() for vault("item_id", "field") references');
@@ -75,7 +43,7 @@ export function resolveCredentialRef(value: string, _defaultField: string): stri
   return trimmed;
 }
 
-/** Lazily expand env("KEY") / vault("id", "field") / credential() references in config */
+/** Lazily expand env("KEY") / vault("id", "field") references in config */
 export async function resolveValue(value: string): Promise<string> {
   const envFull = ENV_FULL_RE.exec(value);
   if (envFull) {
@@ -98,12 +66,7 @@ export async function resolveValue(value: string): Promise<string> {
 
   const credFull = CREDENTIAL_FULL_RE.exec(value);
   if (credFull) {
-    const credPath = credFull[1];
-    const credField = credFull[2];
-    if (credPath === undefined || credField === undefined) {
-      throw new Error(`Invalid credential reference: ${value}`);
-    }
-    return resolveLegacyCredential(credPath, credField, "resolveValue");
+    rejectLegacyCredential("resolveValue", value);
   }
 
   EMBEDDED_RE.lastIndex = 0;
@@ -128,10 +91,11 @@ export async function resolveValue(value: string): Promise<string> {
     } else {
       const credPath = match[4];
       const credField = match[5];
-      if (credPath === undefined || credField === undefined) {
-        throw new Error(`Invalid embedded credential reference in: ${value}`);
-      }
-      result += resolveLegacyCredential(credPath, credField, "embedded resolveValue");
+      const ref =
+        credPath !== undefined && credField !== undefined
+          ? `credential("${credPath}", "${credField}")`
+          : value;
+      rejectLegacyCredential("embedded resolveValue", ref);
     }
     lastIndex = match.index + match[0].length;
   }

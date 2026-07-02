@@ -19,7 +19,7 @@ function validateTunnelConfig(cfg: AnimaConfig): void {
   }
 }
 
-/** Validate config.yaml structure at startup (does not expand env/credential references) */
+/** Validate config.yaml structure at startup (does not expand env/vault references) */
 export async function validateConfigOnStartup(): Promise<void> {
   if (!existsSync(PATHS.configYaml)) {
     console.error(`config.yaml does not exist: ${PATHS.configYaml}`);

@@ -16,7 +16,6 @@ export function adminNavGroups(): AdminNavGroup[] {
       items: [
         { to: "/dashboard", label: m.admin_nav_dashboard() },
         { to: "/config", label: m.admin_nav_config() },
-        { to: "/credentials", label: m.admin_nav_credentials() },
         { to: "/cron", label: m.admin_nav_cron() },
       ],
     },

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 22:26+0800\n"
+"POT-Creation-Date: 2026-07-02 19:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:576
+#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:571
 #, no-wrap
 msgid "Installation"
 msgstr ""
@@ -40,11 +40,11 @@ msgstr ""
 #: docs/guide/install.md:17
 #, no-wrap
 msgid ""
-"| Path               | Best for                                   | PostgreSQL  | Redis                  | Credentials                                          |\n"
-"| ------------------ | ------------------------------------------ | ----------- | ---------------------- | ---------------------------------------------------- |\n"
-"| **npm CLI**        | Day-to-day self-hosting on your OS         | You install | Optional (recommended) | [pass](https://www.passwordstore.org/) (recommended) |\n"
-"| **Docker Compose** | Quick trial, minimal host setup            | Bundled     | Bundled                | `.env` env vars                                      |\n"
-"| **Source**         | Contributors, bleeding-edge, custom builds | You install | Optional (recommended) | pass (recommended)                                   |\n"
+"| Path               | Best for                                   | PostgreSQL  | Redis                  | Secrets                       |\n"
+"| ------------------ | ------------------------------------------ | ----------- | ---------------------- | ----------------------------- |\n"
+"| **npm CLI**        | Day-to-day self-hosting on your OS         | You install | Optional (recommended) | Vault / `env()` (recommended) |\n"
+"| **Docker Compose** | Quick trial, minimal host setup            | Bundled     | Bundled                | `.env` env vars               |\n"
+"| **Source**         | Contributors, bleeding-edge, custom builds | You install | Optional (recommended) | Vault / `env()` (recommended) |\n"
 msgstr ""
 
 #. type: Plain text
@@ -66,12 +66,12 @@ msgstr ""
 #: docs/guide/install.md:28
 #, no-wrap
 msgid ""
-"| Component      | Version / notes                                                                                                                                    |\n"
-"| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| **Bun**        | >= 1.3.14 — required for npm CLI and source installs ([bun.sh](https://bun.sh))                                                                    |\n"
-"| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md)                                                               |\n"
-"| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                                                      |\n"
-"| **pass**       | Optional but recommended for npm/source — API keys and DB URLs stay out of config files ([`security.md`](security.md#credential-responsibilities)) |\n"
+"| Component      | Version / notes                                                                                                                       |\n"
+"| -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| **Bun**        | >= 1.3.14 — required for npm CLI and source installs ([bun.sh](https://bun.sh))                                                       |\n"
+"| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md)                                                  |\n"
+"| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                                         |\n"
+"| **Vault**      | Recommended for npm/source — API keys and DB URLs stay out of config files ([`security.md`](security.md#credential-responsibilities)) |\n"
 msgstr ""
 
 #. type: Plain text
@@ -155,23 +155,24 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:66
-msgid "Prefer pass for secrets:"
+msgid "Prefer Vault or `env()` for secrets:"
 msgstr ""
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:67
 #, no-wrap
 msgid ""
-"anima credential add api/openai token=sk-…\n"
-"anima credential add services/postgres/anima url=postgresql://… host=… password=… database=anima\n"
+"# Shell /vault (User or Agent library), or env vars for headless Hub\n"
+"export OPENAI_API_KEY=sk-…\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:73
 msgid ""
-"Then reference them in config, e.g. `api_key: credential(\"api/openai\", "
-"\"token\")` and `database.url: credential(\"services/postgres/anima\", "
-"\"url\")`. See [`security.md`](security.md#credential-responsibilities)."
+"Then reference them in config, e.g. `api_key: vault(\"123\", \"token\")` or "
+"`api_key: env(\"OPENAI_API_KEY\")`, and `database.url: "
+"env(\"DATABASE_URL\")`. See [`security.md`](security.md#credential-"
+"responsibilities)."
 msgstr ""
 
 #. type: Plain text

@@ -462,10 +462,6 @@ export async function stopAllAcp() {
   return unwrap(resolveApiClient().api.acp["stop-all"].post());
 }
 
-export async function listCredentials() {
-  return unwrap(resolveApiClient().api.credentials.get());
-}
-
 export type EntityRow = import("@freeanima/admin-contract/api").EntityRow;
 
 type EntityListResponse = { items: EntityRow[]; total: number };

@@ -11,7 +11,7 @@
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md)                            |
 | Tools          | Local / MCP / ACP flat registration; MCP client `capabilities/mcp-client/`、MCP server `/mcp` `capabilities/mcp-server/`；tools `capabilities/tools/`、ACP `capabilities/acp/` |
-| Credentials    | pass GPG; injected at runtime; LLM **sees paths, not values**                                                                                                                  |
+| Secrets        | Vault (User/Agent libraries); config `vault()` / `env()`; LLM **sees metadata, not values**                                                                                    |
 | Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                         |
 | Code layout    | `kernel/` → `core/` → `runtime/` → `capabilities/` → `platform/` (+ `app/`) — see [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md)                                 |
 
@@ -56,8 +56,7 @@ bun run test:integration # integration (tests/integration/)
 bun run test # unit + integration in parallel
 bun run service start --foreground # Hub API + SAP（:2658）
 bun run dev:web # 浏览器全壳层开发（Chat + Admin + 任务 + 设置，Vite HMR，需 Hub 已运行）
-# anima credential list # credential paths; values in pass
-anima vault list # agent vault item metadata; use Shell /vault for User library
+# anima vault list # agent vault item metadata; use Shell /vault for User library
 
 # PG schema changes (must generate snapshot.json; see .agent/rules/coding.md)
 DATABASE_URL="…" bun run --filter @freeanima/core db:generate
