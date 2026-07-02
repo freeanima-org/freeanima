@@ -1,5 +1,6 @@
 /// <reference lib="dom" />
 import { resolveHubWsUrl } from "./hub-ws-url.ts";
+import { getSubjectKind } from "./subject-scope-store.ts";
 
 const DB_NAME = "freeanima-satellite-cache";
 const DB_VERSION = 1;
@@ -31,14 +32,18 @@ export function resolveCacheScope(hubWsUrl: string): string {
 
 export function resolveHubCacheScope(): string {
   const shell = globalThis.window?.satelliteShell;
+  let hubScope: string;
   if (shell?.hubWsUrl?.trim()) {
-    return resolveCacheScope(shell.hubWsUrl);
+    hubScope = resolveCacheScope(shell.hubWsUrl);
+  } else {
+    const env = (import.meta as ImportMeta & { env?: { VITE_FREEANIMA_HUB_WS?: string } }).env;
+    if (env?.VITE_FREEANIMA_HUB_WS?.trim()) {
+      hubScope = resolveCacheScope(env.VITE_FREEANIMA_HUB_WS);
+    } else {
+      hubScope = resolveCacheScope(resolveHubWsUrl("http://127.0.0.1:2658"));
+    }
   }
-  const env = (import.meta as ImportMeta & { env?: { VITE_FREEANIMA_HUB_WS?: string } }).env;
-  if (env?.VITE_FREEANIMA_HUB_WS?.trim()) {
-    return resolveCacheScope(env.VITE_FREEANIMA_HUB_WS);
-  }
-  return resolveCacheScope(resolveHubWsUrl("http://127.0.0.1:2658"));
+  return `${hubScope}:${getSubjectKind()}`;
 }
 
 function cacheKey(scope: string, namespace: string, id: string): string {
