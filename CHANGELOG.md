@@ -3,6 +3,56 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.8.3](https://github.com/freeanima-org/freeanima/compare/v0.8.2...v0.8.3) (2026-07-02)
+
+
+### Features
+
+* **brand:** 落地 L01 主标并全平台生成图标 ([5b63f65](https://github.com/freeanima-org/freeanima/commit/5b63f653a225ad10b6515807a1d761228f4b50b2))
+* **hub-rpc:** 引入 Hub RPC 传输层并移除 connectionKind ([00d16f2](https://github.com/freeanima-org/freeanima/commit/00d16f22c15566f2f2f2bc807088e94ddcc8b58c))
+* **lint:** 启用 oxlint type-aware 并收紧 lint 纪律 ([962282f](https://github.com/freeanima-org/freeanima/commit/962282f8441c840f62020360e8b973e1844e5dac))
+* **memory:** 梦境迁移到 dream_entry 实体并新增 Shell /dream 模块 ([5e00993](https://github.com/freeanima-org/freeanima/commit/5e009930d33539e357b4d94f51a07b9b37e99e6f))
+* **memory:** 用户消息 turn 前自动注入相关语义记忆 ([17f8641](https://github.com/freeanima-org/freeanima/commit/17f8641d6a552855bab9d5113c9a9ccfe20d5dcc))
+* **shell:** 模块切换与刷新时保留选中状态 ([8fd324b](https://github.com/freeanima-org/freeanima/commit/8fd324b785f8821e02946fbb0524785050aae379))
+* **shell:** 统一网络与 Hub 连接状态展示 ([bbd5210](https://github.com/freeanima-org/freeanima/commit/bbd5210de7c07b4826ccc9b60e007e6017891fd4))
+* **task,diary:** 任务与日记编辑自动保存 ([0ba2446](https://github.com/freeanima-org/freeanima/commit/0ba2446ea825a80d77f877f29d3f87d13dc05c71))
+* **tools:** 精简 MCP/ToolSet world_id 默认按 caller subject 解析 ([08e4a73](https://github.com/freeanima-org/freeanima/commit/08e4a736c643d2caba2931155d48b39c4f822697))
+* **vault:** 引入 Agent/User 保险库并替换 pass 凭据集成 ([81e11c2](https://github.com/freeanima-org/freeanima/commit/81e11c2673adb1e6e125a9acb2e755f9f0473139))
+* **web:** 扩展 PWA 离线只读缓存与统一 UX ([715448a](https://github.com/freeanima-org/freeanima/commit/715448a97048b8de6c2e9a38db4821bdea6f13cf))
+
+
+### Bug Fixes
+
+* **admin:** 修复 API token 创建卡住与弹窗列表展示 ([9604ac3](https://github.com/freeanima-org/freeanima/commit/9604ac34c1de09986431318fd0375584c1407be1))
+* **chat:** 移动端 Enter 换行而非发送 ([c98cc82](https://github.com/freeanima-org/freeanima/commit/c98cc82399d986e2b25287f8e1ad26cfdaa81c14))
+* **chat:** 移动端 Enter 换行而非发送 ([6e305f4](https://github.com/freeanima-org/freeanima/commit/6e305f4aaa3a807d4984c68b202d7b4366871078))
+* **chat:** 统一 bundled Chat 会话 platform 为 chat ([e4129b8](https://github.com/freeanima-org/freeanima/commit/e4129b889a99944eb1e6e6c67724da5cb3132a38))
+* **platform:** preserve platformExtra for chat platform in buildPlatformInfo ([e7ddebf](https://github.com/freeanima-org/freeanima/commit/e7ddebfdfcc5df535488d12af67a9facb70c392f))
+* **shell-ui:** 修复设置页侧栏在路由切换后不显示 ([96acd57](https://github.com/freeanima-org/freeanima/commit/96acd5744b9ac807be53e55bf5bc59172af39622))
+* **task,email:** 任务与邮件搜索改走 SAP RPC ([caa842f](https://github.com/freeanima-org/freeanima/commit/caa842f5369d745b53fbecdd73c6ab9a3bbe9776))
+* **task:** 修复窄屏任务详情编辑无法保存 ([07d275b](https://github.com/freeanima-org/freeanima/commit/07d275be207fb06ddcd7d76c366100cf48e503da))
+* **task:** 切换 User/Agent 后刷新文件夹与清单 ([3c2a338](https://github.com/freeanima-org/freeanima/commit/3c2a33803fcd71081c72583e50bcc93243aff322))
+* **tests:** 集成测试 Chat 平台改用 flat `chat` ([0e3df75](https://github.com/freeanima-org/freeanima/commit/0e3df752c3b4812daad649a35cf8b8f2e29e513b))
+
+
+### Documentation
+
+* **i18n:** 同步 Vault 迁移后的中英文文档与 PO 译文 ([dab2403](https://github.com/freeanima-org/freeanima/commit/dab2403e077d421698d3d7a6510d48e89482d6bb))
+
+
+### Miscellaneous
+
+* **deps:** 升级 Vite 6 至 Vite 8 ([7aba4f6](https://github.com/freeanima-org/freeanima/commit/7aba4f694ffb081ae0e29e69577bc1e28d140f51))
+* **i18n:** pre-commit 不再检测翻译，留待 PR CI ([88178d1](https://github.com/freeanima-org/freeanima/commit/88178d18468e8978ad6b30f0834abffb7b16cafe))
+* **i18n:** 从 CI 与 dep-check 移除 i18n 强制检测 ([660233e](https://github.com/freeanima-org/freeanima/commit/660233e318526c87054dd4d95222cd9c96cbd951))
+
+
+### Refactoring
+
+* **credentials:** 移除 pass 凭证页与旧凭据运行时逻辑 ([369ae76](https://github.com/freeanima-org/freeanima/commit/369ae760ded3e18a99dadd5cb7bdda1fed8901bb))
+* **ui:** 布局层改由视口断点驱动 ([b3039c5](https://github.com/freeanima-org/freeanima/commit/b3039c589814327c337ad43d279baa92238b1b04))
+* 彻底移除冰箱贴（fridge-magnet）功能 ([0fbb7a9](https://github.com/freeanima-org/freeanima/commit/0fbb7a9e106dc415adee5a3183e01fadb69a37f3))
+
 ## [0.8.2](https://github.com/freeanima-org/freeanima/compare/v0.8.1...v0.8.2) (2026-07-01)
 
 
