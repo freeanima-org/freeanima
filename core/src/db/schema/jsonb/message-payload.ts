@@ -35,6 +35,7 @@ export const userPayloadSchema = messageBaseSchema.extend({
 export const systemPayloadSchema = messageBaseSchema.extend({
   role: z.literal("system"),
   content: z.string(),
+  name: z.string().optional(),
 });
 
 export const assistantPayloadSchema = messageBaseSchema.extend({
@@ -76,4 +77,5 @@ export type ToolCall = z.infer<typeof toolCallSchema>;
 export type LlmTurnMessage =
   | Extract<MessagePayload, { role: "user" }>
   | Extract<MessagePayload, { role: "assistant" }>
-  | Extract<MessagePayload, { role: "tool" }>;
+  | Extract<MessagePayload, { role: "tool" }>
+  | Extract<MessagePayload, { role: "system" }>;

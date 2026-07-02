@@ -33,6 +33,7 @@ export {
   type AutobiographicalRecallHit,
 } from "./search.ts";
 export { registerMemoryTools } from "./register-tools.ts";
+export { registerMemoryPassiveRecallHook } from "./register-hooks.ts";
 export {
   semanticMemoryToolDefs,
   rememberFromArgs,

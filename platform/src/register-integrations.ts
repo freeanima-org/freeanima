@@ -1,4 +1,5 @@
 import { createNotificationInjectHandler } from "@freeanima/capabilities-tools/notification";
+import { registerMemoryPassiveRecallHook as registerPassiveRecall } from "@freeanima/capabilities-memory";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { registerClarifyHooks } from "@freeanima/capabilities-tools/clarify";
 import { createAcpProgressDelivery } from "./acp-progress-delivery.ts";
@@ -41,6 +42,11 @@ export function registerServiceIntegrations(opts: {
 /** Register unread notification inject beforeLlmCall hook (NotificationPort must be registered) */
 export function registerNotificationInject(opts: { kernel: Kernel }): void {
   opts.kernel.hookRegistry.on(beforeLlmCall, createNotificationInjectHandler());
+}
+
+/** Register passive semantic memory recall beforeLlmCall hook */
+export function registerMemoryPassiveRecallHook(opts: { kernel: Kernel }): void {
+  registerPassiveRecall(opts);
 }
 
 /** Start ACP progress polling after service startup */

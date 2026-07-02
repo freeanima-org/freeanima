@@ -6,6 +6,7 @@ import {
 } from "@freeanima/core/db/domain";
 import { cleanToolCallsForApi } from "@freeanima/core/provider/stream-tools";
 import { omitUndefined } from "@freeanima/core/util";
+import { isRuntimeSystemTurn } from "./runtime-system-turn.ts";
 import { repairToolLoopMessages } from "./tool-loop-integrity.ts";
 
 /** Ensure assistant has content or valid tool_calls before sending to provider */
@@ -43,6 +44,14 @@ export function storedMessagesToInvokeInput(messages: StoredMessage[]): InvokeMe
       continue;
     }
     pastLeadingSystem = true;
+    if (msg.role === "system" && isRuntimeSystemTurn(msg)) {
+      turns.push({
+        role: "system",
+        content: msg.content,
+        ...(msg.name ? { name: msg.name } : {}),
+      });
+      continue;
+    }
     if (msg.role === "system") continue;
     if (msg.role === "assistant") {
       const normalized = normalizeAssistantTurn(msg);

@@ -163,6 +163,15 @@ compression:
 #   model: bge-m3
 #   dimensions: 1024
 
+# 被动语义记忆注入（每条用户消息 turn 前自动 hybrid 检索 semantic 并注入 runtime system 上下文）
+# memory:
+#   passive_recall:
+#     enabled: true
+#     limit: 5
+#     min_score: 0
+#     max_chars: 2000
+#     exclude_resident: true
+
 # Hub HTTP（监听地址 + 可选跨域白名单）
 # http:
 #   host: 0.0.0.0                    # 局域网访问；默认 127.0.0.1（仅本机）

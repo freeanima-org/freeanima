@@ -63,6 +63,11 @@ function sanitizeTurnForApi(
         name,
       } as ChatCompletionMessageParam;
     }
+    case "system": {
+      const out: ChatCompletionMessageParam = { role: "system", content: msg.content };
+      if (msg.name) (out as { name?: string }).name = msg.name;
+      return out;
+    }
     default: {
       const _exhaustive: never = msg;
       throw new Error(`Unknown message role: ${JSON.stringify(_exhaustive)}`);

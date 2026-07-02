@@ -23,6 +23,7 @@ export {
   getEarliestConversationDay,
   listStaleConversationIdsForCleanup,
   deleteStaleConversations,
+  isCronSession,
 } from "./repos/conversation-repo.ts";
 export { purgeCronConversations } from "./repos/purge-cron-conversations.ts";
 export {
