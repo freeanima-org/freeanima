@@ -6,6 +6,7 @@ import { httpConfigSchema } from "./http.ts";
 import { webConfigSchema } from "./web.ts";
 import { notificationsConfigSchema } from "./notifications.ts";
 import { worldsConfigSchema } from "./worlds.ts";
+import { memoryConfigSchema } from "./memory-config.ts";
 
 export const mcpServerSchema = z
   .object({
@@ -71,7 +72,7 @@ const fallbackProviderSchema = z.object({
   base_url: z.string().optional(),
 });
 
-const memorySchema = z.object({}).passthrough();
+const memorySchema = memoryConfigSchema;
 
 const firecrawlSchema = z.object({
   api_url: z.string().optional(),

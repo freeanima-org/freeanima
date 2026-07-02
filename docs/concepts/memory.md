@@ -150,6 +150,16 @@ Conversion from working memory to long-term memory is handled by the sleep mecha
 | `limbic`           | Emotional memory body (hybrid FTS + trgm + vector)                           |
 | `autobiographical` | Narrative title + content snippet (hybrid FTS + trgm + vector on title+body) |
 
+### ✅ Passive semantic recall (auto-inject)
+
+Before each user-facing turn, the runtime searches **semantic memory only** from the latest user message (hybrid FTS + trgm + vector), then injects top-N hits as a **runtime-only** `role: system` message (`name: passive_memory_context`) immediately before that user message. Not persisted to PG; not counted as a memory reference.
+
+- **Resident memory** (system prompt): pinned + high-reference anchors, session snapshot
+- **Passive recall**: query-relevant semantic hits for the current message
+- **`memory_recall` tool**: conversation / limbic / autobiographical sources, broader or deeper retrieval when the model needs more
+
+Configure under `memory.passive_recall` (`enabled`, `limit`, `min_score`, `max_chars`, `exclude_resident`). Skipped for cron / background sessions.
+
 **Index columns (PG):** `semantic_memory` and `messages` use `fts_segmented` (optional jieba) → generated `content_fts` (tsvector, keyword FTS) plus async `content_embedding` (pgvector, semantic similarity). `limbic_memory` and `autobiographical_memory` follow the same pattern; autobiographical index text is `title + newline + content`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only). `content_fts` is never written by application code — PostgreSQL generates it from `fts_segmented` or raw content.
 
 Resident memory injected via system prompt: **up to 40 pinned** + **most-referenced top N** (default N=20). Each line carries a citation marker `[[f-000001-abcd]]` (ID only, no language prefix).

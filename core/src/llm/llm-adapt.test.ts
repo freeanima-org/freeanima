@@ -51,7 +51,7 @@ describe("storedMessagesToInvokeInput", () => {
     expect(turns.map((t) => t.role)).toEqual(["user", "assistant"]);
   });
 
-  it("drops non-leading system messages from turns", () => {
+  it("drops unnamed non-leading system messages from turns", () => {
     const messages: StoredMessage[] = [
       { role: "user", content: "hi" },
       { role: "system", content: "injected" },
@@ -60,6 +60,26 @@ describe("storedMessagesToInvokeInput", () => {
     const { turns, systemPrompt } = storedMessagesToInvokeInput(messages);
     expect(systemPrompt).toBeUndefined();
     expect(turns.map((t) => t.role)).toEqual(["user", "assistant"]);
+  });
+
+  it("forwards named runtime system turns before provider invoke", () => {
+    const messages: StoredMessage[] = [
+      { role: "system", content: "You are helpful" },
+      { role: "user", content: "hi" },
+      {
+        role: "system",
+        name: "passive_memory_context",
+        content: "recalled memory",
+      },
+      { role: "user", content: "follow up" },
+    ];
+    const { turns, systemPrompt } = storedMessagesToInvokeInput(messages);
+    expect(systemPrompt).toBe("You are helpful");
+    expect(turns).toEqual([
+      { role: "user", content: "hi" },
+      { role: "system", name: "passive_memory_context", content: "recalled memory" },
+      { role: "user", content: "follow up" },
+    ]);
   });
 });
 

@@ -48,4 +48,23 @@ describe("messagesForApi", () => {
       content: "unread notes",
     });
   });
+
+  it("maps mid-conversation runtime system turns", () => {
+    const api = messagesForApi(
+      [
+        { role: "user", content: "hi" },
+        { role: "system", name: "passive_memory_context", content: "memory block" },
+        { role: "user", content: "follow up" },
+      ],
+      "leading system",
+    );
+    expect(api[0]).toEqual({ role: "system", content: "leading system" });
+    expect(api[1]).toMatchObject({ role: "user", content: "hi" });
+    expect(api[2]).toMatchObject({
+      role: "system",
+      name: "passive_memory_context",
+      content: "memory block",
+    });
+    expect(api[3]).toMatchObject({ role: "user", content: "follow up" });
+  });
 });
