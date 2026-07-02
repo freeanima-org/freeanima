@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { build, type InlineConfig, type Rollup } from "vite";
 
-import { createShellUiAliases } from "./aliases.ts";
+import { companionAtAliasPlugin, createShellUiAliases } from "./aliases.ts";
 import { shellEntryFileNames } from "./entry-file-names.ts";
 import { paraglideCompilePlugin } from "./paraglide-plugin.ts";
 
@@ -52,7 +52,12 @@ export function createShellViteInlineConfig(opts: ShellViteBuildOptions): Inline
     configFile: false,
     root: opts.appDir,
     base: opts.base ?? "/",
-    plugins: [paraglideCompilePlugin(paraglideDir, repoRoot), react(), tailwindcss()],
+    plugins: [
+      companionAtAliasPlugin(repoRoot),
+      paraglideCompilePlugin(paraglideDir, repoRoot),
+      react(),
+      tailwindcss(),
+    ],
     resolve: {
       alias: createShellUiAliases(paraglideDir, repoRoot),
       dedupe: ["react", "react-dom"],
@@ -65,7 +70,7 @@ export function createShellViteInlineConfig(opts: ShellViteBuildOptions): Inline
       sourcemap: opts.sourcemap ?? false,
       modulePreload: false,
       watch: opts.watch ? {} : null,
-      rollupOptions: {
+      rolldownOptions: {
         input,
         output: {
           entryFileNames: (chunkInfo) => shellEntryFileNames(chunkInfo),

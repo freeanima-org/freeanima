@@ -42,8 +42,11 @@ export default defineConfig(() => {
     inline.plugins = [...(inline.plugins ?? []), mobileHtmlPlugin(DIST_DIR)];
   }
 
-  if (inline.build?.rollupOptions?.output && !Array.isArray(inline.build.rollupOptions.output)) {
-    inline.build.rollupOptions.output.entryFileNames = (chunkInfo) =>
+  if (
+    inline.build?.rolldownOptions?.output &&
+    !Array.isArray(inline.build.rolldownOptions.output)
+  ) {
+    inline.build.rolldownOptions.output.entryFileNames = (chunkInfo) =>
       shellEntryFileNames(chunkInfo);
   }
 

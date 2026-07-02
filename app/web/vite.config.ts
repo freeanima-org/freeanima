@@ -152,8 +152,11 @@ export default defineConfig(({ command, mode }) => {
   inline.plugins = [...(inline.plugins ?? []), ...webPwaPlugin()];
 
   if (!isServe) {
-    if (inline.build?.rollupOptions?.output && !Array.isArray(inline.build.rollupOptions.output)) {
-      inline.build.rollupOptions.output.entryFileNames = (chunkInfo) =>
+    if (
+      inline.build?.rolldownOptions?.output &&
+      !Array.isArray(inline.build.rolldownOptions.output)
+    ) {
+      inline.build.rolldownOptions.output.entryFileNames = (chunkInfo) =>
         shellEntryFileNames(chunkInfo);
     }
     inline.plugins = [...(inline.plugins ?? []), shellBridgeHtmlPlugin(DIST_DIR, "/web/")];
