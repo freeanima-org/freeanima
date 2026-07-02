@@ -8,11 +8,12 @@ import {
   ensureDefaultTaskListForWorld,
   listTaskItems,
   listTaskLists,
+  searchTaskItems,
   uncompleteTaskItem,
   updateTaskItem,
   updateTaskList,
 } from "@freeanima/capabilities-task";
-import { getResolvedWorldContext, type SubjectKind } from "@freeanima/core/config";
+import type { SubjectKind } from "@freeanima/core/config";
 import { subjectConfigBodySchema } from "@freeanima/core/db/schema";
 import { getEntity } from "@freeanima/core/db/pg/entity";
 import type { VerifiedServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
@@ -234,6 +235,20 @@ export async function serviceTaskDelete(
   return { ok: true as const };
 }
 
-export function serviceWorldsContext(_deps: RuntimeDeps) {
-  return getResolvedWorldContext();
+export async function serviceTaskSearch(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    query: string;
+    list_id?: number;
+    status?: "pending" | "completed" | "all";
+    limit?: number;
+  },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const worldId = await taskWorldIdForAuth(auth, input.subject_kind);
+  const { subject_kind: _kind, ...searchInput } = input;
+  const items = await searchTaskItems(worldId, omitUndefined(searchInput));
+  return { items };
 }

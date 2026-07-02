@@ -124,6 +124,8 @@ export {
   taskUncompleteOutputSchema,
   taskDeleteInputSchema,
   taskDeleteOutputSchema,
+  taskSearchInputSchema,
+  taskSearchOutputSchema,
 } from "./frames/task.ts";
 export type {
   TaskListRowPayload,
@@ -148,6 +150,8 @@ export type {
   TaskUncompleteOutput,
   TaskDeleteInput,
   TaskDeleteOutput,
+  TaskSearchInput,
+  TaskSearchOutput,
 } from "./frames/task.ts";
 
 export {
@@ -166,6 +170,8 @@ export {
   emailSyncOutputSchema,
   emailThreadListInputSchema,
   emailThreadListOutputSchema,
+  emailMessageSearchInputSchema,
+  emailMessageSearchOutputSchema,
 } from "./frames/email.ts";
 export type {
   EmailAccountRowPayload,
@@ -179,6 +185,8 @@ export type {
   EmailMessageReadOutput,
   EmailMessageMarkReadInput,
   EmailMessageMarkReadOutput,
+  EmailMessageSearchInput,
+  EmailMessageSearchOutput,
   EmailSyncInput,
   EmailSyncOutput,
   EmailThreadListInput,

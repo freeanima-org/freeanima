@@ -1,4 +1,4 @@
-import { fetchWorldContext, getSubjectKind, resolveWorldIdForSubject } from "@freeanima/shell-sdk";
+import { getSubjectKind } from "@freeanima/shell-sdk";
 import {
   readOfflineCache,
   resolveHubCacheScope,
@@ -156,48 +156,28 @@ export async function searchEmailMessages(input: {
   const cacheId = searchCacheId(input);
   const cached = await readOfflineCache<EmailMessageRow[]>(scope, "email", cacheId);
   try {
-    const ctx = await fetchWorldContext();
-    const world_id = resolveWorldIdForSubject(ctx, getSubjectKind());
-    const res = await fetch("/api/entities/search", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const client = await sap();
+    const data = await client.request(
+      "email.message.search",
+      withSubjectKind({
         query: input.query,
-        world_id,
-        primary_component: "email_message",
-        mode: "hybrid",
-        filters: input.account_id != null ? { account_id: input.account_id } : undefined,
-        limit: input.limit ?? 30,
+        account_id: input.account_id,
+        limit: input.limit,
       }),
-    });
-    if (!res.ok) {
-      const body = (await res.json().catch(() => ({}))) as { error?: string };
-      throw new Error(body.error ?? `search failed: ${res.status}`);
-    }
-    const data = (await res.json()) as {
-      results: Array<{
-        id: number;
-        title: string;
-        summary?: string;
-        content?: string;
-        body?: Record<string, unknown>;
-        created_at?: string;
-        updated_at?: string;
-      }>;
-    };
-    const messages = data.results.map((row) => ({
+    );
+    const messages = data.messages.map((row) => ({
       id: row.id,
-      account_id: Number(row.body?.account_id ?? 0),
-      thread_id: Number(row.body?.thread_id ?? 0),
-      subject: row.title,
-      preview: row.summary ?? "",
-      body: row.content ?? "",
-      from: String(row.body?.from ?? ""),
-      to: String(row.body?.to ?? ""),
-      sent_at: String(row.body?.sent_at ?? row.created_at ?? ""),
-      unread: Boolean(row.body?.unread),
-      direction: (row.body?.direction as EmailMessageRow["direction"]) ?? "inbound",
-      tags: Array.isArray(row.body?.tags) ? row.body.tags.map(String) : [],
+      account_id: row.account_id,
+      thread_id: row.thread_id,
+      subject: row.subject,
+      preview: row.preview,
+      body: row.body,
+      from: row.from,
+      to: row.to,
+      sent_at: row.sent_at,
+      unread: row.unread,
+      direction: row.direction,
+      tags: row.tags,
     }));
     void writeOfflineCache(scope, "email", cacheId, messages);
     return messages;
