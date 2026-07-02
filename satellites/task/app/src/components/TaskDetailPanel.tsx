@@ -13,21 +13,36 @@ import { FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form";
 import { isoToDatetimeLocalValue } from "../lib/format-task.ts";
 import type { TaskItemRow } from "../lib/api.ts";
 
+export type DetailSaveStatus = "idle" | "saving" | "saved" | "error";
+
+function saveStatusLabel(status: DetailSaveStatus): string {
+  switch (status) {
+    case "saving":
+      return "保存中…";
+    case "saved":
+      return "已保存";
+    case "error":
+      return "保存失败";
+    default:
+      return "";
+  }
+}
+
 type TaskDetailPanelProps = {
   item: TaskItemRow;
   onChange: (item: TaskItemRow) => void;
-  onSave: () => void;
   onCancel: () => void;
-  saving?: boolean;
+  saveStatus?: DetailSaveStatus;
 };
 
 export function TaskDetailPanel({
   item,
   onChange,
-  onSave,
   onCancel,
-  saving,
+  saveStatus = "idle",
 }: TaskDetailPanelProps) {
+  const statusLabel = saveStatusLabel(saveStatus);
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -101,18 +116,17 @@ export function TaskDetailPanel({
           </div>
         </FormFieldset>
       </div>
-      <div className="border safe-area-pb flex shrink-0 gap-2 border-t p-4">
+      <div className="border safe-area-pb flex shrink-0 items-center gap-2 border-t p-4">
         <Button type="button" variant="ghost" className="min-w-24 flex-1" onClick={onCancel}>
           取消
         </Button>
-        <Button
-          type="button"
-          className="min-w-24 flex-1"
-          disabled={saving}
-          onClick={() => void onSave()}
-        >
-          保存
-        </Button>
+        {statusLabel ? (
+          <span className="text-muted-foreground min-w-0 flex-1 text-right text-xs">
+            {statusLabel}
+          </span>
+        ) : (
+          <span className="flex-1" aria-hidden />
+        )}
       </div>
     </div>
   );
