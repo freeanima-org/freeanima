@@ -64,6 +64,35 @@ describe("http-dispatch", () => {
     expect(result.blocked).toBeNull();
   });
 
+  test("applyHttpAuth preserves POST body after async token verification", async () => {
+    const serviceAuth: import("./service-auth.ts").ServiceAuthVerifier = {
+      async verifyRequest() {
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, 5);
+        });
+        return {
+          blocked: null,
+          auth: {
+            token_id: 1,
+            subject_id: 53,
+            subject_type: "user",
+            scopes: ["full"],
+          },
+        };
+      },
+    };
+    const req = new Request("http://127.0.0.1:2658/api/subjects/53/tokens", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "auth-body-test" }),
+    });
+    const result = await applyHttpAuth(req, "127.0.0.1", serviceAuth);
+    expect(result.blocked).toBeNull();
+    expect(await result.req.json()).toEqual({ name: "auth-body-test" });
+    expect(result.req.headers.get("x-anima-auth-subject-id")).toBe("53");
+    expect(result.req.headers.get("x-anima-remote-address")).toBe("127.0.0.1");
+  });
+
   test("trySapWebSocketUpgrade upgrades /hub/rpc/v1 synchronously", async () => {
     const server = Bun.serve({
       port: 0,

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Badge,
   Button,
@@ -8,7 +8,9 @@ import {
   DialogHeader,
   DialogTitle,
   Input,
+  Label,
   Spinner,
+  Switch,
   Table,
   TableBody,
   TableCell,
@@ -39,6 +41,12 @@ function tokenStatusLabel(token: ServiceApiTokenPublic): string {
   return m.admin_entities_api_token_status_active();
 }
 
+function isActiveToken(token: ServiceApiTokenPublic): boolean {
+  if (token.revoked_at) return false;
+  if (token.expires_at && new Date(token.expires_at).getTime() <= Date.now()) return false;
+  return true;
+}
+
 export function SubjectApiTokensModal({
   subject,
   onClose,
@@ -54,6 +62,12 @@ export function SubjectApiTokensModal({
   const [revokingId, setRevokingId] = useState<number | null>(null);
   const [plaintext, setPlaintext] = useState<string | null>(null);
   const [copyHint, setCopyHint] = useState("");
+  const [showAll, setShowAll] = useState(false);
+
+  const visibleItems = useMemo(
+    () => (showAll ? items : items.filter(isActiveToken)),
+    [items, showAll],
+  );
 
   const fetchTokens = useCallback(async () => {
     setLoading(true);
@@ -145,22 +159,24 @@ export function SubjectApiTokensModal({
         if (!next) onClose();
       }}
     >
-      <DialogContent className="max-w-2xl safe-area-pt safe-area-pb">
+      <DialogContent className="max-w-4xl w-[calc(100%-2rem)] sm:max-w-4xl max-h-[85vh] flex flex-col overflow-hidden safe-area-pt safe-area-pb">
         <DialogHeader>
           <DialogTitle>
             {m.admin_entities_api_tokens_title({ subject: subjectLabel(subject) })}
           </DialogTitle>
         </DialogHeader>
-        <p className="text-sm text-muted-foreground">{m.admin_entities_api_tokens_desc()}</p>
+        <p className="text-sm text-muted-foreground shrink-0">
+          {m.admin_entities_api_tokens_desc()}
+        </p>
 
         {error ? (
-          <StatusAlert variant="error" className="mb-3">
+          <StatusAlert variant="error" className="mb-3 shrink-0">
             {error}
           </StatusAlert>
         ) : null}
 
         {plaintext ? (
-          <StatusAlert variant="warning" className="mb-4">
+          <StatusAlert variant="warning" className="mb-4 shrink-0">
             <div>
               <p className="font-semibold">{m.admin_entities_api_token_plaintext_title()}</p>
               <p className="mt-1">{m.admin_entities_api_token_plaintext_hint()}</p>
@@ -186,7 +202,7 @@ export function SubjectApiTokensModal({
           </StatusAlert>
         ) : null}
 
-        <div className="flex flex-wrap gap-2 items-end mb-4">
+        <div className="flex flex-wrap gap-2 items-end mb-4 shrink-0">
           <FormField
             label={m.admin_entities_api_token_new()}
             className="text-xs flex-1 min-w-[12rem]"
@@ -210,32 +226,53 @@ export function SubjectApiTokensModal({
           </Button>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center py-6">
-            <Spinner />
-          </div>
-        ) : items.length === 0 ? (
-          <StatusAlert variant="info">{m.admin_entities_api_tokens_empty()}</StatusAlert>
-        ) : (
-          <div className="overflow-x-auto">
-            <Table>
+        <div className="flex items-center justify-end gap-2 mb-2 shrink-0">
+          <Label htmlFor="subject-api-tokens-show-all" className="text-xs text-muted-foreground">
+            {m.admin_entities_api_tokens_show_all()}
+          </Label>
+          <Switch id="subject-api-tokens-show-all" checked={showAll} onCheckedChange={setShowAll} />
+        </div>
+
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden [&_[data-slot=table-container]]:overflow-x-hidden">
+          {loading ? (
+            <div className="flex justify-center py-6">
+              <Spinner />
+            </div>
+          ) : visibleItems.length === 0 ? (
+            <StatusAlert variant="info">
+              {showAll
+                ? m.admin_entities_api_tokens_empty()
+                : m.admin_entities_api_tokens_empty_active()}
+            </StatusAlert>
+          ) : (
+            <Table className="table-fixed">
               <TableHeader>
                 <TableRow>
-                  <TableHead>{m.admin_entities_api_token_col_name()}</TableHead>
-                  <TableHead>{m.admin_entities_api_token_col_prefix()}</TableHead>
-                  <TableHead>{m.admin_entities_api_token_col_scopes()}</TableHead>
-                  <TableHead>{m.admin_entities_api_token_col_status()}</TableHead>
-                  <TableHead>{m.admin_entities_api_token_col_last_used()}</TableHead>
-                  <TableHead>{m.admin_common_time()}</TableHead>
-                  <TableHead />
+                  <TableHead className="w-[18%]">{m.admin_entities_api_token_col_name()}</TableHead>
+                  <TableHead className="w-[14%]">
+                    {m.admin_entities_api_token_col_prefix()}
+                  </TableHead>
+                  <TableHead className="w-[12%]">
+                    {m.admin_entities_api_token_col_scopes()}
+                  </TableHead>
+                  <TableHead className="w-[10%]">
+                    {m.admin_entities_api_token_col_status()}
+                  </TableHead>
+                  <TableHead className="w-[18%]">
+                    {m.admin_entities_api_token_col_last_used()}
+                  </TableHead>
+                  <TableHead className="w-[18%]">{m.admin_common_time()}</TableHead>
+                  <TableHead className="w-[10%]" />
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {items.map((token) => (
+                {visibleItems.map((token) => (
                   <TableRow key={token.id}>
-                    <TableCell>{token.name}</TableCell>
-                    <TableCell className="font-mono text-xs">{token.prefix}</TableCell>
-                    <TableCell className="text-xs">
+                    <TableCell className="whitespace-normal break-words">{token.name}</TableCell>
+                    <TableCell className="font-mono text-xs whitespace-normal break-all">
+                      {token.prefix}
+                    </TableCell>
+                    <TableCell className="text-xs whitespace-normal break-words">
                       {token.scopes.join(", ") || m.admin_common_empty()}
                     </TableCell>
                     <TableCell>
@@ -271,10 +308,10 @@ export function SubjectApiTokensModal({
                 ))}
               </TableBody>
             </Table>
-          </div>
-        )}
+          )}
+        </div>
 
-        <DialogFooter>
+        <DialogFooter className="shrink-0">
           <Button type="button" variant="ghost" size="sm" onClick={onClose}>
             {m.admin_common_close()}
           </Button>

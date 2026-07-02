@@ -1,20 +1,53 @@
 import { corsPreflightResponse } from "./elysia/cors.ts";
 import { isMcpPath } from "@freeanima/capabilities-mcp-server";
+import {
+  ANIMA_AUTH_SCOPES_HEADER,
+  ANIMA_AUTH_SUBJECT_ID_HEADER,
+  ANIMA_AUTH_SUBJECT_TYPE_HEADER,
+  ANIMA_AUTH_TOKEN_ID_HEADER,
+  type ServiceAuthContext,
+} from "./auth-context.ts";
 import { isSapWebSocketUpgrade } from "./remote-auth.ts";
 import type { ServiceAuthVerifier } from "./service-auth.ts";
-import { withServiceAuthRequest } from "./service-auth.ts";
 
 /** Bun requestIP 注入，供 /api/echo 等调试接口展示真实 TCP 来源 */
 export const ANIMA_REMOTE_ADDRESS_HEADER = "x-anima-remote-address";
+
+/** Bun.serve 下 POST body 流在 await 后不可再 `new Request(req, …)` 二次包装，须一次合并 headers。 */
+function decorateRequest(
+  req: Request,
+  remoteAddress: string | undefined,
+  auth: ServiceAuthContext | null,
+): Request {
+  if (!remoteAddress && !auth) return req;
+
+  const headers = new Headers(req.headers);
+  if (remoteAddress) {
+    headers.set(ANIMA_REMOTE_ADDRESS_HEADER, remoteAddress);
+  }
+  if (auth) {
+    headers.set(ANIMA_AUTH_SUBJECT_ID_HEADER, String(auth.subject_id));
+    headers.set(ANIMA_AUTH_SUBJECT_TYPE_HEADER, auth.subject_type);
+    headers.set(ANIMA_AUTH_TOKEN_ID_HEADER, String(auth.token_id));
+    headers.set(ANIMA_AUTH_SCOPES_HEADER, auth.scopes.join(","));
+  }
+
+  if (req.body != null) {
+    return new Request(req.url, {
+      method: req.method,
+      headers,
+      body: req.body,
+      duplex: "half",
+    } as RequestInit);
+  }
+  return new Request(req.url, { method: req.method, headers });
+}
 
 export function attachRemoteAddressToRequest(
   req: Request,
   remoteAddress: string | undefined,
 ): Request {
-  if (!remoteAddress) return req;
-  const headers = new Headers(req.headers);
-  headers.set(ANIMA_REMOTE_ADDRESS_HEADER, remoteAddress);
-  return new Request(req, { headers });
+  return decorateRequest(req, remoteAddress, null);
 }
 
 /** REST API 或 MCP 路径（须先过 service_auth 中间件） */
@@ -39,13 +72,12 @@ export async function applyHttpAuth(
   remoteAddress: string | undefined,
   serviceAuth: ServiceAuthVerifier | null,
 ): Promise<{ blocked: Response | null; req: Request }> {
-  const withAddress = attachRemoteAddressToRequest(req, remoteAddress);
   if (serviceAuth) {
-    const result = await serviceAuth.verifyRequest(withAddress, remoteAddress);
-    if (result.blocked) return { blocked: result.blocked, req: withAddress };
-    return { blocked: null, req: withServiceAuthRequest(withAddress, result.auth) };
+    const result = await serviceAuth.verifyRequest(req, remoteAddress);
+    if (result.blocked) return { blocked: result.blocked, req };
+    return { blocked: null, req: decorateRequest(req, remoteAddress, result.auth) };
   }
-  return { blocked: null, req: withAddress };
+  return { blocked: null, req: decorateRequest(req, remoteAddress, null) };
 }
 
 type SapBunHandlers = {

@@ -38,4 +38,17 @@ describe("reviveDates", () => {
     const out = reviveDates(input);
     expect(out[0]?.created_at).toBeInstanceOf(Date);
   });
+
+  test("preserves existing Date instances", () => {
+    const created = new Date("2026-06-28T12:00:00.000Z");
+    const lastUsed = new Date("2026-06-28T13:00:00.000Z");
+    const out = reviveDates({ created_at: created, last_used_at: lastUsed });
+    expect(out.created_at).toBe(created);
+    expect(out.last_used_at).toBe(lastUsed);
+  });
+
+  test("revives last_used_at strings", () => {
+    const out = reviveDates({ last_used_at: "2026-06-28T12:00:00.000Z" });
+    expect(out.last_used_at).toBeInstanceOf(Date);
+  });
 });

@@ -257,6 +257,8 @@
   "admin_entities_api_tokens": "API tokens",
   "admin_entities_api_tokens_desc": "Service tokens bind to this subject. The secret is shown only once when created.",
   "admin_entities_api_tokens_empty": "尚无令牌。",
+  "admin_entities_api_tokens_empty_active": "暂无运行中的令牌。",
+  "admin_entities_api_tokens_show_all": "显示全部",
   "admin_entities_api_tokens_title": "Hub API tokens — {subject}",
   "admin_entities_col_content": "内容",
   "admin_entities_col_default_private_world": "默认私有世界",

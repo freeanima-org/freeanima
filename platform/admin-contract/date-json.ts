@@ -13,6 +13,9 @@ export const DATE_JSON_KEYS = new Set([
   "archived_at",
   "observed_at",
   "timestamp",
+  "last_used_at",
+  "expires_at",
+  "revoked_at",
 ]);
 
 export function isPlainIsoDateString(value: string): boolean {
@@ -22,7 +25,13 @@ export function isPlainIsoDateString(value: string): boolean {
 
 /** Recursively revive ISO date strings under known keys (and nested objects) to `Date`. */
 export function reviveDates<T>(value: T): T {
-  if (value == null || typeof value !== "object") {
+  if (value == null) {
+    return value;
+  }
+  if (value instanceof Date) {
+    return value;
+  }
+  if (typeof value !== "object") {
     return value;
   }
   if (Array.isArray(value)) {

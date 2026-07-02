@@ -257,6 +257,8 @@
   "admin_entities_api_tokens": "API tokens",
   "admin_entities_api_tokens_desc": "Service tokens bind to this subject. The secret is shown only once when created.",
   "admin_entities_api_tokens_empty": "No tokens yet.",
+  "admin_entities_api_tokens_empty_active": "No active tokens.",
+  "admin_entities_api_tokens_show_all": "Show all",
   "admin_entities_api_tokens_title": "Hub API tokens — {subject}",
   "admin_entities_col_content": "Content",
   "admin_entities_col_default_private_world": "Default private world",
