@@ -34,7 +34,7 @@ Parse/serialize: `parseHubRpcEnvelope` / `serializeHubRpcEnvelope` in `@freeanim
 
 Every connection must send a valid **service API token** in the `connect` payload (`auth_token`). The Hub verifies it with `verifyServiceApiToken` ([`core/src/db/pg/service-api-token/`](../../core/src/db/pg/service-api-token/)).
 
-Bundled clients read the token from `window.satelliteShell.remoteAuth.token` (shell bridge). Local web dev may seed via `FREEANIMA_REMOTE_AUTH_TOKEN` or Hub setup UI.
+Bundled clients read the token from `window.satelliteShell.remoteAuth.token` (shell bridge). Hub-hosted Web on loopback receives `auth_token` in `/web/config.json` when `~/.anima/web/loopback-auth.token` or `FREEANIMA_REMOTE_AUTH_TOKEN` is set (`anima token pin-loopback`). Local Vite dev may seed via `FREEANIMA_REMOTE_AUTH_TOKEN` or Hub setup UI.
 
 ## Client profiles
 

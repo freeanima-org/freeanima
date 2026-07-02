@@ -1,14 +1,14 @@
 # 逸灵风 config.yaml 示例
 # 复制到 ~/.anima/config.yaml 并根据需要修改
 
-# LLM（provider + profile）；API Key 使用 credential() 或 env() 引用
+# LLM（provider + profile）；API Key 使用 vault() 或 env() 引用
 llm:
   default_profile: chat
   providers:
     main:
       backend: openai_compatible
       base_url: https://api.openai.com/v1
-      # api_key: credential("api/opencode-go", "token")
+      # api_key: vault("123", "password")
   profiles:
     chat:
       chain:
@@ -131,7 +131,7 @@ compression:
 
 # Slice A 对话 Session PostgreSQL（生产必填）
 # database:
-#   url: credential("services/postgres/anima", "url")
+#   url: env("DATABASE_URL")
 #   # Docker: postgresql://freeanima:${PG_PASSWORD}@postgres:5432/freeanima
 
 # Redis（EventBus / 任务上下文；不可用时静默降级）
@@ -190,8 +190,8 @@ compression:
 #     tunnel_id: ...
 #     zone_id: ...
 #   credentials:
-#     api_token: credential("services/cloudflare/api-token", "token")
-#     tunnel_credentials: credential("services/cloudflare/tunnel-credentials", "json")
+#     api_token: env("CLOUDFLARE_API_TOKEN")
+#     tunnel_credentials: env("CLOUDFLARE_TUNNEL_CREDENTIALS_JSON")
 
 # 浏览器 Web UI（由 Hub :2658/web 托管；web.enabled 时随 anima service stack 挂载静态）
 # web:

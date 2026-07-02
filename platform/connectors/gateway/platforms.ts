@@ -1,5 +1,5 @@
 import type { Config } from "@freeanima/platform/config";
-import { credential } from "@freeanima/platform/config";
+import { resolveValue } from "@freeanima/platform/config";
 import { logComponent } from "@freeanima/platform/logging";
 import type { MessagingPort } from "@freeanima/platform/ports/messaging-port";
 
@@ -18,9 +18,13 @@ export async function discoverPlatforms(
   const adapters: PlatformAdapter[] = [];
 
   try {
-    const token = credential("services/discord", "token");
     const cfg = config.data as Record<string, unknown>;
     const discordCfg = (cfg.discord ?? {}) as Record<string, unknown>;
+    const tokenRef = discordCfg.token;
+    if (typeof tokenRef !== "string" || !tokenRef.trim()) {
+      throw new Error("discord.token not set in config.yaml");
+    }
+    const token = await resolveValue(tokenRef.trim());
     const { createDiscordAdapter } = await import("./discord/discord-adapter.ts");
     adapters.push(createDiscordAdapter(service, token, discordCfg));
     logComponent("gateway").info("Discovered platform: discord");
@@ -35,7 +39,7 @@ export async function discoverPlatforms(
     adapters.push(createWeixinAdapter(service, weixinCreds));
     logComponent("gateway").info("Discovered platform: weixin");
   } else {
-    logComponent("gateway").info("WeChat not configured (pass services/weixin-ilink)");
+    logComponent("gateway").info("WeChat not configured (vault services/weixin-ilink or env)");
   }
 
   return adapters;

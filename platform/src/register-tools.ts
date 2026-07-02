@@ -2,6 +2,7 @@ import { registerClarifyTool } from "@freeanima/capabilities-tools/clarify";
 import { registerDiaryTools } from "@freeanima/capabilities-diary";
 import { registerEmailTools } from "@freeanima/capabilities-email";
 import { registerTaskTools } from "@freeanima/capabilities-task";
+import { registerVaultTools } from "@freeanima/capabilities-vault";
 import { registerNotificationTools } from "@freeanima/capabilities-tools/notification";
 import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities-tools";
 import { registerCronjobTool } from "@freeanima/platform/connectors/cron/cronjob-tool";
@@ -12,6 +13,10 @@ import {
   markAsRead,
   sendEmail,
 } from "@freeanima/platform/connectors/email";
+import {
+  resolveAgentVaultSecret,
+  resolveUserVaultSecret,
+} from "@freeanima/platform/connectors/vault";
 import type { Config } from "@freeanima/core/config";
 import type { SkillRegistry } from "@freeanima/core/skill";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
@@ -43,6 +48,20 @@ export function registerServiceTools(opts: {
   registerNotificationTools(opts.toolSets);
   registerTaskTools(opts.toolSets);
   registerDiaryTools(opts.toolSets);
+  registerVaultTools(opts.toolSets, {
+    resolveAgentSecret: async ({ worldId, itemId, field }) =>
+      resolveAgentVaultSecret(worldId, itemId, field),
+    resolveUserSecret: async ({ worldId, itemId, field, conversationId }) =>
+      resolveUserVaultSecret({
+        item_id: itemId,
+        field,
+        world_id: worldId,
+        ...(conversationId ? { conversation_id: conversationId } : {}),
+      }),
+    injectEnv: ({ envName, value }) => {
+      process.env[envName] = value;
+    },
+  });
   registeredCatalog = opts;
 }
 

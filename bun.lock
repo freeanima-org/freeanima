@@ -237,6 +237,16 @@
         "@types/bun": "catalog:",
       },
     },
+    "capabilities/vault": {
+      "name": "@freeanima/capabilities-vault",
+      "dependencies": {
+        "@freeanima/core": "workspace:*",
+        "@freeanima/sap-contract": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "core": {
       "name": "@freeanima/core",
       "dependencies": {
@@ -285,6 +295,7 @@
       "name": "@freeanima/shell-sdk",
       "dependencies": {
         "@freeanima/hub-rpc": "workspace:*",
+        "@freeanima/vault-crypto": "workspace:*",
         "react": "catalog:",
         "zod": "catalog:",
       },
@@ -305,6 +316,7 @@
         "@freeanima/satellite-email": "workspace:*",
         "@freeanima/satellite-notification": "workspace:*",
         "@freeanima/satellite-task": "workspace:*",
+        "@freeanima/satellite-vault": "workspace:*",
         "@freeanima/shell-sdk": "workspace:*",
         "@freeanima/ui-kit": "workspace:*",
         "@sentry/react": "^10.62.0",
@@ -353,6 +365,12 @@
         "typescript": "catalog:",
       },
     },
+    "packages/vault-crypto": {
+      "name": "@freeanima/vault-crypto",
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "platform": {
       "name": "@freeanima/platform",
       "dependencies": {
@@ -368,11 +386,13 @@
         "@freeanima/capabilities-satellite": "workspace:*",
         "@freeanima/capabilities-task": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
+        "@freeanima/capabilities-vault": "workspace:*",
         "@freeanima/core": "workspace:*",
         "@freeanima/hub-rpc": "workspace:*",
         "@freeanima/kernel": "workspace:*",
         "@freeanima/runtime": "workspace:*",
         "@freeanima/sap-contract": "workspace:*",
+        "@freeanima/vault-crypto": "workspace:*",
         "@node-rs/jieba": "^2.0.1",
         "@sinclair/typebox": "catalog:",
         "@tanstack/react-router": "^1.170.11",
@@ -610,6 +630,21 @@
         "@freeanima/sap-contract": "workspace:*",
         "@freeanima/shell-sdk": "workspace:*",
         "@freeanima/ui-kit": "workspace:*",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+      },
+      "devDependencies": {
+        "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
+      },
+    },
+    "satellites/vault": {
+      "name": "@freeanima/satellite-vault",
+      "dependencies": {
+        "@freeanima/sap-contract": "workspace:*",
+        "@freeanima/shell-sdk": "workspace:*",
+        "@freeanima/ui-kit": "workspace:*",
+        "@freeanima/vault-crypto": "workspace:*",
         "react": "catalog:",
         "react-dom": "catalog:",
       },
@@ -1187,6 +1222,8 @@
 
     "@freeanima/capabilities-tools": ["@freeanima/capabilities-tools@workspace:capabilities/tools"],
 
+    "@freeanima/capabilities-vault": ["@freeanima/capabilities-vault@workspace:capabilities/vault"],
+
     "@freeanima/cli": ["@freeanima/cli@workspace:app/cli"],
 
     "@freeanima/core": ["@freeanima/core@workspace:core"],
@@ -1219,6 +1256,8 @@
 
     "@freeanima/satellite-task": ["@freeanima/satellite-task@workspace:satellites/task"],
 
+    "@freeanima/satellite-vault": ["@freeanima/satellite-vault@workspace:satellites/vault"],
+
     "@freeanima/shell-sdk": ["@freeanima/shell-sdk@workspace:packages/shell-sdk"],
 
     "@freeanima/shell-ui": ["@freeanima/shell-ui@workspace:packages/shell-ui"],
@@ -1226,6 +1265,8 @@
     "@freeanima/site": ["@freeanima/site@workspace:site"],
 
     "@freeanima/ui-kit": ["@freeanima/ui-kit@workspace:packages/ui-kit"],
+
+    "@freeanima/vault-crypto": ["@freeanima/vault-crypto@workspace:packages/vault-crypto"],
 
     "@hono/node-server": ["@hono/node-server@1.19.14", "", { "peerDependencies": { "hono": "^4" } }, "sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw=="],
 

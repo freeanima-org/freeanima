@@ -466,10 +466,6 @@ export async function listCredentials() {
   return unwrap(resolveApiClient().api.credentials.get());
 }
 
-export async function getCredentialDetail(path: string) {
-  return unwrap(resolveApiClient().api.credentials.detail.get({ query: { path } }));
-}
-
 export type EntityRow = import("@freeanima/admin-contract/api").EntityRow;
 
 type EntityListResponse = { items: EntityRow[]; total: number };

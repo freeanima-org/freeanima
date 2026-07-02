@@ -103,6 +103,7 @@ Hub startup binds **`ResolvedWorldContext`** (`GET /api/worlds/context`). The pr
 | `/notifications` | `recipient_kind` + subject entity id             | none (inherits header)         |
 | `/diary`         | subject default private world via `subject_kind` | none (inherits header)         |
 | `/dream`         | agent default private world (fixed)              | none (inherits header)         |
+| `/vault`         | default **user** library; optional Agent view    | User: master password lock     |
 
 SAP task/email methods accept optional `subject_kind` (defaults: task `user`, email `agent`). Satellites read the shell scope via **`useSubjectScope()`** from `@freeanima/shell-sdk`; Hub REST entity search uses **`resolveWorldIdForSubject()`** with the same scope.
 
@@ -153,6 +154,29 @@ Entries live in the **agent** subject's **`default_private_world_id`**. `body.dr
 - **LLM:** ToolSet `dream` — `dream_read` only.
 
 See [`docs/concepts/dream.md`](dream.md).
+
+## Vault module (Estate)
+
+Encrypted credentials in two libraries (**User** + **Agent**), ECS components `vault_config` + `vault_item`:
+
+| Concept | Entity         | Component      |
+| ------- | -------------- | -------------- |
+| Config  | `type=content` | `vault_config` |
+| Item    | `type=content` | `vault_item`   |
+
+| Library | Crypto mode       | Decrypt location          | Headless inject                     |
+| ------- | ----------------- | ------------------------- | ----------------------------------- |
+| User    | `master_password` | Client (Shell)            | No — Chat unlock box or `/vault` UI |
+| Agent   | `machine`         | Hub (`agent-machine.key`) | Yes — cron / tools                  |
+
+Privacy fields live in `body.secrets_enc` + `body.dek_wrapped`; metadata (title, url, username, custom field **names**) is plaintext for search.
+
+- **SAP:** `vault.*` — Shell defaults `subject_kind: user`; ToolSet defaults agent world.
+- **UI:** shell `/vault` (`@freeanima/satellite-vault`); bundled Chat has a dedicated master-password unlock (not a chat message).
+- **LLM:** ToolSet `vault` — metadata + `vault_inject_env` ack only; never plaintext secrets in context.
+- **Config:** `vault("item_id", "field")` resolves Agent library at Hub boot (legacy `credential()` removed).
+
+Legacy pass (`~/.password-store`) is **not** deleted on disk; migrate entries manually via Shell UI.
 
 ## Search
 

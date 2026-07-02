@@ -108,14 +108,6 @@ const skillListEntrySchema = z.object({
   directory: z.string(),
 });
 
-const credentialEntrySchema = z.object({
-  path: z.string(),
-  category: z.string(),
-  fields: z.array(z.string()),
-  tags: z.array(z.string()),
-  desc: z.string().optional(),
-});
-
 const sessionSearchHitSchema = z.object({
   conversation_id: z.string(),
   message_id: z.string(),
@@ -427,20 +419,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
     }),
     example: { ok: true, name: "my-skill", message: "Skill 'my-skill' deleted" },
   }),
-  credential_list: defineToolReturn({
-    schema: z.object({ credentials: z.array(credentialEntrySchema) }),
-    example: {
-      credentials: [
-        {
-          path: "services/firecrawl",
-          category: "services",
-          fields: ["token"],
-          tags: [],
-          desc: "Firecrawl API token",
-        },
-      ],
-    },
-  }),
+
   conversation_search: defineToolReturn({
     schema: z.object({
       query: z.string(),

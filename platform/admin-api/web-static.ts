@@ -3,6 +3,8 @@ import { extname, join, normalize } from "node:path";
 
 import { resolveHubWsUrl } from "@freeanima/sap-contract/urls";
 
+import { resolveLoopbackWebAuthTokenForRequest } from "./web-loopback-auth.ts";
+
 /** Web UI 在 Hub 上的 URL 前缀 */
 export const WEB_URL_PREFIX = "/web";
 
@@ -49,14 +51,20 @@ export function buildFileEtag(filePath: string): string {
   return `"${stat.mtimeMs.toString(16)}-${stat.size.toString(16)}"`;
 }
 
-function webConfigJsonResponse(req: Request, options: WebStaticOptions): Response {
+function webConfigJsonResponse(
+  req: Request,
+  options: WebStaticOptions,
+  remoteAddress?: string,
+): Response {
   const origin = new URL(req.url).origin;
+  const authToken = resolveLoopbackWebAuthTokenForRequest(req, remoteAddress);
   const body = JSON.stringify({
     app_id: options.appId ?? "chat",
     hub_url: origin,
     hub_ws_url: resolveHubWsUrl(origin),
     ...(options.uiVersion ? { ui_version: options.uiVersion } : {}),
     ...(options.minShellVersion ? { min_shell_version: options.minShellVersion } : {}),
+    ...(authToken ? { auth_token: authToken } : {}),
   });
   return new Response(body, {
     headers: {
@@ -103,7 +111,11 @@ export function webPathToDistRel(pathname: string): string | null {
 }
 
 /** 按请求读盘返回 Web 静态；/web/config.json 由运行时生成 */
-export function serveWebStatic(req: Request, options: WebStaticOptions): Response | null {
+export function serveWebStatic(
+  req: Request,
+  options: WebStaticOptions,
+  ctx?: { remoteAddress?: string },
+): Response | null {
   const url = new URL(req.url);
   const pathname = url.pathname;
 
@@ -114,7 +126,7 @@ export function serveWebStatic(req: Request, options: WebStaticOptions): Respons
   }
 
   if (pathname === `${WEB_URL_PREFIX}/config.json`) {
-    return webConfigJsonResponse(req, options);
+    return webConfigJsonResponse(req, options, ctx?.remoteAddress);
   }
 
   if (pathname === `${WEB_URL_PREFIX}/health`) {

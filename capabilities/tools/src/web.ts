@@ -3,8 +3,8 @@ import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 import type { Config } from "@freeanima/core/config";
 import {
-  credentialForCapability as credential,
   readAppVersionForCapability as readAppVersion,
+  vaultForCapability,
 } from "@freeanima/core/config";
 
 function userAgent(): string {
@@ -26,7 +26,31 @@ export function resetWebToolsConfigForTest(): void {
   webToolsConfig = null;
 }
 
-function getFirecrawlConfig(): FirecrawlConfig {
+async function resolveConfigSecret(raw: string): Promise<string> {
+  const trimmed = raw.trim();
+  const vaultMatch = /^vault\("(\d+)",\s*"([^"]*)"\)$/.exec(trimmed);
+  if (vaultMatch) {
+    const itemId = Number(vaultMatch[1]);
+    const field = vaultMatch[2];
+    if (!Number.isFinite(itemId) || itemId <= 0 || !field) {
+      throw new Error(`Invalid vault reference: ${trimmed}`);
+    }
+    return vaultForCapability(itemId, field);
+  }
+  const envMatch = /^env\("([^"]*)"\)$/.exec(trimmed);
+  if (envMatch) {
+    const key = envMatch[1];
+    if (!key) throw new Error(`Invalid env reference: ${trimmed}`);
+    const value = process.env[key];
+    if (value === undefined || value === "") {
+      throw new Error(`Environment variable ${key} is not set`);
+    }
+    return value;
+  }
+  return trimmed;
+}
+
+async function getFirecrawlConfig(): Promise<FirecrawlConfig> {
   if (!webToolsConfig) {
     return { apiUrl: "https://api.firecrawl.dev", apiKey: "" };
   }
@@ -34,18 +58,21 @@ function getFirecrawlConfig(): FirecrawlConfig {
   const fc = (cfg.firecrawl as Record<string, unknown> | undefined) ?? {};
   const apiUrl = (fc.api_url as string) || "https://api.firecrawl.dev";
   let apiKey = "";
-  try {
-    apiKey = credential("services/firecrawl", "token");
-  } catch {
-    /* optional */
+  const rawKey = fc.api_key;
+  if (typeof rawKey === "string" && rawKey.trim()) {
+    try {
+      apiKey = await resolveConfigSecret(rawKey.trim());
+    } catch {
+      /* optional */
+    }
   }
   return { apiUrl: apiUrl.replace(/\/$/, ""), apiKey };
 }
 
-function checkConfig(): string | null {
-  const cfg = getFirecrawlConfig();
+async function checkConfig(): Promise<string | null> {
+  const cfg = await getFirecrawlConfig();
   if (!cfg.apiUrl && !cfg.apiKey) {
-    return "Firecrawl not configured. Set firecrawl.api_url or credential services/firecrawl.";
+    return "Firecrawl not configured. Set firecrawl.api_key (env/vault) or firecrawl.api_url.";
   }
   return null;
 }
@@ -60,12 +87,12 @@ function headers(cfg: FirecrawlConfig): Record<string, string> {
 }
 
 async function handleWebSearch(query: string, limit = 5): Promise<string> {
-  const err = checkConfig();
+  const err = await checkConfig();
   if (err) return toolError(err);
   if (!query?.trim()) return toolError("query is required");
 
   const cap = Math.max(1, Math.min(limit, MAX_SEARCH_LIMIT));
-  const cfg = getFirecrawlConfig();
+  const cfg = await getFirecrawlConfig();
   const url = `${cfg.apiUrl}/v1/search`;
 
   let data: Record<string, unknown>;
@@ -117,11 +144,11 @@ async function handleWebSearch(query: string, limit = 5): Promise<string> {
 }
 
 async function handleWebExtract(urls: string[]): Promise<string> {
-  const err = checkConfig();
+  const err = await checkConfig();
   if (err) return toolError(err);
   if (!urls?.length) return toolError("urls list is required");
 
-  const cfg = getFirecrawlConfig();
+  const cfg = await getFirecrawlConfig();
   const baseUrl = `${cfg.apiUrl}/v1/scrape`;
   const hdrs = headers(cfg);
   const results: Array<{

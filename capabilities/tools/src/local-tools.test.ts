@@ -68,7 +68,6 @@ describe("local tools", () => {
       "file_write",
       "file_search",
       "file_patch",
-      "credential_list",
       "code_execute",
       "terminal_run",
       "terminal_process",

@@ -380,6 +380,7 @@ type ParaglideMessageExports = {
   readonly admin_nav_system_prompt: ParaglideMessageFn;
   readonly admin_nav_tasks: ParaglideMessageFn;
   readonly admin_nav_tools: ParaglideMessageFn;
+  readonly admin_nav_vault: ParaglideMessageFn;
   readonly admin_nav_worlds: ParaglideMessageFn;
   readonly admin_satellites_app_id: ParaglideMessageFn;
   readonly admin_satellites_connected_at: ParaglideMessageFn;
@@ -997,6 +998,7 @@ declare module "*/messages/paraglide/messages.js" {
   export const admin_nav_system_prompt: ParaglideMessageFn;
   export const admin_nav_tasks: ParaglideMessageFn;
   export const admin_nav_tools: ParaglideMessageFn;
+  export const admin_nav_vault: ParaglideMessageFn;
   export const admin_nav_worlds: ParaglideMessageFn;
   export const admin_satellites_app_id: ParaglideMessageFn;
   export const admin_satellites_connected_at: ParaglideMessageFn;

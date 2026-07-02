@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 22:10+0800\n"
+"POT-Creation-Date: 2026-07-02 18:19+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -110,37 +110,44 @@ msgid "Output"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:35
+#: docs/concepts/dream.md:36
 msgid ""
-"Persisted in PG table `dream_memory` (one row per CST calendar day, unique "
-"`dream_day`)."
+"Persisted as **`dream_entry`** entity in the agent subject's **default "
+"private world** (`primary_component=dream_entry`; one row per CST calendar "
+"day via `body.dream_day`)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:35
+#: docs/concepts/dream.md:36
+msgid ""
+"Legacy `dream_memory` table is backfilled and dropped in Drizzle migration."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/dream.md:36
 msgid "Append-only; content is not updated after creation."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:35
+#: docs/concepts/dream.md:36
 msgid ""
 "Does **not** create notification inbox entries (see [`notifications.md`]"
 "(notifications.md))."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/dream.md:36 docs/concepts/sleep.md:32
+#: docs/concepts/dream.md:37 docs/concepts/sleep.md:32
 #, no-wrap
 msgid "Orchestration"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/dream.md:39
+#: docs/concepts/dream.md:40
 msgid "Sleep-cycle DAG node `dream`:"
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/concepts/dream.md:40
+#: docs/concepts/dream.md:41
 #, no-wrap
 msgid ""
 "light-sleep\n"
@@ -150,50 +157,50 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/dream.md:48
+#: docs/concepts/dream.md:49
 msgid ""
 "LLM call uses `PROFILE_REFLECT` with elevated temperature (~1.1), **no "
 "tools**, single completion."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/dream.md:49
+#: docs/concepts/dream.md:50
 #, no-wrap
 msgid "Tools & UI"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/dream.md:55
+#: docs/concepts/dream.md:56
 #, no-wrap
 msgid ""
-"| Surface                        | Purpose              |\n"
-"| ------------------------------ | -------------------- |\n"
-"| `dream_read` tool              | Read stored dream    |\n"
-"| Admin `/admin/dashboard/dream` | Browse dream history |\n"
+"| Surface                                             | Purpose              |\n"
+"| --------------------------------------------------- | -------------------- |\n"
+"| `dream_read` tool                                   | Read stored dream    |\n"
+"| Shell `/dream` (Hub RPC `dream.list` / `dream.get`) | Browse dream history |\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/dream.md:56
+#: docs/concepts/dream.md:57
 #, no-wrap
 msgid "Design Notes"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:61
+#: docs/concepts/dream.md:62
 msgid "Dreams are **not** injected into system prompt or resident memory."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:61
+#: docs/concepts/dream.md:62
 msgid "Accuracy is explicitly **not** a goal; association and metaphor are."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:61
+#: docs/concepts/dream.md:62
 msgid "Dreams persist in PG regardless of Redis availability."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/dream.md:62
+#: docs/concepts/dream.md:63
 msgid "See also: [`sleep.md`](sleep.md), [`memory.md`](memory.md)."
 msgstr ""

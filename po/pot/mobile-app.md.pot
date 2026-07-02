@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 22:15+0800\n"
+"POT-Creation-Date: 2026-07-02 18:19+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,14 +18,14 @@ msgstr ""
 
 #. type: Title ##
 #: docs/features/companion.md:120 docs/features/mobile-app.md:52
-#: docs/guide/database.md:91 docs/guide/remote-access.md:178
+#: docs/guide/database.md:91 docs/guide/remote-access.md:182
 #, no-wrap
 msgid "Troubleshooting"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/features/mobile-app.md:1 docs/features/mobile-app.md:5
-#: messages/po4a/en.xml:591
+#: messages/po4a/en.xml:579
 #, no-wrap
 msgid "Mobile app (Android)"
 msgstr ""
@@ -58,7 +58,7 @@ msgid ""
 "| UI         | 默认 bootstrap → Hub `/web/*`（与浏览器/PWA 同一产物）   |\n"
 "| Modules    | Chat + Admin（bundled shell-ui）                         |\n"
 "| Hub config | APP **Hub settings**（Preferences）或 bootstrap 首次配置 |\n"
-"| Hub duties | `/api` REST + `/hub/rpc/v1` WebSocket                  |\n"
+"| Hub duties | `/api` REST + `/hub/rpc/v1` WebSocket                    |\n"
 msgstr ""
 
 #. type: Title ##

@@ -10,10 +10,13 @@ type PendingRequest = {
   reject: (error: Error) => void;
 };
 
+export type RpcRequestHandler = (payload: unknown) => unknown | Promise<unknown>;
+
 export type RpcClient = {
   connect(payload: Omit<HubRpcConnectPayload, "protocol">): Promise<HubRpcConnectedPayload>;
   request<T = unknown>(method: string, payload?: unknown): Promise<T>;
   onEvent(method: string, handler: (payload: unknown) => void): () => void;
+  onRequest(method: string, handler: RpcRequestHandler): () => void;
   close(): void;
 };
 
@@ -21,14 +24,69 @@ export type CreateRpcClientOptions = {
   ws: WebSocket;
   onConnected?: (payload: HubRpcConnectedPayload) => void;
   onDisconnected?: () => void;
+  /** 全局 Hub→Client 请求处理器（与 {@link RpcClient.onRequest} 二选一或并存） */
+  onRequest?: (req: { id: string; method: string; payload: unknown }) => unknown | Promise<unknown>;
 };
 
 export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
   const { ws } = options;
   const pending = new Map<string, PendingRequest>();
   const eventHandlers = new Map<string, Set<(payload: unknown) => void>>();
+  const requestHandlers = new Map<string, Set<RpcRequestHandler>>();
+
+  const send = (envelope: HubRpcEnvelope): void => {
+    ws.send(serializeHubRpcEnvelope(envelope));
+  };
 
   const dispatchEnvelope = (envelope: HubRpcEnvelope): void => {
+    if (envelope.kind === "req") {
+      const onRequest = options.onRequest;
+      if (onRequest) {
+        void (async () => {
+          try {
+            const payload = await onRequest({
+              id: envelope.id,
+              method: envelope.method,
+              payload: envelope.payload,
+            });
+            send({ kind: "res", id: envelope.id, ok: true, payload: payload ?? {} });
+          } catch (e) {
+            send({
+              kind: "res",
+              id: envelope.id,
+              ok: false,
+              error: {
+                code: "hub_rpc_error",
+                message: e instanceof Error ? e.message : String(e),
+              },
+            });
+          }
+        })();
+        return;
+      }
+      const handlers = requestHandlers.get(envelope.method);
+      if (!handlers?.size) return;
+      void (async () => {
+        try {
+          let result: unknown;
+          for (const handler of handlers) {
+            result = await handler(envelope.payload);
+          }
+          send({ kind: "res", id: envelope.id, ok: true, payload: result ?? {} });
+        } catch (e) {
+          send({
+            kind: "res",
+            id: envelope.id,
+            ok: false,
+            error: {
+              code: "hub_rpc_error",
+              message: e instanceof Error ? e.message : String(e),
+            },
+          });
+        }
+      })();
+      return;
+    }
     if (envelope.kind === "res") {
       const entry = pending.get(envelope.id);
       if (!entry) return;
@@ -69,10 +127,6 @@ export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
     }
     pending.clear();
   });
-
-  function send(envelope: HubRpcEnvelope): void {
-    ws.send(serializeHubRpcEnvelope(envelope));
-  }
 
   return {
     async connect(
@@ -130,6 +184,19 @@ export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
       set.add(handler);
       return () => {
         set?.delete(handler);
+      };
+    },
+
+    onRequest(method: string, handler: RpcRequestHandler): () => void {
+      let set = requestHandlers.get(method);
+      if (!set) {
+        set = new Set();
+        requestHandlers.set(method, set);
+      }
+      set.add(handler);
+      return () => {
+        set?.delete(handler);
+        if (set?.size === 0) requestHandlers.delete(method);
       };
     },
 

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { VAULT_CONFIG_COMPONENT, vaultConfigBodySchema } from "./vault-config.ts";
+import { VAULT_ITEM_COMPONENT, vaultItemBodySchema } from "./vault-item.ts";
 import { AGENT_CONFIG_COMPONENT, agentConfigBodySchema } from "./agent-config.ts";
 import { DIARY_ENTRY_COMPONENT, diaryEntryBodySchema } from "./diary-entry.ts";
 import { DREAM_ENTRY_COMPONENT, dreamEntryBodySchema } from "./dream-entry.ts";
@@ -22,6 +24,8 @@ export const COMPONENT_IDS = [
   EMAIL_ACCOUNT_COMPONENT,
   EMAIL_THREAD_COMPONENT,
   EMAIL_MESSAGE_COMPONENT,
+  VAULT_CONFIG_COMPONENT,
+  VAULT_ITEM_COMPONENT,
 ] as const;
 
 export type ComponentId = (typeof COMPONENT_IDS)[number];
@@ -39,6 +43,8 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [EMAIL_ACCOUNT_COMPONENT]: emailAccountBodySchema,
   [EMAIL_THREAD_COMPONENT]: emailThreadBodySchema,
   [EMAIL_MESSAGE_COMPONENT]: emailMessageBodySchema,
+  [VAULT_CONFIG_COMPONENT]: vaultConfigBodySchema,
+  [VAULT_ITEM_COMPONENT]: vaultItemBodySchema,
 };
 
 export function componentBodySchema(component: ComponentId): z.ZodTypeAny {
@@ -61,3 +67,5 @@ export * from "./dream-entry.ts";
 export * from "./email-account.ts";
 export * from "./email-thread.ts";
 export * from "./email-message.ts";
+export * from "./vault-config.ts";
+export * from "./vault-item.ts";

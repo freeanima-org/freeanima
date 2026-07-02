@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 22:29+0800\n"
+"POT-Creation-Date: 2026-07-02 18:19+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,8 +17,8 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/dream.md:9 docs/concepts/sleep.md:9
-#: docs/guide/remote-access.md:10 messages/po4a/en.xml:592
-#: messages/po4a/en.xml:599
+#: docs/guide/remote-access.md:10 messages/po4a/en.xml:580
+#: messages/po4a/en.xml:587
 #, no-wrap
 msgid "Overview"
 msgstr "概述"
@@ -456,7 +456,7 @@ msgstr "4. 认证行为"
 #, no-wrap
 msgid ""
 "REST:  Authorization: Bearer fa_at_<prefix>_<secret>\n"
-"SAP:   WebSocket /sap/v1 → connect frame includes auth_token\n"
+"Hub RPC: WebSocket /hub/rpc/v1 → connect frame includes auth_token\n"
 "MCP:   POST/GET /mcp → Authorization: Bearer <token>\n"
 msgstr ""
 "REST:  Authorization: Bearer <token>\n"
@@ -470,9 +470,10 @@ msgid ""
 "token."
 msgstr ""
 
+#
 #. type: Plain text
 #: docs/guide/remote-access.md:155
-msgid "Missing or invalid token → HTTP `401` or SAP connection closed."
+msgid "Missing or invalid token → HTTP `401` or Hub RPC connection closed."
 msgstr "缺少或错误的 token → HTTP `401` 或 SAP 连接关闭。"
 
 #. type: Title ##

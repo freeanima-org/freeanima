@@ -45,7 +45,7 @@ export function subscribeHubRpcConnectionState(
 ): () => void {
   connectionStateListeners.add(listener);
   listener(cachedConnectionState);
-  if (!sharedClient && typeof window !== "undefined") {
+  if (!sharedClient && typeof window !== "undefined" && hasBundledHubRpcAuthToken()) {
     try {
       void getBundledHubRpcClient()
         .whenReady()
@@ -70,6 +70,15 @@ function resolveAuthToken(explicit?: string): string {
   throw new Error("Hub RPC requires auth_token");
 }
 
+function hasBundledHubRpcAuthToken(options: BundledHubRpcClientOptions = {}): boolean {
+  try {
+    resolveAuthToken(options.authToken);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function resolveHubUrl(options: BundledHubRpcClientOptions): string {
   if (options.hubUrl?.trim()) return options.hubUrl.trim().replace(/\/$/, "");
   if (options.hubRpcWsUrl?.trim()) return hubHttpFromRpcWsUrl(options.hubRpcWsUrl.trim());
@@ -90,9 +99,9 @@ function createBundledHubRpcClient(options: BundledHubRpcClientOptions = {}): Bu
 
   const startTransport = (): HubRpcTransportHandle => {
     transport?.stop();
-    notify("connecting");
     const hubUrl = resolveHubUrl(options);
     const authToken = resolveAuthToken(options.authToken);
+    notify("connecting");
     transport = runHubRpcTransport({
       hubUrl,
       authToken,
@@ -114,11 +123,19 @@ function createBundledHubRpcClient(options: BundledHubRpcClientOptions = {}): Bu
     }
     if (!initPromise) {
       initPromise = (async () => {
-        startTransport();
-        if (transport === null) {
-          throw new Error("hub RPC transport failed to start");
+        try {
+          startTransport();
+          if (transport === null) {
+            throw new Error("hub RPC transport failed to start");
+          }
+          await transport.whenConnected();
+        } catch (err) {
+          initPromise = null;
+          transport = null;
+          if (sharedTransport) sharedTransport = null;
+          notify("disconnected");
+          throw err;
         }
-        await transport.whenConnected();
       })();
     }
     await initPromise;
@@ -173,6 +190,7 @@ export function resetBundledHubRpcClientForTests(): void {
 export function subscribeBundledHubRpcConfigChanges(): () => void {
   if (typeof window === "undefined") return () => {};
   const handler = (): void => {
+    if (!hasBundledHubRpcAuthToken()) return;
     void getBundledHubRpcClient()
       .reconnect()
       .catch(() => undefined);

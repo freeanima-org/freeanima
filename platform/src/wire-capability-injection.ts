@@ -1,11 +1,10 @@
-import { credential, listCredentials, readAppVersion } from "@freeanima/platform/config";
 import { registerCapabilityInjection } from "@freeanima/core/config";
+import { readAppVersion, resolveVaultField } from "@freeanima/platform/config";
 
 /** Wire service-config I/O helpers for capabilities packages */
 export function wireCapabilityInjection(): void {
   registerCapabilityInjection({
-    listCredentials,
-    credential,
+    vault: async (itemId: number, field: string) => resolveVaultField(itemId, field),
     readAppVersion,
   });
 }

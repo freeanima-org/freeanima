@@ -26,7 +26,7 @@ describe("shell completion", () => {
   it("covers top-level commands", () => {
     const bash = generateCompletion("bash", buildProgram());
     const zsh = generateCompletion("zsh", buildProgram());
-    for (const token of ["service", "credential", "completion", "upgrade"]) {
+    for (const token of ["service", "vault", "completion", "upgrade"]) {
       expect(bash).toContain(token);
       expect(zsh).toContain(token);
     }
@@ -41,9 +41,9 @@ describe("shell completion", () => {
     expect(bash).toMatch(/_service\(\)[\s\S]*COMP_CWORD === 2/);
   });
 
-  it("includes credential subcommands", () => {
+  it("includes vault subcommands", () => {
     const bash = generateCompletion("bash", buildProgram());
-    for (const token of ["list", "get", "add", "set"]) {
+    for (const token of ["list", "get"]) {
       expect(bash).toContain(token);
     }
   });

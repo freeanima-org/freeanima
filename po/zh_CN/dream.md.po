@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 22:10+0800\n"
+"POT-Creation-Date: 2026-07-02 18:19+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -123,20 +123,26 @@ msgid "Output"
 msgstr "输出"
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:35
+#: docs/concepts/dream.md:36
 msgid ""
-"Persisted in PG table `dream_memory` (one row per CST calendar day, unique "
-"`dream_day`)."
+"Persisted as **`dream_entry`** entity in the agent subject's **default "
+"private world** (`primary_component=dream_entry`; one row per CST calendar "
+"day via `body.dream_day`)."
 msgstr ""
-"持久化于 PG 表 `dream_memory`（每个 CST 自然日一行，唯一 `dream_day`）。"
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:35
+#: docs/concepts/dream.md:36
+msgid ""
+"Legacy `dream_memory` table is backfilled and dropped in Drizzle migration."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/dream.md:36
 msgid "Append-only; content is not updated after creation."
 msgstr "仅追加；创建后内容不更新。"
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:35
+#: docs/concepts/dream.md:36
 msgid ""
 "Does **not** create notification inbox entries (see [`notifications.md`]"
 "(notifications.md))."
@@ -144,18 +150,18 @@ msgstr ""
 "**不会**创建通知收件箱条目（见 [`notifications.md`](notifications.md)）。"
 
 #. type: Title ##
-#: docs/concepts/dream.md:36 docs/concepts/sleep.md:32
+#: docs/concepts/dream.md:37 docs/concepts/sleep.md:32
 #, no-wrap
 msgid "Orchestration"
 msgstr "编排"
 
 #. type: Plain text
-#: docs/concepts/dream.md:39
+#: docs/concepts/dream.md:40
 msgid "Sleep-cycle DAG node `dream`:"
 msgstr "睡眠周期 DAG 节点 `dream`："
 
 #. type: Fenced code block (text)
-#: docs/concepts/dream.md:40
+#: docs/concepts/dream.md:41
 #, no-wrap
 msgid ""
 "light-sleep\n"
@@ -169,7 +175,7 @@ msgstr ""
 "  └─► self-layer-refresh\n"
 
 #. type: Plain text
-#: docs/concepts/dream.md:48
+#: docs/concepts/dream.md:49
 msgid ""
 "LLM call uses `PROFILE_REFLECT` with elevated temperature (~1.1), **no "
 "tools**, single completion."
@@ -177,19 +183,19 @@ msgstr ""
 "LLM 调用使用 `PROFILE_REFLECT`，较高温度（约 1.1），**无工具**，单次补全。"
 
 #. type: Title ##
-#: docs/concepts/dream.md:49
+#: docs/concepts/dream.md:50
 #, no-wrap
 msgid "Tools & UI"
 msgstr "工具与 UI"
 
 #. type: Plain text
-#: docs/concepts/dream.md:55
+#: docs/concepts/dream.md:56
 #, no-wrap
 msgid ""
-"| Surface                        | Purpose              |\n"
-"| ------------------------------ | -------------------- |\n"
-"| `dream_read` tool              | Read stored dream    |\n"
-"| Admin `/admin/dashboard/dream` | Browse dream history |\n"
+"| Surface                                             | Purpose              |\n"
+"| --------------------------------------------------- | -------------------- |\n"
+"| `dream_read` tool                                   | Read stored dream    |\n"
+"| Shell `/dream` (Hub RPC `dream.list` / `dream.get`) | Browse dream history |\n"
 msgstr ""
 "| 界面                           | 用途                 |\n"
 "| ------------------------------ | -------------------- |\n"
@@ -197,27 +203,27 @@ msgstr ""
 "| Admin `/admin/dashboard/dream` | 浏览梦境历史         |\n"
 
 #. type: Title ##
-#: docs/concepts/dream.md:56
+#: docs/concepts/dream.md:57
 #, no-wrap
 msgid "Design Notes"
 msgstr "设计说明"
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:61
+#: docs/concepts/dream.md:62
 msgid "Dreams are **not** injected into system prompt or resident memory."
 msgstr "梦境**不会**注入系统提示或常驻记忆。"
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:61
+#: docs/concepts/dream.md:62
 msgid "Accuracy is explicitly **not** a goal; association and metaphor are."
 msgstr "准确性明确**不是**目标；联想与隐喻才是。"
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:61
+#: docs/concepts/dream.md:62
 msgid "Dreams persist in PG regardless of Redis availability."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/dream.md:62
+#: docs/concepts/dream.md:63
 msgid "See also: [`sleep.md`](sleep.md), [`memory.md`](memory.md)."
 msgstr "另见：[`sleep.md`](sleep.md)、[`memory.md`](memory.md)。"

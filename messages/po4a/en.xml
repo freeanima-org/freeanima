@@ -257,6 +257,8 @@
   <msg id="admin_entities_api_tokens">API tokens</msg>
   <msg id="admin_entities_api_tokens_desc">Service tokens bind to this subject. The secret is shown only once when created.</msg>
   <msg id="admin_entities_api_tokens_empty">No tokens yet.</msg>
+  <msg id="admin_entities_api_tokens_empty_active">No active tokens.</msg>
+  <msg id="admin_entities_api_tokens_show_all">Show all</msg>
   <msg id="admin_entities_api_tokens_title">Hub API tokens — {subject}</msg>
   <msg id="admin_entities_col_content">Content</msg>
   <msg id="admin_entities_col_default_private_world">Default private world</msg>
@@ -373,6 +375,7 @@
   <msg id="admin_nav_system_prompt">📋 System Prompt</msg>
   <msg id="admin_nav_tasks">✅ Tasks</msg>
   <msg id="admin_nav_tools">🔧 Tools</msg>
+  <msg id="admin_nav_vault">🔐 Vault</msg>
   <msg id="admin_nav_worlds">🌍 Worlds</msg>
   <msg id="admin_satellites_app_id">App ID</msg>
   <msg id="admin_satellites_connected_at">Connected</msg>

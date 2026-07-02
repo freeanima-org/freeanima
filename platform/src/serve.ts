@@ -94,6 +94,8 @@ export async function serve(
     await persistencePhase.run(config);
     const { bootWorldSubjectsPhase } = await import("./boot/world-subjects-phase.ts");
     await bootWorldSubjectsPhase(config);
+    const { bootConfigSecretsPhase } = await import("./boot/config-secrets-phase.ts");
+    await bootConfigSecretsPhase(config);
     const { bootServiceApiTokensPhase } = await import("./boot/service-api-tokens-phase.ts");
     await bootServiceApiTokensPhase(config);
 

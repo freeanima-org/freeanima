@@ -1,15 +1,8 @@
 import { describe, it, expect } from "bun:test";
 import { getCredentialDetailHandler } from "./handlers/credentials.ts";
-import { ApiHandlerError } from "./handlers/errors.ts";
 
 describe("credentials handler", () => {
-  it("未知路径 getCredentialDetailHandler 抛出 404", () => {
-    try {
-      getCredentialDetailHandler("__nonexistent_credential_path__");
-      expect.unreachable();
-    } catch (err) {
-      expect(err).toBeInstanceOf(ApiHandlerError);
-      expect((err as ApiHandlerError).status).toBe(404);
-    }
+  it("getCredentialDetailHandler 已下线", () => {
+    expect(() => getCredentialDetailHandler("any")).toThrow(/pass credentials removed/);
   });
 });

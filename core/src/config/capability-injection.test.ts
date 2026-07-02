@@ -1,11 +1,10 @@
 import { afterEach, describe, expect, it } from "bun:test";
 
 import {
-  credentialForCapability,
-  listCredentialsForCapability,
   readAppVersionForCapability,
   registerCapabilityInjection,
   resetCapabilityInjectionForTest,
+  vaultForCapability,
 } from "./capability-injection.ts";
 
 describe("capability-injection", () => {
@@ -13,31 +12,25 @@ describe("capability-injection", () => {
     resetCapabilityInjectionForTest();
   });
 
-  it("throws when listCredentials not registered", () => {
-    expect(() => listCredentialsForCapability()).toThrow("listCredentials not registered");
+  it("throws when vault not registered", async () => {
+    await expect(vaultForCapability(1, "password")).rejects.toThrow("vault not registered");
   });
 
-  it("throws when credential not registered", () => {
-    expect(() => credentialForCapability("a", "b")).toThrow("credential not registered");
-  });
-
-  it("delegates to injected helpers", () => {
+  it("delegates to injected helpers", async () => {
     registerCapabilityInjection({
-      listCredentials: () => [{ path: "llm/openai", category: "llm" }],
-      credential: (path, field) => `${path}:${field}`,
+      vault: async (itemId, field) => `${itemId}:${field}`,
       readAppVersion: () => "9.9.9",
     });
-    expect(listCredentialsForCapability()).toEqual([{ path: "llm/openai", category: "llm" }]);
-    expect(credentialForCapability("llm/openai", "api_key")).toBe("llm/openai:api_key");
+    await expect(vaultForCapability(42, "token")).resolves.toBe("42:token");
     expect(readAppVersionForCapability()).toBe("9.9.9");
   });
 
-  it("merges partial injection updates", () => {
+  it("merges partial injection updates", async () => {
     registerCapabilityInjection({ readAppVersion: () => "1.0.0" });
     registerCapabilityInjection({
-      credential: () => "secret",
+      vault: async () => "secret",
     });
     expect(readAppVersionForCapability()).toBe("1.0.0");
-    expect(credentialForCapability("x", "y")).toBe("secret");
+    await expect(vaultForCapability(1, "x")).resolves.toBe("secret");
   });
 });

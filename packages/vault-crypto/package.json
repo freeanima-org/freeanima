@@ -1,0 +1,11 @@
+{
+  "name": "@freeanima/vault-crypto",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

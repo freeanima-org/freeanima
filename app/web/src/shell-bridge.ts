@@ -5,6 +5,7 @@ import {
   isCapacitorRuntime,
   readDefaultRemoteAuthToken,
 } from "./bridge/shared.ts";
+import { registerVaultRpcHandlers } from "@freeanima/shell-sdk";
 
 async function bootstrapShellBridge(): Promise<void> {
   const finish = installShellBridgeReady();
@@ -12,8 +13,8 @@ async function bootstrapShellBridge(): Promise<void> {
 
   try {
     const cfg = await fetchWebUiConfig();
-    const defaultHubUrl = applyWebUiConfig(cfg);
-    const defaultToken = readDefaultRemoteAuthToken();
+    const { hubUrl: defaultHubUrl, authToken: configAuthToken } = applyWebUiConfig(cfg);
+    const defaultToken = readDefaultRemoteAuthToken() || configAuthToken;
 
     if (window.satelliteShell?.isElectron) {
       const { bootstrapElectronBridge } = await import("./bridge/bootstrap-web.ts");
@@ -25,6 +26,8 @@ async function bootstrapShellBridge(): Promise<void> {
       const { bootstrapWebBridge } = await import("./bridge/bootstrap-web.ts");
       await bootstrapWebBridge(defaultHubUrl, defaultToken);
     }
+
+    registerVaultRpcHandlers();
   } finally {
     finish();
   }

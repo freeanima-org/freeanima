@@ -10,6 +10,8 @@ import {
   taskItemPrioritySchema,
   taskItemStatusSchema,
   TASK_ITEM_COMPONENT,
+  VAULT_ITEM_COMPONENT,
+  vaultItemTypeSchema,
 } from "./components/index.ts";
 
 /** task_item 结构化搜索 filters（EntitySearchOpts.filters） */
@@ -147,6 +149,26 @@ export function parseDreamEntrySearchFilters(
   return parsed.data;
 }
 
+export const vaultItemSearchFiltersSchema = z
+  .object({
+    item_type: vaultItemTypeSchema.optional(),
+    tags: z.array(z.string()).optional(),
+  })
+  .strict();
+
+export type VaultItemSearchFilters = z.infer<typeof vaultItemSearchFiltersSchema>;
+
+export function parseVaultItemSearchFilters(
+  raw: Record<string, unknown> | undefined,
+): VaultItemSearchFilters {
+  if (!raw || Object.keys(raw).length === 0) return {};
+  const parsed = vaultItemSearchFiltersSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(`invalid vault_item filters: ${parsed.error.message}`);
+  }
+  return parsed.data;
+}
+
 export const ENTITY_SEARCH_FILTER_COMPONENTS = {
   [TASK_ITEM_COMPONENT]: taskItemSearchFiltersSchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntrySearchFiltersSchema,
@@ -154,4 +176,5 @@ export const ENTITY_SEARCH_FILTER_COMPONENTS = {
   [EMAIL_ACCOUNT_COMPONENT]: emailAccountSearchFiltersSchema,
   [EMAIL_THREAD_COMPONENT]: emailThreadSearchFiltersSchema,
   [EMAIL_MESSAGE_COMPONENT]: emailMessageSearchFiltersSchema,
+  [VAULT_ITEM_COMPONENT]: vaultItemSearchFiltersSchema,
 } as const;
