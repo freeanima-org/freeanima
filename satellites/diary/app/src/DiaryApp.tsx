@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHubConnection, useNetworkOnline, useSubjectScope } from "@freeanima/shell-sdk/react";
 import { Button, Input, Spinner } from "@freeanima/ui-kit";
 import { ListDetailLayout } from "@freeanima/ui-kit/layout";
 
-import { EntryEditor } from "./components/EntryEditor.tsx";
+import { EntryEditor, type EntrySaveStatus } from "./components/EntryEditor.tsx";
 import { EntryTimeline, findEntryByDayLocal } from "./components/EntryTimeline.tsx";
 import {
   createDiaryEntry,
@@ -12,9 +12,24 @@ import {
   searchDiaryEntries,
   updateDiaryEntry,
 } from "./lib/api.ts";
+import {
+  entryDraftFromRow,
+  isEntryDraftDirty,
+  parseTagsText,
+  type EntryDraft,
+} from "./lib/entry-draft-dirty.ts";
 import type { DiaryEntryRow } from "./lib/format-diary.ts";
-import { formatEntryDate, defaultEntryDateLocal, isoToDateLocalValue } from "./lib/format-diary.ts";
+import {
+  dateLocalToEntryAtIso,
+  defaultEntryDateLocal,
+  formatEntryDate,
+  titleFromDateLocal,
+} from "./lib/format-diary.ts";
 import { subscribeShellConfigChanges } from "./lib/sap-client.ts";
+
+function sortEntries(items: DiaryEntryRow[]): DiaryEntryRow[] {
+  return items.toSorted((a, b) => b.entry_at.localeCompare(a.entry_at));
+}
 
 export function DiaryApp() {
   const { kind: subjectKind } = useSubjectScope();
@@ -23,16 +38,26 @@ export function DiaryApp() {
   const writesDisabled = !networkOnline || hubConnection !== "connected";
   const [entries, setEntries] = useState<DiaryEntryRow[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [editorMode, setEditorMode] = useState<"create" | "edit" | null>(null);
+  const [draft, setDraft] = useState<EntryDraft | null>(null);
+  const [draftBaseline, setDraftBaseline] = useState<EntryDraft | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<EntrySaveStatus>("idle");
   const [error, setError] = useState("");
+  const saveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selectedEntry = useMemo(
     () => entries.find((e) => e.id === selectedId) ?? null,
     [entries, selectedId],
   );
+
+  const markSaved = useCallback(() => {
+    if (saveStatusTimerRef.current) clearTimeout(saveStatusTimerRef.current);
+    setSaveStatus("saved");
+    saveStatusTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
+  }, []);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -45,7 +70,8 @@ export function DiaryApp() {
       setEntries(items);
       if (selectedId != null && !items.some((e) => e.id === selectedId)) {
         setSelectedId(null);
-        setEditorMode(null);
+        setDraft(null);
+        setDraftBaseline(null);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -62,8 +88,122 @@ export function DiaryApp() {
 
   useEffect(() => {
     setSelectedId(null);
-    setEditorMode(null);
+    setDraft(null);
+    setDraftBaseline(null);
   }, [subjectKind]);
+
+  useEffect(() => {
+    return () => {
+      if (saveStatusTimerRef.current) clearTimeout(saveStatusTimerRef.current);
+    };
+  }, []);
+
+  const openEntry = useCallback((entry: DiaryEntryRow) => {
+    const nextDraft = entryDraftFromRow(entry);
+    setSelectedId(entry.id);
+    setDraft(nextDraft);
+    setDraftBaseline(nextDraft);
+    setSaveStatus("idle");
+  }, []);
+
+  const persistDraft = useCallback(async (): Promise<boolean> => {
+    if (!selectedEntry || !draft || !draftBaseline || writesDisabled) return true;
+    if (!isEntryDraftDirty(draft, draftBaseline)) return true;
+    if (saving) return false;
+    setSaving(true);
+    setSaveStatus("saving");
+    try {
+      const item = await updateDiaryEntry(subjectKind, selectedEntry.id, {
+        title: titleFromDateLocal(draft.entryDateLocal),
+        summary: "",
+        content: draft.content,
+        entry_at: dateLocalToEntryAtIso(draft.entryDateLocal),
+        tags: parseTagsText(draft.tagsText),
+      });
+      setEntries((prev) => sortEntries(prev.map((e) => (e.id === item.id ? item : e))));
+      const synced = entryDraftFromRow(item);
+      setDraft(synced);
+      setDraftBaseline(synced);
+      markSaved();
+      return true;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg.includes("already exists")) {
+        setError("该日期已有其他日记，请选择别的日期");
+      } else {
+        setError(msg);
+      }
+      setSaveStatus("error");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }, [draft, draftBaseline, markSaved, saving, selectedEntry, subjectKind, writesDisabled]);
+
+  const flushDraftSave = useCallback(async (): Promise<boolean> => {
+    return persistDraft();
+  }, [persistDraft]);
+
+  const selectEntryById = useCallback(
+    (id: number) => {
+      void (async () => {
+        await flushDraftSave();
+        const entry = entries.find((e) => e.id === id);
+        if (entry) openEntry(entry);
+      })();
+    },
+    [entries, flushDraftSave, openEntry],
+  );
+
+  const handleNewEntry = useCallback(() => {
+    void (async () => {
+      if (writesDisabled || creating) return;
+      await flushDraftSave();
+      const todayEntry = findEntryByDayLocal(entries, defaultEntryDateLocal());
+      if (todayEntry) {
+        openEntry(todayEntry);
+        return;
+      }
+      setCreating(true);
+      setError("");
+      try {
+        const day = defaultEntryDateLocal();
+        const item = await createDiaryEntry(subjectKind, {
+          title: titleFromDateLocal(day),
+          summary: "",
+          content: "",
+          entry_at: dateLocalToEntryAtIso(day),
+          tags: [],
+        });
+        setEntries((prev) => sortEntries([item, ...prev]));
+        openEntry(item);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        if (msg.includes("already exists")) {
+          const day = defaultEntryDateLocal();
+          const existing = findEntryByDayLocal(entries, day);
+          if (existing) {
+            openEntry(existing);
+            setError("该日期已有日记，已打开现有条目");
+            return;
+          }
+        }
+        setError(msg);
+      } finally {
+        setCreating(false);
+      }
+    })();
+  }, [creating, entries, flushDraftSave, openEntry, subjectKind, writesDisabled]);
+
+  useEffect(() => {
+    if (!selectedEntry || !draft || !draftBaseline || writesDisabled) return;
+    if (!isEntryDraftDirty(draft, draftBaseline)) return;
+    if (saving) return;
+    const timer = setTimeout(() => {
+      void persistDraft();
+    }, 700);
+    return () => clearTimeout(timer);
+  }, [draft, draftBaseline, persistDraft, saving, selectedEntry, writesDisabled]);
 
   const listPane = (
     <div className="flex h-full min-h-0 flex-col gap-3">
@@ -71,19 +211,10 @@ export function DiaryApp() {
         <Button
           type="button"
           size="sm"
-          disabled={writesDisabled}
-          onClick={() => {
-            const todayEntry = findEntryByDayLocal(entries, defaultEntryDateLocal());
-            if (todayEntry) {
-              setSelectedId(todayEntry.id);
-              setEditorMode("edit");
-              return;
-            }
-            setSelectedId(null);
-            setEditorMode("create");
-          }}
+          disabled={writesDisabled || creating}
+          onClick={handleNewEntry}
         >
-          新建
+          {creating ? "新建中…" : "新建"}
         </Button>
       </div>
       <Input
@@ -96,65 +227,24 @@ export function DiaryApp() {
       {error ? <p className="text-destructive text-xs">{error}</p> : null}
       {loading ? <Spinner className="size-4" /> : null}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <EntryTimeline
-          items={entries}
-          selectedId={selectedId}
-          onSelect={(id) => {
-            setSelectedId(id);
-            setEditorMode("edit");
-          }}
-        />
+        <EntryTimeline items={entries} selectedId={selectedId} onSelect={selectEntryById} />
       </div>
     </div>
   );
 
   const detailPane =
-    editorMode === "create" ? (
+    selectedEntry && draft && draftBaseline ? (
       <EntryEditor
-        mode="create"
-        entry={null}
-        saving={saving}
-        readOnly={writesDisabled}
-        onCancel={() => setEditorMode(null)}
-        onSave={(draft) => {
-          void (async () => {
-            setSaving(true);
-            setError("");
-            try {
-              const item = await createDiaryEntry(subjectKind, draft);
-              setEntries((prev) =>
-                [item, ...prev].toSorted((a, b) => b.entry_at.localeCompare(a.entry_at)),
-              );
-              setSelectedId(item.id);
-              setEditorMode("edit");
-            } catch (e) {
-              const msg = e instanceof Error ? e.message : String(e);
-              if (msg.includes("already exists")) {
-                const day = isoToDateLocalValue(draft.entry_at);
-                const existing = findEntryByDayLocal(entries, day);
-                if (existing) {
-                  setSelectedId(existing.id);
-                  setEditorMode("edit");
-                  setError("该日期已有日记，已打开现有条目");
-                  return;
-                }
-              }
-              setError(msg);
-            } finally {
-              setSaving(false);
-            }
-          })();
-        }}
-      />
-    ) : editorMode === "edit" && selectedEntry ? (
-      <EntryEditor
-        mode="edit"
-        entry={selectedEntry}
-        saving={saving}
+        draft={draft}
+        onDraftChange={setDraft}
+        saveStatus={saveStatus}
         readOnly={writesDisabled}
         onCancel={() => {
-          setEditorMode(null);
+          setDraft({ ...draftBaseline });
           setSelectedId(null);
+          setDraft(null);
+          setDraftBaseline(null);
+          setSaveStatus("idle");
         }}
         onDelete={() => {
           void (async () => {
@@ -165,33 +255,11 @@ export function DiaryApp() {
               await deleteDiaryEntry(subjectKind, selectedEntry.id);
               setEntries((prev) => prev.filter((e) => e.id !== selectedEntry.id));
               setSelectedId(null);
-              setEditorMode(null);
+              setDraft(null);
+              setDraftBaseline(null);
+              setSaveStatus("idle");
             } catch (e) {
               setError(e instanceof Error ? e.message : String(e));
-            } finally {
-              setSaving(false);
-            }
-          })();
-        }}
-        onSave={(draft) => {
-          void (async () => {
-            if (!selectedEntry) return;
-            setSaving(true);
-            setError("");
-            try {
-              const item = await updateDiaryEntry(subjectKind, selectedEntry.id, draft);
-              setEntries((prev) =>
-                prev
-                  .map((e) => (e.id === item.id ? item : e))
-                  .toSorted((a, b) => b.entry_at.localeCompare(a.entry_at)),
-              );
-            } catch (e) {
-              const msg = e instanceof Error ? e.message : String(e);
-              if (msg.includes("already exists")) {
-                setError("该日期已有其他日记，请选择别的日期");
-              } else {
-                setError(msg);
-              }
             } finally {
               setSaving(false);
             }
@@ -204,12 +272,7 @@ export function DiaryApp() {
       </div>
     );
 
-  const detailTitle =
-    editorMode === "create"
-      ? "新建日记"
-      : selectedEntry
-        ? formatEntryDate(selectedEntry.entry_at)
-        : "日记";
+  const detailTitle = selectedEntry ? formatEntryDate(selectedEntry.entry_at) : "日记";
 
   return (
     <ListDetailLayout
