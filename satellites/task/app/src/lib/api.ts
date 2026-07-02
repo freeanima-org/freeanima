@@ -1,6 +1,5 @@
-import { fetchWorldContext, getSubjectKind, resolveWorldIdForSubject } from "@freeanima/shell-sdk";
+import { getSubjectKind } from "@freeanima/shell-sdk";
 
-import { entitySearchHitToTaskItem } from "./search-hit-mapper.ts";
 import { whenSapClientReady } from "./hub-rpc.ts";
 
 export type TaskListRow = {
@@ -101,41 +100,17 @@ export async function searchTaskItems(input: {
   status?: "pending" | "completed" | "all";
   limit?: number;
 }): Promise<TaskItemRow[]> {
-  const filters: Record<string, unknown> = {};
-  if (input.list_id != null) filters.list_id = input.list_id;
-  if (input.status && input.status !== "all") filters.status = input.status;
-
-  const ctx = await fetchWorldContext();
-  const world_id = resolveWorldIdForSubject(ctx, getSubjectKind());
-  const res = await fetch("/api/entities/search", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+  const client = await sap();
+  const data = await client.request(
+    "task.search",
+    withSubjectKind({
       query: input.query,
-      world_id,
-      primary_component: "task_item",
-      mode: "hybrid",
-      filters: Object.keys(filters).length > 0 ? filters : undefined,
-      limit: input.limit ?? 30,
+      list_id: input.list_id,
+      status: input.status,
+      limit: input.limit,
     }),
-  });
-  if (!res.ok) {
-    const body = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new Error(body.error ?? `search failed: ${res.status}`);
-  }
-  const data = (await res.json()) as {
-    results: Array<{
-      id: number;
-      title: string;
-      content?: string;
-      body?: Record<string, unknown>;
-      created_at?: string;
-      updated_at?: string;
-    }>;
-  };
-  return data.results
-    .map((row) => entitySearchHitToTaskItem(row))
-    .filter((row): row is TaskItemRow => row != null);
+  );
+  return data.items;
 }
 
 export async function createTaskItem(input: {

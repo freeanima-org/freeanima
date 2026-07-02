@@ -128,3 +128,15 @@ export const emailThreadListOutputSchema = z.object({
   threads: z.array(emailThreadRowSchema),
 });
 export type EmailThreadListOutput = z.infer<typeof emailThreadListOutputSchema>;
+
+export const emailMessageSearchInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
+  query: z.string().min(1),
+  account_id: z.number().int().positive().optional(),
+  limit: z.number().int().positive().optional(),
+});
+export type EmailMessageSearchInput = z.infer<typeof emailMessageSearchInputSchema>;
+export const emailMessageSearchOutputSchema = z.object({
+  messages: z.array(emailMessageRowSchema),
+});
+export type EmailMessageSearchOutput = z.infer<typeof emailMessageSearchOutputSchema>;

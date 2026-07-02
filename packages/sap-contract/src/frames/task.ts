@@ -152,3 +152,14 @@ export const taskDeleteInputSchema = z.object({
 export type TaskDeleteInput = z.infer<typeof taskDeleteInputSchema>;
 export const taskDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type TaskDeleteOutput = z.infer<typeof taskDeleteOutputSchema>;
+
+export const taskSearchInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+  query: z.string().min(1),
+  list_id: z.number().int().positive().optional(),
+  status: taskStatusSchema.or(z.literal("all")).optional(),
+  limit: z.number().int().positive().optional(),
+});
+export type TaskSearchInput = z.infer<typeof taskSearchInputSchema>;
+export const taskSearchOutputSchema = z.object({ items: z.array(taskItemRowSchema) });
+export type TaskSearchOutput = z.infer<typeof taskSearchOutputSchema>;

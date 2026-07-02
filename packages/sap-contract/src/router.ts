@@ -41,6 +41,8 @@ import type {
   TaskUncompleteOutput,
   TaskDeleteInput,
   TaskDeleteOutput,
+  TaskSearchInput,
+  TaskSearchOutput,
 } from "./frames/task.ts";
 import type {
   EmailAccountListInput,
@@ -51,6 +53,8 @@ import type {
   EmailMessageMarkReadOutput,
   EmailMessageReadInput,
   EmailMessageReadOutput,
+  EmailMessageSearchInput,
+  EmailMessageSearchOutput,
   EmailSyncInput,
   EmailSyncOutput,
   EmailThreadListInput,
@@ -127,6 +131,7 @@ export const SAP_METHODS = [
   "task.complete",
   "task.uncomplete",
   "task.delete",
+  "task.search",
   "diary.list",
   "diary.create",
   "diary.append",
@@ -140,6 +145,7 @@ export const SAP_METHODS = [
   "email.message.list",
   "email.message.read",
   "email.message.markRead",
+  "email.message.search",
   "email.sync",
   "emailthread.list",
   "notification.list",
@@ -183,6 +189,7 @@ export type SapRouterInputs = {
   "task.complete": TaskCompleteInput;
   "task.uncomplete": TaskUncompleteInput;
   "task.delete": TaskDeleteInput;
+  "task.search": TaskSearchInput;
   "diary.list": DiaryListInput;
   "diary.create": DiaryCreateInput;
   "diary.append": DiaryAppendInput;
@@ -196,6 +203,7 @@ export type SapRouterInputs = {
   "email.message.list": EmailMessageListInput;
   "email.message.read": EmailMessageReadInput;
   "email.message.markRead": EmailMessageMarkReadInput;
+  "email.message.search": EmailMessageSearchInput;
   "email.sync": EmailSyncInput;
   "emailthread.list": EmailThreadListInput;
   "notification.list": NotificationListInput;
@@ -237,6 +245,7 @@ export type SapRouterOutputs = {
   "task.complete": TaskCompleteOutput;
   "task.uncomplete": TaskUncompleteOutput;
   "task.delete": TaskDeleteOutput;
+  "task.search": TaskSearchOutput;
   "diary.list": DiaryListOutput;
   "diary.create": DiaryCreateOutput;
   "diary.append": DiaryAppendOutput;
@@ -250,6 +259,7 @@ export type SapRouterOutputs = {
   "email.message.list": EmailMessageListOutput;
   "email.message.read": EmailMessageReadOutput;
   "email.message.markRead": EmailMessageMarkReadOutput;
+  "email.message.search": EmailMessageSearchOutput;
   "email.sync": EmailSyncOutput;
   "emailthread.list": EmailThreadListOutput;
   "notification.list": NotificationListOutput;

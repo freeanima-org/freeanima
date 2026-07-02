@@ -10,6 +10,7 @@ import {
   taskCompleteInputSchema,
   taskUncompleteInputSchema,
   taskDeleteInputSchema,
+  taskSearchInputSchema,
   type SapRequestAuthContext,
   type SapRequestContext,
 } from "@freeanima/sap-contract";
@@ -140,6 +141,19 @@ export async function handleTaskDelete(
 ) {
   const input = taskDeleteInputSchema.parse(payload);
   return serviceEntityTask.serviceTaskDelete(
+    deps.runtime.runtimeDeps(),
+    omitUndefined(input),
+    ctx.auth,
+  );
+}
+
+export async function handleTaskSearch(
+  deps: SapServerDeps,
+  payload: unknown,
+  ctx: SapRequestContext,
+) {
+  const input = taskSearchInputSchema.parse(payload);
+  return serviceEntityTask.serviceTaskSearch(
     deps.runtime.runtimeDeps(),
     omitUndefined(input),
     ctx.auth,

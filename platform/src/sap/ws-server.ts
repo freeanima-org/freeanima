@@ -18,6 +18,7 @@ import {
   handleTaskComplete,
   handleTaskUncomplete,
   handleTaskDelete,
+  handleTaskSearch,
 } from "./handlers/entity-task.ts";
 import {
   sapAttachPayloadSchema,
@@ -47,6 +48,7 @@ import {
   emailMessageListInputSchema,
   emailMessageReadInputSchema,
   emailMessageMarkReadInputSchema,
+  emailMessageSearchInputSchema,
   emailSyncInputSchema,
   emailThreadListInputSchema,
   messageSendInputSchema,
@@ -287,6 +289,8 @@ export function createSapServerHandlers(
           return handleTaskUncomplete(deps, payload, ctx);
         case "task.delete":
           return handleTaskDelete(deps, payload, ctx);
+        case "task.search":
+          return handleTaskSearch(deps, payload, ctx);
         case "diary.list": {
           const input = diaryListInputSchema.parse(payload);
           return serviceEntityDiary.serviceDiaryList(
@@ -356,6 +360,13 @@ export function createSapServerHandlers(
         case "email.message.markRead": {
           const input = emailMessageMarkReadInputSchema.parse(payload);
           return serviceEntityEmail.serviceEmailMessageMarkRead(deps.runtime.runtimeDeps(), input);
+        }
+        case "email.message.search": {
+          const input = emailMessageSearchInputSchema.parse(payload);
+          return serviceEntityEmail.serviceEmailMessageSearch(
+            deps.runtime.runtimeDeps(),
+            omitUndefined(input),
+          );
         }
         case "email.sync": {
           const input = emailSyncInputSchema.parse(payload);

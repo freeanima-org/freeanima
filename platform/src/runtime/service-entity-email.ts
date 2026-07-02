@@ -154,3 +154,19 @@ export async function serviceEmailThreadList(
   const threads = await listEmailThreads(emailWorldId(subject_kind), listInput);
   return { threads: threads.map(toThreadPayload) };
 }
+
+export async function serviceEmailMessageSearch(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    query: string;
+    account_id?: number;
+    limit?: number;
+  },
+) {
+  assertPg(deps);
+  const { searchEmailMessages } = await import("@freeanima/capabilities-email");
+  const { subject_kind, ...searchInput } = input;
+  const messages = await searchEmailMessages(emailWorldId(subject_kind), searchInput);
+  return { messages: messages.map(toMessagePayload) };
+}
