@@ -33,6 +33,7 @@ function isActive(href: string): boolean {
 <header class:list={["site-header", embedded && "site-header--embedded"]}>
   <div class="site-header__inner">
     <a class="site-header__brand" href={locale === "zh-cn" ? "/zh-cn/" : "/"}>
+      <img class="site-header__logo" src="/favicon.svg" width="20" height="20" alt="" />
       {siteName}
     </a>
     <nav class="site-header__nav" aria-label={m.nav_site_aria()}>
@@ -71,7 +72,15 @@ function isActive(href: string): boolean {
     padding: 0.875rem clamp(1.25rem, 4vw, 2rem);
   }
 
+  .site-header__logo {
+    display: block;
+    flex-shrink: 0;
+  }
+
   .site-header__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     font-size: 0.9375rem;
     font-weight: 500;
     letter-spacing: 0.04em;

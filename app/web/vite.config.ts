@@ -86,8 +86,8 @@ function webPwaPlugin(): Plugin[] {
       start_url: "/web/chat",
       scope: "/web/",
       display: "standalone",
-      theme_color: "#0a0a0a",
-      background_color: "#1d232a",
+      theme_color: "#0a0a0b",
+      background_color: "#0a0a0b",
       icons: [
         { src: "/web/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
         {

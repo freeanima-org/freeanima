@@ -1,5 +1,6 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
+import { BrandLockup } from "@freeanima/ui-kit";
 import { HubConnectionBanner } from "@admin/components/HubConnectionBanner.tsx";
 import { ResponsiveSidebarLayout } from "@admin/components/ResponsiveSidebarLayout.tsx";
 import { useHubRestConnectivity } from "@admin/hooks/useHubRestConnectivity.ts";
@@ -63,9 +64,8 @@ function AdminLayout() {
       {probeEnabled ? <HubConnectionBanner state={state} onRetry={() => void retry()} /> : null}
       <div className="flex-1 min-h-0">
         <ResponsiveSidebarLayout
-          title={m.admin_title()}
+          title={<BrandLockup name={m.admin_brand()} subtitle={m.admin_nav()} logoSize={22} />}
           headerTitle={headerTitle}
-          subtitle={m.admin_nav()}
           sidebar={() => <AdminSidebarNav />}
         >
           <Outlet />
