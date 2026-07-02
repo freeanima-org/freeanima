@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:52+0800\n"
+"POT-Creation-Date: 2026-07-02 20:01+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,14 +16,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:62 docs/tools/execute-code-runtimes.md:9
+#: docs/concepts/architecture.md:94 docs/tools/execute-code-runtimes.md:9
 #, no-wrap
 msgid "Background"
 msgstr "背景"
 
 #. type: Content of: <messages><msg>
 #: docs/guide/security.md:1 docs/tools/execute-code-runtimes.md:60
-#: messages/po4a/en.xml:49 messages/po4a/en.xml:52
+#: messages/po4a/en.xml:584 messages/po4a/en.xml:587
 #, no-wrap
 msgid "Security"
 msgstr "安全"
@@ -206,6 +206,6 @@ msgstr ""
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:70
 msgid ""
-"Credential values are never exposed to the LLM; injected from pass at "
-"runtime — no pass CLI inside runtimes."
-msgstr "凭证值永不暴露给 LLM；运行时从 pass 注入 — 运行时内不提供 pass CLI。"
+"Credential values are never exposed to the LLM; injected from Vault at "
+"runtime — no vault CLI inside runtimes."
+msgstr "凭证值永不暴露给 LLM；运行时从 Vault 注入 — 运行时内不提供 vault CLI。"

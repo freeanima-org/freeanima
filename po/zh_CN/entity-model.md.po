@@ -669,6 +669,8 @@ msgid ""
 "**LLM:** ToolSet `vault` — metadata + `vault_inject_env` ack only; never "
 "plaintext secrets in context."
 msgstr ""
+"**LLM：** ToolSet `vault` — 仅元数据与 `vault_inject_env` ack；上下文中永不出"
+"现明文密钥。"
 
 #. type: Bullet: '- '
 #: docs/concepts/entity-model.md:178
@@ -676,6 +678,8 @@ msgid ""
 "**Config:** `vault(\"item_id\", \"field\")` resolves Agent library at Hub "
 "boot (legacy `credential()` removed)."
 msgstr ""
+"**Config：** `vault(\"item_id\", \"field\")` 在 Hub 启动时解析 Agent 库（遗"
+"留 `credential()` 已移除）。"
 
 #. type: Plain text
 #: docs/concepts/entity-model.md:180
@@ -683,6 +687,8 @@ msgid ""
 "Legacy pass (`~/.password-store`) is **not** deleted on disk; migrate "
 "entries manually via Shell UI."
 msgstr ""
+"遗留 pass（`~/.password-store`）**不会从磁盘删除**；请经 Shell UI 手动迁移条"
+"目。"
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/entity-model.md:181 messages/po4a/en.xml:116
