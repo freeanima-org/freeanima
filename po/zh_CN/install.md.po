@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 19:54+0800\n"
+"POT-Creation-Date: 2026-07-02 20:01+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -491,11 +491,10 @@ msgstr "Docker 说明"
 #: docs/guide/install.md:175
 msgid ""
 "Secrets live in `.env` — do not commit `.env` to git. For production, prefer "
-"a secret manager or pass on the host and mount config instead of plaintext "
-"keys in `.env`."
+"Vault / `env()` on the host instead of plaintext keys in `.env`."
 msgstr ""
-"密钥存放在 `.env` — 勿将 `.env` 提交到 git。生产环境优先使用密钥管理器或主机 "
-"pass 并挂载配置，而非 `.env` 明文密钥。"
+"密钥存放在 `.env` — 勿将 `.env` 提交到 git。生产环境优先在主机使用 Vault / "
+"`env()`，而非 `.env` 明文密钥。"
 
 #. type: Bullet: '- '
 #: docs/guide/install.md:175
@@ -509,11 +508,10 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/guide/install.md:175
 msgid ""
-"pass is **not** used inside the default Compose stack; LLM and DB "
-"credentials come from environment variable expansion in `docker/"
-"config.docker.yaml`."
+"pass is **not** used inside the default Compose stack; LLM and DB secrets "
+"come from environment variable expansion in `docker/config.docker.yaml`."
 msgstr ""
-"默认 Compose 栈内**不使用** pass；LLM 与 DB 凭证来自 `docker/"
+"默认 Compose 栈内**不使用** pass；LLM 与 DB 密钥来自 `docker/"
 "config.docker.yaml` 中的环境变量展开。"
 
 #. type: Title ##
@@ -536,8 +534,8 @@ msgstr "1. 克隆并安装依赖"
 #. type: Plain text
 #: docs/guide/install.md:185
 #, no-wrap
-msgid "**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · pass (recommended)\n"
-msgstr "**前置条件：** Bun >= 1.3.14 · PostgreSQL（pgvector）· Redis（推荐）· pass（推荐）\n"
+msgid "**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended)\n"
+msgstr "**前置条件：** Bun >= 1.3.14 · PostgreSQL（pgvector）· Redis（推荐）· Vault（推荐）\n"
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:186
@@ -625,9 +623,9 @@ msgstr "3. 配置并启动"
 #: docs/guide/install.md:221
 msgid ""
 "Same as npm CLI — `~/.anima/config.yaml`, PostgreSQL, optional Redis and "
-"pass:"
+"Vault:"
 msgstr ""
-"与 npm CLI 相同 — `~/.anima/config.yaml`、PostgreSQL、可选 Redis 与 pass："
+"与 npm CLI 相同 — `~/.anima/config.yaml`、PostgreSQL、可选 Redis 与 Vault："
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:222
@@ -723,10 +721,10 @@ msgstr "后续步骤"
 #. type: Bullet: '1. '
 #: docs/guide/install.md:269
 msgid ""
-"**Security** — pass-only secrets, `chmod 700 ~/.anima`, do not expose Admin "
-"without auth ([`security.md`](security.md))"
+"**Security** — Vault / `env()` for secrets, `chmod 700 ~/.anima`, do not "
+"expose Admin without auth ([`security.md`](security.md))"
 msgstr ""
-"**安全** — 密钥仅放 pass、`chmod 700 ~/.anima`、无认证勿暴露 Admin"
+"**安全** — 密钥使用 Vault / `env()`、`chmod 700 ~/.anima`、无认证勿暴露 Admin"
 "（[`security.md`](security.md)）"
 
 #. type: Bullet: '2. '

@@ -67,4 +67,4 @@ Disabled runtimes return a clear error listing available runtimes.
 
 Architecture allows credential path injection in `execute_code` environments — **not yet implemented**. See [Issue #40](https://github.com/freeanima-org/freeanima/issues/40).
 
-Credential values are never exposed to the LLM; injected from pass at runtime — no pass CLI inside runtimes.
+Credential values are never exposed to the LLM; injected from Vault at runtime — no vault CLI inside runtimes.

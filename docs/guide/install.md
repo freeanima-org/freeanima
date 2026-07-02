@@ -169,9 +169,9 @@ Images are published to `ghcr.io/freeanima-org/freeanima` on each release tag.
 
 ### Docker notes
 
-- Secrets live in `.env` — do not commit `.env` to git. For production, prefer a secret manager or pass on the host and mount config instead of plaintext keys in `.env`.
+- Secrets live in `.env` — do not commit `.env` to git. For production, prefer Vault / `env()` on the host instead of plaintext keys in `.env`.
 - The container binds `0.0.0.0` — restrict access with firewall or reverse proxy auth before exposing beyond localhost ([`security.md`](security.md)).
-- pass is **not** used inside the default Compose stack; LLM and DB credentials come from environment variable expansion in `docker/config.docker.yaml`.
+- pass is **not** used inside the default Compose stack; LLM and DB secrets come from environment variable expansion in `docker/config.docker.yaml`.
 
 ---
 
@@ -181,7 +181,7 @@ For development, unreleased fixes, or running from a git checkout.
 
 ### 1. Clone and install dependencies
 
-**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · pass (recommended)
+**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended)
 
 ```bash
 git clone https://github.com/freeanima-org/freeanima.git
@@ -217,7 +217,7 @@ bun run install:cli:local
 
 ### 3. Configure and start
 
-Same as npm CLI — `~/.anima/config.yaml`, PostgreSQL, optional Redis and pass:
+Same as npm CLI — `~/.anima/config.yaml`, PostgreSQL, optional Redis and Vault:
 
 ```bash
 mkdir -p ~/.anima
@@ -262,7 +262,7 @@ If status fails, check PostgreSQL connectivity, that migrations completed ([`dat
 
 ## Next steps
 
-1. **Security** — pass-only secrets, `chmod 700 ~/.anima`, do not expose Admin without auth ([`security.md`](security.md))
+1. **Security** — Vault / `env()` for secrets, `chmod 700 ~/.anima`, do not expose Admin without auth ([`security.md`](security.md))
 2. **Remote access** — optional Cloudflare Tunnel + Service API Token for personal mobile/remote Admin ([`remote-access.md`](remote-access.md))
 3. **Database** — backups, extensions, manual migrations if needed ([`database.md`](database.md))
 4. **Operations** — start/stop, memory metrics ([`service.md`](service.md))

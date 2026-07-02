@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 19:54+0800\n"
+"POT-Creation-Date: 2026-07-02 20:01+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -418,8 +418,7 @@ msgstr ""
 #: docs/guide/install.md:175
 msgid ""
 "Secrets live in `.env` — do not commit `.env` to git. For production, prefer "
-"a secret manager or pass on the host and mount config instead of plaintext "
-"keys in `.env`."
+"Vault / `env()` on the host instead of plaintext keys in `.env`."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -432,9 +431,8 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/guide/install.md:175
 msgid ""
-"pass is **not** used inside the default Compose stack; LLM and DB "
-"credentials come from environment variable expansion in `docker/"
-"config.docker.yaml`."
+"pass is **not** used inside the default Compose stack; LLM and DB secrets "
+"come from environment variable expansion in `docker/config.docker.yaml`."
 msgstr ""
 
 #. type: Title ##
@@ -457,7 +455,7 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:185
 #, no-wrap
-msgid "**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · pass (recommended)\n"
+msgid "**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended)\n"
 msgstr ""
 
 #. type: Fenced code block (bash)
@@ -534,7 +532,7 @@ msgstr ""
 #: docs/guide/install.md:221
 msgid ""
 "Same as npm CLI — `~/.anima/config.yaml`, PostgreSQL, optional Redis and "
-"pass:"
+"Vault:"
 msgstr ""
 
 #. type: Fenced code block (bash)
@@ -622,8 +620,8 @@ msgstr ""
 #. type: Bullet: '1. '
 #: docs/guide/install.md:269
 msgid ""
-"**Security** — pass-only secrets, `chmod 700 ~/.anima`, do not expose Admin "
-"without auth ([`security.md`](security.md))"
+"**Security** — Vault / `env()` for secrets, `chmod 700 ~/.anima`, do not "
+"expose Admin without auth ([`security.md`](security.md))"
 msgstr ""
 
 #. type: Bullet: '2. '
