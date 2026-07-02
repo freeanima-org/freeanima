@@ -138,7 +138,7 @@ export function writeModuleSelection(
       }
       return;
     }
-    if (typeof value === "object" && value !== null && "accountId" in value) {
+    if (typeof value === "object" && "accountId" in value) {
       store.setItem(key, JSON.stringify(value));
     }
   } catch {

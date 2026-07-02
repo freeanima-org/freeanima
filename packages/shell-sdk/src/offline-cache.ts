@@ -52,8 +52,8 @@ function cacheKey(scope: string, namespace: string, id: string): string {
 
 function isEnvelope<T>(raw: unknown): raw is OfflineCacheEnvelope<T> {
   return (
-    typeof raw === "object" &&
     raw !== null &&
+    typeof raw === "object" &&
     "v" in raw &&
     (raw as OfflineCacheEnvelope<T>).v === ENVELOPE_VERSION &&
     "data" in raw
