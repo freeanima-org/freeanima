@@ -1,9 +1,11 @@
-import { detectPlatform } from "../platform.ts";
+import { useLayoutMode } from "../layout-mode.ts";
+import { resolveSettingsPlatform } from "../platform.ts";
 import { useShellAppBindings } from "../shell-app-context.tsx";
 import { SettingsHost } from "./SettingsHost.tsx";
 
 export function SettingsPage() {
-  const platform = detectPlatform();
+  const layoutMode = useLayoutMode();
+  const platform = resolveSettingsPlatform({ layoutMode });
   const bindings = useShellAppBindings();
 
   return (
