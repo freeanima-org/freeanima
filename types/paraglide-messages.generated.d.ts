@@ -262,6 +262,8 @@ type ParaglideMessageExports = {
   readonly admin_entities_api_tokens: ParaglideMessageFn;
   readonly admin_entities_api_tokens_desc: ParaglideMessageFn;
   readonly admin_entities_api_tokens_empty: ParaglideMessageFn;
+  readonly admin_entities_api_tokens_empty_active: ParaglideMessageFn;
+  readonly admin_entities_api_tokens_show_all: ParaglideMessageFn;
   readonly admin_entities_api_tokens_title: ParaglideMessageFn;
   readonly admin_entities_col_content: ParaglideMessageFn;
   readonly admin_entities_col_default_private_world: ParaglideMessageFn;
@@ -605,6 +607,8 @@ type ParaglideMessageExports = {
   readonly ui_common_confirm: ParaglideMessageFn;
   readonly ui_network_offline: ParaglideMessageFn;
   readonly ui_offline_cached_hint: ParaglideMessageFn;
+  readonly ui_offline_readonly_mode: ParaglideMessageFn;
+  readonly ui_offline_snapshot_updated: ParaglideMessageFn;
   readonly ui_pwa_install_action: ParaglideMessageFn;
   readonly ui_pwa_install_prompt: ParaglideMessageFn;
   readonly ui_pwa_shell_offline_ready: ParaglideMessageFn;
@@ -875,6 +879,8 @@ declare module "*/messages/paraglide/messages.js" {
   export const admin_entities_api_tokens: ParaglideMessageFn;
   export const admin_entities_api_tokens_desc: ParaglideMessageFn;
   export const admin_entities_api_tokens_empty: ParaglideMessageFn;
+  export const admin_entities_api_tokens_empty_active: ParaglideMessageFn;
+  export const admin_entities_api_tokens_show_all: ParaglideMessageFn;
   export const admin_entities_api_tokens_title: ParaglideMessageFn;
   export const admin_entities_col_content: ParaglideMessageFn;
   export const admin_entities_col_default_private_world: ParaglideMessageFn;
@@ -1218,6 +1224,8 @@ declare module "*/messages/paraglide/messages.js" {
   export const ui_common_confirm: ParaglideMessageFn;
   export const ui_network_offline: ParaglideMessageFn;
   export const ui_offline_cached_hint: ParaglideMessageFn;
+  export const ui_offline_readonly_mode: ParaglideMessageFn;
+  export const ui_offline_snapshot_updated: ParaglideMessageFn;
   export const ui_pwa_install_action: ParaglideMessageFn;
   export const ui_pwa_install_prompt: ParaglideMessageFn;
   export const ui_pwa_shell_offline_ready: ParaglideMessageFn;

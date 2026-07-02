@@ -1637,6 +1637,18 @@ msgid "No tokens yet."
 msgstr "尚无令牌。"
 
 #. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:259a
+#, no-wrap
+msgid "No active tokens."
+msgstr "暂无运行中的令牌。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:259b
+#, no-wrap
+msgid "Show all"
+msgstr "显示全部"
+
+#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:260
 #, no-wrap
 msgid "Hub API tokens — {subject}"
