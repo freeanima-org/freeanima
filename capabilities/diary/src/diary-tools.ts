@@ -11,10 +11,10 @@ import {
 } from "./entry-store.ts";
 import { entryPayload, parseTags, requireEntryByDate, toolDateKey } from "./diary-tool-helpers.ts";
 import { DIARY_TOOL_RETURNS } from "./return-schemas.ts";
-import { resolveDiaryWorldId } from "./subject-world.ts";
+import { resolveDefaultWorldForToolCaller } from "@freeanima/core/db/pg/entity";
 
-async function agentStoreContext() {
-  const worldId = await resolveDiaryWorldId("agent");
+async function callerStoreContext() {
+  const worldId = await resolveDefaultWorldForToolCaller();
   return { worldId };
 }
 
@@ -23,7 +23,7 @@ async function handleAppend(args: Record<string, unknown>): Promise<string> {
   if (!content) return toolError("content is required");
 
   try {
-    const ctx = await agentStoreContext();
+    const ctx = await callerStoreContext();
     const item = await appendDiaryEntryByDate(
       ctx,
       omitUndefined({
@@ -47,7 +47,7 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
   if (!hasPatch) return toolError("at least one of content, tags, title, summary is required");
 
   try {
-    const ctx = await agentStoreContext();
+    const ctx = await callerStoreContext();
     const resolved = await requireEntryByDate(ctx, args.date);
     if ("error" in resolved) return toolError(resolved.error);
 
@@ -70,7 +70,7 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
 
 async function handleDelete(args: Record<string, unknown>): Promise<string> {
   try {
-    const ctx = await agentStoreContext();
+    const ctx = await callerStoreContext();
     const dateKey = toolDateKey(args.date);
     const ok = await deleteDiaryEntryByDate(ctx, dateKey);
     if (!ok) return toolError(`diary entry not found for date ${dateKey}`);
@@ -82,7 +82,7 @@ async function handleDelete(args: Record<string, unknown>): Promise<string> {
 
 async function handleGet(args: Record<string, unknown>): Promise<string> {
   try {
-    const ctx = await agentStoreContext();
+    const ctx = await callerStoreContext();
     const resolved = await requireEntryByDate(ctx, args.date);
     if ("error" in resolved) return toolError(resolved.error);
     return toolResult({ ok: true, action: "get", item: entryPayload(resolved.entry) });
@@ -103,7 +103,7 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
       : undefined;
 
   try {
-    const ctx = await agentStoreContext();
+    const ctx = await callerStoreContext();
     const items = await listDiaryEntries(
       ctx,
       omitUndefined({
@@ -134,7 +134,7 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
       : undefined;
 
   try {
-    const ctx = await agentStoreContext();
+    const ctx = await callerStoreContext();
     const items = await searchDiaryEntries(
       ctx,
       omitUndefined({
@@ -161,7 +161,7 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
 export function registerDiaryTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "diary",
-    "Agent diary by date in the agent private world; use diary_append to write (auto-creates today's entry).",
+    "Diary by date in caller subject private world; LLM defaults to agent world.",
     attachToolReturns(
       [
         {

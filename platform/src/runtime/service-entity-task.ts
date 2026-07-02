@@ -14,8 +14,7 @@ import {
   updateTaskList,
 } from "@freeanima/capabilities-task";
 import type { SubjectKind } from "@freeanima/core/config";
-import { subjectConfigBodySchema } from "@freeanima/core/db/schema";
-import { getEntity } from "@freeanima/core/db/pg/entity";
+import { resolveDefaultPrivateWorldForSubject } from "@freeanima/core/db/pg/entity";
 import type { VerifiedServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
 import type { SapRequestAuthContext } from "@freeanima/sap-contract";
 
@@ -39,16 +38,7 @@ async function taskWorldIdForAuth(
   subject_kind?: SubjectKind,
 ): Promise<number> {
   assertSubjectKindMatches(auth, subject_kind);
-  const row = await getEntity(auth.subject_id);
-  if (!row || (row.type !== "user" && row.type !== "agent")) {
-    throw new Error("INVALID_AUTH_SUBJECT");
-  }
-  const parsed = subjectConfigBodySchema.safeParse(row.body);
-  const worldId = parsed.success ? parsed.data.default_private_world_id : undefined;
-  if (!worldId) {
-    throw new Error(`subject ${auth.subject_id} has no default_private_world_id`);
-  }
-  return worldId;
+  return resolveDefaultPrivateWorldForSubject(auth.subject_id);
 }
 
 export async function serviceTasklistList(

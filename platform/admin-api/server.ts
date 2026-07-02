@@ -13,6 +13,7 @@ import { broadcastWsReconnect, shutdownAdmin } from "./elysia/shutdown.ts";
 import { getSapServerDeps } from "@freeanima/platform/sap/runtime-context";
 import { createSapBunHandlers } from "@freeanima/platform/sap/bun-route";
 import { createServiceAuthVerifier, type ServiceAuthVerifier } from "./service-auth.ts";
+import { parseServiceAuthFromRequest } from "./auth-context.ts";
 import {
   applyHttpAuth,
   handleHubCorsPreflight,
@@ -107,7 +108,9 @@ export async function startApiHttpServer(
         }
 
         if (isMcpPath(authedPath)) {
-          const mcpRes = await mcpHandler(authedReq);
+          const mcpRes = await mcpHandler(authedReq, {
+            callerAuth: parseServiceAuthFromRequest(authedReq),
+          });
           if (mcpRes !== undefined) return mcpRes;
         }
 

@@ -11,19 +11,20 @@ import {
   updateTaskList,
 } from "./list-store.ts";
 import { TASK_TOOL_RETURNS } from "./return-schemas.ts";
-import { listPayload, parseWorldId, WORLD_ID_TOOL_PROPERTY } from "./task-tool-helpers.ts";
+import { listPayload, WORLD_ID_TOOL_PROPERTY } from "./task-tool-helpers.ts";
+import { resolveTaskToolWorld } from "./tool-world-resolve.ts";
 import type { TaskListUpdateInput } from "./types.ts";
 
-function requireWorldId(args: Record<string, unknown>): number | string {
-  const worldId = parseWorldId(args.world_id);
-  if (worldId == null) return toolError("world_id is required");
-  return worldId;
-}
-
-const WORLD_ID_SCHEMA = { world_id: WORLD_ID_TOOL_PROPERTY };
+const WORLD_ID_OPTIONAL = {
+  world_id: {
+    ...WORLD_ID_TOOL_PROPERTY,
+    description:
+      "Optional world override; defaults to caller subject private world (MCP token subject or agent subject for LLM)",
+  },
+} as const;
 
 async function handleListLists(args: Record<string, unknown>): Promise<string> {
-  const worldId = requireWorldId(args);
+  const worldId = await resolveTaskToolWorld({ args });
   if (typeof worldId === "string") return worldId;
 
   await ensureDefaultTaskListForWorld(worldId);
@@ -38,7 +39,13 @@ async function handleListLists(args: Record<string, unknown>): Promise<string> {
 }
 
 async function handleListCreate(args: Record<string, unknown>): Promise<string> {
-  const worldId = requireWorldId(args);
+  const parentIdRaw = args.parent_id;
+  const hasParentId =
+    parentIdRaw != null && parentIdRaw !== "" && Number.isFinite(Number(parentIdRaw));
+  const worldId = await resolveTaskToolWorld({
+    args,
+    ...(hasParentId ? { listId: Number(parentIdRaw) } : {}),
+  });
   if (typeof worldId === "string") return worldId;
 
   const name = String(args.name ?? "").trim();
@@ -67,11 +74,11 @@ async function handleListCreate(args: Record<string, unknown>): Promise<string> 
 }
 
 async function handleListUpdate(args: Record<string, unknown>): Promise<string> {
-  const worldId = requireWorldId(args);
-  if (typeof worldId === "string") return worldId;
-
   const id = Number(args.id);
   if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
+
+  const worldId = await resolveTaskToolWorld({ args, entityId: id });
+  if (typeof worldId === "string") return worldId;
 
   const patch: TaskListUpdateInput = { id };
   if (args.name !== undefined) patch.name = String(args.name);
@@ -96,11 +103,12 @@ async function handleListUpdate(args: Record<string, unknown>): Promise<string> 
 }
 
 async function handleListDelete(args: Record<string, unknown>): Promise<string> {
-  const worldId = requireWorldId(args);
-  if (typeof worldId === "string") return worldId;
-
   const id = Number(args.id);
   if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
+
+  const worldId = await resolveTaskToolWorld({ args, entityId: id });
+  if (typeof worldId === "string") return worldId;
+
   const cascade = args.cascade === true;
 
   try {
@@ -113,7 +121,7 @@ async function handleListDelete(args: Record<string, unknown>): Promise<string> 
 }
 
 async function handleListSearch(args: Record<string, unknown>): Promise<string> {
-  const worldId = requireWorldId(args);
+  const worldId = await resolveTaskToolWorld({ args });
   if (typeof worldId === "string") return worldId;
 
   const query = String(args.query ?? "").trim();
@@ -148,23 +156,23 @@ const TASKLIST_TOOL_NAMES = [
 export function registerTaskListTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "tasklist",
-    "Task lists (CRUD and name search). Load toolset `task` for task items. All calls require world_id.",
+    "Task lists (CRUD and name search). Load toolset `task` for task items. world_id optional; id scopes infer world.",
     attachToolReturns(
       [
         {
           name: "tasklist_list",
-          description: "List all task lists",
+          description: "List all task lists in caller default world",
           exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
-              ...WORLD_ID_SCHEMA,
+              ...WORLD_ID_OPTIONAL,
               include_closed: {
                 type: "boolean",
                 description: "Include archived (closed) lists when true",
               },
             },
-            required: ["world_id"],
+            required: [],
           },
           handler: handleListLists,
         },
@@ -175,7 +183,7 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
-              ...WORLD_ID_SCHEMA,
+              ...WORLD_ID_OPTIONAL,
               name: { type: "string", description: "List or folder name" },
               sort_order: { type: "integer" },
               color: { type: "string" },
@@ -188,7 +196,7 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
                 description: "Parent folder entity id; omit for root level",
               },
             },
-            required: ["world_id", "name"],
+            required: ["name"],
           },
           handler: handleListCreate,
         },
@@ -199,7 +207,6 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
-              ...WORLD_ID_SCHEMA,
               id: { type: "integer", description: "Task list id" },
               name: { type: "string", description: "New list name" },
               sort_order: { type: "integer" },
@@ -218,7 +225,7 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
                 description: "Parent folder id; null to move to root",
               },
             },
-            required: ["world_id", "id"],
+            required: ["id"],
           },
           handler: handleListUpdate,
         },
@@ -230,29 +237,28 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
-              ...WORLD_ID_SCHEMA,
               id: { type: "integer" },
               cascade: {
                 type: "boolean",
                 description: "Delete contained task items when true",
               },
             },
-            required: ["world_id", "id"],
+            required: ["id"],
           },
           handler: handleListDelete,
         },
         {
           name: "tasklist_search",
-          description: "Hybrid search task lists by name",
+          description: "Hybrid search task lists by name in caller default world",
           exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
-              ...WORLD_ID_SCHEMA,
+              ...WORLD_ID_OPTIONAL,
               query: { type: "string", description: "Search keywords" },
               limit: { type: "integer", description: "Max results, default 30, cap 50" },
             },
-            required: ["world_id", "query"],
+            required: ["query"],
           },
           handler: handleListSearch,
         },

@@ -1,0 +1,75 @@
+import { subjectConfigBodySchema } from "@freeanima/core/db/schema";
+import { resolveToolCallerSubjectId } from "@freeanima/core/tool";
+
+import { getEntity, listEntities } from "./repos/entity-crud-repo.ts";
+import { resolveWorldsAccessibleBySubject } from "./search/accessible-worlds.ts";
+
+export class ToolWorldAccessError extends Error {
+  override name = "ToolWorldAccessError";
+}
+
+/** subject entity → default_private_world_id */
+export async function resolveDefaultPrivateWorldForSubject(subjectId: number): Promise<number> {
+  const row = await getEntity(subjectId);
+  if (!row || (row.type !== "user" && row.type !== "agent")) {
+    throw new ToolWorldAccessError(`subject not found: ${subjectId}`);
+  }
+  const parsed = subjectConfigBodySchema.safeParse(row.body);
+  const worldId = parsed.success ? parsed.data.default_private_world_id : undefined;
+  if (worldId == null || worldId <= 0) {
+    throw new ToolWorldAccessError(`subject ${subjectId} has no default_private_world_id`);
+  }
+  return worldId;
+}
+
+export async function assertSubjectCanAccessWorld(
+  subjectId: number,
+  worldId: number,
+): Promise<void> {
+  const accessible = await resolveWorldsAccessibleBySubject({ list: listEntities }, subjectId);
+  if (!accessible.includes(worldId)) {
+    throw new ToolWorldAccessError(`subject ${subjectId} cannot access world ${worldId}`);
+  }
+}
+
+export async function resolveWorldFromEntityId(entityId: number): Promise<number> {
+  const row = await getEntity(entityId);
+  if (!row) {
+    throw new ToolWorldAccessError(`entity not found: ${entityId}`);
+  }
+  return row.world_id;
+}
+
+export async function resolveDefaultWorldForToolCaller(): Promise<number> {
+  return resolveDefaultPrivateWorldForSubject(resolveToolCallerSubjectId());
+}
+
+export type ResolveToolWorldOpts = {
+  explicitWorldId?: number;
+  entityId?: number;
+  listId?: number;
+};
+
+/** Unified world scope for MCP / LLM tools (caller subject from ToolContext). */
+export async function resolveToolWorld(opts: ResolveToolWorldOpts): Promise<number> {
+  const callerSubjectId = resolveToolCallerSubjectId();
+
+  if (opts.entityId != null && opts.entityId > 0) {
+    const worldId = await resolveWorldFromEntityId(opts.entityId);
+    await assertSubjectCanAccessWorld(callerSubjectId, worldId);
+    return worldId;
+  }
+
+  if (opts.listId != null && opts.listId > 0) {
+    const worldId = await resolveWorldFromEntityId(opts.listId);
+    await assertSubjectCanAccessWorld(callerSubjectId, worldId);
+    return worldId;
+  }
+
+  if (opts.explicitWorldId != null && opts.explicitWorldId > 0) {
+    await assertSubjectCanAccessWorld(callerSubjectId, opts.explicitWorldId);
+    return opts.explicitWorldId;
+  }
+
+  return resolveDefaultPrivateWorldForSubject(callerSubjectId);
+}

@@ -33,3 +33,12 @@ export {
   assertPrivateWorldOwnedBySubject,
   EntityWorldError,
 } from "./world-assert.ts";
+export {
+  resolveDefaultPrivateWorldForSubject,
+  assertSubjectCanAccessWorld,
+  resolveWorldFromEntityId,
+  resolveDefaultWorldForToolCaller,
+  resolveToolWorld,
+  ToolWorldAccessError,
+  type ResolveToolWorldOpts,
+} from "./tool-world-access.ts";

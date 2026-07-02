@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { readAppVersionForCapability as readAppVersion } from "@freeanima/core/config";
+import type { VerifiedServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
 import {
   handlerResultToMcpContent,
   runWithToolContext,
@@ -14,6 +15,10 @@ export type McpHubDeps = {
   toolSets: ToolSetRegistry;
 };
 
+export type McpCallContext = {
+  callerAuth?: VerifiedServiceApiToken | null;
+};
+
 export const MCP_HTTP_PATH = "/mcp";
 
 /** Hub Streamable HTTP MCP endpoint path */
@@ -21,7 +26,7 @@ export function isMcpPath(pathname: string): boolean {
   return pathname === MCP_HTTP_PATH || pathname === `${MCP_HTTP_PATH}/`;
 }
 
-function createMcpServer(deps: McpHubDeps): Server {
+function createMcpServer(deps: McpHubDeps, callCtx?: McpCallContext): Server {
   const server = new Server(
     { name: "freeanima", version: readAppVersion() },
     { capabilities: { tools: {} } },
@@ -46,9 +51,11 @@ function createMcpServer(deps: McpHubDeps): Server {
       };
     }
     const sessionId = randomUUID();
+    const callerAuth = callCtx?.callerAuth ?? undefined;
     const text = await runWithToolContext(`mcp:${sessionId}`, () => tool.handler(args), {
       tools: deps.toolSets,
       contextKind: "auto_llm",
+      ...(callerAuth ? { callerAuth } : {}),
     });
     return handlerResultToMcpContent(await Promise.resolve(text));
   });
@@ -59,14 +66,14 @@ function createMcpServer(deps: McpHubDeps): Server {
 /** Stateless Streamable HTTP handler for Bun.serve fetch */
 export function createMcpBunHandler(
   deps: McpHubDeps,
-): (req: Request) => Promise<Response | undefined> {
-  return async (req: Request): Promise<Response | undefined> => {
+): (req: Request, ctx?: McpCallContext) => Promise<Response | undefined> {
+  return async (req: Request, ctx?: McpCallContext): Promise<Response | undefined> => {
     if (!isMcpPath(new URL(req.url).pathname)) return undefined;
 
     const transport = new WebStandardStreamableHTTPServerTransport({
       enableJsonResponse: true,
     });
-    const server = createMcpServer(deps);
+    const server = createMcpServer(deps, ctx);
     await server.connect(transport);
     try {
       return await transport.handleRequest(req);
