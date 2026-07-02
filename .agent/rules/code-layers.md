@@ -67,7 +67,7 @@ Notes aligned with the checker:
 
 Boot phases: [`platform/src/boot/`](../../platform/src/boot/). Entry: [`platform/src/serve.ts`](../../platform/src/serve.ts).
 
-- `registerCapabilityInjection()` wires credential helpers from `@freeanima/platform/config` into `@freeanima/core/config`
+- `registerCapabilityInjection()` wires vault helpers from `@freeanima/platform/config` into `@freeanima/core/config`
 - **runtime / core / capabilities** must not depend on `@freeanima/platform` in production code (tests may use platform test helpers as devDependency)
 - Connectors and Admin import `@freeanima/platform/ports` only — not the full boot graph
 

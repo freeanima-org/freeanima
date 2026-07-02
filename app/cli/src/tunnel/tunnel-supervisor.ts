@@ -1,5 +1,5 @@
 import { omitUndefined } from "@freeanima/core/util";
-import { PATHS, TUNNEL_PASS_PATHS, type TunnelConfig } from "@freeanima/core/config";
+import { PATHS, type TunnelConfig } from "@freeanima/core/config";
 import { FileConfig } from "@freeanima/platform/config";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
@@ -273,5 +273,3 @@ export function getTunnelStatus(): TunnelStatus {
 export function loadTunnelConfig(): TunnelConfig | undefined {
   return FileConfig.open().data.tunnel;
 }
-
-export { TUNNEL_PASS_PATHS };

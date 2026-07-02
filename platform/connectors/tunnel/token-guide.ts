@@ -17,10 +17,10 @@ export const INVALID_API_TOKEN_HINTS = [
 /** Cloudflare 错误码 10000「Authentication error」（非 verify 成功时的提示消息） */
 export const AUTHENTICATION_ERROR_HINTS = [
   "表示 Bearer Token 未被 Cloudflare 认可（在权限检查之前即失败）。",
-  "常见原因：pass 中 token 与 curl 测试的不一致；粘贴了隧道连接器令牌或 Global API Key。",
-  "config 中 credential() 被引号包裹是正常的 YAML 写法，读回后会正确解析。",
-  "用 pass 中的 token 做 curl 验证（应与 setup 读取的一致）：",
-  '  curl -s "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer $(pass show services/cloudflare/api-token | sed -n \'s/^token: //p\')"',
+  "常见原因：config 中 token 与 curl 测试的不一致；粘贴了隧道连接器令牌或 Global API Key。",
+  "config 中 env() 被引号包裹是正常的 YAML 写法，读回后会正确解析。",
+  "用同一 token 做 curl 验证（应与 setup 读取的一致）：",
+  '  curl -s "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"',
   "若 verify 通过但后续步骤失败，检查 Token 的 Account / Zone 资源范围是否包含目标账号与域名。",
 ] as const;
 

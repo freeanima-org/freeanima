@@ -7,10 +7,6 @@ describe("resolveAdminSubpath", () => {
     expect(resolveAdminSubpath("/admin/dashboard")).toBe("/dashboard");
   });
 
-  it("maps nested admin routes", () => {
-    expect(resolveAdminSubpath("/admin/credentials")).toBe("/credentials");
-  });
-
   it("defaults bare /admin to dashboard", () => {
     expect(resolveAdminSubpath("/admin")).toBe("/dashboard");
     expect(resolveAdminSubpath("/admin/")).toBe("/dashboard");

@@ -1,7 +1,7 @@
 import type { AnimaConfig } from "@freeanima/core/config";
 import { resolveValue } from "./resolve.ts";
 
-/** Expand env/credential references in llm.providers.*.api_key */
+/** Expand env/vault references in llm.providers.*.api_key */
 export async function resolveLlmProviderApiKeys(cfg: AnimaConfig): Promise<AnimaConfig> {
   const providers: AnimaConfig["llm"]["providers"] = {};
   for (const [id, provider] of Object.entries(cfg.llm.providers)) {

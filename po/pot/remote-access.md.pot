@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 18:19+0800\n"
+"POT-Creation-Date: 2026-07-02 19:53+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,21 +18,21 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/dream.md:9 docs/concepts/sleep.md:9
-#: docs/guide/remote-access.md:10 messages/po4a/en.xml:580
-#: messages/po4a/en.xml:587
+#: docs/guide/remote-access.md:10 messages/po4a/en.xml:575
+#: messages/po4a/en.xml:582
 #, no-wrap
 msgid "Overview"
 msgstr ""
 
 #. type: Title ##
 #: docs/features/companion.md:120 docs/features/mobile-app.md:52
-#: docs/guide/database.md:91 docs/guide/remote-access.md:182
+#: docs/guide/database.md:88 docs/guide/remote-access.md:177
 #, no-wrap
 msgid "Troubleshooting"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/companion.md:131 docs/guide/remote-access.md:193
+#: docs/features/companion.md:131 docs/guide/remote-access.md:188
 #, no-wrap
 msgid "Related docs"
 msgstr ""
@@ -334,38 +334,31 @@ msgstr ""
 #. type: Title ###
 #: docs/guide/remote-access.md:116
 #, no-wrap
-msgid "Cloudflare credentials (pass)"
+msgid "Cloudflare credentials"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:122
-#, no-wrap
+#: docs/guide/remote-access.md:119
 msgid ""
-"| pass path                                | Purpose                       |\n"
-"| ---------------------------------------- | ----------------------------- |\n"
-"| `services/cloudflare/api-token`          | Create Tunnel / DNS           |\n"
-"| `services/cloudflare/tunnel-credentials` | `cloudflared` connector creds |\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/remote-access.md:124
-msgid "See wizard `anima tunnel setup`."
+"Store API token and tunnel connector JSON via `env(\"KEY\")` or "
+"`vault(\"item_id\", \"field\")` in `config.yaml` tunnel section. See wizard "
+"`anima tunnel setup`."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/remote-access.md:125
+#: docs/guide/remote-access.md:120
 #, no-wrap
 msgid "3. Client configuration"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:128
+#: docs/guide/remote-access.md:123
 #, no-wrap
 msgid "**app/desktop**, **app/mobile**, and **browser Web** are remote clients; they **do not read** Hub `config.yaml` token.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:134
+#: docs/guide/remote-access.md:129
 #, no-wrap
 msgid ""
 "| Client      | Storage                                          |\n"
@@ -376,44 +369,44 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:136
+#: docs/guide/remote-access.md:131
 msgid "Settings (all clients):"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/guide/remote-access.md:139
+#: docs/guide/remote-access.md:134
 msgid ""
 "**Hub URL** — e.g. `https://anima.example.com` or `http://192.168.1.10:2658` "
 "(Hub root, **without** `/web`)"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/guide/remote-access.md:139
+#: docs/guide/remote-access.md:134
 msgid "**Hub API Token** — `fa_at_...` from `anima token create`"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:141
+#: docs/guide/remote-access.md:136
 msgid ""
 "Browser Web: `/web/config.json` sets default Hub to the page origin; first "
 "visit still requires saving token in settings."
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:143
+#: docs/guide/remote-access.md:138
 msgid ""
 "Flow: open Hub settings → fill → **Test connection** → Save. Desktop "
 "requires **restart app/desktop** after save."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/remote-access.md:144
+#: docs/guide/remote-access.md:139
 #, no-wrap
 msgid "4. Authentication behavior"
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/guide/remote-access.md:146
+#: docs/guide/remote-access.md:141
 #, no-wrap
 msgid ""
 "REST:  Authorization: Bearer fa_at_<prefix>_<secret>\n"
@@ -422,25 +415,25 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:153
+#: docs/guide/remote-access.md:148
 msgid ""
 "`/web/*` static assets skip service auth; `/api` and `/mcp` require Bearer "
 "token."
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:155
+#: docs/guide/remote-access.md:150
 msgid "Missing or invalid token → HTTP `401` or Hub RPC connection closed."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/remote-access.md:156
+#: docs/guide/remote-access.md:151
 #, no-wrap
 msgid "5. MCP outbound (external agents query Hub data)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:159
+#: docs/guide/remote-access.md:154
 msgid ""
 "Hub serves Streamable HTTP MCP Server at **`/mcp`**, exposing read-only "
 "tools from ToolSets with `expose_mcp: true` (e.g. `memory_recall`, "
@@ -449,7 +442,7 @@ msgid ""
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/guide/remote-access.md:160
+#: docs/guide/remote-access.md:155
 #, no-wrap
 msgid ""
 "# External agent example (Cursor mcp.json, etc.)\n"
@@ -461,27 +454,27 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:171
+#: docs/guide/remote-access.md:166
 msgid ""
 "**Inbound** (Hub connects to external MCP servers): `config.yaml` "
 "`mcp_servers` (`capabilities/mcp-client`)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:171
+#: docs/guide/remote-access.md:166
 msgid ""
 "**Outbound** (external agents call Hub tools): `/mcp` endpoint "
 "(`capabilities/mcp-server`)"
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/remote-access.md:172
+#: docs/guide/remote-access.md:167
 #, no-wrap
 msgid "Operations"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:181
+#: docs/guide/remote-access.md:176
 #, no-wrap
 msgid ""
 "| Command                          | Description                                    |\n"
@@ -494,7 +487,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:192
+#: docs/guide/remote-access.md:187
 #, no-wrap
 msgid ""
 "| Symptom                | Check                                                               |\n"
@@ -508,12 +501,12 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:196
+#: docs/guide/remote-access.md:191
 msgid "Mobile: [`mobile-app.md`](../features/mobile-app.md)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:196
+#: docs/guide/remote-access.md:191
 msgid ""
 "Desktop companion Hub source: [`companion.md`](../features/companion.md)"
 msgstr ""

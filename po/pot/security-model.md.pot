@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 18:19+0800\n"
+"POT-Creation-Date: 2026-07-02 19:53+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -73,7 +73,7 @@ msgid ""
 "| Origin check on WebSocket     | **None**                                               |\n"
 "| SAP attach for instance scope | **Yes** — `tool.*` requires `sap.attach`               |\n"
 "| Session-scoped tool routing   | **Yes** — [strict routing](tools.md)                   |\n"
-"| Credential values in frames   | **No** — credentials stay in pass; LLM sees paths only |\n"
+"| Credential values in frames   | **No** — secrets stay in Vault; LLM sees metadata only |\n"
 msgstr ""
 
 #. type: Plain text

@@ -15,11 +15,11 @@ Set the database URL in `config.yaml`:
 ```yaml
 database:
   url: postgresql://user:pass@localhost:5432/anima
-  # or use credential():
-  # url: credential("services/postgres/anima", "url")
+  # or use env() / vault():
+  # url: env("DATABASE_URL")
 ```
 
-Production **must** set `database.url`. Prefer pass for passwords instead of plaintext in config. Path conventions: [`security.md`](security.md#credential-responsibilities).
+Production **must** set `database.url`. Prefer Vault or `env()` for passwords instead of plaintext in config. Path conventions: [`security.md`](security.md#credential-responsibilities).
 
 ## Local Install (Debian)
 
@@ -27,11 +27,8 @@ Production **must** set `database.url`. Prefer pass for passwords instead of pla
 # Install PostgreSQL, create anima db/user (requires sudo)
 sudo ./scripts/setup-postgres-debian.sh
 
-# Write credentials to pass (script prints anima credential add …)
-anima credential add services/postgres/anima url=… host=… password=… database=anima
-
-# config.yaml:
-#   url: credential("services/postgres/anima", "url")
+# config.yaml (example):
+#   url: env("DATABASE_URL")
 ```
 
 Defaults: PostgreSQL 17, `localhost` only, `scram-sha-256`, dedicated `anima` database and user.
@@ -53,7 +50,7 @@ Fresh Debian installs via `setup-postgres-debian.sh` handle extensions automatic
 - **Manual:**
 
 ```bash
-DATABASE_URL="$(anima credential get services/postgres/anima url)" \
+DATABASE_URL="postgresql://anima:…@127.0.0.1:5432/anima" \
   bun run --filter @freeanima/core db:migrate
 ```
 

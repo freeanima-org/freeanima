@@ -5,14 +5,6 @@ export * from "./config.ts";
 export { FileConfig } from "./file-config.ts";
 export { clearVaultFieldCache, resolveVaultField } from "./vault-io.ts";
 export {
-  credential,
-  credentialRaw,
-  getCredentialDetail,
-  listCredentials,
-  type CredentialDetail,
-  type CredentialMeta,
-} from "./credential.ts";
-export {
   Config,
   bindActiveConfig,
   getActiveConfig,

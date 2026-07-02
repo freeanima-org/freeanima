@@ -7,7 +7,6 @@ set -euo pipefail
 DB_NAME="${ANIMA_PG_DATABASE:-anima}"
 DB_USER="${ANIMA_PG_USER:-anima}"
 DB_PORT="${ANIMA_PG_PORT:-5432}"
-PASS_PATH="${ANIMA_PG_PASS_PATH:-services/postgres/anima}"
 
 if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
   echo "请使用 root 运行: sudo $0" >&2
@@ -102,7 +101,7 @@ chmod 600 "${CRED_FILE}"
 chown "${TARGET_USER}:${TARGET_USER}" "${CRED_FILE}" 2>/dev/null || true
 
 cat >"${CRED_FILE}" <<EOF
-# 一次性凭证文件 — 导入 pass 后请删除
+# 一次性凭证文件 — 写入 Vault 或 env 后请删除
 url=${CONN_URL}
 host=127.0.0.1
 port=${DB_PORT}
@@ -119,13 +118,9 @@ echo "  库:   ${DB_NAME}"
 echo "  用户: ${DB_USER}"
 echo ""
 echo "凭证已写入 ${CRED_FILE}（权限 600，一次性）"
-echo "以 ${TARGET_USER} 用户导入 pass 后删除该文件："
-echo "  anima credential add ${PASS_PATH} url=\$(grep '^url=' ${CRED_FILE} | cut -d= -f2-) \\"
-echo "    host=127.0.0.1 port=${DB_PORT} user=${DB_USER} \\"
-echo "    password=\$(grep '^password=' ${CRED_FILE} | cut -d= -f2-) database=${DB_NAME} \\"
-echo "    desc='逸灵风 Slice A PostgreSQL 本机'"
+echo "请导入 Shell /vault（User 库）或写入 env DATABASE_URL 后删除该文件："
 echo "  rm -f ${CRED_FILE}"
 echo ""
-echo "Drizzle migrate（需先从 pass 读取 URL）："
-echo "  DATABASE_URL=\"\$(anima credential get ${PASS_PATH} url)\" bun run --filter @freeanima/kernel-db db:migrate"
+echo "Drizzle migrate 示例："
+echo "  DATABASE_URL=\"${CONN_URL}\" bun run --filter @freeanima/core db:migrate"
 echo ""

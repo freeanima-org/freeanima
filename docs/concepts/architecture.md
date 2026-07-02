@@ -83,7 +83,7 @@ Admin sidebar is grouped (not flat storage tables). Map new features onto these 
 
 | Group        | Cognitive layer | Routes (representative)                             |
 | ------------ | --------------- | --------------------------------------------------- |
-| Runtime      | Estate + ops    | dashboard, config, credentials, cron                |
+| Runtime      | Estate + ops    | dashboard, config, cron                             |
 | Memory       | Memory          | memory hub, browse sub-routes, sleep, auto-llm-runs |
 | Self         | Self            | self-layer, system-prompt                           |
 | Estate       | Estate          | subjects, worlds                                    |
@@ -161,14 +161,13 @@ For design drafts, open a GitHub Issue (no design-doc directory in docs).
 
 Pipeline: nightly **sleep-cycle** pipeline (`builtin-sleep-cycle` cron) extracts and maintains memory; `memory_recall` retrieves on demand during chat. Details: [`memory.md`](memory.md), [`sleep.md`](sleep.md).
 
-## Credential System (Summary)
+## Vault & Secrets (Summary)
 
-- [pass](https://www.passwordstore.org/) (GPG) is the sole credential store; the deployer's pass repo is a first-class runtime asset
-- The LLM **never sees credential values** — only paths and metadata
-- Runtime injection: credentials available only in code execution / terminal environments
-- Credential values are not written to conversation archives or logs
-- Platform adapters (Discord, etc.) read tokens from pass at startup
-- CLI: `anima credential {list,get,add}`
+- **Vault** (ECS `vault_item` in User + Agent libraries) is the authoritative secret store; legacy `~/.password-store` (pass) is **not deleted** on disk but is no longer read at runtime
+- The LLM **never sees secret values** — only vault item metadata and config references
+- Runtime resolution: `vault("item_id", "field")` and `env("KEY")` in config; Shell `/vault` for management
+- Secret values are not written to conversation archives or logs
+- CLI: `anima vault list|get`
 
 See [`guide/security.md`](../guide/security.md).
 
