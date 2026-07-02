@@ -80,6 +80,14 @@ const diaryRoute = createRoute({
   ),
 });
 
+const vaultRoute = createRoute({
+  getParentRoute: () => mainLayoutRoute,
+  path: "/vault",
+  component: shellLazyRoute(
+    lazyNamedComponent(() => import("@freeanima/satellite-vault/app"), "VaultApp"),
+  ),
+});
+
 const dreamRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/dream",
@@ -134,6 +142,7 @@ const routeTree = rootRoute.addChildren([
     tasksRoute,
     emailRoute,
     diaryRoute,
+    vaultRoute,
     dreamRoute,
     notificationsRoute,
     adminIndexRoute,

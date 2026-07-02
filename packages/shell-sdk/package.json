@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@freeanima/hub-rpc": "workspace:*",
+    "@freeanima/vault-crypto": "workspace:*",
     "react": "catalog:",
     "zod": "catalog:"
   },

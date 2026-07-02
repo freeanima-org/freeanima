@@ -18,7 +18,7 @@ export type {
 } from "./lifecycle.ts";
 
 export { createRpcClient } from "./client.ts";
-export type { RpcClient, CreateRpcClientOptions } from "./client.ts";
+export type { RpcClient, CreateRpcClientOptions, RpcRequestHandler } from "./client.ts";
 
 export { runHubRpcTransport } from "./transport.ts";
 export type {

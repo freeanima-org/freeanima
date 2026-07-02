@@ -90,8 +90,19 @@ export async function startApiHttpServer(
         const pathname = new URL(req.url).pathname;
 
         if (webStatic && isWebStaticPath(pathname)) {
-          const staticRes = serveWebStatic(req, webStatic);
+          const staticRes = serveWebStatic(
+            req,
+            webStatic,
+            remoteAddress !== undefined ? { remoteAddress } : undefined,
+          );
           if (staticRes) return staticRes;
+        }
+
+        if (webStatic && pathname === "/favicon.ico" && req.method === "GET") {
+          return Response.redirect(
+            `${new URL(req.url).origin}${WEB_URL_PREFIX}/icons/icon-192.png`,
+            302,
+          );
         }
 
         if (webStatic && pathname === "/" && req.method === "GET") {

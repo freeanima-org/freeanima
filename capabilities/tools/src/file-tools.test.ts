@@ -91,6 +91,6 @@ describe("file tools", () => {
   it("tools are registered", () => {
     const names = new Set(toolSets.listTools().map((t) => t.name));
     expect(names.has("file_read")).toBe(true);
-    expect(names.has("credential_list")).toBe(true);
+    expect(names.has("file_read")).toBe(true);
   });
 });

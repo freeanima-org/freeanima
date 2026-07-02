@@ -1,9 +1,17 @@
 export * from "./paths.ts";
 export { expandConfigEnv } from "./env-expand.ts";
 export { parseYaml, stringifyYaml } from "./yaml.ts";
-export * from "./credential.ts";
 export * from "./config.ts";
 export { FileConfig } from "./file-config.ts";
+export { clearVaultFieldCache, resolveVaultField } from "./vault-io.ts";
+export {
+  credential,
+  credentialRaw,
+  getCredentialDetail,
+  listCredentials,
+  type CredentialDetail,
+  type CredentialMeta,
+} from "./credential.ts";
 export {
   Config,
   bindActiveConfig,
@@ -21,6 +29,12 @@ export * from "./fts.ts";
 export * from "./embedding.ts";
 export * from "./llm-config.ts";
 export { resolveValue, resolveCredentialRef } from "./resolve.ts";
+export {
+  LOOPBACK_WEB_AUTH_TOKEN_REL,
+  loopbackWebAuthTokenPath,
+  readLoopbackWebAuthTokenFromEnvOrFile,
+  writeLoopbackWebAuthTokenFile,
+} from "./loopback-web-auth.ts";
 export { validateConfigOnStartup } from "./validate.ts";
 export { resolveLlmProviderApiKeys } from "./llm-resolve.ts";
 export {

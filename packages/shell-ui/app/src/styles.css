@@ -6,6 +6,7 @@
 @source "../../../satellites/chat/app/src/**/*.{tsx,ts}";
 @source "../../../satellites/task/app/src/**/*.{tsx,ts}";
 @source "../../../satellites/diary/app/src/**/*.{tsx,ts}";
+@source "../../../satellites/vault/app/src/**/*.{tsx,ts}";
 @import "@freeanima/ui-kit/styles.css";
 
 :root {

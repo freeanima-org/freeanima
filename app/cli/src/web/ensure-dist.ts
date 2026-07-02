@@ -23,6 +23,7 @@ export const WEB_SOURCE_WATCH_DIRS = [
   "platform/admin-frontend/app",
   "satellites/chat/app",
   "satellites/task/app",
+  "satellites/vault/app",
   "satellites/pair-programming/app",
 ] as const;
 

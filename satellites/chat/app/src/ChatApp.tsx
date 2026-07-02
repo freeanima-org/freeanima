@@ -42,6 +42,7 @@ import {
   subscribeSubjectKind,
   writeModuleSelection,
 } from "@freeanima/shell-sdk";
+import { VaultUnlockButton } from "@chat/components/VaultUnlockButton.tsx";
 import { useChatStore } from "@chat/stores/chat.ts";
 import { useConversationsStore } from "@chat/stores/conversations.ts";
 
@@ -1051,6 +1052,7 @@ export function ChatApp() {
               }
             }}
           >
+            <VaultUnlockButton conversationId={currentId} />
             <div className="flex-1 relative">
               {showCmdMenu ? (
                 <ul className="absolute bottom-full left-0 right-0 mb-1 max-h-48 overflow-y-auto rounded-lg border border bg-background shadow-lg z-10">

@@ -1,18 +1,11 @@
-import { getCredentialDetail, listCredentials } from "@freeanima/platform/config";
-import { ApiHandlerError } from "./errors.ts";
-
 export function listCredentialMetas() {
-  return { credentials: listCredentials() };
+  return {
+    deprecated: true,
+    message: "pass credentials removed; use Shell /vault",
+    credentials: [] as const,
+  };
 }
 
-export function getCredentialDetailHandler(path: string) {
-  try {
-    return getCredentialDetail(path);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    if (message.includes("not found") || message.includes("Failed to read credential")) {
-      throw new ApiHandlerError(404, message, { path });
-    }
-    throw new ApiHandlerError(500, message, { path });
-  }
+export function getCredentialDetailHandler(_path: string) {
+  throw new Error("pass credentials removed; use Shell /vault");
 }

@@ -77,9 +77,16 @@ export async function bootstrapWebBridge(
   const raw = await backend.load(HUB_SETTINGS_SCOPE);
   const parsed = parseShellClientConfig(raw);
   if (parsed) {
-    installWebShellFromPrefs(parsed.hubUrl, parsed.remoteAuthToken);
+    const token = parsed.remoteAuthToken.trim() || defaultToken.trim();
+    installWebShellFromPrefs(parsed.hubUrl, token);
+    if (token && !parsed.remoteAuthToken.trim()) {
+      await backend.save(HUB_SETTINGS_SCOPE, { hubUrl: parsed.hubUrl, remoteAuthToken: token });
+    }
   } else if (defaultHubUrl) {
     window.satelliteShell = buildWebShellFromRaw(defaultHubUrl, defaultToken);
   }
   redirectToHubSetupIfNeeded();
+  if (window.satelliteShell?.remoteAuth?.token?.trim()) {
+    window.dispatchEvent(new CustomEvent("freeanima:shell-config-changed"));
+  }
 }

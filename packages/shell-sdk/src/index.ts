@@ -85,3 +85,14 @@ export {
   resetModuleSelectionForTest,
   writeModuleSelection,
 } from "./module-selection.ts";
+export {
+  UserVaultSession,
+  VAULT_UI_SCOPE,
+  getUserVaultSession,
+  resetUserVaultSessionForTest,
+} from "./vault/user-vault-session.ts";
+export type { UserVaultSessionState, UserVaultUnlockInput } from "./vault/user-vault-session.ts";
+export {
+  registerVaultRpcHandlers,
+  resetVaultRpcHandlersForTest,
+} from "./vault/vault-rpc-handlers.ts";

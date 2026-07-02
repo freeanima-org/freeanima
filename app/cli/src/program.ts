@@ -2,7 +2,7 @@ import { ANIMA_VERSION } from "@freeanima/platform";
 import { Command } from "commander";
 
 import { registerServiceCommand } from "./commands/service.ts";
-import { registerCredentialCommand } from "./commands/credential.ts";
+import { registerVaultCommand } from "./commands/vault.ts";
 import { registerCompletionCommand } from "./commands/completion.ts";
 import { registerUpgradeCommand } from "./commands/upgrade.ts";
 import { registerTunnelCommand } from "./commands/tunnel.ts";
@@ -17,7 +17,7 @@ export function buildProgram(): Command {
     .showHelpAfterError("(use --help for usage)");
 
   registerServiceCommand(program);
-  registerCredentialCommand(program);
+  registerVaultCommand(program);
   registerUpgradeCommand(program);
   registerTunnelCommand(program);
   registerWebCommand(program);

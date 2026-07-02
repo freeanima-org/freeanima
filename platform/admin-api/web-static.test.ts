@@ -81,6 +81,27 @@ describe("web-static", () => {
     expect(await chunk!.text()).toBe("/* chunk */");
   });
 
+  test("serveWebStatic config.json includes auth_token for loopback direct requests", async () => {
+    const prevEnv = process.env.FREEANIMA_REMOTE_AUTH_TOKEN;
+    process.env.FREEANIMA_REMOTE_AUTH_TOKEN = "anima_loopback_token_123456";
+    try {
+      const dist = mkdtempSync(join(tmpdir(), "hub-web-dist-"));
+      writeFileSync(join(dist, "index.html"), "<html>ok</html>");
+      const base = "http://127.0.0.1:2658";
+      const cfgRes = serveWebStatic(
+        new Request(`${base}${WEB_URL_PREFIX}/config.json`),
+        { distDir: dist, appId: "chat" },
+        { remoteAddress: "127.0.0.1" },
+      );
+      expect(cfgRes?.ok).toBe(true);
+      const cfg = (await cfgRes!.json()) as { auth_token?: string };
+      expect(cfg.auth_token).toBe("anima_loopback_token_123456");
+    } finally {
+      if (prevEnv === undefined) delete process.env.FREEANIMA_REMOTE_AUTH_TOKEN;
+      else process.env.FREEANIMA_REMOTE_AUTH_TOKEN = prevEnv;
+    }
+  });
+
   test("buildFileEtag 随文件 mtime 变化", () => {
     const dist = mkdtempSync(join(tmpdir(), "hub-web-etag-"));
     const filePath = join(dist, "index.html");

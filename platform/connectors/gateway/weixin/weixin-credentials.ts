@@ -1,4 +1,4 @@
-import { credentialRaw } from "@freeanima/platform/config";
+import { getActiveConfig } from "@freeanima/platform/config";
 import { logComponent } from "@freeanima/platform/logging";
 
 import { ILINK_BASE_URL } from "./ilink-api.ts";
@@ -31,13 +31,15 @@ function buildCredentials(data: Record<string, unknown>, source: string): Weixin
   };
 }
 
-/** pass `services/weixin-ilink` */
+/** config.yaml `weixin` section or env WEIXIN_ILINK_TOKEN */
 export function loadWeixinCredentials(): WeixinCredentials | null {
   try {
-    const data = credentialRaw("services/weixin-ilink");
-    const token = String(data.token ?? "");
+    const cfg = getActiveConfig().data as Record<string, unknown>;
+    const weixin = (cfg.weixin ?? {}) as Record<string, unknown>;
+    const tokenEnv = process.env.WEIXIN_ILINK_TOKEN?.trim();
+    const token = String(weixin.token ?? tokenEnv ?? "").trim();
     if (!token) return null;
-    return buildCredentials(data, "pass");
+    return buildCredentials({ ...weixin, token }, "config");
   } catch {
     return null;
   }

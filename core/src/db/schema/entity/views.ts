@@ -9,6 +9,8 @@ import {
   EMAIL_THREAD_COMPONENT,
   TASK_ITEM_COMPONENT,
   TASK_LIST_COMPONENT,
+  VAULT_CONFIG_COMPONENT,
+  VAULT_ITEM_COMPONENT,
   WORLD_CONFIG_COMPONENT,
   diaryEntryBodySchema,
   dreamEntryBodySchema,
@@ -17,6 +19,8 @@ import {
   emailThreadBodySchema,
   taskItemBodySchema,
   taskListBodySchema,
+  vaultConfigBodySchema,
+  vaultItemBodySchema,
   worldConfigBodySchema,
   type DiaryEntryBody,
   type DreamEntryBody,
@@ -25,6 +29,8 @@ import {
   type EmailThreadBody,
   type TaskItemBody,
   type TaskListBody,
+  type VaultConfigBody,
+  type VaultItemBody,
   type WorldConfigBody,
 } from "./components/index.ts";
 
@@ -134,5 +140,21 @@ export function asEmailMessage(
         body: row.content,
         ...parsed.data,
       }
+    : null;
+}
+
+export function asVaultConfig(row: EntityRow): (VaultConfigBody & { id: number }) | null {
+  if (row.primary_component !== VAULT_CONFIG_COMPONENT) return null;
+  const parsed = vaultConfigBodySchema.safeParse(row.body);
+  return parsed.success ? { id: row.id, ...parsed.data } : null;
+}
+
+export function asVaultItem(
+  row: EntityRow,
+): (VaultItemBody & { id: number; title: string; content: string }) | null {
+  if (row.primary_component !== VAULT_ITEM_COMPONENT) return null;
+  const parsed = vaultItemBodySchema.safeParse(row.body);
+  return parsed.success
+    ? { id: row.id, title: row.title, content: row.content, ...parsed.data }
     : null;
 }

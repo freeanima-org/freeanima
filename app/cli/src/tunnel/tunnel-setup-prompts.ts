@@ -1,11 +1,7 @@
 import * as p from "@clack/prompts";
 import { omitUndefined } from "@freeanima/core/util";
-import {
-  TUNNEL_CREDENTIAL_REFS,
-  TUNNEL_PASS_PATHS,
-  type TunnelConfigFields,
-} from "@freeanima/core/config";
-import { credential, insertCredential, resolveCredentialRef } from "@freeanima/platform/config";
+import { TUNNEL_CREDENTIAL_REFS, type TunnelConfigFields } from "@freeanima/core/config";
+import { resolveValue, resolveCredentialRef } from "@freeanima/platform/config";
 import {
   CLOUDFLARE_API_TOKEN_GUIDE,
   normalizeApiToken,
@@ -33,23 +29,26 @@ function isValidHostname(host: string): boolean {
 
 function draftHasApiToken(draft: TunnelConfigFields | undefined): boolean {
   const ref = draft?.credentials?.api_token;
-  if (!ref) return false;
-  return ref.includes(TUNNEL_PASS_PATHS.apiToken) || ref === TUNNEL_CREDENTIAL_REFS.apiToken;
+  return Boolean(ref?.trim());
 }
 
-function resolveApiTokenFromRef(ref: string): string | undefined {
+async function loadSavedApiToken(
+  draft: TunnelConfigFields | undefined,
+): Promise<string | undefined> {
+  const ref = draft?.credentials?.api_token;
+  if (!ref?.trim()) return undefined;
   try {
-    const raw = resolveCredentialRef(ref, "token");
+    const raw = await resolveValue(ref.trim());
     return normalizeApiToken(raw) || undefined;
   } catch {
     return undefined;
   }
 }
 
-function loadSavedApiToken(): string | undefined {
+function resolveApiTokenFromRef(ref: string): string | undefined {
   try {
-    const token = normalizeApiToken(credential(TUNNEL_PASS_PATHS.apiToken, "token"));
-    return token || undefined;
+    const raw = resolveCredentialRef(ref, "token");
+    return normalizeApiToken(raw) || undefined;
   } catch {
     return undefined;
   }
@@ -114,7 +113,7 @@ async function runInteractivePrompts(): Promise<{
 
   const tokenOptions: Array<{ value: string; label: string }> = [];
   if (draftHasApiToken(draft)) {
-    tokenOptions.push({ value: "saved", label: "使用 pass 中已保存的 API Token" });
+    tokenOptions.push({ value: "saved", label: "使用 config 中已配置的 API Token 引用" });
   }
   tokenOptions.push(
     { value: "new", label: "粘贴新的 Cloudflare API Token" },
@@ -131,9 +130,9 @@ async function runInteractivePrompts(): Promise<{
   let apiToken: string | undefined;
 
   if (tokenChoice === "saved") {
-    apiToken = loadSavedApiToken();
+    apiToken = await loadSavedApiToken(draft);
     if (!apiToken) {
-      p.log.warn("pass 中未读到 API Token，请重新粘贴");
+      p.log.warn("config 中未能解析 API Token，请重新粘贴或设置 env");
     }
   }
 
@@ -148,12 +147,13 @@ async function runInteractivePrompts(): Promise<{
     if (p.isCancel(tokenInput)) process.exit(0);
     try {
       apiToken = await acceptAndVerifyApiToken(String(tokenInput));
-      insertCredential(TUNNEL_PASS_PATHS.apiToken, { token: apiToken });
       patchTunnelConfig({
         credentials: { api_token: TUNNEL_CREDENTIAL_REFS.apiToken },
         enabled: false,
       });
-      p.log.success("API Token 已写入 pass");
+      p.log.success(
+        "config 已写入 env 引用；请将 Token 导出到 CLOUDFLARE_API_TOKEN（或改用 vault() 引用 Agent 库条目）",
+      );
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       for (const line of msg.split("\n")) {
@@ -234,11 +234,12 @@ export async function runTunnelSetup(opts: SetupPromptsOptions = {}): Promise<vo
     }
     const draft = loadTunnelDraft();
     const draftApiToken = draft?.credentials?.api_token;
+    const savedToken = await loadSavedApiToken(draft);
     input = omitUndefined({
       hostname: opts.hostname,
       apiToken:
         (opts.apiToken ? resolveApiTokenFromRef(opts.apiToken) : undefined) ??
-        loadSavedApiToken() ??
+        savedToken ??
         (draftApiToken ? resolveApiTokenFromRef(draftApiToken) : undefined),
       hubPort,
     });
@@ -258,11 +259,15 @@ export async function runTunnelSetup(opts: SetupPromptsOptions = {}): Promise<vo
       hostname: input.hostname,
       hubPort: input.hubPort,
       ...omitUndefined({ apiToken: input.apiToken }),
-      saveApiToken: (token: string) => {
-        insertCredential(TUNNEL_PASS_PATHS.apiToken, { token });
+      saveApiToken: (_token: string) => {
+        patchTunnelConfig({
+          credentials: { api_token: TUNNEL_CREDENTIAL_REFS.apiToken },
+        });
       },
-      saveTunnelCredentials: (json: string) => {
-        insertCredential(TUNNEL_PASS_PATHS.tunnelCredentials, { json });
+      saveTunnelCredentials: (_json: string) => {
+        patchTunnelConfig({
+          credentials: { tunnel_credentials: TUNNEL_CREDENTIAL_REFS.tunnelCredentials },
+        });
       },
       patchConfig: (patch: Partial<TunnelConfigFields>) => {
         patchTunnelConfig(patch);

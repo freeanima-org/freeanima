@@ -1,11 +1,10 @@
-import { TUNNEL_PASS_PATHS, type TunnelConfigFields } from "@freeanima/core/config";
-import { credential, FileConfig } from "@freeanima/platform/config";
+import { TUNNEL_CREDENTIAL_REFS, type TunnelConfigFields } from "@freeanima/core/config";
+import { FileConfig } from "@freeanima/platform/config";
 import {
   ensureTunnelCnameRecord,
   findZoneForHostname,
   listZones,
   manualDnsDashboardSteps,
-  normalizeApiToken,
   resolveTunnelApiToken,
 } from "@freeanima/platform/connectors/tunnel";
 import { writeStatusLine } from "../service-common.ts";
@@ -26,7 +25,9 @@ function resolveApiToken(tunnel: TunnelConfigFields): string {
   if (tunnel.credentials?.api_token) {
     return resolveTunnelApiToken(tunnel.credentials.api_token);
   }
-  return normalizeApiToken(credential(TUNNEL_PASS_PATHS.apiToken, "token"));
+  throw new Error(
+    `tunnel.credentials.api_token 未配置 — 在 config.yaml 设置，例如 ${TUNNEL_CREDENTIAL_REFS.apiToken}`,
+  );
 }
 
 export async function runTunnelDnsEnsure(): Promise<void> {

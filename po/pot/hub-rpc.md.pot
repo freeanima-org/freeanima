@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 22:15+0800\n"
+"POT-Creation-Date: 2026-07-02 18:19+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -71,13 +71,13 @@ msgstr ""
 #: docs/sap/hub-rpc.md:30
 #, no-wrap
 msgid ""
-"| `kind`      | Direction | Purpose |\n"
-"| ----------- | --------- | ------- |\n"
+"| `kind`      | Direction    | Purpose                                           |\n"
+"| ----------- | ------------ | ------------------------------------------------- |\n"
 "| `connect`   | Client → Hub | First frame; `protocol: HubRPC/1.0`, `auth_token` |\n"
-"| `connected` | Hub → Client | `session_id`, `heartbeat_interval_sec` |\n"
-"| `req`       | Client → Hub | RPC (`id`, `method`, `payload`) |\n"
-"| `res`       | Hub → Client | RPC reply |\n"
-"| `evt`       | Both      | Async event (incl. `heartbeat`) |\n"
+"| `connected` | Hub → Client | `session_id`, `heartbeat_interval_sec`            |\n"
+"| `req`       | Client → Hub | RPC (`id`, `method`, `payload`)                   |\n"
+"| `res`       | Hub → Client | RPC reply                                         |\n"
+"| `evt`       | Both         | Async event (incl. `heartbeat`)                   |\n"
 msgstr ""
 
 #. type: Plain text
@@ -120,10 +120,10 @@ msgstr ""
 #: docs/sap/hub-rpc.md:45
 #, no-wrap
 msgid ""
-"| Profile | Package entry | `sap.attach` | Typical consumer |\n"
-"| ------- | ------------- | ------------ | ---------------- |\n"
-"| Bundled SPA | `getBundledHubRpcClient()` / `whenHubRpcReady()` | **No** | Chat, task, notification, diary, email modules |\n"
-"| Satellite process | `createSatelliteHub()` in sap-contract | **Yes** | companion, pair-programming |\n"
+"| Profile           | Package entry                                    | `sap.attach` | Typical consumer                               |\n"
+"| ----------------- | ------------------------------------------------ | ------------ | ---------------------------------------------- |\n"
+"| Bundled SPA       | `getBundledHubRpcClient()` / `whenHubRpcReady()` | **No**       | Chat, task, notification, diary, email modules |\n"
+"| Satellite process | `createSatelliteHub()` in sap-contract           | **Yes**      | companion, pair-programming                    |\n"
 msgstr ""
 
 #. type: Plain text

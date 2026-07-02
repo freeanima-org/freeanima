@@ -71,4 +71,7 @@ export const PATHS = {
   get cloudflaredConfigFile() {
     return homePath("cloudflared", "config.yml");
   },
+  get vaultAgentMachineKey() {
+    return homePath("vault", "agent-machine.key");
+  },
 } as const;

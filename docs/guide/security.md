@@ -17,37 +17,47 @@ FreeAnima is designed for **single-user local / intranet** deployment:
 
 ## Credential Responsibilities
 
-| Rule                     | Description                                                                                                                                                                                                     |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Sole authoritative store | [pass](https://www.passwordstore.org/) (GPG, `~/.password-store`)                                                                                                                                               |
-| Never commit secrets     | Do not write API keys, tokens, DB passwords into `config.yaml` and commit to git                                                                                                                                |
-| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, conversations, memory—recommend `chmod 700`                                                                                                            |
-| CLI plaintext output     | `anima credential get` prints plaintext to stdout; do not redirect to shared logs                                                                                                                               |
-| Admin credential detail  | `GET /api/credentials/detail?path=` returns pass plaintext to local Admin; same sensitivity as CLI; relies on bind address and process isolation                                                                |
-| pass path conventions    | `api/opencode-go`, `services/cloudflare/api-token`, `services/cloudflare/tunnel-credentials`, `services/discord`, `services/firecrawl`, `services/postgres/anima`, `services/pushdeer`, `services/weixin-ilink` |
+| Rule                     | Description                                                                                                                                                      |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sole authoritative store | **Vault** (ECS `vault_item` in User + Agent libraries); legacy pass (`~/.password-store`) is read-only on disk after migration — runtime no longer uses pass CLI |
+| Never commit secrets     | Do not write API keys, tokens, DB passwords into `config.yaml` and commit to git                                                                                 |
+| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, agent machine key (`vault/agent-machine.key`), conversations, memory—recommend `chmod 700`              |
+| CLI plaintext output     | `anima vault get` prints Agent-library field plaintext to stdout; do not redirect to shared logs                                                                 |
+| User master password     | Set only in Shell `/vault` or bundled Chat unlock box; **never** sent as a chat message or stored in PG messages                                                 |
+| Chat User vault unlock   | **v1 bundled Chat only** (`app/web` / desktop / mobile); Discord / WeChat gateways cannot unlock User library                                                    |
 
-`config.yaml` supports `credential("path", "field")` and `env("KEY")` for secrets (e.g. `database.url: credential("services/postgres/anima", "url")` or `env("DATABASE_URL")`); values are injected at runtime from pass or the environment.
+`config.yaml` supports `vault("item_id", "field")` (Agent library, Hub headless) and `env("KEY")` for secrets; values are injected at runtime. User-library inject for tools requires an unlocked Chat session on the client.
+
+### Vault trust boundaries
+
+| Surface | User library                | Agent library                         |
+| ------- | --------------------------- | ------------------------------------- |
+| Hub PG  | Ciphertext + verifier only  | Ciphertext + machine key file on disk |
+| LLM     | Metadata / inject ack only  | Metadata / inject ack only            |
+| Shell   | Client master key in memory | Hub decrypt over loopback SAP         |
 
 ## Data Persistence
 
-| Path                            | Content                  | Encryption                      |
-| ------------------------------- | ------------------------ | ------------------------------- |
-| PostgreSQL conversation archive | conversations / messages | No application-layer encryption |
-| `~/.anima/weixin/`              | WeChat sync state        | None                            |
+| Path                               | Content                  | Encryption                      |
+| ---------------------------------- | ------------------------ | ------------------------------- |
+| PostgreSQL conversation archive    | conversations / messages | No application-layer encryption |
+| `~/.anima/vault/agent-machine.key` | Agent vault machine key  | File permissions (`chmod 600`)  |
+| `~/.anima/weixin/`                 | WeChat sync state        | None                            |
 
 Disk backup = data access. Protect backup media accordingly.
 
 ## LLM Tool Risks
 
-| Capability             | Risk                                                                                                                          |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `terminal`             | Default `shell: true`, can run arbitrary shell commands                                                                       |
-| `file_read_file`       | Partial path deny (`.ssh` private keys, `/etc/passwd`, etc.); **not** full `/etc/` deny                                       |
-| `file_write_file`      | deny list + write-protected paths                                                                                             |
-| MCP tools              | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined                         |
-| Capability mask (Mask) | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `capabilities/task/src/mask/` |
-| ACP (Cursor)           | Default **auto-approve** all `session/request_permission` (`allow-once`)                                                      |
-| `credentials_list`     | Returns pass path metadata only, no values                                                                                    |
+| Capability                    | Risk                                                                                                                          |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `terminal`                    | Default `shell: true`, can run arbitrary shell commands                                                                       |
+| `file_read_file`              | Partial path deny (`.ssh` private keys, `/etc/passwd`, etc.); **not** full `/etc/` deny                                       |
+| `file_write_file`             | deny list + write-protected paths                                                                                             |
+| MCP tools                     | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined                         |
+| Capability mask (Mask)        | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `capabilities/task/src/mask/` |
+| ACP (Cursor)                  | Default **auto-approve** all `session/request_permission` (`allow-once`)                                                      |
+| `vault_list` / `vault_search` | Agent vault metadata only; no secret values                                                                                   |
+| `vault_inject_env`            | Injects runtime env for subprocesses; tool result is ack only; User library requires Chat unlock                              |
 
 ## Measures in Place
 
@@ -59,7 +69,7 @@ Disk backup = data access. Protect backup media accordingly.
 | Write path safety       | `file_write_file` deny list (partial `/etc/*`, `.ssh` private keys, etc.)                                                              |
 | Slash commands          | Whitelist routing; every command must produce user-visible feedback; long-running commands send an immediate ack then the final result |
 | MCP default stdio       | Reduces port exposure                                                                                                                  |
-| Credential isolation    | LLM sees pass paths only, not values                                                                                                   |
+| Vault isolation         | LLM sees vault item metadata only, not decrypted fields                                                                                |
 | Service API Token       | Business `/api/*` routes require `Authorization: Bearer fa_at_…` (`service_api_tokens` PG table); health/CORS/echo exempt              |
 | CI secret scanning      | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)                          |
 | `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                                          |
@@ -93,10 +103,11 @@ The following are planned in code or docs—**deployers must not assume implemen
 | Module           | A External                                                 | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |
 | ---------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------- | ------------------ | ---------------------------------- |
 | **Runtime**      | Default 127.0.0.1 bind                                     | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |
-| **Gateway**      | Token in pass                                              | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |
+| **Gateway**      | Token in Vault / env                                       | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |
 | **CLI / Tools**  | Local shell compromised                                    | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |
 | **HTTP / Admin** | `service_api_tokens` Bearer token（所有来源，含 loopback） | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |
 | **MCP / ACP**    | SSE auth undefined                                         | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |
+| **Vault**        | Agent machine key file permissions                         | Metadata-only tools; inject ack                                     | Wrong item inject         | Web Crypto         | User MP never in PG messages       |
 
 ## Proposals Pending Review
 
@@ -117,14 +128,14 @@ The following are planned in code or docs—**deployers must not assume implemen
 
 ### P2 — Config Redaction Maintenance
 
-- When adding secret fields, sync [`service/config/src/config-sanitize.ts`](../../service/config/src/config-sanitize.ts)
+- When adding secret fields, sync config sanitization in platform
 
 ## First-Deployment Security Checklist
 
-1. Install and initialize pass + GPG; all secrets into pass only
-2. Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/config.yaml`; **do not** write plaintext secrets in config
-3. `chmod 700 ~/.anima`
+1. Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/config.yaml`; use `vault()` / `env()` — **do not** write plaintext secrets in config
+2. Open Shell `/vault`; set User master password; migrate secrets from legacy pass if needed
+3. `chmod 700 ~/.anima` (includes `vault/agent-machine.key`)
 4. Bind `127.0.0.1` only, or ensure intranet isolation
 5. Review `mcp_servers` / `acp_agents` config; set `enabled: false` for untrusted external Servers
-6. Regularly backup pass and `~/.anima/`; encrypt backup media
+6. Regularly backup `~/.anima/` (and legacy `~/.password-store` if kept); encrypt backup media
 7. Do not commit `.env`, `config.yaml` to git

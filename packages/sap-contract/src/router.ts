@@ -90,6 +90,32 @@ import type {
   DreamListOutput,
 } from "./frames/dream.ts";
 import type {
+  VaultListInput,
+  VaultListOutput,
+  VaultGetInput,
+  VaultGetOutput,
+  VaultCreateInput,
+  VaultCreateOutput,
+  VaultCreatePlainInput,
+  VaultCreatePlainOutput,
+  VaultPatchInput,
+  VaultPatchOutput,
+  VaultPatchPlainInput,
+  VaultPatchPlainOutput,
+  VaultDeleteInput,
+  VaultDeleteOutput,
+  VaultSearchInput,
+  VaultSearchOutput,
+  VaultCryptoGetInput,
+  VaultCryptoGetOutput,
+  VaultCryptoInitInput,
+  VaultCryptoInitOutput,
+  VaultCryptoChangeInput,
+  VaultCryptoChangeOutput,
+  VaultEnsureAgentInput,
+  VaultEnsureAgentOutput,
+} from "./frames/vault.ts";
+import type {
   ToolErrorInput,
   ToolRegisterInput,
   ToolRegisterOutput,
@@ -141,6 +167,18 @@ export const SAP_METHODS = [
   "diary.search",
   "dream.list",
   "dream.get",
+  "vault.list",
+  "vault.get",
+  "vault.create",
+  "vault.createPlain",
+  "vault.patch",
+  "vault.patchPlain",
+  "vault.delete",
+  "vault.search",
+  "vault.crypto.get",
+  "vault.crypto.init",
+  "vault.crypto.change",
+  "vault.ensureAgent",
   "emailaccount.list",
   "email.message.list",
   "email.message.read",
@@ -199,6 +237,18 @@ export type SapRouterInputs = {
   "diary.search": DiarySearchInput;
   "dream.list": DreamListInput;
   "dream.get": DreamGetInput;
+  "vault.list": VaultListInput;
+  "vault.get": VaultGetInput;
+  "vault.create": VaultCreateInput;
+  "vault.createPlain": VaultCreatePlainInput;
+  "vault.patch": VaultPatchInput;
+  "vault.patchPlain": VaultPatchPlainInput;
+  "vault.delete": VaultDeleteInput;
+  "vault.search": VaultSearchInput;
+  "vault.crypto.get": VaultCryptoGetInput;
+  "vault.crypto.init": VaultCryptoInitInput;
+  "vault.crypto.change": VaultCryptoChangeInput;
+  "vault.ensureAgent": VaultEnsureAgentInput;
   "emailaccount.list": EmailAccountListInput;
   "email.message.list": EmailMessageListInput;
   "email.message.read": EmailMessageReadInput;
@@ -255,6 +305,18 @@ export type SapRouterOutputs = {
   "diary.search": DiarySearchOutput;
   "dream.list": DreamListOutput;
   "dream.get": DreamGetOutput;
+  "vault.list": VaultListOutput;
+  "vault.get": VaultGetOutput;
+  "vault.create": VaultCreateOutput;
+  "vault.createPlain": VaultCreatePlainOutput;
+  "vault.patch": VaultPatchOutput;
+  "vault.patchPlain": VaultPatchPlainOutput;
+  "vault.delete": VaultDeleteOutput;
+  "vault.search": VaultSearchOutput;
+  "vault.crypto.get": VaultCryptoGetOutput;
+  "vault.crypto.init": VaultCryptoInitOutput;
+  "vault.crypto.change": VaultCryptoChangeOutput;
+  "vault.ensureAgent": VaultEnsureAgentOutput;
   "emailaccount.list": EmailAccountListOutput;
   "email.message.list": EmailMessageListOutput;
   "email.message.read": EmailMessageReadOutput;

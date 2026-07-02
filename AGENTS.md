@@ -56,7 +56,8 @@ bun run test:integration # integration (tests/integration/)
 bun run test # unit + integration in parallel
 bun run service start --foreground # Hub API + SAP（:2658）
 bun run dev:web # 浏览器全壳层开发（Chat + Admin + 任务 + 设置，Vite HMR，需 Hub 已运行）
-anima credential list # credential paths; values in pass
+# anima credential list # credential paths; values in pass
+anima vault list # agent vault item metadata; use Shell /vault for User library
 
 # PG schema changes (must generate snapshot.json; see .agent/rules/coding.md)
 DATABASE_URL="…" bun run --filter @freeanima/core db:generate

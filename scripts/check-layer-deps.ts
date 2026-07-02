@@ -30,6 +30,7 @@ const SATELLITE_ALLOWED = new Set([
   "sap-contract",
   "shell-sdk",
   "ui-kit",
+  "vault-crypto",
   "kernel",
   "kernel-logging",
 ]);
@@ -44,7 +45,7 @@ const ADMIN_FRONTEND_ALLOWED = new Set([
 
 const UI_KIT_ALLOWED = new Set(["kernel", "kernel-logging"]);
 
-const SHELL_SDK_ALLOWED = new Set(["kernel", "kernel-logging", "hub-rpc"]);
+const SHELL_SDK_ALLOWED = new Set(["kernel", "kernel-logging", "hub-rpc", "vault-crypto"]);
 
 type Layer = (typeof LAYER_DIRS)[number] | null;
 

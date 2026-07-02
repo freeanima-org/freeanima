@@ -53,14 +53,9 @@ msgstr ""
 "| **Docker Compose** | 快速试用、最少主机配置                     | 内置        | 内置                   | `.env` 环境变量                                      |\n"
 "| **Source**         | 贡献者、前沿版本、自定义构建               | 自行安装    | 可选（推荐）           | pass（推荐）                                         |\n"
 
+#
 #. type: Plain text
 #: docs/guide/install.md:19
-#, fuzzy
-#| msgid ""
-#| "All paths run the same `anima service` runtime (Hub REST `/api` + SAP `/"
-#| "sap/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis "
-#| "powers EventBus and task context; it **degrades silently** when "
-#| "unavailable — Docker and production setups should still run it."
 msgid ""
 "All paths run the same `anima service` runtime (Hub REST `/api` + Hub RPC `/"
 "hub/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis "
@@ -261,10 +256,9 @@ msgstr ""
 "anima service start --foreground # debug — logs to stdout\n"
 "anima service status\n"
 
+#
 #. type: Plain text
 #: docs/guide/install.md:93
-#, fuzzy
-#| msgid "Default bind: `127.0.0.1:2658`（Hub API：`/api`，SAP：`/sap/v1`）。"
 msgid ""
 "Default bind: `127.0.0.1:2658`（Hub API：`/api`，Hub RPC：`/hub/rpc/v1`）。"
 msgstr "默认绑定：`127.0.0.1:2658`（Hub API：`/api`，SAP：`/sap/v1`）。"

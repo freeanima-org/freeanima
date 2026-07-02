@@ -21,6 +21,21 @@ import {
   handleTaskSearch,
 } from "./handlers/entity-task.ts";
 import {
+  handleVaultList,
+  handleVaultGet,
+  handleVaultCreate,
+  handleVaultCreatePlain,
+  handleVaultPatch,
+  handleVaultPatchPlain,
+  handleVaultDelete,
+  handleVaultSearch,
+  handleVaultCryptoGet,
+  handleVaultCryptoInit,
+  handleVaultCryptoChange,
+  handleVaultEnsureAgent,
+} from "./handlers/entity-vault.ts";
+import { bindVaultShellSendRequest } from "@freeanima/platform/connectors/vault";
+import {
   sapAttachPayloadSchema,
   defineSapRouter,
   parseSapEnvelope,
@@ -88,6 +103,7 @@ import {
 import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
 
 const HEARTBEAT_INTERVAL_SEC = 30;
+const SATELLITE_REQUEST_TIMEOUT_MS = 30_000;
 
 type SapWsSend = {
   send: (data: string) => void;
@@ -291,6 +307,30 @@ export function createSapServerHandlers(
           return handleTaskDelete(deps, payload, ctx);
         case "task.search":
           return handleTaskSearch(deps, payload, ctx);
+        case "vault.list":
+          return handleVaultList(deps, payload, ctx);
+        case "vault.get":
+          return handleVaultGet(deps, payload, ctx);
+        case "vault.create":
+          return handleVaultCreate(deps, payload, ctx);
+        case "vault.createPlain":
+          return handleVaultCreatePlain(deps, payload, ctx);
+        case "vault.patch":
+          return handleVaultPatch(deps, payload, ctx);
+        case "vault.patchPlain":
+          return handleVaultPatchPlain(deps, payload, ctx);
+        case "vault.delete":
+          return handleVaultDelete(deps, payload, ctx);
+        case "vault.search":
+          return handleVaultSearch(deps, payload, ctx);
+        case "vault.crypto.get":
+          return handleVaultCryptoGet(deps, payload, ctx);
+        case "vault.crypto.init":
+          return handleVaultCryptoInit(deps, payload, ctx);
+        case "vault.crypto.change":
+          return handleVaultCryptoChange(deps, payload, ctx);
+        case "vault.ensureAgent":
+          return handleVaultEnsureAgent(deps, payload, ctx);
         case "diary.list": {
           const input = diaryListInputSchema.parse(payload);
           return serviceEntityDiary.serviceDiaryList(
@@ -538,9 +578,32 @@ export function attachSapWebSocket(
   let connSapState: { appId: string; instanceId: string } | null = null;
   let connAuth: SapRequestAuthContext | null = null;
   let satelliteConnKey = "";
+  const satellitePendingRequests = new Map<
+    string,
+    {
+      resolve: (value: unknown) => void;
+      reject: (error: Error) => void;
+      timer: ReturnType<typeof setTimeout>;
+    }
+  >();
 
   const sendEnvelope = (envelope: Parameters<typeof serializeSapEnvelope>[0]): void => {
     ws.send(serializeSapEnvelope(envelope));
+  };
+
+  const createSatelliteSendRequest = () => {
+    return async (method: string, payload: unknown): Promise<unknown> => {
+      const id = randomUUID();
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          if (!satellitePendingRequests.has(id)) return;
+          satellitePendingRequests.delete(id);
+          reject(new Error(`satellite request timed out: ${method}`));
+        }, SATELLITE_REQUEST_TIMEOUT_MS);
+        satellitePendingRequests.set(id, { resolve, reject, timer });
+        sendEnvelope({ kind: "req", id, method, payload: payload ?? {} });
+      });
+    };
   };
 
   const ctxFor = (): SapRequestContext => ({
@@ -561,6 +624,7 @@ export function attachSapWebSocket(
     if (!connSapState) return;
     void handlers.onSapDetach(connSapState.appId, connSapState.instanceId);
     deps.satelliteManager.unregisterConnection(satelliteConnKey);
+    bindVaultShellSendRequest(null);
     connSapState = null;
     satelliteConnKey = "";
   };
@@ -603,6 +667,20 @@ export function attachSapWebSocket(
       return;
     }
 
+    if (envelope.kind === "res") {
+      const pending = satellitePendingRequests.get(envelope.id);
+      if (pending) {
+        satellitePendingRequests.delete(envelope.id);
+        clearTimeout(pending.timer);
+        if (envelope.ok) {
+          pending.resolve(envelope.payload);
+        } else {
+          pending.reject(new Error(envelope.error.message));
+        }
+        return;
+      }
+    }
+
     if (envelope.kind === "evt" && envelope.method === "heartbeat") {
       if (connSapState) {
         deps.satelliteManager.touchHeartbeat(connSapState.appId, connSapState.instanceId);
@@ -630,6 +708,8 @@ export function attachSapWebSocket(
             attachPayload.app_id,
             attached.instance_id,
           );
+          const sendRequest = createSatelliteSendRequest();
+          bindVaultShellSendRequest(sendRequest);
           deps.satelliteManager.registerConnection(
             satelliteConnKey,
             {
@@ -638,9 +718,7 @@ export function attachSapWebSocket(
               sendEvent(method, payload) {
                 sendEnvelope({ kind: "evt", method, payload });
               },
-              sendRequest: async () => {
-                throw new Error("satellite sendRequest not implemented on hub");
-              },
+              sendRequest,
             },
             omitUndefined({ httpUrl: attachPayload.http_url }),
           );

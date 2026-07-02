@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 22:10+0800\n"
+"POT-Creation-Date: 2026-07-02 18:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -252,8 +252,8 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/entity-model.md:71 messages/po4a/en.xml:261
-#: messages/po4a/en.xml:304
+#: docs/concepts/entity-model.md:71 messages/po4a/en.xml:263
+#: messages/po4a/en.xml:306
 #, no-wrap
 msgid "Content"
 msgstr ""
@@ -308,8 +308,10 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/entity-model.md:89
 msgid ""
-"Task/list tools and stores require explicit **`world_id`** (typically "
-"`user_world_id` from system prompt / `GET /api/worlds/context`)."
+"Task/list **LLM 工具**默认在 **agent subject 专属 private world** 操作，多数"
+"调用可省略 `world_id`；按 `id` / `list_id` 操作时从实体反查 world 并校验 "
+"caller 权限。**MCP** 工具默认 scope 为 token 绑定 subject 的 private world。"
+"Shell SAP/REST 仍通过 `subject_kind` 选择 user/agent world（见下表）。"
 msgstr ""
 
 #. type: Plain text
@@ -346,7 +348,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:105
+#: docs/concepts/entity-model.md:107
 #, no-wrap
 msgid ""
 "| Surface          | World binding                                    | Control                        |\n"
@@ -356,10 +358,12 @@ msgid ""
 "| `/email`         | follows shell scope via SAP `subject_kind`       | none (inherits header)         |\n"
 "| `/notifications` | `recipient_kind` + subject entity id             | none (inherits header)         |\n"
 "| `/diary`         | subject default private world via `subject_kind` | none (inherits header)         |\n"
+"| `/dream`         | agent default private world (fixed)              | none (inherits header)         |\n"
+"| `/vault`         | default **user** library; optional Agent view    | User: master password lock     |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:107
+#: docs/concepts/entity-model.md:109
 msgid ""
 "SAP task/email methods accept optional `subject_kind` (defaults: task "
 "`user`, email `agent`). Satellites read the shell scope via "
@@ -368,7 +372,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:109
+#: docs/concepts/entity-model.md:111
 msgid ""
 "Future multi-world browse (e.g. diary calendar aggregation across worlds) "
 "should add **module-scoped** filters or Admin tooling — not a speculative "
@@ -376,18 +380,18 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:110
+#: docs/concepts/entity-model.md:112
 #, no-wrap
 msgid "Email module (Estate)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:113
+#: docs/concepts/entity-model.md:115
 msgid "Email accounts, threads, and mirrored messages map to:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:119
+#: docs/concepts/entity-model.md:121
 #, no-wrap
 msgid ""
 "| Concept | Entity         | Component       |\n"
@@ -398,7 +402,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:121
+#: docs/concepts/entity-model.md:123
 msgid ""
 "Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. Messages "
 "store IMAP UID in `body.imap_uid`; human-readable subject/body use entity "
@@ -407,7 +411,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:123
+#: docs/concepts/entity-model.md:125
 msgid ""
 "LLM ToolSets: `@freeanima/capabilities-email` — `email-account` (account "
 "entities) and `email` (sync, send/receive, search); load via `toolset_load`. "
@@ -417,18 +421,18 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:124
+#: docs/concepts/entity-model.md:126
 #, no-wrap
 msgid "Diary module"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:127
+#: docs/concepts/entity-model.md:129
 msgid "Structured journal entries for **user** and **agent** subjects:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:131
+#: docs/concepts/entity-model.md:133
 #, no-wrap
 msgid ""
 "| Concept | Entity         | Component     |\n"
@@ -437,7 +441,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:133
+#: docs/concepts/entity-model.md:135
 msgid ""
 "Entries live in each subject's **`default_private_world_id`**. "
 "`body.entry_at` is the timeline sort key; `title` / `summary` / `content` "
@@ -445,43 +449,169 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:137
+#: docs/concepts/entity-model.md:139
 msgid ""
 "**SAP:** `diary.*` methods — all take `subject_kind: user | agent` "
 "(including `diary.append`)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:137
+#: docs/concepts/entity-model.md:139
 msgid "**UI:** shell `/diary` (`@freeanima/satellite-diary`)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:137
+#: docs/concepts/entity-model.md:139
 msgid "**LLM:** ToolSet `diary` — agent private world only."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:139
+#: docs/concepts/entity-model.md:141
 msgid "See [`docs/features/diary.md`](../features/diary.md)."
 msgstr ""
 
+#. type: Title ##
+#: docs/concepts/entity-model.md:142
+#, no-wrap
+msgid "Dream module"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:145
+msgid "Nightly creative narratives (append-only, one per CST calendar day):"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:149
+#, no-wrap
+msgid ""
+"| Concept | Entity         | Component     |\n"
+"| ------- | -------------- | ------------- |\n"
+"| Entry   | `type=content` | `dream_entry` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:151
+msgid ""
+"Entries live in the **agent** subject's **`default_private_world_id`**. "
+"`body.dream_day` is the unique key per world; narrative text uses entity "
+"`content`; optional `body.source_limbic_ids`, "
+"`body.source_conversation_ids`, `body.episodic_snippets`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:155
+msgid ""
+"**Hub RPC:** `dream.list`, `dream.get` (bundled shell; no `subject_kind` — "
+"always agent world)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:155
+msgid "**UI:** shell `/dream` (`@freeanima/satellite-dream`)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:155
+msgid "**LLM:** ToolSet `dream` — `dream_read` only."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:157
+msgid "See [`docs/concepts/dream.md`](dream.md)."
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/entity-model.md:158
+#, no-wrap
+msgid "Vault module (Estate)"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:161
+msgid ""
+"Encrypted credentials in two libraries (**User** + **Agent**), ECS "
+"components `vault_config` + `vault_item`:"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:166
+#, no-wrap
+msgid ""
+"| Concept | Entity         | Component      |\n"
+"| ------- | -------------- | -------------- |\n"
+"| Config  | `type=content` | `vault_config` |\n"
+"| Item    | `type=content` | `vault_item`   |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:171
+#, no-wrap
+msgid ""
+"| Library | Crypto mode       | Decrypt location          | Headless inject                     |\n"
+"| ------- | ----------------- | ------------------------- | ----------------------------------- |\n"
+"| User    | `master_password` | Client (Shell)            | No — Chat unlock box or `/vault` UI |\n"
+"| Agent   | `machine`         | Hub (`agent-machine.key`) | Yes — cron / tools                  |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:173
+msgid ""
+"Privacy fields live in `body.secrets_enc` + `body.dek_wrapped`; metadata "
+"(title, url, username, custom field **names**) is plaintext for search."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:178
+msgid ""
+"**SAP:** `vault.*` — Shell defaults `subject_kind: user`; ToolSet defaults "
+"agent world."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:178
+msgid ""
+"**UI:** shell `/vault` (`@freeanima/satellite-vault`); bundled Chat has a "
+"dedicated master-password unlock (not a chat message)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:178
+msgid ""
+"**LLM:** ToolSet `vault` — metadata + `vault_inject_env` ack only; never "
+"plaintext secrets in context."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/entity-model.md:178
+msgid ""
+"**Config:** `vault(\"item_id\", \"field\")` resolves Agent library at Hub "
+"boot (legacy `credential()` removed)."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/entity-model.md:180
+msgid ""
+"Legacy pass (`~/.password-store`) is **not** deleted on disk; migrate "
+"entries manually via Shell UI."
+msgstr ""
+
 #. type: Content of: <messages><msg>
-#: docs/concepts/entity-model.md:140 messages/po4a/en.xml:116
-#: messages/po4a/en.xml:128 messages/po4a/en.xml:544
+#: docs/concepts/entity-model.md:181 messages/po4a/en.xml:116
+#: messages/po4a/en.xml:128 messages/po4a/en.xml:547
 #, no-wrap
 msgid "Search"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:143
+#: docs/concepts/entity-model.md:184
 msgid ""
 "Entity **list** (deterministic browse) and **search** (relevance ranking) "
 "are separate ports:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:148
+#: docs/concepts/entity-model.md:189
 #, no-wrap
 msgid ""
 "| Port                      | Role                                                                  |\n"
@@ -491,48 +621,49 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:150
+#: docs/concepts/entity-model.md:191
 #, no-wrap
 msgid "**Scope:** default `world_id`; `global: true` requires an explicit accessible-world allowlist (public worlds only until subject permissions bootstrap).\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:152
+#: docs/concepts/entity-model.md:193
 #, no-wrap
 msgid "**Component filters:** whitelisted per `primary_component` (e.g. `task_item`: `status`, `list_id`, `tags`, `due_today`). Arbitrary JSONPath is forbidden.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:154
+#: docs/concepts/entity-model.md:195
 #, no-wrap
 msgid "**Tools / API:** `entity_search` (LLM/MCP) and `GET|POST /api/entities/search` share `EntitySearchPort`. Task UI search box uses the same REST endpoint.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:156
+#: docs/concepts/entity-model.md:197
 msgid ""
 "See memory hybrid search in [`memory.md`](memory.md) for FTS operator "
 "syntax; entity search reuses the same query builder."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:158
+#: docs/concepts/entity-model.md:199
 #, no-wrap
 msgid "**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run Admin **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:159
+#: docs/concepts/entity-model.md:200
 #, no-wrap
 msgid "Future migration map (not executed yet)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:169
+#: docs/concepts/entity-model.md:211
 #, no-wrap
 msgid ""
 "| Legacy table                 | Target                                                                                                                     |\n"
 "| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |\n"
+"| `dream_memory`               | `dream_entry` (agent world; migration backfill + DROP)                                                                     |\n"
 "| `semantic_memory`            | `content` + memory component                                                                                               |\n"
 "| `autobiographical_memory`    | `content` + narrative component                                                                                            |\n"
 "| `limbic_memory`              | `content` + limbic component                                                                                               |\n"
@@ -542,6 +673,6 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:170
+#: docs/concepts/entity-model.md:212
 msgid "See [`architecture.md`](architecture.md) for cognitive-layer context."
 msgstr ""

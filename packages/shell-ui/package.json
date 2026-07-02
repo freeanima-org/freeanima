@@ -25,6 +25,7 @@
     "@freeanima/satellite-email": "workspace:*",
     "@freeanima/satellite-notification": "workspace:*",
     "@freeanima/satellite-task": "workspace:*",
+    "@freeanima/satellite-vault": "workspace:*",
     "@freeanima/ui-kit": "workspace:*",
     "@sentry/react": "^10.62.0",
     "@tanstack/react-router": "^1.170.11",

@@ -36,8 +36,8 @@ export const TUNNEL_PASS_PATHS = {
   tunnelCredentials: "services/cloudflare/tunnel-credentials",
 } as const;
 
-/** config.yaml 中 credentials 引用（与 LLM api_key 同款 credential() 语法） */
+/** Vault / env 引用示例（item_id 因实例而异，请改用 env() 或填写实际 id） */
 export const TUNNEL_CREDENTIAL_REFS = {
-  apiToken: `credential("${TUNNEL_PASS_PATHS.apiToken}", "token")`,
-  tunnelCredentials: `credential("${TUNNEL_PASS_PATHS.tunnelCredentials}", "json")`,
+  apiToken: 'env("CLOUDFLARE_API_TOKEN")',
+  tunnelCredentials: 'env("CLOUDFLARE_TUNNEL_CREDENTIALS_JSON")',
 } as const;
