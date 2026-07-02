@@ -34,6 +34,8 @@ export {
 } from "./mask-port.ts";
 export {
   runWithToolContext,
+  getToolCallerAuth,
+  resolveToolCallerSubjectId,
   getToolConversationId,
   getToolContextKind,
   getToolContextId,

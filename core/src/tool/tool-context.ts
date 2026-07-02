@@ -1,3 +1,5 @@
+import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
+import type { VerifiedServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
 import { omitUndefined } from "@freeanima/core/util";
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { ToolSetRegistry } from "./toolset.ts";
@@ -9,6 +11,8 @@ type ToolContextStore = {
   contextKind: ToolContextKind;
   parentConversationId?: string;
   tools: ToolSetRegistry;
+  /** MCP / HTTP Service API Token caller; absent for conversation LLM / AutoLlmRun */
+  callerAuth?: VerifiedServiceApiToken;
   /** Mutable execution allowlist; no loaded gate when unset */
   executableTools?: Set<string>;
 };
@@ -42,6 +46,7 @@ export type RunWithToolContextOpts = {
   executableTools?: readonly string[];
   contextKind?: ToolContextKind;
   parentConversationId?: string;
+  callerAuth?: VerifiedServiceApiToken;
 };
 
 export function runWithToolContext<T>(
@@ -54,6 +59,7 @@ export function runWithToolContext<T>(
     contextKind: opts.contextKind ?? "conversation",
     parentConversationId: opts.parentConversationId,
     tools: opts.tools,
+    callerAuth: opts.callerAuth,
     executableTools: opts.executableTools ? new Set(opts.executableTools) : undefined,
   });
   const result = storage.run(store, fn);
@@ -80,6 +86,17 @@ export function getToolContextId(): string | undefined {
 
 export function getToolParentConversationId(): string | undefined {
   return storage.getStore()?.parentConversationId;
+}
+
+export function getToolCallerAuth(): VerifiedServiceApiToken | undefined {
+  return storage.getStore()?.callerAuth;
+}
+
+/** MCP token subject, or agent_subject_id for conversation LLM / AutoLlmRun. */
+export function resolveToolCallerSubjectId(): number {
+  const auth = getToolCallerAuth();
+  if (auth) return auth.subject_id;
+  return getResolvedWorldContext().agent_subject_id;
 }
 
 export function getToolRegistry(): ToolSetRegistry {

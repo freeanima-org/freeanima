@@ -1,5 +1,17 @@
 import type { ToolSetRegistry } from "@freeanima/core/tool";
-import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
+import {
+  attachToolReturns,
+  toolError,
+  toolResult,
+  resolveToolCallerSubjectId,
+} from "@freeanima/core/tool";
+import {
+  resolveToolWorld,
+  resolveWorldsAccessibleBySubject,
+  listEntities,
+  searchEntities,
+  ToolWorldAccessError,
+} from "@freeanima/core/db/pg/entity";
 import {
   formatFtsToolError,
   isFtsQueryError,
@@ -8,12 +20,6 @@ import {
 } from "@freeanima/core/util";
 import type { EntitySearchMode } from "@freeanima/core/repos";
 import type { EntityType } from "@freeanima/core/db/schema";
-
-import {
-  searchEntities,
-  resolvePublicAccessibleWorldIds,
-  listEntities,
-} from "@freeanima/core/db/pg/entity";
 
 const FTS_SYNTAX =
   "PG search syntax (to_tsquery simple):\n" +
@@ -28,24 +34,18 @@ function asFloat(value: unknown, defaultVal: number): number {
   return Number.isNaN(n) ? defaultVal : n;
 }
 
-function parseStringArray(raw: unknown): string[] | undefined {
-  if (raw == null) return undefined;
-  if (Array.isArray(raw)) return raw.map((v) => String(v));
-  if (typeof raw === "string") {
-    return raw
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-  }
-  return undefined;
-}
-
 function parseFilters(raw: unknown): Record<string, unknown> | undefined {
   if (raw == null) return undefined;
   if (typeof raw === "object" && !Array.isArray(raw)) {
     return raw as Record<string, unknown>;
   }
   return undefined;
+}
+
+function parseExplicitWorldId(raw: unknown): number | undefined {
+  if (raw == null || raw === "") return undefined;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : undefined;
 }
 
 function hitPayload(row: {
@@ -83,7 +83,7 @@ export function registerEntitySearchTools(toolSets: ToolSetRegistry): void {
           exposeMcp: true,
           description:
             "Search entities by text (FTS + trigram + optional vector) with structured filters.\n" +
-            "Default scope: single world_id. Use global=true only when cross-world search is intended.\n" +
+            "Default scope: caller subject private world. Use global=true for cross-world search within caller permissions.\n" +
             "Component filters (e.g. task_item.status) require primary_component.\n\n" +
             FTS_SYNTAX,
           parameters: {
@@ -93,8 +93,11 @@ export function registerEntitySearchTools(toolSets: ToolSetRegistry): void {
                 type: "string",
                 description: "Search keywords; omit for filter-only browse",
               },
-              world_id: { type: "number", description: "Owning world id (required unless global)" },
-              global: { type: "boolean", description: "Cross-world search (needs permission)" },
+              world_id: {
+                type: "number",
+                description: "Optional world override; defaults to caller subject private world",
+              },
+              global: { type: "boolean", description: "Cross-world search (caller permissions)" },
               type: { type: "string", enum: ["content", "world", "agent", "user"] },
               primary_component: {
                 type: "string",
@@ -113,26 +116,34 @@ export function registerEntitySearchTools(toolSets: ToolSetRegistry): void {
           handler: async (args) => {
             const query = String(args.query ?? "").trim();
             const global = args.global === true;
-            const worldIdRaw = args.world_id;
-            const world_id =
-              worldIdRaw != null && worldIdRaw !== "" ? Number(worldIdRaw) : undefined;
+            const explicitWorldId = parseExplicitWorldId(args.world_id);
+            const filters = parseFilters(args.filters);
+            const filterListId =
+              filters?.list_id != null && Number.isFinite(Number(filters.list_id))
+                ? Number(filters.list_id)
+                : undefined;
             const limit = Math.max(1, Math.min(50, asFloat(args.limit, 10)));
             const offset = Math.max(0, asFloat(args.offset, 0));
             const mode = (
               args.mode === "filter_only" ? "filter_only" : "hybrid"
             ) as EntitySearchMode;
 
-            if (!global && (world_id == null || !Number.isFinite(world_id) || world_id <= 0)) {
-              return toolError("world_id is required unless global=true");
-            }
-
             try {
               if (query) validateFtsQueryInput(query);
 
-              let accessible_world_ids = parseStringArray(args.accessible_world_ids)?.map(Number);
-              if (global && !accessible_world_ids?.length) {
-                accessible_world_ids = await resolvePublicAccessibleWorldIds({
-                  list: listEntities,
+              let accessible_world_ids: number[] | undefined;
+              if (global) {
+                accessible_world_ids = await resolveWorldsAccessibleBySubject(
+                  { list: listEntities },
+                  resolveToolCallerSubjectId(),
+                );
+              }
+
+              let world_id: number | undefined;
+              if (!global) {
+                world_id = await resolveToolWorld({
+                  ...(explicitWorldId != null ? { explicitWorldId } : {}),
+                  ...(filterListId != null ? { listId: filterListId } : {}),
                 });
               }
 
@@ -146,7 +157,7 @@ export function registerEntitySearchTools(toolSets: ToolSetRegistry): void {
                   primary_component:
                     args.primary_component != null ? String(args.primary_component) : undefined,
                   component: args.component != null ? String(args.component) : undefined,
-                  filters: parseFilters(args.filters),
+                  filters,
                   limit,
                   offset,
                   mode: query ? mode : "filter_only",
@@ -162,6 +173,7 @@ export function registerEntitySearchTools(toolSets: ToolSetRegistry): void {
               });
             } catch (e) {
               if (isFtsQueryError(e)) return toolError(formatFtsToolError(e));
+              if (e instanceof ToolWorldAccessError) return toolError(e.message);
               const msg = e instanceof Error ? e.message : String(e);
               if (msg.includes("accessible_world_ids") || msg.includes("world_id is required")) {
                 return toolError(msg);
