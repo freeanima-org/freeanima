@@ -24,26 +24,37 @@ export function validateFtsQueryInput(raw: string): void {
     throw new FtsQueryError("empty_query", "query 不能为空", "请提供至少一个检索词");
   }
 
-  const first = tokens[0]!.toUpperCase();
-  if (first === "OR" || first === "AND") {
+  const first = tokens[0];
+  if (first === undefined) {
+    throw new FtsQueryError("empty_query", "query 不能为空", "请提供至少一个检索词");
+  }
+  const firstUpper = first.toUpperCase();
+  if (firstUpper === "OR" || firstUpper === "AND") {
     throw new FtsQueryError(
       "leading_operator",
-      `query 不能以 ${first} 开头`,
+      `query 不能以 ${firstUpper} 开头`,
       "示例：退烧 OR 注意力",
     );
   }
 
-  const last = tokens.at(-1)!.toUpperCase();
-  if (isFtsOperatorToken(last)) {
+  const last = tokens.at(-1);
+  if (last === undefined) {
+    throw new FtsQueryError("empty_query", "query 不能为空", "请提供至少一个检索词");
+  }
+  const lastUpper = last.toUpperCase();
+  if (isFtsOperatorToken(lastUpper)) {
     throw new FtsQueryError(
       "trailing_operator",
-      `query 不能以 ${last} 结尾`,
+      `query 不能以 ${lastUpper} 结尾`,
       "示例：退烧 OR 注意力",
     );
   }
 
   for (let i = 0; i < tokens.length - 1; i++) {
-    if (isFtsOperatorToken(tokens[i]!) && isFtsOperatorToken(tokens[i + 1]!)) {
+    const current = tokens[i];
+    const next = tokens[i + 1];
+    if (current === undefined || next === undefined) continue;
+    if (isFtsOperatorToken(current) && isFtsOperatorToken(next)) {
       throw new FtsQueryError(
         "consecutive_operators",
         "连续的 AND/OR/NOT 无效",

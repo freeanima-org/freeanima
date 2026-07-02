@@ -90,7 +90,16 @@ export function resolveMaskPresets(
     };
   }
   if (resolved.length === 1) {
-    return resolved[0]!;
+    const single = resolved[0];
+    if (!single) {
+      return {
+        allowed_tools: [],
+        denied_tools: [],
+        auto_skills: [],
+        credentials: [],
+      };
+    }
+    return single;
   }
   const mergedChain: Mask[] = resolved.map((r) => ({
     inherits: [],

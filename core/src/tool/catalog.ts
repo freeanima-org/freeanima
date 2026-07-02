@@ -39,7 +39,8 @@ function toolsetEntries(registry: ToolSetRegistry): Array<{
     .listToolSets()
     .filter((view) => !view.private)
     .map((view) => {
-      const ts = registry.getToolSet(view.name)!;
+      const ts = registry.getToolSet(view.name);
+      if (!ts) return null;
       return {
         name: ts.name,
         description: ts.description,
@@ -49,7 +50,8 @@ function toolsetEntries(registry: ToolSetRegistry): Array<{
           toolset: ts.name,
         })),
       };
-    });
+    })
+    .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 }
 
 function matchesAllTokens(text: string, tokens: string[]): boolean {

@@ -38,13 +38,14 @@ function App() {
       await store.fetchConfig();
       const conversations = await store.fetchConversations();
       if (conversations.length > 0 && !usePairProgrammingStore.getState().currentConversationId) {
-        await store.selectConversation(conversations[0]!.id);
+        const first = conversations[0];
+        if (first) await store.selectConversation(first.id);
       }
       if (usePairProgrammingStore.getState().config.workspace?.trim()) {
         await store.fetchTree();
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only: store ref stable for app lifetime
   }, []);
 
   const startResize = (edge: "left" | "right" | "bottom", evt: React.MouseEvent) => {
@@ -244,7 +245,9 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")!).render(
+const rootEl = document.getElementById("root");
+if (!rootEl) throw new Error("root element not found");
+createRoot(rootEl).render(
   <StrictMode>
     <App />
   </StrictMode>,

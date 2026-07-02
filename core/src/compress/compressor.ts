@@ -348,9 +348,9 @@ export function analyzeCompression(
 
   let windowRaw = storedTotal;
   let windowSlim = 0;
-  if (isCompressed(state) && l3 != null) {
+  if (isCompressed(state) && state !== null && l3 != null) {
     windowRaw = rawSegment(rest, l3, l4).length;
-    windowSlim = slimSegment(rest, state!.l2, l3).length;
+    windowSlim = slimSegment(rest, state.l2, l3).length;
   }
 
   let messagesUntil: number | null = null;

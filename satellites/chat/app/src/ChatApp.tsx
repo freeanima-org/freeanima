@@ -183,9 +183,11 @@ export function ChatApp() {
         await selectConversation(picked);
         writeConversationToUrl(picked);
       } else if (list.length > 0) {
-        const id = list[0]!.id;
-        await selectConversation(id);
-        writeConversationToUrl(id);
+        const first = list[0];
+        if (first) {
+          await selectConversation(first.id);
+          writeConversationToUrl(first.id);
+        }
       } else {
         try {
           await getSapDirectClient().whenReady();
@@ -711,7 +713,8 @@ export function ChatApp() {
       }
       if ((e.key === "Tab" || e.key === "Enter") && !e.shiftKey && !e.nativeEvent.isComposing) {
         e.preventDefault();
-        applyCommand(filteredCommands[selectedCmdIdx]!);
+        const cmd = filteredCommands[selectedCmdIdx];
+        if (cmd) applyCommand(cmd);
         return;
       }
       if (e.key === "Escape") {

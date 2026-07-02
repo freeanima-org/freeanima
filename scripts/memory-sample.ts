@@ -50,13 +50,17 @@ function parseArgs(argv: string[]): {
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === "--pid" && argv[i + 1]) {
-      pid = parseInt(argv[++i]!, 10);
+      const pidArg = argv[++i];
+      if (pidArg !== undefined) pid = parseInt(pidArg, 10);
     } else if (arg === "--label" && argv[i + 1]) {
-      label = argv[++i]!;
+      const labelArg = argv[++i];
+      if (labelArg !== undefined) label = labelArg;
     } else if (arg === "--url" && argv[i + 1]) {
-      url = argv[++i]!;
+      const urlArg = argv[++i];
+      if (urlArg !== undefined) url = urlArg;
     } else if (arg === "--stage" && argv[i + 1]) {
-      stage = argv[++i]!;
+      const stageArg = argv[++i];
+      if (stageArg !== undefined) stage = stageArg;
     }
   }
   return { pid, label, url, stage };

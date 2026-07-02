@@ -30,7 +30,8 @@ const MIME: Record<string, string> = {
 
 function fileResponse(filePath: string): Response {
   const ext = extname(filePath);
-  const headers = MIME[ext] ? { "Content-Type": MIME[ext]! } : undefined;
+  const contentType = MIME[ext];
+  const headers = contentType ? { "Content-Type": contentType } : undefined;
   const body = readFileSync(filePath);
   return withCors(new Response(body, headers ? { headers } : {}));
 }

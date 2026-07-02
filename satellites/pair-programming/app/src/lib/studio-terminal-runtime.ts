@@ -51,7 +51,10 @@ class StudioTerminalRuntime {
       this.createTerminal();
     }
 
-    const element = this.term!.element;
+    const term = this.term;
+    if (!term) return;
+
+    const element = term.element;
     if (element && element.parentElement !== container) {
       container.appendChild(element);
     }
@@ -123,7 +126,9 @@ class StudioTerminalRuntime {
 
   private bindInput(): void {
     this.onDataDisposable?.dispose();
-    this.onDataDisposable = this.term!.onData((data) => {
+    const term = this.term;
+    if (!term) return;
+    this.onDataDisposable = term.onData((data) => {
       if (!this.alive || !this.conversationId) return;
       void terminalWrite(this.conversationId, data);
     });

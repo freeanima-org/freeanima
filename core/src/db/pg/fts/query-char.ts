@@ -23,7 +23,10 @@ export function buildCharModeTsQuery(raw: string): string {
 
   const parts = tokens.map((tok) => tokenToTsqueryPart(tok)).filter(Boolean);
   if (parts.length === 0) return "";
-  if (parts.length === 1) return parts[0]!;
+  if (parts.length === 1) {
+    const sole = parts[0];
+    return sole ?? "";
+  }
   return parts.map(wrapTsqueryPart).join(" & ");
 }
 
@@ -35,7 +38,10 @@ export function buildJiebaModeTsQuery(segmented: string): string {
     .map((t) => t.replace(/[^\w\u4e00-\u9fff\u3400-\u4dbf-]/g, ""))
     .filter(Boolean);
   if (tokens.length === 0) return "";
-  if (tokens.length === 1) return escapeTsToken(tokens[0]!);
+  if (tokens.length === 1) {
+    const sole = tokens[0];
+    return sole === undefined ? "" : escapeTsToken(sole);
+  }
   return tokens.map((t) => escapeTsToken(t)).join(" & ");
 }
 
@@ -62,7 +68,10 @@ function tokenToTsqueryPart(tok: string): string {
 function cjkProximityChain(text: string): string {
   const chars = [...text].filter((ch) => ch.trim());
   if (chars.length === 0) return "";
-  if (chars.length === 1) return escapeTsToken(chars[0]!);
+  if (chars.length === 1) {
+    const sole = chars[0];
+    return sole === undefined ? "" : escapeTsToken(sole);
+  }
   return chars.map((ch) => escapeTsToken(ch)).join(" <-> ");
 }
 

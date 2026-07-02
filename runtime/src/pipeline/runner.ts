@@ -29,6 +29,12 @@ function pendingSteps(nodes: PipelineNodeDefinition[]): Record<string, PipelineS
   return steps;
 }
 
+function finishedStepState(runState: PipelineRunState, stepId: string): PipelineStepState {
+  const step = runState.steps[stepId];
+  if (!step) throw new Error(`Pipeline step state missing: ${stepId}`);
+  return step;
+}
+
 /** 轻量 DAG Pipeline 执行器 */
 export class PipelineRunner {
   private readonly definitions = new Map<string, PipelineDefinition>();
@@ -83,7 +89,10 @@ export class PipelineRunner {
           skipped_reason: "upstream_failed",
         };
         writePipelineRunState(runState);
-        await this.emitStepFinished(pipelineId, runState, node.id, ctx, runState.steps[node.id]!);
+        const skippedStep = runState.steps[node.id];
+        if (skippedStep) {
+          await this.emitStepFinished(pipelineId, runState, node.id, ctx, skippedStep);
+        }
         continue;
       }
 
@@ -255,7 +264,13 @@ export class PipelineRunner {
         finished_at: finishedAt,
         error: err,
       };
-      await this.emitStepFinished(pipelineId, runState, node.id, ctx, runState.steps[node.id]!);
+      await this.emitStepFinished(
+        pipelineId,
+        runState,
+        node.id,
+        ctx,
+        finishedStepState(runState, node.id),
+      );
       return { ok: false, status: "failed", error: err };
     }
 
@@ -267,7 +282,13 @@ export class PipelineRunner {
         finished_at: finishedAt,
         skipped_reason: "skipIf",
       };
-      await this.emitStepFinished(pipelineId, runState, node.id, ctx, runState.steps[node.id]!);
+      await this.emitStepFinished(
+        pipelineId,
+        runState,
+        node.id,
+        ctx,
+        finishedStepState(runState, node.id),
+      );
       return { ok: true, status: "skipped", skipped_reason: "skipIf" };
     }
 
@@ -291,7 +312,13 @@ export class PipelineRunner {
           ...(result.output !== undefined ? { output: result.output } : {}),
           skipped_reason: result.skipped,
         };
-        await this.emitStepFinished(pipelineId, runState, node.id, ctx, runState.steps[node.id]!);
+        await this.emitStepFinished(
+          pipelineId,
+          runState,
+          node.id,
+          ctx,
+          finishedStepState(runState, node.id),
+        );
         return {
           ok: true,
           status: "skipped",
@@ -309,7 +336,13 @@ export class PipelineRunner {
           ...(result.output !== undefined ? { output: result.output } : {}),
           error: result.error ?? "step failed",
         };
-        await this.emitStepFinished(pipelineId, runState, node.id, ctx, runState.steps[node.id]!);
+        await this.emitStepFinished(
+          pipelineId,
+          runState,
+          node.id,
+          ctx,
+          finishedStepState(runState, node.id),
+        );
         return {
           ok: false,
           status: "failed",
@@ -325,7 +358,13 @@ export class PipelineRunner {
         finished_at: finishedAt,
         ...(result.output !== undefined ? { output: result.output } : {}),
       };
-      await this.emitStepFinished(pipelineId, runState, node.id, ctx, runState.steps[node.id]!);
+      await this.emitStepFinished(
+        pipelineId,
+        runState,
+        node.id,
+        ctx,
+        finishedStepState(runState, node.id),
+      );
       return { ok: true, status: "completed", output: result.output };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -336,7 +375,13 @@ export class PipelineRunner {
         finished_at: formatCstIso(),
         error: message,
       };
-      await this.emitStepFinished(pipelineId, runState, node.id, ctx, runState.steps[node.id]!);
+      await this.emitStepFinished(
+        pipelineId,
+        runState,
+        node.id,
+        ctx,
+        finishedStepState(runState, node.id),
+      );
       return { ok: false, status: "failed", error: message };
     }
   }

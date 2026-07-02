@@ -21,14 +21,18 @@ function randomAlphanumeric(length: number): string {
   const bytes = crypto.getRandomValues(new Uint8Array(length * 2));
   for (const byte of bytes) {
     if (byte >= limit) continue;
-    out.push(PREFIX_CHARS[byte % charsetLen]!);
+    const ch = PREFIX_CHARS[byte % charsetLen];
+    if (ch === undefined) continue;
+    out.push(ch);
     if (out.length === length) break;
   }
   while (out.length < length) {
     const extra = crypto.getRandomValues(new Uint8Array(length));
     for (const byte of extra) {
       if (byte >= limit) continue;
-      out.push(PREFIX_CHARS[byte % charsetLen]!);
+      const ch = PREFIX_CHARS[byte % charsetLen];
+      if (ch === undefined) continue;
+      out.push(ch);
       if (out.length === length) break;
     }
   }

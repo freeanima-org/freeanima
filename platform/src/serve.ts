@@ -85,10 +85,13 @@ export async function serve(
   } = { list: [] };
 
   try {
-    const runConfig = BOOT_PHASES.find((p) => p.id === "config")!.run;
-    const runPersistence = BOOT_PHASES.find((p) => p.id === "persistence")!.run;
-    const { config } = await runConfig();
-    await runPersistence(config);
+    const configPhase = BOOT_PHASES.find((p) => p.id === "config");
+    const persistencePhase = BOOT_PHASES.find((p) => p.id === "persistence");
+    if (!configPhase || !persistencePhase) {
+      throw new Error("boot phases config/persistence missing");
+    }
+    const { config } = await configPhase.run();
+    await persistencePhase.run(config);
     const { bootWorldSubjectsPhase } = await import("./boot/world-subjects-phase.ts");
     await bootWorldSubjectsPhase(config);
     const { bootServiceApiTokensPhase } = await import("./boot/service-api-tokens-phase.ts");

@@ -51,7 +51,10 @@ export function limbicCreatedRange(range: LightSleepDayRange): { fromIso: string
 function shuffleInPlace<T>(items: T[]): void {
   for (let i = items.length - 1; i > 0; i -= 1) {
     const j = randomInt(i + 1);
-    [items[i], items[j]] = [items[j]!, items[i]!];
+    const left = items[j];
+    const right = items[i];
+    if (left === undefined || right === undefined) continue;
+    [items[i], items[j]] = [left, right];
   }
 }
 

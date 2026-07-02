@@ -19,7 +19,8 @@ export function mergeStreamingToolCalls(
       };
       continue;
     }
-    const cur = acc[idx]!;
+    const cur = acc[idx];
+    if (!cur) continue;
     if (fn.arguments) {
       cur.function.arguments = (cur.function.arguments ?? "") + fn.arguments;
     }
@@ -36,7 +37,8 @@ export function finalizeStreamingToolCalls(acc: Record<number, ToolCall>): ToolC
   return Object.keys(acc)
     .map((k) => Number(k))
     .toSorted((a, b) => a - b)
-    .map((i) => acc[i]!)
+    .map((i) => acc[i])
+    .filter((tc): tc is ToolCall => tc !== undefined)
     .filter((tc) => tc.id && tc.function?.name);
 }
 

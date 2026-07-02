@@ -1,7 +1,12 @@
 function formatUuidV4(bytes: Uint8Array): string {
   const normalized = bytes;
-  normalized[6] = (normalized[6]! & 0x0f) | 0x40;
-  normalized[8] = (normalized[8]! & 0x3f) | 0x80;
+  const b6 = normalized[6];
+  const b8 = normalized[8];
+  if (b6 === undefined || b8 === undefined) {
+    throw new Error("formatUuidV4: expected 16-byte UUID payload");
+  }
+  normalized[6] = (b6 & 0x0f) | 0x40;
+  normalized[8] = (b8 & 0x3f) | 0x80;
   const hex = Array.from(normalized, (byte) => byte.toString(16).padStart(2, "0")).join("");
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }

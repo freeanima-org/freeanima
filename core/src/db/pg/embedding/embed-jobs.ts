@@ -21,14 +21,18 @@ export type EmbedAndStoreJobsOpts = {
 /** L2-normalized mean of chunk vectors (single vector when only one chunk). */
 export function averageEmbeddings(vectors: number[][]): number[] | null {
   if (vectors.length === 0) return null;
-  const dim = vectors[0]!.length;
+  const first = vectors[0];
+  if (!first) return null;
+  const dim = first.length;
   if (!dim) return null;
 
   const sum = Array.from({ length: dim }, () => 0);
   for (const vec of vectors) {
     if (vec.length !== dim) continue;
     for (let i = 0; i < dim; i++) {
-      sum[i]! += vec[i]!;
+      const vecVal = vec[i];
+      if (vecVal === undefined) continue;
+      sum[i] = (sum[i] ?? 0) + vecVal;
     }
   }
 

@@ -165,7 +165,8 @@ export class RedisEventQueue implements EventQueueAdapter {
     };
 
     try {
-      const outcome = await this.process!(stored);
+      if (!this.process) return;
+      const outcome = await this.process(stored);
       await this.applyOutcome(raw, envelope, outcome, null);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

@@ -3,7 +3,11 @@ import { semanticMemory } from "@freeanima/core/db/schema";
 
 export function buildSemanticTypeCondition(types: readonly string[]): SQL | undefined {
   if (types.length === 0) return undefined;
-  if (types.length === 1) return eq(semanticMemory.type, types[0]!);
+  if (types.length === 1) {
+    const type = types[0];
+    if (type === undefined) return undefined;
+    return eq(semanticMemory.type, type);
+  }
   return inArray(semanticMemory.type, [...types]);
 }
 

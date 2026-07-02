@@ -169,7 +169,7 @@ async function main(): Promise<void> {
     });
   }
 
-  sql.close();
+  void sql.close();
 
   if (issues.length > 0) fail(issues);
 

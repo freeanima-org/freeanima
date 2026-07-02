@@ -60,8 +60,11 @@ async function navigateAfterRemove(
   if (get().currentId !== removedId) return get().currentId;
   const remaining = activeConversations(get().conversations);
   if (remaining.length > 0) {
-    await get().selectConversation(remaining[0]!.id);
-    return remaining[0]!.id;
+    const first = remaining[0];
+    if (first) {
+      await get().selectConversation(first.id);
+      return first.id;
+    }
   }
   const newId = await get().newConversation();
   return newId;

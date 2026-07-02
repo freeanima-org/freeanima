@@ -1,5 +1,11 @@
 import type { StreamEvent } from "@freeanima/runtime/loop";
-import type { ConversationSummary } from "./schemas/snapshot.ts";
+import type { CronJobData } from "../connectors/cron/schema.ts";
+import type {
+  ConversationSummary,
+  HealthSnapshot,
+  SafeConfigSnapshot,
+  ServiceSnapshot,
+} from "./schemas/snapshot.ts";
 
 export type { MessagingPort } from "./messaging-port.ts";
 
@@ -49,16 +55,16 @@ export type AppRuntimeMessagingPort = {
 
 /** 健康检查、配置与 cron */
 export type AppRuntimeOpsPort = {
-  health(): any;
-  buildStatus(host: string, port: number): Promise<any>;
-  getConfig(): any;
-  listToolsApi(scope?: "default" | "all"): any;
-  listCronJobs(): any;
-  pauseCronJob(id: string): any;
-  resumeCronJob(id: string): any;
-  runCronJobNow(id: string): any;
+  health(): HealthSnapshot;
+  buildStatus(host: string, port: number): Promise<ServiceSnapshot>;
+  getConfig(): SafeConfigSnapshot;
+  listToolsApi(scope?: "default" | "all"): unknown;
+  listCronJobs(): Promise<{ jobs: CronJobData[] }>;
+  pauseCronJob(id: string): Promise<CronJobData | null>;
+  resumeCronJob(id: string): Promise<CronJobData | null>;
+  runCronJobNow(id: string): Promise<{ job: CronJobData; message: string } | null>;
   getStatus(): Record<string, unknown>;
-  getPromptDebug(conversationId?: string | null): Promise<any>;
+  getPromptDebug(conversationId?: string | null): Promise<unknown>;
 };
 
 /** 会话 CRUD 与消息 */
@@ -67,53 +73,53 @@ export type AppRuntimeConversationPort = {
     platform?: string | null,
     opts?: { offset?: number; limit?: number },
   ): Promise<{ conversations: ConversationSummary[]; total: number }>;
-  createConversation(platform: string): any;
-  getConversationInfo(conversationId: string, platform?: string): Promise<any>;
-  getConversationAcpDock(conversationId: string, platform?: string): Promise<any>;
+  createConversation(platform: string): Promise<{ conversation_id: string }>;
+  getConversationInfo(conversationId: string, platform?: string): Promise<unknown>;
+  getConversationAcpDock(conversationId: string, platform?: string): Promise<unknown>;
   watchConversation(conversationId: string, cb: () => void): () => void;
   getMessages(
     conversationId: string,
-    platform: string,
-    opts?: { offset?: number; limit?: number },
-  ): any;
-  setConversationTitle(conversationId: string, title: string, platform: string): Promise<any>;
+    platform?: string,
+    opts?: { offset?: number; limit?: number | null },
+  ): Promise<unknown>;
+  setConversationTitle(conversationId: string, title: string, platform: string): Promise<unknown>;
 };
 
 /** 语义 /  limbic / 自传 / 梦境记忆 */
 export type AppRuntimeMemoryPort = {
-  listMemoryFiles(): any;
-  memorySearch(opts: any): Promise<any>;
-  countSemanticMemory(): any;
-  listSemanticMemories(opts?: any): Promise<any>;
+  listMemoryFiles(): Promise<unknown>;
+  memorySearch(opts: Record<string, unknown>): Promise<unknown>;
+  countSemanticMemory(): Promise<{ index_rows: number }>;
+  listSemanticMemories(opts?: Record<string, unknown>): Promise<unknown>;
   updateSemanticMemoryPinned(
     id: string,
     pinned: boolean,
   ): Promise<{ ok: true; id: string; pinned: boolean }>;
-  listLimbicMemories(opts?: any): Promise<any>;
-  listAutobiographicalMemories(opts?: any): Promise<any>;
-  getFtsStatus(): Promise<any>;
-  startRebuildFtsIndex(opts?: { onlyMissing?: boolean }): any;
-  getRebuildFtsJobStatus(): any;
-  listSelfBlocks(): Promise<any>;
+  listLimbicMemories(opts?: Record<string, unknown>): Promise<unknown>;
+  listAutobiographicalMemories(opts?: Record<string, unknown>): Promise<unknown>;
+  getFtsStatus(): Promise<unknown>;
+  startRebuildFtsIndex(opts?: { onlyMissing?: boolean }): unknown;
+  getRebuildFtsJobStatus(): unknown;
+  listSelfBlocks(): Promise<unknown>;
 };
 
 /** 睡眠流水线与 auto-llm 审计 */
 export type AppRuntimeSleepPort = {
-  getSleepSummary(): Promise<any>;
+  getSleepSummary(): Promise<unknown>;
   listPipelineStepRuns(opts?: {
     step_id?: string;
     run_id?: string;
     limit?: number;
     offset?: number;
-  }): Promise<any>;
+  }): Promise<unknown>;
   listCronLogs(opts?: {
     job_id?: string;
     limit?: number;
     offset?: number;
     ok?: boolean;
-  }): Promise<any>;
+  }): Promise<unknown>;
   getDeepSleepRounds(day: string): { day: string; rounds: unknown[] };
-  getSleepPipelineStatus(): any;
+  getSleepPipelineStatus(): unknown;
   startSleepCycle(opts?: {
     day?: string;
     deep_sleep_mode?: "full" | "incremental";
@@ -129,7 +135,7 @@ export type AppRuntimeSleepPort = {
     status?: "ok" | "error";
     limit?: number;
     offset?: number;
-  }): Promise<any>;
+  }): Promise<unknown>;
 };
 
 /** Admin / Gateway 完整运行时 API 契约（域 port 组合） */

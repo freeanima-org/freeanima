@@ -77,7 +77,8 @@ export class ToolSetRegistry {
     }
     this.sets.delete(trimmed);
     for (let i = this.toolOrder.length - 1; i >= 0; i--) {
-      if (!this.toolIndex.has(this.toolOrder[i]!)) this.toolOrder.splice(i, 1);
+      const toolName = this.toolOrder[i];
+      if (toolName !== undefined && !this.toolIndex.has(toolName)) this.toolOrder.splice(i, 1);
     }
     return removed;
   }
@@ -104,7 +105,9 @@ export class ToolSetRegistry {
   }
 
   listTools(): ToolDef[] {
-    return this.toolOrder.map((n) => this.toolIndex.get(n)!).filter(Boolean);
+    return this.toolOrder
+      .map((n) => this.toolIndex.get(n))
+      .filter((t): t is ToolDef => t !== undefined);
   }
 
   /** Tools with exposeMcp=true for Hub /mcp outbound */

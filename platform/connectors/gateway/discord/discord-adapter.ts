@@ -312,7 +312,7 @@ export class DiscordAdapter implements PlatformAdapter {
     this.conversationUpdatedOff = null;
     unregisterDiscordCronDeliverer();
     this.clarifyPending.disposeAll();
-    this.client.destroy();
+    void this.client.destroy();
     logComponent("shutdown").debug("Discord disconnected");
   }
 

@@ -62,7 +62,7 @@ function createSatelliteShell(
     windowRole,
     apiOrigin,
     createFileInstanceStore,
-    openHubSettings: () => ipcRenderer.invoke("shell:open-settings"),
+    openHubSettings: () => void ipcRenderer.invoke("shell:open-settings"),
     setClickThrough: (ignore) => ipcRenderer.invoke("shell:set-clickthrough", ignore),
     setPointerActive: (active) => ipcRenderer.invoke("shell:set-pointer-active", active),
     moveWindow: (x, y) => ipcRenderer.invoke("shell:move-window", x, y),

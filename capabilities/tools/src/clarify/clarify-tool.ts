@@ -83,7 +83,7 @@ function handleClarify(args: ClarifyArgs): string {
     status: "resolved",
     answers: items.map((item) => ({
       question: item.question,
-      answer: item.default!,
+      answer: item.default ?? "",
     })),
   });
 }

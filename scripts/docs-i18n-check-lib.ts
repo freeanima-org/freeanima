@@ -28,7 +28,8 @@ export function checkMarkdownI18n(content: string, relPath: string): MarkdownChe
   let inFence = false;
 
   for (let i = 0; i < lines.length; i += 1) {
-    const line = lines[i]!;
+    const line = lines[i];
+    if (line === undefined) continue;
     const lineNo = i + 1;
     const trimmed = line.trim();
 

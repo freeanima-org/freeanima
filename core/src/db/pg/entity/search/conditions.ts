@@ -37,7 +37,7 @@ export function resolveWorldScope(opts: EntitySearchOpts): SQL[] {
       );
     }
     if (ids.length === 1) {
-      return [eq(entities.world_id, ids[0]!)];
+      return [eq(entities.world_id, ids[0] as number)];
     }
     return [inArray(entities.world_id, ids)];
   }

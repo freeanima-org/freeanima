@@ -232,14 +232,14 @@ export async function runTunnelSetup(opts: SetupPromptsOptions = {}): Promise<vo
       p.log.error("非交互模式需要 --hostname");
       process.exit(1);
     }
+    const draft = loadTunnelDraft();
+    const draftApiToken = draft?.credentials?.api_token;
     input = omitUndefined({
       hostname: opts.hostname,
       apiToken:
         (opts.apiToken ? resolveApiTokenFromRef(opts.apiToken) : undefined) ??
         loadSavedApiToken() ??
-        (loadTunnelDraft()?.credentials?.api_token
-          ? resolveApiTokenFromRef(loadTunnelDraft()!.credentials!.api_token!)
-          : undefined),
+        (draftApiToken ? resolveApiTokenFromRef(draftApiToken) : undefined),
       hubPort,
     });
     patchTunnelConfig({

@@ -88,7 +88,9 @@ export async function runSetupWizard(input: SetupWizardInput): Promise<SetupWiza
       input.onProgress("获取 Cloudflare 账号…");
       const accounts = await listAccounts(apiToken);
       if (accounts.length === 0) throw new Error("未找到 Cloudflare 账号");
-      accountId = accounts[0]!.id;
+      const firstAccount = accounts[0];
+      if (!firstAccount) throw new Error("未找到 Cloudflare 账号");
+      accountId = firstAccount.id;
       input.patchConfig({
         cloudflare: { account_id: accountId, tunnel_name: tunnelName },
       });

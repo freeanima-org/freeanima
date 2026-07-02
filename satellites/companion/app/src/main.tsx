@@ -160,7 +160,9 @@ function CompanionWindow() {
   );
 }
 
-createRoot(document.getElementById("root")!).render(
+const rootEl = document.getElementById("root");
+if (rootEl === null) throw new Error("root element not found");
+createRoot(rootEl).render(
   <StrictMode>
     <CompanionWindow />
   </StrictMode>,

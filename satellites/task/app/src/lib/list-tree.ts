@@ -61,7 +61,8 @@ export function collectFolderDescendantIds(lists: TaskListRow[], folderId: numbe
   const out: number[] = [];
   const queue = [folderId];
   while (queue.length > 0) {
-    const id = queue.shift()!;
+    const id = queue.shift();
+    if (id === undefined) break;
     for (const child of lists.filter((l) => getParentId(l) === id)) {
       out.push(child.id);
       if (child.is_folder) queue.push(child.id);

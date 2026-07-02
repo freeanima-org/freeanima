@@ -40,7 +40,10 @@ function patchTiktokenWasmLoader(bundlePath: string): void {
     );
   }
   const [, arr, pathMod, bytes, fsMod] = match;
-  const patch = buildTiktokenWasmLoaderPatch(arr!, pathMod!, bytes!, fsMod!);
+  if (arr === undefined || pathMod === undefined || bytes === undefined || fsMod === undefined) {
+    throw new Error("build-cli: tiktoken wasm loader capture groups missing");
+  }
+  const patch = buildTiktokenWasmLoaderPatch(arr, pathMod, bytes, fsMod);
   writeFileSync(bundlePath, src.replace(TIKTOKEN_WASM_LOADER_RE, patch));
 }
 

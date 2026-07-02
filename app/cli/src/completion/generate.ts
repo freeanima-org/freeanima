@@ -106,7 +106,8 @@ function generateBash(root: Command): string {
   ];
 
   for (const child of tree.children) {
-    const cname = child.path.split(" ").pop()!;
+    const cname = child.path.split(" ").pop();
+    if (cname === undefined) continue;
     lines.push(`        ${cname})`);
     lines.push(`            _${fnName(child.path)}`);
     lines.push("            ;;");
@@ -134,7 +135,8 @@ function renderZshCase(node: CommandTree, depth: number): string[] {
   }
 
   for (const child of node.children) {
-    const cmdName = child.path.split(" ").pop()!;
+    const cmdName = child.path.split(" ").pop();
+    if (cmdName === undefined) continue;
     const childLevel = child.path.split(" ").filter(Boolean).length + 1;
     const childSubs = child.subcommands.join(" ");
     const childOpts = child.options.join(" ");

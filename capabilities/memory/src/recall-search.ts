@@ -124,7 +124,8 @@ function mapCandidateToHit(
 ): MemoryRecallHit {
   switch (candidate.memory_type) {
     case "semantic": {
-      const row = candidate.semantic!;
+      const row = candidate.semantic;
+      if (!row) throw new Error("recall candidate missing semantic row");
       return {
         memory_type: "semantic",
         score,
@@ -139,7 +140,8 @@ function mapCandidateToHit(
       };
     }
     case "conversation": {
-      const row = candidate.conversation!;
+      const row = candidate.conversation;
+      if (!row) throw new Error("recall candidate missing conversation row");
       return {
         memory_type: "conversation",
         score,
@@ -151,7 +153,8 @@ function mapCandidateToHit(
       };
     }
     case "limbic": {
-      const row = candidate.limbic!;
+      const row = candidate.limbic;
+      if (!row) throw new Error("recall candidate missing limbic row");
       return {
         memory_type: "limbic",
         score,
@@ -165,7 +168,8 @@ function mapCandidateToHit(
       };
     }
     case "autobiographical": {
-      const row = candidate.autobiographical!;
+      const row = candidate.autobiographical;
+      if (!row) throw new Error("recall candidate missing autobiographical row");
       return {
         memory_type: "autobiographical",
         score,

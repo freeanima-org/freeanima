@@ -44,7 +44,9 @@ export class SkillRegistry {
   }
 
   list(): SkillDef[] {
-    return this.order.map((n) => this.registry.get(n)!).filter(Boolean);
+    return this.order
+      .map((n) => this.registry.get(n))
+      .filter((s): s is SkillDef => s !== undefined);
   }
 
   search(query: string): SkillDef[] {

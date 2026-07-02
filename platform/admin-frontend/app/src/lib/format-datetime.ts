@@ -47,17 +47,25 @@ export function formatConversationIdDateTime(
   opts?: FormatCstDisplayOpts,
 ): string {
   const parts = conversationId.split("_");
-  if (parts.length < 2 || parts[0]!.length < 8 || parts[1]!.length < 4) {
+  const dateSegment = parts[0];
+  const timeSegment = parts[1];
+  if (
+    parts.length < 2 ||
+    dateSegment === undefined ||
+    timeSegment === undefined ||
+    dateSegment.length < 8 ||
+    timeSegment.length < 4
+  ) {
     return conversationId;
   }
-  const y = parts[0]!.slice(0, 4);
-  const mo = parts[0]!.slice(4, 6);
-  const d = parts[0]!.slice(6, 8);
-  const h = parts[1]!.slice(0, 2);
-  const mi = parts[1]!.slice(2, 4);
+  const y = dateSegment.slice(0, 4);
+  const mo = dateSegment.slice(4, 6);
+  const d = dateSegment.slice(6, 8);
+  const h = timeSegment.slice(0, 2);
+  const mi = timeSegment.slice(2, 4);
   const datePart = `${y}/${mo}/${d}`;
-  if (opts?.seconds && parts[1]!.length >= 6) {
-    const s = parts[1]!.slice(4, 6);
+  if (opts?.seconds && timeSegment.length >= 6) {
+    const s = timeSegment.slice(4, 6);
     return `${datePart} ${h}:${mi}:${s}`;
   }
   return `${datePart} ${h}:${mi}`;

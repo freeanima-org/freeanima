@@ -89,7 +89,9 @@ export function findCommand(text: string): [CommandDef | null, string[]] {
   if (!t.startsWith("/")) return [null, []];
   const parts = t.slice(1).split(/\s+/).filter(Boolean);
   if (parts.length === 0) return [null, []];
-  const cmd = getCommand(parts[0]!);
+  const name = parts[0];
+  if (!name) return [null, []];
+  const cmd = getCommand(name);
   if (!cmd) return [null, []];
   return [cmd, parts.slice(1)];
 }

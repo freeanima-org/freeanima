@@ -6,7 +6,12 @@ const INSTANCE_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789";
 export function generateSapInstanceIdCandidate(): string {
   let out = "";
   for (let i = 0; i < 3; i++) {
-    out += INSTANCE_ALPHABET[Math.floor(Math.random() * INSTANCE_ALPHABET.length)]!;
+    const idx = Math.floor(Math.random() * INSTANCE_ALPHABET.length);
+    const char = INSTANCE_ALPHABET[idx];
+    if (char === undefined) {
+      throw new Error("generateSapInstanceIdCandidate: empty alphabet");
+    }
+    out += char;
   }
   return out;
 }

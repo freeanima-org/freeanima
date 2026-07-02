@@ -113,7 +113,9 @@ export async function expireIfNeeded(
 export function mergeClarifyResponse(items: ClarifyItem[], userText: string): string {
   const lines = ["[The assistant previously asked:]"];
   for (let i = 0; i < items.length; i++) {
-    lines.push(`${i + 1}. ${items[i]!.question}`);
+    const item = items[i];
+    if (item === undefined) continue;
+    lines.push(`${i + 1}. ${item.question}`);
   }
   lines.push("[The user responded:]", userText);
   return lines.join("\n");
@@ -122,7 +124,8 @@ export function mergeClarifyResponse(items: ClarifyItem[], userText: string): st
 export function formatClarifyText(items: ClarifyItem[]): string {
   const parts: string[] = [];
   for (let i = 0; i < items.length; i++) {
-    const item = items[i]!;
+    const item = items[i];
+    if (item === undefined) continue;
     parts.push(`❓ ${i + 1}. ${item.question}`);
     if (item.choices?.length) {
       for (let j = 0; j < item.choices.length; j++) {

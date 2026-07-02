@@ -7,7 +7,9 @@ import { getRouter } from "./router.tsx";
 initAdminLocale();
 const router = getRouter();
 
-createRoot(document.getElementById("root")!).render(
+const rootEl = document.getElementById("root");
+if (rootEl === null) throw new Error("root element not found");
+createRoot(rootEl).render(
   <StrictMode>
     <RouterProvider router={router} />
   </StrictMode>,

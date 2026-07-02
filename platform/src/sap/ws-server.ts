@@ -535,7 +535,12 @@ export function attachSapWebSocket(
   const ctxFor = (): SapRequestContext => ({
     app_id: connSapState?.appId ?? "",
     instance_id: connSapState?.instanceId ?? "",
-    auth: connAuth!,
+    auth: connAuth ?? {
+      subject_id: 0,
+      subject_type: "user",
+      token_id: 0,
+      scopes: [],
+    },
     sendEvent(method, payload) {
       sendEnvelope({ kind: "evt", method, payload });
     },

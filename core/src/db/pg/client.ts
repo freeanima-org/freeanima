@@ -50,7 +50,7 @@ export function getDb(): Db {
 
 export async function closeDb(): Promise<void> {
   if (!sqlClient) return;
-  sqlClient.close();
+  void sqlClient.close();
   sqlClient = null;
   dbInstance = null;
 }

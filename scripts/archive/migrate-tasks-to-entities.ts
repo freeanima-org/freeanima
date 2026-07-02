@@ -154,7 +154,7 @@ async function main(): Promise<void> {
     );
   } finally {
     await closeDb();
-    sql.close();
+    void sql.close();
   }
 }
 

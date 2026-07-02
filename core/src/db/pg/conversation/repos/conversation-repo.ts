@@ -42,8 +42,9 @@ export async function getConversationMeta(
     .from(conversations)
     .where(eq(conversations.id, conversation_id))
     .limit(1);
-  if (rows.length === 0) return null;
-  return rowToConversationMeta(rows[0]!);
+  const metaRow = rows[0];
+  if (!metaRow) return null;
+  return rowToConversationMeta(metaRow);
 }
 
 /** 是否为历史 cron agent 创建的 session（platform_info.platform = cron） */
@@ -98,8 +99,9 @@ export async function getConversationMetaLite(
     .from(conversations)
     .where(eq(conversations.id, conversation_id))
     .limit(1);
-  if (rows.length === 0) return null;
-  return rowToConversationMeta(rows[0]!);
+  const metaRow = rows[0];
+  if (!metaRow) return null;
+  return rowToConversationMeta(metaRow);
 }
 
 export async function getConversationTools(
@@ -111,8 +113,9 @@ export async function getConversationTools(
     .from(conversations)
     .where(eq(conversations.id, conversation_id))
     .limit(1);
-  if (rows.length === 0) return [];
-  return conversationCachedToolsetsSchema.parse(rows[0]!.cached_toolsets ?? []);
+  const toolsRow = rows[0];
+  if (!toolsRow) return [];
+  return conversationCachedToolsetsSchema.parse(toolsRow.cached_toolsets ?? []);
 }
 
 export async function upsertConversationMeta(

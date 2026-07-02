@@ -45,7 +45,8 @@ export class AcpClientPool {
 
   async tryAcquire(taskId: string): Promise<ClientLease | null> {
     for (let i = 0; i < this.slots.length; i++) {
-      const slot = this.slots[i]!;
+      const slot = this.slots[i];
+      if (!slot) continue;
       if (slot.taskId) continue;
       if (!slot.client?.isConnected || !slot.client.isProcessAlive()) {
         if (slot.client) slot.client.stop();
@@ -70,7 +71,8 @@ export class AcpClientPool {
 
   findLease(taskId: string): ClientLease | undefined {
     for (let i = 0; i < this.slots.length; i++) {
-      const slot = this.slots[i]!;
+      const slot = this.slots[i];
+      if (!slot) continue;
       if (slot.taskId === taskId && slot.client) {
         return { slotId: i, client: slot.client, taskId };
       }

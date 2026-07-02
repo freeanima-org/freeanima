@@ -222,15 +222,17 @@ export async function replyDiscordInteraction(
     }
     return;
   }
+  const firstChunk = chunks[0];
+  if (!firstChunk) return;
   await deliverDiscordFinalContent(
     async () => {
-      await interaction.editReply({ content: chunks[0]! });
+      await interaction.editReply({ content: firstChunk });
     },
     async () => {
       if (interaction.replied || interaction.deferred) {
-        await withDiscordRetry(() => interaction.followUp({ content: chunks[0]! }));
+        await withDiscordRetry(() => interaction.followUp({ content: firstChunk }));
       } else {
-        await sendViaChannel(chunks[0]!);
+        await sendViaChannel(firstChunk);
       }
     },
     { kind: "slash", chunk: 0 },
@@ -350,7 +352,9 @@ export async function streamReplyToInteraction(
         { phase: "finalize" },
       );
       for (let i = 1; i < chunks.length; i++) {
-        await withDiscordRetry(() => interaction.followUp({ content: chunks[i]! }));
+        const chunk = chunks[i];
+        if (chunk === undefined) continue;
+        await withDiscordRetry(() => interaction.followUp({ content: chunk }));
       }
       answerOpen = false;
       clearInteractionAnswerBag(ctx);

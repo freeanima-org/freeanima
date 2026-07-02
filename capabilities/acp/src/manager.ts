@@ -537,7 +537,7 @@ export class AcpManager {
       else if (pool?.isAnyAlive()) status = "connected";
       else if (this.agentErrors.has(name)) status = "error";
 
-      const registered = this.toolSets!.getTool(`acp_${name}`);
+      const registered = this.toolSets?.getTool(`acp_${name}`);
       const conversationIds = this.conversationStore.listForAgent(name);
 
       views.push(
@@ -561,7 +561,8 @@ export class AcpManager {
       agent_count: views.length,
       connected_count,
       session_count: this.conversationStore.count(),
-      tool_count: this.toolSets!.listToolSets().filter((ts) => ts.name.startsWith("acp_")).length,
+      tool_count:
+        this.toolSets?.listToolSets().filter((ts) => ts.name.startsWith("acp_")).length ?? 0,
       agents: views,
     };
   }
@@ -649,8 +650,9 @@ export class AcpManager {
 
     const results = await Promise.allSettled(names.map((name) => this.startAgent(name)));
     for (let i = 0; i < results.length; i++) {
-      const result = results[i]!;
-      const agentName = names[i]!;
+      const result = results[i];
+      const agentName = names[i];
+      if (result === undefined || agentName === undefined) continue;
       if (result.status === "rejected") {
         logComponent("acp").error(`ACP agent '${agentName}' startup failed`, {
           err: result.reason,
@@ -668,7 +670,10 @@ export class AcpManager {
   async startAll(): Promise<AcpControlResult> {
     const cfg = this.requireConfig().data;
     const agents = cfg.acp_agents ?? {};
-    const names = Object.keys(agents).filter((name) => isAcpAgentEnabled(agents[name]!));
+    const names = Object.keys(agents).filter((name) => {
+      const agentCfg = agents[name];
+      return agentCfg !== undefined && isAcpAgentEnabled(agentCfg);
+    });
     const errors: string[] = [];
 
     await Promise.allSettled(

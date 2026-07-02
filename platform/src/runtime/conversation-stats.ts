@@ -241,10 +241,11 @@ export async function computeStats(
 
   let duration_seconds: number | null = null;
   if (timestamps.length >= 2) {
-    duration_seconds = Math.max(
-      (timestamps.at(-1)!.getTime() - timestamps[0]!.getTime()) / 1000,
-      0,
-    );
+    const lastTs = timestamps.at(-1);
+    const firstTs = timestamps[0];
+    if (lastTs && firstTs) {
+      duration_seconds = Math.max((lastTs.getTime() - firstTs.getTime()) / 1000, 0);
+    }
   }
 
   let avg_tps: number | null = null;

@@ -27,7 +27,10 @@ export function parseSapPlatformString(platform: string): {
 } | null {
   if (!isSapPlatformString(platform)) return null;
   const parts = platform.split(":");
-  return { app_slug: parts[1]!, instance_id_norm: parts[2]! };
+  const appSlug = parts[1];
+  const instanceId = parts[2];
+  if (appSlug === undefined || instanceId === undefined) return null;
+  return { app_slug: appSlug, instance_id_norm: instanceId };
 }
 
 const sapPlatformInfoSchema = z.looseObject({

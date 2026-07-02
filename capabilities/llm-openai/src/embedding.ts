@@ -50,7 +50,8 @@ export function createOpenAiEmbeddingBatchClient(cfg: ResolvedEmbeddingConfig): 
     const result: (number[] | null)[] = texts.map(() => null);
 
     for (let i = 0; i < texts.length; i++) {
-      const trimmed = texts[i]!.trim();
+      const trimmed = texts[i]?.trim();
+      if (!trimmed) continue;
       if (!trimmed) continue;
       inputs.push(trimmed);
       sourceIndices.push(i);
@@ -68,7 +69,9 @@ export function createOpenAiEmbeddingBatchClient(cfg: ResolvedEmbeddingConfig): 
       const vec = item.embedding;
       if (!vec?.length) continue;
       assertEmbeddingDimensions(vec, cfg.dimensions);
-      result[sourceIndices[inputIdx]!] = vec;
+      const sourceIndex = sourceIndices[inputIdx];
+      if (sourceIndex === undefined) continue;
+      result[sourceIndex] = vec;
     }
 
     return result;

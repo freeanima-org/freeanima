@@ -158,9 +158,11 @@ async function waitForAssistantViaSessionEvents(
         finish(false);
         return;
       }
-      pollTimer = setTimeout(async () => {
-        await tryRefresh();
-        schedulePoll();
+      pollTimer = setTimeout(() => {
+        void (async () => {
+          await tryRefresh();
+          schedulePoll();
+        })();
       }, 2_000);
     };
 
@@ -211,7 +213,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set((s) => {
       const idx = s.queue.findIndex((q) => q.id === id);
       if (idx < 0) return s;
-      taken = s.queue[idx]!;
+      const item = s.queue[idx];
+      if (!item) return s;
+      taken = item;
       return { queue: s.queue.filter((q) => q.id !== id) };
     });
     return taken;

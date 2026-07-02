@@ -211,7 +211,9 @@ export async function sendTextChunked(
   let lastRet: Record<string, unknown> = {};
   for (let i = 0; i < parts.length; i += 1) {
     const clientId = `${clientIdPrefix}-${randomBytes(4).toString("hex")}`;
-    lastRet = await sendText(baseUrl, token, toUserId, parts[i]!, clientId, contextToken);
+    const part = parts[i];
+    if (part === undefined) continue;
+    lastRet = await sendText(baseUrl, token, toUserId, part, clientId, contextToken);
     if (i + 1 < parts.length) {
       await new Promise<void>((r) => {
         setTimeout(r, 100);

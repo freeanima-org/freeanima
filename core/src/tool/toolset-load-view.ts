@@ -36,7 +36,8 @@ export function stripCachedToolSetLoadRounds(
   const out: StoredMessage[] = [];
   let i = 0;
   while (i < messages.length) {
-    const msg = messages[i]!;
+    const msg = messages[i];
+    if (msg === undefined) break;
     if (msg.role !== "assistant" || !msg.tool_calls?.length) {
       out.push(msg);
       i++;

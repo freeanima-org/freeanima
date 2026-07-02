@@ -144,7 +144,8 @@ export class AcpTaskScheduler {
     this.draining = true;
     try {
       while (this.pending.length > 0 && this.canStartMore()) {
-        const spec = this.pending.shift()!;
+        const spec = this.pending.shift();
+        if (!spec) continue;
         await this.startSpec(spec);
       }
     } finally {

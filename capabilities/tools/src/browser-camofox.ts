@@ -538,13 +538,16 @@ export async function camofoxGetImages(conversationId: string): Promise<string> 
     const images: Array<{ src: string; alt: string }> = [];
     const lines = snapshot.split("\n");
     for (let i = 0; i < lines.length; i++) {
-      const stripped = lines[i]!.trim();
+      const line = lines[i];
+      if (line === undefined) continue;
+      const stripped = line.trim();
       if (!stripped.startsWith("- img ") && !stripped.startsWith("img ")) continue;
       const altMatch = /img\s+"([^"]*)"/.exec(stripped);
       const alt = altMatch?.[1] ?? "";
       let src = "";
       if (i + 1 < lines.length) {
-        const urlMatch = /\/url:\s*(\S+)/.exec(lines[i + 1]!.trim());
+        const nextLine = lines[i + 1];
+        const urlMatch = nextLine ? /\/url:\s*(\S+)/.exec(nextLine.trim()) : null;
         if (urlMatch?.[1]) src = urlMatch[1];
       }
       if (alt || src) images.push({ src, alt });

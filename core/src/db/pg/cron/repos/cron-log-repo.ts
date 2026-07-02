@@ -61,7 +61,8 @@ export async function listCronLogs(opts?: CronLogListOpts): Promise<CronLogRow[]
 
   const conditions = [];
   if (jobIds.length === 1) {
-    conditions.push(eq(cronLog.job_id, jobIds[0]!));
+    const jobId = jobIds[0];
+    if (jobId) conditions.push(eq(cronLog.job_id, jobId));
   } else if (jobIds.length > 1) {
     conditions.push(inArray(cronLog.job_id, jobIds));
   }

@@ -132,7 +132,7 @@ export async function startApiHttpServer(
     close: () => {
       broadcastWsReconnect();
       shutdownAdmin();
-      server.stop(true);
+      void server.stop(true);
     },
   };
 }
@@ -145,7 +145,9 @@ export async function startApiHttpServers(
   const { coalesceBindHosts } = await import("@freeanima/platform/bind-hosts");
   const bindHosts = coalesceBindHosts(hosts);
   if (bindHosts.length === 1) {
-    return [await startApiHttpServer(bindHosts[0]!, port, options)];
+    const host = bindHosts[0];
+    if (!host) return [];
+    return [await startApiHttpServer(host, port, options)];
   }
   const servers: ApiServerHandle[] = [];
   for (const host of bindHosts) {

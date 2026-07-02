@@ -51,7 +51,9 @@ export function resolveBodyZoneFromPoint(vrm: VRM, hitPoint: THREE.Vector3): Bod
     const distSq = hitPoint.distanceToSquared(boneWorld);
     if (distSq < bestDistSq) {
       bestDistSq = distSq;
-      bestZone = BONE_ZONE[boneName]!;
+      const zone = BONE_ZONE[boneName];
+      if (zone === undefined) continue;
+      bestZone = zone;
     }
   }
 
@@ -77,6 +79,9 @@ export class VrmBodyPicker {
     const hits = this.raycaster.intersectObject(vrm.scene, true);
     if (hits.length === 0) return null;
 
-    return resolveBodyZoneFromPoint(vrm, hits[0]!.point);
+    const hit = hits[0];
+    if (!hit) return null;
+
+    return resolveBodyZoneFromPoint(vrm, hit.point);
   }
 }

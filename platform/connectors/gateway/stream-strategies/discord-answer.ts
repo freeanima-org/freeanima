@@ -148,9 +148,12 @@ export function createDiscordAnswerStrategy(opts: DiscordAnswerStrategyOptions):
             text.length <= finalizeSplitAt
               ? [text]
               : [text.slice(0, finalizeSplitAt), text.slice(finalizeSplitAt)];
-          await io.edit(chunks[0]!);
+          const firstChunk = chunks[0];
+          if (!firstChunk) return [];
+          await io.edit(firstChunk);
           for (let i = 1; i < chunks.length; i++) {
-            await io.send(chunks[i]!);
+            const chunk = chunks[i];
+            if (chunk !== undefined) await io.send(chunk);
           }
           ctx.bag.delete(BAG_ANSWER_OPEN);
           return [];

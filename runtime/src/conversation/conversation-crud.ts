@@ -578,7 +578,8 @@ export async function rollbackToLastUser(conversationId: string): Promise<string
   if (lastUserIdx < 0) throw new Error("No partner message to retry");
 
   const kept = parsed.slice(0, lastUserIdx + 1);
-  const lastUser = kept[lastUserIdx]!;
+  const lastUser = kept[lastUserIdx];
+  if (!lastUser) throw new Error("No partner message to retry");
   const keepThroughPos = lastUser.pos;
   if (keepThroughPos === undefined) {
     throw new Error("No partner message to retry");
@@ -607,7 +608,8 @@ export async function rollbackBeforeLastUser(conversationId: string): Promise<vo
     return;
   }
 
-  const beforeLastUser = parsed[lastUserIdx - 1]!;
+  const beforeLastUser = parsed[lastUserIdx - 1];
+  if (!beforeLastUser) throw new Error("No user message to edit");
   const keepThroughPos = beforeLastUser.pos;
   if (keepThroughPos === undefined) {
     throw new Error("No user message to edit");

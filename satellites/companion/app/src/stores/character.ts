@@ -150,7 +150,8 @@ function nextPatrolPoint(): ScreenPoint {
   if (patrolPoints.length === 0) {
     return { x: 0, y: 0 };
   }
-  const point = patrolPoints[patrolIndex]!;
+  const point = patrolPoints[patrolIndex];
+  if (!point) return { x: 0, y: 0 };
   patrolIndex = (patrolIndex + 1) % patrolPoints.length;
   return point;
 }
@@ -255,8 +256,13 @@ async function beginPatrolFromCurrentPosition(): Promise<void> {
     return;
   }
 
-  const left = points[0]!;
-  const right = points[1]!;
+  const left = points[0];
+  const right = points[1];
+  if (!left || !right) {
+    patrolPausedUntilMs =
+      performance.now() + patrolPauseMsFor(useCompanionStore.getState().behavior);
+    return;
+  }
   patrolIndex = from.x - left.x > right.x - from.x ? 0 : 1;
 
   patrolPausedUntilMs = 0;

@@ -12,7 +12,8 @@ export function expandConfigEnv(raw: string): string {
     if (raw[i] === "$" && raw[i + 1] === "{") {
       const close = raw.indexOf("}", i + 2);
       if (close === -1) {
-        result += raw[i]!;
+        const ch = raw[i];
+        if (ch !== undefined) result += ch;
         i++;
         continue;
       }
@@ -35,7 +36,8 @@ export function expandConfigEnv(raw: string): string {
       continue;
     }
 
-    result += raw[i]!;
+    const ch = raw[i];
+    if (ch !== undefined) result += ch;
     i++;
   }
 

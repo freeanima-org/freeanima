@@ -21,17 +21,24 @@ function parsePo(content: string): { header: string; entries: PoEntry[] } {
   let i = 0;
   const headerLines: string[] = [];
 
-  while (i < lines.length && !lines[i]!.startsWith("#. ") && !lines[i]!.startsWith("#:")) {
-    if (lines[i]!.startsWith("msgid ") || (lines[i] === "" && headerLines.length > 0)) {
-      break;
+  while (i < lines.length) {
+    const headerLine = lines[i];
+    if (headerLine === undefined) break;
+    if (!headerLine.startsWith("#. ") && !headerLine.startsWith("#:")) {
+      if (headerLine.startsWith("msgid ") || (headerLine === "" && headerLines.length > 0)) {
+        break;
+      }
+      headerLines.push(headerLine);
+      i += 1;
+      continue;
     }
-    headerLines.push(lines[i]!);
-    i += 1;
+    break;
   }
 
   let current: PoEntry | null = null;
   for (; i < lines.length; i += 1) {
-    const line = lines[i]!;
+    const line = lines[i];
+    if (line === undefined) continue;
     if (line.startsWith("#. ") || line.startsWith("#,") || line.startsWith("#|")) {
       if (!current) current = { headerLines: [], bodyLines: [], refs: [] };
       current.headerLines.push(line);
@@ -40,7 +47,9 @@ function parsePo(content: string): { header: string; entries: PoEntry[] } {
     if (line.startsWith("#:")) {
       if (!current) current = { headerLines: [], bodyLines: [], refs: [] };
       current.headerLines.push(line);
-      const refs = [...line.matchAll(/docs\/[^\s:]+\.md/g)].map((m) => m[0]!);
+      const refs = [...line.matchAll(/docs\/[^\s:]+\.md/g)]
+        .map((m) => m[0])
+        .filter((ref): ref is string => ref !== undefined);
       current.refs.push(...refs);
       continue;
     }
@@ -51,8 +60,10 @@ function parsePo(content: string): { header: string; entries: PoEntry[] } {
       if (!current) current = { headerLines: [], bodyLines: [], refs: [] };
       current.bodyLines.push(line);
       let j = i + 1;
-      while (j < lines.length && lines[j]!.startsWith('"')) {
-        current.bodyLines.push(lines[j]!);
+      while (j < lines.length) {
+        const contLine = lines[j];
+        if (contLine === undefined || !contLine.startsWith('"')) break;
+        current.bodyLines.push(contLine);
         j += 1;
       }
       i = j - 1;
@@ -101,8 +112,11 @@ for (const entry of entries) {
   const docRefs = [...new Set(entry.refs.filter((r) => masterByRel.has(r)))];
   if (docRefs.length === 0) continue;
   for (const ref of docRefs) {
-    const slug = masterByRel.get(ref)!;
-    buckets.get(slug)!.push(entry);
+    const slug = masterByRel.get(ref);
+    if (!slug) continue;
+    const bucket = buckets.get(slug);
+    if (!bucket) continue;
+    bucket.push(entry);
   }
 }
 
