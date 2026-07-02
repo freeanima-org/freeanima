@@ -1,17 +1,21 @@
 import { join } from "node:path";
-import type { Alias, AliasOptions } from "vite";
+import type { AliasOptions, Plugin } from "vite";
 
 import { shellSourcePaths } from "./paths.ts";
+
 function isCompanionAppImporter(importer: string | undefined): boolean {
   return importer?.replaceAll("\\", "/").includes("satellites/companion/app/") ?? false;
 }
 
-function createAtAlias(paths: ReturnType<typeof shellSourcePaths>): Alias {
+/** companion app 内 `@/` 路径重写（Vite 8 替代 customResolver） */
+export function companionAtAliasPlugin(root?: string): Plugin {
+  const paths = shellSourcePaths(root);
   const shellPrefix = `${paths.shell}/`;
+
   return {
-    find: /^@\/(.*)$/,
-    replacement: `${paths.shell}/$1`,
-    customResolver(source, importer) {
+    name: "companion-at-alias",
+    enforce: "pre",
+    resolveId(source, importer) {
       if (!isCompanionAppImporter(importer)) return null;
       if (source.startsWith(shellPrefix)) {
         return join(paths.companionApp, source.slice(shellPrefix.length));
@@ -34,7 +38,7 @@ export function createShellUiAliases(paraglideDir: string, root?: string): Alias
     { find: /^@task\/(.*)$/, replacement: `${paths.task}/$1` },
     { find: /^@pair\/(.*)$/, replacement: `${paths.pair}/$1` },
     { find: /^@shared\/(.*)$/, replacement: `${paths.companionShared}/$1` },
-    createAtAlias(paths),
+    { find: /^@\/(.*)$/, replacement: `${paths.shell}/$1` },
     { find: /^(.*)messages\/paraglide\/(.*)$/, replacement: `${paraglideDir}/$2` },
   ];
 }

@@ -64,7 +64,7 @@ export function createSatelliteViteInlineConfig(opts: SatelliteViteOptions): Inl
       minify: opts.minify ?? false,
       sourcemap: opts.sourcemap ?? false,
       watch: opts.watch ? {} : null,
-      rollupOptions: {
+      rolldownOptions: {
         input: { main: indexHtml },
         output: {
           entryFileNames: "assets/[name]-[hash].js",

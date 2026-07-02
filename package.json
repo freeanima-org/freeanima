@@ -121,7 +121,7 @@
       "@radix-ui/react-switch": "^1.2.5",
       "@radix-ui/react-tabs": "^1.1.12",
       "@radix-ui/react-tooltip": "^1.2.7",
-      "@vitejs/plugin-react": "^4.7.0",
+      "@vitejs/plugin-react": "^5.2.0",
       "class-variance-authority": "^0.7.1",
       "clsx": "^2.1.1",
       "drizzle-kit": "^1.0.0-rc.4",
@@ -133,7 +133,7 @@
       "tailwindcss": "^4.3.1",
       "tailwindcss-animate": "^1.0.7",
       "typescript": "^6.0.3",
-      "vite": "^6.4.1",
+      "vite": "^8.1.2",
       "zod": "^4.4.3",
       "zustand": "^5.0.14"
     }
