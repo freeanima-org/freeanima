@@ -119,6 +119,17 @@ function iconPath(name: string): string {
   return join(SHELL_ROOT, "electron", "icons", name);
 }
 
+function loadAppIcon(file: string): Electron.NativeImage {
+  const img = nativeImage.createFromPath(iconPath(file));
+  return img.isEmpty() ? nativeImage.createEmpty() : img;
+}
+
+/** 任务栏 / Dock / 窗口标题栏图标（托盘单独用 32x32） */
+function appWindowIcon(): Electron.NativeImage {
+  if (process.platform === "win32") return loadAppIcon("icon.ico");
+  return loadAppIcon("256x256.png");
+}
+
 function shellArgs(extra: string[]): string[] {
   const args = [`--hub-url=${hubClient.hubUrl}`];
   if (hubClient.remoteAuthToken) {
@@ -211,6 +222,7 @@ function createShellBrowserWindow(opts: {
     show: false,
     center: true,
     autoHideMenuBar: true,
+    icon: appWindowIcon(),
     title: opts.title,
     webPreferences: {
       preload: preloadPath(),
@@ -302,7 +314,7 @@ function toggleCompanionVisibility(): boolean {
 }
 
 function createTray(): void {
-  const icon = nativeImage.createFromPath(iconPath("32x32.png"));
+  const icon = loadAppIcon("32x32.png");
   tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon);
   tray.setToolTip("FreeAnima Desktop");
   const menu = Menu.buildFromTemplate([
@@ -395,6 +407,10 @@ async function bootstrap(): Promise<void> {
   }
 
   Menu.setApplicationMenu(null);
+  if (process.platform === "darwin") {
+    const dockIcon = appWindowIcon();
+    if (!dockIcon.isEmpty()) app.dock?.setIcon(dockIcon);
+  }
   if (process.platform === "win32") {
     app.on("browser-window-blur", () => {
       if (companionWindow && !companionWindow.isDestroyed())
