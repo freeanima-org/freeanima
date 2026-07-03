@@ -1,0 +1,30 @@
+{
+  "extends": "../../tsconfig.composite.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "outDir": ".tsout",
+    "paths": {
+      "@admin/*": ["./ui/admin/*"]
+    }
+  },
+  "include": [
+    "plugin.ts",
+    "build/**/*.ts",
+    "hub/**/*.ts",
+    "protocol/**/*.ts",
+    "ui/app/**/*.ts",
+    "ui/app/**/*.tsx",
+    "ui/app/**/*.d.ts",
+    "ui/admin/**/*.ts",
+    "ui/admin/**/*.tsx",
+    "ui/admin/global.d.ts",
+    "../../types/**/*.d.ts"
+  ],
+  "exclude": ["**/*.test.ts", "dist/**"],
+  "references": [
+    { "path": "../../frontend/ui-kit" },
+    { "path": "./protocol/admin-contract" },
+    { "path": "./hub/admin-api" }
+  ]
+}

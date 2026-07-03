@@ -2,7 +2,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { defineConfig, mergeConfig, type Plugin } from "vite";
 
-import { createSatelliteViteInlineConfig } from "../../packages/shell-ui/vite/satellite-vite.ts";
+import { createSatelliteViteInlineConfig } from "../../frontend/shell-ui/vite/satellite-vite.ts";
 
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(PKG_DIR, "..", "..");

@@ -4,7 +4,7 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "paths": {
-      "@admin/*": ["./platform/admin-frontend/app/src/*"],
+      "@admin/*": ["./features/console/ui/admin/*"],
       "@paraglide/messages": ["./messages/paraglide/messages.js"],
       "@paraglide/runtime": ["./messages/paraglide/runtime.js"],
       "@/*": ["./satellites/companion/app/src/*"],
@@ -15,17 +15,15 @@
   "include": [
     "types/**/*.d.ts",
     "kernel/**/*.ts",
-    "packages/**/*.ts",
-    "packages/**/*.tsx",
+    "shared/**/*.ts",
+    "frontend/**/*.ts",
+    "frontend/**/*.tsx",
     "core/**/*.ts",
     "runtime/**/*.ts",
     "platform/**/*.ts",
     "capabilities/**/*.ts",
     "satellites/**/*.ts",
     "app/**/*.ts",
-    "platform/admin-frontend/app/**/*.ts",
-    "platform/admin-frontend/app/**/*.tsx",
-    "platform/admin-frontend/app/index.html",
     "scripts/**/*.ts",
     "tests/**/*.ts",
     "messages/**/*.json",
@@ -37,11 +35,10 @@
     "**/.turbo/**",
     "app/cli/publish/**",
     "satellites/pair-programming/app/**",
-    "satellites/chat/app/**",
     "satellites/companion/app/**",
-    "packages/sap-contract/**",
-    "packages/shell-ui/app/**",
-    "packages/shell-ui/src/**",
-    "packages/shell-ui/types/**"
+    "shared/sap-contract/**",
+    "frontend/shell-ui/app/**",
+    "frontend/shell-ui/src/**",
+    "frontend/shell-ui/types/**"
   ]
 }

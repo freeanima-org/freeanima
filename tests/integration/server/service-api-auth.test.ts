@@ -4,10 +4,10 @@ import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
 import { createServiceApiTokenWithSecret } from "@freeanima/core/db/pg/service-api-token";
 import { getAppRuntime } from "@freeanima/platform/ports";
 
-import { createApiApp } from "../../../platform/admin-api/elysia/app.ts";
-import { bindAdminRuntimeContext } from "../../../platform/admin-api/handlers/runtime.ts";
-import { applyHttpAuth } from "../../../platform/admin-api/http-dispatch.ts";
-import { createServiceAuthVerifier } from "../../../platform/admin-api/service-auth.ts";
+import { createApiApp } from "@freeanima/admin-api/elysia";
+import { bindAdminRuntimeContext } from "@freeanima/admin-api/handlers/runtime";
+import { applyHttpAuth } from "@freeanima/admin-api/http-dispatch";
+import { createServiceAuthVerifier } from "@freeanima/admin-api/service-auth";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,

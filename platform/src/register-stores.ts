@@ -1,4 +1,4 @@
-import { registerEmailSyncPort } from "@freeanima/capabilities-email";
+import { registerEmailSyncPort } from "@freeanima/feature-email/domain";
 import { registerNotificationPort } from "@freeanima/capabilities-tools/notification";
 import { emailSyncPortImpl } from "@freeanima/platform/connectors/email";
 

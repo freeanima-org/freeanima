@@ -6,7 +6,7 @@ title: Frontend Exports
 
 Embeddable frontend content packs register via **manifest / desktop / mobile** exports.
 
-The unified settings window is aggregated by the registry in [`packages/shell-ui/`](../../packages/shell-ui/); contract in [`packages/shell-ui/src/settings.ts`](../../packages/shell-ui/src/settings.ts) (unrelated to SAP).
+The unified settings window is aggregated by the registry in [`frontend/shell-ui/`](../../frontend/shell-ui/); contract in [`frontend/shell-ui/src/settings.ts`](../../frontend/shell-ui/src/settings.ts) (unrelated to SAP).
 
 ## Manifest (required)
 
@@ -21,7 +21,7 @@ Path: `./manifest` — JSON-serializable metadata.
 | `supportsMobile`  | Supports mobile embed                                |
 | `sap`             | Optional; true satellite metadata (`relay`, `tools`) |
 
-Implementation SSOT: [`packages/shell-sdk/src/manifest.ts`](../../packages/shell-sdk/src/manifest.ts)
+Implementation SSOT: [`frontend/shell-sdk/src/manifest.ts`](../../frontend/shell-sdk/src/manifest.ts)
 
 ## Desktop / Mobile profile
 
@@ -45,14 +45,14 @@ Bundled SPA: Hub provides `/api` and `/hub/rpc/v1`.
 | Package                          | appId       | embedMode (profile) |
 | -------------------------------- | ----------- | ------------------- |
 | `@freeanima/satellite-companion` | `companion` | `embedded-sidecar`  |
-| `@freeanima/satellite-chat`      | `chat`      | `bundled-spa`       |
-| Admin (`app/desktop` profile)    | `admin`     | `bundled-spa`       |
+| `@freeanima/feature-chat`        | `chat`      | `bundled-spa`       |
+| `@freeanima/feature-console`     | `console`   | `bundled-spa`       |
 
-Shell apps: [`app/desktop/`](../../app/desktop/) · [`app/mobile/`](../../app/mobile/) · [`packages/shell-ui/`](../../packages/shell-ui/)
+Shell apps: [`app/desktop/`](../../app/desktop/) · [`app/mobile/`](../../app/mobile/) · [`app/web/`](../../app/web/) · [`frontend/shell-ui/`](../../frontend/shell-ui/)
 
 ## Chat: Hub RPC and instance_id
 
-Bundled chat uses [`createSapDirectClient`](../../packages/sap-contract/src/direct-client.ts) on the shared Hub RPC transport (`getBundledHubRpcClient` / `whenHubRpcReady`). It does **not** call `sap.attach`.
+Bundled chat uses [`createSapDirectClient`](../../shared/sap-contract/src/direct-client.ts) on the shared Hub RPC transport (`getBundledHubRpcClient` / `whenHubRpcReady`). It does **not** call `sap.attach`.
 
 `instance_id` persistence:
 
@@ -61,7 +61,7 @@ Bundled chat uses [`createSapDirectClient`](../../packages/sap-contract/src/dire
 
 ## Admin: Hub REST + bundled SPA
 
-Admin UI is built by [`@freeanima/admin-frontend`](../../platform/admin-frontend/) and bundled into desktop / mobile.
+Admin UI source SSOT: [`features/console/ui/admin/`](../../features/console/ui/admin/). Build helpers: [`features/console/build/`](../../features/console/build/)（Paraglide compile、admin hash）；SPA 打包进 desktop / mobile / web shell。
 
 REST base: bundled pages use `window.satelliteShell.hubUrl` for Hub **`/api/*`**. Hub enables CORS for localhost / Capacitor origins.
 

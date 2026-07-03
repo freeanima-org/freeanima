@@ -9,7 +9,7 @@ import {
   registerSystemPromptHooks,
 } from "@freeanima/platform";
 import { getAcpManager } from "@freeanima/capabilities-acp";
-import { MaskRegistry } from "@freeanima/capabilities-task/mask";
+import { MaskRegistry } from "@freeanima/feature-task/domain/mask";
 import { initMaskSystem } from "@freeanima/platform/runtime/mask-wire";
 import {
   registerServiceTools,

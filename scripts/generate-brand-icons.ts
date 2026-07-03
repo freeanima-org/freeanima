@@ -116,7 +116,7 @@ async function main(): Promise<void> {
   // SVG copies
   copySvg(APP_ICON_SVG, join(ROOT, "site/public/favicon.svg"));
   copySvg(APP_ICON_SVG, join(ROOT, "app/web/app/public/favicon.svg"));
-  copySvg(APP_ICON_SVG, join(ROOT, "platform/admin-frontend/app/public/favicon.svg"));
+  copySvg(APP_ICON_SVG, join(ROOT, "features/console/ui/admin/public/favicon.svg"));
 
   // Web PWA
   writePng(join(ROOT, "app/web/app/public/icons/icon-192.png"), renderSvgFile(APP_ICON_SVG, 192));

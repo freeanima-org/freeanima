@@ -3,12 +3,12 @@ import {
   MaskRegistry,
   resolveMaskByName,
   resolveMaskPresets,
-} from "@freeanima/capabilities-task/mask";
+} from "@freeanima/feature-task/domain/mask";
 import type {
   MaskRegistryLookup,
   ResolvedMask,
   ConversationCapabilityMask,
-} from "@freeanima/capabilities-task/mask";
+} from "@freeanima/feature-task/domain/mask";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { isConversationMeta, type ConversationMetaMessage } from "@freeanima/core/db/domain";
 import { parseYaml, PATHS } from "@freeanima/platform/config";
@@ -135,4 +135,4 @@ export function initMaskSystem(masks: MaskRegistry): void {
   loadMasksFromYaml(masks);
 }
 
-export { checkTool, checkCredential } from "@freeanima/capabilities-task/mask";
+export { checkTool, checkCredential } from "@freeanima/feature-task/domain/mask";

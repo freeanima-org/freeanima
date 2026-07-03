@@ -2,9 +2,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin } from "vite";
 
-import { createShellViteInlineConfig } from "../../packages/shell-ui/vite/run-build.ts";
-import { shellEntryFileNames } from "../../packages/shell-ui/vite/entry-file-names.ts";
-import { shellBridgeHtmlPlugin } from "../../packages/shell-ui/vite/shell-bridge-html.ts";
+import { createShellViteInlineConfig } from "../../frontend/shell-ui/vite/run-build.ts";
+import { shellEntryFileNames } from "../../frontend/shell-ui/vite/entry-file-names.ts";
+import { shellBridgeHtmlPlugin } from "../../frontend/shell-ui/vite/shell-bridge-html.ts";
 
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(PKG_DIR, "..", "..");

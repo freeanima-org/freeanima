@@ -1,0 +1,100 @@
+@import "tailwindcss";
+@import "@freeanima/ui-kit/globals.css";
+@source "./**/*.{tsx,ts}";
+@source "../../../../../frontend/ui-kit/src/**/*.{tsx,ts}";
+
+@import "@freeanima/ui-kit/styles.css";
+
+.md-content {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
+}
+.md-content p {
+  margin: 0.3em 0;
+}
+.md-content p:first-child {
+  margin-top: 0;
+}
+.md-content p:last-child {
+  margin-bottom: 0;
+}
+.md-content pre {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.md-content code {
+  @apply bg-muted rounded px-1;
+  font-size: 0.875em;
+}
+.md-content pre code {
+  @apply block p-3 overflow-x-auto bg-muted;
+}
+
+.session-item {
+  @apply block px-3 py-2 rounded-lg text-sm text-muted-foreground transition-colors cursor-pointer;
+}
+.session-item:hover {
+  @apply bg-muted/50 text-foreground;
+}
+.session-item.sidebar-nav-active {
+  @apply bg-primary/20 text-foreground font-semibold border-l-[3px] border-l-primary;
+}
+
+.tool-bubble {
+  @apply rounded-2xl bg-muted/60;
+  max-width: 100%;
+}
+
+.tool-bubble-detail {
+  max-height: min(100vh, 100dvh);
+  overflow: auto;
+}
+
+.tool-bubble-scroll {
+  overflow: auto;
+  max-height: min(40vh, 16rem);
+  max-width: 100%;
+}
+
+.chat-bubble {
+  @apply rounded-2xl px-4 py-2 max-w-[85%];
+  min-width: 0;
+}
+.chat-bubble-user {
+  @apply bg-primary text-primary-foreground ml-auto;
+}
+.chat-bubble-assistant {
+  @apply bg-muted text-foreground;
+}
+
+/* 嵌入移动端壳时 safe-area 由 .shell-layout-compact > main 承担 */
+.shell-layout-compact .chat-app {
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1023px) {
+  .chat-app {
+    padding-top: var(--sat);
+    padding-left: var(--sal);
+    padding-right: var(--sar);
+    box-sizing: border-box;
+  }
+  .chat-compose {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    padding-bottom: max(1rem, var(--sab));
+  }
+  .shell-layout-compact .chat-compose {
+    padding-bottom: 1rem;
+  }
+  .chat-bubble {
+    max-width: min(92vw, 100%);
+  }
+  textarea {
+    font-size: 16px;
+  }
+}

@@ -8,7 +8,7 @@ export {
   listEnabledEmailAccountRows,
   resolveEmailAccountRow,
   updateEmailAccount,
-} from "@freeanima/capabilities-email";
+} from "@freeanima/feature-email/domain";
 export { markAsRead, deleteEmail } from "./actions.ts";
 export { syncEmailAccount, syncAllEmailAccounts, emailSyncPortImpl } from "./sync.ts";
 export { sendEmail, type SendEmailInput } from "./send.ts";

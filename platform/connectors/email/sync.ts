@@ -10,7 +10,7 @@ import {
   upsertEmailMessage,
   upsertEmailThread,
   type EmailSyncResult,
-} from "@freeanima/capabilities-email";
+} from "@freeanima/feature-email/domain";
 import { formatCstIso } from "@freeanima/core/util";
 
 import {

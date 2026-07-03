@@ -18,12 +18,12 @@ const SKIP_DIR_NAMES = new Set([".git", ".vite-app-web", "dist", "node_modules"]
 /** 影响 Web 静态产物的源码目录（相对 monorepo 根） */
 export const WEB_SOURCE_WATCH_DIRS = [
   "app/web",
-  "packages/shell-ui",
-  "packages/sap-contract/src",
-  "platform/admin-frontend/app",
-  "satellites/chat/app",
-  "satellites/task/app",
-  "satellites/vault/app",
+  "frontend/shell-ui",
+  "shared/sap-contract/src",
+  "features/console/ui/admin",
+  "features/chat/ui/app",
+  "features/task/ui/app",
+  "features/vault/ui/app",
   "satellites/pair-programming/app",
 ] as const;
 

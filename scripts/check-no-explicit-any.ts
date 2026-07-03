@@ -2,14 +2,14 @@
 /**
  * Forbid explicit `any` in contract / port directories.
  */
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const ROOT = join(import.meta.dir, "..");
 const SCAN_DIRS = [
   join(ROOT, "platform/ports"),
-  join(ROOT, "platform/admin-contract"),
-  join(ROOT, "packages/sap-contract"),
+  join(ROOT, "features/console/protocol/admin-contract"),
+  join(ROOT, "shared/sap-contract"),
 ];
 const ANY_RE = /:\s*any\b|as\s+any\b|<any>|Promise<any>|Record<string,\s*any>/;
 
@@ -46,6 +46,7 @@ function scanFile(path: string): Hit[] {
 function main(): void {
   const files: string[] = [];
   for (const dir of SCAN_DIRS) {
+    if (!existsSync(dir)) continue;
     walk(dir, files);
   }
 

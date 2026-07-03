@@ -1,19 +1,25 @@
 {
   "files": [],
   "references": [
-    { "path": "./packages/hub-rpc" },
-    { "path": "./packages/sap-contract" },
+    { "path": "./features/chat" },
+    { "path": "./features/console" },
+    { "path": "./features/diary" },
+    { "path": "./features/dream" },
+    { "path": "./features/email" },
+    { "path": "./features/notification" },
+    { "path": "./features/task" },
+    { "path": "./features/vault" },
+    { "path": "./shared/hub-rpc" },
+    { "path": "./shared/sap-contract" },
     { "path": "./tsconfig.monorepo.json" },
     { "path": "./satellites/pair-programming" },
-    { "path": "./satellites/chat" },
     { "path": "./satellites/companion" },
     { "path": "./app/desktop" },
-    { "path": "./packages/ui-kit" },
-    { "path": "./packages/shell-sdk" },
+    { "path": "./frontend/ui-kit" },
+    { "path": "./frontend/shell-sdk" },
     { "path": "./app/mobile" },
     { "path": "./app/web" },
-    { "path": "./platform/admin-contract" },
-    { "path": "./platform/admin-api" },
-    { "path": "./platform/admin-frontend" }
+    { "path": "./features/console/hub/admin-api" },
+    { "path": "./features/console/protocol/admin-contract" }
   ]
 }

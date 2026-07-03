@@ -9,7 +9,7 @@ import {
 import { runWithToolContext } from "@freeanima/runtime/loop";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { getProfileHopModel } from "@freeanima/platform/config";
-import { registerTaskTools, getDefaultTaskList } from "@freeanima/capabilities-task";
+import { registerTaskTools, getDefaultTaskList } from "@freeanima/feature-task/domain";
 import { getEntity } from "@freeanima/core/db/pg/entity";
 import { getActivePgTestContext, testConv } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";

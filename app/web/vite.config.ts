@@ -5,9 +5,9 @@ import { defineConfig, mergeConfig, type Plugin } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import { resolveHubWsUrl } from "@freeanima/sap-contract";
 
-import { shellEntryFileNames } from "../../packages/shell-ui/vite/entry-file-names.ts";
-import { createShellViteInlineConfig } from "../../packages/shell-ui/vite/run-build.ts";
-import { shellBridgeHtmlPlugin } from "../../packages/shell-ui/vite/shell-bridge-html.ts";
+import { shellEntryFileNames } from "../../frontend/shell-ui/vite/entry-file-names.ts";
+import { createShellViteInlineConfig } from "../../frontend/shell-ui/vite/run-build.ts";
+import { shellBridgeHtmlPlugin } from "../../frontend/shell-ui/vite/shell-bridge-html.ts";
 
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(PKG_DIR, "..", "..");

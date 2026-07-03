@@ -4,7 +4,7 @@ title: Hub RPC
 
 # Hub RPC
 
-**Hub RPC** (`HubRPC/1.0`) is the WebSocket transport between any Hub client and the agent runtime. It is implemented in [`packages/hub-rpc/`](../../packages/hub-rpc/) and served at **`/hub/rpc/v1`**.
+**Hub RPC** (`HubRPC/1.0`) is the WebSocket transport between any Hub client and the agent runtime. It is implemented in [`shared/hub-rpc/`](../../shared/hub-rpc/) and served at **`/hub/rpc/v1`**.
 
 SAP (`SAP/1.0`) is a **session layer** on top of Hub RPC: true satellites call `sap.attach` after connect; bundled SPA modules **never** attach.
 

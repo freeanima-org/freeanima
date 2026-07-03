@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 19:53+0800\n"
+"POT-Creation-Date: 2026-07-03 10:33+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -100,6 +100,12 @@ msgstr ""
 #: docs/concepts/recall-flow.md:1 messages/po4a/en.xml:577
 #, no-wrap
 msgid "Recall Flow"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/concepts/repository-topology.md:180 messages/po4a/en.xml:58
+#, no-wrap
+msgid "Other"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -500,12 +506,6 @@ msgstr ""
 #: messages/po4a/en.xml:57
 #, no-wrap
 msgid "Cross-conversation or platform-level actions ({count} total)."
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:58
-#, no-wrap
-msgid "Other"
 msgstr ""
 
 #. type: Content of: <messages><msg>

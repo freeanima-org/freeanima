@@ -1,9 +1,0 @@
-{
-  "extends": "../../tsconfig.composite.base.json",
-  "compilerOptions": {
-    "rootDir": ".",
-    "outDir": ".tsout"
-  },
-  "include": ["**/*.ts"],
-  "exclude": ["node_modules", ".tsout"]
-}

@@ -8,8 +8,16 @@
     "outDir": ".tsout"
   },
   "references": [
-    { "path": "./packages/hub-rpc" },
-    { "path": "./packages/sap-contract" },
-    { "path": "./packages/shell-ui/vite" }
+    { "path": "./shared/hub-rpc" },
+    { "path": "./shared/sap-contract" },
+    { "path": "./frontend/shell-ui/vite" },
+    { "path": "./features/chat" },
+    { "path": "./features/console" },
+    { "path": "./features/diary" },
+    { "path": "./features/dream" },
+    { "path": "./features/email" },
+    { "path": "./features/notification" },
+    { "path": "./features/task" },
+    { "path": "./features/vault" }
   ]
 }

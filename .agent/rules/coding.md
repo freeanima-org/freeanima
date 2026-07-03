@@ -32,7 +32,7 @@
   - `eslint/eqeqeq` — always `===` / `!==` (`null` checks may use `== null` / `!= null`).
   - `eslint/no-promise-executor-return` — Promise executor must not return a value; use block body (`{ setTimeout(resolve, ms); }`).
   - `unicorn/explicit-length-check` — use `.length > 0` / `.length === 0`, not truthy `.length`.
-- **React**（admin-frontend / ui-kit / satellites override）: `react/rules-of-hooks` error；`react/exhaustive-deps` warn。
+- **React**（feature-console Admin / ui-kit / satellites override）: `react/rules-of-hooks` error；`react/exhaustive-deps` warn。
 - **Disable 纪律**（`dep-check` 脚本 enforce）:
   - `oxlint-disable` / `eslint-disable` 行须含 `-- reason`
   - 禁止 `ts-ignore` / `ts-nocheck`；`ts-expect-error` 须同行说明
@@ -81,7 +81,7 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 - **Port 方法名**（`searchFts`、`appendMessageReturningId` 等）与 **tool/REST 计算字段** 保持 camelCase
 - **Row 数据字段** 一律 snake_case；时间戳列统一 `created_at` / `updated_at`（以 [`core/src/db/schema/`](../../core/src/db/schema/) 为准）
 - **PG row 类型**：`core/src/db/schema/rows/*` 或 `typeof table.$inferSelect`；JSON 边界 `Date`↔ISO（见 drizzle-db）；禁止 camelCase→snake_case 字段改名表与 dual-key DbRow
-- **SAP / satellite wire**：capabilities 从 `@freeanima/sap-contract` re-export Payload；admin-frontend 从 `@freeanima/admin-contract/api` 导入 Row / 响应类型
+- **SAP / satellite wire**：capabilities 从 `@freeanima/sap-contract` re-export Payload；Admin UI 从 `@freeanima/admin-contract/api` 导入 Row / 响应类型
 
 详情：[`drizzle-db.md`](drizzle-db.md) DbRow / FTS 列名约定。
 

@@ -1,0 +1,30 @@
+{
+  "name": "@freeanima/feature-chat",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./plugin": "./plugin.ts",
+    "./hub/*": "./hub/*.ts",
+    "./protocol": "./protocol/index.ts",
+    "./ui/app": "./ui/app/index.ts",
+    "./ui/app/styles.css": "./ui/app/src/styles.css"
+  },
+  "dependencies": {
+    "@capacitor/keyboard": "^8.0.5",
+    "@freeanima/core": "workspace:*",
+    "@freeanima/sap-contract": "workspace:*",
+    "@freeanima/shell-sdk": "workspace:*",
+    "@freeanima/ui-kit": "workspace:*",
+    "marked": "^18.0.4",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "zustand": "catalog:"
+  },
+  "devDependencies": {
+    "@freeanima/platform": "workspace:*",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
+  }
+}

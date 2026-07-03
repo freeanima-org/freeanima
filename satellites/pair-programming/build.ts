@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import {
   runSatelliteViteBuild,
   type SatelliteViteOptions,
-} from "../../packages/shell-ui/vite/satellite-vite.ts";
+} from "../../frontend/shell-ui/vite/satellite-vite.ts";
 
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(PKG_DIR, "..", "..");

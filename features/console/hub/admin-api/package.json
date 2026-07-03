@@ -1,0 +1,44 @@
+{
+  "name": "@freeanima/admin-api",
+  "description": "FreeAnima Admin Hub REST API（Elysia + handlers）",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./api": "./api/index.ts",
+    "./elysia": "./elysia/app.ts",
+    "./handlers": "./handlers/index.ts",
+    "./handlers/runtime": "./handlers/runtime.ts",
+    "./http-dispatch": "./http-dispatch.ts",
+    "./service-auth": "./service-auth.ts",
+    "./server": "./server.ts",
+    "./http-shutdown": "./http-shutdown.ts",
+    "./service-restart": "./service-restart.ts",
+    "./web-static": "./web-static.ts",
+    "./date-json": "./date-json.ts"
+  },
+  "dependencies": {
+    "@freeanima/admin-contract": "workspace:*",
+    "@freeanima/capabilities-acp": "workspace:*",
+    "@freeanima/capabilities-identity": "workspace:*",
+    "@freeanima/capabilities-mcp-client": "workspace:*",
+    "@freeanima/capabilities-mcp-server": "workspace:*",
+    "@freeanima/capabilities-memory": "workspace:*",
+    "@freeanima/capabilities-satellite": "workspace:*",
+    "@freeanima/capabilities-tools": "workspace:*",
+    "@freeanima/feature-task": "workspace:*",
+    "@freeanima/core": "workspace:*",
+    "@freeanima/kernel": "workspace:*",
+    "@freeanima/platform": "workspace:*",
+    "@freeanima/runtime": "workspace:*",
+    "@freeanima/sap-contract": "workspace:*",
+    "@sinclair/typebox": "catalog:",
+    "elysia": "^1.4.28",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

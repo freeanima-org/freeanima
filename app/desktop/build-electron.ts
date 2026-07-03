@@ -20,8 +20,8 @@ const BUNDLED_WORKSPACE_PACKAGES = new Set([
   "@freeanima/sap-contract",
   "@freeanima/shell-sdk",
   "@freeanima/satellite-companion",
-  "@freeanima/satellite-chat",
-  "@freeanima/admin-frontend",
+  "@freeanima/feature-chat",
+  "@freeanima/feature-console",
   "@freeanima/shell-ui",
 ]);
 
