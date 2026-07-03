@@ -89,7 +89,7 @@ Task/list **LLM 工具**默认在 **agent subject 专属 private world** 操作�
 
 **Folders** (`body.is_folder: true`) are container nodes in the sidebar tree only — they cannot hold tasks directly (`task.create` / `task.patch` reject `list_id` pointing at a folder). Child lists and sub-folders reference a parent folder via `body.parent_id` (entity id of a folder, or omitted/null at root). Nesting must not form cycles. **Folders cannot be archived** — only deleted. Deleting a folder recursively removes all sub-folders and moves every contained list to root (`parent_id: null`); list task items are kept. List **`body.closed: true`** means archived (lists only): hidden from the main sidebar by default (`tasklist.list` unless `include_closed`), restorable via `tasklist.patch({ closed: false })` only; **any other mutation on an archived list or its tasks** (rename, move, edit, complete, …) returns `清单已归档`. Deleting a non-folder list removes its task items when `cascade` is true (default). `sort_order` is scoped among siblings sharing the same `parent_id`.
 
-LLM ToolSets: `@freeanima/capabilities-task` — `task` (item CRUD + `task_search`) and `tasklist` (list CRUD + `tasklist_search`); load via `toolset_load`. `task_search` searches all lists when `list_id` is omitted. Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration ([`scripts/archive/migrate-tasks-to-entities.ts`](../../scripts/archive/migrate-tasks-to-entities.ts)).
+LLM ToolSets: `@freeanima/feature-task/domain` — `task` (item CRUD + `task_search`) and `tasklist` (list CRUD + `tasklist_search`); load via `toolset_load`. `task_search` searches all lists when `list_id` is omitted. Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration ([`scripts/archive/migrate-tasks-to-entities.ts`](../../scripts/archive/migrate-tasks-to-entities.ts)).
 
 ### Shell UI: global Subject scope
 
@@ -121,7 +121,7 @@ Email accounts, threads, and mirrored messages map to:
 
 Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. Messages store IMAP UID in `body.imap_uid`; human-readable subject/body use entity columns. IMAP sync upserts threads/messages; UI lives in shell `/email` (SAP `email.*` methods), not Admin REST.
 
-LLM ToolSets: `@freeanima/capabilities-email` — `email-account` (account entities) and `email` (sync, send/receive, search); load via `toolset_load`. Legacy `config.yaml` `email.accounts[]` migrates via [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts).
+LLM ToolSets: `@freeanima/feature-email/domain` — `email-account` (account entities) and `email` (sync, send/receive, search); load via `toolset_load`. Legacy `config.yaml` `email.accounts[]` migrates via [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts).
 
 ## Diary module
 

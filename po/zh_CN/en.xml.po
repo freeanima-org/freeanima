@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 19:53+0800\n"
+"POT-Creation-Date: 2026-07-03 10:33+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -100,6 +100,12 @@ msgstr "工具"
 #, no-wrap
 msgid "Recall Flow"
 msgstr "回忆流程"
+
+#. type: Content of: <messages><msg>
+#: docs/concepts/repository-topology.md:180 messages/po4a/en.xml:58
+#, no-wrap
+msgid "Other"
+msgstr "其它"
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:5
@@ -500,12 +506,6 @@ msgstr "暂无已注册的 slash 命令。"
 #, no-wrap
 msgid "Cross-conversation or platform-level actions ({count} total)."
 msgstr "跨对话或平台级操作（共 {count} 个）。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:58
-#, no-wrap
-msgid "Other"
-msgstr "其它"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:59 messages/po4a/en.xml:379

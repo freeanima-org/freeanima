@@ -8,7 +8,7 @@
       "@pair/*": ["./app/src/*"]
     }
   },
-  "references": [{ "path": "../../packages/shell-ui/vite" }],
+  "references": [{ "path": "../../frontend/shell-ui/vite" }],
   "include": [
     "app/src/**/*.ts",
     "app/src/**/*.tsx",

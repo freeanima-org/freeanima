@@ -6,7 +6,7 @@ title: SAP Overview
 
 **SAP** (Satellite Application Protocol, version `SAP/1.0`) is the WebSocket JSON protocol between the FreeAnima **Hub** (`anima service`) and **Satellite** processes. Satellites are standalone apps (e.g. Chat) that expose their own HTTP UI while delegating agent runtime to the Hub.
 
-Schemas and client SDK live in [`packages/sap-contract/`](../../packages/sap-contract/). Hub server implementation: [`platform/src/sap/`](../../platform/src/sap/).
+Schemas and client SDK live in [`shared/sap-contract/`](../../shared/sap-contract/) (`./satellite` for attach/tool/terminal frames; `./feature-rpc` for bundled product Hub RPC). Hub server implementation: [`platform/src/sap/`](../../platform/src/sap/); feature handlers register via [`platform/src/features/`](../../platform/src/features/).
 
 ## Design goals
 

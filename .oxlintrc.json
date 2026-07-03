@@ -20,7 +20,7 @@
     "**/coverage/**",
     "**/www/**",
     "app/cli/publish/**",
-    "platform/admin-frontend/app/src/routeTree.gen.ts"
+    "features/console/ui/admin/routes/routeTree.gen.ts"
   ],
   "rules": {
     "import/extensions": [
@@ -92,7 +92,7 @@
   },
   "overrides": [
     {
-      "files": ["platform/admin-frontend/app/**/*.{ts,tsx}"],
+      "files": ["features/console/ui/admin/**/*.{ts,tsx}"],
       "plugins": ["react"],
       "env": {
         "browser": true

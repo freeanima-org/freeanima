@@ -2,72 +2,13 @@ import { randomUUID } from "node:crypto";
 import { omitUndefined } from "@freeanima/core/util";
 import type { SapServerDeps } from "./types.ts";
 export type { SapServerDeps } from "./types.ts";
-import {
-  handleNotificationList,
-  handleNotificationMarkRead,
-  handleNotificationRecipients,
-} from "./handlers/notification.ts";
-import {
-  handleTasklistList,
-  handleTasklistCreate,
-  handleTasklistPatch,
-  handleTasklistDelete,
-  handleTaskList,
-  handleTaskCreate,
-  handleTaskPatch,
-  handleTaskComplete,
-  handleTaskUncomplete,
-  handleTaskDelete,
-  handleTaskSearch,
-} from "./handlers/entity-task.ts";
-import {
-  handleVaultList,
-  handleVaultGet,
-  handleVaultCreate,
-  handleVaultCreatePlain,
-  handleVaultPatch,
-  handleVaultPatchPlain,
-  handleVaultDelete,
-  handleVaultSearch,
-  handleVaultCryptoGet,
-  handleVaultCryptoInit,
-  handleVaultCryptoChange,
-  handleVaultEnsureAgent,
-} from "./handlers/entity-vault.ts";
 import { bindVaultShellSendRequest } from "@freeanima/platform/connectors/vault";
+import { bindChatSessionPumps } from "@freeanima/feature-chat/hub/session-pumps";
 import {
   sapAttachPayloadSchema,
   defineSapRouter,
   parseSapEnvelope,
   serializeSapEnvelope,
-  conversationCreateInputSchema,
-  conversationListInputSchema,
-  conversationMessagesInputSchema,
-  conversationPatchTitleInputSchema,
-  conversationArchiveInputSchema,
-  conversationUnarchiveInputSchema,
-  conversationDeleteInputSchema,
-  conversationSubscribeInputSchema,
-  sessionAcpDockInputSchema,
-  conversationCommandsInputSchema,
-  diaryListInputSchema,
-  diaryCreateInputSchema,
-  diaryAppendInputSchema,
-  diaryPatchInputSchema,
-  diaryDeleteInputSchema,
-  diaryGetInputSchema,
-  diarySearchInputSchema,
-  dreamListInputSchema,
-  dreamGetInputSchema,
-  emailAccountListInputSchema,
-  emailMessageListInputSchema,
-  emailMessageReadInputSchema,
-  emailMessageMarkReadInputSchema,
-  emailMessageSearchInputSchema,
-  emailSyncInputSchema,
-  emailThreadListInputSchema,
-  messageSendInputSchema,
-  messageInterruptInputSchema,
   toolRegisterInputSchema,
   toolUnregisterInputSchema,
   toolResultInputSchema,
@@ -76,24 +17,13 @@ import {
   terminalWriteInputSchema,
   terminalResizeInputSchema,
   terminalCloseInputSchema,
-  normalizeAppSlug,
-  formatSapPlatform,
   type SapMethod,
   type SapRequestAuthContext,
   type SapRequestContext,
   type SapRouterInputs,
   type SapServerHandlers,
-  type SapRouterOutputs,
 } from "@freeanima/sap-contract";
 import { hubRpcConnectPayloadSchema, HUB_RPC_VERSION } from "@freeanima/hub-rpc";
-import { isConversationMeta } from "@freeanima/core/db/domain";
-import { bridgeMessageStream, bridgeSessionUpdates } from "./stream-bridge.ts";
-import * as serviceSessions from "../runtime/service-conversations.ts";
-import * as serviceAcpDock from "../runtime/service-acp-dock.ts";
-import * as serviceStatus from "../runtime/service-status.ts";
-import * as serviceEntityDiary from "../runtime/service-entity-diary.ts";
-import * as serviceEntityDream from "../runtime/service-entity-dream.ts";
-import * as serviceEntityEmail from "../runtime/service-entity-email.ts";
 import {
   closeTerminalSession,
   createTerminalSession,
@@ -101,6 +31,7 @@ import {
   TerminalSessionError,
 } from "./terminal-session.ts";
 import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
+import { getFeatureRpcHandler } from "../features/registry.ts";
 
 const HEARTBEAT_INTERVAL_SEC = 30;
 const SATELLITE_REQUEST_TIMEOUT_MS = 30_000;
@@ -114,6 +45,7 @@ export function createSapServerHandlers(
   deps: SapServerDeps,
   sessionPumps: Map<string, AbortController>,
 ): SapServerHandlers {
+  bindChatSessionPumps(sessionPumps);
   const router = defineSapRouter();
 
   const handlers: SapServerHandlers = {
@@ -159,294 +91,17 @@ export function createSapServerHandlers(
         throw new Error(`unknown SAP method: ${method}`);
       }
 
+      const featureHandler = getFeatureRpcHandler(method);
+      if (featureHandler) {
+        return featureHandler(deps, payload, ctx) as Promise<
+          import("@freeanima/sap-contract").SapRouterOutputs[typeof method]
+        >;
+      }
+
       switch (method) {
         case "sap.attach":
         case "sap.detach":
           throw new Error("sap session methods are handled by Hub RPC transport");
-        case "conversation.create": {
-          const input = conversationCreateInputSchema.parse(payload);
-          const platform = input.platform ?? formatSapPlatform(ctx.app_id, ctx.instance_id);
-          const platformExtra: Record<string, unknown> = {};
-          if (ctx.app_id.trim() && ctx.instance_id.trim()) {
-            platformExtra.satellite_app_id = normalizeAppSlug(ctx.app_id);
-            platformExtra.satellite_instance_id = ctx.instance_id;
-          }
-          if (input.workspace_root) platformExtra.workspace_root = input.workspace_root;
-          if (input.workspace_gitignore !== undefined) {
-            platformExtra.workspace_gitignore = input.workspace_gitignore;
-          }
-          if (input.workspace_show_hidden !== undefined) {
-            platformExtra.workspace_show_hidden = input.workspace_show_hidden;
-          }
-          if (input.capability_mask) {
-            platformExtra.capability_mask = input.capability_mask;
-          }
-          const sid = await deps.runtime.conversation.newConversation(
-            platform,
-            undefined,
-            platformExtra,
-          );
-          if (input.title?.trim()) {
-            await deps.runtime.setConversationTitle(sid, input.title.trim(), platform);
-          }
-          return { conversation_id: sid };
-        }
-        case "conversation.list": {
-          const input = conversationListInputSchema.parse(payload);
-          const platform = input.platform ?? formatSapPlatform(ctx.app_id, ctx.instance_id);
-          const result = await serviceSessions.listConversations(
-            deps.runtime.runtimeDeps(),
-            platform ?? null,
-            omitUndefined({ includeArchived: input.include_archived }),
-          );
-          return {
-            conversations: result.conversations.map((s) => ({
-              conversation_id: s.id,
-              title: s.title,
-              platform: s.platform,
-              updated_at: s.updated_at,
-              archived_at: s.archived_at ?? null,
-            })),
-          };
-        }
-        case "conversation.messages": {
-          const input = conversationMessagesInputSchema.parse(payload);
-          const platform = await resolveConversationPlatform(deps, input.conversation_id);
-          const messages = await deps.runtime.getMessages(
-            input.conversation_id,
-            platform,
-            omitUndefined({
-              offset: input.offset,
-              limit: input.limit,
-            }),
-          );
-          return messages as SapRouterOutputs["conversation.messages"];
-        }
-        case "conversation.patchTitle": {
-          const input = conversationPatchTitleInputSchema.parse(payload);
-          const platform = await resolveConversationPlatform(deps, input.conversation_id);
-          await deps.runtime.setConversationTitle(input.conversation_id, input.title, platform);
-          return { ok: true as const };
-        }
-        case "conversation.archive": {
-          const input = conversationArchiveInputSchema.parse(payload);
-          const platform = await resolveConversationPlatform(deps, input.conversation_id);
-          await deps.runtime.archiveConversation(input.conversation_id, platform);
-          return { ok: true as const };
-        }
-        case "conversation.unarchive": {
-          const input = conversationUnarchiveInputSchema.parse(payload);
-          const platform = await resolveConversationPlatform(deps, input.conversation_id);
-          await deps.runtime.unarchiveConversation(input.conversation_id, platform);
-          return { ok: true as const };
-        }
-        case "conversation.delete": {
-          const input = conversationDeleteInputSchema.parse(payload);
-          const platform = await resolveConversationPlatform(deps, input.conversation_id);
-          await deps.runtime.deleteConversation(input.conversation_id, platform);
-          return { ok: true as const };
-        }
-        case "conversation.rollbackBeforeLastUser": {
-          const input = conversationDeleteInputSchema.parse(payload);
-          const platform = await resolveConversationPlatform(deps, input.conversation_id);
-          await deps.runtime.rollbackBeforeLastUser(input.conversation_id, platform);
-          return { ok: true as const };
-        }
-        case "conversation.subscribe": {
-          const input = conversationSubscribeInputSchema.parse(payload);
-          const pumpKey = `${ctx.app_id}:${ctx.instance_id}:${input.conversation_id}`;
-          if (!sessionPumps.has(pumpKey)) {
-            const controller = new AbortController();
-            sessionPumps.set(pumpKey, controller);
-            void pumpSessionUpdates(deps, ctx, input.conversation_id, controller.signal).finally(
-              () => {
-                sessionPumps.delete(pumpKey);
-              },
-            );
-          }
-          return { ok: true as const };
-        }
-        case "conversation.acpDock": {
-          const input = sessionAcpDockInputSchema.parse(payload);
-          const platform = await resolveConversationPlatform(deps, input.conversation_id);
-          return serviceAcpDock.getConversationAcpDock(
-            deps.runtime.runtimeDeps(),
-            input.conversation_id,
-            platform,
-          );
-        }
-        case "conversation.commands": {
-          const input = conversationCommandsInputSchema.parse(payload);
-          const platform = input.platform ?? formatSapPlatform(ctx.app_id, ctx.instance_id);
-          return serviceStatus.listCommands(
-            omitUndefined({
-              platform: input.all ? undefined : platform,
-              all: input.all,
-            }),
-          );
-        }
-        case "tasklist.list":
-          return handleTasklistList(deps, payload, ctx);
-        case "tasklist.create":
-          return handleTasklistCreate(deps, payload, ctx);
-        case "tasklist.patch":
-          return handleTasklistPatch(deps, payload, ctx);
-        case "tasklist.delete":
-          return handleTasklistDelete(deps, payload, ctx);
-        case "task.list":
-          return handleTaskList(deps, payload, ctx);
-        case "task.create":
-          return handleTaskCreate(deps, payload, ctx);
-        case "task.patch":
-          return handleTaskPatch(deps, payload, ctx);
-        case "task.complete":
-          return handleTaskComplete(deps, payload, ctx);
-        case "task.uncomplete":
-          return handleTaskUncomplete(deps, payload, ctx);
-        case "task.delete":
-          return handleTaskDelete(deps, payload, ctx);
-        case "task.search":
-          return handleTaskSearch(deps, payload, ctx);
-        case "vault.list":
-          return handleVaultList(deps, payload, ctx);
-        case "vault.get":
-          return handleVaultGet(deps, payload, ctx);
-        case "vault.create":
-          return handleVaultCreate(deps, payload, ctx);
-        case "vault.createPlain":
-          return handleVaultCreatePlain(deps, payload, ctx);
-        case "vault.patch":
-          return handleVaultPatch(deps, payload, ctx);
-        case "vault.patchPlain":
-          return handleVaultPatchPlain(deps, payload, ctx);
-        case "vault.delete":
-          return handleVaultDelete(deps, payload, ctx);
-        case "vault.search":
-          return handleVaultSearch(deps, payload, ctx);
-        case "vault.crypto.get":
-          return handleVaultCryptoGet(deps, payload, ctx);
-        case "vault.crypto.init":
-          return handleVaultCryptoInit(deps, payload, ctx);
-        case "vault.crypto.change":
-          return handleVaultCryptoChange(deps, payload, ctx);
-        case "vault.ensureAgent":
-          return handleVaultEnsureAgent(deps, payload, ctx);
-        case "diary.list": {
-          const input = diaryListInputSchema.parse(payload);
-          return serviceEntityDiary.serviceDiaryList(
-            deps.runtime.runtimeDeps(),
-            omitUndefined(input),
-          );
-        }
-        case "diary.create": {
-          const input = diaryCreateInputSchema.parse(payload);
-          return serviceEntityDiary.serviceDiaryCreate(
-            deps.runtime.runtimeDeps(),
-            omitUndefined(input),
-          );
-        }
-        case "diary.append": {
-          const input = diaryAppendInputSchema.parse(payload);
-          return serviceEntityDiary.serviceDiaryAppend(deps.runtime.runtimeDeps(), input);
-        }
-        case "diary.patch": {
-          const input = diaryPatchInputSchema.parse(payload);
-          return serviceEntityDiary.serviceDiaryPatch(
-            deps.runtime.runtimeDeps(),
-            omitUndefined(input),
-          );
-        }
-        case "diary.delete": {
-          const input = diaryDeleteInputSchema.parse(payload);
-          return serviceEntityDiary.serviceDiaryDelete(deps.runtime.runtimeDeps(), input);
-        }
-        case "diary.get": {
-          const input = diaryGetInputSchema.parse(payload);
-          return serviceEntityDiary.serviceDiaryGet(deps.runtime.runtimeDeps(), input);
-        }
-        case "diary.search": {
-          const input = diarySearchInputSchema.parse(payload);
-          return serviceEntityDiary.serviceDiarySearch(
-            deps.runtime.runtimeDeps(),
-            omitUndefined(input),
-          );
-        }
-        case "dream.list": {
-          const input = dreamListInputSchema.parse(payload ?? {});
-          return serviceEntityDream.serviceDreamList(
-            deps.runtime.runtimeDeps(),
-            omitUndefined(input),
-          );
-        }
-        case "dream.get": {
-          const input = dreamGetInputSchema.parse(payload);
-          return serviceEntityDream.serviceDreamGet(deps.runtime.runtimeDeps(), input);
-        }
-        case "emailaccount.list": {
-          const input = emailAccountListInputSchema.parse(payload ?? {});
-          return serviceEntityEmail.serviceEmailAccountList(deps.runtime.runtimeDeps(), input);
-        }
-        case "email.message.list": {
-          const input = emailMessageListInputSchema.parse(payload);
-          return serviceEntityEmail.serviceEmailMessageList(
-            deps.runtime.runtimeDeps(),
-            omitUndefined(input),
-          );
-        }
-        case "email.message.read": {
-          const input = emailMessageReadInputSchema.parse(payload);
-          return serviceEntityEmail.serviceEmailMessageRead(deps.runtime.runtimeDeps(), input);
-        }
-        case "email.message.markRead": {
-          const input = emailMessageMarkReadInputSchema.parse(payload);
-          return serviceEntityEmail.serviceEmailMessageMarkRead(deps.runtime.runtimeDeps(), input);
-        }
-        case "email.message.search": {
-          const input = emailMessageSearchInputSchema.parse(payload);
-          return serviceEntityEmail.serviceEmailMessageSearch(
-            deps.runtime.runtimeDeps(),
-            omitUndefined(input),
-          );
-        }
-        case "email.sync": {
-          const input = emailSyncInputSchema.parse(payload);
-          return serviceEntityEmail.serviceEmailSync(
-            deps.runtime.runtimeDeps(),
-            omitUndefined(input),
-          );
-        }
-        case "emailthread.list": {
-          const input = emailThreadListInputSchema.parse(payload);
-          return serviceEntityEmail.serviceEmailThreadList(
-            deps.runtime.runtimeDeps(),
-            omitUndefined(input),
-          );
-        }
-        case "notification.list":
-          return handleNotificationList(deps, payload);
-        case "notification.markRead":
-          return handleNotificationMarkRead(deps, payload);
-        case "notification.recipients":
-          return handleNotificationRecipients(deps);
-        case "message.send": {
-          const input = messageSendInputSchema.parse(payload);
-          const streamId = randomUUID();
-          const platform = await resolveConversationPlatform(deps, input.conversation_id);
-          void pumpMessageStream(
-            deps,
-            ctx,
-            streamId,
-            input.conversation_id,
-            input.message,
-            platform,
-          );
-          return { stream_id: streamId };
-        }
-        case "message.interrupt": {
-          const input = messageInterruptInputSchema.parse(payload);
-          deps.runtime.interruptSessionStream(input.conversation_id);
-          return { ok: true as const };
-        }
         case "terminal.attach": {
           const input = terminalAttachInputSchema.parse(payload);
           const { conversationId, pty } = createTerminalSession(input.cwd);
@@ -504,68 +159,13 @@ export function createSapServerHandlers(
           deps.satelliteManager.handleToolError(input.call_id, input.error);
           return { ok: true as const };
         }
-        default: {
-          const _exhaustive: never = method;
-          throw new Error(`unhandled SAP method: ${String(_exhaustive)}`);
-        }
+        default:
+          throw new Error(`unhandled SAP method: ${String(method)}`);
       }
     },
   };
 
   return handlers;
-}
-
-async function resolveConversationPlatform(
-  deps: SapServerDeps,
-  conversationId: string,
-): Promise<string> {
-  const meta = await deps.runtime.conversation.loadConversationMeta(conversationId);
-  const p = isConversationMeta(meta) ? meta.platform : undefined;
-  const platform = typeof p === "string" ? p.trim() : "";
-  if (!platform) {
-    throw new Error(`conversation ${conversationId.slice(0, 16)} has no platform`);
-  }
-  return platform;
-}
-
-async function pumpMessageStream(
-  deps: SapServerDeps,
-  ctx: SapRequestContext,
-  streamId: string,
-  conversationId: string,
-  message: string,
-  platform: string,
-): Promise<void> {
-  try {
-    for await (const mapped of bridgeMessageStream(
-      streamId,
-      deps.runtime.sendMessageStream(conversationId, message, platform),
-    )) {
-      ctx.sendEvent(mapped.method, mapped.payload);
-    }
-  } catch (e) {
-    ctx.sendEvent("stream.error", {
-      stream_id: streamId,
-      error: String(e),
-    });
-    ctx.sendEvent("stream.done", { stream_id: streamId });
-  }
-}
-
-async function pumpSessionUpdates(
-  deps: SapServerDeps,
-  ctx: SapRequestContext,
-  conversationId: string,
-  signal: AbortSignal,
-): Promise<void> {
-  for await (const mapped of bridgeSessionUpdates(
-    conversationId,
-    (cb) => deps.runtime.watchConversation(conversationId, cb),
-    signal,
-  )) {
-    if (signal.aborted) break;
-    ctx.sendEvent(mapped.method, mapped.payload);
-  }
 }
 
 export function attachSapWebSocket(

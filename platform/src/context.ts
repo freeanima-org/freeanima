@@ -12,4 +12,4 @@ export { assertNotShuttingDown } from "@freeanima/platform/ports/app-runtime-con
 
 export type { AppRuntime } from "./runtime/index.ts";
 export type { Engine } from "@freeanima/runtime";
-export type { MaskRegistry } from "@freeanima/capabilities-task/mask";
+export type { MaskRegistry } from "@freeanima/feature-task/domain/mask";

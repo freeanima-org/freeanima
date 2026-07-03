@@ -18,7 +18,7 @@ import {
   reopenTaskList,
   updateTaskItem,
   updateTaskList,
-} from "@freeanima/capabilities-task";
+} from "@freeanima/feature-task/domain";
 import { getEntity } from "@freeanima/core/db/pg/entity";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {

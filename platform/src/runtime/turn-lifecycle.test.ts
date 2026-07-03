@@ -1,7 +1,7 @@
 import { describe, it, expect, spyOn, afterEach } from "bun:test";
 import * as engine from "@freeanima/runtime/loop";
 import { createConversationService } from "@freeanima/runtime/conversation";
-import { MaskRegistry } from "@freeanima/capabilities-task/mask";
+import { MaskRegistry } from "@freeanima/feature-task/domain/mask";
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/runtime";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/core/llm";

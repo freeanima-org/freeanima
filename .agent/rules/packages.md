@@ -1,33 +1,37 @@
 # Package naming (RFC #1)
 
-Workspace package names reflect the six-layer model:
+Workspace package names reflect the layer topology in [`code-layers.md`](code-layers.md):
 
-| Shape           | Pattern                          | Example                                                                |
-| --------------- | -------------------------------- | ---------------------------------------------------------------------- |
-| Layer aggregate | `@freeanima/{layer}`             | `kernel`, `core`, `runtime`, `platform`                                |
-| Capability pack | `@freeanima/capabilities-{slug}` | `capabilities-memory`, `capabilities-tools`                            |
-| Entry           | `@freeanima/cli`                 | CLI only                                                               |
-| Shell UI        | `@freeanima/shell-ui`            | 桌面/移动统一壳层 SPA（路由/导航/设置宿主，无 SAP wire）               |
-| UI kit          | `@freeanima/ui-kit`              | 共享 React UI（shadcn 原语 + FormField、Layout、ACP dock），无 Hub/SAP |
-| Shell SDK       | `@freeanima/shell-sdk`           | 壳层集成（manifest、settings、Hub auth/offline-cache），依赖 hub-rpc   |
-| Admin wire      | `@freeanima/admin-contract`      | Admin Hub wire 类型与边界工具（`platform/admin-contract/`）            |
+| Shape           | Pattern                          | Example                                                       |
+| --------------- | -------------------------------- | ------------------------------------------------------------- |
+| Layer aggregate | `@freeanima/{layer}`             | `kernel`, `core`, `runtime`, `platform`                       |
+| Capability pack | `@freeanima/capabilities-{slug}` | `capabilities-memory`, `capabilities-tools`                   |
+| Feature module  | `@freeanima/feature-{slug}`      | `feature-chat`, `feature-console`                             |
+| Shared wire     | `@freeanima/{name}`              | `hub-rpc`, `sap-contract`, `vault-crypto`（`shared/`）        |
+| Frontend shell  | `@freeanima/{name}`              | `ui-kit`, `shell-sdk`, `shell-ui`（`frontend/`）              |
+| Entry           | `@freeanima/cli`                 | CLI only                                                      |
+| Satellite       | `@freeanima/satellite-{slug}`    | `satellite-companion`（`satellites/` 白名单）                 |
+| Admin wire      | `@freeanima/admin-contract`      | Admin Hub wire（`features/console/protocol/admin-contract/`） |
+| Admin REST      | `@freeanima/admin-api`           | Admin Elysia routes（`features/console/hub/admin-api/`）      |
 
 ## Valid layer packages
 
-| Package                | Layer        | Notes                                                             |
-| ---------------------- | ------------ | ----------------------------------------------------------------- |
-| `@freeanima/kernel`    | kernel       | subpaths: `/logging`, `/hooks`, `/eventbus`                       |
-| `@freeanima/core`      | core         | subpaths: `/db`, `/repos`, `/tool`, `/llm`, …                     |
-| `@freeanima/runtime`   | runtime      | subpaths: `/conversation`, `/turn`, `/loop`, `/goal`, `/pipeline` |
-| `@freeanima/platform`  | platform     | subpaths: `/ports`, `/config`, `/connectors/*`                    |
-| `capabilities-*`       | capabilities | 11 packs; see [`code-layers.md`](code-layers.md)                  |
-| `@freeanima/cli`       | entry        | documented only                                                   |
-| `@freeanima/ui-kit`    | packages     | 共享 React UI（shadcn + composite）                               |
-| `@freeanima/hub-rpc`   | packages     | Hub RPC 传输（connect / req / res / evt）                         |
-| `@freeanima/shell-sdk` | packages     | 壳层 manifest/settings/Hub 连通（依赖 hub-rpc）                   |
-| `@freeanima/shell-ui`  | packages     | 壳层 SPA                                                          |
+| Package                   | Layer / dir  | Notes                                                                                  |
+| ------------------------- | ------------ | -------------------------------------------------------------------------------------- |
+| `@freeanima/kernel`       | kernel       | subpaths: `/logging`, `/hooks`, `/eventbus`                                            |
+| `@freeanima/core`         | core         | subpaths: `/db`, `/repos`, `/tool`, `/llm`, …                                          |
+| `@freeanima/runtime`      | runtime      | subpaths: `/conversation`, `/turn`, `/loop`, `/goal`, `/pipeline`                      |
+| `@freeanima/platform`     | platform     | subpaths: `/ports`, `/config`, `/connectors/*`, `/features/*`                          |
+| `capabilities-*`          | capabilities | 8 packs（acp, identity, llm-openai, mcp-client, mcp-server, memory, satellite, tools） |
+| `feature-*`               | features     | plugin + hub + protocol + ui + domain                                                  |
+| `@freeanima/cli`          | entry        | documented only                                                                        |
+| `@freeanima/ui-kit`       | frontend     | 共享 React UI（shadcn + composite）                                                    |
+| `@freeanima/hub-rpc`      | shared       | Hub RPC 传输（connect / req / res / evt）                                              |
+| `@freeanima/sap-contract` | shared       | SAP + Feature RPC wire；`./satellite`、`./feature-rpc` 子入口                          |
+| `@freeanima/shell-sdk`    | frontend     | 壳层 manifest/settings/Hub 连通（依赖 hub-rpc）                                        |
+| `@freeanima/shell-ui`     | frontend     | 壳层 SPA                                                                               |
 
-**Deprecated prefixes** (must not appear in new packages): `engine-*`, `life-*`, `storage-*`, `mechanism-*`, `orchestration-*`, `service-*`, `connectors-*`.
+**Deprecated prefixes** (must not appear in new packages): `engine-*`, `life-*`, `storage-*`, `mechanism-*`, `orchestration-*`, `service-*`, `connectors-*`, `admin-frontend`（已移除；用 `feature-console`）。
 
 Layer dependency rules: [`code-layers.md`](code-layers.md).
 

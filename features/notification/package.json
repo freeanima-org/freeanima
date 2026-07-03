@@ -1,0 +1,26 @@
+{
+  "name": "@freeanima/feature-notification",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./hub/*": "./hub/*.ts",
+    "./protocol": "./protocol/index.ts",
+    "./plugin": "./plugin.ts",
+    "./ui/app": "./ui/app/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/core": "workspace:*",
+    "@freeanima/sap-contract": "workspace:*",
+    "@freeanima/shell-sdk": "workspace:*",
+    "@freeanima/ui-kit": "workspace:*",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@freeanima/platform": "workspace:*",
+    "@types/bun": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:"
+  }
+}

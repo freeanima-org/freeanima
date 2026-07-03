@@ -13,7 +13,7 @@ const listResidentSemanticMemoryMock = mock(async () => [] as SemanticMemoryRow[
 mock.module("@freeanima/core/db/pg/semantic-memory", () => ({
   listResidentSemanticMemory: listResidentSemanticMemoryMock,
 }));
-import { MaskRegistry } from "@freeanima/capabilities-task/mask";
+import { MaskRegistry } from "@freeanima/feature-task/domain/mask";
 import { createEngineCatalog } from "@freeanima/runtime";
 import type { Engine } from "@freeanima/runtime";
 import { Config } from "@freeanima/core/config";

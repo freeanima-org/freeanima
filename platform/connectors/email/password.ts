@@ -1,5 +1,5 @@
 import { resolveValue } from "@freeanima/platform/config";
-import type { EmailAccountRow } from "@freeanima/capabilities-email";
+import type { EmailAccountRow } from "@freeanima/feature-email/domain";
 
 export async function resolveEmailAccountPassword(
   account: Pick<EmailAccountRow, "password">,

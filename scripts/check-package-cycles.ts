@@ -7,7 +7,16 @@ import { join } from "node:path";
 
 const ROOT = join(import.meta.dir, "..");
 
-const WORKSPACE_DIRS = ["kernel", "core", "runtime", "capabilities", "platform", "app", "tests"];
+const WORKSPACE_DIRS = [
+  "kernel",
+  "core",
+  "runtime",
+  "capabilities",
+  "features",
+  "platform",
+  "app",
+  "tests",
+];
 
 type PkgGraph = Map<string, string[]>;
 

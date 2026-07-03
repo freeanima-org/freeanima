@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, it } from "bun:test";
 
 import { TASK_ITEM_COMPONENT } from "@freeanima/core/db/schema/entity";
-import { createTaskItem, createTaskList } from "@freeanima/capabilities-task";
+import { createTaskItem, createTaskList } from "@freeanima/feature-task/domain";
 import { EntitySearchScopeError, searchEntities } from "@freeanima/core/db/pg/entity";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {

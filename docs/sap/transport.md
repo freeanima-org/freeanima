@@ -23,7 +23,7 @@ Implemented in [`platform/src/sap/bun-route.ts`](../../platform/src/sap/bun-rout
 
 ## Envelope kinds
 
-Hub RPC envelopes live in [`packages/hub-rpc/src/protocol.ts`](../../packages/hub-rpc/src/protocol.ts). SAP re-exports them from [`packages/sap-contract/src/protocol.ts`](../../packages/sap-contract/src/protocol.ts).
+Hub RPC envelopes live in [`shared/hub-rpc/src/protocol.ts`](../../shared/hub-rpc/src/protocol.ts). SAP re-exports them from [`shared/sap-contract/src/protocol.ts`](../../shared/sap-contract/src/protocol.ts).
 
 | `kind`      | Layer   | Purpose                                                                   |
 | ----------- | ------- | ------------------------------------------------------------------------- |
@@ -58,7 +58,7 @@ Rules ([`platform/src/sap/ws-server.ts`](../../platform/src/sap/ws-server.ts) `a
 
 ## Hub RPC handshake
 
-Schema: [`packages/hub-rpc/src/lifecycle.ts`](../../packages/hub-rpc/src/lifecycle.ts).
+Schema: [`shared/hub-rpc/src/lifecycle.ts`](../../shared/hub-rpc/src/lifecycle.ts).
 
 | `connect` field | Required | Role              |
 | --------------- | -------- | ----------------- |
@@ -75,7 +75,7 @@ Schema: [`packages/hub-rpc/src/lifecycle.ts`](../../packages/hub-rpc/src/lifecyc
 
 After Hub RPC connect, satellite processes send `req sap.attach`:
 
-Schema: [`packages/sap-contract/src/frames/sap-session.ts`](../../packages/sap-contract/src/frames/sap-session.ts).
+Schema: [`shared/sap-contract/src/frames/sap-session.ts`](../../shared/sap-contract/src/frames/sap-session.ts).
 
 | Field                | Required | Role                                       |
 | -------------------- | -------- | ------------------------------------------ |
@@ -88,7 +88,7 @@ Schema: [`packages/sap-contract/src/frames/sap-session.ts`](../../packages/sap-c
 
 Reply payload includes `instance_id`, `features_enabled`, `server_info` (same semantics as legacy SAP connect).
 
-Use `createSatelliteHub()` ([`packages/sap-contract/src/satellite-hub.ts`](../../packages/sap-contract/src/satellite-hub.ts)) — it runs Hub RPC transport and performs attach automatically.
+Use `createSatelliteHub()` ([`shared/sap-contract/src/satellite-hub.ts`](../../shared/sap-contract/src/satellite-hub.ts)) — it runs Hub RPC transport and performs attach automatically.
 
 ## Heartbeat
 

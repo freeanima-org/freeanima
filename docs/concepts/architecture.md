@@ -64,18 +64,28 @@ Structured business data (tasks, notes, email accounts/messages, future memory m
 
 Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-backed); legacy Admin email route removed.
 
-### Platform UI layering
+### Repository layout (Phase 0 — revised)
 
-| Layer              | Platform-native?             | Location                                                 | 数据通道             |
-| ------------------ | ---------------------------- | -------------------------------------------------------- | -------------------- |
-| Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring       | preload/IPC          |
-| Shared SPA shell   | Branch on `detectPlatform()` | `packages/shell-ui`                                      | 无 SAP wire          |
-| Admin 前端         | Admin embed                  | `platform/admin-frontend` + `ui-kit` + `shell-sdk`       | REST `/api`          |
-| SAP 产品面         | Satellite apps               | `satellites/*` + `sap-contract` + `ui-kit` + `shell-sdk` | Hub RPC + SAP attach |
+Target layout is **feature modules** under `features/<slug>/` (UI + protocol + Hub adapter + domain + `plugin.ts`). Admin is renamed **console** and uses the **same module shape** as chat/task — not a separate admin-\* stack. `satellites/` is legacy naming; do not add new products there.
+
+**End state:** Hub RPC per feature; console REST is transitional (directory refactor does not remove REST).
+
+Authoritative spec: [`repository-topology.md`](repository-topology.md).
+
+Engine stays horizontal: `kernel/`, `core/`, `runtime/`, `platform/` (boot + routers). Shell host: `frontend/` (`ui-kit`, `shell-sdk`, `shell-ui`).
+
+### Platform UI layering (legacy paths — migrating to features/\*)
+
+| Layer              | Platform-native?             | Location (current → target)                           | 数据通道               |
+| ------------------ | ---------------------------- | ----------------------------------------------------- | ---------------------- |
+| Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring    | preload/IPC            |
+| Shared SPA shell   | Branch on `detectPlatform()` | `frontend/shell-ui`                                   | Hub RPC（Feature RPC） |
+| Console 前端       | Shell embed                  | `features/console`（UI）；REST 过渡期在 `admin-api`   | REST `/api` + Hub RPC  |
+| 卫星应用           | Sidecar only                 | `satellites/companion`、`satellites/pair-programming` | Hub RPC + SAP attach   |
 
 Nav and primary layouts **must use `detectPlatform()`** (Electron / native shell), not viewport breakpoints alone. Responsive CSS is for desktop window resize only.
 
-**边界**：`shell-ui` 与 `admin-frontend` 禁止 import `sap-contract`；SAP wire 仅在 `satellites/*/app` 内。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。
+**边界**：`shell-ui` 与 `features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Hub；**SAP attach / tool.\*** 协议仅 `satellites/companion` 与 `satellites/pair-programming` 使用。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。
 
 ### Admin navigation ↔ cognitive layers
 

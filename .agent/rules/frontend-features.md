@@ -4,34 +4,46 @@
 
 ## 决策树
 
-1. 是否需要用户可见的产品 CRUD + 实时 WS？→ **原型 A（SAP satellite）**
-2. 是否是运维/配置/记忆管理类 UI，走 Hub REST？→ **原型 B（hub-rest / Admin）**
-3. 是否仅是壳层设置（Hub URL、debug）？→ **原型 C（shell-sdk settings）**
+1. 是否需要用户可见的产品 CRUD + 实时 Hub WS？→ **原型 A（Feature RPC）**
+2. 是否需要 SAP attach 的独立卫星进程/壳？→ **原型 A′（SAP satellite）** — 仅 `companion`、`pair-programming`
+3. 是否是运维/配置/记忆管理类 UI，走 Hub REST？→ **原型 B（hub-rest / Console）**
+4. 是否仅是壳层设置（Hub URL、debug）？→ **原型 C（shell-sdk settings）**
 
-## 原型 A — SAP 产品面
+## 原型 A — Feature RPC 产品面
 
-**示例**：chat、task、email、diary、notification
+**示例**：chat、task、email、diary、notification、vault、dream
 
-| 层               | 必须改                                          |
-| ---------------- | ----------------------------------------------- |
-| `core/db`        | entity component 或专用表 + migration           |
-| `capabilities-*` | `*-store.ts`                                    |
-| `sap-contract`   | `frames/<domain>.ts` + `router.ts`              |
-| `platform`       | `service-*` + `sap/handlers/<domain>.ts`        |
-| `satellite-*`    | `sap-client.ts` + `api.ts` + UI                 |
-| `shell-ui`       | 路由 + `@freeanima/satellite-*/app`（不写 SAP） |
+| 层                           | 必须改                                                             |
+| ---------------------------- | ------------------------------------------------------------------ |
+| `core/db`                    | entity component 或专用表 + migration                              |
+| `features/<slug>/domain`     | 域逻辑 SSOT                                                        |
+| `sap-contract`               | `feature-rpc/frames/<domain>.ts` + router 子集                     |
+| `features/<slug>/hub/rpc.ts` | Hub RPC handler 实现                                               |
+| `features/<slug>/ui`         | 产品 UI（`@freeanima/feature-<slug>/ui/*`）                        |
+| `platform`                   | `features/<slug>/plugin.ts` 注册 + 必要时 `service-*` 薄适配       |
+| `shell-ui`                   | 路由 lazy-load `@freeanima/feature-<slug>/ui/app`（不写 SAP wire） |
 
-**不要**：在 `shell-ui` 内 `import @freeanima/sap-contract`；在 capabilities 内 import platform。
+**不要**：在 `shell-ui` 内 `import @freeanima/sap-contract`；在 capabilities 内 import platform；新建 `satellite-*` 做 chat/task 等产品面。
 
-## 原型 B — hub-rest 运维面
+## 原型 A′ — SAP attach 卫星
 
-**示例**：memory、config、cron、MCP、entity worlds
+**示例**：companion、pair-programming
 
-| 层               | 必须改                              |
-| ---------------- | ----------------------------------- |
-| `admin-contract` | API schema                          |
-| `admin-api`      | Elysia route                        |
-| `admin-frontend` | 页面（`ui-kit` + `admin-contract`） |
+| 层                   | 必须改                                       |
+| -------------------- | -------------------------------------------- |
+| `sap-contract`       | `satellite/` + `frames/*` attach 相关 schema |
+| `satellites/<name>/` | `sap-client` + UI（仅白名单目录）            |
+| `shell-ui`           | 路由 + `@freeanima/satellite-*/app`          |
+
+## 原型 B — hub-rest 运维面（Console）
+
+**示例**：memory、config、cron、MCP、entity worlds（Admin UI）
+
+| 层                                         | 必须改                                    |
+| ------------------------------------------ | ----------------------------------------- |
+| `features/console/protocol/admin-contract` | API schema                                |
+| `features/console/hub/admin-api`           | Elysia route                              |
+| `features/console/ui/admin`                | Admin 页面（`ui-kit` + `admin-contract`） |
 
 **不要**：import `sap-contract`；新建 `satellite-*` 包。
 
@@ -44,24 +56,26 @@
 | `shell-sdk/settings`       | section 注册       |
 | `app/desktop\|mobile\|web` | 原生 IPC（若需要） |
 
-## SAP handler 模块化
+## Hub RPC / Feature method 模块化
 
-新增 SAP method 时：
+新增 Feature RPC method 时：
 
-1. 在 `sap-contract/frames/` 增加 schema
-2. 在 `platform/src/runtime/service-*.ts` 增加薄适配
-3. 在 `platform/src/sap/handlers/<domain>.ts` 增加 handler 函数
-4. 在 `ws-server.ts` switch 增加一行 delegate
+1. 在 `shared/sap-contract/src/feature-rpc/frames/` 增加 schema
+2. 在 `features/<slug>/protocol/index.ts` re-export 子集
+3. 在 `features/<slug>/hub/rpc.ts` 实现 handler
+4. 在 `features/<slug>/plugin.ts` 注册 RPC 表；platform boot 已注册 plugin 则无需改 `ws-server` switch
+
+SAP attach 专用 method（tool/terminal/sap.attach）仍在 [`platform/src/sap/ws-server.ts`](../../platform/src/sap/ws-server.ts) switch 内。
 
 ## 前端包依赖速查
 
-| 包               | 允许                                            | 禁止                                   |
-| ---------------- | ----------------------------------------------- | -------------------------------------- |
-| `ui-kit`         | react                                           | sap-contract、workspace                |
-| `shell-sdk`      | kernel\*、zod                                   | sap-contract                           |
-| `shell-ui`       | ui-kit、shell-sdk、satellite-\*、admin-frontend | sap-contract、深路径 import satellites |
-| `admin-frontend` | admin-contract、ui-kit、shell-sdk               | sap-contract、shell-ui                 |
-| `satellite-*`    | sap-contract、shell-sdk、ui-kit                 | shell-ui、admin-\*                     |
+| 包                | 允许                                        | 禁止                                   |
+| ----------------- | ------------------------------------------- | -------------------------------------- |
+| `ui-kit`          | react                                       | sap-contract、workspace                |
+| `shell-sdk`       | kernel\*、hub-rpc、vault-crypto             | sap-contract                           |
+| `shell-ui`        | ui-kit、shell-sdk、feature-\*、satellite-\* | sap-contract、深路径 import satellites |
+| `feature-console` | admin-contract、ui-kit、shell-sdk           | sap-contract、shell-ui                 |
+| `satellite-*`     | sap-contract、shell-sdk、ui-kit             | shell-ui、admin-\*                     |
 
 **Satellite 离线只读缓存**：列表/详情 fetch 应 cache-first 展示、`network refresh` 写回；使用 `@freeanima/shell-sdk/offline-cache`（按 `hubWsUrl` scope 隔离，写入带 `cachedAt` 信封）；离线时通过 `@freeanima/shell-sdk/react` 的 `useOfflineReadOnly()` 禁用写操作；**不要**用 Workbox 缓存 `/api` 或 `/sap`。参见 [`docs/guide/remote-access.md`](../../docs/guide/remote-access.md) PWA 离线边界。
 

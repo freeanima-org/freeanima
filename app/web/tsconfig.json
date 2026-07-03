@@ -5,9 +5,9 @@
     "outDir": ".tsout"
   },
   "references": [
-    { "path": "../../packages/shell-sdk" },
-    { "path": "../../packages/sap-contract" },
-    { "path": "../../packages/shell-ui/vite" },
+    { "path": "../../frontend/shell-sdk" },
+    { "path": "../../shared/sap-contract" },
+    { "path": "../../frontend/shell-ui/vite" },
     { "path": "../desktop" },
     { "path": "../mobile" }
   ],

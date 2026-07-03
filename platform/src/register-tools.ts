@@ -1,8 +1,8 @@
 import { registerClarifyTool } from "@freeanima/capabilities-tools/clarify";
-import { registerDiaryTools } from "@freeanima/capabilities-diary";
-import { registerEmailTools } from "@freeanima/capabilities-email";
-import { registerTaskTools } from "@freeanima/capabilities-task";
-import { registerVaultTools } from "@freeanima/capabilities-vault";
+import { registerDiaryTools } from "@freeanima/feature-diary/domain";
+import { registerEmailTools } from "@freeanima/feature-email/domain";
+import { registerTaskTools } from "@freeanima/feature-task/domain";
+import { registerVaultTools } from "@freeanima/feature-vault/domain";
 import { registerNotificationTools } from "@freeanima/capabilities-tools/notification";
 import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities-tools";
 import { registerCronjobTool } from "@freeanima/platform/connectors/cron/cronjob-tool";

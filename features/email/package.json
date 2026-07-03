@@ -1,0 +1,28 @@
+{
+  "name": "@freeanima/feature-email",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./domain/index.ts",
+    "./domain": "./domain/index.ts",
+    "./domain/*": "./domain/*.ts",
+    "./hub/*": "./hub/*.ts",
+    "./protocol": "./protocol/index.ts",
+    "./plugin": "./plugin.ts",
+    "./ui/app": "./ui/app/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/core": "workspace:*",
+    "@freeanima/sap-contract": "workspace:*",
+    "@freeanima/shell-sdk": "workspace:*",
+    "@freeanima/ui-kit": "workspace:*",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:"
+  }
+}

@@ -20,7 +20,7 @@ import {
   getDefaultTaskList,
   listTaskItems,
   updateTaskItem,
-} from "../../capabilities/task/src/index.ts";
+} from "../../features/task/domain/index.ts";
 import { initDatabase } from "../../core/src/db/pg/index.ts";
 
 const MINIMAL_CONFIG = {

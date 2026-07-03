@@ -13,7 +13,7 @@
 | Tools          | Local / MCP / ACP flat registration; MCP client `capabilities/mcp-client/`、MCP server `/mcp` `capabilities/mcp-server/`；tools `capabilities/tools/`、ACP `capabilities/acp/` |
 | Secrets        | Vault (User/Agent libraries); config `vault()` / `env()`; LLM **sees metadata, not values**                                                                                    |
 | Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                         |
-| Code layout    | `kernel/` → `core/` → `runtime/` → `capabilities/` → `platform/` (+ `app/`) — see [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md)                                 |
+| Code layout    | Feature modules `features/*` + engine + shell + `app/` — see [`docs/concepts/repository-topology.md`](docs/concepts/repository-topology.md)                                    |
 
 **Code is the source of truth**; do not invent tool names, endpoints, or directories from docs alone. Read source or `grep` when needed.
 
@@ -75,17 +75,18 @@ DATABASE_URL="…" bun run --filter @freeanima/core db:migrate
 
 ## Doc map
 
-| File                                                               | Role                                                             |
-| ------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| [`AGENTS.md`](AGENTS.md)                                           | Bootstrap protocol, product & code principles (this file)        |
-| [`.agent/rules/`](.agent/rules/README.md)                          | Implementation constraints (layers, tests, coding, DB, packages) |
-| [GitHub Issues](https://github.com/freeanima-org/freeanima/issues) | Actionable tasks and discussions                                 |
-| [`docs/concepts/architecture.md`](docs/concepts/architecture.md)   | Architecture principles and direction                            |
-| [`docs/concepts/`](docs/concepts/)                                 | Core concepts (memory, self layer, etc.)                         |
-| [`docs/guide/`](docs/guide/)                                       | Usage and maintenance (security, database ops)                   |
-| [`docs/features/`](docs/features/)                                 | Major product capabilities                                       |
-| [`docs/sap/`](docs/sap/)                                           | Satellite Application Protocol (SAP)                             |
-| [`docs/tools/`](docs/tools/)                                       | General/minor built-in tools                                     |
+| File                                                                           | Role                                                             |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| [`AGENTS.md`](AGENTS.md)                                                       | Bootstrap protocol, product & code principles (this file)        |
+| [`.agent/rules/`](.agent/rules/README.md)                                      | Implementation constraints (layers, tests, coding, DB, packages) |
+| [GitHub Issues](https://github.com/freeanima-org/freeanima/issues)             | Actionable tasks and discussions                                 |
+| [`docs/concepts/architecture.md`](docs/concepts/architecture.md)               | Architecture principles and direction                            |
+| [`docs/concepts/repository-topology.md`](docs/concepts/repository-topology.md) | Repo layout Phase 0 audit; shared/frontend migration target      |
+| [`docs/concepts/`](docs/concepts/)                                             | Core concepts (memory, self layer, etc.)                         |
+| [`docs/guide/`](docs/guide/)                                                   | Usage and maintenance (security, database ops)                   |
+| [`docs/features/`](docs/features/)                                             | Major product capabilities                                       |
+| [`docs/sap/`](docs/sap/)                                                       | Satellite Application Protocol (SAP)                             |
+| [`docs/tools/`](docs/tools/)                                                   | General/minor built-in tools                                     |
 
 ---
 

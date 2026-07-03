@@ -26,6 +26,7 @@ import { bindSapServerDeps } from "../sap/runtime-context.ts";
 import { SapInstanceRegistry } from "../sap/instance-registry.ts";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import { ANIMA_VERSION } from "../runtime/version.ts";
+import { builtinFeaturePlugins, registerFeatures } from "../features/index.ts";
 
 export type RuntimePhaseResult = {
   runtime: AppRuntime;
@@ -87,6 +88,8 @@ export async function bootRuntimePhase(
     hookRegistry: kernel.hookRegistry,
     getToolRegistry: () => catalog.toolSets,
   });
+
+  registerFeatures(builtinFeaturePlugins);
 
   satellite.loadSessionPlatformExtra = async (conversationId) => {
     const meta = await conversation.loadConversationMeta(conversationId);

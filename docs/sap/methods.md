@@ -6,7 +6,7 @@ title: SAP RPC Methods
 
 RPC calls use envelope `kind: "req"` with a unique `id`. Hub responds with matching `kind: "res"`.
 
-The authoritative method list is `SAP_METHODS` in [`packages/sap-contract/src/router.ts`](../../packages/sap-contract/src/router.ts). Input/output Zod schemas live under [`packages/sap-contract/src/frames/`](../../packages/sap-contract/src/frames/).
+The authoritative method list is `SAP_METHODS` in [`shared/sap-contract/src/router.ts`](../../shared/sap-contract/src/router.ts). Product feature wire schemas are bundled in [`@freeanima/sap-contract/feature-rpc`](../../shared/sap-contract/src/feature-rpc/index.ts); individual frame modules live under [`shared/sap-contract/src/frames/`](../../shared/sap-contract/src/frames/). Each `features/*/protocol/` re-exports the subset its Hub handlers need.
 
 ## Domain map
 
@@ -32,15 +32,15 @@ flowchart TB
 
 ## Session
 
-| Method                    | Schema                                                                 | Hub behavior                                                                                                |
-| ------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `conversation.create`     | [`session.ts`](../../packages/sap-contract/src/frames/conversation.ts) | Creates session; sets `platform_extra.satellite_app_id`, `satellite_instance_id`, optional workspace fields |
-| `conversation.list`       | `session.ts`                                                           | Lists conversations, optional `platform` filter                                                             |
-| `conversation.messages`   | `session.ts`                                                           | Message history with `offset` / `limit`                                                                     |
-| `conversation.patchTitle` | `session.ts`                                                           | Updates conversation title                                                                                  |
-| `conversation.subscribe`  | `session.ts`                                                           | Subscribes to `conversation.updated` events for one conversation                                            |
-| `conversation.commands`   | `session.ts`                                                           | Lists slash commands for a platform                                                                         |
-| `conversation.acpDock`    | [`acp.ts`](../../packages/sap-contract/src/frames/acp.ts)              | ACP dock operations for a conversation                                                                      |
+| Method                    | Schema                                                               | Hub behavior                                                                                                |
+| ------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `conversation.create`     | [`session.ts`](../../shared/sap-contract/src/frames/conversation.ts) | Creates session; sets `platform_extra.satellite_app_id`, `satellite_instance_id`, optional workspace fields |
+| `conversation.list`       | `session.ts`                                                         | Lists conversations, optional `platform` filter                                                             |
+| `conversation.messages`   | `session.ts`                                                         | Message history with `offset` / `limit`                                                                     |
+| `conversation.patchTitle` | `session.ts`                                                         | Updates conversation title                                                                                  |
+| `conversation.subscribe`  | `session.ts`                                                         | Subscribes to `conversation.updated` events for one conversation                                            |
+| `conversation.commands`   | `session.ts`                                                         | Lists slash commands for a platform                                                                         |
+| `conversation.acpDock`    | [`acp.ts`](../../shared/sap-contract/src/frames/acp.ts)              | ACP dock operations for a conversation                                                                      |
 
 ### `conversation.create` platform binding
 
@@ -54,9 +54,9 @@ This binding is required for [strict tool routing](tools.md).
 
 ## Message
 
-| Method         | Schema                                                            | Returns                                        |
-| -------------- | ----------------------------------------------------------------- | ---------------------------------------------- |
-| `message.send` | [`message.ts`](../../packages/sap-contract/src/frames/message.ts) | `{ stream_id }`; stream events follow on `evt` |
+| Method         | Schema                                                          | Returns                                        |
+| -------------- | --------------------------------------------------------------- | ---------------------------------------------- |
+| `message.send` | [`message.ts`](../../shared/sap-contract/src/frames/message.ts) | `{ stream_id }`; stream events follow on `evt` |
 
 Payload: `conversation_id`, `message` (user text). Hub bridges runtime stream to SAP `stream.*` events — see [events.md](events.md).
 
@@ -64,12 +64,12 @@ Payload: `conversation_id`, `message` (user text). Hub bridges runtime stream to
 
 Hub-side PTY sessions. Events: `terminal.ready`, `terminal.output`, `terminal.exit`, `terminal.error`.
 
-| Method            | Schema                                                                                                      |
-| ----------------- | ----------------------------------------------------------------------------------------------------------- |
-| `terminal.attach` | [`terminal.ts`](../../packages/sap-contract/src/frames/terminal.ts) — optional `cwd`; returns `terminal_id` |
-| `terminal.write`  | `terminal_id`, `data`                                                                                       |
-| `terminal.resize` | `terminal_id`, `cols`, `rows`                                                                               |
-| `terminal.close`  | `terminal_id`                                                                                               |
+| Method            | Schema                                                                                                    |
+| ----------------- | --------------------------------------------------------------------------------------------------------- |
+| `terminal.attach` | [`terminal.ts`](../../shared/sap-contract/src/frames/terminal.ts) — optional `cwd`; returns `terminal_id` |
+| `terminal.write`  | `terminal_id`, `data`                                                                                     |
+| `terminal.resize` | `terminal_id`, `cols`, `rows`                                                                             |
+| `terminal.close`  | `terminal_id`                                                                                             |
 
 ## Tool (Satellite → Hub)
 

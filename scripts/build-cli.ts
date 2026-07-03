@@ -9,7 +9,7 @@ import { $ } from "bun";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
-import { compileParaglideToDir } from "../platform/admin-frontend/paraglide-compile.ts";
+import { compileParaglideToDir } from "@freeanima/feature-console/build/paraglide-compile";
 
 const ROOT = join(import.meta.dir, "..");
 const CLI_DIR = join(ROOT, "app/cli");

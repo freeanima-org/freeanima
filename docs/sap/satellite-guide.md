@@ -52,7 +52,7 @@ Shell satellites (Chat, Admin, etc.) open in desktop / mobile / web shell routes
 
 ## Instance allocation strategies
 
-`instance_id` is a 3-character lowercase alphanumeric id (see [`packages/sap-contract/src/naming.ts`](../../packages/sap-contract/src/naming.ts)). It appears in platform strings (`sap:{app_slug}:{instance_id}`), session `platform_extra`, and SAP tool names. **Do not remove it from the protocol** — but each satellite app picks an **allocation strategy** suited to its product model:
+`instance_id` is a 3-character lowercase alphanumeric id (see [`shared/sap-contract/src/naming.ts`](../../shared/sap-contract/src/naming.ts)). It appears in platform strings (`sap:{app_slug}:{instance_id}`), session `platform_extra`, and SAP tool names. **Do not remove it from the protocol** — but each satellite app picks an **allocation strategy** suited to its product model:
 
 | Strategy      | Meaning                                | Apps                                        | Client behavior                                                                 |
 | ------------- | -------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------- |
@@ -93,7 +93,7 @@ Hub [`SapInstanceRegistry`](../../platform/src/sap/instance-registry.ts): omit `
 
 ### Bundled Hub RPC — shell modules (chat, task, notification, …)
 
-- Modules use shared [`getBundledHubRpcClient`](../../packages/hub-rpc/src/bundled.ts) / [`createSapDirectClient`](../../packages/sap-contract/src/direct-client.ts) on `/hub/rpc/v1`.
+- Modules use shared [`getBundledHubRpcClient`](../../shared/hub-rpc/src/bundled.ts) / [`createSapDirectClient`](../../shared/sap-contract/src/direct-client.ts) on `/hub/rpc/v1`.
 - **No** `sap.attach`; **no** relay sidecar for these modules.
 - See [`hub-rpc.md`](hub-rpc.md) and [`frontend-exports.md`](frontend-exports.md).
 
@@ -123,21 +123,21 @@ flowchart TB
 
 **Deprecated:** HTTP hub-api REST→SAP proxy (removed).
 
-### Chat satellite
+### Chat (bundled feature)
 
-- **app/desktop / browser dev (recommended)**: `createSapDirectClient` to Hub; static UI from [`satellites/chat/server/index.ts`](../../satellites/chat/server/index.ts) for static hosting only (no SAP relay).
-- **Managed legacy**: old relay sidecar pair-programming mode; new embeds use direct.
+- **Shell / browser dev (recommended)**: `createSapDirectClient` on shared Hub RPC; UI from [`features/chat/ui/app/`](../../features/chat/ui/app/) embedded in shell-ui (no SAP relay, no `sap.attach`).
+- Hub RPC handlers: [`features/chat/hub/rpc.ts`](../../features/chat/hub/rpc.ts); wire types: [`features/chat/protocol/`](../../features/chat/protocol/) → `@freeanima/sap-contract/feature-rpc`.
 
 ### Pair-programming satellite
 
-Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../satellites/pair-programming/server/index.ts); sidecar uses `createSatelliteHub` ([`satellite-hub.ts`](../../packages/sap-contract/src/satellite-hub.ts)).
+Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../satellites/pair-programming/server/index.ts); sidecar uses `createSatelliteHub` ([`satellite-hub.ts`](../../shared/sap-contract/src/satellite-hub.ts)).
 
 Reference files:
 
-- [`satellites/chat/app/src/lib/sap-client.ts`](../../satellites/chat/app/src/lib/sap-client.ts)
+- [`features/chat/ui/app/src/lib/sap-client.ts`](../../features/chat/ui/app/src/lib/sap-client.ts)
 - [`satellites/pair-programming/server/sap/hub.ts`](../../satellites/pair-programming/server/sap/hub.ts)
-- [`packages/sap-contract/src/sidecar-client.ts`](../../packages/sap-contract/src/sidecar-client.ts)
-- [`packages/sap-contract/src/satellite-relay-server.ts`](../../packages/sap-contract/src/satellite-relay-server.ts)
+- [`shared/sap-contract/src/sidecar-client.ts`](../../shared/sap-contract/src/sidecar-client.ts)
+- [`shared/sap-contract/src/satellite-relay-server.ts`](../../shared/sap-contract/src/satellite-relay-server.ts)
 - [`satellites/pair-programming/server/http/terminal-bridge.ts`](../../satellites/pair-programming/server/http/terminal-bridge.ts)
 
 ## Minimal SAP client

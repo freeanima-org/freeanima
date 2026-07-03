@@ -5,8 +5,8 @@
     "outDir": ".tsout"
   },
   "references": [
-    { "path": "../../packages/shell-sdk" },
-    { "path": "../../packages/shell-ui/vite" }
+    { "path": "../../frontend/shell-sdk" },
+    { "path": "../../frontend/shell-ui/vite" }
   ],
   "include": [
     "app/**/*.ts",

@@ -1,5 +1,5 @@
-import { getVaultItem } from "@freeanima/capabilities-vault/item-store";
-import { resolveVaultWorldId } from "@freeanima/capabilities-vault/vault-world";
+import { getVaultItem } from "@freeanima/feature-vault/domain/item-store";
+import { resolveVaultWorldId } from "@freeanima/feature-vault/domain/vault-world";
 import {
   vaultResolveSecretUserInputSchema,
   vaultResolveSecretUserOutputSchema,

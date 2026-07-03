@@ -17,7 +17,7 @@ import { ensureWorldSubjects } from "../../core/src/db/pg/entity/subject-world.t
 import {
   createEmailAccount,
   findEmailAccountByAddressAndHost,
-} from "../../capabilities/email/src/index.ts";
+} from "../../features/email/domain/index.ts";
 import { FileConfig } from "../../platform/config/file-config.ts";
 import { parseYaml } from "../../platform/config/yaml.ts";
 import { initDatabase, closeDb } from "../../core/src/db/pg/index.ts";
