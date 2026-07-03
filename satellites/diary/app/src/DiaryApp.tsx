@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHubConnection, useNetworkOnline, useSubjectScope } from "@freeanima/shell-sdk/react";
+import { mergeDraftAfterSave } from "@freeanima/ui-kit/lib/merge-draft-after-save";
 import { Button, Input, Spinner } from "@freeanima/ui-kit";
 import { ListDetailLayout } from "@freeanima/ui-kit/layout";
 
@@ -15,6 +16,7 @@ import {
 import {
   entryDraftFromRow,
   isEntryDraftDirty,
+  isEntryDraftEqual,
   parseTagsText,
   type EntryDraft,
 } from "./lib/entry-draft-dirty.ts";
@@ -47,6 +49,10 @@ export function DiaryApp() {
   const [saveStatus, setSaveStatus] = useState<EntrySaveStatus>("idle");
   const [error, setError] = useState("");
   const saveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const selectedIdRef = useRef<number | null>(null);
+  const initialTodayOpenedRef = useRef(false);
+
+  selectedIdRef.current = selectedId;
 
   const selectedEntry = useMemo(
     () => entries.find((e) => e.id === selectedId) ?? null,
@@ -68,7 +74,8 @@ export function DiaryApp() {
         ? await searchDiaryEntries(subjectKind, query)
         : await fetchDiaryEntries(subjectKind);
       setEntries(items);
-      if (selectedId != null && !items.some((e) => e.id === selectedId)) {
+      const currentSelectedId = selectedIdRef.current;
+      if (currentSelectedId != null && !items.some((e) => e.id === currentSelectedId)) {
         setSelectedId(null);
         setDraft(null);
         setDraftBaseline(null);
@@ -78,7 +85,7 @@ export function DiaryApp() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedId, subjectKind]);
+  }, [searchQuery, subjectKind]);
 
   useEffect(() => {
     void reload();
@@ -90,6 +97,7 @@ export function DiaryApp() {
     setSelectedId(null);
     setDraft(null);
     setDraftBaseline(null);
+    initialTodayOpenedRef.current = false;
   }, [subjectKind]);
 
   useEffect(() => {
@@ -110,20 +118,29 @@ export function DiaryApp() {
     if (!selectedEntry || !draft || !draftBaseline || writesDisabled) return true;
     if (!isEntryDraftDirty(draft, draftBaseline)) return true;
     if (saving) return false;
+    const savingSnapshot = draft;
     setSaving(true);
     setSaveStatus("saving");
     try {
       const item = await updateDiaryEntry(subjectKind, selectedEntry.id, {
-        title: titleFromDateLocal(draft.entryDateLocal),
+        title: titleFromDateLocal(savingSnapshot.entryDateLocal),
         summary: "",
-        content: draft.content,
-        entry_at: dateLocalToEntryAtIso(draft.entryDateLocal),
-        tags: parseTagsText(draft.tagsText),
+        content: savingSnapshot.content,
+        entry_at: dateLocalToEntryAtIso(savingSnapshot.entryDateLocal),
+        tags: parseTagsText(savingSnapshot.tagsText),
       });
       setEntries((prev) => sortEntries(prev.map((e) => (e.id === item.id ? item : e))));
       const synced = entryDraftFromRow(item);
-      setDraft(synced);
       setDraftBaseline(synced);
+      setDraft((current) => {
+        if (!current) return synced;
+        return mergeDraftAfterSave({
+          current,
+          savingSnapshot,
+          synced,
+          isEqual: isEntryDraftEqual,
+        }).draft;
+      });
       markSaved();
       return true;
     } catch (e) {
@@ -139,6 +156,50 @@ export function DiaryApp() {
       setSaving(false);
     }
   }, [draft, draftBaseline, markSaved, saving, selectedEntry, subjectKind, writesDisabled]);
+
+  const openTodayEntry = useCallback(async () => {
+    const today = defaultEntryDateLocal();
+    const todayEntry = findEntryByDayLocal(entries, today);
+    if (todayEntry) {
+      openEntry(todayEntry);
+      return;
+    }
+    if (writesDisabled || creating) return;
+    setCreating(true);
+    setError("");
+    try {
+      const item = await createDiaryEntry(subjectKind, {
+        title: titleFromDateLocal(today),
+        summary: "",
+        content: "",
+        entry_at: dateLocalToEntryAtIso(today),
+        tags: [],
+      });
+      setEntries((prev) => sortEntries([item, ...prev]));
+      openEntry(item);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg.includes("already exists")) {
+        const existing = findEntryByDayLocal(entries, today);
+        if (existing) openEntry(existing);
+      } else {
+        setError(msg);
+      }
+    } finally {
+      setCreating(false);
+    }
+  }, [creating, entries, openEntry, subjectKind, writesDisabled]);
+
+  useEffect(() => {
+    if (loading || initialTodayOpenedRef.current) return;
+    if (selectedId != null) {
+      initialTodayOpenedRef.current = true;
+      return;
+    }
+    if (searchQuery.trim()) return;
+    initialTodayOpenedRef.current = true;
+    void openTodayEntry();
+  }, [loading, openTodayEntry, searchQuery, selectedId]);
 
   const flushDraftSave = useCallback(async (): Promise<boolean> => {
     return persistDraft();
@@ -159,41 +220,9 @@ export function DiaryApp() {
     void (async () => {
       if (writesDisabled || creating) return;
       await flushDraftSave();
-      const todayEntry = findEntryByDayLocal(entries, defaultEntryDateLocal());
-      if (todayEntry) {
-        openEntry(todayEntry);
-        return;
-      }
-      setCreating(true);
-      setError("");
-      try {
-        const day = defaultEntryDateLocal();
-        const item = await createDiaryEntry(subjectKind, {
-          title: titleFromDateLocal(day),
-          summary: "",
-          content: "",
-          entry_at: dateLocalToEntryAtIso(day),
-          tags: [],
-        });
-        setEntries((prev) => sortEntries([item, ...prev]));
-        openEntry(item);
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        if (msg.includes("already exists")) {
-          const day = defaultEntryDateLocal();
-          const existing = findEntryByDayLocal(entries, day);
-          if (existing) {
-            openEntry(existing);
-            setError("该日期已有日记，已打开现有条目");
-            return;
-          }
-        }
-        setError(msg);
-      } finally {
-        setCreating(false);
-      }
+      await openTodayEntry();
     })();
-  }, [creating, entries, flushDraftSave, openEntry, subjectKind, writesDisabled]);
+  }, [creating, flushDraftSave, openTodayEntry, writesDisabled]);
 
   useEffect(() => {
     if (!selectedEntry || !draft || !draftBaseline || writesDisabled) return;

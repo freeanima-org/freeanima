@@ -23,6 +23,10 @@ export function isEntryDraftDirty(draft: EntryDraft, baseline: EntryDraft): bool
   );
 }
 
+export function isEntryDraftEqual(a: EntryDraft, b: EntryDraft): boolean {
+  return !isEntryDraftDirty(a, b);
+}
+
 export function parseTagsText(tagsText: string): string[] {
   return tagsText
     .split(/[,，]/)
