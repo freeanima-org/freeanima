@@ -235,7 +235,7 @@ export function DiaryApp() {
   }, [draft, draftBaseline, persistDraft, saving, selectedEntry, writesDisabled]);
 
   const listPane = (
-    <div className="flex h-full min-h-0 flex-col gap-3">
+    <div className="flex h-full min-h-0 min-w-0 flex-col gap-3">
       <div className="flex flex-wrap items-center justify-end gap-2">
         <Button
           type="button"
@@ -307,7 +307,7 @@ export function DiaryApp() {
     <ListDetailLayout
       detailTitle={detailTitle}
       listTitle="日记"
-      listWidthClass="md:w-80 lg:w-96"
+      listWidthClass="md:w-80 md:max-w-80 lg:w-96 lg:max-w-96"
       list={(ctx) => (
         <div className="flex h-full min-h-0 flex-col gap-3 p-3">
           {listPane}

@@ -57,7 +57,7 @@ export function ListDetailLayout({
   const drawerAsideClass =
     "list-detail-drawer-panel safe-fixed-sidebar border-r border-border bg-background shadow-lg";
   const desktopAsideClass = [
-    "relative flex min-h-0 shrink-0 flex-col border-r",
+    "relative flex min-h-0 min-w-0 shrink-0 flex-col overflow-hidden border-r",
     listWidthClass,
     listAsideClassName,
   ].join(" ");
@@ -140,7 +140,9 @@ export function ListDetailLayout({
               ) : null}
             </div>
           ) : null}
-          <div className="flex min-h-0 flex-1 flex-col">{list(listCtx)}</div>
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+            {list(listCtx)}
+          </div>
         </aside>
 
         <main className={`flex min-h-0 min-w-0 flex-1 flex-col ${detailClassName}`.trim()}>
