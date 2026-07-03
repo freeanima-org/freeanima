@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { readModuleSelection, writeModuleSelection } from "@freeanima/shell-sdk";
 import { useSubjectScope } from "@freeanima/shell-sdk/react";
+import { mergeDraftAfterSave } from "@freeanima/ui-kit/lib/merge-draft-after-save";
 import {
   Alert,
   AlertDescription,
@@ -61,7 +62,7 @@ import { resolveDefaultListId, resolveSelectedListId } from "./lib/resolve-list.
 import { getParentId, getSiblings } from "./lib/list-tree.ts";
 import { sortOrderUpdates } from "./lib/reorder.ts";
 import { buildItemMenuItems, buildListMenuItems } from "./lib/task-menus.ts";
-import { cloneTaskItem, isTaskItemDirty } from "./lib/task-detail-dirty.ts";
+import { cloneTaskItem, isTaskItemDirty, isTaskItemEqual } from "./lib/task-detail-dirty.ts";
 
 type ListMenuState = { x: number; y: number; listId: number };
 type ItemMenuState = { x: number; y: number; itemId: number };
@@ -512,25 +513,34 @@ export function TaskApp() {
       const baseline = detailBaseline;
       if (!item || !baseline || !isTaskItemDirty(item, baseline)) return true;
       if (detailSaving) return false;
+      const savingSnapshot = cloneTaskItem(item);
       setDetailSaving(true);
       setDetailSaveStatus("saving");
       try {
         const saved = await updateTaskItem(item.id, {
-          title: item.title,
-          content: item.content,
-          tags: item.tags,
-          priority: item.priority,
-          due_at: item.due_at,
+          title: savingSnapshot.title,
+          content: savingSnapshot.content,
+          tags: savingSnapshot.tags,
+          priority: savingSnapshot.priority,
+          due_at: savingSnapshot.due_at,
         });
         detailDiscardRef.current = false;
-        const copy = cloneTaskItem(saved);
+        const synced = cloneTaskItem(saved);
         if (opts?.closeAfter) {
           setDetailItem(null);
           setDetailBaseline(null);
           setDetailOpen(false);
         } else {
-          setDetailItem(copy);
-          setDetailBaseline(copy);
+          setDetailBaseline(synced);
+          setDetailItem((current) => {
+            if (!current) return synced;
+            return mergeDraftAfterSave({
+              current,
+              savingSnapshot,
+              synced,
+              isEqual: isTaskItemEqual,
+            }).draft;
+          });
         }
         setItems((prev) => prev.map((row) => (row.id === saved.id ? saved : row)));
         setSearchHits((prev) => prev.map((row) => (row.id === saved.id ? saved : row)));

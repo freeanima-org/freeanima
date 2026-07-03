@@ -10,6 +10,7 @@
     "./components/ui": "./src/components/ui/index.ts",
     "./components/ui/*": "./src/components/ui/*.tsx",
     "./lib/utils": "./src/lib/utils.ts",
+    "./lib/merge-draft-after-save": "./src/lib/merge-draft-after-save.ts",
     "./form": "./src/form/FormFieldset.tsx",
     "./layout": "./src/layout/index.ts",
     "./ui/acp": "./src/ui/AcpProgressDock.tsx",

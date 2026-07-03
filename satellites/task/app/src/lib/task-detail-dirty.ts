@@ -14,3 +14,7 @@ export function isTaskItemDirty(current: TaskItemRow, baseline: TaskItemRow): bo
     current.tags.some((tag, index) => tag !== baseline.tags[index])
   );
 }
+
+export function isTaskItemEqual(a: TaskItemRow, b: TaskItemRow): boolean {
+  return !isTaskItemDirty(a, b);
+}
