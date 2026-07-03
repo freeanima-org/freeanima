@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Alert, Button } from "@freeanima/ui-kit";
-import { initAdminLocale } from "@freeanima/feature-console/ui/admin/i18n";
+import { initConsoleLocale } from "@freeanima/feature-console/ui/console/i18n";
 import type {
   SettingsComponentLoader,
   SettingsPlatform,
@@ -21,7 +21,7 @@ export function LazyComponentPanel({ load, platform, store, deps }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    initAdminLocale();
+    initConsoleLocale();
   }, []);
 
   useEffect(() => {

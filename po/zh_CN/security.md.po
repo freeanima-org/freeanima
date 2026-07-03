@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 18:22+0800\n"
+"POT-Creation-Date: 2026-07-03 18:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/guide/security.md:1 docs/tools/execute-code-runtimes.md:60
-#: messages/po4a/en.xml:592 messages/po4a/en.xml:595
+#: messages/po4a/en.xml:584 messages/po4a/en.xml:587
 #, no-wrap
 msgid "Security"
 msgstr "安全"
@@ -303,14 +303,23 @@ msgstr "安全矩阵"
 
 #. type: Plain text
 #: docs/guide/security.md:111
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Module           | A External                                                 | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |\n"
+#| "| ---------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------- | ------------------ | ---------------------------------- |\n"
+#| "| **Runtime**      | Default 127.0.0.1 bind                                     | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |\n"
+#| "| **Gateway**      | Token in Vault / env                                       | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |\n"
+#| "| **CLI / Tools**  | Local shell compromised                                    | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |\n"
+#| "| **HTTP / **Console** | `service_api_tokens` Bearer token（所有来源，含 loopback） | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |\n"
+#| "| **MCP / ACP**    | SSE auth undefined                                         | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |\n"
+#| "| **Vault**        | Agent machine key file permissions                         | Metadata-only tools; inject ack                                     | Wrong item inject         | Web Crypto         | User MP never in PG messages       |\n"
 msgid ""
 "| Module           | A External                                                 | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |\n"
 "| ---------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------- | ------------------ | ---------------------------------- |\n"
 "| **Runtime**      | Default 127.0.0.1 bind                                     | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |\n"
 "| **Gateway**      | Token in Vault / env                                       | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |\n"
 "| **CLI / Tools**  | Local shell compromised                                    | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |\n"
-"| **HTTP / Admin** | `service_api_tokens` Bearer token（所有来源，含 loopback） | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |\n"
+"| **HTTP / Console** | `service_api_tokens` Bearer token（所有来源，含 loopback） | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |\n"
 "| **MCP / ACP**    | SSE auth undefined                                         | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |\n"
 "| **Vault**        | Agent machine key file permissions                         | Metadata-only tools; inject ack                                     | Wrong item inject         | Web Crypto         | User MP never in PG messages       |\n"
 msgstr ""
@@ -319,7 +328,7 @@ msgstr ""
 "| **Runtime**      | 默认 127.0.0.1 bind | MaxTurnsExceeded                                                | 缺口：速率限制   | llm client 漏洞 | PG 无加密        |\n"
 "| **Gateway**      | Token 在 pass       | 恶意消息                                                        | 错误回复敏感信息 | SDK 漏洞        | —                |\n"
 "| **CLI / Tools**  | 本地 shell 被攻陷   | file_read_file 部分 deny（**P0 扩展中**）；shell=True（**P0**） | rm -rf 等        | —               | 日志可能含对话   |\n"
-"| **HTTP / Admin** | 非 loopback 须 `remote_auth` Bearer | BFF 不直连 LLM 参数                                             | config 展示      | Vue/axios       | SSE 明文         |\n"
+"| **HTTP / **Console** | 非 loopback 须 `remote_auth` Bearer | BFF 不直连 LLM 参数                                             | config 展示      | Vue/axios       | SSE 明文         |\n"
 "| **MCP / ACP**    | SSE 认证未定义      | 恶意参数                                                        | 错误委托         | Server 被攻陷   | 上下文含敏感数据 |\n"
 
 #. type: Title ##

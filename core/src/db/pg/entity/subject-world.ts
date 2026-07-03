@@ -238,7 +238,7 @@ export async function ensureWorldSubjects(config: AnimaConfig): Promise<EnsuredW
   };
 }
 
-/** Admin：创建 subject（不固定 id） */
+/** Console：创建 subject（不固定 id） */
 export async function createSubjectEntityRecord(input: {
   type: "agent" | "user";
   title: string;

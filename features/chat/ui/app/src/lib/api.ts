@@ -1,4 +1,5 @@
 import type { ConversationAcpDockSnapshot, ConversationListItem, StreamApiEvent } from "./types.ts";
+import { getChatHubClient } from "./hub-client.ts";
 import { getSapDirectClient, chatPlatform } from "./sap-client.ts";
 import { m } from "./i18n.ts";
 
@@ -28,6 +29,11 @@ function mapConversationList(raw: {
   };
 }
 
+function hub() {
+  return getChatHubClient();
+}
+
+/** WS-only 流式仍走 SapClient */
 function sap() {
   return getSapDirectClient();
 }
@@ -35,8 +41,7 @@ function sap() {
 export type { ConversationAcpDockSnapshot, StreamApiEvent } from "./types.ts";
 
 export async function listConversations(opts?: { includeArchived?: boolean }) {
-  const client = await sap().whenReady();
-  const result = await client.request("conversation.list", {
+  const result = await hub().call("conversation.list", {
     platform: chatPlatform(),
     include_archived: opts?.includeArchived,
   });
@@ -44,14 +49,12 @@ export async function listConversations(opts?: { includeArchived?: boolean }) {
 }
 
 export async function createConversation() {
-  const client = await sap().whenReady();
-  const result = await client.request("conversation.create", { platform: chatPlatform() });
+  const result = await hub().call("conversation.create", { platform: chatPlatform() });
   return { conversation_id: result.conversation_id };
 }
 
 export async function getStoredMessages(conversationId: string, offset = 0, limit = 500) {
-  const client = await sap().whenReady();
-  return client.request("conversation.messages", {
+  return hub().call("conversation.messages", {
     conversation_id: conversationId,
     offset,
     limit,
@@ -59,41 +62,35 @@ export async function getStoredMessages(conversationId: string, offset = 0, limi
 }
 
 export async function setConversationTitle(conversationId: string, title: string) {
-  const client = await sap().whenReady();
-  await client.request("conversation.patchTitle", { conversation_id: conversationId, title });
+  await hub().call("conversation.patchTitle", { conversation_id: conversationId, title });
   return { ok: true as const };
 }
 
 export async function archiveConversation(conversationId: string) {
-  const client = await sap().whenReady();
-  await client.request("conversation.archive", { conversation_id: conversationId });
+  await hub().call("conversation.archive", { conversation_id: conversationId });
   return { ok: true as const };
 }
 
 export async function unarchiveConversation(conversationId: string) {
-  const client = await sap().whenReady();
-  await client.request("conversation.unarchive", { conversation_id: conversationId });
+  await hub().call("conversation.unarchive", { conversation_id: conversationId });
   return { ok: true as const };
 }
 
 export async function deleteConversation(conversationId: string) {
-  const client = await sap().whenReady();
-  await client.request("conversation.delete", { conversation_id: conversationId });
+  await hub().call("conversation.delete", { conversation_id: conversationId });
   return { ok: true as const };
 }
 
 /** 重编辑：删除末条用户消息及其后的所有内容 */
 export async function rollbackBeforeLastUserMessage(conversationId: string) {
-  const client = await sap().whenReady();
-  await client.request("conversation.rollbackBeforeLastUser", { conversation_id: conversationId });
+  await hub().call("conversation.rollbackBeforeLastUser", { conversation_id: conversationId });
   return { ok: true as const };
 }
 
 export async function getConversationAcpDock(
   conversationId: string,
 ): Promise<ConversationAcpDockSnapshot> {
-  const client = await sap().whenReady();
-  const raw = await client.request("conversation.acpDock", { conversation_id: conversationId });
+  const raw = await hub().call("conversation.acpDock", { conversation_id: conversationId });
   return {
     ...raw,
     tasks: raw.tasks.map((task) => ({
@@ -108,9 +105,39 @@ export async function getConversationAcpDock(
   };
 }
 
-export async function listConversationCommands(opts?: { all?: boolean }) {
+export async function listCommands(opts?: { all?: boolean; platform?: string }) {
+  return hub().call("conversation.commands", {
+    all: opts?.all,
+    platform: opts?.platform,
+  });
+}
+
+export async function interruptConversation(conversationId: string) {
   const client = await sap().whenReady();
-  return client.request("conversation.commands", {
+  await client.request("message.interrupt", { conversation_id: conversationId });
+  return { ok: true as const };
+}
+
+export function sendMessageStream(
+  conversationId: string,
+  message: string,
+  callbacks: SubscribeCallbacks<StreamApiEvent>,
+): { unsubscribe: () => void } {
+  return sap().sendMessageStream({ conversationId, message }, callbacks);
+}
+
+export function subscribeConversationUpdates(
+  conversationId: string,
+  onUpdate: () => void,
+): { unsubscribe: () => void } {
+  return sap().subscribeConversationEvents(conversationId, onUpdate);
+}
+
+/** @deprecated 使用 subscribeConversationUpdates */
+export const subscribeConversationEvents = subscribeConversationUpdates;
+
+export async function listConversationCommands(opts?: { all?: boolean }) {
+  return hub().call("conversation.commands", {
     platform: chatPlatform(),
     all: opts?.all,
   });
@@ -128,13 +155,6 @@ export async function interruptMessageStream(conversationId: string): Promise<vo
   await client.request("message.interrupt", { conversation_id: conversationId });
 }
 
-export function subscribeConversationEvents(
-  conversationId: string,
-  onUpdate: () => void,
-): { unsubscribe: () => void } {
-  return sap().subscribeConversationEvents(conversationId, onUpdate);
-}
-
 export async function loadConfig() {
   const shell = window.satelliteShell;
   if (shell?.hubWsUrl) {
@@ -147,11 +167,11 @@ export async function loadConfig() {
 
   const res = await fetch("/config.json");
   if (!res.ok) {
-    throw new Error(m.admin_common_network_error());
+    throw new Error(m.console_common_network_error());
   }
   const ct = res.headers.get("content-type") ?? "";
   if (!ct.includes("application/json")) {
-    throw new Error(m.admin_common_network_error());
+    throw new Error(m.console_common_network_error());
   }
   return res.json() as Promise<{
     app_id: string;
@@ -159,4 +179,9 @@ export async function loadConfig() {
     instance_id?: string;
     relay_ws_url?: string;
   }>;
+}
+
+export function conversationErrorMessage(err: unknown): string {
+  if (err instanceof Error && err.message.trim()) return err.message;
+  return m.console_common_network_error();
 }

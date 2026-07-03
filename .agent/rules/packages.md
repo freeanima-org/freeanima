@@ -2,17 +2,17 @@
 
 Workspace package names reflect the layer topology in [`code-layers.md`](code-layers.md):
 
-| Shape           | Pattern                          | Example                                                       |
-| --------------- | -------------------------------- | ------------------------------------------------------------- |
-| Layer aggregate | `@freeanima/{layer}`             | `kernel`, `core`, `runtime`, `platform`                       |
-| Capability pack | `@freeanima/capabilities-{slug}` | `capabilities-memory`, `capabilities-tools`                   |
-| Feature module  | `@freeanima/feature-{slug}`      | `feature-chat`, `feature-console`                             |
-| Shared wire     | `@freeanima/{name}`              | `hub-rpc`, `sap-contract`, `vault-crypto`（`shared/`）        |
-| Frontend shell  | `@freeanima/{name}`              | `ui-kit`, `shell-sdk`, `shell-ui`（`frontend/`）              |
-| Entry           | `@freeanima/cli`                 | CLI only                                                      |
-| Satellite       | `@freeanima/satellite-{slug}`    | `satellite-companion`（`satellites/` 白名单）                 |
-| Admin wire      | `@freeanima/admin-contract`      | Admin Hub wire（`features/console/protocol/admin-contract/`） |
-| Admin REST      | `@freeanima/admin-api`           | Admin Elysia routes（`features/console/hub/admin-api/`）      |
+| Shape           | Pattern                          | Example                                                           |
+| --------------- | -------------------------------- | ----------------------------------------------------------------- |
+| Layer aggregate | `@freeanima/{layer}`             | `kernel`, `core`, `runtime`, `platform`                           |
+| Capability pack | `@freeanima/capabilities-{slug}` | `capabilities-memory`, `capabilities-tools`                       |
+| Feature module  | `@freeanima/feature-{slug}`      | `feature-chat`, `feature-console`                                 |
+| Shared wire     | `@freeanima/{name}`              | `hub-rpc`, `sap-contract`, `vault-crypto`（`shared/`）            |
+| Frontend shell  | `@freeanima/{name}`              | `ui-kit`, `shell-sdk`, `shell-ui`（`frontend/`）                  |
+| Entry           | `@freeanima/cli`                 | CLI only                                                          |
+| Satellite       | `@freeanima/satellite-{slug}`    | `satellite-companion`（`satellites/` 白名单）                     |
+| Console wire    | `@freeanima/console-contract`    | Console Hub wire（`features/console/protocol/console-contract/`） |
+| Console REST    | `@freeanima/console-api`         | Console Elysia routes（`features/console/hub/console-api/`）      |
 
 ## Valid layer packages
 
@@ -27,11 +27,13 @@ Workspace package names reflect the layer topology in [`code-layers.md`](code-la
 | `@freeanima/cli`          | entry        | documented only                                                                        |
 | `@freeanima/ui-kit`       | frontend     | 共享 React UI（shadcn + composite）                                                    |
 | `@freeanima/hub-rpc`      | shared       | Hub RPC 传输（connect / req / res / evt）                                              |
+| `@freeanima/hub-contract` | shared       | Hub method SSOT（Zod + 静态 transport 元信息）                                         |
+| `@freeanima/hub-client`   | shared       | Hub 多传输客户端（call / subscribe + HTTP/WS dispatch）                                |
 | `@freeanima/sap-contract` | shared       | SAP + Feature RPC wire；`./satellite`、`./feature-rpc` 子入口                          |
 | `@freeanima/shell-sdk`    | frontend     | 壳层 manifest/settings/Hub 连通（依赖 hub-rpc）                                        |
 | `@freeanima/shell-ui`     | frontend     | 壳层 SPA                                                                               |
 
-**Deprecated prefixes** (must not appear in new packages): `engine-*`, `life-*`, `storage-*`, `mechanism-*`, `orchestration-*`, `service-*`, `connectors-*`, `admin-frontend`（已移除；用 `feature-console`）。
+**Deprecated prefixes** (must not appear in new packages): `engine-*`, `life-*`, `storage-*`, `mechanism-*`, `orchestration-*`, `service-*`, `connectors-*`, `feature-console`（已移除；用 `feature-console`）。
 
 Layer dependency rules: [`code-layers.md`](code-layers.md).
 

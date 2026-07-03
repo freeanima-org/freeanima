@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 22:15+0800\n"
+"POT-Creation-Date: 2026-07-03 18:23+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/sap/satellite-guide.md:1 docs/sap/satellite-guide.md:5
-#: messages/po4a/en.xml:600
+#: messages/po4a/en.xml:583
 #, no-wrap
 msgid "Satellite Guide"
 msgstr ""
@@ -68,7 +68,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/satellite-guide.md:29
 #, no-wrap
-msgid "**Chat / Task / Admin** etc. are bundled in shell-ui (desktop / mobile / web); no separate `satellites:` dev process needed; browser local debug: `bun run dev:web`.\n"
+msgid "**Chat / Task / Console** etc. are bundled in shell-ui (desktop / mobile / web); no separate `satellites:` dev process needed; browser local debug: `bun run dev:web`.\n"
 msgstr ""
 
 #. type: Plain text
@@ -111,7 +111,7 @@ msgstr ""
 #: docs/sap/satellite-guide.md:44
 msgid ""
 "No `command` in config. Start the satellite yourself; it connects to Hub via "
-"SAP WebSocket. Instances appear on Admin → Satellites after connect."
+"SAP WebSocket. Instances appear on Console → Satellites after connect."
 msgstr ""
 
 #. type: Plain text
@@ -122,7 +122,8 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/satellite-guide.md:48
 msgid ""
-"Open managed satellite UI at the URL from Admin (SAP `http_url`), typically:"
+"Open managed satellite UI at the URL from Console (SAP `http_url`), "
+"typically:"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -133,7 +134,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/satellite-guide.md:52
 msgid ""
-"Shell satellites (Chat, Admin, etc.) open in desktop / mobile / web shell "
+"Shell satellites (Chat, Console, etc.) open in desktop / mobile / web shell "
 "routes; no dedicated port."
 msgstr ""
 
@@ -146,8 +147,8 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/satellite-guide.md:56
 msgid ""
-"`instance_id` is a 3-character lowercase alphanumeric id (see [`packages/sap-"
-"contract/src/naming.ts`](../../packages/sap-contract/src/naming.ts)). It "
+"`instance_id` is a 3-character lowercase alphanumeric id (see [`shared/sap-"
+"contract/src/naming.ts`](../../shared/sap-contract/src/naming.ts)). It "
 "appears in platform strings (`sap:{app_slug}:{instance_id}`), session "
 "`platform_extra`, and SAP tool names. **Do not remove it from the protocol** "
 "— but each satellite app picks an **allocation strategy** suited to its "
@@ -183,7 +184,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/satellite-guide.md:76
 #, no-wrap
-msgid "**Chat (singleton):** all desktop / mobile clients share `CHAT_INSTANCE_ID` (`def`) so `conversation.list` is unified across devices. Chat registers no satellite tools; multiple devices may connect with the same id (Admin shows the last `http_url`).\n"
+msgid "**Chat (singleton):** all desktop / mobile clients share `CHAT_INSTANCE_ID` (`def`) so `conversation.list` is unified across devices. Chat registers no satellite tools; multiple devices may connect with the same id (Console shows the last `http_url`).\n"
 msgstr ""
 
 #. type: Plain text
@@ -255,9 +256,9 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:99
 msgid ""
-"Modules use shared [`getBundledHubRpcClient`](../../packages/hub-rpc/src/"
-"bundled.ts) / [`createSapDirectClient`](../../packages/sap-contract/src/"
-"direct-client.ts) on `/hub/rpc/v1`."
+"Modules use shared [`getBundledHubRpcClient`](../../shared/hub-rpc/src/"
+"bundled.ts) / [`createSapDirectClient`](../../shared/sap-contract/src/direct-"
+"client.ts) on `/hub/rpc/v1`."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -329,22 +330,23 @@ msgstr ""
 #. type: Title ###
 #: docs/sap/satellite-guide.md:126
 #, no-wrap
-msgid "Chat satellite"
+msgid "Chat (bundled feature)"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:130
 msgid ""
-"**app/desktop / browser dev (recommended)**: `createSapDirectClient` to Hub; "
-"static UI from [`satellites/chat/server/index.ts`](../../satellites/chat/"
-"server/index.ts) for static hosting only (no SAP relay)."
+"**Shell / browser dev (recommended)**: `createSapDirectClient` on shared Hub "
+"RPC; UI from [`features/chat/ui/app/`](../../features/chat/ui/app/) embedded "
+"in shell-ui (no SAP relay, no `sap.attach`)."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:130
 msgid ""
-"**Managed legacy**: old relay sidecar pair-programming mode; new embeds use "
-"direct."
+"Hub RPC handlers: [`features/chat/hub/rpc.ts`](../../features/chat/hub/"
+"rpc.ts); wire types: [`features/chat/protocol/`](../../features/chat/"
+"protocol/) → `@freeanima/sap-contract/feature-rpc`."
 msgstr ""
 
 #. type: Title ###
@@ -358,7 +360,7 @@ msgstr ""
 msgid ""
 "Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../"
 "satellites/pair-programming/server/index.ts); sidecar uses "
-"`createSatelliteHub` ([`satellite-hub.ts`](../../packages/sap-contract/src/"
+"`createSatelliteHub` ([`satellite-hub.ts`](../../shared/sap-contract/src/"
 "satellite-hub.ts))."
 msgstr ""
 
@@ -370,8 +372,8 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:142
 msgid ""
-"[`satellites/chat/app/src/lib/sap-client.ts`](../../satellites/chat/app/src/"
-"lib/sap-client.ts)"
+"[`features/chat/ui/app/src/lib/sap-client.ts`](../../features/chat/ui/app/"
+"src/lib/sap-client.ts)"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -384,14 +386,14 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:142
 msgid ""
-"[`packages/sap-contract/src/sidecar-client.ts`](../../packages/sap-contract/"
-"src/sidecar-client.ts)"
+"[`shared/sap-contract/src/sidecar-client.ts`](../../shared/sap-contract/src/"
+"sidecar-client.ts)"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:142
 msgid ""
-"[`packages/sap-contract/src/satellite-relay-server.ts`](../../packages/sap-"
+"[`shared/sap-contract/src/satellite-relay-server.ts`](../../shared/sap-"
 "contract/src/satellite-relay-server.ts)"
 msgstr ""
 
@@ -497,13 +499,13 @@ msgstr ""
 #. type: Title ##
 #: docs/sap/satellite-guide.md:185
 #, no-wrap
-msgid "Admin visibility"
+msgid "Console visibility"
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/satellite-guide.md:188
 msgid ""
-"`GET /api/satellites/status` (Admin → Satellites) reads "
+"`GET /api/satellites/status` (Console → Satellites) reads "
 "`SatelliteManager.getStatus()`: connected instances, `http_url`, registered "
 "tools, heartbeat timestamps."
 msgstr ""

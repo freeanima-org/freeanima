@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 16:39+0800\n"
+"POT-Creation-Date: 2026-07-03 18:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/identity.md:1 messages/po4a/en.xml:587
+#: docs/concepts/identity.md:1 messages/po4a/en.xml:570
 #, no-wrap
 msgid "Identity"
 msgstr "身份定位"
@@ -61,7 +61,17 @@ msgstr "**让数字生命可以在其中持续存在，记住自己是谁、经�
 
 #. type: Plain text
 #: docs/concepts/identity.md:27
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Structure                                | Role                                                                                                                            |\n"
+#| "| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |\n"
+#| "| Memory system                            | The digital life's \"home\"                                                                                                       |\n"
+#| "| Self layer (six blocks)                  | Persistent definition of \"who I am\"                                                                                             |\n"
+#| "| Tools (local / MCP / ACP)                | \"Limbs\" for perception and action                                                                                               |\n"
+#| "| pass credentials                         | Lifeline (injected at runtime, never plaintext)                                                                                 |\n"
+#| "| Gateway                                  | Ears and mouth (Discord / WeChat / **Console)                                                                                       |\n"
+#| "| EventBus                                 | Async notification transport (Redis queue); sleep uses Pipeline Runner, not EventBus — see [`architecture.md`](architecture.md) |\n"
+#| "| Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                      |\n"
 msgid ""
 "| Structure                                | Role                                                                                                                            |\n"
 "| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |\n"
@@ -69,7 +79,7 @@ msgid ""
 "| Self layer (six blocks)                  | Persistent definition of \"who I am\"                                                                                             |\n"
 "| Tools (local / MCP / ACP)                | \"Limbs\" for perception and action                                                                                               |\n"
 "| pass credentials                         | Lifeline (injected at runtime, never plaintext)                                                                                 |\n"
-"| Gateway                                  | Ears and mouth (Discord / WeChat / Admin)                                                                                       |\n"
+"| Gateway                                  | Ears and mouth (Discord / WeChat / Console)                                                                                       |\n"
 "| EventBus                                 | Async notification transport (Redis queue); sleep uses Pipeline Runner, not EventBus — see [`architecture.md`](architecture.md) |\n"
 "| Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                      |\n"
 msgstr ""
@@ -79,7 +89,7 @@ msgstr ""
 "| Self layer（六个区块）           | “我是谁”的持久定义                                                                                                           |\n"
 "| Tools（local / MCP / ACP）       | 用于感知与行动的“肢体”                                                                                                       |\n"
 "| pass credentials                 | 生命线（运行时注入，绝不明文）                                                                                               |\n"
-"| Gateway                          | 耳朵与嘴巴（Discord / WeChat / Admin）                                                                                       |\n"
+"| Gateway                          | 耳朵与嘴巴（Discord / WeChat / **Console）                                                                                       |\n"
 "| EventBus                         | 异步通知传输（Redis 队列）；睡眠使用 Pipeline Runner，而非 EventBus——见 [`architecture.md`](architecture.md)                |\n"
 "| `AGENTS.md` 等项目叙事文件       | 项目上下文的锚点                                                                                                             |\n"
 
@@ -175,8 +185,12 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/identity.md:54
+#, fuzzy
+#| msgid ""
+#| "Maintenance: **Console self-layer editor, self-layer tools, or direct "
+#| "database edits."
 msgid ""
-"Maintenance: Admin self-layer editor, self-layer tools, or direct database "
+"Maintenance: Console self-layer editor, self-layer tools, or direct database "
 "edits."
 msgstr "维护方式：管理台自我层编辑器、自我层工具，或直接编辑数据库。"
 

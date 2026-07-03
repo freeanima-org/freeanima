@@ -37,13 +37,13 @@
 
 ## 原型 B — hub-rest 运维面（Console）
 
-**示例**：memory、config、cron、MCP、entity worlds（Admin UI）
+**示例**：memory、config、cron、MCP、entity worlds（Console UI）
 
-| 层                                         | 必须改                                    |
-| ------------------------------------------ | ----------------------------------------- |
-| `features/console/protocol/admin-contract` | API schema                                |
-| `features/console/hub/admin-api`           | Elysia route                              |
-| `features/console/ui/admin`                | Admin 页面（`ui-kit` + `admin-contract`） |
+| 层                                           | 必须改                                                             |
+| -------------------------------------------- | ------------------------------------------------------------------ |
+| `features/console/protocol/console-contract` | API 类型 + hub-contract re-export（schema SSOT 在 hub-contract）   |
+| `features/console/hub/console-api`           | Elysia 薄路由 → `invokeConsoleHubHandler`                          |
+| `features/console/ui/console`                | Console 页面（优先 `@freeanima/hub-client`，Eden Treaty 过渡弃用） |
 
 **不要**：import `sap-contract`；新建 `satellite-*` 包。
 
@@ -60,22 +60,26 @@
 
 新增 Feature RPC method 时：
 
-1. 在 `shared/sap-contract/src/feature-rpc/frames/` 增加 schema
-2. 在 `features/<slug>/protocol/index.ts` re-export 子集
-3. 在 `features/<slug>/hub/rpc.ts` 实现 handler
-4. 在 `features/<slug>/plugin.ts` 注册 RPC 表；platform boot 已注册 plugin 则无需改 `ws-server` switch
+1. 在 `shared/hub-contract/src/registry/` 增加 method 定义（Zod + transport meta）
+2. 在 `shared/sap-contract/src/feature-rpc/frames/` 增加 schema（若尚未存在）
+3. 在 `features/<slug>/hub/rpc.ts` 实现 handler（**禁止** import `hub-client`）
+4. 在 `features/<slug>/plugin.ts` 注册 RPC 表
+5. Feature UI `api.ts` 使用 `@freeanima/hub-client` 的 `call` / `subscribe`（WS-only 流式仍走 `sap-contract` bundled client）
+
+Console REST method 在 `hub-contract/registry/console.ts` + `console-api/console-hub-handlers.ts`；Elysia 路由 delegate 至 `invokeConsoleHubHandler`。
 
 SAP attach 专用 method（tool/terminal/sap.attach）仍在 [`platform/src/sap/ws-server.ts`](../../platform/src/sap/ws-server.ts) switch 内。
 
 ## 前端包依赖速查
 
-| 包                | 允许                                        | 禁止                                   |
-| ----------------- | ------------------------------------------- | -------------------------------------- |
-| `ui-kit`          | react                                       | sap-contract、workspace                |
-| `shell-sdk`       | kernel\*、hub-rpc、vault-crypto             | sap-contract                           |
-| `shell-ui`        | ui-kit、shell-sdk、feature-\*、satellite-\* | sap-contract、深路径 import satellites |
-| `feature-console` | admin-contract、ui-kit、shell-sdk           | sap-contract、shell-ui                 |
-| `satellite-*`     | sap-contract、shell-sdk、ui-kit             | shell-ui、admin-\*                     |
+| 包                | 允许                                                | 禁止                                          |
+| ----------------- | --------------------------------------------------- | --------------------------------------------- |
+| `ui-kit`          | react                                               | sap-contract、workspace                       |
+| `shell-sdk`       | kernel\*、hub-rpc、vault-crypto                     | sap-contract                                  |
+| `shell-ui`        | ui-kit、shell-sdk、feature-\*、satellite-\*         | sap-contract、深路径 import satellites        |
+| `feature-*` UI    | hub-client、hub-contract（类型）、shell-sdk、ui-kit | 在 `hub/rpc.ts` 使用 hub-client               |
+| `feature-console` | console-contract、hub-client、ui-kit、shell-sdk     | sap-contract、shell-ui、Eden Treaty（已移除） |
+| `satellite-*`     | sap-contract、shell-sdk、ui-kit                     | shell-ui、admin-\*                            |
 
 **Satellite 离线只读缓存**：列表/详情 fetch 应 cache-first 展示、`network refresh` 写回；使用 `@freeanima/shell-sdk/offline-cache`（按 `hubWsUrl` scope 隔离，写入带 `cachedAt` 信封）；离线时通过 `@freeanima/shell-sdk/react` 的 `useOfflineReadOnly()` 禁用写操作；**不要**用 Workbox 缓存 `/api` 或 `/sap`。参见 [`docs/guide/remote-access.md`](../../docs/guide/remote-access.md) PWA 离线边界。
 

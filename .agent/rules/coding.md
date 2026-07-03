@@ -32,11 +32,11 @@
   - `eslint/eqeqeq` — always `===` / `!==` (`null` checks may use `== null` / `!= null`).
   - `eslint/no-promise-executor-return` — Promise executor must not return a value; use block body (`{ setTimeout(resolve, ms); }`).
   - `unicorn/explicit-length-check` — use `.length > 0` / `.length === 0`, not truthy `.length`.
-- **React**（feature-console Admin / ui-kit / satellites override）: `react/rules-of-hooks` error；`react/exhaustive-deps` warn。
+- **React**（feature-console Console / ui-kit / satellites override）: `react/rules-of-hooks` error；`react/exhaustive-deps` warn。
 - **Disable 纪律**（`dep-check` 脚本 enforce）:
   - `oxlint-disable` / `eslint-disable` 行须含 `-- reason`
   - 禁止 `ts-ignore` / `ts-nocheck`；`ts-expect-error` 须同行说明
-  - 契约目录（`platform/ports/`、`admin-contract/`、`sap-contract/`）禁止显式 `any`（`scripts/check-no-explicit-any.ts`）
+  - 契约目录（`platform/ports/`、`console-contract/`、`sap-contract/`）禁止显式 `any`（`scripts/check-no-explicit-any.ts`）
 
 - **Failures**: always `toolError(msg)` → JSON `{"error":"..."}`
 - **Successes**: structured tools use `toolResult(obj)`; LLM-readable tools (`file_read`, `terminal_run`, `code_execute`, etc.) may return plain-text stdout
@@ -69,7 +69,7 @@ When adding or moving types / Zod / ports, decide in this order:
 Additional rules:
 
 - Domain views may `import type` / `z.infer` from `@freeanima/core/db`, but **must not duplicate** storage Zod definitions
-- **HTTP/Admin wire 契约** → `@freeanima/admin-contract`（类型 + `date-json` / `display-util`）；**Admin REST 实现** → `@freeanima/admin-api`；**in-process snapshots/display** → `@freeanima/platform`
+- **HTTP/Console wire 契约** → `@freeanima/console-contract`（类型 + `date-json` / `display-util`）；**Console REST 实现** → `@freeanima/console-api`；**in-process snapshots/display** → `@freeanima/platform`
 - **EventBus payloads** → publisher's domain package (e.g. memory events → `capabilities-memory`)
 - **Repository row shapes** → [`core/src/db/schema/rows/`](../../core/src/db/schema/rows/) = `typeof table.$inferSelect`；domain `types.ts` re-export；1:1 CRUD **无 mapper**（非平凡 join/transform 见 [`drizzle-db.md`](drizzle-db.md)）
 
@@ -81,7 +81,7 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 - **Port 方法名**（`searchFts`、`appendMessageReturningId` 等）与 **tool/REST 计算字段** 保持 camelCase
 - **Row 数据字段** 一律 snake_case；时间戳列统一 `created_at` / `updated_at`（以 [`core/src/db/schema/`](../../core/src/db/schema/) 为准）
 - **PG row 类型**：`core/src/db/schema/rows/*` 或 `typeof table.$inferSelect`；JSON 边界 `Date`↔ISO（见 drizzle-db）；禁止 camelCase→snake_case 字段改名表与 dual-key DbRow
-- **SAP / satellite wire**：capabilities 从 `@freeanima/sap-contract` re-export Payload；Admin UI 从 `@freeanima/admin-contract/api` 导入 Row / 响应类型
+- **SAP / satellite wire**：capabilities 从 `@freeanima/sap-contract` re-export Payload；Console UI 从 `@freeanima/console-contract/api` 导入 Row / 响应类型
 
 详情：[`drizzle-db.md`](drizzle-db.md) DbRow / FTS 列名约定。
 

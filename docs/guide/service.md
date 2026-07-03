@@ -46,6 +46,6 @@ When `web.enabled: true`, the stack serves browser Web UI at `http://<host>:2658
 
 **UI access (two modes):**
 
-- **Desktop / mobile bundled shell:** Chat and Admin at `/chat`, `/admin/*` inside the Electron/Capacitor app (not served from Hub `:2658` unless `web.enabled`).
+- **Desktop / mobile bundled shell:** Chat and Console at `/chat`, `/console`/\*`inside the Electron/Capacitor app (not served from Hub`:2658`unless`web.enabled`).
 - **`web.enabled: true`:** browser UI at `http://<host>:2658/web/*` from Hub (see paragraph above).
-- **Local Web dev (`bun run dev:web`):** Vite on `:4173` with base `/web/` — Chat `http://127.0.0.1:4173/web/chat`, Admin `http://127.0.0.1:4173/web/admin/dashboard`; Hub still provides REST `/api/*` and Hub RPC `/hub/rpc/v1`.
+- **Local Web dev (`bun run dev:web`):** Vite on `:4173` with base `/web/` — Chat `http://127.0.0.1:4173/web/chat`, Console `http://127.0.0.1:4173/web/console/dashboard`; Hub still provides REST `/api/*` and Hub RPC `/hub/rpc/v1`.

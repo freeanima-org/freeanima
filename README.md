@@ -85,7 +85,7 @@ Then configure `~/.anima/config.yaml` (or `.env` for Docker) and run `anima serv
 聊天室与管理台由 **app/desktop** / **app/mobile** 提供（bundled SPA）。Hub 仅托管 API 与 SAP：
 
 - API：`http://127.0.0.1:2658/api`
-- 浏览器壳层开发（聊天 + 管理台 + 设置，HMR）：`bun run dev:web` → `http://127.0.0.1:4173/chat`（Admin：`/admin/dashboard`）
+- 浏览器壳层开发（聊天 + 管理台 + 设置，HMR）：`bun run dev:web` → `http://127.0.0.1:4173/chat`（Console：`/console/dashboard`）
 
 ## First-deploy security checklist
 
@@ -93,7 +93,7 @@ Then configure `~/.anima/config.yaml` (or `.env` for Docker) and run `anima serv
 2. `chmod 700 ~/.anima`
 3. Default bind is `127.0.0.1` only; add your own auth before exposing to the public internet
 4. Review MCP/ACP config; set `enabled: false` on untrusted external servers
-5. HTTP / Admin have **no built-in authentication** — see [`docs/guide/security.md`](docs/guide/security.md)
+5. HTTP / Console have **no built-in authentication** — see [`docs/guide/security.md`](docs/guide/security.md)
 
 ## Open-source statement
 

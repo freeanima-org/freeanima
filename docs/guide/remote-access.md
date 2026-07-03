@@ -28,7 +28,7 @@ title: Remote access
 - **更新**：Hub 部署新 Web 静态产物后，已安装 PWA 会提示「新版本可用」；点击重新加载后生效。壳层 JS 由 Workbox precache，`/web/config.json` 始终 `no-store`（Hub URL 动态）。
 - **离线边界（两层）**：
   - **壳层（SW）**：仅缓存 JS/CSS/HTML 等静态资源，保证断网时页面框架可加载。
-  - **业务快照（IndexedDB）**：Chat / Task / Notification / Diary / Email 及 Admin 部分只读页（dashboard status、status config、semantic memory list 等）由 `shell-sdk/offline-cache` 做 cache-first 展示、在线 refresh 写回；**不**经 SW 缓存 `/api` 或 `/sap`。
+  - **业务快照（IndexedDB）**：Chat / Task / Notification / Diary / Email 及 Console 部分只读页（dashboard status、status config、semantic memory list 等）由 `shell-sdk/offline-cache` 做 cache-first 展示、在线 refresh 写回；**不**经 SW 缓存 `/api` 或 `/sap`。
 - **离线只读**：浏览器 `offline` 时 shell-ui 显示全局提示并禁用各 satellite 写操作；展示的是**曾在线拉取过的快照**，非 Hub 全量镜像。
 - **存储**：SW 缓存、localStorage（Hub 设置）、IndexedDB（业务快照）互不冲突；清除站点数据会同时删除三者。
 
@@ -48,7 +48,7 @@ anima token list --subject-id 1
 anima token revoke <token_id>
 ```
 
-Admin REST（需已认证 `full` token）：
+Console REST（需已认证 `full` token）：
 
 - `GET /api/subjects/:id/tokens`
 - `POST /api/subjects/:id/tokens` — body `{ "name": "desktop" }`，响应含一次性 `plaintext`

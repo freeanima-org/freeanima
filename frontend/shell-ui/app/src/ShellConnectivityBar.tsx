@@ -35,7 +35,7 @@ export function ShellConnectivityBar(): JSX.Element | null {
   if (notice.kind === "hub-connecting") {
     return (
       <div className="shrink-0 border-b border-border px-4 py-2">
-        <StatusAlert variant="info">{m.admin_common_connecting()}</StatusAlert>
+        <StatusAlert variant="info">{m.console_common_connecting()}</StatusAlert>
       </div>
     );
   }
@@ -43,7 +43,7 @@ export function ShellConnectivityBar(): JSX.Element | null {
   return (
     <div className="shrink-0 border-b border-border px-4 py-2">
       <StatusAlert variant="warning" className="flex flex-wrap items-center justify-between gap-2">
-        <span>{m.admin_hub_disconnected()}</span>
+        <span>{m.console_hub_disconnected()}</span>
         <div className="flex items-center gap-1">
           {nativeShell ? (
             <Button
@@ -67,7 +67,7 @@ export function ShellConnectivityBar(): JSX.Element | null {
               void reconnectHub().finally(() => setReconnecting(false));
             }}
           >
-            {m.admin_common_reconnect()}
+            {m.console_common_reconnect()}
           </Button>
         </div>
       </StatusAlert>

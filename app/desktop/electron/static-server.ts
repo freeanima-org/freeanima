@@ -12,7 +12,7 @@ const MIME: Record<string, string> = {
   ".woff2": "font/woff2",
 };
 
-const ADMIN_PREFIX = "/admin";
+const CONSOLE_PREFIX = "/console";
 
 function isAddrInUse(error: unknown): boolean {
   return (
@@ -28,8 +28,8 @@ export type StaticServerConfig = {
   hubWsUrl: string;
 };
 
-function resolveAdminAssetPath(pathname: string): string {
-  let rel = pathname.slice(ADMIN_PREFIX.length);
+function resolveConsoleAssetPath(pathname: string): string {
+  let rel = pathname.slice(CONSOLE_PREFIX.length);
   if (rel.startsWith("/")) rel = rel.slice(1);
   if (rel === "" || !rel.includes(".")) {
     return "index.html";
@@ -73,17 +73,17 @@ function createStaticHandler(
   };
 }
 
-function createAdminStaticHandler(
+function createConsoleStaticHandler(
   distDir: string,
 ): (req: IncomingMessage, res: ServerResponse) => void {
   return (req, res) => {
     const pathname = new URL(req.url ?? "/", "http://127.0.0.1").pathname;
-    if (pathname !== ADMIN_PREFIX && !pathname.startsWith(`${ADMIN_PREFIX}/`)) {
+    if (pathname !== CONSOLE_PREFIX && !pathname.startsWith(`${CONSOLE_PREFIX}/`)) {
       res.statusCode = 404;
       res.end("Not Found");
       return;
     }
-    const rel = resolveAdminAssetPath(pathname);
+    const rel = resolveConsoleAssetPath(pathname);
     if (serveStaticFile(distDir, rel, res)) return;
     const indexPath = join(distDir, "index.html");
     if (existsSync(indexPath)) {
@@ -177,7 +177,7 @@ export async function startShellStaticServer(
   throw lastError ?? new Error(`无法在 ${portStart}–${portStart + portAttempts - 1} 找到可用端口`);
 }
 
-export async function startAdminStaticServer(
+export async function startConsoleStaticServer(
   distDir: string,
   portStart: number,
   portAttempts = 10,
@@ -185,7 +185,7 @@ export async function startAdminStaticServer(
   let lastError: unknown;
   for (let i = 0; i < portAttempts; i++) {
     const port = portStart + i;
-    const server = createServer(createAdminStaticHandler(distDir));
+    const server = createServer(createConsoleStaticHandler(distDir));
     try {
       const boundPort = await listenStatic(server, port);
       const url = `http://127.0.0.1:${boundPort}`;

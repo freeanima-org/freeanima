@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 18:22+0800\n"
+"POT-Creation-Date: 2026-07-03 18:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/guide/security.md:1 docs/tools/execute-code-runtimes.md:60
-#: messages/po4a/en.xml:592 messages/po4a/en.xml:595
+#: messages/po4a/en.xml:584 messages/po4a/en.xml:587
 #, no-wrap
 msgid "Security"
 msgstr ""
@@ -248,7 +248,7 @@ msgid ""
 "| **Runtime**      | Default 127.0.0.1 bind                                     | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |\n"
 "| **Gateway**      | Token in Vault / env                                       | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |\n"
 "| **CLI / Tools**  | Local shell compromised                                    | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |\n"
-"| **HTTP / Admin** | `service_api_tokens` Bearer token（所有来源，含 loopback） | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |\n"
+"| **HTTP / Console** | `service_api_tokens` Bearer token（所有来源，含 loopback） | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |\n"
 "| **MCP / ACP**    | SSE auth undefined                                         | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |\n"
 "| **Vault**        | Agent machine key file permissions                         | Metadata-only tools; inject ack                                     | Wrong item inject         | Web Crypto         | User MP never in PG messages       |\n"
 msgstr ""

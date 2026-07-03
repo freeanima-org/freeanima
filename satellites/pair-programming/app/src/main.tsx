@@ -237,7 +237,7 @@ function App() {
             className="h-7 px-2 text-xs shrink-0"
             onClick={() => store.clearError()}
           >
-            {m.admin_common_close()}
+            {m.console_common_close()}
           </Button>
         </Alert>
       ) : null}

@@ -178,7 +178,7 @@ export async function* bridgeSessionUpdates(
   }
 }
 
-/** Bridge Admin SSE-shaped events through the same mapper (for existing HTTP routes) */
+/** Bridge Console SSE-shaped events through the same mapper (for existing HTTP routes) */
 export async function* bridgeApiStreamEvents(
   streamId: string,
   source: AsyncIterable<{ event: string; data: string }>,

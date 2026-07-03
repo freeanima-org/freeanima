@@ -9,8 +9,8 @@ export function resolveShellRouterBasepath(): string | undefined {
   return shellBasepathFromViteBase(import.meta.env?.BASE_URL ?? "/");
 }
 
-/** Admin SPA base when embedded in shell-ui (Hub `/web/admin`, desktop `/admin`). */
-export function resolveEmbeddedAdminBasepath(): string {
+/** Console SPA base when embedded in shell-ui (Hub `/web/console`, desktop `/console`). */
+export function resolveEmbeddedConsoleBasepath(): string {
   const shellBase = resolveShellRouterBasepath();
-  return shellBase ? `${shellBase}/admin` : "/admin";
+  return shellBase ? `${shellBase}/console` : "/console";
 }

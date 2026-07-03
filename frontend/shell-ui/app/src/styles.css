@@ -7,7 +7,7 @@
 @source "../../../../features/task/ui/app/src/**/*.{tsx,ts}";
 @source "../../../../features/diary/ui/app/src/**/*.{tsx,ts}";
 @source "../../../../features/vault/ui/app/src/**/*.{tsx,ts}";
-@source "../../../../features/console/ui/admin/**/*.{tsx,ts}";
+@source "../../../../features/console/ui/console/**/*.{tsx,ts}";
 @import "@freeanima/ui-kit/styles.css";
 
 :root {

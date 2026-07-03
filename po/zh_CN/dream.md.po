@@ -200,7 +200,7 @@ msgstr ""
 "| 界面                           | 用途                 |\n"
 "| ------------------------------ | -------------------- |\n"
 "| `dream_read` 工具              | 读取已存储的梦境     |\n"
-"| Admin `/admin/dashboard/dream` | 浏览梦境历史         |\n"
+"| **Console `/console/dashboard/dream` | 浏览梦境历史         |\n"
 
 #. type: Title ##
 #: docs/concepts/dream.md:57

@@ -55,23 +55,23 @@ const featureRoutes = listShellFeatureRoutes().map((entry) =>
   }),
 );
 
-const adminIndexRoute = createRoute({
+const consoleIndexRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
-  path: "/admin",
+  path: "/console",
   beforeLoad: () => {
-    throw redirect({ to: "/admin/dashboard" });
+    throw redirect({ to: "/console/dashboard" });
   },
 });
 
-const adminDashboardRoute = createRoute({
+const consoleDashboardRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
-  path: "/admin/dashboard",
+  path: "/console/dashboard",
   component: loadConsoleShellRoute(),
 });
 
-const adminRoute = createRoute({
+const consoleRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
-  path: "/admin/$",
+  path: "/console/$",
   component: loadConsoleShellRoute(),
 });
 
@@ -86,9 +86,9 @@ const routeTree = rootRoute.addChildren([
   mainLayoutRoute.addChildren([
     indexRoute,
     ...featureRoutes,
-    adminIndexRoute,
-    adminDashboardRoute,
-    adminRoute,
+    consoleIndexRoute,
+    consoleDashboardRoute,
+    consoleRoute,
     settingsRoute,
   ]),
 ]);

@@ -10,6 +10,8 @@
     { "path": "./features/task" },
     { "path": "./features/vault" },
     { "path": "./shared/hub-rpc" },
+    { "path": "./shared/hub-contract" },
+    { "path": "./shared/hub-client" },
     { "path": "./shared/sap-contract" },
     { "path": "./tsconfig.monorepo.json" },
     { "path": "./satellites/pair-programming" },
@@ -19,7 +21,7 @@
     { "path": "./frontend/shell-sdk" },
     { "path": "./app/mobile" },
     { "path": "./app/web" },
-    { "path": "./features/console/hub/admin-api" },
-    { "path": "./features/console/protocol/admin-contract" }
+    { "path": "./features/console/hub/console-api" },
+    { "path": "./features/console/protocol/console-contract" }
   ]
 }

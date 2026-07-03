@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 18:19+0800\n"
+"POT-Creation-Date: 2026-07-03 18:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,10 +36,16 @@ msgstr "可嵌入的前端内容包通过 **manifest / desktop / mobile** 导出
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:10
+#, fuzzy
+#| msgid ""
+#| "The unified settings window is aggregated by the registry in [`packages/"
+#| "shell-ui/`](../../packages/shell-ui/); contract in [`packages/shell-ui/"
+#| "src/settings.ts`](../../packages/shell-ui/src/settings.ts) (unrelated to "
+#| "SAP)."
 msgid ""
-"The unified settings window is aggregated by the registry in [`packages/"
-"shell-ui/`](../../packages/shell-ui/); contract in [`packages/shell-ui/src/"
-"settings.ts`](../../packages/shell-ui/src/settings.ts) (unrelated to SAP)."
+"The unified settings window is aggregated by the registry in [`frontend/"
+"shell-ui/`](../../frontend/shell-ui/); contract in [`frontend/shell-ui/src/"
+"settings.ts`](../../frontend/shell-ui/src/settings.ts) (unrelated to SAP)."
 msgstr ""
 "统一设置窗口由 [`packages/shell-ui/`](../../packages/shell-ui/) 中的 "
 "registry 聚合；契约见 [`packages/shell-ui/src/settings.ts`](../../packages/"
@@ -80,8 +86,12 @@ msgstr ""
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:25
+#, fuzzy
+#| msgid ""
+#| "Implementation SSOT: [`packages/shell-sdk/src/manifest.ts`](../../"
+#| "packages/shell-sdk/src/manifest.ts)"
 msgid ""
-"Implementation SSOT: [`packages/shell-sdk/src/manifest.ts`](../../packages/"
+"Implementation SSOT: [`frontend/shell-sdk/src/manifest.ts`](../../frontend/"
 "shell-sdk/src/manifest.ts)"
 msgstr ""
 "实现 SSOT：[`packages/shell-sdk/src/manifest.ts`](../../packages/shell-sdk/"
@@ -150,13 +160,19 @@ msgstr "当前前端 package"
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:50
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Package                          | appId       | embedMode (profile) |\n"
+#| "| -------------------------------- | ----------- | ------------------- |\n"
+#| "| `@freeanima/satellite-companion` | `companion` | `embedded-sidecar`  |\n"
+#| "| `@freeanima/satellite-chat`      | `chat`      | `bundled-spa`       |\n"
+#| "| **Console (`app/desktop` profile)    | `admin`     | `bundled-spa`       |\n"
 msgid ""
 "| Package                          | appId       | embedMode (profile) |\n"
 "| -------------------------------- | ----------- | ------------------- |\n"
 "| `@freeanima/satellite-companion` | `companion` | `embedded-sidecar`  |\n"
-"| `@freeanima/satellite-chat`      | `chat`      | `bundled-spa`       |\n"
-"| Admin (`app/desktop` profile)    | `admin`     | `bundled-spa`       |\n"
+"| `@freeanima/feature-chat`        | `chat`      | `bundled-spa`       |\n"
+"| `@freeanima/feature-console`     | `console`   | `bundled-spa`       |\n"
 msgstr ""
 "| Package                          | appId       | embedMode（配置）   |\n"
 "| -------------------------------- | ----------- | ------------------- |\n"
@@ -166,9 +182,14 @@ msgstr ""
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:52
+#, fuzzy
+#| msgid ""
+#| "Shell apps: [`app/desktop/`](../../app/desktop/) · [`app/mobile/`](../../"
+#| "app/mobile/) · [`packages/shell-ui/`](../../packages/shell-ui/)"
 msgid ""
 "Shell apps: [`app/desktop/`](../../app/desktop/) · [`app/mobile/`](../../app/"
-"mobile/) · [`packages/shell-ui/`](../../packages/shell-ui/)"
+"mobile/) · [`app/web/`](../../app/web/) · [`frontend/shell-ui/`](../../"
+"frontend/shell-ui/)"
 msgstr ""
 "Shell 应用：[`app/desktop/`](../../app/desktop/) · [`app/mobile/`](../../app/"
 "mobile/) · [`packages/shell-ui/`](../../packages/shell-ui/)"
@@ -181,8 +202,14 @@ msgstr "聊天室：Hub RPC 与 instance_id"
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:56
+#, fuzzy
+#| msgid ""
+#| "Bundled chat uses [`createSapDirectClient`](../../packages/sap-contract/"
+#| "src/direct-client.ts) on the shared Hub RPC transport "
+#| "(`getBundledHubRpcClient` / `whenHubRpcReady`). It does **not** call "
+#| "`sap.attach`."
 msgid ""
-"Bundled chat uses [`createSapDirectClient`](../../packages/sap-contract/src/"
+"Bundled chat uses [`createSapDirectClient`](../../shared/sap-contract/src/"
 "direct-client.ts) on the shared Hub RPC transport "
 "(`getBundledHubRpcClient` / `whenHubRpcReady`). It does **not** call "
 "`sap.attach`."
@@ -212,18 +239,19 @@ msgstr "Capacitor：Preferences"
 
 #. type: Title ##
 #: docs/sap/frontend-exports.md:62
-#, no-wrap
-msgid "Admin: Hub REST + bundled SPA"
+#, fuzzy, no-wrap
+#| msgid "**Console: Hub REST + bundled SPA"
+msgid "Console: Hub REST + bundled SPA"
 msgstr "管理台：Hub REST + bundled SPA"
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:65
 msgid ""
-"Admin UI is built by [`@freeanima/admin-frontend`](../../platform/admin-"
-"frontend/) and bundled into desktop / mobile."
+"Console UI source SSOT: [`features/console/ui/console/`](../../features/"
+"console/ui/console/). Build helpers: [`features/console/build/`](../../"
+"features/console/build/)（Paraglide compile、admin hash）；SPA 打包进 "
+"desktop / mobile / web shell。"
 msgstr ""
-"管理台 UI 由 [`@freeanima/admin-frontend`](../../platform/admin-frontend/) 构"
-"建并打包进桌面 / 移动客户端。"
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:67
@@ -236,9 +264,13 @@ msgstr ""
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:68
+#, fuzzy
+#| msgid ""
+#| "Local shell dev: `bun run dev:web` → `http://127.0.0.1:4173` (Hub must be "
+#| "running; includes Chat, **Console, settings)."
 msgid ""
 "Local shell dev: `bun run dev:web` → `http://127.0.0.1:4173` (Hub must be "
-"running; includes Chat, Admin, settings)."
+"running; includes Chat, Console, settings)."
 msgstr ""
 "本地 shell 开发：`bun run dev:web` → `http://127.0.0.1:4173`（Hub 须已运行；"
 "含聊天室、管理台、设置）。"

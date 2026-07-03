@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 22:15+0800\n"
+"POT-Creation-Date: 2026-07-03 18:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/service.md:1 messages/po4a/en.xml:606
+#: docs/guide/service.md:1 messages/po4a/en.xml:589
 #, no-wrap
 msgid "Service"
 msgstr "服务"
@@ -154,13 +154,18 @@ msgstr "**UI 访问（两种模式）：**\n"
 
 #. type: Bullet: '- '
 #: docs/guide/service.md:51
+#, fuzzy
+#| msgid ""
+#| "**Desktop / mobile bundled shell:** Chat and **Console at `/chat`, `/"
+#| "console/*` inside the Electron/Capacitor app (not served from Hub `:2658` "
+#| "unless `web.enabled`)."
 msgid ""
-"**Desktop / mobile bundled shell:** Chat and Admin at `/chat`, `/admin/*` "
-"inside the Electron/Capacitor app (not served from Hub `:2658` unless "
+"**Desktop / mobile bundled shell:** Chat and Console at `/chat`, `/console`/"
+"*` inside the Electron/Capacitor app (not served from Hub `:2658` unless "
 "`web.enabled`)."
 msgstr ""
 "**桌面/移动 bundled shell：** 聊天室与管理台位于 Electron/Capacitor 应用内的 "
-"`/chat`、`/admin/*`（除非 `web.enabled`，否则不由 Hub `:2658` 提供）。"
+"`/chat`、`/console/*`（除非 `web.enabled`，否则不由 Hub `:2658` 提供）。"
 
 #. type: Bullet: '- '
 #: docs/guide/service.md:51
@@ -173,10 +178,17 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/service.md:51
+#, fuzzy
+#| msgid ""
+#| "**Local Web dev (`bun run dev:web`):** Vite on `:4173` with base `/web/` "
+#| "— Chat `http://127.0.0.1:4173/web/chat`, **Console `http://127.0.0.1:4173/"
+#| "web/admin/dashboard`; Hub still provides REST `/api/*` and Hub RPC `/hub/"
+#| "rpc/v1`."
 msgid ""
 "**Local Web dev (`bun run dev:web`):** Vite on `:4173` with base `/web/` — "
-"Chat `http://127.0.0.1:4173/web/chat`, Admin `http://127.0.0.1:4173/web/"
-"admin/dashboard`; Hub still provides REST `/api/*` and Hub RPC `/hub/rpc/v1`."
+"Chat `http://127.0.0.1:4173/web/chat`, Console `http://127.0.0.1:4173/web/"
+"console/dashboard`; Hub still provides REST `/api/*` and Hub RPC `/hub/rpc/"
+"v1`."
 msgstr ""
 "**本地 Web 开发（`bun run dev:web`）：** Vite 运行在 `:4173`，base 为 `/web/`"
 "——聊天室 `http://127.0.0.1:4173/web/chat`，管理台 `http://127.0.0.1:4173/web/"

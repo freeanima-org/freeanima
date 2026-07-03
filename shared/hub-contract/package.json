@@ -1,0 +1,22 @@
+{
+  "name": "@freeanima/hub-contract",
+  "description": "Hub method SSOT：Zod schema + 静态 transport 元信息",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./registry": "./src/registry/index.ts",
+    "./schemas/console-schemas": "./src/schemas/console-schemas.ts",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@freeanima/core": "workspace:*",
+    "@freeanima/kernel": "workspace:*",
+    "@freeanima/sap-contract": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@types/node": "catalog:"
+  }
+}

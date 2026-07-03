@@ -11,8 +11,7 @@ const ROOT = join(import.meta.dir, "..");
 type Violation = { file: string; line: number; pkg: string; reason: string };
 
 const IMPORT_RE = /from\s+["']@freeanima\/([^"']+)["']/g;
-const RELATIVE_DEEP_IMPORT_RE =
-  /from\s+["'](\.\.?\/(?:\.\.\/)*)(?:satellites\/|platform\/admin-frontend\/app\/)/g;
+const RELATIVE_DEEP_IMPORT_RE = /from\s+["'](\.\.?\/(?:\.\.\/)*)(?:satellites\/)/g;
 
 const LAYER_DIRS = [
   "kernel",
@@ -53,8 +52,8 @@ function layerOf(relPath: string): Layer {
   return null;
 }
 
-function isAdminApiPath(relPath: string): boolean {
-  return relPath.startsWith("features/console/hub/admin-api/");
+function isConsoleApiPath(relPath: string): boolean {
+  return relPath.startsWith("features/console/hub/console-api/");
 }
 
 function sourceCapabilitiesPkg(relPath: string): string | null {
@@ -122,7 +121,7 @@ function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
   if (!layer) return true;
   const root = workspacePkgName(pkg);
 
-  if (isAdminApiPath(relPath)) {
+  if (isConsoleApiPath(relPath)) {
     return true;
   }
 
@@ -143,6 +142,24 @@ function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
         root === "kernel" ||
         root.startsWith("kernel-") ||
         root === "sap-contract" ||
+        root === "hub-rpc"
+      );
+    }
+    if (relPath.startsWith("shared/hub-contract")) {
+      return (
+        root === "kernel" ||
+        root.startsWith("kernel-") ||
+        root === "hub-contract" ||
+        root === "sap-contract" ||
+        root === "core"
+      );
+    }
+    if (relPath.startsWith("shared/hub-client")) {
+      return (
+        root === "kernel" ||
+        root.startsWith("kernel-") ||
+        root === "hub-client" ||
+        root === "hub-contract" ||
         root === "hub-rpc"
       );
     }
@@ -186,12 +203,14 @@ function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
     case "features": {
       if (root === "runtime") return false;
       if (root === "platform") return true;
-      if (root === "admin-api" || root === "admin-contract") return true;
+      if (root === "console-api" || root === "console-contract") return true;
       if (root === "vault-crypto") return true;
       if (root === "capabilities-memory") return true;
       if (root.startsWith("capabilities-")) return false;
       if (root.startsWith("feature-")) return false;
       if (root === "sap-contract") return true;
+      if (root === "hub-contract") return true;
+      if (root === "hub-client") return true;
       if (root === "shell-sdk") return true;
       if (root === "ui-kit") return true;
       return root.startsWith("kernel-") || root === "kernel" || root === "core";
@@ -258,7 +277,7 @@ function shellUiDeepImportViolation(
     line: lineNo,
     pkg: "relative-import",
     reason:
-      "frontend/shell-ui must not deep-import legacy satellite or admin app paths (use @freeanima/feature-*/ui/*)",
+      "frontend/shell-ui must not deep-import legacy satellite paths (use @freeanima/feature-*/ui/*)",
   };
 }
 
@@ -328,8 +347,8 @@ function scanImports(): Violation[] {
 }
 
 const NESTED_WORKSPACE_PACKAGES = [
-  "features/console/hub/admin-api",
-  "features/console/protocol/admin-contract",
+  "features/console/hub/console-api",
+  "features/console/protocol/console-contract",
 ] as const;
 
 function scanNestedWorkspacePackages(): Violation[] {

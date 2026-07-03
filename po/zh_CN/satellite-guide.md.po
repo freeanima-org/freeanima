@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 22:15+0800\n"
+"POT-Creation-Date: 2026-07-03 18:23+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/sap/satellite-guide.md:1 docs/sap/satellite-guide.md:5
-#: messages/po4a/en.xml:600
+#: messages/po4a/en.xml:583
 #, no-wrap
 msgid "Satellite Guide"
 msgstr "卫星指南"
@@ -74,8 +74,9 @@ msgstr ""
 
 #. type: Plain text
 #: docs/sap/satellite-guide.md:29
-#, no-wrap
-msgid "**Chat / Task / Admin** etc. are bundled in shell-ui (desktop / mobile / web); no separate `satellites:` dev process needed; browser local debug: `bun run dev:web`.\n"
+#, fuzzy, no-wrap
+#| msgid "**Chat / Task / **Console** etc. are bundled in shell-ui (desktop / mobile / web); no separate `satellites:` dev process needed; browser local debug: `bun run dev:web`.\n"
+msgid "**Chat / Task / Console** etc. are bundled in shell-ui (desktop / mobile / web); no separate `satellites:` dev process needed; browser local debug: `bun run dev:web`.\n"
 msgstr "**聊天室 / 任务 / 管理台** 等已打包在 shell-ui（desktop / mobile / web）中；无需单独的 `satellites:` 开发进程；浏览器本地调试：`bun run dev:web`。\n"
 
 #. type: Plain text
@@ -123,9 +124,13 @@ msgstr "动态（SAP connect）"
 
 #. type: Plain text
 #: docs/sap/satellite-guide.md:44
+#, fuzzy
+#| msgid ""
+#| "No `command` in config. Start the satellite yourself; it connects to Hub "
+#| "via SAP WebSocket. Instances appear on Console → Satellites after connect."
 msgid ""
 "No `command` in config. Start the satellite yourself; it connects to Hub via "
-"SAP WebSocket. Instances appear on Admin → Satellites after connect."
+"SAP WebSocket. Instances appear on Console → Satellites after connect."
 msgstr ""
 "配置中不写 `command`。自行启动卫星；它通过 SAP WebSocket 连接 Hub。连接后实例"
 "会出现在管理台 → 卫星中。"
@@ -137,8 +142,13 @@ msgstr "`config.yaml` 中**没有**全局 `studio:` 段。"
 
 #. type: Plain text
 #: docs/sap/satellite-guide.md:48
+#, fuzzy
+#| msgid ""
+#| "Open managed satellite UI at the URL from **Console (SAP `http_url`), "
+#| "typically:"
 msgid ""
-"Open managed satellite UI at the URL from Admin (SAP `http_url`), typically:"
+"Open managed satellite UI at the URL from Console (SAP `http_url`), "
+"typically:"
 msgstr "在管理台提供的 URL（SAP `http_url`）打开托管卫星 UI，通常为："
 
 #. type: Bullet: '- '
@@ -148,8 +158,12 @@ msgstr "结对编程：`http://127.0.0.1:4173`"
 
 #. type: Plain text
 #: docs/sap/satellite-guide.md:52
+#, fuzzy
+#| msgid ""
+#| "Shell satellites (Chat, **Console, etc.) open in desktop / mobile / web "
+#| "shell routes; no dedicated port."
 msgid ""
-"Shell satellites (Chat, Admin, etc.) open in desktop / mobile / web shell "
+"Shell satellites (Chat, Console, etc.) open in desktop / mobile / web shell "
 "routes; no dedicated port."
 msgstr ""
 "壳层卫星（聊天室、管理台等）在 desktop / mobile / web 壳层路由中打开；无专用"
@@ -163,9 +177,17 @@ msgstr "实例分配策略"
 
 #. type: Plain text
 #: docs/sap/satellite-guide.md:56
+#, fuzzy
+#| msgid ""
+#| "`instance_id` is a 3-character lowercase alphanumeric id (see [`packages/"
+#| "sap-contract/src/naming.ts`](../../packages/sap-contract/src/naming.ts)). "
+#| "It appears in platform strings (`sap:{app_slug}:{instance_id}`), session "
+#| "`platform_extra`, and SAP tool names. **Do not remove it from the "
+#| "protocol** — but each satellite app picks an **allocation strategy** "
+#| "suited to its product model:"
 msgid ""
-"`instance_id` is a 3-character lowercase alphanumeric id (see [`packages/sap-"
-"contract/src/naming.ts`](../../packages/sap-contract/src/naming.ts)). It "
+"`instance_id` is a 3-character lowercase alphanumeric id (see [`shared/sap-"
+"contract/src/naming.ts`](../../shared/sap-contract/src/naming.ts)). It "
 "appears in platform strings (`sap:{app_slug}:{instance_id}`), session "
 "`platform_extra`, and SAP tool names. **Do not remove it from the protocol** "
 "— but each satellite app picks an **allocation strategy** suited to its "
@@ -218,8 +240,9 @@ msgstr ""
 
 #. type: Plain text
 #: docs/sap/satellite-guide.md:76
-#, no-wrap
-msgid "**Chat (singleton):** all desktop / mobile clients share `CHAT_INSTANCE_ID` (`def`) so `conversation.list` is unified across devices. Chat registers no satellite tools; multiple devices may connect with the same id (Admin shows the last `http_url`).\n"
+#, fuzzy, no-wrap
+#| msgid "**Chat (singleton):** all desktop / mobile clients share `CHAT_INSTANCE_ID` (`def`) so `conversation.list` is unified across devices. Chat registers no satellite tools; multiple devices may connect with the same id (**Console shows the last `http_url`).\n"
+msgid "**Chat (singleton):** all desktop / mobile clients share `CHAT_INSTANCE_ID` (`def`) so `conversation.list` is unified across devices. Chat registers no satellite tools; multiple devices may connect with the same id (Console shows the last `http_url`).\n"
 msgstr "**聊天室（singleton）：** 所有 desktop / mobile 客户端共享 `CHAT_INSTANCE_ID`（`def`），使 `conversation.list` 跨设备统一。聊天室不注册卫星工具；多台设备可用同一 id 连接（管理台显示最后的 `http_url`）。\n"
 
 #. type: Plain text
@@ -293,10 +316,15 @@ msgstr "壳内 Bundled Hub RPC — shell 模块（聊天室、任务、通知等
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:99
+#, fuzzy
+#| msgid ""
+#| "Modules use shared [`getBundledHubRpcClient`](../../packages/hub-rpc/src/"
+#| "bundled.ts) / [`createSapDirectClient`](../../packages/sap-contract/src/"
+#| "direct-client.ts) on `/hub/rpc/v1`."
 msgid ""
-"Modules use shared [`getBundledHubRpcClient`](../../packages/hub-rpc/src/"
-"bundled.ts) / [`createSapDirectClient`](../../packages/sap-contract/src/"
-"direct-client.ts) on `/hub/rpc/v1`."
+"Modules use shared [`getBundledHubRpcClient`](../../shared/hub-rpc/src/"
+"bundled.ts) / [`createSapDirectClient`](../../shared/sap-contract/src/direct-"
+"client.ts) on `/hub/rpc/v1`."
 msgstr ""
 "模块在 `/hub/rpc/v1` 上使用共享的 [`getBundledHubRpcClient`](../../packages/"
 "hub-rpc/src/bundled.ts) / [`createSapDirectClient`](../../packages/sap-"
@@ -394,15 +422,20 @@ msgstr "**已弃用：** HTTP hub-api REST→SAP 代理（已移除）。\n"
 #. type: Title ###
 #: docs/sap/satellite-guide.md:126
 #, no-wrap
-msgid "Chat satellite"
-msgstr "聊天室卫星"
+msgid "Chat (bundled feature)"
+msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:130
+#, fuzzy
+#| msgid ""
+#| "**app/desktop / browser dev (recommended)**: `createSapDirectClient` to "
+#| "Hub; static UI from [`satellites/chat/server/index.ts`](../../satellites/"
+#| "chat/server/index.ts) for static hosting only (no SAP relay)."
 msgid ""
-"**app/desktop / browser dev (recommended)**: `createSapDirectClient` to Hub; "
-"static UI from [`satellites/chat/server/index.ts`](../../satellites/chat/"
-"server/index.ts) for static hosting only (no SAP relay)."
+"**Shell / browser dev (recommended)**: `createSapDirectClient` on shared Hub "
+"RPC; UI from [`features/chat/ui/app/`](../../features/chat/ui/app/) embedded "
+"in shell-ui (no SAP relay, no `sap.attach`)."
 msgstr ""
 "**app/desktop / 浏览器开发（推荐）**：`createSapDirectClient` 连接 Hub；静态 "
 "UI 来自 [`satellites/chat/server/index.ts`](../../satellites/chat/server/"
@@ -411,9 +444,10 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:130
 msgid ""
-"**Managed legacy**: old relay sidecar pair-programming mode; new embeds use "
-"direct."
-msgstr "**托管遗留模式**：旧的 relay sidecar 结对编程模式；新嵌入使用直连。"
+"Hub RPC handlers: [`features/chat/hub/rpc.ts`](../../features/chat/hub/"
+"rpc.ts); wire types: [`features/chat/protocol/`](../../features/chat/"
+"protocol/) → `@freeanima/sap-contract/feature-rpc`."
+msgstr ""
 
 #. type: Title ###
 #: docs/sap/satellite-guide.md:131
@@ -423,10 +457,16 @@ msgstr "结对编程卫星"
 
 #. type: Plain text
 #: docs/sap/satellite-guide.md:134
+#, fuzzy
+#| msgid ""
+#| "Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`]"
+#| "(../../satellites/pair-programming/server/index.ts); sidecar uses "
+#| "`createSatelliteHub` ([`satellite-hub.ts`](../../packages/sap-contract/"
+#| "src/satellite-hub.ts))."
 msgid ""
 "Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../"
 "satellites/pair-programming/server/index.ts); sidecar uses "
-"`createSatelliteHub` ([`satellite-hub.ts`](../../packages/sap-contract/src/"
+"`createSatelliteHub` ([`satellite-hub.ts`](../../shared/sap-contract/src/"
 "satellite-hub.ts))."
 msgstr ""
 "浏览器通过 `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../"
@@ -441,9 +481,13 @@ msgstr "参考文件："
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:142
+#, fuzzy
+#| msgid ""
+#| "[`satellites/chat/app/src/lib/sap-client.ts`](../../satellites/chat/app/"
+#| "src/lib/sap-client.ts)"
 msgid ""
-"[`satellites/chat/app/src/lib/sap-client.ts`](../../satellites/chat/app/src/"
-"lib/sap-client.ts)"
+"[`features/chat/ui/app/src/lib/sap-client.ts`](../../features/chat/ui/app/"
+"src/lib/sap-client.ts)"
 msgstr ""
 "[`satellites/chat/app/src/lib/sap-client.ts`](../../satellites/chat/app/src/"
 "lib/sap-client.ts)"
@@ -459,17 +503,25 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:142
+#, fuzzy
+#| msgid ""
+#| "[`packages/sap-contract/src/sidecar-client.ts`](../../packages/sap-"
+#| "contract/src/sidecar-client.ts)"
 msgid ""
-"[`packages/sap-contract/src/sidecar-client.ts`](../../packages/sap-contract/"
-"src/sidecar-client.ts)"
+"[`shared/sap-contract/src/sidecar-client.ts`](../../shared/sap-contract/src/"
+"sidecar-client.ts)"
 msgstr ""
 "[`packages/sap-contract/src/sidecar-client.ts`](../../packages/sap-contract/"
 "src/sidecar-client.ts)"
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:142
+#, fuzzy
+#| msgid ""
+#| "[`packages/sap-contract/src/satellite-relay-server.ts`](../../packages/"
+#| "sap-contract/src/satellite-relay-server.ts)"
 msgid ""
-"[`packages/sap-contract/src/satellite-relay-server.ts`](../../packages/sap-"
+"[`shared/sap-contract/src/satellite-relay-server.ts`](../../shared/sap-"
 "contract/src/satellite-relay-server.ts)"
 msgstr ""
 "[`packages/sap-contract/src/satellite-relay-server.ts`](../../packages/sap-"
@@ -607,14 +659,20 @@ msgstr ""
 
 #. type: Title ##
 #: docs/sap/satellite-guide.md:185
-#, no-wrap
-msgid "Admin visibility"
-msgstr "管理台可见性"
+#, fuzzy, no-wrap
+#| msgid "ToolSet visibility"
+msgid "Console visibility"
+msgstr "ToolSet 可见性"
 
 #. type: Plain text
 #: docs/sap/satellite-guide.md:188
+#, fuzzy
+#| msgid ""
+#| "`GET /api/satellites/status` (Console → Satellites) reads "
+#| "`SatelliteManager.getStatus()`: connected instances, `http_url`, "
+#| "registered tools, heartbeat timestamps."
 msgid ""
-"`GET /api/satellites/status` (Admin → Satellites) reads "
+"`GET /api/satellites/status` (Console → Satellites) reads "
 "`SatelliteManager.getStatus()`: connected instances, `http_url`, registered "
 "tools, heartbeat timestamps."
 msgstr ""

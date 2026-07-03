@@ -143,7 +143,7 @@ async function buildSystemView(
   return { parts, composed };
 }
 
-/** Admin system prompt debug view (read-only) */
+/** Console system prompt debug view (read-only) */
 export async function getPromptDebug(
   deps: RuntimeDeps,
   conversationId?: string | null,

@@ -10,9 +10,13 @@ import type {
   NotificationRecipientsOutput,
 } from "@freeanima/sap-contract";
 
-import { whenSapClientReady } from "./hub-rpc.ts";
+import { getNotificationHubClient } from "./hub-client.ts";
 
 export type NotificationRow = NotificationListOutput["items"][number];
+
+function hub() {
+  return getNotificationHubClient();
+}
 
 function cacheKey(input: NotificationListInput): string {
   return JSON.stringify(input);
@@ -25,8 +29,7 @@ export async function listNotifications(
   const key = cacheKey(input);
   const cached = await readOfflineCache<NotificationListOutput>(scope, "notifications", key);
   try {
-    const client = await whenSapClientReady();
-    const result = await client.request("notification.list", input);
+    const result = await hub().call("notification.list", input);
     void writeOfflineCache(scope, "notifications", key, result);
     return result;
   } catch {
@@ -36,11 +39,9 @@ export async function listNotifications(
 }
 
 export async function markNotificationRead(id: string): Promise<NotificationMarkReadOutput> {
-  const client = await whenSapClientReady();
-  return client.request("notification.markRead", { id });
+  return hub().call("notification.markRead", { id });
 }
 
 export async function getNotificationRecipients(): Promise<NotificationRecipientsOutput> {
-  const client = await whenSapClientReady();
-  return client.request("notification.recipients", {});
+  return hub().call("notification.recipients", {});
 }

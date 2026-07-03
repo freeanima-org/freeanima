@@ -1,22 +1,24 @@
 import type { DreamEntryRowPayload, DreamListOutput } from "@freeanima/sap-contract";
 
-import { whenSapClientReady } from "./hub-rpc.ts";
+import { getDreamHubClient } from "./hub-client.ts";
 
 export type DreamEntryRow = DreamEntryRowPayload;
+
+function hub() {
+  return getDreamHubClient();
+}
 
 export async function fetchDreamList(opts?: {
   offset?: number;
   limit?: number;
 }): Promise<DreamListOutput> {
-  const client = await whenSapClientReady();
-  return client.request("dream.list", {
+  return hub().call("dream.list", {
     offset: opts?.offset,
     limit: opts?.limit,
   });
 }
 
 export async function fetchDreamByDay(day: string): Promise<DreamEntryRow> {
-  const client = await whenSapClientReady();
-  const data = await client.request("dream.get", { day });
+  const data = await hub().call("dream.get", { day });
   return data.item;
 }

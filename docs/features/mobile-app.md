@@ -13,7 +13,7 @@ title: Mobile app (Android)
 | ---------- | -------------------------------------------------------- |
 | Platform   | **Android only** sideload (APK); iOS later               |
 | UI         | 默认 bootstrap → Hub `/web/*`（与浏览器/PWA 同一产物）   |
-| Modules    | Chat + Admin（bundled shell-ui）                         |
+| Modules    | Chat + Console（bundled shell-ui）                       |
 | Hub config | APP **Hub settings**（Preferences）或 bootstrap 首次配置 |
 | Hub duties | `/api` REST + `/hub/rpc/v1` WebSocket                    |
 
@@ -24,16 +24,16 @@ flowchart LR
   Phone[Android WebView]
   Shell[shell-ui SPA]
   Chat["/chat"]
-  Admin["/admin"]
+  Console["/console"]
   Settings["/settings"]
   Hub[Anima Service]
 
   Phone --> Shell
   Shell --> Chat
-  Shell --> Admin
+  Shell --> Console
   Shell --> Settings
   Chat -->|SAP auth_token| Hub
-  Admin -->|REST Bearer| Hub
+  Console -->|REST Bearer| Hub
 ```
 
 Mobile REST **connects directly** to Hub (no desktop Electron `/api` proxy); requires a **Service API Token** and Hub CORS for Capacitor origin (`https://localhost`). Routes use hash (`#/chat`) for WebView debugging.
@@ -45,18 +45,18 @@ Mobile REST **connects directly** to Hub (no desktop Electron `/api` proxy); req
 3. APP → **Hub settings** (`/settings`):
    - Hub URL (Tunnel domain or `http://<PC-IP>:2658`; not `127.0.0.1`)
    - Service API Token (`fa_at_...`, printed once at creation)
-4. **Test connection** → **Save and enter** → top bar switches **Chat** / **Admin**.
+4. **Test connection** → **Save and enter** → top bar switches **Chat** / **Console**.
 
 Non-loopback Hub URL requires token; REST uses `Authorization: Bearer`; SAP sends `auth_token` in `connect` frame.
 
 ## Troubleshooting
 
-| Symptom                             | Common cause                                                                                    |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Keyboard covers chat input          | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes |
-| Chat input unresponsive             | No selected conversation (first install should auto-create); or SAP disconnected                |
-| Admin load failed / Failed to fetch | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header      |
-| Not Found                           | Avoid legacy paths like `/admin/dashboard/index.html`; use SPA `/admin/dashboard`               |
+| Symptom                               | Common cause                                                                                    |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Keyboard covers chat input            | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes |
+| Chat input unresponsive               | No selected conversation (first install should auto-create); or SAP disconnected                |
+| Console load failed / Failed to fetch | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header      |
+| Not Found                             | Avoid legacy paths like `/console`/dashboard/index.html`; use SPA `/console`/dashboard`         |
 
 ## Debugging
 

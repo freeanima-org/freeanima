@@ -5,8 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
-const ADMIN_APP_REL = join("features", "console", "ui", "admin");
-const ADMIN_PUBLISH_APP_REL = join("admin-frontend", "app");
+const CONSOLE_APP_REL = join("features", "console", "ui", "console");
 
 function walkFiles(dir: string, files: string[] = []): string[] {
   let entries;
@@ -37,8 +36,8 @@ function hashFileEntry(hash: ReturnType<typeof createHash>, root: string, absPat
   hash.update("\0");
 }
 
-/** 计算 Admin 前端源码 hash（含根 bunfig.toml） */
-export function computeAdminSourceHash(appDir: string, repoRoot = REPO_ROOT): string {
+/** 计算 Console 前端源码 hash（含根 bunfig.toml） */
+export function computeConsoleSourceHash(appDir: string, repoRoot = REPO_ROOT): string {
   const hash = createHash("sha256");
   const files = walkFiles(appDir).toSorted((a, b) => a.localeCompare(b));
   for (const abs of files) {
@@ -53,16 +52,12 @@ export function computeAdminSourceHash(appDir: string, repoRoot = REPO_ROOT): st
   return hash.digest("hex");
 }
 
-/** Published @freeanima/cli layout, or monorepo `features/console/ui/admin`. */
-export function resolveAdminAppDir(repoRoot = REPO_ROOT): string {
-  const publish = join(repoRoot, ADMIN_PUBLISH_APP_REL);
-  if (existsSync(publish)) return publish;
-  const monorepo = join(repoRoot, ADMIN_APP_REL);
-  if (existsSync(monorepo)) return monorepo;
-  return publish;
+/** Monorepo Console UI 源码目录 */
+export function resolveConsoleAppDir(repoRoot = REPO_ROOT): string {
+  return join(repoRoot, CONSOLE_APP_REL);
 }
 
-export function isAdminIndexHtmlValid(htmlPath: string): boolean {
+export function isConsoleIndexHtmlValid(htmlPath: string): boolean {
   if (!existsSync(htmlPath)) return false;
   try {
     const html = readFileSync(htmlPath, "utf-8");
@@ -72,4 +67,4 @@ export function isAdminIndexHtmlValid(htmlPath: string): boolean {
   }
 }
 
-export const ADMIN_PUBLIC_PATH = "/admin/";
+export const CONSOLE_PUBLIC_PATH = "/console/";

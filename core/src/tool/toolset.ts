@@ -18,7 +18,7 @@ export type ToolSet = {
   private?: boolean;
 };
 
-/** Admin / API view */
+/** Console / API view */
 export type ToolSetView = {
   name: string;
   description: string;

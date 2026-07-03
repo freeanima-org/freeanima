@@ -63,7 +63,7 @@ export {
   type CronNotifyFn,
   type CronNotifyPayload,
 } from "./cron-notify.ts";
-export { CHAT_PLATFORM_PATTERN, ADMIN_BASE_PATH } from "./constants.ts";
+export { CHAT_PLATFORM_PATTERN, CONSOLE_BASE_PATH } from "./constants.ts";
 export type {
   AnswerSegment,
   ApplyStreamEventResult,

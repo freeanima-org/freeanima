@@ -32,6 +32,7 @@ import {
 } from "./terminal-session.ts";
 import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
 import { getFeatureRpcHandler } from "../features/registry.ts";
+import { hubDispatch } from "../hub/dispatch.ts";
 
 const HEARTBEAT_INTERVAL_SEC = 30;
 const SATELLITE_REQUEST_TIMEOUT_MS = 30_000;
@@ -93,7 +94,7 @@ export function createSapServerHandlers(
 
       const featureHandler = getFeatureRpcHandler(method);
       if (featureHandler) {
-        return featureHandler(deps, payload, ctx) as Promise<
+        return hubDispatch(deps, method, payload, ctx) as Promise<
           import("@freeanima/sap-contract").SapRouterOutputs[typeof method]
         >;
       }

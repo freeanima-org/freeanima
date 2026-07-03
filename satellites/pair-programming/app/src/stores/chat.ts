@@ -224,7 +224,7 @@ export const useChatStore = create<ChatState>(() => ({
       if (fallbackError) {
         callbacks.onError?.(fallbackError);
       } else if (!streamText.trim()) {
-        callbacks.onError?.(m.admin_common_no_reply());
+        callbacks.onError?.(m.console_common_no_reply());
       }
     };
 
@@ -239,14 +239,14 @@ export const useChatStore = create<ChatState>(() => ({
               if (result.receivedError) {
                 receivedError = true;
                 if (ev.event === "error") {
-                  serverErrorMsg = ev.data.error || m.admin_common_server_error();
+                  serverErrorMsg = ev.data.error || m.console_common_server_error();
                 }
               }
               if (result.receivedDone) notifyDone();
             },
             onError: (err) => {
               receivedError = true;
-              transportErrorMsg = err.message || m.admin_common_server_error();
+              transportErrorMsg = err.message || m.console_common_server_error();
               reject(err);
             },
             onComplete: () => {
@@ -276,7 +276,7 @@ export const useChatStore = create<ChatState>(() => ({
       if (recovered) {
         notifyDone({ recovered: true });
       } else if (!receivedError || transportErrorMsg) {
-        callbacks.onError?.(transportErrorMsg || m.admin_common_network_error());
+        callbacks.onError?.(transportErrorMsg || m.console_common_network_error());
       }
     } finally {
       useChatStore.setState({

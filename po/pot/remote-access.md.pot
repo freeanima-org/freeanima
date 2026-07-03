@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 19:53+0800\n"
+"POT-Creation-Date: 2026-07-03 18:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -124,9 +124,9 @@ msgstr ""
 #: docs/guide/remote-access.md:34
 msgid ""
 "**业务快照（IndexedDB）**：Chat / Task / Notification / Diary / Email 及 "
-"Admin 部分只读页（dashboard status、status config、semantic memory list 等）"
-"由 `shell-sdk/offline-cache` 做 cache-first 展示、在线 refresh 写回；**不**"
-"经 SW 缓存 `/api` 或 `/sap`。"
+"Console 部分只读页（dashboard status、status config、semantic memory list "
+"等）由 `shell-sdk/offline-cache` 做 cache-first 展示、在线 refresh 写回；**不"
+"**经 SW 缓存 `/api` 或 `/sap`。"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -177,7 +177,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/remote-access.md:52
-msgid "Admin REST（需已认证 `full` token）："
+msgid "Console REST（需已认证 `full` token）："
 msgstr ""
 
 #. type: Bullet: '- '

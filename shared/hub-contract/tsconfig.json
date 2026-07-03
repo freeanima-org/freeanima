@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.composite.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "outDir": ".tsout"
+  },
+  "include": ["src/**/*.ts"],
+  "references": [{ "path": "../sap-contract" }]
+}

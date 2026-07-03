@@ -2,7 +2,7 @@
 /**
  * Build @freeanima/cli publish directory (cli/publish/):
  * - dist/cli.js single-file bundle
- * - admin-frontend app/ Bun fullstack static assets
+ * - console UI app/ Bun fullstack static assets
  * - migrations/ PG migrations
  */
 import { $ } from "bun";

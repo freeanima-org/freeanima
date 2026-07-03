@@ -54,7 +54,7 @@ Patch objects: `Partial<typeof {table}.$inferInsert>`.
 
 ### Time columns
 
-Use [`pgTimestamptz`](../../core/src/db/schema/columns/pg-timestamptz.ts) in schema — application code reads/writes **`Date`**. JSON API boundary: Elysia serializes `Date` → ISO string; Admin `unwrap()` calls [`reviveDates`](../../core/src/util/date-json.ts).
+Use [`pgTimestamptz`](../../core/src/db/schema/columns/pg-timestamptz.ts) in schema — application code reads/writes **`Date`**. JSON API boundary: Elysia serializes `Date` → ISO string; Console `unwrap()` calls [`reviveDates`](../../core/src/util/date-json.ts).
 
 Column names: **`created_at` / `updated_at`** (no `created` / `updated` aliases).
 

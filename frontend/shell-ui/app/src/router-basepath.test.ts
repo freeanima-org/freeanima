@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveEmbeddedAdminBasepath, shellBasepathFromViteBase } from "./router-basepath.ts";
+import { resolveEmbeddedConsoleBasepath, shellBasepathFromViteBase } from "./router-basepath.ts";
 
 describe("shellBasepathFromViteBase", () => {
   it("returns undefined for root or relative base", () => {
@@ -13,8 +13,8 @@ describe("shellBasepathFromViteBase", () => {
   });
 });
 
-describe("resolveEmbeddedAdminBasepath", () => {
-  it("uses /admin when shell has no basepath", () => {
-    expect(resolveEmbeddedAdminBasepath()).toBe("/admin");
+describe("resolveEmbeddedConsoleBasepath", () => {
+  it("uses /console when shell has no basepath", () => {
+    expect(resolveEmbeddedConsoleBasepath()).toBe("/console");
   });
 });

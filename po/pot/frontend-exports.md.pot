@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 18:19+0800\n"
+"POT-Creation-Date: 2026-07-03 18:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,9 +38,9 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/frontend-exports.md:10
 msgid ""
-"The unified settings window is aggregated by the registry in [`packages/"
-"shell-ui/`](../../packages/shell-ui/); contract in [`packages/shell-ui/src/"
-"settings.ts`](../../packages/shell-ui/src/settings.ts) (unrelated to SAP)."
+"The unified settings window is aggregated by the registry in [`frontend/"
+"shell-ui/`](../../frontend/shell-ui/); contract in [`frontend/shell-ui/src/"
+"settings.ts`](../../frontend/shell-ui/src/settings.ts) (unrelated to SAP)."
 msgstr ""
 
 #. type: Title ##
@@ -71,7 +71,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/frontend-exports.md:25
 msgid ""
-"Implementation SSOT: [`packages/shell-sdk/src/manifest.ts`](../../packages/"
+"Implementation SSOT: [`frontend/shell-sdk/src/manifest.ts`](../../frontend/"
 "shell-sdk/src/manifest.ts)"
 msgstr ""
 
@@ -136,15 +136,16 @@ msgid ""
 "| Package                          | appId       | embedMode (profile) |\n"
 "| -------------------------------- | ----------- | ------------------- |\n"
 "| `@freeanima/satellite-companion` | `companion` | `embedded-sidecar`  |\n"
-"| `@freeanima/satellite-chat`      | `chat`      | `bundled-spa`       |\n"
-"| Admin (`app/desktop` profile)    | `admin`     | `bundled-spa`       |\n"
+"| `@freeanima/feature-chat`        | `chat`      | `bundled-spa`       |\n"
+"| `@freeanima/feature-console`     | `console`   | `bundled-spa`       |\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:52
 msgid ""
 "Shell apps: [`app/desktop/`](../../app/desktop/) · [`app/mobile/`](../../app/"
-"mobile/) · [`packages/shell-ui/`](../../packages/shell-ui/)"
+"mobile/) · [`app/web/`](../../app/web/) · [`frontend/shell-ui/`](../../"
+"frontend/shell-ui/)"
 msgstr ""
 
 #. type: Title ##
@@ -156,7 +157,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/frontend-exports.md:56
 msgid ""
-"Bundled chat uses [`createSapDirectClient`](../../packages/sap-contract/src/"
+"Bundled chat uses [`createSapDirectClient`](../../shared/sap-contract/src/"
 "direct-client.ts) on the shared Hub RPC transport "
 "(`getBundledHubRpcClient` / `whenHubRpcReady`). It does **not** call "
 "`sap.attach`."
@@ -182,14 +183,16 @@ msgstr ""
 #. type: Title ##
 #: docs/sap/frontend-exports.md:62
 #, no-wrap
-msgid "Admin: Hub REST + bundled SPA"
+msgid "Console: Hub REST + bundled SPA"
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:65
 msgid ""
-"Admin UI is built by [`@freeanima/admin-frontend`](../../platform/admin-"
-"frontend/) and bundled into desktop / mobile."
+"Console UI source SSOT: [`features/console/ui/console/`](../../features/"
+"console/ui/console/). Build helpers: [`features/console/build/`](../../"
+"features/console/build/)（Paraglide compile、admin hash）；SPA 打包进 "
+"desktop / mobile / web shell。"
 msgstr ""
 
 #. type: Plain text
@@ -203,5 +206,5 @@ msgstr ""
 #: docs/sap/frontend-exports.md:68
 msgid ""
 "Local shell dev: `bun run dev:web` → `http://127.0.0.1:4173` (Hub must be "
-"running; includes Chat, Admin, settings)."
+"running; includes Chat, Console, settings)."
 msgstr ""

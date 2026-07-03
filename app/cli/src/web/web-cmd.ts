@@ -73,7 +73,7 @@ async function cmdWebStatus(args: WebCommandArgs): Promise<void> {
     console.log("Web UI · running");
     if (pid != null) console.log(`  pid:     ${pid}`);
     console.log(`  http:    http://${bindHost}:${bindPort}/web/chat`);
-    console.log(`  admin:   http://${bindHost}:${bindPort}/web/admin/dashboard`);
+    console.log(`  console: http://${bindHost}:${bindPort}/web/console/dashboard`);
     return;
   }
 

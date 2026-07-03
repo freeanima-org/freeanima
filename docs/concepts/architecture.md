@@ -62,11 +62,11 @@ A digital life is structured from the inside out. Each layer answers a different
 
 Structured business data (tasks, notes, email accounts/messages, future memory migrations) converges on a single **`entities`** PostgreSQL table with component tags (`task_list`, `task_item`, `email_account`, …). Self layer [`self_blocks`](self-layer.md) stays physically separate. See [`entity-model.md`](entity-model.md).
 
-Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-backed); legacy Admin email route removed.
+Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-backed); legacy Console email route removed.
 
 ### Repository layout (Phase 0 — revised)
 
-Target layout is **feature modules** under `features/<slug>/` (UI + protocol + Hub adapter + domain + `plugin.ts`). Admin is renamed **console** and uses the **same module shape** as chat/task — not a separate admin-\* stack. `satellites/` is legacy naming; do not add new products there.
+Target layout is **feature modules** under `features/<slug>/` (UI + protocol + Hub adapter + domain + `plugin.ts`). Console is renamed **console** and uses the **same module shape** as chat/task — not a separate admin-\* stack. `satellites/` is legacy naming; do not add new products there.
 
 **End state:** Hub RPC per feature; console REST is transitional (directory refactor does not remove REST).
 
@@ -80,16 +80,16 @@ Engine stays horizontal: `kernel/`, `core/`, `runtime/`, `platform/` (boot + rou
 | ------------------ | ---------------------------- | ----------------------------------------------------- | ---------------------- |
 | Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring    | preload/IPC            |
 | Shared SPA shell   | Branch on `detectPlatform()` | `frontend/shell-ui`                                   | Hub RPC（Feature RPC） |
-| Console 前端       | Shell embed                  | `features/console`（UI）；REST 过渡期在 `admin-api`   | REST `/api` + Hub RPC  |
+| Console 前端       | Shell embed                  | `features/console`（UI）；REST 过渡期在 `console-api` | REST `/api` + Hub RPC  |
 | 卫星应用           | Sidecar only                 | `satellites/companion`、`satellites/pair-programming` | Hub RPC + SAP attach   |
 
 Nav and primary layouts **must use `detectPlatform()`** (Electron / native shell), not viewport breakpoints alone. Responsive CSS is for desktop window resize only.
 
 **边界**：`shell-ui` 与 `features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Hub；**SAP attach / tool.\*** 协议仅 `satellites/companion` 与 `satellites/pair-programming` 使用。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。
 
-### Admin navigation ↔ cognitive layers
+### Console navigation ↔ cognitive layers
 
-Admin sidebar is grouped (not flat storage tables). Map new features onto these user-visible concepts:
+Console sidebar is grouped (not flat storage tables). Map new features onto these user-visible concepts:
 
 | Group        | Cognitive layer | Routes (representative)                             |
 | ------------ | --------------- | --------------------------------------------------- |
@@ -187,12 +187,12 @@ Production: `anima service` (systemd --user). Auto-restarts after crashes; only 
 
 - **service**: long-running — Hub HTTP (`/api`, `/hub/rpc/v1`), Discord / WeChat Gateway, cron
 - **chat**: single non-interactive turn (CLI or piped stdin)
-- **UI**: app/desktop / app/mobile bundled SPA (Chat + Admin); Hub does not host `/admin`
+- **UI**: app/desktop / app/mobile bundled SPA (Chat + Console); Hub does not host `/console``
 
 ```bash
 anima service start              # default: systemd --user
 anima service start --foreground # foreground (logs to stdout)
-bun run dev:web                  # browser shell (Chat + Admin + settings, Vite HMR; Hub must be running)
+bun run dev:web                  # browser shell (Chat + Console + settings, Vite HMR; Hub must be running)
 anima service status
 ```
 
@@ -312,17 +312,17 @@ Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User message
 | Desktop      | 默认 Hub `/web/*`（`DESKTOP_UI_MODE=bundled` 回退本地 static）        | 仅 Electron / 伴侣变更   |
 | Mobile APK   | bootstrap → Hub `/web/*`（`MOBILE_UI_MODE=bundled` 回退 bundled SPA） | 仅 Capacitor 插件变更    |
 
-| Module | Connection                                         | Notes                  |
-| ------ | -------------------------------------------------- | ---------------------- |
-| Chat   | Hub RPC `/hub/rpc/v1` (shared WS, no `sap.attach`) | `/web/chat`            |
-| Admin  | Hub REST `/api/*` (CORS + shell)                   | `/web/admin/dashboard` |
+| Module  | Connection                                         | Notes                    |
+| ------- | -------------------------------------------------- | ------------------------ |
+| Chat    | Hub RPC `/hub/rpc/v1` (shared WS, no `sap.attach`) | `/web/chat`              |
+| Console | Hub REST `/api/*` (CORS + shell)                   | `/web/console/dashboard` |
 
 `/web/config.json` 提供 `hub_url`、`ui_version`、`min_shell_version`（壳↔UI 版本协商）。
 
 ## Events and Hooks (Summary)
 
 - **EventBus**: async notification transport (Redis queue); production code currently emits topics such as `session:updated` with **no registered handlers** — ACP callbacks use direct `onSessionUpdated` instead. **Not** used for sleep orchestration.
-- **Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: light → deep → cross-domain maintenance steps). State in `~/.anima/runtime/pipeline_*_run.json`; Admin API for diagnostics.
+- **Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: light → deep → cross-domain maintenance steps). State in `~/.anima/runtime/pipeline_*_run.json`; Console API for diagnostics.
 - **Hooks**: sync interceptors — validation or clarification at message ingress, turn end, tool return, etc.
 
 Complementary: Pipeline Runner handles scheduled multi-step background work; Hooks handle "may this proceed before/during"; EventBus remains available for future cross-process fan-out but is not on the sleep path.

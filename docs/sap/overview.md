@@ -22,16 +22,16 @@ flowchart LR
     B1[Browser] -->|SAP WS or relay| Hub
   end
   Hub --> Runtime[AgentRuntime]
-  subgraph hubAdmin [Hub Admin]
-    Admin[Admin console]
+  subgraph hubConsole [Hub Console]
+    Console["/console"]
   end
 ```
 
-| Role  | Default                 | Responsibility                                              |
-| ----- | ----------------------- | ----------------------------------------------------------- |
-| Hub   | `http://127.0.0.1:2658` | Agent runtime, Hub RPC WebSocket at `/hub/rpc/v1`           |
-| Chat  | bundled `/chat`         | Chat UI; shared Hub RPC (no `sap.attach`)                   |
-| Admin | bundled shell `/admin`  | Memory, config, tools, satellite status (Hub REST `/api/*`) |
+| Role    | Default                  | Responsibility                                              |
+| ------- | ------------------------ | ----------------------------------------------------------- |
+| Hub     | `http://127.0.0.1:2658`  | Agent runtime, Hub RPC WebSocket at `/hub/rpc/v1`           |
+| Chat    | bundled `/chat`          | Chat UI; shared Hub RPC (no `sap.attach`)                   |
+| Console | bundled shell `/console` | Memory, config, tools, satellite status (Hub REST `/api/*`) |
 
 See also: [architecture Client UI section](../concepts/architecture.md#client-uibundled).
 

@@ -15,5 +15,10 @@
     "../../types/**/*.d.ts"
   ],
   "exclude": ["**/*.test.ts", "dist/**"],
-  "references": [{ "path": "../../frontend/ui-kit" }, { "path": "../../shared/sap-contract" }]
+  "references": [
+    { "path": "../../frontend/ui-kit" },
+    { "path": "../../shared/hub-client" },
+    { "path": "../../shared/hub-contract" },
+    { "path": "../../shared/sap-contract" }
+  ]
 }

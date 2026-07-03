@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 18:22+0800\n"
+"POT-Creation-Date: 2026-07-03 18:22+0800\n"
 "PO-Revision-Date: 2026-06-29 14:00+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -291,8 +291,8 @@ msgstr ""
 "未来迁移后将变为 `body.memory_kind=world`。"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/entity-model.md:71 messages/po4a/en.xml:263
-#: messages/po4a/en.xml:306
+#: docs/concepts/entity-model.md:71 messages/po4a/en.xml:262
+#: messages/po4a/en.xml:305
 #, no-wrap
 msgid "Content"
 msgstr "内容"
@@ -373,8 +373,16 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/entity-model.md:93
+#, fuzzy
+#| msgid ""
+#| "LLM ToolSets: `@freeanima/capabilities-task` — `task` (item CRUD + "
+#| "`task_search`) and `tasklist` (list CRUD + `tasklist_search`); load via "
+#| "`toolset_load`. `task_search` searches all lists when `list_id` is "
+#| "omitted. Legacy `tasks` table and `/api/tasks/*` are removed after one-"
+#| "time migration ([`scripts/archive/migrate-tasks-to-entities.ts`](../../"
+#| "scripts/archive/migrate-tasks-to-entities.ts))."
 msgid ""
-"LLM ToolSets: `@freeanima/capabilities-task` — `task` (item CRUD + "
+"LLM ToolSets: `@freeanima/feature-task/domain` — `task` (item CRUD + "
 "`task_search`) and `tasklist` (list CRUD + `tasklist_search`); load via "
 "`toolset_load`. `task_search` searches all lists when `list_id` is omitted. "
 "Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration "
@@ -432,7 +440,7 @@ msgstr ""
 #: docs/concepts/entity-model.md:111
 msgid ""
 "Future multi-world browse (e.g. diary calendar aggregation across worlds) "
-"should add **module-scoped** filters or Admin tooling — not a speculative "
+"should add **module-scoped** filters or Console tooling — not a speculative "
 "arbitrary world picker."
 msgstr ""
 
@@ -465,20 +473,33 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/entity-model.md:123
+#, fuzzy
+#| msgid ""
+#| "Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. "
+#| "Messages store IMAP UID in `body.imap_uid`; human-readable subject/body "
+#| "use entity columns. IMAP sync upserts threads/messages; UI lives in shell "
+#| "`/email` (SAP `email.*` methods), not Console REST."
 msgid ""
 "Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. Messages "
 "store IMAP UID in `body.imap_uid`; human-readable subject/body use entity "
 "columns. IMAP sync upserts threads/messages; UI lives in shell `/email` (SAP "
-"`email.*` methods), not Admin REST."
+"`email.*` methods), not Console REST."
 msgstr ""
 "账户在 `body.sync` 存 SMTP/IMAP 设置与同步游标。消息在 `body.imap_uid` 存 "
 "IMAP UID；可读主题/正文用实体列。IMAP 同步 upsert 线程/消息；UI 在 shell `/"
-"email`（SAP `email.*` 方法），非 Admin REST。"
+"email`（SAP `email.*` 方法），非 Console REST。"
 
 #. type: Plain text
 #: docs/concepts/entity-model.md:125
+#, fuzzy
+#| msgid ""
+#| "LLM ToolSets: `@freeanima/capabilities-email` — `email-account` (account "
+#| "entities) and `email` (sync, send/receive, search); load via "
+#| "`toolset_load`. Legacy `config.yaml` `email.accounts[]` migrates via "
+#| "[`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/"
+#| "migrate-email-to-entities.ts)."
 msgid ""
-"LLM ToolSets: `@freeanima/capabilities-email` — `email-account` (account "
+"LLM ToolSets: `@freeanima/feature-email/domain` — `email-account` (account "
 "entities) and `email` (sync, send/receive, search); load via `toolset_load`. "
 "Legacy `config.yaml` `email.accounts[]` migrates via [`scripts/archive/"
 "migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-"
@@ -691,8 +712,8 @@ msgstr ""
 "目。"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/entity-model.md:181 messages/po4a/en.xml:116
-#: messages/po4a/en.xml:128 messages/po4a/en.xml:547
+#: docs/concepts/entity-model.md:181 messages/po4a/en.xml:122
+#: messages/po4a/en.xml:134 messages/po4a/en.xml:539
 #, no-wrap
 msgid "Search"
 msgstr "查询"
@@ -747,8 +768,9 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/entity-model.md:199
-#, no-wrap
-msgid "**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run Admin **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.\n"
+#, fuzzy, no-wrap
+#| msgid "**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run **Console **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.\n"
+msgid "**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run Console **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.\n"
 msgstr "**FTS 索引：** 与语义记忆相同的 `fts_segmented` + jieba 写入路径（实体创建/更新时 `resolveFtsSegmentedForWrite`）。此列之前导入的旧行可能缺分词；运行管理台 **FTS** 重建（`onlyMissing`）回填 `entities.fts_segmented`，使 jieba 查询 token 与 GIN 索引对齐。\n"
 
 #. type: Title ##

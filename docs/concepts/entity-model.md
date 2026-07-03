@@ -107,7 +107,7 @@ Hub startup binds **`ResolvedWorldContext`** (`GET /api/worlds/context`). The pr
 
 SAP task/email methods accept optional `subject_kind` (defaults: task `user`, email `agent`). Satellites read the shell scope via **`useSubjectScope()`** from `@freeanima/shell-sdk`; Hub REST entity search uses **`resolveWorldIdForSubject()`** with the same scope.
 
-Future multi-world browse (e.g. diary calendar aggregation across worlds) should add **module-scoped** filters or Admin tooling — not a speculative arbitrary world picker.
+Future multi-world browse (e.g. diary calendar aggregation across worlds) should add **module-scoped** filters or Console tooling — not a speculative arbitrary world picker.
 
 ## Email module (Estate)
 
@@ -119,7 +119,7 @@ Email accounts, threads, and mirrored messages map to:
 | Thread  | `type=content` | `email_thread`  |
 | Message | `type=content` | `email_message` |
 
-Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. Messages store IMAP UID in `body.imap_uid`; human-readable subject/body use entity columns. IMAP sync upserts threads/messages; UI lives in shell `/email` (SAP `email.*` methods), not Admin REST.
+Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. Messages store IMAP UID in `body.imap_uid`; human-readable subject/body use entity columns. IMAP sync upserts threads/messages; UI lives in shell `/email` (SAP `email.*` methods), not Console REST.
 
 LLM ToolSets: `@freeanima/feature-email/domain` — `email-account` (account entities) and `email` (sync, send/receive, search); load via `toolset_load`. Legacy `config.yaml` `email.accounts[]` migrates via [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts).
 
@@ -195,7 +195,7 @@ Entity **list** (deterministic browse) and **search** (relevance ranking) are se
 
 See memory hybrid search in [`memory.md`](memory.md) for FTS operator syntax; entity search reuses the same query builder.
 
-**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run Admin **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.
+**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run Console **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.
 
 ## Future migration map (not executed yet)
 

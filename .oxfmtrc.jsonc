@@ -13,7 +13,7 @@
     "**/dist/**",
     "**/electron-dist/**",
     "**/coverage/**",
-    "features/console/ui/admin/routes/routeTree.gen.ts",
+    "features/console/ui/console/routes/routeTree.gen.ts",
     "CHANGELOG.md",
   ],
   "overrides": [

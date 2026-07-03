@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 18:53+0800\n"
+"POT-Creation-Date: 2026-07-03 18:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,20 +24,21 @@ msgid "Design Principles"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9 messages/po4a/en.xml:513
-#: messages/po4a/en.xml:520
+#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9
+#: docs/guide/remote-access.md:10 messages/po4a/en.xml:575
+#: messages/po4a/en.xml:582
 #, no-wrap
 msgid "Overview"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/dream.md:36 docs/concepts/sleep.md:32
+#: docs/concepts/dream.md:37 docs/concepts/sleep.md:32
 #, no-wrap
 msgid "Orchestration"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/sleep.md:1 messages/po4a/en.xml:327 messages/po4a/en.xml:528
+#: docs/concepts/sleep.md:1 messages/po4a/en.xml:590
 #, no-wrap
 msgid "Sleep"
 msgstr ""
@@ -130,15 +131,15 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/sleep.md:39
 msgid ""
-"Admin (`/admin/dashboard/sleep`) supports **diagnostic** runs: full cycle or "
-"individual steps (`force` skips dependency checks). **Deep sleep mode** "
-"(full vs incremental) can be selected before manual runs."
+"Console (`/console`/dashboard/sleep`) supports **diagnostic** runs: full "
+"cycle or individual steps (`force` skips dependency checks). **Deep sleep "
+"mode** (full vs incremental) can be selected before manual runs."
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/sleep.md:41
 #, no-wrap
-msgid "**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Admin → Cron** via each task's **Run history** button.\n"
+msgid "**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Console → Cron** via each task's **Run history** button.\n"
 msgstr ""
 
 #. type: Plain text
@@ -160,7 +161,7 @@ msgstr ""
 msgid ""
 "| Attribute     | Value                                                                                         |\n"
 "| ------------- | --------------------------------------------------------------------------------------------- |\n"
-"| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Admin diagnostics)                            |\n"
+"| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Console diagnostics)                            |\n"
 "| Scope         | Sessions with activity in previous calendar day (**excludes cron-platform sessions**)         |\n"
 "| Input         | Full day's **user conversations** (user+assistant, tools stripped), segmented by conversation |\n"
 "| Orchestration | Three stages sequential (separate LLM calls each)                                             |\n"
@@ -241,7 +242,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/sleep.md:87
 #, no-wrap
-msgid "**Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. Scheduled cron uses incremental Tue–Sun and **full on Mondays**; Admin manual runs default to full but can select incremental.\n"
+msgid "**Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. Scheduled cron uses incremental Tue–Sun and **full on Mondays**; Console manual runs default to full but can select incremental.\n"
 msgstr ""
 
 #. type: Title ###
@@ -350,14 +351,14 @@ msgstr ""
 #. type: Title ##
 #: docs/concepts/sleep.md:130
 #, no-wrap
-msgid "Historical Day (Admin)"
+msgid "Historical Day (Console)"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/sleep.md:133
 msgid ""
 "For a single past CST calendar day (e.g. before go-live or after migration), "
-"use **Admin → Sleep** (`/admin/dashboard/sleep`):"
+"use **Console → Sleep** (`/console`/dashboard/sleep`):"
 msgstr ""
 
 #. type: Bullet: '1. '
@@ -377,7 +378,7 @@ msgstr ""
 msgid ""
 "Each step run is logged in the **Pipeline history** table on the sleep page. "
 "Cross-session merge for that day still relies on a subsequent **deep-sleep** "
-"run. Cron-triggered cycle runs appear in **Admin → Cron → Run history** on "
+"run. Cron-triggered cycle runs appear in **Console → Cron → Run history** on "
 "the sleep-cycle task."
 msgstr ""
 
