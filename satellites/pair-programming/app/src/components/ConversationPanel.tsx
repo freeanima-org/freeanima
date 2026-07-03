@@ -292,7 +292,7 @@ export function ConversationPanel() {
                 className="h-7 px-2 text-xs"
                 disabled={!store.currentConversationId || streaming || !inputText.trim()}
               >
-                {m.admin_common_send()}
+                {m.console_common_send()}
               </Button>
             </div>
             <div className="p-2 pt-1">
@@ -337,7 +337,7 @@ export function ConversationPanel() {
               className="w-full"
               onClick={() => void newConversation()}
             >
-              {m.admin_common_new_conversation()}
+              {m.console_common_new_conversation()}
             </Button>
           </div>
           <div className="flex-1 overflow-y-auto px-2 py-1 space-y-1">
@@ -381,10 +381,10 @@ export function ConversationPanel() {
           />
           <DialogFooter>
             <Button type="button" variant="ghost" size="sm" onClick={() => setShowRename(false)}>
-              {m.admin_common_cancel()}
+              {m.console_common_cancel()}
             </Button>
             <Button type="button" size="sm" onClick={() => void confirmRename()}>
-              {m.admin_common_confirm()}
+              {m.console_common_confirm()}
             </Button>
           </DialogFooter>
         </DialogContent>

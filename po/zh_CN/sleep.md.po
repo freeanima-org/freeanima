@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 18:53+0800\n"
+"POT-Creation-Date: 2026-07-03 18:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,20 +23,21 @@ msgid "Design Principles"
 msgstr "设计原则"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9 messages/po4a/en.xml:513
-#: messages/po4a/en.xml:520
+#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9
+#: docs/guide/remote-access.md:10 messages/po4a/en.xml:575
+#: messages/po4a/en.xml:582
 #, no-wrap
 msgid "Overview"
 msgstr "概述"
 
 #. type: Title ##
-#: docs/concepts/dream.md:36 docs/concepts/sleep.md:32
+#: docs/concepts/dream.md:37 docs/concepts/sleep.md:32
 #, no-wrap
 msgid "Orchestration"
 msgstr "编排"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/sleep.md:1 messages/po4a/en.xml:327 messages/po4a/en.xml:528
+#: docs/concepts/sleep.md:1 messages/po4a/en.xml:590
 #, no-wrap
 msgid "Sleep"
 msgstr "睡眠机制"
@@ -144,18 +145,24 @@ msgstr "**浅睡**与**深睡**在 `runLightSleep()` / `runDeepSleep()` 内部�
 
 #. type: Plain text
 #: docs/concepts/sleep.md:39
+#, fuzzy
+#| msgid ""
+#| "**Console (`/console/dashboard/sleep`) supports **diagnostic** runs: full "
+#| "cycle or individual steps (`force` skips dependency checks). **Deep sleep "
+#| "mode** (full vs incremental) can be selected before manual runs."
 msgid ""
-"Admin (`/admin/dashboard/sleep`) supports **diagnostic** runs: full cycle or "
-"individual steps (`force` skips dependency checks). **Deep sleep mode** "
-"(full vs incremental) can be selected before manual runs."
+"Console (`/console`/dashboard/sleep`) supports **diagnostic** runs: full "
+"cycle or individual steps (`force` skips dependency checks). **Deep sleep "
+"mode** (full vs incremental) can be selected before manual runs."
 msgstr ""
-"管理台（`/admin/dashboard/sleep`）支持**诊断**运行：完整周期或单步（`force` "
-"跳过依赖检查）。"
+"管理台（`/console/dashboard/sleep`）支持**诊断**运行：完整周期或单步"
+"（`force` 跳过依赖检查）。"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:41
-#, no-wrap
-msgid "**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Admin → Cron** via each task's **Run history** button.\n"
+#, fuzzy, no-wrap
+#| msgid "**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Console → Cron** via each task's **Run history** button.\n"
+msgid "**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Console → Cron** via each task's **Run history** button.\n"
 msgstr "**流水线步骤历史**持久化于 PG `pipeline_step_run`（每次节点执行一行，含失败与通过 `attempt` 的手动重试）。**Cron 运行历史**（`builtin-sleep-cycle`）位于 `cron_log`，在 **管理台 → Cron** 各任务的**运行历史**按钮查看。\n"
 
 #. type: Plain text
@@ -175,11 +182,18 @@ msgstr "浅睡"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:52
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Attribute     | Value                                                                                         |\n"
+#| "| ------------- | --------------------------------------------------------------------------------------------- |\n"
+#| "| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or **Console diagnostics)                            |\n"
+#| "| Scope         | Sessions with activity in previous calendar day (**excludes cron-platform sessions**)         |\n"
+#| "| Input         | Full day's **user conversations** (user+assistant, tools stripped), segmented by conversation |\n"
+#| "| Orchestration | Three stages sequential (separate LLM calls each)                                             |\n"
 msgid ""
 "| Attribute     | Value                                                                                         |\n"
 "| ------------- | --------------------------------------------------------------------------------------------- |\n"
-"| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Admin diagnostics)                            |\n"
+"| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Console diagnostics)                            |\n"
 "| Scope         | Sessions with activity in previous calendar day (**excludes cron-platform sessions**)         |\n"
 "| Input         | Full day's **user conversations** (user+assistant, tools stripped), segmented by conversation |\n"
 "| Orchestration | Three stages sequential (separate LLM calls each)                                             |\n"
@@ -282,8 +296,9 @@ msgstr "**顺序理由：** 先清理问题，再细化，再合并，最后审�
 
 #. type: Plain text
 #: docs/concepts/sleep.md:87
-#, no-wrap
-msgid "**Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. Scheduled cron uses incremental Tue–Sun and **full on Mondays**; Admin manual runs default to full but can select incremental.\n"
+#, fuzzy, no-wrap
+#| msgid "**Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. Scheduled cron uses incremental Tue–Sun and **full on Mondays**; **Console manual runs default to full but can select incremental.\n"
+msgid "**Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. Scheduled cron uses incremental Tue–Sun and **full on Mondays**; Console manual runs default to full but can select incremental.\n"
 msgstr "**增量跳过规则：** 增量模式下若 24 小时内无 active 记忆 `updated`，跳过第 1、3 轮。第 2 轮仅对预过滤拆分候选（较长/多句且近期 `updated`）运行。第 4 轮（置顶维护）始终运行。计划 cron 周二至周日增量、**周一全量**；管理台手动运行默认全量但可选增量。\n"
 
 #. type: Title ###
@@ -402,17 +417,22 @@ msgstr "**压缩**保持会话级（回合时 `advanceCompressionMeta`）；**�
 
 #. type: Title ##
 #: docs/concepts/sleep.md:130
-#, no-wrap
-msgid "Historical Day (Admin)"
-msgstr "历史单日（管理台 Admin）"
+#, fuzzy, no-wrap
+#| msgid "Historical Day (**Console)"
+msgid "Historical Day (Console)"
+msgstr "历史单日（管理台 **Console）"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:133
+#, fuzzy
+#| msgid ""
+#| "For a single past CST calendar day (e.g. before go-live or after "
+#| "migration), use **Console → Sleep** (`/console/dashboard/sleep`):"
 msgid ""
 "For a single past CST calendar day (e.g. before go-live or after migration), "
-"use **Admin → Sleep** (`/admin/dashboard/sleep`):"
+"use **Console → Sleep** (`/console`/dashboard/sleep`):"
 msgstr ""
-"对单个过去 CST 自然日（如上线前或迁移后），使用 **管理台 → 睡眠**（`/admin/"
+"对单个过去 CST 自然日（如上线前或迁移后），使用 **管理台 → 睡眠**（`/console/"
 "chamber/sleep`）："
 
 #. type: Bullet: '1. '
@@ -429,10 +449,16 @@ msgstr "运行 **light-sleep** 步骤（如需跳过依赖检查可勾选 **Forc
 
 #. type: Plain text
 #: docs/concepts/sleep.md:138
+#, fuzzy
+#| msgid ""
+#| "Each step run is logged in the **Pipeline history** table on the sleep "
+#| "page. Cross-session merge for that day still relies on a subsequent "
+#| "**deep-sleep** run. Cron-triggered cycle runs appear in **Console → Cron "
+#| "→ Run history** on the sleep-cycle task."
 msgid ""
 "Each step run is logged in the **Pipeline history** table on the sleep page. "
 "Cross-session merge for that day still relies on a subsequent **deep-sleep** "
-"run. Cron-triggered cycle runs appear in **Admin → Cron → Run history** on "
+"run. Cron-triggered cycle runs appear in **Console → Cron → Run history** on "
 "the sleep-cycle task."
 msgstr ""
 "每步运行记录在睡眠页的 **Pipeline history** 表中。该日的跨对话合并仍依赖后续 "

@@ -1,14 +1,14 @@
 import { createMemoryHistory, RouterProvider, useRouterState } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
-import { getRouter } from "../../admin/router.tsx";
-import { initAdminLocale } from "../../admin/lib/i18n.ts";
+import { getRouter } from "../../console/router.tsx";
+import { initConsoleLocale } from "../../console/lib/i18n.ts";
 import { resolveConsoleSubpath, resolveEmbeddedConsoleBasepath } from "./console-path.ts";
 // oxlint-disable-next-line import/no-unassigned-import -- Vite side-effect stylesheet
-import "@admin/styles.css";
+import "@console/styles.css";
 
-initAdminLocale();
+initConsoleLocale();
 
-/** Embedded console/admin SPA inside shell-ui (formerly AdminShell). */
+/** Embedded console SPA inside shell-ui (formerly ConsoleShell). */
 export function ConsoleShell() {
   const shellPath = useRouterState({ select: (s) => s.location.pathname });
   const consoleBase = useMemo(() => resolveEmbeddedConsoleBasepath(), []);

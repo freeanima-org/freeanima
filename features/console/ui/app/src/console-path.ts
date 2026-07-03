@@ -1,6 +1,6 @@
 /** Shell pathname → embedded console inner route. */
 export function resolveConsoleSubpath(shellPathname: string): string {
-  const marker = "/admin";
+  const marker = "/console";
   const idx = shellPathname.indexOf(marker);
   if (idx === -1) return "/dashboard";
   const rest = shellPathname.slice(idx + marker.length);
@@ -14,8 +14,8 @@ function shellBasepathFromViteBase(baseUrl: string): string | undefined {
   return raw;
 }
 
-/** Console SPA base when embedded in shell-ui (Hub `/web/admin`, desktop `/admin`). */
+/** Console SPA base when embedded in shell-ui (Hub `/web/console`, desktop `/console`). */
 export function resolveEmbeddedConsoleBasepath(): string {
   const shellBase = shellBasepathFromViteBase(import.meta.env?.BASE_URL ?? "/");
-  return shellBase ? `${shellBase}/admin` : "/admin";
+  return shellBase ? `${shellBase}/console` : "/console";
 }

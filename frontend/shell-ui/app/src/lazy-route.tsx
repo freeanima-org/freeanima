@@ -19,7 +19,7 @@ function LazyRouteShell<P extends object>({
   );
 }
 
-/** 路由级 lazy 组件：按 tab 切割 satellite / admin 等大模块 */
+/** 路由级 lazy 组件：按 tab 切割 satellite / console 等大模块 */
 export function shellLazyRoute<P extends object>(
   loader: () => Promise<{ default: ComponentType<P> }>,
 ): ComponentType<P> {

@@ -17,6 +17,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@freeanima/core": "workspace:*",
+    "@freeanima/hub-client": "workspace:*",
     "@freeanima/sap-contract": "workspace:*",
     "@freeanima/shell-sdk": "workspace:*",
     "@freeanima/ui-kit": "workspace:*",

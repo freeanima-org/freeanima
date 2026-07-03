@@ -97,7 +97,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
 
   const { serve } = await import("@freeanima/platform");
   const { startApiHttpServers, closeHttpServers, waitForDrainWithTimeout } =
-    await import("@freeanima/admin-api");
+    await import("@freeanima/console-api");
 
   await serve(options.host, options.port, {
     foreground: true,

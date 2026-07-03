@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 10:52+0800\n"
+"POT-Creation-Date: 2026-07-03 18:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -211,12 +211,16 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/architecture.md:66
+#, fuzzy
+#| msgid ""
+#| "Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-"
+#| "backed); legacy **Console email route removed."
 msgid ""
 "Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-"
-"backed); legacy Admin email route removed."
+"backed); legacy Console email route removed."
 msgstr ""
-"Shell UI **`/tasks`** 与 **`/email`** 是主要模块入口（实体支撑）；旧版 Admin "
-"邮件路由已移除。"
+"Shell UI **`/tasks`** 与 **`/email`** 是主要模块入口（实体支撑）；旧版 "
+"**Console 邮件路由已移除。"
 
 #. type: Title ###
 #: docs/concepts/architecture.md:67
@@ -227,7 +231,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/architecture.md:70
 #, no-wrap
-msgid "Target layout is **feature modules** under `features/<slug>/` (UI + protocol + Hub adapter + domain + `plugin.ts`). Admin is renamed **console** and uses the **same module shape** as chat/task — not a separate admin-* stack. `satellites/` is legacy naming; do not add new products there.\n"
+msgid "Target layout is **feature modules** under `features/<slug>/` (UI + protocol + Hub adapter + domain + `plugin.ts`). Console is renamed **console** and uses the **same module shape** as chat/task — not a separate admin-\\* stack. `satellites/` is legacy naming; do not add new products there.\n"
 msgstr ""
 
 #. type: Plain text
@@ -251,7 +255,7 @@ msgstr ""
 #. type: Title ###
 #: docs/concepts/architecture.md:77
 #, no-wrap
-msgid "Platform UI layering (legacy paths — migrating to features/*)"
+msgid "Platform UI layering (legacy paths — migrating to features/\\*)"
 msgstr ""
 
 #. type: Plain text
@@ -262,21 +266,21 @@ msgstr ""
 #| "| ------------------ | ---------------------------- | -------------------------------------------------------- | -------------------- |\n"
 #| "| Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring       | preload/IPC          |\n"
 #| "| Shared SPA shell   | Branch on `detectPlatform()` | `packages/shell-ui`                                      | 无 SAP wire          |\n"
-#| "| Admin 前端         | Admin embed                  | `platform/admin-frontend` + `ui-kit` + `shell-sdk`       | REST `/api`          |\n"
+#| "| **Console 前端         | **Console embed                  | `platform/feature-console` + `ui-kit` + `shell-sdk`       | REST `/api`          |\n"
 #| "| SAP 产品面         | Satellite apps               | `satellites/*` + `sap-contract` + `ui-kit` + `shell-sdk` | Hub RPC + SAP attach |\n"
 msgid ""
-"| Layer              | Platform-native?             | Location (current → target)                                      | 数据通道             |\n"
-"| ------------------ | ---------------------------- | ---------------------------------------------------------------- | -------------------- |\n"
-"| Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring               | preload/IPC          |\n"
-"| Shared SPA shell   | Branch on `detectPlatform()` | `packages/shell-ui` → `frontend/shell-ui`                        | 无 SAP wire          |\n"
-"| Admin 前端         | Admin embed                  | `platform/admin-frontend` → `frontend/admin-frontend` + ui-kit | REST `/api`          |\n"
-"| SAP 产品面         | Satellite apps               | `satellites/*` → `frontend/satellites/*` + sap-contract          | Hub RPC + SAP attach |\n"
+"| Layer              | Platform-native?             | Location (current → target)                           | 数据通道               |\n"
+"| ------------------ | ---------------------------- | ----------------------------------------------------- | ---------------------- |\n"
+"| Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring    | preload/IPC            |\n"
+"| Shared SPA shell   | Branch on `detectPlatform()` | `frontend/shell-ui`                                   | Hub RPC（Feature RPC） |\n"
+"| Console 前端       | Shell embed                  | `features/console`（UI）；REST 过渡期在 `console-api`   | REST `/api` + Hub RPC  |\n"
+"| 卫星应用           | Sidecar only                 | `satellites/companion`、`satellites/pair-programming` | Hub RPC + SAP attach   |\n"
 msgstr ""
 "| 层                 | 平台原生？                   | 位置                                                     | 数据通道      |\n"
 "| ------------------ | ---------------------------- | -------------------------------------------------------- | ------------- |\n"
 "| Shell / capability | 是                           | `app/desktop`、`app/mobile`、companion、Hub 接线         | preload/IPC   |\n"
 "| Shared SPA shell   | 按 `detectPlatform()` 分支   | `packages/shell-ui`                                      | 无 SAP wire   |\n"
-"| hub-rest 前端      | Admin 嵌入                   | `platform/admin-frontend` + `ui-kit` + `shell-sdk`       | Eden `/api`   |\n"
+"| hub-rest 前端      | Console 嵌入                   | `platform/feature-console` + `ui-kit` + `shell-sdk`       | Eden `/api`   |\n"
 "| SAP 产品面         | Satellite 应用               | `satellites/*` + `sap-contract` + `ui-kit` + `shell-sdk` | SAP `/sap/v1` |\n"
 
 #. type: Plain text
@@ -292,19 +296,24 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/architecture.md:89
 #, no-wrap
-msgid "**边界**：`shell-ui` 与 `admin-frontend` 禁止 import `sap-contract`；SAP wire 仅在 `satellites/*/app` 内。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。\n"
+msgid "**边界**：`shell-ui` 与 `features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Hub；**SAP attach / tool.\\*** 协议仅 `satellites/companion` 与 `satellites/pair-programming` 使用。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。\n"
 msgstr ""
 
 #. type: Title ###
 #: docs/concepts/architecture.md:90
-#, no-wrap
-msgid "Admin navigation ↔ cognitive layers"
+#, fuzzy, no-wrap
+#| msgid "**Console navigation ↔ cognitive layers"
+msgid "Console navigation ↔ cognitive layers"
 msgstr "管理台导航 ↔ 认知层"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:93
+#, fuzzy
+#| msgid ""
+#| "**Console sidebar is grouped (not flat storage tables). Map new features "
+#| "onto these user-visible concepts:"
 msgid ""
-"Admin sidebar is grouped (not flat storage tables). Map new features onto "
+"Console sidebar is grouped (not flat storage tables). Map new features onto "
 "these user-visible concepts:"
 msgstr "管理台侧栏分组展示（非扁平存储表）。新功能应映射到以下用户可见概念："
 
@@ -651,25 +660,34 @@ msgstr "**chat**：单次非交互回合（CLI 或管道 stdin）"
 
 #. type: Bullet: '- '
 #: docs/concepts/architecture.md:191
+#, fuzzy
+#| msgid ""
+#| "**UI**: app/desktop / app/mobile bundled SPA (Chat + **Console); Hub does "
+#| "not host `/admin`"
 msgid ""
-"**UI**: app/desktop / app/mobile bundled SPA (Chat + Admin); Hub does not "
-"host `/admin`"
+"**UI**: app/desktop / app/mobile bundled SPA (Chat + Console); Hub does not "
+"host `/console``"
 msgstr ""
 "**UI**：app/desktop / app/mobile bundled SPA（聊天室 + 管理台）；Hub 不托管 "
 "`/admin`"
 
 #. type: Fenced code block (bash)
 #: docs/concepts/architecture.md:192
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "anima service start              # default: systemd --user\n"
+#| "anima service start --foreground # foreground (logs to stdout)\n"
+#| "bun run dev:web                  # browser shell (Chat + **Console + settings, Vite HMR; Hub must be running)\n"
+#| "anima service status\n"
 msgid ""
 "anima service start              # default: systemd --user\n"
 "anima service start --foreground # foreground (logs to stdout)\n"
-"bun run dev:web                  # browser shell (Chat + Admin + settings, Vite HMR; Hub must be running)\n"
+"bun run dev:web                  # browser shell (Chat + Console + settings, Vite HMR; Hub must be running)\n"
 "anima service status\n"
 msgstr ""
 "anima service start              # default: systemd --user\n"
 "anima service start --foreground # foreground (logs to stdout)\n"
-"anima service start --dev        # Admin source watch rebuild (refresh page after edits)\n"
+"anima service start --dev        # **Console source watch rebuild (refresh page after edits)\n"
 "anima service status\n"
 
 #. type: Title ##
@@ -1018,17 +1036,22 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/architecture.md:319
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Module | Connection                                         | Notes                  |\n"
+#| "| ------ | -------------------------------------------------- | ---------------------- |\n"
+#| "| Chat   | Hub RPC `/hub/rpc/v1` (shared WS, no `sap.attach`) | `/web/chat`            |\n"
+#| "| **Console  | Hub REST `/api/*` (CORS + shell)                   | `/web/console/dashboard` |\n"
 msgid ""
 "| Module | Connection                                         | Notes                  |\n"
 "| ------ | -------------------------------------------------- | ---------------------- |\n"
 "| Chat   | Hub RPC `/hub/rpc/v1` (shared WS, no `sap.attach`) | `/web/chat`            |\n"
-"| Admin  | Hub REST `/api/*` (CORS + shell)                   | `/web/admin/dashboard` |\n"
+"| Console  | Hub REST `/api/*` (CORS + shell)                   | `/web/console/dashboard` |\n"
 msgstr ""
 "| 模块   | 连接                              | 说明                   |\n"
 "| ------ | --------------------------------- | ---------------------- |\n"
 "| Chat   | SAP WebSocket `/sap/v1`           | `/web/chat`            |\n"
-"| Admin  | Hub REST `/api/*`（CORS + shell） | `/web/admin/dashboard` |\n"
+"| **Console  | Hub REST `/api/*`（CORS + shell） | `/web/console/dashboard` |\n"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:321
@@ -1059,10 +1082,15 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/architecture.md:327
+#, fuzzy
+#| msgid ""
+#| "**Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: "
+#| "light → deep → cross-domain maintenance steps). State in `~/.anima/"
+#| "runtime/pipeline_*_run.json`; Console API for diagnostics."
 msgid ""
 "**Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: light "
 "→ deep → cross-domain maintenance steps). State in `~/.anima/runtime/"
-"pipeline_*_run.json`; Admin API for diagnostics."
+"pipeline_*_run.json`; Console API for diagnostics."
 msgstr ""
 "**Pipeline Runner**：后台周期的显式 DAG（sleep-cycle：浅睡 → 深睡 → 跨域维护"
 "步骤）。状态位于 `~/.anima/runtime/pipeline_*_run.json`；管理台 API 用于诊"

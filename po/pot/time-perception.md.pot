@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 18:02+0800\n"
+"POT-Creation-Date: 2026-07-03 18:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,13 +18,13 @@ msgstr ""
 
 #. type: Title ##
 #: docs/concepts/compression.md:10 docs/concepts/sleep.md:13
-#: docs/concepts/time-perception.md:21 docs/features/pair-programming-v1.md:10
+#: docs/concepts/time-perception.md:21
 #, no-wrap
 msgid "Design Principles"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/time-perception.md:1 messages/po4a/en.xml:56
+#: docs/concepts/time-perception.md:1 messages/po4a/en.xml:591
 #, no-wrap
 msgid "Time Perception"
 msgstr ""
@@ -261,7 +261,7 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/time-perception.md:87
-msgid "❌ Do not show time prefix in Admin"
+msgid "❌ Do not show time prefix in Console"
 msgstr ""
 
 #. type: Bullet: '- '

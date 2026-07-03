@@ -4,7 +4,7 @@ export * from "./app-runtime.ts";
 export type { RuntimeDeps, FullRuntimeDeps } from "./runtime-deps.ts";
 export * from "./home-channel.ts";
 export * from "./platforms.ts";
-export { REPO_ROOT, ADMIN_BASE_PATH } from "./repo-paths.ts";
+export { REPO_ROOT, CONSOLE_BASE_PATH } from "./repo-paths.ts";
 export * from "./conversation-stats.ts";
 export * from "./runtime-context-stats.ts";
 export * from "./service-prompt-debug.ts";

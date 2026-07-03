@@ -20,7 +20,7 @@ export const WEB_SOURCE_WATCH_DIRS = [
   "app/web",
   "frontend/shell-ui",
   "shared/sap-contract/src",
-  "features/console/ui/admin",
+  "features/console/ui/console",
   "features/chat/ui/app",
   "features/task/ui/app",
   "features/vault/ui/app",

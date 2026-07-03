@@ -1,0 +1,19 @@
+{
+  "name": "@freeanima/hub-client",
+  "description": "Hub 多传输客户端：call / subscribe + HTTP/WS dispatch",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@freeanima/hub-contract": "workspace:*",
+    "@freeanima/hub-rpc": "workspace:*",
+    "@freeanima/kernel": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

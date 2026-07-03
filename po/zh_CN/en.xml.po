@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 10:33+0800\n"
+"POT-Creation-Date: 2026-07-03 18:12+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,7 +29,7 @@ msgid "Compression"
 msgstr "压缩"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:1 messages/po4a/en.xml:426
+#: docs/concepts/dream.md:1 messages/po4a/en.xml:432
 #, no-wrap
 msgid "Dream"
 msgstr "梦境"
@@ -43,27 +43,27 @@ msgid "Overview"
 msgstr "概述"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:13 messages/po4a/en.xml:430
+#: docs/concepts/dream.md:13 messages/po4a/en.xml:436
 #, no-wrap
 msgid "Trigger"
 msgstr "触发"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:30 messages/po4a/en.xml:32
+#: docs/concepts/dream.md:30 messages/po4a/en.xml:38
 #, no-wrap
 msgid "Output"
 msgstr "输出"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/entity-model.md:71 messages/po4a/en.xml:256
-#: messages/po4a/en.xml:299
+#: docs/concepts/entity-model.md:71 messages/po4a/en.xml:262
+#: messages/po4a/en.xml:305
 #, no-wrap
 msgid "Content"
 msgstr "内容"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/entity-model.md:181 messages/po4a/en.xml:116
-#: messages/po4a/en.xml:128 messages/po4a/en.xml:539
+#: docs/concepts/entity-model.md:181 messages/po4a/en.xml:122
+#: messages/po4a/en.xml:134 messages/po4a/en.xml:539
 #, no-wrap
 msgid "Search"
 msgstr "查询"
@@ -75,7 +75,7 @@ msgid "Identity"
 msgstr "身份定位"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/memory.md:1 messages/po4a/en.xml:191 messages/po4a/en.xml:351
+#: docs/concepts/memory.md:1 messages/po4a/en.xml:197 messages/po4a/en.xml:357
 #: messages/po4a/en.xml:572
 #, no-wrap
 msgid "Memory"
@@ -83,13 +83,13 @@ msgstr "记忆体系"
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/notifications.md:1 docs/concepts/notifications.md:5
-#: messages/po4a/en.xml:360
+#: messages/po4a/en.xml:366
 #, no-wrap
 msgid "Notifications"
 msgstr "通知"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/notifications.md:64 messages/po4a/en.xml:149
+#: docs/concepts/notifications.md:64 messages/po4a/en.xml:155
 #: messages/po4a/en.xml:585 messages/po4a/en.xml:592
 #, no-wrap
 msgid "Tools"
@@ -100,12 +100,6 @@ msgstr "工具"
 #, no-wrap
 msgid "Recall Flow"
 msgstr "回忆流程"
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/repository-topology.md:180 messages/po4a/en.xml:58
-#, no-wrap
-msgid "Other"
-msgstr "其它"
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:5
@@ -165,7 +159,7 @@ msgid "Service"
 msgstr "服务"
 
 #. type: Content of: <messages><msg>
-#: docs/sap/hub-rpc.md:50 docs/sap/transport.md:99 messages/po4a/en.xml:117
+#: docs/sap/hub-rpc.md:50 docs/sap/transport.md:99 messages/po4a/en.xml:123
 #, no-wrap
 msgid "Reconnect"
 msgstr "重连"
@@ -184,2675 +178,2681 @@ msgid "Satellite Guide"
 msgstr "卫星指南"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:3 messages/po4a/en.xml:170 messages/po4a/en.xml:303
-#, no-wrap
-msgid "{name} {action} failed: {detail}"
-msgstr "{name} {action}失败: {detail}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:4
-#, no-wrap
-msgid "Active sessions"
-msgstr "活跃会话"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:5 messages/po4a/en.xml:180 messages/po4a/en.xml:304
-#, no-wrap
-msgid "Configured"
-msgstr "已配置"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:6
-#, no-wrap
-msgid "Connect"
-msgstr "连接"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:7
-#, no-wrap
-msgid "Connect all"
-msgstr "全部连接"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:8
-#, no-wrap
-msgid "Agent Client Protocol agents: config, connection status, and active sessions on this instance."
-msgstr "Agent Client Protocol 代理：配置、连接状态与逸灵风侧活跃对话。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:9
-#, no-wrap
-msgid "Disconnect"
-msgstr "断开"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:10
-#, no-wrap
-msgid "Disconnect all"
-msgstr "全部断开"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:11
-#, no-wrap
-msgid "On startup, enabled agents (enabled !== false) connect automatically, same as MCP."
-msgstr "逸灵风启动时会自动连接 enabled !== false 的 agent（与 MCP 一致）。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:12
-#, no-wrap
-msgid "Connect only completes the ACP initialize handshake; no conversation is created."
-msgstr "「连接」仅完成 ACP initialize 握手，不创建 session。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:13
-#, no-wrap
-msgid "Notes"
-msgstr "备注"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:14 messages/po4a/en.xml:307 messages/po4a/en.xml:380
-#, no-wrap
-msgid "Registered tools"
-msgstr "注册工具"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:15
-#, no-wrap
-msgid "Connect all failed: {detail}"
-msgstr "全部连接失败: {detail}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:16
-#, no-wrap
-msgid "Connect all timed out (30s). Check agent configs and login status."
-msgstr "全部连接超时（30s），请检查各 agent 配置与 login 状态"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:17
-#, no-wrap
-msgid "Connection timed out (30s). Check agent login and command path."
-msgstr "连接超时（30s），请检查 agent 是否已 login、command 路径是否正确"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:18
-#, no-wrap
-msgid "Disconnect all failed: {detail}"
-msgstr "全部断开失败: {detail}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:19
-#, no-wrap
-msgid "start"
-msgstr "启动"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:20
-#, no-wrap
-msgid "stop"
-msgstr "停止"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:21
-#, no-wrap
-msgid "Cron job not found: {id}"
-msgstr "未找到任务: {id}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:22
-#, no-wrap
-msgid "Account not found: {account_id}"
-msgstr "未找到账户: {account_id}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:23
-#, no-wrap
-msgid "Semantic memory: {count} rows (PG content_fts is automatic; no rebuild needed)"
-msgstr "语义记忆：{count} 条（PG content_fts 自动维护，无需重建）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:24
-#, no-wrap
-msgid "Service is restarting..."
-msgstr "服务正在重启..."
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:25
-#, no-wrap
-msgid "studio.workspace is not configured or does not exist"
-msgstr "studio.workspace 未配置或不存在"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:26
-#, no-wrap
-msgid "Terminal conversation does not exist or has closed"
-msgstr "终端会话不存在或已关闭"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:27
-#, no-wrap
-msgid "Audit log for background LLM runs (cron agent, sleep pipeline). No user conversation archive."
-msgstr "后台 LLM 运行审计日志（定时任务 agent、睡眠流水线）。不含用户对话归档。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:28
-#, no-wrap
-msgid "Duration"
-msgstr "时长"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:29
-#, no-wrap
-msgid "No AutoLlmRun records yet."
-msgstr "尚无 AutoLlmRun 记录。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:30
-#, no-wrap
-msgid "Input summary"
-msgstr "输入摘要"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:31
-#, no-wrap
-msgid "Metadata"
-msgstr "元数据"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:33
-#, no-wrap
-msgid "Run kind"
-msgstr "运行类型"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:34
-#, no-wrap
-msgid "Run name"
-msgstr "运行名称"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:35
-#, no-wrap
-msgid "Browse autobiographical_memory narrative entries."
-msgstr "浏览 autobiographical_memory 叙事条目。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:36
-#, no-wrap
-msgid "Search term (optional, title/content ILIKE)"
-msgstr "搜索词（可选，标题/内容 ILIKE）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:37 messages/po4a/en.xml:397
-#, no-wrap
-msgid "Source conversation (optional)"
-msgstr "来源对话（可选）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:38
-#, no-wrap
-msgid "Free Anima"
-msgstr "逸灵风"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:39
-#, no-wrap
-msgid "Your confirmation is needed (reply in one message, or send /cancel)"
-msgstr "需要你确认（一条消息回复全部，或发送 /cancel）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:40
-#, no-wrap
-msgid "Actions"
-msgstr "操作"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:41 messages/po4a/en.xml:386 messages/po4a/en.xml:394
-#, no-wrap
-msgid "Created"
-msgstr "创建时间"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:42
-#, no-wrap
-msgid "Conversation ID"
-msgstr "对话 ID"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:43 messages/po4a/en.xml:261
-#, no-wrap
-msgid "Title"
-msgstr "标题"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:44
-#, no-wrap
-msgid "Open"
-msgstr "打开"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:45
-#, no-wrap
-msgid "Conversation management"
-msgstr "对话管理"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:46
-#, no-wrap
-msgid "Type a message (Shift+Enter for newline, Enter to send; / for commands)"
-msgstr "输入消息（Shift+Enter 换行，Enter 发送；/ 开头是命令）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:47
-#, no-wrap
-msgid "Send now"
-msgstr "立即发送"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:48
-#, no-wrap
-msgid "Select a conversation to start"
-msgstr "选择一个会话开始对话"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:49
-#, no-wrap
-msgid "Send the first message"
-msgstr "发送第一条消息"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:50
-#, no-wrap
-msgid "Chat room"
-msgstr "聊天室"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:51
-#, no-wrap
-msgid "Command"
-msgstr "命令"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:52
-#, no-wrap
-msgid "Available on all platforms by default ({count} total)."
-msgstr "所有平台默认可用（共 {count} 个）。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:53
-#, no-wrap
-msgid "Current conversation"
-msgstr "当前会话"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:54
-#, no-wrap
-msgid "Type / in the chat input to trigger. Commands are grouped by scope."
-msgstr "在对话输入框以 / 开头即可触发。命令按作用域分为两类。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:55
-#, no-wrap
-msgid "Description"
-msgstr "说明"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:56
-#, no-wrap
-msgid "No slash commands registered."
-msgstr "暂无已注册的 slash 命令。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:57
-#, no-wrap
-msgid "Cross-conversation or platform-level actions ({count} total)."
-msgstr "跨对话或平台级操作（共 {count} 个）。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:59 messages/po4a/en.xml:379
-#, no-wrap
-msgid "Platform"
-msgstr "平台"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:60
-#, no-wrap
-msgid "Abnormal"
-msgstr "异常"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:61
-#, no-wrap
-msgid "Active (pending + in_progress)"
-msgstr "进行中（pending + in_progress）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:62 messages/po4a/en.xml:324
-#, no-wrap
-msgid "All"
-msgstr "全部"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:63
-#, no-wrap
-msgid "Rebuild runs in the background; you may close this page."
-msgstr "后台运行中，可关闭页面；刷新统计可查看覆盖度变化。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:64 messages/po4a/en.xml:594
-#, no-wrap
-msgid "Cancel"
-msgstr "取消"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:65
-#, no-wrap
-msgid "Capability"
-msgstr "能力"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:66
-#, no-wrap
-msgid "{chars} chars · ~{tokens} tokens"
-msgstr "{chars} 字符 · ~{tokens} tokens"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:67
-#, no-wrap
-msgid "Click \"Search\" to load the list."
-msgstr "点击「查询」加载列表。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:68 messages/po4a/en.xml:494 messages/po4a/en.xml:595
-#, no-wrap
-msgid "Close"
-msgstr "关闭"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:69
-#, no-wrap
-msgid "Collapse"
-msgstr "收起"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:70
-#, no-wrap
-msgid "Coming soon"
-msgstr "即将推出"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:71
-#, no-wrap
-msgid "Config"
-msgstr "配置"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:72 messages/po4a/en.xml:596
-#, no-wrap
-msgid "OK"
-msgstr "确定"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:73 messages/po4a/en.xml:373
-#, no-wrap
-msgid "Connected"
-msgstr "已连接"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:74
-#, no-wrap
-msgid "Connecting"
-msgstr "连接中"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:75
-#, no-wrap
-msgid "Conversation"
-msgstr "对话"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:76 messages/po4a/en.xml:177
-#, no-wrap
-msgid "Conversations"
-msgstr "对话"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:77
-#, no-wrap
-msgid "Copied {label}"
-msgstr "已复制{label}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:78
-#, no-wrap
-msgid "Copy"
-msgstr "复制"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:79
-#, no-wrap
-msgid "Failed to copy {label}"
-msgstr "复制{label}失败"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:80
-#, no-wrap
-msgid "Details"
-msgstr "详情"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:81
-#, no-wrap
-msgid "Disabled"
-msgstr "已禁用"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:82
-#, no-wrap
-msgid "Done"
-msgstr "完成"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:83
-#, no-wrap
-msgid "Edit"
-msgstr "编辑"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:84
-#, no-wrap
-msgid "Edit title"
-msgstr "修改标题"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:85
-#, no-wrap
-msgid "Embedding"
-msgstr "向量"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:86
-#, no-wrap
-msgid "(empty)"
-msgstr "（空）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:87
-#, no-wrap
-msgid "Empty response"
-msgstr "空响应"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:88
-#, no-wrap
-msgid "Error"
-msgstr "错误"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:89
-#, no-wrap
-msgid "Expand"
-msgstr "展开"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:90
-#, no-wrap
-msgid "Failed"
-msgstr "失败"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:91
-#, no-wrap
-msgid "(full rebuild)"
-msgstr "（全量）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:92
-#, no-wrap
-msgid "— Global template —"
-msgstr "— 全局模板 —"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:93
-#, no-wrap
-msgid "Key"
-msgstr "键"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:94
-#, no-wrap
-msgid "Keywords…"
-msgstr "关键词…"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:95
-#, no-wrap
-msgid "Load failed: {detail}"
-msgstr "加载失败: {detail}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:96
-#, no-wrap
-msgid "Load failed"
-msgstr "加载失败"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:97
-#, no-wrap
-msgid "Loading…"
-msgstr "加载中…"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:98
-#, no-wrap
-msgid "Network error"
-msgstr "网络错误"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:99
-#, no-wrap
-msgid "New conversation"
-msgstr "＋ 新会话"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:100
-#, no-wrap
-msgid "Next"
-msgstr "下一页"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:101
-#, no-wrap
-msgid "No reply; check API keys and server logs"
-msgstr "无回复，请检查 API 密钥与服务端日志"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:102
-#, no-wrap
-msgid "No response stream"
-msgstr "无响应流"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:103
-#, no-wrap
-msgid "No matching records."
-msgstr "无匹配记录。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:104
-#, no-wrap
-msgid "(no title)"
-msgstr "（无标题）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:105
-#, no-wrap
-msgid "Not configured"
-msgstr "未配置"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:106
-#, no-wrap
-msgid "Not connected"
-msgstr "未连接"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:107
-#, no-wrap
-msgid "Not started"
-msgstr "未启动"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:108
-#, no-wrap
-msgid "(missing only)"
-msgstr "（仅补缺失）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:109
-#, no-wrap
-msgid "Operation failed: {detail}"
-msgstr "操作失败: {detail}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:110
-#, no-wrap
-msgid "Optional"
-msgstr "可选"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:111
-#, no-wrap
-msgid "{total} items · page {current} / {pages}"
-msgstr "共 {total} 条 · 第 {current} / {pages} 页"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:112
-#, no-wrap
-msgid "Preparing"
-msgstr "准备中"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:113
-#, no-wrap
-msgid "Previous"
-msgstr "上一页"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:114
-#, no-wrap
-msgid "Priority"
-msgstr "优先级"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:115
-#, no-wrap
-msgid "Processing day"
-msgstr "处理日"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:118
-#, no-wrap
-msgid "Refresh"
-msgstr "刷新"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:119
-#, no-wrap
-msgid "Refresh list"
-msgstr "刷新列表"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:120
-#, no-wrap
-msgid "Refreshing…"
-msgstr "刷新中…"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:121
-#, no-wrap
-msgid "Rename"
-msgstr "✏️ 重命名"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:122
-#, no-wrap
-msgid "Request failed"
-msgstr "请求失败"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:123
-#, no-wrap
-msgid "Restart service"
-msgstr "重启服务"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:124
-#, no-wrap
-msgid "Restarting…"
-msgstr "重启中…"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:125
-#, no-wrap
-msgid "Rounds"
-msgstr "轮次"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:126
-#, no-wrap
-msgid "Run at"
-msgstr "运行"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:127
-#, no-wrap
-msgid "Save"
-msgstr "保存"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:129
-#, no-wrap
-msgid "Search failed: {detail}"
-msgstr "检索失败: {detail}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:130
-#, no-wrap
-msgid "Search term (optional)"
-msgstr "搜索词（可选）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:131
-#, no-wrap
-msgid "Segmented"
-msgstr "分词"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:132
-#, no-wrap
-msgid "Send"
-msgstr "发送"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:133
-#, no-wrap
-msgid "Server error"
-msgstr "服务端错误"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:134
-#, no-wrap
-msgid "Start"
-msgstr "启动"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:135
-#, no-wrap
-msgid "Start all"
-msgstr "启动全部"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:136 messages/po4a/en.xml:137 messages/po4a/en.xml:240
-#, no-wrap
-msgid "Status"
-msgstr "状态"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:138
-#, no-wrap
-msgid "Stop"
-msgstr "停止"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:139
-#, no-wrap
-msgid "Stop all"
-msgstr "停止全部"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:140
-#, no-wrap
-msgid "stored and live differ"
-msgstr "stored 与 live 不一致"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:141
-#, no-wrap
-msgid "stored and live match"
-msgstr "stored 与 live 一致"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:142
-#, no-wrap
-msgid "Success"
-msgstr "成功"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:143
-#, no-wrap
-msgid "Table"
-msgstr "表"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:144
-#, no-wrap
-msgid "Task"
-msgstr "任务"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:145
-#, no-wrap
-msgid "Time"
-msgstr "时间"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:146
-#, no-wrap
-msgid "Enter a new title"
-msgstr "输入新标题"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:147
-#, no-wrap
-msgid "Toggle navigation"
-msgstr "切换导航"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:148
-#, no-wrap
-msgid "Tool calls"
-msgstr "工具调用"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:150 messages/po4a/en.xml:262
-#, no-wrap
-msgid "Type"
-msgstr "类型"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:151
-#, no-wrap
-msgid "Value"
-msgstr "值"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:152
-#, no-wrap
-msgid "WebSocket connection failed"
-msgstr "WebSocket 连接失败"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:153
-#, no-wrap
-msgid "Runtime config by config.yaml top-level blocks. Secret values are hidden."
-msgstr "逸灵风运行时配置，按 config.yaml 顶层块展示。密钥值已隐藏。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:154
-#, no-wrap
-msgid "No config entries"
-msgstr "暂无配置项"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:155
-#, no-wrap
-msgid "← Back to list"
-msgstr "← 返回列表"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:156
-#, no-wrap
-msgid "No conversations"
-msgstr "暂无对话"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:157 messages/po4a/en.xml:168 messages/po4a/en.xml:248
-#, no-wrap
-msgid "Active"
-msgstr "运行中"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:158
-#, no-wrap
-msgid "View scheduled jobs, enable/pause, and trigger manually. Create or delete via the cronjob tool."
-msgstr "查看调度任务、启用/暂停与手动触发。新建或删除请使用 cronjob 工具。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:159
-#, no-wrap
-msgid "No cron jobs."
-msgstr "暂无定时任务。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:160
-#, no-wrap
-msgid "Enable"
-msgstr "启用"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:161
-#, no-wrap
-msgid "Next run"
-msgstr "下次运行"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:162 messages/po4a/en.xml:169
-#, no-wrap
-msgid "Paused"
-msgstr "已暂停"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:163
-#, no-wrap
-msgid "Run history"
-msgstr "运行历史"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:164
-#, no-wrap
-msgid "No run records yet"
-msgstr "尚无运行记录"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:165
-#, no-wrap
-msgid "Run history — {name}"
-msgstr "运行历史 — {name}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:166
-#, no-wrap
-msgid "Run now"
-msgstr "立即运行"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:167
-#, no-wrap
-msgid "Schedule"
-msgstr "调度"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:171
-#, no-wrap
-msgid "Total jobs"
-msgstr "任务总数"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:172
-#, no-wrap
-msgid "{name} trigger failed: {detail}"
-msgstr "{name} 触发失败: {detail}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:173
-#, no-wrap
-msgid "Triggered"
-msgstr "已触发"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:174
-#, no-wrap
-msgid "Failed to load ACP status"
-msgstr "ACP 状态加载失败"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:175
-#, no-wrap
-msgid "{agents} agents · {connected} connected · {sessions} sessions · {tools} tools"
-msgstr "{agents} 代理 · {connected} 已连接 · {sessions} 会话 · {tools} 工具"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:176
-#, no-wrap
-msgid "All platforms"
-msgstr "全平台"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:178
-#, no-wrap
-msgid "Conversations &amp; tools"
-msgstr "对话与工具"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:179
-#, no-wrap
-msgid "Cron jobs"
-msgstr "定时任务"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:181
-#, no-wrap
-msgid "None"
-msgstr "无"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:182
-#, no-wrap
-msgid "Current model"
-msgstr "当前模型"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:183
-#, no-wrap
-msgid "Dependencies"
-msgstr "依赖"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:184
-#, no-wrap
-msgid "Dialogue messages"
-msgstr "对话消息"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:185
-#, no-wrap
-msgid "Hover for per-platform breakdown"
-msgstr "悬停查看分平台"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:186
-#, no-wrap
-msgid "JSC heap {size} (not physical RAM)"
-msgstr "JSC 堆 {size}（非物理内存）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:187
-#, no-wrap
-msgid "Failed to load service status"
-msgstr "服务状态加载失败"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:188
-#, no-wrap
-msgid "Manage"
-msgstr "管理"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:189
-#, no-wrap
-msgid "Failed to load MCP status"
-msgstr "MCP 状态加载失败"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:190
-#, no-wrap
-msgid "{servers} servers · {connected} connected · {connecting} connecting · {tools} tools"
-msgstr "{servers} 服务器 · {connected} 已连接 · {connecting} 连接中 · {tools} 工具"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:192
-#, no-wrap
-msgid "Memory desk"
-msgstr "记忆台"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:193
-#, no-wrap
-msgid "messages"
-msgstr "对话消息"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:194
-#, no-wrap
-msgid "No per-platform data"
-msgstr "暂无分平台数据"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:195
-#, no-wrap
-msgid "No platform connections"
-msgstr "无平台接入"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:196
-#, no-wrap
-msgid "Platform connections"
-msgstr "平台连接"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:197
-#, no-wrap
-msgid "Physical memory (RSS)"
-msgstr "物理内存（RSS）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:198
-#, no-wrap
-msgid "Quick links"
-msgstr "快捷入口"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:199
-#, no-wrap
-msgid "Restart the service? Active conversations will be interrupted."
-msgstr "确定要重启服务吗？正在进行的对话将被中断。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:200
-#, no-wrap
-msgid "Restart failed: {detail}"
-msgstr "重启失败: {detail}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:201 messages/po4a/en.xml:352
-#, no-wrap
-msgid "Runtime"
-msgstr "运行时"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:202 messages/po4a/en.xml:326
-#, no-wrap
-msgid "Semantic memory"
-msgstr "语义记忆"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:203
-#, no-wrap
-msgid "Service status"
-msgstr "服务状态"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:204
-#, no-wrap
-msgid "Slash commands"
-msgstr "Slash 命令"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:205
-#, no-wrap
-msgid "Started at {time}"
-msgstr "启动于 {time}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:206
-#, no-wrap
-msgid "Dashboard"
-msgstr "📊 仪表盘"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:207
-#, no-wrap
-msgid "Registered"
-msgstr "已注册"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:208 messages/po4a/en.xml:333 messages/po4a/en.xml:335
-#: messages/po4a/en.xml:468
-#, no-wrap
-msgid "Admin"
-msgstr "管理台"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:209
-#, no-wrap
-msgid "Public URL"
-msgstr "公网 URL"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:210
-#, no-wrap
-msgid "Uptime"
-msgstr "运行时间"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:211
-#, no-wrap
-msgid "Version"
-msgstr "版本"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:212
-#, no-wrap
-msgid "Browse dream_memory (creative nightly narratives from the dream mechanism; not factual records)."
-msgstr "浏览 dream_memory（梦境机制产出的夜间创意叙事；非事实记录）。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:213
-#, no-wrap
-msgid "No dreams recorded yet."
-msgstr "尚无梦境记录。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:214
-#, no-wrap
-msgid "Episodic conversations"
-msgstr "情节对话"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:215
-#, no-wrap
-msgid "Limbic sources"
-msgstr "感性来源"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:216
-#, no-wrap
-msgid "Address"
-msgstr "地址"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:217
-#, no-wrap
-msgid "← Back to accounts"
-msgstr "← 返回账户"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:218
-#, no-wrap
-msgid "Date:"
-msgstr "时间："
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:219
-#, no-wrap
-msgid "Default sender"
-msgstr "默认发件"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:220
-#, no-wrap
-msgid "Pick an email account to open the inbox. Manage accounts, send, and delete via Agent tools."
-msgstr "选择邮箱账户进入收件箱。账户管理、发信与删信请使用 Agent 工具。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:221
-#, no-wrap
-msgid "View inbox messages. Manage accounts, send, and delete via Agent tools."
-msgstr "查看收件箱邮件。账户管理、发信与删信请使用 Agent 工具。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:222
-#, no-wrap
-msgid "Enabled"
-msgstr "已启用"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:223
-#, no-wrap
-msgid "Open inbox"
-msgstr "进入邮箱"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:224
-#, no-wrap
-msgid "Fetch"
-msgstr "拉取"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:225
-#, no-wrap
-msgid "Fetch failed: {detail}"
-msgstr "拉取失败: {detail}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:226
-#, no-wrap
-msgid "From:"
-msgstr "发件人："
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:227
-#, no-wrap
-msgid "Failed to load message list: {detail}"
-msgstr "邮件列表加载失败: {detail}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:228
-#, no-wrap
-msgid "No email accounts. Register with the register_email_account tool."
-msgstr "暂无邮件账户。请用 register_email_account 工具注册。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:229
-#, no-wrap
-msgid "(no body)"
-msgstr "(无正文)"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:230
-#, no-wrap
-msgid "No messages yet. Click \"Fetch\" to sync from the server."
-msgstr "暂无邮件，点击「拉取」从服务器同步。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:231
-#, no-wrap
-msgid "(no subject)"
-msgstr "(无主题)"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:232
-#, no-wrap
-msgid "Partial email load failure: {detail}"
-msgstr "部分邮件加载失败: {detail}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:233
-#, no-wrap
-msgid "Failed to read message: {detail}"
-msgstr "读取邮件失败: {detail}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:234
-#, no-wrap
-msgid "Select a message on the left to view its body"
-msgstr "选择左侧邮件查看正文"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:235
-#, no-wrap
-msgid "To:"
-msgstr "收件人："
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:236
-#, no-wrap
-msgid "Last used"
-msgstr "最近使用"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:237
-#, no-wrap
-msgid "Name"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:238
-#, no-wrap
-msgid "Prefix"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:239
-#, no-wrap
-msgid "Scopes"
-msgstr "范围"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:241
-#, no-wrap
-msgid "Create token"
-msgstr "创建令牌"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:242
-#, no-wrap
-msgid "e.g. desktop, mcp"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:243
-#, no-wrap
-msgid "New token"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:244
-#, no-wrap
-msgid "It will not be shown again. Paste into client Hub settings (Hub API Token)."
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:245
-#, no-wrap
-msgid "Copy this token now"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:246
-#, no-wrap
-msgid "Revoke"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:247
-#, no-wrap
-msgid "Revoke token \"{name}\"?"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:249
-#, no-wrap
-msgid "Revoked"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:250
-#, no-wrap
-msgid "API tokens"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:251
-#, no-wrap
-msgid "Service tokens bind to this subject. The secret is shown only once when created."
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:252
-#, no-wrap
-msgid "No tokens yet."
-msgstr "尚无令牌。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:253
-#, no-wrap
-msgid "No active tokens."
-msgstr "尚无令牌。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:254
-#, no-wrap
-msgid "Show all"
-msgstr "停止全部"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:255
-#, no-wrap
-msgid "Hub API tokens — {subject}"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:257
-#, no-wrap
-msgid "Default private world"
-msgstr "默认私有世界"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:258
-#, no-wrap
-msgid "ID"
-msgstr "ID"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:259
-#, no-wrap
-msgid "Owner subject"
-msgstr "归属主体"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:260 messages/po4a/en.xml:437
-#, no-wrap
-msgid "Summary"
-msgstr "摘要"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:263
-#, no-wrap
-msgid "Visibility"
-msgstr "可见性"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:264
-#, no-wrap
-msgid "World"
-msgstr "世界"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:265
-#, no-wrap
-msgid "No private worlds owned by this subject."
-msgstr "该主体暂无私有世界。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:266
-#, no-wrap
-msgid "Edit subject"
-msgstr "编辑主体"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:267
-#, no-wrap
-msgid "Edit world"
-msgstr "编辑世界"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:268
-#, no-wrap
-msgid "New subject"
-msgstr "新建主体"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:269
-#, no-wrap
-msgid "New world"
-msgstr "新建世界"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:270
-#, no-wrap
-msgid "Select a subject…"
-msgstr "选择主体…"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:271
-#, no-wrap
-msgid "A default private world will be created automatically."
-msgstr "将自动创建默认私有世界。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:272
-#, no-wrap
-msgid "subjects"
-msgstr "主体"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:273
-#, no-wrap
-msgid "Agents and users exist independently. Each subject gets one auto-created default private world."
-msgstr "Agent 与用户相互独立。每个主体会自动获得一个默认私有世界。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:274
-#, no-wrap
-msgid "No subjects yet. Create an agent or user entity."
-msgstr "暂无主体。请创建 agent 或 user 实体。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:275
-#, no-wrap
-msgid "Agent"
-msgstr "Agent"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:276
-#, no-wrap
-msgid "User"
-msgstr "用户"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:277
-#, no-wrap
-msgid "Private"
-msgstr "私有"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:278
-#, no-wrap
-msgid "Public"
-msgstr "公开"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:279
-#, no-wrap
-msgid "Default private"
-msgstr "默认私有"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:280
-#, no-wrap
-msgid "No worlds available"
-msgstr "无可用世界"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:281
-#, no-wrap
-msgid "worlds"
-msgstr "世界"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:282
-#, no-wrap
-msgid "Logical namespaces (type=world). Visibility and owner live in world_config body."
-msgstr "逻辑命名空间（type=world）。可见性与归属主体存放在 world_config body 中。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:283
-#, no-wrap
-msgid "No worlds yet. Create one to get started."
-msgstr "暂无世界。创建后即可开始。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:284
-#, no-wrap
-msgid "When cjk.enabled is off, empty fts_segmented is expected; rebuild segmented after enabling."
-msgstr "cjk.enabled 关闭时 fts_segmented 为空属正常；开启后需重建分词。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:285
-#, no-wrap
-msgid "Index coverage"
-msgstr "索引覆盖度"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:286
-#, no-wrap
-msgid "Rebuild runs in the background. Default rebuilds missing rows only; safe to resume after interrupt."
-msgstr "重建在后台执行，不会阻塞页面。默认仅补缺失行，可断点续跑（如向量中断后再次点击即可继续）。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:287
-#, no-wrap
-msgid "Full rebuild"
-msgstr "全量重建"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:288
-#, no-wrap
-msgid "Messages · embedding"
-msgstr "对话消息 · 向量"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:289
-#, no-wrap
-msgid "Messages · segmented"
-msgstr "对话消息 · 分词"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:290
-#, no-wrap
-msgid "Cannot read PG stats (not connected or not PG backend)"
-msgstr "无法读取 PG 统计（未连接或非 PG 主存）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:291
-#, no-wrap
-msgid "Rebuild progress"
-msgstr "重建进度"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:292
-#, no-wrap
-msgid "Rebuilding…"
-msgstr "重建中…"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:293
-#, no-wrap
-msgid "Refresh stats"
-msgstr "刷新统计"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:294
-#, no-wrap
-msgid "Resume / fill missing"
-msgstr "续跑 / 补缺失"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:295
-#, no-wrap
-msgid "Semantic memory · embedding"
-msgstr "语义记忆 · 向量"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:296
-#, no-wrap
-msgid "Semantic memory · segmented"
-msgstr "语义记忆 · 分词"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:297
-#, no-wrap
-msgid "Full-text search"
-msgstr "🔍 全文检索"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:298 messages/po4a/en.xml:536
-#, no-wrap
-msgid "Disconnected"
-msgstr "连接已断开"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:300
-#, no-wrap
-msgid "Browse limbic_memory (limbic system / emotional intensity)."
-msgstr "浏览 limbic_memory（边缘系统 / 情感强度记录）。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:301
-#, no-wrap
-msgid "Intensity"
-msgstr "强度"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:302
-#, no-wrap
-msgid "Search term (optional, ILIKE)"
-msgstr "搜索词（可选，内容 ILIKE）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:305
-#, no-wrap
-msgid "MCP server config and runtime status (tools, resources, prompts)."
-msgstr "MCP 服务器配置与运行时状态（工具、资源、Prompt）。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:306
-#, no-wrap
-msgid "No MCP servers configured. Add mcp_servers in ~/.anima/config.yaml."
-msgstr "未配置 MCP 服务器。在 ~/.anima/config.yaml 的 mcp_servers 中添加。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:308
-#, no-wrap
-msgid "Start all failed: {detail}"
-msgstr "全部启动失败: {detail}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:309
-#, no-wrap
-msgid "Stop all failed: {detail}"
-msgstr "全部停止失败: {detail}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:310
-#, no-wrap
-msgid "Tools ({count})"
-msgstr "工具 ({count})"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:311
-#, no-wrap
-msgid "Conversation filter (messages only)"
-msgstr "对话过滤（仅对话消息）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:312
-#, no-wrap
-msgid "Filters conversation messages only; semantic, limbic, and autobiographical sources are unaffected."
-msgstr "仅筛选会话消息；语义、感性与自传体来源不受影响。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:313
-#, no-wrap
-msgid "Count semantic memories"
-msgstr "统计语义记忆"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:314
-#, no-wrap
-msgid "Count PG semantic_memory rows (content_fts is automatic). Continue?"
-msgstr "统计 PG semantic_memory 条数（content_fts 自动维护，无需重建）。确定继续？"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:315
-#, no-wrap
-msgid "Debug memory_recall: unified recall from four sources + cross-type reranking."
-msgstr "调试 memory_recall：四源统一召回 + 跨类型重排。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:316
-#, no-wrap
-msgid "No memories matching \"{query}\"."
-msgstr "未找到与「{query}」匹配的记忆。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:317
-#, no-wrap
-msgid "Search term (required)"
-msgstr "搜索词（必填）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:318
-#, no-wrap
-msgid "Browse"
-msgstr "浏览"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:319
-#, no-wrap
-msgid "memory_recall raw output preview"
-msgstr "memory_recall 原始输出预览"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:320
-#, no-wrap
-msgid "Recall results"
-msgstr "召回结果"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:321
-#, no-wrap
-msgid "Top N results"
-msgstr "返回条数（Top N）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:322
-#, no-wrap
-msgid "Autobiographical"
-msgstr "自传体"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:323 messages/po4a/en.xml:457
-#, no-wrap
-msgid "Conversation messages"
-msgstr "对话消息"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:325
-#, no-wrap
-msgid "Limbic memory"
-msgstr "感性记忆"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:327
-#, no-wrap
-msgid "Arguments"
-msgstr "参数"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:328
-#, no-wrap
-msgid "No messages on this page"
-msgstr "此页无消息"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:329
-#, no-wrap
-msgid "Result"
-msgstr "结果"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:330
-#, no-wrap
-msgid "Tool calls · {count}"
-msgstr "工具调用 · {count}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:331
-#, no-wrap
-msgid "…(truncated)"
-msgstr "…（已截断）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:332
-#, no-wrap
-msgid "Waiting for result…"
-msgstr "等待结果…"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:334 messages/po4a/en.xml:339
-#, no-wrap
-msgid "Chat"
-msgstr "聊天室"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:336
-#, no-wrap
-msgid "🤝 ACP"
-msgstr "🤝 ACP"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:337
-#, no-wrap
-msgid "🤖 Auto LLM Runs"
-msgstr "🤖 自动 LLM 运行"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:338
-#, no-wrap
-msgid "📖 Autobiographical Memory"
-msgstr "📖 自传记忆"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:340
-#, no-wrap
-msgid "⌨️ Commands"
-msgstr "⌨️ 命令"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:341
-#, no-wrap
-msgid "⚙️ Config"
-msgstr "⚙️ 配置"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:342
-#, no-wrap
-msgid "💬 Conversations"
-msgstr "💬 对话"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:343
-#, no-wrap
-msgid "⏰ Cron"
-msgstr "⏰ 定时任务"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:344
-#, no-wrap
-msgid "📊 Dashboard"
-msgstr "📊 仪表盘"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:345
-#, no-wrap
-msgid "📔 Diary"
-msgstr "📔 日记"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:346
-#, no-wrap
-msgid "🌙 Dreams"
-msgstr "🌙 梦境"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:347
-#, no-wrap
-msgid "📧 Email"
-msgstr "📧 邮件"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:348
-#, no-wrap
-msgid "🔍 Full-Text Search"
-msgstr "🔍 全文检索"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:349
-#, no-wrap
-msgid "Capabilities"
-msgstr "能力"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:350
-#, no-wrap
-msgid "Estate"
-msgstr "资源"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:353
-#, no-wrap
-msgid "Self"
-msgstr "自我"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:354 messages/po4a/en.xml:530
-#, no-wrap
-msgid "English"
-msgstr "English"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:355 messages/po4a/en.xml:531
-#, no-wrap
-msgid "中文"
-msgstr "中文"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:356
-#, no-wrap
-msgid "💗 Limbic Memory"
-msgstr "💗 情感记忆"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:357
-#, no-wrap
-msgid "Mailbox"
-msgstr "邮箱"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:358
-#, no-wrap
-msgid "🔌 MCP"
-msgstr "🔌 MCP"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:359
-#, no-wrap
-msgid "🧠 Memory Desk"
-msgstr "🧠 记忆台"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:361
-#, no-wrap
-msgid "🛰 Satellites"
-msgstr "🛰 卫星"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:362
-#, no-wrap
-msgid "🪞 Self Layer"
-msgstr "🪞 自我层"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:363
-#, no-wrap
-msgid "📝 Semantic Memory"
-msgstr "📝 语义记忆"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:364
-#, no-wrap
-msgid "Settings"
-msgstr "设置"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:365
-#, no-wrap
-msgid "😴 Sleep"
-msgstr "😴 睡眠"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:366
-#, no-wrap
-msgid "👤 Subjects"
-msgstr "👤 主体"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:367
-#, no-wrap
-msgid "📋 System Prompt"
-msgstr "📋 系统提示词"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:368
-#, no-wrap
-msgid "✅ Tasks"
-msgstr "✅ 任务"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:369
-#, no-wrap
-msgid "🔧 Tools"
-msgstr "🔧 工具"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:370
-#, no-wrap
-msgid "🔐 Vault"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:371
-#, no-wrap
-msgid "🌍 Worlds"
-msgstr "🌍 世界"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:372
-#, no-wrap
-msgid "App ID"
-msgstr "应用 ID"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:374
-#, no-wrap
-msgid "SAP satellite apps connected to this Hub (read-only)."
-msgstr "已连接本 Hub 的 SAP 卫星应用（只读）。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:375
-#, no-wrap
-msgid "No satellite instances connected. Start a satellite process to see it here."
-msgstr "尚无卫星实例连接。启动卫星进程后将显示于此。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:376
-#, no-wrap
-msgid "Instance ID"
-msgstr "实例 ID"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:377
-#, no-wrap
-msgid "Instances"
-msgstr "实例"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:378
-#, no-wrap
-msgid "Last heartbeat"
-msgstr "最近心跳"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:381
-#, no-wrap
-msgid "{count} tools"
-msgstr "{count} 个工具"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:382
-#, no-wrap
-msgid "Read-only view of six PG self_blocks. Maintain via the update_self_block tool."
-msgstr "PG self_blocks 六块只读展示；维护请使用 update_self_block 工具。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:383
-#, no-wrap
-msgid "No self layer data (PG unavailable or not initialized)."
-msgstr "暂无自我层数据（PG 不可用或未初始化）。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:384
-#, no-wrap
-msgid "(not set yet)"
-msgstr "（尚未设定）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:385
-#, no-wrap
-msgid "Updated {time}"
-msgstr "更新于 {time}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:387
-#, no-wrap
-msgid "Browse PG semantic_memory with FTS search and filters."
-msgstr "浏览 PG semantic_memory 表，支持 FTS 搜索与过滤。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:388
-#, no-wrap
-msgid "Pin to resident memory"
-msgstr "置顶到常驻记忆"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:389
-#, no-wrap
-msgid "Pinned"
-msgstr "置顶"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:390
-#, no-wrap
-msgid "Rank"
-msgstr "排名"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:391
-#, no-wrap
-msgid "Refs"
-msgstr "引用"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:392
-#, no-wrap
-msgid "Search term (optional, FTS)"
-msgstr "搜索词（可选，FTS）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:393
-#, no-wrap
-msgid "Sort by"
-msgstr "排序"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:395
-#, no-wrap
-msgid "Reference count"
-msgstr "引用次数"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:396 messages/po4a/en.xml:398
-#, no-wrap
-msgid "Updated"
-msgstr "更新时间"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:399
-#, no-wrap
-msgid "Attempt"
-msgstr "尝试次数"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:400
-#, no-wrap
-msgid "Changes: +{added} / ~{updated}"
-msgstr "变更: +{added} / ~{updated}"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:401 messages/po4a/en.xml:417
-#, no-wrap
-msgid "Sleep cycle"
-msgstr "睡眠周期"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:402
-#, no-wrap
-msgid "Day (YYYY-MM-DD, optional)"
-msgstr "日期（YYYY-MM-DD，可选）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:403
-#, no-wrap
-msgid "Force (skip dependency check)"
-msgstr "强制（跳过依赖检查）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:404
-#, no-wrap
-msgid "Run full cycle"
-msgstr "运行完整周期"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:405
-#, no-wrap
-msgid "Sleep cycle running…"
-msgstr "睡眠周期运行中…"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:406
-#, no-wrap
-msgid "Step status"
-msgstr "步骤状态"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:407
-#, no-wrap
-msgid "Step"
-msgstr "步骤"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:408
-#, no-wrap
-msgid "Run"
-msgstr "运行"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:409
-#, no-wrap
-msgid "Run control"
-msgstr "运行控制"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:410 messages/po4a/en.xml:425
-#, no-wrap
-msgid "Deep sleep"
-msgstr "深睡"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:411
-#, no-wrap
-msgid "Deep sleep (latest)"
-msgstr "深睡最新"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:412
-#, no-wrap
-msgid "Deep sleep round log"
-msgstr "深睡轮次日志"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:413
-#, no-wrap
-msgid "Deep sleep mode"
-msgstr "深睡模式"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:414
-#, no-wrap
-msgid "Full (all rounds, all memories)"
-msgstr "完整（全部轮次、全部记忆）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:415
-#, no-wrap
-msgid "Incremental (skip quiet rounds)"
-msgstr "增量（跳过静默轮次）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:416
-#, no-wrap
-msgid "Sleep cycle status, manual runs, and pipeline step history."
-msgstr "睡眠周期状态、手动运行与流水线步骤历史。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:418
-#, no-wrap
-msgid "{step} (manual)"
-msgstr "{step}（手动）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:419 messages/po4a/en.xml:427
-#, no-wrap
-msgid "Light sleep"
-msgstr "浅睡"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:420
-#, no-wrap
-msgid "Light sleep (latest)"
-msgstr "浅睡最新"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:421
-#, no-wrap
-msgid "Loading rounds…"
-msgstr "加载轮次…"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:422
-#, no-wrap
-msgid "No runs yet"
-msgstr "尚无运行记录"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:423
-#, no-wrap
-msgid "Pipeline history"
-msgstr "流水线历史"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:424
-#, no-wrap
-msgid "{index}. {round} ({count} tool calls)"
-msgstr "{index}. {round} ({count} 次工具)"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:428
-#, no-wrap
-msgid "Memory ref sync"
-msgstr "记忆引用同步"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:429
-#, no-wrap
-msgid "Self layer refresh"
-msgstr "自我层刷新"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:431
-#, no-wrap
-msgid "Manual cycle"
-msgstr "手动周期"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:432
-#, no-wrap
-msgid "Manual step"
-msgstr "手动步骤"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:433
-#, no-wrap
-msgid "Scheduled"
-msgstr "已调度"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:434
-#, no-wrap
-msgid "AGENTS.md"
-msgstr "AGENTS.md"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:435
-#, no-wrap
-msgid "Resident memory"
-msgstr "常驻记忆"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:436 messages/po4a/en.xml:516
-#, no-wrap
-msgid "Self layer"
-msgstr "自我层"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:438
-#, no-wrap
-msgid "ToolSets"
-msgstr "ToolSets"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:439
-#, no-wrap
-msgid "Conversation detail →"
-msgstr "对话详情 →"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:440
-#, no-wrap
-msgid "Conversation (optional)"
-msgstr "对话（可选）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:441
-#, no-wrap
-msgid "Copy JSON"
-msgstr "复制 JSON"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:442
-#, no-wrap
-msgid "Copy live full text"
-msgstr "复制 live 全文"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:443
-#, no-wrap
-msgid "Copy stored full text"
-msgstr "复制 stored 全文"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:444
-#, no-wrap
-msgid "View system prompt breakdown, full text, and effective tool schemas. Global template by default; optional conversation compares PG stored vs live rebuild."
-msgstr "查看系统提示词分解、完整文本与会话有效工具 schema。默认全局模板；可选 conversation 对比 PG 持久化与实时重建结果。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:445
-#, no-wrap
-msgid "Live (rebuilt)"
-msgstr "Live（实时重建）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:446
-#, no-wrap
-msgid "conversation_meta.tools: {count} names"
-msgstr "conversation_meta.tools: {count} 个名称"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:447
-#, no-wrap
-msgid "Conversation compare"
-msgstr "对话对比"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:448
-#, no-wrap
-msgid "Global template"
-msgstr "全局模板"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:449
-#, no-wrap
-msgid "No matching tools"
-msgstr "无匹配工具"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:450
-#, no-wrap
-msgid "Search tool name / description / toolset"
-msgstr "搜索工具名 / 描述 / toolset"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:451
-#, no-wrap
-msgid "Self layer →"
-msgstr "自我层 →"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:452
-#, no-wrap
-msgid "Stored (PG)"
-msgstr "Stored（PG）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:453
-#, no-wrap
-msgid "Full text"
-msgstr "完整文本"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:454
-#, no-wrap
-msgid "Breakdown"
-msgstr "分项"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:455 messages/po4a/en.xml:459
-#, no-wrap
-msgid "Tool schema"
-msgstr "工具 schema"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:456
-#, no-wrap
-msgid "Token breakdown (estimate)"
-msgstr "Token 分项（粗估）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:458
-#, no-wrap
-msgid "System prompt"
-msgstr "系统提示词"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:460
-#, no-wrap
-msgid "Total"
-msgstr "合计"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:461
-#, no-wrap
-msgid "{count} tools ({mode})"
-msgstr "工具 {count} 个（{mode}）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:462
-#, no-wrap
-msgid "conversation effective"
-msgstr "对话有效"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:463
-#, no-wrap
-msgid "Tools list →"
-msgstr "工具列表 →"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:464
-#, no-wrap
-msgid "full registry"
-msgstr "全量注册表"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:465
-#, no-wrap
-msgid "Showing {shown} / {total} · ~{tokens} tokens"
-msgstr "显示 {shown} / {total} · ~{tokens} tokens"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:466
-#, no-wrap
-msgid "Browse entity tasks (/api/task/*) with keyword, status, priority, and list filters (read-only)."
-msgstr "浏览实体任务（/api/task/*），支持关键词、状态、优先级与列表筛选（只读）。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:467
-#, no-wrap
-msgid "Search term (optional, title/description)"
-msgstr "搜索词（可选，匹配标题/描述）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:469
-#, no-wrap
-msgid "Default loaded toolsets"
-msgstr "默认加载工具集"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:470
-#, no-wrap
-msgid "ToolSets auto-injected into new conversations (toolsets loaded on-demand via toolset_load are not listed here)."
-msgstr "新会话自动注入 LLM tools 参数的默认工具集（通过 toolset_load 按需加载的工具集不在此列）。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:471
-#, no-wrap
-msgid "Registered tools list."
-msgstr "已注册的工具列表。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:472
-#, no-wrap
-msgid "Registered tools (grouped by ToolSet)."
-msgstr "已注册的工具列表（按 ToolSet 分组）。"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:473
-#, no-wrap
-msgid "Error return"
-msgstr "错误返回"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:474
-#, no-wrap
-msgid "All tool failures return JSON:"
-msgstr "所有工具失败时统一返回 JSON："
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:475
-#, no-wrap
-msgid "Example:"
-msgstr "示例："
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:476
-#, no-wrap
-msgid "Fidelity example (success)"
-msgstr "保真示例（成功）"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:477
-#, no-wrap
-msgid "Structured JSON"
-msgstr "结构化 JSON"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:478
-#, no-wrap
-msgid "Plain text"
-msgstr "纯文本"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:479
-#, no-wrap
-msgid "Needs secret"
-msgstr "需密钥"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:480
-#, no-wrap
-msgid "Return contract not recorded"
-msgstr "未记录返回契约"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:481
-#, no-wrap
-msgid "Full OpenAI definition"
-msgstr "完整 OpenAI 定义"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:482
-#, no-wrap
-msgid "Parameter schema"
-msgstr "参数 schema"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:483
-#, no-wrap
-msgid "Returns toolResult JSON on success; JSON error on failure"
-msgstr "成功时返回 toolResult JSON 对象；失败时返回 JSON error"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:484
-#, no-wrap
-msgid "Returns plain text on success; JSON error on failure"
-msgstr "成功时返回纯文本；失败时返回 JSON error"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:485
-#, no-wrap
-msgid "success return example"
-msgstr "成功返回示例"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:486
-#, no-wrap
-msgid "Success return schema"
-msgstr "成功返回 schema"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:487
-#, no-wrap
-msgid "Ungrouped tools"
-msgstr "🔧 未分组工具"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:488
+#: messages/po4a/en.xml:3
 #, no-wrap
 msgid "Archive"
 msgstr "归档"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:489
+#: messages/po4a/en.xml:4
 #, no-wrap
 msgid "Archived"
 msgstr "已归档"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:490
+#: messages/po4a/en.xml:5
 #, no-wrap
 msgid "Delete"
 msgstr "删除"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:491
+#: messages/po4a/en.xml:6
 #, no-wrap
 msgid "Permanently delete this conversation and all messages? This cannot be undone."
 msgstr "永久删除此对话及全部消息？此操作不可撤销。"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:492
+#: messages/po4a/en.xml:7
 #, no-wrap
 msgid "Show archived"
 msgstr "显示已归档"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:493
+#: messages/po4a/en.xml:8
 #, no-wrap
 msgid "Unarchive"
 msgstr "取消归档"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:9 messages/po4a/en.xml:176 messages/po4a/en.xml:309
+#, no-wrap
+msgid "{name} {action} failed: {detail}"
+msgstr "{name} {action}失败: {detail}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:10
+#, no-wrap
+msgid "Active sessions"
+msgstr "活跃会话"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:11 messages/po4a/en.xml:186 messages/po4a/en.xml:310
+#, no-wrap
+msgid "Configured"
+msgstr "已配置"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:12
+#, no-wrap
+msgid "Connect"
+msgstr "连接"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:13
+#, no-wrap
+msgid "Connect all"
+msgstr "全部连接"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:14
+#, no-wrap
+msgid "Agent Client Protocol agents: config, connection status, and active sessions on this instance."
+msgstr "Agent Client Protocol 代理：配置、连接状态与逸灵风侧活跃对话。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:15
+#, no-wrap
+msgid "Disconnect"
+msgstr "断开"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:16
+#, no-wrap
+msgid "Disconnect all"
+msgstr "全部断开"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:17
+#, no-wrap
+msgid "On startup, enabled agents (enabled !== false) connect automatically, same as MCP."
+msgstr "逸灵风启动时会自动连接 enabled !== false 的 agent（与 MCP 一致）。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:18
+#, no-wrap
+msgid "Connect only completes the ACP initialize handshake; no conversation is created."
+msgstr "「连接」仅完成 ACP initialize 握手，不创建 session。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:19
+#, no-wrap
+msgid "Notes"
+msgstr "备注"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:20 messages/po4a/en.xml:313 messages/po4a/en.xml:386
+#, no-wrap
+msgid "Registered tools"
+msgstr "注册工具"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:21
+#, no-wrap
+msgid "Connect all failed: {detail}"
+msgstr "全部连接失败: {detail}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:22
+#, no-wrap
+msgid "Connect all timed out (30s). Check agent configs and login status."
+msgstr "全部连接超时（30s），请检查各 agent 配置与 login 状态"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:23
+#, no-wrap
+msgid "Connection timed out (30s). Check agent login and command path."
+msgstr "连接超时（30s），请检查 agent 是否已 login、command 路径是否正确"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:24
+#, no-wrap
+msgid "Disconnect all failed: {detail}"
+msgstr "全部断开失败: {detail}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:25
+#, no-wrap
+msgid "start"
+msgstr "启动"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:26
+#, no-wrap
+msgid "stop"
+msgstr "停止"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:27
+#, no-wrap
+msgid "Cron job not found: {id}"
+msgstr "未找到任务: {id}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:28
+#, no-wrap
+msgid "Account not found: {account_id}"
+msgstr "未找到账户: {account_id}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:29
+#, no-wrap
+msgid "Semantic memory: {count} rows (PG content_fts is automatic; no rebuild needed)"
+msgstr "语义记忆：{count} 条（PG content_fts 自动维护，无需重建）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:30
+#, no-wrap
+msgid "Service is restarting..."
+msgstr "服务正在重启..."
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:31
+#, no-wrap
+msgid "studio.workspace is not configured or does not exist"
+msgstr "studio.workspace 未配置或不存在"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:32
+#, no-wrap
+msgid "Terminal conversation does not exist or has closed"
+msgstr "终端会话不存在或已关闭"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:33
+#, no-wrap
+msgid "Audit log for background LLM runs (cron agent, sleep pipeline). No user conversation archive."
+msgstr "后台 LLM 运行审计日志（定时任务 agent、睡眠流水线）。不含用户对话归档。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:34
+#, no-wrap
+msgid "Duration"
+msgstr "时长"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:35
+#, no-wrap
+msgid "No AutoLlmRun records yet."
+msgstr "尚无 AutoLlmRun 记录。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:36
+#, no-wrap
+msgid "Input summary"
+msgstr "输入摘要"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:37
+#, no-wrap
+msgid "Metadata"
+msgstr "元数据"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:39
+#, no-wrap
+msgid "Run kind"
+msgstr "运行类型"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:40
+#, no-wrap
+msgid "Run name"
+msgstr "运行名称"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:41
+#, no-wrap
+msgid "Browse autobiographical_memory narrative entries."
+msgstr "浏览 autobiographical_memory 叙事条目。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:42
+#, no-wrap
+msgid "Search term (optional, title/content ILIKE)"
+msgstr "搜索词（可选，标题/内容 ILIKE）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:43 messages/po4a/en.xml:403
+#, no-wrap
+msgid "Source conversation (optional)"
+msgstr "来源对话（可选）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:44
+#, no-wrap
+msgid "Free Anima"
+msgstr "逸灵风"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:45
+#, no-wrap
+msgid "Your confirmation is needed (reply in one message, or send /cancel)"
+msgstr "需要你确认（一条消息回复全部，或发送 /cancel）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:46
+#, no-wrap
+msgid "Actions"
+msgstr "操作"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:47 messages/po4a/en.xml:392 messages/po4a/en.xml:400
+#, no-wrap
+msgid "Created"
+msgstr "创建时间"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:48
+#, no-wrap
+msgid "Conversation ID"
+msgstr "对话 ID"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:49 messages/po4a/en.xml:267
+#, no-wrap
+msgid "Title"
+msgstr "标题"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:50
+#, no-wrap
+msgid "Open"
+msgstr "打开"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:51
+#, no-wrap
+msgid "Conversation management"
+msgstr "对话管理"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:52
+#, no-wrap
+msgid "Type a message (Shift+Enter for newline, Enter to send; / for commands)"
+msgstr "输入消息（Shift+Enter 换行，Enter 发送；/ 开头是命令）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:53
+#, no-wrap
+msgid "Send now"
+msgstr "立即发送"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:54
+#, no-wrap
+msgid "Select a conversation to start"
+msgstr "选择一个会话开始对话"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:55
+#, no-wrap
+msgid "Send the first message"
+msgstr "发送第一条消息"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:56
+#, no-wrap
+msgid "Chat room"
+msgstr "聊天室"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:57
+#, no-wrap
+msgid "Command"
+msgstr "命令"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:58
+#, no-wrap
+msgid "Available on all platforms by default ({count} total)."
+msgstr "所有平台默认可用（共 {count} 个）。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:59
+#, no-wrap
+msgid "Current conversation"
+msgstr "当前会话"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:60
+#, no-wrap
+msgid "Type / in the chat input to trigger. Commands are grouped by scope."
+msgstr "在对话输入框以 / 开头即可触发。命令按作用域分为两类。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:61
+#, no-wrap
+msgid "Description"
+msgstr "说明"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:62
+#, no-wrap
+msgid "No slash commands registered."
+msgstr "暂无已注册的 slash 命令。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:63
+#, no-wrap
+msgid "Cross-conversation or platform-level actions ({count} total)."
+msgstr "跨对话或平台级操作（共 {count} 个）。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:64
+#, no-wrap
+msgid "Other"
+msgstr "其它"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:65 messages/po4a/en.xml:385
+#, no-wrap
+msgid "Platform"
+msgstr "平台"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:66
+#, no-wrap
+msgid "Abnormal"
+msgstr "异常"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:67
+#, no-wrap
+msgid "Active (pending + in_progress)"
+msgstr "进行中（pending + in_progress）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:68 messages/po4a/en.xml:330
+#, no-wrap
+msgid "All"
+msgstr "全部"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:69
+#, no-wrap
+msgid "Rebuild runs in the background; you may close this page."
+msgstr "后台运行中，可关闭页面；刷新统计可查看覆盖度变化。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:70 messages/po4a/en.xml:594
+#, no-wrap
+msgid "Cancel"
+msgstr "取消"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:71
+#, no-wrap
+msgid "Capability"
+msgstr "能力"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:72
+#, no-wrap
+msgid "{chars} chars · ~{tokens} tokens"
+msgstr "{chars} 字符 · ~{tokens} tokens"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:73
+#, no-wrap
+msgid "Click \"Search\" to load the list."
+msgstr "点击「查询」加载列表。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:74 messages/po4a/en.xml:494 messages/po4a/en.xml:595
+#, no-wrap
+msgid "Close"
+msgstr "关闭"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:75
+#, no-wrap
+msgid "Collapse"
+msgstr "收起"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:76
+#, no-wrap
+msgid "Coming soon"
+msgstr "即将推出"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:77
+#, no-wrap
+msgid "Config"
+msgstr "配置"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:78 messages/po4a/en.xml:596
+#, no-wrap
+msgid "OK"
+msgstr "确定"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:79 messages/po4a/en.xml:379
+#, no-wrap
+msgid "Connected"
+msgstr "已连接"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:80
+#, no-wrap
+msgid "Connecting"
+msgstr "连接中"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:81
+#, no-wrap
+msgid "Conversation"
+msgstr "对话"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:82 messages/po4a/en.xml:183
+#, no-wrap
+msgid "Conversations"
+msgstr "对话"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:83
+#, no-wrap
+msgid "Copied {label}"
+msgstr "已复制{label}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:84
+#, no-wrap
+msgid "Copy"
+msgstr "复制"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:85
+#, no-wrap
+msgid "Failed to copy {label}"
+msgstr "复制{label}失败"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:86
+#, no-wrap
+msgid "Details"
+msgstr "详情"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:87
+#, no-wrap
+msgid "Disabled"
+msgstr "已禁用"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:88
+#, no-wrap
+msgid "Done"
+msgstr "完成"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:89
+#, no-wrap
+msgid "Edit"
+msgstr "编辑"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:90
+#, no-wrap
+msgid "Edit title"
+msgstr "修改标题"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:91
+#, no-wrap
+msgid "Embedding"
+msgstr "向量"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:92
+#, no-wrap
+msgid "(empty)"
+msgstr "（空）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:93
+#, no-wrap
+msgid "Empty response"
+msgstr "空响应"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:94
+#, no-wrap
+msgid "Error"
+msgstr "错误"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:95
+#, no-wrap
+msgid "Expand"
+msgstr "展开"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:96
+#, no-wrap
+msgid "Failed"
+msgstr "失败"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:97
+#, no-wrap
+msgid "(full rebuild)"
+msgstr "（全量）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:98
+#, no-wrap
+msgid "— Global template —"
+msgstr "— 全局模板 —"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:99
+#, no-wrap
+msgid "Key"
+msgstr "键"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:100
+#, no-wrap
+msgid "Keywords…"
+msgstr "关键词…"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:101
+#, no-wrap
+msgid "Load failed: {detail}"
+msgstr "加载失败: {detail}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:102
+#, no-wrap
+msgid "Load failed"
+msgstr "加载失败"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:103
+#, no-wrap
+msgid "Loading…"
+msgstr "加载中…"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:104
+#, no-wrap
+msgid "Network error"
+msgstr "网络错误"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:105
+#, no-wrap
+msgid "New conversation"
+msgstr "＋ 新会话"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:106
+#, no-wrap
+msgid "Next"
+msgstr "下一页"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:107
+#, no-wrap
+msgid "No reply; check API keys and server logs"
+msgstr "无回复，请检查 API 密钥与服务端日志"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:108
+#, no-wrap
+msgid "No response stream"
+msgstr "无响应流"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:109
+#, no-wrap
+msgid "No matching records."
+msgstr "无匹配记录。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:110
+#, no-wrap
+msgid "(no title)"
+msgstr "（无标题）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:111
+#, no-wrap
+msgid "Not configured"
+msgstr "未配置"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:112
+#, no-wrap
+msgid "Not connected"
+msgstr "未连接"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:113
+#, no-wrap
+msgid "Not started"
+msgstr "未启动"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:114
+#, no-wrap
+msgid "(missing only)"
+msgstr "（仅补缺失）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:115
+#, no-wrap
+msgid "Operation failed: {detail}"
+msgstr "操作失败: {detail}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:116
+#, no-wrap
+msgid "Optional"
+msgstr "可选"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:117
+#, no-wrap
+msgid "{total} items · page {current} / {pages}"
+msgstr "共 {total} 条 · 第 {current} / {pages} 页"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:118
+#, no-wrap
+msgid "Preparing"
+msgstr "准备中"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:119
+#, no-wrap
+msgid "Previous"
+msgstr "上一页"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:120
+#, no-wrap
+msgid "Priority"
+msgstr "优先级"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:121
+#, no-wrap
+msgid "Processing day"
+msgstr "处理日"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:124
+#, no-wrap
+msgid "Refresh"
+msgstr "刷新"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:125
+#, no-wrap
+msgid "Refresh list"
+msgstr "刷新列表"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:126
+#, no-wrap
+msgid "Refreshing…"
+msgstr "刷新中…"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:127
+#, no-wrap
+msgid "Rename"
+msgstr "✏️ 重命名"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:128
+#, no-wrap
+msgid "Request failed"
+msgstr "请求失败"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:129
+#, no-wrap
+msgid "Restart service"
+msgstr "重启服务"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:130
+#, no-wrap
+msgid "Restarting…"
+msgstr "重启中…"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:131
+#, no-wrap
+msgid "Rounds"
+msgstr "轮次"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:132
+#, no-wrap
+msgid "Run at"
+msgstr "运行"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:133
+#, no-wrap
+msgid "Save"
+msgstr "保存"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:135
+#, no-wrap
+msgid "Search failed: {detail}"
+msgstr "检索失败: {detail}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:136
+#, no-wrap
+msgid "Search term (optional)"
+msgstr "搜索词（可选）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:137
+#, no-wrap
+msgid "Segmented"
+msgstr "分词"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:138
+#, no-wrap
+msgid "Send"
+msgstr "发送"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:139
+#, no-wrap
+msgid "Server error"
+msgstr "服务端错误"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:140
+#, no-wrap
+msgid "Start"
+msgstr "启动"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:141
+#, no-wrap
+msgid "Start all"
+msgstr "启动全部"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:142 messages/po4a/en.xml:143 messages/po4a/en.xml:246
+#, no-wrap
+msgid "Status"
+msgstr "状态"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:144
+#, no-wrap
+msgid "Stop"
+msgstr "停止"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:145
+#, no-wrap
+msgid "Stop all"
+msgstr "停止全部"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:146
+#, no-wrap
+msgid "stored and live differ"
+msgstr "stored 与 live 不一致"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:147
+#, no-wrap
+msgid "stored and live match"
+msgstr "stored 与 live 一致"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:148
+#, no-wrap
+msgid "Success"
+msgstr "成功"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:149
+#, no-wrap
+msgid "Table"
+msgstr "表"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:150
+#, no-wrap
+msgid "Task"
+msgstr "任务"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:151
+#, no-wrap
+msgid "Time"
+msgstr "时间"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:152
+#, no-wrap
+msgid "Enter a new title"
+msgstr "输入新标题"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:153
+#, no-wrap
+msgid "Toggle navigation"
+msgstr "切换导航"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:154
+#, no-wrap
+msgid "Tool calls"
+msgstr "工具调用"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:156 messages/po4a/en.xml:268
+#, no-wrap
+msgid "Type"
+msgstr "类型"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:157
+#, no-wrap
+msgid "Value"
+msgstr "值"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:158
+#, no-wrap
+msgid "WebSocket connection failed"
+msgstr "WebSocket 连接失败"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:159
+#, no-wrap
+msgid "Runtime config by config.yaml top-level blocks. Secret values are hidden."
+msgstr "逸灵风运行时配置，按 config.yaml 顶层块展示。密钥值已隐藏。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:160
+#, no-wrap
+msgid "No config entries"
+msgstr "暂无配置项"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:161
+#, no-wrap
+msgid "← Back to list"
+msgstr "← 返回列表"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:162
+#, no-wrap
+msgid "No conversations"
+msgstr "暂无对话"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:163 messages/po4a/en.xml:174 messages/po4a/en.xml:254
+#, no-wrap
+msgid "Active"
+msgstr "运行中"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:164
+#, no-wrap
+msgid "View scheduled jobs, enable/pause, and trigger manually. Create or delete via the cronjob tool."
+msgstr "查看调度任务、启用/暂停与手动触发。新建或删除请使用 cronjob 工具。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:165
+#, no-wrap
+msgid "No cron jobs."
+msgstr "暂无定时任务。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:166
+#, no-wrap
+msgid "Enable"
+msgstr "启用"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:167
+#, no-wrap
+msgid "Next run"
+msgstr "下次运行"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:168 messages/po4a/en.xml:175
+#, no-wrap
+msgid "Paused"
+msgstr "已暂停"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:169
+#, no-wrap
+msgid "Run history"
+msgstr "运行历史"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:170
+#, no-wrap
+msgid "No run records yet"
+msgstr "尚无运行记录"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:171
+#, no-wrap
+msgid "Run history — {name}"
+msgstr "运行历史 — {name}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:172
+#, no-wrap
+msgid "Run now"
+msgstr "立即运行"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:173
+#, no-wrap
+msgid "Schedule"
+msgstr "调度"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:177
+#, no-wrap
+msgid "Total jobs"
+msgstr "任务总数"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:178
+#, no-wrap
+msgid "{name} trigger failed: {detail}"
+msgstr "{name} 触发失败: {detail}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:179
+#, no-wrap
+msgid "Triggered"
+msgstr "已触发"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:180
+#, no-wrap
+msgid "Failed to load ACP status"
+msgstr "ACP 状态加载失败"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:181
+#, no-wrap
+msgid "{agents} agents · {connected} connected · {sessions} sessions · {tools} tools"
+msgstr "{agents} 代理 · {connected} 已连接 · {sessions} 会话 · {tools} 工具"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:182
+#, no-wrap
+msgid "All platforms"
+msgstr "全平台"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:184
+#, no-wrap
+msgid "Conversations &amp; tools"
+msgstr "对话与工具"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:185
+#, no-wrap
+msgid "Cron jobs"
+msgstr "定时任务"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:187
+#, no-wrap
+msgid "None"
+msgstr "无"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:188
+#, no-wrap
+msgid "Current model"
+msgstr "当前模型"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:189
+#, no-wrap
+msgid "Dependencies"
+msgstr "依赖"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:190
+#, no-wrap
+msgid "Dialogue messages"
+msgstr "对话消息"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:191
+#, no-wrap
+msgid "Hover for per-platform breakdown"
+msgstr "悬停查看分平台"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:192
+#, no-wrap
+msgid "JSC heap {size} (not physical RAM)"
+msgstr "JSC 堆 {size}（非物理内存）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:193
+#, no-wrap
+msgid "Failed to load service status"
+msgstr "服务状态加载失败"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:194
+#, no-wrap
+msgid "Manage"
+msgstr "管理"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:195
+#, no-wrap
+msgid "Failed to load MCP status"
+msgstr "MCP 状态加载失败"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:196
+#, no-wrap
+msgid "{servers} servers · {connected} connected · {connecting} connecting · {tools} tools"
+msgstr "{servers} 服务器 · {connected} 已连接 · {connecting} 连接中 · {tools} 工具"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:198
+#, no-wrap
+msgid "Memory desk"
+msgstr "记忆台"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:199
+#, no-wrap
+msgid "messages"
+msgstr "对话消息"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:200
+#, no-wrap
+msgid "No per-platform data"
+msgstr "暂无分平台数据"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:201
+#, no-wrap
+msgid "No platform connections"
+msgstr "无平台接入"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:202
+#, no-wrap
+msgid "Platform connections"
+msgstr "平台连接"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:203
+#, no-wrap
+msgid "Physical memory (RSS)"
+msgstr "物理内存（RSS）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:204
+#, no-wrap
+msgid "Quick links"
+msgstr "快捷入口"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:205
+#, no-wrap
+msgid "Restart the service? Active conversations will be interrupted."
+msgstr "确定要重启服务吗？正在进行的对话将被中断。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:206
+#, no-wrap
+msgid "Restart failed: {detail}"
+msgstr "重启失败: {detail}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:207 messages/po4a/en.xml:358
+#, no-wrap
+msgid "Runtime"
+msgstr "运行时"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:208 messages/po4a/en.xml:332
+#, no-wrap
+msgid "Semantic memory"
+msgstr "语义记忆"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:209
+#, no-wrap
+msgid "Service status"
+msgstr "服务状态"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:210
+#, no-wrap
+msgid "Slash commands"
+msgstr "Slash 命令"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:211
+#, no-wrap
+msgid "Started at {time}"
+msgstr "启动于 {time}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:212
+#, no-wrap
+msgid "Dashboard"
+msgstr "📊 仪表盘"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:213
+#, no-wrap
+msgid "Registered"
+msgstr "已注册"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:214 messages/po4a/en.xml:339 messages/po4a/en.xml:341
+#: messages/po4a/en.xml:474
+#, no-wrap
+msgid "Console"
+msgstr "管理台"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:215
+#, no-wrap
+msgid "Public URL"
+msgstr "公网 URL"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:216
+#, no-wrap
+msgid "Uptime"
+msgstr "运行时间"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:217
+#, no-wrap
+msgid "Version"
+msgstr "版本"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:218
+#, no-wrap
+msgid "Browse dream_memory (creative nightly narratives from the dream mechanism; not factual records)."
+msgstr "浏览 dream_memory（梦境机制产出的夜间创意叙事；非事实记录）。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:219
+#, no-wrap
+msgid "No dreams recorded yet."
+msgstr "尚无梦境记录。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:220
+#, no-wrap
+msgid "Episodic conversations"
+msgstr "情节对话"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:221
+#, no-wrap
+msgid "Limbic sources"
+msgstr "感性来源"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:222
+#, no-wrap
+msgid "Address"
+msgstr "地址"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:223
+#, no-wrap
+msgid "← Back to accounts"
+msgstr "← 返回账户"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:224
+#, no-wrap
+msgid "Date:"
+msgstr "时间："
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:225
+#, no-wrap
+msgid "Default sender"
+msgstr "默认发件"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:226
+#, no-wrap
+msgid "Pick an email account to open the inbox. Manage accounts, send, and delete via Agent tools."
+msgstr "选择邮箱账户进入收件箱。账户管理、发信与删信请使用 Agent 工具。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:227
+#, no-wrap
+msgid "View inbox messages. Manage accounts, send, and delete via Agent tools."
+msgstr "查看收件箱邮件。账户管理、发信与删信请使用 Agent 工具。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:228
+#, no-wrap
+msgid "Enabled"
+msgstr "已启用"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:229
+#, no-wrap
+msgid "Open inbox"
+msgstr "进入邮箱"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:230
+#, no-wrap
+msgid "Fetch"
+msgstr "拉取"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:231
+#, no-wrap
+msgid "Fetch failed: {detail}"
+msgstr "拉取失败: {detail}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:232
+#, no-wrap
+msgid "From:"
+msgstr "发件人："
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:233
+#, no-wrap
+msgid "Failed to load message list: {detail}"
+msgstr "邮件列表加载失败: {detail}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:234
+#, no-wrap
+msgid "No email accounts. Register with the register_email_account tool."
+msgstr "暂无邮件账户。请用 register_email_account 工具注册。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:235
+#, no-wrap
+msgid "(no body)"
+msgstr "(无正文)"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:236
+#, no-wrap
+msgid "No messages yet. Click \"Fetch\" to sync from the server."
+msgstr "暂无邮件，点击「拉取」从服务器同步。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:237
+#, no-wrap
+msgid "(no subject)"
+msgstr "(无主题)"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:238
+#, no-wrap
+msgid "Partial email load failure: {detail}"
+msgstr "部分邮件加载失败: {detail}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:239
+#, no-wrap
+msgid "Failed to read message: {detail}"
+msgstr "读取邮件失败: {detail}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:240
+#, no-wrap
+msgid "Select a message on the left to view its body"
+msgstr "选择左侧邮件查看正文"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:241
+#, no-wrap
+msgid "To:"
+msgstr "收件人："
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:242
+#, no-wrap
+msgid "Last used"
+msgstr "最近使用"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:243
+#, no-wrap
+msgid "Name"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:244
+#, no-wrap
+msgid "Prefix"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:245
+#, no-wrap
+msgid "Scopes"
+msgstr "范围"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:247
+#, no-wrap
+msgid "Create token"
+msgstr "创建令牌"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:248
+#, no-wrap
+msgid "e.g. desktop, mcp"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:249
+#, no-wrap
+msgid "New token"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:250
+#, no-wrap
+msgid "It will not be shown again. Paste into client Hub settings (Hub API Token)."
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:251
+#, no-wrap
+msgid "Copy this token now"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:252
+#, no-wrap
+msgid "Revoke"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:253
+#, no-wrap
+msgid "Revoke token \"{name}\"?"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:255
+#, no-wrap
+msgid "Revoked"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:256
+#, no-wrap
+msgid "API tokens"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:257
+#, no-wrap
+msgid "Service tokens bind to this subject. The secret is shown only once when created."
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:258
+#, no-wrap
+msgid "No tokens yet."
+msgstr "尚无令牌。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:259
+#, no-wrap
+msgid "No active tokens."
+msgstr "尚无令牌。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:260
+#, no-wrap
+msgid "Show all"
+msgstr "停止全部"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:261
+#, no-wrap
+msgid "Hub API tokens — {subject}"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:263
+#, no-wrap
+msgid "Default private world"
+msgstr "默认私有世界"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:264
+#, no-wrap
+msgid "ID"
+msgstr "ID"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:265
+#, no-wrap
+msgid "Owner subject"
+msgstr "归属主体"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:266 messages/po4a/en.xml:443
+#, no-wrap
+msgid "Summary"
+msgstr "摘要"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:269
+#, no-wrap
+msgid "Visibility"
+msgstr "可见性"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:270
+#, no-wrap
+msgid "World"
+msgstr "世界"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:271
+#, no-wrap
+msgid "No private worlds owned by this subject."
+msgstr "该主体暂无私有世界。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:272
+#, no-wrap
+msgid "Edit subject"
+msgstr "编辑主体"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:273
+#, no-wrap
+msgid "Edit world"
+msgstr "编辑世界"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:274
+#, no-wrap
+msgid "New subject"
+msgstr "新建主体"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:275
+#, no-wrap
+msgid "New world"
+msgstr "新建世界"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:276
+#, no-wrap
+msgid "Select a subject…"
+msgstr "选择主体…"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:277
+#, no-wrap
+msgid "A default private world will be created automatically."
+msgstr "将自动创建默认私有世界。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:278
+#, no-wrap
+msgid "subjects"
+msgstr "主体"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:279
+#, no-wrap
+msgid "Agents and users exist independently. Each subject gets one auto-created default private world."
+msgstr "Agent 与用户相互独立。每个主体会自动获得一个默认私有世界。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:280
+#, no-wrap
+msgid "No subjects yet. Create an agent or user entity."
+msgstr "暂无主体。请创建 agent 或 user 实体。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:281
+#, no-wrap
+msgid "Agent"
+msgstr "Agent"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:282
+#, no-wrap
+msgid "User"
+msgstr "用户"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:283
+#, no-wrap
+msgid "Private"
+msgstr "私有"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:284
+#, no-wrap
+msgid "Public"
+msgstr "公开"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:285
+#, no-wrap
+msgid "Default private"
+msgstr "默认私有"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:286
+#, no-wrap
+msgid "No worlds available"
+msgstr "无可用世界"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:287
+#, no-wrap
+msgid "worlds"
+msgstr "世界"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:288
+#, no-wrap
+msgid "Logical namespaces (type=world). Visibility and owner live in world_config body."
+msgstr "逻辑命名空间（type=world）。可见性与归属主体存放在 world_config body 中。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:289
+#, no-wrap
+msgid "No worlds yet. Create one to get started."
+msgstr "暂无世界。创建后即可开始。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:290
+#, no-wrap
+msgid "When cjk.enabled is off, empty fts_segmented is expected; rebuild segmented after enabling."
+msgstr "cjk.enabled 关闭时 fts_segmented 为空属正常；开启后需重建分词。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:291
+#, no-wrap
+msgid "Index coverage"
+msgstr "索引覆盖度"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:292
+#, no-wrap
+msgid "Rebuild runs in the background. Default rebuilds missing rows only; safe to resume after interrupt."
+msgstr "重建在后台执行，不会阻塞页面。默认仅补缺失行，可断点续跑（如向量中断后再次点击即可继续）。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:293
+#, no-wrap
+msgid "Full rebuild"
+msgstr "全量重建"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:294
+#, no-wrap
+msgid "Messages · embedding"
+msgstr "对话消息 · 向量"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:295
+#, no-wrap
+msgid "Messages · segmented"
+msgstr "对话消息 · 分词"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:296
+#, no-wrap
+msgid "Cannot read PG stats (not connected or not PG backend)"
+msgstr "无法读取 PG 统计（未连接或非 PG 主存）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:297
+#, no-wrap
+msgid "Rebuild progress"
+msgstr "重建进度"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:298
+#, no-wrap
+msgid "Rebuilding…"
+msgstr "重建中…"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:299
+#, no-wrap
+msgid "Refresh stats"
+msgstr "刷新统计"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:300
+#, no-wrap
+msgid "Resume / fill missing"
+msgstr "续跑 / 补缺失"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:301
+#, no-wrap
+msgid "Semantic memory · embedding"
+msgstr "语义记忆 · 向量"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:302
+#, no-wrap
+msgid "Semantic memory · segmented"
+msgstr "语义记忆 · 分词"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:303
+#, no-wrap
+msgid "Full-text search"
+msgstr "🔍 全文检索"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:304 messages/po4a/en.xml:536
+#, no-wrap
+msgid "Disconnected"
+msgstr "连接已断开"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:306
+#, no-wrap
+msgid "Browse limbic_memory (limbic system / emotional intensity)."
+msgstr "浏览 limbic_memory（边缘系统 / 情感强度记录）。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:307
+#, no-wrap
+msgid "Intensity"
+msgstr "强度"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:308
+#, no-wrap
+msgid "Search term (optional, ILIKE)"
+msgstr "搜索词（可选，内容 ILIKE）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:311
+#, no-wrap
+msgid "MCP server config and runtime status (tools, resources, prompts)."
+msgstr "MCP 服务器配置与运行时状态（工具、资源、Prompt）。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:312
+#, no-wrap
+msgid "No MCP servers configured. Add mcp_servers in ~/.anima/config.yaml."
+msgstr "未配置 MCP 服务器。在 ~/.anima/config.yaml 的 mcp_servers 中添加。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:314
+#, no-wrap
+msgid "Start all failed: {detail}"
+msgstr "全部启动失败: {detail}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:315
+#, no-wrap
+msgid "Stop all failed: {detail}"
+msgstr "全部停止失败: {detail}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:316
+#, no-wrap
+msgid "Tools ({count})"
+msgstr "工具 ({count})"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:317
+#, no-wrap
+msgid "Conversation filter (messages only)"
+msgstr "对话过滤（仅对话消息）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:318
+#, no-wrap
+msgid "Filters conversation messages only; semantic, limbic, and autobiographical sources are unaffected."
+msgstr "仅筛选会话消息；语义、感性与自传体来源不受影响。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:319
+#, no-wrap
+msgid "Count semantic memories"
+msgstr "统计语义记忆"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:320
+#, no-wrap
+msgid "Count PG semantic_memory rows (content_fts is automatic). Continue?"
+msgstr "统计 PG semantic_memory 条数（content_fts 自动维护，无需重建）。确定继续？"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:321
+#, no-wrap
+msgid "Debug memory_recall: unified recall from four sources + cross-type reranking."
+msgstr "调试 memory_recall：四源统一召回 + 跨类型重排。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:322
+#, no-wrap
+msgid "No memories matching \"{query}\"."
+msgstr "未找到与「{query}」匹配的记忆。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:323
+#, no-wrap
+msgid "Search term (required)"
+msgstr "搜索词（必填）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:324
+#, no-wrap
+msgid "Browse"
+msgstr "浏览"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:325
+#, no-wrap
+msgid "memory_recall raw output preview"
+msgstr "memory_recall 原始输出预览"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:326
+#, no-wrap
+msgid "Recall results"
+msgstr "召回结果"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:327
+#, no-wrap
+msgid "Top N results"
+msgstr "返回条数（Top N）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:328
+#, no-wrap
+msgid "Autobiographical"
+msgstr "自传体"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:329 messages/po4a/en.xml:463
+#, no-wrap
+msgid "Conversation messages"
+msgstr "对话消息"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:331
+#, no-wrap
+msgid "Limbic memory"
+msgstr "感性记忆"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:333
+#, no-wrap
+msgid "Arguments"
+msgstr "参数"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:334
+#, no-wrap
+msgid "No messages on this page"
+msgstr "此页无消息"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:335
+#, no-wrap
+msgid "Result"
+msgstr "结果"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:336
+#, no-wrap
+msgid "Tool calls · {count}"
+msgstr "工具调用 · {count}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:337
+#, no-wrap
+msgid "…(truncated)"
+msgstr "…（已截断）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:338
+#, no-wrap
+msgid "Waiting for result…"
+msgstr "等待结果…"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:340 messages/po4a/en.xml:345
+#, no-wrap
+msgid "Chat"
+msgstr "聊天室"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:342
+#, no-wrap
+msgid "🤝 ACP"
+msgstr "🤝 ACP"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:343
+#, no-wrap
+msgid "🤖 Auto LLM Runs"
+msgstr "🤖 自动 LLM 运行"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:344
+#, no-wrap
+msgid "📖 Autobiographical Memory"
+msgstr "📖 自传记忆"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:346
+#, no-wrap
+msgid "⌨️ Commands"
+msgstr "⌨️ 命令"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:347
+#, no-wrap
+msgid "⚙️ Config"
+msgstr "⚙️ 配置"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:348
+#, no-wrap
+msgid "💬 Conversations"
+msgstr "💬 对话"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:349
+#, no-wrap
+msgid "⏰ Cron"
+msgstr "⏰ 定时任务"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:350
+#, no-wrap
+msgid "📊 Dashboard"
+msgstr "📊 仪表盘"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:351
+#, no-wrap
+msgid "📔 Diary"
+msgstr "📔 日记"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:352
+#, no-wrap
+msgid "🌙 Dreams"
+msgstr "🌙 梦境"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:353
+#, no-wrap
+msgid "📧 Email"
+msgstr "📧 邮件"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:354
+#, no-wrap
+msgid "🔍 Full-Text Search"
+msgstr "🔍 全文检索"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:355
+#, no-wrap
+msgid "Capabilities"
+msgstr "能力"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:356
+#, no-wrap
+msgid "Estate"
+msgstr "资源"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:359
+#, no-wrap
+msgid "Self"
+msgstr "自我"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:360 messages/po4a/en.xml:530
+#, no-wrap
+msgid "English"
+msgstr "English"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:361 messages/po4a/en.xml:531
+#, no-wrap
+msgid "中文"
+msgstr "中文"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:362
+#, no-wrap
+msgid "💗 Limbic Memory"
+msgstr "💗 情感记忆"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:363
+#, no-wrap
+msgid "Mailbox"
+msgstr "邮箱"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:364
+#, no-wrap
+msgid "🔌 MCP"
+msgstr "🔌 MCP"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:365
+#, no-wrap
+msgid "🧠 Memory Desk"
+msgstr "🧠 记忆台"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:367
+#, no-wrap
+msgid "🛰 Satellites"
+msgstr "🛰 卫星"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:368
+#, no-wrap
+msgid "🪞 Self Layer"
+msgstr "🪞 自我层"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:369
+#, no-wrap
+msgid "📝 Semantic Memory"
+msgstr "📝 语义记忆"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:370
+#, no-wrap
+msgid "Settings"
+msgstr "设置"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:371
+#, no-wrap
+msgid "😴 Sleep"
+msgstr "😴 睡眠"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:372
+#, no-wrap
+msgid "👤 Subjects"
+msgstr "👤 主体"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:373
+#, no-wrap
+msgid "📋 System Prompt"
+msgstr "📋 系统提示词"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:374
+#, no-wrap
+msgid "✅ Tasks"
+msgstr "✅ 任务"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:375
+#, no-wrap
+msgid "🔧 Tools"
+msgstr "🔧 工具"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:376
+#, no-wrap
+msgid "🔐 Vault"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:377
+#, no-wrap
+msgid "🌍 Worlds"
+msgstr "🌍 世界"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:378
+#, no-wrap
+msgid "App ID"
+msgstr "应用 ID"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:380
+#, no-wrap
+msgid "SAP satellite apps connected to this Hub (read-only)."
+msgstr "已连接本 Hub 的 SAP 卫星应用（只读）。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:381
+#, no-wrap
+msgid "No satellite instances connected. Start a satellite process to see it here."
+msgstr "尚无卫星实例连接。启动卫星进程后将显示于此。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:382
+#, no-wrap
+msgid "Instance ID"
+msgstr "实例 ID"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:383
+#, no-wrap
+msgid "Instances"
+msgstr "实例"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:384
+#, no-wrap
+msgid "Last heartbeat"
+msgstr "最近心跳"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:387
+#, no-wrap
+msgid "{count} tools"
+msgstr "{count} 个工具"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:388
+#, no-wrap
+msgid "Read-only view of six PG self_blocks. Maintain via the update_self_block tool."
+msgstr "PG self_blocks 六块只读展示；维护请使用 update_self_block 工具。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:389
+#, no-wrap
+msgid "No self layer data (PG unavailable or not initialized)."
+msgstr "暂无自我层数据（PG 不可用或未初始化）。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:390
+#, no-wrap
+msgid "(not set yet)"
+msgstr "（尚未设定）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:391
+#, no-wrap
+msgid "Updated {time}"
+msgstr "更新于 {time}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:393
+#, no-wrap
+msgid "Browse PG semantic_memory with FTS search and filters."
+msgstr "浏览 PG semantic_memory 表，支持 FTS 搜索与过滤。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:394
+#, no-wrap
+msgid "Pin to resident memory"
+msgstr "置顶到常驻记忆"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:395
+#, no-wrap
+msgid "Pinned"
+msgstr "置顶"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:396
+#, no-wrap
+msgid "Rank"
+msgstr "排名"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:397
+#, no-wrap
+msgid "Refs"
+msgstr "引用"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:398
+#, no-wrap
+msgid "Search term (optional, FTS)"
+msgstr "搜索词（可选，FTS）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:399
+#, no-wrap
+msgid "Sort by"
+msgstr "排序"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:401
+#, no-wrap
+msgid "Reference count"
+msgstr "引用次数"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:402 messages/po4a/en.xml:404
+#, no-wrap
+msgid "Updated"
+msgstr "更新时间"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:405
+#, no-wrap
+msgid "Attempt"
+msgstr "尝试次数"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:406
+#, no-wrap
+msgid "Changes: +{added} / ~{updated}"
+msgstr "变更: +{added} / ~{updated}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:407 messages/po4a/en.xml:423
+#, no-wrap
+msgid "Sleep cycle"
+msgstr "睡眠周期"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:408
+#, no-wrap
+msgid "Day (YYYY-MM-DD, optional)"
+msgstr "日期（YYYY-MM-DD，可选）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:409
+#, no-wrap
+msgid "Force (skip dependency check)"
+msgstr "强制（跳过依赖检查）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:410
+#, no-wrap
+msgid "Run full cycle"
+msgstr "运行完整周期"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:411
+#, no-wrap
+msgid "Sleep cycle running…"
+msgstr "睡眠周期运行中…"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:412
+#, no-wrap
+msgid "Step status"
+msgstr "步骤状态"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:413
+#, no-wrap
+msgid "Step"
+msgstr "步骤"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:414
+#, no-wrap
+msgid "Run"
+msgstr "运行"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:415
+#, no-wrap
+msgid "Run control"
+msgstr "运行控制"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:416 messages/po4a/en.xml:431
+#, no-wrap
+msgid "Deep sleep"
+msgstr "深睡"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:417
+#, no-wrap
+msgid "Deep sleep (latest)"
+msgstr "深睡最新"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:418
+#, no-wrap
+msgid "Deep sleep round log"
+msgstr "深睡轮次日志"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:419
+#, no-wrap
+msgid "Deep sleep mode"
+msgstr "深睡模式"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:420
+#, no-wrap
+msgid "Full (all rounds, all memories)"
+msgstr "完整（全部轮次、全部记忆）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:421
+#, no-wrap
+msgid "Incremental (skip quiet rounds)"
+msgstr "增量（跳过静默轮次）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:422
+#, no-wrap
+msgid "Sleep cycle status, manual runs, and pipeline step history."
+msgstr "睡眠周期状态、手动运行与流水线步骤历史。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:424
+#, no-wrap
+msgid "{step} (manual)"
+msgstr "{step}（手动）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:425 messages/po4a/en.xml:433
+#, no-wrap
+msgid "Light sleep"
+msgstr "浅睡"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:426
+#, no-wrap
+msgid "Light sleep (latest)"
+msgstr "浅睡最新"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:427
+#, no-wrap
+msgid "Loading rounds…"
+msgstr "加载轮次…"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:428
+#, no-wrap
+msgid "No runs yet"
+msgstr "尚无运行记录"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:429
+#, no-wrap
+msgid "Pipeline history"
+msgstr "流水线历史"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:430
+#, no-wrap
+msgid "{index}. {round} ({count} tool calls)"
+msgstr "{index}. {round} ({count} 次工具)"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:434
+#, no-wrap
+msgid "Memory ref sync"
+msgstr "记忆引用同步"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:435
+#, no-wrap
+msgid "Self layer refresh"
+msgstr "自我层刷新"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:437
+#, no-wrap
+msgid "Manual cycle"
+msgstr "手动周期"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:438
+#, no-wrap
+msgid "Manual step"
+msgstr "手动步骤"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:439
+#, no-wrap
+msgid "Scheduled"
+msgstr "已调度"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:440
+#, no-wrap
+msgid "AGENTS.md"
+msgstr "AGENTS.md"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:441
+#, no-wrap
+msgid "Resident memory"
+msgstr "常驻记忆"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:442 messages/po4a/en.xml:516
+#, no-wrap
+msgid "Self layer"
+msgstr "自我层"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:444
+#, no-wrap
+msgid "ToolSets"
+msgstr "ToolSets"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:445
+#, no-wrap
+msgid "Conversation detail →"
+msgstr "对话详情 →"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:446
+#, no-wrap
+msgid "Conversation (optional)"
+msgstr "对话（可选）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:447
+#, no-wrap
+msgid "Copy JSON"
+msgstr "复制 JSON"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:448
+#, no-wrap
+msgid "Copy live full text"
+msgstr "复制 live 全文"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:449
+#, no-wrap
+msgid "Copy stored full text"
+msgstr "复制 stored 全文"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:450
+#, no-wrap
+msgid "View system prompt breakdown, full text, and effective tool schemas. Global template by default; optional conversation compares PG stored vs live rebuild."
+msgstr "查看系统提示词分解、完整文本与会话有效工具 schema。默认全局模板；可选 conversation 对比 PG 持久化与实时重建结果。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:451
+#, no-wrap
+msgid "Live (rebuilt)"
+msgstr "Live（实时重建）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:452
+#, no-wrap
+msgid "conversation_meta.tools: {count} names"
+msgstr "conversation_meta.tools: {count} 个名称"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:453
+#, no-wrap
+msgid "Conversation compare"
+msgstr "对话对比"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:454
+#, no-wrap
+msgid "Global template"
+msgstr "全局模板"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:455
+#, no-wrap
+msgid "No matching tools"
+msgstr "无匹配工具"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:456
+#, no-wrap
+msgid "Search tool name / description / toolset"
+msgstr "搜索工具名 / 描述 / toolset"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:457
+#, no-wrap
+msgid "Self layer →"
+msgstr "自我层 →"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:458
+#, no-wrap
+msgid "Stored (PG)"
+msgstr "Stored（PG）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:459
+#, no-wrap
+msgid "Full text"
+msgstr "完整文本"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:460
+#, no-wrap
+msgid "Breakdown"
+msgstr "分项"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:461 messages/po4a/en.xml:465
+#, no-wrap
+msgid "Tool schema"
+msgstr "工具 schema"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:462
+#, no-wrap
+msgid "Token breakdown (estimate)"
+msgstr "Token 分项（粗估）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:464
+#, no-wrap
+msgid "System prompt"
+msgstr "系统提示词"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:466
+#, no-wrap
+msgid "Total"
+msgstr "合计"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:467
+#, no-wrap
+msgid "{count} tools ({mode})"
+msgstr "工具 {count} 个（{mode}）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:468
+#, no-wrap
+msgid "conversation effective"
+msgstr "对话有效"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:469
+#, no-wrap
+msgid "Tools list →"
+msgstr "工具列表 →"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:470
+#, no-wrap
+msgid "full registry"
+msgstr "全量注册表"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:471
+#, no-wrap
+msgid "Showing {shown} / {total} · ~{tokens} tokens"
+msgstr "显示 {shown} / {total} · ~{tokens} tokens"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:472
+#, no-wrap
+msgid "Browse entity tasks (/api/task/*) with keyword, status, priority, and list filters (read-only)."
+msgstr "浏览实体任务（/api/task/*），支持关键词、状态、优先级与列表筛选（只读）。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:473
+#, no-wrap
+msgid "Search term (optional, title/description)"
+msgstr "搜索词（可选，匹配标题/描述）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:475
+#, no-wrap
+msgid "Default loaded toolsets"
+msgstr "默认加载工具集"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:476
+#, no-wrap
+msgid "ToolSets auto-injected into new conversations (toolsets loaded on-demand via toolset_load are not listed here)."
+msgstr "新会话自动注入 LLM tools 参数的默认工具集（通过 toolset_load 按需加载的工具集不在此列）。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:477
+#, no-wrap
+msgid "Registered tools list."
+msgstr "已注册的工具列表。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:478
+#, no-wrap
+msgid "Registered tools (grouped by ToolSet)."
+msgstr "已注册的工具列表（按 ToolSet 分组）。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:479
+#, no-wrap
+msgid "Error return"
+msgstr "错误返回"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:480
+#, no-wrap
+msgid "All tool failures return JSON:"
+msgstr "所有工具失败时统一返回 JSON："
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:481
+#, no-wrap
+msgid "Example:"
+msgstr "示例："
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:482
+#, no-wrap
+msgid "Fidelity example (success)"
+msgstr "保真示例（成功）"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:483
+#, no-wrap
+msgid "Structured JSON"
+msgstr "结构化 JSON"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:484
+#, no-wrap
+msgid "Plain text"
+msgstr "纯文本"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:485
+#, no-wrap
+msgid "Needs secret"
+msgstr "需密钥"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:486
+#, no-wrap
+msgid "Return contract not recorded"
+msgstr "未记录返回契约"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:487
+#, no-wrap
+msgid "Full OpenAI definition"
+msgstr "完整 OpenAI 定义"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:488
+#, no-wrap
+msgid "Parameter schema"
+msgstr "参数 schema"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:489
+#, no-wrap
+msgid "Returns toolResult JSON on success; JSON error on failure"
+msgstr "成功时返回 toolResult JSON 对象；失败时返回 JSON error"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:490
+#, no-wrap
+msgid "Returns plain text on success; JSON error on failure"
+msgstr "成功时返回纯文本；失败时返回 JSON error"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:491
+#, no-wrap
+msgid "success return example"
+msgstr "成功返回示例"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:492
+#, no-wrap
+msgid "Success return schema"
+msgstr "成功返回 schema"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:493
+#, no-wrap
+msgid "Ungrouped tools"
+msgstr "🔧 未分组工具"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:495
@@ -3196,8 +3196,9 @@ msgstr "切换终端面板"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:559
-#, no-wrap
-msgid "Open Admin console config"
+#, fuzzy, no-wrap
+#| msgid "Open **Console console config"
+msgid "Open Console config"
 msgstr "前往管理台配置"
 
 #. type: Content of: <messages><msg>

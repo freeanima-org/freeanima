@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 20:01+0800\n"
+"POT-Creation-Date: 2026-07-03 18:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -221,8 +221,8 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:95
 msgid ""
-"Use **app/desktop** or **app/mobile** for UI (Chat + Admin bundled). Browser "
-"local dev: `bun run dev:web` (Vite HMR; Hub must be running)."
+"Use **app/desktop** or **app/mobile** for UI (Chat + Console bundled). "
+"Browser local dev: `bun run dev:web` (Vite HMR; Hub must be running)."
 msgstr ""
 
 #. type: Plain text
@@ -360,21 +360,21 @@ msgstr ""
 #: docs/guide/install.md:151
 msgid ""
 "Use app/desktop or app/mobile clients for UI (bundled shell with `/chat`, `/"
-"tasks`, `/admin`, etc.)."
+"tasks`, `/console``, etc.)."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/install.md:154
 msgid ""
 "Hub API (health): `http://127.0.0.1:2658/api/health` (Hub does **not** host "
-"Admin UI)"
+"Console UI)"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/install.md:154
 msgid ""
-"Local Web shell dev: `bun run dev:web` → Admin: `http://127.0.0.1:4173/web/"
-"admin/dashboard`"
+"Local Web shell dev: `bun run dev:web` → Console: `http://127.0.0.1:4173/web/"
+"console/dashboard`"
 msgstr ""
 
 #. type: Plain text
@@ -556,7 +556,7 @@ msgstr ""
 #, no-wrap
 msgid ""
 "anima service start --foreground   # terminal 1: Hub REST + SAP\n"
-"bun run dev:web                    # terminal 2: http://127.0.0.1:4173/web/chat · Admin /web/admin/dashboard\n"
+"bun run dev:web                    # terminal 2: http://127.0.0.1:4173/web/chat · Console /web/console/dashboard\n"
 msgstr ""
 
 #. type: Title ###
@@ -621,14 +621,14 @@ msgstr ""
 #: docs/guide/install.md:269
 msgid ""
 "**Security** — Vault / `env()` for secrets, `chmod 700 ~/.anima`, do not "
-"expose Admin without auth ([`security.md`](security.md))"
+"expose Console without auth ([`security.md`](security.md))"
 msgstr ""
 
 #. type: Bullet: '2. '
 #: docs/guide/install.md:269
 msgid ""
 "**Remote access** — optional Cloudflare Tunnel + Service API Token for "
-"personal mobile/remote Admin ([`remote-access.md`](remote-access.md))"
+"personal mobile/remote Console ([`remote-access.md`](remote-access.md))"
 msgstr ""
 
 #. type: Bullet: '3. '

@@ -21,7 +21,7 @@ title: Identity
 | Self layer (six blocks)                  | Persistent definition of "who I am"                                                                                             |
 | Tools (local / MCP / ACP)                | "Limbs" for perception and action                                                                                               |
 | pass credentials                         | Lifeline (injected at runtime, never plaintext)                                                                                 |
-| Gateway                                  | Ears and mouth (Discord / WeChat / Admin)                                                                                       |
+| Gateway                                  | Ears and mouth (Discord / WeChat / Console)                                                                                     |
 | EventBus                                 | Async notification transport (Redis queue); sleep uses Pipeline Runner, not EventBus — see [`architecture.md`](architecture.md) |
 | Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                      |
 
@@ -50,7 +50,7 @@ The open-source repository provides architecture and mechanisms only; **who exac
 
 At runtime, the six self blocks are written in first person. When injected into the system prompt, a second-person outer skeleton wraps them so the LLM clearly understands "this is self-layer content you must follow" while preserving first-person narrative texture.
 
-Maintenance: Admin self-layer editor, self-layer tools, or direct database edits.
+Maintenance: Console self-layer editor, self-layer tools, or direct database edits.
 
 ---
 

@@ -33,7 +33,7 @@ export function TerminalPanel() {
           className="h-7 px-2 text-xs"
           onClick={reconnectStudioTerminal}
         >
-          {m.admin_common_reconnect()}
+          {m.console_common_reconnect()}
         </Button>
       </div>
       <div

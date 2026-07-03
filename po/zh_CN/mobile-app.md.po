@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 18:19+0800\n"
+"POT-Creation-Date: 2026-07-03 18:23+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,14 +17,14 @@ msgstr ""
 
 #. type: Title ##
 #: docs/features/companion.md:120 docs/features/mobile-app.md:52
-#: docs/guide/database.md:91 docs/guide/remote-access.md:182
+#: docs/guide/database.md:88 docs/guide/remote-access.md:177
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
 
 #. type: Content of: <messages><msg>
 #: docs/features/mobile-app.md:1 docs/features/mobile-app.md:5
-#: messages/po4a/en.xml:579
+#: messages/po4a/en.xml:574
 #, no-wrap
 msgid "Mobile app (Android)"
 msgstr "移动端 APP（Android）"
@@ -49,13 +49,21 @@ msgstr "范围"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:19
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Item       | Description                                              |\n"
+#| "| ---------- | -------------------------------------------------------- |\n"
+#| "| Platform   | **Android only** sideload (APK); iOS later               |\n"
+#| "| UI         | 默认 bootstrap → Hub `/web/*`（与浏览器/PWA 同一产物）   |\n"
+#| "| Modules    | Chat + **Console（bundled shell-ui）                         |\n"
+#| "| Hub config | APP **Hub settings**（Preferences）或 bootstrap 首次配置 |\n"
+#| "| Hub duties | `/api` REST + `/hub/rpc/v1` WebSocket                    |\n"
 msgid ""
 "| Item       | Description                                              |\n"
 "| ---------- | -------------------------------------------------------- |\n"
 "| Platform   | **Android only** sideload (APK); iOS later               |\n"
 "| UI         | 默认 bootstrap → Hub `/web/*`（与浏览器/PWA 同一产物）   |\n"
-"| Modules    | Chat + Admin（bundled shell-ui）                         |\n"
+"| Modules    | Chat + Console（bundled shell-ui）                         |\n"
 "| Hub config | APP **Hub settings**（Preferences）或 bootstrap 首次配置 |\n"
 "| Hub duties | `/api` REST + `/hub/rpc/v1` WebSocket                    |\n"
 msgstr ""
@@ -75,37 +83,52 @@ msgstr "拓扑"
 
 #. type: Fenced code block (mermaid)
 #: docs/features/mobile-app.md:22
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "flowchart LR\n"
+#| "  Phone[Android WebView]\n"
+#| "  Shell[shell-ui SPA]\n"
+#| "  Chat[\"/chat\"]\n"
+#| "  **Console[\"/admin\"]\n"
+#| "  Settings[\"/settings\"]\n"
+#| "  Hub[Anima Service]\n"
+#| "\n"
+#| "  Phone --> Shell\n"
+#| "  Shell --> Chat\n"
+#| "  Shell --> **Console\n"
+#| "  Shell --> Settings\n"
+#| "  Chat -->|SAP auth_token| Hub\n"
+#| "  **Console -->|REST Bearer| Hub\n"
 msgid ""
 "flowchart LR\n"
 "  Phone[Android WebView]\n"
 "  Shell[shell-ui SPA]\n"
 "  Chat[\"/chat\"]\n"
-"  Admin[\"/admin\"]\n"
+"  Console[\"/console\"]\n"
 "  Settings[\"/settings\"]\n"
 "  Hub[Anima Service]\n"
 "\n"
 "  Phone --> Shell\n"
 "  Shell --> Chat\n"
-"  Shell --> Admin\n"
+"  Shell --> Console\n"
 "  Shell --> Settings\n"
 "  Chat -->|SAP auth_token| Hub\n"
-"  Admin -->|REST Bearer| Hub\n"
+"  Console -->|REST Bearer| Hub\n"
 msgstr ""
 "flowchart LR\n"
 "  Phone[Android WebView]\n"
 "  Shell[shell-ui SPA]\n"
 "  Chat[\"/chat\"]\n"
-"  Admin[\"/admin\"]\n"
+"  **Console[\"/admin\"]\n"
 "  Settings[\"/settings\"]\n"
 "  Hub[Anima Service]\n"
 "\n"
 "  Phone --> Shell\n"
 "  Shell --> Chat\n"
-"  Shell --> Admin\n"
+"  Shell --> **Console\n"
 "  Shell --> Settings\n"
 "  Chat -->|SAP auth_token| Hub\n"
-"  Admin -->|REST Bearer| Hub\n"
+"  **Console -->|REST Bearer| Hub\n"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:40
@@ -157,9 +180,13 @@ msgstr "服务 API 令牌（`fa_at_...`，创建时仅打印一次）"
 
 #. type: Bullet: '4. '
 #: docs/features/mobile-app.md:49
+#, fuzzy
+#| msgid ""
+#| "**Test connection** → **Save and enter** → top bar switches **Chat** / "
+#| "**Console**."
 msgid ""
 "**Test connection** → **Save and enter** → top bar switches **Chat** / "
-"**Admin**."
+"**Console**."
 msgstr "**测试连接** → **保存并进入** → 顶栏切换 **聊天室** / **管理台**。"
 
 #. type: Plain text
@@ -173,21 +200,28 @@ msgstr ""
 
 #. type: Plain text
 #: docs/features/mobile-app.md:60
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Symptom                             | Common cause                                                                                    |\n"
+#| "| ----------------------------------- | ----------------------------------------------------------------------------------------------- |\n"
+#| "| Keyboard covers chat input          | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes |\n"
+#| "| Chat input unresponsive             | No selected conversation (first install should auto-create); or SAP disconnected                |\n"
+#| "| **Console load failed / Failed to fetch | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header      |\n"
+#| "| Not Found                           | Avoid legacy paths like `/console/dashboard/index.html`; use SPA `/console/dashboard`               |\n"
 msgid ""
 "| Symptom                             | Common cause                                                                                    |\n"
 "| ----------------------------------- | ----------------------------------------------------------------------------------------------- |\n"
 "| Keyboard covers chat input          | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes |\n"
 "| Chat input unresponsive             | No selected conversation (first install should auto-create); or SAP disconnected                |\n"
-"| Admin load failed / Failed to fetch | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header      |\n"
-"| Not Found                           | Avoid legacy paths like `/admin/dashboard/index.html`; use SPA `/admin/dashboard`               |\n"
+"| Console load failed / Failed to fetch | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header      |\n"
+"| Not Found                           | Avoid legacy paths like `/console`/dashboard/index.html`; use SPA `/console`/dashboard`               |\n"
 msgstr ""
 "| 现象                              | 常见原因                                                                                 |\n"
 "| ------------------------------------ | -------------------------------------------------------------------------------------------- |\n"
 "| 键盘遮挡聊天输入           | WebView 未调整大小；需 `adjustResize` + `@capacitor/keyboard`；Web 变更后 `cap sync` |\n"
 "| 聊天输入无响应              | 未选中对话（首次安装应自动创建）；或 SAP 已断开             |\n"
 "| 管理台加载失败 / Failed to fetch  | Hub 未 `--host 0.0.0.0`、token 错误、防火墙；Chrome 远程调试查看 Bearer 头   |\n"
-"| Not Found                            | 避免旧路径如 `/admin/dashboard/index.html`；使用 SPA `/admin/dashboard`            |\n"
+"| Not Found                            | 避免旧路径如 `/console/dashboard/index.html`；使用 SPA `/console/dashboard`            |\n"
 
 #. type: Title ##
 #: docs/features/mobile-app.md:61

@@ -4,10 +4,10 @@ import {
   resolveHubCacheScope,
   writeOfflineCache,
 } from "@freeanima/shell-sdk/offline-cache";
-import { whenSapClientReady } from "./hub-rpc.ts";
+import { getDiaryHubClient } from "./hub-client.ts";
 
-async function sap() {
-  return whenSapClientReady();
+function hub() {
+  return getDiaryHubClient();
 }
 
 function diaryListCacheId(subjectKind: DiarySubjectKind, query?: string): string {
@@ -27,8 +27,7 @@ export async function fetchDiaryEntries(
   const cacheId = diaryListCacheId(subjectKind);
   const cached = await readOfflineCache<DiaryEntryRow[]>(scope, "diary", cacheId);
   try {
-    const client = await sap();
-    const data = await client.request("diary.list", {
+    const data = await hub().call("diary.list", {
       subject_kind: subjectKind,
       limit: opts?.limit ?? 200,
     });
@@ -49,8 +48,7 @@ export async function searchDiaryEntries(
   const cacheId = diaryListCacheId(subjectKind, query);
   const cached = await readOfflineCache<DiaryEntryRow[]>(scope, "diary", cacheId);
   try {
-    const client = await sap();
-    const data = await client.request("diary.search", {
+    const data = await hub().call("diary.search", {
       subject_kind: subjectKind,
       query,
       limit,
@@ -71,8 +69,7 @@ export async function getDiaryEntry(
   const cacheId = diaryEntryCacheId(subjectKind, id);
   const cached = await readOfflineCache<DiaryEntryRow>(scope, "diary", cacheId);
   try {
-    const client = await sap();
-    const data = await client.request("diary.get", { subject_kind: subjectKind, id });
+    const data = await hub().call("diary.get", { subject_kind: subjectKind, id });
     void writeOfflineCache(scope, "diary", cacheId, data.item);
     return data.item;
   } catch (err) {
@@ -91,8 +88,7 @@ export async function createDiaryEntry(
     tags?: string[];
   },
 ): Promise<DiaryEntryRow> {
-  const client = await sap();
-  const data = await client.request("diary.create", { subject_kind: subjectKind, ...input });
+  const data = await hub().call("diary.create", { subject_kind: subjectKind, ...input });
   return data.item;
 }
 
@@ -101,8 +97,7 @@ export async function appendDiaryEntry(
   id: number,
   content: string,
 ): Promise<DiaryEntryRow> {
-  const client = await sap();
-  const data = await client.request("diary.append", { subject_kind: subjectKind, id, content });
+  const data = await hub().call("diary.append", { subject_kind: subjectKind, id, content });
   return data.item;
 }
 
@@ -111,12 +106,10 @@ export async function updateDiaryEntry(
   id: number,
   patch: Partial<Pick<DiaryEntryRow, "title" | "content" | "summary" | "entry_at" | "tags">>,
 ): Promise<DiaryEntryRow> {
-  const client = await sap();
-  const data = await client.request("diary.patch", { subject_kind: subjectKind, id, ...patch });
+  const data = await hub().call("diary.patch", { subject_kind: subjectKind, id, ...patch });
   return data.item;
 }
 
 export async function deleteDiaryEntry(subjectKind: DiarySubjectKind, id: number): Promise<void> {
-  const client = await sap();
-  await client.request("diary.delete", { subject_kind: subjectKind, id });
+  await hub().call("diary.delete", { subject_kind: subjectKind, id });
 }

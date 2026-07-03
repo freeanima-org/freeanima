@@ -16,7 +16,7 @@ Detailed implementation constraints for AI agents working in this repository. St
 | [`frontend-ui.md`](frontend-ui.md)                                                   | DaisyUI 基元约定、`ui-kit/composite` 复合组件、Modal/空态规范                       |
 | [`release.md`](release.md)                                                           | SemVer, Conventional Commits, Release Please, npm/Docker                            |
 | [`compression.md`](compression.md)                                                   | l-point compression algorithm and module entry points                               |
-| [`i18n.md`](i18n.md)                                                                 | UI/docs i18n: Paraglide, po4a, PO workflow, site/Admin message keys                 |
+| [`i18n.md`](i18n.md)                                                                 | UI/docs i18n: Paraglide, po4a, PO workflow, site/Console message keys               |
 | [`docs-i18n.md`](docs-i18n.md)                                                       | AI rules for `docs/**` authoring and `po/zh_CN/*.po` msgstr                         |
 
 **SSOT**: dependency boundaries → [`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts); storage shapes → [`core/src/db/schema/`](../../core/src/db/schema/); port types and wiring contracts → [`platform/ports/`](../../platform/ports/) (composition root imports `@freeanima/platform/ports`).

@@ -56,11 +56,11 @@ export function registerFeaturePluginShellRoutes(): void {
   ]);
 }
 
-/** Console/admin SPA embedded in shell (formerly AdminShell). */
+/** Console/admin SPA embedded in shell (formerly ConsoleShell). */
 export function loadConsoleShellRoute() {
   return shellLazyRoute(() =>
     import("@freeanima/feature-console/ui/app").then(async (mod) => {
-      await import("@freeanima/feature-console/ui/admin/styles.css");
+      await import("@freeanima/feature-console/ui/console/styles.css");
       return { default: mod.ConsoleShell };
     }),
   );

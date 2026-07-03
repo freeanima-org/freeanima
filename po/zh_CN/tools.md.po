@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 17:13+0800\n"
+"POT-Creation-Date: 2026-07-03 18:12+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -48,9 +48,13 @@ msgstr "命名"
 
 #. type: Plain text
 #: docs/sap/tools.md:14
+#, fuzzy
+#| msgid ""
+#| "Canonical name format ([`packages/sap-contract/src/naming.ts`](../../"
+#| "packages/sap-contract/src/naming.ts)):"
 msgid ""
-"Canonical name format ([`packages/sap-contract/src/naming.ts`](../../"
-"packages/sap-contract/src/naming.ts)):"
+"Canonical name format ([`shared/sap-contract/src/naming.ts`](../../shared/"
+"sap-contract/src/naming.ts)):"
 msgstr ""
 "规范名称格式（[`packages/sap-contract/src/naming.ts`](../../packages/sap-"
 "contract/src/naming.ts)）："

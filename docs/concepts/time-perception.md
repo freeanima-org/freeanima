@@ -82,6 +82,6 @@ Time anchors in compression summary not yet injected; see Issue #5.
 
 - ❌ Do not compute and inject elapsed duration (e.g. "8 hours passed")—Agent can derive from timestamps
 - ❌ Do not modify persisted messages
-- ❌ Do not show time prefix in Admin
+- ❌ Do not show time prefix in Console
 - ❌ Do not give built-in time-passing sense—that is biological, not simulated
 - ❌ Do not inject "current time" in system prompt (main conversation relies on per-user `time` lines)

@@ -77,7 +77,7 @@ export function DreamApp() {
       setLoaded(true);
     } catch (e) {
       setError(
-        m.admin_common_load_failed({
+        m.console_common_load_failed({
           detail: e instanceof Error ? e.message : String(e),
         }),
       );
@@ -97,20 +97,20 @@ export function DreamApp() {
   return (
     <div className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col gap-4 p-4">
       <div>
-        <h1 className="text-lg font-bold">{m.admin_nav_dream()}</h1>
-        <p className="text-sm text-muted-foreground">{m.admin_dream_desc()}</p>
+        <h1 className="text-lg font-bold">{m.console_nav_dream()}</h1>
+        <p className="text-sm text-muted-foreground">{m.console_dream_desc()}</p>
       </div>
 
       <div className="flex flex-wrap gap-2">
         <Button type="button" size="sm" onClick={() => void fetchList(offset)} disabled={loading}>
-          {loading ? m.admin_common_loading() : m.admin_common_refresh()}
+          {loading ? m.console_common_loading() : m.console_common_refresh()}
         </Button>
       </div>
 
       {error ? <StatusAlert variant="error">{error}</StatusAlert> : null}
 
       {loaded && items.length === 0 && !loading ? (
-        <p className="text-sm text-muted-foreground">{m.admin_dream_empty()}</p>
+        <p className="text-sm text-muted-foreground">{m.console_dream_empty()}</p>
       ) : null}
 
       {items.length > 0 ? (
@@ -135,7 +135,7 @@ export function DreamApp() {
                       className="h-7 text-xs"
                       onClick={() => setExpandedDay(expanded ? null : dreamDay)}
                     >
-                      {expanded ? m.admin_common_collapse() : m.admin_common_expand()}
+                      {expanded ? m.console_common_collapse() : m.console_common_expand()}
                     </Button>
                   </div>
                   {expanded ? (
@@ -143,12 +143,12 @@ export function DreamApp() {
                       <pre className="font-sans text-sm whitespace-pre-wrap">{row.content}</pre>
                       {row.source_limbic_ids.length > 0 ? (
                         <p className="text-muted-foreground text-xs">
-                          {m.admin_dream_source_limbic()}: {row.source_limbic_ids.join(", ")}
+                          {m.console_dream_source_limbic()}: {row.source_limbic_ids.join(", ")}
                         </p>
                       ) : null}
                       {row.source_conversation_ids.length > 0 ? (
                         <p className="text-muted-foreground text-xs">
-                          {m.admin_dream_source_conversations()}:{" "}
+                          {m.console_dream_source_conversations()}:{" "}
                           {row.source_conversation_ids.join(", ")}
                         </p>
                       ) : null}

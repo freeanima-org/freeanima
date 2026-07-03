@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 22:10+0800\n"
+"POT-Creation-Date: 2026-07-03 18:12+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,10 +32,12 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/methods.md:10
 msgid ""
-"The authoritative method list is `SAP_METHODS` in [`packages/sap-contract/"
-"src/router.ts`](../../packages/sap-contract/src/router.ts). Input/output Zod "
-"schemas live under [`packages/sap-contract/src/frames/`](../../packages/sap-"
-"contract/src/frames/)."
+"The authoritative method list is `SAP_METHODS` in [`shared/sap-contract/src/"
+"router.ts`](../../shared/sap-contract/src/router.ts). Product feature wire "
+"schemas are bundled in [`@freeanima/sap-contract/feature-rpc`](../../shared/"
+"sap-contract/src/feature-rpc/index.ts); individual frame modules live under "
+"[`shared/sap-contract/src/frames/`](../../shared/sap-contract/src/frames/). "
+"Each `features/*/protocol/` re-exports the subset its Hub handlers need."
 msgstr ""
 
 #. type: Title ##
@@ -77,15 +79,15 @@ msgstr ""
 #: docs/sap/methods.md:44
 #, no-wrap
 msgid ""
-"| Method                    | Schema                                                                 | Hub behavior                                                                                                |\n"
-"| ------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
-"| `conversation.create`     | [`session.ts`](../../packages/sap-contract/src/frames/conversation.ts) | Creates session; sets `platform_extra.satellite_app_id`, `satellite_instance_id`, optional workspace fields |\n"
-"| `conversation.list`       | `session.ts`                                                           | Lists conversations, optional `platform` filter                                                             |\n"
-"| `conversation.messages`   | `session.ts`                                                           | Message history with `offset` / `limit`                                                                     |\n"
-"| `conversation.patchTitle` | `session.ts`                                                           | Updates conversation title                                                                                  |\n"
-"| `conversation.subscribe`  | `session.ts`                                                           | Subscribes to `conversation.updated` events for one conversation                                            |\n"
-"| `conversation.commands`   | `session.ts`                                                           | Lists slash commands for a platform                                                                         |\n"
-"| `conversation.acpDock`    | [`acp.ts`](../../packages/sap-contract/src/frames/acp.ts)              | ACP dock operations for a conversation                                                                      |\n"
+"| Method                    | Schema                                                               | Hub behavior                                                                                                |\n"
+"| ------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
+"| `conversation.create`     | [`session.ts`](../../shared/sap-contract/src/frames/conversation.ts) | Creates session; sets `platform_extra.satellite_app_id`, `satellite_instance_id`, optional workspace fields |\n"
+"| `conversation.list`       | `session.ts`                                                         | Lists conversations, optional `platform` filter                                                             |\n"
+"| `conversation.messages`   | `session.ts`                                                         | Message history with `offset` / `limit`                                                                     |\n"
+"| `conversation.patchTitle` | `session.ts`                                                         | Updates conversation title                                                                                  |\n"
+"| `conversation.subscribe`  | `session.ts`                                                         | Subscribes to `conversation.updated` events for one conversation                                            |\n"
+"| `conversation.commands`   | `session.ts`                                                         | Lists slash commands for a platform                                                                         |\n"
+"| `conversation.acpDock`    | [`acp.ts`](../../shared/sap-contract/src/frames/acp.ts)              | ACP dock operations for a conversation                                                                      |\n"
 msgstr ""
 
 #. type: Title ###
@@ -134,9 +136,9 @@ msgstr ""
 #: docs/sap/methods.md:60
 #, no-wrap
 msgid ""
-"| Method         | Schema                                                            | Returns                                        |\n"
-"| -------------- | ----------------------------------------------------------------- | ---------------------------------------------- |\n"
-"| `message.send` | [`message.ts`](../../packages/sap-contract/src/frames/message.ts) | `{ stream_id }`; stream events follow on `evt` |\n"
+"| Method         | Schema                                                          | Returns                                        |\n"
+"| -------------- | --------------------------------------------------------------- | ---------------------------------------------- |\n"
+"| `message.send` | [`message.ts`](../../shared/sap-contract/src/frames/message.ts) | `{ stream_id }`; stream events follow on `evt` |\n"
 msgstr ""
 
 #. type: Plain text
@@ -147,7 +149,7 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/sap/methods.md:63 messages/po4a/en.xml:558
+#: docs/sap/methods.md:63 messages/po4a/en.xml:553
 #, no-wrap
 msgid "Terminal"
 msgstr ""
@@ -163,12 +165,12 @@ msgstr ""
 #: docs/sap/methods.md:73
 #, no-wrap
 msgid ""
-"| Method            | Schema                                                                                                      |\n"
-"| ----------------- | ----------------------------------------------------------------------------------------------------------- |\n"
-"| `terminal.attach` | [`terminal.ts`](../../packages/sap-contract/src/frames/terminal.ts) — optional `cwd`; returns `terminal_id` |\n"
-"| `terminal.write`  | `terminal_id`, `data`                                                                                       |\n"
-"| `terminal.resize` | `terminal_id`, `cols`, `rows`                                                                               |\n"
-"| `terminal.close`  | `terminal_id`                                                                                               |\n"
+"| Method            | Schema                                                                                                    |\n"
+"| ----------------- | --------------------------------------------------------------------------------------------------------- |\n"
+"| `terminal.attach` | [`terminal.ts`](../../shared/sap-contract/src/frames/terminal.ts) — optional `cwd`; returns `terminal_id` |\n"
+"| `terminal.write`  | `terminal_id`, `data`                                                                                     |\n"
+"| `terminal.resize` | `terminal_id`, `cols`, `rows`                                                                             |\n"
+"| `terminal.close`  | `terminal_id`                                                                                             |\n"
 msgstr ""
 
 #. type: Title ##

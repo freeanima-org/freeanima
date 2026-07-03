@@ -59,10 +59,10 @@ Bundled chat uses [`createSapDirectClient`](../../shared/sap-contract/src/direct
 - Electron shell: preload provides `createFileInstanceStore("chat")` → `~/.anima/satellites/chat/instance.json`
 - Capacitor: Preferences
 
-## Admin: Hub REST + bundled SPA
+## Console: Hub REST + bundled SPA
 
-Admin UI source SSOT: [`features/console/ui/admin/`](../../features/console/ui/admin/). Build helpers: [`features/console/build/`](../../features/console/build/)（Paraglide compile、admin hash）；SPA 打包进 desktop / mobile / web shell。
+Console UI source SSOT: [`features/console/ui/console/`](../../features/console/ui/console/). Build helpers: [`features/console/build/`](../../features/console/build/)（Paraglide compile、admin hash）；SPA 打包进 desktop / mobile / web shell。
 
 REST base: bundled pages use `window.satelliteShell.hubUrl` for Hub **`/api/*`**. Hub enables CORS for localhost / Capacitor origins.
 
-Local shell dev: `bun run dev:web` → `http://127.0.0.1:4173` (Hub must be running; includes Chat, Admin, settings).
+Local shell dev: `bun run dev:web` → `http://127.0.0.1:4173` (Hub must be running; includes Chat, Console, settings).

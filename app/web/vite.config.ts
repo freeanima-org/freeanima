@@ -64,7 +64,7 @@ function webDevPlugin(): Plugin {
         const port =
           addr && typeof addr === "object" ? addr.port : Number(process.env.WEB_DEV_PORT ?? 4173);
         console.log(
-          `[dev:web] Hub ${HUB_URL} · http://127.0.0.1:${port}/web/chat · Admin /web/admin/dashboard`,
+          `[dev:web] Hub ${HUB_URL} · http://127.0.0.1:${port}/web/chat · Console /web/console/dashboard`,
         );
       });
     },
@@ -113,9 +113,9 @@ function webPwaPlugin(): Plugin[] {
           icons: [{ src: "/web/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
         },
         {
-          name: "Admin",
-          short_name: "Admin",
-          url: "/web/admin/dashboard",
+          name: "Console",
+          short_name: "Console",
+          url: "/web/console/dashboard",
           icons: [{ src: "/web/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
         },
       ],

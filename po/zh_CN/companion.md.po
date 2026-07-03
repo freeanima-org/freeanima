@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 00:11+0800\n"
+"POT-Creation-Date: 2026-07-03 18:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/architecture.md:1 docs/features/companion.md:11
-#: messages/po4a/en.xml:579
+#: messages/po4a/en.xml:562
 #, no-wrap
 msgid "Architecture"
 msgstr "架构"
@@ -48,14 +48,24 @@ msgstr ""
 
 #. type: Fenced code block (text)
 #: docs/features/companion.md:13
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "FreeAnima Desktop (app/desktop)\n"
+#| "├── Electron Main — tray / multi-window + embedded companion sidecar\n"
+#| "│   ├── companion overlay — transparent always-on-top, VRM / speech bubble\n"
+#| "│   ├── companion settings — settings window\n"
+#| "│   ├── chat — Chat SPA (SAP direct, no sidecar)\n"
+#| "│   └── console — Console WebView (Hub REST)\n"
+#| "└── Renderer — preload satelliteShell; companion API via localhost sidecar\n"
+#| "         ↕ SAP WS\n"
+#| "    anima service Hub\n"
 msgid ""
 "FreeAnima Desktop (app/desktop)\n"
 "├── Electron Main — tray / multi-window + embedded companion sidecar\n"
 "│   ├── companion overlay — transparent always-on-top, VRM / speech bubble\n"
 "│   ├── companion settings — settings window\n"
 "│   ├── chat — Chat SPA (SAP direct, no sidecar)\n"
-"│   └── admin — Admin WebView (Hub REST)\n"
+"│   └── console — Console WebView (Hub REST)\n"
 "└── Renderer — preload satelliteShell; companion API via localhost sidecar\n"
 "         ↕ SAP WS\n"
 "    anima service Hub\n"
@@ -65,7 +75,7 @@ msgstr ""
 "│   ├── companion overlay — transparent always-on-top, VRM / speech bubble\n"
 "│   ├── companion settings — settings window\n"
 "│   ├── chat — Chat SPA (SAP direct, no sidecar)\n"
-"│   └── admin — Admin WebView (Hub REST)\n"
+"│   └── console — Console WebView (Hub REST)\n"
 "└── Renderer — preload satelliteShell; companion API via localhost sidecar\n"
 "         ↕ SAP WS\n"
 "    anima service Hub\n"
@@ -105,7 +115,7 @@ msgstr ""
 "| 客户端与 UI | 可分离               | 伴侣渲染与设置共用同一 Electron 应用 |\n"
 
 #. type: Content of: <messages><msg>
-#: docs/features/companion.md:36 messages/po4a/en.xml:584
+#: docs/features/companion.md:36 messages/po4a/en.xml:567
 #, no-wrap
 msgid "Features"
 msgstr "功能"
@@ -313,8 +323,9 @@ msgstr ""
 
 #. type: Title ###
 #: docs/features/companion.md:88
-#, no-wrap
-msgid "Electron desktop shell (companion + Chat + Admin)"
+#, fuzzy, no-wrap
+#| msgid "Electron desktop shell (companion + Chat + **Console)"
+msgid "Electron desktop shell (companion + Chat + Console)"
 msgstr "Electron 桌面壳层（伴侣 + 聊天室 + 管理台）"
 
 #. type: Fenced code block (bash)
@@ -403,8 +414,8 @@ msgstr ""
 "companion/instance.json`（不在 `satellites/` 下）。"
 
 #. type: Title ##
-#: docs/features/companion.md:120 docs/features/mobile-app.md:51
-#: docs/guide/database.md:91 docs/guide/remote-access.md:168
+#: docs/features/companion.md:120 docs/features/mobile-app.md:52
+#: docs/guide/database.md:88 docs/guide/remote-access.md:177
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
@@ -432,7 +443,7 @@ msgstr ""
 "| FBX 导入不可用           | 运行 `bun run --filter @freeanima/satellite-companion setup:fbx`（缓存到 `~/.anima/tools/fbx2gltf/`） |\n"
 
 #. type: Title ##
-#: docs/features/companion.md:131 docs/guide/remote-access.md:179
+#: docs/features/companion.md:131 docs/guide/remote-access.md:188
 #, no-wrap
 msgid "Related docs"
 msgstr "相关文档"

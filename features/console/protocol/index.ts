@@ -1,4 +1,4 @@
-/** Console REST wire types — colocated admin-contract. */
-export type * from "./admin-contract/api/index.ts";
-export * from "./admin-contract/date-json.ts";
-export * from "./admin-contract/display-util.ts";
+/** Console REST wire types — colocated console-contract. */
+export type * from "./console-contract/api/index.ts";
+export * from "./console-contract/date-json.ts";
+export * from "./console-contract/display-util.ts";

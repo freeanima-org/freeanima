@@ -5,7 +5,7 @@ import {
   writeOfflineCache,
 } from "@freeanima/shell-sdk/offline-cache";
 
-import { whenSapClientReady } from "./hub-rpc.ts";
+import { getEmailHubClient } from "./hub-client.ts";
 
 export type EmailAccountRow = {
   id: number;
@@ -32,8 +32,8 @@ export type EmailMessageRow = {
   tags: string[];
 };
 
-async function sap() {
-  return whenSapClientReady();
+function hub() {
+  return getEmailHubClient();
 }
 
 function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
@@ -66,8 +66,7 @@ export async function fetchEmailAccounts(): Promise<EmailAccountRow[]> {
   const cacheId = accountsCacheId();
   const cached = await readOfflineCache<EmailAccountRow[]>(scope, "email", cacheId);
   try {
-    const client = await sap();
-    const data = await client.request("emailaccount.list", withSubjectKind({}));
+    const data = await hub().call("emailaccount.list", withSubjectKind({}));
     void writeOfflineCache(scope, "email", cacheId, data.accounts);
     return data.accounts;
   } catch (err) {
@@ -86,8 +85,7 @@ export async function fetchEmailMessages(input: {
   const cacheId = messagesCacheId(input);
   const cached = await readOfflineCache<EmailMessageRow[]>(scope, "email", cacheId);
   try {
-    const client = await sap();
-    const data = await client.request("email.message.list", withSubjectKind(input));
+    const data = await hub().call("email.message.list", withSubjectKind(input));
     void writeOfflineCache(scope, "email", cacheId, data.messages);
     return data.messages;
   } catch (err) {
@@ -101,8 +99,7 @@ export async function readEmailMessage(id: number): Promise<EmailMessageRow> {
   const cacheId = messageCacheId(id);
   const cached = await readOfflineCache<EmailMessageRow>(scope, "email", cacheId);
   try {
-    const client = await sap();
-    const data = await client.request("email.message.read", withSubjectKind({ id }));
+    const data = await hub().call("email.message.read", withSubjectKind({ id }));
     void writeOfflineCache(scope, "email", cacheId, data.message);
     return data.message;
   } catch (err) {
@@ -112,8 +109,7 @@ export async function readEmailMessage(id: number): Promise<EmailMessageRow> {
 }
 
 export async function markEmailMessageRead(id: number): Promise<void> {
-  const client = await sap();
-  await client.request("email.message.markRead", withSubjectKind({ id }));
+  await hub().call("email.message.markRead", withSubjectKind({ id }));
 }
 
 export type EmailSyncResult = {
@@ -128,11 +124,7 @@ export async function syncEmailAccount(
   accountId?: number,
   limit = 100,
 ): Promise<EmailSyncResult[]> {
-  const client = await sap();
-  const data = await client.request(
-    "email.sync",
-    withSubjectKind({ account_id: accountId, limit }),
-  );
+  const data = await hub().call("email.sync", withSubjectKind({ account_id: accountId, limit }));
   const results = data.results;
   const failed = results.filter((row) => row.error);
   if (failed.length > 0) {
@@ -156,8 +148,7 @@ export async function searchEmailMessages(input: {
   const cacheId = searchCacheId(input);
   const cached = await readOfflineCache<EmailMessageRow[]>(scope, "email", cacheId);
   try {
-    const client = await sap();
-    const data = await client.request(
+    const data = await hub().call(
       "email.message.search",
       withSubjectKind({
         query: input.query,

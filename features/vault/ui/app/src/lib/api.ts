@@ -11,7 +11,7 @@ import type {
   VaultSecretsViewPayload,
 } from "@freeanima/sap-contract";
 import type { SubjectKind } from "@freeanima/shell-sdk";
-import { whenSapClientReady } from "./hub-rpc.ts";
+import { getVaultHubClient } from "./hub-client.ts";
 
 type VaultSapMethod =
   | "vault.list"
@@ -30,8 +30,7 @@ async function vaultRequest<T>(
   method: VaultSapMethod,
   payload: Record<string, unknown>,
 ): Promise<T> {
-  const client = await whenSapClientReady();
-  return client.request(method as never, payload as never) as Promise<T>;
+  return getVaultHubClient().call(method as never, payload as never) as Promise<T>;
 }
 
 export async function fetchVaultItems(

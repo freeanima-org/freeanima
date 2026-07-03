@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 18:19+0800\n"
+"POT-Creation-Date: 2026-07-03 18:23+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,14 +18,14 @@ msgstr ""
 
 #. type: Title ##
 #: docs/features/companion.md:120 docs/features/mobile-app.md:52
-#: docs/guide/database.md:91 docs/guide/remote-access.md:182
+#: docs/guide/database.md:88 docs/guide/remote-access.md:177
 #, no-wrap
 msgid "Troubleshooting"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/features/mobile-app.md:1 docs/features/mobile-app.md:5
-#: messages/po4a/en.xml:579
+#: messages/po4a/en.xml:574
 #, no-wrap
 msgid "Mobile app (Android)"
 msgstr ""
@@ -56,7 +56,7 @@ msgid ""
 "| ---------- | -------------------------------------------------------- |\n"
 "| Platform   | **Android only** sideload (APK); iOS later               |\n"
 "| UI         | 默认 bootstrap → Hub `/web/*`（与浏览器/PWA 同一产物）   |\n"
-"| Modules    | Chat + Admin（bundled shell-ui）                         |\n"
+"| Modules    | Chat + Console（bundled shell-ui）                         |\n"
 "| Hub config | APP **Hub settings**（Preferences）或 bootstrap 首次配置 |\n"
 "| Hub duties | `/api` REST + `/hub/rpc/v1` WebSocket                    |\n"
 msgstr ""
@@ -75,16 +75,16 @@ msgid ""
 "  Phone[Android WebView]\n"
 "  Shell[shell-ui SPA]\n"
 "  Chat[\"/chat\"]\n"
-"  Admin[\"/admin\"]\n"
+"  Console[\"/console\"]\n"
 "  Settings[\"/settings\"]\n"
 "  Hub[Anima Service]\n"
 "\n"
 "  Phone --> Shell\n"
 "  Shell --> Chat\n"
-"  Shell --> Admin\n"
+"  Shell --> Console\n"
 "  Shell --> Settings\n"
 "  Chat -->|SAP auth_token| Hub\n"
-"  Admin -->|REST Bearer| Hub\n"
+"  Console -->|REST Bearer| Hub\n"
 msgstr ""
 
 #. type: Plain text
@@ -133,7 +133,7 @@ msgstr ""
 #: docs/features/mobile-app.md:49
 msgid ""
 "**Test connection** → **Save and enter** → top bar switches **Chat** / "
-"**Admin**."
+"**Console**."
 msgstr ""
 
 #. type: Plain text
@@ -151,8 +151,8 @@ msgid ""
 "| ----------------------------------- | ----------------------------------------------------------------------------------------------- |\n"
 "| Keyboard covers chat input          | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes |\n"
 "| Chat input unresponsive             | No selected conversation (first install should auto-create); or SAP disconnected                |\n"
-"| Admin load failed / Failed to fetch | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header      |\n"
-"| Not Found                           | Avoid legacy paths like `/admin/dashboard/index.html`; use SPA `/admin/dashboard`               |\n"
+"| Console load failed / Failed to fetch | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header      |\n"
+"| Not Found                           | Avoid legacy paths like `/console`/dashboard/index.html`; use SPA `/console`/dashboard`               |\n"
 msgstr ""
 
 #. type: Title ##

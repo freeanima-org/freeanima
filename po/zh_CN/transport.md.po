@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 18:19+0800\n"
+"POT-Creation-Date: 2026-07-03 18:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,7 +34,7 @@ msgid "Envelope kinds"
 msgstr "信封类型"
 
 #. type: Content of: <messages><msg>
-#: docs/sap/hub-rpc.md:50 docs/sap/transport.md:99 messages/po4a/en.xml:117
+#: docs/sap/hub-rpc.md:50 docs/sap/transport.md:99 messages/po4a/en.xml:123
 #, no-wrap
 msgid "Reconnect"
 msgstr "重连"
@@ -99,10 +99,16 @@ msgstr ""
 
 #. type: Plain text
 #: docs/sap/transport.md:27
+#, fuzzy
+#| msgid ""
+#| "Hub RPC envelopes live in [`packages/hub-rpc/src/protocol.ts`](../../"
+#| "packages/hub-rpc/src/protocol.ts). SAP re-exports them from [`packages/"
+#| "sap-contract/src/protocol.ts`](../../packages/sap-contract/src/"
+#| "protocol.ts)."
 msgid ""
-"Hub RPC envelopes live in [`packages/hub-rpc/src/protocol.ts`](../../"
-"packages/hub-rpc/src/protocol.ts). SAP re-exports them from [`packages/sap-"
-"contract/src/protocol.ts`](../../packages/sap-contract/src/protocol.ts)."
+"Hub RPC envelopes live in [`shared/hub-rpc/src/protocol.ts`](../../shared/"
+"hub-rpc/src/protocol.ts). SAP re-exports them from [`shared/sap-contract/src/"
+"protocol.ts`](../../shared/sap-contract/src/protocol.ts)."
 msgstr ""
 "Hub RPC 信封位于 [`packages/hub-rpc/src/protocol.ts`](../../packages/hub-rpc/"
 "src/protocol.ts)。SAP 从 [`packages/sap-contract/src/protocol.ts`](../../"
@@ -213,8 +219,12 @@ msgstr "Hub RPC 握手"
 
 #. type: Plain text
 #: docs/sap/transport.md:62
+#, fuzzy
+#| msgid ""
+#| "Schema: [`packages/hub-rpc/src/lifecycle.ts`](../../packages/hub-rpc/src/"
+#| "lifecycle.ts)."
 msgid ""
-"Schema: [`packages/hub-rpc/src/lifecycle.ts`](../../packages/hub-rpc/src/"
+"Schema: [`shared/hub-rpc/src/lifecycle.ts`](../../shared/hub-rpc/src/"
 "lifecycle.ts)."
 msgstr ""
 "Schema：[`packages/hub-rpc/src/lifecycle.ts`](../../packages/hub-rpc/src/"
@@ -263,16 +273,29 @@ msgstr "Hub RPC connect 后，satellite 进程发送 `req sap.attach`："
 
 #. type: Plain text
 #: docs/sap/transport.md:79
+#, fuzzy
+#| msgid ""
+#| "Schema: [`packages/sap-contract/src/frames/sap-session.ts`](../../"
+#| "packages/sap-contract/src/frames/sap-session.ts)."
 msgid ""
-"Schema: [`packages/sap-contract/src/frames/sap-session.ts`](../../packages/"
-"sap-contract/src/frames/sap-session.ts)."
+"Schema: [`shared/sap-contract/src/frames/sap-session.ts`](../../shared/sap-"
+"contract/src/frames/sap-session.ts)."
 msgstr ""
 "Schema：[`packages/sap-contract/src/frames/sap-session.ts`](../../packages/"
 "sap-contract/src/frames/sap-session.ts)。"
 
 #. type: Plain text
 #: docs/sap/transport.md:88
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Field                | Required | Role                                       |\n"
+#| "| -------------------- | -------- | ------------------------------------------ |\n"
+#| "| `app_id`             | yes      | Satellite app id (e.g. `pair-programming`) |\n"
+#| "| `instance_id`        | no       | 3-char id; omit on first register          |\n"
+#| "| `protocol`           | yes      | `SAP/1.0`                                  |\n"
+#| "| `features_requested` | no       | Feature flags                              |\n"
+#| "| `http_url`           | no       | Satellite UI URL for **Console                 |\n"
+#| "| `instance_label`     | no       | Display label                              |\n"
 msgid ""
 "| Field                | Required | Role                                       |\n"
 "| -------------------- | -------- | ------------------------------------------ |\n"
@@ -280,7 +303,7 @@ msgid ""
 "| `instance_id`        | no       | 3-char id; omit on first register          |\n"
 "| `protocol`           | yes      | `SAP/1.0`                                  |\n"
 "| `features_requested` | no       | Feature flags                              |\n"
-"| `http_url`           | no       | Satellite UI URL for Admin                 |\n"
+"| `http_url`           | no       | Satellite UI URL for Console                 |\n"
 "| `instance_label`     | no       | Display label                              |\n"
 msgstr ""
 "| 字段                 | 必填 | 作用                                       |\n"
@@ -303,9 +326,14 @@ msgstr ""
 
 #. type: Plain text
 #: docs/sap/transport.md:92
+#, fuzzy
+#| msgid ""
+#| "Use `createSatelliteHub()` ([`packages/sap-contract/src/satellite-hub.ts`]"
+#| "(../../packages/sap-contract/src/satellite-hub.ts)) — it runs Hub RPC "
+#| "transport and performs attach automatically."
 msgid ""
-"Use `createSatelliteHub()` ([`packages/sap-contract/src/satellite-hub.ts`]"
-"(../../packages/sap-contract/src/satellite-hub.ts)) — it runs Hub RPC "
+"Use `createSatelliteHub()` ([`shared/sap-contract/src/satellite-hub.ts`]"
+"(../../shared/sap-contract/src/satellite-hub.ts)) — it runs Hub RPC "
 "transport and performs attach automatically."
 msgstr ""
 "使用 `createSatelliteHub()`（[`packages/sap-contract/src/satellite-hub.ts`]"

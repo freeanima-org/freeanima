@@ -66,7 +66,7 @@ function DesktopModuleShell() {
   return (
     <div className="shell-module-layout h-full flex flex-col bg-background text-foreground">
       <header className="shell-top-nav flex items-center bg-muted border-b border min-h-12 px-3 shrink-0 relative z-50">
-        <BrandLockup name={shellMessages.admin_brand()} logoSize={22} className="shrink-0" />
+        <BrandLockup name={shellMessages.console_brand()} logoSize={22} className="shrink-0" />
         <nav className="flex gap-1 ml-4 flex-1" aria-label="模块导航">
           {nav.map((item) => (
             <ShellNavLink key={item.to} {...item} layout="top" />

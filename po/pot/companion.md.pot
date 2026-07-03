@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-01 00:11+0800\n"
+"POT-Creation-Date: 2026-07-03 18:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/architecture.md:1 docs/features/companion.md:11
-#: messages/po4a/en.xml:579
+#: messages/po4a/en.xml:562
 #, no-wrap
 msgid "Architecture"
 msgstr ""
@@ -53,7 +53,7 @@ msgid ""
 "│   ├── companion overlay — transparent always-on-top, VRM / speech bubble\n"
 "│   ├── companion settings — settings window\n"
 "│   ├── chat — Chat SPA (SAP direct, no sidecar)\n"
-"│   └── admin — Admin WebView (Hub REST)\n"
+"│   └── console — Console WebView (Hub REST)\n"
 "└── Renderer — preload satelliteShell; companion API via localhost sidecar\n"
 "         ↕ SAP WS\n"
 "    anima service Hub\n"
@@ -85,7 +85,7 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/features/companion.md:36 messages/po4a/en.xml:584
+#: docs/features/companion.md:36 messages/po4a/en.xml:567
 #, no-wrap
 msgid "Features"
 msgstr ""
@@ -270,7 +270,7 @@ msgstr ""
 #. type: Title ###
 #: docs/features/companion.md:88
 #, no-wrap
-msgid "Electron desktop shell (companion + Chat + Admin)"
+msgid "Electron desktop shell (companion + Chat + Console)"
 msgstr ""
 
 #. type: Fenced code block (bash)
@@ -338,8 +338,8 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/companion.md:120 docs/features/mobile-app.md:51
-#: docs/guide/database.md:91 docs/guide/remote-access.md:168
+#: docs/features/companion.md:120 docs/features/mobile-app.md:52
+#: docs/guide/database.md:88 docs/guide/remote-access.md:177
 #, no-wrap
 msgid "Troubleshooting"
 msgstr ""
@@ -359,7 +359,7 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/companion.md:131 docs/guide/remote-access.md:179
+#: docs/features/companion.md:131 docs/guide/remote-access.md:188
 #, no-wrap
 msgid "Related docs"
 msgstr ""

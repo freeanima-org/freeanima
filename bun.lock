@@ -31,8 +31,8 @@
       },
       "dependencies": {
         "@clack/prompts": "^1.6.0",
-        "@freeanima/admin-api": "workspace:*",
         "@freeanima/app-web": "workspace:*",
+        "@freeanima/console-api": "workspace:*",
         "@freeanima/core": "workspace:*",
         "@freeanima/platform": "workspace:*",
         "@freeanima/sap-contract": "workspace:*",
@@ -230,6 +230,7 @@
       "dependencies": {
         "@capacitor/keyboard": "^8.0.5",
         "@freeanima/core": "workspace:*",
+        "@freeanima/hub-client": "workspace:*",
         "@freeanima/sap-contract": "workspace:*",
         "@freeanima/shell-sdk": "workspace:*",
         "@freeanima/ui-kit": "workspace:*",
@@ -249,9 +250,9 @@
     "features/console": {
       "name": "@freeanima/feature-console",
       "dependencies": {
-        "@elysiajs/eden": "^1.4.9",
-        "@freeanima/admin-api": "workspace:*",
-        "@freeanima/admin-contract": "workspace:*",
+        "@freeanima/console-api": "workspace:*",
+        "@freeanima/console-contract": "workspace:*",
+        "@freeanima/hub-client": "workspace:*",
         "@freeanima/shell-sdk": "workspace:*",
         "@freeanima/ui-kit": "workspace:*",
         "@tanstack/react-router": "^1.170.11",
@@ -271,10 +272,9 @@
         "typescript": "catalog:",
       },
     },
-    "features/console/hub/admin-api": {
-      "name": "@freeanima/admin-api",
+    "features/console/hub/console-api": {
+      "name": "@freeanima/console-api",
       "dependencies": {
-        "@freeanima/admin-contract": "workspace:*",
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-identity": "workspace:*",
         "@freeanima/capabilities-mcp-client": "workspace:*",
@@ -282,8 +282,10 @@
         "@freeanima/capabilities-memory": "workspace:*",
         "@freeanima/capabilities-satellite": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
+        "@freeanima/console-contract": "workspace:*",
         "@freeanima/core": "workspace:*",
         "@freeanima/feature-task": "workspace:*",
+        "@freeanima/hub-contract": "workspace:*",
         "@freeanima/kernel": "workspace:*",
         "@freeanima/platform": "workspace:*",
         "@freeanima/runtime": "workspace:*",
@@ -298,11 +300,12 @@
         "typescript": "catalog:",
       },
     },
-    "features/console/protocol/admin-contract": {
-      "name": "@freeanima/admin-contract",
+    "features/console/protocol/console-contract": {
+      "name": "@freeanima/console-contract",
       "devDependencies": {
-        "@freeanima/admin-api": "workspace:*",
+        "@freeanima/console-api": "workspace:*",
         "@freeanima/core": "workspace:*",
+        "@freeanima/hub-contract": "workspace:*",
         "@freeanima/platform": "workspace:*",
         "typescript": "catalog:",
       },
@@ -311,6 +314,7 @@
       "name": "@freeanima/feature-diary",
       "dependencies": {
         "@freeanima/core": "workspace:*",
+        "@freeanima/hub-client": "workspace:*",
         "@freeanima/sap-contract": "workspace:*",
         "@freeanima/shell-sdk": "workspace:*",
         "@freeanima/ui-kit": "workspace:*",
@@ -329,6 +333,7 @@
       "dependencies": {
         "@freeanima/capabilities-memory": "workspace:*",
         "@freeanima/core": "workspace:*",
+        "@freeanima/hub-client": "workspace:*",
         "@freeanima/sap-contract": "workspace:*",
         "@freeanima/shell-sdk": "workspace:*",
         "@freeanima/ui-kit": "workspace:*",
@@ -346,6 +351,7 @@
       "name": "@freeanima/feature-email",
       "dependencies": {
         "@freeanima/core": "workspace:*",
+        "@freeanima/hub-client": "workspace:*",
         "@freeanima/sap-contract": "workspace:*",
         "@freeanima/shell-sdk": "workspace:*",
         "@freeanima/ui-kit": "workspace:*",
@@ -354,6 +360,7 @@
         "zod": "catalog:",
       },
       "devDependencies": {
+        "@freeanima/platform": "workspace:*",
         "@types/bun": "catalog:",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
@@ -363,6 +370,7 @@
       "name": "@freeanima/feature-notification",
       "dependencies": {
         "@freeanima/core": "workspace:*",
+        "@freeanima/hub-client": "workspace:*",
         "@freeanima/sap-contract": "workspace:*",
         "@freeanima/shell-sdk": "workspace:*",
         "@freeanima/ui-kit": "workspace:*",
@@ -384,6 +392,7 @@
         "@dnd-kit/sortable": "^10.0.0",
         "@dnd-kit/utilities": "^3.2.2",
         "@freeanima/core": "workspace:*",
+        "@freeanima/hub-client": "workspace:*",
         "@freeanima/sap-contract": "workspace:*",
         "@freeanima/shell-sdk": "workspace:*",
         "@freeanima/ui-kit": "workspace:*",
@@ -401,6 +410,7 @@
       "name": "@freeanima/feature-vault",
       "dependencies": {
         "@freeanima/core": "workspace:*",
+        "@freeanima/hub-client": "workspace:*",
         "@freeanima/sap-contract": "workspace:*",
         "@freeanima/shell-sdk": "workspace:*",
         "@freeanima/ui-kit": "workspace:*",
@@ -410,6 +420,7 @@
         "zod": "catalog:",
       },
       "devDependencies": {
+        "@freeanima/platform": "workspace:*",
         "@types/bun": "catalog:",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
@@ -516,6 +527,7 @@
         "@freeanima/feature-notification": "workspace:*",
         "@freeanima/feature-task": "workspace:*",
         "@freeanima/feature-vault": "workspace:*",
+        "@freeanima/hub-contract": "workspace:*",
         "@freeanima/hub-rpc": "workspace:*",
         "@freeanima/kernel": "workspace:*",
         "@freeanima/runtime": "workspace:*",
@@ -615,6 +627,31 @@
         "vite": "catalog:",
       },
     },
+    "shared/hub-client": {
+      "name": "@freeanima/hub-client",
+      "dependencies": {
+        "@freeanima/hub-contract": "workspace:*",
+        "@freeanima/hub-rpc": "workspace:*",
+        "@freeanima/kernel": "workspace:*",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "shared/hub-contract": {
+      "name": "@freeanima/hub-contract",
+      "dependencies": {
+        "@freeanima/core": "workspace:*",
+        "@freeanima/kernel": "workspace:*",
+        "@freeanima/sap-contract": "workspace:*",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+        "@types/node": "catalog:",
+      },
+    },
     "shared/hub-rpc": {
       "name": "@freeanima/hub-rpc",
       "dependencies": {
@@ -672,13 +709,13 @@
         "@freeanima/runtime": "workspace:*",
       },
       "devDependencies": {
-        "@freeanima/admin-api": "workspace:*",
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-identity": "workspace:*",
         "@freeanima/capabilities-llm-openai": "workspace:*",
         "@freeanima/capabilities-memory": "workspace:*",
         "@freeanima/capabilities-satellite": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
+        "@freeanima/console-api": "workspace:*",
         "@freeanima/feature-notification": "workspace:*",
         "@freeanima/feature-task": "workspace:*",
         "@freeanima/kernel": "workspace:*",
@@ -1178,10 +1215,6 @@
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.11", "", {}, "sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg=="],
 
-    "@freeanima/admin-api": ["@freeanima/admin-api@workspace:features/console/hub/admin-api"],
-
-    "@freeanima/admin-contract": ["@freeanima/admin-contract@workspace:features/console/protocol/admin-contract"],
-
     "@freeanima/app-desktop": ["@freeanima/app-desktop@workspace:app/desktop"],
 
     "@freeanima/app-mobile": ["@freeanima/app-mobile@workspace:app/mobile"],
@@ -1206,6 +1239,10 @@
 
     "@freeanima/cli": ["@freeanima/cli@workspace:app/cli"],
 
+    "@freeanima/console-api": ["@freeanima/console-api@workspace:features/console/hub/console-api"],
+
+    "@freeanima/console-contract": ["@freeanima/console-contract@workspace:features/console/protocol/console-contract"],
+
     "@freeanima/core": ["@freeanima/core@workspace:core"],
 
     "@freeanima/feature-chat": ["@freeanima/feature-chat@workspace:features/chat"],
@@ -1223,6 +1260,10 @@
     "@freeanima/feature-task": ["@freeanima/feature-task@workspace:features/task"],
 
     "@freeanima/feature-vault": ["@freeanima/feature-vault@workspace:features/vault"],
+
+    "@freeanima/hub-client": ["@freeanima/hub-client@workspace:shared/hub-client"],
+
+    "@freeanima/hub-contract": ["@freeanima/hub-contract@workspace:shared/hub-contract"],
 
     "@freeanima/hub-rpc": ["@freeanima/hub-rpc@workspace:shared/hub-rpc"],
 

@@ -277,7 +277,7 @@ export async function runTunnelSetup(opts: SetupPromptsOptions = {}): Promise<vo
     s.stop("Tunnel 配置完成");
 
     p.log.success(`公网 URL: ${result.publicUrl}`);
-    p.log.info("Admin: " + result.publicUrl + "/admin/dashboard");
+    p.log.info("Console: " + result.publicUrl + "/console/dashboard");
     p.log.info("请运行 anima token create --subject-id <id> 创建 token，并在客户端 Hub 设置中填写");
 
     if (result.manualDnsSteps) {

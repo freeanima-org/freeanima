@@ -83,7 +83,7 @@ Schema: [`shared/sap-contract/src/frames/sap-session.ts`](../../shared/sap-contr
 | `instance_id`        | no       | 3-char id; omit on first register          |
 | `protocol`           | yes      | `SAP/1.0`                                  |
 | `features_requested` | no       | Feature flags                              |
-| `http_url`           | no       | Satellite UI URL for Admin                 |
+| `http_url`           | no       | Satellite UI URL for Console               |
 | `instance_label`     | no       | Display label                              |
 
 Reply payload includes `instance_id`, `features_enabled`, `server_info` (same semantics as legacy SAP connect).

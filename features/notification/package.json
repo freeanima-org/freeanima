@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@freeanima/core": "workspace:*",
+    "@freeanima/hub-client": "workspace:*",
     "@freeanima/sap-contract": "workspace:*",
     "@freeanima/shell-sdk": "workspace:*",
     "@freeanima/ui-kit": "workspace:*",

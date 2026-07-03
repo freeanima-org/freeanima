@@ -16,7 +16,7 @@ FreeAnima Desktop (app/desktop)
 │   ├── companion overlay — transparent always-on-top, VRM / speech bubble
 │   ├── companion settings — settings window
 │   ├── chat — Chat SPA (SAP direct, no sidecar)
-│   └── admin — Admin WebView (Hub REST)
+│   └── console — Console WebView (Hub REST)
 └── Renderer — preload satelliteShell; companion API via localhost sidecar
          ↕ SAP WS
     anima service Hub
@@ -85,7 +85,7 @@ bun run dev
 
 In the Electron desktop shell, open settings via tray → **Settings…**; the overlay has no settings button.
 
-### Electron desktop shell (companion + Chat + Admin)
+### Electron desktop shell (companion + Chat + Console)
 
 ```bash
 cd app/desktop

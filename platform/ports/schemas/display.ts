@@ -1,4 +1,4 @@
-/** Admin message display view (projected from Slice A StoredMessage) */
+/** Console message display view (projected from Slice A StoredMessage) */
 
 export type DisplayToolCall = {
   name: string;

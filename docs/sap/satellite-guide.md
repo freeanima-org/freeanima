@@ -25,7 +25,7 @@ satellites:
       SATELLITE_PORT: "4173"
 ```
 
-**Chat / Task / Admin** etc. are bundled in shell-ui (desktop / mobile / web); no separate `satellites:` dev process needed; browser local debug: `bun run dev:web`.
+**Chat / Task / Console** etc. are bundled in shell-ui (desktop / mobile / web); no separate `satellites:` dev process needed; browser local debug: `bun run dev:web`.
 
 | Field              | Role                                             |
 | ------------------ | ------------------------------------------------ |
@@ -40,15 +40,15 @@ See [service.md](../guide/service.md) for systemd unit paths and startup order.
 
 ### Dynamic (SAP connect)
 
-No `command` in config. Start the satellite yourself; it connects to Hub via SAP WebSocket. Instances appear on Admin → Satellites after connect.
+No `command` in config. Start the satellite yourself; it connects to Hub via SAP WebSocket. Instances appear on Console → Satellites after connect.
 
 There is **no** global `studio:` section in `config.yaml`.
 
-Open managed satellite UI at the URL from Admin (SAP `http_url`), typically:
+Open managed satellite UI at the URL from Console (SAP `http_url`), typically:
 
 - Pair-programming: `http://127.0.0.1:4173`
 
-Shell satellites (Chat, Admin, etc.) open in desktop / mobile / web shell routes; no dedicated port.
+Shell satellites (Chat, Console, etc.) open in desktop / mobile / web shell routes; no dedicated port.
 
 ## Instance allocation strategies
 
@@ -72,7 +72,7 @@ flowchart TB
   Workspace --> Platform3["platform = sap:pairprogramming:{projectId}"]
 ```
 
-**Chat (singleton):** all desktop / mobile clients share `CHAT_INSTANCE_ID` (`def`) so `conversation.list` is unified across devices. Chat registers no satellite tools; multiple devices may connect with the same id (Admin shows the last `http_url`).
+**Chat (singleton):** all desktop / mobile clients share `CHAT_INSTANCE_ID` (`def`) so `conversation.list` is unified across devices. Chat registers no satellite tools; multiple devices may connect with the same id (Console shows the last `http_url`).
 
 **Companion (machine):** `~/.anima/companion/instance.json` — one id per computer.
 
@@ -182,9 +182,9 @@ Transport handles WebSocket open, `connect` handshake, heartbeat, and reconnect 
 
 Per [`.agent/rules/code-layers.md`](../../.agent/rules/code-layers.md) (Dependency allow/deny matrix): `satellites/*` may depend only on `@freeanima/sap-contract`, `@freeanima/kernel`, and `kernel-*` packages. Do not import `platform`, `runtime`, `core`, or `capabilities-*` from Satellite code.
 
-## Admin visibility
+## Console visibility
 
-`GET /api/satellites/status` (Admin → Satellites) reads `SatelliteManager.getStatus()`: connected instances, `http_url`, registered tools, heartbeat timestamps.
+`GET /api/satellites/status` (Console → Satellites) reads `SatelliteManager.getStatus()`: connected instances, `http_url`, registered tools, heartbeat timestamps.
 
 ## Further reading
 

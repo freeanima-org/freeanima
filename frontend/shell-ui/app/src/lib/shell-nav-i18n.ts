@@ -9,38 +9,38 @@ export type ShellNavItem = {
 /** Desktop top bar — all primary modules */
 export function shellNavItems(): ShellNavItem[] {
   return [
-    { to: "/chat", match: "/chat", label: () => m.admin_nav_chat() },
-    { to: "/tasks", match: "/tasks", label: () => m.admin_nav_tasks() },
-    { to: "/email", match: "/email", label: () => m.admin_nav_email() },
-    { to: "/diary", match: "/diary", label: () => m.admin_nav_diary() },
-    { to: "/vault", match: "/vault", label: () => m.admin_nav_vault() },
-    { to: "/dream", match: "/dream", label: () => m.admin_nav_dream() },
+    { to: "/chat", match: "/chat", label: () => m.console_nav_chat() },
+    { to: "/tasks", match: "/tasks", label: () => m.console_nav_tasks() },
+    { to: "/email", match: "/email", label: () => m.console_nav_email() },
+    { to: "/diary", match: "/diary", label: () => m.console_nav_diary() },
+    { to: "/vault", match: "/vault", label: () => m.console_nav_vault() },
+    { to: "/dream", match: "/dream", label: () => m.console_nav_dream() },
     {
       to: "/notifications",
       match: "/notifications",
-      label: () => m.admin_nav_notifications(),
+      label: () => m.console_nav_notifications(),
     },
-    { to: "/admin/dashboard", match: "/admin", label: () => m.admin_nav_dashboard() },
+    { to: "/console/dashboard", match: "/console", label: () => m.console_nav_dashboard() },
     {
       to: "/settings",
       match: "/settings",
-      label: () => m.admin_nav_settings(),
+      label: () => m.console_nav_settings(),
     },
   ];
 }
 
-/** Mobile bottom bar — core modules (admin/settings via More) */
+/** Mobile bottom bar — core modules (console/settings via More) */
 export function shellMobilePrimaryNavItems(): ShellNavItem[] {
   return [
-    { to: "/chat", match: "/chat", label: () => m.admin_nav_chat() },
-    { to: "/tasks", match: "/tasks", label: () => m.admin_nav_tasks() },
-    { to: "/email", match: "/email", label: () => m.admin_nav_email() },
-    { to: "/diary", match: "/diary", label: () => m.admin_nav_diary() },
-    { to: "/dream", match: "/dream", label: () => m.admin_nav_dream() },
+    { to: "/chat", match: "/chat", label: () => m.console_nav_chat() },
+    { to: "/tasks", match: "/tasks", label: () => m.console_nav_tasks() },
+    { to: "/email", match: "/email", label: () => m.console_nav_email() },
+    { to: "/diary", match: "/diary", label: () => m.console_nav_diary() },
+    { to: "/dream", match: "/dream", label: () => m.console_nav_dream() },
     {
       to: "/notifications",
       match: "/notifications",
-      label: () => m.admin_nav_notifications(),
+      label: () => m.console_nav_notifications(),
     },
   ];
 }
@@ -48,8 +48,8 @@ export function shellMobilePrimaryNavItems(): ShellNavItem[] {
 /** Mobile More menu — secondary modules */
 export function shellMobileMoreNavItems(): ShellNavItem[] {
   return [
-    { to: "/vault", match: "/vault", label: () => m.admin_nav_vault() },
-    { to: "/admin/dashboard", match: "/admin", label: () => m.admin_nav_dashboard() },
-    { to: "/settings", match: "/settings", label: () => m.admin_nav_settings() },
+    { to: "/vault", match: "/vault", label: () => m.console_nav_vault() },
+    { to: "/console/dashboard", match: "/console", label: () => m.console_nav_dashboard() },
+    { to: "/settings", match: "/settings", label: () => m.console_nav_settings() },
   ];
 }

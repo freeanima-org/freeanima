@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.6.0",
-    "@freeanima/admin-api": "workspace:*",
+    "@freeanima/console-api": "workspace:*",
     "@freeanima/app-web": "workspace:*",
     "@freeanima/core": "workspace:*",
     "@freeanima/platform": "workspace:*",

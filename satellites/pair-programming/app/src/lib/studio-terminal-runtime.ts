@@ -204,7 +204,7 @@ class StudioTerminalRuntime {
         }
       },
       onError: () => {
-        if (this.alive) this.setStatus(m.admin_common_websocket_failed());
+        if (this.alive) this.setStatus(m.console_common_websocket_failed());
       },
       onComplete: () => {
         if (this.alive) this.setStatus(this.statusMsg || m.pair_disconnected());

@@ -33,7 +33,7 @@ describe("startWebStaticServer", () => {
     await handle.close();
   });
 
-  test("falls back to index.html for deep admin routes and serves root assets", async () => {
+  test("falls back to index.html for deep console routes and serves root assets", async () => {
     const dist = mkdtempSync(join(tmpdir(), "web-dist-"));
     const indexHtml =
       '<html><head><script src="/web/assets/main.js"></script></head><body>ok</body></html>';
@@ -48,7 +48,7 @@ describe("startWebStaticServer", () => {
     });
 
     const port = handle.port;
-    const adminPage = await fetch(`http://127.0.0.1:${port}/web/admin/dashboard`);
+    const adminPage = await fetch(`http://127.0.0.1:${port}/web/console/dashboard`);
     expect(adminPage.ok).toBe(true);
     expect(await adminPage.text()).toContain('src="/web/assets/main.js"');
 

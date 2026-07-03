@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 19:53+0800\n"
+"POT-Creation-Date: 2026-07-03 18:12+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,7 +25,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/hub-rpc.md:8
 #, no-wrap
-msgid "**Hub RPC** (`HubRPC/1.0`) is the WebSocket transport between any Hub client and the agent runtime. It is implemented in [`packages/hub-rpc/`](../../packages/hub-rpc/) and served at **`/hub/rpc/v1`**.\n"
+msgid "**Hub RPC** (`HubRPC/1.0`) is the WebSocket transport between any Hub client and the agent runtime. It is implemented in [`shared/hub-rpc/`](../../shared/hub-rpc/) and served at **`/hub/rpc/v1`**.\n"
 msgstr ""
 
 #. type: Plain text
@@ -144,7 +144,7 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/sap/hub-rpc.md:50 docs/sap/transport.md:99 messages/po4a/en.xml:117
+#: docs/sap/hub-rpc.md:50 docs/sap/transport.md:99 messages/po4a/en.xml:123
 #, no-wrap
 msgid "Reconnect"
 msgstr ""

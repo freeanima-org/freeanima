@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-24 17:13+0800\n"
+"POT-Creation-Date: 2026-07-03 18:22+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,8 +40,8 @@ msgstr ""
 #: docs/sap/events.md:12
 msgid ""
 "After `message.send` returns `stream_id`, Hub pushes `stream.*` events. "
-"Defined in [`packages/sap-contract/src/frames/message.ts`](../../packages/"
-"sap-contract/src/frames/message.ts) as `streamEventMethods`."
+"Defined in [`shared/sap-contract/src/frames/message.ts`](../../shared/sap-"
+"contract/src/frames/message.ts) as `streamEventMethods`."
 msgstr ""
 
 #. type: Fenced code block (mermaid)
@@ -96,7 +96,7 @@ msgstr ""
 #. type: Title ##
 #: docs/sap/events.md:49
 #, no-wrap
-msgid "SAP stream → Admin SSE"
+msgid "SAP stream → Console SSE"
 msgstr ""
 
 #. type: Plain text
@@ -174,7 +174,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/events.md:87
 msgid ""
-"Constants: `TERMINAL_EVENT_METHODS` in [`frames/terminal.ts`](../../packages/"
+"Constants: `TERMINAL_EVENT_METHODS` in [`frames/terminal.ts`](../../shared/"
 "sap-contract/src/frames/terminal.ts)."
 msgstr ""
 
@@ -196,7 +196,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/events.md:95
 msgid ""
-"Payload schema: `toolCallPayloadSchema` in [`frames/tool.ts`](../../packages/"
+"Payload schema: `toolCallPayloadSchema` in [`frames/tool.ts`](../../shared/"
 "sap-contract/src/frames/tool.ts) — includes `call_id`, `tool_name`, "
 "`local_name`, `args`, `conversation_id`, optional `workspace_root`."
 msgstr ""

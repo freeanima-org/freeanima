@@ -237,7 +237,7 @@ export function ChatApp() {
           platform: "",
         },
       )
-    : m.admin_chat_title();
+    : m.console_chat_title();
 
   const acpDock = useAcpProgressDock(currentId, {
     patchProgress: patchProgressLine,
@@ -747,7 +747,7 @@ export function ChatApp() {
     return (
       <div className="h-full flex items-center justify-center p-8">
         <div className="max-w-md text-center space-y-3">
-          <h2 className="text-lg font-bold">{m.admin_chat_title()}</h2>
+          <h2 className="text-lg font-bold">{m.console_chat_title()}</h2>
           <p className="text-sm text-destructive">{error}</p>
           <p className="text-xs text-muted-foreground">
             {getSatelliteShell()?.hubWsUrl
@@ -786,10 +786,10 @@ export function ChatApp() {
           size="sm"
           className="h-7 shrink-0 px-2"
           disabled={refreshing || !ready}
-          aria-label={m.admin_common_refresh()}
+          aria-label={m.console_common_refresh()}
           onClick={() => void handleManualRefresh()}
         >
-          {refreshing ? <Spinner className="size-3.5" /> : m.admin_common_refresh()}
+          {refreshing ? <Spinner className="size-3.5" /> : m.console_common_refresh()}
         </Button>
         <Button
           type="button"
@@ -797,7 +797,7 @@ export function ChatApp() {
           className={`h-7 px-2 ${drawerNav ? "" : "hidden"}`}
           onClick={startConversation}
         >
-          {m.admin_common_new_conversation()}
+          {m.console_common_new_conversation()}
         </Button>
         {nativeShell ? (
           <Button
@@ -844,7 +844,7 @@ export function ChatApp() {
                 className="w-full"
                 onClick={() => void newConversation()}
               >
-                {m.admin_common_new_conversation()}
+                {m.console_common_new_conversation()}
               </Button>
               <label className="text-muted-foreground flex cursor-pointer select-none items-center gap-2 px-1 text-xs">
                 <Checkbox
@@ -881,9 +881,9 @@ export function ChatApp() {
         >
           {!currentId ? (
             <div className="flex flex-col items-center justify-center h-full gap-3 text-foreground/40 text-sm">
-              <p>{m.admin_chat_select_conversation()}</p>
+              <p>{m.console_chat_select_conversation()}</p>
               <Button type="button" size="sm" disabled={writesDisabled} onClick={startConversation}>
-                {m.admin_common_new_conversation()}
+                {m.console_common_new_conversation()}
               </Button>
             </div>
           ) : messagesLoading ? (
@@ -892,7 +892,7 @@ export function ChatApp() {
             </div>
           ) : display.length === 0 && !streamVisible && !recovering ? (
             <div className="flex items-center justify-center h-full text-foreground/40 text-sm">
-              {m.admin_chat_send_first_message()}
+              {m.console_chat_send_first_message()}
             </div>
           ) : null}
 
@@ -919,7 +919,7 @@ export function ChatApp() {
                             setEditDraft("");
                           }}
                         >
-                          {m.admin_common_cancel()}
+                          {m.console_common_cancel()}
                         </Button>
                         <Button
                           type="button"
@@ -928,7 +928,7 @@ export function ChatApp() {
                           disabled={!editDraft.trim() || writesDisabled}
                           onClick={() => void confirmReeditUserMessage()}
                         >
-                          {m.admin_common_confirm()}
+                          {m.console_common_confirm()}
                         </Button>
                       </div>
                     </div>
@@ -978,7 +978,7 @@ export function ChatApp() {
           {clarifyPending ? (
             <Alert variant="info" className="shadow-sm">
               <AlertDescription className="w-full space-y-2">
-                <p className="font-medium">{m.admin_chat_clarify_hint()}</p>
+                <p className="font-medium">{m.console_chat_clarify_hint()}</p>
                 {clarifyPending.items.map((item, ci) => (
                   <div key={ci} className="text-sm">
                     <p>
@@ -1013,7 +1013,7 @@ export function ChatApp() {
             <div className="flex justify-start">
               <div className="chat-bubble chat-bubble-assistant text-muted-foreground flex items-center gap-2 text-sm">
                 <Spinner className="size-3" />
-                {m.admin_message_waiting_result()}
+                {m.console_message_waiting_result()}
               </div>
             </div>
           ) : null}
@@ -1037,7 +1037,7 @@ export function ChatApp() {
                     className="h-7 shrink-0 px-2"
                     onClick={() => void sendQueuedNow(item.id)}
                   >
-                    {m.admin_chat_queue_send_now()}
+                    {m.console_chat_queue_send_now()}
                   </Button>
                 </li>
               ))}
@@ -1099,7 +1099,7 @@ export function ChatApp() {
                 }}
                 rows={1}
                 className="min-h-[2.75rem] max-h-48 w-full resize-none py-2.5 leading-normal"
-                placeholder={m.admin_chat_message_placeholder()}
+                placeholder={m.console_chat_message_placeholder()}
                 disabled={writesDisabled}
                 onFocus={() => {
                   requestAnimationFrame(() => {
@@ -1111,11 +1111,11 @@ export function ChatApp() {
             </div>
             {streamVisible ? (
               <Button type="submit" variant="destructive" disabled={writesDisabled}>
-                {m.admin_common_stop()}
+                {m.console_common_stop()}
               </Button>
             ) : (
               <Button type="submit" disabled={!inputText.trim() || writesDisabled}>
-                {m.admin_common_send()}
+                {m.console_common_send()}
               </Button>
             )}
           </form>
@@ -1132,14 +1132,14 @@ export function ChatApp() {
             className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm"
             onClick={() => void copyMessageText(messageMenu.content)}
           >
-            {m.admin_common_copy()}
+            {m.console_common_copy()}
           </div>
           {messageMenu.role === "user" && messageMenu.index === lastUserMessageIndex ? (
             <div
               className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm"
               onClick={startReeditUserMessage}
             >
-              {m.admin_common_edit()}
+              {m.console_common_edit()}
             </div>
           ) : null}
         </div>
@@ -1151,7 +1151,7 @@ export function ChatApp() {
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
           <div className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm" onClick={startRename}>
-            {m.admin_common_rename()}
+            {m.console_common_rename()}
           </div>
           {contextConversation?.archivedAt ? (
             <div
@@ -1190,7 +1190,7 @@ export function ChatApp() {
       <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
         <DialogContent showCloseButton={false} className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>{m.admin_common_edit_title()}</DialogTitle>
+            <DialogTitle>{m.console_common_edit_title()}</DialogTitle>
           </DialogHeader>
           <Input
             ref={renameInputRef}
@@ -1198,7 +1198,7 @@ export function ChatApp() {
             onChange={(e) => setRenameText(e.target.value)}
             type="text"
             className="text-sm"
-            placeholder={m.admin_common_title_placeholder()}
+            placeholder={m.console_common_title_placeholder()}
             onKeyDown={(e) => {
               if (e.key === "Enter") void confirmRename();
               if (e.key === "Escape") setShowRenameDialog(false);
@@ -1211,10 +1211,10 @@ export function ChatApp() {
               size="sm"
               onClick={() => setShowRenameDialog(false)}
             >
-              {m.admin_common_cancel()}
+              {m.console_common_cancel()}
             </Button>
             <Button type="button" size="sm" onClick={() => void confirmRename()}>
-              {m.admin_common_confirm()}
+              {m.console_common_confirm()}
             </Button>
           </DialogFooter>
         </DialogContent>

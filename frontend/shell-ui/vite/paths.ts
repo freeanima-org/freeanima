@@ -11,7 +11,7 @@ export function shellSourcePaths(root = REPO_ROOT) {
     task: join(root, "features", "task", "ui", "app", "src"),
     diary: join(root, "features", "diary", "ui", "app", "src"),
     dream: join(root, "features", "dream", "ui", "app", "src"),
-    admin: join(root, "features", "console", "ui", "admin"),
+    console: join(root, "features", "console", "ui", "console"),
     shell: join(root, "frontend", "shell-ui", "app", "src"),
     pair: join(root, "satellites", "pair-programming", "app", "src"),
     companionApp: join(root, "satellites", "companion", "app", "src"),

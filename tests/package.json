@@ -11,7 +11,7 @@
     "@freeanima/feature-task": "workspace:*",
     "@freeanima/capabilities-tools": "workspace:*",
     "@freeanima/kernel": "workspace:*",
-    "@freeanima/admin-api": "workspace:*",
+    "@freeanima/console-api": "workspace:*",
     "@freeanima/feature-notification": "workspace:*",
     "@freeanima/platform": "workspace:*",
     "@freeanima/runtime": "workspace:*",

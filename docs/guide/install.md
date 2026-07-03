@@ -91,7 +91,7 @@ anima service status
 
 Default bind: `127.0.0.1:2658`（Hub API：`/api`，Hub RPC：`/hub/rpc/v1`）。
 
-Use **app/desktop** or **app/mobile** for UI (Chat + Admin bundled). Browser local dev: `bun run dev:web` (Vite HMR; Hub must be running).
+Use **app/desktop** or **app/mobile** for UI (Chat + Console bundled). Browser local dev: `bun run dev:web` (Vite HMR; Hub must be running).
 
 Schema migrations run automatically on startup when `database.url` is set.
 
@@ -147,10 +147,10 @@ On first start, `docker/entrypoint.sh` copies `docker/config.docker.yaml` to `$F
 http://127.0.0.1:2658/api/health
 ```
 
-Use app/desktop or app/mobile clients for UI (bundled shell with `/chat`, `/tasks`, `/admin`, etc.).
+Use app/desktop or app/mobile clients for UI (bundled shell with `/chat`, `/tasks`, `/console``, etc.).
 
-- Hub API (health): `http://127.0.0.1:2658/api/health` (Hub does **not** host Admin UI)
-- Local Web shell dev: `bun run dev:web` → Admin: `http://127.0.0.1:4173/web/admin/dashboard`
+- Hub API (health): `http://127.0.0.1:2658/api/health` (Hub does **not** host Console UI)
+- Local Web shell dev: `bun run dev:web` → Console: `http://127.0.0.1:4173/web/console/dashboard`
 
 (Use `ANIMA_PORT` if you changed the host mapping.)
 
@@ -231,7 +231,7 @@ Frontend hot reload (Vite HMR — Hub must already be running):
 
 ```bash
 anima service start --foreground   # terminal 1: Hub REST + SAP
-bun run dev:web                    # terminal 2: http://127.0.0.1:4173/web/chat · Admin /web/admin/dashboard
+bun run dev:web                    # terminal 2: http://127.0.0.1:4173/web/chat · Console /web/console/dashboard
 ```
 
 ### 4. Development checks
@@ -262,8 +262,8 @@ If status fails, check PostgreSQL connectivity, that migrations completed ([`dat
 
 ## Next steps
 
-1. **Security** — Vault / `env()` for secrets, `chmod 700 ~/.anima`, do not expose Admin without auth ([`security.md`](security.md))
-2. **Remote access** — optional Cloudflare Tunnel + Service API Token for personal mobile/remote Admin ([`remote-access.md`](remote-access.md))
+1. **Security** — Vault / `env()` for secrets, `chmod 700 ~/.anima`, do not expose Console without auth ([`security.md`](security.md))
+2. **Remote access** — optional Cloudflare Tunnel + Service API Token for personal mobile/remote Console ([`remote-access.md`](remote-access.md))
 3. **Database** — backups, extensions, manual migrations if needed ([`database.md`](database.md))
 4. **Operations** — start/stop, memory metrics ([`service.md`](service.md))
 5. **Architecture** — memory pipeline, self layer, tools ([`../concepts/architecture.md`](../concepts/architecture.md))
