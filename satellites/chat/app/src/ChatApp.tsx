@@ -262,6 +262,8 @@ export function ChatApp() {
   }, [commandList, slashPrefix]);
 
   const showCmdMenu = filteredCommands.length > 0;
+  /** 窄视口/手机：菜单随输入区文档流展开，避免 absolute + 祖先 overflow-hidden 在软键盘顶起时被裁切 */
+  const cmdMenuInFlow = mobileLayout;
   const lastUserMessageIndex = useMemo(() => findLastUserMessageIndex(display), [display]);
 
   const openMessageMenu = (
@@ -1053,9 +1055,18 @@ export function ChatApp() {
             }}
           >
             <VaultUnlockButton conversationId={currentId} />
-            <div className="flex-1 relative">
+            <div
+              className={
+                cmdMenuInFlow ? "flex min-w-0 flex-1 flex-col" : "relative min-w-0 flex-1"
+              }
+            >
               {showCmdMenu ? (
-                <ul className="absolute bottom-full left-0 right-0 mb-1 max-h-48 overflow-y-auto rounded-lg border border bg-background shadow-lg z-10">
+                <ul
+                  className={[
+                    "mb-1 max-h-48 overflow-y-auto rounded-lg border border bg-background shadow-lg",
+                    cmdMenuInFlow ? "relative z-10 shrink-0" : "absolute bottom-full left-0 right-0 z-10",
+                  ].join(" ")}
+                >
                   {filteredCommands.map((cmd, i) => (
                     <li
                       key={cmd.name}
@@ -1063,7 +1074,7 @@ export function ChatApp() {
                         "px-3 py-2 text-sm cursor-pointer flex items-baseline gap-2 hover:bg-muted",
                         i === selectedCmdIdx ? "bg-primary/15" : "",
                       ].join(" ")}
-                      onMouseDown={(e) => {
+                      onPointerDown={(e) => {
                         e.preventDefault();
                         applyCommand(cmd);
                       }}
