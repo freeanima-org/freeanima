@@ -3,6 +3,7 @@ import { z } from "zod";
 export const messageSendInputSchema = z.object({
   conversation_id: z.string().min(1),
   message: z.string().min(1),
+  llm_debug: z.boolean().optional(),
 });
 
 export type MessageSendInput = z.infer<typeof messageSendInputSchema>;
@@ -38,6 +39,7 @@ export const streamEventMethods = [
   "stream.done",
   "stream.error",
   "stream.ping",
+  "stream.llm_debug",
 ] as const;
 
 export type StreamEventMethod = (typeof streamEventMethods)[number];
@@ -63,6 +65,29 @@ export type SapDisplayItem =
   | { type: "message"; role: "user" | "assistant"; content: string }
   | { type: "tool_block"; calls: SapDisplayToolCall[] };
 
+export type LlmDebugTurnPreview = {
+  role: string;
+  name?: string;
+  content?: string | null;
+  tool_calls?: Array<{ id: string; name: string; arguments: string }>;
+};
+
+export type LlmDebugSnapshotPayload = {
+  phase: "initial" | "final";
+  turn_index: number;
+  model: string;
+  tool_count: number;
+  tools: Array<{ name: string; description?: string }>;
+  invoke: {
+    system_prompt?: string;
+    turns: LlmDebugTurnPreview[];
+  };
+  runtime_injections?: {
+    passive_memory_context?: boolean;
+    notification_context?: boolean;
+  };
+};
+
 export type StreamApiLikeEvent =
   | { event: "accepted"; data: Record<string, never> }
   | { event: "token"; data: { content: string } }
@@ -85,7 +110,8 @@ export type StreamApiLikeEvent =
   | { event: "interrupted"; data: { reason: string } }
   | { event: "done"; data: { reason?: "awaiting_clarify" | "interrupted" } }
   | { event: "error"; data: { error: string } }
-  | { event: "ping"; data: Record<string, never> };
+  | { event: "ping"; data: Record<string, never> }
+  | { event: "llm_debug"; data: LlmDebugSnapshotPayload };
 
 const STREAM_METHOD_MAP: Record<StreamApiLikeEvent["event"], StreamEventMethod> = {
   accepted: "stream.accepted",
@@ -100,6 +126,7 @@ const STREAM_METHOD_MAP: Record<StreamApiLikeEvent["event"], StreamEventMethod> 
   done: "stream.done",
   error: "stream.error",
   ping: "stream.ping",
+  llm_debug: "stream.llm_debug",
 };
 
 export function mapStreamApiEventToSap(
@@ -186,6 +213,11 @@ export function mapRuntimeStreamEventToSap(
         event: "error",
         data: { error: String(ev.data.error ?? ev.data.message ?? "error") },
       });
+    case "llm_debug":
+      return mapStreamApiEventToSap(streamId, {
+        event: "llm_debug",
+        data: ev.data as LlmDebugSnapshotPayload,
+      });
     default:
       return null;
   }
@@ -255,6 +287,11 @@ export function mapSapStreamMethodToApi(
     }
     case "stream.error":
       return { event: "error", data: { error: String(payload.error ?? "error") } };
+    case "stream.llm_debug":
+      return {
+        event: "llm_debug",
+        data: payload as LlmDebugSnapshotPayload,
+      };
     case "stream.ping":
       return { event: "ping", data: {} };
     default:

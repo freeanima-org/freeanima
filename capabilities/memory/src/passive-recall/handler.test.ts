@@ -76,7 +76,8 @@ describe("createPassiveMemoryRecallHandler", () => {
 
     expect(semanticPassiveRecallSearch).toHaveBeenCalledWith("hello", {
       limit: 5,
-      min_score: 0,
+      min_score: 0.016,
+      min_relative_score: 0.55,
     });
     expect(messages).toHaveLength(2);
     const injected = messages[0];

@@ -16,7 +16,8 @@ describe("resolvePassiveRecallConfig", () => {
     expect(resolvePassiveRecallConfig(base)).toEqual({
       enabled: true,
       limit: 5,
-      min_score: 0,
+      min_score: 0.016,
+      min_relative_score: 0.55,
       max_chars: 2000,
       exclude_resident: true,
     });
@@ -31,6 +32,7 @@ describe("resolvePassiveRecallConfig", () => {
             enabled: false,
             limit: 3,
             min_score: 0.1,
+            min_relative_score: 0.7,
             max_chars: 500,
             exclude_resident: false,
           },
@@ -40,6 +42,7 @@ describe("resolvePassiveRecallConfig", () => {
       enabled: false,
       limit: 3,
       min_score: 0.1,
+      min_relative_score: 0.7,
       max_chars: 500,
       exclude_resident: false,
     });

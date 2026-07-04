@@ -10,7 +10,7 @@ import { RESIDENT_TOP_N } from "@freeanima/core/repos";
 import { isFtsQueryError } from "@freeanima/core/util";
 
 import { manifestPassiveMemoryContext, stripPassiveMemoryContextFromMessages } from "./inject.ts";
-import { stripTimePrefixFromUserContent } from "./query.ts";
+import { focusPassiveRecallQuery, stripTimePrefixFromUserContent } from "./query.ts";
 import { semanticPassiveRecallSearch } from "./search.ts";
 
 export function createPassiveMemoryRecallHandler() {
@@ -28,7 +28,7 @@ export function createPassiveMemoryRecallHandler() {
 
     if (await isCronSession(conversationId)) return;
 
-    const query = stripTimePrefixFromUserContent(lastMsg.content);
+    const query = focusPassiveRecallQuery(stripTimePrefixFromUserContent(lastMsg.content));
     if (!query) return;
 
     const started = performance.now();
@@ -37,6 +37,7 @@ export function createPassiveMemoryRecallHandler() {
       hits = await semanticPassiveRecallSearch(query, {
         limit: config.limit,
         min_score: config.min_score,
+        min_relative_score: config.min_relative_score,
       });
     } catch (e) {
       if (isFtsQueryError(e)) return;

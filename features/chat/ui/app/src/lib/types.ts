@@ -28,6 +28,32 @@ export type ConversationListItem = {
   archivedAt?: string | null;
 };
 
+export type LlmDebugSnapshotPayload = {
+  phase: "initial" | "final";
+  turn_index: number;
+  model: string;
+  tool_count: number;
+  tools: Array<{ name: string; description?: string }>;
+  invoke: {
+    system_prompt?: string;
+    turns: Array<{
+      role: string;
+      name?: string;
+      content?: string | null;
+      tool_calls?: Array<{ id: string; name: string; arguments: string }>;
+    }>;
+  };
+  runtime_injections?: {
+    passive_memory_context?: boolean;
+    notification_context?: boolean;
+  };
+};
+
+export type LlmDebugSnapshots = {
+  initial?: LlmDebugSnapshotPayload;
+  final?: LlmDebugSnapshotPayload;
+};
+
 export type StreamApiEvent =
   | { event: "accepted"; data: Record<string, never> }
   | { event: "token"; data: { content: string } }
@@ -46,7 +72,8 @@ export type StreamApiEvent =
   | { event: "interrupted"; data: { reason: string } }
   | { event: "done"; data: { reason?: "awaiting_clarify" | "interrupted" } }
   | { event: "error"; data: { error: string } }
-  | { event: "ping"; data: Record<string, never> };
+  | { event: "ping"; data: Record<string, never> }
+  | { event: "llm_debug"; data: LlmDebugSnapshotPayload };
 
 export type ConversationAcpDockTask = {
   acp_conversation_id: string;

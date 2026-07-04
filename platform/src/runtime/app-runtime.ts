@@ -32,6 +32,7 @@ import * as promptDebug from "./service-prompt-debug.ts";
 import * as sleep from "./service-sleep.ts";
 import * as autoLlmRuns from "./service-auto-llm-runs.ts";
 import * as messaging from "./service-messaging.ts";
+import { omitUndefined } from "@freeanima/core/util";
 
 export type { MemoryFileEntry } from "./service-memory.ts";
 export type { StreamEvent } from "@freeanima/runtime/loop";
@@ -122,12 +123,13 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     this.runControl.releaseInFlight();
   }
 
-  engineStreamOpts(conversationId: string, signal: AbortSignal) {
+  engineStreamOpts(conversationId: string, signal: AbortSignal, llmDebug?: boolean) {
     return {
       hookRegistry: this.kernel.hookRegistry,
       ...createTurnMessageCallbacks(this.fullDeps(), conversationId),
       signal,
       shouldStop: () => this.runControl.isShuttingDown(),
+      ...omitUndefined({ llm_debug: llmDebug ? true : undefined }),
     };
   }
 

@@ -39,6 +39,7 @@ export function mapStreamEventToApi(ev: StreamEvent): StreamApiEvent {
     case "interrupted":
       return { event: "interrupted", data: { reason: ev.data.reason } };
     case "tool_round_end":
+    case "llm_debug":
       return { event: "ping", data: {} };
     case "done":
       return { event: "done", data: ev.data };

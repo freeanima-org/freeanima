@@ -144,7 +144,7 @@ export async function listConversationCommands(opts?: { all?: boolean }) {
 }
 
 export function subscribeMessageStream(
-  input: { conversationId: string; message: string },
+  input: { conversationId: string; message: string; llmDebug?: boolean },
   callbacks: SubscribeCallbacks<StreamApiEvent>,
 ): { unsubscribe: () => void } {
   return sap().sendMessageStream(input, callbacks);

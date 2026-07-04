@@ -11,6 +11,7 @@ import {
   DialogTitle,
   Input,
   Spinner,
+  Switch,
   Textarea,
 } from "@freeanima/ui-kit";
 import { ConfirmDialog } from "@freeanima/ui-kit/composite";
@@ -36,7 +37,8 @@ import { reconnectHub, useHubConnection, useNetworkOnline } from "@freeanima/she
 import { getAppLocale, initAppLocale, m, toggleAppLocale } from "@chat/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@chat/lib/input-draft.ts";
 import { getSapDirectClient, subscribeShellConfigChanges } from "@chat/lib/sap-client.ts";
-import type { ConversationListItem } from "@chat/lib/types.ts";
+import { LlmDebugPanel } from "@chat/components/LlmDebugPanel.tsx";
+import type { ConversationListItem, LlmDebugSnapshots } from "@chat/lib/types.ts";
 import {
   readModuleSelection,
   subscribeSubjectKind,
@@ -159,6 +161,9 @@ export function ChatApp() {
   const [commandList, setCommandList] = useState<CommandItem[]>([]);
   const [selectedCmdIdx, setSelectedCmdIdx] = useState(0);
   const [clarifyPending, setClarifyPending] = useState<ClarifyPending | null>(null);
+  const [llmDebugEnabled, setLlmDebugEnabled] = useState(false);
+  const [debugViewerOpen, setDebugViewerOpen] = useState(false);
+  const [llmDebugSnapshots, setLlmDebugSnapshots] = useState<LlmDebugSnapshots | null>(null);
   const pendingRecoveryKeyRef = useRef<string | null>(null);
   const nativeShell = Boolean(getSatelliteShell()?.isNativeShell);
   const isElectron = Boolean(getSatelliteShell()?.isElectron);
@@ -581,47 +586,72 @@ export function ChatApp() {
       const isViewingOrigin = () =>
         useConversationsStore.getState().currentId === originConversationId;
 
-      await send(originConversationId, text, {
-        recoverDisplay: (id) => refreshMessages(id, displayBaseline),
-        onToken: () => {
-          if (!isViewingOrigin()) return;
-          scrollDown();
-        },
-        onDisplayAppend: (item) => {
-          appendItemForConversation(originConversationId, item);
-          if (isViewingOrigin()) scrollDown();
-        },
-        onAwaitingClarify: (data) => {
-          if (!isViewingOrigin()) return;
-          if (Array.isArray(data.items) && data.items.length > 0) {
-            setClarifyPending({
-              items: data.items as ClarifyPending["items"],
-              timeout_sec: (data.timeout_sec as number | undefined) ?? 1800,
+      if (llmDebugEnabled) {
+        setLlmDebugSnapshots(null);
+      }
+
+      await send(
+        originConversationId,
+        text,
+        {
+          recoverDisplay: (id) => refreshMessages(id, displayBaseline),
+          onToken: () => {
+            if (!isViewingOrigin()) return;
+            scrollDown();
+          },
+          onDisplayAppend: (item) => {
+            appendItemForConversation(originConversationId, item);
+            if (isViewingOrigin()) scrollDown();
+          },
+          onAwaitingClarify: (data) => {
+            if (!isViewingOrigin()) return;
+            if (Array.isArray(data.items) && data.items.length > 0) {
+              setClarifyPending({
+                items: data.items as ClarifyPending["items"],
+                timeout_sec: (data.timeout_sec as number | undefined) ?? 1800,
+              });
+            }
+            scrollDown();
+          },
+          onError: (msg) => {
+            appendItemForConversation(originConversationId, {
+              type: "message",
+              role: "assistant",
+              content: `⚠️ ${msg}`,
             });
-          }
-          scrollDown();
-        },
-        onError: (msg) => {
-          appendItemForConversation(originConversationId, {
-            type: "message",
-            role: "assistant",
-            content: `⚠️ ${msg}`,
-          });
-          if (isViewingOrigin()) scrollDown();
-        },
-        onDone: (opts) => {
-          if (opts?.recovered) {
+            if (isViewingOrigin()) scrollDown();
+          },
+          onDone: (opts) => {
+            if (opts?.recovered) {
+              if (isViewingOrigin()) scrollDown();
+              void flushQueueRef.current(originConversationId);
+              return;
+            }
+            void reloadConversationIfCurrent(originConversationId);
             if (isViewingOrigin()) scrollDown();
             void flushQueueRef.current(originConversationId);
-            return;
-          }
-          void reloadConversationIfCurrent(originConversationId);
-          if (isViewingOrigin()) scrollDown();
-          void flushQueueRef.current(originConversationId);
+          },
+          onLlmDebug: (snapshot) => {
+            if (!llmDebugEnabled) return;
+            setLlmDebugSnapshots((prev) => {
+              const next = { ...prev };
+              if (snapshot.phase === "initial") next.initial = snapshot;
+              else next.final = snapshot;
+              return next;
+            });
+          },
         },
-      });
+        { llmDebug: llmDebugEnabled },
+      );
     },
-    [appendItemForConversation, clarifyPending, refreshMessages, reloadConversationIfCurrent, send],
+    [
+      appendItemForConversation,
+      clarifyPending,
+      llmDebugEnabled,
+      refreshMessages,
+      reloadConversationIfCurrent,
+      send,
+    ],
   );
 
   flushQueueRef.current = async (conversationId: string) => {
@@ -810,6 +840,35 @@ export function ChatApp() {
             Hub
           </Button>
         ) : null}
+        <label className="flex h-7 shrink-0 cursor-pointer select-none items-center gap-1.5 px-1">
+          <Switch
+            checked={llmDebugEnabled}
+            onCheckedChange={(checked) => {
+              const enabled = checked === true;
+              if (!enabled) {
+                setLlmDebugSnapshots(null);
+                setDebugViewerOpen(false);
+              }
+              setLlmDebugEnabled(enabled);
+            }}
+            aria-label={m.chat_llm_debug_toggle()}
+          />
+          <span
+            className={`text-xs ${llmDebugEnabled ? "font-medium text-foreground" : "text-muted-foreground"}`}
+          >
+            {m.chat_llm_debug_toggle()}
+          </span>
+        </label>
+        <Button
+          type="button"
+          variant={debugViewerOpen ? "secondary" : "ghost"}
+          size="sm"
+          className="h-7 px-2"
+          disabled={!llmDebugSnapshots?.initial && !llmDebugSnapshots?.final}
+          onClick={() => setDebugViewerOpen((open) => !open)}
+        >
+          {m.chat_llm_debug_view()}
+        </Button>
         <Button
           type="button"
           variant="ghost"
@@ -826,301 +885,322 @@ export function ChatApp() {
         </p>
       ) : null}
 
-      <ListDetailLayout
-        detailTitle={headerTitle}
-        detailHeaderPlacement="none"
-        showDetailHeader={false}
-        showListHeader={false}
-        listWidthClass="w-64"
-        listAsideClassName="border bg-background"
-        listOpen={sidebarOpen}
-        onListOpenChange={setSidebarOpen}
-        list={() => (
-          <>
-            <div className="shrink-0 space-y-2 p-2">
-              <Button
-                type="button"
-                size="sm"
-                className="w-full"
-                onClick={() => void newConversation()}
-              >
-                {m.console_common_new_conversation()}
-              </Button>
-              <label className="text-muted-foreground flex cursor-pointer select-none items-center gap-2 px-1 text-xs">
-                <Checkbox
-                  className="size-3.5"
-                  checked={showArchived}
-                  onCheckedChange={() => toggleShowArchived()}
-                />
-                {m.chat_show_archived()}
-              </label>
-            </div>
-            <div className="flex-1 space-y-1 overflow-y-auto px-2 py-1">
-              {activeConversations.map((s) => renderConversationItem(s))}
-              {showArchived && archivedConversations.length > 0 ? (
-                <div className="border/60 mt-2 space-y-1 border-t pt-2">
-                  <div className="text-muted-foreground px-1 text-[11px] font-medium tracking-wide uppercase">
-                    {m.chat_archived_section()}
-                  </div>
-                  {archivedConversations.map((s) => renderConversationItem(s, true))}
-                </div>
-              ) : null}
-            </div>
-          </>
-        )}
-      >
-        {acpDock ? (
-          <div className="shrink-0 px-4 pt-3">
-            <AcpProgressDock dock={acpDock} />
-          </div>
-        ) : null}
-
-        <div
-          ref={msgAreaRef}
-          className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4 space-y-4"
-        >
-          {!currentId ? (
-            <div className="flex flex-col items-center justify-center h-full gap-3 text-foreground/40 text-sm">
-              <p>{m.console_chat_select_conversation()}</p>
-              <Button type="button" size="sm" disabled={writesDisabled} onClick={startConversation}>
-                {m.console_common_new_conversation()}
-              </Button>
-            </div>
-          ) : messagesLoading ? (
-            <div className="flex h-full items-center justify-center">
-              <Spinner className="size-6" />
-            </div>
-          ) : display.length === 0 && !streamVisible && !recovering ? (
-            <div className="flex items-center justify-center h-full text-foreground/40 text-sm">
-              {m.console_chat_send_first_message()}
-            </div>
-          ) : null}
-
-          {display.map((item, i) => {
-            if (item.type === "message" && item.role === "user") {
-              if (editingUserIndex === i) {
-                return (
-                  <div key={`d${i}`} className="flex justify-end min-w-0 max-w-full">
-                    <div className="chat-bubble chat-bubble-user w-full max-w-full space-y-2">
-                      <Textarea
-                        value={editDraft}
-                        onChange={(e) => setEditDraft(e.target.value)}
-                        rows={3}
-                        className="min-h-[4rem] w-full resize-y bg-background/10 text-primary-foreground"
-                      />
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 text-primary-foreground"
-                          onClick={() => {
-                            setEditingUserIndex(null);
-                            setEditDraft("");
-                          }}
-                        >
-                          {m.console_common_cancel()}
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          className="h-7"
-                          disabled={!editDraft.trim() || writesDisabled}
-                          onClick={() => void confirmReeditUserMessage()}
-                        >
-                          {m.console_common_confirm()}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
-              return (
-                <ChatMessageBubble
-                  key={`d${i}`}
-                  align="end"
-                  className="chat-bubble-user whitespace-pre-wrap"
-                  onLongPress={(coords) =>
-                    openMessageMenu(i, "user", item.content, coords.x, coords.y)
-                  }
-                >
-                  {item.content}
-                </ChatMessageBubble>
-              );
-            }
-            if (item.type === "message" && item.role === "assistant") {
-              return (
-                <ChatMessageBubble
-                  key={`d${i}`}
-                  align="start"
-                  className="chat-bubble-assistant"
-                  onLongPress={(coords) =>
-                    openMessageMenu(i, "assistant", item.content, coords.x, coords.y)
-                  }
-                >
-                  <div
-                    className="md-content min-w-0 max-w-full"
-                    dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
-                  />
-                </ChatMessageBubble>
-              );
-            }
-            if (item.type === "tool_block") {
-              return (
-                <div key={`d${i}`} className="flex max-w-full justify-start">
-                  <ToolBlockBubble calls={item.calls} />
-                </div>
-              );
-            }
-            return null;
-          })}
-
-          {clarifyPending ? (
-            <Alert variant="info" className="shadow-sm">
-              <AlertDescription className="w-full space-y-2">
-                <p className="font-medium">{m.console_chat_clarify_hint()}</p>
-                {clarifyPending.items.map((item, ci) => (
-                  <div key={ci} className="text-sm">
-                    <p>
-                      {ci + 1}. {item.question}
-                    </p>
-                    {item.choices?.length ? (
-                      <ul className="text-muted-foreground ml-2 list-inside list-disc">
-                        {item.choices.map((choice, chi) => (
-                          <li key={chi}>{choice}</li>
-                        ))}
-                      </ul>
-                    ) : null}
-                  </div>
-                ))}
-              </AlertDescription>
-            </Alert>
-          ) : null}
-
-          {streamVisible && streamText ? (
-            <div className="flex justify-start">
-              <div className="chat-bubble chat-bubble-assistant">
-                <div
-                  className="md-content"
-                  dangerouslySetInnerHTML={{ __html: renderMd(streamText) }}
-                />
-                <Spinner className="mt-1 size-3" />
-              </div>
-            </div>
-          ) : null}
-
-          {recovering ? (
-            <div className="flex justify-start">
-              <div className="chat-bubble chat-bubble-assistant text-muted-foreground flex items-center gap-2 text-sm">
-                <Spinner className="size-3" />
-                {m.console_message_waiting_result()}
-              </div>
-            </div>
-          ) : null}
-        </div>
-
-        <div
-          className="border-t border p-4 bg-background relative chat-compose"
-          style={keyboardInset > 0 ? { transform: `translateY(-${keyboardInset}px)` } : undefined}
-        >
-          {messageQueue.length > 0 ? (
-            <ul className="mb-2 space-y-1">
-              {messageQueue.map((item) => (
-                <li
-                  key={item.id}
-                  className="flex items-center gap-2 text-sm bg-muted/60 rounded-lg px-2 py-1.5"
-                >
-                  <span className="flex-1 truncate text-muted-foreground">{item.text}</span>
+      <div className="flex min-h-0 flex-1">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <ListDetailLayout
+            detailTitle={headerTitle}
+            detailHeaderPlacement="none"
+            showDetailHeader={false}
+            showListHeader={false}
+            listWidthClass="w-64"
+            listAsideClassName="border bg-background"
+            listOpen={sidebarOpen}
+            onListOpenChange={setSidebarOpen}
+            list={() => (
+              <>
+                <div className="shrink-0 space-y-2 p-2">
                   <Button
                     type="button"
                     size="sm"
-                    className="h-7 shrink-0 px-2"
-                    onClick={() => void sendQueuedNow(item.id)}
+                    className="w-full"
+                    onClick={() => void newConversation()}
                   >
-                    {m.console_chat_queue_send_now()}
+                    {m.console_common_new_conversation()}
                   </Button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          <form
-            className="flex gap-2 items-end"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (streamVisible) {
-                void stopStreaming();
-              } else {
-                void sendMessage();
-              }
-            }}
+                  <label className="text-muted-foreground flex cursor-pointer select-none items-center gap-2 px-1 text-xs">
+                    <Checkbox
+                      className="size-3.5"
+                      checked={showArchived}
+                      onCheckedChange={() => toggleShowArchived()}
+                    />
+                    {m.chat_show_archived()}
+                  </label>
+                </div>
+                <div className="flex-1 space-y-1 overflow-y-auto px-2 py-1">
+                  {activeConversations.map((s) => renderConversationItem(s))}
+                  {showArchived && archivedConversations.length > 0 ? (
+                    <div className="border/60 mt-2 space-y-1 border-t pt-2">
+                      <div className="text-muted-foreground px-1 text-[11px] font-medium tracking-wide uppercase">
+                        {m.chat_archived_section()}
+                      </div>
+                      {archivedConversations.map((s) => renderConversationItem(s, true))}
+                    </div>
+                  ) : null}
+                </div>
+              </>
+            )}
           >
-            <VaultUnlockButton conversationId={currentId} />
+            {acpDock ? (
+              <div className="shrink-0 px-4 pt-3">
+                <AcpProgressDock dock={acpDock} />
+              </div>
+            ) : null}
+
             <div
-              className={cmdMenuInFlow ? "flex min-w-0 flex-1 flex-col" : "relative min-w-0 flex-1"}
+              ref={msgAreaRef}
+              className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4 space-y-4"
             >
-              {showCmdMenu ? (
-                <ul
-                  className={[
-                    "mb-1 max-h-48 overflow-y-auto rounded-lg border border bg-background shadow-lg",
-                    cmdMenuInFlow
-                      ? "relative z-10 shrink-0"
-                      : "absolute bottom-full left-0 right-0 z-10",
-                  ].join(" ")}
-                >
-                  {filteredCommands.map((cmd, i) => (
-                    <li
-                      key={cmd.name}
-                      className={[
-                        "px-3 py-2 text-sm cursor-pointer flex items-baseline gap-2 hover:bg-muted",
-                        i === selectedCmdIdx ? "bg-primary/15" : "",
-                      ].join(" ")}
-                      onPointerDown={(e) => {
-                        e.preventDefault();
-                        applyCommand(cmd);
-                      }}
+              {!currentId ? (
+                <div className="flex flex-col items-center justify-center h-full gap-3 text-foreground/40 text-sm">
+                  <p>{m.console_chat_select_conversation()}</p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={writesDisabled}
+                    onClick={startConversation}
+                  >
+                    {m.console_common_new_conversation()}
+                  </Button>
+                </div>
+              ) : messagesLoading ? (
+                <div className="flex h-full items-center justify-center">
+                  <Spinner className="size-6" />
+                </div>
+              ) : display.length === 0 && !streamVisible && !recovering ? (
+                <div className="flex items-center justify-center h-full text-foreground/40 text-sm">
+                  {m.console_chat_send_first_message()}
+                </div>
+              ) : null}
+
+              {display.map((item, i) => {
+                if (item.type === "message" && item.role === "user") {
+                  if (editingUserIndex === i) {
+                    return (
+                      <div key={`d${i}`} className="flex justify-end min-w-0 max-w-full">
+                        <div className="chat-bubble chat-bubble-user w-full max-w-full space-y-2">
+                          <Textarea
+                            value={editDraft}
+                            onChange={(e) => setEditDraft(e.target.value)}
+                            rows={3}
+                            className="min-h-[4rem] w-full resize-y bg-background/10 text-primary-foreground"
+                          />
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 text-primary-foreground"
+                              onClick={() => {
+                                setEditingUserIndex(null);
+                                setEditDraft("");
+                              }}
+                            >
+                              {m.console_common_cancel()}
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              className="h-7"
+                              disabled={!editDraft.trim() || writesDisabled}
+                              onClick={() => void confirmReeditUserMessage()}
+                            >
+                              {m.console_common_confirm()}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <ChatMessageBubble
+                      key={`d${i}`}
+                      align="end"
+                      className="chat-bubble-user whitespace-pre-wrap"
+                      onLongPress={(coords) =>
+                        openMessageMenu(i, "user", item.content, coords.x, coords.y)
+                      }
                     >
-                      <span className="font-mono font-medium shrink-0">/{cmd.name}</span>
-                      <span className="text-xs text-muted-foreground truncate">
-                        {cmd.description}
-                      </span>
+                      {item.content}
+                    </ChatMessageBubble>
+                  );
+                }
+                if (item.type === "message" && item.role === "assistant") {
+                  return (
+                    <ChatMessageBubble
+                      key={`d${i}`}
+                      align="start"
+                      className="chat-bubble-assistant"
+                      onLongPress={(coords) =>
+                        openMessageMenu(i, "assistant", item.content, coords.x, coords.y)
+                      }
+                    >
+                      <div
+                        className="md-content min-w-0 max-w-full"
+                        dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
+                      />
+                    </ChatMessageBubble>
+                  );
+                }
+                if (item.type === "tool_block") {
+                  return (
+                    <div key={`d${i}`} className="flex max-w-full justify-start">
+                      <ToolBlockBubble calls={item.calls} />
+                    </div>
+                  );
+                }
+                return null;
+              })}
+
+              {clarifyPending ? (
+                <Alert variant="info" className="shadow-sm">
+                  <AlertDescription className="w-full space-y-2">
+                    <p className="font-medium">{m.console_chat_clarify_hint()}</p>
+                    {clarifyPending.items.map((item, ci) => (
+                      <div key={ci} className="text-sm">
+                        <p>
+                          {ci + 1}. {item.question}
+                        </p>
+                        {item.choices?.length ? (
+                          <ul className="text-muted-foreground ml-2 list-inside list-disc">
+                            {item.choices.map((choice, chi) => (
+                              <li key={chi}>{choice}</li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </div>
+                    ))}
+                  </AlertDescription>
+                </Alert>
+              ) : null}
+
+              {streamVisible && streamText ? (
+                <div className="flex justify-start">
+                  <div className="chat-bubble chat-bubble-assistant">
+                    <div
+                      className="md-content"
+                      dangerouslySetInnerHTML={{ __html: renderMd(streamText) }}
+                    />
+                    <Spinner className="mt-1 size-3" />
+                  </div>
+                </div>
+              ) : null}
+
+              {recovering ? (
+                <div className="flex justify-start">
+                  <div className="chat-bubble chat-bubble-assistant text-muted-foreground flex items-center gap-2 text-sm">
+                    <Spinner className="size-3" />
+                    {m.console_message_waiting_result()}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <div
+              className="border-t border p-4 bg-background relative chat-compose"
+              style={
+                keyboardInset > 0 ? { transform: `translateY(-${keyboardInset}px)` } : undefined
+              }
+            >
+              {messageQueue.length > 0 ? (
+                <ul className="mb-2 space-y-1">
+                  {messageQueue.map((item) => (
+                    <li
+                      key={item.id}
+                      className="flex items-center gap-2 text-sm bg-muted/60 rounded-lg px-2 py-1.5"
+                    >
+                      <span className="flex-1 truncate text-muted-foreground">{item.text}</span>
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="h-7 shrink-0 px-2"
+                        onClick={() => void sendQueuedNow(item.id)}
+                      >
+                        {m.console_chat_queue_send_now()}
+                      </Button>
                     </li>
                   ))}
                 </ul>
               ) : null}
-              <Textarea
-                ref={msgInputRef}
-                value={inputText}
-                onChange={(e) => {
-                  const next = e.target.value;
-                  setInputText(next);
-                  saveInputDraft(currentId, next);
-                  setSelectedCmdIdx(0);
-                  resizeInput();
+              <form
+                className="flex gap-2 items-end"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (streamVisible) {
+                    void stopStreaming();
+                  } else {
+                    void sendMessage();
+                  }
                 }}
-                rows={1}
-                className="min-h-[2.75rem] max-h-48 w-full resize-none py-2.5 leading-normal"
-                placeholder={m.console_chat_message_placeholder()}
-                disabled={writesDisabled}
-                onFocus={() => {
-                  requestAnimationFrame(() => {
-                    msgInputRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-                  });
-                }}
-                onKeyDown={onInputKeydown}
-              />
+              >
+                <VaultUnlockButton conversationId={currentId} />
+                <div
+                  className={
+                    cmdMenuInFlow ? "flex min-w-0 flex-1 flex-col" : "relative min-w-0 flex-1"
+                  }
+                >
+                  {showCmdMenu ? (
+                    <ul
+                      className={[
+                        "mb-1 max-h-48 overflow-y-auto rounded-lg border border bg-background shadow-lg",
+                        cmdMenuInFlow
+                          ? "relative z-10 shrink-0"
+                          : "absolute bottom-full left-0 right-0 z-10",
+                      ].join(" ")}
+                    >
+                      {filteredCommands.map((cmd, i) => (
+                        <li
+                          key={cmd.name}
+                          className={[
+                            "px-3 py-2 text-sm cursor-pointer flex items-baseline gap-2 hover:bg-muted",
+                            i === selectedCmdIdx ? "bg-primary/15" : "",
+                          ].join(" ")}
+                          onPointerDown={(e) => {
+                            e.preventDefault();
+                            applyCommand(cmd);
+                          }}
+                        >
+                          <span className="font-mono font-medium shrink-0">/{cmd.name}</span>
+                          <span className="text-xs text-muted-foreground truncate">
+                            {cmd.description}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  <Textarea
+                    ref={msgInputRef}
+                    value={inputText}
+                    onChange={(e) => {
+                      const next = e.target.value;
+                      setInputText(next);
+                      saveInputDraft(currentId, next);
+                      setSelectedCmdIdx(0);
+                      resizeInput();
+                    }}
+                    rows={1}
+                    className="min-h-[2.75rem] max-h-48 w-full resize-none py-2.5 leading-normal"
+                    placeholder={m.console_chat_message_placeholder()}
+                    disabled={writesDisabled}
+                    onFocus={() => {
+                      requestAnimationFrame(() => {
+                        msgInputRef.current?.scrollIntoView({
+                          block: "nearest",
+                          behavior: "smooth",
+                        });
+                      });
+                    }}
+                    onKeyDown={onInputKeydown}
+                  />
+                </div>
+                {streamVisible ? (
+                  <Button type="submit" variant="destructive" disabled={writesDisabled}>
+                    {m.console_common_stop()}
+                  </Button>
+                ) : (
+                  <Button type="submit" disabled={!inputText.trim() || writesDisabled}>
+                    {m.console_common_send()}
+                  </Button>
+                )}
+              </form>
             </div>
-            {streamVisible ? (
-              <Button type="submit" variant="destructive" disabled={writesDisabled}>
-                {m.console_common_stop()}
-              </Button>
-            ) : (
-              <Button type="submit" disabled={!inputText.trim() || writesDisabled}>
-                {m.console_common_send()}
-              </Button>
-            )}
-          </form>
+          </ListDetailLayout>
         </div>
-      </ListDetailLayout>
+        <LlmDebugPanel
+          open={debugViewerOpen}
+          onClose={() => setDebugViewerOpen(false)}
+          snapshots={llmDebugSnapshots}
+        />
+      </div>
 
       {messageMenu ? (
         <div

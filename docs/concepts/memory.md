@@ -158,7 +158,7 @@ Before each user-facing turn, the runtime searches **semantic memory only** from
 - **Passive recall**: query-relevant semantic hits for the current message
 - **`memory_recall` tool**: conversation / limbic / autobiographical sources, broader or deeper retrieval when the model needs more
 
-Configure under `memory.passive_recall` (`enabled`, `limit`, `min_score`, `max_chars`, `exclude_resident`). Skipped for cron / background sessions.
+Configure under `memory.passive_recall` (`enabled`, `limit`, `min_score`, `min_relative_score`, `max_chars`, `exclude_resident`). Skipped for cron / background sessions.
 
 **Index columns (PG):** `semantic_memory` and `messages` use `fts_segmented` (optional jieba) → generated `content_fts` (tsvector, keyword FTS) plus async `content_embedding` (pgvector, semantic similarity). `limbic_memory` and `autobiographical_memory` follow the same pattern; autobiographical index text is `title + newline + content`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only). `content_fts` is never written by application code — PostgreSQL generates it from `fts_segmented` or raw content.
 

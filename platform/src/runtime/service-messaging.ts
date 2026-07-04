@@ -244,7 +244,13 @@ export async function* sendMessageStream(
     yield { event: "token", data: { content: `${guard.expiredHint}\n\n` } };
   }
 
-  yield* runTurnStream(deps, msgDeps, conversationId, guard.message);
+  yield* runTurnStream(
+    deps,
+    msgDeps,
+    conversationId,
+    guard.message,
+    origin_extra?.llm_debug === true,
+  );
 }
 
 async function* dispatchCommandStream(
@@ -376,6 +382,7 @@ function runTurnStream(
   msgDeps: MessagingDeps,
   conversationId: string,
   message: string,
+  llmDebug = false,
 ): AsyncGenerator<StreamEvent> {
   msgDeps.runControl.preemptSessionEngine(conversationId);
   let effectiveUserText = "";
@@ -383,6 +390,7 @@ function runTurnStream(
     deps,
     conversationId,
     {
+      llmDebug,
       fast: async () => {
         effectiveUserText = await deps.conversation.beginTurnFast(conversationId, message);
         maybeGenerateConversationTitleAsync(deps, conversationId, effectiveUserText, {

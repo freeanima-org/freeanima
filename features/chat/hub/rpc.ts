@@ -219,7 +219,15 @@ export async function handleMessageSend(
   const input = messageSendInputSchema.parse(payload);
   const streamId = randomUUID();
   const platform = await resolveConversationPlatform(deps, input.conversation_id);
-  void pumpMessageStream(deps, ctx, streamId, input.conversation_id, input.message, platform);
+  void pumpMessageStream(
+    deps,
+    ctx,
+    streamId,
+    input.conversation_id,
+    input.message,
+    platform,
+    input.llm_debug,
+  );
   return { stream_id: streamId };
 }
 

@@ -1,4 +1,5 @@
 export * from "./loop-engine.ts";
+export * from "./llm-debug-snapshot.ts";
 export {
   runWithToolContext,
   getToolConversationId,
