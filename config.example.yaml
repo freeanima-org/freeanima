@@ -168,7 +168,8 @@ compression:
 #   passive_recall:
 #     enabled: true
 #     limit: 5
-#     min_score: 0
+#     min_score: 0.016              # hybrid RRF 下限；过低关联命中会被丢弃
+#     min_relative_score: 0.55      # 仅保留得分 ≥ top_score × 此比例的命中
 #     max_chars: 2000
 #     exclude_resident: true
 

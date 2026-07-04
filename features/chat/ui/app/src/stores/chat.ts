@@ -1,3 +1,4 @@
+import { omitUndefined } from "@freeanima/core/util";
 import type { DisplayItem, StreamApiEvent } from "@chat/lib/types.ts";
 import { pollUntilAssistantReply } from "@chat/lib/display-recovery.ts";
 import { randomUuid } from "@freeanima/sap-contract";
@@ -21,6 +22,7 @@ export type SendCallbacks = {
   onRecovering?: (active: boolean) => void;
   onError?: (msg: string) => void;
   onDone?: (opts?: SendDoneOptions) => void;
+  onLlmDebug?: (snapshot: import("@chat/lib/types.ts").LlmDebugSnapshotPayload) => void;
   recoverDisplay?: (conversationId: string) => Promise<boolean>;
 };
 
@@ -42,7 +44,12 @@ type ChatState = {
   removeQueued: (id: string) => void;
   peekQueue: (conversationId: string) => QueuedMessage | null;
   stop: (conversationId: string) => Promise<void>;
-  send: (conversationId: string, text: string, callbacks?: SendCallbacks) => Promise<void>;
+  send: (
+    conversationId: string,
+    text: string,
+    callbacks?: SendCallbacks,
+    opts?: { llmDebug?: boolean },
+  ) => Promise<void>;
   abortStream: () => void;
 };
 
@@ -105,6 +112,9 @@ function handleStreamEvent(
       receivedDone = true;
       break;
     case "ping":
+      break;
+    case "llm_debug":
+      callbacks.onLlmDebug?.(ev.data);
       break;
   }
 
@@ -249,7 +259,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   },
 
-  async send(conversationId, text, callbacks = {}) {
+  async send(conversationId, text, callbacks = {}, sendOpts = {}) {
     const prev = get();
     if (prev.streaming && prev.streamingConversationId === conversationId) {
       detachStreamClient();
@@ -279,11 +289,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
     let transportErrorMsg: string | null = null;
     let doneNotified = false;
 
-    const notifyDone = (opts?: SendDoneOptions) => {
+    const notifyDone = (doneOpts?: SendDoneOptions) => {
       if (doneNotified) return;
       doneNotified = true;
       receivedDone = true;
-      callbacks.onDone?.(opts);
+      callbacks.onDone?.(doneOpts);
     };
 
     const finishWithRecovery = async (fallbackError?: string) => {
@@ -310,7 +320,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     try {
       await new Promise<void>((resolve, reject) => {
         const sub = subscribeMessageStream(
-          { conversationId, message: text },
+          omitUndefined({ conversationId, message: text, llmDebug: sendOpts.llmDebug }),
           {
             onData: (ev) => {
               if (generation !== _streamGeneration) return;

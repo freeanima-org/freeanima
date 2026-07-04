@@ -45,4 +45,5 @@ export type StreamApiEvent =
   | { event: "interrupted"; data: { reason: string } }
   | { event: "done"; data: { reason?: "awaiting_clarify" | "interrupted" } }
   | { event: "error"; data: { error: string } }
-  | { event: "ping"; data: Record<string, never> };
+  | { event: "ping"; data: Record<string, never> }
+  | { event: "llm_debug"; data: Record<string, unknown> };

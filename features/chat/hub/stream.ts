@@ -26,12 +26,18 @@ export async function pumpMessageStream(
   conversationId: string,
   message: string,
   platform: string,
+  llmDebug?: boolean,
 ): Promise<void> {
   const { bridgeMessageStream } = await loadStreamBridge();
   try {
     for await (const mapped of bridgeMessageStream(
       streamId,
-      deps.runtime.sendMessageStream(conversationId, message, platform),
+      deps.runtime.sendMessageStream(
+        conversationId,
+        message,
+        platform,
+        llmDebug ? { llm_debug: true } : undefined,
+      ),
     )) {
       ctx.sendEvent(mapped.method, mapped.payload);
     }

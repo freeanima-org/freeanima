@@ -16,7 +16,7 @@ export type SapSessionStreamClient = {
     onUpdate: () => void,
   ): { unsubscribe: () => void };
   sendMessageStream(
-    input: { conversationId: string; message: string },
+    input: { conversationId: string; message: string; llmDebug?: boolean },
     callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
   ): { unsubscribe: () => void };
   detach(): void;
@@ -99,6 +99,7 @@ export function createSapConversationStreamClient(
           const { stream_id: streamId } = await client.request("message.send", {
             conversation_id: input.conversationId,
             message: input.message,
+            ...(input.llmDebug ? { llm_debug: true } : {}),
           });
 
           for (const method of streamEventMethods) {

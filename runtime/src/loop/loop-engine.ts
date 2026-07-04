@@ -33,6 +33,7 @@ import {
   type ToolMessage,
   type OpenAiToolSchema,
 } from "@freeanima/core/db/domain";
+import { buildLlmDebugSnapshot, type LlmDebugSnapshot } from "./llm-debug-snapshot.ts";
 
 export class MaxTurnsExceeded extends Error {
   override name = "MaxTurnsExceeded";
@@ -62,6 +63,8 @@ type EngineOpts = {
   signal?: AbortSignal;
   /** Returns true on process shutdown; engine interrupts before next LLM / tool round */
   shouldStop?: () => boolean;
+  /** Emit ephemeral llm_debug stream events (initial + final snapshots) */
+  llm_debug?: boolean;
 };
 
 export type RuntimeToolMask = NonNullable<EngineOpts["toolMask"]>;
@@ -249,6 +252,7 @@ export async function run(messages: StoredMessage[], opts?: EngineOpts): Promise
       case "tool_result":
       case "tool_error":
       case "tool_round_end":
+      case "llm_debug":
       case "done":
         break;
     }
@@ -271,6 +275,7 @@ export type StreamEvent =
       data: { items: HookClarifyItem[]; timeout_sec: number };
     }
   | { event: "interrupted"; data: { reason: string } }
+  | { event: "llm_debug"; data: LlmDebugSnapshot }
   | { event: "done"; data: StreamDoneData }
   | { event: "error"; data: { error: string } };
 
@@ -288,6 +293,8 @@ export async function* runStream(
   const failureCounts = new Map<string, number>();
   const HARD = 8;
 
+  let lastDebugSnapshot: LlmDebugSnapshot | null = null;
+
   for (let turn = 0; turn < maxTurns; turn++) {
     checkShouldStop(opts);
     // Run beforeLlmCall hook; modules (e.g. notifications) may modify messages before LLM inference
@@ -297,6 +304,17 @@ export async function* runStream(
         messages: messages as BeforeLlmCallContext["messages"],
       });
     }
+
+    if (opts?.llm_debug) {
+      if (turn === 0) {
+        yield {
+          event: "llm_debug",
+          data: buildLlmDebugSnapshot(messages, toolSchemas, model, turn, "initial"),
+        };
+      }
+      lastDebugSnapshot = buildLlmDebugSnapshot(messages, toolSchemas, model, turn, "final");
+    }
+
     const buffer: string[] = [];
     let toolCalls: llm.LlmResponse["tool_calls"] | undefined;
     let turnReasoning: string | null = null;
@@ -359,6 +377,9 @@ export async function* runStream(
         model,
         tools: toolSchemas,
       });
+      if (opts?.llm_debug && lastDebugSnapshot) {
+        yield { event: "llm_debug", data: lastDebugSnapshot };
+      }
       yield { event: "done", data: {} };
       return;
     }
@@ -384,6 +405,9 @@ export async function* runStream(
         model,
         tools: toolSchemas,
       });
+      if (opts?.llm_debug && lastDebugSnapshot) {
+        yield { event: "llm_debug", data: lastDebugSnapshot };
+      }
       yield { event: "done", data: {} };
       return;
     }
@@ -501,6 +525,9 @@ export async function* runStream(
     }
 
     if (turnControl) {
+      if (opts?.llm_debug && lastDebugSnapshot) {
+        yield { event: "llm_debug", data: lastDebugSnapshot };
+      }
       for (const ev of turnControl.streamEvents) {
         yield hookStreamToEngine(ev);
       }

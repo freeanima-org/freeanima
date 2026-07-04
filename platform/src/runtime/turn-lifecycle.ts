@@ -37,11 +37,13 @@ export type StreamTurnHost = {
   engineStreamOpts(
     conversationId: string,
     signal: AbortSignal,
+    llmDebug?: boolean,
   ): {
     hookRegistry: HookRegistry;
     onMessageAppended: (msg: StoredMessage) => Promise<void>;
     onToolRoundComplete: (batch: StoredMessage[]) => Promise<void>;
     signal: AbortSignal;
+    llm_debug?: boolean;
   };
   reloadRuntimeAfterRepair(conversationId: string): Promise<[Message[], string[]]>;
   onTurnAfterComplete(conversationId: string, msgs: Message[], reply: string): Promise<string>;
@@ -199,6 +201,7 @@ export async function* yieldEngineStream(
   msgs: Message[],
   model: string,
   signal: AbortSignal,
+  llmDebug?: boolean,
 ): AsyncGenerator<StreamEvent> {
   const tools = await deps.conversation.loadConversationTools(conversationId);
   const meta = await deps.conversation.loadConversationMeta(conversationId);
@@ -218,8 +221,8 @@ export async function* yieldEngineStream(
             config: deps.engine.config.data,
             logger: deps.engine.logger,
             llm: deps.engine.llm,
-            ...omitUndefined({ toolMask, executableTools }),
-            ...host.engineStreamOpts(conversationId, signal),
+            ...omitUndefined({ toolMask, executableTools, llm_debug: llmDebug ? true : undefined }),
+            ...host.engineStreamOpts(conversationId, signal, llmDebug),
           }),
         { tools: deps.engine.catalog.toolSets, ...omitUndefined({ executableTools }) },
       )) {
@@ -263,6 +266,7 @@ export type StreamTurnPrepareOpts = {
   /** 快路径：append 用户消息后 yield accepted */
   fast?: () => Promise<string>;
   prepare: () => Promise<[Message[], string[], string]>;
+  llmDebug?: boolean;
 };
 
 export async function* runExclusiveStreamTurn(
@@ -326,6 +330,7 @@ export async function* runExclusiveStreamTurn(
             msgs,
             model,
             signal,
+            opts.llmDebug,
           )) {
             if (ev.event === "done") {
               pendingDone = ev;

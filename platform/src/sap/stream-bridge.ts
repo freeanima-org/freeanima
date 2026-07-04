@@ -136,6 +136,17 @@ export async function* bridgeMessageStream(
   const buffer = new ToolRoundBuffer();
 
   for await (const ev of source) {
+    if (ev.event === "llm_debug") {
+      yield {
+        method: "stream.llm_debug",
+        payload: {
+          stream_id: streamId,
+          ...(ev.data as Record<string, unknown>),
+        },
+      };
+      continue;
+    }
+
     if (ev.event === "accepted") continue;
 
     const { state: next, effects } = applyStreamReplyEvent(state, ev, buffer);
