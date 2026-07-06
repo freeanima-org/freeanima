@@ -7,7 +7,8 @@ import { SettingsSectionPanel } from "./SettingsSectionPanel.tsx";
 
 type Props = {
   bindings: SettingsBinding[];
-  platform: SettingsPlatform;
+  chromePlatform: SettingsPlatform;
+  contentPlatform: SettingsPlatform;
 };
 
 function resolveInitialSectionId(bindings: SettingsBinding[], platform: SettingsPlatform): string {
@@ -20,10 +21,10 @@ function resolveInitialSectionId(bindings: SettingsBinding[], platform: Settings
 
 function SectionContent({
   binding,
-  platform,
+  contentPlatform,
 }: {
   binding: SettingsBinding;
-  platform: SettingsPlatform;
+  contentPlatform: SettingsPlatform;
 }) {
   const { section } = binding;
   return (
@@ -36,18 +37,18 @@ function SectionContent({
           </p>
         ) : null}
       </header>
-      <SettingsSectionPanel binding={binding} platform={platform} />
+      <SettingsSectionPanel binding={binding} platform={contentPlatform} />
     </section>
   );
 }
 
-export function SettingsHost({ bindings, platform }: Props) {
+export function SettingsHost({ bindings, chromePlatform, contentPlatform }: Props) {
   const visible = useMemo(
-    () => listSettingsSectionsForPlatform(bindings, platform),
-    [bindings, platform],
+    () => listSettingsSectionsForPlatform(bindings, contentPlatform),
+    [bindings, contentPlatform],
   );
   const [activeId, setActiveId] = useState<string>(() =>
-    resolveInitialSectionId(bindings, platform),
+    resolveInitialSectionId(bindings, contentPlatform),
   );
 
   useEffect(() => {
@@ -104,14 +105,14 @@ export function SettingsHost({ bindings, platform }: Props) {
   const sectionBody = (
     <div
       className={`flex-1 min-w-0 overflow-y-auto px-4 py-4 lg:p-5 ${
-        platform === "mobile" ? "pb-4" : ""
+        chromePlatform === "mobile" ? "pb-4" : ""
       }`}
     >
-      {active ? <SectionContent binding={active} platform={platform} /> : null}
+      {active ? <SectionContent binding={active} contentPlatform={contentPlatform} /> : null}
     </div>
   );
 
-  const showSidebar = platform !== "mobile";
+  const showSidebar = chromePlatform !== "mobile";
 
   return (
     <div className={`flex h-full min-h-0 ${showSidebar ? "flex-row" : "flex-col"}`}>
