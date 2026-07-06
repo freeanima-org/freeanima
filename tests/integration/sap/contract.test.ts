@@ -67,9 +67,7 @@ describe("sap-contract envelopes", () => {
   });
 
   it("formats sap tool names", () => {
-    expect(formatSapToolName("pair-programming", "k7m", "scan_code")).toBe(
-      "sap_pairprogramming_k7m_scan_code",
-    );
+    expect(formatSapToolName("companion", "k7m", "scan_code")).toBe("sap_companion_k7m_scan_code");
   });
 
   it("validates sap.attach output capability_mask presets shape", () => {

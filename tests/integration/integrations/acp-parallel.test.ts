@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
-import { AcpClientPool } from "../../../capabilities/acp/src/client-pool.ts";
-import { AcpTaskScheduler } from "../../../capabilities/acp/src/task-scheduler.ts";
-import type { ACPClient } from "../../../capabilities/acp/src/client.ts";
+import { AcpClientPool } from "../../../src/capabilities/acp/client-pool.ts";
+import { AcpTaskScheduler } from "../../../src/capabilities/acp/task-scheduler.ts";
+import type { ACPClient } from "../../../src/capabilities/acp/client.ts";
 
 function mockClient(): ACPClient {
   return {

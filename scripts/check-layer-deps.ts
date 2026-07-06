@@ -14,16 +14,16 @@ const IMPORT_RE = /from\s+["']@freeanima\/([^"']+)["']/g;
 const RELATIVE_DEEP_IMPORT_RE = /from\s+["'](\.\.?\/(?:\.\.\/)*)(?:satellites\/)/g;
 
 const LAYER_DIRS = [
-  "kernel",
-  "shared",
-  "frontend",
-  "core",
-  "runtime",
-  "capabilities",
-  "features",
-  "platform",
-  "satellites",
-  "app",
+  "src/kernel",
+  "src/shared",
+  "src/frontend",
+  "src/core",
+  "src/runtime",
+  "src/capabilities",
+  "src/features",
+  "src/platform",
+  "src/satellites",
+  "src/app",
   "tests",
 ] as const;
 
@@ -40,32 +40,61 @@ const UI_KIT_ALLOWED = new Set(["kernel", "kernel-logging"]);
 
 const SHELL_SDK_ALLOWED = new Set(["kernel", "kernel-logging", "hub-rpc", "vault-crypto"]);
 
-type Layer = (typeof LAYER_DIRS)[number] | null;
+type Layer =
+  | "kernel"
+  | "shared"
+  | "frontend"
+  | "core"
+  | "runtime"
+  | "capabilities"
+  | "features"
+  | "platform"
+  | "satellites"
+  | "app"
+  | "tests"
+  | null;
+
+const LAYER_NAMES = new Set([
+  "kernel",
+  "shared",
+  "frontend",
+  "core",
+  "runtime",
+  "capabilities",
+  "features",
+  "platform",
+  "satellites",
+  "app",
+  "tests",
+]);
+
+function layerOf(relPath: string): Layer {
+  const parts = relPath.split("/");
+  if (parts[0] === "tests") return "tests";
+  if (parts[0] === "src" && parts[1] && LAYER_NAMES.has(parts[1])) {
+    return parts[1] as Layer;
+  }
+  return null;
+}
 
 function workspacePkgName(importPath: string): string {
   return importPath.split("/")[0] ?? importPath;
 }
 
-function layerOf(relPath: string): Layer {
-  const top = relPath.split("/")[0] ?? "";
-  if ((LAYER_DIRS as readonly string[]).includes(top)) return top as Layer;
-  return null;
-}
-
 function isConsoleApiPath(relPath: string): boolean {
-  return relPath.startsWith("features/console/hub/console-api/");
+  return relPath.startsWith("src/features/console/hub/console-api/");
 }
 
 function sourceCapabilitiesPkg(relPath: string): string | null {
   const parts = relPath.split("/");
-  if (parts[0] !== "capabilities" || parts.length < 2) return null;
-  return parts[1] ?? null;
+  if (parts[0] !== "src" || parts[1] !== "capabilities" || parts.length < 3) return null;
+  return parts[2] ?? null;
 }
 
 function sourceFeatureSlug(relPath: string): string | null {
   const parts = relPath.split("/");
-  if (parts[0] !== "features" || parts.length < 2) return null;
-  return parts[1] ?? null;
+  if (parts[0] !== "src" || parts[1] !== "features" || parts.length < 3) return null;
+  return parts[2] ?? null;
 }
 
 function isExempt(relPath: string): boolean {
@@ -73,13 +102,13 @@ function isExempt(relPath: string): boolean {
   if (relPath.includes("/test-helpers/")) return true;
   if (/\.(test|spec)\.ts$/.test(relPath)) return true;
   if (relPath.startsWith("tests/")) return true;
-  if (relPath.startsWith("app/cli/")) return true;
+  if (relPath.startsWith("src/app/cli/")) return true;
   if (
-    relPath === "features/console/build/build-utils.ts" ||
-    relPath === "frontend/shell-ui/vite/run-build.ts" ||
-    relPath === "frontend/shell-ui/vite/satellite-vite.ts" ||
-    relPath === "frontend/shell-ui/vite/paths.ts" ||
-    relPath === "features/console/build/paraglide-compile.ts"
+    relPath === "src/features/console/build/build-utils.ts" ||
+    relPath === "src/frontend/shell-ui/vite/run-build.ts" ||
+    relPath === "src/frontend/shell-ui/vite/satellite-vite.ts" ||
+    relPath === "src/frontend/shell-ui/vite/paths.ts" ||
+    relPath === "src/features/console/build/paraglide-compile.ts"
   )
     return true;
   return false;
@@ -126,7 +155,7 @@ function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
   }
 
   if (layer === "satellites") {
-    const satSlug = relPath.split("/")[1];
+    const satSlug = relPath.split("/")[2];
     if (root.startsWith("feature-") && satSlug && root === `feature-${satSlug}`) {
       return true;
     }
@@ -134,10 +163,10 @@ function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
   }
 
   if (layer === "shared") {
-    if (relPath.startsWith("shared/hub-rpc")) {
+    if (relPath.startsWith("src/shared/hub-rpc")) {
       return root === "kernel" || root.startsWith("kernel-") || root === "hub-rpc";
     }
-    if (relPath.startsWith("shared/sap-contract")) {
+    if (relPath.startsWith("src/shared/sap-contract")) {
       return (
         root === "kernel" ||
         root.startsWith("kernel-") ||
@@ -145,7 +174,7 @@ function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
         root === "hub-rpc"
       );
     }
-    if (relPath.startsWith("shared/hub-contract")) {
+    if (relPath.startsWith("src/shared/hub-contract")) {
       return (
         root === "kernel" ||
         root.startsWith("kernel-") ||
@@ -154,7 +183,7 @@ function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
         root === "core"
       );
     }
-    if (relPath.startsWith("shared/hub-client")) {
+    if (relPath.startsWith("src/shared/hub-client")) {
       return (
         root === "kernel" ||
         root.startsWith("kernel-") ||
@@ -163,20 +192,20 @@ function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
         root === "hub-rpc"
       );
     }
-    if (relPath.startsWith("shared/vault-crypto")) {
+    if (relPath.startsWith("src/shared/vault-crypto")) {
       return root === "kernel" || root.startsWith("kernel-") || root === "vault-crypto";
     }
     return false;
   }
 
   if (layer === "frontend") {
-    if (relPath.startsWith("frontend/ui-kit")) {
+    if (relPath.startsWith("src/frontend/ui-kit")) {
       return isUiKitAllowed(pkg);
     }
-    if (relPath.startsWith("frontend/shell-sdk")) {
+    if (relPath.startsWith("src/frontend/shell-sdk")) {
       return isShellSdkAllowed(pkg);
     }
-    if (relPath.startsWith("frontend/shell-ui")) {
+    if (relPath.startsWith("src/frontend/shell-ui")) {
       return isShellUiAllowed(pkg);
     }
     return false;
@@ -231,13 +260,13 @@ function capabilitiesCrossViolation(relPath: string, pkg: string): string | null
   const root = workspacePkgName(pkg);
   if (!root.startsWith("capabilities-")) {
     if (root.startsWith("feature-")) {
-      return `capabilities/${srcPkg} must not depend on @freeanima/${root}`;
+      return `src/capabilities/${srcPkg} must not depend on @freeanima/${root}`;
     }
     return null;
   }
   const importSlug = root.slice("capabilities-".length);
   if (importSlug === srcPkg) return null;
-  return `capabilities/${srcPkg} must not depend on @freeanima/${root}`;
+  return `src/capabilities/${srcPkg} must not depend on @freeanima/${root}`;
 }
 
 function featuresCrossViolation(relPath: string, pkg: string): string | null {
@@ -248,19 +277,19 @@ function featuresCrossViolation(relPath: string, pkg: string): string | null {
   if (!root.startsWith("feature-")) return null;
   const importSlug = root.slice("feature-".length);
   if (importSlug === srcSlug) return null;
-  return `features/${srcSlug} must not depend on @freeanima/${root}`;
+  return `src/features/${srcSlug} must not depend on @freeanima/${root}`;
 }
 
 function satelliteViolation(relPath: string, pkg: string): string | null {
   if (layerOf(relPath) !== "satellites") return null;
   const root = workspacePkgName(pkg);
   if (root.startsWith("feature-")) {
-    const satSlug = relPath.split("/")[1];
+    const satSlug = relPath.split("/")[2];
     if (satSlug && root === `feature-${satSlug}`) return null;
-    return `satellites/* must not depend on @freeanima/${root}`;
+    return `src/satellites/* must not depend on @freeanima/${root}`;
   }
   if (isSatelliteAllowed(pkg)) return null;
-  return `satellites/* must not depend on @freeanima/${root} (allowed: sap-contract, shell-sdk, ui-kit + generic deps)`;
+  return `src/satellites/* must not depend on @freeanima/${root} (allowed: sap-contract, shell-sdk, ui-kit + generic deps)`;
 }
 
 function shellUiDeepImportViolation(
@@ -268,7 +297,7 @@ function shellUiDeepImportViolation(
   line: string,
   lineNo: number,
 ): Violation | null {
-  if (!relPath.startsWith("frontend/shell-ui/")) return null;
+  if (!relPath.startsWith("src/frontend/shell-ui/")) return null;
   if (isExempt(relPath)) return null;
   RELATIVE_DEEP_IMPORT_RE.lastIndex = 0;
   if (!RELATIVE_DEEP_IMPORT_RE.test(line)) return null;
@@ -277,7 +306,7 @@ function shellUiDeepImportViolation(
     line: lineNo,
     pkg: "relative-import",
     reason:
-      "frontend/shell-ui must not deep-import legacy satellite paths (use @freeanima/feature-*/ui/*)",
+      "src/frontend/shell-ui must not deep-import legacy satellite paths (use @freeanima/feature-*/ui/*)",
   };
 }
 
@@ -346,139 +375,27 @@ function scanImports(): Violation[] {
   return violations;
 }
 
-const NESTED_WORKSPACE_PACKAGES = [
-  "features/console/hub/console-api",
-  "features/console/protocol/console-contract",
-] as const;
-
-function scanNestedWorkspacePackages(): Violation[] {
-  const violations: Violation[] = [];
-  for (const relDir of NESTED_WORKSPACE_PACKAGES) {
-    const pjPath = join(ROOT, relDir, "package.json");
-    if (!existsSync(pjPath)) continue;
-    const manifest = JSON.parse(readFileSync(pjPath, "utf-8")) as {
-      dependencies?: Record<string, string>;
-    };
-    for (const dep of Object.keys(manifest.dependencies ?? {})) {
-      if (!dep.startsWith("@freeanima/")) continue;
-      const fakePkg = dep.replace("@freeanima/", "");
-      const fakeLine = join(relDir, "package.json");
-      if (!isAllowed(layerOf(relDir), fakePkg, join(relDir, "src/index.ts"))) {
-        violations.push({
-          file: fakeLine,
-          line: 0,
-          pkg: fakePkg,
-          reason: reasonFor(layerOf(relDir), fakePkg),
-        });
-      }
-    }
-  }
-  return violations;
-}
-
-function scanPackageJson(): Violation[] {
-  const violations: Violation[] = [];
-  for (const dir of LAYER_DIRS) {
-    const base = join(ROOT, dir);
-    if (!existsSync(base)) continue;
-    const entries =
-      dir === "tests" || dir === "kernel"
-        ? [{ name: ".", isDirectory: () => true }]
-        : readdirSync(base, { withFileTypes: true });
-    for (const ent of entries) {
-      if (!ent.isDirectory()) continue;
-      const pkgDir = dir === "tests" || dir === "kernel" ? base : join(base, ent.name);
-      const pjPath = join(pkgDir, "package.json");
-      if (!existsSync(pjPath)) continue;
-      const relDir = relative(ROOT, pkgDir);
-      const manifest = JSON.parse(readFileSync(pjPath, "utf-8")) as {
-        dependencies?: Record<string, string>;
-      };
-      for (const dep of Object.keys(manifest.dependencies ?? {})) {
-        if (!dep.startsWith("@freeanima/")) continue;
-        const fakePkg = dep.replace("@freeanima/", "");
-        const fakeLine = join(relDir, "package.json");
-        const capCross = capabilitiesCrossViolation(fakeLine, fakePkg);
-        if (capCross) {
-          violations.push({ file: fakeLine, line: 0, pkg: fakePkg, reason: capCross });
-          continue;
-        }
-        const featCross = featuresCrossViolation(fakeLine, fakePkg);
-        if (featCross) {
-          violations.push({ file: fakeLine, line: 0, pkg: fakePkg, reason: featCross });
-          continue;
-        }
-        const satCross = satelliteViolation(fakeLine, fakePkg);
-        if (satCross) {
-          violations.push({ file: fakeLine, line: 0, pkg: fakePkg, reason: satCross });
-          continue;
-        }
-        if (!isAllowed(layerOf(relDir), fakePkg, join(relDir, "src/index.ts"))) {
-          violations.push({
-            file: fakeLine,
-            line: 0,
-            pkg: fakePkg,
-            reason: reasonFor(layerOf(relDir), fakePkg),
-          });
-        }
-      }
-      if (dir === "tests" || dir === "kernel") break;
-    }
-  }
-
-  if (existsSync(join(ROOT, "satellites"))) {
-    for (const ent of readdirSync(join(ROOT, "satellites"), { withFileTypes: true })) {
-      if (!ent.isDirectory()) continue;
-      const pjPath = join(ROOT, "satellites", ent.name, "package.json");
-      if (!existsSync(pjPath)) continue;
-      const manifest = JSON.parse(readFileSync(pjPath, "utf-8")) as {
-        dependencies?: Record<string, string>;
-      };
-      for (const dep of Object.keys(manifest.dependencies ?? {})) {
-        if (!dep.startsWith("@freeanima/")) continue;
-        const fakePkg = dep.replace("@freeanima/", "");
-        const satCross = satelliteViolation(`satellites/${ent.name}/package.json`, fakePkg);
-        if (satCross) {
-          violations.push({
-            file: `satellites/${ent.name}/package.json`,
-            line: 0,
-            pkg: fakePkg,
-            reason: satCross,
-          });
-        }
-      }
-    }
-  }
-
-  return violations;
-}
-
-const ALLOWED_SATELLITE_SLUGS = new Set(["companion", "pair-programming"]);
+const ALLOWED_SATELLITE_SLUGS = new Set(["companion"]);
 
 function scanSatelliteLayout(): Violation[] {
   const violations: Violation[] = [];
-  const satellitesRoot = join(ROOT, "satellites");
+  const satellitesRoot = join(ROOT, "src/satellites");
   if (!existsSync(satellitesRoot)) return violations;
   for (const ent of readdirSync(satellitesRoot, { withFileTypes: true })) {
     if (!ent.isDirectory()) continue;
     if (!ALLOWED_SATELLITE_SLUGS.has(ent.name)) {
       violations.push({
-        file: `satellites/${ent.name}`,
+        file: `src/satellites/${ent.name}`,
         line: 0,
         pkg: ent.name,
-        reason: `satellites/ may only contain companion and pair-programming (found ${ent.name})`,
+        reason: `src/satellites/ may only contain companion (found ${ent.name})`,
       });
     }
   }
   return violations;
 }
 
-const violations = [
-  ...scanImports(),
-  ...scanPackageJson(),
-  ...scanNestedWorkspacePackages(),
-  ...scanSatelliteLayout(),
-];
+const violations = [...scanImports(), ...scanSatelliteLayout()];
 if (violations.length === 0) {
   console.log("dep-check: OK");
   process.exit(0);

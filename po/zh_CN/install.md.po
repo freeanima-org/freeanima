@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:22+0800\n"
+"POT-Creation-Date: 2026-07-06 11:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:571
+#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:586
 #, no-wrap
 msgid "Installation"
 msgstr "安装"
@@ -268,14 +268,16 @@ msgstr "默认绑定：`127.0.0.1:2658`（Hub API：`/api`，SAP：`/sap/v1`）�
 #: docs/guide/install.md:95
 #, fuzzy
 #| msgid ""
-#| "Use **app/desktop** or **app/mobile** for UI (Chat + **Console bundled). "
-#| "Browser local dev: `bun run dev:web` (Vite HMR; Hub must be running)."
+#| "Use **src/app/shell/desktop** or **src/app/shell/mobile** for UI (Chat + "
+#| "**Console bundled). Browser local dev: `bun run dev:web` (Vite HMR; Hub "
+#| "must be running)."
 msgid ""
-"Use **app/desktop** or **app/mobile** for UI (Chat + Console bundled). "
-"Browser local dev: `bun run dev:web` (Vite HMR; Hub must be running)."
+"Use **src/app/shell/desktop** or **src/app/shell/mobile** for UI (Chat + "
+"Console bundled). Browser local dev: `bun run dev:web` (Vite HMR; Hub must "
+"be running)."
 msgstr ""
-"UI 请用 **app/desktop** 或 **app/mobile**（捆绑聊天室 + 管理台）。浏览器本地"
-"开发：`bun run dev:web`（Vite HMR；需 Hub 已运行）。"
+"UI 请用 **src/app/shell/desktop** 或 **src/app/shell/mobile**（捆绑聊天室 + "
+"管理台）。浏览器本地开发：`bun run dev:web`（Vite HMR；需 Hub 已运行）。"
 
 #. type: Plain text
 #: docs/guide/install.md:97
@@ -429,14 +431,14 @@ msgstr "http://127.0.0.1:2658/api/health\n"
 #: docs/guide/install.md:151
 #, fuzzy
 #| msgid ""
-#| "Use app/desktop or app/mobile clients for UI (bundled shell with `/chat`, "
-#| "`/tasks`, `/admin`, etc.)."
+#| "Use `src/app/shell/desktop` or `src/app/shell/mobile` clients for UI "
+#| "(bundled shell with `/chat`, `/tasks`, `/admin`, etc.)."
 msgid ""
-"Use app/desktop or app/mobile clients for UI (bundled shell with `/chat`, `/"
-"tasks`, `/console``, etc.)."
+"Use `src/app/shell/desktop` or `src/app/shell/mobile` clients for UI "
+"(bundled shell with `/chat`, `/tasks`, `/console`, etc.)."
 msgstr ""
-"UI 请用 app/desktop 或 app/mobile 客户端（bundled shell，含 `/chat`、`/"
-"tasks`、`/admin` 等）。"
+"UI 请用 src/app/shell/desktop 或 src/app/shell/mobile 客户端（bundled shell，"
+"含 `/chat`、`/tasks`、`/admin` 等）。"
 
 #. type: Bullet: '- '
 #: docs/guide/install.md:154
@@ -594,15 +596,19 @@ msgstr "或直接使用仓库二进制："
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:203
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "bun run anima -- --help\n"
+#| "# or\n"
+#| "bun app/cli/cli.ts --help\n"
 msgid ""
 "bun run anima -- --help\n"
 "# or\n"
-"bun app/cli/src/cli.ts --help\n"
+"bun src/app/cli/cli.ts --help\n"
 msgstr ""
 "bun run anima -- --help\n"
 "# or\n"
-"bun app/cli/src/cli.ts --help\n"
+"bun app/cli/cli.ts --help\n"
 
 #. type: Plain text
 #: docs/guide/install.md:210
@@ -611,20 +617,28 @@ msgstr "若要接近 npm 用户的发布形态本地安装："
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:211
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "bun run install:cli:local\n"
+#| "# equivalent: bun run build:cli && bun install -g \"$PWD/app/cli/publish\"\n"
 msgid ""
 "bun run install:cli:local\n"
-"# equivalent: bun run build:cli && bun install -g \"$PWD/app/cli/publish\"\n"
+"# equivalent: bun run build:cli && bun install -g \"$PWD/src/app/cli/publish\"\n"
 msgstr ""
 "bun run install:cli:local\n"
 "# equivalent: bun run build:cli && bun install -g \"$PWD/app/cli/publish\"\n"
 
 #. type: Plain text
 #: docs/guide/install.md:217
+#, fuzzy
+#| msgid ""
+#| "`bun install -g ./app/cli/publish` from the repo root is not supported; "
+#| "use `bun run install:cli:local` (cleans broken global deps, then pack + "
+#| "install tarball)."
 msgid ""
-"`bun install -g ./app/cli/publish` from the repo root is not supported; use "
-"`bun run install:cli:local` (cleans broken global deps, then pack + install "
-"tarball)."
+"`bun install -g ./src/app/cli/publish` from the repo root is not supported; "
+"use `bun run install:cli:local` (cleans broken global deps, then pack + "
+"install tarball)."
 msgstr ""
 "不支持在仓库根目录执行 `bun install -g ./app/cli/publish`；请使用 `bun run "
 "install:cli:local`（清理损坏的全局依赖后，再 pack 并安装 tarball）。"

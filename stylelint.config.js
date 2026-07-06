@@ -6,7 +6,7 @@ export default {
     "**/android/**",
     "**/node_modules/**",
     "site/**",
-    "app/web/dist*/**",
+    "src/app/shell/web/dist*/**",
   ],
   rules: {
     "at-rule-no-unknown": [

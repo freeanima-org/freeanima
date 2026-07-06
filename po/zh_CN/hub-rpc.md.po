@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version:  6jb4\n"
-"POT-Creation-Date: 2026-07-03 18:12+0800\n"
+"POT-Creation-Date: 2026-07-06 11:54+0800\n"
 "PO-Revision-Date: 2026-07-01 22:15+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -25,7 +25,7 @@ msgstr "Hub RPC"
 #: docs/sap/hub-rpc.md:8
 #, fuzzy, no-wrap
 #| msgid "**Hub RPC** (`HubRPC/1.0`) is the WebSocket transport between any Hub client and the agent runtime. It is implemented in [`packages/hub-rpc/`](../../packages/hub-rpc/) and served at **`/hub/rpc/v1`**.\n"
-msgid "**Hub RPC** (`HubRPC/1.0`) is the WebSocket transport between any Hub client and the agent runtime. It is implemented in [`shared/hub-rpc/`](../../shared/hub-rpc/) and served at **`/hub/rpc/v1`**.\n"
+msgid "**Hub RPC** (`HubRPC/1.0`) is the WebSocket transport between any Hub client and the agent runtime. It is implemented in [`src/shared/hub-rpc/`](../../src/shared/hub-rpc/) and served at **`/hub/rpc/v1`**.\n"
 msgstr "**Hub RPC**（`HubRPC/1.0`）是任意 Hub 客户端与 agent 运行时之间的 WebSocket 传输层。实现位于 [`packages/hub-rpc/`](../../packages/hub-rpc/)，端点为 **`/hub/rpc/v1`**。\n"
 
 #. type: Plain text
@@ -60,8 +60,12 @@ msgstr ""
 
 #. type: Plain text
 #: docs/sap/hub-rpc.md:20
+#, fuzzy
+#| msgid ""
+#| "Hub route: [`platform/src/sap/bun-route.ts`](../../platform/src/sap/bun-"
+#| "route.ts)."
 msgid ""
-"Hub route: [`platform/src/sap/bun-route.ts`](../../platform/src/sap/bun-"
+"Hub route: [`src/platform/sap/bun-route.ts`](../../src/platform/sap/bun-"
 "route.ts)."
 msgstr ""
 "Hub 路由：[`platform/src/sap/bun-route.ts`](../../platform/src/sap/bun-"
@@ -110,10 +114,16 @@ msgstr "认证"
 
 #. type: Plain text
 #: docs/sap/hub-rpc.md:36
+#, fuzzy
+#| msgid ""
+#| "Every connection must send a valid **service API token** in the `connect` "
+#| "payload (`auth_token`). The Hub verifies it with `verifyServiceApiToken` "
+#| "([`core/src/db/pg/service-api-token/`](../../core/src/db/pg/service-api-"
+#| "token/))."
 msgid ""
 "Every connection must send a valid **service API token** in the `connect` "
 "payload (`auth_token`). The Hub verifies it with `verifyServiceApiToken` "
-"([`core/src/db/pg/service-api-token/`](../../core/src/db/pg/service-api-"
+"([`src/core/db/pg/service-api-token/`](../../src/core/db/pg/service-api-"
 "token/))."
 msgstr ""
 "每次连接必须在 `connect` 载荷（`auth_token`）中发送有效的**服务 API 令牌**。"
@@ -143,12 +153,17 @@ msgstr "客户端配置"
 
 #. type: Plain text
 #: docs/sap/hub-rpc.md:45
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Profile           | Package entry                                    | `sap.attach` | Typical consumer                               |\n"
+#| "| ----------------- | ------------------------------------------------ | ------------ | ---------------------------------------------- |\n"
+#| "| Bundled SPA       | `getBundledHubRpcClient()` / `whenHubRpcReady()` | **No**       | Chat, task, notification, diary, email modules |\n"
+#| "| Satellite process | `createSatelliteHub()` in sap-contract           | **Yes**      | companion, pair-programming                    |\n"
 msgid ""
 "| Profile           | Package entry                                    | `sap.attach` | Typical consumer                               |\n"
 "| ----------------- | ------------------------------------------------ | ------------ | ---------------------------------------------- |\n"
 "| Bundled SPA       | `getBundledHubRpcClient()` / `whenHubRpcReady()` | **No**       | Chat, task, notification, diary, email modules |\n"
-"| Satellite process | `createSatelliteHub()` in sap-contract           | **Yes**      | companion, pair-programming                    |\n"
+"| Satellite process | `createSatelliteHub()` in sap-contract           | **Yes**      | companion                                      |\n"
 msgstr ""
 "| 配置            | Package 入口                                      | `sap.attach` | 典型消费者                                   |\n"
 "| --------------- | ------------------------------------------------- | ------------ | -------------------------------------------- |\n"
@@ -175,7 +190,7 @@ msgstr ""
 "`sap.attach`，之后方可 `tool.register` 或使用实例范围的方法。"
 
 #. type: Content of: <messages><msg>
-#: docs/sap/hub-rpc.md:50 docs/sap/transport.md:99 messages/po4a/en.xml:123
+#: docs/sap/hub-rpc.md:50 docs/sap/transport.md:99 messages/po4a/en.xml:138
 #, no-wrap
 msgid "Reconnect"
 msgstr "重连"

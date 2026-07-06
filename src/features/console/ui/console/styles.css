@@ -1,0 +1,127 @@
+@import "tailwindcss";
+@import "@freeanima/ui-kit/globals.css";
+@source "./**/*.{tsx,ts}";
+@source "../../../../src/frontend/ui-kit/**/*.{tsx,ts}";
+@source "../../../../src/frontend/shell-sdk/**/*.{tsx,ts}";
+@import "@freeanima/ui-kit/styles.css";
+
+.app-main-padding {
+  @apply p-4 lg:p-6;
+}
+
+.md-content {
+  line-height: 1.6;
+}
+.md-content p {
+  margin: 0.3em 0;
+}
+.md-content p:first-child {
+  margin-top: 0;
+}
+.md-content p:last-child {
+  margin-bottom: 0;
+}
+.md-content table {
+  @apply w-full text-sm;
+  margin: 0.5em 0;
+  max-width: 100%;
+}
+.md-content pre {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.md-content code {
+  @apply bg-muted rounded px-1;
+  font-size: 0.875em;
+}
+.md-content pre code {
+  @apply block p-3 overflow-x-auto bg-muted;
+}
+.md-content ul,
+.md-content ol {
+  padding-left: 1.5em;
+}
+.md-content blockquote {
+  @apply border-l-4 border pl-3 italic;
+  opacity: 0.85;
+}
+
+#message-area {
+  scroll-behavior: smooth;
+}
+
+.mode-enter-active,
+.mode-leave-active {
+  transition: opacity 0.2s ease;
+}
+.mode-enter-from,
+.mode-leave-to {
+  opacity: 0;
+}
+
+.nav-link,
+.session-item {
+  @apply block px-3 py-2 rounded-lg text-sm text-muted-foreground transition-colors;
+  font-family: system-ui, "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
+.nav-link:hover,
+.session-item:hover {
+  @apply bg-muted/50 text-foreground;
+}
+.nav-link.sidebar-nav-active,
+.session-item.sidebar-nav-active {
+  @apply bg-primary/20 text-foreground font-semibold border-l-[3px] border-l-primary;
+}
+
+.tool-bubble {
+  @apply rounded-2xl bg-muted/60;
+  font-family: inherit;
+}
+
+.shell-layout-compact .admin-app {
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1023px) {
+  .admin-app {
+    padding-top: var(--sat);
+    padding-left: var(--sal);
+    padding-right: var(--sar);
+    box-sizing: border-box;
+  }
+
+  .chat-bubble {
+    max-width: min(92vw, 100%);
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+
+  .app-main-padding {
+    @apply p-3;
+  }
+
+  .admin-page-toolbar {
+    width: 100%;
+  }
+
+  .card .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-panel-overlay {
+    position: fixed;
+    top: var(--sat);
+    right: var(--sar);
+    bottom: var(--sab);
+    left: var(--sal);
+    z-index: 35;
+    width: 100% !important;
+    max-width: 100%;
+    @apply bg-muted;
+  }
+}

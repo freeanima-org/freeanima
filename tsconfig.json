@@ -4,41 +4,357 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "paths": {
-      "@console/*": ["./features/console/ui/console/*"],
+      "@freeanima/feature-console/build/paraglide-compile": [
+        "./src/features/console/build/paraglide-compile.ts"
+      ],
+      "@freeanima/feature-console/ui/console/styles.css": [
+        "./src/features/console/ui/console/styles.css"
+      ],
+      "@freeanima/platform/connectors/gateway/schemas/*": [
+        "./src/platform/connectors/gateway/schemas/*.ts"
+      ],
+      "@freeanima/capabilities-acp/schemas/acp-jsonrpc": [
+        "./src/capabilities/acp/schemas/acp-jsonrpc.ts"
+      ],
+      "@freeanima/capabilities-llm-openai/stream-tools": [
+        "./src/capabilities/llm-openai/stream-tools.ts"
+      ],
+      "@freeanima/hub-contract/schemas/console-schemas": [
+        "./src/shared/hub-contract/schemas/console-schemas.ts"
+      ],
+      "@freeanima/satellite-companion/settings-section": [
+        "./src/satellites/companion/spa/settings/companion-settings-section.ts"
+      ],
+      "@freeanima/app-desktop/companion-settings-api": [
+        "./src/app/shell/desktop/spa/companion-settings-api.ts"
+      ],
+      "@freeanima/core/db/pg/autobiographical-memory": [
+        "./src/core/db/pg/autobiographical-memory/index.ts"
+      ],
+      "@freeanima/platform/connectors/eventbus-redis": [
+        "./src/platform/connectors/eventbus-redis/index.ts"
+      ],
+      "@freeanima/satellite-companion/settings-panel": [
+        "./src/satellites/companion/spa/settings/CompanionSettingsSection.tsx"
+      ],
+      "@freeanima/feature-console/build/build-utils": [
+        "./src/features/console/build/build-utils.ts"
+      ],
+      "@freeanima/feature-console/ui/console/router": [
+        "./src/features/console/ui/console/router.tsx"
+      ],
+      "@freeanima/ui-kit/lib/merge-draft-after-save": [
+        "./src/frontend/ui-kit/lib/merge-draft-after-save.ts"
+      ],
+      "@freeanima/capabilities-llm-openai/messages": ["./src/capabilities/llm-openai/messages.ts"],
+      "@freeanima/console-api/console-hub-handlers": [
+        "./src/features/console/hub/console-api/console-hub-handlers.ts"
+      ],
+      "@freeanima/satellite-companion/settings-api": [
+        "./src/satellites/companion/spa/settings/companion-settings-api.ts"
+      ],
+      "@freeanima/capabilities-tools/notification": [
+        "./src/capabilities/tools/notification/index.ts"
+      ],
+      "@freeanima/feature-console/ui/console/i18n": [
+        "./src/features/console/ui/console/lib/i18n.ts"
+      ],
+      "@freeanima/ui-kit/ui/use-acp-progress-dock": [
+        "./src/frontend/ui-kit/ui/useAcpProgressDock.ts"
+      ],
+      "@freeanima/feature-chat/ui/spa/styles.css": ["./src/features/chat/ui/spa/styles.css"],
+      "@freeanima/app-desktop/settings-registry": [
+        "./src/app/shell/desktop/spa/settings-registry.ts"
+      ],
+      "@freeanima/capabilities-llm-openai/usage": ["./src/capabilities/llm-openai/usage.ts"],
+      "@freeanima/console-contract/display-util": [
+        "./src/features/console/protocol/console-contract/display-util.ts"
+      ],
+      "@freeanima/feature-notification/protocol": ["./src/features/notification/protocol/index.ts"],
+      "@freeanima/app-mobile/settings-registry": [
+        "./src/app/shell/mobile/lib/settings-registry.ts"
+      ],
+      "@freeanima/console-api/handlers/runtime": [
+        "./src/features/console/hub/console-api/handlers/runtime.ts"
+      ],
+      "@freeanima/core/db/pg/service-api-token": ["./src/core/db/pg/service-api-token/index.ts"],
+      "@freeanima/platform/connectors/tunnel/*": ["./src/platform/connectors/tunnel/*.ts"],
+      "@freeanima/satellite-companion/manifest": [
+        "./src/satellites/companion/lib/exports/manifest.ts"
+      ],
+      "@freeanima/app-desktop/settings-stores": ["./src/app/shell/desktop/lib/settings-stores.ts"],
+      "@freeanima/console-api/service-restart": [
+        "./src/features/console/hub/console-api/service-restart.ts"
+      ],
+      "@freeanima/core/db/pg/memory-reference": ["./src/core/db/pg/memory-reference/index.ts"],
+      "@freeanima/core/tool/conversation-port": ["./src/core/tool/conversation-port.ts"],
+      "@freeanima/feature-notification/plugin": ["./src/features/notification/plugin.ts"],
+      "@freeanima/feature-notification/ui/spa": ["./src/features/notification/ui/spa/index.ts"],
+      "@freeanima/platform/connectors/gateway": ["./src/platform/connectors/gateway/index.ts"],
+      "@freeanima/satellite-companion/desktop": [
+        "./src/satellites/companion/lib/exports/desktop.ts"
+      ],
+      "@freeanima/app-mobile/capacitor-ready": ["./src/app/shell/mobile/lib/capacitor-ready.ts"],
+      "@freeanima/app-mobile/settings-stores": ["./src/app/shell/mobile/lib/settings-stores.ts"],
+      "@freeanima/capabilities-tools/clarify": ["./src/capabilities/tools/clarify/index.ts"],
+      "@freeanima/console-contract/date-json": [
+        "./src/features/console/protocol/console-contract/date-json.ts"
+      ],
+      "@freeanima/core/db/pg/semantic-memory": ["./src/core/db/pg/semantic-memory/index.ts"],
+      "@freeanima/feature-notification/hub/*": ["./src/features/notification/hub/*.ts"],
+      "@freeanima/platform/connectors/cron/*": ["./src/platform/connectors/cron/*.ts"],
+      "@freeanima/platform/connectors/tunnel": ["./src/platform/connectors/tunnel/index.ts"],
+      "@freeanima/satellite-companion/mobile": ["./src/satellites/companion/lib/exports/mobile.ts"],
+      "@freeanima/capabilities-mcp-client/*": ["./src/capabilities/mcp-client/*.ts"],
+      "@freeanima/capabilities-mcp-server/*": ["./src/capabilities/mcp-server/*.ts"],
+      "@freeanima/capabilities-tools/estate": ["./src/capabilities/tools/estate/index.ts"],
+      "@freeanima/console-api/http-dispatch": [
+        "./src/features/console/hub/console-api/http-dispatch.ts"
+      ],
+      "@freeanima/console-api/http-shutdown": [
+        "./src/features/console/hub/console-api/http-shutdown.ts"
+      ],
+      "@freeanima/platform/connectors/email": ["./src/platform/connectors/email/index.ts"],
+      "@freeanima/platform/connectors/redis": ["./src/platform/connectors/redis/index.ts"],
+      "@freeanima/platform/connectors/vault": ["./src/platform/connectors/vault/index.ts"],
+      "@freeanima/platform/slash-commands/*": ["./src/platform/slash-commands/*.ts"],
+      "@freeanima/runtime/loop/stream-reply": ["./src/runtime/loop/stream-reply/index.ts"],
+      "@freeanima/satellite-companion/build": ["./src/satellites/companion/lib/exports/build.ts"],
+      "@freeanima/shell-ui/bootstrap/sentry": ["./src/frontend/shell-ui/spa/bootstrap/sentry.ts"],
+      "@freeanima/capabilities-satellite/*": ["./src/capabilities/satellite/*.ts"],
+      "@freeanima/console-api/service-auth": [
+        "./src/features/console/hub/console-api/service-auth.ts"
+      ],
+      "@freeanima/core/db/pg/limbic-memory": ["./src/core/db/pg/limbic-memory/index.ts"],
+      "@freeanima/core/db/pg/notifications": ["./src/core/db/pg/notifications/index.ts"],
+      "@freeanima/feature-console/hub/http": ["./src/features/console/hub/http.ts"],
+      "@freeanima/feature-console/protocol": ["./src/features/console/protocol/index.ts"],
+      "@freeanima/feature-task/domain/mask": ["./src/features/task/domain/mask/index.ts"],
+      "@freeanima/platform/connectors/cron": ["./src/platform/connectors/cron/index.ts"],
+      "@freeanima/sap-contract/feature-rpc": ["./src/shared/sap-contract/feature-rpc/index.ts"],
+      "@freeanima/app-mobile/mobile-shell": ["./src/app/shell/mobile/lib/mobile-shell.ts"],
+      "@freeanima/capabilities-llm-openai": ["./src/capabilities/llm-openai/index.ts"],
+      "@freeanima/capabilities-mcp-client": ["./src/capabilities/mcp-client/index.ts"],
+      "@freeanima/capabilities-mcp-server": ["./src/capabilities/mcp-server/index.ts"],
+      "@freeanima/console-contract/elysia": [
+        "./src/features/console/protocol/console-contract/elysia.ts"
+      ],
+      "@freeanima/core/db/pg/auto-llm-run": ["./src/core/db/pg/auto-llm-run/index.ts"],
+      "@freeanima/core/db/pg/conversation": ["./src/core/db/pg/conversation/index.ts"],
+      "@freeanima/core/hooks/conversation": ["./src/core/hooks/conversation/index.ts"],
+      "@freeanima/kernel/eventbus/testing": ["./src/kernel/eventbus/testing.ts"],
+      "@freeanima/platform/slash-commands": ["./src/platform/slash-commands/index.ts"],
+      "@freeanima/capabilities-satellite": ["./src/capabilities/satellite/index.ts"],
+      "@freeanima/console-api/web-static": ["./src/features/console/hub/console-api/web-static.ts"],
+      "@freeanima/feature-console/plugin": ["./src/features/console/plugin.ts"],
+      "@freeanima/feature-console/ui/spa": ["./src/features/console/ui/spa/index.ts"],
+      "@freeanima/feature-diary/domain/*": ["./src/features/diary/domain/*.ts"],
+      "@freeanima/feature-diary/protocol": ["./src/features/diary/protocol/index.ts"],
+      "@freeanima/feature-dream/domain/*": ["./src/features/dream/domain/*.ts"],
+      "@freeanima/feature-dream/protocol": ["./src/features/dream/protocol/index.ts"],
+      "@freeanima/feature-email/domain/*": ["./src/features/email/domain/*.ts"],
+      "@freeanima/feature-email/protocol": ["./src/features/email/protocol/index.ts"],
+      "@freeanima/feature-vault/domain/*": ["./src/features/vault/domain/*.ts"],
+      "@freeanima/feature-vault/protocol": ["./src/features/vault/protocol/index.ts"],
+      "@freeanima/kernel/logging/console": ["./src/kernel/logging/sinks/console.ts"],
+      "@freeanima/kernel/logging/testing": ["./src/kernel/logging/testing.ts"],
+      "@freeanima/runtime/conversation/*": ["./src/runtime/conversation/*.ts"],
+      "@freeanima/sap-contract/satellite": ["./src/shared/sap-contract/satellite/index.ts"],
+      "@freeanima/ui-kit/components/ui/*": ["./src/frontend/ui-kit/components/ui/*.tsx"],
+      "@freeanima/app-web/static-server": ["./src/app/shell/web/lib/static-server.ts"],
+      "@freeanima/capabilities-identity": ["./src/capabilities/identity/index.ts"],
+      "@freeanima/capabilities-memory/*": ["./src/capabilities/memory/*.ts"],
+      "@freeanima/console-api/date-json": ["./src/features/console/hub/console-api/date-json.ts"],
+      "@freeanima/core/db/pg/self-layer": ["./src/core/db/pg/self-layer/index.ts"],
+      "@freeanima/core/db/schema/entity": ["./src/core/db/schema/entity/index.ts"],
+      "@freeanima/core/db/schema/rows/*": ["./src/core/db/schema/rows/*.ts"],
+      "@freeanima/feature-chat/protocol": ["./src/features/chat/protocol/index.ts"],
+      "@freeanima/feature-task/domain/*": ["./src/features/task/domain/*.ts"],
+      "@freeanima/feature-task/protocol": ["./src/features/task/protocol/index.ts"],
+      "@freeanima/hub-contract/registry": ["./src/shared/hub-contract/registry/index.ts"],
+      "@freeanima/kernel/logging/memory": ["./src/kernel/logging/sinks/memory.ts"],
+      "@freeanima/sap-contract/frames/*": ["./src/shared/sap-contract/frames/*.ts"],
+      "@freeanima/capabilities-tools/*": ["./src/capabilities/tools/*.ts"],
+      "@freeanima/console-api/handlers": [
+        "./src/features/console/hub/console-api/handlers/index.ts"
+      ],
+      "@freeanima/console-contract/api": [
+        "./src/features/console/protocol/console-contract/api/index.ts"
+      ],
+      "@freeanima/feature-diary/domain": ["./src/features/diary/domain/index.ts"],
+      "@freeanima/feature-diary/plugin": ["./src/features/diary/plugin.ts"],
+      "@freeanima/feature-diary/ui/spa": ["./src/features/diary/ui/spa/index.ts"],
+      "@freeanima/feature-dream/domain": ["./src/features/dream/domain/index.ts"],
+      "@freeanima/feature-dream/plugin": ["./src/features/dream/plugin.ts"],
+      "@freeanima/feature-dream/ui/spa": ["./src/features/dream/ui/spa/index.ts"],
+      "@freeanima/feature-email/domain": ["./src/features/email/domain/index.ts"],
+      "@freeanima/feature-email/plugin": ["./src/features/email/plugin.ts"],
+      "@freeanima/feature-email/ui/spa": ["./src/features/email/ui/spa/index.ts"],
+      "@freeanima/feature-vault/domain": ["./src/features/vault/domain/index.ts"],
+      "@freeanima/feature-vault/plugin": ["./src/features/vault/plugin.ts"],
+      "@freeanima/feature-vault/ui/spa": ["./src/features/vault/ui/spa/index.ts"],
+      "@freeanima/kernel/hooks/testing": ["./src/kernel/hooks/testing.ts"],
+      "@freeanima/runtime/conversation": ["./src/runtime/conversation/index.ts"],
+      "@freeanima/shell-ui/sentry-test": ["./src/frontend/shell-ui/lib/sentry-test.ts"],
+      "@freeanima/ui-kit/components/ui": ["./src/frontend/ui-kit/components/ui/index.ts"],
+      "@freeanima/capabilities-memory": ["./src/capabilities/memory/index.ts"],
+      "@freeanima/core/db/pg/pipeline": ["./src/core/db/pg/pipeline/index.ts"],
+      "@freeanima/core/db/schema/rows": ["./src/core/db/schema/rows/index.ts"],
+      "@freeanima/core/util/backoff/*": ["./src/core/util/backoff/*.ts"],
+      "@freeanima/feature-chat/plugin": ["./src/features/chat/plugin.ts"],
+      "@freeanima/feature-chat/ui/spa": ["./src/features/chat/ui/spa/index.ts"],
+      "@freeanima/feature-diary/hub/*": ["./src/features/diary/hub/*.ts"],
+      "@freeanima/feature-dream/hub/*": ["./src/features/dream/hub/*.ts"],
+      "@freeanima/feature-email/hub/*": ["./src/features/email/hub/*.ts"],
+      "@freeanima/feature-task/domain": ["./src/features/task/domain/index.ts"],
+      "@freeanima/feature-task/plugin": ["./src/features/task/plugin.ts"],
+      "@freeanima/feature-task/ui/spa": ["./src/features/task/ui/spa/index.ts"],
+      "@freeanima/feature-vault/hub/*": ["./src/features/vault/hub/*.ts"],
+      "@freeanima/kernel/logging/file": ["./src/kernel/logging/sinks/file.ts"],
+      "@freeanima/kernel/logging/null": ["./src/kernel/logging/sinks/null.ts"],
+      "@freeanima/platform/bind-hosts": ["./src/platform/bind-hosts.ts"],
+      "@freeanima/platform/commands/*": ["./src/platform/slash-commands/*.ts"],
+      "@freeanima/platform/features/*": ["./src/platform/features/*.ts"],
+      "@freeanima/satellite-companion": ["./src/satellites/companion/lib/index.ts"],
+      "@freeanima/ui-kit/ui/acp-types": ["./src/frontend/ui-kit/ui/acp-dock-types.ts"],
+      "@freeanima/capabilities-acp/*": ["./src/capabilities/acp/*.ts"],
+      "@freeanima/capabilities-tools": ["./src/capabilities/tools/index.ts"],
+      "@freeanima/console-api/elysia": ["./src/features/console/hub/console-api/elysia/app.ts"],
+      "@freeanima/console-api/server": ["./src/features/console/hub/console-api/server.ts"],
+      "@freeanima/core/util/search/*": ["./src/core/util/search/*.ts"],
+      "@freeanima/feature-chat/hub/*": ["./src/features/chat/hub/*.ts"],
+      "@freeanima/feature-task/hub/*": ["./src/features/task/hub/*.ts"],
+      "@freeanima/kernel/random-uuid": ["./src/kernel/random-uuid.ts"],
+      "@freeanima/platform/bootstrap": ["./src/platform/bootstrap/index.ts"],
+      "@freeanima/platform/logging/*": ["./src/platform/logging/*.ts"],
+      "@freeanima/platform/runtime/*": ["./src/platform/runtime/*.ts"],
+      "@freeanima/platform/schemas/*": ["./src/platform/schemas/*.ts"],
+      "@freeanima/runtime/pipeline/*": ["./src/runtime/pipeline/*.ts"],
+      "@freeanima/shell-sdk/settings": ["./src/frontend/shell-sdk/settings/index.ts"],
+      "@freeanima/ui-kit/globals.css": ["./src/frontend/ui-kit/styles/globals.css"],
+      "@freeanima/core/db/pg/entity": ["./src/core/db/pg/entity/index.ts"],
+      "@freeanima/core/hooks/prompt": ["./src/core/hooks/prompt/index.ts"],
+      "@freeanima/core/util/backoff": ["./src/core/util/backoff/index.ts"],
+      "@freeanima/platform/commands": ["./src/platform/slash-commands/index.ts"],
+      "@freeanima/platform/config/*": ["./src/platform/config/*.ts"],
+      "@freeanima/platform/features": ["./src/platform/features/index.ts"],
+      "@freeanima/shell-ui/settings": ["./src/frontend/shell-ui/lib/settings.ts"],
+      "@freeanima/ui-kit/styles.css": ["./src/frontend/ui-kit/styles.css"],
+      "@freeanima/capabilities-acp": ["./src/capabilities/acp/index.ts"],
+      "@freeanima/core/db/domain/*": ["./src/core/db/domain/*.ts"],
+      "@freeanima/core/tokenizer/*": ["./src/core/tokenizer/*.ts"],
+      "@freeanima/platform/logging": ["./src/platform/logging/index.ts"],
+      "@freeanima/platform/ports/*": ["./src/platform/ports/*.ts"],
+      "@freeanima/platform/runtime": ["./src/platform/runtime/index.ts"],
+      "@freeanima/runtime/pipeline": ["./src/runtime/pipeline/index.ts"],
+      "@freeanima/ui-kit/composite": ["./src/frontend/ui-kit/composite/index.ts"],
+      "@freeanima/ui-kit/lib/utils": ["./src/frontend/ui-kit/lib/utils.ts"],
+      "@freeanima/console-api/api": ["./src/features/console/hub/console-api/api/index.ts"],
+      "@freeanima/core/compress/*": ["./src/core/compress/*.ts"],
+      "@freeanima/core/db/pg/cron": ["./src/core/db/pg/cron/index.ts"],
+      "@freeanima/core/hooks/loop": ["./src/core/hooks/loop/index.ts"],
+      "@freeanima/core/provider/*": ["./src/core/provider/*.ts"],
+      "@freeanima/core/util/fts/*": ["./src/core/util/fts/*.ts"],
+      "@freeanima/kernel/eventbus": ["./src/kernel/eventbus/index.ts"],
+      "@freeanima/platform/config": ["./src/platform/config/index.ts"],
+      "@freeanima/shell-sdk/react": ["./src/frontend/shell-sdk/react.tsx"],
+      "@freeanima/core/db/domain": ["./src/core/db/domain/index.ts"],
+      "@freeanima/core/db/pg/sap": ["./src/core/db/pg/sap/index.ts"],
+      "@freeanima/core/db/schema": ["./src/core/db/schema/index.ts"],
+      "@freeanima/core/tokenizer": ["./src/core/tokenizer/index.ts"],
+      "@freeanima/hub-contract/*": ["./src/shared/hub-contract/*.ts"],
+      "@freeanima/kernel/logging": ["./src/kernel/logging/index.ts"],
+      "@freeanima/platform/alive": ["./src/platform/alive.ts"],
+      "@freeanima/platform/hub/*": ["./src/platform/hub/*.ts"],
+      "@freeanima/platform/ports": ["./src/platform/ports/index.ts"],
+      "@freeanima/platform/sap/*": ["./src/platform/sap/*.ts"],
+      "@freeanima/runtime/goal/*": ["./src/runtime/goal/*.ts"],
+      "@freeanima/runtime/loop/*": ["./src/runtime/loop/*.ts"],
+      "@freeanima/runtime/turn/*": ["./src/runtime/turn/*.ts"],
+      "@freeanima/sap-contract/*": ["./src/shared/sap-contract/*.ts"],
+      "@freeanima/shell-ui/build": ["./src/frontend/shell-ui/build.ts"],
+      "@freeanima/shell-ui/mount": ["./src/frontend/shell-ui/spa/mount.tsx"],
+      "@freeanima/vault-crypto/*": ["./src/shared/vault-crypto/*.ts"],
+      "@freeanima/core/compress": ["./src/core/compress/index.ts"],
+      "@freeanima/core/config/*": ["./src/core/config/*.ts"],
+      "@freeanima/core/provider": ["./src/core/provider/index.ts"],
+      "@freeanima/feature-diary": ["./src/features/diary/domain/index.ts"],
+      "@freeanima/feature-dream": ["./src/features/dream/domain/index.ts"],
+      "@freeanima/feature-email": ["./src/features/email/domain/index.ts"],
+      "@freeanima/feature-vault": ["./src/features/vault/domain/index.ts"],
+      "@freeanima/ui-kit/layout": ["./src/frontend/ui-kit/layout/index.ts"],
+      "@freeanima/ui-kit/ui/acp": ["./src/frontend/ui-kit/ui/AcpProgressDock.tsx"],
+      "@freeanima/core/db/pg/*": ["./src/core/db/pg/*.ts"],
+      "@freeanima/core/hooks/*": ["./src/core/hooks/*.ts"],
+      "@freeanima/core/repos/*": ["./src/core/repos/*.ts"],
+      "@freeanima/core/skill/*": ["./src/core/skill/*.ts"],
+      "@freeanima/feature-task": ["./src/features/task/domain/index.ts"],
+      "@freeanima/hub-client/*": ["./src/shared/hub-client/*.ts"],
+      "@freeanima/hub-contract": ["./src/shared/hub-contract/index.ts"],
+      "@freeanima/kernel/hooks": ["./src/kernel/hooks/index.ts"],
+      "@freeanima/platform/hub": ["./src/platform/hub/index.ts"],
+      "@freeanima/platform/sap": ["./src/platform/sap/index.ts"],
+      "@freeanima/runtime/goal": ["./src/runtime/goal/index.ts"],
+      "@freeanima/runtime/loop": ["./src/runtime/loop/index.ts"],
+      "@freeanima/runtime/turn": ["./src/runtime/turn/index.ts"],
+      "@freeanima/sap-contract": ["./src/shared/sap-contract/index.ts"],
+      "@freeanima/vault-crypto": ["./src/shared/vault-crypto/index.ts"],
+      "@freeanima/console-api": ["./src/features/console/hub/console-api/index.ts"],
+      "@freeanima/core/config": ["./src/core/config/index.ts"],
+      "@freeanima/core/tool/*": ["./src/core/tool/*.ts"],
+      "@freeanima/core/util/*": ["./src/core/util/*.ts"],
+      "@freeanima/shell-sdk/*": ["./src/frontend/shell-sdk/*.ts"],
+      "@freeanima/ui-kit/form": ["./src/frontend/ui-kit/form/FormFieldset.tsx"],
+      "@freeanima/core/db/pg": ["./src/core/db/pg/index.ts"],
+      "@freeanima/core/llm/*": ["./src/core/llm/*.ts"],
+      "@freeanima/core/repos": ["./src/core/repos/index.ts"],
+      "@freeanima/core/skill": ["./src/core/skill/index.ts"],
+      "@freeanima/hub-client": ["./src/shared/hub-client/index.ts"],
+      "@freeanima/core/tool": ["./src/core/tool/index.ts"],
+      "@freeanima/core/util": ["./src/core/util/index.ts"],
+      "@freeanima/hub-rpc/*": ["./src/shared/hub-rpc/*.ts"],
+      "@freeanima/shell-sdk": ["./src/frontend/shell-sdk/index.ts"],
+      "@freeanima/core/llm": ["./src/core/llm/index.ts"],
+      "@freeanima/platform": ["./src/platform/index.ts"],
+      "@freeanima/shell-ui": ["./src/frontend/shell-ui/lib/index.ts"],
       "@paraglide/messages": ["./messages/paraglide/messages.js"],
+      "@freeanima/core/db": ["./src/core/db/index.ts"],
+      "@freeanima/hub-rpc": ["./src/shared/hub-rpc/index.ts"],
+      "@freeanima/runtime": ["./src/runtime/index.ts"],
       "@paraglide/runtime": ["./messages/paraglide/runtime.js"],
-      "@/*": ["./satellites/companion/app/src/*"],
-      "@shared/*": ["./satellites/companion/shared/*"],
-      "@freeanima/capabilities-satellite": ["./capabilities/satellite/src/index.ts"]
+      "@freeanima/kernel": ["./src/kernel/index.ts"],
+      "@freeanima/ui-kit": ["./src/frontend/ui-kit/index.ts"],
+      "@freeanima/cli": ["./src/app/cli/cli.ts"],
+      "@console/*": ["./src/features/console/ui/console/*"],
+      "@chat/*": ["./src/features/chat/ui/spa/*"],
+      "@shared/*": ["./src/satellites/companion/shared/*"],
+      "@/*": ["./src/satellites/companion/spa/*"]
     }
   },
   "include": [
     "types/**/*.d.ts",
-    "kernel/**/*.ts",
-    "shared/**/*.ts",
-    "frontend/**/*.ts",
-    "frontend/**/*.tsx",
-    "core/**/*.ts",
-    "runtime/**/*.ts",
-    "platform/**/*.ts",
-    "capabilities/**/*.ts",
-    "satellites/**/*.ts",
-    "app/**/*.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
     "scripts/**/*.ts",
     "tests/**/*.ts",
     "messages/**/*.json",
-    "satellites/companion/shared/**/*.json"
+    "src/satellites/companion/shared/**/*.json"
   ],
   "exclude": [
     "node_modules",
     "**/dist/**",
     "**/.turbo/**",
-    "app/cli/publish/**",
-    "satellites/pair-programming/app/**",
-    "satellites/companion/app/**",
-    "shared/sap-contract/**",
-    "frontend/shell-ui/app/**",
-    "frontend/shell-ui/src/**",
-    "frontend/shell-ui/types/**"
+    "src/app/cli/publish/**",
+    "src/satellites/companion/spa/**",
+    "src/shared/sap-contract/**",
+    "src/frontend/shell-ui/spa/**",
+    "src/frontend/shell-ui/lib/**",
+    "src/frontend/shell-ui/types/**",
+    "src/app/shell/mobile/android/**",
+    "src/app/shell/web/spa/**",
+    "src/app/shell/web/lib/**",
+    "src/app/shell/desktop/spa/**",
+    "src/app/shell/mobile/spa/**",
+    "src/features/**/ui/**"
   ]
 }

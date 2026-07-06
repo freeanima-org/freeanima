@@ -8,12 +8,12 @@ import { join } from "node:path";
 const ROOT = join(import.meta.dir, "..");
 
 const WORKSPACE_DIRS = [
-  "kernel",
-  "core",
-  "runtime",
-  "capabilities",
-  "features",
-  "platform",
+  "src/kernel",
+  "src/core",
+  "src/runtime",
+  "src/capabilities",
+  "src/features",
+  "src/platform",
   "app",
   "tests",
 ];

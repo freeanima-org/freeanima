@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:23+0800\n"
+"POT-Creation-Date: 2026-07-06 11:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/features/companion.md:120 docs/features/mobile-app.md:52
+#: docs/features/companion.md:119 docs/features/mobile-app.md:52
 #: docs/guide/database.md:88 docs/guide/remote-access.md:177
 #, no-wrap
 msgid "Troubleshooting"
@@ -25,7 +25,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/features/mobile-app.md:1 docs/features/mobile-app.md:5
-#: messages/po4a/en.xml:574
+#: messages/po4a/en.xml:589
 #, no-wrap
 msgid "Mobile app (Android)"
 msgstr ""
@@ -39,7 +39,7 @@ msgstr ""
 #. type: Plain text
 #: docs/features/mobile-app.md:9
 #, no-wrap
-msgid "> Package: [`app/mobile/`](../../app/mobile/)\n"
+msgid "> Package: [`src/app/shell/mobile/`](../../src/app/shell/mobile/)\n"
 msgstr ""
 
 #. type: Title ##
@@ -56,7 +56,7 @@ msgid ""
 "| ---------- | -------------------------------------------------------- |\n"
 "| Platform   | **Android only** sideload (APK); iOS later               |\n"
 "| UI         | 默认 bootstrap → Hub `/web/*`（与浏览器/PWA 同一产物）   |\n"
-"| Modules    | Chat + Console（bundled shell-ui）                         |\n"
+"| Modules    | Chat + Console（bundled shell-ui）                       |\n"
 "| Hub config | APP **Hub settings**（Preferences）或 bootstrap 首次配置 |\n"
 "| Hub duties | `/api` REST + `/hub/rpc/v1` WebSocket                    |\n"
 msgstr ""
@@ -147,12 +147,12 @@ msgstr ""
 #: docs/features/mobile-app.md:60
 #, no-wrap
 msgid ""
-"| Symptom                             | Common cause                                                                                    |\n"
-"| ----------------------------------- | ----------------------------------------------------------------------------------------------- |\n"
-"| Keyboard covers chat input          | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes |\n"
-"| Chat input unresponsive             | No selected conversation (first install should auto-create); or SAP disconnected                |\n"
+"| Symptom                               | Common cause                                                                                    |\n"
+"| ------------------------------------- | ----------------------------------------------------------------------------------------------- |\n"
+"| Keyboard covers chat input            | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes |\n"
+"| Chat input unresponsive               | No selected conversation (first install should auto-create); or SAP disconnected                |\n"
 "| Console load failed / Failed to fetch | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header      |\n"
-"| Not Found                           | Avoid legacy paths like `/console`/dashboard/index.html`; use SPA `/console`/dashboard`               |\n"
+"| Not Found                             | Avoid legacy paths like `/console`/dashboard/index.html`; use SPA `/console`/dashboard`         |\n"
 msgstr ""
 
 #. type: Title ##
@@ -180,8 +180,8 @@ msgstr ""
 #. type: Plain text
 #: docs/features/mobile-app.md:72
 msgid ""
-"Mobile debug build: `cd app/mobile && bun run android:debug` (no minify + "
-"sourcemap for inspect)."
+"Mobile debug build: `bun run debug:android` (no minify + sourcemap for "
+"inspect)."
 msgstr ""
 
 #. type: Title ##
@@ -194,20 +194,20 @@ msgstr ""
 #: docs/features/mobile-app.md:75
 #, no-wrap
 msgid ""
-"bun run --filter @freeanima/app-mobile build\n"
-"cd app/mobile && bun run sync\n"
+"bun run build:mobile\n"
+"cd src/app/shell/mobile && bunx cap sync android\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/features/mobile-app.md:81
 msgid ""
 "默认 **remote UI**（`www/` 仅 bootstrap，APK 体积小）。完整 bundled SPA："
-"`MOBILE_UI_MODE=bundled bun run --filter @freeanima/app-mobile build`"
+"`MOBILE_UI_MODE=bundled bun run build:mobile`"
 msgstr ""
 
 #. type: Plain text
 #: docs/features/mobile-app.md:83
-msgid "Debug full flow: `cd app/mobile && bun run android:debug`"
+msgid "Debug full flow: `bun run debug:android`"
 msgstr ""
 
 #. type: Plain text
@@ -218,7 +218,9 @@ msgstr ""
 
 #. type: Plain text
 #: docs/features/mobile-app.md:87
-msgid "Package README: [`app/mobile/README.md`](../../app/mobile/README.md)"
+msgid ""
+"Package README: [`src/app/shell/mobile/README.md`](../../src/app/shell/"
+"mobile/README.md)"
 msgstr ""
 
 #. type: Title ##
@@ -231,7 +233,7 @@ msgstr ""
 #: docs/features/mobile-app.md:97
 #, no-wrap
 msgid ""
-"|              | Electron `app/desktop`                          | Capacitor `app/mobile`                |\n"
+"|              | Electron `src/app/shell/desktop`                | Capacitor `src/app/shell/mobile`      |\n"
 "| ------------ | ----------------------------------------------- | ------------------------------------- |\n"
 "| Injection    | preload → `window.satelliteShell`               | `shell-bridge.js` → same-shaped API   |\n"
 "| Hub config   | Hub settings → `~/.anima-desktop/settings.json` | Hub settings → Preferences            |\n"

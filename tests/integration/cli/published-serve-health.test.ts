@@ -9,7 +9,7 @@ import { restoreIntegrationHome } from "../../helpers/integration-case.ts";
 import { writeIntegrationDatabaseConfig } from "../../helpers/pg-test.ts";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
-const publishRoot = join(repoRoot, "app/cli/publish");
+const publishRoot = join(repoRoot, "src/app/cli/publish");
 const cliJs = join(publishRoot, "dist/cli.js");
 const TEST_PORT = 18_658;
 const HEALTH_TIMEOUT_MS = 120_000;

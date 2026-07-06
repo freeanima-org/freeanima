@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:12+0800\n"
+"POT-Creation-Date: 2026-07-06 11:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,8 +33,8 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/tools.md:10
 msgid ""
-"Implementation: [`capabilities/satellite/src/manager.ts`](../../capabilities/"
-"satellite/src/manager.ts)."
+"Implementation: [`src/capabilities/satellite/manager.ts`](../../src/"
+"capabilities/satellite/manager.ts)."
 msgstr ""
 
 #. type: Title ##
@@ -46,8 +46,8 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/tools.md:14
 msgid ""
-"Canonical name format ([`shared/sap-contract/src/naming.ts`](../../shared/"
-"sap-contract/src/naming.ts)):"
+"Canonical name format ([`src/shared/sap-contract/naming.ts`](../../src/"
+"shared/sap-contract/naming.ts)):"
 msgstr ""
 
 #. type: Fenced code block (text)
@@ -244,18 +244,17 @@ msgid "sap:{app_slug}:{instance_id}\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/tools.md:113
+#: docs/sap/tools.md:112
 #, no-wrap
 msgid ""
-"| `app_id`           | Example platform          |\n"
-"| ------------------ | ------------------------- |\n"
-"| `pair-programming` | `sap:pairprogramming:k7m` |\n"
-"| `chat`             | `sap:chat:k7m`            |\n"
-"| `companion`        | `sap:companion:k7m`       |\n"
+"| `app_id`    | Example platform    |\n"
+"| ----------- | ------------------- |\n"
+"| `companion` | `sap:companion:k7m` |\n"
+"| `chat`      | `sap:chat:k7m`      |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/tools.md:115
+#: docs/sap/tools.md:114
 msgid ""
 "`instance_id` is a Hub-assigned 3-character `[a-z0-9]` string, globally "
 "unique across all SAP apps. Hub returns the assigned or confirmed id in "
@@ -263,36 +262,36 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/tools.md:116
+#: docs/sap/tools.md:115
 #, no-wrap
 msgid "Completing a call"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/tools.md:119
+#: docs/sap/tools.md:118
 msgid "Satellite receives `tool.call` with `call_id`. Reply with:"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/tools.md:122
+#: docs/sap/tools.md:121
 msgid "`tool.result` — `{ call_id, content }`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/tools.md:122
+#: docs/sap/tools.md:121
 msgid "`tool.error` — `{ call_id, error }`"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/tools.md:124
+#: docs/sap/tools.md:123
 msgid ""
 "Hub resolves the pending promise and continues the agent turn. Timeout or "
 "disconnect fails the call."
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/tools.md:125
+#: docs/sap/tools.md:124
 msgid ""
-"Reference handler: [`satellites/pair-programming/server/sap/hub.ts`](../../"
-"satellites/pair-programming/server/sap/hub.ts)."
+"Reference handler: [`src/satellites/companion/server/sap/hub.ts`](../../src/"
+"satellites/companion/server/sap/hub.ts)."
 msgstr ""

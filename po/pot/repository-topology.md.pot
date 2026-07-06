@@ -1,0 +1,192 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-07-06 11:54+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Title #
+#: docs/concepts/repository-topology.md:1
+#: docs/concepts/repository-topology.md:5
+#, no-wrap
+msgid "Repository topology"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/repository-topology.md:9
+#, no-wrap
+msgid ""
+"> Living map of the monorepo layout after single-package migration (Phase 0).\n"
+"> **Code is SSOT** — when this doc drifts, fix it in the same PR as structural changes.\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/repository-topology.md:10
+#, no-wrap
+msgid "Packages"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/repository-topology.md:16
+#, no-wrap
+msgid ""
+"| Package           | Path            | Role                                                                         |\n"
+"| ----------------- | --------------- | ---------------------------------------------------------------------------- |\n"
+"| `freeanima`       | repository root | Hub runtime, CLI, capabilities, features, shells — **one `package.json`**    |\n"
+"| `@freeanima/site` | `site/`         | Astro/Starlight 文档站（**独立** `package.json` + `bun.lock`，非 workspace） |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/repository-topology.md:18
+msgid ""
+"根目录 **无** `workspaces`；`site/` 与产品依赖图分离，内容（`docs/`、`po/`、"
+"`messages/`）仍与产品同仓。"
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/repository-topology.md:19
+#, no-wrap
+msgid "Product source (`src/`)"
+msgstr ""
+
+#. type: Fenced code block
+#: docs/concepts/repository-topology.md:21
+#, no-wrap
+msgid ""
+"src/\n"
+"├── kernel/          # 日志、事件总线、无业务依赖\n"
+"├── core/            # 配置、PG schema、repos、LLM 工具\n"
+"├── runtime/         # 对话轮次、目标、流水线\n"
+"├── platform/        # 组合根：Hub、连接器、SAP、slash commands\n"
+"├── capabilities/    # acp, memory, tools, mcp-*, llm-openai, …\n"
+"├── features/        # chat, console, task, vault, diary, …\n"
+"├── shared/          # hub-rpc, hub-contract, sap-contract, vault-crypto\n"
+"├── frontend/        # ui-kit, shell-sdk, shell-ui\n"
+"├── app/\n"
+"│   ├── cli/         # `anima` CLI（无内层 src/）\n"
+"│   └── shell/\n"
+"│       ├── desktop/ # Electron：spa/（Vite 根）+ lib/（设置/桥接）\n"
+"│       ├── mobile/  # Capacitor\n"
+"│       └── web/     # 浏览器全壳层\n"
+"└── satellites/      # companion（spa/ + lib/ + server/ sidecar）\n"
+"\n"
+"内层 Vite SPA 根目录统一称 **`spa/`**（原 `app/`），与交付层 `src/app/` 区分。壳层/卫星的非 SPA 模块用 **`lib/`**（原内层 `src/`）。\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/repository-topology.md:42
+#, no-wrap
+msgid "Root-level (non-`src/`)"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/repository-topology.md:53
+#, no-wrap
+msgid ""
+"| Path                     | Role                                                       |\n"
+"| ------------------------ | ---------------------------------------------------------- |\n"
+"| `tests/`                 | 集成测试与 helpers（非产品模块）                           |\n"
+"| `scripts/`               | 构建、检查、迁移脚本                                       |\n"
+"| `docs/`                  | 英文概念/指南文档（源）                                    |\n"
+"| `docs/.generated/zh_CN/` | po4a 构建产物（gitignore；site 构建时从 `po/zh_CN/` 生成） |\n"
+"| `messages/`              | Paraglide `en.json` / `zh-cn.json`                         |\n"
+"| `po/`                    | gettext PO（恢复文档 i18n 时用）                           |\n"
+"| `site/`                  | 文档站（独立 install / build）                             |\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/repository-topology.md:54
+#, no-wrap
+msgid "Module resolution"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/repository-topology.md:59
+msgid ""
+"TypeScript：`tsconfig.json` 单一配置；`@freeanima/*` 通过 "
+"`compilerOptions.paths` 映射到 `src/**`。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/repository-topology.md:59
+msgid ""
+"Vite 壳层：`src/frontend/shell-ui/vite/paths.ts` 与别名（`@chat/*`、"
+"`@console/*` 等）；feature UI 在 `ui/spa/`。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/repository-topology.md:59
+msgid "产品无 workspace 子 `package.json`；`site/` 为兄弟目录独立包。"
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/repository-topology.md:60
+#, no-wrap
+msgid "护栏"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/repository-topology.md:65
+msgid ""
+"`scripts/check-layer-deps.ts`：目录层依赖软约束（`src/<layer>/` 前缀）。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/repository-topology.md:65
+msgid "已移除 `check-package-cycles.ts`（单包无 workspace 图）。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/repository-topology.md:65
+msgid "CLI npm 发版已暂停（无 `publish:cli`）。"
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/repository-topology.md:66
+#, no-wrap
+msgid "文档站 i18n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/repository-topology.md:69
+msgid ""
+"中文 **PO 译文冻结**（`po/zh_CN/` 保留、不再要求 agent 同步）；"
+"`docs/.generated/zh_CN/` **不入库**，site 构建时 `i18n:po4a` 从 PO 生成。PR/"
+"`bun run check` **不跑**翻译校验。详见 [`.agent/rules/i18n.md`](../.agent/"
+"rules/i18n.md)。"
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/repository-topology.md:70
+#, no-wrap
+msgid "文档站构建"
+msgstr ""
+
+#. type: Fenced code block (bash)
+#: docs/concepts/repository-topology.md:72
+#, no-wrap
+msgid ""
+"# 产品\n"
+"bun install && bun run check\n"
+"\n"
+"# 文档站（独立 lock）\n"
+"cd site && bun install && bun run build\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/repository-topology.md:80
+msgid ""
+"site `prebuild` 会调用根目录 `i18n:po4a` 与 `paraglide:compile`（共享 `docs/"
+"` / `messages/` SSOT）。"
+msgstr ""

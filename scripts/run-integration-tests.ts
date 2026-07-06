@@ -7,7 +7,7 @@ import { setupIntegrationPg } from "./integration-pg-setup.ts";
 
 const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const label = "test:integration";
-const publishedCliJs = join(repoRoot, "app/cli/publish/dist/cli.js");
+const publishedCliJs = join(repoRoot, "src/app/cli/publish/dist/cli.js");
 
 function ensurePublishedCliBuilt(): void {
   if (existsSync(publishedCliJs)) return;

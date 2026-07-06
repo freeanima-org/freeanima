@@ -16,7 +16,7 @@ title: Remote access
 | **cloudflared**         | Outbound tunnel；single hostname → Hub `127.0.0.1:2658`（API + Web UI at `/web`）                           |
 | **`http.host`**         | Hub listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                     |
 | **`http.cors_origins`** | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel          |
-| **Client settings**     | app/desktop / app/mobile / **browser Web** fill Hub URL and token in **Hub settings**                       |
+| **Client settings**     | Desktop / mobile shell / **browser Web** fill Hub URL and token in **Hub settings**                         |
 | **Remote UI**           | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |
 | **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                 |
 
@@ -119,13 +119,13 @@ Store API token and tunnel connector JSON via `env("KEY")` or `vault("item_id", 
 
 ## 3. Client configuration
 
-**app/desktop**, **app/mobile**, and **browser Web** are remote clients; they **do not read** Hub `config.yaml` token.
+**Desktop shell** (`src/app/shell/desktop`), **mobile shell** (`src/app/shell/mobile`), and **browser Web** are remote clients; they **do not read** Hub `config.yaml` token.
 
-| Client      | Storage                                          |
-| ----------- | ------------------------------------------------ |
-| app/desktop | `~/.anima-desktop/settings.json` (`hub` section) |
-| app/mobile  | Capacitor Preferences                            |
-| Browser Web | localStorage (settings page)                     |
+| Client        | Storage                                          |
+| ------------- | ------------------------------------------------ |
+| Desktop shell | `~/.anima-desktop/settings.json` (`hub` section) |
+| Mobile shell  | Capacitor Preferences                            |
+| Browser Web   | localStorage (settings page)                     |
 
 Settings (all clients):
 
@@ -134,7 +134,7 @@ Settings (all clients):
 
 Browser Web: `/web/config.json` sets default Hub to the page origin; first visit still requires saving token in settings.
 
-Flow: open Hub settings → fill → **Test connection** → Save. Desktop requires **restart app/desktop** after save.
+Flow: open Hub settings → fill → **Test connection** → Save. Desktop requires **restart desktop shell** after save.
 
 ## 4. Authentication behavior
 
@@ -161,8 +161,8 @@ mcpServers:
       Authorization: "Bearer fa_at_..."
 ```
 
-- **Inbound** (Hub connects to external MCP servers): `config.yaml` `mcp_servers` (`capabilities/mcp-client`)
-- **Outbound** (external agents call Hub tools): `/mcp` endpoint (`capabilities/mcp-server`)
+- **Inbound** (Hub connects to external MCP servers): `config.yaml` `mcp_servers` (`src/capabilities/mcp-client`)
+- **Outbound** (external agents call Hub tools): `/mcp` endpoint (`src/capabilities/mcp-server`)
 
 ## Operations
 

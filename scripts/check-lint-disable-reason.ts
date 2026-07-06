@@ -7,13 +7,13 @@ import { join, relative } from "node:path";
 
 const ROOT = join(import.meta.dir, "..");
 const SCAN_DIRS = [
-  "kernel",
-  "core",
-  "runtime",
-  "capabilities",
-  "platform",
+  "src/kernel",
+  "src/core",
+  "src/runtime",
+  "src/capabilities",
+  "src/platform",
   "packages",
-  "satellites",
+  "src/satellites",
   "app",
   "scripts",
   "tests",
@@ -23,7 +23,7 @@ const IGNORE_PATH_PARTS = [
   "/dist/",
   "/coverage/",
   "/.tsout/",
-  "/app/cli/publish/",
+  "/src/app/cli/publish/",
   "routeTree.gen.ts",
 ];
 const DIRECTIVE_RE = /(?:oxlint|eslint)-disable(?:-next-line|-line)?/;

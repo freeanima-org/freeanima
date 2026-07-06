@@ -24,7 +24,7 @@ FreeAnima is designed for **single-user local / intranet** deployment:
 | Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, agent machine key (`vault/agent-machine.key`), conversations, memory—recommend `chmod 700`              |
 | CLI plaintext output     | `anima vault get` prints Agent-library field plaintext to stdout; do not redirect to shared logs                                                                 |
 | User master password     | Set only in Shell `/vault` or bundled Chat unlock box; **never** sent as a chat message or stored in PG messages                                                 |
-| Chat User vault unlock   | **v1 bundled Chat only** (`app/web` / desktop / mobile); Discord / WeChat gateways cannot unlock User library                                                    |
+| Chat User vault unlock   | **v1 bundled Chat only** (`src/app/shell/web` / desktop / mobile); Discord / WeChat gateways cannot unlock User library                                          |
 
 `config.yaml` supports `vault("item_id", "field")` (Agent library, Hub headless) and `env("KEY")` for secrets; values are injected at runtime. User-library inject for tools requires an unlocked Chat session on the client.
 
@@ -48,16 +48,16 @@ Disk backup = data access. Protect backup media accordingly.
 
 ## LLM Tool Risks
 
-| Capability                    | Risk                                                                                                                          |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `terminal`                    | Default `shell: true`, can run arbitrary shell commands                                                                       |
-| `file_read_file`              | Partial path deny (`.ssh` private keys, `/etc/passwd`, etc.); **not** full `/etc/` deny                                       |
-| `file_write_file`             | deny list + write-protected paths                                                                                             |
-| MCP tools                     | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined                         |
-| Capability mask (Mask)        | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `capabilities/task/src/mask/` |
-| ACP (Cursor)                  | Default **auto-approve** all `session/request_permission` (`allow-once`)                                                      |
-| `vault_list` / `vault_search` | Agent vault metadata only; no secret values                                                                                   |
-| `vault_inject_env`            | Injects runtime env for subprocesses; tool result is ack only; User library requires Chat unlock                              |
+| Capability                    | Risk                                                                                                                              |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `terminal`                    | Default `shell: true`, can run arbitrary shell commands                                                                           |
+| `file_read_file`              | Partial path deny (`.ssh` private keys, `/etc/passwd`, etc.); **not** full `/etc/` deny                                           |
+| `file_write_file`             | deny list + write-protected paths                                                                                                 |
+| MCP tools                     | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined                             |
+| Capability mask (Mask)        | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `src/capabilities/task/src/mask/` |
+| ACP (Cursor)                  | Default **auto-approve** all `session/request_permission` (`allow-once`)                                                          |
+| `vault_list` / `vault_search` | Agent vault metadata only; no secret values                                                                                       |
+| `vault_inject_env`            | Injects runtime env for subprocesses; tool result is ack only; User library requires Chat unlock                                  |
 
 ## Measures in Place
 

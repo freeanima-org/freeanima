@@ -15,14 +15,12 @@ flowchart TB
     RpcEndpoint["/hub/rpc/v1 WebSocket"]
     Bundled[Bundled SPA modules]
     SatA[Satellite companion]
-    SatB[Satellite pair-programming]
   end
   Browser[Browser]
   Browser --> Bundled
   Browser --> SatA
   Bundled -->|"HubRPC connect + auth_token"| RpcEndpoint
   SatA -->|"HubRPC + sap.attach"| RpcEndpoint
-  SatB --> RpcEndpoint
   RpcEndpoint --> Hub
 ```
 

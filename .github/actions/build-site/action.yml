@@ -1,5 +1,5 @@
 name: Build site
-description: po4a compile + Paraglide + Astro site build (i18n validation checks disabled; run bun run i18n:check:all manually)
+description: Astro site build via site prebuild (po4a + Paraglide); no PO/translation validation checks
 runs:
   using: composite
   steps:
@@ -19,12 +19,16 @@ runs:
         sudo apt-get install -y po4a gettext
         po4a --version | grep -E 'po4a version 0\.(6[7-9]|[7-9][0-9])\.'
     - uses: ./.github/actions/setup-bun
-    - name: i18n po4a
+    - name: Cache site dependencies
+      uses: actions/cache@v4
+      with:
+        path: site/node_modules
+        key: site-bun-${{ runner.os }}-${{ hashFiles('site/bun.lock', 'site/package.json') }}
+        restore-keys: |
+          site-bun-${{ runner.os }}-
+    - name: Install site dependencies
       shell: bash
-      run: bun run i18n:po4a
-    - name: Compile Paraglide messages
-      shell: bash
-      run: bun run paraglide:compile
+      run: cd site && bun install --frozen-lockfile
     - name: Astro build
       shell: bash
       run: cd site && bun run build

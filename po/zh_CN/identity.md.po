@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:22+0800\n"
+"POT-Creation-Date: 2026-07-06 10:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/identity.md:1 messages/po4a/en.xml:570
+#: docs/concepts/identity.md:1 messages/po4a/en.xml:585
 #, no-wrap
 msgid "Identity"
 msgstr "身份定位"
@@ -79,7 +79,7 @@ msgid ""
 "| Self layer (six blocks)                  | Persistent definition of \"who I am\"                                                                                             |\n"
 "| Tools (local / MCP / ACP)                | \"Limbs\" for perception and action                                                                                               |\n"
 "| pass credentials                         | Lifeline (injected at runtime, never plaintext)                                                                                 |\n"
-"| Gateway                                  | Ears and mouth (Discord / WeChat / Console)                                                                                       |\n"
+"| Gateway                                  | Ears and mouth (Discord / WeChat / Console)                                                                                     |\n"
 "| EventBus                                 | Async notification transport (Redis queue); sleep uses Pipeline Runner, not EventBus — see [`architecture.md`](architecture.md) |\n"
 "| Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                      |\n"
 msgstr ""

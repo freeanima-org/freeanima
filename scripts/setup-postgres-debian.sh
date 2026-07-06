@@ -122,5 +122,5 @@ echo "请导入 Shell /vault（User 库）或写入 env DATABASE_URL 后删除�
 echo "  rm -f ${CRED_FILE}"
 echo ""
 echo "Drizzle migrate 示例："
-echo "  DATABASE_URL=\"${CONN_URL}\" bun run --filter @freeanima/core db:migrate"
+echo "  DATABASE_URL=\"${CONN_URL}\" bun run db:migrate"
 echo ""

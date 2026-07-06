@@ -66,26 +66,26 @@ Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-backed
 
 ### Repository layout (Phase 0 — revised)
 
-Target layout is **feature modules** under `features/<slug>/` (UI + protocol + Hub adapter + domain + `plugin.ts`). Console is renamed **console** and uses the **same module shape** as chat/task — not a separate admin-\* stack. `satellites/` is legacy naming; do not add new products there.
+Target layout is **feature modules** under `src/features/<slug>/` (UI + protocol + Hub adapter + domain + `plugin.ts`). Console is renamed **console** and uses the **same module shape** as chat/task — not a separate admin-\* stack. `src/satellites/` is legacy naming; do not add new products there.
 
 **End state:** Hub RPC per feature; console REST is transitional (directory refactor does not remove REST).
 
 Authoritative spec: [`repository-topology.md`](repository-topology.md).
 
-Engine stays horizontal: `kernel/`, `core/`, `runtime/`, `platform/` (boot + routers). Shell host: `frontend/` (`ui-kit`, `shell-sdk`, `shell-ui`).
+Engine stays horizontal: `src/kernel/`, `src/core/`, `src/runtime/`, `src/platform/` (boot + routers). Shell host: `src/frontend/` (`ui-kit`, `shell-sdk`, `shell-ui`).
 
 ### Platform UI layering (legacy paths — migrating to features/\*)
 
-| Layer              | Platform-native?             | Location (current → target)                           | 数据通道               |
-| ------------------ | ---------------------------- | ----------------------------------------------------- | ---------------------- |
-| Shell / capability | Yes                          | `app/desktop`, `app/mobile`, companion, Hub wiring    | preload/IPC            |
-| Shared SPA shell   | Branch on `detectPlatform()` | `frontend/shell-ui`                                   | Hub RPC（Feature RPC） |
-| Console 前端       | Shell embed                  | `features/console`（UI）；REST 过渡期在 `console-api` | REST `/api` + Hub RPC  |
-| 卫星应用           | Sidecar only                 | `satellites/companion`、`satellites/pair-programming` | Hub RPC + SAP attach   |
+| Layer              | Platform-native?             | Location (current → target)                                            | 数据通道               |
+| ------------------ | ---------------------------- | ---------------------------------------------------------------------- | ---------------------- |
+| Shell / capability | Yes                          | `src/app/shell/desktop`, `src/app/shell/mobile`, companion, Hub wiring | preload/IPC            |
+| Shared SPA shell   | Branch on `detectPlatform()` | `src/frontend/shell-ui`                                                | Hub RPC（Feature RPC） |
+| Console 前端       | Shell embed                  | `src/features/console`（UI）；REST 过渡期在 `console-api`              | REST `/api` + Hub RPC  |
+| 卫星应用           | Sidecar only                 | `src/satellites/companion`                                             | Hub RPC + SAP attach   |
 
 Nav and primary layouts **must use `detectPlatform()`** (Electron / native shell), not viewport breakpoints alone. Responsive CSS is for desktop window resize only.
 
-**边界**：`shell-ui` 与 `features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Hub；**SAP attach / tool.\*** 协议仅 `satellites/companion` 与 `satellites/pair-programming` 使用。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。
+**边界**：`shell-ui` 与 `src/features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Hub；**SAP attach / tool.\*** 协议由 companion 等卫星 sidecar 使用。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。
 
 ### Console navigation ↔ cognitive layers
 
@@ -187,7 +187,7 @@ Production: `anima service` (systemd --user). Auto-restarts after crashes; only 
 
 - **service**: long-running — Hub HTTP (`/api`, `/hub/rpc/v1`), Discord / WeChat Gateway, cron
 - **chat**: single non-interactive turn (CLI or piped stdin)
-- **UI**: app/desktop / app/mobile bundled SPA (Chat + Console); Hub does not host `/console``
+- **UI**: `src/app/shell/desktop` / `src/app/shell/mobile` bundled SPA (Chat + Console); Hub does not host `/console`
 
 ```bash
 anima service start              # default: systemd --user
@@ -285,7 +285,7 @@ Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User message
 
 ## Client UI（Hub Web SSOT + 薄壳）
 
-**UI 唯一发布产物**：`app/web/dist`，Hub 托管于 `/web/*`（`web.enabled` 或 `anima web start`）。Desktop / Mobile / 浏览器 / PWA 共用同一 SPA；壳层只保留原生能力（Electron preload、Capacitor Preferences/Keyboard、伴侣 sidecar 等）。
+**UI 唯一发布产物**：`src/app/shell/web/dist`，Hub 托管于 `/web/*`（`web.enabled` 或 `anima web start`）。Desktop / Mobile / 浏览器 / PWA 共用同一 SPA；壳层只保留原生能力（Electron preload、Capacitor Preferences/Keyboard、伴侣 sidecar 等）。
 
 ### 两层模型
 

@@ -5,7 +5,7 @@
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const ROOT = join(import.meta.dir, "..", "core/src/db/pg");
+const ROOT = join(import.meta.dir, "..", "src/core/db/pg");
 
 const RENAMES: [string, string][] = [
   ["sourceConversationIds", "source_conversation_ids"],

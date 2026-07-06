@@ -31,7 +31,7 @@ Sleep is the digital life's memory consolidation mechanism—analogous to human 
 
 ## Orchestration
 
-Sleep uses a **macro DAG** (`sleep-cycle` pipeline) orchestrated by `PipelineRunner` (`@freeanima/runtime/pipeline`). A single cron job triggers the full cycle; step order and dependencies are explicit in code ([`platform/src/boot/sleep-cycle.ts`](../../platform/src/boot/sleep-cycle.ts)).
+Sleep uses a **macro DAG** (`sleep-cycle` pipeline) orchestrated by `PipelineRunner` (`@freeanima/runtime/pipeline`). A single cron job triggers the full cycle; step order and dependencies are explicit in code ([`src/platform/boot/sleep-cycle.ts`](../../src/platform/boot/sleep-cycle.ts)).
 
 **Light sleep** and **deep sleep** keep their **internal** multi-stage / multi-round sequencing inside `runLightSleep()` / `runDeepSleep()` — not promoted to macro DAG nodes.
 

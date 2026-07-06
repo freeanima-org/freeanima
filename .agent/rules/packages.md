@@ -1,18 +1,20 @@
 # Package naming (RFC #1)
 
+> **单包迁移（2026）**：逻辑包名（`@freeanima/*`）仍通过 `tsconfig.json` paths 解析；物理上根 `package.json` 承载产品依赖；`site/` 为**独立**文档站（自有 `package.json` + `bun.lock`，非 workspace）。目录拓扑见 [`docs/concepts/repository-topology.md`](../docs/concepts/repository-topology.md)。
+
 Workspace package names reflect the layer topology in [`code-layers.md`](code-layers.md):
 
-| Shape           | Pattern                          | Example                                                           |
-| --------------- | -------------------------------- | ----------------------------------------------------------------- |
-| Layer aggregate | `@freeanima/{layer}`             | `kernel`, `core`, `runtime`, `platform`                           |
-| Capability pack | `@freeanima/capabilities-{slug}` | `capabilities-memory`, `capabilities-tools`                       |
-| Feature module  | `@freeanima/feature-{slug}`      | `feature-chat`, `feature-console`                                 |
-| Shared wire     | `@freeanima/{name}`              | `hub-rpc`, `sap-contract`, `vault-crypto`（`shared/`）            |
-| Frontend shell  | `@freeanima/{name}`              | `ui-kit`, `shell-sdk`, `shell-ui`（`frontend/`）                  |
-| Entry           | `@freeanima/cli`                 | CLI only                                                          |
-| Satellite       | `@freeanima/satellite-{slug}`    | `satellite-companion`（`satellites/` 白名单）                     |
-| Console wire    | `@freeanima/console-contract`    | Console Hub wire（`features/console/protocol/console-contract/`） |
-| Console REST    | `@freeanima/console-api`         | Console Elysia routes（`features/console/hub/console-api/`）      |
+| Shape           | Pattern                          | Example                                                               |
+| --------------- | -------------------------------- | --------------------------------------------------------------------- |
+| Layer aggregate | `@freeanima/{layer}`             | `kernel`, `core`, `runtime`, `platform`                               |
+| Capability pack | `@freeanima/capabilities-{slug}` | `capabilities-memory`, `capabilities-tools`                           |
+| Feature module  | `@freeanima/feature-{slug}`      | `feature-chat`, `feature-console`                                     |
+| Shared wire     | `@freeanima/{name}`              | `hub-rpc`, `sap-contract`, `vault-crypto`（`src/shared/`）            |
+| Frontend shell  | `@freeanima/{name}`              | `ui-kit`, `shell-sdk`, `shell-ui`（`src/frontend/`）                  |
+| Entry           | `@freeanima/cli`                 | CLI only                                                              |
+| Satellite       | `@freeanima/satellite-{slug}`    | `satellite-companion`（`src/satellites/` 白名单）                     |
+| Console wire    | `@freeanima/console-contract`    | Console Hub wire（`src/features/console/protocol/console-contract/`） |
+| Console REST    | `@freeanima/console-api`         | Console Elysia routes（`src/features/console/hub/console-api/`）      |
 
 ## Valid layer packages
 

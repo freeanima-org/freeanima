@@ -5,15 +5,15 @@
 
 ## Global view
 
-`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: `anima service` starts the Bun Hub（REST `/api` + Hub RPC `/hub/rpc/v1` + engine）；UI 由 app/desktop / app/mobile bundled 提供。
+`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: `anima service` starts the Bun Hub（REST `/api` + Hub RPC `/hub/rpc/v1` + engine）；UI 由 `src/app/shell/desktop` / `src/app/shell/mobile` bundled 提供。
 
-| Capability     | Highlights                                                                                                                                                                     |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md)                            |
-| Tools          | Local / MCP / ACP flat registration; MCP client `capabilities/mcp-client/`、MCP server `/mcp` `capabilities/mcp-server/`；tools `capabilities/tools/`、ACP `capabilities/acp/` |
-| Secrets        | Vault (User/Agent libraries); config `vault()` / `env()`; LLM **sees metadata, not values**                                                                                    |
-| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                         |
-| Code layout    | Feature modules `features/*` + engine + shell + `app/` — see [`docs/concepts/repository-topology.md`](docs/concepts/repository-topology.md)                                    |
+| Capability     | Highlights                                                                                                                                                                                     |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md)                                            |
+| Tools          | Local / MCP / ACP flat registration; MCP client `src/capabilities/mcp-client/`、MCP server `/mcp` `src/capabilities/mcp-server/`；tools `src/capabilities/tools/`、ACP `src/capabilities/acp/` |
+| Secrets        | Vault (User/Agent libraries); config `vault()` / `env()`; LLM **sees metadata, not values**                                                                                                    |
+| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                                         |
+| Code layout    | 产品代码在 `src/`（`features/`、`app/shell/`、`platform/` 等）— 见 [`docs/concepts/repository-topology.md`](docs/concepts/repository-topology.md)                                              |
 
 **Code is the source of truth**; do not invent tool names, endpoints, or directories from docs alone. Read source or `grep` when needed.
 
@@ -53,18 +53,18 @@ bun run lint:fix
 bun run test:changed # local / pre-commit (unit changed only)
 bun run test:unit # all unit tests
 bun run test:integration # integration (tests/integration/)
-bun run test # unit + integration in parallel
+bun run test # unit + integration（串行）
 bun run service start --foreground # Hub API + SAP（:2658）
 bun run dev:web # 浏览器全壳层开发（Chat + Console + 任务 + 设置，Vite HMR，需 Hub 已运行）
 # anima vault list # agent vault item metadata; use Shell /vault for User library
 
 # PG schema changes (must generate snapshot.json; see .agent/rules/coding.md)
-DATABASE_URL="…" bun run --filter @freeanima/core db:generate
-DATABASE_URL="…" bun run --filter @freeanima/core db:migrate
+DATABASE_URL="…" bunx drizzle-kit generate --config src/core/drizzle.config.ts
+DATABASE_URL="…" bunx drizzle-kit migrate --config src/core/drizzle.config.ts
 ```
 
 - Hub API：`http://127.0.0.1:2658/api`（`anima service` 仅托管后端）
-- 桌面/移动/浏览器开发客户端：聊天室 + 管理台 UI 在 `app/desktop` / `app/mobile` / `app/web`（web 仅本地调试）
+- 桌面/移动/浏览器开发客户端：聊天室 + 管理台 UI 在 `src/app/shell/desktop` / `mobile` / `web`（web 仅本地调试）
 - Console / 任务 本地开发：`bun run dev:web` → `http://127.0.0.1:4173/web/chat`（Console：`/web/console/dashboard`）
 - Web 全壳层本地开发：`bun run dev:web` → `http://127.0.0.1:4173/web/chat`
 - Release: [`.agent/rules/release.md`](.agent/rules/release.md)
@@ -128,8 +128,8 @@ When sources conflict: **implemented behavior** follows code (and topic docs tha
 
 | Change type                                                | Update                                                                                                                                                                                   |
 | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PG schema / DDL                                            | [`core/src/db/schema/`](core/src/db/schema/) + [`.agent/rules/coding.md`](.agent/rules/coding.md) — **include data backfill in the same migration SQL when dropping or renaming tables** |
-| PG query conventions (ORM vs execute)                      | [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md) — queries in `core/src/db/pg/`; capabilities use `@freeanima/core/db/pg/*` directly (no `engine.repos`)                       |
+| PG schema / DDL                                            | [`src/core/db/schema/`](src/core/db/schema/) + [`.agent/rules/coding.md`](.agent/rules/coding.md) — **include data backfill in the same migration SQL when dropping or renaming tables** |
+| PG query conventions (ORM vs execute)                      | [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md) — queries in `src/core/db/pg/`; capabilities use `@freeanima/core/db/pg/*` directly (no `engine.repos`)                       |
 | PG ops (install, backup, migrate UX)                       | [`docs/guide/database.md`](docs/guide/database.md) · [`docs/guide/remote-access.md`](docs/guide/remote-access.md) for Tunnel                                                             |
 | Layer deps / composition root / Registry                   | [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md) + confirm `check-layer-deps.ts`                                                                                             |
 | Test strategy / mock tiers                                 | [`.agent/rules/testing.md`](.agent/rules/testing.md) + [`tests/README.md`](tests/README.md)                                                                                              |

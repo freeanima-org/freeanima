@@ -8,7 +8,7 @@ Async notifications use envelope `kind: "evt"` with a `method` string and `paylo
 
 ## Stream events (`message.send`)
 
-After `message.send` returns `stream_id`, Hub pushes `stream.*` events. Defined in [`shared/sap-contract/src/frames/message.ts`](../../shared/sap-contract/src/frames/message.ts) as `streamEventMethods`.
+After `message.send` returns `stream_id`, Hub pushes `stream.*` events. Defined in [`src/shared/sap-contract/frames/message.ts`](../../src/shared/sap-contract/frames/message.ts) as `streamEventMethods`.
 
 ```mermaid
 sequenceDiagram
@@ -64,7 +64,7 @@ flowchart LR
   StreamDone --> DoneEvent
 ```
 
-Type B satellites fan out Hub `stream.*` events over [`/sap/relay/v1`](../../satellites/pair-programming/server/sap/relay.ts); the browser uses `createSapRelayBrowserClient` and `mapSapStreamMethodToApi`.
+Type B satellites with relay may fan out Hub `stream.*` events over `/sap/relay/v1` (see [`satellite-relay-server.ts`](../../src/shared/sap-contract/satellite-relay-server.ts)); the browser uses `createSapRelayBrowserClient` and `mapSapStreamMethodToApi`.
 
 ## Session events
 
@@ -72,7 +72,7 @@ Type B satellites fan out Hub `stream.*` events over [`/sap/relay/v1`](../../sat
 | ---------------------- | ------------------------------ | ----------------- |
 | `conversation.updated` | After `conversation.subscribe` | `conversation_id` |
 
-Bridged from runtime conversation watch in [`platform/src/sap/stream-bridge.ts`](../../platform/src/sap/stream-bridge.ts).
+Bridged from runtime conversation watch in [`src/platform/sap/stream-bridge.ts`](../../src/platform/sap/stream-bridge.ts).
 
 ## Terminal events
 
@@ -83,7 +83,7 @@ Bridged from runtime conversation watch in [`platform/src/sap/stream-bridge.ts`]
 | `terminal.exit`   | `terminal_id`, exit code     |
 | `terminal.error`  | `terminal_id`, error message |
 
-Constants: `TERMINAL_EVENT_METHODS` in [`frames/terminal.ts`](../../shared/sap-contract/src/frames/terminal.ts).
+Constants: `TERMINAL_EVENT_METHODS` in [`frames/terminal.ts`](../../src/shared/sap-contract/frames/terminal.ts).
 
 ## Tool events
 
@@ -91,7 +91,7 @@ Constants: `TERMINAL_EVENT_METHODS` in [`frames/terminal.ts`](../../shared/sap-c
 | ----------- | --------------- | ------------------------------- |
 | `tool.call` | Hub → Satellite | Execute a registered local tool |
 
-Payload schema: `toolCallPayloadSchema` in [`frames/tool.ts`](../../shared/sap-contract/src/frames/tool.ts) — includes `call_id`, `tool_name`, `local_name`, `args`, `conversation_id`, optional `workspace_root`.
+Payload schema: `toolCallPayloadSchema` in [`frames/tool.ts`](../../src/shared/sap-contract/frames/tool.ts) — includes `call_id`, `tool_name`, `local_name`, `args`, `conversation_id`, optional `workspace_root`.
 
 Satellite must reply with `tool.result` or `tool.error` RPC using the same `call_id`.
 

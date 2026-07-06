@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:22+0800\n"
+"POT-Creation-Date: 2026-07-06 10:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/service.md:1 messages/po4a/en.xml:589
+#: docs/guide/service.md:1 messages/po4a/en.xml:604
 #, no-wrap
 msgid "Service"
 msgstr ""
@@ -132,8 +132,8 @@ msgstr ""
 #: docs/guide/service.md:51
 msgid ""
 "**Desktop / mobile bundled shell:** Chat and Console at `/chat`, `/console`/"
-"*` inside the Electron/Capacitor app (not served from Hub `:2658` unless "
-"`web.enabled`)."
+"\\*`inside the Electron/Capacitor app (not served from "
+"Hub`:2658`unless`web.enabled`)."
 msgstr ""
 
 #. type: Bullet: '- '

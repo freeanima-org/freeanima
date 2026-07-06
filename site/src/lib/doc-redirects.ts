@@ -10,7 +10,7 @@ const docMoves: Record<string, string> = {
   "/docs/versioning/": "/docs/",
   "/docs/designs/recall-flow/": "/docs/concepts/recall-flow/",
   "/docs/designs/time-perception/": "/docs/concepts/time-perception/",
-  "/docs/designs/pair-programming-v1/": "/docs/features/pair-programming-v1/",
+  "/docs/designs/companion-v1/": "/docs/features/companion/",
   "/docs/designs/execute-code-runtimes/": "/docs/tools/execute-code-runtimes/",
   "/docs/designs/probe-architecture/": "/docs/",
   "/docs/designs/desktop-companion/": "/docs/",

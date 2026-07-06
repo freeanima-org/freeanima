@@ -6,11 +6,11 @@ title: SAP Tools
 
 Satellites register **local tools** on the Hub. The agent invokes them during a bound session; Hub forwards execution to the Satellite via `tool.call` and waits for `tool.result` / `tool.error`.
 
-Implementation: [`capabilities/satellite/src/manager.ts`](../../capabilities/satellite/src/manager.ts).
+Implementation: [`src/capabilities/satellite/manager.ts`](../../src/capabilities/satellite/manager.ts).
 
 ## Naming
 
-Canonical name format ([`shared/sap-contract/src/naming.ts`](../../shared/sap-contract/src/naming.ts)):
+Canonical name format ([`src/shared/sap-contract/naming.ts`](../../src/shared/sap-contract/naming.ts)):
 
 ```text
 sap_{app_slug}_{instance_id_norm}_{local_name}
@@ -105,11 +105,10 @@ Session platform for SAP satellites uses three segments:
 sap:{app_slug}:{instance_id}
 ```
 
-| `app_id`           | Example platform          |
-| ------------------ | ------------------------- |
-| `pair-programming` | `sap:pairprogramming:k7m` |
-| `chat`             | `sap:chat:k7m`            |
-| `companion`        | `sap:companion:k7m`       |
+| `app_id`    | Example platform    |
+| ----------- | ------------------- |
+| `companion` | `sap:companion:k7m` |
+| `chat`      | `sap:chat:k7m`      |
 
 `instance_id` is a Hub-assigned 3-character `[a-z0-9]` string, globally unique across all SAP apps. Hub returns the assigned or confirmed id in `connected.instance_id`.
 
@@ -122,4 +121,4 @@ Satellite receives `tool.call` with `call_id`. Reply with:
 
 Hub resolves the pending promise and continues the agent turn. Timeout or disconnect fails the call.
 
-Reference handler: [`satellites/pair-programming/server/sap/hub.ts`](../../satellites/pair-programming/server/sap/hub.ts).
+Reference handler: [`src/satellites/companion/server/sap/hub.ts`](../../src/satellites/companion/server/sap/hub.ts).

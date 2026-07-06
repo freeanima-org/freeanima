@@ -10,13 +10,13 @@ const TS_IGNORE = ["@", "ts-ignore"].join("");
 const TS_NOCHECK = ["@", "ts-nocheck"].join("");
 const TS_EXPECT = ["@", "ts-expect-error"].join("");
 const SCAN_DIRS = [
-  "kernel",
-  "core",
-  "runtime",
-  "capabilities",
-  "platform",
+  "src/kernel",
+  "src/core",
+  "src/runtime",
+  "src/capabilities",
+  "src/platform",
   "packages",
-  "satellites",
+  "src/satellites",
   "app",
   "scripts",
   "tests",
@@ -26,7 +26,7 @@ const IGNORE_PATH_PARTS = [
   "/dist/",
   "/coverage/",
   "/.tsout/",
-  "/app/cli/publish/",
+  "/src/app/cli/publish/",
   "routeTree.gen.ts",
 ];
 

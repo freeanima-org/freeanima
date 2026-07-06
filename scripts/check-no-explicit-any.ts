@@ -7,9 +7,9 @@ import { join, relative } from "node:path";
 
 const ROOT = join(import.meta.dir, "..");
 const SCAN_DIRS = [
-  join(ROOT, "platform/ports"),
-  join(ROOT, "features/console/protocol/console-contract"),
-  join(ROOT, "shared/sap-contract"),
+  join(ROOT, "src/platform/ports"),
+  join(ROOT, "src/features/console/protocol/console-contract"),
+  join(ROOT, "src/shared/sap-contract"),
 ];
 const ANY_RE = /:\s*any\b|as\s+any\b|<any>|Promise<any>|Record<string,\s*any>/;
 

@@ -1,16 +1,16 @@
 # Test suite
 
-The root `tests/` directory is workspace member `@freeanima/integration-tests`, hosting **cross-package integration tests** and shared helpers.
+The root `tests/` directory hosts **cross-package integration tests** and shared helpers.
 
 **Full-stack black-box E2E** (Compose + Playwright) lives in [freeanima-testing](https://github.com/freeanima-org/freeanima-testing); main-repo PRs trigger `repository_dispatch` in parallel with Quality. Dependabot / fork PR 跳过 dispatch（见 [`.github/SECRETS.md`](../.github/SECRETS.md)）。
 
-**Unit tests are always co-located**: `{layer}/{pkg}/src/**/*.test.ts` (`bun:test`). Do not use `{pkg}/tests/unit/`.
+**Unit tests are always co-located**: `src/**/*.test.ts` (`bun:test`). Do not use `{pkg}/tests/unit/`.
 
 ## Layers
 
 | Layer         | Location                                                                | External I/O                                                                        |
 | ------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Unit          | `{layer}/{pkg}/src/**/*.test.ts` (e.g. `capabilities/memory/src/…`)     | mock + in-memory only (see [`.agent/rules/testing.md`](../.agent/rules/testing.md)) |
+| Unit          | `src/**/*.test.ts`                                                      | mock + in-memory only (see [`.agent/rules/testing.md`](../.agent/rules/testing.md)) |
 | Integration   | `tests/integration/`                                                    | PG, Redis, temp `FREEANIMA_HOME`, `beginIntegrationCase`                            |
 | Black-box E2E | [freeanima-testing](https://github.com/freeanima-org/freeanima-testing) | Docker PG/Redis + source start + Playwright                                         |
 
@@ -28,14 +28,14 @@ tests/
 ## Running
 
 ```bash
-bun run test:unit          # all unit tests
-bun run test:integration   # integration (PG cases skip without Docker)
-bun run test               # unit + integration in parallel
-bun run test:changed       # pre-commit: changed unit tests only
+bun run test:unit          # bun test src
+bun run test:integration   # integration（无 Docker 时 PG 用例跳过）
+bun run test               # unit 后 integration（串行）
+bun run test:changed       # pre-commit：src 内变更的单元测试
 bun run check              # typecheck + lint + dep-check + format + test:changed
 ```
 
-- With Docker, [`scripts/integration-pg-setup.ts`](../scripts/integration-pg-setup.ts) injects `ANIMA_TEST_PG_URL` for `test` / `test:integration`.
+- 有 Docker 时，[`scripts/integration-pg-setup.ts`](../scripts/integration-pg-setup.ts) 会为 `test:integration` 注入 `ANIMA_TEST_PG_URL`。
 - Before opening a PR, run full `bun run test` occasionally, not only `test:changed`.
 
 ## Main repo ↔ testing-repo wiring

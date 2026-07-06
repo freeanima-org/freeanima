@@ -5,7 +5,7 @@ title: Mobile app (Android)
 # Mobile app (Android)
 
 > Capacitor **薄壳** + Hub `/web/*` 远程 UI（默认）；`MOBILE_UI_MODE=bundled` 可回退 bundled SPA。  
-> Package: [`app/mobile/`](../../app/mobile/)
+> Package: [`src/app/shell/mobile/`](../../src/app/shell/mobile/)
 
 ## Scope
 
@@ -68,26 +68,26 @@ Settings → **Debug** (desktop and mobile share shell-ui panel):
 | DevTools   | F12 / dev package | Debug APK + USB → Chrome `chrome://inspect` |
 | Console    | Electron DevTools | vConsole (settings toggle)                  |
 
-Mobile debug build: `cd app/mobile && bun run android:debug` (no minify + sourcemap for inspect).
+Mobile debug build: `bun run debug:android` (no minify + sourcemap for inspect).
 
 ## Build and sideload
 
 ```bash
-bun run --filter @freeanima/app-mobile build
-cd app/mobile && bun run sync
+bun run build:mobile
+cd src/app/shell/mobile && bunx cap sync android
 ```
 
-默认 **remote UI**（`www/` 仅 bootstrap，APK 体积小）。完整 bundled SPA：`MOBILE_UI_MODE=bundled bun run --filter @freeanima/app-mobile build`
+默认 **remote UI**（`www/` 仅 bootstrap，APK 体积小）。完整 bundled SPA：`MOBILE_UI_MODE=bundled bun run build:mobile`
 
-Debug full flow: `cd app/mobile && bun run android:debug`
+Debug full flow: `bun run debug:android`
 
 **Discipline**: after shell-ui / chat / admin frontend changes, run `bun run build` (or `build:debug`) then `cap sync`, or device serves stale Web assets.
 
-Package README: [`app/mobile/README.md`](../../app/mobile/README.md)
+Package README: [`src/app/shell/mobile/README.md`](../../src/app/shell/mobile/README.md)
 
 ## vs desktop shell
 
-|              | Electron `app/desktop`                          | Capacitor `app/mobile`                |
+|              | Electron `src/app/shell/desktop`                | Capacitor `src/app/shell/mobile`      |
 | ------------ | ----------------------------------------------- | ------------------------------------- |
 | Injection    | preload → `window.satelliteShell`               | `shell-bridge.js` → same-shaped API   |
 | Hub config   | Hub settings → `~/.anima-desktop/settings.json` | Hub settings → Preferences            |
