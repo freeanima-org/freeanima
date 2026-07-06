@@ -9,8 +9,10 @@ import {
 } from "../lib/shell-profile.ts";
 import {
   startCompanionServer,
+  reconnectCompanionSap,
   type CompanionServerHandle,
 } from "@freeanima/satellite-companion/desktop";
+import { shellClientNeedsHubSetup } from "@freeanima/shell-sdk";
 
 import {
   effectiveCompanionClickthrough,
@@ -37,7 +39,6 @@ import {
 
 const SHELL_ROOT = join(__dirname, "..");
 const QUIT_FOR_INSTALL_ARG = "--quit-for-install";
-const quitForInstall = process.argv.includes(QUIT_FOR_INSTALL_ARG);
 
 let mainWindow: BrowserWindow | null = null;
 let companionWindow: BrowserWindow | null = null;
@@ -163,7 +164,17 @@ function applyClickthrough(win: BrowserWindow): void {
 function reloadHubClientAndMainWindow(): void {
   hubClient = resolveHubClient();
   syncHubEnv(hubClient);
+  if (serverHandle) {
+    reconnectCompanionSap(hubClient.hubUrl, serverHandle.url);
+  }
   broadcast("shell:config-changed");
+}
+
+function initialShellPath(): string {
+  if (shellClientNeedsHubSetup(readShellClientConfig())) {
+    return "/setup";
+  }
+  return "/chat";
 }
 
 function broadcast(channel: string, ...args: unknown[]): void {
@@ -434,15 +445,11 @@ async function bootstrap(): Promise<void> {
 
   companionWindow = createCompanionOverlay(serverHandle.url);
   createTray();
-  if (!readShellClientConfig()) {
-    openSettingsWindow();
-  } else {
-    openMainWindow();
-  }
+  openMainWindow(initialShellPath());
   logLine("desktop-shell setup complete");
 }
 
-const gotSingleInstanceLock = app.requestSingleInstanceLock({ quitForInstall });
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
 
 if (!gotSingleInstanceLock) {
   app.quit();
@@ -450,14 +457,12 @@ if (!gotSingleInstanceLock) {
   app.on("second-instance", (_event, argv) => {
     if (argv.includes(QUIT_FOR_INSTALL_ARG)) {
       void releaseInstallLocks().finally(() => app.exit(0));
+      return;
     }
+    openMainWindow();
   });
 
   void app.whenReady().then(() => {
-    if (quitForInstall) {
-      void releaseInstallLocks().finally(() => app.exit(0));
-      return;
-    }
     void bootstrap();
   });
 }

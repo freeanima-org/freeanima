@@ -8,10 +8,12 @@ import type { CliOptions } from "electron-builder";
 
 import { buildShellUi } from "@freeanima/shell-ui/build";
 import { buildCompanionApp } from "@freeanima/satellite-companion/build";
+import { assertElectronMainBundle } from "./electron-main-bundle-assert.ts";
 
 const SHELL_ROOT = import.meta.dir;
 const REPO_ROOT = join(SHELL_ROOT, "..", "..", "..", "..");
 const ELECTRON_DIST = join(SHELL_ROOT, "electron-dist");
+const MAIN_BUNDLE_PATH = join(ELECTRON_DIST, "main.cjs");
 const COMPANION_ROOT = join(REPO_ROOT, "src", "satellites", "companion");
 const FBX_KIT = join(REPO_ROOT, "node_modules", "fbx2vrma-converter");
 const ROOT_PACKAGE_JSON = join(REPO_ROOT, "package.json");
@@ -25,22 +27,30 @@ const BUNDLED_INTERNAL_PACKAGES = new Set([
   "@freeanima/shell-ui",
 ]);
 
-/** 纯 JS 依赖打进 main bundle，避免 electron-builder 复制 node_modules */
+/**
+ * 必须打进 main.cjs 的 npm 包（纯 JS 或 ESM-only）。
+ * 新增主进程 npm 依赖时：默认加入此集合，否则会被标为 external 且安装包无 node_modules。
+ */
 const BUNDLED_NPM_PACKAGES = new Set([
   "zod",
   "ws",
   "fbx2vrma-converter",
   "commander",
-  // ESM-only；external + CJS main 时 require().default 不是 constructor（Windows 启动崩溃）
   "electron-store",
 ]);
+
+/**
+ * 允许 runtime require 但不打进 asar（可选 native / 死分支）。
+ * 见 electron-main-bundle-assert.ts OPTIONAL_EXTERNAL_PACKAGES。
+ */
+const ELECTRON_MAIN_EXTERNAL_ALLOWLIST = new Set(["electron", "bufferutil", "utf-8-validate"]);
 
 function electronMainExternals(): string[] {
   const rootPkg = JSON.parse(readFileSync(ROOT_PACKAGE_JSON, "utf-8")) as {
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
   };
-  const externals = new Set<string>(["electron"]);
+  const externals = new Set<string>(ELECTRON_MAIN_EXTERNAL_ALLOWLIST);
   for (const dep of Object.keys({
     ...rootPkg.dependencies,
     ...rootPkg.devDependencies,
@@ -54,7 +64,7 @@ function electronMainExternals(): string[] {
 
 export function getElectronMainBundleOptions(opts?: { sourcemap?: boolean }): esbuild.BuildOptions {
   return {
-    entryPoints: { main: join(SHELL_ROOT, "electron", "main.ts") },
+    entryPoints: { main: join(SHELL_ROOT, "electron", "main-entry.ts") },
     bundle: true,
     platform: "node",
     target: "node20",
@@ -152,6 +162,9 @@ async function bundleElectronMain(sourcemap: boolean): Promise<void> {
   const bundleOpts = { sourcemap };
   await esbuild.build(getElectronMainBundleOptions(bundleOpts));
   await esbuild.build(getElectronPreloadBundleOptions(bundleOpts));
+  const mainCode = readFileSync(MAIN_BUNDLE_PATH, "utf-8");
+  assertElectronMainBundle(mainCode);
+  console.log("[desktop-shell] main bundle invariants OK");
 }
 
 /** 清除 vendor 残留（如历史 chat/admin 目录），避免 electron-builder 误打进安装包 */

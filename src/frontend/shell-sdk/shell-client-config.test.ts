@@ -13,7 +13,11 @@ import {
   saveShellDebugConfig,
   saveShellSettings,
 } from "./shell-settings-node.ts";
-import { normalizeShellClientConfig, parseShellClientConfig } from "./shell-client-config.ts";
+import {
+  normalizeShellClientConfig,
+  parseShellClientConfig,
+  shellClientNeedsHubSetup,
+} from "./shell-client-config.ts";
 
 describe("shell-client-config", () => {
   test("parseShellClientConfig validates fields", () => {
@@ -37,6 +41,16 @@ describe("shell-client-config", () => {
       hubUrl: "http://192.168.1.10:2658",
       remoteAuthToken: "",
     });
+  });
+
+  test("shellClientNeedsHubSetup when token missing", () => {
+    expect(shellClientNeedsHubSetup(null)).toBe(true);
+    expect(
+      shellClientNeedsHubSetup({ hubUrl: "https://hub.example.com", remoteAuthToken: "" }),
+    ).toBe(true);
+    expect(
+      shellClientNeedsHubSetup({ hubUrl: "https://hub.example.com", remoteAuthToken: "tok" }),
+    ).toBe(false);
   });
 
   test("normalizeShellClientConfig trims hub url", () => {

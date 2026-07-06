@@ -15,6 +15,7 @@ Detailed implementation constraints for AI agents working in this repository. St
 | [`frontend-features.md`](frontend-features.md)                                       | 前端功能原型 A/B/C、SAP vs hub-rest 通道、新功能 touch 清单                         |
 | [`frontend-ui.md`](frontend-ui.md)                                                   | DaisyUI 基元约定、`ui-kit/composite` 复合组件、Modal/空态规范                       |
 | [`release.md`](release.md)                                                           | SemVer, Conventional Commits, Release Please, npm/Docker                            |
+| [`electron-desktop.md`](electron-desktop.md)                                         | 桌面壳 main 打包、external 白名单、安装包启动断言                                   |
 | [`compression.md`](compression.md)                                                   | l-point compression algorithm and module entry points                               |
 | [`i18n.md`](i18n.md)                                                                 | UI/docs i18n: Paraglide, po4a, PO workflow, site/Console message keys               |
 | [`docs-i18n.md`](docs-i18n.md)                                                       | AI rules for `docs/**` authoring and `po/zh_CN/*.po` msgstr                         |

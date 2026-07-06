@@ -13,6 +13,7 @@ import { getCompanionManifest } from "./manifest.ts";
 
 export { startCompanionServer };
 export type { CompanionServerHandle } from "../../server/index.ts";
+export { reconnectSap as reconnectCompanionSap } from "../../server/sap/hub.ts";
 
 export const companionDesktopExport: FrontendDesktopExport = {
   manifest: getCompanionManifest(),

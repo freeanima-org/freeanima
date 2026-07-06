@@ -47,6 +47,9 @@ jobs:
       - name: 安装 companion FBX 工具
         run: bun run setup:fbx
 
+      - name: 校验 Electron main bundle 不变量
+        run: bun test src/app/shell/desktop/build-electron.test.ts
+
       - name: 构建 FreeAnima Desktop
         run: bun run package:windows
 
