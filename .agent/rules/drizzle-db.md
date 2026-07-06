@@ -82,7 +82,20 @@ Link to source — do not maintain function inventories here.
 | Count via ORM                                   | [`message-repo.ts`](../../src/core/db/pg/conversation/repos/message-repo.ts) — `countMessages`                                                                          |
 | Dynamic filters (`buildListConditions` + `and`) | [`entity-crud-repo.ts`](../../src/core/db/pg/entity/repos/entity-crud-repo.ts); [`semantic-filters.ts`](../../src/core/db/pg/semantic-memory/repos/semantic-filters.ts) |
 | FTS / hybrid search (sql subquery in ORM)       | [`fts/hybrid-raw.ts`](../../src/core/db/pg/fts/hybrid-raw.ts), [`fts/hybrid-search.ts`](../../src/core/db/pg/fts/hybrid-search.ts)                                      |
+| Entity hybrid search (`searchEntities`)         | [`entity/search/entity-search-repo.ts`](../../src/core/db/pg/entity/search/entity-search-repo.ts) — FTS + trgm + vector → RRF                                           |
 | Conversation meta transform                     | [`conversation/transform.ts`](../../src/core/db/pg/conversation/transform.ts)                                                                                           |
+
+### Entity search: result order
+
+`searchEntities({ mode: "hybrid", query })` returns rows in **relevance order** (RRF score from FTS / trgm / vector). Feature domain **must not** re-sort hybrid hits with list/browse natural order (`sort_order`, `entry_at`, title localeCompare, etc.).
+
+| Path                                                          | Order                                                                                             |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `mode: "hybrid"` with non-empty `query`                       | Preserve `result.results` sequence (rank desc)                                                    |
+| `mode: "filter_only"` or empty `query`                        | Domain natural order OK (`sort_order` for task_item list, `entry_at` desc for diary browse, etc.) |
+| Hybrid empty → ILIKE fallback (`searchFilterOnly` with query) | `updated_at DESC` (not `sort_order`) for task_item                                                |
+
+Domain search wrappers (`searchTaskItems`, `searchDiaryEntries`, `searchVaultItems`, …) map rows but keep hybrid order unless filtering drops items (e.g. closed task lists).
 
 Table shapes: [`src/core/db/schema/`](../../src/core/db/schema/). Row / input types: [`src/core/db/pg/*/types.ts`](../../src/core/db/pg/) + [`src/core/db/schema/rows/`](../../src/core/db/schema/rows/). `@freeanima/core/repos` re-exports select row types for backward-compatible imports.
 

@@ -202,6 +202,5 @@ export async function searchTaskItems(
         ? toItemRow(parsed, { created_at: row.created_at, updated_at: row.updated_at })
         : null;
     })
-    .filter((row): row is TaskItemRow => row != null)
-    .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
+    .filter((row): row is TaskItemRow => row != null);
 }

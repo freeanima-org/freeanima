@@ -26,8 +26,8 @@ function candidateLimit(requested: number, ftsCount: number): number {
   return base;
 }
 
-function defaultOrderBy(primary_component?: string) {
-  if (primary_component === TASK_ITEM_COMPONENT) {
+function defaultOrderBy(primary_component?: string, opts?: { hasQuery?: boolean }) {
+  if (primary_component === TASK_ITEM_COMPONENT && !opts?.hasQuery) {
     return [sql`COALESCE((${entities.body}->>'sort_order')::int, 0)`, asc(entities.id)] as const;
   }
   return [desc(entities.updated_at), asc(entities.id)] as const;
@@ -51,7 +51,7 @@ async function searchFilterOnly(opts: EntitySearchOpts): Promise<EntitySearchHit
     conditions.push(buildEntityTextMatchCondition(q));
   }
 
-  const orderExprs = defaultOrderBy(opts.primary_component);
+  const orderExprs = defaultOrderBy(opts.primary_component, { hasQuery: Boolean(q) });
   const rows = await db
     .select(getColumns(entities))
     .from(entities)
