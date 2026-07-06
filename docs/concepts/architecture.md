@@ -11,6 +11,7 @@ System-level constraints and long-lived design principles.
 - The memory system may be layered internally, but the LLM sees a single entry point
 - Memory orchestration is built into the runtime; the LLM does not control memory pipelines
 - Credential management is a first-class system concern
+- Hub **runtime configuration** (LLM, compression, integrations) is persisted in PostgreSQL; `~/.anima/config.yaml` holds **bootstrap** only (`database`, `http`, `redis`)
 - Asset management is a first-class system concern
 - The system prompt is part of architecture, not ad-hoc string concatenation
 

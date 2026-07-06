@@ -5,6 +5,8 @@ import type { SettingsStore } from "./settings-store.ts";
 
 export type SettingsPlatform = "desktop" | "mobile";
 
+export type SettingsCategory = "client" | "server";
+
 export type FormFieldType = "text" | "password" | "number" | "boolean" | "select" | "textarea";
 
 export type FormFieldDescriptor = {
@@ -50,6 +52,8 @@ export type SettingsSection = {
   order: number;
   title: string;
   description?: string;
+  /** 设置分组：本机 vs Hub 服务（默认 client） */
+  category?: SettingsCategory;
   platforms: {
     desktop?: SettingsPlatformEntry;
     mobile?: SettingsPlatformEntry;

@@ -17,6 +17,8 @@ export type BootPhaseId = (typeof BOOT_PHASES)[number]["id"];
 
 export type BootIntegrationsContext = Parameters<typeof startAsyncIntegrations>[0];
 
+export type BootConfig = import("@freeanima/platform/config").HybridConfig;
+
 export { startAsyncIntegrations };
 
 export type { ServeOptions };

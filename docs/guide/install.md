@@ -57,10 +57,11 @@ chmod 700 ~/.anima
 cp config.example.yaml ~/.anima/config.yaml   # from repo clone, or write manually
 ```
 
-Minimum production settings in `~/.anima/config.yaml`:
+Minimum production settings in `~/.anima/config.yaml` (**bootstrap only**):
 
 - **`database.url`** — PostgreSQL connection string (required)
-- **`llm.providers.*`** — at least one OpenAI-compatible provider and profile chain
+
+**Runtime settings** (LLM providers, compression, MCP, etc.) are stored in PostgreSQL (`hub_runtime_config`). Edit them in the Shell app under **Settings → Hub 服务 → 服务配置**. On first upgrade, existing `llm` / `compression` blocks in `config.yaml` are imported automatically at Hub startup.
 
 Prefer Vault or `env()` for secrets:
 

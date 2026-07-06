@@ -1,5 +1,5 @@
 import type { Config } from "@freeanima/core/config";
-import { FileConfig } from "@freeanima/platform/config";
+import { getActiveConfig, isPatchableConfig } from "@freeanima/platform/config";
 
 export type HomeChannel = {
   chat_id: string;
@@ -33,12 +33,16 @@ export function getHomeChannel(platform: string): HomeChannel | null {
   return threadId ? { chat_id: chatId, thread_id: threadId } : { chat_id: chatId };
 }
 
-export function setHomeChannel(platform: string, chatId: string, threadId?: string): void {
-  const config = requireHomeChannelConfig();
-  if (!(config instanceof FileConfig)) {
-    throw new Error("setHomeChannel requires FileConfig");
+export async function setHomeChannel(
+  platform: string,
+  chatId: string,
+  threadId?: string,
+): Promise<void> {
+  const config = getActiveConfig();
+  if (!isPatchableConfig(config)) {
+    throw new Error("setHomeChannel requires PatchableConfig");
   }
-  config.patchSection(platform, {
+  await config.patchSection(platform, {
     home_channel: chatId,
     home_thread_id: threadId ?? "",
   });

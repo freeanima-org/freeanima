@@ -68,11 +68,22 @@ import {
   resumeCronJob,
   runCronJobNow,
 } from "./handlers/status.ts";
+import {
+  getHubConfig,
+  getHubConfigSection,
+  importHubConfigFromFile,
+  patchHubConfigSection,
+} from "./handlers/config.ts";
 
 /** Console HTTP-only Hub method handlers */
 export const consoleHubHandlers = {
   "status.get": () => getStatus(),
   "status.config": () => getConfig(),
+  "config.get": () => getHubConfig(),
+  "config.getSection": (payload: { section: string }) => getHubConfigSection(payload.section),
+  "config.patchSection": (payload: { section: string; patch: Record<string, unknown> }) =>
+    patchHubConfigSection(payload.section, payload.patch),
+  "config.importFromFile": () => importHubConfigFromFile(),
   "status.tools": (payload: { scope?: "default" }) =>
     listTools(payload.scope === "default" ? "default" : undefined),
   "status.platforms": () => getPlatforms(),

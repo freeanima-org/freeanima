@@ -28,6 +28,7 @@ export type {
   SettingsFormFields,
   SettingsPanelProps,
   SettingsPlatform,
+  SettingsCategory,
   SettingsPlatformEntry,
   SettingsSection,
   SettingsSectionDeps,

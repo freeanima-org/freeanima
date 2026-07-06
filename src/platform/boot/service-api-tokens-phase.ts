@@ -1,4 +1,4 @@
-import type { FileConfig } from "@freeanima/platform/config";
+import type { HybridConfig } from "@freeanima/platform/config";
 import {
   readLoopbackWebAuthTokenFromEnvOrFile,
   writeLoopbackWebAuthTokenFile,
@@ -16,7 +16,7 @@ export type ServiceApiTokensPhaseResult = Record<string, never>;
 
 /** Phase 2.6: 确认 service API token 已配置（world-subjects 之后） */
 export async function bootServiceApiTokensPhase(
-  config: FileConfig,
+  config: HybridConfig,
 ): Promise<ServiceApiTokensPhaseResult> {
   startupLog("Checking service API tokens…");
   const existing = await countServiceApiTokens();

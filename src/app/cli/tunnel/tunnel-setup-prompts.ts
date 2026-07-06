@@ -91,7 +91,7 @@ async function runInteractivePrompts(): Promise<{
   apiToken?: string;
   hubPort: number;
 }> {
-  const draft = loadTunnelDraft();
+  const draft = await loadTunnelDraft();
   if (draft?.hostname) {
     p.log.info("检测到已保存的 tunnel 配置，将预填未完成项");
   }
@@ -109,7 +109,7 @@ async function runInteractivePrompts(): Promise<{
   });
   if (p.isCancel(hostname)) process.exit(0);
   const hostnameValue = String(hostname).trim();
-  patchTunnelConfig({ hostname: hostnameValue, enabled: false });
+  await patchTunnelConfig({ hostname: hostnameValue, enabled: false });
 
   const tokenOptions: Array<{ value: string; label: string }> = [];
   if (draftHasApiToken(draft)) {
@@ -147,7 +147,7 @@ async function runInteractivePrompts(): Promise<{
     if (p.isCancel(tokenInput)) process.exit(0);
     try {
       apiToken = await acceptAndVerifyApiToken(String(tokenInput));
-      patchTunnelConfig({
+      await patchTunnelConfig({
         credentials: { api_token: TUNNEL_CREDENTIAL_REFS.apiToken },
         enabled: false,
       });
@@ -172,7 +172,7 @@ async function runInteractivePrompts(): Promise<{
       p.log.info("请选「粘贴新的 Cloudflare API Token」重新创建并粘贴");
       process.exit(1);
     }
-    patchTunnelConfig({
+    await patchTunnelConfig({
       credentials: { api_token: TUNNEL_CREDENTIAL_REFS.apiToken },
       enabled: false,
     });
@@ -232,7 +232,7 @@ export async function runTunnelSetup(opts: SetupPromptsOptions = {}): Promise<vo
       p.log.error("非交互模式需要 --hostname");
       process.exit(1);
     }
-    const draft = loadTunnelDraft();
+    const draft = await loadTunnelDraft();
     const draftApiToken = draft?.credentials?.api_token;
     const savedToken = await loadSavedApiToken(draft);
     input = omitUndefined({
@@ -243,7 +243,7 @@ export async function runTunnelSetup(opts: SetupPromptsOptions = {}): Promise<vo
         (draftApiToken ? resolveApiTokenFromRef(draftApiToken) : undefined),
       hubPort,
     });
-    patchTunnelConfig({
+    await patchTunnelConfig({
       hostname: input.hostname,
       enabled: false,
     });
@@ -260,17 +260,17 @@ export async function runTunnelSetup(opts: SetupPromptsOptions = {}): Promise<vo
       hubPort: input.hubPort,
       ...omitUndefined({ apiToken: input.apiToken }),
       saveApiToken: (_token: string) => {
-        patchTunnelConfig({
+        void patchTunnelConfig({
           credentials: { api_token: TUNNEL_CREDENTIAL_REFS.apiToken },
         });
       },
       saveTunnelCredentials: (_json: string) => {
-        patchTunnelConfig({
+        void patchTunnelConfig({
           credentials: { tunnel_credentials: TUNNEL_CREDENTIAL_REFS.tunnelCredentials },
         });
       },
       patchConfig: (patch: Partial<TunnelConfigFields>) => {
-        patchTunnelConfig(patch);
+        void patchTunnelConfig(patch);
       },
       onProgress: (msg: string) => s.message(msg),
     });

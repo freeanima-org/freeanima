@@ -54,9 +54,10 @@ const desktopGeneralFields = defineSettingsForm({
 export const hubSettingsSection: SettingsSection = {
   id: "hub",
   order: 0,
-  title: "通用",
+  category: "client",
+  title: "连接",
   description:
-    "客户端通用设置与 Hub 连接。首次使用请运行 anima token create 并在下方填写 Hub API Token。",
+    "本机保存，用于连接 Hub 的地址与 API Token。首次使用请运行 anima token create 并在下方填写 Hub API Token。",
   platforms: {
     // Web 壳层 detectPlatform() 为 desktop；字段与 mobile 相同（无开机自启动）
     desktop: { kind: "form", fields: hubFields },
@@ -67,9 +68,10 @@ export const hubSettingsSection: SettingsSection = {
 export const desktopGeneralSettingsSection: SettingsSection = {
   id: "hub",
   order: 0,
-  title: "通用",
+  category: "client",
+  title: "连接",
   description:
-    "桌面客户端通用设置与 Hub 连接。首次使用请运行 anima token create 并在下方填写 Hub API Token。",
+    "本机保存的桌面客户端 Hub 连接。首次使用请运行 anima token create 并在下方填写 Hub API Token。",
   platforms: {
     desktop: { kind: "form", fields: desktopGeneralFields },
   },

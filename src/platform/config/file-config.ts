@@ -1,24 +1,11 @@
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { Config, type AnimaConfig, animaConfigSchema } from "@freeanima/core/config";
-import { parseYaml, stringifyYaml } from "./yaml.ts";
+import { stringifyYaml } from "./yaml.ts";
 import { PATHS } from "./paths.ts";
-import { expandConfigEnv } from "./env-expand.ts";
-
-function loadYamlFile(path: string): Record<string, unknown> {
-  if (!existsSync(path)) return {};
-  try {
-    const raw = expandConfigEnv(readFileSync(path, "utf-8"));
-    const data = parseYaml(raw);
-    return typeof data === "object" && data != null && !Array.isArray(data)
-      ? (data as Record<string, unknown>)
-      : {};
-  } catch {
-    return {};
-  }
-}
+import { loadConfigYamlRecord } from "./yaml-io.ts";
 
 function readConfigFromDisk(): AnimaConfig {
-  const merged: Record<string, unknown> = { ...loadYamlFile(PATHS.configYaml) };
+  const merged: Record<string, unknown> = { ...loadConfigYamlRecord() };
   const parsed = animaConfigSchema.safeParse(merged);
   if (!parsed.success) {
     throw new Error(`Invalid config.yaml: ${parsed.error.message}`);
@@ -26,7 +13,7 @@ function readConfigFromDisk(): AnimaConfig {
   return parsed.data;
 }
 
-/** File-backed config: read / reload / patch config.yaml */
+/** File-backed config: read / reload / patch config.yaml（测试与兼容） */
 export class FileConfig extends Config {
   /** Startup: read disk + Zod validate + env expand */
   static open(): FileConfig {
@@ -42,7 +29,7 @@ export class FileConfig extends Config {
 
   /** Merge-write a config.yaml section then reload */
   patchSection(section: keyof AnimaConfig | string, patch: Record<string, unknown>): AnimaConfig {
-    const raw = loadYamlFile(PATHS.configYaml);
+    const raw = loadConfigYamlRecord();
     const existing =
       typeof raw[section] === "object" && raw[section] != null && !Array.isArray(raw[section])
         ? (raw[section] as Record<string, unknown>)

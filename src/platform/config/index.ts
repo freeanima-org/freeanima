@@ -3,6 +3,7 @@ export { expandConfigEnv } from "./env-expand.ts";
 export { parseYaml, stringifyYaml } from "./yaml.ts";
 export * from "./config.ts";
 export { FileConfig } from "./file-config.ts";
+export { HybridConfig, isPatchableConfig, type PatchableConfig } from "./hybrid-config.ts";
 export { clearVaultFieldCache, resolveVaultField } from "./vault-io.ts";
 export {
   Config,
@@ -27,7 +28,13 @@ export {
   readLoopbackWebAuthTokenFromEnvOrFile,
   writeLoopbackWebAuthTokenFile,
 } from "./loopback-web-auth.ts";
-export { validateConfigOnStartup } from "./validate.ts";
+export { loadConfigYamlRecord } from "./yaml-io.ts";
+export { patchRuntimeConfigSection, loadRuntimeConfigSection } from "./runtime-config-patch.ts";
+export {
+  validateBootstrapOnStartup,
+  validateConfigOnStartup,
+  validateFullConfigOnStartup,
+} from "./validate.ts";
 export { resolveLlmProviderApiKeys } from "./llm-resolve.ts";
 export {
   animaConfigSchema,

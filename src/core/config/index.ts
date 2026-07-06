@@ -10,6 +10,7 @@ export * from "./llm-config.ts";
 export * from "./compression-config.ts";
 export * from "./paths.ts";
 export * from "./config-store.ts";
+export * from "./bootstrap-config.ts";
 export * from "./runtime-logger.ts";
 export * from "./capability-injection.ts";
 export * from "./context-window-injection.ts";
