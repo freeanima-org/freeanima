@@ -10,16 +10,16 @@
 
 import { SQL } from "bun";
 
-import type { AnimaConfig } from "../../core/src/config/schemas/config.ts";
-import { bindResolvedWorldContext } from "../../core/src/config/world-context.ts";
-import { ensureWorldSubjects } from "../../core/src/db/pg/entity/subject-world.ts";
+import type { AnimaConfig } from "../../src/core/config/schemas/config.ts";
+import { bindResolvedWorldContext } from "../../src/core/config/world-context.ts";
+import { ensureWorldSubjects } from "../../src/core/db/pg/entity/subject-world.ts";
 import {
   createTaskItem,
   getDefaultTaskList,
   listTaskItems,
   updateTaskItem,
-} from "../../features/task/domain/index.ts";
-import { initDatabase } from "../../core/src/db/pg/index.ts";
+} from "../../src/features/task/domain/index.ts";
+import { initDatabase } from "../../src/core/db/pg/index.ts";
 
 const MINIMAL_CONFIG = {
   llm: { default_profile: "chat", providers: {}, profiles: {} },
@@ -84,7 +84,7 @@ async function main(): Promise<void> {
   }
 
   const sql = new SQL(url);
-  const { closeDb } = await import("../../core/src/db/pg/index.ts");
+  const { closeDb } = await import("../../src/core/db/pg/index.ts");
   initDatabase({ getDatabaseUrl: () => url });
 
   try {

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:23+0800\n"
+"POT-Creation-Date: 2026-07-06 11:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/features/companion.md:120 docs/features/mobile-app.md:52
+#: docs/features/companion.md:119 docs/features/mobile-app.md:52
 #: docs/guide/database.md:88 docs/guide/remote-access.md:177
 #, no-wrap
 msgid "Troubleshooting"
@@ -24,7 +24,7 @@ msgstr "故障排查"
 
 #. type: Content of: <messages><msg>
 #: docs/features/mobile-app.md:1 docs/features/mobile-app.md:5
-#: messages/po4a/en.xml:574
+#: messages/po4a/en.xml:589
 #, no-wrap
 msgid "Mobile app (Android)"
 msgstr "移动端 APP（Android）"
@@ -37,9 +37,10 @@ msgstr "> Capacitor **薄壳** + Hub `/web/*` 远程 UI（默认）；`MOBILE_UI
 
 #. type: Plain text
 #: docs/features/mobile-app.md:9
-#, no-wrap
-msgid "> Package: [`app/mobile/`](../../app/mobile/)\n"
-msgstr "> 包路径：[`app/mobile/`](../../app/mobile/)\n"
+#, fuzzy, no-wrap
+#| msgid "> Package: [`src/app/shell/mobile/`](../../src/app/shell/mobile/)\n"
+msgid "> Package: [`src/app/shell/mobile/`](../../src/app/shell/mobile/)\n"
+msgstr "> 包路径：[`src/app/shell/mobile/`](../../src/app/shell/mobile/)\n"
 
 #. type: Title ##
 #: docs/features/mobile-app.md:10
@@ -63,7 +64,7 @@ msgid ""
 "| ---------- | -------------------------------------------------------- |\n"
 "| Platform   | **Android only** sideload (APK); iOS later               |\n"
 "| UI         | 默认 bootstrap → Hub `/web/*`（与浏览器/PWA 同一产物）   |\n"
-"| Modules    | Chat + Console（bundled shell-ui）                         |\n"
+"| Modules    | Chat + Console（bundled shell-ui）                       |\n"
 "| Hub config | APP **Hub settings**（Preferences）或 bootstrap 首次配置 |\n"
 "| Hub duties | `/api` REST + `/hub/rpc/v1` WebSocket                    |\n"
 msgstr ""
@@ -209,12 +210,12 @@ msgstr ""
 #| "| **Console load failed / Failed to fetch | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header      |\n"
 #| "| Not Found                           | Avoid legacy paths like `/console/dashboard/index.html`; use SPA `/console/dashboard`               |\n"
 msgid ""
-"| Symptom                             | Common cause                                                                                    |\n"
-"| ----------------------------------- | ----------------------------------------------------------------------------------------------- |\n"
-"| Keyboard covers chat input          | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes |\n"
-"| Chat input unresponsive             | No selected conversation (first install should auto-create); or SAP disconnected                |\n"
+"| Symptom                               | Common cause                                                                                    |\n"
+"| ------------------------------------- | ----------------------------------------------------------------------------------------------- |\n"
+"| Keyboard covers chat input            | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes |\n"
+"| Chat input unresponsive               | No selected conversation (first install should auto-create); or SAP disconnected                |\n"
 "| Console load failed / Failed to fetch | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header      |\n"
-"| Not Found                           | Avoid legacy paths like `/console`/dashboard/index.html`; use SPA `/console`/dashboard`               |\n"
+"| Not Found                             | Avoid legacy paths like `/console`/dashboard/index.html`; use SPA `/console`/dashboard`         |\n"
 msgstr ""
 "| 现象                              | 常见原因                                                                                 |\n"
 "| ------------------------------------ | -------------------------------------------------------------------------------------------- |\n"
@@ -253,11 +254,10 @@ msgstr ""
 #. type: Plain text
 #: docs/features/mobile-app.md:72
 msgid ""
-"Mobile debug build: `cd app/mobile && bun run android:debug` (no minify + "
-"sourcemap for inspect)."
+"Mobile debug build: `bun run debug:android` (no minify + sourcemap for "
+"inspect)."
 msgstr ""
-"移动端调试构建：`cd app/mobile && bun run android:debug`（无压缩 + sourcemap "
-"便于 inspect）。"
+"移动端调试构建：`bun run debug:android`（无压缩 + sourcemap 便于 inspect）。"
 
 #. type: Title ##
 #: docs/features/mobile-app.md:73
@@ -269,25 +269,25 @@ msgstr "构建与侧载"
 #: docs/features/mobile-app.md:75
 #, no-wrap
 msgid ""
-"bun run --filter @freeanima/app-mobile build\n"
-"cd app/mobile && bun run sync\n"
+"bun run build:mobile\n"
+"cd src/app/shell/mobile && bunx cap sync android\n"
 msgstr ""
-"bun run --filter @freeanima/app-mobile build\n"
-"cd app/mobile && bun run sync\n"
+"bun run build:mobile\n"
+"cd src/app/shell/mobile && bunx cap sync android\n"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:81
 msgid ""
 "默认 **remote UI**（`www/` 仅 bootstrap，APK 体积小）。完整 bundled SPA："
-"`MOBILE_UI_MODE=bundled bun run --filter @freeanima/app-mobile build`"
+"`MOBILE_UI_MODE=bundled bun run build:mobile`"
 msgstr ""
 "默认 **remote UI**（`www/` 仅 bootstrap，APK 体积小）。完整壳内 bundled SPA："
-"`MOBILE_UI_MODE=bundled bun run --filter @freeanima/app-mobile build`"
+"`MOBILE_UI_MODE=bundled bun run build:mobile`"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:83
-msgid "Debug full flow: `cd app/mobile && bun run android:debug`"
-msgstr "调试完整流程：`cd app/mobile && bun run android:debug`"
+msgid "Debug full flow: `bun run debug:android`"
+msgstr "调试完整流程：`bun run debug:android`"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:85
@@ -297,8 +297,16 @@ msgstr "**纪律**：修改 shell-ui / chat / admin 前端后，须运行 `bun r
 
 #. type: Plain text
 #: docs/features/mobile-app.md:87
-msgid "Package README: [`app/mobile/README.md`](../../app/mobile/README.md)"
-msgstr "包 README：[`app/mobile/README.md`](../../app/mobile/README.md)"
+#, fuzzy
+#| msgid ""
+#| "Package README: [`src/app/shell/mobile/README.md`](../../src/app/shell/"
+#| "mobile/README.md)"
+msgid ""
+"Package README: [`src/app/shell/mobile/README.md`](../../src/app/shell/"
+"mobile/README.md)"
+msgstr ""
+"包 README：[`src/app/shell/mobile/README.md`](../../src/app/shell/mobile/"
+"README.md)"
 
 #. type: Title ##
 #: docs/features/mobile-app.md:88
@@ -308,9 +316,18 @@ msgstr "与桌面壳层对比"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:97
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "|              | Electron `src/app/shell/desktop`                          | Capacitor `src/app/shell/mobile`                |\n"
+#| "| ------------ | ----------------------------------------------- | ------------------------------------- |\n"
+#| "| Injection    | preload → `window.satelliteShell`               | `shell-bridge.js` → same-shaped API   |\n"
+#| "| Hub config   | Hub settings → `~/.anima-desktop/settings.json` | Hub settings → Preferences            |\n"
+#| "| Debug/Sentry | Settings → Debug → same file `debug`            | Settings → Debug → Preferences        |\n"
+#| "| REST         | Local static `/api` proxy (same origin)         | Direct `hubUrl/api/*` (CORS + Bearer) |\n"
+#| "| instance_id  | File `~/.anima/satellites/chat/`                | Preferences                           |\n"
+#| "| Content      | chat + admin + companion                        | chat + admin                          |\n"
 msgid ""
-"|              | Electron `app/desktop`                          | Capacitor `app/mobile`                |\n"
+"|              | Electron `src/app/shell/desktop`                | Capacitor `src/app/shell/mobile`      |\n"
 "| ------------ | ----------------------------------------------- | ------------------------------------- |\n"
 "| Injection    | preload → `window.satelliteShell`               | `shell-bridge.js` → same-shaped API   |\n"
 "| Hub config   | Hub settings → `~/.anima-desktop/settings.json` | Hub settings → Preferences            |\n"
@@ -319,7 +336,7 @@ msgid ""
 "| instance_id  | File `~/.anima/satellites/chat/`                | Preferences                           |\n"
 "| Content      | chat + admin + companion                        | chat + admin                          |\n"
 msgstr ""
-"|             | Electron `app/desktop`                      | Capacitor `app/mobile`               |\n"
+"|             | Electron `src/app/shell/desktop`                      | Capacitor `src/app/shell/mobile`               |\n"
 "| ----------- | ------------------------------------------- | ------------------------------------ |\n"
 "| 注入   | preload → `window.satelliteShell`           | `shell-bridge.js` → 同形 API  |\n"
 "| Hub 配置  | Hub 设置 → `~/.anima-desktop/settings.json` | Hub 设置 → Preferences       |\n"

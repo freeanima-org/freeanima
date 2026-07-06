@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 19:53+0800\n"
+"POT-Creation-Date: 2026-07-06 11:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,14 +17,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/features/companion.md:120 docs/features/mobile-app.md:52
+#: docs/features/companion.md:119 docs/features/mobile-app.md:52
 #: docs/guide/database.md:88 docs/guide/remote-access.md:177
 #, no-wrap
 msgid "Troubleshooting"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/guide/database.md:1 messages/po4a/en.xml:565
+#: docs/guide/database.md:1 messages/po4a/en.xml:580
 #, no-wrap
 msgid "Database"
 msgstr ""
@@ -148,7 +148,7 @@ msgstr ""
 #, no-wrap
 msgid ""
 "DATABASE_URL=\"postgresql://anima:…@127.0.0.1:5432/anima\" \\\n"
-"  bun run --filter @freeanima/core db:migrate\n"
+"  bun run db:migrate\n"
 msgstr ""
 
 #. type: Plain text
@@ -229,7 +229,7 @@ msgstr ""
 #, no-wrap
 msgid ""
 "bun run test:integration\n"
-"bun run test              # unit + integration in parallel\n"
+"bun run test              # unit + integration（串行）\n"
 msgstr ""
 
 #. type: Plain text

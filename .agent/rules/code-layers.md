@@ -12,21 +12,21 @@ app → platform → capabilities → runtime → core → kernel
 
 与运行时栈**并列**、由 dep-check 单独约束的目录：
 
-| Directory     | Package prefix                                                          | Role                                                          |
-| ------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------- |
-| `shared/`     | `hub-rpc`, `hub-contract`, `hub-client`, `sap-contract`, `vault-crypto` | Hub method SSOT、多传输客户端、SAP wire、加密                 |
-| `frontend/`   | `ui-kit`, `shell-sdk`, `shell-ui`                                       | 壳层 UI 与集成 SDK                                            |
-| `features/`   | `feature-*`                                                             | 产品功能纵向模块（plugin + hub + protocol + ui + domain）     |
-| `satellites/` | `satellite-*`                                                           | **仅** SAP attach 型卫星壳（`companion`、`pair-programming`） |
+| Directory         | Package prefix                                                          | Role                                                      |
+| ----------------- | ----------------------------------------------------------------------- | --------------------------------------------------------- |
+| `src/shared/`     | `hub-rpc`, `hub-contract`, `hub-client`, `sap-contract`, `vault-crypto` | Hub method SSOT、多传输客户端、SAP wire、加密             |
+| `src/frontend/`   | `ui-kit`, `shell-sdk`, `shell-ui`                                       | 壳层 UI 与集成 SDK                                        |
+| `features/`       | `feature-*`                                                             | 产品功能纵向模块（plugin + hub + protocol + ui + domain） |
+| `src/satellites/` | `satellite-*`                                                           | **仅** SAP attach 型卫星壳（`companion`）                 |
 
-| Layer            | Directory       | Package               | Responsibility                                                              |
-| ---------------- | --------------- | --------------------- | --------------------------------------------------------------------------- |
-| **kernel**       | `kernel/`       | `@freeanima/kernel`   | Hook, EventBus, logging                                                     |
-| **core**         | `core/`         | `@freeanima/core`     | PG schema, `db/pg` repos, config, tool/LLM/compress/hooks                   |
-| **runtime**      | `runtime/`      | `@freeanima/runtime`  | Conversation, turn, loop, pipeline, Engine factory                          |
-| **capabilities** | `capabilities/` | `capabilities-*` (8)  | acp, identity, llm-openai, mcp-client, mcp-server, memory, satellite, tools |
-| **platform**     | `platform/`     | `@freeanima/platform` | Composition root, ports, connectors, CLI wiring, feature registry           |
-| **app**          | `app/`          | `@freeanima/cli`, …   | CLI、desktop/mobile **薄壳**；UI SSOT 为 `app/web/dist`（Hub `/web/*`）     |
+| Layer            | Directory           | Package               | Responsibility                                                                    |
+| ---------------- | ------------------- | --------------------- | --------------------------------------------------------------------------------- |
+| **kernel**       | `src/kernel/`       | `@freeanima/kernel`   | Hook, EventBus, logging                                                           |
+| **core**         | `src/core/`         | `@freeanima/core`     | PG schema, `db/pg` repos, config, tool/LLM/compress/hooks                         |
+| **runtime**      | `runtime/`          | `@freeanima/runtime`  | Conversation, turn, loop, pipeline, Engine factory                                |
+| **capabilities** | `src/capabilities/` | `capabilities-*` (8)  | acp, identity, llm-openai, mcp-client, mcp-server, memory, satellite, tools       |
+| **platform**     | `src/platform/`     | `@freeanima/platform` | Composition root, ports, connectors, CLI wiring, feature registry                 |
+| **app**          | `app/`              | `@freeanima/cli`, …   | CLI、desktop/mobile **薄壳**；UI SSOT 为 `src/app/shell/web/dist`（Hub `/web/*`） |
 
 ### Console（hub-rest）
 
@@ -36,15 +36,15 @@ app → platform → capabilities → runtime → core → kernel
 | `@freeanima/console-api`      | `features/console/hub/console-api/`           | Console REST 实现（Elysia）                            |
 | `@freeanima/console-contract` | `features/console/protocol/console-contract/` | Console Hub wire 类型                                  |
 
-Console UI 源码 SSOT：`features/console/ui/console/`。Paraglide/build 工具：`features/console/build/`。Shell 路由经 `@freeanima/feature-console/ui/app`。
+Console UI 源码 SSOT：`features/console/ui/console/`。Paraglide/build 工具：`features/console/build/`。Shell 路由经 `@freeanima/feature-console/ui/spa`。
 
 ### Feature 模块（`features/<slug>/`）
 
-内置 plugin 在 [`platform/src/features/builtin-plugins.ts`](../../platform/src/features/builtin-plugins.ts) 注册；Hub RPC 由 `features/*/hub/rpc.ts` 实现，[`platform/src/sap/ws-server.ts`](../../platform/src/sap/ws-server.ts) 经 `getFeatureRpcHandler` 分发（**非** SAP attach）。
+内置 plugin 在 [`src/platform/features/builtin-plugins.ts`](../../src/platform/features/builtin-plugins.ts) 注册；Hub RPC 由 `features/*/hub/rpc.ts` 实现，[`src/platform/sap/ws-server.ts`](../../src/platform/sap/ws-server.ts) 经 `getFeatureRpcHandler` 分发（**非** SAP attach）。
 
 典型子目录：`plugin.ts`、`hub/`、`protocol/`（re-export `@freeanima/sap-contract/feature-rpc`）、`ui/`、`domain/`。
 
-chat / task / vault / diary / email / notification / dream / console 等产品面走 **Feature RPC**；`satellites/` 仅保留 companion、pair-programming。
+chat / task / vault / diary / email / notification / dream / console 等产品面走 **Feature RPC**；`src/satellites/` 仅保留 companion。
 
 ### `@freeanima/core` subpaths
 
@@ -58,7 +58,7 @@ chat / task / vault / diary / email / notification / dream / console 等产品�
 
 `ports`, `config`, `logging`, `commands`, `bootstrap`, `connectors/*`, `sap/*`, `features/*`
 
-### `@freeanima/sap-contract` subpaths（`shared/sap-contract/`）
+### `@freeanima/sap-contract` subpaths（`src/shared/sap-contract/`）
 
 `.`、`./satellite`、`./feature-rpc`、`./frames/*` — satellite attach 与 feature Hub RPC 分入口。
 
@@ -68,37 +68,37 @@ Readable mirror of [`scripts/check-layer-deps.ts`](../../scripts/check-layer-dep
 
 Dependency direction (high → low): `app` / `platform` / `features` → `capabilities` → `runtime` → `core` → `kernel`. Lower layers must not import higher layers.
 
-| Source directory                              | Allowed `@freeanima/*` (package root)                                                                                                                 | Explicitly forbidden                                                                                                                                             |
-| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `kernel/`                                     | `kernel`, `kernel-*`                                                                                                                                  | all other workspace packages                                                                                                                                     |
-| `core/`                                       | `kernel`, `kernel-*`, `core`                                                                                                                          | `runtime`, `capabilities-*`, `platform`, …                                                                                                                       |
-| `runtime/`                                    | `kernel`, `kernel-*`, `core`, `runtime`                                                                                                               | **`platform`**, **`capabilities-*`**                                                                                                                             |
-| `capabilities/<pkg>/`                         | `kernel`, `kernel-*`, `core`, **`core/db/pg`**, **`core/db/schema`**, own `capabilities-<pkg>`, `sap-contract`                                        | **`runtime`**, **`platform`**, **other `capabilities-*`**, **`feature-*`**                                                                                       |
-| `platform/`, `app/`, `tests/`                 | all workspace packages                                                                                                                                | —                                                                                                                                                                |
-| `features/console/hub/console-api/`           | same as `platform/`（nested workspace package）                                                                                                       | —                                                                                                                                                                |
-| `features/console/protocol/console-contract/` | `kernel`, `kernel-*`（devDeps：`platform`, `core`, `console-api` 仅类型解析）                                                                         | **`platform`**, **`core`**, **`console-api`**                                                                                                                    |
-| `features/<slug>/`                            | `core`, `platform` (hub connectors), `admin-*` (console only), `sap-contract`, `shell-sdk`, `ui-kit`, `vault-crypto`, `capabilities-memory` (interim) | other `feature-*`, `runtime`, arbitrary `capabilities-*`                                                                                                         |
-| `satellites/<name>/`                          | `sap-contract`, `shell-sdk`, `ui-kit`, `vault-crypto`, `kernel`, `kernel-*`, matching `feature-*` shim                                                | **`shell-ui`**, **`admin-*`**, **`platform`**, **`core`**, **`runtime`**, **`capabilities-*`** — **only `companion` and `pair-programming` directories allowed** |
-| `shared/hub-rpc/`                             | `kernel`, `kernel-*`, `hub-rpc`                                                                                                                       | all other workspace packages                                                                                                                                     |
-| `shared/sap-contract/`                        | `kernel`, `kernel-*`, `sap-contract`, `hub-rpc`                                                                                                       | all other workspace packages                                                                                                                                     |
-| `shared/vault-crypto/`                        | `kernel`, `kernel-*`, `vault-crypto`                                                                                                                  | all other workspace packages                                                                                                                                     |
-| `frontend/ui-kit/`                            | `kernel`, `kernel-*`                                                                                                                                  | **`sap-contract`**, other workspace packages                                                                                                                     |
-| `frontend/shell-sdk/`                         | `kernel`, `kernel-*`, `hub-rpc`, `vault-crypto`                                                                                                       | **`sap-contract`**, other workspace packages                                                                                                                     |
-| `frontend/shell-ui/`                          | `ui-kit`, `shell-sdk`, `feature-*`, `satellite-*`, `kernel`, `kernel-*`                                                                               | **`sap-contract`**；禁止深路径 import `satellites/`（用 `@freeanima/feature-*/ui/*`）                                                                            |
+| Source directory                              | Allowed `@freeanima/*` (package root)                                                                                                                 | Explicitly forbidden                                                                                                                    |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/kernel/`                                 | `kernel`, `kernel-*`                                                                                                                                  | all other workspace packages                                                                                                            |
+| `src/core/`                                   | `kernel`, `kernel-*`, `core`                                                                                                                          | `runtime`, `capabilities-*`, `platform`, …                                                                                              |
+| `runtime/`                                    | `kernel`, `kernel-*`, `core`, `runtime`                                                                                                               | **`platform`**, **`capabilities-*`**                                                                                                    |
+| `src/capabilities/<pkg>/`                     | `kernel`, `kernel-*`, `core`, **`src/core/db/pg`**, **`src/core/db/schema`**, own `capabilities-<pkg>`, `sap-contract`                                | **`runtime`**, **`platform`**, **other `capabilities-*`**, **`feature-*`**                                                              |
+| `src/platform/`, `app/`, `tests/`             | all workspace packages                                                                                                                                | —                                                                                                                                       |
+| `features/console/hub/console-api/`           | same as `src/platform/`（nested workspace package）                                                                                                   | —                                                                                                                                       |
+| `features/console/protocol/console-contract/` | `kernel`, `kernel-*`（devDeps：`platform`, `core`, `console-api` 仅类型解析）                                                                         | **`platform`**, **`core`**, **`console-api`**                                                                                           |
+| `features/<slug>/`                            | `core`, `platform` (hub connectors), `admin-*` (console only), `sap-contract`, `shell-sdk`, `ui-kit`, `vault-crypto`, `capabilities-memory` (interim) | other `feature-*`, `runtime`, arbitrary `capabilities-*`                                                                                |
+| `src/satellites/<name>/`                      | `sap-contract`, `shell-sdk`, `ui-kit`, `vault-crypto`, `kernel`, `kernel-*`, matching `feature-*` shim                                                | **`shell-ui`**, **`admin-*`**, **`platform`**, **`core`**, **`runtime`**, **`capabilities-*`** — **only `companion` directory allowed** |
+| `src/shared/hub-rpc/`                         | `kernel`, `kernel-*`, `hub-rpc`                                                                                                                       | all other workspace packages                                                                                                            |
+| `src/shared/sap-contract/`                    | `kernel`, `kernel-*`, `sap-contract`, `hub-rpc`                                                                                                       | all other workspace packages                                                                                                            |
+| `src/shared/vault-crypto/`                    | `kernel`, `kernel-*`, `vault-crypto`                                                                                                                  | all other workspace packages                                                                                                            |
+| `src/frontend/ui-kit/`                        | `kernel`, `kernel-*`                                                                                                                                  | **`sap-contract`**, other workspace packages                                                                                            |
+| `src/frontend/shell-sdk/`                     | `kernel`, `kernel-*`, `hub-rpc`, `vault-crypto`                                                                                                       | **`sap-contract`**, other workspace packages                                                                                            |
+| `src/frontend/shell-ui/`                      | `ui-kit`, `shell-sdk`, `feature-*`, `satellite-*`, `kernel`, `kernel-*`                                                                               | **`sap-contract`**；禁止深路径 import `src/satellites/`（用 `@freeanima/feature-*/ui/*`）                                               |
 
 Notes aligned with the checker:
 
 - **Scan scope**: `@freeanima/*` imports in `*.ts` / `*.tsx` **and** `dependencies` in each layer's `package.json`.
-- **Exemptions** (import scan only): paths under `tests/` or `test-helpers/`, `*.test.ts` / `*.spec.ts`, all `app/cli/` source files, and build path helpers (`features/console/build/*.ts`, selected `frontend/shell-ui/vite/*.ts`). Production code in other layers is still checked.
-- **Capabilities isolation**: `capabilities/<src>` must not depend on `@freeanima/capabilities-<other>` where `<other> ≠ <src>`，亦不可依赖任何 `feature-*`。产品域 SSOT 在 `features/*/domain/`；**platform / console-api / tests** 直接 import `@freeanima/feature-*/domain`。
+- **Exemptions** (import scan only): paths under `tests/` or `test-helpers/`, `*.test.ts` / `*.spec.ts`, all `src/app/cli/` source files, and build path helpers (`features/console/build/*.ts`, selected `src/frontend/shell-ui/vite/*.ts`). Production code in other layers is still checked.
+- **Capabilities isolation**: `src/capabilities/<src>` must not depend on `@freeanima/capabilities-<other>` where `<other> ≠ <src>`，亦不可依赖任何 `feature-*`。产品域 SSOT 在 `features/*/domain/`；**platform / console-api / tests** 直接 import `@freeanima/feature-*/domain`。
 - **Features isolation**: `features/<slug>` must not depend on other `@freeanima/feature-*`.
 - **Platform ↔ feature**: `@freeanima/feature-*` 在 `@freeanima/platform` 的 **`dependencies`** 中声明（register-tools、connectors、plugin 注册）。
-- **Satellites**: only **`companion`** and **`pair-programming`** under `satellites/`; product UIs live in `features/*/ui`. Do not import `platform`, `runtime`, `core`, or arbitrary `capabilities-*` — use [`shared/sap-contract`](../../shared/sap-contract/) + [`frontend/shell-sdk`](../../frontend/shell-sdk/) + [`frontend/ui-kit`](../../frontend/ui-kit/)。功能原型见 [`frontend-features.md`](frontend-features.md)。
+- **Satellites**: only **`companion`** under `src/satellites/`; product UIs live in `features/*/ui`. Do not import `platform`, `runtime`, `core`, or arbitrary `capabilities-*` — use [`src/shared/sap-contract`](../../src/shared/sap-contract/) + [`src/frontend/shell-sdk`](../../src/frontend/shell-sdk/) + [`src/frontend/ui-kit`](../../src/frontend/ui-kit/)。功能原型见 [`frontend-features.md`](frontend-features.md)。
 - **Tests**: production layers may use `@freeanima/platform` test helpers in test files / devDependencies; the checker skips exempt paths above.
 
 ## Port wiring at composition root
 
-Boot phases: [`platform/src/boot/`](../../platform/src/boot/). Entry: [`platform/src/serve.ts`](../../platform/src/serve.ts).
+Boot phases: [`src/platform/boot/`](../../src/platform/boot/). Entry: [`src/platform/serve.ts`](../../src/platform/serve.ts).
 
 - `registerCapabilityInjection()` wires vault helpers from `@freeanima/platform/config` into `@freeanima/core/config`
 - `registerFeatures()` wires builtin `FeaturePlugin` list（Hub RPC handlers）
@@ -107,7 +107,7 @@ Boot phases: [`platform/src/boot/`](../../platform/src/boot/). Entry: [`platform
 
 ## RuntimeContext
 
-Single process-wide context after boot (`initRuntimeContext` in [`platform/src/runtime/runtime-context.ts`](../../platform/src/runtime/runtime-context.ts)):
+Single process-wide context after boot (`initRuntimeContext` in [`src/platform/runtime/runtime-context.ts`](../../src/platform/runtime/runtime-context.ts)):
 
 - `deps: FullRuntimeDeps`
 - `app: AppRuntimePort`

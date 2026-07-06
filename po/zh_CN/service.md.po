@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:22+0800\n"
+"POT-Creation-Date: 2026-07-06 10:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/service.md:1 messages/po4a/en.xml:589
+#: docs/guide/service.md:1 messages/po4a/en.xml:604
 #, no-wrap
 msgid "Service"
 msgstr "服务"
@@ -161,8 +161,8 @@ msgstr "**UI 访问（两种模式）：**\n"
 #| "unless `web.enabled`)."
 msgid ""
 "**Desktop / mobile bundled shell:** Chat and Console at `/chat`, `/console`/"
-"*` inside the Electron/Capacitor app (not served from Hub `:2658` unless "
-"`web.enabled`)."
+"\\*`inside the Electron/Capacitor app (not served from "
+"Hub`:2658`unless`web.enabled`)."
 msgstr ""
 "**桌面/移动 bundled shell：** 聊天室与管理台位于 Electron/Capacitor 应用内的 "
 "`/chat`、`/console/*`（除非 `web.enabled`，否则不由 Hub `:2658` 提供）。"

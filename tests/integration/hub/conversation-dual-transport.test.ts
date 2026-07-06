@@ -7,7 +7,7 @@ import {
 } from "../../helpers/integration-case.ts";
 import { bindConsoleRuntimeContext } from "@freeanima/console-api/handlers/runtime";
 import { invokeConsoleHubHandler } from "@freeanima/console-api/console-hub-handlers";
-import { handleConversationList } from "../../../features/chat/hub/rpc.ts";
+import { handleConversationList } from "../../../src/features/chat/hub/rpc.ts";
 import { getAppRuntime } from "@freeanima/platform";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 import { testConv } from "../../helpers/pg-test.ts";

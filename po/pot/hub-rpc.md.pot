@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:12+0800\n"
+"POT-Creation-Date: 2026-07-06 11:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,7 +25,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/hub-rpc.md:8
 #, no-wrap
-msgid "**Hub RPC** (`HubRPC/1.0`) is the WebSocket transport between any Hub client and the agent runtime. It is implemented in [`shared/hub-rpc/`](../../shared/hub-rpc/) and served at **`/hub/rpc/v1`**.\n"
+msgid "**Hub RPC** (`HubRPC/1.0`) is the WebSocket transport between any Hub client and the agent runtime. It is implemented in [`src/shared/hub-rpc/`](../../src/shared/hub-rpc/) and served at **`/hub/rpc/v1`**.\n"
 msgstr ""
 
 #. type: Plain text
@@ -57,7 +57,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/hub-rpc.md:20
 msgid ""
-"Hub route: [`platform/src/sap/bun-route.ts`](../../platform/src/sap/bun-"
+"Hub route: [`src/platform/sap/bun-route.ts`](../../src/platform/sap/bun-"
 "route.ts)."
 msgstr ""
 
@@ -98,7 +98,7 @@ msgstr ""
 msgid ""
 "Every connection must send a valid **service API token** in the `connect` "
 "payload (`auth_token`). The Hub verifies it with `verifyServiceApiToken` "
-"([`core/src/db/pg/service-api-token/`](../../core/src/db/pg/service-api-"
+"([`src/core/db/pg/service-api-token/`](../../src/core/db/pg/service-api-"
 "token/))."
 msgstr ""
 
@@ -125,7 +125,7 @@ msgid ""
 "| Profile           | Package entry                                    | `sap.attach` | Typical consumer                               |\n"
 "| ----------------- | ------------------------------------------------ | ------------ | ---------------------------------------------- |\n"
 "| Bundled SPA       | `getBundledHubRpcClient()` / `whenHubRpcReady()` | **No**       | Chat, task, notification, diary, email modules |\n"
-"| Satellite process | `createSatelliteHub()` in sap-contract           | **Yes**      | companion, pair-programming                    |\n"
+"| Satellite process | `createSatelliteHub()` in sap-contract           | **Yes**      | companion                                      |\n"
 msgstr ""
 
 #. type: Plain text
@@ -144,7 +144,7 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/sap/hub-rpc.md:50 docs/sap/transport.md:99 messages/po4a/en.xml:123
+#: docs/sap/hub-rpc.md:50 docs/sap/transport.md:99 messages/po4a/en.xml:138
 #, no-wrap
 msgid "Reconnect"
 msgstr ""

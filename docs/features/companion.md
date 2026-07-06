@@ -6,12 +6,12 @@ title: Desktop Companion
 
 > **Dynamic SAP satellite**: a standalone desktop GUI app, not managed via `config.yaml`.
 
-The desktop companion is a SAP **Type B** app (embedded sidecar holds the Hub WebSocket, `relay: false`): the **content pack** (React + VRM + Node sidecar) is embedded by **app/desktop**, registers with the Hub via SAP, and exposes local tools to the Agent.
+The desktop companion is a SAP **Type B** app (embedded sidecar holds the Hub WebSocket, `relay: false`): the **content pack** (React + VRM + Node sidecar) is embedded by the **desktop shell** (`src/app/shell/desktop`), registers with the Hub via SAP, and exposes local tools to the Agent.
 
 ## Architecture
 
 ```text
-FreeAnima Desktop (app/desktop)
+FreeAnima Desktop (src/app/shell/desktop)
 ├── Electron Main — tray / multi-window + embedded companion sidecar
 │   ├── companion overlay — transparent always-on-top, VRM / speech bubble
 │   ├── companion settings — settings window
@@ -22,7 +22,7 @@ FreeAnima Desktop (app/desktop)
     anima service Hub
 ```
 
-The content pack lives in [`satellites/companion/`](../../satellites/companion/) (`app/` + `server/` + `shared/`). Export conventions: [`frontend-exports.md`](../sap/frontend-exports.md).
+The content pack lives in [`src/satellites/companion/`](../../src/satellites/companion/) (`spa/` + `server/` + `shared/`). Export conventions: [`frontend-exports.md`](../sap/frontend-exports.md).
 
 Compared with Chat / pair programming:
 
@@ -61,7 +61,7 @@ The repo **does not bundle** `.vrm` / `.vrma` files. Config persists in `~/.anim
 
 Settings → **Models** tab: list, import, delete, rename, switch current model. Files saved to `~/.anima/companion/models/`.
 
-During development, files in `satellites/companion/public/models/` serve as fallback.
+During development, files in `src/satellites/companion/public/models/` serve as fallback.
 
 ### VRMA library and slots
 
@@ -73,11 +73,11 @@ Motion files: `~/.anima/companion/motions/`. Unbound slots play no animation; pa
 
 ### Browser dev (no Electron)
 
-In `satellites/companion`:
+In `src/satellites/companion`:
 
 ```bash
 bun run dev
-# or bun satellites/companion/dev.ts
+# or bun src/satellites/companion/dev.ts
 ```
 
 - Companion: http://127.0.0.1:4176
@@ -88,9 +88,8 @@ In the Electron desktop shell, open settings via tray → **Settings…**; the o
 ### Electron desktop shell (companion + Chat + Console)
 
 ```bash
-cd app/desktop
-bun install
-bun dev:electron
+# 从仓库根目录
+bun run dev:windows
 ```
 
 Packaging (Linux cross-build for Windows):
@@ -103,7 +102,7 @@ bun run dev:windows
 bun run package:windows
 ```
 
-Or from `app/desktop`: `bun run dev:windows` / `bun run package:windows`. Fast path keeps `vendor/` and `release/` for incremental builds; full clean: `DESKTOP_SHELL_CLEAN=1`.
+Or from repository root: `bun run dev:windows` / `bun run package:windows`. Fast path keeps `vendor/` and `release/` for incremental builds; full clean: `DESKTOP_SHELL_CLEAN=1`.
 
 Environment variables:
 
@@ -115,18 +114,18 @@ Environment variables:
 
 Hub URL and remote token are managed by the desktop shell in **`~/.anima-desktop/settings.json`** (`hub` section; tray → **Hub settings…**). Companion Settings → General tab shows Hub URL read-only.
 
-Hub assigns a **3-character** `instance_id` on first `connect`, stored in `~/.anima/companion/instance.json` (not under `satellites/`).
+Hub assigns a **3-character** `instance_id` on first `connect`, stored in `~/.anima/companion/instance.json` (not under `src/satellites/`).
 
 ### Troubleshooting
 
-| Symptom                  | Action                                                                                                 |
-| ------------------------ | ------------------------------------------------------------------------------------------------------ |
-| Double-click, no window  | Check system tray; tray → **Settings…** → import `.vrm`                                                |
-| Click, no motion         | Settings → **Motion library** import VRMA; **Motion slots** bind slot                                  |
-| Cannot reach Hub         | Confirm `anima service` and Hub settings token (`fa_at_...`); tray **Hub settings** URL and token      |
-| Import has no effect     | Hot reload after import; confirm slot has motion checked                                               |
-| Background service fails | See `~/.anima/app/desktop/shell.log`; confirm ports 4176–4185 free                                     |
-| FBX import unavailable   | Run `bun run --filter @freeanima/satellite-companion setup:fbx` (caches to `~/.anima/tools/fbx2gltf/`) |
+| Symptom                  | Action                                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------------------- |
+| Double-click, no window  | Check system tray; tray → **Settings…** → import `.vrm`                                           |
+| Click, no motion         | Settings → **Motion library** import VRMA; **Motion slots** bind slot                             |
+| Cannot reach Hub         | Confirm `anima service` and Hub settings token (`fa_at_...`); tray **Hub settings** URL and token |
+| Import has no effect     | Hot reload after import; confirm slot has motion checked                                          |
+| Background service fails | See `~/.anima/desktop-shell/shell.log`; confirm ports 4176–4185 free                              |
+| FBX import unavailable   | Run `bun run setup:fbx` (caches to `~/.anima/tools/fbx2gltf/`)                                    |
 
 ## Related docs
 

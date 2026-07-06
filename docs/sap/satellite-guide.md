@@ -16,13 +16,10 @@ Declare a process in `~/.anima/config.yaml`. `anima service start/stop/restart` 
 
 ```yaml
 satellites:
-  pair-programming:
+  companion:
     enabled: true
     command: bun
-    args: ["satellites/pair-programming/dev.ts"]
-    env:
-      STUDIO_WORKSPACE: /path/to/project
-      SATELLITE_PORT: "4173"
+    args: ["src/satellites/companion/dev.ts"]
 ```
 
 **Chat / Task / Console** etc. are bundled in shell-ui (desktop / mobile / web); no separate `satellites:` dev process needed; browser local debug: `bun run dev:web`.
@@ -44,58 +41,38 @@ No `command` in config. Start the satellite yourself; it connects to Hub via SAP
 
 There is **no** global `studio:` section in `config.yaml`.
 
-Open managed satellite UI at the URL from Console (SAP `http_url`), typically:
-
-- Pair-programming: `http://127.0.0.1:4173`
+Open managed satellite UI at the URL from Console (SAP `http_url`), typically the companion sidecar HTTP port.
 
 Shell satellites (Chat, Console, etc.) open in desktop / mobile / web shell routes; no dedicated port.
 
 ## Instance allocation strategies
 
-`instance_id` is a 3-character lowercase alphanumeric id (see [`shared/sap-contract/src/naming.ts`](../../shared/sap-contract/src/naming.ts)). It appears in platform strings (`sap:{app_slug}:{instance_id}`), session `platform_extra`, and SAP tool names. **Do not remove it from the protocol** — but each satellite app picks an **allocation strategy** suited to its product model:
+`instance_id` is a 3-character lowercase alphanumeric id (see [`src/shared/sap-contract/naming.ts`](../../src/shared/sap-contract/naming.ts)). It appears in platform strings (`sap:{app_slug}:{instance_id}`), session `platform_extra`, and SAP tool names. **Do not remove it from the protocol** — but each satellite app picks an **allocation strategy** suited to its product model:
 
-| Strategy      | Meaning                                | Apps                                        | Client behavior                                                                 |
-| ------------- | -------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------- |
-| **singleton** | One fixed id per Hub for the whole app | **Chat** (`def`)                            | Always send `instance_id` on `connect`; Hub auto-provisions if missing          |
-| **machine**   | One id per physical device / install   | **Companion**, **pair-programming** (today) | Omit `instance_id` on first connect; Hub assigns randomly; persist locally      |
-| **workspace** | One id per open workspace / project    | **Pair-programming** (future)               | Switch workspace → switch `instance_id` and reconnect — **not implemented yet** |
+| Strategy      | Meaning                                | Apps             | Client behavior                                                            |
+| ------------- | -------------------------------------- | ---------------- | -------------------------------------------------------------------------- |
+| **singleton** | One fixed id per Hub for the whole app | **Chat** (`def`) | Always send `instance_id` on `connect`; Hub auto-provisions if missing     |
+| **machine**   | One id per physical device / install   | **Companion**    | Omit `instance_id` on first connect; Hub assigns randomly; persist locally |
 
 ```mermaid
 flowchart TB
   subgraph policies [Allocation strategies]
     Singleton["singleton: chat → def"]
     Machine["machine: companion → per machine"]
-    Workspace["workspace: pair-programming → per project future"]
   end
   Singleton --> Platform1["platform = sap:chat:def"]
   Machine --> Platform2["platform = sap:companion:{machineId}"]
-  Workspace --> Platform3["platform = sap:pairprogramming:{projectId}"]
 ```
 
 **Chat (singleton):** all desktop / mobile clients share `CHAT_INSTANCE_ID` (`def`) so `conversation.list` is unified across devices. Chat registers no satellite tools; multiple devices may connect with the same id (Console shows the last `http_url`).
 
 **Companion (machine):** `~/.anima/companion/instance.json` — one id per computer.
 
-**Pair-programming (machine today):** single sidecar + `STUDIO_WORKSPACE` at startup → one `~/.anima/satellites/pair-programming/instance.json`. When runtime workspace switching ships, migrate to **workspace** strategy (separate instance per project).
-
-Hub [`SapInstanceRegistry`](../../platform/src/sap/instance-registry.ts): omit `instance_id` → random allocation; send known id → reconnect or **auto-provision** if the id is valid and unused.
+Hub [`SapInstanceRegistry`](../../src/platform/sap/instance-registry.ts): omit `instance_id` → random allocation; send known id → reconnect or **auto-provision** if the id is valid and unused.
 
 ## Satellite access modes
 
 **Rule:** each `app_id + instance_id` has **at most one** active entry in `SatelliteManager` (last connect wins). Multiple WebSockets with the same id are not rejected but stream events follow each socket's own context.
-
-### Type B — Process gateway + local relay (pair-programming)
-
-- Sidecar `createSatelliteHub({ relay: true, ... })` holds the sole Hub WS.
-- Browser uses `createSapRelayBrowserClient` → satellite `/sap/relay/v1`.
-- `instance_id` persisted under `~/.anima/satellites/{app}/instance.json`.
-- **Pair-programming:** relay + `tool.register` + local FS/PTY APIs.
-
-### Bundled Hub RPC — shell modules (chat, task, notification, …)
-
-- Modules use shared [`getBundledHubRpcClient`](../../shared/hub-rpc/src/bundled.ts) / [`createSapDirectClient`](../../shared/sap-contract/src/direct-client.ts) on `/hub/rpc/v1`.
-- **No** `sap.attach`; **no** relay sidecar for these modules.
-- See [`hub-rpc.md`](hub-rpc.md) and [`frontend-exports.md`](frontend-exports.md).
 
 ### Type B + tools, no relay (companion)
 
@@ -105,40 +82,35 @@ Hub [`SapInstanceRegistry`](../../platform/src/sap/instance-registry.ts): omit `
 
 ```mermaid
 flowchart TB
-  subgraph chat [Chat Type B relay]
-    B1[Browser] -->|relay WS| Relay1["/sap/relay/v1"]
-    Relay1 --> ProcSAP1[createSatelliteHub]
-    ProcSAP1 -->|single SAP WS| Hub1[Hub]
-  end
-
-  subgraph ppy [Pair-programming Type B]
-    B2[Browser] -->|relay WS| Relay2["/sap/relay/v1"]
-    Relay2 --> ProcSAP2[createSatelliteHub]
-    ProcSAP2 -->|single SAP WS| Hub2[Hub]
-    B2 --> LocalFS["/api/studio/*"]
-    B2 --> LocalPTY[local terminal WS]
-    ProcSAP2 --> ToolExec[tool executor]
+  subgraph companion [Companion Type B]
+    B[Browser] --> SidecarHTTP[sidecar HTTP]
+    SidecarHTTP --> ProcSAP[createSatelliteHub]
+    ProcSAP -->|single SAP WS| Hub[Hub]
+    ProcSAP --> ToolExec[tool executor]
   end
 ```
 
 **Deprecated:** HTTP hub-api REST→SAP proxy (removed).
 
+### Bundled Hub RPC — shell modules (chat, task, notification, …)
+
+- Modules use shared [`getBundledHubRpcClient`](../../src/shared/hub-rpc/bundled.ts) / [`createSapDirectClient`](../../src/shared/sap-contract/direct-client.ts) on `/hub/rpc/v1`.
+- **No** `sap.attach`; **no** relay sidecar for these modules.
+- See [`hub-rpc.md`](hub-rpc.md) and [`frontend-exports.md`](frontend-exports.md).
+
 ### Chat (bundled feature)
 
-- **Shell / browser dev (recommended)**: `createSapDirectClient` on shared Hub RPC; UI from [`features/chat/ui/app/`](../../features/chat/ui/app/) embedded in shell-ui (no SAP relay, no `sap.attach`).
-- Hub RPC handlers: [`features/chat/hub/rpc.ts`](../../features/chat/hub/rpc.ts); wire types: [`features/chat/protocol/`](../../features/chat/protocol/) → `@freeanima/sap-contract/feature-rpc`.
+- **Shell / browser dev (recommended)**: `createSapDirectClient` on shared Hub RPC; UI from [`src/features/chat/ui/spa/`](../../src/features/chat/ui/spa/) embedded in shell-ui (no SAP relay, no `sap.attach`).
+- Hub RPC handlers: [`src/features/chat/hub/rpc.ts`](../../src/features/chat/hub/rpc.ts); wire types: [`src/features/chat/protocol/`](../../src/features/chat/protocol/) → `@freeanima/sap-contract/feature-rpc`.
 
-### Pair-programming satellite
-
-Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../satellites/pair-programming/server/index.ts); sidecar uses `createSatelliteHub` ([`satellite-hub.ts`](../../shared/sap-contract/src/satellite-hub.ts)).
+### Companion satellite
 
 Reference files:
 
-- [`features/chat/ui/app/src/lib/sap-client.ts`](../../features/chat/ui/app/src/lib/sap-client.ts)
-- [`satellites/pair-programming/server/sap/hub.ts`](../../satellites/pair-programming/server/sap/hub.ts)
-- [`shared/sap-contract/src/sidecar-client.ts`](../../shared/sap-contract/src/sidecar-client.ts)
-- [`shared/sap-contract/src/satellite-relay-server.ts`](../../shared/sap-contract/src/satellite-relay-server.ts)
-- [`satellites/pair-programming/server/http/terminal-bridge.ts`](../../satellites/pair-programming/server/http/terminal-bridge.ts)
+- [`src/satellites/companion/server/sap/hub.ts`](../../src/satellites/companion/server/sap/hub.ts)
+- [`src/features/chat/ui/spa/lib/sap-client.ts`](../../src/features/chat/ui/spa/lib/sap-client.ts)
+- [`src/shared/sap-contract/sidecar-client.ts`](../../src/shared/sap-contract/sidecar-client.ts)
+- [`src/shared/sap-contract/satellite-relay-server.ts`](../../src/shared/sap-contract/satellite-relay-server.ts)
 
 ## Minimal SAP client
 
@@ -160,7 +132,7 @@ const hub = createSatelliteHub({
 });
 ```
 
-**Machine strategy (companion, pair-programming):** omit `instance_id` on first connect; Hub assigns a 3-char id and returns it in `connected.instance_id`. Persist via `SapInstanceStore.save`.
+**Machine strategy (companion):** omit `instance_id` on first connect; Hub assigns a 3-char id and returns it in `connected.instance_id`. Persist via `SapInstanceStore.save`.
 
 **Singleton strategy (chat):** pass fixed `instance_id` (or `instanceId` option on `createSapDirectClient`); Hub auto-provisions on first sight.
 
@@ -170,17 +142,15 @@ Transport handles WebSocket open, `connect` handshake, heartbeat, and reconnect 
 
 ## Environment variables
 
-| Variable                                  | Role                                         |
-| ----------------------------------------- | -------------------------------------------- |
-| `FREEANIMA_URL`                           | Hub HTTP base URL                            |
-| `SATELLITE_PORT`                          | Satellite HTTP listen port                   |
-| `FREEANIMA_HOME`                          | Data root (`~/.anima`); instance store paths |
-| `STUDIO_WORKSPACE`                        | Pair-programming workspace root              |
-| `STUDIO_GITIGNORE` / `STUDIO_SHOW_HIDDEN` | File tree filters                            |
+| Variable         | Role                                         |
+| ---------------- | -------------------------------------------- |
+| `FREEANIMA_URL`  | Hub HTTP base URL                            |
+| `SATELLITE_PORT` | Satellite HTTP listen port                   |
+| `FREEANIMA_HOME` | Data root (`~/.anima`); instance store paths |
 
 ## Layer dependencies
 
-Per [`.agent/rules/code-layers.md`](../../.agent/rules/code-layers.md) (Dependency allow/deny matrix): `satellites/*` may depend only on `@freeanima/sap-contract`, `@freeanima/kernel`, and `kernel-*` packages. Do not import `platform`, `runtime`, `core`, or `capabilities-*` from Satellite code.
+Per [`.agent/rules/code-layers.md`](../../.agent/rules/code-layers.md) (Dependency allow/deny matrix): `src/satellites/*` may depend only on `@freeanima/sap-contract`, `@freeanima/kernel`, and `kernel-*` packages. Do not import `platform`, `runtime`, `core`, or `capabilities-*` from Satellite code.
 
 ## Console visibility
 
@@ -189,9 +159,8 @@ Per [`.agent/rules/code-layers.md`](../../.agent/rules/code-layers.md) (Dependen
 ## Further reading
 
 - Frontend manifest / desktop / mobile exports: [`frontend-exports.md`](frontend-exports.md)
-- Desktop shell: [`app/desktop/`](../../app/desktop/)
-
+- Desktop shell: [`src/app/shell/desktop/`](../../src/app/shell/desktop/)
 - [overview.md](overview.md) — protocol goals
 - [transport.md](transport.md) — envelopes and handshake
 - [tools.md](tools.md) — tool registration and routing
-- [pair-programming v1](../features/pair-programming-v1.md) — Studio product docs
+- [companion](../features/companion.md) — Companion product docs

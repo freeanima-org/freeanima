@@ -17,7 +17,7 @@ const MASKABLE_SVG = join(BRAND, "app-icon-maskable.svg");
 const MARK_SVG = join(BRAND, "logo.svg");
 const MARK_LIGHT_SVG = join(BRAND, "logo-light.svg");
 
-const ANDROID_RES = join(ROOT, "app/mobile/android/app/src/main/res");
+const ANDROID_RES = join(ROOT, "src/app/shell/mobile/android/app/src/main/res");
 
 const MIPMAP_LAUNCHER: Record<string, number> = {
   "mipmap-mdpi": 48,
@@ -115,19 +115,25 @@ async function main(): Promise<void> {
 
   // SVG copies
   copySvg(APP_ICON_SVG, join(ROOT, "site/public/favicon.svg"));
-  copySvg(APP_ICON_SVG, join(ROOT, "app/web/app/public/favicon.svg"));
-  copySvg(APP_ICON_SVG, join(ROOT, "features/console/ui/console/public/favicon.svg"));
+  copySvg(APP_ICON_SVG, join(ROOT, "src/app/shell/web/spa/public/favicon.svg"));
+  copySvg(APP_ICON_SVG, join(ROOT, "src/features/console/ui/console/public/favicon.svg"));
 
   // Web PWA
-  writePng(join(ROOT, "app/web/app/public/icons/icon-192.png"), renderSvgFile(APP_ICON_SVG, 192));
-  writePng(join(ROOT, "app/web/app/public/icons/icon-512.png"), renderSvgFile(APP_ICON_SVG, 512));
   writePng(
-    join(ROOT, "app/web/app/public/icons/icon-512-maskable.png"),
+    join(ROOT, "src/app/shell/web/spa/public/icons/icon-192.png"),
+    renderSvgFile(APP_ICON_SVG, 192),
+  );
+  writePng(
+    join(ROOT, "src/app/shell/web/spa/public/icons/icon-512.png"),
+    renderSvgFile(APP_ICON_SVG, 512),
+  );
+  writePng(
+    join(ROOT, "src/app/shell/web/spa/public/icons/icon-512-maskable.png"),
     renderSvgFile(MASKABLE_SVG, 512),
   );
 
   // Desktop electron
-  const electronIcons = join(ROOT, "app/desktop/electron/icons");
+  const electronIcons = join(ROOT, "src/app/shell/desktop/electron/icons");
   const png32 = join(electronIcons, "32x32.png");
   const png128 = join(electronIcons, "128x128.png");
   const png256 = join(electronIcons, "256x256.png");

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:22+0800\n"
+"POT-Creation-Date: 2026-07-06 11:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/architecture.md:1 docs/features/companion.md:11
-#: messages/po4a/en.xml:562
+#: messages/po4a/en.xml:577
 #, no-wrap
 msgid "Architecture"
 msgstr ""
@@ -40,15 +40,15 @@ msgstr ""
 msgid ""
 "The desktop companion is a SAP **Type B** app (embedded sidecar holds the "
 "Hub WebSocket, `relay: false`): the **content pack** (React + VRM + Node "
-"sidecar) is embedded by **app/desktop**, registers with the Hub via SAP, and "
-"exposes local tools to the Agent."
+"sidecar) is embedded by the **desktop shell** (`src/app/shell/desktop`), "
+"registers with the Hub via SAP, and exposes local tools to the Agent."
 msgstr ""
 
 #. type: Fenced code block (text)
 #: docs/features/companion.md:13
 #, no-wrap
 msgid ""
-"FreeAnima Desktop (app/desktop)\n"
+"FreeAnima Desktop (src/app/shell/desktop)\n"
 "├── Electron Main — tray / multi-window + embedded companion sidecar\n"
 "│   ├── companion overlay — transparent always-on-top, VRM / speech bubble\n"
 "│   ├── companion settings — settings window\n"
@@ -62,8 +62,8 @@ msgstr ""
 #. type: Plain text
 #: docs/features/companion.md:26
 msgid ""
-"The content pack lives in [`satellites/companion/`](../../satellites/"
-"companion/) (`app/` + `server/` + `shared/`). Export conventions: [`frontend-"
+"The content pack lives in [`src/satellites/companion/`](../../src/satellites/"
+"companion/) (`spa/` + `server/` + `shared/`). Export conventions: [`frontend-"
 "exports.md`](../sap/frontend-exports.md)."
 msgstr ""
 
@@ -85,7 +85,7 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/features/companion.md:36 messages/po4a/en.xml:567
+#: docs/features/companion.md:36 messages/po4a/en.xml:582
 #, no-wrap
 msgid "Features"
 msgstr ""
@@ -199,8 +199,8 @@ msgstr ""
 #. type: Plain text
 #: docs/features/companion.md:65
 msgid ""
-"During development, files in `satellites/companion/public/models/` serve as "
-"fallback."
+"During development, files in `src/satellites/companion/public/models/` serve "
+"as fallback."
 msgstr ""
 
 #. type: Title ###
@@ -239,7 +239,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/features/companion.md:77
-msgid "In `satellites/companion`:"
+msgid "In `src/satellites/companion`:"
 msgstr ""
 
 #. type: Fenced code block (bash)
@@ -247,7 +247,7 @@ msgstr ""
 #, no-wrap
 msgid ""
 "bun run dev\n"
-"# or bun satellites/companion/dev.ts\n"
+"# or bun src/satellites/companion/dev.ts\n"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -277,18 +277,17 @@ msgstr ""
 #: docs/features/companion.md:90
 #, no-wrap
 msgid ""
-"cd app/desktop\n"
-"bun install\n"
-"bun dev:electron\n"
+"# 从仓库根目录\n"
+"bun run dev:windows\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:97
+#: docs/features/companion.md:96
 msgid "Packaging (Linux cross-build for Windows):"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/features/companion.md:98
+#: docs/features/companion.md:97
 #, no-wrap
 msgid ""
 "# Daily: portable win-unpacked (~20s; copy exe to Windows)\n"
@@ -299,20 +298,20 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:107
+#: docs/features/companion.md:106
 msgid ""
-"Or from `app/desktop`: `bun run dev:windows` / `bun run package:windows`. "
+"Or from repository root: `bun run dev:windows` / `bun run package:windows`. "
 "Fast path keeps `vendor/` and `release/` for incremental builds; full clean: "
 "`DESKTOP_SHELL_CLEAN=1`."
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:109
+#: docs/features/companion.md:108
 msgid "Environment variables:"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:115
+#: docs/features/companion.md:114
 #, no-wrap
 msgid ""
 "| Variable                 | Default                 | Description                                     |\n"
@@ -323,7 +322,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:117
+#: docs/features/companion.md:116
 msgid ""
 "Hub URL and remote token are managed by the desktop shell in **`~/.anima-"
 "desktop/settings.json`** (`hub` section; tray → **Hub settings…**). "
@@ -331,21 +330,21 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:119
+#: docs/features/companion.md:118
 msgid ""
 "Hub assigns a **3-character** `instance_id` on first `connect`, stored in "
-"`~/.anima/companion/instance.json` (not under `satellites/`)."
+"`~/.anima/companion/instance.json` (not under `src/satellites/`)."
 msgstr ""
 
 #. type: Title ##
-#: docs/features/companion.md:120 docs/features/mobile-app.md:52
+#: docs/features/companion.md:119 docs/features/mobile-app.md:52
 #: docs/guide/database.md:88 docs/guide/remote-access.md:177
 #, no-wrap
 msgid "Troubleshooting"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:130
+#: docs/features/companion.md:129
 #, no-wrap
 msgid ""
 "| Symptom                  | Action                                                                                                 |\n"
@@ -354,22 +353,22 @@ msgid ""
 "| Click, no motion         | Settings → **Motion library** import VRMA; **Motion slots** bind slot                                  |\n"
 "| Cannot reach Hub         | Confirm `anima service` and Hub settings token (`fa_at_...`); tray **Hub settings** URL and token      |\n"
 "| Import has no effect     | Hot reload after import; confirm slot has motion checked                                               |\n"
-"| Background service fails | See `~/.anima/app/desktop/shell.log`; confirm ports 4176–4185 free                                     |\n"
-"| FBX import unavailable   | Run `bun run --filter @freeanima/satellite-companion setup:fbx` (caches to `~/.anima/tools/fbx2gltf/`) |\n"
+"| Background service fails | See `~/.anima/desktop-shell/shell.log`; confirm ports 4176–4185 free                           |\n"
+"| FBX import unavailable   | Run `bun run setup:fbx` (caches to `~/.anima/tools/fbx2gltf/`)                                 |\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/companion.md:131 docs/guide/remote-access.md:188
+#: docs/features/companion.md:130 docs/guide/remote-access.md:188
 #, no-wrap
 msgid "Related docs"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:134
+#: docs/features/companion.md:133
 msgid "SAP satellite guide: [`satellite-guide.md`](../sap/satellite-guide.md)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:134
+#: docs/features/companion.md:133
 msgid "SAP security model: [`security-model.md`](../sap/security-model.md)"
 msgstr ""

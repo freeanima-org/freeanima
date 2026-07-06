@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:22+0800\n"
+"POT-Creation-Date: 2026-07-06 11:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,9 +38,10 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/frontend-exports.md:10
 msgid ""
-"The unified settings window is aggregated by the registry in [`frontend/"
-"shell-ui/`](../../frontend/shell-ui/); contract in [`frontend/shell-ui/src/"
-"settings.ts`](../../frontend/shell-ui/src/settings.ts) (unrelated to SAP)."
+"The unified settings window is aggregated by the registry in [`src/frontend/"
+"shell-ui/`](../../src/frontend/shell-ui/); contract in [`src/frontend/shell-"
+"ui/lib/settings.ts`](../../src/frontend/shell-ui/lib/settings.ts) (unrelated "
+"to SAP)."
 msgstr ""
 
 #. type: Title ##
@@ -71,8 +72,8 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/frontend-exports.md:25
 msgid ""
-"Implementation SSOT: [`frontend/shell-sdk/src/manifest.ts`](../../frontend/"
-"shell-sdk/src/manifest.ts)"
+"Implementation SSOT: [`src/frontend/shell-sdk/manifest.ts`](../../src/"
+"frontend/shell-sdk/manifest.ts)"
 msgstr ""
 
 #. type: Title ##
@@ -143,9 +144,10 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/frontend-exports.md:52
 msgid ""
-"Shell apps: [`app/desktop/`](../../app/desktop/) · [`app/mobile/`](../../app/"
-"mobile/) · [`app/web/`](../../app/web/) · [`frontend/shell-ui/`](../../"
-"frontend/shell-ui/)"
+"Shell apps: [`src/app/shell/desktop/`](../../src/app/shell/desktop/) · [`src/"
+"app/shell/mobile/`](../../src/app/shell/mobile/) · [`src/app/shell/web/`]"
+"(../../src/app/shell/web/) · [`src/frontend/shell-ui/`](../../src/frontend/"
+"shell-ui/)"
 msgstr ""
 
 #. type: Title ##
@@ -157,7 +159,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/frontend-exports.md:56
 msgid ""
-"Bundled chat uses [`createSapDirectClient`](../../shared/sap-contract/src/"
+"Bundled chat uses [`createSapDirectClient`](../../src/shared/sap-contract/"
 "direct-client.ts) on the shared Hub RPC transport "
 "(`getBundledHubRpcClient` / `whenHubRpcReady`). It does **not** call "
 "`sap.attach`."
@@ -189,10 +191,10 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/frontend-exports.md:65
 msgid ""
-"Console UI source SSOT: [`features/console/ui/console/`](../../features/"
-"console/ui/console/). Build helpers: [`features/console/build/`](../../"
-"features/console/build/)（Paraglide compile、admin hash）；SPA 打包进 "
-"desktop / mobile / web shell。"
+"Console UI source SSOT: [`src/features/console/ui/console/`](../../src/"
+"features/console/ui/console/). Build helpers: [`src/features/console/build/`]"
+"(../../src/features/console/build/)（Paraglide compile、admin hash）；SPA 打"
+"包进 desktop / mobile / web shell。"
 msgstr ""
 
 #. type: Plain text

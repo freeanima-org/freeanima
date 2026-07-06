@@ -4,7 +4,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
-const dbRoot = join(repoRoot, "core");
+const dbRoot = join(repoRoot, "src/core");
 
 function assertDockerAvailable(): void {
   try {
@@ -27,8 +27,8 @@ function ensurePgExtensions(url: string): void {
 /** 通过 Drizzle migrator 应用迁移（与运行时 runMigrations 共用 journal，避免 psql 直跑后子进程重复建表） */
 async function runMigrations(url: string): Promise<void> {
   ensurePgExtensions(url);
-  const { initDatabase, getDb, closeDb } = await import(join(repoRoot, "core/src/db/pg/client.ts"));
-  const { runMigrations: applyMigrations } = await import(join(repoRoot, "core/src/db/index.ts"));
+  const { initDatabase, getDb, closeDb } = await import(join(repoRoot, "src/core/db/pg/client.ts"));
+  const { runMigrations: applyMigrations } = await import(join(repoRoot, "src/core/db/index.ts"));
   initDatabase({ getDatabaseUrl: () => url });
   try {
     await applyMigrations(getDb());

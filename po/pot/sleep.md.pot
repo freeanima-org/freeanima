@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:22+0800\n"
+"POT-Creation-Date: 2026-07-06 11:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,8 +25,8 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/dream.md:9 docs/concepts/sleep.md:9
-#: docs/guide/remote-access.md:10 messages/po4a/en.xml:575
-#: messages/po4a/en.xml:582
+#: docs/guide/remote-access.md:10 messages/po4a/en.xml:590
+#: messages/po4a/en.xml:597
 #, no-wrap
 msgid "Overview"
 msgstr ""
@@ -38,7 +38,7 @@ msgid "Orchestration"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/sleep.md:1 messages/po4a/en.xml:590
+#: docs/concepts/sleep.md:1 messages/po4a/en.xml:605
 #, no-wrap
 msgid "Sleep"
 msgstr ""
@@ -118,8 +118,8 @@ msgstr ""
 msgid ""
 "Sleep uses a **macro DAG** (`sleep-cycle` pipeline) orchestrated by "
 "`PipelineRunner` (`@freeanima/runtime/pipeline`). A single cron job triggers "
-"the full cycle; step order and dependencies are explicit in code ([`platform/"
-"src/boot/sleep-cycle.ts`](../../platform/src/boot/sleep-cycle.ts))."
+"the full cycle; step order and dependencies are explicit in code ([`src/"
+"platform/boot/sleep-cycle.ts`](../../src/platform/boot/sleep-cycle.ts))."
 msgstr ""
 
 #. type: Plain text
@@ -161,7 +161,7 @@ msgstr ""
 msgid ""
 "| Attribute     | Value                                                                                         |\n"
 "| ------------- | --------------------------------------------------------------------------------------------- |\n"
-"| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Console diagnostics)                            |\n"
+"| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Console diagnostics)                          |\n"
 "| Scope         | Sessions with activity in previous calendar day (**excludes cron-platform sessions**)         |\n"
 "| Input         | Full day's **user conversations** (user+assistant, tools stripped), segmented by conversation |\n"
 "| Orchestration | Three stages sequential (separate LLM calls each)                                             |\n"

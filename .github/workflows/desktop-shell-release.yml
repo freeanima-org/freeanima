@@ -45,12 +45,10 @@ jobs:
       - uses: ./.github/actions/setup-bun
 
       - name: 安装 companion FBX 工具
-        working-directory: satellites/companion
         run: bun run setup:fbx
 
       - name: 构建 FreeAnima Desktop
-        working-directory: app/desktop
-        run: bun build-electron.ts --platform ${{ matrix.platform }}
+        run: bun run package:windows
 
       - name: 收集安装包
         if: env.DESKTOP_SHELL_BUILD_PROFILE == 'release'
@@ -60,7 +58,7 @@ jobs:
           mkdir -p dist
           case "${{ matrix.platform }}" in
             win)
-              installer="$(ls app/desktop/release/FreeAnima-Desktop-*.exe 2>/dev/null || ls app/desktop/release/*.exe | head -1)"
+              installer="$(ls src/app/shell/desktop/release/FreeAnima-Desktop-*.exe 2>/dev/null || ls src/app/shell/desktop/release/*.exe | head -1)"
               cp "$installer" dist/freeanima-desktop-windows-x64-setup.exe
               ;;
           esac

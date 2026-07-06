@@ -1,7 +1,8 @@
 # Docs i18n (AI agent rules)
 
+> **PAUSED（文档站翻译维护）**：改 `docs/**/*.md` 时**仅维护英文**；**不必**填 `po/zh_CN/*.po`。`po/` 中现有译文冻结保留；`docs/.generated/zh_CN/` 由 `i18n:po4a` 在构建时生成，**不入库**（见 `.gitignore`）。恢复流程见 [`i18n.md`](i18n.md)。
+>
 > Pipeline overview: [`i18n.md`](i18n.md). Terminology: [`i18n/glossary.md`](../../i18n/glossary.md).
-> **No human translators** — agents maintain English docs and Chinese PO in the same PR.
 
 ## When to read
 
@@ -22,7 +23,9 @@ po4a uses **text + markdown** options (`markdown`, `yfm_keys=title`, `yfm_lenien
 | API names, paths, commands: backticks; explanatory prose in separate sentences                   | Shorter translatable segments                 |
 | No complex HTML or MDX in `docs/`                                                                | Starlight collection is plain Markdown        |
 
-Run `bun run docs:i18n:check` before PR when touching docs.
+Run `bun run docs:i18n:check` before PR when touching docs **only after docs i18n is resumed** (currently paused).
+
+## PO workflow (paused — do not run on routine doc edits)
 
 ## PO / Chinese msgstr
 

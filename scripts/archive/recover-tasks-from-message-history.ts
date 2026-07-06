@@ -12,16 +12,16 @@ import { SQL } from "bun";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import type { AnimaConfig } from "../../core/src/config/schemas/config.ts";
-import { bindResolvedWorldContext } from "../../core/src/config/world-context.ts";
-import { ensureWorldSubjects } from "../../core/src/db/pg/entity/subject-world.ts";
+import type { AnimaConfig } from "../../src/core/config/schemas/config.ts";
+import { bindResolvedWorldContext } from "../../src/core/config/world-context.ts";
+import { ensureWorldSubjects } from "../../src/core/db/pg/entity/subject-world.ts";
 import {
   createTaskItem,
   getDefaultTaskList,
   listTaskItems,
   updateTaskItem,
-} from "../../features/task/domain/index.ts";
-import { initDatabase } from "../../core/src/db/pg/index.ts";
+} from "../../src/features/task/domain/index.ts";
+import { initDatabase } from "../../src/core/db/pg/index.ts";
 
 const MINIMAL_CONFIG = {
   llm: { default_profile: "chat", providers: {}, profiles: {} },
@@ -167,7 +167,7 @@ async function resolveDatabaseUrl(): Promise<string> {
   if (fromEnv) return fromEnv;
 
   const { FileConfig, getConfiguredDatabaseUrl } = await import(
-    join(repoRoot, "platform/config/index.ts")
+    join(repoRoot, "src/platform/config/index.ts")
   );
   const cfg = FileConfig.open();
   const url = await getConfiguredDatabaseUrl(cfg.data);
@@ -180,7 +180,7 @@ async function main(): Promise<void> {
   const url = await resolveDatabaseUrl();
 
   const sql = new SQL(url);
-  const { closeDb } = await import("../../core/src/db/pg/index.ts");
+  const { closeDb } = await import("../../src/core/db/pg/index.ts");
   initDatabase({ getDatabaseUrl: () => url });
 
   try {

@@ -5,13 +5,13 @@
  */
 import { SQL } from "bun";
 
-import { resolveWorldSubjectIds } from "../core/src/config/worlds.ts";
-import { initDatabase } from "../core/src/db/pg/index.ts";
+import { resolveWorldSubjectIds } from "../src/core/config/worlds.ts";
+import { initDatabase } from "../src/core/db/pg/index.ts";
 import {
   subjectConfigBodySchema,
   worldConfigBodySchema,
-} from "../core/src/db/schema/entity/index.ts";
-import { FileConfig } from "../platform/config/file-config.ts";
+} from "../src/core/db/schema/entity/index.ts";
+import { FileConfig } from "../src/platform/config/file-config.ts";
 
 type EntityRow = {
   id: number;

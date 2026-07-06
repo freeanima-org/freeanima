@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 19:53+0800\n"
+"POT-Creation-Date: 2026-07-06 11:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,7 +38,23 @@ msgstr "信任边界"
 
 #. type: Fenced code block (mermaid)
 #: docs/sap/security-model.md:11
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "flowchart TB\n"
+#| "  subgraph trusted [Trusted client with service token]\n"
+#| "    Hub[\"Hub anima service :2658\"]\n"
+#| "    RpcEndpoint[\"/hub/rpc/v1 WebSocket\"]\n"
+#| "    Bundled[Bundled SPA modules]\n"
+#| "    SatA[Satellite companion]\n"
+#| "    SatB[Satellite pair-programming]\n"
+#| "  end\n"
+#| "  Browser[Browser]\n"
+#| "  Browser --> Bundled\n"
+#| "  Browser --> SatA\n"
+#| "  Bundled -->|\"HubRPC connect + auth_token\"| RpcEndpoint\n"
+#| "  SatA -->|\"HubRPC + sap.attach\"| RpcEndpoint\n"
+#| "  SatB --> RpcEndpoint\n"
+#| "  RpcEndpoint --> Hub\n"
 msgid ""
 "flowchart TB\n"
 "  subgraph trusted [Trusted client with service token]\n"
@@ -46,14 +62,12 @@ msgid ""
 "    RpcEndpoint[\"/hub/rpc/v1 WebSocket\"]\n"
 "    Bundled[Bundled SPA modules]\n"
 "    SatA[Satellite companion]\n"
-"    SatB[Satellite pair-programming]\n"
 "  end\n"
 "  Browser[Browser]\n"
 "  Browser --> Bundled\n"
 "  Browser --> SatA\n"
 "  Bundled -->|\"HubRPC connect + auth_token\"| RpcEndpoint\n"
 "  SatA -->|\"HubRPC + sap.attach\"| RpcEndpoint\n"
-"  SatB --> RpcEndpoint\n"
 "  RpcEndpoint --> Hub\n"
 msgstr ""
 "flowchart TB\n"
@@ -73,13 +87,13 @@ msgstr ""
 "  RpcEndpoint --> Hub\n"
 
 #. type: Title ##
-#: docs/sap/security-model.md:29
+#: docs/sap/security-model.md:27
 #, no-wrap
 msgid "Current controls"
 msgstr "现有控制"
 
 #. type: Plain text
-#: docs/sap/security-model.md:39
+#: docs/sap/security-model.md:37
 #, no-wrap
 msgid ""
 "| Control                       | Status                                                 |\n"
@@ -101,7 +115,7 @@ msgstr ""
 "| 帧中的凭证值                    | **无** — 密钥保留在 Vault；LLM 仅见元数据              |\n"
 
 #. type: Plain text
-#: docs/sap/security-model.md:41
+#: docs/sap/security-model.md:39
 msgid ""
 "Any client that holds a valid service token and can reach `ws://"
 "127.0.0.1:2658/hub/rpc/v1` can:"
@@ -110,20 +124,20 @@ msgstr ""
 "以："
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:44
+#: docs/sap/security-model.md:42
 msgid ""
 "Call bundled RPC methods (chat, tasks, notifications, …) without `sap.attach`"
 msgstr ""
 "在不调用 `sap.attach` 的情况下调用壳内 bundled RPC 方法（聊天、任务、通知等）"
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:44
+#: docs/sap/security-model.md:42
 msgid ""
 "After `sap.attach`, register tools as the attached `app_id` / `instance_id`"
 msgstr "`sap.attach` 后，以已 attach 的 `app_id` / `instance_id` 注册工具"
 
 #. type: Plain text
-#: docs/sap/security-model.md:46
+#: docs/sap/security-model.md:44
 msgid ""
 "Operational guidance: bind Hub to loopback; rotate service tokens; do not "
 "expose port 2658 to untrusted networks without Tunnel + Access. See "
@@ -134,13 +148,13 @@ msgstr ""
 "security.md)。"
 
 #. type: Title ##
-#: docs/sap/security-model.md:47
+#: docs/sap/security-model.md:45
 #, no-wrap
 msgid "Protocol hardening (transport layer)"
 msgstr "协议加固（传输层）"
 
 #. type: Plain text
-#: docs/sap/security-model.md:50
+#: docs/sap/security-model.md:48
 msgid ""
 "Invalid frames close the socket with **1003**. Protocol violations (double "
 "connect, RPC before connect, `tool.*` without attach) close with **1008**. "
@@ -151,32 +165,32 @@ msgstr ""
 "（`unauthorized`）关闭。"
 
 #. type: Title ##
-#: docs/sap/security-model.md:51
+#: docs/sap/security-model.md:49
 #, no-wrap
 msgid "Future directions (not implemented)"
 msgstr "未来方向（未实现）"
 
 #. type: Plain text
-#: docs/sap/security-model.md:54
+#: docs/sap/security-model.md:52
 msgid "Possible hardening items — track via GitHub Issues if prioritized:"
 msgstr "可能的加固项 — 若优先处理则通过 GitHub Issues 跟踪："
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:58
+#: docs/sap/security-model.md:56
 msgid "mTLS on `/hub/rpc/v1`"
 msgstr "`/hub/rpc/v1` 上的 mTLS"
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:58
+#: docs/sap/security-model.md:56
 msgid "Instance attestation tied to managed satellite systemd units"
 msgstr "与托管 satellite systemd 单元绑定的实例证明"
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:58
+#: docs/sap/security-model.md:56
 msgid "Rate limits on connect and `tool.register`"
 msgstr "对 connect 和 `tool.register` 的速率限制"
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:58
+#: docs/sap/security-model.md:56
 msgid "Explicit disconnect on missed heartbeats"
 msgstr "心跳丢失时显式断开连接"

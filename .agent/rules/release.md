@@ -81,7 +81,7 @@ Specify version in commit body with `Release-As: x.y.z` (see [Release Please doc
 
 After Release PR merge and `release_created`:
 
-1. **`bun run build:cli`** — produces `app/cli/publish/` (`@freeanima/cli` tarball contents)
+1. **`bun run build:cli`** — produces `src/app/cli/publish/` (`@freeanima/cli` tarball contents)
 2. **`scripts/publish-cli.sh`** — `npm publish` + GitHub Actions OIDC (npm CLI ≥ 11.5.1); local manual publish: `bun run publish:cli` (requires `npm login`)
 3. **Docker image** — on `v*` tag push, [`.github/workflows/release-docker.yml`](../../.github/workflows/release-docker.yml) builds and pushes to `ghcr.io/freeanima-org/freeanima:latest` and `:vX.Y.Z`
 
@@ -96,7 +96,7 @@ Configure GitHub Actions in [npm Trusted Publishers](https://docs.npmjs.com/trus
 | Workflow filename    | `release.yml`   |
 | Allowed actions      | `npm publish`   |
 
-Release workflow `publish` job has `id-token: write`; publish with `bunx npm@11 publish` (do not use `setup-node` `registry-url`, blocks OIDC). `app/cli/publish/package.json` `publishConfig.registry` must be `https://registry.npmjs.org/` (trailing slash).
+Release workflow `publish` job has `id-token: write`; publish with `bunx npm@11 publish` (do not use `setup-node` `registry-url`, blocks OIDC). `src/app/cli/publish/package.json` `publishConfig.registry` must be `https://registry.npmjs.org/` (trailing slash).
 
 After verification, package Settings → Publishing access can **disallow tokens**, OIDC-only publish.
 

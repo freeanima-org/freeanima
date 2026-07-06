@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:22+0800\n"
+"POT-Creation-Date: 2026-07-06 11:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/architecture.md:1 docs/features/companion.md:11
-#: messages/po4a/en.xml:562
+#: messages/po4a/en.xml:577
 #, no-wrap
 msgid "Architecture"
 msgstr "架构"
@@ -39,18 +39,18 @@ msgstr "> **动态 SAP 卫星**：独立的桌面 GUI 应用，不通过 `config
 msgid ""
 "The desktop companion is a SAP **Type B** app (embedded sidecar holds the "
 "Hub WebSocket, `relay: false`): the **content pack** (React + VRM + Node "
-"sidecar) is embedded by **app/desktop**, registers with the Hub via SAP, and "
-"exposes local tools to the Agent."
+"sidecar) is embedded by the **desktop shell** (`src/app/shell/desktop`), "
+"registers with the Hub via SAP, and exposes local tools to the Agent."
 msgstr ""
 "桌面伴侣是 SAP **Type B** 应用（嵌入式 sidecar 持有 Hub WebSocket，`relay: "
-"false`）：**内容包**（React + VRM + Node sidecar）由 **app/desktop** 嵌入，通"
-"过 SAP 向 Hub 注册，并向 Agent 暴露本地工具。"
+"false`）：**内容包**（React + VRM + Node sidecar）由 **桌面壳层**（`src/app/"
+"shell/desktop`）嵌入，通过 SAP 向 Hub 注册，并向 Agent 暴露本地工具。"
 
 #. type: Fenced code block (text)
 #: docs/features/companion.md:13
 #, fuzzy, no-wrap
 #| msgid ""
-#| "FreeAnima Desktop (app/desktop)\n"
+#| "FreeAnima Desktop (src/app/shell/desktop)\n"
 #| "├── Electron Main — tray / multi-window + embedded companion sidecar\n"
 #| "│   ├── companion overlay — transparent always-on-top, VRM / speech bubble\n"
 #| "│   ├── companion settings — settings window\n"
@@ -60,7 +60,7 @@ msgstr ""
 #| "         ↕ SAP WS\n"
 #| "    anima service Hub\n"
 msgid ""
-"FreeAnima Desktop (app/desktop)\n"
+"FreeAnima Desktop (src/app/shell/desktop)\n"
 "├── Electron Main — tray / multi-window + embedded companion sidecar\n"
 "│   ├── companion overlay — transparent always-on-top, VRM / speech bubble\n"
 "│   ├── companion settings — settings window\n"
@@ -70,7 +70,7 @@ msgid ""
 "         ↕ SAP WS\n"
 "    anima service Hub\n"
 msgstr ""
-"FreeAnima Desktop (app/desktop)\n"
+"FreeAnima Desktop (src/app/shell/desktop)\n"
 "├── Electron Main — tray / multi-window + embedded companion sidecar\n"
 "│   ├── companion overlay — transparent always-on-top, VRM / speech bubble\n"
 "│   ├── companion settings — settings window\n"
@@ -82,9 +82,14 @@ msgstr ""
 
 #. type: Plain text
 #: docs/features/companion.md:26
+#, fuzzy
+#| msgid ""
+#| "The content pack lives in [`satellites/companion/`](../../satellites/"
+#| "companion/) (`app/` + `server/` + `shared/`). Export conventions: "
+#| "[`frontend-exports.md`](../sap/frontend-exports.md)."
 msgid ""
-"The content pack lives in [`satellites/companion/`](../../satellites/"
-"companion/) (`app/` + `server/` + `shared/`). Export conventions: [`frontend-"
+"The content pack lives in [`src/satellites/companion/`](../../src/satellites/"
+"companion/) (`spa/` + `server/` + `shared/`). Export conventions: [`frontend-"
 "exports.md`](../sap/frontend-exports.md)."
 msgstr ""
 "内容包位于 [`satellites/companion/`](../../satellites/companion/)（`app/` + "
@@ -115,7 +120,7 @@ msgstr ""
 "| 客户端与 UI | 可分离               | 伴侣渲染与设置共用同一 Electron 应用 |\n"
 
 #. type: Content of: <messages><msg>
-#: docs/features/companion.md:36 messages/po4a/en.xml:567
+#: docs/features/companion.md:36 messages/po4a/en.xml:582
 #, no-wrap
 msgid "Features"
 msgstr "功能"
@@ -245,9 +250,13 @@ msgstr ""
 
 #. type: Plain text
 #: docs/features/companion.md:65
+#, fuzzy
+#| msgid ""
+#| "During development, files in `satellites/companion/public/models/` serve "
+#| "as fallback."
 msgid ""
-"During development, files in `satellites/companion/public/models/` serve as "
-"fallback."
+"During development, files in `src/satellites/companion/public/models/` serve "
+"as fallback."
 msgstr "开发期间，`satellites/companion/public/models/` 中的文件作为回退。"
 
 #. type: Title ###
@@ -290,7 +299,9 @@ msgstr "浏览器开发（无 Electron）"
 
 #. type: Plain text
 #: docs/features/companion.md:77
-msgid "In `satellites/companion`:"
+#, fuzzy
+#| msgid "In `satellites/companion`:"
+msgid "In `src/satellites/companion`:"
 msgstr "在 `satellites/companion` 中："
 
 #. type: Fenced code block (bash)
@@ -298,10 +309,10 @@ msgstr "在 `satellites/companion` 中："
 #, no-wrap
 msgid ""
 "bun run dev\n"
-"# or bun satellites/companion/dev.ts\n"
+"# or bun src/satellites/companion/dev.ts\n"
 msgstr ""
 "bun run dev\n"
-"# or bun satellites/companion/dev.ts\n"
+"# or bun src/satellites/companion/dev.ts\n"
 
 #. type: Bullet: '- '
 #: docs/features/companion.md:85
@@ -332,21 +343,17 @@ msgstr "Electron 桌面壳层（伴侣 + 聊天室 + 管理台）"
 #: docs/features/companion.md:90
 #, no-wrap
 msgid ""
-"cd app/desktop\n"
-"bun install\n"
-"bun dev:electron\n"
+"# 从仓库根目录\n"
+"bun run dev:windows\n"
 msgstr ""
-"cd app/desktop\n"
-"bun install\n"
-"bun dev:electron\n"
 
 #. type: Plain text
-#: docs/features/companion.md:97
+#: docs/features/companion.md:96
 msgid "Packaging (Linux cross-build for Windows):"
 msgstr "打包（Linux 交叉构建 Windows）："
 
 #. type: Fenced code block (bash)
-#: docs/features/companion.md:98
+#: docs/features/companion.md:97
 #, no-wrap
 msgid ""
 "# Daily: portable win-unpacked (~20s; copy exe to Windows)\n"
@@ -362,23 +369,27 @@ msgstr ""
 "bun run package:windows\n"
 
 #. type: Plain text
-#: docs/features/companion.md:107
+#: docs/features/companion.md:106
+#, fuzzy
+#| msgid ""
+#| "From repository root: `bun run dev:windows` / `bun run package:windows`. "
+#| "Fast path keeps `vendor/` and `release/` for incremental builds; full "
+#| "clean: `DESKTOP_SHELL_CLEAN=1`."
 msgid ""
-"Or from `app/desktop`: `bun run dev:windows` / `bun run package:windows`. "
+"Or from repository root: `bun run dev:windows` / `bun run package:windows`. "
 "Fast path keeps `vendor/` and `release/` for incremental builds; full clean: "
 "`DESKTOP_SHELL_CLEAN=1`."
 msgstr ""
-"或在 `app/desktop` 中：`bun run dev:windows` / `bun run package:windows`。快"
-"速路径保留 `vendor/` 与 `release/` 以增量构建；完全清理："
-"`DESKTOP_SHELL_CLEAN=1`。"
+"或在仓库根目录：`bun run dev:windows` / `bun run package:windows`。快速路径保"
+"留 `vendor/` 与 `release/` 以增量构建；完全清理：`DESKTOP_SHELL_CLEAN=1`。"
 
 #. type: Plain text
-#: docs/features/companion.md:109
+#: docs/features/companion.md:108
 msgid "Environment variables:"
 msgstr "环境变量："
 
 #. type: Plain text
-#: docs/features/companion.md:115
+#: docs/features/companion.md:114
 #, no-wrap
 msgid ""
 "| Variable                 | Default                 | Description                                     |\n"
@@ -394,7 +405,7 @@ msgstr ""
 "| `COMPANION_VRMA_ZIP_URL` | （空）                 | 可选的直接 zip 镜像；启动时下载  |\n"
 
 #. type: Plain text
-#: docs/features/companion.md:117
+#: docs/features/companion.md:116
 msgid ""
 "Hub URL and remote token are managed by the desktop shell in **`~/.anima-"
 "desktop/settings.json`** (`hub` section; tray → **Hub settings…**). "
@@ -405,24 +416,37 @@ msgstr ""
 "Hub URL。"
 
 #. type: Plain text
-#: docs/features/companion.md:119
+#: docs/features/companion.md:118
+#, fuzzy
+#| msgid ""
+#| "Hub assigns a **3-character** `instance_id` on first `connect`, stored in "
+#| "`~/.anima/companion/instance.json` (not under `satellites/`)."
 msgid ""
 "Hub assigns a **3-character** `instance_id` on first `connect`, stored in "
-"`~/.anima/companion/instance.json` (not under `satellites/`)."
+"`~/.anima/companion/instance.json` (not under `src/satellites/`)."
 msgstr ""
 "Hub 在首次 `connect` 时分配 **3 字符** `instance_id`，存于 `~/.anima/"
 "companion/instance.json`（不在 `satellites/` 下）。"
 
 #. type: Title ##
-#: docs/features/companion.md:120 docs/features/mobile-app.md:52
+#: docs/features/companion.md:119 docs/features/mobile-app.md:52
 #: docs/guide/database.md:88 docs/guide/remote-access.md:177
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
 
 #. type: Plain text
-#: docs/features/companion.md:130
-#, no-wrap
+#: docs/features/companion.md:129
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Symptom                  | Action                                                                                                 |\n"
+#| "| ------------------------ | ------------------------------------------------------------------------------------------------------ |\n"
+#| "| Double-click, no window  | Check system tray; tray → **Settings…** → import `.vrm`                                                |\n"
+#| "| Click, no motion         | Settings → **Motion library** import VRMA; **Motion slots** bind slot                                  |\n"
+#| "| Cannot reach Hub         | Confirm `anima service` and Hub settings token (`fa_at_...`); tray **Hub settings** URL and token      |\n"
+#| "| Import has no effect     | Hot reload after import; confirm slot has motion checked                                               |\n"
+#| "| Background service fails | See `~/.anima/desktop-shell/shell.log`; confirm ports 4176–4185 free                                     |\n"
+#| "| FBX import unavailable   | Run `bun run setup:fbx` (caches to `~/.anima/tools/fbx2gltf/`) |\n"
 msgid ""
 "| Symptom                  | Action                                                                                                 |\n"
 "| ------------------------ | ------------------------------------------------------------------------------------------------------ |\n"
@@ -430,8 +454,8 @@ msgid ""
 "| Click, no motion         | Settings → **Motion library** import VRMA; **Motion slots** bind slot                                  |\n"
 "| Cannot reach Hub         | Confirm `anima service` and Hub settings token (`fa_at_...`); tray **Hub settings** URL and token      |\n"
 "| Import has no effect     | Hot reload after import; confirm slot has motion checked                                               |\n"
-"| Background service fails | See `~/.anima/app/desktop/shell.log`; confirm ports 4176–4185 free                                     |\n"
-"| FBX import unavailable   | Run `bun run --filter @freeanima/satellite-companion setup:fbx` (caches to `~/.anima/tools/fbx2gltf/`) |\n"
+"| Background service fails | See `~/.anima/desktop-shell/shell.log`; confirm ports 4176–4185 free                           |\n"
+"| FBX import unavailable   | Run `bun run setup:fbx` (caches to `~/.anima/tools/fbx2gltf/`)                                 |\n"
 msgstr ""
 "| 现象                     | 处理                                                                                                 |\n"
 "| ------------------------ | ------------------------------------------------------------------------------------------------------ |\n"
@@ -439,21 +463,21 @@ msgstr ""
 "| 点击无动作               | 设置 → **动作库** 导入 VRMA；**动作槽位** 绑定槽位                                                    |\n"
 "| 无法连接 Hub             | 确认 `anima service` 与 Hub 设置 token（`fa_at_...`）；托盘 **Hub 设置** 中的 URL 与 token            |\n"
 "| 导入无效果               | 导入后热重载；确认槽位已勾选动作                                                                       |\n"
-"| 后台服务失败             | 见 `~/.anima/app/desktop/shell.log`；确认端口 4176–4185 空闲                                         |\n"
-"| FBX 导入不可用           | 运行 `bun run --filter @freeanima/satellite-companion setup:fbx`（缓存到 `~/.anima/tools/fbx2gltf/`） |\n"
+"| 后台服务失败             | 见 `~/.anima/desktop-shell/shell.log`；确认端口 4176–4185 空闲                                         |\n"
+"| FBX 导入不可用           | 运行 `bun run setup:fbx`（缓存到 `~/.anima/tools/fbx2gltf/`） |\n"
 
 #. type: Title ##
-#: docs/features/companion.md:131 docs/guide/remote-access.md:188
+#: docs/features/companion.md:130 docs/guide/remote-access.md:188
 #, no-wrap
 msgid "Related docs"
 msgstr "相关文档"
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:134
+#: docs/features/companion.md:133
 msgid "SAP satellite guide: [`satellite-guide.md`](../sap/satellite-guide.md)"
 msgstr "SAP 卫星指南：[`satellite-guide.md`](../sap/satellite-guide.md)"
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:134
+#: docs/features/companion.md:133
 msgid "SAP security model: [`security-model.md`](../sap/security-model.md)"
 msgstr "SAP 安全模型：[`security-model.md`](../sap/security-model.md)"

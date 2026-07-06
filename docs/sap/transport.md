@@ -19,11 +19,11 @@ ws://{hub_host}:{port}/hub/rpc/v1
 
 Derive from Hub HTTP URL: replace `http` with `ws`, strip trailing slash, append `/hub/rpc/v1`. Default Hub port: **2658**.
 
-Implemented in [`platform/src/sap/bun-route.ts`](../../platform/src/sap/bun-route.ts). Client helpers: `@freeanima/hub-rpc` (`resolveHubRpcWsUrl`) and `@freeanima/sap-contract/urls` (re-exports).
+Implemented in [`src/platform/sap/bun-route.ts`](../../src/platform/sap/bun-route.ts). Client helpers: `@freeanima/hub-rpc` (`resolveHubRpcWsUrl`) and `@freeanima/sap-contract/urls` (re-exports).
 
 ## Envelope kinds
 
-Hub RPC envelopes live in [`shared/hub-rpc/src/protocol.ts`](../../shared/hub-rpc/src/protocol.ts). SAP re-exports them from [`shared/sap-contract/src/protocol.ts`](../../shared/sap-contract/src/protocol.ts).
+Hub RPC envelopes live in [`src/shared/hub-rpc/protocol.ts`](../../src/shared/hub-rpc/protocol.ts). SAP re-exports them from [`src/shared/sap-contract/protocol.ts`](../../src/shared/sap-contract/protocol.ts).
 
 | `kind`      | Layer   | Purpose                                                                   |
 | ----------- | ------- | ------------------------------------------------------------------------- |
@@ -48,7 +48,7 @@ stateDiagram-v2
   RpcConnected --> Disconnected: close
 ```
 
-Rules ([`platform/src/sap/ws-server.ts`](../../platform/src/sap/ws-server.ts) `attachSapWebSocket`):
+Rules ([`src/platform/sap/ws-server.ts`](../../src/platform/sap/ws-server.ts) `attachSapWebSocket`):
 
 - First valid frame **must** be Hub RPC `connect` with verified `auth_token`.
 - Second `connect` on same socket → close **1008** (`already connected`).
@@ -58,7 +58,7 @@ Rules ([`platform/src/sap/ws-server.ts`](../../platform/src/sap/ws-server.ts) `a
 
 ## Hub RPC handshake
 
-Schema: [`shared/hub-rpc/src/lifecycle.ts`](../../shared/hub-rpc/src/lifecycle.ts).
+Schema: [`src/shared/hub-rpc/lifecycle.ts`](../../src/shared/hub-rpc/lifecycle.ts).
 
 | `connect` field | Required | Role              |
 | --------------- | -------- | ----------------- |
@@ -75,20 +75,20 @@ Schema: [`shared/hub-rpc/src/lifecycle.ts`](../../shared/hub-rpc/src/lifecycle.t
 
 After Hub RPC connect, satellite processes send `req sap.attach`:
 
-Schema: [`shared/sap-contract/src/frames/sap-session.ts`](../../shared/sap-contract/src/frames/sap-session.ts).
+Schema: [`src/shared/sap-contract/frames/sap-session.ts`](../../src/shared/sap-contract/frames/sap-session.ts).
 
-| Field                | Required | Role                                       |
-| -------------------- | -------- | ------------------------------------------ |
-| `app_id`             | yes      | Satellite app id (e.g. `pair-programming`) |
-| `instance_id`        | no       | 3-char id; omit on first register          |
-| `protocol`           | yes      | `SAP/1.0`                                  |
-| `features_requested` | no       | Feature flags                              |
-| `http_url`           | no       | Satellite UI URL for Console               |
-| `instance_label`     | no       | Display label                              |
+| Field                | Required | Role                                |
+| -------------------- | -------- | ----------------------------------- |
+| `app_id`             | yes      | Satellite app id (e.g. `companion`) |
+| `instance_id`        | no       | 3-char id; omit on first register   |
+| `protocol`           | yes      | `SAP/1.0`                           |
+| `features_requested` | no       | Feature flags                       |
+| `http_url`           | no       | Satellite UI URL for Console        |
+| `instance_label`     | no       | Display label                       |
 
 Reply payload includes `instance_id`, `features_enabled`, `server_info` (same semantics as legacy SAP connect).
 
-Use `createSatelliteHub()` ([`shared/sap-contract/src/satellite-hub.ts`](../../shared/sap-contract/src/satellite-hub.ts)) — it runs Hub RPC transport and performs attach automatically.
+Use `createSatelliteHub()` ([`src/shared/sap-contract/satellite-hub.ts`](../../src/shared/sap-contract/satellite-hub.ts)) — it runs Hub RPC transport and performs attach automatically.
 
 ## Heartbeat
 
@@ -103,9 +103,9 @@ Client sends `evt { method: "heartbeat" }` on `heartbeat_interval_sec`. Hub repl
 
 On detach or disconnect, Hub calls `onSapDetach` and unregisters tools for that instance.
 
-## Local SAP relay (pair-programming)
+## Local SAP relay (optional)
 
-Pair-programming exposes `ws://{satellite_host}:{port}/sap/relay/v1` for browser UI. The satellite **process** holds the Hub `/hub/rpc/v1` connection and SAP attach; relay clients send `req`/`res`/`evt` without transport or SAP handshakes.
+Some Type B satellites may expose `ws://{satellite_host}:{port}/sap/relay/v1` for browser UI. The satellite **process** holds the Hub `/hub/rpc/v1` connection and SAP attach; relay clients send `req`/`res`/`evt` without transport or SAP handshakes.
 
 | Event         | Direction           | Meaning                            |
 | ------------- | ------------------- | ---------------------------------- |

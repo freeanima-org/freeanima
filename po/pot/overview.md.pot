@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:22+0800\n"
+"POT-Creation-Date: 2026-07-06 11:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,11 +37,11 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/overview.md:10
 msgid ""
-"Schemas and client SDK live in [`shared/sap-contract/`](../../shared/sap-"
-"contract/) (`./satellite` for attach/tool/terminal frames; `./feature-rpc` "
-"for bundled product Hub RPC). Hub server implementation: [`platform/src/sap/"
-"`](../../platform/src/sap/); feature handlers register via [`platform/src/"
-"features/`](../../platform/src/features/)."
+"Schemas and client SDK live in [`src/shared/sap-contract/`](../../src/shared/"
+"sap-contract/) (`./satellite` for attach/tool/terminal frames; `./feature-"
+"rpc` for bundled product Hub RPC). Hub server implementation: [`src/platform/"
+"sap/`](../../src/platform/sap/); feature handlers register via [`src/"
+"platform/features/`](../../src/platform/features/)."
 msgstr ""
 
 #. type: Title ##
@@ -90,11 +90,11 @@ msgstr ""
 #: docs/sap/overview.md:35
 #, no-wrap
 msgid ""
-"| Role  | Default                 | Responsibility                                              |\n"
-"| ----- | ----------------------- | ----------------------------------------------------------- |\n"
-"| Hub   | `http://127.0.0.1:2658` | Agent runtime, Hub RPC WebSocket at `/hub/rpc/v1`           |\n"
-"| Chat  | bundled `/chat`         | Chat UI; shared Hub RPC (no `sap.attach`)                   |\n"
-"| Console | bundled shell `/console`  | Memory, config, tools, satellite status (Hub REST `/api/*`) |\n"
+"| Role    | Default                  | Responsibility                                              |\n"
+"| ------- | ------------------------ | ----------------------------------------------------------- |\n"
+"| Hub     | `http://127.0.0.1:2658`  | Agent runtime, Hub RPC WebSocket at `/hub/rpc/v1`           |\n"
+"| Chat    | bundled `/chat`          | Chat UI; shared Hub RPC (no `sap.attach`)                   |\n"
+"| Console | bundled shell `/console` | Memory, config, tools, satellite status (Hub REST `/api/*`) |\n"
 msgstr ""
 
 #. type: Plain text

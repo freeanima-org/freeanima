@@ -18,9 +18,9 @@ describe("sap strict routing integration", () => {
     const manager = new SatelliteManager(registry);
     manager.installToolRouting();
 
-    const sapName = formatSapToolName("pair-programming", "a1b", "file_read");
+    const sapName = formatSapToolName("companion", "a1b", "file_read");
     const route = manager.resolveToolCall("sid", sapName, {
-      satellite_app_id: "pairprogramming",
+      satellite_app_id: "companion",
       satellite_instance_id: "c2d",
     });
     expect(route.kind).toBe("reject");
@@ -37,7 +37,7 @@ describe("sap strict routing integration", () => {
 
   it("returns toolError content for reject route", async () => {
     const manager = new SatelliteManager(new ToolSetRegistry());
-    const name = formatSapToolName("pair-programming", "k7m", "x");
+    const name = formatSapToolName("companion", "k7m", "x");
     const out = await manager.callToolViaSatellite("sid", name, {}, undefined);
     expect(out).toBe(toolError("session has no satellite binding; sap tools forbidden"));
   });

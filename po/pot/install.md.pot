@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:22+0800\n"
+"POT-Creation-Date: 2026-07-06 11:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:571
+#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:586
 #, no-wrap
 msgid "Installation"
 msgstr ""
@@ -221,8 +221,9 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:95
 msgid ""
-"Use **app/desktop** or **app/mobile** for UI (Chat + Console bundled). "
-"Browser local dev: `bun run dev:web` (Vite HMR; Hub must be running)."
+"Use **src/app/shell/desktop** or **src/app/shell/mobile** for UI (Chat + "
+"Console bundled). Browser local dev: `bun run dev:web` (Vite HMR; Hub must "
+"be running)."
 msgstr ""
 
 #. type: Plain text
@@ -359,8 +360,8 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:151
 msgid ""
-"Use app/desktop or app/mobile clients for UI (bundled shell with `/chat`, `/"
-"tasks`, `/console``, etc.)."
+"Use `src/app/shell/desktop` or `src/app/shell/mobile` clients for UI "
+"(bundled shell with `/chat`, `/tasks`, `/console`, etc.)."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -498,7 +499,7 @@ msgstr ""
 msgid ""
 "bun run anima -- --help\n"
 "# or\n"
-"bun app/cli/src/cli.ts --help\n"
+"bun src/app/cli/cli.ts --help\n"
 msgstr ""
 
 #. type: Plain text
@@ -511,15 +512,15 @@ msgstr ""
 #, no-wrap
 msgid ""
 "bun run install:cli:local\n"
-"# equivalent: bun run build:cli && bun install -g \"$PWD/app/cli/publish\"\n"
+"# equivalent: bun run build:cli && bun install -g \"$PWD/src/app/cli/publish\"\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:217
 msgid ""
-"`bun install -g ./app/cli/publish` from the repo root is not supported; use "
-"`bun run install:cli:local` (cleans broken global deps, then pack + install "
-"tarball)."
+"`bun install -g ./src/app/cli/publish` from the repo root is not supported; "
+"use `bun run install:cli:local` (cleans broken global deps, then pack + "
+"install tarball)."
 msgstr ""
 
 #. type: Title ###

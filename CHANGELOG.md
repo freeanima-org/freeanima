@@ -232,7 +232,7 @@
 * **app-web:** 恢复 Web 壳层通用设置面板 ([1e6f731](https://github.com/freeanima-org/freeanima/commit/1e6f73161d9ae76eab3f771bd88a8d5305eeeb8f))
 * **ci:** Quality 工作流安装 gettext/po4a 以运行 strict PO 检查 ([fd35431](https://github.com/freeanima-org/freeanima/commit/fd3543188d398cd42fac54b615d1f68b71e2d42f))
 * **ci:** 修复 Gitleaks 误报与 CodeQL 告警 ([fa38a0f](https://github.com/freeanima-org/freeanima/commit/fa38a0fdaec47ef464db5e497cd5541c95354e88))
-* **ci:** 修正 CLI pack 路径为 app/cli/publish ([c7ed789](https://github.com/freeanima-org/freeanima/commit/c7ed7893e408244893397814fc18cb86a7a18d2a))
+* **ci:** 修正 CLI pack 路径为 src/app/cli/publish ([c7ed789](https://github.com/freeanima-org/freeanima/commit/c7ed7893e408244893397814fc18cb86a7a18d2a))
 * **ci:** 清除 PO fuzzy 并恢复 platform llm-openai 依赖 ([326bc43](https://github.com/freeanima-org/freeanima/commit/326bc434d45d27e5d886e891acb5466bc3312f8b))
 * **cli:** 恢复 cli/src/cli.ts 兼容入口供 blackbox 与旧脚本使用 ([4a8aacd](https://github.com/freeanima-org/freeanima/commit/4a8aacd0b43d4f4d94549673599f9446bc5a94b6))
 * **companion:** companion app 导入时 @/ 别名解析到 companion 源码 ([94bfd4f](https://github.com/freeanima-org/freeanima/commit/94bfd4fe2fb91651847648650ebc0c3c092d3593))

@@ -98,13 +98,13 @@ Legacy meta **read-time migration** (`parseCompressionState`):
 
 | Module                                       | Responsibility                                                                                |
 | -------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `core/src/compress/compressor.ts`            | l-points, `deriveBoundariesFromL4`, `shouldAdvance`, `buildRuntimeFromLPoints`, `slimMessage` |
-| `core/src/compress/compression-config.ts`    | Config and unified `context_window` resolution (config > default > catalog)                   |
-| `core/src/compress/compression-summary.ts`   | Summary LLM                                                                                   |
-| `core/src/compress/compression-tool-loop.ts` | `isInToolLoop`                                                                                |
+| `src/core/compress/compressor.ts`            | l-points, `deriveBoundariesFromL4`, `shouldAdvance`, `buildRuntimeFromLPoints`, `slimMessage` |
+| `src/core/compress/compression-config.ts`    | Config and unified `context_window` resolution (config > default > catalog)                   |
+| `src/core/compress/compression-summary.ts`   | Summary LLM                                                                                   |
+| `src/core/compress/compression-tool-loop.ts` | `isInToolLoop`                                                                                |
 | `runtime/src/conversation/conversation.ts`   | `recompressConversation`, `buildRuntimeMessages`, `maybeApplyEmergencyCompression`            |
 | `runtime/src/loop/engine.ts`                 | Emergency call site                                                                           |
-| `platform/src/runtime/conversation-stats.ts` | `/stats` shows `l2`/`l3`/occupancy                                                            |
+| `src/platform/runtime/conversation-stats.ts` | `/stats` shows `l2`/`l3`/occupancy                                                            |
 
 Manual: `/compress` (`--force` ignores hysteresis).
 

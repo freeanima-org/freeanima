@@ -1,0 +1,58 @@
+@import "tailwindcss";
+@import "@freeanima/ui-kit/globals.css";
+@source "./**/*.{tsx,ts}";
+@source "../../../ui-kit/**/*.{tsx,ts}";
+@source "../../../shell-sdk/**/*.{tsx,ts}";
+@source "../../../../src/features/chat/ui/spa/**/*.{tsx,ts}";
+@source "../../../../src/features/task/ui/spa/**/*.{tsx,ts}";
+@source "../../../../src/features/diary/ui/spa/**/*.{tsx,ts}";
+@source "../../../../src/features/vault/ui/spa/**/*.{tsx,ts}";
+@source "../../../../src/features/console/ui/console/**/*.{tsx,ts}";
+@import "@freeanima/ui-kit/styles.css";
+
+:root {
+  --shell-bottom-nav-h: 3rem;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+html[data-shell-ui="1"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html[data-shell-ui="1"] body {
+  overscroll-behavior-y: none;
+}
+
+.shell-module-layout .shell-top-nav {
+  padding-top: var(--sat);
+  padding-left: var(--sal);
+  padding-right: var(--sar);
+}
+
+/** 移动端底栏布局：顶栏 safe-area 由 main 统一承担（无独立顶栏时） */
+.shell-module-layout.shell-layout-compact > main {
+  padding-top: var(--sat);
+  padding-left: var(--sal);
+  padding-right: var(--sar);
+  box-sizing: border-box;
+}
+
+.shell-bottom-nav {
+  padding-left: var(--sal);
+  padding-right: var(--sar);
+  min-height: calc(var(--shell-bottom-nav-h) + var(--sab));
+  padding-bottom: var(--sab);
+}
+
+.shell-bottom-nav-item:active {
+  opacity: 0.7;
+}

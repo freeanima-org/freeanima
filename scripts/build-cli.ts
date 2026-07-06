@@ -12,7 +12,7 @@ import { dirname, join } from "node:path";
 import { compileParaglideToDir } from "@freeanima/feature-console/build/paraglide-compile";
 
 const ROOT = join(import.meta.dir, "..");
-const CLI_DIR = join(ROOT, "app/cli");
+const CLI_DIR = join(ROOT, "src/app/cli");
 const PUBLISH_DIR = join(CLI_DIR, "publish");
 const ROOT_PKG = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf-8")) as {
   version: string;
@@ -48,7 +48,7 @@ function patchTiktokenWasmLoader(bundlePath: string): void {
 }
 
 function resolveTiktokenWasmPath(): string {
-  const require = createRequire(join(ROOT, "core/package.json"));
+  const require = createRequire(join(ROOT, "package.json"));
   const tiktokenDir = dirname(require.resolve("tiktoken/package.json"));
   return join(tiktokenDir, "tiktoken_bg.wasm");
 }
@@ -59,14 +59,14 @@ async function main(): Promise<void> {
 
   console.log("bundling cli…");
   const bundlePath = join(PUBLISH_DIR, "dist/cli.js");
-  await $`bun build ${join(CLI_DIR, "src/cli.ts")} --outdir ${join(PUBLISH_DIR, "dist")} --target bun --minify`;
+  await $`bun build ${join(CLI_DIR, "cli.ts")} --outdir ${join(PUBLISH_DIR, "dist")} --target bun --minify`;
 
   console.log("patching tiktoken wasm loader…");
   patchTiktokenWasmLoader(bundlePath);
   cpSync(resolveTiktokenWasmPath(), join(PUBLISH_DIR, "dist/tiktoken_bg.wasm"));
 
   console.log("copying migrations…");
-  cpSync(join(ROOT, "core/migrations"), join(PUBLISH_DIR, "migrations"), {
+  cpSync(join(ROOT, "src/core/migrations"), join(PUBLISH_DIR, "migrations"), {
     recursive: true,
   });
 

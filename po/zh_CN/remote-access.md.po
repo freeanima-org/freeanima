@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:22+0800\n"
+"POT-Creation-Date: 2026-07-06 11:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,21 +17,21 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/dream.md:9 docs/concepts/sleep.md:9
-#: docs/guide/remote-access.md:10 messages/po4a/en.xml:575
-#: messages/po4a/en.xml:582
+#: docs/guide/remote-access.md:10 messages/po4a/en.xml:590
+#: messages/po4a/en.xml:597
 #, no-wrap
 msgid "Overview"
 msgstr "概述"
 
 #. type: Title ##
-#: docs/features/companion.md:120 docs/features/mobile-app.md:52
+#: docs/features/companion.md:119 docs/features/mobile-app.md:52
 #: docs/guide/database.md:88 docs/guide/remote-access.md:177
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
 
 #. type: Title ##
-#: docs/features/companion.md:131 docs/guide/remote-access.md:188
+#: docs/features/companion.md:130 docs/guide/remote-access.md:188
 #, no-wrap
 msgid "Related docs"
 msgstr "相关文档"
@@ -58,7 +58,18 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/remote-access.md:22
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Layer                   | Role                                                                                                        |\n"
+#| "| ----------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
+#| "| **Service API Token**   | 绑定 `user` / `agent` subject；REST `Authorization: Bearer`；SAP `connect.auth_token`；MCP `/mcp` 同 Bearer |\n"
+#| "| **CLI bootstrap**       | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                               |\n"
+#| "| **cloudflared**         | Outbound tunnel；single hostname → Hub `127.0.0.1:2658`（API + Web UI at `/web`）                           |\n"
+#| "| **`http.host`**         | Hub listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                     |\n"
+#| "| **`http.cors_origins`** | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel          |\n"
+#| "| **Client settings**     | desktop / mobile shell / **browser Web** fill Hub URL and token in **Hub settings**                       |\n"
+#| "| **Remote UI**           | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |\n"
+#| "| **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                 |\n"
 msgid ""
 "| Layer                   | Role                                                                                                        |\n"
 "| ----------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
@@ -67,7 +78,7 @@ msgid ""
 "| **cloudflared**         | Outbound tunnel；single hostname → Hub `127.0.0.1:2658`（API + Web UI at `/web`）                           |\n"
 "| **`http.host`**         | Hub listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                     |\n"
 "| **`http.cors_origins`** | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel          |\n"
-"| **Client settings**     | app/desktop / app/mobile / **browser Web** fill Hub URL and token in **Hub settings**                       |\n"
+"| **Client settings**     | Desktop / mobile shell / **browser Web** fill Hub URL and token in **Hub settings**                       |\n"
 "| **Remote UI**           | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |\n"
 "| **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                 |\n"
 msgstr ""
@@ -78,7 +89,7 @@ msgstr ""
 "| **cloudflared**         | 出站隧道；single hostname → Hub `127.0.0.1:2658`（API + Web UI 位于 `/web`）                                    |\n"
 "| **`http.host`**         | Hub 监听绑定（IP 或可解析主机名）；默认 `127.0.0.1`；局域网用 `0.0.0.0`                                          |\n"
 "| **`http.cors_origins`** | 显式跨源浏览器 origin（dev:web、分离式 UI/API 反向代理）；独立于 Tunnel                                         |\n"
-"| **客户端设置**          | app/desktop / app/mobile / **浏览器 Web** 在 **Hub 设置** 中填写 Hub URL 与 token                               |\n"
+"| **客户端设置**          | desktop / mobile shell / **浏览器 Web** 在 **Hub 设置** 中填写 Hub URL 与 token                               |\n"
 "| **远程 UI**             | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) 的 Client UI |\n"
 "| **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 `compact` 布局                                   |\n"
 
@@ -382,23 +393,29 @@ msgstr "3. 客户端配置"
 #. type: Plain text
 #: docs/guide/remote-access.md:123
 #, no-wrap
-msgid "**app/desktop**, **app/mobile**, and **browser Web** are remote clients; they **do not read** Hub `config.yaml` token.\n"
-msgstr "**app/desktop**、**app/mobile** 与 **浏览器 Web**（`web.enabled` + Tunnel 或局域网 `:2659`）为远程客户端；它们**不读取** Hub `config.yaml` 中的 token。\n"
+msgid "**Desktop shell** (`src/app/shell/desktop`), **mobile shell** (`src/app/shell/mobile`), and **browser Web** are remote clients; they **do not read** Hub `config.yaml` token.\n"
+msgstr "**桌面壳层**（`src/app/shell/desktop`）、**移动壳层**（`src/app/shell/mobile`）与 **浏览器 Web**（`web.enabled` + Tunnel 或局域网 `:2659`）为远程客户端；它们**不读取** Hub `config.yaml` 中的 token。\n"
 
 #. type: Plain text
 #: docs/guide/remote-access.md:129
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Client      | Storage                                          |\n"
+#| "| ----------- | ------------------------------------------------ |\n"
+#| "| Desktop shell | `~/.anima-desktop/settings.json` (`hub` section) |\n"
+#| "| Mobile shell  | Capacitor Preferences                            |\n"
+#| "| Browser Web | localStorage (settings page)                     |\n"
 msgid ""
-"| Client      | Storage                                          |\n"
-"| ----------- | ------------------------------------------------ |\n"
-"| app/desktop | `~/.anima-desktop/settings.json` (`hub` section) |\n"
-"| app/mobile  | Capacitor Preferences                            |\n"
-"| Browser Web | localStorage (settings page)                     |\n"
+"| Client        | Storage                                          |\n"
+"| ------------- | ------------------------------------------------ |\n"
+"| Desktop shell | `~/.anima-desktop/settings.json` (`hub` section) |\n"
+"| Mobile shell  | Capacitor Preferences                            |\n"
+"| Browser Web   | localStorage (settings page)                     |\n"
 msgstr ""
 "| 客户端      | 存储                                      |\n"
 "| ----------- | -------------------------------------------- |\n"
-"| app/desktop | `~/.anima-desktop/settings.json`（`hub` 段） |\n"
-"| app/mobile  | Capacitor Preferences                        |\n"
+"| Desktop shell | `~/.anima-desktop/settings.json`（`hub` 段） |\n"
+"| Mobile shell  | Capacitor Preferences                        |\n"
 "| Browser Web | localStorage（设置页）                 |\n"
 
 #. type: Plain text
@@ -429,12 +446,16 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/remote-access.md:138
+#, fuzzy
+#| msgid ""
+#| "Flow: open Hub settings → fill → **Test connection** → Save. Desktop "
+#| "requires **restart desktop shell** after save.\n"
 msgid ""
 "Flow: open Hub settings → fill → **Test connection** → Save. Desktop "
-"requires **restart app/desktop** after save."
+"requires **restart desktop shell** after save."
 msgstr ""
-"流程：打开 Hub 设置 → 填写 → **测试连接** → 保存。桌面端保存后需**重启 app/"
-"desktop**。"
+"流程：打开 Hub 设置 → 填写 → **测试连接** → 保存。桌面端保存后需**重启桌面壳"
+"层**。\n"
 
 #. type: Title ##
 #: docs/guide/remote-access.md:139
@@ -505,18 +526,26 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/remote-access.md:166
+#, fuzzy
+#| msgid ""
+#| "**Inbound** (Hub connects to external MCP servers): `config.yaml` "
+#| "`mcp_servers` (`capabilities/mcp-client`)"
 msgid ""
 "**Inbound** (Hub connects to external MCP servers): `config.yaml` "
-"`mcp_servers` (`capabilities/mcp-client`)"
+"`mcp_servers` (`src/capabilities/mcp-client`)"
 msgstr ""
 "**入站**（Hub 连接外部 MCP 服务器）：`config.yaml` `mcp_servers`"
 "（`capabilities/mcp-client`）"
 
 #. type: Bullet: '- '
 #: docs/guide/remote-access.md:166
+#, fuzzy
+#| msgid ""
+#| "**Outbound** (external agents call Hub tools): `/mcp` endpoint "
+#| "(`capabilities/mcp-server`)"
 msgid ""
-"**Outbound** (external agents call Hub tools): `/mcp` endpoint "
-"(`capabilities/mcp-server`)"
+"**Outbound** (external agents call Hub tools): `/mcp` endpoint (`src/"
+"capabilities/mcp-server`)"
 msgstr ""
 "**出站**（外部 Agent 调用 Hub 工具）：`/mcp` 端点（`capabilities/mcp-"
 "server`）"

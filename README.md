@@ -82,7 +82,7 @@ Then configure `~/.anima/config.yaml` (or `.env` for Docker) and run `anima serv
 
 ## Client UI
 
-聊天室与管理台由 **app/desktop** / **app/mobile** 提供（bundled SPA）。Hub 仅托管 API 与 SAP：
+聊天室与管理台由 **desktop / mobile 壳层**（`src/app/shell/desktop`、`src/app/shell/mobile`）提供 bundled SPA。Hub 仅托管 API 与 SAP：
 
 - API：`http://127.0.0.1:2658/api`
 - 浏览器壳层开发（聊天 + 管理台 + 设置，HMR）：`bun run dev:web` → `http://127.0.0.1:4173/chat`（Console：`/console/dashboard`）

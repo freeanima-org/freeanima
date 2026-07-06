@@ -10,12 +10,12 @@ if [ -z "${GITHUB_ACTIONS:-}" ]; then
   exit 1
 fi
 
-if [ ! -f "${ROOT}/app/cli/publish/package.json" ]; then
-  echo "app/cli/publish 不存在，请先 bun run build:cli" >&2
+if [ ! -f "${ROOT}/src/app/cli/publish/package.json" ]; then
+  echo "src/app/cli/publish 不存在，请先 bun run build:cli" >&2
   exit 1
 fi
 
-cd "${ROOT}/app/cli/publish"
+cd "${ROOT}/src/app/cli/publish"
 VERSION="$(bun -p "require('./package.json').version")"
 echo "发布 @freeanima/cli@${VERSION} …"
 

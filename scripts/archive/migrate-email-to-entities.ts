@@ -10,17 +10,17 @@ import { readFileSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-import { bindActiveConfig } from "../../platform/config/index.ts";
-import { bindResolvedWorldContext } from "../../core/src/config/world-context.ts";
-import { omitUndefined } from "../../core/src/util/omit-undefined.ts";
-import { ensureWorldSubjects } from "../../core/src/db/pg/entity/subject-world.ts";
+import { bindActiveConfig } from "../../src/platform/config/index.ts";
+import { bindResolvedWorldContext } from "../../src/core/config/world-context.ts";
+import { omitUndefined } from "../../src/core/util/omit-undefined.ts";
+import { ensureWorldSubjects } from "../../src/core/db/pg/entity/subject-world.ts";
 import {
   createEmailAccount,
   findEmailAccountByAddressAndHost,
-} from "../../features/email/domain/index.ts";
-import { FileConfig } from "../../platform/config/file-config.ts";
-import { parseYaml } from "../../platform/config/yaml.ts";
-import { initDatabase, closeDb } from "../../core/src/db/pg/index.ts";
+} from "../../src/features/email/domain/index.ts";
+import { FileConfig } from "../../src/platform/config/file-config.ts";
+import { parseYaml } from "../../src/platform/config/yaml.ts";
+import { initDatabase, closeDb } from "../../src/core/db/pg/index.ts";
 
 type LegacyAccount = {
   id: string;

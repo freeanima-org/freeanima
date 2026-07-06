@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 19:53+0800\n"
+"POT-Creation-Date: 2026-07-06 11:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,25 +45,23 @@ msgid ""
 "    RpcEndpoint[\"/hub/rpc/v1 WebSocket\"]\n"
 "    Bundled[Bundled SPA modules]\n"
 "    SatA[Satellite companion]\n"
-"    SatB[Satellite pair-programming]\n"
 "  end\n"
 "  Browser[Browser]\n"
 "  Browser --> Bundled\n"
 "  Browser --> SatA\n"
 "  Bundled -->|\"HubRPC connect + auth_token\"| RpcEndpoint\n"
 "  SatA -->|\"HubRPC + sap.attach\"| RpcEndpoint\n"
-"  SatB --> RpcEndpoint\n"
 "  RpcEndpoint --> Hub\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/security-model.md:29
+#: docs/sap/security-model.md:27
 #, no-wrap
 msgid "Current controls"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/security-model.md:39
+#: docs/sap/security-model.md:37
 #, no-wrap
 msgid ""
 "| Control                       | Status                                                 |\n"
@@ -77,26 +75,26 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/security-model.md:41
+#: docs/sap/security-model.md:39
 msgid ""
 "Any client that holds a valid service token and can reach `ws://"
 "127.0.0.1:2658/hub/rpc/v1` can:"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:44
+#: docs/sap/security-model.md:42
 msgid ""
 "Call bundled RPC methods (chat, tasks, notifications, …) without `sap.attach`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:44
+#: docs/sap/security-model.md:42
 msgid ""
 "After `sap.attach`, register tools as the attached `app_id` / `instance_id`"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/security-model.md:46
+#: docs/sap/security-model.md:44
 msgid ""
 "Operational guidance: bind Hub to loopback; rotate service tokens; do not "
 "expose port 2658 to untrusted networks without Tunnel + Access. See "
@@ -104,13 +102,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/security-model.md:47
+#: docs/sap/security-model.md:45
 #, no-wrap
 msgid "Protocol hardening (transport layer)"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/security-model.md:50
+#: docs/sap/security-model.md:48
 msgid ""
 "Invalid frames close the socket with **1003**. Protocol violations (double "
 "connect, RPC before connect, `tool.*` without attach) close with **1008**. "
@@ -118,32 +116,32 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/security-model.md:51
+#: docs/sap/security-model.md:49
 #, no-wrap
 msgid "Future directions (not implemented)"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/security-model.md:54
+#: docs/sap/security-model.md:52
 msgid "Possible hardening items — track via GitHub Issues if prioritized:"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:58
+#: docs/sap/security-model.md:56
 msgid "mTLS on `/hub/rpc/v1`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:58
+#: docs/sap/security-model.md:56
 msgid "Instance attestation tied to managed satellite systemd units"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:58
+#: docs/sap/security-model.md:56
 msgid "Rate limits on connect and `tool.register`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/security-model.md:58
+#: docs/sap/security-model.md:56
 msgid "Explicit disconnect on missed heartbeats"
 msgstr ""
