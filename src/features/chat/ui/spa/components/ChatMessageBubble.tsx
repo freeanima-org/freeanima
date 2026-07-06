@@ -26,9 +26,9 @@ export function ChatMessageBubble({
   });
 
   return (
-    <div className={`flex min-w-0 max-w-full ${align === "end" ? "justify-end" : "justify-start"}`}>
+    <div className={`flex w-full max-w-full ${align === "end" ? "justify-end" : "justify-start"}`}>
       <div
-        className={`chat-bubble min-w-0 max-w-full ${className}`}
+        className={`chat-bubble ${className}`}
         {...(onLongPress && longPressEnabled ? longPress : {})}
       >
         {children}

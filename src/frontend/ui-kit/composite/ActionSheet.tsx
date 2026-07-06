@@ -36,9 +36,11 @@ export function ActionSheet({ title, items, dismissLabel, onClose, className }: 
                   "flex w-full rounded-md px-4 py-3 text-left text-base hover:bg-accent",
                   item.danger && "text-destructive",
                 )}
-                onClick={() => {
-                  item.onClick();
+                onClick={(e) => {
+                  e.stopPropagation();
                   onClose();
+                  // 延后执行，避免同一次 click 被后续 Sheet/Dialog 判为「外部点击」而立刻关闭
+                  queueMicrotask(item.onClick);
                 }}
               >
                 {item.label}

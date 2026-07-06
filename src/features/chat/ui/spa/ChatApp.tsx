@@ -1120,16 +1120,25 @@ export function ChatApp() {
                 </Alert>
               ) : null}
 
-              {streamVisible && streamText ? (
-                <div className="flex justify-start">
-                  <div className="chat-bubble chat-bubble-assistant">
-                    <div
-                      className="md-content"
-                      dangerouslySetInnerHTML={{ __html: renderMd(streamText) }}
-                    />
-                    <Spinner className="mt-1 size-3" />
+              {streamVisible && !recovering ? (
+                streamText ? (
+                  <div className="flex justify-start">
+                    <div className="chat-bubble chat-bubble-assistant">
+                      <div
+                        className="md-content"
+                        dangerouslySetInnerHTML={{ __html: renderMd(streamText) }}
+                      />
+                      <Spinner className="mt-1 size-3" />
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex justify-start">
+                    <div className="chat-bubble chat-bubble-assistant text-muted-foreground flex items-center gap-2 text-sm">
+                      <Spinner className="size-3" />
+                      {m.console_chat_composing_reply()}
+                    </div>
+                  </div>
+                )
               ) : null}
 
               {recovering ? (
