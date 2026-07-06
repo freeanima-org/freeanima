@@ -1,5 +1,6 @@
 /// <reference lib="dom" />
 import type { RpcClient } from "./client.ts";
+import { HUB_RPC_LIVENESS_SILENCE_MS } from "./constants.ts";
 import { hubHttpFromRpcWsUrl } from "./urls.ts";
 import { runHubRpcTransport, type HubRpcTransportHandle } from "./transport.ts";
 
@@ -26,6 +27,7 @@ let sharedClient: BundledHubRpcClient | null = null;
 let sharedTransport: HubRpcTransportHandle | null = null;
 let cachedConnectionState: HubRpcConnectionState = "connecting";
 const connectionStateListeners = new Set<(state: HubRpcConnectionState) => void>();
+let foregroundWatchInstalled = false;
 
 import { readSatelliteShell } from "./shell-bridge.ts";
 
@@ -40,9 +42,29 @@ export function getHubRpcConnectionState(): HubRpcConnectionState {
   return cachedConnectionState;
 }
 
+export function getHubRpcLastInboundAt(): number | null {
+  return sharedTransport?.getLastInboundAt() ?? null;
+}
+
+function ensureHubForegroundReconnectWatch(): void {
+  if (foregroundWatchInstalled || typeof document === "undefined") return;
+  foregroundWatchInstalled = true;
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") return;
+    if (cachedConnectionState !== "connected") return;
+    const lastInbound = sharedTransport?.getLastInboundAt();
+    if (lastInbound == null) return;
+    if (Date.now() - lastInbound <= HUB_RPC_LIVENESS_SILENCE_MS) return;
+    void getBundledHubRpcClient()
+      .reconnect()
+      .catch(() => undefined);
+  });
+}
+
 export function subscribeHubRpcConnectionState(
   listener: (state: HubRpcConnectionState) => void,
 ): () => void {
+  ensureHubForegroundReconnectWatch();
   connectionStateListeners.add(listener);
   listener(cachedConnectionState);
   if (!sharedClient && typeof window !== "undefined" && hasBundledHubRpcAuthToken()) {

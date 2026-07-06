@@ -3,6 +3,7 @@ import type { StreamApiLikeEvent } from "./frames/message.ts";
 import { mapSapStreamMethodToApi, streamEventMethods } from "./frames/message.ts";
 import type { ConversationCreateInput, ConversationListInput } from "./frames/conversation.ts";
 import { formatSapPlatform } from "./naming.ts";
+import { HUB_RPC_MESSAGE_SEND_TIMEOUT_MS } from "@freeanima/hub-rpc";
 
 export type SubscribeCallbacks<T> = {
   onData?: (data: T) => void;
@@ -96,11 +97,15 @@ export function createSapConversationStreamClient(
       void (async () => {
         try {
           const client = await ensureSessionHooks();
-          const { stream_id: streamId } = await client.request("message.send", {
-            conversation_id: input.conversationId,
-            message: input.message,
-            ...(input.llmDebug ? { llm_debug: true } : {}),
-          });
+          const { stream_id: streamId } = await client.request(
+            "message.send",
+            {
+              conversation_id: input.conversationId,
+              message: input.message,
+              ...(input.llmDebug ? { llm_debug: true } : {}),
+            },
+            { timeoutMs: HUB_RPC_MESSAGE_SEND_TIMEOUT_MS },
+          );
 
           for (const method of streamEventMethods) {
             cleanups.push(

@@ -1,4 +1,9 @@
 import { createRpcClient, type RpcClient } from "./client.ts";
+import {
+  HUB_RPC_HEARTBEAT_SEND_CAP_MS,
+  HUB_RPC_LIVENESS_CHECK_INTERVAL_MS,
+  HUB_RPC_LIVENESS_SILENCE_MS,
+} from "./constants.ts";
 import type { HubRpcConnectedPayload } from "./lifecycle.ts";
 import { serializeHubRpcEnvelope } from "./protocol.ts";
 
@@ -16,11 +21,16 @@ export type RunHubRpcTransportOptions = {
   onDisconnected?: () => void;
   createWebSocket?: (wsUrl: string) => WebSocket;
   signal?: AbortSignal;
+  /** 测试注入：覆盖默认 liveness 静默阈值 */
+  livenessSilenceMs?: number;
+  /** 测试注入：覆盖默认 liveness 检查间隔 */
+  livenessCheckIntervalMs?: number;
 };
 
 export type HubRpcTransportHandle = {
   getClient(): RpcClient | null;
   whenConnected(): Promise<RpcClient>;
+  getLastInboundAt(): number | null;
   stop(): void;
 };
 
@@ -68,6 +78,14 @@ function waitWebSocketClose(ws: WebSocket): Promise<void> {
   });
 }
 
+function forceCloseWs(ws: WebSocket): void {
+  try {
+    ws.close();
+  } catch {
+    /* ignore */
+  }
+}
+
 export function runHubRpcTransport(options: RunHubRpcTransportOptions): HubRpcTransportHandle {
   const policy =
     options.reconnect === false
@@ -78,24 +96,66 @@ export function runHubRpcTransport(options: RunHubRpcTransportOptions): HubRpcTr
           factor: options.reconnect?.factor ?? DEFAULT_POLICY.factor,
         };
 
+  const livenessSilenceMs = options.livenessSilenceMs ?? HUB_RPC_LIVENESS_SILENCE_MS;
+  const livenessCheckIntervalMs =
+    options.livenessCheckIntervalMs ?? HUB_RPC_LIVENESS_CHECK_INTERVAL_MS;
+
   let stopped = false;
   let currentClient: RpcClient | null = null;
   let currentWs: WebSocket | null = null;
   let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
+  let livenessTimer: ReturnType<typeof setInterval> | null = null;
+  let lastInboundAt: number | null = null;
+  let heartbeatOff: (() => void) | null = null;
   let connectedWaiters: Array<{
     resolve: (client: RpcClient) => void;
     reject: (error: Error) => void;
   }> = [];
   let connectedPromise: Promise<RpcClient> | null = null;
 
+  function touchInbound(): void {
+    lastInboundAt = Date.now();
+  }
+
   function clearHeartbeat(): void {
     if (heartbeatTimer) clearInterval(heartbeatTimer);
     heartbeatTimer = null;
+    heartbeatOff?.();
+    heartbeatOff = null;
   }
 
-  function startHeartbeat(ws: WebSocket, connected: HubRpcConnectedPayload): void {
+  function clearLiveness(): void {
+    if (livenessTimer) clearInterval(livenessTimer);
+    livenessTimer = null;
+  }
+
+  function resetConnectionState(): void {
     clearHeartbeat();
-    const intervalSec = connected.heartbeat_interval_sec ?? 30;
+    clearLiveness();
+    currentClient = null;
+    connectedPromise = null;
+    lastInboundAt = null;
+  }
+
+  function startLivenessWatch(ws: WebSocket): void {
+    clearLiveness();
+    livenessTimer = setInterval(() => {
+      if (lastInboundAt == null) return;
+      if (Date.now() - lastInboundAt > livenessSilenceMs) {
+        forceCloseWs(ws);
+      }
+    }, livenessCheckIntervalMs);
+  }
+
+  function startHeartbeat(ws: WebSocket, rpc: RpcClient, connected: HubRpcConnectedPayload): void {
+    clearHeartbeat();
+    const serverIntervalMs = (connected.heartbeat_interval_sec ?? 30) * 1000;
+    const sendIntervalMs = Math.min(serverIntervalMs, HUB_RPC_HEARTBEAT_SEND_CAP_MS);
+
+    heartbeatOff = rpc.onEvent("heartbeat", () => {
+      touchInbound();
+    });
+
     heartbeatTimer = setInterval(() => {
       try {
         ws.send(
@@ -106,9 +166,9 @@ export function runHubRpcTransport(options: RunHubRpcTransportOptions): HubRpcTr
           }),
         );
       } catch {
-        /* ws may be closing */
+        forceCloseWs(ws);
       }
-    }, intervalSec * 1000);
+    }, sendIntervalMs);
   }
 
   function resolveConnected(client: RpcClient): void {
@@ -146,11 +206,18 @@ export function runHubRpcTransport(options: RunHubRpcTransportOptions): HubRpcTr
     const notifyDisconnect = (): void => {
       if (disconnectNotified) return;
       disconnectNotified = true;
+      currentClient = null;
+      connectedPromise = null;
       options.onDisconnected?.();
     };
 
+    ws.addEventListener("message", () => {
+      touchInbound();
+    });
+
     try {
       await waitWebSocketOpen(ws);
+      touchInbound();
 
       const rpc = createRpcClient({
         ws,
@@ -158,23 +225,19 @@ export function runHubRpcTransport(options: RunHubRpcTransportOptions): HubRpcTr
       });
 
       const connected = await rpc.connect({ auth_token: options.authToken });
+      touchInbound();
       resolveConnected(rpc);
-      startHeartbeat(ws, connected);
+      startHeartbeat(ws, rpc, connected);
+      startLivenessWatch(ws);
       await options.onConnected(rpc, connected);
       await waitWebSocketClose(ws);
-      clearHeartbeat();
-      currentClient = null;
+      resetConnectionState();
       notifyDisconnect();
       currentWs = null;
     } catch (e) {
-      clearHeartbeat();
-      currentClient = null;
+      resetConnectionState();
       notifyDisconnect();
-      try {
-        ws.close();
-      } catch {
-        /* ignore */
-      }
+      forceCloseWs(ws);
       currentWs = null;
       throw e;
     }
@@ -213,10 +276,12 @@ export function runHubRpcTransport(options: RunHubRpcTransportOptions): HubRpcTr
       return currentClient;
     },
     whenConnected,
+    getLastInboundAt(): number | null {
+      return lastInboundAt;
+    },
     stop(): void {
       stopped = true;
-      clearHeartbeat();
-      currentClient = null;
+      resetConnectionState();
       try {
         currentWs?.close();
       } catch {

@@ -377,6 +377,7 @@ export type SapClient = {
   request<K extends SapMethod>(
     method: K,
     payload: SapRouterInputs[K],
+    opts?: import("@freeanima/hub-rpc").RpcRequestOptions,
   ): Promise<SapRouterOutputs[K]>;
   onEvent(method: string, handler: (payload: unknown) => void): () => void;
   close(): void;
