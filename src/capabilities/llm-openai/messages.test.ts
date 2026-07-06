@@ -49,11 +49,11 @@ describe("messagesForApi", () => {
     });
   });
 
-  it("maps mid-conversation runtime system turns", () => {
+  it("maps mid-conversation passive memory assistant turns", () => {
     const api = messagesForApi(
       [
         { role: "user", content: "hi" },
-        { role: "system", name: "passive_memory_context", content: "memory block" },
+        { role: "assistant", name: "passive_memory_context", content: "memory block" },
         { role: "user", content: "follow up" },
       ],
       "leading system",
@@ -61,7 +61,7 @@ describe("messagesForApi", () => {
     expect(api[0]).toEqual({ role: "system", content: "leading system" });
     expect(api[1]).toMatchObject({ role: "user", content: "hi" });
     expect(api[2]).toMatchObject({
-      role: "system",
+      role: "assistant",
       name: "passive_memory_context",
       content: "memory block",
     });

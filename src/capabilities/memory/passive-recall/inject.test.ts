@@ -1,12 +1,12 @@
 import { describe, expect, it } from "bun:test";
 
 import type { StoredMessage } from "@freeanima/core/db/domain";
-import { PASSIVE_MEMORY_CONTEXT_SYSTEM_NAME } from "@freeanima/core/llm/runtime-system-turn";
+import { PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME } from "@freeanima/core/llm/runtime-system-turn";
 
 import type { SemanticRecallHit } from "../recall-search.ts";
 import {
   formatPassiveMemoryBlock,
-  isPassiveMemoryContextSystem,
+  isPassiveMemoryContextAssistant,
   manifestPassiveMemoryContext,
   stripPassiveMemoryContextFromMessages,
 } from "./inject.ts";
@@ -45,7 +45,7 @@ describe("passive recall inject", () => {
     expect(block).toContain("```memory");
   });
 
-  it("manifest inserts runtime system before last user message", () => {
+  it("manifest inserts runtime assistant before last user message", () => {
     const messages: StoredMessage[] = [
       { role: "user", content: "earlier" },
       { role: "assistant", content: "ok" },
@@ -54,28 +54,28 @@ describe("passive recall inject", () => {
     manifestPassiveMemoryContext(messages, [sampleHit("f-000002-beef", "prefers TS")], 2000);
     expect(messages).toHaveLength(4);
     const injected = messages[2];
-    expect(injected?.role).toBe("system");
-    expect(isPassiveMemoryContextSystem(injected!)).toBe(true);
-    if (injected?.role === "system") {
-      expect(injected.name).toBe(PASSIVE_MEMORY_CONTEXT_SYSTEM_NAME);
+    expect(injected?.role).toBe("assistant");
+    expect(isPassiveMemoryContextAssistant(injected!)).toBe(true);
+    if (injected?.role === "assistant") {
+      expect(injected.name).toBe(PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME);
       expect(injected.content).toContain("prefers TS");
     }
     expect(messages[3]).toEqual({ role: "user", content: "current" });
   });
 
-  it("strip removes prior passive memory system messages", () => {
+  it("strip removes prior passive memory assistant messages", () => {
     const messages: StoredMessage[] = [
       { role: "user", content: "q" },
       {
-        role: "system",
-        name: PASSIVE_MEMORY_CONTEXT_SYSTEM_NAME,
+        role: "assistant",
+        name: PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME,
         content: "old recall",
       },
       { role: "user", content: "q2" },
     ];
     stripPassiveMemoryContextFromMessages(messages);
     expect(messages).toHaveLength(2);
-    expect(messages.every((m) => !isPassiveMemoryContextSystem(m))).toBe(true);
+    expect(messages.every((m) => !isPassiveMemoryContextAssistant(m))).toBe(true);
   });
 
   it("skips manifest when max chars too small", () => {

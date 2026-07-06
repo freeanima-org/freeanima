@@ -152,7 +152,7 @@ Conversion from working memory to long-term memory is handled by the sleep mecha
 
 ### ✅ Passive semantic recall (auto-inject)
 
-Before each user-facing turn, the runtime searches **semantic memory only** from the latest user message (hybrid FTS + trgm + vector), then injects top-N hits as a **runtime-only** `role: system` message (`name: passive_memory_context`) immediately before that user message. Not persisted to PG; not counted as a memory reference.
+Before each user-facing turn, the runtime searches **semantic memory only** from the latest user message (hybrid FTS + trgm + vector), then injects top-N hits as a **runtime-only** `role: assistant` message (`name: passive_memory_context`) immediately before that user message. Not persisted to PG; not counted as a memory reference.
 
 - **Resident memory** (system prompt): pinned + high-reference anchors, session snapshot
 - **Passive recall**: query-relevant semantic hits for the current message

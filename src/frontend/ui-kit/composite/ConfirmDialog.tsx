@@ -21,6 +21,8 @@ export type ConfirmDialogProps = {
   confirmLabel?: ReactNode;
   cancelLabel?: ReactNode;
   variant?: ConfirmDialogVariant;
+  /** 为 false 时仅显示确认按钮（用于 alert 式提示） */
+  cancelable?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
   className?: string;
@@ -33,6 +35,7 @@ export function ConfirmDialog({
   confirmLabel,
   cancelLabel,
   variant = "primary",
+  cancelable = true,
   onConfirm,
   onCancel,
   className,
@@ -55,9 +58,11 @@ export function ConfirmDialog({
           ) : null}
         </DialogHeader>
         <DialogFooter>
-          <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
-            {cancelLabel ?? m.ui_common_cancel()}
-          </Button>
+          {cancelable ? (
+            <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
+              {cancelLabel ?? m.ui_common_cancel()}
+            </Button>
+          ) : null}
           <Button
             type="button"
             variant={confirmButtonVariant(variant)}

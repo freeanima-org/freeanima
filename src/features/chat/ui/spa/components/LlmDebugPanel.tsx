@@ -27,7 +27,7 @@ function TurnRow({
   turn: LlmDebugSnapshotPayload["invoke"]["turns"][number];
   index: number;
 }) {
-  const isPassive = turn.role === "system" && turn.name === "passive_memory_context";
+  const isPassive = turn.role === "assistant" && turn.name === "passive_memory_context";
   const isNotification = turn.role === "assistant" && turn.name === "notification_context";
   const highlight = isPassive || isNotification;
 

@@ -62,12 +62,12 @@ describe("storedMessagesToInvokeInput", () => {
     expect(turns.map((t) => t.role)).toEqual(["user", "assistant"]);
   });
 
-  it("forwards named runtime system turns before provider invoke", () => {
+  it("forwards passive memory as assistant turn before provider invoke", () => {
     const messages: StoredMessage[] = [
       { role: "system", content: "You are helpful" },
       { role: "user", content: "hi" },
       {
-        role: "system",
+        role: "assistant",
         name: "passive_memory_context",
         content: "recalled memory",
       },
@@ -77,7 +77,7 @@ describe("storedMessagesToInvokeInput", () => {
     expect(systemPrompt).toBe("You are helpful");
     expect(turns).toEqual([
       { role: "user", content: "hi" },
-      { role: "system", name: "passive_memory_context", content: "recalled memory" },
+      { role: "assistant", name: "passive_memory_context", content: "recalled memory" },
       { role: "user", content: "follow up" },
     ]);
   });

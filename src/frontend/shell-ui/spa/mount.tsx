@@ -2,6 +2,7 @@ import { StrictMode, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { Button, Card, CardContent } from "@freeanima/ui-kit";
 import type { SettingsBinding } from "@freeanima/shell-sdk/settings";
+import { blockNativeDialogs, ConfirmPromptHost } from "@freeanima/ui-kit/composite";
 
 import { bootstrapSentryFromSettings, Sentry } from "./bootstrap/sentry.ts";
 import { ShellRouterProvider } from "./router.tsx";
@@ -126,6 +127,7 @@ function ShellAppTree({
 
   return (
     <ShellAppProvider bindings={bindings}>
+      <ConfirmPromptHost />
       <div className="h-full min-h-screen flex flex-col">{content}</div>
     </ShellAppProvider>
   );
@@ -153,6 +155,8 @@ export async function mountShellUi(opts: MountShellUiOptions): Promise<void> {
   if (!rootEl) {
     throw new Error("缺少 #root 容器");
   }
+
+  blockNativeDialogs();
 
   createRoot(rootEl).render(
     <StrictMode>

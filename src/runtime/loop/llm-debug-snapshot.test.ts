@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
 import type { StoredMessage } from "@freeanima/core/db/domain";
-import { PASSIVE_MEMORY_CONTEXT_SYSTEM_NAME } from "@freeanima/core/llm/runtime-system-turn";
+import { PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME } from "@freeanima/core/llm/runtime-system-turn";
 
 import { buildLlmDebugSnapshot, LLM_DEBUG_CONTENT_MAX } from "./llm-debug-snapshot.ts";
 
@@ -24,8 +24,8 @@ describe("buildLlmDebugSnapshot", () => {
       { role: "system", content: "global" },
       { role: "user", content: "earlier" },
       {
-        role: "system",
-        name: PASSIVE_MEMORY_CONTEXT_SYSTEM_NAME,
+        role: "assistant",
+        name: PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME,
         content: "recalled facts",
       },
       { role: "user", content: "current" },
@@ -33,9 +33,9 @@ describe("buildLlmDebugSnapshot", () => {
     const snapshot = buildLlmDebugSnapshot(messages, [], "m", 0, "initial");
 
     expect(snapshot.runtime_injections?.passive_memory_context).toBe(true);
-    expect(snapshot.invoke.turns.some((t) => t.name === PASSIVE_MEMORY_CONTEXT_SYSTEM_NAME)).toBe(
-      true,
-    );
+    expect(
+      snapshot.invoke.turns.some((t) => t.name === PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME),
+    ).toBe(true);
   });
 
   it("truncates long content", () => {

@@ -3,11 +3,19 @@ import { resolveHubWsUrl } from "@freeanima/sap-contract/urls";
 import { buildShellApiFields } from "@freeanima/shell-sdk/shell-api-fields";
 import { normalizeShellClientConfig } from "@freeanima/shell-sdk/shell-client-config";
 import type { SatelliteShellApi } from "@freeanima/shell-sdk/shell-api";
+import { HUB_URL_KEY, REMOTE_AUTH_TOKEN_KEY } from "@freeanima/shell-sdk/settings";
 
 export const SHELL_CONFIG_CHANGED_EVENT = "freeanima:shell-config-changed";
 
 function notifyShellConfigChanged(): void {
   window.dispatchEvent(new CustomEvent(SHELL_CONFIG_CHANGED_EVENT));
+}
+
+function reloadWebShellFromPrefs(): void {
+  const hubUrl = localStorage.getItem(HUB_URL_KEY)?.trim() ?? "";
+  const remoteAuthToken = localStorage.getItem(REMOTE_AUTH_TOKEN_KEY)?.trim() ?? "";
+  if (!hubUrl) return;
+  installWebShellFromPrefs(hubUrl, remoteAuthToken);
 }
 
 function shellExtras(
@@ -19,6 +27,7 @@ function shellExtras(
   return {
     createFileInstanceStore: (appId) => browserSapInstanceStore(hubOrigin, appId),
     async emitConfigChanged(): Promise<void> {
+      reloadWebShellFromPrefs();
       notifyShellConfigChanged();
     },
     listenConfigChanged(handler: () => void): () => void {

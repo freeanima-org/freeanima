@@ -84,7 +84,6 @@ function createSatelliteShell(
     setCompanionVisible: async (visible) => {
       await ipcRenderer.invoke("shell:set-companion-visible", visible);
     },
-    emitConfigChanged: () => ipcRenderer.invoke("shell:emit-config-changed"),
     listenConfigChanged: (handler) => {
       const listener = () => handler();
       ipcRenderer.on("shell:config-changed", listener);
@@ -110,10 +109,19 @@ function applyHubFields(
   shell.hubWsUrl = hubFields.hubWsUrl;
   if (hubFields.remoteAuth !== undefined) {
     shell.remoteAuth = hubFields.remoteAuth;
+  } else {
+    delete shell.remoteAuth;
   }
   if (hubFields.hubFetch !== undefined) {
     shell.hubFetch = hubFields.hubFetch;
+  } else {
+    delete shell.hubFetch;
   }
+}
+
+async function refreshHubFields(shell: SatelliteShellApi): Promise<void> {
+  const next = await loadHubClientConfig();
+  applyHubFields(shell, resolvePreloadHubConfig(next));
 }
 
 async function loadHubClientConfig(): Promise<HubClientConfigPayload | null> {
@@ -128,10 +136,13 @@ function bootstrapPreload(): void {
   const cfg = loadHubClientConfigSync();
   const shell = createSatelliteShell(resolvePreloadHubConfig(cfg));
 
+  shell.emitConfigChanged = async () => {
+    await refreshHubFields(shell);
+    await ipcRenderer.invoke("shell:emit-config-changed");
+  };
+
   ipcRenderer.on("shell:config-changed", () => {
-    void loadHubClientConfig().then((next) => {
-      applyHubFields(shell, resolvePreloadHubConfig(next));
-    });
+    void refreshHubFields(shell);
   });
 
   contextBridge.exposeInMainWorld("satelliteShell", shell);

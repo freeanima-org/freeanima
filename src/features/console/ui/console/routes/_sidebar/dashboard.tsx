@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { DependencyStatus, ServiceStatus } from "@freeanima/console-contract/api";
 import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
-import { ConfirmDialog, StatusAlert } from "@freeanima/ui-kit/composite";
+import { ConfirmDialog, showAlert, StatusAlert } from "@freeanima/ui-kit/composite";
 import { useState } from "react";
 import { getStatus, restartService } from "@console/lib/api.ts";
 import { m } from "@console/lib/i18n.ts";
@@ -124,14 +124,16 @@ function DashboardPage() {
     setRestarting(true);
     try {
       const res = await restartService();
-      alert(translateApiPayload(res as { code?: string; message?: string }));
+      await showAlert({
+        description: translateApiPayload(res as { code?: string; message?: string }),
+      });
     } catch (err) {
       logCaughtError("dashboard/restartService", err);
-      alert(
-        m.console_dashboard_restart_failed({
+      await showAlert({
+        description: m.console_dashboard_restart_failed({
           detail: err instanceof Error ? err.message : String(err),
         }),
-      );
+      });
       setRestarting(false);
     }
   };
