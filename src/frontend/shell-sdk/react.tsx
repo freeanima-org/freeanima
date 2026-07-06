@@ -1,5 +1,9 @@
 export { SubjectScopeProvider, useSubjectScope } from "./subject-scope-react.tsx";
 export { SubjectToggle } from "./SubjectToggle.tsx";
+export {
+  useSetShellModuleVisibility,
+  useShellModuleVisibility,
+} from "./shell-module-visibility-react.tsx";
 export { useNetworkOnline, useNetworkStatus } from "./use-network-status.ts";
 export { useHubConnection } from "./use-hub-connection.ts";
 export { reconnectHub } from "./hub-connection.ts";

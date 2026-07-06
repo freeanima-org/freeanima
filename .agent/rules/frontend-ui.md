@@ -40,16 +40,16 @@
 
 ## 平台布局（两层模型）
 
-**能力层**（壳 / `satelliteShell`）：存储、IPC、settings registry 内容、长按 vs 右键、滑动手势——**不**决定底栏/顶栏。
+**能力层**（壳 / `satelliteShell`）：存储、IPC、settings registry 内容、长按 vs 右键、滑动手势——**不**决定底栏/Rail。
 
 **布局层**（仅视口断点，壳不锁定）：
 
-| 档位 | 视口        | API                                                  | 效果            |
-| ---- | ----------- | ---------------------------------------------------- | --------------- |
-| 窄   | ≤1023px     | `useLayoutMode()` → compact、`useDrawerNav()` → true | 底栏 + drawer   |
-| 中   | 1024–1279px | expanded                                             | 顶栏 + 两栏并列 |
-| 宽   | ≥1280px     | `useThreeColumnLayoutMode()` → wide                  | 顶栏 + 三栏     |
+| 档位 | 视口              | API                                                  | 效果                                                                      |
+| ---- | ----------------- | ---------------------------------------------------- | ------------------------------------------------------------------------- |
+| 窄   | `< md`（< 768px） | `useLayoutMode()` → compact、`useDrawerNav()` → true | 底栏 + drawer                                                             |
+| 宽   | `≥ md`（768px+）  | expanded                                             | 左侧 Rail + 三栏并列（Task/Email 等 `useThreeColumnLayoutMode()` → wide） |
 
+- Shell 模块可见性：设置 → 模块，**localStorage** 纯 UI 偏好（`shell-module-visibility.ts`）；`chat` / `settings` 不可关
 - 导航 IA：**必须** `detectLayoutMode()` / `useDrawerNav()` 分支；**禁止**用 `isElectron` / `isNativeShell` 锁布局
 - 设置页 chrome：`detectPlatform()` 跟布局粗档（compact → mobile tabs，expanded → desktop 侧栏）
 - 交互范式（右键/长按/滑动）：能力层分支，**禁止**用 layoutMode 猜测

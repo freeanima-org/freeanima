@@ -65,7 +65,7 @@ export function EmailApp() {
       setSelectedMessageId(message.id);
       setDetailLoading(true);
       setError("");
-      if (layoutMode !== "wide") setDetailOpen(true);
+      if (layoutMode === "compact") setDetailOpen(true);
       writeModuleSelection("email", { accountId, messageId: message.id });
       try {
         const row = await readEmailMessage(message.id);

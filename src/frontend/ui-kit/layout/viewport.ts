@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 
 import { windowWithSatelliteShell } from "./window-shell.ts";
 
-/** 与 Chat / Task / Console 侧栏断点一致（窄档 ≤1023px） */
-export const MOBILE_LAYOUT_MQ = "(max-width: 1023px)";
+/** 与 Tailwind md 对齐：compact < md，expanded ≥ md */
+export const COMPACT_LAYOUT_MAX_PX = 767;
+export const MOBILE_LAYOUT_MQ = `(max-width: ${COMPACT_LAYOUT_MAX_PX}px)`;
+export const EXPANDED_LAYOUT_MQ = `(min-width: ${COMPACT_LAYOUT_MAX_PX + 1}px)`;
 
 export function isNativeShell(): boolean {
   return (
@@ -17,7 +19,7 @@ export function isMobileLayoutViewport(): boolean {
   return window.matchMedia(MOBILE_LAYOUT_MQ).matches;
 }
 
-/** 窄视口布局（≤1023px） */
+/** 窄视口布局（< md） */
 export function useMobileLayout(): boolean {
   const [mobile, setMobile] = useState(() => isMobileLayoutViewport());
 

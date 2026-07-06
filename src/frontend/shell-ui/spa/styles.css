@@ -12,6 +12,7 @@
 
 :root {
   --shell-bottom-nav-h: 3rem;
+  --shell-rail-w: 3.25rem;
 }
 
 html,
@@ -32,13 +33,13 @@ html[data-shell-ui="1"] body {
   overscroll-behavior-y: none;
 }
 
-.shell-module-layout .shell-top-nav {
+.shell-module-rail {
   padding-top: var(--sat);
+  padding-bottom: var(--sab);
   padding-left: var(--sal);
-  padding-right: var(--sar);
 }
 
-/** 移动端底栏布局：顶栏 safe-area 由 main 统一承担（无独立顶栏时） */
+/** 移动端底栏布局：safe-area 由 main 统一承担 */
 .shell-module-layout.shell-layout-compact > main {
   padding-top: var(--sat);
   padding-left: var(--sal);

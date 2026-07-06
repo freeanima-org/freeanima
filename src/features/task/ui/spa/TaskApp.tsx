@@ -572,7 +572,7 @@ export function TaskApp() {
           return copy;
         });
         setDetailSaveStatus("idle");
-        if (layoutMode !== "wide") setDetailOpen(true);
+        if (layoutMode === "compact") setDetailOpen(true);
       })();
     },
     [flushDetailSave, layoutMode],

@@ -274,6 +274,9 @@
       "@freeanima/sap-contract/*": ["./src/shared/sap-contract/*.ts"],
       "@freeanima/shell-ui/build": ["./src/frontend/shell-ui/build.ts"],
       "@freeanima/shell-ui/mount": ["./src/frontend/shell-ui/spa/mount.tsx"],
+      "@freeanima/shell-ui/spa/settings/modules-section.ts": [
+        "./src/frontend/shell-ui/spa/settings/modules-section.ts"
+      ],
       "@freeanima/vault-crypto/*": ["./src/shared/vault-crypto/*.ts"],
       "@freeanima/core/compress": ["./src/core/compress/index.ts"],
       "@freeanima/core/config/*": ["./src/core/config/*.ts"],
