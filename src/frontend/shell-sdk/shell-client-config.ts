@@ -21,3 +21,8 @@ export function normalizeShellClientConfig(input: {
   if (!hubUrl) throw new Error("Hub 地址不能为空");
   return { hubUrl, remoteAuthToken };
 }
+
+/** 未配置 Hub API Token 时需先完成连接引导（SAP / Web 壳层） */
+export function shellClientNeedsHubSetup(config: ShellClientConfig | null): boolean {
+  return !config?.remoteAuthToken?.trim();
+}

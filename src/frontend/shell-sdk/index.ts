@@ -26,7 +26,11 @@ export type {
 
 export { UnsupportedMobileError } from "./mobile-errors.ts";
 export type { ShellClientConfig } from "./shell-client-config.ts";
-export { normalizeShellClientConfig, parseShellClientConfig } from "./shell-client-config.ts";
+export {
+  normalizeShellClientConfig,
+  parseShellClientConfig,
+  shellClientNeedsHubSetup,
+} from "./shell-client-config.ts";
 export type { ShellDebugConfig } from "./shell-debug-config.ts";
 export {
   DEFAULT_SHELL_DEBUG,

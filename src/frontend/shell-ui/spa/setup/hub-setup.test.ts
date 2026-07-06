@@ -15,11 +15,21 @@ function stubShell(
 }
 
 describe("needsHubSetup", () => {
-  test("仅 Web 壳层在未配置 token 时需要引导", () => {
+  test("Web 与 Electron 在未配置 token 时需要引导", () => {
     expect(
       needsHubSetup(
         stubShell({
           isElectron: false,
+          hubUrl: "http://127.0.0.1:2658",
+          hubWsUrl: "ws://127.0.0.1:2658/hub/rpc/v1",
+        }),
+      ),
+    ).toBe(true);
+
+    expect(
+      needsHubSetup(
+        stubShell({
+          isElectron: true,
           hubUrl: "http://127.0.0.1:2658",
           hubWsUrl: "ws://127.0.0.1:2658/hub/rpc/v1",
         }),
@@ -38,8 +48,7 @@ describe("needsHubSetup", () => {
     ).toBe(false);
   });
 
-  test("桌面与移动壳层不进入 Web 引导", () => {
-    expect(needsHubSetup(stubShell({ isElectron: true }))).toBe(false);
+  test("移动原生壳层不进入 Web 引导", () => {
     expect(needsHubSetup(stubShell({ isElectron: false, isNativeShell: true }))).toBe(false);
   });
 });
