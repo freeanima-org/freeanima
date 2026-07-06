@@ -90,6 +90,10 @@ function openHubSettingsIfAvailable(): void {
   getSatelliteShell()?.openHubSettings?.();
 }
 
+function isTransportFailureMessage(msg: string): boolean {
+  return /timed out|websocket|hub_rpc_timeout|网络错误/i.test(msg);
+}
+
 export function ChatApp() {
   const conversations = useConversationsStore((s) => s.conversations);
   const currentId = useConversationsStore((s) => s.currentId);
@@ -335,8 +339,9 @@ export function ChatApp() {
   }, [refreshing, hubConnection, currentId, fetchConversations, selectConversation]);
 
   useEffect(() => {
-    if (hubConnection === "disconnected") {
+    if (hubConnection !== "connected") {
       useChatStore.getState().abortStream();
+      sendingRef.current = false;
     }
   }, [hubConnection]);
 
@@ -619,6 +624,9 @@ export function ChatApp() {
               role: "assistant",
               content: `⚠️ ${msg}`,
             });
+            if (isTransportFailureMessage(msg)) {
+              void reconnectHub().catch(() => undefined);
+            }
             if (isViewingOrigin()) scrollDown();
           },
           onDone: (opts) => {

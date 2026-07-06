@@ -17,8 +17,24 @@ export type {
   HeartbeatPayload,
 } from "./lifecycle.ts";
 
+export {
+  HUB_RPC_CONNECT_TIMEOUT_MS,
+  HUB_RPC_DEFAULT_REQUEST_TIMEOUT_MS,
+  HUB_RPC_HEARTBEAT_SEND_CAP_MS,
+  HUB_RPC_LIVENESS_CHECK_INTERVAL_MS,
+  HUB_RPC_LIVENESS_SILENCE_MS,
+  HUB_RPC_MESSAGE_SEND_TIMEOUT_MS,
+} from "./constants.ts";
+
+export { HubRpcTimeoutError, isHubRpcTimeoutError, isHubRpcTransportError } from "./errors.ts";
+
 export { createRpcClient } from "./client.ts";
-export type { RpcClient, CreateRpcClientOptions, RpcRequestHandler } from "./client.ts";
+export type {
+  RpcClient,
+  CreateRpcClientOptions,
+  RpcRequestHandler,
+  RpcRequestOptions,
+} from "./client.ts";
 
 export { runHubRpcTransport } from "./transport.ts";
 export type {
@@ -36,6 +52,7 @@ export {
   subscribeBundledHubRpcConfigChanges,
   subscribeHubRpcConnectionState,
   getHubRpcConnectionState,
+  getHubRpcLastInboundAt,
   reconnectHubRpc,
 } from "./bundled.ts";
 export type {

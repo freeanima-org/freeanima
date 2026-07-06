@@ -1,5 +1,7 @@
 import { randomUuid } from "@freeanima/kernel/random-uuid";
 
+import { HUB_RPC_CONNECT_TIMEOUT_MS, HUB_RPC_DEFAULT_REQUEST_TIMEOUT_MS } from "./constants.ts";
+import { HubRpcTimeoutError } from "./errors.ts";
 import type { HubRpcConnectPayload, HubRpcConnectedPayload } from "./lifecycle.ts";
 import { hubRpcConnectPayloadSchema } from "./lifecycle.ts";
 import type { HubRpcEnvelope } from "./protocol.ts";
@@ -8,13 +10,19 @@ import { parseHubRpcEnvelope, serializeHubRpcEnvelope } from "./protocol.ts";
 type PendingRequest = {
   resolve: (value: unknown) => void;
   reject: (error: Error) => void;
+  timer: ReturnType<typeof setTimeout> | null;
+};
+
+export type RpcRequestOptions = {
+  /** 省略时使用 {@link HUB_RPC_DEFAULT_REQUEST_TIMEOUT_MS}；传 0 禁用超时 */
+  timeoutMs?: number;
 };
 
 export type RpcRequestHandler = (payload: unknown) => unknown | Promise<unknown>;
 
 export type RpcClient = {
   connect(payload: Omit<HubRpcConnectPayload, "protocol">): Promise<HubRpcConnectedPayload>;
-  request<T = unknown>(method: string, payload?: unknown): Promise<T>;
+  request<T = unknown>(method: string, payload?: unknown, opts?: RpcRequestOptions): Promise<T>;
   onEvent(method: string, handler: (payload: unknown) => void): () => void;
   onRequest(method: string, handler: RpcRequestHandler): () => void;
   close(): void;
@@ -27,6 +35,35 @@ export type CreateRpcClientOptions = {
   /** 全局 Hub→Client 请求处理器（与 {@link RpcClient.onRequest} 二选一或并存） */
   onRequest?: (req: { id: string; method: string; payload: unknown }) => unknown | Promise<unknown>;
 };
+
+function resolveRequestTimeoutMs(opts?: RpcRequestOptions): number | null {
+  if (opts?.timeoutMs === 0) return null;
+  return opts?.timeoutMs ?? HUB_RPC_DEFAULT_REQUEST_TIMEOUT_MS;
+}
+
+function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  label: string,
+  onTimeout: () => void,
+): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      onTimeout();
+      reject(new HubRpcTimeoutError(`${label} timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err instanceof Error ? err : new Error(String(err)));
+      },
+    );
+  });
+}
 
 export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
   const { ws } = options;
@@ -91,6 +128,7 @@ export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
       const entry = pending.get(envelope.id);
       if (!entry) return;
       pending.delete(envelope.id);
+      if (entry.timer) clearTimeout(entry.timer);
       if (envelope.ok) {
         entry.resolve(envelope.payload);
       } else {
@@ -123,6 +161,7 @@ export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
   ws.addEventListener("close", () => {
     options.onDisconnected?.();
     for (const [, entry] of pending) {
+      if (entry.timer) clearTimeout(entry.timer);
       entry.reject(new Error("Hub RPC WebSocket closed"));
     }
     pending.clear();
@@ -133,7 +172,7 @@ export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
       payload: Omit<HubRpcConnectPayload, "protocol">,
     ): Promise<HubRpcConnectedPayload> {
       const body = hubRpcConnectPayloadSchema.parse({ ...payload, protocol: "HubRPC/1.0" });
-      return new Promise<HubRpcConnectedPayload>((resolve, reject) => {
+      const connectPromise = new Promise<HubRpcConnectedPayload>((resolve, reject) => {
         const cleanup = (): void => {
           ws.removeEventListener("message", onMessage);
           ws.removeEventListener("close", onClose);
@@ -162,17 +201,36 @@ export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
         ws.addEventListener("close", onClose, { once: true });
         send({ kind: "connect", payload: body });
       });
+
+      return withTimeout(
+        connectPromise,
+        HUB_RPC_CONNECT_TIMEOUT_MS,
+        "Hub RPC connect",
+        () => undefined,
+      );
     },
 
-    request<T = unknown>(method: string, payload?: unknown): Promise<T> {
+    request<T = unknown>(method: string, payload?: unknown, opts?: RpcRequestOptions): Promise<T> {
+      const timeoutMs = resolveRequestTimeoutMs(opts);
       const id = randomUuid();
-      return new Promise<T>((resolve, reject) => {
-        pending.set(id, {
+      const requestPromise = new Promise<T>((resolve, reject) => {
+        const entry: PendingRequest = {
           resolve: resolve as (value: unknown) => void,
           reject,
-        });
+          timer: null,
+        };
+        if (timeoutMs != null) {
+          entry.timer = setTimeout(() => {
+            pending.delete(id);
+            reject(
+              new HubRpcTimeoutError(`Hub RPC request ${method} timed out after ${timeoutMs}ms`),
+            );
+          }, timeoutMs);
+        }
+        pending.set(id, entry);
         send({ kind: "req", id, method, payload: payload ?? {} });
       });
+      return requestPromise;
     },
 
     onEvent(method: string, handler: (payload: unknown) => void): () => void {
