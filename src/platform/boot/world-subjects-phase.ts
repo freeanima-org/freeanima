@@ -1,4 +1,4 @@
-import type { FileConfig } from "@freeanima/platform/config";
+import type { HybridConfig } from "@freeanima/platform/config";
 import { resolveAndBindWorldContext } from "@freeanima/core/config/world-context";
 
 import { startupLog } from "./status.ts";
@@ -7,7 +7,7 @@ export type WorldSubjectsPhaseResult = Record<string, never>;
 
 /** Phase 2.5: 确保 user/agent subject 与默认私有 world（迁移后、engine 前） */
 export async function bootWorldSubjectsPhase(
-  config: FileConfig,
+  config: HybridConfig,
 ): Promise<WorldSubjectsPhaseResult> {
   startupLog("Ensuring world subjects…");
   const ctx = await resolveAndBindWorldContext(config.data);

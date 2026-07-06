@@ -3,6 +3,7 @@ import type { SettingsSection } from "@freeanima/shell-sdk/settings";
 export const shellModulesSettingsSection: SettingsSection = {
   id: "shell-modules",
   order: 20,
+  category: "client",
   title: "模块",
   description: "控制 Shell 导航中显示的模块。设置保存在本机，不同步到 Hub。",
   platforms: {

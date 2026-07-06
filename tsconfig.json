@@ -278,6 +278,9 @@
       "@freeanima/shell-ui/spa/settings/modules-section.ts": [
         "./src/frontend/shell-ui/spa/settings/modules-section.ts"
       ],
+      "@freeanima/shell-ui/spa/settings/hub-config/hub-runtime-section.ts": [
+        "./src/frontend/shell-ui/spa/settings/hub-config/hub-runtime-section.ts"
+      ],
       "@freeanima/vault-crypto/*": ["./src/shared/vault-crypto/*.ts"],
       "@freeanima/core/compress": ["./src/core/compress/index.ts"],
       "@freeanima/core/config/*": ["./src/core/config/*.ts"],

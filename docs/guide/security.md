@@ -17,14 +17,14 @@ FreeAnima is designed for **single-user local / intranet** deployment:
 
 ## Credential Responsibilities
 
-| Rule                     | Description                                                                                                                                                      |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Sole authoritative store | **Vault** (ECS `vault_item` in User + Agent libraries); legacy pass (`~/.password-store`) is read-only on disk after migration — runtime no longer uses pass CLI |
-| Never commit secrets     | Do not write API keys, tokens, DB passwords into `config.yaml` and commit to git                                                                                 |
-| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, agent machine key (`vault/agent-machine.key`), conversations, memory—recommend `chmod 700`              |
-| CLI plaintext output     | `anima vault get` prints Agent-library field plaintext to stdout; do not redirect to shared logs                                                                 |
-| User master password     | Set only in Shell `/vault` or bundled Chat unlock box; **never** sent as a chat message or stored in PG messages                                                 |
-| Chat User vault unlock   | **v1 bundled Chat only** (`src/app/shell/web` / desktop / mobile); Discord / WeChat gateways cannot unlock User library                                          |
+| Rule                     | Description                                                                                                                                                          |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sole authoritative store | **Vault** (ECS `vault_item` in User + Agent libraries); legacy pass (`~/.password-store`) is read-only on disk after migration — runtime no longer uses pass CLI     |
+| Never commit secrets     | Do not write API keys, tokens, DB passwords into `config.yaml` and commit to git; runtime LLM/MCP settings live in PG — use `vault()` / `env()` references there too |
+| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, agent machine key (`vault/agent-machine.key`), conversations, memory—recommend `chmod 700`                  |
+| CLI plaintext output     | `anima vault get` prints Agent-library field plaintext to stdout; do not redirect to shared logs                                                                     |
+| User master password     | Set only in Shell `/vault` or bundled Chat unlock box; **never** sent as a chat message or stored in PG messages                                                     |
+| Chat User vault unlock   | **v1 bundled Chat only** (`src/app/shell/web` / desktop / mobile); Discord / WeChat gateways cannot unlock User library                                              |
 
 `config.yaml` supports `vault("item_id", "field")` (Agent library, Hub headless) and `env("KEY")` for secrets; values are injected at runtime. User-library inject for tools requires an unlocked Chat session on the client.
 

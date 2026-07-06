@@ -49,6 +49,7 @@ const sleepCycleBodySchema = z.object({
   day: z.string().optional(),
   deep_sleep_mode: z.enum(["full", "incremental"]).optional(),
 });
+const configSectionParamSchema = z.object({ section: z.string().min(1) });
 const sleepRunStepBodySchema = z.object({
   step_id: z.string().min(1),
   day: z.string().optional(),
@@ -102,6 +103,26 @@ export const consoleMethodDefs = {
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: httpOnlyMeta({ method: "POST", path: "/api/status/restart" }),
+  }),
+  "config.get": defineHubMethod({
+    input: emptyInputSchema,
+    output: unknownOutputSchema,
+    meta: httpOnlyMeta({ method: "GET", path: "/api/config" }),
+  }),
+  "config.getSection": defineHubMethod({
+    input: configSectionParamSchema,
+    output: unknownOutputSchema,
+    meta: httpOnlyMeta({ method: "GET", path: "/api/config/{section}" }),
+  }),
+  "config.patchSection": defineHubMethod({
+    input: configSectionParamSchema.extend({ patch: z.record(z.string(), z.unknown()) }),
+    output: unknownOutputSchema,
+    meta: httpOnlyMeta({ method: "PATCH", path: "/api/config/{section}" }),
+  }),
+  "config.importFromFile": defineHubMethod({
+    input: emptyInputSchema,
+    output: unknownOutputSchema,
+    meta: httpOnlyMeta({ method: "POST", path: "/api/config/import-from-file" }),
   }),
   "memory.files": defineHubMethod({
     input: emptyInputSchema,

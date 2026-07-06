@@ -53,6 +53,7 @@ const debugFieldsMobile = defineSettingsForm({
 export const debugSettingsSection: SettingsSection = {
   id: "debug",
   order: 90,
+  category: "client",
   title: "调试",
   description:
     "桌面：F12 打开 DevTools；打包后可用 DESKTOP_SHELL_DEVTOOLS=1。移动：Debug APK + USB → chrome://inspect，或启用 vConsole。",

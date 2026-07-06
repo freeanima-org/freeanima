@@ -4,7 +4,7 @@ import { desktopGeneralSettingsSection, hubSettingsSection } from "./hub-section
 
 describe("hub settings sections", () => {
   test("hub section exposes Hub 连接 fields on desktop and mobile", () => {
-    expect(hubSettingsSection.title).toBe("通用");
+    expect(hubSettingsSection.title).toBe("连接");
     expect(hubSettingsSection.platforms.mobile?.kind).toBe("form");
     const desktop = hubSettingsSection.platforms.desktop;
     expect(desktop?.kind).toBe("form");
@@ -16,7 +16,7 @@ describe("hub settings sections", () => {
   });
 
   test("desktop general section includes launchAtLogin", () => {
-    expect(desktopGeneralSettingsSection.title).toBe("通用");
+    expect(desktopGeneralSettingsSection.title).toBe("连接");
     const desktop = desktopGeneralSettingsSection.platforms.desktop;
     expect(desktop?.kind).toBe("form");
     if (desktop?.kind !== "form") return;

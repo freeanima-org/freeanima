@@ -252,7 +252,7 @@ function cmdSethome(ctx: CommandContext): string {
       return "⚠️ Cannot identify current Discord channel.";
     }
     const threadId = String(extra.thread_id ?? "").trim();
-    setHomeChannel("discord", channelId, threadId || undefined);
+    void setHomeChannel("discord", channelId, threadId || undefined);
     const where = threadId ? `channel ${channelId} / thread ${threadId}` : `channel ${channelId}`;
     return `✅ Set Discord home channel to ${where}(cron delivery etc. will default here)`;
   }
@@ -262,7 +262,7 @@ function cmdSethome(ctx: CommandContext): string {
     if (!peerId) {
       return "⚠️ Cannot identify current WeChat session.";
     }
-    setHomeChannel("weixin", peerId);
+    void setHomeChannel("weixin", peerId);
     return `✅ Set WeChat home channel to ${peerId}(cron delivery etc. will default here)`;
   }
 

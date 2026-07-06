@@ -1,202 +1,25 @@
-# 逸灵风 config.yaml 示例
+# 逸灵风 config.yaml — 冷启动引导（bootstrap）
 # 复制到 ~/.anima/config.yaml 并根据需要修改
+#
+# 运行时配置（llm、compression、mcp 等）保存在 PostgreSQL；
+# 请在 Shell 设置 → Hub 服务 → 服务配置 中编辑，或首次启动时从本文件自动导入。
 
-# LLM（provider + profile）；API Key 使用 vault() 或 env() 引用
-llm:
-  default_profile: chat
-  providers:
-    main:
-      backend: openai_compatible
-      base_url: https://api.openai.com/v1
-      # api_key: vault("123", "password")
-  profiles:
-    chat:
-      chain:
-        - provider: main
-          model: deepseek-v4-flash
-    reflect:
-      chain:
-        - provider: main
-          model: deepseek-v4-flash
-    summary:
-      chain:
-        - provider: main
-          model: deepseek-v4-flash
-    # 可选：goal judge 专用轻量模型；未配置时回退 default_profile
-    goal_judge:
-      chain:
-        - provider: main
-          model: deepseek-v4-flash
+# 生产必填：PostgreSQL 连接（也可用 env DATABASE_URL）
+database:
+  url: env("DATABASE_URL")
+  # url: postgresql://freeanima:password@127.0.0.1:5432/freeanima
 
-# Service API Token（按 subject 绑定；业务 API 一律需要 Bearer）
-# 冷启动：anima token create --subject-id 1 --name bootstrap
-# 客户端设置页填写输出的 fa_at_... token（字段名仍为 remoteAuthToken）
+# Hub HTTP 监听（可选，默认 127.0.0.1）
+# http:
+#   host: 0.0.0.0
+#   cors_origins:
+#     - http://127.0.0.1:4173
 
-# 实体 subject / world 上下文（通知收件人 SSOT）
-# 省略时默认 user_subject_id=1、agent_subject_id=2
-# user_world_id / agent_world_id 由 subject 的 default_private_world_id 推导，不在此配置
-# worlds:
-#   user_subject_id: 1
-#   agent_subject_id: 2
-
-# 旧版（仍兼容一版，优先读 worlds 段）：
-# notifications:
-#   user_subject_id: 1
-#   agent_subject_id: 2
-
-# Firecrawl（web_search / web_extract）
-# API Key 走 Vault：Shell /vault 或 vault("item_id", "token")
-firecrawl:
-  api_url: http://127.0.0.1:3002
-
-# 浏览器工具（browser_*，V1 仅 Camofox REST 后端）
-# browser:
-#   camofox:
-#     base_url: http://127.0.0.1:9377
-#     timeout_ms: 30000
-#     managed_persistence: false
-#     adopt_existing_tab: false
-# Docker: docker run -p 9377:9377 -e CAMOFOX_PORT=9377 jo-inc/camofox-browser
-
-# === 推送通知（手机推送） ===
-# push:
-#   provider: pushdeer
-#   pushdeer:
-#     pushkey: xxxxxxxx
-#     api_base: https://api2.pushdeer.com
-
-# MCP 服务器（stdio / SSE，入站：FreeAnima 作 Client 连外部 Server，工具名 mcp_{server}_{tool}）
-# 出站：Hub /mcp 端点暴露 expose_mcp 工具给外部 agent（见 docs/guide/remote-access.md）
-# enabled 默认 true；设为 false 时逸灵风启动不会自动连接，可在管理台手动启动
-# stdio 建议 command: node + args: [脚本路径]
-# mcp_servers:
-#   database:
-#     command: npx
-#     args: ["-y", "@modelcontextprotocol/server-postgres", "--connection", "postgresql://..."]
-#     transport: stdio
-#     enabled: true
-#   test-http:
-#     url: http://127.0.0.1:3456/mcp
-#     transport: sse
-#     enabled: false
-#     # 需先单独启动：node ~/.anima/mcp-test-http.mjs
-
-# Firecrawl（web_search / web_extract）
-# firecrawl:
-#   api_url: http://127.0.0.1:3003
-
-# ACP 代理（Cursor CLI：`agent acp`，见 https://cursor.com/docs/cli/acp）
-# enabled 默认 true；设为 false 时逸灵风启动不会自动连接，可在管理台手动连接
-# acp_agents:
-#   cursor:
-#     command: ~/.local/bin/agent
-#     args: ["--force", "acp"]
-#     adapter: cursor
-#     cwd: /path/to/your/project
-#     description: "委托 Cursor Agent 执行编码任务"
-#     plan_mode: false
-#     agent_mode: agent
-#     model: auto  # Cursor ACP 模型；auto=Auto，也可写 composer-2.5[fast=true] 等 modelId
-#     enabled: true
-#     connect_timeout_ms: 15000
-#     prompt_timeout_ms: 120000
-#     health_check_interval_ms: 60000
-#     session_ttl_ms: 0
-#     prompt_retry_once: true
-#     auto_restart: true
-#     max_concurrent_tasks: 3  # 同 agent 并行 async 任务上限（每任务独立子进程）
-
-# 模型上下文窗口（用于 token 占用率压缩；未配置则回退 max_rounds 条数模式）
-models:
-  deepseek-v4-flash:
-    context_window: 1000000
-
-# 邮箱账户已迁入 PostgreSQL entities（email_account 组件）；请用 email_register_account 工具或迁移脚本 scripts/migrate-email-to-entities.ts
-
-# 运行时压缩（PG messages 不删，仅裁切发给 LLM 的视图）
-# AutoLlmRun 审计（无用户 LLM：cron agent、睡眠管线）；cron 脚本 no_agent 不走此表
-# auto_llm:
-#   retention_days: 30
-#   per_run_kind_keep: 100
-compression:
-  enabled: true
-  max_rounds: 50
-  reserved_tokens: 8192
-  trigger_high: 0.80
-  trigger_low: 0.60
-  emergency_ratio: 0.92
-  raw_min_messages: 5
-  slim_min_messages: 50
-  summary_max_tokens: 4000
-
-# Slice A 对话 Session PostgreSQL（生产必填）
-# database:
-#   url: env("DATABASE_URL")
-#   # Docker: postgresql://freeanima:${PG_PASSWORD}@postgres:5432/freeanima
-
-# Redis（EventBus / 任务上下文；不可用时静默降级）
-# 本地默认 127.0.0.1:6379；Docker Compose 内写 redis
+# Redis（EventBus / 任务上下文；不可用时静默降级，可选）
 # redis:
 #   url: redis://127.0.0.1:6379/0
-#   # host: 127.0.0.1
-#   # port: 6379
-#   # password:
-#   # db: 0
 
-# CJK 全文检索（jieba 分词；默认关闭）
-# 开启后写入与重建会使用 jieba；切换配置后请在 Admin「全文检索」页重建索引
-# cjk:
-#   enabled: false
-#   # dict_path: ~/.anima/cjk/user.dict
-
-# FTS 调参（trgm / vector 无 enabled 开关，迁移后常开）
-# fts:
-#   trgm:
-#     min_similarity: 0.35
-#     fallback_when_hits_lt: 3
-
-# 向量检索（OpenAI 兼容 /v1/embeddings；配置 model 后常开，与 FTS/trgm 三路 RRF）
-# embedding:
-#   enabled: true
-#   base_url: http://127.0.0.1:11434/v1
-#   api_key: ollama
-#   model: bge-m3
-#   dimensions: 1024
-
-# 被动语义记忆注入（每条用户消息 turn 前自动 hybrid 检索 semantic 并注入 runtime system 上下文）
-# memory:
-#   passive_recall:
-#     enabled: true
-#     limit: 5
-#     min_score: 0.016              # hybrid RRF 下限；过低关联命中会被丢弃
-#     min_relative_score: 0.55      # 仅保留得分 ≥ top_score × 此比例的命中
-#     max_chars: 2000
-#     exclude_resident: true
-
-# Hub HTTP（监听地址 + 可选跨域白名单）
-# http:
-#   host: 0.0.0.0                    # 局域网访问；默认 127.0.0.1（仅本机）
-#   # host: [127.0.0.1, 10.244.0.2]  # 或多网卡 / IP + 主机名
-#   cors_origins:
-#     - http://127.0.0.1:4173        # 仅 dev:web 等跨域场景需要
-
-# Cloudflare Tunnel 远程访问（认证见 Service API Token，docs/guide/remote-access.md）
-# 一条命令完成：anima tunnel setup
-# API Token / Tunnel 凭证用 env() 或 vault()，见 docs/guide/remote-access.md
-# tunnel:
-#   enabled: true
-#   hostname: anima.example.com
-#   cloudflare:
-#     account_id: ...
-#     tunnel_id: ...
-#     zone_id: ...
-#   credentials:
-#     api_token: env("CLOUDFLARE_API_TOKEN")
-#     tunnel_credentials: env("CLOUDFLARE_TUNNEL_CREDENTIALS_JSON")
-
-# 浏览器 Web UI（由 Hub :2658/web 托管；web.enabled 时随 anima service stack 挂载静态）
-# web:
-#   enabled: true
-#   host: 127.0.0.1
-#   port: 2659
-#   public_url: https://anima.example.com/web
+# --- 以下运行时段请通过 Shell「服务配置」或管理台查看；首次升级可从旧版完整 config.yaml 自动导入 ---
+#
+# llm / compression / memory / mcp_servers / acp_agents / embedding / tunnel / web / worlds …
+# 完整示例见仓库 git 历史中的 config.example.yaml（迁移前版本）

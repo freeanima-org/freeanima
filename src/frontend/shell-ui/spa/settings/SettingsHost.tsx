@@ -1,6 +1,10 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, type ReactNode } from "react";
 import { Button } from "@freeanima/ui-kit";
-import type { SettingsBinding, SettingsPlatform } from "@freeanima/shell-sdk/settings";
+import type {
+  SettingsBinding,
+  SettingsCategory,
+  SettingsPlatform,
+} from "@freeanima/shell-sdk/settings";
 import { listSettingsSectionsForPlatform } from "@freeanima/shell-sdk/settings";
 
 import { SettingsSectionPanel } from "./SettingsSectionPanel.tsx";
@@ -10,6 +14,29 @@ type Props = {
   chromePlatform: SettingsPlatform;
   contentPlatform: SettingsPlatform;
 };
+
+const CATEGORY_LABELS: Record<SettingsCategory, string> = {
+  client: "本机",
+  server: "Hub 服务",
+};
+
+const CATEGORY_ORDER: SettingsCategory[] = ["client", "server"];
+
+function sectionCategory(binding: SettingsBinding): SettingsCategory {
+  return binding.section.category ?? "client";
+}
+
+function groupBindings(bindings: SettingsBinding[]): Array<{
+  category: SettingsCategory;
+  label: string;
+  items: SettingsBinding[];
+}> {
+  return CATEGORY_ORDER.map((category) => ({
+    category,
+    label: CATEGORY_LABELS[category],
+    items: bindings.filter((b) => sectionCategory(b) === category),
+  })).filter((g) => g.items.length > 0);
+}
 
 function resolveInitialSectionId(bindings: SettingsBinding[], platform: SettingsPlatform): string {
   const params = new URLSearchParams(window.location.search);
@@ -42,11 +69,36 @@ function SectionContent({
   );
 }
 
+function renderNavButton(
+  binding: SettingsBinding,
+  activeId: string,
+  onSelect: (id: string) => void,
+  chrome: "sidebar" | "tabs",
+  className?: string,
+): ReactNode {
+  const isActive = activeId === binding.section.id;
+  const variant =
+    chrome === "tabs" ? (isActive ? "default" : "ghost") : isActive ? "secondary" : "ghost";
+  return (
+    <Button
+      key={binding.section.id}
+      type="button"
+      size="sm"
+      variant={variant}
+      className={className}
+      onClick={() => onSelect(binding.section.id)}
+    >
+      {binding.section.title}
+    </Button>
+  );
+}
+
 export function SettingsHost({ bindings, chromePlatform, contentPlatform }: Props) {
   const visible = useMemo(
     () => listSettingsSectionsForPlatform(bindings, contentPlatform),
     [bindings, contentPlatform],
   );
+  const groups = useMemo(() => groupBindings(visible), [visible]);
   const [activeId, setActiveId] = useState<string>(() =>
     resolveInitialSectionId(bindings, contentPlatform),
   );
@@ -66,39 +118,49 @@ export function SettingsHost({ bindings, chromePlatform, contentPlatform }: Prop
   }
 
   const sectionTabs = (
-    <nav className="shrink-0 flex gap-1 overflow-x-auto px-3 py-2 border-b border bg-muted/40">
-      {visible.map((binding) => (
-        <Button
-          key={binding.section.id}
-          type="button"
-          size="sm"
-          variant={active?.section.id === binding.section.id ? "default" : "ghost"}
-          className="shrink-0"
-          onClick={() => setActiveId(binding.section.id)}
-        >
-          {binding.section.title}
-        </Button>
+    <nav className="shrink-0 flex gap-1 overflow-x-auto px-3 py-2 border-b border bg-muted/40 items-center">
+      {groups.map((group, groupIndex) => (
+        <div key={group.category} className="contents">
+          {groupIndex > 0 ? (
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground px-1 shrink-0">
+              |
+            </span>
+          ) : null}
+          <span className="text-[10px] uppercase tracking-wide text-muted-foreground px-1 shrink-0">
+            {group.label}
+          </span>
+          {group.items.map((binding) =>
+            renderNavButton(binding, active?.section.id ?? "", setActiveId, "tabs", "shrink-0"),
+          )}
+        </div>
       ))}
     </nav>
   );
 
   const sectionSidebar = (
     <nav className="w-52 shrink-0 border-r border bg-muted/40 p-3 overflow-y-auto">
-      <ul className="flex flex-col gap-0.5">
-        {visible.map((binding) => (
-          <li key={binding.section.id}>
-            <Button
-              type="button"
-              size="sm"
-              variant={active?.section.id === binding.section.id ? "secondary" : "ghost"}
-              className="w-full justify-start"
-              onClick={() => setActiveId(binding.section.id)}
-            >
-              {binding.section.title}
-            </Button>
-          </li>
+      <div className="flex flex-col gap-4">
+        {groups.map((group) => (
+          <div key={group.category}>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground px-2 mb-1">
+              {group.label}
+            </p>
+            <ul className="flex flex-col gap-0.5">
+              {group.items.map((binding) => (
+                <li key={binding.section.id}>
+                  {renderNavButton(
+                    binding,
+                    active?.section.id ?? "",
+                    setActiveId,
+                    "sidebar",
+                    "w-full justify-start",
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
         ))}
-      </ul>
+      </div>
     </nav>
   );
 

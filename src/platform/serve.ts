@@ -90,8 +90,8 @@ export async function serve(
     if (!configPhase || !persistencePhase) {
       throw new Error("boot phases config/persistence missing");
     }
-    const { config } = await configPhase.run();
-    await persistencePhase.run(config);
+    await configPhase.run();
+    const { config } = await persistencePhase.run();
     const { bootWorldSubjectsPhase } = await import("./boot/world-subjects-phase.ts");
     await bootWorldSubjectsPhase(config);
     const { bootConfigSecretsPhase } = await import("./boot/config-secrets-phase.ts");

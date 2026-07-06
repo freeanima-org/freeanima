@@ -34,3 +34,9 @@ export {
   type FtsTableCapabilities,
   type FtsRebuildJobStatus,
 } from "./fts/index.ts";
+export {
+  getHubRuntimeConfigDocument,
+  patchHubRuntimeConfigSection,
+  replaceHubRuntimeConfigDocument,
+  upsertHubRuntimeConfigDocument,
+} from "./config/index.ts";
