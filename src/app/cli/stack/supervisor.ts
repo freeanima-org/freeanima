@@ -92,6 +92,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
       };
     } catch (err) {
       logStartupError("[stack] Web dist 准备失败", err);
+      throw err;
     }
   }
 

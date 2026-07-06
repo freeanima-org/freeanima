@@ -388,14 +388,4 @@ export async function startCompanionServer(
   throw lastError ?? new Error(`无法在 ${portStart}–${portStart + portAttempts - 1} 找到可用端口`);
 }
 
-if (import.meta.main) {
-  startCompanionServer().catch((error) => {
-    console.error(
-      "companion-sidecar-fatal:",
-      error instanceof Error ? (error.stack ?? error.message) : String(error),
-    );
-    process.exit(1);
-  });
-}
-
 export { serveStatic };

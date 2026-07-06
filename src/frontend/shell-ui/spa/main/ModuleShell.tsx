@@ -1,8 +1,7 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { SubjectScopeProvider, SubjectToggle, useSubjectScope } from "@freeanima/shell-sdk/react";
+import { SubjectScopeProvider } from "@freeanima/shell-sdk/react";
 import {
-  isShellModuleVisible,
   resolveDefaultVisibleModulePath,
   resolveShellModuleIdFromPath,
 } from "@freeanima/shell-sdk/shell-module-visibility";
@@ -11,22 +10,13 @@ import { useShellModuleVisibility } from "@freeanima/shell-sdk/react";
 import { isCompactLayout, useLayoutMode } from "../layout-mode.ts";
 import { navigateShellModule } from "../shell-nav.ts";
 import { ShellConnectivityBar } from "../ShellConnectivityBar.tsx";
-import {
-  filterVisibleNavItems,
-  shellMobileMoreNavItems,
-  shellMobilePrimaryNavItems,
-  type ShellNavItem,
-} from "../lib/shell-nav-i18n.ts";
+import { filterVisibleNavItems, shellNavItems, type ShellNavItem } from "../lib/shell-nav-i18n.ts";
+import { useShellBottomNavLayout } from "../lib/use-shell-bottom-nav-layout.ts";
 import { ShellModuleRail } from "./ShellModuleRail.tsx";
 
 function useNavActive(match: string): boolean {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return pathname.startsWith(match);
-}
-
-function ShellSubjectToggle() {
-  const { kind, setKind } = useSubjectScope();
-  return <SubjectToggle value={kind} onChange={setKind} />;
 }
 
 function ShellModuleVisibilityGuard() {
@@ -132,10 +122,9 @@ function MoreNavMenu({ items }: { items: ShellNavItem[] }) {
 }
 
 function DesktopModuleShell() {
-  const activeMatch = useNavActive;
   return (
     <div className="shell-module-layout h-full flex flex-row bg-background text-foreground">
-      <ShellModuleRail activeMatch={activeMatch} footer={<ShellSubjectToggle />} />
+      <ShellModuleRail />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <ShellConnectivityBar />
         <main className="flex-1 min-h-0 overflow-hidden">
@@ -148,8 +137,8 @@ function DesktopModuleShell() {
 
 function MobileModuleShell() {
   const visible = useShellModuleVisibility();
-  const primary = filterVisibleNavItems(shellMobilePrimaryNavItems(), visible);
-  const more = filterVisibleNavItems(shellMobileMoreNavItems(), visible);
+  const navItems = useMemo(() => filterVisibleNavItems(shellNavItems(), visible), [visible]);
+  const { bar, more } = useShellBottomNavLayout(navItems);
 
   return (
     <div className="shell-module-layout shell-layout-compact h-full flex flex-col bg-background text-foreground">
@@ -163,7 +152,7 @@ function MobileModuleShell() {
         className="shell-bottom-nav relative z-[60] shrink-0 flex border-t border bg-background safe-area-pb"
         aria-label="模块导航"
       >
-        {primary.map((item) => (
+        {bar.map((item) => (
           <ShellBottomNavLink key={item.to} item={item} />
         ))}
         {more.length > 0 ? <MoreNavMenu items={more} /> : null}

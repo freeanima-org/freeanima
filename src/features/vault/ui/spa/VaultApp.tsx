@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   getUserVaultSession,
-  SubjectToggle,
+  SubjectScopeToggle,
   useHubConnection,
   useNetworkOnline,
   useSubjectScope,
@@ -156,7 +156,7 @@ function VaultCreateForm({
 }
 
 export function VaultApp() {
-  const { kind: subjectKind, setKind: setSubjectKind } = useSubjectScope();
+  const { kind: subjectKind } = useSubjectScope();
   const networkOnline = useNetworkOnline();
   const hubConnection = useHubConnection();
   const writesDisabled = !networkOnline || hubConnection !== "connected";
@@ -398,7 +398,7 @@ export function VaultApp() {
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b px-3 py-2 md:px-4 md:py-3">
         <h1 className="text-base font-semibold md:text-lg">保险库</h1>
-        <SubjectToggle value={subjectKind} onChange={setSubjectKind} />
+        <SubjectScopeToggle />
         {!isUserVault ? (
           <span className="hidden text-xs text-muted-foreground sm:inline">Agent 库无需主密码</span>
         ) : null}
@@ -439,7 +439,8 @@ export function VaultApp() {
         detailTitle={detailTitle}
         listTitle="条目"
         listSubtitle={loading ? "加载中…" : `共 ${items.length} 条`}
-        listWidthClass="w-64 shrink-0"
+        columnSplitKey="vault"
+        defaultListWidthPx={256}
         listAsideClassName="border-r bg-muted/20 shrink-0"
         listOpen={listOpen}
         onListOpenChange={setListOpen}

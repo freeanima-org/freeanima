@@ -14,7 +14,8 @@ import {
   Switch,
   Textarea,
 } from "@freeanima/ui-kit";
-import { ConfirmDialog } from "@freeanima/ui-kit/composite";
+import { ConfirmDialog, ActionSheet, ContextMenu } from "@freeanima/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import { AcpProgressDock } from "@chat/components/AcpProgressDock.tsx";
 import { ToolBlockBubble } from "@chat/components/ToolBlockBubble.tsx";
 import {
@@ -33,7 +34,13 @@ import {
   subscribeConversationEvents,
 } from "@chat/lib/api.ts";
 import { ListDetailLayout, useDrawerNav, useMobileLayout } from "@freeanima/ui-kit/layout";
-import { reconnectHub, useHubConnection, useNetworkOnline } from "@freeanima/shell-sdk/react";
+import {
+  reconnectHub,
+  useActionSheetCapability,
+  useContextMenuCapability,
+  useHubConnection,
+  useNetworkOnline,
+} from "@freeanima/shell-sdk/react";
 import { getAppLocale, initAppLocale, m, toggleAppLocale } from "@chat/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@chat/lib/input-draft.ts";
 import { getSapDirectClient, subscribeShellConfigChanges } from "@chat/lib/sap-client.ts";
@@ -136,12 +143,9 @@ export function ChatApp() {
   const writesDisabled = !networkOnline || hubConnection !== "connected";
   const [locale, setLocale] = useState(getAppLocale());
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [contextMenu, setContextMenu] = useState({
-    visible: false,
-    x: 0,
-    y: 0,
-    conversationId: null as string | null,
-  });
+  const [menuConversationId, setMenuConversationId] = useState<string | null>(null);
+  const [convPointerMenu, setConvPointerMenu] = useState<{ x: number; y: number } | null>(null);
+  const [convSheetOpen, setConvSheetOpen] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -170,6 +174,8 @@ export function ChatApp() {
   const mobileLayout = useMobileLayout();
   /** 手机 / 窄视口 / 移动壳：Enter 换行；桌面浏览器与 Electron 仍 Enter 发送 */
   const enterToSend = !mobileLayout && (!nativeShell || isElectron);
+  const useActionSheet = useActionSheetCapability();
+  const contextMenuEnabled = useContextMenuCapability();
   const drawerNav = useDrawerNav();
   const openSidebar = useCallback(() => setSidebarOpen(true), []);
   const edgeSwipeHandlers = useEdgeSwipeOpen({
@@ -183,14 +189,6 @@ export function ChatApp() {
     isSpeaking,
     isSupported: speechSupported,
   } = useSpeechPlayback();
-
-  const copyMessageText = useCallback(async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {
-      /* ignore */
-    }
-  }, []);
 
   const startReeditUserMessage = useCallback((index: number, content: string) => {
     setEditingUserIndex(index);
@@ -248,8 +246,30 @@ export function ChatApp() {
   );
 
   const contextConversation = useMemo(
-    () => conversations.find((s) => s.id === contextMenu.conversationId),
-    [conversations, contextMenu.conversationId],
+    () => conversations.find((s) => s.id === menuConversationId),
+    [conversations, menuConversationId],
+  );
+
+  const closeConversationMenu = useCallback(() => {
+    setMenuConversationId(null);
+    setConvPointerMenu(null);
+    setConvSheetOpen(false);
+  }, []);
+
+  const openConversationMenu = useCallback(
+    (conversationId: string, coords?: { x: number; y: number }) => {
+      setMenuConversationId(conversationId);
+      if (useActionSheet) {
+        setConvSheetOpen(true);
+        setConvPointerMenu(null);
+        return;
+      }
+      if (coords && contextMenuEnabled) {
+        setConvPointerMenu(coords);
+        setConvSheetOpen(false);
+      }
+    },
+    [useActionSheet, contextMenuEnabled],
   );
 
   const headerTitle = currentId
@@ -362,14 +382,6 @@ export function ChatApp() {
     if (hubConnection !== "connected") return;
     void fetchConversations();
   }, [hubConnection, fetchConversations]);
-
-  useEffect(() => {
-    const close = () => {
-      setContextMenu((menu) => ({ ...menu, visible: false }));
-    };
-    document.addEventListener("click", close);
-    return () => document.removeEventListener("click", close);
-  }, []);
 
   useEffect(() => {
     stopSpeech();
@@ -500,26 +512,26 @@ export function ChatApp() {
   const startConversation = () => void newConversation();
 
   const startRename = () => {
-    const s = conversations.find((x) => x.id === contextMenu.conversationId);
+    const s = conversations.find((x) => x.id === menuConversationId);
     setRenameText((s && s.title) || "");
     setShowRenameDialog(true);
-    setContextMenu((menu) => ({ ...menu, visible: false }));
+    closeConversationMenu();
     requestAnimationFrame(() => renameInputRef.current?.focus());
   };
 
   const confirmRename = async () => {
     const title = renameText.trim();
-    if (title && contextMenu.conversationId) {
-      await renameConversation(contextMenu.conversationId, title);
+    if (title && menuConversationId) {
+      await renameConversation(menuConversationId, title);
     }
     setShowRenameDialog(false);
     setRenameText("");
   };
 
   const startDelete = () => {
-    setDeleteTargetId(contextMenu.conversationId);
+    setDeleteTargetId(menuConversationId);
     setShowDeleteDialog(true);
-    setContextMenu((menu) => ({ ...menu, visible: false }));
+    closeConversationMenu();
   };
 
   const confirmDelete = async () => {
@@ -531,17 +543,17 @@ export function ChatApp() {
   };
 
   const handleArchive = async () => {
-    const id = contextMenu.conversationId;
+    const id = menuConversationId;
     if (!id) return;
-    setContextMenu((menu) => ({ ...menu, visible: false }));
+    closeConversationMenu();
     const nextId = await archiveConversationFn(id);
     writeConversationToUrl(nextId);
   };
 
   const handleUnarchive = async () => {
-    const id = contextMenu.conversationId;
+    const id = menuConversationId;
     if (!id) return;
-    setContextMenu((menu) => ({ ...menu, visible: false }));
+    closeConversationMenu();
     await unarchiveConversationFn(id);
   };
 
@@ -549,26 +561,55 @@ export function ChatApp() {
     void setShowArchived(!showArchived);
   };
 
+  const conversationMenuItems: ActionSheetItem[] = menuConversationId
+    ? [
+        { label: m.console_common_rename(), onClick: startRename },
+        ...(contextConversation?.archivedAt
+          ? [{ label: m.chat_unarchive(), onClick: () => void handleUnarchive() }]
+          : [{ label: m.chat_archive(), onClick: () => void handleArchive() }]),
+        {
+          label: m.chat_delete(),
+          danger: true,
+          onClick: startDelete,
+        },
+      ]
+    : [];
+
   const renderConversationItem = (s: ConversationListItem, faded = false) => (
     <div
       key={s.id}
       className={[
-        "session-item",
+        "session-item group flex min-h-10 items-center gap-1",
         s.id === currentId ? "sidebar-nav-active" : "",
         faded ? "opacity-60" : "",
       ].join(" ")}
       onClick={() => void navigateToConversation(s.id)}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        setContextMenu({
-          visible: true,
-          x: e.clientX,
-          y: e.clientY,
-          conversationId: s.id,
-        });
-      }}
+      onContextMenu={
+        useActionSheet
+          ? undefined
+          : (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              openConversationMenu(s.id, { x: e.clientX, y: e.clientY });
+            }
+      }
     >
-      <div className="truncate">{conversationLabel(s)}</div>
+      <div className="min-w-0 flex-1 truncate">{conversationLabel(s)}</div>
+      {useActionSheet ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          className="shrink-0 opacity-70 group-hover:opacity-100"
+          aria-label="操作"
+          onClick={(e) => {
+            e.stopPropagation();
+            openConversationMenu(s.id);
+          }}
+        >
+          ⋯
+        </Button>
+      ) : null}
     </div>
   );
 
@@ -892,7 +933,8 @@ export function ChatApp() {
             detailHeaderPlacement="none"
             showDetailHeader={false}
             showListHeader={false}
-            listWidthClass="w-64"
+            columnSplitKey="chat"
+            defaultListWidthPx={256}
             listAsideClassName="border bg-background"
             listOpen={sidebarOpen}
             onListOpenChange={setSidebarOpen}
@@ -1011,10 +1053,10 @@ export function ChatApp() {
                       </ChatMessageBubble>
                       <MessageActionBar
                         align="end"
+                        copyContent={item.content}
                         speechText={item.content}
                         speaking={isSpeaking(`msg-${i}`)}
                         speechSupported={speechSupported}
-                        onCopy={() => void copyMessageText(item.content)}
                         onToggleSpeech={() => toggleSpeech(`msg-${i}`, item.content)}
                         onEdit={
                           i === lastUserMessageIndex
@@ -1037,10 +1079,10 @@ export function ChatApp() {
                       </ChatMessageBubble>
                       <MessageActionBar
                         align="start"
+                        copyContent={speechText}
                         speechText={speechText}
                         speaking={isSpeaking(`msg-${i}`)}
                         speechSupported={speechSupported}
-                        onCopy={() => void copyMessageText(item.content)}
                         onToggleSpeech={() => toggleSpeech(`msg-${i}`, speechText)}
                       />
                     </div>
@@ -1217,36 +1259,21 @@ export function ChatApp() {
         />
       </div>
 
-      {contextMenu.visible ? (
-        <div
-          className="fixed z-50 bg-background border border rounded-lg shadow-xl py-1 min-w-[140px]"
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-        >
-          <div className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm" onClick={startRename}>
-            {m.console_common_rename()}
-          </div>
-          {contextConversation?.archivedAt ? (
-            <div
-              className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm"
-              onClick={() => void handleUnarchive()}
-            >
-              {m.chat_unarchive()}
-            </div>
-          ) : (
-            <div
-              className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm"
-              onClick={() => void handleArchive()}
-            >
-              {m.chat_archive()}
-            </div>
-          )}
-          <div
-            className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm text-destructive"
-            onClick={startDelete}
-          >
-            {m.chat_delete()}
-          </div>
-        </div>
+      {convPointerMenu && conversationMenuItems.length > 0 ? (
+        <ContextMenu
+          x={convPointerMenu.x}
+          y={convPointerMenu.y}
+          items={conversationMenuItems}
+          onClose={closeConversationMenu}
+        />
+      ) : null}
+
+      {convSheetOpen && conversationMenuItems.length > 0 ? (
+        <ActionSheet
+          title={contextConversation ? conversationLabel(contextConversation) : undefined}
+          items={conversationMenuItems}
+          onClose={closeConversationMenu}
+        />
       ) : null}
 
       <ConfirmDialog

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useSubjectScope } from "@freeanima/shell-sdk/react";
+import { useSubjectScope, SubjectScopeToggle } from "@freeanima/shell-sdk/react";
 import {
   Alert,
   AlertDescription,
@@ -154,7 +154,8 @@ export function NotificationApp() {
       <h2 className="mb-1 text-lg font-bold">通知</h2>
       <p className="text-muted-foreground mb-4 text-sm">默认显示未读；点击「标记已读」确认处理。</p>
 
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <SubjectScopeToggle />
         <div className="inline-flex overflow-hidden rounded-md border shadow-xs">
           <Button
             type="button"

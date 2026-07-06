@@ -1,8 +1,8 @@
-import { useMobileLayout } from "@freeanima/ui-kit/layout";
+import { hasFinePointerCapability } from "@freeanima/shell-sdk/react";
 
-/** desktop / web 宽屏支持右键菜单 */
+/** @deprecated 使用 `useContextMenuCapability` from `@freeanima/shell-sdk/react` */
 export function isTaskContextMenuEnabled(): boolean {
-  return typeof window !== "undefined" && !window.satelliteShell?.isNativeShell;
+  return hasFinePointerCapability();
 }
 
 /** 浏览器 Web 壳（dev:web 等），非 desktop/mobile 原生壳 */
@@ -17,7 +17,9 @@ export {
   useMobileLayout,
 } from "@freeanima/ui-kit/layout";
 
-/** 移动布局下用 ActionSheet；桌面宽屏用右键 ContextMenu */
-export function useTaskActionSheet(): boolean {
-  return useMobileLayout();
-}
+export {
+  useActionSheetCapability as useTaskActionSheet,
+  useContextMenuCapability,
+  useFinePointerCapability,
+  useTouchPrimaryCapability,
+} from "@freeanima/shell-sdk/react";

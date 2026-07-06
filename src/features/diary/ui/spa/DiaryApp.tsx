@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useHubConnection, useNetworkOnline, useSubjectScope } from "@freeanima/shell-sdk/react";
+import {
+  useHubConnection,
+  useNetworkOnline,
+  useSubjectScope,
+  SubjectScopeToggle,
+} from "@freeanima/shell-sdk/react";
 import { mergeDraftAfterSave } from "@freeanima/ui-kit/lib/merge-draft-after-save";
 import { Button, Input, Spinner } from "@freeanima/ui-kit";
 import { ListDetailLayout } from "@freeanima/ui-kit/layout";
@@ -236,7 +241,8 @@ export function DiaryApp() {
 
   const listPane = (
     <div className="flex h-full min-h-0 min-w-0 flex-col gap-3">
-      <div className="flex flex-wrap items-center justify-end gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <SubjectScopeToggle />
         <Button
           type="button"
           size="sm"
@@ -307,7 +313,8 @@ export function DiaryApp() {
     <ListDetailLayout
       detailTitle={detailTitle}
       listTitle="日记"
-      listWidthClass="md:w-80 md:max-w-80 lg:w-96 lg:max-w-96"
+      columnSplitKey="diary"
+      defaultListWidthPx={320}
       list={(ctx) => (
         <div className="flex h-full min-h-0 flex-col gap-3 p-3">
           {listPane}

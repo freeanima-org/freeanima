@@ -46,6 +46,7 @@
       "@freeanima/ui-kit/lib/merge-draft-after-save": [
         "./src/frontend/ui-kit/lib/merge-draft-after-save.ts"
       ],
+      "@freeanima/ui-kit/lib/copy-text": ["./src/frontend/ui-kit/lib/copy-text.ts"],
       "@freeanima/capabilities-llm-openai/messages": ["./src/capabilities/llm-openai/messages.ts"],
       "@freeanima/console-api/console-hub-handlers": [
         "./src/features/console/hub/console-api/console-hub-handlers.ts"

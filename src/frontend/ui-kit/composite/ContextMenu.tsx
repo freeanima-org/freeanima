@@ -1,16 +1,15 @@
 import { useEffect } from "react";
 
-import type { TaskMenuItem } from "../lib/menu-types.ts";
+import type { ActionSheetItem } from "./types.ts";
 
-export type ContextMenuItem = TaskMenuItem;
-
-type ContextMenuProps = {
+export type ContextMenuProps = {
   x: number;
   y: number;
-  items: ContextMenuItem[];
+  items: ActionSheetItem[];
   onClose: () => void;
 };
 
+/** 精确指针下的浮动右键菜单（触摸主输入请用 ActionSheet） */
 export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
   useEffect(() => {
     const close = () => onClose();

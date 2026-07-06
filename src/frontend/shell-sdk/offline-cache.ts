@@ -31,6 +31,16 @@ export function resolveCacheScope(hubWsUrl: string): string {
   return hubWsUrl.trim().toLowerCase();
 }
 
+function readFallbackHubWs(): string {
+  if (typeof process !== "undefined" && process.env) {
+    const fromVite = process.env.VITE_FREEANIMA_HUB_WS?.trim();
+    if (fromVite) return fromVite;
+    const hubUrl = process.env.FREEANIMA_URL?.trim();
+    if (hubUrl) return resolveHubWsUrl(hubUrl.replace(/\/$/, ""));
+  }
+  return resolveHubWsUrl("http://127.0.0.1:2658");
+}
+
 export function resolveHubCacheScope(): string {
   const shell = (globalThis.window as (Window & { satelliteShell?: SatelliteShellApi }) | undefined)
     ?.satelliteShell;
@@ -38,12 +48,7 @@ export function resolveHubCacheScope(): string {
   if (shell?.hubWsUrl?.trim()) {
     hubScope = resolveCacheScope(shell.hubWsUrl);
   } else {
-    const env = (import.meta as ImportMeta & { env?: { VITE_FREEANIMA_HUB_WS?: string } }).env;
-    if (env?.VITE_FREEANIMA_HUB_WS?.trim()) {
-      hubScope = resolveCacheScope(env.VITE_FREEANIMA_HUB_WS);
-    } else {
-      hubScope = resolveCacheScope(resolveHubWsUrl("http://127.0.0.1:2658"));
-    }
+    hubScope = resolveCacheScope(readFallbackHubWs());
   }
   return `${hubScope}:${getSubjectKind()}`;
 }

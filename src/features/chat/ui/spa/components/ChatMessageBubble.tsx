@@ -1,49 +1,16 @@
-import { useCallback, useRef, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
-type MessageMenuCoords = { x: number; y: number };
+import { useLongPress, type LongPressCoords } from "@freeanima/ui-kit/composite";
 
-type LongPressHandlers = {
-  onTouchStart: (e: React.TouchEvent) => void;
-  onTouchEnd: () => void;
-  onTouchMove: () => void;
-  onContextMenu: (e: React.MouseEvent) => void;
-};
-
-function useLongPress(
-  onLongPress: (coords: MessageMenuCoords) => void,
-  delayMs = 480,
-): LongPressHandlers {
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const coordsRef = useRef<MessageMenuCoords>({ x: 0, y: 0 });
-
-  const clear = useCallback(() => {
-    if (timerRef.current != null) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-  }, []);
-
-  return {
-    onTouchStart: (e) => {
-      const touch = e.touches[0];
-      coordsRef.current = { x: touch?.clientX ?? 0, y: touch?.clientY ?? 0 };
-      clear();
-      timerRef.current = setTimeout(() => onLongPress(coordsRef.current), delayMs);
-    },
-    onTouchEnd: clear,
-    onTouchMove: clear,
-    onContextMenu: (e) => {
-      e.preventDefault();
-      onLongPress({ x: e.clientX, y: e.clientY });
-    },
-  };
-}
+export type MessageMenuCoords = LongPressCoords;
 
 type ChatMessageBubbleProps = {
   align: "start" | "end";
   className: string;
   children: ReactNode;
   onLongPress?: (coords: MessageMenuCoords) => void;
+  /** 为 false 时不绑定长按/右键（精确指针下由外层提供右键菜单时使用） */
+  longPressEnabled?: boolean;
 };
 
 export function ChatMessageBubble({
@@ -51,14 +18,18 @@ export function ChatMessageBubble({
   className,
   children,
   onLongPress,
+  longPressEnabled = true,
 }: ChatMessageBubbleProps) {
-  const longPress = useLongPress((coords) => onLongPress?.(coords));
+  const longPress = useLongPress({
+    enabled: Boolean(onLongPress) && longPressEnabled,
+    onTrigger: (coords) => onLongPress?.(coords),
+  });
 
   return (
     <div className={`flex min-w-0 max-w-full ${align === "end" ? "justify-end" : "justify-start"}`}>
       <div
         className={`chat-bubble min-w-0 max-w-full ${className}`}
-        {...(onLongPress ? longPress : {})}
+        {...(onLongPress && longPressEnabled ? longPress : {})}
       >
         {children}
       </div>

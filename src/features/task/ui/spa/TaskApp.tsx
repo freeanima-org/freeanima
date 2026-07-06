@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { readModuleSelection, writeModuleSelection } from "@freeanima/shell-sdk";
-import { useSubjectScope } from "@freeanima/shell-sdk/react";
+import { useSubjectScope, SubjectScopeToggle } from "@freeanima/shell-sdk/react";
 import { mergeDraftAfterSave } from "@freeanima/ui-kit/lib/merge-draft-after-save";
 import {
   Alert,
@@ -15,9 +15,9 @@ import {
   Spinner,
 } from "@freeanima/ui-kit";
 
-import { ActionSheet, ConfirmDialog, EmptyState } from "@freeanima/ui-kit/composite";
+import { ActionSheet, ConfirmDialog, ContextMenu, EmptyState } from "@freeanima/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import { CompletedTaskList } from "./components/CompletedTaskList.tsx";
-import { ContextMenu, type ContextMenuItem } from "./components/ContextMenu.tsx";
 import { ListSidebar } from "./components/ListSidebar.tsx";
 import { MoveToListPicker } from "./components/MoveToListPicker.tsx";
 import { SortableTaskList } from "./components/SortableTaskList.tsx";
@@ -50,8 +50,8 @@ import {
 } from "./lib/offline-cache.ts";
 import { useTaskLayoutMode } from "./lib/layout-mode.ts";
 import {
-  isTaskContextMenuEnabled,
   isWebShell,
+  useContextMenuCapability,
   useDrawerNav,
   useTaskActionSheet,
 } from "./lib/platform.ts";
@@ -66,12 +66,12 @@ import { cloneTaskItem, isTaskItemDirty, isTaskItemEqual } from "./lib/task-deta
 
 type ListMenuState = { x: number; y: number; listId: number };
 type ItemMenuState = { x: number; y: number; itemId: number };
-type SheetMenuState = { title?: string; items: ContextMenuItem[] };
+type SheetMenuState = { title?: string; items: ActionSheetItem[] };
 type ChildNamePromptState = { kind: "list" | "folder"; parentId: number };
 
 export function TaskApp() {
   const { kind: subjectKind } = useSubjectScope();
-  const contextMenuEnabled = isTaskContextMenuEnabled();
+  const contextMenuEnabled = useContextMenuCapability();
   const useActionSheet = useTaskActionSheet();
   const useDrawer = useDrawerNav();
   const layoutMode = useTaskLayoutMode();
@@ -635,7 +635,7 @@ export function TaskApp() {
   }, []);
 
   useEffect(() => {
-    if (layoutMode === "wide") {
+    if (layoutMode !== "compact") {
       setDetailOpen(false);
     } else if (detailItem) {
       setDetailOpen(true);
@@ -742,11 +742,11 @@ export function TaskApp() {
       searchHits.find((i) => i.id === itemMenu.itemId))
     : null;
 
-  const listMenuItems: ContextMenuItem[] = menuList
+  const listMenuItems: ActionSheetItem[] = menuList
     ? buildListMenuItems(menuList, menuHandlers)
     : [];
 
-  const itemMenuItems: ContextMenuItem[] = menuItem
+  const itemMenuItems: ActionSheetItem[] = menuItem
     ? buildItemMenuItems(menuItem, itemHandlers, { listArchived: selectedList?.closed === true })
     : [];
 
@@ -806,6 +806,7 @@ export function TaskApp() {
       <div className="h-full min-h-0">
         <ThreeColumnLayout
           layoutMode={layoutMode}
+          columnSplitKey="task"
           listTitle="清单"
           middleTitle={selectedList?.name ?? "任务"}
           detailTitle={detailItem?.title ?? "任务详情"}
@@ -831,33 +832,38 @@ export function TaskApp() {
             ) : null
           }
           list={
-            <ListSidebar
-              key={subjectKind}
-              activeLists={activeLists}
-              closedLists={closedLists}
-              showClosed={showClosed}
-              selectedListId={selectedListId}
-              selectedFolderId={selectedFolderId}
-              editingListId={editingListId}
-              editingListName={editingListName}
-              newListName={newListName}
-              newFolderName={newFolderName}
-              renameInputRef={renameInputRef}
-              useActionSheet={useActionSheet}
-              onToggleShowClosed={() => setShowClosed((v) => !v)}
-              onSelectList={selectList}
-              onSelectFolder={selectFolder}
-              onCreateList={() => void handleCreateList()}
-              onCreateFolder={() => void handleCreateFolder()}
-              onNewListNameChange={setNewListName}
-              onNewFolderNameChange={setNewFolderName}
-              onEditingListNameChange={setEditingListName}
-              onCommitRename={() => void commitRenameList()}
-              onCancelRename={() => setEditingListId(null)}
-              onOpenListMenu={openListMenuSheet}
-              onOpenListContextMenu={openListContextMenu}
-              onStartRename={startRenameList}
-            />
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="shrink-0 border-b p-2">
+                <SubjectScopeToggle />
+              </div>
+              <ListSidebar
+                key={subjectKind}
+                activeLists={activeLists}
+                closedLists={closedLists}
+                showClosed={showClosed}
+                selectedListId={selectedListId}
+                selectedFolderId={selectedFolderId}
+                editingListId={editingListId}
+                editingListName={editingListName}
+                newListName={newListName}
+                newFolderName={newFolderName}
+                renameInputRef={renameInputRef}
+                useActionSheet={useActionSheet}
+                onToggleShowClosed={() => setShowClosed((v) => !v)}
+                onSelectList={selectList}
+                onSelectFolder={selectFolder}
+                onCreateList={() => void handleCreateList()}
+                onCreateFolder={() => void handleCreateFolder()}
+                onNewListNameChange={setNewListName}
+                onNewFolderNameChange={setNewFolderName}
+                onEditingListNameChange={setEditingListName}
+                onCommitRename={() => void commitRenameList()}
+                onCancelRename={() => setEditingListId(null)}
+                onOpenListMenu={openListMenuSheet}
+                onOpenListContextMenu={openListContextMenu}
+                onStartRename={startRenameList}
+              />
+            </div>
           }
           middle={
             <div className="flex min-h-0 flex-1 flex-col">

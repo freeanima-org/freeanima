@@ -13,8 +13,8 @@ const CHAT_PLATFORM = "chat";
 function resolveHubRpcWsUrlFromEnv(): string {
   const shell = window.satelliteShell;
   if (shell?.hubWsUrl) return shell.hubWsUrl;
-  const env = (import.meta as ImportMeta & { env?: { VITE_FREEANIMA_HUB_WS?: string } }).env;
-  if (env?.VITE_FREEANIMA_HUB_WS?.trim()) return env.VITE_FREEANIMA_HUB_WS.trim();
+  const fromVite = process.env.VITE_FREEANIMA_HUB_WS?.trim();
+  if (fromVite) return fromVite;
   return resolveHubRpcWsUrl("http://127.0.0.1:2658");
 }
 

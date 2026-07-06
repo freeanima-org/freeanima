@@ -25,9 +25,23 @@ describe("subscribeShellConfigChanges", () => {
   });
 
   test("导出订阅函数", () => {
-    expect(typeof subscribeShellConfigChanges).toBe("function");
-    const unsub = subscribeShellConfigChanges();
-    expect(typeof unsub).toBe("function");
-    unsub();
+    const prevWindow = globalThis.window;
+    const handlers = new Map<string, EventListener>();
+    globalThis.window = {
+      addEventListener(type: string, handler: EventListener) {
+        handlers.set(type, handler);
+      },
+      removeEventListener(type: string) {
+        handlers.delete(type);
+      },
+    } as Window & typeof globalThis;
+    try {
+      expect(typeof subscribeShellConfigChanges).toBe("function");
+      const unsub = subscribeShellConfigChanges();
+      expect(typeof unsub).toBe("function");
+      unsub();
+    } finally {
+      globalThis.window = prevWindow;
+    }
   });
 });

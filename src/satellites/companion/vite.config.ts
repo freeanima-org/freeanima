@@ -5,7 +5,7 @@ import { defineConfig } from "vite";
 import { createSatelliteViteInlineConfig } from "../../frontend/shell-ui/vite/satellite-vite.ts";
 
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = join(PKG_DIR, "..", "..");
+const REPO_ROOT = join(PKG_DIR, "..", "..", "..");
 const SPA_DIR = join(PKG_DIR, "spa");
 const DIST_DIR = join(PKG_DIR, "dist");
 
@@ -19,7 +19,7 @@ export default defineConfig(({ command, mode }) => {
     minify: mode === "production",
     sourcemap: mode !== "production",
     aliases: [
-      { find: /^@\/(.*)$/, replacement: `${join(SPA_DIR, "src")}/$1` },
+      { find: /^@\/(.*)$/, replacement: `${join(SPA_DIR)}/$1` },
       { find: /^@shared\/(.*)$/, replacement: `${join(PKG_DIR, "shared")}/$1` },
     ],
   });
