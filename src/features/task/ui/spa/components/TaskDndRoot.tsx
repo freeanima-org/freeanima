@@ -101,7 +101,9 @@ export function TaskDndRoot({
   const listById = useMemo(() => new Map(lists.map((l) => [l.id, l])), [lists]);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }),
   );
 

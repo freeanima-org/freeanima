@@ -26,7 +26,14 @@ const BUNDLED_INTERNAL_PACKAGES = new Set([
 ]);
 
 /** 纯 JS 依赖打进 main bundle，避免 electron-builder 复制 node_modules */
-const BUNDLED_NPM_PACKAGES = new Set(["zod", "ws", "fbx2vrma-converter"]);
+const BUNDLED_NPM_PACKAGES = new Set([
+  "zod",
+  "ws",
+  "fbx2vrma-converter",
+  "commander",
+  // ESM-only；external + CJS main 时 require().default 不是 constructor（Windows 启动崩溃）
+  "electron-store",
+]);
 
 function electronMainExternals(): string[] {
   const rootPkg = JSON.parse(readFileSync(ROOT_PACKAGE_JSON, "utf-8")) as {

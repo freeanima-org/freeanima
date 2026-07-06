@@ -5,6 +5,15 @@ import tailwindcss from "@tailwindcss/vite";
 import { build, type Alias, type InlineConfig, type Rollup } from "vite";
 
 import { paraglideCompilePlugin } from "./paraglide-plugin.ts";
+import { createTsconfigPathsAliases } from "./tsconfig-paths.ts";
+
+function satelliteViteDefine(extra?: Record<string, string>): Record<string, string> {
+  const viteHubWs = process.env.VITE_FREEANIMA_HUB_WS ?? "";
+  return {
+    "process.env.VITE_FREEANIMA_HUB_WS": JSON.stringify(viteHubWs),
+    ...extra,
+  };
+}
 
 export type SatelliteViteOptions = {
   appDir: string;
@@ -37,7 +46,7 @@ export function createSatelliteViteInlineConfig(opts: SatelliteViteOptions): Inl
     throw new Error(`satellite vite: missing ${indexHtml}`);
   }
 
-  const alias: Alias[] = [...(opts.aliases ?? [])];
+  const alias: Alias[] = [...(opts.aliases ?? []), ...createTsconfigPathsAliases(opts.repoRoot)];
   if (opts.paraglide) {
     alias.push({ find: /^(.*)messages\/paraglide\/(.*)$/, replacement: `${paraglideDir}/$2` });
   }
@@ -57,7 +66,7 @@ export function createSatelliteViteInlineConfig(opts: SatelliteViteOptions): Inl
       alias,
       dedupe: ["react", "react-dom"],
     },
-    ...(opts.define !== undefined ? { define: opts.define } : {}),
+    define: satelliteViteDefine(opts.define),
     build: {
       outDir: opts.outdir,
       emptyOutDir: !opts.watch,

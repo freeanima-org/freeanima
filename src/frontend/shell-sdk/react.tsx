@@ -1,5 +1,19 @@
 export { SubjectScopeProvider, useSubjectScope } from "./subject-scope-react.tsx";
 export { SubjectToggle } from "./SubjectToggle.tsx";
+export { SubjectScopeToggle } from "./SubjectScopeToggle.tsx";
+export {
+  hasDesktopPointerCapability,
+  hasFinePointerCapability,
+  hasTouchPrimaryCapability,
+} from "./shell-capability.ts";
+export type { PrimaryInputKind } from "./shell-capability.ts";
+export {
+  useActionSheetCapability,
+  useContextMenuCapability,
+  useDesktopPointerCapability,
+  useFinePointerCapability,
+  useTouchPrimaryCapability,
+} from "./shell-capability-react.tsx";
 export {
   useSetShellModuleVisibility,
   useShellModuleVisibility,

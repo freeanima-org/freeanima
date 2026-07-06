@@ -15,6 +15,20 @@ import type { ShellModuleId } from "@freeanima/shell-sdk/shell-module-visibility
 
 import * as m from "../../../../../messages/paraglide/messages.js";
 
+/** Shell Rail/底栏已有图标，去掉 Paraglide 文案前缀 emoji。 */
+export function stripLeadingNavEmoji(label: string): string {
+  return label
+    .replace(
+      /^(?:\p{RI}\p{RI}|\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic})*)\s*/u,
+      "",
+    )
+    .trim();
+}
+
+function shellNavLabel(message: () => string): () => string {
+  return () => stripLeadingNavEmoji(message());
+}
+
 export type ShellNavItem = {
   id: ShellModuleId;
   to: string;
@@ -36,40 +50,28 @@ function navItem(
 /** 全部 Shell 模块（Rail / 设置页顺序） */
 export function shellNavItems(): ShellNavItem[] {
   return [
-    navItem("chat", "/chat", "/chat", () => m.console_nav_chat(), MessageSquare),
-    navItem("tasks", "/tasks", "/tasks", () => m.console_nav_tasks(), ListTodo),
-    navItem("email", "/email", "/email", () => m.console_nav_email(), Mail),
-    navItem("diary", "/diary", "/diary", () => m.console_nav_diary(), BookOpen),
-    navItem("vault", "/vault", "/vault", () => m.console_nav_vault(), Lock),
-    navItem("dream", "/dream", "/dream", () => m.console_nav_dream(), Moon),
+    navItem("chat", "/chat", "/chat", shellNavLabel(m.console_nav_chat), MessageSquare),
+    navItem("tasks", "/tasks", "/tasks", shellNavLabel(m.console_nav_tasks), ListTodo),
+    navItem("email", "/email", "/email", shellNavLabel(m.console_nav_email), Mail),
+    navItem("diary", "/diary", "/diary", shellNavLabel(m.console_nav_diary), BookOpen),
+    navItem("vault", "/vault", "/vault", shellNavLabel(m.console_nav_vault), Lock),
+    navItem("dream", "/dream", "/dream", shellNavLabel(m.console_nav_dream), Moon),
     navItem(
       "notifications",
       "/notifications",
       "/notifications",
-      () => m.console_nav_notifications(),
+      shellNavLabel(m.console_nav_notifications),
       Bell,
     ),
     navItem(
       "console",
       "/console/dashboard",
       "/console",
-      () => m.console_nav_dashboard(),
+      shellNavLabel(m.console_nav_dashboard),
       LayoutDashboard,
     ),
-    navItem("settings", "/settings", "/settings", () => m.console_nav_settings(), Settings),
+    navItem("settings", "/settings", "/settings", shellNavLabel(m.console_nav_settings), Settings),
   ];
-}
-
-/** 移动端底栏 — 核心模块（console/settings 经 More） */
-export function shellMobilePrimaryNavItems(): ShellNavItem[] {
-  return shellNavItems().filter((item) =>
-    ["chat", "tasks", "email", "diary", "dream", "notifications"].includes(item.id),
-  );
-}
-
-/** 移动端 More — 次要模块 */
-export function shellMobileMoreNavItems(): ShellNavItem[] {
-  return shellNavItems().filter((item) => ["vault", "console", "settings"].includes(item.id));
 }
 
 export function filterVisibleNavItems(

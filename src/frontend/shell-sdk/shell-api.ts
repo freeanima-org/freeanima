@@ -1,4 +1,5 @@
 import type { HubFetch, RemoteAuthCredentials } from "./remote-auth.ts";
+import type { PrimaryInputKind } from "./shell-capability.ts";
 
 /** 与 @freeanima/sap-contract SapInstanceStore 对齐 */
 export type SapInstanceStore = {
@@ -24,6 +25,8 @@ export type SatelliteShellApi = {
   isElectron: boolean;
   /** Capacitor 等原生壳 */
   isNativeShell?: boolean;
+  /** 主输入范式（可选；未设时 Electron→pointer，Capacitor→touch，Web→媒体查询） */
+  primaryInput?: PrimaryInputKind;
   hubUrl: string;
   hubWsUrl: string;
   /** 非 loopback Hub 时的 Bearer / SAP connect 凭证 */

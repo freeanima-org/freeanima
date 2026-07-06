@@ -1,6 +1,14 @@
-import { useCallback, useState, type ReactNode } from "react";
+import { useCallback, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
 import { Button } from "../components/ui/button.tsx";
+import { ColumnResizeHandle } from "./ColumnResizeHandle.tsx";
+import { useObservedWidth } from "./observed-width.ts";
+import { clampListWidthForContainer } from "./three-column-container-mode.ts";
+import {
+  DEFAULT_COLUMN_SPLIT_LIMITS,
+  resolveColumnSplits,
+  writeColumnSplits,
+} from "./column-split.ts";
 import { useDrawerNav } from "./viewport.ts";
 
 export type ListDetailListContext = {
@@ -28,7 +36,20 @@ export type ListDetailLayoutProps = {
   detailHeaderPlacement?: "auto" | "none";
   detailClassName?: string;
   className?: string;
+  columnSplitKey?: string;
+  defaultListWidthPx?: number;
 };
+
+const LIST_DEFAULT_PX = 224;
+
+function listColumnStyle(width: number): CSSProperties {
+  return {
+    width,
+    flex: "0 0 auto",
+    minWidth: width,
+    maxWidth: width,
+  };
+}
 
 export function ListDetailLayout({
   detailTitle,
@@ -49,18 +70,51 @@ export function ListDetailLayout({
   detailHeaderPlacement = "auto",
   detailClassName = "",
   className = "",
+  columnSplitKey,
+  defaultListWidthPx = LIST_DEFAULT_PX,
 }: ListDetailLayoutProps) {
   const useDrawer = useDrawerNav();
   const [listOpenInternal, setListOpenInternal] = useState(false);
   const listOpen = listOpenControlled ?? listOpenInternal;
+  const resizeEnabled = Boolean(columnSplitKey) && !useDrawer;
+
+  const [rowRef, containerWidth] = useObservedWidth();
+
+  const [listWidth, setListWidth] = useState(() =>
+    resizeEnabled
+      ? (resolveColumnSplits(columnSplitKey ?? "list-detail", { list: defaultListWidthPx }).list ??
+        defaultListWidthPx)
+      : defaultListWidthPx,
+  );
+  const listWidthRef = useRef(listWidth);
+  listWidthRef.current = listWidth;
+
+  const resizeList = useCallback(
+    (delta: number) => {
+      if (!resizeEnabled || !columnSplitKey) return;
+      const limits = DEFAULT_COLUMN_SPLIT_LIMITS.list;
+      const next = clampListWidthForContainer(
+        listWidthRef.current + delta,
+        0,
+        containerWidth,
+        limits,
+      );
+      listWidthRef.current = next;
+      setListWidth(next);
+      writeColumnSplits(columnSplitKey, { list: next });
+    },
+    [resizeEnabled, columnSplitKey, containerWidth],
+  );
 
   const drawerAsideClass =
     "list-detail-drawer-panel safe-fixed-sidebar border-r border-border bg-background shadow-lg";
   const desktopAsideClass = [
     "relative flex min-h-0 min-w-0 shrink-0 flex-col overflow-hidden border-r",
-    listWidthClass,
+    resizeEnabled ? "" : listWidthClass,
     listAsideClassName,
-  ].join(" ");
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const setListOpen = useCallback(
     (next: boolean | ((prev: boolean) => boolean)) => {
@@ -124,12 +178,15 @@ export function ListDetailLayout({
     <div className={`flex h-full min-h-0 flex-col ${className}`.trim()}>
       {drawerHeaderBlock}
 
-      <div className="relative flex min-h-0 flex-1">
+      <div ref={rowRef} className="relative flex min-h-0 flex-1">
         {listOpen && useDrawer ? (
           <div className="list-detail-drawer-overlay bg-black/55" onClick={closeList} aria-hidden />
         ) : null}
 
-        <aside className={useDrawer ? (listOpen ? drawerAsideClass : "hidden") : desktopAsideClass}>
+        <aside
+          className={useDrawer ? (listOpen ? drawerAsideClass : "hidden") : desktopAsideClass}
+          style={useDrawer ? undefined : resizeEnabled ? listColumnStyle(listWidth) : undefined}
+        >
           {showListHeader && listTitle && !useDrawer ? (
             <div className={listHeaderClassName}>
               {listTitle}
@@ -144,6 +201,8 @@ export function ListDetailLayout({
             {list(listCtx)}
           </div>
         </aside>
+
+        {resizeEnabled ? <ColumnResizeHandle onResize={resizeList} /> : null}
 
         <main className={`flex min-h-0 min-w-0 flex-1 flex-col ${detailClassName}`.trim()}>
           {!useDrawer ? detailHeaderBlock : null}

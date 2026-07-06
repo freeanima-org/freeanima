@@ -1,8 +1,12 @@
-import { type ReactNode } from "react";
+import { type CSSProperties, type ReactNode } from "react";
 
 import { Button } from "../components/ui/button.tsx";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../components/ui/sheet.tsx";
+import { ColumnResizeHandle } from "./ColumnResizeHandle.tsx";
+import { useObservedWidth } from "./observed-width.ts";
 import type { ThreeColumnLayoutMode } from "./three-column-mode.ts";
+import { resolveThreeColumnMode } from "./three-column-container-mode.ts";
+import { useColumnResizeDrag } from "./useColumnResizeDrag.ts";
 
 export type ThreeColumnLayoutProps = {
   layoutMode: ThreeColumnLayoutMode;
@@ -19,15 +23,27 @@ export type ThreeColumnLayoutProps = {
   listToggleAriaLabel?: string;
   middleActions?: ReactNode;
   middleHeaderExtra?: ReactNode;
+  /** 设置后在中/宽屏启用列宽拖拽，宽度持久化到 localStorage */
+  columnSplitKey?: string;
 };
 
-const listAsideClass =
-  "relative flex min-h-0 w-52 shrink-0 flex-col border-r border-border bg-background";
+const LIST_DEFAULT_PX = 256;
+const MIDDLE_DEFAULT_PX = 320;
+
 const listDrawerClass =
   "list-detail-drawer-panel safe-fixed-sidebar flex min-h-0 flex-col border-r border-border bg-background shadow-lg";
-const middleWideClass =
-  "relative flex min-h-0 w-64 shrink-0 flex-col border-r border-border bg-background min-w-0";
-const detailWideClass = "relative flex min-h-0 min-w-0 flex-1 flex-col border-border bg-background";
+const detailPanelClass =
+  "relative flex min-h-0 min-w-0 flex-1 flex-col border-border bg-background";
+
+function columnStyle(width: number | undefined): CSSProperties | undefined {
+  if (width == null) return undefined;
+  return {
+    width,
+    flex: "0 0 auto",
+    minWidth: width,
+    maxWidth: width,
+  };
+}
 
 export function ThreeColumnLayout({
   layoutMode,
@@ -44,13 +60,48 @@ export function ThreeColumnLayout({
   listToggleAriaLabel = "打开侧栏",
   middleActions,
   middleHeaderExtra,
+  columnSplitKey,
 }: ThreeColumnLayoutProps) {
-  const isCompact = layoutMode === "compact";
+  const [rowRef, containerWidth] = useObservedWidth();
+
+  const effectiveMode = resolveThreeColumnMode(containerWidth, layoutMode);
+
+  const isCompact = effectiveMode === "compact";
+  const isMedium = effectiveMode === "medium";
+  const isWide = effectiveMode === "wide";
+  const listInDrawer = isCompact || isMedium;
+  const showDetailColumn = isMedium || isWide;
+  const resizeEnabled = Boolean(columnSplitKey) && !isCompact;
+
+  const { listWidth, middleWidth, resizeList, resizeMiddle } = useColumnResizeDrag({
+    storageKey: columnSplitKey ?? "three-column",
+    defaults: { list: LIST_DEFAULT_PX, middle: MIDDLE_DEFAULT_PX },
+    enabled: resizeEnabled,
+    containerWidth,
+    listInRow: isWide,
+  });
+
+  const listAsideClass = [
+    "relative flex min-h-0 shrink-0 flex-col border-r border-border bg-background",
+    !resizeEnabled || !isWide ? "w-64" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const middleClass = [
+    "relative flex min-h-0 flex-col border-r border-border bg-background min-w-0",
+    !resizeEnabled && isWide ? "w-80 shrink-0" : "",
+    !resizeEnabled && isMedium ? "min-w-0 flex-1" : "",
+    resizeEnabled ? "shrink-0" : "",
+    isCompact ? "min-w-0 flex-1" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const middleHeader = (
     <header className="border flex shrink-0 flex-col gap-2 border-b px-4 py-3">
       <div className="flex items-center justify-between gap-2">
-        {isCompact ? (
+        {listInDrawer ? (
           <Button
             type="button"
             variant="ghost"
@@ -71,7 +122,7 @@ export function ThreeColumnLayout({
     </header>
   );
 
-  const listHeader = !isCompact ? (
+  const listHeader = isWide ? (
     <div className="border shrink-0 border-b p-3 text-sm font-semibold">{listTitle}</div>
   ) : null;
 
@@ -104,8 +155,8 @@ export function ThreeColumnLayout({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="relative flex min-h-0 flex-1">
-        {isCompact && listOpen ? (
+      <div ref={rowRef} className="relative flex min-h-0 flex-1">
+        {listInDrawer && listOpen ? (
           <div
             className="list-detail-drawer-overlay bg-black/55"
             onClick={() => onListOpenChange(false)}
@@ -113,23 +164,31 @@ export function ThreeColumnLayout({
           />
         ) : null}
 
-        {!isCompact ? <aside className={listAsideClass}>{listPanel}</aside> : null}
+        {isWide ? (
+          <aside
+            className={listAsideClass}
+            style={resizeEnabled ? columnStyle(listWidth) : undefined}
+          >
+            {listPanel}
+          </aside>
+        ) : null}
 
-        {isCompact ? (
+        {resizeEnabled && isWide ? <ColumnResizeHandle onResize={resizeList} /> : null}
+
+        {listInDrawer ? (
           <aside className={listOpen ? listDrawerClass : "hidden"}>{listPanel}</aside>
         ) : null}
 
         <section
-          className={
-            isCompact
-              ? "relative flex min-h-0 min-w-0 flex-1 flex-col bg-background"
-              : middleWideClass
-          }
+          className={middleClass}
+          style={resizeEnabled ? columnStyle(middleWidth) : undefined}
         >
           {middlePanel}
         </section>
 
-        {!isCompact ? <aside className={detailWideClass}>{detailPanel}</aside> : null}
+        {resizeEnabled && showDetailColumn ? <ColumnResizeHandle onResize={resizeMiddle} /> : null}
+
+        {showDetailColumn ? <aside className={detailPanelClass}>{detailPanel}</aside> : null}
       </div>
 
       {isCompact ? (

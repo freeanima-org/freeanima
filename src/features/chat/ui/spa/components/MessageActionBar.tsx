@@ -1,26 +1,46 @@
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@freeanima/ui-kit";
+import { copyText } from "@freeanima/ui-kit/lib/copy-text";
 import { m } from "@chat/lib/i18n.ts";
+
+const COPY_FEEDBACK_MS = 3000;
 
 type MessageActionBarProps = {
   align: "start" | "end";
+  copyContent: string;
   speechText: string;
   speaking: boolean;
   speechSupported: boolean;
-  onCopy: () => void;
   onToggleSpeech: () => void;
   onEdit?: () => void;
 };
 
 export function MessageActionBar({
   align,
+  copyContent,
   speechText,
   speaking,
   speechSupported,
-  onCopy,
   onToggleSpeech,
   onEdit,
 }: MessageActionBarProps) {
+  const [copied, setCopied] = useState(false);
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const canSpeak = speechSupported && speechText.trim().length > 0;
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimerRef.current != null) clearTimeout(copiedTimerRef.current);
+    };
+  }, []);
+
+  const handleCopy = useCallback(async () => {
+    const ok = await copyText(copyContent);
+    if (!ok) return;
+    setCopied(true);
+    if (copiedTimerRef.current != null) clearTimeout(copiedTimerRef.current);
+    copiedTimerRef.current = setTimeout(() => setCopied(false), COPY_FEEDBACK_MS);
+  }, [copyContent]);
 
   return (
     <div
@@ -32,11 +52,13 @@ export function MessageActionBar({
         type="button"
         variant="ghost"
         size="icon-sm"
-        className="text-muted-foreground size-7 text-xs"
-        aria-label={m.console_common_copy()}
-        onClick={onCopy}
+        className={`size-7 text-xs ${copied ? "text-foreground" : "text-muted-foreground"}`}
+        aria-label={
+          copied ? m.console_common_copied({ label: "" }).trim() : m.console_common_copy()
+        }
+        onClick={() => void handleCopy()}
       >
-        ⎘
+        {copied ? "✓" : "⎘"}
       </Button>
       <Button
         type="button"

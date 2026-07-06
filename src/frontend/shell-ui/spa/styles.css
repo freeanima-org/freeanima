@@ -13,6 +13,7 @@
 :root {
   --shell-bottom-nav-h: 3rem;
   --shell-rail-w: 3.25rem;
+  --shell-rail-expanded-w: 11rem;
 }
 
 html,

@@ -39,10 +39,37 @@ describe("task platform", () => {
     expect(isNativeShell()).toBe(false);
   });
 
-  it("isTaskContextMenuEnabled is false on native shell", () => {
-    window.satelliteShell = { isNativeShell: true } as SatelliteShellApi;
+  it("isTaskContextMenuEnabled 仅跟指针能力（与布局正交）", () => {
+    window.matchMedia = ((query: string) =>
+      ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      }) satisfies MediaQueryList) as typeof window.matchMedia;
+
+    window.satelliteShell = { isNativeShell: true, isElectron: false } as SatelliteShellApi;
     expect(isTaskContextMenuEnabled()).toBe(false);
-    window.satelliteShell = { isNativeShell: false } as SatelliteShellApi;
+
+    window.satelliteShell = { isElectron: true } as SatelliteShellApi;
+    expect(isTaskContextMenuEnabled()).toBe(true);
+
+    delete window.satelliteShell;
+    window.matchMedia = ((query: string) =>
+      ({
+        matches: query.includes("pointer: fine") || query.includes("hover: hover"),
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      }) satisfies MediaQueryList) as typeof window.matchMedia;
     expect(isTaskContextMenuEnabled()).toBe(true);
   });
 

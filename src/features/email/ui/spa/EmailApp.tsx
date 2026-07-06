@@ -6,7 +6,12 @@ import {
   useDrawerNav,
   useThreeColumnLayoutMode,
 } from "@freeanima/ui-kit/layout";
-import { useHubConnection, useNetworkOnline, useSubjectScope } from "@freeanima/shell-sdk/react";
+import {
+  useHubConnection,
+  useNetworkOnline,
+  useSubjectScope,
+  SubjectScopeToggle,
+} from "@freeanima/shell-sdk/react";
 import { readModuleSelection, writeModuleSelection } from "@freeanima/shell-sdk";
 
 import { EmailMessageDetail } from "./components/EmailMessageDetail.tsx";
@@ -157,7 +162,7 @@ export function EmailApp() {
   }, [subjectKind, loadAccounts]);
 
   useEffect(() => {
-    if (layoutMode === "wide") {
+    if (layoutMode !== "compact") {
       setDetailOpen(false);
     } else if (detail) {
       setDetailOpen(true);
@@ -338,6 +343,7 @@ export function EmailApp() {
       ) : (
         <ThreeColumnLayout
           layoutMode={layoutMode}
+          columnSplitKey="email"
           listTitle="邮箱"
           middleTitle={activeAccount ? accountLabel(activeAccount) : "收件箱"}
           detailTitle={detail?.subject || "(无主题)"}
@@ -347,19 +353,22 @@ export function EmailApp() {
           detailOpen={detailOpen}
           onDetailOpenChange={handleDetailOpenChange}
           middleActions={
-            activeAccount ? (
-              <>
-                {listLoading || searching ? <Spinner className="size-4" /> : null}
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={syncing || writesDisabled}
-                  onClick={() => void onSync()}
-                >
-                  {syncing ? "同步中…" : "同步"}
-                </Button>
-              </>
-            ) : null
+            <>
+              <SubjectScopeToggle />
+              {activeAccount ? (
+                <>
+                  {listLoading || searching ? <Spinner className="size-4" /> : null}
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={syncing || writesDisabled}
+                    onClick={() => void onSync()}
+                  >
+                    {syncing ? "同步中…" : "同步"}
+                  </Button>
+                </>
+              ) : null}
+            </>
           }
           middleHeaderExtra={
             activeAccount ? (

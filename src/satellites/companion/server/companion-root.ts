@@ -1,6 +1,5 @@
 import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 
 /**
  * satellites/companion 包根目录。
@@ -19,5 +18,7 @@ export function companionPackageRoot(): string {
     return shellRoot;
   }
 
-  return join(dirname(fileURLToPath(import.meta.url)), "..");
+  throw new Error(
+    "无法推断 companion 包根目录：请设置 COMPANION_PACKAGE_ROOT（companion dev.ts 会自动注入）",
+  );
 }
