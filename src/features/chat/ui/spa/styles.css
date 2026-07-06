@@ -69,6 +69,10 @@
   @apply bg-muted text-foreground;
 }
 
+.message-action-bar {
+  @apply text-muted-foreground;
+}
+
 /* 嵌入移动端壳时 safe-area 由 .shell-layout-compact > main 承担 */
 .shell-layout-compact .chat-app {
   padding: 0;

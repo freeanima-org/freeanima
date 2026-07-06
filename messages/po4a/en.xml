@@ -20,6 +20,9 @@
   <msg id="chat_llm_debug_turns">Message turns</msg>
   <msg id="chat_llm_debug_view">View</msg>
   <msg id="chat_show_archived">Show archived</msg>
+  <msg id="chat_speech_play">Read aloud</msg>
+  <msg id="chat_speech_stop">Stop reading</msg>
+  <msg id="chat_speech_unavailable">Speech not supported on this device</msg>
   <msg id="chat_unarchive">Unarchive</msg>
   <msg id="console_acp_action_failed">{name} {action} failed: {detail}</msg>
   <msg id="console_acp_active_sessions">Active sessions</msg>
