@@ -19,7 +19,8 @@ import {
   TableRow,
 } from "@freeanima/ui-kit";
 import { FormField } from "@freeanima/ui-kit/form";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
+import { showConfirm, StatusAlert } from "@freeanima/ui-kit/composite";
+import { copyText } from "@freeanima/ui-kit/lib/copy-text";
 import { formatDisplayDateTime } from "@console/lib/format-datetime.ts";
 import { m } from "@console/lib/i18n.ts";
 import {
@@ -123,7 +124,12 @@ export function SubjectApiTokensModal({
 
   const onRevoke = async (token: ServiceApiTokenPublic) => {
     if (token.revoked_at) return;
-    if (!confirm(m.console_entities_api_token_revoke_confirm({ name: token.name }))) return;
+    const confirmed = await showConfirm({
+      description: m.console_entities_api_token_revoke_confirm({ name: token.name }),
+      confirmLabel: m.console_entities_api_token_revoke(),
+      variant: "error",
+    });
+    if (!confirmed) return;
     setRevokingId(token.id);
     setError("");
     try {
@@ -143,13 +149,14 @@ export function SubjectApiTokensModal({
 
   const onCopyPlaintext = async () => {
     if (!plaintext) return;
-    try {
-      await navigator.clipboard.writeText(plaintext);
-      setCopyHint(m.console_common_copied({ label: m.console_entities_api_tokens() }));
-    } catch (e) {
-      logCaughtError("routes/_sidebar/subject-api-tokens-modal/copy", e);
-      setCopyHint(m.console_common_copy_failed({ label: m.console_entities_api_tokens() }));
-    }
+    const ok = await copyText(plaintext);
+    setCopyHint(
+      ok
+        ? m.console_common_copied({ label: m.console_entities_api_tokens() })
+        : m.console_common_copy_failed({ label: m.console_entities_api_tokens() }),
+    );
+    if (!ok)
+      logCaughtError("routes/_sidebar/subject-api-tokens-modal/copy", new Error("copyText failed"));
   };
 
   return (

@@ -4,7 +4,7 @@ import type { StoredMessage } from "@freeanima/core/db/domain";
 import type { BeforeLlmCallContext } from "@freeanima/core/hooks/loop";
 import type { AnimaConfig } from "@freeanima/core/config";
 import { bindActiveConfig, Config, resetActiveConfigForTest } from "@freeanima/core/config";
-import { PASSIVE_MEMORY_CONTEXT_SYSTEM_NAME } from "@freeanima/core/llm/runtime-system-turn";
+import { PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME } from "@freeanima/core/llm/runtime-system-turn";
 
 const semanticPassiveRecallSearch = mock(async () => [
   {
@@ -67,7 +67,7 @@ describe("createPassiveMemoryRecallHandler", () => {
     listResidentSemanticMemory.mockClear();
   });
 
-  it("injects runtime system when enabled and last message is user", async () => {
+  it("injects runtime assistant when enabled and last message is user", async () => {
     bindTestConfig(true);
     const messages: StoredMessage[] = [{ role: "user", content: "time: 2026-06-07T17:45\nhello" }];
     const ctx: BeforeLlmCallContext = { conversationId: "c1", messages };
@@ -81,9 +81,9 @@ describe("createPassiveMemoryRecallHandler", () => {
     });
     expect(messages).toHaveLength(2);
     const injected = messages[0];
-    expect(injected?.role).toBe("system");
-    if (injected?.role === "system") {
-      expect(injected.name).toBe(PASSIVE_MEMORY_CONTEXT_SYSTEM_NAME);
+    expect(injected?.role).toBe("assistant");
+    if (injected?.role === "assistant") {
+      expect(injected.name).toBe(PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME);
     }
   });
 

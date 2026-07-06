@@ -2,45 +2,31 @@ import type { ReactNode } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { Button, Card, CardContent, Input } from "@freeanima/ui-kit";
 import { Label } from "@freeanima/ui-kit/components/ui";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
+import { StatusAlert, showConfirm } from "@freeanima/ui-kit/composite";
+import { FormToggle } from "@freeanima/ui-kit/form";
 import {
   fetchHubConfig,
   patchHubConfigSection,
   restartHubService,
 } from "@freeanima/shell-sdk/hub-config-api";
 
+import * as uiMessages from "../../../../../../messages/paraglide/messages.js";
+import {
+  AdvancedSectionForm,
+  AdvancedSectionPicker,
+  ADVANCED_SECTIONS,
+  readAdvancedSectionDraft,
+  type AdvancedSectionId,
+} from "./hub-advanced-forms.tsx";
+
 type TabId = "compression" | "memory" | "llm" | "advanced";
 
-const TABS: Array<{ id: TabId; label: string; section: string }> = [
-  { id: "compression", label: "压缩", section: "compression" },
-  { id: "memory", label: "记忆", section: "memory" },
-  { id: "llm", label: "LLM", section: "llm" },
-  { id: "advanced", label: "高级", section: "" },
+const TABS: Array<{ id: TabId; label: string }> = [
+  { id: "compression", label: "压缩" },
+  { id: "memory", label: "记忆" },
+  { id: "llm", label: "LLM" },
+  { id: "advanced", label: "高级" },
 ];
-
-const ADVANCED_SECTIONS = [
-  "firecrawl",
-  "browser",
-  "embedding",
-  "cjk",
-  "fts",
-  "models",
-  "mcp_servers",
-  "acp_agents",
-  "tunnel",
-  "web",
-  "worlds",
-  "auto_llm",
-] as const;
-
-function boolField(label: string, value: boolean, onChange: (v: boolean) => void): ReactNode {
-  return (
-    <label className="flex items-center gap-2 text-sm">
-      <input type="checkbox" checked={value} onChange={(e) => onChange(e.target.checked)} />
-      {label}
-    </label>
-  );
-}
 
 function numberField(
   label: string,
@@ -67,8 +53,8 @@ export default function HubRuntimeSettingsPanel() {
   const [tab, setTab] = useState<TabId>("compression");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
-  const [advancedSection, setAdvancedSection] = useState<string>(ADVANCED_SECTIONS[0]);
-  const [advancedJson, setAdvancedJson] = useState("{}");
+  const [advancedSection, setAdvancedSection] = useState<AdvancedSectionId>(ADVANCED_SECTIONS[0]);
+  const [advancedDraft, setAdvancedDraft] = useState<Record<string, unknown>>({});
 
   const [compression, setCompression] = useState({
     enabled: true,
@@ -114,14 +100,15 @@ export default function HubRuntimeSettingsPanel() {
 
   useEffect(() => {
     if (!config) return;
-    const sectionData = config[advancedSection];
-    setAdvancedJson(JSON.stringify(sectionData ?? {}, null, 2));
-  }, [config, advancedSection, tab]);
+    setAdvancedDraft(readAdvancedSectionDraft(config[advancedSection]));
+  }, [config, advancedSection]);
 
   const afterSave = async (section: string) => {
-    const restart = window.confirm(
-      `「${section}」已保存到 Hub 数据库。是否立即重启服务使配置生效？`,
-    );
+    const restart = await showConfirm({
+      title: uiMessages.ui_hub_config_saved_restart_title(),
+      description: uiMessages.ui_hub_config_saved_restart_description({ section }),
+      confirmLabel: uiMessages.console_common_restart_service(),
+    });
     if (restart) {
       try {
         await restartHubService();
@@ -189,8 +176,7 @@ export default function HubRuntimeSettingsPanel() {
     setSaving(true);
     setError("");
     try {
-      const parsed = JSON.parse(advancedJson) as Record<string, unknown>;
-      await patchHubConfigSection(advancedSection, parsed);
+      await patchHubConfigSection(advancedSection, advancedDraft);
       await afterSave(advancedSection);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -224,9 +210,12 @@ export default function HubRuntimeSettingsPanel() {
       {tab === "compression" ? (
         <Card className="bg-muted py-0">
           <CardContent className="gap-4 py-4">
-            {boolField("启用会话压缩", compression.enabled, (v) =>
-              setCompression((c) => ({ ...c, enabled: v })),
-            )}
+            <FormToggle
+              className="w-full"
+              label="启用会话压缩"
+              checked={compression.enabled}
+              onChange={(enabled) => setCompression((c) => ({ ...c, enabled }))}
+            />
             {numberField("最大轮次", compression.max_rounds, (v) =>
               setCompression((c) => ({ ...c, max_rounds: v === "" ? 50 : v })),
             )}
@@ -243,9 +232,12 @@ export default function HubRuntimeSettingsPanel() {
       {tab === "memory" ? (
         <Card className="bg-muted py-0">
           <CardContent className="gap-4 py-4">
-            {boolField("被动语义回忆", memoryRecall.enabled, (v) =>
-              setMemoryRecall((m) => ({ ...m, enabled: v })),
-            )}
+            <FormToggle
+              className="w-full"
+              label="被动语义回忆"
+              checked={memoryRecall.enabled}
+              onChange={(enabled) => setMemoryRecall((m) => ({ ...m, enabled }))}
+            />
             {numberField("检索条数上限", memoryRecall.limit, (v) =>
               setMemoryRecall((m) => ({ ...m, limit: v === "" ? 5 : v })),
             )}
@@ -270,7 +262,8 @@ export default function HubRuntimeSettingsPanel() {
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              providers / profiles 完整编辑请使用「高级」JSON；保存后建议重启服务。
+              providers / profiles 请在「高级」中按 providers、profiles 相关段维护（或通过 CLI
+              编辑完整 llm 段）。
             </p>
             <Button type="button" disabled={saving} onClick={() => void saveLlm()}>
               保存 LLM 配置
@@ -282,24 +275,11 @@ export default function HubRuntimeSettingsPanel() {
       {tab === "advanced" ? (
         <Card className="bg-muted py-0">
           <CardContent className="gap-4 py-4">
-            <div className="space-y-1">
-              <Label className="text-sm">配置段</Label>
-              <select
-                className="select select-bordered select-sm w-full max-w-xs"
-                value={advancedSection}
-                onChange={(e) => setAdvancedSection(e.target.value)}
-              >
-                {ADVANCED_SECTIONS.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <textarea
-              className="textarea textarea-bordered w-full min-h-48 font-mono text-xs"
-              value={advancedJson}
-              onChange={(e) => setAdvancedJson(e.target.value)}
+            <AdvancedSectionPicker section={advancedSection} onSectionChange={setAdvancedSection} />
+            <AdvancedSectionForm
+              section={advancedSection}
+              value={advancedDraft}
+              onChange={setAdvancedDraft}
             />
             <Button type="button" disabled={saving} onClick={() => void saveAdvanced()}>
               保存 {advancedSection}

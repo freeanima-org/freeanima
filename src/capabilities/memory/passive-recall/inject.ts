@@ -1,17 +1,22 @@
 import { formatMemoryReferenceMarker } from "@freeanima/core/repos";
-import type { SystemMessage, StoredMessage } from "@freeanima/core/db/domain";
-import { PASSIVE_MEMORY_CONTEXT_SYSTEM_NAME } from "@freeanima/core/llm/runtime-system-turn";
+import type { AssistantMessage, StoredMessage } from "@freeanima/core/db/domain";
+import { PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME } from "@freeanima/core/llm/runtime-system-turn";
 
 import type { SemanticRecallHit } from "../recall-search.ts";
+
+export { PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME };
 
 export const PASSIVE_MEMORY_CONTEXT_HEAD =
   "以下是与当前用户消息相关的语义记忆。有依据时使用，并在回复末尾引用 [[f-id]]。";
 
 export const PASSIVE_MEMORY_CONTEXT_FENCE = "memory";
 
-export function isPassiveMemoryContextSystem(msg: StoredMessage): msg is SystemMessage {
-  return msg.role === "system" && msg.name === PASSIVE_MEMORY_CONTEXT_SYSTEM_NAME;
+export function isPassiveMemoryContextAssistant(msg: StoredMessage): msg is AssistantMessage {
+  return msg.role === "assistant" && msg.name === PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME;
 }
+
+/** @deprecated 使用 isPassiveMemoryContextAssistant */
+export const isPassiveMemoryContextSystem = isPassiveMemoryContextAssistant;
 
 function formatPassiveMemoryLine(hit: SemanticRecallHit): string {
   const marker = formatMemoryReferenceMarker(hit.semantic_memory_id);
@@ -41,13 +46,13 @@ export function wrapPassiveMemoryContext(hits: SemanticRecallHit[], maxChars: nu
 export function stripPassiveMemoryContextFromMessages(messages: StoredMessage[]): void {
   for (let i = messages.length - 1; i >= 0; i--) {
     const msg = messages[i];
-    if (msg !== undefined && isPassiveMemoryContextSystem(msg)) {
+    if (msg !== undefined && isPassiveMemoryContextAssistant(msg)) {
       messages.splice(i, 1);
     }
   }
 }
 
-/** Manifest passive recall as runtime-only system immediately before the last user message. */
+/** Manifest passive recall as runtime-only assistant immediately before the last user message. */
 export function manifestPassiveMemoryContext(
   messages: StoredMessage[],
   hits: SemanticRecallHit[],
@@ -60,9 +65,9 @@ export function manifestPassiveMemoryContext(
   const content = wrapPassiveMemoryContext(hits, maxChars);
   if (!content.trim()) return;
 
-  const manifest: SystemMessage = {
-    role: "system",
-    name: PASSIVE_MEMORY_CONTEXT_SYSTEM_NAME,
+  const manifest: AssistantMessage = {
+    role: "assistant",
+    name: PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME,
     content,
   };
   messages.splice(lastIdx, 0, manifest);

@@ -1,6 +1,6 @@
 import type { LlmTurnMessage } from "@freeanima/core/provider";
 import type { OpenAiToolSchema, StoredMessage } from "@freeanima/core/db/domain";
-import { PASSIVE_MEMORY_CONTEXT_SYSTEM_NAME } from "@freeanima/core/llm/runtime-system-turn";
+import { PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME } from "@freeanima/core/llm/runtime-system-turn";
 import { storedMessagesToInvokeInput } from "@freeanima/core/llm/llm-adapt";
 import { omitUndefined } from "@freeanima/core/util";
 
@@ -48,7 +48,7 @@ function truncateText(text: string, max = LLM_DEBUG_CONTENT_MAX): string {
 function previewTurn(turn: LlmTurnMessage): LlmDebugTurnPreview {
   const base: LlmDebugTurnPreview = {
     role: turn.role,
-    ...(turn.role === "system" && "name" in turn && turn.name ? { name: turn.name } : {}),
+    ...("name" in turn && turn.name ? { name: turn.name } : {}),
   };
 
   if ("content" in turn) {
@@ -80,7 +80,7 @@ function detectRuntimeInjections(messages: StoredMessage[]): LlmDebugRuntimeInje
   let notification_context = false;
 
   for (const msg of messages) {
-    if (msg.role === "system" && msg.name === PASSIVE_MEMORY_CONTEXT_SYSTEM_NAME) {
+    if (msg.role === "assistant" && msg.name === PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME) {
       passive_memory_context = true;
     }
     if (msg.role === "assistant" && msg.name === NOTIFICATION_CONTEXT_ASSISTANT_NAME) {

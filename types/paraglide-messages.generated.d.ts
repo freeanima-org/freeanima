@@ -25,6 +25,9 @@ type ParaglideMessageExports = {
   readonly chat_llm_debug_turns: ParaglideMessageFn;
   readonly chat_llm_debug_view: ParaglideMessageFn;
   readonly chat_show_archived: ParaglideMessageFn;
+  readonly chat_speech_play: ParaglideMessageFn;
+  readonly chat_speech_stop: ParaglideMessageFn;
+  readonly chat_speech_unavailable: ParaglideMessageFn;
   readonly chat_unarchive: ParaglideMessageFn;
   readonly console_acp_action_failed: ParaglideMessageFn;
   readonly console_acp_active_sessions: ParaglideMessageFn;
@@ -63,6 +66,7 @@ type ParaglideMessageExports = {
   readonly console_autobio_source_conversation: ParaglideMessageFn;
   readonly console_brand: ParaglideMessageFn;
   readonly console_chat_clarify_hint: ParaglideMessageFn;
+  readonly console_chat_composing_reply: ParaglideMessageFn;
   readonly console_chat_conversations_col_actions: ParaglideMessageFn;
   readonly console_chat_conversations_col_created: ParaglideMessageFn;
   readonly console_chat_conversations_col_id: ParaglideMessageFn;
@@ -613,6 +617,9 @@ type ParaglideMessageExports = {
   readonly ui_common_cancel: ParaglideMessageFn;
   readonly ui_common_close: ParaglideMessageFn;
   readonly ui_common_confirm: ParaglideMessageFn;
+  readonly ui_common_notice: ParaglideMessageFn;
+  readonly ui_hub_config_saved_restart_description: ParaglideMessageFn;
+  readonly ui_hub_config_saved_restart_title: ParaglideMessageFn;
   readonly ui_network_offline: ParaglideMessageFn;
   readonly ui_offline_cached_hint: ParaglideMessageFn;
   readonly ui_offline_readonly_mode: ParaglideMessageFn;
@@ -650,6 +657,9 @@ declare module "*/messages/paraglide/messages.js" {
   export const chat_llm_debug_turns: ParaglideMessageFn;
   export const chat_llm_debug_view: ParaglideMessageFn;
   export const chat_show_archived: ParaglideMessageFn;
+  export const chat_speech_play: ParaglideMessageFn;
+  export const chat_speech_stop: ParaglideMessageFn;
+  export const chat_speech_unavailable: ParaglideMessageFn;
   export const chat_unarchive: ParaglideMessageFn;
   export const console_acp_action_failed: ParaglideMessageFn;
   export const console_acp_active_sessions: ParaglideMessageFn;
@@ -688,6 +698,7 @@ declare module "*/messages/paraglide/messages.js" {
   export const console_autobio_source_conversation: ParaglideMessageFn;
   export const console_brand: ParaglideMessageFn;
   export const console_chat_clarify_hint: ParaglideMessageFn;
+  export const console_chat_composing_reply: ParaglideMessageFn;
   export const console_chat_conversations_col_actions: ParaglideMessageFn;
   export const console_chat_conversations_col_created: ParaglideMessageFn;
   export const console_chat_conversations_col_id: ParaglideMessageFn;
@@ -1238,6 +1249,9 @@ declare module "*/messages/paraglide/messages.js" {
   export const ui_common_cancel: ParaglideMessageFn;
   export const ui_common_close: ParaglideMessageFn;
   export const ui_common_confirm: ParaglideMessageFn;
+  export const ui_common_notice: ParaglideMessageFn;
+  export const ui_hub_config_saved_restart_description: ParaglideMessageFn;
+  export const ui_hub_config_saved_restart_title: ParaglideMessageFn;
   export const ui_network_offline: ParaglideMessageFn;
   export const ui_offline_cached_hint: ParaglideMessageFn;
   export const ui_offline_readonly_mode: ParaglideMessageFn;
