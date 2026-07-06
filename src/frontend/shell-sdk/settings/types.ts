@@ -65,6 +65,8 @@ export type SettingsBinding<T = unknown> = {
 
 /** companion 非配置持久化操作 */
 export type CompanionSettingsApi = {
+  getCompanionVisible(): Promise<boolean>;
+  setCompanionVisible(visible: boolean): Promise<void>;
   uploadModel(file: File): Promise<void>;
   setActiveModel(id: string): Promise<void>;
   renameModel(id: string, name: string): Promise<void>;

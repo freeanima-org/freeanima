@@ -1,4 +1,5 @@
 import { Button, Card, CardContent } from "@freeanima/ui-kit";
+import type { SettingsSectionDeps } from "@freeanima/shell-sdk/settings";
 import { useCompanionStore } from "@/stores/companion.ts";
 import { SettingsTabs } from "./settings/SettingsTabs.tsx";
 import { GeneralTab } from "./settings/GeneralTab.tsx";
@@ -10,9 +11,10 @@ import { MotionSlotsTab } from "./settings/MotionSlotsTab.tsx";
 type Props = {
   standalone?: boolean;
   onClose?: () => void;
+  deps?: SettingsSectionDeps;
 };
 
-export function SettingsPanel({ standalone = false, onClose }: Props) {
+export function SettingsPanel({ standalone = false, onClose, deps }: Props) {
   const tab = useCompanionStore((s) => s.settingsTab);
 
   return (
@@ -46,7 +48,9 @@ export function SettingsPanel({ standalone = false, onClose }: Props) {
             tab === "library" ? "flex flex-col overflow-hidden" : "overflow-y-auto"
           }`}
         >
-          {tab === "general" ? <GeneralTab /> : null}
+          {tab === "general" ? (
+            <GeneralTab {...(deps?.companion ? { companionApi: deps.companion } : {})} />
+          ) : null}
           {tab === "behavior" ? <BehaviorTab /> : null}
           {tab === "models" ? <ModelsTab /> : null}
           {tab === "library" ? <MotionLibraryTab /> : null}

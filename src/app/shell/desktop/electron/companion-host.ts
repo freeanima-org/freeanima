@@ -11,7 +11,8 @@ export type CompanionHostState = {
 export type CompanionHostHandlers = {
   setClickthrough: (ignore: boolean) => void;
   setPointerActive: (active: boolean) => void;
-  toggleCompanionVisibility: () => boolean;
+  getCompanionVisible: () => boolean;
+  setCompanionVisible: (visible: boolean) => boolean;
   broadcast: (channel: string, ...args: unknown[]) => void;
 };
 
@@ -71,7 +72,11 @@ export function registerCompanionHostIpc(
     handlers.broadcast("shell:config-changed");
   });
 
-  ipcMain.handle("shell:toggle-companion-visibility", () => handlers.toggleCompanionVisibility());
+  ipcMain.handle("shell:get-companion-visible", () => handlers.getCompanionVisible());
+
+  ipcMain.handle("shell:set-companion-visible", (_event, visible: boolean) =>
+    handlers.setCompanionVisible(visible),
+  );
 }
 
 export function startCompanionCursorPoll(

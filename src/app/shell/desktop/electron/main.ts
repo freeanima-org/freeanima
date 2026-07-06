@@ -24,6 +24,10 @@ import { logLine } from "./log.ts";
 import { defaultHubUrl } from "./paths.ts";
 import { readShellClientConfig } from "./shell-client-store.ts";
 import { registerShellClientIpc } from "./shell-client-ipc.ts";
+import {
+  readCompanionVisibleFromStore,
+  saveCompanionVisibleToStore,
+} from "./shell-scoped-prefs.ts";
 import { startShellStaticServer } from "./static-server.ts";
 import {
   resolveDesktopUiMode,
@@ -293,24 +297,34 @@ function createCompanionOverlay(url: string): BrowserWindow {
   void win.loadURL(`${url}/?view=overlay`);
   win.once("ready-to-show", () => {
     clearOverlayTitle(win);
-    win.show();
-    win.focus();
+    if (readCompanionVisibleFromStore()) {
+      win.show();
+      win.focus();
+    }
   });
   startCompanionCursorPoll(() => companionWindow, applyClickthrough);
   return win;
 }
 
-function toggleCompanionVisibility(): boolean {
+function getCompanionVisible(): boolean {
+  if (!companionWindow || companionWindow.isDestroyed()) {
+    return readCompanionVisibleFromStore();
+  }
+  return companionWindow.isVisible();
+}
+
+function setCompanionVisible(visible: boolean): boolean {
   if (!companionWindow || companionWindow.isDestroyed()) {
     throw new Error("companion window not found");
   }
-  if (companionWindow.isVisible()) {
+  saveCompanionVisibleToStore(visible);
+  if (visible) {
+    companionWindow.show();
+    companionWindow.focus();
+  } else {
     companionWindow.hide();
-    return false;
   }
-  companionWindow.show();
-  companionWindow.focus();
-  return true;
+  return visible;
 }
 
 function createTray(): void {
@@ -319,7 +333,6 @@ function createTray(): void {
   tray.setToolTip("FreeAnima Desktop");
   const menu = Menu.buildFromTemplate([
     { label: "打开主窗口", click: () => openMainWindow() },
-    { label: "显示/隐藏伴侣", click: () => toggleCompanionVisibility() },
     { type: "separator" },
     { label: "退出", click: () => app.quit() },
   ]);
@@ -384,7 +397,8 @@ async function bootstrap(): Promise<void> {
         pointerActive = active;
         if (companionWindow && !companionWindow.isDestroyed()) applyClickthrough(companionWindow);
       },
-      toggleCompanionVisibility,
+      getCompanionVisible,
+      setCompanionVisible,
       broadcast,
     },
   );
