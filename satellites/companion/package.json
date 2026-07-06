@@ -38,7 +38,7 @@
     "fbx2vrma-converter": "^1.0.2",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "three": "^0.185.0",
+    "three": "^0.185.1",
     "ws": "^8.21.0",
     "zod": "^4.4.3",
     "zustand": "^5.0.14"

@@ -8,7 +8,7 @@
     ".": "./src/cli.ts"
   },
   "dependencies": {
-    "@clack/prompts": "^1.6.0",
+    "@clack/prompts": "^1.7.0",
     "@freeanima/admin-api": "workspace:*",
     "@freeanima/app-web": "workspace:*",
     "@freeanima/core": "workspace:*",

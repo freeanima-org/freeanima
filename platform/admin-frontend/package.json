@@ -15,7 +15,7 @@
     "@freeanima/shell-sdk": "workspace:*",
     "@freeanima/ui-kit": "workspace:*",
     "@elysiajs/eden": "^1.4.9",
-    "@tanstack/react-router": "^1.170.11",
+    "@tanstack/react-router": "^1.170.17",
     "elysia": "^1.4.28",
     "highlight.js": "^11.11.1",
     "marked": "^18.0.4",
