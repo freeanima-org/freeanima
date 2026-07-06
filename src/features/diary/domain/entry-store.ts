@@ -262,8 +262,7 @@ export async function searchDiaryEntries(
         ? toEntryRow(parsed, { created_at: row.created_at, updated_at: row.updated_at })
         : null;
     })
-    .filter((row): row is DiaryEntryRow => row != null)
-    .toSorted(sortByEntryAtDesc);
+    .filter((row): row is DiaryEntryRow => row != null);
 }
 
 export function titleFromEntryAt(entryAt: string): string {

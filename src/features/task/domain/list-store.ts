@@ -434,5 +434,5 @@ export async function searchTaskLists(
       }),
     );
   }
-  return lists.toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
+  return lists;
 }
