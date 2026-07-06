@@ -4,17 +4,13 @@ import { attachToolReturns, toolError, toolResult, type ToolArgs } from "@freean
 
 import { getNotificationPort } from "./port.ts";
 import { NOTIFICATION_TOOL_RETURNS } from "./return-schemas.ts";
+import {
+  resolveNotificationListSubject,
+  resolveNotificationSendTargets,
+  SUBJECT_ID_TOOL_PROPERTY,
+} from "./tool-subject-resolve.ts";
 
-const TARGETS = new Set(["user", "agent", "both"]);
 const MARK_READ_MAX = 20;
-
-function resolveTargets(raw: unknown): ("user" | "agent")[] | null {
-  const target = String(raw ?? "both").trim();
-  if (!TARGETS.has(target)) return null;
-  if (target === "user") return ["user"];
-  if (target === "agent") return ["agent"];
-  return ["user", "agent"];
-}
 
 function resolveMarkReadIds(args: ToolArgs): string[] | null {
   const fromArray = Array.isArray(args.ids)
@@ -41,10 +37,11 @@ export function registerNotificationTools(toolSets: ToolSetRegistry): void {
             properties: {
               title: { type: "string", description: "Notification title" },
               body: { type: "string", description: "Notification body" },
+              subject_id: SUBJECT_ID_TOOL_PROPERTY,
               target: {
                 type: "string",
                 enum: ["user", "agent", "both"],
-                description: "Recipient subject, default both",
+                description: "Recipient subject when subject_id omitted, default both",
               },
             },
             required: ["title", "body"],
@@ -58,8 +55,8 @@ export function registerNotificationTools(toolSets: ToolSetRegistry): void {
             if (!title) return toolError("title is required");
             if (!body) return toolError("body is required");
 
-            const targets = resolveTargets(args.target);
-            if (!targets) return toolError("target must be user, agent, or both");
+            const targets = await resolveNotificationSendTargets(args);
+            if (typeof targets === "string") return targets;
 
             const conversationId = getToolConversationId();
             const sourceRef = conversationId
@@ -67,12 +64,10 @@ export function registerNotificationTools(toolSets: ToolSetRegistry): void {
               : `tool:${Date.now()}`;
 
             const created = [];
-            for (const kind of targets) {
-              const recipient =
-                kind === "user" ? port.getUserRecipient() : port.getAgentRecipient();
+            for (const recipient of targets) {
               const row = await port.create({
-                recipient_kind: recipient.kind,
-                recipient_id: recipient.id,
+                recipient_kind: recipient.recipient_kind,
+                recipient_id: recipient.recipient_id,
                 title,
                 body,
                 source_kind: "tool",
@@ -95,10 +90,11 @@ export function registerNotificationTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
+              subject_id: SUBJECT_ID_TOOL_PROPERTY,
               recipient: {
                 type: "string",
                 enum: ["user", "agent"],
-                description: "Which subject inbox, default agent",
+                description: "Which subject inbox when subject_id omitted, default agent",
               },
               read_filter: {
                 type: "string",
@@ -113,13 +109,9 @@ export function registerNotificationTools(toolSets: ToolSetRegistry): void {
             const port = getNotificationPort();
             if (!port) return toolError("Notification port not available");
 
-            const recipientKind = String(args.recipient ?? "agent").trim();
-            if (recipientKind !== "user" && recipientKind !== "agent") {
-              return toolError("recipient must be user or agent");
-            }
+            const recipient = await resolveNotificationListSubject(args);
+            if (typeof recipient === "string") return recipient;
 
-            const recipient =
-              recipientKind === "user" ? port.getUserRecipient() : port.getAgentRecipient();
             const readFilter = String(args.read_filter ?? "unread").trim();
             if (readFilter !== "all" && readFilter !== "unread") {
               return toolError("read_filter must be all or unread");
@@ -132,8 +124,8 @@ export function registerNotificationTools(toolSets: ToolSetRegistry): void {
                 : 20;
 
             const items = await port.list({
-              recipient_kind: recipient.kind,
-              recipient_id: recipient.id,
+              recipient_kind: recipient.recipient_kind,
+              recipient_id: recipient.recipient_id,
               read_filter: readFilter,
               limit,
             });

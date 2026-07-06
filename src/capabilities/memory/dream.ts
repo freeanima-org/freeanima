@@ -10,7 +10,7 @@ import {
 } from "@freeanima/core/tool";
 
 import { getDreamEntryByDay, getLatestDreamEntry } from "./dream/entry-store.ts";
-import { resolveDreamWorldId } from "./dream/subject-world.ts";
+import { resolveDreamToolWorld, WORLD_ID_OPTIONAL } from "./dream/tool-world-resolve.ts";
 
 const dreamReadReturnSchema = z.object({
   ok: z.literal(true),
@@ -39,7 +39,7 @@ const DREAM_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
 export function registerDreamTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "dream",
-    "Dream memory read",
+    "Dream memory read; world_id optional (defaults to caller subject private world).",
     attachToolReturns(
       [
         {
@@ -49,6 +49,7 @@ export function registerDreamTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_OPTIONAL,
               day: {
                 type: "string",
                 description: "CST calendar day YYYY-MM-DD; omit for latest dream",
@@ -57,7 +58,9 @@ export function registerDreamTools(toolSets: ToolSetRegistry): void {
             required: [],
           },
           handler: async (args: ToolArgs) => {
-            const worldId = await resolveDreamWorldId();
+            const worldId = await resolveDreamToolWorld(args);
+            if (typeof worldId === "string") return worldId;
+
             const ctx = { worldId };
             const dayArg = String(args.day ?? "").trim();
             const row = dayArg

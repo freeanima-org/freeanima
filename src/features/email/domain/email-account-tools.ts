@@ -8,7 +8,6 @@ import {
   listEmailAccountRows,
   updateEmailAccount,
 } from "./account-store.ts";
-import { resolveEmailWorldId } from "./email-world.ts";
 import {
   accountCreateSchema,
   accountPatchSchema,
@@ -18,6 +17,7 @@ import {
   parseMessageId,
 } from "./email-tool-helpers.ts";
 import { EMAIL_TOOL_RETURNS } from "./return-schemas.ts";
+import { resolveEmailToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
 
 const ACCOUNT_TOOL_NAMES = [
   "email_register_account",
@@ -29,7 +29,7 @@ const ACCOUNT_TOOL_NAMES = [
 export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailToolIo): void {
   toolSets.registerToolSet(
     "email-account",
-    "Email account setup (load toolset `email` for sync and mailbox ops)",
+    "Email account setup (load toolset `email` for sync and mailbox ops); world_id optional.",
     attachToolReturns(
       [
         {
@@ -39,6 +39,7 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_OPTIONAL,
               password: { type: "string" },
               address: { type: "string" },
               display_name: { type: "string" },
@@ -55,9 +56,11 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
           },
           handler: async (args) => {
             try {
+              const worldId = await resolveEmailToolWorld({ args });
+              if (typeof worldId === "string") return worldId;
+
               const input = accountCreateSchema.parse(args);
               await io.assertPasswordResolvable({ password: input.password });
-              const worldId = resolveEmailWorldId();
               const account = await createEmailAccount(worldId, omitUndefined(input));
               return toolResult({ ok: true, account: accountPayload(account) });
             } catch (err) {
@@ -71,6 +74,7 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_OPTIONAL,
               id: { type: "number" },
               password: { type: "string" },
               address: { type: "string" },
@@ -90,9 +94,11 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
             const id = parseMessageId(args.id);
             if (id == null) return toolError("id is required");
             try {
+              const worldId = await resolveEmailToolWorld({ args, entityId: id });
+              if (typeof worldId === "string") return worldId;
+
               const patch = accountPatchSchema.parse(args);
               if (patch.password) await io.assertPasswordResolvable({ password: patch.password });
-              const worldId = resolveEmailWorldId();
               const account = await updateEmailAccount(worldId, omitUndefined({ id, ...patch }));
               if (!account) return toolError(`Email account not found: ${id}`);
               return toolResult({ ok: true, account: accountPayload(account) });
@@ -104,10 +110,15 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
         {
           name: "email_list_accounts",
           description: "List email account entities.",
-          parameters: { type: "object", properties: {} },
-          handler: async () => {
+          parameters: {
+            type: "object",
+            properties: { ...WORLD_ID_OPTIONAL },
+          },
+          handler: async (args) => {
             try {
-              const worldId = resolveEmailWorldId();
+              const worldId = await resolveEmailToolWorld({ args });
+              if (typeof worldId === "string") return worldId;
+
               const accounts = await listEmailAccountRows(worldId);
               return toolResult({ accounts: accounts.map(accountPayload) });
             } catch (err) {
@@ -120,14 +131,19 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
           description: "Delete an email account entity.",
           parameters: {
             type: "object",
-            properties: { id: { type: "number" } },
+            properties: {
+              ...WORLD_ID_OPTIONAL,
+              id: { type: "number" },
+            },
             required: ["id"],
           },
           handler: async (args) => {
             const id = parseMessageId(args.id);
             if (id == null) return toolError("id is required");
             try {
-              const worldId = resolveEmailWorldId();
+              const worldId = await resolveEmailToolWorld({ args, entityId: id });
+              if (typeof worldId === "string") return worldId;
+
               const ok = await deleteEmailAccountRow(worldId, id);
               if (!ok) return toolError(`Email account not found: ${id}`);
               return toolResult({ ok: true, id });

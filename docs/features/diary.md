@@ -19,11 +19,11 @@ Structured diary for users and Agents, based on the [Unified Entity Model](../co
 
 - User and Agent diaries live in the **default private world** of subjects resolved from `config.yaml` **`worlds.user_subject_id` / `agent_subject_id`** (boot-time `ResolvedWorldContext`).
 - Shell header **User / Agent** toggle selects which subject's diary to view (see [`entity-model.md`](../concepts/entity-model.md) global Subject scope).
-- Agent LLM tools (ToolSet `diary`) always write to **Agent** private world.
+- LLM tools (ToolSet `diary`) default to the **caller subject's private world** (conversation LLM → agent world); optional **`world_id`** overrides (e.g. `user_world_id` from system prompt).
 
 ## Agent tools (ToolSet `diary`)
 
-Load via `toolset_load` with `diary`. Agent tools locate entries by **`date` (YYYY-MM-DD)**; **default today** (CST noon `…T12:00:00+08:00`); **no `diary_create`** — use `diary_append` (creates empty shell for the day if missing, then appends).
+Load via `toolset_load` with `diary`. Tools locate entries by **`date` (YYYY-MM-DD)**; **default today** (CST noon `…T12:00:00+08:00`); **no `diary_create`** — use `diary_append` (creates empty shell for the day if missing, then appends). All tools accept optional **`world_id`**.
 
 | Tool           | Description                                                                                     |
 | -------------- | ----------------------------------------------------------------------------------------------- |
@@ -31,8 +31,8 @@ Load via `toolset_load` with `diary`. Agent tools locate entries by **`date` (YY
 | `diary_update` | Replace full entry or fields by date (not append)                                               |
 | `diary_get`    | Read entry for date; error if not found                                                         |
 | `diary_delete` | Delete entry for date; returns `{ ok, action, date }`                                           |
-| `diary_list`   | List / date filter (unchanged)                                                                  |
-| `diary_search` | Hybrid search (unchanged)                                                                       |
+| `diary_list`   | List / date filter                                                                              |
+| `diary_search` | Hybrid search                                                                                   |
 
 **vs SAP/UI**: Shell `/diary` and human editing use SAP `diary.create` / `diary.patch` etc., located by entity **`id`**; Agent ToolSet is LLM-only and uses **`date`** uniformly.
 

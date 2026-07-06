@@ -9,7 +9,6 @@ import {
   parseAccountId,
   parseMessageId,
 } from "./email-tool-helpers.ts";
-import { resolveEmailWorldId } from "./email-world.ts";
 import {
   getEmailMessageRow,
   listEmailMessages,
@@ -19,6 +18,7 @@ import {
 import { EMAIL_TOOL_RETURNS } from "./return-schemas.ts";
 import { listEmailThreads, tagEmailThread } from "./thread-store.ts";
 import { getEmailSyncPort } from "./sync-port.ts";
+import { resolveEmailToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
 
 const MAILBOX_TOOL_NAMES = [
   "email_sync",
@@ -35,7 +35,7 @@ const MAILBOX_TOOL_NAMES = [
 export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailToolIo): void {
   toolSets.registerToolSet(
     "email",
-    "Email sync and mailbox (use toolset `email-account` to register accounts)",
+    "Email sync and mailbox (use toolset `email-account` to register accounts); world_id optional.",
     attachToolReturns(
       [
         {
@@ -44,6 +44,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_OPTIONAL,
               account_id: { type: "number" },
               limit: { type: "number" },
             },
@@ -61,8 +62,12 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
                 );
                 return toolResult(result);
               }
+              const worldId = await resolveEmailToolWorld({ args });
+              if (typeof worldId === "string") return worldId;
+
               const results = await sync.syncAll(
                 omitUndefined({
+                  worldId,
                   limit: args.limit != null ? Number(args.limit) : undefined,
                 }),
               );
@@ -78,6 +83,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_OPTIONAL,
               account_id: { type: "number" },
               thread_id: { type: "number" },
               unread: { type: "boolean" },
@@ -86,11 +92,17 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           },
           handler: async (args) => {
             try {
-              const worldId = resolveEmailWorldId();
+              const accountId = parseAccountId(args.account_id);
+              const worldId = await resolveEmailToolWorld({
+                args,
+                ...(accountId != null ? { accountId } : {}),
+              });
+              if (typeof worldId === "string") return worldId;
+
               const messages = await listEmailMessages(
                 worldId,
                 omitUndefined({
-                  account_id: parseAccountId(args.account_id),
+                  account_id: accountId,
                   thread_id: parseAccountId(args.thread_id),
                   unread: args.unread != null ? Boolean(args.unread) : undefined,
                   limit: args.limit != null ? Number(args.limit) : undefined,
@@ -111,6 +123,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_OPTIONAL,
               query: { type: "string" },
               account_id: { type: "number" },
               thread_id: { type: "number" },
@@ -123,12 +136,18 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
             const query = String(args.query ?? "").trim();
             if (!query) return toolError("query is required");
             try {
-              const worldId = resolveEmailWorldId();
+              const accountId = parseAccountId(args.account_id);
+              const worldId = await resolveEmailToolWorld({
+                args,
+                ...(accountId != null ? { accountId } : {}),
+              });
+              if (typeof worldId === "string") return worldId;
+
               const messages = await searchEmailMessages(
                 worldId,
                 omitUndefined({
                   query,
-                  account_id: parseAccountId(args.account_id),
+                  account_id: accountId,
                   thread_id: parseAccountId(args.thread_id),
                   unread: args.unread != null ? Boolean(args.unread) : undefined,
                   limit: args.limit != null ? Number(args.limit) : undefined,
@@ -205,6 +224,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_OPTIONAL,
               account_id: { type: "number" },
               to: { type: "string" },
               subject: { type: "string" },
@@ -215,10 +235,15 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
             required: ["to", "subject", "body"],
           },
           handler: async (args) => {
+            const accountId = parseAccountId(args.account_id);
+            if (accountId != null) {
+              const worldId = await resolveEmailToolWorld({ args, accountId });
+              if (typeof worldId === "string") return worldId;
+            }
             try {
               const result = await io.sendEmail(
                 omitUndefined({
-                  account_id: parseAccountId(args.account_id),
+                  account_id: accountId,
                   to: String(args.to ?? ""),
                   subject: String(args.subject ?? ""),
                   body: String(args.body ?? ""),
@@ -238,6 +263,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_OPTIONAL,
               account_id: { type: "number" },
               has_unread: { type: "boolean" },
               limit: { type: "number" },
@@ -245,11 +271,17 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           },
           handler: async (args) => {
             try {
-              const worldId = resolveEmailWorldId();
+              const accountId = parseAccountId(args.account_id);
+              const worldId = await resolveEmailToolWorld({
+                args,
+                ...(accountId != null ? { accountId } : {}),
+              });
+              if (typeof worldId === "string") return worldId;
+
               const threads = await listEmailThreads(
                 worldId,
                 omitUndefined({
-                  account_id: parseAccountId(args.account_id),
+                  account_id: accountId,
                   has_unread: args.has_unread != null ? Boolean(args.has_unread) : undefined,
                   limit: args.limit != null ? Number(args.limit) : undefined,
                 }),
