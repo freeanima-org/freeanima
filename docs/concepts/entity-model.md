@@ -95,15 +95,15 @@ LLM ToolSets: `@freeanima/feature-task/domain` — `task` (item CRUD + `task_sea
 
 Hub startup binds **`ResolvedWorldContext`** (`GET /api/worlds/context`). The product shell exposes a **single User / Agent toggle** in the module header — not an arbitrary `world_id` picker. Selection maps to `user_world_id` / `agent_world_id` and persists in `sessionStorage` for the tab.
 
-| Surface          | World binding                                    | Control                        |
-| ---------------- | ------------------------------------------------ | ------------------------------ |
-| Shell header     | `user_world_id` or `agent_world_id`              | global **User / Agent** toggle |
-| `/tasks`         | follows shell scope via SAP `subject_kind`       | none (inherits header)         |
-| `/email`         | follows shell scope via SAP `subject_kind`       | none (inherits header)         |
-| `/notifications` | `recipient_kind` + subject entity id             | none (inherits header)         |
-| `/diary`         | subject default private world via `subject_kind` | none (inherits header)         |
-| `/dream`         | agent default private world (fixed)              | none (inherits header)         |
-| `/vault`         | default **user** library; optional Agent view    | User: master password lock     |
+| Surface          | World binding                                                           | Control                        |
+| ---------------- | ----------------------------------------------------------------------- | ------------------------------ |
+| Shell header     | `user_world_id` or `agent_world_id`                                     | global **User / Agent** toggle |
+| `/tasks`         | follows shell scope via SAP `subject_kind`                              | none (inherits header)         |
+| `/email`         | follows shell scope via SAP `subject_kind`                              | none (inherits header)         |
+| `/notifications` | `recipient_kind` + subject entity id                                    | none (inherits header)         |
+| `/diary`         | subject default private world via `subject_kind`                        | none (inherits header)         |
+| `/dream`         | agent default private world (Shell fixed); LLM tool optional `world_id` | none (inherits header)         |
+| `/vault`         | default **user** library; optional Agent view                           | User: master password lock     |
 
 SAP task/email methods accept optional `subject_kind` (defaults: task `user`, email `agent`). Satellites read the shell scope via **`useSubjectScope()`** from `@freeanima/shell-sdk`; Hub REST entity search uses **`resolveWorldIdForSubject()`** with the same scope.
 
@@ -121,7 +121,7 @@ Email accounts, threads, and mirrored messages map to:
 
 Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. Messages store IMAP UID in `body.imap_uid`; human-readable subject/body use entity columns. IMAP sync upserts threads/messages; UI lives in shell `/email` (SAP `email.*` methods), not Console REST.
 
-LLM ToolSets: `@freeanima/feature-email/domain` — `email-account` (account entities) and `email` (sync, send/receive, search); load via `toolset_load`. Legacy `config.yaml` `email.accounts[]` migrates via [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts).
+LLM ToolSets: `@freeanima/feature-email/domain` — `email-account` (account entities) and `email` (sync, send/receive, search); load via `toolset_load`. User and agent each have accounts in their **default private world**; LLM tools accept optional **`world_id`** (SAP uses `subject_kind`). Legacy `config.yaml` `email.accounts[]` migrates via [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts).
 
 ## Diary module
 
@@ -135,7 +135,7 @@ Entries live in each subject's **`default_private_world_id`**. `body.entry_at` i
 
 - **SAP:** `diary.*` methods — all take `subject_kind: user | agent` (including `diary.append`).
 - **UI:** shell `/diary` (`@freeanima/satellite-diary`).
-- **LLM:** ToolSet `diary` — agent private world only.
+- **LLM:** ToolSet `diary` — caller subject private world by default; optional `world_id`.
 
 See [`docs/features/diary.md`](../features/diary.md).
 
@@ -151,7 +151,7 @@ Entries live in the **agent** subject's **`default_private_world_id`**. `body.dr
 
 - **Hub RPC:** `dream.list`, `dream.get` (bundled shell; no `subject_kind` — always agent world).
 - **UI:** shell `/dream` (`@freeanima/satellite-dream`).
-- **LLM:** ToolSet `dream` — `dream_read` only.
+- **LLM:** ToolSet `dream` — `dream_read`; optional `world_id` (Shell UI stays agent-scoped).
 
 See [`docs/concepts/dream.md`](dream.md).
 

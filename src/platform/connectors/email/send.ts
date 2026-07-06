@@ -7,6 +7,7 @@ import {
   markEmailMessageRead,
   resolveEmailAccountRow,
   resolveEmailWorldId,
+  worldIdForAccount,
   upsertEmailMessage,
   upsertEmailThread,
 } from "@freeanima/feature-email/domain";
@@ -29,7 +30,8 @@ export async function sendEmail(input: SendEmailInput): Promise<{
   account_id: number;
   message_entity_id: number;
 }> {
-  const worldId = resolveEmailWorldId();
+  const worldId =
+    input.account_id != null ? await worldIdForAccount(input.account_id) : resolveEmailWorldId();
   const account = await resolveEmailAccountRow(worldId, input.account_id);
   const pass = await resolveEmailAccountPassword(account);
 

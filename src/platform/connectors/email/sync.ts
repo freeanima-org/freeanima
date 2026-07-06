@@ -5,10 +5,10 @@ import {
   getEmailAccountRow,
   listEnabledEmailAccountRows,
   normalizeEmailSubject,
-  resolveEmailWorldId,
   updateEmailAccount,
   upsertEmailMessage,
   upsertEmailThread,
+  worldIdForAccount,
   type EmailSyncResult,
 } from "@freeanima/feature-email/domain";
 import { formatCstIso } from "@freeanima/core/util";
@@ -125,7 +125,7 @@ export async function syncEmailAccount(
         const status = await client.status(box, { uidValidity: true });
         const nextValidity =
           status.uidValidity != null ? Number(status.uidValidity) : account.sync?.uidvalidity;
-        await updateEmailAccount(resolveEmailWorldId(), {
+        await updateEmailAccount(await worldIdForAccount(account.id), {
           id: account.id,
           sync: {
             mailbox: box,
@@ -155,14 +155,14 @@ export async function syncEmailAccount(
   };
 }
 
-export async function syncAllEmailAccounts(
-  opts: { limit?: number } = {},
-): Promise<EmailSyncResult[]> {
-  const worldId = resolveEmailWorldId();
-  const accounts = await listEnabledEmailAccountRows(worldId);
+export async function syncAllEmailAccounts(opts: {
+  worldId: number;
+  limit?: number;
+}): Promise<EmailSyncResult[]> {
+  const accounts = await listEnabledEmailAccountRows(opts.worldId);
   const results: EmailSyncResult[] = [];
   for (const account of accounts) {
-    results.push(await syncEmailAccount(account.id, opts));
+    results.push(await syncEmailAccount(account.id, omitUndefined({ limit: opts.limit })));
   }
   return results;
 }

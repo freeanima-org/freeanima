@@ -11,10 +11,11 @@ import {
 } from "./entry-store.ts";
 import { entryPayload, parseTags, requireEntryByDate, toolDateKey } from "./diary-tool-helpers.ts";
 import { DIARY_TOOL_RETURNS } from "./return-schemas.ts";
-import { resolveDefaultWorldForToolCaller } from "@freeanima/core/db/pg/entity";
+import { resolveDiaryToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
 
-async function callerStoreContext() {
-  const worldId = await resolveDefaultWorldForToolCaller();
+async function storeContext(args: Record<string, unknown>) {
+  const worldId = await resolveDiaryToolWorld(args);
+  if (typeof worldId === "string") return worldId;
   return { worldId };
 }
 
@@ -22,8 +23,10 @@ async function handleAppend(args: Record<string, unknown>): Promise<string> {
   const content = String(args.content ?? "").trim();
   if (!content) return toolError("content is required");
 
+  const ctx = await storeContext(args);
+  if (typeof ctx === "string") return ctx;
+
   try {
-    const ctx = await callerStoreContext();
     const item = await appendDiaryEntryByDate(
       ctx,
       omitUndefined({
@@ -46,8 +49,10 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
     args.summary !== undefined;
   if (!hasPatch) return toolError("at least one of content, tags, title, summary is required");
 
+  const ctx = await storeContext(args);
+  if (typeof ctx === "string") return ctx;
+
   try {
-    const ctx = await callerStoreContext();
     const resolved = await requireEntryByDate(ctx, args.date);
     if ("error" in resolved) return toolError(resolved.error);
 
@@ -69,8 +74,10 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
 }
 
 async function handleDelete(args: Record<string, unknown>): Promise<string> {
+  const ctx = await storeContext(args);
+  if (typeof ctx === "string") return ctx;
+
   try {
-    const ctx = await callerStoreContext();
     const dateKey = toolDateKey(args.date);
     const ok = await deleteDiaryEntryByDate(ctx, dateKey);
     if (!ok) return toolError(`diary entry not found for date ${dateKey}`);
@@ -81,8 +88,10 @@ async function handleDelete(args: Record<string, unknown>): Promise<string> {
 }
 
 async function handleGet(args: Record<string, unknown>): Promise<string> {
+  const ctx = await storeContext(args);
+  if (typeof ctx === "string") return ctx;
+
   try {
-    const ctx = await callerStoreContext();
     const resolved = await requireEntryByDate(ctx, args.date);
     if ("error" in resolved) return toolError(resolved.error);
     return toolResult({ ok: true, action: "get", item: entryPayload(resolved.entry) });
@@ -102,8 +111,10 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
       ? String(args.entry_before).trim()
       : undefined;
 
+  const ctx = await storeContext(args);
+  if (typeof ctx === "string") return ctx;
+
   try {
-    const ctx = await callerStoreContext();
     const items = await listDiaryEntries(
       ctx,
       omitUndefined({
@@ -133,8 +144,10 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
       ? Math.max(1, Math.min(50, Math.floor(args.limit)))
       : undefined;
 
+  const ctx = await storeContext(args);
+  if (typeof ctx === "string") return ctx;
+
   try {
-    const ctx = await callerStoreContext();
     const items = await searchDiaryEntries(
       ctx,
       omitUndefined({
@@ -161,7 +174,7 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
 export function registerDiaryTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "diary",
-    "Diary by date in caller subject private world; LLM defaults to agent world.",
+    "Diary by date in caller subject private world; world_id optional.",
     attachToolReturns(
       [
         {
@@ -172,6 +185,7 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_OPTIONAL,
               date: { type: "string", description: "YYYY-MM-DD; defaults to today" },
               content: { type: "string", description: "Text to append" },
               tags: {
@@ -191,6 +205,7 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_OPTIONAL,
               date: { type: "string", description: "YYYY-MM-DD; defaults to today" },
               title: { type: "string" },
               content: { type: "string" },
@@ -207,6 +222,7 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_OPTIONAL,
               date: { type: "string", description: "YYYY-MM-DD; defaults to today" },
             },
           },
@@ -219,6 +235,7 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_OPTIONAL,
               date: { type: "string", description: "YYYY-MM-DD; defaults to today" },
             },
           },
@@ -231,6 +248,7 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_OPTIONAL,
               entry_after: { type: "string", description: "ISO8601 lower bound on entry_at" },
               entry_before: { type: "string", description: "ISO8601 upper bound on entry_at" },
               tags: { type: "array", items: { type: "string" } },
@@ -246,6 +264,7 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
+              ...WORLD_ID_OPTIONAL,
               query: { type: "string" },
               entry_after: { type: "string" },
               entry_before: { type: "string" },

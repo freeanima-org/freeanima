@@ -1,7 +1,7 @@
 import { getEntity } from "@freeanima/core/db/pg/entity";
 import { getResolvedWorldContext } from "@freeanima/core/config";
 
-/** Email accounts live in the agent private world (wire layer SSOT). */
+/** @deprecated 仅 connector/boot 遗留路径；LLM/MCP 工具请用 resolveEmailToolWorld */
 export function resolveEmailWorldId(): number {
   return getResolvedWorldContext().agent_world_id;
 }

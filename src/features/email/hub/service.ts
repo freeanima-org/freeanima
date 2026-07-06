@@ -133,7 +133,12 @@ export async function serviceEmailSync(
       results: [await syncEmailAccount(input.account_id, omitUndefined({ limit: input.limit }))],
     };
   }
-  return { results: await syncAllEmailAccounts(omitUndefined({ limit: input.limit })) };
+  return {
+    results: await syncAllEmailAccounts({
+      worldId: emailWorldId(input.subject_kind),
+      ...(input.limit != null ? { limit: input.limit } : {}),
+    }),
+  };
 }
 
 export async function serviceEmailThreadList(
