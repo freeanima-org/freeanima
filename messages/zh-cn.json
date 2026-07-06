@@ -68,6 +68,7 @@
   "console_chat_conversations_open": "打开",
   "console_chat_conversations_title": "对话管理",
   "console_chat_message_placeholder": "输入消息（Shift+Enter 换行，Enter 发送；/ 开头是命令）",
+  "console_chat_composing_reply": "正在回复…",
   "console_chat_queue_send_now": "立即发送",
   "console_chat_select_conversation": "选择一个会话开始对话",
   "console_chat_send_first_message": "发送第一条消息",

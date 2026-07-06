@@ -44,6 +44,7 @@
   "console_chat_conversations_open": "Open",
   "console_chat_conversations_title": "Conversation management",
   "console_chat_message_placeholder": "Type a message (Shift+Enter for newline, Enter to send; / for commands)",
+  "console_chat_composing_reply": "Composing reply…",
   "console_chat_queue_send_now": "Send now",
   "console_chat_select_conversation": "Select a conversation to start",
   "console_chat_send_first_message": "Send the first message",

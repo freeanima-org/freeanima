@@ -59,8 +59,8 @@
 }
 
 .chat-bubble {
-  @apply rounded-2xl px-4 py-2 max-w-[85%];
-  min-width: 0;
+  /* w-fit + shrink-0：按内容撑开，避免 flex 子项被 min-w-0 压窄导致短句过早换行 */
+  @apply w-fit max-w-[85%] shrink-0 rounded-2xl px-4 py-2;
 }
 .chat-bubble-user {
   @apply bg-primary text-primary-foreground ml-auto;
