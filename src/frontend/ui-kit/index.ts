@@ -4,11 +4,11 @@ export { FormField, FormFieldLabel, FormFieldset, FormToggle } from "./form/Form
 export { ListDetailLayout } from "./layout/index.ts";
 export type { ListDetailLayoutProps, ListDetailListContext } from "./layout/index.ts";
 export {
+  COMPACT_LAYOUT_MAX_PX,
+  EXPANDED_LAYOUT_MQ,
   isMobileLayoutViewport,
   isNativeShell,
-  isThreeColumnWideViewport,
   MOBILE_LAYOUT_MQ,
-  THREE_COLUMN_WIDE_MQ,
   ThreeColumnLayout,
   useDrawerNav,
   useThreeColumnLayoutMode,

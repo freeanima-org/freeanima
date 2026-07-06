@@ -5,7 +5,7 @@
   --sal: env(safe-area-inset-left, 0px);
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 767px) {
   .safe-area-pt {
     padding-top: var(--sat);
   }

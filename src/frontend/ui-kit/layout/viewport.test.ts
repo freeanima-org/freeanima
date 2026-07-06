@@ -25,7 +25,7 @@ describe("layout viewport", () => {
   });
 
   it("MOBILE_LAYOUT_MQ matches task/chat breakpoint", () => {
-    expect(MOBILE_LAYOUT_MQ).toBe("(max-width: 1023px)");
+    expect(MOBILE_LAYOUT_MQ).toBe("(max-width: 767px)");
   });
 
   it("isNativeShell reads satelliteShell flag", () => {
@@ -38,7 +38,7 @@ describe("layout viewport", () => {
   it("isMobileLayoutViewport uses matchMedia", () => {
     window.matchMedia = ((query: string) =>
       ({
-        matches: query.includes("1023px"),
+        matches: query.includes("767px"),
         media: query,
         onchange: null,
         addEventListener: () => {},

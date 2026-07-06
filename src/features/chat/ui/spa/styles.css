@@ -79,7 +79,7 @@
   box-sizing: border-box;
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 767px) {
   .chat-app {
     padding-top: var(--sat);
     padding-left: var(--sal);

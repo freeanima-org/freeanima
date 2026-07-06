@@ -56,7 +56,7 @@ describe("task platform", () => {
   it("isMobileLayoutViewport uses matchMedia", () => {
     window.matchMedia = ((query: string) =>
       ({
-        matches: query.includes("1023px"),
+        matches: query.includes("767px"),
         media: query,
         onchange: null,
         addEventListener: () => {},

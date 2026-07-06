@@ -30,9 +30,5 @@ export function SettingsSectionPanel({ binding, platform }: Props) {
     );
   }
 
-  if (!store) {
-    return <p className="text-sm text-destructive">缺少 settings store 注入</p>;
-  }
-
   return <LazyComponentPanel load={entry.load} platform={platform} store={store} deps={deps} />;
 }

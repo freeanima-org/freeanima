@@ -29,7 +29,7 @@ export type SettingsFormEntry = {
 
 export type SettingsPanelProps<TStore = unknown> = {
   platform: SettingsPlatform;
-  store: SettingsStore<TStore>;
+  store?: SettingsStore<TStore>;
   deps?: SettingsSectionDeps;
   onDirty?: () => void;
 };

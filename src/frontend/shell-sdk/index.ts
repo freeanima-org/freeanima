@@ -85,6 +85,18 @@ export {
   resetModuleSelectionForTest,
   writeModuleSelection,
 } from "./module-selection.ts";
+export type { ShellModuleId } from "./shell-module-visibility.ts";
+export {
+  SHELL_MODULE_IDS,
+  SHELL_MODULE_LOCKED,
+  isShellModuleVisible,
+  readShellModuleVisibility,
+  resetShellModuleVisibilityForTest,
+  resolveDefaultVisibleModulePath,
+  resolveShellModuleIdFromPath,
+  subscribeShellModuleVisibility,
+  writeShellModuleVisibility,
+} from "./shell-module-visibility.ts";
 export {
   UserVaultSession,
   VAULT_UI_SCOPE,

@@ -1,19 +1,23 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { BrandLockup } from "@freeanima/ui-kit";
-import { Button } from "@freeanima/ui-kit";
+import { useEffect, useMemo, useState } from "react";
 import { SubjectScopeProvider, SubjectToggle, useSubjectScope } from "@freeanima/shell-sdk/react";
+import {
+  isShellModuleVisible,
+  resolveDefaultVisibleModulePath,
+  resolveShellModuleIdFromPath,
+} from "@freeanima/shell-sdk/shell-module-visibility";
+import { useShellModuleVisibility } from "@freeanima/shell-sdk/react";
 
 import { isCompactLayout, useLayoutMode } from "../layout-mode.ts";
 import { navigateShellModule } from "../shell-nav.ts";
 import { ShellConnectivityBar } from "../ShellConnectivityBar.tsx";
 import {
+  filterVisibleNavItems,
   shellMobileMoreNavItems,
   shellMobilePrimaryNavItems,
-  shellNavItems,
   type ShellNavItem,
 } from "../lib/shell-nav-i18n.ts";
-import * as shellMessages from "../../../../../messages/paraglide/messages.js";
+import { ShellModuleRail } from "./ShellModuleRail.tsx";
 
 function useNavActive(match: string): boolean {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -25,60 +29,37 @@ function ShellSubjectToggle() {
   return <SubjectToggle value={kind} onChange={setKind} />;
 }
 
-function ShellNavLink({
-  to,
-  match,
-  label,
-  layout,
-}: {
-  to: string;
-  match: string;
-  label: () => string;
-  layout: "top" | "bottom";
-}) {
-  const active = useNavActive(match);
+function ShellModuleVisibilityGuard() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const visible = useShellModuleVisibility();
 
-  if (layout === "top") {
-    return (
-      <Button asChild size="sm" variant={active ? "secondary" : "ghost"}>
-        <Link to={to} aria-current={active ? "page" : undefined}>
-          {label()}
-        </Link>
-      </Button>
-    );
-  }
+  useEffect(() => {
+    const moduleId = resolveShellModuleIdFromPath(pathname);
+    if (!moduleId || visible.has(moduleId)) return;
+    navigateShellModule(navigate, resolveDefaultVisibleModulePath(visible));
+  }, [navigate, pathname, visible]);
+
+  return null;
+}
+
+function ShellBottomNavLink({ item }: { item: ShellNavItem }) {
+  const active = useNavActive(item.match);
+  const Icon = item.icon;
+  const label = item.label();
 
   return (
     <Link
-      to={to}
+      to={item.to}
       className={`shell-bottom-nav-item flex flex-1 flex-col items-center justify-center gap-0.5 min-h-12 text-xs transition-colors ${
         active ? "text-primary font-semibold" : "text-muted-foreground hover:text-foreground"
       }`}
+      aria-label={label}
       aria-current={active ? "page" : undefined}
     >
-      <span className="leading-none">{label()}</span>
+      <Icon className="size-5 shrink-0" aria-hidden />
+      <span className="leading-none truncate max-w-full px-0.5">{label}</span>
     </Link>
-  );
-}
-
-function DesktopModuleShell() {
-  const nav = shellNavItems();
-  return (
-    <div className="shell-module-layout h-full flex flex-col bg-background text-foreground">
-      <header className="shell-top-nav flex items-center bg-muted border-b border min-h-12 px-3 shrink-0 relative z-50">
-        <BrandLockup name={shellMessages.console_brand()} logoSize={22} className="shrink-0" />
-        <nav className="flex gap-1 ml-4 flex-1" aria-label="模块导航">
-          {nav.map((item) => (
-            <ShellNavLink key={item.to} {...item} layout="top" />
-          ))}
-        </nav>
-        <ShellSubjectToggle />
-      </header>
-      <ShellConnectivityBar />
-      <main className="flex-1 min-h-0 overflow-hidden">
-        <Outlet />
-      </main>
-    </div>
   );
 }
 
@@ -122,23 +103,27 @@ function MoreNavMenu({ items }: { items: ShellNavItem[] }) {
               bottom: "calc(var(--shell-bottom-nav-h) + var(--sab) + 0.5rem)",
             }}
           >
-            {items.map((item) => (
-              <button
-                key={item.to}
-                type="button"
-                role="menuitem"
-                className="block w-full px-4 py-2 text-left text-sm hover:bg-muted"
-                onPointerDown={(e) => e.preventDefault()}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  navigateShellModule(navigate, item.to);
-                  setOpen(false);
-                }}
-              >
-                {item.label()}
-              </button>
-            ))}
+            {items.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.to}
+                  type="button"
+                  role="menuitem"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-muted"
+                  onPointerDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigateShellModule(navigate, item.to);
+                    setOpen(false);
+                  }}
+                >
+                  <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                  {item.label()}
+                </button>
+              );
+            })}
           </div>
         </>
       ) : null}
@@ -146,9 +131,25 @@ function MoreNavMenu({ items }: { items: ShellNavItem[] }) {
   );
 }
 
+function DesktopModuleShell() {
+  const activeMatch = useNavActive;
+  return (
+    <div className="shell-module-layout h-full flex flex-row bg-background text-foreground">
+      <ShellModuleRail activeMatch={activeMatch} footer={<ShellSubjectToggle />} />
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <ShellConnectivityBar />
+        <main className="flex-1 min-h-0 overflow-hidden">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}
+
 function MobileModuleShell() {
-  const primary = shellMobilePrimaryNavItems();
-  const more = shellMobileMoreNavItems();
+  const visible = useShellModuleVisibility();
+  const primary = filterVisibleNavItems(shellMobilePrimaryNavItems(), visible);
+  const more = filterVisibleNavItems(shellMobileMoreNavItems(), visible);
 
   return (
     <div className="shell-module-layout shell-layout-compact h-full flex flex-col bg-background text-foreground">
@@ -163,9 +164,9 @@ function MobileModuleShell() {
         aria-label="模块导航"
       >
         {primary.map((item) => (
-          <ShellNavLink key={item.to} {...item} layout="bottom" />
+          <ShellBottomNavLink key={item.to} item={item} />
         ))}
-        <MoreNavMenu items={more} />
+        {more.length > 0 ? <MoreNavMenu items={more} /> : null}
       </nav>
     </div>
   );
@@ -175,6 +176,7 @@ export function ModuleShell() {
   const layoutMode = useLayoutMode();
   return (
     <SubjectScopeProvider>
+      <ShellModuleVisibilityGuard />
       {isCompactLayout(layoutMode) ? <MobileModuleShell /> : <DesktopModuleShell />}
     </SubjectScopeProvider>
   );

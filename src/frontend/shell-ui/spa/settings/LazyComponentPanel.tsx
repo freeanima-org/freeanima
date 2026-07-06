@@ -11,7 +11,7 @@ import type {
 type Props = {
   load: SettingsComponentLoader;
   platform: SettingsPlatform;
-  store: SettingsStore;
+  store?: SettingsStore;
   deps?: SettingsSectionDeps;
 };
 

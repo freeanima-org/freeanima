@@ -22,12 +22,11 @@ export type ThreeColumnLayoutProps = {
 };
 
 const listAsideClass =
-  "relative flex min-h-0 w-56 shrink-0 flex-col border-r border-border bg-background";
+  "relative flex min-h-0 w-52 shrink-0 flex-col border-r border-border bg-background";
 const listDrawerClass =
   "list-detail-drawer-panel safe-fixed-sidebar flex min-h-0 flex-col border-r border-border bg-background shadow-lg";
 const middleWideClass =
-  "relative flex min-h-0 w-80 shrink-0 flex-col border-r border-border bg-background";
-const middleFlexClass = "relative flex min-h-0 min-w-0 flex-1 flex-col bg-background";
+  "relative flex min-h-0 w-64 shrink-0 flex-col border-r border-border bg-background min-w-0";
 const detailWideClass = "relative flex min-h-0 min-w-0 flex-1 flex-col border-border bg-background";
 
 export function ThreeColumnLayout({
@@ -47,7 +46,6 @@ export function ThreeColumnLayout({
   middleHeaderExtra,
 }: ThreeColumnLayoutProps) {
   const isCompact = layoutMode === "compact";
-  const isWide = layoutMode === "wide";
 
   const middleHeader = (
     <header className="border flex shrink-0 flex-col gap-2 border-b px-4 py-3">
@@ -121,20 +119,24 @@ export function ThreeColumnLayout({
           <aside className={listOpen ? listDrawerClass : "hidden"}>{listPanel}</aside>
         ) : null}
 
-        <section className={isWide ? middleWideClass : middleFlexClass}>{middlePanel}</section>
+        <section
+          className={
+            isCompact
+              ? "relative flex min-h-0 min-w-0 flex-1 flex-col bg-background"
+              : middleWideClass
+          }
+        >
+          {middlePanel}
+        </section>
 
-        {isWide ? <aside className={detailWideClass}>{detailPanel}</aside> : null}
+        {!isCompact ? <aside className={detailWideClass}>{detailPanel}</aside> : null}
       </div>
 
-      {!isWide ? (
+      {isCompact ? (
         <Sheet open={detailOpen} onOpenChange={onDetailOpenChange}>
           <SheetContent
-            side={isCompact ? "bottom" : "right"}
-            className={
-              isCompact
-                ? "flex h-[85dvh] max-h-[85dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-full"
-                : "flex w-[min(85vw,28rem)] max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-none"
-            }
+            side="bottom"
+            className="flex h-[85dvh] max-h-[85dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-full"
           >
             <SheetHeader className="border shrink-0 border-b px-4 py-3">
               <SheetTitle className="truncate">{detailTitle}</SheetTitle>
