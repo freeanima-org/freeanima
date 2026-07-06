@@ -9,6 +9,7 @@ import {
   DEBUG_VCONSOLE_ENABLED_KEY,
   HUB_URL_KEY,
   LAUNCH_AT_LOGIN_KEY,
+  COMPANION_VISIBLE_KEY,
   REMOTE_AUTH_TOKEN_KEY,
 } from "@freeanima/shell-sdk/settings";
 import {
@@ -121,6 +122,15 @@ export function readLaunchAtLoginFromStore(): boolean {
 
 export function saveLaunchAtLoginToStore(enabled: boolean): void {
   getStore().set(LAUNCH_AT_LOGIN_KEY, enabled ? "1" : "0");
+}
+
+export function readCompanionVisibleFromStore(): boolean {
+  const raw = getStore().get(COMPANION_VISIBLE_KEY);
+  return raw !== "0";
+}
+
+export function saveCompanionVisibleToStore(visible: boolean): void {
+  getStore().set(COMPANION_VISIBLE_KEY, visible ? "1" : "0");
 }
 
 export function companionConfigPath(): string {

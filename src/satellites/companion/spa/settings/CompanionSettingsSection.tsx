@@ -16,5 +16,5 @@ export default function CompanionSettingsSection({ platform, store, deps }: Sett
     return <p className="text-sm text-muted-foreground">伴侣设置仅桌面端可用</p>;
   }
 
-  return <SettingsPanel standalone />;
+  return <SettingsPanel standalone {...(deps ? { deps } : {})} />;
 }

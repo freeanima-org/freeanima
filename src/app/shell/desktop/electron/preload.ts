@@ -79,6 +79,11 @@ function createSatelliteShell(
     },
     startWindowDrag: () => ipcRenderer.invoke("shell:start-drag"),
     openSettings: () => ipcRenderer.invoke("shell:open-settings"),
+    getCompanionVisible: () =>
+      ipcRenderer.invoke("shell:get-companion-visible") as Promise<boolean>,
+    setCompanionVisible: async (visible) => {
+      await ipcRenderer.invoke("shell:set-companion-visible", visible);
+    },
     emitConfigChanged: () => ipcRenderer.invoke("shell:emit-config-changed"),
     listenConfigChanged: (handler) => {
       const listener = () => handler();

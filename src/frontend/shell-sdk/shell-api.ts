@@ -45,6 +45,8 @@ export type SatelliteShellApi = {
   listenCursorPosition?: (handler: (pos: ScreenPoint) => void) => () => void;
   startWindowDrag?: () => Promise<void>;
   openSettings?: () => Promise<void>;
+  getCompanionVisible?: () => Promise<boolean>;
+  setCompanionVisible?: (visible: boolean) => Promise<void>;
   emitConfigChanged?: () => Promise<void>;
   listenConfigChanged?: (handler: () => void) => () => void;
   listenServerError?: (handler: (message: string) => void) => () => void;
