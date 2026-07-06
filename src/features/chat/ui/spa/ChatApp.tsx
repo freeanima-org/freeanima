@@ -44,6 +44,9 @@ import {
   subscribeSubjectKind,
   writeModuleSelection,
 } from "@freeanima/shell-sdk";
+import { MessageActionBar } from "@chat/components/MessageActionBar.tsx";
+import { useSpeechPlayback } from "@chat/hooks/useSpeechPlayback.ts";
+import { markdownToPlainText } from "@chat/lib/speech/plain-text.ts";
 import { VaultUnlockButton } from "@chat/components/VaultUnlockButton.tsx";
 import { useChatStore } from "@chat/stores/chat.ts";
 import { useConversationsStore } from "@chat/stores/conversations.ts";
@@ -144,13 +147,6 @@ export function ChatApp() {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [renameText, setRenameText] = useState("");
   const renameInputRef = useRef<HTMLInputElement>(null);
-  const [messageMenu, setMessageMenu] = useState<{
-    x: number;
-    y: number;
-    index: number;
-    role: "user" | "assistant";
-    content: string;
-  } | null>(null);
   const [editingUserIndex, setEditingUserIndex] = useState<number | null>(null);
   const [editDraft, setEditDraft] = useState("");
   const [refreshing, setRefreshing] = useState(false);
@@ -181,6 +177,25 @@ export function ChatApp() {
     onOpen: openSidebar,
   });
   const keyboardInset = useKeyboardInset(nativeShell);
+  const {
+    toggle: toggleSpeech,
+    stop: stopSpeech,
+    isSpeaking,
+    isSupported: speechSupported,
+  } = useSpeechPlayback();
+
+  const copyMessageText = useCallback(async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const startReeditUserMessage = useCallback((index: number, content: string) => {
+    setEditingUserIndex(index);
+    setEditDraft(content);
+  }, []);
 
   const bootstrapConversation = useCallback(
     async (includeMemory = true) => {
@@ -275,32 +290,6 @@ export function ChatApp() {
   const cmdMenuInFlow = mobileLayout;
   const lastUserMessageIndex = useMemo(() => findLastUserMessageIndex(display), [display]);
 
-  const openMessageMenu = (
-    index: number,
-    role: "user" | "assistant",
-    content: string,
-    clientX: number,
-    clientY: number,
-  ) => {
-    setMessageMenu({ x: clientX, y: clientY, index, role, content });
-  };
-
-  const copyMessageText = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {
-      /* ignore */
-    }
-    setMessageMenu(null);
-  };
-
-  const startReeditUserMessage = () => {
-    if (!messageMenu) return;
-    setEditingUserIndex(messageMenu.index);
-    setEditDraft(messageMenu.content);
-    setMessageMenu(null);
-  };
-
   const confirmReeditUserMessage = async () => {
     const text = editDraft.trim();
     if (!currentId || editingUserIndex == null || !text || sendingRef.current || writesDisabled) {
@@ -377,11 +366,14 @@ export function ChatApp() {
   useEffect(() => {
     const close = () => {
       setContextMenu((menu) => ({ ...menu, visible: false }));
-      setMessageMenu(null);
     };
     document.addEventListener("click", close);
     return () => document.removeEventListener("click", close);
   }, []);
+
+  useEffect(() => {
+    stopSpeech();
+  }, [currentId, stopSpeech]);
 
   useEffect(() => {
     const el = msgAreaRef.current;
@@ -1010,33 +1002,48 @@ export function ChatApp() {
                     );
                   }
                   return (
-                    <ChatMessageBubble
-                      key={`d${i}`}
-                      align="end"
-                      className="chat-bubble-user whitespace-pre-wrap"
-                      onLongPress={(coords) =>
-                        openMessageMenu(i, "user", item.content, coords.x, coords.y)
-                      }
-                    >
-                      {item.content}
-                    </ChatMessageBubble>
+                    <div key={`d${i}`} className="flex min-w-0 max-w-full flex-col items-end">
+                      <ChatMessageBubble
+                        align="end"
+                        className="chat-bubble-user whitespace-pre-wrap"
+                      >
+                        {item.content}
+                      </ChatMessageBubble>
+                      <MessageActionBar
+                        align="end"
+                        speechText={item.content}
+                        speaking={isSpeaking(`msg-${i}`)}
+                        speechSupported={speechSupported}
+                        onCopy={() => void copyMessageText(item.content)}
+                        onToggleSpeech={() => toggleSpeech(`msg-${i}`, item.content)}
+                        onEdit={
+                          i === lastUserMessageIndex
+                            ? () => startReeditUserMessage(i, item.content)
+                            : undefined
+                        }
+                      />
+                    </div>
                   );
                 }
                 if (item.type === "message" && item.role === "assistant") {
+                  const speechText = markdownToPlainText(item.content);
                   return (
-                    <ChatMessageBubble
-                      key={`d${i}`}
-                      align="start"
-                      className="chat-bubble-assistant"
-                      onLongPress={(coords) =>
-                        openMessageMenu(i, "assistant", item.content, coords.x, coords.y)
-                      }
-                    >
-                      <div
-                        className="md-content min-w-0 max-w-full"
-                        dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
+                    <div key={`d${i}`} className="flex min-w-0 max-w-full flex-col items-start">
+                      <ChatMessageBubble align="start" className="chat-bubble-assistant">
+                        <div
+                          className="md-content min-w-0 max-w-full"
+                          dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
+                        />
+                      </ChatMessageBubble>
+                      <MessageActionBar
+                        align="start"
+                        speechText={speechText}
+                        speaking={isSpeaking(`msg-${i}`)}
+                        speechSupported={speechSupported}
+                        onCopy={() => void copyMessageText(item.content)}
+                        onToggleSpeech={() => toggleSpeech(`msg-${i}`, speechText)}
                       />
-                    </ChatMessageBubble>
+                    </div>
                   );
                 }
                 if (item.type === "tool_block") {
@@ -1209,29 +1216,6 @@ export function ChatApp() {
           snapshots={llmDebugSnapshots}
         />
       </div>
-
-      {messageMenu ? (
-        <div
-          className="fixed z-50 bg-background border border rounded-lg shadow-xl py-1 min-w-[140px]"
-          style={{ top: messageMenu.y, left: messageMenu.x }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div
-            className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm"
-            onClick={() => void copyMessageText(messageMenu.content)}
-          >
-            {m.console_common_copy()}
-          </div>
-          {messageMenu.role === "user" && messageMenu.index === lastUserMessageIndex ? (
-            <div
-              className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm"
-              onClick={startReeditUserMessage}
-            >
-              {m.console_common_edit()}
-            </div>
-          ) : null}
-        </div>
-      ) : null}
 
       {contextMenu.visible ? (
         <div
