@@ -126,6 +126,20 @@ describePg("entity task PG", () => {
     );
   });
 
+  it("archive detaches list from folder", async () => {
+    const worldId = testUserWorldId();
+    const folder = await createTaskList(worldId, { name: "文件夹", is_folder: true });
+    const list = await createTaskList(worldId, { name: "子清单", parent_id: folder.id });
+    expect(list.parent_id).toBe(folder.id);
+
+    const closed = await closeTaskList(worldId, list.id);
+    expect(closed?.closed).toBe(true);
+    expect(closed?.parent_id).toBeNull();
+
+    const all = await listTaskLists(worldId, { includeClosed: true });
+    expect(all.find((l) => l.id === list.id)?.parent_id).toBeNull();
+  });
+
   it("creates nested folders and lists; rejects tasks on folders", async () => {
     const worldId = testUserWorldId();
     const folder = await createTaskList(worldId, { name: "工作", is_folder: true });

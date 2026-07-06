@@ -115,3 +115,10 @@ export function writeExpandedFolders(ids: Set<number>): void {
 export function selectableLists(lists: TaskListRow[]): TaskListRow[] {
   return lists.filter((l) => !l.is_folder && !l.closed);
 }
+
+/** 已归档清单平铺展示（不按文件夹树过滤，避免 parent 仍在活跃文件夹下时消失） */
+export function sortedArchivedLists(lists: TaskListRow[]): TaskListRow[] {
+  return lists
+    .filter((l) => l.closed && !l.is_folder)
+    .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
+}

@@ -17,6 +17,7 @@ import {
   buildListTree,
   flattenVisibleTree,
   readExpandedFolders,
+  sortedArchivedLists,
   writeExpandedFolders,
   type ListTreeNode,
 } from "../lib/list-tree.ts";
@@ -263,7 +264,7 @@ function ClosedListRow({
   );
 }
 
-function ClosedTreeSection({
+function ClosedListsSection({
   closedLists,
   selectedListId,
   useActionSheet,
@@ -278,28 +279,24 @@ function ClosedTreeSection({
   onOpenListMenu: (list: TaskListRow) => void;
   onOpenListContextMenu: (e: MouseEvent, list: TaskListRow) => void;
 }) {
-  const nodes = buildListTree(closedLists);
+  const rows = sortedArchivedLists(closedLists);
 
-  function renderNodes(treeNodes: ListTreeNode[]): ReactNode {
-    return treeNodes.map((node) => (
-      <div key={node.list.id}>
+  return (
+    <>
+      {rows.map((list) => (
         <ClosedListRow
-          list={node.list}
-          depth={node.depth}
-          selected={selectedListId === node.list.id}
+          key={list.id}
+          list={list}
+          depth={0}
+          selected={selectedListId === list.id}
           useActionSheet={useActionSheet}
-          onSelect={() => {
-            if (!node.list.is_folder) onSelectList(node.list.id);
-          }}
-          onOpenMenu={() => onOpenListMenu(node.list)}
-          onContextMenu={(e) => onOpenListContextMenu(e, node.list)}
+          onSelect={() => onSelectList(list.id)}
+          onOpenMenu={() => onOpenListMenu(list)}
+          onContextMenu={(e) => onOpenListContextMenu(e, list)}
         />
-        {node.list.is_folder && node.children.length > 0 ? renderNodes(node.children) : null}
-      </div>
-    ));
-  }
-
-  return <>{renderNodes(nodes)}</>;
+      ))}
+    </>
+  );
 }
 
 export function ListSidebar({
@@ -406,7 +403,7 @@ export function ListSidebar({
                 显示已归档
               </label>
               {showClosed ? (
-                <ClosedTreeSection
+                <ClosedListsSection
                   closedLists={closedLists}
                   selectedListId={selectedListId}
                   useActionSheet={useActionSheet}
