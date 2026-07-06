@@ -344,7 +344,7 @@ export async function updateTaskList(
     await assertFolderHasNoChildren(input.id, worldId);
   }
 
-  if (input.parent_id !== undefined) {
+  if (input.parent_id !== undefined && input.closed !== true) {
     await assertValidParent(input.id, input.parent_id, worldId);
     if (input.parent_id != null) {
       await assertSameWorldReferent(input.id, input.parent_id);
@@ -353,10 +353,15 @@ export async function updateTaskList(
 
   const bodyPatch: Record<string, unknown> = {};
   if (input.sort_order !== undefined) bodyPatch.sort_order = input.sort_order;
-  if (input.closed !== undefined) bodyPatch.closed = input.closed;
   if (input.color !== undefined) bodyPatch.color = input.color;
   if (input.is_folder !== undefined) bodyPatch.is_folder = input.is_folder;
-  if (input.parent_id !== undefined) bodyPatch.parent_id = input.parent_id;
+  if (input.closed === true) {
+    bodyPatch.closed = true;
+    bodyPatch.parent_id = null;
+  } else {
+    if (input.closed !== undefined) bodyPatch.closed = input.closed;
+    if (input.parent_id !== undefined) bodyPatch.parent_id = input.parent_id;
+  }
 
   const row = await updateEntity(
     omitUndefined({
