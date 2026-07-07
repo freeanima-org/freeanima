@@ -4,7 +4,7 @@ import "./shell-bridge.ts";
 import { mountShellUi } from "@freeanima/shell-ui/mount";
 
 // oxlint-disable-next-line import/no-unassigned-import -- Vite side-effect stylesheet
-import "../../../frontend/shell-ui/spa/styles.css";
+import "../../../../frontend/shell-ui/spa/styles.css";
 
 import { createDesktopSettingsApis } from "./companion-settings-api.ts";
 import { createDesktopSettingsBindings } from "./settings-registry.ts";

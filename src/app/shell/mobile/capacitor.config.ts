@@ -5,6 +5,8 @@ const config: CapacitorConfig = {
   appName: "FreeAnima",
   webDir: "www",
   backgroundColor: "#1d232a",
+  // stub package.json 无 dependencies；显式列出 Capacitor 原生插件供 cap sync 发现
+  includePlugins: ["@capacitor/keyboard", "@capacitor/preferences"],
   plugins: {
     Keyboard: {
       resizeOnFullScreen: true,
