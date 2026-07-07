@@ -5,23 +5,33 @@ import { Label } from "@freeanima/ui-kit/components/ui";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { FormToggle } from "@freeanima/ui-kit/form";
 import { patchHubConfigSection } from "@freeanima/shell-sdk/hub-config-api";
+import { EDGE_TTS_VOICE_OPTIONS } from "@freeanima/shell-sdk/speech/edge-voices";
 import {
   parseSpeechConfigFromHub,
   readSpeechConfigDraft,
   speechConfigDraftToPatch,
   type SpeechConfigDraft,
+  type TtsProvider,
 } from "@freeanima/shell-sdk/speech/types";
+import { useSpeechPreview } from "@freeanima/shell-sdk/speech/use-speech-preview";
 import {
   listWebSpeechVoices,
-  previewWebSpeech,
-  stopWebSpeechPreview,
   type WebSpeechVoiceInfo,
 } from "@freeanima/shell-sdk/speech/web-speech";
+import {
+  getWebSpeechUnsupportedReason,
+  isWebSpeechApiAvailable,
+} from "@freeanima/shell-sdk/speech/web-speech-support";
 
 const LANG_OPTIONS = [
   { value: "", label: "跟随应用语言" },
   { value: "zh-CN", label: "中文（zh-CN）" },
   { value: "en-US", label: "English（en-US）" },
+];
+
+const PROVIDER_OPTIONS: Array<{ value: TtsProvider; label: string }> = [
+  { value: "edge-tts", label: "Edge TTS（Hub 合成，推荐）" },
+  { value: "web-speech", label: "浏览器 Web Speech（本机离线）" },
 ];
 
 const selectClassName =
@@ -60,10 +70,17 @@ type Props = {
 export function SpeechSettingsTab({ config, saving, onSavingChange, onError, onSaved }: Props) {
   const [draft, setDraft] = useState<SpeechConfigDraft>(() => readSpeechConfigDraft(config.tts));
   const [voices, setVoices] = useState<WebSpeechVoiceInfo[]>([]);
-  const [previewing, setPreviewing] = useState(false);
-  const [localError, setLocalError] = useState("");
 
   const previewOptions = useMemo(() => parseSpeechConfigFromHub(draft), [draft]);
+  const previewLocale = draft.lang.trim() || navigator.language || "zh-CN";
+  const {
+    previewing,
+    error: localError,
+    setError: setLocalError,
+    runPreview,
+    stop,
+    prime,
+  } = useSpeechPreview(previewOptions, previewLocale);
 
   useEffect(() => {
     setDraft(readSpeechConfigDraft(config.tts));
@@ -78,6 +95,11 @@ export function SpeechSettingsTab({ config, saving, onSavingChange, onError, onS
     return () => synth.removeEventListener("voiceschanged", refresh);
   }, []);
 
+  const webSpeechIssue = getWebSpeechUnsupportedReason(true);
+  const previewSupported =
+    draft.enabled &&
+    (draft.provider === "edge-tts" || (isWebSpeechApiAvailable() && webSpeechIssue === null));
+
   const save = useCallback(async () => {
     onSavingChange(true);
     onError("");
@@ -90,38 +112,16 @@ export function SpeechSettingsTab({ config, saving, onSavingChange, onError, onS
     } finally {
       onSavingChange(false);
     }
-  }, [draft, onError, onSaved, onSavingChange]);
+  }, [draft, onError, onSaved, onSavingChange, setLocalError]);
 
-  const preview = useCallback(async () => {
-    setLocalError("");
-    stopWebSpeechPreview();
-    setPreviewing(true);
-    try {
-      await previewWebSpeech(
-        draft.preview_text,
-        previewOptions,
-        draft.lang.trim() || navigator.language || "zh-CN",
-      );
-    } catch (e) {
-      setLocalError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setPreviewing(false);
-    }
-  }, [draft.lang, draft.preview_text, previewOptions]);
-
-  useEffect(() => () => stopWebSpeechPreview(), []);
-
-  const webSpeechSupported = typeof speechSynthesis !== "undefined";
+  const preview = useCallback(() => {
+    stop();
+    runPreview(draft.preview_text);
+  }, [draft.preview_text, runPreview, stop]);
 
   return (
     <Card className="bg-muted py-0">
       <CardContent className="gap-4 py-4">
-        {!webSpeechSupported ? (
-          <StatusAlert variant="warning">
-            当前环境不支持 Web Speech API，无法朗读或试听。
-          </StatusAlert>
-        ) : null}
-
         <FormToggle
           className="w-full"
           label="启用消息朗读"
@@ -129,6 +129,40 @@ export function SpeechSettingsTab({ config, saving, onSavingChange, onError, onS
           checked={draft.enabled}
           onChange={(enabled) => setDraft((d) => ({ ...d, enabled }))}
         />
+
+        <div className="space-y-1">
+          <Label className="text-sm">合成方式</Label>
+          <select
+            className={selectClassName}
+            value={draft.provider}
+            onChange={(e) => setDraft((d) => ({ ...d, provider: e.target.value as TtsProvider }))}
+          >
+            {PROVIDER_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {draft.provider === "edge-tts" ? (
+          <StatusAlert variant="info">
+            朗读文本经 Hub 发送至 Microsoft Edge 语音服务合成；Hub 需能访问外网。
+          </StatusAlert>
+        ) : null}
+
+        {draft.provider === "web-speech" && webSpeechIssue === "insecure_context" ? (
+          <StatusAlert variant="warning">
+            当前页面非安全上下文（HTTP 局域网），浏览器 Web Speech 不可用。请改用 Edge TTS 或 HTTPS
+            访问 Hub。
+          </StatusAlert>
+        ) : null}
+
+        {draft.provider === "web-speech" && webSpeechIssue === "no_api" ? (
+          <StatusAlert variant="warning">
+            当前环境不支持 Web Speech API，无法朗读或试听。
+          </StatusAlert>
+        ) : null}
 
         <div className="space-y-1">
           <Label className="text-sm">语言</Label>
@@ -147,30 +181,54 @@ export function SpeechSettingsTab({ config, saving, onSavingChange, onError, onS
 
         <div className="space-y-1">
           <Label className="text-sm">语音名称</Label>
-          <Input
-            list="speech-voice-options"
-            value={draft.voice_name}
-            placeholder="留空则按语言自动选择"
-            onChange={(e) => setDraft((d) => ({ ...d, voice_name: e.target.value }))}
-          />
-          <datalist id="speech-voice-options">
-            {voices.map((voice) => (
-              <option key={`${voice.name}:${voice.lang}`} value={voice.name}>
-                {voice.lang}
-              </option>
-            ))}
-          </datalist>
-          <p className="text-xs text-muted-foreground">
-            可选本机已安装的语音包；名称因浏览器/系统而异。
-          </p>
+          {draft.provider === "edge-tts" ? (
+            <>
+              <select
+                className={selectClassName}
+                value={draft.voice_name}
+                onChange={(e) => setDraft((d) => ({ ...d, voice_name: e.target.value }))}
+              >
+                <option value="">跟随语言默认</option>
+                {EDGE_TTS_VOICE_OPTIONS.map((voice: (typeof EDGE_TTS_VOICE_OPTIONS)[number]) => (
+                  <option key={voice.name} value={voice.name}>
+                    {voice.label}（{voice.name}）
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground">
+                Microsoft Edge Neural 语音；留空则按语言自动选择。
+              </p>
+            </>
+          ) : (
+            <>
+              <Input
+                list="speech-voice-options"
+                value={draft.voice_name}
+                placeholder="留空则按语言自动选择"
+                onChange={(e) => setDraft((d) => ({ ...d, voice_name: e.target.value }))}
+              />
+              <datalist id="speech-voice-options">
+                {voices.map((voice) => (
+                  <option key={`${voice.name}:${voice.lang}`} value={voice.name}>
+                    {voice.lang}
+                  </option>
+                ))}
+              </datalist>
+              <p className="text-xs text-muted-foreground">
+                可选本机已安装的语音包；名称因浏览器/系统而异。
+              </p>
+            </>
+          )}
         </div>
 
-        <FormToggle
-          className="w-full"
-          label="优先本机语音"
-          checked={draft.prefer_local}
-          onChange={(prefer_local) => setDraft((d) => ({ ...d, prefer_local }))}
-        />
+        {draft.provider === "web-speech" ? (
+          <FormToggle
+            className="w-full"
+            label="优先本机语音"
+            checked={draft.prefer_local}
+            onChange={(prefer_local) => setDraft((d) => ({ ...d, prefer_local }))}
+          />
+        ) : null}
 
         {numberField("语速", draft.rate, (rate) => setDraft((d) => ({ ...d, rate })), {
           min: 0.1,
@@ -205,8 +263,9 @@ export function SpeechSettingsTab({ config, saving, onSavingChange, onError, onS
           <Button
             type="button"
             variant="outline"
-            disabled={!webSpeechSupported || previewing || !draft.enabled}
-            onClick={() => void preview()}
+            disabled={!previewSupported || previewing}
+            onPointerDown={prime}
+            onClick={preview}
           >
             {previewing ? "播放中…" : "试听"}
           </Button>
@@ -216,7 +275,8 @@ export function SpeechSettingsTab({ config, saving, onSavingChange, onError, onS
         </div>
 
         <p className="text-xs text-muted-foreground">
-          使用浏览器 Web Speech API 朗读，无需 Hub 额外服务；修改后各客户端刷新即可生效。
+          默认 Edge TTS 由 Hub 合成，手机浏览器与 APK 均可播放；Web Speech 适合离线或隐私场景（需
+          HTTPS）。
         </p>
       </CardContent>
     </Card>

@@ -22,6 +22,7 @@ import {
   ChatMessageBubble,
   findLastUserMessageIndex,
 } from "@chat/components/ChatMessageBubble.tsx";
+import { ConversationListItem as ConversationListRow } from "@chat/components/ConversationListItem.tsx";
 import { useAcpProgressDock } from "@chat/hooks/useAcpProgressDock.ts";
 import { useEdgeSwipeOpen } from "@chat/hooks/useEdgeSwipeOpen.ts";
 import { useKeyboardInset } from "@chat/hooks/useKeyboardInset.ts";
@@ -187,6 +188,8 @@ export function ChatApp() {
     stop: stopSpeech,
     isSpeaking,
     isSupported: speechSupported,
+    unsupportedReason: speechUnsupportedReason,
+    playbackError: speechPlaybackError,
   } = useSpeechPlayback();
 
   const startReeditUserMessage = useCallback((index: number, content: string) => {
@@ -577,41 +580,17 @@ export function ChatApp() {
     : [];
 
   const renderConversationItem = (s: ConversationListItem, faded = false) => (
-    <div
+    <ConversationListRow
       key={s.id}
-      className={[
-        "session-item group flex min-h-10 items-center gap-1",
-        s.id === currentId ? "sidebar-nav-active" : "",
-        faded ? "opacity-60" : "",
-      ].join(" ")}
-      onClick={() => void navigateToConversation(s.id)}
-      onContextMenu={
-        useActionSheet
-          ? undefined
-          : (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              openConversationMenu(s.id, { x: e.clientX, y: e.clientY });
-            }
-      }
-    >
-      <div className="min-w-0 flex-1 truncate">{conversationLabel(s)}</div>
-      {useActionSheet ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          className="shrink-0 opacity-70 group-hover:opacity-100"
-          aria-label="操作"
-          onClick={(e) => {
-            e.stopPropagation();
-            openConversationMenu(s.id);
-          }}
-        >
-          ⋯
-        </Button>
-      ) : null}
-    </div>
+      conversation={s}
+      label={conversationLabel(s)}
+      active={s.id === currentId}
+      faded={faded}
+      useActionSheet={useActionSheet}
+      contextMenuEnabled={contextMenuEnabled}
+      onNavigate={navigateToConversation}
+      onOpenMenu={openConversationMenu}
+    />
   );
 
   const flushQueueRef = useRef<(conversationId: string) => Promise<void>>(async () => {});
@@ -1050,6 +1029,7 @@ export function ChatApp() {
                         speechText={item.content}
                         speaking={isSpeaking(`msg-${i}`)}
                         speechSupported={speechSupported}
+                        speechUnsupportedReason={speechUnsupportedReason}
                         onToggleSpeech={() => toggleSpeech(`msg-${i}`, item.content)}
                         onEdit={
                           i === lastUserMessageIndex
@@ -1076,6 +1056,7 @@ export function ChatApp() {
                         speechText={speechText}
                         speaking={isSpeaking(`msg-${i}`)}
                         speechSupported={speechSupported}
+                        speechUnsupportedReason={speechUnsupportedReason}
                         onToggleSpeech={() => toggleSpeech(`msg-${i}`, speechText)}
                       />
                     </div>
@@ -1153,6 +1134,9 @@ export function ChatApp() {
                 keyboardInset > 0 ? { transform: `translateY(-${keyboardInset}px)` } : undefined
               }
             >
+              {speechPlaybackError ? (
+                <p className="mb-2 text-xs text-destructive">{speechPlaybackError}</p>
+              ) : null}
               {messageQueue.length > 0 ? (
                 <ul className="mb-2 space-y-1">
                   {messageQueue.map((item) => (

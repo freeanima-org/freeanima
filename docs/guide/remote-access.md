@@ -22,7 +22,7 @@ title: Remote access
 
 ### PWA（浏览器 Web）
 
-- **Secure context**：Service Worker 需要 HTTPS 或 `localhost`；Tunnel 终端应使用 HTTPS 域名。
+- **Secure context**：Service Worker 需要 HTTPS 或 `localhost`；Tunnel 终端应使用 HTTPS 域名。浏览器 **Web Speech** 朗读同样需安全上下文；默认 **Edge TTS**（Hub `POST /api/tts/synthesize`）在 HTTP 局域网下也可用，但 Hub 需能访问外网 Microsoft 语音服务。
 - **Service Worker vs 安装**：SW 在普通浏览器标签页访问 `/web/*` 时即注册（生产构建）；**不要求**「添加到主屏幕」。安装仅改变启动方式（独立窗口），离线能力与标签页相同。
 - **安装（可选）**：手机浏览器访问 `/web/chat`，Chrome / Safari 支持「添加到主屏幕」；生产构建会显示安装引导条（compact 布局、非已安装态）。
 - **更新**：Hub 部署新 Web 静态产物后，已安装 PWA 会提示「新版本可用」；点击重新加载后生效。壳层 JS 由 Workbox precache，`/web/config.json` 始终 `no-store`（Hub URL 动态）。

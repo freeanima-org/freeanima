@@ -1,10 +1,11 @@
-import type { SpeechPlaybackConfig } from "@freeanima/shell-sdk/speech/types";
+import type { SpeechPlaybackConfig } from "./types.ts";
+import type { SpeechPlaybackAdapter } from "./adapter-types.ts";
+import { applyWebSpeechUtteranceOptions, pickWebSpeechVoice } from "./web-speech.ts";
 import {
-  applyWebSpeechUtteranceOptions,
-  pickWebSpeechVoice,
-} from "@freeanima/shell-sdk/speech/web-speech";
-
-import type { SpeechPlaybackAdapter } from "./types.ts";
+  getWebSpeechUnsupportedReason,
+  isWebSpeechApiAvailable,
+  primeWebSpeechSynth,
+} from "./web-speech-support.ts";
 
 const MAX_CHUNK_LEN = 280;
 
@@ -47,6 +48,7 @@ type ChunkSession = {
 };
 
 let activeSession: ChunkSession | null = null;
+const VOICES_TIMEOUT_MS = 800;
 
 function finishSession(session: ChunkSession, errored = false): void {
   if (activeSession === session) activeSession = null;
@@ -77,6 +79,23 @@ function speakNextChunk(synth: SpeechSynthesis, session: ChunkSession): void {
   synth.speak(utterance);
 }
 
+function waitForVoices(synth: SpeechSynthesis): Promise<SpeechSynthesisVoice[]> {
+  const existing = synth.getVoices();
+  if (existing.length > 0) return Promise.resolve(existing);
+
+  return new Promise((resolve) => {
+    const finish = (voices: SpeechSynthesisVoice[]) => {
+      synth.removeEventListener("voiceschanged", onVoicesChanged);
+      clearTimeout(timer);
+      resolve(voices);
+    };
+    const onVoicesChanged = () => finish(synth.getVoices());
+    const timer = setTimeout(() => finish(synth.getVoices()), VOICES_TIMEOUT_MS);
+    synth.addEventListener("voiceschanged", onVoicesChanged);
+    synth.getVoices();
+  });
+}
+
 export function createBrowserSpeechAdapter(
   synth: SpeechSynthesis | undefined = typeof speechSynthesis !== "undefined"
     ? speechSynthesis
@@ -85,6 +104,7 @@ export function createBrowserSpeechAdapter(
 ): SpeechPlaybackAdapter {
   const options: SpeechPlaybackConfig = speechOptions ?? {
     enabled: true,
+    provider: "web-speech",
     lang: null,
     voiceName: null,
     preferLocal: true,
@@ -95,7 +115,7 @@ export function createBrowserSpeechAdapter(
   };
 
   return {
-    isSupported: () => Boolean(synth) && options.enabled,
+    isSupported: () => getWebSpeechUnsupportedReason(options.enabled) === null,
 
     stop() {
       if (!synth) return;
@@ -104,7 +124,7 @@ export function createBrowserSpeechAdapter(
     },
 
     speak(text, locale, onEnd, onError) {
-      if (!synth || !options.enabled) {
+      if (!synth || getWebSpeechUnsupportedReason(options.enabled) !== null) {
         onError?.();
         return;
       }
@@ -115,34 +135,32 @@ export function createBrowserSpeechAdapter(
         return;
       }
 
+      primeWebSpeechSynth(synth);
       synth.cancel();
       activeSession = null;
 
-      const start = (voice: SpeechSynthesisVoice | null) => {
-        const session: ChunkSession = {
-          chunks,
-          index: 0,
-          onEnd,
-          onError,
-          voice,
-          locale,
-          speechOptions: options,
-        };
-        activeSession = session;
-        speakNextChunk(synth, session);
-      };
-
-      const voices = synth.getVoices();
-      if (voices.length > 0) {
-        start(pickWebSpeechVoice(voices, options, locale));
-        return;
-      }
-
-      const onVoicesChanged = () => {
-        synth.removeEventListener("voiceschanged", onVoicesChanged);
-        start(pickWebSpeechVoice(synth.getVoices(), options, locale));
-      };
-      synth.addEventListener("voiceschanged", onVoicesChanged);
+      void (async () => {
+        try {
+          const voices = await waitForVoices(synth);
+          const session: ChunkSession = {
+            chunks,
+            index: 0,
+            onEnd,
+            voice: pickWebSpeechVoice(voices, options, locale),
+            locale,
+            speechOptions: options,
+            ...(onError ? { onError } : {}),
+          };
+          activeSession = session;
+          speakNextChunk(synth, session);
+        } catch {
+          onError?.();
+        }
+      })();
     },
   };
+}
+
+export function isBrowserSpeechSupported(enabled = true): boolean {
+  return isWebSpeechApiAvailable() && getWebSpeechUnsupportedReason(enabled) === null;
 }

@@ -20,6 +20,7 @@ import { entityRoutes } from "./routes/entities.ts";
 import { worldsRoutes } from "./routes/worlds.ts";
 import { serviceApiTokenRoutes } from "./routes/service-api-tokens.ts";
 import { configRoutes } from "./routes/config.ts";
+import { ttsRoutes } from "./routes/tts.ts";
 
 /** API 路由（Eden Treaty 类型真源） */
 export const apiApp = new Elysia({ prefix: "/api" })
@@ -40,7 +41,8 @@ export const apiApp = new Elysia({ prefix: "/api" })
   .use(worldsRoutes)
   .use(entityRoutes)
   .use(serviceApiTokenRoutes)
-  .use(configRoutes);
+  .use(configRoutes)
+  .use(ttsRoutes);
 
 export type App = typeof apiApp;
 

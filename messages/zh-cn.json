@@ -23,6 +23,8 @@
   "chat_speech_play": "朗读",
   "chat_speech_stop": "停止朗读",
   "chat_speech_unavailable": "此设备不支持语音朗读",
+  "chat_speech_playback_failed": "语音播放失败",
+  "chat_speech_insecure_context": "浏览器朗读需 HTTPS；请改用 Edge TTS 或通过 HTTPS 访问 Hub",
   "chat_unarchive": "取消归档",
   "console_acp_action_failed": "{name} {action}失败: {detail}",
   "console_acp_active_sessions": "活跃会话",
