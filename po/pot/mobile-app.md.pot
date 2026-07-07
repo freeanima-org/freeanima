@@ -33,7 +33,7 @@ msgstr ""
 #. type: Plain text
 #: docs/features/mobile-app.md:7
 #, no-wrap
-msgid "> Capacitor **薄壳** + Hub `/web/*` 远程 UI（默认）；`MOBILE_UI_MODE=bundled` 可回退 bundled SPA。  \n"
+msgid "> Capacitor **薄壳** + Hub `/web/*` 远程 UI（与浏览器/PWA 同一产物）。  \n"
 msgstr ""
 
 #. type: Plain text
@@ -201,22 +201,17 @@ msgstr ""
 #. type: Plain text
 #: docs/features/mobile-app.md:81
 msgid ""
-"默认 **remote UI**（`www/` 仅 bootstrap，APK 体积小）。完整 bundled SPA："
-"`MOBILE_UI_MODE=bundled bun run build:mobile`"
+"`www/` 仅含 bootstrap（Hub 配置 + 跳转），APK 体积小。UI 随 Hub `build:web` / "
+"`anima upgrade` 更新，无需为前端改动重装 APK（Capacitor 插件变更除外）。"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:83
+#: docs/features/mobile-app.md:84
 msgid "Debug full flow: `bun run debug:android`"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:85
-#, no-wrap
-msgid "**Discipline**: after shell-ui / chat / admin frontend changes, run `bun run build` (or `build:debug`) then `cap sync`, or device serves stale Web assets.\n"
-msgstr ""
-
-#. type: Plain text
+#: docs/features/mobile-app.md:86
 #: docs/features/mobile-app.md:87
 msgid ""
 "Package README: [`src/app/shell/mobile/README.md`](../../src/app/shell/"

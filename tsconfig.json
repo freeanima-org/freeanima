@@ -284,6 +284,8 @@
       "@freeanima/vault-crypto/*": ["./src/shared/vault-crypto/*.ts"],
       "@freeanima/core/compress": ["./src/core/compress/index.ts"],
       "@freeanima/core/config/*": ["./src/core/config/*.ts"],
+      "@freeanima/core/tts/*": ["./src/core/tts/*.ts"],
+      "@freeanima/shell-sdk/speech/*": ["./src/frontend/shell-sdk/speech/*.ts"],
       "@freeanima/core/provider": ["./src/core/provider/index.ts"],
       "@freeanima/feature-diary": ["./src/features/diary/domain/index.ts"],
       "@freeanima/feature-dream": ["./src/features/dream/domain/index.ts"],
@@ -361,7 +363,6 @@
     "src/app/shell/web/spa/**",
     "src/app/shell/web/lib/**",
     "src/app/shell/desktop/spa/**",
-    "src/app/shell/mobile/spa/**",
     "src/features/**/ui/**"
   ]
 }
