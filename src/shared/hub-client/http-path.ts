@@ -40,5 +40,16 @@ export function bodyForHttpMethod(
     if (binding.path.includes(`{${key}}`)) continue;
     if (value !== undefined) body[key] = value;
   }
-  return Object.keys(body).length > 0 ? JSON.stringify(body) : undefined;
+  if (Object.keys(body).length === 0) return undefined;
+  // config.patchSection 等 RPC 入参为 { section, patch }；REST body 应为 patch 本身
+  const patch = body.patch;
+  if (
+    Object.keys(body).length === 1 &&
+    patch != null &&
+    typeof patch === "object" &&
+    !Array.isArray(patch)
+  ) {
+    return JSON.stringify(patch);
+  }
+  return JSON.stringify(body);
 }
