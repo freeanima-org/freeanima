@@ -17,6 +17,8 @@ anima service start --host 0.0.0.0
 
 ## 构建
 
+本目录的 `package.json` 为 **Capacitor CLI 必需 stub**（`cap sync` 要求 cwd 下有 package.json），不是独立 npm 包；Capacitor 依赖仍由仓库根 `package.json` 提供。
+
 ```bash
 # 从仓库根目录
 bun run build:mobile
@@ -57,6 +59,7 @@ Debug APK：`android/app/build/outputs/apk/debug/app-debug.apk`
 
 | 路径                  | 作用                                        |
 | --------------------- | ------------------------------------------- |
+| `package.json`        | Capacitor CLI stub（非 workspace 包）       |
 | `lib/mobile-shell.ts` | Preferences 持久化、`window.satelliteShell` |
 | `spa/shell-bridge.ts` | 启动时注入壳层 API，阻塞 SPA 直至 Hub 就绪  |
 | `vite.config.ts`      | 构建 shell-ui → `www/` + shell-bridge       |
