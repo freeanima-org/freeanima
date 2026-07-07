@@ -12,7 +12,7 @@ import {
 import { sendSentryTestEvent } from "@freeanima/shell-ui/sentry-test";
 import { buildMobileShell, SHELL_CONFIG_CHANGED_EVENT } from "./mobile-shell.ts";
 import { createMobileScopedBackend, testMobileHubConnection } from "./settings-prefs-backend.ts";
-import { DEBUG_CONFIG_CHANGED_EVENT } from "./shell-bridge.ts";
+import { DEBUG_CONFIG_CHANGED_EVENT } from "./debug-events.ts";
 
 export type MobileSettingsStores = {
   hub: SettingsStore<ShellClientConfig>;

@@ -307,11 +307,11 @@ Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User message
 
 `resolveLayoutMode()`：窄 → `compact`，中宽 → `expanded`（URL / `config.json` 可覆盖）。`detectPlatform()` 跟布局粗档（设置页 chrome），settings 字段差异仍由能力层 `resolveShellBindings()` 决定。
 
-| 客户端       | UI 加载                                                               | 壳发版                   |
-| ------------ | --------------------------------------------------------------------- | ------------------------ |
-| 浏览器 / PWA | Hub `/web/*`                                                          | 随 Hub / `anima upgrade` |
-| Desktop      | 默认 Hub `/web/*`（`DESKTOP_UI_MODE=bundled` 回退本地 static）        | 仅 Electron / 伴侣变更   |
-| Mobile APK   | bootstrap → Hub `/web/*`（`MOBILE_UI_MODE=bundled` 回退 bundled SPA） | 仅 Capacitor 插件变更    |
+| 客户端       | UI 加载                                                        | 壳发版                   |
+| ------------ | -------------------------------------------------------------- | ------------------------ |
+| 浏览器 / PWA | Hub `/web/*`                                                   | 随 Hub / `anima upgrade` |
+| Desktop      | 默认 Hub `/web/*`（`DESKTOP_UI_MODE=bundled` 回退本地 static） | 仅 Electron / 伴侣变更   |
+| Mobile APK   | bootstrap → Hub `/web/*`                                       | 仅 Capacitor 插件变更    |
 
 | Module  | Connection                                         | Notes                    |
 | ------- | -------------------------------------------------- | ------------------------ |

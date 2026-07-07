@@ -100,7 +100,7 @@
     "package:windows": "cd src/app/shell/desktop && DESKTOP_SHELL_BUILD_PROFILE=release bun build-electron.ts --platform win",
     "build:mobile": "bun run paraglide:compile && cd src/app/shell/mobile && vite build",
     "build:mobile:debug": "bun run paraglide:compile && cd src/app/shell/mobile && MOBILE_DEBUG=1 vite build",
-    "debug:android": "cd src/app/shell/mobile && MOBILE_DEBUG=1 MOBILE_UI_MODE=bundled bash scripts/run-android.sh",
+    "debug:android": "cd src/app/shell/mobile && MOBILE_DEBUG=1 bash scripts/run-android.sh",
     "link:global": "mkdir -p \"${BUN_INSTALL:-$HOME/.bun}/bin\" && ln -sf \"$PWD/src/app/cli/cli.ts\" \"${BUN_INSTALL:-$HOME/.bun}/bin/anima\" && chmod +x src/app/cli/cli.ts",
     "prepare": "husky"
   },

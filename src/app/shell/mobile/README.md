@@ -1,6 +1,6 @@
 # FreeAnima 移动端（Android）
 
-Capacitor 壳 + 聊天室 / 管理台 bundled SPA。Hub 地址在 APP 内 UI 配置。
+Capacitor **bootstrap 薄壳** + Hub `/web/*` 远程 UI。Hub 地址在 bootstrap 或 APP 内设置页配置。
 
 ## 前置条件
 
@@ -24,7 +24,7 @@ anima service start --host 0.0.0.0
 bun run build:mobile
 cd src/app/shell/mobile && bunx cap sync android
 
-# Debug 构建（不压缩 + sourcemap，便于 Chrome inspect）
+# Debug 构建（bootstrap 不压缩 + sourcemap）
 bun run build:mobile:debug
 ```
 
@@ -40,7 +40,7 @@ bash scripts/build-apk.sh
 bash scripts/run-android.sh
 ```
 
-从仓库根目录也可：`bun run debug:android`（bundled UI + debug 构建）。  
+从仓库根目录也可：`bun run debug:android`（remote UI + debug bootstrap）。  
 **注意**：Gradle 编译阶段可能持续数分钟；调试时推荐在本目录直接 `bash scripts/run-android.sh`（可看到 `--console=plain` 流式日志），或分步 `build-apk.sh` + `install-apk.sh`。
 
 脚本会自动 `source scripts/android-env.sh`（`ANDROID_HOME=~/Android/Sdk`）。  
@@ -50,20 +50,25 @@ Debug APK：`android/app/build/outputs/apk/debug/app-debug.apk`
 
 ## 使用
 
-1. 首次启动进入 **Hub 设置**，填写 PC 局域网地址，如 `http://192.168.1.10:2658`，以及 Hub `remote_auth.token`
-2. **测试连接** → **保存并进入**
+1. 首次启动进入 **Hub 设置**，填写 PC 局域网地址，如 `http://192.168.1.10:2658`，以及 Service API Token
+2. **测试连接** → **保存并进入** → 跳转 Hub `/web/chat`
 3. 底栏切换 **Chat / Tasks / Email / Notifications**；**More** 进入管理台与设置
 4. **设置 → 调试**：配置 Sentry DSN、移动 vConsole、查看 DevTools 说明
+
+UI 随 Hub `build:web` / `anima upgrade` 更新；`chrome://inspect` 调试 Hub 页面。
 
 ## 架构
 
 | 路径                  | 作用                                        |
 | --------------------- | ------------------------------------------- |
 | `package.json`        | Capacitor CLI stub（非 workspace 包）       |
+| `bootstrap/`          | Hub 配置表单 + 跳转 Hub `/web/chat`         |
 | `lib/mobile-shell.ts` | Preferences 持久化、`window.satelliteShell` |
-| `spa/shell-bridge.ts` | 启动时注入壳层 API，阻塞 SPA 直至 Hub 就绪  |
-| `vite.config.ts`      | 构建 shell-ui → `www/` + shell-bridge       |
-| `www/`                | 统一 SPA（`/chat`、`/admin`、`/settings`）  |
+| `lib/debug-events.ts` | debug 设置变更事件常量                      |
+| `vite.config.ts`      | 构建 bootstrap → `www/`                     |
+| `www/`                | bootstrap 静态资源（非完整 SPA）            |
 | `android/`            | Capacitor Android 工程                      |
+
+Hub SPA 侧 [`bootstrap-capacitor.ts`](../web/lib/bridge/bootstrap-capacitor.ts) 注入 Capacitor 原生能力。
 
 详见 [`docs/features/mobile-app.md`](../../../docs/features/mobile-app.md)。

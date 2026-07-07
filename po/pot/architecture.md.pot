@@ -845,7 +845,7 @@ msgid ""
 "| ------------ | --------------------------------------------------------------------- | ------------------------ |\n"
 "| 浏览器 / PWA | Hub `/web/*`                                                          | 随 Hub / `anima upgrade` |\n"
 "| Desktop      | 默认 Hub `/web/*`（`DESKTOP_UI_MODE=bundled` 回退本地 static）        | 仅 Electron / 伴侣变更   |\n"
-"| Mobile APK   | bootstrap → Hub `/web/*`（`MOBILE_UI_MODE=bundled` 回退 bundled SPA） | 仅 Capacitor 插件变更    |\n"
+"| Mobile APK   | bootstrap → Hub `/web/*`                                              | 仅 Capacitor 插件变更    |\n"
 msgstr ""
 
 #. type: Plain text
