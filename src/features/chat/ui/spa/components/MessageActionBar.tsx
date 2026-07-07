@@ -1,3 +1,5 @@
+import type { SpeechUnsupportedReason } from "@freeanima/shell-sdk/speech/adapter-types";
+import { primeHubSpeechOutput } from "@freeanima/shell-sdk/speech/hub-adapter";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@freeanima/ui-kit";
 import { copyText } from "@freeanima/ui-kit/lib/copy-text";
@@ -11,6 +13,8 @@ type MessageActionBarProps = {
   speechText: string;
   speaking: boolean;
   speechSupported: boolean;
+  speechUnavailableTitle?: string;
+  speechUnsupportedReason?: SpeechUnsupportedReason | null;
   onToggleSpeech: () => void;
   onEdit?: () => void;
 };
@@ -21,6 +25,8 @@ export function MessageActionBar({
   speechText,
   speaking,
   speechSupported,
+  speechUnavailableTitle,
+  speechUnsupportedReason,
   onToggleSpeech,
   onEdit,
 }: MessageActionBarProps) {
@@ -67,7 +73,17 @@ export function MessageActionBar({
         className="text-muted-foreground size-7 text-xs"
         disabled={!canSpeak}
         aria-label={speaking ? m.chat_speech_stop() : m.chat_speech_play()}
-        title={!speechSupported ? m.chat_speech_unavailable() : undefined}
+        title={
+          !speechSupported
+            ? (speechUnavailableTitle ??
+              (speechUnsupportedReason === "insecure_context"
+                ? m.chat_speech_insecure_context()
+                : m.chat_speech_unavailable()))
+            : undefined
+        }
+        onPointerDown={() => {
+          if (canSpeak) primeHubSpeechOutput();
+        }}
         onClick={onToggleSpeech}
       >
         {speaking ? "■" : "▶"}

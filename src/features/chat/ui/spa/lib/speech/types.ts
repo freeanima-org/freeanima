@@ -1,7 +1,6 @@
-export type SpeechPlaybackStatus = "idle" | "playing";
+export type {
+  SpeechPlaybackAdapter,
+  SpeechUnsupportedReason,
+} from "@freeanima/shell-sdk/speech/adapter-types";
 
-export type SpeechPlaybackAdapter = {
-  isSupported: () => boolean;
-  speak: (text: string, locale: string, onEnd: () => void, onError?: () => void) => void;
-  stop: () => void;
-};
+export type SpeechPlaybackStatus = "idle" | "playing";

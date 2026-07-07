@@ -3,9 +3,14 @@ export const DEFAULT_TTS_PITCH = 1;
 export const DEFAULT_TTS_VOLUME = 1;
 export const DEFAULT_TTS_PREVIEW_TEXT = "你好，我是逸灵风。";
 
-/** 客户端 Web Speech 朗读参数（由 Hub tts 段解析） */
+export const TTS_PROVIDERS = ["edge-tts", "web-speech"] as const;
+export type TtsProvider = (typeof TTS_PROVIDERS)[number];
+export const DEFAULT_TTS_PROVIDER: TtsProvider = "edge-tts";
+
+/** 客户端朗读参数（由 Hub tts 段解析） */
 export type SpeechPlaybackConfig = {
   enabled: boolean;
+  provider: TtsProvider;
   lang: string | null;
   voiceName: string | null;
   preferLocal: boolean;
@@ -17,6 +22,7 @@ export type SpeechPlaybackConfig = {
 
 export type SpeechConfigDraft = {
   enabled: boolean;
+  provider: TtsProvider;
   lang: string;
   voice_name: string;
   prefer_local: boolean;
@@ -41,6 +47,11 @@ function clampVolume(value: number | undefined): number {
   return Math.min(1, Math.max(0, value));
 }
 
+function parseProvider(raw: unknown): TtsProvider {
+  if (raw === "web-speech") return "web-speech";
+  return DEFAULT_TTS_PROVIDER;
+}
+
 export function parseSpeechConfigFromHub(tts: unknown): SpeechPlaybackConfig {
   const raw = (tts ?? {}) as Record<string, unknown>;
   const lang = typeof raw.lang === "string" ? raw.lang.trim() : "";
@@ -52,6 +63,7 @@ export function parseSpeechConfigFromHub(tts: unknown): SpeechPlaybackConfig {
 
   return {
     enabled: raw.enabled !== false,
+    provider: parseProvider(raw.provider),
     lang: lang || null,
     voiceName: voiceName || null,
     preferLocal: raw.prefer_local !== false,
@@ -66,6 +78,7 @@ export function readSpeechConfigDraft(tts: unknown): SpeechConfigDraft {
   const parsed = parseSpeechConfigFromHub(tts);
   return {
     enabled: parsed.enabled,
+    provider: parsed.provider,
     lang: parsed.lang ?? "",
     voice_name: parsed.voiceName ?? "",
     prefer_local: parsed.preferLocal,
@@ -79,6 +92,7 @@ export function readSpeechConfigDraft(tts: unknown): SpeechConfigDraft {
 export function speechConfigDraftToPatch(draft: SpeechConfigDraft): Record<string, unknown> {
   return {
     enabled: draft.enabled,
+    provider: draft.provider,
     lang: draft.lang.trim() || undefined,
     voice_name: draft.voice_name.trim() || undefined,
     prefer_local: draft.prefer_local,

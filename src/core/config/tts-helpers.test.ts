@@ -6,6 +6,7 @@ describe("getResolvedSpeechConfig", () => {
   it("uses defaults when tts section is missing", () => {
     const resolved = getResolvedSpeechConfig({} as never);
     expect(resolved.enabled).toBe(true);
+    expect(resolved.provider).toBe("edge-tts");
     expect(resolved.lang).toBeNull();
     expect(resolved.rate).toBe(1);
     expect(resolved.pitch).toBe(1);
@@ -18,6 +19,7 @@ describe("getResolvedSpeechConfig", () => {
     const resolved = getResolvedSpeechConfig({
       tts: {
         enabled: false,
+        provider: "web-speech",
         lang: "en-US",
         voice_name: "Samantha",
         prefer_local: false,
@@ -28,6 +30,7 @@ describe("getResolvedSpeechConfig", () => {
       },
     } as never);
     expect(resolved.enabled).toBe(false);
+    expect(resolved.provider).toBe("web-speech");
     expect(resolved.lang).toBe("en-US");
     expect(resolved.voiceName).toBe("Samantha");
     expect(resolved.preferLocal).toBe(false);

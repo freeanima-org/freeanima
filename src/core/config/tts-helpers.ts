@@ -1,9 +1,11 @@
 import {
   DEFAULT_TTS_PITCH,
   DEFAULT_TTS_PREVIEW_TEXT,
+  DEFAULT_TTS_PROVIDER,
   DEFAULT_TTS_RATE,
   DEFAULT_TTS_VOLUME,
   type ResolvedSpeechConfig,
+  type TtsProvider,
 } from "./schemas/tts.ts";
 import type { AnimaConfig } from "./schemas/config.ts";
 
@@ -24,6 +26,11 @@ function clampVolume(value: number | undefined): number {
   return Math.min(1, Math.max(0, value));
 }
 
+function parseProvider(raw: unknown): TtsProvider {
+  if (raw === "web-speech") return "web-speech";
+  return DEFAULT_TTS_PROVIDER;
+}
+
 export function getResolvedSpeechConfig(cfg: AnimaConfig): ResolvedSpeechConfig {
   const tts = cfg.tts ?? {};
   const lang = tts.lang?.trim() || null;
@@ -32,6 +39,7 @@ export function getResolvedSpeechConfig(cfg: AnimaConfig): ResolvedSpeechConfig 
 
   return {
     enabled: tts.enabled !== false,
+    provider: parseProvider(tts.provider),
     lang,
     voiceName,
     preferLocal: tts.prefer_local !== false,

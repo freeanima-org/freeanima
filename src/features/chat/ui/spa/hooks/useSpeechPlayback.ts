@@ -1,19 +1,46 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { fetchHubConfig } from "@freeanima/shell-sdk/hub-config-api";
+import { createSpeechAdapter } from "@freeanima/shell-sdk/speech/create-adapter";
 import {
   DEFAULT_SPEECH_PLAYBACK_CONFIG,
   parseSpeechConfigFromHub,
   type SpeechPlaybackConfig,
 } from "@freeanima/shell-sdk/speech/types";
-import { getAppLocale } from "@chat/lib/i18n.ts";
-import { createBrowserSpeechAdapter } from "@chat/lib/speech/browser-adapter.ts";
+import { getWebSpeechUnsupportedReason } from "@freeanima/shell-sdk/speech/web-speech-support";
+import { consumeLastHubSpeechError } from "@freeanima/shell-sdk/speech/hub-adapter";
+import { getAppLocale, m } from "@chat/lib/i18n.ts";
 import { createSpeechPlaybackController } from "@chat/lib/speech/controller.ts";
 import type { SpeechPlaybackAdapter } from "@chat/lib/speech/types.ts";
+
+function wrapAdapterWithErrorHandler(
+  adapter: SpeechPlaybackAdapter,
+  onPlaybackError: () => void,
+): SpeechPlaybackAdapter {
+  return {
+    isSupported: () => adapter.isSupported(),
+    stop: () => adapter.stop(),
+    speak(text, locale, onEnd, onError) {
+      adapter.speak(text, locale, onEnd, () => {
+        onPlaybackError();
+        onError?.();
+      });
+    },
+  };
+}
 
 export function useSpeechPlayback(adapter?: SpeechPlaybackAdapter) {
   const [speechConfig, setSpeechConfig] = useState<SpeechPlaybackConfig>(
     DEFAULT_SPEECH_PLAYBACK_CONFIG,
   );
+  const [playbackError, setPlaybackError] = useState<string | null>(null);
+  const playbackErrorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showPlaybackError = useCallback(() => {
+    const detail = consumeLastHubSpeechError();
+    setPlaybackError(detail ?? m.chat_speech_playback_failed());
+    if (playbackErrorTimerRef.current != null) clearTimeout(playbackErrorTimerRef.current);
+    playbackErrorTimerRef.current = setTimeout(() => setPlaybackError(null), 4000);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -29,13 +56,15 @@ export function useSpeechPlayback(adapter?: SpeechPlaybackAdapter) {
     })();
     return () => {
       cancelled = true;
+      if (playbackErrorTimerRef.current != null) clearTimeout(playbackErrorTimerRef.current);
     };
   }, []);
 
-  const speechAdapter = useMemo(
-    () => adapter ?? createBrowserSpeechAdapter(undefined, speechConfig),
-    [adapter, speechConfig],
-  );
+  const speechAdapter = useMemo(() => {
+    const base = adapter ?? createSpeechAdapter(speechConfig);
+    return wrapAdapterWithErrorHandler(base, showPlaybackError);
+  }, [adapter, showPlaybackError, speechConfig]);
+
   const [, rerender] = useReducer((n: number) => n + 1, 0);
   const controllerRef = useRef(createSpeechPlaybackController(speechAdapter, () => rerender()));
 
@@ -48,10 +77,19 @@ export function useSpeechPlayback(adapter?: SpeechPlaybackAdapter) {
   }, []);
 
   const toggle = useCallback((key: string, text: string) => {
+    setPlaybackError(null);
     controllerRef.current.toggle(key, text, getAppLocale());
   }, []);
 
   const isSpeaking = useCallback((key: string) => controllerRef.current.isSpeaking(key), []);
+
+  const unsupportedReason = useMemo(() => {
+    if (!speechConfig.enabled) return "disabled" as const;
+    if (speechConfig.provider === "edge-tts") return null;
+    return getWebSpeechUnsupportedReason(true);
+  }, [speechConfig.enabled, speechConfig.provider]);
+
+  const isSupported = speechAdapter.isSupported();
 
   useEffect(() => () => controllerRef.current.stop(), []);
 
@@ -59,7 +97,9 @@ export function useSpeechPlayback(adapter?: SpeechPlaybackAdapter) {
     toggle,
     stop,
     isSpeaking,
-    isSupported: speechAdapter.isSupported(),
+    isSupported,
+    unsupportedReason,
+    playbackError,
     activeKey: controllerRef.current.getActiveKey(),
   };
 }
