@@ -9,6 +9,7 @@ import {
   DialogTitle,
   Input,
   Spinner,
+  cn,
 } from "@freeanima/ui-kit";
 
 import { getVaultCryptoConfig } from "@chat/lib/vault-unlock-api.ts";
@@ -18,7 +19,13 @@ export function isBundledShellChat(): boolean {
   return typeof document !== "undefined" && document.documentElement.dataset.shellUi === "1";
 }
 
-export function VaultUnlockButton({ conversationId }: { conversationId: string | null }) {
+export function VaultUnlockButton({
+  conversationId,
+  className,
+}: {
+  conversationId: string | null;
+  className?: string;
+}) {
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -84,7 +91,7 @@ export function VaultUnlockButton({ conversationId }: { conversationId: string |
           type="button"
           size="sm"
           variant="outline"
-          className="h-9 shrink-0"
+          className={cn("h-9 shrink-0", className)}
           onClick={handleLock}
         >
           已解锁用户库
@@ -94,7 +101,7 @@ export function VaultUnlockButton({ conversationId }: { conversationId: string |
           type="button"
           size="sm"
           variant="outline"
-          className="h-9 shrink-0"
+          className={cn("h-9 shrink-0", className)}
           onClick={() => {
             setError("");
             setOpen(true);

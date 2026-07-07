@@ -6,7 +6,7 @@ import {
   resolveDefaultTransport,
   resolveFallbackTransport,
 } from "@freeanima/hub-contract";
-import { buildHttpUrl } from "./http-path.ts";
+import { bodyForHttpMethod, buildHttpUrl } from "./http-path.ts";
 
 describe("hub-contract registry", () => {
   test("conversation.list is dual transport", () => {
@@ -40,5 +40,14 @@ describe("http-path", () => {
     );
     expect(url).toContain("/api/conversations/abc/messages");
     expect(url).toContain("offset=0");
+  });
+
+  test("config.patchSection sends flat patch as HTTP body", () => {
+    const binding = { method: "PATCH" as const, path: "/api/config/{section}" };
+    const body = bodyForHttpMethod(binding, {
+      section: "tts",
+      patch: { enabled: false, rate: 1.2 },
+    });
+    expect(JSON.parse(body!)).toEqual({ enabled: false, rate: 1.2 });
   });
 });

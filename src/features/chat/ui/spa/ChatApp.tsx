@@ -41,7 +41,7 @@ import {
   useHubConnection,
   useNetworkOnline,
 } from "@freeanima/shell-sdk/react";
-import { getAppLocale, initAppLocale, m, toggleAppLocale } from "@chat/lib/i18n.ts";
+import { initAppLocale, m } from "@chat/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@chat/lib/input-draft.ts";
 import { getSapDirectClient, subscribeShellConfigChanges } from "@chat/lib/sap-client.ts";
 import { LlmDebugPanel } from "@chat/components/LlmDebugPanel.tsx";
@@ -141,7 +141,6 @@ export function ChatApp() {
   const networkOnline = useNetworkOnline();
   const hubConnection = useHubConnection();
   const writesDisabled = !networkOnline || hubConnection !== "connected";
-  const [locale, setLocale] = useState(getAppLocale());
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [menuConversationId, setMenuConversationId] = useState<string | null>(null);
   const [convPointerMenu, setConvPointerMenu] = useState<{ x: number; y: number } | null>(null);
@@ -291,6 +290,7 @@ export function ChatApp() {
     },
   });
 
+  const INPUT_MIN_HEIGHT_PX = 36;
   const INPUT_MAX_HEIGHT_PX = 192;
 
   const slashPrefix = useMemo(() => {
@@ -467,8 +467,9 @@ export function ChatApp() {
   const resizeInput = () => {
     const el = msgInputRef.current;
     if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, INPUT_MAX_HEIGHT_PX)}px`;
+    el.style.height = "0px";
+    const next = Math.max(INPUT_MIN_HEIGHT_PX, Math.min(el.scrollHeight, INPUT_MAX_HEIGHT_PX));
+    el.style.height = `${next}px`;
   };
 
   const applyCommand = (cmd: CommandItem) => {
@@ -851,6 +852,7 @@ export function ChatApp() {
         </Button>
         <span className="truncate text-sm font-medium">{headerTitle}</span>
         <span className="flex-1" />
+        <VaultUnlockButton conversationId={currentId} className="h-7" />
         <Button
           type="button"
           variant="ghost"
@@ -909,15 +911,6 @@ export function ChatApp() {
           onClick={() => setDebugViewerOpen((open) => !open)}
         >
           {m.chat_llm_debug_view()}
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-7 px-2"
-          onClick={() => setLocale(toggleAppLocale())}
-        >
-          {locale === "zh-cn" ? "EN" : "中文"}
         </Button>
       </header>
       {showOfflineCachedHint ? (
@@ -1152,7 +1145,10 @@ export function ChatApp() {
             </div>
 
             <div
-              className="border-t border p-4 bg-background relative chat-compose"
+              className={[
+                "border-t border bg-background relative chat-compose",
+                mobileLayout ? "px-3 py-2" : "p-4",
+              ].join(" ")}
               style={
                 keyboardInset > 0 ? { transform: `translateY(-${keyboardInset}px)` } : undefined
               }
@@ -1188,7 +1184,6 @@ export function ChatApp() {
                   }
                 }}
               >
-                <VaultUnlockButton conversationId={currentId} />
                 <div
                   className={
                     cmdMenuInFlow ? "flex min-w-0 flex-1 flex-col" : "relative min-w-0 flex-1"
@@ -1234,7 +1229,7 @@ export function ChatApp() {
                       resizeInput();
                     }}
                     rows={1}
-                    className="min-h-[2.75rem] max-h-48 w-full resize-none py-2.5 leading-normal"
+                    className="!min-h-9 h-9 max-h-48 w-full resize-none overflow-y-auto py-1.5 leading-5 [field-sizing:fixed]"
                     placeholder={m.console_chat_message_placeholder()}
                     disabled={writesDisabled}
                     onFocus={() => {

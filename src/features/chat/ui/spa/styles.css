@@ -90,10 +90,10 @@
     position: sticky;
     bottom: 0;
     z-index: 1;
-    padding-bottom: max(1rem, var(--sab));
+    padding-bottom: max(0.5rem, var(--sab));
   }
   .shell-layout-compact .chat-compose {
-    padding-bottom: 1rem;
+    padding-bottom: 0.5rem;
   }
   .chat-bubble {
     max-width: min(92vw, 100%);
