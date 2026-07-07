@@ -18,13 +18,15 @@ import {
   readAdvancedSectionDraft,
   type AdvancedSectionId,
 } from "./hub-advanced-forms.tsx";
+import { SpeechSettingsTab } from "./SpeechSettingsTab.tsx";
 
-type TabId = "compression" | "memory" | "llm" | "advanced";
+type TabId = "compression" | "memory" | "llm" | "speech" | "advanced";
 
 const TABS: Array<{ id: TabId; label: string }> = [
   { id: "compression", label: "压缩" },
   { id: "memory", label: "记忆" },
   { id: "llm", label: "LLM" },
+  { id: "speech", label: "语音" },
   { id: "advanced", label: "高级" },
 ];
 
@@ -270,6 +272,16 @@ export default function HubRuntimeSettingsPanel() {
             </Button>
           </CardContent>
         </Card>
+      ) : null}
+
+      {tab === "speech" && config ? (
+        <SpeechSettingsTab
+          config={config}
+          saving={saving}
+          onSavingChange={setSaving}
+          onError={setError}
+          onSaved={load}
+        />
       ) : null}
 
       {tab === "advanced" ? (

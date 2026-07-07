@@ -1,16 +1,12 @@
+import type { SpeechPlaybackConfig } from "@freeanima/shell-sdk/speech/types";
+import {
+  applyWebSpeechUtteranceOptions,
+  pickWebSpeechVoice,
+} from "@freeanima/shell-sdk/speech/web-speech";
+
 import type { SpeechPlaybackAdapter } from "./types.ts";
 
 const MAX_CHUNK_LEN = 280;
-
-function localeToLang(locale: string): string {
-  return locale.toLowerCase().startsWith("zh") ? "zh" : "en";
-}
-
-function pickVoice(voices: SpeechSynthesisVoice[], locale: string): SpeechSynthesisVoice | null {
-  const lang = localeToLang(locale);
-  const matched = voices.filter((v) => v.lang.toLowerCase().startsWith(lang));
-  return matched.find((v) => v.localService) ?? matched[0] ?? null;
-}
 
 export function splitTextForSpeech(text: string): string[] {
   const normalized = text.replace(/\s+/g, " ").trim();
@@ -47,6 +43,7 @@ type ChunkSession = {
   onError?: () => void;
   voice: SpeechSynthesisVoice | null;
   locale: string;
+  speechOptions: SpeechPlaybackConfig;
 };
 
 let activeSession: ChunkSession | null = null;
@@ -65,8 +62,7 @@ function speakNextChunk(synth: SpeechSynthesis, session: ChunkSession): void {
   }
 
   const utterance = new SpeechSynthesisUtterance(chunk);
-  utterance.lang = session.locale === "zh-cn" ? "zh-CN" : "en-US";
-  if (session.voice) utterance.voice = session.voice;
+  applyWebSpeechUtteranceOptions(utterance, session.speechOptions, session.locale, session.voice);
 
   utterance.addEventListener("end", () => {
     session.index += 1;
@@ -85,9 +81,21 @@ export function createBrowserSpeechAdapter(
   synth: SpeechSynthesis | undefined = typeof speechSynthesis !== "undefined"
     ? speechSynthesis
     : undefined,
+  speechOptions?: SpeechPlaybackConfig,
 ): SpeechPlaybackAdapter {
+  const options: SpeechPlaybackConfig = speechOptions ?? {
+    enabled: true,
+    lang: null,
+    voiceName: null,
+    preferLocal: true,
+    rate: 1,
+    pitch: 1,
+    volume: 1,
+    previewText: "",
+  };
+
   return {
-    isSupported: () => Boolean(synth),
+    isSupported: () => Boolean(synth) && options.enabled,
 
     stop() {
       if (!synth) return;
@@ -96,7 +104,7 @@ export function createBrowserSpeechAdapter(
     },
 
     speak(text, locale, onEnd, onError) {
-      if (!synth) {
+      if (!synth || !options.enabled) {
         onError?.();
         return;
       }
@@ -118,6 +126,7 @@ export function createBrowserSpeechAdapter(
           onError,
           voice,
           locale,
+          speechOptions: options,
         };
         activeSession = session;
         speakNextChunk(synth, session);
@@ -125,13 +134,13 @@ export function createBrowserSpeechAdapter(
 
       const voices = synth.getVoices();
       if (voices.length > 0) {
-        start(pickVoice(voices, locale));
+        start(pickWebSpeechVoice(voices, options, locale));
         return;
       }
 
       const onVoicesChanged = () => {
         synth.removeEventListener("voiceschanged", onVoicesChanged);
-        start(pickVoice(synth.getVoices(), locale));
+        start(pickWebSpeechVoice(synth.getVoices(), options, locale));
       };
       synth.addEventListener("voiceschanged", onVoicesChanged);
     },
