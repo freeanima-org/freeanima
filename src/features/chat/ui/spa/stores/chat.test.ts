@@ -1,4 +1,11 @@
-import { beforeEach, describe, expect, test } from "bun:test";
+import { beforeEach, describe, expect, mock, test } from "bun:test";
+
+mock.module("../../../../../../messages/paraglide/messages.js", () => ({}));
+mock.module("../../../../../../messages/paraglide/runtime.js", () => ({
+  getLocale: () => "zh-cn",
+  locales: ["zh-cn", "en"],
+  setLocale: async (_locale: string) => {},
+}));
 
 import { useChatStore } from "./chat.ts";
 

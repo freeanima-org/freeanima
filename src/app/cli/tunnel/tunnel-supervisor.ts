@@ -254,7 +254,12 @@ export function getTunnelEdgeStatus(running: boolean): TunnelEdgeStatus {
 export { formatTunnelConnectedLabel };
 
 export function getTunnelStatus(): TunnelStatus {
-  const cfg = FileConfig.open().data.tunnel;
+  let cfg: TunnelConfig | undefined;
+  try {
+    cfg = FileConfig.open().data.tunnel;
+  } catch {
+    cfg = undefined;
+  }
   const enabled = cfg?.enabled === true;
   const pid = tunnelProcessPid();
   const running = pid != null;
