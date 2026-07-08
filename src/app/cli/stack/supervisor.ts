@@ -2,6 +2,11 @@ import type { ChildProcess } from "node:child_process";
 import { join } from "node:path";
 import { logStartupError } from "@freeanima/platform/logging";
 import { FileConfig } from "@freeanima/platform/config";
+import { parseBindHosts } from "@freeanima/platform";
+import {
+  resolveHubTlsListenConfig,
+  toHubTlsBunOptions,
+} from "@freeanima/platform/tls/resolve-hub-tls";
 import { systemdUserAvailable } from "../systemd-unit.ts";
 
 import { ensureWebDistBuilt } from "../web/ensure-dist.ts";
@@ -100,15 +105,38 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
   const { startApiHttpServers, closeHttpServers, waitForDrainWithTimeout } =
     await import("@freeanima/console-api");
 
+  const bindHosts = parseBindHosts(options.host);
+  const tlsListen = await resolveHubTlsListenConfig(cfg.http, bindHosts);
+
   await serve(options.host, options.port, {
     foreground: true,
+    ...(tlsListen ? { httpListen: { tls: tlsListen } } : {}),
     http: {
-      start: (hosts, port) => startApiHttpServers(hosts, port, { webStatic }),
+      start: async (hosts, port, listenOpts) => {
+        const resolvedTls = listenOpts?.tls ?? tlsListen;
+        const result = await startApiHttpServers(hosts, port, {
+          webStatic,
+          ...(resolvedTls
+            ? {
+                tlsListen: {
+                  port: resolvedTls.port,
+                  tls: toHubTlsBunOptions(resolvedTls.material),
+                },
+              }
+            : {}),
+        });
+        return { handles: result.handles, tlsPort: result.tlsPort };
+      },
       close: closeHttpServers,
       waitForDrain: waitForDrainWithTimeout,
     },
     onReady: () => {
       void startStackSidecars(options.port);
+      if (tlsListen) {
+        console.log(
+          `[stack] Hub HTTPS https://127.0.0.1:${tlsListen.port}（TLS 证书：${tlsListen.material.source}）`,
+        );
+      }
     },
   });
 

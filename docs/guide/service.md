@@ -35,12 +35,12 @@ anima service start --foreground
 anima service status
 anima service stop
 anima service restart
-anima web start --foreground # standalone Web static server (default :2659; production: web.enabled + service stack)
+anima web start --foreground # standalone Web static server (default :2660; production: web.enabled + service stack)
 ```
 
 `anima.service` is a **single-unit stack**: Hub (`:2658`, REST + SAP + bundled `/web` when `web.enabled`) + optional Tunnel (cloudflared) managed by one foreground supervisor. Legacy `anima-tunnel.service` is disabled on next `service start`.
 
-When `web.enabled: true`, the stack serves browser Web UI at `http://<host>:2658/web/*` from Hub (no separate API proxy). Clients store Hub URL and **Service API Token** (`fa_at_...`) in **Hub settings**. For standalone static hosting without the Hub process, use `anima web start --foreground` (default `:2659`).
+When `web.enabled: true`, the stack serves browser Web UI at `http://<host>:2658/web/*` from Hub (no separate API proxy). Clients store Hub URL and **Service API Token** (`fa_at_...`) in **Hub settings**. For standalone static hosting without the Hub process, use `anima web start --foreground` (default `:2660`). Optional Hub native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)).
 
 **Startup order:** Hub must pass `GET /api/health` (`status: ok`) before Tunnel sidecars start (`serve()` `onReady` → stack supervisor). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).
 
