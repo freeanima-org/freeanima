@@ -29,7 +29,7 @@ function normalizeCreate(input: EntityCreateInput) {
     body,
     title: input.title?.trim() ?? "",
     summary: input.summary?.trim() ?? "",
-    content: input.content?.trim() ?? "",
+    content: input.content ?? "",
   };
 }
 
@@ -133,7 +133,7 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
   const now = new Date();
   const nextTitle = input.title !== undefined ? input.title.trim() : existing.title;
   const nextSummary = input.summary !== undefined ? input.summary.trim() : existing.summary;
-  const nextContent = input.content !== undefined ? input.content.trim() : existing.content;
+  const nextContent = input.content !== undefined ? input.content : existing.content;
   const indexText = entitySearchTextForWrite({
     title: nextTitle,
     summary: nextSummary,

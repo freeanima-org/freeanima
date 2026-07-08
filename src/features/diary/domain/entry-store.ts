@@ -158,7 +158,7 @@ export async function createDiaryEntry(
     primary_component: DIARY_ENTRY_COMPONENT,
     title: input.title.trim(),
     summary: input.summary?.trim() ?? "",
-    content: input.content?.trim() ?? "",
+    content: input.content ?? "",
     body,
   });
 
