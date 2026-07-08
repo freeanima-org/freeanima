@@ -5,7 +5,7 @@ import type {
   MotionSlotId,
 } from "@shared/constants.ts";
 import type { CompanionBehavior } from "@shared/companion-schema.ts";
-import { getCompanionHubClient } from "./hub-client.ts";
+import { getCompanionHubClient, type CompanionHubConfigResponse } from "./hub-client.ts";
 import { resolveHubBaseUrl, resolveSidecarOrigin } from "./sidecar.ts";
 
 export function resetSidecarOriginCache(): void {
@@ -34,7 +34,10 @@ async function hubBase(): Promise<string> {
 }
 
 export async function fetchCompanionConfig(): Promise<CompanionConfig> {
-  const data = await getCompanionHubClient().call("companion.config.get", {});
+  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+    "companion.config.get",
+    {},
+  );
   const cfg = data.config;
   return wrapHubConfig(cfg);
 }
@@ -54,10 +57,13 @@ export async function saveSettings(patch: {
   behavior?: Partial<CompanionBehavior>;
   motion_slots?: ClientCompanionConfig["motion_slots"];
 }) {
-  const data = await getCompanionHubClient().call("companion.config.update", {
-    ...(patch.behavior !== undefined ? { behavior: patch.behavior } : {}),
-    ...(patch.motion_slots !== undefined ? { motion_slots: patch.motion_slots } : {}),
-  });
+  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+    "companion.config.update",
+    {
+      ...(patch.behavior !== undefined ? { behavior: patch.behavior } : {}),
+      ...(patch.motion_slots !== undefined ? { motion_slots: patch.motion_slots } : {}),
+    },
+  );
   return wrapHubConfig(data.config);
 }
 
@@ -73,12 +79,18 @@ export async function uploadModel(file: File) {
     const err = (await res.json().catch(() => ({}))) as { error?: string };
     throw new Error(err.error ?? `HTTP ${res.status}`);
   }
-  const data = await getCompanionHubClient().call("companion.config.get", {});
+  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+    "companion.config.get",
+    {},
+  );
   return { config: wrapHubConfig(data.config) };
 }
 
 export async function setActiveModel(id: string) {
-  const data = await getCompanionHubClient().call("companion.model.setActive", { id });
+  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+    "companion.model.setActive",
+    { id },
+  );
   return { config: wrapHubConfig(data.config) };
 }
 
@@ -87,12 +99,18 @@ export async function renameModel(id: string, name: string) {
 }
 
 export async function deleteModel(id: string) {
-  const data = await getCompanionHubClient().call("companion.model.delete", { id });
+  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+    "companion.model.delete",
+    { id },
+  );
   return { config: wrapHubConfig(data.config) };
 }
 
 export async function fetchMotionLibrary() {
-  const data = await getCompanionHubClient().call("companion.config.get", {});
+  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+    "companion.config.get",
+    {},
+  );
   return {
     library: data.config.motion_library,
     slots: data.config.motion_slots,
@@ -116,7 +134,10 @@ export async function uploadMotionFile(file: File) {
     entries?: MotionLibraryEntry[];
     skipped_fbx?: string[];
   };
-  const data = await getCompanionHubClient().call("companion.config.get", {});
+  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+    "companion.config.get",
+    {},
+  );
   const skipped = body.skipped_fbx;
   return {
     ok: true as const,
@@ -129,25 +150,37 @@ export async function uploadMotionFile(file: File) {
 }
 
 export async function setMotionSlot(slot: MotionSlotId, motionIds: string[]) {
-  const data = await getCompanionHubClient().call("companion.motion.setSlot", {
-    slot,
-    motion_ids: motionIds,
-  });
+  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+    "companion.motion.setSlot",
+    {
+      slot,
+      motion_ids: motionIds,
+    },
+  );
   return { config: wrapHubConfig(data.config) };
 }
 
 export async function renameMotion(id: string, name: string) {
-  const data = await getCompanionHubClient().call("companion.motion.rename", { id, name });
+  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+    "companion.motion.rename",
+    { id, name },
+  );
   return { entry: data.config.motion_library.find((e) => e.id === id) };
 }
 
 export async function deleteMotion(id: string) {
-  const data = await getCompanionHubClient().call("companion.motion.delete", { id });
+  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+    "companion.motion.delete",
+    { id },
+  );
   return { library: data.config.motion_library, config: wrapHubConfig(data.config) };
 }
 
 export async function fetchMotionStatus() {
-  const data = await getCompanionHubClient().call("companion.config.get", {});
+  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+    "companion.config.get",
+    {},
+  );
   return {
     ready: data.config.motion_library.length > 0,
     user_dir: "",

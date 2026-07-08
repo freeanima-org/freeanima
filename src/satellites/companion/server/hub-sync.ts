@@ -1,7 +1,6 @@
-import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { parseHubRpcEnvelope, serializeHubRpcEnvelope } from "@freeanima/hub-rpc";
+import { hubRpcHttpCall } from "@freeanima/shell-sdk/hub-rpc-http";
 import {
   companionCacheDir,
   companionConfigPath,
@@ -73,32 +72,11 @@ function listDataFiles(dir: string, ext: string): string[] {
 }
 
 async function hubRpcCall<T>(method: string, payload: Record<string, unknown> = {}): Promise<T> {
-  const hubUrl = hubUrlFromConfig();
   const token = remoteAuthTokenFromShell();
-  const id = randomUUID();
-  const headers: Record<string, string> = { "content-type": "application/json" };
-  if (token) headers.authorization = `Bearer ${token}`;
-  const res = await fetch(`${hubUrl}/hub/rpc/v1`, {
-    method: "POST",
-    headers,
-    body: serializeHubRpcEnvelope({
-      kind: "req",
-      id,
-      method,
-      payload,
-    }),
+  return hubRpcHttpCall<T>(method, payload, {
+    hubUrl: hubUrlFromConfig(),
+    ...(token !== undefined ? { token } : {}),
   });
-  if (!res.ok) {
-    throw new Error(`Hub RPC ${method} failed: HTTP ${res.status}`);
-  }
-  const envelope = parseHubRpcEnvelope(await res.text());
-  if (envelope.kind !== "res" || envelope.id !== id) {
-    throw new Error(`Hub RPC ${method} invalid envelope`);
-  }
-  if (!envelope.ok) {
-    throw new Error(envelope.error.message);
-  }
-  return envelope.payload as T;
 }
 
 async function downloadAsset(url: string): Promise<void> {
