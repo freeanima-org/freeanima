@@ -22,7 +22,7 @@ describe("detectCapacitorShellForBootstrap", () => {
     (globalThis as { window: Window }).window = {
       navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14; Mobile)" },
     } as unknown as Window;
-    globalThis.fetch = async () => new Response(null, { status: 404 });
+    globalThis.fetch = (async () => new Response(null, { status: 404 })) as unknown as typeof fetch;
 
     await expect(detectCapacitorShellForBootstrap()).resolves.toBe(false);
   });
@@ -31,8 +31,10 @@ describe("detectCapacitorShellForBootstrap", () => {
     (globalThis as { window: Window }).window = {
       navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14)" },
     } as unknown as Window;
-    globalThis.fetch = async () =>
-      new Response(JSON.stringify({ component: "mobile", version: "1.0.0" }), { status: 200 });
+    globalThis.fetch = (async () =>
+      new Response(JSON.stringify({ component: "mobile", version: "1.0.0" }), {
+        status: 200,
+      })) as unknown as typeof fetch;
 
     await expect(detectCapacitorShellForBootstrap()).resolves.toBe(true);
   });
