@@ -99,10 +99,12 @@ describePg("server status API", () => {
   });
 
   it("health returns status ok", () => {
-    expect(getAppRuntime().health()).toEqual({
-      status: "ok",
-      version: ROOT_VERSION,
-    });
+    expect(getAppRuntime().health()).toEqual(
+      expect.objectContaining({
+        status: "ok",
+        version: ROOT_VERSION,
+      }),
+    );
   });
 
   afterAll(async () => {

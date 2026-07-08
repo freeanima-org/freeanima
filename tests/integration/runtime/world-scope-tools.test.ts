@@ -93,6 +93,13 @@ describePg("world scope tools", () => {
     );
     expect(JSON.parse(agentOut).ok).toBe(true);
 
+    const userCallerAuth = {
+      token_id: 1,
+      subject_id: getResolvedWorldContext().user_subject_id,
+      subject_type: "user" as const,
+      scopes: ["full"],
+    };
+
     let userOut = "";
     await runWithToolContext(
       sid,
@@ -106,7 +113,7 @@ describePg("world scope tools", () => {
           }),
         );
       },
-      { tools: toolSets },
+      { tools: toolSets, callerAuth: userCallerAuth },
     );
     expect(JSON.parse(userOut).ok).toBe(true);
 
@@ -133,7 +140,7 @@ describePg("world scope tools", () => {
           tool.handler({ date: "2026-07-01", world_id: testUserWorldId() }),
         );
       },
-      { tools: toolSets },
+      { tools: toolSets, callerAuth: userCallerAuth },
     );
     const userParsed = JSON.parse(userGet) as { ok: boolean; item: { content: string } };
     expect(userParsed.ok).toBe(true);
@@ -175,7 +182,15 @@ describePg("world scope tools", () => {
           tool.handler({ day: "2026-07-02", world_id: testUserWorldId() }),
         );
       },
-      { tools: toolSets },
+      {
+        tools: toolSets,
+        callerAuth: {
+          token_id: 1,
+          subject_id: getResolvedWorldContext().user_subject_id,
+          subject_type: "user" as const,
+          scopes: ["full"],
+        },
+      },
     );
     expect(JSON.parse(userOut).content).toBe("user dream");
   });
@@ -224,7 +239,15 @@ describePg("world scope tools", () => {
         const tool = toolSets.getTool("email_list_accounts")!;
         userOut = await Promise.resolve(tool.handler({ world_id: testUserWorldId() }));
       },
-      { tools: toolSets },
+      {
+        tools: toolSets,
+        callerAuth: {
+          token_id: 1,
+          subject_id: getResolvedWorldContext().user_subject_id,
+          subject_type: "user" as const,
+          scopes: ["full"],
+        },
+      },
     );
     const userParsed = JSON.parse(userOut) as { accounts: { address: string }[] };
     expect(userParsed.accounts.some((a) => a.address === "user@scope.test")).toBe(true);

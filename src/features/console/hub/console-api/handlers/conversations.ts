@@ -29,7 +29,13 @@ export async function listConversations(
   opts?: { offset?: number; limit?: number },
 ) {
   const result = await consoleCtx().listConversations(platform, opts);
-  return result;
+  return {
+    ...result,
+    conversations: result.conversations.map((s) => ({
+      ...s,
+      conversation_id: s.id,
+    })),
+  };
 }
 
 export async function createConversation(body: CreateConversationBody) {
