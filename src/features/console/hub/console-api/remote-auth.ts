@@ -29,6 +29,15 @@ export function isHealthProbePath(req: Request): boolean {
   return req.method === "GET" && new URL(req.url).pathname === "/api/health";
 }
 
+/** GET /api/tls/ca*：局域网 HTTPS 信任引导，须在未信任 CA 时可访问（走 HTTP 端口） */
+export function isTlsCaPublicPath(req: Request): boolean {
+  if (req.method !== "GET") return false;
+  const pathname = new URL(req.url).pathname;
+  return (
+    pathname === "/api/tls/ca" || pathname === "/api/tls/ca/info" || pathname === "/api/tls/ca/qr"
+  );
+}
+
 /** bundled 客户端跨域 REST 预检：不带 Authorization，须在 service_auth 之前放行 */
 export function isHubApiCorsPreflight(req: Request): boolean {
   if (req.method !== "OPTIONS") return false;

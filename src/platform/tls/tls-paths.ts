@@ -24,12 +24,12 @@ export function isIpv6Host(host: string): boolean {
   return host.includes(":");
 }
 
-/** mkcert / openssl SAN：localhost、loopback、bind hosts */
-export function collectTlsSanNames(bindHosts: string[]): string[] {
+/** mkcert / openssl SAN：localhost、loopback、bind hosts、allowed_hosts */
+export function collectTlsSanNames(bindHosts: string[], allowedHosts: string[] = []): string[] {
   const names = new Set<string>(["localhost", "127.0.0.1", "::1"]);
-  for (const raw of bindHosts) {
+  for (const raw of [...bindHosts, ...allowedHosts]) {
     const host = raw.trim();
-    if (!host || host === "0.0.0.0") continue;
+    if (!host || host === "0.0.0.0" || host === "::" || host === "[::]") continue;
     names.add(host);
   }
   return [...names];

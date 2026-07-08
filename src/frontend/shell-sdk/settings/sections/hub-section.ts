@@ -9,7 +9,7 @@ const remoteAuthTokenSchema = z
     message: "Hub API Token 至少 16 字符",
   });
 
-const hubFields = defineSettingsForm({
+export const hubFields = defineSettingsForm({
   zodSchema: z.object({
     hubUrl: z.string().min(1, "Hub 地址不能为空"),
     remoteAuthToken: remoteAuthTokenSchema,

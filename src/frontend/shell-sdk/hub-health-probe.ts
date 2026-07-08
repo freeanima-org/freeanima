@@ -28,11 +28,22 @@ function probeAbortSignal(timeoutMs: number, external?: AbortSignal): AbortSigna
   return controller.signal;
 }
 
-function probeFetchErrorMessage(err: unknown): string {
+function probeFetchErrorMessage(err: unknown, hubUrl?: string): string {
   if (err instanceof DOMException && err.name === "TimeoutError") {
     return "连接超时";
   }
   if (err instanceof TypeError) {
+    const nativeShell =
+      typeof globalThis !== "undefined" &&
+      (globalThis as { satelliteShell?: { isNativeShell?: boolean } }).satelliteShell
+        ?.isNativeShell;
+    const httpsHub = hubUrl?.trim().toLowerCase().startsWith("https://");
+    if (nativeShell && httpsHub) {
+      return "网络错误：壳层内 HTTPS 需在手机「设置 → 安全」安装 mkcert 根 CA（rootCA.pem），并重新安装 APK；或暂用 http://…:2658";
+    }
+    if (nativeShell) {
+      return "网络错误（请检查 Hub 地址、ZeroTier 是否在线，以及 Hub 是否监听 0.0.0.0）";
+    }
     return "网络错误（请检查 Hub 地址与网络）";
   }
   if (err instanceof Error && err.message) return err.message;
@@ -50,8 +61,18 @@ export async function probeHubHealthUrl(
     Object.assign(headers, buildBearerHeaders(token));
   }
   const timeoutMs = options?.timeoutMs ?? HUB_HEALTH_PROBE_TIMEOUT_MS;
+  const healthUrl = `${base}/api/health`;
   try {
-    const res = await fetch(`${base}/api/health`, {
+    const { probeHubHealthViaCapacitorHttp, shouldProbeHubHealthViaCapacitorHttp } =
+      await import("./native-hub-health-probe.ts");
+    if (await shouldProbeHubHealthViaCapacitorHttp(base)) {
+      try {
+        return await probeHubHealthViaCapacitorHttp(healthUrl, headers, timeoutMs);
+      } catch {
+        /* CapacitorHttp 失败时回退 fetch（androidScheme http + Hub CORS localhost） */
+      }
+    }
+    const res = await fetch(healthUrl, {
       headers,
       signal: probeAbortSignal(timeoutMs, options?.signal),
     });
@@ -60,7 +81,7 @@ export async function probeHubHealthUrl(
     }
     return (await res.json()) as HubHealthBody;
   } catch (err) {
-    throw new Error(probeFetchErrorMessage(err), { cause: err });
+    throw new Error(probeFetchErrorMessage(err, hubUrl), { cause: err });
   }
 }
 

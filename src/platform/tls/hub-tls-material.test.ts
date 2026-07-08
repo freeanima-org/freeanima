@@ -22,6 +22,13 @@ describe("tls-paths", () => {
     expect(names).not.toContain("0.0.0.0");
   });
 
+  test("collectTlsSanNames merges allowed_hosts", () => {
+    const names = collectTlsSanNames(["0.0.0.0"], ["feng-vm.lan", "10.200.200.10"]);
+    expect(names).toContain("feng-vm.lan");
+    expect(names).toContain("10.200.200.10");
+    expect(names).not.toContain("0.0.0.0");
+  });
+
   test("buildOpenSslSubjectAltName maps IP and DNS", () => {
     expect(buildOpenSslSubjectAltName(["localhost", "192.168.1.2"])).toBe(
       "DNS:localhost,IP:192.168.1.2",
@@ -35,15 +42,36 @@ describe("tls-paths", () => {
 });
 
 describe("ensureHubTlsMaterial", () => {
-  test("uses existing files when present", async () => {
-    const { mkdtempSync, writeFileSync } = await import("node:fs");
+  test("uses existing files when present and SAN covers bind hosts", async () => {
+    const { mkdtempSync, rmSync } = await import("node:fs");
     const { join } = await import("node:path");
     const { tmpdir } = await import("node:os");
+    const { spawnSync } = await import("node:child_process");
     const dir = mkdtempSync(join(tmpdir(), "anima-tls-test-"));
     const certPath = join(dir, "cert.pem");
     const keyPath = join(dir, "key.pem");
-    writeFileSync(certPath, "cert");
-    writeFileSync(keyPath, "key");
+    const r = spawnSync(
+      "openssl",
+      [
+        "req",
+        "-x509",
+        "-newkey",
+        "rsa:2048",
+        "-keyout",
+        keyPath,
+        "-out",
+        certPath,
+        "-days",
+        "1",
+        "-nodes",
+        "-subj",
+        "/CN=localhost",
+        "-addext",
+        "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:::1",
+      ],
+      { encoding: "utf-8" },
+    );
+    expect(r.status).toBe(0);
     const { ensureHubTlsMaterial } = await import("./hub-tls-material.ts");
     const material = ensureHubTlsMaterial({
       certPath,
@@ -53,5 +81,6 @@ describe("ensureHubTlsMaterial", () => {
     });
     expect(material.source).toBe("existing");
     expect(material.certPath).toBe(certPath);
+    rmSync(dir, { recursive: true, force: true });
   });
 });

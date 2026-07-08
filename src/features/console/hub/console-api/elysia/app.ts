@@ -3,11 +3,15 @@ import { ApiHandlerError, apiErrorBody } from "../handlers/errors.ts";
 import { assertNotShuttingDown } from "./context.ts";
 import { applyCorsHeaders, corsPreflightResponse } from "./cors.ts";
 import { healthRoutes } from "./routes/health.ts";
+import { tlsCaRoutes } from "./routes/tls-ca.ts";
 import { ttsRoutes } from "./routes/tts.ts";
 import { TerminalSessionError } from "@freeanima/platform/sap/terminal-session";
 
-/** 基础设施 HTTP：health 探针 + TTS（不进 hub-contract） */
-export const apiApp = new Elysia({ prefix: "/api" }).use(healthRoutes).use(ttsRoutes);
+/** 基础设施 HTTP：health 探针 + TTS + TLS CA 分发（不进 hub-contract） */
+export const apiApp = new Elysia({ prefix: "/api" })
+  .use(healthRoutes)
+  .use(tlsCaRoutes)
+  .use(ttsRoutes);
 
 export type App = typeof apiApp;
 

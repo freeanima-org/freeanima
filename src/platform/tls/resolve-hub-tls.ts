@@ -3,6 +3,7 @@ import {
   PATHS,
   type HttpConfig,
   type HttpTlsConfigFields,
+  collectHttpAllowedHosts,
 } from "@freeanima/core/config";
 import { omitUndefined } from "@freeanima/core/util";
 import { resolveValue } from "@freeanima/platform/config";
@@ -41,6 +42,7 @@ export async function resolveHubTlsListenConfig(
     keyPath: keyRaw,
     auto: tls.auto ?? true,
     bindHosts,
+    allowedHosts: collectHttpAllowedHosts(http),
     ...(passphrase ? { passphrase } : {}),
   });
 

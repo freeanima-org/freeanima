@@ -45,6 +45,11 @@ export const httpConfigSchema = z
     host: z.union([httpBindHostEntrySchema, z.array(httpBindHostEntrySchema)]).optional(),
     /** Hub REST 跨域允许的浏览器 origin（dev:web 等）；经 Hub /web 同源访问时通常留空 */
     cors_origins: z.array(httpCorsOriginSchema).optional(),
+    /**
+     * TLS 证书 SAN 额外主机名 / IP（如局域网 mDNS 名）；与 `http.host` bind 地址合并。
+     * `http.host: 0.0.0.0` 时建议在此列出客户端访问用的主机名与 IP。
+     */
+    allowed_hosts: z.array(httpBindHostEntrySchema).optional(),
     /** Hub 原生 TLS（独立端口；HTTP 端口不变） */
     tls: httpTlsConfigSchema,
   })

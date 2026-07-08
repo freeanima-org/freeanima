@@ -5,6 +5,7 @@ import type {
   SettingsFormFields,
   SettingsPlatform,
 } from "@freeanima/shell-sdk/settings";
+import { hubFields } from "@freeanima/shell-sdk/settings";
 
 import { FormRenderer } from "../form/FormRenderer.tsx";
 import { detectPlatform } from "../platform.ts";
@@ -17,8 +18,14 @@ function resolveHubFormBinding(
   const binding = bindings.find((b) => b.section.id === "hub");
   if (!binding?.store) return null;
   const entry = binding.section.platforms[platform];
-  if (!entry || entry.kind !== "form") return null;
-  return { binding, formFields: entry.fields };
+  if (!entry) return null;
+  if (entry.kind === "form") {
+    return { binding, formFields: entry.fields };
+  }
+  if (entry.kind === "component" && binding.section.id === "hub") {
+    return { binding, formFields: hubFields };
+  }
+  return null;
 }
 
 export function HubSetupPage() {
