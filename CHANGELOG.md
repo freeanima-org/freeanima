@@ -3,6 +3,76 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.8.4](https://github.com/freeanima-org/freeanima/compare/v0.8.3...v0.8.4) (2026-07-08)
+
+
+### Features
+
+* **chat:** 新增 LLM 调试侧栏并提升 passive recall 关联度 ([6645bb2](https://github.com/freeanima-org/freeanima/commit/6645bb288445e8d68bf5824d7c192db498c8e773))
+* **chat:** 聊天室消息增加语音朗读与外露操作栏 ([d4ca6d0](https://github.com/freeanima-org/freeanima/commit/d4ca6d017c2b997d1f80b0ebbbbc3a86885c4eb6))
+* **companion:** 伴侣配置与资产上收 Hub，桌面 sidecar 瘦身 ([0c9d5f3](https://github.com/freeanima-org/freeanima/commit/0c9d5f37bbf558fa87e935b34af259459073eadc))
+* **config:** 运行时配置迁入 PostgreSQL 并在 Shell 可编辑 ([105f8d4](https://github.com/freeanima-org/freeanima/commit/105f8d493a61046e47ee6927bd491d4de7e8bf1b))
+* **desktop:** 在设置中增加显示伴侣开关并移除托盘菜单项 ([63d9a39](https://github.com/freeanima-org/freeanima/commit/63d9a394e9799d4fa4cc773319b66a28d86deca7))
+* **hub-rpc:** 新增 HTTP POST /hub/rpc/v1 传输适配 ([4a29de8](https://github.com/freeanima-org/freeanima/commit/4a29de8855df9053fa0060b6768ad8c3829f4511))
+* **hub:** 局域网 TLS 信任引导与移动壳 Hub 连接修复 ([12b52f1](https://github.com/freeanima-org/freeanima/commit/12b52f199379b8b070dfe39ad049c6b48ca96028))
+* **hub:** 支持双端口原生 HTTPS 与自动 TLS 证书 ([4cb8284](https://github.com/freeanima-org/freeanima/commit/4cb8284a6ccefb6ecf62555459267d9898c40d64))
+* **settings:** 设置关于页展示 service/web/native 构建元数据 ([f164d46](https://github.com/freeanima-org/freeanima/commit/f164d46460ee5111e922452869b737649deb8e56))
+* **shell-ui:** 布局能力正交、列宽拖拽与桌面启动修复 ([d69bfb4](https://github.com/freeanima-org/freeanima/commit/d69bfb4385331e424f27ce46e91363902a6bec3e))
+* **shell-ui:** 重设计 Shell 布局为 Rail 导航并支持模块开关 ([b8c1b01](https://github.com/freeanima-org/freeanima/commit/b8c1b01e3ef33629e06307b21336583728d2a0ee))
+* **speech:** Edge TTS 流式合成与客户端边收边播 ([922f2a7](https://github.com/freeanima-org/freeanima/commit/922f2a7dc967ce2633028a6a2538079701cc55d2))
+* **speech:** 接入 Hub Edge TTS 并修复播放切换回放旧音频 ([a0b8d56](https://github.com/freeanima-org/freeanima/commit/a0b8d56fc2b29b7d14bc04ee5ecd0b071fcda67b))
+* **speech:** 新增 Hub 语音配置并在聊天朗读中生效 ([e210fae](https://github.com/freeanima-org/freeanima/commit/e210fae4778eb0af161957844676cb6dfc9198ea))
+* **tools:** 为 diary/dream/email 添加 world_id，notification 添加 subject_id ([3064bf2](https://github.com/freeanima-org/freeanima/commit/3064bf21cd75f8cd90c08287f24e57991f0dbd53))
+
+
+### Bug Fixes
+
+* **app-mobile:** 修复 debug:android 的 bundled 构建与 cap sync ([bb15e64](https://github.com/freeanima-org/freeanima/commit/bb15e64163294e6e6589a61a1be6680c338248d8))
+* **chat,task:** 修复发送占位、用户气泡换行与右键移动到 ([aaafb39](https://github.com/freeanima-org/freeanima/commit/aaafb399e5902952da4de63f4acde7930f589717))
+* **chat:** 优化聊天输入区并调整顶栏布局 ([dc34d35](https://github.com/freeanima-org/freeanima/commit/dc34d35bc508c8c2702b8e0f00d27817b71c852c))
+* **chat:** 修复手机端 slash 候选菜单被裁切不可见 ([2c0ef71](https://github.com/freeanima-org/freeanima/commit/2c0ef71482ae7ec40a49a5574e5961bb4a7b4e17))
+* **chat:** 修复手机端已连接但消息发不出去 ([815ee39](https://github.com/freeanima-org/freeanima/commit/815ee39adfb21726c5966ef7e7b613433af9e800))
+* **chat:** 进入聊天室时不再自动聚焦输入框 ([5c4b4dd](https://github.com/freeanima-org/freeanima/commit/5c4b4dd40e665ab6d222051abdea858a31a1b844))
+* **ci:** 修复 typecheck 失败并处理 PR review 意见 ([453b297](https://github.com/freeanima-org/freeanima/commit/453b2970f6610db2689bf6ec3e7a422cdd5cc4fc))
+* **desktop:** 为任务栏与 Dock 设置应用窗口图标 ([6698f23](https://github.com/freeanima-org/freeanima/commit/6698f23f4612419154675dc2a57cb721b436a120))
+* **desktop:** 未配置 Hub Token 时引导设置并强化安装器清理 ([5051c5a](https://github.com/freeanima-org/freeanima/commit/5051c5ae575c7a801c832cbfcad034947b4e60b6))
+* **diary:** 修复自动保存丢字并默认打开今天日记 ([d807341](https://github.com/freeanima-org/freeanima/commit/d8073410ee3ee62f6bc6e1aef14f13ba223b698d))
+* **diary:** 修复进入 tab 时今日日记未自动选中 ([f854559](https://github.com/freeanima-org/freeanima/commit/f85455911f8d27aab4283b3e975c5d6da6cb0de2))
+* **diary:** 日记侧栏固定宽度不随内容撑开 ([712b0e7](https://github.com/freeanima-org/freeanima/commit/712b0e73d677c8d109ce3673cd10601022fb9dff))
+* **diary:** 进入时自动打开今日条目并保留正文空白 ([fc5cdc9](https://github.com/freeanima-org/freeanima/commit/fc5cdc9b2195431696958fb6add1f8cbf17bf36e))
+* **layers:** 消除 shell-sdk 与 satellite 的 hub-client 层依赖违规 ([f989568](https://github.com/freeanima-org/freeanima/commit/f989568182657988d1b2fe5b4853c7caca9b6219))
+* **mobile:** 修复 Android 关于页 native 构建信息与 debug:android 构建 ([5ef5834](https://github.com/freeanima-org/freeanima/commit/5ef58346c0d6d1e175d330b735fc6a0059cf19c1))
+* **mobile:** 远程 Hub 页通过 localhost 资产展示原生壳版本信息 ([943c9da](https://github.com/freeanima-org/freeanima/commit/943c9da2478687b9f5b7892e5c0c667558dc3218))
+* **search:** 保留 hybrid 检索相关性顺序 ([36a3e97](https://github.com/freeanima-org/freeanima/commit/36a3e97b5f1a43d41a1c19a51181e2f4505b14ad))
+* **shell-ui:** 修复窄屏桌面设置页 tabs 缺失 ([2aabdf7](https://github.com/freeanima-org/freeanima/commit/2aabdf7b82e75dca6c5d9b6bdf3b61469867d1b4))
+* **shell-ui:** 稳定 Rail 侧栏展开收起与图标间距 ([c6cbebe](https://github.com/freeanima-org/freeanima/commit/c6cbebec5e3823f32340173894e7d9963606f045))
+* **shell:** 修复 Hub 配置体验与被动记忆注入 ([21b85e0](https://github.com/freeanima-org/freeanima/commit/21b85e0712af90e6dd027d112e63fee985309871))
+* simplify close() in WebStaticServerHandle ([6378a1c](https://github.com/freeanima-org/freeanima/commit/6378a1c08eb31c84224a1726190152ee90b133da))
+* **task:** 修复移动到清单弹窗并区分桌面/移动布局 ([a4e5de7](https://github.com/freeanima-org/freeanima/commit/a4e5de79a3fd729d11ed2e811f3b1d3d2bd7ef69))
+* **task:** 归档清单脱离文件夹并平铺显示 ([8fa42d7](https://github.com/freeanima-org/freeanima/commit/8fa42d7e58b4c2fbe08bfd75492fcd1b846cc070))
+* **task:** 按布局区分「移动到清单」弹窗形态 ([803f807](https://github.com/freeanima-org/freeanima/commit/803f807b7679b093340963cdc8d7622855c9adbd))
+* **tests:** deduplicate userCallerAuth helper and use explicit conversation mapping ([95039b6](https://github.com/freeanima-org/freeanima/commit/95039b6bfd6d79c09982f7aebbd4ffde5e206859))
+* **tests:** fix 5 CI failures in server health, world scope, and conversation list tests ([031512c](https://github.com/freeanima-org/freeanima/commit/031512c9951bf2657a2394060fef82d9d5945b2b))
+* **tests:** fix 5 CI unit test failures (tunnel config, static server, paraglide) ([4a05796](https://github.com/freeanima-org/freeanima/commit/4a0579664c3cc97847932d6779c491ed9225df94))
+* **test:** 修复 capacitor-local-asset 测试中 fetch mock 类型 ([b57e8c4](https://github.com/freeanima-org/freeanima/commit/b57e8c4650ab4b391dcecacb186391b71e66f832))
+* **test:** 修复全量单测污染与 CI 缺少 paraglide 编译 ([9520138](https://github.com/freeanima-org/freeanima/commit/952013875b31cee6d490c8cd9b09f60fd5d91454))
+* **ui-kit:** 统一全局细滚动条样式 ([fbfed37](https://github.com/freeanima-org/freeanima/commit/fbfed379e6aaef5e92a6ffa5977dc633b7e275aa))
+* **web:** 手机浏览器直连 Hub 时走 Web bridge 而非 Capacitor ([736663e](https://github.com/freeanima-org/freeanima/commit/736663eaa13b8141836d5a7a5abb37499e34505e))
+
+
+### Refactoring
+
+* **app-mobile:** 移除 bundled UI，debug:android 改为 remote ([753c829](https://github.com/freeanima-org/freeanima/commit/753c8293b0ecf331ede1015a236dce245953cecc))
+* **console:** admin 命名统一为 console 并同步 Hub 多传输 ([8cefb90](https://github.com/freeanima-org/freeanima/commit/8cefb90909d0f1a72e55935eb383f3cd0b2d590e))
+* **hub-rpc:** 统一业务通道并移除 Console REST 薄路由 ([6a38d77](https://github.com/freeanima-org/freeanima/commit/6a38d779e5eedbfde9658f0e2918fa726a3cabeb))
+* **repo:** 单包收敛并清理 workspace 遗留 ([a58cc41](https://github.com/freeanima-org/freeanima/commit/a58cc411efe8c2437a7d72375a2f993ca65bf547))
+* **repo:** 完成 features 纵向重组并移除 capabilities 门面 ([a5a9f05](https://github.com/freeanima-org/freeanima/commit/a5a9f052edbdbd77c003abb8d44bca0462309fa0))
+
+
+### CI
+
+* 暂停 Blackbox dispatch，保留 job 配置供日后恢复 ([98bed29](https://github.com/freeanima-org/freeanima/commit/98bed2964a316fb75195963b7e2f40886ac3c00f))
+
 ## [0.8.3](https://github.com/freeanima-org/freeanima/compare/v0.8.2...v0.8.3) (2026-07-02)
 
 
