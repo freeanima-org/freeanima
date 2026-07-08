@@ -1,15 +1,48 @@
-import type { FeatureHttpRegistrar } from "@freeanima/platform/features";
+import type { FeatureHttpRegistrar, FeatureRpcHandler } from "@freeanima/platform/features";
+import { consoleHubHandlers } from "./hub/console-api/console-hub-handlers.ts";
 
-/** Console feature plugin — shell embed + transitional REST via console-api hub shim. */
+/** chat plugin 已注册的 method，避免 duplicate handler */
+const CHAT_HUB_RPC_METHODS = new Set([
+  "conversation.create",
+  "conversation.list",
+  "conversation.messages",
+  "conversation.patchTitle",
+  "conversation.archive",
+  "conversation.unarchive",
+  "conversation.delete",
+  "conversation.rollbackBeforeLastUser",
+  "conversation.subscribe",
+  "conversation.acpDock",
+  "conversation.commands",
+  "message.send",
+  "message.interrupt",
+]);
+
+function wrapConsoleHandler(
+  fn: (payload: unknown) => Promise<unknown> | unknown,
+): FeatureRpcHandler {
+  return (_deps, payload) => Promise.resolve(fn(payload));
+}
+
+function buildConsoleRpcHandlers(): Record<string, FeatureRpcHandler> {
+  const rpc: Record<string, FeatureRpcHandler> = {};
+  for (const [method, fn] of Object.entries(consoleHubHandlers)) {
+    if (CHAT_HUB_RPC_METHODS.has(method)) continue;
+    rpc[method] = wrapConsoleHandler(fn as (payload: unknown) => Promise<unknown> | unknown);
+  }
+  return rpc;
+}
+
+/** Console feature plugin — shell embed + Hub RPC handlers */
 export const consolePlugin = {
   id: "console",
   shell: {
     routes: [{ path: "/console", featureId: "console", navLabel: "Console" }],
   },
   hub: {
+    rpc: buildConsoleRpcHandlers(),
     registerHttp(_register: Parameters<FeatureHttpRegistrar>[0]) {
-      /* Console REST 由 features/console/hub/console-api createApiApp 挂载；
-       * Hub method 薄路由经 invokeConsoleHubHandler（console-hub-handlers.ts）。 */
+      /* health / tts 由 console-api Elysia 挂载 */
     },
   },
 } as const;

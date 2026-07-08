@@ -50,18 +50,12 @@ describePg("service API tokens", () => {
       expect(body.authed).toBe(false);
     });
 
-    it("GET /api/status on loopback without token returns 401", async () => {
+    it("GET /api/status 已移除", async () => {
       const res = await hubFetch("/api/status");
       expect(res.status).toBe(401);
-      expect(await res.text()).toBe("Unauthorized");
     });
 
-    it("POST /mcp on loopback without token returns 401", async () => {
-      const res = await hubFetch("/mcp", { method: "POST" });
-      expect(res.status).toBe(401);
-    });
-
-    it("GET /api/status with valid Bearer token succeeds", async () => {
+    it("GET /api/status with valid Bearer token returns 404", async () => {
       const { user_subject_id } = getResolvedWorldContext();
       const { plaintext } = await createServiceApiTokenWithSecret({
         subject_id: user_subject_id,
@@ -71,9 +65,12 @@ describePg("service API tokens", () => {
       const res = await hubFetch("/api/status", {
         headers: { Authorization: `Bearer ${plaintext}` },
       });
-      expect(res.status).toBe(200);
-      const body = (await res.json()) as { status: string };
-      expect(body.status).toBe("running");
+      expect(res.status).toBe(404);
+    });
+
+    it("POST /mcp on loopback without token returns 401", async () => {
+      const res = await hubFetch("/mcp", { method: "POST" });
+      expect(res.status).toBe(401);
     });
 
     it("GET /api/health with valid Bearer reports authed=true", async () => {

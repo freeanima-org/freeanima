@@ -75,7 +75,7 @@ import {
   patchHubConfigSection,
 } from "./handlers/config.ts";
 
-/** Console HTTP-only Hub method handlers */
+/** Console Hub RPC method handlers */
 export const consoleHubHandlers = {
   "status.get": () => getStatus(),
   "status.config": () => getConfig(),

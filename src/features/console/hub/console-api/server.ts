@@ -35,7 +35,7 @@ function dispatchFetch(
   req: Request,
   bunServer: unknown,
   sapHandlers: ReturnType<typeof createSapBunHandlers> | null,
-): Response | undefined {
+): Response | Promise<Response> | undefined {
   if (sapHandlers) {
     const sapRes = sapHandlers.fetch(req, bunServer as never);
     if (sapRes !== undefined) return sapRes;

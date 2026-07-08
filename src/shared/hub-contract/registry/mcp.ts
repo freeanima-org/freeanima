@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { defineHubMethod, httpOnlyMeta } from "../method-def.ts";
+import { defineHubMethod, dualTransportMeta } from "../method-def.ts";
 
 const emptyInputSchema = z.object({}).strict();
 const mcpServerNameInputSchema = z.object({ name: z.string().min(1) });
@@ -11,26 +11,26 @@ export const mcpMethodDefs = {
   "mcp.status": defineHubMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
-    meta: httpOnlyMeta({ method: "GET", path: "/api/mcp/status" }),
+    meta: dualTransportMeta(true),
   }),
   "mcp.startAll": defineHubMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
-    meta: httpOnlyMeta({ method: "POST", path: "/api/mcp/start-all" }),
+    meta: dualTransportMeta(false),
   }),
   "mcp.stopAll": defineHubMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
-    meta: httpOnlyMeta({ method: "POST", path: "/api/mcp/stop-all" }),
+    meta: dualTransportMeta(false),
   }),
   "mcp.startServer": defineHubMethod({
     input: mcpServerNameInputSchema,
     output: unknownOutputSchema,
-    meta: httpOnlyMeta({ method: "POST", path: "/api/mcp/{name}/start" }),
+    meta: dualTransportMeta(false),
   }),
   "mcp.stopServer": defineHubMethod({
     input: mcpServerNameInputSchema,
     output: unknownOutputSchema,
-    meta: httpOnlyMeta({ method: "POST", path: "/api/mcp/{name}/stop" }),
+    meta: dualTransportMeta(false),
   }),
 } as const;

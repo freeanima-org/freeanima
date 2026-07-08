@@ -1,13 +1,17 @@
 import type { ServerWebSocket } from "bun";
 import type { SapServerDeps } from "./ws-server.ts";
 import { attachSapWebSocket } from "./ws-server.ts";
+import { handleHttpHubRpcRequest } from "../hub/http-rpc.ts";
 
 type SapSocketData = {
   handler: ReturnType<typeof attachSapWebSocket>;
 };
 
 export function createSapBunHandlers(deps: SapServerDeps): {
-  fetch: (req: Request, server: Bun.Server<SapSocketData>) => Response | undefined;
+  fetch: (
+    req: Request,
+    server: Bun.Server<SapSocketData>,
+  ) => Response | Promise<Response> | undefined;
   websocket: {
     open: (ws: ServerWebSocket<SapSocketData>) => void;
     message: (ws: ServerWebSocket<SapSocketData>, message: string | Buffer) => void;
@@ -20,6 +24,9 @@ export function createSapBunHandlers(deps: SapServerDeps): {
       if (url.pathname !== "/hub/rpc/v1") {
         return;
       }
+      if (req.method === "POST") {
+        return handleHttpHubRpcRequest(req, deps);
+      }
       if (
         server.upgrade(req, {
           data: {
@@ -29,7 +36,7 @@ export function createSapBunHandlers(deps: SapServerDeps): {
       ) {
         return;
       }
-      return new Response("Expected WebSocket upgrade", { status: 426 });
+      return new Response("Expected WebSocket upgrade or POST", { status: 426 });
     },
     websocket: {
       open(ws) {

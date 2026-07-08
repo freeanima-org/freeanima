@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import {
   getHubMethodDef,
   isHubMethod,
@@ -10,8 +12,9 @@ import {
   type TransportKind,
 } from "@freeanima/hub-contract";
 import type { RpcClient } from "@freeanima/hub-rpc";
+import { parseHubRpcEnvelope, serializeHubRpcEnvelope } from "@freeanima/hub-rpc";
 
-import { bodyForHttpMethod, buildHttpUrl } from "./http-path.ts";
+import { buildHubRpcHttpUrl } from "./http-rpc.ts";
 
 export type HubCallOptions = {
   transport?: "auto" | TransportKind;
@@ -49,15 +52,16 @@ function isTransportFailure(err: unknown): boolean {
 }
 
 function isReadMethod(method: HubMethod): boolean {
-  const http = getHubMethodDef(method).meta.http;
-  if (http?.method === "GET") return true;
   return (
     method.endsWith(".list") ||
     method.endsWith(".get") ||
     method.endsWith(".messages") ||
     method.endsWith(".search") ||
     method.endsWith(".status") ||
-    method.endsWith(".commands")
+    method.endsWith(".commands") ||
+    method.endsWith(".files") ||
+    method.endsWith(".summary") ||
+    method.endsWith(".config")
   );
 }
 
@@ -78,33 +82,40 @@ export function createHubClient(options: HubClientOptions) {
     payload: HubMethodInputs[K],
     signal?: AbortSignal,
   ): Promise<HubMethodOutputs[K]> {
-    const def = getHubMethodDef(method);
-    const http = def.meta.http;
-    if (!http) {
-      throw new HubTransportError("http", `method ${method} has no HTTP binding`);
-    }
-    const inputRecord = payload as Record<string, unknown>;
-    const url = buildHttpUrl(options.httpOrigin, http, inputRecord);
-    const body = bodyForHttpMethod(http, inputRecord);
-    const headers: Record<string, string> = {};
-    if (body !== undefined) headers["Content-Type"] = "application/json";
+    const id = randomUUID();
+    const url = buildHubRpcHttpUrl(options.httpOrigin);
+    const body = serializeHubRpcEnvelope({
+      kind: "req",
+      id,
+      method,
+      payload: payload ?? {},
+    });
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (options.authToken?.trim()) {
       headers.Authorization = `Bearer ${options.authToken.trim()}`;
     }
     const res = await httpFetch(url, {
-      method: http.method,
+      method: "POST",
       headers,
-      ...(body !== undefined ? { body } : {}),
+      body,
       ...(signal !== undefined ? { signal } : {}),
     });
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       throw new Error(text || `HTTP ${res.status}`);
     }
-    if (res.status === 204) {
-      return undefined as HubMethodOutputs[K];
+    const raw = await res.text();
+    const envelope = parseHubRpcEnvelope(raw);
+    if (envelope.kind !== "res") {
+      throw new Error("expected Hub RPC res envelope");
     }
-    return (await res.json()) as HubMethodOutputs[K];
+    if (envelope.id !== id) {
+      throw new Error("Hub RPC response id mismatch");
+    }
+    if (!envelope.ok) {
+      throw new Error(envelope.error.message);
+    }
+    return envelope.payload as HubMethodOutputs[K];
   }
 
   async function callOne<K extends HubMethod>(

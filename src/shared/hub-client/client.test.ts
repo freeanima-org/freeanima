@@ -6,16 +6,17 @@ import {
   resolveDefaultTransport,
   resolveFallbackTransport,
 } from "@freeanima/hub-contract";
-import { bodyForHttpMethod, buildHttpUrl } from "./http-path.ts";
+
+import { buildHubRpcHttpUrl } from "./http-rpc.ts";
 
 describe("hub-contract registry", () => {
-  test("conversation.list is dual transport", () => {
+  test("conversation.list is dual transport without REST path", () => {
     expect(isHubMethod("conversation.list")).toBe(true);
     const def = getHubMethodDef("conversation.list");
     expect(def.meta.transports).toEqual(["http", "ws"]);
-    expect(resolveDefaultTransport(def.meta, "console")).toBe("http");
+    expect(resolveDefaultTransport(def.meta, "console")).toBe("ws");
     expect(resolveDefaultTransport(def.meta, "satellite")).toBe("ws");
-    expect(resolveFallbackTransport(def.meta, "http")).toBe("ws");
+    expect(resolveFallbackTransport(def.meta, "ws")).toBe("http");
   });
 
   test("message.send is ws-only", () => {
@@ -24,30 +25,21 @@ describe("hub-contract registry", () => {
     expect(def.meta.fallback).toBe(false);
   });
 
-  test("mcp.status is http-only", () => {
+  test("mcp.status supports http and ws", () => {
     const def = getHubMethodDef("mcp.status");
-    expect(def.meta.transports).toEqual(["http"]);
-    expect(def.meta.http?.path).toBe("/api/mcp/status");
+    expect(def.meta.transports).toEqual(["http", "ws"]);
+  });
+
+  test("registry methods have no REST path binding", () => {
+    for (const method of ["conversation.list", "status.get", "mcp.status"] as const) {
+      const def = getHubMethodDef(method);
+      expect((def.meta as { http?: unknown }).http).toBeUndefined();
+    }
   });
 });
 
-describe("http-path", () => {
-  test("resolves path params", () => {
-    const url = buildHttpUrl(
-      "http://127.0.0.1:2658",
-      { method: "GET", path: "/api/conversations/{conversation_id}/messages" },
-      { conversation_id: "abc", offset: 0 },
-    );
-    expect(url).toContain("/api/conversations/abc/messages");
-    expect(url).toContain("offset=0");
-  });
-
-  test("config.patchSection sends flat patch as HTTP body", () => {
-    const binding = { method: "PATCH" as const, path: "/api/config/{section}" };
-    const body = bodyForHttpMethod(binding, {
-      section: "tts",
-      patch: { enabled: false, rate: 1.2 },
-    });
-    expect(JSON.parse(body!)).toEqual({ enabled: false, rate: 1.2 });
+describe("http-rpc", () => {
+  test("buildHubRpcHttpUrl", () => {
+    expect(buildHubRpcHttpUrl("http://127.0.0.1:2658")).toBe("http://127.0.0.1:2658/hub/rpc/v1");
   });
 });

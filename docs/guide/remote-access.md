@@ -4,21 +4,21 @@ title: Remote access
 
 # Remote access (Tunnel + Service API Token)
 
-> Hub 业务 API（REST / SAP / MCP）须带 **per-subject Service API Token**（`Authorization: Bearer fa_at_...`）。
+> Hub 业务 API（Hub RPC `POST|WS /hub/rpc/v1` + MCP）须带 **per-subject Service API Token**（`Authorization: Bearer fa_at_...` 或 WS `connect.auth_token`）。
 > Security context: [`security.md`](security.md) · Install: [`install.md`](install.md)
 
 ## Overview
 
-| Layer                   | Role                                                                                                        |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Service API Token**   | 绑定 `user` / `agent` subject；REST `Authorization: Bearer`；SAP `connect.auth_token`；MCP `/mcp` 同 Bearer |
-| **CLI bootstrap**       | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                               |
-| **cloudflared**         | Outbound tunnel；single hostname → Hub `127.0.0.1:2658`（API + Web UI at `/web`）                           |
-| **`http.host`**         | Hub listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                     |
-| **`http.cors_origins`** | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel          |
-| **Client settings**     | Desktop / mobile shell / **browser Web** fill Hub URL and token in **Hub settings**                         |
-| **Remote UI**           | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |
-| **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                 |
+| Layer                   | Role                                                                                                               |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **Service API Token**   | 绑定 `user` / `agent` subject；Hub RPC HTTP `Authorization: Bearer`；WS `connect.auth_token`；MCP `/mcp` 同 Bearer |
+| **CLI bootstrap**       | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                      |
+| **cloudflared**         | Outbound tunnel；single hostname → Hub `127.0.0.1:2658`（API + Web UI at `/web`）                                  |
+| **`http.host`**         | Hub listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                            |
+| **`http.cors_origins`** | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel                 |
+| **Client settings**     | Desktop / mobile shell / **browser Web** fill Hub URL and token in **Hub settings**                                |
+| **Remote UI**           | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI        |
+| **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                        |
 
 ### PWA（浏览器 Web）
 
@@ -32,7 +32,7 @@ title: Remote access
 - **离线只读**：浏览器 `offline` 时 shell-ui 显示全局提示并禁用各 satellite 写操作；展示的是**曾在线拉取过的快照**，非 Hub 全量镜像。
 - **存储**：SW 缓存、localStorage（Hub 设置）、IndexedDB（业务快照）互不冲突；清除站点数据会同时删除三者。
 
-仅 `GET /api/health`、CORS 预检、`/api/echo` 豁免认证。
+仅 `GET /api/health`、CORS 预检豁免认证（`/hub/rpc/v1` 与 MCP 须 Bearer）。
 
 ## 1. 创建 token（冷启动）
 

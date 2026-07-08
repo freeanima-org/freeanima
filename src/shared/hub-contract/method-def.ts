@@ -18,13 +18,21 @@ export function defineHubMethod<I extends z.ZodTypeAny, O extends z.ZodTypeAny>(
   return def;
 }
 
-/** dual CRUD：console 默认 http，satellite 默认 ws；读操作可 fallback */
-export function dualCrudMeta(http: HubMethodMeta["http"], readOnly = true): HubMethodMeta {
+/** HTTP + WS 双传输（HubRPC envelope；无 REST path） */
+export function dualTransportMeta(readOnly = true): HubMethodMeta {
   return {
     transports: ["http", "ws"],
-    defaultByProfile: { console: "http", satellite: "ws" },
+    defaultByProfile: { console: "ws", satellite: "ws" },
     fallback: readOnly,
-    ...(http !== undefined ? { http } : {}),
+  };
+}
+
+/** 仅 HTTP 传输（HubRPC POST /hub/rpc/v1） */
+export function httpTransportMeta(): HubMethodMeta {
+  return {
+    transports: ["http"],
+    defaultByProfile: { console: "http", satellite: "http" },
+    fallback: false,
   };
 }
 
@@ -37,12 +45,12 @@ export function wsOnlyMeta(): HubMethodMeta {
   };
 }
 
-/** HTTP-only（Console 运维面） */
-export function httpOnlyMeta(http: NonNullable<HubMethodMeta["http"]>): HubMethodMeta {
-  return {
-    transports: ["http"],
-    defaultByProfile: { console: "http", satellite: "http" },
-    fallback: false,
-    http,
-  };
+/** @deprecated 使用 dualTransportMeta */
+export function dualCrudMeta(_http?: unknown, readOnly = true): HubMethodMeta {
+  return dualTransportMeta(readOnly);
+}
+
+/** @deprecated 使用 dualTransportMeta 或 httpTransportMeta */
+export function httpOnlyMeta(_http?: unknown): HubMethodMeta {
+  return dualTransportMeta(true);
 }

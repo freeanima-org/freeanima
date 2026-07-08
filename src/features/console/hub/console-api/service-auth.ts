@@ -1,12 +1,7 @@
 import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
 
 import { attachServiceAuthToRequest, type ServiceAuthContext } from "./auth-context.ts";
-import {
-  isAuthExemptPath,
-  isHealthProbePath,
-  isHubApiCorsPreflight,
-  isSapWebSocketUpgrade,
-} from "./remote-auth.ts";
+import { isHealthProbePath, isHubApiCorsPreflight, isSapWebSocketUpgrade } from "./remote-auth.ts";
 
 export const SERVICE_AUTH_UNAUTHORIZED = "Unauthorized";
 
@@ -29,7 +24,6 @@ export function parseBearerToken(req: Request): string | null {
 }
 
 function shouldSkipServiceAuth(req: Request): boolean {
-  if (isAuthExemptPath(req)) return true;
   if (isHealthProbePath(req)) return true;
   if (isHubApiCorsPreflight(req)) return true;
   if (isSapWebSocketUpgrade(req)) return true;
