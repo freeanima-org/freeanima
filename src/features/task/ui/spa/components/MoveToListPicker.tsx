@@ -1,5 +1,16 @@
-import { useMemo, useState } from "react";
-import { Button, Input, Sheet, SheetContent } from "@freeanima/ui-kit";
+import { useMemo, useState, type ReactNode } from "react";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Sheet,
+  SheetContent,
+} from "@freeanima/ui-kit";
+import { useMobileLayout } from "@freeanima/ui-kit/layout";
 
 import type { TaskListRow } from "../lib/api.ts";
 import {
@@ -158,6 +169,42 @@ function TreePickerRows({
   );
 }
 
+function MoveToListPickerBody({
+  title,
+  searchQuery,
+  onSearchChange,
+  children,
+  onClose,
+}: {
+  title: string;
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
+  children: ReactNode;
+  onClose: () => void;
+}) {
+  return (
+    <>
+      <div className="border-b px-4 py-3">
+        <p className="text-sm font-semibold">{title}</p>
+        <Input
+          type="search"
+          className="mt-2 h-8 w-full"
+          placeholder="搜索清单…"
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          autoFocus
+        />
+      </div>
+      {children}
+      <div className="border-t p-2">
+        <Button type="button" variant="ghost" className="w-full" onClick={onClose}>
+          取消
+        </Button>
+      </div>
+    </>
+  );
+}
+
 export function MoveToListPicker({
   lists,
   currentListId,
@@ -165,6 +212,7 @@ export function MoveToListPicker({
   onSelect,
   onClose,
 }: MoveToListPickerProps) {
+  const mobileLayout = useMobileLayout();
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedFolderIds, setExpandedFolderIds] = useState<Set<number>>(() => {
     const saved = readExpandedFolders();
@@ -193,36 +241,61 @@ export function MoveToListPicker({
     });
   };
 
+  const treeRows = (
+    <TreePickerRows
+      nodes={displayTree}
+      expandedFolderIds={effectiveExpandedIds}
+      currentListId={currentListId}
+      searchQuery={searchQuery}
+      allLists={lists}
+      onToggleExpand={toggleExpand}
+      onSelect={onSelect}
+      onClose={onClose}
+    />
+  );
+
+  if (mobileLayout) {
+    return (
+      <Sheet open onOpenChange={(open) => !open && onClose()}>
+        <SheetContent
+          side="bottom"
+          showCloseButton={false}
+          className="safe-area-pb max-h-[85vh] gap-0 rounded-t-2xl p-0"
+        >
+          <MoveToListPickerBody
+            title={title}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onClose={onClose}
+          >
+            {treeRows}
+          </MoveToListPickerBody>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
   return (
-    <Sheet open onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="bottom" className="safe-area-pb max-h-[85vh] gap-0 p-0 sm:max-w-xl">
-        <div className="border-b px-4 py-3">
-          <p className="text-sm font-semibold">{title}</p>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="flex max-h-[85vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-xl">
+        <DialogHeader className="space-y-2 border-b px-4 py-3 text-left">
+          <DialogTitle className="text-sm">{title}</DialogTitle>
           <Input
             type="search"
-            className="mt-2 h-8 w-full"
+            className="h-8 w-full"
             placeholder="搜索清单…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             autoFocus
           />
-        </div>
-        <TreePickerRows
-          nodes={displayTree}
-          expandedFolderIds={effectiveExpandedIds}
-          currentListId={currentListId}
-          searchQuery={searchQuery}
-          allLists={lists}
-          onToggleExpand={toggleExpand}
-          onSelect={onSelect}
-          onClose={onClose}
-        />
-        <div className="border-t p-2">
+        </DialogHeader>
+        {treeRows}
+        <DialogFooter className="border-t p-2 sm:justify-stretch">
           <Button type="button" variant="ghost" className="w-full" onClick={onClose}>
             取消
           </Button>
-        </div>
-      </SheetContent>
-    </Sheet>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
