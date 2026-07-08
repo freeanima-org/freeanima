@@ -1,4 +1,5 @@
 import { Keyboard } from "@capacitor/keyboard";
+import { isCapacitorNativePlatform } from "@freeanima/shell-sdk/capacitor-runtime";
 import { useEffect, useState } from "react";
 
 import {
@@ -34,7 +35,7 @@ export function useKeyboardInset(nativeShell: boolean): number {
   }, []);
 
   useEffect(() => {
-    if (!nativeShell) return;
+    if (!nativeShell || !isCapacitorNativePlatform()) return;
     let showListener: { remove: () => Promise<void> } | undefined;
     let hideListener: { remove: () => Promise<void> } | undefined;
     void (async () => {

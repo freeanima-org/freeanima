@@ -1,73 +1,39 @@
 import { afterEach, describe, expect, it } from "bun:test";
 
-import {
-  readCapacitorBundledJson,
-  resolveCapacitorBundledAssetUrl,
-} from "./capacitor-local-asset.ts";
+import { detectCapacitorShellForBootstrap } from "./capacitor-local-asset.ts";
 
-describe("capacitor-local-asset", () => {
+describe("detectCapacitorShellForBootstrap", () => {
+  const originalFetch = globalThis.fetch;
+
   afterEach(() => {
+    globalThis.fetch = originalFetch;
     delete (globalThis as { window?: Window }).window;
-    delete (globalThis as { fetch?: typeof fetch }).fetch;
   });
 
-  it("resolveCapacitorBundledAssetUrl 使用 Capacitor config hostname/scheme", () => {
+  it("桌面浏览器走 Web bridge", async () => {
     (globalThis as { window: Window }).window = {
-      Capacitor: {
-        config: { androidScheme: "https", hostname: "localhost" },
-        getPlatform: () => "android",
-        isNativePlatform: () => true,
-      },
+      navigator: { userAgent: "Mozilla/5.0 (X11; Linux x86_64)" },
     } as unknown as Window;
 
-    expect(resolveCapacitorBundledAssetUrl("native-build-meta.json")).toBe(
-      "https://localhost/native-build-meta.json",
-    );
+    await expect(detectCapacitorShellForBootstrap()).resolves.toBe(false);
   });
 
-  it("readCapacitorBundledJson 优先 fetch", async () => {
+  it("手机浏览器直连 Hub 时走 Web bridge（无 localhost 资产）", async () => {
     (globalThis as { window: Window }).window = {
-      Capacitor: {
-        config: { androidScheme: "https", hostname: "localhost" },
-        getPlatform: () => "android",
-        isNativePlatform: () => true,
-      },
+      navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14; Mobile)" },
     } as unknown as Window;
+    globalThis.fetch = async () => new Response(null, { status: 404 });
 
-    (globalThis as { fetch: typeof fetch }).fetch = (async () =>
-      ({
-        ok: true,
-        json: async () => ({
-          component: "native",
-          shell: "mobile",
-          version: "1.0.0",
-          channel: "dev",
-        }),
-      }) as Response) as unknown as typeof fetch;
-
-    const raw = await readCapacitorBundledJson("/native-build-meta.json");
-    expect((raw as { version?: string }).version).toBe("1.0.0");
+    await expect(detectCapacitorShellForBootstrap()).resolves.toBe(false);
   });
 
-  it("readCapacitorBundledJson Android WebView 无 window.Capacitor 仍可读", async () => {
+  it("Capacitor WebView 远程 Hub 页可读 localhost 资产时走 Capacitor bridge", async () => {
     (globalThis as { window: Window }).window = {
       navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14)" },
     } as unknown as Window;
+    globalThis.fetch = async () =>
+      new Response(JSON.stringify({ component: "mobile", version: "1.0.0" }), { status: 200 });
 
-    (globalThis as { fetch: typeof fetch }).fetch = (async (url: string) => {
-      expect(url).toBe("https://localhost/native-build-meta.json");
-      return {
-        ok: true,
-        json: async () => ({
-          component: "native",
-          shell: "mobile",
-          version: "0.8.3",
-          channel: "prod",
-        }),
-      } as Response;
-    }) as unknown as typeof fetch;
-
-    const raw = await readCapacitorBundledJson("/native-build-meta.json");
-    expect((raw as { version?: string }).version).toBe("0.8.3");
+    await expect(detectCapacitorShellForBootstrap()).resolves.toBe(true);
   });
 });

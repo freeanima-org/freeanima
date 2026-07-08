@@ -53,3 +53,16 @@ export async function readCapacitorBundledJson(assetPath: string): Promise<unkno
   if (fromFetch != null) return fromFetch;
   return readJsonViaCapacitorHttp(url);
 }
+
+const CAPACITOR_BOOTSTRAP_PROBE_PATH = "/native-build-meta.json";
+
+/**
+ * Hub 托管 Web UI 的 bootstrap 分流：仅 Capacitor 原生或 WebView 内嵌壳（可读到 localhost 资产），
+ * 普通手机浏览器（Safari/Chrome 直连 Hub）应走 Web bridge。
+ */
+export async function detectCapacitorShellForBootstrap(): Promise<boolean> {
+  if (isCapacitorNativePlatform()) return true;
+  if (!isMobileCapacitorShellCandidate()) return false;
+  const meta = await readCapacitorBundledJson(CAPACITOR_BOOTSTRAP_PROBE_PATH);
+  return meta != null;
+}
