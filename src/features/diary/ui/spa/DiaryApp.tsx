@@ -162,14 +162,16 @@ export function DiaryApp() {
     }
   }, [draft, draftBaseline, markSaved, saving, selectedEntry, subjectKind, writesDisabled]);
 
-  const openTodayEntry = useCallback(async () => {
+  const openTodayEntry = useCallback(async (): Promise<boolean> => {
     const today = defaultEntryDateLocal();
     const todayEntry = findEntryByDayLocal(entries, today);
     if (todayEntry) {
-      openEntry(todayEntry);
-      return;
+      if (selectedIdRef.current !== todayEntry.id) {
+        openEntry(todayEntry);
+      }
+      return true;
     }
-    if (writesDisabled || creating) return;
+    if (writesDisabled || creating) return false;
     setCreating(true);
     setError("");
     try {
@@ -182,29 +184,44 @@ export function DiaryApp() {
       });
       setEntries((prev) => sortEntries([item, ...prev]));
       openEntry(item);
+      return true;
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       if (msg.includes("already exists")) {
         const existing = findEntryByDayLocal(entries, today);
-        if (existing) openEntry(existing);
+        if (existing) {
+          openEntry(existing);
+          return true;
+        }
       } else {
         setError(msg);
       }
+      return false;
     } finally {
       setCreating(false);
     }
   }, [creating, entries, openEntry, subjectKind, writesDisabled]);
 
   useEffect(() => {
-    if (loading || initialTodayOpenedRef.current) return;
+    if (loading) return;
+    if (searchQuery.trim()) return;
     if (selectedId != null) {
       initialTodayOpenedRef.current = true;
       return;
     }
-    if (searchQuery.trim()) return;
-    initialTodayOpenedRef.current = true;
-    void openTodayEntry();
-  }, [loading, openTodayEntry, searchQuery, selectedId]);
+    if (initialTodayOpenedRef.current) return;
+    void (async () => {
+      const opened = await openTodayEntry();
+      if (opened) {
+        initialTodayOpenedRef.current = true;
+        return;
+      }
+      // Hub 尚未就绪时保留 ref=false，连接后再次尝试创建/选中今日条目
+      if (!writesDisabled) {
+        initialTodayOpenedRef.current = true;
+      }
+    })();
+  }, [loading, openTodayEntry, searchQuery, selectedId, writesDisabled]);
 
   const flushDraftSave = useCallback(async (): Promise<boolean> => {
     return persistDraft();
