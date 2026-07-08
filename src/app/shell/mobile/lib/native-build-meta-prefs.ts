@@ -1,4 +1,5 @@
 import type { ComponentBuildMeta } from "@freeanima/shell-sdk/build-meta";
+import { readCapacitorBundledJson } from "@freeanima/shell-sdk/capacitor-local-asset";
 import { isCapacitorNativePlatform } from "@freeanima/shell-sdk/capacitor-runtime";
 import { readNativeBuildMetaFromDefine } from "@freeanima/shell-sdk/native-build-meta.read";
 
@@ -13,11 +14,17 @@ function readNativeBuildFromDefine(): ComponentBuildMeta | undefined {
   );
 }
 
+/** 写入 Preferences，供 Hub 远程 UI 桥接读取 */
+export async function persistNativeBuildMeta(meta: ComponentBuildMeta): Promise<void> {
+  if (!isCapacitorNativePlatform()) return;
+  await prefsSet({ key: NATIVE_BUILD_META_KEY, value: JSON.stringify(meta) });
+}
+
 /** bootstrap 薄壳（含 Vite define）启动时写入 Preferences，供 Hub 远程 UI 桥接读取 */
 export async function persistNativeBuildMetaFromDefine(): Promise<void> {
   const meta = readNativeBuildFromDefine();
   if (!meta) return;
-  await prefsSet({ key: NATIVE_BUILD_META_KEY, value: JSON.stringify(meta) });
+  await persistNativeBuildMeta(meta);
 }
 
 async function readNativeBuildFromPrefs(): Promise<ComponentBuildMeta | undefined> {
@@ -33,32 +40,34 @@ async function readNativeBuildFromPrefs(): Promise<ComponentBuildMeta | undefine
 
 /** Capacitor 本地 Web 服务器仍托管 www 静态资源，远程 Hub 页可回读 APK 内 meta */
 async function readNativeBuildFromBundledAsset(): Promise<ComponentBuildMeta | undefined> {
-  if (!isCapacitorNativePlatform()) return undefined;
-  try {
-    const res = await fetch("https://localhost/native-build-meta.json", { cache: "no-store" });
-    if (!res.ok) return undefined;
-    return readNativeBuildMetaFromDefine(await res.json());
-  } catch {
-    return undefined;
-  }
+  const raw = await readCapacitorBundledJson("/native-build-meta.json");
+  return raw != null ? readNativeBuildMetaFromDefine(raw) : undefined;
+}
+
+async function loadMobileNativeBuildMetaUncached(): Promise<ComponentBuildMeta | undefined> {
+  const fromDefine = readNativeBuildFromDefine();
+  if (fromDefine) return fromDefine;
+  const fromAsset = await readNativeBuildFromBundledAsset();
+  if (fromAsset) return fromAsset;
+  const fromPrefs = await readNativeBuildFromPrefs();
+  if (fromPrefs) return fromPrefs;
+  return undefined;
 }
 
 let cachedNativeBuild: Promise<ComponentBuildMeta | undefined> | undefined;
 
-/** Capacitor 壳层 native build meta：define → Preferences → APK 内 JSON */
+/** Capacitor 壳层 native build meta：define → APK JSON → Preferences */
 export function loadMobileNativeBuildMeta(): Promise<ComponentBuildMeta | undefined> {
   if (!cachedNativeBuild) {
-    cachedNativeBuild = (async () => {
-      const fromDefine = readNativeBuildFromDefine();
-      if (fromDefine) return fromDefine;
-      const fromPrefs = await readNativeBuildFromPrefs();
-      if (fromPrefs) return fromPrefs;
-      const fromAsset = await readNativeBuildFromBundledAsset();
-      if (fromAsset) {
-        void prefsSet({ key: NATIVE_BUILD_META_KEY, value: JSON.stringify(fromAsset) });
-      }
-      return fromAsset;
-    })();
+    cachedNativeBuild = loadMobileNativeBuildMetaUncached()
+      .then((meta) => {
+        if (!meta) cachedNativeBuild = undefined;
+        return meta;
+      })
+      .catch((err: unknown) => {
+        cachedNativeBuild = undefined;
+        throw err;
+      });
   }
   return cachedNativeBuild;
 }
