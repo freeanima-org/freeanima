@@ -43,16 +43,28 @@ describe("createSpeechPlaybackController", () => {
   });
 
   it("再次 toggle 同一 key 会 stop", () => {
-    const adapter = createMockAdapter();
-    const ctrl = createSpeechPlaybackController(adapter, () => {});
+    let end: (() => void) | undefined;
+    const adapter: SpeechPlaybackAdapter = {
+      isSupported: () => true,
+      stopped: 0,
+      stop() {
+        (this as { stopped: number }).stopped += 1;
+        end = undefined;
+      },
+      speak(_text, _locale, onEnd) {
+        end = onEnd;
+      },
+    };
 
+    const ctrl = createSpeechPlaybackController(adapter, () => {});
     ctrl.toggle("msg-1", "hello", "en");
+    expect(ctrl.isSpeaking("msg-1")).toBe(true);
     ctrl.toggle("msg-1", "hello", "en");
-    expect(adapter.stopped).toBeGreaterThanOrEqual(1);
+    expect((adapter as { stopped: number }).stopped).toBeGreaterThanOrEqual(1);
     expect(ctrl.getActiveKey()).toBeNull();
   });
 
-  it("切换 key 会 stop 前一条", () => {
+  it("切换 key 时由 adapter.speak 自行停止前一条", () => {
     const adapter: SpeechPlaybackAdapter = {
       isSupported: () => true,
       stopCalls: 0,
@@ -67,7 +79,7 @@ describe("createSpeechPlaybackController", () => {
     const ctrl = createSpeechPlaybackController(adapter, () => {});
     ctrl.toggle("msg-1", "one", "en");
     ctrl.toggle("msg-2", "two", "en");
-    expect((adapter as SpeechPlaybackAdapter & { stopCalls: number }).stopCalls).toBeGreaterThan(0);
+    expect((adapter as SpeechPlaybackAdapter & { stopCalls: number }).stopCalls).toBe(0);
   });
 
   it("空文本不触发 speak", () => {

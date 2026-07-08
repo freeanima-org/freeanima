@@ -40,6 +40,34 @@ export function mapProsodyToEdgeStrings(rate = 1, pitch = 1, volume = 1): EdgePr
   };
 }
 
+export function validateEdgeTtsText(text: string): string {
+  const normalized = text.replace(/\s+/g, " ").trim();
+  if (!normalized) {
+    throw new Error("朗读文本不能为空");
+  }
+  if (normalized.length > MAX_EDGE_TTS_TEXT_LENGTH) {
+    throw new Error(`朗读文本过长（最多 ${MAX_EDGE_TTS_TEXT_LENGTH} 字）`);
+  }
+  return normalized;
+}
+
+export function createEdgeCommunicate(input: EdgeSynthesizeInput): Communicate {
+  const text = validateEdgeTtsText(input.text);
+  const voice = resolveEdgeVoiceName(
+    input.voice ?? null,
+    input.lang ?? null,
+    input.appLocale ?? "zh-CN",
+  );
+  const prosody = mapProsodyToEdgeStrings(input.rate, input.pitch, input.volume);
+
+  return new Communicate(text, {
+    voice,
+    rate: prosody.rate,
+    pitch: prosody.pitch,
+    volume: prosody.volume,
+  });
+}
+
 export async function collectCommunicateAudio(communicate: Communicate): Promise<Buffer> {
   const chunks: Buffer[] = [];
   for await (const chunk of communicate.stream()) {
@@ -53,31 +81,46 @@ export async function collectCommunicateAudio(communicate: Communicate): Promise
   return Buffer.concat(chunks);
 }
 
-export async function synthesizeEdgeTts(input: EdgeSynthesizeInput): Promise<Buffer> {
-  const text = input.text.replace(/\s+/g, " ").trim();
-  if (!text) {
-    throw new Error("朗读文本不能为空");
-  }
-  if (text.length > MAX_EDGE_TTS_TEXT_LENGTH) {
-    throw new Error(`朗读文本过长（最多 ${MAX_EDGE_TTS_TEXT_LENGTH} 字）`);
-  }
-
-  const voice = resolveEdgeVoiceName(
-    input.voice ?? null,
-    input.lang ?? null,
-    input.appLocale ?? "zh-CN",
-  );
-  const prosody = mapProsodyToEdgeStrings(input.rate, input.pitch, input.volume);
-
-  const communicate = new Communicate(text, {
-    voice,
-    rate: prosody.rate,
-    pitch: prosody.pitch,
-    volume: prosody.volume,
-  });
-
+/** 将 Edge TTS 音频流直接 pipe 为 HTTP ReadableStream */
+export function streamEdgeTtsAudio(input: EdgeSynthesizeInput): ReadableStream<Uint8Array> {
+  let communicate: Communicate;
   try {
-    return await collectCommunicateAudio(communicate);
+    communicate = createEdgeCommunicate(input);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return new ReadableStream({
+      start(controller) {
+        controller.error(new Error(message));
+      },
+    });
+  }
+
+  return new ReadableStream<Uint8Array>({
+    async start(controller) {
+      let hasAudio = false;
+      try {
+        for await (const chunk of communicate.stream()) {
+          if (chunk.type === "audio" && chunk.data) {
+            hasAudio = true;
+            controller.enqueue(new Uint8Array(chunk.data));
+          }
+        }
+        if (!hasAudio) {
+          controller.error(new Error("Edge TTS 未返回音频"));
+          return;
+        }
+        controller.close();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        controller.error(new Error(`Edge TTS 合成失败：${message}`, { cause: err }));
+      }
+    },
+  });
+}
+
+export async function synthesizeEdgeTts(input: EdgeSynthesizeInput): Promise<Buffer> {
+  try {
+    return await collectCommunicateAudio(createEdgeCommunicate(input));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     throw new Error(`Edge TTS 合成失败：${message}`, { cause: err });

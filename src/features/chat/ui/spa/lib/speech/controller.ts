@@ -38,7 +38,6 @@ export function createSpeechPlaybackController(
         return;
       }
 
-      adapter.stop();
       const trimmed = text.trim();
       if (!trimmed || !adapter.isSupported()) return;
 
