@@ -96,6 +96,9 @@
         "./src/satellites/companion/lib/exports/desktop.ts"
       ],
       "@freeanima/app-mobile/capacitor-ready": ["./src/app/shell/mobile/lib/capacitor-ready.ts"],
+      "@freeanima/app-mobile/native-build-meta-prefs": [
+        "./src/app/shell/mobile/lib/native-build-meta-prefs.ts"
+      ],
       "@freeanima/app-mobile/settings-stores": ["./src/app/shell/mobile/lib/settings-stores.ts"],
       "@freeanima/capabilities-tools/clarify": ["./src/capabilities/tools/clarify/index.ts"],
       "@freeanima/console-contract/date-json": [

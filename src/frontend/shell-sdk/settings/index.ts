@@ -7,6 +7,7 @@ export {
   HUB_URL_KEY,
   COMPANION_VISIBLE_KEY,
   LAUNCH_AT_LOGIN_KEY,
+  NATIVE_BUILD_META_KEY,
   REMOTE_AUTH_TOKEN_KEY,
   sapInstanceKey,
 } from "./prefs-keys.ts";

@@ -1,10 +1,18 @@
 export async function bootstrapCapacitorBridge(): Promise<void> {
   const { waitForCapacitorBridge } = await import("@freeanima/app-mobile/capacitor-ready");
-  const { buildMobileShell, createMobileShellStub, loadHubUrl, loadRemoteAuthToken } =
-    await import("@freeanima/app-mobile/mobile-shell");
+  const {
+    attachNativeBuild,
+    buildMobileShell,
+    createMobileShellStub,
+    loadHubUrl,
+    loadRemoteAuthToken,
+  } = await import("@freeanima/app-mobile/mobile-shell");
+  const { loadMobileNativeBuildMeta } =
+    await import("@freeanima/app-mobile/native-build-meta-prefs");
 
   await waitForCapacitorBridge();
-  window.satelliteShell = createMobileShellStub();
+  const nativeBuild = await loadMobileNativeBuildMeta();
+  window.satelliteShell = attachNativeBuild(createMobileShellStub(), nativeBuild);
   const hubUrl = await loadHubUrl();
   const remoteAuthToken = await loadRemoteAuthToken();
   if (hubUrl) {

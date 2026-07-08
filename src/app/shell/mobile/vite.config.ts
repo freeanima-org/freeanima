@@ -1,11 +1,11 @@
+import { writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 
-import {
-  nativeBuildMetaDefine,
-  resolveNativeBuildMeta,
-} from "../../../frontend/shell-sdk/native-build-meta.ts";
+import { nativeBuildMetaDefine } from "../../../frontend/shell-sdk/native-build-meta.ts";
+import { resolveNativeBuildMeta } from "../shared/resolve-native-build-meta.ts";
+import type { ComponentBuildMeta } from "../../../core/config/build-meta.ts";
 import { createShellViteInlineConfig } from "../../../frontend/shell-ui/vite/run-build.ts";
 import { shellEntryFileNames } from "../../../frontend/shell-ui/vite/entry-file-names.ts";
 
@@ -22,6 +22,15 @@ const nativeBuildMeta = resolveNativeBuildMeta({
   repoRoot: REPO_ROOT,
 });
 
+function writeNativeBuildMetaAsset(meta: ComponentBuildMeta): Plugin {
+  return {
+    name: "mobile-native-build-meta-asset",
+    closeBundle() {
+      writeFileSync(join(DIST_DIR, "native-build-meta.json"), `${JSON.stringify(meta)}\n`, "utf8");
+    },
+  };
+}
+
 export default defineConfig(() => {
   const inline = createShellViteInlineConfig({
     appDir: SPA_DIR,
@@ -32,6 +41,8 @@ export default defineConfig(() => {
     sourcemap: debug,
     define: nativeBuildMetaDefine(nativeBuildMeta),
   });
+
+  inline.plugins = [...(inline.plugins ?? []), writeNativeBuildMetaAsset(nativeBuildMeta)];
 
   if (
     inline.build?.rolldownOptions?.output &&

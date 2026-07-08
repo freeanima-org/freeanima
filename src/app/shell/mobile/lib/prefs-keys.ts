@@ -1,4 +1,5 @@
 /** Preferences 键名（Capacitor） */
+export { NATIVE_BUILD_META_KEY } from "../../../../frontend/shell-sdk/settings/prefs-keys.ts";
 export const HUB_URL_KEY = "freeanima.hubUrl";
 export const REMOTE_AUTH_TOKEN_KEY = "freeanima.remoteAuthToken";
 export const DEBUG_SENTRY_ENABLED_KEY = "freeanima.debug.sentryEnabled";

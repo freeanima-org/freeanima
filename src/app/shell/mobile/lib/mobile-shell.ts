@@ -6,8 +6,9 @@ import {
   type SapInstanceStore,
   type SatelliteShellApi,
 } from "@freeanima/shell-sdk";
-import { readNativeBuildMetaFromDefine } from "@freeanima/shell-sdk/native-build-meta.read";
+import type { ComponentBuildMeta } from "@freeanima/shell-sdk/build-meta";
 
+import { loadMobileNativeBuildMeta } from "./native-build-meta-prefs.ts";
 import { HUB_URL_KEY, REMOTE_AUTH_TOKEN_KEY, sapInstanceKey } from "./prefs-keys.ts";
 import { prefsGet, prefsSet } from "./prefs-safe.ts";
 import { SETTINGS_PAGE } from "./paths.ts";
@@ -15,14 +16,11 @@ import { replaceShellPath } from "./shell-nav.ts";
 
 const SHELL_SNAPSHOT_KEY = "freeanima.shell.snapshot";
 
-declare const __NATIVE_BUILD_META__: import("@freeanima/shell-sdk/build-meta").ComponentBuildMeta;
-
-const NATIVE_BUILD = readNativeBuildMetaFromDefine(
-  typeof __NATIVE_BUILD_META__ !== "undefined" ? __NATIVE_BUILD_META__ : undefined,
-);
-
-function withNativeBuild(shell: SatelliteShellApi): SatelliteShellApi {
-  return NATIVE_BUILD ? { ...shell, nativeBuild: NATIVE_BUILD } : shell;
+export function attachNativeBuild(
+  shell: SatelliteShellApi,
+  nativeBuild?: ComponentBuildMeta,
+): SatelliteShellApi {
+  return nativeBuild ? { ...shell, nativeBuild } : shell;
 }
 
 export type ShellSnapshot = {
@@ -101,7 +99,7 @@ function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
     snapshot.hubWsUrl,
     snapshot.remoteAuthToken,
   );
-  return withNativeBuild({
+  return {
     isElectron: false,
     isNativeShell: true,
     ...apiFields,
@@ -119,12 +117,12 @@ function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
       window.addEventListener(SHELL_CONFIG_CHANGED_EVENT, listener);
       return () => window.removeEventListener(SHELL_CONFIG_CHANGED_EVENT, listener);
     },
-  });
+  };
 }
 
 /** Hub 未配置时的 minimal 壳层标记（供设置页正确识别 mobile 平台） */
 export function createMobileShellStub(): SatelliteShellApi {
-  return withNativeBuild({
+  return {
     isElectron: false,
     isNativeShell: true,
     hubUrl: "",
@@ -143,7 +141,7 @@ export function createMobileShellStub(): SatelliteShellApi {
       window.addEventListener(SHELL_CONFIG_CHANGED_EVENT, listener);
       return () => window.removeEventListener(SHELL_CONFIG_CHANGED_EVENT, listener);
     },
-  });
+  };
 }
 
 export async function buildMobileShell(
@@ -158,7 +156,8 @@ export async function buildMobileShell(
     remoteAuthToken: normalized.remoteAuthToken,
   };
   writeShellSnapshot(snapshot);
-  return createShellFromSnapshot(snapshot);
+  const nativeBuild = await loadMobileNativeBuildMeta();
+  return attachNativeBuild(createShellFromSnapshot(snapshot), nativeBuild);
 }
 
 /** 从 Preferences 加载并注入 window.satelliteShell */
@@ -189,7 +188,8 @@ export async function ensureMobileShellForChat(): Promise<SatelliteShellApi> {
     };
     writeShellSnapshot(snapshot);
   }
-  const shell = createShellFromSnapshot(snapshot);
+  const nativeBuild = await loadMobileNativeBuildMeta();
+  const shell = attachNativeBuild(createShellFromSnapshot(snapshot), nativeBuild);
   window.satelliteShell = shell;
   return shell;
 }
