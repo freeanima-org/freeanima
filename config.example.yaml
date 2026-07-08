@@ -9,11 +9,17 @@ database:
   url: env("DATABASE_URL")
   # url: postgresql://freeanima:password@127.0.0.1:5432/freeanima
 
-# Hub HTTP 监听（可选，默认 127.0.0.1）
+# Hub HTTP 监听（可选，默认 127.0.0.1:2658）
 # http:
 #   host: 0.0.0.0
 #   cors_origins:
 #     - http://127.0.0.1:4173
+#   tls:
+#     enabled: true          # 额外监听 HTTPS :2659（HTTP :2658 不变；Tunnel 仍走 HTTP）
+#     port: 2659
+#     auto: true             # 缺失 cert/key 时自动生成（优先 mkcert，fallback openssl 自签）
+#     # cert: ~/.anima/tls/cert.pem
+#     # key: ~/.anima/tls/key.pem
 
 # Redis（EventBus / 任务上下文；不可用时静默降级，可选）
 # redis:

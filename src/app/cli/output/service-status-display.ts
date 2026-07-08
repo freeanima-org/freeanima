@@ -65,6 +65,7 @@ export function printServiceRunningStatus(opts: {
   statusFile: Record<string, unknown>;
   host: string;
   port: number;
+  tlsPort?: number | null;
   healthMs: number;
   systemd: string | null;
   pidOverride?: number | null;
@@ -107,6 +108,11 @@ export function printServiceRunningStatus(opts: {
   for (const h of parseBindHosts(opts.host)) {
     printField("http", `http://${h}:${opts.port}`);
     printField("api", `http://${h}:${opts.port}/api`);
+    const tlsPort = opts.tlsPort ?? (opts.statusFile.tls_port as number | undefined);
+    if (tlsPort != null && tlsPort > 0) {
+      printField("https", `https://${h}:${tlsPort}`);
+      printField("api (tls)", `https://${h}:${tlsPort}/api`);
+    }
   }
 
   if (build) {

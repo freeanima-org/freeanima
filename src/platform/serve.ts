@@ -117,19 +117,28 @@ export async function serve(
     cronInitialized = true;
 
     const http = httpHooks;
+    let tlsPort: number | null = null;
     if (http) {
       startupLog("Starting Hub HTTP (API + SAP)…");
-      servers = await http.start(bindHosts, port);
+      const started = await http.start(bindHosts, port, opts.httpListen);
+      servers = started.handles;
+      tlsPort = started.tlsPort;
     } else {
       startupLog("HTTP hooks not injected; skipping HTTP listen");
     }
 
-    writeStatusFile(statusHost, port, "ready");
+    writeStatusFile(statusHost, port, "ready", tlsPort);
     for (const bindHost of bindHosts) {
       logComponent("startup").info(`freeanima listening on http://${bindHost}:${port}`, {
         host: bindHost,
         port,
       });
+      if (tlsPort != null) {
+        logComponent("startup").info(`freeanima listening on https://${bindHost}:${tlsPort}`, {
+          host: bindHost,
+          port: tlsPort,
+        });
+      }
     }
     startupLog("HTTP listen ready");
     markStartupPhase(false);

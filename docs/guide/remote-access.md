@@ -90,6 +90,43 @@ http:
 
 CORS is **not** derived from `tunnel` or `web.public_url`.
 
+### Hub 本地 HTTPS（双端口，可选）
+
+Hub 可在 **独立端口** 提供原生 TLS（`Bun.serve`），与默认 HTTP 并行：
+
+| 端口     | 协议  | 用途                                                                            |
+| -------- | ----- | ------------------------------------------------------------------------------- |
+| **2658** | HTTP  | 默认；Tunnel ingress、CLI 探活、日常客户端                                      |
+| **2659** | HTTPS | 本地/局域网安全上下文（Web Speech 等）；客户端 Hub URL 填 `https://<host>:2659` |
+
+启用（`~/.anima/config.yaml` bootstrap 段）：
+
+```yaml
+http:
+  host: 0.0.0.0
+  tls:
+    enabled: true
+    port: 2659
+    auto: true
+```
+
+- **`auto: true`**（默认）：首次启动在 `~/.anima/tls/` 自动生成 cert/key（优先 **mkcert**，否则 **openssl 自签**）；SAN 含 `localhost`、`127.0.0.1`、`::1` 及 `http.host` 中的局域网 IP。
+- **Tunnel 不变**：cloudflared 仍指向 `http://127.0.0.1:2658`。
+- **探活**：`anima service status` 与 `/api/health` 仍走 HTTP `:2658`。
+
+#### mkcert 根 CA 导入手机（可选）
+
+Hub 服务器证书在 Hub 机器上；手机浏览器/APK 无警告访问须在各设备安装 **mkcert 根 CA**（`rootCA.pem`，非 `cert.pem`）：
+
+```bash
+mkcert -CAROOT   # 查看 rootCA.pem 路径
+```
+
+- **iOS**：AirDrop/邮件传 `rootCA.pem` → 安装描述文件 → **设置 → 通用 → 关于本机 → 证书信任设置** → 启用完全信任。
+- **Android**：可选转 DER 后 **设置 → 安全 → 安装 CA 证书**。
+
+日常手机远程访问仍推荐 **Tunnel HTTPS** 或 **HTTP `:2658`**，避免逐台装 CA。Capacitor APK 对 user CA 的支持因平台/构建而异。
+
 ## 2. Tunnel (optional)
 
 ```bash

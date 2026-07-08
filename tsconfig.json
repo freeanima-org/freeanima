@@ -269,6 +269,7 @@
       "@freeanima/hub-contract/*": ["./src/shared/hub-contract/*.ts"],
       "@freeanima/kernel/logging": ["./src/kernel/logging/index.ts"],
       "@freeanima/platform/alive": ["./src/platform/alive.ts"],
+      "@freeanima/platform/tls/*": ["./src/platform/tls/*.ts"],
       "@freeanima/platform/hub/*": ["./src/platform/hub/*.ts"],
       "@freeanima/platform/ports": ["./src/platform/ports/index.ts"],
       "@freeanima/platform/sap/*": ["./src/platform/sap/*.ts"],

@@ -13,8 +13,9 @@ export function writeStatusFile(
   host: string,
   port: number,
   phase: "starting" | "ready" = "ready",
+  tlsPort?: number | null,
 ): void {
-  const status = {
+  const status: Record<string, unknown> = {
     pid: process.pid,
     version: ANIMA_VERSION,
     build: SERVICE_BUILD_META,
@@ -23,6 +24,9 @@ export function writeStatusFile(
     port,
     phase,
   };
+  if (tlsPort != null && tlsPort > 0) {
+    status.tls_port = tlsPort;
+  }
   mkdirSync(dirname(PATHS.statusFile), { recursive: true });
   writeFileSync(PATHS.statusFile, JSON.stringify(status, null, 2));
 }

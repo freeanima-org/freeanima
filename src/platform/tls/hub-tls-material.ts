@@ -1,0 +1,154 @@
+import { chmodSync, existsSync, mkdirSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+
+import { PATHS } from "@freeanima/core/config";
+import { logComponent } from "@freeanima/platform/logging";
+
+import { buildOpenSslSubjectAltName, collectTlsSanNames, expandConfigPath } from "./tls-paths.ts";
+
+export type HubTlsMaterialSource = "existing" | "mkcert" | "self-signed";
+
+export type HubTlsMaterial = {
+  certPath: string;
+  keyPath: string;
+  source: HubTlsMaterialSource;
+  passphrase?: string;
+};
+
+export type EnsureHubTlsMaterialOptions = {
+  certPath: string;
+  keyPath: string;
+  auto: boolean;
+  bindHosts: string[];
+  passphrase?: string;
+};
+
+function commandAvailable(name: string): boolean {
+  const r = spawnSync("command", ["-v", name], { encoding: "utf-8", shell: true });
+  return r.status === 0;
+}
+
+function tlsFilesReadable(certPath: string, keyPath: string): boolean {
+  try {
+    return existsSync(certPath) && existsSync(keyPath);
+  } catch {
+    return false;
+  }
+}
+
+function ensureTlsDirForFile(filePath: string): void {
+  mkdirSync(PATHS.tlsDir, { recursive: true, mode: 0o700 });
+  const slash = filePath.lastIndexOf("/");
+  const keyDir = slash >= 0 ? filePath.slice(0, slash) : PATHS.tlsDir;
+  if (keyDir && keyDir !== filePath) {
+    mkdirSync(keyDir, { recursive: true, mode: 0o700 });
+  }
+}
+
+function secureKeyFile(keyPath: string): void {
+  try {
+    chmodSync(keyPath, 0o600);
+  } catch {
+    /* ignore on platforms without chmod */
+  }
+}
+
+function mkcertCaReady(): boolean {
+  if (!commandAvailable("mkcert")) return false;
+  const r = spawnSync("mkcert", ["-CAROOT"], { encoding: "utf-8" });
+  if (r.status !== 0) return false;
+  const caroot = r.stdout.trim();
+  if (!caroot) return false;
+  return existsSync(`${caroot}/rootCA.pem`);
+}
+
+function tryGenerateWithMkcert(certPath: string, keyPath: string, sanNames: string[]): boolean {
+  if (!mkcertCaReady()) return false;
+  ensureTlsDirForFile(certPath);
+  const args = ["-cert-file", certPath, "-key-file", keyPath, ...sanNames];
+  const r = spawnSync("mkcert", args, { encoding: "utf-8" });
+  if (r.status !== 0) {
+    logComponent("startup").warn("mkcert 生成 TLS 证书失败，将尝试 openssl 自签", {
+      stderr: r.stderr?.trim() || r.stdout?.trim(),
+    });
+    return false;
+  }
+  secureKeyFile(keyPath);
+  return tlsFilesReadable(certPath, keyPath);
+}
+
+function tryGenerateWithOpenSsl(certPath: string, keyPath: string, sanNames: string[]): boolean {
+  if (!commandAvailable("openssl")) return false;
+  ensureTlsDirForFile(certPath);
+  const san = buildOpenSslSubjectAltName(sanNames);
+  const r = spawnSync(
+    "openssl",
+    [
+      "req",
+      "-x509",
+      "-newkey",
+      "rsa:2048",
+      "-keyout",
+      keyPath,
+      "-out",
+      certPath,
+      "-days",
+      "825",
+      "-nodes",
+      "-subj",
+      "/CN=localhost",
+      "-addext",
+      `subjectAltName=${san}`,
+    ],
+    { encoding: "utf-8" },
+  );
+  if (r.status !== 0) {
+    logComponent("startup").warn("openssl 自签 TLS 证书失败", {
+      stderr: r.stderr?.trim() || r.stdout?.trim(),
+    });
+    return false;
+  }
+  secureKeyFile(keyPath);
+  return tlsFilesReadable(certPath, keyPath);
+}
+
+/**
+ * 确保 Hub TLS cert/key 存在；auto 时优先 mkcert，fallback openssl 自签。
+ */
+export function ensureHubTlsMaterial(options: EnsureHubTlsMaterialOptions): HubTlsMaterial {
+  const certPath = expandConfigPath(options.certPath);
+  const keyPath = expandConfigPath(options.keyPath);
+  const passphrase = options.passphrase?.trim() || undefined;
+
+  if (tlsFilesReadable(certPath, keyPath)) {
+    return { certPath, keyPath, source: "existing", ...(passphrase ? { passphrase } : {}) };
+  }
+
+  if (!options.auto) {
+    throw new Error(`TLS 证书或私钥不存在（auto=false）：cert=${certPath} key=${keyPath}`);
+  }
+
+  const sanNames = collectTlsSanNames(options.bindHosts);
+
+  if (tryGenerateWithMkcert(certPath, keyPath, sanNames)) {
+    logComponent("startup").info("Hub TLS 证书已生成（mkcert）", { cert: certPath });
+    return { certPath, keyPath, source: "mkcert", ...(passphrase ? { passphrase } : {}) };
+  }
+
+  if (tryGenerateWithOpenSsl(certPath, keyPath, sanNames)) {
+    logComponent("startup").info("Hub TLS 证书已生成（openssl 自签）", { cert: certPath });
+    return { certPath, keyPath, source: "self-signed", ...(passphrase ? { passphrase } : {}) };
+  }
+
+  throw new Error(
+    "无法自动生成 Hub TLS 证书：请安装 mkcert（mkcert -install）或 openssl，或在 config.yaml 指定 cert/key",
+  );
+}
+
+export function defaultHubTlsCertPath(): string {
+  return PATHS.tlsCertFile;
+}
+
+export function defaultHubTlsKeyPath(): string {
+  return PATHS.tlsKeyFile;
+}

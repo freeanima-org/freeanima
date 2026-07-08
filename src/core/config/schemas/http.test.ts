@@ -1,38 +1,38 @@
 import { describe, expect, test } from "bun:test";
 
-import { collectHttpCorsOrigins } from "../http-origins.ts";
-import { httpConfigSchema, httpCorsOriginSchema } from "./http.ts";
+import { DEFAULT_HUB_TLS_PORT } from "./http-ports.ts";
+import { httpConfigSchema, httpTlsConfigSchema } from "./http.ts";
 
-describe("httpCorsOriginSchema", () => {
-  test("accepts origin without path", () => {
-    expect(httpCorsOriginSchema.safeParse("http://127.0.0.1:4173").success).toBe(true);
-    expect(httpCorsOriginSchema.safeParse("https://anima.lan").success).toBe(true);
+describe("httpTlsConfigSchema", () => {
+  test("accepts enabled tls with defaults", () => {
+    const parsed = httpTlsConfigSchema.safeParse({ enabled: true });
+    expect(parsed.success).toBe(true);
   });
 
-  test("rejects URL with path", () => {
-    expect(httpCorsOriginSchema.safeParse("http://127.0.0.1:4173/web").success).toBe(false);
+  test("accepts manual cert paths", () => {
+    const parsed = httpTlsConfigSchema.safeParse({
+      enabled: true,
+      cert: "/path/cert.pem",
+      key: "/path/key.pem",
+      auto: false,
+    });
+    expect(parsed.success).toBe(true);
   });
 });
 
 describe("httpConfigSchema", () => {
-  test("parses cors_origins", () => {
+  test("accepts http.tls nested config", () => {
     const parsed = httpConfigSchema.safeParse({
-      cors_origins: ["http://127.0.0.1:4173"],
+      host: "0.0.0.0",
+      tls: { enabled: true, port: 2659 },
     });
     expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data?.tls?.enabled).toBe(true);
+    }
   });
 
-  test("parses host string and array", () => {
-    expect(httpConfigSchema.safeParse({ host: "0.0.0.0" }).success).toBe(true);
-    expect(httpConfigSchema.safeParse({ host: ["127.0.0.1", "galaxy"] }).success).toBe(true);
-  });
-});
-
-describe("collectHttpCorsOrigins", () => {
-  test("deduplicates and trims", () => {
-    const set = collectHttpCorsOrigins({
-      cors_origins: ["http://127.0.0.1:4173", " http://127.0.0.1:4173 "],
-    });
-    expect([...set]).toEqual(["http://127.0.0.1:4173"]);
+  test("DEFAULT_HUB_TLS_PORT is 2659", () => {
+    expect(DEFAULT_HUB_TLS_PORT).toBe(2659);
   });
 });

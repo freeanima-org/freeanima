@@ -181,6 +181,10 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
       statusFile,
       host,
       port,
+      tlsPort:
+        (statusFile.tls_port as number | undefined) ??
+        (body?.tls_port as number | undefined) ??
+        null,
       healthMs,
       systemd: sd,
       pidOverride: pid,

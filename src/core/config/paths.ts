@@ -68,6 +68,15 @@ export const PATHS = {
   get cloudflaredConfigFile() {
     return homePath("cloudflared", "config.yml");
   },
+  get tlsDir() {
+    return homePath("tls");
+  },
+  get tlsCertFile() {
+    return homePath("tls", "cert.pem");
+  },
+  get tlsKeyFile() {
+    return homePath("tls", "key.pem");
+  },
   get vaultAgentMachineKey() {
     return homePath("vault", "agent-machine.key");
   },
