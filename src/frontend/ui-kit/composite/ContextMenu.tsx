@@ -11,8 +11,8 @@ export type ContextMenuProps = {
 
 function runMenuItemAction(onClick: () => void, onClose: () => void) {
   onClose();
-  // 延后执行，避免同一次 click 被 Radix Sheet/Dialog 判为「外部点击」而立刻关闭
-  queueMicrotask(onClick);
+  // 菜单卸载后再打开 Dialog/Sheet，避免 window click 监听器或 outside 判定立刻 dismiss
+  window.setTimeout(onClick, 0);
 }
 
 /** 精确指针下的浮动右键菜单（触摸主输入请用 ActionSheet） */

@@ -17,6 +17,8 @@ export function resolveThreeColumnMode(
   containerWidth: number,
   viewportMode: ThreeColumnLayoutMode,
 ): ThreeColumnLayoutMode {
+  // 移动壳无左 rail，容器宽度≈视口；compact 视口必须保持单列 + 详情 Sheet
+  if (viewportMode === "compact") return "compact";
   // 未量到或量到异常窄时仍用视口档，避免首帧误判 compact 导致拖拽手柄不挂载
   if (containerWidth <= THREE_COLUMN_CONTAINER_COMPACT_MAX) return viewportMode;
   return threeColumnModeForContainerWidth(containerWidth);

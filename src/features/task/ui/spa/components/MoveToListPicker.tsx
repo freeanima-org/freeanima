@@ -1,15 +1,7 @@
-import { useMemo, useState, type ReactNode } from "react";
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  Input,
-  Sheet,
-  SheetContent,
-} from "@freeanima/ui-kit";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
+
+import { Button, Input } from "@freeanima/ui-kit";
 import { useMobileLayout } from "@freeanima/ui-kit/layout";
 
 import type { TaskListRow } from "../lib/api.ts";
@@ -22,6 +14,7 @@ import {
 } from "../lib/list-tree.ts";
 
 type MoveToListPickerProps = {
+  open: boolean;
   lists: TaskListRow[];
   currentListId: number | null;
   title?: string;
@@ -192,7 +185,6 @@ function MoveToListPickerBody({
           placeholder="搜索清单…"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          autoFocus
         />
       </div>
       {children}
@@ -206,6 +198,7 @@ function MoveToListPickerBody({
 }
 
 export function MoveToListPicker({
+  open,
   lists,
   currentListId,
   title = "移动到清单",
@@ -213,7 +206,28 @@ export function MoveToListPicker({
   onClose,
 }: MoveToListPickerProps) {
   const mobileLayout = useMobileLayout();
+  const [visible, setVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    if (!open) {
+      setVisible(false);
+      setSearchQuery("");
+      return;
+    }
+    const timer = window.setTimeout(() => setVisible(true), 0);
+    return () => window.clearTimeout(timer);
+  }, [open]);
+
+  useEffect(() => {
+    if (!visible) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [visible, onClose]);
+
   const [expandedFolderIds, setExpandedFolderIds] = useState<Set<number>>(() => {
     const saved = readExpandedFolders();
     if (saved.size > 0) return saved;
@@ -241,6 +255,8 @@ export function MoveToListPicker({
     });
   };
 
+  if (!open || !visible || typeof document === "undefined") return null;
+
   const treeRows = (
     <TreePickerRows
       nodes={displayTree}
@@ -254,48 +270,37 @@ export function MoveToListPicker({
     />
   );
 
-  if (mobileLayout) {
-    return (
-      <Sheet open onOpenChange={(open) => !open && onClose()}>
-        <SheetContent
-          side="bottom"
-          showCloseButton={false}
-          className="safe-area-pb max-h-[85vh] gap-0 rounded-t-2xl p-0"
+  // plain portal，不用 Radix（右键后会被 outside 立刻 dismiss）；布局随视口档分形态
+  return createPortal(
+    <>
+      <div
+        className="fixed inset-0 z-[100] bg-black/50"
+        aria-hidden
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={onClose}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className={
+          mobileLayout
+            ? "bg-background fixed inset-x-0 bottom-0 z-[101] flex max-h-[85vh] flex-col overflow-hidden rounded-t-2xl border-t shadow-lg safe-area-pb"
+            : "bg-background fixed top-1/2 left-1/2 z-[101] flex max-h-[min(85vh,32rem)] w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-lg border shadow-lg"
+        }
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <MoveToListPickerBody
+          title={title}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onClose={onClose}
         >
-          <MoveToListPickerBody
-            title={title}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            onClose={onClose}
-          >
-            {treeRows}
-          </MoveToListPickerBody>
-        </SheetContent>
-      </Sheet>
-    );
-  }
-
-  return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex max-h-[85vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-xl">
-        <DialogHeader className="space-y-2 border-b px-4 py-3 text-left">
-          <DialogTitle className="text-sm">{title}</DialogTitle>
-          <Input
-            type="search"
-            className="h-8 w-full"
-            placeholder="搜索清单…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            autoFocus
-          />
-        </DialogHeader>
-        {treeRows}
-        <DialogFooter className="border-t p-2 sm:justify-stretch">
-          <Button type="button" variant="ghost" className="w-full" onClick={onClose}>
-            取消
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          {treeRows}
+        </MoveToListPickerBody>
+      </div>
+    </>,
+    document.body,
   );
 }

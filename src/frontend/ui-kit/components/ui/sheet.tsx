@@ -71,6 +71,7 @@ function SheetContent({
       <SheetOverlay />
       <SheetPrimitive.Content
         data-slot="sheet-content"
+        onOpenAutoFocus={(e) => e.preventDefault()}
         className={cn(sheetVariants({ side }), className)}
         {...props}
       >

@@ -104,6 +104,25 @@ describe("ensure-web-dist", () => {
     expect(result.needsRebuild).toBe(false);
   });
 
+  it("assessMonorepoWebDist ui-kit 源码比 dist 新时需要 rebuild", () => {
+    const root = tempRoot("web-dist-ui-kit-");
+    const dist = join(root, "dist");
+    mkdirSync(dist, { recursive: true });
+    const distTime = Date.now() - 60_000;
+    touch(join(dist, "index.html"), distTime);
+    writeShellBridgeAsset(dist, distTime);
+    touch(join(dist, "manifest.webmanifest"), distTime);
+    touch(join(dist, "sw.js"), distTime);
+
+    const sourceRoot = join(root, "src/frontend/ui-kit/composite");
+    mkdirSync(sourceRoot, { recursive: true });
+    touch(join(sourceRoot, "ContextMenu.tsx"), distTime + 1000);
+
+    const result = assessMonorepoWebDist(root, dist);
+    expect(result.needsRebuild).toBe(true);
+    expect(result.stale).toBe(true);
+  });
+
   it("isSourceTreeNewerThan 跳过 node_modules", () => {
     const root = tempRoot("web-dist-skip-");
     const since = Date.now();
