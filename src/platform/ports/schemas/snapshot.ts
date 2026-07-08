@@ -1,8 +1,13 @@
 /** AppRuntime internal snapshot types */
 
+import type { ComponentBuildMeta } from "@freeanima/shell-sdk/build-meta";
+
 export type HealthSnapshot = {
   status: "ok";
   version: string;
+  build?: ComponentBuildMeta;
+  /** Hub 进程本次启动时间（CST ISO） */
+  started_at?: string;
   /** GET /api/health：Bearer 是否足以访问其余 REST API */
   authed?: boolean;
 };
@@ -67,6 +72,7 @@ export type ServiceSnapshot = {
   status: "running";
   pid: number;
   version: string;
+  build?: ComponentBuildMeta;
   uptime_seconds: number | null;
   start_time_iso: string;
   config: {

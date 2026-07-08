@@ -4,7 +4,7 @@ export type ShellBridgeWindow = Window & {
   __freeanimaShellBridge?: { ready: Promise<void> };
   __freeanimaWebUiConfig?: Pick<
     WebUiConfigJson,
-    "layout_mode" | "ui_version" | "min_shell_version"
+    "layout_mode" | "ui_version" | "web_build" | "min_shell_version"
   >;
 };
 
@@ -20,7 +20,7 @@ declare global {
     freeanimaScopedSettings?: ScopedSettingsBridge;
     __freeanimaWebUiConfig?: Pick<
       WebUiConfigJson,
-      "layout_mode" | "ui_version" | "min_shell_version"
+      "layout_mode" | "ui_version" | "web_build" | "min_shell_version"
     >;
   }
 
@@ -74,6 +74,7 @@ export function applyWebUiConfig(cfg: WebUiConfigJson | null): WebUiBootstrapCon
   const meta: NonNullable<Window["__freeanimaWebUiConfig"]> = {};
   if (cfg.layout_mode) meta.layout_mode = cfg.layout_mode;
   if (cfg.ui_version) meta.ui_version = cfg.ui_version;
+  if (cfg.web_build) meta.web_build = cfg.web_build;
   if (cfg.min_shell_version) meta.min_shell_version = cfg.min_shell_version;
   window.__freeanimaWebUiConfig = meta;
   const runtimeHub = cfg.hub_url?.trim().replace(/\/$/, "");

@@ -5,6 +5,7 @@ import {
   type CompanionWindowRole,
   type SatelliteShellApi,
 } from "@freeanima/shell-sdk";
+import { readNativeBuildMetaFromDefine } from "@freeanima/shell-sdk/native-build-meta.read";
 
 type HubClientConfigPayload = {
   hubUrl: string;
@@ -13,6 +14,12 @@ type HubClientConfigPayload = {
 };
 
 const DEFAULT_HUB_URL = "http://127.0.0.1:2658";
+
+declare const __NATIVE_BUILD_META__: import("@freeanima/shell-sdk/build-meta").ComponentBuildMeta;
+
+const NATIVE_BUILD = readNativeBuildMetaFromDefine(
+  typeof __NATIVE_BUILD_META__ !== "undefined" ? __NATIVE_BUILD_META__ : undefined,
+);
 
 const apiOriginArg = process.argv.find((v) => v.startsWith("--companion-api-origin="));
 const windowRoleArg = process.argv.find((v) => v.startsWith("--companion-window="));
@@ -58,6 +65,7 @@ function createSatelliteShell(
 ): SatelliteShellApi {
   return {
     isElectron: true,
+    ...(NATIVE_BUILD ? { nativeBuild: NATIVE_BUILD } : {}),
     ...hubFields,
     windowRole,
     apiOrigin,

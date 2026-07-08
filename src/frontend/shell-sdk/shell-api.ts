@@ -1,4 +1,5 @@
 import type { HubFetch, RemoteAuthCredentials } from "./remote-auth.ts";
+import type { ComponentBuildMeta } from "./build-meta.ts";
 import type { PrimaryInputKind } from "./shell-capability.ts";
 
 /** 与 @freeanima/sap-contract SapInstanceStore 对齐 */
@@ -25,6 +26,8 @@ export type SatelliteShellApi = {
   isElectron: boolean;
   /** Capacitor 等原生壳 */
   isNativeShell?: boolean;
+  /** 原生壳构建元数据（desktop/mobile build 时 bake） */
+  nativeBuild?: ComponentBuildMeta;
   /** 主输入范式（可选；未设时 Electron→pointer，Capacitor→touch，Web→媒体查询） */
   primaryInput?: PrimaryInputKind;
   hubUrl: string;

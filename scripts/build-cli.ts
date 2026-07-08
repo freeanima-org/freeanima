@@ -57,6 +57,9 @@ async function main(): Promise<void> {
   rmSync(PUBLISH_DIR, { recursive: true, force: true });
   mkdirSync(join(PUBLISH_DIR, "dist"), { recursive: true });
 
+  console.log("generating service build-meta…");
+  await $`bun ${join(ROOT, "scripts/gen-build-meta.ts")} --component service --channel prod --out ${join(PUBLISH_DIR, "dist/build-meta.json")} --repo-root ${ROOT}`;
+
   console.log("bundling cli…");
   const bundlePath = join(PUBLISH_DIR, "dist/cli.js");
   await $`bun build ${join(CLI_DIR, "cli.ts")} --outdir ${join(PUBLISH_DIR, "dist")} --target bun --minify`;

@@ -6,6 +6,7 @@ import {
   type SapInstanceStore,
   type SatelliteShellApi,
 } from "@freeanima/shell-sdk";
+import { readNativeBuildMetaFromDefine } from "@freeanima/shell-sdk/native-build-meta.read";
 
 import { HUB_URL_KEY, REMOTE_AUTH_TOKEN_KEY, sapInstanceKey } from "./prefs-keys.ts";
 import { prefsGet, prefsSet } from "./prefs-safe.ts";
@@ -13,6 +14,16 @@ import { SETTINGS_PAGE } from "./paths.ts";
 import { replaceShellPath } from "./shell-nav.ts";
 
 const SHELL_SNAPSHOT_KEY = "freeanima.shell.snapshot";
+
+declare const __NATIVE_BUILD_META__: import("@freeanima/shell-sdk/build-meta").ComponentBuildMeta;
+
+const NATIVE_BUILD = readNativeBuildMetaFromDefine(
+  typeof __NATIVE_BUILD_META__ !== "undefined" ? __NATIVE_BUILD_META__ : undefined,
+);
+
+function withNativeBuild(shell: SatelliteShellApi): SatelliteShellApi {
+  return NATIVE_BUILD ? { ...shell, nativeBuild: NATIVE_BUILD } : shell;
+}
 
 export type ShellSnapshot = {
   hubUrl: string;
@@ -90,7 +101,7 @@ function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
     snapshot.hubWsUrl,
     snapshot.remoteAuthToken,
   );
-  return {
+  return withNativeBuild({
     isElectron: false,
     isNativeShell: true,
     ...apiFields,
@@ -108,12 +119,12 @@ function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
       window.addEventListener(SHELL_CONFIG_CHANGED_EVENT, listener);
       return () => window.removeEventListener(SHELL_CONFIG_CHANGED_EVENT, listener);
     },
-  };
+  });
 }
 
 /** Hub 未配置时的 minimal 壳层标记（供设置页正确识别 mobile 平台） */
 export function createMobileShellStub(): SatelliteShellApi {
-  return {
+  return withNativeBuild({
     isElectron: false,
     isNativeShell: true,
     hubUrl: "",
@@ -132,7 +143,7 @@ export function createMobileShellStub(): SatelliteShellApi {
       window.addEventListener(SHELL_CONFIG_CHANGED_EVENT, listener);
       return () => window.removeEventListener(SHELL_CONFIG_CHANGED_EVENT, listener);
     },
-  };
+  });
 }
 
 export async function buildMobileShell(

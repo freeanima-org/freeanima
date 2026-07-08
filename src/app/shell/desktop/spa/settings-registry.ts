@@ -5,6 +5,7 @@ import {
 } from "@freeanima/shell-sdk/settings";
 import { companionSettingsSection } from "@freeanima/satellite-companion/settings-section";
 import { shellModulesSettingsSection } from "@freeanima/shell-ui/spa/settings/modules-section.ts";
+import { aboutSettingsSection } from "@freeanima/shell-ui/spa/settings/about/about-section.ts";
 import { hubRuntimeSettingsSection } from "@freeanima/shell-ui/spa/settings/hub-config/hub-runtime-section.ts";
 
 import type { DesktopSettingsApis } from "./companion-settings-api.ts";
@@ -24,5 +25,6 @@ export function createDesktopSettingsBindings(
       store: stores.companion,
       deps: { companion: apis.companion },
     },
+    { section: aboutSettingsSection },
   ];
 }

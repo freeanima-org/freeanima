@@ -57,6 +57,18 @@ export {
   connectAuthTokenForHub,
   hubRequiresRemoteAuth,
 } from "./shell-api-fields.ts";
+export type {
+  BuildChannel,
+  BuildComponent,
+  ComponentBuildMeta,
+  GitBuildInfo,
+  NativeShellKind,
+} from "./build-meta.ts";
+export {
+  formatBuildChannelLabel,
+  formatBuildMetaLines,
+  parseComponentBuildMeta,
+} from "./build-meta.ts";
 export type { HubHealthBody } from "./hub-health-probe.ts";
 export {
   HUB_HEALTH_PROBE_TIMEOUT_MS,

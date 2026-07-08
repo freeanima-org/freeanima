@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, mergeConfig, type Plugin } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { createComponentBuildMeta } from "../../../core/config/build-meta.ts";
 import { resolveHubRpcWsUrl } from "../../../shared/hub-rpc/urls.ts";
 
 import { shellEntryFileNames } from "../../../frontend/shell-ui/vite/entry-file-names.ts";
@@ -30,6 +31,18 @@ function readUiVersion(): string {
 
 const UI_VERSION = readUiVersion();
 
+function devWebBuildMeta() {
+  return createComponentBuildMeta({
+    component: "web",
+    channel: "dev",
+    repoRoot: REPO_ROOT,
+    version: UI_VERSION,
+    includeBuiltAt: true,
+  });
+}
+
+const DEV_WEB_BUILD = devWebBuildMeta();
+
 function webDevPlugin(): Plugin {
   return {
     name: "app-web-dev",
@@ -46,6 +59,7 @@ function webDevPlugin(): Plugin {
               hub_url: HUB_URL,
               hub_ws_url: resolveHubRpcWsUrl(HUB_URL),
               ui_version: UI_VERSION,
+              web_build: DEV_WEB_BUILD,
               min_shell_version: "0.8.0",
               ...(authToken ? { auth_token: authToken } : {}),
             }),
