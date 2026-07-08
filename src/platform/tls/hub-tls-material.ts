@@ -1,9 +1,10 @@
-import { chmodSync, existsSync, mkdirSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, unlinkSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
 import { PATHS } from "@freeanima/core/config";
 import { logComponent } from "@freeanima/platform/logging";
 
+import { certSanCoversRequired, readCertSanNames } from "./cert-san.ts";
 import { buildOpenSslSubjectAltName, collectTlsSanNames, expandConfigPath } from "./tls-paths.ts";
 
 export type HubTlsMaterialSource = "existing" | "mkcert" | "self-signed";
@@ -20,6 +21,7 @@ export type EnsureHubTlsMaterialOptions = {
   keyPath: string;
   auto: boolean;
   bindHosts: string[];
+  allowedHosts?: string[];
   passphrase?: string;
 };
 
@@ -112,6 +114,27 @@ function tryGenerateWithOpenSsl(certPath: string, keyPath: string, sanNames: str
   return tlsFilesReadable(certPath, keyPath);
 }
 
+function removeTlsFiles(certPath: string, keyPath: string): void {
+  for (const filePath of [certPath, keyPath]) {
+    try {
+      if (existsSync(filePath)) unlinkSync(filePath);
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+function existingMaterialCoversSan(
+  certPath: string,
+  keyPath: string,
+  requiredSan: string[],
+): boolean {
+  if (!tlsFilesReadable(certPath, keyPath)) return false;
+  const certSan = readCertSanNames(certPath);
+  if (!certSan) return false;
+  return certSanCoversRequired(certSan, requiredSan);
+}
+
 /**
  * 确保 Hub TLS cert/key 存在；auto 时优先 mkcert，fallback openssl 自签。
  */
@@ -119,16 +142,34 @@ export function ensureHubTlsMaterial(options: EnsureHubTlsMaterialOptions): HubT
   const certPath = expandConfigPath(options.certPath);
   const keyPath = expandConfigPath(options.keyPath);
   const passphrase = options.passphrase?.trim() || undefined;
+  const allowedHosts = options.allowedHosts ?? [];
+  const requiredSan = collectTlsSanNames(options.bindHosts, allowedHosts);
+
+  if (existingMaterialCoversSan(certPath, keyPath, requiredSan)) {
+    return { certPath, keyPath, source: "existing", ...(passphrase ? { passphrase } : {}) };
+  }
+
+  if (tlsFilesReadable(certPath, keyPath) && !options.auto) {
+    logComponent("startup").warn("Hub TLS 证书 SAN 未覆盖当前配置，auto=false 不会自动重签", {
+      cert: certPath,
+      requiredSan,
+    });
+    return { certPath, keyPath, source: "existing", ...(passphrase ? { passphrase } : {}) };
+  }
 
   if (tlsFilesReadable(certPath, keyPath)) {
-    return { certPath, keyPath, source: "existing", ...(passphrase ? { passphrase } : {}) };
+    logComponent("startup").info("Hub TLS 证书 SAN 已过期，将重新生成", {
+      cert: certPath,
+      requiredSan,
+    });
+    removeTlsFiles(certPath, keyPath);
   }
 
   if (!options.auto) {
     throw new Error(`TLS 证书或私钥不存在（auto=false）：cert=${certPath} key=${keyPath}`);
   }
 
-  const sanNames = collectTlsSanNames(options.bindHosts);
+  const sanNames = requiredSan;
 
   if (tryGenerateWithMkcert(certPath, keyPath, sanNames)) {
     logComponent("startup").info("Hub TLS 证书已生成（mkcert）", { cert: certPath });

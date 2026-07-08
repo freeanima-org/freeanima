@@ -9,16 +9,17 @@ title: Remote access
 
 ## Overview
 
-| Layer                   | Role                                                                                                               |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| **Service API Token**   | 绑定 `user` / `agent` subject；Hub RPC HTTP `Authorization: Bearer`；WS `connect.auth_token`；MCP `/mcp` 同 Bearer |
-| **CLI bootstrap**       | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                      |
-| **cloudflared**         | Outbound tunnel；single hostname → Hub `127.0.0.1:2658`（API + Web UI at `/web`）                                  |
-| **`http.host`**         | Hub listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                            |
-| **`http.cors_origins`** | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel                 |
-| **Client settings**     | Desktop / mobile shell / **browser Web** fill Hub URL and token in **Hub settings**                                |
-| **Remote UI**           | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI        |
-| **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                        |
+| Layer                    | Role                                                                                                               |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| **Service API Token**    | 绑定 `user` / `agent` subject；Hub RPC HTTP `Authorization: Bearer`；WS `connect.auth_token`；MCP `/mcp` 同 Bearer |
+| **CLI bootstrap**        | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                      |
+| **cloudflared**          | Outbound tunnel；single hostname → Hub `127.0.0.1:2658`（API + Web UI at `/web`）                                  |
+| **`http.host`**          | Hub listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                            |
+| **`http.allowed_hosts`** | TLS 证书 SAN 额外主机名 / IP（`http.host: 0.0.0.0` 时列出客户端访问用的名称）；变更后 `auto: true` 时重启自动重签  |
+| **`http.cors_origins`**  | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel                 |
+| **Client settings**      | Desktop / mobile shell / **browser Web** fill Hub URL and token in **Hub settings**                                |
+| **Remote UI**            | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI        |
+| **PWA**                  | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                        |
 
 ### PWA（浏览器 Web）
 
@@ -104,19 +105,25 @@ Hub 可在 **独立端口** 提供原生 TLS（`Bun.serve`），与默认 HTTP �
 ```yaml
 http:
   host: 0.0.0.0
+  allowed_hosts:
+    - feng-vm.lan
+    - 10.200.200.10
   tls:
     enabled: true
     port: 2659
     auto: true
 ```
 
-- **`auto: true`**（默认）：首次启动在 `~/.anima/tls/` 自动生成 cert/key（优先 **mkcert**，否则 **openssl 自签**）；SAN 含 `localhost`、`127.0.0.1`、`::1` 及 `http.host` 中的局域网 IP。
+- **`auto: true`**（默认）：首次启动在 `~/.anima/tls/` 自动生成 cert/key（优先 **mkcert**，否则 **openssl 自签**）；SAN 含 `localhost`、`127.0.0.1`、`::1`、`http.host` 中的 bind 地址（跳过 `0.0.0.0`）及 **`http.allowed_hosts`**。配置变更导致 SAN 不足时，**重启 Hub 会自动删除旧证书并重签**（`auto: false` 时仅告警，不覆盖手动证书）。
 - **Tunnel 不变**：cloudflared 仍指向 `http://127.0.0.1:2658`。
 - **探活**：`anima service status` 与 `/api/health` 仍走 HTTP `:2658`。
 
 #### mkcert 根 CA 导入手机（可选）
 
 Hub 服务器证书在 Hub 机器上；手机浏览器/APK 无警告访问须在各设备安装 **mkcert 根 CA**（`rootCA.pem`，非 `cert.pem`）：
+
+- **设置 → 连接**（`/web/settings?section=hub`）：页面底部提供 **rootCA.pem 下载**与 **二维码**（二维码指向 HTTP `:2658` 下载链接，便于未信任 HTTPS 时扫码）。
+- 若 HTTPS 页面脚本仍报错，请先用 **`http://<host>:2658/web/settings?section=hub`** 打开设置页。
 
 ```bash
 mkcert -CAROOT   # 查看 rootCA.pem 路径

@@ -22,6 +22,13 @@ export function formatHttpBindHosts(hosts: string[]): string {
   return hosts.join(",");
 }
 
+/** 从 `http.allowed_hosts` 收集 TLS SAN 额外条目（去重、去空） */
+export function collectHttpAllowedHosts(http?: HttpConfig | null): string[] {
+  const raw = http?.allowed_hosts;
+  if (!raw?.length) return [];
+  return [...new Set(raw.map((entry) => entry.trim()).filter(Boolean))];
+}
+
 /** CLI `--host` 优先，否则读 `http.host`，最后回退默认 loopback */
 export function resolveHttpBindHost(
   cliHost: string | undefined,

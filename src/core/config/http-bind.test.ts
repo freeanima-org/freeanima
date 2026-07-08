@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+  collectHttpAllowedHosts,
   collectHttpBindHosts,
   formatHttpBindHosts,
   parseHttpBindHostInput,
@@ -30,6 +31,21 @@ describe("collectHttpBindHosts", () => {
       "galaxy",
       "10.244.0.2",
     ]);
+  });
+});
+
+describe("collectHttpAllowedHosts", () => {
+  test("reads allowed_hosts array", () => {
+    expect(
+      collectHttpAllowedHosts({
+        allowed_hosts: ["feng-vm.lan", "10.200.200.10", "feng-vm.lan"],
+      }),
+    ).toEqual(["feng-vm.lan", "10.200.200.10"]);
+  });
+
+  test("returns empty when missing", () => {
+    expect(collectHttpAllowedHosts({})).toEqual([]);
+    expect(collectHttpAllowedHosts(undefined)).toEqual([]);
   });
 });
 

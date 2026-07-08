@@ -36,7 +36,7 @@ flowchart LR
   Console -->|REST Bearer| Hub
 ```
 
-Mobile REST **connects directly** to Hub (no desktop Electron `/api` proxy); requires a **Service API Token** and Hub CORS for Capacitor origin (`https://localhost`).
+Mobile REST **connects directly** to Hub (no desktop Electron `/api` proxy); requires a **Service API Token** and Hub CORS for Capacitor origin (`http://localhost`；`androidScheme: http`）。
 
 ## Hub settings
 
@@ -51,14 +51,16 @@ Non-loopback Hub URL requires token; REST uses `Authorization: Bearer`; SAP send
 
 ## Troubleshooting
 
-| Symptom                               | Common cause                                                                                    |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Keyboard covers chat input            | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes |
-| Chat input unresponsive               | No selected conversation (first install should auto-create); or SAP disconnected                |
-| Console load failed / Failed to fetch | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header      |
-| Not Found                             | Avoid legacy paths like `/console`/dashboard/index.html`; use SPA `/web/console/dashboard`      |
-| TTS / 朗读无声                        | 默认 Edge TTS 需 Hub 出网；Hub 设置 → 语音 → 试听。若用 Web Speech 需 HTTPS 安全上下文          |
-| Mobile UI 与浏览器不一致              | 确认 WebView 地址为 `{hub}/web/*`（非 `https://localhost`）；Hub 需部署最新 `build:web`         |
+| Symptom                                | Common cause                                                                                                                                                                                                                    |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Keyboard covers chat input             | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes                                                                                                                                 |
+| Chat input unresponsive                | No selected conversation (first install should auto-create); or SAP disconnected                                                                                                                                                |
+| Console load failed / Failed to fetch  | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header                                                                                                                                      |
+| 测试连接「网络错误」、浏览器同地址正常 | Bootstrap 在 `https://localhost`，WebView 会拦截跨域/混合内容 fetch；需 **Capacitor 原生 HTTP**（`CapacitorHttp`）或先 HTTP 进 Hub 再测。HTTPS 另需 APK 信任用户 CA（`network_security_config` + 安装 `rootCA.pem` 后重装 APK） |
+| ZeroTier / 虚拟网卡 IP                 | 确认手机 ZeroTier 在线；Hub `http.host: 0.0.0.0`；`allowed_hosts` 含该 IP；壳层 Hub URL **勿带尾斜杠**，HTTP 用 `:2658`                                                                                                         |
+| Not Found                              | Avoid legacy paths like `/console`/dashboard/index.html`; use SPA `/web/console/dashboard`                                                                                                                                      |
+| TTS / 朗读无声                         | 默认 Edge TTS 需 Hub 出网；Hub 设置 → 语音 → 试听。若用 Web Speech 需 HTTPS 安全上下文                                                                                                                                          |
+| Mobile UI 与浏览器不一致               | 确认 WebView 地址为 `{hub}/web/*`（非 `https://localhost`）；Hub 需部署最新 `build:web`                                                                                                                                         |
 
 ## Debugging
 

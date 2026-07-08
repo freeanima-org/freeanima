@@ -12,6 +12,9 @@ database:
 # Hub HTTP 监听（可选，默认 127.0.0.1:2658）
 # http:
 #   host: 0.0.0.0
+#   allowed_hosts:           # TLS SAN（host 为 0.0.0.0 时填客户端访问用的主机名/IP）
+#     - feng-vm.lan
+#     - 10.200.200.10
 #   cors_origins:
 #     - http://127.0.0.1:4173
 #   tls:

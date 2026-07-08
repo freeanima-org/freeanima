@@ -35,5 +35,9 @@ export type {
   SettingsSectionDeps,
 } from "./types.ts";
 export { defineSettingsForm, listSettingsSectionsForPlatform } from "./types.ts";
-export { desktopGeneralSettingsSection, hubSettingsSection } from "./sections/hub-section.ts";
+export {
+  desktopGeneralSettingsSection,
+  hubFields,
+  hubSettingsSection,
+} from "./sections/hub-section.ts";
 export { debugSettingsSection } from "./sections/debug-section.ts";
