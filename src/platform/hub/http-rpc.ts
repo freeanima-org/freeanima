@@ -92,6 +92,7 @@ export async function handleHttpHubRpcRequest(
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
   } catch (e) {
+    console.error("[hub-rpc] handler failed:", e);
     return new Response(
       serializeHubRpcEnvelope({
         kind: "res",
@@ -99,7 +100,7 @@ export async function handleHttpHubRpcRequest(
         ok: false,
         error: {
           code: "hub_rpc_error",
-          message: e instanceof Error ? e.message : String(e),
+          message: "Hub RPC request failed",
         },
       }),
       { status: 200, headers: { "Content-Type": "application/json" } },

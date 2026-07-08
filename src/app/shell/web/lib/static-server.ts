@@ -44,7 +44,7 @@ export type WebStaticServerOptions = {
 };
 
 export type WebStaticServerHandle = {
-  server: BunServer;
+  server: BunServer<undefined>;
   url: string;
   port: number;
   host: string;
@@ -143,6 +143,9 @@ export async function startWebStaticServer(
       });
 
       const actualPort = server.port;
+      if (actualPort == null) {
+        throw new Error(`Web 静态服绑定失败: ${host}:${attemptPort}`);
+      }
       let cleanupPid: (() => void) | undefined;
       if (pidFile) {
         writeFileSync(pidFile, String(process.pid), "utf-8");
@@ -164,7 +167,7 @@ export async function startWebStaticServer(
         port: actualPort,
         host,
         close: async () => {
-          server.stop(true);
+          void server.stop(true);
           cleanupPid?.();
         },
       };
