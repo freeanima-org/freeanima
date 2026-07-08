@@ -19,6 +19,11 @@ describe("three-column-container-mode", () => {
     expect(resolveThreeColumnMode(200, "medium")).toBe("medium");
   });
 
+  it("compact 视口不受容器宽度影响", () => {
+    expect(resolveThreeColumnMode(700, "compact")).toBe("compact");
+    expect(resolveThreeColumnMode(900, "compact")).toBe("compact");
+  });
+
   it("列宽不超过容器剩余空间", () => {
     const limits = { min: 180, max: 480 };
     expect(clampListWidthForContainer(400, 320, 900, limits)).toBe(352);

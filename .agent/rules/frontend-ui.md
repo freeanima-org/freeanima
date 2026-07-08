@@ -21,14 +21,15 @@
 
 ## 基元约定
 
-| 场景       | 推荐做法                              |
-| ---------- | ------------------------------------- |
-| 按钮       | `<Button variant="…" size="…">`       |
-| 表单输入   | `<Input>` / `<Textarea>` / `<Select>` |
-| 加载       | `<Spinner>`                           |
-| 空态       | `<EmptyState>`                        |
-| 错误/提示  | `<StatusAlert>`                       |
-| 确认对话框 | `<ConfirmDialog>` / `<Dialog>`        |
+| 场景         | 推荐做法                                                                                                  |
+| ------------ | --------------------------------------------------------------------------------------------------------- |
+| 按钮         | `<Button variant="…" size="…">`                                                                           |
+| 表单输入     | `<Input>` / `<Textarea>` / `<Select>`；**默认不自动聚焦**，需要时用 `focusOnMount`                        |
+| 对话框/Sheet | `DialogContent` / `SheetContent` 默认 `onOpenAutoFocus` 阻止聚焦；确需打开时聚焦用 `onOpenAutoFocus` 覆盖 |
+| 加载         | `<Spinner>`                                                                                               |
+| 空态         | `<EmptyState>`                                                                                            |
+| 错误/提示    | `<StatusAlert>`                                                                                           |
+| 确认对话框   | `<ConfirmDialog>` / `<Dialog>`                                                                            |
 
 ## 复合组件
 

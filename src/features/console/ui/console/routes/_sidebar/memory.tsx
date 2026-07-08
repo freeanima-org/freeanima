@@ -181,7 +181,7 @@ function MemoryPage() {
                   type="text"
                   className="h-8 font-mono"
                   placeholder={m.console_common_keyword_placeholder()}
-                  autoFocus
+                  focusOnMount
                 />
               </FormField>
               <FormField label={m.console_memory_top_n()} className="max-w-xs text-xs">
