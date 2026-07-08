@@ -7,6 +7,7 @@ import {
   dreamMethodDefs,
   emailMethodDefs,
   notificationMethodDefs,
+  companionMethodDefs,
 } from "./features.ts";
 import { mcpMethodDefs } from "./mcp.ts";
 import { taskMethodDefs } from "./task.ts";
@@ -22,6 +23,7 @@ const REGISTRY_PARTS = [
   diaryMethodDefs,
   dreamMethodDefs,
   notificationMethodDefs,
+  companionMethodDefs,
   wsOnlyMethodDefs,
   mcpMethodDefs,
   consoleMethodDefs,
@@ -49,6 +51,7 @@ export const METHOD_REGISTRY = {
   ...diaryMethodDefs,
   ...dreamMethodDefs,
   ...notificationMethodDefs,
+  ...companionMethodDefs,
   ...wsOnlyMethodDefs,
   ...mcpMethodDefs,
   ...consoleMethodDefs,

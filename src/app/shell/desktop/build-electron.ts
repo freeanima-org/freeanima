@@ -1,7 +1,6 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
-import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import * as esbuild from "esbuild";
 import type { CliOptions } from "electron-builder";
@@ -17,7 +16,6 @@ const REPO_ROOT = join(SHELL_ROOT, "..", "..", "..", "..");
 const ELECTRON_DIST = join(SHELL_ROOT, "electron-dist");
 const MAIN_BUNDLE_PATH = join(ELECTRON_DIST, "main.cjs");
 const COMPANION_ROOT = join(REPO_ROOT, "src", "satellites", "companion");
-const FBX_KIT = join(REPO_ROOT, "node_modules", "fbx2vrma-converter");
 const ROOT_PACKAGE_JSON = join(REPO_ROOT, "package.json");
 
 const BUNDLED_INTERNAL_PACKAGES = new Set([
@@ -33,13 +31,7 @@ const BUNDLED_INTERNAL_PACKAGES = new Set([
  * 必须打进 main.cjs 的 npm 包（纯 JS 或 ESM-only）。
  * 新增主进程 npm 依赖时：默认加入此集合，否则会被标为 external 且安装包无 node_modules。
  */
-const BUNDLED_NPM_PACKAGES = new Set([
-  "zod",
-  "ws",
-  "fbx2vrma-converter",
-  "commander",
-  "electron-store",
-]);
+const BUNDLED_NPM_PACKAGES = new Set(["zod", "ws", "commander", "electron-store"]);
 
 /**
  * 允许 runtime require 但不打进 asar（可选 native / 死分支）。
@@ -211,27 +203,6 @@ function cleanCompanionBuildArtifacts(): void {
   if (cleaned) console.log("[desktop-shell] cleaned companion build artifacts");
 }
 
-function resolveWindowsFbx2gltfExe(): string {
-  const cacheHome = process.env.FREEANIMA_HOME?.trim() || join(homedir(), ".anima");
-  const candidates = [
-    join(FBX_KIT, "FBX2glTF-windows-x64.exe"),
-    join(cacheHome, "tools", "fbx2gltf", "FBX2glTF-windows-x64.exe"),
-  ];
-  for (const path of candidates) {
-    if (existsSync(path) && statSync(path).size > 1_000_000) return path;
-  }
-  throw new Error("missing FBX2glTF-windows-x64.exe; run `bun run setup:fbx` from repository root");
-}
-
-function stageFbxBinary(platform: string): void {
-  const binDir = join(SHELL_ROOT, "build-resources", "bin");
-  mkdirSync(binDir, { recursive: true });
-  if (platform === "win" || platform === "win32") {
-    const src = resolveWindowsFbx2gltfExe();
-    cpSync(src, join(binDir, "FBX2glTF-windows-x64.exe"));
-  }
-}
-
 function buildElectronBuilderOptions(
   platform: string,
   profile: BuildProfile,
@@ -322,7 +293,6 @@ export async function buildDesktopShellElectron(opts: BuildElectronOptions = {})
   await buildVendorAssets({ minify, sourcemap });
   const version = resolveBuildVersion(opts.version);
   await bundleElectronMain(sourcemap, profile, version);
-  stageFbxBinary(platform);
   if (fullClean) {
     cleanReleaseDir();
   }

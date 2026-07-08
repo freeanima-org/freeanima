@@ -3,7 +3,7 @@ import { extname, join } from "node:path";
 import { jsonResponse, withCors } from "./http/cors.ts";
 import { companionPackageRoot } from "./companion-root.ts";
 import { resolveModelFile } from "./model-path.ts";
-import { resolveMotionFile } from "./motions.ts";
+import { resolveMotionFile } from "./motion-path.ts";
 
 let distDirOverride: string | null = null;
 

@@ -1,43 +1,52 @@
-import { isElectron } from "./electron.ts";
-import { resolveSidecarOrigin } from "./sidecar.ts";
 import type {
   ClientCompanionConfig,
   LocomotionSlot,
   MotionLibraryEntry,
   MotionSlotId,
-  PlaySlotCommand,
-  RuntimeState,
-  RuntimeWsMessage,
 } from "@shared/constants.ts";
 import type { CompanionBehavior } from "@shared/companion-schema.ts";
-
-let sidecarOrigin: string | null = null;
+import { getCompanionHubClient } from "./hub-client.ts";
+import { resolveHubBaseUrl, resolveSidecarOrigin } from "./sidecar.ts";
 
 export function resetSidecarOriginCache(): void {
-  sidecarOrigin = null;
-}
-
-async function origin(): Promise<string> {
-  if (!sidecarOrigin) {
-    sidecarOrigin = await resolveSidecarOrigin();
-  }
-  return sidecarOrigin;
-}
-
-async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const base = await origin();
-  const res = await fetch(`${base}${path}`, init);
-  if (!res.ok) {
-    const err = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new Error(err.error ?? `HTTP ${res.status}`);
-  }
-  return (await res.json()) as T;
+  /* sidecar origin 缓存已移除；保留 API 兼容 */
 }
 
 export type CompanionConfig = ClientCompanionConfig;
 
+function wrapHubConfig(
+  cfg: Omit<ClientCompanionConfig, "app_id" | "instance_id" | "sap_connected"> & {
+    app_id?: ClientCompanionConfig["app_id"];
+    instance_id?: string;
+    sap_connected?: boolean;
+  },
+): CompanionConfig {
+  return {
+    ...cfg,
+    app_id: "companion",
+    instance_id: cfg.instance_id ?? "",
+    sap_connected: cfg.sap_connected ?? false,
+  };
+}
+
+async function hubBase(): Promise<string> {
+  return (await resolveHubBaseUrl()).replace(/\/$/, "");
+}
+
 export async function fetchCompanionConfig(): Promise<CompanionConfig> {
-  return apiJson<CompanionConfig>("/api/config");
+  const data = await getCompanionHubClient().call("companion.config.get", {});
+  const cfg = data.config;
+  return wrapHubConfig(cfg);
+}
+
+/** Overlay 运行时：从本地 sidecar 读取 instance_id / sap / 缓存配置 */
+export async function fetchSidecarRuntimeConfig(): Promise<CompanionConfig> {
+  const base = await resolveSidecarOrigin();
+  const res = await fetch(`${base}/api/config`);
+  if (!res.ok) {
+    throw new Error(`sidecar config HTTP ${res.status}`);
+  }
+  return wrapHubConfig((await res.json()) as ClientCompanionConfig);
 }
 
 export async function saveSettings(patch: {
@@ -45,118 +54,18 @@ export async function saveSettings(patch: {
   behavior?: Partial<CompanionBehavior>;
   motion_slots?: ClientCompanionConfig["motion_slots"];
 }) {
-  return apiJson<CompanionConfig>("/api/config", {
-    method: "POST",
-    body: JSON.stringify(patch),
-    headers: { "Content-Type": "application/json" },
+  const data = await getCompanionHubClient().call("companion.config.update", {
+    ...(patch.behavior !== undefined ? { behavior: patch.behavior } : {}),
+    ...(patch.motion_slots !== undefined ? { motion_slots: patch.motion_slots } : {}),
   });
+  return wrapHubConfig(data.config);
 }
 
 export async function uploadModel(file: File) {
-  const base = await origin();
+  const base = await hubBase();
   const form = new FormData();
   form.append("file", file);
-  const res = await fetch(`${base}/api/models/upload`, { method: "POST", body: form });
-  if (!res.ok) {
-    const err = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new Error(err.error ?? `HTTP ${res.status}`);
-  }
-  return (await res.json()) as { model: { id: string; path: string }; config: CompanionConfig };
-}
-
-export async function setActiveModel(id: string) {
-  return apiJson<{ model: { id: string; path: string }; config: CompanionConfig }>(
-    "/api/models/active",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    },
-  );
-}
-
-export async function renameModel(id: string, name: string) {
-  return apiJson<{ model: { id: string; name: string } }>("/api/models/rename", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id, name }),
-  });
-}
-
-export async function deleteModel(id: string) {
-  return apiJson<{ config: CompanionConfig }>("/api/models/delete", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id }),
-  });
-}
-
-export type MotionStatus = {
-  ready: boolean;
-  user_dir: string;
-  required: string[];
-  booth_url: string;
-  auto_download_configured: boolean;
-  fbx_import_available: boolean;
-};
-
-export async function fetchMotionStatus() {
-  return apiJson<MotionStatus>("/api/motions/status");
-}
-
-export async function uploadMotionFile(file: File) {
-  const base = await origin();
-  const form = new FormData();
-  form.append("file", file);
-  let res: Response;
-  try {
-    res = await fetch(`${base}/api/motions/import`, { method: "POST", body: form });
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    throw new Error(
-      msg.includes("fetch") || msg.includes("Fetch")
-        ? "无法连接伴侣后台（请确认 sidecar 已启动，或稍后重试）"
-        : msg,
-      { cause: e },
-    );
-  }
-  if (!res.ok) {
-    const err = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new Error(err.error ?? `HTTP ${res.status}`);
-  }
-  return (await res.json()) as {
-    ok: true;
-    dir: string;
-    files: string[];
-    entries: MotionLibraryEntry[];
-    library: MotionLibraryEntry[];
-    skipped_fbx?: string[];
-  };
-}
-
-export type { LocomotionSlot } from "@shared/constants.ts";
-
-export type LocomotionStatus = {
-  library: MotionLibraryEntry[];
-  slots: ClientCompanionConfig["motion_slots"];
-  user_dir: string;
-};
-
-export async function fetchLocomotionStatus() {
-  return apiJson<LocomotionStatus>("/api/motions/locomotion");
-}
-
-export async function fetchMotionLibrary() {
-  return apiJson<{ library: MotionLibraryEntry[]; slots: ClientCompanionConfig["motion_slots"] }>(
-    "/api/motions/library",
-  );
-}
-
-export async function uploadLocomotionMotion(slot: LocomotionSlot, file: File) {
-  const base = await origin();
-  const form = new FormData();
-  form.append("file", file);
-  const res = await fetch(`${base}/api/motions/locomotion/${slot}/import`, {
+  const res = await fetch(`${base}/api/companion/models/upload`, {
     method: "POST",
     body: form,
   });
@@ -164,54 +73,106 @@ export async function uploadLocomotionMotion(slot: LocomotionSlot, file: File) {
     const err = (await res.json().catch(() => ({}))) as { error?: string };
     throw new Error(err.error ?? `HTTP ${res.status}`);
   }
-  return (await res.json()) as { slot: LocomotionSlot; file: string };
+  const data = await getCompanionHubClient().call("companion.config.get", {});
+  return { config: wrapHubConfig(data.config) };
+}
+
+export async function setActiveModel(id: string) {
+  const data = await getCompanionHubClient().call("companion.model.setActive", { id });
+  return { config: wrapHubConfig(data.config) };
+}
+
+export async function renameModel(id: string, name: string) {
+  await getCompanionHubClient().call("companion.model.rename", { id, name });
+}
+
+export async function deleteModel(id: string) {
+  const data = await getCompanionHubClient().call("companion.model.delete", { id });
+  return { config: wrapHubConfig(data.config) };
+}
+
+export async function fetchMotionLibrary() {
+  const data = await getCompanionHubClient().call("companion.config.get", {});
+  return {
+    library: data.config.motion_library,
+    slots: data.config.motion_slots,
+  };
+}
+
+export async function uploadMotionFile(file: File) {
+  const base = await hubBase();
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(`${base}/api/companion/motions/import`, {
+    method: "POST",
+    body: form,
+  });
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(err.error ?? `HTTP ${res.status}`);
+  }
+  const body = (await res.json()) as {
+    library?: MotionLibraryEntry[];
+    entries?: MotionLibraryEntry[];
+    skipped_fbx?: string[];
+  };
+  const data = await getCompanionHubClient().call("companion.config.get", {});
+  const skipped = body.skipped_fbx;
+  return {
+    ok: true as const,
+    dir: "",
+    files: body.entries?.map((e) => e.file) ?? [],
+    entries: body.entries ?? [],
+    library: data.config.motion_library,
+    ...(skipped && skipped.length > 0 ? { skipped_fbx: skipped } : {}),
+  };
 }
 
 export async function setMotionSlot(slot: MotionSlotId, motionIds: string[]) {
-  return apiJson<{ config: CompanionConfig }>("/api/motions/slots", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ slot, motion_ids: motionIds }),
+  const data = await getCompanionHubClient().call("companion.motion.setSlot", {
+    slot,
+    motion_ids: motionIds,
   });
+  return { config: wrapHubConfig(data.config) };
 }
 
 export async function renameMotion(id: string, name: string) {
-  return apiJson<{ entry: MotionLibraryEntry }>("/api/motions/library/rename", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id, name }),
-  });
+  const data = await getCompanionHubClient().call("companion.motion.rename", { id, name });
+  return { entry: data.config.motion_library.find((e) => e.id === id) };
 }
 
 export async function deleteMotion(id: string) {
-  return apiJson<{ library: MotionLibraryEntry[]; config: CompanionConfig }>(
-    "/api/motions/library/delete",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    },
-  );
+  const data = await getCompanionHubClient().call("companion.motion.delete", { id });
+  return { library: data.config.motion_library, config: wrapHubConfig(data.config) };
+}
+
+export async function fetchMotionStatus() {
+  const data = await getCompanionHubClient().call("companion.config.get", {});
+  return {
+    ready: data.config.motion_library.length > 0,
+    user_dir: "",
+    required: [] as string[],
+    booth_url: "",
+    auto_download_configured: false,
+    fbx_import_available: data.config.fbx_import_available,
+  };
+}
+
+export async function uploadLocomotionMotion(_slot: LocomotionSlot, file: File) {
+  return uploadMotionFile(file);
+}
+
+export async function fetchLocomotionStatus() {
+  const data = await fetchMotionLibrary();
+  return {
+    library: data.library,
+    slots: data.slots,
+    user_dir: "",
+  };
 }
 
 export async function downloadMotionsFromMirror() {
-  return apiJson<{ ok: true; dir: string; files: string[] }>("/api/motions/download", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: "{}",
-  });
+  throw new Error("请通过 Settings 动作库导入 VRMA/FBX");
 }
 
-export function runtimeWsUrl(httpOrigin: string): string {
-  return `${httpOrigin.replace(/^http/, "ws")}/api/runtime/ws`;
-}
-
-export async function advanceBubble() {
-  return apiJson<{ current: { id: string; text: string } | null }>("/api/bubbles/advance", {
-    method: "POST",
-  });
-}
-
-export type { PlaySlotCommand, RuntimeState, RuntimeWsMessage, MotionLibraryEntry, MotionSlotId };
-
-export { isElectron };
+export { isElectron } from "./electron.ts";

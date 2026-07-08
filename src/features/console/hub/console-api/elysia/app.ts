@@ -5,13 +5,15 @@ import { applyCorsHeaders, corsPreflightResponse } from "./cors.ts";
 import { healthRoutes } from "./routes/health.ts";
 import { tlsCaRoutes } from "./routes/tls-ca.ts";
 import { ttsRoutes } from "./routes/tts.ts";
+import { companionHttpRoutes } from "@freeanima/feature-companion/hub/http";
 import { TerminalSessionError } from "@freeanima/platform/sap/terminal-session";
 
-/** 基础设施 HTTP：health 探针 + TTS + TLS CA 分发（不进 hub-contract） */
+/** 基础设施 HTTP：health / TTS / TLS CA / companion 资产（不进 hub-contract） */
 export const apiApp = new Elysia({ prefix: "/api" })
   .use(healthRoutes)
   .use(tlsCaRoutes)
-  .use(ttsRoutes);
+  .use(ttsRoutes)
+  .use(companionHttpRoutes);
 
 export type App = typeof apiApp;
 

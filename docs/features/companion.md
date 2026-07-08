@@ -14,15 +14,36 @@ The desktop companion is a SAP **Type B** app (embedded sidecar holds the Hub We
 FreeAnima Desktop (src/app/shell/desktop)
 ├── Electron Main — tray / multi-window + embedded companion sidecar
 │   ├── companion overlay — transparent always-on-top, VRM / speech bubble
-│   ├── companion settings — settings window
+│   ├── companion settings — settings window (Hub RPC + asset HTTP)
 │   ├── chat — Chat SPA (SAP direct, no sidecar)
 │   └── console — Console WebView (Hub REST)
-└── Renderer — preload satelliteShell; companion API via localhost sidecar
-         ↕ SAP WS
-    anima service Hub
+└── Renderer — preload satelliteShell; companion visibility via IPC
+         ↕ SAP WS + Hub RPC
+    anima service Hub (companion_profile SSOT + assets + FBX→VRMA)
 ```
 
-The content pack lives in [`src/satellites/companion/`](../../src/satellites/companion/) (`spa/` + `server/` + `shared/`). Export conventions: [`frontend-exports.md`](../sap/frontend-exports.md).
+### Hub vs local boundary
+
+| Layer            | Location                             | Responsibility                                                                                                                                                           |
+| ---------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Hub SSOT**     | `src/features/companion/`            | `companion_profile` entity (behavior, slots, library meta); VRM/VRMA files under `~/.anima/companion/` on Hub host; FBX→VRMA conversion; Settings read/write via Hub RPC |
+| **Settings UI**  | Desktop Settings → Companion section | Hub RPC (`companion.config.*`, model/motion CRUD); upload via `POST /api/companion/models/upload` and `/motions/import`                                                  |
+| **Thin sidecar** | `src/satellites/companion/server/`   | SAP attach, `bubble` / `play_slot`, runtime WebSocket, local asset cache; startup `companion.sync.pull`                                                                  |
+| **Electron**     | `src/app/shell/desktop/`             | Transparent window, click-through, tray, companion show/hide IPC                                                                                                         |
+
+Management is in **Settings only** — Console has no companion admin page.
+
+On sidecar start: Hub config wins; `~/.anima/companion/config.json` on the desktop is an **offline cache**. Legacy local data is migrated once to Hub (`companion.migrate.fromLocal` or HTTP upload). Multiple desktops share the same model/motion library via Hub.
+
+```text
+Settings ──Hub RPC/HTTP──► features/companion (Hub)
+Sidecar  ◄──sync.pull────► Hub          ──► local cache (VRM/VRMA)
+Overlay  ◄──localhost────► Sidecar       (runtime WS + /api/config)
+Electron ◄──IPC──────────► Settings       (show/hide only)
+Agent    ──SAP───────────► Sidecar        (bubble, play_slot)
+```
+
+The content pack lives in [`src/satellites/companion/`](../../src/satellites/companion/) (`spa/` + thin `server/` + `shared/`). Hub domain logic: [`src/features/companion/`](../../src/features/companion/). Export conventions: [`frontend-exports.md`](../sap/frontend-exports.md).
 
 Compared with Chat / pair programming:
 
@@ -55,19 +76,23 @@ Periodic content (e.g. scheduled jokes) is configured on **anima service / sched
 
 ## Models and motions
 
-The repo **does not bundle** `.vrm` / `.vrma` files. Config persists in `~/.anima/companion/config.json` (`models`, `motion_library`, `motion_slots`, `behavior`).
+The repo **does not bundle** `.vrm` / `.vrma` files. **Hub** is the SSOT: `companion_profile` entity in PostgreSQL plus files on the Hub host at `~/.anima/companion/models/` and `motions/`. Each desktop keeps a **local cache** synced on sidecar start (`companion.sync.pull`).
 
 ### VRM models
 
-Settings → **Models** tab: list, import, delete, rename, switch current model. Files saved to `~/.anima/companion/models/`.
+Settings → **Models** tab: list, import, delete, rename, switch current model. Upload goes to Hub (`POST /api/companion/models/upload`); sidecar downloads missing files for overlay rendering.
 
 During development, files in `src/satellites/companion/public/models/` serve as fallback.
 
 ### VRMA library and slots
 
-Settings → **Motion library** tab: import VRMA ZIP or single files; **Motion slots** tab: assign motions per slot. Preview supports mouse drag to rotate view.
+Settings → **Motion library** tab: import VRMA, FBX, or ZIP (FBX is converted on **Hub**, not on desktop). **Motion slots** tab assigns motions per slot. Preview supports mouse drag to rotate view.
 
-Motion files: `~/.anima/companion/motions/`. Unbound slots play no animation; patrol still moves the window; walk/climb VRMA play only when bound.
+Unbound slots play no animation; patrol still moves the window; walk/climb VRMA play only when bound.
+
+### FBX import
+
+FBX→VRMA runs on the **Hub host** (`anima service`). Desktop installers no longer bundle `fbx2vrma-converter` or FBX2glTF. On the Hub machine run `bun run setup:fbx` if FBX conversion is needed.
 
 ## Development and run
 
@@ -125,7 +150,7 @@ Hub assigns a **3-character** `instance_id` on first `connect`, stored in `~/.an
 | Cannot reach Hub         | Confirm `anima service` and Hub settings token (`fa_at_...`); tray **Hub settings** URL and token |
 | Import has no effect     | Hot reload after import; confirm slot has motion checked                                          |
 | Background service fails | See `~/.anima/desktop-shell/shell.log`; confirm ports 4176–4185 free                              |
-| FBX import unavailable   | Run `bun run setup:fbx` (caches to `~/.anima/tools/fbx2gltf/`)                                    |
+| FBX import unavailable   | Run `bun run setup:fbx` on the **Hub host** (not the desktop installer)                           |
 
 ## Related docs
 

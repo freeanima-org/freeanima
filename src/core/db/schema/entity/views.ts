@@ -11,6 +11,7 @@ import {
   TASK_LIST_COMPONENT,
   VAULT_CONFIG_COMPONENT,
   VAULT_ITEM_COMPONENT,
+  COMPANION_PROFILE_COMPONENT,
   WORLD_CONFIG_COMPONENT,
   diaryEntryBodySchema,
   dreamEntryBodySchema,
@@ -21,6 +22,7 @@ import {
   taskListBodySchema,
   vaultConfigBodySchema,
   vaultItemBodySchema,
+  companionProfileBodySchema,
   worldConfigBodySchema,
   type DiaryEntryBody,
   type DreamEntryBody,
@@ -31,6 +33,7 @@ import {
   type TaskListBody,
   type VaultConfigBody,
   type VaultItemBody,
+  type CompanionProfileBody,
   type WorldConfigBody,
 } from "./components/index.ts";
 
@@ -157,4 +160,10 @@ export function asVaultItem(
   return parsed.success
     ? { id: row.id, title: row.title, content: row.content, ...parsed.data }
     : null;
+}
+
+export function asCompanionProfile(row: EntityRow): (CompanionProfileBody & { id: number }) | null {
+  if (row.primary_component !== COMPANION_PROFILE_COMPONENT) return null;
+  const parsed = companionProfileBodySchema.safeParse(row.body);
+  return parsed.success ? { id: row.id, ...parsed.data } : null;
 }
