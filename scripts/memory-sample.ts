@@ -1,13 +1,14 @@
 #!/usr/bin/env bun
 /**
- * Sample anima service process RSS (VmRSS) and /api/status snapshot.
+ * Sample anima service process RSS (VmRSS) and Hub RPC status.get snapshot.
  *
  *   bun run memory:sample -- --label idle
  *   bun run memory:sample -- --pid 12345 --label after-chat
- *   bun run memory:sample -- --url http://127.0.0.1:2658/api/status
- *   bun run memory:sample -- --url http://127.0.0.1:2658/api/status --stage full
+ *   bun run memory:sample -- --hub-url http://127.0.0.1:2658
+ *   bun run memory:sample -- --hub-url http://127.0.0.1:2658 --stage full
  */
 
+import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 
 type MemoryDetail = {
@@ -40,12 +41,12 @@ function readRssKb(pid: number): number {
 function parseArgs(argv: string[]): {
   pid: number;
   label: string;
-  url: string | null;
+  hubUrl: string | null;
   stage: string;
 } {
   let pid = process.pid;
   let label = "";
-  let url: string | null = null;
+  let hubUrl: string | null = null;
   let stage = "basic";
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -55,22 +56,40 @@ function parseArgs(argv: string[]): {
     } else if (arg === "--label" && argv[i + 1]) {
       const labelArg = argv[++i];
       if (labelArg !== undefined) label = labelArg;
-    } else if (arg === "--url" && argv[i + 1]) {
+    } else if ((arg === "--hub-url" || arg === "--url") && argv[i + 1]) {
       const urlArg = argv[++i];
-      if (urlArg !== undefined) url = urlArg;
+      if (urlArg !== undefined) hubUrl = urlArg.replace(/\/api\/status\/?$/, "");
     } else if (arg === "--stage" && argv[i + 1]) {
       const stageArg = argv[++i];
       if (stageArg !== undefined) stage = stageArg;
     }
   }
-  return { pid, label, url, stage };
+  return { pid, label, hubUrl, stage };
 }
 
-async function fetchStatus(url: string): Promise<Record<string, unknown> | null> {
+async function fetchStatusViaHubRpc(
+  hubUrl: string,
+  token?: string,
+): Promise<Record<string, unknown> | null> {
+  const base = hubUrl.replace(/\/$/, "");
+  const id = randomUUID();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const bearer = token?.trim() || process.env.FREEANIMA_REMOTE_AUTH_TOKEN?.trim();
+  if (bearer) headers.Authorization = `Bearer ${bearer}`;
   try {
-    const res = await fetch(url);
+    const res = await fetch(`${base}/hub/rpc/v1`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ kind: "req", id, method: "status.get", payload: {} }),
+    });
     if (!res.ok) return null;
-    return (await res.json()) as Record<string, unknown>;
+    const envelope = (await res.json()) as {
+      kind: string;
+      ok?: boolean;
+      payload?: Record<string, unknown>;
+    };
+    if (envelope.kind !== "res" || !envelope.ok) return null;
+    return envelope.payload ?? null;
   } catch {
     return null;
   }
@@ -98,7 +117,7 @@ function appendMemoryDetail(
   }
 }
 
-const { pid, label, url, stage } = parseArgs(process.argv.slice(2));
+const { pid, label, hubUrl, stage } = parseArgs(process.argv.slice(2));
 const rssKb = readRssKb(pid);
 const rssMb = (rssKb / 1024).toFixed(1);
 
@@ -109,8 +128,8 @@ parts.push(`pid=${pid}`);
 parts.push(`rss_kb=${rssKb}`);
 parts.push(`rss_mb=${rssMb}`);
 
-if (url) {
-  const status = await fetchStatus(url);
+if (hubUrl) {
+  const status = await fetchStatusViaHubRpc(hubUrl);
   if (status) {
     if (typeof status.memory_kb === "number") {
       parts.push(`status_memory_kb=${status.memory_kb}`);

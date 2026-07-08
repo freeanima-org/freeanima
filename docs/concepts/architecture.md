@@ -69,7 +69,7 @@ Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-backed
 
 Target layout is **feature modules** under `src/features/<slug>/` (UI + protocol + Hub adapter + domain + `plugin.ts`). Console is renamed **console** and uses the **same module shape** as chat/task — not a separate admin-\* stack. `src/satellites/` is legacy naming; do not add new products there.
 
-**End state:** Hub RPC per feature; console REST is transitional (directory refactor does not remove REST).
+**End state:** Hub RPC per feature; business methods use `POST|WS /hub/rpc/v1` (same envelope). Infrastructure HTTP only: `GET /api/health`, `POST /api/tts/synthesize`.
 
 Authoritative spec: [`repository-topology.md`](repository-topology.md).
 
@@ -77,12 +77,12 @@ Engine stays horizontal: `src/kernel/`, `src/core/`, `src/runtime/`, `src/platfo
 
 ### Platform UI layering (legacy paths — migrating to features/\*)
 
-| Layer              | Platform-native?             | Location (current → target)                                            | 数据通道               |
-| ------------------ | ---------------------------- | ---------------------------------------------------------------------- | ---------------------- |
-| Shell / capability | Yes                          | `src/app/shell/desktop`, `src/app/shell/mobile`, companion, Hub wiring | preload/IPC            |
-| Shared SPA shell   | Branch on `detectPlatform()` | `src/frontend/shell-ui`                                                | Hub RPC（Feature RPC） |
-| Console 前端       | Shell embed                  | `src/features/console`（UI）；REST 过渡期在 `console-api`              | REST `/api` + Hub RPC  |
-| 卫星应用           | Sidecar only                 | `src/satellites/companion`                                             | Hub RPC + SAP attach   |
+| Layer              | Platform-native?             | Location (current → target)                                            | 数据通道                                |
+| ------------------ | ---------------------------- | ---------------------------------------------------------------------- | --------------------------------------- |
+| Shell / capability | Yes                          | `src/app/shell/desktop`, `src/app/shell/mobile`, companion, Hub wiring | preload/IPC                             |
+| Shared SPA shell   | Branch on `detectPlatform()` | `src/frontend/shell-ui`                                                | Hub RPC（Feature RPC）                  |
+| Console 前端       | Shell embed                  | `src/features/console`（UI + `plugin.hub.rpc`）                        | Hub RPC（WS + HTTP POST `/hub/rpc/v1`） |
+| 卫星应用           | Sidecar only                 | `src/satellites/companion`                                             | Hub RPC + SAP attach                    |
 
 Nav and primary layouts **must use `detectPlatform()`** (Electron / native shell), not viewport breakpoints alone. Responsive CSS is for desktop window resize only.
 
@@ -313,10 +313,10 @@ Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User message
 | Desktop      | 默认 Hub `/web/*`（`DESKTOP_UI_MODE=bundled` 回退本地 static） | 仅 Electron / 伴侣变更   |
 | Mobile APK   | bootstrap → Hub `/web/*`                                       | 仅 Capacitor 插件变更    |
 
-| Module  | Connection                                         | Notes                    |
-| ------- | -------------------------------------------------- | ------------------------ |
-| Chat    | Hub RPC `/hub/rpc/v1` (shared WS, no `sap.attach`) | `/web/chat`              |
-| Console | Hub REST `/api/*` (CORS + shell)                   | `/web/console/dashboard` |
+| Module  | Connection                                            | Notes                    |
+| ------- | ----------------------------------------------------- | ------------------------ |
+| Chat    | Hub RPC `/hub/rpc/v1` (shared WS, no `sap.attach`)    | `/web/chat`              |
+| Console | Hub RPC `/hub/rpc/v1` (WS + HTTP POST, same envelope) | `/web/console/dashboard` |
 
 `/web/config.json` 提供 `hub_url`、`ui_version`、`min_shell_version`（壳↔UI 版本协商）。
 

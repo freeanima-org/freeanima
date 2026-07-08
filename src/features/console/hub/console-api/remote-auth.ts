@@ -10,7 +10,6 @@ export function isInternalHubHost(hostname: string): boolean {
   return normalized === "127.0.0.1" || normalized === "localhost" || normalized === "::1";
 }
 
-/** cloudflared 连本机时 requestIP 为 loopback，但会带上 CF 代理头（仅供 /api/echo 诊断） */
 export function hasCloudflareProxyHeaders(req: Request): boolean {
   return (
     normalizeHeader(req, "cf-access-jwt-assertion") != null ||
@@ -23,11 +22,6 @@ export function hasCloudflareProxyHeaders(req: Request): boolean {
 export function isLocalDirectConnection(req: Request, remoteAddress?: string): boolean {
   const host = new URL(req.url).hostname;
   return isInternalHubHost(host) && isLoopbackAddress(remoteAddress);
-}
-
-/** 调试回显：任意来源均不验 service token */
-export function isAuthExemptPath(req: Request): boolean {
-  return new URL(req.url).pathname === "/api/echo";
 }
 
 /** GET /api/health：任意来源均不拦截，认证结果由响应体 authed 报告 */
@@ -43,6 +37,7 @@ export function isHubApiCorsPreflight(req: Request): boolean {
     pathname === "/" ||
     pathname === "/api" ||
     pathname.startsWith("/api/") ||
+    pathname === "/hub/rpc/v1" ||
     pathname === "/mcp" ||
     pathname === "/mcp/"
   );

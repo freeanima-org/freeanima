@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test";
 import {
-  isAuthExemptPath,
   isHealthProbePath,
   isHubApiCorsPreflight,
   isInternalHubHost,
@@ -32,11 +31,6 @@ describe("remote-auth helpers", () => {
     expect(tokensEqual("abc", "ab")).toBe(false);
   });
 
-  test("isAuthExemptPath", () => {
-    expect(isAuthExemptPath(new Request("http://127.0.0.1:2658/api/echo"))).toBe(true);
-    expect(isAuthExemptPath(new Request("http://127.0.0.1:2658/api/status"))).toBe(false);
-  });
-
   test("isHealthProbePath", () => {
     expect(isHealthProbePath(new Request("http://127.0.0.1:2658/api/health"))).toBe(true);
     expect(isHealthProbePath(new Request("http://127.0.0.1:2658/api/status"))).toBe(false);
@@ -48,6 +42,11 @@ describe("remote-auth helpers", () => {
       headers: { Origin: "https://localhost" },
     });
     expect(isHubApiCorsPreflight(preflight)).toBe(true);
+    const hubRpcPreflight = new Request("https://anima.freetrace.me/hub/rpc/v1", {
+      method: "OPTIONS",
+      headers: { Origin: "https://localhost" },
+    });
+    expect(isHubApiCorsPreflight(hubRpcPreflight)).toBe(true);
     expect(isHubApiCorsPreflight(new Request("http://127.0.0.1:2658/api/status"))).toBe(false);
   });
 

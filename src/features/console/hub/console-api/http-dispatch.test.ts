@@ -37,9 +37,13 @@ describe("http-dispatch", () => {
     expect(result.blocked?.status).toBe(401);
   });
 
-  test("applyHttpAuth blocks loopback status without token", async () => {
+  test("applyHttpAuth blocks POST /hub/rpc/v1 without token", async () => {
     const serviceAuth = createServiceAuthVerifier();
-    const req = new Request("http://127.0.0.1:2658/api/status");
+    const req = new Request("http://127.0.0.1:2658/hub/rpc/v1", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kind: "req", id: "1", method: "status.get", payload: {} }),
+    });
     const result = await applyHttpAuth(req, "127.0.0.1", serviceAuth);
     expect(result.blocked?.status).toBe(401);
   });

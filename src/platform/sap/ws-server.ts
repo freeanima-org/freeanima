@@ -31,6 +31,7 @@ import {
   TerminalSessionError,
 } from "./terminal-session.ts";
 import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
+import { isHubMethod } from "@freeanima/hub-contract";
 import { getFeatureRpcHandler } from "../features/registry.ts";
 import { hubDispatch } from "../hub/dispatch.ts";
 
@@ -88,15 +89,17 @@ export function createSapServerHandlers(
     },
 
     async handle(method, payload, ctx) {
-      if (!router.isSapMethod(method)) {
-        throw new Error(`unknown SAP method: ${method}`);
+      if (isHubMethod(method)) {
+        const featureHandler = getFeatureRpcHandler(method);
+        if (featureHandler) {
+          return hubDispatch(deps, method, payload, ctx) as Promise<
+            import("@freeanima/sap-contract").SapRouterOutputs[typeof method]
+          >;
+        }
       }
 
-      const featureHandler = getFeatureRpcHandler(method);
-      if (featureHandler) {
-        return hubDispatch(deps, method, payload, ctx) as Promise<
-          import("@freeanima/sap-contract").SapRouterOutputs[typeof method]
-        >;
+      if (!router.isSapMethod(method)) {
+        throw new Error(`unknown SAP method: ${method}`);
       }
 
       switch (method) {

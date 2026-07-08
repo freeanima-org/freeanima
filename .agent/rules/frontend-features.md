@@ -6,7 +6,7 @@
 
 1. 是否需要用户可见的产品 CRUD + 实时 Hub WS？→ **原型 A（Feature RPC）**
 2. 是否需要 SAP attach 的独立卫星进程/壳？→ **原型 A′（SAP satellite）** — 仅 `companion`
-3. 是否是运维/配置/记忆管理类 UI，走 Hub REST？→ **原型 B（hub-rest / Console）**
+3. 是否是运维/配置/记忆管理类 UI（Console）？→ **原型 B（Console Hub RPC）** — 与原型 A 相同 wire，handler 在 `console/plugin.hub.rpc`
 4. 是否仅是壳层设置（Hub URL、debug）？→ **原型 C（shell-sdk settings）**
 
 ## 原型 A — Feature RPC 产品面
@@ -35,17 +35,18 @@
 | `src/satellites/<name>/` | `sap-client` + UI（仅白名单目录）            |
 | `shell-ui`               | 路由 + `@freeanima/satellite-*/app`          |
 
-## 原型 B — hub-rest 运维面（Console）
+## 原型 B — Console 运维面（Hub RPC）
 
 **示例**：memory、config、cron、MCP、entity worlds（Console UI）
 
-| 层                                               | 必须改                                                             |
-| ------------------------------------------------ | ------------------------------------------------------------------ |
-| `src/features/console/protocol/console-contract` | API 类型 + hub-contract re-export（schema SSOT 在 hub-contract）   |
-| `src/features/console/hub/console-api`           | Elysia 薄路由 → `invokeConsoleHubHandler`                          |
-| `src/features/console/ui/console`                | Console 页面（优先 `@freeanima/hub-client`，Eden Treaty 过渡弃用） |
+| 层                                               | 必须改                                                           |
+| ------------------------------------------------ | ---------------------------------------------------------------- |
+| `src/features/console/protocol/console-contract` | API 类型 + hub-contract re-export（schema SSOT 在 hub-contract） |
+| `src/features/console/hub/console-api`           | `console-hub-handlers.ts` + 基础设施 Elysia（health、tts）       |
+| `src/features/console/plugin.ts`                 | `hub.rpc` 注册 handler（**禁止**在 hub-contract 写 REST path）   |
+| `src/features/console/ui/console`                | `@freeanima/hub-client` `call` / `subscribe`                     |
 
-**不要**：import `sap-contract`；新建 `satellite-*` 包。
+**不要**：import `sap-contract`；在 registry 注册 `/api/*` path；新建 `satellite-*` 包。
 
 ## 原型 C — 壳层设置
 
@@ -60,13 +61,13 @@
 
 新增 Feature RPC method 时：
 
-1. 在 `src/shared/hub-contract/registry/` 增加 method 定义（Zod + transport meta）
+1. 在 `src/shared/hub-contract/registry/` 增加 method 定义（Zod + `dualTransportMeta` / `wsOnlyMeta` — **无 REST path**）
 2. 在 `src/shared/sap-contract/feature-rpc/frames/` 增加 schema（若尚未存在）
 3. 在 `src/features/<slug>/hub/rpc.ts` 实现 handler（**禁止** import `hub-client`）
-4. 在 `src/features/<slug>/plugin.ts` 注册 RPC 表
-5. Feature UI `api.ts` 使用 `@freeanima/hub-client` 的 `call` / `subscribe`（WS-only 流式仍走 `sap-contract` bundled client）
+4. 在 `src/features/<slug>/plugin.ts` 注册 `hub.rpc`
+5. Feature UI `api.ts` 使用 `@freeanima/hub-client` 的 `call` / `subscribe`
 
-Console REST method 在 `hub-contract/registry/console.ts` + `console-api/console-hub-handlers.ts`；Elysia 路由 delegate 至 `invokeConsoleHubHandler`。
+Console method：`hub-contract/registry/console.ts` + `console-hub-handlers.ts` + `console/plugin.hub.rpc`。业务传输：`POST|WS /hub/rpc/v1`（同 envelope）。
 
 SAP attach 专用 method（tool/terminal/sap.attach）仍在 [`src/platform/sap/ws-server.ts`](../../src/platform/sap/ws-server.ts) switch 内。
 

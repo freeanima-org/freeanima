@@ -4,35 +4,45 @@ title: Hub RPC
 
 # Hub RPC
 
-**Hub RPC** (`HubRPC/1.0`) is the WebSocket transport between any Hub client and the agent runtime. It is implemented in [`src/shared/hub-rpc/`](../../src/shared/hub-rpc/) and served at **`/hub/rpc/v1`**.
+**Hub RPC** (`HubRPC/1.0`) is the **single business channel** between Hub clients and the agent runtime. Transport:
 
-SAP (`SAP/1.0`) is a **session layer** on top of Hub RPC: true satellites call `sap.attach` after connect; bundled SPA modules **never** attach.
+- **WebSocket** — long-lived connection at **`/hub/rpc/v1`** (connect handshake + heartbeat)
+- **HTTP POST** — stateless request/response at **`/hub/rpc/v1`** (same `req`/`res` envelope, `Authorization: Bearer`)
 
-## Endpoint
+Implemented in [`src/shared/hub-rpc/`](../../src/shared/hub-rpc/) (envelope) and [`src/platform/hub/http-rpc.ts`](../../src/platform/hub/http-rpc.ts) (HTTP adapter).
+
+Infrastructure HTTP **outside** Hub RPC: `GET /api/health`, `POST /api/tts/synthesize`.
+
+SAP (`SAP/1.0`) is a **session layer** on top of Hub RPC WebSocket: true satellites call `sap.attach` after connect; bundled SPA modules **never** attach.
+
+## Endpoints
 
 ```text
-ws://{hub_host}:{port}/hub/rpc/v1
+ws://{hub_host}:{port}/hub/rpc/v1    # WebSocket upgrade
+http://{hub_host}:{port}/hub/rpc/v1  # POST (HubRPC req/res)
 ```
 
-Derive from Hub HTTP URL: replace `http` with `ws`, strip trailing slash, append `/hub/rpc/v1`. Helpers: `resolveHubRpcWsUrl` in `@freeanima/hub-rpc`.
+Derive WS URL from HTTP: replace `http` with `ws`, append `/hub/rpc/v1`. Helpers: `resolveHubRpcWsUrl` in `@freeanima/hub-rpc`.
 
 Hub route: [`src/platform/sap/bun-route.ts`](../../src/platform/sap/bun-route.ts).
 
 ## Envelope kinds
 
-| `kind`      | Direction    | Purpose                                           |
-| ----------- | ------------ | ------------------------------------------------- |
-| `connect`   | Client → Hub | First frame; `protocol: HubRPC/1.0`, `auth_token` |
-| `connected` | Hub → Client | `session_id`, `heartbeat_interval_sec`            |
-| `req`       | Client → Hub | RPC (`id`, `method`, `payload`)                   |
-| `res`       | Hub → Client | RPC reply                                         |
-| `evt`       | Both         | Async event (incl. `heartbeat`)                   |
+| `kind`      | Direction    | Purpose                                                    |
+| ----------- | ------------ | ---------------------------------------------------------- |
+| `connect`   | Client → Hub | WS only: first frame; `protocol: HubRPC/1.0`, `auth_token` |
+| `connected` | Hub → Client | WS only: `session_id`, `heartbeat_interval_sec`            |
+| `req`       | Client → Hub | RPC (`id`, `method`, `payload`)                            |
+| `res`       | Hub → Client | RPC reply                                                  |
+| `evt`       | Both         | Async event (WS only; incl. `heartbeat`)                   |
 
-Parse/serialize: `parseHubRpcEnvelope` / `serializeHubRpcEnvelope` in `@freeanima/hub-rpc`.
+HTTP POST sends a single `req` envelope; Hub responds with one `res` envelope (no `connect` frame — use Bearer token).
+
+Method contracts live in [`src/shared/hub-contract/registry/`](../../src/shared/hub-contract/registry/) (`transports: http | ws` only — **no REST paths**). Handlers register via `feature/plugin.hub.rpc`.
 
 ## Authentication
 
-Every connection must send a valid **service API token** in the `connect` payload (`auth_token`). The Hub verifies it with `verifyServiceApiToken` ([`src/core/db/pg/service-api-token/`](../../src/core/db/pg/service-api-token/)).
+Every **WebSocket** connection must send a valid **service API token** in the `connect` payload (`auth_token`). **HTTP POST** uses `Authorization: Bearer fa_at_...` on each request. The Hub verifies with `verifyServiceApiToken` ([`src/core/db/pg/service-api-token/`](../../src/core/db/pg/service-api-token/)).
 
 Bundled clients read the token from `window.satelliteShell.remoteAuth.token` (shell bridge). Hub-hosted Web on loopback receives `auth_token` in `/web/config.json` when `~/.anima/web/loopback-auth.token` or `FREEANIMA_REMOTE_AUTH_TOKEN` is set (`anima token pin-loopback`). Local Vite dev may seed via `FREEANIMA_REMOTE_AUTH_TOKEN` or Hub setup UI.
 

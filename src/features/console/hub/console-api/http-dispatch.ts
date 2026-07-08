@@ -10,7 +10,7 @@ import {
 import { isSapWebSocketUpgrade } from "./remote-auth.ts";
 import type { ServiceAuthVerifier } from "./service-auth.ts";
 
-/** Bun requestIP 注入，供 /api/echo 等调试接口展示真实 TCP 来源 */
+/** Bun requestIP 注入，供 health 等接口展示真实 TCP 来源 */
 export const ANIMA_REMOTE_ADDRESS_HEADER = "x-anima-remote-address";
 
 /** Bun.serve 下 POST body 流在 await 后不可再 `new Request(req, …)` 二次包装，须一次合并 headers。 */
@@ -50,9 +50,13 @@ export function attachRemoteAddressToRequest(
   return decorateRequest(req, remoteAddress, null);
 }
 
-/** REST API 或 MCP 路径（须先过 service_auth 中间件） */
+/** Hub RPC / 基础设施 API / MCP 路径（须先过 service_auth） */
 export function isHubProtectedHttpPath(pathname: string): boolean {
-  return isHubApiPath(pathname) || isMcpPath(pathname);
+  return isHubApiPath(pathname) || isHubRpcPath(pathname) || isMcpPath(pathname);
+}
+
+export function isHubRpcPath(pathname: string): boolean {
+  return pathname === "/hub/rpc/v1";
 }
 
 /** REST API 路径（须先过 service_auth 中间件） */
@@ -81,7 +85,7 @@ export async function applyHttpAuth(
 }
 
 type SapBunHandlers = {
-  fetch: (req: Request, server: Bun.Server<unknown>) => Response | undefined;
+  fetch: (req: Request, server: Bun.Server<unknown>) => Response | Promise<Response> | undefined;
 };
 
 /**
@@ -92,7 +96,7 @@ export function trySapWebSocketUpgrade(
   req: Request,
   bunServer: Bun.Server<unknown>,
   sapHandlers: SapBunHandlers | null,
-): Response | undefined | null {
+): Response | Promise<Response> | undefined | null {
   if (!sapHandlers || !isSapWebSocketUpgrade(req)) return null;
   const sapRes = sapHandlers.fetch(req, bunServer);
   if (sapRes !== undefined) return sapRes;

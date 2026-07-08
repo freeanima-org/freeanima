@@ -94,9 +94,7 @@ async function fetchHttpStatus(
   const health = await apiGet(probeHost, port, "/api/health", 2000);
   const ms = performance.now() - t0;
   if (!health || health.status !== "ok") return [false, null, ms];
-  const body = await apiGet(probeHost, port, "/api/status", 3000);
-  if (body && "error" in body) return [true, null, ms];
-  return [true, body, ms];
+  return [true, null, ms];
 }
 
 function printDeadStatus(statusFile: Record<string, unknown>): void {

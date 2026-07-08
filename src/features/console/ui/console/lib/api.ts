@@ -6,14 +6,12 @@ import {
   resolveCacheScope,
   writeOfflineCache,
 } from "@freeanima/shell-sdk/offline-cache";
-import { shouldAttachRemoteAuth } from "@freeanima/shell-sdk/remote-auth";
 import { reviveDates } from "@freeanima/console-contract/date-json";
 
 import { getConsoleHubClient } from "./hub-client.ts";
 import { omitUndefined } from "./omit-undefined.ts";
-import { resetHubFetchCache, subscribeHubSse } from "./hub-fetch.ts";
+import { resetHubFetchCache } from "./hub-fetch.ts";
 import { resolveApiOrigin } from "./hub-origin.ts";
-import { apiPath } from "./api-path.ts";
 
 function hub() {
   return getConsoleHubClient();
@@ -110,36 +108,21 @@ export function subscribeConversationEvents(
   conversationId: string,
   onUpdate: () => void,
 ): { unsubscribe: () => void } {
-  const path = `/api/conversations/${encodeURIComponent(conversationId)}/events`;
-  const shell = (typeof window !== "undefined" ? window.satelliteShell : undefined) as
-    | { hubFetch?: typeof fetch; remoteAuth?: { token?: string } }
-    | undefined;
-  const origin = resolveApiOrigin();
-  const token = shell?.remoteAuth?.token?.trim() ?? "";
-  const useAuthFetch = Boolean(shell?.hubFetch || (token && shouldAttachRemoteAuth(origin, token)));
-
-  if (useAuthFetch) {
-    return subscribeHubSse(path, {
-      conversation_updated: onUpdate,
-      ready: onUpdate,
-    });
-  }
-
-  const url = apiPath(path);
-  const es = new EventSource(url);
-  const handler = () => onUpdate();
-  es.addEventListener("conversation_updated", handler);
-  es.addEventListener("ready", handler);
-  es.addEventListener("error", () => {
-    /* EventSource 会自动重连 */
-  });
-  return {
-    unsubscribe: () => {
-      es.removeEventListener("conversation_updated", handler);
-      es.removeEventListener("ready", handler);
-      es.close();
-    },
+  const client = getConsoleHubClient() as ReturnType<typeof getConsoleHubClient> & {
+    subscribe?: (
+      method: "conversation.subscribe",
+      input: { conversation_id: string },
+      callbacks: { onData?: (data: unknown) => void },
+    ) => { unsubscribe: () => void };
   };
+  if (typeof client.subscribe !== "function") {
+    return { unsubscribe: () => {} };
+  }
+  return client.subscribe(
+    "conversation.subscribe",
+    { conversation_id: conversationId },
+    { onData: () => onUpdate() },
+  );
 }
 
 export async function setConversationTitle(conversationId: string, title: string) {

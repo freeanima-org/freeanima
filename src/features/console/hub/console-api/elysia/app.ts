@@ -2,51 +2,16 @@ import { Elysia, NotFoundError } from "elysia";
 import { ApiHandlerError, apiErrorBody } from "../handlers/errors.ts";
 import { assertNotShuttingDown } from "./context.ts";
 import { applyCorsHeaders, corsPreflightResponse } from "./cors.ts";
-import { acpRoutes } from "./routes/acp.ts";
-import { ftsRoutes } from "./routes/fts.ts";
 import { healthRoutes } from "./routes/health.ts";
-import { echoRoutes } from "./routes/echo.ts";
-import { mcpRoutes } from "./routes/mcp.ts";
-import { satellitesRoutes } from "./routes/satellites.ts";
-import { memoryRoutes } from "./routes/memory.ts";
-import { promptRoutes } from "./routes/prompt.ts";
-import { selfRoutes } from "./routes/self.ts";
-import { conversationsRoutes } from "./routes/conversations.ts";
-import { cronLogRoutes, sleepRoutes } from "./routes/sleep.ts";
-import { statusRoutes } from "./routes/status.ts";
-import { TerminalSessionError } from "@freeanima/platform/sap/terminal-session";
-import { autoLlmRunRoutes } from "./routes/auto-llm-runs.ts";
-import { entityRoutes } from "./routes/entities.ts";
-import { worldsRoutes } from "./routes/worlds.ts";
-import { serviceApiTokenRoutes } from "./routes/service-api-tokens.ts";
-import { configRoutes } from "./routes/config.ts";
 import { ttsRoutes } from "./routes/tts.ts";
+import { TerminalSessionError } from "@freeanima/platform/sap/terminal-session";
 
-/** API 路由（Eden Treaty 类型真源） */
-export const apiApp = new Elysia({ prefix: "/api" })
-  .use(healthRoutes)
-  .use(echoRoutes)
-  .use(conversationsRoutes)
-  .use(statusRoutes)
-  .use(sleepRoutes)
-  .use(cronLogRoutes)
-  .use(memoryRoutes)
-  .use(ftsRoutes)
-  .use(promptRoutes)
-  .use(selfRoutes)
-  .use(mcpRoutes)
-  .use(satellitesRoutes)
-  .use(acpRoutes)
-  .use(autoLlmRunRoutes)
-  .use(worldsRoutes)
-  .use(entityRoutes)
-  .use(serviceApiTokenRoutes)
-  .use(configRoutes)
-  .use(ttsRoutes);
+/** 基础设施 HTTP：health 探针 + TTS（不进 hub-contract） */
+export const apiApp = new Elysia({ prefix: "/api" }).use(healthRoutes).use(ttsRoutes);
 
 export type App = typeof apiApp;
 
-/** Hub HTTP：仅 REST API（UI 由 desktop / mobile 客户端 bundled 提供） */
+/** Hub HTTP：health / TTS；业务 API 走 POST|WS /hub/rpc/v1 */
 export function createApiApp() {
   return new Elysia()
     .onBeforeHandle(({ path, request, set }) => {
@@ -81,6 +46,6 @@ export function createApiApp() {
       set.status = 500;
       return { error: error instanceof Error ? error.message : "Internal Server Error" };
     })
-    .get("/", () => ({ service: "freeanima", api: "/api" }))
+    .get("/", () => ({ service: "freeanima", api: "/api", hub_rpc: "/hub/rpc/v1" }))
     .use(apiApp);
 }
