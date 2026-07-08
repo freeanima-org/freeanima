@@ -1,4 +1,4 @@
-import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
+import type { Server as BunServer } from "bun";
 import { existsSync, readFileSync, statSync, writeFileSync, unlinkSync } from "node:fs";
 import { extname, join } from "node:path";
 
@@ -44,46 +44,42 @@ export type WebStaticServerOptions = {
 };
 
 export type WebStaticServerHandle = {
-  server: Server;
+  server: BunServer;
   url: string;
   port: number;
   host: string;
   close: () => Promise<void>;
 };
 
-function serveStaticFile(distDir: string, rel: string, res: ServerResponse): boolean {
+function serveStaticFile(distDir: string, rel: string): Response | null {
   const normalized = rel.startsWith("/") ? rel.slice(1) : rel;
   const filePath = join(distDir, normalized);
   if (existsSync(filePath) && statSync(filePath).isFile()) {
     const ext = extname(filePath);
-    res.setHeader("Content-Type", MIME[ext] ?? "application/octet-stream");
+    const headers: Record<string, string> = {
+      "Content-Type": MIME[ext] ?? "application/octet-stream",
+    };
     if (normalized.startsWith("assets/")) {
-      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      headers["Cache-Control"] = "public, max-age=31536000, immutable";
     }
-    res.end(readFileSync(filePath));
-    return true;
+    return new Response(readFileSync(filePath), { headers });
   }
-  return false;
+  return null;
 }
 
-function createShellStaticHandler(
+function createShellStaticFetch(
   distDir: string,
   runtime?: WebStaticRuntimeConfig,
-): (req: IncomingMessage, res: ServerResponse) => void {
-  return (req, res) => {
-    const pathname = new URL(req.url ?? "/", "http://127.0.0.1").pathname;
+): (req: Request) => Response {
+  return (req: Request): Response => {
+    const pathname = new URL(req.url).pathname;
 
     if (pathname === WEB_PREFIX) {
-      res.statusCode = 302;
-      res.setHeader("Location", `${WEB_PREFIX}/chat`);
-      res.end();
-      return;
+      return Response.redirect(`${WEB_PREFIX}/chat`, 302);
     }
 
     if (pathname === `${WEB_PREFIX}/config.json`) {
-      res.setHeader("Content-Type", "application/json; charset=utf-8");
-      res.setHeader("Cache-Control", "no-store");
-      res.end(
+      return new Response(
         JSON.stringify({
           app_id: runtime?.appId ?? "chat",
           hub_url: runtime?.hubUrl ?? "",
@@ -91,51 +87,39 @@ function createShellStaticHandler(
           ui_version: runtime?.uiVersion,
           min_shell_version: runtime?.minShellVersion,
         }),
+        {
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            "Cache-Control": "no-store",
+          },
+        },
       );
-      return;
     }
+
     if (pathname === `${WEB_PREFIX}/health`) {
-      res.setHeader("Content-Type", "application/json; charset=utf-8");
-      res.end(JSON.stringify({ ok: true, app: "web", mode: "static" }));
-      return;
+      return new Response(JSON.stringify({ ok: true, app: "web", mode: "static" }), {
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+      });
     }
 
     if (!pathname.startsWith(`${WEB_PREFIX}/`)) {
-      res.statusCode = 404;
-      res.end("Not Found");
-      return;
+      return new Response("Not Found", { status: 404 });
     }
 
     const rel = pathname.slice(WEB_PREFIX.length) || "/";
     const fileRel = rel === "/" ? "/index.html" : rel;
-    if (serveStaticFile(distDir, fileRel, res)) return;
+    const fileRes = serveStaticFile(distDir, fileRel);
+    if (fileRes) return fileRes;
+
     const indexPath = join(distDir, "index.html");
     if (existsSync(indexPath)) {
-      res.setHeader("Content-Type", "text/html; charset=utf-8");
-      res.end(readFileSync(indexPath));
-      return;
+      return new Response(readFileSync(indexPath), {
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      });
     }
-    res.statusCode = 404;
-    res.end("Not Found");
-  };
-}
 
-function listenStatic(server: Server, host: string, port: number): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const onError = (error: Error): void => {
-      server.removeListener("listening", onListening);
-      reject(error);
-    };
-    const onListening = (): void => {
-      server.removeListener("error", onError);
-      const addr = server.address();
-      const actual = addr && typeof addr === "object" && "port" in addr ? addr.port : port;
-      resolve(actual);
-    };
-    server.once("error", onError);
-    server.once("listening", onListening);
-    server.listen(port, host);
-  });
+    return new Response("Not Found", { status: 404 });
+  };
 }
 
 export async function startWebStaticServer(
@@ -146,26 +130,32 @@ export async function startWebStaticServer(
     throw new Error(`Web dist 不存在或缺少 index.html: ${distDir}`);
   }
 
+  const fetchHandler = createShellStaticFetch(distDir, runtime);
+
   let lastError: unknown;
   for (let i = 0; i < portAttempts; i++) {
-    const attemptPort = port + i;
-    const server = createServer(createShellStaticHandler(distDir, runtime));
+    const attemptPort = port === 0 ? 0 : port + i;
     try {
-      const boundPort = await listenStatic(server, host, attemptPort);
-      const addr = server.address();
-      const actualPort = addr && typeof addr === "object" && "port" in addr ? addr.port : boundPort;
+      const server = Bun.serve({
+        hostname: host,
+        port: attemptPort,
+        fetch: fetchHandler,
+      });
+
+      const actualPort = server.port;
+      let cleanupPid: (() => void) | undefined;
       if (pidFile) {
         writeFileSync(pidFile, String(process.pid), "utf-8");
-        const cleanupPid = (): void => {
+        cleanupPid = (): void => {
           try {
             unlinkSync(pidFile);
           } catch {
             /* ignore */
           }
         };
-        server.on("close", cleanupPid);
         process.once("exit", cleanupPid);
       }
+
       const displayHost = host === "0.0.0.0" ? "127.0.0.1" : host;
       const url = `http://${displayHost}:${actualPort}${WEB_PREFIX}`;
       return {
@@ -173,13 +163,13 @@ export async function startWebStaticServer(
         url,
         port: actualPort,
         host,
-        close: () =>
-          new Promise((resolve, reject) => {
-            server.close((err) => (err ? reject(err) : resolve()));
-          }),
+        close: () => {
+          server.stop(true);
+          cleanupPid?.();
+          return Promise.resolve();
+        },
       };
     } catch (error) {
-      server.close();
       lastError = error;
       if (isAddrInUse(error) && i < portAttempts - 1) continue;
       throw error;
