@@ -1,14 +1,21 @@
-import { MAX_HUB_TTS_TEXT_LENGTH } from "./constants.ts";
+import {
+  FIRST_HUB_TTS_CHUNK_MAX,
+  LATER_HUB_TTS_CHUNK_MAX,
+  LATER_HUB_TTS_CHUNK_MIN,
+  MIN_HUB_TTS_SPLIT_LEN,
+  SECOND_HUB_TTS_CHUNK_MAX,
+  SECOND_HUB_TTS_CHUNK_MIN,
+} from "./constants.ts";
 import type { SpeechPlaybackAdapter } from "./adapter-types.ts";
-import { synthesizeSpeechViaHub } from "./tts-api.ts";
+import { synthesizeSpeechViaHubStream } from "./tts-api.ts";
 import type { SpeechPlaybackConfig } from "./types.ts";
-import { splitTextForSpeech } from "./browser-adapter.ts";
-
-const HUB_CHUNK_LEN = MAX_HUB_TTS_TEXT_LENGTH;
-
-/** 极短静音 WAV，在手势链内解锁 HTMLAudio，且不回放上一段朗读 */
-const SILENT_WAV_DATA_URI =
-  "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
+import {
+  getPlaybackGeneration,
+  isSpeechCancelledError,
+  playMpegBuffer,
+  primeMpegSpeechOutput,
+  stopMpegPlayback,
+} from "./mpeg-player.ts";
 
 let lastPlaybackErrorMessage: string | undefined;
 
@@ -20,176 +27,85 @@ export function consumeLastHubSpeechError(): string | undefined {
 
 /** 在用户点击/触摸同步链内调用，解锁移动端 HTMLAudio 播放 */
 export function primeHubSpeechOutput(): void {
-  if (typeof window === "undefined") return;
-  if (!sharedAudio) {
-    sharedAudio = createAudioElement();
+  primeMpegSpeechOutput();
+}
+
+type ChunkTier = { min: number; max: number };
+
+function chunkTier(index: number): ChunkTier {
+  if (index === 0) return { min: 1, max: FIRST_HUB_TTS_CHUNK_MAX };
+  if (index === 1) return { min: SECOND_HUB_TTS_CHUNK_MIN, max: SECOND_HUB_TTS_CHUNK_MAX };
+  return { min: LATER_HUB_TTS_CHUNK_MIN, max: LATER_HUB_TTS_CHUNK_MAX };
+}
+
+function findCutIndex(text: string, tier: ChunkTier, preferEarly: boolean): number {
+  if (text.length <= tier.max) return text.length;
+
+  const sentenceEnd = /[。！？.!?]/g;
+  let match: RegExpExecArray | null;
+  let firstEnd = -1;
+  let bestEnd = -1;
+
+  while ((match = sentenceEnd.exec(text)) !== null) {
+    const end = match.index + 1;
+    if (end > tier.max) break;
+    if (firstEnd < 0) firstEnd = end;
+    if (end >= tier.min) bestEnd = end;
   }
-  resetSharedAudioElement();
-  sharedAudio.src = SILENT_WAV_DATA_URI;
-  sharedAudio.load();
-  void sharedAudio.play().catch(() => {
-    /* 仅用于手势解锁，失败可忽略 */
-  });
+
+  if (preferEarly && firstEnd > 0) return firstEnd;
+  if (bestEnd > 0) return bestEnd;
+  if (firstEnd > 0 && tier.min <= 1) return firstEnd;
+  return tier.max;
 }
 
-function createAudioElement(): HTMLAudioElement {
-  const audio = new Audio();
-  audio.setAttribute("playsinline", "true");
-  audio.setAttribute("webkit-playsinline", "true");
-  audio.preload = "auto";
-  return audio;
+function takeTierChunk(remaining: string, tier: ChunkTier, preferEarly: boolean): string {
+  const trimmed = remaining.trimStart();
+  if (!trimmed) return "";
+
+  if (trimmed.length <= tier.max) {
+    if (preferEarly && trimmed.length > MIN_HUB_TTS_SPLIT_LEN) {
+      const earlyEnd = findCutIndex(trimmed, { min: 1, max: tier.max }, true);
+      if (earlyEnd < trimmed.length) {
+        return trimmed.slice(0, earlyEnd).trim();
+      }
+      const cut = Math.max(MIN_HUB_TTS_SPLIT_LEN + 1, Math.floor(trimmed.length / 2));
+      if (cut < trimmed.length) {
+        return trimmed.slice(0, cut).trim();
+      }
+    }
+    return trimmed;
+  }
+
+  const cut = findCutIndex(trimmed, tier, preferEarly);
+  return trimmed.slice(0, cut).trim();
 }
 
-function splitTextForHubSpeech(text: string): string[] {
+export function splitTextForHubSpeech(text: string): string[] {
   const normalized = text.replace(/\s+/g, " ").trim();
   if (!normalized) return [];
-  if (normalized.length <= HUB_CHUNK_LEN) return [normalized];
+  if (normalized.length <= MIN_HUB_TTS_SPLIT_LEN) return [normalized];
 
-  const coarse = splitTextForSpeech(normalized);
   const chunks: string[] = [];
-  let current = "";
+  let cursor = 0;
+  let tierIndex = 0;
 
-  for (const part of coarse) {
-    if (current.length + part.length > HUB_CHUNK_LEN) {
-      if (current.trim()) chunks.push(current.trim());
-      if (part.length > HUB_CHUNK_LEN) {
-        for (let i = 0; i < part.length; i += HUB_CHUNK_LEN) {
-          chunks.push(part.slice(i, i + HUB_CHUNK_LEN).trim());
-        }
-        current = "";
-      } else {
-        current = part;
-      }
-    } else {
-      current += part;
-    }
+  while (cursor < normalized.length) {
+    const raw = normalized.slice(cursor);
+    const remaining = raw.trimStart();
+    const skipped = raw.length - remaining.length;
+    if (!remaining) break;
+
+    const tier = chunkTier(tierIndex);
+    const chunk = takeTierChunk(remaining, tier, tierIndex === 0);
+    if (!chunk) break;
+
+    chunks.push(chunk);
+    cursor += skipped + chunk.length;
+    tierIndex += 1;
   }
 
-  if (current.trim()) chunks.push(current.trim());
-  return chunks.length > 0 ? chunks : [normalized.slice(0, HUB_CHUNK_LEN)];
-}
-
-let playbackGeneration = 0;
-let sharedAudio: HTMLAudioElement | null = null;
-let activeObjectUrl: string | null = null;
-
-function mediaErrorMessage(audio: HTMLAudioElement): string {
-  const code = audio.error?.code;
-  if (code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) {
-    return "语音播放失败：浏览器不支持 MP3 解码";
-  }
-  if (code != null) {
-    return `语音播放失败（MediaError ${code}）`;
-  }
-  return "语音播放失败";
-}
-
-function resetSharedAudioElement(): void {
-  if (!sharedAudio) return;
-  sharedAudio.pause();
-  sharedAudio.currentTime = 0;
-  sharedAudio.removeAttribute("src");
-  sharedAudio.src = "";
-  sharedAudio.load();
-}
-
-function stopActiveAudio(): void {
-  playbackGeneration += 1;
-  resetSharedAudioElement();
-  if (activeObjectUrl) {
-    URL.revokeObjectURL(activeObjectUrl);
-    activeObjectUrl = null;
-  }
-}
-
-function waitForCanPlay(audio: HTMLAudioElement, generation: number): Promise<void> {
-  if (generation !== playbackGeneration) {
-    return Promise.reject(new Error("朗读已取消"));
-  }
-  if (audio.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
-    return Promise.resolve();
-  }
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    const cleanup = () => {
-      audio.removeEventListener("canplaythrough", onReady);
-      audio.removeEventListener("canplay", onReady);
-      audio.removeEventListener("loadeddata", onReady);
-      audio.removeEventListener("error", onError);
-      clearTimeout(timer);
-    };
-    const finish = (fn: () => void) => {
-      if (settled || generation !== playbackGeneration) return;
-      settled = true;
-      cleanup();
-      fn();
-    };
-    const onReady = () => finish(resolve);
-    const onError = () => finish(() => reject(new Error(mediaErrorMessage(audio))));
-    const timer = setTimeout(() => {
-      if (audio.readyState >= HTMLMediaElement.HAVE_METADATA) {
-        finish(resolve);
-      }
-    }, 8_000);
-
-    audio.addEventListener("canplaythrough", onReady);
-    audio.addEventListener("canplay", onReady);
-    audio.addEventListener("loadeddata", onReady);
-    audio.addEventListener("error", onError);
-  });
-}
-
-async function playMpegBuffer(buffer: ArrayBuffer, generation: number): Promise<void> {
-  if (generation !== playbackGeneration) return;
-  if (typeof window === "undefined") {
-    throw new Error("语音播放需要浏览器环境");
-  }
-
-  if (!sharedAudio) {
-    sharedAudio = createAudioElement();
-  }
-
-  const blob = new Blob([buffer], { type: "audio/mpeg" });
-  const objectUrl = URL.createObjectURL(blob);
-  if (activeObjectUrl) {
-    URL.revokeObjectURL(activeObjectUrl);
-  }
-  activeObjectUrl = objectUrl;
-
-  const audio = sharedAudio;
-  audio.pause();
-  audio.currentTime = 0;
-  audio.src = objectUrl;
-  audio.load();
-
-  await waitForCanPlay(audio, generation);
-  if (generation !== playbackGeneration) return;
-
-  await new Promise<void>((resolve, reject) => {
-    const cleanup = () => {
-      audio.removeEventListener("ended", onEnded);
-      audio.removeEventListener("error", onError);
-    };
-    const onEnded = () => {
-      cleanup();
-      resolve();
-    };
-    const onError = () => {
-      cleanup();
-      reject(new Error(mediaErrorMessage(audio)));
-    };
-
-    audio.addEventListener("ended", onEnded);
-    audio.addEventListener("error", onError);
-    void audio.play().catch((err: unknown) => {
-      cleanup();
-      if (err instanceof DOMException && err.name === "NotAllowedError") {
-        reject(new Error("语音播放失败：浏览器阻止自动播放，请再次点击试听"));
-        return;
-      }
-      reject(err instanceof Error ? err : new Error("语音播放失败"));
-    });
-  });
+  return chunks.length > 0 ? chunks : [normalized];
 }
 
 export function createHubSpeechAdapter(speechOptions: SpeechPlaybackConfig): SpeechPlaybackAdapter {
@@ -199,7 +115,7 @@ export function createHubSpeechAdapter(speechOptions: SpeechPlaybackConfig): Spe
     isSupported: () => options.enabled && options.provider === "edge-tts",
 
     stop() {
-      stopActiveAudio();
+      stopMpegPlayback();
     },
 
     speak(text, locale, onEnd, onError) {
@@ -215,32 +131,66 @@ export function createHubSpeechAdapter(speechOptions: SpeechPlaybackConfig): Spe
         return;
       }
 
-      stopActiveAudio();
+      stopMpegPlayback();
       primeHubSpeechOutput();
-      const generation = playbackGeneration;
+      const generation = getPlaybackGeneration();
 
       void (async () => {
         try {
-          for (const chunk of chunks) {
-            if (generation !== playbackGeneration) return;
+          const synthParams = {
+            lang: options.lang,
+            voice: options.voiceName,
+            appLocale: locale,
+            rate: options.rate,
+            pitch: options.pitch,
+            volume: options.volume,
+          };
 
-            const buffer = await synthesizeSpeechViaHub({
-              text: chunk,
-              lang: options.lang,
-              voice: options.voiceName,
-              appLocale: locale,
-              rate: options.rate,
-              pitch: options.pitch,
-              volume: options.volume,
-            });
+          const startFetch = (chunkText: string, play: boolean, onResponse?: () => void) =>
+            synthesizeSpeechViaHubStream(
+              { ...synthParams, text: chunkText },
+              onResponse ? { generation, play, onResponse } : { generation, play },
+            );
 
-            if (generation !== playbackGeneration) return;
-            await playMpegBuffer(buffer, generation);
+          let upcoming: ReturnType<typeof startFetch> | null = null;
+          let current: ReturnType<typeof startFetch> | null = chunks[0]
+            ? startFetch(chunks[0], true, () => {
+                const second = chunks[1];
+                if (second) upcoming = startFetch(second, false);
+              })
+            : null;
+
+          for (let i = 0; i < chunks.length; i++) {
+            if (generation !== getPlaybackGeneration()) return;
+            if (!current) break;
+
+            const result = await current;
+            current = null;
+
+            if (generation !== getPlaybackGeneration()) return;
+
+            if (!result.played) {
+              await playMpegBuffer(result.buffer, generation);
+            }
+
+            if (i + 1 >= chunks.length) break;
+
+            if (upcoming) {
+              current = upcoming;
+              upcoming = null;
+              const lookahead = chunks[i + 2];
+              if (lookahead) {
+                upcoming = startFetch(lookahead, false);
+              }
+            } else {
+              const nextChunk = chunks[i + 1];
+              if (nextChunk) current = startFetch(nextChunk, false);
+            }
           }
 
-          if (generation === playbackGeneration) onEnd();
+          if (generation === getPlaybackGeneration()) onEnd();
         } catch (err) {
-          if (generation !== playbackGeneration) return;
+          if (generation !== getPlaybackGeneration() || isSpeechCancelledError(err)) return;
           lastPlaybackErrorMessage = err instanceof Error ? err.message : String(err);
           onError?.();
         }
