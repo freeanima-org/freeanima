@@ -1,5 +1,6 @@
 import { probeHubHealthUrl } from "@freeanima/shell-sdk";
 import { waitForCapacitorBridge } from "../lib/capacitor-ready.ts";
+import { persistNativeBuildMetaFromDefine } from "../lib/native-build-meta-prefs.ts";
 import {
   loadHubUrl,
   loadRemoteAuthToken,
@@ -111,6 +112,7 @@ function mountSetupForm(prefill?: { hubUrl?: string | null }): void {
 
 async function bootstrapRemoteUi(): Promise<void> {
   await waitForCapacitorBridge();
+  await persistNativeBuildMetaFromDefine();
   const hubUrl = await loadHubUrl();
   if (!hubUrl) {
     setStatus("请先配置 Hub");

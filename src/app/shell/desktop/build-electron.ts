@@ -8,10 +8,8 @@ import type { CliOptions } from "electron-builder";
 
 import { buildShellUi } from "@freeanima/shell-ui/build";
 import { buildCompanionApp } from "@freeanima/satellite-companion/build";
-import {
-  nativeBuildMetaDefine,
-  resolveNativeBuildMeta,
-} from "@freeanima/shell-sdk/native-build-meta";
+import { nativeBuildMetaDefine } from "@freeanima/shell-sdk/native-build-meta";
+import { resolveNativeBuildMeta } from "../shared/resolve-native-build-meta.ts";
 import { assertElectronMainBundle } from "./electron-main-bundle-assert.ts";
 
 const SHELL_ROOT = import.meta.dir;
