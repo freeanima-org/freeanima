@@ -37,8 +37,8 @@ function maskSecret(key: string, value: unknown): string {
 }
 
 function formatDisplayValue(key: string, value: unknown): string {
-  if (value == null) return "null";
   if (value === undefined) return m.console_common_empty();
+  if (value === null) return "null";
   if (typeof value === "boolean" || typeof value === "number") return String(value);
   if (typeof value === "string") return maskSecret(key, value);
   if (Array.isArray(value)) {
