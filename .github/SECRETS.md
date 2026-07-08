@@ -2,6 +2,8 @@
 
 主仓 CI 统一使用组织级 **`FREEANIMA_CI`**（替代原 `RELEASE_PAT`、`TESTING_REPO_DISPATCH_PAT`）。
 
+> **Blackbox 暂停（2026-07）**：[`ci.yml`](workflows/ci.yml) 的 `blackbox-dispatch` 已 `if: false`，PR 不再触发 `freeanima-testing` 或等待 `freeanima/blackbox`。`FREEANIMA_CI` 仍用于 Release Please；恢复 Blackbox 时见 `ci.yml` 内注释。
+
 在 **freeanima-org** → Settings → Secrets and variables → Actions → Organization secrets 配置后，确保 `freeanima` 仓库可访问。
 
 ## `FREEANIMA_CI`（Release Please + Blackbox dispatch）
@@ -44,11 +46,13 @@ curl -sf -X POST \
 
 返回 **204** 表示 PAT 配置正确；**403 / Resource not accessible** 表示权限或 SSO 未授权。
 
-### Dependabot PR 的限制
+### Dependabot PR 与 Blackbox（已暂停）
 
-由 **Dependabot** 触发的 workflow（`github.actor == 'dependabot[bot]'`）**无法读取 Actions / Organization secrets**，只能使用仓库或组织下的 **Dependabot secrets**。因此 `FREEANIMA_CI` 在 Dependabot PR 上为空，`blackbox-dispatch` 会报 `Parameter token or opts.auth is required`。
+Blackbox dispatch 已全局 `if: false`（见上文）。以下为 **恢复 Blackbox 后** 的 Dependabot 注意点：
 
-当前策略：[`ci.yml`](workflows/ci.yml) 的 `blackbox-dispatch` 在 **Dependabot PR** 与 **fork PR** 上 **跳过**（仅跑 Quality 等常规 CI；Blackbox 与 Quality 并行 dispatch，不等待 Quality 结果）。Release Please PR 与同仓 contributor PR 不受影响。
+由 **Dependabot** 触发的 workflow（`github.actor == 'dependabot[bot]'`）**无法读取 Actions / Organization secrets**，只能使用仓库或组织下的 **Dependabot secrets**。因此 `FREEANIMA_CI` 在 Dependabot PR 上为空时，`blackbox-dispatch` 会报 `Parameter token or opts.auth is required`。
+
+恢复后可在 `blackbox-dispatch` 的 `if` 中跳过 **Dependabot PR** 与 **fork PR**（仅跑 Quality 等常规 CI）。Release Please PR 与同仓 contributor PR 不受影响。
 
 若必须为 Dependabot PR 也跑 Blackbox，可在组织 **Dependabot secrets**（非 Actions secrets）添加同名 `FREEANIMA_CI`；高权限 PAT 暴露给 Dependabot 触发的 workflow，一般不建议。
 
