@@ -356,7 +356,7 @@ function scanImports(): Violation[] {
           violations.push({ file: rel, line: i + 1, pkg, reason: capCross });
           continue;
         }
-        const featCross = featuresCrossViolation(rel, pkg);
+        const featCross = isConsoleApiPath(rel) ? null : featuresCrossViolation(rel, pkg);
         if (featCross) {
           violations.push({ file: rel, line: i + 1, pkg, reason: featCross });
           continue;

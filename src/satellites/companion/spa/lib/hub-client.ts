@@ -1,6 +1,21 @@
 /// <reference lib="dom" />
-import { getBundledHubClient } from "@freeanima/hub-client";
+import { whenSatelliteHubRpcReady } from "@freeanima/shell-sdk/hub-rpc-call";
+import type { ClientCompanionConfig } from "@shared/constants.ts";
+
+export type HubCompanionConfig = Omit<
+  ClientCompanionConfig,
+  "app_id" | "instance_id" | "sap_connected"
+> & {
+  instance_id?: string;
+  sap_connected?: boolean;
+};
+
+export type CompanionHubConfigResponse = { config: HubCompanionConfig };
 
 export function getCompanionHubClient() {
-  return getBundledHubClient({ profile: "satellite" });
+  return {
+    call<T = unknown>(method: string, payload?: unknown): Promise<T> {
+      return whenSatelliteHubRpcReady().then((rpc) => rpc.request<T>(method, payload));
+    },
+  };
 }
