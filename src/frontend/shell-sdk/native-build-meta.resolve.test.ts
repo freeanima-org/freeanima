@@ -10,9 +10,11 @@ const sampleMeta = {
 };
 
 describe("native-build-meta.resolve", () => {
+  const originalFetch = globalThis.fetch;
+
   afterEach(() => {
     delete (globalThis as { window?: Window }).window;
-    delete (globalThis as { fetch?: typeof fetch }).fetch;
+    globalThis.fetch = originalFetch;
   });
 
   it("resolveAboutNativeBuildMeta 优先 satelliteShell.nativeBuild", async () => {
