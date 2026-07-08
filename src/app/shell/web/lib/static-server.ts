@@ -163,10 +163,9 @@ export async function startWebStaticServer(
         url,
         port: actualPort,
         host,
-        close: () => {
+        close: async () => {
           server.stop(true);
           cleanupPid?.();
-          return Promise.resolve();
         },
       };
     } catch (error) {
