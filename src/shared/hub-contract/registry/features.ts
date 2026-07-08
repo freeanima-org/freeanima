@@ -43,6 +43,28 @@ import {
   notificationMarkReadOutputSchema,
   notificationRecipientsOutputSchema,
 } from "@freeanima/sap-contract/frames/notification";
+import {
+  companionConfigGetInputSchema,
+  companionConfigGetOutputSchema,
+  companionConfigUpdateInputSchema,
+  companionConfigUpdateOutputSchema,
+  companionMigrateFromLocalInputSchema,
+  companionMigrateFromLocalOutputSchema,
+  companionModelDeleteInputSchema,
+  companionModelDeleteOutputSchema,
+  companionModelRenameInputSchema,
+  companionModelRenameOutputSchema,
+  companionModelSetActiveInputSchema,
+  companionModelSetActiveOutputSchema,
+  companionMotionDeleteInputSchema,
+  companionMotionDeleteOutputSchema,
+  companionMotionRenameInputSchema,
+  companionMotionRenameOutputSchema,
+  companionMotionSetSlotInputSchema,
+  companionMotionSetSlotOutputSchema,
+  companionSyncPullInputSchema,
+  companionSyncPullOutputSchema,
+} from "@freeanima/sap-contract/frames/companion";
 import { z } from "zod";
 
 import { defineHubMethod, dualTransportMeta } from "../method-def.ts";
@@ -152,6 +174,59 @@ export const notificationMethodDefs = {
   "notification.recipients": defineHubMethod({
     input: emptyInputSchema,
     output: notificationRecipientsOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+} as const;
+
+export const companionMethodDefs = {
+  "companion.config.get": defineHubMethod({
+    input: companionConfigGetInputSchema,
+    output: companionConfigGetOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "companion.config.update": defineHubMethod({
+    input: companionConfigUpdateInputSchema,
+    output: companionConfigUpdateOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "companion.model.setActive": defineHubMethod({
+    input: companionModelSetActiveInputSchema,
+    output: companionModelSetActiveOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "companion.model.rename": defineHubMethod({
+    input: companionModelRenameInputSchema,
+    output: companionModelRenameOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "companion.model.delete": defineHubMethod({
+    input: companionModelDeleteInputSchema,
+    output: companionModelDeleteOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "companion.motion.setSlot": defineHubMethod({
+    input: companionMotionSetSlotInputSchema,
+    output: companionMotionSetSlotOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "companion.motion.rename": defineHubMethod({
+    input: companionMotionRenameInputSchema,
+    output: companionMotionRenameOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "companion.motion.delete": defineHubMethod({
+    input: companionMotionDeleteInputSchema,
+    output: companionMotionDeleteOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "companion.migrate.fromLocal": defineHubMethod({
+    input: companionMigrateFromLocalInputSchema,
+    output: companionMigrateFromLocalOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "companion.sync.pull": defineHubMethod({
+    input: companionSyncPullInputSchema,
+    output: companionSyncPullOutputSchema,
     meta: dualTransportMeta(true),
   }),
 } as const;

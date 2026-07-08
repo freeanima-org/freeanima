@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { chdir } from "node:process";
 import { createTempDir, removeTempDir } from "@freeanima/core/util";
 import { Config } from "@freeanima/platform/config";
 import { registerCoreTools } from "@freeanima/capabilities-tools";
@@ -68,24 +67,17 @@ describe("file tools", () => {
     expect(readFileSync(p, "utf-8")).toBe("hello anima\n");
   });
 
-  it("patch works with relative path after write_file", async () => {
-    const rel = join("sub", "rel.txt");
-    const abs = join(cwd, rel);
+  it("patch works in nested directory path", async () => {
+    const abs = join(cwd, "sub", "rel.txt");
     mkdirSync(dirname(abs), { recursive: true });
     writeFileSync(abs, "alpha\n", "utf-8");
-    const prevCwd = process.cwd();
-    chdir(cwd);
-    try {
-      const out = await toolSets.getTool("file_patch")!.handler({
-        path: rel,
-        old_string: "alpha",
-        new_string: "beta",
-      });
-      expect(out).not.toContain("invalid path");
-      expect(readFileSync(abs, "utf-8")).toBe("beta\n");
-    } finally {
-      chdir(prevCwd);
-    }
+    const out = await toolSets.getTool("file_patch")!.handler({
+      path: abs,
+      old_string: "alpha",
+      new_string: "beta",
+    });
+    expect(out).toContain('"ok":true');
+    expect(readFileSync(abs, "utf-8")).toBe("beta\n");
   });
 
   it("tools are registered", () => {

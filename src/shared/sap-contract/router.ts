@@ -90,6 +90,28 @@ import type {
   DreamListOutput,
 } from "./frames/dream.ts";
 import type {
+  CompanionConfigGetInput,
+  CompanionConfigGetOutput,
+  CompanionConfigUpdateInput,
+  CompanionConfigUpdateOutput,
+  CompanionMigrateFromLocalInput,
+  CompanionMigrateFromLocalOutput,
+  CompanionModelDeleteInput,
+  CompanionModelDeleteOutput,
+  CompanionModelRenameInput,
+  CompanionModelRenameOutput,
+  CompanionModelSetActiveInput,
+  CompanionModelSetActiveOutput,
+  CompanionMotionDeleteInput,
+  CompanionMotionDeleteOutput,
+  CompanionMotionRenameInput,
+  CompanionMotionRenameOutput,
+  CompanionMotionSetSlotInput,
+  CompanionMotionSetSlotOutput,
+  CompanionSyncPullInput,
+  CompanionSyncPullOutput,
+} from "./frames/companion.ts";
+import type {
   VaultListInput,
   VaultListOutput,
   VaultGetInput,
@@ -189,6 +211,16 @@ export const SAP_METHODS = [
   "notification.list",
   "notification.markRead",
   "notification.recipients",
+  "companion.config.get",
+  "companion.config.update",
+  "companion.model.setActive",
+  "companion.model.rename",
+  "companion.model.delete",
+  "companion.motion.setSlot",
+  "companion.motion.rename",
+  "companion.motion.delete",
+  "companion.migrate.fromLocal",
+  "companion.sync.pull",
   "terminal.attach",
   "terminal.write",
   "terminal.resize",
@@ -259,6 +291,16 @@ export type SapRouterInputs = {
   "notification.list": NotificationListInput;
   "notification.markRead": NotificationMarkReadInput;
   "notification.recipients": Record<string, never>;
+  "companion.config.get": CompanionConfigGetInput;
+  "companion.config.update": CompanionConfigUpdateInput;
+  "companion.model.setActive": CompanionModelSetActiveInput;
+  "companion.model.rename": CompanionModelRenameInput;
+  "companion.model.delete": CompanionModelDeleteInput;
+  "companion.motion.setSlot": CompanionMotionSetSlotInput;
+  "companion.motion.rename": CompanionMotionRenameInput;
+  "companion.motion.delete": CompanionMotionDeleteInput;
+  "companion.migrate.fromLocal": CompanionMigrateFromLocalInput;
+  "companion.sync.pull": CompanionSyncPullInput;
   "terminal.attach": TerminalAttachInput;
   "terminal.write": TerminalWriteInput;
   "terminal.resize": TerminalResizeInput;
@@ -327,6 +369,16 @@ export type SapRouterOutputs = {
   "notification.list": NotificationListOutput;
   "notification.markRead": NotificationMarkReadOutput;
   "notification.recipients": NotificationRecipientsOutput;
+  "companion.config.get": CompanionConfigGetOutput;
+  "companion.config.update": CompanionConfigUpdateOutput;
+  "companion.model.setActive": CompanionModelSetActiveOutput;
+  "companion.model.rename": CompanionModelRenameOutput;
+  "companion.model.delete": CompanionModelDeleteOutput;
+  "companion.motion.setSlot": CompanionMotionSetSlotOutput;
+  "companion.motion.rename": CompanionMotionRenameOutput;
+  "companion.motion.delete": CompanionMotionDeleteOutput;
+  "companion.migrate.fromLocal": CompanionMigrateFromLocalOutput;
+  "companion.sync.pull": CompanionSyncPullOutput;
   "terminal.attach": TerminalAttachOutput;
   "terminal.write": { ok: true };
   "terminal.resize": { ok: true };

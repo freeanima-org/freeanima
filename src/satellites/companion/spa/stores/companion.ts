@@ -1,7 +1,8 @@
 import { create } from "zustand";
-import type { CompanionSettingsApi, SettingsStore } from "@freeanima/shell-sdk/settings";
+import type { SettingsStore } from "@freeanima/shell-sdk/settings";
 import {
   fetchCompanionConfig,
+  fetchSidecarRuntimeConfig,
   resetSidecarOriginCache,
   saveSettings,
   uploadModel as uploadModelApi,
@@ -56,7 +57,7 @@ type CompanionState = {
   init: () => Promise<void>;
   initFromStore: (
     store: SettingsStore<CompanionConfig>,
-    api?: CompanionSettingsApi,
+    api?: import("@freeanima/shell-sdk/settings").CompanionSettingsApi,
   ) => Promise<void>;
   refreshConfig: () => Promise<void>;
   updateSettings: (patch: {
@@ -100,7 +101,6 @@ function applyConfigToState(cfg: CompanionConfig, prev?: CompanionState): Partia
 }
 
 let configStore: SettingsStore<CompanionConfig> | null = null;
-let companionApi: CompanionSettingsApi | null = null;
 
 export const useCompanionStore = create<CompanionState>((set, get) => ({
   loading: true,
@@ -177,7 +177,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
         cfg =
           raw && typeof raw === "object" && "hub_url" in raw ? raw : await fetchCompanionConfig();
       } else {
-        cfg = await fetchCompanionConfig();
+        cfg = await fetchSidecarRuntimeConfig();
       }
       get().applyConfig(cfg);
     } catch (e) {
@@ -188,9 +188,8 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
     }
   },
 
-  async initFromStore(store, api) {
+  async initFromStore(store, _api) {
     configStore = store;
-    companionApi = api ?? null;
     await get().init();
   },
 
@@ -198,7 +197,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
     try {
       const cfg = configStore
         ? ((await configStore.load()) as CompanionConfig)
-        : await fetchCompanionConfig();
+        : await fetchSidecarRuntimeConfig();
       get().applyConfig(cfg);
     } catch (e) {
       set({ error: e instanceof Error ? e.message : String(e) });
@@ -214,13 +213,8 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   },
 
   async uploadModel(file) {
-    if (companionApi) {
-      await companionApi.uploadModel(file);
-      await get().refreshConfig();
-    } else {
-      const result = await uploadModelApi(file);
-      get().applyConfig(result.config);
-    }
+    const result = await uploadModelApi(file);
+    get().applyConfig(result.config);
     set({ characterReady: false, modelLoading: true, error: null });
     await emitConfigChanged();
   },

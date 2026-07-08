@@ -1,20 +1,18 @@
 import { existsSync, statSync } from "node:fs";
-import { basename, join } from "node:path";
+import { join } from "node:path";
 import { jsonResponse } from "./http/cors.ts";
-import { companionPackageRoot } from "./companion-root.ts";
 import { companionMotionsDir } from "./paths.ts";
 import { requiredMotionFiles } from "../shared/motion-manifest.ts";
 import { importMotionUpload } from "./motion-import.ts";
 import { listMotionLibrary } from "./motion-library.ts";
+import { publicMotionsDir, resolveMotionFile, resolveMotionsSearchDirs } from "./motion-path.ts";
 
 /** manifest 中引用的 VRMA 文件名（idle + 分区动作） */
 export const REQUIRED_MOTION_FILES = requiredMotionFiles();
 
-const BOOTH_ITEM_URL = "https://booth.pm/ja/items/5512385";
+export { publicMotionsDir, resolveMotionFile, resolveMotionsSearchDirs };
 
-export function publicMotionsDir(): string {
-  return join(companionPackageRoot(), "public", "motions");
-}
+const BOOTH_ITEM_URL = "https://booth.pm/ja/items/5512385";
 
 export function motionsReady(dir: string): boolean {
   if (!existsSync(dir)) return false;
@@ -29,29 +27,6 @@ function resolveMotionInDir(dir: string, name: string): string | null {
   const nested = join(dir, "vrma", name);
   if (existsSync(nested) && statSync(nested).isFile()) {
     return nested;
-  }
-  return null;
-}
-
-/** 用户数据目录 → 开发 public 回退 */
-export function resolveMotionsSearchDirs(): string[] {
-  const dirs = [companionMotionsDir(), publicMotionsDir()];
-  return dirs.filter((dir, index) => dirs.indexOf(dir) === index);
-}
-
-export function resolveMotionFile(relativePath: string): string | null {
-  const rawName = basename(relativePath);
-  let name: string;
-  try {
-    name = decodeURIComponent(rawName);
-  } catch {
-    name = rawName;
-  }
-  if (!name.endsWith(".vrma")) return null;
-
-  for (const dir of resolveMotionsSearchDirs()) {
-    const found = resolveMotionInDir(dir, name);
-    if (found) return found;
   }
   return null;
 }

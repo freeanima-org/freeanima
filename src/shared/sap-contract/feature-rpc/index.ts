@@ -7,4 +7,5 @@ export * from "../frames/diary.ts";
 export * from "../frames/dream.ts";
 export * from "../frames/email.ts";
 export * from "../frames/notification.ts";
+export * from "../frames/companion.ts";
 export * from "../frames/acp.ts";

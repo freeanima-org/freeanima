@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { COMPANION_PROFILE_COMPONENT, companionProfileBodySchema } from "./companion-profile.ts";
 import { VAULT_CONFIG_COMPONENT, vaultConfigBodySchema } from "./vault-config.ts";
 import { VAULT_ITEM_COMPONENT, vaultItemBodySchema } from "./vault-item.ts";
 import { AGENT_CONFIG_COMPONENT, agentConfigBodySchema } from "./agent-config.ts";
@@ -26,6 +27,7 @@ export const COMPONENT_IDS = [
   EMAIL_MESSAGE_COMPONENT,
   VAULT_CONFIG_COMPONENT,
   VAULT_ITEM_COMPONENT,
+  COMPANION_PROFILE_COMPONENT,
 ] as const;
 
 export type ComponentId = (typeof COMPONENT_IDS)[number];
@@ -45,6 +47,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [EMAIL_MESSAGE_COMPONENT]: emailMessageBodySchema,
   [VAULT_CONFIG_COMPONENT]: vaultConfigBodySchema,
   [VAULT_ITEM_COMPONENT]: vaultItemBodySchema,
+  [COMPANION_PROFILE_COMPONENT]: companionProfileBodySchema,
 };
 
 export function componentBodySchema(component: ComponentId): z.ZodTypeAny {
@@ -69,3 +72,4 @@ export * from "./email-thread.ts";
 export * from "./email-message.ts";
 export * from "./vault-config.ts";
 export * from "./vault-item.ts";
+export * from "./companion-profile.ts";
