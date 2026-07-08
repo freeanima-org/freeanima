@@ -22,7 +22,7 @@ jobs:
       - uses: googleapis/release-please-action@v5
         id: release
         with:
-          # GITHUB_TOKEN 开的 PR 不触发下游 workflow；须 PAT 以便 Release PR 跑 ci.yml（Quality + blackbox）
+          # GITHUB_TOKEN 开的 PR 不触发下游 workflow；须 PAT 以便 Release PR 跑 ci.yml（Quality；Blackbox 已暂停）
           token: ${{ secrets.FREEANIMA_CI }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json

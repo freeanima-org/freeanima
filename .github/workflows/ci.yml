@@ -72,11 +72,14 @@ jobs:
       - uses: ./.github/actions/setup-bun
       - uses: ./.github/actions/setup-anima-home
       - run: bun run build:shell-ui
+  # 暂停 Blackbox E2E（commit status `freeanima/blackbox`）：不再向 freeanima-testing 发 dispatch。
+  # 恢复：删除 `if: false`，取消注释下方原条件。
   blackbox-dispatch:
     name: Blackbox dispatch
-    if: >-
-      github.event_name == 'pull_request' &&
-      github.event.pull_request.head.repo.full_name == github.repository
+    if: false
+    # if: >-
+    #   github.event_name == 'pull_request' &&
+    #   github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Dispatch pr-verify to freeanima-testing
