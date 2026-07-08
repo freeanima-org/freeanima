@@ -1,11 +1,13 @@
 import {
   autobiographicalSignificanceSchema,
   autobiographicalStatusSchema,
-  clarifyItemSchema,
-  limbicKindSchema,
+} from "../../../core/db/schema/autobiographical-memory.ts";
+import { clarifyItemSchema } from "../../../core/db/schema/jsonb/conversation-meta-jsonb.ts";
+import { limbicKindSchema } from "../../../core/db/schema/limbic-memory.ts";
+import {
   semanticMemoryStatusSchema,
   semanticMemoryTypeSchema,
-} from "@freeanima/core/db/schema";
+} from "../../../core/db/schema/semantic-memory.ts";
 import { z } from "zod";
 
 const memoryListPaginationSchema = z.object({

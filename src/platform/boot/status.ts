@@ -3,6 +3,7 @@ import { dirname } from "node:path";
 import { PATHS } from "@freeanima/platform/config";
 import { logComponent } from "@freeanima/platform/logging";
 import { ANIMA_VERSION } from "../runtime/version.ts";
+import { SERVICE_BUILD_META } from "../runtime/service-build-meta.ts";
 
 export function startupLog(message: string): void {
   logComponent("startup").debug(message);
@@ -16,6 +17,7 @@ export function writeStatusFile(
   const status = {
     pid: process.pid,
     version: ANIMA_VERSION,
+    build: SERVICE_BUILD_META,
     start_time: Date.now() / 1000,
     host,
     port,

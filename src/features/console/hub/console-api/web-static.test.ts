@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import {
   buildFileEtag,
   isWebStaticPath,
+  readWebBuildMetaFromDist,
   serveWebStatic,
   webPathToDistRel,
   WEB_URL_PREFIX,
@@ -21,6 +22,43 @@ describe("web-static", () => {
   test("webPathToDistRel", () => {
     expect(webPathToDistRel("/web")).toBe("/");
     expect(webPathToDistRel("/web/assets/main.js")).toBe("/assets/main.js");
+  });
+
+  test("readWebBuildMetaFromDist reads build-meta.json", () => {
+    const dist = mkdtempSync(join(tmpdir(), "hub-web-meta-"));
+    writeFileSync(
+      join(dist, "build-meta.json"),
+      JSON.stringify({
+        component: "web",
+        version: "0.8.3",
+        channel: "prod",
+        built_at: "2026-07-08T00:00:00.000Z",
+      }),
+    );
+    expect(readWebBuildMetaFromDist(dist)?.version).toBe("0.8.3");
+  });
+
+  test("serveWebStatic config.json includes web_build from dist", async () => {
+    const dist = mkdtempSync(join(tmpdir(), "hub-web-dist-meta-"));
+    writeFileSync(join(dist, "index.html"), "<html>ok</html>");
+    writeFileSync(
+      join(dist, "build-meta.json"),
+      JSON.stringify({
+        component: "web",
+        version: "0.8.3",
+        channel: "prod",
+        built_at: "2026-07-08T00:00:00.000Z",
+      }),
+    );
+    const base = "http://127.0.0.1:2658";
+    const cfgRes = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/config.json`), {
+      distDir: dist,
+      appId: "chat",
+    });
+    expect(cfgRes?.ok).toBe(true);
+    const cfg = (await cfgRes!.json()) as { web_build?: { version?: string; component?: string } };
+    expect(cfg.web_build?.component).toBe("web");
+    expect(cfg.web_build?.version).toBe("0.8.3");
   });
 
   test("serveWebStatic serves files, config.json, and conditional GET", async () => {

@@ -37,6 +37,7 @@ import type {
   ServiceSnapshot,
 } from "@freeanima/platform/schemas/snapshot";
 import { ANIMA_VERSION } from "./version.ts";
+import { SERVICE_BUILD_META } from "./service-build-meta.ts";
 import { buildTunnelSnapshot } from "@freeanima/platform/connectors/tunnel";
 
 export function startTimeIso(epochSec: number): string {
@@ -127,8 +128,13 @@ export async function buildConversationsByPlatform(
   }
 }
 
-export function health(): HealthSnapshot {
-  return { status: "ok", version: ANIMA_VERSION };
+export function health(startTime?: number): HealthSnapshot {
+  return {
+    status: "ok",
+    version: ANIMA_VERSION,
+    build: SERVICE_BUILD_META,
+    ...(startTime != null && startTime > 0 ? { started_at: startTimeIso(startTime) } : {}),
+  };
 }
 
 export async function buildDependenciesStatus(): Promise<{
@@ -224,6 +230,7 @@ export async function buildStatus(
     status: "running",
     pid: process.pid,
     version: ANIMA_VERSION,
+    build: SERVICE_BUILD_META,
     uptime_seconds: uptime,
     start_time_iso: startTimeIso(startTime),
     config: {

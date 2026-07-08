@@ -625,5 +625,21 @@
   "ui_pwa_install_prompt": "将 FreeAnima 添加到主屏幕，便于快速访问。",
   "ui_pwa_shell_offline_ready": "应用界面已可离线打开；Hub 数据仍需联网。",
   "ui_pwa_update_available": "有新版本可用。",
-  "ui_pwa_update_reload": "重新加载"
+  "ui_pwa_update_reload": "重新加载",
+  "settings_about_title": "关于",
+  "settings_about_group_service": "Hub 服务",
+  "settings_about_group_web": "Web UI",
+  "settings_about_group_native": "原生壳",
+  "settings_about_field_version": "版本",
+  "settings_about_field_channel": "渠道",
+  "settings_about_field_commit": "Commit",
+  "settings_about_field_branch": "分支",
+  "settings_about_field_dirty": "工作区",
+  "settings_about_field_built_at": "构建时间",
+  "settings_about_field_started_at": "启动时间",
+  "settings_about_field_shell": "壳类型",
+  "settings_about_dirty_yes": "有未提交改动",
+  "settings_about_dirty_no": "干净",
+  "settings_about_loading": "加载中…",
+  "settings_about_unavailable": "不可用"
 }

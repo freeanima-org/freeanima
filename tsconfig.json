@@ -278,6 +278,9 @@
       "@freeanima/shell-ui/spa/settings/modules-section.ts": [
         "./src/frontend/shell-ui/spa/settings/modules-section.ts"
       ],
+      "@freeanima/shell-ui/spa/settings/about/about-section.ts": [
+        "./src/frontend/shell-ui/spa/settings/about/about-section.ts"
+      ],
       "@freeanima/shell-ui/spa/settings/hub-config/hub-runtime-section.ts": [
         "./src/frontend/shell-ui/spa/settings/hub-config/hub-runtime-section.ts"
       ],

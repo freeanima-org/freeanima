@@ -238,7 +238,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
   }
 
   health(): HealthSnapshot {
-    return status.health();
+    return status.health(this.startTime);
   }
 
   async buildStatus(host: string, port: number): Promise<ServiceSnapshot> {

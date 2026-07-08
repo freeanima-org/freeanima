@@ -1,4 +1,5 @@
 import { parseBindHosts } from "@freeanima/platform/bind-hosts";
+import { formatBuildMetaLines, parseComponentBuildMeta } from "@freeanima/core/config/build-meta";
 import { formatTunnelConnectedLabel } from "../tunnel/tunnel-supervisor.ts";
 import { prettyDuration, writeStatusLine } from "./status.ts";
 
@@ -85,6 +86,8 @@ export function printServiceRunningStatus(opts: {
   const api = opts.body ?? {};
   const pid = api.pid ?? opts.statusFile.pid ?? opts.pidOverride ?? "?";
   const version = api.version ?? opts.statusFile.version ?? "?";
+  const buildRaw = api.build ?? opts.statusFile.build;
+  const build = parseComponentBuildMeta(buildRaw);
 
   let uptime = api.uptime_seconds as number | undefined;
   if (uptime == null && opts.statusFile.start_time) {
@@ -104,6 +107,18 @@ export function printServiceRunningStatus(opts: {
   for (const h of parseBindHosts(opts.host)) {
     printField("http", `http://${h}:${opts.port}`);
     printField("api", `http://${h}:${opts.port}/api`);
+  }
+
+  if (build) {
+    printSection("build");
+    for (const line of formatBuildMetaLines(build)) {
+      const space = line.indexOf(" ");
+      if (space > 0) {
+        printField(line.slice(0, space), line.slice(space + 1));
+      } else {
+        printField("info", line);
+      }
+    }
   }
 
   const apiTunnel = opts.body?.tunnel as { public_url?: string; api_url?: string } | undefined;

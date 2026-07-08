@@ -8,6 +8,10 @@ import type { CliOptions } from "electron-builder";
 
 import { buildShellUi } from "@freeanima/shell-ui/build";
 import { buildCompanionApp } from "@freeanima/satellite-companion/build";
+import {
+  nativeBuildMetaDefine,
+  resolveNativeBuildMeta,
+} from "@freeanima/shell-sdk/native-build-meta";
 import { assertElectronMainBundle } from "./electron-main-bundle-assert.ts";
 
 const SHELL_ROOT = import.meta.dir;
@@ -78,7 +82,16 @@ export function getElectronMainBundleOptions(opts?: { sourcemap?: boolean }): es
 
 export function getElectronPreloadBundleOptions(opts?: {
   sourcemap?: boolean;
+  profile?: BuildProfile;
+  version?: string;
 }): esbuild.BuildOptions {
+  const channel = opts?.profile === "release" ? "prod" : "dev";
+  const nativeMeta = resolveNativeBuildMeta({
+    shell: "desktop",
+    channel,
+    repoRoot: REPO_ROOT,
+    ...(opts?.version ? { version: opts.version } : {}),
+  });
   return {
     entryPoints: { preload: join(SHELL_ROOT, "electron", "preload.ts") },
     bundle: true,
@@ -89,6 +102,7 @@ export function getElectronPreloadBundleOptions(opts?: {
     external: ["electron"],
     sourcemap: opts?.sourcemap ?? false,
     logLevel: "info",
+    define: nativeBuildMetaDefine(nativeMeta),
   };
 }
 
@@ -156,10 +170,14 @@ function resolveDesktopUiMode(): "remote" | "bundled" {
   return raw === "bundled" ? "bundled" : "remote";
 }
 
-async function bundleElectronMain(sourcemap: boolean): Promise<void> {
+async function bundleElectronMain(
+  sourcemap: boolean,
+  profile: BuildProfile,
+  version: string,
+): Promise<void> {
   rmSync(ELECTRON_DIST, { recursive: true, force: true });
   mkdirSync(ELECTRON_DIST, { recursive: true });
-  const bundleOpts = { sourcemap };
+  const bundleOpts = { sourcemap, profile, version };
   await esbuild.build(getElectronMainBundleOptions(bundleOpts));
   await esbuild.build(getElectronPreloadBundleOptions(bundleOpts));
   const mainCode = readFileSync(MAIN_BUNDLE_PATH, "utf-8");
@@ -304,13 +322,13 @@ export async function buildDesktopShellElectron(opts: BuildElectronOptions = {})
   }
   const sourcemap = profile !== "release";
   await buildVendorAssets({ minify, sourcemap });
-  await bundleElectronMain(sourcemap);
+  const version = resolveBuildVersion(opts.version);
+  await bundleElectronMain(sourcemap, profile, version);
   stageFbxBinary(platform);
   if (fullClean) {
     cleanReleaseDir();
   }
 
-  const version = resolveBuildVersion(opts.version);
   runElectronBuilderViaNode(buildElectronBuilderOptions(platform, profile, version));
   console.log("[desktop-shell] build complete");
 }

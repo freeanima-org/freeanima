@@ -2,10 +2,12 @@
 import { buildProgram, ANIMA_VERSION } from "./program.ts";
 import { printCliError } from "./output/errors.ts";
 import { formatCliVersion } from "@freeanima/core/config/cli-install";
+import { resolveServiceBuildMeta } from "@freeanima/platform/runtime/service-build-meta";
 
 const argv = process.argv;
 if (argv.includes("-V") || argv.includes("--version")) {
-  console.log(formatCliVersion(ANIMA_VERSION));
+  const build = resolveServiceBuildMeta();
+  console.log(`${formatCliVersion(ANIMA_VERSION)} · ${build.channel}`);
 } else {
   const program = buildProgram();
   try {

@@ -1,4 +1,4 @@
-import { omitUndefined } from "@freeanima/core/util";
+import { omitUndefined } from "@freeanima/core/util/omit-undefined";
 import type { DisplayItem, StreamApiEvent } from "@chat/lib/types.ts";
 import { pollUntilAssistantReply } from "@chat/lib/display-recovery.ts";
 import { randomUuid } from "@freeanima/sap-contract";

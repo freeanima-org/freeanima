@@ -1,6 +1,7 @@
 import { existsSync, statSync } from "node:fs";
 import { extname, join, normalize } from "node:path";
 
+import { readBuildMetaFile, type ComponentBuildMeta } from "@freeanima/core/config/build-meta";
 import { resolveHubWsUrl } from "@freeanima/sap-contract/urls";
 
 import { resolveLoopbackWebAuthTokenForRequest } from "./web-loopback-auth.ts";
@@ -26,7 +27,14 @@ export type WebStaticOptions = {
   appId?: string;
   uiVersion?: string;
   minShellVersion?: string;
+  webBuild?: ComponentBuildMeta | null;
 };
+
+export function readWebBuildMetaFromDist(distDir: string): ComponentBuildMeta | null {
+  const fromFile = readBuildMetaFile(join(distDir, "build-meta.json"));
+  if (fromFile?.component === "web") return fromFile;
+  return null;
+}
 
 export function isWebStaticPath(pathname: string): boolean {
   return pathname === WEB_URL_PREFIX || pathname.startsWith(`${WEB_URL_PREFIX}/`);
@@ -58,11 +66,14 @@ function webConfigJsonResponse(
 ): Response {
   const origin = new URL(req.url).origin;
   const authToken = resolveLoopbackWebAuthTokenForRequest(req, remoteAddress);
+  const webBuild =
+    options.webBuild === undefined ? readWebBuildMetaFromDist(options.distDir) : options.webBuild;
   const body = JSON.stringify({
     app_id: options.appId ?? "chat",
     hub_url: origin,
     hub_ws_url: resolveHubWsUrl(origin),
     ...(options.uiVersion ? { ui_version: options.uiVersion } : {}),
+    ...(webBuild ? { web_build: webBuild } : {}),
     ...(options.minShellVersion ? { min_shell_version: options.minShellVersion } : {}),
     ...(authToken ? { auth_token: authToken } : {}),
   });

@@ -625,5 +625,21 @@
   "ui_pwa_install_prompt": "Install FreeAnima on your home screen for quick access.",
   "ui_pwa_shell_offline_ready": "App shell is ready for offline use. Hub data still requires a connection.",
   "ui_pwa_update_available": "A new version is available.",
-  "ui_pwa_update_reload": "Reload"
+  "ui_pwa_update_reload": "Reload",
+  "settings_about_title": "About",
+  "settings_about_group_service": "Hub service",
+  "settings_about_group_web": "Web UI",
+  "settings_about_group_native": "Native shell",
+  "settings_about_field_version": "Version",
+  "settings_about_field_channel": "Channel",
+  "settings_about_field_commit": "Commit",
+  "settings_about_field_branch": "Branch",
+  "settings_about_field_dirty": "Working tree",
+  "settings_about_field_built_at": "Built at",
+  "settings_about_field_started_at": "Started at",
+  "settings_about_field_shell": "Shell",
+  "settings_about_dirty_yes": "Modified",
+  "settings_about_dirty_no": "Clean",
+  "settings_about_loading": "Loading…",
+  "settings_about_unavailable": "Unavailable"
 }

@@ -46,6 +46,7 @@
           "__freeanimaWebUiConfig",
           "__WEB_DEFAULT_HUB_URL__",
           "__WEB_DEFAULT_REMOTE_AUTH_TOKEN__",
+          "__NATIVE_BUILD_META__",
           "_check",
           "_exhaustive",
           "_def",
