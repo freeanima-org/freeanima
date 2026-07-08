@@ -9,6 +9,20 @@ import { collectCoverageShards } from "./coverage-collect.ts";
 const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const label = "ci:tests";
 const publishedCliJs = join(repoRoot, "src/app/cli/publish/dist/cli.js");
+const paraglideMessagesJs = join(repoRoot, "messages/paraglide/messages.js");
+
+function ensureParaglideCompiled(): void {
+  if (existsSync(paraglideMessagesJs)) return;
+  console.log(`[${label}] compiling paraglide messages…`);
+  const result = spawnSync("bun", ["run", "paraglide:compile"], {
+    cwd: repoRoot,
+    stdio: "inherit",
+    env: process.env,
+  });
+  if (result.status !== 0) {
+    throw new Error("paraglide:compile failed before unit tests");
+  }
+}
 
 function ensurePublishedCliBuilt(): void {
   if (existsSync(publishedCliJs)) return;
@@ -36,6 +50,7 @@ let exitCode = 0;
 let teardown: () => Promise<void> = async () => {};
 
 try {
+  ensureParaglideCompiled();
   ensurePublishedCliBuilt();
 } catch (err) {
   const msg = err instanceof Error ? err.message : String(err);
