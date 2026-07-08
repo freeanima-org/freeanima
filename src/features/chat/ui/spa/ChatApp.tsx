@@ -408,11 +408,10 @@ export function ChatApp() {
     setInputText(loadInputDraft(currentId));
     stickToBottomRef.current = true;
     requestAnimationFrame(() => {
-      if (!nativeShell) msgInputRef.current?.focus();
       resizeInput();
       scrollDown({ force: true });
     });
-  }, [currentId, nativeShell]);
+  }, [currentId]);
 
   useEffect(() => {
     if (!currentId) return;
@@ -498,10 +497,7 @@ export function ChatApp() {
     const id = await newConversationFn();
     if (id) {
       writeConversationToUrl(id);
-      requestAnimationFrame(() => {
-        if (!nativeShell) msgInputRef.current?.focus();
-        resizeInput();
-      });
+      requestAnimationFrame(resizeInput);
     }
   };
 
