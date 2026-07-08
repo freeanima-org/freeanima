@@ -48,7 +48,7 @@ export function DiaryApp() {
   const [draft, setDraft] = useState<EntryDraft | null>(null);
   const [draftBaseline, setDraftBaseline] = useState<EntryDraft | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<EntrySaveStatus>("idle");
@@ -210,18 +210,37 @@ export function DiaryApp() {
       return;
     }
     if (initialTodayOpenedRef.current) return;
+
+    const todayEntry = findEntryByDayLocal(entries, defaultEntryDateLocal());
+    if (todayEntry) {
+      openEntry(todayEntry);
+      initialTodayOpenedRef.current = true;
+      return;
+    }
+
+    if (creating) return;
+
     void (async () => {
       const opened = await openTodayEntry();
       if (opened) {
         initialTodayOpenedRef.current = true;
         return;
       }
-      // Hub 尚未就绪时保留 ref=false，连接后再次尝试创建/选中今日条目
-      if (!writesDisabled) {
+      // 创建进行中或 Hub 未连接时不标记完成，以便稍后重试
+      if (!writesDisabled && !creating) {
         initialTodayOpenedRef.current = true;
       }
     })();
-  }, [loading, openTodayEntry, searchQuery, selectedId, writesDisabled]);
+  }, [
+    creating,
+    entries,
+    loading,
+    openEntry,
+    openTodayEntry,
+    searchQuery,
+    selectedId,
+    writesDisabled,
+  ]);
 
   const flushDraftSave = useCallback(async (): Promise<boolean> => {
     return persistDraft();
