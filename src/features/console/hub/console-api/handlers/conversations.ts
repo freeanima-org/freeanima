@@ -32,8 +32,11 @@ export async function listConversations(
   return {
     ...result,
     conversations: result.conversations.map((s) => ({
-      ...s,
       conversation_id: s.id,
+      title: s.title,
+      platform: s.platform,
+      updated_at: s.updated_at,
+      archived_at: s.archived_at ?? null,
     })),
   };
 }

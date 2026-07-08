@@ -40,6 +40,15 @@ function testRuntimeDeps(): RuntimeDeps {
   };
 }
 
+function userCallerAuth() {
+  return {
+    token_id: 1,
+    subject_id: getResolvedWorldContext().user_subject_id,
+    subject_type: "user" as const,
+    scopes: ["full"],
+  };
+}
+
 describePg("world scope tools", () => {
   const prev = process.env.FREEANIMA_HOME;
   let toolSets: ToolSetRegistry;
@@ -93,13 +102,6 @@ describePg("world scope tools", () => {
     );
     expect(JSON.parse(agentOut).ok).toBe(true);
 
-    const userCallerAuth = {
-      token_id: 1,
-      subject_id: getResolvedWorldContext().user_subject_id,
-      subject_type: "user" as const,
-      scopes: ["full"],
-    };
-
     let userOut = "";
     await runWithToolContext(
       sid,
@@ -113,7 +115,7 @@ describePg("world scope tools", () => {
           }),
         );
       },
-      { tools: toolSets, callerAuth: userCallerAuth },
+      { tools: toolSets, callerAuth: userCallerAuth() },
     );
     expect(JSON.parse(userOut).ok).toBe(true);
 
@@ -140,7 +142,7 @@ describePg("world scope tools", () => {
           tool.handler({ date: "2026-07-01", world_id: testUserWorldId() }),
         );
       },
-      { tools: toolSets, callerAuth: userCallerAuth },
+      { tools: toolSets, callerAuth: userCallerAuth() },
     );
     const userParsed = JSON.parse(userGet) as { ok: boolean; item: { content: string } };
     expect(userParsed.ok).toBe(true);
@@ -184,12 +186,7 @@ describePg("world scope tools", () => {
       },
       {
         tools: toolSets,
-        callerAuth: {
-          token_id: 1,
-          subject_id: getResolvedWorldContext().user_subject_id,
-          subject_type: "user" as const,
-          scopes: ["full"],
-        },
+        callerAuth: userCallerAuth(),
       },
     );
     expect(JSON.parse(userOut).content).toBe("user dream");
@@ -241,12 +238,7 @@ describePg("world scope tools", () => {
       },
       {
         tools: toolSets,
-        callerAuth: {
-          token_id: 1,
-          subject_id: getResolvedWorldContext().user_subject_id,
-          subject_type: "user" as const,
-          scopes: ["full"],
-        },
+        callerAuth: userCallerAuth(),
       },
     );
     const userParsed = JSON.parse(userOut) as { accounts: { address: string }[] };
