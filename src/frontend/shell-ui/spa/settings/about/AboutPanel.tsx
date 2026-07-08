@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@freeanima/ui-kit";
 import type { ComponentBuildMeta } from "@freeanima/shell-sdk/build-meta";
-import { isCapacitorNativePlatform } from "@freeanima/shell-sdk/capacitor-runtime";
+import {
+  isCapacitorNativePlatform,
+  isMobileCapacitorShellCandidate,
+} from "@freeanima/shell-sdk/capacitor-runtime";
 import { resolveHubApiOrigin } from "@freeanima/shell-sdk/hub-api-origin";
 import { parseComponentBuildMeta } from "@freeanima/shell-sdk/build-meta";
 import {
@@ -17,7 +20,7 @@ function isNativeShellRuntime(): boolean {
 }
 
 function showNativeAboutSection(): boolean {
-  return isNativeShellRuntime() || isCapacitorNativePlatform();
+  return isNativeShellRuntime() || isCapacitorNativePlatform() || isMobileCapacitorShellCandidate();
 }
 
 function formatBuiltAt(iso: string): string {

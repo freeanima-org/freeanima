@@ -2,7 +2,7 @@ import {
   applyWebUiConfig,
   fetchWebUiConfig,
   installShellBridgeReady,
-  isCapacitorRuntime,
+  isMobileCapacitorShellCandidate,
   readDefaultRemoteAuthToken,
 } from "./bridge/shared.ts";
 import { registerVaultRpcHandlers } from "@freeanima/shell-sdk";
@@ -19,9 +19,15 @@ async function bootstrapShellBridge(): Promise<void> {
     if (window.satelliteShell?.isElectron) {
       const { bootstrapElectronBridge } = await import("./bridge/bootstrap-web.ts");
       await bootstrapElectronBridge(defaultHubUrl, defaultToken);
-    } else if (isCapacitorRuntime()) {
-      const { bootstrapCapacitorBridge } = await import("./bridge/bootstrap-capacitor.ts");
-      await bootstrapCapacitorBridge();
+    } else if (isMobileCapacitorShellCandidate()) {
+      try {
+        const { bootstrapCapacitorBridge } = await import("./bridge/bootstrap-capacitor.ts");
+        await bootstrapCapacitorBridge();
+      } catch (err) {
+        console.warn("[shell-bridge] Capacitor bootstrap 失败，回退 Web bridge", err);
+        const { bootstrapWebBridge } = await import("./bridge/bootstrap-web.ts");
+        await bootstrapWebBridge(defaultHubUrl, defaultToken);
+      }
     } else {
       const { bootstrapWebBridge } = await import("./bridge/bootstrap-web.ts");
       await bootstrapWebBridge(defaultHubUrl, defaultToken);

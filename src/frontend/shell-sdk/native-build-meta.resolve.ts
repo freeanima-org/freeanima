@@ -1,9 +1,14 @@
 import type { ComponentBuildMeta } from "./build-meta.ts";
-import { isCapacitorNativePlatform } from "./capacitor-runtime.ts";
+import { readCapacitorBundledJson } from "./capacitor-local-asset.ts";
+import {
+  isCapacitorNativePlatform,
+  isMobileCapacitorShellCandidate,
+  waitForCapacitorNativePlatform,
+} from "./capacitor-runtime.ts";
 import { readNativeBuildMetaFromDefine } from "./native-build-meta.read.ts";
 import { NATIVE_BUILD_META_KEY } from "./settings/prefs-keys.ts";
 
-const CAPACITOR_LOCAL_META_URL = "https://localhost/native-build-meta.json";
+export const NATIVE_BUILD_META_CHANGED_EVENT = "freeanima:native-build-meta";
 
 async function readCapacitorPreference(key: string): Promise<string | null> {
   if (!isCapacitorNativePlatform()) return null;
@@ -43,14 +48,8 @@ async function readNativeBuildFromCapacitorPrefs(): Promise<ComponentBuildMeta |
 }
 
 async function readNativeBuildFromCapacitorAsset(): Promise<ComponentBuildMeta | undefined> {
-  if (!isCapacitorNativePlatform()) return undefined;
-  try {
-    const res = await fetch(CAPACITOR_LOCAL_META_URL, { cache: "no-store" });
-    if (!res.ok) return undefined;
-    return readNativeBuildMetaFromDefine(await res.json());
-  } catch {
-    return undefined;
-  }
+  const raw = await readCapacitorBundledJson("/native-build-meta.json");
+  return raw != null ? readNativeBuildMetaFromDefine(raw) : undefined;
 }
 
 function readNativeBuildFromSatelliteShell(): ComponentBuildMeta | undefined {
@@ -60,23 +59,32 @@ function readNativeBuildFromSatelliteShell(): ComponentBuildMeta | undefined {
 function attachNativeBuildToSatelliteShell(meta: ComponentBuildMeta): void {
   if (!window.satelliteShell) return;
   window.satelliteShell = { ...window.satelliteShell, nativeBuild: meta };
+  window.dispatchEvent(new CustomEvent(NATIVE_BUILD_META_CHANGED_EVENT));
 }
 
-/** 设置 → 关于：解析 native shell 构建信息（Capacitor 远程 Hub UI 从 Preferences / APK 资产读取） */
+/** 设置 → 关于：解析 native shell 构建信息（Capacitor 远程 Hub UI 从 APK 资产 / Preferences 读取） */
 export async function resolveAboutNativeBuildMeta(): Promise<ComponentBuildMeta | null> {
+  if (!isMobileCapacitorShellCandidate() && !isCapacitorNativePlatform()) {
+    const fromShellOnly = readNativeBuildFromSatelliteShell();
+    return fromShellOnly ?? null;
+  }
+
   const fromShell = readNativeBuildFromSatelliteShell();
   if (fromShell) return fromShell;
+
+  // 远程 Hub 页：WebView 拦截 https://localhost，不依赖 window.Capacitor
+  const fromAsset = await readNativeBuildFromCapacitorAsset();
+  if (fromAsset) {
+    attachNativeBuildToSatelliteShell(fromAsset);
+    return fromAsset;
+  }
+
+  await waitForCapacitorNativePlatform();
 
   const fromPrefs = await readNativeBuildFromCapacitorPrefs();
   if (fromPrefs) {
     attachNativeBuildToSatelliteShell(fromPrefs);
     return fromPrefs;
-  }
-
-  const fromAsset = await readNativeBuildFromCapacitorAsset();
-  if (fromAsset) {
-    attachNativeBuildToSatelliteShell(fromAsset);
-    return fromAsset;
   }
 
   const bridgeReady = (window as Window & { __freeanimaShellBridge?: { ready?: Promise<void> } })
@@ -90,6 +98,12 @@ export async function resolveAboutNativeBuildMeta(): Promise<ComponentBuildMeta 
     const afterBridge = readNativeBuildFromSatelliteShell();
     if (afterBridge) return afterBridge;
 
+    const afterAsset = await readNativeBuildFromCapacitorAsset();
+    if (afterAsset) {
+      attachNativeBuildToSatelliteShell(afterAsset);
+      return afterAsset;
+    }
+
     const afterPrefs = await readNativeBuildFromCapacitorPrefs();
     if (afterPrefs) {
       attachNativeBuildToSatelliteShell(afterPrefs);
@@ -99,5 +113,3 @@ export async function resolveAboutNativeBuildMeta(): Promise<ComponentBuildMeta 
 
   return null;
 }
-
-export const NATIVE_BUILD_META_CHANGED_EVENT = "freeanima:native-build-meta";
