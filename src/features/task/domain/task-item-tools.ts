@@ -59,6 +59,16 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
   const remindAt =
     args.remind_at != null && args.remind_at !== "" ? String(args.remind_at).trim() : null;
   const content = args.content != null ? String(args.content) : "";
+  const projectIdRaw = args.project_id;
+  const project_id =
+    projectIdRaw != null && projectIdRaw !== "" && Number.isFinite(Number(projectIdRaw))
+      ? Number(projectIdRaw)
+      : undefined;
+  const milestoneIdRaw = args.milestone_id;
+  const milestone_id =
+    milestoneIdRaw != null && milestoneIdRaw !== "" && Number.isFinite(Number(milestoneIdRaw))
+      ? Number(milestoneIdRaw)
+      : undefined;
 
   try {
     const item = await createTaskItem(
@@ -71,6 +81,8 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
         priority,
         due_at: dueAt,
         remind_at: remindAt,
+        project_id,
+        milestone_id,
       }),
     );
     return toolResult({ ok: true, action: "create", item: itemPayload(item) });
@@ -111,6 +123,16 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
       args.remind_at != null && args.remind_at !== "" ? String(args.remind_at) : null;
   }
   if (args.sort_order !== undefined) patch.sort_order = Number(args.sort_order);
+  if (args.project_id !== undefined) {
+    const raw = args.project_id;
+    patch.project_id =
+      raw == null || raw === "" ? null : Number.isFinite(Number(raw)) ? Number(raw) : null;
+  }
+  if (args.milestone_id !== undefined) {
+    const raw = args.milestone_id;
+    patch.milestone_id =
+      raw == null || raw === "" ? null : Number.isFinite(Number(raw)) ? Number(raw) : null;
+  }
 
   try {
     const item = await updateTaskItem(worldId, patch);
@@ -181,6 +203,8 @@ async function handleGet(args: Record<string, unknown>): Promise<string> {
     due_at: parsed.due_at ?? null,
     remind_at: parsed.remind_at ?? null,
     list_id: parsed.list_id,
+    project_id: parsed.project_id ?? null,
+    milestone_id: parsed.milestone_id ?? null,
     sort_order: parsed.sort_order ?? 0,
     completed_at: parsed.completed_at ?? null,
     created_at: row.created_at.toISOString(),
@@ -304,6 +328,8 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
                 description: "Optional tags",
               },
               list_id: { type: "integer", description: "Target list id (default inbox)" },
+              project_id: { type: "integer", description: "Assign to project (optional)" },
+              milestone_id: { type: "integer", description: "Link to milestone in project" },
               priority: { type: "string", enum: TASK_PRIORITIES },
               due_at: { type: "string", description: "Due time ISO8601" },
               remind_at: { type: "string", description: "Reminder time ISO8601" },
@@ -324,6 +350,11 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
               content: { type: "string" },
               tags: { type: "array", items: { type: "string" } },
               list_id: { type: "integer" },
+              project_id: {
+                type: "integer",
+                description: "Move to project; null to return to Backlog",
+              },
+              milestone_id: { type: "integer", description: "Optional milestone in project" },
               priority: { type: "string", enum: TASK_PRIORITIES },
               due_at: { type: "string" },
               remind_at: { type: "string" },

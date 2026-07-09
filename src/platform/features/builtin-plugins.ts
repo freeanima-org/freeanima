@@ -8,6 +8,7 @@ import { notificationPlugin } from "@freeanima/features/notification/plugin";
 import { companionPlugin } from "@freeanima/features/companion/plugin";
 import { pomodoroPlugin } from "@freeanima/features/pomodoro/plugin";
 import { taskPlugin } from "@freeanima/features/task/plugin";
+import { projectPlugin } from "@freeanima/features/project/plugin";
 import { vaultPlugin } from "@freeanima/features/vault/plugin";
 
 /** Hub feature plugins registered at boot. */
@@ -15,6 +16,7 @@ export const builtinFeaturePlugins: FeaturePlugin[] = [
   chatPlugin,
   consolePlugin,
   taskPlugin,
+  projectPlugin,
   vaultPlugin,
   notificationPlugin,
   companionPlugin,

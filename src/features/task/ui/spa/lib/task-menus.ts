@@ -77,6 +77,8 @@ export function buildItemMenuItems(
     onStartPomodoro?: (item: import("./api.ts").TaskItemRow) => void;
     onToggleComplete: (item: import("./api.ts").TaskItemRow) => void;
     onMoveTo: (item: import("./api.ts").TaskItemRow) => void;
+    onMoveToProject?: (item: import("./api.ts").TaskItemRow) => void;
+    onMoveToBacklog?: (item: import("./api.ts").TaskItemRow) => void;
     onDelete: (item: import("./api.ts").TaskItemRow) => void;
   },
   opts?: { listArchived?: boolean },
@@ -97,7 +99,12 @@ export function buildItemMenuItems(
       onClick: () => void handlers.onToggleComplete(item),
     },
     { label: "移动到…", onClick: () => handlers.onMoveTo(item) },
-    { label: "删除", danger: true, onClick: () => void handlers.onDelete(item) },
   );
+  if (item.project_id != null && handlers.onMoveToBacklog) {
+    items.push({ label: "移回清单", onClick: () => handlers.onMoveToBacklog?.(item) });
+  } else if (handlers.onMoveToProject) {
+    items.push({ label: "移入项目…", onClick: () => handlers.onMoveToProject?.(item) });
+  }
+  items.push({ label: "删除", danger: true, onClick: () => void handlers.onDelete(item) });
   return items;
 }

@@ -1,10 +1,10 @@
 import { useDraggable } from "@dnd-kit/core";
-import { Badge, Button, Checkbox } from "@freeanima/frontend/ui-kit";
-import { useRef, useState, type MouseEvent, type TouchEvent } from "react";
+import { Badge } from "@freeanima/frontend/ui-kit";
+import { TaskItemRowView } from "@freeanima/frontend/ui-kit/composite";
+import { useState, type MouseEvent } from "react";
 
 import { taskDndId } from "../lib/dnd-ids.ts";
 import type { TaskItemRow } from "../lib/api.ts";
-import { EntityIdLabel } from "./EntityIdLabel.tsx";
 
 type CompletedTaskListProps = {
   items: TaskItemRow[];
@@ -22,7 +22,7 @@ type CompletedTaskListProps = {
   onLongPressSelect: (itemId: number) => void;
 };
 
-function CompletedTaskRow({
+function CompletedDraggableRow({
   item,
   sortable,
   listName,
@@ -51,89 +51,44 @@ function CompletedTaskRow({
   onSelectItem: (shiftKey: boolean) => void;
   onLongPressSelect: () => void;
 }) {
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: taskDndId(item.id),
     disabled: selectionMode || !sortable,
   });
 
-  const clearLongPress = () => {
-    if (longPressTimer.current != null) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  };
-
-  const handleTouchStart = (_e: TouchEvent) => {
-    if (!useActionSheet || selectionMode) return;
-    clearLongPress();
-    longPressTimer.current = setTimeout(() => {
-      onLongPressSelect();
-    }, 450);
-  };
-
-  return (
-    <li
-      ref={setNodeRef}
-      className={`hover:bg-muted flex min-h-11 items-center gap-1 rounded-lg px-1 py-1 opacity-70 ${
-        isDragging ? "opacity-40" : ""
-      } ${selected ? "bg-primary/10 opacity-100" : ""} ${active && !selected ? "ring-primary/30 opacity-100 ring-1 ring-inset" : ""}`}
-      onContextMenu={onContextMenu}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={clearLongPress}
-      onTouchMove={clearLongPress}
-      onTouchCancel={clearLongPress}
-    >
-      {!selectionMode && sortable ? (
-        <button
-          type="button"
-          title="拖到左侧清单以移动"
-          className="text-foreground/40 hover:text-foreground flex min-h-11 min-w-8 shrink-0 cursor-grab items-center justify-center select-none active:cursor-grabbing"
-          {...attributes}
-          {...listeners}
-        >
-          ⋮⋮
-        </button>
-      ) : null}
-      <Checkbox
-        className="size-4"
-        checked={selectionMode ? selected : true}
-        onClick={(e) => {
-          if (selectionMode) {
-            e.preventDefault();
-            onSelectItem(e.shiftKey);
-          }
-        }}
-        {...(selectionMode ? {} : { onCheckedChange: () => onToggleComplete() })}
-      />
+  const dragHandle =
+    !selectionMode && sortable ? (
       <button
         type="button"
-        className={`min-w-0 flex-1 truncate py-2 text-left text-sm ${selectionMode ? "" : "line-through"}`}
-        onClick={(e) => {
-          if (selectionMode) onSelectItem(e.shiftKey);
-          else onEdit();
-        }}
+        title="拖到左侧清单以移动"
+        className="text-foreground/40 hover:text-foreground flex min-h-11 min-w-8 shrink-0 cursor-grab items-center justify-center select-none active:cursor-grabbing"
+        {...attributes}
+        {...listeners}
       >
-        <span className="block truncate">{item.title}</span>
-        {listName ? (
-          <span className="text-foreground/45 block truncate text-xs no-underline">{listName}</span>
-        ) : null}
+        ⋮⋮
       </button>
-      {!selectionMode ? <EntityIdLabel id={item.id} /> : null}
-      {useActionSheet && !selectionMode ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          className="shrink-0"
-          aria-label="任务操作"
-          onClick={() => onOpenMenu()}
-        >
-          ⋯
-        </Button>
-      ) : null}
-    </li>
+    ) : null;
+
+  return (
+    <TaskItemRowView
+      item={item}
+      active={active}
+      selected={selected}
+      selectionMode={selectionMode}
+      useActionSheet={useActionSheet}
+      secondaryLine={listName}
+      showEntityId={!selectionMode}
+      dragHandle={dragHandle}
+      rowRef={setNodeRef}
+      dragging={isDragging}
+      longPressEnabled={useActionSheet && !selectionMode}
+      onToggleComplete={onToggleComplete}
+      onEdit={onEdit}
+      onOpenMenu={onOpenMenu}
+      onContextMenu={onContextMenu}
+      onSelectItem={onSelectItem}
+      onLongPress={onLongPressSelect}
+    />
   );
 }
 
@@ -173,7 +128,7 @@ export function CompletedTaskList({
       {showList ? (
         <ul className="space-y-1">
           {items.map((item) => (
-            <CompletedTaskRow
+            <CompletedDraggableRow
               key={item.id}
               item={item}
               sortable={sortable}

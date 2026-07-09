@@ -387,10 +387,11 @@ type ParaglideMessageExports = {
   readonly console_nav_mcp: ParaglideMessageFn;
   readonly console_nav_memory: ParaglideMessageFn;
   readonly console_nav_notifications: ParaglideMessageFn;
+  readonly console_nav_pomodoro: ParaglideMessageFn;
+  readonly console_nav_projects: ParaglideMessageFn;
   readonly console_nav_satellites: ParaglideMessageFn;
   readonly console_nav_self_layer: ParaglideMessageFn;
   readonly console_nav_semantic: ParaglideMessageFn;
-  readonly console_nav_pomodoro: ParaglideMessageFn;
   readonly console_nav_settings: ParaglideMessageFn;
   readonly console_nav_sleep: ParaglideMessageFn;
   readonly console_nav_subjects: ParaglideMessageFn;
@@ -1041,6 +1042,8 @@ declare module "*/messages/paraglide/messages.js" {
   export const console_nav_mcp: ParaglideMessageFn;
   export const console_nav_memory: ParaglideMessageFn;
   export const console_nav_notifications: ParaglideMessageFn;
+  export const console_nav_pomodoro: ParaglideMessageFn;
+  export const console_nav_projects: ParaglideMessageFn;
   export const console_nav_satellites: ParaglideMessageFn;
   export const console_nav_self_layer: ParaglideMessageFn;
   export const console_nav_semantic: ParaglideMessageFn;
@@ -1049,7 +1052,6 @@ declare module "*/messages/paraglide/messages.js" {
   export const console_nav_subjects: ParaglideMessageFn;
   export const console_nav_system_prompt: ParaglideMessageFn;
   export const console_nav_tasks: ParaglideMessageFn;
-  export const console_nav_pomodoro: ParaglideMessageFn;
   export const console_nav_tools: ParaglideMessageFn;
   export const console_nav_vault: ParaglideMessageFn;
   export const console_nav_worlds: ParaglideMessageFn;

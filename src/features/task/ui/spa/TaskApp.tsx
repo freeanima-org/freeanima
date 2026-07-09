@@ -5,8 +5,12 @@ import {
   launchPomodoroForTask,
 } from "@freeanima/frontend/shell-sdk";
 import type { TaskModuleSelection } from "@freeanima/frontend/shell-sdk";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/shell-sdk/react.tsx";
-import { mergeDraftAfterSave } from "@freeanima/frontend/ui-kit/lib/merge-draft-after-save.ts";
+import {
+  useSubjectScope,
+  SubjectScopeToggle,
+  useHubConnection,
+  useNetworkOnline,
+} from "@freeanima/frontend/shell-sdk/react.tsx";
 import {
   Alert,
   AlertDescription,
@@ -25,6 +29,9 @@ import {
   ConfirmDialog,
   ContextMenu,
   EmptyState,
+  ModuleScopeBar,
+  QuickAddBar,
+  useDetailPanelState,
 } from "@freeanima/frontend/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
 import { CompletedTaskList } from "./components/CompletedTaskList.tsx";
@@ -35,8 +42,9 @@ import {
   CustomSmartListSection,
 } from "./components/SmartListSidebarSection.tsx";
 import { MoveToListPicker } from "./components/MoveToListPicker.tsx";
+import { MoveToProjectPicker } from "./components/MoveToProjectPicker.tsx";
 import { SortableTaskList } from "./components/SortableTaskList.tsx";
-import { TaskDetailPanel, type DetailSaveStatus } from "./components/TaskDetailPanel.tsx";
+import { TaskDetailPanel } from "./components/TaskDetailPanel.tsx";
 import { TaskDndRoot } from "./components/TaskDndRoot.tsx";
 import { ThreeColumnLayout } from "@freeanima/frontend/ui-kit/layout";
 import {
@@ -54,6 +62,8 @@ import {
   fetchTaskLists,
   reopenTaskList,
   searchTaskItems,
+  fetchProjectsForMove,
+  updateTaskItem as patchTaskItem,
   uncompleteTaskItem,
   updateSmartList,
   updateTaskItem,
@@ -78,6 +88,7 @@ import {
 } from "./lib/platform.ts";
 import { readTaskSelectionFromUrl, writeTaskSelectionToUrl } from "./lib/task-selection-url.ts";
 import { moveTaskItemsToList } from "./lib/move-items.ts";
+import { taskAttributionLabel } from "./lib/task-attribution.ts";
 import { applyShiftRangeSelect } from "./lib/range-select.ts";
 import { resolveTaskSelection } from "./lib/resolve-task-selection.ts";
 import { resolveDefaultListId } from "./lib/resolve-list.ts";
@@ -104,6 +115,9 @@ type ChildNamePromptState = { kind: "list" | "folder"; parentId: number };
 
 export function TaskApp() {
   const { kind: subjectKind } = useSubjectScope();
+  const networkOnline = useNetworkOnline();
+  const hubConnection = useHubConnection();
+  const writesDisabled = !networkOnline || hubConnection !== "connected";
   const contextMenuEnabled = useContextMenuCapability();
   const useActionSheet = useTaskActionSheet();
   const useDrawer = useDrawerNav();
@@ -111,7 +125,6 @@ export function TaskApp() {
   const webShell = isWebShell();
   const renameInputRef = useRef<HTMLInputElement>(null);
   const selectionAnchorRef = useRef<number | null>(null);
-  const detailDiscardRef = useRef(false);
   const listsLoadGenRef = useRef(0);
   const itemsLoadGenRef = useRef(0);
 
@@ -128,12 +141,6 @@ export function TaskApp() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchHits, setSearchHits] = useState<TaskItemRow[]>([]);
   const [searching, setSearching] = useState(false);
-  const [detailItem, setDetailItem] = useState<TaskItemRow | null>(null);
-  const [detailBaseline, setDetailBaseline] = useState<TaskItemRow | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [detailSaving, setDetailSaving] = useState(false);
-  const [detailSaveStatus, setDetailSaveStatus] = useState<DetailSaveStatus>("idle");
-  const detailSaveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [editingListId, setEditingListId] = useState<number | null>(null);
@@ -150,10 +157,48 @@ export function TaskApp() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedItemIds, setSelectedItemIds] = useState<Set<number>>(() => new Set());
   const [movePickerItemIds, setMovePickerItemIds] = useState<number[] | null>(null);
+  const [moveProjectItemId, setMoveProjectItemId] = useState<number | null>(null);
+  const [projectsForMove, setProjectsForMove] = useState<
+    Array<{ id: number; title: string; status: string }>
+  >([]);
   const [showClosed, setShowClosed] = useState(false);
   const [smartListEditor, setSmartListEditor] = useState<SmartListRow | null | undefined>(
     undefined,
   );
+
+  const {
+    item: detailItem,
+    setItem: setDetailItem,
+    detailOpen,
+    saveStatus: detailSaveStatus,
+    openDetail: openTaskDetail,
+    closeDetail: closeTaskDetail,
+    closeDetailSheet,
+    handleDetailOpenChange,
+    resetDetail,
+  } = useDetailPanelState<TaskItemRow>({
+    layoutMode,
+    cloneItem: cloneTaskItem,
+    isDirty: isTaskItemDirty,
+    isEqual: isTaskItemEqual,
+    autoSaveDebounceMs: 700,
+    compactSheetEnabled: movePickerItemIds == null,
+    persistItem: (snapshot) =>
+      updateTaskItem(snapshot.id, {
+        title: snapshot.title,
+        content: snapshot.content,
+        tags: snapshot.tags,
+        priority: snapshot.priority,
+        due_at: snapshot.due_at,
+      }),
+    onSaved: (saved) => {
+      setItems((prev) => prev.map((row) => (row.id === saved.id ? saved : row)));
+      setSearchHits((prev) => prev.map((row) => (row.id === saved.id ? saved : row)));
+    },
+    onPersistError: (err) => {
+      setError(err instanceof Error ? err.message : String(err));
+    },
+  });
 
   const persistSelection = useCallback(
     (next: TaskModuleSelection) => {
@@ -276,10 +321,8 @@ export function TaskApp() {
     selectionAnchorRef.current = null;
     setSearchQuery("");
     setSearchHits([]);
-    setDetailItem(null);
-    setDetailBaseline(null);
-    setDetailOpen(false);
-  }, [selection, smartLists, loadItems, loadItemsByFilters]);
+    resetDetail();
+  }, [selection, smartLists, loadItems, loadItemsByFilters, resetDetail]);
 
   useEffect(() => {
     const q = searchQuery.trim();
@@ -575,14 +618,17 @@ export function TaskApp() {
     setMovePickerItemIds(null);
   }, []);
 
-  const openMovePickerForItems = useCallback((itemIds: number[]) => {
-    if (itemIds.length === 0) return;
-    setSheetMenu(null);
-    setItemMenu(null);
-    setListMenu(null);
-    setDetailOpen(false);
-    window.setTimeout(() => setMovePickerItemIds(itemIds), 0);
-  }, []);
+  const openMovePickerForItems = useCallback(
+    (itemIds: number[]) => {
+      if (itemIds.length === 0) return;
+      setSheetMenu(null);
+      setItemMenu(null);
+      setListMenu(null);
+      closeDetailSheet();
+      window.setTimeout(() => setMovePickerItemIds(itemIds), 0);
+    },
+    [closeDetailSheet],
+  );
 
   const handleMoveItemsToList = async (itemIds: number[], targetListId: number) => {
     if (itemIds.length === 0 || (selection?.kind === "list" && targetListId === selection.id))
@@ -598,146 +644,48 @@ export function TaskApp() {
     }
   };
 
-  const markDetailSaved = useCallback(() => {
-    if (detailSaveStatusTimerRef.current) clearTimeout(detailSaveStatusTimerRef.current);
-    setDetailSaveStatus("saved");
-    detailSaveStatusTimerRef.current = setTimeout(() => setDetailSaveStatus("idle"), 2000);
-  }, []);
-
-  const persistDetailItem = useCallback(
-    async (opts?: { closeAfter?: boolean }): Promise<boolean> => {
-      const item = detailItem;
-      const baseline = detailBaseline;
-      if (!item || !baseline || !isTaskItemDirty(item, baseline)) return true;
-      if (detailSaving) return false;
-      const savingSnapshot = cloneTaskItem(item);
-      setDetailSaving(true);
-      setDetailSaveStatus("saving");
+  const openMoveProjectPicker = useCallback(
+    async (itemId: number) => {
+      setSheetMenu(null);
+      setItemMenu(null);
+      setListMenu(null);
+      closeDetailSheet();
       try {
-        const saved = await updateTaskItem(item.id, {
-          title: savingSnapshot.title,
-          content: savingSnapshot.content,
-          tags: savingSnapshot.tags,
-          priority: savingSnapshot.priority,
-          due_at: savingSnapshot.due_at,
-        });
-        detailDiscardRef.current = false;
-        const synced = cloneTaskItem(saved);
-        if (opts?.closeAfter) {
-          setDetailItem(null);
-          setDetailBaseline(null);
-          setDetailOpen(false);
-        } else {
-          setDetailBaseline(synced);
-          setDetailItem((current) => {
-            if (!current) return synced;
-            return mergeDraftAfterSave({
-              current,
-              savingSnapshot,
-              synced,
-              isEqual: isTaskItemEqual,
-            }).draft;
-          });
-        }
-        setItems((prev) => prev.map((row) => (row.id === saved.id ? saved : row)));
-        setSearchHits((prev) => prev.map((row) => (row.id === saved.id ? saved : row)));
-        markDetailSaved();
-        return true;
+        setProjectsForMove(await fetchProjectsForMove());
+        setMoveProjectItemId(itemId);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
-        setDetailSaveStatus("error");
-        return false;
-      } finally {
-        setDetailSaving(false);
       }
     },
-    [detailBaseline, detailItem, detailSaving, markDetailSaved],
+    [closeDetailSheet],
   );
 
-  const flushDetailSave = useCallback(async (): Promise<boolean> => {
-    return persistDetailItem();
-  }, [persistDetailItem]);
-
-  const openTaskDetail = useCallback(
-    (item: TaskItemRow) => {
-      void (async () => {
-        await flushDetailSave();
-        setDetailItem((prev) => {
-          if (prev?.id === item.id) return prev;
-          const copy = cloneTaskItem(item);
-          setDetailBaseline(copy);
-          return copy;
-        });
-        setDetailSaveStatus("idle");
-        if (layoutMode === "compact") setDetailOpen(true);
-      })();
-    },
-    [flushDetailSave, layoutMode],
-  );
-
-  const closeTaskDetail = useCallback((opts?: { discard?: boolean }) => {
-    if (opts?.discard) detailDiscardRef.current = true;
-    setDetailItem(null);
-    setDetailBaseline(null);
-    setDetailOpen(false);
-    setDetailSaveStatus("idle");
+  const closeMoveProjectPicker = useCallback(() => {
+    setMoveProjectItemId(null);
   }, []);
 
-  const handleDetailOpenChange = useCallback(
-    (open: boolean) => {
-      if (open) {
-        setDetailOpen(true);
-        return;
-      }
-      if (detailDiscardRef.current) {
-        detailDiscardRef.current = false;
-        setDetailItem(null);
-        setDetailBaseline(null);
-        setDetailOpen(false);
-        setDetailSaveStatus("idle");
-        return;
-      }
-      void (async () => {
-        const dirty =
-          detailItem != null &&
-          detailBaseline != null &&
-          isTaskItemDirty(detailItem, detailBaseline);
-        if (dirty) {
-          const ok = await persistDetailItem({ closeAfter: true });
-          if (!ok) return;
-          return;
-        }
-        setDetailItem(null);
-        setDetailBaseline(null);
-        setDetailOpen(false);
-        setDetailSaveStatus("idle");
-      })();
-    },
-    [detailBaseline, detailItem, persistDetailItem],
-  );
-
-  useEffect(() => {
-    if (!detailItem || !detailBaseline || !isTaskItemDirty(detailItem, detailBaseline)) return;
-    if (detailSaving) return;
-    const timer = setTimeout(() => {
-      void persistDetailItem();
-    }, 700);
-    return () => clearTimeout(timer);
-  }, [detailBaseline, detailItem, detailSaving, persistDetailItem]);
-
-  useEffect(() => {
-    return () => {
-      if (detailSaveStatusTimerRef.current) clearTimeout(detailSaveStatusTimerRef.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (layoutMode !== "compact") {
-      setDetailOpen(false);
-    } else if (detailItem && movePickerItemIds == null) {
-      setDetailOpen(true);
+  const handleMoveItemToProject = async (itemId: number, projectId: number) => {
+    try {
+      await patchTaskItem(itemId, { project_id: projectId, milestone_id: null });
+      closeMoveProjectPicker();
+      await reloadCurrentItems();
+      if (searchActive) await refreshSearchHits();
+      if (detailItem?.id === itemId) closeDetailSheet();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
     }
-  }, [layoutMode, detailItem?.id, movePickerItemIds]);
+  };
+
+  const handleMoveItemToBacklog = async (itemId: number) => {
+    try {
+      await patchTaskItem(itemId, { project_id: null, milestone_id: null });
+      closeMoveProjectPicker();
+      await reloadCurrentItems();
+      if (searchActive) await refreshSearchHits();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
 
   const defaultInboxId = useMemo(() => resolveDefaultListId(lists), [lists]);
   const inboxItemCount = useMemo(
@@ -785,8 +733,11 @@ export function TaskApp() {
       ? selectedList != null && !selectedList.closed
       : activeSmartListRow != null && allowsSmartListQuickAdd(activeSmartListRow.filters));
   const resolveListName = useCallback(
-    (item: TaskItemRow) => listNameById.get(item.list_id) ?? `#${item.list_id}`,
-    [listNameById],
+    (item: TaskItemRow) =>
+      searchActive
+        ? taskAttributionLabel(item)
+        : (listNameById.get(item.list_id) ?? `#${item.list_id}`),
+    [searchActive, listNameById],
   );
   const allVisibleItems = searchActive ? searchHits : items;
   const selectableOrder = useMemo(() => allVisibleItems.map((i) => i.id), [allVisibleItems]);
@@ -882,6 +833,8 @@ export function TaskApp() {
       launchPomodoroForTask({ id: item.id, title: item.title }),
     onToggleComplete: toggleComplete,
     onMoveTo: (item: TaskItemRow) => openMovePickerForItems([item.id]),
+    onMoveToProject: (item: TaskItemRow) => void openMoveProjectPicker(item.id),
+    onMoveToBacklog: (item: TaskItemRow) => void handleMoveItemToBacklog(item.id),
     onDelete: handleDeleteItem,
   };
 
@@ -1044,9 +997,9 @@ export function TaskApp() {
             }
             list={
               <div className="flex min-h-0 flex-1 flex-col">
-                <div className="shrink-0 border-b p-2">
+                <ModuleScopeBar>
                   <SubjectScopeToggle />
-                </div>
+                </ModuleScopeBar>
                 <ListSidebar
                   key={subjectKind}
                   builtinSmartListSection={
@@ -1217,20 +1170,12 @@ export function TaskApp() {
                         </Button>
                       </div>
                     ) : searchActive || !canQuickAdd ? null : (
-                      <div className="border safe-area-pb flex shrink-0 gap-2 border-t p-3">
-                        <Input
-                          className="min-w-0 flex-1"
-                          placeholder="添加任务，Enter 确认"
-                          value={quickTitle}
-                          onChange={(e) => setQuickTitle(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") void handleQuickAdd();
-                          }}
-                        />
-                        <Button type="button" onClick={() => void handleQuickAdd()}>
-                          添加
-                        </Button>
-                      </div>
+                      <QuickAddBar
+                        value={quickTitle}
+                        onChange={setQuickTitle}
+                        disabled={writesDisabled}
+                        onSubmit={() => void handleQuickAdd()}
+                      />
                     )}
                   </>
                 ) : null}
@@ -1372,6 +1317,27 @@ export function TaskApp() {
           void handleMoveItemsToList(movePickerItemIds, listId);
         }}
         onClose={closeMovePicker}
+      />
+
+      <MoveToProjectPicker
+        open={moveProjectItemId != null}
+        projects={projectsForMove}
+        currentProjectId={
+          moveProjectItemId != null
+            ? (items.find((i) => i.id === moveProjectItemId)?.project_id ??
+              searchHits.find((i) => i.id === moveProjectItemId)?.project_id ??
+              null)
+            : null
+        }
+        onSelect={(projectId) => {
+          if (moveProjectItemId == null) return;
+          void handleMoveItemToProject(moveProjectItemId, projectId);
+        }}
+        onMoveToBacklog={() => {
+          if (moveProjectItemId == null) return;
+          void handleMoveItemToBacklog(moveProjectItemId);
+        }}
+        onClose={closeMoveProjectPicker}
       />
     </>
   );

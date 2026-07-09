@@ -3,6 +3,7 @@ import { registerDiaryTools } from "@freeanima/features/diary/domain";
 import { registerPomodoroTools } from "@freeanima/features/pomodoro/domain";
 import { registerEmailTools } from "@freeanima/features/email/domain";
 import { registerTaskTools } from "@freeanima/features/task/domain";
+import { registerProjectTools } from "@freeanima/features/project/domain";
 import { registerVaultTools } from "@freeanima/features/vault/domain";
 import { registerNotificationTools } from "@freeanima/capabilities/tools/notification";
 import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities/tools";
@@ -48,6 +49,7 @@ export function registerServiceTools(opts: {
   registerCronjobTool(opts.toolSets);
   registerNotificationTools(opts.toolSets);
   registerTaskTools(opts.toolSets);
+  registerProjectTools(opts.toolSets);
   registerDiaryTools(opts.toolSets);
   registerPomodoroTools(opts.toolSets);
   registerVaultTools(opts.toolSets, {

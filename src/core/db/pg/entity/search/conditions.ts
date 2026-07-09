@@ -203,6 +203,14 @@ function buildTaskItemBodyConditions(
         AND (${entities.body}->>'completed_at')::timestamptz::date >= ${CST_TODAY} - ${filters.completed_on_or_after_days}`,
     );
   }
+  if (filters.project_id != null) {
+    conditions.push(sql`${entities.body}->>'project_id' = ${String(filters.project_id)}`);
+  }
+  if (filters.in_backlog === true) {
+    conditions.push(
+      sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
+    );
+  }
   return conditions;
 }
 

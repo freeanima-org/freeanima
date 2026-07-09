@@ -3,6 +3,7 @@ const STORAGE_KEY = "freeanima.shell-modules.visible";
 export type ShellModuleId =
   | "chat"
   | "tasks"
+  | "projects"
   | "pomodoro"
   | "email"
   | "diary"
@@ -15,6 +16,7 @@ export type ShellModuleId =
 export const SHELL_MODULE_IDS: ShellModuleId[] = [
   "chat",
   "tasks",
+  "projects",
   "pomodoro",
   "email",
   "diary",
@@ -106,6 +108,7 @@ export function resolveShellModuleIdFromPath(pathname: string): ShellModuleId | 
   const path = pathname.split("?")[0]?.split("#")[0] ?? "";
   if (path.startsWith("/chat")) return "chat";
   if (path.startsWith("/tasks")) return "tasks";
+  if (path.startsWith("/projects")) return "projects";
   if (path.startsWith("/pomodoro")) return "pomodoro";
   if (path.startsWith("/email")) return "email";
   if (path.startsWith("/diary")) return "diary";
@@ -122,6 +125,7 @@ export function resolveDefaultVisibleModulePath(visible?: Set<ShellModuleId>): s
   const order: Array<{ id: ShellModuleId; to: string }> = [
     { id: "chat", to: "/chat" },
     { id: "tasks", to: "/tasks" },
+    { id: "projects", to: "/projects" },
     { id: "pomodoro", to: "/pomodoro" },
     { id: "email", to: "/email" },
     { id: "diary", to: "/diary" },

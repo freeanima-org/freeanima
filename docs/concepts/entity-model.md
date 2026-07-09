@@ -99,6 +99,7 @@ Hub startup binds **`ResolvedWorldContext`** (`GET /api/worlds/context`). The pr
 | ---------------- | ----------------------------------------------------------------------- | ------------------------------ |
 | Shell header     | `user_world_id` or `agent_world_id`                                     | global **User / Agent** toggle |
 | `/tasks`         | follows shell scope via SAP `subject_kind`                              | none (inherits header)         |
+| `/projects`      | follows shell scope via SAP `subject_kind`                              | none (inherits header)         |
 | `/email`         | follows shell scope via SAP `subject_kind`                              | none (inherits header)         |
 | `/notifications` | `recipient_kind` + subject entity id                                    | none (inherits header)         |
 | `/diary`         | subject default private world via `subject_kind`                        | none (inherits header)         |
@@ -108,6 +109,20 @@ Hub startup binds **`ResolvedWorldContext`** (`GET /api/worlds/context`). The pr
 SAP task/email methods accept optional `subject_kind` (defaults: task `user`, email `agent`). Satellites read the shell scope via **`useSubjectScope()`** from `@freeanima/shell-sdk`; Hub REST entity search uses **`resolveWorldIdForSubject()`** with the same scope.
 
 Future multi-world browse (e.g. diary calendar aggregation across worlds) should add **module-scoped** filters or Console tooling — not a speculative arbitrary world picker.
+
+## Project module (v1 spec)
+
+Project management uses a **separate folder tree** from task-list folders. Tasks belong to either the task module (Backlog, `project_id` null) or exactly one project — not both in UI at once.
+
+| Concept        | Entity         | Component        |
+| -------------- | -------------- | ---------------- |
+| Project folder | `type=content` | `project_folder` |
+| Project        | `type=content` | `project`        |
+| Milestone      | `type=content` | `milestone`      |
+
+`task_item.body.project_id` and optional `milestone_id` link items to projects. Smart Lists in the task module default to tasks with no `project_id`. Shell route `/projects`; Hub RPC `projectfolder.*`, `project.*`, `milestone.*`; extended `task.*` for ownership moves.
+
+Full spec: [`docs/features/project.md`](../features/project.md).
 
 ## Email module (Estate)
 
