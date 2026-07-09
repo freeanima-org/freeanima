@@ -1,23 +1,20 @@
 #!/usr/bin/env bun
 /**
- * 从 brand/ SSOT 生成各端图标与 splash。
+ * 从 brand/app-icon.png SSOT 生成各端图标与 splash。
  * 修改 logo 后运行：bun run brand:icons
  */
-import { Resvg } from "@resvg/resvg-js";
-import { cpSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import pngToIco from "png-to-ico";
+import sharp from "sharp";
 
 const ROOT = join(import.meta.dir, "..");
-const BRAND = join(ROOT, "brand");
-
-const APP_ICON_SVG = join(BRAND, "app-icon.svg");
-const APP_ICON_LIGHT_SVG = join(BRAND, "app-icon-light.svg");
-const MASKABLE_SVG = join(BRAND, "app-icon-maskable.svg");
-const MARK_SVG = join(BRAND, "logo.svg");
-const MARK_LIGHT_SVG = join(BRAND, "logo-light.svg");
+const APP_ICON_PNG = join(ROOT, "brand/app-icon.png");
 
 const ANDROID_RES = join(ROOT, "src/app/shell/mobile/android/app/src/main/res");
+
+const BG_DARK = "#0a0a0b";
+const BG_NAVY = "#0d1628";
 
 const MIPMAP_LAUNCHER: Record<string, number> = {
   "mipmap-mdpi": 48,
@@ -49,48 +46,50 @@ const SPLASH_SIZES: Record<string, { w: number; h: number }> = {
   drawable: { w: 480, h: 800 },
 };
 
-function readSvg(path: string): string {
-  return readFileSync(path, "utf-8");
-}
-
-function renderPngSized(svg: string, size: number): Buffer {
-  const resvg = new Resvg(svg, {
-    fitTo: { mode: "width", value: size },
-    background: "transparent",
-  });
-  return Buffer.from(resvg.render().asPng());
-}
-
-function renderPngIntrinsic(svg: string): Buffer {
-  const resvg = new Resvg(svg, { background: "transparent" });
-  return Buffer.from(resvg.render().asPng());
-}
-
-function renderSvgFile(path: string, size: number): Buffer {
-  return renderPngSized(readSvg(path), size);
-}
-
-function splashSvg(width: number, height: number, iconSize: number): string {
-  const markInner = readSvg(MARK_SVG)
-    .replace(/<svg[^>]*>/, "")
-    .replace(/<\/svg>\s*$/, "");
-  const x = (width - iconSize) / 2;
-  const y = (height - iconSize) / 2;
-  const scale = iconSize / 32;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-  <rect width="${width}" height="${height}" fill="#0a0a0b"/>
-  <g transform="translate(${x} ${y}) scale(${scale})">${markInner}</g>
-</svg>`;
-}
-
 function writePng(path: string, data: Buffer): void {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, data);
 }
 
-function copySvg(src: string, dest: string): void {
-  mkdirSync(dirname(dest), { recursive: true });
-  cpSync(src, dest);
+async function renderIcon(size: number): Promise<Buffer> {
+  return sharp(APP_ICON_PNG).resize(size, size, { fit: "cover", kernel: sharp.kernel.lanczos3 }).png().toBuffer();
+}
+
+async function renderMaskable(size: number): Promise<Buffer> {
+  const inner = Math.round(size * 0.8);
+  const icon = await renderIcon(inner);
+  const offset = Math.round((size - inner) / 2);
+  return sharp({
+    create: { width: size, height: size, channels: 4, background: BG_NAVY },
+  })
+    .composite([{ input: icon, left: offset, top: offset }])
+    .png()
+    .toBuffer();
+}
+
+async function renderForeground(size: number): Promise<Buffer> {
+  const inner = Math.round(size * 0.55);
+  const icon = await renderIcon(inner);
+  const offset = Math.round((size - inner) / 2);
+  return sharp({
+    create: { width: size, height: size, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+  })
+    .composite([{ input: icon, left: offset, top: offset }])
+    .png()
+    .toBuffer();
+}
+
+async function renderSplash(width: number, height: number): Promise<Buffer> {
+  const iconSize = Math.round(Math.min(width, height) * 0.28);
+  const icon = await renderIcon(iconSize);
+  const left = Math.round((width - iconSize) / 2);
+  const top = Math.round((height - iconSize) / 2);
+  return sharp({
+    create: { width, height, channels: 4, background: BG_DARK },
+  })
+    .composite([{ input: icon, left, top }])
+    .png()
+    .toBuffer();
 }
 
 async function writeIco(pngPaths: string[], dest: string): Promise<void> {
@@ -111,28 +110,31 @@ function writeIcns(png1024: Buffer, dest: string): void {
 }
 
 async function main(): Promise<void> {
-  console.log("brand:icons — generating from", BRAND);
+  console.log("brand:icons — generating from", APP_ICON_PNG);
 
-  // SVG copies
-  copySvg(APP_ICON_SVG, join(ROOT, "site/public/favicon.svg"));
-  copySvg(APP_ICON_SVG, join(ROOT, "src/app/shell/web/spa/public/favicon.svg"));
-  copySvg(APP_ICON_SVG, join(ROOT, "src/features/console/ui/console/public/favicon.svg"));
+  const faviconDests = [
+    join(ROOT, "site/public/favicon.png"),
+    join(ROOT, "src/app/shell/web/spa/public/favicon.png"),
+    join(ROOT, "src/features/console/ui/console/public/favicon.png"),
+  ];
+  const favicon32 = await renderIcon(32);
+  for (const dest of faviconDests) {
+    writePng(dest, favicon32);
+  }
 
-  // Web PWA
   writePng(
     join(ROOT, "src/app/shell/web/spa/public/icons/icon-192.png"),
-    renderSvgFile(APP_ICON_SVG, 192),
+    await renderIcon(192),
   );
   writePng(
     join(ROOT, "src/app/shell/web/spa/public/icons/icon-512.png"),
-    renderSvgFile(APP_ICON_SVG, 512),
+    await renderIcon(512),
   );
   writePng(
     join(ROOT, "src/app/shell/web/spa/public/icons/icon-512-maskable.png"),
-    renderSvgFile(MASKABLE_SVG, 512),
+    await renderMaskable(512),
   );
 
-  // Desktop electron
   const electronIcons = join(ROOT, "src/app/shell/desktop/electron/icons");
   const png32 = join(electronIcons, "32x32.png");
   const png128 = join(electronIcons, "128x128.png");
@@ -140,51 +142,34 @@ async function main(): Promise<void> {
   const png512 = join(electronIcons, "512x512.png");
   const png1024 = join(electronIcons, "1024x1024.png");
 
-  writePng(png32, renderSvgFile(APP_ICON_SVG, 32));
-  writePng(png128, renderSvgFile(APP_ICON_SVG, 128));
-  writePng(png256, renderSvgFile(APP_ICON_SVG, 256));
-  writePng(png512, renderSvgFile(APP_ICON_SVG, 512));
-  const buf1024 = renderSvgFile(APP_ICON_SVG, 1024);
+  writePng(png32, await renderIcon(32));
+  writePng(png128, await renderIcon(128));
+  writePng(png256, await renderIcon(256));
+  writePng(png512, await renderIcon(512));
+  const buf1024 = await renderIcon(1024);
   writePng(png1024, buf1024);
 
   await writeIco([png32, png128, png256], join(electronIcons, "icon.ico"));
   writeIcns(buf1024, join(electronIcons, "icon.icns"));
 
-  // Android mipmap — white launcher tiles (adaptive background is ic_launcher_background #FFFFFF)
   for (const [folder, size] of Object.entries(MIPMAP_LAUNCHER)) {
     const base = join(ANDROID_RES, folder);
-    const icon = renderSvgFile(APP_ICON_LIGHT_SVG, size);
+    const icon = await renderIcon(size);
     writePng(join(base, "ic_launcher.png"), icon);
     writePng(join(base, "ic_launcher_round.png"), icon);
   }
 
   for (const [folder, size] of Object.entries(MIPMAP_FOREGROUND)) {
-    writePng(
-      join(ANDROID_RES, folder, "ic_launcher_foreground.png"),
-      renderPngIntrinsic(foregroundSvg(size, MARK_LIGHT_SVG)),
-    );
+    writePng(join(ANDROID_RES, folder, "ic_launcher_foreground.png"), await renderForeground(size));
   }
 
-  // Android splash
   for (const [folder, { w, h }] of Object.entries(SPLASH_SIZES)) {
-    const iconSize = Math.round(Math.min(w, h) * 0.28);
-    const svg = splashSvg(w, h, iconSize);
-    writePng(join(ANDROID_RES, folder, "splash.png"), renderPngIntrinsic(svg));
+    writePng(join(ANDROID_RES, folder, "splash.png"), await renderSplash(w, h));
   }
+
+  writePng(join(ROOT, "src/frontend/ui-kit/brand/app-icon.png"), await renderIcon(64));
 
   console.log("brand:icons — done");
-}
-
-function foregroundSvg(size: number, markPath: string = MARK_SVG): string {
-  const markInner = readSvg(markPath)
-    .replace(/<svg[^>]*>/, "")
-    .replace(/<\/svg>\s*$/, "");
-  const iconSize = size * 0.55;
-  const offset = (size - iconSize) / 2;
-  const scale = iconSize / 32;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-  <g transform="translate(${offset} ${offset}) scale(${scale})">${markInner}</g>
-</svg>`;
 }
 
 main().catch((err: unknown) => {
