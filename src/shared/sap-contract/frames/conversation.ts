@@ -50,6 +50,20 @@ export const conversationMessagesInputSchema = z.object({
   limit: z.number().int().min(1).max(500).optional(),
 });
 
+export const conversationTailInputSchema = z.object({
+  conversation_id: z.string().min(1),
+});
+
+export type ConversationTailInput = z.infer<typeof conversationTailInputSchema>;
+
+export const conversationTailOutputSchema = z.object({
+  tail_pos: z.number().int().min(0),
+  tail_role: z.string().optional(),
+  updated_at: z.string().optional(),
+});
+
+export type ConversationTailOutput = z.infer<typeof conversationTailOutputSchema>;
+
 export type StoredMessagesInput = z.infer<typeof conversationMessagesInputSchema>;
 
 export const conversationPatchTitleInputSchema = z.object({

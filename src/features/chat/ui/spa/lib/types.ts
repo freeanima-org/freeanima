@@ -11,6 +11,8 @@ export type DisplayMessageItem = {
   type: "message";
   role: "user" | "assistant";
   content: string;
+  clientOpId?: string;
+  sendStatus?: "pending" | "sending" | "failed" | "stale";
 };
 
 export type DisplayToolBlockItem = {
@@ -71,7 +73,14 @@ export type StreamApiEvent =
     }
   | { event: "interrupted"; data: { reason: string } }
   | { event: "done"; data: { reason?: "awaiting_clarify" | "interrupted" } }
-  | { event: "error"; data: { error: string } }
+  | {
+      event: "error";
+      data: {
+        error: string;
+        code?: string;
+        current_tail_pos?: number;
+      };
+    }
   | { event: "ping"; data: Record<string, never> }
   | { event: "llm_debug"; data: LlmDebugSnapshotPayload };
 

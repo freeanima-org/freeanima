@@ -53,6 +53,10 @@ export async function createConversation() {
   return { conversation_id: result.conversation_id };
 }
 
+export async function getConversationTail(conversationId: string) {
+  return hub().call("conversation.tail", { conversation_id: conversationId });
+}
+
 export async function getStoredMessages(conversationId: string, offset = 0, limit = 500) {
   return hub().call("conversation.messages", {
     conversation_id: conversationId,
@@ -144,7 +148,14 @@ export async function listConversationCommands(opts?: { all?: boolean }) {
 }
 
 export function subscribeMessageStream(
-  input: { conversationId: string; message: string; llmDebug?: boolean },
+  input: {
+    conversationId: string;
+    message: string;
+    llmDebug?: boolean;
+    clientOpId?: string;
+    expectedTailPos?: number;
+    forceTail?: boolean;
+  },
   callbacks: SubscribeCallbacks<StreamApiEvent>,
 ): { unsubscribe: () => void } {
   return sap().sendMessageStream(input, callbacks);

@@ -143,9 +143,13 @@ async function prepareTurnMessages(
 }
 
 /** 快路径：仅持久化用户消息 */
-export async function beginTurnFast(conversationId: string, userText: string): Promise<string> {
+export async function beginTurnFast(
+  conversationId: string,
+  userText: string,
+  opts?: { client_op_id?: string },
+): Promise<string> {
   clearToolLoopSuppression(conversationId);
-  return appendUserTurn(conversationId, userText);
+  return appendUserTurn(conversationId, userText, opts);
 }
 
 /** 慢路径：加载历史、压缩、构建 runtime 消息 */

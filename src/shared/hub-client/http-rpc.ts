@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomUuid } from "@freeanima/kernel/random-uuid.ts";
 
 import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc";
 import { parseHubRpcEnvelope, serializeHubRpcEnvelope } from "@freeanima/shared/hub-rpc";
@@ -14,7 +14,7 @@ export function buildHubRpcHttpRequest(
   payload: unknown,
   authToken?: string,
 ): { url: string; init: RequestInit } {
-  const id = randomUUID();
+  const id = randomUuid();
   const body = serializeHubRpcEnvelope({
     kind: "req",
     id,

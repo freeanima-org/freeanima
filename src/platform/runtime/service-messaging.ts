@@ -30,6 +30,13 @@ import { scheduleGracefulRestart, runAnimaCliUpgrade } from "./process-restart.t
 import { omitUndefined } from "@freeanima/core/util";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
+export type MessageSendOriginExtra = {
+  llm_debug?: boolean;
+  client_op_id?: string;
+  expected_tail_pos?: number;
+  force_tail?: boolean;
+};
+
 export type MessagingDeps = {
   runControl: EngineRunControl;
   conversationManager: ConversationManager;
@@ -80,6 +87,41 @@ export function emitSessionUpdated(
 ): void {
   msgDeps.bus?.emit(conversationUpdated, { conversation_id: conversationId });
   msgDeps.onConversationUpdated?.(conversationId);
+}
+
+async function isClientOpTurnComplete(
+  deps: FullRuntimeDeps,
+  conversationId: string,
+  client_op_id: string,
+): Promise<boolean> {
+  const existing = await deps.conversation.findUserMessageByClientOpId(
+    conversationId,
+    client_op_id,
+  );
+  if (!existing || existing.pos === undefined) return false;
+  const msgs = await deps.conversation.load(conversationId);
+  const idx = msgs.findIndex((m) => m.pos === existing.pos);
+  if (idx < 0) return false;
+  const after = msgs.slice(idx + 1);
+  return after.some(
+    (m) => m.role === "assistant" && typeof m.content === "string" && m.content.length > 0,
+  );
+}
+
+function parseMessageSendOriginExtra(
+  origin_extra?: Record<string, unknown>,
+): MessageSendOriginExtra | undefined {
+  if (!origin_extra) return undefined;
+  return omitUndefined({
+    llm_debug: origin_extra.llm_debug === true ? true : undefined,
+    client_op_id:
+      typeof origin_extra.client_op_id === "string" ? origin_extra.client_op_id : undefined,
+    expected_tail_pos:
+      typeof origin_extra.expected_tail_pos === "number"
+        ? origin_extra.expected_tail_pos
+        : undefined,
+    force_tail: origin_extra.force_tail === true ? true : undefined,
+  });
 }
 
 export async function executeCommand(
@@ -244,12 +286,38 @@ export async function* sendMessageStream(
     yield { event: "token", data: { content: `${guard.expiredHint}\n\n` } };
   }
 
+  const sendOpts = parseMessageSendOriginExtra(origin_extra);
+  if (sendOpts?.expected_tail_pos != null && !sendOpts.force_tail) {
+    const currentTail = await deps.conversation.getMaxMessagePos(conversationId);
+    if (currentTail !== sendOpts.expected_tail_pos) {
+      yield {
+        event: "error",
+        data: {
+          error: "Conversation tail changed",
+          code: "tail_conflict",
+          current_tail_pos: currentTail,
+        },
+      };
+      return;
+    }
+  }
+
+  if (sendOpts?.client_op_id) {
+    const complete = await isClientOpTurnComplete(deps, conversationId, sendOpts.client_op_id);
+    if (complete) {
+      yield { event: "accepted", data: {} };
+      yield { event: "done", data: {} };
+      return;
+    }
+  }
+
   yield* runTurnStream(
     deps,
     msgDeps,
     conversationId,
     guard.message,
-    origin_extra?.llm_debug === true,
+    sendOpts?.llm_debug === true,
+    sendOpts,
   );
 }
 
@@ -383,6 +451,7 @@ function runTurnStream(
   conversationId: string,
   message: string,
   llmDebug = false,
+  sendOpts?: MessageSendOriginExtra,
 ): AsyncGenerator<StreamEvent> {
   msgDeps.runControl.preemptSessionEngine(conversationId);
   let effectiveUserText = "";
@@ -392,7 +461,11 @@ function runTurnStream(
     {
       llmDebug,
       fast: async () => {
-        effectiveUserText = await deps.conversation.beginTurnFast(conversationId, message);
+        effectiveUserText = await deps.conversation.beginTurnFast(
+          conversationId,
+          message,
+          omitUndefined({ client_op_id: sendOpts?.client_op_id }),
+        );
         await triggerConversationTitleIfFirstTurn(deps, conversationId, effectiveUserText, {
           bus: msgDeps.bus,
           onConversationUpdated: msgDeps.onConversationUpdated,

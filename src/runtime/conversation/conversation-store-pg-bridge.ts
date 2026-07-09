@@ -20,6 +20,9 @@ import {
   listMessagesByPosRange,
   listMessagesPage,
   nextMessagePos,
+  getMaxMessagePos,
+  findUserMessageByClientOpId,
+  getLastMessageRole,
   patchConversationMeta,
   appendMessage,
   shiftMessagePositions,
@@ -142,6 +145,23 @@ export async function listConversationsWithRouting(
 
 export async function nextMessagePosWithRouting(conversationId: string): Promise<number> {
   return nextMessagePos(conversationId);
+}
+
+export async function getMaxMessagePosWithRouting(conversationId: string): Promise<number> {
+  return getMaxMessagePos(conversationId);
+}
+
+export async function findUserMessageByClientOpIdWithRouting(
+  conversationId: string,
+  client_op_id: string,
+) {
+  return findUserMessageByClientOpId(conversationId, client_op_id);
+}
+
+export async function getLastMessageRoleWithRouting(
+  conversationId: string,
+): Promise<string | null> {
+  return getLastMessageRole(conversationId);
 }
 
 export async function pgCountConversationsByPlatform(): Promise<Record<string, number>> {

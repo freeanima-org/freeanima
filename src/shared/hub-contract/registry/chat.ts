@@ -15,6 +15,8 @@ import {
   conversationMutateOutputSchema,
   conversationPatchTitleInputSchema,
   conversationSubscribeInputSchema,
+  conversationTailInputSchema,
+  conversationTailOutputSchema,
   conversationUnarchiveInputSchema,
 } from "@freeanima/shared/sap-contract/frames/conversation";
 import {
@@ -45,6 +47,11 @@ export const chatMethodDefs = {
   "conversation.messages": defineHubMethod({
     input: conversationMessagesInputSchema,
     output: conversationMessagesOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "conversation.tail": defineHubMethod({
+    input: conversationTailInputSchema,
+    output: conversationTailOutputSchema,
     meta: dualTransportMeta(true),
   }),
   "conversation.patchTitle": defineHubMethod({

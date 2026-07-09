@@ -50,7 +50,14 @@ type ChatState = {
     conversationId: string,
     text: string,
     callbacks?: SendCallbacks,
-    opts?: { llmDebug?: boolean },
+    opts?: {
+      llmDebug?: boolean;
+      clientOpId?: string;
+      expectedTailPos?: number;
+      forceTail?: boolean;
+      onStreamDone?: () => void;
+      onTailConflict?: () => void;
+    },
   ) => Promise<void>;
   abortStream: () => void;
 };
@@ -287,6 +294,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     let streamText = "";
     let receivedDone = false;
     let receivedError = false;
+    let tailConflict = false;
     let serverErrorMsg: string | null = null;
     let transportErrorMsg: string | null = null;
     let doneNotified = false;
@@ -322,10 +330,23 @@ export const useChatStore = create<ChatState>((set, get) => ({
     try {
       await new Promise<void>((resolve, reject) => {
         const sub = subscribeMessageStream(
-          omitUndefined({ conversationId, message: text, llmDebug: sendOpts.llmDebug }),
+          omitUndefined({
+            conversationId,
+            message: text,
+            llmDebug: sendOpts.llmDebug,
+            clientOpId: sendOpts.clientOpId,
+            expectedTailPos: sendOpts.expectedTailPos,
+            forceTail: sendOpts.forceTail,
+          }),
           {
             onData: (ev) => {
               if (generation !== _streamGeneration) return;
+              if (ev.event === "error" && ev.data.code === "tail_conflict") {
+                tailConflict = true;
+                receivedError = true;
+                sendOpts.onTailConflict?.();
+                return;
+              }
               const result = handleStreamEvent(ev, streamText, callbacks, (partial) =>
                 set(partial),
               );
@@ -336,7 +357,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
                   serverErrorMsg = ev.data.error || m.console_common_server_error();
                 }
               }
-              if (result.receivedDone) notifyDone();
+              if (result.receivedDone) {
+                sendOpts.onStreamDone?.();
+                notifyDone();
+              }
             },
             onError: (err) => {
               if (generation !== _streamGeneration) return;
@@ -354,6 +378,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
 
       if (generation !== _streamGeneration) return;
+
+      if (tailConflict) {
+        set({
+          streaming: false,
+          recovering: false,
+          streamingConversationId: null,
+          streamText: "",
+        });
+        return;
+      }
 
       if (serverErrorMsg) {
         await finishWithRecovery(serverErrorMsg);

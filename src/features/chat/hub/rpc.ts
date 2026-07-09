@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { omitUndefined } from "@freeanima/core/util";
+import { getLastMessageRole, getMaxMessagePos } from "@freeanima/core/db/pg/conversation";
+import { getConversationUpdatedAt } from "@freeanima/core/db/pg/conversation/repos/conversation-repo.ts";
 import type { SapServerDeps } from "@freeanima/platform/sap/types";
 import {
   conversationArchiveInputSchema,
@@ -10,6 +12,7 @@ import {
   conversationMessagesInputSchema,
   conversationPatchTitleInputSchema,
   conversationSubscribeInputSchema,
+  conversationTailInputSchema,
   conversationUnarchiveInputSchema,
   messageInterruptInputSchema,
   messageSendInputSchema,
@@ -105,6 +108,24 @@ export async function handleConversationMessages(
     }),
   );
   return messages as SapRouterOutputs["conversation.messages"];
+}
+
+export async function handleConversationTail(
+  deps: ChatHubDeps,
+  payload: unknown,
+  _ctx: SapRequestContext,
+) {
+  const input = conversationTailInputSchema.parse(payload);
+  await resolveConversationPlatform(deps, input.conversation_id);
+  const tail_pos = await getMaxMessagePos(input.conversation_id);
+  const tail_role = (await getLastMessageRole(input.conversation_id)) ?? undefined;
+  const updatedAt = await getConversationUpdatedAt(input.conversation_id);
+  const updated_at = updatedAt?.toISOString();
+  return omitUndefined({
+    tail_pos,
+    tail_role,
+    updated_at,
+  });
 }
 
 export async function handleConversationPatchTitle(
@@ -226,7 +247,12 @@ export async function handleMessageSend(
     input.conversation_id,
     input.message,
     platform,
-    input.llm_debug,
+    omitUndefined({
+      llm_debug: input.llm_debug,
+      client_op_id: input.client_op_id,
+      expected_tail_pos: input.expected_tail_pos,
+      force_tail: input.force_tail,
+    }),
   );
   return { stream_id: streamId };
 }

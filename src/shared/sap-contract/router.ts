@@ -18,6 +18,8 @@ import type {
   ConversationSubscribeInput,
   ConversationCommandsInput,
   ConversationCommandsOutput,
+  ConversationTailInput,
+  ConversationTailOutput,
 } from "./frames/conversation.ts";
 import type { ConversationAcpDockInput, ConversationAcpDockOutput } from "./frames/acp.ts";
 import type {
@@ -159,6 +161,7 @@ export const SAP_METHODS = [
   "conversation.create",
   "conversation.list",
   "conversation.messages",
+  "conversation.tail",
   "conversation.patchTitle",
   "conversation.archive",
   "conversation.unarchive",
@@ -239,6 +242,7 @@ export type SapRouterInputs = {
   "conversation.create": ConversationCreateInput;
   "conversation.list": ConversationListInput;
   "conversation.messages": StoredMessagesInput;
+  "conversation.tail": ConversationTailInput;
   "conversation.patchTitle": ConversationPatchTitleInput;
   "conversation.archive": ConversationArchiveInput;
   "conversation.unarchive": ConversationUnarchiveInput;
@@ -317,6 +321,7 @@ export type SapRouterOutputs = {
   "conversation.create": ConversationCreateOutput;
   "conversation.list": ConversationListOutput;
   "conversation.messages": Record<string, unknown>;
+  "conversation.tail": ConversationTailOutput;
   "conversation.patchTitle": { ok: true };
   "conversation.archive": ConversationMutateOutput;
   "conversation.unarchive": ConversationMutateOutput;

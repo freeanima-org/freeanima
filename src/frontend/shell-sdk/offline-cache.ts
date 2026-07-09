@@ -4,8 +4,9 @@ import { resolveHubWsUrl } from "./hub-ws-url.ts";
 import { getSubjectKind } from "./subject-scope-store.ts";
 
 const DB_NAME = "freeanima-satellite-cache";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE = "kv";
+export const OFFLINE_OUTBOX_STORE = "outbox";
 const ENVELOPE_VERSION = 1 as const;
 
 type MemoryBackend = Map<string, unknown>;
@@ -89,6 +90,9 @@ function openDb(): Promise<IDBDatabase | null> {
         const db = req.result;
         if (!db.objectStoreNames.contains(STORE)) {
           db.createObjectStore(STORE);
+        }
+        if (!db.objectStoreNames.contains(OFFLINE_OUTBOX_STORE)) {
+          db.createObjectStore(OFFLINE_OUTBOX_STORE);
         }
       },
       { once: true },
