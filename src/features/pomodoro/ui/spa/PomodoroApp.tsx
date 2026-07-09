@@ -49,6 +49,7 @@ import {
   createInitialActiveState,
   nextPhaseAfterComplete,
   pauseActiveState,
+  phaseCompletionKey,
   phaseLabel,
   remainingMs,
   resumeActiveState,
@@ -305,11 +306,33 @@ export function PomodoroApp() {
   const handlePhaseComplete = useCallback(
     async (state: PomodoroActiveState) => {
       if (!config) return;
-      const key = `${state.sessionLocalId}:${state.phase}:${state.phaseStartedAt}`;
+      const key = phaseCompletionKey(state);
       if (phaseHandledRef.current === key) return;
       phaseHandledRef.current = key;
 
-      await persistPhaseEnd(state, false);
+      const transition = nextPhaseAfterComplete(config, state.phase, state.completedWorkInCycle);
+      const autoStart = shouldAutoStartNext(config, state.phase);
+      // 先切换/清空活动态（与 handleAbort 一致），避免原 phaseEndsAt 到期再次落库
+      if (!autoStart) {
+        applyActive(null);
+      } else {
+        applyActive(
+          startPhaseState(
+            config,
+            state,
+            transition.nextPhase,
+            transition.cycleIndex,
+            transition.completedWorkInCycle,
+          ),
+        );
+      }
+
+      try {
+        await persistPhaseEnd(state, false);
+      } catch (e) {
+        setError(String(e instanceof Error ? e.message : e));
+        return;
+      }
 
       if (config.notify_on_phase_end || config.sound_enabled) {
         void deliverAlert(
@@ -323,22 +346,6 @@ export function PomodoroApp() {
           { sourceRoute: "/pomodoro", suppressOsWhenFocused: true },
         );
       }
-
-      const transition = nextPhaseAfterComplete(config, state.phase, state.completedWorkInCycle);
-      const autoStart = shouldAutoStartNext(config, state.phase);
-      if (!autoStart) {
-        applyActive(null);
-        return;
-      }
-      applyActive(
-        startPhaseState(
-          config,
-          state,
-          transition.nextPhase,
-          transition.cycleIndex,
-          transition.completedWorkInCycle,
-        ),
-      );
     },
     [config, persistPhaseEnd, applyActive],
   );

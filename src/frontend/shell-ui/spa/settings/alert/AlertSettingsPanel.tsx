@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import {
   deliverAlert,
   getAlertBackend,
+  isCapacitorShellRuntime,
   readAlertPermission,
   requestAlertPermission,
+  resolveAlertDisplayPlatform,
   type AlertPermissionState,
 } from "@freeanima/frontend/shell-sdk/alert";
 import { Alert, AlertDescription, Button } from "@freeanima/frontend/ui-kit";
@@ -20,21 +22,31 @@ export default function AlertSettingsPanel(_props: SettingsPanelProps) {
   const [permission, setPermission] = useState<AlertPermissionState>("default");
   const [testing, setTesting] = useState(false);
   const [message, setMessage] = useState("");
-
-  const backend = getAlertBackend();
-  const platform = backend?.platform ?? "—";
+  const [backend, setBackend] = useState(() => getAlertBackend());
+  const platform = backend ? resolveAlertDisplayPlatform(backend) : "—";
 
   useEffect(() => {
-    const b = getAlertBackend();
-    if (!b) return;
-    void b
+    void (async () => {
+      let current = getAlertBackend();
+      if (current?.platform === "web" && isCapacitorShellRuntime()) {
+        const mod = await import("@freeanima/app/shell/web/lib/register-alert-backend.ts");
+        await mod.registerShellAlertBackend();
+        current = getAlertBackend();
+      }
+      setBackend(current);
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!backend) return;
+    void backend
       .readPermission()
       .then(setPermission)
       .catch((e: unknown) => {
         setMessage(String(e instanceof Error ? e.message : e));
         setPermission("unsupported");
       });
-  }, []);
+  }, [backend]);
 
   const refreshPermission = useCallback(async () => {
     const b = getAlertBackend();

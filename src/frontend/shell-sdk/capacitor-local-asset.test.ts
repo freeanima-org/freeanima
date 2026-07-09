@@ -38,4 +38,23 @@ describe("detectCapacitorShellForBootstrap", () => {
 
     await expect(detectCapacitorShellForBootstrap()).resolves.toBe(true);
   });
+
+  it("无 window.Capacitor 时 Android 候选默认探测 http://localhost 资产", async () => {
+    (globalThis as { window: Window }).window = {
+      navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14)" },
+    } as unknown as Window;
+    const seen: string[] = [];
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      seen.push(String(input));
+      if (String(input) === "http://localhost/native-build-meta.json") {
+        return new Response(JSON.stringify({ component: "mobile", version: "1.0.0" }), {
+          status: 200,
+        });
+      }
+      return new Response(null, { status: 404 });
+    }) as unknown as typeof fetch;
+
+    await expect(detectCapacitorShellForBootstrap()).resolves.toBe(true);
+    expect(seen[0]).toBe("http://localhost/native-build-meta.json");
+  });
 });

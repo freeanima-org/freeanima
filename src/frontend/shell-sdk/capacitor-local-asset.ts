@@ -2,6 +2,8 @@ import { isCapacitorNativePlatform, isMobileCapacitorShellCandidate } from "./ca
 
 const DEFAULT_CAPACITOR_HOST = "localhost";
 const DEFAULT_CAPACITOR_SCHEME = "https";
+/** 与 mobile `capacitor.config.json` androidScheme 默认一致；Capacitor 未注入时回退。 */
+const DEFAULT_ANDROID_CAPACITOR_SCHEME = "http";
 
 /** Capacitor 打包 www 内静态资源 URL（远程 Hub 页回读 APK 内 JSON 等） */
 export function resolveCapacitorBundledAssetUrl(assetPath: string): string {
@@ -16,10 +18,17 @@ export function resolveCapacitorBundledAssetUrl(assetPath: string): string {
   ).Capacitor;
   const hostname = cap?.config?.hostname?.trim() || DEFAULT_CAPACITOR_HOST;
   const platform = cap?.getPlatform?.() ?? "web";
-  const scheme =
-    platform === "ios"
-      ? cap?.config?.iosScheme?.trim() || DEFAULT_CAPACITOR_SCHEME
-      : cap?.config?.androidScheme?.trim() || DEFAULT_CAPACITOR_SCHEME;
+  let scheme = DEFAULT_CAPACITOR_SCHEME;
+  if (platform === "ios") {
+    scheme = cap?.config?.iosScheme?.trim() || DEFAULT_CAPACITOR_SCHEME;
+  } else if (platform === "android") {
+    scheme = cap?.config?.androidScheme?.trim() || DEFAULT_ANDROID_CAPACITOR_SCHEME;
+  } else if (isMobileCapacitorShellCandidate()) {
+    // 远程 Hub 页上 window.Capacitor 可能尚未注入；Android 薄壳默认可读 http://localhost 资产
+    scheme = cap?.config?.androidScheme?.trim() || DEFAULT_ANDROID_CAPACITOR_SCHEME;
+  } else {
+    scheme = cap?.config?.androidScheme?.trim() || DEFAULT_CAPACITOR_SCHEME;
+  }
   return `${scheme}://${hostname}${path}`;
 }
 
@@ -46,12 +55,26 @@ async function readJsonViaCapacitorHttp(url: string): Promise<unknown | undefine
 }
 
 /** 读取 Capacitor www 内 JSON；WebView 会拦截 https://localhost 请求，无需 window.Capacitor */
+function alternateCapacitorAssetUrl(url: string): string | null {
+  if (url.startsWith("https://")) return `http://${url.slice("https://".length)}`;
+  if (url.startsWith("http://")) return `https://${url.slice("http://".length)}`;
+  return null;
+}
+
 export async function readCapacitorBundledJson(assetPath: string): Promise<unknown | undefined> {
   if (!isMobileCapacitorShellCandidate() && !isCapacitorNativePlatform()) return undefined;
-  const url = resolveCapacitorBundledAssetUrl(assetPath);
-  const fromFetch = await readJsonViaFetch(url);
-  if (fromFetch != null) return fromFetch;
-  return readJsonViaCapacitorHttp(url);
+  const primaryUrl = resolveCapacitorBundledAssetUrl(assetPath);
+  const urls = [primaryUrl];
+  const alternate = alternateCapacitorAssetUrl(primaryUrl);
+  if (alternate) urls.push(alternate);
+
+  for (const url of urls) {
+    const fromFetch = await readJsonViaFetch(url);
+    if (fromFetch != null) return fromFetch;
+    const fromHttp = await readJsonViaCapacitorHttp(url);
+    if (fromHttp != null) return fromHttp;
+  }
+  return undefined;
 }
 
 const CAPACITOR_BOOTSTRAP_PROBE_PATH = "/native-build-meta.json";

@@ -4,6 +4,7 @@ import {
   createInitialActiveState,
   nextPhaseAfterComplete,
   pauseActiveState,
+  phaseCompletionKey,
   remainingMs,
   resumeActiveState,
 } from "./timer-engine.ts";
@@ -51,5 +52,11 @@ describe("timer-engine", () => {
     }
     const fourth = nextPhaseAfterComplete(config, "work", completed);
     expect(fourth.nextPhase).toBe("long_break");
+  });
+
+  test("phaseCompletionKey stable per phase start", () => {
+    const state = createInitialActiveState(config, { sessionLocalId: "sess-a" }, 1_000_000);
+    expect(phaseCompletionKey(state)).toBe(`sess-a:work:${state.phaseStartedAt}`);
+    expect(phaseCompletionKey(state)).toBe(phaseCompletionKey(state));
   });
 });
