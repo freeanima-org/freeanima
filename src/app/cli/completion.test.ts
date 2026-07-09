@@ -37,8 +37,8 @@ describe("shell completion", () => {
     for (const token of ["start", "stop", "restart", "status", "--foreground"]) {
       expect(bash).toContain(token);
     }
-    // action at COMP_CWORD===2 (anima service <TAB>)
-    expect(bash).toMatch(/_service\(\)[\s\S]*COMP_CWORD === 2/);
+    // action at COMP_CWORD==2 (anima service <TAB>)
+    expect(bash).toMatch(/_service\(\)[\s\S]*COMP_CWORD == 2/);
   });
 
   it("includes vault subcommands", () => {
