@@ -3,7 +3,10 @@ import type { ImgHTMLAttributes } from "react";
 import appIconUrl from "./app-icon.png";
 import { cn } from "../lib/utils.ts";
 
-export type BrandLogoProps = Omit<ImgHTMLAttributes<HTMLImageElement>, "src" | "width" | "height"> & {
+export type BrandLogoProps = Omit<
+  ImgHTMLAttributes<HTMLImageElement>,
+  "src" | "width" | "height"
+> & {
   size?: number;
 };
 
