@@ -1183,17 +1183,7 @@ msgstr "值"
 msgid "WebSocket connection failed"
 msgstr "WebSocket 连接失败"
 
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:177
-#, no-wrap
-msgid "Runtime config by config.yaml top-level blocks. Secret values are hidden."
-msgstr "逸灵风运行时配置，按 config.yaml 顶层块展示。密钥值已隐藏。"
 
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:178
-#, no-wrap
-msgid "No config entries"
-msgstr "暂无配置项"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:179
@@ -2192,11 +2182,6 @@ msgstr "📖 自传记忆"
 msgid "⌨️ Commands"
 msgstr "⌨️ 命令"
 
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:365
-#, no-wrap
-msgid "⚙️ Config"
-msgstr "⚙️ 配置"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:366

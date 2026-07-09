@@ -7,6 +7,8 @@ import { createEngine, createEngineCatalog } from "@freeanima/runtime";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/core/llm";
 import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
+import { createLogger } from "@freeanima/kernel/logging";
+import { createMemorySink } from "@freeanima/kernel/logging/sinks/memory";
 import { createServiceKernel } from "@freeanima/platform/bootstrap";
 import { parseYaml } from "@freeanima/platform/config";
 import { animaConfigSchema } from "@freeanima/core/config";
@@ -247,6 +249,75 @@ describe("maybeGenerateConversationTitleAsync", () => {
     expect(gen).toHaveBeenCalled();
     expect(setTitle).toHaveBeenCalledWith("sid", "LLM title");
     expect(countCalls).toBe(0);
+  });
+
+  it("logs warn and uses fallback when LLM fails", async () => {
+    const sink = createMemorySink();
+    const engine = createEngine({
+      catalog,
+      config: testConfig,
+      llm: initLlmRuntime(testConfig.data),
+      logger: createLogger({ level: "debug", sinks: [sink] }),
+    });
+    const deps = { ...wireTestDeps(), engine };
+    const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("");
+    const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(1);
+    const gen = spyOn(sessionTitleLlm, "generateConversationTitle").mockResolvedValue({
+      ok: false,
+      error: "provider timeout",
+      model: "summary-model",
+      finish_reason: "length",
+      had_reasoning: true,
+    });
+    const setTitle = spyOn(deps.conversation, "setConversationTitle").mockResolvedValue();
+    restores.push(getTitle, userCount, gen, setTitle);
+
+    maybeGenerateConversationTitleAsync(deps, "sid", "hello world");
+    await new Promise((r) => {
+      setTimeout(r, 0);
+    });
+
+    expect(setTitle).toHaveBeenCalledWith("sid", "hello world");
+    const warn = sink.records.find((r) => r.level === "warn");
+    expect(warn?.message).toBe("LLM title failed, using text fallback");
+    expect(warn?.attributes).toMatchObject({
+      component: "conversation-title",
+      conversation_id: "sid",
+      error: "provider timeout",
+      fallback_title: "hello world",
+      model: "summary-model",
+      finish_reason: "length",
+      had_reasoning: true,
+    });
+  });
+
+  it("logs error when generation throws", async () => {
+    const sink = createMemorySink();
+    const engine = createEngine({
+      catalog,
+      config: testConfig,
+      llm: initLlmRuntime(testConfig.data),
+      logger: createLogger({ level: "debug", sinks: [sink] }),
+    });
+    const deps = { ...wireTestDeps(), engine };
+    const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("");
+    const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(1);
+    const gen = spyOn(sessionTitleLlm, "generateConversationTitle").mockRejectedValue(
+      new Error("db down"),
+    );
+    restores.push(getTitle, userCount, gen);
+
+    maybeGenerateConversationTitleAsync(deps, "sid", "hello");
+    await new Promise((r) => {
+      setTimeout(r, 0);
+    });
+
+    const err = sink.records.find((r) => r.level === "error");
+    expect(err?.message).toBe("conversation title generation failed");
+    expect(err?.attributes).toMatchObject({
+      component: "conversation-title",
+      conversation_id: "sid",
+    });
   });
 
   it("triggerConversationTitleIfFirstTurn gates on sync user count", async () => {

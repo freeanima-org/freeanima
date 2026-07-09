@@ -174,8 +174,6 @@
   <msg id="console_common_type_label">Type</msg>
   <msg id="console_common_value_label">Value</msg>
   <msg id="console_common_websocket_failed">WebSocket connection failed</msg>
-  <msg id="console_config_desc">Runtime config by config.yaml top-level blocks. Secret values are hidden.</msg>
-  <msg id="console_config_empty">No config entries</msg>
   <msg id="console_conversations_back_list">← Back to list</msg>
   <msg id="console_conversations_empty">No conversations</msg>
   <msg id="console_cron_active">Active</msg>
@@ -362,7 +360,6 @@
   <msg id="console_nav_autobio">📖 Autobiographical Memory</msg>
   <msg id="console_nav_chat">Chat</msg>
   <msg id="console_nav_commands">⌨️ Commands</msg>
-  <msg id="console_nav_config">⚙️ Config</msg>
   <msg id="console_nav_conversations">💬 Conversations</msg>
   <msg id="console_nav_cron">⏰ Cron</msg>
   <msg id="console_nav_dashboard">📊 Dashboard</msg>

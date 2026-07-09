@@ -42,7 +42,10 @@ function resolveInitialSectionId(bindings: SettingsBinding[], platform: Settings
   const params = new URLSearchParams(window.location.search);
   const fromQuery = params.get("section")?.trim();
   const visible = listSettingsSectionsForPlatform(bindings, platform);
-  if (fromQuery && visible.some((b) => b.section.id === fromQuery)) return fromQuery;
+  const normalizedQuery = fromQuery === "hub-runtime" ? "compression" : fromQuery;
+  if (normalizedQuery && visible.some((b) => b.section.id === normalizedQuery)) {
+    return normalizedQuery;
+  }
   return visible[0]?.section.id ?? "";
 }
 

@@ -1,8 +1,8 @@
 @import "tailwindcss";
-@import "@freeanima/ui-kit/globals.css";
+@import "@freeanima/frontend/ui-kit/styles/globals.css";
 @source "./**/*.{tsx,ts}";
-@source "../../../ui-kit/**/*.{tsx,ts}";
-@source "../../../shell-sdk/**/*.{tsx,ts}";
+@source "../../ui-kit/**/*.{tsx,ts}";
+@source "../../shell-sdk/**/*.{tsx,ts}";
 @source "../../../../src/features/chat/ui/spa/**/*.{tsx,ts}";
 @source "../../../../src/features/task/ui/spa/**/*.{tsx,ts}";
 @source "../../../../src/features/diary/ui/spa/**/*.{tsx,ts}";
@@ -11,7 +11,7 @@
 @source "../../../../src/features/email/ui/spa/**/*.{tsx,ts}";
 @source "../../../../src/features/dream/ui/spa/**/*.{tsx,ts}";
 @source "../../../../src/features/notification/ui/spa/**/*.{tsx,ts}";
-@import "@freeanima/ui-kit/styles.css";
+@import "@freeanima/frontend/ui-kit/styles.css";
 
 :root {
   --shell-bottom-nav-h: 3rem;

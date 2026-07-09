@@ -2,7 +2,7 @@ import { debugSettingsSection, type SettingsBinding } from "@freeanima/frontend/
 import { shellModulesSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/modules-section.ts";
 import { aboutSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/about/about-section.ts";
 import { hubConnectionSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/hub-config/hub-connection-section.ts";
-import { hubRuntimeSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/hub-config/hub-runtime-section.ts";
+import { hubConfigSettingsBindings } from "@freeanima/frontend/shell-ui/spa/settings/hub-config/hub-config-sections.ts";
 
 import type { MobileSettingsStores } from "./settings-stores.ts";
 
@@ -10,7 +10,7 @@ export function createMobileSettingsBindings(stores: MobileSettingsStores): Sett
   return [
     { section: shellModulesSettingsSection },
     { section: hubConnectionSettingsSection, store: stores.hub },
-    { section: hubRuntimeSettingsSection },
+    ...hubConfigSettingsBindings,
     { section: debugSettingsSection, store: stores.debug },
     { section: aboutSettingsSection },
   ];

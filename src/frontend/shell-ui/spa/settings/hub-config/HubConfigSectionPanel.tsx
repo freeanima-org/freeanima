@@ -4,6 +4,7 @@ import { Button, Card, CardContent, Input } from "@freeanima/frontend/ui-kit";
 import { Label } from "@freeanima/frontend/ui-kit/components/ui";
 import { StatusAlert, showConfirm } from "@freeanima/frontend/ui-kit/composite";
 import { FormToggle } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
+import type { SettingsPanelProps } from "@freeanima/frontend/shell-sdk/settings";
 import {
   fetchHubConfig,
   patchHubConfigSection,
@@ -13,22 +14,16 @@ import {
 import { m as uiMessages } from "@paraglide/messages";
 import {
   AdvancedSectionForm,
-  AdvancedSectionPicker,
-  ADVANCED_SECTIONS,
   readAdvancedSectionDraft,
   type AdvancedSectionId,
 } from "./hub-advanced-forms.tsx";
+import { LlmSettingsPanel } from "./LlmSettingsPanel.tsx";
 import { SpeechSettingsTab } from "./SpeechSettingsTab.tsx";
+import type { HubConfigSectionKey } from "./hub-config-sections.ts";
 
-type TabId = "compression" | "memory" | "llm" | "speech" | "advanced";
-
-const TABS: Array<{ id: TabId; label: string }> = [
-  { id: "compression", label: "压缩" },
-  { id: "memory", label: "记忆" },
-  { id: "llm", label: "LLM" },
-  { id: "speech", label: "语音" },
-  { id: "advanced", label: "高级" },
-];
+type Props = SettingsPanelProps & {
+  configKey: HubConfigSectionKey;
+};
 
 function numberField(
   label: string,
@@ -50,12 +45,14 @@ function numberField(
   );
 }
 
-export default function HubRuntimeSettingsPanel() {
+function isAdvancedSectionKey(key: HubConfigSectionKey): key is AdvancedSectionId {
+  return key !== "compression" && key !== "memory" && key !== "llm" && key !== "tts";
+}
+
+export default function HubConfigSectionPanel({ configKey }: Props) {
   const [config, setConfig] = useState<Record<string, unknown> | null>(null);
-  const [tab, setTab] = useState<TabId>("compression");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
-  const [advancedSection, setAdvancedSection] = useState<AdvancedSectionId>(ADVANCED_SECTIONS[0]);
   const [advancedDraft, setAdvancedDraft] = useState<Record<string, unknown>>({});
 
   const [compression, setCompression] = useState({
@@ -68,7 +65,6 @@ export default function HubRuntimeSettingsPanel() {
     limit: 5,
     max_chars: 2000,
   });
-  const [llmDefaultProfile, setLlmDefaultProfile] = useState("chat");
 
   const load = useCallback(async () => {
     setError("");
@@ -89,37 +85,36 @@ export default function HubRuntimeSettingsPanel() {
         limit: typeof mem?.limit === "number" ? mem.limit : 5,
         max_chars: typeof mem?.max_chars === "number" ? mem.max_chars : 2000,
       });
-      const llm = (data.llm ?? {}) as Record<string, unknown>;
-      setLlmDefaultProfile(typeof llm.default_profile === "string" ? llm.default_profile : "chat");
+      if (isAdvancedSectionKey(configKey)) {
+        setAdvancedDraft(readAdvancedSectionDraft(data[configKey]));
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
-  }, []);
+  }, [configKey]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  useEffect(() => {
-    if (!config) return;
-    setAdvancedDraft(readAdvancedSectionDraft(config[advancedSection]));
-  }, [config, advancedSection]);
-
-  const afterSave = async (section: string) => {
-    const restart = await showConfirm({
-      title: uiMessages.ui_hub_config_saved_restart_title(),
-      description: uiMessages.ui_hub_config_saved_restart_description({ section }),
-      confirmLabel: uiMessages.console_common_restart_service(),
-    });
-    if (restart) {
-      try {
-        await restartHubService();
-      } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
+  const afterSave = useCallback(
+    async (section: string) => {
+      const restart = await showConfirm({
+        title: uiMessages.ui_hub_config_saved_restart_title(),
+        description: uiMessages.ui_hub_config_saved_restart_description({ section }),
+        confirmLabel: uiMessages.console_common_restart_service(),
+      });
+      if (restart) {
+        try {
+          await restartHubService();
+        } catch (e) {
+          setError(e instanceof Error ? e.message : String(e));
+        }
       }
-    }
-    await load();
-  };
+      await load();
+    },
+    [load],
+  );
 
   const saveCompression = async () => {
     setSaving(true);
@@ -157,29 +152,13 @@ export default function HubRuntimeSettingsPanel() {
     }
   };
 
-  const saveLlm = async () => {
-    setSaving(true);
-    setError("");
-    try {
-      const currentLlm = ((config?.llm ?? {}) as Record<string, unknown>) || {};
-      await patchHubConfigSection("llm", {
-        ...currentLlm,
-        default_profile: llmDefaultProfile.trim() || "chat",
-      });
-      await afterSave("llm");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const saveAdvanced = async () => {
+    if (!isAdvancedSectionKey(configKey)) return;
     setSaving(true);
     setError("");
     try {
-      await patchHubConfigSection(advancedSection, advancedDraft);
-      await afterSave(advancedSection);
+      await patchHubConfigSection(configKey, advancedDraft);
+      await afterSave(configKey);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -193,23 +172,9 @@ export default function HubRuntimeSettingsPanel() {
 
   return (
     <div className="space-y-4">
-      <nav className="flex flex-wrap gap-1">
-        {TABS.map((t) => (
-          <Button
-            key={t.id}
-            type="button"
-            size="sm"
-            variant={tab === t.id ? "default" : "ghost"}
-            onClick={() => setTab(t.id)}
-          >
-            {t.label}
-          </Button>
-        ))}
-      </nav>
-
       {error ? <StatusAlert variant="error">{error}</StatusAlert> : null}
 
-      {tab === "compression" ? (
+      {configKey === "compression" ? (
         <Card className="bg-muted py-0">
           <CardContent className="gap-4 py-4">
             <FormToggle
@@ -231,7 +196,7 @@ export default function HubRuntimeSettingsPanel() {
         </Card>
       ) : null}
 
-      {tab === "memory" ? (
+      {configKey === "memory" ? (
         <Card className="bg-muted py-0">
           <CardContent className="gap-4 py-4">
             <FormToggle
@@ -253,28 +218,17 @@ export default function HubRuntimeSettingsPanel() {
         </Card>
       ) : null}
 
-      {tab === "llm" ? (
-        <Card className="bg-muted py-0">
-          <CardContent className="gap-4 py-4">
-            <div className="space-y-1">
-              <Label className="text-sm">默认 profile</Label>
-              <Input
-                value={llmDefaultProfile}
-                onChange={(e) => setLlmDefaultProfile(e.target.value)}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              providers / profiles 请在「高级」中按 providers、profiles 相关段维护（或通过 CLI
-              编辑完整 llm 段）。
-            </p>
-            <Button type="button" disabled={saving} onClick={() => void saveLlm()}>
-              保存 LLM 配置
-            </Button>
-          </CardContent>
-        </Card>
+      {configKey === "llm" && config ? (
+        <LlmSettingsPanel
+          llmConfig={(config.llm ?? {}) as Record<string, unknown>}
+          saving={saving}
+          onSavingChange={setSaving}
+          onError={setError}
+          onSaved={afterSave}
+        />
       ) : null}
 
-      {tab === "speech" && config ? (
+      {configKey === "tts" && config ? (
         <SpeechSettingsTab
           config={config}
           saving={saving}
@@ -284,17 +238,16 @@ export default function HubRuntimeSettingsPanel() {
         />
       ) : null}
 
-      {tab === "advanced" ? (
+      {isAdvancedSectionKey(configKey) ? (
         <Card className="bg-muted py-0">
           <CardContent className="gap-4 py-4">
-            <AdvancedSectionPicker section={advancedSection} onSectionChange={setAdvancedSection} />
             <AdvancedSectionForm
-              section={advancedSection}
+              section={configKey}
               value={advancedDraft}
               onChange={setAdvancedDraft}
             />
             <Button type="button" disabled={saving} onClick={() => void saveAdvanced()}>
-              保存 {advancedSection}
+              保存 {configKey}
             </Button>
           </CardContent>
         </Card>
