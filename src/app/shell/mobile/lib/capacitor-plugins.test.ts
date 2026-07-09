@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it } from "bun:test";
 
 import {
-  hasCapacitorLocalNotificationsBridge,
-  hasCapacitorPreferencesBridge,
-  readWindowLocalNotificationsPlugin,
-  readWindowPreferencesPlugin,
+  createLocalNotificationsApiFromNativeBridge,
+  createPreferencesApiFromNativeBridge,
+  hasCapacitorNativeBridge,
+  pinCapacitorNativeBridge,
 } from "./capacitor-plugins.ts";
 
 describe("capacitor-plugins", () => {
@@ -12,31 +12,42 @@ describe("capacitor-plugins", () => {
     delete (globalThis as { window?: Window }).window;
   });
 
-  it("无 window.Capacitor 时插件不可用", () => {
+  it("无 window.Capacitor 时原生桥不可用", () => {
     (globalThis as { window: Window }).window = {} as Window;
-    expect(readWindowPreferencesPlugin()).toBeNull();
-    expect(readWindowLocalNotificationsPlugin()).toBeNull();
-    expect(hasCapacitorPreferencesBridge()).toBe(false);
-    expect(hasCapacitorLocalNotificationsBridge()).toBe(false);
+    expect(hasCapacitorNativeBridge()).toBe(false);
+    expect(createPreferencesApiFromNativeBridge()).toBeNull();
+    expect(createLocalNotificationsApiFromNativeBridge()).toBeNull();
   });
 
-  it("读取 window.Capacitor.Plugins 原生桥", () => {
-    const prefs = {
-      get: async () => ({ value: "hub" }),
-      set: async () => {},
-    };
-    const notifications = {
-      checkPermissions: async () => ({ display: "granted" }),
-      requestPermissions: async () => ({ display: "granted" }),
-      schedule: async () => {},
-    };
+  it("通过 nativePromise 调用 Preferences / LocalNotifications", async () => {
+    const calls: string[] = [];
     (globalThis as { window: Window }).window = {
-      Capacitor: { Plugins: { Preferences: prefs, LocalNotifications: notifications } },
+      Capacitor: {
+        nativePromise: async (plugin: string, method: string) => {
+          calls.push(`${plugin}.${method}`);
+          if (plugin === "Preferences" && method === "get") {
+            return { value: "hub" };
+          }
+          if (plugin === "LocalNotifications" && method === "checkPermissions") {
+            return { display: "granted" };
+          }
+          return {};
+        },
+        getPlatform: () => "android",
+      },
     } as unknown as Window;
 
-    expect(readWindowPreferencesPlugin()).toBe(prefs);
-    expect(readWindowLocalNotificationsPlugin()).toBe(notifications);
-    expect(hasCapacitorPreferencesBridge()).toBe(true);
-    expect(hasCapacitorLocalNotificationsBridge()).toBe(true);
+    pinCapacitorNativeBridge();
+    expect(hasCapacitorNativeBridge()).toBe(true);
+
+    const prefs = createPreferencesApiFromNativeBridge();
+    expect(prefs).not.toBeNull();
+    await expect(prefs?.get({ key: "freeanima.hubUrl" })).resolves.toEqual({ value: "hub" });
+
+    const notifications = createLocalNotificationsApiFromNativeBridge();
+    expect(notifications).not.toBeNull();
+    await expect(notifications?.checkPermissions()).resolves.toEqual({ display: "granted" });
+    expect(calls).toContain("Preferences.get");
+    expect(calls).toContain("LocalNotifications.checkPermissions");
   });
 });

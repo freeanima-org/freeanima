@@ -1,7 +1,8 @@
 import { waitForCapacitorBridge } from "./capacitor-ready.ts";
 import {
+  createPreferencesApiFromNativeBridge,
   isMobileCapacitorBridgeExpected,
-  readWindowPreferencesPlugin,
+  pinCapacitorNativeBridge,
   type CapacitorPreferencesApi,
 } from "./capacitor-plugins.ts";
 
@@ -17,13 +18,19 @@ export function withPromiseTimeout<T>(promise: Promise<T>, ms: number, label: st
 }
 
 async function resolvePreferencesApi(): Promise<CapacitorPreferencesApi> {
-  const fromWindow = readWindowPreferencesPlugin();
-  if (fromWindow) return fromWindow;
+  pinCapacitorNativeBridge();
+  let api = createPreferencesApiFromNativeBridge();
+  if (api) return api;
 
   if (isMobileCapacitorBridgeExpected()) {
-    await waitForCapacitorBridge();
-    const retry = readWindowPreferencesPlugin();
-    if (retry) return retry;
+    try {
+      await waitForCapacitorBridge();
+    } catch {
+      /* fall through */
+    }
+    pinCapacitorNativeBridge();
+    api = createPreferencesApiFromNativeBridge();
+    if (api) return api;
   }
 
   throw new Error("Preferences 插件不可用：请确认在 Capacitor 壳内运行且已执行 cap sync android");

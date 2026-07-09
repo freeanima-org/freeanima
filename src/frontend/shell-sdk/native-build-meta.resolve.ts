@@ -11,25 +11,12 @@ import { NATIVE_BUILD_META_KEY } from "./settings/prefs-keys.ts";
 export const NATIVE_BUILD_META_CHANGED_EVENT = "freeanima:native-build-meta";
 
 async function readCapacitorPreference(key: string): Promise<string | null> {
-  if (!isCapacitorNativePlatform()) return null;
   try {
-    const { Preferences } = await import("@capacitor/preferences");
-    const { value } = await Preferences.get({ key });
-    return value?.trim() || null;
-  } catch {
-    /* fall through */
-  }
-  try {
-    const prefs = (
-      window as Window & {
-        Capacitor?: {
-          Plugins?: {
-            Preferences?: { get(options: { key: string }): Promise<{ value: string | null }> };
-          };
-        };
-      }
-    ).Capacitor?.Plugins?.Preferences;
-    if (!prefs?.get) return null;
+    const { createPreferencesApiFromNativeBridge, pinCapacitorNativeBridge } =
+      await import("@freeanima/app/shell/mobile/lib/capacitor-plugins.ts");
+    pinCapacitorNativeBridge();
+    const prefs = createPreferencesApiFromNativeBridge();
+    if (!prefs) return null;
     const { value } = await prefs.get({ key });
     return value?.trim() || null;
   } catch {

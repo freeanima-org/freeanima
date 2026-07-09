@@ -3,12 +3,46 @@ function runtimeWindow(): Window | undefined {
   return (globalThis as { window?: Window }).window;
 }
 
+type CapacitorNativeBridge = {
+  nativePromise?: (plugin: string, method: string, options?: object) => Promise<unknown>;
+  isNativePlatform?: () => boolean;
+};
+
+function readCapacitorNativeBridge(): CapacitorNativeBridge | undefined {
+  const w = runtimeWindow();
+  if (!w) return undefined;
+  const pinned = (w as Window & { __freeanimaCapacitorNative?: CapacitorNativeBridge })
+    .__freeanimaCapacitorNative;
+  if (pinned?.nativePromise) return pinned;
+  const live = (w as Window & { Capacitor?: CapacitorNativeBridge }).Capacitor;
+  return live?.nativePromise ? live : undefined;
+}
+
+/** Capacitor 8 原生桥（nativePromise）是否可用；优先读 shell-bridge pin 的副本。 */
+export function hasCapacitorNativePromise(): boolean {
+  return Boolean(readCapacitorNativeBridge()?.nativePromise);
+}
+
+/** 等待 Capacitor 注入 nativePromise（远程 Hub 页上 @capacitor/core 可能晚于 shell-bridge）。 */
+export async function waitForCapacitorNativePromise(timeoutMs = 3_000): Promise<boolean> {
+  if (hasCapacitorNativePromise()) return true;
+  if (!isMobileCapacitorShellCandidate()) return false;
+
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 50);
+    });
+    if (hasCapacitorNativePromise()) return true;
+  }
+  return hasCapacitorNativePromise();
+}
+
 /** Capacitor WebView 运行时探测（不依赖 @capacitor/core 静态 import） */
 export function isCapacitorNativePlatform(): boolean {
-  const w = runtimeWindow();
-  if (!w) return false;
-  const cap = (w as Window & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
-  return Boolean(cap?.isNativePlatform?.());
+  const cap = readCapacitorNativeBridge();
+  if (cap?.isNativePlatform?.()) return true;
+  return Boolean(cap?.nativePromise);
 }
 
 /**

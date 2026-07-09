@@ -1,4 +1,5 @@
 import { detectCapacitorShellForBootstrap } from "@freeanima/frontend/shell-sdk/capacitor-local-asset";
+import { pinCapacitorNativeBridge } from "@freeanima/app/shell/mobile/lib/capacitor-plugins.ts";
 
 import {
   applyWebUiConfig,
@@ -7,6 +8,9 @@ import {
   readDefaultRemoteAuthToken,
 } from "./bridge/shared.ts";
 import { registerVaultRpcHandlers } from "@freeanima/frontend/shell-sdk";
+
+// 尽早 pin，避免 Hub main bundle 加载 @capacitor/core 后覆盖 window.Capacitor。
+pinCapacitorNativeBridge();
 
 async function bootstrapShellBridge(): Promise<void> {
   const finish = installShellBridgeReady();

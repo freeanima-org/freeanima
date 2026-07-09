@@ -9,17 +9,44 @@ import { parseShellDebugConfig, type ShellDebugConfig } from "@freeanima/fronten
 
 import { applyMobileDebugConsole } from "./debug-console.ts";
 import { prefsGet, prefsSet } from "./prefs-safe.ts";
+import { readShellSnapshot } from "./mobile-shell.ts";
+
+function loadHubConfigFromShellSnapshot(): { hubUrl: string; remoteAuthToken: string } | null {
+  const snapshot = readShellSnapshot();
+  if (!snapshot?.hubUrl?.trim()) return null;
+  return {
+    hubUrl: snapshot.hubUrl.trim(),
+    remoteAuthToken: snapshot.remoteAuthToken?.trim() ?? "",
+  };
+}
+
+function loadHubConfigFromSatelliteShell(): { hubUrl: string; remoteAuthToken: string } | null {
+  const shell = window.satelliteShell;
+  const hubUrl = shell?.hubUrl?.trim();
+  if (!hubUrl) return null;
+  return {
+    hubUrl,
+    remoteAuthToken: shell?.remoteAuth?.token?.trim() ?? "",
+  };
+}
 
 async function loadKvScope(scope: SettingsStorageScope): Promise<unknown> {
   if (scope.kind !== "kv") throw new Error("mobile 仅支持 kv scope");
   const scopeId = scope.id;
   if (scopeId === "hub") {
-    const [hubUrl, remoteAuthToken] = await Promise.all([
-      prefsGet({ key: HUB_URL_KEY }),
-      prefsGet({ key: REMOTE_AUTH_TOKEN_KEY }),
-    ]);
-    if (!hubUrl.value && !remoteAuthToken.value) return null;
-    return { hubUrl: hubUrl.value ?? "", remoteAuthToken: remoteAuthToken.value ?? "" };
+    const shellFallback = loadHubConfigFromSatelliteShell() ?? loadHubConfigFromShellSnapshot();
+    try {
+      const [hubUrl, remoteAuthToken] = await Promise.all([
+        prefsGet({ key: HUB_URL_KEY }, 2_000),
+        prefsGet({ key: REMOTE_AUTH_TOKEN_KEY }, 2_000),
+      ]);
+      if (hubUrl.value || remoteAuthToken.value) {
+        return { hubUrl: hubUrl.value ?? "", remoteAuthToken: remoteAuthToken.value ?? "" };
+      }
+    } catch {
+      /* 远程 Hub 页 Preferences 可能尚未就绪，回退 shell-bridge 注入 */
+    }
+    return shellFallback ?? null;
   }
   if (scope.id === "debug") {
     const vConsole = await prefsGet({ key: DEBUG_VCONSOLE_ENABLED_KEY });
