@@ -1,11 +1,11 @@
 import { useMemo, useState, useEffect, type ReactNode } from "react";
-import { Button } from "@freeanima/ui-kit";
+import { Button } from "@freeanima/frontend/ui-kit";
 import type {
   SettingsBinding,
   SettingsCategory,
   SettingsPlatform,
-} from "@freeanima/shell-sdk/settings";
-import { listSettingsSectionsForPlatform } from "@freeanima/shell-sdk/settings";
+} from "@freeanima/frontend/shell-sdk/settings";
+import { listSettingsSectionsForPlatform } from "@freeanima/frontend/shell-sdk/settings";
 
 import { SettingsSectionPanel } from "./SettingsSectionPanel.tsx";
 

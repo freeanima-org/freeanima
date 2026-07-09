@@ -1,4 +1,4 @@
-import type { CompanionSettingsApi } from "@freeanima/shell-sdk/settings";
+import type { CompanionSettingsApi } from "@freeanima/frontend/shell-sdk/settings";
 import {
   deleteModel,
   fetchMotionLibrary,
@@ -7,7 +7,7 @@ import {
   uploadModel,
 } from "../lib/api.ts";
 
-function shellApi(): import("@freeanima/shell-sdk").SatelliteShellApi | undefined {
+function shellApi(): import("@freeanima/frontend/shell-sdk").SatelliteShellApi | undefined {
   return window.satelliteShell;
 }
 

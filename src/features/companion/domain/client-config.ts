@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import type { CompanionClientConfigPayload } from "@freeanima/sap-contract/frames/companion";
+import type { CompanionClientConfigPayload } from "@freeanima/shared/sap-contract/frames/companion";
 import { activeModelPath, hubUrlFromEnv, loadCompanionConfig } from "./config.ts";
 import { fbxImportAvailable } from "./fbx-converter-kit.ts";
 import { isModelPathAvailable } from "./model-path.ts";

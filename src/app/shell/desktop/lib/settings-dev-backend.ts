@@ -1,5 +1,5 @@
-import type { SettingsStorageScope } from "@freeanima/shell-sdk/settings";
-import type { ScopedSettingsBackend } from "@freeanima/shell-sdk/settings";
+import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
+import type { ScopedSettingsBackend } from "@freeanima/frontend/shell-sdk/settings";
 import {
   DEBUG_SENTRY_DSN_KEY,
   DEBUG_SENTRY_ENABLED_KEY,
@@ -7,11 +7,11 @@ import {
   HUB_URL_KEY,
   LAUNCH_AT_LOGIN_KEY,
   REMOTE_AUTH_TOKEN_KEY,
-} from "@freeanima/shell-sdk/settings";
+} from "@freeanima/frontend/shell-sdk/settings";
 import {
   parseShellDebugConfig,
   type ShellDebugConfig,
-} from "@freeanima/shell-sdk/shell-debug-config";
+} from "@freeanima/frontend/shell-sdk/shell-debug-config";
 
 const COMPANION_CONFIG_LS_KEY = "freeanima.companion.config";
 

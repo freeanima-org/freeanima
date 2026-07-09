@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
-import { buildAutobiographySummary } from "@freeanima/capabilities-memory/autobiography/run";
+import { buildAutobiographySummary } from "@freeanima/capabilities/memory/autobiography/run";
 import {
   createAutobiographicalMemory,
   deprecateAutobiographicalMemory,

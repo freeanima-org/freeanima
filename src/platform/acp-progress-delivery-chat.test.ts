@@ -1,5 +1,5 @@
 import { describe, it, expect, mock } from "bun:test";
-import type { AcpAsyncTaskSnapshot } from "@freeanima/capabilities-acp";
+import type { AcpAsyncTaskSnapshot } from "@freeanima/capabilities/acp";
 
 const updates: Array<{ messageId: string; content: string }> = [];
 let storedId = "";

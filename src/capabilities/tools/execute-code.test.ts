@@ -5,7 +5,7 @@ import { parseYaml } from "@freeanima/platform/config";
 import { animaConfigSchema } from "@freeanima/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
 import { parseRuntime, clampTimeout, runExecuteCode } from "./execute-code-runtimes.ts";
-import { registerCoreTools } from "@freeanima/capabilities-tools";
+import { registerCoreTools } from "@freeanima/capabilities/tools";
 
 function testConfig() {
   const parsed = animaConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));

@@ -1,5 +1,5 @@
 import { conversationGoalSchema, type ConversationGoal } from "@freeanima/core/db/domain";
-import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
+import type { ConversationPort } from "@freeanima/core/tool/conversation-port.ts";
 
 import { DEFAULT_GOAL_MAX_TURNS } from "./prompts.ts";
 import { clearConversationGoal, patchConversationGoal, readConversationGoal } from "./store.ts";

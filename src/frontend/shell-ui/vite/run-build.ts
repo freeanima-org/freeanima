@@ -4,10 +4,9 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { build, type InlineConfig, type Rollup } from "vite";
 
-import { companionAtAliasPlugin, createShellUiAliases } from "./aliases.ts";
+import { buildViteAliases } from "./module-aliases.ts";
 import { shellEntryFileNames } from "./entry-file-names.ts";
 import { paraglideCompilePlugin } from "./paraglide-plugin.ts";
-import { createTsconfigPathsAliases } from "./tsconfig-paths.ts";
 
 export type ShellViteBuildOptions = {
   /** composition 目录（含 index.html） */
@@ -53,17 +52,9 @@ export function createShellViteInlineConfig(opts: ShellViteBuildOptions): Inline
     configFile: false,
     root: opts.appDir,
     base: opts.base ?? "/",
-    plugins: [
-      companionAtAliasPlugin(repoRoot),
-      paraglideCompilePlugin(paraglideDir, repoRoot),
-      react(),
-      tailwindcss(),
-    ],
+    plugins: [paraglideCompilePlugin(paraglideDir, repoRoot), react(), tailwindcss()],
     resolve: {
-      alias: [
-        ...createShellUiAliases(paraglideDir, repoRoot),
-        ...(repoRoot ? createTsconfigPathsAliases(repoRoot) : []),
-      ],
+      alias: repoRoot ? buildViteAliases({ repoRoot, paraglideDir }) : [],
       dedupe: ["react", "react-dom"],
     },
     ...(opts.define !== undefined ? { define: opts.define } : {}),

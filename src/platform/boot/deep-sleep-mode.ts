@@ -1,4 +1,4 @@
-import type { DeepSleepMode } from "@freeanima/capabilities-memory/deep-sleep/types";
+import type { DeepSleepMode } from "@freeanima/capabilities/memory/deep-sleep/types";
 import { isCstMonday } from "@freeanima/core/util";
 import type { PipelineContext } from "@freeanima/runtime/pipeline";
 

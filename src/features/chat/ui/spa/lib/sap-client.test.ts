@@ -34,7 +34,7 @@ describe("subscribeShellConfigChanges", () => {
       removeEventListener(type: string) {
         handlers.delete(type);
       },
-    } as Window & typeof globalThis;
+    } as unknown as Window & typeof globalThis;
     try {
       expect(typeof subscribeShellConfigChanges).toBe("function");
       const unsub = subscribeShellConfigChanges();

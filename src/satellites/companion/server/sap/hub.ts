@@ -1,8 +1,8 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-import { createSatelliteHub, type SatelliteHubHandle } from "@freeanima/sap-contract";
-import { fileSapInstanceStore } from "@freeanima/sap-contract/file-instance-store";
+import { createSatelliteHub, type SatelliteHubHandle } from "@freeanima/shared/sap-contract";
+import { fileSapInstanceStore } from "@freeanima/shared/sap-contract/file-instance-store";
 import { remoteAuthTokenFromShell } from "../config.ts";
 import { executeCompanionTool } from "../tools/executor.ts";
 

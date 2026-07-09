@@ -1,6 +1,6 @@
-import { Button } from "@freeanima/ui-kit";
-import { m } from "@console/lib/i18n.ts";
-import type { HubRestConnectionState } from "@console/hooks/useHubRestConnectivity.ts";
+import { Button } from "@freeanima/frontend/ui-kit";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
+import type { HubRestConnectionState } from "@freeanima/features/console/ui/console/hooks/useHubRestConnectivity.ts";
 
 type Props = {
   state: HubRestConnectionState;

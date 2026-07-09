@@ -23,7 +23,7 @@ import {
   vaultPatchPlainOutputSchema,
   vaultSearchInputSchema,
   vaultSearchOutputSchema,
-} from "@freeanima/sap-contract/frames/vault";
+} from "@freeanima/shared/sap-contract/frames/vault";
 
 import { defineHubMethod, dualTransportMeta } from "../method-def.ts";
 

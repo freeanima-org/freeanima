@@ -2,7 +2,7 @@ import type {
   AcpAsyncTaskSnapshot,
   AcpProgressDeliveryPort,
   AcpPromptResult,
-} from "@freeanima/capabilities-acp";
+} from "@freeanima/capabilities/acp";
 import {
   deliverToTargets,
   type CronDeliverTarget,
@@ -11,7 +11,7 @@ import { isConversationMeta } from "@freeanima/runtime/conversation";
 import type { ConversationService } from "@freeanima/runtime/conversation";
 import type { ConversationMetaLoadResult } from "@freeanima/core/db/domain";
 import type { EventBus } from "@freeanima/kernel/eventbus";
-import { conversationUpdated } from "@freeanima/capabilities-memory";
+import { conversationUpdated } from "@freeanima/capabilities/memory";
 import { appendMessageReturningId, updateMessageContent } from "@freeanima/core/db/pg/conversation";
 import { omitUndefined } from "@freeanima/core/util";
 import { logComponent } from "@freeanima/platform/logging";

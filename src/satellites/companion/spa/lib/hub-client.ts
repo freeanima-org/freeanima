@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
-import { whenSatelliteHubRpcReady } from "@freeanima/shell-sdk/hub-rpc-call";
-import type { ClientCompanionConfig } from "@shared/constants.ts";
+import { whenSatelliteHubRpcReady } from "@freeanima/frontend/shell-sdk/hub-rpc-call";
+import type { ClientCompanionConfig } from "@freeanima/satellites/companion/shared/constants.ts";
 
 export type HubCompanionConfig = Omit<
   ClientCompanionConfig,

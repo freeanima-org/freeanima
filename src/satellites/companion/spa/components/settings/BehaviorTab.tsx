@@ -1,7 +1,11 @@
-import { Card, CardContent, Input } from "@freeanima/ui-kit";
-import { FormFieldLabel, FormFieldset, FormToggle } from "@freeanima/ui-kit/form";
-import { useCompanionStore } from "@/stores/companion.ts";
-import type { CompanionBehavior } from "@shared/companion-schema.ts";
+import { Card, CardContent, Input } from "@freeanima/frontend/ui-kit";
+import {
+  FormFieldLabel,
+  FormFieldset,
+  FormToggle,
+} from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
+import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
+import type { CompanionBehavior } from "@freeanima/satellites/companion/shared/companion-schema.ts";
 
 export function BehaviorTab() {
   const behavior = useCompanionStore((s) => s.behavior);

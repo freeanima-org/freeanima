@@ -1,5 +1,8 @@
-import type { DisplayItem, ConversationListItem } from "@chat/lib/types.ts";
-import { hasNewAssistantReply } from "@chat/lib/display-recovery.ts";
+import type {
+  DisplayItem,
+  ConversationListItem,
+} from "@freeanima/features/chat/ui/spa/lib/types.ts";
+import { hasNewAssistantReply } from "@freeanima/features/chat/ui/spa/lib/display-recovery.ts";
 import { create } from "zustand";
 import {
   archiveConversation as archiveConversationApi,
@@ -10,16 +13,16 @@ import {
   listConversations,
   setConversationTitle,
   unarchiveConversation as unarchiveConversationApi,
-} from "@chat/lib/api.ts";
+} from "@freeanima/features/chat/ui/spa/lib/api.ts";
 import {
   readCachedConversations,
   readCachedMessages,
   resolveHubCacheScope,
   writeCachedConversations,
   writeCachedMessages,
-} from "@chat/lib/offline-cache.ts";
-import { sortConversationsByUpdatedAt } from "@chat/lib/sort-conversations.ts";
-import { useChatStore } from "@chat/stores/chat.ts";
+} from "@freeanima/features/chat/ui/spa/lib/offline-cache.ts";
+import { sortConversationsByUpdatedAt } from "@freeanima/features/chat/ui/spa/lib/sort-conversations.ts";
+import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";
 
 type ConversationsState = {
   conversations: ConversationListItem[];

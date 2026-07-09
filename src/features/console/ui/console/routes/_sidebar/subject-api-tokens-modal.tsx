@@ -17,20 +17,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@freeanima/ui-kit";
-import { FormField } from "@freeanima/ui-kit/form";
-import { showConfirm, StatusAlert } from "@freeanima/ui-kit/composite";
-import { copyText } from "@freeanima/ui-kit/lib/copy-text";
-import { formatDisplayDateTime } from "@console/lib/format-datetime.ts";
-import { m } from "@console/lib/i18n.ts";
+} from "@freeanima/frontend/ui-kit";
+import { FormField } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
+import { showConfirm, StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { copyText } from "@freeanima/frontend/ui-kit/lib/copy-text.ts";
+import { formatDisplayDateTime } from "@freeanima/features/console/ui/console/lib/format-datetime.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
 import {
   createSubjectApiToken,
   listSubjectApiTokens,
   revokeSubjectApiToken,
   type EntityRow,
   type ServiceApiTokenPublic,
-} from "@console/lib/api.ts";
-import { logCaughtError } from "@console/lib/log-caught-error.ts";
+} from "@freeanima/features/console/ui/console/lib/api.ts";
+import { logCaughtError } from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
 
 function subjectLabel(row: EntityRow): string {
   const title = row.title || m.console_common_no_title();

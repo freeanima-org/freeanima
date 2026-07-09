@@ -1,6 +1,6 @@
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
-import { compileParaglideToDir } from "../../../features/console/build/paraglide-compile.ts";
+import { compileParaglideToDir } from "@freeanima/features/console/build/paraglide-compile.ts";
 import type { Plugin, ViteDevServer } from "vite";
 
 import { REPO_ROOT } from "./paths.ts";

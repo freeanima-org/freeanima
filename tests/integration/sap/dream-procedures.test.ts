@@ -1,5 +1,9 @@
 import { describe, expect, it } from "bun:test";
-import { SAP_METHODS, dreamGetInputSchema, dreamListInputSchema } from "@freeanima/sap-contract";
+import {
+  SAP_METHODS,
+  dreamGetInputSchema,
+  dreamListInputSchema,
+} from "@freeanima/shared/sap-contract";
 
 describe("dream Hub RPC procedures", () => {
   it("registers dream.* methods", () => {

@@ -8,7 +8,7 @@ import type { Config } from "@freeanima/core/config";
 import { logCapability as logComponent } from "@freeanima/core/config";
 import { omitUndefined } from "@freeanima/core/util";
 
-import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
+import type { ConversationPort } from "@freeanima/core/tool/conversation-port.ts";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import {
   AcpAsyncTaskStore,

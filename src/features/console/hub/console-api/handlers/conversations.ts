@@ -5,7 +5,7 @@ import {
   patchTitleBodySchema,
   type CreateConversationBody,
   type PatchTitleBody,
-} from "@freeanima/console-api/api";
+} from "@freeanima/features/console/hub/console-api/api";
 import { ApiHandlerError } from "./errors.ts";
 
 function requirePlatform(platform: string | undefined): string {

@@ -1,6 +1,6 @@
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import { parseConversationGoal, type ConversationGoal } from "@freeanima/core/db/domain";
-import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
+import type { ConversationPort } from "@freeanima/core/tool/conversation-port.ts";
 
 export async function readConversationGoal(
   conversation: ConversationPort,

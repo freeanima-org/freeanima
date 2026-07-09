@@ -9,7 +9,7 @@ import {
 } from "@freeanima/core/db/schema/entity";
 import type { AnimaConfig } from "@freeanima/core/config";
 import { omitUndefined } from "@freeanima/core/util";
-import { resolveWorldSubjectIds } from "../../../config/worlds.ts";
+import { resolveWorldSubjectIds } from "@freeanima/core/config/worlds.ts";
 
 import {
   createEntity,

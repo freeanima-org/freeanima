@@ -10,7 +10,7 @@ import {
   worldIdForAccount,
   upsertEmailMessage,
   upsertEmailThread,
-} from "@freeanima/feature-email/domain";
+} from "@freeanima/features/email/domain";
 import { messagePreview, smtpSecure, withImapAccount } from "./imap-client.ts";
 import { resolveEmailAccountPassword } from "./password.ts";
 import nodemailer from "nodemailer";
@@ -144,7 +144,7 @@ export async function deleteMessageOnImap(messageId: number): Promise<{ ok: true
     );
   }
 
-  const { deleteEmailMessageRow } = await import("@freeanima/feature-email/domain");
+  const { deleteEmailMessageRow } = await import("@freeanima/features/email/domain");
   await deleteEmailMessageRow(messageId);
   return { ok: true };
 }

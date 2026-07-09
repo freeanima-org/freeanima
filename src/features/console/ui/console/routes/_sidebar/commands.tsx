@@ -1,9 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@freeanima/ui-kit";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { listConversationCommands } from "@console/lib/api.ts";
-import { m } from "@console/lib/i18n.ts";
-import { catchWithFallback } from "@console/lib/log-caught-error.ts";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@freeanima/frontend/ui-kit";
+import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { listConversationCommands } from "@freeanima/features/console/ui/console/lib/api.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
+import { catchWithFallback } from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/commands")({
   loader: () =>

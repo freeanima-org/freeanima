@@ -238,7 +238,7 @@ bun run dev:web                    # terminal 2: http://127.0.0.1:4173/web/chat 
 ### 4. Development checks
 
 ```bash
-bun run check    # typecheck + lint + dep-check + format + changed unit tests
+bun run check    # typecheck + lint + format + changed unit tests
 bun run test     # full unit + integration (integration uses Docker for temp PG)
 ```
 

@@ -2,9 +2,12 @@ import { useMemo } from "react";
 import {
   useAcpProgressDock as useSharedAcpProgressDock,
   type AcpProgressDockOptions,
-} from "@freeanima/ui-kit/ui/use-acp-progress-dock";
-import { getConversationAcpDock, subscribeConversationEvents } from "@chat/lib/api.ts";
-import type { ConversationAcpDockSnapshot } from "@chat/lib/types.ts";
+} from "@freeanima/frontend/ui-kit/ui/useAcpProgressDock.ts";
+import {
+  getConversationAcpDock,
+  subscribeConversationEvents,
+} from "@freeanima/features/chat/ui/spa/lib/api.ts";
+import type { ConversationAcpDockSnapshot } from "@freeanima/features/chat/ui/spa/lib/types.ts";
 
 export type { AcpProgressDockOptions };
 

@@ -1,6 +1,6 @@
 # Code layers and dependencies
 
-> **Repository** layering (distinct from cognitive Consciousness/Self/Memory/Estate in [`docs/concepts/architecture.md`](../../docs/concepts/architecture.md)). Enforced by [`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts).
+> **Repository** layering (distinct from cognitive Consciousness/Self/Memory/Estate in [`docs/concepts/architecture.md`](../../docs/concepts/architecture.md)). **文档约定 + PR review** 把关；import 路径由 `tsconfig.base.json` paths（`@freeanima/*` → `src/*` 等）+ `tsgo` 保障。
 
 ## Layer topology
 
@@ -10,14 +10,14 @@ Classic runtime stack（纵向依赖，高 → 低）：
 app → platform → capabilities → runtime → core → kernel
 ```
 
-与运行时栈**并列**、由 dep-check 单独约束的目录：
+与运行时栈**并列**、由层依赖约定约束的目录：
 
-| Directory         | Package prefix                                                          | Role                                                      |
-| ----------------- | ----------------------------------------------------------------------- | --------------------------------------------------------- |
-| `src/shared/`     | `hub-rpc`, `hub-contract`, `hub-client`, `sap-contract`, `vault-crypto` | Hub method SSOT、多传输客户端、SAP wire、加密             |
-| `src/frontend/`   | `ui-kit`, `shell-sdk`, `shell-ui`                                       | 壳层 UI 与集成 SDK                                        |
-| `features/`       | `feature-*`                                                             | 产品功能纵向模块（plugin + hub + protocol + ui + domain） |
-| `src/satellites/` | `satellite-*`                                                           | **仅** SAP attach 型卫星壳（`companion`）                 |
+| Directory         | Import prefix（`@freeanima/*` → `src/*`） | Role                                                      |
+| ----------------- | ----------------------------------------- | --------------------------------------------------------- |
+| `src/shared/`     | `@freeanima/shared/hub-rpc` 等            | Hub method SSOT、多传输客户端、SAP wire、加密             |
+| `src/frontend/`   | `@freeanima/frontend/ui-kit` 等           | 壳层 UI 与集成 SDK                                        |
+| `features/`       | `@freeanima/features/{slug}/`             | 产品功能纵向模块（plugin + hub + protocol + ui + domain） |
+| `src/satellites/` | `@freeanima/satellites/companion/`        | **仅** SAP attach 型卫星壳（`companion`）                 |
 
 | Layer            | Directory           | Package               | Responsibility                                                                    |
 | ---------------- | ------------------- | --------------------- | --------------------------------------------------------------------------------- |
@@ -64,7 +64,7 @@ chat / task / vault / diary / email / notification / dream / console 等产品�
 
 ## Dependency allow/deny matrix
 
-Readable mirror of [`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts). **When rules change, update the script and this section in the same PR.**
+Readable mirror of层依赖约定（**非**自动化脚本）。**When rules change, update this section in the same PR.**
 
 Dependency direction (high → low): `app` / `platform` / `features` → `capabilities` → `runtime` → `core` → `kernel`. Lower layers must not import higher layers.
 

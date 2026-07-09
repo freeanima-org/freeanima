@@ -16,7 +16,7 @@ import {
 import type { SubjectKind } from "@freeanima/core/config";
 import { resolveDefaultPrivateWorldForSubject } from "@freeanima/core/db/pg/entity";
 import type { VerifiedServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
-import type { SapRequestAuthContext } from "@freeanima/sap-contract";
+import type { SapRequestAuthContext } from "@freeanima/shared/sap-contract";
 
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
 import type { RuntimeDeps } from "./runtime-deps.ts";

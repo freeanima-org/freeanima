@@ -1,12 +1,12 @@
-import { ensureVaultConfig, getVaultConfig } from "@freeanima/feature-vault/domain/config-store";
-import { getVaultItem, updateVaultItem } from "@freeanima/feature-vault/domain/item-store";
-import { resolveVaultWorldId } from "@freeanima/feature-vault/domain/vault-world";
+import { ensureVaultConfig, getVaultConfig } from "@freeanima/features/vault/domain/config-store";
+import { getVaultItem, updateVaultItem } from "@freeanima/features/vault/domain/item-store";
+import { resolveVaultWorldId } from "@freeanima/features/vault/domain/vault-world";
 import {
   extractCustomFieldNames,
   openVaultSecrets,
   sealVaultSecrets,
   type VaultSecretsPayload,
-} from "@freeanima/vault-crypto";
+} from "@freeanima/shared/vault-crypto";
 
 import { getAgentMachineKey } from "./machine-key.ts";
 
@@ -54,7 +54,7 @@ export async function resolveAgentVaultSecret(
     throw new Error("NOT_FOUND");
   }
   const secrets = await openAgentVaultSecrets(item.secrets_enc, item.dek_wrapped);
-  const { resolveSecretField } = await import("@freeanima/vault-crypto");
+  const { resolveSecretField } = await import("@freeanima/shared/vault-crypto");
   const value = resolveSecretField(secrets, field);
   if (value == null) throw new Error("FIELD_NOT_FOUND");
   return value;

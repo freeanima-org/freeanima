@@ -8,7 +8,7 @@ import { closeDb, getDb, initDatabase } from "@freeanima/core/db/pg";
 import {
   getAgentVaultCliField,
   listAgentVaultCliItems,
-} from "@freeanima/platform/commands/vault-cli";
+} from "@freeanima/platform/slash-commands/vault-cli.ts";
 
 import { printCliError } from "../output/errors.ts";
 import { renderTable } from "../output/table.ts";

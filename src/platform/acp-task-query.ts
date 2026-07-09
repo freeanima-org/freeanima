@@ -1,4 +1,4 @@
-import type { AcpPromptResult, AcpTaskQueryPort } from "@freeanima/capabilities-acp";
+import type { AcpPromptResult, AcpTaskQueryPort } from "@freeanima/capabilities/acp";
 import { getMessageContentById, listMessages } from "@freeanima/core/db/pg/conversation";
 
 const ACP_RESULT_PREFIX = "[ACP result]";

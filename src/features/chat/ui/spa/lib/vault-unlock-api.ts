@@ -1,5 +1,5 @@
-import { whenBundledSapClientReady } from "@freeanima/sap-contract";
-import type { VaultConfigRowPayload } from "@freeanima/sap-contract";
+import { whenBundledSapClientReady } from "@freeanima/shared/sap-contract";
+import type { VaultConfigRowPayload } from "@freeanima/shared/sap-contract";
 
 export async function getVaultCryptoConfig(
   subjectKind: "user" | "agent",

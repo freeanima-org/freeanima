@@ -1,10 +1,10 @@
-import { MOBILE_LAYOUT_MQ } from "@freeanima/ui-kit/layout";
-import { useEffect, useRef, useState } from "react";
-import { Button } from "@freeanima/ui-kit";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
+import { MOBILE_LAYOUT_MQ } from "@freeanima/frontend/ui-kit/layout";
+import { useEffect, useRef, useState, type JSX } from "react";
+import { Button } from "@freeanima/frontend/ui-kit";
+import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
 import { registerSW } from "virtual:pwa-register";
 
-import * as m from "../../../../messages/paraglide/messages.js";
+import { m } from "@paraglide/messages";
 import {
   isBrowserWebShell,
   isStandalonePwa,
@@ -81,7 +81,7 @@ export function PwaNotices(): JSX.Element | null {
             type="button"
             size="sm"
             onClick={() => {
-              void reloadRef.current?.(true);
+              void reloadRef.current?.();
               setNeedRefresh(false);
             }}
           >

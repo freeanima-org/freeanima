@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/shell-sdk/react";
+import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/shell-sdk/react.tsx";
 import {
   Alert,
   AlertDescription,
@@ -8,7 +8,7 @@ import {
   Card,
   CardContent,
   Spinner,
-} from "@freeanima/ui-kit";
+} from "@freeanima/frontend/ui-kit";
 
 import {
   listNotifications,

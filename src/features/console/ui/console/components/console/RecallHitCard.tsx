@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Badge, Card, CardContent } from "@freeanima/ui-kit";
-import { formatDisplayDateTime } from "@console/lib/format-datetime.ts";
-import { m } from "@console/lib/i18n.ts";
-import { memoryTypeLabel } from "@console/lib/console-status.ts";
+import { Badge, Card, CardContent } from "@freeanima/frontend/ui-kit";
+import { formatDisplayDateTime } from "@freeanima/features/console/ui/console/lib/format-datetime.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
+import { memoryTypeLabel } from "@freeanima/features/console/ui/console/lib/console-status.ts";
 import type { MemoryRecallHit } from "./memory-recall-types.ts";
 
 type BadgeVariant = "default" | "secondary" | "warning" | "ghost" | "outline";

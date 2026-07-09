@@ -1,11 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { getAcpStatus, startAllAcp, startAcp, stopAllAcp, stopAcp } from "@console/lib/api.ts";
-import { m } from "@console/lib/i18n.ts";
-import { acpStatusLabel } from "@console/lib/console-status.ts";
-import { catchWithFallback, logCaughtError } from "@console/lib/log-caught-error.ts";
+import { Badge, Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
+import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import {
+  getAcpStatus,
+  startAllAcp,
+  startAcp,
+  stopAllAcp,
+  stopAcp,
+} from "@freeanima/features/console/ui/console/lib/api.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
+import { acpStatusLabel } from "@freeanima/features/console/ui/console/lib/console-status.ts";
+import {
+  catchWithFallback,
+  logCaughtError,
+} from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
 
 const ACP_START_TIMEOUT_MS = 30_000;
 

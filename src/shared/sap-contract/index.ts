@@ -7,7 +7,7 @@ export {
   HUB_RPC_VERSION,
 } from "./protocol.ts";
 export type { SapEnvelope, SapError } from "./protocol.ts";
-export { randomUuid } from "@freeanima/kernel/random-uuid";
+export { randomUuid } from "@freeanima/kernel/random-uuid.ts";
 
 export {
   normalizeAppSlug,

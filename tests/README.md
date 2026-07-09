@@ -32,7 +32,7 @@ bun run test:unit          # bun test src
 bun run test:integration   # integration（无 Docker 时 PG 用例跳过）
 bun run test               # unit 后 integration（串行）
 bun run test:changed       # pre-commit：src 内变更的单元测试
-bun run check              # typecheck + lint + dep-check + format + test:changed
+bun run check              # typecheck + lint + format + test:changed
 ```
 
 - 有 Docker 时，[`scripts/integration-pg-setup.ts`](../scripts/integration-pg-setup.ts) 会为 `test:integration` 注入 `ANIMA_TEST_PG_URL`。

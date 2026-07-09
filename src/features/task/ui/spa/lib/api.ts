@@ -1,4 +1,4 @@
-import { getSubjectKind } from "@freeanima/shell-sdk";
+import { getSubjectKind } from "@freeanima/frontend/shell-sdk";
 
 import { getTaskHubClient } from "./hub-client.ts";
 

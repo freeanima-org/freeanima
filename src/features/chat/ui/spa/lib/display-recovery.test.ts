@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import type { DisplayItem } from "@chat/lib/types.ts";
+import type { DisplayItem } from "@freeanima/features/chat/ui/spa/lib/types.ts";
 import { displayAwaitingReply, hasNewAssistantReply } from "./display-recovery.ts";
 
 describe("displayAwaitingReply", () => {

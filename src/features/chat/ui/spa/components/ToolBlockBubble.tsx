@@ -1,6 +1,6 @@
 import { useState } from "react";
-import type { DisplayToolCall } from "@chat/lib/types.ts";
-import { m } from "@chat/lib/i18n.ts";
+import type { DisplayToolCall } from "@freeanima/features/chat/ui/spa/lib/types.ts";
+import { m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 
 type ToolBlockBubbleProps = {
   calls: DisplayToolCall[];

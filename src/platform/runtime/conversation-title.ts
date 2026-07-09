@@ -1,5 +1,5 @@
 import type { EventBus } from "@freeanima/kernel/eventbus";
-import { conversationUpdated } from "@freeanima/capabilities-memory";
+import { conversationUpdated } from "@freeanima/capabilities/memory";
 import { fallbackConversationTitle, generateConversationTitle } from "@freeanima/core/llm";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 

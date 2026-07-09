@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import type { SatelliteShellApi } from "@freeanima/shell-sdk";
+import type { SatelliteShellApi } from "@freeanima/frontend/shell-sdk";
 
 import {
   isMobileLayoutViewport,

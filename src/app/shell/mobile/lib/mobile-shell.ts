@@ -1,12 +1,12 @@
-import { resolveHubWsUrl } from "@freeanima/sap-contract/urls";
+import { resolveHubWsUrl } from "@freeanima/shared/sap-contract/urls";
 import {
   buildShellApiFields,
   normalizeShellClientConfig,
   testHubHealthConnection,
   type SapInstanceStore,
   type SatelliteShellApi,
-} from "@freeanima/shell-sdk";
-import type { ComponentBuildMeta } from "@freeanima/shell-sdk/build-meta";
+} from "@freeanima/frontend/shell-sdk";
+import type { ComponentBuildMeta } from "@freeanima/frontend/shell-sdk/build-meta";
 
 import { loadMobileNativeBuildMeta } from "./native-build-meta-prefs.ts";
 import { HUB_URL_KEY, REMOTE_AUTH_TOKEN_KEY, sapInstanceKey } from "./prefs-keys.ts";

@@ -4,7 +4,7 @@ import {
   WEB_URL_PREFIX,
   type WebStaticOptions,
 } from "./web-static.ts";
-import { createMcpBunHandler, isMcpPath } from "@freeanima/capabilities-mcp-server";
+import { createMcpBunHandler, isMcpPath } from "@freeanima/capabilities/mcp-server";
 import { CONSOLE_BASE_PATH } from "@freeanima/platform/ports/constants";
 import type { HubTlsBunOptions } from "@freeanima/platform/tls/resolve-hub-tls";
 import { createApiApp } from "./elysia/app.ts";
@@ -198,7 +198,7 @@ export async function startApiHttpServers(
   port: number,
   options: ApiServerOptions = {},
 ): Promise<ApiServerStartResult> {
-  const { coalesceBindHosts } = await import("@freeanima/platform/bind-hosts");
+  const { coalesceBindHosts } = await import("@freeanima/platform/bind-hosts.ts");
   const bindHosts = coalesceBindHosts(hosts);
   const runtime = prepareApiServerRuntime(options);
   const handles: ApiServerHandle[] = [];

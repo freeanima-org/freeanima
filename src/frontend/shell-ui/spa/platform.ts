@@ -1,4 +1,4 @@
-import type { SettingsPlatform } from "@freeanima/shell-sdk/settings";
+import type { SettingsPlatform } from "@freeanima/frontend/shell-sdk/settings";
 
 import { detectLayoutMode, type LayoutMode } from "./layout-mode.ts";
 

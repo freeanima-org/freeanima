@@ -20,18 +20,28 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@freeanima/ui-kit";
-import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form";
+} from "@freeanima/frontend/ui-kit";
+import {
+  FormField,
+  FormFieldLabel,
+  FormFieldset,
+} from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
 import {
   getDeepSleepRounds,
   getSleepPipelineStatus,
   listPipelineStepRuns,
   startSleepCycle,
   startSleepPipelineStep,
-} from "@console/lib/api.ts";
-import { formatDisplayDate, formatDisplayDateTime } from "@console/lib/format-datetime.ts";
-import { m } from "@console/lib/i18n.ts";
-import { catchWithFallback, logCaughtError } from "@console/lib/log-caught-error.ts";
+} from "@freeanima/features/console/ui/console/lib/api.ts";
+import {
+  formatDisplayDate,
+  formatDisplayDateTime,
+} from "@freeanima/features/console/ui/console/lib/format-datetime.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
+import {
+  catchWithFallback,
+  logCaughtError,
+} from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
 
 type DateField = string | Date | null | undefined;
 

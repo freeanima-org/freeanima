@@ -1,23 +1,26 @@
 import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
-import type { ServiceStatus } from "@freeanima/console-contract/api";
-import { Badge, Button, Card, CardContent, Input, Spinner } from "@freeanima/ui-kit";
-import { FormField, FormFieldset } from "@freeanima/ui-kit/form";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { cn } from "@freeanima/ui-kit/lib/utils";
+import type { ServiceStatus } from "@freeanima/features/console/protocol/console-contract/api";
+import { Badge, Button, Card, CardContent, Input, Spinner } from "@freeanima/frontend/ui-kit";
+import { FormField, FormFieldset } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
+import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { cn } from "@freeanima/frontend/ui-kit/lib/utils.ts";
 import { useMemo, useState } from "react";
-import { formatMemoryRecallOutput } from "@console/components/console/format-memory-recall-output.ts";
+import { formatMemoryRecallOutput } from "@freeanima/features/console/ui/console/components/console/format-memory-recall-output.ts";
 import {
   countByMemoryType,
   MEMORY_RECALL_TYPES,
   recallHitKey,
   type MemoryRecallResult,
   type MemoryRecallType,
-} from "@console/components/console/memory-recall-types.ts";
-import { RecallHitCard } from "@console/components/console/RecallHitCard.tsx";
-import { m } from "@console/lib/i18n.ts";
-import { getStatus, searchMemory } from "@console/lib/api.ts";
-import { memoryTypeLabel } from "@console/lib/console-status.ts";
-import { catchWithFallback, logCaughtError } from "@console/lib/log-caught-error.ts";
+} from "@freeanima/features/console/ui/console/components/console/memory-recall-types.ts";
+import { RecallHitCard } from "@freeanima/features/console/ui/console/components/console/RecallHitCard.tsx";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
+import { getStatus, searchMemory } from "@freeanima/features/console/ui/console/lib/api.ts";
+import { memoryTypeLabel } from "@freeanima/features/console/ui/console/lib/console-status.ts";
+import {
+  catchWithFallback,
+  logCaughtError,
+} from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/memory")({
   loader: async () => {

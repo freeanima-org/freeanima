@@ -1,1 +1,1 @@
-export { copyText } from "@freeanima/ui-kit/lib/copy-text";
+export { copyText } from "@freeanima/frontend/ui-kit/lib/copy-text.ts";

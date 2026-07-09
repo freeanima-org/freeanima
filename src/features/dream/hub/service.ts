@@ -3,7 +3,7 @@ import {
   getDreamEntryByDay,
   listDreamEntries,
   resolveDreamWorldId,
-} from "@freeanima/capabilities-memory/dream-store";
+} from "@freeanima/capabilities/memory/dream-store";
 
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
 import type { RuntimeDeps } from "./runtime-deps.ts";

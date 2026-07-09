@@ -1,4 +1,4 @@
-import { lazy, Suspense, type ComponentType, type LazyExoticComponent } from "react";
+import { lazy, Suspense, type ComponentType, type JSX, type LazyExoticComponent } from "react";
 
 function ShellRouteFallback(): JSX.Element {
   return (
@@ -34,5 +34,5 @@ export function lazyNamedComponent<T extends Record<string, ComponentType<object
   loader: () => Promise<T>,
   exportName: keyof T & string,
 ): () => Promise<{ default: ComponentType<object> }> {
-  return () => loader().then((mod) => ({ default: mod[exportName] }));
+  return () => loader().then((mod) => ({ default: mod[exportName] as ComponentType<object> }));
 }

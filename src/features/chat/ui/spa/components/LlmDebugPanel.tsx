@@ -10,9 +10,12 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@freeanima/ui-kit";
-import type { LlmDebugSnapshotPayload, LlmDebugSnapshots } from "@chat/lib/types.ts";
-import { m } from "@chat/lib/i18n.ts";
+} from "@freeanima/frontend/ui-kit";
+import type {
+  LlmDebugSnapshotPayload,
+  LlmDebugSnapshots,
+} from "@freeanima/features/chat/ui/spa/lib/types.ts";
+import { m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 
 type LlmDebugPanelProps = {
   open: boolean;

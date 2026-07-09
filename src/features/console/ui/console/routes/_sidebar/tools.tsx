@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import type { ToolsStatusResponse, ToolsStatusToolItem } from "@freeanima/console-contract/api";
-import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
+import type {
+  ToolsStatusResponse,
+  ToolsStatusToolItem,
+} from "@freeanima/features/console/protocol/console-contract/api";
+import { Badge, Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
 import { useMemo, useState } from "react";
-import { getToolsStatus } from "@console/lib/api.ts";
-import { MemoryListPagination } from "@console/components/console/MemoryListPagination.tsx";
-import { m } from "@console/lib/i18n.ts";
-import { catchWithFallback } from "@console/lib/log-caught-error.ts";
+import { getToolsStatus } from "@freeanima/features/console/ui/console/lib/api.ts";
+import { MemoryListPagination } from "@freeanima/features/console/ui/console/components/console/MemoryListPagination.tsx";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
+import { catchWithFallback } from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
 
 type ToolsLoaderData = ToolsStatusResponse;
 

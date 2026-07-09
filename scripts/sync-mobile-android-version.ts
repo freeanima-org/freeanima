@@ -3,8 +3,8 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { readAppVersion } from "../src/core/config/version.ts";
-import { getRepoRoot } from "../src/core/config/repo-root.ts";
+import { readAppVersion } from "@freeanima/core/config/version.ts";
+import { getRepoRoot } from "@freeanima/core/config/repo-root.ts";
 
 const ROOT = getRepoRoot();
 const gradlePath = join(ROOT, "src/app/shell/mobile/android/app/build.gradle");

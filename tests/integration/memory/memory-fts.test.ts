@@ -7,7 +7,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { filterRecallableMessages } from "@freeanima/capabilities-memory";
+import { filterRecallableMessages } from "@freeanima/capabilities/memory";
 import { buildFtsTsQuery, getDb } from "@freeanima/core/db/pg";
 import {
   createSemanticMemory,

@@ -11,13 +11,13 @@ import {
   type PatrolBounds,
   type ScreenPoint,
   type ScreenRect,
-} from "@/lib/window-metrics.ts";
+} from "@freeanima/satellites/companion/spa/lib/window-metrics.ts";
 import {
   getPatrolScreen,
   getWindowPosition,
   isCompanionOverlay,
   moveWindow,
-} from "@/lib/electron.ts";
+} from "@freeanima/satellites/companion/spa/lib/electron.ts";
 import {
   interpolateJourneyPoint,
   journeyDurationMs,
@@ -25,10 +25,10 @@ import {
   patrolSpeedPxFor,
   shouldEnablePatrol,
 } from "./character-patrol.ts";
-import { companionDebug } from "@/lib/companion-debug.ts";
-import type { LocomotionKind } from "@/renderer/VrmBackend.ts";
-import { useCompanionStore } from "@/stores/companion.ts";
-import { idlePatrolDelayMs } from "@shared/core/behavior.ts";
+import { companionDebug } from "@freeanima/satellites/companion/spa/lib/companion-debug.ts";
+import type { LocomotionKind } from "@freeanima/satellites/companion/spa/renderer/VrmBackend.ts";
+import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
+import { idlePatrolDelayMs } from "@freeanima/satellites/companion/shared/core/behavior.ts";
 
 type CharacterState = {
   patrolling: boolean;

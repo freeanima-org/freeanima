@@ -5,7 +5,7 @@ import {
   isHubMethod,
   resolveDefaultTransport,
   resolveFallbackTransport,
-} from "@freeanima/hub-contract";
+} from "@freeanima/shared/hub-contract";
 
 import { buildHubRpcHttpUrl } from "./http-rpc.ts";
 

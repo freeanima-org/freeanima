@@ -1,16 +1,23 @@
 import { useRef, type PointerEvent } from "react";
-import { VrmCanvas } from "@/renderer/VrmCanvas.tsx";
-import { useCompanionStore } from "@/stores/companion.ts";
+import { VrmCanvas } from "@freeanima/satellites/companion/spa/renderer/VrmCanvas.tsx";
+import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
 import {
   enterPatrolMode,
   moveCompanionStage,
   recordInteraction,
   syncCompanionWindowPosition,
-} from "@/stores/character.ts";
-import { getVrmBackend } from "@/renderer/VrmBackend.ts";
-import { companionDebug } from "@/lib/companion-debug.ts";
-import { getWindowPosition, isCompanionOverlay, moveWindow } from "@/lib/electron.ts";
-import { COMPANION_WINDOW_HEIGHT, COMPANION_WINDOW_WIDTH } from "@/lib/window-metrics.ts";
+} from "@freeanima/satellites/companion/spa/stores/character.ts";
+import { getVrmBackend } from "@freeanima/satellites/companion/spa/renderer/VrmBackend.ts";
+import { companionDebug } from "@freeanima/satellites/companion/spa/lib/companion-debug.ts";
+import {
+  getWindowPosition,
+  isCompanionOverlay,
+  moveWindow,
+} from "@freeanima/satellites/companion/spa/lib/electron.ts";
+import {
+  COMPANION_WINDOW_HEIGHT,
+  COMPANION_WINDOW_WIDTH,
+} from "@freeanima/satellites/companion/spa/lib/window-metrics.ts";
 
 const DRAG_THRESHOLD_PX = 8;
 const DOUBLE_CLICK_MS = 400;

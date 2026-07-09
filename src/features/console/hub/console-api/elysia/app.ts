@@ -5,7 +5,7 @@ import { applyCorsHeaders, corsPreflightResponse } from "./cors.ts";
 import { healthRoutes } from "./routes/health.ts";
 import { tlsCaRoutes } from "./routes/tls-ca.ts";
 import { ttsRoutes } from "./routes/tts.ts";
-import { companionHttpRoutes } from "@freeanima/feature-companion/hub/http";
+import { companionHttpRoutes } from "@freeanima/features/companion/hub/http";
 import { TerminalSessionError } from "@freeanima/platform/sap/terminal-session";
 
 /** 基础设施 HTTP：health / TTS / TLS CA / companion 资产（不进 hub-contract） */

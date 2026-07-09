@@ -3,7 +3,7 @@ import {
   readOfflineCache,
   resolveHubCacheScope,
   writeOfflineCache,
-} from "@freeanima/shell-sdk/offline-cache";
+} from "@freeanima/frontend/shell-sdk/offline-cache";
 import { getDiaryHubClient } from "./hub-client.ts";
 
 function hub() {

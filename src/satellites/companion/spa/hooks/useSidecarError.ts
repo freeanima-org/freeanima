@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { isElectron, listenServerError } from "@/lib/electron.ts";
-import { useCompanionStore } from "@/stores/companion.ts";
+import { isElectron, listenServerError } from "@freeanima/satellites/companion/spa/lib/electron.ts";
+import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
 
 /** Electron 生产包：监听主进程服务致命错误并写入 store */
 export function useSidecarError(fallbackMessage?: string): void {

@@ -3,7 +3,7 @@ import {
   getBundledHubRpcClient,
   subscribeBundledHubRpcConfigChanges,
   type HubRpcConnectionState,
-} from "@freeanima/hub-rpc";
+} from "@freeanima/shared/hub-rpc";
 import type { StreamApiLikeEvent } from "./frames/message.ts";
 import {
   createSapConversationStreamClient,

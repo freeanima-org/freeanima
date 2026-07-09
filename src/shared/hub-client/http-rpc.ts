@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 
-import { resolveHubRpcWsUrl } from "@freeanima/hub-rpc";
-import { parseHubRpcEnvelope, serializeHubRpcEnvelope } from "@freeanima/hub-rpc";
+import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc";
+import { parseHubRpcEnvelope, serializeHubRpcEnvelope } from "@freeanima/shared/hub-rpc";
 
 /** Hub RPC HTTP 传输：POST /hub/rpc/v1，body 为 HubRPC req envelope */
 export function buildHubRpcHttpUrl(httpOrigin: string): string {

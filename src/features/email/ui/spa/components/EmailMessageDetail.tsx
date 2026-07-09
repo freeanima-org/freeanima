@@ -1,4 +1,4 @@
-import { Spinner } from "@freeanima/ui-kit";
+import { Spinner } from "@freeanima/frontend/ui-kit";
 
 import type { EmailMessageRow } from "../lib/api.ts";
 

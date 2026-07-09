@@ -3,7 +3,7 @@ import { safeParseOrNull } from "@freeanima/core/util";
 import { PATHS } from "@freeanima/platform/config";
 import { logComponent } from "@freeanima/platform/logging";
 import { getAppRuntime } from "@freeanima/platform/ports";
-import { resolveCommand } from "@freeanima/platform/commands";
+import { resolveCommand } from "@freeanima/platform/slash-commands";
 import type { MessagingPort } from "@freeanima/platform/ports/messaging-port";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";

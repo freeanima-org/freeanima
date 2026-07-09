@@ -1,5 +1,5 @@
-import { Button } from "@freeanima/ui-kit";
-import { m } from "@console/lib/i18n.ts";
+import { Button } from "@freeanima/frontend/ui-kit";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
 
 type MemoryListPaginationProps = {
   total: number;

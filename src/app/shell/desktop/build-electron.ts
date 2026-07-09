@@ -5,9 +5,9 @@ import { dirname, join } from "node:path";
 import * as esbuild from "esbuild";
 import type { CliOptions } from "electron-builder";
 
-import { buildShellUi } from "@freeanima/shell-ui/build";
-import { buildCompanionApp } from "@freeanima/satellite-companion/build";
-import { nativeBuildMetaDefine } from "@freeanima/shell-sdk/native-build-meta";
+import { buildShellUi } from "@freeanima/frontend/shell-ui/build.ts";
+import { buildCompanionApp } from "@freeanima/satellites/companion/lib/exports/build.ts";
+import { nativeBuildMetaDefine } from "@freeanima/frontend/shell-sdk/native-build-meta";
 import { resolveNativeBuildMeta } from "../shared/resolve-native-build-meta.ts";
 import { assertElectronMainBundle } from "./electron-main-bundle-assert.ts";
 

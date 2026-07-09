@@ -1,7 +1,7 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
-import type { LimbicMemoryRow } from "@freeanima/console-contract/api";
+import type { LimbicMemoryRow } from "@freeanima/features/console/protocol/console-contract/api";
 import {
   Button,
   Card,
@@ -19,15 +19,19 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@freeanima/ui-kit";
-import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { MemoryListPagination } from "@console/components/console/MemoryListPagination.tsx";
-import { listLimbicMemories } from "@console/lib/api.ts";
-import { formatDisplayDateTime } from "@console/lib/format-datetime.ts";
-import { m } from "@console/lib/i18n.ts";
-import { logCaughtError } from "@console/lib/log-caught-error.ts";
-import { useConsoleOffsetPagination } from "@console/lib/use-console-offset-pagination.ts";
+} from "@freeanima/frontend/ui-kit";
+import {
+  FormField,
+  FormFieldLabel,
+  FormFieldset,
+} from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
+import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { MemoryListPagination } from "@freeanima/features/console/ui/console/components/console/MemoryListPagination.tsx";
+import { listLimbicMemories } from "@freeanima/features/console/ui/console/lib/api.ts";
+import { formatDisplayDateTime } from "@freeanima/features/console/ui/console/lib/format-datetime.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
+import { logCaughtError } from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
+import { useConsoleOffsetPagination } from "@freeanima/features/console/ui/console/lib/use-console-offset-pagination.ts";
 
 const PAGE_SIZE = 20;
 const ALL_VALUE = "__all__";

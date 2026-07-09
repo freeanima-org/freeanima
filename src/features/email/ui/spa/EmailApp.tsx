@@ -1,18 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, AlertDescription, Button, Input, Spinner } from "@freeanima/ui-kit";
-import { EmptyState, StatusAlert } from "@freeanima/ui-kit/composite";
+import { Alert, AlertDescription, Button, Input, Spinner } from "@freeanima/frontend/ui-kit";
+import { EmptyState, StatusAlert } from "@freeanima/frontend/ui-kit/composite";
 import {
   ThreeColumnLayout,
   useDrawerNav,
   useThreeColumnLayoutMode,
-} from "@freeanima/ui-kit/layout";
+} from "@freeanima/frontend/ui-kit/layout";
 import {
   useHubConnection,
   useNetworkOnline,
   useSubjectScope,
   SubjectScopeToggle,
-} from "@freeanima/shell-sdk/react";
-import { readModuleSelection, writeModuleSelection } from "@freeanima/shell-sdk";
+} from "@freeanima/frontend/shell-sdk/react.tsx";
+import { readModuleSelection, writeModuleSelection } from "@freeanima/frontend/shell-sdk";
 
 import { EmailMessageDetail } from "./components/EmailMessageDetail.tsx";
 import {

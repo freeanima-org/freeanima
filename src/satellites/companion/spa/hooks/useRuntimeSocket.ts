@@ -1,9 +1,9 @@
 import { useEffect } from "react";
-import { resolveSidecarOrigin } from "@/lib/sidecar.ts";
-import { runtimeWsUrl } from "@/lib/api.ts";
-import { useCompanionStore } from "@/stores/companion.ts";
-import type { MotionSlotId } from "@shared/companion-schema.ts";
-import type { RuntimeWsMessage } from "@shared/constants.ts";
+import { resolveSidecarOrigin } from "@freeanima/satellites/companion/spa/lib/sidecar.ts";
+import { runtimeWsUrl } from "@freeanima/satellites/companion/spa/lib/api.ts";
+import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
+import type { MotionSlotId } from "@freeanima/satellites/companion/shared/companion-schema.ts";
+import type { RuntimeWsMessage } from "@freeanima/satellites/companion/shared/constants.ts";
 
 export function useRuntimeSocket(enabled: boolean): void {
   const setRuntimeBubble = useCompanionStore((s) => s.setRuntimeBubble);

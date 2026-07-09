@@ -3,7 +3,7 @@ import { describePg } from "../../helpers/pg-test-gate.ts";
 import { beginIntegrationCase, restoreIntegrationHome } from "../../helpers/integration-case.ts";
 
 import * as goalJudge from "@freeanima/core/llm/goal-judge";
-import { findCommand, executeCommand, isGoalStartResult } from "@freeanima/platform/commands";
+import { findCommand, executeCommand, isGoalStartResult } from "@freeanima/platform/slash-commands";
 import { getConversationMeta } from "@freeanima/core/db/pg/conversation";
 import { seedSession, getTestEngine } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";

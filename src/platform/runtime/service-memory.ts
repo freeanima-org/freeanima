@@ -23,7 +23,7 @@ import {
 } from "@freeanima/core/db/pg/semantic-memory";
 import { PATHS } from "@freeanima/platform/config";
 import { omitUndefined } from "@freeanima/core/util";
-import { memoryRecallSearch, type MemoryRecallResult } from "@freeanima/capabilities-memory/search";
+import { memoryRecallSearch, type MemoryRecallResult } from "@freeanima/capabilities/memory/search";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 export type MemoryListResult<T> = {

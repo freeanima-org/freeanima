@@ -2,7 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync, chmodSync, existsSync } from "n
 import { dirname } from "node:path";
 
 import { PATHS } from "@freeanima/core/config/paths";
-import { importRawAesKey, randomSalt } from "@freeanima/vault-crypto";
+import { importRawAesKey, randomSalt } from "@freeanima/shared/vault-crypto";
 
 let cachedMachineKey: CryptoKey | null = null;
 

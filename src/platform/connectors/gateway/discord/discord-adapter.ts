@@ -8,15 +8,15 @@ import {
   Partials,
   type TextBasedChannel,
 } from "discord.js";
-import { expireIfNeeded, readAwaitingClarify } from "@freeanima/capabilities-tools/clarify";
+import { expireIfNeeded, readAwaitingClarify } from "@freeanima/capabilities/tools/clarify";
 import {
   isEngineStreamError,
   isTransientNetworkError,
   networkErrorUserHint,
 } from "@freeanima/runtime/loop";
 import { getAppRuntime } from "@freeanima/platform/ports";
-import { resolveCommand } from "@freeanima/platform/commands";
-import { conversationUpdated } from "@freeanima/capabilities-memory";
+import { resolveCommand } from "@freeanima/platform/slash-commands";
+import { conversationUpdated } from "@freeanima/capabilities/memory";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import type { EventBus } from "@freeanima/kernel/eventbus";
 import { KeyedRateLimiter } from "@freeanima/core/util/backoff";

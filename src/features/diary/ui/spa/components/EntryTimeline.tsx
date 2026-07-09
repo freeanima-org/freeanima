@@ -1,5 +1,5 @@
 import type { DiaryEntryRow } from "../lib/format-diary.ts";
-import { EmptyState } from "@freeanima/ui-kit/composite";
+import { EmptyState } from "@freeanima/frontend/ui-kit/composite";
 import {
   dateLocalToEntryAtIso,
   defaultEntryDateLocal,

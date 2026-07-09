@@ -1,9 +1,9 @@
 import { omitUndefined } from "../lib/omit-undefined.ts";
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { ListDetailLayout } from "@freeanima/ui-kit/layout";
+import { ListDetailLayout } from "@freeanima/frontend/ui-kit/layout";
 
-import { m } from "@console/lib/i18n.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
 
 type ResponsiveSidebarLayoutProps = {
   title: ReactNode;

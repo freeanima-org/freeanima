@@ -7,7 +7,7 @@ import {
 } from "@freeanima/runtime/loop/stream-reply";
 import type { DisplayItem } from "@freeanima/platform/schemas/display";
 import { omitUndefined } from "@freeanima/core/util";
-import { mapRuntimeStreamEventToSap } from "@freeanima/sap-contract";
+import { mapRuntimeStreamEventToSap } from "@freeanima/shared/sap-contract";
 
 export type SapStreamEmitter = (method: string, payload: Record<string, unknown>) => void;
 

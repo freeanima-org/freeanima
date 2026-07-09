@@ -117,7 +117,7 @@ Reference files:
 Use `runSapTransport` or `createSatelliteHub` from `@freeanima/sap-contract`:
 
 ```typescript
-import { createSatelliteHub, fileSapInstanceStore } from "@freeanima/sap-contract";
+import { createSatelliteHub, fileSapInstanceStore } from "@freeanima/shared/sap-contract";
 
 const hub = createSatelliteHub({
   appId: "my-app",

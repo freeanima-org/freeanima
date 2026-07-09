@@ -15,8 +15,8 @@ import {
   resolveUserContent,
   guardAwaitingClarify,
   findAwaitingClarifyInMessages,
-} from "@freeanima/capabilities-tools/clarify";
-import { executeCommand, getCommand } from "@freeanima/platform/commands";
+} from "@freeanima/capabilities/tools/clarify";
+import { executeCommand, getCommand } from "@freeanima/platform/slash-commands";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 
 describePg("clarify session", () => {

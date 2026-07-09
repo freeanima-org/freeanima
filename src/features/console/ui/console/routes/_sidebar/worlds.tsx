@@ -26,19 +26,19 @@ import {
   TableHeader,
   TableRow,
   Textarea,
-} from "@freeanima/ui-kit";
-import { FormField, FormFieldset } from "@freeanima/ui-kit/form";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { formatDisplayDateTime } from "@console/lib/format-datetime.ts";
-import { m } from "@console/lib/i18n.ts";
+} from "@freeanima/frontend/ui-kit";
+import { FormField, FormFieldset } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
+import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { formatDisplayDateTime } from "@freeanima/features/console/ui/console/lib/format-datetime.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
 import {
   createWorldEntity,
   listSubjectEntities,
   listWorldEntities,
   updateWorldEntity,
   type EntityRow,
-} from "@console/lib/api.ts";
-import { logCaughtError } from "@console/lib/log-caught-error.ts";
+} from "@freeanima/features/console/ui/console/lib/api.ts";
+import { logCaughtError } from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/worlds")({
   component: WorldsPage,

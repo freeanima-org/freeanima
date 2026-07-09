@@ -8,8 +8,8 @@ import {
   listAllCronJobs,
   updateCronJob,
   upsertBuiltinCronJob,
-} from "../../../core/db/pg/cron/repos/cron-crud-repo.ts";
-import { listCronLogs } from "../../../core/db/pg/cron/repos/cron-log-repo.ts";
+} from "@freeanima/core/db/pg/cron/repos/cron-crud-repo.ts";
+import { listCronLogs } from "@freeanima/core/db/pg/cron/repos/cron-log-repo.ts";
 
 const appendCronLogMock = mock(async (row: CronLogAppendInput) => {
   rows.push(row);

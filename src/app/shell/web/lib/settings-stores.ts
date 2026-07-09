@@ -3,11 +3,11 @@ import {
   createHubSettingsStore,
   HUB_SETTINGS_SCOPE,
   type SettingsStore,
-} from "@freeanima/shell-sdk/settings";
-import type { ShellClientConfig } from "@freeanima/shell-sdk/shell-client-config";
-import type { ShellDebugConfig } from "@freeanima/shell-sdk/shell-debug-config";
-import { normalizeShellClientConfig } from "@freeanima/shell-sdk/shell-client-config";
-import { sendSentryTestEvent } from "@freeanima/shell-ui/sentry-test";
+} from "@freeanima/frontend/shell-sdk/settings";
+import type { ShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-client-config";
+import type { ShellDebugConfig } from "@freeanima/frontend/shell-sdk/shell-debug-config";
+import { normalizeShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-client-config";
+import { sendSentryTestEvent } from "@freeanima/frontend/shell-ui/lib/sentry-test.ts";
 
 import { createWebScopedBackend } from "./settings-local-backend.ts";
 import {

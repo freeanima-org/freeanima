@@ -12,13 +12,21 @@ import {
   TableBody,
   TableCell,
   TableRow,
-} from "@freeanima/ui-kit";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { getCronJobs, pauseCronJob, resumeCronJob, runCronJob } from "@console/lib/api.ts";
-import { formatDisplayDateTime } from "@console/lib/format-datetime.ts";
-import { m } from "@console/lib/i18n.ts";
+} from "@freeanima/frontend/ui-kit";
+import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import {
+  getCronJobs,
+  pauseCronJob,
+  resumeCronJob,
+  runCronJob,
+} from "@freeanima/features/console/ui/console/lib/api.ts";
+import { formatDisplayDateTime } from "@freeanima/features/console/ui/console/lib/format-datetime.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
 import { CronRunLogModal } from "./cron-run-log-modal.tsx";
-import { catchWithFallback, logCaughtError } from "@console/lib/log-caught-error.ts";
+import {
+  catchWithFallback,
+  logCaughtError,
+} from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/cron")({
   loader: () => getCronJobs().catch(catchWithFallback("cron/getCronJobs", { jobs: [] })),

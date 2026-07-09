@@ -4,17 +4,17 @@ export type {
   EmailAccountRowPayload,
   EmailMessageRowPayload,
   EmailThreadRowPayload,
-} from "@freeanima/sap-contract";
+} from "@freeanima/shared/sap-contract";
 
 /** Entity store row (includes credential path fields not exposed on SAP wire). */
-export type EmailAccountRow = import("@freeanima/sap-contract").EmailAccountRowPayload & {
+export type EmailAccountRow = import("@freeanima/shared/sap-contract").EmailAccountRowPayload & {
   password: string;
   sync: EmailAccountBody["sync"];
 };
 
-export type EmailThreadRow = import("@freeanima/sap-contract").EmailThreadRowPayload;
+export type EmailThreadRow = import("@freeanima/shared/sap-contract").EmailThreadRowPayload;
 
-export type EmailMessageRow = import("@freeanima/sap-contract").EmailMessageRowPayload & {
+export type EmailMessageRow = import("@freeanima/shared/sap-contract").EmailMessageRowPayload & {
   imap_mailbox: string;
   message_id: string | null;
   flags: string[];

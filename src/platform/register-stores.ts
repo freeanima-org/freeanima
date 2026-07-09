@@ -1,5 +1,5 @@
-import { registerEmailSyncPort } from "@freeanima/feature-email/domain";
-import { registerNotificationPort } from "@freeanima/capabilities-tools/notification";
+import { registerEmailSyncPort } from "@freeanima/features/email/domain";
+import { registerNotificationPort } from "@freeanima/capabilities/tools/notification";
 import { emailSyncPortImpl } from "@freeanima/platform/connectors/email";
 
 import { createNotificationPort } from "./runtime/notification-helpers.ts";

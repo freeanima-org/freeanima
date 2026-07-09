@@ -3,7 +3,7 @@ import {
   readAcpTasks,
   readAcpTasksHandledAt,
   setAcpTasksHandledAt,
-} from "@freeanima/capabilities-acp";
+} from "@freeanima/capabilities/acp";
 import { isConversationMeta } from "@freeanima/runtime/conversation";
 import type { ConversationService } from "@freeanima/runtime/conversation";
 import { logComponent } from "@freeanima/platform/logging";

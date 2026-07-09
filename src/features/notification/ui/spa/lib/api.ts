@@ -2,13 +2,13 @@ import {
   readOfflineCache,
   resolveHubCacheScope,
   writeOfflineCache,
-} from "@freeanima/shell-sdk/offline-cache";
+} from "@freeanima/frontend/shell-sdk/offline-cache";
 import type {
   NotificationListInput,
   NotificationListOutput,
   NotificationMarkReadOutput,
   NotificationRecipientsOutput,
-} from "@freeanima/sap-contract";
+} from "@freeanima/shared/sap-contract";
 
 import { getNotificationHubClient } from "./hub-client.ts";
 

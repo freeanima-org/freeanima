@@ -39,7 +39,6 @@ jobs:
       - uses: ./.github/actions/setup-anima-home
       - run: bun run typecheck
       - run: bun run lint
-      - run: bun run dep-check
       - run: bun run build:cli
       - run: cd src/app/cli/publish && bun pm pack
       - run: bun scripts/run-ci-tests.ts

@@ -9,7 +9,7 @@ import {
   storedMessagesToInvokeInput,
   normalizeAssistantTurn,
 } from "./index.ts";
-import { messagesForApi } from "@freeanima/capabilities-llm-openai/messages";
+import { messagesForApi } from "@freeanima/capabilities/llm-openai/messages.ts";
 import type { StoredMessage } from "@freeanima/core/db/domain";
 describe("tool-loop-integrity", () => {
   it("detectToolLoopCorruption finds dangling assistant", () => {

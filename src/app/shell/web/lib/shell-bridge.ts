@@ -1,4 +1,4 @@
-import { detectCapacitorShellForBootstrap } from "@freeanima/shell-sdk/capacitor-local-asset";
+import { detectCapacitorShellForBootstrap } from "@freeanima/frontend/shell-sdk/capacitor-local-asset";
 
 import {
   applyWebUiConfig,
@@ -6,7 +6,7 @@ import {
   installShellBridgeReady,
   readDefaultRemoteAuthToken,
 } from "./bridge/shared.ts";
-import { registerVaultRpcHandlers } from "@freeanima/shell-sdk";
+import { registerVaultRpcHandlers } from "@freeanima/frontend/shell-sdk";
 
 async function bootstrapShellBridge(): Promise<void> {
   const finish = installShellBridgeReady();

@@ -12,12 +12,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@freeanima/ui-kit";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { listCronLogs } from "@console/lib/api.ts";
-import { formatDisplayDateTime } from "@console/lib/format-datetime.ts";
-import { m } from "@console/lib/i18n.ts";
-import { logCaughtError } from "@console/lib/log-caught-error.ts";
+} from "@freeanima/frontend/ui-kit";
+import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { listCronLogs } from "@freeanima/features/console/ui/console/lib/api.ts";
+import { formatDisplayDateTime } from "@freeanima/features/console/ui/console/lib/format-datetime.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
+import { logCaughtError } from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
 
 type CronLogRow = {
   id: number;

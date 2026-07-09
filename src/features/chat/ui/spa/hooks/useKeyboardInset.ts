@@ -1,12 +1,12 @@
 import { Keyboard } from "@capacitor/keyboard";
-import { isCapacitorNativePlatform } from "@freeanima/shell-sdk/capacitor-runtime";
+import { isCapacitorNativePlatform } from "@freeanima/frontend/shell-sdk/capacitor-runtime";
 import { useEffect, useState } from "react";
 
 import {
   computeLayoutShrink,
   computeVisualViewportInset,
   mergeKeyboardInset,
-} from "@chat/lib/keyboard-inset.ts";
+} from "@freeanima/features/chat/ui/spa/lib/keyboard-inset.ts";
 
 function readInnerHeight(): number {
   return typeof window !== "undefined" ? window.innerHeight : 0;

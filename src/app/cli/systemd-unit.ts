@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { DEFAULT_BIND_HOST } from "@freeanima/platform/bind-hosts";
+import { DEFAULT_BIND_HOST } from "@freeanima/platform/bind-hosts.ts";
 import { REPO_ROOT } from "@freeanima/platform";
 
 export const SERVICE_UNIT_NAME = "anima.service";

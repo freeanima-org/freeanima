@@ -10,7 +10,7 @@ import {
   setConversationGoal,
 } from "./manager.ts";
 import { readConversationGoal } from "./store.ts";
-import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
+import type { ConversationPort } from "@freeanima/core/tool/conversation-port.ts";
 
 function createMemoryConversation(): ConversationPort & {
   meta: Record<string, unknown>;

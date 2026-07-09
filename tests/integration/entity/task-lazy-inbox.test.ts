@@ -4,7 +4,7 @@ import {
   ensureDefaultTaskListForWorld,
   getDefaultTaskList,
   listTaskLists,
-} from "@freeanima/feature-task/domain";
+} from "@freeanima/features/task/domain";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,

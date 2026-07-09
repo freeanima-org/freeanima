@@ -1,4 +1,4 @@
-import { getBundledHubRpcClient, type RpcClient } from "@freeanima/hub-rpc";
+import { getBundledHubRpcClient, type RpcClient } from "@freeanima/shared/hub-rpc";
 
 let satelliteRpc: Promise<RpcClient> | null = null;
 

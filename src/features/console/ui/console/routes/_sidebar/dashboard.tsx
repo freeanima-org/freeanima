@@ -1,14 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import type { DependencyStatus, ServiceStatus } from "@freeanima/console-contract/api";
-import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
-import { ConfirmDialog, showAlert, StatusAlert } from "@freeanima/ui-kit/composite";
+import type {
+  DependencyStatus,
+  ServiceStatus,
+} from "@freeanima/features/console/protocol/console-contract/api";
+import { Badge, Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
+import { ConfirmDialog, showAlert, StatusAlert } from "@freeanima/frontend/ui-kit/composite";
 import { useState } from "react";
-import { getStatus, restartService } from "@console/lib/api.ts";
-import { m } from "@console/lib/i18n.ts";
-import { formatDisplayDateTime } from "@console/lib/format-datetime.ts";
-import { translateApiPayload } from "@console/lib/api-errors.ts";
-import { dependencyStatusLabel } from "@console/lib/console-status.ts";
-import { catchWithFallback, logCaughtError } from "@console/lib/log-caught-error.ts";
+import { getStatus, restartService } from "@freeanima/features/console/ui/console/lib/api.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
+import { formatDisplayDateTime } from "@freeanima/features/console/ui/console/lib/format-datetime.ts";
+import { translateApiPayload } from "@freeanima/features/console/ui/console/lib/api-errors.ts";
+import { dependencyStatusLabel } from "@freeanima/features/console/ui/console/lib/console-status.ts";
+import {
+  catchWithFallback,
+  logCaughtError,
+} from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/dashboard")({
   loader: async () => {

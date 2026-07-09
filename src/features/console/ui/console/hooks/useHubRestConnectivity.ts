@@ -5,11 +5,11 @@ import {
   isHubHealthConnected,
   HUB_HEALTH_PROBE_TIMEOUT_MS,
   probeHubHealthUrl,
-} from "@freeanima/shell-sdk/hub-health-probe";
-import { hubApiFetch } from "@console/lib/hub-fetch.ts";
-import { resetApiClientCache } from "@console/lib/api.ts";
-import { resolveApiOrigin } from "@console/lib/hub-origin.ts";
-import { logCaughtError } from "@console/lib/log-caught-error.ts";
+} from "@freeanima/frontend/shell-sdk/hub-health-probe";
+import { hubApiFetch } from "@freeanima/features/console/ui/console/lib/hub-fetch.ts";
+import { resetApiClientCache } from "@freeanima/features/console/ui/console/lib/api.ts";
+import { resolveApiOrigin } from "@freeanima/features/console/ui/console/lib/hub-origin.ts";
+import { logCaughtError } from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
 
 export type HubRestConnectionState = "connecting" | "connected" | "disconnected";
 

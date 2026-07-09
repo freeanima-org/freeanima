@@ -4,7 +4,7 @@ import { registerSystemPromptHookRunner } from "@freeanima/core/hooks/prompt";
 import { rebuildConversationCache } from "@freeanima/runtime/conversation";
 import { registerConversationToolMaskFilter } from "@freeanima/core/tool";
 import { registerCompressionSummaryPostCut } from "@freeanima/core/compress";
-import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-llm-openai";
+import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
 import { foldSystemPromptSections, systemPromptBuild } from "@freeanima/core/hooks/prompt";
 import { filterToolNamesByMask, resolveConversationMaskFromMeta } from "./runtime/mask-wire.ts";
 import { getAppRuntime } from "./context.ts";

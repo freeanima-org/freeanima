@@ -5,7 +5,7 @@ import {
   createNotification,
   listNotifications,
   markNotificationRead,
-} from "@freeanima/feature-notification/hub/service";
+} from "@freeanima/features/notification/hub/service";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import {
   markNotificationsReadBySourceRef,
@@ -14,7 +14,7 @@ import {
 import type {
   NotificationPort,
   NotificationRecipientRef,
-} from "@freeanima/capabilities-tools/notification";
+} from "@freeanima/capabilities/tools/notification";
 
 export function createNotificationPort(deps: RuntimeDeps, config: Config): NotificationPort {
   const recipients = resolveNotificationRecipients(config.data);

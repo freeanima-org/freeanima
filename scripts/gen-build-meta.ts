@@ -12,8 +12,8 @@ import {
   type BuildChannel,
   type BuildComponent,
   type NativeShellKind,
-} from "../src/core/config/build-meta.ts";
-import { getRepoRoot } from "../src/core/config/repo-root.ts";
+} from "@freeanima/core/config/build-meta.ts";
+import { getRepoRoot } from "@freeanima/core/config/repo-root.ts";
 
 function usage(): never {
   console.error(

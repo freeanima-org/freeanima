@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import { readModuleSelection, writeModuleSelection } from "@freeanima/shell-sdk";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/shell-sdk/react";
-import { mergeDraftAfterSave } from "@freeanima/ui-kit/lib/merge-draft-after-save";
+import { readModuleSelection, writeModuleSelection } from "@freeanima/frontend/shell-sdk";
+import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/shell-sdk/react.tsx";
+import { mergeDraftAfterSave } from "@freeanima/frontend/ui-kit/lib/merge-draft-after-save.ts";
 import {
   Alert,
   AlertDescription,
@@ -13,17 +13,22 @@ import {
   DialogTitle,
   Input,
   Spinner,
-} from "@freeanima/ui-kit";
+} from "@freeanima/frontend/ui-kit";
 
-import { ActionSheet, ConfirmDialog, ContextMenu, EmptyState } from "@freeanima/ui-kit/composite";
-import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
+import {
+  ActionSheet,
+  ConfirmDialog,
+  ContextMenu,
+  EmptyState,
+} from "@freeanima/frontend/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
 import { CompletedTaskList } from "./components/CompletedTaskList.tsx";
 import { ListSidebar } from "./components/ListSidebar.tsx";
 import { MoveToListPicker } from "./components/MoveToListPicker.tsx";
 import { SortableTaskList } from "./components/SortableTaskList.tsx";
 import { TaskDetailPanel, type DetailSaveStatus } from "./components/TaskDetailPanel.tsx";
 import { TaskDndRoot } from "./components/TaskDndRoot.tsx";
-import { ThreeColumnLayout } from "@freeanima/ui-kit/layout";
+import { ThreeColumnLayout } from "@freeanima/frontend/ui-kit/layout";
 import {
   completeTaskItem,
   createTaskItem,

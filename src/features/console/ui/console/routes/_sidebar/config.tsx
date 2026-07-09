@@ -8,11 +8,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@freeanima/ui-kit";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { getStatusConfig } from "@console/lib/api.ts";
-import { m } from "@console/lib/i18n.ts";
-import { catchWithFallback } from "@console/lib/log-caught-error.ts";
+} from "@freeanima/frontend/ui-kit";
+import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { getStatusConfig } from "@freeanima/features/console/ui/console/lib/api.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
+import { catchWithFallback } from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/config")({
   loader: () => getStatusConfig().catch(catchWithFallback("config/getStatusConfig", null)),

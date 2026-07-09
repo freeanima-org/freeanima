@@ -59,7 +59,8 @@ src/
 
 ## 护栏
 
-- `scripts/check-layer-deps.ts`：目录层依赖软约束（`src/<layer>/` 前缀）。
+- `tsconfig.base.json` paths：`@freeanima/*`、`@paraglide/*`（与 Vite `module-aliases.ts` 手动对齐）。
+- [`.agent/rules/code-layers.md`](../../.agent/rules/code-layers.md)：目录层依赖约定（`src/<layer>/` 前缀）。
 - 已移除 `check-package-cycles.ts`（单包无 workspace 图）。
 - CLI npm 发版已暂停（无 `publish:cli`）。
 

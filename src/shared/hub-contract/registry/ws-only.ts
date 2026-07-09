@@ -1,21 +1,21 @@
 import {
   sapAttachPayloadSchema,
   sapAttachOutputSchema,
-} from "@freeanima/sap-contract/frames/sap-session";
+} from "@freeanima/shared/sap-contract/frames/sap-session";
 import {
   toolErrorInputSchema,
   toolRegisterInputSchema,
   toolRegisterOutputSchema,
   toolResultInputSchema,
   toolUnregisterInputSchema,
-} from "@freeanima/sap-contract/frames/tool";
+} from "@freeanima/shared/sap-contract/frames/tool";
 import {
   terminalAttachInputSchema,
   terminalAttachOutputSchema,
   terminalCloseInputSchema,
   terminalResizeInputSchema,
   terminalWriteInputSchema,
-} from "@freeanima/sap-contract/frames/terminal";
+} from "@freeanima/shared/sap-contract/frames/terminal";
 import { z } from "zod";
 
 import { defineHubMethod, wsOnlyMeta } from "../method-def.ts";

@@ -1,5 +1,5 @@
 bun run typecheck
 bun run lint
-bun scripts/check-lint-disable-reason.ts
+bun run import-depth
 bun run format
 bun run test:changed

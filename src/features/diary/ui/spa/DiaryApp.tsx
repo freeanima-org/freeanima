@@ -4,10 +4,10 @@ import {
   useNetworkOnline,
   useSubjectScope,
   SubjectScopeToggle,
-} from "@freeanima/shell-sdk/react";
-import { mergeDraftAfterSave } from "@freeanima/ui-kit/lib/merge-draft-after-save";
-import { Button, Input, Spinner } from "@freeanima/ui-kit";
-import { ListDetailLayout } from "@freeanima/ui-kit/layout";
+} from "@freeanima/frontend/shell-sdk/react.tsx";
+import { mergeDraftAfterSave } from "@freeanima/frontend/ui-kit/lib/merge-draft-after-save.ts";
+import { Button, Input, Spinner } from "@freeanima/frontend/ui-kit";
+import { ListDetailLayout } from "@freeanima/frontend/ui-kit/layout";
 
 import { EntryEditor, type EntrySaveStatus } from "./components/EntryEditor.tsx";
 import { EntryTimeline, findEntryByDayLocal } from "./components/EntryTimeline.tsx";

@@ -10,9 +10,9 @@ import {
   type HubMethodInputs,
   type HubMethodOutputs,
   type TransportKind,
-} from "@freeanima/hub-contract";
-import type { RpcClient } from "@freeanima/hub-rpc";
-import { parseHubRpcEnvelope, serializeHubRpcEnvelope } from "@freeanima/hub-rpc";
+} from "@freeanima/shared/hub-contract";
+import type { RpcClient } from "@freeanima/shared/hub-rpc";
+import { parseHubRpcEnvelope, serializeHubRpcEnvelope } from "@freeanima/shared/hub-rpc";
 
 import { buildHubRpcHttpUrl } from "./http-rpc.ts";
 

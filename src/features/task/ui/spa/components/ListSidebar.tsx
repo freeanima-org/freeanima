@@ -1,15 +1,8 @@
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Button, Checkbox, Input } from "@freeanima/ui-kit";
-import { useDrawerNav } from "@freeanima/ui-kit/layout";
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type MouseEvent,
-  type ReactNode,
-  type RefObject,
-} from "react";
+import { Button, Checkbox, Input } from "@freeanima/frontend/ui-kit";
+import { useDrawerNav } from "@freeanima/frontend/ui-kit/layout";
+import { useEffect, useMemo, useState, type MouseEvent, type RefObject } from "react";
 
 import { listDndId } from "../lib/dnd-ids.ts";
 import type { TaskListRow } from "../lib/api.ts";

@@ -1,17 +1,17 @@
 import { describe, it, expect, spyOn, afterEach } from "bun:test";
 import * as sessionTitleLlm from "@freeanima/core/llm";
 import { createConversationService } from "@freeanima/runtime/conversation";
-import { MaskRegistry } from "@freeanima/feature-task/domain/mask";
+import { MaskRegistry } from "@freeanima/features/task/domain/mask";
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/runtime";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/core/llm";
-import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-llm-openai";
+import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { createServiceKernel } from "@freeanima/platform/bootstrap";
 import { parseYaml } from "@freeanima/platform/config";
 import { animaConfigSchema } from "@freeanima/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
-import { getAcpManager } from "@freeanima/capabilities-acp";
+import { getAcpManager } from "@freeanima/capabilities/acp";
 import {
   maybeGenerateConversationTitleAsync,
   resetConversationTitleGenerationForTests,

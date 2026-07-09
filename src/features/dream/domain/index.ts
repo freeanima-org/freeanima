@@ -4,7 +4,7 @@ export type {
   DreamEntryCreateInput,
   DreamEntryListOpts,
   DreamStoreContext,
-} from "@freeanima/capabilities-memory/dream-store";
+} from "@freeanima/capabilities/memory/dream-store";
 export {
   countDreamEntries,
   createDreamEntry,
@@ -13,4 +13,4 @@ export {
   getLatestDreamEntry,
   listDreamEntries,
   resolveDreamWorldId,
-} from "@freeanima/capabilities-memory/dream-store";
+} from "@freeanima/capabilities/memory/dream-store";

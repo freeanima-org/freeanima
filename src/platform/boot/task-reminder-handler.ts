@@ -2,7 +2,7 @@ import { TASK_ITEM_COMPONENT, asTaskItem } from "@freeanima/core/db/schema/entit
 import { getResolvedWorldContext } from "@freeanima/core/config";
 import { searchEntities, updateEntity } from "@freeanima/core/db/pg/entity";
 import { formatCstIso } from "@freeanima/core/util";
-import { getNotificationPort } from "@freeanima/capabilities-tools/notification";
+import { getNotificationPort } from "@freeanima/capabilities/tools/notification";
 
 export type TaskReminderSchedulable = {
   due_at?: string | null;

@@ -1,9 +1,9 @@
 import type { HookRegistry } from "@freeanima/kernel/hooks";
 import { systemPromptBuild } from "@freeanima/core/hooks/prompt";
-import { registerToolsetSystemPromptHooks } from "@freeanima/capabilities-tools/toolset-prompt-hooks";
-import { registerWorldContextSystemPromptHook } from "@freeanima/capabilities-tools/world-prompt-hooks";
-import { buildMemorySystemPromptSections } from "@freeanima/capabilities-memory/system-prompt-sections";
-import { loadSelfLayerPrompt } from "@freeanima/capabilities-identity";
+import { registerToolsetSystemPromptHooks } from "@freeanima/capabilities/tools/toolset-prompt-hooks";
+import { registerWorldContextSystemPromptHook } from "@freeanima/capabilities/tools/world-prompt-hooks";
+import { buildMemorySystemPromptSections } from "@freeanima/capabilities/memory/system-prompt-sections";
+import { loadSelfLayerPrompt } from "@freeanima/capabilities/identity";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 
 function describePlatform(platform?: string): string {

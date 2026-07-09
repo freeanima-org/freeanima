@@ -11,10 +11,10 @@ import {
   type ConversationService,
 } from "@freeanima/runtime/conversation";
 import { createServiceLogger } from "@freeanima/platform/logging";
-import { MaskRegistry } from "@freeanima/feature-task/domain/mask";
-import { MCPManager } from "@freeanima/capabilities-mcp-client";
-import { SatelliteManager } from "@freeanima/capabilities-satellite";
-import { getAcpManager } from "@freeanima/capabilities-acp";
+import { MaskRegistry } from "@freeanima/features/task/domain/mask";
+import { MCPManager } from "@freeanima/capabilities/mcp-client";
+import { SatelliteManager } from "@freeanima/capabilities/satellite";
+import { getAcpManager } from "@freeanima/capabilities/acp";
 import { wireContextWindowLookup } from "../wire-context-window.ts";
 import type { Kernel } from "@freeanima/kernel";
 import type { HybridConfig } from "@freeanima/platform/config";

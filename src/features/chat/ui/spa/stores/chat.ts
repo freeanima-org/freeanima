@@ -1,15 +1,15 @@
 import { omitUndefined } from "@freeanima/core/util/omit-undefined";
-import type { DisplayItem, StreamApiEvent } from "@chat/lib/types.ts";
-import { pollUntilAssistantReply } from "@chat/lib/display-recovery.ts";
-import { randomUuid } from "@freeanima/sap-contract";
+import type { DisplayItem, StreamApiEvent } from "@freeanima/features/chat/ui/spa/lib/types.ts";
+import { pollUntilAssistantReply } from "@freeanima/features/chat/ui/spa/lib/display-recovery.ts";
+import { randomUuid } from "@freeanima/shared/sap-contract";
 import { marked } from "marked";
 import { create } from "zustand";
-import { m } from "@chat/lib/i18n.ts";
+import { m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 import {
   interruptMessageStream,
   subscribeMessageStream,
   subscribeConversationEvents,
-} from "@chat/lib/api.ts";
+} from "@freeanima/features/chat/ui/spa/lib/api.ts";
 
 type SendDoneOptions = {
   recovered?: boolean;
@@ -22,7 +22,9 @@ export type SendCallbacks = {
   onRecovering?: (active: boolean) => void;
   onError?: (msg: string) => void;
   onDone?: (opts?: SendDoneOptions) => void;
-  onLlmDebug?: (snapshot: import("@chat/lib/types.ts").LlmDebugSnapshotPayload) => void;
+  onLlmDebug?: (
+    snapshot: import("@freeanima/features/chat/ui/spa/lib/types.ts").LlmDebugSnapshotPayload,
+  ) => void;
   recoverDisplay?: (conversationId: string) => Promise<boolean>;
 };
 

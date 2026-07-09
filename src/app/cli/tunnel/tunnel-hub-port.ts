@@ -1,4 +1,4 @@
-import { readStatusFile } from "@freeanima/platform/alive";
+import { readStatusFile } from "@freeanima/platform/alive.ts";
 
 /** 与 `anima service --port` 默认值一致 */
 export const DEFAULT_HUB_PORT = 2658;

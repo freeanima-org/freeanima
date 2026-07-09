@@ -1,5 +1,5 @@
-import type { SapMethod, SapRequestContext } from "@freeanima/sap-contract";
-import { getHubMethodDef, isHubMethod, type HubMethod } from "@freeanima/hub-contract";
+import type { SapMethod, SapRequestContext } from "@freeanima/shared/sap-contract";
+import { getHubMethodDef, isHubMethod, type HubMethod } from "@freeanima/shared/hub-contract";
 import { getFeatureRpcHandler } from "../features/registry.ts";
 import type { SapServerDeps } from "../sap/types.ts";
 

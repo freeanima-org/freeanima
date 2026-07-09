@@ -1,4 +1,4 @@
-import type { SettingsSection } from "@freeanima/shell-sdk/settings";
+import type { SettingsSection } from "@freeanima/frontend/shell-sdk/settings";
 
 /** Hub 连接 + 局域网 HTTPS 根 CA 引导（Web / Mobile） */
 export const hubConnectionSettingsSection: SettingsSection = {

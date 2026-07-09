@@ -4,7 +4,7 @@ import type { AnimaConfig } from "@freeanima/core/config";
 import { getProfileHopModel } from "@freeanima/core/config";
 import { judgeGoal } from "@freeanima/core/llm/goal-judge";
 import { PROFILE_GOAL_JUDGE } from "@freeanima/core/provider";
-import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
+import type { ConversationPort } from "@freeanima/core/tool/conversation-port.ts";
 import type { LlmRuntime } from "@freeanima/core/llm";
 
 import {

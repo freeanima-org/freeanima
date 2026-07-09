@@ -1,4 +1,4 @@
-import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
+import type { ConversationPort } from "@freeanima/core/tool/conversation-port.ts";
 import { omitUndefined } from "@freeanima/core/util";
 import type { AcpTaskStatus } from "./acp-tasks.ts";
 import { readAcpTasks, type AcpTaskEntry, type AcpTasksMeta } from "./acp-tasks.ts";

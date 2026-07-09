@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, expect, it } from "bun:test";
 
 import { TASK_ITEM_COMPONENT, DIARY_ENTRY_COMPONENT } from "@freeanima/core/db/schema/entity";
-import { createTaskItem, createTaskList, searchTaskItems } from "@freeanima/feature-task/domain";
-import { createDiaryEntry, searchDiaryEntries } from "@freeanima/feature-diary/domain";
+import { createTaskItem, createTaskList, searchTaskItems } from "@freeanima/features/task/domain";
+import { createDiaryEntry, searchDiaryEntries } from "@freeanima/features/diary/domain";
 import { EntitySearchScopeError, searchEntities } from "@freeanima/core/db/pg/entity";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {

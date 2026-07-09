@@ -3,7 +3,7 @@ import {
   finalizeStreamingToolCalls,
   mergeStreamingToolCalls,
 } from "@freeanima/core/provider/stream-tools";
-import { messagesForApi } from "@freeanima/capabilities-llm-openai/messages";
+import { messagesForApi } from "@freeanima/capabilities/llm-openai/messages.ts";
 import type { LlmTurnMessage } from "@freeanima/core/provider";
 
 describe("mergeStreamingToolCalls", () => {

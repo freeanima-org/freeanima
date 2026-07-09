@@ -1,11 +1,11 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { SubjectScopeProvider } from "@freeanima/shell-sdk/react";
+import { SubjectScopeProvider } from "@freeanima/frontend/shell-sdk/react.tsx";
 import {
   resolveDefaultVisibleModulePath,
   resolveShellModuleIdFromPath,
-} from "@freeanima/shell-sdk/shell-module-visibility";
-import { useShellModuleVisibility } from "@freeanima/shell-sdk/react";
+} from "@freeanima/frontend/shell-sdk/shell-module-visibility";
+import { useShellModuleVisibility } from "@freeanima/frontend/shell-sdk/react.tsx";
 
 import { isCompactLayout, useLayoutMode } from "../layout-mode.ts";
 import { navigateShellModule } from "../shell-nav.ts";

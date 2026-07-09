@@ -11,19 +11,19 @@ import {
   LAUNCH_AT_LOGIN_KEY,
   COMPANION_VISIBLE_KEY,
   REMOTE_AUTH_TOKEN_KEY,
-} from "@freeanima/shell-sdk/settings";
+} from "@freeanima/frontend/shell-sdk/settings";
 import {
   normalizeShellDebugConfig,
   parseShellDebugConfig,
   parseShellClientConfig,
   type ShellDebugConfig,
   type ShellClientConfig,
-} from "@freeanima/shell-sdk";
+} from "@freeanima/frontend/shell-sdk";
 import {
   desktopSettingsPath,
   legacyShellClientConfigPath,
-} from "@freeanima/shell-sdk/desktop-settings-paths";
-import { parseShellSettings } from "@freeanima/shell-sdk/shell-settings";
+} from "@freeanima/frontend/shell-sdk/desktop-settings-paths";
+import { parseShellSettings } from "@freeanima/frontend/shell-sdk/shell-settings";
 
 import { dirname, join } from "node:path";
 

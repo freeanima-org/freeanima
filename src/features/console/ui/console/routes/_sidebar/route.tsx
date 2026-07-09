@@ -1,12 +1,15 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
-import { BrandLockup } from "@freeanima/ui-kit";
-import { HubConnectionBanner } from "@console/components/HubConnectionBanner.tsx";
-import { ResponsiveSidebarLayout } from "@console/components/ResponsiveSidebarLayout.tsx";
-import { useHubRestConnectivity } from "@console/hooks/useHubRestConnectivity.ts";
-import { consoleNavGroups, consoleNavItems } from "@console/lib/console-nav.ts";
-import { resetApiClientCache } from "@console/lib/api.ts";
-import { m } from "@console/lib/i18n.ts";
+import { BrandLockup } from "@freeanima/frontend/ui-kit";
+import { HubConnectionBanner } from "@freeanima/features/console/ui/console/components/HubConnectionBanner.tsx";
+import { ResponsiveSidebarLayout } from "@freeanima/features/console/ui/console/components/ResponsiveSidebarLayout.tsx";
+import { useHubRestConnectivity } from "@freeanima/features/console/ui/console/hooks/useHubRestConnectivity.ts";
+import {
+  consoleNavGroups,
+  consoleNavItems,
+} from "@freeanima/features/console/ui/console/lib/console-nav.ts";
+import { resetApiClientCache } from "@freeanima/features/console/ui/console/lib/api.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
 
 export const Route = createFileRoute("/_sidebar")({
   component: ConsoleLayout,

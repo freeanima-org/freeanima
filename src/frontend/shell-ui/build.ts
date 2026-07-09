@@ -49,4 +49,4 @@ export async function buildShellUi(opts?: BuildShellUiOptions): Promise<string> 
 }
 
 export { createShellViteInlineConfig, runShellViteBuild } from "./vite/run-build.ts";
-export { createShellUiAliases } from "./vite/aliases.ts";
+export { buildViteAliases } from "./vite/module-aliases.ts";

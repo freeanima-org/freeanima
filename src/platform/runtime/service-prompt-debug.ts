@@ -4,12 +4,12 @@ import { getProfileHopModel } from "@freeanima/platform/config";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import type { JsonSchemaObject } from "@freeanima/core/tool";
 import { buildSystemPrompt } from "@freeanima/core/hooks/prompt";
-import { renderToolsetsSection } from "@freeanima/capabilities-tools/toolset-prompt";
-import { loadSelfLayerPrompt } from "@freeanima/capabilities-identity";
+import { renderToolsetsSection } from "@freeanima/capabilities/tools/toolset-prompt";
+import { loadSelfLayerPrompt } from "@freeanima/capabilities/identity";
 import {
   decomposeSystemPromptParts,
   type SystemPromptParts,
-} from "@freeanima/capabilities-memory/system-prompt";
+} from "@freeanima/capabilities/memory/system-prompt";
 import { omitUndefined } from "@freeanima/core/util";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import {

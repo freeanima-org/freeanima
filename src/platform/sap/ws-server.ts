@@ -3,7 +3,7 @@ import { omitUndefined } from "@freeanima/core/util";
 import type { SapServerDeps } from "./types.ts";
 export type { SapServerDeps } from "./types.ts";
 import { bindVaultShellSendRequest } from "@freeanima/platform/connectors/vault";
-import { bindChatSessionPumps } from "@freeanima/feature-chat/hub/session-pumps";
+import { bindChatSessionPumps } from "@freeanima/features/chat/hub/session-pumps";
 import {
   sapAttachPayloadSchema,
   defineSapRouter,
@@ -22,8 +22,8 @@ import {
   type SapRequestContext,
   type SapRouterInputs,
   type SapServerHandlers,
-} from "@freeanima/sap-contract";
-import { hubRpcConnectPayloadSchema, HUB_RPC_VERSION } from "@freeanima/hub-rpc";
+} from "@freeanima/shared/sap-contract";
+import { hubRpcConnectPayloadSchema, HUB_RPC_VERSION } from "@freeanima/shared/hub-rpc";
 import {
   closeTerminalSession,
   createTerminalSession,
@@ -31,7 +31,7 @@ import {
   TerminalSessionError,
 } from "./terminal-session.ts";
 import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
-import { isHubMethod } from "@freeanima/hub-contract";
+import { isHubMethod } from "@freeanima/shared/hub-contract";
 import { getFeatureRpcHandler } from "../features/registry.ts";
 import { hubDispatch } from "../hub/dispatch.ts";
 
@@ -93,7 +93,7 @@ export function createSapServerHandlers(
         const featureHandler = getFeatureRpcHandler(method);
         if (featureHandler) {
           return hubDispatch(deps, method, payload, ctx) as Promise<
-            import("@freeanima/sap-contract").SapRouterOutputs[typeof method]
+            import("@freeanima/shared/sap-contract").SapRouterOutputs[typeof method]
           >;
         }
       }

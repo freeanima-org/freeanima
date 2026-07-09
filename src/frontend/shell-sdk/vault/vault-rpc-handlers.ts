@@ -1,4 +1,4 @@
-import { subscribeHubRpcConnectionState, whenHubRpcReady } from "@freeanima/hub-rpc";
+import { subscribeHubRpcConnectionState, whenHubRpcReady } from "@freeanima/shared/hub-rpc";
 import { z } from "zod";
 
 import { getUserVaultSession } from "./user-vault-session.ts";

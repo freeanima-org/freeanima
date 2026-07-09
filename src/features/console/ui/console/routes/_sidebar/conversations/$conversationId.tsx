@@ -1,13 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { StoredMessagePanel } from "@console/components/console/ConversationMessagePanel.tsx";
-import { AcpProgressDock } from "@console/components/AcpProgressDock.tsx";
-import { useAcpProgressDock } from "@console/hooks/useAcpProgressDock.ts";
-import { formatDisplayDateTime } from "@console/lib/format-datetime.ts";
-import { m } from "@console/lib/i18n.ts";
-import { useConsoleConversationsStore } from "@console/stores/console-conversations.ts";
+import { Badge, Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
+import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { StoredMessagePanel } from "@freeanima/features/console/ui/console/components/console/ConversationMessagePanel.tsx";
+import { AcpProgressDock } from "@freeanima/features/console/ui/console/components/AcpProgressDock.tsx";
+import { useAcpProgressDock } from "@freeanima/features/console/ui/console/hooks/useAcpProgressDock.ts";
+import { formatDisplayDateTime } from "@freeanima/features/console/ui/console/lib/format-datetime.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
+import { useConsoleConversationsStore } from "@freeanima/features/console/ui/console/stores/console-conversations.ts";
 
 export const Route = createFileRoute("/_sidebar/conversations/$conversationId")({
   component: ConversationDetailPage,

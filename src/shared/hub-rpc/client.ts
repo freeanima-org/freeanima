@@ -1,4 +1,4 @@
-import { randomUuid } from "@freeanima/kernel/random-uuid";
+import { randomUuid } from "@freeanima/kernel/random-uuid.ts";
 
 import { HUB_RPC_CONNECT_TIMEOUT_MS, HUB_RPC_DEFAULT_REQUEST_TIMEOUT_MS } from "./constants.ts";
 import { HubRpcTimeoutError } from "./errors.ts";

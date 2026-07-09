@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { ToolSetRegistry } from "@freeanima/core/tool";
-import { formatSapToolName } from "@freeanima/sap-contract";
+import { formatSapToolName } from "@freeanima/shared/sap-contract";
 import { SatelliteManager } from "./manager.ts";
 
 describe("SatelliteManager routing", () => {

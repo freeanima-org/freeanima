@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Button, Card, CardContent } from "@freeanima/ui-kit";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { fetchTlsCaInfo, type TlsCaInfo } from "@freeanima/shell-sdk/tls-ca-api";
+import { Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
+import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { fetchTlsCaInfo, type TlsCaInfo } from "@freeanima/frontend/shell-sdk/tls-ca-api";
 
 type Props = {
   hubUrl?: string;

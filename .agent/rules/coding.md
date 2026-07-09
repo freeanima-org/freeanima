@@ -4,6 +4,7 @@
 
 - Full type annotations on new and touched code
 - **Relative imports must include `.ts` / `.tsx` suffix** (oxlint `import/extensions`)
+- **Relative import depth**（`bun run import-depth`）：`src/`、`scripts/`、`tests/` 内相对路径最多 `../../`（禁止 `../../../` 及以上）；禁止 `../src/` 形式（跨目录引用 `src/` 须用 `@freeanima/*`）
 - **Base compiler flags** ([`tsconfig.base.json`](../../tsconfig.base.json)): `strict`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noImplicitOverride`, `allowUnreachableCode: false`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`
 - **Paraglide types**: [`types/paraglide-messages.generated.d.ts`](../../types/paraglide-messages.generated.d.ts) is generated from `messages/en.json` (`bun scripts/gen-paraglide-message-types.ts`; optional via `bun run i18n:check:all`)
 - **Optional props**: with `exactOptionalPropertyTypes`, do not pass `prop: undefined` — use `omitUndefined()` from `@freeanima/core/util` or conditional spread
@@ -33,10 +34,10 @@
   - `eslint/no-promise-executor-return` — Promise executor must not return a value; use block body (`{ setTimeout(resolve, ms); }`).
   - `unicorn/explicit-length-check` — use `.length > 0` / `.length === 0`, not truthy `.length`.
 - **React**（feature-console Console / ui-kit / satellites override）: `react/rules-of-hooks` error；`react/exhaustive-deps` warn。
-- **Disable 纪律**（`dep-check` 脚本 enforce）:
+- **Disable 纪律**（oxlint + review 把关）:
   - `oxlint-disable` / `eslint-disable` 行须含 `-- reason`
   - 禁止 `ts-ignore` / `ts-nocheck`；`ts-expect-error` 须同行说明
-  - 契约目录（`src/platform/ports/`、`console-contract/`、`sap-contract/`）禁止显式 `any`（`scripts/check-no-explicit-any.ts`）
+  - 契约目录（`src/platform/ports/`、`console-contract/`、`sap-contract/`）禁止显式 `any`（`oxlint` `no-explicit-any`）
 
 - **Failures**: always `toolError(msg)` → JSON `{"error":"..."}`
 - **Successes**: structured tools use `toolResult(obj)`; LLM-readable tools (`file_read`, `terminal_run`, `code_execute`, etc.) may return plain-text stdout

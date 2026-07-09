@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test";
 
-import { createBearerFetch } from "@freeanima/shell-sdk/remote-auth";
+import { createBearerFetch } from "@freeanima/frontend/shell-sdk/remote-auth";
 
 import { resetHubFetchCache, resolveHubFetch } from "./hub-fetch.ts";
 

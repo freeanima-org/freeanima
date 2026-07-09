@@ -1,5 +1,5 @@
-import { randomUuid } from "@freeanima/kernel/random-uuid";
-import { parseHubRpcEnvelope, serializeHubRpcEnvelope } from "@freeanima/hub-rpc";
+import { randomUuid } from "@freeanima/kernel/random-uuid.ts";
+import { parseHubRpcEnvelope, serializeHubRpcEnvelope } from "@freeanima/shared/hub-rpc";
 
 export type HubRpcHttpCallOptions = {
   hubUrl: string;

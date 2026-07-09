@@ -9,8 +9,8 @@ export function registerFeaturePluginShellRoutes(): void {
       path: "/chat",
       navLabel: "Chat",
       load: () =>
-        import("@freeanima/feature-chat/ui/spa").then(async (mod) => {
-          await import("@freeanima/feature-chat/ui/spa/styles.css");
+        import("@freeanima/features/chat/ui/spa").then(async (mod) => {
+          await import("@freeanima/features/chat/ui/spa/styles.css");
           return { default: mod.ChatApp };
         }),
     },
@@ -18,20 +18,20 @@ export function registerFeaturePluginShellRoutes(): void {
       featureId: "task",
       path: "/tasks",
       navLabel: "Tasks",
-      load: lazyNamedComponent(() => import("@freeanima/feature-task/ui/spa"), "TaskApp"),
+      load: lazyNamedComponent(() => import("@freeanima/features/task/ui/spa"), "TaskApp"),
     },
     {
       featureId: "vault",
       path: "/vault",
       navLabel: "Vault",
-      load: lazyNamedComponent(() => import("@freeanima/feature-vault/ui/spa"), "VaultApp"),
+      load: lazyNamedComponent(() => import("@freeanima/features/vault/ui/spa"), "VaultApp"),
     },
     {
       featureId: "notification",
       path: "/notifications",
       navLabel: "Notifications",
       load: lazyNamedComponent(
-        () => import("@freeanima/feature-notification/ui/spa"),
+        () => import("@freeanima/features/notification/ui/spa"),
         "NotificationApp",
       ),
     },
@@ -39,30 +39,31 @@ export function registerFeaturePluginShellRoutes(): void {
       featureId: "diary",
       path: "/diary",
       navLabel: "Diary",
-      load: lazyNamedComponent(() => import("@freeanima/feature-diary/ui/spa"), "DiaryApp"),
+      load: lazyNamedComponent(() => import("@freeanima/features/diary/ui/spa"), "DiaryApp"),
     },
     {
       featureId: "dream",
       path: "/dream",
       navLabel: "Dream",
-      load: lazyNamedComponent(() => import("@freeanima/feature-dream/ui/spa"), "DreamApp"),
+      load: lazyNamedComponent(() => import("@freeanima/features/dream/ui/spa"), "DreamApp"),
     },
     {
       featureId: "email",
       path: "/email",
       navLabel: "Email",
-      load: lazyNamedComponent(() => import("@freeanima/feature-email/ui/spa"), "EmailApp"),
+      load: lazyNamedComponent(() => import("@freeanima/features/email/ui/spa"), "EmailApp"),
     },
   ]);
 }
 
 /** Console/admin SPA embedded in shell (formerly ConsoleShell). */
 export function loadConsoleShellRoute() {
-  return shellLazyRoute(() =>
-    import("@freeanima/feature-console/ui/spa").then(async (mod) => {
-      await import("@freeanima/feature-console/ui/console/styles.css");
-      return { default: mod.ConsoleShell };
-    }),
+  return shellLazyRoute(
+    () =>
+      import("@freeanima/features/console/ui/spa").then(async (mod) => {
+        await import("@freeanima/features/console/ui/console/styles.css");
+        return { default: mod.ConsoleShell as import("react").ComponentType<object> };
+      }) as Promise<{ default: import("react").ComponentType<object> }>,
   );
 }
 

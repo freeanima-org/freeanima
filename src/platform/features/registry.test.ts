@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { SapRequestContext } from "@freeanima/sap-contract";
+import type { SapRequestContext } from "@freeanima/shared/sap-contract";
 
 import type { SapServerDeps } from "../sap/types.ts";
 import {

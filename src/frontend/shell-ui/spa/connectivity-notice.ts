@@ -1,4 +1,4 @@
-import type { HubConnectionState } from "@freeanima/shell-sdk/react";
+import type { HubConnectionState } from "@freeanima/frontend/shell-sdk/react.tsx";
 
 export type ConnectivityNoticeVariant = "info" | "warning";
 

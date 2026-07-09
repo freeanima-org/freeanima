@@ -13,7 +13,7 @@ import {
   conversationCommandsInputSchema,
   toolRegisterInputSchema,
   hubRpcConnectPayloadSchema,
-} from "@freeanima/sap-contract";
+} from "@freeanima/shared/sap-contract";
 
 describe("sap-contract envelopes", () => {
   it("round-trips req/res frames", () => {

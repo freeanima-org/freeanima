@@ -11,8 +11,8 @@ import {
   startCompanionServer,
   reconnectCompanionSap,
   type CompanionServerHandle,
-} from "@freeanima/satellite-companion/desktop";
-import { shellClientNeedsHubSetup } from "@freeanima/shell-sdk";
+} from "@freeanima/satellites/companion/lib/exports/desktop.ts";
+import { shellClientNeedsHubSetup } from "@freeanima/frontend/shell-sdk";
 
 import {
   effectiveCompanionClickthrough,

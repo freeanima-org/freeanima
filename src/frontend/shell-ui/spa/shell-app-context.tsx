@@ -1,5 +1,5 @@
 import { createContext, useContext, type ReactNode } from "react";
-import type { SettingsBinding } from "@freeanima/shell-sdk/settings";
+import type { SettingsBinding } from "@freeanima/frontend/shell-sdk/settings";
 
 const ShellAppContext = createContext<{ bindings: SettingsBinding[] }>({ bindings: [] });
 

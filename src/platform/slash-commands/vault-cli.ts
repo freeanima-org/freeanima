@@ -1,5 +1,5 @@
-import { listVaultItems, toVaultItemMeta } from "@freeanima/feature-vault/domain/item-store";
-import { resolveVaultWorldId } from "@freeanima/feature-vault/domain/vault-world";
+import { listVaultItems, toVaultItemMeta } from "@freeanima/features/vault/domain/item-store";
+import { resolveVaultWorldId } from "@freeanima/features/vault/domain/vault-world";
 import { resolveAgentVaultSecret } from "@freeanima/platform/connectors/vault";
 
 export type VaultCliItem = {
@@ -15,7 +15,7 @@ export async function listAgentVaultCliItems(): Promise<VaultCliItem[]> {
   return rows.map((row) => {
     const meta =
       "secrets_enc" in row && row.secrets_enc
-        ? toVaultItemMeta(row as import("@freeanima/feature-vault/domain/item-store").VaultItemRow)
+        ? toVaultItemMeta(row as import("@freeanima/features/vault/domain/item-store").VaultItemRow)
         : row;
     return {
       id: meta.id,

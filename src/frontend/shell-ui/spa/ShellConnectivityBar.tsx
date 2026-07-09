@@ -1,9 +1,13 @@
-import { Button } from "@freeanima/ui-kit";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { reconnectHub, useHubConnection, useNetworkOnline } from "@freeanima/shell-sdk/react";
-import { useState } from "react";
+import { Button } from "@freeanima/frontend/ui-kit";
+import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import {
+  reconnectHub,
+  useHubConnection,
+  useNetworkOnline,
+} from "@freeanima/frontend/shell-sdk/react.tsx";
+import { useState, type JSX } from "react";
 
-import * as m from "../../../../messages/paraglide/messages.js";
+import { m } from "@paraglide/messages";
 import { resolveConnectivityNotice } from "./connectivity-notice.ts";
 
 function openHubSettingsIfAvailable(): void {

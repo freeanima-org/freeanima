@@ -1,4 +1,4 @@
-import type { SettingsSection } from "@freeanima/shell-sdk/settings";
+import type { SettingsSection } from "@freeanima/frontend/shell-sdk/settings";
 
 export const companionSettingsSection: SettingsSection = {
   id: "companion",
@@ -8,7 +8,8 @@ export const companionSettingsSection: SettingsSection = {
   platforms: {
     desktop: {
       kind: "component",
-      load: () => import("@freeanima/satellite-companion/settings-panel"),
+      load: () =>
+        import("@freeanima/satellites/companion/spa/settings/CompanionSettingsSection.tsx"),
     },
   },
 };

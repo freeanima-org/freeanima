@@ -13,13 +13,13 @@ import {
   diaryPatchOutputSchema,
   diarySearchInputSchema,
   diarySearchOutputSchema,
-} from "@freeanima/sap-contract/frames/diary";
+} from "@freeanima/shared/sap-contract/frames/diary";
 import {
   dreamGetInputSchema,
   dreamGetOutputSchema,
   dreamListInputSchema,
   dreamListOutputSchema,
-} from "@freeanima/sap-contract/frames/dream";
+} from "@freeanima/shared/sap-contract/frames/dream";
 import {
   emailAccountListInputSchema,
   emailAccountListOutputSchema,
@@ -35,14 +35,14 @@ import {
   emailSyncOutputSchema,
   emailThreadListInputSchema,
   emailThreadListOutputSchema,
-} from "@freeanima/sap-contract/frames/email";
+} from "@freeanima/shared/sap-contract/frames/email";
 import {
   notificationListInputSchema,
   notificationListOutputSchema,
   notificationMarkReadInputSchema,
   notificationMarkReadOutputSchema,
   notificationRecipientsOutputSchema,
-} from "@freeanima/sap-contract/frames/notification";
+} from "@freeanima/shared/sap-contract/frames/notification";
 import {
   companionConfigGetInputSchema,
   companionConfigGetOutputSchema,
@@ -64,7 +64,7 @@ import {
   companionMotionSetSlotOutputSchema,
   companionSyncPullInputSchema,
   companionSyncPullOutputSchema,
-} from "@freeanima/sap-contract/frames/companion";
+} from "@freeanima/shared/sap-contract/frames/companion";
 import { z } from "zod";
 
 import { defineHubMethod, dualTransportMeta } from "../method-def.ts";

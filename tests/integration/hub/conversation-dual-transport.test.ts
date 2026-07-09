@@ -5,9 +5,9 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { bindConsoleRuntimeContext } from "@freeanima/console-api/handlers/runtime";
-import { invokeConsoleHubHandler } from "@freeanima/console-api/console-hub-handlers";
-import { handleConversationList } from "../../../src/features/chat/hub/rpc.ts";
+import { bindConsoleRuntimeContext } from "@freeanima/features/console/hub/console-api/handlers/runtime";
+import { invokeConsoleHubHandler } from "@freeanima/features/console/hub/console-api/console-hub-handlers.ts";
+import { handleConversationList } from "@freeanima/features/chat/hub/rpc.ts";
 import { getAppRuntime } from "@freeanima/platform";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 import { testConv } from "../../helpers/pg-test.ts";

@@ -1,9 +1,9 @@
 export type {
   SatelliteInstanceStatus,
   SatellitesStatusResponse,
-} from "@freeanima/capabilities-satellite";
+} from "@freeanima/capabilities/satellite";
 
-import type { SatellitesStatusResponse } from "@freeanima/capabilities-satellite";
+import type { SatellitesStatusResponse } from "@freeanima/capabilities/satellite";
 
 /** SAP satellite runtime management port */
 export interface SatelliteManagerPort {

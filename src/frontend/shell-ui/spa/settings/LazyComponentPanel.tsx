@@ -1,12 +1,12 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { Alert, Button } from "@freeanima/ui-kit";
-import { initConsoleLocale } from "@freeanima/feature-console/ui/console/i18n";
+import { Alert, Button } from "@freeanima/frontend/ui-kit";
+import { initConsoleLocale } from "@freeanima/features/console/ui/console/lib/i18n.ts";
 import type {
   SettingsComponentLoader,
   SettingsPlatform,
   SettingsSectionDeps,
   SettingsStore,
-} from "@freeanima/shell-sdk/settings";
+} from "@freeanima/frontend/shell-sdk/settings";
 
 type Props = {
   load: SettingsComponentLoader;
@@ -46,7 +46,12 @@ export function LazyComponentPanel({ load, platform, store, deps }: Props) {
 
   return (
     <Suspense fallback={<p className="text-sm text-muted-foreground">加载组件…</p>}>
-      <LazyPanel key={retryKey} platform={platform} store={store} deps={deps} />
+      <LazyPanel
+        key={retryKey}
+        platform={platform}
+        {...(store !== undefined ? { store } : {})}
+        {...(deps !== undefined ? { deps } : {})}
+      />
     </Suspense>
   );
 }

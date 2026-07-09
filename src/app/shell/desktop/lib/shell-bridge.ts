@@ -1,13 +1,13 @@
-import { browserSapInstanceStore } from "@freeanima/sap-contract";
-import { resolveHubWsUrl } from "@freeanima/sap-contract/urls";
-import { testHubHealthConnection } from "@freeanima/shell-sdk";
-import { buildShellApiFields } from "@freeanima/shell-sdk/shell-api-fields";
-import type { SatelliteShellApi } from "@freeanima/shell-sdk/shell-api";
-import { parseShellClientConfig } from "@freeanima/shell-sdk/shell-client-config";
-import type { SettingsStorageScope } from "@freeanima/shell-sdk/settings";
-import type { ScopedSettingsBackend } from "@freeanima/shell-sdk/settings";
-import { HUB_SETTINGS_SCOPE } from "@freeanima/shell-sdk/settings";
-import { sendSentryTestEvent } from "@freeanima/shell-ui/sentry-test";
+import { browserSapInstanceStore } from "@freeanima/shared/sap-contract";
+import { resolveHubWsUrl } from "@freeanima/shared/sap-contract/urls";
+import { testHubHealthConnection } from "@freeanima/frontend/shell-sdk";
+import { buildShellApiFields } from "@freeanima/frontend/shell-sdk/shell-api-fields";
+import type { SatelliteShellApi } from "@freeanima/frontend/shell-sdk/shell-api";
+import { parseShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-client-config";
+import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
+import type { ScopedSettingsBackend } from "@freeanima/frontend/shell-sdk/settings";
+import { HUB_SETTINGS_SCOPE } from "@freeanima/frontend/shell-sdk/settings";
+import { sendSentryTestEvent } from "@freeanima/frontend/shell-ui/lib/sentry-test.ts";
 
 import { createDesktopDevScopedBackend } from "./settings-dev-backend.ts";
 

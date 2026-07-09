@@ -1,26 +1,26 @@
 import { PROFILE_REFLECT } from "@freeanima/core/provider";
 import { getProfileHopModel } from "@freeanima/core/config";
-import { applyDeepSleepToolResult } from "@freeanima/capabilities-memory";
+import { applyDeepSleepToolResult } from "@freeanima/capabilities/memory";
 import {
   registerLightSleepEngine,
   type LightSleepEngineInput,
   type LightSleepEngineResult,
-} from "@freeanima/capabilities-memory/light-sleep-port";
+} from "@freeanima/capabilities/memory/light-sleep-port";
 import {
   registerDeepSleepEngine,
   type DeepSleepEngineInput,
   type DeepSleepEngineResult,
-} from "@freeanima/capabilities-memory/deep-sleep-port";
+} from "@freeanima/capabilities/memory/deep-sleep-port";
 import {
   registerAutobiographyEngine,
   type AutobiographyEngineInput,
   type AutobiographyEngineResult,
-} from "@freeanima/capabilities-memory/autobiography-port";
+} from "@freeanima/capabilities/memory/autobiography-port";
 import {
   registerDreamEngine,
   type DreamEngineInput,
   type DreamEngineResult,
-} from "@freeanima/capabilities-memory/dream-engine-port";
+} from "@freeanima/capabilities/memory/dream-engine-port";
 import { omitUndefined } from "@freeanima/core/util";
 
 import type { FullRuntimeDeps } from "./runtime-deps.ts";

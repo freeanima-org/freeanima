@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@freeanima/ui-kit";
-import type { ComponentBuildMeta } from "@freeanima/shell-sdk/build-meta";
+import { Card, CardContent, CardHeader, CardTitle } from "@freeanima/frontend/ui-kit";
+import type { ComponentBuildMeta } from "@freeanima/frontend/shell-sdk/build-meta";
 import {
   isCapacitorNativePlatform,
   isMobileCapacitorShellCandidate,
-} from "@freeanima/shell-sdk/capacitor-runtime";
-import { resolveHubApiOrigin } from "@freeanima/shell-sdk/hub-api-origin";
-import { parseComponentBuildMeta } from "@freeanima/shell-sdk/build-meta";
+} from "@freeanima/frontend/shell-sdk/capacitor-runtime";
+import { resolveHubApiOrigin } from "@freeanima/frontend/shell-sdk/hub-api-origin";
+import { parseComponentBuildMeta } from "@freeanima/frontend/shell-sdk/build-meta";
 import {
   NATIVE_BUILD_META_CHANGED_EVENT,
   resolveAboutNativeBuildMeta,
-} from "@freeanima/shell-sdk/native-build-meta.resolve";
-import { parseWebUiConfigJson } from "@freeanima/shell-sdk/web-ui-config";
+} from "@freeanima/frontend/shell-sdk/native-build-meta.resolve";
+import { parseWebUiConfigJson } from "@freeanima/frontend/shell-sdk/web-ui-config";
 
-import * as m from "../../../../../../messages/paraglide/messages.js";
+import { m } from "@paraglide/messages";
 
 function isNativeShellRuntime(): boolean {
   return Boolean(window.satelliteShell?.isElectron || window.satelliteShell?.isNativeShell);

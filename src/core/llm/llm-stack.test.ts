@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from "bun:test";
-import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-llm-openai";
+import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
 import { createLlmRuntime } from "./llm-stack.ts";
 import { registerLlmStackConfigurator } from "./llm-stack-configurator.ts";
 import type { AnimaConfig } from "@freeanima/core/config";

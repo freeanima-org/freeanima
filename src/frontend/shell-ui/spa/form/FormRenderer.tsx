@@ -1,14 +1,19 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Button, Input, Textarea } from "@freeanima/ui-kit";
-import { cn } from "@freeanima/ui-kit/lib/utils";
+import { Alert, Button, Input, Textarea } from "@freeanima/frontend/ui-kit";
+import { cn } from "@freeanima/frontend/ui-kit/lib/utils.ts";
 import type {
   FormFieldDescriptor,
   SettingsFormFields,
   SettingsPlatform,
   SettingsStore,
-} from "@freeanima/shell-sdk/settings";
-import { FormField, FormFieldLabel, FormFieldset, FormToggle } from "@freeanima/ui-kit/form";
+} from "@freeanima/frontend/shell-sdk/settings";
+import {
+  FormField,
+  FormFieldLabel,
+  FormFieldset,
+  FormToggle,
+} from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
 
 import { notifyDebugConfigChanged } from "../bootstrap/sentry.ts";
 import { resolveShellRouterBasepath } from "../router-basepath.ts";
@@ -111,7 +116,7 @@ export function FormRenderer({
       return;
     }
     if (platform === "mobile" || window.satelliteShell?.isNativeShell) {
-      await navigate({ to: "/chat" });
+      await navigate({ to: "/chat" as never });
       return;
     }
     const base = resolveShellRouterBasepath() ?? "";
