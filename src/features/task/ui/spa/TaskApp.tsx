@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { readModuleSelection, writeModuleSelection } from "@freeanima/frontend/shell-sdk";
+import type { TaskModuleSelection } from "@freeanima/frontend/shell-sdk";
 import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/shell-sdk/react.tsx";
 import { mergeDraftAfterSave } from "@freeanima/frontend/ui-kit/lib/merge-draft-after-save.ts";
 import {
@@ -24,6 +25,11 @@ import {
 import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
 import { CompletedTaskList } from "./components/CompletedTaskList.tsx";
 import { ListSidebar } from "./components/ListSidebar.tsx";
+import { SmartListEditorDialog } from "./components/SmartListEditorDialog.tsx";
+import {
+  BuiltinSmartListSection,
+  CustomSmartListSection,
+} from "./components/SmartListSidebarSection.tsx";
 import { MoveToListPicker } from "./components/MoveToListPicker.tsx";
 import { SortableTaskList } from "./components/SortableTaskList.tsx";
 import { TaskDetailPanel, type DetailSaveStatus } from "./components/TaskDetailPanel.tsx";
@@ -31,18 +37,24 @@ import { TaskDndRoot } from "./components/TaskDndRoot.tsx";
 import { ThreeColumnLayout } from "@freeanima/frontend/ui-kit/layout";
 import {
   completeTaskItem,
+  createSmartList,
   createTaskItem,
   createTaskList,
   closeTaskList,
+  deleteSmartList,
   deleteTaskItem,
   deleteTaskList,
+  fetchSmartLists,
   fetchTaskItems,
+  fetchTaskItemsByFilters,
   fetchTaskLists,
   reopenTaskList,
   searchTaskItems,
   uncompleteTaskItem,
+  updateSmartList,
   updateTaskItem,
   updateTaskList,
+  type SmartListRow,
   type TaskItemRow,
   type TaskListRow,
 } from "./lib/api.ts";
@@ -60,16 +72,28 @@ import {
   useDrawerNav,
   useTaskActionSheet,
 } from "./lib/platform.ts";
-import { readListIdFromUrl, writeListIdToUrl } from "./lib/list-url.ts";
+import { readTaskSelectionFromUrl, writeTaskSelectionToUrl } from "./lib/task-selection-url.ts";
 import { moveTaskItemsToList } from "./lib/move-items.ts";
 import { applyShiftRangeSelect } from "./lib/range-select.ts";
-import { resolveDefaultListId, resolveSelectedListId } from "./lib/resolve-list.ts";
+import { resolveTaskSelection } from "./lib/resolve-task-selection.ts";
+import { resolveDefaultListId } from "./lib/resolve-list.ts";
+import {
+  allowsSmartListQuickAdd,
+  findSmartListRowByKey,
+  isCompletedOnlyFilters,
+  smartListRowKey,
+} from "./lib/task-smart-list-utils.ts";
 import { getParentId, getSiblings } from "./lib/list-tree.ts";
 import { sortOrderUpdates } from "./lib/reorder.ts";
-import { buildItemMenuItems, buildListMenuItems } from "./lib/task-menus.ts";
+import {
+  buildItemMenuItems,
+  buildListMenuItems,
+  buildSmartListMenuItems,
+} from "./lib/task-menus.ts";
 import { cloneTaskItem, isTaskItemDirty, isTaskItemEqual } from "./lib/task-detail-dirty.ts";
 
 type ListMenuState = { x: number; y: number; listId: number };
+type SmartListMenuState = { x: number; y: number; smartListId: number };
 type ItemMenuState = { x: number; y: number; itemId: number };
 type SheetMenuState = { title?: string; items: ActionSheetItem[] };
 type ChildNamePromptState = { kind: "list" | "folder"; parentId: number };
@@ -88,8 +112,9 @@ export function TaskApp() {
   const itemsLoadGenRef = useRef(0);
 
   const [lists, setLists] = useState<TaskListRow[]>([]);
+  const [smartLists, setSmartLists] = useState<SmartListRow[]>([]);
   const [items, setItems] = useState<TaskItemRow[]>([]);
-  const [selectedListId, setSelectedListId] = useState<number | null>(null);
+  const [selection, setSelection] = useState<TaskModuleSelection | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [newListName, setNewListName] = useState("");
@@ -111,6 +136,7 @@ export function TaskApp() {
   const [editingListName, setEditingListName] = useState("");
 
   const [listMenu, setListMenu] = useState<ListMenuState | null>(null);
+  const [smartListMenu, setSmartListMenu] = useState<SmartListMenuState | null>(null);
   const [itemMenu, setItemMenu] = useState<ItemMenuState | null>(null);
   const [sheetMenu, setSheetMenu] = useState<SheetMenuState | null>(null);
   const [listToDelete, setListToDelete] = useState<TaskListRow | null>(null);
@@ -121,41 +147,29 @@ export function TaskApp() {
   const [selectedItemIds, setSelectedItemIds] = useState<Set<number>>(() => new Set());
   const [movePickerItemIds, setMovePickerItemIds] = useState<number[] | null>(null);
   const [showClosed, setShowClosed] = useState(false);
+  const [smartListEditor, setSmartListEditor] = useState<SmartListRow | null | undefined>(
+    undefined,
+  );
 
-  const loadLists = useCallback(async (): Promise<TaskListRow[]> => {
-    const generation = ++listsLoadGenRef.current;
-    const scope = resolveHubCacheScope();
-    const cached = await readCachedTaskLists(scope);
-    if (generation !== listsLoadGenRef.current) return cached ?? [];
-    if (cached?.length) setLists(cached);
+  const persistSelection = useCallback(
+    (next: TaskModuleSelection) => {
+      writeModuleSelection("tasks", next);
+      if (webShell) writeTaskSelectionToUrl(next);
+    },
+    [webShell],
+  );
+
+  const loadItemsByFilters = useCallback(async (filters: SmartListRow["filters"]) => {
+    const generation = ++itemsLoadGenRef.current;
     try {
-      const rows = await fetchTaskLists({ includeClosed: true });
-      if (generation !== listsLoadGenRef.current) return rows;
-      setLists(rows);
-      void writeCachedTaskLists(scope, rows);
-      if (rows.length === 0) {
-        setSelectedListId(null);
-        setItems([]);
-        return rows;
-      }
-      setSelectedListId((prev) => {
-        const next = resolveSelectedListId(rows, {
-          currentId: prev,
-          storedListId: readModuleSelection("tasks"),
-          urlListId: webShell ? readListIdFromUrl() : null,
-          preferUrl: webShell,
-        });
-        if (next != null) writeModuleSelection("tasks", next);
-        if (webShell && next != null) writeListIdToUrl(next);
-        return next;
-      });
-      return rows;
+      const rows = await fetchTaskItemsByFilters(filters);
+      if (generation !== itemsLoadGenRef.current) return;
+      setItems(rows);
     } catch {
-      if (generation !== listsLoadGenRef.current) return cached ?? [];
-      if (!cached?.length) setError("无法加载任务清单");
-      return cached ?? [];
+      if (generation !== itemsLoadGenRef.current) return;
+      setItems([]);
     }
-  }, [webShell]);
+  }, []);
 
   const loadItems = useCallback(async (listId: number) => {
     const generation = ++itemsLoadGenRef.current;
@@ -174,6 +188,47 @@ export function TaskApp() {
     }
   }, []);
 
+  const loadLists = useCallback(async (): Promise<TaskListRow[]> => {
+    const generation = ++listsLoadGenRef.current;
+    const scope = resolveHubCacheScope();
+    const cached = await readCachedTaskLists(scope);
+    if (generation !== listsLoadGenRef.current) return cached ?? [];
+    if (cached?.length) setLists(cached);
+    try {
+      const [rows, smartRows] = await Promise.all([
+        fetchTaskLists({ includeClosed: true }),
+        fetchSmartLists(),
+      ]);
+      if (generation !== listsLoadGenRef.current) return rows;
+      setLists(rows);
+      setSmartLists(smartRows);
+      void writeCachedTaskLists(scope, rows);
+      const next = resolveTaskSelection(rows, smartRows, {
+        stored: readModuleSelection("tasks"),
+        urlSelection: webShell ? readTaskSelectionFromUrl() : null,
+        preferUrl: webShell,
+      });
+      setSelection(next);
+      persistSelection(next);
+      if (rows.length === 0) setItems([]);
+      return rows;
+    } catch {
+      if (generation !== listsLoadGenRef.current) return cached ?? [];
+      if (!cached?.length) setError("无法加载任务清单");
+      return cached ?? [];
+    }
+  }, [persistSelection, webShell]);
+
+  const reloadCurrentItems = useCallback(async () => {
+    if (selection == null) return;
+    if (selection.kind === "list") {
+      await loadItems(selection.id);
+    } else {
+      const row = findSmartListRowByKey(smartLists, selection.key);
+      if (row) await loadItemsByFilters(row.filters);
+    }
+  }, [loadItems, loadItemsByFilters, selection, smartLists]);
+
   const refresh = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -190,7 +245,8 @@ export function TaskApp() {
     listsLoadGenRef.current += 1;
     itemsLoadGenRef.current += 1;
     setLists([]);
-    setSelectedListId(null);
+    setSmartLists([]);
+    setSelection(null);
     setSelectedFolderId(null);
     setItems([]);
     setSearchQuery("");
@@ -199,8 +255,16 @@ export function TaskApp() {
   }, [subjectKind, refresh]);
 
   useEffect(() => {
-    if (selectedListId == null) return;
-    void loadItems(selectedListId).catch((err) => {
+    if (selection == null) return;
+    const run = async () => {
+      if (selection.kind === "list") {
+        await loadItems(selection.id);
+      } else {
+        const row = findSmartListRowByKey(smartLists, selection.key);
+        if (row) await loadItemsByFilters(row.filters);
+      }
+    };
+    void run().catch((err) => {
       setError(err instanceof Error ? err.message : String(err));
     });
     setSelectionMode(false);
@@ -211,7 +275,7 @@ export function TaskApp() {
     setDetailItem(null);
     setDetailBaseline(null);
     setDetailOpen(false);
-  }, [selectedListId, loadItems]);
+  }, [selection, smartLists, loadItems, loadItemsByFilters]);
 
   useEffect(() => {
     const q = searchQuery.trim();
@@ -251,13 +315,28 @@ export function TaskApp() {
     renameInputRef.current?.select();
   }, [editingListId]);
 
+  const applySelection = (next: TaskModuleSelection) => {
+    setSelection(next);
+    persistSelection(next);
+    if (useDrawer) setSidebarOpen(false);
+  };
+
+  const selectSmartList = (row: SmartListRow) => {
+    setSelectedFolderId(null);
+    applySelection({ kind: "smart_list", key: smartListRowKey(row) });
+  };
+
+  const selectInbox = () => {
+    const inboxId = resolveDefaultListId(lists);
+    if (inboxId == null) return;
+    setSelectedFolderId(null);
+    applySelection({ kind: "list", id: inboxId });
+  };
+
   const selectList = (id: number) => {
-    setSelectedListId(id);
     setSelectedFolderId(null);
     if (lists.find((l) => l.id === id)?.closed) setShowClosed(true);
-    writeModuleSelection("tasks", id);
-    if (webShell) writeListIdToUrl(id);
-    if (useDrawer) setSidebarOpen(false);
+    applySelection({ kind: "list", id });
   };
 
   const selectFolder = (id: number) => {
@@ -352,15 +431,19 @@ export function TaskApp() {
 
   const handleCloseList = async (list: TaskListRow) => {
     if (list.is_default || list.closed || list.is_folder) return;
-    const wasSelected = selectedListId === list.id;
+    const wasSelected = selection?.kind === "list" && selection.id === list.id;
     try {
       await closeTaskList(list.id);
       const rows = await loadLists();
       if (wasSelected) {
-        const nextId = resolveDefaultListId(rows.filter((l) => !l.closed));
-        setSelectedListId(nextId);
-        if (nextId != null) writeModuleSelection("tasks", nextId);
-        if (webShell && nextId != null) writeListIdToUrl(nextId);
+        const smartRows = await fetchSmartLists();
+        const next = resolveTaskSelection(rows, smartRows, {
+          stored: null,
+          urlSelection: null,
+          preferUrl: false,
+        });
+        setSelection(next);
+        persistSelection(next);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -422,18 +505,21 @@ export function TaskApp() {
       await Promise.all(updates.map((u) => updateTaskItem(u.id, { sort_order: u.sort_order })));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
-      if (selectedListId != null) await loadItems(selectedListId);
+      if (selection?.kind === "list") await loadItems(selection.id);
+      else await reloadCurrentItems();
     }
   };
 
   const handleQuickAdd = async () => {
     const title = quickTitle.trim();
-    if (!title || selectedListId == null) return;
+    if (!title) return;
+    const targetListId = selection?.kind === "list" ? selection.id : resolveDefaultListId(lists);
+    if (targetListId == null) return;
     try {
       const pending = items.filter((i) => i.status === "pending");
-      await createTaskItem({ title, list_id: selectedListId, sort_order: pending.length });
+      await createTaskItem({ title, list_id: targetListId, sort_order: pending.length });
       setQuickTitle("");
-      await Promise.all([loadItems(selectedListId), loadLists()]);
+      await Promise.all([reloadCurrentItems(), loadLists()]);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
@@ -446,9 +532,7 @@ export function TaskApp() {
       } else {
         await completeTaskItem(item.id);
       }
-      if (selectedListId != null) {
-        await Promise.all([loadItems(selectedListId), loadLists()]);
-      }
+      await Promise.all([reloadCurrentItems(), loadLists()]);
       if (searchActive) await refreshSearchHits();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -464,9 +548,7 @@ export function TaskApp() {
         next.delete(item.id);
         return next;
       });
-      if (selectedListId != null) {
-        await Promise.all([loadItems(selectedListId), loadLists()]);
-      }
+      await Promise.all([reloadCurrentItems(), loadLists()]);
       if (searchActive) await refreshSearchHits();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -499,15 +581,13 @@ export function TaskApp() {
   }, []);
 
   const handleMoveItemsToList = async (itemIds: number[], targetListId: number) => {
-    if (itemIds.length === 0 || targetListId === selectedListId) return;
+    if (itemIds.length === 0 || (selection?.kind === "list" && targetListId === selection.id))
+      return;
     try {
       await moveTaskItemsToList(itemIds, targetListId);
       closeMovePicker();
       exitSelectionMode();
-      await Promise.all([
-        selectedListId != null ? loadItems(selectedListId) : Promise.resolve(),
-        loadLists(),
-      ]);
+      await Promise.all([reloadCurrentItems(), loadLists()]);
       if (searchActive) await refreshSearchHits();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -655,17 +735,51 @@ export function TaskApp() {
     }
   }, [layoutMode, detailItem?.id, movePickerItemIds]);
 
-  const selectedList = lists.find((l) => l.id === selectedListId) ?? null;
-  const activeLists = useMemo(() => lists.filter((l) => !l.closed), [lists]);
+  const defaultInboxId = useMemo(() => resolveDefaultListId(lists), [lists]);
+  const inboxItemCount = useMemo(
+    () => lists.find((l) => l.id === defaultInboxId)?.item_count ?? 0,
+    [lists, defaultInboxId],
+  );
+  const inboxSelected =
+    selection?.kind === "list" && defaultInboxId != null && selection.id === defaultInboxId;
+  const listSidebarSelectedId = selection?.kind === "list" && !inboxSelected ? selection.id : null;
+  const activeSmartListRow =
+    selection?.kind === "smart_list" ? findSmartListRowByKey(smartLists, selection.key) : null;
+  const smartListMode = selection?.kind === "smart_list";
+  const smartListCompletedOnly = activeSmartListRow
+    ? isCompletedOnlyFilters(activeSmartListRow.filters)
+    : false;
+  const selectedList =
+    selection?.kind === "list" ? (lists.find((l) => l.id === selection.id) ?? null) : null;
+  const activeLists = useMemo(() => lists.filter((l) => !l.closed && !l.is_default), [lists]);
   const closedLists = useMemo(() => lists.filter((l) => l.closed), [lists]);
-  const moveTargetLists = activeLists;
+  const moveTargetLists = useMemo(() => lists.filter((l) => !l.closed && !l.is_folder), [lists]);
   const listNameById = useMemo(() => new Map(lists.map((l) => [l.id, l.name])), [lists]);
   const pendingItems = items.filter((i) => i.status === "pending");
   const completedItems = items.filter((i) => i.status === "completed");
   const searchPending = searchHits.filter((i) => i.status === "pending");
   const searchCompleted = searchHits.filter((i) => i.status === "completed");
-  const displayPending = searchActive ? searchPending : pendingItems;
-  const displayCompleted = searchActive ? searchCompleted : completedItems;
+  const displayPending = searchActive ? searchPending : smartListCompletedOnly ? [] : pendingItems;
+  const displayCompleted = searchActive
+    ? searchCompleted
+    : smartListCompletedOnly
+      ? items
+      : completedItems;
+  const showCompletedSection =
+    !smartListCompletedOnly && (searchActive || selection?.kind === "list");
+  const itemsSortable = !searchActive && !smartListMode;
+  const showListNameColumn = searchActive || smartListMode;
+  const middleTitle =
+    selection?.kind === "smart_list"
+      ? (activeSmartListRow?.title ?? "智能清单")
+      : inboxSelected
+        ? "收件箱"
+        : (selectedList?.name ?? "任务");
+  const canQuickAdd =
+    selection != null &&
+    (selection.kind === "list"
+      ? selectedList != null && !selectedList.closed
+      : activeSmartListRow != null && allowsSmartListQuickAdd(activeSmartListRow.filters));
   const resolveListName = useCallback(
     (item: TaskItemRow) => listNameById.get(item.list_id) ?? `#${item.list_id}`,
     [listNameById],
@@ -705,6 +819,48 @@ export function TaskApp() {
       void handleCreateList({ parentId: childNamePrompt.parentId, name });
     }
     setChildNamePrompt(null);
+  };
+
+  const handleSaveSmartList = async (input: {
+    title: string;
+    filters: SmartListRow["filters"];
+  }) => {
+    try {
+      if (smartListEditor?.id != null) {
+        await updateSmartList(smartListEditor.id, input);
+      } else {
+        await createSmartList(input);
+      }
+      const smartRows = await fetchSmartLists();
+      setSmartLists(smartRows);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  const handleDeleteSmartList = async (row: SmartListRow) => {
+    if (row.id == null) return;
+    try {
+      await deleteSmartList(row.id);
+      const smartRows = await fetchSmartLists();
+      setSmartLists(smartRows);
+      if (selection?.kind === "smart_list" && selection.key === smartListRowKey(row)) {
+        const next = resolveTaskSelection(lists, smartRows, {
+          stored: null,
+          urlSelection: null,
+          preferUrl: false,
+        });
+        setSelection(next);
+        persistSelection(next);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  const smartListMenuHandlers = {
+    onEdit: (row: SmartListRow) => setSmartListEditor(row),
+    onDelete: handleDeleteSmartList,
   };
 
   const menuHandlers = {
@@ -750,6 +906,9 @@ export function TaskApp() {
   );
 
   const menuList = listMenu ? lists.find((l) => l.id === listMenu.listId) : null;
+  const menuSmartList = smartListMenu
+    ? smartLists.find((row) => row.id === smartListMenu.smartListId)
+    : null;
   const menuItem = itemMenu
     ? (items.find((i) => i.id === itemMenu.itemId) ??
       searchHits.find((i) => i.id === itemMenu.itemId))
@@ -759,6 +918,10 @@ export function TaskApp() {
     ? buildListMenuItems(menuList, menuHandlers)
     : [];
 
+  const smartListMenuItems: ActionSheetItem[] = menuSmartList
+    ? buildSmartListMenuItems(menuSmartList, smartListMenuHandlers)
+    : [];
+
   const itemMenuItems: ActionSheetItem[] = menuItem
     ? buildItemMenuItems(menuItem, itemHandlers, { listArchived: selectedList?.closed === true })
     : [];
@@ -766,14 +929,26 @@ export function TaskApp() {
   const openListMenuSheet = (list: TaskListRow) => {
     setItemMenu(null);
     setListMenu(null);
+    setSmartListMenu(null);
     setSheetMenu({
       title: list.name,
       items: buildListMenuItems(list, menuHandlers),
     });
   };
 
+  const openSmartListMenuSheet = (row: SmartListRow) => {
+    setItemMenu(null);
+    setListMenu(null);
+    setSmartListMenu(null);
+    setSheetMenu({
+      title: row.title,
+      items: buildSmartListMenuItems(row, smartListMenuHandlers),
+    });
+  };
+
   const openItemMenuSheet = (item: TaskItemRow) => {
     setListMenu(null);
+    setSmartListMenu(null);
     setItemMenu(null);
     setSheetMenu({
       title: item.title,
@@ -789,8 +964,21 @@ export function TaskApp() {
     e.preventDefault();
     e.stopPropagation();
     setItemMenu(null);
+    setSmartListMenu(null);
     setSheetMenu(null);
     setListMenu({ x: e.clientX, y: e.clientY, listId: list.id });
+  };
+
+  const openSmartListContextMenu = (e: MouseEvent, row: SmartListRow) => {
+    if (row.id == null) return;
+    if (useActionSheet) return;
+    if (!contextMenuEnabled) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setItemMenu(null);
+    setListMenu(null);
+    setSheetMenu(null);
+    setSmartListMenu({ x: e.clientX, y: e.clientY, smartListId: row.id });
   };
 
   const openItemContextMenu = (e: MouseEvent, item: TaskItemRow) => {
@@ -799,9 +987,12 @@ export function TaskApp() {
     e.preventDefault();
     e.stopPropagation();
     setListMenu(null);
+    setSmartListMenu(null);
     setSheetMenu(null);
     setItemMenu({ x: e.clientX, y: e.clientY, itemId: item.id });
   };
+
+  const showMiddleContent = selection != null && !loading;
 
   return (
     <>
@@ -821,8 +1012,8 @@ export function TaskApp() {
           <ThreeColumnLayout
             layoutMode={layoutMode}
             columnSplitKey="task"
-            listTitle="清单"
-            middleTitle={selectedList?.name ?? "任务"}
+            listTitle="任务"
+            middleTitle={middleTitle}
             detailTitle={detailItem?.title ?? "任务详情"}
             listOpen={sidebarOpen}
             onListOpenChange={setSidebarOpen}
@@ -831,12 +1022,12 @@ export function TaskApp() {
             onDetailOpenChange={handleDetailOpenChange}
             middleActions={
               <>
-                {selectedList ? selectionToolbar : null}
+                {showMiddleContent ? selectionToolbar : null}
                 {loading || searching ? <Spinner className="size-4" /> : null}
               </>
             }
             middleHeaderExtra={
-              selectedList ? (
+              showMiddleContent ? (
                 <Input
                   className="h-8 w-full max-w-md"
                   placeholder="搜索全部清单…"
@@ -852,10 +1043,33 @@ export function TaskApp() {
                 </div>
                 <ListSidebar
                   key={subjectKind}
+                  builtinSmartListSection={
+                    <BuiltinSmartListSection
+                      smartLists={smartLists}
+                      selectedKey={selection?.kind === "smart_list" ? selection.key : null}
+                      defaultInboxId={defaultInboxId}
+                      inboxItemCount={inboxItemCount}
+                      inboxSelected={inboxSelected}
+                      onSelectSmartList={selectSmartList}
+                      onSelectInbox={selectInbox}
+                    />
+                  }
+                  customSmartListSection={
+                    <CustomSmartListSection
+                      smartLists={smartLists}
+                      selectedKey={selection?.kind === "smart_list" ? selection.key : null}
+                      inboxSelected={inboxSelected}
+                      onSelectSmartList={selectSmartList}
+                      onCreateSmartList={() => setSmartListEditor(null)}
+                      onOpenSmartListContextMenu={openSmartListContextMenu}
+                      onOpenSmartListMenu={openSmartListMenuSheet}
+                      useActionSheet={useActionSheet}
+                    />
+                  }
                   activeLists={activeLists}
                   closedLists={closedLists}
                   showClosed={showClosed}
-                  selectedListId={selectedListId}
+                  selectedListId={listSidebarSelectedId}
                   selectedFolderId={selectedFolderId}
                   editingListId={editingListId}
                   editingListName={editingListName}
@@ -898,15 +1112,15 @@ export function TaskApp() {
                   </Alert>
                 ) : null}
 
-                {!selectedList && !loading ? (
+                {!showMiddleContent && !loading ? (
                   <div className="text-muted-foreground flex flex-1 items-center justify-center p-8 text-sm">
                     创建第一个清单开始使用
                   </div>
                 ) : null}
 
-                {selectedList ? (
+                {showMiddleContent ? (
                   <>
-                    {selectedList.closed ? (
+                    {selectedList?.closed ? (
                       <div className="border bg-muted/60 text-muted-foreground m-3 shrink-0 rounded-lg border px-3 py-2 text-sm">
                         此清单已归档，无法添加新任务。可在清单菜单中取消归档。
                       </div>
@@ -927,37 +1141,57 @@ export function TaskApp() {
                         </p>
                       ) : null}
 
-                      <SortableTaskList
-                        items={displayPending}
-                        sortable={!searchActive}
-                        {...(searchActive ? { listNameForItem: resolveListName } : {})}
-                        {...(detailItem ? { activeItemId: detailItem.id } : {})}
-                        useActionSheet={useActionSheet}
-                        selectionMode={selectionMode}
-                        selectedIds={selectedItemIds}
-                        onToggleComplete={(item) => void toggleComplete(item)}
-                        onEdit={openTaskDetail}
-                        onOpenItemMenu={openItemMenuSheet}
-                        onOpenItemContextMenu={openItemContextMenu}
-                        onSelectItem={handleSelectItem}
-                        onLongPressSelect={enterSelectionWithItem}
-                      />
+                      {smartListCompletedOnly ? (
+                        <SortableTaskList
+                          items={displayCompleted}
+                          sortable={itemsSortable}
+                          {...(showListNameColumn ? { listNameForItem: resolveListName } : {})}
+                          {...(detailItem ? { activeItemId: detailItem.id } : {})}
+                          useActionSheet={useActionSheet}
+                          selectionMode={selectionMode}
+                          selectedIds={selectedItemIds}
+                          onToggleComplete={(item) => void toggleComplete(item)}
+                          onEdit={openTaskDetail}
+                          onOpenItemMenu={openItemMenuSheet}
+                          onOpenItemContextMenu={openItemContextMenu}
+                          onSelectItem={handleSelectItem}
+                          onLongPressSelect={enterSelectionWithItem}
+                        />
+                      ) : (
+                        <SortableTaskList
+                          items={displayPending}
+                          sortable={itemsSortable}
+                          {...(showListNameColumn ? { listNameForItem: resolveListName } : {})}
+                          {...(detailItem ? { activeItemId: detailItem.id } : {})}
+                          useActionSheet={useActionSheet}
+                          selectionMode={selectionMode}
+                          selectedIds={selectedItemIds}
+                          onToggleComplete={(item) => void toggleComplete(item)}
+                          onEdit={openTaskDetail}
+                          onOpenItemMenu={openItemMenuSheet}
+                          onOpenItemContextMenu={openItemContextMenu}
+                          onSelectItem={handleSelectItem}
+                          onLongPressSelect={enterSelectionWithItem}
+                        />
+                      )}
 
-                      <CompletedTaskList
-                        items={displayCompleted}
-                        sortable={!searchActive}
-                        {...(searchActive ? { listNameForItem: resolveListName } : {})}
-                        {...(detailItem ? { activeItemId: detailItem.id } : {})}
-                        useActionSheet={useActionSheet}
-                        selectionMode={selectionMode}
-                        selectedIds={selectedItemIds}
-                        onToggleComplete={(item) => void toggleComplete(item)}
-                        onEdit={openTaskDetail}
-                        onOpenItemMenu={openItemMenuSheet}
-                        onOpenItemContextMenu={openItemContextMenu}
-                        onSelectItem={handleSelectItem}
-                        onLongPressSelect={enterSelectionWithItem}
-                      />
+                      {showCompletedSection && !smartListCompletedOnly ? (
+                        <CompletedTaskList
+                          items={displayCompleted}
+                          sortable={itemsSortable}
+                          {...(showListNameColumn ? { listNameForItem: resolveListName } : {})}
+                          {...(detailItem ? { activeItemId: detailItem.id } : {})}
+                          useActionSheet={useActionSheet}
+                          selectionMode={selectionMode}
+                          selectedIds={selectedItemIds}
+                          onToggleComplete={(item) => void toggleComplete(item)}
+                          onEdit={openTaskDetail}
+                          onOpenItemMenu={openItemMenuSheet}
+                          onOpenItemContextMenu={openItemContextMenu}
+                          onSelectItem={handleSelectItem}
+                          onLongPressSelect={enterSelectionWithItem}
+                        />
+                      ) : null}
                     </div>
 
                     {selectionMode && selectedItemIds.size > 0 ? (
@@ -976,7 +1210,7 @@ export function TaskApp() {
                           取消
                         </Button>
                       </div>
-                    ) : searchActive || selectedList.closed ? null : (
+                    ) : searchActive || !canQuickAdd ? null : (
                       <div className="border safe-area-pb flex shrink-0 gap-2 border-t p-3">
                         <Input
                           className="min-w-0 flex-1"
@@ -1019,6 +1253,15 @@ export function TaskApp() {
             y={listMenu.y}
             items={listMenuItems}
             onClose={() => setListMenu(null)}
+          />
+        ) : null}
+
+        {smartListMenu ? (
+          <ContextMenu
+            x={smartListMenu.x}
+            y={smartListMenu.y}
+            items={smartListMenuItems}
+            onClose={() => setSmartListMenu(null)}
           />
         ) : null}
 
@@ -1098,10 +1341,18 @@ export function TaskApp() {
         />
       </TaskDndRoot>
 
+      <SmartListEditorDialog
+        open={smartListEditor !== undefined}
+        initial={smartListEditor ?? null}
+        lists={lists}
+        onClose={() => setSmartListEditor(undefined)}
+        onSave={handleSaveSmartList}
+      />
+
       <MoveToListPicker
         open={movePickerItemIds != null}
         lists={moveTargetLists}
-        currentListId={selectedListId}
+        currentListId={selection?.kind === "list" ? selection.id : null}
         title={
           movePickerItemIds != null && movePickerItemIds.length > 1
             ? `移动 ${movePickerItemIds.length} 项到…`

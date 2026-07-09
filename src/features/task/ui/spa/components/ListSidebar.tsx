@@ -2,7 +2,14 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-
 import { CSS } from "@dnd-kit/utilities";
 import { Button, Checkbox, Input } from "@freeanima/frontend/ui-kit";
 import { useDrawerNav } from "@freeanima/frontend/ui-kit/layout";
-import { useEffect, useMemo, useState, type MouseEvent, type RefObject } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type MouseEvent,
+  type ReactNode,
+  type RefObject,
+} from "react";
 
 import { listDndId } from "../lib/dnd-ids.ts";
 import type { TaskListRow } from "../lib/api.ts";
@@ -18,6 +25,8 @@ import { useTaskDndUi } from "./TaskDndRoot.tsx";
 import { EntityIdLabel } from "./EntityIdLabel.tsx";
 
 type ListSidebarProps = {
+  builtinSmartListSection?: ReactNode;
+  customSmartListSection?: ReactNode;
   activeLists: TaskListRow[];
   closedLists: TaskListRow[];
   showClosed: boolean;
@@ -293,6 +302,8 @@ function ClosedListsSection({
 }
 
 export function ListSidebar({
+  builtinSmartListSection,
+  customSmartListSection,
   activeLists,
   closedLists,
   showClosed,
@@ -359,54 +370,59 @@ export function ListSidebar({
         items={visibleNodes.map((n) => listDndId(n.list.id))}
         strategy={verticalListSortingStrategy}
       >
-        <div className="flex-1 overflow-y-auto p-2">
-          {visibleNodes.map((node) => (
-            <SortableTreeRow
-              key={node.list.id}
-              node={node}
-              expanded={expandedFolderIds.has(node.list.id)}
-              selected={
-                node.list.is_folder
-                  ? selectedFolderId === node.list.id
-                  : selectedListId === node.list.id
-              }
-              editing={editingListId === node.list.id}
-              editingName={editingListName}
-              renameInputRef={renameInputRef}
-              useActionSheet={useActionSheet}
-              onToggleExpand={() => toggleExpand(node.list.id)}
-              onSelectList={() => onSelectList(node.list.id)}
-              onSelectFolder={() => onSelectFolder(node.list.id)}
-              onEditingNameChange={onEditingListNameChange}
-              onCommitRename={onCommitRename}
-              onCancelRename={onCancelRename}
-              onOpenMenu={() => onOpenListMenu(node.list)}
-              onContextMenu={(e) => onOpenListContextMenu(e, node.list)}
-              {...(useActionSheet ? {} : { onDoubleClickRename: () => onStartRename(node.list) })}
-            />
-          ))}
-          {closedLists.length > 0 ? (
-            <div className="border/60 mt-2 space-y-1 border-t pt-2">
-              <label className="text-muted-foreground flex cursor-pointer select-none items-center gap-2 px-1 py-1 text-xs">
-                <Checkbox
-                  className="size-3.5"
-                  checked={showClosed}
-                  onCheckedChange={onToggleShowClosed}
-                />
-                显示已归档
-              </label>
-              {showClosed ? (
-                <ClosedListsSection
-                  closedLists={closedLists}
-                  selectedListId={selectedListId}
-                  useActionSheet={useActionSheet}
-                  onSelectList={onSelectList}
-                  onOpenListMenu={onOpenListMenu}
-                  onOpenListContextMenu={onOpenListContextMenu}
-                />
-              ) : null}
-            </div>
-          ) : null}
+        <div className="flex-1 overflow-y-auto">
+          {builtinSmartListSection}
+          {customSmartListSection}
+          <div className="border-t p-2">
+            <div className="text-muted-foreground px-1 pb-1 text-xs font-medium">清单</div>
+            {visibleNodes.map((node) => (
+              <SortableTreeRow
+                key={node.list.id}
+                node={node}
+                expanded={expandedFolderIds.has(node.list.id)}
+                selected={
+                  node.list.is_folder
+                    ? selectedFolderId === node.list.id
+                    : selectedListId === node.list.id
+                }
+                editing={editingListId === node.list.id}
+                editingName={editingListName}
+                renameInputRef={renameInputRef}
+                useActionSheet={useActionSheet}
+                onToggleExpand={() => toggleExpand(node.list.id)}
+                onSelectList={() => onSelectList(node.list.id)}
+                onSelectFolder={() => onSelectFolder(node.list.id)}
+                onEditingNameChange={onEditingListNameChange}
+                onCommitRename={onCommitRename}
+                onCancelRename={onCancelRename}
+                onOpenMenu={() => onOpenListMenu(node.list)}
+                onContextMenu={(e) => onOpenListContextMenu(e, node.list)}
+                {...(useActionSheet ? {} : { onDoubleClickRename: () => onStartRename(node.list) })}
+              />
+            ))}
+            {closedLists.length > 0 ? (
+              <div className="border/60 mt-2 space-y-1 border-t pt-2">
+                <label className="text-muted-foreground flex cursor-pointer select-none items-center gap-2 px-1 py-1 text-xs">
+                  <Checkbox
+                    className="size-3.5"
+                    checked={showClosed}
+                    onCheckedChange={onToggleShowClosed}
+                  />
+                  显示已归档
+                </label>
+                {showClosed ? (
+                  <ClosedListsSection
+                    closedLists={closedLists}
+                    selectedListId={selectedListId}
+                    useActionSheet={useActionSheet}
+                    onSelectList={onSelectList}
+                    onOpenListMenu={onOpenListMenu}
+                    onOpenListContextMenu={onOpenListContextMenu}
+                  />
+                ) : null}
+              </div>
+            ) : null}
+          </div>
         </div>
       </SortableContext>
       <div className="border flex shrink-0 flex-col gap-1 border-t p-2">

@@ -51,11 +51,44 @@ export function resolveWorldScope(opts: EntitySearchOpts): SQL[] {
   return [eq(entities.world_id, opts.world_id)];
 }
 
+const CST_TODAY = sql`(now() AT TIME ZONE 'Asia/Shanghai')::date`;
+
+function buildTaskItemDueOnCondition(relativeDay: "today" | "tomorrow" | "yesterday"): SQL {
+  if (relativeDay === "today") {
+    return sql`(${entities.body}->>'due_at')::timestamptz::date = ${CST_TODAY}`;
+  }
+  if (relativeDay === "tomorrow") {
+    return sql`(${entities.body}->>'due_at')::timestamptz::date = ${CST_TODAY} + 1`;
+  }
+  return sql`(${entities.body}->>'due_at')::timestamptz::date = ${CST_TODAY} - 1`;
+}
+
+function buildTaskItemCompletedOnCondition(relativeDay: "today" | "tomorrow" | "yesterday"): SQL {
+  if (relativeDay === "today") {
+    return sql`(${entities.body}->>'completed_at')::timestamptz::date = ${CST_TODAY}`;
+  }
+  if (relativeDay === "tomorrow") {
+    return sql`(${entities.body}->>'completed_at')::timestamptz::date = ${CST_TODAY} + 1`;
+  }
+  return sql`(${entities.body}->>'completed_at')::timestamptz::date = ${CST_TODAY} - 1`;
+}
+
 function buildTaskItemBodyConditions(
   filters: ReturnType<typeof parseTaskItemSearchFilters>,
 ): SQL[] {
   const conditions: SQL[] = [];
-  if (filters.list_id != null) {
+  if (filters.list_ids != null && filters.list_ids.length > 0) {
+    if (filters.list_ids.length === 1) {
+      conditions.push(sql`${entities.body}->>'list_id' = ${String(filters.list_ids[0])}`);
+    } else {
+      conditions.push(
+        sql`${entities.body}->>'list_id' IN (${sql.join(
+          filters.list_ids.map((id) => sql`${String(id)}`),
+          sql`, `,
+        )})`,
+      );
+    }
+  } else if (filters.list_id != null) {
     conditions.push(sql`${entities.body}->>'list_id' = ${String(filters.list_id)}`);
   }
   if (filters.status != null && filters.status !== "all") {
@@ -82,6 +115,29 @@ function buildTaskItemBodyConditions(
   if (filters.due_after) {
     conditions.push(
       sql`(${entities.body}->>'due_at')::timestamptz >= ${filters.due_after}::timestamptz`,
+    );
+  }
+  if (filters.has_due_at) {
+    conditions.push(
+      sql`${entities.body}->>'due_at' IS NOT NULL AND ${entities.body}->>'due_at' <> ''`,
+    );
+  }
+  if (filters.due_on != null) {
+    conditions.push(buildTaskItemDueOnCondition(filters.due_on));
+  }
+  if (filters.due_on_or_before_days != null) {
+    conditions.push(
+      sql`(${entities.body}->>'due_at')::timestamptz IS NOT NULL
+        AND (${entities.body}->>'due_at')::timestamptz::date <= ${CST_TODAY} + ${filters.due_on_or_before_days}`,
+    );
+  }
+  if (filters.completed_on != null) {
+    conditions.push(buildTaskItemCompletedOnCondition(filters.completed_on));
+  }
+  if (filters.completed_on_or_after_days != null) {
+    conditions.push(
+      sql`(${entities.body}->>'completed_at')::timestamptz IS NOT NULL
+        AND (${entities.body}->>'completed_at')::timestamptz::date >= ${CST_TODAY} - ${filters.completed_on_or_after_days}`,
     );
   }
   return conditions;

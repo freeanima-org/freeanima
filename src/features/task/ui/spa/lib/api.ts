@@ -1,6 +1,14 @@
 import { getSubjectKind } from "@freeanima/frontend/shell-sdk";
 
+import type {
+  SmartListRowPayload,
+  TaskItemSearchFiltersPayload,
+} from "@freeanima/shared/sap-contract/frames/task.ts";
+
 import { getTaskHubClient } from "./hub-client.ts";
+
+export type TaskItemSearchFilters = TaskItemSearchFiltersPayload;
+export type SmartListRow = SmartListRowPayload;
 
 export type TaskListRow = {
   id: number;
@@ -83,6 +91,39 @@ export async function deleteTaskList(id: number): Promise<void> {
 export async function fetchTaskItems(listId: number): Promise<TaskItemRow[]> {
   const data = await hub().call("task.list", withSubjectKind({ list_id: listId, status: "all" }));
   return data.items;
+}
+
+export async function fetchTaskItemsByFilters(
+  filters: TaskItemSearchFilters,
+): Promise<TaskItemRow[]> {
+  const data = await hub().call("task.list", withSubjectKind({ filters }));
+  return data.items;
+}
+
+export async function fetchSmartLists(): Promise<SmartListRow[]> {
+  const data = await hub().call("smartlist.list", withSubjectKind({}));
+  return data.smart_lists;
+}
+
+export async function createSmartList(input: {
+  title: string;
+  filters: TaskItemSearchFilters;
+  sort_order?: number;
+}): Promise<SmartListRow> {
+  const data = await hub().call("smartlist.create", withSubjectKind(input));
+  return data.item;
+}
+
+export async function updateSmartList(
+  id: number,
+  patch: { title?: string; filters?: TaskItemSearchFilters; sort_order?: number },
+): Promise<SmartListRow> {
+  const data = await hub().call("smartlist.patch", withSubjectKind({ id, ...patch }));
+  return data.item;
+}
+
+export async function deleteSmartList(id: number): Promise<void> {
+  await hub().call("smartlist.delete", withSubjectKind({ id }));
 }
 
 export async function searchTaskItems(input: {

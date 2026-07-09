@@ -6,6 +6,36 @@ const taskSubjectKindSchema = notificationRecipientKindSchema.default("user");
 
 const taskPrioritySchema = z.enum(["high", "medium", "low", "none"]);
 const taskStatusSchema = z.enum(["pending", "completed"]);
+const taskRelativeDaySchema = z.enum(["today", "tomorrow", "yesterday"]);
+
+export const taskItemSearchFiltersSchema = z
+  .object({
+    list_id: z.number().int().positive().optional(),
+    list_ids: z.array(z.number().int().positive()).min(1).optional(),
+    status: taskStatusSchema.or(z.literal("all")).optional(),
+    priority: taskPrioritySchema.optional(),
+    tags: z.array(z.string()).optional(),
+    due_today: z.boolean().optional(),
+    due_before: z.string().optional(),
+    due_after: z.string().optional(),
+    has_due_at: z.boolean().optional(),
+    due_on: taskRelativeDaySchema.optional(),
+    due_on_or_before_days: z.number().int().nonnegative().optional(),
+    completed_on: taskRelativeDaySchema.optional(),
+    completed_on_or_after_days: z.number().int().nonnegative().optional(),
+  })
+  .strict();
+
+export type TaskItemSearchFiltersPayload = z.infer<typeof taskItemSearchFiltersSchema>;
+
+const smartListPresetSchema = z.enum([
+  "due_today",
+  "due_tomorrow",
+  "due_next_7d",
+  "done_today",
+  "done_yesterday",
+  "done_last_7d",
+]);
 
 export const taskListRowSchema = z.object({
   id: z.number().int().positive(),
@@ -86,9 +116,60 @@ export type TasklistDeleteInput = z.infer<typeof tasklistDeleteInputSchema>;
 export const tasklistDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type TasklistDeleteOutput = z.infer<typeof tasklistDeleteOutputSchema>;
 
+export const smartListRowSchema = z.object({
+  id: z.number().int().positive().optional(),
+  preset: smartListPresetSchema.optional(),
+  title: z.string(),
+  sort_order: z.number().int(),
+  filters: taskItemSearchFiltersSchema,
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
+});
+
+export type SmartListRowPayload = z.infer<typeof smartListRowSchema>;
+
+export const smartlistListInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+});
+export type SmartlistListInput = z.infer<typeof smartlistListInputSchema>;
+export const smartlistListOutputSchema = z.object({
+  smart_lists: z.array(smartListRowSchema),
+});
+export type SmartlistListOutput = z.infer<typeof smartlistListOutputSchema>;
+
+export const smartlistCreateInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+  title: z.string().min(1),
+  filters: taskItemSearchFiltersSchema,
+  sort_order: z.number().int().optional(),
+});
+export type SmartlistCreateInput = z.infer<typeof smartlistCreateInputSchema>;
+export const smartlistCreateOutputSchema = z.object({ item: smartListRowSchema });
+export type SmartlistCreateOutput = z.infer<typeof smartlistCreateOutputSchema>;
+
+export const smartlistPatchInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+  id: z.number().int().positive(),
+  title: z.string().min(1).optional(),
+  filters: taskItemSearchFiltersSchema.optional(),
+  sort_order: z.number().int().optional(),
+});
+export type SmartlistPatchInput = z.infer<typeof smartlistPatchInputSchema>;
+export const smartlistPatchOutputSchema = z.object({ item: smartListRowSchema });
+export type SmartlistPatchOutput = z.infer<typeof smartlistPatchOutputSchema>;
+
+export const smartlistDeleteInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+  id: z.number().int().positive(),
+});
+export type SmartlistDeleteInput = z.infer<typeof smartlistDeleteInputSchema>;
+export const smartlistDeleteOutputSchema = z.object({ ok: z.literal(true) });
+export type SmartlistDeleteOutput = z.infer<typeof smartlistDeleteOutputSchema>;
+
 export const taskListInputSchema = z.object({
   subject_kind: taskSubjectKindSchema,
   list_id: z.number().int().positive().optional(),
+  filters: taskItemSearchFiltersSchema.optional(),
   status: taskStatusSchema.or(z.literal("all")).optional(),
   due_today: z.boolean().optional(),
   tags: z.array(z.string()).optional(),

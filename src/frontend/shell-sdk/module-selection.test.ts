@@ -51,9 +51,19 @@ describe("module-selection", () => {
     expect(readModuleSelection("chat", ctx)).toBeNull();
   });
 
-  test("tasks 读写 listId", () => {
-    writeModuleSelection("tasks", 42, ctx);
-    expect(readModuleSelection("tasks", ctx)).toBe(42);
+  test("tasks 读写 listId（兼容旧 number）", () => {
+    writeModuleSelection("tasks", { kind: "list", id: 42 }, ctx);
+    expect(readModuleSelection("tasks", ctx)).toEqual({ kind: "list", id: 42 });
+    localStorage.setItem("freeanima.module-selection:http://127.0.0.1:2658/sap:user:tasks", "7");
+    expect(readModuleSelection("tasks", ctx)).toEqual({ kind: "list", id: 7 });
+  });
+
+  test("tasks 读写 smart_list key", () => {
+    writeModuleSelection("tasks", { kind: "smart_list", key: "due_today" }, ctx);
+    expect(readModuleSelection("tasks", ctx)).toEqual({
+      kind: "smart_list",
+      key: "due_today",
+    });
   });
 
   test("email 读写 accountId 与 messageId", () => {

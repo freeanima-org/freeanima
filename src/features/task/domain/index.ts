@@ -32,4 +32,21 @@ export {
   searchTaskItems,
 } from "./item-store.ts";
 
+export {
+  listSmartListsMerged,
+  createSmartList,
+  updateSmartList,
+  deleteSmartList,
+  type SmartListCreateInput,
+  type SmartListUpdateInput,
+} from "./smart-list-store.ts";
+
+export {
+  BUILTIN_SMART_LIST_DEFINITIONS,
+  DEFAULT_SMART_LIST_PRESET,
+  findBuiltinSmartListByPreset,
+  listBuiltinSmartListRows,
+  type SmartListPreset,
+} from "./smart-list-presets.ts";
+
 export { registerTaskTools } from "./tools.ts";

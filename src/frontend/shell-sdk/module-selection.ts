@@ -11,6 +11,10 @@ export type EmailModuleSelection = {
   messageId?: number | null;
 };
 
+export type TaskModuleSelection =
+  | { kind: "smart_list"; key: string }
+  | { kind: "list"; id: number };
+
 export type ModuleSelectionContext = {
   hubScope?: string;
   subjectKind?: SubjectKind;
@@ -45,14 +49,24 @@ function parseChatValue(raw: string | null): string | null {
   return trimmed || null;
 }
 
-function parseTasksValue(raw: string | null): number | null {
+function parseTasksValue(raw: string | null): TaskModuleSelection | null {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as unknown;
-    if (typeof parsed === "number" && Number.isInteger(parsed) && parsed > 0) return parsed;
+    if (typeof parsed === "number" && Number.isInteger(parsed) && parsed > 0) {
+      return { kind: "list", id: parsed };
+    }
+    if (typeof parsed !== "object" || parsed === null) return null;
+    const obj = parsed as Record<string, unknown>;
+    if (obj.kind === "list" && typeof obj.id === "number" && obj.id > 0) {
+      return { kind: "list", id: obj.id };
+    }
+    if (obj.kind === "smart_list" && typeof obj.key === "string" && obj.key.trim()) {
+      return { kind: "smart_list", key: obj.key.trim() };
+    }
   } catch {
     const id = Number(raw);
-    if (Number.isInteger(id) && id > 0) return id;
+    if (Number.isInteger(id) && id > 0) return { kind: "list", id };
   }
   return null;
 }
@@ -77,7 +91,10 @@ function parseEmailValue(raw: string | null): EmailModuleSelection | null {
 }
 
 export function readModuleSelection(module: "chat", ctx?: ModuleSelectionContext): string | null;
-export function readModuleSelection(module: "tasks", ctx?: ModuleSelectionContext): number | null;
+export function readModuleSelection(
+  module: "tasks",
+  ctx?: ModuleSelectionContext,
+): TaskModuleSelection | null;
 export function readModuleSelection(
   module: "email",
   ctx?: ModuleSelectionContext,
@@ -85,7 +102,7 @@ export function readModuleSelection(
 export function readModuleSelection(
   module: ModuleSelectionModule,
   ctx?: ModuleSelectionContext,
-): string | number | EmailModuleSelection | null {
+): string | TaskModuleSelection | EmailModuleSelection | null {
   try {
     const raw = storage()?.getItem(storageKey(module, ctx)) ?? null;
     if (module === "chat") return parseChatValue(raw);
@@ -103,7 +120,7 @@ export function writeModuleSelection(
 ): void;
 export function writeModuleSelection(
   module: "tasks",
-  value: number | null,
+  value: TaskModuleSelection | null,
   ctx?: ModuleSelectionContext,
 ): void;
 export function writeModuleSelection(
@@ -113,7 +130,7 @@ export function writeModuleSelection(
 ): void;
 export function writeModuleSelection(
   module: ModuleSelectionModule,
-  value: string | number | EmailModuleSelection | null,
+  value: string | TaskModuleSelection | EmailModuleSelection | null,
   ctx?: ModuleSelectionContext,
 ): void {
   try {
@@ -131,7 +148,12 @@ export function writeModuleSelection(
       return;
     }
     if (module === "tasks") {
-      if (typeof value === "number" && Number.isInteger(value) && value > 0) {
+      if (
+        value != null &&
+        typeof value === "object" &&
+        "kind" in value &&
+        (value.kind === "list" || value.kind === "smart_list")
+      ) {
         store.setItem(key, JSON.stringify(value));
       } else {
         store.removeItem(key);

@@ -9,6 +9,7 @@ import {
   EMAIL_THREAD_COMPONENT,
   TASK_ITEM_COMPONENT,
   TASK_LIST_COMPONENT,
+  SMART_LIST_COMPONENT,
   VAULT_CONFIG_COMPONENT,
   VAULT_ITEM_COMPONENT,
   COMPANION_PROFILE_COMPONENT,
@@ -20,6 +21,7 @@ import {
   emailThreadBodySchema,
   taskItemBodySchema,
   taskListBodySchema,
+  smartListBodySchema,
   vaultConfigBodySchema,
   vaultItemBodySchema,
   companionProfileBodySchema,
@@ -31,6 +33,7 @@ import {
   type EmailThreadBody,
   type TaskItemBody,
   type TaskListBody,
+  type SmartListBody,
   type VaultConfigBody,
   type VaultItemBody,
   type CompanionProfileBody,
@@ -82,6 +85,14 @@ export function asTaskList(row: EntityRow): (TaskListBody & { id: number; name: 
   if (row.primary_component !== TASK_LIST_COMPONENT) return null;
   const parsed = taskListBodySchema.safeParse(row.body);
   return parsed.success ? { id: row.id, name: row.title, ...parsed.data } : null;
+}
+
+export function asSmartList(
+  row: EntityRow,
+): (SmartListBody & { id: number; title: string }) | null {
+  if (row.primary_component !== SMART_LIST_COMPONENT) return null;
+  const parsed = smartListBodySchema.safeParse(row.body);
+  return parsed.success ? { id: row.id, title: row.title, ...parsed.data } : null;
 }
 
 export function asTaskItem(

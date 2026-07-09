@@ -8,6 +8,19 @@ function copyIdMenuItem(id: number): import("./menu-types.ts").TaskMenuItem {
   };
 }
 
+export function buildSmartListMenuItems(
+  row: import("./api.ts").SmartListRow,
+  handlers: {
+    onEdit: (row: import("./api.ts").SmartListRow) => void;
+    onDelete: (row: import("./api.ts").SmartListRow) => void;
+  },
+): import("./menu-types.ts").TaskMenuItem[] {
+  return [
+    { label: "编辑", onClick: () => handlers.onEdit(row) },
+    { label: "删除", danger: true, onClick: () => void handlers.onDelete(row) },
+  ];
+}
+
 export function buildListMenuItems(
   list: TaskListRow,
   handlers: {
