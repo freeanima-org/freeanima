@@ -92,6 +92,9 @@ lint/tmp/
 # Cordova plugins for Capacitor
 capacitor-cordova-android-plugins
 
+# cap sync 生成；路径随本机 bun 缓存解析变化，构建脚本会先执行 cap sync
+capacitor.settings.gradle
+
 # Copied web assets
 app/src/main/assets/public
 
