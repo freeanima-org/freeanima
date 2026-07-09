@@ -53,14 +53,14 @@ function buildReminderBody(item: TaskReminderSchedulable & { title: string }): s
   return [dueLine, remindLine].filter(Boolean).join("\n") || item.title;
 }
 
-/** 扫描到期/提醒时间已到的 pending 任务，向 agent 主体发通知（last_notified_at 去重） */
+/** 扫描到期/提醒时间已到的 pending 任务，向 user 主体发通知（last_notified_at 去重） */
 export async function runTaskReminderScan(): Promise<string> {
   const port = getNotificationPort();
   if (!port) {
     return JSON.stringify({ ok: false, error: "notification port unavailable" });
   }
 
-  const agent = port.getAgentRecipient();
+  const user = port.getUserRecipient();
   const now = Date.now();
   const userWorldId = getResolvedWorldContext().user_world_id;
   const search = await searchEntities({
@@ -84,8 +84,8 @@ export async function runTaskReminderScan(): Promise<string> {
     const sourceRef = taskReminderSourceRef(item.id, at);
 
     await port.create({
-      recipient_kind: agent.kind,
-      recipient_id: agent.id,
+      recipient_kind: user.kind,
+      recipient_id: user.id,
       title: `任务到期：${item.title}`,
       body,
       source_kind: "system",

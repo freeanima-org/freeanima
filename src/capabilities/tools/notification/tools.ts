@@ -25,13 +25,13 @@ function resolveMarkReadIds(args: ToolArgs): string[] | null {
 export function registerNotificationTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "notification",
-    "In-app notification inbox (user and agent subjects). Task due/reminder cron feeds the agent inbox — do not duplicate with notification_send.",
+    "In-app notification inbox (user and agent subjects). Task due/reminder cron feeds the user inbox — do not duplicate with notification_send.",
     attachToolReturns(
       [
         {
           name: "notification_send",
           description:
-            "Send an in-app notification to the configured user and/or agent subject. Agent inbox is also fed by cron/task scanners; do not send duplicate reminders to yourself.",
+            "Send an in-app notification to the configured user and/or agent subject. Task due/reminder cron writes to the user inbox; do not send duplicate task reminders.",
           parameters: {
             type: "object",
             properties: {

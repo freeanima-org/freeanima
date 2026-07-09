@@ -24,7 +24,7 @@ Each row stores `recipient_kind` (`user` | `agent`) and `recipient_id` (entity i
 | --------------------------------------- | ------------------------------------------ |
 | Cron success (when `notify_on_success`) | **both** user + agent                      |
 | Cron failure                            | **both** user + agent                      |
-| Task due reminder                       | agent                                      |
+| Task due reminder                       | user                                       |
 | `notification_send` tool                | user / agent / both; optional `subject_id` |
 
 Dream pipeline **does not** create notifications (reminder removed).
@@ -71,7 +71,7 @@ For each pending `task_item`:
 
 **Product rule (confirmed)**: one trigger per task per scan — **remind first, else due**; not separate notifications for both when both are set.
 
-Task reminders are delivered via this inbox (ToolSet `task` / cron), not by `notification_send` duplicating the same reminder.
+Task reminders are delivered to the **user** inbox via cron (Shell UI / SAP), not injected into agent context and not duplicated by `notification_send`.
 
 ## Tools
 
