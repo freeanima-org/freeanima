@@ -1,4 +1,4 @@
-const TIME_PREFIX_RE = /^time: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}\n/;
+const TIME_PREFIX_RE = /^time: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?: 周[一二三四五六日])?\n/;
 
 export const PASSIVE_RECALL_QUERY_MAX = 320;
 

@@ -69,6 +69,14 @@ export function formatCstDisplayFromMs(epochMs: number, opts?: FormatCstDisplayO
 
 const CST_DAY_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
+/** CST calendar weekday in Chinese, e.g. `周三` */
+export function formatCstWeekdayZh(date: Date): string {
+  return new Intl.DateTimeFormat("zh-CN", {
+    timeZone: "Asia/Shanghai",
+    weekday: "short",
+  }).format(date);
+}
+
 /** Whether a YYYY-MM-DD calendar day is Monday in CST (+08:00) */
 export function isCstMonday(day: string): boolean {
   const match = CST_DAY_RE.exec(day.trim());

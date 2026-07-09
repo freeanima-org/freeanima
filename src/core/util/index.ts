@@ -7,6 +7,7 @@ export {
   formatCstDisplayFromMs,
   formatCstIso,
   formatCstIsoFromEpoch,
+  formatCstWeekdayZh,
   isCstMonday,
   type FormatCstDisplayOpts,
 } from "./time.ts";
