@@ -17,7 +17,6 @@ const config: CapacitorConfig = {
   },
   android: {
     allowMixedContent: true,
-    adjustMarginsForEdgeToEdge: "auto",
   },
   server: {
     // http：bootstrap 可 fetch 局域网 HTTP Hub（CORS 允许 http://localhost）；https Hub 仍通过 location 整页跳转
