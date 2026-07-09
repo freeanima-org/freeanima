@@ -3,12 +3,12 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, mergeConfig, type Plugin } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
-import { createComponentBuildMeta } from "@freeanima/core/config/build-meta.ts";
-import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc/urls.ts";
-
-import { shellEntryFileNames } from "@freeanima/frontend/shell-ui/vite/entry-file-names.ts";
-import { createShellViteInlineConfig } from "@freeanima/frontend/shell-ui/vite/run-build.ts";
-import { shellBridgeHtmlPlugin } from "@freeanima/frontend/shell-ui/vite/shell-bridge-html.ts";
+import { createComponentBuildMeta, resolveHubRpcWsUrl } from "../vite-config-imports.ts";
+import {
+  createShellViteInlineConfig,
+  shellBridgeHtmlPlugin,
+  shellEntryFileNames,
+} from "../vite-config-imports.ts";
 
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(PKG_DIR, "..", "..", "..", "..");
