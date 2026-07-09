@@ -1,10 +1,12 @@
 import type { SettingsSection } from "@freeanima/frontend/shell-sdk/settings";
 
-export const companionSettingsSection: SettingsSection = {
+export const companionHubSettingsSection: SettingsSection = {
   id: "companion",
-  order: 10,
+  order: 55,
+  category: "server",
   title: "桌面伴侣",
-  description: "模型、行为与动作库",
+  description:
+    "保存在 Hub 数据库（companion_profile），多客户端共享；修改后 sidecar 通过 sync.pull 同步到本机。",
   platforms: {
     desktop: {
       kind: "component",
@@ -13,3 +15,6 @@ export const companionSettingsSection: SettingsSection = {
     },
   },
 };
+
+/** @deprecated 使用 companionHubSettingsSection */
+export const companionSettingsSection = companionHubSettingsSection;

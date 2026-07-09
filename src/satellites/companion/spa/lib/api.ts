@@ -52,6 +52,25 @@ export async function fetchSidecarRuntimeConfig(): Promise<CompanionConfig> {
   return wrapHubConfig((await res.json()) as ClientCompanionConfig);
 }
 
+export async function fetchSidecarRuntimeFields(): Promise<{
+  instance_id: string;
+  sap_connected: boolean;
+}> {
+  try {
+    const cfg = await fetchSidecarRuntimeConfig();
+    return { instance_id: cfg.instance_id, sap_connected: cfg.sap_connected };
+  } catch {
+    return { instance_id: "", sap_connected: false };
+  }
+}
+
+/** Hub 设置页：profile 走 RPC，运行时字段走 sidecar */
+export async function loadHubCompanionSettingsConfig(): Promise<CompanionConfig> {
+  const profile = await fetchCompanionConfig();
+  const runtime = await fetchSidecarRuntimeFields();
+  return { ...profile, ...runtime };
+}
+
 export async function saveSettings(patch: {
   hub_url?: string;
   behavior?: Partial<CompanionBehavior>;

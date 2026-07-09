@@ -1,8 +1,6 @@
 import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
 import type { ScopedSettingsBackend } from "@freeanima/frontend/shell-sdk/settings";
 import {
-  DEBUG_SENTRY_DSN_KEY,
-  DEBUG_SENTRY_ENABLED_KEY,
   DEBUG_VCONSOLE_ENABLED_KEY,
   HUB_URL_KEY,
   REMOTE_AUTH_TOKEN_KEY,
@@ -23,8 +21,6 @@ function loadKvScope(scope: SettingsStorageScope): unknown {
   }
   if (scopeId === "debug") {
     return parseShellDebugConfig({
-      sentryEnabled: localStorage.getItem(DEBUG_SENTRY_ENABLED_KEY) === "1",
-      sentryDsn: localStorage.getItem(DEBUG_SENTRY_DSN_KEY) ?? "",
       vConsoleEnabled: localStorage.getItem(DEBUG_VCONSOLE_ENABLED_KEY) === "1",
     });
   }
@@ -42,8 +38,6 @@ function saveKvScope(scope: SettingsStorageScope, value: unknown): void {
   }
   if (scopeId === "debug") {
     const cfg = value as ShellDebugConfig;
-    localStorage.setItem(DEBUG_SENTRY_ENABLED_KEY, cfg.sentryEnabled ? "1" : "0");
-    localStorage.setItem(DEBUG_SENTRY_DSN_KEY, cfg.sentryDsn);
     localStorage.setItem(DEBUG_VCONSOLE_ENABLED_KEY, cfg.vConsoleEnabled ? "1" : "0");
     return;
   }

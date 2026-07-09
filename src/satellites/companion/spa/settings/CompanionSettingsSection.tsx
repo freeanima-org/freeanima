@@ -1,20 +1,17 @@
 import { useEffect } from "react";
-import type { SettingsPanelProps, SettingsStore } from "@freeanima/frontend/shell-sdk/settings";
-import type { ClientCompanionConfig } from "@freeanima/satellites/companion/shared/constants.ts";
+import type { SettingsPanelProps } from "@freeanima/frontend/shell-sdk/settings";
 
 import { SettingsPanel } from "../components/SettingsPanel.tsx";
 import { useCompanionStore } from "../stores/companion.ts";
 
-export default function CompanionSettingsSection({ platform, store, deps }: SettingsPanelProps) {
+export default function CompanionSettingsSection({ platform, deps }: SettingsPanelProps) {
   useEffect(() => {
-    void useCompanionStore
-      .getState()
-      .initFromStore(store as SettingsStore<ClientCompanionConfig>, deps?.companion);
-  }, [store, deps]);
+    void useCompanionStore.getState().initHubSettings();
+  }, []);
 
   if (platform === "mobile") {
     return <p className="text-sm text-muted-foreground">伴侣设置仅桌面端可用</p>;
   }
 
-  return <SettingsPanel standalone {...(deps ? { deps } : {})} />;
+  return <SettingsPanel standalone hubOnly {...(deps ? { deps } : {})} />;
 }

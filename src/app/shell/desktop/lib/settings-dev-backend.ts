@@ -1,8 +1,7 @@
 import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
 import type { ScopedSettingsBackend } from "@freeanima/frontend/shell-sdk/settings";
 import {
-  DEBUG_SENTRY_DSN_KEY,
-  DEBUG_SENTRY_ENABLED_KEY,
+  COMPANION_VISIBLE_KEY,
   DEBUG_VCONSOLE_ENABLED_KEY,
   HUB_URL_KEY,
   LAUNCH_AT_LOGIN_KEY,
@@ -12,8 +11,6 @@ import {
   parseShellDebugConfig,
   type ShellDebugConfig,
 } from "@freeanima/frontend/shell-sdk/shell-debug-config";
-
-const COMPANION_CONFIG_LS_KEY = "freeanima.companion.config";
 
 function loadKvScope(scope: SettingsStorageScope): unknown {
   if (scope.kind !== "kv") throw new Error("dev backend 不支持 file scope");
@@ -28,10 +25,11 @@ function loadKvScope(scope: SettingsStorageScope): unknown {
   }
   if (scope.id === "debug") {
     return parseShellDebugConfig({
-      sentryEnabled: localStorage.getItem(DEBUG_SENTRY_ENABLED_KEY) === "1",
-      sentryDsn: localStorage.getItem(DEBUG_SENTRY_DSN_KEY) ?? "",
       vConsoleEnabled: localStorage.getItem(DEBUG_VCONSOLE_ENABLED_KEY) === "1",
     });
+  }
+  if (scope.id === "companion-shell") {
+    return { visible: localStorage.getItem(COMPANION_VISIBLE_KEY) !== "0" };
   }
   throw new Error(`未知 kv scope: ${(scope as SettingsStorageScope).id}`);
 }
@@ -49,9 +47,12 @@ function saveKvScope(scope: SettingsStorageScope, value: unknown): void {
   }
   if (scope.id === "debug") {
     const cfg = value as ShellDebugConfig;
-    localStorage.setItem(DEBUG_SENTRY_ENABLED_KEY, cfg.sentryEnabled ? "1" : "0");
-    localStorage.setItem(DEBUG_SENTRY_DSN_KEY, cfg.sentryDsn);
     localStorage.setItem(DEBUG_VCONSOLE_ENABLED_KEY, cfg.vConsoleEnabled ? "1" : "0");
+    return;
+  }
+  if (scope.id === "companion-shell") {
+    const raw = value as { visible?: boolean };
+    localStorage.setItem(COMPANION_VISIBLE_KEY, raw.visible === false ? "0" : "1");
     return;
   }
   throw new Error(`未知 kv scope: ${(scope as SettingsStorageScope).id}`);
@@ -61,7 +62,7 @@ function loadFileScope(scope: SettingsStorageScope): unknown {
   if (scope.kind !== "file" || scope.id !== "companion") {
     throw new Error(`dev backend 不支持 scope: ${JSON.stringify(scope)}`);
   }
-  const raw = localStorage.getItem(COMPANION_CONFIG_LS_KEY);
+  const raw = localStorage.getItem("freeanima.companion.config");
   if (!raw) return null;
   try {
     return JSON.parse(raw) as unknown;
@@ -74,7 +75,7 @@ function saveFileScope(scope: SettingsStorageScope, value: unknown): void {
   if (scope.kind !== "file" || scope.id !== "companion") {
     throw new Error(`dev backend 不支持 scope: ${JSON.stringify(scope)}`);
   }
-  localStorage.setItem(COMPANION_CONFIG_LS_KEY, JSON.stringify(value, null, 2));
+  localStorage.setItem("freeanima.companion.config", JSON.stringify(value, null, 2));
 }
 
 /** 浏览器直接打开 desktop Vite 时的 localStorage 回退（Electron preload 未注入时） */

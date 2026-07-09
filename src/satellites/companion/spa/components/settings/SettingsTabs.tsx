@@ -1,14 +1,13 @@
 import { Tabs, TabsList, TabsTrigger } from "@freeanima/frontend/ui-kit";
 import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
 
-const TAB_IDS = ["general", "behavior", "models", "library", "slots"] as const;
+const TAB_IDS = ["behavior", "models", "library", "slots"] as const;
 
 export function SettingsTabs() {
   const tab = useCompanionStore((s) => s.settingsTab);
   const setTab = useCompanionStore((s) => s.setSettingsTab);
 
   const tabs = [
-    { id: "general" as const, label: "通用" },
     { id: "behavior" as const, label: "行为" },
     { id: "models" as const, label: "模型" },
     { id: "library" as const, label: "动作库" },

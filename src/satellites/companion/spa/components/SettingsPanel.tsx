@@ -2,7 +2,6 @@ import { Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
 import type { SettingsSectionDeps } from "@freeanima/frontend/shell-sdk/settings";
 import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
 import { SettingsTabs } from "./settings/SettingsTabs.tsx";
-import { GeneralTab } from "./settings/GeneralTab.tsx";
 import { BehaviorTab } from "./settings/BehaviorTab.tsx";
 import { ModelsTab } from "./settings/ModelsTab.tsx";
 import { MotionLibraryTab } from "./settings/MotionLibraryTab.tsx";
@@ -10,11 +9,12 @@ import { MotionSlotsTab } from "./settings/MotionSlotsTab.tsx";
 
 type Props = {
   standalone?: boolean;
+  hubOnly?: boolean;
   onClose?: () => void;
   deps?: SettingsSectionDeps;
 };
 
-export function SettingsPanel({ standalone = false, onClose, deps }: Props) {
+export function SettingsPanel({ standalone = false, onClose, deps: _deps }: Props) {
   const tab = useCompanionStore((s) => s.settingsTab);
 
   return (
@@ -48,9 +48,6 @@ export function SettingsPanel({ standalone = false, onClose, deps }: Props) {
             tab === "library" ? "flex flex-col overflow-hidden" : "overflow-y-auto"
           }`}
         >
-          {tab === "general" ? (
-            <GeneralTab {...(deps?.companion ? { companionApi: deps.companion } : {})} />
-          ) : null}
           {tab === "behavior" ? <BehaviorTab /> : null}
           {tab === "models" ? <ModelsTab /> : null}
           {tab === "library" ? <MotionLibraryTab /> : null}

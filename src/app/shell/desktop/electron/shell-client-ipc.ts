@@ -5,6 +5,7 @@ import { testHubHealthConnection } from "@freeanima/frontend/shell-sdk";
 import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
 import {
   COMPANION_CONFIG_SCOPE,
+  COMPANION_SHELL_SCOPE,
   DEBUG_SETTINGS_SCOPE,
   HUB_SETTINGS_SCOPE,
 } from "@freeanima/frontend/shell-sdk/settings";
@@ -14,8 +15,10 @@ import { readShellDebugConfig, writeShellDebugConfig } from "./shell-debug-store
 import { setLaunchAtLogin } from "./launch-at-login.ts";
 import {
   loadCompanionConfigFromFile,
+  readCompanionVisibleFromStore,
   readLaunchAtLoginFromStore,
   saveCompanionConfigToFile,
+  saveCompanionVisibleToStore,
 } from "./shell-scoped-prefs.ts";
 
 export type HubClientConfigPayload = {
@@ -57,6 +60,7 @@ function assertScope(expected: SettingsStorageScope, actual: SettingsStorageScop
 export function registerShellClientIpc(
   showHubSettings: () => void,
   onConfigSaved?: () => void,
+  onCompanionVisibleSaved?: (visible: boolean) => void,
 ): void {
   ipcMain.handle("shell:settings:load", (_event, scope: SettingsStorageScope) => {
     if (scope.kind === "kv" && scope.id === "hub") {
@@ -66,6 +70,10 @@ export function registerShellClientIpc(
     if (scope.kind === "kv" && scope.id === "debug") {
       assertScope(DEBUG_SETTINGS_SCOPE, scope);
       return readShellDebugConfig();
+    }
+    if (scope.kind === "kv" && scope.id === "companion-shell") {
+      assertScope(COMPANION_SHELL_SCOPE, scope);
+      return { visible: readCompanionVisibleFromStore() };
     }
     if (scope.kind === "file" && scope.id === "companion") {
       assertScope(COMPANION_CONFIG_SCOPE, scope);
@@ -90,6 +98,14 @@ export function registerShellClientIpc(
       return writeShellDebugConfig(
         value as import("@freeanima/frontend/shell-sdk").ShellDebugConfig,
       );
+    }
+    if (scope.kind === "kv" && scope.id === "companion-shell") {
+      assertScope(COMPANION_SHELL_SCOPE, scope);
+      const raw = value as { visible?: boolean };
+      const visible = raw.visible !== false;
+      saveCompanionVisibleToStore(visible);
+      onCompanionVisibleSaved?.(visible);
+      return { visible };
     }
     if (scope.kind === "file" && scope.id === "companion") {
       assertScope(COMPANION_CONFIG_SCOPE, scope);

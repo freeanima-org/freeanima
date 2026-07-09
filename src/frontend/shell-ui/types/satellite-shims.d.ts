@@ -10,7 +10,9 @@ declare module "@freeanima/satellites/companion/spa/settings/CompanionSettingsSe
   export default CompanionSettingsSection;
 }
 
-declare module "@freeanima/frontend/shell-ui/spa/bootstrap/sentry.ts" {
-  export function sendSentryTestEvent(): Promise<void>;
-  export function notifyDebugConfigChanged(): void;
+declare module "@freeanima/satellites/companion/spa/settings/CompanionClientSettingsSection.tsx" {
+  import type { ComponentType } from "react";
+  import type { SettingsPanelProps } from "@freeanima/frontend/shell-sdk/settings";
+  const CompanionClientSettingsSection: ComponentType<SettingsPanelProps>;
+  export default CompanionClientSettingsSection;
 }

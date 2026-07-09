@@ -15,7 +15,7 @@ import {
   FormToggle,
 } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
 
-import { notifyDebugConfigChanged } from "../bootstrap/sentry.ts";
+import { notifyDebugConfigChanged } from "../debug-config-events.ts";
 import { resolveShellRouterBasepath } from "../router-basepath.ts";
 
 type Props = {
@@ -131,7 +131,7 @@ export function FormRenderer({
     try {
       const parsed = fields.zodSchema.parse(values);
       await store.test(parsed);
-      setStatus(sectionId === "debug" ? "测试事件已发送" : "连接成功");
+      setStatus(sectionId === "hub" ? "连接成功" : "已保存");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -145,14 +145,7 @@ export function FormRenderer({
 
   const fieldWidthClass = "w-full lg:max-w-xl";
 
-  const testLabel =
-    sectionId === "debug"
-      ? testing
-        ? "发送中…"
-        : "发送测试事件"
-      : testing
-        ? "测试中…"
-        : "测试连接";
+  const testLabel = testing ? "测试中…" : "测试连接";
 
   return (
     <div className={`space-y-4 ${platform === "mobile" ? "pb-8" : ""}`}>
