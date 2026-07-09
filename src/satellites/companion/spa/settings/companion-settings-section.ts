@@ -1,5 +1,8 @@
 import type { SettingsSection } from "@freeanima/frontend/shell-sdk/settings";
 
+const companionHubPanelLoad = () =>
+  import("@freeanima/satellites/companion/spa/settings/CompanionSettingsSection.tsx");
+
 export const companionHubSettingsSection: SettingsSection = {
   id: "companion",
   order: 55,
@@ -8,11 +11,8 @@ export const companionHubSettingsSection: SettingsSection = {
   description:
     "保存在 Hub 数据库（companion_profile），多客户端共享；修改后 sidecar 通过 sync.pull 同步到本机。",
   platforms: {
-    desktop: {
-      kind: "component",
-      load: () =>
-        import("@freeanima/satellites/companion/spa/settings/CompanionSettingsSection.tsx"),
-    },
+    desktop: { kind: "component", load: companionHubPanelLoad },
+    mobile: { kind: "component", load: companionHubPanelLoad },
   },
 };
 

@@ -141,7 +141,7 @@ export function SettingsHost({ bindings, chromePlatform, contentPlatform }: Prop
   );
 
   const sectionSidebar = (
-    <nav className="w-52 shrink-0 border-r border bg-muted/40 p-3 overflow-y-auto">
+    <nav className="w-52 h-full shrink-0 border-r border bg-muted/40 p-3 overflow-y-auto">
       <div className="flex flex-col gap-4">
         {groups.map((group) => (
           <div key={group.category}>
@@ -182,7 +182,11 @@ export function SettingsHost({ bindings, chromePlatform, contentPlatform }: Prop
   return (
     <div className={`flex h-full min-h-0 ${showSidebar ? "flex-row" : "flex-col"}`}>
       {!showSidebar ? <div className="shrink-0">{sectionTabs}</div> : null}
-      {showSidebar ? <div className="shrink-0 min-h-0">{sectionSidebar}</div> : null}
+      {showSidebar ? (
+        <div className="flex h-full min-h-0 shrink-0 flex-col overflow-hidden">
+          {sectionSidebar}
+        </div>
+      ) : null}
       {sectionBody}
     </div>
   );
