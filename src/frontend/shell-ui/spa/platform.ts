@@ -12,11 +12,13 @@ export function resolveSettingsChromePlatform(ctx: PlatformDetectContext): Setti
   return "desktop";
 }
 
+import { isCapacitorNativePlatform } from "@freeanima/frontend/shell-sdk/capacitor-runtime.ts";
+
 /** 设置 section 列表与字段：跟壳能力层（Electron→desktop，Capacitor→mobile），不跟视口布局 */
 export function resolveSettingsContentPlatform(): SettingsPlatform {
   const shell = typeof window !== "undefined" ? window.satelliteShell : undefined;
   if (shell?.isElectron) return "desktop";
-  if (shell?.isNativeShell) return "mobile";
+  if (shell?.isNativeShell || isCapacitorNativePlatform()) return "mobile";
   return "desktop";
 }
 

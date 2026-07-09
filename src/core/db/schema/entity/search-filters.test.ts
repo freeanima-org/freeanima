@@ -1,6 +1,10 @@
 import { describe, expect, it } from "bun:test";
 
-import { parseDiaryEntrySearchFilters, parseTaskItemSearchFilters } from "./search-filters.ts";
+import {
+  parseDiaryEntrySearchFilters,
+  parsePomodoroSessionSearchFilters,
+  parseTaskItemSearchFilters,
+} from "./search-filters.ts";
 
 describe("parseTaskItemSearchFilters", () => {
   it("parseTaskItemSearchFilters accepts task_item filter shape", () => {
@@ -35,6 +39,25 @@ describe("parseDiaryEntrySearchFilters", () => {
   it("rejects unknown fields", () => {
     expect(() => parseDiaryEntrySearchFilters({ foo: "bar" })).toThrow(
       /invalid diary_entry filters/,
+    );
+  });
+});
+
+describe("parsePomodoroSessionSearchFilters", () => {
+  it("accepts pomodoro_session filter shape", () => {
+    const parsed = parsePomodoroSessionSearchFilters({
+      started_after: "2026-07-09T00:00:00+08:00",
+      phase: "work",
+      task_item_id: 12,
+    });
+    expect(parsed.started_after).toBe("2026-07-09T00:00:00+08:00");
+    expect(parsed.phase).toBe("work");
+    expect(parsed.task_item_id).toBe(12);
+  });
+
+  it("rejects unknown fields", () => {
+    expect(() => parsePomodoroSessionSearchFilters({ foo: "bar" })).toThrow(
+      /invalid pomodoro_session filters/,
     );
   });
 });

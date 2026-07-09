@@ -21,6 +21,16 @@ export type PatrolScreenInfo = {
 
 export type CompanionWindowRole = "overlay" | "settings";
 
+export type ShellNativeAlertPayload = {
+  title: string;
+  body?: string;
+  tag?: string;
+  silent?: boolean;
+  requireInteraction?: boolean;
+};
+
+export type ShellNativeAlertPermission = "granted" | "denied" | "unsupported";
+
 /** 通用壳层桥接（Electron preload / Capacitor 注入 window.satelliteShell） */
 export type SatelliteShellApi = {
   isElectron: boolean;
@@ -56,6 +66,9 @@ export type SatelliteShellApi = {
   emitConfigChanged?: () => Promise<void>;
   listenConfigChanged?: (handler: () => void) => () => void;
   listenServerError?: (handler: (message: string) => void) => () => void;
+  /** 原生壳 OS 通知（Electron 主进程 / Capacitor Local Notifications） */
+  showNativeAlert?: (payload: ShellNativeAlertPayload) => Promise<void>;
+  requestNativeAlertPermission?: () => Promise<ShellNativeAlertPermission>;
 };
 
 declare global {

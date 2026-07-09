@@ -3,6 +3,12 @@ import { z } from "zod";
 import { COMPANION_PROFILE_COMPONENT, companionProfileBodySchema } from "./companion-profile.ts";
 import { VAULT_CONFIG_COMPONENT, vaultConfigBodySchema } from "./vault-config.ts";
 import { VAULT_ITEM_COMPONENT, vaultItemBodySchema } from "./vault-item.ts";
+import { POMODORO_CONFIG_COMPONENT, pomodoroConfigBodySchema } from "./pomodoro-config.ts";
+import { POMODORO_SESSION_COMPONENT, pomodoroSessionBodySchema } from "./pomodoro-session.ts";
+import {
+  POMODORO_TASK_FOCUS_COMPONENT,
+  pomodoroTaskFocusBodySchema,
+} from "./pomodoro-task-focus.ts";
 import { AGENT_CONFIG_COMPONENT, agentConfigBodySchema } from "./agent-config.ts";
 import { DIARY_ENTRY_COMPONENT, diaryEntryBodySchema } from "./diary-entry.ts";
 import { DREAM_ENTRY_COMPONENT, dreamEntryBodySchema } from "./dream-entry.ts";
@@ -29,6 +35,9 @@ export const COMPONENT_IDS = [
   EMAIL_MESSAGE_COMPONENT,
   VAULT_CONFIG_COMPONENT,
   VAULT_ITEM_COMPONENT,
+  POMODORO_CONFIG_COMPONENT,
+  POMODORO_SESSION_COMPONENT,
+  POMODORO_TASK_FOCUS_COMPONENT,
   COMPANION_PROFILE_COMPONENT,
 ] as const;
 
@@ -51,6 +60,9 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [VAULT_CONFIG_COMPONENT]: vaultConfigBodySchema,
   [VAULT_ITEM_COMPONENT]: vaultItemBodySchema,
   [COMPANION_PROFILE_COMPONENT]: companionProfileBodySchema,
+  [POMODORO_CONFIG_COMPONENT]: pomodoroConfigBodySchema,
+  [POMODORO_SESSION_COMPONENT]: pomodoroSessionBodySchema,
+  [POMODORO_TASK_FOCUS_COMPONENT]: pomodoroTaskFocusBodySchema,
 };
 
 export function componentBodySchema(component: ComponentId): z.ZodTypeAny {
@@ -77,3 +89,6 @@ export * from "./email-message.ts";
 export * from "./vault-config.ts";
 export * from "./vault-item.ts";
 export * from "./companion-profile.ts";
+export * from "./pomodoro-config.ts";
+export * from "./pomodoro-session.ts";
+export * from "./pomodoro-task-focus.ts";

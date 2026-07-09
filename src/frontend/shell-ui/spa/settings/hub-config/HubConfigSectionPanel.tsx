@@ -70,14 +70,15 @@ export default function HubConfigSectionPanel({ configKey }: Props) {
     setError("");
     try {
       const data = await fetchHubConfig();
-      setConfig(data);
-      const comp = (data.compression ?? {}) as Record<string, unknown>;
+      setConfig(data ?? {});
+      const safe = data ?? {};
+      const comp = (safe.compression ?? {}) as Record<string, unknown>;
       setCompression({
         enabled: comp.enabled !== false,
         max_rounds: typeof comp.max_rounds === "number" ? comp.max_rounds : 50,
         reserved_tokens: typeof comp.reserved_tokens === "number" ? comp.reserved_tokens : 8192,
       });
-      const mem = (data.memory as Record<string, unknown> | undefined)?.passive_recall as
+      const mem = (safe.memory as Record<string, unknown> | undefined)?.passive_recall as
         | Record<string, unknown>
         | undefined;
       setMemoryRecall({
@@ -86,7 +87,7 @@ export default function HubConfigSectionPanel({ configKey }: Props) {
         max_chars: typeof mem?.max_chars === "number" ? mem.max_chars : 2000,
       });
       if (isAdvancedSectionKey(configKey)) {
-        setAdvancedDraft(readAdvancedSectionDraft(data[configKey]));
+        setAdvancedDraft(readAdvancedSectionDraft(safe[configKey]));
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

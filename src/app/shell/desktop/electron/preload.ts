@@ -106,6 +106,11 @@ function createSatelliteShell(
         ipcRenderer.removeListener("shell:server-error", listener);
       };
     },
+    showNativeAlert: (payload) => ipcRenderer.invoke("shell:alert:show", payload) as Promise<void>,
+    requestNativeAlertPermission: () =>
+      ipcRenderer.invoke("shell:alert:request-permission") as Promise<
+        "granted" | "denied" | "unsupported"
+      >,
   };
 }
 

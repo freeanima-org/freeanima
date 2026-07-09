@@ -347,12 +347,16 @@ export function LlmGeneralForm({
   );
 }
 
-export function providersDraftToPatch(draft: Record<string, unknown>): Record<string, unknown> {
+export function providersDraftToPatch(
+  draft: Record<string, unknown> | null | undefined,
+): Record<string, unknown> {
   return readHubConfigRecord(draft);
 }
 
 /** 保存前规范化：去掉空 hop，保留非空 params */
-export function profilesDraftToPatch(draft: Record<string, unknown>): Record<string, unknown> {
+export function profilesDraftToPatch(
+  draft: Record<string, unknown> | null | undefined,
+): Record<string, unknown> {
   const entries = readHubConfigRecord(draft);
   const out: Record<string, unknown> = {};
   for (const [id, profile] of Object.entries(entries)) {

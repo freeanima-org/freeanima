@@ -17,6 +17,7 @@ import {
   mergeDateTimeLocal,
 } from "../lib/format-task.ts";
 import type { TaskItemRow } from "../lib/api.ts";
+import { TaskPomodoroFocusSection } from "./TaskPomodoroFocusSection.tsx";
 
 function openNativePicker(event: MouseEvent<HTMLInputElement>): void {
   const input = event.currentTarget;
@@ -47,6 +48,7 @@ type TaskDetailPanelProps = {
   item: TaskItemRow;
   onChange: (item: TaskItemRow) => void;
   onCancel: () => void;
+  onStartPomodoro?: (item: TaskItemRow) => void;
   saveStatus?: DetailSaveStatus;
 };
 
@@ -54,6 +56,7 @@ export function TaskDetailPanel({
   item,
   onChange,
   onCancel,
+  onStartPomodoro,
   saveStatus = "idle",
 }: TaskDetailPanelProps) {
   const statusLabel = saveStatusLabel(saveStatus);
@@ -145,6 +148,19 @@ export function TaskDetailPanel({
               }
             />
           </div>
+          <TaskPomodoroFocusSection taskId={item.id} />
+          {item.status === "pending" && onStartPomodoro ? (
+            <div>
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-full"
+                onClick={() => onStartPomodoro(item)}
+              >
+                开始番茄钟
+              </Button>
+            </div>
+          ) : null}
         </FormFieldset>
       </div>
       <div className="border safe-area-pb flex shrink-0 items-center gap-2 border-t p-4">

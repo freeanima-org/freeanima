@@ -6,9 +6,13 @@ import { mountShellUi } from "@freeanima/frontend/shell-ui/spa/mount.tsx";
 // oxlint-disable-next-line import/no-unassigned-import -- Vite side-effect stylesheet
 import "@freeanima/frontend/shell-ui/spa/styles.css";
 
+import { registerAlertBackend } from "@freeanima/frontend/shell-sdk/alert";
+import { createDesktopAlertBackend } from "../lib/alert-backend.ts";
 import { createDesktopSettingsApis } from "./companion-settings-api.ts";
 import { createDesktopSettingsBindings } from "./settings-registry.ts";
 import { createDesktopSettingsStores } from "../lib/settings-stores.ts";
+
+registerAlertBackend(createDesktopAlertBackend());
 
 const stores = createDesktopSettingsStores();
 const apis = createDesktopSettingsApis();

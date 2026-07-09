@@ -125,3 +125,31 @@ export {
   registerVaultRpcHandlers,
   resetVaultRpcHandlersForTest,
 } from "./vault/vault-rpc-handlers.ts";
+export type {
+  PomodoroActiveState,
+  PomodoroFocusSegmentDraft,
+  PomodoroPhase,
+  TimerRunState,
+} from "./pomodoro-active-types.ts";
+export {
+  buildTaskFocusSegmentPayloads,
+  normalizeRestoredActiveState,
+  openWorkFocusSegment,
+  primaryTaskItemIdFromSegments,
+  switchWorkFocusTask,
+} from "./pomodoro-focus-segments.ts";
+export type { PomodoroTaskFocusSegmentPayload } from "./pomodoro-focus-segments.ts";
+export {
+  clearPomodoroActiveStateForTest,
+  readPomodoroActiveState,
+  switchPomodoroActiveTask,
+  writePomodoroActiveState,
+} from "./pomodoro-active.ts";
+export type { PomodoroLaunchParams } from "./pomodoro-launch.ts";
+export {
+  clearPomodoroLaunchParamsFromUrl,
+  navigateShellModulePath,
+  readPomodoroLaunchParamsFromLocation,
+} from "./pomodoro-launch.ts";
+export { launchPomodoroForTask } from "./pomodoro-task-launch.ts";
+export type { PomodoroTaskLaunchInput } from "./pomodoro-task-launch.ts";

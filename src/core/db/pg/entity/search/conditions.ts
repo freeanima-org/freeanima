@@ -11,7 +11,11 @@ import {
   parseEmailAccountSearchFilters,
   parseEmailMessageSearchFilters,
   parseEmailThreadSearchFilters,
+  parsePomodoroSessionSearchFilters,
+  parsePomodoroTaskFocusSearchFilters,
   parseTaskItemSearchFilters,
+  POMODORO_SESSION_COMPONENT,
+  POMODORO_TASK_FOCUS_COMPONENT,
   TASK_ITEM_COMPONENT,
   type EntityType,
 } from "@freeanima/core/db/schema";
@@ -71,6 +75,65 @@ function buildTaskItemCompletedOnCondition(relativeDay: "today" | "tomorrow" | "
     return sql`(${entities.body}->>'completed_at')::timestamptz::date = ${CST_TODAY} + 1`;
   }
   return sql`(${entities.body}->>'completed_at')::timestamptz::date = ${CST_TODAY} - 1`;
+}
+
+function buildPomodoroSessionBodyConditions(
+  filters: ReturnType<typeof parsePomodoroSessionSearchFilters>,
+): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.started_after) {
+    conditions.push(
+      sql`(${entities.body}->>'started_at')::timestamptz >= ${filters.started_after}::timestamptz`,
+    );
+  }
+  if (filters.started_before) {
+    conditions.push(
+      sql`(${entities.body}->>'started_at')::timestamptz <= ${filters.started_before}::timestamptz`,
+    );
+  }
+  if (filters.phase != null) {
+    conditions.push(sql`${entities.body}->>'phase' = ${filters.phase}`);
+  }
+  if (filters.interrupted != null) {
+    conditions.push(
+      sql`coalesce((${entities.body}->>'interrupted')::boolean, false) = ${filters.interrupted}`,
+    );
+  }
+  if (filters.task_item_id != null) {
+    conditions.push(sql`${entities.body}->>'task_item_id' = ${String(filters.task_item_id)}`);
+  }
+  return conditions;
+}
+
+function buildPomodoroTaskFocusBodyConditions(
+  filters: ReturnType<typeof parsePomodoroTaskFocusSearchFilters>,
+): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.task_item_id != null) {
+    conditions.push(sql`${entities.body}->>'task_item_id' = ${String(filters.task_item_id)}`);
+  }
+  if (filters.session_local_id) {
+    conditions.push(sql`${entities.body}->>'session_local_id' = ${filters.session_local_id}`);
+  }
+  if (filters.pomodoro_session_id != null) {
+    conditions.push(
+      sql`${entities.body}->>'pomodoro_session_id' = ${String(filters.pomodoro_session_id)}`,
+    );
+  }
+  if (filters.phase_started_at) {
+    conditions.push(sql`${entities.body}->>'phase_started_at' = ${filters.phase_started_at}`);
+  }
+  if (filters.started_after) {
+    conditions.push(
+      sql`(${entities.body}->>'started_at')::timestamptz >= ${filters.started_after}::timestamptz`,
+    );
+  }
+  if (filters.started_before) {
+    conditions.push(
+      sql`(${entities.body}->>'started_at')::timestamptz <= ${filters.started_before}::timestamptz`,
+    );
+  }
+  return conditions;
 }
 
 function buildTaskItemBodyConditions(
@@ -279,6 +342,12 @@ export function buildComponentFilterConditions(opts: EntitySearchOpts): SQL[] {
   }
   if (component === EMAIL_MESSAGE_COMPONENT) {
     return buildEmailMessageBodyConditions(parseEmailMessageSearchFilters(filters));
+  }
+  if (component === POMODORO_SESSION_COMPONENT) {
+    return buildPomodoroSessionBodyConditions(parsePomodoroSessionSearchFilters(filters));
+  }
+  if (component === POMODORO_TASK_FOCUS_COMPONENT) {
+    return buildPomodoroTaskFocusBodyConditions(parsePomodoroTaskFocusSearchFilters(filters));
   }
 
   if (component) {

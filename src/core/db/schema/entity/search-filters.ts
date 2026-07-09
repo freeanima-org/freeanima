@@ -7,6 +7,9 @@ import {
   EMAIL_MESSAGE_COMPONENT,
   EMAIL_THREAD_COMPONENT,
   emailDirectionSchema,
+  pomodoroPhaseSchema,
+  POMODORO_SESSION_COMPONENT,
+  POMODORO_TASK_FOCUS_COMPONENT,
   TASK_ITEM_COMPONENT,
   VAULT_ITEM_COMPONENT,
   vaultItemTypeSchema,
@@ -149,6 +152,53 @@ export function parseVaultItemSearchFilters(
   return parsed.data;
 }
 
+export const pomodoroSessionSearchFiltersSchema = z
+  .object({
+    started_after: z.string().optional(),
+    started_before: z.string().optional(),
+    phase: pomodoroPhaseSchema.optional(),
+    interrupted: z.boolean().optional(),
+    task_item_id: z.number().int().positive().optional(),
+  })
+  .strict();
+
+export type PomodoroSessionSearchFilters = z.infer<typeof pomodoroSessionSearchFiltersSchema>;
+
+export function parsePomodoroSessionSearchFilters(
+  raw: Record<string, unknown> | undefined,
+): PomodoroSessionSearchFilters {
+  if (!raw || Object.keys(raw).length === 0) return {};
+  const parsed = pomodoroSessionSearchFiltersSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(`invalid pomodoro_session filters: ${parsed.error.message}`);
+  }
+  return parsed.data;
+}
+
+export const pomodoroTaskFocusSearchFiltersSchema = z
+  .object({
+    task_item_id: z.number().int().positive().optional(),
+    session_local_id: z.string().min(1).optional(),
+    pomodoro_session_id: z.number().int().positive().optional(),
+    phase_started_at: z.string().optional(),
+    started_after: z.string().optional(),
+    started_before: z.string().optional(),
+  })
+  .strict();
+
+export type PomodoroTaskFocusSearchFilters = z.infer<typeof pomodoroTaskFocusSearchFiltersSchema>;
+
+export function parsePomodoroTaskFocusSearchFilters(
+  raw: Record<string, unknown> | undefined,
+): PomodoroTaskFocusSearchFilters {
+  if (!raw || Object.keys(raw).length === 0) return {};
+  const parsed = pomodoroTaskFocusSearchFiltersSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(`invalid pomodoro_task_focus filters: ${parsed.error.message}`);
+  }
+  return parsed.data;
+}
+
 export const ENTITY_SEARCH_FILTER_COMPONENTS = {
   [TASK_ITEM_COMPONENT]: taskItemSearchFiltersSchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntrySearchFiltersSchema,
@@ -157,4 +207,6 @@ export const ENTITY_SEARCH_FILTER_COMPONENTS = {
   [EMAIL_THREAD_COMPONENT]: emailThreadSearchFiltersSchema,
   [EMAIL_MESSAGE_COMPONENT]: emailMessageSearchFiltersSchema,
   [VAULT_ITEM_COMPONENT]: vaultItemSearchFiltersSchema,
+  [POMODORO_SESSION_COMPONENT]: pomodoroSessionSearchFiltersSchema,
+  [POMODORO_TASK_FOCUS_COMPONENT]: pomodoroTaskFocusSearchFiltersSchema,
 } as const;

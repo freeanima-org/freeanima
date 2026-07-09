@@ -13,6 +13,9 @@ import {
   VAULT_CONFIG_COMPONENT,
   VAULT_ITEM_COMPONENT,
   COMPANION_PROFILE_COMPONENT,
+  POMODORO_CONFIG_COMPONENT,
+  POMODORO_SESSION_COMPONENT,
+  POMODORO_TASK_FOCUS_COMPONENT,
   WORLD_CONFIG_COMPONENT,
   diaryEntryBodySchema,
   dreamEntryBodySchema,
@@ -25,6 +28,9 @@ import {
   vaultConfigBodySchema,
   vaultItemBodySchema,
   companionProfileBodySchema,
+  pomodoroConfigBodySchema,
+  pomodoroSessionBodySchema,
+  pomodoroTaskFocusBodySchema,
   worldConfigBodySchema,
   type DiaryEntryBody,
   type DreamEntryBody,
@@ -37,6 +43,9 @@ import {
   type VaultConfigBody,
   type VaultItemBody,
   type CompanionProfileBody,
+  type PomodoroConfigBody,
+  type PomodoroSessionBody,
+  type PomodoroTaskFocusBody,
   type WorldConfigBody,
 } from "./components/index.ts";
 
@@ -176,5 +185,27 @@ export function asVaultItem(
 export function asCompanionProfile(row: EntityRow): (CompanionProfileBody & { id: number }) | null {
   if (row.primary_component !== COMPANION_PROFILE_COMPONENT) return null;
   const parsed = companionProfileBodySchema.safeParse(row.body);
+  return parsed.success ? { id: row.id, ...parsed.data } : null;
+}
+
+export function asPomodoroConfig(row: EntityRow): (PomodoroConfigBody & { id: number }) | null {
+  if (row.primary_component !== POMODORO_CONFIG_COMPONENT) return null;
+  const parsed = pomodoroConfigBodySchema.safeParse(row.body);
+  return parsed.success ? { id: row.id, ...parsed.data } : null;
+}
+
+export function asPomodoroSession(
+  row: EntityRow,
+): (PomodoroSessionBody & { id: number; title: string }) | null {
+  if (row.primary_component !== POMODORO_SESSION_COMPONENT) return null;
+  const parsed = pomodoroSessionBodySchema.safeParse(row.body);
+  return parsed.success ? { id: row.id, title: row.title, ...parsed.data } : null;
+}
+
+export function asPomodoroTaskFocus(
+  row: EntityRow,
+): (PomodoroTaskFocusBody & { id: number }) | null {
+  if (row.primary_component !== POMODORO_TASK_FOCUS_COMPONENT) return null;
+  const parsed = pomodoroTaskFocusBodySchema.safeParse(row.body);
   return parsed.success ? { id: row.id, ...parsed.data } : null;
 }

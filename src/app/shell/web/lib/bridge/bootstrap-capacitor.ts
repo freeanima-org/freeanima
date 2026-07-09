@@ -24,6 +24,11 @@ export async function bootstrapCapacitorBridge(): Promise<void> {
   if (hubUrl) {
     window.satelliteShell = await buildMobileShell(hubUrl, remoteAuthToken ?? "");
   }
+  if (window.satelliteShell) {
+    const { attachMobileNativeAlertToShell } =
+      await import("@freeanima/app/shell/mobile/lib/mobile-local-alert.ts");
+    window.satelliteShell = attachMobileNativeAlertToShell(window.satelliteShell);
+  }
   if (window.satelliteShell?.nativeBuild) {
     window.dispatchEvent(new CustomEvent(NATIVE_BUILD_META_CHANGED_EVENT));
   }
