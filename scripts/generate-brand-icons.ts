@@ -52,7 +52,10 @@ function writePng(path: string, data: Buffer): void {
 }
 
 async function renderIcon(size: number): Promise<Buffer> {
-  return sharp(APP_ICON_PNG).resize(size, size, { fit: "cover", kernel: sharp.kernel.lanczos3 }).png().toBuffer();
+  return sharp(APP_ICON_PNG)
+    .resize(size, size, { fit: "cover", kernel: sharp.kernel.lanczos3 })
+    .png()
+    .toBuffer();
 }
 
 async function renderMaskable(size: number): Promise<Buffer> {
@@ -122,14 +125,8 @@ async function main(): Promise<void> {
     writePng(dest, favicon32);
   }
 
-  writePng(
-    join(ROOT, "src/app/shell/web/spa/public/icons/icon-192.png"),
-    await renderIcon(192),
-  );
-  writePng(
-    join(ROOT, "src/app/shell/web/spa/public/icons/icon-512.png"),
-    await renderIcon(512),
-  );
+  writePng(join(ROOT, "src/app/shell/web/spa/public/icons/icon-192.png"), await renderIcon(192));
+  writePng(join(ROOT, "src/app/shell/web/spa/public/icons/icon-512.png"), await renderIcon(512));
   writePng(
     join(ROOT, "src/app/shell/web/spa/public/icons/icon-512-maskable.png"),
     await renderMaskable(512),
