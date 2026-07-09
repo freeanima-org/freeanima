@@ -1,4 +1,4 @@
-import { getActiveConfig, isCjkJiebaEnabled } from "@freeanima/core/config";
+import { getActiveRuntimeConfig, isCjkJiebaEnabled } from "@freeanima/core/config";
 import { logPgComponent } from "../log.ts";
 
 import { segmentForFts } from "./segment.ts";
@@ -9,7 +9,7 @@ const log = logPgComponent("fts");
 export async function resolveFtsSegmentedForWrite(content: string): Promise<string | null> {
   let cfg;
   try {
-    cfg = getActiveConfig().data;
+    cfg = getActiveRuntimeConfig().data;
   } catch {
     return null;
   }

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import {
   isBootstrapConfigKey,
-  mergeBootstrapWithDocument,
   pickBootstrapRecord,
   pickRuntimeDocument,
 } from "@freeanima/core/config";
@@ -31,15 +30,6 @@ describe("bootstrap-config", () => {
       llm: { default_profile: "chat" },
       compression: { enabled: true },
     });
-  });
-
-  it("mergeBootstrapWithDocument bootstrap 覆盖 document", () => {
-    const merged = mergeBootstrapWithDocument(
-      { database: { url: "file-url" } },
-      { database: { url: "db-url" }, llm: { default_profile: "chat" } },
-    );
-    expect(merged.database).toEqual({ url: "file-url" });
-    expect(merged.llm).toEqual({ default_profile: "chat" });
   });
 
   it("isBootstrapConfigKey", () => {

@@ -14,9 +14,9 @@ describe("hubStackSystemdUnits", () => {
 });
 
 describe("getTunnelStatus", () => {
-  it("running 与主机上 cloudflared 进程一致", () => {
+  it("running 与主机上 cloudflared 进程一致", async () => {
     const pid = findCloudflaredPidOnHost();
-    const status = getTunnelStatus();
+    const status = await getTunnelStatus();
     expect(status.running).toBe(pid != null);
   });
 });

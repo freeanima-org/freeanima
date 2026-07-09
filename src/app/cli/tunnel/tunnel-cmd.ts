@@ -59,13 +59,13 @@ export async function runTunnelCommand(args: TunnelCommandArgs): Promise<void> {
   }
 
   if (action === "start") {
-    const status = getTunnelStatus();
+    const status = await getTunnelStatus();
     if (!status.enabled) {
       console.error("tunnel.enabled 未开启 — 先运行 anima tunnel setup");
       process.exit(1);
     }
     if (args.foreground || !systemdUserAvailable()) {
-      const child = startTunnelForeground();
+      const child = await startTunnelForeground();
       if (!child) {
         console.error("无法启动 cloudflared — 检查 install 与 config");
         process.exit(1);
@@ -76,7 +76,7 @@ export async function runTunnelCommand(args: TunnelCommandArgs): Promise<void> {
       });
       return;
     }
-    startTunnelViaSystemd();
+    await startTunnelViaSystemd();
     writeStatusLine("ok", "Tunnel 已通过 systemd 启动");
     return;
   }
@@ -94,7 +94,7 @@ export async function runTunnelCommand(args: TunnelCommandArgs): Promise<void> {
   }
 
   if (action === "status") {
-    const s = getTunnelStatus();
+    const s = await getTunnelStatus();
     console.log("Cloudflare Tunnel 状态");
     console.log(`  enabled:           ${s.enabled}`);
     console.log(`  running:           ${s.running}`);
@@ -111,11 +111,11 @@ export async function runTunnelCommand(args: TunnelCommandArgs): Promise<void> {
   process.exit(1);
 }
 
-export function startTunnelSidecar(opts: { foreground: boolean }): void {
-  const status = getTunnelStatus();
+export async function startTunnelSidecar(opts: { foreground: boolean }): Promise<void> {
+  const status = await getTunnelStatus();
   if (!status.enabled || !status.configExists) return;
   if (opts.foreground) {
-    startTunnelForeground();
+    await startTunnelForeground();
   }
 }
 

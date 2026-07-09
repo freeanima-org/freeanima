@@ -1,6 +1,6 @@
 import type { BeforeLlmCallContext } from "@freeanima/core/hooks/loop";
 import {
-  getActiveConfig,
+  getActiveRuntimeConfig,
   getRuntimeLogger,
   resolvePassiveRecallConfig,
 } from "@freeanima/core/config";
@@ -17,7 +17,7 @@ export function createPassiveMemoryRecallHandler() {
   return async (ctx: BeforeLlmCallContext): Promise<void> => {
     stripPassiveMemoryContextFromMessages(ctx.messages);
 
-    const config = resolvePassiveRecallConfig(getActiveConfig().data);
+    const config = resolvePassiveRecallConfig(getActiveRuntimeConfig().data);
     if (!config.enabled) return;
 
     const lastMsg = ctx.messages.at(-1);

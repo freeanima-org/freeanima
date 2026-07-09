@@ -1,8 +1,8 @@
 # 逸灵风 config.yaml — 冷启动引导（bootstrap）
 # 复制到 ~/.anima/config.yaml 并根据需要修改
 #
-# 运行时配置（llm、compression、mcp 等）保存在 PostgreSQL；
-# 请在 Shell 设置 → Hub 服务 → 服务配置 中编辑，或首次启动时从本文件自动导入。
+# 运行时配置（llm、compression、mcp 等）保存在 PostgreSQL（hub_runtime_config）；
+# 请在 Shell 设置 → Hub 服务 → 服务配置 中编辑。YAML 中的运行时段会被忽略，请清理废段。
 
 # 生产必填：PostgreSQL 连接（也可用 env DATABASE_URL）
 database:
@@ -28,7 +28,7 @@ database:
 # redis:
 #   url: redis://127.0.0.1:6379/0
 
-# --- 以下运行时段请通过 Shell「服务配置」或管理台查看；首次升级可从旧版完整 config.yaml 自动导入 ---
+# --- 以下运行时段请通过 Shell「Hub 服务设置」编辑；勿再写入 config.yaml ---
 #
 # llm / compression / memory / mcp_servers / acp_agents / embedding / tunnel / web / worlds …
 # 完整示例见仓库 git 历史中的 config.example.yaml（迁移前版本）

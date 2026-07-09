@@ -1,5 +1,5 @@
 import { TUNNEL_CREDENTIAL_REFS, type TunnelConfigFields } from "@freeanima/core/config";
-import { FileConfig } from "@freeanima/platform/config";
+import { loadRuntimeConfigSection } from "@freeanima/platform/config";
 import {
   ensureTunnelCnameRecord,
   findZoneForHostname,
@@ -9,8 +9,8 @@ import {
 } from "@freeanima/platform/connectors/tunnel";
 import { writeStatusLine } from "../service-common.ts";
 
-function loadTunnelFromConfig(): TunnelConfigFields {
-  const tunnel = FileConfig.open().data.tunnel;
+async function loadTunnelFromRuntime(): Promise<TunnelConfigFields> {
+  const tunnel = await loadRuntimeConfigSection<TunnelConfigFields>("tunnel");
   if (!tunnel?.hostname) throw new Error("tunnel.hostname 未配置 — 先运行 anima tunnel setup");
   if (!tunnel.cloudflare?.tunnel_id) {
     throw new Error("tunnel.cloudflare.tunnel_id 未配置 — 先运行 anima tunnel setup");
@@ -26,12 +26,12 @@ function resolveApiToken(tunnel: TunnelConfigFields): string {
     return resolveTunnelApiToken(tunnel.credentials.api_token);
   }
   throw new Error(
-    `tunnel.credentials.api_token 未配置 — 在 config.yaml 设置，例如 ${TUNNEL_CREDENTIAL_REFS.apiToken}`,
+    `tunnel.credentials.api_token 未配置 — 在 Hub 服务设置中配置，例如 ${TUNNEL_CREDENTIAL_REFS.apiToken}`,
   );
 }
 
 export async function runTunnelDnsEnsure(): Promise<void> {
-  const tunnel = loadTunnelFromConfig();
+  const tunnel = await loadTunnelFromRuntime();
   const apiToken = resolveApiToken(tunnel);
   const cloudflare = tunnel.cloudflare;
   const hostname = tunnel.hostname;

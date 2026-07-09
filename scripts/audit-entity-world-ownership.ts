@@ -11,7 +11,7 @@ import {
   subjectConfigBodySchema,
   worldConfigBodySchema,
 } from "@freeanima/core/db/schema/entity/index.ts";
-import { FileConfig } from "@freeanima/platform/config/file-config.ts";
+import { RuntimeConfigStore } from "@freeanima/platform/config/runtime-config-store.ts";
 
 type EntityRow = {
   id: number;
@@ -90,15 +90,15 @@ async function main(): Promise<void> {
     }
   }
 
-  let config;
+  let runtime;
   try {
-    config = FileConfig.open().data;
+    runtime = (await RuntimeConfigStore.open()).data;
   } catch {
-    config = undefined;
+    runtime = undefined;
   }
 
-  if (config) {
-    const { user_subject_id, agent_subject_id } = resolveWorldSubjectIds(config);
+  if (runtime) {
+    const { user_subject_id, agent_subject_id } = resolveWorldSubjectIds(runtime);
     for (const [label, subjectId] of [
       ["user", user_subject_id],
       ["agent", agent_subject_id],

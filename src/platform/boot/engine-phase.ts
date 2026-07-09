@@ -17,7 +17,7 @@ import { SatelliteManager } from "@freeanima/capabilities/satellite";
 import { getAcpManager } from "@freeanima/capabilities/acp";
 import { wireContextWindowLookup } from "../wire-context-window.ts";
 import type { Kernel } from "@freeanima/kernel";
-import type { HybridConfig } from "@freeanima/platform/config";
+import type { RuntimeConfigStore } from "@freeanima/platform/config";
 
 import { registerServiceTools } from "../register.ts";
 import { registerServiceIntegrations } from "../register.ts";
@@ -36,7 +36,7 @@ export type EnginePhaseResult = {
 
 /** Phase 3: catalog、kernel、engine、conversation、MCP/ACP 管理器 */
 export function bootEnginePhase(
-  config: HybridConfig,
+  config: RuntimeConfigStore,
   onConversationUpdated: (conversationId: string) => void,
 ): EnginePhaseResult {
   startupLog("Registering tools…");

@@ -10,7 +10,7 @@ export {
 export {
   Config,
   bindActiveConfig,
-  getActiveConfig,
+  getActiveRuntimeConfig,
   resetActiveConfigForTest,
   registerRuntimeLogger,
   resetRuntimeLoggerForTest,

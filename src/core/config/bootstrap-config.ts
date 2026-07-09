@@ -46,13 +46,6 @@ export function pickRuntimeDocument(raw: Record<string, unknown>): Record<string
   return out;
 }
 
-export function mergeBootstrapWithDocument(
-  bootstrap: Record<string, unknown>,
-  document: Record<string, unknown>,
-): Record<string, unknown> {
-  return { ...document, ...bootstrap };
-}
-
 export function hasRuntimeSectionsInYaml(raw: Record<string, unknown>): boolean {
   return Object.keys(pickRuntimeDocument(raw)).length > 0;
 }

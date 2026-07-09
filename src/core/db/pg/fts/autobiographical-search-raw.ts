@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, getColumns, isNotNull, sql } from "drizzle-orm";
-import { getActiveConfig, getFtsTrgmMinSimilarity } from "@freeanima/core/config";
+import { getActiveRuntimeConfig, getFtsTrgmMinSimilarity } from "@freeanima/core/config";
 import { autobiographicalDocKey } from "@freeanima/core/util";
 import { autobiographicalMemory } from "@freeanima/core/db/schema";
 import type { AutobiographicalStatus } from "@freeanima/core/repos";
@@ -64,7 +64,7 @@ export async function searchAutobiographicalMemoryTrgm(
 
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
   const status = opts?.status ?? "active";
-  const minSim = getFtsTrgmMinSimilarity(getActiveConfig().data);
+  const minSim = getFtsTrgmMinSimilarity(getActiveRuntimeConfig().data);
   const db = getDb();
   const rankExpr = sql<number>`similarity(${autobiographicalBodySql}, ${q})`.as("rank");
 

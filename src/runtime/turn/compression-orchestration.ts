@@ -1,5 +1,5 @@
 import type { ToolSetRegistry } from "@freeanima/core/tool";
-import { getActiveConfig, getProfileHopModel } from "@freeanima/core/config";
+import { getActiveRuntimeConfig, getProfileHopModel } from "@freeanima/core/config";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
 import {
   getCompressionConfig,
@@ -22,7 +22,7 @@ import {
 import type { StoredMessage, ConversationMetaLoadResult } from "@freeanima/core/db/domain";
 
 function defaultChatModel(): string {
-  return getProfileHopModel(getActiveConfig().data, PROFILE_CHAT);
+  return getProfileHopModel(getActiveRuntimeConfig().data, PROFILE_CHAT);
 }
 
 export { flushCompressionSummaries, maybeApplyEmergencyCompression };
@@ -86,7 +86,7 @@ export async function recompressConversation(
       const systemSnapshot = isConversationMeta(meta) ? (meta.system_prompt ?? "") : "";
       const model = isConversationMeta(meta)
         ? meta.model
-        : getProfileHopModel(getActiveConfig().data, PROFILE_CHAT);
+        : getProfileHopModel(getActiveRuntimeConfig().data, PROFILE_CHAT);
       await updateConversationMetaField(conversationId, { compression: newState });
       scheduleCompressionSummary(conversationId, prevState, newState, systemSnapshot, model);
     } else {

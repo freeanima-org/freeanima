@@ -1,4 +1,4 @@
-import { getActiveConfig, getFtsTrgmFallbackWhenHitsLt } from "@freeanima/core/config";
+import { getActiveRuntimeConfig, getFtsTrgmFallbackWhenHitsLt } from "@freeanima/core/config";
 import { entityDocKey, omitUndefined, rrfMerge } from "@freeanima/core/util";
 import type { EntitySearchHit, EntitySearchOpts, EntitySearchResult } from "../types.ts";
 import { mapEntityRow } from "@freeanima/core/db/schema/entity";
@@ -18,7 +18,7 @@ import { searchEntitiesTrgm } from "./entity-trgm-search.ts";
 import { searchEntitiesVector } from "./entity-vector-search.ts";
 
 function candidateLimit(requested: number, ftsCount: number): number {
-  const fallback = getFtsTrgmFallbackWhenHitsLt(getActiveConfig().data);
+  const fallback = getFtsTrgmFallbackWhenHitsLt(getActiveRuntimeConfig().data);
   const base = Math.max(requested * 3, 20);
   if (fallback > 0 && ftsCount < fallback) {
     return Math.max(base, requested * 5);

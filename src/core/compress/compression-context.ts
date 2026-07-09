@@ -5,7 +5,7 @@ import {
   type CompressionState,
 } from "@freeanima/core/db/domain";
 import {
-  getActiveConfig,
+  getActiveRuntimeConfig,
   budgetFromContextWindow,
   lookupCatalogContextWindow,
   resolveContextWindowWithSource,
@@ -60,7 +60,7 @@ function enrichCompressOptionsWithWindow(
   source: ContextWindowSource,
   catalogContextWindow?: number,
 ): CompressOptions {
-  const cfg = getActiveConfig().data;
+  const cfg = getActiveRuntimeConfig().data;
   return omitUndefined({
     ...base,
     catalogContextWindow,
@@ -85,7 +85,7 @@ export async function buildCompressOptionsResolved(
   const model = base.model ?? "";
   if (!model) return base;
 
-  const cfg = getActiveConfig().data;
+  const cfg = getActiveRuntimeConfig().data;
   const sync = resolveContextWindowWithSource(cfg, model);
   if (sync.window != null && sync.source != null) {
     return enrichCompressOptionsWithWindow(base, sync.window, sync.source);

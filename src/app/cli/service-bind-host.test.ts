@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, afterEach } from "bun:test";
 
 import { resolveServiceBindHost } from "./service-bind-host.ts";
-import { FileConfig } from "@freeanima/platform/config";
+import * as bootstrapModule from "@freeanima/platform/config/bootstrap.ts";
 
 describe("resolveServiceBindHost", () => {
   afterEach(() => {
@@ -9,16 +9,18 @@ describe("resolveServiceBindHost", () => {
   });
 
   it("prefers CLI host over config", () => {
-    vi.spyOn(FileConfig, "open").mockReturnValue({
-      data: { http: { host: "0.0.0.0" } },
-    } as ReturnType<typeof FileConfig.open>);
+    vi.spyOn(bootstrapModule, "loadBootstrapConfig").mockReturnValue({
+      database: { url: "postgresql://x" },
+      http: { host: "0.0.0.0" },
+    });
     expect(resolveServiceBindHost("127.0.0.1")).toBe("127.0.0.1");
   });
 
   it("reads http.host when CLI omitted", () => {
-    vi.spyOn(FileConfig, "open").mockReturnValue({
-      data: { http: { host: ["127.0.0.1", "10.244.0.2"] } },
-    } as ReturnType<typeof FileConfig.open>);
+    vi.spyOn(bootstrapModule, "loadBootstrapConfig").mockReturnValue({
+      database: { url: "postgresql://x" },
+      http: { host: ["127.0.0.1", "10.244.0.2"] },
+    });
     expect(resolveServiceBindHost()).toBe("127.0.0.1,10.244.0.2");
   });
 });

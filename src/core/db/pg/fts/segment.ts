@@ -1,6 +1,10 @@
 import { readFileSync } from "node:fs";
 
-import { getActiveConfig, isCjkJiebaEnabled, cjkJiebaDictPath } from "@freeanima/core/config";
+import {
+  getActiveRuntimeConfig,
+  isCjkJiebaEnabled,
+  cjkJiebaDictPath,
+} from "@freeanima/core/config";
 import type { Jieba } from "@node-rs/jieba";
 
 const CJK_RUN_RE = /[\u4e00-\u9fff\u3400-\u4dbf]+/g;
@@ -9,14 +13,14 @@ let jiebaInstance: Jieba | null = null;
 let jiebaLoadFailed = false;
 
 async function getJieba(): Promise<Jieba | null> {
-  if (!isCjkJiebaEnabled(getActiveConfig().data)) return null;
+  if (!isCjkJiebaEnabled(getActiveRuntimeConfig().data)) return null;
   if (jiebaLoadFailed) return null;
   if (jiebaInstance) return jiebaInstance;
   try {
     const { Jieba } = await import("@node-rs/jieba");
     const { dict } = await import("@node-rs/jieba/dict");
     const jieba = Jieba.withDict(dict);
-    const dictPath = cjkJiebaDictPath(getActiveConfig().data);
+    const dictPath = cjkJiebaDictPath(getActiveRuntimeConfig().data);
     try {
       jieba.loadDict(readFileSync(dictPath));
     } catch {

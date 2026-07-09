@@ -58,10 +58,5 @@ export {
   createSubjectApiToken,
   revokeSubjectApiToken,
 } from "./service-api-tokens.ts";
-export {
-  getHubConfig,
-  getHubConfigSection,
-  importHubConfigFromFile,
-  patchHubConfigSection,
-} from "./config.ts";
+export { getHubConfig, getHubConfigSection, patchHubConfigSection } from "./config.ts";
 export { ApiHandlerError } from "./errors.ts";

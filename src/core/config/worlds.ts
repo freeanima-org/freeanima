@@ -1,4 +1,4 @@
-import type { AnimaConfig } from "./schemas/config.ts";
+import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 import { DEFAULT_AGENT_SUBJECT_ID, DEFAULT_USER_SUBJECT_ID } from "./schemas/worlds.ts";
 
 export type ResolvedWorldSubjectIds = {
@@ -7,7 +7,7 @@ export type ResolvedWorldSubjectIds = {
 };
 
 /** 解析 worlds 段 subject id；缺省 user=1 agent=2；兼容旧 notifications 段 */
-export function resolveWorldSubjectIds(config: AnimaConfig): ResolvedWorldSubjectIds {
+export function resolveWorldSubjectIds(config: RuntimeConfig): ResolvedWorldSubjectIds {
   const worlds = config.worlds;
   if (worlds?.user_subject_id != null || worlds?.agent_subject_id != null) {
     return {

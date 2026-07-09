@@ -5,7 +5,7 @@ const segmentForFtsMock = mock(async (_text: string) => {
 });
 
 mock.module("@freeanima/core/config", () => ({
-  getActiveConfig: () => ({ data: {} }),
+  getActiveRuntimeConfig: () => ({ data: {} }),
   isCjkJiebaEnabled: () => true,
 }));
 

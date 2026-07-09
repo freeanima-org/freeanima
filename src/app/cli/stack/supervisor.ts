@@ -1,7 +1,8 @@
 import type { ChildProcess } from "node:child_process";
 import { join } from "node:path";
 import { logStartupError } from "@freeanima/platform/logging";
-import { FileConfig } from "@freeanima/platform/config";
+import { loadRuntimeConfigSection } from "@freeanima/platform/config";
+import { loadBootstrapConfig } from "@freeanima/platform/config/bootstrap.ts";
 import { parseBindHosts } from "@freeanima/platform";
 import {
   resolveHubTlsListenConfig,
@@ -32,28 +33,29 @@ let shuttingDown = false;
 async function stopStackSidecars(): Promise<void> {
   if (shuttingDown) return;
   shuttingDown = true;
-  // 仅停前台 spawn；systemd tunnel 由 `anima service stop` / stopHubStackViaSystemd 统一关停。
-  // 避免 restart 时旧进程 SIGTERM 误杀新 stack 刚拉起的 anima-tunnel.service。
   stopTunnelForeground();
   sidecars.tunnel = null;
 }
 
 async function startStackSidecars(hubPort: number): Promise<void> {
-  const cfg = FileConfig.open().data;
+  const webCfg = await loadRuntimeConfigSection<{ enabled?: boolean }>("web");
+  const tunnelCfg = await loadRuntimeConfigSection<{ enabled?: boolean }>("tunnel");
 
-  if (cfg.web?.enabled) {
+  if (webCfg?.enabled) {
     console.log(`[stack] Web UI http://127.0.0.1:${hubPort}/web/chat（由 Hub 托管）`);
   }
 
-  if (cfg.tunnel?.enabled) {
-    sidecars.tunnel = startTunnelForStack();
+  if (tunnelCfg?.enabled) {
+    sidecars.tunnel = await startTunnelForStack();
     if (sidecars.tunnel) {
       sidecars.tunnel.on("exit", (code, signal) => {
         if (shuttingDown) return;
         console.warn(`[stack] cloudflared 退出 code=${code ?? "?"} signal=${signal ?? ""}`);
         sidecars.tunnel = null;
-        if (!shuttingDown && cfg.tunnel?.enabled) {
-          sidecars.tunnel = startTunnelForStack();
+        if (!shuttingDown && tunnelCfg?.enabled) {
+          void startTunnelForStack().then((child) => {
+            sidecars.tunnel = child;
+          });
         }
       });
     } else if (findCloudflaredPidOnHost() == null && !systemdUserAvailable()) {
@@ -73,8 +75,8 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
   process.once("SIGINT", onStop);
   process.once("SIGTERM", onStop);
 
-  const fileConfig = FileConfig.open();
-  const cfg = fileConfig.data;
+  const webCfg = await loadRuntimeConfigSection<{ enabled?: boolean }>("web");
+  const bootstrapHttp = loadBootstrapConfig().http;
 
   let webStatic: {
     distDir: string;
@@ -82,7 +84,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
     uiVersion?: string;
     minShellVersion?: string;
   } | null = null;
-  if (cfg.web?.enabled) {
+  if (webCfg?.enabled) {
     try {
       await ensureWebDistBuilt();
       const rootPkg = JSON.parse(
@@ -106,7 +108,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
     await import("@freeanima/features/console/hub/console-api");
 
   const bindHosts = parseBindHosts(options.host);
-  const tlsListen = await resolveHubTlsListenConfig(cfg.http, bindHosts);
+  const tlsListen = await resolveHubTlsListenConfig(bootstrapHttp, bindHosts);
 
   await serve(options.host, options.port, {
     foreground: true,

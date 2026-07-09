@@ -1,9 +1,6 @@
 import type { Command } from "commander";
 
-import { FileConfig, getConfiguredDatabaseUrl } from "@freeanima/platform/config";
-import { resolveAndBindWorldContext } from "@freeanima/core/config/world-context";
-import { runMigrations } from "@freeanima/core/db";
-import { closeDb, getDb, initDatabase } from "@freeanima/core/db/pg";
+import { withPlatformDb } from "@freeanima/platform/config";
 
 import {
   getAgentVaultCliField,
@@ -12,22 +9,6 @@ import {
 
 import { printCliError } from "../output/errors.ts";
 import { renderTable } from "../output/table.ts";
-
-async function withDb<T>(fn: () => Promise<T>): Promise<T> {
-  const fileConfig = FileConfig.open();
-  const url = await getConfiguredDatabaseUrl(fileConfig.data);
-  if (!url) {
-    throw new Error("database.url 未配置；请在 config.yaml 或 DATABASE_URL 中设置 PostgreSQL 连接");
-  }
-  initDatabase({ getDatabaseUrl: () => url });
-  await runMigrations(getDb());
-  await resolveAndBindWorldContext(fileConfig.data);
-  try {
-    return await fn();
-  } finally {
-    await closeDb();
-  }
-}
 
 export function registerVaultCommand(program: Command): void {
   const vaultCmd = program
@@ -39,7 +20,9 @@ export function registerVaultCommand(program: Command): void {
     .description("List agent vault items (metadata only)")
     .action(async () => {
       try {
-        const items = await withDb(async () => listAgentVaultCliItems());
+        const items = await withPlatformDb(async () => listAgentVaultCliItems(), {
+          bindWorldContext: true,
+        });
         if (items.length === 0) {
           console.log("(no vault items in agent library)");
           return;
@@ -69,7 +52,11 @@ export function registerVaultCommand(program: Command): void {
         process.exit(1);
       }
       try {
-        console.log(await withDb(async () => getAgentVaultCliField(id, field)));
+        console.log(
+          await withPlatformDb(async () => getAgentVaultCliField(id, field), {
+            bindWorldContext: true,
+          }),
+        );
       } catch (e) {
         printCliError(e);
         process.exit(1);

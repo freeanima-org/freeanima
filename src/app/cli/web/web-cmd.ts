@@ -5,7 +5,7 @@ import {
   resolveWebHostPort,
   startWebServer,
 } from "./web-runtime.ts";
-import { FileConfig } from "@freeanima/platform/config";
+import { loadRuntimeConfigSection } from "@freeanima/platform/config";
 import { writeStatusLine } from "../service-common.ts";
 import type { WebStaticServerHandle } from "@freeanima/app/shell/web/lib/static-server.ts";
 
@@ -62,7 +62,8 @@ export async function runWebCommand(args: WebCommandArgs): Promise<void> {
 }
 
 async function cmdWebStatus(args: WebCommandArgs): Promise<void> {
-  const cfg = FileConfig.open().data.web;
+  const cfg =
+    await loadRuntimeConfigSection<import("@freeanima/core/config").WebConfigFields>("web");
   const { host, port } = resolveWebHostPort(cfg);
   const bindHost = args.host ?? host;
   const bindPort = args.port ?? port;

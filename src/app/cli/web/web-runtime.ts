@@ -3,7 +3,7 @@ import { PATHS } from "@freeanima/core/config";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import { DEFAULT_WEB_HOST, DEFAULT_WEB_PORT, type WebConfigFields } from "@freeanima/core/config";
 import { resolveHubWsUrl } from "@freeanima/shared/sap-contract/urls";
-import { FileConfig } from "@freeanima/platform/config";
+import { loadRuntimeConfigSection } from "@freeanima/platform/config";
 import {
   startWebStaticServer,
   type WebStaticServerHandle,
@@ -38,11 +38,12 @@ export function isWebProcessAlive(): number | null {
   }
 }
 
-export function resolveDefaultHubUrlForWeb(): string {
-  const data = FileConfig.open().data;
-  const tunnelHost = data.tunnel?.hostname?.trim();
+export async function resolveDefaultHubUrlForWeb(): Promise<string> {
+  const tunnel = await loadRuntimeConfigSection<{ hostname?: string }>("tunnel");
+  const tunnelHost = tunnel?.hostname?.trim();
   if (tunnelHost) return `https://${tunnelHost}`;
-  const publicUrl = data.web?.public_url?.trim();
+  const web = await loadRuntimeConfigSection<{ public_url?: string }>("web");
+  const publicUrl = web?.public_url?.trim();
   if (publicUrl) return publicUrl.replace(/\/$/, "");
   return (process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658").replace(/\/$/, "");
 }
@@ -53,14 +54,13 @@ export type StartWebServerOptions = {
   dist?: string;
   writePid?: boolean;
   hubUrl?: string;
-  /** 跳过 monorepo 自动 build（见 FREEANIMA_WEB_SKIP_BUILD） */
   skipBuild?: boolean;
 };
 
 export async function startWebServer(
   opts: StartWebServerOptions = {},
 ): Promise<WebStaticServerHandle> {
-  const cfg = FileConfig.open().data.web;
+  const cfg = await loadRuntimeConfigSection<WebConfigFields>("web");
   const { host, port } = resolveWebHostPort(cfg);
   const bindHost = opts.host ?? host;
   const bindPort = opts.port ?? port;
@@ -68,7 +68,7 @@ export async function startWebServer(
   await ensureWebDistBuilt(omitUndefined({ dist: opts.dist, skipBuild: opts.skipBuild }));
 
   const distDir = resolveWebDistDir(opts.dist);
-  const hubUrl = (opts.hubUrl ?? resolveDefaultHubUrlForWeb()).replace(/\/$/, "");
+  const hubUrl = (opts.hubUrl ?? (await resolveDefaultHubUrlForWeb())).replace(/\/$/, "");
 
   return startWebStaticServer(
     omitUndefined({
