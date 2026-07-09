@@ -74,6 +74,7 @@ export function buildItemMenuItems(
   item: import("./api.ts").TaskItemRow,
   handlers: {
     onEdit: (item: import("./api.ts").TaskItemRow) => void;
+    onStartPomodoro?: (item: import("./api.ts").TaskItemRow) => void;
     onToggleComplete: (item: import("./api.ts").TaskItemRow) => void;
     onMoveTo: (item: import("./api.ts").TaskItemRow) => void;
     onDelete: (item: import("./api.ts").TaskItemRow) => void;
@@ -83,14 +84,20 @@ export function buildItemMenuItems(
   if (opts?.listArchived) {
     return [copyIdMenuItem(item.id)];
   }
-  return [
+  const items: import("./menu-types.ts").TaskMenuItem[] = [
     { label: "编辑", onClick: () => handlers.onEdit(item) },
     copyIdMenuItem(item.id),
+  ];
+  if (item.status === "pending" && handlers.onStartPomodoro) {
+    items.push({ label: "开始番茄", onClick: () => handlers.onStartPomodoro?.(item) });
+  }
+  items.push(
     {
       label: item.status === "completed" ? "标记未完成" : "标记完成",
       onClick: () => void handlers.onToggleComplete(item),
     },
     { label: "移动到…", onClick: () => handlers.onMoveTo(item) },
     { label: "删除", danger: true, onClick: () => void handlers.onDelete(item) },
-  ];
+  );
+  return items;
 }

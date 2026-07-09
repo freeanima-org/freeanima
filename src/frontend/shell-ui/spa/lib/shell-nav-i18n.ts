@@ -9,6 +9,7 @@ import {
   MessageSquare,
   Moon,
   Settings,
+  Timer,
 } from "lucide-react";
 
 import type { ShellModuleId } from "@freeanima/frontend/shell-sdk/shell-module-visibility";
@@ -52,6 +53,7 @@ export function shellNavItems(): ShellNavItem[] {
   return [
     navItem("chat", "/chat", "/chat", shellNavLabel(m.console_nav_chat), MessageSquare),
     navItem("tasks", "/tasks", "/tasks", shellNavLabel(m.console_nav_tasks), ListTodo),
+    navItem("pomodoro", "/pomodoro", "/pomodoro", shellNavLabel(m.console_nav_pomodoro), Timer),
     navItem("email", "/email", "/email", shellNavLabel(m.console_nav_email), Mail),
     navItem("diary", "/diary", "/diary", shellNavLabel(m.console_nav_diary), BookOpen),
     navItem("vault", "/vault", "/vault", shellNavLabel(m.console_nav_vault), Lock),

@@ -6,6 +6,7 @@ import { dreamPlugin } from "@freeanima/features/dream/plugin";
 import { emailPlugin } from "@freeanima/features/email/plugin";
 import { notificationPlugin } from "@freeanima/features/notification/plugin";
 import { companionPlugin } from "@freeanima/features/companion/plugin";
+import { pomodoroPlugin } from "@freeanima/features/pomodoro/plugin";
 import { taskPlugin } from "@freeanima/features/task/plugin";
 import { vaultPlugin } from "@freeanima/features/vault/plugin";
 
@@ -19,5 +20,6 @@ export const builtinFeaturePlugins: FeaturePlugin[] = [
   companionPlugin,
   diaryPlugin,
   dreamPlugin,
+  pomodoroPlugin,
   emailPlugin,
 ];

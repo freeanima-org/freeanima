@@ -79,9 +79,10 @@ export function hubConfigTransportField(value: string, onChange: (v: string) => 
 }
 
 export function readHubConfigRecord(
-  value: Record<string, unknown>,
+  value: Record<string, unknown> | null | undefined,
 ): Record<string, Record<string, unknown>> {
   const out: Record<string, Record<string, unknown>> = {};
+  if (value == null || typeof value !== "object" || Array.isArray(value)) return out;
   for (const [key, raw] of Object.entries(value)) {
     if (raw && typeof raw === "object" && !Array.isArray(raw)) {
       out[key] = raw as Record<string, unknown>;
@@ -97,7 +98,7 @@ export function HubConfigRecordEntryEditor({
   renderFields,
 }: {
   label: string;
-  value: Record<string, unknown>;
+  value: Record<string, unknown> | null | undefined;
   onChange: (next: Record<string, unknown>) => void;
   renderFields: (
     entry: Record<string, unknown>,

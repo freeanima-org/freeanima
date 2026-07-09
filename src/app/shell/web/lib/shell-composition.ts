@@ -1,18 +1,22 @@
+import {
+  isCapacitorNativePlatform,
+  isMobileCapacitorShellCandidate,
+} from "@freeanima/frontend/shell-sdk/capacitor-runtime.ts";
 import type { SettingsBinding } from "@freeanima/frontend/shell-sdk/settings";
 
 import { createWebSettingsBindings } from "./settings-registry.ts";
 import { createWebSettingsStores } from "./settings-stores.ts";
 
-function isCapacitorRuntime(): boolean {
-  const cap = (window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
-  return Boolean(cap?.isNativePlatform?.() ?? cap);
-}
-
 export type ShellRuntimeKind = "electron" | "capacitor" | "web";
 
 export function detectShellRuntimeKind(): ShellRuntimeKind {
   if (window.satelliteShell?.isElectron) return "electron";
-  if (window.satelliteShell?.isNativeShell || isCapacitorRuntime()) return "capacitor";
+  if (
+    window.satelliteShell?.isNativeShell ||
+    isCapacitorNativePlatform() ||
+    isMobileCapacitorShellCandidate()
+  )
+    return "capacitor";
   return "web";
 }
 

@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import { readModuleSelection, writeModuleSelection } from "@freeanima/frontend/shell-sdk";
+import {
+  readModuleSelection,
+  writeModuleSelection,
+  launchPomodoroForTask,
+} from "@freeanima/frontend/shell-sdk";
 import type { TaskModuleSelection } from "@freeanima/frontend/shell-sdk";
 import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/shell-sdk/react.tsx";
 import { mergeDraftAfterSave } from "@freeanima/frontend/ui-kit/lib/merge-draft-after-save.ts";
@@ -874,6 +878,8 @@ export function TaskApp() {
 
   const itemHandlers = {
     onEdit: openTaskDetail,
+    onStartPomodoro: (item: TaskItemRow) =>
+      launchPomodoroForTask({ id: item.id, title: item.title }),
     onToggleComplete: toggleComplete,
     onMoveTo: (item: TaskItemRow) => openMovePickerForItems([item.id]),
     onDelete: handleDeleteItem,
@@ -1236,6 +1242,9 @@ export function TaskApp() {
                   item={detailItem}
                   onChange={setDetailItem}
                   onCancel={() => closeTaskDetail({ discard: true })}
+                  onStartPomodoro={(item) =>
+                    launchPomodoroForTask({ id: item.id, title: item.title })
+                  }
                   saveStatus={detailSaveStatus}
                 />
               ) : (

@@ -20,6 +20,7 @@ import {
   startCompanionCursorPoll,
 } from "./companion-host.ts";
 import { registerInstanceStoreIpc } from "./instance-store-ipc.ts";
+import { registerAlertIpc } from "./alert-ipc.ts";
 import { attachWindowDevTools } from "./devtools.ts";
 import { syncLaunchAtLoginFromStore } from "./launch-at-login.ts";
 import { logLine } from "./log.ts";
@@ -393,6 +394,7 @@ async function bootstrap(): Promise<void> {
   logLine("desktop-shell main enter");
 
   registerInstanceStoreIpc();
+  registerAlertIpc();
   registerShellClientIpc(openSettingsWindow, reloadHubClientAndMainWindow, (visible) => {
     try {
       setCompanionVisible(visible);

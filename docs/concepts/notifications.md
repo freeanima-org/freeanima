@@ -4,6 +4,37 @@ title: Notifications
 
 # Notifications
 
+代码里 **`notification*`** 指 **Inbox（收件箱）**；瞬时提醒使用 **`alert*`** 命名空间（`shell-sdk/alert`），二者概念分离。
+
+## Inbox（收件箱）
+
+PG-backed in-app inbox for **user** and **agent** subjects (entity model). Cron results, task due reminders, and LLM tools write here; Shell UI lists and marks read via SAP.
+
+## Alert（瞬时提醒，本机-only）
+
+**不走 Hub RPC、不写 PG、不跨设备同步。** 各 shell 端在启动时注册 `AlertBackend`（web / desktop / mobile），Feature 调用 `deliverAlert()` 使用**当前设备**系统通知通道。
+
+| 事件                      | Inbox |               Alert               | SSOT                |
+| ------------------------- | :---: | :-------------------------------: | ------------------- |
+| 任务到期/提醒             |   ✓   | 可选（后续：本机读 inbox 后弹窗） | `task_item` + inbox |
+| Agent `notification_send` |   ✓   |               可选                | inbox               |
+| Chat 新消息               |   ✗   |             ✓（后续）             | `conversation`      |
+| 番茄钟阶段结束            |   ✗   |                 ✓                 | `pomodoro_session`  |
+
+番茄钟阶段结束**不写 inbox**；会话历史由 `pomodoro_session` entity 承担。
+
+实现：`src/frontend/shell-sdk/alert/` + 各端 backend。
+
+| 端          | 通道                                                                                                                                     |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **desktop** | Electron 主进程 `Notification`（IPC `shell:alert:show`）→ OS 原生通知                                                                    |
+| **web**     | Web Notification API                                                                                                                     |
+| **mobile**  | Capacitor **Local Notifications**；`bootstrap-capacitor` 注入 `satelliteShell.showNativeAlert`（远程 Hub 页不依赖 Web Notification API） |
+
+---
+
+（以下为 Inbox 专章，保留原行为说明。）
+
 PG-backed in-app inbox for **user** and **agent** subjects (entity model). Cron results, task due reminders, and LLM tools write here; Shell UI lists and marks read via SAP.
 
 ## Recipients

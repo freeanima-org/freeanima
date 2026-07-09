@@ -65,6 +65,22 @@ import {
   companionSyncPullInputSchema,
   companionSyncPullOutputSchema,
 } from "@freeanima/shared/sap-contract/frames/companion";
+import {
+  pomodoroConfigGetInputSchema,
+  pomodoroConfigGetOutputSchema,
+  pomodoroConfigUpdateInputSchema,
+  pomodoroConfigUpdateOutputSchema,
+  pomodoroFocusListInputSchema,
+  pomodoroFocusListOutputSchema,
+  pomodoroSessionAbortInputSchema,
+  pomodoroSessionAbortOutputSchema,
+  pomodoroSessionCompleteInputSchema,
+  pomodoroSessionCompleteOutputSchema,
+  pomodoroSessionListInputSchema,
+  pomodoroSessionListOutputSchema,
+  pomodoroSessionStatsInputSchema,
+  pomodoroSessionStatsOutputSchema,
+} from "@freeanima/shared/sap-contract/frames/pomodoro";
 import { z } from "zod";
 
 import { defineHubMethod, dualTransportMeta } from "../method-def.ts";
@@ -174,6 +190,44 @@ export const notificationMethodDefs = {
   "notification.recipients": defineHubMethod({
     input: emptyInputSchema,
     output: notificationRecipientsOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+} as const;
+
+export const pomodoroMethodDefs = {
+  "pomodoro.config.get": defineHubMethod({
+    input: pomodoroConfigGetInputSchema,
+    output: pomodoroConfigGetOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "pomodoro.config.update": defineHubMethod({
+    input: pomodoroConfigUpdateInputSchema,
+    output: pomodoroConfigUpdateOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "pomodoro.session.complete": defineHubMethod({
+    input: pomodoroSessionCompleteInputSchema,
+    output: pomodoroSessionCompleteOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "pomodoro.session.abort": defineHubMethod({
+    input: pomodoroSessionAbortInputSchema,
+    output: pomodoroSessionAbortOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "pomodoro.session.list": defineHubMethod({
+    input: pomodoroSessionListInputSchema,
+    output: pomodoroSessionListOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "pomodoro.session.stats": defineHubMethod({
+    input: pomodoroSessionStatsInputSchema,
+    output: pomodoroSessionStatsOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "pomodoro.focus.list": defineHubMethod({
+    input: pomodoroFocusListInputSchema,
+    output: pomodoroFocusListOutputSchema,
     meta: dualTransportMeta(true),
   }),
 } as const;
