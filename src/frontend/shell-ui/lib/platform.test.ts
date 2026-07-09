@@ -2,6 +2,12 @@ import { afterEach, describe, expect, test } from "bun:test";
 
 import { resolveSettingsChromePlatform, resolveSettingsContentPlatform } from "../spa/platform.ts";
 
+type TestWindow = Window & typeof globalThis;
+
+function setTestWindow(value: Partial<TestWindow>): void {
+  (globalThis as { window: TestWindow }).window = value as unknown as TestWindow;
+}
+
 describe("resolveSettingsChromePlatform", () => {
   test("compact layoutMode 为 mobile settings chrome", () => {
     expect(resolveSettingsChromePlatform({ layoutMode: "compact" })).toBe("mobile");
@@ -20,29 +26,27 @@ describe("resolveSettingsContentPlatform", () => {
   const originalShell = globalThis.window?.satelliteShell;
 
   test("Electron 壳为 desktop", () => {
-    (globalThis as typeof globalThis & { window: Window }).window = {
-      satelliteShell: { isElectron: true },
-    } as Window;
+    setTestWindow({ satelliteShell: { isElectron: true } } as Partial<TestWindow>);
     expect(resolveSettingsContentPlatform()).toBe("desktop");
   });
 
   test("Capacitor 原生壳为 mobile", () => {
-    (globalThis as typeof globalThis & { window: Window }).window = {
+    setTestWindow({
       satelliteShell: { isNativeShell: true, isElectron: false },
-    } as Window;
+    } as Partial<TestWindow>);
     expect(resolveSettingsContentPlatform()).toBe("mobile");
   });
 
   test("Web 无壳为 desktop", () => {
-    (globalThis as typeof globalThis & { window: Window }).window = {} as Window;
+    setTestWindow({});
     expect(resolveSettingsContentPlatform()).toBe("desktop");
   });
 
   afterEach(() => {
     if (originalShell !== undefined) {
-      (globalThis.window as Window).satelliteShell = originalShell;
+      (globalThis.window as TestWindow).satelliteShell = originalShell;
     } else {
-      delete (globalThis.window as Window).satelliteShell;
+      delete (globalThis.window as TestWindow).satelliteShell;
     }
   });
 });

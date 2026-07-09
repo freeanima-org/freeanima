@@ -8,7 +8,7 @@ import { bindBrowserToolsConfig, resetBrowserToolsConfigForTest } from "./browse
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "bun:test";
 import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
 
-import { registerSupplementalTools } from "@freeanima/capabilities-tools";
+import { registerSupplementalTools } from "@freeanima/capabilities/tools";
 import {
   camofoxNavigate,
   camofoxSnapshot,

@@ -5,8 +5,8 @@ import type {
   SemanticMemoryRow,
 } from "@freeanima/core/repos";
 import { FtsQueryError } from "@freeanima/core/util";
-import { registerMemoryTools, searchSemanticMemory } from "@freeanima/capabilities-memory";
-import { registerToolConversationResolver } from "@freeanima/capabilities-memory/tool-conversation-port";
+import { registerMemoryTools, searchSemanticMemory } from "@freeanima/capabilities/memory";
+import { registerToolConversationResolver } from "@freeanima/capabilities/memory/tool-conversation-port";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { runWithToolContext, getToolConversationId } from "@freeanima/core/tool";
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { SatelliteShellApi } from "@freeanima/shell-sdk/shell-api";
+import type { SatelliteShellApi } from "@freeanima/frontend/shell-sdk/shell-api";
 
 import { needsHubSetup } from "./hub-setup.ts";
 

@@ -8,7 +8,6 @@ function createMockAdapter(): SpeechPlaybackAdapter & {
 } {
   const spoken: Array<{ text: string; locale: string }> = [];
   let stopped = 0;
-  let onEnd: (() => void) | null = null;
 
   return {
     spoken,
@@ -18,11 +17,9 @@ function createMockAdapter(): SpeechPlaybackAdapter & {
     isSupported: () => true,
     stop() {
       stopped += 1;
-      onEnd = null;
     },
     speak(text, locale, end) {
       spoken.push({ text, locale });
-      onEnd = end;
       end();
     },
   };
@@ -43,43 +40,31 @@ describe("createSpeechPlaybackController", () => {
   });
 
   it("再次 toggle 同一 key 会 stop", () => {
-    let end: (() => void) | undefined;
+    let stopped = 0;
     const adapter: SpeechPlaybackAdapter = {
       isSupported: () => true,
-      stopped: 0,
       stop() {
-        (this as { stopped: number }).stopped += 1;
-        end = undefined;
+        stopped += 1;
       },
-      speak(_text, _locale, onEnd) {
-        end = onEnd;
+      speak(text, _locale, _end) {
+        void text;
+        // 保持播放中，不立即 end，以便断言 isSpeaking
       },
     };
-
     const ctrl = createSpeechPlaybackController(adapter, () => {});
     ctrl.toggle("msg-1", "hello", "en");
     expect(ctrl.isSpeaking("msg-1")).toBe(true);
     ctrl.toggle("msg-1", "hello", "en");
-    expect((adapter as { stopped: number }).stopped).toBeGreaterThanOrEqual(1);
+    expect(stopped).toBeGreaterThanOrEqual(1);
     expect(ctrl.getActiveKey()).toBeNull();
   });
 
   it("切换 key 时由 adapter.speak 自行停止前一条", () => {
-    const adapter: SpeechPlaybackAdapter = {
-      isSupported: () => true,
-      stopCalls: 0,
-      stop() {
-        (this as { stopCalls: number }).stopCalls += 1;
-      },
-      speak(text, _locale, onEnd) {
-        onEnd();
-      },
-    } as SpeechPlaybackAdapter & { stopCalls: number };
-
+    const adapter = createMockAdapter();
     const ctrl = createSpeechPlaybackController(adapter, () => {});
     ctrl.toggle("msg-1", "one", "en");
     ctrl.toggle("msg-2", "two", "en");
-    expect((adapter as SpeechPlaybackAdapter & { stopCalls: number }).stopCalls).toBe(0);
+    expect(adapter.stopped).toBe(0);
   });
 
   it("空文本不触发 speak", () => {

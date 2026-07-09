@@ -1,6 +1,10 @@
-export { resolveHubHttpUrl, resolveHubRpcWsUrl, hubHttpFromRpcWsUrl } from "@freeanima/hub-rpc";
+export {
+  resolveHubHttpUrl,
+  resolveHubRpcWsUrl,
+  hubHttpFromRpcWsUrl,
+} from "@freeanima/shared/hub-rpc";
 
-import { resolveHubRpcWsUrl, hubHttpFromRpcWsUrl } from "@freeanima/hub-rpc";
+import { resolveHubRpcWsUrl, hubHttpFromRpcWsUrl } from "@freeanima/shared/hub-rpc";
 
 /** @deprecated 使用 resolveHubRpcWsUrl */
 export function resolveHubWsUrl(hubUrl: string): string {

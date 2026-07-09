@@ -2,7 +2,7 @@ import {
   assertSapInstanceId,
   generateSapInstanceIdCandidate,
   normalizeAppSlug,
-} from "@freeanima/sap-contract";
+} from "@freeanima/shared/sap-contract";
 import { getSapInstance, upsertSapInstance } from "@freeanima/core/db/pg/sap";
 
 export type SapInstanceRecord = {

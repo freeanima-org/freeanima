@@ -3,12 +3,12 @@ import { cronJobDataSchema } from "@freeanima/platform/connectors/cron";
 import {
   eventPayloadSchemas,
   conversationUpdatedPayloadSchema,
-} from "@freeanima/capabilities-memory/schemas/event-payloads";
-import { factExtractionSchema } from "@freeanima/capabilities-memory/schemas/fact-extraction";
-import { filterRecallableMessages } from "@freeanima/capabilities-memory";
+} from "@freeanima/capabilities/memory/schemas/event-payloads";
+import { factExtractionSchema } from "@freeanima/capabilities/memory/schemas/fact-extraction";
+import { filterRecallableMessages } from "@freeanima/capabilities/memory";
 import { toolArgsSchema, toolErrorSchema } from "@freeanima/core/tool";
 import { parseCompressionState, clarifyToolAwaitingResultSchema } from "@freeanima/core/db/domain";
-import { jsonRpcMessageSchema } from "@freeanima/capabilities-acp/schemas/acp-jsonrpc";
+import { jsonRpcMessageSchema } from "@freeanima/capabilities/acp/schemas/acp-jsonrpc.ts";
 import {
   weixinContextTokensSchema,
   weixinSyncSchema,

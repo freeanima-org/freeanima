@@ -1,4 +1,4 @@
-import { UnsupportedMobileError, type FrontendMobileExport } from "@freeanima/shell-sdk";
+import { UnsupportedMobileError, type FrontendMobileExport } from "@freeanima/frontend/shell-sdk";
 
 import { getCompanionManifest } from "./manifest.ts";
 

@@ -22,7 +22,7 @@ PG repository 实现位于 `src/core/db/pg/`（按域分子目录）；schema / 
 
 ## Decision tree: ORM only
 
-All queries in `src/core/db/pg/` and `tests/integration/` use Drizzle ORM — **`db.execute` is forbidden** (enforced by [`scripts/check-no-db-execute.ts`](../../scripts/check-no-db-execute.ts)).
+All queries in `src/core/db/pg/` and `tests/integration/` use Drizzle ORM — **`db.execute` is forbidden**（约定；review 把关）。
 
 | Tier                         | When                                                                              | How                                                                                      |
 | ---------------------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |

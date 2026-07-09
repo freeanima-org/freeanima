@@ -21,6 +21,10 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "allowImportingTsExtensions": true,
-    "types": ["bun"]
+    "types": ["bun"],
+    "paths": {
+      "@freeanima/*": ["./src/*"],
+      "@paraglide/*": ["./messages/paraglide/*"]
+    }
   }
 }

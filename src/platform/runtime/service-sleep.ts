@@ -7,7 +7,7 @@ import {
   buildSleepSummary,
   listDeepSleepRoundLogs,
   type SleepSummary,
-} from "@freeanima/capabilities-memory";
+} from "@freeanima/capabilities/memory";
 import type { PipelineRunState } from "@freeanima/runtime/pipeline";
 
 import {

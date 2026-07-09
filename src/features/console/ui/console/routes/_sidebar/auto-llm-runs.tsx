@@ -15,15 +15,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@freeanima/ui-kit";
-import { FormField } from "@freeanima/ui-kit/form";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { MemoryListPagination } from "@console/components/console/MemoryListPagination.tsx";
-import { listAutoLlmRuns } from "@console/lib/api.ts";
-import { formatDisplayDateTime } from "@console/lib/format-datetime.ts";
-import { m } from "@console/lib/i18n.ts";
-import { logCaughtError } from "@console/lib/log-caught-error.ts";
-import { useConsoleOffsetPagination } from "@console/lib/use-console-offset-pagination.ts";
+} from "@freeanima/frontend/ui-kit";
+import { FormField } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
+import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { MemoryListPagination } from "@freeanima/features/console/ui/console/components/console/MemoryListPagination.tsx";
+import { listAutoLlmRuns } from "@freeanima/features/console/ui/console/lib/api.ts";
+import { formatDisplayDateTime } from "@freeanima/features/console/ui/console/lib/format-datetime.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
+import { logCaughtError } from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
+import { useConsoleOffsetPagination } from "@freeanima/features/console/ui/console/lib/use-console-offset-pagination.ts";
 
 const PAGE_SIZE = 20;
 

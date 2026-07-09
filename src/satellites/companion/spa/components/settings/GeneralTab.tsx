@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@freeanima/ui-kit";
-import { FormToggle } from "@freeanima/ui-kit/form";
-import type { CompanionSettingsApi } from "@freeanima/shell-sdk/settings";
-import { useCompanionStore } from "@/stores/companion.ts";
+import { Card, CardContent } from "@freeanima/frontend/ui-kit";
+import { FormToggle } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
+import type { CompanionSettingsApi } from "@freeanima/frontend/shell-sdk/settings";
+import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
 
 type Props = {
   companionApi?: CompanionSettingsApi;

@@ -11,7 +11,7 @@ import { spawnSync } from "node:child_process";
 import { createTempDir, removeTempDir } from "@freeanima/core/util";
 
 import { Config } from "@freeanima/platform/config";
-import { registerCoreTools } from "@freeanima/capabilities-tools";
+import { registerCoreTools } from "@freeanima/capabilities/tools";
 import { parseYaml } from "@freeanima/platform/config";
 
 const MIN_CONFIG = `

@@ -1,7 +1,7 @@
-import { createNotificationInjectHandler } from "@freeanima/capabilities-tools/notification";
-import { registerMemoryPassiveRecallHook as registerPassiveRecall } from "@freeanima/capabilities-memory";
-import { getAcpManager } from "@freeanima/capabilities-acp";
-import { registerClarifyHooks } from "@freeanima/capabilities-tools/clarify";
+import { createNotificationInjectHandler } from "@freeanima/capabilities/tools/notification";
+import { registerMemoryPassiveRecallHook as registerPassiveRecall } from "@freeanima/capabilities/memory";
+import { getAcpManager } from "@freeanima/capabilities/acp";
+import { registerClarifyHooks } from "@freeanima/capabilities/tools/clarify";
 import { createAcpProgressDelivery } from "./acp-progress-delivery.ts";
 import { createAcpTaskQueryPort } from "./acp-task-query.ts";
 import type { Kernel } from "@freeanima/kernel";

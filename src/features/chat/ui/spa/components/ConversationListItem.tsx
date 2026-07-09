@@ -1,6 +1,6 @@
 import { useRef } from "react";
-import { useLongPress } from "@freeanima/ui-kit/composite";
-import type { ConversationListItem as ConversationListEntry } from "@chat/lib/types.ts";
+import { useLongPress } from "@freeanima/frontend/ui-kit/composite";
+import type { ConversationListItem as ConversationListEntry } from "@freeanima/features/chat/ui/spa/lib/types.ts";
 
 type ConversationListItemProps = {
   conversation: ConversationListEntry;

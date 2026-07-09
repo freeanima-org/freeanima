@@ -1,8 +1,8 @@
-import { StrictMode, type ReactNode } from "react";
+import { StrictMode, type ComponentType, type JSX, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
-import { Button, Card, CardContent } from "@freeanima/ui-kit";
-import type { SettingsBinding } from "@freeanima/shell-sdk/settings";
-import { blockNativeDialogs, ConfirmPromptHost } from "@freeanima/ui-kit/composite";
+import { Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
+import type { SettingsBinding } from "@freeanima/frontend/shell-sdk/settings";
+import { blockNativeDialogs, ConfirmPromptHost } from "@freeanima/frontend/ui-kit/composite";
 
 import { bootstrapSentryFromSettings, Sentry } from "./bootstrap/sentry.ts";
 import { ShellRouterProvider } from "./router.tsx";
@@ -133,6 +133,12 @@ function ShellAppTree({
   );
 }
 
+const ShellErrorBoundary = Sentry.ErrorBoundary as unknown as ComponentType<{
+  fallback: typeof ShellErrorFallback;
+  showDialog: boolean;
+  children?: ReactNode;
+}>;
+
 export async function mountShellUi(opts: MountShellUiOptions): Promise<void> {
   setShellAppBindings(opts.bindings);
 
@@ -160,9 +166,9 @@ export async function mountShellUi(opts: MountShellUiOptions): Promise<void> {
 
   createRoot(rootEl).render(
     <StrictMode>
-      <Sentry.ErrorBoundary fallback={ShellErrorFallback} showDialog={false}>
+      <ShellErrorBoundary fallback={ShellErrorFallback} showDialog={false}>
         <ShellAppTree bindings={opts.bindings} bootError={bootError} headerSlot={opts.headerSlot} />
-      </Sentry.ErrorBoundary>
+      </ShellErrorBoundary>
     </StrictMode>,
   );
 }

@@ -1,6 +1,6 @@
-import { Button, Card, CardContent } from "@freeanima/ui-kit";
-import type { SettingsSectionDeps } from "@freeanima/shell-sdk/settings";
-import { useCompanionStore } from "@/stores/companion.ts";
+import { Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
+import type { SettingsSectionDeps } from "@freeanima/frontend/shell-sdk/settings";
+import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
 import { SettingsTabs } from "./settings/SettingsTabs.tsx";
 import { GeneralTab } from "./settings/GeneralTab.tsx";
 import { BehaviorTab } from "./settings/BehaviorTab.tsx";

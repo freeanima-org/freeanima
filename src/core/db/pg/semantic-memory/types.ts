@@ -48,4 +48,4 @@ export type SemanticMemorySearchOpts = {
 export {
   semanticFtsHitSchema,
   semanticMemoryRowSchema,
-} from "../../../repos/schemas/semantic-memory-row.ts";
+} from "@freeanima/core/repos/schemas/semantic-memory-row.ts";

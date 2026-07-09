@@ -18,7 +18,7 @@ import {
   normalizeAppSlug,
   type SapRequestContext,
 } from "../protocol/index.ts";
-import type { SapRouterOutputs } from "@freeanima/sap-contract";
+import type { SapRouterOutputs } from "@freeanima/shared/sap-contract";
 import { chatSessionPumps } from "./session-pumps.ts";
 import { pumpMessageStream, pumpSessionUpdates, resolveConversationPlatform } from "./stream.ts";
 

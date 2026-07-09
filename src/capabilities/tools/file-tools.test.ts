@@ -3,7 +3,7 @@ import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createTempDir, removeTempDir } from "@freeanima/core/util";
 import { Config } from "@freeanima/platform/config";
-import { registerCoreTools } from "@freeanima/capabilities-tools";
+import { registerCoreTools } from "@freeanima/capabilities/tools";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { parseYaml } from "@freeanima/platform/config";
 import { animaConfigSchema } from "@freeanima/core/config";

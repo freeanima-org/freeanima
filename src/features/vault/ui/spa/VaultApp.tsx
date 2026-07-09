@@ -6,11 +6,14 @@ import {
   useNetworkOnline,
   useSubjectScope,
   VAULT_UI_SCOPE,
-} from "@freeanima/shell-sdk/react";
-import { Button, Card, CardContent, Input, Spinner, Textarea } from "@freeanima/ui-kit";
-import { EmptyState, StatusAlert } from "@freeanima/ui-kit/composite";
-import { ListDetailLayout } from "@freeanima/ui-kit/layout";
-import type { VaultItemDetailRowPayload, VaultItemMetaRowPayload } from "@freeanima/sap-contract";
+} from "@freeanima/frontend/shell-sdk/react.tsx";
+import { Button, Card, CardContent, Input, Spinner, Textarea } from "@freeanima/frontend/ui-kit";
+import { EmptyState, StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { ListDetailLayout } from "@freeanima/frontend/ui-kit/layout";
+import type {
+  VaultItemDetailRowPayload,
+  VaultItemMetaRowPayload,
+} from "@freeanima/shared/sap-contract";
 
 import {
   createVaultItem,
@@ -24,7 +27,7 @@ import {
   type VaultSecretsViewPayload,
 } from "./lib/api.ts";
 import { newUserVaultSalt, type VaultSecretsPayload } from "./lib/crypto-client.ts";
-import { extractCustomFieldNames } from "@freeanima/vault-crypto";
+import { extractCustomFieldNames } from "@freeanima/shared/vault-crypto";
 
 function LockScreen({
   loading,

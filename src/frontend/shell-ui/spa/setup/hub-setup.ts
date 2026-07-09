@@ -1,4 +1,4 @@
-import type { SatelliteShellApi } from "@freeanima/shell-sdk/shell-api";
+import type { SatelliteShellApi } from "@freeanima/frontend/shell-sdk/shell-api";
 
 /** 未配置 Hub API Token 时需先完成引导（Web / 桌面 Electron；移动原生壳层除外） */
 export function needsHubSetup(

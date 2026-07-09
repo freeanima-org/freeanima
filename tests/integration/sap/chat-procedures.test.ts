@@ -5,7 +5,7 @@ import {
   notificationMarkReadInputSchema,
   sessionAcpDockInputSchema,
   conversationCommandsInputSchema,
-} from "@freeanima/sap-contract";
+} from "@freeanima/shared/sap-contract";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 
 describe("chat SAP procedures", () => {

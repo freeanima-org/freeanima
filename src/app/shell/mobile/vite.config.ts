@@ -3,11 +3,11 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin } from "vite";
 
-import { nativeBuildMetaDefine } from "../../../frontend/shell-sdk/native-build-meta.ts";
+import { nativeBuildMetaDefine } from "@freeanima/frontend/shell-sdk/native-build-meta.ts";
 import { resolveNativeBuildMeta } from "../shared/resolve-native-build-meta.ts";
-import type { ComponentBuildMeta } from "../../../core/config/build-meta.ts";
-import { createShellViteInlineConfig } from "../../../frontend/shell-ui/vite/run-build.ts";
-import { shellEntryFileNames } from "../../../frontend/shell-ui/vite/entry-file-names.ts";
+import type { ComponentBuildMeta } from "@freeanima/core/config/build-meta.ts";
+import { createShellViteInlineConfig } from "@freeanima/frontend/shell-ui/vite/run-build.ts";
+import { shellEntryFileNames } from "@freeanima/frontend/shell-ui/vite/entry-file-names.ts";
 
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(PKG_DIR, "..", "..", "..", "..");

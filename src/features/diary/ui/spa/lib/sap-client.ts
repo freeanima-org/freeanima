@@ -1,1 +1,1 @@
-export { subscribeShellConfigChanges } from "@freeanima/sap-contract";
+export { subscribeShellConfigChanges } from "@freeanima/shared/sap-contract";

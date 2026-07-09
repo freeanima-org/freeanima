@@ -1,1 +1,1 @@
-export type { HubRpcReconnectPolicy as SapReconnectPolicy } from "@freeanima/hub-rpc";
+export type { HubRpcReconnectPolicy as SapReconnectPolicy } from "@freeanima/shared/hub-rpc";

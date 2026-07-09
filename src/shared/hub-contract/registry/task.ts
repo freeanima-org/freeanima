@@ -21,7 +21,7 @@ import {
   taskSearchOutputSchema,
   taskUncompleteInputSchema,
   taskUncompleteOutputSchema,
-} from "@freeanima/sap-contract/frames/task";
+} from "@freeanima/shared/sap-contract/frames/task";
 
 import { defineHubMethod, dualTransportMeta } from "../method-def.ts";
 

@@ -2,10 +2,10 @@ import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { build, type Alias, type InlineConfig, type Rollup } from "vite";
+import { build, type InlineConfig, type Rollup } from "vite";
 
+import { buildViteAliases } from "./module-aliases.ts";
 import { paraglideCompilePlugin } from "./paraglide-plugin.ts";
-import { createTsconfigPathsAliases } from "./tsconfig-paths.ts";
 
 function satelliteViteDefine(extra?: Record<string, string>): Record<string, string> {
   const viteHubWs = process.env.VITE_FREEANIMA_HUB_WS ?? "";
@@ -23,7 +23,6 @@ export type SatelliteViteOptions = {
   minify?: boolean;
   sourcemap?: boolean;
   watch?: boolean;
-  aliases?: Alias[];
   /** 编译 messages/paraglide 到 outdir/.paraglide */
   paraglide?: boolean;
   define?: Record<string, string>;
@@ -46,10 +45,9 @@ export function createSatelliteViteInlineConfig(opts: SatelliteViteOptions): Inl
     throw new Error(`satellite vite: missing ${indexHtml}`);
   }
 
-  const alias: Alias[] = [...(opts.aliases ?? []), ...createTsconfigPathsAliases(opts.repoRoot)];
-  if (opts.paraglide) {
-    alias.push({ find: /^(.*)messages\/paraglide\/(.*)$/, replacement: `${paraglideDir}/$2` });
-  }
+  const alias = buildViteAliases(
+    opts.paraglide ? { repoRoot: opts.repoRoot, paraglideDir } : { repoRoot: opts.repoRoot },
+  );
 
   const plugins = [];
   if (opts.paraglide) {

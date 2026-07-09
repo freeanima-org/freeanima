@@ -16,7 +16,7 @@ import {
   resumeCronJob,
   runCronJobNow,
   ApiHandlerError,
-} from "@freeanima/console-api/handlers";
+} from "@freeanima/features/console/hub/console-api/handlers";
 
 describePg("server cron API", () => {
   let home: string;

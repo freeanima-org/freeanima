@@ -9,13 +9,13 @@ import {
   formatCommandPreAck,
   formatCommandStreamPreAck,
   ensureCommandResultText,
-} from "@freeanima/platform/commands";
-import type { CommandDef } from "@freeanima/platform/commands";
+} from "@freeanima/platform/slash-commands";
+import type { CommandDef } from "@freeanima/platform/slash-commands";
 import { messageIncoming, turnAfterComplete } from "@freeanima/core/hooks/conversation";
 import { headOkStepData } from "@freeanima/kernel/hooks";
 import type { StoredMessage as Message } from "@freeanima/core/db/domain";
 import type { EventBus } from "@freeanima/kernel/eventbus";
-import { conversationUpdated } from "@freeanima/capabilities-memory";
+import { conversationUpdated } from "@freeanima/capabilities/memory";
 import type { EngineRunControl } from "./engine-run-control.ts";
 import type { ConversationManager } from "./conversation-manager.ts";
 import { runExclusiveStreamTurn, streamErrorEvent, type StreamTurnHost } from "./turn-lifecycle.ts";

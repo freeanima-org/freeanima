@@ -1,5 +1,5 @@
 import type { StreamEvent } from "@freeanima/runtime/loop";
-import type { StreamApiEvent } from "@freeanima/console-api/api";
+import type { StreamApiEvent } from "@freeanima/features/console/hub/console-api/api";
 
 export function mapStreamEventToApi(ev: StreamEvent): StreamApiEvent {
   switch (ev.event) {

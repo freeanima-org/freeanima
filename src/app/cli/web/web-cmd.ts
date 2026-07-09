@@ -7,7 +7,7 @@ import {
 } from "./web-runtime.ts";
 import { FileConfig } from "@freeanima/platform/config";
 import { writeStatusLine } from "../service-common.ts";
-import type { WebStaticServerHandle } from "@freeanima/app-web/static-server";
+import type { WebStaticServerHandle } from "@freeanima/app/shell/web/lib/static-server.ts";
 
 export type WebCommandArgs = {
   action: string;

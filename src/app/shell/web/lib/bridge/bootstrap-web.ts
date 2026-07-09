@@ -1,6 +1,6 @@
-import { parseShellClientConfig } from "@freeanima/shell-sdk/shell-client-config";
-import type { SettingsStorageScope } from "@freeanima/shell-sdk/settings";
-import { HUB_SETTINGS_SCOPE } from "@freeanima/shell-sdk/settings";
+import { parseShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-client-config";
+import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
+import { HUB_SETTINGS_SCOPE } from "@freeanima/frontend/shell-sdk/settings";
 
 import { createWebScopedBackend, seedWebHubPrefsIfEmpty } from "../settings-local-backend.ts";
 import {
@@ -29,7 +29,8 @@ function installScopedSettingsBridge(): void {
       }
       if (scope.kind === "kv" && scope.id === "debug") {
         await backend.save(scope, value);
-        const { sendSentryTestEvent } = await import("@freeanima/shell-ui/sentry-test");
+        const { sendSentryTestEvent } =
+          await import("@freeanima/frontend/shell-ui/lib/sentry-test.ts");
         await sendSentryTestEvent();
         return;
       }

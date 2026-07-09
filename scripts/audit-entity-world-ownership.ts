@@ -5,13 +5,13 @@
  */
 import { SQL } from "bun";
 
-import { resolveWorldSubjectIds } from "../src/core/config/worlds.ts";
-import { initDatabase } from "../src/core/db/pg/index.ts";
+import { resolveWorldSubjectIds } from "@freeanima/core/config/worlds.ts";
+import { initDatabase } from "@freeanima/core/db/pg/index.ts";
 import {
   subjectConfigBodySchema,
   worldConfigBodySchema,
-} from "../src/core/db/schema/entity/index.ts";
-import { FileConfig } from "../src/platform/config/file-config.ts";
+} from "@freeanima/core/db/schema/entity/index.ts";
+import { FileConfig } from "@freeanima/platform/config/file-config.ts";
 
 type EntityRow = {
   id: number;

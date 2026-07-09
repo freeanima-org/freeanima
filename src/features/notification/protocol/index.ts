@@ -3,4 +3,4 @@ export {
   notificationListInputSchema,
   notificationMarkReadInputSchema,
   type SapRequestContext,
-} from "@freeanima/sap-contract";
+} from "@freeanima/shared/sap-contract";

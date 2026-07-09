@@ -2,7 +2,7 @@ import { initCronModule } from "@freeanima/platform/connectors/cron";
 import {
   invalidateSelfLayerPromptCache,
   loadSelfLayerPrompt,
-} from "@freeanima/capabilities-identity";
+} from "@freeanima/capabilities/identity";
 import { listAllSapInstances } from "@freeanima/core/db/pg/sap";
 
 import { createAppRuntime, type AppRuntime } from "../runtime/app-runtime.ts";

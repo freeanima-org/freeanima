@@ -3,7 +3,7 @@ import {
   SAP_METHODS,
   emailMessageSearchInputSchema,
   taskSearchInputSchema,
-} from "@freeanima/sap-contract";
+} from "@freeanima/shared/sap-contract";
 
 describe("task/email SAP search procedures", () => {
   it("registers task.search and email.message.search", () => {

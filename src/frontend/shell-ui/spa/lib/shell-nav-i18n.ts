@@ -11,9 +11,9 @@ import {
   Settings,
 } from "lucide-react";
 
-import type { ShellModuleId } from "@freeanima/shell-sdk/shell-module-visibility";
+import type { ShellModuleId } from "@freeanima/frontend/shell-sdk/shell-module-visibility";
 
-import * as m from "../../../../../messages/paraglide/messages.js";
+import { m } from "@paraglide/messages";
 
 /** Shell Rail/底栏已有图标，去掉 Paraglide 文案前缀 emoji。 */
 export function stripLeadingNavEmoji(label: string): string {

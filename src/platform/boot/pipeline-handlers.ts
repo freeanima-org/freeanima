@@ -1,12 +1,12 @@
 import { omitUndefined } from "@freeanima/core/util";
-import { runLightSleep } from "@freeanima/capabilities-memory/light-sleep/run";
-import { runDeepSleep } from "@freeanima/capabilities-memory/deep-sleep/run";
-import { runDream } from "@freeanima/capabilities-memory/dream/run";
-import { cstDayRange, syncSemanticMemoryReferenceCounts } from "@freeanima/capabilities-memory";
+import { runLightSleep } from "@freeanima/capabilities/memory/light-sleep/run";
+import { runDeepSleep } from "@freeanima/capabilities/memory/deep-sleep/run";
+import { runDream } from "@freeanima/capabilities/memory/dream/run";
+import { cstDayRange, syncSemanticMemoryReferenceCounts } from "@freeanima/capabilities/memory";
 import {
   invalidateSelfLayerPromptCache,
   loadSelfLayerPrompt,
-} from "@freeanima/capabilities-identity";
+} from "@freeanima/capabilities/identity";
 import { purgeStaleAutoLlmRuns } from "@freeanima/core/db/pg/auto-llm-run";
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
 import { getPipelineRunner, type PipelineStepTrigger } from "@freeanima/runtime/pipeline";

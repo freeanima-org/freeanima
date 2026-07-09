@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { ToolSetRegistry, toolError } from "@freeanima/core/tool";
-import { formatSapToolName } from "@freeanima/sap-contract";
-import { SatelliteManager } from "@freeanima/capabilities-satellite";
+import { formatSapToolName } from "@freeanima/shared/sap-contract";
+import { SatelliteManager } from "@freeanima/capabilities/satellite";
 
 describe("sap strict routing integration", () => {
   it("does not fall back to hub file_read for mismatched sap tool", () => {

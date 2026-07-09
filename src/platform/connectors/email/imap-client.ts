@@ -1,7 +1,7 @@
 import { omitUndefined } from "@freeanima/core/util";
 import { ImapFlow } from "imapflow";
 
-import type { EmailAccountRow } from "@freeanima/feature-email/domain";
+import type { EmailAccountRow } from "@freeanima/features/email/domain";
 
 import { resolveEmailAccountPassword } from "./password.ts";
 

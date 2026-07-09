@@ -1,6 +1,6 @@
 import { SUMMARY_USER_PREFIX } from "@freeanima/core/compress";
 import { isConversationMeta } from "@freeanima/core/db/domain";
-import { decomposeSystemPromptParts } from "@freeanima/capabilities-memory/system-prompt";
+import { decomposeSystemPromptParts } from "@freeanima/capabilities/memory/system-prompt";
 import type { StoredMessage } from "@freeanima/core/db/domain";
 import {
   estimateMessagesTokens,
@@ -9,8 +9,8 @@ import {
 } from "@freeanima/core/compress";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
 import { getProfileHopModel } from "@freeanima/platform/config";
-import { loadSelfLayerPrompt } from "@freeanima/capabilities-identity";
-import { renderToolsetsSection } from "@freeanima/capabilities-tools/toolset-prompt";
+import { loadSelfLayerPrompt } from "@freeanima/capabilities/identity";
+import { renderToolsetsSection } from "@freeanima/capabilities/tools/toolset-prompt";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 export type RuntimeContextBreakdown = {

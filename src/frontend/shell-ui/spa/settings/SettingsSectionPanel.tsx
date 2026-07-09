@@ -1,4 +1,4 @@
-import type { SettingsBinding, SettingsPlatform } from "@freeanima/shell-sdk/settings";
+import type { SettingsBinding, SettingsPlatform } from "@freeanima/frontend/shell-sdk/settings";
 
 import { FormRenderer } from "../form/FormRenderer.tsx";
 import { LazyComponentPanel } from "./LazyComponentPanel.tsx";
@@ -30,5 +30,12 @@ export function SettingsSectionPanel({ binding, platform }: Props) {
     );
   }
 
-  return <LazyComponentPanel load={entry.load} platform={platform} store={store} deps={deps} />;
+  return (
+    <LazyComponentPanel
+      load={entry.load}
+      platform={platform}
+      {...(store !== undefined ? { store } : {})}
+      {...(deps !== undefined ? { deps } : {})}
+    />
+  );
 }

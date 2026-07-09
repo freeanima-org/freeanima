@@ -1,7 +1,7 @@
 import { describe, expect, it, mock } from "bun:test";
 
-mock.module("../../../../../messages/paraglide/messages.js", () => ({}));
-mock.module("../../../../../messages/paraglide/runtime.js", () => ({
+mock.module("@paraglide/messages", () => ({ m: {} }));
+mock.module("@paraglide/runtime", () => ({
   getLocale: () => "zh-cn",
   locales: ["zh-cn", "en"],
   setLocale: async (_locale: string) => {},

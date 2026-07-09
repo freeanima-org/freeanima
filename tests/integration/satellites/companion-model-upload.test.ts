@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { handleModelUpload } from "../../../src/satellites/companion/server/models.ts";
-import { loadConfig } from "../../../src/satellites/companion/server/config.ts";
-import { companionModelsDir } from "../../../src/satellites/companion/server/paths.ts";
-import { serveStatic } from "../../../src/satellites/companion/server/static.ts";
+import { handleModelUpload } from "@freeanima/satellites/companion/server/models.ts";
+import { loadConfig } from "@freeanima/satellites/companion/server/config.ts";
+import { companionModelsDir } from "@freeanima/satellites/companion/server/paths.ts";
+import { serveStatic } from "@freeanima/satellites/companion/server/static.ts";
 
 const MODEL_PATH_RE = /^\/models\/mdl_[0-9a-f-]+\.vrm$/;
 

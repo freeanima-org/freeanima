@@ -1,7 +1,14 @@
 import { create } from "zustand";
-import type { DisplayItem, ConversationListItem } from "@freeanima/console-contract/api";
-import { getConversationInfo, getStoredMessages, listConversations } from "@console/lib/api.ts";
-import { logCaughtError } from "@console/lib/log-caught-error.ts";
+import type {
+  DisplayItem,
+  ConversationListItem,
+} from "@freeanima/features/console/protocol/console-contract/api";
+import {
+  getConversationInfo,
+  getStoredMessages,
+  listConversations,
+} from "@freeanima/features/console/ui/console/lib/api.ts";
+import { logCaughtError } from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
 
 const CONVERSATIONS_PAGE_SIZE = 10;
 const MESSAGES_PAGE_SIZE = 100;

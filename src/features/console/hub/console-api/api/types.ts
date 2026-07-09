@@ -17,4 +17,4 @@ export type {
   SelfBlockDisplay,
   CronJobApi,
   CronJobsResponse,
-} from "@freeanima/console-contract/api";
+} from "@freeanima/features/console/protocol/console-contract/api";

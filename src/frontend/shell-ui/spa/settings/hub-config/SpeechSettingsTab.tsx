@@ -1,27 +1,27 @@
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Card, CardContent, Input } from "@freeanima/ui-kit";
-import { Label } from "@freeanima/ui-kit/components/ui";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { FormToggle } from "@freeanima/ui-kit/form";
-import { patchHubConfigSection } from "@freeanima/shell-sdk/hub-config-api";
-import { EDGE_TTS_VOICE_OPTIONS } from "@freeanima/shell-sdk/speech/edge-voices";
+import { Button, Card, CardContent, Input } from "@freeanima/frontend/ui-kit";
+import { Label } from "@freeanima/frontend/ui-kit/components/ui";
+import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { FormToggle } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
+import { patchHubConfigSection } from "@freeanima/frontend/shell-sdk/hub-config-api";
+import { EDGE_TTS_VOICE_OPTIONS } from "@freeanima/frontend/shell-sdk/speech/edge-voices";
 import {
   parseSpeechConfigFromHub,
   readSpeechConfigDraft,
   speechConfigDraftToPatch,
   type SpeechConfigDraft,
   type TtsProvider,
-} from "@freeanima/shell-sdk/speech/types";
-import { useSpeechPreview } from "@freeanima/shell-sdk/speech/use-speech-preview";
+} from "@freeanima/frontend/shell-sdk/speech/types";
+import { useSpeechPreview } from "@freeanima/frontend/shell-sdk/speech/use-speech-preview";
 import {
   listWebSpeechVoices,
   type WebSpeechVoiceInfo,
-} from "@freeanima/shell-sdk/speech/web-speech";
+} from "@freeanima/frontend/shell-sdk/speech/web-speech";
 import {
   getWebSpeechUnsupportedReason,
   isWebSpeechApiAvailable,
-} from "@freeanima/shell-sdk/speech/web-speech-support";
+} from "@freeanima/frontend/shell-sdk/speech/web-speech-support";
 
 const LANG_OPTIONS = [
   { value: "", label: "跟随应用语言" },

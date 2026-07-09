@@ -17,4 +17,4 @@ export {
   resolveSecretField,
   extractCustomFieldNames,
   rewrapAllDekWrapped,
-} from "@freeanima/vault-crypto";
+} from "@freeanima/shared/vault-crypto";

@@ -1,4 +1,4 @@
-import { hasFinePointerCapability } from "@freeanima/shell-sdk/react";
+import { hasFinePointerCapability } from "@freeanima/frontend/shell-sdk/react.tsx";
 
 /** @deprecated 使用 `useContextMenuCapability` from `@freeanima/shell-sdk/react` */
 export function isTaskContextMenuEnabled(): boolean {
@@ -15,11 +15,11 @@ export {
   isNativeShell,
   useDrawerNav,
   useMobileLayout,
-} from "@freeanima/ui-kit/layout";
+} from "@freeanima/frontend/ui-kit/layout";
 
 export {
   useActionSheetCapability as useTaskActionSheet,
   useContextMenuCapability,
   useFinePointerCapability,
   useTouchPrimaryCapability,
-} from "@freeanima/shell-sdk/react";
+} from "@freeanima/frontend/shell-sdk/react.tsx";

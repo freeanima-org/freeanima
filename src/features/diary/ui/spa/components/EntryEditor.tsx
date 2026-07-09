@@ -1,4 +1,4 @@
-import { Button, Input, Label, Textarea } from "@freeanima/ui-kit";
+import { Button, Input, Label, Textarea } from "@freeanima/frontend/ui-kit";
 
 import type { EntryDraft } from "../lib/entry-draft-dirty.ts";
 

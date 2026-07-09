@@ -3,7 +3,7 @@ import type { StreamApiLikeEvent } from "./frames/message.ts";
 import { mapSapStreamMethodToApi, streamEventMethods } from "./frames/message.ts";
 import type { ConversationCreateInput, ConversationListInput } from "./frames/conversation.ts";
 import { formatSapPlatform } from "./naming.ts";
-import { HUB_RPC_MESSAGE_SEND_TIMEOUT_MS } from "@freeanima/hub-rpc";
+import { HUB_RPC_MESSAGE_SEND_TIMEOUT_MS } from "@freeanima/shared/hub-rpc";
 
 export type SubscribeCallbacks<T> = {
   onData?: (data: T) => void;

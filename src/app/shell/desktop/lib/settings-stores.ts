@@ -5,13 +5,13 @@ import {
   HUB_SETTINGS_SCOPE,
   parseHubClientSettings,
   type SettingsStore,
-} from "@freeanima/shell-sdk/settings";
+} from "@freeanima/frontend/shell-sdk/settings";
 import {
   normalizeShellClientConfig,
   type ShellClientConfig,
   type ShellDebugConfig,
-} from "@freeanima/shell-sdk";
-import { sendSentryTestEvent } from "@freeanima/shell-ui/sentry-test";
+} from "@freeanima/frontend/shell-sdk";
+import { sendSentryTestEvent } from "@freeanima/frontend/shell-ui/lib/sentry-test.ts";
 
 import { createDesktopScopedBackend, testScopedSettings } from "./settings-ipc-backend.ts";
 

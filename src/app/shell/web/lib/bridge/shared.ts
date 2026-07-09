@@ -1,5 +1,5 @@
-import type { WebUiConfigJson } from "@freeanima/shell-sdk/web-ui-config";
-import { isMobileCapacitorShellCandidate } from "@freeanima/shell-sdk/capacitor-runtime";
+import type { WebUiConfigJson } from "@freeanima/frontend/shell-sdk/web-ui-config";
+import { isMobileCapacitorShellCandidate } from "@freeanima/frontend/shell-sdk/capacitor-runtime";
 
 export { isMobileCapacitorShellCandidate };
 
@@ -11,12 +11,13 @@ export type ShellBridgeWindow = Window & {
   >;
 };
 
-export type ScopedSettingsBridge = import("@freeanima/shell-sdk/settings").ScopedSettingsBackend & {
-  test(
-    scope: import("@freeanima/shell-sdk/settings").SettingsStorageScope,
-    value: unknown,
-  ): Promise<unknown>;
-};
+export type ScopedSettingsBridge =
+  import("@freeanima/frontend/shell-sdk/settings").ScopedSettingsBackend & {
+    test(
+      scope: import("@freeanima/frontend/shell-sdk/settings").SettingsStorageScope,
+      value: unknown,
+    ): Promise<unknown>;
+  };
 
 declare global {
   interface Window {
@@ -55,7 +56,7 @@ export async function fetchWebUiConfig(): Promise<WebUiConfigJson | null> {
     const configPath = `${import.meta.env.BASE_URL}config.json`.replace(/\/{2,}/g, "/");
     const res = await fetch(configPath, { cache: "no-store" });
     if (!res.ok) return null;
-    const { parseWebUiConfigJson } = await import("@freeanima/shell-sdk/web-ui-config");
+    const { parseWebUiConfigJson } = await import("@freeanima/frontend/shell-sdk/web-ui-config");
     return parseWebUiConfigJson(await res.json());
   } catch {
     return null;

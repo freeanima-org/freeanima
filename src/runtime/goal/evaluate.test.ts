@@ -4,7 +4,7 @@ import { Config, animaConfigSchema } from "@freeanima/core/config";
 import type { LlmRuntime } from "@freeanima/core/llm";
 import { evaluateGoalAfterTurn } from "./evaluate.ts";
 import { pauseConversationGoal, setConversationGoal } from "./manager.ts";
-import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
+import type { ConversationPort } from "@freeanima/core/tool/conversation-port.ts";
 
 function createMemoryConversation(): ConversationPort {
   const state = { meta: { role: "conversation_meta", model: "m" } as Record<string, unknown> };

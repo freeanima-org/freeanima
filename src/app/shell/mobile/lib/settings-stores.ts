@@ -3,13 +3,13 @@ import {
   createHubSettingsStore,
   HUB_SETTINGS_SCOPE,
   type SettingsStore,
-} from "@freeanima/shell-sdk/settings";
+} from "@freeanima/frontend/shell-sdk/settings";
 import {
   normalizeShellClientConfig,
   type ShellClientConfig,
   type ShellDebugConfig,
-} from "@freeanima/shell-sdk";
-import { sendSentryTestEvent } from "@freeanima/shell-ui/sentry-test";
+} from "@freeanima/frontend/shell-sdk";
+import { sendSentryTestEvent } from "@freeanima/frontend/shell-ui/lib/sentry-test.ts";
 import { buildMobileShell, SHELL_CONFIG_CHANGED_EVENT } from "./mobile-shell.ts";
 import { createMobileScopedBackend, testMobileHubConnection } from "./settings-prefs-backend.ts";
 import { DEBUG_CONFIG_CHANGED_EVENT } from "./debug-events.ts";

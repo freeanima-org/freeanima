@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { fetchHubConfig } from "@freeanima/shell-sdk/hub-config-api";
-import { createSpeechAdapter } from "@freeanima/shell-sdk/speech/create-adapter";
+import { fetchHubConfig } from "@freeanima/frontend/shell-sdk/hub-config-api";
+import { createSpeechAdapter } from "@freeanima/frontend/shell-sdk/speech/create-adapter";
 import {
   DEFAULT_SPEECH_PLAYBACK_CONFIG,
   parseSpeechConfigFromHub,
   type SpeechPlaybackConfig,
-} from "@freeanima/shell-sdk/speech/types";
-import { getWebSpeechUnsupportedReason } from "@freeanima/shell-sdk/speech/web-speech-support";
-import { consumeLastHubSpeechError } from "@freeanima/shell-sdk/speech/hub-adapter";
-import { getAppLocale, m } from "@chat/lib/i18n.ts";
-import { createSpeechPlaybackController } from "@chat/lib/speech/controller.ts";
-import type { SpeechPlaybackAdapter } from "@chat/lib/speech/types.ts";
+} from "@freeanima/frontend/shell-sdk/speech/types";
+import { getWebSpeechUnsupportedReason } from "@freeanima/frontend/shell-sdk/speech/web-speech-support";
+import { consumeLastHubSpeechError } from "@freeanima/frontend/shell-sdk/speech/hub-adapter";
+import { getAppLocale, m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
+import { createSpeechPlaybackController } from "@freeanima/features/chat/ui/spa/lib/speech/controller.ts";
+import type { SpeechPlaybackAdapter } from "@freeanima/features/chat/ui/spa/lib/speech/types.ts";
 
 function wrapAdapterWithErrorHandler(
   adapter: SpeechPlaybackAdapter,

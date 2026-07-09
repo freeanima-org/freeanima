@@ -1,6 +1,9 @@
-import type { ScreenPoint } from "@/lib/window-metrics.ts";
-import type { CompanionBehavior } from "@shared/companion-schema.ts";
-import { idlePatrolDelayMs, patrolPauseMs } from "@shared/core/behavior.ts";
+import type { ScreenPoint } from "@freeanima/satellites/companion/spa/lib/window-metrics.ts";
+import type { CompanionBehavior } from "@freeanima/satellites/companion/shared/companion-schema.ts";
+import {
+  idlePatrolDelayMs,
+  patrolPauseMs,
+} from "@freeanima/satellites/companion/shared/core/behavior.ts";
 
 export const PATROL_SPEED_PX = 95;
 export const MIN_JOURNEY_MS = 1200;

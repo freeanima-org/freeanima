@@ -1,5 +1,10 @@
 {
   "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "paths": {
+      "@paraglide/*": ["../messages/paraglide/*"]
+    }
+  },
   "include": [".astro/types.d.ts", "**/*"],
   "exclude": ["dist"]
 }

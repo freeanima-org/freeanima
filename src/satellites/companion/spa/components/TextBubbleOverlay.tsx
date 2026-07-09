@@ -1,6 +1,6 @@
-import { advanceBubble } from "@/lib/api.ts";
-import { useRuntimeSocket } from "@/hooks/useRuntimeSocket.ts";
-import { useCompanionStore } from "@/stores/companion.ts";
+import { advanceBubble } from "@freeanima/satellites/companion/spa/lib/api.ts";
+import { useRuntimeSocket } from "@freeanima/satellites/companion/spa/hooks/useRuntimeSocket.ts";
+import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
 
 function advanceBubbleOnClick(): void {
   void advanceBubble();

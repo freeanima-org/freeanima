@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { SettingsStore } from "@freeanima/shell-sdk/settings";
+import type { SettingsStore } from "@freeanima/frontend/shell-sdk/settings";
 import {
   fetchCompanionConfig,
   fetchSidecarRuntimeConfig,
@@ -57,7 +57,7 @@ type CompanionState = {
   init: () => Promise<void>;
   initFromStore: (
     store: SettingsStore<CompanionConfig>,
-    api?: import("@freeanima/shell-sdk/settings").CompanionSettingsApi,
+    api?: import("@freeanima/frontend/shell-sdk/settings").CompanionSettingsApi,
   ) => Promise<void>;
   refreshConfig: () => Promise<void>;
   updateSettings: (patch: {

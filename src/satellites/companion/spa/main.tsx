@@ -1,11 +1,14 @@
 import { StrictMode, useCallback, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { Spinner } from "@freeanima/ui-kit";
-import { CharacterViewport } from "@/components/CharacterViewport.tsx";
-import { TextBubbleOverlay } from "@/components/TextBubbleOverlay.tsx";
-import { useCompanionStore } from "@/stores/companion.ts";
-import { onCharacterModelReady, startPatrolWatcher } from "@/stores/character.ts";
-import { useSidecarError } from "@/hooks/useSidecarError.ts";
+import { Spinner } from "@freeanima/frontend/ui-kit";
+import { CharacterViewport } from "@freeanima/satellites/companion/spa/components/CharacterViewport.tsx";
+import { TextBubbleOverlay } from "@freeanima/satellites/companion/spa/components/TextBubbleOverlay.tsx";
+import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
+import {
+  onCharacterModelReady,
+  startPatrolWatcher,
+} from "@freeanima/satellites/companion/spa/stores/character.ts";
+import { useSidecarError } from "@freeanima/satellites/companion/spa/hooks/useSidecarError.ts";
 import {
   isCompanionOverlay,
   listenConfigChanged,
@@ -13,8 +16,8 @@ import {
   openSettings,
   setClickThrough,
   setPointerActive,
-} from "@/lib/electron.ts";
-import { companionDebug } from "@/lib/companion-debug.ts";
+} from "@freeanima/satellites/companion/spa/lib/electron.ts";
+import { companionDebug } from "@freeanima/satellites/companion/spa/lib/companion-debug.ts";
 import { useRef } from "react";
 
 function ClickThroughManager() {

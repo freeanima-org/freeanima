@@ -1,7 +1,7 @@
-import { mountShellUi } from "@freeanima/shell-ui/mount";
+import { mountShellUi } from "@freeanima/frontend/shell-ui/spa/mount.tsx";
 
 // oxlint-disable-next-line import/no-unassigned-import -- Vite side-effect stylesheet
-import "../../../../frontend/shell-ui/spa/styles.css";
+import "@freeanima/frontend/shell-ui/spa/styles.css";
 
 import { PwaNotices } from "../lib/pwa/PwaNotices.tsx";
 import { resolveShellBindings } from "../lib/shell-composition.ts";

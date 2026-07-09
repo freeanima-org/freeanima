@@ -13,7 +13,7 @@ import {
   sapToolsetId,
   type SapToolDefInput,
   type ToolCallPayload,
-} from "@freeanima/sap-contract";
+} from "@freeanima/shared/sap-contract";
 import { logCapability as logComponent } from "@freeanima/core/config";
 
 export type SatelliteConnection = {

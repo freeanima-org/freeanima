@@ -8,13 +8,20 @@ import {
   CardTitle,
   Input,
   Spinner,
-} from "@freeanima/ui-kit";
-import { deleteMotion, renameMotion, uploadMotionFile } from "@/lib/api.ts";
-import { useCompanionStore } from "@/stores/companion.ts";
-import { emitConfigChanged } from "@/lib/electron.ts";
-import { COMPANION_WINDOW_HEIGHT, COMPANION_WINDOW_WIDTH } from "@/lib/window-metrics.ts";
-import { FBX_IMPORT_UNAVAILABLE_MSG } from "@shared/constants.ts";
-import type { MotionLibraryEntry } from "@shared/constants.ts";
+} from "@freeanima/frontend/ui-kit";
+import {
+  deleteMotion,
+  renameMotion,
+  uploadMotionFile,
+} from "@freeanima/satellites/companion/spa/lib/api.ts";
+import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
+import { emitConfigChanged } from "@freeanima/satellites/companion/spa/lib/electron.ts";
+import {
+  COMPANION_WINDOW_HEIGHT,
+  COMPANION_WINDOW_WIDTH,
+} from "@freeanima/satellites/companion/spa/lib/window-metrics.ts";
+import { FBX_IMPORT_UNAVAILABLE_MSG } from "@freeanima/satellites/companion/shared/constants.ts";
+import type { MotionLibraryEntry } from "@freeanima/satellites/companion/shared/constants.ts";
 import { MotionPreviewCanvas } from "./MotionPreviewCanvas.tsx";
 
 /** 预览区与伴侣窗同尺寸（160×260），侧栏含 card padding */

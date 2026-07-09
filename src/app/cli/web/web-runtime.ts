@@ -2,9 +2,12 @@ import { omitUndefined } from "@freeanima/core/util";
 import { PATHS } from "@freeanima/core/config";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import { DEFAULT_WEB_HOST, DEFAULT_WEB_PORT, type WebConfigFields } from "@freeanima/core/config";
-import { resolveHubWsUrl } from "@freeanima/sap-contract/urls";
+import { resolveHubWsUrl } from "@freeanima/shared/sap-contract/urls";
 import { FileConfig } from "@freeanima/platform/config";
-import { startWebStaticServer, type WebStaticServerHandle } from "@freeanima/app-web/static-server";
+import {
+  startWebStaticServer,
+  type WebStaticServerHandle,
+} from "@freeanima/app/shell/web/lib/static-server.ts";
 
 import { apiGet, resolveProbeHost } from "../service-common.ts";
 import { resolveWebDistDir } from "./dist-path.ts";

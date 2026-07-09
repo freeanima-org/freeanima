@@ -10,7 +10,7 @@ import type { StoredMessage } from "@freeanima/core/db/domain";
 import * as loopEngine from "@freeanima/runtime/loop";
 import { runWithToolContext } from "@freeanima/core/tool";
 import type { StreamEvent } from "@freeanima/runtime/loop";
-import { applyClarifyStreamAwaiting } from "@freeanima/capabilities-tools/clarify";
+import { applyClarifyStreamAwaiting } from "@freeanima/capabilities/tools/clarify";
 import { ProviderError } from "@freeanima/core/provider";
 import { omitUndefined } from "@freeanima/core/util";
 import { getProfileHopModel } from "@freeanima/platform/config";

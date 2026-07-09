@@ -9,7 +9,7 @@ import {
   type MemorySearchBody,
   type SemanticMemoryListBody,
   type SemanticMemoryPinBody,
-} from "@freeanima/console-api/api";
+} from "@freeanima/features/console/hub/console-api/api";
 import { consoleCtx } from "./runtime.ts";
 
 export async function listMemoryFiles() {

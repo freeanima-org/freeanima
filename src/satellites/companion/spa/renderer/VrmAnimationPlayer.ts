@@ -6,14 +6,17 @@ import {
   type VRMAnimation,
 } from "@pixiv/three-vrm-animation";
 import type { VRM } from "@pixiv/three-vrm";
-import { motionManifest } from "@shared/motion-manifest.ts";
-import { resolveLocomotionMotion, resolveMotionForSlot } from "@shared/core/motion-slot-resolve.ts";
+import { motionManifest } from "@freeanima/satellites/companion/shared/motion-manifest.ts";
+import {
+  resolveLocomotionMotion,
+  resolveMotionForSlot,
+} from "@freeanima/satellites/companion/shared/core/motion-slot-resolve.ts";
 import type {
   MotionLibraryEntry,
   MotionSlotId,
   MotionSlotsConfig,
-} from "@shared/companion-schema.ts";
-import { companionDebug } from "@/lib/companion-debug.ts";
+} from "@freeanima/satellites/companion/shared/companion-schema.ts";
+import { companionDebug } from "@freeanima/satellites/companion/spa/lib/companion-debug.ts";
 
 const manifest = motionManifest;
 const LOOP_FADE_SEC = 0.15;

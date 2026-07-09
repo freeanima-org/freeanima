@@ -1,7 +1,7 @@
 import { Outlet, createRootRoute } from "@tanstack/react-router";
-import { BrandLockup } from "@freeanima/ui-kit";
+import { BrandLockup } from "@freeanima/frontend/ui-kit";
 
-import { m } from "@console/lib/i18n.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
 
 export const Route = createRootRoute({
   component: RootComponent,

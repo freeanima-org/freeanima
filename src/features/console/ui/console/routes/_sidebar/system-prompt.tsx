@@ -1,6 +1,9 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import type { PromptDebugResponse, ConversationListItem } from "@freeanima/console-contract/api";
+import type {
+  PromptDebugResponse,
+  ConversationListItem,
+} from "@freeanima/features/console/protocol/console-contract/api";
 import {
   Badge,
   Button,
@@ -16,14 +19,17 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@freeanima/ui-kit";
+} from "@freeanima/frontend/ui-kit";
 import { useEffect, useMemo, useState } from "react";
-import { FormField } from "@freeanima/ui-kit/form";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { getPromptDebug, listConversations } from "@console/lib/api.ts";
-import { MemoryListPagination } from "@console/components/console/MemoryListPagination.tsx";
-import { m } from "@console/lib/i18n.ts";
-import { logCaughtError } from "@console/lib/log-caught-error.ts";
+import { FormField } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
+import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import {
+  getPromptDebug,
+  listConversations,
+} from "@freeanima/features/console/ui/console/lib/api.ts";
+import { MemoryListPagination } from "@freeanima/features/console/ui/console/components/console/MemoryListPagination.tsx";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
+import { logCaughtError } from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
 
 type TabId = "parts" | "full" | "tools";
 

@@ -1,9 +1,9 @@
-import { getSubjectKind } from "@freeanima/shell-sdk";
+import { getSubjectKind } from "@freeanima/frontend/shell-sdk";
 import {
   readOfflineCache,
   resolveHubCacheScope,
   writeOfflineCache,
-} from "@freeanima/shell-sdk/offline-cache";
+} from "@freeanima/frontend/shell-sdk/offline-cache";
 
 import { getEmailHubClient } from "./hub-client.ts";
 

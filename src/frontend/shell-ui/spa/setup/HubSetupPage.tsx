@@ -1,11 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
-import { Card, CardContent } from "@freeanima/ui-kit";
+import { Card, CardContent } from "@freeanima/frontend/ui-kit";
 import type {
   SettingsBinding,
   SettingsFormFields,
   SettingsPlatform,
-} from "@freeanima/shell-sdk/settings";
-import { hubFields } from "@freeanima/shell-sdk/settings";
+} from "@freeanima/frontend/shell-sdk/settings";
+import { hubFields } from "@freeanima/frontend/shell-sdk/settings";
 
 import { FormRenderer } from "../form/FormRenderer.tsx";
 import { detectPlatform } from "../platform.ts";
@@ -69,7 +69,7 @@ export function HubSetupPage() {
             platform={platform}
             sectionId={section.id}
             enterAfterSave
-            onEnterAfterSave={() => void navigate({ to: "/chat" })}
+            onEnterAfterSave={() => void navigate({ to: "/chat" as never })}
           />
         </CardContent>
       </Card>

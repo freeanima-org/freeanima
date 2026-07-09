@@ -1,8 +1,8 @@
 import {
   DEFAULT_SHELL_DEBUG,
   type ShellDebugConfig,
-} from "@freeanima/shell-sdk/shell-debug-config";
-import type { SettingsBinding } from "@freeanima/shell-sdk/settings";
+} from "@freeanima/frontend/shell-sdk/shell-debug-config";
+import type { SettingsBinding } from "@freeanima/frontend/shell-sdk/settings";
 
 import { findDebugStore } from "../shell-app-context.tsx";
 

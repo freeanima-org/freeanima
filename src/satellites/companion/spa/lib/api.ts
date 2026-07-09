@@ -3,8 +3,8 @@ import type {
   LocomotionSlot,
   MotionLibraryEntry,
   MotionSlotId,
-} from "@shared/constants.ts";
-import type { CompanionBehavior } from "@shared/companion-schema.ts";
+} from "@freeanima/satellites/companion/shared/constants.ts";
+import type { CompanionBehavior } from "@freeanima/satellites/companion/shared/companion-schema.ts";
 import { getCompanionHubClient, type CompanionHubConfigResponse } from "./hub-client.ts";
 import { resolveHubBaseUrl, resolveSidecarOrigin } from "./sidecar.ts";
 

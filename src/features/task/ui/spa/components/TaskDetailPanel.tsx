@@ -7,8 +7,8 @@ import {
   SelectTrigger,
   SelectValue,
   Textarea,
-} from "@freeanima/ui-kit";
-import { FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form";
+} from "@freeanima/frontend/ui-kit";
+import { FormFieldLabel, FormFieldset } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
 
 import { isoToDatetimeLocalValue } from "../lib/format-task.ts";
 import type { TaskItemRow } from "../lib/api.ts";

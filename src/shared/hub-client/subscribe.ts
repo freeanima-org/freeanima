@@ -1,6 +1,6 @@
-import type { HubClientProfile } from "@freeanima/hub-contract";
-import { getHubMethodDef, isHubMethod, type HubMethod } from "@freeanima/hub-contract";
-import type { RpcClient } from "@freeanima/hub-rpc";
+import type { HubClientProfile } from "@freeanima/shared/hub-contract";
+import { getHubMethodDef, isHubMethod, type HubMethod } from "@freeanima/shared/hub-contract";
+import type { RpcClient } from "@freeanima/shared/hub-rpc";
 
 import { createHubClient, type HubCallOptions, type HubClient } from "./client.ts";
 

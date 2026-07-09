@@ -1,6 +1,6 @@
 /** 布局层粗档：移动布局 vs 桌面布局，仅视口断点（与壳能力解耦） */
 import { useEffect, useState } from "react";
-import { MOBILE_LAYOUT_MQ } from "@freeanima/ui-kit/layout";
+import { MOBILE_LAYOUT_MQ } from "@freeanima/frontend/ui-kit/layout";
 
 export type LayoutMode = "compact" | "expanded";
 

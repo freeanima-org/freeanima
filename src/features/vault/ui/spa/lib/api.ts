@@ -9,8 +9,8 @@ import type {
   VaultPatchInput,
   VaultPatchPlainInput,
   VaultSecretsViewPayload,
-} from "@freeanima/sap-contract";
-import type { SubjectKind } from "@freeanima/shell-sdk";
+} from "@freeanima/shared/sap-contract";
+import type { SubjectKind } from "@freeanima/frontend/shell-sdk";
 import { getVaultHubClient } from "./hub-client.ts";
 
 type VaultSapMethod =

@@ -11,7 +11,7 @@ import {
 import { createLlmRuntime } from "@freeanima/core/llm";
 import type { Logger } from "@freeanima/kernel/logging";
 import { createLogger } from "@freeanima/kernel/logging";
-import { createNullSink } from "@freeanima/kernel/logging/null";
+import { createNullSink } from "@freeanima/kernel/logging/sinks/null.ts";
 
 export type { EngineCatalog } from "./catalog.ts";
 export { createEngineCatalog } from "./catalog.ts";

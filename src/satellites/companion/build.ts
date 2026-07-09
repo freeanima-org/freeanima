@@ -18,10 +18,6 @@ function companionViteBuildOptions(
     appDir: SPA_DIR,
     repoRoot: REPO_ROOT,
     outdir: DIST_DIR,
-    aliases: [
-      { find: /^@\/(.*)$/, replacement: `${join(SPA_DIR)}/$1` },
-      { find: /^@shared\/(.*)$/, replacement: `${join(PKG_DIR, "shared")}/$1` },
-    ],
     ...overrides,
   };
 }

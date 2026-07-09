@@ -13,7 +13,7 @@ import { isPostgresPrimary } from "@freeanima/core/db/pg";
 import { appendAutoLlmRun } from "@freeanima/core/db/pg/auto-llm-run";
 
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
-import type { ResolvedMask } from "@freeanima/feature-task/domain/mask";
+import type { ResolvedMask } from "@freeanima/features/task/domain/mask";
 import { runtimeToolMaskFromResolved } from "./mask-wire.ts";
 
 const AUTO_LLM_MAX_ATTEMPTS = 3;

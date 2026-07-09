@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import { randomUuid } from "@freeanima/kernel/random-uuid";
+import { randomUuid } from "@freeanima/kernel/random-uuid.ts";
 import { parseSapEnvelope, serializeSapEnvelope, type SapEnvelope } from "./protocol.ts";
 import type { SapClient, SapMethod, SapRouterInputs, SapRouterOutputs } from "./router.ts";
 

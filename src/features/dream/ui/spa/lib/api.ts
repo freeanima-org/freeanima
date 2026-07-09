@@ -1,4 +1,4 @@
-import type { DreamEntryRowPayload, DreamListOutput } from "@freeanima/sap-contract";
+import type { DreamEntryRowPayload, DreamListOutput } from "@freeanima/shared/sap-contract";
 
 import { getDreamHubClient } from "./hub-client.ts";
 

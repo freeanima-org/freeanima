@@ -1,6 +1,6 @@
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Button, Checkbox } from "@freeanima/ui-kit";
+import { Button, Checkbox } from "@freeanima/frontend/ui-kit";
 import { useRef, type MouseEvent, type TouchEvent } from "react";
 
 import { formatDue, priorityDot } from "../lib/format-task.ts";

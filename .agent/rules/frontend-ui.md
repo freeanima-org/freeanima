@@ -14,7 +14,7 @@
 ## 主题与 CSS
 
 - **主题变量唯一定义处**：[`src/frontend/ui-kit/styles/globals.css`](../../src/frontend/ui-kit/styles/globals.css)（`:root` / `.dark`）
-- 各 SPA `styles.css`：`@import "tailwindcss"` + `@import "@freeanima/ui-kit/globals.css"` + `@source`；需要 safe-area 时 `@import "@freeanima/ui-kit/styles.css"`
+- 各 SPA `styles.css`：`@import "tailwindcss"` + `@import "@freeanima/frontend/ui-kit/styles/globals.css"` + `@source`；需要 safe-area 时 `@import "@freeanima/frontend/ui-kit/styles.css"`
 - **禁止**在 `globals.css` 以外用 `var(--background)`、`var(--muted)` 等写背景/边框/文字色；改用 Tailwind class 或 `@apply bg-background` 等
 - **布局类裸 CSS**（`shared-safe-area.css`）只放 position、safe-area（`--sat` 等），**不放主题色**
 - 暗色：根节点 `.dark`（shadcn 约定），不用 `data-theme`

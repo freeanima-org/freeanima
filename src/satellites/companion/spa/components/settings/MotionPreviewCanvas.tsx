@@ -8,11 +8,17 @@ import {
   VRMAnimationLoaderPlugin,
   type VRMAnimation,
 } from "@pixiv/three-vrm-animation";
-import { motionManifest } from "@shared/motion-manifest.ts";
-import { COMPANION_WINDOW_HEIGHT, COMPANION_WINDOW_WIDTH } from "@/lib/window-metrics.ts";
-import { loadCachedModelSource } from "@/lib/model-cache.ts";
-import { resolveSidecarAssetUrl } from "@/lib/sidecar-asset-url.ts";
-import { applyVrmCameraFraming, computeVrmFraming } from "@/renderer/VrmCameraFraming.ts";
+import { motionManifest } from "@freeanima/satellites/companion/shared/motion-manifest.ts";
+import {
+  COMPANION_WINDOW_HEIGHT,
+  COMPANION_WINDOW_WIDTH,
+} from "@freeanima/satellites/companion/spa/lib/window-metrics.ts";
+import { loadCachedModelSource } from "@freeanima/satellites/companion/spa/lib/model-cache.ts";
+import { resolveSidecarAssetUrl } from "@freeanima/satellites/companion/spa/lib/sidecar-asset-url.ts";
+import {
+  applyVrmCameraFraming,
+  computeVrmFraming,
+} from "@freeanima/satellites/companion/spa/renderer/VrmCameraFraming.ts";
 
 type Props = {
   modelPath: string;

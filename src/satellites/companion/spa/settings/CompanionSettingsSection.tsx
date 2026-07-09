@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import type { SettingsPanelProps, SettingsStore } from "@freeanima/shell-sdk/settings";
-import type { ClientCompanionConfig } from "@shared/constants.ts";
+import type { SettingsPanelProps, SettingsStore } from "@freeanima/frontend/shell-sdk/settings";
+import type { ClientCompanionConfig } from "@freeanima/satellites/companion/shared/constants.ts";
 
 import { SettingsPanel } from "../components/SettingsPanel.tsx";
 import { useCompanionStore } from "../stores/companion.ts";

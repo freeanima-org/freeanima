@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import type { SelfBlockDisplay } from "@freeanima/console-contract/api";
-import { Badge, Card, CardContent } from "@freeanima/ui-kit";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { getSelfBlocks } from "@console/lib/api.ts";
-import { formatDisplayDateTime } from "@console/lib/format-datetime.ts";
-import { m } from "@console/lib/i18n.ts";
-import { catchWithFallback } from "@console/lib/log-caught-error.ts";
+import type { SelfBlockDisplay } from "@freeanima/features/console/protocol/console-contract/api";
+import { Badge, Card, CardContent } from "@freeanima/frontend/ui-kit";
+import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { getSelfBlocks } from "@freeanima/features/console/ui/console/lib/api.ts";
+import { formatDisplayDateTime } from "@freeanima/features/console/ui/console/lib/format-datetime.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
+import { catchWithFallback } from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/self-layer")({
   loader: () =>

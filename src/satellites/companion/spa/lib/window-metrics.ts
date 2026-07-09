@@ -3,7 +3,7 @@ export {
   COMPANION_WINDOW_WIDTH,
   SATELLITE_PORT_MAX,
   SATELLITE_PORT_START,
-} from "@shared/constants.ts";
+} from "@freeanima/satellites/companion/shared/constants.ts";
 
 export type ScreenPoint = { x: number; y: number };
 

@@ -1,5 +1,5 @@
 import { isConversationMeta } from "@freeanima/core/db/domain";
-import type { SapRequestContext } from "@freeanima/sap-contract";
+import type { SapRequestContext } from "@freeanima/shared/sap-contract";
 import type { SapServerDeps } from "@freeanima/platform/sap/types";
 
 async function loadStreamBridge() {

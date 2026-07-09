@@ -3,4 +3,4 @@ export {
   reviveDates,
   DATE_JSON_KEYS,
   isPlainIsoDateString,
-} from "@freeanima/console-contract/date-json";
+} from "@freeanima/features/console/protocol/console-contract/date-json.ts";

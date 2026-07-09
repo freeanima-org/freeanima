@@ -1,13 +1,13 @@
 import { ipcMain } from "electron";
 
-import { resolveHubWsUrl } from "@freeanima/sap-contract";
-import { testHubHealthConnection } from "@freeanima/shell-sdk";
-import type { SettingsStorageScope } from "@freeanima/shell-sdk/settings";
+import { resolveHubWsUrl } from "@freeanima/shared/sap-contract";
+import { testHubHealthConnection } from "@freeanima/frontend/shell-sdk";
+import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
 import {
   COMPANION_CONFIG_SCOPE,
   DEBUG_SETTINGS_SCOPE,
   HUB_SETTINGS_SCOPE,
-} from "@freeanima/shell-sdk/settings";
+} from "@freeanima/frontend/shell-sdk/settings";
 
 import { readShellClientConfig, writeShellClientConfig } from "./shell-client-store.ts";
 import { readShellDebugConfig, writeShellDebugConfig } from "./shell-debug-store.ts";
@@ -87,7 +87,9 @@ export function registerShellClientIpc(
     }
     if (scope.kind === "kv" && scope.id === "debug") {
       assertScope(DEBUG_SETTINGS_SCOPE, scope);
-      return writeShellDebugConfig(value as import("@freeanima/shell-sdk").ShellDebugConfig);
+      return writeShellDebugConfig(
+        value as import("@freeanima/frontend/shell-sdk").ShellDebugConfig,
+      );
     }
     if (scope.kind === "file" && scope.id === "companion") {
       assertScope(COMPANION_CONFIG_SCOPE, scope);

@@ -6,7 +6,7 @@ import {
   subscribeShellConfigChanges,
   whenBundledSapClientReady,
   type SapClient,
-} from "@freeanima/sap-contract";
+} from "@freeanima/shared/sap-contract";
 
 const CHAT_PLATFORM = "chat";
 

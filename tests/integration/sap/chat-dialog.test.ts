@@ -3,7 +3,7 @@ import {
   createSapDirectClient,
   mapSapStreamMethodToApi,
   streamEventMethods,
-} from "@freeanima/sap-contract";
+} from "@freeanima/shared/sap-contract";
 
 describe("chat browser SAP client", () => {
   it("sendMessageStream maps stream events to console shape", () => {

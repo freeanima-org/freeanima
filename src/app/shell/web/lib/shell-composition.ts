@@ -1,4 +1,4 @@
-import type { SettingsBinding } from "@freeanima/shell-sdk/settings";
+import type { SettingsBinding } from "@freeanima/frontend/shell-sdk/settings";
 
 import { createWebSettingsBindings } from "./settings-registry.ts";
 import { createWebSettingsStores } from "./settings-stores.ts";
@@ -25,9 +25,9 @@ export async function resolveShellBindings(): Promise<SettingsBinding[]> {
       { createDesktopSettingsBindings },
       { createDesktopSettingsStores },
     ] = await Promise.all([
-      import("@freeanima/app-desktop/companion-settings-api"),
-      import("@freeanima/app-desktop/settings-registry"),
-      import("@freeanima/app-desktop/settings-stores"),
+      import("@freeanima/app/shell/desktop/spa/companion-settings-api.ts"),
+      import("@freeanima/app/shell/desktop/spa/settings-registry.ts"),
+      import("@freeanima/app/shell/desktop/lib/settings-stores.ts"),
     ]);
     const stores = createDesktopSettingsStores();
     const apis = createDesktopSettingsApis();
@@ -35,8 +35,8 @@ export async function resolveShellBindings(): Promise<SettingsBinding[]> {
   }
   if (kind === "capacitor") {
     const [{ createMobileSettingsBindings }, { createMobileSettingsStores }] = await Promise.all([
-      import("@freeanima/app-mobile/settings-registry"),
-      import("@freeanima/app-mobile/settings-stores"),
+      import("@freeanima/app/shell/mobile/lib/settings-registry.ts"),
+      import("@freeanima/app/shell/mobile/lib/settings-stores.ts"),
     ]);
     const stores = createMobileSettingsStores();
     return createMobileSettingsBindings(stores);

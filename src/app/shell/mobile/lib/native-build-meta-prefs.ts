@@ -1,9 +1,9 @@
-import type { ComponentBuildMeta } from "@freeanima/shell-sdk/build-meta";
-import { readCapacitorBundledJson } from "@freeanima/shell-sdk/capacitor-local-asset";
-import { isCapacitorNativePlatform } from "@freeanima/shell-sdk/capacitor-runtime";
-import { readNativeBuildMetaFromDefine } from "@freeanima/shell-sdk/native-build-meta.read";
+import type { ComponentBuildMeta } from "@freeanima/frontend/shell-sdk/build-meta";
+import { readCapacitorBundledJson } from "@freeanima/frontend/shell-sdk/capacitor-local-asset";
+import { isCapacitorNativePlatform } from "@freeanima/frontend/shell-sdk/capacitor-runtime";
+import { readNativeBuildMetaFromDefine } from "@freeanima/frontend/shell-sdk/native-build-meta.read";
 
-import { NATIVE_BUILD_META_KEY } from "../../../../frontend/shell-sdk/settings/prefs-keys.ts";
+import { NATIVE_BUILD_META_KEY } from "@freeanima/frontend/shell-sdk/settings/prefs-keys.ts";
 import { prefsGet, prefsSet } from "./prefs-safe.ts";
 
 declare const __NATIVE_BUILD_META__: ComponentBuildMeta;

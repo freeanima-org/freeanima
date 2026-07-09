@@ -1,8 +1,8 @@
 import { marked } from "marked";
 import { useMemo } from "react";
-import type { DisplayItem } from "@freeanima/console-contract/api";
-import { Button, Spinner } from "@freeanima/ui-kit";
-import { m } from "@console/lib/i18n.ts";
+import type { DisplayItem } from "@freeanima/features/console/protocol/console-contract/api";
+import { Button, Spinner } from "@freeanima/frontend/ui-kit";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
 import { ToolBlockBubble } from "./ToolBlockBubble.tsx";
 
 type StoredMessagePanelProps = {

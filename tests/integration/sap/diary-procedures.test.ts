@@ -4,7 +4,7 @@ import {
   diaryAppendInputSchema,
   diaryCreateInputSchema,
   diaryListInputSchema,
-} from "@freeanima/sap-contract";
+} from "@freeanima/shared/sap-contract";
 
 describe("diary SAP procedures", () => {
   it("registers diary.* methods", () => {

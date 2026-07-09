@@ -21,7 +21,7 @@ import {
 } from "@freeanima/platform/connectors/cron";
 import type { CronJobData } from "@freeanima/platform/connectors/cron";
 import { buildToolsStatus, resolveDefaultConversationToolSets } from "@freeanima/core/tool";
-import { listCommandDefs, listCommandDefsForPlatform } from "@freeanima/platform/commands";
+import { listCommandDefs, listCommandDefsForPlatform } from "@freeanima/platform/slash-commands";
 import { pingDatabase, isJiebaLoaded } from "@freeanima/core/db/pg";
 import { countSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
 import { countSearchableMessages } from "@freeanima/core/db/pg/conversation";

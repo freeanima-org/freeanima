@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { disposeVrmBackend, getVrmBackend } from "./VrmBackend.ts";
-import { useCompanionStore } from "@/stores/companion.ts";
-import { loadCachedModelSource } from "@/lib/model-cache.ts";
-import { measureCharacterViewportSize } from "@/lib/canvas-metrics.ts";
-import { resolveSidecarOrigin } from "@/lib/sidecar.ts";
+import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
+import { loadCachedModelSource } from "@freeanima/satellites/companion/spa/lib/model-cache.ts";
+import { measureCharacterViewportSize } from "@freeanima/satellites/companion/spa/lib/canvas-metrics.ts";
+import { resolveSidecarOrigin } from "@freeanima/satellites/companion/spa/lib/sidecar.ts";
 
 type Props = {
   modelPath: string;

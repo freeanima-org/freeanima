@@ -3,7 +3,7 @@ import { isConversationMeta } from "@freeanima/core/db/domain";
 import { resolveDefaultConversationToolSets } from "@freeanima/core/tool";
 import { getProfileHopModel } from "@freeanima/platform/config";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
-import type { CommandResult } from "@freeanima/platform/commands";
+import type { CommandResult } from "@freeanima/platform/slash-commands";
 import type { MessagesDisplay } from "@freeanima/platform/schemas/display";
 import type { ConversationSummary } from "@freeanima/platform/schemas/snapshot";
 import type { RuntimeDeps } from "./runtime-deps.ts";

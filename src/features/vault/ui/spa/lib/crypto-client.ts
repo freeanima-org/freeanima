@@ -3,8 +3,8 @@ import {
   randomSalt,
   sealVaultSecrets,
   type VaultSecretsPayload,
-} from "@freeanima/vault-crypto";
-import type { VaultCreateInput, VaultPatchInput } from "@freeanima/sap-contract";
+} from "@freeanima/shared/vault-crypto";
+import type { VaultCreateInput, VaultPatchInput } from "@freeanima/shared/sap-contract";
 
 export async function buildUserVaultCreatePayload(input: {
   title: string;

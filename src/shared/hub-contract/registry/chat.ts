@@ -1,7 +1,7 @@
 import {
   sessionAcpDockInputSchema,
   sessionAcpDockOutputSchema,
-} from "@freeanima/sap-contract/frames/acp";
+} from "@freeanima/shared/sap-contract/frames/acp";
 import {
   conversationArchiveInputSchema,
   conversationCommandsInputSchema,
@@ -16,13 +16,13 @@ import {
   conversationPatchTitleInputSchema,
   conversationSubscribeInputSchema,
   conversationUnarchiveInputSchema,
-} from "@freeanima/sap-contract/frames/conversation";
+} from "@freeanima/shared/sap-contract/frames/conversation";
 import {
   messageInterruptInputSchema,
   messageInterruptOutputSchema,
   messageSendInputSchema,
   messageSendOutputSchema,
-} from "@freeanima/sap-contract/frames/message";
+} from "@freeanima/shared/sap-contract/frames/message";
 import { z } from "zod";
 
 import { defineHubMethod, dualTransportMeta, wsOnlyMeta } from "../method-def.ts";

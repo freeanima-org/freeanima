@@ -1,4 +1,4 @@
-import type { ShellDebugConfig } from "@freeanima/shell-sdk";
+import type { ShellDebugConfig } from "@freeanima/frontend/shell-sdk";
 import { loadDebugConfigFromStore, saveDebugConfigToStore } from "./shell-scoped-prefs.ts";
 
 export function readShellDebugConfig(): ShellDebugConfig {

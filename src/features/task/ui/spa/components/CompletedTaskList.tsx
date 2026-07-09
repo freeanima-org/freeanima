@@ -1,5 +1,5 @@
 import { useDraggable } from "@dnd-kit/core";
-import { Badge, Button, Checkbox } from "@freeanima/ui-kit";
+import { Badge, Button, Checkbox } from "@freeanima/frontend/ui-kit";
 import { useRef, useState, type MouseEvent, type TouchEvent } from "react";
 
 import { taskDndId } from "../lib/dnd-ids.ts";

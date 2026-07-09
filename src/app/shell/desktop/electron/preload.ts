@@ -1,11 +1,11 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { resolveHubWsUrl, type SapInstanceStore } from "@freeanima/sap-contract";
+import { resolveHubWsUrl, type SapInstanceStore } from "@freeanima/shared/sap-contract";
 import {
   buildShellApiFields,
   type CompanionWindowRole,
   type SatelliteShellApi,
-} from "@freeanima/shell-sdk";
-import { readNativeBuildMetaFromDefine } from "@freeanima/shell-sdk/native-build-meta.read";
+} from "@freeanima/frontend/shell-sdk";
+import { readNativeBuildMetaFromDefine } from "@freeanima/frontend/shell-sdk/native-build-meta.read";
 
 type HubClientConfigPayload = {
   hubUrl: string;
@@ -15,7 +15,7 @@ type HubClientConfigPayload = {
 
 const DEFAULT_HUB_URL = "http://127.0.0.1:2658";
 
-declare const __NATIVE_BUILD_META__: import("@freeanima/shell-sdk/build-meta").ComponentBuildMeta;
+declare const __NATIVE_BUILD_META__: import("@freeanima/frontend/shell-sdk/build-meta").ComponentBuildMeta;
 
 const NATIVE_BUILD = readNativeBuildMetaFromDefine(
   typeof __NATIVE_BUILD_META__ !== "undefined" ? __NATIVE_BUILD_META__ : undefined,
@@ -156,13 +156,19 @@ function bootstrapPreload(): void {
   contextBridge.exposeInMainWorld("satelliteShell", shell);
   contextBridge.exposeInMainWorld("__freeanimaShellBridge", { ready: Promise.resolve() });
   contextBridge.exposeInMainWorld("freeanimaScopedSettings", {
-    load(scope: import("@freeanima/shell-sdk/settings").SettingsStorageScope) {
+    load(scope: import("@freeanima/frontend/shell-sdk/settings").SettingsStorageScope) {
       return ipcRenderer.invoke("shell:settings:load", scope) as Promise<unknown>;
     },
-    save(scope: import("@freeanima/shell-sdk/settings").SettingsStorageScope, value: unknown) {
+    save(
+      scope: import("@freeanima/frontend/shell-sdk/settings").SettingsStorageScope,
+      value: unknown,
+    ) {
       return ipcRenderer.invoke("shell:settings:save", scope, value) as Promise<unknown>;
     },
-    test(scope: import("@freeanima/shell-sdk/settings").SettingsStorageScope, value: unknown) {
+    test(
+      scope: import("@freeanima/frontend/shell-sdk/settings").SettingsStorageScope,
+      value: unknown,
+    ) {
       return ipcRenderer.invoke("shell:settings:test", scope, value) as Promise<unknown>;
     },
   });

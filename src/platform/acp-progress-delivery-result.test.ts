@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "bun:test";
-import type { AcpAsyncTaskSnapshot, AcpPromptResult } from "@freeanima/capabilities-acp";
+import type { AcpAsyncTaskSnapshot, AcpPromptResult } from "@freeanima/capabilities/acp";
 
 const deliverToTargets = vi.fn();
 

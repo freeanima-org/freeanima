@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { Button, Card, CardContent } from "@freeanima/ui-kit";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
+import { Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
+import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
 
-import * as m from "../../../../messages/paraglide/messages.js";
+import { m } from "@paraglide/messages";
 import { fetchDreamList, type DreamEntryRow } from "./lib/api.ts";
 import { formatDreamDateTime, formatDreamDay } from "./lib/format-dream.ts";
 

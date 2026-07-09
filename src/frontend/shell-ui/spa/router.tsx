@@ -34,7 +34,7 @@ const mainLayoutRoute = createRoute({
   component: ModuleShell,
   beforeLoad: () => {
     if (needsHubSetup()) {
-      throw redirect({ to: "/setup" });
+      throw redirect({ to: "/setup" as never });
     }
   },
 });
@@ -43,7 +43,7 @@ const indexRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/",
   beforeLoad: () => {
-    throw redirect({ to: "/chat" });
+    throw redirect({ to: "/chat" as never });
   },
 });
 
@@ -59,7 +59,7 @@ const consoleIndexRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/console",
   beforeLoad: () => {
-    throw redirect({ to: "/console/dashboard" });
+    throw redirect({ to: "/console/dashboard" as never });
   },
 });
 
@@ -105,12 +105,6 @@ function createShellRouterInstance() {
 
 export function getShellRouter() {
   return createShellRouterInstance();
-}
-
-declare module "@tanstack/react-router" {
-  interface Register {
-    router: ReturnType<typeof createShellRouterInstance>;
-  }
 }
 
 export function ShellRouterProvider() {

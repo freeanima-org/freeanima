@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { hubRpcHttpCall } from "@freeanima/shell-sdk/hub-rpc-http";
+import { hubRpcHttpCall } from "@freeanima/frontend/shell-sdk/hub-rpc-http";
 import {
   companionCacheDir,
   companionConfigPath,

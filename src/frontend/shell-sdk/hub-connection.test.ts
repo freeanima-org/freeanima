@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, test } from "bun:test";
 
-import { getHubRpcConnectionState, resetBundledHubRpcClientForTests } from "@freeanima/hub-rpc";
+import {
+  getHubRpcConnectionState,
+  resetBundledHubRpcClientForTests,
+} from "@freeanima/shared/hub-rpc";
 
 import { reconnectHub, subscribeHubConnection } from "./hub-connection.ts";
 

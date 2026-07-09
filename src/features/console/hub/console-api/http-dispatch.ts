@@ -1,5 +1,5 @@
 import { corsPreflightResponse } from "./elysia/cors.ts";
-import { isMcpPath } from "@freeanima/capabilities-mcp-server";
+import { isMcpPath } from "@freeanima/capabilities/mcp-server";
 import {
   ANIMA_AUTH_SCOPES_HEADER,
   ANIMA_AUTH_SUBJECT_ID_HEADER,

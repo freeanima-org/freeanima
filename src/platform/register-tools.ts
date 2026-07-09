@@ -1,12 +1,12 @@
-import { registerClarifyTool } from "@freeanima/capabilities-tools/clarify";
-import { registerDiaryTools } from "@freeanima/feature-diary/domain";
-import { registerEmailTools } from "@freeanima/feature-email/domain";
-import { registerTaskTools } from "@freeanima/feature-task/domain";
-import { registerVaultTools } from "@freeanima/feature-vault/domain";
-import { registerNotificationTools } from "@freeanima/capabilities-tools/notification";
-import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities-tools";
+import { registerClarifyTool } from "@freeanima/capabilities/tools/clarify";
+import { registerDiaryTools } from "@freeanima/features/diary/domain";
+import { registerEmailTools } from "@freeanima/features/email/domain";
+import { registerTaskTools } from "@freeanima/features/task/domain";
+import { registerVaultTools } from "@freeanima/features/vault/domain";
+import { registerNotificationTools } from "@freeanima/capabilities/tools/notification";
+import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities/tools";
 import { registerCronjobTool } from "@freeanima/platform/connectors/cron/cronjob-tool";
-import { registerSelfTools } from "@freeanima/capabilities-identity";
+import { registerSelfTools } from "@freeanima/capabilities/identity";
 import {
   assertEmailPasswordResolvable,
   deleteEmail,
@@ -20,7 +20,7 @@ import {
 import type { Config } from "@freeanima/core/config";
 import type { SkillRegistry } from "@freeanima/core/skill";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
-import { registerMemoryTools } from "@freeanima/capabilities-memory";
+import { registerMemoryTools } from "@freeanima/capabilities/memory";
 
 let registeredCatalog: { toolSets: ToolSetRegistry; skills: SkillRegistry } | null = null;
 

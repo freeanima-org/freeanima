@@ -1,6 +1,6 @@
-import { formatDisplayDateTime } from "@console/lib/format-datetime.ts";
-import { m } from "@console/lib/i18n.ts";
-import { memoryTypeLabel } from "@console/lib/console-status.ts";
+import { formatDisplayDateTime } from "@freeanima/features/console/ui/console/lib/format-datetime.ts";
+import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
+import { memoryTypeLabel } from "@freeanima/features/console/ui/console/lib/console-status.ts";
 import type { MemoryRecallHit, MemoryRecallResult } from "./memory-recall-types.ts";
 
 function formatSemanticLines(hit: MemoryRecallHit): string[] {

@@ -2,10 +2,14 @@ import { describe, expect, it } from "bun:test";
 import {
   HUB_RPC_DEFAULT_REQUEST_TIMEOUT_MS,
   HUB_RPC_MESSAGE_SEND_TIMEOUT_MS,
-} from "@freeanima/hub-rpc";
-import { createRpcClient, HubRpcTimeoutError, runHubRpcTransport } from "@freeanima/hub-rpc";
-import { HUB_RPC_VERSION, parseHubRpcEnvelope, serializeHubRpcEnvelope } from "@freeanima/hub-rpc";
-import type { HubRpcEnvelope } from "@freeanima/hub-rpc";
+} from "@freeanima/shared/hub-rpc";
+import { createRpcClient, HubRpcTimeoutError, runHubRpcTransport } from "@freeanima/shared/hub-rpc";
+import {
+  HUB_RPC_VERSION,
+  parseHubRpcEnvelope,
+  serializeHubRpcEnvelope,
+} from "@freeanima/shared/hub-rpc";
+import type { HubRpcEnvelope } from "@freeanima/shared/hub-rpc";
 
 type Listener = (ev: Event | MessageEvent | CloseEvent) => void;
 

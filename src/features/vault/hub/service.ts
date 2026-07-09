@@ -16,8 +16,8 @@ import {
 } from "../domain/item-store.ts";
 import { ensureVaultConfig, getVaultConfig, updateVaultConfig } from "../domain/config-store.ts";
 import { defaultVaultSubjectForShell, resolveVaultWorldId } from "../domain/vault-world.ts";
-import type { SapRequestAuthContext } from "@freeanima/sap-contract";
-import type { VaultSecretsPayload } from "@freeanima/vault-crypto";
+import type { SapRequestAuthContext } from "@freeanima/shared/sap-contract";
+import type { VaultSecretsPayload } from "@freeanima/shared/vault-crypto";
 import { omitUndefined } from "@freeanima/core/util";
 
 import { isPostgresPrimary } from "@freeanima/core/db/pg";

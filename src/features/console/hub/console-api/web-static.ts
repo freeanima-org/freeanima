@@ -2,7 +2,7 @@ import { existsSync, statSync } from "node:fs";
 import { extname, join, normalize } from "node:path";
 
 import { readBuildMetaFile, type ComponentBuildMeta } from "@freeanima/core/config/build-meta";
-import { resolveHubWsUrl } from "@freeanima/sap-contract/urls";
+import { resolveHubWsUrl } from "@freeanima/shared/sap-contract/urls";
 
 import { resolveLoopbackWebAuthTokenForRequest } from "./web-loopback-auth.ts";
 

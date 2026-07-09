@@ -1,4 +1,4 @@
-import { createOpenAiEmbeddingClient } from "@freeanima/capabilities-llm-openai";
+import { createOpenAiEmbeddingClient } from "@freeanima/capabilities/llm-openai";
 import { registerEmbedTextFn, registerEmbedTextsFn } from "@freeanima/core/db/pg";
 import type { Config } from "@freeanima/core/config";
 import { getResolvedEmbeddingConfig } from "@freeanima/platform/config";

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
-import { Button, Input } from "@freeanima/ui-kit";
-import { useMobileLayout } from "@freeanima/ui-kit/layout";
+import { Button, Input } from "@freeanima/frontend/ui-kit";
+import { useMobileLayout } from "@freeanima/frontend/ui-kit/layout";
 
 import type { TaskListRow } from "../lib/api.ts";
 import {

@@ -1,5 +1,5 @@
-import { loadSelfLayerPrompt } from "@freeanima/capabilities-identity";
-import { buildMemorySystemPromptSections } from "@freeanima/capabilities-memory/system-prompt-sections";
+import { loadSelfLayerPrompt } from "@freeanima/capabilities/identity";
+import { buildMemorySystemPromptSections } from "@freeanima/capabilities/memory/system-prompt-sections";
 
 /** Self-layer + resident + optional task section for AutoLlmRun system prompt */
 export async function buildAutoLlmSystemPrompt(opts?: {

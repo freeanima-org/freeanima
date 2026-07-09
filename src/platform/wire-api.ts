@@ -7,7 +7,7 @@ import {
 } from "@freeanima/platform/ports/cron-notify";
 import { registerOnConversationCloseBeforeNew } from "@freeanima/platform/ports/conversation-close";
 import { getToolConversationId } from "@freeanima/core/tool";
-import { registerToolConversationResolver } from "@freeanima/capabilities-memory/tool-conversation-port";
+import { registerToolConversationResolver } from "@freeanima/capabilities/memory/tool-conversation-port";
 import { runSimpleTurn } from "./runtime/turn-lifecycle.ts";
 import { statsReport } from "./runtime/conversation-stats.ts";
 import { onConversationCloseBeforeNew } from "./runtime/use-cases/on-conversation-close.ts";

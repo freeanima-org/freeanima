@@ -2,13 +2,13 @@ import { useMemo } from "react";
 import {
   useAcpProgressDock as useSharedAcpProgressDock,
   type AcpProgressDockOptions,
-} from "@freeanima/ui-kit/ui/use-acp-progress-dock";
+} from "@freeanima/frontend/ui-kit/ui/useAcpProgressDock.ts";
 import {
   getConversationAcpDock,
   subscribeConversationEvents,
   type ConversationAcpDockSnapshot,
-} from "@console/lib/api.ts";
-import { logCaughtError } from "@console/lib/log-caught-error.ts";
+} from "@freeanima/features/console/ui/console/lib/api.ts";
+import { logCaughtError } from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
 
 export type { AcpProgressDockOptions };
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { isMcpPath } from "@freeanima/capabilities-mcp-server";
+import { isMcpPath } from "@freeanima/capabilities/mcp-server";
 
 import { applyHttpAuth } from "./http-dispatch.ts";
 import { createServiceAuthVerifier } from "./service-auth.ts";

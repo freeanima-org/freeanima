@@ -18,9 +18,5 @@ export default defineConfig(({ command, mode }) => {
     base: "/",
     minify: mode === "production",
     sourcemap: mode !== "production",
-    aliases: [
-      { find: /^@\/(.*)$/, replacement: `${join(SPA_DIR)}/$1` },
-      { find: /^@shared\/(.*)$/, replacement: `${join(PKG_DIR, "shared")}/$1` },
-    ],
   });
 });

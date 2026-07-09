@@ -1,12 +1,12 @@
-import type { ConversationListItem } from "@freeanima/console-contract/api";
-import type { ServiceStatus } from "@freeanima/console-contract/api";
-import { resetBundledHubClientForTests } from "@freeanima/hub-client";
+import type { ConversationListItem } from "@freeanima/features/console/protocol/console-contract/api";
+import type { ServiceStatus } from "@freeanima/features/console/protocol/console-contract/api";
+import { resetBundledHubClientForTests } from "@freeanima/shared/hub-client";
 import {
   readOfflineCache,
   resolveCacheScope,
   writeOfflineCache,
-} from "@freeanima/shell-sdk/offline-cache";
-import { reviveDates } from "@freeanima/console-contract/date-json";
+} from "@freeanima/frontend/shell-sdk/offline-cache";
+import { reviveDates } from "@freeanima/features/console/protocol/console-contract/date-json.ts";
 
 import { getConsoleHubClient } from "./hub-client.ts";
 import { omitUndefined } from "./omit-undefined.ts";
@@ -333,7 +333,7 @@ export async function getMcpStatus() {
 }
 
 export async function getSatellitesStatus() {
-  return hubCall(hub().call("satellites.status", {}));
+  return hubCall(hub().call("src/satellites.status", {}));
 }
 
 export async function startMcp(name: string) {
@@ -372,7 +372,8 @@ export async function stopAllAcp() {
   return hubCall(hub().call("acp.stopAll", {}));
 }
 
-export type EntityRow = import("@freeanima/console-contract/api").EntityRow;
+export type EntityRow =
+  import("@freeanima/features/console/protocol/console-contract/api").EntityRow;
 
 type EntityListResponse = { items: EntityRow[]; total: number };
 

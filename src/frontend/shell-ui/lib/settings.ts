@@ -1,1 +1,1 @@
-export * from "@freeanima/shell-sdk/settings";
+export * from "@freeanima/frontend/shell-sdk/settings";

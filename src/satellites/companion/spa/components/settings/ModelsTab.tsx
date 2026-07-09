@@ -8,10 +8,14 @@ import {
   CardContent,
   Input,
   Spinner,
-} from "@freeanima/ui-kit";
-import { deleteModel, renameModel, setActiveModel } from "@/lib/api.ts";
-import { useCompanionStore } from "@/stores/companion.ts";
-import { emitConfigChanged } from "@/lib/electron.ts";
+} from "@freeanima/frontend/ui-kit";
+import {
+  deleteModel,
+  renameModel,
+  setActiveModel,
+} from "@freeanima/satellites/companion/spa/lib/api.ts";
+import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
+import { emitConfigChanged } from "@freeanima/satellites/companion/spa/lib/electron.ts";
 
 export function ModelsTab() {
   const models = useCompanionStore((s) => s.models);

@@ -6,7 +6,7 @@ import {
   tasklistPatchInputSchema,
   taskListInputSchema,
   taskCreateInputSchema,
-} from "@freeanima/sap-contract";
+} from "@freeanima/shared/sap-contract";
 
 describe("task SAP procedures", () => {
   it("registers tasklist.* and task.* methods", () => {

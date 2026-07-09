@@ -2,7 +2,7 @@ import type { SapAttachOutput } from "./frames/lifecycle.ts";
 import type { SapToolDefInput, ToolCallPayload } from "./frames/tool.ts";
 import type { SapInstanceStore } from "./instance-store.ts";
 import type { SapClient } from "./router.ts";
-import { runHubRpcTransport, type HubRpcTransportHandle } from "@freeanima/hub-rpc";
+import { runHubRpcTransport, type HubRpcTransportHandle } from "@freeanima/shared/hub-rpc";
 import {
   attachHubEventFanout,
   createSapRelayServerState,

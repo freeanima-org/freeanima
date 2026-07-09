@@ -1,4 +1,4 @@
-import { parseBindHosts } from "@freeanima/platform/bind-hosts";
+import { parseBindHosts } from "@freeanima/platform/bind-hosts.ts";
 import { formatBuildMetaLines, parseComponentBuildMeta } from "@freeanima/core/config/build-meta";
 import { formatTunnelConnectedLabel } from "../tunnel/tunnel-supervisor.ts";
 import { prettyDuration, writeStatusLine } from "./status.ts";

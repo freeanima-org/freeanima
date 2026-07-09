@@ -6,7 +6,7 @@ import {
   sealVaultSecrets,
   verifyMasterKey,
   type VaultSecretsPayload,
-} from "@freeanima/vault-crypto";
+} from "@freeanima/shared/vault-crypto";
 
 export const VAULT_UI_SCOPE = "__vault_ui__";
 

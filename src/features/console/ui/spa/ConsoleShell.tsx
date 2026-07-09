@@ -4,7 +4,7 @@ import { getRouter } from "../console/router.tsx";
 import { initConsoleLocale } from "../console/lib/i18n.ts";
 import { resolveConsoleSubpath, resolveEmbeddedConsoleBasepath } from "./console-path.ts";
 // oxlint-disable-next-line import/no-unassigned-import -- Vite side-effect stylesheet
-import "@console/styles.css";
+import "@freeanima/features/console/ui/console/styles.css";
 
 initConsoleLocale();
 

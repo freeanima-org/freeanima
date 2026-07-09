@@ -9,16 +9,16 @@ import {
 import { runWithToolContext } from "@freeanima/runtime/loop";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { getProfileHopModel } from "@freeanima/platform/config";
-import { registerDiaryTools } from "@freeanima/feature-diary/domain";
-import { registerDreamTools } from "@freeanima/capabilities-memory";
-import { createDreamEntry } from "@freeanima/capabilities-memory/dream/entry-store";
-import { registerEmailTools } from "@freeanima/feature-email/domain";
-import { createEmailAccount } from "@freeanima/feature-email/domain";
+import { registerDiaryTools } from "@freeanima/features/diary/domain";
+import { registerDreamTools } from "@freeanima/capabilities/memory";
+import { createDreamEntry } from "@freeanima/capabilities/memory/dream/entry-store";
+import { registerEmailTools } from "@freeanima/features/email/domain";
+import { createEmailAccount } from "@freeanima/features/email/domain";
 import {
   registerNotificationPort,
   registerNotificationTools,
   resetNotificationPortForTests,
-} from "@freeanima/capabilities-tools/notification";
+} from "@freeanima/capabilities/tools/notification";
 import { createNotificationPort } from "@freeanima/platform/runtime/notification-helpers";
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";

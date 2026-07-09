@@ -15,9 +15,9 @@ import {
 import { resolveFacingOffsetY } from "./vrm-facing.ts";
 import { VrmBodyPicker } from "./VrmBodyPicker.ts";
 import { VrmAnimationPlayer, type MotionBindConfig } from "./VrmAnimationPlayer.ts";
-import { resolveSidecarOrigin } from "@/lib/sidecar.ts";
-import { encodeSidecarPath } from "@/lib/sidecar-asset-url.ts";
-import type { MotionSlotId } from "@shared/companion-schema.ts";
+import { resolveSidecarOrigin } from "@freeanima/satellites/companion/spa/lib/sidecar.ts";
+import { encodeSidecarPath } from "@freeanima/satellites/companion/spa/lib/sidecar-asset-url.ts";
+import type { MotionSlotId } from "@freeanima/satellites/companion/shared/companion-schema.ts";
 import { VRMLookAtQuaternionProxy } from "@pixiv/three-vrm-animation";
 
 const LOOK_AT_PROXY_NAME = "lookAtQuaternionProxy";

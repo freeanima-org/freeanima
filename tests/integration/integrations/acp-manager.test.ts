@@ -3,7 +3,7 @@ import { Config } from "@freeanima/platform/config";
 import { parseYaml } from "@freeanima/platform/config";
 import { animaConfigSchema } from "@freeanima/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
-import { getAcpManager, registerAcpTools } from "@freeanima/capabilities-acp";
+import { getAcpManager, registerAcpTools } from "@freeanima/capabilities/acp";
 import { createEngineCatalog } from "@freeanima/runtime";
 
 function emptyConfig() {

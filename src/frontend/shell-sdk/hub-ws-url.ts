@@ -3,4 +3,8 @@ export function resolveHubWsUrl(hubUrl: string): string {
   return hubUrl.replace(/\/$/, "").replace(/^http/, "ws") + "/hub/rpc/v1";
 }
 
-export { resolveHubRpcWsUrl, hubHttpFromRpcWsUrl, resolveHubHttpUrl } from "@freeanima/hub-rpc";
+export {
+  resolveHubRpcWsUrl,
+  hubHttpFromRpcWsUrl,
+  resolveHubHttpUrl,
+} from "@freeanima/shared/hub-rpc";

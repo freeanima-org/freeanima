@@ -1,10 +1,13 @@
-import { Checkbox, Label } from "@freeanima/ui-kit";
+import { Checkbox, Label } from "@freeanima/frontend/ui-kit";
 import {
   SHELL_MODULE_LOCKED,
   type ShellModuleId,
-} from "@freeanima/shell-sdk/shell-module-visibility";
-import { useSetShellModuleVisibility, useShellModuleVisibility } from "@freeanima/shell-sdk/react";
-import type { SettingsPanelProps } from "@freeanima/shell-sdk/settings";
+} from "@freeanima/frontend/shell-sdk/shell-module-visibility";
+import {
+  useSetShellModuleVisibility,
+  useShellModuleVisibility,
+} from "@freeanima/frontend/shell-sdk/react.tsx";
+import type { SettingsPanelProps } from "@freeanima/frontend/shell-sdk/settings";
 
 import { shellNavItems } from "../lib/shell-nav-i18n.ts";
 

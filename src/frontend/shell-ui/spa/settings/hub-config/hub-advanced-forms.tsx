@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { Button, Input, Label, Textarea } from "@freeanima/ui-kit";
-import { FormToggle } from "@freeanima/ui-kit/form";
-import { cn } from "@freeanima/ui-kit/lib/utils";
+import { Button, Input, Label, Textarea } from "@freeanima/frontend/ui-kit";
+import { FormToggle } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
+import { cn } from "@freeanima/frontend/ui-kit/lib/utils.ts";
 
 export const ADVANCED_SECTIONS = [
   "firecrawl",

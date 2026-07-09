@@ -1,9 +1,9 @@
-import { getVaultItem } from "@freeanima/feature-vault/domain/item-store";
-import { resolveVaultWorldId } from "@freeanima/feature-vault/domain/vault-world";
+import { getVaultItem } from "@freeanima/features/vault/domain/item-store";
+import { resolveVaultWorldId } from "@freeanima/features/vault/domain/vault-world";
 import {
   vaultResolveSecretUserInputSchema,
   vaultResolveSecretUserOutputSchema,
-} from "@freeanima/sap-contract";
+} from "@freeanima/shared/sap-contract";
 
 type ShellSendRequest = (method: string, payload: unknown) => Promise<unknown>;
 

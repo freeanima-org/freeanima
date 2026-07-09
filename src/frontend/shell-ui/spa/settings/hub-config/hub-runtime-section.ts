@@ -1,4 +1,4 @@
-import type { SettingsSection } from "@freeanima/shell-sdk/settings";
+import type { SettingsSection } from "@freeanima/frontend/shell-sdk/settings";
 
 export const hubRuntimeSettingsSection: SettingsSection = {
   id: "hub-runtime",

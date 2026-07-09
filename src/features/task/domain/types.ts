@@ -3,7 +3,7 @@ import type { TaskItemPriority } from "@freeanima/core/db/schema/entity";
 export type {
   TaskItemRowPayload as TaskItemRow,
   TaskListRowPayload as TaskListRow,
-} from "@freeanima/sap-contract";
+} from "@freeanima/shared/sap-contract";
 
 export type TaskListCreateInput = {
   name: string;

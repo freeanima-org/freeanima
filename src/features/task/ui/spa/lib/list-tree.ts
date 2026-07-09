@@ -1,4 +1,4 @@
-import { getSubjectKind } from "@freeanima/shell-sdk";
+import { getSubjectKind } from "@freeanima/frontend/shell-sdk";
 
 import type { TaskListRow } from "./api.ts";
 

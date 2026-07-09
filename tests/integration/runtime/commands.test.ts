@@ -25,7 +25,7 @@ import {
   isRestartResult,
   isUpgradeResult,
   resolveCommand,
-} from "@freeanima/platform/commands";
+} from "@freeanima/platform/slash-commands";
 import { getAppRuntime } from "@freeanima/platform";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 import * as engineConversation from "@freeanima/runtime/conversation";

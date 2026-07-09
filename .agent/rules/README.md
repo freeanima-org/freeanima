@@ -20,6 +20,6 @@ Detailed implementation constraints for AI agents working in this repository. St
 | [`i18n.md`](i18n.md)                                                                 | UI/docs i18n: Paraglide, po4a, PO workflow, site/Console message keys               |
 | [`docs-i18n.md`](docs-i18n.md)                                                       | AI rules for `docs/**` authoring and `po/zh_CN/*.po` msgstr                         |
 
-**SSOT**: dependency boundaries → [`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts); storage shapes → [`src/core/db/schema/`](../../src/core/db/schema/); port types and wiring contracts → [`src/platform/ports/`](../../src/platform/ports/) (composition root imports `@freeanima/platform/ports`).
+**SSOT**: dependency boundaries → [`.agent/rules/code-layers.md`](code-layers.md)；import paths → `tsconfig.base.json` + `tsgo`；storage shapes → [`src/core/db/schema/`](../../src/core/db/schema/); port types and wiring contracts → [`src/platform/ports/`](../../src/platform/ports/) (composition root imports `@freeanima/platform/ports`).
 
 Product / cognitive architecture (four storage layers, tools, Gateway) → [`docs/concepts/architecture.md`](../../docs/concepts/architecture.md).

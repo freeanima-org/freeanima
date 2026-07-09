@@ -1,16 +1,16 @@
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useState } from "react";
-import { Button, Card, CardContent, Input } from "@freeanima/ui-kit";
-import { Label } from "@freeanima/ui-kit/components/ui";
-import { StatusAlert, showConfirm } from "@freeanima/ui-kit/composite";
-import { FormToggle } from "@freeanima/ui-kit/form";
+import { Button, Card, CardContent, Input } from "@freeanima/frontend/ui-kit";
+import { Label } from "@freeanima/frontend/ui-kit/components/ui";
+import { StatusAlert, showConfirm } from "@freeanima/frontend/ui-kit/composite";
+import { FormToggle } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
 import {
   fetchHubConfig,
   patchHubConfigSection,
   restartHubService,
-} from "@freeanima/shell-sdk/hub-config-api";
+} from "@freeanima/frontend/shell-sdk/hub-config-api";
 
-import * as uiMessages from "../../../../../../messages/paraglide/messages.js";
+import { m as uiMessages } from "@paraglide/messages";
 import {
   AdvancedSectionForm,
   AdvancedSectionPicker,

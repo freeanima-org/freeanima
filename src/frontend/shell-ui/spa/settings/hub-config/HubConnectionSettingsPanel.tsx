@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import type { SettingsPanelProps } from "@freeanima/shell-sdk/settings";
-import { hubFields } from "@freeanima/shell-sdk/settings";
-import type { ShellClientConfig } from "@freeanima/shell-sdk/shell-client-config";
+import type { SettingsPanelProps } from "@freeanima/frontend/shell-sdk/settings";
+import { hubFields } from "@freeanima/frontend/shell-sdk/settings";
+import type { ShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-client-config";
 
 import { FormRenderer } from "../../form/FormRenderer.tsx";
 import { HubTlsCaTrustCard } from "./HubTlsCaTrustCard.tsx";

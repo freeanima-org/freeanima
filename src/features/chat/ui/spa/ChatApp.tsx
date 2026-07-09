@@ -13,51 +13,60 @@ import {
   Spinner,
   Switch,
   Textarea,
-} from "@freeanima/ui-kit";
-import { ConfirmDialog, ActionSheet, ContextMenu } from "@freeanima/ui-kit/composite";
-import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
-import { AcpProgressDock } from "@chat/components/AcpProgressDock.tsx";
-import { ToolBlockBubble } from "@chat/components/ToolBlockBubble.tsx";
+} from "@freeanima/frontend/ui-kit";
+import { ConfirmDialog, ActionSheet, ContextMenu } from "@freeanima/frontend/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
+import { AcpProgressDock } from "@freeanima/features/chat/ui/spa/components/AcpProgressDock.tsx";
+import { ToolBlockBubble } from "@freeanima/features/chat/ui/spa/components/ToolBlockBubble.tsx";
 import {
   ChatMessageBubble,
   findLastUserMessageIndex,
-} from "@chat/components/ChatMessageBubble.tsx";
-import { ConversationListItem as ConversationListRow } from "@chat/components/ConversationListItem.tsx";
-import { useAcpProgressDock } from "@chat/hooks/useAcpProgressDock.ts";
-import { useEdgeSwipeOpen } from "@chat/hooks/useEdgeSwipeOpen.ts";
-import { useKeyboardInset } from "@chat/hooks/useKeyboardInset.ts";
-import { formatConversationIdDateTime } from "@chat/lib/format-datetime.ts";
-import { displayAwaitingReply, pollUntilAssistantReply } from "@chat/lib/display-recovery.ts";
+} from "@freeanima/features/chat/ui/spa/components/ChatMessageBubble.tsx";
+import { ConversationListItem as ConversationListRow } from "@freeanima/features/chat/ui/spa/components/ConversationListItem.tsx";
+import { useAcpProgressDock } from "@freeanima/features/chat/ui/spa/hooks/useAcpProgressDock.ts";
+import { useEdgeSwipeOpen } from "@freeanima/features/chat/ui/spa/hooks/useEdgeSwipeOpen.ts";
+import { useKeyboardInset } from "@freeanima/features/chat/ui/spa/hooks/useKeyboardInset.ts";
+import { formatConversationIdDateTime } from "@freeanima/features/chat/ui/spa/lib/format-datetime.ts";
+import {
+  displayAwaitingReply,
+  pollUntilAssistantReply,
+} from "@freeanima/features/chat/ui/spa/lib/display-recovery.ts";
 import {
   listConversationCommands,
   loadConfig,
   rollbackBeforeLastUserMessage,
   subscribeConversationEvents,
-} from "@chat/lib/api.ts";
-import { ListDetailLayout, useDrawerNav, useMobileLayout } from "@freeanima/ui-kit/layout";
+} from "@freeanima/features/chat/ui/spa/lib/api.ts";
+import { ListDetailLayout, useDrawerNav, useMobileLayout } from "@freeanima/frontend/ui-kit/layout";
 import {
   reconnectHub,
   useActionSheetCapability,
   useContextMenuCapability,
   useHubConnection,
   useNetworkOnline,
-} from "@freeanima/shell-sdk/react";
-import { initAppLocale, m } from "@chat/lib/i18n.ts";
-import { loadInputDraft, saveInputDraft } from "@chat/lib/input-draft.ts";
-import { getSapDirectClient, subscribeShellConfigChanges } from "@chat/lib/sap-client.ts";
-import { LlmDebugPanel } from "@chat/components/LlmDebugPanel.tsx";
-import type { ConversationListItem, LlmDebugSnapshots } from "@chat/lib/types.ts";
+} from "@freeanima/frontend/shell-sdk/react.tsx";
+import { initAppLocale, m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
+import { loadInputDraft, saveInputDraft } from "@freeanima/features/chat/ui/spa/lib/input-draft.ts";
+import {
+  getSapDirectClient,
+  subscribeShellConfigChanges,
+} from "@freeanima/features/chat/ui/spa/lib/sap-client.ts";
+import { LlmDebugPanel } from "@freeanima/features/chat/ui/spa/components/LlmDebugPanel.tsx";
+import type {
+  ConversationListItem,
+  LlmDebugSnapshots,
+} from "@freeanima/features/chat/ui/spa/lib/types.ts";
 import {
   readModuleSelection,
   subscribeSubjectKind,
   writeModuleSelection,
-} from "@freeanima/shell-sdk";
-import { MessageActionBar } from "@chat/components/MessageActionBar.tsx";
-import { useSpeechPlayback } from "@chat/hooks/useSpeechPlayback.ts";
-import { markdownToPlainText } from "@chat/lib/speech/plain-text.ts";
-import { VaultUnlockButton } from "@chat/components/VaultUnlockButton.tsx";
-import { useChatStore } from "@chat/stores/chat.ts";
-import { useConversationsStore } from "@chat/stores/conversations.ts";
+} from "@freeanima/frontend/shell-sdk";
+import { MessageActionBar } from "@freeanima/features/chat/ui/spa/components/MessageActionBar.tsx";
+import { useSpeechPlayback } from "@freeanima/features/chat/ui/spa/hooks/useSpeechPlayback.ts";
+import { markdownToPlainText } from "@freeanima/features/chat/ui/spa/lib/speech/plain-text.ts";
+import { VaultUnlockButton } from "@freeanima/features/chat/ui/spa/components/VaultUnlockButton.tsx";
+import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";
+import { useConversationsStore } from "@freeanima/features/chat/ui/spa/stores/conversations.ts";
 
 initAppLocale();
 
@@ -584,7 +593,7 @@ export function ChatApp() {
       faded={faded}
       useActionSheet={useActionSheet}
       contextMenuEnabled={contextMenuEnabled}
-      onNavigate={navigateToConversation}
+      onNavigate={(id) => void navigateToConversation(id)}
       onOpenMenu={openConversationMenu}
     />
   );
@@ -1027,11 +1036,9 @@ export function ChatApp() {
                         speechSupported={speechSupported}
                         speechUnsupportedReason={speechUnsupportedReason}
                         onToggleSpeech={() => toggleSpeech(`msg-${i}`, item.content)}
-                        onEdit={
-                          i === lastUserMessageIndex
-                            ? () => startReeditUserMessage(i, item.content)
-                            : undefined
-                        }
+                        {...(i === lastUserMessageIndex
+                          ? { onEdit: () => startReeditUserMessage(i, item.content) }
+                          : {})}
                       />
                     </div>
                   );

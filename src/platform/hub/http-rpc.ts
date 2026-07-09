@@ -1,6 +1,6 @@
-import { isHubMethod } from "@freeanima/hub-contract";
-import { parseHubRpcEnvelope, serializeHubRpcEnvelope } from "@freeanima/hub-rpc";
-import type { SapRequestAuthContext, SapRequestContext } from "@freeanima/sap-contract";
+import { isHubMethod } from "@freeanima/shared/hub-contract";
+import { parseHubRpcEnvelope, serializeHubRpcEnvelope } from "@freeanima/shared/hub-rpc";
+import type { SapRequestAuthContext, SapRequestContext } from "@freeanima/shared/sap-contract";
 import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
 
 import { getFeatureRpcHandler } from "../features/registry.ts";

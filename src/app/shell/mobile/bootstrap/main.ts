@@ -1,4 +1,4 @@
-import { probeHubHealthUrl } from "@freeanima/shell-sdk";
+import { probeHubHealthUrl } from "@freeanima/frontend/shell-sdk";
 import { waitForCapacitorBridge } from "../lib/capacitor-ready.ts";
 import { persistNativeBuildMetaFromDefine } from "../lib/native-build-meta-prefs.ts";
 import {

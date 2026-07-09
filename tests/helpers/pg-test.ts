@@ -14,7 +14,7 @@ import {
   registerLlmStackConfigurator,
   resetLlmRuntimeForTests,
 } from "@freeanima/core/llm";
-import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-llm-openai";
+import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
 import {
   createConversationService,
   type ConversationService,

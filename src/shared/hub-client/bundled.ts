@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import { getBundledHubRpcClient, type RpcClient } from "@freeanima/hub-rpc";
+import { getBundledHubRpcClient, type RpcClient } from "@freeanima/shared/hub-rpc";
 
 import { createFullHubClient, hubHttpFromWsUrl, type HubClient } from "./index.ts";
 

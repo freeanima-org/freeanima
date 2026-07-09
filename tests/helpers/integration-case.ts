@@ -8,15 +8,15 @@ import {
   wireServicePorts,
   registerSystemPromptHooks,
 } from "@freeanima/platform";
-import { getAcpManager } from "@freeanima/capabilities-acp";
-import { MaskRegistry } from "@freeanima/feature-task/domain/mask";
+import { getAcpManager } from "@freeanima/capabilities/acp";
+import { MaskRegistry } from "@freeanima/features/task/domain/mask";
 import { initMaskSystem } from "@freeanima/platform/runtime/mask-wire";
 import {
   registerServiceTools,
   registerServiceStores,
   resetRegisterServiceToolsForTest,
 } from "@freeanima/platform";
-import { invalidateSelfLayerPromptCache } from "@freeanima/capabilities-identity";
+import { invalidateSelfLayerPromptCache } from "@freeanima/capabilities/identity";
 import { upsertSelfBlock } from "@freeanima/core/db/pg/self-layer";
 
 import { removeManagedAnimaTmpPath, removeTempDir } from "@freeanima/core/util";

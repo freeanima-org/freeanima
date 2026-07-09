@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { createNullSink } from "@freeanima/kernel/logging/null";
+import { createNullSink } from "@freeanima/kernel/logging/sinks/null.ts";
 import { createLogger } from "@freeanima/kernel/logging";
 
 import {

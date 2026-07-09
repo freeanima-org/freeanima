@@ -4,14 +4,14 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-import { isServerAlive } from "@freeanima/platform/alive";
+import { isServerAlive } from "@freeanima/platform/alive.ts";
 import { prettyDuration, writeStatusLine } from "./output/status.ts";
 
 export { prettyDuration, writeStatusLine };
 
 export const LOG_FILE = join(PATHS.home, "error.log");
 
-export { resolveProbeHost } from "@freeanima/platform/bind-hosts";
+export { resolveProbeHost } from "@freeanima/platform/bind-hosts.ts";
 
 export function readRecentErrorLogTail(maxLines = 10): string[] {
   if (!existsSync(LOG_FILE)) return [];

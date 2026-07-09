@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BrandLogo, cn } from "@freeanima/ui-kit";
-import { useShellModuleVisibility } from "@freeanima/shell-sdk/react";
+import { BrandLogo, cn } from "@freeanima/frontend/ui-kit";
+import { useShellModuleVisibility } from "@freeanima/frontend/shell-sdk/react.tsx";
 import { PanelLeft, PanelLeftClose } from "lucide-react";
 import { useCallback, useSyncExternalStore } from "react";
 
@@ -10,7 +10,7 @@ import {
   subscribeShellRailExpanded,
   writeShellRailExpanded,
 } from "../lib/shell-rail-prefs.ts";
-import * as shellMessages from "../../../../../messages/paraglide/messages.js";
+import { m as shellMessages } from "@paraglide/messages";
 
 function useShellRailExpanded(): [boolean, () => void] {
   const expanded = useSyncExternalStore(

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { DEFAULT_BEHAVIOR } from "@shared/companion-schema.ts";
+import { DEFAULT_BEHAVIOR } from "@freeanima/satellites/companion/shared/companion-schema.ts";
 import {
   interpolateJourneyPoint,
   journeyDurationMs,

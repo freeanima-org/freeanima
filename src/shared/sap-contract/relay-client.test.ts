@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { SAP_RELAY_READY_METHOD, serializeSapEnvelope } from "@freeanima/sap-contract";
+import { SAP_RELAY_READY_METHOD, serializeSapEnvelope } from "@freeanima/shared/sap-contract";
 
 describe("sap relay client constants", () => {
   it("uses relay.ready event method", () => {

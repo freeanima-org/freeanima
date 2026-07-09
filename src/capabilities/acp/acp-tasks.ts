@@ -1,4 +1,4 @@
-import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
+import type { ConversationPort } from "@freeanima/core/tool/conversation-port.ts";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import type { AcpTaskEntryJson, AcpTaskStatusJson, AcpTasksJson } from "@freeanima/core/db/schema";
 import type { CursorPendingInteraction } from "./cursor-decision.ts";

@@ -1,7 +1,7 @@
 import { installErrorLogHandlers, logStartupError } from "@freeanima/platform/logging";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { spawnSync, spawn } from "node:child_process";
-import { isServerAlive, readStatusFile } from "@freeanima/platform/alive";
+import { isServerAlive, readStatusFile } from "@freeanima/platform/alive.ts";
 import {
   apiGet,
   checkServerAlive,
