@@ -140,8 +140,6 @@ export async function listConversationCommands(opts?: { all?: boolean; platform?
 
 const CONSOLE_STATUS_CACHE_NS = "console-status";
 const CONSOLE_STATUS_CACHE_KEY = "dashboard";
-const CONSOLE_CONFIG_CACHE_NS = "console-config";
-const CONSOLE_CONFIG_CACHE_KEY = "status";
 const CONSOLE_MEMORY_CACHE_NS = "console-memory";
 
 export async function getStatus(): Promise<ServiceStatus> {
@@ -157,19 +155,6 @@ export async function getStatus(): Promise<ServiceStatus> {
     return status;
   } catch (err) {
     if (cached) return cached;
-    throw err;
-  }
-}
-
-export async function getStatusConfig() {
-  const scope = resolveCacheScope(resolveApiOrigin());
-  const cached = await readOfflineCache(scope, CONSOLE_CONFIG_CACHE_NS, CONSOLE_CONFIG_CACHE_KEY);
-  try {
-    const config = await hubCall(hub().call("status.config", {}));
-    void writeOfflineCache(scope, CONSOLE_CONFIG_CACHE_NS, CONSOLE_CONFIG_CACHE_KEY, config);
-    return config;
-  } catch (err) {
-    if (cached != null) return reviveDates(cached);
     throw err;
   }
 }

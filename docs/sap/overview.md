@@ -27,11 +27,11 @@ flowchart LR
   end
 ```
 
-| Role    | Default                  | Responsibility                                              |
-| ------- | ------------------------ | ----------------------------------------------------------- |
-| Hub     | `http://127.0.0.1:2658`  | Agent runtime, Hub RPC WebSocket at `/hub/rpc/v1`           |
-| Chat    | bundled `/chat`          | Chat UI; shared Hub RPC (no `sap.attach`)                   |
-| Console | bundled shell `/console` | Memory, config, tools, satellite status (Hub REST `/api/*`) |
+| Role    | Default                  | Responsibility                                      |
+| ------- | ------------------------ | --------------------------------------------------- |
+| Hub     | `http://127.0.0.1:2658`  | Agent runtime, Hub RPC WebSocket at `/hub/rpc/v1`   |
+| Chat    | bundled `/chat`          | Chat UI; shared Hub RPC (no `sap.attach`)           |
+| Console | bundled shell `/console` | Memory, tools, satellite status (Hub REST `/api/*`) |
 
 See also: [architecture Client UI section](../concepts/architecture.md#client-uibundled).
 

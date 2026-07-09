@@ -59,7 +59,6 @@ import {
   startSleepPipelineStep,
 } from "./handlers/sleep.ts";
 import {
-  getConfig,
   getStatus,
   listCronJobs,
   listTools,
@@ -78,7 +77,6 @@ import {
 /** Console Hub RPC method handlers */
 export const consoleHubHandlers = {
   "status.get": () => getStatus(),
-  "status.config": () => getConfig(),
   "config.get": () => getHubConfig(),
   "config.getSection": (payload: { section: string }) => getHubConfigSection(payload.section),
   "config.patchSection": (payload: { section: string; patch: Record<string, unknown> }) =>

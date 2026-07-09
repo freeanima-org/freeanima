@@ -1,10 +1,28 @@
 import { omitUndefined } from "@freeanima/core/util";
 import { PROFILE_SUMMARY } from "@freeanima/core/provider";
+import type { ChatCompletion } from "@freeanima/core/provider";
 import { chat } from "./llm.ts";
 import type { LlmRuntime } from "./llm-stack.ts";
 
-const SESSION_TITLE_INSTRUCTION = `Generate a short conversation title (at most 50 characters) from the user's first message.
-Use the same language as the user. Output only the title text — no quotes, prefix, or explanation.`;
+/** Title is at most 50 chars; cap generation budget tightly. */
+export const SESSION_TITLE_MAX_OUTPUT_TOKENS = 30;
+
+const SESSION_TITLE_INSTRUCTION = `You label chat threads in a sidebar (like ChatGPT or WeChat). Read ONLY the user's first message.
+
+Write a short TOPIC label (at most 50 characters) in the same language as the user.
+The label names what the conversation is about — it is NOT a reply to the user.
+
+Rules:
+- Output ONLY the title text: no quotes, prefix, markdown, or explanation.
+- NEVER write in assistant voice: no greetings, no addressing the user (你/主人/亲爱的), no roleplay lines, no filler like "喵".
+- NEVER continue the scene or paraphrase dialogue; use a concise noun phrase or situation name.
+- For stage-direction or roleplay openers, name the scene/topic, not the line itself.
+
+Examples (Chinese):
+- User: "（轻轻点头）马上了，这就到小区门口" → 小区门口碰面
+- User: "我有些育儿问题，帮帮我吧" → 育儿问题
+- Bad title (reply, not a label): "好，到家了。懂了，去洗澡。"
+- Good title: "回家洗澡"`;
 
 export const SESSION_TITLE_MAX_LEN = 50;
 
@@ -27,12 +45,37 @@ export function sanitizeConversationTitle(raw: string): string {
 }
 
 export function fallbackConversationTitle(userText: string): string {
-  return userText.slice(0, 30).trim();
+  const withoutStage = userText
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/（[^）]*）/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const base = withoutStage || userText.trim();
+  return sanitizeConversationTitle(base).slice(0, 30).trim();
 }
 
+export type GenerateConversationTitleDiagnostics = {
+  model?: string;
+  finish_reason?: string | null;
+  had_reasoning?: boolean;
+};
+
 export type GenerateConversationTitleResult =
-  | { ok: true; title: string }
-  | { ok: false; error: string };
+  | ({ ok: true; title: string } & GenerateConversationTitleDiagnostics)
+  | ({ ok: false; error: string } & GenerateConversationTitleDiagnostics);
+
+function extractTitleFromCompletion(resp: ChatCompletion): string {
+  // Only use final content; reasoning is chain-of-thought, not a sidebar label.
+  return sanitizeConversationTitle(resp.content ?? "");
+}
+
+function completionDiagnostics(resp: ChatCompletion): GenerateConversationTitleDiagnostics {
+  return omitUndefined({
+    model: resp.model,
+    finish_reason: resp.finish_reason,
+    had_reasoning: Boolean(String(resp.reasoning ?? "").trim()),
+  });
+}
 
 export async function generateConversationTitle(
   userText: string,
@@ -53,12 +96,19 @@ export async function generateConversationTitle(
         profileId: PROFILE_SUMMARY,
         runtime: opts?.runtime,
         model: opts?.model,
-        requestParams: { maxOutputTokens: 64 },
+        requestParams: { maxOutputTokens: SESSION_TITLE_MAX_OUTPUT_TOKENS },
       }),
     );
-    const title = sanitizeConversationTitle(resp.content ?? "");
-    if (!title) return { ok: false, error: "LLM returned empty title" };
-    return { ok: true, title };
+    const title = extractTitleFromCompletion(resp);
+    const diagnostics = completionDiagnostics(resp);
+    if (!title) {
+      return {
+        ok: false,
+        error: "LLM returned empty title",
+        ...diagnostics,
+      };
+    }
+    return { ok: true, title, ...diagnostics };
   } catch (e) {
     return { ok: false, error: String(e) };
   }

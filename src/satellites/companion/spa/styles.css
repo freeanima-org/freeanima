@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "@freeanima/ui-kit/globals.css";
+@import "@freeanima/frontend/ui-kit/styles/globals.css";
 @source "./**/*.{tsx,ts}";
 
 html,

@@ -15,7 +15,6 @@ export function consoleNavGroups(): ConsoleNavGroup[] {
       label: m.console_nav_group_runtime(),
       items: [
         { to: "/dashboard", label: m.console_nav_dashboard() },
-        { to: "/config", label: m.console_nav_config() },
         { to: "/cron", label: m.console_nav_cron() },
       ],
     },

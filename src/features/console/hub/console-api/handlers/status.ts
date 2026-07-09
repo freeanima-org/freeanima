@@ -15,10 +15,6 @@ export async function getStatus() {
   return ctx.buildStatus(ctx.host, ctx.port);
 }
 
-export function getConfig() {
-  return consoleCtx().getConfig().config;
-}
-
 export function listTools(scope?: "default" | "all") {
   return consoleCtx().listToolsApi(scope);
 }

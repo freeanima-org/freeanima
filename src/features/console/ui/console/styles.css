@@ -1,9 +1,9 @@
 @import "tailwindcss";
-@import "@freeanima/ui-kit/globals.css";
+@import "@freeanima/frontend/ui-kit/styles/globals.css";
 @source "./**/*.{tsx,ts}";
 @source "../../../../src/frontend/ui-kit/**/*.{tsx,ts}";
 @source "../../../../src/frontend/shell-sdk/**/*.{tsx,ts}";
-@import "@freeanima/ui-kit/styles.css";
+@import "@freeanima/frontend/ui-kit/styles.css";
 
 .app-main-padding {
   @apply p-4 lg:p-6;

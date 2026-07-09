@@ -64,11 +64,6 @@ export const consoleMethodDefs = {
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "status.config": defineHubMethod({
-    input: emptyInputSchema,
-    output: unknownOutputSchema,
-    meta: dualTransportMeta(true),
-  }),
   "status.tools": defineHubMethod({
     input: toolsQuerySchema,
     output: unknownOutputSchema,

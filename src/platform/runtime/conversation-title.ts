@@ -73,20 +73,29 @@ export function maybeGenerateConversationTitleAsync(
           if (userCount !== 1) return;
         }
 
+        const log = deps.engine.logger.with({ component: "conversation-title" });
         const gen = await generateConversationTitle(userText, { runtime: deps.engine.llm });
         let title = gen.ok ? gen.title : "";
         if (!title) {
+          const fallback = fallbackConversationTitle(userText);
           if (!gen.ok) {
-            deps.engine.logger
-              .with({ component: "conversation-title" })
-              .debug("LLM title failed, using text fallback", {
-                conversation_id: conversationId,
-                error: gen.error,
-              });
+            log.warn("LLM title failed, using text fallback", {
+              conversation_id: conversationId,
+              error: gen.error,
+              fallback_title: fallback || undefined,
+              model: gen.model,
+              finish_reason: gen.finish_reason ?? undefined,
+              had_reasoning: gen.had_reasoning,
+            });
           }
-          title = fallbackConversationTitle(userText);
+          title = fallback;
         }
-        if (!title) return;
+        if (!title) {
+          log.warn("conversation title unavailable: empty user text", {
+            conversation_id: conversationId,
+          });
+          return;
+        }
 
         const stillEmpty = !(await deps.conversation.getConversationTitle(conversationId)).trim();
         if (stillEmpty) {
@@ -98,7 +107,7 @@ export function maybeGenerateConversationTitleAsync(
       }
     } catch (e) {
       deps.engine.logger
-        .with({ component: "session-title" })
+        .with({ component: "conversation-title" })
         .error("conversation title generation failed", { err: e, conversation_id: conversationId });
     }
   })();

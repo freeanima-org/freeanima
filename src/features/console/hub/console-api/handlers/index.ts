@@ -11,7 +11,6 @@ export {
 export {
   getHealthProbe,
   getStatus,
-  getConfig,
   listTools,
   listCronJobs,
   pauseCronJob,
