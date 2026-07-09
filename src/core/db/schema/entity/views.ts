@@ -10,6 +10,9 @@ import {
   TASK_ITEM_COMPONENT,
   TASK_LIST_COMPONENT,
   SMART_LIST_COMPONENT,
+  PROJECT_FOLDER_COMPONENT,
+  PROJECT_COMPONENT,
+  MILESTONE_COMPONENT,
   VAULT_CONFIG_COMPONENT,
   VAULT_ITEM_COMPONENT,
   COMPANION_PROFILE_COMPONENT,
@@ -25,6 +28,9 @@ import {
   taskItemBodySchema,
   taskListBodySchema,
   smartListBodySchema,
+  projectFolderBodySchema,
+  projectBodySchema,
+  milestoneBodySchema,
   vaultConfigBodySchema,
   vaultItemBodySchema,
   companionProfileBodySchema,
@@ -40,6 +46,9 @@ import {
   type TaskItemBody,
   type TaskListBody,
   type SmartListBody,
+  type ProjectFolderBody,
+  type ProjectBody,
+  type MilestoneBody,
   type VaultConfigBody,
   type VaultItemBody,
   type CompanionProfileBody,
@@ -208,4 +217,30 @@ export function asPomodoroTaskFocus(
   if (row.primary_component !== POMODORO_TASK_FOCUS_COMPONENT) return null;
   const parsed = pomodoroTaskFocusBodySchema.safeParse(row.body);
   return parsed.success ? { id: row.id, ...parsed.data } : null;
+}
+
+export function asProjectFolder(
+  row: EntityRow,
+): (ProjectFolderBody & { id: number; name: string }) | null {
+  if (row.primary_component !== PROJECT_FOLDER_COMPONENT) return null;
+  const parsed = projectFolderBodySchema.safeParse(row.body);
+  return parsed.success ? { id: row.id, name: row.title, ...parsed.data } : null;
+}
+
+export function asProject(
+  row: EntityRow,
+): (ProjectBody & { id: number; title: string; content: string }) | null {
+  if (row.primary_component !== PROJECT_COMPONENT) return null;
+  const parsed = projectBodySchema.safeParse(row.body);
+  return parsed.success
+    ? { id: row.id, title: row.title, content: row.content, ...parsed.data }
+    : null;
+}
+
+export function asMilestone(
+  row: EntityRow,
+): (MilestoneBody & { id: number; title: string }) | null {
+  if (row.primary_component !== MILESTONE_COMPONENT) return null;
+  const parsed = milestoneBodySchema.safeParse(row.body);
+  return parsed.success ? { id: row.id, title: row.title, ...parsed.data } : null;
 }

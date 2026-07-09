@@ -21,6 +21,12 @@ export function registerFeaturePluginShellRoutes(): void {
       load: lazyNamedComponent(() => import("@freeanima/features/task/ui/spa"), "TaskApp"),
     },
     {
+      featureId: "project",
+      path: "/projects",
+      navLabel: "Projects",
+      load: lazyNamedComponent(() => import("@freeanima/features/project/ui/spa"), "ProjectApp"),
+    },
+    {
       featureId: "pomodoro",
       path: "/pomodoro",
       navLabel: "Pomodoro",

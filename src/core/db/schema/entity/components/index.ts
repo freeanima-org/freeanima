@@ -18,6 +18,9 @@ import { EMAIL_THREAD_COMPONENT, emailThreadBodySchema } from "./email-thread.ts
 import { TASK_ITEM_COMPONENT, taskItemBodySchema } from "./task-item.ts";
 import { TASK_LIST_COMPONENT, taskListBodySchema } from "./task-list.ts";
 import { SMART_LIST_COMPONENT, smartListBodySchema } from "./smart-list.ts";
+import { PROJECT_FOLDER_COMPONENT, projectFolderBodySchema } from "./project-folder.ts";
+import { PROJECT_COMPONENT, projectBodySchema } from "./project.ts";
+import { MILESTONE_COMPONENT, milestoneBodySchema } from "./milestone.ts";
 import { USER_CONFIG_COMPONENT, userConfigBodySchema } from "./user-config.ts";
 import { WORLD_CONFIG_COMPONENT, worldConfigBodySchema } from "./world-config.ts";
 
@@ -28,6 +31,9 @@ export const COMPONENT_IDS = [
   TASK_LIST_COMPONENT,
   SMART_LIST_COMPONENT,
   TASK_ITEM_COMPONENT,
+  PROJECT_FOLDER_COMPONENT,
+  PROJECT_COMPONENT,
+  MILESTONE_COMPONENT,
   DIARY_ENTRY_COMPONENT,
   DREAM_ENTRY_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
@@ -52,6 +58,9 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [TASK_LIST_COMPONENT]: taskListBodySchema,
   [SMART_LIST_COMPONENT]: smartListBodySchema,
   [TASK_ITEM_COMPONENT]: taskItemBodySchema,
+  [PROJECT_FOLDER_COMPONENT]: projectFolderBodySchema,
+  [PROJECT_COMPONENT]: projectBodySchema,
+  [MILESTONE_COMPONENT]: milestoneBodySchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntryBodySchema,
   [DREAM_ENTRY_COMPONENT]: dreamEntryBodySchema,
   [EMAIL_ACCOUNT_COMPONENT]: emailAccountBodySchema,
@@ -81,6 +90,9 @@ export * from "./user-config.ts";
 export * from "./task-list.ts";
 export * from "./smart-list.ts";
 export * from "./task-item.ts";
+export * from "./project-folder.ts";
+export * from "./project.ts";
+export * from "./milestone.ts";
 export * from "./diary-entry.ts";
 export * from "./dream-entry.ts";
 export * from "./email-account.ts";

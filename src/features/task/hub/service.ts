@@ -19,7 +19,7 @@ import {
 } from "../domain/index.ts";
 import type { TaskItemSearchFilters } from "@freeanima/core/db/schema";
 import type { SubjectKind } from "@freeanima/core/config";
-import { resolveDefaultPrivateWorldForSubject } from "@freeanima/core/db/pg/entity";
+import { resolveSubjectWorldId } from "@freeanima/core/config/world-context";
 import type { VerifiedServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
 import type { SapRequestAuthContext } from "@freeanima/shared/sap-contract";
 
@@ -33,17 +33,22 @@ function assertPg(_deps: RuntimeDeps): void {
 }
 
 function assertSubjectKindMatches(auth: SapRequestAuthContext, subject_kind?: SubjectKind): void {
-  if (subject_kind && subject_kind !== auth.subject_type) {
-    throw new Error("FORBIDDEN_SUBJECT");
-  }
+  if (!subject_kind || subject_kind === auth.subject_type) return;
+  if (auth.subject_type === "user" && subject_kind === "agent") return;
+  throw new Error("FORBIDDEN_SUBJECT");
+}
+
+function resolveSubjectKind(subject_kind?: SubjectKind): SubjectKind {
+  return subject_kind ?? "user";
 }
 
 async function taskWorldIdForAuth(
   auth: SapRequestAuthContext,
   subject_kind?: SubjectKind,
 ): Promise<number> {
-  assertSubjectKindMatches(auth, subject_kind);
-  return resolveDefaultPrivateWorldForSubject(auth.subject_id);
+  const kind = resolveSubjectKind(subject_kind);
+  assertSubjectKindMatches(auth, kind);
+  return resolveSubjectWorldId(kind);
 }
 
 export async function serviceTasklistList(
@@ -186,6 +191,7 @@ export async function serviceTaskList(
   input: {
     subject_kind?: SubjectKind;
     list_id?: number;
+    project_id?: number;
     filters?: TaskItemSearchFilters;
     status?: "pending" | "completed" | "all";
     due_today?: boolean;
@@ -199,12 +205,16 @@ export async function serviceTaskList(
   if (input.list_id != null && input.filters != null) {
     throw new Error("list_id and filters are mutually exclusive");
   }
+  if (input.project_id != null && input.list_id != null) {
+    throw new Error("project_id and list_id are mutually exclusive");
+  }
   const worldId = await taskWorldIdForAuth(auth, input.subject_kind);
   await ensureDefaultTaskListForWorld(worldId);
   const items = await listTaskItems(
     worldId,
     omitUndefined({
       list_id: input.list_id,
+      project_id: input.project_id,
       filters: input.filters,
       status: input.filters == null ? (input.status ?? "all") : undefined,
       due_today: input.filters == null ? input.due_today : undefined,
@@ -222,6 +232,8 @@ export async function serviceTaskCreate(
     subject_kind?: SubjectKind;
     title: string;
     list_id: number;
+    project_id?: number;
+    milestone_id?: number;
     content?: string;
     tags?: string[];
     priority?: "high" | "medium" | "low" | "none";
@@ -243,6 +255,8 @@ export async function serviceTaskPatch(
     id: number;
     title?: string;
     list_id?: number;
+    project_id?: number | null;
+    milestone_id?: number | null;
     content?: string;
     tags?: string[];
     priority?: "high" | "medium" | "low" | "none";

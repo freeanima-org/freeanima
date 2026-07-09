@@ -35,6 +35,8 @@ export type TaskItemCreateInput = {
   due_at?: string | null;
   remind_at?: string | null;
   sort_order?: number;
+  project_id?: number;
+  milestone_id?: number;
 };
 
 export type TaskItemUpdateInput = {
@@ -43,6 +45,8 @@ export type TaskItemUpdateInput = {
   content?: string;
   tags?: string[];
   list_id?: number;
+  project_id?: number | null;
+  milestone_id?: number | null;
   priority?: TaskItemPriority;
   due_at?: string | null;
   remind_at?: string | null;
@@ -72,6 +76,8 @@ export type TaskItemListOpts = {
   status?: "pending" | "completed" | "all";
   due_today?: boolean;
   tags?: string[];
+  project_id?: number;
+  in_backlog?: boolean;
   filters?: TaskItemSearchFilters;
   limit?: number;
   offset?: number;

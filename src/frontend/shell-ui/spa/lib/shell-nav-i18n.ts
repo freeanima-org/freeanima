@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   Bell,
   BookOpen,
+  FolderKanban,
   LayoutDashboard,
   ListTodo,
   Lock,
@@ -53,6 +54,13 @@ export function shellNavItems(): ShellNavItem[] {
   return [
     navItem("chat", "/chat", "/chat", shellNavLabel(m.console_nav_chat), MessageSquare),
     navItem("tasks", "/tasks", "/tasks", shellNavLabel(m.console_nav_tasks), ListTodo),
+    navItem(
+      "projects",
+      "/projects",
+      "/projects",
+      shellNavLabel(m.console_nav_projects),
+      FolderKanban,
+    ),
     navItem("pomodoro", "/pomodoro", "/pomodoro", shellNavLabel(m.console_nav_pomodoro), Timer),
     navItem("email", "/email", "/email", shellNavLabel(m.console_nav_email), Mail),
     navItem("diary", "/diary", "/diary", shellNavLabel(m.console_nav_diary), BookOpen),

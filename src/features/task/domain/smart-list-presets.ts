@@ -23,37 +23,37 @@ export const BUILTIN_SMART_LIST_DEFINITIONS: readonly BuiltinSmartListDefinition
     preset: "due_today",
     title: "今天",
     sort_order: 0,
-    filters: { status: "pending", has_due_at: true, due_on_or_before_days: 0 },
+    filters: { status: "pending", has_due_at: true, due_on_or_before_days: 0, in_backlog: true },
   },
   {
     preset: "due_tomorrow",
     title: "明天",
     sort_order: 1,
-    filters: { status: "pending", due_on: "tomorrow" },
+    filters: { status: "pending", due_on: "tomorrow", in_backlog: true },
   },
   {
     preset: "due_next_7d",
     title: "未来7天",
     sort_order: 2,
-    filters: { status: "pending", has_due_at: true, due_on_or_before_days: 7 },
+    filters: { status: "pending", has_due_at: true, due_on_or_before_days: 7, in_backlog: true },
   },
   {
     preset: "done_today",
     title: "今日完成",
     sort_order: 3,
-    filters: { status: "completed", completed_on: "today" },
+    filters: { status: "completed", completed_on: "today", in_backlog: true },
   },
   {
     preset: "done_yesterday",
     title: "昨日完成",
     sort_order: 4,
-    filters: { status: "completed", completed_on: "yesterday" },
+    filters: { status: "completed", completed_on: "yesterday", in_backlog: true },
   },
   {
     preset: "done_last_7d",
     title: "最近7天完成",
     sort_order: 5,
-    filters: { status: "completed", completed_on_or_after_days: 6 },
+    filters: { status: "completed", completed_on_or_after_days: 6, in_backlog: true },
   },
 ] as const;
 

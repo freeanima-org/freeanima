@@ -24,7 +24,7 @@ describe("listTaskItems filters", () => {
       expect.objectContaining({
         world_id: 1,
         mode: "filter_only",
-        filters: { status: "pending", due_on: "today" },
+        filters: { status: "pending", due_on: "today", in_backlog: true },
       }),
     );
   });

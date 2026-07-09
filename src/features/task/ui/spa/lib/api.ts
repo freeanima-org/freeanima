@@ -2,6 +2,7 @@ import { getSubjectKind } from "@freeanima/frontend/shell-sdk";
 
 import type {
   SmartListRowPayload,
+  TaskItemRowPayload,
   TaskItemSearchFiltersPayload,
 } from "@freeanima/shared/sap-contract/frames/task.ts";
 
@@ -24,20 +25,7 @@ export type TaskListRow = {
   updated_at: string;
 };
 
-export type TaskItemRow = {
-  id: number;
-  title: string;
-  content: string;
-  tags: string[];
-  status: "pending" | "completed";
-  priority: "high" | "medium" | "low" | "none";
-  due_at: string | null;
-  list_id: number;
-  sort_order: number;
-  completed_at: string | null;
-  created_at: string;
-  updated_at: string;
-};
+export type TaskItemRow = TaskItemRowPayload;
 
 function hub() {
   return getTaskHubClient();
@@ -163,12 +151,28 @@ export async function updateTaskItem(
   patch: Partial<
     Pick<
       TaskItemRow,
-      "title" | "content" | "tags" | "priority" | "due_at" | "list_id" | "status" | "sort_order"
+      | "title"
+      | "content"
+      | "tags"
+      | "priority"
+      | "due_at"
+      | "list_id"
+      | "project_id"
+      | "milestone_id"
+      | "status"
+      | "sort_order"
     >
   >,
 ): Promise<TaskItemRow> {
   const data = await hub().call("task.patch", withSubjectKind({ id, ...patch }));
   return data.item;
+}
+
+export type ProjectPickerRow = { id: number; title: string; status: string };
+
+export async function fetchProjectsForMove(): Promise<ProjectPickerRow[]> {
+  const data = await hub().call("project.list", withSubjectKind({}));
+  return data.projects.map((p) => ({ id: p.id, title: p.title, status: p.status }));
 }
 
 export async function completeTaskItem(id: number): Promise<TaskItemRow> {

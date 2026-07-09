@@ -12,6 +12,7 @@ import {
 } from "./features.ts";
 import { mcpMethodDefs } from "./mcp.ts";
 import { taskMethodDefs } from "./task.ts";
+import { projectMethodDefs } from "./project.ts";
 import { vaultMethodDefs } from "./vault.ts";
 import { wsOnlyMethodDefs } from "./ws-only.ts";
 import type { HubMethodDef } from "../method-def.ts";
@@ -19,6 +20,7 @@ import type { HubMethodDef } from "../method-def.ts";
 const REGISTRY_PARTS = [
   chatMethodDefs,
   taskMethodDefs,
+  projectMethodDefs,
   vaultMethodDefs,
   emailMethodDefs,
   diaryMethodDefs,
@@ -48,6 +50,7 @@ assertNoDuplicateRegistry();
 export const METHOD_REGISTRY = {
   ...chatMethodDefs,
   ...taskMethodDefs,
+  ...projectMethodDefs,
   ...vaultMethodDefs,
   ...emailMethodDefs,
   ...diaryMethodDefs,

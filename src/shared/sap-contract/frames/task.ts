@@ -23,6 +23,8 @@ export const taskItemSearchFiltersSchema = z
     due_on_or_before_days: z.number().int().nonnegative().optional(),
     completed_on: taskRelativeDaySchema.optional(),
     completed_on_or_after_days: z.number().int().nonnegative().optional(),
+    project_id: z.number().int().positive().optional(),
+    in_backlog: z.boolean().optional(),
   })
   .strict();
 
@@ -63,6 +65,10 @@ export const taskItemRowSchema = z.object({
   due_at: z.string().nullable(),
   remind_at: z.string().nullable(),
   list_id: z.number().int().positive(),
+  project_id: z.number().int().positive().nullable(),
+  milestone_id: z.number().int().positive().nullable(),
+  project_title: z.string().nullable().optional(),
+  list_name: z.string().nullable().optional(),
   sort_order: z.number().int(),
   completed_at: z.string().nullable(),
   created_at: z.string(),
@@ -169,6 +175,7 @@ export type SmartlistDeleteOutput = z.infer<typeof smartlistDeleteOutputSchema>;
 export const taskListInputSchema = z.object({
   subject_kind: taskSubjectKindSchema,
   list_id: z.number().int().positive().optional(),
+  project_id: z.number().int().positive().optional(),
   filters: taskItemSearchFiltersSchema.optional(),
   status: taskStatusSchema.or(z.literal("all")).optional(),
   due_today: z.boolean().optional(),
@@ -184,6 +191,8 @@ export const taskCreateInputSchema = z.object({
   subject_kind: taskSubjectKindSchema,
   title: z.string().min(1),
   list_id: z.number().int().positive(),
+  project_id: z.number().int().positive().optional(),
+  milestone_id: z.number().int().positive().optional(),
   content: z.string().optional(),
   tags: z.array(z.string()).optional(),
   priority: taskPrioritySchema.optional(),
@@ -199,6 +208,8 @@ export const taskPatchInputSchema = z.object({
   id: z.number().int().positive(),
   title: z.string().min(1).optional(),
   list_id: z.number().int().positive().optional(),
+  project_id: z.number().int().positive().nullable().optional(),
+  milestone_id: z.number().int().positive().nullable().optional(),
   content: z.string().optional(),
   tags: z.array(z.string()).optional(),
   priority: taskPrioritySchema.optional(),
