@@ -7,7 +7,7 @@ import {
   worldConfigBodySchema,
   type EntityRow,
 } from "@freeanima/core/db/schema/entity";
-import type { AnimaConfig } from "@freeanima/core/config";
+import type { RuntimeConfig } from "@freeanima/core/config";
 import { omitUndefined } from "@freeanima/core/util";
 import { resolveWorldSubjectIds } from "@freeanima/core/config/worlds.ts";
 
@@ -213,7 +213,7 @@ function readSubjectWorldId(subject: EntityRow): number {
 }
 
 /** Hub 启动：确保 user/agent subject 及默认私有 world 存在 */
-export async function ensureWorldSubjects(config: AnimaConfig): Promise<EnsuredWorldSubjects> {
+export async function ensureWorldSubjects(config: RuntimeConfig): Promise<EnsuredWorldSubjects> {
   const { user_subject_id, agent_subject_id } = resolveWorldSubjectIds(config);
 
   const userSubject = await ensureSubjectAtId(user_subject_id, "user", { bootstrapWorld: false });

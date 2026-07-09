@@ -67,12 +67,7 @@ import {
   resumeCronJob,
   runCronJobNow,
 } from "./handlers/status.ts";
-import {
-  getHubConfig,
-  getHubConfigSection,
-  importHubConfigFromFile,
-  patchHubConfigSection,
-} from "./handlers/config.ts";
+import { getHubConfig, getHubConfigSection, patchHubConfigSection } from "./handlers/config.ts";
 
 /** Console Hub RPC method handlers */
 export const consoleHubHandlers = {
@@ -81,7 +76,6 @@ export const consoleHubHandlers = {
   "config.getSection": (payload: { section: string }) => getHubConfigSection(payload.section),
   "config.patchSection": (payload: { section: string; patch: Record<string, unknown> }) =>
     patchHubConfigSection(payload.section, payload.patch),
-  "config.importFromFile": () => importHubConfigFromFile(),
   "status.tools": (payload: { scope?: "default" }) =>
     listTools(payload.scope === "default" ? "default" : undefined),
   "status.platforms": () => getPlatforms(),

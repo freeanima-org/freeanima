@@ -2,9 +2,9 @@ import { afterEach, describe, expect, it } from "bun:test";
 
 import type { AnimaConfig } from "./schemas/config.ts";
 import {
-  bindActiveConfig,
+  bindActiveRuntimeConfig,
   Config,
-  getActiveConfig,
+  getActiveRuntimeConfig,
   resetActiveConfigForTest,
 } from "./config-store.ts";
 
@@ -30,13 +30,13 @@ describe("Config store", () => {
     expect(cfg.data.compression?.default_context_window).toBe(32_000);
   });
 
-  it("bindActiveConfig / getActiveConfig round-trip", () => {
+  it("bindActiveRuntimeConfig / getActiveRuntimeConfig round-trip", () => {
     const cfg = Config.fromSnapshot(snapshot);
-    bindActiveConfig(cfg);
-    expect(getActiveConfig()).toBe(cfg);
+    bindActiveRuntimeConfig(cfg);
+    expect(getActiveRuntimeConfig()).toBe(cfg);
   });
 
-  it("getActiveConfig throws when not bound", () => {
-    expect(() => getActiveConfig()).toThrow("Active Config not bound");
+  it("getActiveRuntimeConfig throws when not bound", () => {
+    expect(() => getActiveRuntimeConfig()).toThrow("Active runtime config not bound");
   });
 });

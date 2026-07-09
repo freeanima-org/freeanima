@@ -1,5 +1,5 @@
 import { asc, desc, getColumns, isNotNull, sql } from "drizzle-orm";
-import { getActiveConfig, getFtsTrgmMinSimilarity } from "@freeanima/core/config";
+import { getActiveRuntimeConfig, getFtsTrgmMinSimilarity } from "@freeanima/core/config";
 import { limbicDocKey } from "@freeanima/core/util";
 import { limbicMemory } from "@freeanima/core/db/schema";
 
@@ -52,7 +52,7 @@ export async function searchLimbicMemoryTrgm(
   if (!q) return [];
 
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
-  const minSim = getFtsTrgmMinSimilarity(getActiveConfig().data);
+  const minSim = getFtsTrgmMinSimilarity(getActiveRuntimeConfig().data);
   const db = getDb();
   const rankExpr = sql<number>`similarity(${limbicMemory.content}, ${q})`.as("rank");
 

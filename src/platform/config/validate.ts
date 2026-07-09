@@ -1,16 +1,15 @@
 import { readFileSync, existsSync } from "node:fs";
 import {
-  animaConfigSchema,
   bootstrapConfigSchema,
   pickBootstrapRecord,
-  type AnimaConfig,
+  runtimeConfigSchema,
+  type RuntimeConfig,
 } from "@freeanima/core/config";
 import { expandConfigEnv } from "./env-expand.ts";
 import { parseYaml } from "./yaml.ts";
 import { PATHS } from "./paths.ts";
-import { loadConfigYamlRecord } from "./yaml-io.ts";
 
-function validateTunnelConfig(cfg: AnimaConfig): void {
+function validateTunnelConfig(cfg: RuntimeConfig): void {
   const tunnel = cfg.tunnel;
   if (!tunnel?.enabled) return;
 
@@ -58,9 +57,9 @@ export async function validateBootstrapOnStartup(): Promise<void> {
   }
 }
 
-/** Phase 2：PG 加载后校验完整配置 */
-export function validateFullConfigOnStartup(cfg: AnimaConfig): void {
-  const parsed = animaConfigSchema.safeParse(cfg);
+/** Phase 2：PG 加载后校验运行时配置 */
+export function validateRuntimeConfigOnStartup(cfg: RuntimeConfig): void {
+  const parsed = runtimeConfigSchema.safeParse(cfg);
   if (!parsed.success) {
     console.error("runtime config validation failed:");
     for (const issue of parsed.error.issues) {
@@ -79,18 +78,12 @@ export function validateFullConfigOnStartup(cfg: AnimaConfig): void {
   }
 }
 
-/** @deprecated 使用 validateBootstrapOnStartup + validateFullConfigOnStartup */
+/** @deprecated 使用 validateRuntimeConfigOnStartup */
+export function validateFullConfigOnStartup(cfg: RuntimeConfig): void {
+  validateRuntimeConfigOnStartup(cfg);
+}
+
+/** @deprecated 使用 validateBootstrapOnStartup */
 export async function validateConfigOnStartup(): Promise<void> {
   await validateBootstrapOnStartup();
-  const merged = loadConfigYamlRecord();
-  const parsed = animaConfigSchema.safeParse(merged);
-  if (!parsed.success) {
-    console.error("config.yaml validation failed:");
-    for (const issue of parsed.error.issues) {
-      const path = issue.path.length > 0 ? issue.path.join(".") : "(root)";
-      console.error(`  - ${path}: ${issue.message}`);
-    }
-    process.exit(1);
-  }
-  validateTunnelConfig(parsed.data);
 }

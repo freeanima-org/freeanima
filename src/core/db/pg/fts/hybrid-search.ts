@@ -1,6 +1,6 @@
 import type { MessageFtsHit, SemanticFtsHit } from "@freeanima/core/repos";
 import {
-  getActiveConfig,
+  getActiveRuntimeConfig,
   getFtsTrgmFallbackWhenHitsLt,
   getFtsTrgmMinSimilarity,
 } from "@freeanima/core/config";
@@ -18,7 +18,7 @@ import { searchSemanticMemoryFtsRaw, searchMessagesFtsRaw } from "./hybrid-raw.t
 import { searchMessagesVector, searchSemanticMemoryVector } from "./vector-search.ts";
 
 function candidateLimit(requested: number, ftsCount: number): number {
-  const fallback = getFtsTrgmFallbackWhenHitsLt(getActiveConfig().data);
+  const fallback = getFtsTrgmFallbackWhenHitsLt(getActiveRuntimeConfig().data);
   const base = Math.max(requested * 3, 20);
   if (fallback > 0 && ftsCount < fallback) {
     return Math.max(base, requested * 5);
@@ -130,7 +130,7 @@ export async function hybridCountSemanticMemory(
   const status = opts?.status ?? "active";
   const source_conversations =
     opts?.source_conversations?.map((s) => s.trim()).filter(Boolean) ?? [];
-  const minSim = getFtsTrgmMinSimilarity(getActiveConfig().data);
+  const minSim = getFtsTrgmMinSimilarity(getActiveRuntimeConfig().data);
   const queryEmbedding = await embedQueryText(q);
 
   const db = getDb();

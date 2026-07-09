@@ -1,6 +1,5 @@
 import { omitUndefined } from "@freeanima/core/util";
 import { PATHS, type TunnelConfig } from "@freeanima/core/config";
-import { FileConfig } from "@freeanima/platform/config";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { join } from "node:path";
@@ -20,6 +19,7 @@ import {
   probeTunnelEdgeStatus,
   type TunnelEdgeStatus,
 } from "./tunnel-edge-status.ts";
+import { loadTunnelDraft } from "./tunnel-config-patch.ts";
 
 const foregroundChild: { current: ChildProcess | null } = { current: null };
 
@@ -31,30 +31,30 @@ function tunnelUnitPath(): string {
   return join(serviceUnitDir(), tunnelServiceUnitFileName());
 }
 
-export function isTunnelEnabled(): boolean {
-  const cfg = FileConfig.open().data.tunnel;
+export async function isTunnelEnabled(): Promise<boolean> {
+  const cfg = await loadTunnelDraft();
   return cfg?.enabled === true;
 }
 
 /** 按当前 Hub/Web 端口刷新 cloudflared ingress */
-export function refreshTunnelIngressFromService(): boolean {
+export async function refreshTunnelIngressFromService(): Promise<boolean> {
   return refreshTunnelIngressFromConfig();
 }
 
 /** @deprecated 保留兼容；stack 现通过 startTunnelForStack 托管 tunnel */
-export function migrateLegacyTunnelUnit(): void {
-  if (!systemdUserAvailable() || !isTunnelEnabled()) return;
-  ensureTunnelUnitFile();
+export async function migrateLegacyTunnelUnit(): Promise<void> {
+  if (!systemdUserAvailable() || !(await isTunnelEnabled())) return;
+  await ensureTunnelUnitFile();
 }
 
 /** Stack 启动 tunnel：systemd 可用时用 anima-tunnel.service，否则前台 spawn */
-export function startTunnelForStack(): ChildProcess | null {
-  if (!isTunnelEnabled()) {
+export async function startTunnelForStack(): Promise<ChildProcess | null> {
+  if (!(await isTunnelEnabled())) {
     console.warn("[stack] cloudflared 未启动：tunnel.enabled=false");
     return null;
   }
   if (systemdUserAvailable()) {
-    startTunnelViaSystemd();
+    await startTunnelViaSystemd();
     if (isSystemdTunnelRunning() || findCloudflaredPidOnHost() != null) {
       console.log("[stack] cloudflared 已通过 systemd 启动 (anima-tunnel.service)");
     } else {
@@ -77,15 +77,16 @@ export function stopTunnelForStack(): void {
   stopTunnelViaSystemd();
 }
 
-export function ensureTunnelUnitFile(): boolean {
+export async function ensureTunnelUnitFile(): Promise<boolean> {
   if (!isCloudflaredInstalled()) return false;
-  refreshTunnelIngressFromService();
+  await refreshTunnelIngressFromService();
   if (!existsSync(PATHS.cloudflaredConfigFile)) return false;
+  const cfg = await loadTunnelDraft();
   const content = renderTunnelSystemdUnit(
     cloudflaredRunExecStart(cloudflaredBinPath(), {
       credentialsFile: defaultCredentialsFile(),
       configFile: PATHS.cloudflaredConfigFile,
-      ...omitUndefined({ tunnelId: FileConfig.open().data.tunnel?.cloudflare?.tunnel_id }),
+      ...omitUndefined({ tunnelId: cfg?.cloudflare?.tunnel_id }),
     }),
   );
   const path = tunnelUnitPath();
@@ -97,9 +98,9 @@ export function ensureTunnelUnitFile(): boolean {
   return true;
 }
 
-export function startTunnelViaSystemd(): void {
-  if (!systemdUserAvailable() || !isTunnelEnabled()) return;
-  const unitChanged = ensureTunnelUnitFile();
+export async function startTunnelViaSystemd(): Promise<void> {
+  if (!systemdUserAvailable() || !(await isTunnelEnabled())) return;
+  const unitChanged = await ensureTunnelUnitFile();
   if (unitChanged) systemctl("daemon-reload");
   const active = systemctl("is-active", TUNNEL_SYSTEMD_UNIT);
   if (String(active.stdout ?? "").trim() === "active") return;
@@ -159,11 +160,11 @@ function isForegroundTunnelChildAlive(): boolean {
   return child != null && !child.killed && child.pid != null && child.pid > 0;
 }
 
-export function startTunnelForeground(): ChildProcess | null {
+export async function startTunnelForeground(): Promise<ChildProcess | null> {
   if (foregroundChild.current && !foregroundChild.current.killed) {
     return foregroundChild.current;
   }
-  if (!isTunnelEnabled()) {
+  if (!(await isTunnelEnabled())) {
     console.warn("[stack] cloudflared 未启动：tunnel.enabled=false");
     return null;
   }
@@ -171,7 +172,7 @@ export function startTunnelForeground(): ChildProcess | null {
     console.warn(`[stack] cloudflared 未启动：未安装 (${cloudflaredBinPath()})`);
     return null;
   }
-  refreshTunnelIngressFromService();
+  await refreshTunnelIngressFromService();
   if (!existsSync(PATHS.cloudflaredConfigFile)) {
     console.warn(`[stack] cloudflared 未启动：缺少配置 ${PATHS.cloudflaredConfigFile}`);
     return null;
@@ -181,7 +182,7 @@ export function startTunnelForeground(): ChildProcess | null {
     console.log(`[stack] cloudflared 已在运行 (PID ${existingPid})，跳过重复启动`);
     return null;
   }
-  const cfg = FileConfig.open().data.tunnel;
+  const cfg = await loadTunnelDraft();
   const argv = cloudflaredRunArgv(cloudflaredBinPath(), {
     credentialsFile: defaultCredentialsFile(),
     configFile: PATHS.cloudflaredConfigFile,
@@ -222,9 +223,7 @@ export function stopTunnelForeground(): void {
 
 export type TunnelStatus = {
   enabled: boolean;
-  /** cloudflared 进程是否在运行（systemd / 前台） */
   running: boolean;
-  /** 是否已与 Cloudflare 边缘建立连接；进程未运行时为 false */
   connected: boolean | null;
   haConnections: number | null;
   publicUrl: string | null;
@@ -253,10 +252,10 @@ export function getTunnelEdgeStatus(running: boolean): TunnelEdgeStatus {
 
 export { formatTunnelConnectedLabel };
 
-export function getTunnelStatus(): TunnelStatus {
+export async function getTunnelStatus(): Promise<TunnelStatus> {
   let cfg: TunnelConfig | undefined;
   try {
-    cfg = FileConfig.open().data.tunnel;
+    cfg = await loadTunnelDraft();
   } catch {
     cfg = undefined;
   }
@@ -275,6 +274,6 @@ export function getTunnelStatus(): TunnelStatus {
   };
 }
 
-export function loadTunnelConfig(): TunnelConfig | undefined {
-  return FileConfig.open().data.tunnel;
+export async function loadTunnelConfig(): Promise<TunnelConfig | undefined> {
+  return loadTunnelDraft();
 }

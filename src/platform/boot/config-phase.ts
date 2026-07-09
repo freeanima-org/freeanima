@@ -5,12 +5,14 @@ import { wireCapabilityInjection } from "../wire-capability-injection.ts";
 import {
   PATHS,
   validateBootstrapOnStartup,
-  validateFullConfigOnStartup,
+  validateRuntimeConfigOnStartup,
+  type RuntimeConfigStore,
 } from "@freeanima/platform/config";
 import { bindHomeChannelConfig } from "@freeanima/platform/ports/home-channel";
-import type { HybridConfig } from "@freeanima/platform/config";
-import { bindActiveConfig } from "@freeanima/core/config";
+import { bindActiveRuntimeConfig } from "@freeanima/core/config";
 
+import { bindBootstrapHttpForProcess } from "../config/bootstrap-http-cache.ts";
+import { loadBootstrapConfig } from "../config/bootstrap.ts";
 import { startupLog } from "./status.ts";
 
 export type ConfigPhaseResult = Record<string, never>;
@@ -19,6 +21,7 @@ export type ConfigPhaseResult = Record<string, never>;
 export async function bootConfigPhase(): Promise<ConfigPhaseResult> {
   startupLog("Validating config.yaml (bootstrap)…");
   await validateBootstrapOnStartup();
+  bindBootstrapHttpForProcess(loadBootstrapConfig().http);
   wireEnginePorts();
   wireCapabilityInjection();
 
@@ -28,11 +31,11 @@ export async function bootConfigPhase(): Promise<ConfigPhaseResult> {
   return {};
 }
 
-/** Phase 2 之后：绑定 HybridConfig 并校验完整配置 */
-export function bindRuntimeConfig(config: HybridConfig): void {
-  bindActiveConfig(config);
+/** Phase 2 之后：绑定 RuntimeConfig 并校验 */
+export function bindRuntimeConfig(config: RuntimeConfigStore): void {
+  bindActiveRuntimeConfig(config);
   bindHomeChannelConfig(config);
-  validateFullConfigOnStartup(config.data);
+  validateRuntimeConfigOnStartup(config.data);
 }
 
 export { bindHomeChannelConfig };

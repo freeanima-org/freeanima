@@ -23,7 +23,7 @@ import { waitForHubReadyOrWarn } from "./wait-hub-ready.ts";
 import { stopHubStackViaSystemd } from "./tunnel/tunnel-supervisor.ts";
 import { getTunnelStatus, migrateLegacyTunnelUnit } from "./tunnel/tunnel-supervisor.ts";
 import { buildTunnelSnapshot } from "@freeanima/platform/connectors/tunnel";
-import { FileConfig, validateConfigOnStartup } from "@freeanima/platform/config";
+import { loadRuntimeConfigSection, validateBootstrapOnStartup } from "@freeanima/platform/config";
 import { runServiceStack } from "./stack/supervisor.ts";
 import { probeWebHealth } from "./web/web-runtime.ts";
 
@@ -171,9 +171,14 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
   const pid = isServerAlive();
 
   if (httpUp) {
-    const tunnelStatus = getTunnelStatus();
-    const tunnelUrls = buildTunnelSnapshot(FileConfig.open().data.tunnel);
-    const webCfg = FileConfig.open().data.web;
+    const tunnelCfg = await loadRuntimeConfigSection<{ enabled?: boolean; hostname?: string }>(
+      "tunnel",
+    );
+    const tunnelStatus = await getTunnelStatus();
+    const tunnelUrls = buildTunnelSnapshot(tunnelCfg);
+    const webCfg = await loadRuntimeConfigSection<{ enabled?: boolean; public_url?: string }>(
+      "web",
+    );
     const webUp =
       webCfg?.enabled === true ? await probeWebHealth(resolveProbeHost(host), port) : false;
     printServiceRunningStatus({
@@ -275,14 +280,14 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
     }
 
     if (!systemdUserAvailable()) {
-      await validateConfigOnStartup();
+      await validateBootstrapOnStartup();
       await startDetachedWithoutSystemd(args);
       await waitForHubReadyOrWarn(args.host, args.port);
       return;
     }
 
-    await validateConfigOnStartup();
-    migrateLegacyTunnelUnit();
+    await validateBootstrapOnStartup();
+    await migrateLegacyTunnelUnit();
     ensureUnitFile(args.host, args.port);
     systemctl("daemon-reload");
     const r = systemctl("enable", "--now", SYSTEMD_UNIT);
@@ -328,7 +333,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
 
   if (action === "restart") {
     if (systemdUserAvailable() && existsSync(serviceUnitPath())) {
-      migrateLegacyTunnelUnit();
+      await migrateLegacyTunnelUnit();
       ensureUnitFile(args.host, args.port);
       systemctl("daemon-reload");
       const r = systemctl("restart", SYSTEMD_UNIT);

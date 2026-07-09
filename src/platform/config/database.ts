@@ -1,4 +1,4 @@
-import type { AnimaConfig } from "@freeanima/core/config";
+import type { BootstrapConfig } from "@freeanima/core/config";
 import { resolveValue } from "./resolve.ts";
 
 /** Expand env/vault references in database.url */
@@ -6,8 +6,19 @@ export async function resolveDatabaseUrl(raw: string): Promise<string> {
   return resolveValue(raw);
 }
 
-/** Read database.url from config; null when not configured */
-export async function getConfiguredDatabaseUrl(cfg: AnimaConfig): Promise<string | null> {
+/** 从 bootstrap 读取 database.url */
+export async function getConfiguredDatabaseUrlFromBootstrap(
+  bootstrap: BootstrapConfig,
+): Promise<string | null> {
+  const db = bootstrap.database;
+  if (!db?.url) return null;
+  return resolveDatabaseUrl(db.url);
+}
+
+/** @deprecated 使用 getConfiguredDatabaseUrlFromBootstrap */
+export async function getConfiguredDatabaseUrl(cfg: {
+  database?: BootstrapConfig["database"];
+}): Promise<string | null> {
   const db = cfg.database;
   if (!db?.url) return null;
   return resolveDatabaseUrl(db.url);

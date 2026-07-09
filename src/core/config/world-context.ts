@@ -1,4 +1,4 @@
-import type { AnimaConfig } from "./schemas/config.ts";
+import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 import { ensureWorldSubjects, type EnsuredWorldSubjects } from "../db/pg/entity/subject-world.ts";
 
 export type ResolvedWorldContext = EnsuredWorldSubjects;
@@ -13,7 +13,7 @@ export function resolveSubjectWorldId(kind: SubjectKind): number {
 let resolvedWorldContext: ResolvedWorldContext | null = null;
 
 export async function resolveAndBindWorldContext(
-  config: AnimaConfig,
+  config: RuntimeConfig,
 ): Promise<ResolvedWorldContext> {
   const ctx = await ensureWorldSubjects(config);
   resolvedWorldContext = ctx;

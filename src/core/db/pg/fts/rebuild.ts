@@ -8,7 +8,11 @@ import {
 } from "@freeanima/core/db/schema";
 import { entitySearchTextForWrite } from "@freeanima/core/db/schema/entity";
 
-import { getActiveConfig, isCjkJiebaEnabled, isEmbeddingEnabled } from "@freeanima/core/config";
+import {
+  getActiveRuntimeConfig,
+  isCjkJiebaEnabled,
+  isEmbeddingEnabled,
+} from "@freeanima/core/config";
 import { omitUndefined } from "@freeanima/core/util";
 import { logPgComponent } from "../log.ts";
 
@@ -689,14 +693,15 @@ async function rebuildAutobiographicalMemoryEmbeddings(opts: FtsRebuildOptions):
 export async function rebuildAllFtsSegments(
   opts: FtsRebuildOptions = {},
 ): Promise<FtsRebuildResult> {
-  const useJieba = isCjkJiebaEnabled(getActiveConfig().data);
+  const useJieba = isCjkJiebaEnabled(getActiveRuntimeConfig().data);
   const semantic_memory = await rebuildSemanticMemoryFtsSegmented(useJieba, opts);
   const messagesCount = await rebuildMessagesFtsSegmented(useJieba, opts);
   const limbic_memory = await rebuildLimbicMemoryFtsSegmented(useJieba, opts);
   const autobiographical_memory = await rebuildAutobiographicalMemoryFtsSegmented(useJieba, opts);
   const entitiesCount = await rebuildEntitiesFtsSegmented(useJieba, opts);
 
-  const embedding_enabled = isEmbeddingEnabled(getActiveConfig().data) && getEmbedTextFn() != null;
+  const embedding_enabled =
+    isEmbeddingEnabled(getActiveRuntimeConfig().data) && getEmbedTextFn() != null;
   let embeddings: Record<string, number> | undefined;
   if (embedding_enabled) {
     const smEmb = await rebuildSemanticMemoryEmbeddings(opts);

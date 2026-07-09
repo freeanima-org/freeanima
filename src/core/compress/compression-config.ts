@@ -1,5 +1,5 @@
 import type { AnimaConfig } from "../config/schemas/config.ts";
-import { getActiveConfig } from "../config/config-store.ts";
+import { getActiveRuntimeConfig } from "../config/config-store.ts";
 import {
   getCompressionConfig as resolveCompressionConfig,
   getContextWindow as resolveContextWindow,
@@ -14,7 +14,7 @@ import {
 export type { ModelConfig, ResolvedCompressionConfig };
 
 function activeData(): AnimaConfig {
-  return getActiveConfig().data;
+  return getActiveRuntimeConfig().data;
 }
 
 export function getCompressionConfig(cfg: AnimaConfig = activeData()): ResolvedCompressionConfig {

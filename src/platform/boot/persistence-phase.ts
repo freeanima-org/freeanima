@@ -2,35 +2,29 @@ import { closeDb, getDb, initDatabase } from "@freeanima/core/db/pg";
 import { initRedis } from "@freeanima/platform/connectors/redis";
 import { runMigrations } from "@freeanima/core/db";
 import {
-  getConfiguredDatabaseUrl,
-  getConfiguredRedisUrl,
-  HybridConfig,
+  getConfiguredDatabaseUrlFromBootstrap,
+  getConfiguredRedisUrlFromBootstrap,
+  RuntimeConfigStore,
 } from "@freeanima/platform/config";
-import { pickBootstrapRecord } from "@freeanima/core/config";
-import { loadConfigYamlRecord } from "../config/yaml-io.ts";
-import { bootstrapConfigSchema } from "@freeanima/core/config";
 
+import { loadBootstrapConfig } from "../config/bootstrap.ts";
 import { bindRuntimeConfig } from "./config-phase.ts";
 import { startupLog } from "./status.ts";
 
 export type PersistencePhaseResult = {
-  config: HybridConfig;
+  config: RuntimeConfigStore;
 };
 
-/** Phase 2: PG / Redis 连接、迁移、加载 HybridConfig */
+/** Phase 2: PG / Redis 连接、迁移、加载 RuntimeConfig */
 export async function bootPersistencePhase(): Promise<PersistencePhaseResult> {
-  const yamlRecord = loadConfigYamlRecord();
-  const bootstrap = bootstrapConfigSchema.parse(pickBootstrapRecord(yamlRecord));
-  const dbUrl = await getConfiguredDatabaseUrl(
-    bootstrap as import("@freeanima/core/config").AnimaConfig,
-  );
+  const bootstrap = loadBootstrapConfig();
+  const dbUrl = await getConfiguredDatabaseUrlFromBootstrap(bootstrap);
   if (!dbUrl) {
     throw new Error("database.url is required; PostgreSQL is the only supported backend");
   }
   initDatabase({ getDatabaseUrl: () => dbUrl });
   initRedis({
-    getRedisUrl: () =>
-      getConfiguredRedisUrl(bootstrap as import("@freeanima/core/config").AnimaConfig),
+    getRedisUrl: () => getConfiguredRedisUrlFromBootstrap(bootstrap),
   });
 
   startupLog("Initializing PostgreSQL connection pool…");
@@ -39,7 +33,7 @@ export async function bootPersistencePhase(): Promise<PersistencePhaseResult> {
   startupLog("Database migrations complete");
 
   startupLog("Loading runtime config from database…");
-  const config = await HybridConfig.open();
+  const config = await RuntimeConfigStore.open();
   bindRuntimeConfig(config);
 
   return { config };

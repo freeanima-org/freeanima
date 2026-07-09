@@ -10,7 +10,7 @@ import {
   resolveToolSetNames,
   toolNamesForToolSets,
 } from "@freeanima/core/tool";
-import { getActiveConfig, getProfileHopModel } from "@freeanima/core/config";
+import { getActiveRuntimeConfig, getProfileHopModel } from "@freeanima/core/config";
 import { CST_OFFSET_MS, formatCstIso, omitUndefined } from "@freeanima/core/util";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
 import { buildSystemPrompt } from "@freeanima/core/hooks/prompt";
@@ -263,7 +263,7 @@ export async function newConversation(
   model?: string,
   platformExtra?: Record<string, unknown>,
 ): Promise<string> {
-  const cfg = getActiveConfig().data;
+  const cfg = getActiveRuntimeConfig().data;
   const sid = generateConversationId();
   await initConversation(
     tools,

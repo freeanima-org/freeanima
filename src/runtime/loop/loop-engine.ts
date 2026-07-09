@@ -1,6 +1,6 @@
 import { parseToolArgs, toolError, toolResult } from "@freeanima/core/tool";
 import {
-  getActiveConfig,
+  getActiveRuntimeConfig,
   getProfileHopModel,
   getRuntimeLogger,
   type AnimaConfig,
@@ -121,7 +121,7 @@ function prepareEngine(
   }
   const schemas: OpenAiToolSchema[] =
     opts?.tools && opts.tools.length > 0 ? opts.tools : registry.openaiSchemas();
-  const cfg = opts?.config ?? getActiveConfig().data;
+  const cfg = opts?.config ?? getActiveRuntimeConfig().data;
   const resolved = opts?.model ?? getProfileHopModel(cfg, PROFILE_CHAT);
   return [schemas, resolved];
 }

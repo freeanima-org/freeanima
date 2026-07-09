@@ -1,7 +1,7 @@
 import { describe, expect, it, mock } from "bun:test";
 
 mock.module("@freeanima/core/config", () => ({
-  getActiveConfig: () => {
+  getActiveRuntimeConfig: () => {
     throw new Error("Active Config not bound");
   },
   isCjkJiebaEnabled: () => true,

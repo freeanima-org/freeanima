@@ -1,6 +1,6 @@
 import { omitUndefined } from "@freeanima/core/util";
 import {
-  getActiveConfig,
+  getActiveRuntimeConfig,
   resolveContextWindowWithSource,
   type ContextWindowSource,
 } from "@freeanima/core/config";
@@ -305,7 +305,7 @@ function resolveCompressBudget(
   }
   const catalogFallback = opts?.catalogContextWindow;
   const { window, source } = resolveContextWindowWithSource(
-    getActiveConfig().data,
+    getActiveRuntimeConfig().data,
     model,
     omitUndefined({
       catalogFallback,

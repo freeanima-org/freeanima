@@ -1,5 +1,5 @@
 import { logPgComponent } from "../log.ts";
-import { getActiveConfig, getResolvedEmbeddingConfig } from "@freeanima/core/config";
+import { getActiveRuntimeConfig, getResolvedEmbeddingConfig } from "@freeanima/core/config";
 
 import { expandJobsToUnits } from "./batch-pack.ts";
 import { getEmbedTextFn } from "./runtime.ts";
@@ -92,7 +92,7 @@ export async function embedAndStoreJobs(
   }
   if (validJobs.length === 0) return 0;
 
-  const embeddingModel = getResolvedEmbeddingConfig(getActiveConfig().data)?.model ?? "";
+  const embeddingModel = getResolvedEmbeddingConfig(getActiveRuntimeConfig().data)?.model ?? "";
   let updated = 0;
 
   for (const job of validJobs) {

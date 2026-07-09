@@ -2,13 +2,21 @@ export * from "./paths.ts";
 export { expandConfigEnv } from "./env-expand.ts";
 export { parseYaml, stringifyYaml } from "./yaml.ts";
 export * from "./config.ts";
-export { FileConfig } from "./file-config.ts";
-export { HybridConfig, isPatchableConfig, type PatchableConfig } from "./hybrid-config.ts";
+export {
+  RuntimeConfigStore,
+  isPatchableRuntimeConfig,
+  isPatchableConfig,
+  type PatchableRuntimeConfig,
+  type PatchableConfig,
+} from "./runtime-config-store.ts";
+export { withPlatformDb } from "./cli-db.ts";
 export { clearVaultFieldCache, resolveVaultField } from "./vault-io.ts";
 export {
   Config,
   bindActiveConfig,
+  bindActiveRuntimeConfig,
   getActiveConfig,
+  getActiveRuntimeConfig,
   resetActiveConfigForTest,
 } from "@freeanima/core/config";
 export * from "./database.ts";
@@ -34,6 +42,7 @@ export {
   validateBootstrapOnStartup,
   validateConfigOnStartup,
   validateFullConfigOnStartup,
+  validateRuntimeConfigOnStartup,
 } from "./validate.ts";
 export { resolveLlmProviderApiKeys } from "./llm-resolve.ts";
 export {
@@ -41,6 +50,8 @@ export {
   acpAgentSchema,
   mcpServerSchema,
   type AnimaConfig,
+  type RuntimeConfig,
+  runtimeConfigSchema,
   type LlmConfig,
   OPENAI_COMPATIBLE_BACKEND_ID,
   llmConfigSchema,

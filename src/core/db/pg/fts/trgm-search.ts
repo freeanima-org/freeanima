@@ -1,6 +1,6 @@
 import type { SemanticFtsHit } from "@freeanima/core/repos";
 import { and, desc, eq, getColumns, isNotNull, notLike, sql } from "drizzle-orm";
-import { getActiveConfig, getFtsTrgmMinSimilarity } from "@freeanima/core/config";
+import { getActiveRuntimeConfig, getFtsTrgmMinSimilarity } from "@freeanima/core/config";
 import { messageDocKey, semanticMemoryDocKey } from "@freeanima/core/util";
 import { messages, semanticMemory } from "@freeanima/core/db/schema";
 
@@ -22,7 +22,7 @@ export async function searchSemanticMemoryTrgm(
   if (!q) return [];
 
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
-  const minSim = getFtsTrgmMinSimilarity(getActiveConfig().data);
+  const minSim = getFtsTrgmMinSimilarity(getActiveRuntimeConfig().data);
   const types = opts?.types?.filter(Boolean) ?? [];
   const status = opts?.status ?? "active";
   const source_conversations =
@@ -70,7 +70,7 @@ export async function searchMessagesTrgm(
   if (!q) return [];
 
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));
-  const minSim = getFtsTrgmMinSimilarity(getActiveConfig().data);
+  const minSim = getFtsTrgmMinSimilarity(getActiveRuntimeConfig().data);
   const conversation_id = opts?.conversation_id?.trim() || null;
   const msgContent = sql<string>`${messages.payload}->>'content'`;
 

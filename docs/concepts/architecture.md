@@ -11,8 +11,18 @@ System-level constraints and long-lived design principles.
 - The memory system may be layered internally, but the LLM sees a single entry point
 - Memory orchestration is built into the runtime; the LLM does not control memory pipelines
 - Credential management is a first-class system concern
-- Hub **runtime configuration** (LLM, compression, integrations) is persisted in PostgreSQL; `~/.anima/config.yaml` holds **bootstrap** only (`database`, `http`, `redis`)
-- Asset management is a first-class system concern
+- Hub **runtime configuration** (LLM, compression, integrations) is persisted in PostgreSQL (`hub_runtime_config`); `~/.anima/config.yaml` holds **bootstrap** only (`database`, `http`, `redis`) for cold start — not editable via Shell or Console API
+- **Asset management** is a first-class system concern
+
+### Hub configuration (SSOT)
+
+| Layer         | Storage                                              | Who reads/writes                                          |
+| ------------- | ---------------------------------------------------- | --------------------------------------------------------- |
+| **Bootstrap** | `~/.anima/config.yaml` (`database`, `http`, `redis`) | `platform/boot` only; install/ops edit YAML               |
+| **Runtime**   | PostgreSQL `hub_runtime_config`                      | Engine, tools, Shell **Hub 服务设置**, Console `config.*` |
+
+Bootstrap and runtime are **not merged** into a single config object. CLI cold paths connect via internal `withPlatformDb` and receive **runtime only**. Legacy runtime keys in `config.yaml` are ignored (optional startup warn).
+
 - The system prompt is part of architecture, not ad-hoc string concatenation
 
 ## Four Cognitive Layers

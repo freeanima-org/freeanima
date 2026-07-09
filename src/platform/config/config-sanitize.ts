@@ -1,4 +1,5 @@
 import type { AnimaConfig } from "@freeanima/core/config";
+import type { RuntimeConfig } from "@freeanima/core/config";
 
 /** Sanitize entire value when key name matches (case-insensitive) */
 const SECRET_KEY_PATTERN =
@@ -66,6 +67,6 @@ function sanitizeRecord(obj: Record<string, unknown>, parentKey = ""): Record<st
 }
 
 /** Runtime config snapshot for HTTP / Console display (secrets sanitized) */
-export function sanitizeConfigForApi(cfg: AnimaConfig): Record<string, unknown> {
+export function sanitizeConfigForApi(cfg: RuntimeConfig | AnimaConfig): Record<string, unknown> {
   return sanitizeRecord(cfg as Record<string, unknown>);
 }

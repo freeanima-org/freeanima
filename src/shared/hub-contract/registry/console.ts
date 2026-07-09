@@ -114,11 +114,6 @@ export const consoleMethodDefs = {
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "config.importFromFile": defineHubMethod({
-    input: emptyInputSchema,
-    output: unknownOutputSchema,
-    meta: dualTransportMeta(false),
-  }),
   "memory.files": defineHubMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,

@@ -1,9 +1,9 @@
 import { omitUndefined } from "@freeanima/core/util";
 import { PATHS } from "@freeanima/core/config";
 import { renderCloudflaredConfig } from "@freeanima/platform/connectors/tunnel";
+import { loadRuntimeConfigSection } from "@freeanima/platform/config";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { FileConfig } from "@freeanima/platform/config";
 import { resolveHubPort } from "./tunnel-hub-port.ts";
 
 export function defaultCredentialsFile(): string {
@@ -17,8 +17,7 @@ export function writeTunnelIngressConfig(params: {
   tunnelId?: string;
 }): string {
   const credentialsFile = params.credentialsFile ?? defaultCredentialsFile();
-  const tunnelId =
-    params.tunnelId ?? FileConfig.open().data.tunnel?.cloudflare?.tunnel_id ?? undefined;
+  const tunnelId = params.tunnelId;
   mkdirSync(PATHS.cloudflaredConfigDir, { recursive: true });
   const content = renderCloudflaredConfig(
     omitUndefined({
@@ -33,9 +32,11 @@ export function writeTunnelIngressConfig(params: {
 }
 
 /** 按当前 Hub 端口刷新 cloudflared ingress（Web UI 由 Hub /web 托管） */
-export function refreshTunnelIngressFromConfig(): boolean {
-  const fileCfg = FileConfig.open().data;
-  const cfg = fileCfg.tunnel;
+export async function refreshTunnelIngressFromConfig(): Promise<boolean> {
+  const cfg = await loadRuntimeConfigSection<{
+    hostname?: string;
+    cloudflare?: { tunnel_id?: string };
+  }>("tunnel");
   if (!cfg?.hostname) return false;
   writeTunnelIngressConfig(
     omitUndefined({

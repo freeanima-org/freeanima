@@ -1,6 +1,6 @@
 /** bundled 客户端（Electron / Capacitor / 本地 Web dev）跨 origin 访问 Hub REST */
 import { collectHttpCorsOrigins } from "@freeanima/core/config";
-import { FileConfig } from "@freeanima/platform/config";
+import { getBootstrapHttpForProcess } from "@freeanima/platform/config/bootstrap-http-cache";
 
 const ALLOWED_ORIGIN = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$|^capacitor:\/\/localhost$/;
 
@@ -15,13 +15,11 @@ function loadConfiguredHttpOrigins(): Set<string> {
     return extraOriginsCache.origins;
   }
   const origins = new Set<string>();
-  try {
-    const data = FileConfig.open().data;
-    for (const origin of collectHttpCorsOrigins(data.http)) {
+  const http = getBootstrapHttpForProcess();
+  if (http) {
+    for (const origin of collectHttpCorsOrigins(http)) {
       origins.add(origin);
     }
-  } catch {
-    /* config unavailable */
   }
   extraOriginsCache = { origins, loadedAt: now };
   return origins;

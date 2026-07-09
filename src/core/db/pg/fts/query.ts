@@ -4,7 +4,7 @@ import {
   parseFtsOperatorQuery,
   validateFtsQueryInput,
 } from "@freeanima/core/util";
-import { getActiveConfig, isCjkJiebaEnabled } from "@freeanima/core/config";
+import { getActiveRuntimeConfig, isCjkJiebaEnabled } from "@freeanima/core/config";
 
 import {
   buildCharModeTsQuery,
@@ -22,14 +22,14 @@ export async function buildFtsTsQuery(raw: string): Promise<string> {
 
   let tsquery: string;
   if (hasFtsQueryOperators(trimmed)) {
-    if (isCjkJiebaEnabled(getActiveConfig().data)) {
+    if (isCjkJiebaEnabled(getActiveRuntimeConfig().data)) {
       tsquery = await buildJiebaOperatorTsQuery(trimmed);
     } else {
       tsquery = buildCharModeTsQuery(trimmed);
     }
   } else if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
     tsquery = buildCharModeTsQuery(trimmed);
-  } else if (isCjkJiebaEnabled(getActiveConfig().data)) {
+  } else if (isCjkJiebaEnabled(getActiveRuntimeConfig().data)) {
     const segmented = await segmentForFts(trimmed);
     tsquery = buildJiebaModeTsQuery(segmented);
   } else {

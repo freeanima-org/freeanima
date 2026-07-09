@@ -20,8 +20,9 @@ import {
   type ConversationService,
 } from "@freeanima/runtime/conversation";
 import { appendMessage, upsertConversationMeta } from "@freeanima/core/db/pg/conversation";
-import { FileConfig, type Config } from "@freeanima/platform/config";
-import { bindActiveConfig } from "@freeanima/core/config";
+import { FileConfig } from "@freeanima/platform/config/file-config.ts";
+import { type Config } from "@freeanima/platform/config";
+import { bindActiveRuntimeConfig } from "@freeanima/core/config";
 import { bindResolvedWorldContext } from "@freeanima/core/config/world-context";
 import { ensureWorldSubjects } from "@freeanima/core/db/pg/entity/subject-world";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
@@ -86,7 +87,7 @@ function createTestSql(url: string): { sql: SqlClient; db: Db } {
 
 export async function setupPgTestDb(url: string, config: Config): Promise<PgTestContext> {
   initDatabase({ getDatabaseUrl: () => url });
-  bindActiveConfig(config);
+  bindActiveRuntimeConfig(config);
   const { sql, db } = createTestSql(url);
   // ensureWorldSubjects（clearPgTables 内）走 getDb()，须先注入测试连接以免泄漏孤儿连接
   setDbForTest(db, sql);
@@ -155,7 +156,7 @@ export async function setupIntegrationHome(opts: {
 }): Promise<PgTestContext> {
   writeDatabaseConfig(opts.home, opts.url, opts.configYaml);
   const config = FileConfig.open();
-  bindActiveConfig(config);
+  bindActiveRuntimeConfig(config);
   if (activeCtx) {
     await clearPgTables(activeCtx.sql, config);
     activeCtx.config = config;

@@ -2,7 +2,7 @@ import { and, desc, getColumns, sql } from "drizzle-orm";
 import { entities } from "@freeanima/core/db/schema";
 import { mapEntityRow } from "@freeanima/core/db/schema/entity";
 import { entityDocKey } from "@freeanima/core/util";
-import { getActiveConfig, getFtsTrgmMinSimilarity } from "@freeanima/core/config";
+import { getActiveRuntimeConfig, getFtsTrgmMinSimilarity } from "@freeanima/core/config";
 import type { EntitySearchOpts } from "../types.ts";
 
 import { getDb } from "../../client.ts";
@@ -18,7 +18,7 @@ export async function searchEntitiesTrgm(
   if (!q) return [];
 
   const limit = Math.max(1, Math.min(100, opts.limit ?? 10));
-  const minSim = getFtsTrgmMinSimilarity(getActiveConfig().data);
+  const minSim = getFtsTrgmMinSimilarity(getActiveRuntimeConfig().data);
   const searchText = sql<string>`btrim(
     coalesce(${entities.title}, '') || ' ' ||
     coalesce(${entities.summary}, '') || ' ' ||

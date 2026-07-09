@@ -1,11 +1,4 @@
-import {
-  FileConfig,
-  getConfiguredDatabaseUrl,
-  writeLoopbackWebAuthTokenFile,
-} from "@freeanima/platform/config";
-import { resolveAndBindWorldContext } from "@freeanima/core/config/world-context";
-import { runMigrations } from "@freeanima/core/db";
-import { closeDb, getDb, initDatabase } from "@freeanima/core/db/pg";
+import { withPlatformDb, writeLoopbackWebAuthTokenFile } from "@freeanima/platform/config";
 import {
   createServiceApiTokenWithSecret,
   listServiceApiTokensBySubject,
@@ -16,22 +9,6 @@ import type { Command } from "commander";
 
 import { printCliError } from "../output/errors.ts";
 import { writeStatusLine } from "../output/status.ts";
-
-async function withDb<T>(fn: () => Promise<T>): Promise<T> {
-  const fileConfig = FileConfig.open();
-  const url = await getConfiguredDatabaseUrl(fileConfig.data);
-  if (!url) {
-    throw new Error("database.url 未配置；请在 config.yaml 或 DATABASE_URL 中设置 PostgreSQL 连接");
-  }
-  initDatabase({ getDatabaseUrl: () => url });
-  await runMigrations(getDb());
-  await resolveAndBindWorldContext(fileConfig.data);
-  try {
-    return await fn();
-  } finally {
-    await closeDb();
-  }
-}
 
 export function registerTokenCommand(program: Command): void {
   const tokenCmd = program
@@ -45,11 +22,13 @@ export function registerTokenCommand(program: Command): void {
     .requiredOption("--name <name>", "token 名称，如 bootstrap / desktop")
     .action(async (opts: { subjectId: number; name: string }) => {
       try {
-        const result = await withDb(async () =>
-          createServiceApiTokenWithSecret({
-            subject_id: opts.subjectId,
-            name: opts.name.trim(),
-          }),
+        const result = await withPlatformDb(
+          async () =>
+            createServiceApiTokenWithSecret({
+              subject_id: opts.subjectId,
+              name: opts.name.trim(),
+            }),
+          { bindWorldContext: true },
         );
         console.log(result.plaintext);
         writeStatusLine(
@@ -72,7 +51,7 @@ export function registerTokenCommand(program: Command): void {
     .action(async (token: string) => {
       try {
         const trimmed = token.trim();
-        await withDb(async () => {
+        await withPlatformDb(async () => {
           const verified = await verifyServiceApiToken(trimmed);
           if (!verified) {
             throw new Error("token 无效或已撤销");
@@ -92,7 +71,9 @@ export function registerTokenCommand(program: Command): void {
     .requiredOption("--subject-id <id>", "subject entity id", parseInt)
     .action(async (opts: { subjectId: number }) => {
       try {
-        const items = await withDb(async () => listServiceApiTokensBySubject(opts.subjectId));
+        const items = await withPlatformDb(async () =>
+          listServiceApiTokensBySubject(opts.subjectId),
+        );
         if (items.length === 0) {
           console.log("(no tokens)");
           return;
@@ -114,7 +95,7 @@ export function registerTokenCommand(program: Command): void {
     .argument("<id>", "token id", parseInt)
     .action(async (id: number) => {
       try {
-        const ok = await withDb(async () => revokeServiceApiToken(id));
+        const ok = await withPlatformDb(async () => revokeServiceApiToken(id));
         if (!ok) {
           throw new Error(`token ${id} 不存在或已撤销`);
         }
