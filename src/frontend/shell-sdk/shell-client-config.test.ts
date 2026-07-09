@@ -69,16 +69,14 @@ describe("shell-client-config", () => {
 describe("shell-debug-config", () => {
   test("parseShellDebugConfig defaults", () => {
     expect(parseShellDebugConfig(null)).toEqual({
-      sentryEnabled: false,
-      sentryDsn: "",
       vConsoleEnabled: false,
     });
   });
 
-  test("normalizeShellDebugConfig requires dsn when enabled", () => {
-    expect(() =>
-      normalizeShellDebugConfig({ sentryEnabled: true, sentryDsn: "", vConsoleEnabled: false }),
-    ).toThrow("DSN");
+  test("normalizeShellDebugConfig passes through vConsole", () => {
+    expect(normalizeShellDebugConfig({ vConsoleEnabled: true })).toEqual({
+      vConsoleEnabled: true,
+    });
   });
 });
 
@@ -96,15 +94,11 @@ describe("shell-settings-node", () => {
       });
       saveShellDebugConfig(
         {
-          sentryEnabled: true,
-          sentryDsn: "https://key@o0.ingest.sentry.io/1",
           vConsoleEnabled: true,
         },
         home,
       );
       expect(loadShellDebugConfig(home)).toEqual({
-        sentryEnabled: true,
-        sentryDsn: "https://key@o0.ingest.sentry.io/1",
         vConsoleEnabled: true,
       });
       expect(loadShellClientConfig(home)?.hubUrl).toBe("https://hub.example.com");
@@ -119,21 +113,19 @@ describe("shell-settings-node", () => {
       saveShellSettings(
         {
           hub: { hubUrl: "https://a.com", remoteAuthToken: "token-at-least-16-ch" },
-          debug: { sentryEnabled: false, sentryDsn: "", vConsoleEnabled: false },
+          debug: { vConsoleEnabled: false },
         },
         home,
       );
       saveShellDebugConfig(
         {
-          sentryEnabled: true,
-          sentryDsn: "https://key@o0.ingest.sentry.io/1",
-          vConsoleEnabled: false,
+          vConsoleEnabled: true,
         },
         home,
       );
       const settings = loadShellSettings(home);
       expect(settings.hub?.hubUrl).toBe("https://a.com");
-      expect(settings.debug.sentryEnabled).toBe(true);
+      expect(settings.debug.vConsoleEnabled).toBe(true);
     } finally {
       rmSync(home, { recursive: true, force: true });
     }

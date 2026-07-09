@@ -7,7 +7,6 @@ import {
 import type { ShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-client-config";
 import type { ShellDebugConfig } from "@freeanima/frontend/shell-sdk/shell-debug-config";
 import { normalizeShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-client-config";
-import { sendSentryTestEvent } from "@freeanima/frontend/shell-ui/lib/sentry-test.ts";
 
 import { createWebScopedBackend } from "./settings-local-backend.ts";
 import {
@@ -15,6 +14,7 @@ import {
   SHELL_CONFIG_CHANGED_EVENT,
   testWebHubConnection,
 } from "./web-shell.ts";
+import { notifyDebugConfigChanged } from "@freeanima/frontend/shell-ui/spa/debug-config-events.ts";
 
 export type WebSettingsStores = {
   hub: SettingsStore<ShellClientConfig>;
@@ -54,10 +54,7 @@ export function createWebSettingsStores(): WebSettingsStores {
     load: () => debugBase.load(),
     async save(value) {
       await debugBase.save(value);
-    },
-    async test(value) {
-      await debugBase.save(value);
-      await sendSentryTestEvent();
+      notifyDebugConfigChanged();
     },
   };
   return { hub, debug };

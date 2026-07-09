@@ -1,19 +1,14 @@
 import {
-  COMPANION_CONFIG_SCOPE,
-  createDebugSettingsStore,
+  COMPANION_SHELL_SCOPE,
   createScopedSettingsStore,
   HUB_SETTINGS_SCOPE,
   parseHubClientSettings,
   type SettingsStore,
 } from "@freeanima/frontend/shell-sdk/settings";
-import {
-  normalizeShellClientConfig,
-  type ShellClientConfig,
-  type ShellDebugConfig,
-} from "@freeanima/frontend/shell-sdk";
-import { sendSentryTestEvent } from "@freeanima/frontend/shell-ui/lib/sentry-test.ts";
+import { normalizeShellClientConfig, type ShellClientConfig } from "@freeanima/frontend/shell-sdk";
 
 import { createDesktopScopedBackend, testScopedSettings } from "./settings-ipc-backend.ts";
+import type { CompanionShellSettings } from "@freeanima/satellites/companion/spa/settings/companion-shell-settings.ts";
 
 export type DesktopGeneralSettings = ShellClientConfig & {
   launchAtLogin: boolean;
@@ -21,8 +16,7 @@ export type DesktopGeneralSettings = ShellClientConfig & {
 
 export type DesktopSettingsStores = {
   hub: SettingsStore<DesktopGeneralSettings>;
-  debug: SettingsStore<ShellDebugConfig>;
-  companion: SettingsStore<unknown>;
+  companionShell: SettingsStore<CompanionShellSettings>;
 };
 
 function parseDesktopGeneralSettings(raw: unknown): DesktopGeneralSettings {
@@ -40,9 +34,19 @@ function normalizeDesktopGeneralSettings(input: DesktopGeneralSettings): Desktop
   return { ...hub, launchAtLogin: Boolean(input.launchAtLogin) };
 }
 
+function parseCompanionShellSettings(raw: unknown): CompanionShellSettings {
+  if (
+    raw != null &&
+    typeof raw === "object" &&
+    typeof (raw as CompanionShellSettings).visible === "boolean"
+  ) {
+    return { visible: (raw as CompanionShellSettings).visible };
+  }
+  return { visible: true };
+}
+
 export function createDesktopSettingsStores(): DesktopSettingsStores {
   const backend = createDesktopScopedBackend();
-  const debugBase = createDebugSettingsStore(backend);
   return {
     hub: createScopedSettingsStore<DesktopGeneralSettings>({
       scope: HUB_SETTINGS_SCOPE,
@@ -53,23 +57,11 @@ export function createDesktopSettingsStores(): DesktopSettingsStores {
         await testScopedSettings(HUB_SETTINGS_SCOPE, value);
       },
     }),
-    debug: {
-      scope: debugBase.scope,
-      load: () => debugBase.load(),
-      async save(value) {
-        await debugBase.save(value);
-      },
-      async test(value) {
-        await debugBase.save(value);
-        await sendSentryTestEvent();
-      },
-    },
-    companion: createScopedSettingsStore<unknown>({
-      scope: COMPANION_CONFIG_SCOPE,
+    companionShell: createScopedSettingsStore<CompanionShellSettings>({
+      scope: COMPANION_SHELL_SCOPE,
       backend,
-      parseLoad(raw) {
-        return raw ?? {};
-      },
+      parseLoad: parseCompanionShellSettings,
+      normalizeSave: (value) => ({ visible: Boolean(value.visible) }),
     }),
   };
 }

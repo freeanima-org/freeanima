@@ -1,8 +1,6 @@
 import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
 import type { ScopedSettingsBackend } from "@freeanima/frontend/shell-sdk/settings";
 import {
-  DEBUG_SENTRY_DSN_KEY,
-  DEBUG_SENTRY_ENABLED_KEY,
   DEBUG_VCONSOLE_ENABLED_KEY,
   HUB_URL_KEY,
   REMOTE_AUTH_TOKEN_KEY,
@@ -24,14 +22,8 @@ async function loadKvScope(scope: SettingsStorageScope): Promise<unknown> {
     return { hubUrl: hubUrl.value ?? "", remoteAuthToken: remoteAuthToken.value ?? "" };
   }
   if (scope.id === "debug") {
-    const [enabled, dsn, vConsole] = await Promise.all([
-      prefsGet({ key: DEBUG_SENTRY_ENABLED_KEY }),
-      prefsGet({ key: DEBUG_SENTRY_DSN_KEY }),
-      prefsGet({ key: DEBUG_VCONSOLE_ENABLED_KEY }),
-    ]);
+    const vConsole = await prefsGet({ key: DEBUG_VCONSOLE_ENABLED_KEY });
     return parseShellDebugConfig({
-      sentryEnabled: enabled.value === "1",
-      sentryDsn: dsn.value ?? "",
       vConsoleEnabled: vConsole.value === "1",
     });
   }
@@ -49,11 +41,6 @@ async function saveKvScope(scope: SettingsStorageScope, value: unknown): Promise
   }
   if (scope.id === "debug") {
     const cfg = value as ShellDebugConfig;
-    await prefsSet({
-      key: DEBUG_SENTRY_ENABLED_KEY,
-      value: cfg.sentryEnabled ? "1" : "0",
-    });
-    await prefsSet({ key: DEBUG_SENTRY_DSN_KEY, value: cfg.sentryDsn });
     await prefsSet({
       key: DEBUG_VCONSOLE_ENABLED_KEY,
       value: cfg.vConsoleEnabled ? "1" : "0",

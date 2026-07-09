@@ -7,7 +7,6 @@ import { parseShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-clie
 import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
 import type { ScopedSettingsBackend } from "@freeanima/frontend/shell-sdk/settings";
 import { HUB_SETTINGS_SCOPE } from "@freeanima/frontend/shell-sdk/settings";
-import { sendSentryTestEvent } from "@freeanima/frontend/shell-ui/lib/sentry-test.ts";
 
 import { createDesktopDevScopedBackend } from "./settings-dev-backend.ts";
 
@@ -59,7 +58,6 @@ function installDevScopedSettingsBridge(): void {
       }
       if (scope.kind === "kv" && scope.id === "debug") {
         await backend.save(scope, value);
-        await sendSentryTestEvent();
         return;
       }
     },

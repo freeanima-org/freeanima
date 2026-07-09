@@ -1,10 +1,16 @@
-import { StrictMode, type ComponentType, type JSX, type ReactNode } from "react";
+import {
+  Component,
+  StrictMode,
+  type ComponentType,
+  type ErrorInfo,
+  type JSX,
+  type ReactNode,
+} from "react";
 import { createRoot } from "react-dom/client";
 import { Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
 import type { SettingsBinding } from "@freeanima/frontend/shell-sdk/settings";
 import { blockNativeDialogs, ConfirmPromptHost } from "@freeanima/frontend/ui-kit/composite";
 
-import { bootstrapSentryFromSettings, Sentry } from "./bootstrap/sentry.ts";
 import { ShellRouterProvider } from "./router.tsx";
 import { setShellAppBindings, ShellAppProvider } from "./shell-app-context.tsx";
 
@@ -106,6 +112,40 @@ function ShellErrorFallback({
   );
 }
 
+type ShellErrorBoundaryProps = {
+  children?: ReactNode;
+  fallback: ComponentType<{ error: unknown; resetError: () => void }>;
+};
+
+type ShellErrorBoundaryState = {
+  error: unknown;
+};
+
+class ShellErrorBoundary extends Component<ShellErrorBoundaryProps, ShellErrorBoundaryState> {
+  override state: ShellErrorBoundaryState = { error: null };
+
+  static getDerivedStateFromError(error: unknown): ShellErrorBoundaryState {
+    return { error };
+  }
+
+  override componentDidCatch(error: unknown, info: ErrorInfo): void {
+    console.error("[shell-ui]", error, info.componentStack);
+  }
+
+  resetError = (): void => {
+    this.setState({ error: null });
+  };
+
+  override render(): ReactNode {
+    const { error } = this.state;
+    if (error != null) {
+      const Fallback = this.props.fallback;
+      return <Fallback error={error} resetError={this.resetError} />;
+    }
+    return this.props.children;
+  }
+}
+
 export type MountShellUiOptions = { bindings: SettingsBinding[]; headerSlot?: ReactNode };
 
 function ShellAppTree({
@@ -133,12 +173,6 @@ function ShellAppTree({
   );
 }
 
-const ShellErrorBoundary = Sentry.ErrorBoundary as unknown as ComponentType<{
-  fallback: typeof ShellErrorFallback;
-  showDialog: boolean;
-  children?: ReactNode;
-}>;
-
 export async function mountShellUi(opts: MountShellUiOptions): Promise<void> {
   setShellAppBindings(opts.bindings);
 
@@ -155,8 +189,6 @@ export async function mountShellUi(opts: MountShellUiOptions): Promise<void> {
     }
   }
 
-  void bootstrapSentryFromSettings(opts.bindings);
-
   const rootEl = document.getElementById("root");
   if (!rootEl) {
     throw new Error("缺少 #root 容器");
@@ -166,7 +198,7 @@ export async function mountShellUi(opts: MountShellUiOptions): Promise<void> {
 
   createRoot(rootEl).render(
     <StrictMode>
-      <ShellErrorBoundary fallback={ShellErrorFallback} showDialog={false}>
+      <ShellErrorBoundary fallback={ShellErrorFallback}>
         <ShellAppTree bindings={opts.bindings} bootError={bootError} headerSlot={opts.headerSlot} />
       </ShellErrorBoundary>
     </StrictMode>,

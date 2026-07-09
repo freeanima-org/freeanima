@@ -393,7 +393,13 @@ async function bootstrap(): Promise<void> {
   logLine("desktop-shell main enter");
 
   registerInstanceStoreIpc();
-  registerShellClientIpc(openSettingsWindow, reloadHubClientAndMainWindow);
+  registerShellClientIpc(openSettingsWindow, reloadHubClientAndMainWindow, (visible) => {
+    try {
+      setCompanionVisible(visible);
+    } catch {
+      /* companion 窗口尚未就绪时仅持久化偏好 */
+    }
+  });
   registerCompanionHostIpc(
     {
       getCompanionWindow: () => companionWindow,

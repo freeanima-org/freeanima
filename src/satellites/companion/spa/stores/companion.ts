@@ -1,8 +1,7 @@
 import { create } from "zustand";
-import type { SettingsStore } from "@freeanima/frontend/shell-sdk/settings";
 import {
-  fetchCompanionConfig,
   fetchSidecarRuntimeConfig,
+  loadHubCompanionSettingsConfig,
   resetSidecarOriginCache,
   saveSettings,
   uploadModel as uploadModelApi,
@@ -22,7 +21,7 @@ import type { MotionLibraryEntry } from "../../shared/constants.ts";
 import { DEFAULT_BEHAVIOR } from "../../shared/companion-schema.ts";
 import type { VrmBackend } from "../renderer/VrmBackend.ts";
 
-type SettingsTabId = "general" | "behavior" | "models" | "slots" | "library";
+type SettingsTabId = "behavior" | "models" | "slots" | "library";
 
 type CompanionState = {
   loading: boolean;
@@ -55,10 +54,7 @@ type CompanionState = {
   setRuntimeBubble: (current: { id: string; text: string } | null, pending: number) => void;
   applyConfig: (cfg: CompanionConfig) => void;
   init: () => Promise<void>;
-  initFromStore: (
-    store: SettingsStore<CompanionConfig>,
-    api?: import("@freeanima/frontend/shell-sdk/settings").CompanionSettingsApi,
-  ) => Promise<void>;
+  initHubSettings: () => Promise<void>;
   refreshConfig: () => Promise<void>;
   updateSettings: (patch: {
     hub_url?: string;
@@ -100,12 +96,10 @@ function applyConfigToState(cfg: CompanionConfig, prev?: CompanionState): Partia
   };
 }
 
-let configStore: SettingsStore<CompanionConfig> | null = null;
-
 export const useCompanionStore = create<CompanionState>((set, get) => ({
   loading: true,
   error: null,
-  settingsTab: "general",
+  settingsTab: "behavior",
   settingsOpen: false,
   hubUrl: "http://127.0.0.1:2658",
   modelPath: "",
@@ -171,14 +165,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   async init() {
     set({ loading: true, error: null });
     try {
-      let cfg: CompanionConfig;
-      if (configStore) {
-        const raw = (await configStore.load()) as CompanionConfig;
-        cfg =
-          raw && typeof raw === "object" && "hub_url" in raw ? raw : await fetchCompanionConfig();
-      } else {
-        cfg = await fetchSidecarRuntimeConfig();
-      }
+      const cfg = await fetchSidecarRuntimeConfig();
       get().applyConfig(cfg);
     } catch (e) {
       set({
@@ -188,16 +175,24 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
     }
   },
 
-  async initFromStore(store, _api) {
-    configStore = store;
-    await get().init();
+  async initHubSettings() {
+    set({ loading: true, error: null });
+    try {
+      const cfg = await loadHubCompanionSettingsConfig();
+      get().applyConfig(cfg);
+    } catch (e) {
+      set({
+        loading: false,
+        error: e instanceof Error ? e.message : String(e),
+      });
+    }
   },
 
   async refreshConfig() {
     try {
-      const cfg = configStore
-        ? ((await configStore.load()) as CompanionConfig)
-        : await fetchSidecarRuntimeConfig();
+      const cfg = isCompanionOverlay()
+        ? await fetchSidecarRuntimeConfig()
+        : await loadHubCompanionSettingsConfig();
       get().applyConfig(cfg);
     } catch (e) {
       set({ error: e instanceof Error ? e.message : String(e) });
@@ -207,7 +202,6 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   async updateSettings(patch) {
     const next = await saveSettings(patch);
     get().applyConfig(next);
-    if (configStore) await configStore.save(next);
     await get().refreshConfig();
     await emitConfigChanged();
   },

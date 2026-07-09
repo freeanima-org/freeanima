@@ -7,20 +7,8 @@ import {
   uploadModel,
 } from "../lib/api.ts";
 
-function shellApi(): import("@freeanima/frontend/shell-sdk").SatelliteShellApi | undefined {
-  return window.satelliteShell;
-}
-
 export function createCompanionSettingsApi(): CompanionSettingsApi {
   return {
-    async getCompanionVisible() {
-      const api = shellApi();
-      if (!api?.getCompanionVisible) return true;
-      return api.getCompanionVisible();
-    },
-    async setCompanionVisible(visible: boolean) {
-      await shellApi()?.setCompanionVisible?.(visible);
-    },
     async uploadModel(file: File) {
       await uploadModel(file);
     },

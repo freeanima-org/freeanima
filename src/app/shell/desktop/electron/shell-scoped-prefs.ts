@@ -4,8 +4,6 @@ import { homedir } from "node:os";
 import Store from "electron-store";
 
 import {
-  DEBUG_SENTRY_DSN_KEY,
-  DEBUG_SENTRY_ENABLED_KEY,
   DEBUG_VCONSOLE_ENABLED_KEY,
   HUB_URL_KEY,
   LAUNCH_AT_LOGIN_KEY,
@@ -76,8 +74,6 @@ function applyHubToStore(kv: ScopedStore, hub: ShellClientConfig | null): void {
 }
 
 function applyDebugToStore(kv: ScopedStore, debug: ShellDebugConfig): void {
-  kv.set(DEBUG_SENTRY_ENABLED_KEY, debug.sentryEnabled ? "1" : "0");
-  kv.set(DEBUG_SENTRY_DSN_KEY, debug.sentryDsn);
   kv.set(DEBUG_VCONSOLE_ENABLED_KEY, debug.vConsoleEnabled ? "1" : "0");
 }
 
@@ -101,8 +97,6 @@ export function saveHubConfigToStore(config: ShellClientConfig): ShellClientConf
 export function loadDebugConfigFromStore(): ShellDebugConfig {
   const kv = getStore();
   return parseShellDebugConfig({
-    sentryEnabled: kv.get(DEBUG_SENTRY_ENABLED_KEY) === "1",
-    sentryDsn: kv.get(DEBUG_SENTRY_DSN_KEY) ?? "",
     vConsoleEnabled: kv.get(DEBUG_VCONSOLE_ENABLED_KEY) === "1",
   });
 }
@@ -110,8 +104,6 @@ export function loadDebugConfigFromStore(): ShellDebugConfig {
 export function saveDebugConfigToStore(config: ShellDebugConfig): ShellDebugConfig {
   const normalized = normalizeShellDebugConfig(config);
   const kv = getStore();
-  kv.set(DEBUG_SENTRY_ENABLED_KEY, normalized.sentryEnabled ? "1" : "0");
-  kv.set(DEBUG_SENTRY_DSN_KEY, normalized.sentryDsn);
   kv.set(DEBUG_VCONSOLE_ENABLED_KEY, normalized.vConsoleEnabled ? "1" : "0");
   return normalized;
 }

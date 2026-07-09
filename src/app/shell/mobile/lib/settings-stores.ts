@@ -9,7 +9,6 @@ import {
   type ShellClientConfig,
   type ShellDebugConfig,
 } from "@freeanima/frontend/shell-sdk";
-import { sendSentryTestEvent } from "@freeanima/frontend/shell-ui/lib/sentry-test.ts";
 import { buildMobileShell, SHELL_CONFIG_CHANGED_EVENT } from "./mobile-shell.ts";
 import { createMobileScopedBackend, testMobileHubConnection } from "./settings-prefs-backend.ts";
 import { DEBUG_CONFIG_CHANGED_EVENT } from "./debug-events.ts";
@@ -55,11 +54,6 @@ export function createMobileSettingsStores(): MobileSettingsStores {
     async save(value) {
       await debugBase.save(value);
       notifyDebugConfigChanged();
-    },
-    async test(value) {
-      await debugBase.save(value);
-      notifyDebugConfigChanged();
-      await sendSentryTestEvent();
     },
   };
   return { hub, debug };

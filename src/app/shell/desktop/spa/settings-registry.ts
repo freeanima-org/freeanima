@@ -1,9 +1,9 @@
 import {
-  debugSettingsSection,
   desktopGeneralSettingsSection,
   type SettingsBinding,
 } from "@freeanima/frontend/shell-sdk/settings";
-import { companionSettingsSection } from "@freeanima/satellites/companion/spa/settings/companion-settings-section.ts";
+import { companionClientSettingsSection } from "@freeanima/satellites/companion/spa/settings/companion-client-settings-section.ts";
+import { companionHubSettingsSection } from "@freeanima/satellites/companion/spa/settings/companion-settings-section.ts";
 import { shellModulesSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/modules-section.ts";
 import { aboutSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/about/about-section.ts";
 import { hubConfigSettingsBindings } from "@freeanima/frontend/shell-ui/spa/settings/hub-config/hub-config-sections.ts";
@@ -18,11 +18,10 @@ export function createDesktopSettingsBindings(
   return [
     { section: shellModulesSettingsSection },
     { section: desktopGeneralSettingsSection, store: stores.hub },
+    { section: companionClientSettingsSection, store: stores.companionShell },
     ...hubConfigSettingsBindings,
-    { section: debugSettingsSection, store: stores.debug },
     {
-      section: companionSettingsSection,
-      store: stores.companion,
+      section: companionHubSettingsSection,
       deps: { companion: apis.companion },
     },
     { section: aboutSettingsSection },
