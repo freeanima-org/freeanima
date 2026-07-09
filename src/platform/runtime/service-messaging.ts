@@ -19,7 +19,7 @@ import { conversationUpdated } from "@freeanima/capabilities/memory";
 import type { EngineRunControl } from "./engine-run-control.ts";
 import type { ConversationManager } from "./conversation-manager.ts";
 import { runExclusiveStreamTurn, streamErrorEvent, type StreamTurnHost } from "./turn-lifecycle.ts";
-import { maybeGenerateConversationTitleAsync } from "./conversation-title.ts";
+import { triggerConversationTitleIfFirstTurn } from "./conversation-title.ts";
 import {
   applyCommandConversationEffects,
   checkPlatform,
@@ -356,7 +356,7 @@ function runGoalStartStream(
     {
       fast: async () => {
         effectiveUserText = await deps.conversation.beginTurnFast(conversationId, prompt);
-        maybeGenerateConversationTitleAsync(deps, conversationId, effectiveUserText, {
+        await triggerConversationTitleIfFirstTurn(deps, conversationId, effectiveUserText, {
           bus: msgDeps.bus,
           onConversationUpdated: msgDeps.onConversationUpdated,
           emitSessionUpdated: (sid) => msgDeps.streamHost.emitSessionUpdated(sid),
@@ -393,7 +393,7 @@ function runTurnStream(
       llmDebug,
       fast: async () => {
         effectiveUserText = await deps.conversation.beginTurnFast(conversationId, message);
-        maybeGenerateConversationTitleAsync(deps, conversationId, effectiveUserText, {
+        await triggerConversationTitleIfFirstTurn(deps, conversationId, effectiveUserText, {
           bus: msgDeps.bus,
           onConversationUpdated: msgDeps.onConversationUpdated,
           emitSessionUpdated: (sid) => msgDeps.streamHost.emitSessionUpdated(sid),

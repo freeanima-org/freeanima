@@ -26,12 +26,38 @@ export function resetConversationTitleGenerationForTests(): void {
   titleGenerationInFlight.clear();
 }
 
+export type ConversationTitleGenOpts = {
+  /** 调用方已在 beginTurnFast 后确认仅一条 user 消息，跳过异步阶段重复计数 */
+  firstTurn?: boolean;
+};
+
+/** beginTurnFast 之后同步判定：无标题且恰有一条 user 消息 */
+export async function shouldGenerateConversationTitle(
+  deps: FullRuntimeDeps,
+  conversationId: string,
+): Promise<boolean> {
+  if ((await deps.conversation.getConversationTitle(conversationId)).trim()) return false;
+  return (await deps.conversation.countUserMessages(conversationId)) === 1;
+}
+
+/** beginTurnFast 后调用：同步门禁 + 异步 LLM 标题（不阻塞主 turn） */
+export async function triggerConversationTitleIfFirstTurn(
+  deps: FullRuntimeDeps,
+  conversationId: string,
+  userText: string,
+  notify?: SessionTitleNotify,
+): Promise<void> {
+  if (!(await shouldGenerateConversationTitle(deps, conversationId))) return;
+  maybeGenerateConversationTitleAsync(deps, conversationId, userText, notify, { firstTurn: true });
+}
+
 /** 首条用户消息后异步生成 conversation 标题（不阻塞主 turn） */
 export function maybeGenerateConversationTitleAsync(
   deps: FullRuntimeDeps,
   conversationId: string,
   userText: string,
   notify?: SessionTitleNotify,
+  opts?: ConversationTitleGenOpts,
 ): void {
   void (async () => {
     try {
@@ -39,12 +65,14 @@ export function maybeGenerateConversationTitleAsync(
       if (existing) return;
 
       if (titleGenerationInFlight.has(conversationId)) return;
-
-      const userCount = await deps.conversation.countUserMessages(conversationId);
-      if (userCount !== 1) return;
-
       titleGenerationInFlight.add(conversationId);
+
       try {
+        if (!opts?.firstTurn) {
+          const userCount = await deps.conversation.countUserMessages(conversationId);
+          if (userCount !== 1) return;
+        }
+
         const gen = await generateConversationTitle(userText, { runtime: deps.engine.llm });
         let title = gen.ok ? gen.title : "";
         if (!title) {

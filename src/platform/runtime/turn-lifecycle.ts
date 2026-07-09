@@ -2,7 +2,7 @@ import { isConversationMeta, resolveExecutableToolNames } from "@freeanima/runti
 import { resolveConversationMaskFromMeta, runtimeToolMaskFromResolved } from "./mask-wire.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import {
-  maybeGenerateConversationTitleAsync,
+  triggerConversationTitleIfFirstTurn,
   type SessionTitleNotify,
 } from "./conversation-title.ts";
 import type { StoredMessage as Message } from "@freeanima/core/db/domain";
@@ -143,7 +143,7 @@ export async function runSimpleTurn(
     titleNotify,
   } = opts;
   let [msgs, functions, effective] = await prepare(conversationId, prompt);
-  maybeGenerateConversationTitleAsync(deps, conversationId, effective, titleNotify);
+  await triggerConversationTitleIfFirstTurn(deps, conversationId, effective, titleNotify);
   const goalDeps = toGoalRuntimeDeps(deps);
   let result = "";
 
