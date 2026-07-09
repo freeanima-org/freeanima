@@ -15,6 +15,8 @@ import { getAcpManager } from "@freeanima/capabilities/acp";
 import {
   maybeGenerateConversationTitleAsync,
   resetConversationTitleGenerationForTests,
+  shouldGenerateConversationTitle,
+  triggerConversationTitleIfFirstTurn,
 } from "./conversation-title.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
@@ -220,5 +222,55 @@ describe("maybeGenerateConversationTitleAsync", () => {
     });
 
     expect(setTitle).not.toHaveBeenCalled();
+  });
+
+  it("firstTurn skips userCount re-check when goal loop added a second user message", async () => {
+    const deps = wireTestDeps();
+    const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("");
+    let countCalls = 0;
+    const userCount = spyOn(deps.conversation, "countUserMessages").mockImplementation(async () => {
+      countCalls += 1;
+      return countCalls === 1 ? 1 : 2;
+    });
+    const gen = spyOn(sessionTitleLlm, "generateConversationTitle").mockResolvedValue({
+      ok: true,
+      title: "LLM title",
+    });
+    const setTitle = spyOn(deps.conversation, "setConversationTitle").mockResolvedValue();
+    restores.push(getTitle, userCount, gen, setTitle);
+
+    maybeGenerateConversationTitleAsync(deps, "sid", "hello", undefined, { firstTurn: true });
+    await new Promise((r) => {
+      setTimeout(r, 0);
+    });
+
+    expect(gen).toHaveBeenCalled();
+    expect(setTitle).toHaveBeenCalledWith("sid", "LLM title");
+    expect(countCalls).toBe(0);
+  });
+
+  it("triggerConversationTitleIfFirstTurn gates on sync user count", async () => {
+    const deps = wireTestDeps();
+    const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("");
+    const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(2);
+    const gen = spyOn(sessionTitleLlm, "generateConversationTitle");
+    restores.push(getTitle, userCount, gen);
+
+    await triggerConversationTitleIfFirstTurn(deps, "sid", "hello");
+    await new Promise((r) => {
+      setTimeout(r, 0);
+    });
+
+    expect(gen).not.toHaveBeenCalled();
+  });
+
+  it("shouldGenerateConversationTitle returns false when title exists", async () => {
+    const deps = wireTestDeps();
+    const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("已有");
+    const userCount = spyOn(deps.conversation, "countUserMessages");
+    restores.push(getTitle, userCount);
+
+    expect(await shouldGenerateConversationTitle(deps, "sid")).toBe(false);
+    expect(userCount).not.toHaveBeenCalled();
   });
 });

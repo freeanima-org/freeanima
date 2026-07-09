@@ -13,6 +13,7 @@ import { animaConfigSchema } from "@freeanima/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
 import { getAcpManager } from "@freeanima/capabilities/acp";
 import { createTurnMessageCallbacks, finalizeTurn, runSimpleTurn } from "./turn-lifecycle.ts";
+import * as conversationTitle from "./conversation-title.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 const catalog = createEngineCatalog();
@@ -83,6 +84,7 @@ describe("turn-lifecycle", () => {
     const msgs = [{ role: "user" as const, content: "cron prompt" }];
     const deps = wireTestDeps();
     restores.push(
+      spyOn(conversationTitle, "triggerConversationTitleIfFirstTurn").mockResolvedValue(undefined),
       spyOn(deps.conversation, "beginTurn").mockResolvedValue([msgs, ["tool_a"], "cron prompt"]),
       spyOn(deps.conversation, "loadConversationTools").mockResolvedValue([]),
       spyOn(deps.conversation, "loadConversationMeta").mockResolvedValue({
@@ -119,6 +121,7 @@ describe("turn-lifecycle", () => {
   it("runSimpleTurn catches MaxTurnsExceeded", async () => {
     const deps = wireTestDeps();
     restores.push(
+      spyOn(conversationTitle, "triggerConversationTitleIfFirstTurn").mockResolvedValue(undefined),
       spyOn(deps.conversation, "beginTurn").mockResolvedValue([
         [{ role: "user" as const, content: "x" }],
         [],

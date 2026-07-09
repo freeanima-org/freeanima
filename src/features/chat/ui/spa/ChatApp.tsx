@@ -654,6 +654,7 @@ export function ChatApp() {
               return;
             }
             void reloadConversationIfCurrent(originConversationId);
+            void fetchConversations();
             if (isViewingOrigin()) scrollDown();
             void flushQueueRef.current(originConversationId);
           },
@@ -676,6 +677,7 @@ export function ChatApp() {
       llmDebugEnabled,
       refreshMessages,
       reloadConversationIfCurrent,
+      fetchConversations,
       send,
     ],
   );

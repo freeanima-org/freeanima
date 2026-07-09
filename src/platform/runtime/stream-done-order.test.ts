@@ -16,6 +16,7 @@ import { animaConfigSchema } from "@freeanima/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
 import { getAcpManager } from "@freeanima/capabilities/acp";
 import { createAppRuntime } from "./app-runtime.ts";
+import * as conversationTitle from "./conversation-title.ts";
 import { initRuntimeContext } from "../context.ts";
 
 const catalog = createEngineCatalog();
@@ -62,6 +63,7 @@ describe("sendMessageStream done order", () => {
 
   it("done yields to consumer before finishTurn starts", async () => {
     restores.push(
+      spyOn(conversationTitle, "triggerConversationTitleIfFirstTurn").mockResolvedValue(undefined),
       spyOn(conv, "conversationExists").mockResolvedValue(true),
       spyOn(conv, "assertConversationPlatform").mockResolvedValue(),
       spyOn(conv, "loadConversationMeta").mockResolvedValue({
