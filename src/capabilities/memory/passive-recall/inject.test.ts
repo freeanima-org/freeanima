@@ -27,6 +27,7 @@ const sampleHit = (id: string, content: string): SemanticRecallHit => ({
 
 describe("stripTimePrefixFromUserContent", () => {
   it("strips runtime time prefix", () => {
+    expect(stripTimePrefixFromUserContent("time: 2026-06-07T17:45 周日\nhello")).toBe("hello");
     expect(stripTimePrefixFromUserContent("time: 2026-06-07T17:45\nhello")).toBe("hello");
   });
 

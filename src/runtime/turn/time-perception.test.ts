@@ -7,8 +7,15 @@ function ts(isoLocal: string): string {
   return `${isoLocal}.000+08:00`;
 }
 
+const WEEKDAY: Record<string, string> = {
+  "2026-05-20": "周三",
+  "2026-05-21": "周四",
+};
+
 function prefixed(content: string, isoLocal: string): string {
-  return `time: ${isoLocal}\n${content}`;
+  const day = isoLocal.slice(0, 10);
+  const weekday = WEEKDAY[day] ?? "";
+  return `time: ${isoLocal} ${weekday}\n${content}`;
 }
 
 function userMsg(content: string, timestamp: string): UserMessage {

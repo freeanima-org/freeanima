@@ -30,7 +30,7 @@ This is not a trivial joke problem—time perception is a foundational capabilit
 
 ### Basic Rules
 
-- Before each **user** message with valid `timestamp`, insert dedicated line: `time: YYYY-MM-DDTHH:mm`
+- Before each **user** message with valid `timestamp`, insert dedicated line: `time: YYYY-MM-DDTHH:mm 周X` (CST weekday in Chinese)
 - Timezone: **Asia/Shanghai (CST, +08:00)**
 - Newline then original content
 - No `timestamp` or unparseable timestamp → skip, keep original content
@@ -51,13 +51,13 @@ user: going to eat
 After time perception (context sent to LLM):
 
 ```text
-user: time: 2026-05-20T08:02
+user: time: 2026-05-20T08:02 周三
 good morning
 assistant: morning ☀️
-user: time: 2026-05-20T12:15
+user: time: 2026-05-20T12:15 周三
 going to eat
 assistant: what are you having
-user: time: 2026-05-20T19:30
+user: time: 2026-05-20T19:30 周三
 going to eat
 ```
 

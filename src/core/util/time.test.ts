@@ -6,6 +6,7 @@ import {
   formatCstDisplayFromEpoch,
   formatCstDisplayFromMs,
   formatCstIso,
+  formatCstWeekdayZh,
   isCstMonday,
 } from "./time.ts";
 
@@ -43,6 +44,14 @@ describe("formatCstDisplay", () => {
     expect(formatCstDisplay(undefined)).toBe("");
     expect(formatCstDisplay(0)).toBe("");
     expect(formatCstDisplayFromEpoch(0)).toBe("");
+  });
+});
+
+describe("formatCstWeekdayZh", () => {
+  test("returns Chinese weekday in CST", () => {
+    expect(formatCstWeekdayZh(new Date("2026-05-20T08:02:00+08:00"))).toBe("周三");
+    expect(formatCstWeekdayZh(new Date("2026-05-21T09:15:00+08:00"))).toBe("周四");
+    expect(formatCstWeekdayZh(new Date("2026-06-07T17:45:00+08:00"))).toBe("周日");
   });
 });
 
