@@ -140,3 +140,8 @@ export function actualDurationMs(state: PomodoroActiveState, finishedAtMs: numbe
   if (!Number.isFinite(started)) return state.phasePlannedMs;
   return Math.max(0, Math.min(state.phasePlannedMs, finishedAtMs - started));
 }
+
+/** 阶段完成去重键（跳过与自然结束时共用）。 */
+export function phaseCompletionKey(state: PomodoroActiveState): string {
+  return `${state.sessionLocalId}:${state.phase}:${state.phaseStartedAt}`;
+}

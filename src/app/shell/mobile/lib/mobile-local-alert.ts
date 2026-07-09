@@ -1,9 +1,6 @@
-import type { LocalNotificationsPlugin } from "@capacitor/local-notifications";
-
 import {
   isCapacitorNativePlatform,
   isMobileCapacitorShellCandidate,
-  waitForCapacitorNativePlatform,
 } from "@freeanima/frontend/shell-sdk/capacitor-runtime.ts";
 import { createWebAlertBackend } from "@freeanima/frontend/shell-sdk/alert/web-backend.ts";
 import type {
@@ -17,14 +14,17 @@ import type {
   ShellNativeAlertPermission,
 } from "@freeanima/frontend/shell-sdk/shell-api.ts";
 
+import { waitForCapacitorBridge } from "./capacitor-ready.ts";
+import {
+  readWindowLocalNotificationsPlugin,
+  type CapacitorLocalNotificationsApi,
+} from "./capacitor-plugins.ts";
+
 const CHANNEL_ID = "freeanima-alerts";
 
 let channelReady = false;
 
-type LocalNotificationsApi = Pick<
-  LocalNotificationsPlugin,
-  "checkPermissions" | "requestPermissions" | "schedule" | "createChannel"
->;
+type LocalNotificationsApi = CapacitorLocalNotificationsApi;
 
 export function isMobileShellRuntime(): boolean {
   return Boolean(
@@ -50,44 +50,34 @@ export function tagToNotificationId(tag: string): number {
   return (Math.abs(hash) % 2_000_000_000) + 1;
 }
 
-function readWindowLocalNotificationsPlugin(): LocalNotificationsApi | null {
-  const plugin = (
-    window as Window & {
-      Capacitor?: {
-        Plugins?: { LocalNotifications?: LocalNotificationsApi };
-        getPlatform?: () => string;
-      };
-    }
-  ).Capacitor?.Plugins?.LocalNotifications;
-  return plugin ?? null;
+function readCapacitorPlatform(): string | null {
+  const getPlatform = (window as Window & { Capacitor?: { getPlatform?: () => string } }).Capacitor
+    ?.getPlatform;
+  return getPlatform?.() ?? null;
 }
 
 async function resolveLocalNotificationsApi(): Promise<LocalNotificationsApi | null> {
   if (!isMobileShellRuntime()) return null;
-  await waitForCapacitorNativePlatform(5_000);
 
   const fromWindow = readWindowLocalNotificationsPlugin();
   if (fromWindow) return fromWindow;
 
   try {
-    const { Capacitor } = await import("@capacitor/core");
-    if (!Capacitor.isPluginAvailable("LocalNotifications")) return null;
-    const { LocalNotifications } = await import("@capacitor/local-notifications");
-    return LocalNotifications;
+    await waitForCapacitorBridge();
   } catch {
     return null;
   }
+
+  return readWindowLocalNotificationsPlugin();
 }
 
 async function ensureAndroidChannel(api: LocalNotificationsApi): Promise<void> {
   if (channelReady) return;
-  try {
-    const { Capacitor } = await import("@capacitor/core");
-    if (Capacitor.getPlatform() !== "android") {
-      channelReady = true;
-      return;
-    }
-  } catch {
+  if (readCapacitorPlatform() !== "android") {
+    channelReady = true;
+    return;
+  }
+  if (!api.createChannel) {
     channelReady = true;
     return;
   }

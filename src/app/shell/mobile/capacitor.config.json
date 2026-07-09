@@ -1,0 +1,26 @@
+{
+  "appId": "org.freeanima.app",
+  "appName": "FreeAnima",
+  "webDir": "www",
+  "backgroundColor": "#1d232a",
+  "includePlugins": [
+    "@capacitor/keyboard",
+    "@capacitor/preferences",
+    "@capacitor/local-notifications"
+  ],
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    },
+    "Keyboard": {
+      "resizeOnFullScreen": true
+    }
+  },
+  "android": {
+    "allowMixedContent": true
+  },
+  "server": {
+    "androidScheme": "http",
+    "allowNavigation": ["*"]
+  }
+}

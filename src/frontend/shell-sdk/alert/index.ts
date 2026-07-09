@@ -14,3 +14,4 @@ export {
   resetAlertBackendForTest,
 } from "./deliver.ts";
 export { createWebAlertBackend } from "./web-backend.ts";
+export { isCapacitorShellRuntime, resolveAlertDisplayPlatform } from "./resolve-platform.ts";
