@@ -31,6 +31,14 @@ import type {
   TasklistPatchOutput,
   TasklistDeleteInput,
   TasklistDeleteOutput,
+  SmartlistListInput,
+  SmartlistListOutput,
+  SmartlistCreateInput,
+  SmartlistCreateOutput,
+  SmartlistPatchInput,
+  SmartlistPatchOutput,
+  SmartlistDeleteInput,
+  SmartlistDeleteOutput,
   TaskListInput,
   TaskListOutput,
   TaskCreateInput,
@@ -176,6 +184,10 @@ export const SAP_METHODS = [
   "tasklist.create",
   "tasklist.patch",
   "tasklist.delete",
+  "smartlist.list",
+  "smartlist.create",
+  "smartlist.patch",
+  "smartlist.delete",
   "task.list",
   "task.create",
   "task.patch",
@@ -257,6 +269,10 @@ export type SapRouterInputs = {
   "tasklist.create": TasklistCreateInput;
   "tasklist.patch": TasklistPatchInput;
   "tasklist.delete": TasklistDeleteInput;
+  "smartlist.list": SmartlistListInput;
+  "smartlist.create": SmartlistCreateInput;
+  "smartlist.patch": SmartlistPatchInput;
+  "smartlist.delete": SmartlistDeleteInput;
   "task.list": TaskListInput;
   "task.create": TaskCreateInput;
   "task.patch": TaskPatchInput;
@@ -336,6 +352,10 @@ export type SapRouterOutputs = {
   "tasklist.create": TasklistCreateOutput;
   "tasklist.patch": TasklistPatchOutput;
   "tasklist.delete": TasklistDeleteOutput;
+  "smartlist.list": SmartlistListOutput;
+  "smartlist.create": SmartlistCreateOutput;
+  "smartlist.patch": SmartlistPatchOutput;
+  "smartlist.delete": SmartlistDeleteOutput;
   "task.list": TaskListOutput;
   "task.create": TaskCreateOutput;
   "task.patch": TaskPatchOutput;

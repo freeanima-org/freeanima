@@ -56,11 +56,14 @@ export async function listTaskItems(
   worldId: number,
   opts: TaskItemListOpts = {},
 ): Promise<TaskItemRow[]> {
-  const filters: Record<string, unknown> = {};
-  if (opts.list_id != null) filters.list_id = opts.list_id;
-  if (opts.status != null) filters.status = opts.status;
-  if (opts.due_today) filters.due_today = true;
-  if (opts.tags?.length) filters.tags = opts.tags;
+  const filters: Record<string, unknown> = opts.filters != null ? { ...opts.filters } : {};
+
+  if (opts.filters == null) {
+    if (opts.list_id != null) filters.list_id = opts.list_id;
+    if (opts.status != null) filters.status = opts.status;
+    if (opts.due_today) filters.due_today = true;
+    if (opts.tags?.length) filters.tags = opts.tags;
+  }
 
   const result = await searchEntities({
     world_id: worldId,

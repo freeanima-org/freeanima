@@ -3,16 +3,21 @@ import {
   completeTaskItem,
   createTaskItem,
   createTaskList,
+  createSmartList,
   deleteTaskItem,
   deleteTaskList,
+  deleteSmartList,
   ensureDefaultTaskListForWorld,
+  listSmartListsMerged,
   listTaskItems,
   listTaskLists,
   searchTaskItems,
   uncompleteTaskItem,
   updateTaskItem,
   updateTaskList,
+  updateSmartList,
 } from "../domain/index.ts";
+import type { TaskItemSearchFilters } from "@freeanima/core/db/schema";
 import type { SubjectKind } from "@freeanima/core/config";
 import { resolveDefaultPrivateWorldForSubject } from "@freeanima/core/db/pg/entity";
 import type { VerifiedServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
@@ -116,11 +121,72 @@ export async function serviceTasklistDelete(
   }
 }
 
+export async function serviceSmartlistList(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind } | undefined,
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const worldId = await taskWorldIdForAuth(auth, input?.subject_kind);
+  await ensureDefaultTaskListForWorld(worldId);
+  const smart_lists = await listSmartListsMerged(worldId);
+  return { smart_lists };
+}
+
+export async function serviceSmartlistCreate(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    title: string;
+    filters: TaskItemSearchFilters;
+    sort_order?: number;
+  },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const { subject_kind, ...createInput } = input;
+  const item = await createSmartList(await taskWorldIdForAuth(auth, subject_kind), createInput);
+  return { item };
+}
+
+export async function serviceSmartlistPatch(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    id: number;
+    title?: string;
+    filters?: TaskItemSearchFilters;
+    sort_order?: number;
+  },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const { id, subject_kind, ...patch } = input;
+  const item = await updateSmartList(await taskWorldIdForAuth(auth, subject_kind), {
+    id,
+    ...patch,
+  });
+  if (!item) throw new Error("NOT_FOUND");
+  return { item };
+}
+
+export async function serviceSmartlistDelete(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const ok = await deleteSmartList(await taskWorldIdForAuth(auth, input.subject_kind), input.id);
+  if (!ok) throw new Error("NOT_FOUND");
+  return { ok: true as const };
+}
+
 export async function serviceTaskList(
   deps: RuntimeDeps,
   input: {
     subject_kind?: SubjectKind;
     list_id?: number;
+    filters?: TaskItemSearchFilters;
     status?: "pending" | "completed" | "all";
     due_today?: boolean;
     tags?: string[];
@@ -130,15 +196,19 @@ export async function serviceTaskList(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
+  if (input.list_id != null && input.filters != null) {
+    throw new Error("list_id and filters are mutually exclusive");
+  }
   const worldId = await taskWorldIdForAuth(auth, input.subject_kind);
   await ensureDefaultTaskListForWorld(worldId);
   const items = await listTaskItems(
     worldId,
     omitUndefined({
       list_id: input.list_id,
-      status: input.status ?? "all",
-      due_today: input.due_today,
-      tags: input.tags,
+      filters: input.filters,
+      status: input.filters == null ? (input.status ?? "all") : undefined,
+      due_today: input.filters == null ? input.due_today : undefined,
+      tags: input.filters == null ? input.tags : undefined,
       limit: input.limit,
       offset: input.offset,
     }),

@@ -94,6 +94,7 @@ export type {
   EmailModuleSelection,
   ModuleSelectionContext,
   ModuleSelectionModule,
+  TaskModuleSelection,
 } from "./module-selection.ts";
 export {
   clearModuleSelection,

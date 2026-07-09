@@ -11,6 +11,7 @@ import { EMAIL_MESSAGE_COMPONENT, emailMessageBodySchema } from "./email-message
 import { EMAIL_THREAD_COMPONENT, emailThreadBodySchema } from "./email-thread.ts";
 import { TASK_ITEM_COMPONENT, taskItemBodySchema } from "./task-item.ts";
 import { TASK_LIST_COMPONENT, taskListBodySchema } from "./task-list.ts";
+import { SMART_LIST_COMPONENT, smartListBodySchema } from "./smart-list.ts";
 import { USER_CONFIG_COMPONENT, userConfigBodySchema } from "./user-config.ts";
 import { WORLD_CONFIG_COMPONENT, worldConfigBodySchema } from "./world-config.ts";
 
@@ -19,6 +20,7 @@ export const COMPONENT_IDS = [
   AGENT_CONFIG_COMPONENT,
   USER_CONFIG_COMPONENT,
   TASK_LIST_COMPONENT,
+  SMART_LIST_COMPONENT,
   TASK_ITEM_COMPONENT,
   DIARY_ENTRY_COMPONENT,
   DREAM_ENTRY_COMPONENT,
@@ -39,6 +41,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [AGENT_CONFIG_COMPONENT]: agentConfigBodySchema,
   [USER_CONFIG_COMPONENT]: userConfigBodySchema,
   [TASK_LIST_COMPONENT]: taskListBodySchema,
+  [SMART_LIST_COMPONENT]: smartListBodySchema,
   [TASK_ITEM_COMPONENT]: taskItemBodySchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntryBodySchema,
   [DREAM_ENTRY_COMPONENT]: dreamEntryBodySchema,
@@ -64,6 +67,7 @@ export * from "./world-config.ts";
 export * from "./agent-config.ts";
 export * from "./user-config.ts";
 export * from "./task-list.ts";
+export * from "./smart-list.ts";
 export * from "./task-item.ts";
 export * from "./diary-entry.ts";
 export * from "./dream-entry.ts";
