@@ -208,4 +208,18 @@ export async function downloadMotionsFromMirror() {
   throw new Error("请通过 Settings 动作库导入 VRMA/FBX");
 }
 
+export function runtimeWsUrl(httpOrigin: string): string {
+  return `${httpOrigin.replace(/^http/, "ws")}/api/runtime/ws`;
+}
+
+export async function advanceBubble() {
+  const base = await resolveSidecarOrigin();
+  const res = await fetch(`${base}/api/bubbles/advance`, { method: "POST" });
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(err.error ?? `HTTP ${res.status}`);
+  }
+  return (await res.json()) as { current: { id: string; text: string } | null };
+}
+
 export { isElectron } from "./electron.ts";
