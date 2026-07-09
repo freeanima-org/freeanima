@@ -6,10 +6,13 @@ import { isMobileCapacitorShellCandidate } from "@freeanima/frontend/shell-sdk/c
 /** 按运行时注册本机 Alert backend（不跨端）。 */
 export async function registerShellAlertBackend(): Promise<void> {
   if (window.satelliteShell?.isNativeShell || isMobileCapacitorShellCandidate()) {
+    const { pinCapacitorNativeBridge } =
+      await import("@freeanima/app/shell/mobile/lib/capacitor-plugins.ts");
     const { waitForCapacitorBridge } =
       await import("@freeanima/app/shell/mobile/lib/capacitor-ready.ts");
+    pinCapacitorNativeBridge();
     try {
-      await waitForCapacitorBridge(5_000);
+      await waitForCapacitorBridge(2_000);
     } catch {
       /* 桥未就绪时仍尝试注册 mobile 后端，设置页会再补注册 */
     }

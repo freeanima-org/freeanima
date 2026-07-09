@@ -16,7 +16,9 @@ import type {
 
 import { waitForCapacitorBridge } from "./capacitor-ready.ts";
 import {
-  readWindowLocalNotificationsPlugin,
+  createLocalNotificationsApiFromNativeBridge,
+  pinCapacitorNativeBridge,
+  readCapacitorPlatform,
   type CapacitorLocalNotificationsApi,
 } from "./capacitor-plugins.ts";
 
@@ -50,17 +52,12 @@ export function tagToNotificationId(tag: string): number {
   return (Math.abs(hash) % 2_000_000_000) + 1;
 }
 
-function readCapacitorPlatform(): string | null {
-  const getPlatform = (window as Window & { Capacitor?: { getPlatform?: () => string } }).Capacitor
-    ?.getPlatform;
-  return getPlatform?.() ?? null;
-}
-
 async function resolveLocalNotificationsApi(): Promise<LocalNotificationsApi | null> {
   if (!isMobileShellRuntime()) return null;
 
-  const fromWindow = readWindowLocalNotificationsPlugin();
-  if (fromWindow) return fromWindow;
+  pinCapacitorNativeBridge();
+  const immediate = createLocalNotificationsApiFromNativeBridge();
+  if (immediate) return immediate;
 
   try {
     await waitForCapacitorBridge();
@@ -68,7 +65,8 @@ async function resolveLocalNotificationsApi(): Promise<LocalNotificationsApi | n
     return null;
   }
 
-  return readWindowLocalNotificationsPlugin();
+  pinCapacitorNativeBridge();
+  return createLocalNotificationsApiFromNativeBridge();
 }
 
 async function ensureAndroidChannel(api: LocalNotificationsApi): Promise<void> {

@@ -14,21 +14,11 @@ describe("waitForCapacitorBridge", () => {
     await expect(waitForCapacitorBridge(100)).resolves.toBeUndefined();
   });
 
-  it("Android 候选在插件就绪后返回", async () => {
+  it("Android 候选在 nativePromise 就绪后返回", async () => {
     (globalThis as { window: Window }).window = {
       navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14)" },
       Capacitor: {
-        Plugins: {
-          Preferences: {
-            get: async () => ({ value: null }),
-            set: async () => {},
-          },
-          LocalNotifications: {
-            checkPermissions: async () => ({ display: "granted" }),
-            requestPermissions: async () => ({ display: "granted" }),
-            schedule: async () => {},
-          },
-        },
+        nativePromise: async () => ({}),
       },
     } as unknown as Window;
     await expect(waitForCapacitorBridge(200)).resolves.toBeUndefined();

@@ -1,4 +1,9 @@
-import { isCapacitorNativePlatform, isMobileCapacitorShellCandidate } from "./capacitor-runtime.ts";
+import {
+  hasCapacitorNativePromise,
+  isCapacitorNativePlatform,
+  isMobileCapacitorShellCandidate,
+  waitForCapacitorNativePromise,
+} from "./capacitor-runtime.ts";
 
 const DEFAULT_CAPACITOR_HOST = "localhost";
 const DEFAULT_CAPACITOR_SCHEME = "https";
@@ -32,6 +37,10 @@ export function resolveCapacitorBundledAssetUrl(assetPath: string): string {
   return `${scheme}://${hostname}${path}`;
 }
 
+type CapacitorNativeBridge = {
+  nativePromise?: (plugin: string, method: string, options?: object) => Promise<unknown>;
+};
+
 async function readJsonViaFetch(url: string): Promise<unknown | undefined> {
   try {
     const res = await fetch(url, { cache: "no-store" });
@@ -43,10 +52,20 @@ async function readJsonViaFetch(url: string): Promise<unknown | undefined> {
 }
 
 async function readJsonViaCapacitorHttp(url: string): Promise<unknown | undefined> {
-  if (!isCapacitorNativePlatform()) return undefined;
+  if (!hasCapacitorNativePromise()) return undefined;
   try {
-    const { CapacitorHttp } = await import("@capacitor/core");
-    const res = await CapacitorHttp.get({ url, responseType: "json" });
+    const w = window as Window & {
+      __freeanimaCapacitorNative?: CapacitorNativeBridge;
+      Capacitor?: CapacitorNativeBridge;
+    };
+    const cap = w.__freeanimaCapacitorNative?.nativePromise
+      ? w.__freeanimaCapacitorNative
+      : w.Capacitor;
+    if (!cap?.nativePromise) return undefined;
+    const res = (await cap.nativePromise("CapacitorHttp", "get", {
+      url,
+      responseType: "json",
+    })) as { status?: number; data?: unknown };
     if (res.status !== 200) return undefined;
     return res.data;
   } catch {
@@ -61,6 +80,13 @@ function alternateCapacitorAssetUrl(url: string): string | null {
   return null;
 }
 
+function isCapacitorBundledAssetFetchAllowed(): boolean {
+  if (typeof window === "undefined") return false;
+  const origin = window.location?.origin;
+  if (!origin) return false;
+  return /localhost/i.test(origin) || origin.startsWith("capacitor://");
+}
+
 export async function readCapacitorBundledJson(assetPath: string): Promise<unknown | undefined> {
   if (!isMobileCapacitorShellCandidate() && !isCapacitorNativePlatform()) return undefined;
   const primaryUrl = resolveCapacitorBundledAssetUrl(assetPath);
@@ -69,10 +95,12 @@ export async function readCapacitorBundledJson(assetPath: string): Promise<unkno
   if (alternate) urls.push(alternate);
 
   for (const url of urls) {
-    const fromFetch = await readJsonViaFetch(url);
-    if (fromFetch != null) return fromFetch;
     const fromHttp = await readJsonViaCapacitorHttp(url);
     if (fromHttp != null) return fromHttp;
+    if (isCapacitorBundledAssetFetchAllowed()) {
+      const fromFetch = await readJsonViaFetch(url);
+      if (fromFetch != null) return fromFetch;
+    }
   }
   return undefined;
 }
@@ -86,6 +114,11 @@ const CAPACITOR_BOOTSTRAP_PROBE_PATH = "/native-build-meta.json";
 export async function detectCapacitorShellForBootstrap(): Promise<boolean> {
   if (isCapacitorNativePlatform()) return true;
   if (!isMobileCapacitorShellCandidate()) return false;
+
+  // 远程 Hub 页跨域 fetch localhost 会 CORS 失败；Capacitor 8 以 nativePromise 为准。
+  if (hasCapacitorNativePromise()) return true;
+  if (await waitForCapacitorNativePromise(1_500)) return true;
+
   const meta = await readCapacitorBundledJson(CAPACITOR_BOOTSTRAP_PROBE_PATH);
   return meta != null;
 }

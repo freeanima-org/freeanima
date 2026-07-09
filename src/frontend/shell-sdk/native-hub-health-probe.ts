@@ -5,15 +5,6 @@ type CapacitorHttpResponse = {
   data: unknown;
 };
 
-type CapacitorHttpModule = {
-  get: (options: {
-    url: string;
-    headers?: Record<string, string>;
-    connectTimeout?: number;
-    readTimeout?: number;
-  }) => Promise<CapacitorHttpResponse>;
-};
-
 function parseCapacitorHttpBody(data: unknown): HubHealthBody {
   if (typeof data === "string") {
     return JSON.parse(data) as HubHealthBody;
@@ -41,24 +32,37 @@ export async function probeHubHealthViaCapacitorHttp(
   headers: Record<string, string>,
   timeoutMs: number,
 ): Promise<HubHealthBody> {
-  const { Capacitor, CapacitorHttp } = (await import("@capacitor/core")) as {
-    Capacitor: { isPluginAvailable: (name: string) => boolean };
-    CapacitorHttp: CapacitorHttpModule;
-  };
-  if (!Capacitor.isPluginAvailable("CapacitorHttp")) {
+  const { hasCapacitorNativePromise } = await import("./capacitor-runtime.ts");
+  if (!hasCapacitorNativePromise()) {
     throw new Error("CapacitorHttp 不可用，请 cap sync 后重装 APK");
   }
-  const response = await CapacitorHttp.get({
+  const w = window as Window & {
+    __freeanimaCapacitorNative?: { nativePromise?: CapacitorNativeInvoker };
+    Capacitor?: { nativePromise?: CapacitorNativeInvoker };
+  };
+  const cap = w.__freeanimaCapacitorNative?.nativePromise
+    ? w.__freeanimaCapacitorNative
+    : w.Capacitor;
+  if (!cap?.nativePromise) {
+    throw new Error("CapacitorHttp 不可用，请 cap sync 后重装 APK");
+  }
+  const response = (await cap.nativePromise("CapacitorHttp", "get", {
     url,
     headers,
     connectTimeout: timeoutMs,
     readTimeout: timeoutMs,
-  });
+  })) as CapacitorHttpResponse;
   if (response.status < 200 || response.status >= 300) {
     throw new Error(`HTTP ${response.status}`);
   }
   return parseCapacitorHttpBody(response.data);
 }
+
+type CapacitorNativeInvoker = (
+  plugin: string,
+  method: string,
+  options?: object,
+) => Promise<unknown>;
 
 export async function shouldProbeHubHealthViaCapacitorHttp(hubUrl: string): Promise<boolean> {
   const {
