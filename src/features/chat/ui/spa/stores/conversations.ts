@@ -21,6 +21,7 @@ import {
   writeCachedConversations,
   writeCachedMessages,
 } from "@freeanima/features/chat/ui/spa/lib/offline-cache.ts";
+import { getConversationTail } from "@freeanima/features/chat/ui/spa/lib/api.ts";
 import { sortConversationsByUpdatedAt } from "@freeanima/features/chat/ui/spa/lib/sort-conversations.ts";
 import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";
 
@@ -30,6 +31,7 @@ type ConversationsState = {
   display: DisplayItem[];
   loading: boolean;
   showArchived: boolean;
+  tailPosByConversation: Record<string, number>;
   fetchConversations: () => Promise<ConversationListItem[]>;
   setShowArchived: (show: boolean) => Promise<ConversationListItem[]>;
   selectConversation: (id: string) => Promise<void>;
@@ -40,9 +42,16 @@ type ConversationsState = {
   deleteConversation: (conversationId: string) => Promise<string | null>;
   appendItem: (item: DisplayItem) => void;
   appendItemForConversation: (conversationId: string, item: DisplayItem) => void;
+  patchDisplayByClientOpId: (
+    clientOpId: string,
+    patch: Partial<Pick<DisplayItem & { type: "message" }, "sendStatus" | "content">>,
+  ) => void;
+  removeDisplayByClientOpId: (clientOpId: string) => void;
   refreshMessages: (conversationId: string, baselineCount: number) => Promise<boolean>;
   reloadConversationIfCurrent: (conversationId: string) => Promise<void>;
   patchProgressLine: (text: string, messageId?: string) => void;
+  cacheTailPos: (conversationId: string, tailPos: number) => void;
+  resolveExpectedTailPos: (conversationId: string, online: boolean) => Promise<number>;
 };
 
 async function maybeInterruptStream(conversationId: string): Promise<void> {
@@ -79,6 +88,26 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
   display: [],
   loading: false,
   showArchived: false,
+  tailPosByConversation: {},
+
+  cacheTailPos(conversationId, tailPos) {
+    set((s) => ({
+      tailPosByConversation: { ...s.tailPosByConversation, [conversationId]: tailPos },
+    }));
+  },
+
+  async resolveExpectedTailPos(conversationId, online) {
+    if (online) {
+      try {
+        const tail = await getConversationTail(conversationId);
+        get().cacheTailPos(conversationId, tail.tail_pos);
+        return tail.tail_pos;
+      } catch {
+        // fall through to cache
+      }
+    }
+    return get().tailPosByConversation[conversationId] ?? 0;
+  },
 
   async fetchConversations() {
     const scope = resolveHubCacheScope();
@@ -116,6 +145,7 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
       const display = (resp as { display?: DisplayItem[] }).display ?? [];
       set({ display, loading: false });
       void writeCachedMessages(scope, id, display);
+      void get().resolveExpectedTailPos(id, true);
     } catch (e) {
       console.error("selectSession messages:", e);
       set({ loading: false });
@@ -192,6 +222,23 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
     set({ display: [...get().display, item] });
   },
 
+  patchDisplayByClientOpId(clientOpId, patch) {
+    set((s) => ({
+      display: s.display.map((item) => {
+        if (item.type !== "message" || item.clientOpId !== clientOpId) return item;
+        return { ...item, ...patch };
+      }),
+    }));
+  },
+
+  removeDisplayByClientOpId(clientOpId) {
+    set((s) => ({
+      display: s.display.filter(
+        (item) => !(item.type === "message" && item.clientOpId === clientOpId),
+      ),
+    }));
+  },
+
   async refreshMessages(conversationId, baselineCount) {
     const scope = resolveHubCacheScope();
     try {
@@ -202,6 +249,7 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
         set({ display });
       }
       void writeCachedMessages(scope, conversationId, display);
+      void get().resolveExpectedTailPos(conversationId, true);
       return hasReply;
     } catch (e) {
       console.error("refreshMessages:", e);
@@ -217,6 +265,7 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
       const display = (resp as { display?: DisplayItem[] }).display ?? [];
       set({ display });
       void writeCachedMessages(scope, conversationId, display);
+      void get().resolveExpectedTailPos(conversationId, true);
     } catch (e) {
       console.error("reloadSessionIfCurrent:", e);
     }

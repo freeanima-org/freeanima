@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomUuid } from "@freeanima/kernel/random-uuid.ts";
 
 import {
   getHubMethodDef,
@@ -82,7 +82,7 @@ export function createHubClient(options: HubClientOptions) {
     payload: HubMethodInputs[K],
     signal?: AbortSignal,
   ): Promise<HubMethodOutputs[K]> {
-    const id = randomUUID();
+    const id = randomUuid();
     const url = buildHubRpcHttpUrl(options.httpOrigin);
     const body = serializeHubRpcEnvelope({
       kind: "req",

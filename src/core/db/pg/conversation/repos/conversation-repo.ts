@@ -369,6 +369,16 @@ export async function touchConversationUpdatedAt(conversation_id: string): Promi
     .where(eq(conversations.id, conversation_id));
 }
 
+export async function getConversationUpdatedAt(conversation_id: string): Promise<Date | null> {
+  const db = getDb();
+  const rows = await db
+    .select({ updated_at: conversations.updated_at })
+    .from(conversations)
+    .where(eq(conversations.id, conversation_id))
+    .limit(1);
+  return rows[0]?.updated_at ?? null;
+}
+
 export async function listConversationSummaries(
   platform?: string | null,
   opts?: { includeArchived?: boolean },

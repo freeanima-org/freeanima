@@ -38,6 +38,7 @@ import {
   subscribeConversationEvents,
 } from "@freeanima/features/chat/ui/spa/lib/api.ts";
 import { ListDetailLayout, useDrawerNav, useMobileLayout } from "@freeanima/frontend/ui-kit/layout";
+import { omitUndefined } from "@freeanima/core/util";
 import {
   reconnectHub,
   useActionSheetCapability,
@@ -67,6 +68,15 @@ import { markdownToPlainText } from "@freeanima/features/chat/ui/spa/lib/speech/
 import { VaultUnlockButton } from "@freeanima/features/chat/ui/spa/components/VaultUnlockButton.tsx";
 import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";
 import { useConversationsStore } from "@freeanima/features/chat/ui/spa/stores/conversations.ts";
+import { useOutboxStore } from "@freeanima/features/chat/ui/spa/stores/outbox.ts";
+import { listChatOutboxEntries } from "@freeanima/features/chat/ui/spa/lib/offline-send-store.ts";
+import type { DisplayItem } from "@freeanima/features/chat/ui/spa/lib/types.ts";
+import {
+  filterUndeliveredOutbox,
+  isOutboxDeliveredOnDisplay,
+  mergeOutboxStatusIntoDisplay,
+  stripRedundantOptimisticDisplay,
+} from "@freeanima/features/chat/ui/spa/lib/outbox-display-sync.ts";
 
 initAppLocale();
 
@@ -114,6 +124,26 @@ function isTransportFailureMessage(msg: string): boolean {
   return /timed out|websocket|hub_rpc_timeout|网络错误/i.test(msg);
 }
 
+function buildSendOpts(
+  sendMeta: SendDispatchOpts | undefined,
+  llmDebug: boolean,
+  onTailConflict: () => void,
+) {
+  return omitUndefined({
+    llmDebug: llmDebug || undefined,
+    clientOpId: sendMeta?.clientOpId,
+    expectedTailPos: sendMeta?.expectedTailPos,
+    forceTail: sendMeta?.forceTail,
+    onTailConflict: sendMeta?.clientOpId ? onTailConflict : undefined,
+  });
+}
+
+type SendDispatchOpts = {
+  clientOpId?: string;
+  expectedTailPos?: number;
+  forceTail?: boolean;
+};
+
 export function ChatApp() {
   const conversations = useConversationsStore((s) => s.conversations);
   const currentId = useConversationsStore((s) => s.currentId);
@@ -133,6 +163,16 @@ export function ChatApp() {
   const refreshMessages = useConversationsStore((s) => s.refreshMessages);
   const reloadConversationIfCurrent = useConversationsStore((s) => s.reloadConversationIfCurrent);
   const patchProgressLine = useConversationsStore((s) => s.patchProgressLine);
+  const resolveExpectedTailPos = useConversationsStore((s) => s.resolveExpectedTailPos);
+  const outboxEntries = useOutboxStore((s) => s.entries);
+  const outboxAckEntry = useOutboxStore((s) => s.ackEntry);
+  const outboxDiscard = useOutboxStore((s) => s.discard);
+  const outboxUpdatePendingText = useOutboxStore((s) => s.updatePendingText);
+  const outboxDetectStale = useOutboxStore((s) => s.detectStaleForConversation);
+  const outboxHydrate = useOutboxStore((s) => s.hydrate);
+  const outboxSetEntryStatus = useOutboxStore((s) => s.setEntryStatus);
+  const patchDisplayByClientOpId = useConversationsStore((s) => s.patchDisplayByClientOpId);
+  const removeDisplayByClientOpId = useConversationsStore((s) => s.removeDisplayByClientOpId);
 
   const renderMd = useChatStore((s) => s.renderMd);
   const streaming = useChatStore((s) => s.streaming);
@@ -150,7 +190,9 @@ export function ChatApp() {
   const [error, setError] = useState<string | null>(null);
   const networkOnline = useNetworkOnline();
   const hubConnection = useHubConnection();
-  const writesDisabled = !networkOnline || hubConnection !== "connected";
+  const canSendOnline = networkOnline && hubConnection === "connected";
+  const shellWritesDisabled = !networkOnline || hubConnection !== "connected";
+  const writesDisabled = shellWritesDisabled;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [menuConversationId, setMenuConversationId] = useState<string | null>(null);
   const [convPointerMenu, setConvPointerMenu] = useState<{ x: number; y: number } | null>(null);
@@ -161,6 +203,7 @@ export function ChatApp() {
   const [renameText, setRenameText] = useState("");
   const renameInputRef = useRef<HTMLInputElement>(null);
   const [editingUserIndex, setEditingUserIndex] = useState<number | null>(null);
+  const [editingOutboxOpId, setEditingOutboxOpId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
@@ -202,9 +245,19 @@ export function ChatApp() {
   } = useSpeechPlayback();
 
   const startReeditUserMessage = useCallback((index: number, content: string) => {
+    setEditingOutboxOpId(null);
     setEditingUserIndex(index);
     setEditDraft(content);
   }, []);
+
+  const startEditOutboxMessage = useCallback(
+    (index: number, clientOpId: string, content: string) => {
+      setEditingUserIndex(index);
+      setEditingOutboxOpId(clientOpId);
+      setEditDraft(content);
+    },
+    [],
+  );
 
   const bootstrapConversation = useCallback(
     async (includeMemory = true) => {
@@ -320,7 +373,41 @@ export function ChatApp() {
   const showCmdMenu = filteredCommands.length > 0;
   /** 窄视口/手机：菜单随输入区文档流展开，避免 absolute + 祖先 overflow-hidden 在软键盘顶起时被裁切 */
   const cmdMenuInFlow = mobileLayout;
-  const lastUserMessageIndex = useMemo(() => findLastUserMessageIndex(display), [display]);
+
+  const mergedDisplay = useMemo((): DisplayItem[] => {
+    if (!currentId) return display;
+    const cleaned = stripRedundantOptimisticDisplay(display);
+    const conversationOutbox = Object.values(outboxEntries).filter(
+      (e) => e.conversationId === currentId,
+    );
+    const synced = mergeOutboxStatusIntoDisplay(cleaned, conversationOutbox);
+    const undelivered = filterUndeliveredOutbox(synced, conversationOutbox, currentId);
+    const pendingOutbox = undelivered.map(
+      (e): DisplayItem => ({
+        type: "message",
+        role: "user",
+        content: e.text,
+        clientOpId: e.clientOpId,
+        sendStatus: e.status,
+      }),
+    );
+    return [...synced, ...pendingOutbox];
+  }, [currentId, display, outboxEntries]);
+
+  const pendingOutboxKey = useMemo(
+    () =>
+      Object.values(outboxEntries)
+        .filter((e) => e.status === "pending" || e.status === "failed")
+        .map((e) => `${e.clientOpId}:${e.status}`)
+        .toSorted()
+        .join(","),
+    [outboxEntries],
+  );
+
+  const lastUserMessageIndex = useMemo(
+    () => findLastUserMessageIndex(mergedDisplay),
+    [mergedDisplay],
+  );
 
   const confirmReeditUserMessage = async () => {
     const text = editDraft.trim();
@@ -337,6 +424,35 @@ export function ChatApp() {
       stickToBottomRef.current = true;
       appendItem({ type: "message", role: "user", content: text });
       await dispatchSend(text, originConversationId);
+    } finally {
+      sendingRef.current = false;
+    }
+  };
+
+  const confirmEditOutboxMessage = async () => {
+    const text = editDraft.trim();
+    const clientOpId = editingOutboxOpId;
+    if (!clientOpId || !text || sendingRef.current) return;
+    const entry = useOutboxStore.getState().entries[clientOpId];
+    if (!entry || entry.status === "sending" || entry.status === "stale") return;
+
+    setEditingUserIndex(null);
+    setEditingOutboxOpId(null);
+    setEditDraft("");
+
+    await outboxUpdatePendingText(clientOpId, text);
+    patchDisplayByClientOpId(clientOpId, { content: text, sendStatus: "pending" });
+
+    if (!canSendOnline) return;
+
+    sendingRef.current = true;
+    try {
+      const updated = useOutboxStore.getState().entries[clientOpId];
+      if (!updated || updated.status !== "pending") return;
+      await dispatchSend(text, updated.conversationId, {
+        clientOpId,
+        expectedTailPos: updated.expectedTailPos,
+      });
     } finally {
       sendingRef.current = false;
     }
@@ -389,6 +505,25 @@ export function ChatApp() {
       void bootstrapConversation(false).catch((e) => console.error("chat subject bootstrap:", e));
     });
   }, [ready, bootstrapConversation]);
+
+  useEffect(() => {
+    if (!ready) return;
+    void listChatOutboxEntries().then((entries) => {
+      outboxHydrate(entries);
+    });
+  }, [ready, outboxHydrate]);
+
+  useEffect(() => {
+    if (!currentId) return;
+    const orphans = Object.values(outboxEntries).filter(
+      (entry) =>
+        entry.conversationId === currentId && isOutboxDeliveredOnDisplay(display, entry.text),
+    );
+    if (orphans.length === 0) return;
+    for (const entry of orphans) {
+      void outboxAckEntry(entry.clientOpId);
+    }
+  }, [currentId, display, outboxEntries, outboxAckEntry]);
 
   useEffect(() => {
     if (hubConnection !== "connected") return;
@@ -601,7 +736,7 @@ export function ChatApp() {
   const flushQueueRef = useRef<(conversationId: string) => Promise<void>>(async () => {});
 
   const dispatchSend = useCallback(
-    async (text: string, originConversationId: string) => {
+    async (text: string, originConversationId: string, sendMeta?: SendDispatchOpts) => {
       const displayBaseline = useConversationsStore.getState().display.length;
       if (clarifyPending) setClarifyPending(null);
       scrollDown();
@@ -611,6 +746,11 @@ export function ChatApp() {
 
       if (llmDebugEnabled) {
         setLlmDebugSnapshots(null);
+      }
+
+      if (sendMeta?.clientOpId) {
+        patchDisplayByClientOpId(sendMeta.clientOpId, { sendStatus: "sending" });
+        outboxSetEntryStatus(sendMeta.clientOpId, "sending");
       }
 
       await send(
@@ -637,6 +777,20 @@ export function ChatApp() {
             scrollDown();
           },
           onError: (msg) => {
+            if (sendMeta?.clientOpId) {
+              const entry = useOutboxStore.getState().entries[sendMeta.clientOpId];
+              if (entry?.status !== "stale") {
+                patchDisplayByClientOpId(sendMeta.clientOpId, { sendStatus: "failed" });
+                outboxSetEntryStatus(sendMeta.clientOpId, "failed", msg);
+              }
+            }
+            if (
+              sendMeta?.clientOpId &&
+              useOutboxStore.getState().entries[sendMeta.clientOpId]?.status === "stale"
+            ) {
+              if (isViewingOrigin()) scrollDown();
+              return;
+            }
             appendItemForConversation(originConversationId, {
               type: "message",
               role: "assistant",
@@ -648,6 +802,10 @@ export function ChatApp() {
             if (isViewingOrigin()) scrollDown();
           },
           onDone: (opts) => {
+            if (sendMeta?.clientOpId) {
+              removeDisplayByClientOpId(sendMeta.clientOpId);
+              void outboxAckEntry(sendMeta.clientOpId);
+            }
             if (opts?.recovered) {
               if (isViewingOrigin()) scrollDown();
               void flushQueueRef.current(originConversationId);
@@ -668,19 +826,65 @@ export function ChatApp() {
             });
           },
         },
-        { llmDebug: llmDebugEnabled },
+        buildSendOpts(sendMeta, llmDebugEnabled, () => {
+          if (!sendMeta?.clientOpId) return;
+          patchDisplayByClientOpId(sendMeta.clientOpId, { sendStatus: "stale" });
+          outboxSetEntryStatus(sendMeta.clientOpId, "stale");
+        }),
       );
     },
     [
       appendItemForConversation,
       clarifyPending,
       llmDebugEnabled,
+      outboxAckEntry,
+      outboxSetEntryStatus,
+      patchDisplayByClientOpId,
+      removeDisplayByClientOpId,
       refreshMessages,
       reloadConversationIfCurrent,
       fetchConversations,
       send,
     ],
   );
+
+  useEffect(() => {
+    if (!canSendOnline || !ready || !pendingOutboxKey) return;
+    void (async () => {
+      const pending = Object.values(useOutboxStore.getState().entries).filter(
+        (e) => e.status === "pending" || e.status === "failed",
+      );
+      const conversationIds = [...new Set(pending.map((e) => e.conversationId))];
+      for (const conversationId of conversationIds) {
+        const staleIds = await outboxDetectStale(conversationId);
+        for (const opId of staleIds) {
+          patchDisplayByClientOpId(opId, { sendStatus: "stale" });
+        }
+      }
+      const stillPending = Object.values(useOutboxStore.getState().entries)
+        .filter((e) => e.status === "pending" || e.status === "failed")
+        .toSorted((a, b) => a.createdAt.localeCompare(b.createdAt));
+      for (const entry of stillPending) {
+        if (sendingRef.current) break;
+        sendingRef.current = true;
+        try {
+          await dispatchSend(entry.text, entry.conversationId, {
+            clientOpId: entry.clientOpId,
+            expectedTailPos: entry.expectedTailPos,
+          });
+        } finally {
+          sendingRef.current = false;
+        }
+      }
+    })();
+  }, [
+    canSendOnline,
+    ready,
+    pendingOutboxKey,
+    dispatchSend,
+    outboxDetectStale,
+    patchDisplayByClientOpId,
+  ]);
 
   flushQueueRef.current = async (conversationId: string) => {
     const next = useChatStore.getState().peekQueue(conversationId);
@@ -702,14 +906,16 @@ export function ChatApp() {
   };
 
   const offlineCachedHint = m.ui_offline_cached_hint();
-  const showOfflineCachedHint = writesDisabled && (conversations.length > 0 || display.length > 0);
+  const showOfflineCachedHint =
+    shellWritesDisabled && (conversations.length > 0 || display.length > 0);
 
   const sendMessage = async () => {
     const text = inputText.trim();
-    if (!text || sendingRef.current || writesDisabled) return;
+    if (!text || sendingRef.current) return;
 
     let conversationId = currentId;
     if (!conversationId) {
+      if (!canSendOnline) return;
       conversationId = await ensureConversation();
       if (!conversationId) return;
     }
@@ -723,14 +929,30 @@ export function ChatApp() {
     }
 
     const originConversationId = conversationId;
+    const expectedTailPos = await resolveExpectedTailPos(originConversationId, canSendOnline);
+    const entry = await useOutboxStore
+      .getState()
+      .enqueue(originConversationId, text, expectedTailPos);
+
     sendingRef.current = true;
     setInputText("");
     saveInputDraft(originConversationId, "");
     requestAnimationFrame(resizeInput);
-    appendItem({ type: "message", role: "user", content: text });
+    appendItem({
+      type: "message",
+      role: "user",
+      content: text,
+      clientOpId: entry.clientOpId,
+      sendStatus: "pending",
+    });
 
     try {
-      await dispatchSend(text, originConversationId);
+      if (canSendOnline) {
+        await dispatchSend(text, originConversationId, {
+          clientOpId: entry.clientOpId,
+          expectedTailPos: entry.expectedTailPos,
+        });
+      }
     } finally {
       sendingRef.current = false;
     }
@@ -983,7 +1205,7 @@ export function ChatApp() {
                 </div>
               ) : null}
 
-              {display.map((item, i) => {
+              {mergedDisplay.map((item, i) => {
                 if (item.type === "message" && item.role === "user") {
                   if (editingUserIndex === i) {
                     return (
@@ -1003,6 +1225,7 @@ export function ChatApp() {
                               className="h-7 text-primary-foreground"
                               onClick={() => {
                                 setEditingUserIndex(null);
+                                setEditingOutboxOpId(null);
                                 setEditDraft("");
                               }}
                             >
@@ -1012,8 +1235,14 @@ export function ChatApp() {
                               type="button"
                               size="sm"
                               className="h-7"
-                              disabled={!editDraft.trim() || writesDisabled}
-                              onClick={() => void confirmReeditUserMessage()}
+                              disabled={
+                                !editDraft.trim() || (editingOutboxOpId ? false : writesDisabled)
+                              }
+                              onClick={() =>
+                                void (editingOutboxOpId
+                                  ? confirmEditOutboxMessage()
+                                  : confirmReeditUserMessage())
+                              }
                             >
                               {m.console_common_confirm()}
                             </Button>
@@ -1026,10 +1255,74 @@ export function ChatApp() {
                     <div key={`d${i}`} className="flex min-w-0 max-w-full flex-col items-end">
                       <ChatMessageBubble
                         align="end"
-                        className="chat-bubble-user whitespace-pre-wrap"
+                        className={`chat-bubble-user whitespace-pre-wrap${
+                          item.sendStatus === "pending" || item.sendStatus === "sending"
+                            ? " opacity-70"
+                            : item.sendStatus === "stale" || item.sendStatus === "failed"
+                              ? " border border-warning"
+                              : ""
+                        }`}
                       >
                         {item.content}
+                        {item.sendStatus === "pending" ? (
+                          <p className="mt-1 text-xs opacity-70">{m.ui_outbox_pending()}</p>
+                        ) : null}
+                        {item.sendStatus === "stale" ? (
+                          <>
+                            <p className="mt-1 text-xs text-warning">{m.ui_outbox_stale()}</p>
+                            <p className="text-xs text-warning/80">{m.ui_outbox_stale_hint()}</p>
+                          </>
+                        ) : null}
+                        {item.sendStatus === "failed" ? (
+                          <p className="mt-1 text-xs text-warning">{m.ui_outbox_failed()}</p>
+                        ) : null}
                       </ChatMessageBubble>
+                      {item.clientOpId &&
+                      (item.sendStatus === "pending" ||
+                        item.sendStatus === "failed" ||
+                        item.sendStatus === "stale") ? (
+                        <div className="mt-1 flex gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              const opId = item.clientOpId;
+                              if (!opId) return;
+                              void outboxDiscard(opId).then(() => {
+                                removeDisplayByClientOpId(opId);
+                              });
+                            }}
+                          >
+                            {m.ui_outbox_discard()}
+                          </Button>
+                          {item.sendStatus === "stale" ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                const opId = item.clientOpId;
+                                if (!opId || !currentId) return;
+                                void (async () => {
+                                  sendingRef.current = true;
+                                  try {
+                                    await dispatchSend(item.content, currentId, {
+                                      clientOpId: opId,
+                                      expectedTailPos: outboxEntries[opId]?.expectedTailPos ?? 0,
+                                      forceTail: true,
+                                    });
+                                  } finally {
+                                    sendingRef.current = false;
+                                  }
+                                })();
+                              }}
+                            >
+                              {m.ui_outbox_force_send()}
+                            </Button>
+                          ) : null}
+                        </div>
+                      ) : null}
                       <MessageActionBar
                         align="end"
                         copyContent={item.content}
@@ -1038,9 +1331,18 @@ export function ChatApp() {
                         speechSupported={speechSupported}
                         speechUnsupportedReason={speechUnsupportedReason}
                         onToggleSpeech={() => toggleSpeech(`msg-${i}`, item.content)}
-                        {...(i === lastUserMessageIndex
-                          ? { onEdit: () => startReeditUserMessage(i, item.content) }
-                          : {})}
+                        {...(item.clientOpId &&
+                        (item.sendStatus === "pending" || item.sendStatus === "failed")
+                          ? {
+                              onEdit: () => {
+                                const opId = item.clientOpId;
+                                if (!opId) return;
+                                startEditOutboxMessage(i, opId, item.content);
+                              },
+                            }
+                          : i === lastUserMessageIndex && !item.sendStatus
+                            ? { onEdit: () => startReeditUserMessage(i, item.content) }
+                            : {})}
                       />
                     </div>
                   );
@@ -1220,7 +1522,7 @@ export function ChatApp() {
                     rows={1}
                     className="!min-h-9 h-9 max-h-48 w-full resize-none overflow-y-auto py-1.5 leading-5 [field-sizing:fixed]"
                     placeholder={m.console_chat_message_placeholder()}
-                    disabled={writesDisabled}
+                    disabled={streamVisible}
                     onFocus={() => {
                       requestAnimationFrame(() => {
                         msgInputRef.current?.scrollIntoView({
@@ -1233,11 +1535,11 @@ export function ChatApp() {
                   />
                 </div>
                 {streamVisible ? (
-                  <Button type="submit" variant="destructive" disabled={writesDisabled}>
+                  <Button type="submit" variant="destructive" disabled={!canSendOnline}>
                     {m.console_common_stop()}
                   </Button>
                 ) : (
-                  <Button type="submit" disabled={!inputText.trim() || writesDisabled}>
+                  <Button type="submit" disabled={!inputText.trim()}>
                     {m.console_common_send()}
                   </Button>
                 )}

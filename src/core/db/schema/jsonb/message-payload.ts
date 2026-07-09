@@ -30,6 +30,8 @@ export const userPayloadSchema = messageBaseSchema.extend({
   role: z.literal("user"),
   content: z.string(),
   name: z.string().optional(),
+  /** 客户端 outbox 幂等键（Tier 2 Hub 约定 client_op_id） */
+  client_op_id: z.string().optional(),
 });
 
 export const systemPayloadSchema = messageBaseSchema.extend({

@@ -4,6 +4,9 @@ import {
   appendMessage,
   appendConversationMeta,
   appendUserTurn,
+  getMaxMessagePos,
+  findUserMessageByClientOpId,
+  getLastMessageRole,
   assertConversationPlatform,
   cleanupDebugConversations,
   countMessages,
@@ -91,6 +94,10 @@ export function createConversationService(tools: ToolSetRegistry) {
     refreshSystemPromptOnResume,
     assertConversationPlatform,
     appendUserTurn,
+    getMaxMessagePos: (conversationId: string) => getMaxMessagePos(conversationId),
+    findUserMessageByClientOpId: (conversationId: string, client_op_id: string) =>
+      findUserMessageByClientOpId(conversationId, client_op_id),
+    getLastMessageRole: (conversationId: string) => getLastMessageRole(conversationId),
     advanceCompressionMeta: (
       conversationId: string,
       preloaded?: Parameters<typeof advanceCompressionMeta>[2],

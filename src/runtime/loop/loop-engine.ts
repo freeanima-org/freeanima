@@ -277,7 +277,10 @@ export type StreamEvent =
   | { event: "interrupted"; data: { reason: string } }
   | { event: "llm_debug"; data: LlmDebugSnapshot }
   | { event: "done"; data: StreamDoneData }
-  | { event: "error"; data: { error: string } };
+  | {
+      event: "error";
+      data: { error: string; code?: string; current_tail_pos?: number };
+    };
 
 function hookStreamToEngine(ev: HookStreamEvent): StreamEvent {
   return ev as StreamEvent;

@@ -198,6 +198,43 @@ export async function nextMessagePos(conversation_id: string): Promise<number> {
   return Number(rows[0]?.maxPos ?? 0) + 1;
 }
 
+/** 当前会话末条消息的 pos；空会话为 0 */
+export async function getMaxMessagePos(conversation_id: string): Promise<number> {
+  const next = await nextMessagePos(conversation_id);
+  return Math.max(0, next - 1);
+}
+
+export async function findUserMessageByClientOpId(
+  conversation_id: string,
+  client_op_id: string,
+): Promise<ConversationMessage | null> {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(messages)
+    .where(
+      and(
+        eq(messages.conversation_id, conversation_id),
+        sql`(${messages.payload})->>'role' = 'user'`,
+        sql`(${messages.payload})->>'client_op_id' = ${client_op_id}`,
+      ),
+    )
+    .limit(1);
+  const row = rows[0];
+  return row ? rowToMessage(row) : null;
+}
+
+export async function getLastMessageRole(conversation_id: string): Promise<string | null> {
+  const db = getDb();
+  const rows = await db
+    .select({ role: sql<string>`(${messages.payload})->>'role'` })
+    .from(messages)
+    .where(eq(messages.conversation_id, conversation_id))
+    .orderBy(desc(messages.pos))
+    .limit(1);
+  return rows[0]?.role ?? null;
+}
+
 export async function listMessages(conversation_id: string): Promise<ConversationMessage[]> {
   const db = getDb();
   const rows = await db

@@ -26,18 +26,19 @@ export async function pumpMessageStream(
   conversationId: string,
   message: string,
   platform: string,
-  llmDebug?: boolean,
+  sendExtra?: {
+    llm_debug?: boolean;
+    client_op_id?: string;
+    expected_tail_pos?: number;
+    force_tail?: boolean;
+  },
 ): Promise<void> {
   const { bridgeMessageStream } = await loadStreamBridge();
+  const originExtra = sendExtra && Object.keys(sendExtra).length > 0 ? sendExtra : undefined;
   try {
     for await (const mapped of bridgeMessageStream(
       streamId,
-      deps.runtime.sendMessageStream(
-        conversationId,
-        message,
-        platform,
-        llmDebug ? { llm_debug: true } : undefined,
-      ),
+      deps.runtime.sendMessageStream(conversationId, message, platform, originExtra),
     )) {
       ctx.sendEvent(mapped.method, mapped.payload);
     }

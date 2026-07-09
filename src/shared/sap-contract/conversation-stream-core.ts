@@ -4,6 +4,7 @@ import { mapSapStreamMethodToApi, streamEventMethods } from "./frames/message.ts
 import type { ConversationCreateInput, ConversationListInput } from "./frames/conversation.ts";
 import { formatSapPlatform } from "./naming.ts";
 import { HUB_RPC_MESSAGE_SEND_TIMEOUT_MS } from "@freeanima/shared/hub-rpc";
+import { omitUndefined } from "@freeanima/core/util";
 
 export type SubscribeCallbacks<T> = {
   onData?: (data: T) => void;
@@ -17,7 +18,14 @@ export type SapSessionStreamClient = {
     onUpdate: () => void,
   ): { unsubscribe: () => void };
   sendMessageStream(
-    input: { conversationId: string; message: string; llmDebug?: boolean },
+    input: {
+      conversationId: string;
+      message: string;
+      llmDebug?: boolean;
+      clientOpId?: string;
+      expectedTailPos?: number;
+      forceTail?: boolean;
+    },
     callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
   ): { unsubscribe: () => void };
   detach(): void;
@@ -99,11 +107,14 @@ export function createSapConversationStreamClient(
           const client = await ensureSessionHooks();
           const { stream_id: streamId } = await client.request(
             "message.send",
-            {
+            omitUndefined({
               conversation_id: input.conversationId,
               message: input.message,
-              ...(input.llmDebug ? { llm_debug: true } : {}),
-            },
+              llm_debug: input.llmDebug ? true : undefined,
+              client_op_id: input.clientOpId,
+              expected_tail_pos: input.expectedTailPos,
+              force_tail: input.forceTail ? true : undefined,
+            }),
             { timeoutMs: HUB_RPC_MESSAGE_SEND_TIMEOUT_MS },
           );
 

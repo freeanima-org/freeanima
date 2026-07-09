@@ -182,8 +182,6 @@ type ParaglideMessageExports = {
   readonly console_common_type_label: ParaglideMessageFn;
   readonly console_common_value_label: ParaglideMessageFn;
   readonly console_common_websocket_failed: ParaglideMessageFn;
-  readonly console_config_desc: ParaglideMessageFn;
-  readonly console_config_empty: ParaglideMessageFn;
   readonly console_conversations_back_list: ParaglideMessageFn;
   readonly console_conversations_empty: ParaglideMessageFn;
   readonly console_cron_active: ParaglideMessageFn;
@@ -370,7 +368,6 @@ type ParaglideMessageExports = {
   readonly console_nav_autobio: ParaglideMessageFn;
   readonly console_nav_chat: ParaglideMessageFn;
   readonly console_nav_commands: ParaglideMessageFn;
-  readonly console_nav_config: ParaglideMessageFn;
   readonly console_nav_conversations: ParaglideMessageFn;
   readonly console_nav_cron: ParaglideMessageFn;
   readonly console_nav_dashboard: ParaglideMessageFn;
@@ -642,6 +639,12 @@ type ParaglideMessageExports = {
   readonly ui_offline_cached_hint: ParaglideMessageFn;
   readonly ui_offline_readonly_mode: ParaglideMessageFn;
   readonly ui_offline_snapshot_updated: ParaglideMessageFn;
+  readonly ui_outbox_discard: ParaglideMessageFn;
+  readonly ui_outbox_failed: ParaglideMessageFn;
+  readonly ui_outbox_force_send: ParaglideMessageFn;
+  readonly ui_outbox_pending: ParaglideMessageFn;
+  readonly ui_outbox_stale: ParaglideMessageFn;
+  readonly ui_outbox_stale_hint: ParaglideMessageFn;
   readonly ui_pwa_install_action: ParaglideMessageFn;
   readonly ui_pwa_install_prompt: ParaglideMessageFn;
   readonly ui_pwa_shell_offline_ready: ParaglideMessageFn;
@@ -832,8 +835,6 @@ declare module "*/messages/paraglide/messages.js" {
   export const console_common_type_label: ParaglideMessageFn;
   export const console_common_value_label: ParaglideMessageFn;
   export const console_common_websocket_failed: ParaglideMessageFn;
-  export const console_config_desc: ParaglideMessageFn;
-  export const console_config_empty: ParaglideMessageFn;
   export const console_conversations_back_list: ParaglideMessageFn;
   export const console_conversations_empty: ParaglideMessageFn;
   export const console_cron_active: ParaglideMessageFn;
@@ -1020,7 +1021,6 @@ declare module "*/messages/paraglide/messages.js" {
   export const console_nav_autobio: ParaglideMessageFn;
   export const console_nav_chat: ParaglideMessageFn;
   export const console_nav_commands: ParaglideMessageFn;
-  export const console_nav_config: ParaglideMessageFn;
   export const console_nav_conversations: ParaglideMessageFn;
   export const console_nav_cron: ParaglideMessageFn;
   export const console_nav_dashboard: ParaglideMessageFn;
@@ -1292,6 +1292,12 @@ declare module "*/messages/paraglide/messages.js" {
   export const ui_offline_cached_hint: ParaglideMessageFn;
   export const ui_offline_readonly_mode: ParaglideMessageFn;
   export const ui_offline_snapshot_updated: ParaglideMessageFn;
+  export const ui_outbox_discard: ParaglideMessageFn;
+  export const ui_outbox_failed: ParaglideMessageFn;
+  export const ui_outbox_force_send: ParaglideMessageFn;
+  export const ui_outbox_pending: ParaglideMessageFn;
+  export const ui_outbox_stale: ParaglideMessageFn;
+  export const ui_outbox_stale_hint: ParaglideMessageFn;
   export const ui_pwa_install_action: ParaglideMessageFn;
   export const ui_pwa_install_prompt: ParaglideMessageFn;
   export const ui_pwa_shell_offline_ready: ParaglideMessageFn;

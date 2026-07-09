@@ -49,6 +49,9 @@ import {
   pgWriteTruncate,
   conversationExistsWithRouting,
   nextMessagePosWithRouting,
+  getMaxMessagePosWithRouting,
+  findUserMessageByClientOpIdWithRouting,
+  getLastMessageRoleWithRouting,
   deleteStaleConversations,
 } from "./conversation-store-pg-bridge.ts";
 import type { ConversationSummaryRow } from "@freeanima/core/repos";
@@ -492,10 +495,42 @@ export async function assertConversationPlatform(
   }
 }
 
-export async function appendUserTurn(conversationId: string, userText: string): Promise<string> {
+export async function appendUserTurn(
+  conversationId: string,
+  userText: string,
+  opts?: { client_op_id?: string },
+): Promise<string> {
   const content = userText;
-  await appendMessage({ role: "user", content }, conversationId);
+  if (opts?.client_op_id) {
+    const existing = await findUserMessageByClientOpIdWithRouting(
+      conversationId,
+      opts.client_op_id,
+    );
+    if (existing?.role === "user" && typeof existing.content === "string") {
+      return existing.content;
+    }
+  }
+  await appendMessage(
+    omitUndefined({
+      role: "user",
+      content,
+      client_op_id: opts?.client_op_id,
+    }) as StoredMessage,
+    conversationId,
+  );
   return content;
+}
+
+export async function getMaxMessagePos(conversationId: string): Promise<number> {
+  return getMaxMessagePosWithRouting(conversationId);
+}
+
+export async function findUserMessageByClientOpId(conversationId: string, client_op_id: string) {
+  return findUserMessageByClientOpIdWithRouting(conversationId, client_op_id);
+}
+
+export async function getLastMessageRole(conversationId: string): Promise<string | null> {
+  return getLastMessageRoleWithRouting(conversationId);
 }
 
 export async function updateConversationMeta(

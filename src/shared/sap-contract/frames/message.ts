@@ -1,8 +1,12 @@
 import { z } from "zod";
+import { omitUndefined } from "@freeanima/core/util";
 
 export const messageSendInputSchema = z.object({
   conversation_id: z.string().min(1),
   message: z.string().min(1),
+  client_op_id: z.string().min(1).optional(),
+  expected_tail_pos: z.number().int().min(0).optional(),
+  force_tail: z.boolean().optional(),
   llm_debug: z.boolean().optional(),
 });
 
@@ -109,7 +113,14 @@ export type StreamApiLikeEvent =
     }
   | { event: "interrupted"; data: { reason: string } }
   | { event: "done"; data: { reason?: "awaiting_clarify" | "interrupted" } }
-  | { event: "error"; data: { error: string } }
+  | {
+      event: "error";
+      data: {
+        error: string;
+        code?: string;
+        current_tail_pos?: number;
+      };
+    }
   | { event: "ping"; data: Record<string, never> }
   | { event: "llm_debug"; data: LlmDebugSnapshotPayload };
 
@@ -211,7 +222,12 @@ export function mapRuntimeStreamEventToSap(
     case "error":
       return mapStreamApiEventToSap(streamId, {
         event: "error",
-        data: { error: String(ev.data.error ?? ev.data.message ?? "error") },
+        data: omitUndefined({
+          error: String(ev.data.error ?? ev.data.message ?? "error"),
+          code: typeof ev.data.code === "string" ? ev.data.code : undefined,
+          current_tail_pos:
+            typeof ev.data.current_tail_pos === "number" ? ev.data.current_tail_pos : undefined,
+        }),
       });
     case "llm_debug":
       return mapStreamApiEventToSap(streamId, {
@@ -286,7 +302,15 @@ export function mapSapStreamMethodToApi(
       };
     }
     case "stream.error":
-      return { event: "error", data: { error: String(payload.error ?? "error") } };
+      return {
+        event: "error",
+        data: omitUndefined({
+          error: String(payload.error ?? "error"),
+          code: typeof payload.code === "string" ? payload.code : undefined,
+          current_tail_pos:
+            typeof payload.current_tail_pos === "number" ? payload.current_tail_pos : undefined,
+        }),
+      };
     case "stream.llm_debug":
       return {
         event: "llm_debug",
