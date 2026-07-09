@@ -1,3 +1,4 @@
+import type { MouseEvent } from "react";
 import {
   Button,
   Input,
@@ -10,8 +11,22 @@ import {
 } from "@freeanima/frontend/ui-kit";
 import { FormFieldLabel, FormFieldset } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
 
-import { isoToDatetimeLocalValue } from "../lib/format-task.ts";
+import {
+  isoToDateLocalValue,
+  isoToTimeLocalValue,
+  mergeDateTimeLocal,
+} from "../lib/format-task.ts";
 import type { TaskItemRow } from "../lib/api.ts";
+
+function openNativePicker(event: MouseEvent<HTMLInputElement>): void {
+  const input = event.currentTarget;
+  if (typeof input.showPicker !== "function") return;
+  try {
+    input.showPicker();
+  } catch {
+    // 已打开或不支持时忽略
+  }
+}
 
 export type DetailSaveStatus = "idle" | "saving" | "saved" | "error";
 
@@ -76,17 +91,33 @@ export function TaskDetailPanel({
           </div>
           <div>
             <FormFieldLabel>截止日期</FormFieldLabel>
-            <Input
-              type="datetime-local"
-              className="w-full"
-              value={isoToDatetimeLocalValue(item.due_at)}
-              onChange={(e) =>
-                onChange({
-                  ...item,
-                  due_at: e.target.value ? new Date(e.target.value).toISOString() : null,
-                })
-              }
-            />
+            <div className="flex gap-2">
+              <Input
+                type="date"
+                className="min-w-0 flex-1"
+                value={isoToDateLocalValue(item.due_at)}
+                onClick={openNativePicker}
+                onChange={(e) =>
+                  onChange({
+                    ...item,
+                    due_at: mergeDateTimeLocal(e.target.value, isoToTimeLocalValue(item.due_at)),
+                  })
+                }
+              />
+              <Input
+                type="time"
+                className="w-32 shrink-0"
+                value={isoToTimeLocalValue(item.due_at)}
+                disabled={!isoToDateLocalValue(item.due_at)}
+                onClick={openNativePicker}
+                onChange={(e) =>
+                  onChange({
+                    ...item,
+                    due_at: mergeDateTimeLocal(isoToDateLocalValue(item.due_at), e.target.value),
+                  })
+                }
+              />
+            </div>
           </div>
           <div>
             <FormFieldLabel>内容</FormFieldLabel>

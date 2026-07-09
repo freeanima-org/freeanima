@@ -2,7 +2,7 @@ import {
   createComponentBuildMeta,
   type BuildChannel,
   type ComponentBuildMeta,
-} from "@freeanima/core/config/build-meta.ts";
+} from "../vite-config-imports.ts";
 
 /** Node / 构建脚本：生成 native shell build meta */
 export function resolveNativeBuildMeta(opts: {

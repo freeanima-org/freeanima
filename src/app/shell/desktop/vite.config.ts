@@ -2,7 +2,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, mergeConfig, type Plugin } from "vite";
 
-import { createShellViteInlineConfig } from "@freeanima/frontend/shell-ui/vite/run-build.ts";
+import { createShellViteInlineConfig } from "../vite-config-imports.ts";
 
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(PKG_DIR, "..", "..", "..", "..");
