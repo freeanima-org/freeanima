@@ -70,7 +70,7 @@ export function createMockRedisLists(prefix = DEFAULT_PREFIX): {
       let removed = 0;
       const limit = count === 0 ? Infinity : Math.abs(count);
       if (count >= 0) {
-        for (let i = 0; i < list.length && removed < limit; ) {
+        for (let i = 0; i < list.length && removed < limit;) {
           if (list[i] === value) {
             list.splice(i, 1);
             removed++;
