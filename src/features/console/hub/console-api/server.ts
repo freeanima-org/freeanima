@@ -108,11 +108,7 @@ function createApiFetchHandler(runtime: ApiServerRuntime) {
       const pathname = new URL(req.url).pathname;
 
       if (webStatic && isWebStaticPath(pathname)) {
-        const staticRes = serveWebStatic(
-          req,
-          webStatic,
-          remoteAddress !== undefined ? { remoteAddress } : undefined,
-        );
+        const staticRes = serveWebStatic(req, webStatic);
         if (staticRes) return staticRes;
       }
 

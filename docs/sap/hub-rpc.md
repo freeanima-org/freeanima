@@ -44,7 +44,7 @@ Method contracts live in [`src/shared/hub-contract/registry/`](../../src/shared/
 
 Every **WebSocket** connection must send a valid **service API token** in the `connect` payload (`auth_token`). **HTTP POST** uses `Authorization: Bearer fa_at_...` on each request. The Hub verifies with `verifyServiceApiToken` ([`src/core/db/pg/service-api-token/`](../../src/core/db/pg/service-api-token/)).
 
-Bundled clients read the token from `window.satelliteShell.remoteAuth.token` (shell bridge). Hub-hosted Web on loopback receives `auth_token` in `/web/config.json` when `~/.anima/web/loopback-auth.token` or `FREEANIMA_REMOTE_AUTH_TOKEN` is set (`anima token pin-loopback`). Local Vite dev may seed via `FREEANIMA_REMOTE_AUTH_TOKEN` or Hub setup UI.
+Bundled clients read the token from `window.satelliteShell.remoteAuth.token` (shell bridge), configured in client **Hub settings** (`/setup` or settings panel). Hub `/web/config.json` does not include tokens.
 
 ## Client profiles
 

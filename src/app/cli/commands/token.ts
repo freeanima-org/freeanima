@@ -1,9 +1,8 @@
-import { withPlatformDb, writeLoopbackWebAuthTokenFile } from "@freeanima/platform/config";
+import { withPlatformDb } from "@freeanima/platform/config";
 import {
   createServiceApiTokenWithSecret,
   listServiceApiTokensBySubject,
   revokeServiceApiToken,
-  verifyServiceApiToken,
 } from "@freeanima/core/db/pg/service-api-token";
 import type { Command } from "commander";
 
@@ -35,30 +34,7 @@ export function registerTokenCommand(program: Command): void {
           "ok",
           `已创建 token id=${result.token.id} subject_id=${result.token.subject_id} name=${result.token.name}`,
         );
-        writeStatusLine("hint", "Hub 托管 Web：anima token pin-loopback <token>");
-      } catch (e) {
-        printCliError(e);
-        process.exit(1);
-      }
-    });
-
-  tokenCmd
-    .command("pin-loopback")
-    .description(
-      "将已有 Service API Token 写入 ~/.anima/web/loopback-auth.token（Hub 托管 Web UI）",
-    )
-    .argument("<token>", "anima token create 输出的明文 token")
-    .action(async (token: string) => {
-      try {
-        const trimmed = token.trim();
-        await withPlatformDb(async () => {
-          const verified = await verifyServiceApiToken(trimmed);
-          if (!verified) {
-            throw new Error("token 无效或已撤销");
-          }
-          writeLoopbackWebAuthTokenFile(trimmed);
-        });
-        writeStatusLine("ok", "已写入 loopback web auth token");
+        writeStatusLine("hint", "请在客户端 Hub 设置中配置 Service API Token");
       } catch (e) {
         printCliError(e);
         process.exit(1);

@@ -52,16 +52,3 @@ export function createWebScopedBackend(): ScopedSettingsBackend {
     },
   };
 }
-
-export function seedWebHubPrefsIfEmpty(hubUrl: string, remoteAuthToken: string): void {
-  const token = remoteAuthToken.trim();
-  const existingToken = localStorage.getItem(REMOTE_AUTH_TOKEN_KEY)?.trim();
-  if (existingToken) return;
-  const hub = hubUrl.replace(/\/$/, "");
-  if (!localStorage.getItem(HUB_URL_KEY)?.trim()) {
-    localStorage.setItem(HUB_URL_KEY, hub);
-  }
-  if (token) {
-    localStorage.setItem(REMOTE_AUTH_TOKEN_KEY, token);
-  }
-}

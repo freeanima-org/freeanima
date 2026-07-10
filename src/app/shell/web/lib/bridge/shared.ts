@@ -29,7 +29,6 @@ declare global {
   }
 
   const __WEB_DEFAULT_HUB_URL__: string;
-  const __WEB_DEFAULT_REMOTE_AUTH_TOKEN__: string;
 }
 
 export function isCapacitorRuntime(): boolean {
@@ -65,7 +64,6 @@ export async function fetchWebUiConfig(): Promise<WebUiConfigJson | null> {
 
 export type WebUiBootstrapConfig = {
   hubUrl: string;
-  authToken: string;
 };
 
 export function applyWebUiConfig(cfg: WebUiConfigJson | null): WebUiBootstrapConfig {
@@ -74,7 +72,7 @@ export function applyWebUiConfig(cfg: WebUiConfigJson | null): WebUiBootstrapCon
       ? __WEB_DEFAULT_HUB_URL__
       : "http://127.0.0.1:2658"
   ).replace(/\/$/, "");
-  if (!cfg) return { hubUrl: fallback, authToken: "" };
+  if (!cfg) return { hubUrl: fallback };
   const meta: NonNullable<Window["__freeanimaWebUiConfig"]> = {};
   if (cfg.layout_mode) meta.layout_mode = cfg.layout_mode;
   if (cfg.ui_version) meta.ui_version = cfg.ui_version;
@@ -82,12 +80,5 @@ export function applyWebUiConfig(cfg: WebUiConfigJson | null): WebUiBootstrapCon
   if (cfg.min_shell_version) meta.min_shell_version = cfg.min_shell_version;
   window.__freeanimaWebUiConfig = meta;
   const runtimeHub = cfg.hub_url?.trim().replace(/\/$/, "");
-  const authToken = cfg.auth_token?.trim() ?? "";
-  return { hubUrl: runtimeHub || fallback, authToken };
-}
-
-export function readDefaultRemoteAuthToken(): string {
-  return typeof __WEB_DEFAULT_REMOTE_AUTH_TOKEN__ !== "undefined"
-    ? __WEB_DEFAULT_REMOTE_AUTH_TOKEN__
-    : "";
+  return { hubUrl: runtimeHub || fallback };
 }

@@ -1,8 +1,4 @@
 import type { RuntimeConfigStore } from "@freeanima/platform/config";
-import {
-  readLoopbackWebAuthTokenFromEnvOrFile,
-  writeLoopbackWebAuthTokenFile,
-} from "@freeanima/platform/config";
 import { resolveAndBindWorldContext } from "@freeanima/core/config/world-context";
 import {
   countServiceApiTokens,
@@ -20,29 +16,21 @@ export async function bootServiceApiTokensPhase(
 ): Promise<ServiceApiTokensPhaseResult> {
   startupLog("Checking service API tokens…");
   const existing = await countServiceApiTokens();
-  const loopbackToken = readLoopbackWebAuthTokenFromEnvOrFile();
 
   if (existing > 0) {
-    if (loopbackToken) {
-      startupLog(`Service API tokens ready (${existing} active, loopback web auth configured)`);
-    } else {
-      logComponent("startup").warn(
-        "Hub 托管 Web UI 需 loopback token：anima token pin-loopback <token> 或设置 FREEANIMA_REMOTE_AUTH_TOKEN",
-      );
-      startupLog(`Service API tokens ready (${existing} active)`);
-    }
+    startupLog(`Service API tokens ready (${existing} active)`);
     return {};
   }
 
   const ctx = await resolveAndBindWorldContext(config.data);
   const result = await createServiceApiTokenWithSecret({
     subject_id: ctx.user_subject_id,
-    name: "loopback-web-bootstrap",
+    name: "bootstrap",
   });
-  writeLoopbackWebAuthTokenFile(result.plaintext);
-  startupLog("Created loopback web bootstrap token");
+  startupLog(`Created service API bootstrap token (id=${result.token.id})`);
   logComponent("startup").info(
-    "已自动创建 Hub 托管 Web UI 的 loopback token（~/.anima/web/loopback-auth.token）",
+    "已自动创建 bootstrap Service API Token；请在客户端 Hub 设置中配置（明文仅此次输出到终端）",
   );
+  console.log(result.plaintext);
   return {};
 }
