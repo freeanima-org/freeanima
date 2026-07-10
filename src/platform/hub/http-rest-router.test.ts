@@ -37,6 +37,18 @@ describe("http-rest-router", () => {
     expect(postMatch?.entry.hubMethod).toBe("vault.get");
   });
 
+  test("findRoute GET tls.ca raw method", () => {
+    const match = findRoute("GET", "tls/ca");
+    expect(match?.entry.hubMethod).toBe("tls.ca");
+    expect(match?.entry.http.response).toBe("raw");
+  });
+
+  test("findRoute GET companion.asset.get", () => {
+    const match = findRoute("GET", "companion/assets/models/demo.vrm");
+    expect(match?.entry.hubMethod).toBe("companion.asset.get");
+    expect(match?.pathValues).toEqual({ kind: "models", fileName: "demo.vrm" });
+  });
+
   test("compiled routes have unique verb+path", () => {
     const seen = new Set<string>();
     for (const verb of ["GET", "POST"] as const) {

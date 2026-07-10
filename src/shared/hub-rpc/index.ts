@@ -48,13 +48,18 @@ export { resolveHubHttpUrl, resolveHubRpcWsUrl, hubHttpFromRpcWsUrl } from "./ur
 export {
   appendPayloadToQuery,
   buildHubRestRequest,
+  fetchHubRestRaw,
   hubHealthProbeUrl,
+  hubRestUrl,
   hubRpcRestPrefix,
+  hubTlsCaDownloadUrl,
   hubTlsCaInfoUrl,
+  isNonJsonHubHttpMethod,
   parseHubRestResponse,
   parseQueryToPayload,
+  throwHubRestError,
 } from "./http-rest.ts";
-export type { HubRestErrorBody } from "./http-rest.ts";
+export type { BuildHubRestRequestOptions, HubRestErrorBody } from "./http-rest.ts";
 
 export {
   getBundledHubRpcClient,

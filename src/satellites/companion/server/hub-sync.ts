@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { fetchHubRestRaw } from "@freeanima/shared/hub-rpc";
 import { hubRpcHttpCall } from "@freeanima/frontend/shell-sdk/hub-rpc-http";
 import {
   companionCacheDir,
@@ -104,32 +105,42 @@ async function downloadAsset(url: string): Promise<void> {
 }
 
 async function uploadLocalFile(
-  endpoint: "/api/companion/models/upload" | "/api/companion/motions/import",
+  method: "companion.model.upload" | "companion.motion.import",
   filePath: string,
 ): Promise<boolean> {
   const hubUrl = hubUrlFromConfig().replace(/\/$/, "");
   const token = remoteAuthTokenFromShell();
-  const headers: Record<string, string> = {};
-  if (token) headers.authorization = `Bearer ${token}`;
   const bytes = readFileSync(filePath);
   const name = filePath.split(/[/\\]/).pop() ?? "upload.bin";
   const form = new FormData();
   form.append("file", new Blob([bytes]), name);
-  const res = await fetch(`${hubUrl}${endpoint}`, { method: "POST", headers, body: form });
-  return res.ok;
+  try {
+    await fetchHubRestRaw(
+      hubUrl,
+      method,
+      {},
+      {
+        ...(token !== undefined ? { authToken: token } : {}),
+        body: form,
+      },
+    );
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function pushLocalAssetsToHub(): Promise<void> {
   for (const file of listDataFiles(companionModelsDir(), ".vrm")) {
     try {
-      await uploadLocalFile("/api/companion/models/upload", join(companionModelsDir(), file));
+      await uploadLocalFile("companion.model.upload", join(companionModelsDir(), file));
     } catch (e) {
       console.warn("[companion] model upload skipped:", file, e);
     }
   }
   for (const file of listDataFiles(companionMotionsDir(), ".vrma")) {
     try {
-      await uploadLocalFile("/api/companion/motions/import", join(companionMotionsDir(), file));
+      await uploadLocalFile("companion.motion.import", join(companionMotionsDir(), file));
     } catch (e) {
       console.warn("[companion] motion upload skipped:", file, e);
     }

@@ -1,7 +1,7 @@
 import type { z } from "zod";
 
 import type { HubMethodMeta } from "./transport.ts";
-import type { HttpRouteMeta } from "./http-route.ts";
+import type { HttpRouteMeta, HttpRequestEncoding, HttpResponseEncoding } from "./http-route.ts";
 
 /** 单个 Hub method 的契约定义 */
 export type HubMethodDef<
@@ -66,5 +66,40 @@ export function publicHttpMeta(): HubMethodMeta {
     defaultByProfile: { console: "http", satellite: "http" },
     fallback: false,
     auth: "optional",
+  };
+}
+
+/** publicHttpMeta + raw Response 响应（TLS PEM/QR 等） */
+export function rawPublicHttpMeta(): HubMethodMeta {
+  return {
+    ...publicHttpMeta(),
+    httpOverrides: { response: "raw" },
+  };
+}
+
+export type BinaryHttpMetaOptions = {
+  verb: "GET" | "POST";
+  path: string;
+  pathParams?: readonly string[];
+  request?: HttpRequestEncoding;
+  response?: HttpResponseEncoding;
+  auth?: HubMethodMeta["auth"];
+};
+
+/** 仅 HTTP + 非 JSON 请求/响应（companion 资产等） */
+export function binaryHttpMeta(options: BinaryHttpMetaOptions): HubMethodMeta {
+  const httpOverrides: Partial<HttpRouteMeta> = {
+    verb: options.verb,
+    path: options.path,
+  };
+  if (options.pathParams) httpOverrides.pathParams = options.pathParams;
+  if (options.request) httpOverrides.request = options.request;
+  if (options.response) httpOverrides.response = options.response;
+  return {
+    transports: ["http"],
+    defaultByProfile: { console: "http", satellite: "http" },
+    fallback: false,
+    ...(options.auth !== undefined ? { auth: options.auth } : {}),
+    httpOverrides,
   };
 }

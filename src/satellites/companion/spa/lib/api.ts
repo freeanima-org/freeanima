@@ -5,6 +5,7 @@ import type {
   MotionSlotId,
 } from "@freeanima/satellites/companion/shared/constants.ts";
 import type { CompanionBehavior } from "@freeanima/satellites/companion/shared/companion-schema.ts";
+import { fetchHubRestRaw, parseHubRestResponse } from "@freeanima/shared/hub-rpc";
 import { getCompanionHubClient, type CompanionHubConfigResponse } from "./hub-client.ts";
 import { resolveHubBaseUrl, resolveSidecarOrigin } from "./sidecar.ts";
 
@@ -90,14 +91,8 @@ export async function uploadModel(file: File) {
   const base = await hubBase();
   const form = new FormData();
   form.append("file", file);
-  const res = await fetch(`${base}/api/companion/models/upload`, {
-    method: "POST",
-    body: form,
-  });
-  if (!res.ok) {
-    const err = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new Error(err.error ?? `HTTP ${res.status}`);
-  }
+  const res = await fetchHubRestRaw(base, "companion.model.upload", {}, { body: form });
+  await parseHubRestResponse(res);
   const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
     "companion.config.get",
     {},
@@ -140,15 +135,8 @@ export async function uploadMotionFile(file: File) {
   const base = await hubBase();
   const form = new FormData();
   form.append("file", file);
-  const res = await fetch(`${base}/api/companion/motions/import`, {
-    method: "POST",
-    body: form,
-  });
-  if (!res.ok) {
-    const err = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new Error(err.error ?? `HTTP ${res.status}`);
-  }
-  const body = (await res.json()) as {
+  const res = await fetchHubRestRaw(base, "companion.motion.import", {}, { body: form });
+  const body = (await parseHubRestResponse(res)) as {
     library?: MotionLibraryEntry[];
     entries?: MotionLibraryEntry[];
     skipped_fbx?: string[];

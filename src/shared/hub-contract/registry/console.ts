@@ -11,7 +11,12 @@ import {
   subjectEntityCreateBodySchema,
   worldEntityCreateBodySchema,
 } from "./schemas.ts";
-import { defineHubMethod, dualTransportMeta, publicHttpMeta } from "../method-def.ts";
+import {
+  defineHubMethod,
+  dualTransportMeta,
+  publicHttpMeta,
+  rawPublicHttpMeta,
+} from "../method-def.ts";
 import { z } from "zod";
 
 const unknownOutputSchema = z.record(z.string(), z.unknown());
@@ -86,12 +91,12 @@ export const consoleMethodDefs = {
   "tls.ca.qr": defineHubMethod({
     input: tlsCaQrInputSchema,
     output: unknownOutputSchema,
-    meta: publicHttpMeta(),
+    meta: rawPublicHttpMeta(),
   }),
   "tls.ca": defineHubMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
-    meta: publicHttpMeta(),
+    meta: rawPublicHttpMeta(),
   }),
   "status.get": defineHubMethod({
     input: emptyInputSchema,

@@ -3,15 +3,14 @@ import { ApiHandlerError, apiErrorBody } from "../handlers/errors.ts";
 import { assertNotShuttingDown } from "./context.ts";
 import { applyCorsHeaders, corsPreflightResponse } from "./cors.ts";
 import { ttsRoutes } from "./routes/tts.ts";
-import { companionHttpRoutes } from "@freeanima/features/companion/hub/http";
 import { TerminalSessionError } from "@freeanima/platform/sap/terminal-session";
 
-/** 基础设施 HTTP：TTS / companion 资产（health/TLS 已迁 Hub RPC public methods） */
-export const apiApp = new Elysia({ prefix: "/api" }).use(ttsRoutes).use(companionHttpRoutes);
+/** 基础设施 HTTP：TTS（companion 资产已迁 Hub RPC） */
+export const apiApp = new Elysia({ prefix: "/api" }).use(ttsRoutes);
 
 export type App = typeof apiApp;
 
-/** Hub HTTP：TTS / companion；业务 API 走 Hub RPC REST/WS */
+/** Hub HTTP：TTS；业务与 companion 资产走 Hub RPC REST/WS */
 export function createApiApp() {
   return new Elysia()
     .onBeforeHandle(({ path, request, set }) => {

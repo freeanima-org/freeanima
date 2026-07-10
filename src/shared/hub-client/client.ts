@@ -10,12 +10,21 @@ import {
   type TransportKind,
 } from "@freeanima/shared/hub-contract";
 import type { RpcClient } from "@freeanima/shared/hub-rpc";
-import { buildHubRestRequest, parseHubRestResponse } from "@freeanima/shared/hub-rpc";
+import {
+  buildHubRestRequest,
+  isNonJsonHubHttpMethod,
+  parseHubRestResponse,
+  throwHubRestError,
+} from "@freeanima/shared/hub-rpc";
 
 export type HubCallOptions = {
   transport?: "auto" | TransportKind;
   profile?: HubClientProfile;
   signal?: AbortSignal;
+};
+
+export type HubCallRawOptions = HubCallOptions & {
+  body?: BodyInit;
 };
 
 export type HubClientOptions = {
@@ -78,6 +87,9 @@ export function createHubClient(options: HubClientOptions) {
     payload: HubMethodInputs[K],
     signal?: AbortSignal,
   ): Promise<HubMethodOutputs[K]> {
+    if (isNonJsonHubHttpMethod(method)) {
+      throw new Error(`hub method ${method} requires callRaw() for non-JSON HTTP`);
+    }
     const recordPayload = (payload ?? {}) as Record<string, unknown>;
     const { url, init } = buildHubRestRequest(
       options.httpOrigin,
@@ -148,7 +160,37 @@ export function createHubClient(options: HubClientOptions) {
     }
   }
 
-  return { call, callViaWs, callViaHttp };
+  async function callRaw<K extends HubMethod>(
+    method: K,
+    payload: HubMethodInputs[K],
+    opts: HubCallRawOptions = {},
+  ): Promise<Response> {
+    if (!isHubMethod(method)) {
+      throw new Error(`unknown hub method: ${method}`);
+    }
+    if (!isNonJsonHubHttpMethod(method)) {
+      throw new Error(`hub method ${method} should use call() for JSON HTTP`);
+    }
+    const def = getHubMethodDef(method);
+    def.input.parse(payload);
+
+    const recordPayload = (payload ?? {}) as Record<string, unknown>;
+    const { url, init } = buildHubRestRequest(
+      options.httpOrigin,
+      method,
+      recordPayload,
+      options.authToken,
+      opts.body !== undefined ? { body: opts.body } : undefined,
+    );
+    const res = await httpFetch(url, {
+      ...init,
+      ...(opts.signal !== undefined ? { signal: opts.signal } : {}),
+    });
+    if (res.ok) return res;
+    return throwHubRestError(res);
+  }
+
+  return { call, callRaw, callViaWs, callViaHttp };
 }
 
 export type HubClient = ReturnType<typeof createHubClient>;

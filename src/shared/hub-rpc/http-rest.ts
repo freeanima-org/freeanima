@@ -1,4 +1,9 @@
-import { getHubMethodDef, type HubMethod } from "@freeanima/shared/hub-contract";
+import {
+  getHubMethodDef,
+  resolveHttpRequestEncoding,
+  resolveHttpResponseEncoding,
+  type HubMethod,
+} from "@freeanima/shared/hub-contract";
 
 const HUB_RPC_REST_PREFIX = "/hub/rpc/v1";
 
@@ -8,12 +13,7 @@ export function hubRpcRestPrefix(): string {
 
 /** 无 token 探活 URL */
 export function hubHealthProbeUrl(httpOrigin: string): string {
-  return `${normalizeOrigin(httpOrigin)}${HUB_RPC_REST_PREFIX}health/probe`;
-}
-
-/** TLS CA 信息 URL（无 token） */
-export function hubTlsCaInfoUrl(httpOrigin: string): string {
-  return `${normalizeOrigin(httpOrigin)}${HUB_RPC_REST_PREFIX}tls/ca/info`;
+  return `${normalizeOrigin(httpOrigin)}${HUB_RPC_REST_PREFIX}/health/probe`;
 }
 
 function normalizeOrigin(httpOrigin: string): string {
@@ -119,11 +119,24 @@ function buildRestPath(
   return segments.join("/");
 }
 
+export type BuildHubRestRequestOptions = {
+  body?: BodyInit;
+};
+
+export function hubRestUrl(
+  httpOrigin: string,
+  method: HubMethod,
+  payload: Record<string, unknown>,
+): string {
+  return buildHubRestRequest(httpOrigin, method, payload).url;
+}
+
 export function buildHubRestRequest(
   httpOrigin: string,
   method: HubMethod,
   payload: Record<string, unknown>,
   authToken?: string,
+  options?: BuildHubRestRequestOptions,
 ): { url: string; init: RequestInit } {
   const def = getHubMethodDef(method);
   const http = def.meta.http;
@@ -135,6 +148,7 @@ export function buildHubRestRequest(
   const omitKeys = new Set(pathParams);
   const restPath = buildRestPath(http.path, pathParams, payload);
   const url = new URL(`${normalizeOrigin(httpOrigin)}${HUB_RPC_REST_PREFIX}/${restPath}`);
+  const requestEncoding = resolveHttpRequestEncoding(http);
 
   const headers: Record<string, string> = {};
   if (authToken?.trim()) {
@@ -146,22 +160,77 @@ export function buildHubRestRequest(
     return { url: url.toString(), init: { method: "GET", headers } };
   }
 
-  headers["Content-Type"] = "application/json";
-  const bodyPayload: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(payload)) {
-    if (!omitKeys.has(key)) {
-      bodyPayload[key] = value;
+  if (requestEncoding === "json") {
+    headers["Content-Type"] = "application/json";
+    const bodyPayload: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(payload)) {
+      if (!omitKeys.has(key)) {
+        bodyPayload[key] = value;
+      }
     }
+    return {
+      url: url.toString(),
+      init: { method: "POST", headers, body: JSON.stringify(bodyPayload) },
+    };
   }
-  return {
-    url: url.toString(),
-    init: { method: "POST", headers, body: JSON.stringify(bodyPayload) },
-  };
+
+  if (
+    requestEncoding === "multipart" &&
+    options?.body !== undefined &&
+    !(options.body instanceof FormData)
+  ) {
+    throw new Error(`hub method ${method} requires FormData body`);
+  }
+
+  const init: RequestInit = { method: "POST", headers };
+  if (options?.body !== undefined) {
+    init.body = options.body;
+  }
+  return { url: url.toString(), init };
 }
 
 export type HubRestErrorBody = {
   error: { code: string; message: string };
 };
+
+export async function throwHubRestError(res: Response): Promise<never> {
+  const text = await res.text();
+  try {
+    const parsed = JSON.parse(text) as Partial<HubRestErrorBody>;
+    const message = parsed.error?.message ?? (text || `HTTP ${res.status}`);
+    throw new Error(message);
+  } catch (e) {
+    if (e instanceof Error && e.message !== text) throw e;
+    throw new Error(text || `HTTP ${res.status}`, { cause: e });
+  }
+}
+
+export async function fetchHubRestRaw(
+  httpOrigin: string,
+  method: HubMethod,
+  payload: Record<string, unknown>,
+  options?: {
+    authToken?: string;
+    body?: BodyInit;
+    fetch?: typeof fetch;
+    signal?: AbortSignal;
+  },
+): Promise<Response> {
+  const { url, init } = buildHubRestRequest(
+    httpOrigin,
+    method,
+    payload,
+    options?.authToken,
+    options?.body !== undefined ? { body: options.body } : undefined,
+  );
+  const fetchFn = options?.fetch ?? globalThis.fetch;
+  const res = await fetchFn(url, {
+    ...init,
+    ...(options?.signal ? { signal: options.signal } : {}),
+  });
+  if (res.ok) return res;
+  return throwHubRestError(res);
+}
 
 export async function parseHubRestResponse(res: Response): Promise<unknown> {
   const text = await res.text();
@@ -180,4 +249,22 @@ export async function parseHubRestResponse(res: Response): Promise<unknown> {
   }
 
   return parsed;
+}
+
+/** TLS CA 信息 URL（无 token） */
+export function hubTlsCaInfoUrl(httpOrigin: string): string {
+  return hubRestUrl(httpOrigin, "tls.ca.info", {});
+}
+
+/** TLS CA PEM 下载 URL（无 token） */
+export function hubTlsCaDownloadUrl(httpOrigin: string): string {
+  return hubRestUrl(httpOrigin, "tls.ca", {});
+}
+
+export function isNonJsonHubHttpMethod(method: HubMethod): boolean {
+  const http = getHubMethodDef(method).meta.http;
+  if (!http) return false;
+  return (
+    resolveHttpRequestEncoding(http) !== "json" || resolveHttpResponseEncoding(http) !== "json"
+  );
 }
