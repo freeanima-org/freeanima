@@ -9,13 +9,6 @@ export type FeatureRpcHandler = (
   ctx: SapRequestContext,
 ) => Promise<unknown>;
 
-/** HTTP route registration hook (legacy; health/tts only). */
-export type FeatureHttpRegistrar = (register: FeatureHttpRouteRegistrar) => void;
-
-export type FeatureHttpRouteRegistrar = {
-  mount: (prefix: string, setup: () => void) => void;
-};
-
 export type FeatureShellRouteDef = {
   path: string;
   featureId: string;
@@ -29,6 +22,5 @@ export type FeaturePlugin = {
   };
   hub: {
     rpc?: Record<string, FeatureRpcHandler>;
-    registerHttp?: FeatureHttpRegistrar;
   };
 };

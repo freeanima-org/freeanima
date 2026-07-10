@@ -37,8 +37,3 @@ export function createBearerFetch(token: string, hubOrigin: string): BearerFetch
 export function hubHttpFromWsUrl(wsUrl: string): string {
   return wsUrl.replace(/^ws/i, "http").replace(/\/hub\/rpc\/v1\/?$/i, "");
 }
-
-export function hubRpcWsFromHttp(httpUrl: string): string {
-  const base = httpUrl.replace(/\/$/, "");
-  return `${base.replace(/^http/i, "ws")}/hub/rpc/v1`;
-}

@@ -1,5 +1,6 @@
-import type { FeatureHttpRegistrar, FeatureRpcHandler } from "@freeanima/platform/features";
+import type { FeatureRpcHandler } from "@freeanima/platform/features";
 import { consoleHubHandlers } from "./hub/console-api/console-hub-handlers.ts";
+import { tokensHubHandlers } from "./hub/console-api/handlers/service-api-tokens.ts";
 import { consolePublicHubHandlers } from "./hub/public-handlers.ts";
 import { handleTtsSynthesize } from "./hub/tts-handler.ts";
 
@@ -27,7 +28,10 @@ function wrapConsoleHandler(
 }
 
 function buildConsoleRpcHandlers(): Record<string, FeatureRpcHandler> {
-  const rpc: Record<string, FeatureRpcHandler> = { ...consolePublicHubHandlers };
+  const rpc: Record<string, FeatureRpcHandler> = {
+    ...consolePublicHubHandlers,
+    ...tokensHubHandlers,
+  };
   for (const [method, fn] of Object.entries(consoleHubHandlers)) {
     if (CHAT_HUB_RPC_METHODS.has(method)) continue;
     if (method in consolePublicHubHandlers) continue;
@@ -45,8 +49,5 @@ export const consolePlugin = {
   },
   hub: {
     rpc: buildConsoleRpcHandlers(),
-    registerHttp(_register: Parameters<FeatureHttpRegistrar>[0]) {
-      /* 业务 HTTP 均走 Hub RPC REST */
-    },
   },
 } as const;
