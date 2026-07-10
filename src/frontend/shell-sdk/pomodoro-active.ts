@@ -103,11 +103,21 @@ export function writePomodoroActiveState(
     if (state == null) {
       store.removeItem(key);
       removeLegacyKeysForSubject(kind);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("freeanima:pomodoro-active-changed", { detail: { subjectKind: kind } }),
+        );
+      }
       return;
     }
     const raw = JSON.stringify(state);
     store.setItem(key, raw);
     removeLegacyKeysForSubject(kind, key);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("freeanima:pomodoro-active-changed", { detail: { subjectKind: kind } }),
+      );
+    }
   } catch {
     /* ignore */
   }

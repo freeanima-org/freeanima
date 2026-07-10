@@ -80,6 +80,12 @@ import {
   pomodoroSessionListOutputSchema,
   pomodoroSessionStatsInputSchema,
   pomodoroSessionStatsOutputSchema,
+  pomodoroActiveGetInputSchema,
+  pomodoroActiveGetOutputSchema,
+  pomodoroActivePutInputSchema,
+  pomodoroActivePutOutputSchema,
+  pomodoroActiveClearInputSchema,
+  pomodoroActiveClearOutputSchema,
 } from "@freeanima/shared/sap-contract/frames/pomodoro";
 import { z } from "zod";
 
@@ -229,6 +235,21 @@ export const pomodoroMethodDefs = {
     input: pomodoroFocusListInputSchema,
     output: pomodoroFocusListOutputSchema,
     meta: dualTransportMeta(true),
+  }),
+  "pomodoro.active.get": defineHubMethod({
+    input: pomodoroActiveGetInputSchema,
+    output: pomodoroActiveGetOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "pomodoro.active.put": defineHubMethod({
+    input: pomodoroActivePutInputSchema,
+    output: pomodoroActivePutOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "pomodoro.active.clear": defineHubMethod({
+    input: pomodoroActiveClearInputSchema,
+    output: pomodoroActiveClearOutputSchema,
+    meta: dualTransportMeta(false),
   }),
 } as const;
 

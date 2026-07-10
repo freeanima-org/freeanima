@@ -1,17 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { deliverAlert, requestAlertPermission } from "@freeanima/frontend/shell-sdk/alert";
-import {
-  buildTaskFocusSegmentPayloads,
-  primaryTaskItemIdFromSegments,
-  switchWorkFocusTask,
-} from "@freeanima/frontend/shell-sdk/pomodoro-focus-segments.ts";
+import { requestAlertPermission } from "@freeanima/frontend/shell-sdk/alert";
+import { switchWorkFocusTask } from "@freeanima/frontend/shell-sdk/pomodoro-focus-segments.ts";
 import {
   clearPomodoroLaunchParamsFromUrl,
   getSubjectKind,
-  readPomodoroActiveState,
   readPomodoroLaunchParamsFromLocation,
-  writePomodoroActiveState,
 } from "@freeanima/frontend/shell-sdk";
+import {
+  getPomodoroSyncSnapshot,
+  subscribePomodoroSync,
+} from "@freeanima/frontend/shell-sdk/pomodoro-sync-local.ts";
 import {
   useHubConnection,
   useNetworkOnline,
@@ -31,8 +29,6 @@ import {
 
 import { TaskPickerDialog } from "./components/TaskPickerDialog.tsx";
 import {
-  abortPomodoroSession,
-  completePomodoroSession,
   fetchPomodoroConfig,
   fetchPomodoroSessions,
   fetchPomodoroStats,
@@ -44,17 +40,19 @@ import {
   type PomodoroTaskFocusRow,
 } from "./lib/api.ts";
 import { resolveTaskTitleForPicker } from "./lib/task-picker-api.ts";
+import { enqueuePomodoroConfigUpdate } from "./lib/pomodoro-offline-store.ts";
 import {
-  actualDurationMs,
+  applyPomodoroActive,
+  pullPomodoroActive,
+  runPhaseAbort,
+  runPhaseComplete,
+} from "./lib/pomodoro-sync.ts";
+import {
   createInitialActiveState,
-  nextPhaseAfterComplete,
   pauseActiveState,
-  phaseCompletionKey,
   phaseLabel,
   remainingMs,
   resumeActiveState,
-  shouldAutoStartNext,
-  startPhaseState,
   type PomodoroActiveState,
 } from "./lib/timer-engine.ts";
 
@@ -121,11 +119,11 @@ export function PomodoroApp() {
   const { kind: subjectKind } = useSubjectScope();
   const networkOnline = useNetworkOnline();
   const hubConnection = useHubConnection();
-  const writesDisabled = !networkOnline || hubConnection !== "connected";
+  const hubOnline = networkOnline && hubConnection === "connected";
 
   const [config, setConfig] = useState<PomodoroConfigRow | null>(null);
-  const [active, setActive] = useState<PomodoroActiveState | null>(() =>
-    readPomodoroActiveState(undefined, getSubjectKind()),
+  const [active, setActive] = useState<PomodoroActiveState | null>(
+    () => getPomodoroSyncSnapshot(getSubjectKind()).active,
   );
   const [tick, setTick] = useState(0);
   const [stats, setStats] = useState<PomodoroStats | null>(null);
@@ -139,7 +137,6 @@ export function PomodoroApp() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showSettings, setShowSettings] = useState(false);
-  const phaseHandledRef = useRef<string | null>(null);
   const autostartHandledRef = useRef(false);
   const [navTick, setNavTick] = useState(0);
 
@@ -172,16 +169,14 @@ export function PomodoroApp() {
     setFocusBySessionId(map);
   }, [subjectKind]);
 
-  const applyActive = useCallback(
-    (next: PomodoroActiveState | null) => {
-      setActive(next);
-      writePomodoroActiveState(next, undefined, subjectKind);
-      if (next?.taskItemId != null) {
-        setTaskItemId(next.taskItemId);
+  useEffect(() => {
+    return subscribePomodoroSync((snapshot) => {
+      setActive(snapshot.active);
+      if (snapshot.active?.taskItemId != null) {
+        setTaskItemId(snapshot.active.taskItemId);
       }
-    },
-    [subjectKind],
-  );
+    });
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -192,11 +187,11 @@ export function PomodoroApp() {
         const cfg = await fetchPomodoroConfig(subjectKind);
         if (cancelled) return;
         setConfig(cfg);
-        const restored = readPomodoroActiveState(undefined, subjectKind);
-        if (restored) {
-          setActive(restored);
-          if (restored.taskItemId != null) setTaskItemId(restored.taskItemId);
-        }
+        await pullPomodoroActive(subjectKind);
+        if (cancelled) return;
+        setActive(getPomodoroSyncSnapshot(subjectKind).active);
+        const restored = getPomodoroSyncSnapshot(subjectKind).active;
+        if (restored?.taskItemId != null) setTaskItemId(restored.taskItemId);
         await reloadMeta();
         void requestAlertPermission();
       } catch (e) {
@@ -208,7 +203,7 @@ export function PomodoroApp() {
     return () => {
       cancelled = true;
     };
-  }, [subjectKind, reloadMeta, applyActive]);
+  }, [subjectKind, reloadMeta]);
 
   useEffect(() => {
     autostartHandledRef.current = false;
@@ -237,7 +232,7 @@ export function PomodoroApp() {
 
     if (active) {
       if (launch.taskId != null && active.taskItemId !== launch.taskId) {
-        applyActive(switchWorkFocusTask(active, launch.taskId));
+        void applyPomodoroActive(switchWorkFocusTask(active, launch.taskId), subjectKind);
       }
       clearPomodoroLaunchParamsFromUrl();
       return;
@@ -246,15 +241,15 @@ export function PomodoroApp() {
     if (launch.autostart && launch.taskId != null && !autostartHandledRef.current) {
       autostartHandledRef.current = true;
       clearPomodoroLaunchParamsFromUrl();
-      phaseHandledRef.current = null;
-      applyActive(
+      void applyPomodoroActive(
         createInitialActiveState(config, {
           taskItemId: launch.taskId,
           sessionLocalId: crypto.randomUUID(),
         }),
+        subjectKind,
       );
     }
-  }, [loading, config, active, applyActive, navTick]);
+  }, [loading, config, active, subjectKind, navTick]);
 
   useEffect(() => {
     if (taskItemId == null) {
@@ -276,124 +271,65 @@ export function PomodoroApp() {
     return () => clearInterval(id);
   }, [active]);
 
-  const persistPhaseEnd = useCallback(
-    async (state: PomodoroActiveState, interrupted: boolean) => {
-      if (!config) return;
-      const finishedAt = new Date().toISOString();
-      const actual = actualDurationMs(state, Date.now());
-      const segments = buildTaskFocusSegmentPayloads(state, Date.now());
-      const payload = {
-        phase: state.phase,
-        started_at: state.phaseStartedAt,
-        finished_at: finishedAt,
-        planned_duration_ms: state.phasePlannedMs,
-        actual_duration_ms: actual,
-        task_item_id: primaryTaskItemIdFromSegments(segments) ?? state.taskItemId,
-        cycle_index: state.cycleIndex,
-        session_local_id: state.sessionLocalId,
-        ...(segments.length > 0 ? { task_focus_segments: segments } : {}),
-      };
-      if (interrupted) {
-        await abortPomodoroSession(subjectKind, payload);
-      } else {
-        await completePomodoroSession(subjectKind, payload);
-      }
-      await reloadMeta();
-    },
-    [config, subjectKind, reloadMeta],
-  );
-
-  const handlePhaseComplete = useCallback(
-    async (state: PomodoroActiveState) => {
-      if (!config) return;
-      const key = phaseCompletionKey(state);
-      if (phaseHandledRef.current === key) return;
-      phaseHandledRef.current = key;
-
-      const transition = nextPhaseAfterComplete(config, state.phase, state.completedWorkInCycle);
-      const autoStart = shouldAutoStartNext(config, state.phase);
-      // 先切换/清空活动态（与 handleAbort 一致），避免原 phaseEndsAt 到期再次落库
-      if (!autoStart) {
-        applyActive(null);
-      } else {
-        applyActive(
-          startPhaseState(
-            config,
-            state,
-            transition.nextPhase,
-            transition.cycleIndex,
-            transition.completedWorkInCycle,
-          ),
-        );
-      }
-
-      try {
-        await persistPhaseEnd(state, false);
-      } catch (e) {
-        setError(String(e instanceof Error ? e.message : e));
-        return;
-      }
-
-      if (config.notify_on_phase_end || config.sound_enabled) {
-        void deliverAlert(
-          {
-            title: `${phaseLabel(state.phase)}结束`,
-            body: state.phase === "work" ? "休息一下" : "准备下一轮专注",
-            tag: `pomodoro:${state.sessionLocalId}:${state.phase}`,
-            sound: config.sound_enabled,
-            silent: !config.notify_on_phase_end,
-          },
-          { sourceRoute: "/pomodoro", suppressOsWhenFocused: true },
-        );
-      }
-    },
-    [config, persistPhaseEnd, applyActive],
-  );
-
   useEffect(() => {
     if (!active || active.runState !== "running" || !config) return;
     if (remainingMs(active) > 0) return;
-    void handlePhaseComplete(active);
-  }, [active, config, tick, handlePhaseComplete]);
+    void (async () => {
+      try {
+        await runPhaseComplete({ state: active, config, subjectKind });
+        await reloadMeta();
+      } catch (e) {
+        setError(String(e instanceof Error ? e.message : e));
+      }
+    })();
+  }, [active, config, tick, subjectKind, reloadMeta]);
 
   const handleStart = () => {
     if (!config) return;
-    phaseHandledRef.current = null;
-    applyActive(
+    void applyPomodoroActive(
       createInitialActiveState(config, {
         taskItemId,
         sessionLocalId: crypto.randomUUID(),
       }),
+      subjectKind,
     );
   };
 
   const handlePauseResume = () => {
     if (!active) return;
-    applyActive(
+    void applyPomodoroActive(
       active.runState === "paused" ? resumeActiveState(active) : pauseActiveState(active),
+      subjectKind,
     );
   };
 
   const handleAbort = async () => {
     if (!active) return;
-    const snapshot = active;
-    applyActive(null);
-    if (!writesDisabled) {
-      try {
-        await persistPhaseEnd(snapshot, true);
-      } catch (e) {
-        setError(String(e instanceof Error ? e.message : e));
-      }
+    try {
+      await runPhaseAbort({ state: active, subjectKind });
+      await reloadMeta();
+    } catch (e) {
+      setError(String(e instanceof Error ? e.message : e));
     }
   };
 
   const handleSkip = async () => {
-    if (!active) return;
-    await handlePhaseComplete(active);
+    if (!active || !config) return;
+    try {
+      await runPhaseComplete({ state: active, config, subjectKind });
+      await reloadMeta();
+    } catch (e) {
+      setError(String(e instanceof Error ? e.message : e));
+    }
   };
 
   const handleConfigChange = async (patch: Partial<PomodoroConfigRow>) => {
-    if (!config || writesDisabled) return;
+    if (!config) return;
+    if (!hubOnline) {
+      await enqueuePomodoroConfigUpdate(subjectKind, patch);
+      setConfig({ ...config, ...patch });
+      return;
+    }
     try {
       const next = await updatePomodoroConfig(subjectKind, patch);
       setConfig(next);
@@ -496,7 +432,7 @@ export function PomodoroApp() {
                     setTaskItemId(null);
                     setLinkedTaskTitle(null);
                     if (active && canPickTaskWhileActive) {
-                      applyActive(switchWorkFocusTask(active, null));
+                      void applyPomodoroActive(switchWorkFocusTask(active, null), subjectKind);
                     }
                   }}
                 >
@@ -531,7 +467,7 @@ export function PomodoroApp() {
                   className="w-24"
                   type="number"
                   value={config[key]}
-                  disabled={writesDisabled}
+                  disabled={!hubOnline}
                   onChange={(e) => void handleConfigChange({ [key]: Number(e.target.value) })}
                 />
               </div>
@@ -548,7 +484,7 @@ export function PomodoroApp() {
                 <span>{label}</span>
                 <Switch
                   checked={config[key]}
-                  disabled={writesDisabled}
+                  disabled={!hubOnline}
                   onCheckedChange={(checked) => void handleConfigChange({ [key]: checked })}
                 />
               </div>
@@ -571,7 +507,7 @@ export function PomodoroApp() {
           setTaskItemId(nextId);
           setLinkedTaskTitle(task?.title ?? null);
           if (active && canPickTaskWhileActive) {
-            applyActive(switchWorkFocusTask(active, nextId));
+            void applyPomodoroActive(switchWorkFocusTask(active, nextId), subjectKind);
           }
         }}
       />

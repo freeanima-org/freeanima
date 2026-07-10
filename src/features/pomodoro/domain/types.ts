@@ -41,6 +41,7 @@ export type PomodoroSessionWriteInput = {
   interrupted?: boolean;
   title?: string;
   session_local_id?: string;
+  client_op_id?: string;
   task_focus_segments?: PomodoroTaskFocusWriteInput[];
 };
 

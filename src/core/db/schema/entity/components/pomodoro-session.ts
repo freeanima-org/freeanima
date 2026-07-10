@@ -14,6 +14,7 @@ export const pomodoroSessionBodySchema = z.object({
   task_item_id: z.number().int().positive().nullable().default(null),
   cycle_index: z.number().int().nonnegative().default(0),
   interrupted: z.boolean().default(false),
+  client_op_id: z.string().min(1).nullable().default(null),
 });
 
 export type PomodoroSessionBody = z.infer<typeof pomodoroSessionBodySchema>;

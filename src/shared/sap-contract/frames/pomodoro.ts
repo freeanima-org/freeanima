@@ -101,6 +101,7 @@ export const pomodoroSessionCompleteInputSchema = z.object({
   interrupted: z.boolean().optional(),
   title: z.string().optional(),
   session_local_id: z.string().min(1).optional(),
+  client_op_id: z.string().min(1).optional(),
   task_focus_segments: z.array(pomodoroTaskFocusSegmentInputSchema).optional(),
 });
 export type PomodoroSessionCompleteInput = z.infer<typeof pomodoroSessionCompleteInputSchema>;
@@ -120,6 +121,7 @@ export const pomodoroSessionAbortInputSchema = z.object({
   cycle_index: z.number().int().nonnegative().optional(),
   title: z.string().optional(),
   session_local_id: z.string().min(1).optional(),
+  client_op_id: z.string().min(1).optional(),
   task_focus_segments: z.array(pomodoroTaskFocusSegmentInputSchema).optional(),
 });
 export type PomodoroSessionAbortInput = z.infer<typeof pomodoroSessionAbortInputSchema>;
@@ -175,3 +177,55 @@ export const pomodoroFocusListOutputSchema = z.object({
   total: z.number().int().nonnegative(),
 });
 export type PomodoroFocusListOutput = z.infer<typeof pomodoroFocusListOutputSchema>;
+
+export const pomodoroFocusSegmentDraftSchema = z.object({
+  task_item_id: z.number().int().positive().nullable(),
+  started_at: z.string().min(1),
+  ended_at: z.string().nullable(),
+});
+
+export const pomodoroActiveStateSchema = z.object({
+  phase: pomodoroPhaseSchema,
+  run_state: z.enum(["running", "paused"]),
+  phase_planned_ms: z.number().int().positive(),
+  phase_ends_at: z.number().int().nullable(),
+  paused_remaining_ms: z.number().int().nonnegative().nullable(),
+  cycle_index: z.number().int().nonnegative(),
+  completed_work_in_cycle: z.number().int().nonnegative(),
+  task_item_id: z.number().int().positive().nullable(),
+  session_local_id: z.string().min(1),
+  phase_started_at: z.string().min(1),
+  focus_segments: z.array(pomodoroFocusSegmentDraftSchema),
+  device_id: z.string().min(1),
+  updated_at_ms: z.number().int().nonnegative(),
+});
+
+export type PomodoroActiveStatePayload = z.infer<typeof pomodoroActiveStateSchema>;
+
+export const pomodoroActiveGetInputSchema = z.object({
+  subject_kind: notificationRecipientKindSchema,
+});
+export type PomodoroActiveGetInput = z.infer<typeof pomodoroActiveGetInputSchema>;
+export const pomodoroActiveGetOutputSchema = z.object({
+  active: pomodoroActiveStateSchema.nullable(),
+});
+export type PomodoroActiveGetOutput = z.infer<typeof pomodoroActiveGetOutputSchema>;
+
+export const pomodoroActivePutInputSchema = z.object({
+  subject_kind: notificationRecipientKindSchema,
+  active: pomodoroActiveStateSchema,
+});
+export type PomodoroActivePutInput = z.infer<typeof pomodoroActivePutInputSchema>;
+export const pomodoroActivePutOutputSchema = z.object({
+  active: pomodoroActiveStateSchema.nullable(),
+});
+export type PomodoroActivePutOutput = z.infer<typeof pomodoroActivePutOutputSchema>;
+
+export const pomodoroActiveClearInputSchema = z.object({
+  subject_kind: notificationRecipientKindSchema,
+});
+export type PomodoroActiveClearInput = z.infer<typeof pomodoroActiveClearInputSchema>;
+export const pomodoroActiveClearOutputSchema = z.object({
+  ok: z.literal(true),
+});
+export type PomodoroActiveClearOutput = z.infer<typeof pomodoroActiveClearOutputSchema>;

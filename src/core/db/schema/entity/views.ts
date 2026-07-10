@@ -19,6 +19,7 @@ import {
   POMODORO_CONFIG_COMPONENT,
   POMODORO_SESSION_COMPONENT,
   POMODORO_TASK_FOCUS_COMPONENT,
+  POMODORO_ACTIVE_COMPONENT,
   WORLD_CONFIG_COMPONENT,
   diaryEntryBodySchema,
   dreamEntryBodySchema,
@@ -37,6 +38,7 @@ import {
   pomodoroConfigBodySchema,
   pomodoroSessionBodySchema,
   pomodoroTaskFocusBodySchema,
+  pomodoroActiveBodySchema,
   worldConfigBodySchema,
   type DiaryEntryBody,
   type DreamEntryBody,
@@ -55,6 +57,7 @@ import {
   type PomodoroConfigBody,
   type PomodoroSessionBody,
   type PomodoroTaskFocusBody,
+  type PomodoroActiveBody,
   type WorldConfigBody,
 } from "./components/index.ts";
 
@@ -216,6 +219,12 @@ export function asPomodoroTaskFocus(
 ): (PomodoroTaskFocusBody & { id: number }) | null {
   if (row.primary_component !== POMODORO_TASK_FOCUS_COMPONENT) return null;
   const parsed = pomodoroTaskFocusBodySchema.safeParse(row.body);
+  return parsed.success ? { id: row.id, ...parsed.data } : null;
+}
+
+export function asPomodoroActive(row: EntityRow): (PomodoroActiveBody & { id: number }) | null {
+  if (row.primary_component !== POMODORO_ACTIVE_COMPONENT) return null;
+  const parsed = pomodoroActiveBodySchema.safeParse(row.body);
   return parsed.success ? { id: row.id, ...parsed.data } : null;
 }
 

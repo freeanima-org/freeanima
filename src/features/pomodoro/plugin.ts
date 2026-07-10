@@ -6,6 +6,9 @@ import {
   handlePomodoroSessionComplete,
   handlePomodoroSessionList,
   handlePomodoroSessionStats,
+  handlePomodoroActiveGet,
+  handlePomodoroActivePut,
+  handlePomodoroActiveClear,
 } from "./hub/rpc.ts";
 
 /** Pomodoro feature plugin — registered by platform at boot. */
@@ -23,6 +26,9 @@ export const pomodoroPlugin = {
       "pomodoro.session.list": handlePomodoroSessionList,
       "pomodoro.session.stats": handlePomodoroSessionStats,
       "pomodoro.focus.list": handlePomodoroFocusList,
+      "pomodoro.active.get": handlePomodoroActiveGet,
+      "pomodoro.active.put": handlePomodoroActivePut,
+      "pomodoro.active.clear": handlePomodoroActiveClear,
     },
   },
 } as const;

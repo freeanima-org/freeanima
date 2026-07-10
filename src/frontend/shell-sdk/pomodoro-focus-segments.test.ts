@@ -39,4 +39,20 @@ describe("pomodoro-focus-segments", () => {
     expect(payloads[1]?.task_item_id).toBe(2);
     expect(payloads.every((segment) => segment.duration_ms > 0)).toBe(true);
   });
+
+  test("buildTaskFocusSegmentPayloads caps total duration to planned phase length", () => {
+    const planned = 25 * 60_000;
+    const started = 1_000_000;
+    const state = workState(1);
+    const overdueState: PomodoroActiveState = {
+      ...state,
+      phasePlannedMs: planned,
+      phaseEndsAt: started + planned,
+    };
+    const nowMs = started + 3 * 60 * 60_000;
+    const payloads = buildTaskFocusSegmentPayloads(overdueState, nowMs);
+    expect(payloads).toHaveLength(1);
+    const total = payloads.reduce((sum, s) => sum + s.duration_ms, 0);
+    expect(total).toBe(planned);
+  });
 });

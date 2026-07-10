@@ -102,6 +102,9 @@ function buildPomodoroSessionBodyConditions(
   if (filters.task_item_id != null) {
     conditions.push(sql`${entities.body}->>'task_item_id' = ${String(filters.task_item_id)}`);
   }
+  if (filters.client_op_id) {
+    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+  }
   return conditions;
 }
 

@@ -13,6 +13,7 @@ import { ShellConnectivityBar } from "../ShellConnectivityBar.tsx";
 import { filterVisibleNavItems, shellNavItems, type ShellNavItem } from "../lib/shell-nav-i18n.ts";
 import { useShellBottomNavLayout } from "../lib/use-shell-bottom-nav-layout.ts";
 import { ShellModuleRail } from "./ShellModuleRail.tsx";
+import { PomodoroShellWatcher } from "@freeanima/features/pomodoro/ui/spa/PomodoroShellWatcher.tsx";
 
 function useNavActive(match: string): boolean {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -166,6 +167,7 @@ export function ModuleShell() {
   return (
     <SubjectScopeProvider>
       <ShellModuleVisibilityGuard />
+      <PomodoroShellWatcher />
       {isCompactLayout(layoutMode) ? <MobileModuleShell /> : <DesktopModuleShell />}
     </SubjectScopeProvider>
   );
