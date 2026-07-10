@@ -101,7 +101,11 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
 
         {tab === "providers" ? (
           <>
-            <LlmProvidersForm value={providersDraft} onChange={setProvidersDraft} />
+            <LlmProvidersForm
+              value={providersDraft}
+              onChange={setProvidersDraft}
+              testDisabled={saving}
+            />
             <Button type="button" disabled={saving} onClick={() => void saveProviders()}>
               保存 providers
             </Button>

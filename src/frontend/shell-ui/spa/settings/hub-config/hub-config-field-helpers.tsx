@@ -96,6 +96,7 @@ export function HubConfigRecordEntryEditor({
   value,
   onChange,
   renderFields,
+  renderToolbar,
 }: {
   label: string;
   value: Record<string, unknown> | null | undefined;
@@ -104,6 +105,7 @@ export function HubConfigRecordEntryEditor({
     entry: Record<string, unknown>,
     patch: (part: Record<string, unknown>) => void,
   ) => ReactNode;
+  renderToolbar?: (ctx: { activeKey: string; entry: Record<string, unknown> }) => ReactNode;
 }) {
   const entries = useMemo(() => readHubConfigRecord(value), [value]);
   const keys = useMemo(() => Object.keys(entries).toSorted(), [entries]);
@@ -178,7 +180,10 @@ export function HubConfigRecordEntryEditor({
         ) : null}
       </div>
       {entry ? (
-        renderFields(entry, patchEntry)
+        <>
+          {renderFields(entry, patchEntry)}
+          {renderToolbar && activeKey ? renderToolbar({ activeKey, entry }) : null}
+        </>
       ) : (
         <p className="text-sm text-muted-foreground">暂无条目，请先添加。</p>
       )}

@@ -9,6 +9,7 @@ import {
   hubConfigTextField,
   readHubConfigRecord,
 } from "./hub-config-field-helpers.tsx";
+import { HubConfigConnectionTestButton } from "./HubConfigConnectionTestButton.tsx";
 
 const OPENAI_COMPATIBLE_BACKEND_ID = "openai_compatible";
 
@@ -261,15 +262,25 @@ function LlmChainEditor({
 export function LlmProvidersForm({
   value,
   onChange,
+  testDisabled,
 }: {
   value: Record<string, unknown>;
   onChange: (v: Record<string, unknown>) => void;
+  testDisabled?: boolean;
 }) {
   return (
     <HubConfigRecordEntryEditor
       label="provider"
       value={value}
       onChange={onChange}
+      renderToolbar={({ activeKey, entry }) => (
+        <HubConfigConnectionTestButton
+          service="llm_provider"
+          providerId={activeKey}
+          config={entry}
+          disabled={testDisabled ?? false}
+        />
+      )}
       renderFields={(entry, patch) => (
         <div className="space-y-4">
           <div className="space-y-1">
