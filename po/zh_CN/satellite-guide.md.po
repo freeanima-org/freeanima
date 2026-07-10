@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-06 11:54+0800\n"
+"POT-Creation-Date: 2026-07-10 23:57+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/sap/satellite-guide.md:1 docs/sap/satellite-guide.md:5
-#: messages/po4a/en.xml:598
+#: messages/po4a/en.xml:619
 #, no-wrap
 msgid "Satellite Guide"
 msgstr "卫星指南"
@@ -110,8 +110,9 @@ msgstr ""
 
 #. type: Plain text
 #: docs/sap/satellite-guide.md:35
-#, no-wrap
-msgid "**Startup:** managed satellites start only after Hub `GET /api/health` returns `status: ok`.\n"
+#, fuzzy, no-wrap
+#| msgid "**Startup:** managed satellites start only after Hub `GET /api/health` returns `status: ok`.\n"
+msgid "**Startup:** managed satellites start only after Hub `GET /hub/rpc/v1/health/probe` returns `status: ok`.\n"
 msgstr "**启动：** 托管卫星仅在 Hub `GET /api/health` 返回 `status: ok` 之后才会启动。\n"
 
 #. type: Plain text
@@ -360,8 +361,8 @@ msgstr "壳内 Bundled Hub RPC — shell 模块（聊天室、任务、通知等
 #| "direct-client.ts) on `/hub/rpc/v1`."
 msgid ""
 "Modules use shared [`getBundledHubRpcClient`](../../src/shared/hub-rpc/"
-"bundled.ts) / [`createSapDirectClient`](../../src/shared/sap-contract/direct-"
-"client.ts) on `/hub/rpc/v1`."
+"bundled.ts) / [`getBundledSapStreamClient`](../../src/shared/sap-contract/"
+"bundled-sap-stream.ts) on `/hub/rpc/v1`."
 msgstr ""
 "模块在 `/hub/rpc/v1` 上使用共享的 [`getBundledHubRpcClient`](../../packages/"
 "hub-rpc/src/bundled.ts) / [`createSapDirectClient`](../../packages/sap-"
@@ -395,9 +396,9 @@ msgstr ""
 #| "Hub; static UI from [`satellites/chat/server/index.ts`](../../satellites/"
 #| "chat/server/index.ts) for static hosting only (no SAP relay)."
 msgid ""
-"**Shell / browser dev (recommended)**: `createSapDirectClient` on shared Hub "
-"RPC; UI from [`src/features/chat/ui/spa/`](../../src/features/chat/ui/spa/) "
-"embedded in shell-ui (no SAP relay, no `sap.attach`)."
+"**Shell / browser dev (recommended)**: `getBundledSapStreamClient` on shared "
+"Hub RPC; UI from [`src/features/chat/ui/spa/`](../../src/features/chat/ui/"
+"spa/) embedded in shell-ui (no SAP relay, no `sap.attach`)."
 msgstr ""
 "**Shell / 浏览器开发（推荐）**：`createSapDirectClient` 连接共享 Hub RPC；UI "
 "来自 [`src/features/chat/ui/spa/`](../../src/features/chat/ui/spa/)，嵌入 "
@@ -491,9 +492,23 @@ msgstr ""
 
 #. type: Fenced code block (typescript)
 #: docs/sap/satellite-guide.md:119
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "import { createSatelliteHub, fileSapInstanceStore } from \"@freeanima/sap-contract\";\n"
+#| "\n"
+#| "const hub = createSatelliteHub({\n"
+#| "  appId: \"my-app\",\n"
+#| "  hubUrl: process.env.FREEANIMA_URL ?? \"http://127.0.0.1:2658\",\n"
+#| "  httpUrl: `http://127.0.0.1:${process.env.SATELLITE_PORT ?? 4173}`,\n"
+#| "  instanceStore: fileSapInstanceStore(\"/path/to/instance.json\"),\n"
+#| "  relay: false,\n"
+#| "  tools: [],\n"
+#| "  onConnected: async () => {\n"
+#| "    /* optional conversation.create — connect does not auto-create conversations */\n"
+#| "  },\n"
+#| "});\n"
 msgid ""
-"import { createSatelliteHub, fileSapInstanceStore } from \"@freeanima/sap-contract\";\n"
+"import { createSatelliteHub, fileSapInstanceStore } from \"@freeanima/shared/sap-contract\";\n"
 "\n"
 "const hub = createSatelliteHub({\n"
 "  appId: \"my-app\",\n"
@@ -530,8 +545,9 @@ msgstr "**Machine 策略（companion、结对编程）：** 首次连接省略 `
 
 #. type: Plain text
 #: docs/sap/satellite-guide.md:138
-#, no-wrap
-msgid "**Singleton strategy (chat):** pass fixed `instance_id` (or `instanceId` option on `createSapDirectClient`); Hub auto-provisions on first sight.\n"
+#, fuzzy, no-wrap
+#| msgid "**Singleton strategy (chat):** pass fixed `instance_id` (or `instanceId` option on `createSapDirectClient`); Hub auto-provisions on first sight.\n"
+msgid "**Singleton strategy (chat):** pass fixed `instance_id` (or `instanceId` option on `getBundledSapStreamClient`); Hub auto-provisions on first sight.\n"
 msgstr "**Singleton 策略（聊天室）：** 传入固定 `instance_id`（或 `createSapDirectClient` 的 `instanceId` 选项）；Hub 在首次见到时自动预配。\n"
 
 #. type: Plain text

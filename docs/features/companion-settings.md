@@ -1,3 +1,7 @@
+---
+title: Companion Settings
+---
+
 # 桌面伴侣设置
 
 伴侣配置分两层存储：

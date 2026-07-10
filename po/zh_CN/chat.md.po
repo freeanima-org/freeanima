@@ -1,0 +1,121 @@
+# Chinese translations for PACKAGE package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-07-11 00:01+0800\n"
+"PO-Revision-Date: 2026-07-10 23:57+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Content of: <messages><msg>
+#: docs/features/chat.md:1 messages/po4a/en.xml:359 messages/po4a/en.xml:364
+#, no-wrap
+msgid "Chat"
+msgstr "聊天室"
+
+#. type: Title #
+#: docs/features/chat.md:5
+#, no-wrap
+msgid "Chat — 离线发送与多端冲突"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/chat.md:8
+msgid ""
+"Chat SPA 支持 **离线写入 outbox**、上线后 **自动重试**，并通过 Hub 侧幂等与 "
+"tail CAS 避免重复发送与陈旧消息。"
+msgstr ""
+
+#. type: Title ##
+#: docs/features/chat.md:9
+#, no-wrap
+msgid "客户端"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/chat.md:15
+msgid ""
+"发送先入 IndexedDB `outbox`（`moduleId: chat`），并乐观显示 user bubble"
+"（`sendStatus: pending`）。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/chat.md:15
+msgid "离线时可输入并发送；消息排队，Hub 恢复后按 FIFO 重试。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/chat.md:15
+msgid "重试前调用 `conversation.tail` 对比入队时的 `expected_tail_pos`。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/chat.md:15
+msgid ""
+"**tail 不一致**（会话已在别端继续）：标记 `stale`，默认不发送；用户可 **丢弃"
+"** 或 **仍要发送**（`force_tail`）。"
+msgstr ""
+
+#. type: Title ##
+#: docs/features/chat.md:16
+#, no-wrap
+msgid "Hub 协议"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/chat.md:19
+msgid "`message.send` 可选字段："
+msgstr ""
+
+#. type: Plain text
+#: docs/features/chat.md:25
+#, no-wrap
+msgid ""
+"| 字段                | 说明                                 |\n"
+"| ------------------- | ------------------------------------ |\n"
+"| `client_op_id`      | 幂等键；重复请求不重复写入 user 消息 |\n"
+"| `expected_tail_pos` | 发送时观测的 `max(pos)`，空会话为 0  |\n"
+"| `force_tail`        | 跳过 CAS，追加到当前末尾             |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/chat.md:27
+msgid "`conversation.tail` 返回 `{ tail_pos, tail_role?, updated_at? }`。"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/chat.md:29
+msgid "流错误 `code`："
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/chat.md:32
+msgid "`tail_conflict` — CAS 失败"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/chat.md:32
+msgid "幂等已完成时直接 `accepted` + `done`"
+msgstr ""
+
+#. type: Title ##
+#: docs/features/chat.md:33
+#, no-wrap
+msgid "与 Tier 2 离线平台"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/chat.md:35
+msgid ""
+"Outbox 布局与 [`shell-sdk/offline-outbox`](../../src/frontend/shell-sdk/"
+"offline-outbox.ts) 对齐；Chat flush 走 WS 流式 `message.send`，非通用 "
+"`hub().call` 单次响应。"
+msgstr ""

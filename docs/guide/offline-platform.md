@@ -1,3 +1,7 @@
+---
+title: Offline Platform
+---
+
 # 离线平台（Tier 2）
 
 FreeAnima 卫星壳离线能力分三层：

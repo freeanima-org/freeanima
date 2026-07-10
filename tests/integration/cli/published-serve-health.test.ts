@@ -3,6 +3,7 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { closeDb, initDatabase, upsertHubRuntimeConfigDocument } from "@freeanima/core/db/pg";
 import { describePg, pgTestUrl } from "../../helpers/pg-test-gate.ts";
 import { beginLogIsolation } from "../../helpers/log-isolation.ts";
 import { restoreIntegrationHome } from "../../helpers/integration-case.ts";
@@ -13,6 +14,30 @@ const publishRoot = join(repoRoot, "src/app/cli/publish");
 const cliJs = join(publishRoot, "dist/cli.js");
 const TEST_PORT = 18_658;
 const HEALTH_TIMEOUT_MS = 120_000;
+
+const PUBLISHED_CLI_RUNTIME_CONFIG = {
+  llm: {
+    default_profile: "chat",
+    providers: {
+      main: {
+        backend: "openai_compatible",
+        base_url: "https://api.openai.com/v1",
+        api_key: "test-key",
+      },
+    },
+    profiles: {
+      chat: { chain: [{ provider: "main", model: "test-model" }] },
+      reflect: { chain: [{ provider: "main", model: "test-model" }] },
+      summary: { chain: [{ provider: "main", model: "test-model" }] },
+    },
+  },
+};
+
+async function seedPublishedCliRuntimeConfig(url: string): Promise<void> {
+  initDatabase({ getDatabaseUrl: () => url });
+  await upsertHubRuntimeConfigDocument(PUBLISHED_CLI_RUNTIME_CONFIG);
+  await closeDb();
+}
 
 function assertPublishedCliBuilt(): void {
   if (existsSync(cliJs)) return;
@@ -62,10 +87,11 @@ describePg("published CLI HTTP health", () => {
     assertPublishedCliBuilt();
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     if (!pgTestUrl) throw new Error("ANIMA_TEST_PG_URL is not set");
     home = beginLogIsolation("published-cli-serve-");
     writeIntegrationDatabaseConfig(home, pgTestUrl);
+    await seedPublishedCliRuntimeConfig(pgTestUrl);
 
     child = spawn(
       process.execPath,

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-06 11:54+0800\n"
+"POT-Creation-Date: 2026-07-10 23:57+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/sap/satellite-guide.md:1 docs/sap/satellite-guide.md:5
-#: messages/po4a/en.xml:598
+#: messages/po4a/en.xml:619
 #, no-wrap
 msgid "Satellite Guide"
 msgstr ""
@@ -88,7 +88,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/satellite-guide.md:35
 #, no-wrap
-msgid "**Startup:** managed satellites start only after Hub `GET /api/health` returns `status: ok`.\n"
+msgid "**Startup:** managed satellites start only after Hub `GET /hub/rpc/v1/health/probe` returns `status: ok`.\n"
 msgstr ""
 
 #. type: Plain text
@@ -258,8 +258,8 @@ msgstr ""
 #: docs/sap/satellite-guide.md:100
 msgid ""
 "Modules use shared [`getBundledHubRpcClient`](../../src/shared/hub-rpc/"
-"bundled.ts) / [`createSapDirectClient`](../../src/shared/sap-contract/direct-"
-"client.ts) on `/hub/rpc/v1`."
+"bundled.ts) / [`getBundledSapStreamClient`](../../src/shared/sap-contract/"
+"bundled-sap-stream.ts) on `/hub/rpc/v1`."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -283,9 +283,9 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:105
 msgid ""
-"**Shell / browser dev (recommended)**: `createSapDirectClient` on shared Hub "
-"RPC; UI from [`src/features/chat/ui/spa/`](../../src/features/chat/ui/spa/) "
-"embedded in shell-ui (no SAP relay, no `sap.attach`)."
+"**Shell / browser dev (recommended)**: `getBundledSapStreamClient` on shared "
+"Hub RPC; UI from [`src/features/chat/ui/spa/`](../../src/features/chat/ui/"
+"spa/) embedded in shell-ui (no SAP relay, no `sap.attach`)."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -351,7 +351,7 @@ msgstr ""
 #: docs/sap/satellite-guide.md:119
 #, no-wrap
 msgid ""
-"import { createSatelliteHub, fileSapInstanceStore } from \"@freeanima/sap-contract\";\n"
+"import { createSatelliteHub, fileSapInstanceStore } from \"@freeanima/shared/sap-contract\";\n"
 "\n"
 "const hub = createSatelliteHub({\n"
 "  appId: \"my-app\",\n"
@@ -375,7 +375,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/satellite-guide.md:138
 #, no-wrap
-msgid "**Singleton strategy (chat):** pass fixed `instance_id` (or `instanceId` option on `createSapDirectClient`); Hub auto-provisions on first sight.\n"
+msgid "**Singleton strategy (chat):** pass fixed `instance_id` (or `instanceId` option on `getBundledSapStreamClient`); Hub auto-provisions on first sight.\n"
 msgstr ""
 
 #. type: Plain text

@@ -1,5 +1,5 @@
 import { buildBearerHeaders } from "./remote-auth.ts";
-import { hubHealthProbeUrl } from "@freeanima/shared/hub-rpc";
+import { hubHealthProbeUrl } from "@freeanima/shared/hub-rpc/urls.ts";
 
 export type HubHealthBody = {
   status?: string;

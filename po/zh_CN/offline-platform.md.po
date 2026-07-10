@@ -1,0 +1,179 @@
+# Chinese translations for PACKAGE package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-07-11 00:02+0800\n"
+"PO-Revision-Date: 2026-07-10 23:57+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Yaml Front Matter Hash Value: title
+#: docs/guide/offline-platform.md:1
+#, fuzzy, no-wrap
+#| msgid "Platform"
+msgid "Offline Platform"
+msgstr "平台"
+
+#. type: Title #
+#: docs/guide/offline-platform.md:5
+#, no-wrap
+msgid "离线平台（Tier 2）"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/offline-platform.md:8
+msgid "FreeAnima 卫星壳离线能力分三层："
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/offline-platform.md:15
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Round | Intent                                                                  |\n"
+#| "| ----- | ----------------------------------------------------------------------- |\n"
+#| "| 1     | Contradiction detection + expiry marking                                |\n"
+#| "| 2     | Split multi-fact entries                                                |\n"
+#| "| 3     | Dedup merge similar entries                                             |\n"
+#| "| 4     | Pin quality review (unpin stale pins; resident read still capped at 40) |\n"
+msgid ""
+"| 层级          | 能力                      | 模块                                   |\n"
+"| ------------- | ------------------------- | -------------------------------------- |\n"
+"| Tier 1        | IndexedDB 只读快照        | Email、Notification、Console、Dream 等 |\n"
+"| Tier 2-CRUD   | outbox + 乐观 KV          | Diary、Task                            |\n"
+"| Tier 2-Hybrid | outbox + localStorage LWW | Pomodoro（active 计时）                |\n"
+"| Tier 2-Stream | SAP 流式 flush            | Chat send                              |\n"
+msgstr ""
+"| 轮次 | 意图                                   |\n"
+"| ----- | ---------------------------------------- |\n"
+"| 1     | 矛盾检测 + 过期标记 |\n"
+"| 2     | 拆分多事实条目                 |\n"
+"| 3     | 去重合并相似条目              |\n"
+"| 4     | 置顶质量审查（解除过时置顶；常驻读仍上限 40 条）       |\n"
+
+#. type: Title ##
+#: docs/guide/offline-platform.md:16
+#, no-wrap
+msgid "平台原语（shell-sdk）"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/offline-platform.md:25
+msgid "`offline-cache` — Tier 1 KV 快照"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/offline-platform.md:25
+msgid "`offline-outbox` — 跨模块写队列"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/offline-platform.md:25
+msgid "`offline-id-map` / `offline-temp-id` — 本地负 id → server id"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/offline-platform.md:25
+msgid "`offline-module-registry` — Rpc / Stream 双适配器注册"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/offline-platform.md:25
+msgid "`offline-sync` — 重连/可见时 orchestrator flush + refreshAll"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/offline-platform.md:25
+msgid "`offline-cache-first` — `withOfflineCache()` 统一读路径"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/offline-platform.md:25
+msgid ""
+"`hub-fetch-gate` — `isHubFetchAvailable()`：断网 **或** Hub 非 `connected` 时"
+"不发起 Hub RPC 读/flush，只读 IndexedDB 快照"
+msgstr ""
+
+#. type: Title ##
+#: docs/guide/offline-platform.md:26
+#, no-wrap
+msgid "读路径 gate"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/offline-platform.md:29
+msgid ""
+"`isHubFetchAvailable()` = `navigator.onLine !== false` **且** "
+"`getHubRpcConnectionState() === \"connected\"`。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/offline-platform.md:33
+msgid "Tier 1：`withOfflineCache()` 内置 gate"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/offline-platform.md:33
+msgid ""
+"Tier 2 模块：`api.ts` / store 在拉列表前先读本地缓存，gate 为 false 时直接返"
+"回、不等待 RPC 超时"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/offline-platform.md:33
+msgid ""
+"`flushOfflineModule` / `flushAllOfflineModules`：gate 为 false 时 no-op，重连"
+"后由 `OfflineSyncBootstrap` 触发 flush"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/offline-platform.md:35
+msgid ""
+"写 RPC 可选 `client_op_id`；flush 重试使用同一 id；create 响应含完整 `item` "
+"供 id-map 写入。"
+msgstr ""
+
+#. type: Title ##
+#: docs/guide/offline-platform.md:36
+#, no-wrap
+msgid "接入清单"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/guide/offline-platform.md:43
+msgid "Hub 写 RPC 支持 `client_op_id`（若尚未有）"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/guide/offline-platform.md:43
+msgid "实现 `features/<slug>/ui/spa/lib/offline-store.ts`（或 stream adapter）"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/guide/offline-platform.md:43
+msgid ""
+"`registerOfflineModule(adapter)` + "
+"`registerOfflineModuleCap({ offlineWritable: true })`"
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/guide/offline-platform.md:43
+msgid "`api.ts` 写路径委托 offline-store"
+msgstr ""
+
+#. type: Bullet: '5. '
+#: docs/guide/offline-platform.md:43
+msgid "更新 `docs/guide/remote-access.md`"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/offline-platform.md:44
+msgid "冲突策略：单设备；flush 后 refreshAll，以 Hub 为准。"
+msgstr ""

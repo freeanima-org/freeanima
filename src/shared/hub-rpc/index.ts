@@ -43,15 +43,20 @@ export type {
   HubRpcTransportHandle,
 } from "./transport.ts";
 
-export { resolveHubHttpUrl, resolveHubRpcWsUrl, hubHttpFromRpcWsUrl } from "./urls.ts";
+export {
+  resolveHubHttpUrl,
+  resolveHubRpcWsUrl,
+  hubHttpFromRpcWsUrl,
+  hubHealthProbeUrl,
+  hubRpcRestPrefix,
+  HUB_RPC_REST_PREFIX,
+} from "./urls.ts";
 
 export {
   appendPayloadToQuery,
   buildHubRestRequest,
   fetchHubRestRaw,
-  hubHealthProbeUrl,
   hubRestUrl,
-  hubRpcRestPrefix,
   hubTlsCaDownloadUrl,
   hubTlsCaInfoUrl,
   isNonJsonHubHttpMethod,

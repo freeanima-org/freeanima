@@ -1,4 +1,4 @@
-import { m } from "@paraglide/messages";
+import { m } from "../../../messages/paraglide/messages.js";
 
 type SidebarMessageFn = (typeof m)["sidebar_home"];
 

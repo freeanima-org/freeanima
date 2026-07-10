@@ -2,9 +2,15 @@ import { afterAll, afterEach, beforeEach, describe, expect, it } from "bun:test"
 
 import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
 import { createServiceApiTokenWithSecret } from "@freeanima/core/db/pg/service-api-token";
-import { getAppRuntime } from "@freeanima/platform/ports";
+import { getAppRuntime } from "@freeanima/platform";
 import { createSapBunHandlers } from "@freeanima/platform/sap/bun-route";
-import { getSapServerDeps } from "@freeanima/platform/sap/runtime-context";
+import {
+  bindSapServerDeps,
+  clearSapServerDeps,
+  getSapServerDeps,
+} from "@freeanima/platform/sap/runtime-context";
+import { SapInstanceRegistry } from "@freeanima/platform/sap/instance-registry";
+import type { SatelliteManager } from "@freeanima/capabilities/satellite";
 
 import { bindConsoleRuntimeContext } from "@freeanima/features/console/hub/console-api/handlers/runtime.ts";
 import { applyHttpAuth } from "@freeanima/features/console/hub/console-api/http-dispatch.ts";
@@ -33,6 +39,7 @@ describePg("service API tokens", () => {
   }
 
   afterAll(async () => {
+    clearSapServerDeps();
     await endIntegrationCase();
   });
 
@@ -40,10 +47,19 @@ describePg("service API tokens", () => {
     beforeEach(async () => {
       await beginIntegrationCase("freeanima-svc-auth-");
       bindConsoleRuntimeContext();
-      getAppRuntime().markStarted();
+      const runtime = getAppRuntime();
+      runtime.markStarted();
+      bindSapServerDeps({
+        runtime,
+        satelliteManager: runtime.fullDeps().satellite as SatelliteManager,
+        instanceRegistry: new SapInstanceRegistry(false),
+        animaVersion: "test",
+        masks: runtime.fullDeps().masks,
+      });
     });
 
     afterEach(async () => {
+      clearSapServerDeps();
       await restoreIntegrationHome(prev);
     });
 
@@ -57,7 +73,7 @@ describePg("service API tokens", () => {
 
     it("GET /api/status 已移除", async () => {
       const res = await hubFetch("/api/status");
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(401);
     });
 
     it("POST /mcp on loopback without token returns 401", async () => {

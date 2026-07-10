@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-06 11:54+0800\n"
+"POT-Creation-Date: 2026-07-10 23:57+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,26 +15,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Title ##
-#: docs/sap/hub-rpc.md:11 docs/sap/transport.md:14
-#, no-wrap
-msgid "Endpoint"
-msgstr "端点"
-
-#. type: Fenced code block (text)
-#: docs/sap/hub-rpc.md:13 docs/sap/transport.md:16
-#, no-wrap
-msgid "ws://{hub_host}:{port}/hub/rpc/v1\n"
-msgstr "ws://{hub_host}:{port}/hub/rpc/v1\n"
-
-#. type: Title ##
-#: docs/sap/hub-rpc.md:21 docs/sap/transport.md:24
-#, no-wrap
-msgid "Envelope kinds"
-msgstr "信封类型"
-
 #. type: Content of: <messages><msg>
-#: docs/sap/hub-rpc.md:50 docs/sap/transport.md:99 messages/po4a/en.xml:138
+#: docs/sap/hub-rpc.md:91 docs/sap/transport.md:99 messages/po4a/en.xml:144
 #, no-wrap
 msgid "Reconnect"
 msgstr "重连"
@@ -77,6 +59,18 @@ msgid ""
 msgstr ""
 "壳内 bundled SPA 客户端仅使用第 1 层。传输细节见 [hub-rpc.md](hub-rpc.md)。"
 
+#. type: Title ##
+#: docs/sap/transport.md:14
+#, no-wrap
+msgid "Endpoint"
+msgstr "端点"
+
+#. type: Fenced code block (text)
+#: docs/sap/transport.md:16
+#, no-wrap
+msgid "ws://{hub_host}:{port}/hub/rpc/v1\n"
+msgstr "ws://{hub_host}:{port}/hub/rpc/v1\n"
+
 #. type: Plain text
 #: docs/sap/transport.md:21
 msgid ""
@@ -101,6 +95,12 @@ msgstr ""
 "实现位于 [`platform/src/sap/bun-route.ts`](../../platform/src/sap/bun-"
 "route.ts)。客户端辅助：`@freeanima/hub-rpc`（`resolveHubRpcWsUrl`）与 "
 "`@freeanima/sap-contract/urls`（再导出）。"
+
+#. type: Title ##
+#: docs/sap/transport.md:24
+#, no-wrap
+msgid "Envelope kinds"
+msgstr "信封类型"
 
 #. type: Plain text
 #: docs/sap/transport.md:27

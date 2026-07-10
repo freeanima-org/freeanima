@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-06 11:54+0800\n"
+"POT-Creation-Date: 2026-07-10 23:57+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -137,29 +137,37 @@ msgid "护栏"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/repository-topology.md:65
+#: docs/concepts/repository-topology.md:66
 msgid ""
-"`scripts/check-layer-deps.ts`：目录层依赖软约束（`src/<layer>/` 前缀）。"
+"`tsconfig.base.json` paths：`@freeanima/*`、`@paraglide/*`（与 Vite `module-"
+"aliases.ts` 手动对齐）。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/repository-topology.md:65
+#: docs/concepts/repository-topology.md:66
+msgid ""
+"[`.agent/rules/code-layers.md`](../../.agent/rules/code-layers.md)：目录层依"
+"赖约定（`src/<layer>/` 前缀）。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/repository-topology.md:66
 msgid "已移除 `check-package-cycles.ts`（单包无 workspace 图）。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/repository-topology.md:65
+#: docs/concepts/repository-topology.md:66
 msgid "CLI npm 发版已暂停（无 `publish:cli`）。"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/repository-topology.md:66
+#: docs/concepts/repository-topology.md:67
 #, no-wrap
 msgid "文档站 i18n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/repository-topology.md:69
+#: docs/concepts/repository-topology.md:70
 msgid ""
 "中文 **PO 译文冻结**（`po/zh_CN/` 保留、不再要求 agent 同步）；"
 "`docs/.generated/zh_CN/` **不入库**，site 构建时 `i18n:po4a` 从 PO 生成。PR/"
@@ -168,13 +176,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/repository-topology.md:70
+#: docs/concepts/repository-topology.md:71
 #, no-wrap
 msgid "文档站构建"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/concepts/repository-topology.md:72
+#: docs/concepts/repository-topology.md:73
 #, no-wrap
 msgid ""
 "# 产品\n"
@@ -185,7 +193,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/repository-topology.md:80
+#: docs/concepts/repository-topology.md:81
 msgid ""
 "site `prebuild` 会调用根目录 `i18n:po4a` 与 `paraglide:compile`（共享 `docs/"
 "` / `messages/` SSOT）。"

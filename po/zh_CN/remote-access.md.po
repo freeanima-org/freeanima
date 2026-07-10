@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-06 11:54+0800\n"
+"POT-Creation-Date: 2026-07-10 23:57+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,21 +17,21 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/dream.md:9 docs/concepts/sleep.md:9
-#: docs/guide/remote-access.md:10 messages/po4a/en.xml:590
-#: messages/po4a/en.xml:597
+#: docs/guide/remote-access.md:10 messages/po4a/en.xml:611
+#: messages/po4a/en.xml:618
 #, no-wrap
 msgid "Overview"
 msgstr "概述"
 
 #. type: Title ##
-#: docs/features/companion.md:119 docs/features/mobile-app.md:52
-#: docs/guide/database.md:88 docs/guide/remote-access.md:177
+#: docs/features/companion.md:144 docs/features/mobile-app.md:52
+#: docs/guide/database.md:88 docs/guide/remote-access.md:221
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
 
 #. type: Title ##
-#: docs/features/companion.md:130 docs/guide/remote-access.md:188
+#: docs/features/companion.md:155 docs/guide/remote-access.md:232
 #, no-wrap
 msgid "Related docs"
 msgstr "相关文档"
@@ -52,12 +52,12 @@ msgstr "远程访问（Tunnel + 应用 token）"
 #: docs/guide/remote-access.md:9
 #, no-wrap
 msgid ""
-"> Hub 业务 API（REST / SAP / MCP）须带 **per-subject Service API Token**（`Authorization: Bearer fa_at_...`）。\n"
+"> Hub 业务 API（Hub RPC `POST|WS /hub/rpc/v1` + MCP）须带 **per-subject Service API Token**（`Authorization: Bearer fa_at_...` 或 WS `connect.auth_token`）。\n"
 "> Security context: [`security.md`](security.md) · Install: [`install.md`](install.md)\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:22
+#: docs/guide/remote-access.md:23
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Layer                   | Role                                                                                                        |\n"
@@ -71,16 +71,17 @@ msgstr ""
 #| "| **Remote UI**           | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |\n"
 #| "| **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                 |\n"
 msgid ""
-"| Layer                   | Role                                                                                                        |\n"
-"| ----------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
-"| **Service API Token**   | 绑定 `user` / `agent` subject；REST `Authorization: Bearer`；SAP `connect.auth_token`；MCP `/mcp` 同 Bearer |\n"
-"| **CLI bootstrap**       | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                               |\n"
-"| **cloudflared**         | Outbound tunnel；single hostname → Hub `127.0.0.1:2658`（API + Web UI at `/web`）                           |\n"
-"| **`http.host`**         | Hub listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                     |\n"
-"| **`http.cors_origins`** | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel          |\n"
-"| **Client settings**     | Desktop / mobile shell / **browser Web** fill Hub URL and token in **Hub settings**                       |\n"
-"| **Remote UI**           | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |\n"
-"| **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                 |\n"
+"| Layer                    | Role                                                                                                               |\n"
+"| ------------------------ | ------------------------------------------------------------------------------------------------------------------ |\n"
+"| **Service API Token**    | 绑定 `user` / `agent` subject；Hub RPC HTTP `Authorization: Bearer`；WS `connect.auth_token`；MCP `/mcp` 同 Bearer |\n"
+"| **CLI bootstrap**        | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                      |\n"
+"| **cloudflared**          | Outbound tunnel；single hostname → Hub `127.0.0.1:2658`（API + Web UI at `/web`）                                  |\n"
+"| **`http.host`**          | Hub listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                            |\n"
+"| **`http.allowed_hosts`** | TLS 证书 SAN 额外主机名 / IP（`http.host: 0.0.0.0` 时列出客户端访问用的名称）；变更后 `auto: true` 时重启自动重签  |\n"
+"| **`http.cors_origins`**  | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel                 |\n"
+"| **Client settings**      | Desktop / mobile shell / **browser Web** fill Hub URL and token in **Hub settings**                                |\n"
+"| **Remote UI**            | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI        |\n"
+"| **PWA**                  | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                        |\n"
 msgstr ""
 "| 层级                   | 作用                                                                                                            |\n"
 "| ----------------------- | --------------------------------------------------------------------------------------------------------------- |\n"
@@ -94,20 +95,22 @@ msgstr ""
 "| **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 `compact` 布局                                   |\n"
 
 #. type: Title ###
-#: docs/guide/remote-access.md:23
+#: docs/guide/remote-access.md:24
 #, no-wrap
 msgid "PWA（浏览器 Web）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:34
+#: docs/guide/remote-access.md:35
 msgid ""
 "**Secure context**：Service Worker 需要 HTTPS 或 `localhost`；Tunnel 终端应使"
-"用 HTTPS 域名。"
+"用 HTTPS 域名。浏览器 **Web Speech** 朗读同样需安全上下文；默认 **Edge TTS**"
+"（Hub `POST /hub/rpc/v1/tts/synthesize`）在 HTTP 局域网下也可用，但 Hub 需能"
+"访问外网 Microsoft 语音服务。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:34
+#: docs/guide/remote-access.md:35
 msgid ""
 "**Service Worker vs 安装**：SW 在普通浏览器标签页访问 `/web/*` 时即注册（生产"
 "构建）；**不要求**「添加到主屏幕」。安装仅改变启动方式（独立窗口），离线能力"
@@ -115,14 +118,14 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:34
+#: docs/guide/remote-access.md:35
 msgid ""
 "**安装（可选）**：手机浏览器访问 `/web/chat`，Chrome / Safari 支持「添加到主"
 "屏幕」；生产构建会显示安装引导条（compact 布局、非已安装态）。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:34
+#: docs/guide/remote-access.md:35
 msgid ""
 "**更新**：Hub 部署新 Web 静态产物后，已安装 PWA 会提示「新版本可用」；点击重"
 "新加载后生效。壳层 JS 由 Workbox precache，`/web/config.json` 始终 `no-store`"
@@ -130,52 +133,57 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:34
+#: docs/guide/remote-access.md:35
 msgid "**离线边界（两层）**："
 msgstr ""
 
 #. type: Bullet: '  - '
-#: docs/guide/remote-access.md:34
+#: docs/guide/remote-access.md:35
 msgid ""
 "**壳层（SW）**：仅缓存 JS/CSS/HTML 等静态资源，保证断网时页面框架可加载。"
 msgstr ""
 
 #. type: Bullet: '  - '
-#: docs/guide/remote-access.md:34
+#: docs/guide/remote-access.md:35
 msgid ""
-"**业务快照（IndexedDB）**：Chat / Task / Notification / Diary / Email 及 "
-"Console 部分只读页（dashboard status、status config、semantic memory list "
-"等）由 `shell-sdk/offline-cache` 做 cache-first 展示、在线 refresh 写回；**不"
-"**经 SW 缓存 `/api` 或 `/sap`。"
+"**业务快照（IndexedDB）**：Chat / Task / Notification / Diary / Email / "
+"Dream / Pomodoro（config/历史）及 Console 部分只读页由 `shell-sdk/offline-"
+"cache` 做 cache-first；**Tier 2 可写**模块（Diary、Task、Chat send、Pomodoro "
+"outbox）离线可编辑，恢复在线后 outbox flush；详见 [`offline-platform.md`]"
+"(offline-platform.md)。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:34
+#: docs/guide/remote-access.md:35
 msgid ""
-"**离线只读**：浏览器 `offline` 时 shell-ui 显示全局提示并禁用各 satellite 写"
-"操作；展示的是**曾在线拉取过的快照**，非 Hub 全量镜像。"
+"**离线边界**：浏览器 `offline` 时 Tier 1 模块只读展示快照；"
+"**offlineWritable** 模块（Diary、Task、Chat、Pomodoro）仍可本地编辑并排队待同"
+"步。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:34
+#: docs/guide/remote-access.md:35
 msgid ""
 "**存储**：SW 缓存、localStorage（Hub 设置）、IndexedDB（业务快照）互不冲突；"
 "清除站点数据会同时删除三者。"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:36
-msgid "仅 `GET /api/health`、CORS 预检、`/api/echo` 豁免认证。"
+#: docs/guide/remote-access.md:37
+msgid ""
+"Registry 标记 `auth: optional` 的 Hub RPC 方法（如 `health.probe`、"
+"`tls.ca.*`）与 CORS 预检可不带 Bearer；其余 `/hub/rpc/v1/*` 与 MCP 须 "
+"Bearer。"
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/remote-access.md:37
+#: docs/guide/remote-access.md:38
 #, no-wrap
 msgid "1. 创建 token（冷启动）"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/remote-access.md:39
+#: docs/guide/remote-access.md:40
 #, no-wrap
 msgid ""
 "anima token create --subject-id 1 --name bootstrap\n"
@@ -183,12 +191,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:45
+#: docs/guide/remote-access.md:46
 msgid "列出 / 撤销："
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/remote-access.md:46
+#: docs/guide/remote-access.md:47
 #, no-wrap
 msgid ""
 "anima token list --subject-id 1\n"
@@ -196,41 +204,41 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:52
+#: docs/guide/remote-access.md:53
 msgid "Console REST（需已认证 `full` token）："
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:56
+#: docs/guide/remote-access.md:57
 msgid "`GET /api/subjects/:id/tokens`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:56
+#: docs/guide/remote-access.md:57
 msgid ""
 "`POST /api/subjects/:id/tokens` — body `{ \"name\": \"desktop\" }`，响应含一"
 "次性 `plaintext`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:56
+#: docs/guide/remote-access.md:57
 msgid "`DELETE /api/tokens/:id`"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/remote-access.md:57
+#: docs/guide/remote-access.md:58
 #, no-wrap
 msgid "Listen address (`http.host`)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:60
+#: docs/guide/remote-access.md:61
 #, no-wrap
 msgid "Default bind is `127.0.0.1:2658` (loopback only). For LAN access via `http://<PC-IP>:2658/web` or a local hostname such as `http://galaxy:2658/web`, set:\n"
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/guide/remote-access.md:61
+#: docs/guide/remote-access.md:62
 #, no-wrap
 msgid ""
 "http:\n"
@@ -238,7 +246,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:67
+#: docs/guide/remote-access.md:68
 msgid ""
 "Multiple binds (distinct interfaces only — not client-facing aliases). Use "
 "`0.0.0.0` instead of listing every IP; do not mix `0.0.0.0` with specific "
@@ -246,7 +254,7 @@ msgid ""
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/guide/remote-access.md:68
+#: docs/guide/remote-access.md:69
 #, no-wrap
 msgid ""
 "http:\n"
@@ -256,26 +264,26 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:76
+#: docs/guide/remote-access.md:77
 msgid ""
 "CLI `--host` overrides config for a single run / systemd unit write. After "
 "changing `http.host`, run `anima service restart`."
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:78
+#: docs/guide/remote-access.md:79
 #, no-wrap
 msgid "Without Tunnel, LAN: `http://<PC-IP>:2658/web/chat` with `http.host: 0.0.0.0` (or `anima service start --host 0.0.0.0`); clients set Hub URL to `http://<PC-IP>:2658` (no `/web` suffix).\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/remote-access.md:79
+#: docs/guide/remote-access.md:80
 #, no-wrap
 msgid "Cross-origin (`http.cors_origins`)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:82
+#: docs/guide/remote-access.md:83
 msgid ""
 "When the browser UI and Hub API share the same origin (default: `https://"
 "anima.example.com/web` + `https://anima.example.com/api`), **no CORS config "
@@ -283,14 +291,14 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:84
+#: docs/guide/remote-access.md:85
 msgid ""
 "Add origins only for **cross-origin** cases (e.g. Vite dev server, external "
 "reverse proxy splitting UI and API):"
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/guide/remote-access.md:85
+#: docs/guide/remote-access.md:86
 #, no-wrap
 msgid ""
 "http:\n"
@@ -302,18 +310,143 @@ msgstr ""
 "    - http://127.0.0.1:4173\n"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:92
+#: docs/guide/remote-access.md:93
 msgid "CORS is **not** derived from `tunnel` or `web.public_url`."
 msgstr ""
 
+#. type: Title ###
+#: docs/guide/remote-access.md:94
+#, no-wrap
+msgid "Hub 本地 HTTPS（双端口，可选）"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:97
+msgid "Hub 可在 **独立端口** 提供原生 TLS（`Bun.serve`），与默认 HTTP 并行："
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:102
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Port                      | Role                                                                  |\n"
+#| "| ------------------------- | --------------------------------------------------------------------- |\n"
+#| "| `EntityStorePort.list`    | Structural filters; stable sort                                       |\n"
+#| "| `EntitySearchPort.search` | Hard filters + optional text query; hybrid FTS/trigram/vector via RRF |\n"
+msgid ""
+"| 端口     | 协议  | 用途                                                                            |\n"
+"| -------- | ----- | ------------------------------------------------------------------------------- |\n"
+"| **2658** | HTTP  | 默认；Tunnel ingress、CLI 探活、日常客户端                                      |\n"
+"| **2659** | HTTPS | 本地/局域网安全上下文（Web Speech 等）；客户端 Hub URL 填 `https://<host>:2659` |\n"
+msgstr ""
+"| 端口                      | 作用                                                                  |\n"
+"| ------------------------- | --------------------------------------------------------------------- |\n"
+"| `EntityStorePort.list`    | 结构过滤；稳定排序                                                      |\n"
+"| `EntitySearchPort.search` | 硬过滤 + 可选文本查询；经 RRF 混合 FTS/trigram/vector                 |\n"
+
+#. type: Plain text
+#: docs/guide/remote-access.md:104
+msgid "启用（`~/.anima/config.yaml` bootstrap 段）："
+msgstr ""
+
+#. type: Fenced code block (yaml)
+#: docs/guide/remote-access.md:105
+#, no-wrap
+msgid ""
+"http:\n"
+"  host: 0.0.0.0\n"
+"  allowed_hosts:\n"
+"    - feng-vm.lan\n"
+"    - 10.200.200.10\n"
+"  tls:\n"
+"    enabled: true\n"
+"    port: 2659\n"
+"    auto: true\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/remote-access.md:120
+msgid ""
+"**`auto: true`**（默认）：首次启动在 `~/.anima/tls/` 自动生成 cert/key（优先 "
+"**mkcert**，否则 **openssl 自签**）；SAN 含 `localhost`、`127.0.0.1`、`::1`、"
+"`http.host` 中的 bind 地址（跳过 `0.0.0.0`）及 **`http.allowed_hosts`**。配置"
+"变更导致 SAN 不足时，**重启 Hub 会自动删除旧证书并重签**（`auto: false` 时仅"
+"告警，不覆盖手动证书）。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/remote-access.md:120
+msgid "**Tunnel 不变**：cloudflared 仍指向 `http://127.0.0.1:2658`。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/remote-access.md:120
+msgid ""
+"**探活**：`anima service status` 与 `GET /hub/rpc/v1/health/probe` 仍走 HTTP "
+"`:2658`。"
+msgstr ""
+
+#. type: Title ####
+#: docs/guide/remote-access.md:121
+#, no-wrap
+msgid "mkcert 根 CA 导入手机（可选）"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:124
+msgid ""
+"Hub 服务器证书在 Hub 机器上；手机浏览器/APK 无警告访问须在各设备安装 "
+"**mkcert 根 CA**（`rootCA.pem`，非 `cert.pem`）："
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/remote-access.md:127
+msgid ""
+"**设置 → 连接**（`/web/settings?section=hub`）：页面底部提供 **rootCA.pem 下"
+"载**与 **二维码**（二维码指向 HTTP `:2658` 下载链接，便于未信任 HTTPS 时扫"
+"码）。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/remote-access.md:127
+msgid ""
+"若 HTTPS 页面脚本仍报错，请先用 **`http://<host>:2658/web/settings?"
+"section=hub`** 打开设置页。"
+msgstr ""
+
+#. type: Fenced code block (bash)
+#: docs/guide/remote-access.md:128
+#, no-wrap
+msgid "mkcert -CAROOT   # 查看 rootCA.pem 路径\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/remote-access.md:134
+msgid ""
+"**iOS**：AirDrop/邮件传 `rootCA.pem` → 安装描述文件 → **设置 → 通用 → 关于本"
+"机 → 证书信任设置** → 启用完全信任。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/remote-access.md:134
+msgid "**Android**：可选转 DER 后 **设置 → 安全 → 安装 CA 证书**。"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:136
+msgid ""
+"日常手机远程访问仍推荐 **Tunnel HTTPS** 或 **HTTP `:2658`**，避免逐台装 CA。"
+"Capacitor APK 对 user CA 的支持因平台/构建而异。"
+msgstr ""
+
 #. type: Title ##
-#: docs/guide/remote-access.md:93
+#: docs/guide/remote-access.md:137
 #, no-wrap
 msgid "2. Tunnel (optional)"
 msgstr "2. Tunnel（可选）"
 
 #. type: Fenced code block (bash)
-#: docs/guide/remote-access.md:95
+#: docs/guide/remote-access.md:139
 #, no-wrap
 msgid ""
 "anima tunnel setup\n"
@@ -323,7 +456,7 @@ msgstr ""
 "anima service start\n"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:101
+#: docs/guide/remote-access.md:145
 msgid ""
 "When `tunnel.enabled: true`, cloudflared starts with **`anima service "
 "start`** stack (no separate `anima-tunnel.service`). Ingress points to Hub "
@@ -334,7 +467,7 @@ msgstr ""
 "`tunnel.web_hostname` 与 `web.enabled` 时，第二条 ingress 指向 Web `:2659`。"
 
 #. type: Fenced code block (yaml)
-#: docs/guide/remote-access.md:102
+#: docs/guide/remote-access.md:146
 #, no-wrap
 msgid ""
 "tunnel:\n"
@@ -356,26 +489,26 @@ msgstr ""
 "  public_url: https://app.anima.example.com\n"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:113
+#: docs/guide/remote-access.md:157
 msgid ""
 "Browser: `https://anima.example.com/web/chat` · Hub API: `https://"
 "anima.example.com/api`"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:115
+#: docs/guide/remote-access.md:159
 #, no-wrap
 msgid "Without Tunnel, LAN: `http://<PC-IP>:2658/web/chat` with `http.host: 0.0.0.0` in config (see above); clients set Hub URL to `http://<PC-IP>:2658` (no `/web` suffix).\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/remote-access.md:116
+#: docs/guide/remote-access.md:160
 #, no-wrap
 msgid "Cloudflare credentials"
 msgstr "Cloudflare 凭证"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:119
+#: docs/guide/remote-access.md:163
 msgid ""
 "Store API token and tunnel connector JSON via `env(\"KEY\")` or "
 "`vault(\"item_id\", \"field\")` in `config.yaml` tunnel section. See wizard "
@@ -385,19 +518,19 @@ msgstr ""
 "\"field\")` 保存 API Token 与隧道连接器 JSON。见 `anima tunnel setup` 向导。"
 
 #. type: Title ##
-#: docs/guide/remote-access.md:120
+#: docs/guide/remote-access.md:164
 #, no-wrap
 msgid "3. Client configuration"
 msgstr "3. 客户端配置"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:123
+#: docs/guide/remote-access.md:167
 #, no-wrap
 msgid "**Desktop shell** (`src/app/shell/desktop`), **mobile shell** (`src/app/shell/mobile`), and **browser Web** are remote clients; they **do not read** Hub `config.yaml` token.\n"
 msgstr "**桌面壳层**（`src/app/shell/desktop`）、**移动壳层**（`src/app/shell/mobile`）与 **浏览器 Web**（`web.enabled` + Tunnel 或局域网 `:2659`）为远程客户端；它们**不读取** Hub `config.yaml` 中的 token。\n"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:129
+#: docs/guide/remote-access.md:173
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Client      | Storage                                          |\n"
@@ -419,24 +552,24 @@ msgstr ""
 "| Browser Web | localStorage（设置页）                 |\n"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:131
+#: docs/guide/remote-access.md:175
 msgid "Settings (all clients):"
 msgstr "设置（所有客户端）："
 
 #. type: Bullet: '1. '
-#: docs/guide/remote-access.md:134
+#: docs/guide/remote-access.md:178
 msgid ""
 "**Hub URL** — e.g. `https://anima.example.com` or `http://192.168.1.10:2658` "
 "(Hub root, **without** `/web`)"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/guide/remote-access.md:134
+#: docs/guide/remote-access.md:178
 msgid "**Hub API Token** — `fa_at_...` from `anima token create`"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:136
+#: docs/guide/remote-access.md:180
 msgid ""
 "Browser Web: `/web/config.json` sets default Hub to the page origin; first "
 "visit still requires saving token in settings."
@@ -445,7 +578,7 @@ msgstr ""
 "在设置中保存 token。"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:138
+#: docs/guide/remote-access.md:182
 #, fuzzy
 #| msgid ""
 #| "Flow: open Hub settings → fill → **Test connection** → Save. Desktop "
@@ -458,13 +591,13 @@ msgstr ""
 "层**。\n"
 
 #. type: Title ##
-#: docs/guide/remote-access.md:139
+#: docs/guide/remote-access.md:183
 #, no-wrap
 msgid "4. Authentication behavior"
 msgstr "4. 认证行为"
 
 #. type: Fenced code block (text)
-#: docs/guide/remote-access.md:141
+#: docs/guide/remote-access.md:185
 #, no-wrap
 msgid ""
 "REST:  Authorization: Bearer fa_at_<prefix>_<secret>\n"
@@ -476,7 +609,7 @@ msgstr ""
 "MCP:   POST/GET /mcp → Authorization: Bearer <token>\n"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:148
+#: docs/guide/remote-access.md:192
 msgid ""
 "`/web/*` static assets skip service auth; `/api` and `/mcp` require Bearer "
 "token."
@@ -484,18 +617,18 @@ msgstr ""
 
 #
 #. type: Plain text
-#: docs/guide/remote-access.md:150
+#: docs/guide/remote-access.md:194
 msgid "Missing or invalid token → HTTP `401` or Hub RPC connection closed."
 msgstr "缺少或错误的 token → HTTP `401` 或 SAP 连接关闭。"
 
 #. type: Title ##
-#: docs/guide/remote-access.md:151
+#: docs/guide/remote-access.md:195
 #, no-wrap
 msgid "5. MCP outbound (external agents query Hub data)"
 msgstr "5. MCP 出站（外部 Agent 查询 Hub 数据）"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:154
+#: docs/guide/remote-access.md:198
 msgid ""
 "Hub serves Streamable HTTP MCP Server at **`/mcp`**, exposing read-only "
 "tools from ToolSets with `expose_mcp: true` (e.g. `memory_recall`, "
@@ -507,7 +640,7 @@ msgstr ""
 "MCP 客户端（Cursor、Claude Desktop 等）**无需 LLM relay** 即可连接。"
 
 #. type: Fenced code block (yaml)
-#: docs/guide/remote-access.md:155
+#: docs/guide/remote-access.md:199
 #, no-wrap
 msgid ""
 "# External agent example (Cursor mcp.json, etc.)\n"
@@ -525,7 +658,7 @@ msgstr ""
 "      Authorization: \"Bearer <remote_auth.token>\"\n"
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:166
+#: docs/guide/remote-access.md:210
 #, fuzzy
 #| msgid ""
 #| "**Inbound** (Hub connects to external MCP servers): `config.yaml` "
@@ -538,7 +671,7 @@ msgstr ""
 "（`capabilities/mcp-client`）"
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:166
+#: docs/guide/remote-access.md:210
 #, fuzzy
 #| msgid ""
 #| "**Outbound** (external agents call Hub tools): `/mcp` endpoint "
@@ -551,13 +684,13 @@ msgstr ""
 "server`）"
 
 #. type: Title ##
-#: docs/guide/remote-access.md:167
+#: docs/guide/remote-access.md:211
 #, no-wrap
 msgid "Operations"
 msgstr "运维"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:176
+#: docs/guide/remote-access.md:220
 #, no-wrap
 msgid ""
 "| Command                          | Description                                    |\n"
@@ -576,7 +709,7 @@ msgstr ""
 "| `anima service status`         | Hub / Web / Tunnel 栈                          |\n"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:187
+#: docs/guide/remote-access.md:231
 #, no-wrap
 msgid ""
 "| Symptom                | Check                                                               |\n"
@@ -597,12 +730,12 @@ msgstr ""
 "| 更换 token 后 401        | 更新 Hub 配置**并**所有客户端设置页        |\n"
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:191
+#: docs/guide/remote-access.md:235
 msgid "Mobile: [`mobile-app.md`](../features/mobile-app.md)"
 msgstr "移动端：[`mobile-app.md`](../features/mobile-app.md)"
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:191
+#: docs/guide/remote-access.md:235
 msgid ""
 "Desktop companion Hub source: [`companion.md`](../features/companion.md)"
 msgstr "桌面伴侣 Hub 来源：[`companion.md`](../features/companion.md)"

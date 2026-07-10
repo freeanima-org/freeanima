@@ -13,10 +13,12 @@ import {
 import {
   normalizeShellDebugConfig,
   parseShellDebugConfig,
-  parseShellClientConfig,
   type ShellDebugConfig,
+} from "@freeanima/frontend/shell-sdk/shell-debug-config.ts";
+import {
+  parseShellClientConfig,
   type ShellClientConfig,
-} from "@freeanima/frontend/shell-sdk";
+} from "@freeanima/frontend/shell-sdk/shell-client-config.ts";
 import {
   desktopSettingsPath,
   legacyShellClientConfigPath,

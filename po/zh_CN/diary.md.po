@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-30 16:54+0800\n"
+"POT-Creation-Date: 2026-07-10 23:57+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -81,8 +81,10 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/features/diary.md:23
 msgid ""
-"Agent LLM tools (ToolSet `diary`) always write to **Agent** private world."
-msgstr "Agent LLM 工具（ToolSet `diary`）始终写入 **Agent** 私有 world。"
+"LLM tools (ToolSet `diary`) default to the **caller subject's private "
+"world** (conversation LLM → agent world); optional **`world_id`** overrides "
+"(e.g. `user_world_id` from system prompt)."
+msgstr ""
 
 #. type: Title ##
 #: docs/features/diary.md:24
@@ -92,11 +94,17 @@ msgstr "Agent 工具（ToolSet `diary`）"
 
 #. type: Plain text
 #: docs/features/diary.md:27
+#, fuzzy
+#| msgid ""
+#| "Load via `toolset_load` with `diary`. Agent tools locate entries by "
+#| "**`date` (YYYY-MM-DD)**; **default today** (CST noon `…T12:00:00+08:00`); "
+#| "**no `diary_create`** — use `diary_append` (creates empty shell for the "
+#| "day if missing, then appends)."
 msgid ""
-"Load via `toolset_load` with `diary`. Agent tools locate entries by **`date` "
-"(YYYY-MM-DD)**; **default today** (CST noon `…T12:00:00+08:00`); **no "
+"Load via `toolset_load` with `diary`. Tools locate entries by **`date` (YYYY-"
+"MM-DD)**; **default today** (CST noon `…T12:00:00+08:00`); **no "
 "`diary_create`** — use `diary_append` (creates empty shell for the day if "
-"missing, then appends)."
+"missing, then appends). All tools accept optional **`world_id`**."
 msgstr ""
 "通过 `toolset_load` 加载 `diary`。Agent 工具按 **`date`（YYYY-MM-DD）** 定位"
 "条目；**默认当天**（CST 正午 `…T12:00:00+08:00`）；**无 `diary_create`** — 使"
@@ -104,7 +112,16 @@ msgstr ""
 
 #. type: Plain text
 #: docs/features/diary.md:36
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Tool           | Description                                                                                     |\n"
+#| "| -------------- | ----------------------------------------------------------------------------------------------- |\n"
+#| "| `diary_append` | Append body for date (`\\n\\n` separator); create shell if missing; `tags` only on shell creation |\n"
+#| "| `diary_update` | Replace full entry or fields by date (not append)                                               |\n"
+#| "| `diary_get`    | Read entry for date; error if not found                                                         |\n"
+#| "| `diary_delete` | Delete entry for date; returns `{ ok, action, date }`                                           |\n"
+#| "| `diary_list`   | List / date filter (unchanged)                                                                  |\n"
+#| "| `diary_search` | Hybrid search (unchanged)                                                                       |\n"
 msgid ""
 "| Tool           | Description                                                                                     |\n"
 "| -------------- | ----------------------------------------------------------------------------------------------- |\n"
@@ -112,8 +129,8 @@ msgid ""
 "| `diary_update` | Replace full entry or fields by date (not append)                                               |\n"
 "| `diary_get`    | Read entry for date; error if not found                                                         |\n"
 "| `diary_delete` | Delete entry for date; returns `{ ok, action, date }`                                           |\n"
-"| `diary_list`   | List / date filter (unchanged)                                                                  |\n"
-"| `diary_search` | Hybrid search (unchanged)                                                                       |\n"
+"| `diary_list`   | List / date filter                                                                              |\n"
+"| `diary_search` | Hybrid search                                                                                   |\n"
 msgstr ""
 "| 工具           | 说明                                                                 |\n"
 "| -------------- | -------------------------------------------------------------------- |\n"

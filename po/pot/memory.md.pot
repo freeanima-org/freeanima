@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-06 10:28+0800\n"
+"POT-Creation-Date: 2026-07-10 23:57+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,8 +23,8 @@ msgid "Core Principles"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/memory.md:1 messages/po4a/en.xml:212 messages/po4a/en.xml:372
-#: messages/po4a/en.xml:587
+#: docs/concepts/memory.md:1 messages/po4a/en.xml:216 messages/po4a/en.xml:375
+#: messages/po4a/en.xml:608
 #, no-wrap
 msgid "Memory"
 msgstr ""
@@ -375,7 +375,7 @@ msgstr ""
 msgid ""
 "Before each user-facing turn, the runtime searches **semantic memory only** "
 "from the latest user message (hybrid FTS + trgm + vector), then injects top-"
-"N hits as a **runtime-only** `role: system` message (`name: "
+"N hits as a **runtime-only** `role: assistant` message (`name: "
 "passive_memory_context`) immediately before that user message. Not persisted "
 "to PG; not counted as a memory reference."
 msgstr ""

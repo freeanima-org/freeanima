@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-06 11:54+0800\n"
+"POT-Creation-Date: 2026-07-10 23:57+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,26 +16,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Title ##
-#: docs/sap/hub-rpc.md:11 docs/sap/transport.md:14
-#, no-wrap
-msgid "Endpoint"
-msgstr ""
-
-#. type: Fenced code block (text)
-#: docs/sap/hub-rpc.md:13 docs/sap/transport.md:16
-#, no-wrap
-msgid "ws://{hub_host}:{port}/hub/rpc/v1\n"
-msgstr ""
-
-#. type: Title ##
-#: docs/sap/hub-rpc.md:21 docs/sap/transport.md:24
-#, no-wrap
-msgid "Envelope kinds"
-msgstr ""
-
 #. type: Content of: <messages><msg>
-#: docs/sap/hub-rpc.md:50 docs/sap/transport.md:99 messages/po4a/en.xml:138
+#: docs/sap/hub-rpc.md:91 docs/sap/transport.md:99 messages/po4a/en.xml:144
 #, no-wrap
 msgid "Reconnect"
 msgstr ""
@@ -73,6 +55,18 @@ msgid ""
 "transport details."
 msgstr ""
 
+#. type: Title ##
+#: docs/sap/transport.md:14
+#, no-wrap
+msgid "Endpoint"
+msgstr ""
+
+#. type: Fenced code block (text)
+#: docs/sap/transport.md:16
+#, no-wrap
+msgid "ws://{hub_host}:{port}/hub/rpc/v1\n"
+msgstr ""
+
 #. type: Plain text
 #: docs/sap/transport.md:21
 msgid ""
@@ -86,6 +80,12 @@ msgid ""
 "Implemented in [`src/platform/sap/bun-route.ts`](../../src/platform/sap/bun-"
 "route.ts). Client helpers: `@freeanima/hub-rpc` (`resolveHubRpcWsUrl`) and "
 "`@freeanima/sap-contract/urls` (re-exports)."
+msgstr ""
+
+#. type: Title ##
+#: docs/sap/transport.md:24
+#, no-wrap
+msgid "Envelope kinds"
 msgstr ""
 
 #. type: Plain text

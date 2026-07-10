@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-06 11:54+0800\n"
+"POT-Creation-Date: 2026-07-10 23:57+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,15 +16,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/features/companion.md:119 docs/features/mobile-app.md:52
-#: docs/guide/database.md:88 docs/guide/remote-access.md:177
+#: docs/features/companion.md:144 docs/features/mobile-app.md:52
+#: docs/guide/database.md:88 docs/guide/remote-access.md:221
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
 
 #. type: Content of: <messages><msg>
 #: docs/features/mobile-app.md:1 docs/features/mobile-app.md:5
-#: messages/po4a/en.xml:589
+#: messages/po4a/en.xml:610
 #, no-wrap
 msgid "Mobile app (Android)"
 msgstr "移动端 APP（Android）"
@@ -63,8 +63,8 @@ msgid ""
 "| Item       | Description                                              |\n"
 "| ---------- | -------------------------------------------------------- |\n"
 "| Platform   | **Android only** sideload (APK); iOS later               |\n"
-"| UI         | 默认 bootstrap → Hub `/web/*`（与浏览器/PWA 同一产物）   |\n"
-"| Modules    | Chat + Console（bundled shell-ui）                       |\n"
+"| UI         | bootstrap → Hub `/web/*`（与浏览器/PWA 同一产物）        |\n"
+"| Modules    | Chat + Console（Hub 托管 shell-ui）                      |\n"
 "| Hub config | APP **Hub settings**（Preferences）或 bootstrap 首次配置 |\n"
 "| Hub duties | `/api` REST + `/hub/rpc/v1` WebSocket                    |\n"
 msgstr ""
@@ -103,16 +103,16 @@ msgstr "拓扑"
 msgid ""
 "flowchart LR\n"
 "  Phone[Android WebView]\n"
+"  Bootstrap[bootstrap 薄壳]\n"
 "  Shell[shell-ui SPA]\n"
-"  Chat[\"/chat\"]\n"
-"  Console[\"/console\"]\n"
-"  Settings[\"/settings\"]\n"
+"  Chat[\"/web/chat\"]\n"
+"  Console[\"/web/console\"]\n"
 "  Hub[Anima Service]\n"
 "\n"
-"  Phone --> Shell\n"
+"  Phone --> Bootstrap\n"
+"  Bootstrap -->|location.replace| Shell\n"
 "  Shell --> Chat\n"
 "  Shell --> Console\n"
-"  Shell --> Settings\n"
 "  Chat -->|SAP auth_token| Hub\n"
 "  Console -->|REST Bearer| Hub\n"
 msgstr ""
@@ -133,10 +133,16 @@ msgstr ""
 
 #. type: Plain text
 #: docs/features/mobile-app.md:40
+#, fuzzy
+#| msgid ""
+#| "Mobile REST **connects directly** to Hub (no desktop Electron `/api` "
+#| "proxy); requires a **Service API Token** and Hub CORS for Capacitor "
+#| "origin (`https://localhost`). Routes use hash (`#/chat`) for WebView "
+#| "debugging."
 msgid ""
 "Mobile REST **connects directly** to Hub (no desktop Electron `/api` proxy); "
-"requires a **Service API Token** and Hub CORS for Capacitor origin (`https://"
-"localhost`). Routes use hash (`#/chat`) for WebView debugging."
+"requires a **Service API Token** and Hub CORS for Capacitor origin (`http://"
+"localhost`；`androidScheme: http`）。"
 msgstr ""
 "移动端 REST **直连** Hub（无桌面 Electron `/api` 代理）；需要 **Service API "
 "Token** 以及 Hub 对 Capacitor 源（`https://localhost`）的 CORS。路由使用 hash"
@@ -185,9 +191,7 @@ msgstr "服务 API 令牌（`fa_at_...`，创建时仅打印一次）"
 #| msgid ""
 #| "**Test connection** → **Save and enter** → top bar switches **Chat** / "
 #| "**Console**."
-msgid ""
-"**Test connection** → **Save and enter** → top bar switches **Chat** / "
-"**Console**."
+msgid "**Test connection** → **Save and enter** → 跳转 Hub `/web/chat`。"
 msgstr "**测试连接** → **保存并进入** → 顶栏切换 **聊天室** / **管理台**。"
 
 #. type: Plain text
@@ -200,43 +204,34 @@ msgstr ""
 "`connect` 帧发送 `auth_token`。"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:60
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Symptom                             | Common cause                                                                                    |\n"
-#| "| ----------------------------------- | ----------------------------------------------------------------------------------------------- |\n"
-#| "| Keyboard covers chat input          | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes |\n"
-#| "| Chat input unresponsive             | No selected conversation (first install should auto-create); or SAP disconnected                |\n"
-#| "| **Console load failed / Failed to fetch | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header      |\n"
-#| "| Not Found                           | Avoid legacy paths like `/console/dashboard/index.html`; use SPA `/console/dashboard`               |\n"
+#: docs/features/mobile-app.md:64
+#, no-wrap
 msgid ""
-"| Symptom                               | Common cause                                                                                    |\n"
-"| ------------------------------------- | ----------------------------------------------------------------------------------------------- |\n"
-"| Keyboard covers chat input            | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes |\n"
-"| Chat input unresponsive               | No selected conversation (first install should auto-create); or SAP disconnected                |\n"
-"| Console load failed / Failed to fetch | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header      |\n"
-"| Not Found                             | Avoid legacy paths like `/console`/dashboard/index.html`; use SPA `/console`/dashboard`         |\n"
+"| Symptom                                | Common cause                                                                                                                                                                                                                    |\n"
+"| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| Keyboard covers chat input             | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes                                                                                                                                 |\n"
+"| Chat input unresponsive                | No selected conversation (first install should auto-create); or SAP disconnected                                                                                                                                                |\n"
+"| Console load failed / Failed to fetch  | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header                                                                                                                                      |\n"
+"| 测试连接「网络错误」、浏览器同地址正常 | Bootstrap 在 `https://localhost`，WebView 会拦截跨域/混合内容 fetch；需 **Capacitor 原生 HTTP**（`CapacitorHttp`）或先 HTTP 进 Hub 再测。HTTPS 另需 APK 信任用户 CA（`network_security_config` + 安装 `rootCA.pem` 后重装 APK） |\n"
+"| ZeroTier / 虚拟网卡 IP                 | 确认手机 ZeroTier 在线；Hub `http.host: 0.0.0.0`；`allowed_hosts` 含该 IP；壳层 Hub URL **勿带尾斜杠**，HTTP 用 `:2658`                                                                                                         |\n"
+"| Not Found                              | Avoid legacy paths like `/console`/dashboard/index.html`; use SPA `/web/console/dashboard`                                                                                                                                      |\n"
+"| TTS / 朗读无声                         | 默认 Edge TTS 需 Hub 出网；Hub 设置 → 语音 → 试听。若用 Web Speech 需 HTTPS 安全上下文                                                                                                                                          |\n"
+"| Mobile UI 与浏览器不一致               | 确认 WebView 地址为 `{hub}/web/*`（非 `https://localhost`）；Hub 需部署最新 `build:web`                                                                                                                                         |\n"
 msgstr ""
-"| 现象                              | 常见原因                                                                                 |\n"
-"| ------------------------------------ | -------------------------------------------------------------------------------------------- |\n"
-"| 键盘遮挡聊天输入           | WebView 未调整大小；需 `adjustResize` + `@capacitor/keyboard`；Web 变更后 `cap sync` |\n"
-"| 聊天输入无响应              | 未选中对话（首次安装应自动创建）；或 SAP 已断开             |\n"
-"| 管理台加载失败 / Failed to fetch  | Hub 未 `--host 0.0.0.0`、token 错误、防火墙；Chrome 远程调试查看 Bearer 头   |\n"
-"| Not Found                            | 避免旧路径如 `/console/dashboard/index.html`；使用 SPA `/console/dashboard`            |\n"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:61
+#: docs/features/mobile-app.md:65
 #, no-wrap
 msgid "Debugging"
 msgstr "调试"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:64
+#: docs/features/mobile-app.md:68
 msgid "Settings → **Debug** (desktop and mobile share shell-ui panel):"
 msgstr "设置 → **调试**（桌面与移动端共用 shell-ui 面板）："
 
 #. type: Plain text
-#: docs/features/mobile-app.md:70
+#: docs/features/mobile-app.md:74
 #, no-wrap
 msgid ""
 "| Capability | Desktop           | Mobile                                      |\n"
@@ -252,22 +247,22 @@ msgstr ""
 "| Console    | Electron DevTools    | vConsole（设置开关）                    |\n"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:72
+#: docs/features/mobile-app.md:76
 msgid ""
-"`bun run debug:android`：bootstrap debug APK（不压缩 + sourcemap），UI 从 Hub "
-"`/web/*` 加载；inspect 目标为 Hub 页面。"
+"`bun run debug:android`：bootstrap debug APK（不压缩 + sourcemap），UI 从 "
+"Hub `/web/*` 加载；inspect 目标为 Hub 页面。"
 msgstr ""
-"`bun run debug:android`：bootstrap debug APK（不压缩 + sourcemap），UI 从 Hub "
-"`/web/*` 加载；inspect 目标为 Hub 页面。"
+"`bun run debug:android`：bootstrap debug APK（不压缩 + sourcemap），UI 从 "
+"Hub `/web/*` 加载；inspect 目标为 Hub 页面。"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:74
+#: docs/features/mobile-app.md:77
 #, no-wrap
 msgid "Build and sideload"
 msgstr "构建与侧载"
 
 #. type: Fenced code block (bash)
-#: docs/features/mobile-app.md:75
+#: docs/features/mobile-app.md:79
 #, no-wrap
 msgid ""
 "bun run build:mobile\n"
@@ -277,21 +272,23 @@ msgstr ""
 "cd src/app/shell/mobile && bunx cap sync android\n"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:81
+#: docs/features/mobile-app.md:85
 msgid ""
-"`www/` 仅含 bootstrap（Hub 配置 + 跳转），APK 体积小。UI 随 Hub `build:web` / "
-"`anima upgrade` 更新，无需为前端改动重装 APK（Capacitor 插件变更除外）。"
+"`www/` 仅含 bootstrap（Hub 配置 + 跳转），APK 体积小。UI 随 Hub "
+"`build:web` / `anima upgrade` 更新，无需为前端改动重装 APK（Capacitor 插件变"
+"更除外）。"
 msgstr ""
-"`www/` 仅含 bootstrap（Hub 配置 + 跳转），APK 体积小。UI 随 Hub `build:web` / "
-"`anima upgrade` 更新，无需为前端改动重装 APK（Capacitor 插件变更除外）。"
+"`www/` 仅含 bootstrap（Hub 配置 + 跳转），APK 体积小。UI 随 Hub "
+"`build:web` / `anima upgrade` 更新，无需为前端改动重装 APK（Capacitor 插件变"
+"更除外）。"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:84
+#: docs/features/mobile-app.md:87
 msgid "Debug full flow: `bun run debug:android`"
 msgstr "调试完整流程：`bun run debug:android`"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:86
+#: docs/features/mobile-app.md:89
 #, fuzzy
 #| msgid ""
 #| "Package README: [`src/app/shell/mobile/README.md`](../../src/app/shell/"
@@ -304,13 +301,13 @@ msgstr ""
 "README.md)"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:88
+#: docs/features/mobile-app.md:90
 #, no-wrap
 msgid "vs desktop shell"
 msgstr "与桌面壳层对比"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:97
+#: docs/features/mobile-app.md:99
 #, fuzzy, no-wrap
 #| msgid ""
 #| "|              | Electron `src/app/shell/desktop`                          | Capacitor `src/app/shell/mobile`                |\n"
@@ -322,14 +319,14 @@ msgstr "与桌面壳层对比"
 #| "| instance_id  | File `~/.anima/satellites/chat/`                | Preferences                           |\n"
 #| "| Content      | chat + admin + companion                        | chat + admin                          |\n"
 msgid ""
-"|              | Electron `src/app/shell/desktop`                | Capacitor `src/app/shell/mobile`      |\n"
-"| ------------ | ----------------------------------------------- | ------------------------------------- |\n"
-"| Injection    | preload → `window.satelliteShell`               | `shell-bridge.js` → same-shaped API   |\n"
-"| Hub config   | Hub settings → `~/.anima-desktop/settings.json` | Hub settings → Preferences            |\n"
-"| Debug/Sentry | Settings → Debug → same file `debug`            | Settings → Debug → Preferences        |\n"
-"| REST         | Local static `/api` proxy (same origin)         | Direct `hubUrl/api/*` (CORS + Bearer) |\n"
-"| instance_id  | File `~/.anima/satellites/chat/`                | Preferences                           |\n"
-"| Content      | chat + admin + companion                        | chat + admin                          |\n"
+"|              | Electron `src/app/shell/desktop`                | Capacitor `src/app/shell/mobile`       |\n"
+"| ------------ | ----------------------------------------------- | -------------------------------------- |\n"
+"| Injection    | preload → `window.satelliteShell`               | Hub SPA `bootstrap-capacitor` → API    |\n"
+"| Hub config   | Hub settings → `~/.anima-desktop/settings.json` | bootstrap / Hub settings → Preferences |\n"
+"| Debug/Sentry | Settings → Debug → same file `debug`            | Settings → Debug → Preferences         |\n"
+"| REST         | Local static `/api` proxy (same origin)         | Direct `hubUrl/api/*` (CORS + Bearer)  |\n"
+"| instance_id  | File `~/.anima/satellites/chat/`                | Preferences                            |\n"
+"| Content      | chat + admin + companion                        | chat + admin（Hub `/web/*`）           |\n"
 msgstr ""
 "|             | Electron `src/app/shell/desktop`                      | Capacitor `src/app/shell/mobile`               |\n"
 "| ----------- | ------------------------------------------- | ------------------------------------ |\n"
