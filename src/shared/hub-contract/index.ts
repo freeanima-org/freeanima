@@ -2,16 +2,7 @@ export type { HubClientProfile, HubMethodMeta, TransportKind } from "./transport
 export { resolveDefaultTransport, resolveFallbackTransport } from "./transport.ts";
 
 export type { HubMethodDef } from "./method-def.ts";
-export {
-  defineHubMethod,
-  dualTransportMeta,
-  httpTransportMeta,
-  wsOnlyMeta,
-  /** @deprecated */
-  dualCrudMeta,
-  /** @deprecated */
-  httpOnlyMeta,
-} from "./method-def.ts";
+export { defineHubMethod, dualTransportMeta, httpTransportMeta, wsOnlyMeta } from "./method-def.ts";
 
 export {
   METHOD_REGISTRY,

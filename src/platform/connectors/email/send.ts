@@ -1,12 +1,12 @@
 import { formatCstIso } from "@freeanima/core/util";
 
+import { getResolvedWorldContext } from "@freeanima/core/config";
 import {
   deriveThreadKey,
   getEmailAccountRow,
   getEmailMessageRow,
   markEmailMessageRead,
   resolveEmailAccountRow,
-  resolveEmailWorldId,
   worldIdForAccount,
   upsertEmailMessage,
   upsertEmailThread,
@@ -31,7 +31,9 @@ export async function sendEmail(input: SendEmailInput): Promise<{
   message_entity_id: number;
 }> {
   const worldId =
-    input.account_id != null ? await worldIdForAccount(input.account_id) : resolveEmailWorldId();
+    input.account_id != null
+      ? await worldIdForAccount(input.account_id)
+      : getResolvedWorldContext().agent_world_id;
   const account = await resolveEmailAccountRow(worldId, input.account_id);
   const pass = await resolveEmailAccountPassword(account);
 

@@ -1,11 +1,11 @@
 import type { DreamEntryRowPayload, DreamListOutput } from "@freeanima/shared/sap-contract";
 
-import { getDreamHubClient } from "./hub-client.ts";
+import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
 
 export type DreamEntryRow = DreamEntryRowPayload;
 
 function hub() {
-  return getDreamHubClient();
+  return getSatelliteHubClient();
 }
 
 export async function fetchDreamList(opts?: {

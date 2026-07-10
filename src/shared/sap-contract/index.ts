@@ -420,9 +420,6 @@ export type {
   SapClient,
 } from "./router.ts";
 
-export { createSapClient } from "./client.ts";
-export type { CreateSapClientOptions } from "./client.ts";
-
 export {
   resolveHubHttpUrl,
   resolveHubWsUrl,

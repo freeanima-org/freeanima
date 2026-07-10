@@ -35,7 +35,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 
 import { MilestoneDialog } from "./components/MilestoneDialog.tsx";
-import { MoveToListPicker } from "./components/MoveToListPicker.tsx";
+import { MoveToListPicker } from "@freeanima/frontend/ui-kit/composite";
 import { MoveToProjectPicker } from "./components/MoveToProjectPicker.tsx";
 import { ProjectDetailHeader } from "./components/ProjectDetailHeader.tsx";
 import { ProjectSidebar } from "./components/ProjectSidebar.tsx";
@@ -79,7 +79,10 @@ import {
 } from "./lib/project-menus.ts";
 import { folderIdForNewProject } from "./lib/project-tree.ts";
 import { dateLocalToIso, todayDateLocalValue } from "./lib/format-task.ts";
-import { useProjectActionSheet, useContextMenuCapability } from "./lib/platform.ts";
+import {
+  useActionSheetCapability,
+  useContextMenuCapability,
+} from "@freeanima/frontend/shell-sdk/react.tsx";
 import { cloneTaskItem, isTaskItemDirty, isTaskItemEqual } from "./lib/task-detail-dirty.ts";
 
 type MenuState =
@@ -101,7 +104,7 @@ export function ProjectApp() {
   const hubConnection = useHubConnection();
   const writesDisabled = !networkOnline || hubConnection !== "connected";
   const contextMenuEnabled = useContextMenuCapability();
-  const useActionSheet = useProjectActionSheet();
+  const useActionSheet = useActionSheetCapability();
   const useDrawer = useDrawerNav();
   const layoutMode = useThreeColumnLayoutMode();
   const renameInputRef = useRef<HTMLInputElement>(null);

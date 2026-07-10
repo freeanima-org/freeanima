@@ -1,5 +1,5 @@
 import { browserSapInstanceStore } from "@freeanima/shared/sap-contract";
-import { resolveHubWsUrl } from "@freeanima/shared/sap-contract/urls";
+import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc";
 import { testHubHealthConnection } from "@freeanima/frontend/shell-sdk";
 import { buildShellApiFields } from "@freeanima/frontend/shell-sdk/shell-api-fields";
 import type { SatelliteShellApi } from "@freeanima/frontend/shell-sdk/shell-api";
@@ -66,7 +66,7 @@ function installDevScopedSettingsBridge(): void {
 
 function createBrowserDevShellStub(hubUrl = "", remoteAuthToken = ""): SatelliteShellApi {
   const trimmedHub = hubUrl.replace(/\/$/, "");
-  const hubWsUrl = trimmedHub ? resolveHubWsUrl(trimmedHub) : "";
+  const hubWsUrl = trimmedHub ? resolveHubRpcWsUrl(trimmedHub) : "";
   const apiFields = trimmedHub
     ? buildShellApiFields(trimmedHub, hubWsUrl, remoteAuthToken)
     : { hubUrl: "", hubWsUrl: "" };

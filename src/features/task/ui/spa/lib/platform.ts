@@ -1,10 +1,3 @@
-import { hasFinePointerCapability } from "@freeanima/frontend/shell-sdk/react.tsx";
-
-/** @deprecated 使用 `useContextMenuCapability` from `@freeanima/shell-sdk/react` */
-export function isTaskContextMenuEnabled(): boolean {
-  return hasFinePointerCapability();
-}
-
 /** 浏览器 Web 壳（dev:web 等），非 desktop/mobile 原生壳 */
 export function isWebShell(): boolean {
   return typeof window !== "undefined" && !window.satelliteShell?.isNativeShell;

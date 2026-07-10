@@ -6,7 +6,7 @@ import type {
   TaskItemSearchFiltersPayload,
 } from "@freeanima/shared/sap-contract/frames/task.ts";
 
-import { getTaskHubClient } from "./hub-client.ts";
+import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
 
 export type TaskItemSearchFilters = TaskItemSearchFiltersPayload;
 export type SmartListRow = SmartListRowPayload;
@@ -28,7 +28,7 @@ export type TaskListRow = {
 export type TaskItemRow = TaskItemRowPayload;
 
 function hub() {
-  return getTaskHubClient();
+  return getSatelliteHubClient();
 }
 
 function withSubjectKind<T extends Record<string, unknown>>(payload: T) {

@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 import { getSubjectKind } from "@freeanima/frontend/shell-sdk/subject-scope-store.ts";
-import { getBundledHubClient } from "@freeanima/shared/hub-client";
+import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
 
 export type PomodoroTaskPickRow = {
   id: number;
@@ -12,7 +12,7 @@ export type PomodoroTaskPickRow = {
 const PICK_LIMIT = 10;
 
 function hub() {
-  return getBundledHubClient({ profile: "satellite" });
+  return getSatelliteHubClient();
 }
 
 function withSubjectKind<T extends Record<string, unknown>>(payload: T) {

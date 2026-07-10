@@ -41,7 +41,7 @@ import {
   BuiltinSmartListSection,
   CustomSmartListSection,
 } from "./components/SmartListSidebarSection.tsx";
-import { MoveToListPicker } from "./components/MoveToListPicker.tsx";
+import { MoveToListPicker } from "@freeanima/frontend/ui-kit/composite";
 import { MoveToProjectPicker } from "./components/MoveToProjectPicker.tsx";
 import { SortableTaskList } from "./components/SortableTaskList.tsx";
 import { TaskDetailPanel } from "./components/TaskDetailPanel.tsx";
@@ -98,7 +98,7 @@ import {
   isCompletedOnlyFilters,
   smartListRowKey,
 } from "./lib/task-smart-list-utils.ts";
-import { getParentId, getSiblings } from "./lib/list-tree.ts";
+import { getParentId, getSiblings } from "@freeanima/frontend/ui-kit/lib/task-list-tree.ts";
 import { sortOrderUpdates } from "./lib/reorder.ts";
 import {
   buildItemMenuItems,

@@ -18,12 +18,6 @@ export function isPatchableRuntimeConfig(config: Config): config is PatchableRun
   );
 }
 
-/** @deprecated 使用 isPatchableRuntimeConfig */
-export const isPatchableConfig = isPatchableRuntimeConfig;
-
-/** @deprecated 使用 PatchableRuntimeConfig */
-export type PatchableConfig = PatchableRuntimeConfig;
-
 /** PG hub_runtime_config 运行时配置存储 */
 export class RuntimeConfigStore extends Config implements PatchableRuntimeConfig {
   private constructor(snapshot: RuntimeConfig) {

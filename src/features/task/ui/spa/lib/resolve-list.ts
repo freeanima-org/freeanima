@@ -41,16 +41,3 @@ export function resolveSelectedListId(
 
   return resolveDefaultListId(rows);
 }
-
-/** @deprecated 使用 resolveSelectedListId */
-export function resolveSelectedListIdWithUrl(
-  rows: TaskListRow[],
-  options: { webShell: boolean; currentId: number | null; urlListId: number | null },
-): number | null {
-  return resolveSelectedListId(rows, {
-    currentId: options.currentId,
-    storedListId: null,
-    urlListId: options.urlListId,
-    preferUrl: options.webShell,
-  });
-}

@@ -1,5 +1,5 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { bindActiveConfig } from "@freeanima/platform/config";
+import { bindActiveRuntimeConfig } from "@freeanima/platform/config";
 import { parseYaml } from "@freeanima/platform/config";
 import { animaConfigSchema } from "@freeanima/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
@@ -26,7 +26,7 @@ function applyTestConfig(patch: Record<string, unknown>): void {
   const ctx = getActivePgTestContext();
   if (!ctx) throw new Error("PG test context not initialized");
   ctx.config.update({ ...minimalConfig(), ...patch });
-  bindActiveConfig(ctx.config);
+  bindActiveRuntimeConfig(ctx.config);
 }
 
 describePg("FTS jieba PG", () => {

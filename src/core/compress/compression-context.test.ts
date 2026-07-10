@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeEach, afterEach } from "bun:test";
 import {
   Config,
-  bindActiveConfig,
+  bindActiveRuntimeConfig,
   registerCatalogContextWindowLookup,
   resetCatalogContextWindowLookupForTest,
   resetActiveConfigForTest,
@@ -26,7 +26,7 @@ const BASE_CONFIG = {
 
 describe("buildCompressOptionsResolved", () => {
   beforeEach(() => {
-    bindActiveConfig(Config.fromSnapshot(BASE_CONFIG));
+    bindActiveRuntimeConfig(Config.fromSnapshot(BASE_CONFIG));
   });
 
   afterEach(() => {

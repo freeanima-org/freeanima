@@ -12,7 +12,10 @@ import {
 } from "@freeanima/frontend/ui-kit";
 
 import type { SmartListRow, TaskItemSearchFilters, TaskListRow } from "../lib/api.ts";
-import { buildListTree, flattenVisibleTree } from "../lib/list-tree.ts";
+import {
+  buildListTree,
+  flattenVisibleTree,
+} from "@freeanima/frontend/ui-kit/lib/task-list-tree.ts";
 
 type SmartListEditorDialogProps = {
   open: boolean;

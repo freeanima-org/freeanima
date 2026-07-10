@@ -15,7 +15,11 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from "re
 
 import type { TaskItemRow, TaskListRow } from "../lib/api.ts";
 import { taskListCollisionDetection } from "../lib/dnd-collision.ts";
-import { getParentId, getSiblings, isDescendant } from "../lib/list-tree.ts";
+import {
+  getParentId,
+  getSiblings,
+  isDescendant,
+} from "@freeanima/frontend/ui-kit/lib/task-list-tree.ts";
 import { isListDndId, isTaskDndId, parseListDndId, parseTaskDndId } from "../lib/dnd-ids.ts";
 
 type TaskDndRootProps = {

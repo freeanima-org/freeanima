@@ -1,5 +1,5 @@
 import { afterEach, beforeEach } from "bun:test";
-import { bindActiveConfig, Config, resetActiveConfigForTest } from "@freeanima/core/config";
+import { bindActiveRuntimeConfig, Config, resetActiveConfigForTest } from "@freeanima/core/config";
 
 const MINIMAL_COMPRESSION_CONFIG = {
   llm: {
@@ -18,7 +18,7 @@ const MINIMAL_COMPRESSION_CONFIG = {
 /** Bind minimal active Config for compressor unit tests (compress() reads compression defaults). */
 export function installCompressionConfigForTests(): void {
   beforeEach(() => {
-    bindActiveConfig(Config.fromSnapshot(MINIMAL_COMPRESSION_CONFIG));
+    bindActiveRuntimeConfig(Config.fromSnapshot(MINIMAL_COMPRESSION_CONFIG));
   });
   afterEach(() => {
     resetActiveConfigForTest();

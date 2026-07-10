@@ -5,17 +5,13 @@ export * from "./config.ts";
 export {
   RuntimeConfigStore,
   isPatchableRuntimeConfig,
-  isPatchableConfig,
   type PatchableRuntimeConfig,
-  type PatchableConfig,
 } from "./runtime-config-store.ts";
 export { withPlatformDb } from "./cli-db.ts";
 export { clearVaultFieldCache, resolveVaultField } from "./vault-io.ts";
 export {
   Config,
-  bindActiveConfig,
   bindActiveRuntimeConfig,
-  getActiveConfig,
   getActiveRuntimeConfig,
   resetActiveConfigForTest,
 } from "@freeanima/core/config";

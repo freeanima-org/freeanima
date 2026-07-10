@@ -29,3 +29,5 @@ export type {
 } from "./useDetailPanelState.ts";
 export { QuickAddBar } from "./QuickAddBar.tsx";
 export { ModuleScopeBar } from "./ModuleScopeBar.tsx";
+export { MoveToListPicker } from "./MoveToListPicker.tsx";
+export type { MoveToListPickerProps } from "./MoveToListPicker.tsx";

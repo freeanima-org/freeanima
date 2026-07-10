@@ -5,7 +5,7 @@ import {
 } from "@freeanima/frontend/ui-kit/ui/useAcpProgressDock.ts";
 import {
   getConversationAcpDock,
-  subscribeConversationEvents,
+  subscribeConversationUpdates,
 } from "@freeanima/features/chat/ui/spa/lib/api.ts";
 import type { ConversationAcpDockSnapshot } from "@freeanima/features/chat/ui/spa/lib/types.ts";
 
@@ -13,7 +13,7 @@ export type { AcpProgressDockOptions };
 
 const chatAcpAdapter = {
   getDock: getConversationAcpDock,
-  subscribe: subscribeConversationEvents,
+  subscribe: subscribeConversationUpdates,
 };
 
 export function useAcpProgressDock(

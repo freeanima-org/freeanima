@@ -2,7 +2,7 @@ import { existsSync, statSync } from "node:fs";
 import { extname, join, normalize } from "node:path";
 
 import { readBuildMetaFile, type ComponentBuildMeta } from "@freeanima/core/config/build-meta";
-import { resolveHubWsUrl } from "@freeanima/shared/sap-contract/urls";
+import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc";
 
 import { resolveLoopbackWebAuthTokenForRequest } from "./web-loopback-auth.ts";
 
@@ -71,7 +71,7 @@ function webConfigJsonResponse(
   const body = JSON.stringify({
     app_id: options.appId ?? "chat",
     hub_url: origin,
-    hub_ws_url: resolveHubWsUrl(origin),
+    hub_ws_url: resolveHubRpcWsUrl(origin),
     ...(options.uiVersion ? { ui_version: options.uiVersion } : {}),
     ...(webBuild ? { web_build: webBuild } : {}),
     ...(options.minShellVersion ? { min_shell_version: options.minShellVersion } : {}),
