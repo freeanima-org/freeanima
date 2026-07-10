@@ -12,9 +12,8 @@ function requirePatchableConfig() {
 }
 
 export function getHubConfig() {
-  return sanitizeConfigForApi(
-    consoleCtx().getConfig().config.data as import("@freeanima/core/config").RuntimeConfig,
-  );
+  // SafeConfigSnapshot.config 已是脱敏后的运行时配置快照，无嵌套 .data 字段。
+  return consoleCtx().getConfig().config;
 }
 
 export function getHubConfigSection(section: string) {
@@ -23,7 +22,7 @@ export function getHubConfigSection(section: string) {
       code: "config_bootstrap_section",
     });
   }
-  const cfg = consoleCtx().getConfig().config.data as Record<string, unknown>;
+  const cfg = consoleCtx().getConfig().config;
   const value = cfg[section];
   if (value === undefined) {
     throw new ApiHandlerError(404, `配置段不存在: ${section}`, {
