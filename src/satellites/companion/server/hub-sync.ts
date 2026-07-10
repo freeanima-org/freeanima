@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { fetchHubRestRaw } from "@freeanima/shared/hub-rpc";
-import { hubRpcHttpCall } from "@freeanima/frontend/shell-sdk/hub-rpc-http";
+import { isHubMethod, type HubMethod } from "@freeanima/shared/hub-contract";
+import { fetchHubRestRaw, parseHubRestResponse } from "@freeanima/shared/hub-rpc";
 import {
   companionCacheDir,
   companionConfigPath,
@@ -73,11 +73,13 @@ function listDataFiles(dir: string, ext: string): string[] {
 }
 
 async function hubRpcCall<T>(method: string, payload: Record<string, unknown> = {}): Promise<T> {
+  if (!isHubMethod(method)) {
+    throw new Error(`unknown hub method: ${method}`);
+  }
   const token = remoteAuthTokenFromShell();
-  return hubRpcHttpCall<T>(method, payload, {
-    hubUrl: hubUrlFromConfig(),
-    ...(token !== undefined ? { token } : {}),
-  });
+  const options = token !== undefined ? { authToken: token } : undefined;
+  const res = await fetchHubRestRaw(hubUrlFromConfig(), method as HubMethod, payload, options);
+  return (await parseHubRestResponse(res)) as T;
 }
 
 async function downloadAsset(url: string): Promise<void> {

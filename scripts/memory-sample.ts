@@ -8,8 +8,9 @@
  *   bun run memory:sample -- --hub-url http://127.0.0.1:2658 --stage full
  */
 
-import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
+
+import { fetchHubRestRaw, parseHubRestResponse } from "@freeanima/shared/hub-rpc";
 
 type MemoryDetail = {
   rss_kb?: number;
@@ -71,25 +72,11 @@ async function fetchStatusViaHubRpc(
   hubUrl: string,
   token?: string,
 ): Promise<Record<string, unknown> | null> {
-  const base = hubUrl.replace(/\/$/, "");
-  const id = randomUUID();
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
   const bearer = token?.trim() || process.env.FREEANIMA_REMOTE_AUTH_TOKEN?.trim();
-  if (bearer) headers.Authorization = `Bearer ${bearer}`;
   try {
-    const res = await fetch(`${base}/hub/rpc/v1`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ kind: "req", id, method: "status.get", payload: {} }),
-    });
-    if (!res.ok) return null;
-    const envelope = (await res.json()) as {
-      kind: string;
-      ok?: boolean;
-      payload?: Record<string, unknown>;
-    };
-    if (envelope.kind !== "res" || !envelope.ok) return null;
-    return envelope.payload ?? null;
+    const options = bearer ? { authToken: bearer } : undefined;
+    const res = await fetchHubRestRaw(hubUrl, "status.get", {}, options);
+    return (await parseHubRestResponse(res)) as Record<string, unknown>;
   } catch {
     return null;
   }

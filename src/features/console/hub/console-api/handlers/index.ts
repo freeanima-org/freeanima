@@ -32,7 +32,6 @@ export { listSelfBlocks } from "./self.ts";
 export { getMcpStatus, mcpStartAll, mcpStopAll, mcpStartServer, mcpStopServer } from "./mcp.ts";
 export { getSatellitesStatus } from "./satellites.ts";
 export { getAcpStatus, acpStartAll, acpStopAll, acpStartAgent, acpStopAgent } from "./acp.ts";
-export { iterateMessageStream } from "./message-stream.ts";
 export { fetchConversationAcpDock, iterateConversationEvents } from "./conversation-events.ts";
 export { getFtsStatus, startRebuildFtsIndex, getRebuildFtsJobStatus } from "./fts.ts";
 export {
@@ -53,10 +52,6 @@ export {
   updateSubjectEntity,
   searchEntities,
 } from "./entities.ts";
-export {
-  listSubjectApiTokens,
-  createSubjectApiToken,
-  revokeSubjectApiToken,
-} from "./service-api-tokens.ts";
+export { tokensHubHandlers } from "./service-api-tokens.ts";
 export { getHubConfig, getHubConfigSection, patchHubConfigSection } from "./config.ts";
 export { ApiHandlerError } from "./errors.ts";

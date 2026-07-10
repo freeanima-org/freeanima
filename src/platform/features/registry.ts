@@ -1,8 +1,7 @@
-import type { FeatureHttpRegistrar, FeaturePlugin, FeatureRpcHandler } from "./types.ts";
+import type { FeaturePlugin, FeatureRpcHandler } from "./types.ts";
 
 const plugins: FeaturePlugin[] = [];
 const rpcHandlers = new Map<string, FeatureRpcHandler>();
-const httpRegistrars: FeatureHttpRegistrar[] = [];
 
 export function registerFeatures(entries: FeaturePlugin[]): void {
   for (const plugin of entries) {
@@ -15,9 +14,6 @@ export function registerFeatures(entries: FeaturePlugin[]): void {
         rpcHandlers.set(method, handler);
       }
     }
-    if (plugin.hub.registerHttp) {
-      httpRegistrars.push(plugin.hub.registerHttp);
-    }
   }
 }
 
@@ -29,14 +25,7 @@ export function getFeatureRpcHandler(method: string): FeatureRpcHandler | undefi
   return rpcHandlers.get(method);
 }
 
-export function applyFeatureHttpRegistrations(register: Parameters<FeatureHttpRegistrar>[0]): void {
-  for (const registrar of httpRegistrars) {
-    registrar(register);
-  }
-}
-
 export function resetFeatureRegistryForTests(): void {
   plugins.length = 0;
   rpcHandlers.clear();
-  httpRegistrars.length = 0;
 }

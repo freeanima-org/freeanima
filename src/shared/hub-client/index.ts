@@ -1,9 +1,4 @@
-export {
-  buildBearerHeaders,
-  createBearerFetch,
-  hubHttpFromWsUrl,
-  hubRpcWsFromHttp,
-} from "./http-auth.ts";
+export { buildBearerHeaders, createBearerFetch, hubHttpFromWsUrl } from "./http-auth.ts";
 export {
   createHubClient,
   HubTransportError,
