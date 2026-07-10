@@ -230,6 +230,7 @@ export async function ensureDefaultTaskListForWorld(worldId: number): Promise<Ta
     is_default: true,
     is_folder: false,
     parent_id: null,
+    client_op_id: null,
   };
   const row = await createEntity({
     type: "content",
@@ -275,6 +276,30 @@ export async function listTaskLists(
   return lists.toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
 }
 
+async function findTaskListByClientOpId(
+  worldId: number,
+  clientOpId: string,
+): Promise<TaskListRow | null> {
+  const result = await searchEntities({
+    world_id: worldId,
+    primary_component: TASK_LIST_COMPONENT,
+    filters: { client_op_id: clientOpId },
+    limit: 1,
+    mode: "filter_only",
+  });
+  const row = result.results[0];
+  if (!row) return null;
+  const parsed = asTaskList(row);
+  if (!parsed) return null;
+  const is_folder = parsed.is_folder ?? false;
+  const item_count = is_folder ? 0 : await countItemsForList(parsed.id, worldId);
+  return toListRow(parsed, {
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    item_count,
+  });
+}
+
 export async function getDefaultTaskList(worldId: number): Promise<TaskListRow> {
   return ensureDefaultTaskListForWorld(worldId);
 }
@@ -283,6 +308,11 @@ export async function createTaskList(
   worldId: number,
   input: TaskListCreateInput,
 ): Promise<TaskListRow> {
+  if (input.client_op_id) {
+    const existing = await findTaskListByClientOpId(worldId, input.client_op_id);
+    if (existing) return existing;
+  }
+
   const is_folder = input.is_folder ?? false;
   const parent_id = input.parent_id ?? null;
 
@@ -300,6 +330,7 @@ export async function createTaskList(
     is_default: false,
     is_folder,
     parent_id,
+    client_op_id: input.client_op_id ?? null,
   };
   const row = await createEntity({
     type: "content",

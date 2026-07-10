@@ -1,4 +1,7 @@
 import { getSubjectKind } from "@freeanima/frontend/shell-sdk";
+import { resolveHubCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
+import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
+import { isTempId } from "@freeanima/frontend/shell-sdk/offline-temp-id";
 
 import type {
   SmartListRowPayload,
@@ -7,6 +10,25 @@ import type {
 } from "@freeanima/shared/sap-contract/frames/task.ts";
 
 import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
+
+import {
+  offlineCreateTaskItem,
+  offlineCreateTaskList,
+  offlineDeleteTaskItem,
+  offlineDeleteTaskList,
+  offlineUpdateTaskItem,
+  offlineUpdateTaskList,
+  registerTaskOfflineModule,
+} from "./offline-store.ts";
+import { readCachedTaskItems, readCachedTaskLists } from "./offline-cache.ts";
+
+let taskModuleRegistered = false;
+
+function ensureTaskOfflineModule(): void {
+  if (taskModuleRegistered) return;
+  registerTaskOfflineModule();
+  taskModuleRegistered = true;
+}
 
 export type TaskItemSearchFilters = TaskItemSearchFiltersPayload;
 export type SmartListRow = SmartListRowPayload;
@@ -36,6 +58,9 @@ function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
 }
 
 export async function fetchTaskLists(opts?: { includeClosed?: boolean }): Promise<TaskListRow[]> {
+  if (!isHubFetchAvailable()) {
+    return (await readCachedTaskLists(resolveHubCacheScope())) ?? [];
+  }
   const data = await hub().call(
     "tasklist.list",
     withSubjectKind({ include_closed: opts?.includeClosed }),
@@ -50,8 +75,8 @@ export async function createTaskList(input: {
   sort_order?: number;
   color?: string | null;
 }): Promise<TaskListRow> {
-  const data = await hub().call("tasklist.create", withSubjectKind(input));
-  return data.item;
+  ensureTaskOfflineModule();
+  return offlineCreateTaskList(input);
 }
 
 export async function updateTaskList(
@@ -60,8 +85,8 @@ export async function updateTaskList(
     Pick<TaskListRow, "name" | "sort_order" | "closed" | "color" | "is_folder" | "parent_id">
   >,
 ): Promise<TaskListRow> {
-  const data = await hub().call("tasklist.patch", withSubjectKind({ id, ...patch }));
-  return data.item;
+  ensureTaskOfflineModule();
+  return offlineUpdateTaskList(id, patch);
 }
 
 export async function closeTaskList(id: number): Promise<TaskListRow> {
@@ -73,10 +98,14 @@ export async function reopenTaskList(id: number): Promise<TaskListRow> {
 }
 
 export async function deleteTaskList(id: number): Promise<void> {
-  await hub().call("tasklist.delete", withSubjectKind({ id, cascade: true }));
+  ensureTaskOfflineModule();
+  return offlineDeleteTaskList(id);
 }
 
 export async function fetchTaskItems(listId: number): Promise<TaskItemRow[]> {
+  if (isTempId(listId) || !isHubFetchAvailable()) {
+    return (await readCachedTaskItems(resolveHubCacheScope(), listId)) ?? [];
+  }
   const data = await hub().call("task.list", withSubjectKind({ list_id: listId, status: "all" }));
   return data.items;
 }
@@ -84,11 +113,13 @@ export async function fetchTaskItems(listId: number): Promise<TaskItemRow[]> {
 export async function fetchTaskItemsByFilters(
   filters: TaskItemSearchFilters,
 ): Promise<TaskItemRow[]> {
+  if (!isHubFetchAvailable()) return [];
   const data = await hub().call("task.list", withSubjectKind({ filters }));
   return data.items;
 }
 
 export async function fetchSmartLists(): Promise<SmartListRow[]> {
+  if (!isHubFetchAvailable()) return [];
   const data = await hub().call("smartlist.list", withSubjectKind({}));
   return data.smart_lists;
 }
@@ -142,8 +173,8 @@ export async function createTaskItem(input: {
   due_at?: string | null;
   sort_order?: number;
 }): Promise<TaskItemRow> {
-  const data = await hub().call("task.create", withSubjectKind(input));
-  return data.item;
+  ensureTaskOfflineModule();
+  return offlineCreateTaskItem(input);
 }
 
 export async function updateTaskItem(
@@ -164,8 +195,8 @@ export async function updateTaskItem(
     >
   >,
 ): Promise<TaskItemRow> {
-  const data = await hub().call("task.patch", withSubjectKind({ id, ...patch }));
-  return data.item;
+  ensureTaskOfflineModule();
+  return offlineUpdateTaskItem(id, patch);
 }
 
 export type ProjectPickerRow = { id: number; title: string; status: string };
@@ -176,15 +207,18 @@ export async function fetchProjectsForMove(): Promise<ProjectPickerRow[]> {
 }
 
 export async function completeTaskItem(id: number): Promise<TaskItemRow> {
-  const data = await hub().call("task.complete", withSubjectKind({ id }));
-  return data.item;
+  ensureTaskOfflineModule();
+  return offlineUpdateTaskItem(id, { status: "completed" });
 }
 
 export async function uncompleteTaskItem(id: number): Promise<TaskItemRow> {
-  const data = await hub().call("task.uncomplete", withSubjectKind({ id }));
-  return data.item;
+  ensureTaskOfflineModule();
+  return offlineUpdateTaskItem(id, { status: "pending" });
 }
 
 export async function deleteTaskItem(id: number): Promise<void> {
-  await hub().call("task.delete", withSubjectKind({ id }));
+  ensureTaskOfflineModule();
+  return offlineDeleteTaskItem(id);
 }
+
+export { countTaskPendingOps } from "./offline-store.ts";

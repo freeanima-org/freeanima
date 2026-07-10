@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  useHubConnection,
-  useNetworkOnline,
-  useSubjectScope,
-  SubjectScopeToggle,
-} from "@freeanima/frontend/shell-sdk/react.tsx";
+import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/shell-sdk/react.tsx";
+import { registerDiaryOfflineModule } from "./lib/offline-store.ts";
+import { countDiaryPendingOps } from "./lib/api.ts";
 import { mergeDraftAfterSave } from "@freeanima/frontend/ui-kit/lib/merge-draft-after-save.ts";
 import { Button, Input, Spinner } from "@freeanima/frontend/ui-kit";
 import { ListDetailLayout } from "@freeanima/frontend/ui-kit/layout";
@@ -40,9 +37,8 @@ function sortEntries(items: DiaryEntryRow[]): DiaryEntryRow[] {
 
 export function DiaryApp() {
   const { kind: subjectKind } = useSubjectScope();
-  const networkOnline = useNetworkOnline();
-  const hubConnection = useHubConnection();
-  const writesDisabled = !networkOnline || hubConnection !== "connected";
+  const [pendingOps, setPendingOps] = useState(0);
+  const writesDisabled = false;
   const [entries, setEntries] = useState<DiaryEntryRow[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [draft, setDraft] = useState<EntryDraft | null>(null);
@@ -91,6 +87,18 @@ export function DiaryApp() {
       setLoading(false);
     }
   }, [searchQuery, subjectKind]);
+
+  useEffect(() => {
+    registerDiaryOfflineModule();
+  }, []);
+
+  useEffect(() => {
+    void countDiaryPendingOps().then(setPendingOps);
+    const timer = window.setInterval(() => {
+      void countDiaryPendingOps().then(setPendingOps);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [entries, saving, creating]);
 
   useEffect(() => {
     void reload();
@@ -296,6 +304,9 @@ export function DiaryApp() {
         onChange={(e) => setSearchQuery(e.target.value)}
       />
       {error ? <p className="text-destructive text-xs">{error}</p> : null}
+      {pendingOps > 0 ? (
+        <p className="text-muted-foreground text-xs">{pendingOps} 项待同步</p>
+      ) : null}
       {loading ? <Spinner className="size-4" /> : null}
       <div className="min-h-0 flex-1 overflow-y-auto">
         <EntryTimeline items={entries} selectedId={selectedId} onSelect={selectEntryById} />

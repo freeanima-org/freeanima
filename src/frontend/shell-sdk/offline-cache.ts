@@ -2,11 +2,15 @@
 import type { SatelliteShellApi } from "./shell-api.ts";
 import { resolveHubRpcWsUrl } from "./hub-ws-url.ts";
 import { getSubjectKind } from "./subject-scope-store.ts";
+import {
+  OFFLINE_KV_STORE,
+  offlineDbGet,
+  offlineDbPut,
+  setOfflineDbBackendForTests,
+} from "./offline-db.ts";
 
-const DB_NAME = "freeanima-satellite-cache";
-const DB_VERSION = 2;
-const STORE = "kv";
-export const OFFLINE_OUTBOX_STORE = "outbox";
+export { OFFLINE_OUTBOX_STORE } from "./offline-db.ts";
+
 const ENVELOPE_VERSION = 1 as const;
 
 type MemoryBackend = Map<string, unknown>;
@@ -22,10 +26,8 @@ export type OfflineCacheEntry<T> = {
   cachedAt: Date | null;
 };
 
-let testBackend: MemoryBackend | null = null;
-
 export function setSatelliteOfflineCacheBackendForTests(map: MemoryBackend | null): void {
-  testBackend = map;
+  setOfflineDbBackendForTests(map);
 }
 
 export function resolveCacheScope(hubWsUrl: string): string {
@@ -77,80 +79,12 @@ function unwrapStored<T>(raw: unknown): OfflineCacheEntry<T> | null {
   return { data: raw as T, cachedAt: null };
 }
 
-function openDb(): Promise<IDBDatabase | null> {
-  if (testBackend || typeof indexedDB === "undefined") {
-    return Promise.resolve(null);
-  }
-  return new Promise((resolve) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.addEventListener("error", () => resolve(null), { once: true });
-    req.addEventListener(
-      "upgradeneeded",
-      () => {
-        const db = req.result;
-        if (!db.objectStoreNames.contains(STORE)) {
-          db.createObjectStore(STORE);
-        }
-        if (!db.objectStoreNames.contains(OFFLINE_OUTBOX_STORE)) {
-          db.createObjectStore(OFFLINE_OUTBOX_STORE);
-        }
-      },
-      { once: true },
-    );
-    req.addEventListener("success", () => resolve(req.result), { once: true });
-  });
-}
-
-async function kvGet(key: string): Promise<unknown | null> {
-  if (testBackend) {
-    return testBackend.get(key) ?? null;
-  }
-  const db = await openDb();
-  if (!db) return null;
-  return new Promise((resolve) => {
-    const tx = db.transaction(STORE, "readonly");
-    const req = tx.objectStore(STORE).get(key);
-    req.addEventListener("success", () => resolve(req.result ?? null), { once: true });
-    req.addEventListener("error", () => resolve(null), { once: true });
-    tx.addEventListener("complete", () => db.close(), { once: true });
-  });
-}
-
-async function kvSet(key: string, value: unknown): Promise<void> {
-  if (testBackend) {
-    testBackend.set(key, value);
-    return;
-  }
-  const db = await openDb();
-  if (!db) return;
-  await new Promise<void>((resolve) => {
-    const tx = db.transaction(STORE, "readwrite");
-    tx.objectStore(STORE).put(value, key);
-    tx.addEventListener(
-      "complete",
-      () => {
-        db.close();
-        resolve();
-      },
-      { once: true },
-    );
-    tx.addEventListener(
-      "error",
-      () => {
-        db.close();
-        resolve();
-      },
-      { once: true },
-    );
-  });
-}
-
 export async function readOfflineCacheEntry<T>(
   scope: string,
   namespace: string,
   id: string,
 ): Promise<OfflineCacheEntry<T> | null> {
-  const raw = await kvGet(cacheKey(scope, namespace, id));
+  const raw = await offlineDbGet(OFFLINE_KV_STORE, cacheKey(scope, namespace, id));
   return unwrapStored<T>(raw);
 }
 
@@ -174,7 +108,7 @@ export async function writeOfflineCache<T>(
     data: value,
     cachedAt: new Date().toISOString(),
   };
-  await kvSet(cacheKey(scope, namespace, id), envelope);
+  await offlineDbPut(OFFLINE_KV_STORE, cacheKey(scope, namespace, id), envelope);
 }
 
 export function formatOfflineCacheTime(cachedAt: Date, locale?: string): string {

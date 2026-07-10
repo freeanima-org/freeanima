@@ -82,6 +82,6 @@ SAP attach 专用 method（tool/terminal/sap.attach）仍在 [`src/platform/sap/
 | `feature-console` | console-contract、hub-client、ui-kit、shell-sdk     | sap-contract、shell-ui、Eden Treaty（已移除） |
 | `satellite-*`     | sap-contract、shell-sdk、ui-kit                     | shell-ui、admin-\*                            |
 
-**Satellite 离线只读缓存**：列表/详情 fetch 应 cache-first 展示、`network refresh` 写回；使用 `@freeanima/shell-sdk/offline-cache`（按 `hubWsUrl` scope 隔离，写入带 `cachedAt` 信封）；离线时通过 `@freeanima/shell-sdk/react` 的 `useOfflineReadOnly()` 禁用写操作；**不要**用 Workbox 缓存 `/api` 或 `/sap`。参见 [`docs/guide/remote-access.md`](../../docs/guide/remote-access.md) PWA 离线边界。
+**Satellite 离线缓存**：列表/详情 fetch 应 cache-first 展示、`network refresh` 写回；使用 `@freeanima/frontend/shell-sdk/offline-cache`（按 `hubWsUrl` + subject scope 隔离）。**Tier 2 可写**模块通过 `offline-module-registry` 注册 adapter，离线写经 outbox flush；shell-ui `OfflineSyncBootstrap` 展示跨模块待同步计数。**不要**用 Workbox 缓存 `/api` 或 `/sap`。参见 [`docs/guide/remote-access.md`](../../docs/guide/remote-access.md) 与 [`docs/guide/offline-platform.md`](../../docs/guide/offline-platform.md)。
 
 UI 样式与复合组件约定 → [`frontend-ui.md`](frontend-ui.md)。

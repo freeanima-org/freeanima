@@ -11,6 +11,7 @@ export const taskListBodySchema = z.object({
   is_folder: z.boolean().optional(),
   /** 父文件夹 entity id；null 表示根级 */
   parent_id: z.number().int().positive().nullable().optional(),
+  client_op_id: z.string().min(1).nullable().default(null),
 });
 
 export type TaskListBody = z.infer<typeof taskListBodySchema>;

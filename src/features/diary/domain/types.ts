@@ -17,6 +17,7 @@ export type DiaryEntryCreateInput = {
   summary?: string;
   entry_at: string;
   tags?: string[];
+  client_op_id?: string;
 };
 
 export type DiaryEntryUpdateInput = {

@@ -36,6 +36,7 @@ export const diaryCreateInputSchema = z.object({
   summary: z.string().optional(),
   entry_at: z.string().min(1),
   tags: z.array(z.string()).optional(),
+  client_op_id: z.string().min(1).optional(),
 });
 export type DiaryCreateInput = z.infer<typeof diaryCreateInputSchema>;
 export const diaryCreateOutputSchema = z.object({ item: diaryEntryRowSchema });
@@ -43,8 +44,9 @@ export type DiaryCreateOutput = z.infer<typeof diaryCreateOutputSchema>;
 
 export const diaryAppendInputSchema = z.object({
   subject_kind: notificationRecipientKindSchema,
-  id: z.number().int().positive(),
+  id: z.number().int(),
   content: z.string().min(1),
+  client_op_id: z.string().min(1).optional(),
 });
 export type DiaryAppendInput = z.infer<typeof diaryAppendInputSchema>;
 export const diaryAppendOutputSchema = z.object({ item: diaryEntryRowSchema });
@@ -52,12 +54,13 @@ export type DiaryAppendOutput = z.infer<typeof diaryAppendOutputSchema>;
 
 export const diaryPatchInputSchema = z.object({
   subject_kind: notificationRecipientKindSchema,
-  id: z.number().int().positive(),
+  id: z.number().int(),
   title: z.string().min(1).optional(),
   content: z.string().optional(),
   summary: z.string().optional(),
   entry_at: z.string().min(1).optional(),
   tags: z.array(z.string()).optional(),
+  client_op_id: z.string().min(1).optional(),
 });
 export type DiaryPatchInput = z.infer<typeof diaryPatchInputSchema>;
 export const diaryPatchOutputSchema = z.object({ item: diaryEntryRowSchema });
@@ -65,7 +68,8 @@ export type DiaryPatchOutput = z.infer<typeof diaryPatchOutputSchema>;
 
 export const diaryDeleteInputSchema = z.object({
   subject_kind: notificationRecipientKindSchema,
-  id: z.number().int().positive(),
+  id: z.number().int(),
+  client_op_id: z.string().min(1).optional(),
 });
 export type DiaryDeleteInput = z.infer<typeof diaryDeleteInputSchema>;
 export const diaryDeleteOutputSchema = z.object({ ok: z.literal(true) });

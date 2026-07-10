@@ -16,7 +16,9 @@ import {
   parseTaskItemSearchFilters,
   POMODORO_SESSION_COMPONENT,
   POMODORO_TASK_FOCUS_COMPONENT,
+  parseTaskListSearchFilters,
   TASK_ITEM_COMPONENT,
+  TASK_LIST_COMPONENT,
   type EntityType,
 } from "@freeanima/core/db/schema";
 import type { EntitySearchOpts } from "../types.ts";
@@ -214,6 +216,19 @@ function buildTaskItemBodyConditions(
       sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
     );
   }
+  if (filters.client_op_id) {
+    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+  }
+  return conditions;
+}
+
+function buildTaskListBodyConditions(
+  filters: ReturnType<typeof parseTaskListSearchFilters>,
+): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.client_op_id) {
+    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+  }
   return conditions;
 }
 
@@ -338,6 +353,9 @@ export function buildComponentFilterConditions(opts: EntitySearchOpts): SQL[] {
   const component = opts.primary_component ?? opts.component;
   if (component === TASK_ITEM_COMPONENT) {
     return buildTaskItemBodyConditions(parseTaskItemSearchFilters(filters));
+  }
+  if (component === TASK_LIST_COMPONENT) {
+    return buildTaskListBodyConditions(parseTaskListSearchFilters(filters));
   }
   if (component === DIARY_ENTRY_COMPONENT) {
     return buildDiaryEntryBodyConditions(parseDiaryEntrySearchFilters(filters));

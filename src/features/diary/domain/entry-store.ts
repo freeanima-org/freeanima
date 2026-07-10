@@ -134,10 +134,33 @@ export async function getDiaryEntry(
     : null;
 }
 
+async function findDiaryEntryByClientOpId(
+  ctx: DiaryStoreContext,
+  clientOpId: string,
+): Promise<DiaryEntryRow | null> {
+  const result = await searchEntities({
+    world_id: ctx.worldId,
+    primary_component: DIARY_ENTRY_COMPONENT,
+    filters: { client_op_id: clientOpId },
+    limit: 1,
+    mode: "filter_only",
+  });
+  const row = result.results[0];
+  if (!row) return null;
+  const parsed = asDiaryEntry(row);
+  if (!parsed) return null;
+  return toEntryRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+}
+
 export async function createDiaryEntry(
   ctx: DiaryStoreContext,
   input: DiaryEntryCreateInput,
 ): Promise<DiaryEntryRow> {
+  if (input.client_op_id) {
+    const existing = await findDiaryEntryByClientOpId(ctx, input.client_op_id);
+    if (existing) return existing;
+  }
+
   const entryAt = input.entry_at.trim();
   if (!entryAt) throw new Error("entry_at is required");
 
@@ -149,6 +172,7 @@ export async function createDiaryEntry(
   const body: DiaryEntryBody = {
     entry_at: entryAt,
     tags: normalizeTags(input.tags),
+    client_op_id: input.client_op_id ?? null,
   };
 
   const row = await createEntity({
