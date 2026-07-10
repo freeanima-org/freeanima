@@ -1,5 +1,3 @@
-import { randomUuid } from "@freeanima/kernel/random-uuid.ts";
-
 import {
   getHubMethodDef,
   isHubMethod,
@@ -12,9 +10,7 @@ import {
   type TransportKind,
 } from "@freeanima/shared/hub-contract";
 import type { RpcClient } from "@freeanima/shared/hub-rpc";
-import { parseHubRpcEnvelope, serializeHubRpcEnvelope } from "@freeanima/shared/hub-rpc";
-
-import { buildHubRpcHttpUrl } from "./http-rpc.ts";
+import { buildHubRestRequest, parseHubRestResponse } from "@freeanima/shared/hub-rpc";
 
 export type HubCallOptions = {
   transport?: "auto" | TransportKind;
@@ -82,40 +78,20 @@ export function createHubClient(options: HubClientOptions) {
     payload: HubMethodInputs[K],
     signal?: AbortSignal,
   ): Promise<HubMethodOutputs[K]> {
-    const id = randomUuid();
-    const url = buildHubRpcHttpUrl(options.httpOrigin);
-    const body = serializeHubRpcEnvelope({
-      kind: "req",
-      id,
+    const recordPayload = (payload ?? {}) as Record<string, unknown>;
+    const { url, init } = buildHubRestRequest(
+      options.httpOrigin,
       method,
-      payload: payload ?? {},
-    });
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (options.authToken?.trim()) {
-      headers.Authorization = `Bearer ${options.authToken.trim()}`;
-    }
+      recordPayload,
+      options.authToken,
+    );
     const res = await httpFetch(url, {
-      method: "POST",
-      headers,
-      body,
+      ...init,
       ...(signal !== undefined ? { signal } : {}),
     });
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw new Error(text || `HTTP ${res.status}`);
-    }
-    const raw = await res.text();
-    const envelope = parseHubRpcEnvelope(raw);
-    if (envelope.kind !== "res") {
-      throw new Error("expected Hub RPC res envelope");
-    }
-    if (envelope.id !== id) {
-      throw new Error("Hub RPC response id mismatch");
-    }
-    if (!envelope.ok) {
-      throw new Error(envelope.error.message);
-    }
-    return envelope.payload as HubMethodOutputs[K];
+    const result = await parseHubRestResponse(res);
+    const def = getHubMethodDef(method);
+    return def.output.parse(result) as HubMethodOutputs[K];
   }
 
   async function callOne<K extends HubMethod>(
