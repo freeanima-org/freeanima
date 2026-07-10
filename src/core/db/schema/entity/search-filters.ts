@@ -159,6 +159,7 @@ export const pomodoroSessionSearchFiltersSchema = z
     phase: pomodoroPhaseSchema.optional(),
     interrupted: z.boolean().optional(),
     task_item_id: z.number().int().positive().optional(),
+    client_op_id: z.string().min(1).optional(),
   })
   .strict();
 

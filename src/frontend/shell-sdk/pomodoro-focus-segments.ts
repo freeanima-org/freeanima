@@ -1,4 +1,5 @@
 import type { PomodoroActiveState, PomodoroPhase } from "./pomodoro-active-types.ts";
+import { effectivePhaseFinishedAtMs } from "./pomodoro-phase-timing.ts";
 
 export type PomodoroTaskFocusSegmentPayload = {
   session_local_id: string;
@@ -77,28 +78,51 @@ export function closeOpenWorkFocusSegments(
   return { ...state, focusSegments: closed };
 }
 
+function capSegmentDurations(
+  segments: Array<
+    { duration_ms: number; ended_at: string } & Omit<PomodoroTaskFocusSegmentPayload, "duration_ms">
+  >,
+  maxTotalMs: number,
+): PomodoroTaskFocusSegmentPayload[] {
+  const total = segments.reduce((sum, s) => sum + s.duration_ms, 0);
+  if (total <= maxTotalMs || total <= 0) return segments;
+  const scale = maxTotalMs / total;
+  let allocated = 0;
+  return segments.map((segment, index) => {
+    if (index === segments.length - 1) {
+      return { ...segment, duration_ms: Math.max(0, maxTotalMs - allocated) };
+    }
+    const capped = Math.floor(segment.duration_ms * scale);
+    allocated += capped;
+    return { ...segment, duration_ms: capped };
+  });
+}
+
 export function buildTaskFocusSegmentPayloads(
   state: PomodoroActiveState,
-  finishedAtMs: number = Date.now(),
+  nowMs: number = Date.now(),
 ): PomodoroTaskFocusSegmentPayload[] {
   if (state.phase !== "work") return [];
-  const closed = closeOpenWorkFocusSegments(state, finishedAtMs).focusSegments;
-  return closed
+  const effectiveFinishMs = effectivePhaseFinishedAtMs(state, nowMs);
+  const closed = closeOpenWorkFocusSegments(state, effectiveFinishMs).focusSegments;
+  const raw = closed
     .map((segment) => {
-      const endedAt = segment.ended_at ?? isoNow(finishedAtMs);
-      const durationMs = segmentDurationMs(segment.started_at, Date.parse(endedAt));
+      const endedAt = segment.ended_at ?? isoNow(effectiveFinishMs);
+      const endedMs = Math.min(Date.parse(endedAt), effectiveFinishMs);
+      const durationMs = segmentDurationMs(segment.started_at, endedMs);
       return {
         session_local_id: state.sessionLocalId,
         phase: state.phase,
         phase_started_at: state.phaseStartedAt,
         task_item_id: segment.task_item_id,
         started_at: segment.started_at,
-        ended_at: endedAt,
+        ended_at: new Date(endedMs).toISOString(),
         duration_ms: durationMs,
         cycle_index: state.cycleIndex,
       };
     })
     .filter((segment) => segment.duration_ms > 0);
+  return capSegmentDurations(raw, state.phasePlannedMs);
 }
 
 export function normalizeRestoredActiveState(state: PomodoroActiveState): PomodoroActiveState {

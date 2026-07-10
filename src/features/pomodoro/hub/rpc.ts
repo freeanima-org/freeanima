@@ -7,6 +7,9 @@ import {
   pomodoroSessionCompleteInputSchema,
   pomodoroSessionListInputSchema,
   pomodoroSessionStatsInputSchema,
+  pomodoroActiveGetInputSchema,
+  pomodoroActivePutInputSchema,
+  pomodoroActiveClearInputSchema,
   type SapRequestContext,
 } from "../protocol/index.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
@@ -79,4 +82,31 @@ export async function handlePomodoroFocusList(
 ) {
   const input = pomodoroFocusListInputSchema.parse(payload);
   return service.servicePomodoroFocusList(deps.runtime.runtimeDeps(), omitUndefined(input));
+}
+
+export async function handlePomodoroActiveGet(
+  deps: PomodoroSapServerDeps,
+  payload: unknown,
+  _ctx: SapRequestContext,
+) {
+  const input = pomodoroActiveGetInputSchema.parse(payload);
+  return service.servicePomodoroActiveGet(deps.runtime.runtimeDeps(), input);
+}
+
+export async function handlePomodoroActivePut(
+  deps: PomodoroSapServerDeps,
+  payload: unknown,
+  _ctx: SapRequestContext,
+) {
+  const input = pomodoroActivePutInputSchema.parse(payload);
+  return service.servicePomodoroActivePut(deps.runtime.runtimeDeps(), input);
+}
+
+export async function handlePomodoroActiveClear(
+  deps: PomodoroSapServerDeps,
+  payload: unknown,
+  _ctx: SapRequestContext,
+) {
+  const input = pomodoroActiveClearInputSchema.parse(payload);
+  return service.servicePomodoroActiveClear(deps.runtime.runtimeDeps(), input);
 }

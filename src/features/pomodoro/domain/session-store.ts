@@ -37,6 +37,7 @@ function toSessionRow(
     task_item_id: row.task_item_id,
     cycle_index: row.cycle_index,
     interrupted: row.interrupted,
+    client_op_id: row.client_op_id,
     created_at: meta.created_at.toISOString(),
     updated_at: meta.updated_at.toISOString(),
   };
@@ -85,11 +86,33 @@ export async function listPomodoroSessions(
   return { items, total: items.length };
 }
 
+async function findSessionByClientOpId(
+  ctx: PomodoroStoreContext,
+  clientOpId: string,
+): Promise<PomodoroSessionRow | null> {
+  const result = await searchEntities({
+    world_id: ctx.worldId,
+    primary_component: POMODORO_SESSION_COMPONENT,
+    filters: { client_op_id: clientOpId },
+    limit: 1,
+    mode: "filter_only",
+  });
+  const row = result.results[0];
+  if (!row) return null;
+  const parsed = asPomodoroSession(row);
+  if (!parsed) return null;
+  return toSessionRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+}
+
 async function persistSessionWithFocus(
   ctx: PomodoroStoreContext,
   input: PomodoroSessionWriteInput,
   interrupted: boolean,
 ): Promise<PomodoroSessionRow> {
+  if (input.client_op_id) {
+    const existing = await findSessionByClientOpId(ctx, input.client_op_id);
+    if (existing) return existing;
+  }
   const cycleIndex = input.cycle_index ?? 0;
   const title = input.title?.trim() || defaultSessionTitle(input.phase, cycleIndex);
   const created = await createEntity({
@@ -107,6 +130,7 @@ async function persistSessionWithFocus(
       task_item_id: input.task_item_id ?? null,
       cycle_index: cycleIndex,
       interrupted,
+      client_op_id: input.client_op_id ?? null,
     },
   });
   const parsed = asPomodoroSession(created);

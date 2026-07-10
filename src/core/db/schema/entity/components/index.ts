@@ -9,6 +9,7 @@ import {
   POMODORO_TASK_FOCUS_COMPONENT,
   pomodoroTaskFocusBodySchema,
 } from "./pomodoro-task-focus.ts";
+import { POMODORO_ACTIVE_COMPONENT, pomodoroActiveBodySchema } from "./pomodoro-active.ts";
 import { AGENT_CONFIG_COMPONENT, agentConfigBodySchema } from "./agent-config.ts";
 import { DIARY_ENTRY_COMPONENT, diaryEntryBodySchema } from "./diary-entry.ts";
 import { DREAM_ENTRY_COMPONENT, dreamEntryBodySchema } from "./dream-entry.ts";
@@ -44,6 +45,7 @@ export const COMPONENT_IDS = [
   POMODORO_CONFIG_COMPONENT,
   POMODORO_SESSION_COMPONENT,
   POMODORO_TASK_FOCUS_COMPONENT,
+  POMODORO_ACTIVE_COMPONENT,
   COMPANION_PROFILE_COMPONENT,
 ] as const;
 
@@ -72,6 +74,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [POMODORO_CONFIG_COMPONENT]: pomodoroConfigBodySchema,
   [POMODORO_SESSION_COMPONENT]: pomodoroSessionBodySchema,
   [POMODORO_TASK_FOCUS_COMPONENT]: pomodoroTaskFocusBodySchema,
+  [POMODORO_ACTIVE_COMPONENT]: pomodoroActiveBodySchema,
 };
 
 export function componentBodySchema(component: ComponentId): z.ZodTypeAny {
@@ -104,3 +107,4 @@ export * from "./companion-profile.ts";
 export * from "./pomodoro-config.ts";
 export * from "./pomodoro-session.ts";
 export * from "./pomodoro-task-focus.ts";
+export * from "./pomodoro-active.ts";

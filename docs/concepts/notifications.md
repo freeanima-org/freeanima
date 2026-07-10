@@ -14,6 +14,8 @@ PG-backed in-app inbox for **user** and **agent** subjects (entity model). Cron 
 
 **不走 Hub RPC、不写 PG、不跨设备同步。** 各 shell 端在启动时注册 `AlertBackend`（web / desktop / mobile），Feature 调用 `deliverAlert()` 使用**当前设备**系统通知通道。
 
+**例外（Hub 同步，非 Alert）**：番茄钟**运行中活跃态**（`pomodoro_active` entity + `pomodoro.active.*` RPC）在 user/agent world 间 **last-write-wins 同步**，便于多端继续同一计时；**阶段结束系统通知仍仅本机** `deliverAlert()`，不在其他设备弹出。
+
 | 事件                      | Inbox |               Alert               | SSOT                |
 | ------------------------- | :---: | :-------------------------------: | ------------------- |
 | 任务到期/提醒             |   ✓   | 可选（后续：本机读 inbox 后弹窗） | `task_item` + inbox |

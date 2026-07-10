@@ -92,6 +92,7 @@ export async function completePomodoroSession(
     cycle_index?: number;
     title?: string;
     session_local_id?: string;
+    client_op_id?: string;
     task_focus_segments?: PomodoroTaskFocusSegmentInput[];
   },
 ): Promise<PomodoroSessionRow> {
@@ -114,6 +115,7 @@ export async function abortPomodoroSession(
     cycle_index?: number;
     title?: string;
     session_local_id?: string;
+    client_op_id?: string;
     task_focus_segments?: PomodoroTaskFocusSegmentInput[];
   },
 ): Promise<PomodoroSessionRow> {
@@ -160,4 +162,43 @@ export async function fetchPomodoroTaskFocus(
     limit: opts?.limit ?? 50,
     offset: opts?.offset ?? 0,
   });
+}
+
+export type PomodoroActiveRemote = {
+  phase: PomodoroSessionRow["phase"];
+  run_state: "running" | "paused";
+  phase_planned_ms: number;
+  phase_ends_at: number | null;
+  paused_remaining_ms: number | null;
+  cycle_index: number;
+  completed_work_in_cycle: number;
+  task_item_id: number | null;
+  session_local_id: string;
+  phase_started_at: string;
+  focus_segments: Array<{
+    task_item_id: number | null;
+    started_at: string;
+    ended_at: string | null;
+  }>;
+  device_id: string;
+  updated_at_ms: number;
+};
+
+export async function fetchPomodoroActive(
+  subjectKind: PomodoroSubjectKind,
+): Promise<PomodoroActiveRemote | null> {
+  const data = await hub().call("pomodoro.active.get", { subject_kind: subjectKind });
+  return data.active;
+}
+
+export async function putPomodoroActiveRemote(
+  subjectKind: PomodoroSubjectKind,
+  active: PomodoroActiveRemote,
+): Promise<PomodoroActiveRemote | null> {
+  const data = await hub().call("pomodoro.active.put", { subject_kind: subjectKind, active });
+  return data.active;
+}
+
+export async function clearPomodoroActiveRemote(subjectKind: PomodoroSubjectKind): Promise<void> {
+  await hub().call("pomodoro.active.clear", { subject_kind: subjectKind });
 }

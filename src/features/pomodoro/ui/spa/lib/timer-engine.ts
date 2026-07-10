@@ -2,6 +2,11 @@ import type { PomodoroConfigRow } from "./api.ts";
 
 import type { PomodoroActiveState } from "@freeanima/frontend/shell-sdk/pomodoro-active-types.ts";
 import { openWorkFocusSegment } from "@freeanima/frontend/shell-sdk/pomodoro-focus-segments.ts";
+export {
+  actualDurationMs,
+  effectiveFinishedAtIso,
+  effectivePhaseFinishedAtMs,
+} from "@freeanima/frontend/shell-sdk/pomodoro-phase-timing.ts";
 
 export type { PomodoroActiveState };
 export type PomodoroPhase = PomodoroActiveState["phase"];
@@ -133,12 +138,6 @@ export function resumeActiveState(
     phaseEndsAt: nowMs + left,
     pausedRemainingMs: null,
   };
-}
-
-export function actualDurationMs(state: PomodoroActiveState, finishedAtMs: number): number {
-  const started = Date.parse(state.phaseStartedAt);
-  if (!Number.isFinite(started)) return state.phasePlannedMs;
-  return Math.max(0, Math.min(state.phasePlannedMs, finishedAtMs - started));
 }
 
 /** 阶段完成去重键（跳过与自然结束时共用）。 */

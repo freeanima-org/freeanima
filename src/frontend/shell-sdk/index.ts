@@ -153,3 +153,22 @@ export {
 } from "./pomodoro-launch.ts";
 export { launchPomodoroForTask } from "./pomodoro-task-launch.ts";
 export type { PomodoroTaskLaunchInput } from "./pomodoro-task-launch.ts";
+export {
+  actualDurationMs,
+  effectiveFinishedAtIso,
+  effectivePhaseFinishedAtMs,
+} from "./pomodoro-phase-timing.ts";
+export { getPomodoroDeviceId, clearPomodoroDeviceIdForTest } from "./pomodoro-device-id.ts";
+export { activeStateToHubBody, hubBodyToActiveState, hubRowMeta } from "./pomodoro-active-hub.ts";
+export type { PomodoroActiveHubRow } from "./pomodoro-active-hub.ts";
+export {
+  applyLocalPomodoroActive,
+  buildHubActivePayload,
+  dispatchPomodoroActiveChanged,
+  getPomodoroSyncMeta,
+  getPomodoroSyncSnapshot,
+  mergeRemoteActive,
+  setPomodoroSyncMeta,
+  subscribePomodoroSync,
+} from "./pomodoro-sync-local.ts";
+export type { PomodoroSyncMeta, PomodoroSyncSnapshot } from "./pomodoro-sync-local.ts";

@@ -9,8 +9,12 @@ import {
   listPomodoroSessions,
   listPomodoroTaskFocus,
   resolvePomodoroWorldId,
+  getPomodoroActive,
+  putPomodoroActive,
+  clearPomodoroActive,
 } from "../domain/index.ts";
 import type { PomodoroSubjectKind } from "../domain/index.ts";
+import type { PomodoroActiveBody } from "@freeanima/core/db/schema/entity";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
@@ -70,6 +74,7 @@ export async function servicePomodoroSessionComplete(
     cycle_index?: number;
     title?: string;
     session_local_id?: string;
+    client_op_id?: string;
     task_focus_segments?: Array<{
       session_local_id: string;
       phase: "work" | "short_break" | "long_break";
@@ -102,6 +107,7 @@ export async function servicePomodoroSessionAbort(
     cycle_index?: number;
     title?: string;
     session_local_id?: string;
+    client_op_id?: string;
     task_focus_segments?: Array<{
       session_local_id: string;
       phase: "work" | "short_break" | "long_break";
@@ -166,4 +172,42 @@ export async function servicePomodoroFocusList(
   const ctx = await storeContext(deps, input.subject_kind);
   const { subject_kind: _kind, ...opts } = input;
   return listPomodoroTaskFocus(ctx, omitUndefined(opts));
+}
+
+export async function servicePomodoroActiveGet(
+  deps: RuntimeDeps,
+  input: { subject_kind: PomodoroSubjectKind },
+) {
+  assertPg(deps);
+  const ctx = await storeContext(deps, input.subject_kind);
+  const active = await getPomodoroActive(ctx);
+  return { active: active ? omitEntityId(active) : null };
+}
+
+export async function servicePomodoroActivePut(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind: PomodoroSubjectKind;
+    active: PomodoroActiveBody;
+  },
+) {
+  assertPg(deps);
+  const ctx = await storeContext(deps, input.subject_kind);
+  const row = await putPomodoroActive(ctx, input.active);
+  return { active: row ? omitEntityId(row) : null };
+}
+
+export async function servicePomodoroActiveClear(
+  deps: RuntimeDeps,
+  input: { subject_kind: PomodoroSubjectKind },
+) {
+  assertPg(deps);
+  const ctx = await storeContext(deps, input.subject_kind);
+  await clearPomodoroActive(ctx);
+  return { ok: true as const };
+}
+
+function omitEntityId<T extends { id: number }>(row: T): Omit<T, "id"> {
+  const { id: _id, ...rest } = row;
+  return rest;
 }

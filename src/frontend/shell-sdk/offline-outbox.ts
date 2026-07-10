@@ -12,7 +12,7 @@ type MemoryBackend = Map<string, unknown>;
 
 let testBackend: MemoryBackend | null = null;
 
-export type OfflineModuleId = "chat" | "diary" | (string & {});
+export type OfflineModuleId = "chat" | "diary" | "pomodoro" | (string & {});
 
 export type OfflineOutboxOp = {
   id: string;
