@@ -16,7 +16,7 @@ import { flushPomodoroOutbox, pullPomodoroActive, runPhaseComplete } from "./lib
 import { remainingMs } from "./lib/timer-engine.ts";
 
 const POLL_MS = 1_000;
-const REMOTE_PULL_MS = 30_000;
+const REMOTE_PULL_MS = 5_000;
 
 export function PomodoroShellWatcher() {
   const { kind: subjectKind } = useSubjectScope();

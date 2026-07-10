@@ -170,13 +170,21 @@ export function PomodoroApp() {
   }, [subjectKind]);
 
   useEffect(() => {
-    return subscribePomodoroSync((snapshot) => {
+    return subscribePomodoroSync(() => {
+      const snapshot = getPomodoroSyncSnapshot(subjectKind);
       setActive(snapshot.active);
       if (snapshot.active?.taskItemId != null) {
         setTaskItemId(snapshot.active.taskItemId);
       }
     });
-  }, []);
+  }, [subjectKind]);
+
+  useEffect(() => {
+    if (!hubOnline) return;
+    void pullPomodoroActive(subjectKind).then(() => {
+      setActive(getPomodoroSyncSnapshot(subjectKind).active);
+    });
+  }, [hubOnline, subjectKind]);
 
   useEffect(() => {
     let cancelled = false;

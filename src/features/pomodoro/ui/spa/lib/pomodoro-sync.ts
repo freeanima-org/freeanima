@@ -7,6 +7,7 @@ import {
   mergeRemoteActive,
 } from "@freeanima/frontend/shell-sdk/pomodoro-sync-local.ts";
 import { readPomodoroActiveState } from "@freeanima/frontend/shell-sdk/pomodoro-active.ts";
+import { getHubRpcConnectionState } from "@freeanima/frontend/shell-sdk/hub-connection.ts";
 
 import {
   abortPomodoroSession,
@@ -33,9 +34,9 @@ import {
 const handledPhaseKeys = new Set<string>();
 const putTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
-function isOnline(): boolean {
+function hubReady(): boolean {
   if (typeof navigator !== "undefined" && !navigator.onLine) return false;
-  return true;
+  return getHubRpcConnectionState() === "connected";
 }
 
 export function isPhaseAlreadyHandled(state: PomodoroActiveState): boolean {
@@ -54,6 +55,7 @@ export async function applyPomodoroActive(
   subjectKind: PomodoroSubjectKind,
   opts?: { skipRemote?: boolean },
 ): Promise<void> {
+  const prev = readPomodoroActiveState(undefined, subjectKind);
   const updatedAtMs = Date.now();
   const meta =
     next == null
@@ -66,7 +68,8 @@ export async function applyPomodoroActive(
   if (opts?.skipRemote) return;
 
   if (next == null) {
-    if (isOnline()) {
+    cancelScheduledPut(subjectKind);
+    if (hubReady()) {
       try {
         await clearPomodoroActiveRemote(subjectKind);
       } catch {
@@ -80,39 +83,54 @@ export async function applyPomodoroActive(
     return;
   }
 
-  scheduleActivePut(next, subjectKind, updatedAtMs);
+  const immediate = prev == null || prev.sessionLocalId !== next.sessionLocalId;
+  scheduleActivePut(subjectKind, updatedAtMs, immediate);
+}
+
+function cancelScheduledPut(subjectKind: PomodoroSubjectKind): void {
+  const prev = putTimers.get(subjectKind);
+  if (prev) clearTimeout(prev);
+  putTimers.delete(subjectKind);
 }
 
 function scheduleActivePut(
-  state: PomodoroActiveState,
   subjectKind: PomodoroSubjectKind,
   updatedAtMs: number,
+  immediate: boolean,
 ): void {
-  const key = subjectKind;
-  const prev = putTimers.get(key);
-  if (prev) clearTimeout(prev);
+  cancelScheduledPut(subjectKind);
+  if (immediate) {
+    void flushActivePut(subjectKind, updatedAtMs);
+    return;
+  }
   putTimers.set(
-    key,
+    subjectKind,
     setTimeout(() => {
-      putTimers.delete(key);
-      void flushActivePut(state, subjectKind, updatedAtMs);
+      putTimers.delete(subjectKind);
+      void flushActivePut(subjectKind, updatedAtMs);
     }, 300),
   );
 }
 
 async function flushActivePut(
-  state: PomodoroActiveState,
   subjectKind: PomodoroSubjectKind,
-  updatedAtMs: number,
+  _scheduledAtMs: number,
 ): Promise<void> {
-  const active = buildHubActivePayload(state, updatedAtMs);
-  if (!isOnline()) {
+  const state = readPomodoroActiveState(undefined, subjectKind);
+  if (!state) return;
+  const syncedAtMs = Date.now();
+  const active = buildHubActivePayload(state, syncedAtMs);
+  if (!hubReady()) {
     const { enqueuePomodoroActivePut } = await import("./pomodoro-offline-store.ts");
     await enqueuePomodoroActivePut(subjectKind, active);
     return;
   }
   try {
     await putPomodoroActiveRemote(subjectKind, active);
+    applyLocalPomodoroActive(state, subjectKind, {
+      device_id: active.device_id,
+      updated_at_ms: syncedAtMs,
+    });
   } catch {
     const { enqueuePomodoroActivePut } = await import("./pomodoro-offline-store.ts");
     await enqueuePomodoroActivePut(subjectKind, active);
@@ -120,7 +138,7 @@ async function flushActivePut(
 }
 
 export async function pullPomodoroActive(subjectKind: PomodoroSubjectKind): Promise<void> {
-  if (!isOnline()) return;
+  if (!hubReady()) return;
   try {
     const remote = await fetchPomodoroActive(subjectKind);
     const local = readPomodoroActiveState(undefined, subjectKind);
@@ -138,7 +156,7 @@ async function persistPhaseEnd(
   interrupted: boolean,
 ): Promise<void> {
   const payload = buildPhaseEndPayload(state);
-  if (!isOnline()) {
+  if (!hubReady()) {
     if (interrupted) await enqueuePomodoroSessionAbort(subjectKind, payload);
     else await enqueuePomodoroSessionComplete(subjectKind, payload);
     return;
