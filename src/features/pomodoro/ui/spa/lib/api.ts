@@ -1,9 +1,5 @@
 /// <reference lib="dom" />
-import { getBundledHubClient } from "@freeanima/shared/hub-client";
-
-export function getPomodoroHubClient() {
-  return getBundledHubClient({ profile: "satellite" });
-}
+import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
 
 export type PomodoroSubjectKind = "user" | "agent";
 
@@ -66,7 +62,7 @@ export type PomodoroTaskFocusSegmentInput = {
 };
 
 function hub() {
-  return getPomodoroHubClient();
+  return getSatelliteHubClient();
 }
 
 export async function fetchPomodoroConfig(

@@ -1,4 +1,4 @@
-import { resolveHubWsUrl } from "@freeanima/shared/sap-contract/urls";
+import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc";
 import {
   buildShellApiFields,
   normalizeShellClientConfig,
@@ -149,7 +149,7 @@ export async function buildMobileShell(
   remoteAuthToken: string,
 ): Promise<SatelliteShellApi> {
   const normalized = normalizeShellClientConfig({ hubUrl, remoteAuthToken });
-  const hubWsUrl = resolveHubWsUrl(normalized.hubUrl);
+  const hubWsUrl = resolveHubRpcWsUrl(normalized.hubUrl);
   const snapshot: ShellSnapshot = {
     hubUrl: normalized.hubUrl,
     hubWsUrl,
@@ -183,7 +183,7 @@ export async function ensureMobileShellForChat(): Promise<SatelliteShellApi> {
     const normalized = normalizeShellClientConfig({ hubUrl, remoteAuthToken });
     snapshot = {
       hubUrl: normalized.hubUrl,
-      hubWsUrl: resolveHubWsUrl(normalized.hubUrl),
+      hubWsUrl: resolveHubRpcWsUrl(normalized.hubUrl),
       remoteAuthToken: normalized.remoteAuthToken,
     };
     writeShellSnapshot(snapshot);

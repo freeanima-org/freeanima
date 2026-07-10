@@ -38,6 +38,10 @@ function resolveHubRpcWsUrl(options: BundledHubClientOptions): string {
   return `${http.replace(/\/$/, "").replace(/^http/i, "ws")}/hub/rpc/v1`;
 }
 
+export function getSatelliteHubClient(): HubClient {
+  return getBundledHubClient({ profile: "satellite" });
+}
+
 export function getBundledHubClient(options: BundledHubClientOptions = {}): HubClient {
   const wsUrl = resolveHubRpcWsUrl(options);
   const httpOrigin = hubHttpFromWsUrl(wsUrl);

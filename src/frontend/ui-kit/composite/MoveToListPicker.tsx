@@ -1,40 +1,39 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
-import { Button, Input } from "@freeanima/frontend/ui-kit";
-import { useMobileLayout } from "@freeanima/frontend/ui-kit/layout";
-
-import type { TaskListRow } from "../lib/api.ts";
+import { Button, Input } from "../components/ui/index.ts";
+import { useMobileLayout } from "../layout/index.ts";
 import {
   buildListTree,
   flattenVisibleTree,
   listPathLabel,
   readExpandedFolders,
   type ListTreeNode,
-} from "../lib/list-tree.ts";
+  type TaskListRowLike,
+} from "../lib/task-list-tree.ts";
 
-type MoveToListPickerProps = {
+export type MoveToListPickerProps<T extends TaskListRowLike = TaskListRowLike> = {
   open: boolean;
-  lists: TaskListRow[];
+  lists: T[];
   currentListId: number | null;
   title?: string;
   onSelect: (listId: number) => void;
   onClose: () => void;
 };
 
-function filterTreeForSearch(
-  nodes: ListTreeNode[],
+function filterTreeForSearch<T extends TaskListRowLike>(
+  nodes: ListTreeNode<T>[],
   query: string,
-): { nodes: ListTreeNode[]; expandedFolderIds: Set<number> } {
+): { nodes: ListTreeNode<T>[]; expandedFolderIds: Set<number> } {
   const q = query.trim().toLowerCase();
   if (!q) return { nodes, expandedFolderIds: new Set() };
 
   const expandedFolderIds = new Set<number>();
 
-  function prune(node: ListTreeNode): ListTreeNode | null {
+  function prune(node: ListTreeNode<T>): ListTreeNode<T> | null {
     const nameMatch = node.list.name.toLowerCase().includes(q);
     const prunedChildren = node.list.is_folder
-      ? node.children.map(prune).filter((n): n is ListTreeNode => n != null)
+      ? node.children.map(prune).filter((n): n is ListTreeNode<T> => n != null)
       : [];
 
     if (node.list.is_folder) {
@@ -48,11 +47,11 @@ function filterTreeForSearch(
     return nameMatch ? node : null;
   }
 
-  const filtered = nodes.map(prune).filter((n): n is ListTreeNode => n != null);
+  const filtered = nodes.map(prune).filter((n): n is ListTreeNode<T> => n != null);
   return { nodes: filtered, expandedFolderIds };
 }
 
-function TreePickerRows({
+function TreePickerRows<T extends TaskListRowLike>({
   nodes,
   expandedFolderIds,
   currentListId,
@@ -62,11 +61,11 @@ function TreePickerRows({
   onSelect,
   onClose,
 }: {
-  nodes: ListTreeNode[];
+  nodes: ListTreeNode<T>[];
   expandedFolderIds: Set<number>;
   currentListId: number | null;
   searchQuery: string;
-  allLists: TaskListRow[];
+  allLists: T[];
   onToggleExpand: (folderId: number) => void;
   onSelect: (listId: number) => void;
   onClose: () => void;
@@ -197,14 +196,14 @@ function MoveToListPickerBody({
   );
 }
 
-export function MoveToListPicker({
+export function MoveToListPicker<T extends TaskListRowLike>({
   open,
   lists,
   currentListId,
   title = "移动到清单",
   onSelect,
   onClose,
-}: MoveToListPickerProps) {
+}: MoveToListPickerProps<T>) {
   const mobileLayout = useMobileLayout();
   const [visible, setVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -270,7 +269,6 @@ export function MoveToListPicker({
     />
   );
 
-  // plain portal，不用 Radix（右键后会被 outside 立刻 dismiss）；布局随视口档分形态
   return createPortal(
     <>
       <div

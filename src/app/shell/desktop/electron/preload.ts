@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { resolveHubWsUrl, type SapInstanceStore } from "@freeanima/shared/sap-contract";
+import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc";
+import type { SapInstanceStore } from "@freeanima/shared/sap-contract";
 import {
   buildShellApiFields,
   type CompanionWindowRole,
@@ -44,7 +45,7 @@ function resolvePreloadHubConfig(
 ): Pick<SatelliteShellApi, "hubUrl" | "hubWsUrl" | "remoteAuth" | "hubFetch"> {
   const fallback = readArgvHubConfig();
   const hubUrl = (cfg?.hubUrl?.trim() || fallback.hubUrl || DEFAULT_HUB_URL).replace(/\/$/, "");
-  const hubWsUrl = cfg?.hubWsUrl?.trim() || resolveHubWsUrl(hubUrl);
+  const hubWsUrl = cfg?.hubWsUrl?.trim() || resolveHubRpcWsUrl(hubUrl);
   const remoteAuthToken = cfg?.remoteAuthToken?.trim() || fallback.remoteAuthToken || "";
   return buildShellApiFields(hubUrl, hubWsUrl, remoteAuthToken);
 }

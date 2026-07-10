@@ -3,7 +3,7 @@ import { createEngineCatalog } from "./catalog.ts";
 import type { BackendRegistry, ProfileRegistry, ProviderRegistry } from "@freeanima/core/provider";
 import type { Config } from "@freeanima/core/config";
 import {
-  bindActiveConfig,
+  bindActiveRuntimeConfig,
   registerRuntimeLogger,
   resetActiveConfigForTest,
   resetRuntimeLoggerForTest,
@@ -41,7 +41,7 @@ function defaultLogger(): Logger {
 /** Construct Engine; binds active Config and logger for mechanism layers */
 export function createEngine(deps: EngineDeps): Engine {
   const logger = deps.logger ?? defaultLogger();
-  bindActiveConfig(deps.config);
+  bindActiveRuntimeConfig(deps.config);
   registerRuntimeLogger(logger);
   return new Engine(
     deps.catalog ?? createEngineCatalog(),

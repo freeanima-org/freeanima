@@ -10,7 +10,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-import { bindActiveConfig } from "@freeanima/platform/config/index.ts";
+import { bindActiveRuntimeConfig } from "@freeanima/platform/config/index.ts";
 import { bindResolvedWorldContext } from "@freeanima/core/config/world-context.ts";
 import { omitUndefined } from "@freeanima/core/util/omit-undefined.ts";
 import { ensureWorldSubjects } from "@freeanima/core/db/pg/entity/subject-world.ts";
@@ -68,7 +68,7 @@ async function main(): Promise<void> {
   }
 
   initDatabase({ getDatabaseUrl: () => url });
-  bindActiveConfig(FileConfig.open());
+  bindActiveRuntimeConfig(FileConfig.open());
 
   const configPath = resolveConfigPath();
   if (!existsSync(configPath)) {

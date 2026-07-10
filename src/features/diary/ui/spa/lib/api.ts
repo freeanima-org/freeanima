@@ -4,10 +4,10 @@ import {
   resolveHubCacheScope,
   writeOfflineCache,
 } from "@freeanima/frontend/shell-sdk/offline-cache";
-import { getDiaryHubClient } from "./hub-client.ts";
+import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
 
 function hub() {
-  return getDiaryHubClient();
+  return getSatelliteHubClient();
 }
 
 function diaryListCacheId(subjectKind: DiarySubjectKind, query?: string): string {

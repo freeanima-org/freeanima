@@ -2,7 +2,7 @@ import { omitUndefined } from "@freeanima/core/util";
 import { PATHS } from "@freeanima/core/config";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import { DEFAULT_WEB_HOST, DEFAULT_WEB_PORT, type WebConfigFields } from "@freeanima/core/config";
-import { resolveHubWsUrl } from "@freeanima/shared/sap-contract/urls";
+import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc";
 import { loadRuntimeConfigSection } from "@freeanima/platform/config";
 import {
   startWebStaticServer,
@@ -79,7 +79,7 @@ export async function startWebServer(
       runtime: {
         appId: "chat",
         hubUrl,
-        hubWsUrl: resolveHubWsUrl(hubUrl),
+        hubWsUrl: resolveHubRpcWsUrl(hubUrl),
       },
       pidFile: opts.writePid === false ? undefined : PATHS.webPidFile,
     }),

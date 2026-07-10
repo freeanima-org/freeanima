@@ -20,7 +20,7 @@ import {
   sortedArchivedLists,
   writeExpandedFolders,
   type ListTreeNode,
-} from "../lib/list-tree.ts";
+} from "@freeanima/frontend/ui-kit/lib/task-list-tree.ts";
 import { useTaskDndUi } from "./TaskDndRoot.tsx";
 import { EntityIdLabel } from "./EntityIdLabel.tsx";
 

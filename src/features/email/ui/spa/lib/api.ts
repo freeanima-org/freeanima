@@ -5,7 +5,7 @@ import {
   writeOfflineCache,
 } from "@freeanima/frontend/shell-sdk/offline-cache";
 
-import { getEmailHubClient } from "./hub-client.ts";
+import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
 
 export type EmailAccountRow = {
   id: number;
@@ -33,7 +33,7 @@ export type EmailMessageRow = {
 };
 
 function hub() {
-  return getEmailHubClient();
+  return getSatelliteHubClient();
 }
 
 function withSubjectKind<T extends Record<string, unknown>>(payload: T) {

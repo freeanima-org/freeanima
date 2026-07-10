@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, mock } from "bun:test";
 import type { StoredMessage } from "@freeanima/core/db/domain";
 import type { BeforeLlmCallContext } from "@freeanima/core/hooks/loop";
 import type { AnimaConfig } from "@freeanima/core/config";
-import { bindActiveConfig, Config, resetActiveConfigForTest } from "@freeanima/core/config";
+import { bindActiveRuntimeConfig, Config, resetActiveConfigForTest } from "@freeanima/core/config";
 import { PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME } from "@freeanima/core/llm/runtime-system-turn";
 
 const semanticPassiveRecallSearch = mock(async () => [
@@ -49,7 +49,7 @@ const baseConfig = {
 } as AnimaConfig;
 
 function bindTestConfig(enabled = true): void {
-  bindActiveConfig(
+  bindActiveRuntimeConfig(
     Config.fromSnapshot({
       ...baseConfig,
       memory: {

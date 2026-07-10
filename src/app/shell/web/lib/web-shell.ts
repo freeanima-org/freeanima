@@ -1,5 +1,5 @@
 import { browserSapInstanceStore } from "@freeanima/shared/sap-contract";
-import { resolveHubWsUrl } from "@freeanima/shared/sap-contract/urls";
+import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc";
 import { buildShellApiFields } from "@freeanima/frontend/shell-sdk/shell-api-fields";
 import { normalizeShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-client-config";
 import type { SatelliteShellApi } from "@freeanima/frontend/shell-sdk/shell-api";
@@ -63,7 +63,7 @@ export function createWebShellStub(): SatelliteShellApi {
 export function buildWebShellFromRaw(hubUrl: string, remoteAuthToken: string): SatelliteShellApi {
   const trimmedHub = hubUrl.trim().replace(/\/$/, "");
   if (!trimmedHub) return createWebShellStub();
-  const hubWsUrl = resolveHubWsUrl(trimmedHub);
+  const hubWsUrl = resolveHubRpcWsUrl(trimmedHub);
   const apiFields = buildShellApiFields(trimmedHub, hubWsUrl, remoteAuthToken.trim());
   return {
     isElectron: false,

@@ -1,5 +1,5 @@
 import type { ConversationAcpDockSnapshot, ConversationListItem, StreamApiEvent } from "./types.ts";
-import { getChatHubClient } from "./hub-client.ts";
+import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
 import { getSapDirectClient, chatPlatform } from "./sap-client.ts";
 import { m } from "./i18n.ts";
 
@@ -30,7 +30,7 @@ function mapConversationList(raw: {
 }
 
 function hub() {
-  return getChatHubClient();
+  return getSatelliteHubClient();
 }
 
 /** WS-only 流式仍走 SapClient */
@@ -136,9 +136,6 @@ export function subscribeConversationUpdates(
 ): { unsubscribe: () => void } {
   return sap().subscribeConversationEvents(conversationId, onUpdate);
 }
-
-/** @deprecated 使用 subscribeConversationUpdates */
-export const subscribeConversationEvents = subscribeConversationUpdates;
 
 export async function listConversationCommands(opts?: { all?: boolean }) {
   return hub().call("conversation.commands", {

@@ -1,12 +1,7 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import type { SatelliteShellApi } from "@freeanima/frontend/shell-sdk";
 
-import {
-  isMobileLayoutViewport,
-  isNativeShell,
-  isTaskContextMenuEnabled,
-  isWebShell,
-} from "./platform.ts";
+import { isMobileLayoutViewport, isNativeShell, isWebShell } from "./platform.ts";
 
 const hasWindow = typeof globalThis.window !== "undefined";
 
@@ -37,40 +32,6 @@ describe("task platform", () => {
     expect(isNativeShell()).toBe(true);
     clearSatelliteShell();
     expect(isNativeShell()).toBe(false);
-  });
-
-  it("isTaskContextMenuEnabled 仅跟指针能力（与布局正交）", () => {
-    window.matchMedia = ((query: string) =>
-      ({
-        matches: false,
-        media: query,
-        onchange: null,
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        addListener: () => {},
-        removeListener: () => {},
-        dispatchEvent: () => false,
-      }) satisfies MediaQueryList) as typeof window.matchMedia;
-
-    window.satelliteShell = { isNativeShell: true, isElectron: false } as SatelliteShellApi;
-    expect(isTaskContextMenuEnabled()).toBe(false);
-
-    window.satelliteShell = { isElectron: true } as SatelliteShellApi;
-    expect(isTaskContextMenuEnabled()).toBe(true);
-
-    delete window.satelliteShell;
-    window.matchMedia = ((query: string) =>
-      ({
-        matches: query.includes("pointer: fine") || query.includes("hover: hover"),
-        media: query,
-        onchange: null,
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        addListener: () => {},
-        removeListener: () => {},
-        dispatchEvent: () => false,
-      }) satisfies MediaQueryList) as typeof window.matchMedia;
-    expect(isTaskContextMenuEnabled()).toBe(true);
   });
 
   it("isWebShell is inverse of native shell", () => {

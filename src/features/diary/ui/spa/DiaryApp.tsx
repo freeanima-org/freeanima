@@ -32,7 +32,7 @@ import {
   formatEntryDate,
   titleFromDateLocal,
 } from "./lib/format-diary.ts";
-import { subscribeShellConfigChanges } from "./lib/sap-client.ts";
+import { subscribeShellConfigChanges } from "@freeanima/shared/sap-contract";
 
 function sortEntries(items: DiaryEntryRow[]): DiaryEntryRow[] {
   return items.toSorted((a, b) => b.entry_at.localeCompare(a.entry_at));

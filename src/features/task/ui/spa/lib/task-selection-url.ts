@@ -28,14 +28,3 @@ export function writeTaskSelectionToUrl(selection: TaskModuleSelection | null): 
   }
   window.history.replaceState(null, "", url);
 }
-
-/** @deprecated 使用 readTaskSelectionFromUrl */
-export function readListIdFromUrl(): number | null {
-  const sel = readTaskSelectionFromUrl();
-  return sel?.kind === "list" ? sel.id : null;
-}
-
-/** @deprecated 使用 writeTaskSelectionToUrl */
-export function writeListIdToUrl(listId: number | null): void {
-  writeTaskSelectionToUrl(listId != null ? { kind: "list", id: listId } : null);
-}

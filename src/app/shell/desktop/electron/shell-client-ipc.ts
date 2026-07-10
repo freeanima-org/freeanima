@@ -1,6 +1,6 @@
 import { ipcMain } from "electron";
 
-import { resolveHubWsUrl } from "@freeanima/shared/sap-contract";
+import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc";
 import { testHubHealthConnection } from "@freeanima/frontend/shell-sdk";
 import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
 import {
@@ -46,7 +46,7 @@ export function resolveHubClientConfig(): HubClientConfigPayload | null {
   if (!cfg) return null;
   return {
     hubUrl: cfg.hubUrl,
-    hubWsUrl: resolveHubWsUrl(cfg.hubUrl),
+    hubWsUrl: resolveHubRpcWsUrl(cfg.hubUrl),
     remoteAuthToken: cfg.remoteAuthToken,
   };
 }

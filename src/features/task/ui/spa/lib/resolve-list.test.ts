@@ -1,11 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import type { TaskListRow } from "./api.ts";
-import {
-  resolveDefaultListId,
-  resolveSelectedListId,
-  resolveSelectedListIdWithUrl,
-} from "./resolve-list.ts";
+import { resolveDefaultListId, resolveSelectedListId } from "./resolve-list.ts";
 
 const lists: TaskListRow[] = [
   {
@@ -43,30 +39,33 @@ describe("resolve-list", () => {
 
   test("web uses valid url list id", () => {
     expect(
-      resolveSelectedListIdWithUrl(lists, {
-        webShell: true,
+      resolveSelectedListId(lists, {
         currentId: null,
+        storedListId: null,
         urlListId: 1,
+        preferUrl: true,
       }),
     ).toBe(1);
   });
 
   test("web falls back to default when url invalid", () => {
     expect(
-      resolveSelectedListIdWithUrl(lists, {
-        webShell: true,
+      resolveSelectedListId(lists, {
         currentId: null,
+        storedListId: null,
         urlListId: 99,
+        preferUrl: true,
       }),
     ).toBe(2);
   });
 
   test("non-web ignores url and uses default", () => {
     expect(
-      resolveSelectedListIdWithUrl(lists, {
-        webShell: false,
+      resolveSelectedListId(lists, {
         currentId: null,
+        storedListId: null,
         urlListId: 1,
+        preferUrl: false,
       }),
     ).toBe(2);
   });

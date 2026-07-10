@@ -26,12 +26,6 @@ export class Config {
 /** Composition root: bind runtime config before engine mechanisms run */
 export function bindActiveRuntimeConfig(config: Config): void {
   activeRuntimeConfig = config;
-  bindActiveConfig(config);
-}
-
-/** @deprecated 使用 bindActiveRuntimeConfig */
-export function bindActiveConfig(config: Config): void {
-  activeRuntimeConfig = config;
 }
 
 export function getActiveRuntimeConfig(): Config {
@@ -43,15 +37,7 @@ export function getActiveRuntimeConfig(): Config {
   return activeRuntimeConfig;
 }
 
-/** @deprecated 使用 getActiveRuntimeConfig */
-export function getActiveConfig(): Config {
-  return getActiveRuntimeConfig();
-}
-
 /** Unit test isolation */
 export function resetActiveConfigForTest(): void {
   activeRuntimeConfig = null;
 }
-
-/** @deprecated 使用 resetActiveConfigForTest */
-export const resetActiveRuntimeConfigForTest = resetActiveConfigForTest;

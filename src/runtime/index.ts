@@ -9,7 +9,7 @@ export {
 } from "./engine.ts";
 export {
   Config,
-  bindActiveConfig,
+  bindActiveRuntimeConfig,
   getActiveRuntimeConfig,
   resetActiveConfigForTest,
   registerRuntimeLogger,

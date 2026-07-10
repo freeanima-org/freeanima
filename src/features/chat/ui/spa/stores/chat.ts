@@ -8,7 +8,7 @@ import { m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 import {
   interruptMessageStream,
   subscribeMessageStream,
-  subscribeConversationEvents,
+  subscribeConversationUpdates,
 } from "@freeanima/features/chat/ui/spa/lib/api.ts";
 
 type SendDoneOptions = {
@@ -167,7 +167,7 @@ async function waitForAssistantViaSessionEvents(
       return false;
     };
 
-    const sub = subscribeConversationEvents(conversationId, () => {
+    const sub = subscribeConversationUpdates(conversationId, () => {
       void tryRefresh();
     });
 

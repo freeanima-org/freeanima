@@ -1,6 +1,6 @@
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import {
-  bindActiveConfig,
+  bindActiveRuntimeConfig,
   resetActiveConfigForTest,
   animaConfigSchema,
 } from "@freeanima/core/config";
@@ -50,7 +50,7 @@ describe("local tools", () => {
     process.env.FREEANIMA_HOME = home;
     const parsed = animaConfigSchema.safeParse(parseYaml(MIN_CONFIG));
     if (!parsed.success) throw new Error(parsed.error.message);
-    bindActiveConfig(Config.fromSnapshot(parsed.data));
+    bindActiveRuntimeConfig(Config.fromSnapshot(parsed.data));
   });
 
   afterEach(() => {

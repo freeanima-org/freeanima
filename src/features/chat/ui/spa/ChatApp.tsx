@@ -35,7 +35,7 @@ import {
   listConversationCommands,
   loadConfig,
   rollbackBeforeLastUserMessage,
-  subscribeConversationEvents,
+  subscribeConversationUpdates,
 } from "@freeanima/features/chat/ui/spa/lib/api.ts";
 import { ListDetailLayout, useDrawerNav, useMobileLayout } from "@freeanima/frontend/ui-kit/layout";
 import { omitUndefined } from "@freeanima/core/util";
@@ -564,7 +564,7 @@ export function ChatApp() {
 
   useEffect(() => {
     if (!currentId) return;
-    const sub = subscribeConversationEvents(currentId, () => {
+    const sub = subscribeConversationUpdates(currentId, () => {
       void fetchConversations();
     });
     return () => sub.unsubscribe();
@@ -586,7 +586,7 @@ export function ChatApp() {
     let cancelled = false;
     useChatStore.setState({ recovering: true });
 
-    const sub = subscribeConversationEvents(currentId, () => {
+    const sub = subscribeConversationUpdates(currentId, () => {
       void refreshMessages(currentId, baseline);
     });
 

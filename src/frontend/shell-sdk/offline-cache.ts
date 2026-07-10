@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 import type { SatelliteShellApi } from "./shell-api.ts";
-import { resolveHubWsUrl } from "./hub-ws-url.ts";
+import { resolveHubRpcWsUrl } from "./hub-ws-url.ts";
 import { getSubjectKind } from "./subject-scope-store.ts";
 
 const DB_NAME = "freeanima-satellite-cache";
@@ -37,9 +37,9 @@ function readFallbackHubWs(): string {
     const fromVite = process.env.VITE_FREEANIMA_HUB_WS?.trim();
     if (fromVite) return fromVite;
     const hubUrl = process.env.FREEANIMA_URL?.trim();
-    if (hubUrl) return resolveHubWsUrl(hubUrl.replace(/\/$/, ""));
+    if (hubUrl) return resolveHubRpcWsUrl(hubUrl.replace(/\/$/, ""));
   }
-  return resolveHubWsUrl("http://127.0.0.1:2658");
+  return resolveHubRpcWsUrl("http://127.0.0.1:2658");
 }
 
 export function resolveHubCacheScope(): string {

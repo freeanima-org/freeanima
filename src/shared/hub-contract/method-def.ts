@@ -44,13 +44,3 @@ export function wsOnlyMeta(): HubMethodMeta {
     fallback: false,
   };
 }
-
-/** @deprecated 使用 dualTransportMeta */
-export function dualCrudMeta(_http?: unknown, readOnly = true): HubMethodMeta {
-  return dualTransportMeta(readOnly);
-}
-
-/** @deprecated 使用 dualTransportMeta 或 httpTransportMeta */
-export function httpOnlyMeta(_http?: unknown): HubMethodMeta {
-  return dualTransportMeta(true);
-}

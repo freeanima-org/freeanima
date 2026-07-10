@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 import { getSubjectKind } from "@freeanima/frontend/shell-sdk/subject-scope-store.ts";
-import { getBundledHubClient } from "@freeanima/shared/hub-client";
+import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
 
 export type TaskPomodoroFocusRow = {
   id: number;
@@ -11,7 +11,7 @@ export type TaskPomodoroFocusRow = {
 };
 
 function hub() {
-  return getBundledHubClient({ profile: "satellite" });
+  return getSatelliteHubClient();
 }
 
 export async function fetchTaskPomodoroFocus(

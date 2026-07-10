@@ -19,6 +19,7 @@ export {
 } from "./subscribe.ts";
 export {
   getBundledHubClient,
+  getSatelliteHubClient,
   resetBundledHubClientForTests,
   type BundledHubClientOptions,
 } from "./bundled.ts";

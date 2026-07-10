@@ -1,5 +1,5 @@
 import type { Config } from "@freeanima/core/config";
-import { getActiveRuntimeConfig, isPatchableConfig } from "@freeanima/platform/config";
+import { getActiveRuntimeConfig, isPatchableRuntimeConfig } from "@freeanima/platform/config";
 
 export type HomeChannel = {
   chat_id: string;
@@ -39,8 +39,8 @@ export async function setHomeChannel(
   threadId?: string,
 ): Promise<void> {
   const config = getActiveRuntimeConfig();
-  if (!isPatchableConfig(config)) {
-    throw new Error("setHomeChannel requires PatchableConfig");
+  if (!isPatchableRuntimeConfig(config)) {
+    throw new Error("setHomeChannel requires PatchableRuntimeConfig");
   }
   await config.patchSection(platform, {
     home_channel: chatId,
