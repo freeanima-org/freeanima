@@ -2,8 +2,8 @@ import type {
   NotificationCreateInput,
   NotificationListOpts,
   NotificationRecipientKind,
-  NotificationRow,
-} from "@freeanima/core/repos";
+} from "@freeanima/core/db/pg/notifications/types";
+import type { NotificationRow } from "@freeanima/core/db/schema/rows";
 
 export type NotificationRecipientRef = {
   kind: NotificationRecipientKind;

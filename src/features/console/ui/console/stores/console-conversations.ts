@@ -1,8 +1,6 @@
 import { create } from "zustand";
-import type {
-  DisplayItem,
-  ConversationListItem,
-} from "@freeanima/features/console/protocol/console-contract/api";
+import type { DisplayItem } from "@freeanima/platform/ports/schemas/display";
+import type { ConversationSummary } from "@freeanima/platform/ports/schemas/snapshot";
 import {
   getConversationInfo,
   getStoredMessages,
@@ -15,12 +13,12 @@ const MESSAGES_PAGE_SIZE = 100;
 const CONVERSATIONS_CACHE_TTL_MS = 30_000;
 
 type ConsoleConversationsState = {
-  conversations: ConversationListItem[];
+  conversations: ConversationSummary[];
   conversationsTotal: number;
   conversationsPage: number;
   conversationsFetchedAt: number;
   selectedId: string | null;
-  headlineById: Record<string, ConversationListItem>;
+  headlineById: Record<string, ConversationSummary>;
   display: DisplayItem[];
   total: number;
   offset: number;
@@ -33,7 +31,7 @@ type ConsoleConversationsState = {
   goToConversationsPage: (page: number) => Promise<void>;
   pageCount: () => number;
   currentPage: () => number;
-  findConversation: (id: string) => ConversationListItem | undefined;
+  findConversation: (id: string) => ConversationSummary | undefined;
   fetchConversations: (opts?: { force?: boolean; page?: number }) => Promise<void>;
   ensureConversationHeadline: (id: string) => Promise<void>;
   selectConversation: (id: string, page?: number) => Promise<void>;
@@ -100,8 +98,7 @@ export const useConsoleConversationsStore = create<ConsoleConversationsState>((s
     const offset = (page - 1) * CONVERSATIONS_PAGE_SIZE;
     try {
       const resp = await listConversations({ offset, limit: CONVERSATIONS_PAGE_SIZE });
-      const conversations =
-        (resp as { conversations?: ConversationListItem[] }).conversations ?? [];
+      const conversations = (resp as { conversations?: ConversationSummary[] }).conversations ?? [];
       const total = (resp as { total?: number }).total ?? conversations.length;
       set({
         conversations,
@@ -133,7 +130,7 @@ export const useConsoleConversationsStore = create<ConsoleConversationsState>((s
         created_at?: Date;
         updated_at?: Date;
       };
-      const item: ConversationListItem = {
+      const item: ConversationSummary = {
         id: info.conversation_id ?? id,
         title: info.title ?? "",
         platform: info.platform ?? "",

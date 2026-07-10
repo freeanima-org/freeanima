@@ -1,6 +1,6 @@
 import { getResolvedWorldContext } from "@freeanima/core/config";
 import { getEntity } from "@freeanima/core/db/pg/entity";
-import type { NotificationRecipientKind } from "@freeanima/core/repos";
+import type { NotificationRecipientKind } from "@freeanima/core/db/pg/notifications/types";
 import { toolError } from "@freeanima/core/tool";
 
 export type ResolvedNotificationSubject = {

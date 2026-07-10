@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import type {
   ToolsStatusResponse,
   ToolsStatusToolItem,
-} from "@freeanima/features/console/protocol/console-contract/api";
+} from "@freeanima/features/console/protocol/console-contract/api/response-types.ts";
 import { Badge, Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
 import { useMemo, useState } from "react";
 import { getToolsStatus } from "@freeanima/features/console/ui/console/lib/api.ts";

@@ -1,4 +1,4 @@
-import type { ConversationMessage } from "@freeanima/core/repos";
+import type { ConversationMessage } from "@freeanima/core/db/domain";
 
 export type RecallableMessage = {
   t: string;

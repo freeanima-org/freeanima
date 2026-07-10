@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import type { NotificationRow } from "@freeanima/core/repos";
+import type { NotificationRow } from "@freeanima/core/db/schema/rows";
 import type { StoredMessage } from "@freeanima/core/db/domain";
 import { storedMessagesToInvokeInput } from "@freeanima/core/llm/llm-adapt";
 

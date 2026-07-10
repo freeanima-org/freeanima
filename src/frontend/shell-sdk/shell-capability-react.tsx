@@ -28,9 +28,6 @@ export function useTouchPrimaryCapability(): boolean {
   return !fine;
 }
 
-/** @deprecated 使用 `useFinePointerCapability` */
-export const useDesktopPointerCapability = useFinePointerCapability;
-
 /** 是否启用右键 ContextMenu（`hasFinePointerCapability` 的 React 封装） */
 export function useContextMenuCapability(): boolean {
   return useFinePointerCapability();

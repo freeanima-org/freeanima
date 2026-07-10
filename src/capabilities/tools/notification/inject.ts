@@ -1,4 +1,4 @@
-import type { NotificationRow } from "@freeanima/core/repos";
+import type { NotificationRow } from "@freeanima/core/db/schema/rows";
 import type { AssistantMessage, StoredMessage } from "@freeanima/core/db/domain";
 
 export const NOTIFICATION_CONTEXT_ASSISTANT_NAME = "notification_context";

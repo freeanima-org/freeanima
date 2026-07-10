@@ -9,7 +9,7 @@ import {
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { getAppRuntime } from "@freeanima/platform";
-import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
+import { SELF_BLOCK_KEYS } from "@freeanima/core/db/pg/self-layer/types";
 import { createAutobiographicalMemory } from "@freeanima/core/db/pg/autobiographical-memory";
 import { createLimbicMemory } from "@freeanima/core/db/pg/limbic-memory";
 import { createSemanticMemory, getSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";

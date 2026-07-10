@@ -1,4 +1,4 @@
-import type { SemanticMemoryRow } from "@freeanima/core/repos";
+import type { SemanticMemoryRow } from "@freeanima/core/db/schema/rows";
 import { listActiveSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
 import type { DeepSleepRound, DeepSleepChangeLog, DeepSleepMode } from "./types.ts";
 import { formatChangeLogMessage } from "./change-log.ts";

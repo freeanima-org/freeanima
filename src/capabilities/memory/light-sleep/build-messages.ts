@@ -1,5 +1,5 @@
 import { CST_OFFSET_MS } from "@freeanima/core/util";
-import type { LimbicMemoryRow, SemanticMemoryRow } from "@freeanima/core/repos";
+import type { LimbicMemoryRow, SemanticMemoryRow } from "@freeanima/core/db/schema/rows";
 import { getConversationMetaLite, listMessages } from "@freeanima/core/db/pg/conversation";
 import { listLimbicMemoryBySession } from "@freeanima/core/db/pg/limbic-memory";
 import { listSemanticMemoryBySourceSessions } from "@freeanima/core/db/pg/semantic-memory";

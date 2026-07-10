@@ -1,7 +1,7 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
-import type { LimbicMemoryRow } from "@freeanima/features/console/protocol/console-contract/api";
+import type { LimbicMemoryRow } from "@freeanima/core/db/schema/rows";
 import {
   Button,
   Card,

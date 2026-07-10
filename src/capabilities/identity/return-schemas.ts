@@ -1,5 +1,5 @@
 import { defineToolReturn, type ToolReturnContractFields, z } from "@freeanima/core/tool";
-import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
+import { SELF_BLOCK_KEYS } from "@freeanima/core/db/pg/self-layer/types";
 
 const selfBlockSchema = z.object({
   block_key: z.enum(SELF_BLOCK_KEYS),

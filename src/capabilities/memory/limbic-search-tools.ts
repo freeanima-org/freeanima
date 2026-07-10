@@ -1,7 +1,8 @@
 import type { ToolDef } from "@freeanima/core/tool";
 import { toolError, toolResult } from "@freeanima/core/tool";
 import { omitUndefined } from "@freeanima/core/util";
-import type { LimbicKind, LimbicMemoryRow } from "@freeanima/core/repos";
+import type { LimbicKind } from "@freeanima/core/db/pg/limbic-memory/types";
+import type { LimbicMemoryRow } from "@freeanima/core/db/schema/rows";
 import {
   getLimbicMemory,
   listLimbicMemory,

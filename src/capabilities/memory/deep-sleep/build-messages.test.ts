@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
-import type { SemanticMemoryRow } from "@freeanima/core/repos";
+import type { SemanticMemoryRow } from "@freeanima/core/db/schema/rows";
 
 import {
   fetchAllActiveMemories,

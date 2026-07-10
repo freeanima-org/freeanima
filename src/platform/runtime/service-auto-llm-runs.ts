@@ -1,5 +1,5 @@
 import { omitUndefined } from "@freeanima/core/util";
-import type { AutoLlmRunRow } from "@freeanima/core/repos";
+import type { AutoLlmRunRow } from "@freeanima/core/db/pg/auto-llm-run/types";
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
 import {
   countAutoLlmRuns,

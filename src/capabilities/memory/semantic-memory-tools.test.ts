@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
-import type { SemanticMemoryCreateInput } from "@freeanima/core/repos";
+import type { SemanticMemoryCreateInput } from "@freeanima/core/db/pg/semantic-memory/types";
 
 const created: SemanticMemoryCreateInput[] = [];
 

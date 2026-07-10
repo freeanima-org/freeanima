@@ -6,7 +6,7 @@ import {
 } from "@freeanima/core/config";
 import { isCronSession } from "@freeanima/core/db/pg/conversation";
 import { listResidentSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
-import { RESIDENT_TOP_N } from "@freeanima/core/repos";
+import { RESIDENT_TOP_N } from "@freeanima/core/db/pg/semantic-memory/types";
 import { isFtsQueryError } from "@freeanima/core/util";
 
 import { manifestPassiveMemoryContext, stripPassiveMemoryContextFromMessages } from "./inject.ts";

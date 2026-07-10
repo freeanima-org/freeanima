@@ -1,20 +1,33 @@
+/** Console Hub API wire types — canonical imports (no console-contract barrel). */
+
 export type {
   DisplayItem,
   DisplayMessageItem,
   DisplayToolBlockItem,
   DisplayToolCall,
-  MessagesResponse,
+  MessagesDisplay as MessagesResponse,
+} from "@freeanima/platform/ports/schemas/display";
+
+export type {
   AutobiographicalMemoryRow,
-  EntityRow,
   LimbicMemoryRow,
   SemanticMemoryRow,
+} from "@freeanima/core/db/schema/rows";
+export type { EntityRow } from "@freeanima/core/db/pg/entity/types";
+
+export type {
   DependencyStatus,
-  HealthResponse,
-  PlatformStatus,
-  SafeConfigResponse,
-  ServiceStatus,
-  ConversationListItem,
-  SelfBlockDisplay,
-  CronJobApi,
-  CronJobsResponse,
-} from "@freeanima/features/console/protocol/console-contract/api";
+  HealthSnapshot as HealthResponse,
+  PlatformStatusSnapshot as PlatformStatus,
+  SafeConfigSnapshot as SafeConfigResponse,
+  ServiceSnapshot as ServiceStatus,
+  ConversationSummary as ConversationListItem,
+} from "@freeanima/platform/ports/schemas/snapshot";
+
+export type { SelfBlockDisplay } from "@freeanima/platform/runtime/service-self";
+
+export type { CronJobData as CronJobApi } from "@freeanima/platform/connectors/cron";
+
+export type CronJobsResponse = {
+  jobs: import("@freeanima/platform/connectors/cron").CronJobData[];
+};

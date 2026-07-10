@@ -4,9 +4,12 @@ import { omitUndefined } from "@freeanima/core/util";
 import { buildDreamEngineInput } from "./build-messages.ts";
 import { runDreamEngine } from "../dream-engine-port.ts";
 import { cstDayRange } from "../light-sleep/build-messages.ts";
-import { createDreamEntry, getDreamEntryByDay } from "./entry-store.ts";
+import {
+  createDreamEntry,
+  getDreamEntryByDay,
+  resolveDreamWorldId,
+} from "@freeanima/core/db/pg/dream";
 import { gatherDreamInput, hasDreamFuel } from "./gather-input.ts";
-import { resolveDreamWorldId } from "./subject-world.ts";
 import { recordDreamRun } from "./state.ts";
 
 export type DreamResult = {

@@ -10,7 +10,7 @@ import type { RecordMessageReferencesInput } from "../types.ts";
 import {
   parseMemoryReferenceMarkers,
   memoryReferenceWeight,
-} from "@freeanima/core/repos/memory-reference/markers";
+} from "@freeanima/core/db/pg/memory-reference/markers";
 
 import { getDb } from "../../client.ts";
 

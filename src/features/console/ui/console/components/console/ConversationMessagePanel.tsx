@@ -1,6 +1,6 @@
 import { marked } from "marked";
 import { useMemo } from "react";
-import type { DisplayItem } from "@freeanima/features/console/protocol/console-contract/api";
+import type { DisplayItem } from "@freeanima/platform/ports/schemas/display";
 import { Button, Spinner } from "@freeanima/frontend/ui-kit";
 import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
 import { ToolBlockBubble } from "./ToolBlockBubble.tsx";

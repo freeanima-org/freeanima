@@ -24,7 +24,7 @@ function getClient() {
   });
 }
 
-export function getSapDirectClient() {
+export function getChatSapClient() {
   return getClient();
 }
 

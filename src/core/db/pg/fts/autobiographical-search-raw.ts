@@ -2,7 +2,7 @@ import { and, asc, desc, eq, getColumns, isNotNull, sql } from "drizzle-orm";
 import { getActiveRuntimeConfig, getFtsTrgmMinSimilarity } from "@freeanima/core/config";
 import { autobiographicalDocKey } from "@freeanima/core/util";
 import { autobiographicalMemory } from "@freeanima/core/db/schema";
-import type { AutobiographicalStatus } from "@freeanima/core/repos";
+import type { AutobiographicalStatus } from "@freeanima/core/db/pg/autobiographical-memory/types";
 
 import { formatPgVector } from "../embedding/format.ts";
 import { getDb } from "../client.ts";

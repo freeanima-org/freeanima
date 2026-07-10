@@ -1,4 +1,5 @@
-import type { MessageFtsHit, SemanticFtsHit } from "@freeanima/core/repos";
+import type { MessageFtsHit } from "@freeanima/core/db/pg/conversation/types";
+import type { SemanticFtsHit } from "@freeanima/core/db/schema/rows";
 import {
   getActiveRuntimeConfig,
   getFtsTrgmFallbackWhenHitsLt,

@@ -52,7 +52,7 @@ Shell apps: [`src/app/shell/desktop/`](../../src/app/shell/desktop/) · [`src/ap
 
 ## Chat: Hub RPC and instance_id
 
-Bundled chat uses [`createSapDirectClient`](../../src/shared/sap-contract/direct-client.ts) on the shared Hub RPC transport (`getBundledHubRpcClient` / `whenHubRpcReady`). It does **not** call `sap.attach`.
+Bundled chat uses [`getBundledSapStreamClient`](../../src/shared/sap-contract/bundled-sap-stream.ts) on the shared Hub RPC transport (`getBundledHubRpcClient` / `whenHubRpcReady`). It does **not** call `sap.attach`.
 
 `instance_id` persistence:
 

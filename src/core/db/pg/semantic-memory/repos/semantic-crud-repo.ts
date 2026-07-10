@@ -6,10 +6,10 @@ import {
 } from "@freeanima/core/db/schema";
 import type {
   SemanticMemoryCreateInput,
-  SemanticMemoryRow,
   SemanticMemoryUpdateInput,
-} from "@freeanima/core/repos";
-import { RESIDENT_PINNED_MAX } from "@freeanima/core/repos";
+} from "@freeanima/core/db/pg/semantic-memory/types";
+import type { SemanticMemoryRow } from "@freeanima/core/db/schema/rows";
+import { RESIDENT_PINNED_MAX } from "@freeanima/core/db/pg/semantic-memory/types";
 import { logPgComponent } from "../../log.ts";
 
 const log = logPgComponent("memory");

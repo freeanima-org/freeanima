@@ -18,7 +18,7 @@ import {
   omitUndefined,
   validateFtsQueryInput,
 } from "@freeanima/core/util";
-import type { EntitySearchMode } from "@freeanima/core/repos";
+import type { EntitySearchMode } from "@freeanima/core/db/pg/entity/types";
 import type { EntityType } from "@freeanima/core/db/schema";
 
 const FTS_SYNTAX =

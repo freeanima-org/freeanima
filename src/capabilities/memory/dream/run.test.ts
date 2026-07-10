@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
 
-import type { DreamEntryCreateInput } from "./types.ts";
+import type { DreamEntryCreateInput } from "@freeanima/core/db/pg/dream";
 import { registerDreamEngine, resetDreamEngineForTests } from "../dream-engine-port.ts";
 import { runDream } from "./run.ts";
 
@@ -66,11 +66,9 @@ const listMessagesMock = mock(async () => [
   },
 ]);
 
-mock.module("./entry-store.ts", () => ({
+mock.module("@freeanima/core/db/pg/dream", () => ({
   createDreamEntry: createDreamEntryMock,
   getDreamEntryByDay: getDreamEntryByDayMock,
-}));
-mock.module("./subject-world.ts", () => ({
   resolveDreamWorldId: mock(async () => 100),
 }));
 mock.module("@freeanima/core/db/pg/limbic-memory", () => ({

@@ -98,9 +98,3 @@ export async function synthesizeSpeechViaHubStream(
 
   return { buffer, fromCache: false, played };
 }
-
-/** @deprecated 使用 synthesizeSpeechViaHubStream */
-export async function synthesizeSpeechViaHub(params: HubTtsSynthesizeParams): Promise<ArrayBuffer> {
-  const result = await synthesizeSpeechViaHubStream(params, { generation: 0, play: false });
-  return result.buffer;
-}

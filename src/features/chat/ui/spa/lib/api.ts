@@ -1,6 +1,6 @@
 import type { ConversationAcpDockSnapshot, ConversationListItem, StreamApiEvent } from "./types.ts";
 import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
-import { getSapDirectClient, chatPlatform } from "./sap-client.ts";
+import { getChatSapClient, chatPlatform } from "./sap-client.ts";
 import { m } from "./i18n.ts";
 
 type SubscribeCallbacks<T> = {
@@ -35,7 +35,7 @@ function hub() {
 
 /** WS-only 流式仍走 SapClient */
 function sap() {
-  return getSapDirectClient();
+  return getChatSapClient();
 }
 
 export type { ConversationAcpDockSnapshot, StreamApiEvent } from "./types.ts";

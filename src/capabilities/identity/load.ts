@@ -1,5 +1,5 @@
-import type { SelfBlockRow } from "@freeanima/core/repos";
-import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
+import type { SelfBlockRow } from "@freeanima/core/db/schema/rows";
+import { SELF_BLOCK_KEYS } from "@freeanima/core/db/pg/self-layer/types";
 import { listSelfBlocks } from "@freeanima/core/db/pg/self-layer";
 
 import {

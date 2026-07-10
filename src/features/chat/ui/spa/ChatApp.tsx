@@ -49,7 +49,7 @@ import {
 import { initAppLocale, m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@freeanima/features/chat/ui/spa/lib/input-draft.ts";
 import {
-  getSapDirectClient,
+  getChatSapClient,
   subscribeShellConfigChanges,
 } from "@freeanima/features/chat/ui/spa/lib/sap-client.ts";
 import { LlmDebugPanel } from "@freeanima/features/chat/ui/spa/components/LlmDebugPanel.tsx";
@@ -277,13 +277,13 @@ export function ChatApp() {
         }
       } else {
         try {
-          await getSapDirectClient().whenReady();
+          await getChatSapClient().whenReady();
           await newConversationFn();
         } catch {
           /* 离线且无缓存：保持空态 */
         }
       }
-      void getSapDirectClient()
+      void getChatSapClient()
         .whenReady()
         .then(() => listConversationCommands())
         .then((raw) => setCommandList((raw as { commands?: CommandItem[] }).commands ?? []))
@@ -488,7 +488,7 @@ export function ChatApp() {
     void (async () => {
       try {
         await loadConfig();
-        getSapDirectClient();
+        getChatSapClient();
         setReady(true);
         void bootstrapConversation().catch((e) => {
           console.error("chat bootstrap:", e);

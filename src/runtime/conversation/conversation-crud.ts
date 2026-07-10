@@ -54,7 +54,7 @@ import {
   getLastMessageRoleWithRouting,
   deleteStaleConversations,
 } from "./conversation-store-pg-bridge.ts";
-import type { ConversationSummaryRow } from "@freeanima/core/repos";
+import type { ConversationSummaryRow } from "@freeanima/core/db/pg/conversation/types";
 
 export type Message = StoredMessage;
 

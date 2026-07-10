@@ -117,5 +117,4 @@ export {
   type DreamGatherInput,
 } from "./dream/gather-input.ts";
 export { readDreamState, recordDreamRun, type DreamState } from "./dream/state.ts";
-export { registerDreamTools } from "./dream.ts";
 export { registerMemoryLimbicTools } from "./memory-limbic.ts";

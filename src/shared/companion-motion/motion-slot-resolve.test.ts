@@ -3,7 +3,9 @@ import {
   normalizeMotionSlots,
   resolveLocomotionMotion,
   resolveMotionForSlot,
-} from "./motion-slot-resolve.ts";
+} from "@freeanima/shared/companion-motion/motion-slot-resolve.ts";
+
+const defaultLocomotion = { walk: "mot_walk.vrma" };
 
 describe("resolveMotionForSlot", () => {
   const library = [
@@ -61,7 +63,9 @@ describe("resolveLocomotionMotion", () => {
   test("walk 槽位为空时使用 manifest 默认文件", () => {
     const library = [{ id: "w1", name: "locomotion_walk", file: "mot_walk.vrma" }];
     const slots = { idle: [], rest: [], walk: [], climb: [], in_place: [] };
-    expect(resolveLocomotionMotion("walk", slots, library)?.file).toBe("mot_walk.vrma");
+    expect(resolveLocomotionMotion("walk", slots, library, defaultLocomotion)?.file).toBe(
+      "mot_walk.vrma",
+    );
   });
 });
 
@@ -85,7 +89,7 @@ describe("normalizeMotionSlots", () => {
 
   test("空 walk 槽位链接 manifest locomotion 到动作库 id", () => {
     const library = [{ id: "w1", name: "locomotion_walk", file: "mot_walk.vrma" }];
-    const normalized = normalizeMotionSlots({ walk: [] }, library);
+    const normalized = normalizeMotionSlots({ walk: [] }, library, defaultLocomotion);
     expect(normalized.walk).toEqual(["w1"]);
   });
 });

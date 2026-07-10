@@ -1,4 +1,4 @@
-import type { SelfBlockKey } from "@freeanima/core/repos";
+import type { SelfBlockKey } from "@freeanima/core/db/pg/self-layer/types";
 
 /** Six block headings (injected into system prompt) */
 export const SELF_BLOCK_HEADINGS: Record<SelfBlockKey, string> = {

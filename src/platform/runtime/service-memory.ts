@@ -1,13 +1,13 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import type { AutobiographicalListOpts } from "@freeanima/core/db/pg/autobiographical-memory/types";
 import type {
-  AutobiographicalListOpts,
   AutobiographicalMemoryRow,
-  LimbicListOpts,
   LimbicMemoryRow,
   SemanticFtsHit,
-  SemanticMemorySearchOpts,
-} from "@freeanima/core/repos";
+} from "@freeanima/core/db/schema/rows";
+import type { LimbicListOpts } from "@freeanima/core/db/pg/limbic-memory/types";
+import type { SemanticMemorySearchOpts } from "@freeanima/core/db/pg/semantic-memory/types";
 import {
   countAutobiographicalMemory,
   listAutobiographicalMemory,

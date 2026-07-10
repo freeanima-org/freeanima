@@ -1,4 +1,4 @@
-import type { SemanticFtsHit } from "@freeanima/core/repos";
+import type { SemanticFtsHit } from "@freeanima/core/db/schema/rows";
 import {
   DEFAULT_PASSIVE_RECALL_MIN_RELATIVE_SCORE,
   DEFAULT_PASSIVE_RECALL_MIN_SCORE,

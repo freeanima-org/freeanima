@@ -1,9 +1,7 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import type {
-  PromptDebugResponse,
-  ConversationListItem,
-} from "@freeanima/features/console/protocol/console-contract/api";
+import type { ConversationSummary } from "@freeanima/platform/ports/schemas/snapshot";
+import type { PromptDebugResponse } from "@freeanima/features/console/protocol/console-contract/api/response-types.ts";
 import {
   Badge,
   Button,
@@ -169,7 +167,7 @@ function BreakdownBar({ data }: { data: PromptDebugResponse["system"]["breakdown
 function SystemPromptPage() {
   const { conversation: conversationFromUrl } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const [recentConversations, setRecentConversations] = useState<ConversationListItem[]>([]);
+  const [recentConversations, setRecentConversations] = useState<ConversationSummary[]>([]);
   const [tab, setTab] = useState<TabId>("parts");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -184,7 +182,7 @@ function SystemPromptPage() {
     void listConversations({ offset: 0, limit: 100 })
       .then((resp) => {
         setRecentConversations(
-          (resp as { conversations?: ConversationListItem[] }).conversations ?? [],
+          (resp as { conversations?: ConversationSummary[] }).conversations ?? [],
         );
       })
       .catch((err) => {

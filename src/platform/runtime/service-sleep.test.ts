@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
-import type { PipelineStepRunAppendInput, PipelineStepRunRow } from "@freeanima/core/repos";
+import type {
+  PipelineStepRunAppendInput,
+  PipelineStepRunRow,
+} from "@freeanima/core/db/pg/pipeline/types";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 const runSleepCycleMock = mock(async () => ({

@@ -94,13 +94,13 @@ flowchart TB
 
 ### Bundled Hub RPC — shell modules (chat, task, notification, …)
 
-- Modules use shared [`getBundledHubRpcClient`](../../src/shared/hub-rpc/bundled.ts) / [`createSapDirectClient`](../../src/shared/sap-contract/direct-client.ts) on `/hub/rpc/v1`.
+- Modules use shared [`getBundledHubRpcClient`](../../src/shared/hub-rpc/bundled.ts) / [`getBundledSapStreamClient`](../../src/shared/sap-contract/bundled-sap-stream.ts) on `/hub/rpc/v1`.
 - **No** `sap.attach`; **no** relay sidecar for these modules.
 - See [`hub-rpc.md`](hub-rpc.md) and [`frontend-exports.md`](frontend-exports.md).
 
 ### Chat (bundled feature)
 
-- **Shell / browser dev (recommended)**: `createSapDirectClient` on shared Hub RPC; UI from [`src/features/chat/ui/spa/`](../../src/features/chat/ui/spa/) embedded in shell-ui (no SAP relay, no `sap.attach`).
+- **Shell / browser dev (recommended)**: `getBundledSapStreamClient` on shared Hub RPC; UI from [`src/features/chat/ui/spa/`](../../src/features/chat/ui/spa/) embedded in shell-ui (no SAP relay, no `sap.attach`).
 - Hub RPC handlers: [`src/features/chat/hub/rpc.ts`](../../src/features/chat/hub/rpc.ts); wire types: [`src/features/chat/protocol/`](../../src/features/chat/protocol/) → `@freeanima/sap-contract/feature-rpc`.
 
 ### Companion satellite
@@ -134,7 +134,7 @@ const hub = createSatelliteHub({
 
 **Machine strategy (companion):** omit `instance_id` on first connect; Hub assigns a 3-char id and returns it in `connected.instance_id`. Persist via `SapInstanceStore.save`.
 
-**Singleton strategy (chat):** pass fixed `instance_id` (or `instanceId` option on `createSapDirectClient`); Hub auto-provisions on first sight.
+**Singleton strategy (chat):** pass fixed `instance_id` (or `instanceId` option on `getBundledSapStreamClient`); Hub auto-provisions on first sight.
 
 Browser UI on Type B relay satellites uses `createSapRelayBrowserClient()` instead of talking to Hub directly.
 

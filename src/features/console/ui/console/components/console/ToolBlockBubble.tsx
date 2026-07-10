@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { DisplayToolCall } from "@freeanima/features/console/protocol/console-contract/api";
+import type { DisplayToolCall } from "@freeanima/platform/ports/schemas/display";
 import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
 
 type ToolBlockBubbleProps = {

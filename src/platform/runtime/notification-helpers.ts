@@ -1,4 +1,4 @@
-import type { NotificationCreateInput } from "@freeanima/core/repos";
+import type { NotificationCreateInput } from "@freeanima/core/db/pg/notifications/types";
 import { resolveNotificationRecipients } from "@freeanima/core/config";
 import type { Config } from "@freeanima/core/config";
 import {

@@ -451,13 +451,11 @@ export {
 } from "./conversation-stream-core.ts";
 
 export {
-  createSapDirectClient,
   loadDirectSatelliteConfig,
   formatDirectPlatform,
+  defaultChatPlatform,
   type DirectSatelliteConfig,
-  type SapDirectClient,
-  type SapDirectClientOptions,
-} from "./direct-client.ts";
+} from "./satellite-config.ts";
 
 export {
   createSapSidecarClient,

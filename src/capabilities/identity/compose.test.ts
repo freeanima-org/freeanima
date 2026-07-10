@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import type { SelfBlockKey } from "@freeanima/core/repos";
+import type { SelfBlockKey } from "@freeanima/core/db/pg/self-layer/types";
 import {
   SELF_BLOCK_HEADINGS,
   SELF_LAYER_PROMPT_HEADING,

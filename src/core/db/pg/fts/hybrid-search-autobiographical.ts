@@ -1,4 +1,7 @@
-import type { AutobiographicalFtsHit, AutobiographicalStatus } from "@freeanima/core/repos";
+import type {
+  AutobiographicalFtsHit,
+  AutobiographicalStatus,
+} from "@freeanima/core/db/pg/autobiographical-memory/types";
 import { getActiveRuntimeConfig, getFtsTrgmFallbackWhenHitsLt } from "@freeanima/core/config";
 import { autobiographicalDocKey, rrfMerge } from "@freeanima/core/util";
 
