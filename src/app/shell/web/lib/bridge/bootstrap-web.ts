@@ -2,7 +2,7 @@ import { parseShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-clie
 import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
 import { HUB_SETTINGS_SCOPE } from "@freeanima/frontend/shell-sdk/settings";
 
-import { createWebScopedBackend, seedWebHubPrefsIfEmpty } from "../settings-local-backend.ts";
+import { createWebScopedBackend } from "../settings-local-backend.ts";
 import {
   buildWebShellFromRaw,
   createWebShellStub,
@@ -47,10 +47,7 @@ function redirectToHubSetupIfNeeded(): void {
   window.history.replaceState(null, "", next);
 }
 
-export async function bootstrapElectronBridge(
-  defaultHubUrl: string,
-  defaultToken: string,
-): Promise<void> {
+export async function bootstrapElectronBridge(defaultHubUrl: string): Promise<void> {
   if (window.satelliteShell?.isElectron) return;
   window.satelliteShell = createWebShellStub();
   if (!window.freeanimaScopedSettings) installScopedSettingsBridge();
@@ -60,28 +57,20 @@ export async function bootstrapElectronBridge(
   if (parsed) {
     installWebShellFromPrefs(parsed.hubUrl, parsed.remoteAuthToken);
   } else if (defaultHubUrl) {
-    window.satelliteShell = buildWebShellFromRaw(defaultHubUrl, defaultToken);
+    window.satelliteShell = buildWebShellFromRaw(defaultHubUrl, "");
   }
 }
 
-export async function bootstrapWebBridge(
-  defaultHubUrl: string,
-  defaultToken: string,
-): Promise<void> {
+export async function bootstrapWebBridge(defaultHubUrl: string): Promise<void> {
   installScopedSettingsBridge();
   window.satelliteShell = createWebShellStub();
-  seedWebHubPrefsIfEmpty(defaultHubUrl, defaultToken);
   const backend = createWebScopedBackend();
   const raw = await backend.load(HUB_SETTINGS_SCOPE);
   const parsed = parseShellClientConfig(raw);
   if (parsed) {
-    const token = parsed.remoteAuthToken.trim() || defaultToken.trim();
-    installWebShellFromPrefs(parsed.hubUrl, token);
-    if (token && !parsed.remoteAuthToken.trim()) {
-      await backend.save(HUB_SETTINGS_SCOPE, { hubUrl: parsed.hubUrl, remoteAuthToken: token });
-    }
+    installWebShellFromPrefs(parsed.hubUrl, parsed.remoteAuthToken);
   } else if (defaultHubUrl) {
-    window.satelliteShell = buildWebShellFromRaw(defaultHubUrl, defaultToken);
+    window.satelliteShell = buildWebShellFromRaw(defaultHubUrl, "");
   }
   redirectToHubSetupIfNeeded();
   if (window.satelliteShell?.remoteAuth?.token?.trim()) {

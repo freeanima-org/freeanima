@@ -26,12 +26,6 @@ export * from "./fts.ts";
 export * from "./embedding.ts";
 export * from "./llm-config.ts";
 export { resolveValue, resolveCredentialRef } from "./resolve.ts";
-export {
-  LOOPBACK_WEB_AUTH_TOKEN_REL,
-  loopbackWebAuthTokenPath,
-  readLoopbackWebAuthTokenFromEnvOrFile,
-  writeLoopbackWebAuthTokenFile,
-} from "./loopback-web-auth.ts";
 export { loadConfigYamlRecord } from "./yaml-io.ts";
 export { patchRuntimeConfigSection, loadRuntimeConfigSection } from "./runtime-config-patch.ts";
 export {

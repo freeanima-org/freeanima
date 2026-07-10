@@ -52,7 +52,6 @@ function webDevPlugin(): Plugin {
         if (path === "/web/config.json") {
           res.setHeader("Content-Type", "application/json; charset=utf-8");
           res.setHeader("Cache-Control", "no-store");
-          const authToken = process.env.FREEANIMA_REMOTE_AUTH_TOKEN?.trim() ?? "";
           res.end(
             JSON.stringify({
               app_id: "chat",
@@ -61,7 +60,6 @@ function webDevPlugin(): Plugin {
               ui_version: UI_VERSION,
               web_build: DEV_WEB_BUILD,
               min_shell_version: "0.8.0",
-              ...(authToken ? { auth_token: authToken } : {}),
             }),
           );
           return;
@@ -158,9 +156,6 @@ export default defineConfig(({ command, mode }) => {
     },
     define: {
       __WEB_DEFAULT_HUB_URL__: JSON.stringify(HUB_URL),
-      __WEB_DEFAULT_REMOTE_AUTH_TOKEN__: JSON.stringify(
-        process.env.FREEANIMA_REMOTE_AUTH_TOKEN ?? "",
-      ),
       __WEB_UI_VERSION__: JSON.stringify(UI_VERSION),
     },
   });

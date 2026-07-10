@@ -10,8 +10,6 @@ export type WebUiConfigJson = {
   web_build?: ComponentBuildMeta;
   min_shell_version?: string;
   layout_mode?: "compact" | "expanded";
-  /** 仅 loopback 直连时由 Hub 注入；勿写入持久化 meta */
-  auth_token?: string;
 };
 
 export function parseWebUiConfigJson(raw: unknown): WebUiConfigJson | null {
@@ -31,8 +29,5 @@ export function parseWebUiConfigJson(raw: unknown): WebUiConfigJson | null {
     ...(webBuild ? { web_build: webBuild } : {}),
     ...(typeof o.min_shell_version === "string" ? { min_shell_version: o.min_shell_version } : {}),
     ...(layout_mode ? { layout_mode } : {}),
-    ...(typeof o.auth_token === "string" && o.auth_token.trim()
-      ? { auth_token: o.auth_token.trim() }
-      : {}),
   };
 }
