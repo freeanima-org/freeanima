@@ -3,6 +3,11 @@ import { afterAll, afterEach, beforeEach, describe, expect, it } from "bun:test"
 import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
 import { createServiceApiTokenWithSecret } from "@freeanima/core/db/pg/service-api-token";
 import { getAppRuntime } from "@freeanima/platform";
+import {
+  builtinFeaturePlugins,
+  registerFeatures,
+  resetFeatureRegistryForTests,
+} from "@freeanima/platform/features";
 import { createSapBunHandlers } from "@freeanima/platform/sap/bun-route";
 import {
   bindSapServerDeps,
@@ -47,6 +52,7 @@ describePg("service API tokens", () => {
     beforeEach(async () => {
       await beginIntegrationCase("freeanima-svc-auth-");
       bindConsoleRuntimeContext();
+      registerFeatures(builtinFeaturePlugins);
       const runtime = getAppRuntime();
       runtime.markStarted();
       bindSapServerDeps({
@@ -60,6 +66,7 @@ describePg("service API tokens", () => {
 
     afterEach(async () => {
       clearSapServerDeps();
+      resetFeatureRegistryForTests();
       await restoreIntegrationHome(prev);
     });
 
