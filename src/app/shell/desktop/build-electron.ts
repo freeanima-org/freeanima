@@ -31,7 +31,7 @@ const BUNDLED_INTERNAL_PACKAGES = new Set([
  * 必须打进 main.cjs 的 npm 包（纯 JS 或 ESM-only）。
  * 新增主进程 npm 依赖时：默认加入此集合，否则会被标为 external 且安装包无 node_modules。
  */
-const BUNDLED_NPM_PACKAGES = new Set(["zod", "ws", "commander", "electron-store"]);
+const BUNDLED_NPM_PACKAGES = new Set(["zod", "ws", "commander", "electron-store", "drizzle-orm"]);
 
 /**
  * 允许 runtime require 但不打进 asar（可选 native / 死分支）。

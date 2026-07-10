@@ -33,6 +33,16 @@ export default defineConfig({
         outdir: "../messages/paraglide",
       }),
     ],
+    resolve: {
+      alias: {
+        "@paraglide/messages": fileURLToPath(
+          new URL("../messages/paraglide/messages.js", import.meta.url),
+        ),
+        "@paraglide/runtime": fileURLToPath(
+          new URL("../messages/paraglide/runtime.js", import.meta.url),
+        ),
+      },
+    },
   },
   integrations: [
     mermaid(faMermaidConfig),

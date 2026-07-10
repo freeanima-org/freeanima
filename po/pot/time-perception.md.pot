@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:22+0800\n"
+"POT-Creation-Date: 2026-07-10 23:57+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,7 +24,7 @@ msgid "Design Principles"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/time-perception.md:1 messages/po4a/en.xml:591
+#: docs/concepts/time-perception.md:1 messages/po4a/en.xml:627
 #, no-wrap
 msgid "Time Perception"
 msgstr ""
@@ -139,7 +139,7 @@ msgstr ""
 #: docs/concepts/time-perception.md:38
 msgid ""
 "Before each **user** message with valid `timestamp`, insert dedicated line: "
-"`time: YYYY-MM-DDTHH:mm`"
+"`time: YYYY-MM-DDTHH:mm 周X` (CST weekday in Chinese)"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -193,13 +193,13 @@ msgstr ""
 #: docs/concepts/time-perception.md:53
 #, no-wrap
 msgid ""
-"user: time: 2026-05-20T08:02\n"
+"user: time: 2026-05-20T08:02 周三\n"
 "good morning\n"
 "assistant: morning ☀️\n"
-"user: time: 2026-05-20T12:15\n"
+"user: time: 2026-05-20T12:15 周三\n"
 "going to eat\n"
 "assistant: what are you having\n"
-"user: time: 2026-05-20T19:30\n"
+"user: time: 2026-05-20T19:30 周三\n"
 "going to eat\n"
 msgstr ""
 

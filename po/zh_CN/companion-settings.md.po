@@ -1,0 +1,58 @@
+# Chinese translations for PACKAGE package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-07-11 00:02+0800\n"
+"PO-Revision-Date: 2026-07-10 23:57+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Yaml Front Matter Hash Value: title
+#: docs/features/companion-settings.md:1
+#, fuzzy, no-wrap
+#| msgid "Pair-programming satellite"
+msgid "Companion Settings"
+msgstr "结对编程卫星"
+
+#. type: Title #
+#: docs/features/companion-settings.md:5
+#, no-wrap
+msgid "桌面伴侣设置"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/companion-settings.md:8
+msgid "伴侣配置分两层存储："
+msgstr ""
+
+#. type: Plain text
+#: docs/features/companion-settings.md:13
+#, no-wrap
+msgid ""
+"| 层级                              | 内容                                                        | 存取                                          |\n"
+"| --------------------------------- | ----------------------------------------------------------- | --------------------------------------------- |\n"
+"| **Hub PG**（`companion_profile`） | 行为、模型、动作库、槽位                                    | 设置 → Hub 服务 → 桌面伴侣；经 Hub RPC / HTTP |\n"
+"| **本机**                          | 窗口显隐（`companion-shell` scope）、SAP 运行时状态（只读） | 设置 → 本机 → 桌面伴侣                        |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/companion-settings.md:15
+msgid ""
+"Sidecar 本地 `~/.anima/companion/config.json` 仅为 **hub-sync 缓存**，设置 "
+"UI 不直接读写。"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/companion-settings.md:16
+msgid ""
+"修改 Hub profile 后，sidecar 通过 `companion.sync.pull` 同步到本机；overlay "
+"通过 `emitConfigChanged` 刷新。"
+msgstr ""

@@ -1,7 +1,7 @@
 import { ipcMain } from "electron";
 
-import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc";
-import { testHubHealthConnection } from "@freeanima/frontend/shell-sdk";
+import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc/urls.ts";
+import { testHubHealthConnection } from "@freeanima/frontend/shell-sdk/hub-health-probe.ts";
 import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
 import {
   COMPANION_CONFIG_SCOPE,
@@ -96,7 +96,7 @@ export function registerShellClientIpc(
     if (scope.kind === "kv" && scope.id === "debug") {
       assertScope(DEBUG_SETTINGS_SCOPE, scope);
       return writeShellDebugConfig(
-        value as import("@freeanima/frontend/shell-sdk").ShellDebugConfig,
+        value as import("@freeanima/frontend/shell-sdk/shell-debug-config.ts").ShellDebugConfig,
       );
     }
     if (scope.kind === "kv" && scope.id === "companion-shell") {

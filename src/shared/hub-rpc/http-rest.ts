@@ -5,16 +5,9 @@ import {
   type HubMethod,
 } from "@freeanima/shared/hub-contract";
 
-const HUB_RPC_REST_PREFIX = "/hub/rpc/v1";
+import { HUB_RPC_REST_PREFIX } from "./urls.ts";
 
-export function hubRpcRestPrefix(): string {
-  return HUB_RPC_REST_PREFIX;
-}
-
-/** 无 token 探活 URL */
-export function hubHealthProbeUrl(httpOrigin: string): string {
-  return `${normalizeOrigin(httpOrigin)}${HUB_RPC_REST_PREFIX}/health/probe`;
-}
+export { hubRpcRestPrefix, hubHealthProbeUrl } from "./urls.ts";
 
 function normalizeOrigin(httpOrigin: string): string {
   return httpOrigin.replace(/\/$/, "");

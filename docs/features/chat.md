@@ -1,3 +1,7 @@
+---
+title: Chat
+---
+
 # Chat — 离线发送与多端冲突
 
 Chat SPA 支持 **离线写入 outbox**、上线后 **自动重试**，并通过 Hub 侧幂等与 tail CAS 避免重复发送与陈旧消息。

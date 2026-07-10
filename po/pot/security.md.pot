@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-06 10:28+0800\n"
+"POT-Creation-Date: 2026-07-10 23:57+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/guide/security.md:1 docs/tools/execute-code-runtimes.md:60
-#: messages/po4a/en.xml:599 messages/po4a/en.xml:602
+#: messages/po4a/en.xml:620 messages/po4a/en.xml:623
 #, no-wrap
 msgid "Security"
 msgstr ""
@@ -82,14 +82,14 @@ msgstr ""
 #: docs/guide/security.md:28
 #, no-wrap
 msgid ""
-"| Rule                     | Description                                                                                                                                                      |\n"
-"| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| Sole authoritative store | **Vault** (ECS `vault_item` in User + Agent libraries); legacy pass (`~/.password-store`) is read-only on disk after migration — runtime no longer uses pass CLI |\n"
-"| Never commit secrets     | Do not write API keys, tokens, DB passwords into `config.yaml` and commit to git                                                                                 |\n"
-"| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, agent machine key (`vault/agent-machine.key`), conversations, memory—recommend `chmod 700`              |\n"
-"| CLI plaintext output     | `anima vault get` prints Agent-library field plaintext to stdout; do not redirect to shared logs                                                                 |\n"
-"| User master password     | Set only in Shell `/vault` or bundled Chat unlock box; **never** sent as a chat message or stored in PG messages                                                 |\n"
-"| Chat User vault unlock   | **v1 bundled Chat only** (`src/app/shell/web` / desktop / mobile); Discord / WeChat gateways cannot unlock User library                                                    |\n"
+"| Rule                     | Description                                                                                                                                                          |\n"
+"| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| Sole authoritative store | **Vault** (ECS `vault_item` in User + Agent libraries); legacy pass (`~/.password-store`) is read-only on disk after migration — runtime no longer uses pass CLI     |\n"
+"| Never commit secrets     | Do not write API keys, tokens, DB passwords into `config.yaml` and commit to git; runtime LLM/MCP settings live in PG — use `vault()` / `env()` references there too |\n"
+"| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, agent machine key (`vault/agent-machine.key`), conversations, memory—recommend `chmod 700`                  |\n"
+"| CLI plaintext output     | `anima vault get` prints Agent-library field plaintext to stdout; do not redirect to shared logs                                                                     |\n"
+"| User master password     | Set only in Shell `/vault` or bundled Chat unlock box; **never** sent as a chat message or stored in PG messages                                                     |\n"
+"| Chat User vault unlock   | **v1 bundled Chat only** (`src/app/shell/web` / desktop / mobile); Discord / WeChat gateways cannot unlock User library                                              |\n"
 msgstr ""
 
 #. type: Plain text

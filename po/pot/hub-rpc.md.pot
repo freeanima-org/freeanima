@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-06 11:54+0800\n"
+"POT-Creation-Date: 2026-07-10 23:57+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,101 +25,225 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/hub-rpc.md:8
 #, no-wrap
-msgid "**Hub RPC** (`HubRPC/1.0`) is the WebSocket transport between any Hub client and the agent runtime. It is implemented in [`src/shared/hub-rpc/`](../../src/shared/hub-rpc/) and served at **`/hub/rpc/v1`**.\n"
+msgid "**Hub RPC** (`HubRPC/1.0`) is the **single business channel** between Hub clients and the agent runtime. Transport:\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/hub-rpc.md:11
+msgid ""
+"**WebSocket** — long-lived connection at **`/hub/rpc/v1`** (connect "
+"handshake + heartbeat; HubRPC `req`/`res`/`evt` envelope)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/hub-rpc.md:11
+msgid ""
+"**HTTP REST** — stateless GET/POST at **`/hub/rpc/v1/{method/path}`** (plain "
+"JSON body or query; `Authorization: Bearer`)"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:10
+#: docs/sap/hub-rpc.md:13
 msgid ""
-"SAP (`SAP/1.0`) is a **session layer** on top of Hub RPC: true satellites "
-"call `sap.attach` after connect; bundled SPA modules **never** attach."
+"Implemented in [`src/shared/hub-rpc/`](../../src/shared/hub-rpc/) (WS "
+"envelope + HTTP REST helpers) and [`src/platform/hub/http-rest-router.ts`]"
+"(../../src/platform/hub/http-rest-router.ts) (HTTP adapter)."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:15
+msgid ""
+"Binary HTTP methods (e.g. `tts.synthesize`, companion assets, TLS PEM/QR) "
+"use Hub RPC REST with registry `request` / `response` encoding. Public "
+"probes (`health.probe`, `tls.ca.*`) are Hub RPC methods with `auth: "
+"optional` — `GET /hub/rpc/v1/health/probe`, `GET /hub/rpc/v1/tls/ca`, etc."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:17
+msgid ""
+"SAP (`SAP/1.0`) is a **session layer** on top of Hub RPC WebSocket: true "
+"satellites call `sap.attach` after connect; bundled SPA modules **never** "
+"attach."
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/hub-rpc.md:11 docs/sap/transport.md:14
+#: docs/sap/hub-rpc.md:18
 #, no-wrap
-msgid "Endpoint"
+msgid "Endpoints"
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/sap/hub-rpc.md:13 docs/sap/transport.md:16
-#, no-wrap
-msgid "ws://{hub_host}:{port}/hub/rpc/v1\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/hub-rpc.md:18
-msgid ""
-"Derive from Hub HTTP URL: replace `http` with `ws`, strip trailing slash, "
-"append `/hub/rpc/v1`. Helpers: `resolveHubRpcWsUrl` in `@freeanima/hub-rpc`."
-msgstr ""
-
-#. type: Plain text
 #: docs/sap/hub-rpc.md:20
+#, no-wrap
+msgid ""
+"ws://{hub_host}:{port}/hub/rpc/v1              # WebSocket upgrade (HubRPC envelope)\n"
+"http://{hub_host}:{port}/hub/rpc/v1/task/list  # GET (read-only methods)\n"
+"http://{hub_host}:{port}/hub/rpc/v1/task/create # POST (write methods)\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:27
+msgid ""
+"Derive WS URL from HTTP: replace `http` with `ws`, append `/hub/rpc/v1`. "
+"Helpers: `resolveHubRpcWsUrl`, `buildHubRestRequest` in `@freeanima/shared/"
+"hub-rpc`."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:29
 msgid ""
 "Hub route: [`src/platform/sap/bun-route.ts`](../../src/platform/sap/bun-"
 "route.ts)."
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/hub-rpc.md:21 docs/sap/transport.md:24
-#, no-wrap
-msgid "Envelope kinds"
-msgstr ""
-
-#. type: Plain text
 #: docs/sap/hub-rpc.md:30
 #, no-wrap
-msgid ""
-"| `kind`      | Direction    | Purpose                                           |\n"
-"| ----------- | ------------ | ------------------------------------------------- |\n"
-"| `connect`   | Client → Hub | First frame; `protocol: HubRPC/1.0`, `auth_token` |\n"
-"| `connected` | Hub → Client | `session_id`, `heartbeat_interval_sec`            |\n"
-"| `req`       | Client → Hub | RPC (`id`, `method`, `payload`)                   |\n"
-"| `res`       | Hub → Client | RPC reply                                         |\n"
-"| `evt`       | Both         | Async event (incl. `heartbeat`)                   |\n"
+msgid "HTTP REST mapping"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:32
+#: docs/sap/hub-rpc.md:33
 msgid ""
-"Parse/serialize: `parseHubRpcEnvelope` / `serializeHubRpcEnvelope` in "
-"`@freeanima/hub-rpc`."
+"Hub method `domain.action` maps to path **`/hub/rpc/v1/domain/action`** "
+"(dots → slashes; camelCase preserved)."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:41
+#, no-wrap
+msgid ""
+"| Kind           | HTTP     | Example                                                             |\n"
+"| -------------- | -------- | ------------------------------------------------------------------- |\n"
+"| Read-only      | **GET**  | `GET /hub/rpc/v1/task/list?subject_kind=user`                       |\n"
+"| Write          | **POST** | `POST /hub/rpc/v1/task/create` `{ subject_kind, title, … }`         |\n"
+"| By id (read)   | **GET**  | `GET /hub/rpc/v1/task/get/42?subject_kind=user`                     |\n"
+"| By id (write)  | **POST** | `POST /hub/rpc/v1/task/patch/42` `{ subject_kind, title?, … }`      |\n"
+"| Sensitive read | **POST** | `POST /hub/rpc/v1/vault/get/3` `{ subject_kind, include_secrets? }` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:43
+msgid ""
+"Route metadata is generated from [`hub-contract`](../../src/shared/hub-"
+"contract/) (`meta.http`: `verb`, `path`, `pathParams`). Wrong verb on a "
+"known path → **405**; legacy `POST /hub/rpc/v1` envelope → **410**."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:45
+msgid ""
+"HTTP responses are **plain handler JSON** (not HubRPC `res` envelope). "
+"Errors: `{ \"error\": { \"code\", \"message\" } }` with 4xx/5xx status."
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/hub-rpc.md:33
+#: docs/sap/hub-rpc.md:46
+#, no-wrap
+msgid "WebSocket envelope kinds"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:55
+#, no-wrap
+msgid ""
+"| `kind`      | Direction    | Purpose                                                    |\n"
+"| ----------- | ------------ | ---------------------------------------------------------- |\n"
+"| `connect`   | Client → Hub | WS only: first frame; `protocol: HubRPC/1.0`, `auth_token` |\n"
+"| `connected` | Hub → Client | WS only: `session_id`, `heartbeat_interval_sec`            |\n"
+"| `req`       | Client → Hub | RPC (`id`, `method`, `payload`)                            |\n"
+"| `res`       | Hub → Client | RPC reply                                                  |\n"
+"| `evt`       | Both         | Async event (WS only; incl. `heartbeat`)                   |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:57
+msgid ""
+"HTTP REST uses Bearer on each GET/POST unless the method declares `auth: "
+"optional` (e.g. `health.probe`, `tls.ca.*`). WebSocket uses `connect` frame "
+"`auth_token` (required)."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:59
+msgid ""
+"Method contracts live in [`src/shared/hub-contract/registry/`](../../src/"
+"shared/hub-contract/registry/) (`transports: http | ws`; HTTP routes in "
+"`meta.http`). Handlers register via `feature/plugin.hub.rpc`."
+msgstr ""
+
+#. type: Title ##
+#: docs/sap/hub-rpc.md:60
 #, no-wrap
 msgid "Authentication"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:36
+#: docs/sap/hub-rpc.md:63
 msgid ""
-"Every connection must send a valid **service API token** in the `connect` "
-"payload (`auth_token`). The Hub verifies it with `verifyServiceApiToken` "
-"([`src/core/db/pg/service-api-token/`](../../src/core/db/pg/service-api-"
-"token/))."
+"Every **WebSocket** connection must send a valid **service API token** in "
+"the `connect` payload (`auth_token`). **HTTP REST** uses `Authorization: "
+"Bearer fa_at_...` on each request unless the method registry marks `auth: "
+"optional` (public read-only probes only). The Hub verifies with "
+"`verifyServiceApiToken` ([`src/core/db/pg/service-api-token/`](../../src/"
+"core/db/pg/service-api-token/))."
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:38
+#: docs/sap/hub-rpc.md:65
 msgid ""
 "Bundled clients read the token from `window.satelliteShell.remoteAuth.token` "
-"(shell bridge). Hub-hosted Web on loopback receives `auth_token` in `/web/"
-"config.json` when `~/.anima/web/loopback-auth.token` or "
-"`FREEANIMA_REMOTE_AUTH_TOKEN` is set (`anima token pin-loopback`). Local "
-"Vite dev may seed via `FREEANIMA_REMOTE_AUTH_TOKEN` or Hub setup UI."
+"(shell bridge), configured in client **Hub settings** (`/setup` or settings "
+"panel). Hub `/web/config.json` does not include tokens."
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/hub-rpc.md:39
+#: docs/sap/hub-rpc.md:66
+#, no-wrap
+msgid "Binary HTTP methods"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:69
+msgid ""
+"Registry `meta.http` may set `request` / `response` encoding (default "
+"`json`):"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:75
+#, no-wrap
+msgid ""
+"| Encoding             | Use                                                                                                         |\n"
+"| -------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
+"| `response: raw`      | Handler returns `Response` (PEM, PNG, VRM, MPEG, octet-stream). Client: `callRaw()` or `fetchHubRestRaw()`. |\n"
+"| `request: multipart` | POST with `FormData` body (e.g. `companion.model.upload`).                                                  |\n"
+"| `request: raw`       | POST body read from `ctx.httpRequest` in handler.                                                           |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:77
+msgid ""
+"Examples: `tts.synthesize` (JSON POST → MPEG stream), `companion.asset.get` "
+"(GET → VRM), `tls.ca` (GET → PEM)."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/hub-rpc.md:79
+msgid ""
+"Helpers: `hubRestUrl()`, `binaryHttpMeta()` / `rawPublicHttpMeta()` in hub-"
+"contract. JSON methods continue to use `hubClient.call()`."
+msgstr ""
+
+#. type: Title ##
+#: docs/sap/hub-rpc.md:80
 #, no-wrap
 msgid "Client profiles"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:45
+#: docs/sap/hub-rpc.md:86
 #, no-wrap
 msgid ""
 "| Profile           | Package entry                                    | `sap.attach` | Typical consumer                               |\n"
@@ -129,28 +253,31 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:47
+#: docs/sap/hub-rpc.md:88
 msgid ""
-"Bundled SPA shares **one** Hub RPC WebSocket per page load. Modules call SAP-"
-"shaped RPC methods (`conversation.*`, `task.*`, …) directly on that "
-"transport."
+"Bundled SPA shares **one** Hub RPC WebSocket per page load (for streaming, "
+"subscriptions, and WS fallback). **`hub-client.call()`** picks transport per "
+"method: **read-only** dual-transport methods default to **HTTP GET**; "
+"**writes** default to **WebSocket** (`dualTransportMeta` in hub-contract). "
+"WS failure on a read-only call falls back to the other channel when "
+"`fallback` is enabled."
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:49
+#: docs/sap/hub-rpc.md:90
 msgid ""
 "Satellite processes connect with Hub RPC, then `sap.attach` with `app_id` / "
 "`instance_id` before `tool.register` or instance-scoped methods."
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/sap/hub-rpc.md:50 docs/sap/transport.md:99 messages/po4a/en.xml:138
+#: docs/sap/hub-rpc.md:91 docs/sap/transport.md:99 messages/po4a/en.xml:144
 #, no-wrap
 msgid "Reconnect"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:53
+#: docs/sap/hub-rpc.md:94
 msgid ""
 "Use `runHubRpcTransport` for connect, heartbeat, and exponential backoff "
 "(default 1s → 30s cap). On satellite detach or socket close, Hub unregisters "
@@ -158,7 +285,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:54
+#: docs/sap/hub-rpc.md:95
 msgid ""
 "See also: [transport.md](transport.md) (full state machine), [overview.md]"
 "(overview.md)."

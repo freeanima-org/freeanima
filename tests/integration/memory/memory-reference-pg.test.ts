@@ -56,13 +56,13 @@ describePg("memory_references PG", () => {
       role: "assistant",
       content: `See [[${memoryId}]] for details`,
       pos: 1,
-      timestamp: "2026-06-09T12:00:00+08:00",
+      timestamp: new Date().toISOString(),
     });
     await appendMessage(conversationId, {
       role: "assistant",
       content: `Again [[${memoryId}]]`,
       pos: 2,
-      timestamp: "2026-06-09T12:01:00+08:00",
+      timestamp: new Date().toISOString(),
     });
 
     let row = await getSemanticMemory(memoryId);
