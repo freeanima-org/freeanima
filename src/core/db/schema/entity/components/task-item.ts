@@ -19,6 +19,7 @@ export const taskItemBodySchema = schedulableBodySchema.extend({
   completed_at: z.string().nullable().optional(),
   project_id: z.number().int().positive().nullable().optional(),
   milestone_id: z.number().int().positive().nullable().optional(),
+  client_op_id: z.string().min(1).nullable().default(null),
 });
 
 export type TaskItemBody = z.infer<typeof taskItemBodySchema>;

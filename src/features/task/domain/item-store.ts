@@ -128,10 +128,33 @@ export async function listTaskItems(
     .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
 }
 
+async function findTaskItemByClientOpId(
+  worldId: number,
+  clientOpId: string,
+): Promise<TaskItemRow | null> {
+  const result = await searchEntities({
+    world_id: worldId,
+    primary_component: TASK_ITEM_COMPONENT,
+    filters: { client_op_id: clientOpId },
+    limit: 1,
+    mode: "filter_only",
+  });
+  const row = result.results[0];
+  if (!row) return null;
+  const parsed = asTaskItem(row);
+  if (!parsed) return null;
+  return toItemRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+}
+
 export async function createTaskItem(
   worldId: number,
   input: TaskItemCreateInput,
 ): Promise<TaskItemRow> {
+  if (input.client_op_id) {
+    const existing = await findTaskItemByClientOpId(worldId, input.client_op_id);
+    if (existing) return existing;
+  }
+
   await assertListAcceptsTasks(input.list_id, worldId);
   if (input.project_id != null) {
     await assertProjectActiveForTask(input.project_id, worldId);
@@ -149,6 +172,7 @@ export async function createTaskItem(
     due_at: input.due_at ?? null,
     remind_at: input.remind_at ?? null,
     completed_at: null,
+    client_op_id: input.client_op_id ?? null,
     ...(input.project_id != null ? { project_id: input.project_id } : {}),
     ...(input.milestone_id != null ? { milestone_id: input.milestone_id } : {}),
   };

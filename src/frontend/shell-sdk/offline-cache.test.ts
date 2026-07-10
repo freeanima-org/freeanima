@@ -27,7 +27,7 @@ describe("satellite-sdk offline-cache", () => {
     const map = new Map<string, unknown>();
     setSatelliteOfflineCacheBackendForTests(map);
     const scope = resolveCacheScope("ws://127.0.0.1:2658/sap/v1");
-    map.set(`${scope}|tasks|lists`, [{ id: 2 }]);
+    map.set(`kv|${scope}|tasks|lists`, [{ id: 2 }]);
     const entry = await readOfflineCacheEntry<{ id: number }[]>(scope, "tasks", "lists");
     expect(entry?.data).toEqual([{ id: 2 }]);
     expect(entry?.cachedAt).toBeNull();

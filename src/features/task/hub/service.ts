@@ -75,6 +75,7 @@ export async function serviceTasklistCreate(
     color?: string | null;
     is_folder?: boolean;
     parent_id?: number | null;
+    client_op_id?: string;
   },
   auth: VerifiedServiceApiToken,
 ) {
@@ -239,6 +240,7 @@ export async function serviceTaskCreate(
     priority?: "high" | "medium" | "low" | "none";
     due_at?: string | null;
     sort_order?: number;
+    client_op_id?: string;
   },
   auth: VerifiedServiceApiToken,
 ) {

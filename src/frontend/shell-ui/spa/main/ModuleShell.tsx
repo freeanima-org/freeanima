@@ -14,6 +14,7 @@ import { filterVisibleNavItems, shellNavItems, type ShellNavItem } from "../lib/
 import { useShellBottomNavLayout } from "../lib/use-shell-bottom-nav-layout.ts";
 import { ShellModuleRail } from "./ShellModuleRail.tsx";
 import { PomodoroShellWatcher } from "@freeanima/features/pomodoro/ui/spa/PomodoroShellWatcher.tsx";
+import { OfflineSyncBootstrap } from "../OfflineSyncBootstrap.tsx";
 
 function useNavActive(match: string): boolean {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -128,6 +129,7 @@ function DesktopModuleShell() {
       <ShellModuleRail />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <ShellConnectivityBar />
+        <OfflineSyncBootstrap />
         <main className="flex-1 min-h-0 overflow-hidden">
           <Outlet />
         </main>
@@ -145,6 +147,7 @@ function MobileModuleShell() {
     <div className="shell-module-layout shell-layout-compact h-full flex flex-col bg-background text-foreground">
       <main className="flex-1 min-h-0 overflow-hidden flex flex-col">
         <ShellConnectivityBar />
+        <OfflineSyncBootstrap />
         <div className="flex-1 min-h-0 overflow-hidden">
           <Outlet />
         </div>

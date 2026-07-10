@@ -21,6 +21,7 @@ import {
   writeCachedConversations,
   writeCachedMessages,
 } from "@freeanima/features/chat/ui/spa/lib/offline-cache.ts";
+import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
 import { getConversationTail } from "@freeanima/features/chat/ui/spa/lib/api.ts";
 import { sortConversationsByUpdatedAt } from "@freeanima/features/chat/ui/spa/lib/sort-conversations.ts";
 import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";
@@ -116,6 +117,9 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
     if (cached?.length) {
       set({ conversations: sortConversationsByUpdatedAt(cached) });
     }
+    if (!isHubFetchAvailable()) {
+      return cached ?? [];
+    }
     try {
       const resp = await listConversations({ includeArchived });
       const conversations = sortConversationsByUpdatedAt(resp.conversations);
@@ -139,6 +143,10 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
     const cached = await readCachedMessages(scope, id);
     if (cached) {
       set({ display: cached });
+    }
+    if (!isHubFetchAvailable()) {
+      set({ loading: false });
+      return;
     }
     try {
       const resp = await getStoredMessages(id);

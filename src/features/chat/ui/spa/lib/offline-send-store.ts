@@ -49,7 +49,9 @@ function toEntry(op: OfflineOutboxOp, status: OutboxSendStatus): ChatOutboxEntry
 export async function listChatOutboxEntries(scope?: string): Promise<ChatOutboxEntry[]> {
   const resolvedScope = scope ?? resolveOutboxScope();
   const ops = await listOutboxOps(resolvedScope, CHAT_MODULE_ID);
-  return ops.map((op) => toEntry(op, "pending")).filter((e): e is ChatOutboxEntry => e != null);
+  return ops
+    .map((op) => toEntry(op, op.lastError ? "failed" : "pending"))
+    .filter((e): e is ChatOutboxEntry => e != null);
 }
 
 export async function enqueueChatSend(

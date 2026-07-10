@@ -4,7 +4,25 @@ import {
   resolveHubCacheScope,
   writeOfflineCache,
 } from "@freeanima/frontend/shell-sdk/offline-cache";
+import { withOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache-first";
+import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
 import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
+
+import {
+  offlineAppendDiaryEntry,
+  offlineCreateDiaryEntry,
+  offlineDeleteDiaryEntry,
+  offlineUpdateDiaryEntry,
+  registerDiaryOfflineModule,
+} from "./offline-store.ts";
+
+let diaryModuleRegistered = false;
+
+function ensureDiaryOfflineModule(): void {
+  if (diaryModuleRegistered) return;
+  registerDiaryOfflineModule();
+  diaryModuleRegistered = true;
+}
 
 function hub() {
   return getSatelliteHubClient();
@@ -25,18 +43,19 @@ export async function fetchDiaryEntries(
 ): Promise<DiaryEntryRow[]> {
   const scope = resolveHubCacheScope();
   const cacheId = diaryListCacheId(subjectKind);
-  const cached = await readOfflineCache<DiaryEntryRow[]>(scope, "diary", cacheId);
-  try {
-    const data = await hub().call("diary.list", {
-      subject_kind: subjectKind,
-      limit: opts?.limit ?? 200,
-    });
-    void writeOfflineCache(scope, "diary", cacheId, data.items);
-    return data.items;
-  } catch (err) {
-    if (cached) return cached;
-    throw err;
-  }
+  return withOfflineCache({
+    scope,
+    namespace: "diary",
+    id: cacheId,
+    fetch: async () => {
+      const data = await hub().call("diary.list", {
+        subject_kind: subjectKind,
+        limit: opts?.limit ?? 200,
+      });
+      return data.items;
+    },
+    offlineError: "diary.list unavailable offline",
+  });
 }
 
 export async function searchDiaryEntries(
@@ -46,19 +65,20 @@ export async function searchDiaryEntries(
 ): Promise<DiaryEntryRow[]> {
   const scope = resolveHubCacheScope();
   const cacheId = diaryListCacheId(subjectKind, query);
-  const cached = await readOfflineCache<DiaryEntryRow[]>(scope, "diary", cacheId);
-  try {
-    const data = await hub().call("diary.search", {
-      subject_kind: subjectKind,
-      query,
-      limit,
-    });
-    void writeOfflineCache(scope, "diary", cacheId, data.items);
-    return data.items;
-  } catch (err) {
-    if (cached) return cached;
-    throw err;
-  }
+  return withOfflineCache({
+    scope,
+    namespace: "diary",
+    id: cacheId,
+    fetch: async () => {
+      const data = await hub().call("diary.search", {
+        subject_kind: subjectKind,
+        query,
+        limit,
+      });
+      return data.items;
+    },
+    offlineError: "diary.search unavailable offline",
+  });
 }
 
 export async function getDiaryEntry(
@@ -68,14 +88,13 @@ export async function getDiaryEntry(
   const scope = resolveHubCacheScope();
   const cacheId = diaryEntryCacheId(subjectKind, id);
   const cached = await readOfflineCache<DiaryEntryRow>(scope, "diary", cacheId);
-  try {
-    const data = await hub().call("diary.get", { subject_kind: subjectKind, id });
-    void writeOfflineCache(scope, "diary", cacheId, data.item);
-    return data.item;
-  } catch (err) {
-    if (cached) return cached;
-    throw err;
+  if (cached) return cached;
+  if (!isHubFetchAvailable()) {
+    throw new Error("diary.get unavailable offline");
   }
+  const data = await hub().call("diary.get", { subject_kind: subjectKind, id });
+  void writeOfflineCache(scope, "diary", cacheId, data.item);
+  return data.item;
 }
 
 export async function createDiaryEntry(
@@ -88,8 +107,8 @@ export async function createDiaryEntry(
     tags?: string[];
   },
 ): Promise<DiaryEntryRow> {
-  const data = await hub().call("diary.create", { subject_kind: subjectKind, ...input });
-  return data.item;
+  ensureDiaryOfflineModule();
+  return offlineCreateDiaryEntry(subjectKind, input);
 }
 
 export async function appendDiaryEntry(
@@ -97,8 +116,8 @@ export async function appendDiaryEntry(
   id: number,
   content: string,
 ): Promise<DiaryEntryRow> {
-  const data = await hub().call("diary.append", { subject_kind: subjectKind, id, content });
-  return data.item;
+  ensureDiaryOfflineModule();
+  return offlineAppendDiaryEntry(subjectKind, id, content);
 }
 
 export async function updateDiaryEntry(
@@ -106,10 +125,13 @@ export async function updateDiaryEntry(
   id: number,
   patch: Partial<Pick<DiaryEntryRow, "title" | "content" | "summary" | "entry_at" | "tags">>,
 ): Promise<DiaryEntryRow> {
-  const data = await hub().call("diary.patch", { subject_kind: subjectKind, id, ...patch });
-  return data.item;
+  ensureDiaryOfflineModule();
+  return offlineUpdateDiaryEntry(subjectKind, id, patch);
 }
 
 export async function deleteDiaryEntry(subjectKind: DiarySubjectKind, id: number): Promise<void> {
-  await hub().call("diary.delete", { subject_kind: subjectKind, id });
+  ensureDiaryOfflineModule();
+  return offlineDeleteDiaryEntry(subjectKind, id);
 }
+
+export { countDiaryPendingOps } from "./offline-store.ts";

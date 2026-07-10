@@ -11,6 +11,7 @@ import {
   POMODORO_SESSION_COMPONENT,
   POMODORO_TASK_FOCUS_COMPONENT,
   TASK_ITEM_COMPONENT,
+  TASK_LIST_COMPONENT,
   VAULT_ITEM_COMPONENT,
   vaultItemTypeSchema,
 } from "./components/index.ts";
@@ -200,8 +201,28 @@ export function parsePomodoroTaskFocusSearchFilters(
   return parsed.data;
 }
 
+export const taskListSearchFiltersSchema = z
+  .object({
+    client_op_id: z.string().min(1).optional(),
+  })
+  .strict();
+
+export type TaskListSearchFilters = z.infer<typeof taskListSearchFiltersSchema>;
+
+export function parseTaskListSearchFilters(
+  raw: Record<string, unknown> | undefined,
+): TaskListSearchFilters {
+  if (!raw || Object.keys(raw).length === 0) return {};
+  const parsed = taskListSearchFiltersSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(`invalid task_list filters: ${parsed.error.message}`);
+  }
+  return parsed.data;
+}
+
 export const ENTITY_SEARCH_FILTER_COMPONENTS = {
   [TASK_ITEM_COMPONENT]: taskItemSearchFiltersSchema,
+  [TASK_LIST_COMPONENT]: taskListSearchFiltersSchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntrySearchFiltersSchema,
   [DREAM_ENTRY_COMPONENT]: dreamEntrySearchFiltersSchema,
   [EMAIL_ACCOUNT_COMPONENT]: emailAccountSearchFiltersSchema,

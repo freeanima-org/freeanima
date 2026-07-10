@@ -5,12 +5,9 @@ import {
   launchPomodoroForTask,
 } from "@freeanima/frontend/shell-sdk";
 import type { TaskModuleSelection } from "@freeanima/frontend/shell-sdk";
-import {
-  useSubjectScope,
-  SubjectScopeToggle,
-  useHubConnection,
-  useNetworkOnline,
-} from "@freeanima/frontend/shell-sdk/react.tsx";
+import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
+import { isTempId } from "@freeanima/frontend/shell-sdk/offline-temp-id";
+import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/shell-sdk/react.tsx";
 import {
   Alert,
   AlertDescription,
@@ -79,6 +76,7 @@ import {
   writeCachedTaskItems,
   writeCachedTaskLists,
 } from "./lib/offline-cache.ts";
+import { registerTaskOfflineModule } from "./lib/offline-store.ts";
 import { useTaskLayoutMode } from "./lib/layout-mode.ts";
 import {
   isWebShell,
@@ -115,9 +113,7 @@ type ChildNamePromptState = { kind: "list" | "folder"; parentId: number };
 
 export function TaskApp() {
   const { kind: subjectKind } = useSubjectScope();
-  const networkOnline = useNetworkOnline();
-  const hubConnection = useHubConnection();
-  const writesDisabled = !networkOnline || hubConnection !== "connected";
+  const writesDisabled = false;
   const contextMenuEnabled = useContextMenuCapability();
   const useActionSheet = useTaskActionSheet();
   const useDrawer = useDrawerNav();
@@ -210,6 +206,11 @@ export function TaskApp() {
 
   const loadItemsByFilters = useCallback(async (filters: SmartListRow["filters"]) => {
     const generation = ++itemsLoadGenRef.current;
+    if (!isHubFetchAvailable()) {
+      if (generation !== itemsLoadGenRef.current) return;
+      setItems([]);
+      return;
+    }
     try {
       const rows = await fetchTaskItemsByFilters(filters);
       if (generation !== itemsLoadGenRef.current) return;
@@ -226,6 +227,10 @@ export function TaskApp() {
     const cached = await readCachedTaskItems(scope, listId);
     if (generation !== itemsLoadGenRef.current) return;
     if (cached) setItems(cached);
+    if (isTempId(listId) || !isHubFetchAvailable()) {
+      if (!cached) setItems([]);
+      return;
+    }
     try {
       const rows = await fetchTaskItems(listId);
       if (generation !== itemsLoadGenRef.current) return;
@@ -242,25 +247,33 @@ export function TaskApp() {
     const scope = resolveHubCacheScope();
     const cached = await readCachedTaskLists(scope);
     if (generation !== listsLoadGenRef.current) return cached ?? [];
+    const tempLists = (cached ?? []).filter((list) => isTempId(list.id));
     if (cached?.length) setLists(cached);
+    if (!isHubFetchAvailable()) {
+      return cached ?? [];
+    }
     try {
       const [rows, smartRows] = await Promise.all([
         fetchTaskLists({ includeClosed: true }),
         fetchSmartLists(),
       ]);
       if (generation !== listsLoadGenRef.current) return rows;
-      setLists(rows);
+      const merged = [
+        ...rows,
+        ...tempLists.filter((temp) => !rows.some((row) => row.id === temp.id)),
+      ];
+      setLists(merged);
       setSmartLists(smartRows);
-      void writeCachedTaskLists(scope, rows);
-      const next = resolveTaskSelection(rows, smartRows, {
+      void writeCachedTaskLists(scope, merged);
+      const next = resolveTaskSelection(merged, smartRows, {
         stored: readModuleSelection("tasks"),
         urlSelection: webShell ? readTaskSelectionFromUrl() : null,
         preferUrl: webShell,
       });
       setSelection(next);
       persistSelection(next);
-      if (rows.length === 0) setItems([]);
-      return rows;
+      if (merged.length === 0) setItems([]);
+      return merged;
     } catch {
       if (generation !== listsLoadGenRef.current) return cached ?? [];
       if (!cached?.length) setError("无法加载任务清单");
@@ -279,8 +292,15 @@ export function TaskApp() {
   }, [loadItems, loadItemsByFilters, selection, smartLists]);
 
   const refresh = useCallback(async () => {
-    setLoading(true);
     setError("");
+    const scope = resolveHubCacheScope();
+    const cached = await readCachedTaskLists(scope);
+    if (cached?.length) {
+      setLists(cached);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     try {
       await loadLists();
     } catch (err) {
@@ -289,6 +309,10 @@ export function TaskApp() {
       setLoading(false);
     }
   }, [loadLists]);
+
+  useEffect(() => {
+    registerTaskOfflineModule();
+  }, []);
 
   useEffect(() => {
     listsLoadGenRef.current += 1;
@@ -951,7 +975,7 @@ export function TaskApp() {
     setItemMenu({ x: e.clientX, y: e.clientY, itemId: item.id });
   };
 
-  const showMiddleContent = selection != null && !loading;
+  const showMiddleContent = selection != null && !(loading && lists.length === 0);
 
   return (
     <>

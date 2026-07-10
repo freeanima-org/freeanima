@@ -1,5 +1,9 @@
 /// <reference lib="dom" />
+import { resolveHubCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
+import { withOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache-first";
 import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
+
+import { registerPomodoroOfflineModule } from "./pomodoro-offline-adapter.ts";
 
 export type PomodoroSubjectKind = "user" | "agent";
 
@@ -65,11 +69,29 @@ function hub() {
   return getSatelliteHubClient();
 }
 
+let pomodoroModuleRegistered = false;
+
+function ensurePomodoroOfflineModule(): void {
+  if (pomodoroModuleRegistered) return;
+  registerPomodoroOfflineModule();
+  pomodoroModuleRegistered = true;
+}
+
 export async function fetchPomodoroConfig(
   subjectKind: PomodoroSubjectKind,
 ): Promise<PomodoroConfigRow> {
-  const data = await hub().call("pomodoro.config.get", { subject_kind: subjectKind });
-  return data.config;
+  ensurePomodoroOfflineModule();
+  const scope = resolveHubCacheScope();
+  return withOfflineCache({
+    scope,
+    namespace: "pomodoro",
+    id: `config:${subjectKind}`,
+    fetch: async () => {
+      const data = await hub().call("pomodoro.config.get", { subject_kind: subjectKind });
+      return data.config;
+    },
+    offlineError: "pomodoro.config unavailable offline",
+  });
 }
 
 export async function updatePomodoroConfig(
@@ -130,10 +152,19 @@ export async function fetchPomodoroSessions(
   subjectKind: PomodoroSubjectKind,
   opts?: { limit?: number; offset?: number },
 ): Promise<{ items: PomodoroSessionRow[]; total: number }> {
-  return hub().call("pomodoro.session.list", {
-    subject_kind: subjectKind,
-    limit: opts?.limit ?? 20,
-    offset: opts?.offset ?? 0,
+  ensurePomodoroOfflineModule();
+  const scope = resolveHubCacheScope();
+  return withOfflineCache({
+    scope,
+    namespace: "pomodoro",
+    id: `sessions:${subjectKind}`,
+    fetch: async () =>
+      hub().call("pomodoro.session.list", {
+        subject_kind: subjectKind,
+        limit: opts?.limit ?? 20,
+        offset: opts?.offset ?? 0,
+      }),
+    offlineError: "pomodoro.session.list unavailable offline",
   });
 }
 
@@ -141,7 +172,15 @@ export async function fetchPomodoroStats(
   subjectKind: PomodoroSubjectKind,
   period: "today" | "week" = "today",
 ): Promise<PomodoroStats> {
-  return hub().call("pomodoro.session.stats", { subject_kind: subjectKind, period });
+  ensurePomodoroOfflineModule();
+  const scope = resolveHubCacheScope();
+  return withOfflineCache({
+    scope,
+    namespace: "pomodoro",
+    id: `stats:${subjectKind}:${period}`,
+    fetch: async () => hub().call("pomodoro.session.stats", { subject_kind: subjectKind, period }),
+    offlineError: "pomodoro.session.stats unavailable offline",
+  });
 }
 
 export async function fetchPomodoroTaskFocus(

@@ -1,4 +1,5 @@
 import type { ConversationAcpDockSnapshot, ConversationListItem, StreamApiEvent } from "./types.ts";
+import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
 import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
 import { getChatSapClient, chatPlatform } from "./sap-client.ts";
 import { m } from "./i18n.ts";
@@ -33,6 +34,12 @@ function hub() {
   return getSatelliteHubClient();
 }
 
+function requireHubFetch(method: string): void {
+  if (!isHubFetchAvailable()) {
+    throw new Error(`${method} unavailable offline`);
+  }
+}
+
 /** WS-only 流式仍走 SapClient */
 function sap() {
   return getChatSapClient();
@@ -41,6 +48,7 @@ function sap() {
 export type { ConversationAcpDockSnapshot, StreamApiEvent } from "./types.ts";
 
 export async function listConversations(opts?: { includeArchived?: boolean }) {
+  requireHubFetch("conversation.list");
   const result = await hub().call("conversation.list", {
     platform: chatPlatform(),
     include_archived: opts?.includeArchived,
@@ -54,10 +62,12 @@ export async function createConversation() {
 }
 
 export async function getConversationTail(conversationId: string) {
+  requireHubFetch("conversation.tail");
   return hub().call("conversation.tail", { conversation_id: conversationId });
 }
 
 export async function getStoredMessages(conversationId: string, offset = 0, limit = 500) {
+  requireHubFetch("conversation.messages");
   return hub().call("conversation.messages", {
     conversation_id: conversationId,
     offset,
@@ -94,6 +104,7 @@ export async function rollbackBeforeLastUserMessage(conversationId: string) {
 export async function getConversationAcpDock(
   conversationId: string,
 ): Promise<ConversationAcpDockSnapshot> {
+  requireHubFetch("conversation.acpDock");
   const raw = await hub().call("conversation.acpDock", { conversation_id: conversationId });
   return {
     ...raw,

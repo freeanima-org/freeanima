@@ -70,7 +70,15 @@ import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";
 import { useConversationsStore } from "@freeanima/features/chat/ui/spa/stores/conversations.ts";
 import { useOutboxStore } from "@freeanima/features/chat/ui/spa/stores/outbox.ts";
 import { listChatOutboxEntries } from "@freeanima/features/chat/ui/spa/lib/offline-send-store.ts";
-import type { DisplayItem } from "@freeanima/features/chat/ui/spa/lib/types.ts";
+import {
+  buildChatStreamFlushContext,
+  CHAT_OFFLINE_MODULE_ID,
+  type ChatStreamFlushHandlers,
+} from "@freeanima/features/chat/ui/spa/lib/offline-stream-adapter.ts";
+import type { DisplayItem, StreamApiEvent } from "@freeanima/features/chat/ui/spa/lib/types.ts";
+import { registerChatStreamContextFactory } from "@freeanima/frontend/shell-ui/spa/OfflineSyncBootstrap.tsx";
+import { resolveOutboxScope } from "@freeanima/frontend/shell-sdk/offline-outbox";
+import { flushOfflineModule } from "@freeanima/frontend/shell-sdk/offline-sync";
 import {
   filterUndeliveredOutbox,
   isOutboxDeliveredOnDisplay,
@@ -734,6 +742,120 @@ export function ChatApp() {
   );
 
   const flushQueueRef = useRef<(conversationId: string) => Promise<void>>(async () => {});
+  const chatFlushHandlersRef = useRef<ChatStreamFlushHandlers>({
+    onStreamEvent: () => {},
+    onDone: () => {},
+    onError: () => {},
+  });
+
+  const syncOutboxFromIdb = useCallback(async () => {
+    const idbEntries = await listChatOutboxEntries();
+    const idbIds = new Set(idbEntries.map((e) => e.clientOpId));
+    for (const opId of Object.keys(useOutboxStore.getState().entries)) {
+      if (!idbIds.has(opId)) {
+        removeDisplayByClientOpId(opId);
+        await outboxAckEntry(opId);
+        continue;
+      }
+      const idbEntry = idbEntries.find((e) => e.clientOpId === opId);
+      if (idbEntry?.status === "failed") {
+        patchDisplayByClientOpId(opId, { sendStatus: "failed" });
+        outboxSetEntryStatus(opId, "failed", idbEntry.lastError);
+      }
+    }
+  }, [outboxAckEntry, outboxSetEntryStatus, patchDisplayByClientOpId, removeDisplayByClientOpId]);
+
+  useEffect(() => {
+    chatFlushHandlersRef.current = {
+      onStreamEvent: (conversationId: string, ev: unknown) => {
+        const streamEv = ev as StreamApiEvent;
+        if (useConversationsStore.getState().currentId !== conversationId) return;
+        switch (streamEv.event) {
+          case "accepted":
+            useChatStore.setState({ streaming: true, streamingConversationId: conversationId });
+            break;
+          case "token": {
+            const prev = useChatStore.getState().streamText;
+            useChatStore.setState({
+              streaming: true,
+              streamingConversationId: conversationId,
+              streamText: prev + (streamEv.data.content || ""),
+            });
+            scrollDown();
+            break;
+          }
+          case "content_replace":
+            useChatStore.setState({
+              streaming: true,
+              streamingConversationId: conversationId,
+              streamText: streamEv.data.content || "",
+            });
+            scrollDown();
+            break;
+          case "display_append":
+            appendItemForConversation(conversationId, streamEv.data.item);
+            if (streamEv.data.item.type === "message" && streamEv.data.item.role === "assistant") {
+              useChatStore.setState({ streamText: "" });
+            }
+            scrollDown();
+            break;
+          case "awaiting_clarify":
+            if (Array.isArray(streamEv.data.items) && streamEv.data.items.length > 0) {
+              setClarifyPending({
+                items: streamEv.data.items as ClarifyPending["items"],
+                timeout_sec: (streamEv.data.timeout_sec as number | undefined) ?? 1800,
+              });
+            }
+            scrollDown();
+            break;
+          case "done":
+          case "interrupted":
+            useChatStore.setState({
+              streaming: false,
+              streamingConversationId: null,
+              streamText: "",
+            });
+            break;
+          default:
+            break;
+        }
+      },
+      onDone: (conversationId: string) => {
+        void syncOutboxFromIdb();
+        void reloadConversationIfCurrent(conversationId);
+        void fetchConversations();
+        useChatStore.setState({
+          streaming: false,
+          streamingConversationId: null,
+          streamText: "",
+        });
+      },
+      onError: (conversationId: string, msg: string) => {
+        for (const entry of Object.values(useOutboxStore.getState().entries)) {
+          if (entry.conversationId === conversationId && entry.status === "sending") {
+            patchDisplayByClientOpId(entry.clientOpId, { sendStatus: "failed" });
+            outboxSetEntryStatus(entry.clientOpId, "failed", msg);
+          }
+        }
+        void syncOutboxFromIdb();
+      },
+      llmDebug: llmDebugEnabled,
+    };
+    registerChatStreamContextFactory(() => {
+      if (!canSendOnline) return null;
+      return buildChatStreamFlushContext(chatFlushHandlersRef.current);
+    });
+    return () => registerChatStreamContextFactory(() => null);
+  }, [
+    appendItemForConversation,
+    canSendOnline,
+    fetchConversations,
+    llmDebugEnabled,
+    outboxSetEntryStatus,
+    patchDisplayByClientOpId,
+    reloadConversationIfCurrent,
+    syncOutboxFromIdb,
+  ]);
 
   const dispatchSend = useCallback(
     async (text: string, originConversationId: string, sendMeta?: SendDispatchOpts) => {
@@ -850,6 +972,8 @@ export function ChatApp() {
 
   useEffect(() => {
     if (!canSendOnline || !ready || !pendingOutboxKey) return;
+    if (sendingRef.current) return;
+
     void (async () => {
       const pending = Object.values(useOutboxStore.getState().entries).filter(
         (e) => e.status === "pending" || e.status === "failed",
@@ -861,29 +985,30 @@ export function ChatApp() {
           patchDisplayByClientOpId(opId, { sendStatus: "stale" });
         }
       }
-      const stillPending = Object.values(useOutboxStore.getState().entries)
-        .filter((e) => e.status === "pending" || e.status === "failed")
-        .toSorted((a, b) => a.createdAt.localeCompare(b.createdAt));
+
+      const stillPending = Object.values(useOutboxStore.getState().entries).filter(
+        (e) => e.status === "pending" || e.status === "failed",
+      );
+      if (stillPending.length === 0 || sendingRef.current) return;
+
       for (const entry of stillPending) {
-        if (sendingRef.current) break;
-        sendingRef.current = true;
-        try {
-          await dispatchSend(entry.text, entry.conversationId, {
-            clientOpId: entry.clientOpId,
-            expectedTailPos: entry.expectedTailPos,
-          });
-        } finally {
-          sendingRef.current = false;
-        }
+        patchDisplayByClientOpId(entry.clientOpId, { sendStatus: "sending" });
+        outboxSetEntryStatus(entry.clientOpId, "sending");
       }
+
+      await flushOfflineModule(CHAT_OFFLINE_MODULE_ID, resolveOutboxScope(), {
+        streamContext: buildChatStreamFlushContext(chatFlushHandlersRef.current),
+      });
+      await syncOutboxFromIdb();
     })();
   }, [
     canSendOnline,
     ready,
     pendingOutboxKey,
-    dispatchSend,
     outboxDetectStale,
+    outboxSetEntryStatus,
     patchDisplayByClientOpId,
+    syncOutboxFromIdb,
   ]);
 
   flushQueueRef.current = async (conversationId: string) => {
