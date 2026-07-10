@@ -14,7 +14,7 @@ Workspace package names reflect the layer topology in [`code-layers.md`](code-la
 | Entry           | `@freeanima/cli`                 | CLI only                                                              |
 | Satellite       | `@freeanima/satellite-{slug}`    | `satellite-companion`（`src/satellites/` 白名单）                     |
 | Console wire    | `@freeanima/console-contract`    | Console Hub wire（`src/features/console/protocol/console-contract/`） |
-| Console REST    | `@freeanima/console-api`         | Console Elysia routes（`src/features/console/hub/console-api/`）      |
+| Console REST    | `@freeanima/console-api`         | Console Hub HTTP 服务（`src/features/console/hub/console-api/`）      |
 
 ## Valid layer packages
 

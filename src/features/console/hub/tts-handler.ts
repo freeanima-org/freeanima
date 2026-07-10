@@ -1,25 +1,22 @@
-import { Elysia } from "elysia";
-import { z } from "zod";
-import { ApiHandlerError } from "../../handlers/errors.ts";
 import { streamEdgeTtsAudio } from "@freeanima/core/tts/edge-synthesize";
+import { assertNotShuttingDown } from "@freeanima/platform/ports";
+import type { FeatureRpcHandler } from "@freeanima/platform/features";
 
-const synthesizeBodySchema = z.object({
-  text: z.string().min(1),
-  lang: z.string().optional(),
-  voice: z.string().optional(),
-  app_locale: z.string().optional(),
-  rate: z.number().min(0.1).max(10).optional(),
-  pitch: z.number().min(0).max(2).optional(),
-  volume: z.number().min(0).max(1).optional(),
-});
+import { ApiHandlerError } from "./console-api/handlers/errors.ts";
 
-export const ttsRoutes = new Elysia({ prefix: "/tts" }).post("/synthesize", async ({ body }) => {
-  let parsed: z.infer<typeof synthesizeBodySchema>;
-  try {
-    parsed = synthesizeBodySchema.parse(body);
-  } catch {
-    throw new ApiHandlerError(400, "请求体无效");
-  }
+type TtsSynthesizePayload = {
+  text: string;
+  lang?: string;
+  voice?: string;
+  app_locale?: string;
+  rate?: number;
+  pitch?: number;
+  volume?: number;
+};
+
+export const handleTtsSynthesize: FeatureRpcHandler = async (_deps, payload) => {
+  assertNotShuttingDown();
+  const parsed = payload as TtsSynthesizePayload;
 
   try {
     const stream = streamEdgeTtsAudio({
@@ -44,4 +41,4 @@ export const ttsRoutes = new Elysia({ prefix: "/tts" }).post("/synthesize", asyn
     }
     throw new ApiHandlerError(503, message);
   }
-});
+};

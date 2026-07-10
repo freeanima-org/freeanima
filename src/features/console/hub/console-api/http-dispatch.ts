@@ -1,4 +1,4 @@
-import { corsPreflightResponse } from "./elysia/cors.ts";
+import { corsPreflightResponse } from "./cors.ts";
 import { isMcpPath } from "@freeanima/capabilities/mcp-server";
 import {
   ANIMA_AUTH_SCOPES_HEADER,
@@ -50,18 +50,13 @@ export function attachRemoteAddressToRequest(
   return decorateRequest(req, remoteAddress, null);
 }
 
-/** Hub RPC / 基础设施 API / MCP 路径（须先过 service_auth） */
+/** Hub RPC / MCP 路径（须先过 service_auth） */
 export function isHubProtectedHttpPath(pathname: string): boolean {
-  return isHubApiPath(pathname) || isHubRpcPath(pathname) || isMcpPath(pathname);
+  return isHubRpcPath(pathname) || isMcpPath(pathname);
 }
 
 export function isHubRpcPath(pathname: string): boolean {
   return pathname === "/hub/rpc/v1" || pathname.startsWith("/hub/rpc/v1/");
-}
-
-/** REST API 路径（须先过 service_auth 中间件） */
-export function isHubApiPath(pathname: string): boolean {
-  return pathname === "/" || pathname === "/api" || pathname.startsWith("/api/");
 }
 
 /** OPTIONS 预检：在 service_auth 之前返回 CORS 204（Capacitor / Electron 直连 Hub） */

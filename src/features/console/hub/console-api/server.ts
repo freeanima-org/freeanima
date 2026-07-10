@@ -7,20 +7,15 @@ import {
 import { createMcpBunHandler, isMcpPath } from "@freeanima/capabilities/mcp-server";
 import { CONSOLE_BASE_PATH } from "@freeanima/platform/ports/constants";
 import type { HubTlsBunOptions } from "@freeanima/platform/tls/resolve-hub-tls";
-import { createApiApp } from "./elysia/app.ts";
 import { bindConsoleApiLogging } from "./api-logging.ts";
 import { bindConsoleRuntimeContext, consoleCtx } from "./handlers/runtime.ts";
-import { broadcastWsReconnect, shutdownAdmin } from "./elysia/shutdown.ts";
+import { applyCorsToResponse } from "./cors.ts";
+import { broadcastWsReconnect, shutdownAdmin } from "./shutdown.ts";
 import { getSapServerDeps } from "@freeanima/platform/sap/runtime-context";
 import { createSapBunHandlers } from "@freeanima/platform/sap/bun-route";
 import { createServiceAuthVerifier, type ServiceAuthVerifier } from "./service-auth.ts";
 import { parseServiceAuthFromRequest } from "./auth-context.ts";
-import {
-  applyHttpAuth,
-  handleHubCorsPreflight,
-  isHubApiPath,
-  trySapWebSocketUpgrade,
-} from "./http-dispatch.ts";
+import { applyHttpAuth, handleHubCorsPreflight, trySapWebSocketUpgrade } from "./http-dispatch.ts";
 
 export type ApiServerTlsOptions = {
   port: number;
@@ -44,12 +39,15 @@ export type ApiServerHandle = {
 };
 
 type ApiServerRuntime = {
-  apiApp: ReturnType<ReturnType<typeof createApiApp>["compile"]>;
   sapHandlers: ReturnType<typeof createSapBunHandlers> | null;
   serviceAuth: ServiceAuthVerifier;
   mcpHandler: ReturnType<typeof createMcpBunHandler>;
   webStatic: WebStaticOptions | null;
 };
+
+async function withCors(req: Request, res: Response | Promise<Response>): Promise<Response> {
+  return applyCorsToResponse(req, await res);
+}
 
 function dispatchFetch(
   req: Request,
@@ -77,7 +75,6 @@ function resolveRemoteAddress(bunServer: unknown, req: Request): string | undefi
 function prepareApiServerRuntime(options: ApiServerOptions): ApiServerRuntime {
   bindConsoleRuntimeContext();
   bindConsoleApiLogging(consoleCtx().engine.logger);
-  const apiApp = createApiApp().compile();
   const sapDeps = getSapServerDeps();
   const sapHandlers = sapDeps ? createSapBunHandlers(sapDeps) : null;
   const serviceAuth = options.serviceAuth ?? createServiceAuthVerifier();
@@ -85,7 +82,6 @@ function prepareApiServerRuntime(options: ApiServerOptions): ApiServerRuntime {
     toolSets: consoleCtx().engine.catalog.toolSets,
   });
   return {
-    apiApp,
     sapHandlers,
     serviceAuth,
     mcpHandler,
@@ -94,7 +90,7 @@ function prepareApiServerRuntime(options: ApiServerOptions): ApiServerRuntime {
 }
 
 function createApiFetchHandler(runtime: ApiServerRuntime) {
-  const { apiApp, sapHandlers, serviceAuth, mcpHandler, webStatic } = runtime;
+  const { sapHandlers, serviceAuth, mcpHandler, webStatic } = runtime;
   return function apiFetch(req: Request, bunServer: unknown): Response | Promise<Response> {
     const remoteAddress = resolveRemoteAddress(bunServer, req);
 
@@ -124,23 +120,20 @@ function createApiFetchHandler(runtime: ApiServerRuntime) {
       }
 
       const authResult = await applyHttpAuth(req, remoteAddress, serviceAuth);
-      if (authResult.blocked) return authResult.blocked;
+      if (authResult.blocked) return withCors(req, authResult.blocked);
 
       const authedReq = authResult.req;
       const authedPath = new URL(authedReq.url).pathname;
-      if (isHubApiPath(authedPath)) {
-        return apiApp.fetch(authedReq);
-      }
 
       if (isMcpPath(authedPath)) {
         const mcpRes = await mcpHandler(authedReq, {
           callerAuth: parseServiceAuthFromRequest(authedReq),
         });
-        if (mcpRes !== undefined) return mcpRes;
+        if (mcpRes !== undefined) return withCors(req, mcpRes);
       }
 
       const sapRes = dispatchFetch(authedReq, bunServer, sapHandlers);
-      return sapRes ?? new Response("Not Found", { status: 404 });
+      return withCors(req, sapRes ?? new Response("Not Found", { status: 404 }));
     };
     return run();
   };

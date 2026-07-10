@@ -49,6 +49,12 @@ describe("http-rest-router", () => {
     expect(match?.pathValues).toEqual({ kind: "models", fileName: "demo.vrm" });
   });
 
+  test("findRoute POST tts.synthesize raw method", () => {
+    const match = findRoute("POST", "tts/synthesize");
+    expect(match?.entry.hubMethod).toBe("tts.synthesize");
+    expect(match?.entry.http.response).toBe("raw");
+  });
+
   test("compiled routes have unique verb+path", () => {
     const seen = new Set<string>();
     for (const verb of ["GET", "POST"] as const) {

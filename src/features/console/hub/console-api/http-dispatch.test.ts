@@ -2,26 +2,18 @@ import { describe, expect, test } from "bun:test";
 import {
   applyHttpAuth,
   handleHubCorsPreflight,
-  isHubApiPath,
   isHubRpcPath,
   trySapWebSocketUpgrade,
 } from "./http-dispatch.ts";
 import { createServiceAuthVerifier } from "./service-auth.ts";
 
 describe("http-dispatch", () => {
-  test("isHubApiPath", () => {
-    expect(isHubApiPath("/")).toBe(true);
-    expect(isHubApiPath("/api")).toBe(true);
-    expect(isHubApiPath("/api/")).toBe(true);
-    expect(isHubApiPath("/api/tts/synthesize")).toBe(true);
-    expect(isHubApiPath("/hub/rpc/v1")).toBe(false);
-  });
-
   test("isHubRpcPath matches REST subpaths", () => {
     expect(isHubRpcPath("/hub/rpc/v1")).toBe(true);
     expect(isHubRpcPath("/hub/rpc/v1/task/list")).toBe(true);
     expect(isHubRpcPath("/hub/rpc/v1/task/create")).toBe(true);
     expect(isHubRpcPath("/hub/rpc/v1/health/probe")).toBe(true);
+    expect(isHubRpcPath("/hub/rpc/v1/tts/synthesize")).toBe(true);
     expect(isHubRpcPath("/api/health")).toBe(false);
   });
 
@@ -46,9 +38,9 @@ describe("http-dispatch", () => {
     expect(result.blocked).toBeNull();
   });
 
-  test("applyHttpAuth blocks without token for status", async () => {
+  test("applyHttpAuth blocks without token for protected hub rpc", async () => {
     const serviceAuth = createServiceAuthVerifier();
-    const req = new Request("https://anima.freetrace.me/api/status");
+    const req = new Request("https://anima.freetrace.me/hub/rpc/v1/status/get");
     const result = await applyHttpAuth(req, "127.0.0.1", serviceAuth);
     expect(result.blocked?.status).toBe(401);
   });
@@ -101,14 +93,14 @@ describe("http-dispatch", () => {
         };
       },
     };
-    const req = new Request("http://127.0.0.1:2658/api/subjects/53/tokens", {
+    const req = new Request("http://127.0.0.1:2658/hub/rpc/v1/task/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "auth-body-test" }),
+      body: JSON.stringify({ subject_kind: "user", title: "auth-body-test" }),
     });
     const result = await applyHttpAuth(req, "127.0.0.1", serviceAuth);
     expect(result.blocked).toBeNull();
-    expect(await result.req.json()).toEqual({ name: "auth-body-test" });
+    expect(await result.req.json()).toEqual({ subject_kind: "user", title: "auth-body-test" });
     expect(result.req.headers.get("x-anima-auth-subject-id")).toBe("53");
     expect(result.req.headers.get("x-anima-remote-address")).toBe("127.0.0.1");
   });

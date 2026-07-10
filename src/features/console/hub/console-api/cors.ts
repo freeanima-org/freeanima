@@ -63,6 +63,22 @@ export function applyCorsHeaders(headers: CorsHeaderBag, origin: string | null):
   headers["Vary"] = "Origin";
 }
 
+export function applyCorsToResponse(req: Request, res: Response): Response {
+  const origin = req.headers.get("Origin");
+  const allowed = corsAllowOrigin(origin);
+  if (!allowed) return res;
+  const headers = new Headers(res.headers);
+  headers.set("Access-Control-Allow-Origin", allowed);
+  headers.set("Access-Control-Allow-Credentials", "true");
+  const vary = headers.get("Vary");
+  headers.set("Vary", vary ? `${vary}, Origin` : "Origin");
+  return new Response(res.body, {
+    status: res.status,
+    statusText: res.statusText,
+    headers,
+  });
+}
+
 export function corsPreflightResponse(origin: string | null): Response | null {
   const allowed = corsAllowOrigin(origin);
   if (!allowed) return null;

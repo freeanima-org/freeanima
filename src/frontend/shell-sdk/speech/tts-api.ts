@@ -1,5 +1,8 @@
+import { buildHubRestRequest } from "@freeanima/shared/hub-rpc";
+
+import { resolveHubApiFetch } from "../hub-api-fetch.ts";
+import { resolveHubApiOrigin } from "../hub-api-origin.ts";
 import { MAX_HUB_TTS_TEXT_LENGTH } from "./constants.ts";
-import { resolveHubApiFetch, resolveHubApiUrl } from "../hub-api-fetch.ts";
 import { buildTtsCacheKey, getTtsAudioCache } from "./tts-cache.ts";
 import { consumeMpegStream, playMpegBuffer } from "./mpeg-player.ts";
 
@@ -33,25 +36,31 @@ function normalizeHubTtsText(text: string): string {
 async function postHubTtsSynthesize(params: HubTtsSynthesizeParams): Promise<Response> {
   const text = normalizeHubTtsText(params.text);
   const hubFetch = resolveHubApiFetch();
-  const response = await hubFetch(resolveHubApiUrl("/api/tts/synthesize"), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      text,
-      lang: params.lang ?? undefined,
-      voice: params.voice ?? undefined,
-      app_locale: params.appLocale,
-      rate: params.rate,
-      pitch: params.pitch,
-      volume: params.volume,
-    }),
+  const { url, init } = buildHubRestRequest(resolveHubApiOrigin(), "tts.synthesize", {
+    text,
+    lang: params.lang ?? undefined,
+    voice: params.voice ?? undefined,
+    app_locale: params.appLocale,
+    rate: params.rate,
+    pitch: params.pitch,
+    volume: params.volume,
   });
+  const response = await hubFetch(url, init);
 
   if (!response.ok) {
     let message = "语音合成失败";
     try {
-      const body = (await response.json()) as { error?: string };
-      if (typeof body.error === "string" && body.error.trim()) {
+      const body = (await response.json()) as {
+        error?: { message?: string } | string;
+      };
+      if (
+        typeof body.error === "object" &&
+        body.error !== null &&
+        typeof body.error.message === "string" &&
+        body.error.message.trim()
+      ) {
+        message = body.error.message.trim();
+      } else if (typeof body.error === "string" && body.error.trim()) {
         message = body.error.trim();
       }
     } catch {

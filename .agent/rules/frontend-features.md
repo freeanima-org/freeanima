@@ -42,7 +42,7 @@
 | 层                                               | 必须改                                                                      |
 | ------------------------------------------------ | --------------------------------------------------------------------------- |
 | `src/features/console/protocol/console-contract` | API 类型 + hub-contract re-export（schema SSOT 在 hub-contract）            |
-| `src/features/console/hub/console-api`           | `console-hub-handlers.ts` + 基础设施 Elysia（health、tts）                  |
+| `src/features/console/hub/console-api`           | `console-hub-handlers.ts` + Hub RPC REST 基础设施（health、TLS、TTS）       |
 | `src/features/console/plugin.ts`                 | `hub.rpc` 注册 handler；HTTP REST path 由 hub-contract `meta.http` 自动生成 |
 | `src/features/console/ui/console`                | `@freeanima/hub-client` `call` / `subscribe`                                |
 
