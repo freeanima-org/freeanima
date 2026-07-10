@@ -1,7 +1,13 @@
 import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
 import type { SapRequestAuthContext } from "@freeanima/shared/sap-contract";
+import {
+  getHubMethodDef,
+  resolveHubAuthPolicy,
+  type HubMethod,
+} from "@freeanima/shared/hub-contract";
 
 import { handleHttpHubRestRequest } from "./http-rest-router.ts";
+import { matchHubHttpRoute } from "./http-rest-auth.ts";
 import type { SapServerDeps } from "../sap/types.ts";
 
 function parseBearerToken(req: Request): string | null {
@@ -11,13 +17,19 @@ function parseBearerToken(req: Request): string | null {
   return match?.[1]?.trim() || null;
 }
 
-async function authenticateRequest(req: Request): Promise<SapRequestAuthContext | Response> {
+async function resolveHttpRestAuth(
+  req: Request,
+  hubMethod: HubMethod,
+): Promise<SapRequestAuthContext | null | Response> {
+  const optional = resolveHubAuthPolicy(getHubMethodDef(hubMethod).meta) === "optional";
   const token = parseBearerToken(req);
   if (!token) {
+    if (optional) return null;
     return new Response("Unauthorized", { status: 401 });
   }
   const auth = await verifyServiceApiToken(token);
   if (!auth) {
+    if (optional) return null;
     return new Response("Unauthorized", { status: 401 });
   }
   return auth;
@@ -28,8 +40,14 @@ export async function handleHttpHubRestRequestWithAuth(
   req: Request,
   deps: SapServerDeps,
 ): Promise<Response> {
-  const authResult = await authenticateRequest(req);
+  const matched = matchHubHttpRoute(req);
+  if (!matched) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  const authResult = await resolveHttpRestAuth(req, matched.hubMethod);
   if (authResult instanceof Response) return authResult;
+
   return handleHttpHubRestRequest(req, deps, authResult);
 }
 

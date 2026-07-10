@@ -33,7 +33,7 @@ title: Remote access
 - **离线边界**：浏览器 `offline` 时 Tier 1 模块只读展示快照；**offlineWritable** 模块（Diary、Task、Chat、Pomodoro）仍可本地编辑并排队待同步。
 - **存储**：SW 缓存、localStorage（Hub 设置）、IndexedDB（业务快照）互不冲突；清除站点数据会同时删除三者。
 
-仅 `GET /api/health`、CORS 预检豁免认证（`/hub/rpc/v1` 与 MCP 须 Bearer）。
+Registry 标记 `auth: optional` 的 Hub RPC 方法（如 `health.probe`、`tls.ca.*`）与 CORS 预检可不带 Bearer；其余 `/hub/rpc/v1/*` 与 MCP 须 Bearer。
 
 ## 1. 创建 token（冷启动）
 
@@ -116,7 +116,7 @@ http:
 
 - **`auto: true`**（默认）：首次启动在 `~/.anima/tls/` 自动生成 cert/key（优先 **mkcert**，否则 **openssl 自签**）；SAN 含 `localhost`、`127.0.0.1`、`::1`、`http.host` 中的 bind 地址（跳过 `0.0.0.0`）及 **`http.allowed_hosts`**。配置变更导致 SAN 不足时，**重启 Hub 会自动删除旧证书并重签**（`auto: false` 时仅告警，不覆盖手动证书）。
 - **Tunnel 不变**：cloudflared 仍指向 `http://127.0.0.1:2658`。
-- **探活**：`anima service status` 与 `/api/health` 仍走 HTTP `:2658`。
+- **探活**：`anima service status` 与 `GET /hub/rpc/v1/health/probe` 仍走 HTTP `:2658`。
 
 #### mkcert 根 CA 导入手机（可选）
 

@@ -2,22 +2,16 @@ import { Elysia, NotFoundError } from "elysia";
 import { ApiHandlerError, apiErrorBody } from "../handlers/errors.ts";
 import { assertNotShuttingDown } from "./context.ts";
 import { applyCorsHeaders, corsPreflightResponse } from "./cors.ts";
-import { healthRoutes } from "./routes/health.ts";
-import { tlsCaRoutes } from "./routes/tls-ca.ts";
 import { ttsRoutes } from "./routes/tts.ts";
 import { companionHttpRoutes } from "@freeanima/features/companion/hub/http";
 import { TerminalSessionError } from "@freeanima/platform/sap/terminal-session";
 
-/** 基础设施 HTTP：health / TTS / TLS CA / companion 资产（不进 hub-contract） */
-export const apiApp = new Elysia({ prefix: "/api" })
-  .use(healthRoutes)
-  .use(tlsCaRoutes)
-  .use(ttsRoutes)
-  .use(companionHttpRoutes);
+/** 基础设施 HTTP：TTS / companion 资产（health/TLS 已迁 Hub RPC public methods） */
+export const apiApp = new Elysia({ prefix: "/api" }).use(ttsRoutes).use(companionHttpRoutes);
 
 export type App = typeof apiApp;
 
-/** Hub HTTP：health / TTS；业务 API 走 POST|WS /hub/rpc/v1 */
+/** Hub HTTP：TTS / companion；业务 API 走 Hub RPC REST/WS */
 export function createApiApp() {
   return new Elysia()
     .onBeforeHandle(({ path, request, set }) => {
@@ -52,6 +46,5 @@ export function createApiApp() {
       set.status = 500;
       return { error: error instanceof Error ? error.message : "Internal Server Error" };
     })
-    .get("/", () => ({ service: "freeanima", api: "/api", hub_rpc: "/hub/rpc/v1" }))
     .use(apiApp);
 }

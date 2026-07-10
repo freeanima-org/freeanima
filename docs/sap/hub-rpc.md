@@ -11,7 +11,7 @@ title: Hub RPC
 
 Implemented in [`src/shared/hub-rpc/`](../../src/shared/hub-rpc/) (WS envelope + HTTP REST helpers) and [`src/platform/hub/http-rest-router.ts`](../../src/platform/hub/http-rest-router.ts) (HTTP adapter).
 
-Infrastructure HTTP **outside** Hub RPC: `GET /api/health`, `POST /api/tts/synthesize`.
+Infrastructure HTTP **outside** Hub RPC: `POST /api/tts/synthesize` (multipart TTS). Public probes (`health.probe`, `tls.ca.*`) are Hub RPC methods with `auth: optional` — `GET /hub/rpc/v1/health/probe`, `GET /hub/rpc/v1/tls/ca`, etc.
 
 SAP (`SAP/1.0`) is a **session layer** on top of Hub RPC WebSocket: true satellites call `sap.attach` after connect; bundled SPA modules **never** attach.
 
@@ -53,13 +53,13 @@ HTTP responses are **plain handler JSON** (not HubRPC `res` envelope). Errors: `
 | `res`       | Hub → Client | RPC reply                                                  |
 | `evt`       | Both         | Async event (WS only; incl. `heartbeat`)                   |
 
-HTTP REST uses Bearer on each GET/POST. WebSocket uses `connect` frame `auth_token` (see below).
+HTTP REST uses Bearer on each GET/POST unless the method declares `auth: optional` (e.g. `health.probe`, `tls.ca.*`). WebSocket uses `connect` frame `auth_token` (required).
 
 Method contracts live in [`src/shared/hub-contract/registry/`](../../src/shared/hub-contract/registry/) (`transports: http | ws`; HTTP routes in `meta.http`). Handlers register via `feature/plugin.hub.rpc`.
 
 ## Authentication
 
-Every **WebSocket** connection must send a valid **service API token** in the `connect` payload (`auth_token`). **HTTP REST** uses `Authorization: Bearer fa_at_...` on each request. The Hub verifies with `verifyServiceApiToken` ([`src/core/db/pg/service-api-token/`](../../src/core/db/pg/service-api-token/)).
+Every **WebSocket** connection must send a valid **service API token** in the `connect` payload (`auth_token`). **HTTP REST** uses `Authorization: Bearer fa_at_...` on each request unless the method registry marks `auth: optional` (public read-only probes only). The Hub verifies with `verifyServiceApiToken` ([`src/core/db/pg/service-api-token/`](../../src/core/db/pg/service-api-token/)).
 
 Bundled clients read the token from `window.satelliteShell.remoteAuth.token` (shell bridge), configured in client **Hub settings** (`/setup` or settings panel). Hub `/web/config.json` does not include tokens.
 

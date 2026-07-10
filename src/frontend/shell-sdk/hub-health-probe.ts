@@ -1,4 +1,5 @@
 import { buildBearerHeaders } from "./remote-auth.ts";
+import { hubHealthProbeUrl } from "@freeanima/shared/hub-rpc";
 
 export type HubHealthBody = {
   status?: string;
@@ -61,7 +62,7 @@ export async function probeHubHealthUrl(
     Object.assign(headers, buildBearerHeaders(token));
   }
   const timeoutMs = options?.timeoutMs ?? HUB_HEALTH_PROBE_TIMEOUT_MS;
-  const healthUrl = `${base}/api/health`;
+  const healthUrl = hubHealthProbeUrl(base);
   try {
     const { probeHubHealthViaCapacitorHttp, shouldProbeHubHealthViaCapacitorHttp } =
       await import("./native-hub-health-probe.ts");

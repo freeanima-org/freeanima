@@ -20,7 +20,9 @@ export async function probeHubHealth(
   timeoutMs = HUB_HEALTH_PROBE_TIMEOUT_MS,
 ): Promise<boolean> {
   try {
-    const res = await fetchFn("/api/health", { signal: AbortSignal.timeout(timeoutMs) });
+    const res = await fetchFn("/hub/rpc/v1/health/probe", {
+      signal: AbortSignal.timeout(timeoutMs),
+    });
     if (!res.ok) return false;
     const body = (await res.json()) as { status?: string; authed?: boolean };
     return isHubHealthConnected(body);

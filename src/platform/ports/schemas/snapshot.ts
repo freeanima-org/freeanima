@@ -8,7 +8,7 @@ export type HealthSnapshot = {
   build?: ComponentBuildMeta;
   /** Hub 进程本次启动时间（CST ISO） */
   started_at?: string;
-  /** GET /api/health：Bearer 是否足以访问其余 REST API */
+  /** health.probe：Bearer 是否足以访问其余 REST API */
   authed?: boolean;
 };
 

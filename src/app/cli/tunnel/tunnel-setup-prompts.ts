@@ -11,6 +11,7 @@ import {
 } from "@freeanima/platform/connectors/tunnel";
 import { installCloudflared, manualDownloadHint } from "./tunnel-install.ts";
 import { checkServerAlive, resolveProbeHost } from "../service-common.ts";
+import { hubHealthProbeUrl } from "@freeanima/shared/hub-rpc";
 import { resolveHubPort } from "./tunnel-hub-port.ts";
 import { loadTunnelDraft, patchTunnelConfig } from "./tunnel-config-patch.ts";
 
@@ -75,7 +76,7 @@ async function acceptAndVerifyApiToken(raw: string): Promise<string> {
 async function hubReachable(port: number): Promise<boolean> {
   const host = resolveProbeHost("127.0.0.1");
   try {
-    const res = await fetch(`http://${host}:${port}/api/health`, {
+    const res = await fetch(hubHealthProbeUrl(`http://${host}:${port}`), {
       signal: AbortSignal.timeout(2000),
     });
     if (!res.ok) return false;

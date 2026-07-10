@@ -31,7 +31,7 @@ satellites:
 
 Working directory is derived by anima from the install layout (monorepo root or CLI package root), not configured here.
 
-**Startup:** managed satellites start only after Hub `GET /api/health` returns `status: ok`.
+**Startup:** managed satellites start only after Hub `GET /hub/rpc/v1/health/probe` returns `status: ok`.
 
 See [service.md](../guide/service.md) for systemd unit paths and startup order.
 

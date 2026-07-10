@@ -58,3 +58,13 @@ export function wsOnlyMeta(): HubMethodMeta {
     fallback: false,
   };
 }
+
+/** 仅 HTTP + 匿名可访问（health / TLS CA 等基础设施探活） */
+export function publicHttpMeta(): HubMethodMeta {
+  return {
+    transports: ["http"],
+    defaultByProfile: { console: "http", satellite: "http" },
+    fallback: false,
+    auth: "optional",
+  };
+}

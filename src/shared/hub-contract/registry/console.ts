@@ -11,7 +11,7 @@ import {
   subjectEntityCreateBodySchema,
   worldEntityCreateBodySchema,
 } from "./schemas.ts";
-import { defineHubMethod, dualTransportMeta } from "../method-def.ts";
+import { defineHubMethod, dualTransportMeta, publicHttpMeta } from "../method-def.ts";
 import { z } from "zod";
 
 const unknownOutputSchema = z.record(z.string(), z.unknown());
@@ -67,9 +67,32 @@ const sleepRunStepBodySchema = z.object({
   force: z.boolean().optional(),
   deep_sleep_mode: z.enum(["full", "incremental"]).optional(),
 });
+const tlsCaQrInputSchema = z.object({
+  size: z.coerce.number().int().min(128).max(512).optional(),
+});
 
 /** Console 运维面 HTTP-only methods（conversation.* dual 定义在 chat registry） */
 export const consoleMethodDefs = {
+  "health.probe": defineHubMethod({
+    input: emptyInputSchema,
+    output: unknownOutputSchema,
+    meta: publicHttpMeta(),
+  }),
+  "tls.ca.info": defineHubMethod({
+    input: emptyInputSchema,
+    output: unknownOutputSchema,
+    meta: publicHttpMeta(),
+  }),
+  "tls.ca.qr": defineHubMethod({
+    input: tlsCaQrInputSchema,
+    output: unknownOutputSchema,
+    meta: publicHttpMeta(),
+  }),
+  "tls.ca": defineHubMethod({
+    input: emptyInputSchema,
+    output: unknownOutputSchema,
+    meta: publicHttpMeta(),
+  }),
   "status.get": defineHubMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,

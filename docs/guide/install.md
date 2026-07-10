@@ -145,12 +145,12 @@ On first start, `docker/entrypoint.sh` copies `docker/config.docker.yaml` to `$F
 ### 3. Access Hub API
 
 ```text
-http://127.0.0.1:2658/api/health
+http://127.0.0.1:2658/hub/rpc/v1/health/probe
 ```
 
 Use `src/app/shell/desktop` or `src/app/shell/mobile` clients for UI (bundled shell with `/chat`, `/tasks`, `/console`, etc.).
 
-- Hub API (health): `http://127.0.0.1:2658/api/health` (Hub does **not** host Console UI)
+- Hub API (health): `http://127.0.0.1:2658/hub/rpc/v1/health/probe` (Hub does **not** host Console UI)
 - Local Web shell dev: `bun run dev:web` → Console: `http://127.0.0.1:4173/web/console/dashboard`
 
 (Use `ANIMA_PORT` if you changed the host mapping.)

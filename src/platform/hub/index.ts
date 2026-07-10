@@ -5,3 +5,4 @@ export {
   buildHubRestPathForTest,
   COMPILED_ROUTES,
 } from "./http-rest-router.ts";
+export { isOptionalAuthHubHttpRequest, matchHubHttpRoute } from "./http-rest-auth.ts";

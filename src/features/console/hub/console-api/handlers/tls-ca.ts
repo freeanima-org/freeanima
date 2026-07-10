@@ -59,8 +59,8 @@ export async function getTlsCaInfo(request: Request): Promise<TlsCaInfoResponse>
   const kind = detectHubTlsIssuerKind();
   const issuer = readHubCertIssuer();
   const httpBase = buildHttpDownloadBase(request);
-  const downloadUrl = `${httpBase}/api/tls/ca`;
-  const qrUrl = `${httpBase}/api/tls/ca/qr?size=256`;
+  const downloadUrl = `${httpBase}/hub/rpc/v1/tls/ca`;
+  const qrUrl = `${httpBase}/hub/rpc/v1/tls/ca/qr?size=256`;
 
   if (kind === "mkcert" && readMkcertRootCaPem()) {
     const qr_data_url = await buildQrDataUrl(downloadUrl);
