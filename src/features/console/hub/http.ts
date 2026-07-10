@@ -1,3 +1,2 @@
-/** Console Hub HTTP (REST) — colocated console-api under features/console/hub. */
-export { apiApp, createApiApp, type App } from "./console-api/elysia/app.ts";
+/** Console Hub HTTP — colocated console-api under features/console/hub. */
 export { startApiHttpServer, startApiHttpServers } from "./console-api/server.ts";

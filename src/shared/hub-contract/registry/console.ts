@@ -12,6 +12,7 @@ import {
   worldEntityCreateBodySchema,
 } from "./schemas.ts";
 import {
+  binaryHttpMeta,
   defineHubMethod,
   dualTransportMeta,
   publicHttpMeta,
@@ -74,6 +75,15 @@ const sleepRunStepBodySchema = z.object({
 });
 const tlsCaQrInputSchema = z.object({
   size: z.coerce.number().int().min(128).max(512).optional(),
+});
+const ttsSynthesizeInputSchema = z.object({
+  text: z.string().min(1),
+  lang: z.string().optional(),
+  voice: z.string().optional(),
+  app_locale: z.string().optional(),
+  rate: z.number().min(0.1).max(10).optional(),
+  pitch: z.number().min(0).max(2).optional(),
+  volume: z.number().min(0).max(1).optional(),
 });
 
 /** Console 运维面 HTTP-only methods（conversation.* dual 定义在 chat registry） */
@@ -375,5 +385,14 @@ export const consoleMethodDefs = {
     input: z.object({ id: z.coerce.number().int().positive() }),
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
+  }),
+  "tts.synthesize": defineHubMethod({
+    input: ttsSynthesizeInputSchema,
+    output: z.record(z.string(), z.unknown()),
+    meta: binaryHttpMeta({
+      verb: "POST",
+      path: "tts/synthesize",
+      response: "raw",
+    }),
   }),
 } as const;

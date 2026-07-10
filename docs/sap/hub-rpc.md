@@ -11,7 +11,7 @@ title: Hub RPC
 
 Implemented in [`src/shared/hub-rpc/`](../../src/shared/hub-rpc/) (WS envelope + HTTP REST helpers) and [`src/platform/hub/http-rest-router.ts`](../../src/platform/hub/http-rest-router.ts) (HTTP adapter).
 
-Infrastructure HTTP **outside** Hub RPC: `POST /api/tts/synthesize` (multipart TTS). Public probes (`health.probe`, `tls.ca.*`) are Hub RPC methods with `auth: optional` — `GET /hub/rpc/v1/health/probe`, `GET /hub/rpc/v1/tls/ca`, etc.
+Binary HTTP methods (e.g. `tts.synthesize`, companion assets, TLS PEM/QR) use Hub RPC REST with registry `request` / `response` encoding. Public probes (`health.probe`, `tls.ca.*`) are Hub RPC methods with `auth: optional` — `GET /hub/rpc/v1/health/probe`, `GET /hub/rpc/v1/tls/ca`, etc.
 
 SAP (`SAP/1.0`) is a **session layer** on top of Hub RPC WebSocket: true satellites call `sap.attach` after connect; bundled SPA modules **never** attach.
 
@@ -67,11 +67,13 @@ Bundled clients read the token from `window.satelliteShell.remoteAuth.token` (sh
 
 Registry `meta.http` may set `request` / `response` encoding (default `json`):
 
-| Encoding             | Use                                                                                                   |
-| -------------------- | ----------------------------------------------------------------------------------------------------- |
-| `response: raw`      | Handler returns `Response` (PEM, PNG, VRM, octet-stream). Client: `callRaw()` or `fetchHubRestRaw()`. |
-| `request: multipart` | POST with `FormData` body (e.g. `companion.model.upload`).                                            |
-| `request: raw`       | POST body read from `ctx.httpRequest` in handler.                                                     |
+| Encoding             | Use                                                                                                         |
+| -------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `response: raw`      | Handler returns `Response` (PEM, PNG, VRM, MPEG, octet-stream). Client: `callRaw()` or `fetchHubRestRaw()`. |
+| `request: multipart` | POST with `FormData` body (e.g. `companion.model.upload`).                                                  |
+| `request: raw`       | POST body read from `ctx.httpRequest` in handler.                                                           |
+
+Examples: `tts.synthesize` (JSON POST → MPEG stream), `companion.asset.get` (GET → VRM), `tls.ca` (GET → PEM).
 
 Helpers: `hubRestUrl()`, `binaryHttpMeta()` / `rawPublicHttpMeta()` in hub-contract. JSON methods continue to use `hubClient.call()`.
 

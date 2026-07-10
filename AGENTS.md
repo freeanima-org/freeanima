@@ -5,7 +5,7 @@
 
 ## Global view
 
-`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: `anima service` starts the Bun Hub（REST `/api` + Hub RPC `/hub/rpc/v1` + engine）；UI 由 `src/app/shell/desktop` / `src/app/shell/mobile` bundled 提供。
+`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: `anima service` starts the Bun Hub（Hub RPC REST/WS `/hub/rpc/v1` + MCP `/mcp` + engine）；UI 由 `src/app/shell/desktop` / `src/app/shell/mobile` bundled 提供。
 
 | Capability     | Highlights                                                                                                                                                                                     |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -63,7 +63,7 @@ DATABASE_URL="…" bunx drizzle-kit generate --config src/core/drizzle.config.ts
 DATABASE_URL="…" bunx drizzle-kit migrate --config src/core/drizzle.config.ts
 ```
 
-- Hub API：`http://127.0.0.1:2658/api`（`anima service` 仅托管后端）
+- Hub API：`http://127.0.0.1:2658/hub/rpc/v1`（`anima service` 仅托管后端；静态 UI 在 `/web/*`）
 - 桌面/移动/浏览器开发客户端：聊天室 + 管理台 UI 在 `src/app/shell/desktop` / `mobile` / `web`（web 仅本地调试）
 - Console / 任务 本地开发：`bun run dev:web` → `http://127.0.0.1:4173/web/chat`（Console：`/web/console/dashboard`）
 - Web 全壳层本地开发：`bun run dev:web` → `http://127.0.0.1:4173/web/chat`

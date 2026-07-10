@@ -1,6 +1,7 @@
 import type { FeatureHttpRegistrar, FeatureRpcHandler } from "@freeanima/platform/features";
 import { consoleHubHandlers } from "./hub/console-api/console-hub-handlers.ts";
 import { consolePublicHubHandlers } from "./hub/public-handlers.ts";
+import { handleTtsSynthesize } from "./hub/tts-handler.ts";
 
 /** chat plugin 已注册的 method，避免 duplicate handler */
 const CHAT_HUB_RPC_METHODS = new Set([
@@ -32,6 +33,7 @@ function buildConsoleRpcHandlers(): Record<string, FeatureRpcHandler> {
     if (method in consolePublicHubHandlers) continue;
     rpc[method] = wrapConsoleHandler(fn as (payload: unknown) => Promise<unknown> | unknown);
   }
+  rpc["tts.synthesize"] = handleTtsSynthesize;
   return rpc;
 }
 
@@ -44,7 +46,7 @@ export const consolePlugin = {
   hub: {
     rpc: buildConsoleRpcHandlers(),
     registerHttp(_register: Parameters<FeatureHttpRegistrar>[0]) {
-      /* TTS / companion 仍由 console-api Elysia 挂载 */
+      /* 业务 HTTP 均走 Hub RPC REST */
     },
   },
 } as const;

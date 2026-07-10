@@ -126,7 +126,7 @@ describe("createHubSpeechAdapter", () => {
 
     const fetchMock = mock(async (input: RequestInfo | URL) => {
       const url = String(input);
-      expect(url).toBe("http://192.168.1.10:2658/api/tts/synthesize");
+      expect(url).toBe("http://192.168.1.10:2658/hub/rpc/v1/tts/synthesize");
       return streamResponse(audioBuffer);
     });
     globalThis.fetch = fetchMock as unknown as typeof fetch;

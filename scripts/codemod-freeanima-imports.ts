@@ -129,10 +129,6 @@ const EXACT_REWRITES: Record<string, string> = {
     "@freeanima/features/console/protocol/console-contract/display-util.ts",
   "@freeanima/features/console/protocol/console-contract/date-json":
     "@freeanima/features/console/protocol/console-contract/date-json.ts",
-  "@freeanima/features/console/protocol/console-contract/elysia":
-    "@freeanima/features/console/protocol/console-contract/elysia.ts",
-  "@freeanima/features/console/hub/console-api/elysia":
-    "@freeanima/features/console/hub/console-api/elysia/app.ts",
   "@freeanima/shared/hub-contract/schemas/console-schemas":
     "@freeanima/shared/hub-contract/schemas/console-schemas.ts",
   "@freeanima/capabilities/acp/schemas/acp-jsonrpc":

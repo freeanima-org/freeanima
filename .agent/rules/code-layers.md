@@ -30,11 +30,11 @@ app → platform → capabilities → runtime → core → kernel
 
 ### Console（hub-rest）
 
-| 包名                          | 物理路径                                      | 说明                                                   |
-| ----------------------------- | --------------------------------------------- | ------------------------------------------------------ |
-| `@freeanima/feature-console`  | `features/console/`                           | Console feature（plugin、Console UI SSOT、build 工具） |
-| `@freeanima/console-api`      | `features/console/hub/console-api/`           | Console REST 实现（Elysia）                            |
-| `@freeanima/console-contract` | `features/console/protocol/console-contract/` | Console Hub wire 类型                                  |
+| 包名                          | 物理路径                                      | 说明                                                    |
+| ----------------------------- | --------------------------------------------- | ------------------------------------------------------- |
+| `@freeanima/feature-console`  | `features/console/`                           | Console feature（plugin、Console UI SSOT、build 工具）  |
+| `@freeanima/console-api`      | `features/console/hub/console-api/`           | Console Hub HTTP 服务（Hub RPC REST 分发、静态 `/web`） |
+| `@freeanima/console-contract` | `features/console/protocol/console-contract/` | Console Hub wire 类型                                   |
 
 Console UI 源码 SSOT：`features/console/ui/console/`。Paraglide/build 工具：`features/console/build/`。Shell 路由经 `@freeanima/feature-console/ui/spa`。
 

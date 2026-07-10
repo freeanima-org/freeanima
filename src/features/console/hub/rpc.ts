@@ -1,4 +1,4 @@
-/** Console Hub RPC — re-export from console-api（WS dispatch 与 Elysia 薄路由共用） */
+/** Console Hub RPC — re-export from console-api handlers */
 export {
   consoleHubHandlers,
   invokeConsoleHubHandler,

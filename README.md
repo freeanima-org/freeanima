@@ -31,7 +31,7 @@ The technical stack (layered memory, self layer, flat tool registry, Gateway, pa
 | **Tools**       | Flat registry: local / MCP / ACP; capability masks                                                     |
 | **Gateway**     | Discord · WeChat · Chat                                                                                |
 | **Credentials** | pass (GPG) injection; LLM sees paths, not values                                                       |
-| **Runtime**     | Bun Hub: Elysia REST `/api` + SAP `/sap/v1` + Pipeline Runner (sleep, cron)                            |
+| **Runtime**     | Bun Hub: Hub RPC REST/WS `/hub/rpc/v1` + SAP `/sap/v1` + Pipeline Runner (sleep, cron)                 |
 
 ## Architecture at a glance
 
