@@ -50,6 +50,17 @@ const sleepCycleBodySchema = z.object({
   deep_sleep_mode: z.enum(["full", "incremental"]).optional(),
 });
 const configSectionParamSchema = z.object({ section: z.string().min(1) });
+const configTestConnectionInputSchema = z.object({
+  service: z.enum(["firecrawl", "camofox", "embedding", "llm_provider"]),
+  config: z.record(z.string(), z.unknown()).optional(),
+  provider_id: z.string().min(1).optional(),
+});
+const configTestConnectionOutputSchema = z.object({
+  ok: z.boolean(),
+  message: z.string(),
+  latency_ms: z.number().int().nonnegative().optional(),
+  details: z.record(z.string(), z.unknown()).optional(),
+});
 const sleepRunStepBodySchema = z.object({
   step_id: z.string().min(1),
   day: z.string().optional(),
@@ -112,6 +123,11 @@ export const consoleMethodDefs = {
   "config.patchSection": defineHubMethod({
     input: configSectionParamSchema.extend({ patch: z.record(z.string(), z.unknown()) }),
     output: unknownOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "config.testConnection": defineHubMethod({
+    input: configTestConnectionInputSchema,
+    output: configTestConnectionOutputSchema,
     meta: dualTransportMeta(false),
   }),
   "memory.files": defineHubMethod({

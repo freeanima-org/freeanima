@@ -17,6 +17,7 @@ import {
   readAdvancedSectionDraft,
   type AdvancedSectionId,
 } from "./hub-advanced-forms.tsx";
+import { HubConfigConnectionTestButton } from "./HubConfigConnectionTestButton.tsx";
 import { LlmSettingsPanel } from "./LlmSettingsPanel.tsx";
 import { SpeechSettingsTab } from "./SpeechSettingsTab.tsx";
 import type { HubConfigSectionKey } from "./hub-config-sections.ts";
@@ -47,6 +48,22 @@ function numberField(
 
 function isAdvancedSectionKey(key: HubConfigSectionKey): key is AdvancedSectionId {
   return key !== "compression" && key !== "memory" && key !== "llm" && key !== "tts";
+}
+
+const ADVANCED_TEST_SERVICES: Partial<
+  Record<AdvancedSectionId, "firecrawl" | "camofox" | "embedding">
+> = {
+  firecrawl: "firecrawl",
+  browser: "camofox",
+  embedding: "embedding",
+};
+
+function advancedTestConfig(
+  section: AdvancedSectionId,
+  draft: Record<string, unknown>,
+): Record<string, unknown> {
+  if (section === "browser") return { camofox: draft.camofox ?? {} };
+  return draft;
 }
 
 export default function HubConfigSectionPanel({ configKey }: Props) {
@@ -171,6 +188,10 @@ export default function HubConfigSectionPanel({ configKey }: Props) {
     return <p className="text-sm text-muted-foreground">加载 Hub 配置…</p>;
   }
 
+  const advancedTestService = isAdvancedSectionKey(configKey)
+    ? ADVANCED_TEST_SERVICES[configKey]
+    : undefined;
+
   return (
     <div className="space-y-4">
       {error ? <StatusAlert variant="error">{error}</StatusAlert> : null}
@@ -247,6 +268,13 @@ export default function HubConfigSectionPanel({ configKey }: Props) {
               value={advancedDraft}
               onChange={setAdvancedDraft}
             />
+            {advancedTestService ? (
+              <HubConfigConnectionTestButton
+                service={advancedTestService}
+                config={advancedTestConfig(configKey, advancedDraft)}
+                disabled={saving}
+              />
+            ) : null}
             <Button type="button" disabled={saving} onClick={() => void saveAdvanced()}>
               保存 {configKey}
             </Button>

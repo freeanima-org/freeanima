@@ -68,6 +68,7 @@ import {
   runCronJobNow,
 } from "./handlers/status.ts";
 import { getHubConfig, getHubConfigSection, patchHubConfigSection } from "./handlers/config.ts";
+import { testConfigConnection } from "./handlers/config-test-connection.ts";
 
 /** Console Hub RPC method handlers */
 export const consoleHubHandlers = {
@@ -76,6 +77,11 @@ export const consoleHubHandlers = {
   "config.getSection": (payload: { section: string }) => getHubConfigSection(payload.section),
   "config.patchSection": (payload: { section: string; patch: Record<string, unknown> }) =>
     patchHubConfigSection(payload.section, payload.patch),
+  "config.testConnection": (payload: {
+    service: "firecrawl" | "camofox" | "embedding" | "llm_provider";
+    config?: Record<string, unknown>;
+    provider_id?: string;
+  }) => testConfigConnection(payload),
   "status.tools": (payload: { scope?: "default" }) =>
     listTools(payload.scope === "default" ? "default" : undefined),
   "status.platforms": () => getPlatforms(),
