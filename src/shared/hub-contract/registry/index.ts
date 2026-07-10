@@ -1,6 +1,7 @@
 import type { z } from "zod";
 
 import { buildHttpRouteMeta, isReadOnlyHubMeta, type HttpRouteMeta } from "../http-route.ts";
+import { resolveHttpRequestEncoding } from "../http-route.ts";
 import { resolveHubAuthPolicy } from "../transport.ts";
 import { chatMethodDefs } from "./chat.ts";
 import { consoleMethodDefs } from "./console.ts";
@@ -81,6 +82,10 @@ function buildHttpRouteRegistry(): Partial<Record<HubMethod, HttpRouteMeta>> {
     }
     if (http.verb === "GET" && !readOnly && !meta.httpOverrides?.verb) {
       throw new Error(`hub method ${method}: GET route requires readOnly meta`);
+    }
+    const requestEncoding = resolveHttpRequestEncoding(http);
+    if (requestEncoding !== "json" && http.verb !== "POST") {
+      throw new Error(`hub method ${method}: non-json request requires POST verb`);
     }
     const routeKey = `${http.verb}:${http.path}`;
     if (routeKeys.has(routeKey)) {

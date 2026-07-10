@@ -6,7 +6,8 @@ export type TransportKind = "http" | "ws";
 /** 客户端 profile：决定 dual method 的 default transport */
 export type HubClientProfile = "console" | "satellite";
 
-export type { HttpRouteMeta };
+export type { HttpRouteMeta, HttpRequestEncoding, HttpResponseEncoding } from "./http-route.ts";
+export { resolveHttpRequestEncoding, resolveHttpResponseEncoding } from "./http-route.ts";
 
 /** Hub method HTTP/WS 鉴权策略（默认 required） */
 export type HubAuthPolicy = "required" | "optional";

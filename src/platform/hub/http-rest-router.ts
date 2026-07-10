@@ -4,6 +4,8 @@ import {
   getHubMethodDef,
   listHubMethods,
   coercePayloadForSchema,
+  resolveHttpRequestEncoding,
+  resolveHttpResponseEncoding,
   type HubMethod,
   type HttpRouteMeta,
 } from "@freeanima/shared/hub-contract";
@@ -166,15 +168,19 @@ export async function handleHttpHubRestRequest(
 
   const { entry, pathValues } = match;
   const pathParamSet = new Set(entry.http.pathParams ?? []);
+  const requestEncoding = resolveHttpRequestEncoding(entry.http);
 
   let bodyPayload: Record<string, unknown> = {};
   if (verb === "POST") {
-    try {
-      const raw = await req.text();
-      bodyPayload = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
-    } catch {
-      return jsonError(400, "invalid_json", "Invalid JSON body");
+    if (requestEncoding === "json") {
+      try {
+        const raw = await req.text();
+        bodyPayload = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+      } catch {
+        return jsonError(400, "invalid_json", "Invalid JSON body");
+      }
     }
+    /* multipart / raw：body 由 handler 经 ctx.httpRequest 读取 */
   }
 
   const url = new URL(req.url);
@@ -188,9 +194,20 @@ export async function handleHttpHubRestRequest(
 
   const def = getHubMethodDef(entry.hubMethod);
   const coerced = coercePayloadForSchema(merged, def.input);
+  const responseEncoding = resolveHttpResponseEncoding(entry.http);
 
   try {
     const result = await hubDispatch(deps, entry.hubMethod, coerced, ctxFor(auth, req));
+    if (responseEncoding === "raw") {
+      if (!(result instanceof Response)) {
+        return jsonError(
+          500,
+          "invalid_handler_response",
+          "Hub method with raw response must return Response",
+        );
+      }
+      return result;
+    }
     if (result instanceof Response) {
       return result;
     }

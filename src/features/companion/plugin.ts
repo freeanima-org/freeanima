@@ -1,4 +1,9 @@
 import {
+  handleCompanionAssetGet,
+  handleCompanionModelUpload,
+  handleCompanionMotionImport,
+} from "./hub/binary.ts";
+import {
   handleCompanionConfigGet,
   handleCompanionConfigUpdate,
   handleCompanionMigrateFromLocal,
@@ -26,6 +31,9 @@ export const companionPlugin = {
       "companion.motion.delete": handleCompanionMotionDelete,
       "companion.migrate.fromLocal": handleCompanionMigrateFromLocal,
       "companion.sync.pull": handleCompanionSyncPull,
+      "companion.asset.get": handleCompanionAssetGet,
+      "companion.model.upload": handleCompanionModelUpload,
+      "companion.motion.import": handleCompanionMotionImport,
     },
   },
 } as const;

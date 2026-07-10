@@ -6,6 +6,8 @@ import {
   appendPayloadToQuery,
   buildHubRestRequest,
   hubRpcRestPrefix,
+  hubRestUrl,
+  isNonJsonHubHttpMethod,
   parseQueryToPayload,
 } from "./http-rest.ts";
 
@@ -100,5 +102,39 @@ describe("http-rest", () => {
       limit: 50,
     });
     expect(url).toBe("http://127.0.0.1:2658/hub/rpc/v1/conversation/messages/abc?limit=50");
+  });
+
+  test("hubRestUrl for tls.ca", () => {
+    expect(hubRestUrl("http://127.0.0.1:2658", "tls.ca", {})).toBe(
+      "http://127.0.0.1:2658/hub/rpc/v1/tls/ca",
+    );
+  });
+
+  test("tls.ca.qr marked raw response", () => {
+    const http = getHubMethodDef("tls.ca.qr").meta.http!;
+    expect(http.response).toBe("raw");
+  });
+
+  test("buildHubRestRequest multipart companion.model.upload", () => {
+    const form = new FormData();
+    form.append("file", new Blob(["x"]), "test.vrm");
+    const { url, init } = buildHubRestRequest(
+      "http://127.0.0.1:2658",
+      "companion.model.upload",
+      {},
+      "fa_at_test",
+      { body: form },
+    );
+    expect(url).toBe("http://127.0.0.1:2658/hub/rpc/v1/companion/model/upload");
+    expect(init.method).toBe("POST");
+    expect((init.headers as Record<string, string>).Authorization).toBe("Bearer fa_at_test");
+    expect((init.headers as Record<string, string>)["Content-Type"]).toBeUndefined();
+    expect(init.body).toBe(form);
+  });
+
+  test("isNonJsonHubHttpMethod", () => {
+    expect(isNonJsonHubHttpMethod("task.list")).toBe(false);
+    expect(isNonJsonHubHttpMethod("tls.ca")).toBe(true);
+    expect(isNonJsonHubHttpMethod("companion.model.upload")).toBe(true);
   });
 });

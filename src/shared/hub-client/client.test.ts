@@ -6,6 +6,7 @@ import {
   resolveDefaultTransport,
   resolveFallbackTransport,
 } from "@freeanima/shared/hub-contract";
+import { isNonJsonHubHttpMethod } from "@freeanima/shared/hub-rpc";
 
 describe("hub-contract registry", () => {
   test("conversation.list is dual transport with REST meta", () => {
@@ -45,6 +46,22 @@ describe("hub-contract registry", () => {
       verb: "POST",
       path: "vault/get/:id",
       pathParams: ["id"],
+    });
+  });
+
+  test("tls.ca uses raw HTTP response", () => {
+    const def = getHubMethodDef("tls.ca");
+    expect(def.meta.http?.response).toBe("raw");
+    expect(isNonJsonHubHttpMethod("tls.ca")).toBe(true);
+  });
+
+  test("companion.asset.get is raw GET", () => {
+    const def = getHubMethodDef("companion.asset.get");
+    expect(def.meta.http).toEqual({
+      verb: "GET",
+      path: "companion/assets/:kind/:fileName",
+      pathParams: ["kind", "fileName"],
+      response: "raw",
     });
   });
 });

@@ -8,6 +8,7 @@ export {
   createHubClient,
   HubTransportError,
   type HubCallOptions,
+  type HubCallRawOptions,
   type HubClient,
   type HubClientOptions,
 } from "./client.ts";

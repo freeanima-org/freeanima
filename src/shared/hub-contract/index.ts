@@ -3,21 +3,31 @@ export type {
   HubMethodMeta,
   TransportKind,
   HttpRouteMeta,
+  HttpRequestEncoding,
+  HttpResponseEncoding,
   HubAuthPolicy,
 } from "./transport.ts";
 export {
   resolveDefaultTransport,
   resolveFallbackTransport,
   resolveHubAuthPolicy,
+  resolveHttpRequestEncoding,
+  resolveHttpResponseEncoding,
 } from "./transport.ts";
 
-export type { HubMethodDef, DualTransportMetaOptions } from "./method-def.ts";
+export type {
+  HubMethodDef,
+  DualTransportMetaOptions,
+  BinaryHttpMetaOptions,
+} from "./method-def.ts";
 export {
   defineHubMethod,
   dualTransportMeta,
   httpTransportMeta,
   wsOnlyMeta,
   publicHttpMeta,
+  rawPublicHttpMeta,
+  binaryHttpMeta,
 } from "./method-def.ts";
 
 export {

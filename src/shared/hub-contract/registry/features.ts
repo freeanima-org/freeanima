@@ -89,9 +89,14 @@ import {
 } from "@freeanima/shared/sap-contract/frames/pomodoro";
 import { z } from "zod";
 
-import { defineHubMethod, dualTransportMeta } from "../method-def.ts";
+import { defineHubMethod, dualTransportMeta, binaryHttpMeta } from "../method-def.ts";
 
 const emptyInputSchema = z.object({}).passthrough();
+const companionAssetGetInputSchema = z.object({
+  kind: z.enum(["models", "motions"]),
+  fileName: z.string().min(1),
+});
+const companionUploadOkOutputSchema = z.object({ ok: z.literal(true) });
 
 export const emailMethodDefs = {
   "emailaccount.list": defineHubMethod({
@@ -303,5 +308,33 @@ export const companionMethodDefs = {
     input: companionSyncPullInputSchema,
     output: companionSyncPullOutputSchema,
     meta: dualTransportMeta(true),
+  }),
+  "companion.asset.get": defineHubMethod({
+    input: companionAssetGetInputSchema,
+    output: z.record(z.string(), z.unknown()),
+    meta: binaryHttpMeta({
+      verb: "GET",
+      path: "companion/assets/:kind/:fileName",
+      pathParams: ["kind", "fileName"],
+      response: "raw",
+    }),
+  }),
+  "companion.model.upload": defineHubMethod({
+    input: emptyInputSchema,
+    output: companionUploadOkOutputSchema,
+    meta: binaryHttpMeta({
+      verb: "POST",
+      path: "companion/model/upload",
+      request: "multipart",
+    }),
+  }),
+  "companion.motion.import": defineHubMethod({
+    input: emptyInputSchema,
+    output: z.record(z.string(), z.unknown()),
+    meta: binaryHttpMeta({
+      verb: "POST",
+      path: "companion/motion/import",
+      request: "multipart",
+    }),
   }),
 } as const;

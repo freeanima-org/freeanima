@@ -1,5 +1,11 @@
 import type { z as zod } from "zod";
 
+/** POST 请求体编码（默认 json） */
+export type HttpRequestEncoding = "json" | "multipart" | "raw";
+
+/** 成功响应体编码（默认 json；raw 时 handler 须返回 Response） */
+export type HttpResponseEncoding = "json" | "raw";
+
 /** HTTP REST 路由元数据（相对 /hub/rpc/v1/） */
 export type HttpRouteMeta = {
   verb: "GET" | "POST";
@@ -7,7 +13,17 @@ export type HttpRouteMeta = {
   path: string;
   /** path 中的具名参数，按顺序 */
   pathParams?: readonly string[];
+  request?: HttpRequestEncoding;
+  response?: HttpResponseEncoding;
 };
+
+export function resolveHttpRequestEncoding(http: HttpRouteMeta): HttpRequestEncoding {
+  return http.request ?? "json";
+}
+
+export function resolveHttpResponseEncoding(http: HttpRouteMeta): HttpResponseEncoding {
+  return http.response ?? "json";
+}
 
 /** 无法从 input schema 自动推导的 path / verb 覆盖 */
 export const HTTP_ROUTE_OVERRIDES: Partial<Record<string, Partial<HttpRouteMeta>>> = {
@@ -15,6 +31,11 @@ export const HTTP_ROUTE_OVERRIDES: Partial<Record<string, Partial<HttpRouteMeta>
   "conversation.tail": { pathParams: ["conversation_id"] },
   "vault.get": { verb: "POST" },
   "vault.crypto.get": { verb: "POST" },
+  "companion.asset.get": {
+    path: "companion/assets/:kind/:fileName",
+    pathParams: ["kind", "fileName"],
+    response: "raw",
+  },
 };
 
 const WRITE_PATH_ACTIONS = new Set([
@@ -113,6 +134,10 @@ export function buildHttpRouteMeta(
   if (pathParams.length > 0) {
     meta.pathParams = pathParams;
   }
+  const request = partial?.request ?? override?.request;
+  const response = partial?.response ?? override?.response;
+  if (request) meta.request = request;
+  if (response) meta.response = response;
   return meta;
 }
 

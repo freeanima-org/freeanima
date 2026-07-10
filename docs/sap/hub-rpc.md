@@ -63,6 +63,18 @@ Every **WebSocket** connection must send a valid **service API token** in the `c
 
 Bundled clients read the token from `window.satelliteShell.remoteAuth.token` (shell bridge), configured in client **Hub settings** (`/setup` or settings panel). Hub `/web/config.json` does not include tokens.
 
+## Binary HTTP methods
+
+Registry `meta.http` may set `request` / `response` encoding (default `json`):
+
+| Encoding             | Use                                                                                                   |
+| -------------------- | ----------------------------------------------------------------------------------------------------- |
+| `response: raw`      | Handler returns `Response` (PEM, PNG, VRM, octet-stream). Client: `callRaw()` or `fetchHubRestRaw()`. |
+| `request: multipart` | POST with `FormData` body (e.g. `companion.model.upload`).                                            |
+| `request: raw`       | POST body read from `ctx.httpRequest` in handler.                                                     |
+
+Helpers: `hubRestUrl()`, `binaryHttpMeta()` / `rawPublicHttpMeta()` in hub-contract. JSON methods continue to use `hubClient.call()`.
+
 ## Client profiles
 
 | Profile           | Package entry                                    | `sap.attach` | Typical consumer                               |
