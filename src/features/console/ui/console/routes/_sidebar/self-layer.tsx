@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import type { SelfBlockDisplay } from "@freeanima/features/console/protocol/console-contract/api";
+import type { SelfBlockDisplay } from "@freeanima/platform/runtime/service-self";
 import { Badge, Card, CardContent } from "@freeanima/frontend/ui-kit";
 import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
 import { getSelfBlocks } from "@freeanima/features/console/ui/console/lib/api.ts";

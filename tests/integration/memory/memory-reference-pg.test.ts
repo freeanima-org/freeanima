@@ -97,7 +97,7 @@ describePg("memory_references PG", () => {
   });
 
   it("listResident caps pinned at RESIDENT_PINNED_MAX", async () => {
-    const { RESIDENT_PINNED_MAX } = await import("@freeanima/core/repos");
+    const { RESIDENT_PINNED_MAX } = await import("@freeanima/core/db/pg/semantic-memory/types");
 
     for (let i = 0; i < RESIDENT_PINNED_MAX + 2; i++) {
       await createSemanticMemory({

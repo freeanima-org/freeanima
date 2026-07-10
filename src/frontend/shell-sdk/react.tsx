@@ -1,16 +1,11 @@
 export { SubjectScopeProvider, useSubjectScope } from "./subject-scope-react.tsx";
 export { SubjectToggle } from "./SubjectToggle.tsx";
 export { SubjectScopeToggle } from "./SubjectScopeToggle.tsx";
-export {
-  hasDesktopPointerCapability,
-  hasFinePointerCapability,
-  hasTouchPrimaryCapability,
-} from "./shell-capability.ts";
+export { hasFinePointerCapability, hasTouchPrimaryCapability } from "./shell-capability.ts";
 export type { PrimaryInputKind } from "./shell-capability.ts";
 export {
   useActionSheetCapability,
   useContextMenuCapability,
-  useDesktopPointerCapability,
   useFinePointerCapability,
   useTouchPrimaryCapability,
 } from "./shell-capability-react.tsx";
@@ -18,7 +13,7 @@ export {
   useSetShellModuleVisibility,
   useShellModuleVisibility,
 } from "./shell-module-visibility-react.tsx";
-export { useNetworkOnline, useNetworkStatus } from "./use-network-status.ts";
+export { useNetworkOnline } from "./use-network-status.ts";
 export { useHubConnection } from "./use-hub-connection.ts";
 export { reconnectHub } from "./hub-connection.ts";
 export type { HubConnectionState } from "./hub-connection.ts";

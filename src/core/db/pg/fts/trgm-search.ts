@@ -1,4 +1,4 @@
-import type { SemanticFtsHit } from "@freeanima/core/repos";
+import type { SemanticFtsHit } from "@freeanima/core/db/schema/rows";
 import { and, desc, eq, getColumns, isNotNull, notLike, sql } from "drizzle-orm";
 import { getActiveRuntimeConfig, getFtsTrgmMinSimilarity } from "@freeanima/core/config";
 import { messageDocKey, semanticMemoryDocKey } from "@freeanima/core/util";

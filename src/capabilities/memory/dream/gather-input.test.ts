@@ -1,6 +1,6 @@
 import { describe, expect, it, mock, beforeEach, afterEach } from "bun:test";
 
-import type { LimbicMemoryRow } from "@freeanima/core/repos";
+import type { LimbicMemoryRow } from "@freeanima/core/db/schema/rows";
 
 import {
   DREAM_MIN_INTENSITY,

@@ -1,7 +1,7 @@
 import { randomInt } from "node:crypto";
 
 import type { DreamEpisodicSnippet } from "@freeanima/core/db/schema";
-import type { LimbicMemoryRow } from "@freeanima/core/repos";
+import type { LimbicMemoryRow } from "@freeanima/core/db/schema/rows";
 import { CST_OFFSET_MS } from "@freeanima/core/util";
 import {
   listConversationIdsUpdatedBetween,

@@ -1,5 +1,5 @@
 import type { DreamEpisodicSnippet } from "@freeanima/core/db/schema";
-import type { LimbicMemoryRow } from "@freeanima/core/repos";
+import type { LimbicMemoryRow } from "@freeanima/core/db/schema/rows";
 
 import type { DreamGatherInput } from "./gather-input.ts";
 

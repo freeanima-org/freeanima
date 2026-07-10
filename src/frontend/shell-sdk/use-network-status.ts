@@ -18,8 +18,3 @@ export function useNetworkOnline(): boolean {
 
   return online;
 }
-
-/** @deprecated 使用 useNetworkOnline */
-export function useNetworkStatus(): boolean {
-  return useNetworkOnline();
-}

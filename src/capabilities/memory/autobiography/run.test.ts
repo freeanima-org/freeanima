@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import type { AutobiographicalMemoryRow } from "@freeanima/core/repos";
+import type { AutobiographicalMemoryRow } from "@freeanima/core/db/schema/rows";
 
 import { AUTOBIOGRAPHY_SUMMARY_SECTION_HEADINGS, buildAutobiographySummary } from "./run.ts";
 

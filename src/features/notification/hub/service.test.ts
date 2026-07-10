@@ -2,9 +2,9 @@ import { describe, expect, it, mock, beforeEach } from "bun:test";
 import type {
   NotificationCreateInput,
   NotificationListOpts,
-  NotificationRow,
-} from "@freeanima/core/repos";
-import { DEFAULT_NOTIFICATION_RECIPIENT_ID } from "@freeanima/core/repos";
+} from "@freeanima/core/db/pg/notifications/types";
+import type { NotificationRow } from "@freeanima/core/db/schema/rows";
+import { DEFAULT_NOTIFICATION_RECIPIENT_ID } from "@freeanima/core/db/pg/notifications/types";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 const rows = new Map<string, NotificationRow>();

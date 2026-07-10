@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
-import type { ServiceStatus } from "@freeanima/features/console/protocol/console-contract/api";
+import type { ServiceSnapshot } from "@freeanima/platform/ports/schemas/snapshot";
 import { Badge, Button, Card, CardContent, Input, Spinner } from "@freeanima/frontend/ui-kit";
 import { FormField, FormFieldset } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
 import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
@@ -77,7 +77,7 @@ function MemoryBrowseTabs() {
 
 function MemoryPage() {
   const { status } = Route.useLoaderData();
-  const svc = status as ServiceStatus | null;
+  const svc = status as ServiceSnapshot | null;
   const semanticMemoryCount = svc?.memory?.semantic_memory_count ?? 0;
   const dialogueMessageCount = svc?.memory?.dialogue_message_count ?? 0;
 

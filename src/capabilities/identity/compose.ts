@@ -1,7 +1,7 @@
 import type { SelfBlockKey } from "@freeanima/core/db/schema";
 import { selfBlockKeySchema } from "@freeanima/core/db/schema";
 
-import type { SelfBlockRow } from "@freeanima/core/repos";
+import type { SelfBlockRow } from "@freeanima/core/db/schema/rows";
 
 import {
   SELF_BLOCK_EMPTY_PLACEHOLDER,

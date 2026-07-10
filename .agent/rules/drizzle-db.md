@@ -16,7 +16,7 @@ Repository query patterns for `@freeanima/core/db/pg`. Schema DDL and migrations
 
 Driver: `drizzle-orm/bun-sql/postgres` via [`src/core/db/pg/client.ts`](../../src/core/db/pg/client.ts).
 
-PG repository 实现位于 `src/core/db/pg/`（按域分子目录）；schema / row 类型 SSOT 在 `@freeanima/core/db`。`src/capabilities/*` 可直接 import `@freeanima/core/db/pg/*` 与 `@freeanima/core/db/schema`（见 [`code-layers.md`](code-layers.md)）。`@freeanima/core/repos` 仅保留共享类型与 marker 常量，不再暴露 `PgRepositories` / StorePort。
+PG repository 实现位于 `src/core/db/pg/`（按域分子目录）；schema / row 类型 SSOT 在 `@freeanima/core/db`。`src/capabilities/*` 可直接 import `@freeanima/core/db/pg/*` 与 `@freeanima/core/db/schema`（见 [`code-layers.md`](code-layers.md)）。
 
 ---
 
@@ -97,7 +97,7 @@ Link to source — do not maintain function inventories here.
 
 Domain search wrappers (`searchTaskItems`, `searchDiaryEntries`, `searchVaultItems`, …) map rows but keep hybrid order unless filtering drops items (e.g. closed task lists).
 
-Table shapes: [`src/core/db/schema/`](../../src/core/db/schema/). Row / input types: [`src/core/db/pg/*/types.ts`](../../src/core/db/pg/) + [`src/core/db/schema/rows/`](../../src/core/db/schema/rows/). `@freeanima/core/repos` re-exports select row types for backward-compatible imports.
+Table shapes: [`src/core/db/schema/`](../../src/core/db/schema/). Row / input types: [`src/core/db/pg/*/types.ts`](../../src/core/db/pg/) + [`src/core/db/schema/rows/`](../../src/core/db/schema/rows/).
 
 ---
 

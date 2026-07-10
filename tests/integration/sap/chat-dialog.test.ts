@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import {
-  createSapDirectClient,
+  getBundledSapStreamClient,
   mapSapStreamMethodToApi,
   streamEventMethods,
 } from "@freeanima/shared/sap-contract";
@@ -15,8 +15,8 @@ describe("chat browser SAP client", () => {
     expect(streamEventMethods).toContain("stream.done");
   });
 
-  it("createSapDirectClient exposes subscribe and stream helpers", () => {
-    const client = createSapDirectClient({
+  it("getBundledSapStreamClient exposes subscribe and stream helpers", () => {
+    const client = getBundledSapStreamClient({
       hubRpcWsUrl: "ws://127.0.0.1:2658/hub/rpc/v1",
     });
     expect(client.getClient()).toBeNull();

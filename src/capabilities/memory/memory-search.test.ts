@@ -1,9 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
-import type {
-  MessageFtsHit,
-  SemanticMemoryCreateInput,
-  SemanticMemoryRow,
-} from "@freeanima/core/repos";
+import type { MessageFtsHit } from "@freeanima/core/db/pg/conversation/types";
+import type { SemanticMemoryCreateInput } from "@freeanima/core/db/pg/semantic-memory/types";
+import type { SemanticMemoryRow } from "@freeanima/core/db/schema/rows";
 import { FtsQueryError } from "@freeanima/core/util";
 import { registerMemoryTools, searchSemanticMemory } from "@freeanima/capabilities/memory";
 import { registerToolConversationResolver } from "@freeanima/capabilities/memory/tool-conversation-port";

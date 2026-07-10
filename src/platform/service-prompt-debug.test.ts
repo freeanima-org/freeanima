@@ -6,7 +6,7 @@ import {
   resetTokenizerForTest,
   setTokenizerEncodeForTest,
 } from "@freeanima/core/tokenizer/testing";
-import type { SemanticMemoryRow } from "@freeanima/core/repos";
+import type { SemanticMemoryRow } from "@freeanima/core/db/schema/rows";
 
 const listResidentSemanticMemoryMock = mock(async () => [] as SemanticMemoryRow[]);
 

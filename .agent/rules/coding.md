@@ -64,7 +64,7 @@
 When adding or moving types / Zod / ports, decide in this order:
 
 1. **PG storage shape (DDL + JSONB Zod)** → `@freeanima/core/db` (sole SSOT) — [`src/core/db/schema/`](../../src/core/db/schema/)
-2. **PG 查询 API** → `@freeanima/core/db/pg/{domain}`（函数 + `types.ts`）；共享 marker → `@freeanima/core/repos` — [`src/core/db/pg/`](../../src/core/db/pg/)
+2. **PG 查询 API** → `@freeanima/core/db/pg/{domain}`（函数 + `types.ts`）；memory citation marker → `@freeanima/core/db/pg/memory-reference/markers` — [`src/core/db/pg/`](../../src/core/db/pg/)
 3. **Domain types** → owner package (`{layer}-{slug}` or `@freeanima/core/*` subpath); hoist to kernel pure-type packages only when shared across domains
 
 Additional rules:

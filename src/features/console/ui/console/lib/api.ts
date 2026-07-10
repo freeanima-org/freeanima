@@ -1,5 +1,7 @@
-import type { ConversationListItem } from "@freeanima/features/console/protocol/console-contract/api";
-import type { ServiceStatus } from "@freeanima/features/console/protocol/console-contract/api";
+import type {
+  ConversationSummary,
+  ServiceSnapshot,
+} from "@freeanima/platform/ports/schemas/snapshot";
 import { resetBundledHubClientForTests } from "@freeanima/shared/hub-client";
 import {
   readOfflineCache,
@@ -42,7 +44,7 @@ export async function listConversations(opts?: {
   const total = (raw as { total?: number }).total;
   return reviveDates({
     conversations: raw.conversations.map(
-      (s): ConversationListItem => ({
+      (s): ConversationSummary => ({
         id: s.conversation_id,
         title: s.title ?? "",
         platform: s.platform ?? "",
@@ -142,15 +144,15 @@ const CONSOLE_STATUS_CACHE_NS = "console-status";
 const CONSOLE_STATUS_CACHE_KEY = "dashboard";
 const CONSOLE_MEMORY_CACHE_NS = "console-memory";
 
-export async function getStatus(): Promise<ServiceStatus> {
+export async function getStatus(): Promise<ServiceSnapshot> {
   const scope = resolveCacheScope(resolveApiOrigin());
-  const cached = await readOfflineCache<ServiceStatus>(
+  const cached = await readOfflineCache<ServiceSnapshot>(
     scope,
     CONSOLE_STATUS_CACHE_NS,
     CONSOLE_STATUS_CACHE_KEY,
   );
   try {
-    const status = (await hubCall(hub().call("status.get", {}))) as ServiceStatus;
+    const status = (await hubCall(hub().call("status.get", {}))) as ServiceSnapshot;
     void writeOfflineCache(scope, CONSOLE_STATUS_CACHE_NS, CONSOLE_STATUS_CACHE_KEY, status);
     return status;
   } catch (err) {
@@ -357,8 +359,7 @@ export async function stopAllAcp() {
   return hubCall(hub().call("acp.stopAll", {}));
 }
 
-export type EntityRow =
-  import("@freeanima/features/console/protocol/console-contract/api").EntityRow;
+export type EntityRow = import("@freeanima/core/db/pg/entity/types").EntityRow;
 
 type EntityListResponse = { items: EntityRow[]; total: number };
 

@@ -1,5 +1,6 @@
 import { registerClarifyTool } from "@freeanima/capabilities/tools/clarify";
 import { registerDiaryTools } from "@freeanima/features/diary/domain";
+import { registerDreamTools } from "@freeanima/features/dream/domain";
 import { registerPomodoroTools } from "@freeanima/features/pomodoro/domain";
 import { registerEmailTools } from "@freeanima/features/email/domain";
 import { registerTaskTools } from "@freeanima/features/task/domain";
@@ -51,6 +52,7 @@ export function registerServiceTools(opts: {
   registerTaskTools(opts.toolSets);
   registerProjectTools(opts.toolSets);
   registerDiaryTools(opts.toolSets);
+  registerDreamTools(opts.toolSets);
   registerPomodoroTools(opts.toolSets);
   registerVaultTools(opts.toolSets, {
     resolveAgentSecret: async ({ worldId, itemId, field }) =>

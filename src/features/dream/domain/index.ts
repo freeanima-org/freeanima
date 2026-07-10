@@ -1,10 +1,9 @@
-/** Dream store — domain remains in capabilities-memory until fully colocated. */
 export type {
   DreamEntryRow,
   DreamEntryCreateInput,
   DreamEntryListOpts,
   DreamStoreContext,
-} from "@freeanima/capabilities/memory/dream-store";
+} from "@freeanima/core/db/pg/dream";
 export {
   countDreamEntries,
   createDreamEntry,
@@ -13,4 +12,5 @@ export {
   getLatestDreamEntry,
   listDreamEntries,
   resolveDreamWorldId,
-} from "@freeanima/capabilities/memory/dream-store";
+} from "@freeanima/core/db/pg/dream";
+export { registerDreamTools } from "./tools.ts";

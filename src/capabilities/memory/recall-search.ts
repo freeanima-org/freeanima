@@ -2,7 +2,7 @@ import type {
   AutobiographicalMemoryRow,
   LimbicMemoryRow,
   SemanticFtsHit,
-} from "@freeanima/core/repos";
+} from "@freeanima/core/db/schema/rows";
 import {
   autobiographicalDocKey,
   buildTextSearchSnippet,

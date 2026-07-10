@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import type { SemanticFtsHit } from "@freeanima/core/repos";
+import type { SemanticFtsHit } from "@freeanima/core/db/schema/rows";
 
 import { effectivePassiveRecallMinScore, meetsPassiveRecallMinScore } from "./score.ts";
 

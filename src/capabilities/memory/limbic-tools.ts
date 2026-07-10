@@ -1,7 +1,10 @@
 import type { ToolDef } from "@freeanima/core/tool";
 import { toolError, toolResult } from "@freeanima/core/tool";
 import { omitUndefined } from "@freeanima/core/util";
-import type { LimbicKind, LimbicMemoryCreateInput } from "@freeanima/core/repos";
+import type {
+  LimbicKind,
+  LimbicMemoryCreateInput,
+} from "@freeanima/core/db/pg/limbic-memory/types";
 import { createLimbicMemory } from "@freeanima/core/db/pg/limbic-memory";
 
 const LIMBIC_KINDS = ["conversation_mood", "turning_point", "spike"] as const;

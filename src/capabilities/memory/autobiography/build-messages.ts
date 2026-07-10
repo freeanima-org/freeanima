@@ -2,7 +2,7 @@ import type {
   AutobiographicalMemoryRow,
   LimbicMemoryRow,
   SemanticMemoryRow,
-} from "@freeanima/core/repos";
+} from "@freeanima/core/db/schema/rows";
 import { getLimbicMemory } from "@freeanima/core/db/pg/limbic-memory";
 import {
   getSemanticMemory,

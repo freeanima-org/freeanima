@@ -1,4 +1,4 @@
-import type { NotificationRecipientKind } from "@freeanima/core/repos";
+import type { NotificationRecipientKind } from "@freeanima/core/db/pg/notifications/types";
 import type { AnimaConfig } from "./schemas/config.ts";
 import { resolveWorldSubjectIds } from "./worlds.ts";
 

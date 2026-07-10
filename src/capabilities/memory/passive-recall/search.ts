@@ -1,4 +1,4 @@
-import type { SemanticFtsHit } from "@freeanima/core/repos";
+import type { SemanticFtsHit } from "@freeanima/core/db/schema/rows";
 import { validateFtsQueryInput } from "@freeanima/core/util";
 import { searchSemanticMemoryFts } from "@freeanima/core/db/pg/semantic-memory";
 

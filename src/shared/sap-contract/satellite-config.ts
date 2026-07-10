@@ -1,35 +1,11 @@
 /// <reference lib="dom" />
-export {
-  createBundledSapStreamClient,
-  getBundledSapStreamClient,
-  whenBundledSapClientReady,
-  subscribeShellConfigChanges,
-  type BundledSapStreamClient,
-  type SapConnectionState,
-} from "./bundled-sap-stream.ts";
-
-import {
-  getBundledSapStreamClient,
-  createBundledSapStreamClient,
-  type BundledSapStreamClient,
-} from "./bundled-sap-stream.ts";
-import { resolveHubRpcWsUrl } from "./urls.ts";
 import { formatSapPlatform } from "./naming.ts";
-
-/** @deprecated 使用 getBundledSapStreamClient */
-export type SapDirectClient = BundledSapStreamClient;
-
-export type SapDirectClientOptions = Parameters<typeof createBundledSapStreamClient>[0];
 
 export type DirectSatelliteConfig = {
   hub_ws_url: string;
   app_id: string;
   instance_id?: string;
 };
-
-export function createSapDirectClient(options: SapDirectClientOptions = {}): SapDirectClient {
-  return getBundledSapStreamClient(options);
-}
 
 export async function loadDirectSatelliteConfig(
   configUrl = "/config.json",
@@ -57,5 +33,3 @@ export function formatDirectPlatform(appId: string, instanceId: string): string 
 export function defaultChatPlatform(): string {
   return "chat";
 }
-
-export { resolveHubRpcWsUrl };

@@ -1,5 +1,8 @@
 import { omitUndefined } from "@freeanima/core/util";
-import type { PipelineStepRunListOpts, PipelineStepRunRow } from "@freeanima/core/repos";
+import type {
+  PipelineStepRunListOpts,
+  PipelineStepRunRow,
+} from "@freeanima/core/db/pg/pipeline/types";
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
 import { listPipelineStepRuns as listPgPipelineStepRuns } from "@freeanima/core/db/pg/pipeline";
 import { listCronLogs as listPgCronLogs } from "@freeanima/core/db/pg/cron";
@@ -155,7 +158,7 @@ export async function listCronLogs(
     offset?: number;
     ok?: boolean;
   },
-): Promise<{ items: import("@freeanima/core/repos").CronLogRow[]; total: number }> {
+): Promise<{ items: import("@freeanima/core/db/pg/cron/types").CronLogRow[]; total: number }> {
   if (!isPostgresPrimary()) {
     return { items: [], total: 0 };
   }

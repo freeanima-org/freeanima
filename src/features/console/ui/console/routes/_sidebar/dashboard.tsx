@@ -1,8 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import type {
-  DependencyStatus,
-  ServiceStatus,
-} from "@freeanima/features/console/protocol/console-contract/api";
+import type { DependencyStatus, ServiceSnapshot } from "@freeanima/platform/ports/schemas/snapshot";
 import { Badge, Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
 import { ConfirmDialog, showAlert, StatusAlert } from "@freeanima/frontend/ui-kit/composite";
 import { useState } from "react";
@@ -70,7 +67,7 @@ function DashboardPage() {
   const [restarting, setRestarting] = useState(false);
   const [showRestartConfirm, setShowRestartConfirm] = useState(false);
 
-  const svc = status as ServiceStatus | null;
+  const svc = status as ServiceSnapshot | null;
   const extensions = svc?.extensions;
 
   const mcp = extensions?.mcp ?? {
@@ -263,7 +260,7 @@ function RuntimeCard({
   restarting,
   onRestart,
 }: {
-  svc: ServiceStatus;
+  svc: ServiceSnapshot;
   processMemoryLabel: string;
   heapMemoryHint: string | null;
   postgres: DependencyStatus | undefined;
@@ -335,7 +332,7 @@ function RuntimeCard({
   );
 }
 
-function TunnelLinksCard({ tunnel }: { tunnel: NonNullable<ServiceStatus["tunnel"]> }) {
+function TunnelLinksCard({ tunnel }: { tunnel: NonNullable<ServiceSnapshot["tunnel"]> }) {
   return (
     <Card className="bg-muted py-0 lg:col-span-3">
       <CardContent className="py-3 px-4">

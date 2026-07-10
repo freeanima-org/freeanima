@@ -2,9 +2,9 @@ import type {
   NotificationCreateInput,
   NotificationRecipientKind,
   NotificationReadFilter,
-  NotificationRow,
-} from "@freeanima/core/repos";
-import { DEFAULT_NOTIFICATION_RECIPIENT_ID } from "@freeanima/core/repos";
+} from "@freeanima/core/db/pg/notifications/types";
+import type { NotificationRow } from "@freeanima/core/db/schema/rows";
+import { DEFAULT_NOTIFICATION_RECIPIENT_ID } from "@freeanima/core/db/pg/notifications/types";
 import {
   countNotifications,
   createNotification as createPgNotification,

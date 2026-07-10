@@ -1,8 +1,8 @@
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
 import { SELF_TOOL_RETURNS } from "./return-schemas.ts";
-import type { SelfBlockKey } from "@freeanima/core/repos";
-import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
+import type { SelfBlockKey } from "@freeanima/core/db/pg/self-layer/types";
+import { SELF_BLOCK_KEYS } from "@freeanima/core/db/pg/self-layer/types";
 import { getSelfBlock, updateSelfBlock, upsertSelfBlock } from "@freeanima/core/db/pg/self-layer";
 
 import { invalidateSelfLayerPromptCache } from "./cache.ts";

@@ -1,4 +1,4 @@
-import type { MessageFtsHit } from "@freeanima/core/repos";
+import type { MessageFtsHit } from "@freeanima/core/db/pg/conversation/types";
 import { omitUndefined } from "@freeanima/core/util";
 import { searchSemanticMemoryFts } from "@freeanima/core/db/pg/semantic-memory";
 import { searchMessagesFts } from "@freeanima/core/db/pg/conversation";

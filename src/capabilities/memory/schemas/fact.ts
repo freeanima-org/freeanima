@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { semanticMemoryStatusSchema, semanticMemoryTypeSchema } from "@freeanima/core/db/schema";
-import { semanticMemoryRowSchema } from "@freeanima/core/repos";
+import { semanticMemoryRowSchema } from "@freeanima/core/db/pg/semantic-memory/types";
 
 export { semanticMemoryStatusSchema, semanticMemoryTypeSchema };
 export type { SemanticMemoryStatus, SemanticMemoryType } from "@freeanima/core/db/schema";

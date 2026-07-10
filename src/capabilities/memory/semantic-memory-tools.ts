@@ -7,7 +7,10 @@ import {
   omitUndefined,
   validateFtsQueryInput,
 } from "@freeanima/core/util";
-import type { SemanticMemoryCreateInput, SemanticMemoryUpdateInput } from "@freeanima/core/repos";
+import type {
+  SemanticMemoryCreateInput,
+  SemanticMemoryUpdateInput,
+} from "@freeanima/core/db/pg/semantic-memory/types";
 import {
   createSemanticMemory,
   deleteSemanticMemory,

@@ -1,10 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
-import type {
-  AutobiographicalFtsHit,
-  LimbicFtsHit,
-  MessageFtsHit,
-  SemanticFtsHit,
-} from "@freeanima/core/repos";
+import type { AutobiographicalFtsHit } from "@freeanima/core/db/pg/autobiographical-memory/types";
+import type { LimbicFtsHit } from "@freeanima/core/db/pg/limbic-memory/types";
+import type { MessageFtsHit } from "@freeanima/core/db/pg/conversation/types";
+import type { SemanticFtsHit } from "@freeanima/core/db/schema/rows";
 
 const searchSemanticMemoryFtsMock = mock(async (..._args: unknown[]) => [] as SemanticFtsHit[]);
 const searchMessagesFtsMock = mock(async (..._args: unknown[]) => [] as MessageFtsHit[]);

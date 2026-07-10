@@ -1,4 +1,4 @@
-import { formatMemoryReferenceMarker } from "@freeanima/core/repos";
+import { formatMemoryReferenceMarker } from "@freeanima/core/db/pg/memory-reference/markers";
 import type { AssistantMessage, StoredMessage } from "@freeanima/core/db/domain";
 import { PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME } from "@freeanima/core/llm/runtime-system-turn";
 

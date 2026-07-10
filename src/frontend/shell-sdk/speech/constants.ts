@@ -14,6 +14,3 @@ export const SECOND_HUB_TTS_CHUNK_MAX = 200;
 /** 第三段及以后字数范围 */
 export const LATER_HUB_TTS_CHUNK_MIN = 500;
 export const LATER_HUB_TTS_CHUNK_MAX = 1000;
-
-/** @deprecated 使用 FIRST_HUB_TTS_CHUNK_MAX */
-export const FIRST_HUB_TTS_CHUNK_LEN = FIRST_HUB_TTS_CHUNK_MAX;

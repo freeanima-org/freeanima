@@ -1,5 +1,5 @@
-import type { SelfBlockKey } from "@freeanima/core/repos";
-import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
+import type { SelfBlockKey } from "@freeanima/core/db/pg/self-layer/types";
+import { SELF_BLOCK_KEYS } from "@freeanima/core/db/pg/self-layer/types";
 import { toSelfBlockView } from "@freeanima/capabilities/identity";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import { listSelfBlocks as listPgSelfBlocks } from "@freeanima/core/db/pg/self-layer";

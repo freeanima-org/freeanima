@@ -4,7 +4,7 @@ import { omitUndefined } from "@freeanima/core/util";
 import type {
   AutobiographicalSignificance,
   AutobiographicalMemoryCreateInput,
-} from "@freeanima/core/repos";
+} from "@freeanima/core/db/pg/autobiographical-memory/types";
 
 import {
   createAutobiographicalMemory,

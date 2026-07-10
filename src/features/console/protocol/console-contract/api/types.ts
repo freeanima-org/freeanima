@@ -10,10 +10,10 @@ export type {
 
 export type {
   AutobiographicalMemoryRow,
-  EntityRow,
   LimbicMemoryRow,
   SemanticMemoryRow,
-} from "@freeanima/core/repos";
+} from "@freeanima/core/db/schema/rows";
+export type { EntityRow } from "@freeanima/core/db/pg/entity/types";
 
 export type {
   DependencyStatus,

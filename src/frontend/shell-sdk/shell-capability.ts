@@ -30,9 +30,6 @@ export function hasFinePointerCapability(): boolean {
   return readFinePointerFromMedia();
 }
 
-/** @deprecated 使用 `hasFinePointerCapability` */
-export const hasDesktopPointerCapability = hasFinePointerCapability;
-
 export function hasTouchPrimaryCapability(): boolean {
   return !hasFinePointerCapability();
 }

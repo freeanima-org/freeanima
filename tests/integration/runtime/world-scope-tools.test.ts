@@ -10,8 +10,8 @@ import { runWithToolContext } from "@freeanima/runtime/loop";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { getProfileHopModel } from "@freeanima/platform/config";
 import { registerDiaryTools } from "@freeanima/features/diary/domain";
-import { registerDreamTools } from "@freeanima/capabilities/memory";
-import { createDreamEntry } from "@freeanima/capabilities/memory/dream/entry-store";
+import { registerDreamTools } from "@freeanima/features/dream/domain";
+import { createDreamEntry } from "@freeanima/core/db/pg/dream";
 import { registerEmailTools } from "@freeanima/features/email/domain";
 import { createEmailAccount } from "@freeanima/features/email/domain";
 import {

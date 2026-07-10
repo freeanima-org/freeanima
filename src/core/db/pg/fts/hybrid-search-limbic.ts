@@ -1,4 +1,4 @@
-import type { LimbicFtsHit } from "@freeanima/core/repos";
+import type { LimbicFtsHit } from "@freeanima/core/db/pg/limbic-memory/types";
 import { getActiveRuntimeConfig, getFtsTrgmFallbackWhenHitsLt } from "@freeanima/core/config";
 import { limbicDocKey, rrfMerge } from "@freeanima/core/util";
 

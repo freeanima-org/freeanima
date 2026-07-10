@@ -8,9 +8,9 @@ import {
   type ToolReturnContractFields,
   z,
 } from "@freeanima/core/tool";
+import { getDreamEntryByDay, getLatestDreamEntry } from "@freeanima/core/db/pg/dream";
 
-import { getDreamEntryByDay, getLatestDreamEntry } from "./dream/entry-store.ts";
-import { resolveDreamToolWorld, WORLD_ID_OPTIONAL } from "./dream/tool-world-resolve.ts";
+import { resolveDreamToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
 
 const dreamReadReturnSchema = z.object({
   ok: z.literal(true),

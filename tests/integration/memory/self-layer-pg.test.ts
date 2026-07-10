@@ -5,7 +5,7 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
+import { SELF_BLOCK_KEYS } from "@freeanima/core/db/pg/self-layer/types";
 import { buildAutobiographySummary } from "@freeanima/capabilities/memory/autobiography/run";
 import {
   createAutobiographicalMemory,

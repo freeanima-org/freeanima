@@ -1,7 +1,7 @@
 import { describe, it, expect, spyOn, afterEach, mock } from "bun:test";
 import * as loopEngine from "@freeanima/runtime/loop";
 import * as conv from "@freeanima/runtime/conversation";
-import type { AutoLlmRunAppendInput } from "@freeanima/core/repos";
+import type { AutoLlmRunAppendInput } from "@freeanima/core/db/pg/auto-llm-run/types";
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/runtime";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/core/llm";
