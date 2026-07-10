@@ -6,6 +6,8 @@ import type { SapServerDeps } from "../sap/types.ts";
 export type HubDispatchContext = SapRequestContext & {
   app_id: string;
   instance_id: string;
+  /** HTTP REST 适配器注入；WS 无此字段 */
+  httpRequest?: Request;
 };
 
 /** 统一 Hub method dispatch（WS / HTTP 适配器共用入口） */

@@ -79,7 +79,7 @@ Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-backed
 
 Target layout is **feature modules** under `src/features/<slug>/` (UI + protocol + Hub adapter + domain + `plugin.ts`). Console is renamed **console** and uses the **same module shape** as chat/task — not a separate admin-\* stack. `src/satellites/` is legacy naming; do not add new products there.
 
-**End state:** Hub RPC per feature; business methods use `POST|WS /hub/rpc/v1` (same envelope). Infrastructure HTTP only: `GET /api/health`, `POST /api/tts/synthesize`.
+**End state:** Hub RPC per feature; business methods use `POST|WS /hub/rpc/v1` (same envelope). Infrastructure HTTP only: `POST /api/tts/synthesize`. Public health/TLS probes are Hub RPC methods with `auth: optional`.
 
 Authoritative spec: [`repository-topology.md`](repository-topology.md).
 

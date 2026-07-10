@@ -6,6 +6,7 @@ import {
   isMobileCapacitorShellCandidate,
 } from "@freeanima/frontend/shell-sdk/capacitor-runtime";
 import { resolveHubApiOrigin } from "@freeanima/frontend/shell-sdk/hub-api-origin";
+import { hubHealthProbeUrl } from "@freeanima/shared/hub-rpc";
 import { parseComponentBuildMeta } from "@freeanima/frontend/shell-sdk/build-meta";
 import {
   NATIVE_BUILD_META_CHANGED_EVENT,
@@ -117,7 +118,7 @@ type ServiceAboutInfo = {
 async function fetchServiceAboutInfo(): Promise<ServiceAboutInfo> {
   try {
     const origin = resolveHubApiOrigin();
-    const res = await fetch(`${origin}/api/health`, { cache: "no-store" });
+    const res = await fetch(hubHealthProbeUrl(origin), { cache: "no-store" });
     if (!res.ok) return { meta: null };
     const body = (await res.json()) as {
       build?: unknown;

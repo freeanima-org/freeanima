@@ -48,7 +48,9 @@ export { resolveHubHttpUrl, resolveHubRpcWsUrl, hubHttpFromRpcWsUrl } from "./ur
 export {
   appendPayloadToQuery,
   buildHubRestRequest,
+  hubHealthProbeUrl,
   hubRpcRestPrefix,
+  hubTlsCaInfoUrl,
   parseHubRestResponse,
   parseQueryToPayload,
 } from "./http-rest.ts";

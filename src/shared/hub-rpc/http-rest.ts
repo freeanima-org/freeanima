@@ -6,6 +6,16 @@ export function hubRpcRestPrefix(): string {
   return HUB_RPC_REST_PREFIX;
 }
 
+/** 无 token 探活 URL */
+export function hubHealthProbeUrl(httpOrigin: string): string {
+  return `${normalizeOrigin(httpOrigin)}${HUB_RPC_REST_PREFIX}health/probe`;
+}
+
+/** TLS CA 信息 URL（无 token） */
+export function hubTlsCaInfoUrl(httpOrigin: string): string {
+  return `${normalizeOrigin(httpOrigin)}${HUB_RPC_REST_PREFIX}tls/ca/info`;
+}
+
 function normalizeOrigin(httpOrigin: string): string {
   return httpOrigin.replace(/\/$/, "");
 }

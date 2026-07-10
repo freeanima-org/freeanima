@@ -13,7 +13,7 @@ describe("http-dispatch", () => {
     expect(isHubApiPath("/")).toBe(true);
     expect(isHubApiPath("/api")).toBe(true);
     expect(isHubApiPath("/api/")).toBe(true);
-    expect(isHubApiPath("/api/health")).toBe(true);
+    expect(isHubApiPath("/api/tts/synthesize")).toBe(true);
     expect(isHubApiPath("/hub/rpc/v1")).toBe(false);
   });
 
@@ -21,6 +21,7 @@ describe("http-dispatch", () => {
     expect(isHubRpcPath("/hub/rpc/v1")).toBe(true);
     expect(isHubRpcPath("/hub/rpc/v1/task/list")).toBe(true);
     expect(isHubRpcPath("/hub/rpc/v1/task/create")).toBe(true);
+    expect(isHubRpcPath("/hub/rpc/v1/health/probe")).toBe(true);
     expect(isHubRpcPath("/api/health")).toBe(false);
   });
 
@@ -31,16 +32,16 @@ describe("http-dispatch", () => {
     expect(result.blocked?.status).toBe(401);
   });
 
-  test("applyHttpAuth allows GET /api/health without token", async () => {
+  test("applyHttpAuth allows GET /hub/rpc/v1/health/probe without token", async () => {
     const serviceAuth = createServiceAuthVerifier();
-    const req = new Request("http://127.0.0.1:2658/api/health");
+    const req = new Request("http://127.0.0.1:2658/hub/rpc/v1/health/probe");
     const result = await applyHttpAuth(req, "127.0.0.1", serviceAuth);
     expect(result.blocked).toBeNull();
   });
 
-  test("applyHttpAuth allows GET /api/health on public host without token", async () => {
+  test("applyHttpAuth allows GET /hub/rpc/v1/health/probe on public host without token", async () => {
     const serviceAuth = createServiceAuthVerifier();
-    const req = new Request("https://anima.freetrace.me/api/health");
+    const req = new Request("https://anima.freetrace.me/hub/rpc/v1/health/probe");
     const result = await applyHttpAuth(req, "127.0.0.1", serviceAuth);
     expect(result.blocked).toBeNull();
   });
@@ -64,7 +65,7 @@ describe("http-dispatch", () => {
   });
 
   test("handleHubCorsPreflight returns 204 for Capacitor origin", () => {
-    const req = new Request("https://hub.example.com/api/health", {
+    const req = new Request("https://hub.example.com/hub/rpc/v1/health/probe", {
       method: "OPTIONS",
       headers: { Origin: "https://localhost" },
     });
@@ -75,7 +76,7 @@ describe("http-dispatch", () => {
 
   test("applyHttpAuth allows OPTIONS preflight without token", async () => {
     const serviceAuth = createServiceAuthVerifier();
-    const req = new Request("https://anima.freetrace.me/api/health", {
+    const req = new Request("https://anima.freetrace.me/hub/rpc/v1/task/list", {
       method: "OPTIONS",
       headers: { Origin: "https://localhost" },
     });

@@ -34,7 +34,7 @@ describe("remote-auth helpers", () => {
     }) as typeof fetch;
     try {
       const hubFetch = createBearerFetch("secret-token-min-16", "http://127.0.0.1:2658");
-      await hubFetch("http://127.0.0.1:2658/api/health");
+      await hubFetch("http://127.0.0.1:2658/hub/rpc/v1/health/probe");
       expect(seenAuth).toBe("Bearer secret-token-min-16");
     } finally {
       globalThis.fetch = originalFetch;

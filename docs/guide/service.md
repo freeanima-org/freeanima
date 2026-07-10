@@ -42,7 +42,7 @@ anima web start --foreground # standalone Web static server (default :2660; prod
 
 When `web.enabled: true`, the stack serves browser Web UI at `http://<host>:2658/web/*` from Hub (no separate API proxy). Clients store Hub URL and **Service API Token** (`fa_at_...`) in **Hub settings**. For standalone static hosting without the Hub process, use `anima web start --foreground` (default `:2660`). Optional Hub native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)).
 
-**Startup order:** Hub must pass `GET /api/health` (`status: ok`) before Tunnel sidecars start (`serve()` `onReady` → stack supervisor). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).
+**Startup order:** Hub must pass `GET /hub/rpc/v1/health/probe` (`status: ok`) before Tunnel sidecars start (`serve()` `onReady` → stack supervisor). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).
 
 **UI access (two modes):**
 

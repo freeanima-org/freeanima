@@ -1,4 +1,6 @@
 /** Hub REST 默认 HTTP 端口（与 @freeanima/core/config DEFAULT_HUB_HTTP_PORT 保持一致） */
+import { hubTlsCaInfoUrl } from "@freeanima/shared/hub-rpc";
+
 const DEFAULT_HUB_HTTP_PORT = 2658;
 
 export type TlsCaInfo = {
@@ -61,7 +63,7 @@ export async function fetchTlsCaInfo(hubUrl?: string): Promise<TlsCaInfo> {
   let lastError: Error | undefined;
   for (const base of bases) {
     try {
-      const res = await fetch(`${base}/api/tls/ca/info`, { cache: "no-store" });
+      const res = await fetch(hubTlsCaInfoUrl(base), { cache: "no-store" });
       if (!res.ok) {
         throw new Error(`TLS CA 信息不可用（${res.status}）`);
       }

@@ -13,7 +13,7 @@ mock.module("@freeanima/core/db/pg/service-api-token", () => ({
 const { evaluateServiceAuthAuthed } = await import("./service-auth.ts");
 
 describe("evaluateServiceAuthAuthed", () => {
-  test("GET /api/health 带 Bearer 仍校验 token", async () => {
+  test("health.probe 带 Bearer 仍校验 token", async () => {
     verifyServiceApiToken.mockReset();
     verifyServiceApiToken.mockResolvedValueOnce({
       token_id: 1,
@@ -22,7 +22,7 @@ describe("evaluateServiceAuthAuthed", () => {
       scopes: ["full"],
     });
 
-    const req = new Request("http://127.0.0.1:2658/api/health", {
+    const req = new Request("http://127.0.0.1:2658/hub/rpc/v1/health/probe", {
       headers: { Authorization: "Bearer fa_at_testprefix_testsecret" },
     });
 
@@ -32,7 +32,7 @@ describe("evaluateServiceAuthAuthed", () => {
 
   test("无 Bearer 返回 false", async () => {
     verifyServiceApiToken.mockReset();
-    const req = new Request("http://127.0.0.1:2658/api/health");
+    const req = new Request("http://127.0.0.1:2658/hub/rpc/v1/health/probe");
     await expect(evaluateServiceAuthAuthed(req)).resolves.toBe(false);
     expect(verifyServiceApiToken).not.toHaveBeenCalled();
   });

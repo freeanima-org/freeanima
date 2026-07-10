@@ -3,11 +3,16 @@ import { afterAll, afterEach, beforeEach, describe, expect, it } from "bun:test"
 import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
 import { createServiceApiTokenWithSecret } from "@freeanima/core/db/pg/service-api-token";
 import { getAppRuntime } from "@freeanima/platform/ports";
+import { createSapBunHandlers } from "@freeanima/platform/sap/bun-route";
+import { getSapServerDeps } from "@freeanima/platform/sap/runtime-context";
 
 import { createApiApp } from "@freeanima/features/console/hub/console-api/elysia/app.ts";
-import { bindConsoleRuntimeContext } from "@freeanima/features/console/hub/console-api/handlers/runtime";
-import { applyHttpAuth } from "@freeanima/features/console/hub/console-api/http-dispatch";
-import { createServiceAuthVerifier } from "@freeanima/features/console/hub/console-api/service-auth";
+import { bindConsoleRuntimeContext } from "@freeanima/features/console/hub/console-api/handlers/runtime.ts";
+import {
+  applyHttpAuth,
+  isHubApiPath,
+} from "@freeanima/features/console/hub/console-api/http-dispatch.ts";
+import { createServiceAuthVerifier } from "@freeanima/features/console/hub/console-api/service-auth.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
@@ -24,7 +29,16 @@ describePg("service API tokens", () => {
     const req = new Request(`http://127.0.0.1:2658${path}`, init);
     const auth = await applyHttpAuth(req, "127.0.0.1", serviceAuth);
     if (auth.blocked) return auth.blocked;
-    return apiApp.fetch(auth.req);
+    const authedReq = auth.req;
+    const authedPath = new URL(authedReq.url).pathname;
+    if (isHubApiPath(authedPath)) {
+      return apiApp.fetch(authedReq);
+    }
+    const sapDeps = getSapServerDeps();
+    if (!sapDeps) return new Response("Not Found", { status: 404 });
+    const sapHandlers = createSapBunHandlers(sapDeps);
+    const sapRes = await sapHandlers.fetch(authedReq, undefined as never);
+    return sapRes ?? new Response("Not Found", { status: 404 });
   }
 
   afterAll(async () => {
@@ -42,8 +56,8 @@ describePg("service API tokens", () => {
       await restoreIntegrationHome(prev);
     });
 
-    it("GET /api/health without token returns ok and authed=false", async () => {
-      const res = await hubFetch("/api/health");
+    it("GET /hub/rpc/v1/health/probe without token returns ok and authed=false", async () => {
+      const res = await hubFetch("/hub/rpc/v1/health/probe");
       expect(res.status).toBe(200);
       const body = (await res.json()) as { status: string; authed: boolean };
       expect(body.status).toBe("ok");
@@ -73,14 +87,14 @@ describePg("service API tokens", () => {
       expect(res.status).toBe(401);
     });
 
-    it("GET /api/health with valid Bearer reports authed=true", async () => {
+    it("GET /hub/rpc/v1/health/probe with valid Bearer reports authed=true", async () => {
       const { user_subject_id } = getResolvedWorldContext();
       const { plaintext } = await createServiceApiTokenWithSecret({
         subject_id: user_subject_id,
         name: "health-authed",
       });
 
-      const res = await hubFetch("/api/health", {
+      const res = await hubFetch("/hub/rpc/v1/health/probe", {
         headers: { Authorization: `Bearer ${plaintext}` },
       });
       expect(res.status).toBe(200);

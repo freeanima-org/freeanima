@@ -13,6 +13,19 @@ import type { SapRequestAuthContext, SapRequestContext } from "@freeanima/shared
 import { hubDispatch } from "./dispatch.ts";
 import type { SapServerDeps } from "../sap/types.ts";
 
+/** 与 console-api handlers/errors 对齐；platform 不依赖 feature-console */
+class HubRestHandlerError extends Error {
+  readonly status: number;
+  readonly code: string;
+
+  constructor(status: number, code: string, message: string) {
+    super(message);
+    this.name = "HubRestHandlerError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
 const HUB_RPC_REST_PREFIX = "/hub/rpc/v1/";
 
 type RouteEntry = {
@@ -101,18 +114,32 @@ function jsonError(status: number, code: string, message: string): Response {
   return Response.json({ error: { code, message } }, { status });
 }
 
-function ctxFor(auth: SapRequestAuthContext): SapRequestContext {
+function ctxFor(
+  auth: HttpHubRestAuth,
+  req: Request,
+): SapRequestContext & {
+  app_id: string;
+  instance_id: string;
+  httpRequest: Request;
+} {
+  const authCtx: SapRequestAuthContext = auth ?? {
+    token_id: 0,
+    subject_id: 0,
+    subject_type: "user",
+    scopes: [],
+  };
   return {
     app_id: "",
     instance_id: "",
-    auth,
+    auth: authCtx,
+    httpRequest: req,
     sendEvent() {
       /* stateless HTTP REST — no streaming evt */
     },
   };
 }
 
-export type HttpHubRestAuth = SapRequestAuthContext;
+export type HttpHubRestAuth = SapRequestAuthContext | null;
 
 export async function handleHttpHubRestRequest(
   req: Request,
@@ -163,7 +190,10 @@ export async function handleHttpHubRestRequest(
   const coerced = coercePayloadForSchema(merged, def.input);
 
   try {
-    const result = await hubDispatch(deps, entry.hubMethod, coerced, ctxFor(auth));
+    const result = await hubDispatch(deps, entry.hubMethod, coerced, ctxFor(auth, req));
+    if (result instanceof Response) {
+      return result;
+    }
     return Response.json(result, {
       status: 200,
       headers: { "Cache-Control": "private, no-cache" },
@@ -171,6 +201,17 @@ export async function handleHttpHubRestRequest(
   } catch (e) {
     if (e instanceof z.ZodError) {
       return jsonError(400, "invalid_input", e.message);
+    }
+    if (e instanceof HubRestHandlerError) {
+      return jsonError(e.status, e.code, e.message);
+    }
+    const apiErr = e as { status?: number; message?: string; context?: { code?: string } };
+    if (typeof apiErr.status === "number" && apiErr.message) {
+      return jsonError(
+        apiErr.status,
+        typeof apiErr.context?.code === "string" ? apiErr.context.code : "hub_rpc_error",
+        apiErr.message,
+      );
     }
     console.error("[hub-rest] handler failed:", e);
     return jsonError(500, "hub_rpc_error", "Hub RPC request failed");

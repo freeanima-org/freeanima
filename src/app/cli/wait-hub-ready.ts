@@ -20,7 +20,7 @@ function systemdHubFailed(): boolean {
   return String(r.stdout ?? "").trim() === "failed";
 }
 
-/** Poll GET /api/health until status is ok or timeout. */
+/** Poll GET /hub/rpc/v1/health/probe until status is ok or timeout. */
 export async function waitForHubReady(
   host: string,
   port: number,
@@ -32,7 +32,7 @@ export async function waitForHubReady(
   const deadline = Date.now() + timeoutMs;
 
   while (Date.now() < deadline) {
-    const health = await apiGet(probeHost, port, "/api/health", 2000);
+    const health = await apiGet(probeHost, port, "/hub/rpc/v1/health/probe", 2000);
     if (health?.status === "ok") return true;
     await sleep(intervalMs);
   }
@@ -48,7 +48,7 @@ export async function waitForHubReadyOrWarn(host: string, port: number): Promise
   let lastProgressAt = 0;
 
   while (Date.now() < deadline) {
-    const health = await apiGet(probeHost, port, "/api/health", 2000);
+    const health = await apiGet(probeHost, port, "/hub/rpc/v1/health/probe", 2000);
     if (health?.status === "ok") return true;
 
     if (systemdHubFailed()) {

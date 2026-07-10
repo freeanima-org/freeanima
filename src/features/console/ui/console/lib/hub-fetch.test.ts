@@ -45,7 +45,7 @@ describe("resolveHubFetch", () => {
       isElectron: true,
     });
 
-    await resolveHubFetch()("https://anima.example.com/api/health");
+    await resolveHubFetch()("https://anima.example.com/hub/rpc/v1/health/probe");
     expect(seenAuth).toBe("Bearer secret-token-min-16");
   });
 
@@ -62,7 +62,7 @@ describe("resolveHubFetch", () => {
       isElectron: true,
     });
 
-    await resolveHubFetch()("http://127.0.0.1:2658/api/health");
+    await resolveHubFetch()("http://127.0.0.1:2658/hub/rpc/v1/health/probe");
     expect(seenAuth).toBe("Bearer secret-token-min-16");
   });
 

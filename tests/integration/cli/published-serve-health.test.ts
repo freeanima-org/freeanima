@@ -35,7 +35,7 @@ async function waitForHealth(
   let lastError: unknown;
   while (Date.now() < deadline) {
     try {
-      const res = await fetch(`http://127.0.0.1:${port}/api/health`);
+      const res = await fetch(`http://127.0.0.1:${port}/hub/rpc/v1/health/probe`);
       if (res.ok) {
         const body = (await res.json()) as Record<string, unknown>;
         if (body.status === "ok") return body;
@@ -96,7 +96,7 @@ describePg("published CLI HTTP health", () => {
   });
 
   it(
-    "GET /api/health returns status ok from publish bundle",
+    "GET /hub/rpc/v1/health/probe returns status ok from publish bundle",
     async () => {
       const body = await waitForHealth(TEST_PORT);
       expect(body.status).toBe("ok");
