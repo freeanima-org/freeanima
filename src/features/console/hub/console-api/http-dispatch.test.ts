@@ -3,6 +3,7 @@ import {
   applyHttpAuth,
   handleHubCorsPreflight,
   isHubApiPath,
+  isHubRpcPath,
   trySapWebSocketUpgrade,
 } from "./http-dispatch.ts";
 import { createServiceAuthVerifier } from "./service-auth.ts";
@@ -14,6 +15,20 @@ describe("http-dispatch", () => {
     expect(isHubApiPath("/api/")).toBe(true);
     expect(isHubApiPath("/api/health")).toBe(true);
     expect(isHubApiPath("/hub/rpc/v1")).toBe(false);
+  });
+
+  test("isHubRpcPath matches REST subpaths", () => {
+    expect(isHubRpcPath("/hub/rpc/v1")).toBe(true);
+    expect(isHubRpcPath("/hub/rpc/v1/task/list")).toBe(true);
+    expect(isHubRpcPath("/hub/rpc/v1/task/create")).toBe(true);
+    expect(isHubRpcPath("/api/health")).toBe(false);
+  });
+
+  test("applyHttpAuth blocks GET /hub/rpc/v1/task/list without token", async () => {
+    const serviceAuth = createServiceAuthVerifier();
+    const req = new Request("http://127.0.0.1:2658/hub/rpc/v1/task/list");
+    const result = await applyHttpAuth(req, "127.0.0.1", serviceAuth);
+    expect(result.blocked?.status).toBe(401);
   });
 
   test("applyHttpAuth allows GET /api/health without token", async () => {

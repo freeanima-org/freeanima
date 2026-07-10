@@ -56,7 +56,7 @@ export function isHubProtectedHttpPath(pathname: string): boolean {
 }
 
 export function isHubRpcPath(pathname: string): boolean {
-  return pathname === "/hub/rpc/v1";
+  return pathname === "/hub/rpc/v1" || pathname.startsWith("/hub/rpc/v1/");
 }
 
 /** REST API 路径（须先过 service_auth 中间件） */

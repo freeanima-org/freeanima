@@ -1,6 +1,7 @@
 import type { z } from "zod";
 
 import type { HubMethodMeta } from "./transport.ts";
+import type { HttpRouteMeta } from "./http-route.ts";
 
 /** 单个 Hub method 的契约定义 */
 export type HubMethodDef<
@@ -18,16 +19,29 @@ export function defineHubMethod<I extends z.ZodTypeAny, O extends z.ZodTypeAny>(
   return def;
 }
 
-/** HTTP + WS 双传输（HubRPC envelope；无 REST path） */
-export function dualTransportMeta(readOnly = true): HubMethodMeta {
-  return {
+export type DualTransportMetaOptions = {
+  http?: Partial<HttpRouteMeta>;
+};
+
+/** HTTP + WS 双传输（只读默认 HTTP GET；写入默认 WS） */
+export function dualTransportMeta(
+  readOnly = true,
+  options?: DualTransportMetaOptions,
+): HubMethodMeta {
+  const meta: HubMethodMeta = {
     transports: ["http", "ws"],
-    defaultByProfile: { console: "ws", satellite: "ws" },
+    defaultByProfile: readOnly
+      ? { console: "http", satellite: "http" }
+      : { console: "ws", satellite: "ws" },
     fallback: readOnly,
   };
+  if (options?.http) {
+    meta.httpOverrides = options.http;
+  }
+  return meta;
 }
 
-/** 仅 HTTP 传输（HubRPC POST /hub/rpc/v1） */
+/** 仅 HTTP 传输（REST /hub/rpc/v1/{path}） */
 export function httpTransportMeta(): HubMethodMeta {
   return {
     transports: ["http"],

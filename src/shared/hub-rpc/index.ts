@@ -46,6 +46,15 @@ export type {
 export { resolveHubHttpUrl, resolveHubRpcWsUrl, hubHttpFromRpcWsUrl } from "./urls.ts";
 
 export {
+  appendPayloadToQuery,
+  buildHubRestRequest,
+  hubRpcRestPrefix,
+  parseHubRestResponse,
+  parseQueryToPayload,
+} from "./http-rest.ts";
+export type { HubRestErrorBody } from "./http-rest.ts";
+
+export {
   getBundledHubRpcClient,
   whenHubRpcReady,
   resetBundledHubRpcClientForTests,

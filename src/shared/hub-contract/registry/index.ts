@@ -1,5 +1,6 @@
 import type { z } from "zod";
 
+import { buildHttpRouteMeta, isReadOnlyHubMeta, type HttpRouteMeta } from "../http-route.ts";
 import { chatMethodDefs } from "./chat.ts";
 import { consoleMethodDefs } from "./console.ts";
 import {
@@ -63,6 +64,37 @@ export const METHOD_REGISTRY = {
   ...consoleMethodDefs,
 } as const;
 
+function buildHttpRouteRegistry(): Partial<Record<HubMethod, HttpRouteMeta>> {
+  const routeKeys = new Set<string>();
+  const routes: Partial<Record<HubMethod, HttpRouteMeta>> = {};
+
+  for (const method of Object.keys(METHOD_REGISTRY) as HubMethod[]) {
+    const def = METHOD_REGISTRY[method];
+    const meta = def.meta;
+    if (!meta.transports.includes("http")) continue;
+
+    const readOnly = isReadOnlyHubMeta(meta);
+    const http = buildHttpRouteMeta(method, def.input, readOnly, meta.httpOverrides);
+    if (http.verb === "GET" && !readOnly && !meta.httpOverrides?.verb) {
+      throw new Error(`hub method ${method}: GET route requires readOnly meta`);
+    }
+    const routeKey = `${http.verb}:${http.path}`;
+    if (routeKeys.has(routeKey)) {
+      throw new Error(`duplicate hub http route: ${routeKey} (${method})`);
+    }
+    routeKeys.add(routeKey);
+    routes[method] = http;
+  }
+
+  return routes;
+}
+
+const HTTP_ROUTE_REGISTRY = buildHttpRouteRegistry();
+
+export function getHubMethodHttpRoute(method: HubMethod): HttpRouteMeta | undefined {
+  return HTTP_ROUTE_REGISTRY[method];
+}
+
 export type HubMethod = keyof typeof METHOD_REGISTRY;
 
 export type HubMethodInputs = {
@@ -78,7 +110,11 @@ export function isHubMethod(method: string): method is HubMethod {
 }
 
 export function getHubMethodDef(method: HubMethod): HubMethodDef {
-  return METHOD_REGISTRY[method];
+  const def = METHOD_REGISTRY[method];
+  const http = HTTP_ROUTE_REGISTRY[method];
+  if (!http) return def;
+  const { httpOverrides: _ignored, ...metaBase } = def.meta;
+  return { ...def, meta: { ...metaBase, http } };
 }
 
 export function listHubMethods(): HubMethod[] {

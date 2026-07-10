@@ -39,12 +39,12 @@
 
 **示例**：memory、config、cron、MCP、entity worlds（Console UI）
 
-| 层                                               | 必须改                                                           |
-| ------------------------------------------------ | ---------------------------------------------------------------- |
-| `src/features/console/protocol/console-contract` | API 类型 + hub-contract re-export（schema SSOT 在 hub-contract） |
-| `src/features/console/hub/console-api`           | `console-hub-handlers.ts` + 基础设施 Elysia（health、tts）       |
-| `src/features/console/plugin.ts`                 | `hub.rpc` 注册 handler（**禁止**在 hub-contract 写 REST path）   |
-| `src/features/console/ui/console`                | `@freeanima/hub-client` `call` / `subscribe`                     |
+| 层                                               | 必须改                                                                      |
+| ------------------------------------------------ | --------------------------------------------------------------------------- |
+| `src/features/console/protocol/console-contract` | API 类型 + hub-contract re-export（schema SSOT 在 hub-contract）            |
+| `src/features/console/hub/console-api`           | `console-hub-handlers.ts` + 基础设施 Elysia（health、tts）                  |
+| `src/features/console/plugin.ts`                 | `hub.rpc` 注册 handler；HTTP REST path 由 hub-contract `meta.http` 自动生成 |
+| `src/features/console/ui/console`                | `@freeanima/hub-client` `call` / `subscribe`                                |
 
 **不要**：import `sap-contract`；在 registry 注册 `/api/*` path；新建 `satellite-*` 包。
 
@@ -61,13 +61,13 @@
 
 新增 Feature RPC method 时：
 
-1. 在 `src/shared/hub-contract/registry/` 增加 method 定义（Zod + `dualTransportMeta` / `wsOnlyMeta` — **无 REST path**）
+1. 在 `src/shared/hub-contract/registry/` 增加 method 定义（Zod + `dualTransportMeta` / `wsOnlyMeta`；HTTP REST 由 registry finalize 生成 `meta.http`，复合 path 用 `HTTP_ROUTE_OVERRIDES` 或 `dualTransportMeta(..., { http: … })`）
 2. 在 `src/shared/sap-contract/feature-rpc/frames/` 增加 schema（若尚未存在）
 3. 在 `src/features/<slug>/hub/rpc.ts` 实现 handler（**禁止** import `hub-client`）
 4. 在 `src/features/<slug>/plugin.ts` 注册 `hub.rpc`
 5. Feature UI `api.ts` 使用 `@freeanima/hub-client` 的 `call` / `subscribe`
 
-Console method：`hub-contract/registry/console.ts` + `console-hub-handlers.ts` + `console/plugin.hub.rpc`。业务传输：`POST|WS /hub/rpc/v1`（同 envelope）。
+Console method：`hub-contract/registry/console.ts` + `console-hub-handlers.ts` + `console/plugin.hub.rpc`。业务传输：**WS** `/hub/rpc/v1`（HubRPC envelope）；**HTTP** `/hub/rpc/v1/{path}`（REST GET/POST，plain JSON）。
 
 SAP attach 专用 method（tool/terminal/sap.attach）仍在 [`src/platform/sap/ws-server.ts`](../../src/platform/sap/ws-server.ts) switch 内。
 
