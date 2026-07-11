@@ -24,6 +24,24 @@ export type FeatureRouteBundle = {
   defs: Record<string, HubMethodDef>;
 };
 
+type RouteBundleDefs<R extends readonly HubRouteBundle[]> = {
+  [K in R[number]["method"]]: Extract<R[number], { method: K }>["def"];
+};
+
+type RouteBundleHandlers<R extends readonly HubRouteBundle[]> = {
+  [K in R[number]["method"]]: Extract<R[number], { method: K }>["handler"];
+};
+
+export type MergedRouteBundle<B extends readonly FeatureRouteBundle[]> = B extends readonly [
+  infer H extends FeatureRouteBundle,
+  ...infer T extends readonly FeatureRouteBundle[],
+]
+  ? {
+      handlers: H["handlers"] & MergedRouteBundle<T>["handlers"];
+      defs: H["defs"] & MergedRouteBundle<T>["defs"];
+    }
+  : { handlers: Record<string, never>; defs: Record<string, never> };
+
 export function defineHubRoute<
   const M extends string,
   I extends z.ZodTypeAny,
@@ -46,7 +64,12 @@ export function defineHubRoute<
   };
 }
 
-export function mergeFeatureRoutes(routes: readonly HubRouteBundle[]): FeatureRouteBundle {
+export function mergeFeatureRoutes<const R extends readonly HubRouteBundle[]>(
+  routes: R,
+): {
+  handlers: RouteBundleHandlers<R>;
+  defs: RouteBundleDefs<R>;
+} {
   const handlers: FeatureRouteBundle["handlers"] = {};
   const defs: FeatureRouteBundle["defs"] = {};
 
@@ -58,10 +81,15 @@ export function mergeFeatureRoutes(routes: readonly HubRouteBundle[]): FeatureRo
     defs[route.method] = route.def;
   }
 
-  return { handlers, defs };
+  return { handlers, defs } as {
+    handlers: RouteBundleHandlers<R>;
+    defs: RouteBundleDefs<R>;
+  };
 }
 
-export function mergeHubRouteBundles(bundles: readonly FeatureRouteBundle[]): FeatureRouteBundle {
+export function mergeHubRouteBundles<const B extends readonly FeatureRouteBundle[]>(
+  bundles: B,
+): MergedRouteBundle<B> {
   const handlers: FeatureRouteBundle["handlers"] = {};
   const defs: FeatureRouteBundle["defs"] = {};
 
@@ -80,26 +108,18 @@ export function mergeHubRouteBundles(bundles: readonly FeatureRouteBundle[]): Fe
     }
   }
 
-  return { handlers, defs };
+  return { handlers, defs } as MergedRouteBundle<B>;
 }
 
-/** 从 legacy registry defs + handler map 构建 feature routes（迁移辅助） */
-export function attachHandlersToDefs<
-  T extends Record<string, HubMethodDef>,
-  H extends Record<keyof T & string, HubRouteHandler<z.ZodTypeAny, z.ZodTypeAny>>,
->(defs: T, handlers: H): FeatureRouteBundle {
-  const routes: HubRouteBundle[] = [];
-  for (const method of Object.keys(defs) as (keyof T & string)[]) {
-    const def = defs[method];
-    const handler = handlers[method];
-    if (!def || !handler) {
-      throw new Error(`missing handler or def for hub method: ${String(method)}`);
-    }
-    routes.push({
-      method,
-      def,
-      handler,
-    });
-  }
-  return mergeFeatureRoutes(routes);
+/** 从已有 HubMethodDef（registry/schemas）绑定 handler，用于 console 等大批量 method */
+export function defineHubRouteFromDef<M extends string>(
+  method: M,
+  def: HubMethodDef,
+  handler: HubRouteHandler<z.ZodTypeAny, z.ZodTypeAny>,
+): HubRouteBundle<M, z.ZodTypeAny, z.ZodTypeAny> {
+  return {
+    method,
+    def,
+    handler,
+  };
 }

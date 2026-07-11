@@ -9,7 +9,7 @@ import type {
   TaskItemSearchFiltersPayload,
 } from "@freeanima/shared/sap-contract/frames/task.ts";
 
-import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
 
 import {
   offlineCreateTaskItem,
@@ -50,7 +50,7 @@ export type TaskListRow = {
 export type TaskItemRow = TaskItemRowPayload;
 
 function hub() {
-  return getSatelliteHubClient();
+  return getTypedSatelliteHubClient();
 }
 
 function withSubjectKind<T extends Record<string, unknown>>(payload: T) {

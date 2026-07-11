@@ -21,7 +21,7 @@ import {
   recordFlushIdMapping,
 } from "@freeanima/frontend/shell-sdk/offline-sync";
 import { allocateTempId, isTempId } from "@freeanima/frontend/shell-sdk/offline-temp-id";
-import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
 
 import type { DiaryEntryRow, DiarySubjectKind } from "./format-diary.ts";
 
@@ -150,7 +150,7 @@ function mergePatchIntoCreate(
 }
 
 async function flushDiaryOp(op: OfflineOutboxOp, scope: string): Promise<"done" | "failed"> {
-  const hub = getSatelliteHubClient();
+  const hub = getTypedSatelliteHubClient();
   try {
     const result = (await hub.call(op.method as never, op.payload as never)) as {
       item?: DiaryEntryRow;
@@ -172,7 +172,7 @@ export const diaryRpcAdapter: RpcModuleAdapter = {
   resolvePayloadIds: (payload, idMap) => resolveIdFields(payload, idMap, ["id"]),
   flushOp: async (op, ctx) => flushDiaryOp(op, ctx.scope),
   refreshAll: async (scope) => {
-    const hub = getSatelliteHubClient();
+    const hub = getTypedSatelliteHubClient();
     for (const subjectKind of ["user", "agent"] as const) {
       try {
         const data = await hub.call("diary.list", {

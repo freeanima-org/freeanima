@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { beforeAll, describe, expect, test } from "bun:test";
 
 import {
   getHubMethodDef,
@@ -7,8 +7,16 @@ import {
   resolveFallbackTransport,
 } from "@freeanima/shared/hub-contract";
 import { isNonJsonHubHttpMethod } from "@freeanima/shared/hub-rpc";
+import { initHubRouter, resetHubRouterForTests } from "@freeanima/platform/hub/init.ts";
+import { resetHubMethodRegistryForTests } from "@freeanima/shared/hub-contract/registry/runtime.ts";
 
-describe("hub-contract registry", () => {
+describe("hub method registry (runtime SSOT)", () => {
+  beforeAll(() => {
+    resetHubMethodRegistryForTests();
+    resetHubRouterForTests();
+    initHubRouter();
+  });
+
   test("conversation.list is dual transport with REST meta", () => {
     expect(isHubMethod("conversation.list")).toBe(true);
     const def = getHubMethodDef("conversation.list");

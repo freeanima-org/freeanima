@@ -13,13 +13,10 @@ import { projectHubRoutes } from "@freeanima/features/project/hub/routes/index.t
 import { taskHubRoutes } from "@freeanima/features/task/hub/routes/index.ts";
 import { vaultHubRoutes } from "@freeanima/features/vault/hub/routes/index.ts";
 
-import { defsOnlyBundle } from "./types.ts";
-import { wsOnlyMethodDefs } from "@freeanima/shared/hub-contract/registry/ws-only.ts";
+import type { InferHubInputs, InferHubOutputs } from "./types.ts";
+import { wsOnlyHubRoutes } from "./ws-only-routes.ts";
 
-/** ws-only method 定义（handler 仍在 ws-server，见 ws-only-routes.ts） */
-export const wsOnlyHubRoutes = defsOnlyBundle(wsOnlyMethodDefs);
-
-export const hubRouter = mergeHubRouteBundles([
+const featureRouteBundles = [
   chatHubRoutes,
   taskHubRoutes,
   projectHubRoutes,
@@ -33,10 +30,38 @@ export const hubRouter = mergeHubRouteBundles([
   wsOnlyHubRoutes,
   mcpHubRoutes,
   consoleHubRoutes,
-]);
+] as const;
 
-export type HubMethod = keyof typeof hubRouter.defs & string;
+export const hubRouter = mergeHubRouteBundles(featureRouteBundles);
+
+export type HubMethodInputs = InferHubInputs<typeof chatHubRoutes> &
+  InferHubInputs<typeof taskHubRoutes> &
+  InferHubInputs<typeof projectHubRoutes> &
+  InferHubInputs<typeof vaultHubRoutes> &
+  InferHubInputs<typeof emailHubRoutes> &
+  InferHubInputs<typeof diaryHubRoutes> &
+  InferHubInputs<typeof dreamHubRoutes> &
+  InferHubInputs<typeof pomodoroHubRoutes> &
+  InferHubInputs<typeof notificationHubRoutes> &
+  InferHubInputs<typeof companionHubRoutes> &
+  InferHubInputs<typeof wsOnlyHubRoutes> &
+  InferHubInputs<typeof mcpHubRoutes> &
+  InferHubInputs<typeof consoleHubRoutes>;
+
+export type HubMethodOutputs = InferHubOutputs<typeof chatHubRoutes> &
+  InferHubOutputs<typeof taskHubRoutes> &
+  InferHubOutputs<typeof projectHubRoutes> &
+  InferHubOutputs<typeof vaultHubRoutes> &
+  InferHubOutputs<typeof emailHubRoutes> &
+  InferHubOutputs<typeof diaryHubRoutes> &
+  InferHubOutputs<typeof dreamHubRoutes> &
+  InferHubOutputs<typeof pomodoroHubRoutes> &
+  InferHubOutputs<typeof notificationHubRoutes> &
+  InferHubOutputs<typeof companionHubRoutes> &
+  InferHubOutputs<typeof wsOnlyHubRoutes> &
+  InferHubOutputs<typeof mcpHubRoutes> &
+  InferHubOutputs<typeof consoleHubRoutes>;
+
+export type HubMethod = keyof HubMethodInputs & string;
 
 export type { InferHubInputs, InferHubOutputs } from "./types.ts";
-export type HubMethodInputs = import("./types.ts").InferHubInputs<typeof hubRouter>;
-export type HubMethodOutputs = import("./types.ts").InferHubOutputs<typeof hubRouter>;

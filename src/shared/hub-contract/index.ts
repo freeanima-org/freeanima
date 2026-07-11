@@ -32,9 +32,9 @@ export {
 
 export {
   defineHubRoute,
+  defineHubRouteFromDef,
   mergeFeatureRoutes,
   mergeHubRouteBundles,
-  attachHandlersToDefs,
   type HubRouteBundle,
   type HubRouteHandler,
   type FeatureRouteBundle,

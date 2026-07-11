@@ -40,7 +40,7 @@ Console UI 源码 SSOT：`features/console/ui/console/`。Paraglide/build 工具
 
 ### Feature 模块（`features/<slug>/`）
 
-内置 plugin 在 [`src/platform/features/builtin-plugins.ts`](../../src/platform/features/builtin-plugins.ts) 注册；Hub RPC 由 `features/*/hub/rpc.ts` 实现，[`src/platform/sap/ws-server.ts`](../../src/platform/sap/ws-server.ts) 经 `getFeatureRpcHandler` 分发（**非** SAP attach）。
+内置 plugin 在 [`src/platform/features/builtin-plugins.ts`](../../src/platform/features/builtin-plugins.ts) 注册；Hub RPC 由 `features/*/hub/routes/index.ts`（`defineHubRoute`）实现，经 [`src/platform/hub/hub-router.ts`](../../src/platform/hub/hub-router.ts) 聚合；[`src/platform/sap/ws-server.ts`](../../src/platform/sap/ws-server.ts) 经 `getFeatureRpcHandler` 分发（**非** SAP attach）。
 
 典型子目录：`plugin.ts`、`hub/`、`protocol/`（re-export `@freeanima/sap-contract/feature-rpc`）、`ui/`、`domain/`。
 

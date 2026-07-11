@@ -13,15 +13,15 @@
 
 **示例**：chat、task、email、diary、notification、vault、dream
 
-| 层                               | 必须改                                                             |
-| -------------------------------- | ------------------------------------------------------------------ |
-| `src/core/db`                    | entity component 或专用表 + migration                              |
-| `src/features/<slug>/domain`     | 域逻辑 SSOT                                                        |
-| `sap-contract`                   | `feature-rpc/frames/<domain>.ts` + router 子集                     |
-| `src/features/<slug>/hub/rpc.ts` | Hub RPC handler 实现                                               |
-| `src/features/<slug>/ui`         | 产品 UI（`@freeanima/feature-<slug>/ui/*`）                        |
-| `platform`                       | `src/features/<slug>/plugin.ts` 注册 + 必要时 `service-*` 薄适配   |
-| `shell-ui`                       | 路由 lazy-load `@freeanima/feature-<slug>/ui/spa`（不写 SAP wire） |
+| 层                                        | 必须改                                                             |
+| ----------------------------------------- | ------------------------------------------------------------------ |
+| `src/core/db`                             | entity component 或专用表 + migration                              |
+| `src/features/<slug>/domain`              | 域逻辑 SSOT                                                        |
+| `sap-contract`                            | `feature-rpc/frames/<domain>.ts` + router 子集                     |
+| `src/features/<slug>/hub/routes/index.ts` | Hub RPC handler（`defineHubRoute`）                                |
+| `src/features/<slug>/ui`                  | 产品 UI（`@freeanima/feature-<slug>/ui/*`）                        |
+| `platform`                                | `src/features/<slug>/plugin.ts` 注册 + 必要时 `service-*` 薄适配   |
+| `shell-ui`                                | 路由 lazy-load `@freeanima/feature-<slug>/ui/spa`（不写 SAP wire） |
 
 **不要**：在 `shell-ui` 内 `import @freeanima/sap-contract`；在 capabilities 内 import platform；新建 `satellite-*` 做 chat/task 等产品面。
 
@@ -42,7 +42,7 @@
 | 层                                               | 必须改                                                                      |
 | ------------------------------------------------ | --------------------------------------------------------------------------- |
 | `src/features/console/protocol/console-contract` | API 类型 + hub-contract re-export（schema SSOT 在 hub-contract）            |
-| `src/features/console/hub/console-api`           | `console-hub-handlers.ts` + Hub RPC REST 基础设施（health、TLS、TTS）       |
+| `src/features/console/hub/console-api`           | Hub RPC handler 实现 + REST 基础设施（health、TLS、TTS）                    |
 | `src/features/console/plugin.ts`                 | `hub.rpc` 注册 handler；HTTP REST path 由 hub-contract `meta.http` 自动生成 |
 | `src/features/console/ui/console`                | `@freeanima/hub-client` `call` / `subscribe`                                |
 
@@ -63,11 +63,11 @@
 
 1. 在 `src/shared/hub-contract/registry/` 增加 method 定义（Zod + `dualTransportMeta` / `wsOnlyMeta`；HTTP REST 由 registry finalize 生成 `meta.http`，复合 path 用 `HTTP_ROUTE_OVERRIDES` 或 `dualTransportMeta(..., { http: … })`）
 2. 在 `src/shared/sap-contract/feature-rpc/frames/` 增加 schema（若尚未存在）
-3. 在 `src/features/<slug>/hub/rpc.ts` 实现 handler（**禁止** import `hub-client`）
-4. 在 `src/features/<slug>/plugin.ts` 注册 `hub.rpc`
-5. Feature UI `api.ts` 使用 `@freeanima/hub-client` 的 `call` / `subscribe`
+3. 在 `src/features/<slug>/hub/routes/index.ts` 用 `defineHubRoute` 实现 handler（**禁止** import `hub-client`）
+4. 在 `src/platform/hub/hub-router.ts` import 该 feature routes bundle
+5. Feature UI `api.ts` 使用 `@freeanima/platform/hub` 的 `getTypedSatelliteHubClient` / `call` / `subscribe`
 
-Console method：`hub-contract/registry/console.ts` + `console-hub-handlers.ts` + `console/plugin.hub.rpc`。业务传输：**WS** `/hub/rpc/v1`（HubRPC envelope）；**HTTP** `/hub/rpc/v1/{path}`（REST GET/POST，plain JSON）。
+Console method：`hub-contract/registry/console.ts` + `console/hub/routes/index.ts`（`defineHubRouteFromDef`）。业务传输：**WS** `/hub/rpc/v1`（HubRPC envelope）；**HTTP** `/hub/rpc/v1/{path}`（REST GET/POST，plain JSON）。
 
 SAP attach 专用 method（tool/terminal/sap.attach）仍在 [`src/platform/sap/ws-server.ts`](../../src/platform/sap/ws-server.ts) switch 内。
 
@@ -78,7 +78,7 @@ SAP attach 专用 method（tool/terminal/sap.attach）仍在 [`src/platform/sap/
 | `ui-kit`          | react                                               | sap-contract、workspace                       |
 | `shell-sdk`       | kernel\*、hub-rpc、vault-crypto                     | sap-contract                                  |
 | `shell-ui`        | ui-kit、shell-sdk、feature-\*、satellite-\*         | sap-contract、深路径 import satellites        |
-| `feature-*` UI    | hub-client、hub-contract（类型）、shell-sdk、ui-kit | 在 `hub/rpc.ts` 使用 hub-client               |
+| `feature-*` UI    | hub-client、hub-contract（类型）、shell-sdk、ui-kit | 在 `hub/routes` 使用 hub-client               |
 | `feature-console` | console-contract、hub-client、ui-kit、shell-sdk     | sap-contract、shell-ui、Eden Treaty（已移除） |
 | `satellite-*`     | sap-contract、shell-sdk、ui-kit                     | shell-ui、admin-\*                            |
 

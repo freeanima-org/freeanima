@@ -15,5 +15,11 @@ export {
   type HubMethodOutputs,
 } from "./hub-router.ts";
 export { initHubRouter, resetHubRouterForTests } from "./init.ts";
-export { createTypedHubClient, type TypedHubClient } from "./client.ts";
+export {
+  createTypedHubClient,
+  getTypedConsoleHubClient,
+  getTypedSatelliteHubClient,
+  resetTypedHubClientForTests,
+  type TypedHubClient,
+} from "./client.ts";
 export { wsOnlyHubRoutes } from "./ws-only-routes.ts";

@@ -6,7 +6,7 @@ import {
 } from "@freeanima/frontend/shell-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache-first";
 import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
-import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
 
 import {
   offlineAppendDiaryEntry,
@@ -25,7 +25,7 @@ function ensureDiaryOfflineModule(): void {
 }
 
 function hub() {
-  return getSatelliteHubClient();
+  return getTypedSatelliteHubClient();
 }
 
 function diaryListCacheId(subjectKind: DiarySubjectKind, query?: string): string {

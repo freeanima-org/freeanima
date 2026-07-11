@@ -101,7 +101,7 @@ flowchart TB
 ### Chat (bundled feature)
 
 - **Shell / browser dev (recommended)**: `getBundledSapStreamClient` on shared Hub RPC; UI from [`src/features/chat/ui/spa/`](../../src/features/chat/ui/spa/) embedded in shell-ui (no SAP relay, no `sap.attach`).
-- Hub RPC handlers: [`src/features/chat/hub/rpc.ts`](../../src/features/chat/hub/rpc.ts); wire types: [`src/features/chat/protocol/`](../../src/features/chat/protocol/) → `@freeanima/sap-contract/feature-rpc`.
+- Hub RPC handlers: [`src/features/chat/hub/routes/index.ts`](../../src/features/chat/hub/routes/index.ts); wire types: [`src/features/chat/protocol/`](../../src/features/chat/protocol/) → `@freeanima/sap-contract/feature-rpc`.
 
 ### Companion satellite
 

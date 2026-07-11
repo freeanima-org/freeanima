@@ -9,14 +9,6 @@ import {
   defineSapRouter,
   parseSapEnvelope,
   serializeSapEnvelope,
-  toolRegisterInputSchema,
-  toolUnregisterInputSchema,
-  toolResultInputSchema,
-  toolErrorInputSchema,
-  terminalAttachInputSchema,
-  terminalWriteInputSchema,
-  terminalResizeInputSchema,
-  terminalCloseInputSchema,
   type SapMethod,
   type SapRequestAuthContext,
   type SapRequestContext,
@@ -24,12 +16,6 @@ import {
   type SapServerHandlers,
 } from "@freeanima/shared/sap-contract";
 import { hubRpcConnectPayloadSchema, HUB_RPC_VERSION } from "@freeanima/shared/hub-rpc";
-import {
-  closeTerminalSession,
-  createTerminalSession,
-  getTerminalSession,
-  TerminalSessionError,
-} from "./terminal-session.ts";
 import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
 import { isHubMethod } from "@freeanima/shared/hub-contract";
 import { getFeatureRpcHandler } from "../features/registry.ts";
@@ -106,65 +92,8 @@ export function createSapServerHandlers(
         case "sap.attach":
         case "sap.detach":
           throw new Error("sap session methods are handled by Hub RPC transport");
-        case "terminal.attach": {
-          const input = terminalAttachInputSchema.parse(payload);
-          const { conversationId, pty } = createTerminalSession(input.cwd);
-          pty.onData((data) => {
-            ctx.sendEvent("terminal.output", { terminal_id: conversationId, data });
-          });
-          pty.onExit((code) => {
-            ctx.sendEvent("terminal.exit", { terminal_id: conversationId, code });
-            closeTerminalSession(conversationId);
-          });
-          ctx.sendEvent("terminal.ready", { terminal_id: conversationId, conversationId });
-          return { terminal_id: conversationId };
-        }
-        case "terminal.write": {
-          const input = terminalWriteInputSchema.parse(payload);
-          const pty = getTerminalSession(input.terminal_id);
-          if (!pty) throw new TerminalSessionError();
-          pty.write(input.data);
-          return { ok: true as const };
-        }
-        case "terminal.resize": {
-          const input = terminalResizeInputSchema.parse(payload);
-          const pty = getTerminalSession(input.terminal_id);
-          if (!pty) throw new TerminalSessionError();
-          pty.resize(input.cols, input.rows);
-          return { ok: true as const };
-        }
-        case "terminal.close": {
-          const input = terminalCloseInputSchema.parse(payload);
-          closeTerminalSession(input.terminal_id);
-          return { ok: true as const };
-        }
-        case "tool.register": {
-          const input = toolRegisterInputSchema.parse(payload);
-          const registered = deps.satelliteManager.registerTools(
-            ctx.app_id,
-            ctx.instance_id,
-            input.tools,
-            { private: input.private },
-          );
-          return { registered };
-        }
-        case "tool.unregister": {
-          const input = toolUnregisterInputSchema.parse(payload);
-          deps.satelliteManager.unregisterTools(ctx.app_id, ctx.instance_id, input.local_names);
-          return { ok: true as const };
-        }
-        case "tool.result": {
-          const input = toolResultInputSchema.parse(payload);
-          deps.satelliteManager.handleToolResult(input.call_id, input.content);
-          return { ok: true as const };
-        }
-        case "tool.error": {
-          const input = toolErrorInputSchema.parse(payload);
-          deps.satelliteManager.handleToolError(input.call_id, input.error);
-          return { ok: true as const };
-        }
         default:
-          throw new Error(`unhandled SAP method: ${String(method)}`);
+          throw new Error(`unknown SAP method: ${String(method)}`);
       }
     },
   };

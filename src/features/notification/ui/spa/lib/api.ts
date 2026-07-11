@@ -10,12 +10,12 @@ import type {
   NotificationRecipientsOutput,
 } from "@freeanima/shared/sap-contract";
 
-import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
 
 export type NotificationRow = NotificationListOutput["items"][number];
 
 function hub() {
-  return getSatelliteHubClient();
+  return getTypedSatelliteHubClient();
 }
 
 function cacheKey(input: NotificationListInput): string {
