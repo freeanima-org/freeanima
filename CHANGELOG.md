@@ -3,6 +3,65 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.8.5](https://github.com/freeanima-org/freeanima/compare/v0.8.4...v0.8.5) (2026-07-11)
+
+
+### Features
+
+* **brand:** 全端应用图标替换为新 logo ([d0e36bc](https://github.com/freeanima-org/freeanima/commit/d0e36bc63abe006542dc362244bcae1499956a42))
+* **chat:** 离线 outbox 发送与跨端 tail 冲突处理 ([331881f](https://github.com/freeanima-org/freeanima/commit/331881fc34bc8232260dcd0d05eb5dd965c025f3))
+* **config:** 外部服务配置测试连接并降级 embedding 检索 ([ab8abd8](https://github.com/freeanima-org/freeanima/commit/ab8abd8dd3c475118d1684e6b416e0510d2394e8))
+* **hub:** health/TLS 收进 RPC 并支持 method 级 auth optional ([07c556f](https://github.com/freeanima-org/freeanima/commit/07c556ffb889623c9690086e9e5ca0dceef4c949))
+* **hub:** health/TLS 收进 RPC 并支持 method 级 auth optional ([276b041](https://github.com/freeanima-org/freeanima/commit/276b0416001910208055e4098edde810bcc9e121))
+* **hub:** Hub RPC HTTP 迁移为 RESTful 路径 ([dd5fdff](https://github.com/freeanima-org/freeanima/commit/dd5fdff3b1f15dfece38f620430f1aa1f47c3a53))
+* **hub:** Hub RPC 支持非 JSON 请求/响应与 callRaw ([bc1f81b](https://github.com/freeanima-org/freeanima/commit/bc1f81b2ea54fb88effa6e886abbd74b12953ad7))
+* **hub:** platform hub-router 运行时聚合 feature routes ([96e8e86](https://github.com/freeanima-org/freeanima/commit/96e8e86ac29be8f6f6db1102d66528b2d28a7f4b))
+* **hub:** TTS 迁入 Hub RPC 并移除 Elysia 层 ([9d2a5cd](https://github.com/freeanima-org/freeanima/commit/9d2a5cdefeca5ebb143f3e4efbd5fdc574077aef))
+* **offline:** 实现卫星壳离线平台并在断连时跳过 Hub RPC ([2ca2088](https://github.com/freeanima-org/freeanima/commit/2ca2088851aa6bd37a56cc4043965621bc689a40))
+* **pomodoro:** 时长封顶、壳层后台计时与 Hub 多端同步 ([c436750](https://github.com/freeanima-org/freeanima/commit/c4367505dbb1aa3d625d59caf78afad98729ebfe))
+* **pomodoro:** 番茄钟、任务专注分段与本机 Alert 通知 ([9725c25](https://github.com/freeanima-org/freeanima/commit/9725c2569649aca9d9d79d0a4df2ea7399b64dc7))
+* **project:** 项目管理模块与任务/项目 UI 交互优化 ([08d321f](https://github.com/freeanima-org/freeanima/commit/08d321f6fe5c0aab4ace627dabff739c3d5b4359))
+* **runtime:** 时间感知前缀注入 CST 周几 ([5c95943](https://github.com/freeanima-org/freeanima/commit/5c959430843b8238b95af8c5d558c74333db4915))
+* **settings:** Hub 配置平铺侧栏并完善 LLM 与会话标题 ([596cc11](https://github.com/freeanima-org/freeanima/commit/596cc1189bb805a1430147733d44830b4719032f))
+* **task:** 智能清单与侧栏重构 ([99fb592](https://github.com/freeanima-org/freeanima/commit/99fb592f992fa763528a22ccd1c5eaf80388b25f))
+
+
+### Bug Fixes
+
+* **chat:** 修复首条消息自动生成会话标题的竞态与 UI 刷新 ([4aa87f0](https://github.com/freeanima-org/freeanima/commit/4aa87f044b6556e50d60639427097fa0757d5fd9))
+* **ci:** 修复 0.8.5 PR Quality 与 Build site 失败项 ([b600924](https://github.com/freeanima-org/freeanima/commit/b60092401e4cedb66deb41a8f88750e1fdc32162))
+* **cli:** 修复 shell 补全脚本算术比较语法错误 ([5cda7d9](https://github.com/freeanima-org/freeanima/commit/5cda7d9d314b3ea5a0f803ab2d67804a67d75be0))
+* **companion:** 补回 sidecar 运行时 API 导出 ([4d6379f](https://github.com/freeanima-org/freeanima/commit/4d6379fd01a0948eb5db6212ceb32c7d79e1bbb0))
+* **config:** 修复 Hub 设置页 config.get 误读 config.data ([10c5bbe](https://github.com/freeanima-org/freeanima/commit/10c5bbeaeaddce8b8ddcf293fd5bca77c95f37e1))
+* **hub:** 修复 RPC 遗留调用并补全 tokens handler ([6ece19e](https://github.com/freeanima-org/freeanima/commit/6ece19ea460da87e04516a17983a5fc27dda85a8))
+* **pomodoro:** 修复多端活跃态 Hub 同步 ([80dd734](https://github.com/freeanima-org/freeanima/commit/80dd734adf580d4f981110f4fad8ec6afab7b184))
+* **settings:** 修复配置侧栏滚动并开放 Hub 伴侣设置全平台 ([6a3a23d](https://github.com/freeanima-org/freeanima/commit/6a3a23d57c58a336880a12453a52a52ec7e9b185))
+* **shell:** 修复移动壳插件桥接、Alert 平台与番茄钟跳过重复记录 ([5aa6a6f](https://github.com/freeanima-org/freeanima/commit/5aa6a6ffbca507994c72aaec35acf12ea68e1eb7))
+* **shell:** 远程 Hub 页改用 nativePromise 桥接 Capacitor 插件 ([4f489df](https://github.com/freeanima-org/freeanima/commit/4f489df61e1b89d998d0b386c9eecdfeac03d10c))
+* **task:** 任务到期提醒改推 user 收件箱 ([ac1753d](https://github.com/freeanima-org/freeanima/commit/ac1753d8a678a9eba1c1f28e4e57774378acae14))
+* **task:** 修复桌面截止日期选择器并恢复 web 构建 ([659d129](https://github.com/freeanima-org/freeanima/commit/659d1291e0ca572b4aee1b03f0bca3f03087307b))
+* **test:** 集成测试注册 health.probe 等 public Hub handler ([2908597](https://github.com/freeanima-org/freeanima/commit/290859753b8b03a82b9828a8b5f2735148243d87))
+
+
+### Miscellaneous
+
+* **brand:** oxfmt 格式化品牌图标脚本与 Logo 组件 ([c125fd6](https://github.com/freeanima-org/freeanima/commit/c125fd6cdea8c1a2555f5a657ae5f169a902556c))
+* **deps:** 更新依赖至最新版本 ([c122846](https://github.com/freeanima-org/freeanima/commit/c1228468124d45fb7ba04a9388472a01dae16f12))
+* **mobile:** 从版本库移除 cap sync 生成的 capacitor.settings.gradle ([cbd95a2](https://github.com/freeanima-org/freeanima/commit/cbd95a2caf0fdb3388f38089a2f3adbd2c764c0e))
+* **mobile:** 忽略 cap sync 生成的 capacitor.settings.gradle ([796dcd5](https://github.com/freeanima-org/freeanima/commit/796dcd517ab42c1bd2755fba3d851160f1cb9891))
+* 添加 Hub RPC 相关 plan 并忽略 .cursor/plans 格式化 ([02216d5](https://github.com/freeanima-org/freeanima/commit/02216d5dd09780ad1603706ddfc4be1fda2e0800))
+
+
+### Refactoring
+
+* **auth:** 移除 pin-loopback 与 config.json token 自动注入 ([5954701](https://github.com/freeanima-org/freeanima/commit/5954701299e1abf2f63bc8e1dc763f21ae447fb3))
+* **build:** 统一 tsconfig 别名并约束相对 import 深度 ([26d937b](https://github.com/freeanima-org/freeanima/commit/26d937bb4a3c3ac70a41d4b223b8718dbbf8e636))
+* **config:** Bootstrap 内化并以 RuntimeConfig 为对外 SSOT ([c17778d](https://github.com/freeanima-org/freeanima/commit/c17778d5823e90f9c4434413e5746580d366e23d))
+* **hub:** 内联 feature routes 并收敛 registry 与 typed client ([d5bee4a](https://github.com/freeanima-org/freeanima/commit/d5bee4a7b99d709fd04bc365924fb4be9bc22fc3))
+* **settings:** 桌面伴侣设置分层并移除 Sentry ([063e59d](https://github.com/freeanima-org/freeanima/commit/063e59d03aec6b12a4cfd0d18110edd01486c241))
+* 架构清理二期 — Dream 归位、core/repos 塌缩与 Console 瘦身 ([254e212](https://github.com/freeanima-org/freeanima/commit/254e212a0310adbf5e4c803b1145af12d04c429d))
+* 清理迁移遗留与重复实现 ([c177ec3](https://github.com/freeanima-org/freeanima/commit/c177ec3ed7c11abb457aa5773dd3bcbe89344a92))
+
 ## [0.8.4](https://github.com/freeanima-org/freeanima/compare/v0.8.3...v0.8.4) (2026-07-08)
 
 
