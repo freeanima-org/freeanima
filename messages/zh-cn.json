@@ -489,7 +489,7 @@
   "console_system_prompt_tools_list": "工具列表 →",
   "console_system_prompt_tools_registry": "全量注册表",
   "console_system_prompt_tools_shown": "显示 {shown} / {total} · ~{tokens} tokens",
-  "console_tasks_desc": "浏览实体任务（/api/task/*），支持关键词、状态、优先级与列表筛选（只读）。",
+  "console_tasks_desc": "Browse entity tasks (/hub/rpc/v1/task/*) with keyword, status, priority, and list filters (read-only).",
   "console_tasks_search_label": "搜索词（可选，匹配标题/描述）",
   "console_title": "管理台",
   "console_tools_default_loaded": "默认加载工具集",

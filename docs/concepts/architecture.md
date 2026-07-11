@@ -342,14 +342,14 @@ Complementary: Pipeline Runner handles scheduled multi-step background work; Hoo
 
 The desktop companion is a **dynamic SAP Type B satellite** with a split boundary:
 
-| Concern                             | Hub (`src/features/companion/`)           | Local device                              |
-| ----------------------------------- | ----------------------------------------- | ----------------------------------------- |
-| Behavior, slots, active model       | `companion_profile` entity + Hub RPC      | Cache in `~/.anima/companion/config.json` |
-| VRM / VRMA library                  | Files on Hub host + content-hash metadata | Lazy download to desktop cache            |
-| FBX → VRMA                          | Hub service only                          | Not bundled in desktop installer          |
-| Settings UI                         | Hub RPC + `/api/companion/*` upload       | Desktop Settings section (not Console)    |
-| VRM render, float window, patrol    | —                                         | Electron + overlay SPA                    |
-| Agent tools (`bubble`, `play_slot`) | SAP route                                 | Thin sidecar executes + runtime WS        |
+| Concern                             | Hub (`src/features/companion/`)            | Local device                              |
+| ----------------------------------- | ------------------------------------------ | ----------------------------------------- |
+| Behavior, slots, active model       | `companion_profile` entity + Hub RPC       | Cache in `~/.anima/companion/config.json` |
+| VRM / VRMA library                  | Files on Hub host + content-hash metadata  | Lazy download to desktop cache            |
+| FBX → VRMA                          | Hub service only                           | Not bundled in desktop installer          |
+| Settings UI                         | Hub RPC + `/hub/rpc/v1/companion/*` upload | Desktop Settings section (not Console)    |
+| VRM render, float window, patrol    | —                                          | Electron + overlay SPA                    |
+| Agent tools (`bubble`, `play_slot`) | SAP route                                  | Thin sidecar executes + runtime WS        |
 
 Multiple desktops share one library; each machine keeps its own `instance_id` for SAP. See [`companion.md`](../features/companion.md).
 

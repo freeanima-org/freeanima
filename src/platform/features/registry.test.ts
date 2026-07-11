@@ -2,9 +2,12 @@ import { describe, expect, test } from "bun:test";
 import type { SapRequestContext } from "@freeanima/shared/sap-contract";
 import { listHubMethods } from "@freeanima/shared/hub-contract";
 import { wsOnlyMethodDefs } from "@freeanima/shared/hub-contract/registry/ws-only.ts";
+import { resetHubMethodRegistryForTests } from "@freeanima/shared/hub-contract/registry/runtime.ts";
 
 import type { SapServerDeps } from "../sap/types.ts";
 import { builtinFeaturePlugins } from "./builtin-plugins.ts";
+import { resetHubRouterForTests } from "../hub/init.ts";
+import { resetCompiledHttpRoutes } from "../hub/http-rest-router.ts";
 import {
   getFeatureRpcHandler,
   registerFeatures,
@@ -16,6 +19,9 @@ const WS_ONLY_DISPATCH_METHODS = new Set(Object.keys(wsOnlyMethodDefs));
 describe("registerFeatures", () => {
   test("registers feature RPC handler lookup", async () => {
     resetFeatureRegistryForTests();
+    resetHubMethodRegistryForTests();
+    resetHubRouterForTests();
+    resetCompiledHttpRoutes();
     const deps = {} as SapServerDeps;
     const ctx = {
       app_id: "x",
@@ -33,20 +39,23 @@ describe("registerFeatures", () => {
         id: "mock",
         hub: {
           rpc: {
-            "task.list": async () => ({ tasks: [] }),
+            "mock.echo": async () => ({ ok: true }),
           },
         },
       },
     ]);
-    const handler = getFeatureRpcHandler("task.list");
+    const handler = getFeatureRpcHandler("mock.echo");
     expect(handler).toBeDefined();
     await expect(handler!(deps, {}, ctx)).resolves.toEqual({
-      tasks: [],
+      ok: true,
     });
   });
 
   test("builtin plugins register a handler for every hub-dispatch method", () => {
     resetFeatureRegistryForTests();
+    resetHubMethodRegistryForTests();
+    resetHubRouterForTests();
+    resetCompiledHttpRoutes();
     registerFeatures(builtinFeaturePlugins);
 
     const missing: string[] = [];

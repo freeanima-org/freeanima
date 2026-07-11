@@ -8,7 +8,7 @@ title: Service
 
 ## Status and memory metrics
 
-`anima service status` and `/api/status` report process memory under `memory_kb` and `memory_detail`.
+`anima service status` and `hub().call("status.get")` (REST `GET /hub/rpc/v1/status/get`) report process memory under `memory_kb` and `memory_detail`.
 
 | Field / label                 | Source                                                 | Meaning                                                             |
 | ----------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------- |
@@ -22,9 +22,9 @@ On Bun + JavaScriptCore, `heap (jsc)` can be **much larger than** `rss (phys)`. 
 Verify from the shell (business API requires a Service API Token — see [`remote-access.md`](remote-access.md)):
 
 ```bash
-curl -s -H "Authorization: Bearer <fa_at_...>" http://127.0.0.1:2658/api/status | jq '.memory_kb, .memory_detail'
+curl -s -H "Authorization: Bearer <fa_at_...>" http://127.0.0.1:2658/hub/rpc/v1/status/get | jq '.memory_kb, .memory_detail'
 grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f 'anima service' | head -1)/status
-bun run memory:sample -- --url http://127.0.0.1:2658/api/status --stage full
+bun run memory:sample -- --hub-url http://127.0.0.1:2658 --stage full
 ```
 
 ## Common commands
@@ -48,4 +48,4 @@ When `web.enabled: true`, the stack serves browser Web UI at `http://<host>:2658
 
 - **Desktop / mobile bundled shell:** Chat and Console at `/chat`, `/console`/\*`inside the Electron/Capacitor app (not served from Hub`:2658`unless`web.enabled`).
 - **`web.enabled: true`:** browser UI at `http://<host>:2658/web/*` from Hub (see paragraph above).
-- **Local Web dev (`bun run dev:web`):** Vite on `:4173` with base `/web/` — Chat `http://127.0.0.1:4173/web/chat`, Console `http://127.0.0.1:4173/web/console/dashboard`; Hub still provides REST `/api/*` and Hub RPC `/hub/rpc/v1`.
+- **Local Web dev (`bun run dev:web`):** Vite on `:4173` with base `/web/` — Chat `http://127.0.0.1:4173/web/chat`, Console `http://127.0.0.1:4173/web/console/dashboard`; Hub serves Hub RPC REST + WS at `/hub/rpc/v1`.

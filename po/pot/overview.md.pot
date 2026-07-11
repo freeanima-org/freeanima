@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-10 23:57+0800\n"
+"POT-Creation-Date: 2026-07-11 11:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -90,11 +90,11 @@ msgstr ""
 #: docs/sap/overview.md:35
 #, no-wrap
 msgid ""
-"| Role    | Default                  | Responsibility                                      |\n"
-"| ------- | ------------------------ | --------------------------------------------------- |\n"
-"| Hub     | `http://127.0.0.1:2658`  | Agent runtime, Hub RPC WebSocket at `/hub/rpc/v1`   |\n"
-"| Chat    | bundled `/chat`          | Chat UI; shared Hub RPC (no `sap.attach`)           |\n"
-"| Console | bundled shell `/console` | Memory, tools, satellite status (Hub REST `/api/*`) |\n"
+"| Role    | Default                  | Responsibility                                                 |\n"
+"| ------- | ------------------------ | -------------------------------------------------------------- |\n"
+"| Hub     | `http://127.0.0.1:2658`  | Agent runtime, Hub RPC WebSocket at `/hub/rpc/v1`              |\n"
+"| Chat    | bundled `/chat`          | Chat UI; shared Hub RPC (no `sap.attach`)                      |\n"
+"| Console | bundled shell `/console` | Memory, tools, satellite status (Hub RPC REST `/hub/rpc/v1/*`) |\n"
 msgstr ""
 
 #. type: Plain text

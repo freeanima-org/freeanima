@@ -63,6 +63,6 @@ Bundled chat uses [`getBundledSapStreamClient`](../../src/shared/sap-contract/bu
 
 Console UI source SSOT: [`src/features/console/ui/console/`](../../src/features/console/ui/console/). Build helpers: [`src/features/console/build/`](../../src/features/console/build/)（Paraglide compile、admin hash）；SPA 打包进 desktop / mobile / web shell。
 
-REST base: bundled pages use `window.satelliteShell.hubUrl` for Hub **`/api/*`**. Hub enables CORS for localhost / Capacitor origins.
+REST base: bundled pages use `window.satelliteShell.hubUrl` for Hub RPC REST **`/hub/rpc/v1/*`** (or `hub().call("method")`). Hub enables CORS for localhost / Capacitor origins.
 
 Local shell dev: `bun run dev:web` → `http://127.0.0.1:4173` (Hub must be running; includes Chat, Console, settings).

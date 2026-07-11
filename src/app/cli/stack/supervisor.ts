@@ -104,7 +104,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
   }
 
   const { serve } = await import("@freeanima/platform");
-  const { startApiHttpServers, closeHttpServers, waitForDrainWithTimeout } =
+  const { startHubHttpServers, closeHttpServers, waitForDrainWithTimeout } =
     await import("@freeanima/features/console/hub/console-api");
 
   const bindHosts = parseBindHosts(options.host);
@@ -116,7 +116,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
     http: {
       start: async (hosts, port, listenOpts) => {
         const resolvedTls = listenOpts?.tls ?? tlsListen;
-        const result = await startApiHttpServers(hosts, port, {
+        const result = await startHubHttpServers(hosts, port, {
           webStatic,
           ...(resolvedTls
             ? {

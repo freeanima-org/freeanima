@@ -30,8 +30,6 @@ export function isHubApiCorsPreflight(req: Request): boolean {
   const pathname = new URL(req.url).pathname;
   return (
     pathname === "/" ||
-    pathname === "/api" ||
-    pathname.startsWith("/api/") ||
     pathname === "/hub/rpc/v1" ||
     pathname.startsWith("/hub/rpc/v1/") ||
     pathname === "/mcp" ||

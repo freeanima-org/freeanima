@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-10 23:57+0800\n"
+"POT-Creation-Date: 2026-07-11 11:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,8 +43,8 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/service.md:12
 msgid ""
-"`anima service status` and `/api/status` report process memory under "
-"`memory_kb` and `memory_detail`."
+"`anima service status` and `hub().call(\"status.get\")` (REST `GET /hub/rpc/"
+"v1/status/get`) report process memory under `memory_kb` and `memory_detail`."
 msgstr ""
 
 #. type: Plain text
@@ -78,9 +78,9 @@ msgstr ""
 #: docs/guide/service.md:24
 #, no-wrap
 msgid ""
-"curl -s -H \"Authorization: Bearer <fa_at_...>\" http://127.0.0.1:2658/api/status | jq '.memory_kb, .memory_detail'\n"
+"curl -s -H \"Authorization: Bearer <fa_at_...>\" http://127.0.0.1:2658/hub/rpc/v1/status/get | jq '.memory_kb, .memory_detail'\n"
 "grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f 'anima service' | head -1)/status\n"
-"bun run memory:sample -- --url http://127.0.0.1:2658/api/status --stage full\n"
+"bun run memory:sample -- --hub-url http://127.0.0.1:2658 --stage full\n"
 msgstr ""
 
 #. type: Title ##
@@ -148,6 +148,5 @@ msgstr ""
 msgid ""
 "**Local Web dev (`bun run dev:web`):** Vite on `:4173` with base `/web/` — "
 "Chat `http://127.0.0.1:4173/web/chat`, Console `http://127.0.0.1:4173/web/"
-"console/dashboard`; Hub still provides REST `/api/*` and Hub RPC `/hub/rpc/"
-"v1`."
+"console/dashboard`; Hub serves Hub RPC REST + WS at `/hub/rpc/v1`."
 msgstr ""

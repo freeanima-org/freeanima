@@ -31,6 +31,16 @@ export {
 } from "./method-def.ts";
 
 export {
+  defineHubRoute,
+  mergeFeatureRoutes,
+  mergeHubRouteBundles,
+  attachHandlersToDefs,
+  type HubRouteBundle,
+  type HubRouteHandler,
+  type FeatureRouteBundle,
+} from "./route.ts";
+
+export {
   buildHttpRouteMeta,
   HTTP_ROUTE_OVERRIDES,
   isReadOnlyHubMeta,

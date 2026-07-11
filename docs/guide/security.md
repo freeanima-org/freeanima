@@ -11,7 +11,7 @@ title: Security
 
 FreeAnima is designed for **single-user local / intranet** deployment:
 
-- Business HTTP API (`/api/*` except health/CORS/echo) requires a **Service API Token** (`Authorization: Bearer fa_at_…`); create with `anima token create`. Binding `127.0.0.1` limits network exposure but does not replace token auth — any local process that can reach the port still needs a valid token for business routes.
+- Hub RPC REST (`/hub/rpc/v1/*` except health probe/CORS/echo) requires a **Service API Token** (`Authorization: Bearer fa_at_…`); create with `anima token create`. Binding `127.0.0.1` limits network exposure but does not replace token auth — any local process that can reach the port still needs a valid token for business routes.
 - Default bind is `127.0.0.1`; for LAN access, assess CORS and network isolation yourself.
 - **Do not** expose the service to the public internet without TLS and token-protected clients (see [`remote-access.md`](remote-access.md)).
 
@@ -61,18 +61,18 @@ Disk backup = data access. Protect backup media accordingly.
 
 ## Measures in Place
 
-| Measure                 | Description                                                                                                                            |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Same-origin RPC         | TanStack Start server functions same-origin by default, no CORS whitelist needed                                                       |
-| Config secret redaction | `AppRuntime.getConfig()` → `sanitizeConfigForApi()` (`api_key`, `database.url`, nested `pushkey`, `mcp env`, etc.)                     |
-| MCP config redaction    | `sanitizeMcpConfig`: `env` exposes only `env_keys`                                                                                     |
-| Write path safety       | `file_write_file` deny list (partial `/etc/*`, `.ssh` private keys, etc.)                                                              |
-| Slash commands          | Whitelist routing; every command must produce user-visible feedback; long-running commands send an immediate ack then the final result |
-| MCP default stdio       | Reduces port exposure                                                                                                                  |
-| Vault isolation         | LLM sees vault item metadata only, not decrypted fields                                                                                |
-| Service API Token       | Business `/api/*` routes require `Authorization: Bearer fa_at_…` (`service_api_tokens` PG table); health/CORS/echo exempt              |
-| CI secret scanning      | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)                          |
-| `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                                          |
+| Measure                 | Description                                                                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Same-origin RPC         | TanStack Start server functions same-origin by default, no CORS whitelist needed                                                           |
+| Config secret redaction | `AppRuntime.getConfig()` → `sanitizeConfigForApi()` (`api_key`, `database.url`, nested `pushkey`, `mcp env`, etc.)                         |
+| MCP config redaction    | `sanitizeMcpConfig`: `env` exposes only `env_keys`                                                                                         |
+| Write path safety       | `file_write_file` deny list (partial `/etc/*`, `.ssh` private keys, etc.)                                                                  |
+| Slash commands          | Whitelist routing; every command must produce user-visible feedback; long-running commands send an immediate ack then the final result     |
+| MCP default stdio       | Reduces port exposure                                                                                                                      |
+| Vault isolation         | LLM sees vault item metadata only, not decrypted fields                                                                                    |
+| Service API Token       | Hub RPC REST `/hub/rpc/v1/*` routes require `Authorization: Bearer fa_at_…` (`service_api_tokens` PG table); health probe/CORS/echo exempt |
+| CI secret scanning      | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)                              |
+| `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                                              |
 
 ## Known Gaps (Documentation ≠ Fully Implemented)
 

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-11 00:01+0800\n"
+"POT-Creation-Date: 2026-07-11 11:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2844,8 +2844,8 @@ msgstr "显示 {shown} / {total} · ~{tokens} tokens"
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:492
 #, no-wrap
-msgid "Browse entity tasks (/api/task/*) with keyword, status, priority, and list filters (read-only)."
-msgstr "浏览实体任务（/api/task/*），支持关键词、状态、优先级与列表筛选（只读）。"
+msgid "Browse entity tasks (/hub/rpc/v1/task/*) with keyword, status, priority, and list filters (read-only)."
+msgstr "浏览实体任务（/hub/rpc/v1/task/*），支持关键词、状态、优先级与列表筛选（只读）。"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:493

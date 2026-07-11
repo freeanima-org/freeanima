@@ -3,7 +3,7 @@ import { useEffect, useMemo } from "react";
 import { BrandLockup } from "@freeanima/frontend/ui-kit";
 import { HubConnectionBanner } from "@freeanima/features/console/ui/console/components/HubConnectionBanner.tsx";
 import { ResponsiveSidebarLayout } from "@freeanima/features/console/ui/console/components/ResponsiveSidebarLayout.tsx";
-import { useHubRestConnectivity } from "@freeanima/features/console/ui/console/hooks/useHubRestConnectivity.ts";
+import { useHubRpcConnectivity } from "@freeanima/features/console/ui/console/hooks/useHubRpcConnectivity.ts";
 import {
   consoleNavGroups,
   consoleNavItems,
@@ -44,7 +44,7 @@ function ConsoleSidebarNav() {
 function ConsoleLayout() {
   const shell = window.satelliteShell;
   const probeEnabled = Boolean(shell?.isNativeShell || shell?.isElectron);
-  const { state, retry } = useHubRestConnectivity(probeEnabled);
+  const { state, retry } = useHubRpcConnectivity(probeEnabled);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const headerTitle = useMemo(() => {
     const items = consoleNavItems();

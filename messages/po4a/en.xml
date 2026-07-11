@@ -489,7 +489,7 @@
   <msg id="console_system_prompt_tools_list">Tools list →</msg>
   <msg id="console_system_prompt_tools_registry">full registry</msg>
   <msg id="console_system_prompt_tools_shown">Showing {shown} / {total} · ~{tokens} tokens</msg>
-  <msg id="console_tasks_desc">Browse entity tasks (/api/task/*) with keyword, status, priority, and list filters (read-only).</msg>
+  <msg id="console_tasks_desc">Browse entity tasks (/hub/rpc/v1/task/*) with keyword, status, priority, and list filters (read-only).</msg>
   <msg id="console_tasks_search_label">Search term (optional, title/description)</msg>
   <msg id="console_title">Console</msg>
   <msg id="console_tools_default_loaded">Default loaded toolsets</msg>

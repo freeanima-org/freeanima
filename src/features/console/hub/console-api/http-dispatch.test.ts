@@ -101,7 +101,12 @@ describe("http-dispatch", () => {
     const result = await applyHttpAuth(req, "127.0.0.1", serviceAuth);
     expect(result.blocked).toBeNull();
     expect(await result.req.json()).toEqual({ subject_kind: "user", title: "auth-body-test" });
-    expect(result.req.headers.get("x-anima-auth-subject-id")).toBe("53");
+    expect(result.auth).toEqual({
+      token_id: 1,
+      subject_id: 53,
+      subject_type: "user",
+      scopes: ["full"],
+    });
     expect(result.req.headers.get("x-anima-remote-address")).toBe("127.0.0.1");
   });
 

@@ -62,7 +62,15 @@ function compileHttpRoutes(): CompiledRoutes {
   return routes;
 }
 
-const COMPILED_ROUTES = compileHttpRoutes();
+let COMPILED_ROUTES: CompiledRoutes = compileHttpRoutes();
+
+export function resetCompiledHttpRoutes(): void {
+  COMPILED_ROUTES = { GET: [], POST: [] };
+}
+
+export function compileHttpRoutesFromRegistry(): void {
+  COMPILED_ROUTES = compileHttpRoutes();
+}
 
 function matchPattern(pattern: string, path: string): Record<string, string> | null {
   const patternParts = pattern.split("/").filter((s) => s.length > 0);

@@ -15,7 +15,7 @@ title: Mobile app (Android)
 | UI         | bootstrap → Hub `/web/*`（与浏览器/PWA 同一产物）        |
 | Modules    | Chat + Console（Hub 托管 shell-ui）                      |
 | Hub config | APP **Hub settings**（Preferences）或 bootstrap 首次配置 |
-| Hub duties | `/api` REST + `/hub/rpc/v1` WebSocket                    |
+| Hub duties | Hub RPC REST `/hub/rpc/v1` + WebSocket at `/hub/rpc/v1`  |
 
 ## Topology
 
@@ -36,7 +36,7 @@ flowchart LR
   Console -->|REST Bearer| Hub
 ```
 
-Mobile REST **connects directly** to Hub (no desktop Electron `/api` proxy); requires a **Service API Token** and Hub CORS for Capacitor origin (`http://localhost`；`androidScheme: http`）。
+Mobile REST **connects directly** to Hub (no local REST proxy); requires a **Service API Token** and Hub CORS for Capacitor origin (`http://localhost`；`androidScheme: http`）。
 
 ## Hub settings
 
@@ -89,11 +89,11 @@ Package README: [`src/app/shell/mobile/README.md`](../../src/app/shell/mobile/RE
 
 ## vs desktop shell
 
-|              | Electron `src/app/shell/desktop`                | Capacitor `src/app/shell/mobile`       |
-| ------------ | ----------------------------------------------- | -------------------------------------- |
-| Injection    | preload → `window.satelliteShell`               | Hub SPA `bootstrap-capacitor` → API    |
-| Hub config   | Hub settings → `~/.anima-desktop/settings.json` | bootstrap / Hub settings → Preferences |
-| Debug/Sentry | Settings → Debug → same file `debug`            | Settings → Debug → Preferences         |
-| REST         | Local static `/api` proxy (same origin)         | Direct `hubUrl/api/*` (CORS + Bearer)  |
-| instance_id  | File `~/.anima/satellites/chat/`                | Preferences                            |
-| Content      | chat + admin + companion                        | chat + admin（Hub `/web/*`）           |
+|              | Electron `src/app/shell/desktop`                | Capacitor `src/app/shell/mobile`             |
+| ------------ | ----------------------------------------------- | -------------------------------------------- |
+| Injection    | preload → `window.satelliteShell`               | Hub SPA `bootstrap-capacitor` → API          |
+| Hub config   | Hub settings → `~/.anima-desktop/settings.json` | bootstrap / Hub settings → Preferences       |
+| Debug/Sentry | Settings → Debug → same file `debug`            | Settings → Debug → Preferences               |
+| REST         | Direct `hubUrl/hub/rpc/v1/*` (Bearer)           | Direct `hubUrl/hub/rpc/v1/*` (CORS + Bearer) |
+| instance_id  | File `~/.anima/satellites/chat/`                | Preferences                                  |
+| Content      | chat + admin + companion                        | chat + admin（Hub `/web/*`）                 |

@@ -27,7 +27,7 @@ FreeAnima Desktop (src/app/shell/desktop)
 | Layer            | Location                             | Responsibility                                                                                                                                                           |
 | ---------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Hub SSOT**     | `src/features/companion/`            | `companion_profile` entity (behavior, slots, library meta); VRM/VRMA files under `~/.anima/companion/` on Hub host; FBX→VRMA conversion; Settings read/write via Hub RPC |
-| **Settings UI**  | Desktop Settings → Companion section | Hub RPC (`companion.config.*`, model/motion CRUD); upload via `POST /api/companion/models/upload` and `/motions/import`                                                  |
+| **Settings UI**  | Desktop Settings → Companion section | Hub RPC (`companion.config.*`, model/motion CRUD); upload via `POST /hub/rpc/v1/companion/model/upload` and `/companion/motion/import`                                   |
 | **Thin sidecar** | `src/satellites/companion/server/`   | SAP attach, `bubble` / `play_slot`, runtime WebSocket, local asset cache; startup `companion.sync.pull`                                                                  |
 | **Electron**     | `src/app/shell/desktop/`             | Transparent window, click-through, tray, companion show/hide IPC                                                                                                         |
 
@@ -80,7 +80,7 @@ The repo **does not bundle** `.vrm` / `.vrma` files. **Hub** is the SSOT: `compa
 
 ### VRM models
 
-Settings → **Models** tab: list, import, delete, rename, switch current model. Upload goes to Hub (`POST /api/companion/models/upload`); sidecar downloads missing files for overlay rendering.
+Settings → **Models** tab: list, import, delete, rename, switch current model. Upload goes to Hub (`POST /hub/rpc/v1/companion/model/upload`); sidecar downloads missing files for overlay rendering.
 
 During development, files in `src/satellites/companion/public/models/` serve as fallback.
 

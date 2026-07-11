@@ -93,7 +93,7 @@ LLM ToolSets: `@freeanima/feature-task/domain` — `task` (item CRUD + `task_sea
 
 ### Shell UI: global Subject scope
 
-Hub startup binds **`ResolvedWorldContext`** (`GET /api/worlds/context`). The product shell exposes a **single User / Agent toggle** in the module header — not an arbitrary `world_id` picker. Selection maps to `user_world_id` / `agent_world_id` and persists in `sessionStorage` for the tab.
+Hub startup binds **`ResolvedWorldContext`** (`hub().call("worlds.context")` / `GET /hub/rpc/v1/worlds/context`). The product shell exposes a **single User / Agent toggle** in the module header — not an arbitrary `world_id` picker. Selection maps to `user_world_id` / `agent_world_id` and persists in `sessionStorage` for the tab.
 
 | Surface          | World binding                                                           | Control                        |
 | ---------------- | ----------------------------------------------------------------------- | ------------------------------ |
@@ -206,7 +206,7 @@ Entity **list** (deterministic browse) and **search** (relevance ranking) are se
 
 **Component filters:** whitelisted per `primary_component` (e.g. `task_item`: `status`, `list_id`, `tags`, `due_today`). Arbitrary JSONPath is forbidden.
 
-**Tools / API:** `entity_search` (LLM/MCP) and `GET|POST /api/entities/search` share `EntitySearchPort`. Task UI search box uses the same REST endpoint.
+**Tools / API:** `entity_search` (LLM/MCP) and `hub().call("entity.searchGet")` / `hub().call("entity.searchPost")` (REST `GET /hub/rpc/v1/entity/searchGet` | `POST /hub/rpc/v1/entity/searchPost`) share `EntitySearchPort`. Task UI search box uses the same Hub RPC endpoint.
 
 See memory hybrid search in [`memory.md`](memory.md) for FTS operator syntax; entity search reuses the same query builder.
 
