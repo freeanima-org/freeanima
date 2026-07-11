@@ -1,12 +1,12 @@
-import { evaluateHealthAuthed } from "../health-auth.ts";
 import { consoleCtx } from "./runtime.ts";
 import { scheduleServiceRestart } from "../service-restart.ts";
 import { ApiHandlerError } from "./errors.ts";
+import type { ServiceAuthContext } from "../auth-context.ts";
 
-export async function getHealthProbe(request: Request) {
+export async function getHealthProbe(auth?: ServiceAuthContext | null) {
   const ctx = consoleCtx();
   const base = ctx.health();
-  const authed = await evaluateHealthAuthed(request);
+  const authed = auth != null && auth.token_id > 0;
   return { ...base, authed };
 }
 

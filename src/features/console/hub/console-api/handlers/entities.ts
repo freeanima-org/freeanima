@@ -19,8 +19,8 @@ import {
   updateEntity,
 } from "@freeanima/core/db/pg/entity";
 
-import { parseServiceAuthFromRequest } from "../auth-context.ts";
 import { ApiHandlerError } from "./errors.ts";
+import type { ServiceAuthContext } from "../auth-context.ts";
 
 function mapSearchHit(row: EntitySearchHit): EntitySearchHit {
   return row;
@@ -352,10 +352,9 @@ export async function searchEntities(
     offset?: number;
     mode?: "hybrid" | "filter_only";
   },
-  request?: Request,
+  auth?: ServiceAuthContext | null,
 ) {
   const global = input.global === true;
-  const auth = request ? parseServiceAuthFromRequest(request) : null;
   let accessible_world_ids: number[] | undefined;
 
   if (global) {

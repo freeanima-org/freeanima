@@ -1,6 +1,6 @@
 import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
 
-import { attachServiceAuthToRequest, type ServiceAuthContext } from "./auth-context.ts";
+import type { ServiceAuthContext } from "./auth-context.ts";
 import { isHubApiCorsPreflight, isSapWebSocketUpgrade } from "./remote-auth.ts";
 import { isOptionalAuthHubHttpRequest } from "@freeanima/platform/hub/http-rest-auth.ts";
 
@@ -58,11 +58,6 @@ export function createServiceAuthVerifier(): ServiceAuthVerifier {
       return verifyBearerToken(req);
     },
   };
-}
-
-export function withServiceAuthRequest(req: Request, auth: ServiceAuthContext | null): Request {
-  if (!auth) return req;
-  return attachServiceAuthToRequest(req, auth);
 }
 
 /** health 探活：请求是否带有效 service token（health 路径豁免拦截，但仍应报告 authed） */

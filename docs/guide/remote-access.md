@@ -49,11 +49,11 @@ anima token list --subject-id 1
 anima token revoke <token_id>
 ```
 
-Console REST（需已认证 `full` token）：
+Console Hub RPC REST（需已认证 `full` token）：
 
-- `GET /api/subjects/:id/tokens`
-- `POST /api/subjects/:id/tokens` — body `{ "name": "desktop" }`，响应含一次性 `plaintext`
-- `DELETE /api/tokens/:id`
+- `GET /hub/rpc/v1/tokens/listForSubject?id=:id`（或 `hub().call("tokens.listForSubject", { id })`）
+- `POST /hub/rpc/v1/tokens/createForSubject` — body `{ "id": <subject_id>, "name": "desktop" }`，响应含一次性 `plaintext`
+- `POST /hub/rpc/v1/tokens/revoke` — body `{ "id": <token_id> }`
 
 ### Listen address (`http.host`)
 

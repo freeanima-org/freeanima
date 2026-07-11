@@ -46,7 +46,7 @@
 | `src/features/console/plugin.ts`                 | `hub.rpc` 注册 handler；HTTP REST path 由 hub-contract `meta.http` 自动生成 |
 | `src/features/console/ui/console`                | `@freeanima/hub-client` `call` / `subscribe`                                |
 
-**不要**：import `sap-contract`；在 registry 注册 `/api/*` path；新建 `satellite-*` 包。
+**不要**：import `sap-contract`；在 registry 手写 legacy `/api/*` Hub path（主 Hub 统一为 `/hub/rpc/v1/*`）；新建 `satellite-*` 包。
 
 ## 原型 C — 壳层设置
 

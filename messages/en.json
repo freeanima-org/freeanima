@@ -463,7 +463,7 @@
   "console_system_prompt_tools_list": "Tools list →",
   "console_system_prompt_tools_registry": "full registry",
   "console_system_prompt_tools_shown": "Showing {shown} / {total} · ~{tokens} tokens",
-  "console_tasks_desc": "Browse entity tasks (/api/task/*) with keyword, status, priority, and list filters (read-only).",
+  "console_tasks_desc": "Browse entity tasks (/hub/rpc/v1/task/*) with keyword, status, priority, and list filters (read-only).",
   "console_tasks_search_label": "Search term (optional, title/description)",
   "console_title": "Console",
   "console_tools_default_loaded": "Default loaded toolsets",

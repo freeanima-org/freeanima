@@ -154,7 +154,7 @@ Per [`.agent/rules/code-layers.md`](../../.agent/rules/code-layers.md) (Dependen
 
 ## Console visibility
 
-`GET /api/satellites/status` (Console → Satellites) reads `SatelliteManager.getStatus()`: connected instances, `http_url`, registered tools, heartbeat timestamps.
+`hub().call("src/satellites.status")` (REST `GET /hub/rpc/v1/src/satellites/status`; Console → Satellites) reads `SatelliteManager.getStatus()`: connected instances, `http_url`, registered tools, heartbeat timestamps.
 
 ## Further reading
 

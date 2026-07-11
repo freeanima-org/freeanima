@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-10 23:57+0800\n"
+"POT-Creation-Date: 2026-07-11 11:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -205,24 +205,26 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/remote-access.md:53
-msgid "Console REST（需已认证 `full` token）："
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/guide/remote-access.md:57
-msgid "`GET /api/subjects/:id/tokens`"
+msgid "Console Hub RPC REST（需已认证 `full` token）："
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/remote-access.md:57
 msgid ""
-"`POST /api/subjects/:id/tokens` — body `{ \"name\": \"desktop\" }`，响应含一"
-"次性 `plaintext`"
+"`GET /hub/rpc/v1/tokens/listForSubject?id=:id`（或 "
+"`hub().call(\"tokens.listForSubject\", { id })`）"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/remote-access.md:57
-msgid "`DELETE /api/tokens/:id`"
+msgid ""
+"`POST /hub/rpc/v1/tokens/createForSubject` — body `{ \"id\": <subject_id>, "
+"\"name\": \"desktop\" }`，响应含一次性 `plaintext`"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/remote-access.md:57
+msgid "`POST /hub/rpc/v1/tokens/revoke` — body `{ \"id\": <token_id> }`"
 msgstr ""
 
 #. type: Title ###

@@ -1,9 +1,9 @@
 import { Button } from "@freeanima/frontend/ui-kit";
 import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
-import type { HubRestConnectionState } from "@freeanima/features/console/ui/console/hooks/useHubRestConnectivity.ts";
+import type { HubRpcConnectionState } from "@freeanima/features/console/ui/console/hooks/useHubRpcConnectivity.ts";
 
 type Props = {
-  state: HubRestConnectionState;
+  state: HubRpcConnectionState;
   onRetry: () => void;
 };
 

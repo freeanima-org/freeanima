@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-10 23:57+0800\n"
+"POT-Creation-Date: 2026-07-11 11:39+0800\n"
 "PO-Revision-Date: 2026-06-29 14:00+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -405,11 +405,11 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/entity-model.md:97
 msgid ""
-"Hub startup binds **`ResolvedWorldContext`** (`GET /api/worlds/context`). "
-"The product shell exposes a **single User / Agent toggle** in the module "
-"header — not an arbitrary `world_id` picker. Selection maps to "
-"`user_world_id` / `agent_world_id` and persists in `sessionStorage` for the "
-"tab."
+"Hub startup binds **`ResolvedWorldContext`** "
+"(`hub().call(\"worlds.context\")` / `GET /hub/rpc/v1/worlds/context`). The "
+"product shell exposes a **single User / Agent toggle** in the module header "
+"— not an arbitrary `world_id` picker. Selection maps to `user_world_id` / "
+"`agent_world_id` and persists in `sessionStorage` for the tab."
 msgstr ""
 
 #. type: Plain text
@@ -815,8 +815,9 @@ msgstr "**组件过滤：** 按 `primary_component` 白名单（如 `task_item`�
 
 #. type: Plain text
 #: docs/concepts/entity-model.md:210
-#, no-wrap
-msgid "**Tools / API:** `entity_search` (LLM/MCP) and `GET|POST /api/entities/search` share `EntitySearchPort`. Task UI search box uses the same REST endpoint.\n"
+#, fuzzy, no-wrap
+#| msgid "**Tools / API:** `entity_search` (LLM/MCP) and `GET|POST /api/entities/search` share `EntitySearchPort`. Task UI search box uses the same REST endpoint.\n"
+msgid "**Tools / API:** `entity_search` (LLM/MCP) and `hub().call(\"entity.searchGet\")` / `hub().call(\"entity.searchPost\")` (REST `GET /hub/rpc/v1/entity/searchGet` | `POST /hub/rpc/v1/entity/searchPost`) share `EntitySearchPort`. Task UI search box uses the same Hub RPC endpoint.\n"
 msgstr "**工具 / API：** `entity_search`（LLM/MCP）与 `GET|POST /api/entities/search` 共用 `EntitySearchPort`。任务 UI 搜索框使用同一 REST 端点。\n"
 
 #. type: Plain text

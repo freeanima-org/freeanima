@@ -1,3 +1,7 @@
+/**
+ * SAP WS 帧级 router 类型（legacy satellite attach 路径）。
+ * 完整 Hub method 列表与 transport meta 以 `@freeanima/platform/hub/hub-router` 为 SSOT。
+ */
 import type {
   MessageInterruptInput,
   MessageInterruptOutput,

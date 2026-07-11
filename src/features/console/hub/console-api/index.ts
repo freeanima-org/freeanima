@@ -1,6 +1,8 @@
 export {
   startApiHttpServer,
   startApiHttpServers,
+  startHubHttpServer,
+  startHubHttpServers,
   CONSOLE_BASE_PATH,
   type ApiServerHandle,
   type ApiServerOptions,

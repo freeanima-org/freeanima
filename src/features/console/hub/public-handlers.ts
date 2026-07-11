@@ -27,7 +27,7 @@ function qrRequest(ctx: HubDispatchContext, payload: { size?: number }): Request
 
 /** auth: optional 的 Hub RPC handler（health / TLS CA） */
 export const consolePublicHubHandlers: Record<string, FeatureRpcHandler> = {
-  "health.probe": (_deps, _payload, ctx) => getHealthProbe(requireHttpRequest(ctx)),
+  "health.probe": (_deps, _payload, ctx) => getHealthProbe(ctx.auth ?? null),
   "tls.ca.info": (_deps, _payload, ctx) => getTlsCaInfo(requireHttpRequest(ctx)),
   "tls.ca.qr": async (_deps, payload, ctx) => {
     const res = await getTlsCaQrResponse(qrRequest(ctx, payload as { size?: number }));

@@ -14,7 +14,6 @@ import { broadcastWsReconnect, shutdownAdmin } from "./shutdown.ts";
 import { getSapServerDeps } from "@freeanima/platform/sap/runtime-context";
 import { createSapBunHandlers } from "@freeanima/platform/sap/bun-route";
 import { createServiceAuthVerifier, type ServiceAuthVerifier } from "./service-auth.ts";
-import { parseServiceAuthFromRequest } from "./auth-context.ts";
 import { applyHttpAuth, handleHubCorsPreflight, trySapWebSocketUpgrade } from "./http-dispatch.ts";
 
 export type ApiServerTlsOptions = {
@@ -127,7 +126,7 @@ function createApiFetchHandler(runtime: ApiServerRuntime) {
 
       if (isMcpPath(authedPath)) {
         const mcpRes = await mcpHandler(authedReq, {
-          callerAuth: parseServiceAuthFromRequest(authedReq),
+          callerAuth: authResult.auth,
         });
         if (mcpRes !== undefined) return withCors(req, mcpRes);
       }
@@ -207,5 +206,11 @@ export async function startApiHttpServers(
 
   return { handles, tlsPort };
 }
+
+/** @alias startApiHttpServer */
+export const startHubHttpServer = startApiHttpServer;
+
+/** @alias startApiHttpServers */
+export const startHubHttpServers = startApiHttpServers;
 
 export { CONSOLE_BASE_PATH };
