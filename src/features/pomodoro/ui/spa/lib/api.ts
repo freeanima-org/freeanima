@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 import { resolveHubCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache-first";
-import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
 
 import { registerPomodoroOfflineModule } from "./pomodoro-offline-adapter.ts";
 
@@ -66,7 +66,7 @@ export type PomodoroTaskFocusSegmentInput = {
 };
 
 function hub() {
-  return getSatelliteHubClient();
+  return getTypedSatelliteHubClient();
 }
 
 let pomodoroModuleRegistered = false;

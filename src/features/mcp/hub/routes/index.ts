@@ -1,29 +1,53 @@
-import type { z } from "zod";
+import { z } from "zod";
 
+import { dualTransportMeta } from "@freeanima/shared/hub-contract";
+import { defineHubRoute, mergeFeatureRoutes } from "@freeanima/shared/hub-contract/route.ts";
 import {
-  attachHandlersToDefs,
-  type HubRouteHandler,
-} from "@freeanima/shared/hub-contract/route.ts";
-import { mcpMethodDefs } from "@freeanima/shared/hub-contract/registry/mcp.ts";
+  getMcpStatus,
+  mcpStartAll,
+  mcpStartServer,
+  mcpStopAll,
+  mcpStopServer,
+} from "@freeanima/features/console/hub/console-api/handlers/mcp.ts";
 
-import { consoleHubHandlers } from "@freeanima/features/console/hub/console-api/console-hub-handlers.ts";
+const emptyInputSchema = z.object({}).strict();
+const mcpServerNameInputSchema = z.object({ name: z.string().min(1) });
+const unknownOutputSchema = z.record(z.string(), z.unknown());
 
-type AnyHubRouteHandler = HubRouteHandler<z.ZodTypeAny, z.ZodTypeAny>;
-
-function wrapConsoleLegacyHandler(
-  fn: (payload: unknown) => Promise<unknown> | unknown,
-): AnyHubRouteHandler {
-  return (_deps: unknown, input: unknown, _ctx: unknown) => Promise.resolve(fn(input));
-}
-
-export const mcpHubRoutes = attachHandlersToDefs(mcpMethodDefs, {
-  "mcp.status": wrapConsoleLegacyHandler(consoleHubHandlers["mcp.status"]),
-  "mcp.startAll": wrapConsoleLegacyHandler(consoleHubHandlers["mcp.startAll"]),
-  "mcp.stopAll": wrapConsoleLegacyHandler(consoleHubHandlers["mcp.stopAll"]),
-  "mcp.startServer": wrapConsoleLegacyHandler(
-    consoleHubHandlers["mcp.startServer"] as (payload: unknown) => Promise<unknown>,
-  ),
-  "mcp.stopServer": wrapConsoleLegacyHandler(
-    consoleHubHandlers["mcp.stopServer"] as (payload: unknown) => Promise<unknown>,
-  ),
-} as Record<keyof typeof mcpMethodDefs, AnyHubRouteHandler>);
+export const mcpHubRoutes = mergeFeatureRoutes([
+  defineHubRoute({
+    method: "mcp.status",
+    input: emptyInputSchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(true),
+    handler: async () => getMcpStatus(),
+  }),
+  defineHubRoute({
+    method: "mcp.startAll",
+    input: emptyInputSchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(false),
+    handler: async () => mcpStartAll(),
+  }),
+  defineHubRoute({
+    method: "mcp.stopAll",
+    input: emptyInputSchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(false),
+    handler: async () => mcpStopAll(),
+  }),
+  defineHubRoute({
+    method: "mcp.startServer",
+    input: mcpServerNameInputSchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(false),
+    handler: async (_deps, input) => mcpStartServer(input.name),
+  }),
+  defineHubRoute({
+    method: "mcp.stopServer",
+    input: mcpServerNameInputSchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(false),
+    handler: async (_deps, input) => mcpStopServer(input.name),
+  }),
+]);

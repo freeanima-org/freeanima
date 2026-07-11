@@ -22,7 +22,7 @@ import type {
   TaskItemRowPayload,
   TaskListRowPayload,
 } from "@freeanima/shared/sap-contract/frames/task.ts";
-import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
 
 import {
   readCachedTaskItems,
@@ -196,7 +196,7 @@ export function compactTaskOutbox(ops: OfflineOutboxOp[]): OfflineOutboxOp[] {
 }
 
 async function flushTaskOp(op: OfflineOutboxOp, scope: string): Promise<"done" | "failed"> {
-  const hub = getSatelliteHubClient();
+  const hub = getTypedSatelliteHubClient();
   try {
     const result = (await hub.call(op.method as "tasklist.create", op.payload as never)) as {
       item?: TaskListRow | TaskItemRow;
@@ -220,7 +220,7 @@ export const taskRpcAdapter: RpcModuleAdapter = {
     resolveIdFields(payload, idMap, ["id", "list_id", "parent_id"]),
   flushOp: async (op, ctx) => flushTaskOp(op, ctx.scope),
   refreshAll: async (scope) => {
-    const hub = getSatelliteHubClient();
+    const hub = getTypedSatelliteHubClient();
     const localLists = await readLocalLists(scope);
     const tempLists = localLists.filter((list) => isTempId(list.id));
     const cachedListIds = localLists.filter((list) => !list.is_folder).map((list) => list.id);

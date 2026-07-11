@@ -5,17 +5,16 @@ import type { FeatureRouteBundle } from "@freeanima/shared/hub-contract/route.ts
 
 export type HubRouterBundle = FeatureRouteBundle;
 
-export type InferHubInputs<T extends HubRouterBundle> = {
-  [K in keyof T["defs"] & string]: z.infer<T["defs"][K]["input"]>;
-};
+export type InferHubInputs<T> = T extends { defs: infer D extends Record<string, HubMethodDef> }
+  ? {
+      [K in keyof D & string]: z.infer<D[K]["input"]>;
+    }
+  : never;
 
-export type InferHubOutputs<T extends HubRouterBundle> = {
-  [K in keyof T["defs"] & string]: z.infer<T["defs"][K]["output"]>;
-};
+export type InferHubOutputs<T> = T extends { defs: infer D extends Record<string, HubMethodDef> }
+  ? {
+      [K in keyof D & string]: z.infer<D[K]["output"]>;
+    }
+  : never;
 
 export type HubMethodFromRouter<T extends HubRouterBundle> = keyof T["defs"] & string;
-
-/** defs-only bundle（ws-only / mcp 等无 feature handler 的 method） */
-export function defsOnlyBundle(defs: Record<string, HubMethodDef>): FeatureRouteBundle {
-  return { handlers: {}, defs };
-}

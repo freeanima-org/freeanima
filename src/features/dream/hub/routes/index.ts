@@ -1,14 +1,39 @@
-import type { z } from "zod";
-
+import { omitUndefined } from "@freeanima/core/util";
+import { dualTransportMeta } from "@freeanima/shared/hub-contract";
+import { defineHubRoute, mergeFeatureRoutes } from "@freeanima/shared/hub-contract/route.ts";
 import {
-  attachHandlersToDefs,
-  type HubRouteHandler,
-} from "@freeanima/shared/hub-contract/route.ts";
-import { dreamMethodDefs } from "@freeanima/shared/hub-contract/registry/features.ts";
+  dreamGetInputSchema,
+  dreamGetOutputSchema,
+  dreamListInputSchema,
+  dreamListOutputSchema,
+} from "@freeanima/shared/sap-contract/frames/dream";
 
-import { handleDreamGet, handleDreamList } from "../rpc.ts";
+import type { RuntimeDeps } from "../runtime-deps.ts";
+import * as service from "../service.ts";
 
-export const dreamHubRoutes = attachHandlersToDefs(dreamMethodDefs, {
-  "dream.list": handleDreamList,
-  "dream.get": handleDreamGet,
-} as Record<keyof typeof dreamMethodDefs, HubRouteHandler<z.ZodTypeAny, z.ZodTypeAny>>);
+type DreamSapServerDeps = {
+  runtime: { runtimeDeps(): RuntimeDeps };
+};
+
+function depsOf(deps: unknown): DreamSapServerDeps {
+  return deps as DreamSapServerDeps;
+}
+
+export const dreamHubRoutes = mergeFeatureRoutes([
+  defineHubRoute({
+    method: "dream.list",
+    input: dreamListInputSchema,
+    output: dreamListOutputSchema,
+    meta: dualTransportMeta(true),
+    handler: async (deps, input) =>
+      service.serviceDreamList(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
+  }),
+  defineHubRoute({
+    method: "dream.get",
+    input: dreamGetInputSchema,
+    output: dreamGetOutputSchema,
+    meta: dualTransportMeta(true),
+    handler: async (deps, input) =>
+      service.serviceDreamGet(depsOf(deps).runtime.runtimeDeps(), input),
+  }),
+]);

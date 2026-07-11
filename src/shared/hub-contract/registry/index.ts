@@ -1,5 +1,3 @@
-import type { z } from "zod";
-
 import type { HubMethodDef } from "../method-def.ts";
 import {
   buildHttpRouteMeta,
@@ -8,20 +6,7 @@ import {
   type HttpRouteMeta,
 } from "../http-route.ts";
 import { resolveHubAuthPolicy } from "../transport.ts";
-import { chatMethodDefs } from "./chat.ts";
 import { consoleMethodDefs } from "./console.ts";
-import {
-  diaryMethodDefs,
-  dreamMethodDefs,
-  emailMethodDefs,
-  notificationMethodDefs,
-  companionMethodDefs,
-  pomodoroMethodDefs,
-} from "./features.ts";
-import { mcpMethodDefs } from "./mcp.ts";
-import { taskMethodDefs } from "./task.ts";
-import { projectMethodDefs } from "./project.ts";
-import { vaultMethodDefs } from "./vault.ts";
 import { wsOnlyMethodDefs } from "./ws-only.ts";
 import {
   getInstalledHubMethodDef,
@@ -32,20 +17,12 @@ import {
   resetHubMethodRegistryForTests,
 } from "./runtime.ts";
 
-/** 编译期 method defs（与 hub-router 同步；boot 后 runtime registry 为准） */
+/**
+ * 编译期 fallback defs（console / ws-only）。
+ * Feature method defs SSOT：features hub routes → platform hub-router → runtime registry。
+ */
 export const STATIC_METHOD_REGISTRY = {
-  ...chatMethodDefs,
-  ...taskMethodDefs,
-  ...projectMethodDefs,
-  ...vaultMethodDefs,
-  ...emailMethodDefs,
-  ...diaryMethodDefs,
-  ...dreamMethodDefs,
-  ...pomodoroMethodDefs,
-  ...notificationMethodDefs,
-  ...companionMethodDefs,
   ...wsOnlyMethodDefs,
-  ...mcpMethodDefs,
   ...consoleMethodDefs,
 } as const;
 
@@ -56,7 +33,7 @@ function buildStaticHttpRouteRegistry(): Partial<Record<HubMethod, HttpRouteMeta
   const routeKeys = new Set<string>();
   const routes: Partial<Record<HubMethod, HttpRouteMeta>> = {};
 
-  for (const method of Object.keys(STATIC_METHOD_REGISTRY) as HubMethod[]) {
+  for (const method of Object.keys(STATIC_METHOD_REGISTRY) as StaticHubMethod[]) {
     const def = STATIC_METHOD_REGISTRY[method];
     const meta = def.meta;
     if (!meta.transports.includes("http")) continue;
@@ -86,15 +63,15 @@ function buildStaticHttpRouteRegistry(): Partial<Record<HubMethod, HttpRouteMeta
 
 const STATIC_HTTP_ROUTE_REGISTRY = buildStaticHttpRouteRegistry();
 
-export type HubMethod = keyof typeof STATIC_METHOD_REGISTRY;
+export type StaticHubMethod = keyof typeof STATIC_METHOD_REGISTRY;
 
-export type HubMethodInputs = {
-  [K in HubMethod]: z.infer<(typeof STATIC_METHOD_REGISTRY)[K]["input"]>;
-};
+export type HubMethod = string;
 
-export type HubMethodOutputs = {
-  [K in HubMethod]: z.infer<(typeof STATIC_METHOD_REGISTRY)[K]["output"]>;
-};
+/** shared hub-client 运行时 payload；精确类型见 @freeanima/platform/hub */
+export type HubMethodInputs = Record<string, unknown>;
+
+/** shared hub-client 运行时返回值；精确类型见 @freeanima/platform/hub */
+export type HubMethodOutputs = unknown;
 
 export function isHubMethod(method: string): method is HubMethod {
   if (isHubMethodRegistryInstalled()) {
@@ -103,13 +80,18 @@ export function isHubMethod(method: string): method is HubMethod {
   return method in STATIC_METHOD_REGISTRY;
 }
 
-export function getHubMethodDef(method: HubMethod): HubMethodDef {
+export function getHubMethodDef(method: string): HubMethodDef {
   if (isHubMethodRegistryInstalled()) {
     const installed = getInstalledHubMethodDef(method);
     if (installed) return installed;
   }
-  const def = STATIC_METHOD_REGISTRY[method];
-  const http = STATIC_HTTP_ROUTE_REGISTRY[method];
+  const def = STATIC_METHOD_REGISTRY[method as StaticHubMethod];
+  if (!def) {
+    throw new Error(
+      `unknown hub method: ${method} (install runtime registry via initHubRouter for feature methods)`,
+    );
+  }
+  const http = STATIC_HTTP_ROUTE_REGISTRY[method as StaticHubMethod];
   if (!http) return def;
   const { httpOverrides: _ignored, ...metaBase } = def.meta;
   return { ...def, meta: { ...metaBase, http } };
@@ -119,7 +101,7 @@ export function getHubMethodHttpRoute(method: HubMethod): HttpRouteMeta | undefi
   if (isHubMethodRegistryInstalled()) {
     return getInstalledHubMethodDef(method)?.meta.http;
   }
-  return STATIC_HTTP_ROUTE_REGISTRY[method];
+  return STATIC_HTTP_ROUTE_REGISTRY[method as StaticHubMethod];
 }
 
 export function listHubMethods(): HubMethod[] {

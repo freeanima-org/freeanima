@@ -38,30 +38,38 @@ function resolveHubRpcWsUrl(options: BundledHubClientOptions): string {
   return `${http.replace(/\/$/, "").replace(/^http/i, "ws")}/hub/rpc/v1`;
 }
 
+export function resolveBundledHubClientOptions(
+  options: BundledHubClientOptions = {},
+): Parameters<typeof createFullHubClient>[0] {
+  const wsUrl = resolveHubRpcWsUrl(options);
+  const httpOrigin = hubHttpFromWsUrl(wsUrl);
+  const token = resolveAuthToken(options.authToken);
+  const profile = options.profile ?? "satellite";
+  const hubRpc = getBundledHubRpcClient({
+    hubRpcWsUrl: wsUrl,
+    ...(token !== undefined ? { authToken: token } : {}),
+  });
+  return {
+    httpOrigin,
+    ...(token !== undefined ? { authToken: token } : {}),
+    ...(options.fetch !== undefined ? { fetch: options.fetch } : {}),
+    profile,
+    getRpcClient: (): Promise<RpcClient> => hubRpc.whenReady(),
+  };
+}
+
 export function getSatelliteHubClient(): HubClient {
   return getBundledHubClient({ profile: "satellite" });
 }
 
 export function getBundledHubClient(options: BundledHubClientOptions = {}): HubClient {
   const wsUrl = resolveHubRpcWsUrl(options);
-  const httpOrigin = hubHttpFromWsUrl(wsUrl);
   const token = resolveAuthToken(options.authToken);
   const profile = options.profile ?? "satellite";
   const key = `${wsUrl}\0${token ?? ""}\0${profile}\0${options.fetch ? "1" : "0"}`;
   if (sharedHubClient && sharedKey === key) return sharedHubClient;
 
-  const hubRpc = getBundledHubRpcClient({
-    hubRpcWsUrl: wsUrl,
-    ...(token !== undefined ? { authToken: token } : {}),
-  });
-
-  sharedHubClient = createFullHubClient({
-    httpOrigin,
-    ...(token !== undefined ? { authToken: token } : {}),
-    ...(options.fetch !== undefined ? { fetch: options.fetch } : {}),
-    profile,
-    getRpcClient: (): Promise<RpcClient> => hubRpc.whenReady(),
-  });
+  sharedHubClient = createFullHubClient(resolveBundledHubClientOptions(options));
   sharedKey = key;
   return sharedHubClient;
 }

@@ -11,7 +11,7 @@ import type {
   VaultSecretsViewPayload,
 } from "@freeanima/shared/sap-contract";
 import type { SubjectKind } from "@freeanima/frontend/shell-sdk";
-import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
 
 type VaultSapMethod =
   | "vault.list"
@@ -30,7 +30,7 @@ async function vaultRequest<T>(
   method: VaultSapMethod,
   payload: Record<string, unknown>,
 ): Promise<T> {
-  return getSatelliteHubClient().call(method as never, payload as never) as Promise<T>;
+  return getTypedSatelliteHubClient().call(method as never, payload as never) as Promise<T>;
 }
 
 export async function fetchVaultItems(

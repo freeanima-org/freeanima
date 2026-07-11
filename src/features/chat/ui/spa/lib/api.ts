@@ -1,6 +1,6 @@
 import type { ConversationAcpDockSnapshot, ConversationListItem, StreamApiEvent } from "./types.ts";
 import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
-import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
 import { getChatSapClient, chatPlatform } from "./sap-client.ts";
 import { m } from "./i18n.ts";
 
@@ -31,7 +31,7 @@ function mapConversationList(raw: {
 }
 
 function hub() {
-  return getSatelliteHubClient();
+  return getTypedSatelliteHubClient();
 }
 
 function requireHubFetch(method: string): void {

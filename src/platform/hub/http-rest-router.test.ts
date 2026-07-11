@@ -1,13 +1,25 @@
-import { describe, expect, test } from "bun:test";
+import { beforeAll, describe, expect, test } from "bun:test";
 
 import {
   COMPILED_ROUTES,
+  compileHttpRoutesFromRegistry,
   findRoute,
   hubRestRelativePath,
   matchPattern,
+  resetCompiledHttpRoutes,
 } from "./http-rest-router.ts";
+import { initHubRouter, resetHubRouterForTests } from "./init.ts";
+import { resetHubMethodRegistryForTests } from "@freeanima/shared/hub-contract/registry/runtime.ts";
 
 describe("http-rest-router", () => {
+  beforeAll(() => {
+    resetHubMethodRegistryForTests();
+    resetHubRouterForTests();
+    resetCompiledHttpRoutes();
+    initHubRouter();
+    compileHttpRoutesFromRegistry();
+  });
+
   test("hubRestRelativePath", () => {
     expect(hubRestRelativePath("/hub/rpc/v1/task/list")).toBe("task/list");
     expect(hubRestRelativePath("/hub/rpc/v1")).toBeNull();

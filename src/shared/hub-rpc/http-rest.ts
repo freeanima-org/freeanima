@@ -2,7 +2,6 @@ import {
   getHubMethodDef,
   resolveHttpRequestEncoding,
   resolveHttpResponseEncoding,
-  type HubMethod,
 } from "@freeanima/shared/hub-contract";
 
 import { HUB_RPC_REST_PREFIX } from "./urls.ts";
@@ -118,7 +117,7 @@ export type BuildHubRestRequestOptions = {
 
 export function hubRestUrl(
   httpOrigin: string,
-  method: HubMethod,
+  method: string,
   payload: Record<string, unknown>,
 ): string {
   return buildHubRestRequest(httpOrigin, method, payload).url;
@@ -126,7 +125,7 @@ export function hubRestUrl(
 
 export function buildHubRestRequest(
   httpOrigin: string,
-  method: HubMethod,
+  method: string,
   payload: Record<string, unknown>,
   authToken?: string,
   options?: BuildHubRestRequestOptions,
@@ -200,7 +199,7 @@ export async function throwHubRestError(res: Response): Promise<never> {
 
 export async function fetchHubRestRaw(
   httpOrigin: string,
-  method: HubMethod,
+  method: string,
   payload: Record<string, unknown>,
   options?: {
     authToken?: string;
@@ -254,7 +253,7 @@ export function hubTlsCaDownloadUrl(httpOrigin: string): string {
   return hubRestUrl(httpOrigin, "tls.ca", {});
 }
 
-export function isNonJsonHubHttpMethod(method: HubMethod): boolean {
+export function isNonJsonHubHttpMethod(method: string): boolean {
   const http = getHubMethodDef(method).meta.http;
   if (!http) return false;
   return (

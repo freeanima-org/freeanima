@@ -1,14 +1,13 @@
 /// <reference lib="dom" />
-import { getBundledHubClient } from "@freeanima/shared/hub-client";
+import { getTypedConsoleHubClient } from "@freeanima/platform/hub";
 
 import { resolveApiOrigin } from "./hub-origin.ts";
 import { resolveHubFetch } from "./hub-fetch.ts";
 
 export function getConsoleHubClient() {
   const origin = resolveApiOrigin();
-  return getBundledHubClient({
+  return getTypedConsoleHubClient({
     hubUrl: origin,
-    profile: "console",
     fetch: resolveHubFetch() as typeof fetch,
   });
 }

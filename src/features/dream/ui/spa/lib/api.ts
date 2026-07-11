@@ -1,12 +1,12 @@
 import type { DreamEntryRowPayload } from "@freeanima/shared/sap-contract";
 import { withOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache-first";
 import { resolveHubCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
-import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
 
 export type DreamEntryRow = DreamEntryRowPayload;
 
 function hub() {
-  return getSatelliteHubClient();
+  return getTypedSatelliteHubClient();
 }
 
 export async function fetchDreamList(opts?: {

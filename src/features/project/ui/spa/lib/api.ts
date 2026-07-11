@@ -8,7 +8,7 @@ import type {
 } from "@freeanima/shared/sap-contract/frames/project";
 import type { TaskItemRowPayload } from "@freeanima/shared/sap-contract/frames/task";
 
-import { getSatelliteHubClient } from "@freeanima/shared/hub-client";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
 
 export type ProjectFolderRow = ProjectFolderRowPayload;
 export type ProjectRow = ProjectRowPayload;
@@ -32,7 +32,7 @@ export type TaskListRow = {
 export type ProjectPickerRow = { id: number; title: string; status: string };
 
 function hub() {
-  return getSatelliteHubClient();
+  return getTypedSatelliteHubClient();
 }
 
 export async function fetchProjectFolders(subjectKind: SubjectKind): Promise<ProjectFolderRow[]> {
