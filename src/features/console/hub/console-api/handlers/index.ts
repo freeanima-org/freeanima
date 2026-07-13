@@ -53,5 +53,10 @@ export {
   searchEntities,
 } from "./entities.ts";
 export { tokensHubHandlers } from "./service-api-tokens.ts";
-export { getHubConfig, getHubConfigSection, patchHubConfigSection } from "./config.ts";
+export {
+  getHubConfig,
+  getHubConfigSection,
+  patchHubConfigSection,
+  replaceHubConfigSection,
+} from "./config.ts";
 export { ApiHandlerError } from "./errors.ts";

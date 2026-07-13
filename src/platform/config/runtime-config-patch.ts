@@ -4,7 +4,11 @@ import {
   isPatchableRuntimeConfig,
 } from "@freeanima/platform/config";
 import { isBootstrapConfigKey } from "@freeanima/core/config";
-import { getHubRuntimeConfigDocument, patchHubRuntimeConfigSection } from "@freeanima/core/db/pg";
+import {
+  getHubRuntimeConfigDocument,
+  patchHubRuntimeConfigSection,
+  replaceHubRuntimeConfigSection,
+} from "@freeanima/core/db/pg";
 import { getDb, initDatabase } from "@freeanima/core/db/pg";
 
 import { loadBootstrapConfig } from "../boot/bootstrap.ts";
@@ -45,6 +49,28 @@ export async function patchRuntimeConfigSection(
 
   await ensureDbFromBootstrap();
   await patchHubRuntimeConfigSection(section, patch);
+}
+
+export async function replaceRuntimeConfigSection(
+  section: string,
+  value: Record<string, unknown>,
+): Promise<void> {
+  if (isBootstrapConfigKey(section)) {
+    throw new Error(`bootstrap 段 ${section} 为平台冷启动配置，非 Hub 服务配置`);
+  }
+
+  try {
+    const active = getActiveRuntimeConfig();
+    if (isPatchableRuntimeConfig(active)) {
+      await active.replaceSection(section, value);
+      return;
+    }
+  } catch {
+    /* Hub 未启动：走 PG 直连 */
+  }
+
+  await ensureDbFromBootstrap();
+  await replaceHubRuntimeConfigSection(section, value);
 }
 
 export async function loadRuntimeConfigSection<T = unknown>(

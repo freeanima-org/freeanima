@@ -22,7 +22,18 @@ export const ADVANCED_SECTIONS = [
   "auto_llm",
 ] as const;
 
+/** 以条目名为 key 的 record 段；保存时需整段替换才能删除条目。 */
+export const HUB_CONFIG_RECORD_SECTIONS = ["models", "mcp_servers", "acp_agents"] as const;
+
 export type AdvancedSectionId = (typeof ADVANCED_SECTIONS)[number];
+
+export type HubConfigRecordSectionId = (typeof HUB_CONFIG_RECORD_SECTIONS)[number];
+
+export function isHubConfigRecordSection(
+  section: AdvancedSectionId,
+): section is HubConfigRecordSectionId {
+  return (HUB_CONFIG_RECORD_SECTIONS as readonly string[]).includes(section);
+}
 
 function FirecrawlForm({
   value,

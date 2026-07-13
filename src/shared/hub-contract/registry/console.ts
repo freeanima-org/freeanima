@@ -163,6 +163,11 @@ export const consoleMethodDefs = {
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
+  "config.replaceSection": defineHubMethod({
+    input: configSectionParamSchema.extend({ value: z.record(z.string(), z.unknown()) }),
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
   "config.testConnection": defineHubMethod({
     input: configTestConnectionInputSchema,
     output: configTestConnectionOutputSchema,

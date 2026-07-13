@@ -188,7 +188,10 @@ function mergePatchIntoCreate(
   return { ...createOp, payload, createdAt: patchOp.createdAt };
 }
 
-async function flushDiaryOp(op: OfflineOutboxOp, scope: string): Promise<"done" | "failed"> {
+async function flushDiaryOp(
+  op: OfflineOutboxOp,
+  scope: string,
+): Promise<import("@freeanima/frontend/shell-sdk/offline-module-types").FlushOpOutcome> {
   const hub = getTypedSatelliteHubClient();
   try {
     const result = (await hub.call(op.method as never, op.payload as never)) as {
@@ -197,9 +200,10 @@ async function flushDiaryOp(op: OfflineOutboxOp, scope: string): Promise<"done" 
     if (op.tempEntityId != null && op.method === "diary.create" && result.item?.id) {
       await recordFlushIdMapping(scope, MODULE_ID, op.tempEntityId, result.item.id);
     }
-    return "done";
-  } catch {
-    return "failed";
+    return { status: "done" };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    return { status: "failed", error: message };
   }
 }
 
@@ -242,13 +246,17 @@ export async function offlineCreateDiaryEntry(
     tags?: string[];
   },
 ): Promise<DiaryEntryRow> {
+  const title = input.title.trim();
+  if (title.length === 0) throw new Error("diary title is required");
+  if (!input.entry_at.trim()) throw new Error("diary entry_at is required");
+
   const scope = resolveOutboxScope();
   const tempId = allocateTempId(scope, MODULE_ID);
   const opId = randomUuid();
   const now = new Date().toISOString();
   const row: DiaryEntryRow = {
     id: tempId,
-    title: input.title,
+    title,
     content: input.content ?? "",
     summary: input.summary ?? "",
     entry_at: input.entry_at,
@@ -265,6 +273,7 @@ export async function offlineCreateDiaryEntry(
       subject_kind: subjectKind,
       client_op_id: opId,
       ...input,
+      title,
     },
     tempEntityId: tempId,
     createdAt: now,

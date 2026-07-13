@@ -2,6 +2,12 @@ import type { OfflineModuleId, OfflineOutboxOp } from "./offline-outbox.ts";
 
 export type FlushResult = "done" | "stale" | "failed";
 
+export type FlushOpOutcome = {
+  status: FlushResult;
+  /** flush 失败时的错误信息；offline-sync 统一写入 outbox。 */
+  error?: string;
+};
+
 export type RpcFlushContext = {
   scope: string;
   signal?: AbortSignal;
@@ -23,7 +29,7 @@ export type RpcModuleAdapter = {
   kind: "rpc";
   moduleId: OfflineModuleId;
   ordering: "fifo" | "topological";
-  flushOp: (op: OfflineOutboxOp, ctx: RpcFlushContext) => Promise<FlushResult>;
+  flushOp: (op: OfflineOutboxOp, ctx: RpcFlushContext) => Promise<FlushOpOutcome>;
   refreshAll: (scope: string) => Promise<void>;
   compactOutbox?: (ops: OfflineOutboxOp[]) => OfflineOutboxOp[];
   resolvePayloadIds?: (payload: Record<string, unknown>, idMap: IdMap) => Record<string, unknown>;
@@ -40,7 +46,7 @@ export type StreamModuleAdapter = {
     op: OfflineOutboxOp,
     ctx: StreamFlushContext,
   ) => Promise<"proceed" | "stale" | "abort">;
-  flushOp: (op: OfflineOutboxOp, ctx: StreamFlushContext) => Promise<FlushResult>;
+  flushOp: (op: OfflineOutboxOp, ctx: StreamFlushContext) => Promise<FlushOpOutcome>;
   persistForceTail?: (opId: string, scope: string) => Promise<void>;
   refreshAll?: (scope: string) => Promise<void>;
 };

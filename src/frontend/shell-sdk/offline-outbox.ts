@@ -13,6 +13,11 @@ type MemoryBackend = Map<string, unknown>;
 
 export type OfflineModuleId = "chat" | "diary" | "pomodoro" | "task" | "dream" | (string & {});
 
+/** 自动 flush 达到该次数后停止重试，需用户手动重试或丢弃。 */
+export const OFFLINE_OUTBOX_MAX_ATTEMPTS = 5;
+
+export type OfflineSyncStatus = "failed" | "stale";
+
 export type OfflineOutboxDependsOn = {
   tempId: number;
   field: string;
@@ -27,6 +32,8 @@ export type OfflineOutboxOp = {
   dependsOn?: OfflineOutboxDependsOn[];
   createdAt: string;
   lastError?: string;
+  attempts?: number;
+  syncStatus?: OfflineSyncStatus;
 };
 
 export type ChatSendOutboxPayload = {
@@ -78,6 +85,20 @@ export async function removeOutboxOp(scope: string, opId: string): Promise<void>
   await offlineDbDelete(OFFLINE_OUTBOX_STORE, outboxKey(scope, opId));
 }
 
+export function shouldAutoRetryOp(op: OfflineOutboxOp): boolean {
+  if (op.syncStatus === "stale") return false;
+  return (op.attempts ?? 0) < OFFLINE_OUTBOX_MAX_ATTEMPTS;
+}
+
+export function isStaleOutboxOp(op: OfflineOutboxOp): boolean {
+  return op.syncStatus === "stale";
+}
+
+export function isFailedOutboxOp(op: OfflineOutboxOp): boolean {
+  if (op.syncStatus === "stale") return false;
+  return op.syncStatus === "failed" || Boolean(op.lastError);
+}
+
 export async function updateOutboxOpError(
   scope: string,
   opId: string,
@@ -85,7 +106,42 @@ export async function updateOutboxOpError(
 ): Promise<void> {
   const op = await getOutboxOp(scope, opId);
   if (!op) return;
-  await enqueueOutboxOp(scope, { ...op, lastError });
+  await enqueueOutboxOp(scope, {
+    ...op,
+    lastError,
+    syncStatus: "failed",
+    attempts: (op.attempts ?? 0) + 1,
+  });
+}
+
+export async function markOutboxOpStale(scope: string, opId: string): Promise<void> {
+  const op = await getOutboxOp(scope, opId);
+  if (!op) return;
+  await enqueueOutboxOp(scope, {
+    ...op,
+    syncStatus: "stale",
+    lastError: "stale",
+    attempts: (op.attempts ?? 0) + 1,
+  });
+}
+
+export async function resetOutboxOpForRetry(scope: string, opId: string): Promise<void> {
+  const op = await getOutboxOp(scope, opId);
+  if (!op) return;
+  const { lastError: _lastError, syncStatus: _syncStatus, ...rest } = op;
+  await enqueueOutboxOp(scope, { ...rest, attempts: 0 });
+}
+
+export async function listAllOutboxOps(scope: string): Promise<OfflineOutboxOp[]> {
+  return listOutboxOps(scope);
+}
+
+export async function listFailedOutboxOps(
+  scope: string,
+  moduleId?: OfflineModuleId,
+): Promise<OfflineOutboxOp[]> {
+  const ops = await listOutboxOps(scope, moduleId);
+  return ops.filter((op) => isFailedOutboxOp(op) || isStaleOutboxOp(op));
 }
 
 export function resolveOutboxScope(): string {

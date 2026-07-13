@@ -43,3 +43,14 @@ export async function patchHubConfigSection(section: string, patch: Record<strin
   await config.patchSection(section, patch);
   return sanitizeConfigForApi(config.data as import("@freeanima/core/config").RuntimeConfig);
 }
+
+export async function replaceHubConfigSection(section: string, value: Record<string, unknown>) {
+  if (isBootstrapConfigKey(section)) {
+    throw new ApiHandlerError(400, `段 ${section} 为平台冷启动配置，非 Hub 服务配置`, {
+      code: "config_bootstrap_section",
+    });
+  }
+  const config = requirePatchableConfig();
+  await config.replaceSection(section, value);
+  return sanitizeConfigForApi(config.data as import("@freeanima/core/config").RuntimeConfig);
+}

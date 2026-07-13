@@ -56,16 +56,16 @@ export const chatStreamAdapter: StreamModuleAdapter = {
   },
   async flushOp(op, ctx) {
     const payload = readPayload(op);
-    if (!payload) return "failed";
+    if (!payload) return { status: "failed", error: "invalid chat send payload" };
 
     const forceTail = ctx.forceTail || payload.force_tail === true;
 
     return await new Promise((resolve) => {
       let settled = false;
-      const finish = (result: "done" | "stale" | "failed") => {
+      const finish = (status: "done" | "stale" | "failed", error?: string) => {
         if (settled) return;
         settled = true;
-        resolve(result);
+        resolve(error ? { status, error } : { status });
       };
 
       const { unsubscribe } = subscribeMessageStream(
@@ -88,7 +88,7 @@ export const chatStreamAdapter: StreamModuleAdapter = {
                 return;
               }
               ctx.stream.onError(payload.conversation_id, ev.data.error);
-              finish("failed");
+              finish("failed", ev.data.error);
               unsubscribe();
               return;
             }
@@ -100,7 +100,7 @@ export const chatStreamAdapter: StreamModuleAdapter = {
           },
           onError: (err) => {
             ctx.stream.onError(payload.conversation_id, err.message);
-            finish("failed");
+            finish("failed", err.message);
           },
           onComplete: () => {
             if (!settled) finish("done");
@@ -135,6 +135,16 @@ export function buildChatStreamFlushContext(handlers: ChatStreamFlushHandlers): 
     }),
     ...(handlers.forceTail ? { forceTail: true } : {}),
   };
+}
+
+/** 不依赖 ChatApp 挂载：全局 bar 离页时仍可 flush chat outbox。 */
+export function buildHeadlessChatStreamFlushContext(forceTail = false): StreamFlushContext {
+  return buildChatStreamFlushContext({
+    onStreamEvent: () => {},
+    onDone: () => {},
+    onError: () => {},
+    forceTail,
+  });
 }
 
 export function scheduleChatFlush(handlers: ChatStreamFlushHandlers): void {

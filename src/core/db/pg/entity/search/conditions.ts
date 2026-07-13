@@ -251,6 +251,9 @@ function buildDiaryEntryBodyConditions(
       sql`(${entities.body}->>'entry_at')::timestamptz <= ${filters.entry_before}::timestamptz`,
     );
   }
+  if (filters.client_op_id) {
+    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+  }
   return conditions;
 }
 

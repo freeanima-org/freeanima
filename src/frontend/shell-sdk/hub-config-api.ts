@@ -15,6 +15,13 @@ export async function patchHubConfigSection(
   return satelliteHubRpcCall<Record<string, unknown>>("config.patchSection", { section, patch });
 }
 
+export async function replaceHubConfigSection(
+  section: string,
+  value: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  return satelliteHubRpcCall<Record<string, unknown>>("config.replaceSection", { section, value });
+}
+
 export async function restartHubService(): Promise<void> {
   await satelliteHubRpcCall("status.restart", {});
 }

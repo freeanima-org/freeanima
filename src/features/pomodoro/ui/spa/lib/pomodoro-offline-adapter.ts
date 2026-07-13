@@ -6,9 +6,7 @@ import {
 import type { RpcModuleAdapter } from "@freeanima/frontend/shell-sdk/offline-module-types";
 import {
   listOutboxOps,
-  removeOutboxOp,
   resolveOutboxScope,
-  updateOutboxOpError,
   type OfflineOutboxOp,
 } from "@freeanima/frontend/shell-sdk/offline-outbox";
 import { flushOfflineModule } from "@freeanima/frontend/shell-sdk/offline-sync";
@@ -52,19 +50,20 @@ export function compactPomodoroOutbox(ops: OfflineOutboxOp[]): OfflineOutboxOp[]
   );
 }
 
-async function flushPomodoroOp(op: OfflineOutboxOp, scope: string): Promise<"done" | "failed"> {
+async function flushPomodoroOp(
+  op: OfflineOutboxOp,
+  _scope: string,
+): Promise<import("@freeanima/frontend/shell-sdk/offline-module-types").FlushOpOutcome> {
   const hub = getTypedSatelliteHubClient();
   try {
     await hub.call(op.method as "pomodoro.config.update", {
       ...op.payload,
       subject_kind: op.payload.subject_kind as "user" | "agent",
     });
-    await removeOutboxOp(scope, op.id);
-    return "done";
+    return { status: "done" };
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    await updateOutboxOpError(scope, op.id, msg);
-    return "failed";
+    const message = e instanceof Error ? e.message : String(e);
+    return { status: "failed", error: message };
   }
 }
 

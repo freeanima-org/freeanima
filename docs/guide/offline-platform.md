@@ -30,6 +30,8 @@ FreeAnima 卫星壳离线能力分三层：
 - Tier 1：`withOfflineCache()` 内置 gate
 - Tier 2 模块：`api.ts` / store 在拉列表前先读本地缓存，gate 为 false 时直接返回、不等待 RPC 超时
 - `flushOfflineModule` / `flushAllOfflineModules`：gate 为 false 时 no-op，重连后由 `OfflineSyncBootstrap` 触发 flush
+- 自动 flush 连续失败达到 5 次后停止重试；`OfflineSyncBootstrap` 展示失败/冲突原因，支持单条重试、丢弃与「重连并重试全部」
+- chat 流式 flush 在离开聊天页时回退到 headless context，全局 bar 仍可 flush
 
 写 RPC 可选 `client_op_id`；flush 重试使用同一 id；create 响应含完整 `item` 供 id-map 写入。
 

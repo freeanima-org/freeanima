@@ -8,6 +8,7 @@ import type { SettingsPanelProps } from "@freeanima/frontend/shell-sdk/settings"
 import {
   fetchHubConfig,
   patchHubConfigSection,
+  replaceHubConfigSection,
   restartHubService,
 } from "@freeanima/frontend/shell-sdk/hub-config-api";
 
@@ -16,6 +17,7 @@ import {
   AdvancedSectionForm,
   readAdvancedSectionDraft,
   type AdvancedSectionId,
+  isHubConfigRecordSection,
 } from "./hub-advanced-forms.tsx";
 import { HubConfigConnectionTestButton } from "./HubConfigConnectionTestButton.tsx";
 import { LlmSettingsPanel } from "./LlmSettingsPanel.tsx";
@@ -175,7 +177,11 @@ export default function HubConfigSectionPanel({ configKey }: Props) {
     setSaving(true);
     setError("");
     try {
-      await patchHubConfigSection(configKey, advancedDraft);
+      if (isHubConfigRecordSection(configKey)) {
+        await replaceHubConfigSection(configKey, advancedDraft);
+      } else {
+        await patchHubConfigSection(configKey, advancedDraft);
+      }
       await afterSave(configKey);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

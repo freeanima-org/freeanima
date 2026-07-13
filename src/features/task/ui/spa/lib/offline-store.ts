@@ -196,7 +196,10 @@ export function compactTaskOutbox(ops: OfflineOutboxOp[]): OfflineOutboxOp[] {
   );
 }
 
-async function flushTaskOp(op: OfflineOutboxOp, scope: string): Promise<"done" | "failed"> {
+async function flushTaskOp(
+  op: OfflineOutboxOp,
+  scope: string,
+): Promise<import("@freeanima/frontend/shell-sdk/offline-module-types").FlushOpOutcome> {
   const hub = getTypedSatelliteHubClient();
   try {
     const result = (await hub.call(op.method as "tasklist.create", op.payload as never)) as {
@@ -206,9 +209,10 @@ async function flushTaskOp(op: OfflineOutboxOp, scope: string): Promise<"done" |
     if (op.tempEntityId != null && result.item?.id) {
       await recordFlushIdMapping(scope, MODULE_ID, op.tempEntityId, result.item.id);
     }
-    return "done";
-  } catch {
-    return "failed";
+    return { status: "done" };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    return { status: "failed", error: message };
   }
 }
 
@@ -272,13 +276,16 @@ export async function offlineCreateTaskList(input: {
   sort_order?: number;
   color?: string | null;
 }): Promise<TaskListRow> {
+  const name = input.name.trim();
+  if (name.length === 0) throw new Error("task list name is required");
+
   const scope = resolveOutboxScope();
   const tempId = allocateTempId(scope, MODULE_ID);
   const opId = randomUuid();
   const now = new Date().toISOString();
   const row: TaskListRow = {
     id: tempId,
-    name: input.name.trim(),
+    name,
     sort_order: input.sort_order ?? 0,
     closed: false,
     color: input.color ?? null,
@@ -385,13 +392,16 @@ export async function offlineCreateTaskItem(input: {
   due_at?: string | null;
   sort_order?: number;
 }): Promise<TaskItemRow> {
+  const title = input.title.trim();
+  if (title.length === 0) throw new Error("task title is required");
+
   const scope = resolveOutboxScope();
   const tempId = allocateTempId(scope, MODULE_ID);
   const opId = randomUuid();
   const now = new Date().toISOString();
   const row: TaskItemRow = {
     id: tempId,
-    title: input.title.trim(),
+    title,
     content: input.content?.trim() ?? "",
     tags: input.tags ?? [],
     status: "pending",
