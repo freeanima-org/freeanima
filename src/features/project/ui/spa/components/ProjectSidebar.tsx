@@ -18,6 +18,8 @@ type ProjectSidebarProps = {
   selectedFolderId: number | null;
   editingFolderId: number | null;
   editingFolderName: string;
+  editingProjectId: number | null;
+  editingProjectName: string;
   newFolderName: string;
   newProjectTitle: string;
   writesDisabled: boolean;
@@ -32,6 +34,9 @@ type ProjectSidebarProps = {
   onEditingFolderNameChange: (value: string) => void;
   onCommitFolderRename: () => void;
   onCancelFolderRename: () => void;
+  onEditingProjectNameChange: (value: string) => void;
+  onCommitProjectRename: () => void;
+  onCancelProjectRename: () => void;
   onOpenFolderMenu: (folder: ProjectFolderRow) => void;
   onOpenProjectMenu: (project: ProjectRow) => void;
   onFolderContextMenu: (e: MouseEvent, folder: ProjectFolderRow) => void;
@@ -45,6 +50,8 @@ function TreeRow({
   selectedFolderId,
   editingFolderId,
   editingFolderName,
+  editingProjectId,
+  editingProjectName,
   renameInputRef,
   useActionSheet,
   writesDisabled,
@@ -54,6 +61,9 @@ function TreeRow({
   onEditingFolderNameChange,
   onCommitFolderRename,
   onCancelFolderRename,
+  onEditingProjectNameChange,
+  onCommitProjectRename,
+  onCancelProjectRename,
   onOpenFolderMenu,
   onOpenProjectMenu,
   onFolderContextMenu,
@@ -65,6 +75,8 @@ function TreeRow({
   selectedFolderId: number | null;
   editingFolderId: number | null;
   editingFolderName: string;
+  editingProjectId: number | null;
+  editingProjectName: string;
   renameInputRef: RefObject<HTMLInputElement | null>;
   useActionSheet: boolean;
   writesDisabled: boolean;
@@ -74,6 +86,9 @@ function TreeRow({
   onEditingFolderNameChange: (value: string) => void;
   onCommitFolderRename: () => void;
   onCancelFolderRename: () => void;
+  onEditingProjectNameChange: (value: string) => void;
+  onCommitProjectRename: () => void;
+  onCancelProjectRename: () => void;
   onOpenFolderMenu: (folder: ProjectFolderRow) => void;
   onOpenProjectMenu: (project: ProjectRow) => void;
   onFolderContextMenu: (e: MouseEvent, folder: ProjectFolderRow) => void;
@@ -154,6 +169,7 @@ function TreeRow({
 
   const project = node.project;
   const selected = selectedProjectId === project.id;
+  const editing = editingProjectId === project.id;
   return (
     <div
       style={{ paddingLeft: pad }}
@@ -164,15 +180,31 @@ function TreeRow({
       onContextMenu={(e) => onProjectContextMenu(e, project)}
     >
       <span className="min-w-6 shrink-0" aria-hidden />
-      <button
-        type="button"
-        className="flex min-w-0 flex-1 items-center gap-1 truncate py-2 text-left"
-        onClick={() => onSelectProject(project.id)}
-      >
-        <span className="truncate">{project.title}</span>
-        <span className="text-muted-foreground shrink-0 text-xs">{project.task_count}</span>
-      </button>
-      {useActionSheet ? (
+      {editing ? (
+        <Input
+          ref={renameInputRef}
+          className="h-7 min-w-0 flex-1 px-2 text-xs"
+          value={editingProjectName}
+          disabled={writesDisabled}
+          onChange={(e) => onEditingProjectNameChange(e.target.value)}
+          onBlur={() => onCommitProjectRename()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") onCommitProjectRename();
+            if (e.key === "Escape") onCancelProjectRename();
+          }}
+          onClick={(e) => e.stopPropagation()}
+        />
+      ) : (
+        <button
+          type="button"
+          className="flex min-w-0 flex-1 items-center gap-1 truncate py-2 text-left"
+          onClick={() => onSelectProject(project.id)}
+        >
+          <span className="truncate">{project.title}</span>
+          <span className="text-muted-foreground shrink-0 text-xs">{project.task_count}</span>
+        </button>
+      )}
+      {useActionSheet && !editing ? (
         <Button
           type="button"
           variant="ghost"
@@ -232,6 +264,8 @@ export function ProjectSidebar(props: ProjectSidebarProps) {
             selectedFolderId={props.selectedFolderId}
             editingFolderId={props.editingFolderId}
             editingFolderName={props.editingFolderName}
+            editingProjectId={props.editingProjectId}
+            editingProjectName={props.editingProjectName}
             renameInputRef={props.renameInputRef}
             useActionSheet={props.useActionSheet}
             writesDisabled={props.writesDisabled}
@@ -243,6 +277,9 @@ export function ProjectSidebar(props: ProjectSidebarProps) {
             onEditingFolderNameChange={props.onEditingFolderNameChange}
             onCommitFolderRename={props.onCommitFolderRename}
             onCancelFolderRename={props.onCancelFolderRename}
+            onEditingProjectNameChange={props.onEditingProjectNameChange}
+            onCommitProjectRename={props.onCommitProjectRename}
+            onCancelProjectRename={props.onCancelProjectRename}
             onOpenFolderMenu={props.onOpenFolderMenu}
             onOpenProjectMenu={props.onOpenProjectMenu}
             onFolderContextMenu={props.onFolderContextMenu}

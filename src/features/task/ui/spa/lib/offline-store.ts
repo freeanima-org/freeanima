@@ -23,6 +23,7 @@ import type {
   TaskListRowPayload,
 } from "@freeanima/shared/sap-contract/frames/task.ts";
 import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
+import { randomUuid } from "@freeanima/shared/sap-contract";
 
 import {
   readCachedTaskItems,
@@ -273,7 +274,7 @@ export async function offlineCreateTaskList(input: {
 }): Promise<TaskListRow> {
   const scope = resolveOutboxScope();
   const tempId = allocateTempId(scope, MODULE_ID);
-  const opId = crypto.randomUUID();
+  const opId = randomUuid();
   const now = new Date().toISOString();
   const row: TaskListRow = {
     id: tempId,
@@ -328,7 +329,7 @@ export async function offlineUpdateTaskList(
   };
   await upsertLocalList(scope, updated);
 
-  const opId = crypto.randomUUID();
+  const opId = randomUuid();
   await enqueueOutboxOp(scope, {
     id: opId,
     moduleId: MODULE_ID,
@@ -359,7 +360,7 @@ export async function offlineDeleteTaskList(id: number): Promise<void> {
     return;
   }
 
-  const opId = crypto.randomUUID();
+  const opId = randomUuid();
   await enqueueOutboxOp(scope, {
     id: opId,
     moduleId: MODULE_ID,
@@ -386,7 +387,7 @@ export async function offlineCreateTaskItem(input: {
 }): Promise<TaskItemRow> {
   const scope = resolveOutboxScope();
   const tempId = allocateTempId(scope, MODULE_ID);
-  const opId = crypto.randomUUID();
+  const opId = randomUuid();
   const now = new Date().toISOString();
   const row: TaskItemRow = {
     id: tempId,
@@ -505,7 +506,7 @@ export async function offlineUpdateTaskItem(
     }
   }
 
-  const opId = crypto.randomUUID();
+  const opId = randomUuid();
   await enqueueOutboxOp(scope, {
     id: opId,
     moduleId: MODULE_ID,
@@ -559,7 +560,7 @@ export async function offlineDeleteTaskItem(id: number, listId?: number): Promis
     return;
   }
 
-  const opId = crypto.randomUUID();
+  const opId = randomUuid();
   await enqueueOutboxOp(scope, {
     id: opId,
     moduleId: MODULE_ID,

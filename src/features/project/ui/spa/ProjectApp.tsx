@@ -130,6 +130,8 @@ export function ProjectApp() {
 
   const [editingFolderId, setEditingFolderId] = useState<number | null>(null);
   const [editingFolderName, setEditingFolderName] = useState("");
+  const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
+  const [editingProjectName, setEditingProjectName] = useState("");
   const [childFolderParentId, setChildFolderParentId] = useState<number | null>(null);
   const [childFolderName, setChildFolderName] = useState("");
 
@@ -424,6 +426,10 @@ export function ProjectApp() {
     setSheetItems(
       menuToSheet(
         buildProjectMenuItems(project, {
+          onRename: (p) => {
+            setEditingProjectId(p.id);
+            setEditingProjectName(p.title);
+          },
           onDelete: (p) => setDeleteProjectTarget(p),
         }),
       ),
@@ -461,6 +467,10 @@ export function ProjectApp() {
     if (contextMenu.kind === "project") {
       return menuToSheet(
         buildProjectMenuItems(contextMenu.project, {
+          onRename: (p) => {
+            setEditingProjectId(p.id);
+            setEditingProjectName(p.title);
+          },
           onDelete: (p) => setDeleteProjectTarget(p),
         }),
       );
@@ -562,6 +572,8 @@ export function ProjectApp() {
                 selectedFolderId={selectedFolderId}
                 editingFolderId={editingFolderId}
                 editingFolderName={editingFolderName}
+                editingProjectId={editingProjectId}
+                editingProjectName={editingProjectName}
                 newFolderName={newFolderName}
                 newProjectTitle={newProjectTitle}
                 writesDisabled={writesDisabled}
@@ -591,6 +603,20 @@ export function ProjectApp() {
                   });
                 }}
                 onCancelFolderRename={() => setEditingFolderId(null)}
+                onEditingProjectNameChange={setEditingProjectName}
+                onCommitProjectRename={() => {
+                  if (editingProjectId == null) return;
+                  const title = editingProjectName.trim();
+                  if (!title) {
+                    setEditingProjectId(null);
+                    return;
+                  }
+                  void patchProjectApi(subjectKind, editingProjectId, { title }).then(() => {
+                    setEditingProjectId(null);
+                    void reload();
+                  });
+                }}
+                onCancelProjectRename={() => setEditingProjectId(null)}
                 onOpenFolderMenu={openFolderMenuSheet}
                 onOpenProjectMenu={openProjectMenuSheet}
                 onFolderContextMenu={(e, folder) =>

@@ -22,6 +22,7 @@ import {
 } from "@freeanima/frontend/shell-sdk/offline-sync";
 import { allocateTempId, isTempId } from "@freeanima/frontend/shell-sdk/offline-temp-id";
 import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
+import { randomUuid } from "@freeanima/shared/sap-contract";
 
 import type { DiaryEntryRow, DiarySubjectKind } from "./format-diary.ts";
 
@@ -243,7 +244,7 @@ export async function offlineCreateDiaryEntry(
 ): Promise<DiaryEntryRow> {
   const scope = resolveOutboxScope();
   const tempId = allocateTempId(scope, MODULE_ID);
-  const opId = crypto.randomUUID();
+  const opId = randomUuid();
   const now = new Date().toISOString();
   const row: DiaryEntryRow = {
     id: tempId,
@@ -290,7 +291,7 @@ export async function offlineUpdateDiaryEntry(
   };
   await upsertLocalEntry(scope, subjectKind, updated);
 
-  const opId = crypto.randomUUID();
+  const opId = randomUuid();
   await enqueueOutboxOp(scope, {
     id: opId,
     moduleId: MODULE_ID,
@@ -325,7 +326,7 @@ export async function offlineAppendDiaryEntry(
   const updated: DiaryEntryRow = { ...existing, content: nextContent, updated_at: now };
   await upsertLocalEntry(scope, subjectKind, updated);
 
-  const opId = crypto.randomUUID();
+  const opId = randomUuid();
   await enqueueOutboxOp(scope, {
     id: opId,
     moduleId: MODULE_ID,
@@ -359,7 +360,7 @@ export async function offlineDeleteDiaryEntry(
     return;
   }
 
-  const opId = crypto.randomUUID();
+  const opId = randomUuid();
   await enqueueOutboxOp(scope, {
     id: opId,
     moduleId: MODULE_ID,
