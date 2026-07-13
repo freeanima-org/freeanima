@@ -6,9 +6,10 @@ import {
   resolveOutboxScope,
   setOfflineOutboxBackendForTests,
 } from "@freeanima/frontend/shell-sdk/offline-outbox";
+import { resetOfflineModuleRegistryForTests } from "@freeanima/frontend/shell-sdk/offline-module-registry";
 
 import type { DiaryEntryRow } from "./format-diary.ts";
-import { reconcileServerDiaryList } from "./offline-store.ts";
+import { offlineCreateDiaryEntry, reconcileServerDiaryList } from "./offline-store.ts";
 
 function row(id: number, entryAt: string): DiaryEntryRow {
   return {
@@ -26,6 +27,7 @@ function row(id: number, entryAt: string): DiaryEntryRow {
 describe("reconcileServerDiaryList", () => {
   beforeEach(() => {
     setOfflineOutboxBackendForTests(new Map());
+    resetOfflineModuleRegistryForTests();
   });
 
   it("保留 outbox 中仍未同步的 temp 条目，避免被服务器列表覆盖丢失", async () => {
@@ -58,5 +60,30 @@ describe("reconcileServerDiaryList", () => {
     const merged = await reconcileServerDiaryList("user", serverItems);
 
     expect(merged.map((e) => e.id)).toEqual([11]);
+  });
+});
+
+describe("offlineCreateDiaryEntry validation", () => {
+  beforeEach(() => {
+    setOfflineOutboxBackendForTests(new Map());
+    resetOfflineModuleRegistryForTests();
+  });
+
+  it("拒绝空标题，避免产生服务端必然拒绝的 outbox op", async () => {
+    await expect(
+      offlineCreateDiaryEntry("user", {
+        title: "   ",
+        entry_at: "2026-07-12T00:00:00.000Z",
+      }),
+    ).rejects.toThrow("diary title is required");
+  });
+
+  it("拒绝空 entry_at", async () => {
+    await expect(
+      offlineCreateDiaryEntry("user", {
+        title: "hello",
+        entry_at: "  ",
+      }),
+    ).rejects.toThrow("diary entry_at is required");
   });
 });

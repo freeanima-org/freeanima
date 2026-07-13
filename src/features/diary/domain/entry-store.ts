@@ -2,6 +2,7 @@ import {
   DIARY_ENTRY_COMPONENT,
   asDiaryEntry,
   type DiaryEntryBody,
+  type DiaryEntrySearchFilters,
 } from "@freeanima/core/db/schema/entity";
 import { formatCstIso, omitUndefined } from "@freeanima/core/util";
 import {
@@ -97,7 +98,7 @@ export async function listDiaryEntries(
   ctx: DiaryStoreContext,
   opts: DiaryEntryListOpts = {},
 ): Promise<DiaryEntryRow[]> {
-  const filters: Record<string, unknown> = {};
+  const filters: DiaryEntrySearchFilters = {};
   if (opts.entry_after) filters.entry_after = opts.entry_after;
   if (opts.entry_before) filters.entry_before = opts.entry_before;
   if (opts.tags?.length) filters.tags = opts.tags;
@@ -138,10 +139,11 @@ async function findDiaryEntryByClientOpId(
   ctx: DiaryStoreContext,
   clientOpId: string,
 ): Promise<DiaryEntryRow | null> {
+  const filters: DiaryEntrySearchFilters = { client_op_id: clientOpId };
   const result = await searchEntities({
     world_id: ctx.worldId,
     primary_component: DIARY_ENTRY_COMPONENT,
-    filters: { client_op_id: clientOpId },
+    filters,
     limit: 1,
     mode: "filter_only",
   });
@@ -265,7 +267,7 @@ export async function searchDiaryEntries(
   ctx: DiaryStoreContext,
   opts: DiaryEntrySearchOpts,
 ): Promise<DiaryEntryRow[]> {
-  const filters: Record<string, unknown> = {};
+  const filters: DiaryEntrySearchFilters = {};
   if (opts.entry_after) filters.entry_after = opts.entry_after;
   if (opts.entry_before) filters.entry_before = opts.entry_before;
   if (opts.tags?.length) filters.tags = opts.tags;

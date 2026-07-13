@@ -14,11 +14,16 @@ export type BundledHubRpcClientOptions = {
   onConnectionStateChange?: (state: HubRpcConnectionState) => void;
 };
 
+export type ReconnectOptions = {
+  /** true 时强制断开重建（如 Hub 配置变更）；默认健康连接直接复用。 */
+  force?: boolean;
+};
+
 export type BundledHubRpcClient = {
   whenReady(): Promise<RpcClient>;
   getClient(): RpcClient | null;
   stop(): void;
-  reconnect(): Promise<RpcClient>;
+  reconnect(opts?: ReconnectOptions): Promise<RpcClient>;
 };
 
 const SHELL_CONFIG_CHANGED_EVENT = "freeanima:shell-config-changed";
@@ -81,8 +86,8 @@ export function subscribeHubRpcConnectionState(
   };
 }
 
-export async function reconnectHubRpc(): Promise<RpcClient> {
-  return getBundledHubRpcClient().reconnect();
+export async function reconnectHubRpc(opts?: ReconnectOptions): Promise<RpcClient> {
+  return getBundledHubRpcClient().reconnect(opts);
 }
 
 function resolveAuthToken(explicit?: string): string {
@@ -139,6 +144,14 @@ function createBundledHubRpcClient(options: BundledHubRpcClientOptions = {}): Bu
     return transport;
   };
 
+  const isConnectionHealthy = (): boolean => {
+    const client = transport?.getClient();
+    if (!client || cachedConnectionState !== "connected") return false;
+    const lastInbound = transport?.getLastInboundAt() ?? null;
+    if (lastInbound == null) return false;
+    return Date.now() - lastInbound <= HUB_RPC_LIVENESS_SILENCE_MS;
+  };
+
   const ensureTransport = async (): Promise<RpcClient> => {
     if (transport?.getClient()) {
       return transport.whenConnected();
@@ -179,7 +192,12 @@ function createBundledHubRpcClient(options: BundledHubRpcClientOptions = {}): Bu
       initPromise = null;
       if (sharedTransport === active) sharedTransport = null;
     },
-    async reconnect(): Promise<RpcClient> {
+    async reconnect(opts?: ReconnectOptions): Promise<RpcClient> {
+      // 已有健康连接时优先复用，避免无谓断开重连（churn）。
+      if (!opts?.force) {
+        const client = transport?.getClient();
+        if (client && isConnectionHealthy()) return client;
+      }
       this.stop();
       notify("connecting");
       initPromise = null;
@@ -213,8 +231,9 @@ export function subscribeBundledHubRpcConfigChanges(): () => void {
   if (typeof window === "undefined") return () => {};
   const handler = (): void => {
     if (!hasBundledHubRpcAuthToken()) return;
+    // 配置变更（Hub URL / token）必须强制重建，不能复用旧连接。
     void getBundledHubRpcClient()
-      .reconnect()
+      .reconnect({ force: true })
       .catch(() => undefined);
   };
   window.addEventListener(SHELL_CONFIG_CHANGED_EVENT, handler);

@@ -8,7 +8,9 @@ import type {
 } from "./offline-module-types.ts";
 import {
   listOutboxOps,
+  markOutboxOpStale,
   removeOutboxOp,
+  shouldAutoRetryOp,
   updateOutboxOpError,
   type OfflineModuleId,
   type OfflineOutboxOp,
@@ -17,6 +19,8 @@ import { sortOutboxOps } from "./offline-topological.ts";
 
 export type FlushModuleOptions = {
   streamContext?: StreamFlushContext;
+  /** 手动重试时绕过 attempts 上限与 stale 跳过。 */
+  forceRetry?: boolean;
 };
 
 let flushing = false;
@@ -29,11 +33,14 @@ async function flushRpcModule(
   adapter: RpcModuleAdapter,
   scope: string,
   ops: OfflineOutboxOp[],
+  opts?: FlushModuleOptions,
 ): Promise<void> {
   let compacted = adapter.compactOutbox ? adapter.compactOutbox(ops) : ops;
   compacted = sortOutboxOps(compacted, adapter.ordering);
 
   for (const op of compacted) {
+    if (!opts?.forceRetry && !shouldAutoRetryOp(op)) continue;
+
     const currentMap = await loadIdMap(scope, adapter.moduleId);
     let payload = op.payload;
     if (adapter.resolvePayloadIds) {
@@ -44,11 +51,11 @@ async function flushRpcModule(
     const unresolved = (resolvedOp.dependsOn ?? []).some((dep) => !currentMap.has(dep.tempId));
     if (unresolved) continue;
 
-    const result = await adapter.flushOp(resolvedOp, { scope });
-    if (result === "done") {
+    const outcome = await adapter.flushOp(resolvedOp, { scope });
+    if (outcome.status === "done") {
       await removeOutboxOp(scope, op.id);
-    } else if (result === "failed") {
-      await updateOutboxOpError(scope, op.id, "flush failed");
+    } else if (outcome.status === "failed") {
+      await updateOutboxOpError(scope, op.id, outcome.error ?? "flush failed");
     }
   }
 
@@ -60,6 +67,7 @@ async function flushStreamModule(
   scope: string,
   ops: OfflineOutboxOp[],
   ctx: StreamFlushContext,
+  opts?: FlushModuleOptions,
 ): Promise<void> {
   const sorted = sortOutboxOps(ops, adapter.ordering);
   const byGroup = new Map<string, OfflineOutboxOp[]>();
@@ -72,23 +80,30 @@ async function flushStreamModule(
 
   for (const groupOps of byGroup.values()) {
     for (const op of groupOps) {
+      if (!opts?.forceRetry && !shouldAutoRetryOp(op)) continue;
+
       if (adapter.preflight) {
         const pre = await adapter.preflight(op, ctx);
-        if (pre === "stale" || pre === "abort") {
-          if (adapter.breakOnStale && pre === "stale") break;
+        if (pre === "stale") {
+          await markOutboxOpStale(scope, op.id);
+          if (adapter.breakOnStale) break;
+          continue;
+        }
+        if (pre === "abort") {
           continue;
         }
       }
       if (ctx.forceTail && adapter.persistForceTail) {
         await adapter.persistForceTail(op.id, scope);
       }
-      const result = await adapter.flushOp(op, ctx);
-      if (result === "done") {
+      const outcome = await adapter.flushOp(op, ctx);
+      if (outcome.status === "done") {
         await removeOutboxOp(scope, op.id);
-      } else if (result === "stale" && adapter.breakOnStale) {
-        break;
-      } else if (result === "failed") {
-        await updateOutboxOpError(scope, op.id, "flush failed");
+      } else if (outcome.status === "stale") {
+        await markOutboxOpStale(scope, op.id);
+        if (adapter.breakOnStale) break;
+      } else if (outcome.status === "failed") {
+        await updateOutboxOpError(scope, op.id, outcome.error ?? "flush failed");
       }
     }
   }
@@ -122,11 +137,11 @@ export async function flushOfflineModule(
 
   if (adapter.kind === "stream") {
     if (!opts?.streamContext) return;
-    await flushStreamModule(adapter, scope, ops, opts.streamContext);
+    await flushStreamModule(adapter, scope, ops, opts.streamContext, opts);
     return;
   }
 
-  await flushRpcModule(adapter, scope, ops);
+  await flushRpcModule(adapter, scope, ops, opts);
 }
 
 export async function flushAllOfflineModules(
@@ -145,12 +160,12 @@ export async function flushAllOfflineModules(
       if (adapter.kind === "stream") {
         const ctx = opts?.streamContextByModule?.chat ?? opts?.streamContext;
         if (ctx) {
-          await flushStreamModule(adapter, scope, ops, ctx);
+          await flushStreamModule(adapter, scope, ops, ctx, opts);
         }
         continue;
       }
 
-      await flushRpcModule(adapter, scope, ops);
+      await flushRpcModule(adapter, scope, ops, opts);
     }
   } finally {
     flushing = false;

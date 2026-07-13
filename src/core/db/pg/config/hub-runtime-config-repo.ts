@@ -21,6 +21,19 @@ function mergeSection(
   };
 }
 
+function replaceSection(
+  document: Record<string, unknown>,
+  section: string,
+  value: Record<string, unknown>,
+): Record<string, unknown> {
+  return {
+    ...document,
+    [section]: value,
+  };
+}
+
+export { mergeSection, replaceSection };
+
 export async function getHubRuntimeConfigDocument(): Promise<Record<string, unknown>> {
   const db = getDb();
   const rows = await db
@@ -60,6 +73,17 @@ export async function patchHubRuntimeConfigSection(
 ): Promise<Record<string, unknown>> {
   const current = await getHubRuntimeConfigDocument();
   const next = mergeSection(current, section, patch);
+  await upsertHubRuntimeConfigDocument(next);
+  return next;
+}
+
+/** 整段替换（用于 acp_agents / mcp_servers 等 record 配置，支持删除条目）。 */
+export async function replaceHubRuntimeConfigSection(
+  section: string,
+  value: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  const current = await getHubRuntimeConfigDocument();
+  const next = replaceSection(current, section, value);
   await upsertHubRuntimeConfigDocument(next);
   return next;
 }

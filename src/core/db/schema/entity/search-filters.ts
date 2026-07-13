@@ -96,6 +96,7 @@ export const diaryEntrySearchFiltersSchema = z
     entry_after: z.string().optional(),
     entry_before: z.string().optional(),
     tags: z.array(z.string()).optional(),
+    client_op_id: z.string().min(1).optional(),
   })
   .strict();
 

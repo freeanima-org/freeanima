@@ -116,6 +116,29 @@ describePg("entity search PG", () => {
     expect(domain.map((row) => row.id)).toEqual(raw.results.map((row) => row.id));
   });
 
+  it("createDiaryEntry with client_op_id is idempotent (client_op_id filter lookup)", async () => {
+    const worldId = testUserWorldId();
+    const first = await createDiaryEntry(
+      { worldId },
+      {
+        title: "幂等测试",
+        content: "第一次写入",
+        entry_at: "2026-07-13T12:00:00+08:00",
+        client_op_id: "diary-op-idem-1",
+      },
+    );
+    const second = await createDiaryEntry(
+      { worldId },
+      {
+        title: "幂等测试重放",
+        content: "重复提交",
+        entry_at: "2026-07-13T12:00:00+08:00",
+        client_op_id: "diary-op-idem-1",
+      },
+    );
+    expect(second.id).toBe(first.id);
+  });
+
   it("global search without accessible worlds throws scope error", async () => {
     await expect(
       searchEntities({

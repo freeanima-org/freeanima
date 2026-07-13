@@ -30,6 +30,7 @@ import {
   getHubConfig,
   getHubConfigSection,
   patchHubConfigSection,
+  replaceHubConfigSection,
 } from "../console-api/handlers/config.ts";
 import { testConfigConnection } from "../console-api/handlers/config-test-connection.ts";
 import {
@@ -217,6 +218,14 @@ export const consoleHubRoutes = mergeFeatureRoutes([
     wrapConsoleLegacyHandler((payload) => {
       const { section, patch } = payload as { section: string; patch: Record<string, unknown> };
       return patchHubConfigSection(section, patch);
+    }),
+  ),
+  defineHubRouteFromDef(
+    "config.replaceSection",
+    consoleMethodDefs["config.replaceSection"],
+    wrapConsoleLegacyHandler((payload) => {
+      const { section, value } = payload as { section: string; value: Record<string, unknown> };
+      return replaceHubConfigSection(section, value);
     }),
   ),
   defineHubRouteFromDef(

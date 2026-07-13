@@ -36,6 +36,11 @@ describe("parseDiaryEntrySearchFilters", () => {
     expect(parsed.tags).toEqual(["日常"]);
   });
 
+  it("accepts client_op_id for idempotent create lookup", () => {
+    const parsed = parseDiaryEntrySearchFilters({ client_op_id: "op-123" });
+    expect(parsed.client_op_id).toBe("op-123");
+  });
+
   it("rejects unknown fields", () => {
     expect(() => parseDiaryEntrySearchFilters({ foo: "bar" })).toThrow(
       /invalid diary_entry filters/,

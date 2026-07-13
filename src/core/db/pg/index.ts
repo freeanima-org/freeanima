@@ -36,7 +36,10 @@ export {
 } from "./fts/index.ts";
 export {
   getHubRuntimeConfigDocument,
+  mergeSection,
   patchHubRuntimeConfigSection,
+  replaceSection,
+  replaceHubRuntimeConfigSection,
   replaceHubRuntimeConfigDocument,
   upsertHubRuntimeConfigDocument,
 } from "./config/index.ts";
