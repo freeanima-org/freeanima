@@ -61,11 +61,11 @@
 
 新增 Feature RPC method 时：
 
-1. 在 `src/shared/hub-contract/registry/` 增加 method 定义（Zod + `dualTransportMeta` / `wsOnlyMeta`；HTTP REST 由 registry finalize 生成 `meta.http`，复合 path 用 `HTTP_ROUTE_OVERRIDES` 或 `dualTransportMeta(..., { http: … })`）
+1. 在 `src/features/<slug>/hub/method-defs.ts` 增加 method 定义（Zod + `dualTransportMeta` / `wsOnlyMeta` / `binaryHttpMeta`）
 2. 在 `src/shared/sap-contract/feature-rpc/frames/` 增加 schema（若尚未存在）
-3. 在 `src/features/<slug>/hub/routes/index.ts` 用 `defineHubRoute` 实现 handler（**禁止** import `hub-client`）
-4. 在 `src/platform/hub/hub-router.ts` import 该 feature routes bundle
-5. Feature UI `api.ts` 使用 `@freeanima/platform/hub` 的 `getTypedSatelliteHubClient` / `call` / `subscribe`
+3. 在 `src/features/<slug>/hub/routes/index.ts` 用 `bindHubRouteHandlers(methodDefs, handlers)` 绑定 handler（**禁止** import `hub-client`）
+4. 在 `src/platform/hub/hub-router.ts` import 该 feature routes bundle；`platform/hub/feature-method-defs.ts` 聚合 `method-defs.ts` 供浏览器 client registry
+5. Feature UI `api.ts` 使用 `@freeanima/platform/hub/client.ts` 的 `getTypedSatelliteHubClient` / `call` / `subscribe`
 
 Console method：`hub-contract/registry/console.ts` + `console/hub/routes/index.ts`（`defineHubRouteFromDef`）。业务传输：**WS** `/hub/rpc/v1`（HubRPC envelope）；**HTTP** `/hub/rpc/v1/{path}`（REST GET/POST，plain JSON）。
 
@@ -84,6 +84,6 @@ SAP attach 专用 method（tool/terminal/sap.attach）仍在 [`src/platform/sap/
 
 **Satellite 离线缓存**：列表/详情 fetch 应 cache-first 展示、`network refresh` 写回；使用 `@freeanima/frontend/shell-sdk/offline-cache`（按 `hubWsUrl` + subject scope 隔离）。**Tier 2 可写**模块通过 `offline-module-registry` 注册 adapter，离线写经 outbox flush；shell-ui `OfflineSyncBootstrap` 展示跨模块待同步计数。**不要**用 Workbox 缓存 `/api` 或 `/sap`。参见 [`docs/guide/remote-access.md`](../../docs/guide/remote-access.md) 与 [`docs/guide/offline-platform.md`](../../docs/guide/offline-platform.md)。
 
-**typed Hub client**：前端 UI 只能从 `@freeanima/platform/hub/client.ts` 取 `getTypedSatelliteHubClient` / `getTypedConsoleHubClient`，**不要**从桶文件 `@freeanima/platform/hub` 导入——后者会 re-export 运行时聚合的 `hubRouter`（`hub-router.ts` 值级导入全部 feature server routes → hub service → `core/db/pg/client.ts` → `import { SQL } from "bun"`），会把整个服务端图打进浏览器 bundle，导致 `Rolldown failed to resolve import "bun"` 构建失败、`build:web` 挂掉进而服务无法启动。`client.ts` 对 `hub-router` 仅 `import type`（`verbatimModuleSyntax` 下会被擦除），故安全。
+**typed Hub client**：前端 UI 只能从 `@freeanima/platform/hub/client.ts` 取 `getTypedSatelliteHubClient` / `getTypedConsoleHubClient`，**不要**从桶文件 `@freeanima/platform/hub` 导入——后者会 re-export 运行时聚合的 `hubRouter`（`hub-router.ts` 值级导入全部 feature server routes → hub service → `core/db/pg/client.ts` → `import { SQL } from "bun"`），会把整个服务端图打进浏览器 bundle，导致 `Rolldown failed to resolve import "bun"` 构建失败、`build:web` 挂掉进而服务无法启动。`client.ts` 对 `hub-router` 仅 `import type`（`verbatimModuleSyntax` 下会被擦除），故安全。首次 `call` 前会通过 `platform/hub/install-client-method-registry.ts` 安装 **client-side method registry**（`STATIC_METHOD_REGISTRY` + 各 feature `hub/method-defs.ts` 聚合，无 handler）；def SSOT 在 feature `method-defs.ts`，与 `hubRouter.defs` 对齐由 `hub-method-registry.test.ts` 守护。
 
 UI 样式与复合组件约定 → [`frontend-ui.md`](frontend-ui.md)。

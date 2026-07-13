@@ -8,10 +8,15 @@ import {
   resolveBundledHubClientOptions,
   type BundledHubClientOptions,
 } from "@freeanima/shared/hub-client/bundled.ts";
+import {
+  ensureClientHubMethodRegistry,
+  resetClientHubMethodRegistryForTests,
+} from "./install-client-method-registry.ts";
 import type { HubMethod, HubMethodInputs, HubMethodOutputs } from "./hub-router.ts";
 
 /** 带 HubMethod 类型推导的 Hub client（类型 SSOT：platform/hub-router） */
 export function createTypedHubClient(options: HubClientOptions) {
+  ensureClientHubMethodRegistry();
   const client = createFullHubClient(options);
   return {
     call<K extends HubMethod>(
@@ -56,6 +61,7 @@ export function getTypedConsoleHubClient(options: BundledHubClientOptions): Type
 
 /** @deprecated 测试重置 */
 export function resetTypedHubClientForTests(): void {
+  resetClientHubMethodRegistryForTests();
   typedSatelliteClient = null;
   typedSatelliteKey = "";
 }
