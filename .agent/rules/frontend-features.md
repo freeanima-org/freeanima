@@ -73,15 +73,17 @@ SAP attach 专用 method（tool/terminal/sap.attach）仍在 [`src/platform/sap/
 
 ## 前端包依赖速查
 
-| 包                | 允许                                                | 禁止                                          |
-| ----------------- | --------------------------------------------------- | --------------------------------------------- |
-| `ui-kit`          | react                                               | sap-contract、workspace                       |
-| `shell-sdk`       | kernel\*、hub-rpc、vault-crypto                     | sap-contract                                  |
-| `shell-ui`        | ui-kit、shell-sdk、feature-\*、satellite-\*         | sap-contract、深路径 import satellites        |
-| `feature-*` UI    | hub-client、hub-contract（类型）、shell-sdk、ui-kit | 在 `hub/routes` 使用 hub-client               |
-| `feature-console` | console-contract、hub-client、ui-kit、shell-sdk     | sap-contract、shell-ui、Eden Treaty（已移除） |
-| `satellite-*`     | sap-contract、shell-sdk、ui-kit                     | shell-ui、admin-\*                            |
+| 包                | 允许                                                | 禁止                                                   |
+| ----------------- | --------------------------------------------------- | ------------------------------------------------------ |
+| `ui-kit`          | react                                               | sap-contract、workspace                                |
+| `shell-sdk`       | kernel\*、hub-rpc、vault-crypto                     | sap-contract                                           |
+| `shell-ui`        | ui-kit、shell-sdk、feature-\*、satellite-\*         | sap-contract、深路径 import satellites                 |
+| `feature-*` UI    | hub-client、hub-contract（类型）、shell-sdk、ui-kit | 在 `hub/routes` 使用 hub-client；`platform/hub` 桶文件 |
+| `feature-console` | console-contract、hub-client、ui-kit、shell-sdk     | sap-contract、shell-ui、Eden Treaty（已移除）          |
+| `satellite-*`     | sap-contract、shell-sdk、ui-kit                     | shell-ui、admin-\*                                     |
 
 **Satellite 离线缓存**：列表/详情 fetch 应 cache-first 展示、`network refresh` 写回；使用 `@freeanima/frontend/shell-sdk/offline-cache`（按 `hubWsUrl` + subject scope 隔离）。**Tier 2 可写**模块通过 `offline-module-registry` 注册 adapter，离线写经 outbox flush；shell-ui `OfflineSyncBootstrap` 展示跨模块待同步计数。**不要**用 Workbox 缓存 `/api` 或 `/sap`。参见 [`docs/guide/remote-access.md`](../../docs/guide/remote-access.md) 与 [`docs/guide/offline-platform.md`](../../docs/guide/offline-platform.md)。
+
+**typed Hub client**：前端 UI 只能从 `@freeanima/platform/hub/client.ts` 取 `getTypedSatelliteHubClient` / `getTypedConsoleHubClient`，**不要**从桶文件 `@freeanima/platform/hub` 导入——后者会 re-export 运行时聚合的 `hubRouter`（`hub-router.ts` 值级导入全部 feature server routes → hub service → `core/db/pg/client.ts` → `import { SQL } from "bun"`），会把整个服务端图打进浏览器 bundle，导致 `Rolldown failed to resolve import "bun"` 构建失败、`build:web` 挂掉进而服务无法启动。`client.ts` 对 `hub-router` 仅 `import type`（`verbatimModuleSyntax` 下会被擦除），故安全。
 
 UI 样式与复合组件约定 → [`frontend-ui.md`](frontend-ui.md)。

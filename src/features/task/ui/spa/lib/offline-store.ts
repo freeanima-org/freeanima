@@ -22,7 +22,7 @@ import type {
   TaskItemRowPayload,
   TaskListRowPayload,
 } from "@freeanima/shared/sap-contract/frames/task.ts";
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 
 import {
   readCachedTaskItems,

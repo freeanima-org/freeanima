@@ -12,7 +12,7 @@ import {
   type OfflineOutboxOp,
 } from "@freeanima/frontend/shell-sdk/offline-outbox";
 import { flushOfflineModule } from "@freeanima/frontend/shell-sdk/offline-sync";
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 
 import { POMODORO_OUTBOX_MODULE_ID } from "./pomodoro-offline-store.ts";
 

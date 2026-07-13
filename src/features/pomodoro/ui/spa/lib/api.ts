@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 import { resolveHubCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache-first";
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 
 import { registerPomodoroOfflineModule } from "./pomodoro-offline-adapter.ts";
 

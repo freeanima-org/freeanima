@@ -21,7 +21,7 @@ import {
   recordFlushIdMapping,
 } from "@freeanima/frontend/shell-sdk/offline-sync";
 import { allocateTempId, isTempId } from "@freeanima/frontend/shell-sdk/offline-temp-id";
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 
 import type { DiaryEntryRow, DiarySubjectKind } from "./format-diary.ts";
 
@@ -84,6 +84,44 @@ async function removeLocalEntry(
 
 function scheduleFlush(scope: string): void {
   void flushOfflineModule(MODULE_ID, scope).catch(() => {});
+}
+
+/** outbox 中仍存在 create op 的 temp 条目 id（尚未同步到服务器）。 */
+async function pendingTempEntryIds(scope: string): Promise<Set<number>> {
+  const ops = await listOutboxOps(scope, MODULE_ID);
+  const ids = new Set<number>();
+  for (const op of ops) {
+    if (op.method === "diary.create" && typeof op.tempEntityId === "number") {
+      ids.add(op.tempEntityId);
+    }
+  }
+  return ids;
+}
+
+/**
+ * 用服务器列表刷新本地缓存时，保留 outbox 中仍未同步的 temp 条目，
+ * 避免刷新覆盖后 temp 条目从缓存消失、导致后续编辑报 "diary entry not found locally"。
+ */
+async function mergeServerList(
+  scope: string,
+  subjectKind: DiarySubjectKind,
+  serverItems: DiaryEntryRow[],
+): Promise<DiaryEntryRow[]> {
+  const tempIds = await pendingTempEntryIds(scope);
+  if (tempIds.size === 0) return serverItems;
+  const local = await readLocalList(scope, subjectKind);
+  const serverIds = new Set(serverItems.map((e) => e.id));
+  const pendingTemps = local.filter((e) => tempIds.has(e.id) && !serverIds.has(e.id));
+  if (pendingTemps.length === 0) return serverItems;
+  return [...pendingTemps, ...serverItems].toSorted((a, b) => b.entry_at.localeCompare(a.entry_at));
+}
+
+/** 供 cache-first 读路径在写回服务器列表前调用，合并未同步的 temp 条目。 */
+export async function reconcileServerDiaryList(
+  subjectKind: DiarySubjectKind,
+  serverItems: DiaryEntryRow[],
+): Promise<DiaryEntryRow[]> {
+  return mergeServerList(resolveOutboxScope(), subjectKind, serverItems);
 }
 
 export function compactDiaryOutbox(ops: OfflineOutboxOp[]): OfflineOutboxOp[] {
@@ -179,7 +217,8 @@ export const diaryRpcAdapter: RpcModuleAdapter = {
           subject_kind: subjectKind,
           limit: 200,
         });
-        await writeOfflineCache(scope, NAMESPACE, listCacheId(subjectKind), data.items);
+        const merged = await mergeServerList(scope, subjectKind, data.items);
+        await writeLocalList(scope, subjectKind, merged);
       } catch {
         /* keep local snapshot */
       }

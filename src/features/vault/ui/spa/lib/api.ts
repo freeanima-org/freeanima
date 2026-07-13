@@ -11,7 +11,7 @@ import type {
   VaultSecretsViewPayload,
 } from "@freeanima/shared/sap-contract";
 import type { SubjectKind } from "@freeanima/frontend/shell-sdk";
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 
 type VaultSapMethod =
   | "vault.list"
