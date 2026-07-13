@@ -1,18 +1,10 @@
 import { omitUndefined } from "@freeanima/core/util";
 import type { NotificationRow as PgNotificationRow } from "@freeanima/core/db/schema/rows";
 import { resolveNotificationRecipients } from "@freeanima/core/config";
-import { dualTransportMeta } from "@freeanima/shared/hub-contract";
-import { defineHubRoute, mergeFeatureRoutes } from "@freeanima/shared/hub-contract/route.ts";
-import {
-  notificationListInputSchema,
-  notificationListOutputSchema,
-  notificationMarkReadInputSchema,
-  notificationMarkReadOutputSchema,
-  notificationRecipientsOutputSchema,
-  type NotificationRow,
-} from "@freeanima/shared/sap-contract/frames/notification";
-import { z } from "zod";
+import { bindHubRouteHandlers } from "@freeanima/shared/hub-contract/route.ts";
+import type { NotificationRow } from "@freeanima/shared/sap-contract/frames/notification";
 
+import { notificationMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
 
@@ -39,60 +31,40 @@ function serializeNotificationRow(row: PgNotificationRow): NotificationRow {
   };
 }
 
-const emptyInputSchema = z.object({}).passthrough();
-
-export const notificationHubRoutes = mergeFeatureRoutes([
-  defineHubRoute({
-    method: "notification.list",
-    input: notificationListInputSchema,
-    output: notificationListOutputSchema,
-    meta: dualTransportMeta(true),
-    handler: async (deps, input) => {
-      const result = await service.listNotifications(
-        depsOf(deps).runtime.runtimeDeps(),
-        omitUndefined({
-          recipient_kind: input.recipient_kind,
-          recipient_id: input.recipient_id,
-          read_filter: input.read_filter,
-          offset: input.offset,
-          limit: input.limit,
-        }),
-      );
-      return {
-        ...result,
-        items: result.items.map(serializeNotificationRow),
-      };
-    },
-  }),
-  defineHubRoute({
-    method: "notification.markRead",
-    input: notificationMarkReadInputSchema,
-    output: notificationMarkReadOutputSchema,
-    meta: dualTransportMeta(false),
-    handler: async (deps, input) => {
-      const notification = await service.markNotificationRead(
-        depsOf(deps).runtime.runtimeDeps(),
-        input.id,
-      );
-      if (!notification) {
-        throw new Error(`Notification not found: ${input.id}`);
-      }
-      return { ok: true as const, notification: serializeNotificationRow(notification) };
-    },
-  }),
-  defineHubRoute({
-    method: "notification.recipients",
-    input: emptyInputSchema,
-    output: notificationRecipientsOutputSchema,
-    meta: dualTransportMeta(true),
-    handler: async (deps) => {
-      const { user, agent } = resolveNotificationRecipients(
-        depsOf(deps).runtime.runtimeDeps().engine.config.data,
-      );
-      return {
-        user_subject_id: user.id,
-        agent_subject_id: agent.id,
-      };
-    },
-  }),
-]);
+export const notificationHubRoutes = bindHubRouteHandlers(notificationMethodDefs, {
+  "notification.list": async (deps, input) => {
+    const result = await service.listNotifications(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined({
+        recipient_kind: input.recipient_kind,
+        recipient_id: input.recipient_id,
+        read_filter: input.read_filter,
+        offset: input.offset,
+        limit: input.limit,
+      }),
+    );
+    return {
+      ...result,
+      items: result.items.map(serializeNotificationRow),
+    };
+  },
+  "notification.markRead": async (deps, input) => {
+    const notification = await service.markNotificationRead(
+      depsOf(deps).runtime.runtimeDeps(),
+      input.id,
+    );
+    if (!notification) {
+      throw new Error(`Notification not found: ${input.id}`);
+    }
+    return { ok: true as const, notification: serializeNotificationRow(notification) };
+  },
+  "notification.recipients": async (deps) => {
+    const { user, agent } = resolveNotificationRecipients(
+      depsOf(deps).runtime.runtimeDeps().engine.config.data,
+    );
+    return {
+      user_subject_id: user.id,
+      agent_subject_id: agent.id,
+    };
+  },
+});

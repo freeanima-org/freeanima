@@ -123,3 +123,33 @@ export function defineHubRouteFromDef<M extends string>(
     handler,
   };
 }
+
+type HubMethodDefMap = Readonly<Record<string, HubMethodDef>>;
+
+/** 由 method-defs 推导各 method handler 的 input/output 类型 */
+export type HubRouteHandlersForDefs<T extends HubMethodDefMap> = {
+  [K in keyof T & string]: T[K] extends HubMethodDef<infer I, infer O>
+    ? HubRouteHandler<I, O>
+    : never;
+};
+
+/** 将 feature method-defs（SSOT）与 handler 绑定，供 hub routes 与 client registry 复用同一份 def */
+export function bindHubRouteHandlers<const T extends HubMethodDefMap>(
+  defs: T,
+  handlers: HubRouteHandlersForDefs<T>,
+): { handlers: HubRouteHandlersForDefs<T>; defs: T } {
+  const outHandlers: FeatureRouteBundle["handlers"] = {};
+  const outDefs: FeatureRouteBundle["defs"] = {};
+  for (const method of Object.keys(defs)) {
+    const def = defs[method];
+    const handler = handlers[method as keyof T & string];
+    if (!def) throw new Error(`missing hub route def for ${method}`);
+    if (!handler) throw new Error(`missing hub route handler for ${method}`);
+    outHandlers[method] = handler as HubRouteHandler<z.ZodTypeAny, z.ZodTypeAny>;
+    outDefs[method] = def;
+  }
+  return { handlers: outHandlers, defs: outDefs } as {
+    handlers: HubRouteHandlersForDefs<T>;
+    defs: T;
+  };
+}

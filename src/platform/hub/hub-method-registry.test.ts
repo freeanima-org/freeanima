@@ -5,9 +5,13 @@ import {
   isHubMethod,
   resolveDefaultTransport,
   resolveFallbackTransport,
+  type HubMethodDef,
 } from "@freeanima/shared/hub-contract";
+import { FEATURE_METHOD_DEFS } from "./feature-method-defs.ts";
+import { STATIC_METHOD_REGISTRY } from "@freeanima/shared/hub-contract/registry/index.ts";
 import { isNonJsonHubHttpMethod } from "@freeanima/shared/hub-rpc";
 import { initHubRouter, resetHubRouterForTests } from "@freeanima/platform/hub/init.ts";
+import { hubRouter } from "@freeanima/platform/hub/hub-router.ts";
 import { resetHubMethodRegistryForTests } from "@freeanima/shared/hub-contract/registry/runtime.ts";
 
 describe("hub method registry (runtime SSOT)", () => {
@@ -15,6 +19,27 @@ describe("hub method registry (runtime SSOT)", () => {
     resetHubMethodRegistryForTests();
     resetHubRouterForTests();
     initHubRouter();
+  });
+
+  test("feature method-defs 与 hubRouter.defs 对齐", () => {
+    const clientKeys = new Set([
+      ...Object.keys(STATIC_METHOD_REGISTRY),
+      ...Object.keys(FEATURE_METHOD_DEFS),
+    ]);
+    const serverKeys = new Set(Object.keys(hubRouter.defs));
+    expect(clientKeys).toEqual(serverKeys);
+    const clientDefs: Record<string, HubMethodDef> = {
+      ...STATIC_METHOD_REGISTRY,
+      ...FEATURE_METHOD_DEFS,
+    };
+    const serverDefs = hubRouter.defs as Record<string, HubMethodDef>;
+    for (const method of serverKeys) {
+      const serverDef = serverDefs[method];
+      const clientDef = clientDefs[method];
+      expect(clientDef).toBeDefined();
+      expect(clientDef!.meta.transports).toEqual(serverDef!.meta.transports);
+      expect(clientDef!.meta.fallback).toBe(serverDef!.meta.fallback);
+    }
   });
 
   test("conversation.list is dual transport with REST meta", () => {
