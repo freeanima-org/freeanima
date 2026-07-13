@@ -158,8 +158,14 @@ export function coercePayloadForSchema(
   for (const [key, fieldSchema] of Object.entries(shape)) {
     if (!(key in out)) continue;
     const val = out[key];
-    if (typeof val !== "string") continue;
     const unwrapped = unwrapZodType(fieldSchema) as ZodSchema;
+    // query 解码（decodeQueryScalar）会把数字/布尔样式的字符串预先转成 number/boolean，
+    // 但 schema 声明为 string 时需还原为字符串（如 recipient_id="53"），否则 Zod 校验失败。
+    if (unwrapped.type === "string" && (typeof val === "number" || typeof val === "boolean")) {
+      out[key] = String(val);
+      continue;
+    }
+    if (typeof val !== "string") continue;
     if (unwrapped.type === "number" && /^-?\d+$/.test(val)) {
       out[key] = Number(val);
     } else if (unwrapped.type === "boolean" && (val === "true" || val === "false")) {

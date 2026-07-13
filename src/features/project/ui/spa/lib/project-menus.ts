@@ -26,10 +26,14 @@ export function buildFolderMenuItems(
 export function buildProjectMenuItems(
   project: import("./api.ts").ProjectRow,
   handlers: {
+    onRename: (project: import("./api.ts").ProjectRow) => void;
     onDelete: (project: import("./api.ts").ProjectRow) => void;
   },
 ): ProjectMenuItem[] {
-  return [{ label: "删除项目", danger: true, onClick: () => void handlers.onDelete(project) }];
+  return [
+    { label: "重命名", onClick: () => handlers.onRename(project) },
+    { label: "删除项目", danger: true, onClick: () => void handlers.onDelete(project) },
+  ];
 }
 
 export function buildProjectTaskMenuItems(

@@ -26,6 +26,7 @@ import {
   Spinner,
   Switch,
 } from "@freeanima/frontend/ui-kit";
+import { randomUuid } from "@freeanima/shared/sap-contract";
 
 import { TaskPickerDialog } from "./components/TaskPickerDialog.tsx";
 import {
@@ -252,7 +253,7 @@ export function PomodoroApp() {
       void applyPomodoroActive(
         createInitialActiveState(config, {
           taskItemId: launch.taskId,
-          sessionLocalId: crypto.randomUUID(),
+          sessionLocalId: randomUuid(),
         }),
         subjectKind,
       );
@@ -297,7 +298,7 @@ export function PomodoroApp() {
     void applyPomodoroActive(
       createInitialActiveState(config, {
         taskItemId,
-        sessionLocalId: crypto.randomUUID(),
+        sessionLocalId: randomUuid(),
       }),
       subjectKind,
     );

@@ -2,6 +2,7 @@ import type { PomodoroConfigRow } from "./api.ts";
 
 import type { PomodoroActiveState } from "@freeanima/frontend/shell-sdk/pomodoro-active-types.ts";
 import { openWorkFocusSegment } from "@freeanima/frontend/shell-sdk/pomodoro-focus-segments.ts";
+import { randomUuid } from "@freeanima/shared/sap-contract";
 export {
   actualDurationMs,
   effectiveFinishedAtIso,
@@ -67,7 +68,7 @@ export function createInitialActiveState(
   opts?: { taskItemId?: number | null; sessionLocalId?: string },
   nowMs: number = Date.now(),
 ): PomodoroActiveState {
-  const sessionLocalId = opts?.sessionLocalId ?? crypto.randomUUID();
+  const sessionLocalId = opts?.sessionLocalId ?? randomUuid();
   const planned = phaseDurationMs(config, "work");
   const phaseStartedAt = new Date(nowMs).toISOString();
   const base: PomodoroActiveState = {
