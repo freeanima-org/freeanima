@@ -10,7 +10,7 @@ import type {
   NotificationRecipientsOutput,
 } from "@freeanima/shared/sap-contract";
 
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 
 export type NotificationRow = NotificationListOutput["items"][number];
 

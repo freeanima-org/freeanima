@@ -6,13 +6,14 @@ import {
 } from "@freeanima/frontend/shell-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache-first";
 import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 
 import {
   offlineAppendDiaryEntry,
   offlineCreateDiaryEntry,
   offlineDeleteDiaryEntry,
   offlineUpdateDiaryEntry,
+  reconcileServerDiaryList,
   registerDiaryOfflineModule,
 } from "./offline-store.ts";
 
@@ -54,6 +55,7 @@ export async function fetchDiaryEntries(
       });
       return data.items;
     },
+    reconcile: (items) => reconcileServerDiaryList(subjectKind, items),
     offlineError: "diary.list unavailable offline",
   });
 }

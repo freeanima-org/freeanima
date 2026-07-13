@@ -1,7 +1,7 @@
 import type { DreamEntryRowPayload } from "@freeanima/shared/sap-contract";
 import { withOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache-first";
 import { resolveHubCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 
 export type DreamEntryRow = DreamEntryRowPayload;
 

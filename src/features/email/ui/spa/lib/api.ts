@@ -5,7 +5,7 @@ import {
   writeOfflineCache,
 } from "@freeanima/frontend/shell-sdk/offline-cache";
 
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 
 export type EmailAccountRow = {
   id: number;

@@ -8,7 +8,7 @@ import type {
 } from "@freeanima/shared/sap-contract/frames/project";
 import type { TaskItemRowPayload } from "@freeanima/shared/sap-contract/frames/task";
 
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 
 export type ProjectFolderRow = ProjectFolderRowPayload;
 export type ProjectRow = ProjectRowPayload;

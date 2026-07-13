@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import { getTypedConsoleHubClient } from "@freeanima/platform/hub";
+import { getTypedConsoleHubClient } from "@freeanima/platform/hub/client.ts";
 
 import { resolveApiOrigin } from "./hub-origin.ts";
 import { resolveHubFetch } from "./hub-fetch.ts";
