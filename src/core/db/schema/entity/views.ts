@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { entityTypeSchema, type EntitySelect } from "./entity.ts";
+import { entities, entityTypeSchema, type EntitySelect } from "./entity.ts";
 import {
   DIARY_ENTRY_COMPONENT,
   DREAM_ENTRY_COMPONENT,
@@ -75,7 +75,27 @@ export type EntityRow = {
   updated_at: Date;
 };
 
-export function mapEntityRow(row: EntitySelect): EntityRow {
+/**
+ * 列表 / filter_only / get 查询列：不含 fts_segmented / search_embedding / search_fts，
+ * 避免远程 PG 传输大字段拖慢 task.list 等热路径。
+ */
+export const entityRowSelectColumns = {
+  id: entities.id,
+  type: entities.type,
+  world_id: entities.world_id,
+  components: entities.components,
+  primary_component: entities.primary_component,
+  title: entities.title,
+  summary: entities.summary,
+  content: entities.content,
+  body: entities.body,
+  created_at: entities.created_at,
+  updated_at: entities.updated_at,
+} as const;
+
+export type EntityRowSelect = Pick<EntitySelect, keyof typeof entityRowSelectColumns>;
+
+export function mapEntityRow(row: EntityRowSelect): EntityRow {
   const typeParsed = entityTypeSchema.parse(row.type);
   return {
     id: row.id,

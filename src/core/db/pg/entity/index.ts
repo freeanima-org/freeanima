@@ -8,6 +8,8 @@ export {
   listEntities,
   countEntities,
   countEntitiesByBodyListId,
+  countPendingTaskItemsByListId,
+  countPendingTaskItemsGroupedByListId,
 } from "./repos/entity-crud-repo.ts";
 export {
   searchEntities,

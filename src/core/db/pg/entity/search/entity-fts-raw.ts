@@ -1,6 +1,6 @@
-import { and, desc, getColumns, sql } from "drizzle-orm";
+import { and, desc, sql } from "drizzle-orm";
 import { entities } from "@freeanima/core/db/schema";
-import { mapEntityRow } from "@freeanima/core/db/schema/entity";
+import { entityRowSelectColumns, mapEntityRow } from "@freeanima/core/db/schema/entity";
 import type { EntitySearchOpts } from "../types.ts";
 
 import { getDb } from "../../client.ts";
@@ -42,7 +42,7 @@ async function searchEntitiesFtsWithTsquery(
 
   const rows = await db
     .select({
-      ...getColumns(entities),
+      ...entityRowSelectColumns,
       rank: rankExpr,
     })
     .from(entities)

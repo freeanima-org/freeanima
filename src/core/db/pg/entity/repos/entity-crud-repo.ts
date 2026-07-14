@@ -3,9 +3,11 @@ import { entities, entityTypeSchema } from "@freeanima/core/db/schema";
 import {
   mergeComponentBody,
   mapEntityRow,
+  entityRowSelectColumns,
   primaryComponentSchema,
   validateEntityBody,
   entitySearchTextForWrite,
+  type EntityRowSelect,
 } from "@freeanima/core/db/schema/entity";
 import type { EntityCreateInput, EntityListOpts, EntityRow, EntityUpdateInput } from "../types.ts";
 
@@ -13,7 +15,7 @@ import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { scheduleEntityEmbedding, clearEntityEmbedding } from "../../embedding/entity-embedding.ts";
 import { getDb } from "../../client.ts";
 
-function mapRow(row: typeof entities.$inferSelect): EntityRow {
+function mapRow(row: EntityRowSelect | typeof entities.$inferSelect): EntityRow {
   return mapEntityRow(row);
 }
 
@@ -115,7 +117,11 @@ export async function createEntityAtId(input: EntityCreateAtIdInput): Promise<En
 
 export async function getEntity(id: number): Promise<EntityRow | null> {
   const db = getDb();
-  const [row] = await db.select().from(entities).where(eq(entities.id, id)).limit(1);
+  const [row] = await db
+    .select(entityRowSelectColumns)
+    .from(entities)
+    .where(eq(entities.id, id))
+    .limit(1);
   return row ? mapRow(row) : null;
 }
 
@@ -205,7 +211,7 @@ export async function listEntities(opts?: EntityListOpts): Promise<EntityRow[]> 
   const offset = Math.max(0, opts?.offset ?? 0);
   const where = buildListConditions(opts);
   const rows = await db
-    .select()
+    .select(entityRowSelectColumns)
     .from(entities)
     .where(where)
     .orderBy(entities.id)
@@ -236,4 +242,56 @@ export async function countEntitiesByBodyListId(listId: number, world_id: number
       ),
     );
   return Number(row?.value ?? 0);
+}
+
+const pendingTaskItemStatusWhere = sql`COALESCE(${entities.body}->>'status', '') <> ${"completed"}`;
+
+/** 非 completed 的 task_item 计数（与清单 item_count 语义一致） */
+export async function countPendingTaskItemsByListId(
+  listId: number,
+  world_id: number,
+): Promise<number> {
+  const db = getDb();
+  const [row] = await db
+    .select({ value: count() })
+    .from(entities)
+    .where(
+      and(
+        eq(entities.world_id, world_id),
+        eq(entities.primary_component, "task_item"),
+        sql`${entities.body}->>'list_id' = ${String(listId)}`,
+        pendingTaskItemStatusWhere,
+      ),
+    );
+  return Number(row?.value ?? 0);
+}
+
+/** 一次查出 world 内各 list_id 的 pending task 数 */
+export async function countPendingTaskItemsGroupedByListId(
+  world_id: number,
+): Promise<Map<number, number>> {
+  const db = getDb();
+  const listIdExpr = sql<string>`${entities.body}->>'list_id'`;
+  const rows = await db
+    .select({
+      list_id: listIdExpr,
+      value: count(),
+    })
+    .from(entities)
+    .where(
+      and(
+        eq(entities.world_id, world_id),
+        eq(entities.primary_component, "task_item"),
+        pendingTaskItemStatusWhere,
+      ),
+    )
+    .groupBy(listIdExpr);
+
+  const map = new Map<number, number>();
+  for (const row of rows) {
+    const id = Number(row.list_id);
+    if (!Number.isFinite(id) || id <= 0) continue;
+    map.set(id, Number(row.value));
+  }
+  return map;
 }

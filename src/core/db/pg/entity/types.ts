@@ -57,6 +57,11 @@ export type EntitySearchOpts = {
   limit?: number;
   offset?: number;
   mode?: EntitySearchMode;
+  /**
+   * 默认 true。false 时跳过额外 COUNT 查询，`count` 回落为当前页 `results.length`
+   *（适合 listTaskItems 等不读 total 的调用方）。
+   */
+  include_count?: boolean;
 };
 
 export type EntitySearchHit = EntityRow & {

@@ -6,6 +6,8 @@ import {
 import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/core/db/pg/entity";
 import { omitUndefined } from "@freeanima/core/util";
 import {
+  countPendingTaskItemsByListId,
+  countPendingTaskItemsGroupedByListId,
   createEntity,
   deleteEntity,
   getEntity,
@@ -39,14 +41,7 @@ function resolveClosed(body: Record<string, unknown>): boolean {
 }
 
 async function countItemsForList(listId: number, worldId: number): Promise<number> {
-  const items = await listEntities({
-    world_id: worldId,
-    primary_component: "task_item",
-    limit: 500,
-  });
-  return items.filter(
-    (item) => Number(item.body.list_id) === listId && item.body.status !== "completed",
-  ).length;
+  return countPendingTaskItemsByListId(listId, worldId);
 }
 
 function toListRow(
@@ -217,11 +212,25 @@ export async function assertListAcceptsTasks(listId: number, worldId: number): P
   }
 }
 
-/** 按 world 懒创建默认 Inbox（幂等） */
+/** 按 world 懒创建默认 Inbox（幂等）；不拉全量清单计数 */
 export async function ensureDefaultTaskListForWorld(worldId: number): Promise<TaskListRow> {
-  const lists = await listTaskLists(worldId, { includeClosed: true });
-  const existing = lists.find((l) => l.is_default);
-  if (existing) return existing;
+  const rows = await listEntities({
+    world_id: worldId,
+    primary_component: TASK_LIST_COMPONENT,
+    limit: 200,
+  });
+  const existingRow = rows.find((row) => row.body.is_default === true);
+  if (existingRow) {
+    const parsed = asTaskList(existingRow);
+    if (!parsed) throw new Error("default task list body invalid");
+    const is_folder = parsed.is_folder ?? false;
+    const item_count = is_folder ? 0 : await countItemsForList(parsed.id, worldId);
+    return toListRow(parsed, {
+      created_at: existingRow.created_at,
+      updated_at: existingRow.updated_at,
+      item_count,
+    });
+  }
 
   const body: TaskListBody = {
     sort_order: 0,
@@ -258,13 +267,14 @@ export async function listTaskLists(
     primary_component: TASK_LIST_COMPONENT,
     limit: 200,
   });
+  const counts = await countPendingTaskItemsGroupedByListId(worldId);
   const lists: TaskListRow[] = [];
   for (const row of rows) {
     const parsed = asTaskList(row);
     if (!parsed) continue;
     if (!opts?.includeClosed && (parsed.closed ?? false)) continue;
     const is_folder = parsed.is_folder ?? false;
-    const item_count = is_folder ? 0 : await countItemsForList(parsed.id, worldId);
+    const item_count = is_folder ? 0 : (counts.get(parsed.id) ?? 0);
     lists.push(
       toListRow(parsed, {
         created_at: row.created_at,
@@ -286,6 +296,7 @@ async function findTaskListByClientOpId(
     filters: { client_op_id: clientOpId },
     limit: 1,
     mode: "filter_only",
+    include_count: false,
   });
   const row = result.results[0];
   if (!row) return null;
@@ -453,15 +464,17 @@ export async function searchTaskLists(
     query: opts.query,
     limit: Math.max(1, Math.min(50, opts.limit ?? 30)),
     mode: "hybrid",
+    include_count: false,
   });
 
+  const counts = await countPendingTaskItemsGroupedByListId(worldId);
   const lists: TaskListRow[] = [];
   for (const row of result.results) {
     const parsed = asTaskList(row);
     if (!parsed) continue;
     if (!opts.includeClosed && (parsed.closed ?? false)) continue;
     const is_folder = parsed.is_folder ?? false;
-    const item_count = is_folder ? 0 : await countItemsForList(parsed.id, worldId);
+    const item_count = is_folder ? 0 : (counts.get(parsed.id) ?? 0);
     lists.push(
       toListRow(parsed, {
         created_at: row.created_at,
