@@ -1,11 +1,12 @@
-import { describe, it, expect } from "bun:test";
-import { mkdirSync } from "node:fs";
+import { describe, it, expect, afterEach } from "bun:test";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createTempDir, removeTempDir } from "@freeanima/core/util";
-import { resolveMigrationsFolder } from "./migrate.ts";
+import { resolveMigrationsFolder, resolveMigrationsFolderForRun } from "./migrate.ts";
+import { registerEmbeddedMigrations } from "./migrations-embedded.ts";
 
 describe("resolveMigrationsFolder", () => {
-  it("prefers published migrations/ layout", () => {
+  it("prefers sidecar migrations/ layout", () => {
     const root = createTempDir("freeanima-migrations-root-");
     try {
       const published = join(root, "migrations");
@@ -27,5 +28,27 @@ describe("resolveMigrationsFolder", () => {
     } finally {
       removeTempDir(root);
     }
+  });
+});
+
+describe("resolveMigrationsFolderForRun", () => {
+  const GLOBAL_KEY = "__FREEANIMA_EMBEDDED_MIGRATIONS__";
+  const tempDirs: string[] = [];
+
+  afterEach(() => {
+    delete (globalThis as Record<string, unknown>)[GLOBAL_KEY];
+    for (const dir of tempDirs.splice(0)) removeTempDir(dir);
+  });
+
+  it("prefers registered embedded migrations when present", () => {
+    const src = createTempDir("freeanima-mig-embed-");
+    tempDirs.push(src);
+    const sqlPath = join(src, "migration.sql");
+    writeFileSync(sqlPath, "SELECT 1;\n");
+    registerEmbeddedMigrations([{ name: "20260101000000_embed", path: sqlPath }]);
+
+    const folder = resolveMigrationsFolderForRun("/nonexistent-repo-root");
+    tempDirs.push(folder);
+    expect(existsSync(join(folder, "20260101000000_embed", "migration.sql"))).toBe(true);
   });
 });

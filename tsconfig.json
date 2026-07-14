@@ -17,7 +17,6 @@
     "node_modules",
     "**/dist/**",
     "**/.turbo/**",
-    "src/app/cli/publish/**",
     "src/app/shell/mobile/android/**",
     "scripts/codemod-freeanima-imports.ts"
   ]

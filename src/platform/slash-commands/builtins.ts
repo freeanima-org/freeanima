@@ -21,8 +21,8 @@ import {
   resolveToolDisplayMode,
 } from "../connectors/gateway/tool-display.ts";
 import {
-  CLI_UPGRADE_HINT_DOCKER,
   CLI_UPGRADE_HINT_SOURCE,
+  CLI_UPGRADE_HINT_STANDALONE,
   getCliInstallKind,
 } from "@freeanima/core/config/cli-install";
 import {
@@ -362,20 +362,10 @@ function cmdUpgrade(_ctx: CommandContext): CommandResult | string {
     return "Service is already restarting…";
   }
   const kind = getCliInstallKind();
-  if (kind === "source") {
-    return `⛔ ${CLI_UPGRADE_HINT_SOURCE}`;
+  if (kind === "standalone") {
+    return `⛔ ${CLI_UPGRADE_HINT_STANDALONE}`;
   }
-  if (kind === "docker") {
-    return `⛔ ${CLI_UPGRADE_HINT_DOCKER}`;
-  }
-  const text =
-    kind === "npm-local"
-      ? "⬆️ 正在从本地仓库升级 CLI 并重启服务（等待进行中的对话结束）…"
-      : "⬆️ 正在从 npm 升级 @freeanima/cli 并重启服务（等待进行中的对话结束）…";
-  return {
-    text,
-    data: { action: "upgrade" },
-  };
+  return `⛔ ${CLI_UPGRADE_HINT_SOURCE}`;
 }
 
 export function registerBuiltins(): void {
@@ -484,7 +474,7 @@ export function registerBuiltins(): void {
   });
   registerCommand({
     name: "upgrade",
-    description: "Upgrade @freeanima/cli and restart service",
+    description: "Show how to upgrade (source / standalone; manual only)",
     handler: cmdUpgrade,
     scope: "global",
     platforms: [CHAT_PLATFORM_PATTERN, "discord", "weixin"],

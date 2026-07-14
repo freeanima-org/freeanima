@@ -1,20 +1,19 @@
-import { existsSync, readFileSync, realpathSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
+import { realpathSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
-export type CliInstallKind = "source" | "npm-registry" | "npm-local" | "docker";
+/** 仅两种运行形态：源码 / bun --compile standalone */
+export type CliInstallKind = "source" | "standalone";
 
-const NPM_CLI_MARKER = "node_modules/@freeanima/cli/";
+/** bun build --compile 把入口挂在虚拟 FS `/$bunfs/root/…`（Bun 1.3.x 尚无 isStandaloneExecutable）。 */
+export function isStandaloneExecutable(argv1 = process.argv[1]): boolean {
+  return typeof argv1 === "string" && argv1.startsWith("/$bunfs/");
+}
 
 export const CLI_UPGRADE_HINT_SOURCE =
-  "源码 link 安装不支持自动 upgrade。请手动执行：git pull、bun install，然后重启服务（anima service restart）。";
+  "源码安装不支持自动 upgrade。请手动执行：git pull、bun install，然后重启服务（anima service restart）。";
 
-export const CLI_UPGRADE_HINT_DOCKER =
-  "Docker 部署请在宿主机执行：docker compose pull && docker compose up -d";
-
-export const CLI_UPGRADE_HINT_NPM_LOCAL_NO_REPO =
-  "无法定位 freeanima 仓库根目录。请在有 git clone 的目录手动执行：git pull、bun run install:cli:local，然后重启服务。";
+export const CLI_UPGRADE_HINT_STANDALONE =
+  "standalone 可执行文件不支持自动 upgrade。请下载新版 Release 产物（或重新 bun run build:cli:executable），覆盖安装前缀后重启服务。";
 
 /** Resolved anima entry script path (realpath). */
 export function resolveAnimaScriptPath(scriptPath?: string): string {
@@ -38,63 +37,30 @@ export function resolveAnimaScriptPath(scriptPath?: string): string {
   return script ? realpathSync(script) : "anima";
 }
 
-export function isDockerInstall(): boolean {
-  return existsSync("/.dockerenv");
-}
-
-export function bunGlobalPackageJsonPath(): string {
-  const bunInstall = process.env.BUN_INSTALL ?? join(homedir(), ".bun");
-  return join(bunInstall, "install/global/package.json");
-}
-
-/** Bun 全局安装清单中 @freeanima/cli 的依赖 spec（用于区分 registry vs 本地 pack）。 */
-export function readBunGlobalCliDependencySpec(): string | null {
-  const path = bunGlobalPackageJsonPath();
-  if (!existsSync(path)) return null;
-  try {
-    const pkg = JSON.parse(readFileSync(path, "utf-8")) as {
-      dependencies?: Record<string, string>;
-    };
-    const spec = pkg.dependencies?.["@freeanima/cli"];
-    return typeof spec === "string" ? spec : null;
-  } catch {
-    return null;
-  }
-}
-
-export function isLocalPackDependencySpec(spec: string): boolean {
-  return (
-    spec.includes(".tgz") ||
-    spec.startsWith("file:") ||
-    spec.startsWith("/") ||
-    spec.startsWith("./") ||
-    spec.startsWith("../")
-  );
-}
-
-/** source / npm-local / npm-registry / docker */
+/** source | standalone */
 export function getCliInstallKind(scriptPath?: string): CliInstallKind {
-  if (isDockerInstall()) return "docker";
+  if (!scriptPath && isStandaloneExecutable()) return "standalone";
+  if (scriptPath && isStandaloneExecutable(scriptPath)) return "standalone";
   const resolved = resolveAnimaScriptPath(scriptPath);
   if (resolved.endsWith("/src/app/cli/cli.ts")) return "source";
-  if (resolved.includes(NPM_CLI_MARKER)) {
-    const spec = readBunGlobalCliDependencySpec();
-    if (spec && isLocalPackDependencySpec(spec)) return "npm-local";
-    return "npm-registry";
-  }
+  // symlink → cli.ts 等仍算源码；standalone 由 bunfs argv 识别
   return "source";
 }
 
 export function formatCliVersion(version: string, scriptPath?: string): string {
   const kind = getCliInstallKind(scriptPath);
-  if (kind === "source") return `${version} (local)`;
-  if (kind === "npm-local") return `${version} (local-pack)`;
-  if (kind === "docker") return `${version} (docker)`;
-  return version;
+  if (kind === "standalone") return `${version} (standalone)`;
+  return `${version} (local)`;
 }
 
-/** Executable path for systemd ExecStart (shebang script or bun + cli.js) */
+/** Executable path for systemd ExecStart (shebang script or bun + cli.ts) */
 export function animaBinString(scriptPath?: string): string {
+  if (
+    (!scriptPath && isStandaloneExecutable()) ||
+    (scriptPath && isStandaloneExecutable(scriptPath))
+  ) {
+    return process.execPath;
+  }
   const script = scriptPath ?? process.argv[1];
   if (script?.endsWith("cli.js") || script?.endsWith("cli.ts")) {
     return `${process.execPath} ${realpathSync(script)}`;

@@ -10,12 +10,12 @@ import { restoreIntegrationHome } from "../../helpers/integration-case.ts";
 import { writeIntegrationDatabaseConfig } from "../../helpers/pg-test.ts";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
-const publishRoot = join(repoRoot, "src/app/cli/publish");
-const cliJs = join(publishRoot, "dist/cli.js");
+const standaloneRoot = join(repoRoot, "dist/anima-executable");
+const standaloneBin = join(standaloneRoot, "anima");
 const TEST_PORT = 18_658;
 const HEALTH_TIMEOUT_MS = 120_000;
 
-const PUBLISHED_CLI_RUNTIME_CONFIG = {
+const STANDALONE_RUNTIME_CONFIG = {
   llm: {
     default_profile: "chat",
     providers: {
@@ -33,16 +33,16 @@ const PUBLISHED_CLI_RUNTIME_CONFIG = {
   },
 };
 
-async function seedPublishedCliRuntimeConfig(url: string): Promise<void> {
+async function seedRuntimeConfig(url: string): Promise<void> {
   initDatabase({ getDatabaseUrl: () => url });
-  await upsertHubRuntimeConfigDocument(PUBLISHED_CLI_RUNTIME_CONFIG);
+  await upsertHubRuntimeConfigDocument(STANDALONE_RUNTIME_CONFIG);
   await closeDb();
 }
 
-function assertPublishedCliBuilt(): void {
-  if (existsSync(cliJs)) return;
+function assertStandaloneBuilt(): void {
+  if (existsSync(standaloneBin)) return;
   throw new Error(
-    "cli/publish/dist/cli.js 不存在；请先运行 `bun run build:cli`（CI Quality 作业会在集成测试前构建）",
+    "dist/anima-executable/anima 不存在；请先运行 `bun run build:cli:executable`（CI Quality 作业会在集成测试前构建）",
   );
 }
 
@@ -78,29 +78,29 @@ function stopChild(child: ChildProcess | null): void {
   child.kill("SIGTERM");
 }
 
-describePg("published CLI HTTP health", () => {
+describePg("standalone CLI HTTP health", () => {
   const prevHome = process.env.FREEANIMA_HOME;
   let child: ChildProcess | null = null;
   let home = "";
 
   beforeAll(() => {
-    assertPublishedCliBuilt();
+    assertStandaloneBuilt();
   });
 
   beforeEach(async () => {
     if (!pgTestUrl) throw new Error("ANIMA_TEST_PG_URL is not set");
-    home = beginLogIsolation("published-cli-serve-");
+    home = beginLogIsolation("standalone-cli-serve-");
     writeIntegrationDatabaseConfig(home, pgTestUrl);
-    await seedPublishedCliRuntimeConfig(pgTestUrl);
+    await seedRuntimeConfig(pgTestUrl);
 
     child = spawn(
-      process.execPath,
-      [cliJs, "service", "start", "--foreground", "--port", String(TEST_PORT)],
+      standaloneBin,
+      ["service", "start", "--foreground", "--port", String(TEST_PORT)],
       {
         env: {
           ...process.env,
           FREEANIMA_HOME: home,
-          FREEANIMA_REPO_ROOT: publishRoot,
+          FREEANIMA_REPO_ROOT: standaloneRoot,
         },
         stdio: ["ignore", "pipe", "pipe"],
       },
@@ -109,7 +109,7 @@ describePg("published CLI HTTP health", () => {
     child.stderr?.on("data", (chunk: Buffer) => {
       const line = chunk.toString();
       if (line.includes("[startup]") || line.includes("Error")) {
-        process.stderr.write(`[published-cli-serve] ${line}`);
+        process.stderr.write(`[standalone-cli-serve] ${line}`);
       }
     });
   });
@@ -122,7 +122,7 @@ describePg("published CLI HTTP health", () => {
   });
 
   it(
-    "GET /hub/rpc/v1/health/probe returns status ok from publish bundle",
+    "GET /hub/rpc/v1/health/probe returns status ok from standalone executable",
     async () => {
       const body = await waitForHealth(TEST_PORT);
       expect(body.status).toBe("ok");

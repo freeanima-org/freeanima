@@ -4,175 +4,84 @@ title: Installation
 
 # Installation
 
-> Deploy FreeAnima on your machine — npm CLI, Docker Compose, or from source.
+> Deploy FreeAnima on your machine — from source, or with a Linux standalone executable.
 > After install: [`security.md`](security.md) (credentials, bind address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`](service.md) (runtime commands) · [`remote-access.md`](remote-access.md) (Cloudflare Tunnel).
 
 ## Choose a path
 
-| Path               | Best for                                   | PostgreSQL  | Redis                  | Secrets                       |
-| ------------------ | ------------------------------------------ | ----------- | ---------------------- | ----------------------------- |
-| **npm CLI**        | Day-to-day self-hosting on your OS         | You install | Optional (recommended) | Vault / `env()` (recommended) |
-| **Docker Compose** | Quick trial, minimal host setup            | Bundled     | Bundled                | `.env` env vars               |
-| **Source**         | Contributors, bleeding-edge, custom builds | You install | Optional (recommended) | Vault / `env()` (recommended) |
+| Path           | Best for                                  | Bun on host | PostgreSQL  | Redis                  | Secrets                       |
+| -------------- | ----------------------------------------- | ----------- | ----------- | ---------------------- | ----------------------------- |
+| **Source**     | Contributors, day-to-day development      | Required    | You install | Optional (recommended) | Vault / `env()` (recommended) |
+| **Standalone** | Production / self-host without a checkout | Not needed  | You install | Optional (recommended) | Vault / `env()` (recommended) |
 
-All paths run the same `anima service` runtime (Hub REST `/api` + Hub RPC `/hub/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis powers EventBus and task context; it **degrades silently** when unavailable — Docker and production setups should still run it.
+Both paths run the same `anima service` runtime (Hub REST `/api` + Hub RPC `/hub/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis powers EventBus and task context; it **degrades silently** when unavailable — production setups should still run it.
 
 ## Shared prerequisites
 
-| Component      | Version / notes                                                                                                                       |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| **Bun**        | >= 1.3.14 — required for npm CLI and source installs ([bun.sh](https://bun.sh))                                                       |
-| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md)                                                  |
-| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                                         |
-| **Vault**      | Recommended for npm/source — API keys and DB URLs stay out of config files ([`security.md`](security.md#credential-responsibilities)) |
+| Component      | Version / notes                                                                                                        |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **Bun**        | >= 1.3.14 — required for **source** installs ([bun.sh](https://bun.sh)); not required for standalone binaries          |
+| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md)                                   |
+| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                          |
+| **Vault**      | Recommended — API keys and DB URLs stay out of config files ([`security.md`](security.md#credential-responsibilities)) |
 
 Data directory: `~/.anima/` (override with `FREEANIMA_HOME`). Back it up with your database.
 
 ---
 
-## npm CLI
+## Standalone (Linux x64)
 
-The published package is [`@freeanima/cli`](https://www.npmjs.com/package/@freeanima/cli) on npm. The binary is `anima`; runtime is Bun (not Node).
+Release publishes a single tarball: `anima-linux-x64.tar.gz` (executable + `package.json` + `dist/build-meta.json`). Migrations and Web UI are embedded in the binary.
 
-### 1. Install Bun and the CLI
+### 1. Download and unpack
 
 ```bash
-# Install Bun (https://bun.sh/docs/installation)
-curl -fsSL https://bun.sh/install | bash
-
-# Global CLI from npm registry
-bun install -g @freeanima/cli
-
-# Verify
-anima --help
+# From a GitHub Release asset (example)
+mkdir -p ~/freeanima && cd ~/freeanima
+tar -xzf anima-linux-x64.tar.gz
+./anima --version   # e.g. 0.8.5 (standalone) · prod
 ```
 
-You can also use `npm install -g @freeanima/cli`, but `anima` still invokes Bun — ensure `bun` is on your `PATH`.
+Keep the directory layout: `anima`, `package.json`, and `dist/` stay siblings. Optionally put the directory on your `PATH` or symlink `anima`.
 
 ### 2. Configure
 
 ```bash
 mkdir -p ~/.anima
 chmod 700 ~/.anima
-cp config.example.yaml ~/.anima/config.yaml   # from repo clone, or write manually
+# copy config.example.yaml from the repo, or write manually
+cp /path/to/freeanima-checkout/config.example.yaml ~/.anima/config.yaml
 ```
 
 Minimum production settings in `~/.anima/config.yaml` (**bootstrap only**):
 
 - **`database.url`** — PostgreSQL connection string (required)
 
-**Runtime settings** (LLM providers, compression, MCP, etc.) are stored in PostgreSQL (`hub_runtime_config`). Edit them in the Shell app under **Settings → Hub 服务 → 服务配置**. Legacy `llm` / `compression` blocks left in `config.yaml` are **ignored** at startup (remove them from YAML after migrating settings in the Shell).
+**Runtime settings** (LLM providers, compression, MCP, etc.) are stored in PostgreSQL (`hub_runtime_config`). Edit them in the Shell app under **Settings → Hub 服务 → 服务配置**.
 
-Prefer Vault or `env()` for secrets:
-
-```bash
-# Shell /vault (User or Agent library), or env vars for headless Hub
-export OPENAI_API_KEY=sk-…
-```
-
-Then reference them in config, e.g. `api_key: vault("123", "token")` or `api_key: env("OPENAI_API_KEY")`, and `database.url: env("DATABASE_URL")`. See [`security.md`](security.md#credential-responsibilities).
-
-PostgreSQL setup (Debian helper, extensions, migrations): [`database.md`](database.md).
-
-Optional Redis block in config (defaults shown in `config.example.yaml`):
-
-```yaml
-redis:
-  host: 127.0.0.1
-  port: 6379
-```
+Prefer Vault or `env()` for secrets. See [`security.md`](security.md#credential-responsibilities).
 
 ### 3. Start the service
 
 ```bash
-anima service start              # background (systemd user unit when available)
-anima service start --foreground # debug — logs to stdout
-anima service status
+./anima service start              # background (systemd user unit when available)
+./anima service start --foreground # debug — logs to stdout
+./anima service status
 ```
 
-Default bind: `127.0.0.1:2658`（Hub API：`/api`，Hub RPC：`/hub/rpc/v1`）。
-
-Use **src/app/shell/desktop** or **src/app/shell/mobile** for UI (Chat + Console bundled). Browser local dev: `bun run dev:web` (Vite HMR; Hub must be running).
-
-Schema migrations run automatically on startup when `database.url` is set.
+Default bind: `127.0.0.1:2658`（Hub API：`/api`，Hub RPC：`/hub/rpc/v1`；Web UI：`/web/*` when `web.enabled`).
 
 ### 4. Upgrade
 
-```bash
-anima upgrade
-```
+Replace the install directory with a new release tarball (or rebuild with `bun run build:cli:executable`), then `anima service restart`. `anima upgrade` / `/upgrade` only print guidance.
 
-Upgrades the global `@freeanima/cli` package from the npm registry, then restart the service if needed (`anima service restart` or `/restart` in chat).
-
----
-
-## Docker Compose
-
-Recommended for a **quick trial** with PostgreSQL, Redis, and the service in one stack. The image installs `@freeanima/cli` globally and listens on `0.0.0.0:2658` inside the container.
-
-### 1. Prepare environment
-
-From the repository root (or any directory with `docker-compose.yml` and `.env.example`):
+### Build from a checkout
 
 ```bash
-cp .env.example .env
+bun run build:cli:executable
+# → dist/anima-executable/
+./dist/anima-executable/anima --version
 ```
-
-Edit `.env`:
-
-| Variable          | Required | Description                                           |
-| ----------------- | -------- | ----------------------------------------------------- |
-| `PG_PASSWORD`     | yes      | PostgreSQL password for user/db `freeanima`           |
-| `OPENAI_API_KEY`  | yes      | LLM API key (injected into config template)           |
-| `OPENAI_BASE_URL` | no       | Default `https://api.openai.com/v1`                   |
-| `OPENAI_MODEL`    | no       | Default `gpt-4o-mini`                                 |
-| `ANIMA_PORT`      | no       | Host port mapped to container `2658` (default `2658`) |
-
-### 2. Start the stack
-
-```bash
-docker compose up --build
-```
-
-Services:
-
-- **postgres** — `pgvector/pgvector:pg17`, database `freeanima`
-- **redis** — `redis:7-alpine`
-- **freeanima** — `ghcr.io/freeanima-org/freeanima:latest` (built locally on first `--build`)
-
-On first start, `docker/entrypoint.sh` copies `docker/config.docker.yaml` to `$FREEANIMA_HOME/config.yaml` if missing. Persistent volumes: `pgdata`, `anima_data`.
-
-### 3. Access Hub API
-
-```text
-http://127.0.0.1:2658/hub/rpc/v1/health/probe
-```
-
-Use `src/app/shell/desktop` or `src/app/shell/mobile` clients for UI (bundled shell with `/chat`, `/tasks`, `/console`, etc.).
-
-- Hub API (health): `http://127.0.0.1:2658/hub/rpc/v1/health/probe` (Hub does **not** host Console UI)
-- Local Web shell dev: `bun run dev:web` → Console: `http://127.0.0.1:4173/web/console/dashboard`
-
-(Use `ANIMA_PORT` if you changed the host mapping.)
-
-### 4. Upgrade
-
-On the **host** (not inside the container):
-
-```bash
-docker compose pull
-docker compose up -d
-```
-
-`anima upgrade` and `/upgrade` inside the container only print this guidance.
-
-Images are published to `ghcr.io/freeanima-org/freeanima` on each release tag.
-
-### Docker notes
-
-- Secrets live in `.env` — do not commit `.env` to git. For production, prefer Vault / `env()` on the host instead of plaintext keys in `.env`.
-- The container binds `0.0.0.0` — restrict access with firewall or reverse proxy auth before exposing beyond localhost ([`security.md`](security.md)).
-- pass is **not** used inside the default Compose stack; LLM and DB secrets come from environment variable expansion in `docker/config.docker.yaml`.
 
 ---
 
@@ -199,7 +108,7 @@ bun run link:global
 anima --help
 ```
 
-Alternatively, use the repo binary directly:
+Alternatively, use the repo entry directly:
 
 ```bash
 bun run anima -- --help
@@ -207,18 +116,7 @@ bun run anima -- --help
 bun src/app/cli/cli.ts --help
 ```
 
-For a publish-shaped local install (closer to npm users):
-
-```bash
-bun run install:cli:local
-# equivalent: bun run build:cli && bun install -g "$PWD/src/app/cli/publish"
-```
-
-`bun install -g ./src/app/cli/publish` from the repo root is not supported; use `bun run install:cli:local` (cleans broken global deps, then pack + install tarball).
-
 ### 3. Configure and start
-
-Same as npm CLI — `~/.anima/config.yaml`, PostgreSQL, optional Redis and Vault:
 
 ```bash
 mkdir -p ~/.anima
@@ -239,12 +137,10 @@ bun run dev:web                    # terminal 2: http://127.0.0.1:4173/web/chat 
 
 ```bash
 bun run check    # typecheck + lint + format + changed unit tests
-bun run test     # full unit + integration (integration uses Docker for temp PG)
+bun run test     # full unit + integration (integration may use Docker for temp PG)
 ```
 
-**link:global** (`bun run link:global`): upgrade manually — `git pull`, `bun install`, then restart the service. `anima upgrade` and `/upgrade` print instructions only.
-
-**Local pack** (`bun run install:cli:local`): `anima upgrade` runs `git pull` and reinstalls the local pack from the repo.
+Upgrade manually: `git pull`, `bun install`, then restart the service. `anima upgrade` / `/upgrade` print instructions only.
 
 ---
 

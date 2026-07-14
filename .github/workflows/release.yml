@@ -27,14 +27,13 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
-  publish:
-    name: Publish CLI
+  publish-standalone:
+    name: Publish Linux standalone
     needs: release-please
     if: needs.release-please.outputs.release_created == 'true'
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      id-token: write # npm Trusted Publishing (OIDC)
+      contents: write
     steps:
       - uses: actions/checkout@v7
         with:
@@ -43,9 +42,19 @@ jobs:
           persist-credentials: false
 
       - uses: ./.github/actions/setup-bun
+      - uses: ./.github/actions/setup-anima-home
 
-      - run: bun run build:cli
+      - run: bun run build:cli:executable
 
-      # npm 发布走 scripts/publish-cli.sh（bunx npm@11 + OIDC）；勿用 setup-node registry-url
-      # 见 https://docs.npmjs.com/trusted-publishers#for-github-actions
-      - run: bash scripts/publish-cli.sh
+      - name: Pack Linux x64 artifact
+        run: |
+          cd dist/anima-executable
+          tar -czf ../../anima-linux-x64.tar.gz anima package.json dist
+          ls -lh ../../anima-linux-x64.tar.gz
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.release-please.outputs.tag_name }}
+          files: anima-linux-x64.tar.gz
+          fail_on_unmatched_files: true
