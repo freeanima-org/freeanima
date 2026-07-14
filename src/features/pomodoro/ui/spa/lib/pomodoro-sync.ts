@@ -150,6 +150,21 @@ export async function pullPomodoroActive(subjectKind: PomodoroSubjectKind): Prom
   }
 }
 
+/** Hub `pomodoro.active.changed` 推送：null 表示对端 clear，直接清空本地。 */
+export function applyPomodoroActiveChangedEvent(
+  subjectKind: PomodoroSubjectKind,
+  remote: Parameters<typeof mergeRemoteActive>[0],
+): void {
+  if (remote == null) {
+    applyLocalPomodoroActive(null, subjectKind, null);
+    return;
+  }
+  const local = readPomodoroActiveState(undefined, subjectKind);
+  const localMeta = getPomodoroSyncMeta(subjectKind);
+  const merged = mergeRemoteActive(remote, local, localMeta);
+  applyLocalPomodoroActive(merged.active, subjectKind, merged.meta);
+}
+
 async function persistPhaseEnd(
   state: PomodoroActiveState,
   subjectKind: PomodoroSubjectKind,

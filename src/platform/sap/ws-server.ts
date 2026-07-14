@@ -108,6 +108,7 @@ export function attachSapWebSocket(
   const sessionPumps = new Map<string, AbortController>();
   const handlers = createSapServerHandlers(deps, sessionPumps);
   let rpcConnected = false;
+  let hubSessionId: string | null = null;
   let connSapState: { appId: string; instanceId: string } | null = null;
   let connAuth: SapRequestAuthContext | null = null;
   let satelliteConnKey = "";
@@ -184,11 +185,18 @@ export function attachSapWebSocket(
       }
       connAuth = verified;
       rpcConnected = true;
+      hubSessionId = randomUUID();
+      deps.hubSessionRegistry.register(hubSessionId, {
+        auth: verified,
+        sendEvent(method, payload) {
+          sendEnvelope({ kind: "evt", method, payload });
+        },
+      });
       sendEnvelope({
         kind: "connected",
         payload: {
           protocol: HUB_RPC_VERSION,
-          session_id: randomUUID(),
+          session_id: hubSessionId,
           heartbeat_interval_sec: HEARTBEAT_INTERVAL_SEC,
         },
       });
@@ -343,6 +351,10 @@ export function attachSapWebSocket(
         controller.abort();
       }
       sessionPumps.clear();
+      if (hubSessionId) {
+        deps.hubSessionRegistry.unregister(hubSessionId);
+        hubSessionId = null;
+      }
       unregisterSapSession();
     },
     handleMessage,

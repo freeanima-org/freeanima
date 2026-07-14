@@ -68,11 +68,14 @@ Type B satellites with relay may fan out Hub `stream.*` events over `/sap/relay/
 
 ## Session events
 
-| Method                 | When                           | Payload           |
-| ---------------------- | ------------------------------ | ----------------- |
-| `conversation.updated` | After `conversation.subscribe` | `conversation_id` |
+| Method                    | When                                  | Payload                          |
+| ------------------------- | ------------------------------------- | -------------------------------- |
+| `conversation.updated`    | After `conversation.subscribe`        | `conversation_id`                |
+| `pomodoro.active.changed` | After `pomodoro.active.put` / `clear` | `subject_kind`, `active` \| null |
 
-Bridged from runtime conversation watch in [`src/platform/sap/stream-bridge.ts`](../../src/platform/sap/stream-bridge.ts).
+`conversation.updated` is bridged from the runtime conversation watch in [`src/platform/sap/stream-bridge.ts`](../../src/platform/sap/stream-bridge.ts).
+
+`pomodoro.active.changed` is fan-out by Hub session registry keyed on `auth.subject_type` ([`src/platform/sap/hub-session-registry.ts`](../../src/platform/sap/hub-session-registry.ts)); payload schema: `pomodoroActiveChangedEventSchema` in [`frames/pomodoro.ts`](../../src/shared/sap-contract/frames/pomodoro.ts).
 
 ## Terminal events
 

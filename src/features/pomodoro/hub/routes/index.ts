@@ -1,11 +1,16 @@
 import { omitUndefined } from "@freeanima/core/util";
 import { bindHubRouteHandlers } from "@freeanima/shared/hub-contract/route.ts";
+import {
+  POMODORO_ACTIVE_CHANGED_EVENT,
+  type PomodoroActiveChangedEvent,
+} from "@freeanima/shared/sap-contract/frames/pomodoro";
+import type { SapServerDeps } from "@freeanima/platform/sap/types";
 
 import { pomodoroMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
 
-type PomodoroSapServerDeps = {
+type PomodoroSapServerDeps = SapServerDeps & {
   runtime: {
     runtimeDeps(): RuntimeDeps;
   };
@@ -13,6 +18,17 @@ type PomodoroSapServerDeps = {
 
 function depsOf(deps: unknown): PomodoroSapServerDeps {
   return deps as PomodoroSapServerDeps;
+}
+
+function broadcastActiveChanged(
+  deps: PomodoroSapServerDeps,
+  event: PomodoroActiveChangedEvent,
+): void {
+  deps.hubSessionRegistry.broadcastToSubject(
+    event.subject_kind,
+    POMODORO_ACTIVE_CHANGED_EVENT,
+    event,
+  );
 }
 
 export const pomodoroHubRoutes = bindHubRouteHandlers(pomodoroMethodDefs, {
@@ -35,8 +51,22 @@ export const pomodoroHubRoutes = bindHubRouteHandlers(pomodoroMethodDefs, {
     service.servicePomodoroFocusList(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
   "pomodoro.active.get": async (deps, input) =>
     service.servicePomodoroActiveGet(depsOf(deps).runtime.runtimeDeps(), input),
-  "pomodoro.active.put": async (deps, input) =>
-    service.servicePomodoroActivePut(depsOf(deps).runtime.runtimeDeps(), input),
-  "pomodoro.active.clear": async (deps, input) =>
-    service.servicePomodoroActiveClear(depsOf(deps).runtime.runtimeDeps(), input),
+  "pomodoro.active.put": async (deps, input) => {
+    const d = depsOf(deps);
+    const result = await service.servicePomodoroActivePut(d.runtime.runtimeDeps(), input);
+    broadcastActiveChanged(d, {
+      subject_kind: input.subject_kind,
+      active: result.active,
+    });
+    return result;
+  },
+  "pomodoro.active.clear": async (deps, input) => {
+    const d = depsOf(deps);
+    const result = await service.servicePomodoroActiveClear(d.runtime.runtimeDeps(), input);
+    broadcastActiveChanged(d, {
+      subject_kind: input.subject_kind,
+      active: null,
+    });
+    return result;
+  },
 });

@@ -15,6 +15,7 @@ import {
   getSapServerDeps,
 } from "@freeanima/platform/sap/runtime-context";
 import { SapInstanceRegistry } from "@freeanima/platform/sap/instance-registry";
+import { HubSessionRegistry } from "@freeanima/platform/sap/hub-session-registry";
 import type { SatelliteManager } from "@freeanima/capabilities/satellite";
 
 import { bindConsoleRuntimeContext } from "@freeanima/features/console/hub/console-api/handlers/runtime.ts";
@@ -59,6 +60,7 @@ describePg("service API tokens", () => {
         runtime,
         satelliteManager: runtime.fullDeps().satellite as SatelliteManager,
         instanceRegistry: new SapInstanceRegistry(false),
+        hubSessionRegistry: new HubSessionRegistry(),
         animaVersion: "test",
         masks: runtime.fullDeps().masks,
       });
