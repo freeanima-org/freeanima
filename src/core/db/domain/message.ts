@@ -51,6 +51,8 @@ export const conversationMetaSchema = z
     timestamp: z.string().default(""),
     platform: z.string().optional(),
     system_prompt: z.string().optional(),
+    /** ISO timestamptz；上次全量构建 system_prompt（日界刷新用） */
+    system_prompt_built_at: z.string().optional(),
     cwd: z.string().optional(),
     title: z.string().optional(),
     compression: z.unknown().optional(),

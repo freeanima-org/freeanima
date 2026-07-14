@@ -8,6 +8,7 @@ const baseRow = {
   title: null,
   cwd: null,
   system_prompt: null,
+  system_prompt_built_at: null,
   platform_info: null,
   compression: null,
   todos: { items: [], next_id: 1 },

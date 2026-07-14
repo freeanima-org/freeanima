@@ -20,6 +20,8 @@ export const conversations = pgTable("conversations", {
   title: text("title"),
   cwd: text("cwd"),
   system_prompt: text("system_prompt"),
+  /** CST 02:00 日界刷新用：上次全量构建 system_prompt 的时刻 */
+  system_prompt_built_at: pgTimestamptz("system_prompt_built_at"),
   platform_info: jsonb("platform_info").$type<PlatformInfo | null>(),
   compression: jsonb("compression").$type<CompressionJson | null>(),
   todos: jsonb("todos").$type<ConversationTodosJson>().notNull().default({ items: [], next_id: 1 }),

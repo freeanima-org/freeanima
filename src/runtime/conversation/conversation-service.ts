@@ -29,6 +29,7 @@ import {
   patchConversationOrigin,
   rebuildConversationSystemPrompt,
   refreshSystemPromptOnResume,
+  ensureSystemPromptFresh,
   rebuildConversationCache,
   rollbackToLastUser,
   rollbackBeforeLastUser,
@@ -91,6 +92,7 @@ export function createConversationService(tools: ToolSetRegistry) {
     rebuildConversationSystemPrompt,
     rebuildConversationCache: (conversationId: string) =>
       rebuildConversationCache(tools, conversationId),
+    ensureSystemPromptFresh,
     refreshSystemPromptOnResume,
     assertConversationPlatform,
     appendUserTurn,

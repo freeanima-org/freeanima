@@ -40,6 +40,7 @@ const META_KNOWN_KEYS = new Set([
   "title",
   "cwd",
   "system_prompt",
+  "system_prompt_built_at",
   "compression",
   "todos",
   "awaiting_clarify",
@@ -54,6 +55,12 @@ const META_KNOWN_KEYS = new Set([
   "capability_mask",
   "gateway_tool_display",
 ]);
+
+function metaBuiltAtToDate(raw: string | undefined): Date | null {
+  if (!raw?.trim()) return null;
+  const parsed = new Date(raw);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
 
 /** conversation_meta → PG insert row */
 export function conversationMetaToInsert(
@@ -95,12 +102,17 @@ export function conversationMetaToInsert(
   const goalRaw = pgJsonbOrNull(meta.goal);
   const goalParsed = goalRaw ? conversationGoalSchema.parse(goalRaw) : null;
 
+  const systemPrompt = pgTextOrNull(meta.system_prompt);
+  const builtAt =
+    metaBuiltAtToDate(meta.system_prompt_built_at) ?? (systemPrompt != null ? pgNow() : null);
+
   return {
     id: conversation_id,
     model: meta.model,
     title: pgTextOrNull(meta.title),
     cwd: pgTextOrNull(meta.cwd),
-    system_prompt: pgTextOrNull(meta.system_prompt),
+    system_prompt: systemPrompt,
+    system_prompt_built_at: builtAt,
     platform_info: buildPlatformInfo(
       meta.platform,
       Object.keys(extra).length > 0 ? extra : undefined,
@@ -150,6 +162,12 @@ export function rowToConversationMeta(row: unknown): ConversationMetaMessage {
     title: parsed.title ?? undefined,
     cwd: parsed.cwd ?? undefined,
     system_prompt: parsed.system_prompt ?? undefined,
+    system_prompt_built_at:
+      parsed.system_prompt_built_at instanceof Date
+        ? parsed.system_prompt_built_at.toISOString()
+        : parsed.system_prompt_built_at
+          ? String(parsed.system_prompt_built_at)
+          : undefined,
     compression: parsed.compression ?? undefined,
     todos: parsed.todos,
     awaiting_clarify: parsed.awaiting_clarify ?? undefined,
