@@ -1,4 +1,4 @@
-import { readdirSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { compileParaglideToDir } from "../paraglide-build.ts";
 import type { Plugin, ViteDevServer } from "vite";
@@ -32,6 +32,27 @@ function paraglideOutputFiles(paraglideDir: string): string[] {
   return files;
 }
 
+/** 输出是否齐全且不老于 message catalogs（避免与 bun run paraglide:compile 重复） */
+export function paraglideNeedsCompile(projectRoot: string, paraglideDir: string): boolean {
+  const runtimeJs = join(paraglideDir, "runtime.js");
+  if (!existsSync(runtimeJs)) return true;
+  let outMtime: number;
+  try {
+    outMtime = statSync(runtimeJs).mtimeMs;
+  } catch {
+    return true;
+  }
+  for (const catalog of messageCatalogPaths(projectRoot)) {
+    if (!existsSync(catalog)) continue;
+    try {
+      if (statSync(catalog).mtimeMs > outMtime) return true;
+    } catch {
+      return true;
+    }
+  }
+  return false;
+}
+
 function invalidateParaglideModules(server: ViteDevServer, paraglideDir: string): void {
   const seen = new Set<string>();
   for (const file of paraglideOutputFiles(paraglideDir)) {
@@ -46,21 +67,20 @@ function invalidateParaglideModules(server: ViteDevServer, paraglideDir: string)
   }
 }
 
-/** 构建前编译 Paraglide 到 outDir/.paraglide（或 paraglideOutdir） */
+/** 构建前按需编译 Paraglide（已由 paraglide:compile 预热则可跳过） */
 export function paraglideCompilePlugin(paraglideDir: string, projectRoot = REPO_ROOT): Plugin {
-  const compile = (): void => {
+  const compileIfNeeded = (force = false): void => {
+    if (!force && !paraglideNeedsCompile(projectRoot, paraglideDir)) return;
     compileParaglideToDir({ projectRoot, outdir: paraglideDir });
   };
 
   return {
     name: "shell-ui-paraglide",
-    config() {
-      compile();
-    },
     buildStart() {
-      compile();
+      compileIfNeeded();
     },
     configureServer(server) {
+      compileIfNeeded();
       const catalogs = messageCatalogPaths(projectRoot);
       for (const path of catalogs) {
         server.watcher.add(path);
@@ -71,7 +91,7 @@ export function paraglideCompilePlugin(paraglideDir: string, projectRoot = REPO_
           normalized.endsWith(catalog.replaceAll("\\", "/")),
         );
         if (!matched) return;
-        compile();
+        compileIfNeeded(true);
         invalidateParaglideModules(server, paraglideDir);
         server.ws.send({ type: "full-reload", path: "*" });
       };

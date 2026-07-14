@@ -4,9 +4,17 @@ import { spawnSync } from "node:child_process";
 /** 仅两种运行形态：源码 / bun --compile standalone */
 export type CliInstallKind = "source" | "standalone";
 
-/** bun build --compile 把入口挂在虚拟 FS `/$bunfs/root/…`（Bun 1.3.x 尚无 isStandaloneExecutable）。 */
+/**
+ * 是否为 `bun build --compile` 产物。
+ * `$bunfs` 路径启发式（测试 / 历史 argv）+ `Bun.isStandaloneExecutable`（官方 API）。
+ */
 export function isStandaloneExecutable(argv1 = process.argv[1]): boolean {
-  return typeof argv1 === "string" && argv1.startsWith("/$bunfs/");
+  if (typeof argv1 === "string" && argv1.startsWith("/$bunfs/")) return true;
+  if (argv1 === process.argv[1]) {
+    const bunStandalone = (Bun as { isStandaloneExecutable?: boolean }).isStandaloneExecutable;
+    if (typeof bunStandalone === "boolean") return bunStandalone;
+  }
+  return false;
 }
 
 export const CLI_UPGRADE_HINT_SOURCE =

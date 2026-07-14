@@ -20,12 +20,11 @@ export function registerWebCommand(program: Command): void {
     .option("--host <host>", "Listen address", DEFAULT_WEB_HOST)
     .option("--port <port>", "Listen port", String(DEFAULT_WEB_PORT))
     .option("--dist <dir>", "Override static dist directory")
-    .option("--skip-build", "Skip monorepo auto-build before start")
     .addHelpText(
       "after",
       `
 生产环境推荐 \`web.enabled: true\` 后随 \`anima service start\` 一并启动。
-npm 发布包内置 dist；monorepo 下 start 会自动检测并在需要时 build（\`--skip-build\` 或 FREEANIMA_WEB_SKIP_BUILD=1 可跳过）。
+启动不会自动 build：源码部署请先 \`bun run build:web\`；开发请用 \`bun run dev:web\`（Vite HMR）。
 `,
     )
     .action(
@@ -36,7 +35,6 @@ npm 发布包内置 dist；monorepo 下 start 会自动检测并在需要时 bui
           host: string;
           port: string;
           dist?: string;
-          skipBuild?: boolean;
         },
       ) => {
         const args: WebCommandArgs = omitUndefined({
@@ -45,7 +43,6 @@ npm 发布包内置 dist；monorepo 下 start 会自动检测并在需要时 bui
           host: opts.host,
           port: parseInt(opts.port, 10),
           dist: opts.dist,
-          skipBuild: Boolean(opts.skipBuild),
         });
         await runWebCommand(args);
       },

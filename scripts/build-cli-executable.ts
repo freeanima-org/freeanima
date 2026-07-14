@@ -3,8 +3,8 @@
  * Linux standalone 分发构建（唯一发版产物）。
  *
  * 产物：`dist/anima-executable/`
- * - `anima` — standalone 二进制（migration.sql + Web dist 经 `type: "file"` 嵌入）
- * - `package.json` — 供 getRepoRoot 识别安装前缀（name 可为 @freeanima/cli，非 npm 包）
+ * - `anima` — standalone 二进制（migration.sql + Web dist 经 Bun `type: "file"` 嵌入）
+ * - `package.json` — 供 getRepoRoot 识别安装前缀
  * - `dist/build-meta.json` — service build-meta
  *
  * 用法：
@@ -12,27 +12,83 @@
  *   ./dist/anima-executable/anima --version
  */
 import { $ } from "bun";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { Glob } from "bun";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+
+import {
+  createStandaloneEmbedPlugin,
+  type StandaloneEmbedInput,
+} from "./standalone-embed-plugin.ts";
 
 const ROOT = join(import.meta.dir, "..");
 const OUT_DIR = join(ROOT, "dist/anima-executable");
-const COMPILE_ENTRY = join(OUT_DIR, ".compile-entry.ts");
-const WEB_DIST_INDEX = join(ROOT, "src/app/shell/web/dist/index.html");
+const CLI_ENTRY = join(ROOT, "src/app/cli/cli.ts");
+const EMBEDS_MODULE = join(ROOT, "src/app/cli/standalone-embeds.ts");
+const MIGRATIONS_DIR = join(ROOT, "src/core/migrations");
+const WEB_DIST_DIR = join(ROOT, "src/app/shell/web/dist");
+const WEB_DIST_INDEX = join(WEB_DIST_DIR, "index.html");
 const ROOT_PKG = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf-8")) as {
   version: string;
 };
 
 async function ensureWebDist(): Promise<void> {
-  if (existsSync(WEB_DIST_INDEX)) {
-    console.log("Web dist present — will embed");
-    return;
+  const force = process.env.FREEANIMA_FORCE_WEB_BUILD === "1";
+  if (!force && existsSync(WEB_DIST_INDEX)) {
+    const { assessMonorepoWebDist } = await import("@freeanima/app/cli/web/ensure-dist.ts");
+    const assessment = assessMonorepoWebDist(ROOT, WEB_DIST_DIR);
+    if (!assessment.needsRebuild) {
+      console.log("Web dist up to date — skip build:web（FREEANIMA_FORCE_WEB_BUILD=1 可强制）");
+      return;
+    }
+    if (assessment.stale) {
+      console.log("Web source newer than dist — rebuilding…");
+    } else if (assessment.missing.length > 0) {
+      console.log(`Web dist incomplete (${assessment.missing.join(", ")}) — rebuilding…`);
+    }
   }
-  console.log("Web dist missing — running build:web…");
+
+  console.log("building Web dist for embed…");
   await $`bun run build:web`;
   if (!existsSync(WEB_DIST_INDEX)) {
     throw new Error("build:web 完成后仍缺少 src/app/shell/web/dist/index.html");
   }
+}
+
+function listMigrationEmbeds(): StandaloneEmbedInput[] {
+  const names = readdirSync(MIGRATIONS_DIR, { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .map((e) => e.name)
+    .filter((name) => existsSync(join(MIGRATIONS_DIR, name, "migration.sql")))
+    .toSorted((a, b) => a.localeCompare(b));
+  if (names.length === 0) {
+    throw new Error(`no migration.sql under ${MIGRATIONS_DIR}`);
+  }
+  return names.map((name) => ({
+    kind: "migration" as const,
+    rel: name,
+    absPath: join(MIGRATIONS_DIR, name, "migration.sql"),
+  }));
+}
+
+function listWebEmbeds(): StandaloneEmbedInput[] {
+  if (!existsSync(WEB_DIST_INDEX)) {
+    throw new Error(`Web dist 缺失（${WEB_DIST_DIR}）。请先 bun run build:web`);
+  }
+  const files: StandaloneEmbedInput[] = [];
+  for (const rel of new Glob("**/*").scanSync({ cwd: WEB_DIST_DIR, onlyFiles: true })) {
+    const normalized = rel.split("\\").join("/");
+    if (normalized === ".ok" || normalized.endsWith("/.ok")) continue;
+    files.push({
+      kind: "web",
+      rel: normalized,
+      absPath: join(WEB_DIST_DIR, normalized),
+    });
+  }
+  if (files.length === 0) {
+    throw new Error(`Web dist 为空: ${WEB_DIST_DIR}`);
+  }
+  return files.toSorted((a, b) => a.rel.localeCompare(b.rel));
 }
 
 async function main(): Promise<void> {
@@ -59,14 +115,31 @@ async function main(): Promise<void> {
     )}\n`,
   );
 
-  console.log("generating compile entry (migrations + web dist)…");
-  await $`bun ${join(ROOT, "scripts/gen-standalone-compile-entry.ts")} --out ${COMPILE_ENTRY}`;
-
+  const files = [...listMigrationEmbeds(), ...listWebEmbeds()];
   const outfile = join(OUT_DIR, "anima");
-  console.log(`compiling standalone executable → ${outfile}`);
-  await $`bun build ${COMPILE_ENTRY} --compile --outfile ${outfile}`;
+  console.log(
+    `compiling standalone executable → ${outfile} (${files.length} embedded files via type: "file")`,
+  );
 
-  rmSync(COMPILE_ENTRY, { force: true });
+  const result = await Bun.build({
+    entrypoints: [CLI_ENTRY],
+    plugins: [
+      createStandaloneEmbedPlugin({
+        embedsModulePath: EMBEDS_MODULE,
+        files,
+      }),
+    ],
+    compile: {
+      outfile,
+    },
+  });
+
+  if (!result.success) {
+    for (const log of result.logs) {
+      console.error(log);
+    }
+    throw new Error("Bun.build --compile failed");
+  }
 
   console.log(`executable ready: ${OUT_DIR}`);
   console.log(`  try: ${outfile} --version`);

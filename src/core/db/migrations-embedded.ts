@@ -16,7 +16,7 @@ type EmbeddedMigrationsGlobal = typeof globalThis & {
   [GLOBAL_KEY]?: EmbeddedMigrationFile[];
 };
 
-/** 由 compile entry 在导入 cli 前注入 */
+/** 由 standalone-embed-boot（编译期 type:file 嵌入）注入 */
 export function registerEmbeddedMigrations(files: EmbeddedMigrationFile[]): void {
   (globalThis as EmbeddedMigrationsGlobal)[GLOBAL_KEY] = files;
 }

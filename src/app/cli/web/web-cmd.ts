@@ -15,7 +15,6 @@ export type WebCommandArgs = {
   host?: string;
   port?: number;
   dist?: string;
-  skipBuild?: boolean;
 };
 
 export async function runWebCommand(args: WebCommandArgs): Promise<void> {
@@ -40,7 +39,6 @@ export async function runWebCommand(args: WebCommandArgs): Promise<void> {
         port: args.port,
         dist: args.dist,
         writePid: true,
-        skipBuild: args.skipBuild,
       }),
     );
 

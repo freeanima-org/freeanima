@@ -10,9 +10,7 @@ import {
 } from "@freeanima/platform/tls/resolve-hub-tls";
 import { systemdUserAvailable } from "../systemd-unit.ts";
 
-import { isStandaloneExecutable } from "@freeanima/core/config/cli-install";
 import { getRepoRoot } from "@freeanima/core/config/repo-root";
-import { ensureWebDistBuilt } from "../web/ensure-dist.ts";
 import { tryResolveWebDistDir } from "../web/dist-path.ts";
 import {
   findCloudflaredPidOnHost,
@@ -88,10 +86,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
   } | null = null;
   if (webCfg?.enabled) {
     try {
-      // standalone / 无 monorepo 时不强制 build；缺 dist 时降级为纯 Hub
-      if (!isStandaloneExecutable()) {
-        await ensureWebDistBuilt();
-      }
+      // 启动从不自动 build：源码部署须先 bun run build:web；standalone 打包时已嵌入
       const distDir = tryResolveWebDistDir();
       if (distDir) {
         let uiVersion: string | undefined;
@@ -111,11 +106,11 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
         };
       } else {
         console.warn(
-          "[stack] web.enabled 但未找到 Web dist，Hub 将不托管 /web（可稍后 bun run build:web）",
+          "[stack] web.enabled 但未找到 Web dist，Hub 将不托管 /web（请先 bun run build:web）",
         );
       }
     } catch (err) {
-      logStartupError("[stack] Web dist 准备失败，继续启动 Hub（不托管 /web）", err);
+      logStartupError("[stack] Web dist 解析失败，继续启动 Hub（不托管 /web）", err);
       webStatic = null;
     }
   }
