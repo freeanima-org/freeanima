@@ -34,6 +34,7 @@ const conversationJsonbRefine = {
   cached_toolsets: conversationCachedToolsetsSchema,
   staged_toolsets: conversationStagedToolsetsSchema,
   functions: conversationFunctionsSchema,
+  system_prompt_built_at: z.coerce.date().nullable().optional(),
   archived_at: z.coerce.date().nullable().optional(),
   created_at: z.coerce.date(),
   updated_at: z.coerce.date(),

@@ -82,6 +82,7 @@ export async function getConversationMetaLite(
       title: conversations.title,
       cwd: conversations.cwd,
       system_prompt: conversations.system_prompt,
+      system_prompt_built_at: conversations.system_prompt_built_at,
       platform_info: conversations.platform_info,
       compression: conversations.compression,
       todos: conversations.todos,
@@ -138,6 +139,7 @@ export async function upsertConversationMeta(
           title: row.title,
           cwd: row.cwd,
           system_prompt: row.system_prompt,
+          system_prompt_built_at: row.system_prompt_built_at,
           platform_info: row.platform_info,
           compression: row.compression,
           todos: row.todos,
@@ -198,6 +200,16 @@ export async function patchConversationMeta(
   }
   if (patch.system_prompt !== undefined) {
     set.system_prompt = pgTextOrNull(patch.system_prompt);
+    hasColumnPatch = true;
+    if (typeof patch.system_prompt_built_at === "string" && patch.system_prompt_built_at.trim()) {
+      const parsed = new Date(patch.system_prompt_built_at);
+      set.system_prompt_built_at = Number.isNaN(parsed.getTime()) ? pgNow() : parsed;
+    } else {
+      set.system_prompt_built_at = pgNow();
+    }
+  } else if (typeof patch.system_prompt_built_at === "string") {
+    const parsed = new Date(patch.system_prompt_built_at);
+    set.system_prompt_built_at = Number.isNaN(parsed.getTime()) ? null : parsed;
     hasColumnPatch = true;
   }
   if (patch.compression == null) {

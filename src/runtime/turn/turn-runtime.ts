@@ -26,6 +26,7 @@ import {
   loadConversationTools,
   rollbackToLastUser,
   updateConversationMeta,
+  ensureSystemPromptFresh,
 } from "../conversation/conversation-crud.ts";
 import type {
   StoredMessage,
@@ -157,6 +158,7 @@ export async function beginTurnPrepare(
   registry: ToolSetRegistry,
   conversationId: string,
 ): Promise<[StoredMessage[], string[]]> {
+  await ensureSystemPromptFresh(conversationId);
   const meta = await loadConversationMeta(conversationId);
   const { msgs, tools } = await prepareTurnMessages(registry, conversationId, meta);
   await advanceCompressionMeta(registry, conversationId, { meta, msgs });
@@ -209,6 +211,7 @@ export async function retryTurn(
   conversationId: string,
 ): Promise<[StoredMessage[], string[], string]> {
   const effective = await rollbackToLastUser(conversationId);
+  await ensureSystemPromptFresh(conversationId);
   const meta = await loadConversationMeta(conversationId);
   const { msgs, tools } = await prepareTurnMessages(registry, conversationId, meta);
   await advanceCompressionMeta(registry, conversationId, { meta, msgs });

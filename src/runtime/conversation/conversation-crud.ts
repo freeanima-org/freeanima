@@ -16,6 +16,7 @@ import { PROFILE_CHAT } from "@freeanima/core/provider";
 import { buildSystemPrompt } from "@freeanima/core/hooks/prompt";
 import { capabilityMaskSchema, stripOriginRoutingMeta } from "@freeanima/core/db/schema";
 import { applyConversationToolMaskFilter } from "@freeanima/core/tool";
+import { isSystemPromptStale } from "./system-prompt-freshness.ts";
 import {
   isConversationMeta,
   type StoredMessage,
@@ -37,7 +38,6 @@ import {
   pgListDebugConversationIds,
   pgListConversationSummaries,
   pgListConversationSummariesPage,
-  pgLastMessageTimestamp,
   pgFindConversationIdByPlatformInfo,
   pgListConversationIdsMatchingPlatformProbe,
   pgWriteDeleteConversation,
@@ -256,7 +256,11 @@ export async function initConversation(
       platform_extra && Object.keys(platform_extra).length > 0 ? platform_extra : undefined,
   };
   const systemPrompt = await buildSystemPrompt(opts.functions ?? [], cwd, metaDraft);
-  const meta: ConversationMetaMessage = { ...metaDraft, system_prompt: systemPrompt };
+  const meta: ConversationMetaMessage = {
+    ...metaDraft,
+    system_prompt: systemPrompt,
+    system_prompt_built_at: new Date().toISOString(),
+  };
   await pgWriteMeta(sid, meta);
 }
 
@@ -415,7 +419,10 @@ export async function rebuildConversationSystemPrompt(conversationId: string): P
   const functions = meta.functions ?? [];
   const cwd = meta.cwd;
   const systemPrompt = await buildSystemPrompt(functions, cwd, meta);
-  await updateConversationMetaField(conversationId, { system_prompt: systemPrompt });
+  await updateConversationMetaField(conversationId, {
+    system_prompt: systemPrompt,
+    system_prompt_built_at: new Date().toISOString(),
+  });
 }
 
 /** Promote staged ToolSets to cached and rebuild system_prompt */
@@ -452,36 +459,21 @@ export async function rebuildConversationCache(
   };
 }
 
-const RESUME_STALE_MS = 7 * 24 * 60 * 60 * 1000;
-
-async function conversationLastActivityMs(conversationId: string): Promise<number | null> {
-  const meta = await loadConversationMeta(conversationId);
-  const metaTs = isConversationMeta(meta) ? meta.timestamp : undefined;
-  let last: number | null = metaTs ? Date.parse(metaTs) : null;
-  const ts = await pgLastMessageTimestamp(conversationId);
-  if (ts) {
-    const t = Date.parse(ts);
-    if (!Number.isNaN(t) && (last == null || t > last)) last = t;
-  }
-  return last;
-}
-
-/** Conditionally refresh system_prompt when resuming conversation */
-export async function refreshSystemPromptOnResume(conversationId: string): Promise<boolean> {
+/** 空 prompt 或越过 CST 02:00 日界则全量重建；返回是否发生了重建 */
+export async function ensureSystemPromptFresh(conversationId: string): Promise<boolean> {
   const meta = await loadConversationMeta(conversationId);
   if (!isConversationMeta(meta)) return false;
   const cached = (meta.system_prompt ?? "").trim();
-  if (!cached) {
-    await rebuildConversationSystemPrompt(conversationId);
-    return true;
-  }
-  const last = await conversationLastActivityMs(conversationId);
-  if (last == null) return false;
-  if (Date.now() - last > RESUME_STALE_MS) {
+  if (!cached || isSystemPromptStale(meta.system_prompt_built_at)) {
     await rebuildConversationSystemPrompt(conversationId);
     return true;
   }
   return false;
+}
+
+/** Conditionally refresh system_prompt when resuming conversation */
+export async function refreshSystemPromptOnResume(conversationId: string): Promise<boolean> {
+  return ensureSystemPromptFresh(conversationId);
 }
 
 export async function assertConversationPlatform(

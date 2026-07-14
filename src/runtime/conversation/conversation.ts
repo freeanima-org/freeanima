@@ -26,6 +26,7 @@ export {
   patchConversationOrigin,
   rebuildConversationSystemPrompt,
   rebuildConversationCache,
+  ensureSystemPromptFresh,
   refreshSystemPromptOnResume,
   assertConversationPlatform,
   appendUserTurn,
