@@ -1,6 +1,6 @@
-import { and, desc, getColumns, sql } from "drizzle-orm";
+import { and, desc, sql } from "drizzle-orm";
 import { entities } from "@freeanima/core/db/schema";
-import { mapEntityRow } from "@freeanima/core/db/schema/entity";
+import { entityRowSelectColumns, mapEntityRow } from "@freeanima/core/db/schema/entity";
 import { entityDocKey } from "@freeanima/core/util";
 import { getActiveRuntimeConfig, getFtsTrgmMinSimilarity } from "@freeanima/core/config";
 import type { EntitySearchOpts } from "../types.ts";
@@ -35,7 +35,7 @@ export async function searchEntitiesTrgm(
 
   const rows = await db
     .select({
-      ...getColumns(entities),
+      ...entityRowSelectColumns,
       rank: rankExpr,
     })
     .from(entities)

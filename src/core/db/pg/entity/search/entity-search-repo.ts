@@ -1,9 +1,9 @@
 import { getActiveRuntimeConfig, getFtsTrgmFallbackWhenHitsLt } from "@freeanima/core/config";
 import { entityDocKey, omitUndefined, rrfMerge } from "@freeanima/core/util";
 import type { EntitySearchHit, EntitySearchOpts, EntitySearchResult } from "../types.ts";
-import { mapEntityRow } from "@freeanima/core/db/schema/entity";
+import { entityRowSelectColumns, mapEntityRow } from "@freeanima/core/db/schema/entity";
 import { entities, TASK_ITEM_COMPONENT } from "@freeanima/core/db/schema";
-import { and, asc, count, desc, getColumns, sql } from "drizzle-orm";
+import { and, asc, count, desc, sql } from "drizzle-orm";
 
 import { embedQueryText } from "../../embedding/query.ts";
 import { getDb } from "../../client.ts";
@@ -53,7 +53,7 @@ async function searchFilterOnly(opts: EntitySearchOpts): Promise<EntitySearchHit
 
   const orderExprs = defaultOrderBy(opts.primary_component, { hasQuery: Boolean(q) });
   const rows = await db
-    .select(getColumns(entities))
+    .select(entityRowSelectColumns)
     .from(entities)
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(...orderExprs)
@@ -133,7 +133,10 @@ export async function searchEntities(opts: EntitySearchOpts = {}): Promise<Entit
         ? await searchHybrid({ ...opts, limit, offset })
         : await searchFilterOnly({ ...opts, limit, offset });
 
-    const total = await countEntitiesSearch(omitUndefined({ ...opts, query: q || undefined }));
+    const total =
+      opts.include_count === false
+        ? results.length
+        : await countEntitiesSearch(omitUndefined({ ...opts, query: q || undefined }));
 
     return {
       query: q || null,

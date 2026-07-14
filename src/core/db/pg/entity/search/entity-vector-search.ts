@@ -1,6 +1,6 @@
-import { and, asc, getColumns, isNotNull, sql } from "drizzle-orm";
+import { and, asc, isNotNull, sql } from "drizzle-orm";
 import { entities } from "@freeanima/core/db/schema";
-import { mapEntityRow } from "@freeanima/core/db/schema/entity";
+import { entityRowSelectColumns, mapEntityRow } from "@freeanima/core/db/schema/entity";
 import { entityDocKey } from "@freeanima/core/util";
 import type { EntitySearchOpts } from "../types.ts";
 
@@ -24,7 +24,7 @@ export async function searchEntitiesVector(
 
   const rows = await db
     .select({
-      ...getColumns(entities),
+      ...entityRowSelectColumns,
       rank: rankExpr,
     })
     .from(entities)

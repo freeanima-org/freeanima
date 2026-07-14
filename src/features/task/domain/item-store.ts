@@ -115,6 +115,7 @@ export async function listTaskItems(
     limit: opts.limit ?? 500,
     offset: opts.offset ?? 0,
     mode: "filter_only",
+    include_count: false,
   });
 
   return result.results
@@ -138,6 +139,7 @@ async function findTaskItemByClientOpId(
     filters: { client_op_id: clientOpId },
     limit: 1,
     mode: "filter_only",
+    include_count: false,
   });
   const row = result.results[0];
   if (!row) return null;
@@ -338,6 +340,7 @@ export async function searchTaskItems(
     ...(Object.keys(filters).length > 0 ? { filters } : {}),
     limit: Math.max(1, Math.min(50, opts.limit ?? 30)),
     mode: "hybrid",
+    include_count: false,
   });
 
   const rows = result.results
