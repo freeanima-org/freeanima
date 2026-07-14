@@ -84,7 +84,9 @@ function webDevPlugin(): Plugin {
 }
 
 function webPwaPlugin(): Plugin[] {
+  const skipPwa = process.env.FREEANIMA_WEB_SKIP_PWA === "1";
   return VitePWA({
+    disable: skipPwa,
     registerType: "prompt",
     injectRegister: false,
     scope: "/web/",
@@ -147,7 +149,7 @@ export default defineConfig(({ command, mode }) => {
     appDir: SPA_DIR,
     repoRoot: REPO_ROOT,
     outdir: isServe ? join(PKG_DIR, "node_modules", ".vite-app-web") : DIST_DIR,
-    ...(isServe ? { paraglideOutdir: join(REPO_ROOT, "messages", "paraglide") } : {}),
+    paraglideOutdir: join(REPO_ROOT, "messages", "paraglide"),
     base: "/web/",
     minify: mode === "production",
     sourcemap: mode !== "production",
@@ -160,7 +162,11 @@ export default defineConfig(({ command, mode }) => {
     },
   });
 
+  const skipPwa = process.env.FREEANIMA_WEB_SKIP_PWA === "1";
   inline.plugins = [...(inline.plugins ?? []), ...webPwaPlugin()];
+  if (skipPwa) {
+    console.info("[build:web] FREEANIMA_WEB_SKIP_PWA=1 — VitePWA disabled");
+  }
 
   if (!isServe) {
     if (

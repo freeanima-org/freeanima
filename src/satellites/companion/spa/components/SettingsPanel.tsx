@@ -1,11 +1,16 @@
-import { Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
+import { lazy, Suspense } from "react";
+import { Button, Card, CardContent, Spinner } from "@freeanima/frontend/ui-kit";
 import type { SettingsSectionDeps } from "@freeanima/frontend/shell-sdk/settings";
 import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
 import { SettingsTabs } from "./settings/SettingsTabs.tsx";
 import { BehaviorTab } from "./settings/BehaviorTab.tsx";
 import { ModelsTab } from "./settings/ModelsTab.tsx";
-import { MotionLibraryTab } from "./settings/MotionLibraryTab.tsx";
 import { MotionSlotsTab } from "./settings/MotionSlotsTab.tsx";
+
+/** three / VRM 预览挂在动作库 tab — 按需分包，避免设置面板一开就拉整包 3D */
+const MotionLibraryTab = lazy(() =>
+  import("./settings/MotionLibraryTab.tsx").then((m) => ({ default: m.MotionLibraryTab })),
+);
 
 type Props = {
   standalone?: boolean;
@@ -13,6 +18,14 @@ type Props = {
   onClose?: () => void;
   deps?: SettingsSectionDeps;
 };
+
+function TabFallback() {
+  return (
+    <div className="flex flex-1 items-center justify-center py-10">
+      <Spinner className="size-6" />
+    </div>
+  );
+}
 
 export function SettingsPanel({ standalone = false, onClose, deps: _deps }: Props) {
   const tab = useCompanionStore((s) => s.settingsTab);
@@ -50,7 +63,11 @@ export function SettingsPanel({ standalone = false, onClose, deps: _deps }: Prop
         >
           {tab === "behavior" ? <BehaviorTab /> : null}
           {tab === "models" ? <ModelsTab /> : null}
-          {tab === "library" ? <MotionLibraryTab /> : null}
+          {tab === "library" ? (
+            <Suspense fallback={<TabFallback />}>
+              <MotionLibraryTab />
+            </Suspense>
+          ) : null}
           {tab === "slots" ? <MotionSlotsTab /> : null}
         </div>
       </CardContent>

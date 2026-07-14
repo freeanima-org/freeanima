@@ -20,9 +20,14 @@ describe("cli-install", () => {
     for (const dir of tempDirs.splice(0)) removeTempDir(dir);
   });
 
-  it("isStandaloneExecutable detects bunfs argv", () => {
+  it("isStandaloneExecutable detects bunfs argv when probing paths", () => {
     expect(isStandaloneExecutable("/$bunfs/root/anima")).toBe(true);
     expect(isStandaloneExecutable("/home/feng/workspace/freeanima/src/app/cli/cli.ts")).toBe(false);
+  });
+
+  it("isStandaloneExecutable uses Bun.isStandaloneExecutable for process argv", () => {
+    // 源码/`bun test` 下应为 false；与显式 bunfs 探测互补
+    expect(isStandaloneExecutable()).toBe(false);
   });
 
   it("getCliInstallKind treats monorepo cli.ts as source", () => {

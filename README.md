@@ -76,14 +76,14 @@ bun run build:cli:executable
 ./dist/anima-executable/anima --version
 ```
 
-Then configure `~/.anima/config.yaml` and run `anima service start`. See [`docs/guide/install.md`](docs/guide/install.md), [`docs/guide/database.md`](docs/guide/database.md), [`docs/guide/security.md`](docs/guide/security.md).
+Then configure `~/.anima/config.yaml` and run `anima service start`. Source deploy with Hub-hosted `/web`: run `bun run build:web` first (startup never auto-builds). See [`docs/guide/install.md`](docs/guide/install.md), [`docs/guide/database.md`](docs/guide/database.md), [`docs/guide/security.md`](docs/guide/security.md).
 
 ## Client UI
 
-聊天室与管理台由 **desktop / mobile 壳层**（`src/app/shell/desktop`、`src/app/shell/mobile`）提供 bundled SPA。Hub 仅托管 API 与 SAP：
+聊天室与管理台由 **desktop / mobile 壳层**（`src/app/shell/desktop`、`src/app/shell/mobile`）提供 bundled SPA。Hub 托管 API / SAP；`web.enabled` 且已有 dist 时托管 `/web/*`：
 
 - API：`http://127.0.0.1:2658/api`
-- 浏览器壳层开发（聊天 + 管理台 + 设置，HMR）：`bun run dev:web` → `http://127.0.0.1:4173/chat`（Console：`/console/dashboard`）
+- Dev：`bun run dev:service` + `bun run dev:web` → `http://127.0.0.1:4173/web/chat`（Console：`/web/console/dashboard`）
 
 ## First-deploy security checklist
 

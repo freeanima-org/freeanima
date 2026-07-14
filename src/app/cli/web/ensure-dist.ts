@@ -2,10 +2,12 @@ import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 import { getInstallContext } from "../satellite-launch.ts";
-import { resolveMonorepoWebDistDir } from "./dist-path.ts";
 
-/** npm 发布包内置 dist；monorepo 开发需本地 build */
-export const WEB_DIST_REQUIRED_FILES = ["index.html", "manifest.webmanifest", "sw.js"] as const;
+/** 用于评估 monorepo Web dist 是否齐全/过期（启动不会据此自动 build） */
+export const WEB_DIST_REQUIRED_FILES = ["index.html"] as const;
+
+/** PWA 产物（可选；FREEANIMA_WEB_SKIP_PWA=1 时可不存在） */
+export const WEB_DIST_PWA_FILES = ["manifest.webmanifest", "sw.js"] as const;
 
 /** 与 Vite shellEntryFileNames 产出一致 */
 const SHELL_BRIDGE_ASSET_PREFIX = "shell-bridge-";
@@ -27,6 +29,9 @@ export const WEB_SOURCE_WATCH_DIRS = [
   "src/features/chat/ui/spa",
   "src/features/task/ui/spa",
   "src/features/vault/ui/spa",
+  "src/satellites/companion/spa",
+  "messages/en.json",
+  "messages/zh-cn.json",
 ] as const;
 
 export type WebDistBuildAssessment = {
@@ -59,8 +64,17 @@ function listMissingDistFiles(distDir: string): string[] {
   return missing;
 }
 
-/** 目录树内是否存在 mtime 晚于 sinceMs 的源文件 */
+/** 目录树（或单文件）内是否存在 mtime 晚于 sinceMs 的源文件 */
 export function isSourceTreeNewerThan(root: string, sinceMs: number): boolean {
+  let rootStat;
+  try {
+    rootStat = statSync(root);
+  } catch {
+    return false;
+  }
+  if (rootStat.isFile()) return rootStat.mtimeMs > sinceMs;
+  if (!rootStat.isDirectory()) return false;
+
   const stack = [root];
   while (stack.length > 0) {
     const current = stack.pop();
@@ -128,48 +142,4 @@ export function assessMonorepoWebDist(
   }
 
   return { needsRebuild: false, missing: [], stale: false, distDir };
-}
-
-export async function runMonorepoWebBuild(monorepoRoot: string): Promise<void> {
-  const proc = Bun.spawn({
-    cmd: ["bun", "run", "build:web"],
-    cwd: monorepoRoot,
-    stdout: "inherit",
-    stderr: "inherit",
-  });
-  const code = await proc.exited;
-  if (code !== 0) {
-    throw new Error(`Web build 失败 (exit ${code})。请手动运行: bun run build:web`);
-  }
-}
-
-export type EnsureWebDistOptions = {
-  /** 显式 dist 目录时跳过检测 */
-  dist?: string;
-  /** 跳过自动 build（CLI --skip-build 或 FREEANIMA_WEB_SKIP_BUILD=1） */
-  skipBuild?: boolean;
-};
-
-/** monorepo 启动 Web 前：缺失或源码更新则自动 build；npm 包跳过 */
-export async function ensureWebDistBuilt(opts: EnsureWebDistOptions = {}): Promise<void> {
-  if (opts.dist || opts.skipBuild || process.env.FREEANIMA_WEB_SKIP_BUILD === "1") {
-    return;
-  }
-
-  const { monorepoRoot } = getInstallContext();
-  if (!monorepoRoot) return;
-
-  const distDir = resolveMonorepoWebDistDir(monorepoRoot);
-  const assessment = assessMonorepoWebDist(monorepoRoot, distDir);
-  if (!assessment.needsRebuild) return;
-
-  if (assessment.missing.length > 0) {
-    console.log(`[web] 缺少静态产物: ${assessment.missing.join(", ")}`);
-  } else if (assessment.stale) {
-    console.log("[web] 源码已更新，正在重新 build Web 静态产物…");
-  } else {
-    console.log("[web] 未找到 Web dist，正在 build…");
-  }
-
-  await runMonorepoWebBuild(monorepoRoot);
 }

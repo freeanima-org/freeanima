@@ -71,7 +71,7 @@ Specify version in commit body with `Release-As: x.y.z` (see [Release Please doc
 
 After Release PR merge and `release_created`:
 
-1. **`bun run build:cli:executable`** — produces `dist/anima-executable/` (`anima` binary with embedded migrations + Web dist, plus install-prefix `package.json` / `dist/build-meta.json`)
+1. **`bun run build:cli:executable`** — `Bun.build({ compile })` + plugin 将 migrations / Web dist 以 `with { type: "file" }` 嵌入；产物 `dist/anima-executable/`（`anima` + install-prefix `package.json` / `dist/build-meta.json`）。Web dist 未过期时跳过 `build:web`（`FREEANIMA_FORCE_WEB_BUILD=1` 强制）。
 2. Pack `anima-linux-x64.tar.gz` and upload to the GitHub Release for tag `vX.Y.Z`
 
 **Runtime install modes:**

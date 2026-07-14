@@ -77,6 +77,8 @@ Replace the install directory with a new release tarball (or rebuild with `bun r
 
 ### Build from a checkout
 
+Always runs `build:web` before compiling the binary (embeds current Web dist):
+
 ```bash
 bun run build:cli:executable
 # → dist/anima-executable/
@@ -122,15 +124,21 @@ bun src/app/cli/cli.ts --help
 mkdir -p ~/.anima
 cp config.example.yaml ~/.anima/config.yaml
 # configure database + LLM (see database.md, security.md)
-
-anima service start --foreground
 ```
 
-Frontend hot reload (Vite HMR — Hub must already be running):
+**Dev** (Hub + Vite HMR; service never auto-builds Web):
 
 ```bash
-anima service start --foreground   # terminal 1: Hub REST + SAP
-bun run dev:web                    # terminal 2: http://127.0.0.1:4173/web/chat · Console /web/console/dashboard
+bun run dev:service   # terminal 1: Hub REST + SAP
+bun run dev:web       # terminal 2: http://127.0.0.1:4173/web/chat · Console /web/console/dashboard
+```
+
+**Source deploy** (Hub hosts `/web/*` when `web.enabled`): build Web first, then start — startup does not run `build:web`.
+
+```bash
+bun run build:web
+anima service start --foreground
+# UI: http://127.0.0.1:2658/web/chat
 ```
 
 ### 4. Development checks

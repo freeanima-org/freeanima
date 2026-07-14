@@ -11,7 +11,6 @@ import {
 
 import { apiGet, resolveProbeHost } from "../service-common.ts";
 import { resolveWebDistDir } from "./dist-path.ts";
-import { ensureWebDistBuilt } from "./ensure-dist.ts";
 
 export { DEFAULT_WEB_HOST, DEFAULT_WEB_PORT };
 
@@ -54,7 +53,6 @@ export type StartWebServerOptions = {
   dist?: string;
   writePid?: boolean;
   hubUrl?: string;
-  skipBuild?: boolean;
 };
 
 export async function startWebServer(
@@ -64,8 +62,6 @@ export async function startWebServer(
   const { host, port } = resolveWebHostPort(cfg);
   const bindHost = opts.host ?? host;
   const bindPort = opts.port ?? port;
-
-  await ensureWebDistBuilt(omitUndefined({ dist: opts.dist, skipBuild: opts.skipBuild }));
 
   const distDir = resolveWebDistDir(opts.dist);
   const hubUrl = (opts.hubUrl ?? (await resolveDefaultHubUrlForWeb())).replace(/\/$/, "");

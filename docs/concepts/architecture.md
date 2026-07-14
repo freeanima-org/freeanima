@@ -201,9 +201,11 @@ Production: `anima service` (systemd --user). Auto-restarts after crashes; only 
 - **UI**: `src/app/shell/desktop` / `src/app/shell/mobile` bundled SPA (Chat + Console); Hub does not host `/console`
 
 ```bash
-anima service start              # default: systemd --user
+anima service start              # default: systemd --user (does not auto-build Web)
 anima service start --foreground # foreground (logs to stdout)
-bun run dev:web                  # browser shell (Chat + Console + settings, Vite HMR; Hub must be running)
+bun run dev:service              # monorepo Hub foreground
+bun run dev:web                  # browser shell Vite HMR :4173 (Hub must be running)
+bun run build:web                # source deploy / Hub /web: build dist before start
 anima service status
 ```
 
