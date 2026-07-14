@@ -1,17 +1,16 @@
 import {
   MILESTONE_COMPONENT,
   PROJECT_COMPONENT,
-  TASK_ITEM_COMPONENT,
   asMilestone,
 } from "@freeanima/core/db/schema/entity";
 import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/core/db/pg/entity";
 import { omitUndefined } from "@freeanima/core/util";
 import {
+  clearTaskItemMilestoneId,
   createEntity,
   deleteEntity,
   getEntity,
   listEntities,
-  searchEntities,
   updateEntity,
 } from "@freeanima/core/db/pg/entity";
 
@@ -48,19 +47,7 @@ function toMilestoneRow(
 }
 
 async function clearTaskMilestoneRefs(worldId: number, milestoneId: number): Promise<void> {
-  const result = await searchEntities({
-    world_id: worldId,
-    primary_component: TASK_ITEM_COMPONENT,
-    limit: 500,
-    mode: "filter_only",
-  });
-  for (const row of result.results) {
-    if (Number(row.body.milestone_id) !== milestoneId) continue;
-    await updateEntity({
-      id: row.id,
-      body: { milestone_id: null },
-    });
-  }
+  await clearTaskItemMilestoneId(worldId, milestoneId);
 }
 
 export async function listMilestones(worldId: number, projectId: number): Promise<MilestoneRow[]> {

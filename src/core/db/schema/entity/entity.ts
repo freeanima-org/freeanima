@@ -47,8 +47,10 @@ export const entities = pgTable(
   (t) => [
     index("idx_entities_world_id").on(t.world_id),
     index("idx_entities_primary_component").on(t.primary_component),
+    index("idx_entities_world_primary_component").on(t.world_id, t.primary_component),
     index("idx_entities_components").using("gin", t.components),
     index("idx_entities_search_fts").using("gin", t.search_fts),
+    // HNSW / gin_trgm / body 表达式索引：见 migrations 追加 SQL（drizzle-kit 难表达 opclass / partial）
   ],
 );
 

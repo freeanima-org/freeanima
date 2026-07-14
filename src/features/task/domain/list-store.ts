@@ -10,6 +10,7 @@ import {
   countPendingTaskItemsGroupedByListId,
   createEntity,
   deleteEntity,
+  deleteTaskItemsByListId,
   getEntity,
   listEntities,
   searchEntities,
@@ -186,16 +187,7 @@ async function dissolveFolderTree(folderId: number, worldId: number): Promise<vo
 }
 
 async function deleteTasksInList(listId: number, worldId: number): Promise<void> {
-  const items = await listEntities({
-    world_id: worldId,
-    primary_component: "task_item",
-    limit: 500,
-  });
-  for (const item of items) {
-    if (Number(item.body.list_id) === listId) {
-      await deleteEntity(item.id);
-    }
-  }
+  await deleteTaskItemsByListId(worldId, listId);
 }
 
 export async function assertListAcceptsTasks(listId: number, worldId: number): Promise<void> {

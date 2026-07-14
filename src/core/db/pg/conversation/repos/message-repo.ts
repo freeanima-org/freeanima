@@ -245,6 +245,22 @@ export async function listMessages(conversation_id: string): Promise<Conversatio
   return rows.map((r) => rowToMessage(r));
 }
 
+/** 按 pos 降序拉取最近消息（ACP result 扫描等，避免整会话 listMessages） */
+export async function listRecentMessages(
+  conversation_id: string,
+  limit: number,
+): Promise<ConversationMessage[]> {
+  const db = getDb();
+  const safeLimit = Math.max(1, Math.min(200, limit));
+  const rows = await db
+    .select()
+    .from(messages)
+    .where(eq(messages.conversation_id, conversation_id))
+    .orderBy(desc(messages.pos))
+    .limit(safeLimit);
+  return rows.map((r) => rowToMessage(r));
+}
+
 export async function listMessagesByPosRange(
   conversation_id: string,
   fromPos: number,
@@ -387,7 +403,8 @@ export async function truncateMessagesAfter(
 }
 
 /**
- * Shift message pos > afterPos by delta (avoid unique conflicts: positive delta high-to-low, negative low-to-high).
+ * Shift message pos > afterPos by delta.
+ * 正 delta：先抬到临时高位再落到位，避开 (conversation_id, pos) 唯一约束冲突。
  */
 export async function shiftMessagePositions(
   conversation_id: string,
@@ -396,17 +413,31 @@ export async function shiftMessagePositions(
 ): Promise<void> {
   if (delta === 0) return;
   const db = getDb();
-  await db.transaction(async (tx) => {
-    const rows = await tx
-      .select({ id: messages.id, pos: messages.pos })
-      .from(messages)
-      .where(and(eq(messages.conversation_id, conversation_id), sql`${messages.pos} > ${afterPos}`))
-      .orderBy(delta > 0 ? desc(messages.pos) : asc(messages.pos));
-    for (const row of rows) {
+  const scoped = and(
+    eq(messages.conversation_id, conversation_id),
+    sql`${messages.pos} > ${afterPos}`,
+  );
+  if (delta > 0) {
+    const TEMP_OFFSET = 1_000_000_000;
+    await db.transaction(async (tx) => {
       await tx
         .update(messages)
-        .set({ pos: row.pos + delta })
-        .where(eq(messages.id, row.id));
-    }
-  });
+        .set({ pos: sql`${messages.pos} + ${TEMP_OFFSET}` })
+        .where(scoped);
+      await tx
+        .update(messages)
+        .set({ pos: sql`${messages.pos} - ${TEMP_OFFSET - delta}` })
+        .where(
+          and(
+            eq(messages.conversation_id, conversation_id),
+            sql`${messages.pos} > ${afterPos + TEMP_OFFSET}`,
+          ),
+        );
+    });
+    return;
+  }
+  await db
+    .update(messages)
+    .set({ pos: sql`${messages.pos} + ${delta}` })
+    .where(scoped);
 }

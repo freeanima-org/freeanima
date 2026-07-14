@@ -2,7 +2,7 @@ import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
 import { createAcpTaskQueryPort } from "./acp-task-query.ts";
 
 const getMessageContentByIdMock = mock(async () => "progress");
-const listMessagesMock = mock(async () => [
+const listRecentMessagesMock = mock(async () => [
   {
     role: "assistant",
     content:
@@ -12,18 +12,18 @@ const listMessagesMock = mock(async () => [
 
 mock.module("@freeanima/core/db/pg/conversation", () => ({
   getMessageContentById: getMessageContentByIdMock,
-  listMessages: listMessagesMock,
+  listRecentMessages: listRecentMessagesMock,
 }));
 
 describe("createAcpTaskQueryPort", () => {
   beforeEach(() => {
     getMessageContentByIdMock.mockClear();
-    listMessagesMock.mockClear();
+    listRecentMessagesMock.mockClear();
   });
 
   afterEach(() => {
     getMessageContentByIdMock.mockClear();
-    listMessagesMock.mockClear();
+    listRecentMessagesMock.mockClear();
   });
 
   it("finds ACP result message by task_id", async () => {

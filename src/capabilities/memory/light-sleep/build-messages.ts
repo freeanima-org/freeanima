@@ -212,8 +212,11 @@ export function formatLimbicMemoriesMessage(rows: LimbicMemoryRow[]): string {
   return lines.join("\n").trim();
 }
 
-export async function buildLightSleepUserMessages(conversationIds: string[]): Promise<string[]> {
-  const blocks = await collectConversationBlocks(conversationIds);
+export async function buildLightSleepUserMessages(
+  conversationIds: string[],
+  precomputedBlocks?: LightSleepConversationBlock[],
+): Promise<string[]> {
+  const blocks = precomputedBlocks ?? (await collectConversationBlocks(conversationIds));
   const dialogue = formatDialogueMessage(blocks);
   const related = await listSemanticMemoryBySourceSessions(conversationIds, {
     status: "active",
@@ -221,8 +224,11 @@ export async function buildLightSleepUserMessages(conversationIds: string[]): Pr
   return [dialogue.text, formatExistingMemoriesMessage(related), LIGHT_SLEEP_INSTRUCTION_MESSAGE];
 }
 
-export async function buildLimbicUserMessages(conversationIds: string[]): Promise<string[]> {
-  const blocks = await collectConversationBlocks(conversationIds);
+export async function buildLimbicUserMessages(
+  conversationIds: string[],
+  precomputedBlocks?: LightSleepConversationBlock[],
+): Promise<string[]> {
+  const blocks = precomputedBlocks ?? (await collectConversationBlocks(conversationIds));
   const dialogue = formatDialogueMessage(blocks);
   const related = await collectLimbicMemoriesForSessions(conversationIds);
   return [dialogue.text, formatLimbicMemoriesMessage(related), LIMBIC_INSTRUCTION];

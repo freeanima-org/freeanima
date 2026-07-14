@@ -26,9 +26,11 @@ export async function hybridSearchLimbicMemory(
   if (!q) return [];
 
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
-  const queryEmbedding = await embedQueryText(q);
 
-  const ftsHits = await searchLimbicMemoryFtsRaw(q, { limit: candidateLimit(limit, 0) });
+  const [queryEmbedding, ftsHits] = await Promise.all([
+    embedQueryText(q),
+    searchLimbicMemoryFtsRaw(q, { limit: candidateLimit(limit, 0) }),
+  ]);
   const pool = candidateLimit(limit, ftsHits.length);
   const [trgmHits, vectorHits] = await Promise.all([
     searchLimbicMemoryTrgm(q, { limit: pool }),

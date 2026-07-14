@@ -93,9 +93,26 @@ export const entityRowSelectColumns = {
   updated_at: entities.updated_at,
 } as const;
 
-export type EntityRowSelect = Pick<EntitySelect, keyof typeof entityRowSelectColumns>;
+/** 邮件/vault 等列表：不拉 content（正文另走 get） */
+export const entityListSelectColumns = {
+  id: entities.id,
+  type: entities.type,
+  world_id: entities.world_id,
+  components: entities.components,
+  primary_component: entities.primary_component,
+  title: entities.title,
+  summary: entities.summary,
+  body: entities.body,
+  created_at: entities.created_at,
+  updated_at: entities.updated_at,
+} as const;
 
-export function mapEntityRow(row: EntityRowSelect): EntityRow {
+export type EntityRowSelect = Pick<EntitySelect, keyof typeof entityRowSelectColumns>;
+export type EntityListRowSelect = Pick<EntitySelect, keyof typeof entityListSelectColumns>;
+
+export function mapEntityRow(
+  row: EntityRowSelect | (EntityListRowSelect & { content?: string }),
+): EntityRow {
   const typeParsed = entityTypeSchema.parse(row.type);
   return {
     id: row.id,

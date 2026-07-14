@@ -85,6 +85,8 @@ Link to source — do not maintain function inventories here.
 | Entity hybrid search (`searchEntities`)         | [`entity/search/entity-search-repo.ts`](../../src/core/db/pg/entity/search/entity-search-repo.ts) — FTS + trgm + vector → RRF                                           |
 | Conversation meta transform                     | [`conversation/transform.ts`](../../src/core/db/pg/conversation/transform.ts)                                                                                           |
 
+**检索与索引**：任何热路径使用 `<=>` / `word_similarity` / `similarity` 的表列，必须同步有 HNSW 或 `gin_trgm_ops`（可在 generate 后的 migration SQL 追加；见 entities / limbic / autobiographical）。表达式唯一索引（email IMAP 等）必须对应 SQL 点查，禁止 `limit N` 扫表 + JS 过滤。
+
 ### Entity search: result order
 
 `searchEntities({ mode: "hybrid", query })` returns rows in **relevance order** (RRF score from FTS / trgm / vector). Feature domain **must not** re-sort hybrid hits with list/browse natural order (`sort_order`, `entry_at`, title localeCompare, etc.).

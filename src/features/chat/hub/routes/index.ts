@@ -73,7 +73,11 @@ export const chatHubRoutes = bindHubRouteHandlers(chatMethodDefs, {
     const result = await serviceSessions.listConversations(
       depsOf(deps).runtime.runtimeDeps(),
       platform ?? null,
-      omitUndefined({ includeArchived: input.include_archived }),
+      omitUndefined({
+        includeArchived: input.include_archived,
+        offset: input.offset,
+        limit: input.limit,
+      }),
     );
     return {
       conversations: result.conversations.map((s) => ({

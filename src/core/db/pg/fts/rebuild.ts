@@ -26,8 +26,8 @@ import type { FtsRebuildOptions, FtsRebuildPhase } from "./rebuild-types.ts";
 
 /** PG page size for fts_segmented rebuild. */
 const REBUILD_DB_PAGE_SIZE = EMBEDDING_QUEUE_FLUSH_THRESHOLD;
-/** Embedding rebuild: one row per round-trip; embed then store immediately. */
-const REBUILD_EMBEDDING_PAGE_SIZE = 1;
+/** Embedding rebuild：按批读取，再交给 embedAndStoreJobs（支持 batch API） */
+const REBUILD_EMBEDDING_PAGE_SIZE = EMBEDDING_QUEUE_FLUSH_THRESHOLD;
 
 const log = logPgComponent("embedding");
 

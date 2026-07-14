@@ -1,22 +1,45 @@
 import { logPgComponent } from "../log.ts";
 
+import { EMBEDDING_QUEUE_FLUSH_THRESHOLD } from "./batch-pack.ts";
 import { embedAndStoreJobs } from "./embed-jobs.ts";
 import type { EmbeddingPendingJob } from "./types.ts";
 
 const log = logPgComponent("embedding");
 
+const pendingJobs: EmbeddingPendingJob[] = [];
 const inFlight = new Set<Promise<void>>();
+let flushTimer: ReturnType<typeof setTimeout> | null = null;
 
-function runEmbedding(job: EmbeddingPendingJob): void {
+const FLUSH_DEBOUNCE_MS = 50;
+
+function enqueue(job: EmbeddingPendingJob): void {
   const trimmed = job.content.trim();
   if (!trimmed) return;
+  pendingJobs.push({ ...job, content: trimmed });
+  if (pendingJobs.length >= EMBEDDING_QUEUE_FLUSH_THRESHOLD) {
+    flushPending();
+    return;
+  }
+  if (flushTimer == null) {
+    flushTimer = setTimeout(() => {
+      flushTimer = null;
+      flushPending();
+    }, FLUSH_DEBOUNCE_MS);
+  }
+}
 
-  const promise: Promise<void> = embedAndStoreJobs([{ ...job, content: trimmed }])
+function flushPending(): void {
+  if (flushTimer != null) {
+    clearTimeout(flushTimer);
+    flushTimer = null;
+  }
+  if (pendingJobs.length === 0) return;
+  const batch = pendingJobs.splice(0, pendingJobs.length);
+  const promise: Promise<void> = embedAndStoreJobs(batch)
     .then(() => {})
     .catch((err) => {
       log.warn("embedding write failed", {
-        kind: job.kind,
-        id: job.id,
+        batch_size: batch.length,
         error: String(err),
       });
     });
@@ -28,35 +51,41 @@ function runEmbedding(job: EmbeddingPendingJob): void {
 
 /** Async write semantic_memory embedding (failure logged only) */
 export function scheduleSemanticMemoryEmbedding(id: string, content: string): void {
-  runEmbedding({ kind: "semantic_memory", id, content });
+  enqueue({ kind: "semantic_memory", id, content });
 }
 
 /** Async write messages embedding (failure logged only) */
 export function scheduleMessageEmbedding(id: string, content: string): void {
-  runEmbedding({ kind: "message", id, content });
+  enqueue({ kind: "message", id, content });
 }
 
 /** Async write limbic_memory embedding (failure logged only) */
 export function scheduleLimbicMemoryEmbedding(id: string, content: string): void {
-  runEmbedding({ kind: "limbic_memory", id, content });
+  enqueue({ kind: "limbic_memory", id, content });
 }
 
 /** Async write autobiographical_memory embedding (failure logged only) */
 export function scheduleAutobiographicalMemoryEmbedding(id: string, content: string): void {
-  runEmbedding({ kind: "autobiographical_memory", id, content });
+  enqueue({ kind: "autobiographical_memory", id, content });
 }
 
 /** Async write entity search embedding (failure logged only) */
 export function scheduleEntityEmbedding(id: number, content: string): void {
-  runEmbedding({ kind: "entity", id: String(id), content });
+  enqueue({ kind: "entity", id: String(id), content });
 }
 
 /** Unit/integration test: await all in-flight embedding writes */
 export async function awaitPendingEmbeddingsForTest(): Promise<void> {
+  flushPending();
   await Promise.all(inFlight);
 }
 
 /** Test teardown */
 export function resetPendingEmbeddingsForTest(): void {
+  if (flushTimer != null) {
+    clearTimeout(flushTimer);
+    flushTimer = null;
+  }
+  pendingJobs.length = 0;
   inFlight.clear();
 }

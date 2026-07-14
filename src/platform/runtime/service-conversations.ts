@@ -33,28 +33,24 @@ export async function checkPlatform(
   if (platform) await deps.conversation.assertConversationPlatform(sid, platform);
 }
 
+const DEFAULT_CONVERSATION_LIST_LIMIT = 200;
+
 export async function listConversations(
   deps: RuntimeDeps,
   platform?: string | null,
   opts?: { offset?: number; limit?: number; includeArchived?: boolean },
 ): Promise<{ conversations: ConversationSummary[]; total: number }> {
   const p = platform === "" ? null : platform;
-  if (opts?.offset != null || opts?.limit != null) {
-    const page = await deps.conversation.listConversationSummariesPage(
-      omitUndefined({
-        platform: p ?? undefined,
-        offset: opts.offset,
-        limit: opts.limit,
-        includeArchived: opts.includeArchived,
-      }),
-    );
-    return { conversations: page.items, total: page.total };
-  }
-  const items = await deps.conversation.listConversationSummaries(
-    p ?? undefined,
-    omitUndefined({ includeArchived: opts?.includeArchived }),
+  // 始终走分页 API，禁止无界全表拉取
+  const page = await deps.conversation.listConversationSummariesPage(
+    omitUndefined({
+      platform: p ?? undefined,
+      offset: opts?.offset ?? 0,
+      limit: opts?.limit ?? DEFAULT_CONVERSATION_LIST_LIMIT,
+      includeArchived: opts?.includeArchived,
+    }),
   );
-  return { conversations: items, total: items.length };
+  return { conversations: page.items, total: page.total };
 }
 
 export async function createConversation(

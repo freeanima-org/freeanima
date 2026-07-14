@@ -329,12 +329,17 @@ export async function listDebugConversationIds(): Promise<string[]> {
 
 export async function countConversationsByPlatform(): Promise<Record<string, number>> {
   const db = getDb();
-  const rows = await db.select({ platform_info: conversations.platform_info }).from(conversations);
+  const platformExpr = sql<string>`COALESCE(NULLIF(btrim(${conversations.platform_info}->>'platform'), ''), 'unknown')`;
+  const rows = await db
+    .select({
+      platform: platformExpr,
+      n: sql<number>`count(*)::int`,
+    })
+    .from(conversations)
+    .groupBy(platformExpr);
   const byPlatform: Record<string, number> = {};
   for (const row of rows) {
-    const raw = row.platform_info?.platform;
-    const platform = typeof raw === "string" && raw.trim() ? raw.trim() : "unknown";
-    byPlatform[platform] = (byPlatform[platform] ?? 0) + 1;
+    byPlatform[row.platform] = Number(row.n);
   }
   return byPlatform;
 }
@@ -419,7 +424,7 @@ export async function listConversationSummariesPage(opts?: {
   includeArchived?: boolean;
 }): Promise<{ items: ConversationSummaryRow[]; total: number }> {
   const offset = Math.max(0, opts?.offset ?? 0);
-  const limit = Math.min(100, Math.max(1, opts?.limit ?? 20));
+  const limit = Math.min(500, Math.max(1, opts?.limit ?? 20));
   const platform = opts?.platform;
   const db = getDb();
   const where = buildConversationListWhere(platform, opts?.includeArchived);

@@ -24,6 +24,8 @@ export type ConversationCreateOutput = z.infer<typeof conversationCreateOutputSc
 export const conversationListInputSchema = z.object({
   platform: z.string().optional(),
   include_archived: z.boolean().optional(),
+  offset: z.number().int().min(0).optional(),
+  limit: z.number().int().min(1).max(500).optional(),
 });
 
 export type ConversationListInput = z.infer<typeof conversationListInputSchema>;

@@ -2,7 +2,7 @@ import { logPgComponent } from "../log.ts";
 import { getActiveRuntimeConfig, getResolvedEmbeddingConfig } from "@freeanima/core/config";
 
 import { expandJobsToUnits } from "./batch-pack.ts";
-import { getEmbedTextFn } from "./runtime.ts";
+import { getEmbedTextFn, getEmbedTextsFn } from "./runtime.ts";
 import {
   setAutobiographicalMemoryEmbedding,
   setEntityEmbedding,
@@ -43,21 +43,38 @@ export function averageEmbeddings(vectors: number[][]): number[] | null {
   return avg.map((v) => v / norm);
 }
 
-async function embedUnit(unit: EmbeddingEmbedUnit): Promise<number[] | null> {
-  const embedSingle = getEmbedTextFn();
-  if (!embedSingle) return null;
-
-  try {
-    return await embedSingle(unit.text);
-  } catch (err) {
-    log.warn("embedding request failed", {
-      kind: unit.job.kind,
-      id: unit.job.id,
-      chunk_index: unit.chunkIndex,
-      error: String(err),
-    });
-    return null;
+async function embedUnits(units: EmbeddingEmbedUnit[]): Promise<(number[] | null)[]> {
+  if (units.length === 0) return [];
+  const embedBatch = getEmbedTextsFn();
+  if (embedBatch) {
+    try {
+      return await embedBatch(units.map((u) => u.text));
+    } catch (err) {
+      log.warn("embedding batch request failed; falling back to single", {
+        unit_count: units.length,
+        error: String(err),
+      });
+    }
   }
+
+  const embedSingle = getEmbedTextFn();
+  if (!embedSingle) return units.map(() => null);
+
+  const out: (number[] | null)[] = [];
+  for (const unit of units) {
+    try {
+      out.push(await embedSingle(unit.text));
+    } catch (err) {
+      log.warn("embedding request failed", {
+        kind: unit.job.kind,
+        id: unit.job.id,
+        chunk_index: unit.chunkIndex,
+        error: String(err),
+      });
+      out.push(null);
+    }
+  }
+  return out;
 }
 
 async function storeJobEmbedding(job: EmbeddingPendingJob, merged: number[]): Promise<boolean> {
@@ -81,8 +98,7 @@ export async function embedAndStoreJobs(
 ): Promise<number> {
   if (jobs.length === 0) return 0;
 
-  const embedSingle = getEmbedTextFn();
-  if (!embedSingle) return 0;
+  if (!getEmbedTextFn() && !getEmbedTextsFn()) return 0;
 
   const validJobs: EmbeddingPendingJob[] = [];
   for (const job of jobs) {
@@ -93,25 +109,29 @@ export async function embedAndStoreJobs(
   if (validJobs.length === 0) return 0;
 
   const embeddingModel = getResolvedEmbeddingConfig(getActiveRuntimeConfig().data)?.model ?? "";
+  const units = expandJobsToUnits(validJobs, { model: embeddingModel });
+  const vectors = await embedUnits(units);
+
+  const byJobKey = new Map<string, { job: EmbeddingPendingJob; vectors: number[][] }>();
+  for (let i = 0; i < units.length; i++) {
+    const unit = units[i];
+    const vec = vectors[i];
+    if (!unit || !vec) continue;
+    const key = `${unit.job.kind}:${unit.job.id}`;
+    const entry = byJobKey.get(key) ?? { job: unit.job, vectors: [] };
+    entry.vectors.push(vec);
+    byJobKey.set(key, entry);
+  }
+
   let updated = 0;
-
-  for (const job of validJobs) {
-    const units = expandJobsToUnits([job], { model: embeddingModel });
-    const chunkVectors: number[][] = [];
-    for (const unit of units) {
-      const vec = await embedUnit(unit);
-      if (vec) chunkVectors.push(vec);
-    }
-    if (chunkVectors.length === 0) continue;
-
-    const merged = averageEmbeddings(chunkVectors);
+  for (const entry of byJobKey.values()) {
+    const merged = averageEmbeddings(entry.vectors);
     if (!merged) continue;
-
-    const ok = await storeJobEmbedding(job, merged);
+    const ok = await storeJobEmbedding(entry.job, merged);
     if (ok) {
       updated += 1;
     } else {
-      log.warn("embedding store skipped", { kind: job.kind, id: job.id });
+      log.warn("embedding store skipped", { kind: entry.job.kind, id: entry.job.id });
     }
   }
 

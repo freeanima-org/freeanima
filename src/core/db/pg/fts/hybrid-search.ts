@@ -5,7 +5,7 @@ import {
   getFtsTrgmFallbackWhenHitsLt,
   getFtsTrgmMinSimilarity,
 } from "@freeanima/core/config";
-import { and, isNotNull, sql } from "drizzle-orm";
+import { and, sql } from "drizzle-orm";
 import { union } from "drizzle-orm/pg-core";
 import { semanticMemory } from "@freeanima/core/db/schema";
 import { omitUndefined, rrfMerge, messageDocKey, semanticMemoryDocKey } from "@freeanima/core/util";
@@ -44,18 +44,19 @@ export async function hybridSearchSemanticMemory(
   const offset = Math.max(0, opts?.offset ?? 0);
   const fetchLimit = limit + offset;
 
-  const queryEmbedding = await embedQueryText(q);
-
   const filterOpts = omitUndefined({
     types: opts?.types,
     status: opts?.status,
     source_conversations: opts?.source_conversations,
   });
 
-  const ftsHits = await searchSemanticMemoryFtsRaw(q, {
-    ...filterOpts,
-    limit: candidateLimit(fetchLimit, 0),
-  });
+  const [queryEmbedding, ftsHits] = await Promise.all([
+    embedQueryText(q),
+    searchSemanticMemoryFtsRaw(q, {
+      ...filterOpts,
+      limit: candidateLimit(fetchLimit, 0),
+    }),
+  ]);
   const pool = candidateLimit(fetchLimit, ftsHits.length);
   const [trgmHits, vectorHits] = await Promise.all([
     searchSemanticMemoryTrgm(q, {
@@ -89,9 +90,11 @@ export async function hybridSearchMessages(
   if (!q) return [];
 
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));
-  const queryEmbedding = await embedQueryText(q);
 
-  const ftsHits = await searchMessagesFtsRaw(q, { ...opts, limit: candidateLimit(limit, 0) });
+  const [queryEmbedding, ftsHits] = await Promise.all([
+    embedQueryText(q),
+    searchMessagesFtsRaw(q, { ...opts, limit: candidateLimit(limit, 0) }),
+  ]);
   const pool = candidateLimit(limit, ftsHits.length);
   const [trgmHits, vectorHits] = await Promise.all([
     searchMessagesTrgm(q, { ...opts, limit: pool }),
@@ -132,11 +135,9 @@ export async function hybridCountSemanticMemory(
   const source_conversations =
     opts?.source_conversations?.map((s) => s.trim()).filter(Boolean) ?? [];
   const minSim = getFtsTrgmMinSimilarity(getActiveRuntimeConfig().data);
-  const queryEmbedding = await embedQueryText(q);
 
   const db = getDb();
   const semanticConditions = buildSemanticConditions({ types, status, source_conversations });
-  const whereSemantic = semanticConditions.length > 0 ? and(...semanticConditions) : undefined;
 
   const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
   const ftsBranch = db
@@ -158,15 +159,8 @@ export async function hybridCountSemanticMemory(
       ),
     );
 
-  const vectorBranch = db
-    .select({ id: semanticMemory.id })
-    .from(semanticMemory)
-    .where(and(isNotNull(semanticMemory.content_embedding), whereSemantic));
-
-  const merged =
-    queryEmbedding && queryEmbedding.length > 0
-      ? union(ftsBranch, trgmBranch, vectorBranch).as("merged")
-      : union(ftsBranch, trgmBranch).as("merged");
+  // COUNT 仅走 FTS∪trgm；不再把「有 embedding」当作命中（会严重偏大且全表扫）
+  const merged = union(ftsBranch, trgmBranch).as("merged");
   const rows = await db.select({ n: sql<number>`count(*)::int` }).from(merged);
   return Number(rows[0]?.n ?? 0);
 }

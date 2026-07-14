@@ -32,8 +32,26 @@ export function isPostgresPrimary(): boolean {
   return getDatabaseConfig() != null;
 }
 
+/** 与部署 PG max_connections 对齐的默认池；可通过环境变量覆盖 */
+function resolvePoolOptions(): { max: number; idleTimeout: number; maxLifetime: number } {
+  const maxRaw = Number.parseInt(process.env.FREEANIMA_PG_POOL_MAX ?? "", 10);
+  const idleRaw = Number.parseInt(process.env.FREEANIMA_PG_POOL_IDLE_TIMEOUT ?? "", 10);
+  const lifetimeRaw = Number.parseInt(process.env.FREEANIMA_PG_POOL_MAX_LIFETIME ?? "", 10);
+  return {
+    max: Number.isFinite(maxRaw) && maxRaw > 0 ? maxRaw : 10,
+    idleTimeout: Number.isFinite(idleRaw) && idleRaw >= 0 ? idleRaw : 30,
+    maxLifetime: Number.isFinite(lifetimeRaw) && lifetimeRaw >= 0 ? lifetimeRaw : 0,
+  };
+}
+
 function createDb(url: string): Db {
-  const client = new SQL(url);
+  const pool = resolvePoolOptions();
+  const client = new SQL({
+    url,
+    max: pool.max,
+    idleTimeout: pool.idleTimeout,
+    maxLifetime: pool.maxLifetime,
+  });
   sqlClient = client;
   return drizzle({ client, relations });
 }
