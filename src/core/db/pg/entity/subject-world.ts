@@ -3,9 +3,11 @@ import {
   ENTITY_ROOT_WORLD_ID,
   USER_CONFIG_COMPONENT,
   WORLD_CONFIG_COMPONENT,
+  normalizeWorldGrants,
   subjectConfigBodySchema,
   worldConfigBodySchema,
   type EntityRow,
+  type WorldGrant,
 } from "@freeanima/core/db/schema/entity";
 import type { RuntimeConfig } from "@freeanima/core/config";
 import { omitUndefined } from "@freeanima/core/util";
@@ -31,9 +33,14 @@ export function buildWorldConfigBody(input: {
   private: boolean;
   owner_subject_id?: number;
   default_private?: boolean;
+  grants?: WorldGrant[];
 }): Record<string, unknown> {
+  const grants = normalizeWorldGrants(
+    input.grants,
+    input.private ? input.owner_subject_id : undefined,
+  );
   if (!input.private) {
-    const body = { private: false, default_private: false };
+    const body = { private: false, default_private: false, grants };
     worldConfigBodySchema.parse(body);
     return body;
   }
@@ -41,6 +48,7 @@ export function buildWorldConfigBody(input: {
     private: true,
     owner_subject_id: input.owner_subject_id,
     default_private: input.default_private ?? false,
+    grants,
   };
   worldConfigBodySchema.parse(body);
   return body;

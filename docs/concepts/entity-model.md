@@ -38,7 +38,7 @@ Component fields live in **`body` JSONB** at the top level. **`primary_component
 | `body`                          | JSONB component payload                      |
 | `created_at` / `updated_at`     | Timestamps                                   |
 
-**Not in v0.8 bootstrap:** relationship table, permission table, World nesting/mount, graph DB (PostgreSQL AGE).
+**Not in v0.8 bootstrap:** relationship table, World nesting/mount, graph DB (PostgreSQL AGE). Subject↔world grants live in `world_config.grants` (no separate permission table).
 
 ## Subject (`agent` / `user`)
 
@@ -62,10 +62,19 @@ Legacy SQL bootstrap seeds (public world id=1, Inbox id=2) are removed by migrat
 ## World namespace
 
 - **`type: world`** entities are logical containers (permission/list boundary).
-- Visibility and owner live in **`world_config` body**:
+- Visibility, owner, and grants live in **`world_config` body**:
   - `private: false` — public world
   - `private: true` + `owner_subject_id` — private world owned by an `agent` or `user` entity
   - `default_private: true` — marks the subject's **exclusive** default private world (at most one per `owner_subject_id`)
+  - `grants: [{ subject_id, permission: "read" | "write" }]` — explicit subject grants (**write includes read**; `subject_id` must not equal owner). Configured in Console Worlds UI; never hardcoded per subject in source.
+- **Access rules** (MCP / LLM tools via `resolveToolWorld`):
+
+  | World   | Read                   | Write                    |
+  | ------- | ---------------------- | ------------------------ |
+  | public  | all subjects           | owner **or** write grant |
+  | private | owner **or** any grant | owner **or** write grant |
+
+- Owner always has full access without a grant row. Cross-world tool calls must use grants — open-source builds must not special-case subject ids.
 - Do not confuse with semantic memory **`type=world`** (fact classification in [`memory.md`](memory.md)) — that becomes `body.memory_kind=world` after future migration.
 
 ## Content
@@ -202,7 +211,7 @@ Entity **list** (deterministic browse) and **search** (relevance ranking) are se
 | `EntityStorePort.list`    | Structural filters; stable sort                                       |
 | `EntitySearchPort.search` | Hard filters + optional text query; hybrid FTS/trigram/vector via RRF |
 
-**Scope:** default `world_id`; `global: true` requires an explicit accessible-world allowlist (public worlds only until subject permissions bootstrap).
+**Scope:** default `world_id`; `global: true` requires an explicit accessible-world allowlist (`resolveWorldsAccessibleBySubject`: public + owned private + grant-readable worlds).
 
 **Component filters:** whitelisted per `primary_component` (e.g. `task_item`: `status`, `list_id`, `tags`, `due_today`). Arbitrary JSONPath is forbidden.
 

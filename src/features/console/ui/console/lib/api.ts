@@ -369,12 +369,18 @@ export async function listWorldEntities(opts?: { offset?: number; limit?: number
   ) as Promise<EntityListResponse>;
 }
 
+export type WorldGrantInput = {
+  subject_id: number;
+  permission: "read" | "write";
+};
+
 export async function createWorldEntity(body: {
   title: string;
   summary?: string;
   content?: string;
   private?: boolean;
   owner_subject_id?: number;
+  grants?: WorldGrantInput[];
 }) {
   return hubCall(hub().call("entity.worldsCreate", body as never)) as Promise<EntityRow>;
 }
@@ -387,6 +393,7 @@ export async function updateWorldEntity(
     content?: string;
     private?: boolean;
     owner_subject_id?: number | null;
+    grants?: WorldGrantInput[];
   },
 ) {
   return hubCall(

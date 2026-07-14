@@ -10,6 +10,7 @@ import {
   semanticMemoryPinBodySchema,
   subjectEntityCreateBodySchema,
   worldEntityCreateBodySchema,
+  worldEntityPatchInputSchema,
 } from "./schemas.ts";
 import {
   binaryHttpMeta,
@@ -234,7 +235,7 @@ export const consoleMethodDefs = {
     meta: dualTransportMeta(true),
   }),
   "entity.worldsPatch": defineHubMethod({
-    input: z.object({ id: z.string().min(1) }).passthrough(),
+    input: worldEntityPatchInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),

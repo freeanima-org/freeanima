@@ -23,6 +23,7 @@ export async function resolveEmailToolWorld(opts: {
   args: Record<string, unknown>;
   entityId?: number;
   accountId?: number;
+  access?: "read" | "write";
 }): Promise<number | string> {
   try {
     const explicit = parseWorldId(opts.args.world_id);
@@ -31,6 +32,7 @@ export async function resolveEmailToolWorld(opts: {
     return await resolveToolWorld({
       ...(explicit != null ? { explicitWorldId: explicit } : {}),
       ...(entityId != null ? { entityId } : {}),
+      access: opts.access ?? "read",
     });
   } catch (e) {
     const msg = e instanceof ToolWorldAccessError ? e.message : String(e);

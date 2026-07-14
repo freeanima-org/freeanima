@@ -290,6 +290,15 @@
   <msg id="console_entities_default_private_world_empty">No private worlds owned by this subject.</msg>
   <msg id="console_entities_edit_subject">Edit subject</msg>
   <msg id="console_entities_edit_world">Edit world</msg>
+  <msg id="console_entities_grant_add">Add grant</msg>
+  <msg id="console_entities_grant_permission_label">Permission</msg>
+  <msg id="console_entities_grant_permission_read">Read</msg>
+  <msg id="console_entities_grant_permission_write">Write</msg>
+  <msg id="console_entities_grant_remove">Remove</msg>
+  <msg id="console_entities_grant_subject_label">Subject</msg>
+  <msg id="console_entities_grants_empty_subjects">No other subjects available to grant.</msg>
+  <msg id="console_entities_grants_hint">Owners always have full access. Write includes read. Public worlds are readable by all subjects; grants here mainly unlock write, or private-world read/write.</msg>
+  <msg id="console_entities_grants_label">Subject grants</msg>
   <msg id="console_entities_new_subject">New subject</msg>
   <msg id="console_entities_new_world">New world</msg>
   <msg id="console_entities_owner_subject_placeholder">Select a subject…</msg>
@@ -304,7 +313,7 @@
   <msg id="console_entities_world_default_private_badge">Default private</msg>
   <msg id="console_entities_world_select_empty">No worlds available</msg>
   <msg id="console_entities_worlds_count_label">worlds</msg>
-  <msg id="console_entities_worlds_desc">Logical namespaces (type=world). Visibility and owner live in world_config body.</msg>
+  <msg id="console_entities_worlds_desc">Logical namespaces (type=world). Visibility, owner, and subject grants live in world_config body.</msg>
   <msg id="console_entities_worlds_empty">No worlds yet. Create one to get started.</msg>
   <msg id="console_fts_cjk_note">When cjk.enabled is off, empty fts_segmented is expected; rebuild segmented after enabling.</msg>
   <msg id="console_fts_coverage">Index coverage</msg>
@@ -637,6 +646,15 @@ Digital Humans</msg>
   <msg id="ui_offline_cached_hint"> · Showing cached data</msg>
   <msg id="ui_offline_readonly_mode">Offline read-only — edits are disabled until you're back online.</msg>
   <msg id="ui_offline_snapshot_updated">Offline snapshot · updated {time}</msg>
+  <msg id="ui_offline_sync_failed">{count} sync failed</msg>
+  <msg id="ui_offline_sync_module_chat">Chat</msg>
+  <msg id="ui_offline_sync_module_diary">Diary</msg>
+  <msg id="ui_offline_sync_module_pomodoro">Pomodoro</msg>
+  <msg id="ui_offline_sync_module_task">Task</msg>
+  <msg id="ui_offline_sync_pending">{count} items pending sync</msg>
+  <msg id="ui_offline_sync_retry">Retry</msg>
+  <msg id="ui_offline_sync_retry_all">Reconnect and retry all</msg>
+  <msg id="ui_offline_sync_stale">{count} conflicts</msg>
   <msg id="ui_outbox_discard">Discard</msg>
   <msg id="ui_outbox_failed">Send failed</msg>
   <msg id="ui_outbox_force_send">Send anyway</msg>

@@ -1,6 +1,7 @@
 import { worldConfigBodySchema } from "@freeanima/core/db/schema";
 import type { EntityListOpts } from "../types.ts";
 import type { EntityRow } from "@freeanima/core/db/schema/entity";
+import { accessLevelMeets, subjectWorldAccessLevel } from "../subject-world-access.ts";
 
 type EntityWorldListStore = {
   list(opts?: EntityListOpts): Promise<EntityRow[]>;
@@ -21,7 +22,7 @@ export async function resolvePublicAccessibleWorldIds(
   return ids;
 }
 
-/** subject 可访问的 world：public + 该 subject 拥有的 private world */
+/** subject 可访问（至少 read）的 world：public + owned private + grants */
 export async function resolveWorldsAccessibleBySubject(
   store: EntityWorldListStore,
   subjectId: number,
@@ -29,13 +30,8 @@ export async function resolveWorldsAccessibleBySubject(
   const worlds = await store.list({ type: "world", limit: 500 });
   const ids: number[] = [];
   for (const row of worlds) {
-    const parsed = worldConfigBodySchema.safeParse(row.body);
-    if (!parsed.success) continue;
-    if (!parsed.data.private) {
-      ids.push(row.id);
-      continue;
-    }
-    if (parsed.data.owner_subject_id === subjectId) {
+    const level = subjectWorldAccessLevel(row.body ?? {}, subjectId);
+    if (accessLevelMeets(level, "read")) {
       ids.push(row.id);
     }
   }

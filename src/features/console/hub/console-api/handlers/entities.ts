@@ -5,9 +5,11 @@ import {
   USER_CONFIG_COMPONENT,
   WORLD_CONFIG_COMPONENT,
   worldConfigBodySchema,
+  type WorldGrant,
 } from "@freeanima/core/db/schema";
 import type { EntityRow, EntitySearchHit } from "@freeanima/core/db/pg/entity";
 import {
+  buildWorldConfigBody,
   countEntities,
   createEntity,
   EntitySearchScopeError,
@@ -24,25 +26,6 @@ import type { ServiceAuthContext } from "../auth-context.ts";
 
 function mapSearchHit(row: EntitySearchHit): EntitySearchHit {
   return row;
-}
-
-function buildWorldConfigBody(input: {
-  private: boolean;
-  owner_subject_id?: number;
-  default_private?: boolean;
-}): Record<string, unknown> {
-  if (!input.private) {
-    const body = { private: false, default_private: false };
-    worldConfigBodySchema.parse(body);
-    return body;
-  }
-  const body = {
-    private: true,
-    owner_subject_id: input.owner_subject_id,
-    default_private: input.default_private ?? false,
-  };
-  worldConfigBodySchema.parse(body);
-  return body;
 }
 
 async function assertSubjectEntity(id: number): Promise<EntityRow> {
@@ -160,12 +143,20 @@ export async function getWorldEntity(id: number) {
   return row;
 }
 
+async function assertGrantSubjects(grants: WorldGrant[] | undefined): Promise<void> {
+  if (!grants?.length) return;
+  for (const g of grants) {
+    await assertSubjectEntity(g.subject_id);
+  }
+}
+
 export async function createWorldEntity(input: {
   title: string;
   summary?: string;
   content?: string;
   private: boolean;
   owner_subject_id?: number;
+  grants?: WorldGrant[];
 }) {
   if (input.private) {
     if (input.owner_subject_id == null) {
@@ -175,6 +166,7 @@ export async function createWorldEntity(input: {
     }
     await assertSubjectEntity(input.owner_subject_id);
   }
+  await assertGrantSubjects(input.grants);
 
   const body = buildWorldConfigBody(input);
   const created = await createEntity({
@@ -202,6 +194,7 @@ export async function updateWorldEntity(
     content?: string;
     private?: boolean;
     owner_subject_id?: number | null;
+    grants?: WorldGrant[];
   },
 ) {
   const existing = await getEntity(id);
@@ -213,12 +206,17 @@ export async function updateWorldEntity(
   const isDefaultPrivate = current.data?.default_private === true;
 
   let bodyPatch: Record<string, unknown> | undefined;
-  if (input.private !== undefined || input.owner_subject_id !== undefined) {
+  if (
+    input.private !== undefined ||
+    input.owner_subject_id !== undefined ||
+    input.grants !== undefined
+  ) {
     const nextPrivate = input.private ?? current.data?.private ?? false;
     const nextOwnerSubjectId =
       input.owner_subject_id !== undefined
         ? (input.owner_subject_id ?? undefined)
         : current.data?.owner_subject_id;
+    const nextGrants = input.grants !== undefined ? input.grants : (current.data?.grants ?? []);
 
     if (isDefaultPrivate && !nextPrivate) {
       throw new ApiHandlerError(400, "default private world cannot be made public", {
@@ -234,12 +232,14 @@ export async function updateWorldEntity(
       }
       await assertSubjectEntity(nextOwnerSubjectId);
     }
+    await assertGrantSubjects(nextGrants);
 
     bodyPatch = buildWorldConfigBody(
       omitUndefined({
         private: nextPrivate,
         owner_subject_id: nextPrivate ? nextOwnerSubjectId : undefined,
         default_private: isDefaultPrivate,
+        grants: nextGrants,
       }),
     );
   }

@@ -40,6 +40,7 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
   const worldId = await resolveTaskToolWorld({
     args,
     ...(hasListId ? { listId: Number(listIdRaw) } : {}),
+    access: "write",
   });
   if (typeof worldId === "string") return worldId;
 
@@ -95,7 +96,7 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
   const id = Number(args.id);
   if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
 
-  const worldId = await resolveTaskToolWorld({ args, entityId: id });
+  const worldId = await resolveTaskToolWorld({ args, entityId: id, access: "write" });
   if (typeof worldId === "string") return worldId;
 
   const patch: TaskItemUpdateInput = { id };
@@ -147,7 +148,7 @@ async function handleComplete(args: Record<string, unknown>, uncomplete: boolean
   const id = Number(args.id);
   if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
 
-  const worldId = await resolveTaskToolWorld({ args, entityId: id });
+  const worldId = await resolveTaskToolWorld({ args, entityId: id, access: "write" });
   if (typeof worldId === "string") return worldId;
 
   try {
@@ -169,7 +170,7 @@ async function handleDelete(args: Record<string, unknown>): Promise<string> {
   const id = Number(args.id);
   if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
 
-  const worldId = await resolveTaskToolWorld({ args, entityId: id });
+  const worldId = await resolveTaskToolWorld({ args, entityId: id, access: "write" });
   if (typeof worldId === "string") return worldId;
 
   try {

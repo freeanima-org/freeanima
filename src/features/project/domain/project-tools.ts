@@ -31,12 +31,14 @@ function parseWorldId(raw: unknown): number | null {
 async function resolveProjectToolWorld(opts: {
   args: Record<string, unknown>;
   entityId?: number;
+  access?: "read" | "write";
 }): Promise<number | string> {
   try {
     const explicit = parseWorldId(opts.args.world_id);
     return await resolveToolWorld({
       ...(explicit != null ? { explicitWorldId: explicit } : {}),
       ...(opts.entityId != null ? { entityId: opts.entityId } : {}),
+      access: opts.access ?? "read",
     });
   } catch (e) {
     const msg = e instanceof ToolWorldAccessError ? e.message : String(e);
@@ -64,8 +66,11 @@ function projectPayload(row: Awaited<ReturnType<typeof getProject>> & object) {
   };
 }
 
-async function resolveWorld(args: Record<string, unknown>): Promise<number | string> {
-  return resolveProjectToolWorld({ args });
+async function resolveWorld(
+  args: Record<string, unknown>,
+  access: "read" | "write" = "read",
+): Promise<number | string> {
+  return resolveProjectToolWorld({ args, access });
 }
 
 export function registerProjectTools(toolSets: ToolSetRegistry): void {
@@ -140,7 +145,7 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
             required: ["title", "start_at", "end_at", "completion_criteria"],
           },
           handler: async (args) => {
-            const worldId = await resolveWorld(args);
+            const worldId = await resolveWorld(args, "write");
             if (typeof worldId === "string") return worldId;
             const title = String(args.title ?? "").trim();
             if (!title) return toolError("title is required");
@@ -182,7 +187,11 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
           },
           handler: async (args) => {
             const id = Number(args.id);
-            const worldId = await resolveProjectToolWorld({ args, entityId: id });
+            const worldId = await resolveProjectToolWorld({
+              args,
+              entityId: id,
+              access: "write",
+            });
             if (typeof worldId === "string") return worldId;
             try {
               const item = await updateProject(
@@ -214,7 +223,11 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
           },
           handler: async (args) => {
             const id = Number(args.id);
-            const worldId = await resolveProjectToolWorld({ args, entityId: id });
+            const worldId = await resolveProjectToolWorld({
+              args,
+              entityId: id,
+              access: "write",
+            });
             if (typeof worldId === "string") return worldId;
             const ok = await deleteProject(worldId, id);
             if (!ok) return toolError(`project not found: ${id}`);
@@ -268,7 +281,11 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
           },
           handler: async (args) => {
             const projectId = Number(args.project_id);
-            const worldId = await resolveProjectToolWorld({ args, entityId: projectId });
+            const worldId = await resolveProjectToolWorld({
+              args,
+              entityId: projectId,
+              access: "write",
+            });
             if (typeof worldId === "string") return worldId;
             try {
               const item = await createMilestone(worldId, {
@@ -309,7 +326,11 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
           },
           handler: async (args) => {
             const id = Number(args.id);
-            const worldId = await resolveProjectToolWorld({ args, entityId: id });
+            const worldId = await resolveProjectToolWorld({
+              args,
+              entityId: id,
+              access: "write",
+            });
             if (typeof worldId === "string") return worldId;
             const item = await updateMilestone(
               worldId,
@@ -369,7 +390,7 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
             required: ["name"],
           },
           handler: async (args) => {
-            const worldId = await resolveWorld(args);
+            const worldId = await resolveWorld(args, "write");
             if (typeof worldId === "string") return worldId;
             const name = String(args.name ?? "").trim();
             if (!name) return toolError("name is required");

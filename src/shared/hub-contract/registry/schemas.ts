@@ -18,5 +18,6 @@ export {
   subjectEntityUpdateBodySchema,
   toolsStatusResponseSchema,
   worldEntityCreateBodySchema,
+  worldEntityPatchInputSchema,
   worldEntityUpdateBodySchema,
 } from "../schemas/console-schemas.ts";

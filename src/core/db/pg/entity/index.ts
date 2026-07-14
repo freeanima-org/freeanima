@@ -36,9 +36,16 @@ export {
 export {
   resolveDefaultPrivateWorldForSubject,
   assertSubjectCanAccessWorld,
+  getSubjectWorldAccessLevel,
   resolveWorldFromEntityId,
   resolveDefaultWorldForToolCaller,
   resolveToolWorld,
+  listWorldIdsAccessibleBySubject,
   ToolWorldAccessError,
   type ResolveToolWorldOpts,
 } from "./tool-world-access.ts";
+export {
+  subjectWorldAccessLevel,
+  accessLevelMeets,
+  type SubjectWorldAccessLevel,
+} from "./subject-world-access.ts";

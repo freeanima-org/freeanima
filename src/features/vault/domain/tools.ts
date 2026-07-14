@@ -113,7 +113,7 @@ async function handleInjectEnv(args: Record<string, unknown>, io: VaultToolIo): 
   if (!envName) return toolError("env_name is required");
 
   const subjectKind = parseSubjectKind(args.subject_kind);
-  const worldId = await resolveVaultToolWorld({ args, entityId: id });
+  const worldId = await resolveVaultToolWorld({ args, entityId: id, access: "write" });
   if (typeof worldId === "string") return worldId;
 
   try {

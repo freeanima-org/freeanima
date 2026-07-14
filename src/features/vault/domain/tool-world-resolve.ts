@@ -17,17 +17,19 @@ function parseWorldId(raw: unknown): number | null {
 export async function resolveVaultToolWorld(opts: {
   args: Record<string, unknown>;
   entityId?: number;
+  access?: "read" | "write";
 }): Promise<number | string> {
   try {
     const explicitWorld = parseWorldId(opts.args.world_id);
     const subjectKind = parseSubjectKind(opts.args.subject_kind) ?? defaultVaultSubjectForTools();
+    const access = opts.access ?? "read";
 
     if (explicitWorld != null) {
-      return await resolveToolWorld({ explicitWorldId: explicitWorld });
+      return await resolveToolWorld({ explicitWorldId: explicitWorld, access });
     }
 
     if (opts.entityId != null && opts.entityId > 0) {
-      return await resolveToolWorld({ entityId: opts.entityId });
+      return await resolveToolWorld({ entityId: opts.entityId, access });
     }
 
     return resolveVaultWorldId(subjectKind);
