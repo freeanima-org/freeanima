@@ -14,7 +14,6 @@ import { loadConsoleShellRoute } from "./features/feature-shell-routes.ts";
 import { listShellFeatureRoutes } from "./features/shell-registry.ts";
 import { ModuleShell } from "./main/ModuleShell.tsx";
 import { SettingsPage } from "./settings/SettingsPage.tsx";
-import { HubSetupPage } from "./setup/HubSetupPage.tsx";
 import { needsHubSetup } from "./setup/hub-setup.ts";
 import { resolveShellRouterBasepath } from "./router-basepath.ts";
 
@@ -22,19 +21,25 @@ const rootRoute = createRootRoute({
   component: Outlet,
 });
 
-const setupRoute = createRoute({
+const setupAliasRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/setup",
-  component: HubSetupPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/settings" as never });
+  },
 });
+
+function isSettingsPath(pathname: string): boolean {
+  return pathname === "/settings" || pathname.endsWith("/settings");
+}
 
 const mainLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: "main-layout",
   component: ModuleShell,
-  beforeLoad: () => {
-    if (needsHubSetup()) {
-      throw redirect({ to: "/setup" as never });
+  beforeLoad: ({ location }) => {
+    if (needsHubSetup() && !isSettingsPath(location.pathname)) {
+      throw redirect({ to: "/settings" as never });
     }
   },
 });
@@ -82,7 +87,7 @@ const settingsRoute = createRoute({
 });
 
 const routeTree = rootRoute.addChildren([
-  setupRoute,
+  setupAliasRoute,
   mainLayoutRoute.addChildren([
     indexRoute,
     ...featureRoutes,

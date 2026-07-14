@@ -10,9 +10,12 @@ const MIME: Record<string, string> = {
   ".svg": "image/svg+xml",
   ".png": "image/png",
   ".woff2": "font/woff2",
+  ".webmanifest": "application/manifest+json",
+  ".ico": "image/x-icon",
 };
 
 const CONSOLE_PREFIX = "/console";
+const WEB_PREFIX = "/web";
 
 function isAddrInUse(error: unknown): boolean {
   return (
@@ -101,8 +104,24 @@ function createShellStaticHandler(
 ): (req: IncomingMessage, res: ServerResponse) => void {
   return (req, res) => {
     const pathname = new URL(req.url ?? "/", "http://127.0.0.1").pathname;
-    const rel = pathname === "/" ? "/index.html" : pathname;
-    if (serveStaticFile(distDir, rel, res)) return;
+
+    if (pathname === WEB_PREFIX || pathname === `${WEB_PREFIX}/`) {
+      res.statusCode = 302;
+      res.setHeader("Location", `${WEB_PREFIX}/chat`);
+      res.end();
+      return;
+    }
+
+    if (!pathname.startsWith(`${WEB_PREFIX}/`)) {
+      res.statusCode = 404;
+      res.end("Not Found");
+      return;
+    }
+
+    const rel = pathname.slice(WEB_PREFIX.length) || "/";
+    const fileRel = rel === "/" ? "/index.html" : rel;
+    if (serveStaticFile(distDir, fileRel.replace(/^\//, ""), res)) return;
+
     const indexPath = join(distDir, "index.html");
     if (existsSync(indexPath)) {
       res.setHeader("Content-Type", "text/html; charset=utf-8");

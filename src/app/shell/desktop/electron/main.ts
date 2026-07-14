@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, Menu, nativeImage, Tray } from "electron";
 import type { Server } from "node:http";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 import {
@@ -107,7 +108,9 @@ function shellUiDistDir(): string {
   if (app.isPackaged) {
     return join(app.getAppPath(), "vendor", "shell-ui", "dist");
   }
-  return join(SHELL_ROOT, "..", "..", "packages", "shell-ui", "dist");
+  const vendorDist = join(SHELL_ROOT, "vendor", "shell-ui", "dist");
+  if (existsSync(join(vendorDist, "index.html"))) return vendorDist;
+  return join(SHELL_ROOT, "..", "web", "dist");
 }
 
 function companionDistDir(): string {
@@ -173,7 +176,7 @@ function reloadHubClientAndMainWindow(): void {
 
 function initialShellPath(): string {
   if (shellClientNeedsHubSetup(readShellClientConfig())) {
-    return "/setup";
+    return "/settings";
   }
   return "/chat";
 }
@@ -376,13 +379,19 @@ async function startShellStatic(): Promise<void> {
   }
 
   const dist = shellUiDistDir();
+  if (!existsSync(join(dist, "index.html"))) {
+    throw new Error(
+      `本地 shell-ui 缺失: ${dist}/index.html（请 bun run build:web 或先跑桌面打包脚本）`,
+    );
+  }
   const { server, url, port } = await startShellStaticServer(
     dist,
     SHELL_STATIC_PORT,
     SHELL_STATIC_PORT_ATTEMPTS,
   );
   shellStaticServer = server;
-  shellStaticUrl = url;
+  // web/dist 使用 base `/web/`；静态服根映射到 /web
+  shellStaticUrl = `${url.replace(/\/$/, "")}/web`;
   if (port !== SHELL_STATIC_PORT) {
     logLine(`shell-ui static port ${SHELL_STATIC_PORT} in use, using ${port}`);
   }

@@ -7,13 +7,13 @@
 
 `freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: `anima service` starts the Bun Hub（Hub RPC REST/WS `/hub/rpc/v1` + MCP `/mcp` + engine）；UI 由 `src/app/shell/desktop` / `src/app/shell/mobile` bundled 提供。
 
-| Capability     | Highlights                                                                                                                                                                                     |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md)                                            |
-| Tools          | Local / MCP / ACP flat registration; MCP client `src/capabilities/mcp-client/`、MCP server `/mcp` `src/capabilities/mcp-server/`；tools `src/capabilities/tools/`、ACP `src/capabilities/acp/` |
-| Secrets        | Vault (User/Agent libraries); config `vault()` / `env()`; LLM **sees metadata, not values**                                                                                                    |
-| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                                         |
-| Code layout    | 产品代码在 `src/`（`features/`、`app/shell/`、`platform/` 等）— 见 [`docs/concepts/repository-topology.md`](docs/concepts/repository-topology.md)                                              |
+| Capability     | Highlights                                                                                                                                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md)                                                                 |
+| Tools          | Local / MCP / ACP flat registration; MCP client `src/capabilities/mcp-client/`、MCP server `/mcp` `src/capabilities/mcp-server/`；tools `src/capabilities/tools/`、ACP `src/capabilities/acp/`                      |
+| Secrets        | Vault (User/Agent libraries); config `vault()` / `env()`; LLM **sees metadata, not values**                                                                                                                         |
+| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                                                              |
+| Code layout    | 产品代码在 `src/`（`features/`、`app/shell/`、`platform/` 等）— 见 [`docs/concepts/repository-topology.md`](docs/concepts/repository-topology.md)；Desktop/Mobile 安装包内嵌 `web/dist`，浏览器/PWA 用 Hub `/web/*` |
 
 **Code is the source of truth**; do not invent tool names, endpoints, or directories from docs alone. Read source or `grep` when needed.
 

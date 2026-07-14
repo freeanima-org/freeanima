@@ -3,12 +3,14 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=android-env.sh
 source "$ROOT/scripts/android-env.sh"
-cd "$ROOT"
+REPO_ROOT="$(cd "$ROOT/../../../.." && pwd)"
+cd "$REPO_ROOT"
 if [ "${MOBILE_DEBUG:-}" = "1" ]; then
-  MOBILE_DEBUG=1 bunx vite build
+  bun run build:mobile:debug
 else
-  bunx vite build
+  bun run build:mobile
 fi
+cd "$ROOT"
 bunx cap sync android
 
 echo ">>> Gradle assembleDebug（首次可能需数分钟）..."

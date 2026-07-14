@@ -3,8 +3,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=android-env.sh
 source "$ROOT/scripts/android-env.sh"
+REPO_ROOT="$(cd "$ROOT/../../../.." && pwd)"
+cd "$REPO_ROOT"
+bun run build:mobile
 cd "$ROOT"
-bunx vite build
 bunx cap sync android
 cd android
 ./gradlew assembleDebug

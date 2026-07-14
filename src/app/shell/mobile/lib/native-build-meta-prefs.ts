@@ -14,13 +14,13 @@ function readNativeBuildFromDefine(): ComponentBuildMeta | undefined {
   );
 }
 
-/** 写入 Preferences，供 Hub 远程 UI 桥接读取 */
+/** 写入 Preferences，供本地 SPA / About 读取 */
 export async function persistNativeBuildMeta(meta: ComponentBuildMeta): Promise<void> {
   if (!isCapacitorNativePlatform()) return;
   await prefsSet({ key: NATIVE_BUILD_META_KEY, value: JSON.stringify(meta) });
 }
 
-/** bootstrap 薄壳（含 Vite define）启动时写入 Preferences，供 Hub 远程 UI 桥接读取 */
+/** 壳启动时写入 Preferences，供本地 SPA / About 读取原生构建元数据 */
 export async function persistNativeBuildMetaFromDefine(): Promise<void> {
   const meta = readNativeBuildFromDefine();
   if (!meta) return;
@@ -38,7 +38,7 @@ async function readNativeBuildFromPrefs(): Promise<ComponentBuildMeta | undefine
   }
 }
 
-/** Capacitor 本地 Web 服务器仍托管 www 静态资源，远程 Hub 页可回读 APK 内 meta */
+/** Capacitor `www/` 根托管 native-build-meta.json，供本地 SPA / About 读取 */
 async function readNativeBuildFromBundledAsset(): Promise<ComponentBuildMeta | undefined> {
   const raw = await readCapacitorBundledJson("/native-build-meta.json");
   return raw != null ? readNativeBuildMetaFromDefine(raw) : undefined;

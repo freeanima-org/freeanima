@@ -19,14 +19,14 @@ app → platform → capabilities → runtime → core → kernel
 | `features/`       | `@freeanima/features/{slug}/`             | 产品功能纵向模块（plugin + hub + protocol + ui + domain） |
 | `src/satellites/` | `@freeanima/satellites/companion/`        | **仅** SAP attach 型卫星壳（`companion`）                 |
 
-| Layer            | Directory           | Package               | Responsibility                                                                    |
-| ---------------- | ------------------- | --------------------- | --------------------------------------------------------------------------------- |
-| **kernel**       | `src/kernel/`       | `@freeanima/kernel`   | Hook, EventBus, logging                                                           |
-| **core**         | `src/core/`         | `@freeanima/core`     | PG schema, `db/pg` repos, config, tool/LLM/compress/hooks                         |
-| **runtime**      | `runtime/`          | `@freeanima/runtime`  | Conversation, turn, loop, pipeline, Engine factory                                |
-| **capabilities** | `src/capabilities/` | `capabilities-*` (8)  | acp, identity, llm-openai, mcp-client, mcp-server, memory, satellite, tools       |
-| **platform**     | `src/platform/`     | `@freeanima/platform` | Composition root, ports, connectors, CLI wiring, feature registry                 |
-| **app**          | `app/`              | CLI / shells          | CLI、desktop/mobile **薄壳**；UI SSOT 为 `src/app/shell/web/dist`（Hub `/web/*`） |
+| Layer            | Directory           | Package               | Responsibility                                                                     |
+| ---------------- | ------------------- | --------------------- | ---------------------------------------------------------------------------------- |
+| **kernel**       | `src/kernel/`       | `@freeanima/kernel`   | Hook, EventBus, logging                                                            |
+| **core**         | `src/core/`         | `@freeanima/core`     | PG schema, `db/pg` repos, config, tool/LLM/compress/hooks                          |
+| **runtime**      | `runtime/`          | `@freeanima/runtime`  | Conversation, turn, loop, pipeline, Engine factory                                 |
+| **capabilities** | `src/capabilities/` | `capabilities-*` (8)  | acp, identity, llm-openai, mcp-client, mcp-server, memory, satellite, tools        |
+| **platform**     | `src/platform/`     | `@freeanima/platform` | Composition root, ports, connectors, CLI wiring, feature registry                  |
+| **app**          | `app/`              | CLI / shells          | CLI、desktop/mobile 壳（安装包内嵌 `web/dist`）；浏览器/PWA 仍由 Hub `/web/*` 托管 |
 
 ### Console（hub-rest）
 

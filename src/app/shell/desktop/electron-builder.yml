@@ -13,7 +13,7 @@ directories:
 files:
   - electron-dist/**/*
   - vendor/companion/**/*
-  # remote UI 默认不打包 shell-ui；DESKTOP_UI_MODE=bundled 时包含 vendor/shell-ui/**/*
+  # 主窗口 UI：web/dist 打入 vendor/shell-ui（默认本地加载）
   - vendor/shell-ui/**/*
   - package.json
   - electron/icons/**/*
