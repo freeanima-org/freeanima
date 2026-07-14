@@ -27,30 +27,24 @@ describe("schedule embedding", () => {
     resetPendingEmbeddingsForTest();
   });
 
-  it("schedules embed immediately per job", async () => {
+  it("batches rapid schedules into one flush", async () => {
     scheduleMessageEmbedding("m1", "alpha");
     scheduleMessageEmbedding("m2", "beta");
     await awaitPendingEmbeddingsForTest();
 
-    expect(embedAndStoreJobsMock).toHaveBeenCalledTimes(2);
-    const ids = embedAndStoreJobsMock.mock.calls.map((call) => {
-      const jobs = call![0] as EmbeddingPendingJob[];
-      return jobs[0]!.id;
-    });
-    expect(ids.toSorted()).toEqual(["m1", "m2"]);
+    expect(embedAndStoreJobsMock).toHaveBeenCalledTimes(1);
+    const jobs = embedAndStoreJobsMock.mock.calls[0]![0] as EmbeddingPendingJob[];
+    expect(jobs.map((j) => j.id).toSorted()).toEqual(["m1", "m2"]);
   });
 
-  it("rapid writes for same id each trigger embed", async () => {
+  it("rapid writes for same id keep all contents in one batch", async () => {
     scheduleSemanticMemoryEmbedding("s1", "old");
     scheduleSemanticMemoryEmbedding("s1", "new");
     await awaitPendingEmbeddingsForTest();
 
-    expect(embedAndStoreJobsMock).toHaveBeenCalledTimes(2);
-    const contents = embedAndStoreJobsMock.mock.calls.map((call) => {
-      const jobs = call![0] as EmbeddingPendingJob[];
-      return jobs[0]!.content;
-    });
-    expect(contents).toEqual(["old", "new"]);
+    expect(embedAndStoreJobsMock).toHaveBeenCalledTimes(1);
+    const jobs = embedAndStoreJobsMock.mock.calls[0]![0] as EmbeddingPendingJob[];
+    expect(jobs.map((j) => j.content)).toEqual(["old", "new"]);
   });
 
   it("blank content not scheduled", async () => {
@@ -64,11 +58,11 @@ describe("schedule embedding", () => {
     scheduleAutobiographicalMemoryEmbedding("ab-1", "title\nbody");
     await awaitPendingEmbeddingsForTest();
 
-    expect(embedAndStoreJobsMock).toHaveBeenCalledTimes(2);
-    const kinds = embedAndStoreJobsMock.mock.calls.map((call) => {
-      const jobs = call![0] as EmbeddingPendingJob[];
-      return jobs[0]!.kind;
-    });
-    expect(kinds.toSorted()).toEqual(["autobiographical_memory", "limbic_memory"]);
+    expect(embedAndStoreJobsMock).toHaveBeenCalledTimes(1);
+    const jobs = embedAndStoreJobsMock.mock.calls[0]![0] as EmbeddingPendingJob[];
+    expect(jobs.map((j) => j.kind).toSorted()).toEqual([
+      "autobiographical_memory",
+      "limbic_memory",
+    ]);
   });
 });

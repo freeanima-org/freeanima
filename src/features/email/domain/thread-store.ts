@@ -74,17 +74,16 @@ export async function findEmailThreadByKey(
   const result = await searchEntities({
     world_id: worldId,
     primary_component: EMAIL_THREAD_COMPONENT,
-    filters: { account_id: accountId },
-    limit: 500,
+    filters: { account_id: accountId, thread_key: threadKey },
+    limit: 1,
     mode: "filter_only",
+    include_count: false,
   });
-  for (const row of result.results) {
-    const parsed = asEmailThread(row);
-    if (parsed && parsed.thread_key === threadKey) {
-      return toThreadRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
-    }
-  }
-  return null;
+  const row = result.results[0];
+  if (!row) return null;
+  const parsed = asEmailThread(row);
+  if (!parsed) return null;
+  return toThreadRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
 }
 
 export async function upsertEmailThread(input: EmailThreadUpsertInput): Promise<EmailThreadRow> {

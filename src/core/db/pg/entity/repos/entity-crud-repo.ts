@@ -62,7 +62,7 @@ export async function createEntity(input: EntityCreateInput): Promise<EntityRow>
       created_at: now,
       updated_at: now,
     })
-    .returning();
+    .returning(entityRowSelectColumns);
   if (!row) throw new Error("entity insert failed");
   scheduleEntityEmbedding(row.id, indexText);
   return mapRow(row);
@@ -100,7 +100,7 @@ export async function createEntityAtId(input: EntityCreateAtIdInput): Promise<En
       created_at: now,
       updated_at: now,
     })
-    .returning();
+    .returning(entityRowSelectColumns);
   if (!row) throw new Error("entity insert at id failed");
   await db
     .select({
@@ -169,7 +169,11 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
   }
 
   const db = getDb();
-  const [row] = await db.update(entities).set(patch).where(eq(entities.id, input.id)).returning();
+  const [row] = await db
+    .update(entities)
+    .set(patch)
+    .where(eq(entities.id, input.id))
+    .returning(entityRowSelectColumns);
   if (textChanged && row) {
     scheduleEntityEmbedding(row.id, indexText);
   }
@@ -183,6 +187,59 @@ export async function deleteEntity(id: number): Promise<boolean> {
     .where(eq(entities.id, id))
     .returning({ id: entities.id });
   return result.length > 0;
+}
+
+/** 按 list_id 批量删除 task_item（分页直至清空，避免 500 截断） */
+export async function deleteTaskItemsByListId(
+  world_id: number,
+  list_id: number,
+  page_size = 200,
+): Promise<number> {
+  const db = getDb();
+  const pageSize = Math.max(1, Math.min(500, page_size));
+  let deleted = 0;
+  while (true) {
+    const rows = await db
+      .delete(entities)
+      .where(
+        sql`${entities.id} IN (
+          SELECT id FROM ${entities}
+          WHERE ${entities.world_id} = ${world_id}
+            AND ${entities.primary_component} = 'task_item'
+            AND ${entities.body}->>'list_id' = ${String(list_id)}
+          ORDER BY ${entities.id}
+          LIMIT ${pageSize}
+        )`,
+      )
+      .returning({ id: entities.id });
+    deleted += rows.length;
+    if (rows.length < pageSize) break;
+  }
+  return deleted;
+}
+
+/** 清除所有引用某 milestone 的 task_item.milestone_id */
+export async function clearTaskItemMilestoneId(
+  world_id: number,
+  milestone_id: number,
+): Promise<number> {
+  const db = getDb();
+  const now = new Date();
+  const rows = await db
+    .update(entities)
+    .set({
+      body: sql`${entities.body} || '{"milestone_id": null}'::jsonb`,
+      updated_at: now,
+    })
+    .where(
+      and(
+        eq(entities.world_id, world_id),
+        eq(entities.primary_component, "task_item"),
+        sql`${entities.body}->>'milestone_id' = ${String(milestone_id)}`,
+      ),
+    )
+    .returning({ id: entities.id });
+  return rows.length;
 }
 
 function buildListConditions(opts?: Omit<EntityListOpts, "offset" | "limit">) {

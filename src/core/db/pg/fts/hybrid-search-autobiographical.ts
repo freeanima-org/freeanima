@@ -30,12 +30,14 @@ export async function hybridSearchAutobiographicalMemory(
 
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
   const status = opts?.status ?? "active";
-  const queryEmbedding = await embedQueryText(q);
 
-  const ftsHits = await searchAutobiographicalMemoryFtsRaw(q, {
-    limit: candidateLimit(limit, 0),
-    status,
-  });
+  const [queryEmbedding, ftsHits] = await Promise.all([
+    embedQueryText(q),
+    searchAutobiographicalMemoryFtsRaw(q, {
+      limit: candidateLimit(limit, 0),
+      status,
+    }),
+  ]);
   const pool = candidateLimit(limit, ftsHits.length);
   const [trgmHits, vectorHits] = await Promise.all([
     searchAutobiographicalMemoryTrgm(q, { limit: pool, status }),

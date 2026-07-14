@@ -302,6 +302,9 @@ function buildEmailThreadBodyConditions(
   if (filters.account_id != null) {
     conditions.push(sql`${entities.body}->>'account_id' = ${String(filters.account_id)}`);
   }
+  if (filters.thread_key) {
+    conditions.push(sql`${entities.body}->>'thread_key' = ${filters.thread_key}`);
+  }
   if (filters.tags?.length) {
     for (const tag of filters.tags) {
       conditions.push(sql`${entities.body}->'tags' ? ${tag}`);
@@ -322,6 +325,12 @@ function buildEmailMessageBodyConditions(
   }
   if (filters.thread_id != null) {
     conditions.push(sql`${entities.body}->>'thread_id' = ${String(filters.thread_id)}`);
+  }
+  if (filters.imap_uid != null) {
+    conditions.push(sql`${entities.body}->>'imap_uid' = ${String(filters.imap_uid)}`);
+  }
+  if (filters.imap_mailbox) {
+    conditions.push(sql`${entities.body}->>'imap_mailbox' = ${filters.imap_mailbox}`);
   }
   if (filters.unread != null) {
     conditions.push(

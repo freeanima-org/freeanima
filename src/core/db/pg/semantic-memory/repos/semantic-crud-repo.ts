@@ -1,4 +1,4 @@
-import { desc, eq, sql as drizzleSql, and, arrayOverlaps } from "drizzle-orm";
+import { desc, eq, sql as drizzleSql, and, arrayOverlaps, getColumns } from "drizzle-orm";
 import {
   normalizeSemanticMemoryType,
   semanticMemory,
@@ -19,6 +19,18 @@ import { scheduleSemanticMemoryEmbedding } from "../../embedding/schedule.ts";
 import { clearSemanticMemoryEmbedding } from "../../embedding/store.ts";
 import { getDb } from "../../client.ts";
 import { nextSemanticMemoryId } from "./id-gen.ts";
+
+/** 读路径投影：剔除 embedding / FTS 附属列 */
+function semanticMemorySelectColumns() {
+  const cols = getColumns(semanticMemory);
+  const {
+    content_embedding: _embedding,
+    fts_segmented: _ftsSeg,
+    content_fts: _fts,
+    ...rest
+  } = cols;
+  return rest;
+}
 
 function normalizeStatus(raw: string | undefined | null): string {
   const parsed = semanticMemoryStatusSchema.safeParse(String(raw ?? "active").trim());
@@ -147,30 +159,32 @@ export async function countSemanticMemory(): Promise<number> {
 export async function listResidentSemanticMemory(topN = 20): Promise<SemanticMemoryRow[]> {
   const limit = Math.max(1, Math.min(100, topN));
   const db = getDb();
+  const columns = semanticMemorySelectColumns();
 
-  const allPinnedRows = await db
-    .select()
+  const pinnedRows = await db
+    .select(columns)
     .from(semanticMemory)
     .where(and(eq(semanticMemory.status, "active"), eq(semanticMemory.pinned, true)))
-    .orderBy(desc(semanticMemory.updated_at));
+    .orderBy(desc(semanticMemory.updated_at))
+    .limit(RESIDENT_PINNED_MAX + 1);
 
-  if (allPinnedRows.length > RESIDENT_PINNED_MAX) {
-    const omitted = allPinnedRows.slice(RESIDENT_PINNED_MAX);
+  if (pinnedRows.length > RESIDENT_PINNED_MAX) {
+    const omitted = pinnedRows.slice(RESIDENT_PINNED_MAX);
     log.warn("resident pinned count exceeds max; truncating", {
-      pinned_count: allPinnedRows.length,
+      pinned_count: pinnedRows.length,
       pinned_max: RESIDENT_PINNED_MAX,
       omitted_ids: omitted.map((r) => r.id),
     });
   }
 
-  const pinnedRows = allPinnedRows.slice(0, RESIDENT_PINNED_MAX);
-  const pinnedIds = new Set(pinnedRows.map((r) => r.id));
-  const remaining = Math.max(0, limit - pinnedRows.length);
+  const pinnedLimited = pinnedRows.slice(0, RESIDENT_PINNED_MAX);
+  const pinnedIds = new Set(pinnedLimited.map((r) => r.id));
+  const remaining = Math.max(0, limit - pinnedLimited.length);
 
-  let topReferenced = pinnedRows;
+  let topReferenced = pinnedLimited;
   if (remaining > 0) {
     const candidates = await db
-      .select()
+      .select(columns)
       .from(semanticMemory)
       .where(
         and(
@@ -180,12 +194,11 @@ export async function listResidentSemanticMemory(topN = 20): Promise<SemanticMem
         ),
       )
       .orderBy(desc(semanticMemory.reference_count), desc(semanticMemory.updated_at))
-      .limit(remaining + pinnedIds.size);
-    const filtered = candidates.filter((r) => !pinnedIds.has(r.id)).slice(0, remaining);
-    topReferenced = [...pinnedRows, ...filtered];
+      .limit(remaining);
+    topReferenced = [...pinnedLimited, ...candidates.filter((r) => !pinnedIds.has(r.id))];
   }
 
-  return topReferenced;
+  return topReferenced as SemanticMemoryRow[];
 }
 
 export async function listAllSemanticMemory(): Promise<SemanticMemoryRow[]> {
@@ -197,11 +210,11 @@ export async function listAllSemanticMemory(): Promise<SemanticMemoryRow[]> {
 export async function listActiveSemanticMemory(): Promise<SemanticMemoryRow[]> {
   const db = getDb();
   const rows = await db
-    .select()
+    .select(semanticMemorySelectColumns())
     .from(semanticMemory)
     .where(eq(semanticMemory.status, "active"))
     .orderBy(desc(semanticMemory.updated_at));
-  return rows;
+  return rows as SemanticMemoryRow[];
 }
 
 export async function listSemanticMemoryBySourceSessions(

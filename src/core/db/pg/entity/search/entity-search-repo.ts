@@ -1,7 +1,11 @@
 import { getActiveRuntimeConfig, getFtsTrgmFallbackWhenHitsLt } from "@freeanima/core/config";
 import { entityDocKey, omitUndefined, rrfMerge } from "@freeanima/core/util";
 import type { EntitySearchHit, EntitySearchOpts, EntitySearchResult } from "../types.ts";
-import { entityRowSelectColumns, mapEntityRow } from "@freeanima/core/db/schema/entity";
+import {
+  entityListSelectColumns,
+  entityRowSelectColumns,
+  mapEntityRow,
+} from "@freeanima/core/db/schema/entity";
 import { entities, TASK_ITEM_COMPONENT } from "@freeanima/core/db/schema";
 import { and, asc, count, desc, sql } from "drizzle-orm";
 
@@ -52,8 +56,9 @@ async function searchFilterOnly(opts: EntitySearchOpts): Promise<EntitySearchHit
   }
 
   const orderExprs = defaultOrderBy(opts.primary_component, { hasQuery: Boolean(q) });
+  const columns = opts.projection === "list" ? entityListSelectColumns : entityRowSelectColumns;
   const rows = await db
-    .select(entityRowSelectColumns)
+    .select(columns)
     .from(entities)
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(...orderExprs)
@@ -79,11 +84,13 @@ async function searchHybrid(opts: EntitySearchOpts): Promise<EntitySearchHit[]> 
   const fetchLimit = limit + offset;
   const searchOpts = { ...opts, query: q };
 
-  const queryEmbedding = await embedQueryText(q);
-  const ftsHits = await searchEntitiesFtsRaw(q, {
-    ...searchOpts,
-    limit: candidateLimit(fetchLimit, 0),
-  });
+  const [queryEmbedding, ftsHits] = await Promise.all([
+    embedQueryText(q),
+    searchEntitiesFtsRaw(q, {
+      ...searchOpts,
+      limit: candidateLimit(fetchLimit, 0),
+    }),
+  ]);
   const pool = candidateLimit(fetchLimit, ftsHits.length);
 
   const [trgmHits, vectorHits] = await Promise.all([
@@ -133,8 +140,9 @@ export async function searchEntities(opts: EntitySearchOpts = {}): Promise<Entit
         ? await searchHybrid({ ...opts, limit, offset })
         : await searchFilterOnly({ ...opts, limit, offset });
 
+    // hybrid COUNT 与 RRF 语义不一致且偏贵：默认用本页条数；调用方显式 include_count 时再估
     const total =
-      opts.include_count === false
+      opts.include_count === false || (mode === "hybrid" && opts.include_count !== true)
         ? results.length
         : await countEntitiesSearch(omitUndefined({ ...opts, query: q || undefined }));
 
@@ -158,7 +166,8 @@ export async function countEntitiesSearch(
   const where = buildEntitySearchWhere(opts);
   const db = getDb();
   const conditions = where ? [where] : [];
-  if (q && opts.mode !== "hybrid") {
+  if (q) {
+    // hybrid 也用文本谓词近似（FTS∪ILIKE），避免「仅结构化过滤」撑大 total
     conditions.push(buildEntityTextMatchCondition(q));
   }
   const [row] = await db

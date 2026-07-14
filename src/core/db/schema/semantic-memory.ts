@@ -65,5 +65,8 @@ export const semanticMemory = pgTable(
     index("idx_semantic_memory_pinned").on(t.pinned),
     index("idx_semantic_memory_source_conversations").using("gin", t.source_conversations),
     index("idx_semantic_memory_status").on(t.status),
+    index("idx_semantic_memory_status_reference_count").on(t.status, t.reference_count.desc()),
+    index("idx_semantic_memory_status_pinned_updated").on(t.status, t.pinned, t.updated_at.desc()),
+    // HNSW / gin_trgm：见 migrations 追加 SQL（与 messages 同源 opclass）
   ],
 );

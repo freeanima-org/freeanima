@@ -48,6 +48,7 @@ export function parseEmailAccountSearchFilters(
 export const emailThreadSearchFiltersSchema = z
   .object({
     account_id: z.number().int().positive().optional(),
+    thread_key: z.string().min(1).optional(),
     tags: z.array(z.string()).optional(),
     has_unread: z.boolean().optional(),
   })
@@ -70,6 +71,8 @@ export const emailMessageSearchFiltersSchema = z
   .object({
     account_id: z.number().int().positive().optional(),
     thread_id: z.number().int().positive().optional(),
+    imap_uid: z.number().int().positive().optional(),
+    imap_mailbox: z.string().min(1).optional(),
     unread: z.boolean().optional(),
     direction: emailDirectionSchema.optional(),
     tags: z.array(z.string()).optional(),

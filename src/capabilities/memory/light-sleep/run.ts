@@ -97,7 +97,7 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
     truncated_sessions: dialogue.truncatedConversations,
   });
 
-  const semanticMessages = await buildLightSleepUserMessages(conversationIds);
+  const semanticMessages = await buildLightSleepUserMessages(conversationIds, blocks);
   const stageSemantic = await runLightSleepEngine({
     systemPrompt,
     userMessages: semanticMessages,
@@ -111,7 +111,7 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
     semantic_memory_ids: stageSemantic.semantic_memory_ids,
   });
 
-  const limbicMessages = await buildLimbicUserMessages(conversationIds);
+  const limbicMessages = await buildLimbicUserMessages(conversationIds, blocks);
   const stageLimbic = await runLightSleepEngine({
     systemPrompt,
     userMessages: limbicMessages,
@@ -129,6 +129,7 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
     conversationIds,
     stageSemantic.semantic_memory_ids,
     stageLimbic.limbic_memory_ids,
+    blocks,
   );
   const stageAutobiography = await runAutobiographyEngine({
     systemPrompt,

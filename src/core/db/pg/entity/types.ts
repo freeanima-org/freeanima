@@ -62,6 +62,10 @@ export type EntitySearchOpts = {
    *（适合 listTaskItems 等不读 total 的调用方）。
    */
   include_count?: boolean;
+  /**
+   * `list`：不拉 content（email/vault 列表）；默认 `full`。
+   */
+  projection?: "full" | "list";
 };
 
 export type EntitySearchHit = EntityRow & {

@@ -5,7 +5,7 @@ import type { LimbicMemoryRow } from "@freeanima/core/db/schema/rows";
 import { CST_OFFSET_MS } from "@freeanima/core/util";
 import {
   listConversationIdsUpdatedBetween,
-  listMessages,
+  listRecentMessages,
 } from "@freeanima/core/db/pg/conversation";
 import { listLimbicMemoryByCreatedBetween } from "@freeanima/core/db/pg/limbic-memory";
 
@@ -18,6 +18,8 @@ export const DREAM_LIMBIC_CREATED_GRACE_HOURS = 6;
 export const DREAM_EPISODIC_TARGET = 5;
 export const DREAM_EPISODIC_MAX_CHARS = 4000;
 export const DREAM_LLM_TEMPERATURE = 1.1;
+/** 每会话仅采近期消息进抽样池，避免 N×全量 listMessages */
+const DREAM_PER_SESSION_MESSAGE_CAP = 40;
 
 export type DreamGatherInput = {
   day: string;
@@ -61,7 +63,9 @@ function shuffleInPlace<T>(items: T[]): void {
 async function sampleEpisodicSnippets(conversationIds: string[]): Promise<DreamEpisodicSnippet[]> {
   const pool: DreamEpisodicSnippet[] = [];
   for (const conversationId of conversationIds) {
-    const messages = filterRecallableMessages(await listMessages(conversationId));
+    const messages = filterRecallableMessages(
+      await listRecentMessages(conversationId, DREAM_PER_SESSION_MESSAGE_CAP),
+    );
     for (const msg of messages) {
       pool.push({
         conversation_id: conversationId,

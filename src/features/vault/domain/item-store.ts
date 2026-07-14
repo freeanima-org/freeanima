@@ -107,6 +107,8 @@ export async function listVaultItems(
     ...(Object.keys(filters).length > 0 ? { filters } : {}),
     limit: opts.limit ?? 500,
     mode: "filter_only",
+    include_count: false,
+    ...(opts.include_secrets ? {} : { projection: "list" as const }),
   });
   return result.results
     .map((row) => {

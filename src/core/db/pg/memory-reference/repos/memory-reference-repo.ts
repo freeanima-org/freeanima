@@ -1,4 +1,4 @@
-import { and, eq, ne, sql as drizzleSql } from "drizzle-orm";
+import { and, eq, inArray, ne, sql as drizzleSql } from "drizzle-orm";
 import {
   memoryReferences,
   messages,
@@ -14,71 +14,74 @@ import {
 
 import { getDb } from "../../client.ts";
 
+const REF_INSERT_CHUNK = 100;
+
 export async function recordMessageReferences(
   input: RecordMessageReferencesInput,
 ): Promise<string[]> {
-  const semantic_memory_ids = parseMemoryReferenceMarkers(input.content);
+  const semantic_memory_ids = [...new Set(parseMemoryReferenceMarkers(input.content))];
   if (semantic_memory_ids.length === 0) return [];
   if (input.skip_reference_count) return [];
 
   const created_at = input.created_at ? new Date(input.created_at) : new Date(formatCstIso());
   const db = getDb();
-  const recorded: string[] = [];
 
-  for (const semantic_memory_id of semantic_memory_ids) {
-    const exists = await db
-      .select({ id: semanticMemory.id })
-      .from(semanticMemory)
-      .where(eq(semanticMemory.id, semantic_memory_id))
-      .limit(1);
-    if (exists.length === 0) continue;
+  const existingRows = await db
+    .select({ id: semanticMemory.id })
+    .from(semanticMemory)
+    .where(inArray(semanticMemory.id, semantic_memory_ids));
+  const existingIds = existingRows.map((r) => r.id);
+  if (existingIds.length === 0) return [];
 
-    const inserted = await db
-      .insert(memoryReferences)
-      .values({
+  const inserted = await db
+    .insert(memoryReferences)
+    .values(
+      existingIds.map((semantic_memory_id) => ({
         message_id: input.message_id,
         semantic_memory_id,
         conversation_id: input.conversation_id,
         created_at,
-      })
-      .onConflictDoNothing({
-        target: [memoryReferences.message_id, memoryReferences.semantic_memory_id],
-      })
-      .returning({ id: memoryReferences.id });
-    if (inserted.length === 0) continue;
+      })),
+    )
+    .onConflictDoNothing({
+      target: [memoryReferences.message_id, memoryReferences.semantic_memory_id],
+    })
+    .returning({ semantic_memory_id: memoryReferences.semantic_memory_id });
 
-    recorded.push(semantic_memory_id);
+  if (inserted.length === 0) return [];
 
-    const prior = await db
-      .select({ id: memoryReferences.id })
-      .from(memoryReferences)
-      .where(
-        and(
-          eq(memoryReferences.conversation_id, input.conversation_id),
-          eq(memoryReferences.semantic_memory_id, semantic_memory_id),
-          ne(memoryReferences.message_id, input.message_id),
-        ),
-      )
-      .limit(1);
-    if (prior.length > 0) continue;
+  const recordedIds = inserted.map((r) => r.semantic_memory_id);
 
-    const weight = memoryReferenceWeight(created_at);
-    await db
-      .update(semanticMemory)
-      .set({
-        reference_count: drizzleSql`${semanticMemory.reference_count} + ${weight}`,
-        updated_at: new Date(formatCstIso()),
-      })
-      .where(eq(semanticMemory.id, semantic_memory_id));
-  }
+  const priorRows = await db
+    .select({ semantic_memory_id: memoryReferences.semantic_memory_id })
+    .from(memoryReferences)
+    .where(
+      and(
+        eq(memoryReferences.conversation_id, input.conversation_id),
+        inArray(memoryReferences.semantic_memory_id, recordedIds),
+        ne(memoryReferences.message_id, input.message_id),
+      ),
+    );
+  const hasPrior = new Set(priorRows.map((r) => r.semantic_memory_id));
+  const firstHits = recordedIds.filter((id) => !hasPrior.has(id));
+  if (firstHits.length === 0) return recordedIds;
 
-  return recorded;
+  const weight = memoryReferenceWeight(created_at);
+  const now = new Date(formatCstIso());
+  await db
+    .update(semanticMemory)
+    .set({
+      reference_count: drizzleSql`${semanticMemory.reference_count} + ${weight}`,
+      updated_at: now,
+    })
+    .where(inArray(semanticMemory.id, firstHits));
+
+  return recordedIds;
 }
 
 /** Rescan `[[f-xxx]]` in message bodies, rebuild memory_references (full calibration) */
 export async function rebuildMemoryReferencesFromMessages(): Promise<number> {
   const db = getDb();
-  await db.delete(memoryReferences);
 
   const rows = await db
     .select({
@@ -97,77 +100,97 @@ export async function rebuildMemoryReferencesFromMessages(): Promise<number> {
       ),
     );
 
-  let inserted = 0;
+  type PendingRef = {
+    message_id: string;
+    semantic_memory_id: string;
+    conversation_id: string;
+    created_at: Date;
+  };
+  const pending: PendingRef[] = [];
+  const markerIds = new Set<string>();
+
   for (const row of rows) {
     const semantic_memory_ids = parseMemoryReferenceMarkers(row.content);
     if (semantic_memory_ids.length === 0) continue;
-
     const created_at = row.timestamp ? new Date(row.timestamp) : new Date(formatCstIso());
     for (const semantic_memory_id of semantic_memory_ids) {
-      const exists = await db
-        .select({ id: semanticMemory.id })
-        .from(semanticMemory)
-        .where(eq(semanticMemory.id, semantic_memory_id))
-        .limit(1);
-      if (exists.length === 0) continue;
-
-      const refs = await db
-        .insert(memoryReferences)
-        .values({
-          message_id: row.id,
-          semantic_memory_id,
-          conversation_id: row.conversation_id,
-          created_at,
-        })
-        .onConflictDoNothing({
-          target: [memoryReferences.message_id, memoryReferences.semantic_memory_id],
-        })
-        .returning({ id: memoryReferences.id });
-      if (refs.length > 0) inserted += 1;
+      markerIds.add(semantic_memory_id);
+      pending.push({
+        message_id: row.id,
+        semantic_memory_id,
+        conversation_id: row.conversation_id,
+        created_at,
+      });
     }
   }
 
-  return inserted;
+  const validIds = new Set<string>();
+  if (markerIds.size > 0) {
+    const idList = [...markerIds];
+    for (let i = 0; i < idList.length; i += REF_INSERT_CHUNK) {
+      const chunk = idList.slice(i, i + REF_INSERT_CHUNK);
+      const existing = await db
+        .select({ id: semanticMemory.id })
+        .from(semanticMemory)
+        .where(inArray(semanticMemory.id, chunk));
+      for (const row of existing) validIds.add(row.id);
+    }
+  }
+
+  const toInsert = pending.filter((p) => validIds.has(p.semantic_memory_id));
+
+  // 差分重建：先落新表数据前清空；短事务降低与在线写窗口的重叠
+  await db.transaction(async (tx) => {
+    await tx.delete(memoryReferences);
+    for (let i = 0; i < toInsert.length; i += REF_INSERT_CHUNK) {
+      const chunk = toInsert.slice(i, i + REF_INSERT_CHUNK);
+      if (chunk.length === 0) continue;
+      await tx
+        .insert(memoryReferences)
+        .values(chunk)
+        .onConflictDoNothing({
+          target: [memoryReferences.message_id, memoryReferences.semantic_memory_id],
+        });
+    }
+  });
+
+  return toInsert.length;
 }
 
 export async function syncAllReferenceCounts(): Promise<{ updated: number; rebuilt: number }> {
   const rebuilt = await rebuildMemoryReferencesFromMessages();
   const db = getDb();
-  await db.update(semanticMemory).set({ reference_count: 0 });
+  const now = new Date(formatCstIso());
 
-  const rows = await db.select({
-    semantic_memory_id: drizzleSql<string>`semantic_memory_id`,
-    weightedCount: drizzleSql<number>`weighted_count`,
-  }).from(drizzleSql`(
+  // 单语句：全表 reference_count 按 dedupe+衰减 CTE 写回；无命中者置 0
+  await db.update(semanticMemory).set({
+    reference_count: drizzleSql`COALESCE((
       WITH deduped AS (
         SELECT DISTINCT ON (conversation_id, semantic_memory_id)
           conversation_id,
           semantic_memory_id,
           created_at
         FROM memory_references
+        WHERE semantic_memory_id = ${semanticMemory.id}
         ORDER BY conversation_id, semantic_memory_id, created_at DESC
       )
-      SELECT
-        semantic_memory_id,
-        SUM(
-          CASE
-            WHEN created_at >= NOW() - INTERVAL '30 days' THEN 2.0
-            ELSE 1.0
-          END
-        )::float8 AS weighted_count
+      SELECT SUM(
+        CASE
+          WHEN created_at >= NOW() - INTERVAL '30 days' THEN 2.0
+          ELSE 1.0
+        END
+      )::float8
       FROM deduped
-      GROUP BY semantic_memory_id
-    ) AS ref_counts`);
+    ), 0)`,
+    updated_at: now,
+  });
 
-  const now = new Date(formatCstIso());
-  for (const row of rows) {
-    await db
-      .update(semanticMemory)
-      .set({ reference_count: row.weightedCount, updated_at: now })
-      .where(eq(semanticMemory.id, row.semantic_memory_id));
-  }
+  const countRows = await db
+    .select({ count: drizzleSql<number>`count(*)::int` })
+    .from(semanticMemory)
+    .where(drizzleSql`${semanticMemory.reference_count} > 0`);
 
-  return { updated: rows.length, rebuilt };
+  return { updated: Number(countRows[0]?.count ?? 0), rebuilt };
 }
 
 export async function countReferencesBySemanticMemory(semantic_memory_id: string): Promise<number> {

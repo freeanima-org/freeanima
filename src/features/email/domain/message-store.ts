@@ -60,17 +60,16 @@ export async function findEmailMessageByImapUid(
   const result = await searchEntities({
     world_id: worldId,
     primary_component: EMAIL_MESSAGE_COMPONENT,
-    filters: { account_id: accountId },
-    limit: 500,
+    filters: { account_id: accountId, imap_uid: imapUid, imap_mailbox: mailbox },
+    limit: 1,
     mode: "filter_only",
+    include_count: false,
   });
-  for (const row of result.results) {
-    const parsed = asEmailMessage(row);
-    if (parsed && parsed.imap_uid === imapUid && (parsed.imap_mailbox ?? "INBOX") === mailbox) {
-      return toMessageRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
-    }
-  }
-  return null;
+  const row = result.results[0];
+  if (!row) return null;
+  const parsed = asEmailMessage(row);
+  if (!parsed) return null;
+  return toMessageRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
 }
 
 export async function upsertEmailMessage(input: EmailMessageUpsertInput): Promise<EmailMessageRow> {
@@ -156,6 +155,8 @@ export async function listEmailMessages(
     limit: opts.limit ?? 200,
     offset: opts.offset ?? 0,
     mode: "filter_only",
+    include_count: false,
+    projection: "list",
   });
 
   return result.results
