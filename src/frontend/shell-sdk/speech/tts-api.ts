@@ -1,6 +1,6 @@
 import { buildHubRestRequest } from "@freeanima/shared/hub-rpc";
 
-import { resolveHubApiFetch } from "../hub-api-fetch.ts";
+import { resolveBinarySafeHubFetch } from "../hub-api-fetch.ts";
 import { resolveHubApiOrigin } from "../hub-api-origin.ts";
 import { MAX_HUB_TTS_TEXT_LENGTH } from "./constants.ts";
 import { buildTtsCacheKey, getTtsAudioCache } from "./tts-cache.ts";
@@ -35,7 +35,8 @@ function normalizeHubTtsText(text: string): string {
 
 async function postHubTtsSynthesize(params: HubTtsSynthesizeParams): Promise<Response> {
   const text = normalizeHubTtsText(params.text);
-  const hubFetch = resolveHubApiFetch();
+  // 不可用 resolveHubApiFetch / shell.hubFetch：CapacitorHttp patch 会损坏 MP3 字节
+  const hubFetch = resolveBinarySafeHubFetch();
   const { url, init } = buildHubRestRequest(resolveHubApiOrigin(), "tts.synthesize", {
     text,
     lang: params.lang ?? undefined,

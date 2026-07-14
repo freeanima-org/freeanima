@@ -38,7 +38,8 @@ function writeRootRedirect(): void {
     <meta name="theme-color" content="#1d232a" />
     <title>FreeAnima</title>
     <script>
-      location.replace("/web/");
+      // Capacitor 对目录 URL /web/ 会目录重定向死循环；必须落到具体 index.html + hash 路由
+      location.replace("/web/index.html#/");
     </script>
   </head>
   <body style="margin:0;background:#1d232a"></body>

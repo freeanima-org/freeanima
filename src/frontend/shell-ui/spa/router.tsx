@@ -9,6 +9,11 @@ import {
 } from "@tanstack/react-router";
 import { useMemo } from "react";
 
+import {
+  isCapacitorNativePlatform,
+  isMobileCapacitorShellCandidate,
+} from "@freeanima/frontend/shell-sdk/capacitor-runtime.ts";
+
 import { shellLazyRoute } from "./lazy-route.tsx";
 import { loadConsoleShellRoute } from "./features/feature-shell-routes.ts";
 import { listShellFeatureRoutes } from "./features/shell-registry.ts";
@@ -98,13 +103,20 @@ const routeTree = rootRoute.addChildren([
   ]),
 ]);
 
+/** Capacitor：用 hash 路由（无 SPA fallback）；document 已在 /web/，勿再叠 basepath */
+function shouldUseNativeHashHistory(): boolean {
+  if (typeof window === "undefined") return false;
+  if (window.satelliteShell?.isNativeShell) return true;
+  return isCapacitorNativePlatform() || isMobileCapacitorShellCandidate();
+}
+
 function createShellRouterInstance() {
-  const native = typeof window !== "undefined" && Boolean(window.satelliteShell?.isNativeShell);
+  const nativeHash = shouldUseNativeHashHistory();
   const basepath = resolveShellRouterBasepath();
   return createRouter({
     routeTree,
-    ...(basepath ? { basepath } : {}),
-    ...(native ? { history: createHashHistory() } : {}),
+    ...(!nativeHash && basepath ? { basepath } : {}),
+    ...(nativeHash ? { history: createHashHistory() } : {}),
   });
 }
 
