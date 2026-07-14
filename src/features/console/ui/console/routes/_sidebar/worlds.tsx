@@ -1,6 +1,6 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Button,
   Card,
@@ -37,6 +37,7 @@ import {
   listWorldEntities,
   updateWorldEntity,
   type EntityRow,
+  type WorldGrantInput,
 } from "@freeanima/features/console/ui/console/lib/api.ts";
 import { logCaughtError } from "@freeanima/features/console/ui/console/lib/log-caught-error.ts";
 
@@ -44,12 +45,18 @@ export const Route = createFileRoute("/_sidebar/worlds")({
   component: WorldsPage,
 });
 
+type GrantFormRow = {
+  subject_id: string;
+  permission: "read" | "write";
+};
+
 type WorldFormState = {
   title: string;
   summary: string;
   content: string;
   private: boolean;
   owner_subject_id: string;
+  grants: GrantFormRow[];
 };
 
 const EMPTY_FORM: WorldFormState = {
@@ -58,12 +65,14 @@ const EMPTY_FORM: WorldFormState = {
   content: "",
   private: false,
   owner_subject_id: "",
+  grants: [],
 };
 
 function readWorldBody(row: EntityRow): {
   private: boolean;
   owner_subject_id: number | null;
   default_private: boolean;
+  grants: WorldGrantInput[];
 } {
   const body = row.body ?? {};
   const isPrivate = body.private === true;
@@ -71,10 +80,22 @@ function readWorldBody(row: EntityRow): {
     typeof body.owner_subject_id === "number" && body.owner_subject_id > 0
       ? body.owner_subject_id
       : null;
+  const grantsRaw = Array.isArray(body.grants) ? body.grants : [];
+  const grants: WorldGrantInput[] = [];
+  for (const g of grantsRaw) {
+    if (!g || typeof g !== "object") continue;
+    const subjectId = Number((g as { subject_id?: unknown }).subject_id);
+    const permission = (g as { permission?: unknown }).permission;
+    if (!Number.isFinite(subjectId) || subjectId <= 0) continue;
+    if (permission !== "read" && permission !== "write") continue;
+    if (ownerSubjectId != null && subjectId === ownerSubjectId) continue;
+    grants.push({ subject_id: subjectId, permission });
+  }
   return {
     private: isPrivate,
     owner_subject_id: ownerSubjectId,
     default_private: body.default_private === true,
+    grants,
   };
 }
 
@@ -116,6 +137,27 @@ function WorldEditModal({
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  const ownerId = form.private && form.owner_subject_id ? Number(form.owner_subject_id) : null;
+
+  const grantableSubjects = useMemo(
+    () => subjects.filter((s) => ownerId == null || s.id !== ownerId),
+    [subjects, ownerId],
+  );
+
+  const usedGrantSubjectIds = useMemo(
+    () => new Set(form.grants.map((g) => g.subject_id).filter(Boolean)),
+    [form.grants],
+  );
+
+  const addGrant = () => {
+    const next = grantableSubjects.find((s) => !usedGrantSubjectIds.has(String(s.id)));
+    if (!next) return;
+    setForm((f) => ({
+      ...f,
+      grants: [...f.grants, { subject_id: String(next.id), permission: "read" }],
+    }));
+  };
+
   return (
     <Dialog
       open
@@ -123,7 +165,7 @@ function WorldEditModal({
         if (!next) onClose();
       }}
     >
-      <DialogContent className="max-w-lg safe-area-pt safe-area-pb">
+      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto safe-area-pt safe-area-pb">
         <DialogHeader>
           <DialogTitle>
             {mode === "create" ? m.console_entities_new_world() : m.console_entities_edit_world()}
@@ -164,11 +206,19 @@ function WorldEditModal({
                 id="world-private"
                 checked={form.private}
                 onCheckedChange={(checked) =>
-                  setForm((f) => ({
-                    ...f,
-                    private: checked === true,
-                    owner_subject_id: checked === true ? f.owner_subject_id : "",
-                  }))
+                  setForm((f) => {
+                    const nextPrivate = checked === true;
+                    const nextOwner = nextPrivate ? f.owner_subject_id : "";
+                    const ownerNum = nextOwner ? Number(nextOwner) : null;
+                    return {
+                      ...f,
+                      private: nextPrivate,
+                      owner_subject_id: nextOwner,
+                      grants: f.grants.filter(
+                        (g) => ownerNum == null || Number(g.subject_id) !== ownerNum,
+                      ),
+                    };
+                  })
                 }
               />
               <Label htmlFor="world-private">{m.console_entities_visibility_private()}</Label>
@@ -179,7 +229,17 @@ function WorldEditModal({
               <Select
                 value={form.owner_subject_id || "__none__"}
                 onValueChange={(v) =>
-                  setForm((f) => ({ ...f, owner_subject_id: v === "__none__" ? "" : v }))
+                  setForm((f) => {
+                    const nextOwner = v === "__none__" ? "" : v;
+                    const ownerNum = nextOwner ? Number(nextOwner) : null;
+                    return {
+                      ...f,
+                      owner_subject_id: nextOwner,
+                      grants: f.grants.filter(
+                        (g) => ownerNum == null || Number(g.subject_id) !== ownerNum,
+                      ),
+                    };
+                  })
                 }
               >
                 <SelectTrigger size="sm" className="w-full">
@@ -198,6 +258,109 @@ function WorldEditModal({
               </Select>
             </FormField>
           ) : null}
+
+          <FormField label={m.console_entities_grants_label()} className="text-xs">
+            <p className="text-muted-foreground mb-2 leading-snug">
+              {m.console_entities_grants_hint()}
+            </p>
+            <div className="flex flex-col gap-2">
+              {form.grants.map((grant, index) => {
+                const taken = new Set(
+                  form.grants.map((g, i) => (i === index ? "" : g.subject_id)).filter(Boolean),
+                );
+                const options = grantableSubjects.filter(
+                  (s) => !taken.has(String(s.id)) || String(s.id) === grant.subject_id,
+                );
+                return (
+                  <div key={index} className="flex flex-wrap items-center gap-2">
+                    <Select
+                      value={grant.subject_id || "__none__"}
+                      onValueChange={(v) =>
+                        setForm((f) => ({
+                          ...f,
+                          grants: f.grants.map((g, i) =>
+                            i === index ? { ...g, subject_id: v === "__none__" ? "" : v } : g,
+                          ),
+                        }))
+                      }
+                    >
+                      <SelectTrigger size="sm" className="min-w-[12rem] flex-1">
+                        <SelectValue placeholder={m.console_entities_grant_subject_label()} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">
+                          {m.console_entities_owner_subject_placeholder()}
+                        </SelectItem>
+                        {options.map((s) => (
+                          <SelectItem key={s.id} value={String(s.id)}>
+                            {subjectOptionLabel(s)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select
+                      value={grant.permission}
+                      onValueChange={(v) =>
+                        setForm((f) => ({
+                          ...f,
+                          grants: f.grants.map((g, i) =>
+                            i === index
+                              ? { ...g, permission: v === "write" ? "write" : "read" }
+                              : g,
+                          ),
+                        }))
+                      }
+                    >
+                      <SelectTrigger size="sm" className="w-28">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="read">
+                          {m.console_entities_grant_permission_read()}
+                        </SelectItem>
+                        <SelectItem value="write">
+                          {m.console_entities_grant_permission_write()}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8"
+                      onClick={() =>
+                        setForm((f) => ({
+                          ...f,
+                          grants: f.grants.filter((_, i) => i !== index),
+                        }))
+                      }
+                    >
+                      {m.console_entities_grant_remove()}
+                    </Button>
+                  </div>
+                );
+              })}
+              {grantableSubjects.length === 0 ? (
+                <p className="text-muted-foreground">
+                  {m.console_entities_grants_empty_subjects()}
+                </p>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="self-start"
+                  disabled={
+                    grantableSubjects.every((s) => usedGrantSubjectIds.has(String(s.id))) ||
+                    form.grants.some((g) => !g.subject_id)
+                  }
+                  onClick={addGrant}
+                >
+                  {m.console_entities_grant_add()}
+                </Button>
+              )}
+            </div>
+          </FormField>
         </FormFieldset>
         <DialogFooter>
           <Button type="button" variant="ghost" size="sm" disabled={saving} onClick={onClose}>
@@ -207,7 +370,10 @@ function WorldEditModal({
             type="button"
             size="sm"
             disabled={
-              saving || !form.title.trim() || (form.private && !form.owner_subject_id.trim())
+              saving ||
+              !form.title.trim() ||
+              (form.private && !form.owner_subject_id.trim()) ||
+              form.grants.some((g) => !g.subject_id)
             }
             onClick={() => onSave(form)}
           >
@@ -293,6 +459,10 @@ function WorldsPage() {
             private: access.private,
             owner_subject_id:
               access.owner_subject_id != null ? String(access.owner_subject_id) : "",
+            grants: access.grants.map((g) => ({
+              subject_id: String(g.subject_id),
+              permission: g.permission,
+            })),
           };
         })()
       : EMPTY_FORM;
@@ -302,12 +472,24 @@ function WorldsPage() {
     setModalError("");
     try {
       const ownerSubjectId = form.private ? Number(form.owner_subject_id) : undefined;
+      const grants: WorldGrantInput[] = form.grants
+        .map((g) => ({
+          subject_id: Number(g.subject_id),
+          permission: g.permission,
+        }))
+        .filter(
+          (g) =>
+            Number.isFinite(g.subject_id) &&
+            g.subject_id > 0 &&
+            (ownerSubjectId == null || g.subject_id !== ownerSubjectId),
+        );
       const payload = omitUndefined({
         title: form.title.trim(),
         summary: form.summary.trim(),
         content: form.content.trim(),
         private: form.private,
         owner_subject_id: ownerSubjectId,
+        grants,
       });
       if (modal?.mode === "edit" && modal.row) {
         await updateWorldEntity(modal.row.id, payload);
@@ -374,6 +556,7 @@ function WorldsPage() {
                   <TableHead>{m.console_entities_col_summary()}</TableHead>
                   <TableHead>{m.console_entities_col_visibility()}</TableHead>
                   <TableHead>{m.console_entities_col_owner_subject()}</TableHead>
+                  <TableHead>{m.console_entities_grants_label()}</TableHead>
                   <TableHead>{m.console_common_time()}</TableHead>
                   <TableHead />
                 </TableRow>
@@ -401,6 +584,16 @@ function WorldsPage() {
                         {access.private
                           ? subjectTitleById(access.owner_subject_id)
                           : m.console_common_empty()}
+                      </TableCell>
+                      <TableCell className="text-xs max-w-[14rem] truncate text-muted-foreground">
+                        {access.grants.length === 0
+                          ? m.console_common_empty()
+                          : access.grants
+                              .map(
+                                (g) =>
+                                  `${subjectTitleById(g.subject_id)}:${g.permission === "write" ? m.console_entities_grant_permission_write() : m.console_entities_grant_permission_read()}`,
+                              )
+                              .join(", ")}
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
                         {formatDisplayDateTime(row.updated_at)}

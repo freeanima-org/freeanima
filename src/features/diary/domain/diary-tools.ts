@@ -13,8 +13,8 @@ import { entryPayload, parseTags, requireEntryByDate, toolDateKey } from "./diar
 import { DIARY_TOOL_RETURNS } from "./return-schemas.ts";
 import { resolveDiaryToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
 
-async function storeContext(args: Record<string, unknown>) {
-  const worldId = await resolveDiaryToolWorld(args);
+async function storeContext(args: Record<string, unknown>, access: "read" | "write" = "read") {
+  const worldId = await resolveDiaryToolWorld(args, access);
   if (typeof worldId === "string") return worldId;
   return { worldId };
 }
@@ -23,7 +23,7 @@ async function handleAppend(args: Record<string, unknown>): Promise<string> {
   const content = String(args.content ?? "").trim();
   if (!content) return toolError("content is required");
 
-  const ctx = await storeContext(args);
+  const ctx = await storeContext(args, "write");
   if (typeof ctx === "string") return ctx;
 
   try {
@@ -49,7 +49,7 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
     args.summary !== undefined;
   if (!hasPatch) return toolError("at least one of content, tags, title, summary is required");
 
-  const ctx = await storeContext(args);
+  const ctx = await storeContext(args, "write");
   if (typeof ctx === "string") return ctx;
 
   try {
@@ -74,7 +74,7 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
 }
 
 async function handleDelete(args: Record<string, unknown>): Promise<string> {
-  const ctx = await storeContext(args);
+  const ctx = await storeContext(args, "write");
   if (typeof ctx === "string") return ctx;
 
   try {

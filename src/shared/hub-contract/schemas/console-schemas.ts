@@ -90,6 +90,11 @@ export const entityListQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(500).optional(),
 });
 
+const worldGrantInputSchema = z.object({
+  subject_id: z.number().int().positive(),
+  permission: z.enum(["read", "write"]),
+});
+
 export const worldEntityCreateBodySchema = z
   .object({
     title: z.string(),
@@ -97,6 +102,7 @@ export const worldEntityCreateBodySchema = z
     content: z.string().optional(),
     private: z.boolean().optional().default(false),
     owner_subject_id: z.number().int().positive().optional(),
+    grants: z.array(worldGrantInputSchema).optional(),
   })
   .transform((b) => ({
     title: b.title.trim(),
@@ -104,6 +110,7 @@ export const worldEntityCreateBodySchema = z
     content: b.content?.trim() ?? "",
     private: b.private ?? false,
     owner_subject_id: b.owner_subject_id,
+    grants: b.grants,
   }))
   .refine((b) => b.title.length > 0, { message: "title is required" })
   .superRefine((b, ctx) => {
@@ -115,13 +122,14 @@ export const worldEntityCreateBodySchema = z
     }
   });
 
-export const worldEntityUpdateBodySchema = z
+const worldEntityUpdateFieldsSchema = z
   .object({
     title: z.string().optional(),
     summary: z.string().optional(),
     content: z.string().optional(),
     private: z.boolean().optional(),
     owner_subject_id: z.number().int().positive().nullable().optional(),
+    grants: z.array(worldGrantInputSchema).optional(),
   })
   .transform((b) => ({
     title: b.title !== undefined ? b.title.trim() : undefined,
@@ -129,6 +137,39 @@ export const worldEntityUpdateBodySchema = z
     content: b.content !== undefined ? b.content.trim() : undefined,
     private: b.private,
     owner_subject_id: b.owner_subject_id,
+    grants: b.grants,
+  }))
+  .refine((b) => b.title === undefined || b.title.length > 0, { message: "title is required" })
+  .superRefine((b, ctx) => {
+    if (b.private === true && (b.owner_subject_id === undefined || b.owner_subject_id == null)) {
+      ctx.addIssue({ code: "custom", message: "private world requires owner_subject_id" });
+    }
+    if (b.private === false && b.owner_subject_id != null) {
+      ctx.addIssue({ code: "custom", message: "public world must not have owner_subject_id" });
+    }
+  });
+
+export const worldEntityUpdateBodySchema = worldEntityUpdateFieldsSchema;
+
+/** Hub PATCH：字段 + id */
+export const worldEntityPatchInputSchema = z
+  .object({
+    id: z.string().min(1),
+    title: z.string().optional(),
+    summary: z.string().optional(),
+    content: z.string().optional(),
+    private: z.boolean().optional(),
+    owner_subject_id: z.number().int().positive().nullable().optional(),
+    grants: z.array(worldGrantInputSchema).optional(),
+  })
+  .transform((b) => ({
+    id: b.id,
+    title: b.title !== undefined ? b.title.trim() : undefined,
+    summary: b.summary !== undefined ? b.summary.trim() : undefined,
+    content: b.content !== undefined ? b.content.trim() : undefined,
+    private: b.private,
+    owner_subject_id: b.owner_subject_id,
+    grants: b.grants,
   }))
   .refine((b) => b.title === undefined || b.title.length > 0, { message: "title is required" })
   .superRefine((b, ctx) => {

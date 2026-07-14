@@ -56,7 +56,7 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
           },
           handler: async (args) => {
             try {
-              const worldId = await resolveEmailToolWorld({ args });
+              const worldId = await resolveEmailToolWorld({ args, access: "write" });
               if (typeof worldId === "string") return worldId;
 
               const input = accountCreateSchema.parse(args);
@@ -94,7 +94,11 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
             const id = parseMessageId(args.id);
             if (id == null) return toolError("id is required");
             try {
-              const worldId = await resolveEmailToolWorld({ args, entityId: id });
+              const worldId = await resolveEmailToolWorld({
+                args,
+                entityId: id,
+                access: "write",
+              });
               if (typeof worldId === "string") return worldId;
 
               const patch = accountPatchSchema.parse(args);
@@ -141,7 +145,11 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
             const id = parseMessageId(args.id);
             if (id == null) return toolError("id is required");
             try {
-              const worldId = await resolveEmailToolWorld({ args, entityId: id });
+              const worldId = await resolveEmailToolWorld({
+                args,
+                entityId: id,
+                access: "write",
+              });
               if (typeof worldId === "string") return worldId;
 
               const ok = await deleteEmailAccountRow(worldId, id);

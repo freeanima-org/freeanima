@@ -21,10 +21,14 @@ export const WORLD_ID_OPTIONAL = {
 
 export async function resolveDiaryToolWorld(
   args: Record<string, unknown>,
+  access: "read" | "write" = "read",
 ): Promise<number | string> {
   try {
     const explicit = parseWorldId(args.world_id);
-    return await resolveToolWorld(explicit != null ? { explicitWorldId: explicit } : {});
+    return await resolveToolWorld({
+      ...(explicit != null ? { explicitWorldId: explicit } : {}),
+      access,
+    });
   } catch (e) {
     const msg = e instanceof ToolWorldAccessError ? e.message : String(e);
     return toolError(msg);

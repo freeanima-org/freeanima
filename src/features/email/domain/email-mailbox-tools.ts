@@ -62,7 +62,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
                 );
                 return toolResult(result);
               }
-              const worldId = await resolveEmailToolWorld({ args });
+              const worldId = await resolveEmailToolWorld({ args, access: "write" });
               if (typeof worldId === "string") return worldId;
 
               const results = await sync.syncAll(
@@ -237,7 +237,11 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           handler: async (args) => {
             const accountId = parseAccountId(args.account_id);
             if (accountId != null) {
-              const worldId = await resolveEmailToolWorld({ args, accountId });
+              const worldId = await resolveEmailToolWorld({
+                args,
+                accountId,
+                access: "write",
+              });
               if (typeof worldId === "string") return worldId;
             }
             try {

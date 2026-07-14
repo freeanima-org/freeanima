@@ -1821,6 +1821,42 @@ msgid "Edit world"
 msgstr "编辑世界"
 
 #. type: Content of: <messages><msg>
+msgid "Add grant"
+msgstr "添加授权"
+
+#. type: Content of: <messages><msg>
+msgid "Permission"
+msgstr "权限"
+
+#. type: Content of: <messages><msg>
+msgid "Read"
+msgstr "读"
+
+#. type: Content of: <messages><msg>
+msgid "Write"
+msgstr "写"
+
+#. type: Content of: <messages><msg>
+msgid "Remove"
+msgstr "移除"
+
+#. type: Content of: <messages><msg>
+msgid "Subject"
+msgstr "主体"
+
+#. type: Content of: <messages><msg>
+msgid "No other subjects available to grant."
+msgstr "没有可授权的其他主体。"
+
+#. type: Content of: <messages><msg>
+msgid "Owners always have full access. Write includes read. Public worlds are readable by all subjects; grants here mainly unlock write, or private-world read/write."
+msgstr "所有者始终拥有完全访问权。写权限包含读权限。公共世界对所有主体可读；此处授权主要用于开放写权限，或私有世界的读/写权限。"
+
+#. type: Content of: <messages><msg>
+msgid "Subject grants"
+msgstr "主体授权"
+
+#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:293
 #, no-wrap
 msgid "New subject"
@@ -1907,8 +1943,8 @@ msgstr "世界"
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:307
 #, no-wrap
-msgid "Logical namespaces (type=world). Visibility and owner live in world_config body."
-msgstr "逻辑命名空间（type=world）。可见性与归属主体存放在 world_config body 中。"
+msgid "Logical namespaces (type=world). Visibility, owner, and subject grants live in world_config body."
+msgstr "逻辑命名空间（type=world）。可见性、归属主体与主体授权存放在 world_config body 中。"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:308

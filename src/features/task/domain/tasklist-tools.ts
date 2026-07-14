@@ -45,6 +45,7 @@ async function handleListCreate(args: Record<string, unknown>): Promise<string> 
   const worldId = await resolveTaskToolWorld({
     args,
     ...(hasParentId ? { listId: Number(parentIdRaw) } : {}),
+    access: "write",
   });
   if (typeof worldId === "string") return worldId;
 
@@ -77,7 +78,7 @@ async function handleListUpdate(args: Record<string, unknown>): Promise<string> 
   const id = Number(args.id);
   if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
 
-  const worldId = await resolveTaskToolWorld({ args, entityId: id });
+  const worldId = await resolveTaskToolWorld({ args, entityId: id, access: "write" });
   if (typeof worldId === "string") return worldId;
 
   const patch: TaskListUpdateInput = { id };
@@ -106,7 +107,7 @@ async function handleListDelete(args: Record<string, unknown>): Promise<string> 
   const id = Number(args.id);
   if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
 
-  const worldId = await resolveTaskToolWorld({ args, entityId: id });
+  const worldId = await resolveTaskToolWorld({ args, entityId: id, access: "write" });
   if (typeof worldId === "string") return worldId;
 
   const cascade = args.cascade === true;
