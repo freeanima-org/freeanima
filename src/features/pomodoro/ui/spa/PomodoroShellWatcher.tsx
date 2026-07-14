@@ -10,13 +10,22 @@ import {
   subscribePomodoroSync,
 } from "@freeanima/frontend/shell-sdk/pomodoro-sync-local.ts";
 import { readPomodoroActiveState } from "@freeanima/frontend/shell-sdk/pomodoro-active.ts";
+import { whenSatelliteHubRpcReady } from "@freeanima/frontend/shell-sdk/hub-rpc-call";
+import {
+  POMODORO_ACTIVE_CHANGED_EVENT,
+  pomodoroActiveChangedEventSchema,
+} from "@freeanima/shared/sap-contract/frames/pomodoro";
 
 import { fetchPomodoroConfig } from "./lib/api.ts";
-import { flushPomodoroOutbox, pullPomodoroActive, runPhaseComplete } from "./lib/pomodoro-sync.ts";
+import {
+  applyPomodoroActiveChangedEvent,
+  flushPomodoroOutbox,
+  pullPomodoroActive,
+  runPhaseComplete,
+} from "./lib/pomodoro-sync.ts";
 import { remainingMs } from "./lib/timer-engine.ts";
 
 const POLL_MS = 1_000;
-const REMOTE_PULL_MS = 5_000;
 
 export function PomodoroShellWatcher() {
   const { kind: subjectKind } = useSubjectScope();
@@ -64,13 +73,23 @@ export function PomodoroShellWatcher() {
   }, [subjectKind]);
 
   useEffect(() => {
-    const remotePull = window.setInterval(() => {
-      if (networkOnline && hubConnection === "connected") {
-        void pullPomodoroActive(subjectKind);
-      }
-    }, REMOTE_PULL_MS);
-    return () => clearInterval(remotePull);
-  }, [subjectKind, networkOnline, hubConnection]);
+    if (!networkOnline || hubConnection !== "connected") return;
+    let cancelled = false;
+    let off: (() => void) | undefined;
+    void whenSatelliteHubRpcReady().then((rpc) => {
+      if (cancelled) return;
+      off = rpc.onEvent(POMODORO_ACTIVE_CHANGED_EVENT, (payload) => {
+        const parsed = pomodoroActiveChangedEventSchema.safeParse(payload);
+        if (!parsed.success) return;
+        if (parsed.data.subject_kind !== subjectKind) return;
+        applyPomodoroActiveChangedEvent(subjectKind, parsed.data.active);
+      });
+    });
+    return () => {
+      cancelled = true;
+      off?.();
+    };
+  }, [networkOnline, hubConnection, subjectKind]);
 
   useEffect(() => {
     const id = window.setInterval(() => {

@@ -47,6 +47,7 @@ describePg("hub conversation.list dual transport", () => {
       runtime: runtime as never,
       satelliteManager: null as never,
       instanceRegistry: null as never,
+      hubSessionRegistry: null as never,
       animaVersion: "test",
       masks: null as never,
     };
