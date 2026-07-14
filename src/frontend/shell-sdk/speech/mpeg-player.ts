@@ -1,3 +1,5 @@
+import { isCapacitorLikeSpeechRuntime } from "./capacitor-runtime-gate.ts";
+
 /** 极短静音 WAV，在手势链内解锁 HTMLAudio，且不回放上一段朗读 */
 export const SILENT_WAV_DATA_URI =
   "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
@@ -227,6 +229,8 @@ async function playAudioElementToEnd(audio: HTMLAudioElement, generation: number
 }
 
 function isMpegMseSupported(): boolean {
+  // Android WebView：isTypeSupported('audio/mpeg') 偶发 true，但 MSE 播 MP3 实际不可用
+  if (isCapacitorLikeSpeechRuntime()) return false;
   return (
     typeof MediaSource !== "undefined" &&
     typeof MediaSource.isTypeSupported === "function" &&

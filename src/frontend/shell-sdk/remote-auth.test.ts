@@ -61,4 +61,15 @@ describe("remote-auth helpers", () => {
       globalThis.fetch = originalFetch;
     }
   });
+
+  test("createBearerFetch 可注入底层 fetch（绕过 CapacitorHttp patch）", async () => {
+    let calledCustom = false;
+    const customFetch: import("./remote-auth.ts").HubFetch = async () => {
+      calledCustom = true;
+      return new Response("ok", { status: 200 });
+    };
+    const hubFetch = createBearerFetch("secret-token-min-16", "http://127.0.0.1:2658", customFetch);
+    await hubFetch("http://127.0.0.1:2658/hub/rpc/v1/tts/synthesize", { method: "POST" });
+    expect(calledCustom).toBe(true);
+  });
 });

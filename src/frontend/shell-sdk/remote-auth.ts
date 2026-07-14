@@ -38,25 +38,29 @@ function resolveFetchUrl(input: string | URL | Request): string {
   return String(input);
 }
 
-export function createBearerFetch(token: string, hubOrigin: string): HubFetch {
+export function createBearerFetch(
+  token: string,
+  hubOrigin: string,
+  baseFetch: HubFetch = fetch,
+): HubFetch {
   const hub = hubOrigin.replace(/\/$/, "");
   const bearer = `Bearer ${token.trim()}`;
   return async (input, init) => {
     if (!token.trim()) {
-      return fetch(input, init);
+      return baseFetch(input, init);
     }
     const url = resolveFetchUrl(input);
     if (!url.startsWith(hub)) {
-      return fetch(input, init);
+      return baseFetch(input, init);
     }
     if (input instanceof Request) {
       const headers = new Headers(input.headers);
       headers.set("Authorization", bearer);
-      return fetch(new Request(input, { ...init, headers }));
+      return baseFetch(new Request(input, { ...init, headers }));
     }
     const headers = new Headers(init?.headers);
     headers.set("Authorization", bearer);
-    return fetch(input, { ...init, headers });
+    return baseFetch(input, { ...init, headers });
   };
 }
 
