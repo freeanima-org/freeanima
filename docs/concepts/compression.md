@@ -56,6 +56,10 @@ compression:
 | `raw_min_messages`  | 5       | Minimum messages in raw segment     |
 | `slim_min_messages` | 50      | Minimum messages in slim after trim |
 
+### Token counting
+
+Compression and embedding batch packing use **heuristic token estimates** (`tokenx` in-process, id `__estimate__:tokenx`), not full HuggingFace vocabularies. Counts are approximate (good enough for budget triggers and chunk sizing); they are not provider-billing exact.
+
 ### Context window resolution (token mode)
 
 Priority when estimating compression budget:

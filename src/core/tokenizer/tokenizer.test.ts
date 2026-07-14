@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "bun:test";
 
-import { FALLBACK_TOKENIZER_REPO } from "./constants.ts";
+import { FALLBACK_TOKENIZER_REPO, TOKENX_ESTIMATE_REPO } from "./constants.ts";
 import { generateCandidateRepos, toPascalCaseModel } from "./resolve.ts";
 import {
   bindModelForTest,
@@ -16,7 +16,6 @@ import {
   setTokenizerEncodeForTest,
   splitTextByTokenLimit,
 } from "./store.ts";
-import { NATIVE_TIKTOKEN_REPO } from "./native-tiktoken.ts";
 
 describe("toPascalCaseModel", () => {
   it("deepseek-v4-flash → DeepseekV4Flash", () => {
@@ -63,11 +62,17 @@ describe("countTokens with test encode", () => {
     expect(countTokens("abcd", "unknown-model-xyz")).toBe(1);
   });
 
-  it("binds gpt models via tiktoken without fallback", async () => {
+  it("binds models to tokenx estimate without HF fallback", async () => {
     await ensureTokenizer("gpt-4o");
     expect(isUsingFallbackTokenizer("gpt-4o")).toBe(false);
-    expect(getActiveTokenizerRepo("gpt-4o")).toBe(NATIVE_TIKTOKEN_REPO);
+    expect(getActiveTokenizerRepo("gpt-4o")).toBe(TOKENX_ESTIMATE_REPO);
     expect(countTokens("hello world", "gpt-4o")).toBeGreaterThan(0);
+    expect(listLoadedTokenizerRepos()).toContain(TOKENX_ESTIMATE_REPO);
+  });
+
+  it("countTokens uses tokenx when no test encode is installed", async () => {
+    await ensureTokenizer("deepseek-v4-pro");
+    expect(countTokens("你好世界 hello", "deepseek-v4-pro")).toBeGreaterThan(0);
   });
 
   it("splitTextByTokenLimit respects max tokens", async () => {
