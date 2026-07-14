@@ -30,6 +30,7 @@ Release Please defaults to `feat` / `fix` / `deps` as releasable commit triggers
 bun -p "require('./package.json').version"
 # Or after build:
 bun run anima -- service status   # reads version from status file / health API
+./dist/anima-executable/anima --version
 ```
 
 ## Release Flow (Release PR)
@@ -38,8 +39,7 @@ bun run anima -- service status   # reads version from status file / health API
 2. Merge PR to `main`（须通过 `Quality`；Blackbox `freeanima/blackbox` 已暂停，见 [`.github/SECRETS.md`](../../.github/SECRETS.md)）
 3. `Release` workflow runs **release-please**: opens or updates a **Release PR** (label `autorelease: pending`), accumulating changelog and version bump since last tag
 4. Release PR runs full CI; **maintainers decide when to release**, merge Release PR
-5. After merge, same workflow: `release_created` → tag `vX.Y.Z`, create GitHub Release → `build:cli` + `publish-cli.sh` (npm OIDC)
-6. Push `v*` tag triggers [`.github/workflows/release-docker.yml`](../../.github/workflows/release-docker.yml)
+5. After merge, same workflow: `release_created` → tag `vX.Y.Z`, create GitHub Release → **`build:cli:executable`** → upload `anima-linux-x64.tar.gz`
 
 **Not** one release per `feat`; **one release when Release PR merges** (accumulating multiple commits).
 
@@ -57,16 +57,6 @@ Common types: `feat`, `fix`, `perf`, `docs`, `chore`, `refactor`, `test`, `ci`, 
 
 Local **`git commit` is enforced** (Husky `commit-msg` + [commitlint](https://commitlint.js.org/), config at root `commitlint.config.mjs`).
 
-Examples:
-
-```
-feat(gateway): Discord thread continuation reuses session
-fix(cron): run endpoint changed to async enqueue
-feat(api)!: remove non-SSE message endpoint
-
-BREAKING CHANGE: POST /api/sessions/:id/messages removed
-```
-
 ### Preview Next Version
 
 On GitHub, inspect **Release PR** diff (`package.json` + `CHANGELOG.md`) for next version content and number.
@@ -77,41 +67,27 @@ Specify version in commit body with `Release-As: x.y.z` (see [Release Please doc
 
 [`.release-please-manifest.json`](../../.release-please-manifest.json) records current published version; must match latest `v*` tag and root `package.json`; auto-updated by Release Please after release.
 
-## Bun Global Package and Docker Image
+## Linux standalone artifact (sole distribution)
 
 After Release PR merge and `release_created`:
 
-1. **`bun run build:cli`** — produces `src/app/cli/publish/` (`@freeanima/cli` tarball contents)
-2. **`scripts/publish-cli.sh`** — `npm publish` + GitHub Actions OIDC (npm CLI ≥ 11.5.1); local manual publish: `bun run publish:cli` (requires `npm login`)
-3. **Docker image** — on `v*` tag push, [`.github/workflows/release-docker.yml`](../../.github/workflows/release-docker.yml) builds and pushes to `ghcr.io/freeanima-org/freeanima:latest` and `:vX.Y.Z`
+1. **`bun run build:cli:executable`** — produces `dist/anima-executable/` (`anima` binary with embedded migrations + Web dist, plus install-prefix `package.json` / `dist/build-meta.json`)
+2. Pack `anima-linux-x64.tar.gz` and upload to the GitHub Release for tag `vX.Y.Z`
 
-### npm Trusted Publishing (Sole CI Publish Path)
+**Runtime install modes:**
 
-Configure GitHub Actions in [npm Trusted Publishers](https://docs.npmjs.com/trusted-publishers#for-github-actions) for `@freeanima/cli`:
+| Mode           | How to run                                                 |
+| -------------- | ---------------------------------------------------------- |
+| **source**     | `bun install` + `bun run link:global` (or `bun run anima`) |
+| **standalone** | Unpack Release tarball; run `./anima`                      |
 
-| Field                | Value           |
-| -------------------- | --------------- |
-| Organization or user | `freeanima-org` |
-| Repository           | `freeanima`     |
-| Workflow filename    | `release.yml`   |
-| Allowed actions      | `npm publish`   |
+There is **no** npm package publish and **no** Docker image publish.
 
-Release workflow `publish` job has `id-token: write`; publish with `bunx npm@11 publish` (do not use `setup-node` `registry-url`, blocks OIDC). `src/app/cli/publish/package.json` `publishConfig.registry` must be `https://registry.npmjs.org/` (trailing slash).
-
-After verification, package Settings → Publishing access can **disallow tokens**, OIDC-only publish.
-
-Local install of published package (dev debugging):
+Local rebuild:
 
 ```bash
-bun run install:cli:local
-anima service start --foreground
-```
-
-Docker Compose quick start:
-
-```bash
-cp .env.example .env   # fill PG_PASSWORD, OPENAI_API_KEY
-docker compose up --build
+bun run build:cli:executable
+./dist/anima-executable/anima --version
 ```
 
 ## Prohibited
@@ -123,14 +99,14 @@ docker compose up --build
 
 ## Related Files
 
-| File                                   | Role                                                                                     |
-| -------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `package.json`                         | Sole version write source (updated by Release PR)                                        |
-| `release-please-config.json`           | Release Please strategy and changelog sections                                           |
-| `.release-please-manifest.json`        | Published version manifest                                                               |
-| `.github/workflows/release.yml`        | release-please + npm publish                                                             |
-| `.github/workflows/release-docker.yml` | Docker image push to GHCR                                                                |
-| `CHANGELOG.md`                         | New version section appended on Release PR merge; excluded from oxfmt (`*` list markers) |
+| File                              | Role                                                                                     |
+| --------------------------------- | ---------------------------------------------------------------------------------------- |
+| `package.json`                    | Sole version write source (updated by Release PR)                                        |
+| `release-please-config.json`      | Release Please strategy and changelog sections                                           |
+| `.release-please-manifest.json`   | Published version manifest                                                               |
+| `.github/workflows/release.yml`   | release-please + Linux standalone upload                                                 |
+| `scripts/build-cli-executable.ts` | Standalone build                                                                         |
+| `CHANGELOG.md`                    | New version section appended on Release PR merge; excluded from oxfmt (`*` list markers) |
 
 ## Repository Settings (Maintainers)
 

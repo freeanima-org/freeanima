@@ -39,8 +39,10 @@ jobs:
       - uses: ./.github/actions/setup-anima-home
       - run: bun run typecheck
       - run: bun run lint
-      - run: bun run build:cli
-      - run: cd src/app/cli/publish && bun pm pack
+      - name: Build Linux standalone
+        run: bun run build:cli:executable
+      - name: Smoke standalone
+        run: ./dist/anima-executable/anima --version
       - run: bun scripts/run-ci-tests.ts
       - name: Upload coverage report
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository

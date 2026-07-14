@@ -61,24 +61,22 @@ Full blueprint: [`docs/concepts/architecture.md`](docs/concepts/architecture.md)
 
 ## Quick start
 
-Install via **npm CLI**, **local npm package**, **Docker Compose**, or **from source** — full steps in [`docs/guide/install.md`](docs/guide/install.md).
+Two runtime modes — **source** or **Linux standalone** — full steps in [`docs/guide/install.md`](docs/guide/install.md).
 
 ```bash
-# npm CLI (requires Bun)
-bun install -g @freeanima/cli
-
-# Local npm package (from clone; publish-shaped, closer to registry install)
-bun run install:cli:local
-
-# Docker Compose (quick trial)
-cp .env.example .env && docker compose up --build
-
-# Source
+# Source (requires Bun)
 git clone https://github.com/freeanima-org/freeanima.git && cd freeanima
 bun install && bun run link:global
+
+# Standalone (from a GitHub Release asset, no Bun on host)
+# tar -xzf anima-linux-x64.tar.gz && ./anima --version
+
+# Or build standalone from a checkout
+bun run build:cli:executable
+./dist/anima-executable/anima --version
 ```
 
-Then configure `~/.anima/config.yaml` (or `.env` for Docker) and run `anima service start`. See [`docs/guide/install.md`](docs/guide/install.md), [`docs/guide/database.md`](docs/guide/database.md), [`docs/guide/security.md`](docs/guide/security.md).
+Then configure `~/.anima/config.yaml` and run `anima service start`. See [`docs/guide/install.md`](docs/guide/install.md), [`docs/guide/database.md`](docs/guide/database.md), [`docs/guide/security.md`](docs/guide/security.md).
 
 ## Client UI
 

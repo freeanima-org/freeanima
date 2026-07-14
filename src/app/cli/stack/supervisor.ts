@@ -10,8 +10,10 @@ import {
 } from "@freeanima/platform/tls/resolve-hub-tls";
 import { systemdUserAvailable } from "../systemd-unit.ts";
 
+import { isStandaloneExecutable } from "@freeanima/core/config/cli-install";
+import { getRepoRoot } from "@freeanima/core/config/repo-root";
 import { ensureWebDistBuilt } from "../web/ensure-dist.ts";
-import { resolveWebDistDir } from "../web/dist-path.ts";
+import { tryResolveWebDistDir } from "../web/dist-path.ts";
 import {
   findCloudflaredPidOnHost,
   startTunnelForStack,
@@ -86,20 +88,35 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
   } | null = null;
   if (webCfg?.enabled) {
     try {
-      await ensureWebDistBuilt();
-      const rootPkg = JSON.parse(
-        await Bun.file(join(import.meta.dir, "..", "..", "..", "..", "package.json")).text(),
-      ) as { version?: string };
-      const uiVersion = rootPkg.version?.trim();
-      webStatic = {
-        distDir: resolveWebDistDir(),
-        appId: "chat",
-        ...(uiVersion ? { uiVersion } : {}),
-        minShellVersion: "0.8.0",
-      };
+      // standalone / 无 monorepo 时不强制 build；缺 dist 时降级为纯 Hub
+      if (!isStandaloneExecutable()) {
+        await ensureWebDistBuilt();
+      }
+      const distDir = tryResolveWebDistDir();
+      if (distDir) {
+        let uiVersion: string | undefined;
+        try {
+          const rootPkg = JSON.parse(
+            await Bun.file(join(getRepoRoot(), "package.json")).text(),
+          ) as { version?: string };
+          uiVersion = rootPkg.version?.trim();
+        } catch {
+          /* standalone 等形态可能无 package.json 版本字段 */
+        }
+        webStatic = {
+          distDir,
+          appId: "chat",
+          ...(uiVersion ? { uiVersion } : {}),
+          minShellVersion: "0.8.0",
+        };
+      } else {
+        console.warn(
+          "[stack] web.enabled 但未找到 Web dist，Hub 将不托管 /web（可稍后 bun run build:web）",
+        );
+      }
     } catch (err) {
-      logStartupError("[stack] Web dist 准备失败", err);
-      throw err;
+      logStartupError("[stack] Web dist 准备失败，继续启动 Hub（不托管 /web）", err);
+      webStatic = null;
     }
   }
 

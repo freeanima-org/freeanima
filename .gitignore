@@ -45,9 +45,6 @@ bun-debug.log*
 connectors/admin/app/*/node_modules/
 connectors/admin/app/dist/
 
-# CLI publish 产物
-cli/publish/
-
 # Coverage
 coverage/
 .coverage-shards/

@@ -2,6 +2,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { isStandaloneExecutable } from "./cli-install.ts";
+
 let cachedRepoRoot: string | null = null;
 
 const ROOT_PACKAGE_NAME = "freeanima";
@@ -39,13 +41,29 @@ export function resolveMonorepoRoot(startDir?: string): string | null {
   return null;
 }
 
-/** Monorepo or @freeanima/cli published package root */
+/** bun build --compile：二进制旁的安装前缀（package.json + migrations） */
+export function resolveStandaloneInstallRoot(
+  execPath = process.execPath,
+  argv1 = process.argv[1],
+): string | null {
+  if (!isStandaloneExecutable(argv1)) return null;
+  const dir = dirname(execPath);
+  return isRepoRoot(dir) ? dir : null;
+}
+
+/** Monorepo or standalone install root（package.json name 为 freeanima / @freeanima/cli） */
 export function getRepoRoot(): string {
   if (cachedRepoRoot) return cachedRepoRoot;
 
   const fromEnv = process.env.FREEANIMA_REPO_ROOT?.trim();
   if (fromEnv && isRepoRoot(fromEnv)) {
     cachedRepoRoot = fromEnv;
+    return cachedRepoRoot;
+  }
+
+  const standaloneRoot = resolveStandaloneInstallRoot();
+  if (standaloneRoot) {
+    cachedRepoRoot = standaloneRoot;
     return cachedRepoRoot;
   }
 
@@ -62,4 +80,9 @@ export function getRepoRoot(): string {
 
   cachedRepoRoot = join(dirname(fileURLToPath(import.meta.url)), "../../..");
   return cachedRepoRoot;
+}
+
+/** 测试用：重置缓存 */
+export function resetRepoRootForTests(): void {
+  cachedRepoRoot = null;
 }

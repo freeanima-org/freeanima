@@ -450,48 +450,10 @@ describePg("slash commands", () => {
     }
   });
 
-  it("/upgrade returns upgrade action on npm install layout", async () => {
-    const dir = createTempDir("freeanima-cli-npm-cmd-");
-    const bunRoot = join(dir, "bun");
-    const globalDir = join(bunRoot, "install/global");
-    mkdirSync(globalDir, { recursive: true });
-    writeFileSync(
-      join(globalDir, "package.json"),
-      JSON.stringify({
-        name: "bun-global",
-        dependencies: { "@freeanima/cli": "^0.4.0" },
-      }),
-    );
-    const cliJs = join(dir, "node_modules", "@freeanima", "cli", "dist", "cli.js");
-    mkdirSync(join(dir, "node_modules", "@freeanima", "cli", "dist"), { recursive: true });
-    writeFileSync(cliJs, "// cli\n");
-    const prevArgv1 = process.argv[1];
-    const prevBunInstall = process.env.BUN_INSTALL;
-    process.env.BUN_INSTALL = bunRoot;
-    process.argv[1] = cliJs;
-    try {
-      const [cmd] = findCommand("/upgrade");
-      const result = await executeCommand(cmd!, {
-        conversationId: "x",
-        platform: TEST_SAP_CHAT_PLATFORM,
-        args: [],
-        raw: "/upgrade",
-      });
-      expect(isUpgradeResult(result)).toBe(true);
-      expect(result.text).toContain("正在从 npm 升级");
-    } finally {
-      if (prevArgv1 !== undefined) process.argv[1] = prevArgv1;
-      else delete (process.argv as { 1?: string })[1];
-      if (prevBunInstall === undefined) delete process.env.BUN_INSTALL;
-      else process.env.BUN_INSTALL = prevBunInstall;
-      removeTempDir(dir);
-    }
-  });
-
-  it("/upgrade is disabled for local cli.ts installs", async () => {
+  it("/upgrade is disabled for source installs", async () => {
     const dir = createTempDir("freeanima-cli-local-cmd-");
-    const cliPath = join(dir, "cli", "src", "cli.ts");
-    mkdirSync(join(dir, "cli", "src"), { recursive: true });
+    const cliPath = join(dir, "src", "app", "cli", "cli.ts");
+    mkdirSync(join(dir, "src", "app", "cli"), { recursive: true });
     writeFileSync(cliPath, "#!/usr/bin/env bun\n");
     const prevArgv1 = process.argv[1];
     process.argv[1] = cliPath;
@@ -504,11 +466,30 @@ describePg("slash commands", () => {
         raw: "/upgrade",
       });
       expect(isUpgradeResult(result)).toBe(false);
-      expect(result.text).toContain("源码 link 安装不支持自动 upgrade");
+      expect(result.text).toContain("源码安装不支持自动 upgrade");
     } finally {
       if (prevArgv1 !== undefined) process.argv[1] = prevArgv1;
       else delete (process.argv as { 1?: string })[1];
       removeTempDir(dir);
+    }
+  });
+
+  it("/upgrade is disabled for standalone installs", async () => {
+    const prevArgv1 = process.argv[1];
+    process.argv[1] = "/$bunfs/root/anima";
+    try {
+      const [cmd] = findCommand("/upgrade");
+      const result = await executeCommand(cmd!, {
+        conversationId: "x",
+        platform: TEST_SAP_CHAT_PLATFORM,
+        args: [],
+        raw: "/upgrade",
+      });
+      expect(isUpgradeResult(result)).toBe(false);
+      expect(result.text).toContain("standalone 可执行文件不支持自动 upgrade");
+    } finally {
+      if (prevArgv1 !== undefined) process.argv[1] = prevArgv1;
+      else delete (process.argv as { 1?: string })[1];
     }
   });
 

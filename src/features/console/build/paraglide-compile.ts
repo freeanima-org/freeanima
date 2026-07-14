@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 export const BUNDLED_PARAGLIDE_REL = join("messages", "paraglide");
 
-/** Published @freeanima/cli: messages/paraglide（build-cli 预编译） */
+/** 预编译 paraglide 到指定 outdir（Vite / 本地产物构建） */
 export function resolveBundledParaglideDir(repoRoot: string): string | null {
   const dir = join(repoRoot, BUNDLED_PARAGLIDE_REL);
   if (existsSync(join(dir, "runtime.js"))) return dir;

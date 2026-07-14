@@ -26,7 +26,7 @@ app → platform → capabilities → runtime → core → kernel
 | **runtime**      | `runtime/`          | `@freeanima/runtime`  | Conversation, turn, loop, pipeline, Engine factory                                |
 | **capabilities** | `src/capabilities/` | `capabilities-*` (8)  | acp, identity, llm-openai, mcp-client, mcp-server, memory, satellite, tools       |
 | **platform**     | `src/platform/`     | `@freeanima/platform` | Composition root, ports, connectors, CLI wiring, feature registry                 |
-| **app**          | `app/`              | `@freeanima/cli`, …   | CLI、desktop/mobile **薄壳**；UI SSOT 为 `src/app/shell/web/dist`（Hub `/web/*`） |
+| **app**          | `app/`              | CLI / shells          | CLI、desktop/mobile **薄壳**；UI SSOT 为 `src/app/shell/web/dist`（Hub `/web/*`） |
 
 ### Console（hub-rest）
 

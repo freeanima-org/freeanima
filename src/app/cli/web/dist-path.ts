@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { getInstallContext } from "../satellite-launch.ts";
+import { getRegisteredEmbeddedWebDist, materializeEmbeddedWebDist } from "./web-dist-embedded.ts";
 
 const DIST_CANDIDATES = ["src/app/shell/web/dist"] as const;
 
@@ -11,14 +12,18 @@ export function resolveMonorepoWebDistDir(monorepoRoot: string): string | null {
   return null;
 }
 
-/** 解析 Web 静态产物目录（monorepo / npm 发布包） */
-export function resolveWebDistDir(explicit?: string): string {
+/** 解析 Web 静态产物目录；缺失时返回 null（不抛） */
+export function tryResolveWebDistDir(explicit?: string): string | null {
   if (explicit) {
     const dir = explicit.trim();
-    if (!existsSync(join(dir, "index.html"))) {
-      throw new Error(`Web dist 不存在或缺少 index.html: ${dir}`);
-    }
+    if (!existsSync(join(dir, "index.html"))) return null;
     return dir;
+  }
+
+  const embedded = getRegisteredEmbeddedWebDist();
+  if (embedded) {
+    const dir = materializeEmbeddedWebDist(embedded);
+    if (existsSync(join(dir, "index.html"))) return dir;
   }
 
   const { monorepoRoot, cliRoot } = getInstallContext();
@@ -37,5 +42,15 @@ export function resolveWebDistDir(explicit?: string): string {
     }
   }
 
+  return null;
+}
+
+/** 解析 Web 静态产物目录（monorepo / npm 发布包）；缺失时抛错 */
+export function resolveWebDistDir(explicit?: string): string {
+  const dist = tryResolveWebDistDir(explicit);
+  if (dist) return dist;
+  if (explicit?.trim()) {
+    throw new Error(`Web dist 不存在或缺少 index.html: ${explicit.trim()}`);
+  }
   throw new Error("未找到 Web dist。请在仓库根目录运行: bun run build:web");
 }
