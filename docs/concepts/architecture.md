@@ -296,9 +296,17 @@ Session Goal is an **in-process autonomous loop** at the Estate / orchestration 
 
 Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User messages preempt the loop; `/goal pause` stops auto-continue without clearing state. See [`goal.md`](../features/goal.md).
 
-## Client UI（Hub Web SSOT + 薄壳）
+## Client UI（web/dist SSOT + 原生壳打包）
 
-**UI 唯一发布产物**：`src/app/shell/web/dist`，Hub 托管于 `/web/*`（`web.enabled` 或 `anima web start`）。Desktop / Mobile / 浏览器 / PWA 共用同一 SPA；壳层只保留原生能力（Electron preload、Capacitor Preferences/Keyboard、伴侣 sidecar 等）。
+**UI 源码产物**：`src/app/shell/web/dist`（`base: /web/`）。
+
+| 客户端       | UI 加载                                                                                                               | 更新方式                            |
+| ------------ | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| 浏览器 / PWA | Hub 托管 `/web/*`（`web.enabled` 或 `anima web start`）                                                               | Hub / `anima upgrade` / `build:web` |
+| Desktop      | **安装包内** `vendor/shell-ui`（本地 static `/web/*`）；调试可用 `DESKTOP_SHELL_VITE_URL` 或 `DESKTOP_UI_MODE=remote` | 随 Desktop 安装包发版               |
+| Mobile APK   | **安装包内** Capacitor `www/web`（本地同源）；Hub 仅 API                                                              | 随 APK 发版                         |
+
+壳层保留原生能力（Electron preload、Capacitor Preferences/Keyboard、伴侣 sidecar 等）。**无壳内 UI OTA**：原生端不从 Hub 热替换 SPA。Hub 配置统一走 settings「连接」（`/settings`）；无独立 bootstrap Hub 页。
 
 ### 两层模型
 
@@ -319,18 +327,18 @@ Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User message
 
 `resolveLayoutMode()`：窄 → `compact`，中宽 → `expanded`（URL / `config.json` 可覆盖）。`detectPlatform()` 跟布局粗档（设置页 chrome），settings 字段差异仍由能力层 `resolveShellBindings()` 决定。
 
-| 客户端       | UI 加载                                                        | 壳发版                   |
-| ------------ | -------------------------------------------------------------- | ------------------------ |
-| 浏览器 / PWA | Hub `/web/*`                                                   | 随 Hub / `anima upgrade` |
-| Desktop      | 默认 Hub `/web/*`（`DESKTOP_UI_MODE=bundled` 回退本地 static） | 仅 Electron / 伴侣变更   |
-| Mobile APK   | bootstrap → Hub `/web/*`                                       | 仅 Capacitor 插件变更    |
+| 客户端       | UI 加载                                                        | 壳发版                          |
+| ------------ | -------------------------------------------------------------- | ------------------------------- |
+| 浏览器 / PWA | Hub `/web/*`                                                   | 随 Hub / `anima upgrade`        |
+| Desktop      | 安装包内本地 `/web/*`（默认）；`DESKTOP_UI_MODE=remote` 调试用 | Electron 安装包（含 UI + 伴侣） |
+| Mobile APK   | 安装包内本地 `/web/*`                                          | APK（含 UI + Capacitor）        |
 
 | Module  | Connection                                            | Notes                    |
 | ------- | ----------------------------------------------------- | ------------------------ |
 | Chat    | Hub RPC `/hub/rpc/v1` (shared WS, no `sap.attach`)    | `/web/chat`              |
 | Console | Hub RPC `/hub/rpc/v1` (WS + HTTP POST, same envelope) | `/web/console/dashboard` |
 
-`/web/config.json` 提供 `hub_url`、`ui_version`、`min_shell_version`（壳↔UI 版本协商）。
+`/web/config.json` 提供 `hub_url`、`ui_version`、`min_shell_version`（浏览器/PWA 与壳调试用；原生壳 UI 版本随安装包）。
 
 ## Events and Hooks (Summary)
 

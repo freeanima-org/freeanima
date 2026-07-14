@@ -7,6 +7,7 @@ import type {
 } from "@freeanima/frontend/shell-sdk/settings";
 import { listSettingsSectionsForPlatform } from "@freeanima/frontend/shell-sdk/settings";
 
+import { needsHubSetup } from "../setup/hub-setup.ts";
 import { SettingsSectionPanel } from "./SettingsSectionPanel.tsx";
 
 type Props = {
@@ -45,6 +46,9 @@ function resolveInitialSectionId(bindings: SettingsBinding[], platform: Settings
   const normalizedQuery = fromQuery === "hub-runtime" ? "compression" : fromQuery;
   if (normalizedQuery && visible.some((b) => b.section.id === normalizedQuery)) {
     return normalizedQuery;
+  }
+  if (needsHubSetup() && visible.some((b) => b.section.id === "hub")) {
+    return "hub";
   }
   return visible[0]?.section.id ?? "";
 }

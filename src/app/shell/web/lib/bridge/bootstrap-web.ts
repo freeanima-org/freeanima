@@ -40,10 +40,10 @@ function installScopedSettingsBridge(): void {
 function redirectToHubSetupIfNeeded(): void {
   if (!webNeedsHubSetupFromConfig()) return;
   const base = (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
-  const setupPath = base ? `${base}/setup` : "/setup";
+  const settingsPath = base ? `${base}/settings` : "/settings";
   const path = window.location.pathname.replace(/\/$/, "") || "/";
-  if (path === setupPath || path.endsWith("/setup")) return;
-  const next = `${setupPath}${window.location.search}${window.location.hash}`;
+  if (path === settingsPath || path.endsWith("/settings")) return;
+  const next = `${settingsPath}${window.location.search}${window.location.hash}`;
   window.history.replaceState(null, "", next);
 }
 

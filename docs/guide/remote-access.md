@@ -9,17 +9,17 @@ title: Remote access
 
 ## Overview
 
-| Layer                    | Role                                                                                                               |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| **Service API Token**    | 绑定 `user` / `agent` subject；Hub RPC HTTP `Authorization: Bearer`；WS `connect.auth_token`；MCP `/mcp` 同 Bearer |
-| **CLI bootstrap**        | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                      |
-| **cloudflared**          | Outbound tunnel；single hostname → Hub `127.0.0.1:2658`（API + Web UI at `/web`）                                  |
-| **`http.host`**          | Hub listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                            |
-| **`http.allowed_hosts`** | TLS 证书 SAN 额外主机名 / IP（`http.host: 0.0.0.0` 时列出客户端访问用的名称）；变更后 `auto: true` 时重启自动重签  |
-| **`http.cors_origins`**  | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel                 |
-| **Client settings**      | Desktop / mobile shell / **browser Web** fill Hub URL and token in **Hub settings**                                |
-| **Remote UI**            | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI        |
-| **PWA**                  | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                        |
+| Layer                    | Role                                                                                                                               |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Service API Token**    | 绑定 `user` / `agent` subject；Hub RPC HTTP `Authorization: Bearer`；WS `connect.auth_token`；MCP `/mcp` 同 Bearer                 |
+| **CLI bootstrap**        | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                                      |
+| **cloudflared**          | Outbound tunnel；single hostname → Hub `127.0.0.1:2658`（API + Web UI at `/web`）                                                  |
+| **`http.host`**          | Hub listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                                            |
+| **`http.allowed_hosts`** | TLS 证书 SAN 额外主机名 / IP（`http.host: 0.0.0.0` 时列出客户端访问用的名称）；变更后 `auto: true` 时重启自动重签                  |
+| **`http.cors_origins`**  | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel                                 |
+| **Client settings**      | Desktop / mobile shell / **browser Web** fill Hub URL and token in **Hub settings**                                                |
+| **Remote UI**            | 浏览器/PWA 从 Hub `/web/*` 加载；Desktop/Mobile 默认安装包内本地 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |
+| **PWA**                  | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                                        |
 
 ### PWA（浏览器 Web）
 

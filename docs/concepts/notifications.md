@@ -27,11 +27,11 @@ PG-backed in-app inbox for **user** and **agent** subjects (entity model). Cron 
 
 实现：`src/frontend/shell-sdk/alert/` + 各端 backend。
 
-| 端          | 通道                                                                                                                                     |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| **desktop** | Electron 主进程 `Notification`（IPC `shell:alert:show`）→ OS 原生通知                                                                    |
-| **web**     | Web Notification API                                                                                                                     |
-| **mobile**  | Capacitor **Local Notifications**；`bootstrap-capacitor` 注入 `satelliteShell.showNativeAlert`（远程 Hub 页不依赖 Web Notification API） |
+| 端          | 通道                                                                                                                                                              |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **desktop** | Electron 主进程 `Notification`（IPC `shell:alert:show`）→ OS 原生通知                                                                                             |
+| **web**     | Web Notification API                                                                                                                                              |
+| **mobile**  | Capacitor **Local Notifications**；本地 bundled SPA 上 `bootstrap-capacitor` 注入 `satelliteShell.showNativeAlert`（localhost 同源，不依赖 Web Notification API） |
 
 ---
 

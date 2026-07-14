@@ -102,8 +102,8 @@
     "anima": "bun src/app/cli/cli.ts",
     "dev:windows": "cd src/app/shell/desktop && bun dev-electron.ts",
     "package:windows": "cd src/app/shell/desktop && DESKTOP_SHELL_BUILD_PROFILE=release bun build-electron.ts --platform win",
-    "build:mobile": "bun run paraglide:compile && bun scripts/sync-mobile-android-version.ts && cd src/app/shell/mobile && vite build",
-    "build:mobile:debug": "bun run paraglide:compile && cd src/app/shell/mobile && MOBILE_DEBUG=1 vite build",
+    "build:mobile": "bun run build:web && bun scripts/sync-mobile-android-version.ts && bun scripts/sync-mobile-www.ts",
+    "build:mobile:debug": "FREEANIMA_WEB_SKIP_PWA=1 bun run build:web && MOBILE_DEBUG=1 bun scripts/sync-mobile-www.ts",
     "debug:android": "cd src/app/shell/mobile && MOBILE_DEBUG=1 bash scripts/run-android.sh",
     "link:global": "mkdir -p \"${BUN_INSTALL:-$HOME/.bun}/bin\" && ln -sf \"$PWD/src/app/cli/cli.ts\" \"${BUN_INSTALL:-$HOME/.bun}/bin/anima\" && chmod +x src/app/cli/cli.ts",
     "prepare": "husky"

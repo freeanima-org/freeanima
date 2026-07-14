@@ -5,7 +5,6 @@ import { dirname, join } from "node:path";
 import * as esbuild from "esbuild";
 import type { CliOptions } from "electron-builder";
 
-import { buildShellUi } from "@freeanima/frontend/shell-ui/build.ts";
 import { buildCompanionApp } from "@freeanima/satellites/companion/lib/exports/build.ts";
 import { nativeBuildMetaDefine } from "@freeanima/frontend/shell-sdk/native-build-meta";
 import { resolveNativeBuildMeta } from "../shared/resolve-native-build-meta.ts";
@@ -13,6 +12,7 @@ import { assertElectronMainBundle } from "./electron-main-bundle-assert.ts";
 
 const SHELL_ROOT = import.meta.dir;
 const REPO_ROOT = join(SHELL_ROOT, "..", "..", "..", "..");
+const WEB_DIST = join(REPO_ROOT, "src", "app", "shell", "web", "dist");
 const ELECTRON_DIST = join(SHELL_ROOT, "electron-dist");
 const MAIN_BUNDLE_PATH = join(ELECTRON_DIST, "main.cjs");
 const COMPANION_ROOT = join(REPO_ROOT, "src", "satellites", "companion");
@@ -139,25 +139,22 @@ function copyDist(src: string, dest: string): void {
   cpSync(src, dest, { recursive: true });
 }
 
-async function buildVendorAssets(opts: { minify: boolean; sourcemap: boolean }): Promise<void> {
-  const companionDist = await buildCompanionApp(opts);
-  copyDist(companionDist, join(SHELL_ROOT, "vendor", "companion", "dist"));
-  if (resolveDesktopUiMode() === "bundled") {
-    const shellUiDist = await buildShellUi({
-      appDir: join(SHELL_ROOT, "spa"),
-      minify: opts.minify,
-      sourcemap: opts.sourcemap,
-    });
-    copyDist(shellUiDist, join(SHELL_ROOT, "vendor", "shell-ui", "dist"));
-  } else {
-    rmSync(join(SHELL_ROOT, "vendor", "shell-ui"), { recursive: true, force: true });
-    console.log("[desktop-shell] remote UI mode — skip vendor/shell-ui bundle");
+function ensureWebDistForVendor(): void {
+  if (existsSync(join(WEB_DIST, "index.html"))) return;
+  console.log("[desktop-shell] web dist 缺失，执行 build:web…");
+  const r = spawnSync("bun", ["run", "build:web"], { cwd: REPO_ROOT, stdio: "inherit" });
+  if (r.status !== 0) throw new Error("build:web 失败");
+  if (!existsSync(join(WEB_DIST, "index.html"))) {
+    throw new Error("build:web 完成后仍缺少 src/app/shell/web/dist/index.html");
   }
 }
 
-function resolveDesktopUiMode(): "remote" | "bundled" {
-  const raw = process.env.DESKTOP_UI_MODE?.trim().toLowerCase();
-  return raw === "bundled" ? "bundled" : "remote";
+async function buildVendorAssets(opts: { minify: boolean; sourcemap: boolean }): Promise<void> {
+  const companionDist = await buildCompanionApp(opts);
+  copyDist(companionDist, join(SHELL_ROOT, "vendor", "companion", "dist"));
+  ensureWebDistForVendor();
+  copyDist(WEB_DIST, join(SHELL_ROOT, "vendor", "shell-ui", "dist"));
+  console.log("[desktop-shell] vendor/shell-ui ← web/dist");
 }
 
 async function bundleElectronMain(

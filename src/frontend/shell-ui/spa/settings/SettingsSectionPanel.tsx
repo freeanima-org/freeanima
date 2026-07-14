@@ -1,6 +1,8 @@
+import { useNavigate } from "@tanstack/react-router";
 import type { SettingsBinding, SettingsPlatform } from "@freeanima/frontend/shell-sdk/settings";
 
 import { FormRenderer } from "../form/FormRenderer.tsx";
+import { needsHubSetup } from "../setup/hub-setup.ts";
 import { LazyComponentPanel } from "./LazyComponentPanel.tsx";
 
 type Props = {
@@ -11,6 +13,8 @@ type Props = {
 export function SettingsSectionPanel({ binding, platform }: Props) {
   const { section, store, deps } = binding;
   const entry = section.platforms[platform];
+  const navigate = useNavigate();
+  const gateMode = section.id === "hub" && needsHubSetup();
 
   if (!entry) {
     return <p className="text-sm text-muted-foreground">此平台暂无设置项</p>;
@@ -26,6 +30,8 @@ export function SettingsSectionPanel({ binding, platform }: Props) {
         store={store}
         platform={platform}
         sectionId={section.id}
+        enterAfterSave={gateMode}
+        onEnterAfterSave={() => void navigate({ to: "/chat" as never })}
       />
     );
   }
