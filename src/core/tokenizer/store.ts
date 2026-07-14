@@ -1,24 +1,13 @@
+import { estimateTokenCount, splitByTokens } from "tokenx";
+
 import { getRuntimeLogger } from "@freeanima/core/config";
 
-import { FALLBACK_TOKENIZER_REPO } from "./constants.ts";
-import {
-  createTokenizerFromEncode,
-  loadTokenizerFromRepo,
-  type TokenizerInstance,
-} from "./load.ts";
-import {
-  isTiktokenModel,
-  NATIVE_TIKTOKEN_REPO,
-  resetTiktokenForTest,
-  tiktokenEncode,
-} from "./native-tiktoken.ts";
-import { resolveTokenizerRepoWithMeta } from "./resolve.ts";
+import { FALLBACK_TOKENIZER_REPO, TOKENX_ESTIMATE_REPO } from "./constants.ts";
+import { createTokenizerFromEncode, type TokenizerInstance } from "./instance.ts";
 
 function tokenizerLog() {
   return getRuntimeLogger().with({ component: "tokenizer" });
 }
-
-const RECONCILE_INTERVAL_MS = 6 * 60 * 60 * 1000;
 
 type ModelBinding = {
   model: string;
@@ -35,10 +24,8 @@ export type TokenizerBindingSnapshot = {
 
 const repoInstances = new Map<string, TokenizerInstance>();
 const modelBindings = new Map<string, ModelBinding>();
-const loadPromises = new Map<string, Promise<TokenizerInstance>>();
 
 let testEncodeByRepo: Map<string, (text: string) => number[]> | null = null;
-let reconcileTimer: ReturnType<typeof setInterval> | null = null;
 
 export function setTokenizerEncodeForTest(repo: string, encode: (text: string) => number[]): void {
   if (!testEncodeByRepo) testEncodeByRepo = new Map();
@@ -50,37 +37,12 @@ export function resetTokenizerForTest(): void {
   testEncodeByRepo = null;
   repoInstances.clear();
   modelBindings.clear();
-  loadPromises.clear();
   stopTokenizerReconcileForTest();
-  resetTiktokenForTest();
 }
 
+/** @deprecated No-op: HF reconcile removed; kept for testing teardown compatibility. */
 export function stopTokenizerReconcileForTest(): void {
-  if (reconcileTimer) {
-    clearInterval(reconcileTimer);
-    reconcileTimer = null;
-  }
-}
-
-async function loadRepo(repo: string): Promise<TokenizerInstance> {
-  const cached = repoInstances.get(repo);
-  if (cached) return cached;
-
-  const pending = loadPromises.get(repo);
-  if (pending) return pending;
-
-  const promise = (async () => {
-    const testEncode = testEncodeByRepo?.get(repo);
-    const instance = testEncode
-      ? createTokenizerFromEncode(repo, testEncode)
-      : await loadTokenizerFromRepo(repo);
-    repoInstances.set(repo, instance);
-    loadPromises.delete(repo);
-    return instance;
-  })();
-
-  loadPromises.set(repo, promise);
-  return promise;
+  /* no timer after tokenx switch */
 }
 
 function bindModel(model: string, primaryRepo: string | null, activeRepo: string): void {
@@ -104,8 +66,8 @@ function isRepoReferenced(repo: string): boolean {
 export function releaseTokenizerRepo(repo: string): boolean {
   if (!repoInstances.has(repo)) return false;
   if (isRepoReferenced(repo)) return false;
+  if (repo === TOKENX_ESTIMATE_REPO) return false;
   repoInstances.delete(repo);
-  loadPromises.delete(repo);
   return true;
 }
 
@@ -125,119 +87,51 @@ export function bindModelToFallbackForTest(model: string): void {
   bindModel(model.trim(), null, FALLBACK_TOKENIZER_REPO);
 }
 
-async function ensureNativeTiktoken(): Promise<void> {
-  if (repoInstances.has(NATIVE_TIKTOKEN_REPO)) return;
-  repoInstances.set(
-    NATIVE_TIKTOKEN_REPO,
-    createTokenizerFromEncode(NATIVE_TIKTOKEN_REPO, tiktokenEncode),
-  );
+function ensureTokenxInstance(): TokenizerInstance {
+  const cached = repoInstances.get(TOKENX_ESTIMATE_REPO);
+  if (cached) return cached;
+  // encode unused in production (countTokens uses estimateTokenCount); placeholder for maps/status.
+  const instance = createTokenizerFromEncode(TOKENX_ESTIMATE_REPO, () => []);
+  repoInstances.set(TOKENX_ESTIMATE_REPO, instance);
+  return instance;
 }
 
+/** Ensure heuristic estimator is registered (no vocab download). */
 export async function ensureFallbackTokenizer(): Promise<void> {
-  await loadRepo(FALLBACK_TOKENIZER_REPO);
+  if (
+    testEncodeByRepo?.has(FALLBACK_TOKENIZER_REPO) &&
+    repoInstances.has(FALLBACK_TOKENIZER_REPO)
+  ) {
+    return;
+  }
+  ensureTokenxInstance();
 }
 
+/** Bind model to in-process tokenx estimate (no HF / tiktoken preload). */
 export async function ensureTokenizer(model: string): Promise<void> {
   const trimmed = model.trim();
-  if (!trimmed) {
-    await ensureFallbackTokenizer();
-    return;
-  }
-
-  const existing = modelBindings.get(trimmed);
-  if (existing && !existing.usingFallback && repoInstances.has(existing.activeRepo)) {
-    return;
-  }
-
-  if (isTiktokenModel(trimmed)) {
-    await ensureNativeTiktoken();
-    bindModel(trimmed, NATIVE_TIKTOKEN_REPO, NATIVE_TIKTOKEN_REPO);
-    return;
-  }
-
-  const { repo: primaryRepo, meta } = await resolveTokenizerRepoWithMeta(trimmed);
-  if (primaryRepo) {
-    try {
-      await loadRepo(primaryRepo);
-      bindModel(trimmed, primaryRepo, primaryRepo);
-      return;
-    } catch (err) {
-      tokenizerLog().warn("tokenizer primary load failed, using fallback", {
-        model: trimmed,
-        repo: primaryRepo,
-        candidates_tried: meta.candidatesTried,
-        search_queries: meta.searchQueries,
-        error: String(err),
-      });
-    }
-  } else {
-    tokenizerLog().warn("tokenizer resolve failed, using fallback", {
-      model: trimmed,
-      candidates_tried: meta.candidatesTried,
-      search_queries: meta.searchQueries,
-    });
-  }
-
-  await ensureFallbackTokenizer();
-  bindModel(trimmed, primaryRepo, FALLBACK_TOKENIZER_REPO);
+  ensureTokenxInstance();
+  if (!trimmed) return;
+  bindModel(trimmed, TOKENX_ESTIMATE_REPO, TOKENX_ESTIMATE_REPO);
 }
 
+/** @deprecated No-op: primary path is always tokenx; kept for wire/API compatibility. */
 export async function reconcileTokenizer(model: string): Promise<boolean> {
   const trimmed = model.trim();
   if (!trimmed) return false;
-
-  const binding = modelBindings.get(trimmed);
-  if (binding && !binding.usingFallback) return false;
-
-  if (isTiktokenModel(trimmed)) {
-    await ensureNativeTiktoken();
-    bindModel(trimmed, NATIVE_TIKTOKEN_REPO, NATIVE_TIKTOKEN_REPO);
-    return true;
-  }
-
-  const { repo: primaryRepo, meta } = await resolveTokenizerRepoWithMeta(trimmed);
-  if (!primaryRepo) {
-    tokenizerLog().debug("tokenizer reconcile still unresolved", {
-      model: trimmed,
-      candidates_tried: meta.candidatesTried,
-      search_queries: meta.searchQueries,
-    });
-    return false;
-  }
-
-  try {
-    await loadRepo(primaryRepo);
-    bindModel(trimmed, primaryRepo, primaryRepo);
-    tokenizerLog().info("tokenizer reconcile succeeded", { model: trimmed, repo: primaryRepo });
-    return true;
-  } catch (err) {
-    tokenizerLog().warn("tokenizer reconcile load failed", {
-      model: trimmed,
-      repo: primaryRepo,
-      error: String(err),
-    });
-    return false;
-  }
+  await ensureTokenizer(trimmed);
+  return false;
 }
 
-async function runTokenizerReconcile(): Promise<void> {
-  for (const binding of modelBindings.values()) {
-    if (!binding.usingFallback) continue;
-    await reconcileTokenizer(binding.model);
-  }
-}
-
-export function startTokenizerReconcile(intervalMs = RECONCILE_INTERVAL_MS): void {
-  if (reconcileTimer) return;
-  reconcileTimer = setInterval(() => {
-    void runTokenizerReconcile();
-  }, intervalMs);
+/** @deprecated No-op after tokenx switch. */
+export function startTokenizerReconcile(_intervalMs?: number): void {
+  tokenizerLog().debug("tokenizer reconcile skipped (tokenx estimate)");
 }
 
 function getActiveRepo(model: string): string {
   const binding = modelBindings.get(model.trim());
   if (binding) return binding.activeRepo;
-  return FALLBACK_TOKENIZER_REPO;
+  return TOKENX_ESTIMATE_REPO;
 }
 
 export function getActiveTokenizerRepo(model: string): string {
@@ -245,12 +139,14 @@ export function getActiveTokenizerRepo(model: string): string {
 }
 
 export function isTokenizerReady(model: string): boolean {
-  return repoInstances.has(getActiveRepo(model));
+  const repo = getActiveRepo(model);
+  if (repo === TOKENX_ESTIMATE_REPO) return true;
+  return repoInstances.has(repo);
 }
 
 export function isUsingFallbackTokenizer(model: string): boolean {
   const binding = modelBindings.get(model.trim());
-  return binding?.usingFallback ?? true;
+  return binding?.usingFallback ?? false;
 }
 
 export function getTokenizerBindingSnapshot(model: string): TokenizerBindingSnapshot | null {
@@ -276,6 +172,16 @@ export function listLoadedTokenizerRepos(): string[] {
   return [...repoInstances.keys()];
 }
 
+function usesTestEncode(model: string): boolean {
+  if (!testEncodeByRepo) return false;
+  const repo = getActiveRepo(model);
+  if (testEncodeByRepo.has(repo)) return true;
+  if (repo !== FALLBACK_TOKENIZER_REPO && testEncodeByRepo.has(FALLBACK_TOKENIZER_REPO)) {
+    return true;
+  }
+  return false;
+}
+
 function encodeWithRepo(text: string, repo: string): number[] {
   let instance = repoInstances.get(repo);
   if (!instance && repo !== FALLBACK_TOKENIZER_REPO) {
@@ -288,13 +194,22 @@ function encodeWithRepo(text: string, repo: string): number[] {
 export function countTokens(text: string, model: string): number {
   const trimmed = text.trim();
   if (!trimmed) return 0;
-  const ids = encodeWithRepo(trimmed, getActiveRepo(model));
-  return ids.length > 0 ? ids.length : 0;
+  if (usesTestEncode(model)) {
+    const ids = encodeWithRepo(trimmed, getActiveRepo(model));
+    return ids.length > 0 ? ids.length : 0;
+  }
+  return estimateTokenCount(trimmed);
 }
 
 export function splitTextByTokenLimit(text: string, maxTokens: number, model: string): string[] {
   const trimmed = text.trim();
   if (!trimmed || maxTokens <= 0) return [];
+
+  if (!usesTestEncode(model)) {
+    if (estimateTokenCount(trimmed) <= maxTokens) return [trimmed];
+    return splitByTokens(trimmed, maxTokens).filter((c) => c.length > 0);
+  }
+
   if (countTokens(trimmed, model) <= maxTokens) return [trimmed];
 
   const chunks: string[] = [];

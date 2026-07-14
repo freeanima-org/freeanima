@@ -1,4 +1,4 @@
-export { FALLBACK_TOKENIZER_REPO, HF_HUB_BASE } from "./constants.ts";
+export { FALLBACK_TOKENIZER_REPO, HF_HUB_BASE, TOKENX_ESTIMATE_REPO } from "./constants.ts";
 export {
   setResolveContext,
   getResolveContext,

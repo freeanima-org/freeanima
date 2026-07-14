@@ -24,7 +24,11 @@ function formatVirtualKb(kb: number): string {
 
 function shortRepo(repo: string): string {
   const slash = repo.lastIndexOf("/");
-  return slash >= 0 ? repo.slice(slash + 1) : repo;
+  if (slash >= 0) return repo.slice(slash + 1);
+  // e.g. __estimate__:tokenx → tokenx
+  const colon = repo.lastIndexOf(":");
+  if (colon >= 0 && repo.startsWith("__")) return repo.slice(colon + 1);
+  return repo;
 }
 
 function printSection(title: string): void {

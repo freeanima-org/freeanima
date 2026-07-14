@@ -1,8 +1,4 @@
-import {
-  ensureTokenizer,
-  setResolveContext,
-  startTokenizerReconcile,
-} from "@freeanima/core/tokenizer";
+import { ensureTokenizer, setResolveContext } from "@freeanima/core/tokenizer";
 import type { AnimaConfig, Config } from "@freeanima/core/config";
 import {
   getDefaultProviderBaseUrl,
@@ -43,7 +39,7 @@ function collectOllamaBaseUrls(cfg: AnimaConfig): string[] {
   return urls;
 }
 
-/** Preload configured chat/embedding model tokenizers; fallback loads only on resolve failure. */
+/** Bind chat/embedding models to in-process tokenx estimate (no HF vocab preload). */
 export async function wireTokenizerRuntime(config: Config): Promise<void> {
   const cfg = config.data;
   setResolveContext({ ollamaBaseUrls: collectOllamaBaseUrls(cfg) });
@@ -54,11 +50,11 @@ export async function wireTokenizerRuntime(config: Config): Promise<void> {
     const chatModel = getProfileHopModel(cfg, PROFILE_CHAT);
     tasks.push(
       ensureTokenizer(chatModel).catch((err) => {
-        log.warn("chat tokenizer preload failed", { model: chatModel, error: String(err) });
+        log.warn("chat tokenizer bind failed", { model: chatModel, error: String(err) });
       }),
     );
   } catch (err) {
-    log.warn("chat model not configured for tokenizer preload", { error: String(err) });
+    log.warn("chat model not configured for tokenizer bind", { error: String(err) });
   }
 
   if (isEmbeddingEnabled(cfg)) {
@@ -66,7 +62,7 @@ export async function wireTokenizerRuntime(config: Config): Promise<void> {
     if (embeddingModel) {
       tasks.push(
         ensureTokenizer(embeddingModel).catch((err) => {
-          log.warn("embedding tokenizer preload failed", {
+          log.warn("embedding tokenizer bind failed", {
             model: embeddingModel,
             error: String(err),
           });
@@ -76,6 +72,5 @@ export async function wireTokenizerRuntime(config: Config): Promise<void> {
   }
 
   await Promise.all(tasks);
-  startTokenizerReconcile();
-  log.info("tokenizer runtime wired");
+  log.info("tokenizer runtime wired (tokenx estimate)");
 }
