@@ -1,4 +1,4 @@
-import { createTempDir, removeTempDir } from "@freeanima/core/util";
+import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
 
 import { resetServiceLogger } from "@freeanima/platform/logging";
 

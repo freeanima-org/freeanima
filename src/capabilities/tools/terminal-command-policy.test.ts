@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { createTempDir, removeTempDir } from "@freeanima/core/util";
+import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
 import { join } from "node:path";
 import { assertTerminalCommandAllowed, splitCommandLine } from "./terminal-command-policy.ts";
 

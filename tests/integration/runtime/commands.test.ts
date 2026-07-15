@@ -11,7 +11,7 @@ import type { PgTestContext } from "../../helpers/pg-test.ts";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { createTempDir, removeTempDir } from "@freeanima/core/util";
+import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
 import {
   getTestEngine,
   seedSession,

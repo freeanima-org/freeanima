@@ -2,7 +2,9 @@ import { describe, expect, test } from "bun:test";
 
 import {
   isListDndId,
+  isListRootDndId,
   isTaskDndId,
+  LIST_ROOT_DND_ID,
   listDndId,
   parseListDndId,
   parseTaskDndId,
@@ -21,5 +23,11 @@ describe("dnd-ids", () => {
     expect(taskDndId(9)).toBe("task:9");
     expect(parseTaskDndId("task:9")).toBe(9);
     expect(isTaskDndId("task:9")).toBe(true);
+  });
+
+  test("list-root is not a list id", () => {
+    expect(isListRootDndId(LIST_ROOT_DND_ID)).toBe(true);
+    expect(isListDndId(LIST_ROOT_DND_ID)).toBe(false);
+    expect(parseListDndId(LIST_ROOT_DND_ID)).toBeNull();
   });
 });

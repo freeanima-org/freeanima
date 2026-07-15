@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from "bun:test";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { createTempDir, removeTempDir } from "@freeanima/core/util";
+import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
 import {
   getRegisteredEmbeddedMigrations,
   materializeEmbeddedMigrations,

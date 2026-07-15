@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { createTempDir, removeTempDir } from "@freeanima/core/util";
+import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
 import { SkillRegistry } from "./registry.ts";
 import {
   formatSkillsPrefix,

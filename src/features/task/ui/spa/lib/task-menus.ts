@@ -44,7 +44,7 @@ export function buildListMenuItems(
   }
 
   const items: import("./menu-types.ts").TaskMenuItem[] = [
-    { label: "重命名", onClick: () => handlers.onRename(list) },
+    { label: "编辑", onClick: () => handlers.onRename(list) },
     copyIdMenuItem(list.id),
   ];
 

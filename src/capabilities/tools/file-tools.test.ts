@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { createTempDir, removeTempDir } from "@freeanima/core/util";
+import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
 import { Config } from "@freeanima/platform/config";
 import { registerCoreTools } from "@freeanima/capabilities/tools";
 import { ToolSetRegistry } from "@freeanima/core/tool";
