@@ -15,9 +15,20 @@ describe("shell-bridge shared", () => {
     expect(isMobileCapacitorShellCandidate()).toBe(false);
   });
 
-  it("isMobileCapacitorShellCandidate Android WebView 无 window.Capacitor 仍为 true", () => {
+  it("远程 Hub 手机 UA 无 Capacitor 不为候选", () => {
     (globalThis as { window: Window }).window = {
       navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14)" },
+      location: { origin: "https://hub.example.com" },
+    } as unknown as Window;
+
+    expect(isCapacitorRuntime()).toBe(false);
+    expect(isMobileCapacitorShellCandidate()).toBe(false);
+  });
+
+  it("薄壳 localhost 无 window.Capacitor 仍为候选", () => {
+    (globalThis as { window: Window }).window = {
+      navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14)" },
+      location: { origin: "http://localhost" },
     } as unknown as Window;
 
     expect(isCapacitorRuntime()).toBe(false);

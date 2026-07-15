@@ -46,13 +46,21 @@ export function isCapacitorNativePlatform(): boolean {
 }
 
 /**
- * 移动壳 WebView（含远程 Hub 页）：Capacitor 注入脚本仅挂在 https://localhost，
- * 跳转到 Hub 后 window.Capacitor 可能尚未存在，但仍可通过 fetch localhost 读 APK 内资源。
+ * Capacitor 壳「候选」探测（软信号，供 bootstrap / 资产探测等继续等待或试读）。
+ *
+ * - 已有 nativePromise / isNativeShell → 真壳
+ * - 薄壳首页（localhost / capacitor://）+ 移动 UA → 可试读 APK 内资产
+ * - **禁止**仅凭远程 Hub 上的手机 UA 判为壳：普通 Safari/Chrome 直连 `/web` 必须走 Web bridge
+ *   （能力层跟壳，不跟 UA；布局轴另由 viewport 决定）
  */
 export function isMobileCapacitorShellCandidate(): boolean {
   const w = runtimeWindow();
   if (!w || w.satelliteShell?.isElectron) return false;
   if (isCapacitorNativePlatform()) return true;
+  if (w.satelliteShell?.isNativeShell) return true;
+  const origin = w.location?.origin ?? "";
+  const onThinShellOrigin = /localhost/i.test(origin) || origin.startsWith("capacitor://");
+  if (!onThinShellOrigin) return false;
   const ua = w.navigator?.userAgent ?? "";
   return /Android|iPhone|iPad|Mobile/i.test(ua);
 }

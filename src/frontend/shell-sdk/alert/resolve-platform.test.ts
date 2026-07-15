@@ -13,12 +13,27 @@ describe("resolveAlertDisplayPlatform", () => {
     expect(resolveAlertDisplayPlatform(backend)).toBe("mobile");
   });
 
-  it("web backend + Android WebView 展示 mobile", () => {
+  it("web backend + 手机浏览器直连 Hub 保持 web（不跟 UA）", () => {
+    (globalThis as { window: Window }).window = {
+      navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14; Mobile)" },
+      location: { origin: "https://hub.example.com" },
+    } as unknown as Window;
+    const backend = { platform: "web" } as AlertBackend;
+    expect(resolveAlertDisplayPlatform(backend)).toBe("web");
+    expect(isCapacitorShellRuntime()).toBe(false);
+  });
+
+  it("web backend + Capacitor nativePromise 展示 mobile", () => {
     (globalThis as { window: Window }).window = {
       navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14)" },
+      location: { origin: "https://hub.example.com" },
+      Capacitor: {
+        nativePromise: async () => ({}),
+      },
     } as unknown as Window;
     const backend = { platform: "web" } as AlertBackend;
     expect(resolveAlertDisplayPlatform(backend)).toBe("mobile");
+    expect(isCapacitorShellRuntime()).toBe(true);
   });
 
   it("web backend + isNativeShell 展示 mobile", () => {
