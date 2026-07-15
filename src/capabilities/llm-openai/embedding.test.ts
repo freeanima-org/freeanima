@@ -24,6 +24,7 @@ const cfg = {
   model: "bge-m3",
   dimensions: 4,
   timeoutMs: 5000,
+  queryTimeoutMs: 800,
 };
 
 describe("createOpenAiEmbeddingBatchClient", () => {

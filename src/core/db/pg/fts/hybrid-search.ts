@@ -50,25 +50,26 @@ export async function hybridSearchSemanticMemory(
     source_conversations: opts?.source_conversations,
   });
 
-  const [queryEmbedding, ftsHits] = await Promise.all([
-    embedQueryText(q),
-    searchSemanticMemoryFtsRaw(q, {
-      ...filterOpts,
-      limit: candidateLimit(fetchLimit, 0),
-    }),
-  ]);
-  const pool = candidateLimit(fetchLimit, ftsHits.length);
-  const [trgmHits, vectorHits] = await Promise.all([
-    searchSemanticMemoryTrgm(q, {
-      ...filterOpts,
-      limit: pool,
-    }),
+  // Single-wave parallel: FTS ∥ trgm ∥ (embed → vector); optimistic pool (no wait on FTS hits)
+  const pool = candidateLimit(fetchLimit, 0);
+  const vectorBranch = embedQueryText(q).then((queryEmbedding) =>
     queryEmbedding
       ? searchSemanticMemoryVector(queryEmbedding, {
           ...filterOpts,
           limit: pool,
         })
       : Promise.resolve([]),
+  );
+  const [ftsHits, trgmHits, vectorHits] = await Promise.all([
+    searchSemanticMemoryFtsRaw(q, {
+      ...filterOpts,
+      limit: pool,
+    }),
+    searchSemanticMemoryTrgm(q, {
+      ...filterOpts,
+      limit: pool,
+    }),
+    vectorBranch,
   ]);
 
   const ftsRanked = ftsHits.map((h) => ({ ...h, docKey: semanticMemoryDocKey(h.id) }));
@@ -91,16 +92,16 @@ export async function hybridSearchMessages(
 
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));
 
-  const [queryEmbedding, ftsHits] = await Promise.all([
-    embedQueryText(q),
-    searchMessagesFtsRaw(q, { ...opts, limit: candidateLimit(limit, 0) }),
-  ]);
-  const pool = candidateLimit(limit, ftsHits.length);
-  const [trgmHits, vectorHits] = await Promise.all([
-    searchMessagesTrgm(q, { ...opts, limit: pool }),
+  const pool = candidateLimit(limit, 0);
+  const vectorBranch = embedQueryText(q).then((queryEmbedding) =>
     queryEmbedding
       ? searchMessagesVector(queryEmbedding, { ...opts, limit: pool })
       : Promise.resolve([]),
+  );
+  const [ftsHits, trgmHits, vectorHits] = await Promise.all([
+    searchMessagesFtsRaw(q, { ...opts, limit: pool }),
+    searchMessagesTrgm(q, { ...opts, limit: pool }),
+    vectorBranch,
   ]);
 
   const ftsRanked = ftsHits.map((h) => ({ ...h, docKey: messageDocKey(h.id) }));

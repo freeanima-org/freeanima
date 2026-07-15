@@ -164,6 +164,8 @@ Configure under `memory.passive_recall` (`enabled`, `limit`, `min_score`, `min_r
 
 **Index columns (PG):** `semantic_memory` and `messages` use `fts_segmented` (optional jieba) → generated `content_fts` (tsvector, keyword FTS) plus async `content_embedding` (pgvector, semantic similarity). `limbic_memory` and `autobiographical_memory` follow the same pattern; autobiographical index text is `title + newline + content`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only). `content_fts` is never written by application code — PostgreSQL generates it from `fts_segmented` or raw content.
 
+**Hybrid retrieval:** FTS, trigram, and vector branches run in **one parallel wave** (vector depends on query embedding). Query embedding uses `embedding.query_timeout_ms` (default **800ms**), independent of write-path `embedding.timeout_ms` (default 60s). On timeout or upstream error, the vector branch is skipped (fail-open) and results still merge from FTS ∪ trigram — so a stuck embed service does not block the chat turn for tens of seconds.
+
 Resident memory injected via system prompt: **up to 40 pinned** + **most-referenced top N** (default N=20). Each line carries a citation marker `[[f-000001-abcd]]` (ID only, no language prefix).
 
 **Citation obligation:** whenever an assistant reply uses semantic memory—resident list, `memory_recall` / `memory_semantic_search` semantic hits, or prior message markers—it must append each cited `[[f-id]]` at the **end of the reply body**. Use the inline marker or `semantic_memory_id` from tool results. Session, limbic, and autobiographical hits do not use this marker.

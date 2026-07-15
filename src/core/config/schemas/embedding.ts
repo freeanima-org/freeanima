@@ -10,7 +10,10 @@ export const embeddingConfigSchema = z
     api_key: z.string().optional(),
     model: z.string().optional(),
     dimensions: z.number().int().positive().optional(),
+    /** Write / rebuild embed HTTP timeout (default 60s) */
     timeout_ms: z.number().int().positive().optional(),
+    /** Retrieval query embed budget; fail-open (default 800ms) */
+    query_timeout_ms: z.number().int().positive().optional(),
   })
   .optional();
 
@@ -22,4 +25,5 @@ export type ResolvedEmbeddingConfig = {
   model: string;
   dimensions: number;
   timeoutMs: number;
+  queryTimeoutMs: number;
 };
