@@ -5,7 +5,7 @@
 
 ## Global view
 
-`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: `anima service` starts the Bun Hub（Hub RPC REST/WS `/hub/rpc/v1` + MCP `/mcp` + engine）；UI 由 `src/app/shell/desktop` / `src/app/shell/mobile` bundled 提供。
+`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: 源码用 `bun run dev:hub` 起 Bun Hub；standalone 安装版用 `anima service`（Hub RPC REST/WS `/hub/rpc/v1` + MCP `/mcp` + engine）；UI 由 `src/app/shell/desktop` / `src/app/shell/mobile` bundled 提供。
 
 | Capability     | Highlights                                                                                                                                                                                                          |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -54,8 +54,9 @@ bun run test:changed # local / pre-commit (unit changed only)
 bun run test:unit # all unit tests
 bun run test:integration # integration (tests/integration/)
 bun run test # unit + integration（串行）
-bun run dev:service # Hub API + SAP（:2658）；启动不自动 build Web
+bun run dev:hub # 源码起 Hub（前台，可 --port；不经 anima service）；启动不自动 build Web
 bun run dev:web # 浏览器全壳层开发（Vite HMR :4173；需 Hub 已运行）
+# anima service … # 仅 standalone 安装版 CLI（源码 anima 无此子命令）
 bun run build:web # 源码部署 / 托管 /web 前构建（可用 FREEANIMA_WEB_SKIP_PWA=1 跳过 SW；standalone 打包若 dist 未过期会跳过）
 # anima vault list # agent vault item metadata; use Shell /vault for User library
 
@@ -64,8 +65,8 @@ DATABASE_URL="…" bunx drizzle-kit generate --config src/core/drizzle.config.ts
 DATABASE_URL="…" bunx drizzle-kit migrate --config src/core/drizzle.config.ts
 ```
 
-- Hub API：`http://127.0.0.1:2658/hub/rpc/v1`（`anima service` 托管后端；`web.enabled` 且已有 dist 时托管 `/web/*`）
-- Web 形态：standalone / 源码部署须先有 `build:web`（打包时强制；源码部署手动）；dev 用 `dev:service` + `dev:web`（HMR，不依赖落盘）
+- Hub API：`http://127.0.0.1:2658/hub/rpc/v1`（开发用 `dev:hub`；生产用 standalone `anima service`；`web.enabled` 且已有 dist 时托管 `/web/*`）
+- Web 形态：standalone / 源码部署须先有 `build:web`（打包时强制；源码部署手动）；dev 用 `dev:hub` + `dev:web`（HMR，不依赖落盘）
 - 桌面/移动/浏览器开发客户端：聊天室 + 管理台 UI 在 `src/app/shell/desktop` / `mobile` / `web`（web 仅本地调试）
 - Dev UI：`bun run dev:web` → `http://127.0.0.1:4173/web/chat`（Console：`/web/console/dashboard`）
 - Release: [`.agent/rules/release.md`](.agent/rules/release.md)

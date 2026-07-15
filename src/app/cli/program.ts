@@ -7,15 +7,25 @@ import { registerCompletionCommand } from "./commands/completion.ts";
 import { registerUpgradeCommand } from "./commands/upgrade.ts";
 import { registerWebCommand } from "./commands/web.ts";
 import { registerTokenCommand } from "./commands/token.ts";
+import { isStandaloneCli } from "./is-standalone-cli.ts";
+
+export type BuildProgramOptions = {
+  /** 默认 `isStandaloneCli()`；测试可强制 */
+  standalone?: boolean;
+};
 
 /** Build CLI program (shared by parse and completion generation) */
-export function buildProgram(): Command {
+export function buildProgram(opts: BuildProgramOptions = {}): Command {
+  const standalone = opts.standalone ?? isStandaloneCli();
   const program = new Command()
     .name("anima")
     .description("Free Anima — digital life runtime")
     .showHelpAfterError("(use --help for usage)");
 
-  registerServiceCommand(program);
+  if (standalone) {
+    registerServiceCommand(program);
+  }
+
   registerVaultCommand(program);
   registerUpgradeCommand(program);
   registerWebCommand(program);

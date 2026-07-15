@@ -149,18 +149,18 @@ cp config.example.yaml ~/.anima/config.yaml
 # configure database + LLM (see database.md, security.md)
 ```
 
-**Dev** (Hub + Vite HMR; service never auto-builds Web):
+**Dev** (Hub + Vite HMR; never auto-builds Web):
 
 ```bash
-bun run dev:service   # terminal 1: Hub REST + SAP
-bun run dev:web       # terminal 2: http://127.0.0.1:4173/web/chat · Console /web/console/dashboard
+bun run dev:hub     # terminal 1: Hub REST + SAP (optional -- --port 2701)
+bun run dev:web     # terminal 2: http://127.0.0.1:4173/web/chat · Console /web/console/dashboard
 ```
 
-**Source deploy** (Hub hosts `/web/*` when `config.yaml` `web.enabled`): build Web first, then start — startup does not run `build:web`.
+**Source deploy** (Hub hosts `/web/*` when `config.yaml` `web.enabled`): build Web first, then start — startup does not run `build:web`. Source-tree `anima` has no `service` command.
 
 ```bash
 bun run build:web
-anima service start --foreground
+bun run dev:hub
 # UI: http://127.0.0.1:2658/web/chat
 ```
 
@@ -176,6 +176,8 @@ Upgrade manually: `git pull`, `bun install`, then restart the service. `anima up
 ---
 
 ## Verify installation
+
+Requires the **standalone** `anima` binary (`anima service` is not on the source-tree CLI).
 
 ```bash
 anima service start
