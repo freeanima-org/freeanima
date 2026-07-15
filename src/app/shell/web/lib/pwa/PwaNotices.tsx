@@ -23,12 +23,19 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
+export const PWA_UPDATE_CHECK_EVENT = "freeanima:pwa-update-check";
+
+export function requestPwaUpdateCheck(): void {
+  window.dispatchEvent(new CustomEvent(PWA_UPDATE_CHECK_EVENT));
+}
+
 export function PwaNotices(): JSX.Element | null {
   const [needRefresh, setNeedRefresh] = useState(false);
   const [offlineReady, setOfflineReady] = useState(false);
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [installDismissed, setInstallDismissed] = useState(() => readInstallDismissed());
   const reloadRef = useRef<(() => Promise<void>) | null>(null);
+  const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
 
   const webShell = isBrowserWebShell();
   const compactLayout = isCompactInstallContext();
@@ -36,16 +43,38 @@ export function PwaNotices(): JSX.Element | null {
   useEffect(() => {
     if (!webShell) return;
 
+    const cleanups: Array<() => void> = [];
+
     if (import.meta.env.PROD) {
       const updateSW = registerSW({
+        immediate: true,
         onNeedRefresh() {
           setNeedRefresh(true);
         },
         onOfflineReady() {
           setOfflineReady(true);
         },
+        onRegistered(registration) {
+          if (registration) registrationRef.current = registration;
+        },
       });
       reloadRef.current = updateSW;
+
+      const pollUpdate = () => {
+        void registrationRef.current?.update();
+      };
+      const interval = window.setInterval(pollUpdate, 60 * 60 * 1000);
+      const onVis = () => {
+        if (document.visibilityState === "visible") pollUpdate();
+      };
+      const onManual = () => pollUpdate();
+      document.addEventListener("visibilitychange", onVis);
+      window.addEventListener(PWA_UPDATE_CHECK_EVENT, onManual);
+      cleanups.push(() => {
+        window.clearInterval(interval);
+        document.removeEventListener("visibilitychange", onVis);
+        window.removeEventListener(PWA_UPDATE_CHECK_EVENT, onManual);
+      });
     }
 
     const onBeforeInstall = (event: Event) => {
@@ -56,12 +85,15 @@ export function PwaNotices(): JSX.Element | null {
       setInstallEvent(null);
       setInstallDismissed(true);
     };
-
     window.addEventListener("beforeinstallprompt", onBeforeInstall);
     window.addEventListener("appinstalled", onInstalled);
-    return () => {
+    cleanups.push(() => {
       window.removeEventListener("beforeinstallprompt", onBeforeInstall);
       window.removeEventListener("appinstalled", onInstalled);
+    });
+
+    return () => {
+      for (const c of cleanups) c();
     };
   }, [webShell]);
 

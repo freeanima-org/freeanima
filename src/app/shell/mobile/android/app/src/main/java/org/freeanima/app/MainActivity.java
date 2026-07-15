@@ -10,6 +10,7 @@ import org.freeanima.app.BuildConfig;
 public class MainActivity extends BridgeActivity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
+    registerPlugin(ApkInstallerPlugin.class);
     super.onCreate(savedInstanceState);
     if (BuildConfig.DEBUG) {
       WebView.setWebContentsDebuggingEnabled(true);

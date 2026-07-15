@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@freeanima/frontend/ui-kit";
+import { Button, Card, CardContent, CardHeader, CardTitle } from "@freeanima/frontend/ui-kit";
 import type { ComponentBuildMeta } from "@freeanima/frontend/shell-sdk/build-meta";
 import {
   isCapacitorNativePlatform,
@@ -13,8 +13,10 @@ import {
   resolveAboutNativeBuildMeta,
 } from "@freeanima/frontend/shell-sdk/native-build-meta.resolve";
 import { parseWebUiConfigJson } from "@freeanima/frontend/shell-sdk/web-ui-config";
+import { resolveNativePackagedKind } from "@freeanima/frontend/shell-sdk/app-update";
 
 import { m } from "@paraglide/messages";
+import { requestShellUpdateCheck } from "../../ShellUpdateBanner.tsx";
 
 function isNativeShellRuntime(): boolean {
   return Boolean(window.satelliteShell?.isElectron || window.satelliteShell?.isNativeShell);
@@ -227,9 +229,33 @@ export default function AboutPanel() {
   }, []);
 
   const showNative = nativeSection !== "hide";
+  const isBrowserWeb =
+    typeof window !== "undefined" &&
+    !window.satelliteShell?.isElectron &&
+    !window.satelliteShell?.isNativeShell;
+  const canCheckNative = resolveNativePackagedKind() != null;
 
   return (
     <div className="space-y-4 max-w-3xl">
+      <div className="flex flex-wrap gap-2">
+        {canCheckNative ? (
+          <Button type="button" size="sm" onClick={() => requestShellUpdateCheck()}>
+            {m.ui_shell_update_check()}
+          </Button>
+        ) : null}
+        {isBrowserWeb ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("freeanima:pwa-update-check"));
+            }}
+          >
+            {m.ui_shell_update_check()}
+          </Button>
+        ) : null}
+      </div>
       <BuildMetaGroup
         title={m.settings_about_group_service()}
         meta={serviceAbout?.meta}

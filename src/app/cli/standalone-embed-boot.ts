@@ -1,9 +1,14 @@
 import { registerEmbeddedMigrations } from "@freeanima/core/db";
+import { registerStandaloneRuntimeMeta } from "@freeanima/core/config/standalone-runtime-meta";
 import { registerEmbeddedWebDist } from "./web/web-dist-embedded.ts";
-import { standaloneEmbeds } from "./standalone-embeds.ts";
+import { standaloneEmbeds, standaloneRuntimeMeta } from "./standalone-embeds.ts";
 
 /** 在 cli 入口最早 side-effect：把编译期嵌入注册到 globalThis */
 export function bootStandaloneEmbeds(): void {
+  if (standaloneRuntimeMeta) {
+    registerStandaloneRuntimeMeta(standaloneRuntimeMeta);
+  }
+
   if (standaloneEmbeds.length === 0) return;
 
   const migrations = standaloneEmbeds
@@ -16,3 +21,6 @@ export function bootStandaloneEmbeds(): void {
   if (migrations.length > 0) registerEmbeddedMigrations(migrations);
   if (web.length > 0) registerEmbeddedWebDist(web);
 }
+
+/** 模块加载即注册，保证先于 ANIMA_VERSION / SERVICE_BUILD_META 求值 */
+bootStandaloneEmbeds();

@@ -112,6 +112,9 @@ function createSatelliteShell(
       ipcRenderer.invoke("shell:alert:request-permission") as Promise<
         "granted" | "denied" | "unsupported"
       >,
+    applyPackagedUpdate: async ({ assetUrl }) => {
+      await ipcRenderer.invoke("shell:apply-packaged-update", assetUrl);
+    },
   };
 }
 

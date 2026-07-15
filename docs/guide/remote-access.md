@@ -27,7 +27,7 @@ title: Remote access
 - **Secure context**：Service Worker 需要 HTTPS 或 `localhost`。局域网可用 Hub 本地 HTTPS（`:2659`）或自建 TLS 终止。浏览器 **Web Speech** 朗读同样需安全上下文；默认 **Edge TTS**（Hub `POST /hub/rpc/v1/tts/synthesize`）在 HTTP 局域网下也可用，但 Hub 需能访问外网 Microsoft 语音服务。
 - **Service Worker vs 安装**：SW 在普通浏览器标签页访问 `/web/*` 时即注册（生产构建）；**不要求**「添加到主屏幕」。安装仅改变启动方式（独立窗口），离线能力与标签页相同。
 - **安装（可选）**：手机浏览器访问 `/web/chat`，Chrome / Safari 支持「添加到主屏幕」；生产构建会显示安装引导条（compact 布局、非已安装态）。
-- **更新**：Hub 部署新 Web 静态产物后，已安装 PWA 会提示「新版本可用」；点击重新加载后生效。壳层 JS 由 Workbox precache，`/web/config.json` 始终 `no-store`（Hub URL 动态）。
+- **更新**：Hub 部署新 Web 静态产物后，已安装 PWA 会提示「新版本可用」；点击重新加载后生效（不会自动刷新）。壳层 JS 由 Workbox precache，生产环境会定期/`visibilitychange` 时 `registration.update()`。`/web/config.json` 始终 `no-store`（Hub URL 动态）。Desktop/Mobile 不走 SW；升级见 Releases 安装包检测（设置 → 关于「检查更新」）。
 - **离线边界（两层）**：
   - **壳层（SW）**：仅缓存 JS/CSS/HTML 等静态资源，保证断网时页面框架可加载。
   - **业务快照（IndexedDB）**：Chat / Task / Notification / Diary / Email / Dream / Pomodoro（config/历史）及 Console 部分只读页由 `shell-sdk/offline-cache` 做 cache-first；**Tier 2 可写**模块（Diary、Task、Chat send、Pomodoro outbox）离线可编辑，恢复在线后 outbox flush；详见 [`offline-platform.md`](offline-platform.md)。

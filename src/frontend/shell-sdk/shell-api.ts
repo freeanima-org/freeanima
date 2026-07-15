@@ -69,6 +69,8 @@ export type SatelliteShellApi = {
   /** 原生壳 OS 通知（Electron 主进程 / Capacitor Local Notifications） */
   showNativeAlert?: (payload: ShellNativeAlertPayload) => Promise<void>;
   requestNativeAlertPermission?: () => Promise<ShellNativeAlertPermission>;
+  /** 原生壳：确认后下载 Releases 产物并覆盖安装（Desktop NSIS / Mobile APK） */
+  applyPackagedUpdate?: (opts: { assetUrl: string }) => Promise<void>;
 };
 
 declare global {

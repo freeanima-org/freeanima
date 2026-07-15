@@ -49,7 +49,7 @@ jobs:
       - name: Pack Linux x64 artifact
         run: |
           cd dist/anima-executable
-          tar -czf ../../anima-linux-x64.tar.gz anima package.json dist
+          tar -czf ../../anima-linux-x64.tar.gz anima
           ls -lh ../../anima-linux-x64.tar.gz
 
       - name: Upload to GitHub Release

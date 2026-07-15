@@ -20,11 +20,7 @@ import {
   resolveConversationHandoffOnNew,
   resolveToolDisplayMode,
 } from "../connectors/gateway/tool-display.ts";
-import {
-  CLI_UPGRADE_HINT_SOURCE,
-  CLI_UPGRADE_HINT_STANDALONE,
-  getCliInstallKind,
-} from "@freeanima/core/config/cli-install";
+import { CLI_UPGRADE_HINT_SOURCE, getCliInstallKind } from "@freeanima/core/config/cli-install";
 import {
   addSubgoal,
   clearGoal,
@@ -363,7 +359,7 @@ function cmdUpgrade(_ctx: CommandContext): CommandResult | string {
   }
   const kind = getCliInstallKind();
   if (kind === "standalone") {
-    return `⛔ ${CLI_UPGRADE_HINT_STANDALONE}`;
+    return "请在终端执行 `anima upgrade`（从 GitHub Releases 下载并覆盖独立安装前缀），完成后 `anima service restart`。";
   }
   return `⛔ ${CLI_UPGRADE_HINT_SOURCE}`;
 }

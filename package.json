@@ -65,6 +65,8 @@
     "stylelint:fix": "stylelint --fix \"src/frontend/**/spa/**/*.css\" \"src/frontend/**/lib/**/*.css\" \"src/features/**/ui/**/*.css\" \"src/satellites/**/spa/**/*.css\" \"src/app/shell/desktop/**/spa/**/*.css\" \"src/app/shell/web/**/spa/**/*.css\"",
     "brand:icons": "bun scripts/generate-brand-icons.ts",
     "build:cli:executable": "bun scripts/build-cli-executable.ts",
+    "install-cli": "bun run build:cli:executable && bun scripts/install-cli.ts --skip-build",
+    "install-cli-from-dist": "bun scripts/install-cli.ts --skip-build",
     "setup:fbx": "bun src/satellites/companion/scripts/ensure-fbx2gltf.ts",
     "db:generate": "bunx drizzle-kit generate --config src/core/drizzle.config.ts",
     "db:migrate": "bunx drizzle-kit migrate --config src/core/drizzle.config.ts",
@@ -105,7 +107,6 @@
     "build:mobile": "bun run build:web && bun scripts/sync-mobile-android-version.ts && bun scripts/sync-mobile-www.ts",
     "build:mobile:debug": "FREEANIMA_WEB_SKIP_PWA=1 bun run build:web && MOBILE_DEBUG=1 bun scripts/sync-mobile-www.ts",
     "debug:android": "cd src/app/shell/mobile && MOBILE_DEBUG=1 bash scripts/run-android.sh",
-    "link:global": "mkdir -p \"${BUN_INSTALL:-$HOME/.bun}/bin\" && ln -sf \"$PWD/src/app/cli/cli.ts\" \"${BUN_INSTALL:-$HOME/.bun}/bin/anima\" && chmod +x src/app/cli/cli.ts",
     "prepare": "husky"
   },
   "patchedDependencies": {

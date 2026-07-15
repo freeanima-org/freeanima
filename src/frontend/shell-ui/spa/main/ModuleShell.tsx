@@ -10,6 +10,7 @@ import { useShellModuleVisibility } from "@freeanima/frontend/shell-sdk/react.ts
 import { isCompactLayout, useLayoutMode } from "../layout-mode.ts";
 import { navigateShellModule } from "../shell-nav.ts";
 import { ShellConnectivityBar } from "../ShellConnectivityBar.tsx";
+import { ShellUpdateBanner } from "../ShellUpdateBanner.tsx";
 import { filterVisibleNavItems, shellNavItems, type ShellNavItem } from "../lib/shell-nav-i18n.ts";
 import { useShellBottomNavLayout } from "../lib/use-shell-bottom-nav-layout.ts";
 import { ShellModuleRail } from "./ShellModuleRail.tsx";
@@ -128,6 +129,7 @@ function DesktopModuleShell() {
     <div className="shell-module-layout h-full flex flex-row bg-background text-foreground">
       <ShellModuleRail />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <ShellUpdateBanner />
         <ShellConnectivityBar />
         <OfflineSyncBootstrap />
         <main className="flex-1 min-h-0 overflow-hidden">
@@ -146,6 +148,7 @@ function MobileModuleShell() {
   return (
     <div className="shell-module-layout shell-layout-compact h-full flex flex-col bg-background text-foreground">
       <main className="flex-1 min-h-0 overflow-hidden flex flex-col">
+        <ShellUpdateBanner />
         <ShellConnectivityBar />
         <OfflineSyncBootstrap />
         <div className="flex-1 min-h-0 overflow-hidden">

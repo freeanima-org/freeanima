@@ -31,18 +31,23 @@ Data directory: `~/.anima/` (override with `FREEANIMA_HOME`). Back it up with yo
 
 ## Standalone (Linux x64)
 
-Release publishes a single tarball: `anima-linux-x64.tar.gz` (executable + `package.json` + `dist/build-meta.json`). Migrations and Web UI are embedded in the binary.
+Release publishes a single tarball: `anima-linux-x64.tar.gz`（内含单文件可执行文件 `anima`）。版本、service build-meta、migrations 与 Web UI 均嵌入该二进制。
 
 ### 1. Download and unpack
 
 ```bash
 # From a GitHub Release asset (example)
-mkdir -p ~/freeanima && cd ~/freeanima
-tar -xzf anima-linux-x64.tar.gz
-./anima --version   # e.g. 0.8.5 (standalone) · prod
+mkdir -p ~/.anima/standalone && cd ~/.anima/standalone
+tar -xzf /path/to/anima-linux-x64.tar.gz
+# Optional PATH shim:
+mkdir -p ~/.anima/bin && ln -sf "$PWD/anima" ~/.anima/bin/anima
+# Ensure ~/.anima/bin is on PATH
+anima --version   # e.g. 0.8.5 (standalone) · prod
 ```
 
-Keep the directory layout: `anima`, `package.json`, and `dist/` stay siblings. Optionally put the directory on your `PATH` or symlink `anima`.
+Install prefix（默认 `~/.anima/standalone`）只需要 **一个** `anima` 文件。Do not unpack into a git checkout.
+
+Or from a checkout: `just install-cli` (builds then installs to the same default prefix).
 
 ### 2. Configure
 
@@ -74,7 +79,20 @@ Default bind: `127.0.0.1:2658`（Hub API：`/api`，Hub RPC：`/hub/rpc/v1`；We
 
 ### 4. Upgrade
 
-Replace the install directory with a new release tarball (or rebuild with `bun run build:cli:executable`), then `anima service restart`. `anima upgrade` / `/upgrade` only print guidance.
+Installed standalone (independent prefix, e.g. `~/.anima/standalone`):
+
+```bash
+anima upgrade          # download latest Release tarball and overwrite the install prefix
+anima service restart
+```
+
+From a checkout, rebuild and reinstall into the independent prefix (never into the repo):
+
+```bash
+just install-cli
+```
+
+`dist/anima-executable/` is build staging only — not a runtime prefix.
 
 ### Build from a checkout
 
@@ -82,9 +100,13 @@ Always runs `build:web` before compiling the binary (embeds current Web dist):
 
 ```bash
 bun run build:cli:executable
-# → dist/anima-executable/
-./dist/anima-executable/anima --version
+# → dist/anima-executable/ (staging)
+just install-cli
+# → ~/.anima/standalone/ + ~/.anima/bin/anima
+anima --version
 ```
+
+Override prefix: `FREEANIMA_INSTALL_PREFIX=/opt/freeanima just install-cli` or `bun scripts/install-cli.ts --prefix /opt/freeanima --skip-build`.
 
 ---
 
@@ -94,7 +116,7 @@ For development, unreleased fixes, or running from a git checkout.
 
 ### 1. Clone and install dependencies
 
-**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended)
+**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended) · [just](https://github.com/casey/just) (for `just install-cli`)
 
 ```bash
 git clone https://github.com/freeanima-org/freeanima.git
@@ -102,21 +124,21 @@ cd freeanima
 bun install
 ```
 
-### 2. Expose the `anima` command
+### 2. Run the CLI from the checkout
 
-Link the workspace CLI into your Bun global bin (editable without rebuild):
-
-```bash
-bun run link:global
-anima --help
-```
-
-Alternatively, use the repo entry directly:
+Do **not** symlink source `cli.ts` into a global bin. Use package scripts:
 
 ```bash
 bun run anima -- --help
-# or
-bun src/app/cli/cli.ts --help
+bun run service start --foreground
+```
+
+To install a **standalone** binary into an independent prefix (default `~/.anima/standalone`) for a PATH `anima` command:
+
+```bash
+just install-cli
+# ensure ~/.anima/bin is on PATH
+anima --version
 ```
 
 ### 3. Configure and start

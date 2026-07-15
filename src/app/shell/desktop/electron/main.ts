@@ -28,6 +28,7 @@ import { logLine } from "./log.ts";
 import { defaultHubUrl } from "./paths.ts";
 import { readShellClientConfig } from "./shell-client-store.ts";
 import { registerShellClientIpc } from "./shell-client-ipc.ts";
+import { registerPackagedUpdateIpc } from "./packaged-update-ipc.ts";
 import {
   readCompanionVisibleFromStore,
   saveCompanionVisibleToStore,
@@ -404,6 +405,7 @@ async function bootstrap(): Promise<void> {
 
   registerInstanceStoreIpc();
   registerAlertIpc();
+  registerPackagedUpdateIpc();
   registerShellClientIpc(openSettingsWindow, reloadHubClientAndMainWindow, (visible) => {
     try {
       setCompanionVisible(visible);
