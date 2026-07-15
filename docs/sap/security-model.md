@@ -26,21 +26,21 @@ flowchart TB
 
 ## Current controls
 
-| Control                       | Status                                                 |
-| ----------------------------- | ------------------------------------------------------ |
-| TLS on Hub RPC                | Optional; remote access via Tunnel + HTTPS/WSS         |
-| Token on Hub RPC `connect`    | **Yes** — service API token (`verifyServiceApiToken`)  |
-| Origin check on WebSocket     | **None**                                               |
-| SAP attach for instance scope | **Yes** — `tool.*` requires `sap.attach`               |
-| Session-scoped tool routing   | **Yes** — [strict routing](tools.md)                   |
-| Credential values in frames   | **No** — secrets stay in Vault; LLM sees metadata only |
+| Control                       | Status                                                                |
+| ----------------------------- | --------------------------------------------------------------------- |
+| TLS on Hub RPC                | Optional; LAN / local HTTPS (`http.tls`) or self-hosted reverse proxy |
+| Token on Hub RPC `connect`    | **Yes** — service API token (`verifyServiceApiToken`)                 |
+| Origin check on WebSocket     | **None**                                                              |
+| SAP attach for instance scope | **Yes** — `tool.*` requires `sap.attach`                              |
+| Session-scoped tool routing   | **Yes** — [strict routing](tools.md)                                  |
+| Credential values in frames   | **No** — secrets stay in Vault; LLM sees metadata only                |
 
 Any client that holds a valid service token and can reach `ws://127.0.0.1:2658/hub/rpc/v1` can:
 
 - Call bundled RPC methods (chat, tasks, notifications, …) without `sap.attach`
 - After `sap.attach`, register tools as the attached `app_id` / `instance_id`
 
-Operational guidance: bind Hub to loopback; rotate service tokens; do not expose port 2658 to untrusted networks without Tunnel + Access. See [security guide](../guide/security.md).
+Operational guidance: bind Hub to loopback by default; rotate service tokens; do not expose port 2658 to untrusted networks without TLS termination and token-protected clients. See [security guide](../guide/security.md).
 
 ## Protocol hardening (transport layer)
 

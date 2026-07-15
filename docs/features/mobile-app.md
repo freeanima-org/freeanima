@@ -39,11 +39,10 @@ Mobile REST **connects directly** to Hub (no local REST proxy); requires a **Ser
 ## Hub settings
 
 1. Home PC: `anima service start --host 0.0.0.0`, create a Service API Token (`anima token create --subject-id 1 --name bootstrap`; see [`remote-access.md`](../guide/remote-access.md)).
-2. (Optional) `anima tunnel setup`; phone uses `https://<your-hostname>`.
-3. 首次启动未配置 Token → 进入 **设置 → 连接**：
-   - Hub URL (Tunnel 或 `http://<PC-IP>:2658`；勿用 `127.0.0.1`)
+2. 首次启动未配置 Token → 进入 **设置 → 连接**：
+   - Hub URL（`http://<PC-IP>:2658` 或本地 HTTPS `https://<host>:2659`；勿用 `127.0.0.1`）
    - Service API Token (`fa_at_...`)
-4. **测试连接** → **保存并进入** → 本地 `/web/chat`。
+3. **测试连接** → **保存并进入** → 本地 `/web/chat`。
 
 Non-loopback Hub URL requires token; REST uses `Authorization: Bearer`; SAP sends `auth_token` in `connect` frame.
 

@@ -18,7 +18,7 @@ database:
 #   cors_origins:
 #     - http://127.0.0.1:4173
 #   tls:
-#     enabled: true          # 额外监听 HTTPS :2659（HTTP :2658 不变；Tunnel 仍走 HTTP）
+#     enabled: true          # 额外监听 HTTPS :2659（HTTP :2658 不变）
 #     port: 2659
 #     auto: true             # 缺失 cert/key 时自动生成（优先 mkcert，fallback openssl 自签）
 #     # cert: ~/.anima/tls/cert.pem
@@ -30,5 +30,5 @@ database:
 
 # --- 以下运行时段请通过 Shell「Hub 服务设置」编辑；勿再写入 config.yaml ---
 #
-# llm / compression / memory / mcp_servers / acp_agents / embedding / tunnel / web / worlds …
+# llm / compression / memory / mcp_servers / acp_agents / embedding / web / worlds …
 # 完整示例见仓库 git 历史中的 config.example.yaml（迁移前版本）

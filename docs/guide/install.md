@@ -5,7 +5,7 @@ title: Installation
 # Installation
 
 > Deploy FreeAnima on your machine — from source, or with a Linux standalone executable.
-> After install: [`security.md`](security.md) (credentials, bind address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`](service.md) (runtime commands) · [`remote-access.md`](remote-access.md) (Cloudflare Tunnel).
+> After install: [`security.md`](security.md) (credentials, bind address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`](service.md) (runtime commands) · [`remote-access.md`](remote-access.md) (Service API Token / LAN).
 
 ## Choose a path
 
@@ -169,7 +169,7 @@ If status fails, check PostgreSQL connectivity, that migrations completed ([`dat
 ## Next steps
 
 1. **Security** — Vault / `env()` for secrets, `chmod 700 ~/.anima`, do not expose Console without auth ([`security.md`](security.md))
-2. **Remote access** — optional Cloudflare Tunnel + Service API Token for personal mobile/remote Console ([`remote-access.md`](remote-access.md))
+2. **Remote access** — Service API Token + LAN / local HTTPS for personal mobile/remote Console ([`remote-access.md`](remote-access.md))
 3. **Database** — backups, extensions, manual migrations if needed ([`database.md`](database.md))
 4. **Operations** — start/stop, memory metrics ([`service.md`](service.md))
 5. **Architecture** — memory pipeline, self layer, tools ([`../concepts/architecture.md`](../concepts/architecture.md))

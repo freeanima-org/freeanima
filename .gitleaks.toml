@@ -2,4 +2,4 @@ title = "freeanima"
 
 [allowlist]
 description = "单元测试中的占位凭证"
-paths = ['''cli/src/tunnel-run\.test\.ts''']
+paths = []

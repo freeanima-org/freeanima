@@ -70,7 +70,7 @@ DATABASE_URL="…" bunx drizzle-kit migrate --config src/core/drizzle.config.ts
 - Dev UI：`bun run dev:web` → `http://127.0.0.1:4173/web/chat`（Console：`/web/console/dashboard`）
 - Release: [`.agent/rules/release.md`](.agent/rules/release.md)
 - PG ops (install, backup): [`docs/guide/database.md`](docs/guide/database.md)
-- Remote access (Cloudflare Tunnel): [`docs/guide/remote-access.md`](docs/guide/remote-access.md)
+- Remote access (Service API Token / LAN): [`docs/guide/remote-access.md`](docs/guide/remote-access.md)
 
 ---
 
@@ -131,7 +131,7 @@ When sources conflict: **implemented behavior** follows code (and topic docs tha
 | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | PG schema / DDL                                            | [`src/core/db/schema/`](src/core/db/schema/) + [`.agent/rules/coding.md`](.agent/rules/coding.md) — **include data backfill in the same migration SQL when dropping or renaming tables** |
 | PG query conventions (ORM vs execute)                      | [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md) — queries in `src/core/db/pg/`; capabilities use `@freeanima/core/db/pg/*` directly (no `engine.repos`)                       |
-| PG ops (install, backup, migrate UX)                       | [`docs/guide/database.md`](docs/guide/database.md) · [`docs/guide/remote-access.md`](docs/guide/remote-access.md) for Tunnel                                                             |
+| PG ops (install, backup, migrate UX)                       | [`docs/guide/database.md`](docs/guide/database.md) · [`docs/guide/remote-access.md`](docs/guide/remote-access.md) for Token / LAN                                                        |
 | Layer deps / composition root / Registry                   | [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md)                                                                                                                             |
 | Test strategy / mock tiers                                 | [`.agent/rules/testing.md`](.agent/rules/testing.md) + [`tests/README.md`](tests/README.md)                                                                                              |
 | Memory pipeline / retrieval                                | [`docs/concepts/memory.md`](docs/concepts/memory.md) + architecture                                                                                                                      |

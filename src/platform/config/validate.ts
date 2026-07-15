@@ -9,19 +9,12 @@ import { expandConfigEnv } from "./env-expand.ts";
 import { parseYaml } from "./yaml.ts";
 import { PATHS } from "./paths.ts";
 
-function validateTunnelConfig(cfg: RuntimeConfig): void {
-  const tunnel = cfg.tunnel;
-  if (!tunnel?.enabled) return;
-
-  const warnings: string[] = [];
-  if (!tunnel.hostname) warnings.push("tunnel.hostname 未配置");
-  if (!tunnel.credentials?.tunnel_credentials) {
-    warnings.push("tunnel.credentials.tunnel_credentials 未配置");
-  }
-
-  for (const msg of warnings) {
-    console.warn(`[tunnel] ${msg}`);
-  }
+/** 旧版 Cloudflare Tunnel 配置段已移除；检测到则提示清理 */
+function warnDeprecatedTunnelConfig(cfg: RuntimeConfig): void {
+  if (!("tunnel" in cfg) || (cfg as Record<string, unknown>).tunnel == null) return;
+  console.warn(
+    "[config] tunnel 配置段已废弃并忽略：可从配置中删除，并可移除 ~/.anima/cloudflared 与 ~/.anima/bin/cloudflared；远程暴露请改用局域网、本地 HTTPS 或自建反向代理（见 docs/guide/remote-access.md）",
+  );
 }
 
 /** Phase 1：连 PG 前仅校验 bootstrap 段 */
@@ -55,6 +48,12 @@ export async function validateBootstrapOnStartup(): Promise<void> {
     }
     process.exit(1);
   }
+
+  if ("tunnel" in record && record.tunnel != null) {
+    console.warn(
+      "[config] tunnel 配置段已废弃并忽略：可从 config.yaml 删除，并可移除 ~/.anima/cloudflared 与 ~/.anima/bin/cloudflared；远程暴露请改用局域网、本地 HTTPS 或自建反向代理（见 docs/guide/remote-access.md）",
+    );
+  }
 }
 
 /** Phase 2：PG 加载后校验运行时配置 */
@@ -69,13 +68,7 @@ export function validateRuntimeConfigOnStartup(cfg: RuntimeConfig): void {
     process.exit(1);
   }
 
-  validateTunnelConfig(parsed.data);
-
-  if (parsed.data.tunnel?.enabled) {
-    console.warn(
-      "[tunnel] 远程访问需要 Service API Token（anima token create --subject-id <id>）；请在客户端 Hub 设置中配置 fa_at_...",
-    );
-  }
+  warnDeprecatedTunnelConfig(parsed.data);
 }
 
 /** @deprecated 使用 validateRuntimeConfigOnStartup */

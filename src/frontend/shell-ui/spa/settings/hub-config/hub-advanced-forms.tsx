@@ -16,7 +16,6 @@ export const ADVANCED_SECTIONS = [
   "models",
   "mcp_servers",
   "acp_agents",
-  "tunnel",
   "worlds",
   "auto_llm",
 ] as const;
@@ -286,61 +285,6 @@ function AcpAgentsForm({
   );
 }
 
-function TunnelForm({
-  value,
-  onChange,
-}: {
-  value: Record<string, unknown>;
-  onChange: (v: Record<string, unknown>) => void;
-}) {
-  const cloudflare = (value.cloudflare ?? {}) as Record<string, unknown>;
-  const credentials = (value.credentials ?? {}) as Record<string, unknown>;
-  const setCloudflare = (patch: Record<string, unknown>) =>
-    onChange({ ...value, cloudflare: { ...cloudflare, ...patch } });
-  const setCredentials = (patch: Record<string, unknown>) =>
-    onChange({ ...value, credentials: { ...credentials, ...patch } });
-
-  return (
-    <div className="space-y-4">
-      {hubConfigBoolField("enabled", Boolean(value.enabled), (enabled) =>
-        onChange({ ...value, enabled }),
-      )}
-      {hubConfigTextField("hostname", String(value.hostname ?? ""), (v) =>
-        onChange({ ...value, hostname: v }),
-      )}
-      <p className="text-sm font-medium">cloudflare</p>
-      {hubConfigTextField("account_id", String(cloudflare.account_id ?? ""), (v) =>
-        setCloudflare({ account_id: v }),
-      )}
-      {hubConfigTextField("tunnel_id", String(cloudflare.tunnel_id ?? ""), (v) =>
-        setCloudflare({ tunnel_id: v }),
-      )}
-      {hubConfigTextField("tunnel_name", String(cloudflare.tunnel_name ?? ""), (v) =>
-        setCloudflare({ tunnel_name: v }),
-      )}
-      {hubConfigTextField("zone_id", String(cloudflare.zone_id ?? ""), (v) =>
-        setCloudflare({ zone_id: v }),
-      )}
-      <p className="text-sm font-medium">credentials</p>
-      {hubConfigTextField(
-        "api_token",
-        String(credentials.api_token ?? ""),
-        (v) => setCredentials({ api_token: v }),
-        {
-          type: "password",
-          hint: '可用 env("CLOUDFLARE_API_TOKEN") 引用',
-        },
-      )}
-      {hubConfigTextField(
-        "tunnel_credentials",
-        String(credentials.tunnel_credentials ?? ""),
-        (v) => setCredentials({ tunnel_credentials: v }),
-        { hint: "可用 env() 或 vault 引用" },
-      )}
-    </div>
-  );
-}
-
 function WorldsForm({
   value,
   onChange,
@@ -413,8 +357,6 @@ export function AdvancedSectionForm({
       return <McpServersForm value={value} onChange={onChange} />;
     case "acp_agents":
       return <AcpAgentsForm value={value} onChange={onChange} />;
-    case "tunnel":
-      return <TunnelForm value={value} onChange={onChange} />;
     case "worlds":
       return <WorldsForm value={value} onChange={onChange} />;
     case "auto_llm":

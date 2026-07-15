@@ -105,12 +105,6 @@ export type ServiceSnapshot = {
     postgres: DependencyStatus;
     redis: DependencyStatus;
   };
-  tunnel?: {
-    enabled: boolean;
-    hostname: string;
-    public_url: string;
-    api_url: string;
-  };
 };
 
 export type ConversationSummary = {

@@ -13,6 +13,10 @@ export const SYSTEMD_RESTART_SEC = 180;
 /** 0 = never give up restarting on consecutive failures (only `systemctl stop` can stop) */
 export const SYSTEMD_START_LIMIT_INTERVAL_SEC = 0;
 
+function systemctl(...args: string[]): ReturnType<typeof spawnSync> {
+  return spawnSync("systemctl", ["--user", ...args], { encoding: "utf-8" });
+}
+
 /** Generate anima systemd user unit file content */
 export function renderSystemdUnit(
   binPath: string,
@@ -22,7 +26,7 @@ export function renderSystemdUnit(
 ): string {
   const execStart = `${binPath} service start --foreground --host ${host} --port ${port}`;
   return `[Unit]
-Description=FreeAnima stack（Hub + optional Web + Tunnel）
+Description=FreeAnima stack（Hub + optional Web）
 After=network.target
 
 [Service]
@@ -52,4 +56,13 @@ export function systemdUserAvailable(): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * 停止 Hub stack（anima.service）。
+ * Satellite 使用 PartOf=anima.service，随 hub 一并关停。
+ */
+export function stopHubStackViaSystemd(): ReturnType<typeof systemctl> | null {
+  if (!systemdUserAvailable()) return null;
+  return systemctl("stop", SYSTEMD_UNIT);
 }

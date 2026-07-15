@@ -1,7 +1,6 @@
 export * from "./schemas/config.ts";
 export * from "./schemas/llm-config.ts";
 export * from "./schemas/embedding.ts";
-export * from "./schemas/tunnel.ts";
 export * from "./schemas/http.ts";
 export * from "./schemas/http-ports.ts";
 export * from "./http-origins.ts";

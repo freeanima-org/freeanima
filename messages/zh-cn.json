@@ -230,8 +230,6 @@
   "console_dashboard_started_at": "启动于 {time}",
   "console_dashboard_title": "📊 仪表盘",
   "console_dashboard_tools_registered": "已注册",
-  "console_dashboard_tunnel": "管理台",
-  "console_dashboard_tunnel_public": "公网 URL",
   "console_dashboard_uptime": "运行时间",
   "console_dashboard_version": "版本",
   "console_dream_desc": "浏览 dream_memory（梦境机制产出的夜间创意叙事；非事实记录）。",
