@@ -107,7 +107,7 @@
     "build:mobile": "bun run build:web && bun scripts/sync-mobile-android-version.ts && bun scripts/sync-mobile-www.ts",
     "build:mobile:debug": "FREEANIMA_WEB_SKIP_PWA=1 bun run build:web && MOBILE_DEBUG=1 bun scripts/sync-mobile-www.ts",
     "debug:android": "cd src/app/shell/mobile && MOBILE_DEBUG=1 bash scripts/run-android.sh",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "patchedDependencies": {
     "fbx2vrma-converter@1.0.2": "patches/fbx2vrma-converter@1.0.2.patch"
