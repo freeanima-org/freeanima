@@ -729,7 +729,8 @@ export function TaskApp() {
     selection?.kind === "list" ? (lists.find((l) => l.id === selection.id) ?? null) : null;
   const activeLists = useMemo(() => lists.filter((l) => !l.closed && !l.is_default), [lists]);
   const closedLists = useMemo(() => lists.filter((l) => l.closed), [lists]);
-  const moveTargetLists = useMemo(() => lists.filter((l) => !l.closed && !l.is_folder), [lists]);
+  // 保留文件夹供树形展示；MoveToListPicker 不会把文件夹当作可选目标
+  const moveTargetLists = useMemo(() => lists.filter((l) => !l.closed), [lists]);
   const listNameById = useMemo(() => new Map(lists.map((l) => [l.id, l.name])), [lists]);
   const pendingItems = items.filter((i) => i.status === "pending");
   const completedItems = items.filter((i) => i.status === "completed");
