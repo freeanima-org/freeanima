@@ -5,6 +5,8 @@ export class EngineRunControl {
   private inFlightCount = 0;
   private inFlightResolve: (() => void) | null = null;
   private conversationAbortControllers = new Map<string, AbortController>();
+  /** 进行中的 message.send client_op_id，用于弱网重复投递时幂等短路。 */
+  private inFlightClientOpIds = new Set<string>();
 
   isShuttingDown(): boolean {
     return this.shuttingDown;
@@ -58,6 +60,17 @@ export class EngineRunControl {
 
   preemptSessionEngine(conversationId: string): void {
     this.conversationAbortControllers.get(conversationId)?.abort();
+  }
+
+  /** @returns false 表示同 client_op_id 已有进行中的 turn，调用方不得再跑一轮。 */
+  tryAcquireClientOp(clientOpId: string): boolean {
+    if (this.inFlightClientOpIds.has(clientOpId)) return false;
+    this.inFlightClientOpIds.add(clientOpId);
+    return true;
+  }
+
+  releaseClientOp(clientOpId: string): void {
+    this.inFlightClientOpIds.delete(clientOpId);
   }
 
   beginEngineRun(conversationId: string): { signal: AbortSignal; controller: AbortController } {

@@ -303,12 +303,33 @@ export async function* sendMessageStream(
   }
 
   if (sendOpts?.client_op_id) {
-    const complete = await isClientOpTurnComplete(deps, conversationId, sendOpts.client_op_id);
+    const clientOpId = sendOpts.client_op_id;
+    const complete = await isClientOpTurnComplete(deps, conversationId, clientOpId);
     if (complete) {
       yield { event: "accepted", data: {} };
       yield { event: "done", data: {} };
       return;
     }
+    // 弱网下在线 dispatch 与 outbox flush 可能并发同 client_op_id；
+    // 若已有进行中 turn，直接幂等返回，避免 preempt 后再跑一轮。
+    if (!msgDeps.runControl.tryAcquireClientOp(clientOpId)) {
+      yield { event: "accepted", data: {} };
+      yield { event: "done", data: {} };
+      return;
+    }
+    try {
+      yield* runTurnStream(
+        deps,
+        msgDeps,
+        conversationId,
+        guard.message,
+        sendOpts?.llm_debug === true,
+        sendOpts,
+      );
+    } finally {
+      msgDeps.runControl.releaseClientOp(clientOpId);
+    }
+    return;
   }
 
   yield* runTurnStream(

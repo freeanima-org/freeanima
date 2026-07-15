@@ -24,6 +24,30 @@ export type ChatOutboxEntry = {
 
 const CHAT_MODULE_ID = "chat";
 
+/** 进程内 claim：在线 dispatchSend 期间阻止 outbox flush 再发同一条。 */
+const chatSendClaims = new Map<string, number>();
+
+export function claimChatSend(clientOpId: string): void {
+  chatSendClaims.set(clientOpId, (chatSendClaims.get(clientOpId) ?? 0) + 1);
+}
+
+export function releaseChatSend(clientOpId: string): void {
+  const n = chatSendClaims.get(clientOpId) ?? 0;
+  if (n <= 1) {
+    chatSendClaims.delete(clientOpId);
+    return;
+  }
+  chatSendClaims.set(clientOpId, n - 1);
+}
+
+export function isChatSendClaimed(clientOpId: string): boolean {
+  return (chatSendClaims.get(clientOpId) ?? 0) > 0;
+}
+
+export function resetChatSendClaimsForTests(): void {
+  chatSendClaims.clear();
+}
+
 function toEntry(op: OfflineOutboxOp, status: OutboxSendStatus): ChatOutboxEntry | null {
   if (op.moduleId !== CHAT_MODULE_ID || op.method !== "message.send") return null;
   const payload = op.payload as ChatSendOutboxPayload;

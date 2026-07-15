@@ -69,7 +69,11 @@ import { VaultUnlockButton } from "@freeanima/features/chat/ui/spa/components/Va
 import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";
 import { useConversationsStore } from "@freeanima/features/chat/ui/spa/stores/conversations.ts";
 import { useOutboxStore } from "@freeanima/features/chat/ui/spa/stores/outbox.ts";
-import { listChatOutboxEntries } from "@freeanima/features/chat/ui/spa/lib/offline-send-store.ts";
+import {
+  claimChatSend,
+  listChatOutboxEntries,
+  releaseChatSend,
+} from "@freeanima/features/chat/ui/spa/lib/offline-send-store.ts";
 import {
   buildChatStreamFlushContext,
   CHAT_OFFLINE_MODULE_ID,
@@ -871,89 +875,96 @@ export function ChatApp() {
       }
 
       if (sendMeta?.clientOpId) {
+        claimChatSend(sendMeta.clientOpId);
         patchDisplayByClientOpId(sendMeta.clientOpId, { sendStatus: "sending" });
         outboxSetEntryStatus(sendMeta.clientOpId, "sending");
       }
 
-      await send(
-        originConversationId,
-        text,
-        {
-          recoverDisplay: (id) => refreshMessages(id, displayBaseline),
-          onToken: () => {
-            if (!isViewingOrigin()) return;
-            scrollDown();
-          },
-          onDisplayAppend: (item) => {
-            appendItemForConversation(originConversationId, item);
-            if (isViewingOrigin()) scrollDown();
-          },
-          onAwaitingClarify: (data) => {
-            if (!isViewingOrigin()) return;
-            if (Array.isArray(data.items) && data.items.length > 0) {
-              setClarifyPending({
-                items: data.items as ClarifyPending["items"],
-                timeout_sec: (data.timeout_sec as number | undefined) ?? 1800,
-              });
-            }
-            scrollDown();
-          },
-          onError: (msg) => {
-            if (sendMeta?.clientOpId) {
-              const entry = useOutboxStore.getState().entries[sendMeta.clientOpId];
-              if (entry?.status !== "stale") {
-                patchDisplayByClientOpId(sendMeta.clientOpId, { sendStatus: "failed" });
-                outboxSetEntryStatus(sendMeta.clientOpId, "failed", msg);
-              }
-            }
-            if (
-              sendMeta?.clientOpId &&
-              useOutboxStore.getState().entries[sendMeta.clientOpId]?.status === "stale"
-            ) {
+      try {
+        await send(
+          originConversationId,
+          text,
+          {
+            recoverDisplay: (id) => refreshMessages(id, displayBaseline),
+            onToken: () => {
+              if (!isViewingOrigin()) return;
+              scrollDown();
+            },
+            onDisplayAppend: (item) => {
+              appendItemForConversation(originConversationId, item);
               if (isViewingOrigin()) scrollDown();
-              return;
-            }
-            appendItemForConversation(originConversationId, {
-              type: "message",
-              role: "assistant",
-              content: `⚠️ ${msg}`,
-            });
-            if (isTransportFailureMessage(msg)) {
-              void reconnectHub().catch(() => undefined);
-            }
-            if (isViewingOrigin()) scrollDown();
-          },
-          onDone: (opts) => {
-            if (sendMeta?.clientOpId) {
-              removeDisplayByClientOpId(sendMeta.clientOpId);
-              void outboxAckEntry(sendMeta.clientOpId);
-            }
-            if (opts?.recovered) {
+            },
+            onAwaitingClarify: (data) => {
+              if (!isViewingOrigin()) return;
+              if (Array.isArray(data.items) && data.items.length > 0) {
+                setClarifyPending({
+                  items: data.items as ClarifyPending["items"],
+                  timeout_sec: (data.timeout_sec as number | undefined) ?? 1800,
+                });
+              }
+              scrollDown();
+            },
+            onError: (msg) => {
+              if (sendMeta?.clientOpId) {
+                const entry = useOutboxStore.getState().entries[sendMeta.clientOpId];
+                if (entry?.status !== "stale") {
+                  patchDisplayByClientOpId(sendMeta.clientOpId, { sendStatus: "failed" });
+                  outboxSetEntryStatus(sendMeta.clientOpId, "failed", msg);
+                }
+              }
+              if (
+                sendMeta?.clientOpId &&
+                useOutboxStore.getState().entries[sendMeta.clientOpId]?.status === "stale"
+              ) {
+                if (isViewingOrigin()) scrollDown();
+                return;
+              }
+              appendItemForConversation(originConversationId, {
+                type: "message",
+                role: "assistant",
+                content: `⚠️ ${msg}`,
+              });
+              if (isTransportFailureMessage(msg)) {
+                void reconnectHub().catch(() => undefined);
+              }
+              if (isViewingOrigin()) scrollDown();
+            },
+            onDone: (opts) => {
+              if (sendMeta?.clientOpId) {
+                removeDisplayByClientOpId(sendMeta.clientOpId);
+                void outboxAckEntry(sendMeta.clientOpId);
+              }
+              if (opts?.recovered) {
+                if (isViewingOrigin()) scrollDown();
+                void flushQueueRef.current(originConversationId);
+                return;
+              }
+              void reloadConversationIfCurrent(originConversationId);
+              void fetchConversations();
               if (isViewingOrigin()) scrollDown();
               void flushQueueRef.current(originConversationId);
-              return;
-            }
-            void reloadConversationIfCurrent(originConversationId);
-            void fetchConversations();
-            if (isViewingOrigin()) scrollDown();
-            void flushQueueRef.current(originConversationId);
+            },
+            onLlmDebug: (snapshot) => {
+              if (!llmDebugEnabled) return;
+              setLlmDebugSnapshots((prev) => {
+                const next = { ...prev };
+                if (snapshot.phase === "initial") next.initial = snapshot;
+                else next.final = snapshot;
+                return next;
+              });
+            },
           },
-          onLlmDebug: (snapshot) => {
-            if (!llmDebugEnabled) return;
-            setLlmDebugSnapshots((prev) => {
-              const next = { ...prev };
-              if (snapshot.phase === "initial") next.initial = snapshot;
-              else next.final = snapshot;
-              return next;
-            });
-          },
-        },
-        buildSendOpts(sendMeta, llmDebugEnabled, () => {
-          if (!sendMeta?.clientOpId) return;
-          patchDisplayByClientOpId(sendMeta.clientOpId, { sendStatus: "stale" });
-          outboxSetEntryStatus(sendMeta.clientOpId, "stale");
-        }),
-      );
+          buildSendOpts(sendMeta, llmDebugEnabled, () => {
+            if (!sendMeta?.clientOpId) return;
+            patchDisplayByClientOpId(sendMeta.clientOpId, { sendStatus: "stale" });
+            outboxSetEntryStatus(sendMeta.clientOpId, "stale");
+          }),
+        );
+      } finally {
+        if (sendMeta?.clientOpId) {
+          releaseChatSend(sendMeta.clientOpId);
+        }
+      }
     },
     [
       appendItemForConversation,
@@ -1053,25 +1064,30 @@ export function ChatApp() {
       return;
     }
 
-    const originConversationId = conversationId;
-    const expectedTailPos = await resolveExpectedTailPos(originConversationId, canSendOnline);
-    const entry = await useOutboxStore
-      .getState()
-      .enqueue(originConversationId, text, expectedTailPos);
-
+    // 在任何 await 之前上锁，避免弱网下连点/Enter 越过守卫。
     sendingRef.current = true;
-    setInputText("");
-    saveInputDraft(originConversationId, "");
-    requestAnimationFrame(resizeInput);
-    appendItem({
-      type: "message",
-      role: "user",
-      content: text,
-      clientOpId: entry.clientOpId,
-      sendStatus: "pending",
-    });
-
+    const originConversationId = conversationId;
+    let claimedOpId: string | null = null;
     try {
+      const expectedTailPos = await resolveExpectedTailPos(originConversationId, canSendOnline);
+      const entry = await useOutboxStore
+        .getState()
+        .enqueue(originConversationId, text, expectedTailPos);
+      // enqueue 后立刻 claim，堵住 flush effect / OfflineSyncBootstrap 窗口
+      claimChatSend(entry.clientOpId);
+      claimedOpId = entry.clientOpId;
+
+      setInputText("");
+      saveInputDraft(originConversationId, "");
+      requestAnimationFrame(resizeInput);
+      appendItem({
+        type: "message",
+        role: "user",
+        content: text,
+        clientOpId: entry.clientOpId,
+        sendStatus: "pending",
+      });
+
       if (canSendOnline) {
         await dispatchSend(text, originConversationId, {
           clientOpId: entry.clientOpId,
@@ -1079,6 +1095,7 @@ export function ChatApp() {
         });
       }
     } finally {
+      if (claimedOpId) releaseChatSend(claimedOpId);
       sendingRef.current = false;
     }
   };
