@@ -3,6 +3,7 @@ import {
   BackendRegistry,
   LlmProfile,
   LlmProvider,
+  LLM_PROFILES_UNCONFIGURED_MESSAGE,
   PROFILE_CHAT,
   ProfileRegistry,
   ProviderError,
@@ -93,6 +94,15 @@ describe("ProfileRegistry", () => {
     expect(
       () => new ProfileRegistry([profileDef("chat", [hop("main", "m")])], "missing", providers),
     ).toThrow('default profile "missing" is not defined');
+  });
+
+  it("allows empty registry when LLM is not configured yet", () => {
+    const backends = new BackendRegistry();
+    backends.register(new MockBackend());
+    const providers = new ProviderRegistry(backends);
+    const profiles = new ProfileRegistry([], "", providers);
+    expect(profiles.list()).toEqual([]);
+    expect(() => profiles.resolve()).toThrow(LLM_PROFILES_UNCONFIGURED_MESSAGE);
   });
 
   it("falls back to default profile when resolving unknown profile", () => {

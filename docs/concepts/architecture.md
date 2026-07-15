@@ -11,15 +11,17 @@ System-level constraints and long-lived design principles.
 - The memory system may be layered internally, but the LLM sees a single entry point
 - Memory orchestration is built into the runtime; the LLM does not control memory pipelines
 - Credential management is a first-class system concern
-- Hub **runtime configuration** (LLM, compression, integrations) is persisted in PostgreSQL (`hub_runtime_config`); `~/.anima/config.yaml` holds **bootstrap** only (`database`, `http`, `redis`) for cold start — not editable via Shell or Console API
+- Hub **runtime configuration** (LLM, compression, integrations) is persisted in PostgreSQL (`hub_runtime_config`); `~/.anima/config.yaml` holds **bootstrap** only (`database`, `http`, `redis`, `web`) for cold start — not editable via Shell or Console API
+- Hub **may start without LLM** configured; first-time setup happens in Shell **设置 → Hub 服务** (persist to PG), then restart Hub so registries rebuild. Missing `llm` must not block cold start.
+- Whether Hub hosts browser `/web/*` is **`config.yaml` `web.enabled`** (bootstrap; absent defaults to on when dist exists). Do not put this switch in PG — empty runtime would otherwise block the Settings UI that configures that runtime.
 - **Asset management** is a first-class system concern
 
 ### Hub configuration (SSOT)
 
-| Layer         | Storage                                              | Who reads/writes                                          |
-| ------------- | ---------------------------------------------------- | --------------------------------------------------------- |
-| **Bootstrap** | `~/.anima/config.yaml` (`database`, `http`, `redis`) | `platform/boot` only; install/ops edit YAML               |
-| **Runtime**   | PostgreSQL `hub_runtime_config`                      | Engine, tools, Shell **Hub 服务设置**, Console `config.*` |
+| Layer         | Storage                                                     | Who reads/writes                                          |
+| ------------- | ----------------------------------------------------------- | --------------------------------------------------------- |
+| **Bootstrap** | `~/.anima/config.yaml` (`database`, `http`, `redis`, `web`) | `platform/boot` only; install/ops edit YAML               |
+| **Runtime**   | PostgreSQL `hub_runtime_config`                             | Engine, tools, Shell **Hub 服务设置**, Console `config.*` |
 
 Bootstrap and runtime are **not merged** into a single config object. CLI cold paths connect via internal `withPlatformDb` and receive **runtime only**. Legacy runtime keys in `config.yaml` are ignored (optional startup warn).
 
@@ -302,7 +304,7 @@ Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User message
 
 | 客户端       | UI 加载                                                                                                               | 更新方式                            |
 | ------------ | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| 浏览器 / PWA | Hub 托管 `/web/*`（`web.enabled` 或 `anima web start`）                                                               | Hub / `anima upgrade` / `build:web` |
+| 浏览器 / PWA | Hub 托管 `/web/*`（`config.yaml` `web.enabled`，或 `anima web start`）                                                | Hub / `anima upgrade` / `build:web` |
 | Desktop      | **安装包内** `vendor/shell-ui`（本地 static `/web/*`）；调试可用 `DESKTOP_SHELL_VITE_URL` 或 `DESKTOP_UI_MODE=remote` | 随 Desktop 安装包发版               |
 | Mobile APK   | **安装包内** Capacitor `www/web`（本地同源）；Hub 仅 API                                                              | 随 APK 发版                         |
 

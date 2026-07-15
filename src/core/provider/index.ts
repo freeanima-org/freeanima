@@ -41,6 +41,7 @@ export type {
 } from "./profile.ts";
 export {
   BUILTIN_PROFILE_IDS,
+  LLM_PROFILES_UNCONFIGURED_MESSAGE,
   LlmProfile,
   PROFILE_CHAT,
   PROFILE_GOAL_JUDGE,

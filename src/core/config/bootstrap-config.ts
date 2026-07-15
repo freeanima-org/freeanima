@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { databaseConfigSchema } from "./schemas/config.ts";
 import { httpConfigSchema } from "./schemas/http.ts";
+import { webConfigSchema } from "./schemas/web.ts";
 
 const redisBootstrapSchema = z
   .object({
@@ -14,7 +15,7 @@ const redisBootstrapSchema = z
   .optional();
 
 /** 冷启动引导段：必须在 config.yaml，不写入 hub_runtime_config */
-export const BOOTSTRAP_CONFIG_KEYS = ["database", "http", "redis"] as const;
+export const BOOTSTRAP_CONFIG_KEYS = ["database", "http", "redis", "web"] as const;
 
 export type BootstrapConfigKey = (typeof BOOTSTRAP_CONFIG_KEYS)[number];
 
@@ -22,6 +23,8 @@ export const bootstrapConfigSchema = z.object({
   database: databaseConfigSchema,
   http: httpConfigSchema.optional(),
   redis: redisBootstrapSchema,
+  /** Hub 是否托管 /web；缺省视为 true（有 dist 时生效） */
+  web: webConfigSchema,
 });
 
 export type BootstrapConfig = z.infer<typeof bootstrapConfigSchema>;
@@ -52,4 +55,9 @@ export function hasRuntimeSectionsInYaml(raw: Record<string, unknown>): boolean 
 
 export function isEmptyRuntimeDocument(document: Record<string, unknown>): boolean {
   return Object.keys(document).length === 0;
+}
+
+/** Hub 是否托管浏览器 /web（bootstrap；未写 enabled 默认 true） */
+export function isBootstrapWebHostingEnabled(bootstrap: BootstrapConfig): boolean {
+  return bootstrap.web?.enabled ?? true;
 }

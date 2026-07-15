@@ -97,6 +97,7 @@ export function HubConfigRecordEntryEditor({
   onChange,
   renderFields,
   renderToolbar,
+  createEntry,
 }: {
   label: string;
   value: Record<string, unknown> | null | undefined;
@@ -106,6 +107,8 @@ export function HubConfigRecordEntryEditor({
     patch: (part: Record<string, unknown>) => void,
   ) => ReactNode;
   renderToolbar?: (ctx: { activeKey: string; entry: Record<string, unknown> }) => ReactNode;
+  /** 新建条目的初始对象；默认 `{}` */
+  createEntry?: () => Record<string, unknown>;
 }) {
   const entries = useMemo(() => readHubConfigRecord(value), [value]);
   const keys = useMemo(() => Object.keys(entries).toSorted(), [entries]);
@@ -128,7 +131,7 @@ export function HubConfigRecordEntryEditor({
   const addEntry = () => {
     const name = newName.trim();
     if (!name || entries[name]) return;
-    onChange({ ...entries, [name]: {} });
+    onChange({ ...entries, [name]: createEntry?.() ?? {} });
     setSelected(name);
     setNewName("");
   };

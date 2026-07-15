@@ -9,9 +9,13 @@ import { PROFILE_CHAT } from "@freeanima/core/provider";
 /** Wire Provider catalog lookup for compression context_window fallback */
 export function wireContextWindowLookup(): void {
   registerCatalogContextWindowLookup(async (model) => {
-    const cfg = getActiveRuntimeConfig().data;
-    const providerId = getProfileHopProviderId(cfg, PROFILE_CHAT);
-    const info = await getLlmRuntime().providers.get(providerId).getModel(model);
-    return info?.contextWindow ?? null;
+    try {
+      const cfg = getActiveRuntimeConfig().data;
+      const providerId = getProfileHopProviderId(cfg, PROFILE_CHAT);
+      const info = await getLlmRuntime().providers.get(providerId).getModel(model);
+      return info?.contextWindow ?? null;
+    } catch {
+      return null;
+    }
   });
 }

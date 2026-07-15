@@ -56,6 +56,7 @@ cp /path/to/freeanima-checkout/config.example.yaml ~/.anima/config.yaml
 Minimum production settings in `~/.anima/config.yaml` (**bootstrap only**):
 
 - **`database.url`** — PostgreSQL connection string (required)
+- **`web.enabled`** — Hub hosts `/web/*` when dist exists (optional; defaults to on if omitted)
 
 **Runtime settings** (LLM providers, compression, MCP, etc.) are stored in PostgreSQL (`hub_runtime_config`). Edit them in the Shell app under **Settings → Hub 服务 → 服务配置**.
 
@@ -69,7 +70,7 @@ Prefer Vault or `env()` for secrets. See [`security.md`](security.md#credential-
 ./anima service status
 ```
 
-Default bind: `127.0.0.1:2658`（Hub API：`/api`，Hub RPC：`/hub/rpc/v1`；Web UI：`/web/*` when `web.enabled`).
+Default bind: `127.0.0.1:2658`（Hub API：`/api`，Hub RPC：`/hub/rpc/v1`；Web UI：`/web/*` when `config.yaml` `web.enabled`).
 
 ### 4. Upgrade
 
@@ -133,7 +134,7 @@ bun run dev:service   # terminal 1: Hub REST + SAP
 bun run dev:web       # terminal 2: http://127.0.0.1:4173/web/chat · Console /web/console/dashboard
 ```
 
-**Source deploy** (Hub hosts `/web/*` when `web.enabled`): build Web first, then start — startup does not run `build:web`.
+**Source deploy** (Hub hosts `/web/*` when `config.yaml` `web.enabled`): build Web first, then start — startup does not run `build:web`.
 
 ```bash
 bun run build:web

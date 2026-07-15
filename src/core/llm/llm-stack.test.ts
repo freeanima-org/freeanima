@@ -33,4 +33,11 @@ describe("createLlmRuntime", () => {
     expect(rt.providers.has("main")).toBe(true);
     expect(rt.profiles.resolve("chat").def.id).toBe("chat");
   });
+
+  it("allows missing llm for Hub cold start", () => {
+    const rt = createLlmRuntime({} as AnimaConfig);
+    expect(rt.backends.has("openai_compatible")).toBe(true);
+    expect(rt.profiles.list()).toEqual([]);
+    expect(() => rt.profiles.resolve()).toThrow(/LLM 未配置/);
+  });
 });

@@ -107,6 +107,18 @@ function createApiFetchHandler(runtime: ApiServerRuntime) {
         if (staticRes) return staticRes;
       }
 
+      // 有 /web 路径但未托管：勿落入 Bearer 鉴权变成 401，误导为“未登录”
+      if (
+        !webStatic &&
+        isWebStaticPath(pathname) &&
+        (req.method === "GET" || req.method === "HEAD")
+      ) {
+        return new Response(
+          "Web UI 未托管：请在 ~/.anima/config.yaml 设置 web.enabled: true，并确认已 bun run build:web",
+          { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } },
+        );
+      }
+
       if (webStatic && pathname === "/favicon.ico" && req.method === "GET") {
         return Response.redirect(
           `${new URL(req.url).origin}${WEB_URL_PREFIX}/icons/icon-192.png`,

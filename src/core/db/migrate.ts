@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { BunSQLDatabase } from "drizzle-orm/bun-sql/postgres";
 import type { DbRelations } from "@freeanima/core/db/schema";
@@ -11,12 +11,25 @@ import {
 /** migrations directory inside @freeanima/core (relative to this module) */
 export const DEFAULT_MIGRATIONS_FOLDER = join(import.meta.dir, "../../migrations");
 
-/** 旁路 migrations/（若存在）；否则 Monorepo `src/core/migrations`；standalone 优先走嵌入物化 */
+/** 旁路目录须真有 migration.sql，避免空 migrations/ 抢路导致 migrate 空跑 */
+function hasMigrationSqlFiles(dir: string): boolean {
+  if (!existsSync(dir)) return false;
+  try {
+    for (const name of readdirSync(dir)) {
+      if (existsSync(join(dir, name, "migration.sql"))) return true;
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
+/** 旁路 migrations/（含 SQL）；否则 Monorepo `src/core/migrations`；standalone 优先走嵌入物化 */
 export function resolveMigrationsFolder(repoRoot = getRepoRoot()): string {
   const sidecar = join(repoRoot, "migrations");
-  if (existsSync(sidecar)) return sidecar;
+  if (hasMigrationSqlFiles(sidecar)) return sidecar;
   const monorepo = join(repoRoot, "src/core", "migrations");
-  if (existsSync(monorepo)) return monorepo;
+  if (hasMigrationSqlFiles(monorepo) || existsSync(monorepo)) return monorepo;
   return join(import.meta.dir, "../../migrations");
 }
 

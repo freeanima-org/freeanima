@@ -9,6 +9,7 @@ import {
   LlmProvidersForm,
   profilesDraftToPatch,
   providersDraftToPatch,
+  readProvidersDraft,
 } from "./llm-settings-forms.tsx";
 
 type LlmTabId = "providers" | "profiles" | "general";
@@ -34,7 +35,9 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
   const [defaultProfile, setDefaultProfile] = useState("chat");
 
   useEffect(() => {
-    setProvidersDraft(readLlmRecordDraft(llmConfig.providers));
+    setProvidersDraft(
+      readProvidersDraft(llmConfig.providers as Record<string, unknown> | undefined),
+    );
     setProfilesDraft(readLlmRecordDraft(llmConfig.profiles));
     setDefaultProfile(
       typeof llmConfig.default_profile === "string" ? llmConfig.default_profile : "chat",

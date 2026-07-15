@@ -1,5 +1,5 @@
-import type { AnimaConfig } from "@freeanima/core/config";
-import { getLlmConfig } from "@freeanima/core/config";
+import type { AnimaConfig, LlmConfig } from "@freeanima/core/config";
+import { isLlmConfigured, tryGetLlmConfig } from "@freeanima/core/config";
 import {
   assertProfilesValid,
   BackendRegistry,
@@ -20,8 +20,7 @@ export type LlmRuntime = {
 
 let runtime: LlmRuntime | null = null;
 
-function profileDefsFromConfig(cfg: AnimaConfig): LlmProfileDef[] {
-  const llm = getLlmConfig(cfg);
+function profileDefsFromConfig(llm: LlmConfig): LlmProfileDef[] {
   return Object.entries(llm.profiles).map(([id, profile]) =>
     omitUndefined({
       id,
@@ -42,8 +41,16 @@ export function createLlmRuntime(cfg: AnimaConfig): LlmRuntime {
   const providers = new ProviderRegistry(backends);
   applyLlmStackConfigurator(cfg, backends, providers);
 
-  const llm = getLlmConfig(cfg);
-  const defs = profileDefsFromConfig(cfg);
+  const llm = tryGetLlmConfig(cfg);
+  if (!isLlmConfigured(cfg) || !llm) {
+    return {
+      backends,
+      providers,
+      profiles: new ProfileRegistry([], "", providers),
+    };
+  }
+
+  const defs = profileDefsFromConfig(llm);
   const profileRegistry = new ProfileRegistry(defs, llm.default_profile, providers);
   assertProfilesValid(defs, providers);
 

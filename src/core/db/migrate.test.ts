@@ -6,14 +6,30 @@ import { resolveMigrationsFolder, resolveMigrationsFolderForRun } from "./migrat
 import { registerEmbeddedMigrations } from "./migrations-embedded.ts";
 
 describe("resolveMigrationsFolder", () => {
-  it("prefers sidecar migrations/ layout", () => {
+  it("prefers sidecar migrations/ layout when it has SQL", () => {
+    const root = createTempDir("freeanima-migrations-root-");
+    try {
+      const published = join(root, "migrations");
+      const monorepo = join(root, "src/core", "migrations");
+      mkdirSync(join(published, "20260101000000_pub"), { recursive: true });
+      writeFileSync(join(published, "20260101000000_pub", "migration.sql"), "SELECT 1;\n");
+      mkdirSync(join(monorepo, "20260101000000_core"), { recursive: true });
+      writeFileSync(join(monorepo, "20260101000000_core", "migration.sql"), "SELECT 1;\n");
+      expect(resolveMigrationsFolder(root)).toBe(published);
+    } finally {
+      removeTempDir(root);
+    }
+  });
+
+  it("ignores empty sidecar and uses monorepo migrations", () => {
     const root = createTempDir("freeanima-migrations-root-");
     try {
       const published = join(root, "migrations");
       const monorepo = join(root, "src/core", "migrations");
       mkdirSync(published, { recursive: true });
-      mkdirSync(monorepo, { recursive: true });
-      expect(resolveMigrationsFolder(root)).toBe(published);
+      mkdirSync(join(monorepo, "20260101000000_core"), { recursive: true });
+      writeFileSync(join(monorepo, "20260101000000_core", "migration.sql"), "SELECT 1;\n");
+      expect(resolveMigrationsFolder(root)).toBe(monorepo);
     } finally {
       removeTempDir(root);
     }

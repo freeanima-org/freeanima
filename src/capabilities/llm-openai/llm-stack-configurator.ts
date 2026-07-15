@@ -1,5 +1,5 @@
 import type { AnimaConfig } from "@freeanima/core/config";
-import { getLlmConfig } from "@freeanima/core/config";
+import { tryGetLlmConfig } from "@freeanima/core/config";
 import type { BackendRegistry, ProviderRegistry } from "@freeanima/core/provider";
 import {
   OpenAiCompatibleBackend,
@@ -15,7 +15,9 @@ export function wireOpenAiCompatibleLlm(
 ): void {
   backends.register(new OpenAiCompatibleBackend(OPENAI_COMPATIBLE_BACKEND_ID));
 
-  const llm = getLlmConfig(cfg);
+  const llm = tryGetLlmConfig(cfg);
+  if (!llm) return;
+
   for (const [id, raw] of Object.entries(llm.providers)) {
     const record = raw as Record<string, unknown>;
     if (record.backend === OPENAI_COMPATIBLE_BACKEND_ID) {
