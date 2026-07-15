@@ -16,6 +16,7 @@ on:
       - "scripts/check-po-health.ts"
       - "scripts/gen-po4a-cfg.ts"
       - "scripts/i18n-po4a.ts"
+      - "scripts/install.sh"
       - "scripts/messages-i18n-lib.ts"
       - ".github/actions/build-site/**"
       - ".github/workflows/site.yml"
