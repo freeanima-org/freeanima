@@ -90,6 +90,22 @@ bun run build:cli:executable
 ./dist/anima-executable/anima --version
 ```
 
+## Canary 滚动预构建
+
+[`.github/workflows/canary.yml`](../../.github/workflows/canary.yml) 在每次 `main` push（及 `workflow_dispatch`）构建三端产物，滚动更新固定 GitHub Pre-release tag **`canary`**（`prerelease: true`，`make_latest: false`）。
+
+| 产物                     | 文件名（与 updater 匹配）                 |
+| ------------------------ | ----------------------------------------- |
+| Linux standalone         | `anima-linux-x64.tar.gz`                  |
+| Desktop Windows NSIS     | `freeanima-desktop-windows-x64-setup.exe` |
+| Mobile Android debug APK | `freeanima-mobile-android.apk`            |
+
+产物 bake `channel=canary`（环境变量 `FREEANIMA_BUILD_CHANNEL=canary`）。Release body 含 `sha: <full>`，供 canary 轨按 commit 检测更新。
+
+**分发轨（build-meta `channel`）**：`release`（稳定 `v*` Releases） / `canary`（上述滚动轨） / `dev`（本地调试，**不可**换轨、不参与 GitHub 包更新）。Standalone / Desktop / Mobile 在轨内检查更新；可在 `release`⇄`canary` 间切换并安装目标轨 tip。浏览器仅 PWA，不走 GitHub 包通道。
+
+发布 canary 使用组织 secret **`FREEANIMA_CI`**（force-move tag + 更新 Pre-release）。
+
 ## Prohibited
 
 - Do not hardcode `X.Y.Z` in business code; use `import { ANIMA_VERSION } from "@freeanima/platform"` (or expose via health/status).
@@ -105,6 +121,7 @@ bun run build:cli:executable
 | `release-please-config.json`      | Release Please strategy and changelog sections                                           |
 | `.release-please-manifest.json`   | Published version manifest                                                               |
 | `.github/workflows/release.yml`   | release-please + Linux standalone upload                                                 |
+| `.github/workflows/canary.yml`    | main 滚动 canary Pre-release（CLI / Desktop / Mobile）                                   |
 | `scripts/build-cli-executable.ts` | Standalone build                                                                         |
 | `CHANGELOG.md`                    | New version section appended on Release PR merge; excluded from oxfmt (`*` list markers) |
 

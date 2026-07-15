@@ -3,10 +3,10 @@ import { describe, expect, it } from "bun:test";
 import { resolveNativeBuildMeta } from "./resolve-native-build-meta.ts";
 
 describe("resolve-native-build-meta", () => {
-  it("resolveNativeBuildMeta sets shell and built_at for prod", () => {
+  it("resolveNativeBuildMeta sets shell and built_at for release", () => {
     const meta = resolveNativeBuildMeta({
       shell: "desktop",
-      channel: "prod",
+      channel: "release",
       repoRoot: process.cwd(),
       version: "1.0.0",
     });

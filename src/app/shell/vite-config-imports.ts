@@ -1,5 +1,5 @@
 /** Vite 配置专用 re-export：Node 加载 vite.config.ts 时不识别 tsconfig paths，此处用 ≤2 级相对路径。 */
-export { createComponentBuildMeta } from "../../core/config/build-meta.ts";
+export { createComponentBuildMeta, isShipChannel } from "../../core/config/build-meta.ts";
 export type { BuildChannel, ComponentBuildMeta } from "../../core/config/build-meta.ts";
 export { resolveHubRpcWsUrl } from "../../shared/hub-rpc/urls.ts";
 export { nativeBuildMetaDefine } from "../../frontend/shell-sdk/native-build-meta.ts";

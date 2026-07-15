@@ -31,6 +31,7 @@ describe("shell-sdk app-update", () => {
     const up = await resolvePackagedUpdate({
       kind: "desktop-windows",
       localVersion: "0.8.5",
+      channel: "release",
       fetchImpl,
     });
     expect(up.available).toBe(true);

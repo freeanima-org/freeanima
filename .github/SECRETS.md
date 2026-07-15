@@ -6,14 +6,15 @@
 
 在 **freeanima-org** → Settings → Secrets and variables → Actions → Organization secrets 配置后，确保 `freeanima` 仓库可访问。
 
-## `FREEANIMA_CI`（Release Please + Blackbox dispatch）
+## `FREEANIMA_CI`（Release Please + Canary + Blackbox dispatch）
 
 同一 token 用于：
 
-| 用途              | Workflow                        | 说明                                                                       |
-| ----------------- | ------------------------------- | -------------------------------------------------------------------------- |
-| Release Please    | `.github/workflows/release.yml` | 开 Release PR；须能触发 PR 上的 `ci.yml`（不能用默认 `GITHUB_TOKEN` 替代） |
-| Blackbox dispatch | `.github/workflows/ci.yml`      | PR 通过 Quality 后向 `freeanima-testing` 发送 `repository_dispatch`        |
+| 用途               | Workflow                        | 说明                                                                       |
+| ------------------ | ------------------------------- | -------------------------------------------------------------------------- |
+| Release Please     | `.github/workflows/release.yml` | 开 Release PR；须能触发 PR 上的 `ci.yml`（不能用默认 `GITHUB_TOKEN` 替代） |
+| Canary Pre-release | `.github/workflows/canary.yml`  | force-move tag `canary` 并更新滚动 Pre-release 资产                        |
+| Blackbox dispatch  | `.github/workflows/ci.yml`      | PR 通过 Quality 后向 `freeanima-testing` 发送 `repository_dispatch`        |
 
 ### 权限（Fine-grained PAT，推荐）
 

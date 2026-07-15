@@ -42,12 +42,20 @@ tar -xzf /path/to/anima-linux-x64.tar.gz
 # Optional PATH shim:
 mkdir -p ~/.anima/bin && ln -sf "$PWD/anima" ~/.anima/bin/anima
 # Ensure ~/.anima/bin is on PATH
-anima --version   # e.g. 0.8.5 (standalone) · prod
+anima --version   # e.g. 0.8.5 (standalone) · release
 ```
 
 Install prefix（默认 `~/.anima/standalone`）只需要 **一个** `anima` 文件。Do not unpack into a git checkout.
 
 Or from a checkout: `just install-cli` (builds then installs to the same default prefix).
+
+**Canary**：`main` 每次提交滚动构建的 Pre-release tag `canary` 也提供同名 `anima-linux-x64.tar.gz`（以及 Desktop / Mobile 包）。试用 canary 轨：
+
+```bash
+# 下载 canary 包安装后
+anima upgrade --channel canary   # 跟随 canary tip
+anima upgrade --channel release  # 切回稳定轨 tip
+```
 
 ### 2. Configure
 
@@ -82,7 +90,9 @@ Default bind: `127.0.0.1:2658`（Hub API：`/api`，Hub RPC：`/hub/rpc/v1`；We
 Installed standalone (independent prefix, e.g. `~/.anima/standalone`):
 
 ```bash
-anima upgrade          # download latest Release tarball and overwrite the install prefix
+anima upgrade                 # 当前 bake channel 内升级（release：semver；canary：commit）
+anima upgrade --check
+anima upgrade --channel canary   # 切到 / 检查 canary tip
 anima service restart
 ```
 

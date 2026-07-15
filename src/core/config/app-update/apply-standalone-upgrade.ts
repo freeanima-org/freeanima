@@ -14,6 +14,7 @@ import { join } from "node:path";
 
 import { downloadReleaseAsset } from "./download.ts";
 import { resolvePackagedUpdate } from "./resolve-packaged-update.ts";
+import type { BuildChannel } from "../build-meta.parse.ts";
 import {
   animaBinShimPath,
   assertSafeStandaloneInstallPrefix,
@@ -24,6 +25,10 @@ import { getStandaloneRuntimeMeta } from "../standalone-runtime-meta.ts";
 export type ApplyStandaloneUpgradeOptions = {
   prefix: string;
   localVersion: string;
+  channel: BuildChannel;
+  localCommit?: string;
+  intent?: "check" | "switch";
+  targetChannel?: BuildChannel;
   /** 仅检查，不下载 */
   checkOnly?: boolean;
   signal?: AbortSignal;
@@ -111,10 +116,17 @@ export async function applyStandaloneUpgrade(
   const update = await resolvePackagedUpdate({
     kind: "standalone-linux-x64",
     localVersion,
+    channel: opts.channel,
+    ...(opts.localCommit ? { localCommit: opts.localCommit } : {}),
+    ...(opts.intent ? { intent: opts.intent } : {}),
+    ...(opts.targetChannel ? { targetChannel: opts.targetChannel } : {}),
     ...(opts.fetchOptions ? { fetchOptions: opts.fetchOptions } : {}),
   });
 
   if (!update.available) {
+    if (update.reason === "unsupported_channel") {
+      return { status: "no_release" };
+    }
     if (update.reason === "up_to_date") {
       return {
         status: "up_to_date",

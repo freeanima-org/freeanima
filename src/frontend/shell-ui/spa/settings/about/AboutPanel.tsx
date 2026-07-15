@@ -7,13 +7,18 @@ import {
 } from "@freeanima/frontend/shell-sdk/capacitor-runtime";
 import { resolveHubApiOrigin } from "@freeanima/frontend/shell-sdk/hub-api-origin";
 import { hubHealthProbeUrl } from "@freeanima/shared/hub-rpc";
+import {
+  isSwitchableChannel,
+  otherUpdateTrack,
+  resolveNativePackagedKind,
+  type UpdateTrack,
+} from "@freeanima/frontend/shell-sdk/app-update";
 import { parseComponentBuildMeta } from "@freeanima/frontend/shell-sdk/build-meta";
 import {
   NATIVE_BUILD_META_CHANGED_EVENT,
   resolveAboutNativeBuildMeta,
 } from "@freeanima/frontend/shell-sdk/native-build-meta.resolve";
 import { parseWebUiConfigJson } from "@freeanima/frontend/shell-sdk/web-ui-config";
-import { resolveNativePackagedKind } from "@freeanima/frontend/shell-sdk/app-update";
 
 import { m } from "@paraglide/messages";
 import { requestShellUpdateCheck } from "../../ShellUpdateBanner.tsx";
@@ -234,6 +239,12 @@ export default function AboutPanel() {
     !window.satelliteShell?.isElectron &&
     !window.satelliteShell?.isNativeShell;
   const canCheckNative = resolveNativePackagedKind() != null;
+  const nativeChannel = nativeBuild?.channel;
+  const canSwitchChannel =
+    canCheckNative && nativeChannel != null && isSwitchableChannel(nativeChannel);
+  const switchTarget: UpdateTrack | null = canSwitchChannel
+    ? otherUpdateTrack(nativeChannel)
+    : null;
 
   return (
     <div className="space-y-4 max-w-3xl">
@@ -241,6 +252,18 @@ export default function AboutPanel() {
         {canCheckNative ? (
           <Button type="button" size="sm" onClick={() => requestShellUpdateCheck()}>
             {m.ui_shell_update_check()}
+          </Button>
+        ) : null}
+        {switchTarget ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              requestShellUpdateCheck({ intent: "switch", targetChannel: switchTarget })
+            }
+          >
+            {m.ui_shell_channel_switch({ channel: switchTarget })}
           </Button>
         ) : null}
         {isBrowserWeb ? (

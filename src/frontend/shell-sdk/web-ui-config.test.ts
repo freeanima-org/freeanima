@@ -12,7 +12,7 @@ describe("parseWebUiConfigJson", () => {
       web_build: {
         component: "web",
         version: "0.8.1",
-        channel: "prod",
+        channel: "release",
         built_at: "2026-07-08T00:00:00.000Z",
       },
       min_shell_version: "0.8.0",

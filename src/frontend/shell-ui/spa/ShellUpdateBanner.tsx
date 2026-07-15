@@ -1,18 +1,25 @@
 import { Button } from "@freeanima/frontend/ui-kit";
 import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
 import {
+  isSwitchableChannel,
   resolveNativePackagedKind,
   resolvePackagedUpdate,
   type PackagedUpdateResult,
+  type UpdateTrack,
 } from "@freeanima/frontend/shell-sdk/app-update";
+import type { BuildChannel } from "@freeanima/frontend/shell-sdk/build-meta";
 import { resolveAboutNativeBuildMeta } from "@freeanima/frontend/shell-sdk/native-build-meta.resolve";
 import { useEffect, useRef, useState, type JSX } from "react";
 
 import { m } from "@paraglide/messages";
 
-const DISMISS_KEY = "freeanima.shell-update.dismissed-version";
+const DISMISS_KEY = "freeanima.shell-update.dismissed-key";
 
-function readDismissedVersion(): string | null {
+function dismissKey(update: Extract<PackagedUpdateResult, { available: true }>): string {
+  return `${update.track}:${update.remoteVersion}:${update.remoteCommit ?? ""}`;
+}
+
+function readDismissedKey(): string | null {
   try {
     return sessionStorage.getItem(DISMISS_KEY);
   } catch {
@@ -20,9 +27,9 @@ function readDismissedVersion(): string | null {
   }
 }
 
-function writeDismissedVersion(version: string): void {
+function writeDismissedKey(key: string): void {
   try {
-    sessionStorage.setItem(DISMISS_KEY, version);
+    sessionStorage.setItem(DISMISS_KEY, key);
   } catch {
     /* ignore */
   }
@@ -30,8 +37,13 @@ function writeDismissedVersion(version: string): void {
 
 export const SHELL_UPDATE_CHECK_EVENT = "freeanima:shell-update-check";
 
-export function requestShellUpdateCheck(): void {
-  window.dispatchEvent(new CustomEvent(SHELL_UPDATE_CHECK_EVENT));
+export type ShellUpdateRequestDetail = {
+  intent?: "check" | "switch";
+  targetChannel?: UpdateTrack;
+};
+
+export function requestShellUpdateCheck(detail?: ShellUpdateRequestDetail): void {
+  window.dispatchEvent(new CustomEvent(SHELL_UPDATE_CHECK_EVENT, { detail }));
 }
 
 type Phase = "idle" | "checking" | "available" | "applying" | "failed" | "latest" | "none";
@@ -43,29 +55,53 @@ export function ShellUpdateBanner(): JSX.Element | null {
     null,
   );
   const [error, setError] = useState<string | null>(null);
+  const [switching, setSwitching] = useState(false);
   const checkingRef = useRef(false);
 
   useEffect(() => {
     if (!kind) return;
 
-    const runCheck = async (manual: boolean) => {
+    const runCheck = async (manual: boolean, detail?: ShellUpdateRequestDetail) => {
       if (checkingRef.current) return;
       checkingRef.current = true;
       if (manual) setPhase("checking");
       try {
         const meta = await resolveAboutNativeBuildMeta();
+        const channel: BuildChannel =
+          meta?.channel ?? window.satelliteShell?.nativeBuild?.channel ?? "dev";
+        if (!isSwitchableChannel(channel)) {
+          if (manual) setPhase("none");
+          else setPhase("idle");
+          setUpdate(null);
+          return;
+        }
         const local = meta?.version ?? window.satelliteShell?.nativeBuild?.version ?? "0.0.0";
-        const result = await resolvePackagedUpdate({ kind, localVersion: local });
+        const localCommit = meta?.git?.commit_full ?? meta?.git?.commit;
+        const intent = detail?.intent ?? "check";
+        const targetChannel = detail?.targetChannel;
+        setSwitching(intent === "switch");
+        const result = await resolvePackagedUpdate({
+          kind,
+          localVersion: local,
+          channel,
+          ...(localCommit ? { localCommit } : {}),
+          intent,
+          ...(targetChannel ? { targetChannel } : {}),
+        });
         if (!result.available) {
           if (manual) {
-            setPhase(result.reason === "no_asset" ? "none" : "latest");
+            setPhase(
+              result.reason === "no_asset" || result.reason === "unsupported_channel"
+                ? "none"
+                : "latest",
+            );
           } else {
             setPhase("idle");
           }
           setUpdate(null);
           return;
         }
-        if (!manual && readDismissedVersion() === result.remoteVersion) {
+        if (!manual && readDismissedKey() === dismissKey(result)) {
           setPhase("idle");
           setUpdate(null);
           return;
@@ -87,7 +123,10 @@ export function ShellUpdateBanner(): JSX.Element | null {
     const onVis = () => {
       if (document.visibilityState === "visible") void runCheck(false);
     };
-    const onManual = () => void runCheck(true);
+    const onManual = (ev: Event) => {
+      const detail = (ev as CustomEvent<ShellUpdateRequestDetail>).detail;
+      void runCheck(true, detail);
+    };
     document.addEventListener("visibilitychange", onVis);
     window.addEventListener(SHELL_UPDATE_CHECK_EVENT, onManual);
     return () => {
@@ -147,10 +186,17 @@ export function ShellUpdateBanner(): JSX.Element | null {
 
   if (!update) return null;
 
+  const title = switching
+    ? m.ui_shell_channel_switch_available({
+        channel: update.track,
+        version: update.remoteVersion,
+      })
+    : m.ui_shell_update_available({ version: update.remoteVersion });
+
   return (
     <div className="shrink-0 border-b border-border px-4 py-2">
       <StatusAlert variant="info" className="flex flex-wrap items-center justify-between gap-2">
-        <span>{m.ui_shell_update_available({ version: update.remoteVersion })}</span>
+        <span>{title}</span>
         <div className="flex flex-wrap gap-2">
           <Button
             type="button"
@@ -169,14 +215,14 @@ export function ShellUpdateBanner(): JSX.Element | null {
               });
             }}
           >
-            {m.ui_shell_update_install()}
+            {switching ? m.ui_shell_channel_switch_install() : m.ui_shell_update_install()}
           </Button>
           <Button
             type="button"
             size="sm"
             variant="ghost"
             onClick={() => {
-              writeDismissedVersion(update.remoteVersion);
+              writeDismissedKey(dismissKey(update));
               setPhase("idle");
               setUpdate(null);
             }}

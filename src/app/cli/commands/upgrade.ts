@@ -4,6 +4,11 @@ import { join } from "node:path";
 
 import { applyStandaloneUpgrade } from "@freeanima/core/config/app-update/apply-standalone-upgrade";
 import {
+  isSwitchableChannel,
+  normalizeBuildChannel,
+  type BuildChannel,
+} from "@freeanima/core/config/build-meta";
+import {
   CLI_UPGRADE_HINT_SOURCE,
   CLI_UPGRADE_HINT_STANDALONE_UNSAFE_PREFIX,
   getCliInstallKind,
@@ -34,9 +39,15 @@ function exitWith(code: number): never {
   process.exit(code);
 }
 
+function resolveBakedChannel(): BuildChannel {
+  return getStandaloneRuntimeMeta()?.buildMeta?.channel ?? "release";
+}
+
 export async function runCliUpgrade(opts?: {
   scriptPath?: string;
   checkOnly?: boolean;
+  /** 目标轨：省略则通道内更新；指定则换轨（check 时仅报告） */
+  channel?: string;
 }): Promise<void> {
   const kind = getCliInstallKind(opts?.scriptPath);
   if (kind !== "standalone") {
@@ -66,12 +77,37 @@ export async function runCliUpgrade(opts?: {
     exitWith(1);
   }
 
+  const bakedChannel = resolveBakedChannel();
+  if (!isSwitchableChannel(bakedChannel)) {
+    console.error(
+      `当前 channel 为 ${bakedChannel}，无法从 GitHub 升级。请安装 release 或 canary 独立包后再试。`,
+    );
+    exitWith(1);
+  }
+
+  let targetChannel: BuildChannel | undefined;
+  let intent: "check" | "switch" = "check";
+  if (opts?.channel != null && opts.channel.trim() !== "") {
+    const parsed = normalizeBuildChannel(opts.channel.trim());
+    if (!parsed || !isSwitchableChannel(parsed)) {
+      console.error(`无效 --channel（须为 release 或 canary）：${opts.channel}`);
+      exitWith(1);
+    }
+    if (parsed !== bakedChannel) {
+      intent = "switch";
+      targetChannel = parsed;
+    }
+  }
+
   let localVersion: string;
   try {
     localVersion = getStandaloneRuntimeMeta()?.version ?? readAppVersion();
   } catch {
     localVersion = "0.0.0";
   }
+  const localCommit =
+    getStandaloneRuntimeMeta()?.buildMeta?.git?.commit_full ??
+    getStandaloneRuntimeMeta()?.buildMeta?.git?.commit;
 
   const animaBin = join(prefix, "anima");
   const checkOnly = Boolean(opts?.checkOnly);
@@ -83,6 +119,10 @@ export async function runCliUpgrade(opts?: {
   const result = await applyStandaloneUpgrade({
     prefix,
     localVersion,
+    channel: bakedChannel,
+    ...(localCommit ? { localCommit } : {}),
+    intent,
+    ...(targetChannel ? { targetChannel } : {}),
     checkOnly,
     log: (msg) => console.error(msg),
   });
@@ -91,8 +131,8 @@ export async function runCliUpgrade(opts?: {
     case "up_to_date":
       console.error(
         result.remoteVersion
-          ? `已是最新（本地 ${localVersion}，远端 ${result.remoteVersion}）`
-          : `已是最新（本地 ${localVersion}）`,
+          ? `已是最新（channel ${bakedChannel}，本地 ${localVersion}，远端 ${result.remoteVersion}）`
+          : `已是最新（channel ${bakedChannel}，本地 ${localVersion}）`,
       );
       exitWith(0);
     case "no_release":
@@ -102,10 +142,18 @@ export async function runCliUpgrade(opts?: {
       console.error(`远端 ${result.remoteVersion ?? "?"} 尚无 anima-linux-x64.tar.gz，跳过升级。`);
       exitWith(1);
     case "would_upgrade":
-      console.error(`有新版本 ${result.remoteVersion}: ${result.assetUrl}`);
+      console.error(
+        intent === "switch"
+          ? `可切换到 ${targetChannel}：${result.remoteVersion} ${result.assetUrl}`
+          : `有新版本 ${result.remoteVersion}: ${result.assetUrl}`,
+      );
       exitWith(0);
     case "upgraded":
-      console.error(`已升级到 ${result.remoteVersion}（前缀 ${result.prefix}）`);
+      console.error(
+        intent === "switch"
+          ? `已切换到 ${targetChannel} ${result.remoteVersion}（前缀 ${result.prefix}）`
+          : `已升级到 ${result.remoteVersion}（前缀 ${result.prefix}）`,
+      );
       tryStartService(join(result.prefix, "anima"));
       exitWith(0);
     default: {
@@ -119,9 +167,15 @@ export async function runCliUpgrade(opts?: {
 export function registerUpgradeCommand(program: Command): void {
   program
     .command("upgrade")
-    .description("standalone：从 GitHub Releases 下载并覆盖独立安装前缀；源码安装仅打印指引")
+    .description(
+      "standalone：从 GitHub Releases 按 channel 升级；--channel release|canary 可换轨；源码/dev 仅打印指引",
+    )
     .option("--check", "仅检查是否有新版本，不下载安装")
-    .action(async (options: { check?: boolean }) => {
-      await runCliUpgrade({ checkOnly: Boolean(options.check) });
+    .option("--channel <name>", "release 或 canary（与当前不同时视为换轨）")
+    .action(async (options: { check?: boolean; channel?: string }) => {
+      await runCliUpgrade({
+        checkOnly: Boolean(options.check),
+        ...(options.channel != null ? { channel: options.channel } : {}),
+      });
     });
 }

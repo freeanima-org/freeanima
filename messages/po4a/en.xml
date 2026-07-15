@@ -664,4 +664,15 @@ Digital Humans</msg>
   <msg id="ui_pwa_shell_offline_ready">App shell is ready for offline use. Hub data still requires a connection.</msg>
   <msg id="ui_pwa_update_available">A new version is available.</msg>
   <msg id="ui_pwa_update_reload">Reload</msg>
+  <msg id="ui_shell_channel_switch">Switch to {channel}</msg>
+  <msg id="ui_shell_channel_switch_available">Install {channel} build ({version})?</msg>
+  <msg id="ui_shell_channel_switch_install">Switch channel</msg>
+  <msg id="ui_shell_update_applying">Downloading and installing…</msg>
+  <msg id="ui_shell_update_available">A new app version ({version}) is available.</msg>
+  <msg id="ui_shell_update_check">Check for updates</msg>
+  <msg id="ui_shell_update_dismiss">Later</msg>
+  <msg id="ui_shell_update_failed">Update failed. Please try again.</msg>
+  <msg id="ui_shell_update_install">Update now</msg>
+  <msg id="ui_shell_update_latest">You are on the latest version.</msg>
+  <msg id="ui_shell_update_none">No update package for this platform yet.</msg>
 </messages>

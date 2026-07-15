@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 import { resolveNativeBuildMeta } from "@freeanima/app/shell/shared/resolve-native-build-meta.ts";
+import { resolveBuildChannelFromEnv } from "@freeanima/core/config/build-meta.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const WEB_DIST = join(ROOT, "src/app/shell/web/dist");
@@ -50,10 +51,11 @@ function writeRootRedirect(): void {
 }
 
 function writeNativeBuildMeta(): void {
-  const debug = process.env.MOBILE_DEBUG === "1";
+  const fallback = process.env.MOBILE_DEBUG === "1" ? "dev" : "release";
+  const channel = resolveBuildChannelFromEnv(fallback);
   const meta = resolveNativeBuildMeta({
     shell: "mobile",
-    channel: debug ? "dev" : "prod",
+    channel,
     repoRoot: ROOT,
   });
   writeFileSync(join(WWW, "native-build-meta.json"), `${JSON.stringify(meta)}\n`, "utf8");
