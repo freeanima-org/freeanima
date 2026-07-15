@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createTempDir, removeTempDir } from "@freeanima/core/util";
 import { Config } from "@freeanima/platform/config";
@@ -80,9 +80,30 @@ describe("file tools", () => {
     expect(readFileSync(abs, "utf-8")).toBe("beta\n");
   });
 
+  it("denies /etc read and write", async () => {
+    const readOut = await toolSets.getTool("file_read")!.handler({ path: "/etc/passwd" });
+    expect(readOut).toContain("blocked /etc path");
+    const writeOut = await toolSets.getTool("file_write")!.handler({
+      path: "/etc/hosts",
+      content: "x",
+    });
+    expect(writeOut).toContain("blocked /etc path");
+  });
+
+  it("file_delete removes a file and denies /etc", async () => {
+    const p = join(cwd, "to-delete.txt");
+    writeFileSync(p, "bye", "utf-8");
+    const out = await toolSets.getTool("file_delete")!.handler({ path: p });
+    expect(out).toContain('"ok":true');
+    expect(existsSync(p)).toBe(false);
+
+    const deny = await toolSets.getTool("file_delete")!.handler({ path: "/etc/passwd" });
+    expect(deny).toContain("blocked /etc path");
+  });
+
   it("tools are registered", () => {
     const names = new Set(toolSets.listTools().map((t) => t.name));
     expect(names.has("file_read")).toBe(true);
-    expect(names.has("file_read")).toBe(true);
+    expect(names.has("file_delete")).toBe(true);
   });
 });
