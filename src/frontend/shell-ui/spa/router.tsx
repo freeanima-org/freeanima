@@ -107,6 +107,7 @@ const routeTree = rootRoute.addChildren([
 function shouldUseNativeHashHistory(): boolean {
   if (typeof window === "undefined") return false;
   if (window.satelliteShell?.isNativeShell) return true;
+  // 仅真壳 / 薄壳候选；手机浏览器直连 Hub 走 path 路由
   return isCapacitorNativePlatform() || isMobileCapacitorShellCandidate();
 }
 

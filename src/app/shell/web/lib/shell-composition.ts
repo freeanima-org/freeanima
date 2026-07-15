@@ -9,14 +9,14 @@ import { createWebSettingsStores } from "./settings-stores.ts";
 
 export type ShellRuntimeKind = "electron" | "capacitor" | "web";
 
+/** 能力层壳类型：跟 satelliteShell / Capacitor 原生桥，不跟手机 UA（phone ≠ Capacitor）。 */
 export function detectShellRuntimeKind(): ShellRuntimeKind {
   if (window.satelliteShell?.isElectron) return "electron";
-  if (
-    window.satelliteShell?.isNativeShell ||
-    isCapacitorNativePlatform() ||
-    isMobileCapacitorShellCandidate()
-  )
+  if (window.satelliteShell?.isNativeShell || isCapacitorNativePlatform()) {
     return "capacitor";
+  }
+  // 薄壳首页尚未注入 satelliteShell 时：localhost / capacitor:// 仍可能是 Capacitor
+  if (isMobileCapacitorShellCandidate()) return "capacitor";
   return "web";
 }
 
