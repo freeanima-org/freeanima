@@ -11,6 +11,8 @@ export type EmbeddingConfigSnapshot = {
 };
 
 const DEFAULT_EMBEDDING_TIMEOUT_MS = 60_000;
+/** Retrieval-side embed budget; hybrid fail-open when exceeded */
+export const DEFAULT_EMBEDDING_QUERY_TIMEOUT_MS = 800;
 const DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434/v1";
 
 function stripTrailingSlashes(url: string): string {
@@ -54,7 +56,15 @@ export function getResolvedEmbeddingConfig(cfg: AnimaConfig): ResolvedEmbeddingC
       typeof embedding.timeout_ms === "number" && embedding.timeout_ms > 0
         ? embedding.timeout_ms
         : DEFAULT_EMBEDDING_TIMEOUT_MS,
+    queryTimeoutMs: getEmbeddingQueryTimeoutMs(cfg),
   };
+}
+
+/** Query-time embed deadline (fail-open); independent of write-path timeout_ms */
+export function getEmbeddingQueryTimeoutMs(cfg: AnimaConfig): number {
+  const raw = cfg.embedding?.query_timeout_ms;
+  if (typeof raw === "number" && raw > 0) return raw;
+  return DEFAULT_EMBEDDING_QUERY_TIMEOUT_MS;
 }
 
 export function getEmbeddingConfigSnapshot(cfg: AnimaConfig): EmbeddingConfigSnapshot {

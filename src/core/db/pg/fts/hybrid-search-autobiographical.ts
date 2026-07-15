@@ -31,19 +31,19 @@ export async function hybridSearchAutobiographicalMemory(
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
   const status = opts?.status ?? "active";
 
-  const [queryEmbedding, ftsHits] = await Promise.all([
-    embedQueryText(q),
-    searchAutobiographicalMemoryFtsRaw(q, {
-      limit: candidateLimit(limit, 0),
-      status,
-    }),
-  ]);
-  const pool = candidateLimit(limit, ftsHits.length);
-  const [trgmHits, vectorHits] = await Promise.all([
-    searchAutobiographicalMemoryTrgm(q, { limit: pool, status }),
+  const pool = candidateLimit(limit, 0);
+  const vectorBranch = embedQueryText(q).then((queryEmbedding) =>
     queryEmbedding
       ? searchAutobiographicalMemoryVector(queryEmbedding, { limit: pool, status })
       : Promise.resolve([]),
+  );
+  const [ftsHits, trgmHits, vectorHits] = await Promise.all([
+    searchAutobiographicalMemoryFtsRaw(q, {
+      limit: pool,
+      status,
+    }),
+    searchAutobiographicalMemoryTrgm(q, { limit: pool, status }),
+    vectorBranch,
   ]);
 
   const ftsRanked = ftsHits.map((h) => ({ ...h, docKey: autobiographicalDocKey(h.id) }));

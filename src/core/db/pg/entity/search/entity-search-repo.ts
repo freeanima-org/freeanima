@@ -84,20 +84,19 @@ async function searchHybrid(opts: EntitySearchOpts): Promise<EntitySearchHit[]> 
   const fetchLimit = limit + offset;
   const searchOpts = { ...opts, query: q };
 
-  const [queryEmbedding, ftsHits] = await Promise.all([
-    embedQueryText(q),
-    searchEntitiesFtsRaw(q, {
-      ...searchOpts,
-      limit: candidateLimit(fetchLimit, 0),
-    }),
-  ]);
-  const pool = candidateLimit(fetchLimit, ftsHits.length);
-
-  const [trgmHits, vectorHits] = await Promise.all([
-    searchEntitiesTrgm(q, { ...searchOpts, limit: pool }),
+  const pool = candidateLimit(fetchLimit, 0);
+  const vectorBranch = embedQueryText(q).then((queryEmbedding) =>
     queryEmbedding
       ? searchEntitiesVector(queryEmbedding, { ...searchOpts, limit: pool })
       : Promise.resolve([]),
+  );
+  const [ftsHits, trgmHits, vectorHits] = await Promise.all([
+    searchEntitiesFtsRaw(q, {
+      ...searchOpts,
+      limit: pool,
+    }),
+    searchEntitiesTrgm(q, { ...searchOpts, limit: pool }),
+    vectorBranch,
   ]);
 
   const ftsRanked = ftsHits.map((h) => ({ ...h, docKey: entityDocKey(h.id) }));

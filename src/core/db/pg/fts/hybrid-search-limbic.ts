@@ -27,16 +27,16 @@ export async function hybridSearchLimbicMemory(
 
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
 
-  const [queryEmbedding, ftsHits] = await Promise.all([
-    embedQueryText(q),
-    searchLimbicMemoryFtsRaw(q, { limit: candidateLimit(limit, 0) }),
-  ]);
-  const pool = candidateLimit(limit, ftsHits.length);
-  const [trgmHits, vectorHits] = await Promise.all([
-    searchLimbicMemoryTrgm(q, { limit: pool }),
+  const pool = candidateLimit(limit, 0);
+  const vectorBranch = embedQueryText(q).then((queryEmbedding) =>
     queryEmbedding
       ? searchLimbicMemoryVector(queryEmbedding, { limit: pool })
       : Promise.resolve([]),
+  );
+  const [ftsHits, trgmHits, vectorHits] = await Promise.all([
+    searchLimbicMemoryFtsRaw(q, { limit: pool }),
+    searchLimbicMemoryTrgm(q, { limit: pool }),
+    vectorBranch,
   ]);
 
   const ftsRanked = ftsHits.map((h) => ({ ...h, docKey: limbicDocKey(h.id) }));
