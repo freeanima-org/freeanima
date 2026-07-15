@@ -5,12 +5,24 @@ import { buildProgram, ANIMA_VERSION } from "./program.ts";
 import { printCliError } from "./output/errors.ts";
 import { formatCliVersion } from "@freeanima/core/config/cli-install";
 import { resolveServiceBuildMeta } from "@freeanima/platform/runtime/service-build-meta";
+import { isStandaloneCli } from "./is-standalone-cli.ts";
 
 const argv = process.argv;
 if (argv.includes("-V") || argv.includes("--version")) {
   const build = resolveServiceBuildMeta();
   console.log(`${formatCliVersion(ANIMA_VERSION)} · ${build.channel}`);
 } else {
+  // 源码 CLI 不注册 service；友好提示（避免仅 unknown command）
+  if (!isStandaloneCli()) {
+    const args = argv.slice(2).filter((a) => a !== "--");
+    if (args[0] === "service") {
+      console.error("`anima service` is only available in the standalone install CLI.");
+      console.error("For monorepo / worktree Hub: bun run dev:hub");
+      console.error("  e.g. bun run dev:hub -- --port 2701");
+      process.exit(1);
+    }
+  }
+
   const program = buildProgram();
   try {
     await program.parseAsync(argv);

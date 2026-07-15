@@ -196,19 +196,21 @@ See [`guide/security.md`](../guide/security.md).
 
 ## Runtime Modes
 
-Production: `anima service` (systemd --user). Auto-restarts after crashes; only `systemctl stop` stops the service.
+Production (standalone install CLI): `anima service` (systemd --user). Auto-restarts after crashes; only `systemctl stop` stops the service. Source-tree `anima` does **not** register `service` — use `bun run dev:hub` for local Hub.
 
-- **service**: long-running — Hub HTTP (`/api`, `/hub/rpc/v1`), Discord / WeChat Gateway, cron
-- **chat**: single non-interactive turn (CLI or piped stdin)
+- **hub / service**: long-running — Hub HTTP (`/hub/rpc/v1`), Discord / WeChat Gateway, cron
 - **UI**: `src/app/shell/desktop` / `src/app/shell/mobile` bundled SPA (Chat + Console); Hub does not host `/console`
 
 ```bash
+# standalone install
 anima service start              # default: systemd --user (does not auto-build Web)
-anima service start --foreground # foreground (logs to stdout)
-bun run dev:service              # monorepo Hub foreground
+anima service start --foreground # foreground (logs to stdout; systemd unit uses this)
+anima service status
+
+# monorepo / worktree
+bun run dev:hub                  # Hub foreground (optional -- --port 2701)
 bun run dev:web                  # browser shell Vite HMR :4173 (Hub must be running)
 bun run build:web                # source deploy / Hub /web: build dist before start
-anima service status
 ```
 
 ## Tool Architecture (Three Layers)

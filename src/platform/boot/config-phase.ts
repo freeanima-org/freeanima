@@ -1,4 +1,4 @@
-import { writeFileSync, mkdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { wireEnginePorts } from "../wire-engine-ports.ts";
 import { wireCapabilityInjection } from "../wire-capability-injection.ts";
@@ -13,7 +13,7 @@ import { bindActiveRuntimeConfig } from "@freeanima/core/config";
 
 import { bindBootstrapHttpForProcess } from "../config/bootstrap-http-cache.ts";
 import { loadBootstrapConfig } from "../config/bootstrap.ts";
-import { startupLog } from "./status.ts";
+import { claimPidFileIfUnowned, startupLog } from "./status.ts";
 
 export type ConfigPhaseResult = Record<string, never>;
 
@@ -26,7 +26,7 @@ export async function bootConfigPhase(): Promise<ConfigPhaseResult> {
   wireCapabilityInjection();
 
   mkdirSync(dirname(PATHS.pidFile), { recursive: true });
-  writeFileSync(PATHS.pidFile, String(process.pid));
+  claimPidFileIfUnowned();
 
   return {};
 }

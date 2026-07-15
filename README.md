@@ -91,7 +91,7 @@ Then configure `~/.anima/config.yaml` and run `anima service start` (installed) 
 聊天室与管理台由 **desktop / mobile 壳层**（`src/app/shell/desktop`、`src/app/shell/mobile`）提供 bundled SPA。Hub 托管 API / SAP；`web.enabled` 且已有 dist 时托管 `/web/*`：
 
 - API：`http://127.0.0.1:2658/api`
-- Dev：`bun run dev:service` + `bun run dev:web` → `http://127.0.0.1:4173/web/chat`（Console：`/web/console/dashboard`）
+- Dev：`bun run dev:hub` + `bun run dev:web` → `http://127.0.0.1:4173/web/chat`（Console：`/web/console/dashboard`）
 
 ## First-deploy security checklist
 

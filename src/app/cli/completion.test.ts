@@ -8,32 +8,40 @@ describe("shell completion", () => {
   });
 
   it.each([...SUPPORTED_SHELLS])("generate %s smoke", (shell: string) => {
-    const program = buildProgram();
+    const program = buildProgram({ standalone: true });
     const script = generateCompletion(shell, program);
     expect(script.length).toBeGreaterThan(50);
   });
 
   it("bash registers complete", () => {
-    const script = generateCompletion("bash", buildProgram());
+    const script = generateCompletion("bash", buildProgram({ standalone: true }));
     expect(script).toContain("complete -F _anima anima");
   });
 
   it("zsh has compdef", () => {
-    const script = generateCompletion("zsh", buildProgram());
+    const script = generateCompletion("zsh", buildProgram({ standalone: true }));
     expect(script).toContain("#compdef anima");
   });
 
-  it("covers top-level commands", () => {
-    const bash = generateCompletion("bash", buildProgram());
-    const zsh = generateCompletion("zsh", buildProgram());
+  it("source CLI omits service", () => {
+    const bash = generateCompletion("bash", buildProgram({ standalone: false }));
+    expect(bash).not.toContain("_service()");
+    for (const token of ["vault", "completion", "upgrade"]) {
+      expect(bash).toContain(token);
+    }
+  });
+
+  it("covers top-level commands when standalone", () => {
+    const bash = generateCompletion("bash", buildProgram({ standalone: true }));
+    const zsh = generateCompletion("zsh", buildProgram({ standalone: true }));
     for (const token of ["service", "vault", "completion", "upgrade"]) {
       expect(bash).toContain(token);
       expect(zsh).toContain(token);
     }
   });
 
-  it("includes service actions and flags", () => {
-    const bash = generateCompletion("bash", buildProgram());
+  it("includes service actions and flags when standalone", () => {
+    const bash = generateCompletion("bash", buildProgram({ standalone: true }));
     for (const token of ["start", "stop", "restart", "status", "--foreground"]) {
       expect(bash).toContain(token);
     }
@@ -42,7 +50,7 @@ describe("shell completion", () => {
   });
 
   it("includes vault subcommands", () => {
-    const bash = generateCompletion("bash", buildProgram());
+    const bash = generateCompletion("bash", buildProgram({ standalone: false }));
     for (const token of ["list", "get"]) {
       expect(bash).toContain(token);
     }

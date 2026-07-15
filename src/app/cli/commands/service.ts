@@ -8,13 +8,13 @@ const SERVICE_ACTIONS = ["start", "stop", "restart", "status"] as const;
 export function registerServiceCommand(program: Command): void {
   program
     .command("service")
-    .description("Manage Free Anima service (systemd default)")
+    .description("Manage Free Anima service (standalone install only; systemd default)")
     .addArgument(
       new Argument("[action]", `action (${SERVICE_ACTIONS.join("|")})`)
         .default("start")
         .choices([...SERVICE_ACTIONS]),
     )
-    .option("--foreground", "Run serve() in foreground (debug)")
+    .option("--foreground", "Run serve() in foreground (used by systemd unit)")
     .option(
       "--host <host>",
       "Listen address (overrides http.host in config; comma-separated for multiple binds)",
@@ -23,6 +23,10 @@ export function registerServiceCommand(program: Command): void {
     .addHelpText(
       "after",
       `
+standalone install only (not available in source-tree anima CLI).
+
+Monorepo / worktree Hub: bun run dev:hub
+
 systemd (default):
   First start writes ~/.config/systemd/user/anima.service
   and runs systemctl --user enable --now anima
