@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 
+import { llmConfigSchema } from "@freeanima/core/config/schemas/llm-config.ts";
 import { HUB_RUNTIME_CONFIG_ID, hubRuntimeConfig } from "@freeanima/core/db/schema";
 
 import { getDb } from "../client.ts";
@@ -29,6 +30,18 @@ function replaceSection(
   return {
     ...document,
     [section]: value,
+  };
+}
+
+/** llm 允许只 patch providers：用 schema 默认补齐 backend / 空 profiles，再落库 */
+function normalizeDocumentSection(
+  document: Record<string, unknown>,
+  section: string,
+): Record<string, unknown> {
+  if (section !== "llm") return document;
+  return {
+    ...document,
+    llm: llmConfigSchema.parse(document.llm ?? {}),
   };
 }
 
@@ -72,7 +85,7 @@ export async function patchHubRuntimeConfigSection(
   patch: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
   const current = await getHubRuntimeConfigDocument();
-  const next = mergeSection(current, section, patch);
+  const next = normalizeDocumentSection(mergeSection(current, section, patch), section);
   await upsertHubRuntimeConfigDocument(next);
   return next;
 }
@@ -83,7 +96,7 @@ export async function replaceHubRuntimeConfigSection(
   value: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
   const current = await getHubRuntimeConfigDocument();
-  const next = replaceSection(current, section, value);
+  const next = normalizeDocumentSection(replaceSection(current, section, value), section);
   await upsertHubRuntimeConfigDocument(next);
   return next;
 }

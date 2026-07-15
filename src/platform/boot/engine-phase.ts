@@ -5,12 +5,13 @@ import {
   type EngineCatalog,
 } from "@freeanima/runtime";
 import { getLlmRuntime, initLlmRuntime } from "@freeanima/core/llm";
+import { isLlmConfigured } from "@freeanima/core/config";
 import { createServiceKernel } from "@freeanima/platform/bootstrap";
 import {
   createConversationService,
   type ConversationService,
 } from "@freeanima/runtime/conversation";
-import { createServiceLogger } from "@freeanima/platform/logging";
+import { createServiceLogger, logComponent } from "@freeanima/platform/logging";
 import { MaskRegistry } from "@freeanima/features/task/domain/mask";
 import { MCPManager } from "@freeanima/capabilities/mcp-client";
 import { SatelliteManager } from "@freeanima/capabilities/satellite";
@@ -46,6 +47,9 @@ export function bootEnginePhase(
   const kernel = createServiceKernel(config);
 
   initLlmRuntime(config.data);
+  if (!isLlmConfigured(config.data)) {
+    logComponent("startup").warn("LLM 未配置；请在 Shell 设置 → Hub 服务中配置后重启服务");
+  }
   wireContextWindowLookup();
   const logger = createServiceLogger();
   const engine = createEngine({ llm: getLlmRuntime(), catalog, config, logger });

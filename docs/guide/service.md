@@ -50,12 +50,12 @@ bun run dev:web              # monorepo: Vite HMR on :4173 (Hub must already be 
 | Source deploy      | Run `bun run build:web` before start         | Hub `/web/*` when `web.enabled`                         |
 | Dev                | Not required                                 | `bun run dev:service` + `bun run dev:web` → `:4173` HMR |
 
-When `web.enabled: true` and `src/app/shell/web/dist` (or embedded dist) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Hub (no separate API proxy). Clients store Hub URL and **Service API Token** (`fa_at_...`) in **Hub settings**. For standalone static hosting without the Hub process, use `anima web start --foreground` (default `:2660`) after dist exists. Optional Hub native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)).
+When `config.yaml` has `web.enabled: true` (absent defaults to on) and `src/app/shell/web/dist` (or embedded dist) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Hub (no separate API proxy). Clients store Hub URL and **Service API Token** (`fa_at_...`) in **Hub settings**. For standalone static hosting without the Hub process, use `anima web start --foreground` (default `:2660`) after dist exists. Optional Hub native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)).
 
 **Startup order:** Hub must pass `GET /hub/rpc/v1/health/probe` (`status: ok`) before Tunnel sidecars start (`serve()` `onReady` → stack supervisor). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).
 
 **UI access:**
 
 - **Desktop / mobile bundled shell:** Chat and Console at `/chat`, `/console`/\*`inside the Electron/Capacitor app (not served from Hub`:2658`unless`web.enabled`).
-- **`web.enabled: true`:** browser UI at `http://<host>:2658/web/*` from Hub when dist is present (see table above).
+- **`config.yaml` `web.enabled: true`:** browser UI at `http://<host>:2658/web/*` from Hub when dist is present (see table above). `web` is bootstrap (not PG).
 - **Local Web dev (`bun run dev:web`):** Vite on `:4173` with base `/web/` — Chat `http://127.0.0.1:4173/web/chat`, Console `http://127.0.0.1:4173/web/console/dashboard`; Hub serves Hub RPC REST + WS at `/hub/rpc/v1`.

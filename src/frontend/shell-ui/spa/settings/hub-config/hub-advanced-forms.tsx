@@ -17,7 +17,6 @@ export const ADVANCED_SECTIONS = [
   "mcp_servers",
   "acp_agents",
   "tunnel",
-  "web",
   "worlds",
   "auto_llm",
 ] as const;
@@ -342,29 +341,6 @@ function TunnelForm({
   );
 }
 
-function WebForm({
-  value,
-  onChange,
-}: {
-  value: Record<string, unknown>;
-  onChange: (v: Record<string, unknown>) => void;
-}) {
-  return (
-    <div className="space-y-4">
-      {hubConfigBoolField("enabled", Boolean(value.enabled), (enabled) =>
-        onChange({ ...value, enabled }),
-      )}
-      {hubConfigTextField("host", String(value.host ?? ""), (v) => onChange({ ...value, host: v }))}
-      {hubConfigNumberField("port", typeof value.port === "number" ? value.port : "", (v) =>
-        onChange({ ...value, port: v === "" ? undefined : v }),
-      )}
-      {hubConfigTextField("public_url", String(value.public_url ?? ""), (v) =>
-        onChange({ ...value, public_url: v }),
-      )}
-    </div>
-  );
-}
-
 function WorldsForm({
   value,
   onChange,
@@ -439,8 +415,6 @@ export function AdvancedSectionForm({
       return <AcpAgentsForm value={value} onChange={onChange} />;
     case "tunnel":
       return <TunnelForm value={value} onChange={onChange} />;
-    case "web":
-      return <WebForm value={value} onChange={onChange} />;
     case "worlds":
       return <WorldsForm value={value} onChange={onChange} />;
     case "auto_llm":

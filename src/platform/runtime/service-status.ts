@@ -213,10 +213,20 @@ export async function buildStatus(
     l2IndexRows = 0;
   }
 
-  const chatModel = getProfileHopModel(cfg, PROFILE_CHAT);
+  let chatModel = "";
+  let apiBase = "";
+  try {
+    chatModel = getProfileHopModel(cfg, PROFILE_CHAT);
+    apiBase = getDefaultProviderBaseUrl(cfg);
+  } catch {
+    /* LLM 可未配置：Hub 仍可启动，设置页写入后需重启 */
+  }
+
   const tokenizerStatus: ServiceSnapshot["tokenizer"] = {};
-  const chatBinding = getTokenizerBindingSnapshot(chatModel);
-  if (chatBinding) tokenizerStatus.chat = chatBinding;
+  if (chatModel) {
+    const chatBinding = getTokenizerBindingSnapshot(chatModel);
+    if (chatBinding) tokenizerStatus.chat = chatBinding;
+  }
 
   if (isEmbeddingEnabled(cfg)) {
     const embeddingModel = cfg.embedding?.model?.trim();
@@ -235,7 +245,7 @@ export async function buildStatus(
     start_time_iso: startTimeIso(startTime),
     config: {
       model: chatModel,
-      api_base: getDefaultProviderBaseUrl(cfg),
+      api_base: apiBase,
     },
     ...(tokenizerStatus.chat || tokenizerStatus.embedding ? { tokenizer: tokenizerStatus } : {}),
     conversations: { total: sessionCount, by_platform: byPlatform },

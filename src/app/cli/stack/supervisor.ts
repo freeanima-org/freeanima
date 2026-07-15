@@ -1,6 +1,7 @@
 import type { ChildProcess } from "node:child_process";
 import { join } from "node:path";
 import { logStartupError } from "@freeanima/platform/logging";
+import { getRepoRoot, isBootstrapWebHostingEnabled } from "@freeanima/core/config";
 import { loadRuntimeConfigSection } from "@freeanima/platform/config";
 import { loadBootstrapConfig } from "@freeanima/platform/config/bootstrap.ts";
 import { parseBindHosts } from "@freeanima/platform";
@@ -10,7 +11,6 @@ import {
 } from "@freeanima/platform/tls/resolve-hub-tls";
 import { systemdUserAvailable } from "../systemd-unit.ts";
 
-import { getRepoRoot } from "@freeanima/core/config/repo-root";
 import { tryResolveWebDistDir } from "../web/dist-path.ts";
 import {
   findCloudflaredPidOnHost,
@@ -38,10 +38,10 @@ async function stopStackSidecars(): Promise<void> {
 }
 
 async function startStackSidecars(hubPort: number): Promise<void> {
-  const webCfg = await loadRuntimeConfigSection<{ enabled?: boolean }>("web");
+  const bootstrap = loadBootstrapConfig();
   const tunnelCfg = await loadRuntimeConfigSection<{ enabled?: boolean }>("tunnel");
 
-  if (webCfg?.enabled) {
+  if (isBootstrapWebHostingEnabled(bootstrap)) {
     console.log(`[stack] Web UI http://127.0.0.1:${hubPort}/web/chat（由 Hub 托管）`);
   }
 
@@ -75,8 +75,9 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
   process.once("SIGINT", onStop);
   process.once("SIGTERM", onStop);
 
-  const webCfg = await loadRuntimeConfigSection<{ enabled?: boolean }>("web");
-  const bootstrapHttp = loadBootstrapConfig().http;
+  const bootstrap = loadBootstrapConfig();
+  const webEnabled = isBootstrapWebHostingEnabled(bootstrap);
+  const bootstrapHttp = bootstrap.http;
 
   let webStatic: {
     distDir: string;
@@ -84,7 +85,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
     uiVersion?: string;
     minShellVersion?: string;
   } | null = null;
-  if (webCfg?.enabled) {
+  if (webEnabled) {
     try {
       // 启动从不自动 build：源码部署须先 bun run build:web；standalone 打包时已嵌入
       const distDir = tryResolveWebDistDir();
@@ -106,7 +107,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
         };
       } else {
         console.warn(
-          "[stack] web.enabled 但未找到 Web dist，Hub 将不托管 /web（请先 bun run build:web）",
+          "[stack] config.yaml web.enabled 已开启（或缺省开启）但未找到 Web dist，Hub 将不托管 /web（请先 bun run build:web）",
         );
       }
     } catch (err) {

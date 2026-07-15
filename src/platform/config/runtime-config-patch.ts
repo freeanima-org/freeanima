@@ -4,28 +4,30 @@ import {
   isPatchableRuntimeConfig,
 } from "@freeanima/platform/config";
 import { isBootstrapConfigKey } from "@freeanima/core/config";
+import { runMigrations } from "@freeanima/core/db";
 import {
+  getDb,
   getHubRuntimeConfigDocument,
+  initDatabase,
   patchHubRuntimeConfigSection,
   replaceHubRuntimeConfigSection,
 } from "@freeanima/core/db/pg";
-import { getDb, initDatabase } from "@freeanima/core/db/pg";
 
 import { loadBootstrapConfig } from "../boot/bootstrap.ts";
 
+/** CLI 冷路径：连 PG 并应用迁移后再读/写 hub_runtime_config（模拟新用户空库） */
 async function ensureDbFromBootstrap(): Promise<void> {
   try {
     getDb();
-    return;
   } catch {
-    /* not initialized */
+    const bootstrap = loadBootstrapConfig();
+    const dbUrl = await getConfiguredDatabaseUrlFromBootstrap(bootstrap);
+    if (!dbUrl) {
+      throw new Error("database.url 未配置；无法访问运行时配置");
+    }
+    initDatabase({ getDatabaseUrl: () => dbUrl });
   }
-  const bootstrap = loadBootstrapConfig();
-  const dbUrl = await getConfiguredDatabaseUrlFromBootstrap(bootstrap);
-  if (!dbUrl) {
-    throw new Error("database.url 未配置；无法访问运行时配置");
-  }
-  initDatabase({ getDatabaseUrl: () => dbUrl });
+  await runMigrations(getDb());
 }
 
 /** Hub 进程内或 CLI 独立写入运行时段 */

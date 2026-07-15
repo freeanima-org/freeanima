@@ -23,7 +23,9 @@ import { waitForHubReadyOrWarn } from "./wait-hub-ready.ts";
 import { stopHubStackViaSystemd } from "./tunnel/tunnel-supervisor.ts";
 import { getTunnelStatus, migrateLegacyTunnelUnit } from "./tunnel/tunnel-supervisor.ts";
 import { buildTunnelSnapshot } from "@freeanima/platform/connectors/tunnel";
+import { isBootstrapWebHostingEnabled } from "@freeanima/core/config";
 import { loadRuntimeConfigSection, validateBootstrapOnStartup } from "@freeanima/platform/config";
+import { loadBootstrapConfig } from "@freeanima/platform/config/bootstrap.ts";
 import { runServiceStack } from "./stack/supervisor.ts";
 import { probeWebHealth } from "./web/web-runtime.ts";
 
@@ -176,11 +178,9 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
     );
     const tunnelStatus = await getTunnelStatus();
     const tunnelUrls = buildTunnelSnapshot(tunnelCfg);
-    const webCfg = await loadRuntimeConfigSection<{ enabled?: boolean; public_url?: string }>(
-      "web",
-    );
-    const webUp =
-      webCfg?.enabled === true ? await probeWebHealth(resolveProbeHost(host), port) : false;
+    const bootstrap = loadBootstrapConfig();
+    const webEnabled = isBootstrapWebHostingEnabled(bootstrap);
+    const webUp = webEnabled ? await probeWebHealth(resolveProbeHost(host), port) : false;
     printServiceRunningStatus({
       body,
       statusFile,
@@ -203,12 +203,12 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
             webUrl: tunnelUrls.web_url,
           }
         : null,
-      web: webCfg?.enabled
+      web: webEnabled
         ? {
             running: webUp,
             host: resolveProbeHost(host),
             port,
-            publicUrl: webCfg?.public_url ?? tunnelUrls?.web_url ?? null,
+            publicUrl: bootstrap.web?.public_url ?? tunnelUrls?.web_url ?? null,
           }
         : null,
     });

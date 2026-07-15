@@ -209,6 +209,10 @@ export class LlmProfile {
   }
 }
 
+/** 空 ProfileRegistry（Hub 可先启动，设置页配置后再重启） */
+export const LLM_PROFILES_UNCONFIGURED_MESSAGE =
+  "LLM 未配置；请在 Shell 设置 → Hub 服务中配置 LLM 后重启服务";
+
 /** Resolve and return LlmProfile entities only */
 export class ProfileRegistry {
   private readonly profiles = new Map<string, LlmProfile>();
@@ -224,12 +228,18 @@ export class ProfileRegistry {
       }
       this.profiles.set(def.id, new LlmProfile(def, providers));
     }
+    if (this.profiles.size === 0) {
+      return;
+    }
     if (!this.profiles.has(defaultProfileId)) {
       throw new Error(`default profile "${defaultProfileId}" is not defined`);
     }
   }
 
   resolve(profileId?: string): LlmProfile {
+    if (this.profiles.size === 0) {
+      throw new Error(LLM_PROFILES_UNCONFIGURED_MESSAGE);
+    }
     const id = profileId !== undefined ? profileId : this.defaultProfileId;
     const profile = this.profiles.get(id);
     if (profile) return profile;
