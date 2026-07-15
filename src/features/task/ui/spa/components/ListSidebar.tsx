@@ -1,17 +1,11 @@
+import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Button, Checkbox, Input } from "@freeanima/frontend/ui-kit";
 import { useDrawerNav } from "@freeanima/frontend/ui-kit/layout";
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type MouseEvent,
-  type ReactNode,
-  type RefObject,
-} from "react";
+import { useEffect, useMemo, useState, type MouseEvent, type ReactNode } from "react";
 
-import { listDndId } from "../lib/dnd-ids.ts";
+import { LIST_ROOT_DND_ID, listDndId } from "../lib/dnd-ids.ts";
 import type { TaskListRow } from "../lib/api.ts";
 import {
   buildListTree,
@@ -32,11 +26,8 @@ type ListSidebarProps = {
   showClosed: boolean;
   selectedListId: number | null;
   selectedFolderId: number | null;
-  editingListId: number | null;
-  editingListName: string;
   newListName: string;
   newFolderName: string;
-  renameInputRef: RefObject<HTMLInputElement | null>;
   useActionSheet: boolean;
   onToggleShowClosed: () => void;
   onSelectList: (id: number) => void;
@@ -45,55 +36,48 @@ type ListSidebarProps = {
   onCreateFolder: () => void;
   onNewListNameChange: (value: string) => void;
   onNewFolderNameChange: (value: string) => void;
-  onEditingListNameChange: (value: string) => void;
-  onCommitRename: () => void;
-  onCancelRename: () => void;
   onOpenListMenu: (list: TaskListRow) => void;
   onOpenListContextMenu: (e: MouseEvent, list: TaskListRow) => void;
-  onStartRename: (list: TaskListRow) => void;
+  onEditList: (list: TaskListRow) => void;
 };
 
 function SortableTreeRow({
   node,
   expanded,
   selected,
-  editing,
-  editingName,
-  renameInputRef,
   useActionSheet,
   onToggleExpand,
   onSelectList,
   onSelectFolder,
-  onEditingNameChange,
-  onCommitRename,
-  onCancelRename,
   onOpenMenu,
   onContextMenu,
-  onDoubleClickRename,
+  onEdit,
 }: {
   node: ListTreeNode;
   expanded: boolean;
   selected: boolean;
-  editing: boolean;
-  editingName: string;
-  renameInputRef: RefObject<HTMLInputElement | null>;
   useActionSheet: boolean;
   onToggleExpand: () => void;
   onSelectList: () => void;
   onSelectFolder: () => void;
-  onEditingNameChange: (value: string) => void;
-  onCommitRename: () => void;
-  onCancelRename: () => void;
   onOpenMenu: () => void;
   onContextMenu: (e: MouseEvent) => void;
-  onDoubleClickRename?: () => void;
+  onEdit: () => void;
 }) {
   const { list, depth } = node;
-  const { draggingTask, draggingList, overListId } = useTaskDndUi();
+  const { draggingTask, draggingList, overListId, activeListId, folderDropIntent } = useTaskDndUi();
   const isFolder = list.is_folder;
   const isTaskDropTarget = draggingTask && overListId === list.id && !isFolder;
-  const isFolderDropTarget =
-    draggingList && overListId === list.id && isFolder && list.id !== node.list.id;
+  const isFolderIntoTarget =
+    draggingList &&
+    overListId === list.id &&
+    isFolder &&
+    activeListId !== list.id &&
+    folderDropIntent === "into";
+  const showBeforeLine =
+    draggingList && overListId === list.id && isFolder && folderDropIntent === "before";
+  const showAfterLine =
+    draggingList && overListId === list.id && isFolder && folderDropIntent === "after";
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: listDndId(list.id),
@@ -110,14 +94,22 @@ function SortableTreeRow({
       ref={setNodeRef}
       style={style}
       className={[
-        "group flex min-h-11 items-center gap-0.5 rounded-lg py-1 pr-1 text-sm",
+        "group relative flex min-h-11 touch-manipulation items-center gap-0.5 rounded-lg py-1 pr-1 text-sm select-none",
         selected ? "bg-primary/15 font-medium" : "hover:bg-muted",
         isDragging ? "opacity-50" : "",
-        isTaskDropTarget || isFolderDropTarget ? "ring-primary bg-primary/10 ring-2" : "",
+        isTaskDropTarget || isFolderIntoTarget ? "ring-primary bg-primary/10 ring-2" : "",
       ].join(" ")}
       onContextMenu={onContextMenu}
-      onDoubleClick={onDoubleClickRename}
+      onDoubleClick={useActionSheet ? undefined : onEdit}
+      {...attributes}
+      {...listeners}
     >
+      {showBeforeLine ? (
+        <div className="bg-primary absolute top-0 right-1 left-1 z-20 h-0.5 rounded-full" />
+      ) : null}
+      {showAfterLine ? (
+        <div className="bg-primary absolute right-1 bottom-0 left-1 z-20 h-0.5 rounded-full" />
+      ) : null}
       {isFolder ? (
         <button
           type="button"
@@ -133,34 +125,14 @@ function SortableTreeRow({
       ) : (
         <span className="min-w-6 shrink-0" aria-hidden />
       )}
-      <button
-        type="button"
-        title="拖拽排序"
-        className="text-foreground/40 hover:text-foreground flex min-h-11 min-w-8 shrink-0 cursor-grab items-center justify-center select-none active:cursor-grabbing"
-        {...attributes}
-        {...listeners}
-        onClick={(e) => e.stopPropagation()}
-      >
-        ⋮⋮
-      </button>
-      {editing ? (
-        <Input
-          ref={renameInputRef}
-          className="h-7 min-w-0 flex-1 px-2 text-xs"
-          value={editingName}
-          onChange={(e) => onEditingNameChange(e.target.value)}
-          onBlur={() => onCommitRename()}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") onCommitRename();
-            if (e.key === "Escape") onCancelRename();
-          }}
-          onClick={(e) => e.stopPropagation()}
-        />
-      ) : isFolder ? (
+      {isFolder ? (
         <button
           type="button"
           className="flex min-w-0 flex-1 items-center gap-1 truncate py-2 text-left"
-          onClick={onSelectFolder}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelectFolder();
+          }}
         >
           <span className="mr-1 shrink-0" aria-hidden>
             📁
@@ -172,14 +144,17 @@ function SortableTreeRow({
         <button
           type="button"
           className="flex min-w-0 flex-1 items-center gap-1 truncate py-2 text-left"
-          onClick={onSelectList}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelectList();
+          }}
         >
           <span className="truncate">{list.name}</span>
           <EntityIdLabel id={list.id} />
           <span className="text-muted-foreground shrink-0 text-xs">{list.item_count}</span>
         </button>
       )}
-      {useActionSheet && !editing ? (
+      {useActionSheet ? (
         <Button
           type="button"
           variant="ghost"
@@ -309,11 +284,8 @@ export function ListSidebar({
   showClosed,
   selectedListId,
   selectedFolderId,
-  editingListId,
-  editingListName,
   newListName,
   newFolderName,
-  renameInputRef,
   useActionSheet,
   onToggleShowClosed,
   onSelectList,
@@ -322,15 +294,13 @@ export function ListSidebar({
   onCreateFolder,
   onNewListNameChange,
   onNewFolderNameChange,
-  onEditingListNameChange,
-  onCommitRename,
-  onCancelRename,
   onOpenListMenu,
   onOpenListContextMenu,
-  onStartRename,
+  onEditList,
 }: ListSidebarProps) {
   const useDrawer = useDrawerNav();
-  const { draggingTask } = useTaskDndUi();
+  const { draggingTask, draggingList, overListRoot } = useTaskDndUi();
+  const { setNodeRef: setListRootRef } = useDroppable({ id: LIST_ROOT_DND_ID });
   const [expandedFolderIds, setExpandedFolderIds] = useState<Set<number>>(() =>
     readExpandedFolders(),
   );
@@ -354,6 +324,8 @@ export function ListSidebar({
     });
   };
 
+  const isRootDropTarget = draggingList && overListRoot;
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {draggingTask && useDrawer ? (
@@ -374,7 +346,21 @@ export function ListSidebar({
           {builtinSmartListSection}
           {customSmartListSection}
           <div className="border-t p-2">
-            <div className="text-muted-foreground px-1 pb-1 text-xs font-medium">清单</div>
+            {/* 固定高度根 droppable：始终预留边框，避免 dragStart 改尺寸导致 Overlay 错位 */}
+            <div
+              ref={setListRootRef}
+              className={[
+                "sticky top-0 z-10 mb-1 flex h-8 items-center rounded-md border border-transparent px-2 text-xs font-medium",
+                draggingList && !isRootDropTarget
+                  ? "text-muted-foreground/80 border-muted-foreground/30 border-dashed"
+                  : "text-muted-foreground",
+                isRootDropTarget
+                  ? "ring-primary bg-primary/15 border-primary text-foreground border-dashed ring-2"
+                  : "",
+              ].join(" ")}
+            >
+              {isRootDropTarget ? "移到顶级" : draggingList ? "清单（拖到此处移到顶级）" : "清单"}
+            </div>
             {visibleNodes.map((node) => (
               <SortableTreeRow
                 key={node.list.id}
@@ -385,19 +371,13 @@ export function ListSidebar({
                     ? selectedFolderId === node.list.id
                     : selectedListId === node.list.id
                 }
-                editing={editingListId === node.list.id}
-                editingName={editingListName}
-                renameInputRef={renameInputRef}
                 useActionSheet={useActionSheet}
                 onToggleExpand={() => toggleExpand(node.list.id)}
                 onSelectList={() => onSelectList(node.list.id)}
                 onSelectFolder={() => onSelectFolder(node.list.id)}
-                onEditingNameChange={onEditingListNameChange}
-                onCommitRename={onCommitRename}
-                onCancelRename={onCancelRename}
                 onOpenMenu={() => onOpenListMenu(node.list)}
                 onContextMenu={(e) => onOpenListContextMenu(e, node.list)}
-                {...(useActionSheet ? {} : { onDoubleClickRename: () => onStartRename(node.list) })}
+                onEdit={() => onEditList(node.list)}
               />
             ))}
             {closedLists.length > 0 ? (

@@ -183,12 +183,13 @@ export default defineConfig(({ command, mode }) => {
   return mergeConfig(inline, {
     plugins: [webDevPlugin()],
     server: {
-      host: "127.0.0.1",
+      host: "0.0.0.0",
       port: PORT,
       strictPort: false,
+      allowedHosts: true,
       proxy: {
-        "/hub": { target: HUB_URL, changeOrigin: true },
-        "/mcp": { target: HUB_URL, changeOrigin: true },
+        "/hub": { target: HUB_URL, changeOrigin: true, ws: true },
+        "/mcp": { target: HUB_URL, changeOrigin: true, ws: true },
       },
     },
   });

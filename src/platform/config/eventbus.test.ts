@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeEach, afterEach } from "bun:test";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { createTempDir, removeTempDir } from "@freeanima/core/util";
+import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
 import { FileConfig } from "./file-config.ts";
 import { stringifyYaml } from "./yaml.ts";
 import { getEventbusBackend, getEventbusKeyPrefix } from "./eventbus.ts";

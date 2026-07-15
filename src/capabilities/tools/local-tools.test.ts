@@ -8,7 +8,7 @@ import { describe, it, expect, beforeAll, beforeEach, afterEach } from "bun:test
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { createTempDir, removeTempDir } from "@freeanima/core/util";
+import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
 
 import { Config } from "@freeanima/platform/config";
 import { registerCoreTools } from "@freeanima/capabilities/tools";

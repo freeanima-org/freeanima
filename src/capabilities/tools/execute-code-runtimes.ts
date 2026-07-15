@@ -1,5 +1,5 @@
 import { toolError } from "@freeanima/core/tool";
-import { createTempDir, removeManagedAnimaTmpPath } from "@freeanima/core/util";
+import { createTempDir, removeManagedAnimaTmpPath } from "@freeanima/core/util/temp-dir";
 import { spawnSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";

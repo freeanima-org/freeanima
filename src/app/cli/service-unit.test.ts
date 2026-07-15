@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "bun:test";
 import { readFileSync, existsSync, mkdirSync, writeFileSync, realpathSync } from "node:fs";
 import { join } from "node:path";
-import { createTempDir, removeTempDir } from "@freeanima/core/util";
+import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
 import { renderSystemdUnit } from "./systemd-unit.ts";
 import { ensureUnitFile } from "./service-cmd.ts";
 import * as serviceCommon from "./service-common.ts";

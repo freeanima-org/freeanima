@@ -32,14 +32,21 @@ import {
   useDrawerNav,
   useThreeColumnLayoutMode,
 } from "@freeanima/frontend/ui-kit/layout";
-import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react";
 
 import { MilestoneDialog } from "./components/MilestoneDialog.tsx";
 import { MoveToListPicker } from "@freeanima/frontend/ui-kit/composite";
 import { MoveToProjectPicker } from "./components/MoveToProjectPicker.tsx";
+import {
+  ProjectEditorDialog,
+  type ProjectEditorTarget,
+} from "./components/ProjectEditorDialog.tsx";
 import { ProjectDetailHeader } from "./components/ProjectDetailHeader.tsx";
+import { ProjectDndRoot } from "./components/ProjectDndRoot.tsx";
 import { ProjectSidebar } from "./components/ProjectSidebar.tsx";
 import { ProjectTaskDetailPanel } from "./components/ProjectTaskDetailPanel.tsx";
+import type { ProjectDragEndAction } from "./lib/resolve-project-drag-end.ts";
+import { sortOrderUpdates } from "./lib/reorder.ts";
 import {
   completeProjectTask,
   createMilestoneApi,
@@ -107,7 +114,6 @@ export function ProjectApp() {
   const useActionSheet = useActionSheetCapability();
   const useDrawer = useDrawerNav();
   const layoutMode = useThreeColumnLayoutMode();
-  const renameInputRef = useRef<HTMLInputElement>(null);
 
   const [listOpen, setListOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -128,10 +134,7 @@ export function ProjectApp() {
   const [createProjectCriteria, setCreateProjectCriteria] = useState("");
   const [quickTaskTitle, setQuickTaskTitle] = useState("");
 
-  const [editingFolderId, setEditingFolderId] = useState<number | null>(null);
-  const [editingFolderName, setEditingFolderName] = useState("");
-  const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
-  const [editingProjectName, setEditingProjectName] = useState("");
+  const [editorTarget, setEditorTarget] = useState<ProjectEditorTarget | null>(null);
   const [childFolderParentId, setChildFolderParentId] = useState<number | null>(null);
   const [childFolderName, setChildFolderName] = useState("");
 
@@ -407,14 +410,100 @@ export function ProjectApp() {
     await reloadProjectDetail();
   };
 
+  const openFolderEditor = (folder: ProjectFolderRow) => {
+    setEditorTarget({ kind: "folder", folder });
+  };
+
+  const openProjectEditor = (project: ProjectRow) => {
+    setEditorTarget({ kind: "project", project });
+  };
+
+  const saveEditor = async (input: { name: string; folderId: number | null }) => {
+    if (editorTarget == null) return;
+    if (editorTarget.kind === "folder") {
+      await patchProjectFolderApi(subjectKind, editorTarget.folder.id, {
+        name: input.name,
+        parent_id: input.folderId,
+      });
+    } else {
+      await patchProjectApi(subjectKind, editorTarget.project.id, {
+        title: input.name,
+        folder_id: input.folderId,
+      });
+    }
+    await reload();
+  };
+
+  const applyDragAction = async (action: Exclude<ProjectDragEndAction, { type: "noop" }>) => {
+    try {
+      if (action.type === "moveFolder") {
+        setFolders((prev) =>
+          prev.map((f) => (f.id === action.folderId ? { ...f, parent_id: action.parentId } : f)),
+        );
+        await patchProjectFolderApi(subjectKind, action.folderId, {
+          parent_id: action.parentId,
+        });
+      } else if (action.type === "reorderFolders" || action.type === "placeFolder") {
+        const ordered = action.ordered.map((row, index) => ({
+          ...row,
+          parent_id: action.parentId,
+          sort_order: index,
+        }));
+        setFolders((prev) => {
+          const ids = new Set(ordered.map((f) => f.id));
+          const others = prev.filter((f) => !ids.has(f.id));
+          return [...others, ...ordered];
+        });
+        if (action.type === "placeFolder") {
+          await patchProjectFolderApi(subjectKind, action.folderId, {
+            parent_id: action.parentId,
+            sort_order: ordered.findIndex((f) => f.id === action.folderId),
+          });
+        }
+        const updates = sortOrderUpdates(ordered);
+        await Promise.all(
+          updates.map((u) =>
+            patchProjectFolderApi(subjectKind, u.id, { sort_order: u.sort_order }),
+          ),
+        );
+      } else if (action.type === "moveProject") {
+        setProjects((prev) =>
+          prev.map((p) => (p.id === action.projectId ? { ...p, folder_id: action.folderId } : p)),
+        );
+        await patchProjectApi(subjectKind, action.projectId, { folder_id: action.folderId });
+      } else if (action.type === "reorderProjects" || action.type === "placeProject") {
+        const ordered = action.ordered.map((row, index) => ({
+          ...row,
+          folder_id: action.folderId,
+          sort_order: index,
+        }));
+        setProjects((prev) => {
+          const ids = new Set(ordered.map((p) => p.id));
+          const others = prev.filter((p) => !ids.has(p.id));
+          return [...others, ...ordered];
+        });
+        if (action.type === "placeProject") {
+          await patchProjectApi(subjectKind, action.projectId, {
+            folder_id: action.folderId,
+            sort_order: ordered.findIndex((p) => p.id === action.projectId),
+          });
+        }
+        const updates = sortOrderUpdates(ordered);
+        await Promise.all(
+          updates.map((u) => patchProjectApi(subjectKind, u.id, { sort_order: u.sort_order })),
+        );
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      await reload();
+    }
+  };
+
   const openFolderMenuSheet = (folder: ProjectFolderRow) => {
     setSheetItems(
       menuToSheet(
         buildFolderMenuItems(folder, {
-          onRename: (f) => {
-            setEditingFolderId(f.id);
-            setEditingFolderName(f.name);
-          },
+          onEdit: openFolderEditor,
           onCreateChildFolder: (f) => setChildFolderParentId(f.id),
           onDelete: (f) => setDeleteFolderTarget(f),
         }),
@@ -426,10 +515,7 @@ export function ProjectApp() {
     setSheetItems(
       menuToSheet(
         buildProjectMenuItems(project, {
-          onRename: (p) => {
-            setEditingProjectId(p.id);
-            setEditingProjectName(p.title);
-          },
+          onEdit: openProjectEditor,
           onDelete: (p) => setDeleteProjectTarget(p),
         }),
       ),
@@ -455,10 +541,7 @@ export function ProjectApp() {
     if (contextMenu.kind === "folder") {
       return menuToSheet(
         buildFolderMenuItems(contextMenu.folder, {
-          onRename: (f) => {
-            setEditingFolderId(f.id);
-            setEditingFolderName(f.name);
-          },
+          onEdit: openFolderEditor,
           onCreateChildFolder: (f) => setChildFolderParentId(f.id),
           onDelete: (f) => setDeleteFolderTarget(f),
         }),
@@ -467,10 +550,7 @@ export function ProjectApp() {
     if (contextMenu.kind === "project") {
       return menuToSheet(
         buildProjectMenuItems(contextMenu.project, {
-          onRename: (p) => {
-            setEditingProjectId(p.id);
-            setEditingProjectName(p.title);
-          },
+          onEdit: openProjectEditor,
           onDelete: (p) => setDeleteProjectTarget(p),
         }),
       );
@@ -564,68 +644,43 @@ export function ProjectApp() {
               <ModuleScopeBar>
                 <SubjectScopeToggle />
               </ModuleScopeBar>
-              <ProjectSidebar
-                subjectKind={subjectKind}
+              <ProjectDndRoot
                 folders={folders}
                 projects={projects}
-                selectedProjectId={selectedProjectId}
-                selectedFolderId={selectedFolderId}
-                editingFolderId={editingFolderId}
-                editingFolderName={editingFolderName}
-                editingProjectId={editingProjectId}
-                editingProjectName={editingProjectName}
-                newFolderName={newFolderName}
-                newProjectTitle={newProjectTitle}
-                writesDisabled={writesDisabled}
-                useActionSheet={useActionSheet}
-                renameInputRef={renameInputRef}
-                onSelectProject={handleSelectProject}
-                onSelectFolder={setSelectedFolderId}
-                onCreateFolder={() =>
-                  void handleCreateFolder(selectedFolderId, newFolderName).then(() =>
-                    setNewFolderName(""),
-                  )
-                }
-                onCreateProject={promptCreateProject}
-                onNewFolderNameChange={setNewFolderName}
-                onNewProjectTitleChange={setNewProjectTitle}
-                onEditingFolderNameChange={setEditingFolderName}
-                onCommitFolderRename={() => {
-                  if (editingFolderId == null) return;
-                  const name = editingFolderName.trim();
-                  if (!name) {
-                    setEditingFolderId(null);
-                    return;
+                onAction={(action) => void applyDragAction(action)}
+              >
+                <ProjectSidebar
+                  subjectKind={subjectKind}
+                  folders={folders}
+                  projects={projects}
+                  selectedProjectId={selectedProjectId}
+                  selectedFolderId={selectedFolderId}
+                  newFolderName={newFolderName}
+                  newProjectTitle={newProjectTitle}
+                  writesDisabled={writesDisabled}
+                  useActionSheet={useActionSheet}
+                  onSelectProject={handleSelectProject}
+                  onSelectFolder={setSelectedFolderId}
+                  onCreateFolder={() =>
+                    void handleCreateFolder(selectedFolderId, newFolderName).then(() =>
+                      setNewFolderName(""),
+                    )
                   }
-                  void patchProjectFolderApi(subjectKind, editingFolderId, { name }).then(() => {
-                    setEditingFolderId(null);
-                    void reload();
-                  });
-                }}
-                onCancelFolderRename={() => setEditingFolderId(null)}
-                onEditingProjectNameChange={setEditingProjectName}
-                onCommitProjectRename={() => {
-                  if (editingProjectId == null) return;
-                  const title = editingProjectName.trim();
-                  if (!title) {
-                    setEditingProjectId(null);
-                    return;
+                  onCreateProject={promptCreateProject}
+                  onNewFolderNameChange={setNewFolderName}
+                  onNewProjectTitleChange={setNewProjectTitle}
+                  onOpenFolderMenu={openFolderMenuSheet}
+                  onOpenProjectMenu={openProjectMenuSheet}
+                  onFolderContextMenu={(e, folder) =>
+                    openContextMenuAt(e, { kind: "folder", folder, x: 0, y: 0 })
                   }
-                  void patchProjectApi(subjectKind, editingProjectId, { title }).then(() => {
-                    setEditingProjectId(null);
-                    void reload();
-                  });
-                }}
-                onCancelProjectRename={() => setEditingProjectId(null)}
-                onOpenFolderMenu={openFolderMenuSheet}
-                onOpenProjectMenu={openProjectMenuSheet}
-                onFolderContextMenu={(e, folder) =>
-                  openContextMenuAt(e, { kind: "folder", folder, x: 0, y: 0 })
-                }
-                onProjectContextMenu={(e, project) =>
-                  openContextMenuAt(e, { kind: "project", project, x: 0, y: 0 })
-                }
-              />
+                  onProjectContextMenu={(e, project) =>
+                    openContextMenuAt(e, { kind: "project", project, x: 0, y: 0 })
+                  }
+                  onEditFolder={openFolderEditor}
+                  onEditProject={openProjectEditor}
+                />
+              </ProjectDndRoot>
             </div>
           }
           middle={
@@ -710,6 +765,14 @@ export function ProjectApp() {
           closeMoveToProjectPicker();
         }}
         onClose={closeMoveToProjectPicker}
+      />
+
+      <ProjectEditorDialog
+        open={editorTarget != null}
+        target={editorTarget}
+        folders={folders}
+        onClose={() => setEditorTarget(null)}
+        onSave={(input) => saveEditor(input)}
       />
 
       <Dialog open={createProjectOpen} onOpenChange={setCreateProjectOpen}>

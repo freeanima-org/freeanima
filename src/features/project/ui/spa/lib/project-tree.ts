@@ -6,16 +6,38 @@ export type ProjectTreeNode =
   | { kind: "folder"; folder: ProjectFolderRow; depth: number; children: ProjectTreeNode[] }
   | { kind: "project"; project: ProjectRow; depth: number };
 
-function folderSiblings(folders: ProjectFolderRow[], parentId: number | null): ProjectFolderRow[] {
+export function folderSiblings(
+  folders: ProjectFolderRow[],
+  parentId: number | null,
+): ProjectFolderRow[] {
   return folders
     .filter((f) => (f.parent_id ?? null) === parentId)
     .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
 }
 
-function projectsInFolder(projects: ProjectRow[], folderId: number | null): ProjectRow[] {
+export function projectsInFolder(projects: ProjectRow[], folderId: number | null): ProjectRow[] {
   return projects
     .filter((p) => (p.folder_id ?? null) === folderId)
     .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
+}
+
+/** 判断 nodeId 是否在 ancestorId 文件夹子树内（不含自身）。 */
+export function isFolderDescendant(
+  folders: ProjectFolderRow[],
+  ancestorId: number,
+  nodeId: number,
+): boolean {
+  let current = folders.find((f) => f.id === nodeId);
+  const visited = new Set<number>();
+  while (current) {
+    const parentId = current.parent_id ?? null;
+    if (parentId == null) return false;
+    if (parentId === ancestorId) return true;
+    if (visited.has(parentId)) return false;
+    visited.add(parentId);
+    current = folders.find((f) => f.id === parentId);
+  }
+  return false;
 }
 
 export function buildProjectTree(

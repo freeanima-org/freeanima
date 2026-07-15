@@ -1,3 +1,4 @@
+/** 浏览器可安全导入的 util 桶。Node-only（createTempDir 等）请用 `@freeanima/core/util/temp-dir`。 */
 export { safeParseOrNull, formatZodError } from "./json.ts";
 export { DATE_JSON_KEYS, isPlainIsoDateString, reviveDates } from "./date-json.ts";
 export {
@@ -12,12 +13,6 @@ export {
   type FormatCstDisplayOpts,
 } from "./time.ts";
 export { isEnabledByDefault } from "./config.ts";
-export {
-  createTempDir,
-  removeTempDir,
-  isManagedAnimaTmpPath,
-  removeManagedAnimaTmpPath,
-} from "./temp-dir.ts";
 export {
   rrfMerge,
   semanticMemoryDocKey,

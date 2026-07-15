@@ -17,7 +17,7 @@ import {
   recordFlushIdMapping,
 } from "@freeanima/frontend/shell-sdk/offline-sync";
 import { allocateTempId, isTempId } from "@freeanima/frontend/shell-sdk/offline-temp-id";
-import { formatCstIso } from "@freeanima/core/util";
+import { formatCstIso } from "@freeanima/core/util/time";
 import type {
   TaskItemRowPayload,
   TaskListRowPayload,
@@ -73,6 +73,70 @@ async function removeLocalList(scope: string, id: number): Promise<void> {
     lists.filter((row) => row.id !== id),
   );
   await writeCachedTaskItems(scope, id, []);
+}
+
+/** outbox 中仍存在 create op 的 temp 清单 id（尚未同步到服务器）。 */
+async function pendingTempListIds(scope: string): Promise<Set<number>> {
+  const ops = await listOutboxOps(scope, MODULE_ID);
+  const ids = new Set<number>();
+  for (const op of ops) {
+    if (op.method === "tasklist.create" && typeof op.tempEntityId === "number") {
+      ids.add(op.tempEntityId);
+    }
+  }
+  return ids;
+}
+
+/** 把 outbox 中未 flush 的 tasklist.patch 叠到服务端行上，避免 loadLists 踩掉乐观 parent/name。 */
+async function applyPendingListPatches(
+  scope: string,
+  lists: TaskListRow[],
+): Promise<TaskListRow[]> {
+  const ops = await listOutboxOps(scope, MODULE_ID);
+  if (ops.length === 0) return lists;
+  const byId = new Map(lists.map((row) => [row.id, { ...row }]));
+  for (const op of ops) {
+    if (op.method !== "tasklist.patch") continue;
+    const id = op.payload.id;
+    if (typeof id !== "number") continue;
+    const row = byId.get(id);
+    if (!row) continue;
+    const patch = op.payload;
+    byId.set(id, {
+      ...row,
+      ...(typeof patch.name === "string" ? { name: patch.name } : {}),
+      ...(typeof patch.sort_order === "number" ? { sort_order: patch.sort_order } : {}),
+      ...(typeof patch.closed === "boolean" ? { closed: patch.closed } : {}),
+      ...(patch.color === null || typeof patch.color === "string" ? { color: patch.color } : {}),
+      ...(typeof patch.is_folder === "boolean" ? { is_folder: patch.is_folder } : {}),
+      ...(patch.parent_id === null || typeof patch.parent_id === "number"
+        ? { parent_id: patch.parent_id }
+        : {}),
+    });
+  }
+  return [...byId.values()].toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
+}
+
+/**
+ * 用服务器列表刷新本地缓存时，仅保留 outbox 中仍未同步的 temp 清单，
+ * 并叠加上未 flush 的 patch，避免已同步负 id / 乐观移动被踩掉。
+ */
+async function mergeServerTaskLists(
+  scope: string,
+  serverLists: TaskListRow[],
+): Promise<TaskListRow[]> {
+  const tempIds = await pendingTempListIds(scope);
+  const local = await readLocalLists(scope);
+  const serverIds = new Set(serverLists.map((row) => row.id));
+  const pendingTemps =
+    tempIds.size === 0 ? [] : local.filter((row) => tempIds.has(row.id) && !serverIds.has(row.id));
+  const base = pendingTemps.length === 0 ? serverLists : [...pendingTemps, ...serverLists];
+  return applyPendingListPatches(scope, base);
+}
+
+/** 供 cache-first 读路径在写回服务器列表前调用，合并未同步的 temp 清单。 */
+export async function reconcileServerTaskLists(serverLists: TaskListRow[]): Promise<TaskListRow[]> {
+  return mergeServerTaskLists(resolveOutboxScope(), serverLists);
 }
 
 async function upsertLocalItem(scope: string, item: TaskItemRow): Promise<void> {
@@ -196,6 +260,22 @@ export function compactTaskOutbox(ops: OfflineOutboxOp[]): OfflineOutboxOp[] {
   );
 }
 
+/** 本轮 flush 成功写入的 methods；仅清单元数据时跳过全量 task.list。 */
+const flushedMethodsBuffer = new Set<string>();
+
+const LIST_META_ONLY_METHODS = new Set(["tasklist.create", "tasklist.patch", "tasklist.delete"]);
+
+function takeFlushedMethods(): Set<string> {
+  const methods = new Set(flushedMethodsBuffer);
+  flushedMethodsBuffer.clear();
+  return methods;
+}
+
+function shouldRefreshAllTaskItems(methods: Set<string>): boolean {
+  if (methods.size === 0) return true;
+  return ![...methods].every((m) => LIST_META_ONLY_METHODS.has(m));
+}
+
 async function flushTaskOp(
   op: OfflineOutboxOp,
   scope: string,
@@ -223,11 +303,15 @@ export const taskRpcAdapter: RpcModuleAdapter = {
   compactOutbox: compactTaskOutbox,
   resolvePayloadIds: (payload, idMap) =>
     resolveIdFields(payload, idMap, ["id", "list_id", "parent_id"]),
-  flushOp: async (op, ctx) => flushTaskOp(op, ctx.scope),
+  flushOp: async (op, ctx) => {
+    const outcome = await flushTaskOp(op, ctx.scope);
+    if (outcome.status === "done") flushedMethodsBuffer.add(op.method);
+    return outcome;
+  },
   refreshAll: async (scope) => {
+    const flushedMethods = takeFlushedMethods();
     const hub = getTypedSatelliteHubClient();
     const localLists = await readLocalLists(scope);
-    const tempLists = localLists.filter((list) => isTempId(list.id));
     const cachedListIds = localLists.filter((list) => !list.is_folder).map((list) => list.id);
 
     try {
@@ -235,10 +319,7 @@ export const taskRpcAdapter: RpcModuleAdapter = {
         ...subjectPayload(),
         include_closed: true,
       });
-      const merged = [
-        ...data.lists,
-        ...tempLists.filter((temp) => !data.lists.some((row) => row.id === temp.id)),
-      ];
+      const merged = await mergeServerTaskLists(scope, data.lists);
       await writeLocalLists(scope, merged);
       for (const list of merged) {
         if (!list.is_folder && !cachedListIds.includes(list.id)) cachedListIds.push(list.id);
@@ -246,6 +327,8 @@ export const taskRpcAdapter: RpcModuleAdapter = {
     } catch {
       /* keep local snapshot */
     }
+
+    if (!shouldRefreshAllTaskItems(flushedMethods)) return;
 
     const listIds = [...new Set(cachedListIds)];
     for (const listId of listIds) {

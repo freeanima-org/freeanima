@@ -131,6 +131,8 @@ export async function patchProjectApi(
     start_at?: string;
     end_at?: string;
     completion_criteria?: string;
+    folder_id?: number | null;
+    sort_order?: number;
   },
 ): Promise<ProjectRow> {
   const data = await hub().call("project.patch", { subject_kind: subjectKind, id, ...patch });
@@ -175,7 +177,7 @@ export async function createProjectFolderApi(
 export async function patchProjectFolderApi(
   subjectKind: SubjectKind,
   id: number,
-  patch: { name?: string; parent_id?: number | null },
+  patch: { name?: string; parent_id?: number | null; sort_order?: number },
 ): Promise<ProjectFolderRow> {
   const data = await hub().call("projectfolder.patch", { subject_kind: subjectKind, id, ...patch });
   return data.item;

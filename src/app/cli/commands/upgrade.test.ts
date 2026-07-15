@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, mock, spyOn } from "bun:test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { createTempDir, removeTempDir } from "@freeanima/core/util";
+import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
 import { CLI_UPGRADE_HINT_SOURCE } from "@freeanima/core/config/cli-install";
 
 describe("runCliUpgrade", () => {

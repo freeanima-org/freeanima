@@ -19,7 +19,7 @@ import {
 import { invalidateSelfLayerPromptCache } from "@freeanima/capabilities/identity";
 import { upsertSelfBlock } from "@freeanima/core/db/pg/self-layer";
 
-import { removeManagedAnimaTmpPath, removeTempDir } from "@freeanima/core/util";
+import { removeManagedAnimaTmpPath, removeTempDir } from "@freeanima/core/util/temp-dir";
 import { conversations } from "@freeanima/core/db/schema";
 import { isNotNull } from "drizzle-orm";
 

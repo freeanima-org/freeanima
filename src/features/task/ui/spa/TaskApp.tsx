@@ -33,6 +33,7 @@ import {
 import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
 import { CompletedTaskList } from "./components/CompletedTaskList.tsx";
 import { ListSidebar } from "./components/ListSidebar.tsx";
+import { ListEditorDialog } from "./components/ListEditorDialog.tsx";
 import { SmartListEditorDialog } from "./components/SmartListEditorDialog.tsx";
 import {
   BuiltinSmartListSection,
@@ -76,7 +77,7 @@ import {
   writeCachedTaskItems,
   writeCachedTaskLists,
 } from "./lib/offline-cache.ts";
-import { registerTaskOfflineModule } from "./lib/offline-store.ts";
+import { reconcileServerTaskLists, registerTaskOfflineModule } from "./lib/offline-store.ts";
 import { useTaskLayoutMode } from "./lib/layout-mode.ts";
 import {
   isWebShell,
@@ -119,7 +120,6 @@ export function TaskApp() {
   const useDrawer = useDrawerNav();
   const layoutMode = useTaskLayoutMode();
   const webShell = isWebShell();
-  const renameInputRef = useRef<HTMLInputElement>(null);
   const selectionAnchorRef = useRef<number | null>(null);
   const listsLoadGenRef = useRef(0);
   const itemsLoadGenRef = useRef(0);
@@ -139,8 +139,7 @@ export function TaskApp() {
   const [searching, setSearching] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const [editingListId, setEditingListId] = useState<number | null>(null);
-  const [editingListName, setEditingListName] = useState("");
+  const [listEditor, setListEditor] = useState<TaskListRow | null>(null);
 
   const [listMenu, setListMenu] = useState<ListMenuState | null>(null);
   const [smartListMenu, setSmartListMenu] = useState<SmartListMenuState | null>(null);
@@ -247,7 +246,6 @@ export function TaskApp() {
     const scope = resolveHubCacheScope();
     const cached = await readCachedTaskLists(scope);
     if (generation !== listsLoadGenRef.current) return cached ?? [];
-    const tempLists = (cached ?? []).filter((list) => isTempId(list.id));
     if (cached?.length) setLists(cached);
     if (!isHubFetchAvailable()) {
       return cached ?? [];
@@ -258,10 +256,7 @@ export function TaskApp() {
         fetchSmartLists(),
       ]);
       if (generation !== listsLoadGenRef.current) return rows;
-      const merged = [
-        ...rows,
-        ...tempLists.filter((temp) => !rows.some((row) => row.id === temp.id)),
-      ];
+      const merged = await reconcileServerTaskLists(rows);
       setLists(merged);
       setSmartLists(smartRows);
       void writeCachedTaskLists(scope, merged);
@@ -380,12 +375,6 @@ export function TaskApp() {
 
   const searchActive = searchQuery.trim().length > 0;
 
-  useEffect(() => {
-    if (editingListId == null) return;
-    renameInputRef.current?.focus();
-    renameInputRef.current?.select();
-  }, [editingListId]);
-
   const applySelection = (next: TaskModuleSelection) => {
     setSelection(next);
     persistSelection(next);
@@ -461,24 +450,38 @@ export function TaskApp() {
     }
   };
 
-  const startRenameList = (list: TaskListRow) => {
+  const openListEditor = (list: TaskListRow) => {
     if (list.closed) return;
-    setEditingListId(list.id);
-    setEditingListName(list.name);
+    setListEditor(list);
   };
 
-  const commitRenameList = async () => {
-    if (editingListId == null) return;
-    const name = editingListName.trim();
-    setEditingListId(null);
-    if (!name) return;
-    const current = lists.find((l) => l.id === editingListId);
-    if (!current || current.name === name) return;
+  const saveListEditor = async (input: { name: string; parent_id: number | null }) => {
+    const current = listEditor;
+    if (current == null) return;
+    const nameChanged = current.name !== input.name;
+    const parentChanged = getParentId(current) !== input.parent_id;
+    if (!nameChanged && !parentChanged) return;
+
+    const siblings = getSiblings(
+      lists.filter((l) => !l.closed),
+      input.parent_id,
+    ).filter((l) => l.id !== current.id);
+    const patch: Partial<Pick<TaskListRow, "name" | "parent_id" | "sort_order">> = {};
+    if (nameChanged) patch.name = input.name;
+    if (parentChanged) {
+      patch.parent_id = input.parent_id;
+      patch.sort_order = siblings.length;
+    }
+    const optimistic: TaskListRow = {
+      ...current,
+      ...patch,
+    };
+    setLists((prev) => prev.map((l) => (l.id === current.id ? optimistic : l)));
     try {
-      await updateTaskList(editingListId, { name });
-      await loadLists();
+      await updateTaskList(current.id, patch);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
+      await loadLists();
     }
   };
 
@@ -551,16 +554,58 @@ export function TaskApp() {
   };
 
   const persistMoveListToParent = async (listId: number, parentId: number | null) => {
+    const list = lists.find((l) => l.id === listId);
+    if (!list || getParentId(list) === parentId) return;
     const siblings = getSiblings(
       lists.filter((l) => !l.closed),
       parentId,
     ).filter((l) => l.id !== listId);
+    const nextSort = siblings.length;
+    const optimistic: TaskListRow = {
+      ...list,
+      parent_id: parentId,
+      sort_order: nextSort,
+    };
+    setLists((prev) => prev.map((l) => (l.id === listId ? optimistic : l)));
     try {
       await updateTaskList(listId, {
         parent_id: parentId,
-        sort_order: siblings.length,
+        sort_order: nextSort,
       });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
       await loadLists();
+    }
+  };
+
+  const persistPlaceList = async (
+    listId: number,
+    parentId: number | null,
+    ordered: TaskListRow[],
+  ) => {
+    const closed = lists.filter((l) => l.closed);
+    const active = lists.filter((l) => !l.closed);
+    const orderedIds = new Set(ordered.map((l) => l.id));
+    const others = active.filter(
+      (l) => l.id !== listId && (getParentId(l) !== parentId || !orderedIds.has(l.id)),
+    );
+    const nextSiblings = ordered.map((row, index) => ({
+      ...row,
+      parent_id: parentId,
+      sort_order: index,
+    }));
+    const mergedActive = [...others, ...nextSiblings].toSorted(
+      (a, b) => a.sort_order - b.sort_order || a.id - b.id,
+    );
+    setLists([...mergedActive, ...closed]);
+    const sortAt = nextSiblings.findIndex((l) => l.id === listId);
+    try {
+      await updateTaskList(listId, {
+        parent_id: parentId,
+        sort_order: sortAt < 0 ? nextSiblings.length : sortAt,
+      });
+      const updates = sortOrderUpdates(nextSiblings);
+      await Promise.all(updates.map((u) => updateTaskList(u.id, { sort_order: u.sort_order })));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       await loadLists();
@@ -844,7 +889,7 @@ export function TaskApp() {
   };
 
   const menuHandlers = {
-    onRename: startRenameList,
+    onRename: openListEditor,
     onClose: handleCloseList,
     onReopen: handleReopenList,
     onDelete: handleDeleteList,
@@ -986,6 +1031,9 @@ export function TaskApp() {
         taskItems={items}
         onReorderSiblings={(ordered, parentId) => void persistSiblingOrder(ordered, parentId)}
         onMoveListToParent={(listId, parentId) => void persistMoveListToParent(listId, parentId)}
+        onPlaceList={(listId, parentId, ordered) =>
+          void persistPlaceList(listId, parentId, ordered)
+        }
         onReorderPending={(ordered) => void persistItemOrder(ordered)}
         onMoveTaskToList={(taskId, listId) => void handleMoveItemsToList([taskId], listId)}
         onTaskDragStart={() => {
@@ -1055,11 +1103,8 @@ export function TaskApp() {
                   showClosed={showClosed}
                   selectedListId={listSidebarSelectedId}
                   selectedFolderId={selectedFolderId}
-                  editingListId={editingListId}
-                  editingListName={editingListName}
                   newListName={newListName}
                   newFolderName={newFolderName}
-                  renameInputRef={renameInputRef}
                   useActionSheet={useActionSheet}
                   onToggleShowClosed={() => setShowClosed((v) => !v)}
                   onSelectList={selectList}
@@ -1068,12 +1113,9 @@ export function TaskApp() {
                   onCreateFolder={() => void handleCreateFolder()}
                   onNewListNameChange={setNewListName}
                   onNewFolderNameChange={setNewFolderName}
-                  onEditingListNameChange={setEditingListName}
-                  onCommitRename={() => void commitRenameList()}
-                  onCancelRename={() => setEditingListId(null)}
                   onOpenListMenu={openListMenuSheet}
                   onOpenListContextMenu={openListContextMenu}
-                  onStartRename={startRenameList}
+                  onEditList={openListEditor}
                 />
               </div>
             }
@@ -1260,6 +1302,14 @@ export function TaskApp() {
             onClose={() => setSheetMenu(null)}
           />
         ) : null}
+
+        <ListEditorDialog
+          open={listEditor != null}
+          list={listEditor}
+          lists={lists}
+          onClose={() => setListEditor(null)}
+          onSave={saveListEditor}
+        />
 
         <Dialog
           open={childNamePrompt != null}

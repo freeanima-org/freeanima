@@ -11,16 +11,22 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 
 import type { TaskItemRow, TaskListRow } from "../lib/api.ts";
-import { taskListCollisionDetection } from "../lib/dnd-collision.ts";
+import { createTaskListCollisionDetection } from "../lib/dnd-collision.ts";
 import {
-  getParentId,
-  getSiblings,
-  isDescendant,
-} from "@freeanima/frontend/ui-kit/lib/task-list-tree.ts";
-import { isListDndId, isTaskDndId, parseListDndId, parseTaskDndId } from "../lib/dnd-ids.ts";
+  isListDndId,
+  isListRootDndId,
+  isTaskDndId,
+  parseListDndId,
+  parseTaskDndId,
+} from "../lib/dnd-ids.ts";
+import {
+  resolveFolderDropIntent,
+  resolveListDragEnd,
+  type FolderDropIntent,
+} from "../lib/resolve-list-drag-end.ts";
 
 type TaskDndRootProps = {
   lists: TaskListRow[];
@@ -29,6 +35,7 @@ type TaskDndRootProps = {
   children: ReactNode;
   onReorderSiblings: (ordered: TaskListRow[], parentId: number | null) => void;
   onMoveListToParent: (listId: number, parentId: number | null) => void;
+  onPlaceList: (listId: number, parentId: number | null, ordered: TaskListRow[]) => void;
   onReorderPending: (ordered: TaskItemRow[]) => void;
   onMoveTaskToList: (taskId: number, listId: number) => void;
   onTaskDragStart?: () => void;
@@ -38,12 +45,18 @@ type TaskDndUiState = {
   draggingTask: boolean;
   draggingList: boolean;
   overListId: number | null;
+  activeListId: number | null;
+  overListRoot: boolean;
+  folderDropIntent: FolderDropIntent | null;
 };
 
 const TaskDndUiContext = createContext<TaskDndUiState>({
   draggingTask: false,
   draggingList: false,
   overListId: null,
+  activeListId: null,
+  overListRoot: false,
+  folderDropIntent: null,
 });
 
 export function useTaskDndUi(): TaskDndUiState {
@@ -51,36 +64,88 @@ export function useTaskDndUi(): TaskDndUiState {
 }
 
 function DragMonitor({
+  lists,
   onTaskDragChange,
   onListDragChange,
   onOverListChange,
+  onActiveListChange,
+  onOverListRootChange,
+  onFolderDropIntentChange,
+  pointerYRef,
 }: {
+  lists: TaskListRow[];
   onTaskDragChange: (dragging: boolean) => void;
   onListDragChange: (dragging: boolean) => void;
   onOverListChange: (listId: number | null) => void;
+  onActiveListChange: (listId: number | null) => void;
+  onOverListRootChange: (overRoot: boolean) => void;
+  onFolderDropIntentChange: (intent: FolderDropIntent | null) => void;
+  pointerYRef: React.MutableRefObject<number | null>;
 }) {
+  const listById = useMemo(() => new Map(lists.map((l) => [l.id, l])), [lists]);
+
   useDndMonitor({
     onDragStart(event) {
       onTaskDragChange(isTaskDndId(event.active.id));
       onListDragChange(isListDndId(event.active.id));
+      onActiveListChange(parseListDndId(event.active.id));
+      onFolderDropIntentChange(null);
+    },
+    onDragMove(event) {
+      if (event.over && isListDndId(event.active.id)) {
+        const overListId = parseListDndId(event.over.id);
+        const overList = overListId != null ? listById.get(overListId) : null;
+        if (overList?.is_folder && pointerYRef.current != null) {
+          onFolderDropIntentChange(
+            resolveFolderDropIntent(
+              { top: event.over.rect.top, height: event.over.rect.height },
+              pointerYRef.current,
+            ),
+          );
+        } else {
+          onFolderDropIntentChange(null);
+        }
+      }
     },
     onDragOver(event) {
       if (!event.over) {
         onOverListChange(null);
+        onOverListRootChange(false);
+        onFolderDropIntentChange(null);
         return;
       }
-      const listId = parseListDndId(event.over.id);
-      onOverListChange(listId);
+      onOverListRootChange(isListRootDndId(event.over.id));
+      const overListId = parseListDndId(event.over.id);
+      onOverListChange(overListId);
+      const overList = overListId != null ? listById.get(overListId) : null;
+      if (overList?.is_folder && isListDndId(event.active.id) && pointerYRef.current != null) {
+        onFolderDropIntentChange(
+          resolveFolderDropIntent(
+            { top: event.over.rect.top, height: event.over.rect.height },
+            pointerYRef.current,
+          ),
+        );
+      } else {
+        onFolderDropIntentChange(null);
+      }
     },
     onDragEnd() {
       onTaskDragChange(false);
       onListDragChange(false);
       onOverListChange(null);
+      onActiveListChange(null);
+      onOverListRootChange(false);
+      onFolderDropIntentChange(null);
+      // pointerYRef 由 TaskDndRoot.handleDragEnd 读取后再清空
     },
     onDragCancel() {
       onTaskDragChange(false);
       onListDragChange(false);
       onOverListChange(null);
+      onActiveListChange(null);
+      onOverListRootChange(false);
+      onFolderDropIntentChange(null);
+      pointerYRef.current = null;
     },
   });
   return null;
@@ -93,16 +158,30 @@ export function TaskDndRoot({
   children,
   onReorderSiblings,
   onMoveListToParent,
+  onPlaceList,
   onReorderPending,
   onMoveTaskToList,
   onTaskDragStart,
 }: TaskDndRootProps) {
   const [activeTask, setActiveTask] = useState<TaskItemRow | null>(null);
+  const [activeList, setActiveList] = useState<TaskListRow | null>(null);
   const [draggingTask, setDraggingTask] = useState(false);
   const [draggingList, setDraggingList] = useState(false);
   const [overListId, setOverListId] = useState<number | null>(null);
+  const [activeListId, setActiveListId] = useState<number | null>(null);
+  const [overListRoot, setOverListRoot] = useState(false);
+  const [folderDropIntent, setFolderDropIntent] = useState<FolderDropIntent | null>(null);
+  const pointerYRef = useRef<number | null>(null);
 
   const listById = useMemo(() => new Map(lists.map((l) => [l.id, l])), [lists]);
+
+  const collisionDetection = useMemo(
+    () =>
+      createTaskListCollisionDetection((y) => {
+        pointerYRef.current = y;
+      }),
+    [],
+  );
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -112,58 +191,67 @@ export function TaskDndRoot({
   );
 
   const handleDragStart = (event: DragStartEvent) => {
+    const listId = parseListDndId(event.active.id);
+    if (listId != null) {
+      setActiveList(listById.get(listId) ?? null);
+      setActiveTask(null);
+      return;
+    }
     const taskId = parseTaskDndId(event.active.id);
     if (taskId == null) return;
     const item = taskItems.find((i) => i.id === taskId) ?? null;
     setActiveTask(item);
+    setActiveList(null);
     onTaskDragStart?.();
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     setActiveTask(null);
+    setActiveList(null);
     const { active, over } = event;
-    if (!over) return;
+    if (!over) {
+      pointerYRef.current = null;
+      return;
+    }
 
     const activeId = String(active.id);
     const overId = String(over.id);
 
     if (isListDndId(activeId)) {
-      const activeListId = parseListDndId(activeId);
-      const overListIdParsed = parseListDndId(overId);
-      if (activeListId == null || overListIdParsed == null || activeListId === overListIdParsed) {
+      const activeListIdParsed = parseListDndId(activeId);
+      if (activeListIdParsed == null) {
+        pointerYRef.current = null;
         return;
       }
 
-      const activeList = listById.get(activeListId);
-      const overList = listById.get(overListIdParsed);
-      if (!activeList || !overList || activeList.closed) return;
-
-      if (overList.is_folder && !isDescendant(lists, activeListId, overListIdParsed)) {
-        onMoveListToParent(activeListId, overListIdParsed);
-        return;
+      let folderIntent: FolderDropIntent | undefined;
+      const overList = listById.get(parseListDndId(overId) ?? -1);
+      if (overList?.is_folder) {
+        const pointerY = pointerYRef.current;
+        folderIntent =
+          pointerY != null
+            ? resolveFolderDropIntent({ top: over.rect.top, height: over.rect.height }, pointerY)
+            : "into";
       }
 
-      if (overList.is_folder) return;
-
-      const targetParentId = getParentId(overList);
-      const siblings = getSiblings(lists, targetParentId);
-      const from = siblings.findIndex((l) => l.id === activeListId);
-      const to = siblings.findIndex((l) => l.id === overListIdParsed);
-      if (from < 0 || to < 0) {
-        if (!isDescendant(lists, activeListId, overListIdParsed)) {
-          onMoveListToParent(activeListId, targetParentId);
-        }
-        return;
-      }
-      if (getParentId(activeList) !== targetParentId) {
-        onMoveListToParent(activeListId, targetParentId);
-        return;
-      }
-      if (from !== to) {
-        onReorderSiblings(arrayMove(siblings, from, to), targetParentId);
+      const action = resolveListDragEnd(
+        lists,
+        activeListIdParsed,
+        overId,
+        folderIntent != null ? { folderIntent } : undefined,
+      );
+      pointerYRef.current = null;
+      if (action.type === "move") {
+        onMoveListToParent(action.listId, action.parentId);
+      } else if (action.type === "reorder") {
+        onReorderSiblings(action.ordered, action.parentId);
+      } else if (action.type === "place") {
+        onPlaceList(action.listId, action.parentId, action.ordered);
       }
       return;
     }
+
+    pointerYRef.current = null;
 
     if (isTaskDndId(activeId)) {
       const taskId = parseTaskDndId(activeId);
@@ -196,26 +284,49 @@ export function TaskDndRoot({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={taskListCollisionDetection}
+      collisionDetection={collisionDetection}
       measuring={{
         droppable: { strategy: MeasuringStrategy.Always },
       }}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      onDragCancel={() => setActiveTask(null)}
+      onDragCancel={() => {
+        setActiveTask(null);
+        setActiveList(null);
+        pointerYRef.current = null;
+      }}
     >
       <DragMonitor
+        lists={lists}
         onTaskDragChange={setDraggingTask}
         onListDragChange={setDraggingList}
         onOverListChange={setOverListId}
+        onActiveListChange={setActiveListId}
+        onOverListRootChange={setOverListRoot}
+        onFolderDropIntentChange={setFolderDropIntent}
+        pointerYRef={pointerYRef}
       />
-      <TaskDndUiContext.Provider value={{ draggingTask, draggingList, overListId }}>
+      <TaskDndUiContext.Provider
+        value={{
+          draggingTask,
+          draggingList,
+          overListId,
+          activeListId,
+          overListRoot,
+          folderDropIntent,
+        }}
+      >
         {children}
       </TaskDndUiContext.Provider>
       <DragOverlay>
+        {activeList ? (
+          <div className="bg-background border flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 shadow-lg">
+            {activeList.is_folder ? <span aria-hidden>📁</span> : null}
+            <span className="truncate text-sm">{activeList.name}</span>
+          </div>
+        ) : null}
         {activeTask ? (
           <div className="bg-background border flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 shadow-lg">
-            <span className="text-foreground/40">⋮⋮</span>
             <span className="truncate text-sm">{activeTask.title}</span>
           </div>
         ) : null}

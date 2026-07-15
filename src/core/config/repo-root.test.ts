@@ -2,7 +2,7 @@ import { describe, expect, it, afterEach } from "bun:test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { createTempDir, removeTempDir } from "@freeanima/core/util";
+import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
 import { resolveStandaloneInstallRoot, resetRepoRootForTests } from "./repo-root.ts";
 
 describe("resolveStandaloneInstallRoot", () => {
