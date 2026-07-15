@@ -113,7 +113,8 @@
     "fbx2vrma-converter@1.0.2": "patches/fbx2vrma-converter@1.0.2.patch"
   },
   "overrides": {
-    "@sinclair/typebox": "^0.34.50"
+    "@sinclair/typebox": "^0.34.50",
+    "esbuild": "0.28.1"
   },
   "trustedDependencies": [
     "cpu-features",
