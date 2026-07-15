@@ -22,6 +22,6 @@ describe("paths", () => {
     expect(PATHS.home).toBe("/tmp/anima-paths");
     expect(PATHS.configYaml).toBe(join("/tmp/anima-paths", "config.yaml"));
     expect(PATHS.cronDir).toBe(join("/tmp/anima-paths", "cron"));
-    expect(PATHS.cloudflaredConfigFile).toBe(join("/tmp/anima-paths", "cloudflared", "config.yml"));
+    expect(PATHS.binDir).toBe(join("/tmp/anima-paths", "bin"));
   });
 });

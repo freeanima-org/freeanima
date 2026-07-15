@@ -3,7 +3,6 @@ import { PATHS } from "@freeanima/core/config";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import { DEFAULT_WEB_HOST, DEFAULT_WEB_PORT, type WebConfigFields } from "@freeanima/core/config";
 import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc";
-import { loadRuntimeConfigSection } from "@freeanima/platform/config";
 import { loadBootstrapConfig } from "@freeanima/platform/config/bootstrap.ts";
 import {
   startWebStaticServer,
@@ -39,9 +38,6 @@ export function isWebProcessAlive(): number | null {
 }
 
 export async function resolveDefaultHubUrlForWeb(): Promise<string> {
-  const tunnel = await loadRuntimeConfigSection<{ hostname?: string }>("tunnel");
-  const tunnelHost = tunnel?.hostname?.trim();
-  if (tunnelHost) return `https://${tunnelHost}`;
   const publicUrl = loadBootstrapConfig().web?.public_url?.trim();
   if (publicUrl) return publicUrl.replace(/\/$/, "");
   return (process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658").replace(/\/$/, "");

@@ -40,7 +40,7 @@ bun run dev:service          # monorepo: Hub foreground (same as service start -
 bun run dev:web              # monorepo: Vite HMR on :4173 (Hub must already be running)
 ```
 
-`anima.service` is a **single-unit stack**: Hub (`:2658`, REST + SAP + bundled `/web` when `web.enabled` and dist exists) + optional Tunnel (cloudflared) managed by one foreground supervisor. Legacy `anima-tunnel.service` is disabled on next `service start`.
+`anima.service` is a **single-unit stack**: Hub (`:2658`, REST + SAP + bundled `/web` when `web.enabled` and dist exists) managed by one foreground supervisor.
 
 **Web build is never triggered by `service start` / `anima web start`.** Paths:
 
@@ -52,7 +52,7 @@ bun run dev:web              # monorepo: Vite HMR on :4173 (Hub must already be 
 
 When `config.yaml` has `web.enabled: true` (absent defaults to on) and `src/app/shell/web/dist` (or embedded dist) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Hub (no separate API proxy). Clients store Hub URL and **Service API Token** (`fa_at_...`) in **Hub settings**. For standalone static hosting without the Hub process, use `anima web start --foreground` (default `:2660`) after dist exists. Optional Hub native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)).
 
-**Startup order:** Hub must pass `GET /hub/rpc/v1/health/probe` (`status: ok`) before Tunnel sidecars start (`serve()` `onReady` → stack supervisor). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).
+**Startup order:** Hub must pass `GET /hub/rpc/v1/health/probe` (`status: ok`) before `serve()` `onReady` sidecars/hooks run. SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).
 
 **UI access:**
 

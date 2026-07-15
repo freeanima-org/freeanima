@@ -170,7 +170,6 @@ function DashboardPage() {
             />
             <PlatformConnectionsCard platforms={platforms} />
           </div>
-          {svc.tunnel ? <TunnelLinksCard tunnel={svc.tunnel} /> : null}
         </section>
 
         <section>
@@ -325,40 +324,6 @@ function RuntimeCard({
             >
               {restarting ? m.console_common_restarting() : m.console_common_restart_service()}
             </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function TunnelLinksCard({ tunnel }: { tunnel: NonNullable<ServiceSnapshot["tunnel"]> }) {
-  return (
-    <Card className="bg-muted py-0 lg:col-span-3">
-      <CardContent className="py-3 px-4">
-        <h3 className="text-sm text-muted-foreground">{m.console_dashboard_tunnel()}</h3>
-        <div className="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-          <div>
-            <span className="text-muted-foreground">{m.console_dashboard_tunnel_public()}: </span>
-            <a
-              href={tunnel.public_url}
-              className="text-primary underline-offset-4 hover:underline text-xs font-mono"
-              target="_blank"
-              rel="noreferrer"
-            >
-              {tunnel.public_url}
-            </a>
-          </div>
-          <div>
-            <span className="text-muted-foreground">{m.console_dashboard_tunnel()}: </span>
-            <a
-              href={tunnel.api_url}
-              className="text-primary underline-offset-4 hover:underline text-xs font-mono"
-              target="_blank"
-              rel="noreferrer"
-            >
-              {tunnel.api_url}
-            </a>
           </div>
         </div>
       </CardContent>

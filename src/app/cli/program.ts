@@ -5,7 +5,6 @@ import { registerServiceCommand } from "./commands/service.ts";
 import { registerVaultCommand } from "./commands/vault.ts";
 import { registerCompletionCommand } from "./commands/completion.ts";
 import { registerUpgradeCommand } from "./commands/upgrade.ts";
-import { registerTunnelCommand } from "./commands/tunnel.ts";
 import { registerWebCommand } from "./commands/web.ts";
 import { registerTokenCommand } from "./commands/token.ts";
 
@@ -19,7 +18,6 @@ export function buildProgram(): Command {
   registerServiceCommand(program);
   registerVaultCommand(program);
   registerUpgradeCommand(program);
-  registerTunnelCommand(program);
   registerWebCommand(program);
   registerTokenCommand(program);
   registerCompletionCommand(program);

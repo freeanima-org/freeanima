@@ -230,8 +230,6 @@
   <msg id="console_dashboard_started_at">Started at {time}</msg>
   <msg id="console_dashboard_title">Dashboard</msg>
   <msg id="console_dashboard_tools_registered">Registered</msg>
-  <msg id="console_dashboard_tunnel">Console</msg>
-  <msg id="console_dashboard_tunnel_public">Public URL</msg>
   <msg id="console_dashboard_uptime">Uptime</msg>
   <msg id="console_dashboard_version">Version</msg>
   <msg id="console_dream_desc">Browse dream_memory (creative nightly narratives from the dream mechanism; not factual records).</msg>

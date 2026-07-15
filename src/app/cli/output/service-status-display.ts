@@ -1,6 +1,5 @@
 import { parseBindHosts } from "@freeanima/platform/bind-hosts.ts";
 import { formatBuildMetaLines, parseComponentBuildMeta } from "@freeanima/core/config/build-meta";
-import { formatTunnelConnectedLabel } from "../tunnel/tunnel-supervisor.ts";
 import { prettyDuration, writeStatusLine } from "./status.ts";
 
 type MemoryDetail = {
@@ -73,14 +72,6 @@ export function printServiceRunningStatus(opts: {
   healthMs: number;
   systemd: string | null;
   pidOverride?: number | null;
-  tunnel?: {
-    running: boolean;
-    connected: boolean | null;
-    haConnections: number | null;
-    publicUrl: string | null;
-    apiUrl: string | null;
-    webUrl?: string | null;
-  } | null;
   web?: {
     running: boolean;
     host: string;
@@ -129,27 +120,6 @@ export function printServiceRunningStatus(opts: {
         printField("info", line);
       }
     }
-  }
-
-  const apiTunnel = opts.body?.tunnel as { public_url?: string; api_url?: string } | undefined;
-  const tunnelPublic = opts.tunnel?.publicUrl ?? apiTunnel?.public_url ?? null;
-  const tunnelApi = opts.tunnel?.apiUrl ?? apiTunnel?.api_url ?? null;
-  if (tunnelPublic) {
-    printSection("tunnel");
-    if (opts.tunnel) {
-      printField("running", opts.tunnel.running ? "yes" : "no — run: anima tunnel start");
-      printField(
-        "connected",
-        formatTunnelConnectedLabel({
-          connected: opts.tunnel.connected,
-          haConnections: opts.tunnel.haConnections,
-        }),
-      );
-    }
-    printField("public", tunnelPublic);
-    if (tunnelApi) printField("api", tunnelApi);
-    const tunnelWeb = opts.tunnel?.webUrl;
-    if (tunnelWeb) printField("web", tunnelWeb);
   }
 
   if (opts.web) {

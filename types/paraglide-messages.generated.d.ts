@@ -235,8 +235,6 @@ type ParaglideMessageExports = {
   readonly console_dashboard_started_at: ParaglideMessageFn;
   readonly console_dashboard_title: ParaglideMessageFn;
   readonly console_dashboard_tools_registered: ParaglideMessageFn;
-  readonly console_dashboard_tunnel: ParaglideMessageFn;
-  readonly console_dashboard_tunnel_public: ParaglideMessageFn;
   readonly console_dashboard_uptime: ParaglideMessageFn;
   readonly console_dashboard_version: ParaglideMessageFn;
   readonly console_dream_desc: ParaglideMessageFn;
@@ -908,8 +906,6 @@ declare module "*/messages/paraglide/messages.js" {
   export const console_dashboard_started_at: ParaglideMessageFn;
   export const console_dashboard_title: ParaglideMessageFn;
   export const console_dashboard_tools_registered: ParaglideMessageFn;
-  export const console_dashboard_tunnel: ParaglideMessageFn;
-  export const console_dashboard_tunnel_public: ParaglideMessageFn;
   export const console_dashboard_uptime: ParaglideMessageFn;
   export const console_dashboard_version: ParaglideMessageFn;
   export const console_dream_desc: ParaglideMessageFn;

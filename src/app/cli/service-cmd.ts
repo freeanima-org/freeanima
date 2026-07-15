@@ -17,14 +17,16 @@ import {
 } from "./service-common.ts";
 
 import { REPO_ROOT } from "@freeanima/platform";
-import { renderSystemdUnit, systemdUserAvailable, SYSTEMD_UNIT } from "./systemd-unit.ts";
+import {
+  renderSystemdUnit,
+  systemdUserAvailable,
+  SYSTEMD_UNIT,
+  stopHubStackViaSystemd,
+} from "./systemd-unit.ts";
 import { printServiceRunningStatus } from "./output/service-status-display.ts";
 import { waitForHubReadyOrWarn } from "./wait-hub-ready.ts";
-import { stopHubStackViaSystemd } from "./tunnel/tunnel-supervisor.ts";
-import { getTunnelStatus, migrateLegacyTunnelUnit } from "./tunnel/tunnel-supervisor.ts";
-import { buildTunnelSnapshot } from "@freeanima/platform/connectors/tunnel";
 import { isBootstrapWebHostingEnabled } from "@freeanima/core/config";
-import { loadRuntimeConfigSection, validateBootstrapOnStartup } from "@freeanima/platform/config";
+import { validateBootstrapOnStartup } from "@freeanima/platform/config";
 import { loadBootstrapConfig } from "@freeanima/platform/config/bootstrap.ts";
 import { runServiceStack } from "./stack/supervisor.ts";
 import { probeWebHealth } from "./web/web-runtime.ts";
@@ -173,11 +175,6 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
   const pid = isServerAlive();
 
   if (httpUp) {
-    const tunnelCfg = await loadRuntimeConfigSection<{ enabled?: boolean; hostname?: string }>(
-      "tunnel",
-    );
-    const tunnelStatus = await getTunnelStatus();
-    const tunnelUrls = buildTunnelSnapshot(tunnelCfg);
     const bootstrap = loadBootstrapConfig();
     const webEnabled = isBootstrapWebHostingEnabled(bootstrap);
     const webUp = webEnabled ? await probeWebHealth(resolveProbeHost(host), port) : false;
@@ -193,22 +190,12 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
       healthMs,
       systemd: sd,
       pidOverride: pid,
-      tunnel: tunnelUrls
-        ? {
-            running: tunnelStatus.running,
-            connected: tunnelStatus.connected,
-            haConnections: tunnelStatus.haConnections,
-            publicUrl: tunnelUrls.public_url,
-            apiUrl: tunnelUrls.api_url,
-            webUrl: tunnelUrls.web_url,
-          }
-        : null,
       web: webEnabled
         ? {
             running: webUp,
             host: resolveProbeHost(host),
             port,
-            publicUrl: bootstrap.web?.public_url ?? tunnelUrls?.web_url ?? null,
+            publicUrl: bootstrap.web?.public_url ?? null,
           }
         : null,
     });
@@ -287,7 +274,6 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
     }
 
     await validateBootstrapOnStartup();
-    await migrateLegacyTunnelUnit();
     ensureUnitFile(args.host, args.port);
     systemctl("daemon-reload");
     const r = systemctl("enable", "--now", SYSTEMD_UNIT);
@@ -333,7 +319,6 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
 
   if (action === "restart") {
     if (systemdUserAvailable() && existsSync(serviceUnitPath())) {
-      await migrateLegacyTunnelUnit();
       ensureUnitFile(args.host, args.port);
       systemctl("daemon-reload");
       const r = systemctl("restart", SYSTEMD_UNIT);
