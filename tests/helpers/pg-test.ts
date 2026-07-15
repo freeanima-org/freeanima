@@ -179,8 +179,10 @@ export function appendIntegrationConfig(home: string, yaml: string): void {
   const existing = readFileSync(path, "utf-8");
   writeFileSync(path, `${existing.trimEnd()}\n${yaml}`, "utf-8");
   if (activeCtx) {
-    activeCtx.config = FileConfig.open();
-    wireEngine(activeCtx.config);
+    const config = FileConfig.open();
+    activeCtx.config = config;
+    bindActiveRuntimeConfig(config);
+    wireEngine(config);
   }
 }
 

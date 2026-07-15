@@ -1,5 +1,9 @@
-import type { Config } from "@freeanima/core/config";
-import { getActiveRuntimeConfig, isPatchableRuntimeConfig } from "@freeanima/platform/config";
+import type { AnimaConfig, Config } from "@freeanima/core/config";
+import {
+  getActiveRuntimeConfig,
+  isPatchableRuntimeConfig,
+  patchRuntimeConfigSection,
+} from "@freeanima/platform/config";
 
 export type HomeChannel = {
   chat_id: string;
@@ -24,7 +28,12 @@ function requireHomeChannelConfig(): Config {
 }
 
 export function getHomeChannel(platform: string): HomeChannel | null {
-  const cfg = requireHomeChannelConfig().data as Record<string, unknown>;
+  let cfg: Record<string, unknown>;
+  try {
+    cfg = getActiveRuntimeConfig().data as Record<string, unknown>;
+  } catch {
+    cfg = requireHomeChannelConfig().data as Record<string, unknown>;
+  }
   const section = cfg[platform] as Record<string, unknown> | undefined;
   if (!section) return null;
   const chatId = String(section.home_channel ?? "").trim();
@@ -33,17 +42,30 @@ export function getHomeChannel(platform: string): HomeChannel | null {
   return threadId ? { chat_id: chatId, thread_id: threadId } : { chat_id: chatId };
 }
 
+function mergePlatformSectionIntoActive(platform: string, patch: Record<string, unknown>): void {
+  const config = getActiveRuntimeConfig();
+  if (isPatchableRuntimeConfig(config)) {
+    // RuntimeConfigStore.patchSection 已更新内存快照
+    return;
+  }
+  const data = { ...(config.data as Record<string, unknown>) };
+  const existing =
+    typeof data[platform] === "object" && data[platform] != null && !Array.isArray(data[platform])
+      ? { ...(data[platform] as Record<string, unknown>) }
+      : {};
+  data[platform] = { ...existing, ...patch };
+  config.update(data as AnimaConfig);
+}
+
 export async function setHomeChannel(
   platform: string,
   chatId: string,
   threadId?: string,
 ): Promise<void> {
-  const config = getActiveRuntimeConfig();
-  if (!isPatchableRuntimeConfig(config)) {
-    throw new Error("setHomeChannel requires PatchableRuntimeConfig");
-  }
-  await config.patchSection(platform, {
+  const patch = {
     home_channel: chatId,
     home_thread_id: threadId ?? "",
-  });
+  };
+  await patchRuntimeConfigSection(platform, patch);
+  mergePlatformSectionIntoActive(platform, patch);
 }

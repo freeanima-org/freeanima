@@ -236,7 +236,7 @@ async function cmdTitle(ctx: CommandContext): Promise<string> {
   return `✅ Title updated: ${newTitle}`;
 }
 
-function cmdSethome(ctx: CommandContext): string {
+async function cmdSethome(ctx: CommandContext): Promise<string> {
   const extra = ctx.origin_extra;
   if (!extra) {
     return "⚠️ /sethome only works in Discord or WeChat chat.";
@@ -248,7 +248,7 @@ function cmdSethome(ctx: CommandContext): string {
       return "⚠️ Cannot identify current Discord channel.";
     }
     const threadId = String(extra.thread_id ?? "").trim();
-    void setHomeChannel("discord", channelId, threadId || undefined);
+    await setHomeChannel("discord", channelId, threadId || undefined);
     const where = threadId ? `channel ${channelId} / thread ${threadId}` : `channel ${channelId}`;
     return `✅ Set Discord home channel to ${where}(cron delivery etc. will default here)`;
   }
@@ -258,7 +258,7 @@ function cmdSethome(ctx: CommandContext): string {
     if (!peerId) {
       return "⚠️ Cannot identify current WeChat session.";
     }
-    void setHomeChannel("weixin", peerId);
+    await setHomeChannel("weixin", peerId);
     return `✅ Set WeChat home channel to ${peerId}(cron delivery etc. will default here)`;
   }
 

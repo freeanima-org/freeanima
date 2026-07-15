@@ -9,7 +9,7 @@ import {
 import type { PgTestContext } from "../../helpers/pg-test.ts";
 
 import { isConversationMeta } from "@freeanima/core/db/domain";
-import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
 import {
@@ -27,6 +27,8 @@ import {
   resolveCommand,
 } from "@freeanima/platform/slash-commands";
 import { getAppRuntime } from "@freeanima/platform";
+import { getHomeChannel } from "@freeanima/platform/ports/home-channel";
+import { getHubRuntimeConfigDocument } from "@freeanima/core/db/pg";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 import * as engineConversation from "@freeanima/runtime/conversation";
 import { patchConversationMeta } from "@freeanima/core/db/pg/conversation";
@@ -339,7 +341,7 @@ describePg("slash commands", () => {
     expect(await testConv().getConversationCwd(sid)).toBe(home);
   });
 
-  it("/sethome writes discord home_channel to config", async () => {
+  it("/sethome writes discord home_channel to runtime config", async () => {
     appendIntegrationConfig(home, "model: test\ndiscord:\n  require_mention: true\n");
     const [cmd] = findCommand("/sethome");
     expect(cmd?.name).toBe("sethome");
@@ -351,12 +353,17 @@ describePg("slash commands", () => {
       origin_extra: { channel_id: "1234567890123456789", thread_id: "999" },
     });
     expect(result.text).toContain("home channel");
-    const cfg = readFileSync(join(home, "config.yaml"), "utf-8");
-    expect(cfg).toContain('home_channel: "1234567890123456789"');
-    expect(cfg).toContain('home_thread_id: "999"');
+    expect(getHomeChannel("discord")).toEqual({
+      chat_id: "1234567890123456789",
+      thread_id: "999",
+    });
+    const doc = await getHubRuntimeConfigDocument();
+    const discord = doc.discord as Record<string, unknown> | undefined;
+    expect(discord?.home_channel).toBe("1234567890123456789");
+    expect(discord?.home_thread_id).toBe("999");
   });
 
-  it("/sethome writes weixin home_channel to config", async () => {
+  it("/sethome writes weixin home_channel to runtime config", async () => {
     appendIntegrationConfig(home, "model: test\n");
     const [cmd] = findCommand("/sethome");
     const result = await executeCommand(cmd!, {
@@ -367,8 +374,10 @@ describePg("slash commands", () => {
       origin_extra: { weixin_peer_id: "peer@im.wechat" },
     });
     expect(result.text).toContain("WeChat home channel");
-    const cfg = readFileSync(join(home, "config.yaml"), "utf-8");
-    expect(cfg).toContain("home_channel: peer@im.wechat");
+    expect(getHomeChannel("weixin")).toEqual({ chat_id: "peer@im.wechat" });
+    const doc = await getHubRuntimeConfigDocument();
+    const weixin = doc.weixin as Record<string, unknown> | undefined;
+    expect(weixin?.home_channel).toBe("peer@im.wechat");
   });
 
   it("/tooldisplay sets and resets conversation override", async () => {
@@ -474,7 +483,7 @@ describePg("slash commands", () => {
     }
   });
 
-  it("/upgrade is disabled for standalone installs", async () => {
+  it("/upgrade hints terminal upgrade for standalone installs", async () => {
     const prevArgv1 = process.argv[1];
     process.argv[1] = "/$bunfs/root/anima";
     try {
@@ -486,7 +495,8 @@ describePg("slash commands", () => {
         raw: "/upgrade",
       });
       expect(isUpgradeResult(result)).toBe(false);
-      expect(result.text).toContain("standalone 可执行文件不支持自动 upgrade");
+      expect(result.text).toContain("anima upgrade");
+      expect(result.text).toContain("anima service restart");
     } finally {
       if (prevArgv1 !== undefined) process.argv[1] = prevArgv1;
       else delete (process.argv as { 1?: string })[1];

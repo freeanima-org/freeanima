@@ -5,7 +5,7 @@ import { standaloneEmbeds, standaloneRuntimeMeta } from "./standalone-embeds.ts"
 
 /** 在 cli 入口最早 side-effect：把编译期嵌入注册到 globalThis */
 export function bootStandaloneEmbeds(): void {
-  if (standaloneRuntimeMeta) {
+  if (standaloneRuntimeMeta != null) {
     registerStandaloneRuntimeMeta(standaloneRuntimeMeta);
   }
 
