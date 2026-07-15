@@ -1,6 +1,6 @@
 /** Node / CLI 侧 build-meta 解析（与 shell-sdk/build-meta.ts 保持同步） */
 
-export type BuildChannel = "prod" | "dev";
+export type BuildChannel = "release" | "canary" | "dev";
 
 export type BuildComponent = "service" | "web" | "native";
 
@@ -26,6 +26,23 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === "object" && !Array.isArray(value);
 }
 
+/** 遗留 `"prod"` 归一为 `"release"` */
+export function normalizeBuildChannel(raw: unknown): BuildChannel | null {
+  if (raw === "release" || raw === "canary" || raw === "dev") return raw;
+  if (raw === "prod") return "release";
+  return null;
+}
+
+/** 可发运轨（写 built_at、参与 GitHub 包更新） */
+export function isShipChannel(channel: BuildChannel): boolean {
+  return channel === "release" || channel === "canary";
+}
+
+/** 允许在 UI/CLI 在 release⇄canary 间切换 */
+export function isSwitchableChannel(channel: BuildChannel): channel is "release" | "canary" {
+  return channel === "release" || channel === "canary";
+}
+
 function parseGitBuildInfo(raw: unknown): GitBuildInfo | undefined {
   if (!isRecord(raw)) return undefined;
   const commit = typeof raw.commit === "string" ? raw.commit.trim() : "";
@@ -45,8 +62,8 @@ export function parseComponentBuildMeta(raw: unknown): ComponentBuildMeta | null
   if (!isRecord(raw)) return null;
   const component = raw.component;
   if (component !== "service" && component !== "web" && component !== "native") return null;
-  const channel = raw.channel;
-  if (channel !== "prod" && channel !== "dev") return null;
+  const channel = normalizeBuildChannel(raw.channel);
+  if (!channel) return null;
   const version = typeof raw.version === "string" ? raw.version.trim() : "";
   if (!version) return null;
 
@@ -71,7 +88,7 @@ export function parseComponentBuildMeta(raw: unknown): ComponentBuildMeta | null
 }
 
 export function formatBuildChannelLabel(channel: BuildChannel): string {
-  return channel === "prod" ? "prod" : "dev";
+  return channel;
 }
 
 /** CLI / status 多行展示 */

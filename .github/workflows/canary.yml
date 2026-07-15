@@ -1,0 +1,188 @@
+name: Canary
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 构建的 git ref（留空则用当前触发 SHA）
+        required: false
+        type: string
+
+concurrency:
+  group: canary-main
+  cancel-in-progress: true
+
+env:
+  FREEANIMA_BUILD_CHANNEL: canary
+
+jobs:
+  linux-standalone:
+    name: Linux standalone
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-bun
+      - uses: ./.github/actions/setup-anima-home
+
+      - name: Build Linux standalone
+        run: bun run build:cli:executable
+
+      - name: Pack artifact
+        run: |
+          set -euo pipefail
+          cd dist/anima-executable
+          tar -czf ../../anima-linux-x64.tar.gz anima
+          ls -lh ../../anima-linux-x64.tar.gz
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: canary-linux-standalone
+          path: anima-linux-x64.tar.gz
+          if-no-files-found: error
+
+  desktop-windows:
+    name: Desktop Windows
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    env:
+      DESKTOP_SHELL_BUILD_PROFILE: release
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-bun
+
+      - name: 安装 companion FBX 工具
+        run: bun run setup:fbx
+
+      - name: 校验 Electron main bundle 不变量
+        run: bun test src/app/shell/desktop/build-electron.test.ts
+
+      - name: 构建 FreeAnima Desktop
+        run: bun run package:windows
+
+      - name: 收集安装包
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          installer="$(ls src/app/shell/desktop/release/FreeAnima-Desktop-*.exe 2>/dev/null || ls src/app/shell/desktop/release/*.exe | head -1)"
+          cp "$installer" dist/freeanima-desktop-windows-x64-setup.exe
+          ls -la dist/
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: canary-desktop-windows
+          path: dist/freeanima-desktop-windows-x64-setup.exe
+          if-no-files-found: error
+
+  mobile-android:
+    name: Mobile Android
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-bun
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Setup Android SDK
+        run: bash src/app/shell/mobile/scripts/setup-android-sdk.sh
+
+      - name: Build debug APK
+        run: |
+          set -euo pipefail
+          # shellcheck source=src/app/shell/mobile/scripts/android-env.sh
+          source src/app/shell/mobile/scripts/android-env.sh
+          bun run build:mobile
+          cd src/app/shell/mobile
+          bunx cap sync android
+          cd android
+          ./gradlew assembleDebug
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          cp app/build/outputs/apk/debug/app-debug.apk \
+            "$GITHUB_WORKSPACE/dist/freeanima-mobile-android.apk"
+          ls -lh "$GITHUB_WORKSPACE/dist/freeanima-mobile-android.apk"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: canary-mobile-android
+          path: dist/freeanima-mobile-android.apk
+          if-no-files-found: error
+
+  publish-canary:
+    name: Publish canary Pre-release
+    needs: [linux-standalone, desktop-windows, mobile-android]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          fetch-depth: 0
+          # 需要推送滚动 tag canary
+          token: ${{ secrets.FREEANIMA_CI }}
+
+      - uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -la artifacts/
+
+      - name: Resolve build SHA
+        id: build
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Move canary tag
+        run: |
+          set -euo pipefail
+          git tag -f canary "${{ steps.build.outputs.sha }}"
+          git push -f origin refs/tags/canary
+
+      - name: Publish / update Pre-release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: canary
+          name: Canary
+          prerelease: true
+          make_latest: false
+          target_commitish: ${{ steps.build.outputs.sha }}
+          token: ${{ secrets.FREEANIMA_CI }}
+          body: |
+            Rolling canary builds from `main`.
+
+            sha: `${{ steps.build.outputs.sha }}`
+
+            - Linux standalone: `anima-linux-x64.tar.gz`
+            - Desktop Windows: `freeanima-desktop-windows-x64-setup.exe`
+            - Mobile Android (debug): `freeanima-mobile-android.apk`
+
+            Channel: **canary**. Use in-app / `anima upgrade --channel canary` to follow this track.
+          files: |
+            artifacts/anima-linux-x64.tar.gz
+            artifacts/freeanima-desktop-windows-x64-setup.exe
+            artifacts/freeanima-mobile-android.apk
+          fail_on_unmatched_files: true

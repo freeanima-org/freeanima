@@ -13,6 +13,9 @@ export type {
 export {
   formatBuildChannelLabel,
   formatBuildMetaLines,
+  isShipChannel,
+  isSwitchableChannel,
+  normalizeBuildChannel,
   parseComponentBuildMeta,
 } from "./build-meta.parse.ts";
 
@@ -23,7 +26,11 @@ import type {
   GitBuildInfo,
   NativeShellKind,
 } from "./build-meta.parse.ts";
-import { parseComponentBuildMeta } from "./build-meta.parse.ts";
+import {
+  isShipChannel,
+  normalizeBuildChannel,
+  parseComponentBuildMeta,
+} from "./build-meta.parse.ts";
 
 export type ResolveGitBuildInfoOptions = {
   repoRoot?: string;
@@ -101,10 +108,24 @@ export type CreateComponentBuildMetaInput = {
   version?: string;
   repoRoot?: string;
   env?: NodeJS.ProcessEnv;
-  /** prod build 产物写入 build 时间；dev 默认不写 */
+  /** release/canary 默认写入 build 时间；dev 默认不写 */
   includeBuiltAt?: boolean;
   builtAt?: string;
 };
+
+/** 读取 FREEANIMA_BUILD_CHANNEL；非法值抛错；未设时用 fallback */
+export function resolveBuildChannelFromEnv(
+  fallback: BuildChannel,
+  env: NodeJS.ProcessEnv = process.env,
+): BuildChannel {
+  const raw = env.FREEANIMA_BUILD_CHANNEL?.trim();
+  if (!raw) return fallback;
+  const channel = normalizeBuildChannel(raw);
+  if (!channel) {
+    throw new Error(`Invalid FREEANIMA_BUILD_CHANNEL=${raw} (expected release|canary|dev)`);
+  }
+  return channel;
+}
 
 export function createComponentBuildMeta(input: CreateComponentBuildMetaInput): ComponentBuildMeta {
   const version = input.version?.trim() || readAppVersion(input.repoRoot);
@@ -112,7 +133,7 @@ export function createComponentBuildMeta(input: CreateComponentBuildMetaInput): 
     ...(input.repoRoot ? { repoRoot: input.repoRoot } : {}),
     ...(input.env ? { env: input.env } : {}),
   });
-  const includeBuiltAt = input.includeBuiltAt ?? input.channel === "prod";
+  const includeBuiltAt = input.includeBuiltAt ?? isShipChannel(input.channel);
 
   return {
     component: input.component,

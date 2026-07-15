@@ -14,7 +14,10 @@ import { Glob } from "bun";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
-import { createComponentBuildMeta } from "@freeanima/core/config/build-meta";
+import {
+  createComponentBuildMeta,
+  resolveBuildChannelFromEnv,
+} from "@freeanima/core/config/build-meta";
 import {
   createStandaloneEmbedPlugin,
   type StandaloneEmbedInput,
@@ -97,9 +100,10 @@ async function main(): Promise<void> {
   await ensureWebDist();
 
   console.log("resolving service build-meta for embed…");
+  const channel = resolveBuildChannelFromEnv("release");
   const buildMeta = createComponentBuildMeta({
     component: "service",
-    channel: "prod",
+    channel,
     repoRoot: ROOT,
     includeBuiltAt: true,
   });

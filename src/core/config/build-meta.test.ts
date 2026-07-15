@@ -37,20 +37,28 @@ describe("build-meta", () => {
         component: "native",
         shell: "desktop",
         version: "0.8.3",
-        channel: "prod",
+        channel: "release",
         built_at: "2026-07-08T00:00:00.000Z",
         git: { commit: "abc123", branch: "main", dirty: false },
       }),
     ).toMatchObject({
       component: "native",
       shell: "desktop",
+      channel: "release",
       git: { commit: "abc123", branch: "main", dirty: false },
     });
     expect(
       parseComponentBuildMeta({
-        component: "native",
+        component: "web",
         version: "0.8.3",
         channel: "prod",
+      }),
+    ).toMatchObject({ channel: "release" });
+    expect(
+      parseComponentBuildMeta({
+        component: "native",
+        version: "0.8.3",
+        channel: "release",
       }),
     ).toBeNull();
   });
@@ -76,7 +84,7 @@ describe("build-meta", () => {
       JSON.stringify({
         component: "web",
         version: "0.8.3",
-        channel: "prod",
+        channel: "release",
         built_at: "2026-07-08T00:00:00.000Z",
       }),
     );
@@ -106,12 +114,12 @@ describe("build-meta", () => {
     const lines = formatBuildMetaLines({
       component: "service",
       version: "0.8.3",
-      channel: "prod",
+      channel: "release",
       built_at: "2026-07-08T00:00:00.000Z",
       git: { commit: "abc123", branch: "main", dirty: true },
     });
     expect(lines).toContain("version 0.8.3");
-    expect(lines).toContain("channel prod");
+    expect(lines).toContain("channel release");
     expect(lines.some((l) => l.startsWith("commit abc123"))).toBe(true);
     expect(lines).toContain("branch main");
     expect(lines).toContain("dirty yes");

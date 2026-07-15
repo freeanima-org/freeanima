@@ -7,6 +7,7 @@ import type { CliOptions } from "electron-builder";
 
 import { buildCompanionApp } from "@freeanima/satellites/companion/lib/exports/build.ts";
 import { nativeBuildMetaDefine } from "@freeanima/frontend/shell-sdk/native-build-meta";
+import { resolveBuildChannelFromEnv } from "@freeanima/core/config/build-meta";
 import { resolveNativeBuildMeta } from "../shared/resolve-native-build-meta.ts";
 import { assertElectronMainBundle } from "./electron-main-bundle-assert.ts";
 
@@ -75,7 +76,7 @@ export function getElectronPreloadBundleOptions(opts?: {
   profile?: BuildProfile;
   version?: string;
 }): esbuild.BuildOptions {
-  const channel = opts?.profile === "release" ? "prod" : "dev";
+  const channel = resolveBuildChannelFromEnv(opts?.profile === "release" ? "release" : "dev");
   const nativeMeta = resolveNativeBuildMeta({
     shell: "desktop",
     channel,

@@ -2,22 +2,26 @@
 /**
  * 生成 component build-meta.json（service / web / native）。
  *
- * bun scripts/gen-build-meta.ts --component service --channel prod --out path/to/build-meta.json
+ * bun scripts/gen-build-meta.ts --component service --channel release --out path/to/build-meta.json
+ * 也可用环境变量 FREEANIMA_BUILD_CHANNEL 覆盖 --channel（若同时提供，以 CLI 为准）。
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
 import {
   createComponentBuildMeta,
+  normalizeBuildChannel,
+  resolveBuildChannelFromEnv,
   type BuildChannel,
   type BuildComponent,
   type NativeShellKind,
+  isShipChannel,
 } from "@freeanima/core/config/build-meta.ts";
 import { getRepoRoot } from "@freeanima/core/config/repo-root.ts";
 
 function usage(): never {
   console.error(
-    "Usage: bun scripts/gen-build-meta.ts --component service|web|native [--shell desktop|mobile] --channel prod|dev --out <path> [--repo-root <dir>]",
+    "Usage: bun scripts/gen-build-meta.ts --component service|web|native [--shell desktop|mobile] --channel release|canary|dev --out <path> [--repo-root <dir>]",
   );
   process.exit(1);
 }
@@ -31,7 +35,7 @@ function parseArgs(argv: string[]): {
 } {
   let component: BuildComponent | null = null;
   let shell: NativeShellKind | undefined;
-  let channel: BuildChannel | null = null;
+  let channelArg: BuildChannel | null = null;
   let out: string | null = null;
   let repoRoot: string | null = null;
 
@@ -47,8 +51,9 @@ function parseArgs(argv: string[]): {
       else usage();
     } else if (arg === "--channel") {
       const v = argv[++i];
-      if (v === "prod" || v === "dev") channel = v;
-      else usage();
+      const n = normalizeBuildChannel(v);
+      if (!n) usage();
+      channelArg = n;
     } else if (arg === "--out") {
       out = argv[++i] ?? null;
     } else if (arg === "--repo-root") {
@@ -58,7 +63,8 @@ function parseArgs(argv: string[]): {
     }
   }
 
-  if (!component || !channel || !out) usage();
+  if (!component || !out) usage();
+  const channel = channelArg ?? resolveBuildChannelFromEnv("release");
 
   return {
     component,
@@ -79,7 +85,7 @@ const meta = createComponentBuildMeta({
   ...(args.shell ? { shell: args.shell } : {}),
   channel: args.channel,
   repoRoot: args.repoRoot,
-  includeBuiltAt: args.channel === "prod",
+  includeBuiltAt: isShipChannel(args.channel),
 });
 
 mkdirSync(dirname(args.out), { recursive: true });

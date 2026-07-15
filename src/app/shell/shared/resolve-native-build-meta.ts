@@ -1,5 +1,6 @@
 import {
   createComponentBuildMeta,
+  isShipChannel,
   type BuildChannel,
   type ComponentBuildMeta,
 } from "../vite-config-imports.ts";
@@ -17,6 +18,6 @@ export function resolveNativeBuildMeta(opts: {
     channel: opts.channel,
     repoRoot: opts.repoRoot,
     ...(opts.version ? { version: opts.version } : {}),
-    includeBuiltAt: opts.channel === "prod",
+    includeBuiltAt: isShipChannel(opts.channel),
   });
 }

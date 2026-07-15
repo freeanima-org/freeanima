@@ -670,5 +670,8 @@
   "ui_shell_update_failed": "更新失败，请重试。",
   "ui_shell_update_check": "检查更新",
   "ui_shell_update_latest": "当前已是最新版本。",
-  "ui_shell_update_none": "当前平台暂无可用安装包。"
+  "ui_shell_update_none": "当前平台暂无可用安装包。",
+  "ui_shell_channel_switch": "切换到 {channel}",
+  "ui_shell_channel_switch_available": "安装 {channel} 构建（{version}）？",
+  "ui_shell_channel_switch_install": "切换通道"
 }

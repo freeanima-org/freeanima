@@ -1,4 +1,8 @@
-/** 与 CI / @freeanima/core app-update 产物名对齐（shell-sdk 不可依赖 core） */
+/** 与 CI / @freeanima/core app-update 产物名与轨语义对齐（shell-sdk 不可依赖 core） */
+
+import type { BuildChannel } from "./build-meta.ts";
+import { isSwitchableChannel } from "./build-meta.ts";
+
 export type PackagedReleaseKind = "standalone-linux-x64" | "desktop-windows" | "mobile-android";
 
 export const RELEASE_ASSET_NAMES: Record<PackagedReleaseKind, string> = {
@@ -6,6 +10,11 @@ export const RELEASE_ASSET_NAMES: Record<PackagedReleaseKind, string> = {
   "desktop-windows": "freeanima-desktop-windows-x64-setup.exe",
   "mobile-android": "freeanima-mobile-android.apk",
 };
+
+export const CANARY_RELEASE_TAG = "canary";
+export const FREEANIMA_GITHUB_REPO = "freeanima-org/freeanima";
+
+export type UpdateTrack = "release" | "canary";
 
 export type GithubReleaseAsset = {
   name: string;
@@ -47,7 +56,13 @@ export function matchReleaseAsset(
 }
 
 export type PackagedUpdateResult =
-  | { available: false; reason: "no_release" | "no_asset" | "up_to_date"; remoteVersion?: string }
+  | {
+      available: false;
+      reason: "no_release" | "no_asset" | "up_to_date" | "unsupported_channel";
+      remoteVersion?: string;
+      remoteCommit?: string;
+      track?: UpdateTrack;
+    }
   | {
       available: true;
       remoteVersion: string;
@@ -55,6 +70,8 @@ export type PackagedUpdateResult =
       assetUrl: string;
       releaseUrl: string;
       assetSize?: number;
+      remoteCommit?: string;
+      track: UpdateTrack;
     };
 
 type ReleaseJson = {
@@ -62,46 +79,40 @@ type ReleaseJson = {
   prerelease?: boolean;
   draft?: boolean;
   html_url?: string;
+  target_commitish?: string;
+  body?: string;
   assets?: Array<{ name?: string; browser_download_url?: string; size?: number }>;
 };
 
-async function fetchLatestTagRelease(
-  fetchImpl: typeof fetch,
-  signal?: AbortSignal,
-): Promise<ReleaseJson | null> {
-  const headers = {
+function githubHeaders(): Record<string, string> {
+  return {
     Accept: "application/vnd.github+json",
     "User-Agent": "freeanima-shell-app-update",
     "X-GitHub-Api-Version": "2022-11-28",
   };
-  const latestRes = await fetchImpl(
-    "https://api.github.com/repos/freeanima-org/freeanima/releases/latest",
-    { headers, ...(signal ? { signal } : {}) } as RequestInit,
-  );
-  if (latestRes.ok) {
-    const j = (await latestRes.json()) as ReleaseJson;
-    if (!j.draft && !j.prerelease) return j;
-  }
-  const listRes = await fetchImpl(
-    "https://api.github.com/repos/freeanima-org/freeanima/releases?per_page=10",
-    { headers, ...(signal ? { signal } : {}) } as RequestInit,
-  );
-  if (!listRes.ok) return null;
-  const list = (await listRes.json()) as ReleaseJson[];
-  if (!Array.isArray(list)) return null;
-  return list.find((r) => !r.draft && !r.prerelease) ?? null;
 }
 
-export async function resolvePackagedUpdate(opts: {
-  kind: PackagedReleaseKind;
-  localVersion: string;
-  signal?: AbortSignal;
-  fetchImpl?: typeof fetch;
-}): Promise<PackagedUpdateResult> {
-  const fetchImpl = opts.fetchImpl ?? fetch;
-  const release = await fetchLatestTagRelease(fetchImpl, opts.signal);
-  if (!release?.tag_name) return { available: false, reason: "no_release" };
+export function extractReleaseCommit(release: {
+  target_commitish?: string;
+  body?: string;
+}): string | undefined {
+  const tc = release.target_commitish?.trim();
+  if (tc && /^[0-9a-f]{7,40}$/i.test(tc)) return tc.toLowerCase();
+  const body = release.body ?? "";
+  const m = body.match(/\bsha[:\s]+`?([0-9a-f]{7,40})`?/i);
+  if (m?.[1]) return m[1].toLowerCase();
+  return undefined;
+}
 
+export function commitsMatch(local?: string, remote?: string): boolean {
+  if (!local || !remote) return false;
+  const a = local.trim().toLowerCase();
+  const b = remote.trim().toLowerCase();
+  if (!a || !b) return false;
+  return a === b || a.startsWith(b) || b.startsWith(a);
+}
+
+function assetsFromRelease(release: ReleaseJson): GithubReleaseAsset[] {
   const assets: GithubReleaseAsset[] = [];
   for (const a of release.assets ?? []) {
     if (typeof a.name === "string" && typeof a.browser_download_url === "string") {
@@ -112,21 +123,129 @@ export async function resolvePackagedUpdate(opts: {
       });
     }
   }
+  return assets;
+}
+
+async function fetchLatestStableRelease(
+  fetchImpl: typeof fetch,
+  signal?: AbortSignal,
+): Promise<ReleaseJson | null> {
+  const headers = githubHeaders();
+  const latestRes = await fetchImpl(
+    `https://api.github.com/repos/${FREEANIMA_GITHUB_REPO}/releases/latest`,
+    { headers, ...(signal ? { signal } : {}) } as RequestInit,
+  );
+  if (latestRes.ok) {
+    const j = (await latestRes.json()) as ReleaseJson;
+    if (!j.draft && !j.prerelease) return j;
+  }
+  const listRes = await fetchImpl(
+    `https://api.github.com/repos/${FREEANIMA_GITHUB_REPO}/releases?per_page=10`,
+    { headers, ...(signal ? { signal } : {}) } as RequestInit,
+  );
+  if (!listRes.ok) return null;
+  const list = (await listRes.json()) as ReleaseJson[];
+  if (!Array.isArray(list)) return null;
+  return list.find((r) => !r.draft && !r.prerelease) ?? null;
+}
+
+async function fetchReleaseByTag(
+  tag: string,
+  fetchImpl: typeof fetch,
+  signal?: AbortSignal,
+): Promise<ReleaseJson | null> {
+  const encoded = encodeURIComponent(tag);
+  const res = await fetchImpl(
+    `https://api.github.com/repos/${FREEANIMA_GITHUB_REPO}/releases/tags/${encoded}`,
+    { headers: githubHeaders(), ...(signal ? { signal } : {}) } as RequestInit,
+  );
+  if (!res.ok) return null;
+  const j = (await res.json()) as ReleaseJson;
+  if (j.draft) return null;
+  return j;
+}
+
+function isUpdateTrack(channel: BuildChannel): channel is UpdateTrack {
+  return channel === "release" || channel === "canary";
+}
+
+export async function resolvePackagedUpdate(opts: {
+  kind: PackagedReleaseKind;
+  localVersion: string;
+  channel: BuildChannel;
+  localCommit?: string;
+  intent?: "check" | "switch";
+  targetChannel?: BuildChannel;
+  signal?: AbortSignal;
+  fetchImpl?: typeof fetch;
+}): Promise<PackagedUpdateResult> {
+  const fetchImpl = opts.fetchImpl ?? fetch;
+  const intent = opts.intent ?? "check";
+  const trackChannel = intent === "switch" ? (opts.targetChannel ?? opts.channel) : opts.channel;
+  if (!isUpdateTrack(trackChannel)) {
+    return { available: false, reason: "unsupported_channel" };
+  }
+  if (intent === "switch" && !isUpdateTrack(opts.channel)) {
+    return { available: false, reason: "unsupported_channel" };
+  }
+
+  const release =
+    trackChannel === "canary"
+      ? await fetchReleaseByTag(CANARY_RELEASE_TAG, fetchImpl, opts.signal)
+      : await fetchLatestStableRelease(fetchImpl, opts.signal);
+  if (!release?.tag_name) {
+    return { available: false, reason: "no_release", track: trackChannel };
+  }
+
+  const remoteCommit = extractReleaseCommit(release);
+  const assets = assetsFromRelease(release);
   const asset = matchReleaseAsset(opts.kind, assets);
   if (!asset) {
-    return { available: false, reason: "no_asset", remoteVersion: release.tag_name };
+    return {
+      available: false,
+      reason: "no_asset",
+      remoteVersion: release.tag_name,
+      track: trackChannel,
+      ...(remoteCommit ? { remoteCommit } : {}),
+    };
   }
-  if (!isSemverNewer(release.tag_name, opts.localVersion)) {
-    return { available: false, reason: "up_to_date", remoteVersion: release.tag_name };
-  }
-  return {
+
+  const available: Extract<PackagedUpdateResult, { available: true }> = {
     available: true,
     remoteVersion: release.tag_name,
     assetName: asset.name,
     assetUrl: asset.browser_download_url,
     releaseUrl: typeof release.html_url === "string" ? release.html_url : "",
+    track: trackChannel,
     ...(asset.size != null ? { assetSize: asset.size } : {}),
+    ...(remoteCommit ? { remoteCommit } : {}),
   };
+
+  if (intent === "switch") return available;
+
+  if (trackChannel === "release") {
+    if (!isSemverNewer(available.remoteVersion, opts.localVersion)) {
+      return {
+        available: false,
+        reason: "up_to_date",
+        remoteVersion: available.remoteVersion,
+        track: trackChannel,
+        ...(remoteCommit ? { remoteCommit } : {}),
+      };
+    }
+    return available;
+  }
+
+  if (remoteCommit && commitsMatch(opts.localCommit, remoteCommit)) {
+    return {
+      available: false,
+      reason: "up_to_date",
+      remoteVersion: available.remoteVersion,
+      remoteCommit,
+      track: trackChannel,
+    };
+  }
+  return available;
 }
 
 export function resolveNativePackagedKind(): PackagedReleaseKind | null {
@@ -135,3 +254,9 @@ export function resolveNativePackagedKind(): PackagedReleaseKind | null {
   if (shell?.isNativeShell) return "mobile-android";
   return null;
 }
+
+export function otherUpdateTrack(channel: UpdateTrack): UpdateTrack {
+  return channel === "release" ? "canary" : "release";
+}
+
+export { isSwitchableChannel };
