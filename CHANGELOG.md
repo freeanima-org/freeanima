@@ -3,6 +3,66 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.9.0](https://github.com/freeanima-org/freeanima/compare/v0.8.5...v0.9.0) (2026-07-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* 移除 Cloudflare Tunnel 远程访问能力
+
+### Features
+
+* **ci:** 增加 canary 滚动预构建与通道更新 ([7af7ab7](https://github.com/freeanima-org/freeanima/commit/7af7ab702b6cd5e8cf3b8b8a31d929d51640aa53))
+* **conversation:** CST 02:00 日界后重建系统提示词 ([a164e40](https://github.com/freeanima-org/freeanima/commit/a164e40cb6fa0ba6c5071c7ca528d2a1e706c307))
+* **entity:** 实现 world_config subject read/write 授权 ([370d146](https://github.com/freeanima-org/freeanima/commit/370d14632ea35807b5f2de4d04b69514aa876cce))
+* **install:** 增加 curl|bash standalone 安装脚本与统一手册 ([3ea4af4](https://github.com/freeanima-org/freeanima/commit/3ea4af4ebe3e37f921821beaaba8e862c47df0ed))
+* **pomodoro:** 用 Hub WS 推送替代 active 状态周期轮询 ([1a8c1cf](https://github.com/freeanima-org/freeanima/commit/1a8c1cf25ef0c50f2b5d7824aedd88d17da8e0a9))
+* **release:** 三端更新检测与单文件 standalone 安装 ([4da99b1](https://github.com/freeanima-org/freeanima/commit/4da99b1555f3776aa72fa275e5245ebab00b20ae))
+* **release:** 以 Linux standalone 替代 npm 与 Docker 分发 ([4d87c9c](https://github.com/freeanima-org/freeanima/commit/4d87c9cb2b2b409a3050ca3ff663bd952bd1c708))
+* **tools:** 加固 terminal/file/code_execute 工具面安全 ([d4fe596](https://github.com/freeanima-org/freeanima/commit/d4fe59616b6d9bb233ad6695e10a00e1a4b92a55))
+
+
+### Bug Fixes
+
+* **boot:** 修复空库冷启动与 LLM/Web 配置闭环 ([8ee33b3](https://github.com/freeanima-org/freeanima/commit/8ee33b3166f70667fded49809b852bfa8f2895bb))
+* **chat:** Hub 未就绪时避免进入聊天反复新建会话 ([7faa9a5](https://github.com/freeanima-org/freeanima/commit/7faa9a50237c91b4f26e6239ab1fd90f834233f4))
+* **chat:** 弱网下同一 client_op_id 避免双重触发 turn ([e922a1a](https://github.com/freeanima-org/freeanima/commit/e922a1a4e20f3e552f7b402dd0d75bb36c30017c))
+* **ci:** switch Desktop Windows build to Linux cross-compilation ([c87afe3](https://github.com/freeanima-org/freeanima/commit/c87afe307972ce1cc34f3587aac89092a8b92e75))
+* **ci:** 修复 Quality 中 sethome/upgrade 与空 gitleaks allowlist ([dcbde17](https://github.com/freeanima-org/freeanima/commit/dcbde17d58c4f87728dc4328cd407d3364c9bbcf))
+* **ci:** 统一 esbuild 并加强 Windows 冷装，修复 Canary Desktop ([834077d](https://github.com/freeanima-org/freeanima/commit/834077d15388b816c24ccdc7e523a4c3f17781a9))
+* **ci:** 缓解 Windows Canary bun install ENOENT 与 husky prepare 失败 ([74ba234](https://github.com/freeanima-org/freeanima/commit/74ba2349609d31bcd1b425830cd5d95f6abab572))
+* **hub:** 修复 HTTP 下 GET query 400 与 randomUUID 报错，并增加项目重命名 ([2c284dc](https://github.com/freeanima-org/freeanima/commit/2c284dc179846c60dbab71e4d0830d7ffcc1d336))
+* **hub:** 前端 typed client 改用 client 子模块避免打入服务端图 ([de9d13b](https://github.com/freeanima-org/freeanima/commit/de9d13bfdaa55cfd5fde1a8e6a4626ae26311be6))
+* **hub:** 前端安装 client method registry 修复 unknown hub method ([dec4828](https://github.com/freeanima-org/freeanima/commit/dec48283fd5ad99d9a9a719faa4be1d0571b8e87))
+* **memory:** 检索嵌入短超时 fail-open，hybrid 三路并行 ([f5033b8](https://github.com/freeanima-org/freeanima/commit/f5033b801e0abec8e03335ea65c587fd74621a43))
+* **mobile:** 修复本地 SPA 暗屏与 TTS MP3 播放 ([95edc30](https://github.com/freeanima-org/freeanima/commit/95edc30c5648ddd090ac12d4814ee89d34e81d91))
+* **offline:** 修复离线同步卡住无报错与配置删除不生效 ([7492e23](https://github.com/freeanima-org/freeanima/commit/7492e232358c137b09e06915474b745de8a31079))
+* **shell:** 避免手机浏览器 UA 误判为 Capacitor 壳 ([3bf91d5](https://github.com/freeanima-org/freeanima/commit/3bf91d522567b0e2933a5438f776cf14ce01f04c))
+* **task:** 修复清单拖出文件夹并同步项目树拖拽 ([a29bec2](https://github.com/freeanima-org/freeanima/commit/a29bec2d01bb83a075824f781b1f03b2ea8fad2e))
+* **task:** 消除清单计数 N+1 以加速任务列表接口 ([869fe0c](https://github.com/freeanima-org/freeanima/commit/869fe0c78612662b03bb9f1ed305e2373c4e62aa))
+* **task:** 移动到弹窗保留文件夹以展示子清单 ([c21136a](https://github.com/freeanima-org/freeanima/commit/c21136ab27a9b862599b8e94161277afb1a80ca1))
+* **test:** 消除 FTS write 测试 mock.module 污染 buildFtsTsQuery ([7cfb837](https://github.com/freeanima-org/freeanima/commit/7cfb8373555852d8761ec1933df1426f2188887e))
+
+
+### Performance
+
+* **db:** 补齐检索索引并消除热路径写放大 ([ce6e682](https://github.com/freeanima-org/freeanima/commit/ce6e6828776eeade0761256e8014aa783ea672c9))
+
+
+### Miscellaneous
+
+* **deps-dev:** bump the dev-dependencies group with 4 updates ([16940f6](https://github.com/freeanima-org/freeanima/commit/16940f64c006b0dc83edb55a486620821a82245c))
+* **deps:** bump softprops/action-gh-release ([0c7b825](https://github.com/freeanima-org/freeanima/commit/0c7b8252f5ec7eb0b7d19eae1f50e0c0213355e8))
+
+
+### Refactoring
+
+* **cli:** 拆分 Web 构建职责并加速 standalone 打包 ([270fd33](https://github.com/freeanima-org/freeanima/commit/270fd33aabab6b8b9cda4b7699c362efca15160f))
+* **cli:** 源码用 dev:hub 起 Hub，service 仅 standalone ([e1f4e23](https://github.com/freeanima-org/freeanima/commit/e1f4e2393e06e8c8e35b1c2c68d30a3334aa501e))
+* **shell:** Desktop/Mobile 默认本地打包 web/dist ([1225dc2](https://github.com/freeanima-org/freeanima/commit/1225dc204066be3b74cd40a0cec9edf77d36d576))
+* **tokenizer:** 用 tokenx 估算替代进程内 HF 词表预加载 ([d287b30](https://github.com/freeanima-org/freeanima/commit/d287b30327fe87e1f87091b22e390f72b8c5fb11))
+* 移除 Cloudflare Tunnel 远程访问能力 ([153945a](https://github.com/freeanima-org/freeanima/commit/153945a01a033bc7ef3211b58c207cfee242351d))
+
 ## [0.8.5](https://github.com/freeanima-org/freeanima/compare/v0.8.4...v0.8.5) (2026-07-11)
 
 
