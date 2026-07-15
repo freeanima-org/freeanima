@@ -37,6 +37,7 @@ import {
   rollbackBeforeLastUserMessage,
   subscribeConversationUpdates,
 } from "@freeanima/features/chat/ui/spa/lib/api.ts";
+import { runBootstrapConversation } from "@freeanima/features/chat/ui/spa/lib/bootstrap-conversation.ts";
 import { ListDetailLayout, useDrawerNav, useMobileLayout } from "@freeanima/frontend/ui-kit/layout";
 import { omitUndefined } from "@freeanima/core/util";
 import {
@@ -112,16 +113,6 @@ function writeConversationToUrl(conversationId: string | null) {
   if (conversationId) url.searchParams.set("conversation", conversationId);
   else url.searchParams.delete("conversation");
   window.history.replaceState(null, "", url);
-}
-
-function pickConversationId(
-  list: ConversationListItem[],
-  candidates: (string | null | undefined)[],
-): string | undefined {
-  for (const id of candidates) {
-    if (id && list.some((c) => c.id === id)) return id;
-  }
-  return undefined;
 }
 
 function getSatelliteShell() {
@@ -273,27 +264,24 @@ export function ChatApp() {
 
   const bootstrapConversation = useCallback(
     async (includeMemory = true) => {
-      const list = await fetchConversations();
       const fromUrl = readConversationFromUrl();
       const stored = readModuleSelection("chat");
       const memId = includeMemory ? useConversationsStore.getState().currentId : null;
-      const picked = pickConversationId(list, [fromUrl, stored, memId]);
-      if (picked) {
-        await selectConversation(picked);
-        writeConversationToUrl(picked);
-      } else if (list.length > 0) {
-        const first = list[0];
-        if (first) {
-          await selectConversation(first.id);
-          writeConversationToUrl(first.id);
-        }
-      } else {
-        try {
+      const result = await runBootstrapConversation({
+        fetchConversations,
+        whenReady: async () => {
           await getChatSapClient().whenReady();
-          await newConversationFn();
-        } catch {
-          /* 离线且无缓存：保持空态 */
-        }
+        },
+        createConversation: newConversationFn,
+        selectConversation: async (conversationId) => {
+          await selectConversation(conversationId);
+          writeConversationToUrl(conversationId);
+        },
+        candidates: [fromUrl, stored, memId],
+      });
+      if (result === "created") {
+        const createdId = useConversationsStore.getState().currentId;
+        if (createdId) writeConversationToUrl(createdId);
       }
       void getChatSapClient()
         .whenReady()
