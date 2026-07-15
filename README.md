@@ -66,17 +66,25 @@ Two runtime modes — **source** or **Linux standalone** — full steps in [`doc
 ```bash
 # Source (requires Bun)
 git clone https://github.com/freeanima-org/freeanima.git && cd freeanima
-bun install && bun run link:global
+bun install
 
-# Standalone (from a GitHub Release asset, no Bun on host)
+# Dev: run from checkout (no global link)
+bun run anima -- --help
+bun run service start --foreground
+
+# Local installed standalone (independent prefix, not the repo)
+just install-cli   # or: bun run install-cli
+# Ensure ~/.anima/bin is on PATH, then: anima --version
+
+# Standalone from a GitHub Release (single-file anima; no Bun on host)
 # tar -xzf anima-linux-x64.tar.gz && ./anima --version
 
-# Or build standalone from a checkout
+# Or build staging only (does not install)
 bun run build:cli:executable
 ./dist/anima-executable/anima --version
 ```
 
-Then configure `~/.anima/config.yaml` and run `anima service start`. Source deploy with Hub-hosted `/web`: run `bun run build:web` first (startup never auto-builds). See [`docs/guide/install.md`](docs/guide/install.md), [`docs/guide/database.md`](docs/guide/database.md), [`docs/guide/security.md`](docs/guide/security.md).
+Then configure `~/.anima/config.yaml` and run `anima service start` (installed) or `bun run service start` (from source). Source deploy with Hub-hosted `/web`: run `bun run build:web` first (startup never auto-builds). See [`docs/guide/install.md`](docs/guide/install.md), [`docs/guide/database.md`](docs/guide/database.md), [`docs/guide/security.md`](docs/guide/security.md).
 
 ## Client UI
 

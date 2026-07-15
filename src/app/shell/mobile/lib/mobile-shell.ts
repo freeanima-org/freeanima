@@ -109,6 +109,10 @@ function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
     openHubSettings(): void {
       replaceShellPath(SETTINGS_PAGE);
     },
+    async applyPackagedUpdate({ assetUrl }): Promise<void> {
+      const { installApkFromUrl } = await import("./apk-installer.ts");
+      await installApkFromUrl(assetUrl);
+    },
     async emitConfigChanged(): Promise<void> {
       notifyShellConfigChanged();
     },
@@ -132,6 +136,10 @@ export function createMobileShellStub(): SatelliteShellApi {
     createFileInstanceStore: createPreferencesInstanceStore,
     openHubSettings(): void {
       replaceShellPath(SETTINGS_PAGE);
+    },
+    async applyPackagedUpdate({ assetUrl }): Promise<void> {
+      const { installApkFromUrl } = await import("./apk-installer.ts");
+      await installApkFromUrl(assetUrl);
     },
     async emitConfigChanged(): Promise<void> {
       notifyShellConfigChanged();

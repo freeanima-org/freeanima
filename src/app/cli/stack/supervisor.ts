@@ -1,6 +1,5 @@
-import { join } from "node:path";
 import { logStartupError } from "@freeanima/platform/logging";
-import { getRepoRoot, isBootstrapWebHostingEnabled } from "@freeanima/core/config";
+import { isBootstrapWebHostingEnabled } from "@freeanima/core/config";
 import { loadBootstrapConfig } from "@freeanima/platform/config/bootstrap.ts";
 import { parseBindHosts } from "@freeanima/platform";
 import {
@@ -42,12 +41,10 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
       if (distDir) {
         let uiVersion: string | undefined;
         try {
-          const rootPkg = JSON.parse(
-            await Bun.file(join(getRepoRoot(), "package.json")).text(),
-          ) as { version?: string };
-          uiVersion = rootPkg.version?.trim();
+          const { readAppVersion } = await import("@freeanima/core/config/version");
+          uiVersion = readAppVersion().trim();
         } catch {
-          /* standalone 等形态可能无 package.json 版本字段 */
+          /* ignore */
         }
         webStatic = {
           distDir,

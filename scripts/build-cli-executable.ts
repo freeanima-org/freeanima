@@ -1,11 +1,9 @@
 #!/usr/bin/env bun
 /**
- * Linux standalone 分发构建（唯一发版产物）。
+ * Linux standalone 分发构建（唯一发版产物）：单文件 `anima`。
  *
- * 产物：`dist/anima-executable/`
- * - `anima` — standalone 二进制（migration.sql + Web dist 经 Bun `type: "file"` 嵌入）
- * - `package.json` — 供 getRepoRoot 识别安装前缀
- * - `dist/build-meta.json` — service build-meta
+ * 产物：`dist/anima-executable/anima`
+ * - version / service build-meta / migration.sql / Web dist 均嵌入二进制
  *
  * 用法：
  *   bun run build:cli:executable
@@ -13,9 +11,10 @@
  */
 import { $ } from "bun";
 import { Glob } from "bun";
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
+import { createComponentBuildMeta } from "@freeanima/core/config/build-meta";
 import {
   createStandaloneEmbedPlugin,
   type StandaloneEmbedInput,
@@ -93,32 +92,22 @@ function listWebEmbeds(): StandaloneEmbedInput[] {
 
 async function main(): Promise<void> {
   rmSync(OUT_DIR, { recursive: true, force: true });
-  mkdirSync(join(OUT_DIR, "dist"), { recursive: true });
+  mkdirSync(OUT_DIR, { recursive: true });
 
   await ensureWebDist();
 
-  console.log("generating service build-meta…");
-  await $`bun ${join(ROOT, "scripts/gen-build-meta.ts")} --component service --channel prod --out ${join(OUT_DIR, "dist/build-meta.json")} --repo-root ${ROOT}`;
-
-  writeFileSync(
-    join(OUT_DIR, "package.json"),
-    `${JSON.stringify(
-      {
-        name: "@freeanima/cli",
-        version: ROOT_PKG.version,
-        description: "FreeAnima CLI standalone executable layout (experimental)",
-        type: "module",
-        private: true,
-      },
-      null,
-      2,
-    )}\n`,
-  );
+  console.log("resolving service build-meta for embed…");
+  const buildMeta = createComponentBuildMeta({
+    component: "service",
+    channel: "prod",
+    repoRoot: ROOT,
+    includeBuiltAt: true,
+  });
 
   const files = [...listMigrationEmbeds(), ...listWebEmbeds()];
   const outfile = join(OUT_DIR, "anima");
   console.log(
-    `compiling standalone executable → ${outfile} (${files.length} embedded files via type: "file")`,
+    `compiling single-file standalone → ${outfile} (${files.length} embedded files + runtime meta)`,
   );
 
   const result = await Bun.build({
@@ -127,6 +116,8 @@ async function main(): Promise<void> {
       createStandaloneEmbedPlugin({
         embedsModulePath: EMBEDS_MODULE,
         files,
+        version: ROOT_PKG.version,
+        buildMeta,
       }),
     ],
     compile: {
@@ -141,7 +132,7 @@ async function main(): Promise<void> {
     throw new Error("Bun.build --compile failed");
   }
 
-  console.log(`executable ready: ${OUT_DIR}`);
+  console.log(`executable ready: ${outfile}`);
   console.log(`  try: ${outfile} --version`);
   console.log(`  try: ${outfile} service status`);
 }

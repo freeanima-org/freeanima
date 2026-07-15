@@ -662,5 +662,13 @@
   "ui_pwa_install_prompt": "将 FreeAnima 添加到主屏幕，便于快速访问。",
   "ui_pwa_shell_offline_ready": "应用界面已可离线打开；Hub 数据仍需联网。",
   "ui_pwa_update_available": "有新版本可用。",
-  "ui_pwa_update_reload": "重新加载"
+  "ui_pwa_update_reload": "重新加载",
+  "ui_shell_update_available": "有新的应用版本（{version}）可用。",
+  "ui_shell_update_install": "立即更新",
+  "ui_shell_update_dismiss": "稍后",
+  "ui_shell_update_applying": "正在下载并安装…",
+  "ui_shell_update_failed": "更新失败，请重试。",
+  "ui_shell_update_check": "检查更新",
+  "ui_shell_update_latest": "当前已是最新版本。",
+  "ui_shell_update_none": "当前平台暂无可用安装包。"
 }

@@ -2,10 +2,7 @@ import { afterEach, describe, expect, it, mock, spyOn } from "bun:test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { createTempDir, removeTempDir } from "@freeanima/core/util";
-import {
-  CLI_UPGRADE_HINT_SOURCE,
-  CLI_UPGRADE_HINT_STANDALONE,
-} from "@freeanima/core/config/cli-install";
+import { CLI_UPGRADE_HINT_SOURCE } from "@freeanima/core/config/cli-install";
 
 describe("runCliUpgrade", () => {
   const prevArgv1 = process.argv[1];
@@ -30,7 +27,7 @@ describe("runCliUpgrade", () => {
 
     const stderr: string[] = [];
     spyOn(console, "error").mockImplementation((msg: string) => {
-      stderr.push(msg);
+      stderr.push(String(msg));
     });
     let exitCode: number | undefined;
     process.exit = ((code?: number) => {
@@ -39,26 +36,8 @@ describe("runCliUpgrade", () => {
     }) as typeof process.exit;
 
     const { runCliUpgrade } = await import("./upgrade.ts");
-    expect(() => runCliUpgrade(cliPath)).toThrow("exit");
+    await expect(runCliUpgrade({ scriptPath: cliPath })).rejects.toThrow("exit");
     expect(exitCode).toBe(1);
     expect(stderr.join("\n")).toContain(CLI_UPGRADE_HINT_SOURCE);
-  });
-
-  it("standalone install prints standalone hint and exits", async () => {
-    process.argv[1] = "/$bunfs/root/anima";
-    const stderr: string[] = [];
-    spyOn(console, "error").mockImplementation((msg: string) => {
-      stderr.push(msg);
-    });
-    let exitCode: number | undefined;
-    process.exit = ((code?: number) => {
-      exitCode = code ?? 0;
-      throw new Error("exit");
-    }) as typeof process.exit;
-
-    const { runCliUpgrade } = await import("./upgrade.ts");
-    expect(() => runCliUpgrade()).toThrow("exit");
-    expect(exitCode).toBe(1);
-    expect(stderr.join("\n")).toContain(CLI_UPGRADE_HINT_STANDALONE);
   });
 });

@@ -302,13 +302,13 @@ Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User message
 
 **UI 源码产物**：`src/app/shell/web/dist`（`base: /web/`）。
 
-| 客户端       | UI 加载                                                                                                               | 更新方式                            |
-| ------------ | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| 浏览器 / PWA | Hub 托管 `/web/*`（`config.yaml` `web.enabled`，或 `anima web start`）                                                | Hub / `anima upgrade` / `build:web` |
-| Desktop      | **安装包内** `vendor/shell-ui`（本地 static `/web/*`）；调试可用 `DESKTOP_SHELL_VITE_URL` 或 `DESKTOP_UI_MODE=remote` | 随 Desktop 安装包发版               |
-| Mobile APK   | **安装包内** Capacitor `www/web`（本地同源）；Hub 仅 API                                                              | 随 APK 发版                         |
+| 客户端       | UI 加载                                                                                                               | 更新方式                                                               |
+| ------------ | --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 浏览器 / PWA | Hub 托管 `/web/*`（`config.yaml` `web.enabled`，或 `anima web start`）                                                | Service Worker 提示新版本后**手动重载**（不自动刷新）                  |
+| Desktop      | **安装包内** `vendor/shell-ui`（本地 static `/web/*`）；调试可用 `DESKTOP_SHELL_VITE_URL` 或 `DESKTOP_UI_MODE=remote` | GitHub Releases 检测 NSIS 产物；用户确认后下载并覆盖安装               |
+| Mobile APK   | **安装包内** Capacitor `www/web`（本地同源）；Hub 仅 API                                                              | GitHub Releases 检测 APK 产物（有 asset 才提示）；确认后系统安装器覆盖 |
 
-壳层保留原生能力（Electron preload、Capacitor Preferences/Keyboard、伴侣 sidecar 等）。**无壳内 UI OTA**：原生端不从 Hub 热替换 SPA。Hub 配置统一走 settings「连接」（`/settings`）；无独立 bootstrap Hub 页。
+壳层保留原生能力（Electron preload、Capacitor Preferences/Keyboard、伴侣 sidecar 等）。**无壳内 UI OTA**：原生端不从 Hub 热替换 SPA。允许**用户确认后**的安装包级覆盖（Desktop NSIS / Mobile APK / Standalone `anima upgrade` → 独立前缀如 `~/.anima/standalone`）。Hub 配置统一走 settings「连接」（`/settings`）；无独立 bootstrap Hub 页。
 
 ### 两层模型
 

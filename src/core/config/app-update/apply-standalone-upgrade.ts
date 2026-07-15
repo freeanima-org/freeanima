@@ -1,0 +1,156 @@
+import {
+  chmodSync,
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  renameSync,
+  rmSync,
+  symlinkSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+import { downloadReleaseAsset } from "./download.ts";
+import { resolvePackagedUpdate } from "./resolve-packaged-update.ts";
+import {
+  animaBinShimPath,
+  assertSafeStandaloneInstallPrefix,
+  defaultAnimaBinDir,
+} from "../install-prefix.ts";
+import { getStandaloneRuntimeMeta } from "../standalone-runtime-meta.ts";
+
+export type ApplyStandaloneUpgradeOptions = {
+  prefix: string;
+  localVersion: string;
+  /** 仅检查，不下载 */
+  checkOnly?: boolean;
+  signal?: AbortSignal;
+  fetchOptions?: Parameters<typeof resolvePackagedUpdate>[0]["fetchOptions"];
+  log?: (msg: string) => void;
+};
+
+export type ApplyStandaloneUpgradeResult =
+  | { status: "up_to_date"; remoteVersion?: string }
+  | { status: "no_release" }
+  | { status: "no_asset"; remoteVersion?: string }
+  | { status: "would_upgrade"; remoteVersion: string; assetUrl: string }
+  | { status: "upgraded"; remoteVersion: string; prefix: string };
+
+function relinkBinShim(prefix: string): void {
+  const binDir = defaultAnimaBinDir();
+  mkdirSync(binDir, { recursive: true });
+  const shim = animaBinShimPath(binDir);
+  const target = join(prefix, "anima");
+  rmSync(shim, { force: true });
+  symlinkSync(target, shim);
+}
+
+function findAnimaInExtract(extractDir: string): string {
+  const direct = join(extractDir, "anima");
+  if (existsSync(direct)) return direct;
+  for (const name of readdirSync(extractDir)) {
+    const candidate = join(extractDir, name, "anima");
+    if (existsSync(candidate)) return candidate;
+  }
+  throw new Error("tarball 中未找到 anima 可执行文件");
+}
+
+/** 解压 tarball 并仅替换 prefix/anima（单文件） */
+async function extractAndReplaceAnima(
+  tarballPath: string,
+  prefix: string,
+  log: (msg: string) => void,
+): Promise<void> {
+  const extractDir = mkdtempSync(join(tmpdir(), "anima-upgrade-"));
+  try {
+    const proc = Bun.spawn(["tar", "-xzf", tarballPath, "-C", extractDir], {
+      stdout: "ignore",
+      stderr: "pipe",
+    });
+    const code = await proc.exited;
+    if (code !== 0) {
+      const err = await new Response(proc.stderr).text();
+      throw new Error(`tar 解压失败: ${err || code}`);
+    }
+
+    const newAnima = findAnimaInExtract(extractDir);
+    mkdirSync(prefix, { recursive: true });
+    const destAnima = join(prefix, "anima");
+    const destAnimaNew = join(prefix, "anima.new");
+
+    cpSync(newAnima, destAnimaNew);
+    chmodSync(destAnimaNew, 0o755);
+    if (existsSync(destAnima)) {
+      try {
+        renameSync(destAnima, join(prefix, "anima.old"));
+      } catch {
+        rmSync(destAnima, { force: true });
+      }
+    }
+    renameSync(destAnimaNew, destAnima);
+    rmSync(join(prefix, "anima.old"), { force: true });
+    // 清理旧旁路布局残留（若有）
+    rmSync(join(prefix, "package.json"), { force: true });
+    rmSync(join(prefix, "dist"), { recursive: true, force: true });
+    relinkBinShim(prefix);
+    log(`已覆盖安装单文件: ${destAnima}`);
+  } finally {
+    rmSync(extractDir, { recursive: true, force: true });
+  }
+}
+
+export async function applyStandaloneUpgrade(
+  opts: ApplyStandaloneUpgradeOptions,
+): Promise<ApplyStandaloneUpgradeResult> {
+  const log = opts.log ?? ((msg) => console.error(msg));
+  assertSafeStandaloneInstallPrefix(opts.prefix);
+
+  const localVersion = opts.localVersion || getStandaloneRuntimeMeta()?.version || "0.0.0";
+  const update = await resolvePackagedUpdate({
+    kind: "standalone-linux-x64",
+    localVersion,
+    ...(opts.fetchOptions ? { fetchOptions: opts.fetchOptions } : {}),
+  });
+
+  if (!update.available) {
+    if (update.reason === "up_to_date") {
+      return {
+        status: "up_to_date",
+        ...(update.remoteVersion ? { remoteVersion: update.remoteVersion } : {}),
+      };
+    }
+    if (update.reason === "no_asset") {
+      return {
+        status: "no_asset",
+        ...(update.remoteVersion ? { remoteVersion: update.remoteVersion } : {}),
+      };
+    }
+    return { status: "no_release" };
+  }
+
+  if (opts.checkOnly) {
+    return {
+      status: "would_upgrade",
+      remoteVersion: update.remoteVersion,
+      assetUrl: update.assetUrl,
+    };
+  }
+
+  const tmp = mkdtempSync(join(tmpdir(), "anima-dl-"));
+  const tarball = join(tmp, update.assetName);
+  try {
+    log(`下载 ${update.assetUrl} …`);
+    await downloadReleaseAsset(
+      update.assetUrl,
+      tarball,
+      opts.signal ? { signal: opts.signal } : undefined,
+    );
+    await extractAndReplaceAnima(tarball, opts.prefix, log);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+
+  return { status: "upgraded", remoteVersion: update.remoteVersion, prefix: opts.prefix };
+}

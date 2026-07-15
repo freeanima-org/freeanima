@@ -41,14 +41,13 @@ export function resolveMonorepoRoot(startDir?: string): string | null {
   return null;
 }
 
-/** bun build --compile：二进制旁的安装前缀（package.json + migrations） */
+/** bun build --compile：安装前缀 = 可执行文件所在目录（单文件，无旁路 package.json） */
 export function resolveStandaloneInstallRoot(
   execPath = process.execPath,
   argv1 = process.argv[1],
 ): string | null {
   if (!isStandaloneExecutable(argv1)) return null;
-  const dir = dirname(execPath);
-  return isRepoRoot(dir) ? dir : null;
+  return dirname(execPath);
 }
 
 /** Monorepo or standalone install root（package.json name 为 freeanima / @freeanima/cli） */
