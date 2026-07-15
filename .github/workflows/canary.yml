@@ -50,7 +50,7 @@ jobs:
 
   desktop-windows:
     name: Desktop Windows
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     env:
@@ -69,11 +69,10 @@ jobs:
       - name: 校验 Electron main bundle 不变量
         run: bun test src/app/shell/desktop/build-electron.test.ts
 
-      - name: 构建 FreeAnima Desktop
+      - name: 构建 FreeAnima Desktop（Linux 交叉编译）
         run: bun run package:windows
 
       - name: 收集安装包
-        shell: bash
         run: |
           set -euo pipefail
           mkdir -p dist
