@@ -12,12 +12,12 @@ title: Execute Code Runtimes
 
 ## Division from terminal
 
-|           | `execute_code`                               | `terminal`                              |
-| --------- | -------------------------------------------- | --------------------------------------- |
-| Execution | No shell, fixed runtime                      | shell=true                              |
-| Best for  | Short scripts, data processing, logic checks | System commands, pipes, git, long tasks |
-| Output    | 50KB cap, configurable timeout               | Same limits but more freedom            |
-| Security  | Smaller surface (no shell injection)         | Larger surface                          |
+|           | `execute_code`                               | `terminal`                                                               |
+| --------- | -------------------------------------------- | ------------------------------------------------------------------------ |
+| Execution | No shell, fixed runtime                      | Default `shell=false` (argv); `shell=true` needs `FREEANIMA_ALLOW_SHELL` |
+| Best for  | Short scripts, data processing, logic checks | System commands, git, long tasks; pipes only with ALLOW_SHELL            |
+| Output    | 50KB cap, configurable timeout               | Same limits                                                              |
+| Security  | No shell injection; **not** a FS sandbox     | Catastrophic command hard deny + workdir path policy; still ≠ OS sandbox |
 
 Use `execute_code(runtime="python")` for Python batches, not `python3 -c "..."` in terminal.
 
@@ -62,6 +62,7 @@ Disabled runtimes return a clear error listing available runtimes.
 - Always `shell: false` (see [`security.md`](../guide/security.md))
 - Timeout and output size limits match current implementation
 - **Do not** auto-guess runtime from code content
+- JS runtimes can still import `node:fs`—terminal command hard denies do **not** apply inside `code_execute`
 
 ## Credential Injection (Planned)
 

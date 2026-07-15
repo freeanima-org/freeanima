@@ -224,6 +224,10 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
     schema: okPathSchema,
     example: { ok: true, path: "/home/user/project/README.md" },
   }),
+  file_delete: defineToolReturn({
+    schema: okPathSchema,
+    example: { ok: true, path: "/home/user/project/tmp.txt" },
+  }),
   file_search: defineToolReturn({
     schema: fileSearchFilesUnionSchema,
     example: {
@@ -237,7 +241,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
     example: { ok: true, path: "/home/user/project/src/app.ts" },
   }),
   terminal_run: defineTextToolReturn({
-    hint: "Command stdout/stderr plain text; non-zero exit appends --- exit code: N ---; background mode returns conversation_id hint",
+    hint: "Command stdout/stderr plain text; non-zero exit appends --- exit code: N ---; background mode returns conversation_id hint. Default shell=false; catastrophic rm targets always blocked.",
     example: "hello world\n--- exit code: 0 ---",
   }),
   terminal_process: defineTextToolReturn({

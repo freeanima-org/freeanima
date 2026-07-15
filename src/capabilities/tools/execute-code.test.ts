@@ -41,6 +41,20 @@ describe("execute_code runtimes", () => {
     const out = await runExecuteCode('console.log("anima-node-ok");', "nodejs", 30);
     expect(out.trim()).toBe("anima-node-ok");
   });
+
+  it("executes without /bin/sh -c (argv spawn)", async () => {
+    const out = await runExecuteCode(
+      [
+        "import { spawnSync } from 'node:child_process';",
+        "const r = spawnSync('ps', ['-p', String(process.pid), '-o', 'args='], { encoding: 'utf-8' });",
+        "console.log((r.stdout || '').trim());",
+      ].join("\n"),
+      "bun",
+      30,
+    );
+    expect(out).not.toContain("/bin/sh -c");
+    expect(out).not.toMatch(/\bsh\s+-c\b/);
+  });
 });
 
 describe("openaiSchemas", () => {

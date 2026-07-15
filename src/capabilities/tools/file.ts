@@ -1,17 +1,10 @@
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  realpathSync,
-  statSync,
-  writeFileSync,
-} from "node:fs";
+import { assertPathAllowed, resolveToolPath } from "./path-policy.ts";
+import { existsSync, mkdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { dirname, extname, join, resolve } from "node:path";
-import { homedir } from "node:os";
 
 const BINARY_EXT = new Set([
   ".png",
@@ -28,91 +21,9 @@ const BINARY_EXT = new Set([
   ".sqlite",
 ]);
 
-const BLOCKED_DEVICES = new Set([
-  "/dev/random",
-  "/dev/urandom",
-  "/dev/zero",
-  "/dev/null",
-  "/dev/full",
-]);
-
-function home(): string {
-  return homedir();
-}
-
-function deniedWritePaths(): Set<string> {
-  const h = home();
-  const paths = [
-    join(h, ".ssh", "authorized_keys"),
-    join(h, ".ssh", "id_rsa"),
-    join(h, ".ssh", "id_ed25519"),
-    "/etc/passwd",
-    "/etc/shadow",
-    "/etc/sudoers",
-  ];
-  const out = new Set<string>();
-  for (const p of paths) {
-    try {
-      if (existsSync(p)) out.add(realpathSync(p));
-    } catch {
-      /* skip when path missing or unparseable */
-    }
-  }
-  return out;
-}
-
-function resolveFilePath(filepath: string): string {
-  const p = filepath.trim();
-  if (p.startsWith("~/")) return resolve(home(), p.slice(2));
-  if (p === "~") return home();
-  if (!p.startsWith("/")) return resolve(process.cwd(), p);
-  return resolve(p);
-}
-
-function realpathIfExists(path: string): string | null {
-  try {
-    return realpathSync(path);
-  } catch {
-    return null;
-  }
-}
-
-function isDeniedRead(path: string): string | null {
-  const rp = realpathIfExists(path) ?? resolveFilePath(path);
-  if (BLOCKED_DEVICES.has(rp)) return "blocked device path";
-  if (rp.startsWith("/proc/") || rp.startsWith("/sys/")) return "blocked system path";
-
-  const sshDir = join(home(), ".ssh");
-  if (existsSync(sshDir)) {
-    const sshReal = realpathIfExists(sshDir);
-    if (sshReal && rp.startsWith(`${sshReal}/`) && !rp.endsWith(".pub")) {
-      return "blocked ssh private path";
-    }
-  }
-  return null;
-}
-
-function isDeniedWrite(path: string): string | null {
-  const resolved = resolveFilePath(path);
-  if (!existsSync(resolved)) {
-    const parent = dirname(resolved);
-    if (existsSync(parent)) {
-      const err = isDeniedRead(parent);
-      if (err) return err;
-    }
-    return null;
-  }
-  const readErr = isDeniedRead(resolved);
-  if (readErr) return readErr;
-  const rp = realpathIfExists(resolved);
-  if (!rp) return "invalid path";
-  if (deniedWritePaths().has(rp)) return "write denied";
-  return null;
-}
-
 async function handleReadFile(path: string, offset = 1, limit = 500): Promise<string> {
-  const resolved = resolveFilePath(path);
-  const deny = isDeniedRead(resolved);
+  const resolved = resolveToolPath(path);
+  const deny = assertPathAllowed(resolved, "read");
   if (deny) return toolError(deny);
   const ext = extname(resolved).toLowerCase();
   if (BINARY_EXT.has(ext)) return toolError("binary file type blocked");
@@ -128,8 +39,8 @@ async function handleReadFile(path: string, offset = 1, limit = 500): Promise<st
 }
 
 function handleWriteFile(path: string, content: string): string {
-  const resolved = resolveFilePath(path);
-  const deny = isDeniedWrite(resolved);
+  const resolved = resolveToolPath(path);
+  const deny = assertPathAllowed(resolved, "write");
   if (deny) return toolError(deny);
   try {
     mkdirSync(dirname(resolved), { recursive: true });
@@ -137,6 +48,23 @@ function handleWriteFile(path: string, content: string): string {
     return toolResult({ ok: true, path: resolved });
   } catch (e) {
     return toolError(`write failed: ${e}`);
+  }
+}
+
+function handleDeleteFile(path: string): string {
+  const resolved = resolveToolPath(path);
+  const deny = assertPathAllowed(resolved, "write");
+  if (deny) return toolError(deny);
+  if (!existsSync(resolved)) return toolError(`File does not exist: ${path}`);
+  try {
+    const st = statSync(resolved);
+    if (st.isDirectory()) {
+      return toolError("path is a directory; file_delete only removes a single file");
+    }
+    unlinkSync(resolved);
+    return toolResult({ ok: true, path: resolved });
+  } catch (e) {
+    return toolError(`delete failed: ${e}`);
   }
 }
 
@@ -196,6 +124,8 @@ async function searchFilesByGlob(
   offset: number,
 ): Promise<string> {
   const base = resolveSearchPath(path);
+  const deny = assertPathAllowed(base, "read");
+  if (deny) return toolError(deny);
   if (!existsSync(base)) return toolError(`Path does not exist: ${path}`);
   const cap = Math.max(1, Math.min(limit, 5000));
   const off = Math.max(0, offset);
@@ -245,6 +175,8 @@ async function handleSearchFiles(
   regex = false,
 ): Promise<string> {
   const base = resolveSearchPath(path);
+  const deny = assertPathAllowed(base, "read");
+  if (deny) return toolError(deny);
   if (!existsSync(base)) return toolError(`Path does not exist: ${path}`);
   const cap = Math.max(1, Math.min(limit, 5000));
   const off = Math.max(0, offset);
@@ -314,8 +246,8 @@ function handlePatch(
   new_string: string,
   replace_all = false,
 ): string {
-  const resolved = resolveFilePath(path);
-  const deny = isDeniedWrite(resolved);
+  const resolved = resolveToolPath(path);
+  const deny = assertPathAllowed(resolved, "write");
   if (deny) return toolError(deny);
   if (!existsSync(resolved)) return toolError(`File does not exist: ${path}`);
   try {
@@ -371,6 +303,19 @@ export function registerFileTools(toolSets: ToolSetRegistry): void {
             required: ["path", "content"],
           },
           handler: (a) => handleWriteFile(String(a.path), String(a.content ?? "")),
+        },
+        {
+          name: "file_delete",
+          description:
+            "Delete a single file (not a directory). Same path deny rules as file_write.",
+          parameters: {
+            type: "object",
+            properties: {
+              path: { type: "string" },
+            },
+            required: ["path"],
+          },
+          handler: (a) => handleDeleteFile(String(a.path)),
         },
         {
           name: "file_search",

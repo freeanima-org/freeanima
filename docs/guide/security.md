@@ -48,45 +48,49 @@ Disk backup = data access. Protect backup media accordingly.
 
 ## LLM Tool Risks
 
-| Capability                    | Risk                                                                                                                              |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `terminal`                    | Default `shell: true`, can run arbitrary shell commands                                                                           |
-| `file_read_file`              | Partial path deny (`.ssh` private keys, `/etc/passwd`, etc.); **not** full `/etc/` deny                                           |
-| `file_write_file`             | deny list + write-protected paths                                                                                                 |
-| MCP tools                     | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined                             |
-| Capability mask (Mask)        | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `src/capabilities/task/src/mask/` |
-| ACP (Cursor)                  | Default **auto-approve** all `session/request_permission` (`allow-once`)                                                          |
-| `vault_list` / `vault_search` | Agent vault metadata only; no secret values                                                                                       |
-| `vault_inject_env`            | Injects runtime env for subprocesses; tool result is ack only; User library requires Chat unlock                                  |
+| Capability                                                 | Risk                                                                                                                                                                                                                                                               |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `terminal_run`                                             | Default `shell: false` (argv spawn). `shell: true` requires `FREEANIMA_ALLOW_SHELL=true`. Always-on hard deny for catastrophic targets (`rm -rf /`, `~`, `$HOME`, system roots, mkfs/dd/…)—**not** an OS sandbox; bypass via `code_execute` / interpreters remains |
+| `file_read` / `file_write` / `file_delete` / `file_search` | Path deny: `/etc`, `/proc`, `/sys`, dangerous `/dev`, `~/.ssh` private keys, `FREEANIMA_HOME/vault`. Heuristic deny ≠ writable-root sandbox                                                                                                                        |
+| `code_execute`                                             | No shell (Bun/Node argv). Arbitrary JS can still use `node:fs`—not a container sandbox                                                                                                                                                                             |
+| MCP tools                                                  | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined                                                                                                                                                              |
+| Capability mask (Mask)                                     | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `src/features/task/domain/mask/`                                                                                                                                   |
+| ACP (Cursor)                                               | Default **auto-approve** all `session/request_permission` (`allow-once`)                                                                                                                                                                                           |
+| `vault_list` / `vault_search`                              | Agent vault metadata only; no secret values                                                                                                                                                                                                                        |
+| `vault_inject_env`                                         | Injects runtime env for subprocesses; tool result is ack only; User library requires Chat unlock                                                                                                                                                                   |
 
 ## Measures in Place
 
-| Measure                 | Description                                                                                                                                |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Same-origin RPC         | TanStack Start server functions same-origin by default, no CORS whitelist needed                                                           |
-| Config secret redaction | `AppRuntime.getConfig()` → `sanitizeConfigForApi()` (`api_key`, `database.url`, nested `pushkey`, `mcp env`, etc.)                         |
-| MCP config redaction    | `sanitizeMcpConfig`: `env` exposes only `env_keys`                                                                                         |
-| Write path safety       | `file_write_file` deny list (partial `/etc/*`, `.ssh` private keys, etc.)                                                                  |
-| Slash commands          | Whitelist routing; every command must produce user-visible feedback; long-running commands send an immediate ack then the final result     |
-| MCP default stdio       | Reduces port exposure                                                                                                                      |
-| Vault isolation         | LLM sees vault item metadata only, not decrypted fields                                                                                    |
-| Service API Token       | Hub RPC REST `/hub/rpc/v1/*` routes require `Authorization: Bearer fa_at_…` (`service_api_tokens` PG table); health probe/CORS/echo exempt |
-| CI secret scanning      | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)                              |
-| `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                                              |
+| Measure                    | Description                                                                                                                                |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Same-origin RPC            | TanStack Start server functions same-origin by default, no CORS whitelist needed                                                           |
+| Config secret redaction    | `AppRuntime.getConfig()` → `sanitizeConfigForApi()` (`api_key`, `database.url`, nested `pushkey`, `mcp env`, etc.)                         |
+| MCP config redaction       | `sanitizeMcpConfig`: `env` exposes only `env_keys`                                                                                         |
+| File path policy           | Shared `path-policy` for `file_*` tools: `/etc`, vault, ssh private keys, `/proc`/`/sys`, blocked devices                                  |
+| Terminal shell default off | `terminal_run` default `shell=false`; pipes need `FREEANIMA_ALLOW_SHELL=true`                                                              |
+| Terminal command hard deny | Always-on catastrophic command policy (`terminal-command-policy`); cannot be disabled via env                                              |
+| Slash commands             | Whitelist routing; every command must produce user-visible feedback; long-running commands send an immediate ack then the final result     |
+| MCP default stdio          | Reduces port exposure                                                                                                                      |
+| Vault isolation            | LLM sees vault item metadata only, not decrypted fields                                                                                    |
+| Service API Token          | Hub RPC REST `/hub/rpc/v1/*` routes require `Authorization: Bearer fa_at_…` (`service_api_tokens` PG table); health probe/CORS/echo exempt |
+| CI secret scanning         | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)                              |
+| `.gitignore`               | `.env.*`, `config.yaml`, private key suffixes                                                                                              |
 
 ## Known Gaps (Documentation ≠ Fully Implemented)
 
 The following are planned in code or docs—**deployers must not assume implemented**:
 
-| Priority | Item                                                  | Status                              |
-| -------- | ----------------------------------------------------- | ----------------------------------- |
-| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                             |
-| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                     |
-| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                     |
-| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                     |
-| P2       | Config redaction maintenance for new secret fields    | Partial — sync on new config fields |
-| P3       | IPC / LLM rate limiting                               | None                                |
-| P3       | Session disk encryption                               | None                                |
+| Priority | Item                                               | Status                                 |
+| -------- | -------------------------------------------------- | -------------------------------------- |
+| P0       | `file_*` path deny (`/etc/`, vault, ssh, …)        | **Implemented** (`path-policy`)        |
+| P0       | `terminal_run` default `shell=false` + ALLOW_SHELL | **Implemented**                        |
+| P0       | Terminal catastrophic command hard deny            | **Implemented** (heuristic; ≠ sandbox) |
+| P0       | `code_execute` no shell                            | **Implemented** (JS FS still open)     |
+| P1       | Runtime Unix socket `chmod 600` + handshake token  | Not implemented                        |
+| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`     | Not implemented                        |
+| P2       | Config redaction maintenance for new secret fields | Partial — sync on new config fields    |
+| P3       | IPC / LLM rate limiting                            | None                                   |
+| P3       | Session disk encryption                            | None                                   |
 
 ## Threat Sources
 
@@ -104,22 +108,23 @@ The following are planned in code or docs—**deployers must not assume implemen
 | ------------------ | ---------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------- | ------------------ | ---------------------------------- |
 | **Runtime**        | Default 127.0.0.1 bind                                     | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |
 | **Gateway**        | Token in Vault / env                                       | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |
-| **CLI / Tools**    | Local shell compromised                                    | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |
+| **CLI / Tools**    | Local shell compromised                                    | path deny + terminal hard deny (bypass via `code_execute` possible) | Reduced catastrophic rm   | —                  | Logs may contain conversations     |
 | **HTTP / Console** | `service_api_tokens` Bearer token（所有来源，含 loopback） | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |
 | **MCP / ACP**      | SSE auth undefined                                         | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |
 | **Vault**          | Agent machine key file permissions                         | Metadata-only tools; inject ack                                     | Wrong item inject         | Web Crypto         | User MP never in PG messages       |
 
 ## Proposals Pending Review
 
-### P0 — file_read_file Path Safety
+### P0 — File path safety (landed)
 
-- Read-side deny: `/etc/`, `/proc/`, `~/.ssh/`, etc.
-- Optional `FREEANIMA_READ_SAFE_ROOT`
+- Read/write/delete/search deny: `/etc/`, `/proc/`, `~/.ssh/` private keys, vault under `FREEANIMA_HOME`
+- Optional `FREEANIMA_READ_SAFE_ROOT` still **P1**
 
-### P0 — Shell Execution Policy
+### P0 — Shell execution + command hard deny (landed)
 
-- `terminal_run()` / `code_execute` default `shell=False`
-- `FREEANIMA_ALLOW_SHELL=true` required for shell pipes
+- `terminal_run` default `shell=false`; `FREEANIMA_ALLOW_SHELL=true` for shell pipes
+- Always-on deny for catastrophic `rm`/`rmdir`, `mkfs*`, `dd of=/dev/…`, fork bombs, power commands, recursive chmod/chown on `/` or `$HOME`, destructive `find` on system/home roots
+- `code_execute` remains argv-only (no shell); **not** a process sandbox
 
 ### P1 — Runtime / Gateway
 
@@ -139,3 +144,4 @@ The following are planned in code or docs—**deployers must not assume implemen
 5. Review `mcp_servers` / `acp_agents` config; set `enabled: false` for untrusted external Servers
 6. Regularly backup `~/.anima/` (and legacy `~/.password-store` if kept); encrypt backup media
 7. Do not commit `.env`, `config.yaml` to git
+8. Keep `FREEANIMA_ALLOW_SHELL` unset unless you intentionally need shell pipes in `terminal_run`
