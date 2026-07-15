@@ -33,26 +33,43 @@ Data directory: `~/.anima/` (override with `FREEANIMA_HOME`). Back it up with yo
 
 Release publishes a single tarball: `anima-linux-x64.tar.gz`（内含单文件可执行文件 `anima`）。版本、service build-meta、migrations 与 Web UI 均嵌入该二进制。
 
-### 1. Download and unpack
+### 1. Install (recommended)
 
 ```bash
-# From a GitHub Release asset (example)
-mkdir -p ~/.anima/standalone && cd ~/.anima/standalone
-tar -xzf /path/to/anima-linux-x64.tar.gz
-# Optional PATH shim:
-mkdir -p ~/.anima/bin && ln -sf "$PWD/anima" ~/.anima/bin/anima
-# Ensure ~/.anima/bin is on PATH
+curl -fsSL https://freeanima.com/install | bash
 anima --version   # e.g. 0.8.5 (standalone) · release
 ```
 
-Install prefix（默认 `~/.anima/standalone`）只需要 **一个** `anima` 文件。Do not unpack into a git checkout.
+Canary（`main` 滚动 Pre-release tag `canary`）或 pin 版本：
+
+```bash
+curl -fsSL https://freeanima.com/install | CHANNEL=canary bash
+curl -fsSL https://freeanima.com/install | VERSION=v0.8.5 bash
+```
+
+可选环境变量：`FREEANIMA_INSTALL_PREFIX`（默认 `~/.anima/standalone`）、`FREEANIMA_HOME`（默认 `~/.anima`，决定 `bin` shim 位置）。
+
+备用（不依赖站点发布）：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/freeanima-org/freeanima/main/scripts/install.sh | bash
+```
+
+Install prefix 只需要 **一个** `anima` 文件。Do not unpack into a git checkout. Ensure `~/.anima/bin` is on `PATH`.
+
+Manual unpack (same layout as the installer):
+
+```bash
+mkdir -p ~/.anima/standalone && cd ~/.anima/standalone
+tar -xzf /path/to/anima-linux-x64.tar.gz
+mkdir -p ~/.anima/bin && ln -sf "$PWD/anima" ~/.anima/bin/anima
+```
 
 Or from a checkout: `just install-cli` (builds then installs to the same default prefix).
 
-**Canary**：`main` 每次提交滚动构建的 Pre-release tag `canary` 也提供同名 `anima-linux-x64.tar.gz`（以及 Desktop / Mobile 包）。试用 canary 轨：
+Installed standalone 可用内置升级换轨：
 
 ```bash
-# 下载 canary 包安装后
 anima upgrade --channel canary   # 跟随 canary tip
 anima upgrade --channel release  # 切回稳定轨 tip
 ```
@@ -78,9 +95,9 @@ Prefer Vault or `env()` for secrets. See [`security.md`](security.md#credential-
 ### 3. Start the service
 
 ```bash
-./anima service start              # background (systemd user unit when available)
-./anima service start --foreground # debug — logs to stdout
-./anima service status
+anima service start              # background (systemd user unit when available)
+anima service start --foreground # debug — logs to stdout
+anima service status
 ```
 
 Default bind: `127.0.0.1:2658`（Hub API：`/api`，Hub RPC：`/hub/rpc/v1`；Web UI：`/web/*` when `config.yaml` `web.enabled`).
@@ -96,7 +113,7 @@ anima upgrade --channel canary   # 切到 / 检查 canary tip
 anima service restart
 ```
 
-From a checkout, rebuild and reinstall into the independent prefix (never into the repo):
+Re-run the curl installer to reinstall/overwrite the same prefix, or from a checkout rebuild and reinstall (never into the repo):
 
 ```bash
 just install-cli

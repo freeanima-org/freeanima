@@ -3,6 +3,9 @@ dist/
 # generated types
 .astro/
 
+# synced from ../scripts/install.sh (site prebuild/predev)
+public/install
+
 # dependencies
 node_modules/
 

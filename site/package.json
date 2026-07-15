@@ -5,9 +5,10 @@
   "packageManager": "bun@1.3.14",
   "scripts": {
     "paraglide": "paraglide-js compile --project ../project.inlang --outdir ../messages/paraglide",
-    "predev": "cd .. && bun run i18n:po4a && bun run paraglide:compile",
+    "sync-install": "cp ../scripts/install.sh public/install",
+    "predev": "bun run sync-install && cd .. && bun run i18n:po4a && bun run paraglide:compile",
     "dev": "astro dev",
-    "prebuild": "cd .. && bun run i18n:po4a && bun run paraglide:compile",
+    "prebuild": "bun run sync-install && cd .. && bun run i18n:po4a && bun run paraglide:compile",
     "build": "astro build",
     "preview": "astro preview"
   },
