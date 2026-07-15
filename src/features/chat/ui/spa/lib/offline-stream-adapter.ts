@@ -16,7 +16,7 @@ import {
 
 import { getConversationTail, subscribeMessageStream } from "./api.ts";
 import type { StreamApiEvent } from "./types.ts";
-import { updateChatSendPayload } from "./offline-send-store.ts";
+import { isChatSendClaimed, updateChatSendPayload } from "./offline-send-store.ts";
 
 export const CHAT_OFFLINE_MODULE_ID = "chat" as const;
 
@@ -40,9 +40,11 @@ export const chatStreamAdapter: StreamModuleAdapter = {
   breakOnStale: true,
   groupKey: (op) => readPayload(op)?.conversation_id ?? op.id,
   async preflight(op, ctx) {
-    if (ctx.forceTail) return "proceed";
     const payload = readPayload(op);
     if (!payload) return "abort";
+    // 在线 dispatchSend 已持有 claim 时跳过，避免与 flush 双通路并发 message.send
+    if (isChatSendClaimed(payload.client_op_id)) return "abort";
+    if (ctx.forceTail) return "proceed";
     try {
       const tail = await getConversationTail(payload.conversation_id);
       if (tail.tail_pos !== payload.expected_tail_pos) return "stale";

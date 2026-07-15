@@ -25,3 +25,22 @@ describe("EngineRunControl.abortAll", () => {
     expect(ctrl.getInFlightCount()).toBe(0);
   });
 });
+
+describe("EngineRunControl client_op lock", () => {
+  it("同 client_op_id 第二次 tryAcquire 失败直到 release", () => {
+    const ctrl = new EngineRunControl();
+    expect(ctrl.tryAcquireClientOp("op-1")).toBe(true);
+    expect(ctrl.tryAcquireClientOp("op-1")).toBe(false);
+    ctrl.releaseClientOp("op-1");
+    expect(ctrl.tryAcquireClientOp("op-1")).toBe(true);
+    ctrl.releaseClientOp("op-1");
+  });
+
+  it("不同 client_op_id 可并行占用", () => {
+    const ctrl = new EngineRunControl();
+    expect(ctrl.tryAcquireClientOp("a")).toBe(true);
+    expect(ctrl.tryAcquireClientOp("b")).toBe(true);
+    ctrl.releaseClientOp("a");
+    ctrl.releaseClientOp("b");
+  });
+});

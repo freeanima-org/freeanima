@@ -28,7 +28,13 @@ Chat SPA 支持 **离线写入 outbox**、上线后 **自动重试**，并通过
 流错误 `code`：
 
 - `tail_conflict` — CAS 失败
-- 幂等已完成时直接 `accepted` + `done`
+
+幂等短路（`client_op_id` 已提供时）：
+
+- turn **已完成**（该 user 后已有非空 assistant）→ 直接 `accepted` + `done`
+- turn **进行中**（同 `client_op_id` 已占用）→ 直接 `accepted` + `done`，**不 preempt / 不重跑**（避免弱网下在线发送与 outbox flush 并发触发两轮）
+
+客户端：在线 `dispatchSend` 期间对 outbox op 做进程内 claim，flush preflight 跳过已 claim 的条目；`flushOfflineModule` 与全局 sync 共用锁。
 
 ## 与 Tier 2 离线平台
 

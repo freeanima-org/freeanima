@@ -128,20 +128,26 @@ export async function flushOfflineModule(
   scope: string,
   opts?: FlushModuleOptions,
 ): Promise<void> {
-  if (!isHubFetchAvailable()) return;
+  // 与 flushAllOfflineModules 共用锁，避免 ChatApp 与 OfflineSyncBootstrap 并发 flush 同一条
+  if (flushing || !isHubFetchAvailable()) return;
   const adapter = getOfflineModule(moduleId);
   if (!adapter) return;
 
   const ops = await listOutboxOps(scope, moduleId);
   if (ops.length === 0) return;
 
-  if (adapter.kind === "stream") {
-    if (!opts?.streamContext) return;
-    await flushStreamModule(adapter, scope, ops, opts.streamContext, opts);
-    return;
-  }
+  flushing = true;
+  try {
+    if (adapter.kind === "stream") {
+      if (!opts?.streamContext) return;
+      await flushStreamModule(adapter, scope, ops, opts.streamContext, opts);
+      return;
+    }
 
-  await flushRpcModule(adapter, scope, ops, opts);
+    await flushRpcModule(adapter, scope, ops, opts);
+  } finally {
+    flushing = false;
+  }
 }
 
 export async function flushAllOfflineModules(
