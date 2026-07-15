@@ -25,17 +25,37 @@ runs:
     - uses: oven-sh/setup-bun@v2
       with:
         bun-version: ${{ steps.bun-version.outputs.version }}
-    - name: Cache Bun dependencies
+    # Windows 上缓存 node_modules 易与 bun copyfile ENOENT 竞态叠加，仅缓存安装缓存。
+    - name: Cache Bun install cache
       if: inputs.install == 'true'
       uses: actions/cache@v4
       with:
-        path: |
-          ~/.bun/install/cache
-          node_modules
+        path: ~/.bun/install/cache
         key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', '**/package.json', 'patches/**') }}
         restore-keys: |
           bun-${{ runner.os }}-
+    - name: Cache node_modules (non-Windows)
+      if: inputs.install == 'true' && runner.os != 'Windows'
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: bun-nm-${{ runner.os }}-${{ hashFiles('bun.lock', '**/package.json', 'patches/**') }}
+        restore-keys: |
+          bun-nm-${{ runner.os }}-
     - name: Install dependencies
       if: inputs.install == 'true'
       shell: bash
-      run: bun install --frozen-lockfile
+      env:
+        # CI 不装 git hooks；也避免 Windows ENOENT 导致 husky 未链式时 prepare 硬失败
+        HUSKY: "0"
+      run: |
+        set -euo pipefail
+        if [[ "${RUNNER_OS}" == "Windows" ]]; then
+          if ! bun install --frozen-lockfile; then
+            echo "::warning::bun install 失败，清理 node_modules 后重试（Windows ENOENT copyfile）"
+            rm -rf node_modules
+            bun install --frozen-lockfile
+          fi
+        else
+          bun install --frozen-lockfile
+        fi
