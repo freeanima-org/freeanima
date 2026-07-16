@@ -82,6 +82,9 @@ jobs:
       - name: Build Linux standalone
         run: bun run build:cli:executable
 
+      - name: Smoke standalone (off build-machine tiktoken path)
+        run: bun scripts/smoke-standalone-tiktoken.ts
+
       - name: Pack artifact
         run: |
           set -euo pipefail
