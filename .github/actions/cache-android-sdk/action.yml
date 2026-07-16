@@ -6,7 +6,8 @@ runs:
     - name: Cache Android SDK
       uses: actions/cache@v4
       with:
-        path: ~/Android/Sdk
+        # 与 setup-android-sdk.sh 在 GITHUB_ACTIONS 下的安装路径一致（勿用 ~，避免未展开）
+        path: /home/runner/Android/Sdk
         # 与 setup-android-sdk.sh 安装的包/cmdline-tools 版本对齐；升级 SDK 时改此 key
         key: android-sdk-${{ runner.os }}-api35-bt35.0.0-cmdline11076708
         restore-keys: |
