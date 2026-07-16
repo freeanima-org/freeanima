@@ -1,11 +1,14 @@
-import { Button } from "@freeanima/frontend/ui-kit";
-import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
 import {
   reconnectHub,
   useHubConnection,
   useNetworkOnline,
 } from "@freeanima/frontend/shell-sdk/react.tsx";
-import { useState, type JSX } from "react";
+import {
+  dismissShellToast,
+  showShellToast,
+  SHELL_TOAST_IDS,
+} from "@freeanima/frontend/ui-kit/composite";
+import { useEffect, useRef } from "react";
 
 import { m } from "@paraglide/messages";
 import { resolveConnectivityNotice } from "./connectivity-notice.ts";
@@ -14,67 +17,53 @@ function openHubSettingsIfAvailable(): void {
   window.satelliteShell?.openHubSettings?.();
 }
 
-export function ShellConnectivityBar(): JSX.Element | null {
+export function ShellConnectivityBar(): null {
   const networkOnline = useNetworkOnline();
   const hubConnection = useHubConnection();
-  const [reconnecting, setReconnecting] = useState(false);
+  const reconnectingRef = useRef(false);
   const nativeShell = Boolean(window.satelliteShell?.isNativeShell);
 
   const notice = resolveConnectivityNotice({ networkOnline, hubConnection });
-  if (!notice) return null;
 
-  if (notice.kind === "offline") {
-    return (
-      <div className="shrink-0 border-b border-border px-4 py-2">
-        <StatusAlert variant="warning">
-          <div className="flex flex-col gap-1">
-            <span>{m.ui_network_offline()}</span>
-            <span className="text-xs opacity-90">{m.ui_offline_readonly_mode()}</span>
-          </div>
-        </StatusAlert>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!notice) {
+      dismissShellToast(SHELL_TOAST_IDS.connectivity);
+      return;
+    }
 
-  if (notice.kind === "hub-connecting") {
-    return (
-      <div className="shrink-0 border-b border-border px-4 py-2">
-        <StatusAlert variant="info">{m.console_common_connecting()}</StatusAlert>
-      </div>
-    );
-  }
+    if (notice.kind === "offline") {
+      showShellToast(SHELL_TOAST_IDS.connectivity, m.ui_network_offline(), {
+        description: m.ui_offline_readonly_mode(),
+      });
+      return;
+    }
 
-  return (
-    <div className="shrink-0 border-b border-border px-4 py-2">
-      <StatusAlert variant="warning" className="flex flex-wrap items-center justify-between gap-2">
-        <span>{m.console_hub_disconnected()}</span>
-        <div className="flex items-center gap-1">
-          {nativeShell ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2"
-              onClick={openHubSettingsIfAvailable}
-            >
-              Hub 设置
-            </Button>
-          ) : null}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-7 px-2"
-            disabled={reconnecting || hubConnection === "connecting"}
-            onClick={() => {
-              setReconnecting(true);
-              void reconnectHub().finally(() => setReconnecting(false));
-            }}
-          >
-            {m.console_common_reconnect()}
-          </Button>
-        </div>
-      </StatusAlert>
-    </div>
-  );
+    if (notice.kind === "hub-connecting") {
+      showShellToast(SHELL_TOAST_IDS.connectivity, m.console_common_connecting());
+      return;
+    }
+
+    showShellToast(SHELL_TOAST_IDS.connectivity, m.console_hub_disconnected(), {
+      action: {
+        label: m.console_common_reconnect(),
+        onClick: () => {
+          if (reconnectingRef.current || hubConnection === "connecting") return;
+          reconnectingRef.current = true;
+          void reconnectHub().finally(() => {
+            reconnectingRef.current = false;
+          });
+        },
+      },
+      ...(nativeShell
+        ? {
+            cancel: {
+              label: "Hub 设置",
+              onClick: openHubSettingsIfAvailable,
+            },
+          }
+        : {}),
+    });
+  }, [hubConnection, nativeShell, notice]);
+
+  return null;
 }

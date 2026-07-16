@@ -5,17 +5,17 @@ import {
   resolveDefaultVisibleModulePath,
   resolveShellModuleIdFromPath,
 } from "@freeanima/frontend/shell-sdk/shell-module-visibility";
-import { useShellModuleVisibility } from "@freeanima/frontend/shell-sdk/react.tsx";
+import {
+  useShellModuleVisibility,
+  useShellModuleOrder,
+} from "@freeanima/frontend/shell-sdk/react.tsx";
 
 import { isCompactLayout, useLayoutMode } from "../layout-mode.ts";
 import { navigateShellModule } from "../shell-nav.ts";
-import { ShellConnectivityBar } from "../ShellConnectivityBar.tsx";
-import { ShellUpdateBanner } from "../ShellUpdateBanner.tsx";
-import { filterVisibleNavItems, shellNavItems, type ShellNavItem } from "../lib/shell-nav-i18n.ts";
+import { orderedVisibleShellNavItems, type ShellNavItem } from "../lib/shell-nav-i18n.ts";
 import { useShellBottomNavLayout } from "../lib/use-shell-bottom-nav-layout.ts";
 import { ShellModuleRail } from "./ShellModuleRail.tsx";
 import { PomodoroShellWatcher } from "@freeanima/features/pomodoro/ui/spa/PomodoroShellWatcher.tsx";
-import { OfflineSyncBootstrap } from "../OfflineSyncBootstrap.tsx";
 
 function useNavActive(match: string): boolean {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -26,17 +26,18 @@ function ShellModuleVisibilityGuard() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const visible = useShellModuleVisibility();
+  const order = useShellModuleOrder();
 
   useEffect(() => {
     const moduleId = resolveShellModuleIdFromPath(pathname);
     if (!moduleId || visible.has(moduleId)) return;
-    navigateShellModule(navigate, resolveDefaultVisibleModulePath(visible));
-  }, [navigate, pathname, visible]);
+    navigateShellModule(navigate, resolveDefaultVisibleModulePath(visible, order));
+  }, [navigate, order, pathname, visible]);
 
   return null;
 }
 
-function ShellBottomNavLink({ item }: { item: ShellNavItem }) {
+function ShellBottomNavLink({ item, density }: { item: ShellNavItem; density: "label" | "icon" }) {
   const active = useNavActive(item.match);
   const Icon = item.icon;
   const label = item.label();
@@ -44,14 +45,16 @@ function ShellBottomNavLink({ item }: { item: ShellNavItem }) {
   return (
     <Link
       to={item.to}
-      className={`shell-bottom-nav-item flex flex-1 flex-col items-center justify-center gap-0.5 min-h-12 text-xs transition-colors ${
+      className={`shell-bottom-nav-item flex flex-1 flex-col items-center justify-center gap-0.5 min-h-12 min-w-0 text-xs transition-colors ${
         active ? "text-primary font-semibold" : "text-muted-foreground hover:text-foreground"
       }`}
       aria-label={label}
       aria-current={active ? "page" : undefined}
     >
       <Icon className="size-5 shrink-0" aria-hidden />
-      <span className="leading-none truncate max-w-full px-0.5">{label}</span>
+      {density === "label" ? (
+        <span className="leading-none truncate max-w-full px-0.5">{label}</span>
+      ) : null}
     </Link>
   );
 }
@@ -129,9 +132,6 @@ function DesktopModuleShell() {
     <div className="shell-module-layout h-full flex flex-row bg-background text-foreground">
       <ShellModuleRail />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <ShellUpdateBanner />
-        <ShellConnectivityBar />
-        <OfflineSyncBootstrap />
         <main className="flex-1 min-h-0 overflow-hidden">
           <Outlet />
         </main>
@@ -142,25 +142,21 @@ function DesktopModuleShell() {
 
 function MobileModuleShell() {
   const visible = useShellModuleVisibility();
-  const navItems = useMemo(() => filterVisibleNavItems(shellNavItems(), visible), [visible]);
-  const { bar, more } = useShellBottomNavLayout(navItems);
+  const order = useShellModuleOrder();
+  const navItems = useMemo(() => orderedVisibleShellNavItems(visible, order), [order, visible]);
+  const { bar, more, density } = useShellBottomNavLayout(navItems);
 
   return (
     <div className="shell-module-layout shell-layout-compact h-full flex flex-col bg-background text-foreground">
-      <main className="flex-1 min-h-0 overflow-hidden flex flex-col">
-        <ShellUpdateBanner />
-        <ShellConnectivityBar />
-        <OfflineSyncBootstrap />
-        <div className="flex-1 min-h-0 overflow-hidden">
-          <Outlet />
-        </div>
+      <main className="flex-1 min-h-0 overflow-hidden">
+        <Outlet />
       </main>
       <nav
         className="shell-bottom-nav relative z-[60] shrink-0 flex border-t border bg-background safe-area-pb"
         aria-label="模块导航"
       >
         {bar.map((item) => (
-          <ShellBottomNavLink key={item.to} item={item} />
+          <ShellBottomNavLink key={item.to} item={item} density={density} />
         ))}
         {more.length > 0 ? <MoreNavMenu items={more} /> : null}
       </nav>

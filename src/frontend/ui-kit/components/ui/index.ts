@@ -83,3 +83,4 @@ export {
 } from "./table.tsx";
 export { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs.tsx";
 export { Textarea } from "./textarea.tsx";
+export { Toaster } from "./sonner.tsx";

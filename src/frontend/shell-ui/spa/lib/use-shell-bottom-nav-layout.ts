@@ -5,11 +5,13 @@ import {
   layoutShellBottomNav,
   readShellBottomNavSafeAreaHorizontalPx,
   readShellBottomNavViewportWidthPx,
+  type ShellBottomNavDensity,
 } from "./shell-bottom-nav-layout.ts";
 
 export function useShellBottomNavLayout(items: ShellNavItem[]): {
   bar: ShellNavItem[];
   more: ShellNavItem[];
+  density: ShellBottomNavDensity;
 } {
   const [viewportWidth, setViewportWidth] = useState(readShellBottomNavViewportWidthPx);
   const [safeAreaHorizontal, setSafeAreaHorizontal] = useState(

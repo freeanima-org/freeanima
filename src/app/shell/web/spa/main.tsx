@@ -19,5 +19,5 @@ void (async () => {
   }
   await registerShellAlertBackend();
   const bindings = await resolveShellBindings();
-  await mountShellUi({ bindings, headerSlot: <PwaNotices /> });
+  await mountShellUi({ bindings, noticeWatchers: <PwaNotices /> });
 })();

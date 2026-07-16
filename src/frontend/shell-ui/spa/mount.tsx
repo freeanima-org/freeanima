@@ -12,6 +12,7 @@ import type { SettingsBinding } from "@freeanima/frontend/shell-sdk/settings";
 import { blockNativeDialogs, ConfirmPromptHost } from "@freeanima/frontend/ui-kit/composite";
 
 import { ShellRouterProvider } from "./router.tsx";
+import { ShellNoticeWatchers, ShellToaster } from "./ShellNoticeHost.tsx";
 import { setShellAppBindings, ShellAppProvider } from "./shell-app-context.tsx";
 
 type ShellBridgeWindow = Window & {
@@ -146,16 +147,22 @@ class ShellErrorBoundary extends Component<ShellErrorBoundaryProps, ShellErrorBo
   }
 }
 
-export type MountShellUiOptions = { bindings: SettingsBinding[]; headerSlot?: ReactNode };
+export type MountShellUiOptions = {
+  bindings: SettingsBinding[];
+  headerSlot?: ReactNode;
+  noticeWatchers?: ReactNode;
+};
 
 function ShellAppTree({
   bindings,
   bootError,
   headerSlot,
+  noticeWatchers,
 }: {
   bindings: SettingsBinding[];
   bootError: string | null;
   headerSlot?: ReactNode;
+  noticeWatchers?: ReactNode;
 }): JSX.Element {
   const content: ReactNode = (
     <>
@@ -168,6 +175,9 @@ function ShellAppTree({
   return (
     <ShellAppProvider bindings={bindings}>
       <ConfirmPromptHost />
+      <ShellToaster />
+      <ShellNoticeWatchers />
+      {noticeWatchers}
       <div className="h-full min-h-screen flex flex-col">{content}</div>
     </ShellAppProvider>
   );
@@ -199,7 +209,12 @@ export async function mountShellUi(opts: MountShellUiOptions): Promise<void> {
   createRoot(rootEl).render(
     <StrictMode>
       <ShellErrorBoundary fallback={ShellErrorFallback}>
-        <ShellAppTree bindings={opts.bindings} bootError={bootError} headerSlot={opts.headerSlot} />
+        <ShellAppTree
+          bindings={opts.bindings}
+          bootError={bootError}
+          headerSlot={opts.headerSlot}
+          noticeWatchers={opts.noticeWatchers}
+        />
       </ShellErrorBoundary>
     </StrictMode>,
   );

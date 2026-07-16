@@ -1,10 +1,13 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { BrandLogo, cn } from "@freeanima/frontend/ui-kit";
-import { useShellModuleVisibility } from "@freeanima/frontend/shell-sdk/react.tsx";
+import {
+  useShellModuleVisibility,
+  useShellModuleOrder,
+} from "@freeanima/frontend/shell-sdk/react.tsx";
 import { PanelLeft, PanelLeftClose } from "lucide-react";
 import { useCallback, useSyncExternalStore } from "react";
 
-import { filterVisibleNavItems, shellNavItems, type ShellNavItem } from "../lib/shell-nav-i18n.ts";
+import { orderedVisibleShellNavItems, type ShellNavItem } from "../lib/shell-nav-i18n.ts";
 import {
   readShellRailExpanded,
   subscribeShellRailExpanded,
@@ -52,7 +55,8 @@ function RailNavLink({ item, expanded }: { item: ShellNavItem; expanded: boolean
 export function ShellModuleRail() {
   const [expanded, toggleExpanded] = useShellRailExpanded();
   const visible = useShellModuleVisibility();
-  const nav = filterVisibleNavItems(shellNavItems(), visible);
+  const order = useShellModuleOrder();
+  const nav = orderedVisibleShellNavItems(visible, order);
 
   return (
     <aside
