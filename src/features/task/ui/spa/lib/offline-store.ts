@@ -18,6 +18,7 @@ import {
 } from "@freeanima/frontend/shell-sdk/offline-sync";
 import { allocateTempId, isTempId } from "@freeanima/frontend/shell-sdk/offline-temp-id";
 import { formatCstIso } from "@freeanima/core/util/time";
+import { omitUndefined } from "@freeanima/core/util";
 import type {
   TaskItemRowPayload,
   TaskListRowPayload,
@@ -140,6 +141,7 @@ export async function reconcileServerTaskLists(serverLists: TaskListRow[]): Prom
 }
 
 async function upsertLocalItem(scope: string, item: TaskItemRow): Promise<void> {
+  if (item.list_id == null) return;
   const items = await readLocalItems(scope, item.list_id);
   const next = items.filter((row) => row.id !== item.id);
   next.push(item);
@@ -218,7 +220,7 @@ export function compactTaskOutbox(ops: OfflineOutboxOp[]): OfflineOutboxOp[] {
     }
 
     if (
-      (op.method === "tasklist.create" || op.method === "task.create") &&
+      (op.method === "tasklist.create" || op.method === "tasklist.item.create") &&
       op.tempEntityId != null
     ) {
       const prev = byTemp.get(op.tempEntityId);
@@ -260,7 +262,7 @@ export function compactTaskOutbox(ops: OfflineOutboxOp[]): OfflineOutboxOp[] {
   );
 }
 
-/** 本轮 flush 成功写入的 methods；仅清单元数据时跳过全量 task.list。 */
+/** 本轮 flush 成功写入的 methods；仅清单元数据时跳过全量 tasklist.item.list。 */
 const flushedMethodsBuffer = new Set<string>();
 
 const LIST_META_ONLY_METHODS = new Set(["tasklist.create", "tasklist.patch", "tasklist.delete"]);
@@ -334,7 +336,7 @@ export const taskRpcAdapter: RpcModuleAdapter = {
     for (const listId of listIds) {
       if (isTempId(listId)) continue;
       try {
-        const itemData = await hub.call("task.list", {
+        const itemData = await hub.call("tasklist.item.list", {
           ...subjectPayload(),
           list_id: listId,
           status: "all",
@@ -500,12 +502,14 @@ export async function offlineCreateTaskItem(input: {
     updated_at: now,
   };
   await upsertLocalItem(scope, row);
-  await adjustListItemCount(scope, row.list_id, 1);
+  if (row.list_id != null) {
+    await adjustListItemCount(scope, row.list_id, 1);
+  }
 
   const baseOp = {
     id: opId,
     moduleId: MODULE_ID,
-    method: "task.create",
+    method: "tasklist.item.create",
     payload: {
       ...subjectPayload(),
       client_op_id: opId,
@@ -569,12 +573,26 @@ export async function offlineUpdateTaskItem(
   if (!existing || sourceListId == null) throw new Error("task item not found locally");
 
   const now = new Date().toISOString();
-  const nextListId = patch.list_id ?? existing.list_id;
+  const patchProjectId = patch.project_id;
+  const movingToProject = typeof patchProjectId === "number";
+  const nextProjectId: number | null = movingToProject
+    ? patchProjectId
+    : patchProjectId === null
+      ? null
+      : (existing.project_id ?? null);
+  const nextListId: number | null = movingToProject
+    ? null
+    : (patch.list_id ?? existing.list_id ?? null);
   const nextStatus = patch.status ?? existing.status;
   const updated: TaskItemRow = {
     ...existing,
     ...patch,
     list_id: nextListId,
+    project_id: nextProjectId,
+    milestone_id:
+      movingToProject || patch.project_id === null || patch.list_id != null
+        ? (patch.milestone_id ?? null)
+        : (patch.milestone_id ?? existing.milestone_id),
     status: nextStatus,
     completed_at:
       patch.status === "completed"
@@ -585,7 +603,10 @@ export async function offlineUpdateTaskItem(
     updated_at: now,
   };
 
-  if (nextListId !== sourceListId) {
+  if (movingToProject || nextListId == null) {
+    await removeLocalItem(scope, sourceListId, id);
+    if (existing.status === "pending") await adjustListItemCount(scope, sourceListId, -1);
+  } else if (nextListId !== sourceListId) {
     await removeLocalItem(scope, sourceListId, id);
     await upsertLocalItem(scope, updated);
     if (existing.status === "pending") await adjustListItemCount(scope, sourceListId, -1);
@@ -600,18 +621,51 @@ export async function offlineUpdateTaskItem(
   }
 
   const opId = randomUuid();
-  await enqueueOutboxOp(scope, {
-    id: opId,
-    moduleId: MODULE_ID,
-    method: "task.patch",
-    payload: {
-      ...subjectPayload(),
-      id,
-      client_op_id: opId,
-      ...patch,
-    },
-    createdAt: now,
-  });
+  const movingToList = !movingToProject && patch.list_id != null;
+
+  if (movingToProject) {
+    await enqueueOutboxOp(scope, {
+      id: opId,
+      moduleId: MODULE_ID,
+      method: "task.moveToProject",
+      payload: omitUndefined({
+        ...subjectPayload(),
+        id,
+        client_op_id: opId,
+        project_id: patch.project_id,
+        sort_order: patch.sort_order,
+      }),
+      createdAt: now,
+    });
+  } else if (movingToList) {
+    await enqueueOutboxOp(scope, {
+      id: opId,
+      moduleId: MODULE_ID,
+      method: "task.moveToList",
+      payload: omitUndefined({
+        ...subjectPayload(),
+        id,
+        client_op_id: opId,
+        list_id: patch.list_id,
+        sort_order: patch.sort_order,
+      }),
+      createdAt: now,
+    });
+  } else {
+    const { list_id: _listId, project_id: _projectId, ...contentPatch } = patch;
+    await enqueueOutboxOp(scope, {
+      id: opId,
+      moduleId: MODULE_ID,
+      method: "task.patch",
+      payload: {
+        ...subjectPayload(),
+        id,
+        client_op_id: opId,
+        ...contentPatch,
+      },
+      createdAt: now,
+    });
+  }
   scheduleFlush(scope);
   return updated;
 }

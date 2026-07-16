@@ -81,7 +81,7 @@ function toItemRow(
     priority: row.priority,
     due_at: row.due_at ?? null,
     remind_at: row.remind_at ?? null,
-    list_id: row.list_id,
+    list_id: row.list_id ?? null,
     project_id: row.project_id ?? null,
     milestone_id: row.milestone_id ?? null,
     sort_order: row.sort_order ?? 0,
@@ -157,7 +157,15 @@ export async function createTaskItem(
     if (existing) return existing;
   }
 
-  await assertListAcceptsTasks(input.list_id, worldId);
+  const hasList = input.list_id != null;
+  const hasProject = input.project_id != null;
+  if (hasList === hasProject) {
+    throw new Error("exactly one of list_id or project_id required");
+  }
+
+  if (input.list_id != null) {
+    await assertListAcceptsTasks(input.list_id, worldId);
+  }
   if (input.project_id != null) {
     await assertProjectActiveForTask(input.project_id, worldId);
     if (input.milestone_id != null) {
@@ -165,18 +173,20 @@ export async function createTaskItem(
     }
   }
   const tags = normalizeTags(input.tags);
+  const listId = hasProject ? null : (input.list_id as number);
+  const projectId = hasProject ? (input.project_id as number) : null;
   const body = {
     status: "pending" as const,
     priority: input.priority ?? "none",
-    list_id: input.list_id,
+    list_id: listId,
     sort_order: input.sort_order ?? 0,
     tags,
     due_at: input.due_at ?? null,
     remind_at: input.remind_at ?? null,
     completed_at: null,
     client_op_id: input.client_op_id ?? null,
-    ...(input.project_id != null ? { project_id: input.project_id } : {}),
-    ...(input.milestone_id != null ? { milestone_id: input.milestone_id } : {}),
+    project_id: projectId,
+    ...(input.milestone_id != null && hasProject ? { milestone_id: input.milestone_id } : {}),
   };
 
   const row = await createEntity({
@@ -205,22 +215,37 @@ export async function updateTaskItem(
   const parsedExisting = asTaskItem(existing);
   if (!parsedExisting) return null;
 
+  if (input.list_id != null && input.project_id != null) {
+    throw new Error("list_id and project_id are mutually exclusive");
+  }
+
   const inProject = parsedExisting.project_id != null;
-  if (!inProject) {
+  if (!inProject && parsedExisting.list_id != null) {
     await assertTaskListNotArchived(parsedExisting.list_id, worldId);
   }
 
   const bodyPatch: Record<string, unknown> = {};
   if (input.list_id !== undefined) {
+    if (input.list_id == null) {
+      throw new Error("list_id cannot be cleared without project_id");
+    }
     await assertListAcceptsTasks(input.list_id, worldId);
     await assertSameWorldReferent(input.id, input.list_id);
     bodyPatch.list_id = input.list_id;
+    bodyPatch.project_id = null;
+    bodyPatch.milestone_id = null;
   }
   if (input.project_id !== undefined) {
     if (input.project_id != null) {
       await assertProjectActiveForTask(input.project_id, worldId);
       await assertSameWorldReferent(input.id, input.project_id);
       bodyPatch.project_id = input.project_id;
+      bodyPatch.list_id = null;
+      if (input.project_id !== parsedExisting.project_id) {
+        bodyPatch.milestone_id = null;
+      }
+    } else if (input.list_id === undefined) {
+      throw new Error("list_id required when leaving project");
     } else {
       bodyPatch.project_id = null;
       bodyPatch.milestone_id = null;
@@ -235,16 +260,9 @@ export async function updateTaskItem(
       }
       await assertMilestoneInProjectForTask(input.milestone_id, projectId, worldId);
       bodyPatch.milestone_id = input.milestone_id;
-    } else {
+    } else if (bodyPatch.milestone_id === undefined) {
       bodyPatch.milestone_id = null;
     }
-  }
-  if (
-    input.project_id !== undefined &&
-    input.project_id != null &&
-    input.project_id !== parsedExisting.project_id
-  ) {
-    bodyPatch.milestone_id = null;
   }
   if (input.priority !== undefined) bodyPatch.priority = input.priority;
   if (input.due_at !== undefined) bodyPatch.due_at = input.due_at;
@@ -285,7 +303,7 @@ export async function deleteTaskItem(worldId: number, id: number): Promise<boole
   if (!existing) return false;
   await assertEntityInWorld(id, worldId);
   const parsed = asTaskItem(existing);
-  if (parsed && parsed.project_id == null) {
+  if (parsed && parsed.project_id == null && parsed.list_id != null) {
     await assertTaskListNotArchived(parsed.list_id, worldId);
   }
   return deleteEntity(id);
@@ -315,7 +333,10 @@ export async function enrichTaskItemsWithAttribution(rows: TaskItemRow[]): Promi
       row.project_id != null
         ? await resolveEntityTitle(row.project_id, PROJECT_COMPONENT, projectCache)
         : null;
-    const list_name = await resolveEntityTitle(row.list_id, TASK_LIST_COMPONENT, listCache);
+    const list_name =
+      row.list_id != null
+        ? await resolveEntityTitle(row.list_id, TASK_LIST_COMPONENT, listCache)
+        : null;
     enriched.push({
       ...row,
       project_title,

@@ -5,5 +5,5 @@ export function taskAttributionLabel(item: TaskItemRow): string {
   if (item.project_id != null) {
     return `项目 / ${item.project_title ?? item.project_id}`;
   }
-  return `清单 / ${item.list_name ?? item.list_id}`;
+  return `清单 / ${item.list_name ?? item.list_id ?? "—"}`;
 }

@@ -4,7 +4,7 @@ import type { SubjectKind } from "./subject-scope.ts";
 
 const STORAGE_PREFIX = "freeanima.module-selection";
 
-export type ModuleSelectionModule = "chat" | "tasks" | "email";
+export type ModuleSelectionModule = "chat" | "tasks" | "email" | "project";
 
 export type EmailModuleSelection = {
   accountId: number;
@@ -90,6 +90,19 @@ function parseEmailValue(raw: string | null): EmailModuleSelection | null {
   }
 }
 
+function parseProjectValue(raw: string | null): number | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (typeof parsed === "number" && Number.isInteger(parsed) && parsed > 0) return parsed;
+  } catch {
+    /* fall through */
+  }
+  const id = Number(raw);
+  if (Number.isInteger(id) && id > 0) return id;
+  return null;
+}
+
 export function readModuleSelection(module: "chat", ctx?: ModuleSelectionContext): string | null;
 export function readModuleSelection(
   module: "tasks",
@@ -99,14 +112,16 @@ export function readModuleSelection(
   module: "email",
   ctx?: ModuleSelectionContext,
 ): EmailModuleSelection | null;
+export function readModuleSelection(module: "project", ctx?: ModuleSelectionContext): number | null;
 export function readModuleSelection(
   module: ModuleSelectionModule,
   ctx?: ModuleSelectionContext,
-): string | TaskModuleSelection | EmailModuleSelection | null {
+): string | TaskModuleSelection | EmailModuleSelection | number | null {
   try {
     const raw = storage()?.getItem(storageKey(module, ctx)) ?? null;
     if (module === "chat") return parseChatValue(raw);
     if (module === "tasks") return parseTasksValue(raw);
+    if (module === "project") return parseProjectValue(raw);
     return parseEmailValue(raw);
   } catch {
     return null;
@@ -129,8 +144,13 @@ export function writeModuleSelection(
   ctx?: ModuleSelectionContext,
 ): void;
 export function writeModuleSelection(
+  module: "project",
+  value: number | null,
+  ctx?: ModuleSelectionContext,
+): void;
+export function writeModuleSelection(
   module: ModuleSelectionModule,
-  value: string | TaskModuleSelection | EmailModuleSelection | null,
+  value: string | TaskModuleSelection | EmailModuleSelection | number | null,
   ctx?: ModuleSelectionContext,
 ): void {
   try {
@@ -154,6 +174,14 @@ export function writeModuleSelection(
         "kind" in value &&
         (value.kind === "list" || value.kind === "smart_list")
       ) {
+        store.setItem(key, JSON.stringify(value));
+      } else {
+        store.removeItem(key);
+      }
+      return;
+    }
+    if (module === "project") {
+      if (typeof value === "number" && Number.isInteger(value) && value > 0) {
         store.setItem(key, JSON.stringify(value));
       } else {
         store.removeItem(key);

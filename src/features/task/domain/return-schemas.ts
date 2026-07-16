@@ -9,7 +9,7 @@ const taskItemSchema = z.object({
   priority: z.enum(["high", "medium", "low", "none"]),
   due_at: z.string().nullable(),
   remind_at: z.string().nullable(),
-  list_id: z.number(),
+  list_id: z.number().nullable(),
   sort_order: z.number(),
   completed_at: z.string().nullable(),
   created_at: z.string(),

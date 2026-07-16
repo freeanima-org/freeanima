@@ -32,6 +32,7 @@ export function buildProjectMenuItems(
 ): ProjectMenuItem[] {
   return [
     { label: "编辑", onClick: () => handlers.onEdit(project) },
+    { label: "复制 ID", onClick: () => void copyText(String(project.id)) },
     { label: "删除项目", danger: true, onClick: () => void handlers.onDelete(project) },
   ];
 }
@@ -44,7 +45,6 @@ export function buildProjectTaskMenuItems(
     onToggleComplete: () => void;
     onMoveToList: () => void;
     onMoveToProject: () => void;
-    onMoveToBacklog: () => void;
     onDelete: () => void;
   },
 ): ProjectMenuItem[] {
@@ -62,7 +62,6 @@ export function buildProjectTaskMenuItems(
     },
     { label: "移动到清单", onClick: handlers.onMoveToList },
     { label: "移动到项目", onClick: handlers.onMoveToProject },
-    { label: "移回清单", onClick: () => void handlers.onMoveToBacklog() },
     { label: "删除", danger: true, onClick: () => void handlers.onDelete() },
   );
   return items;

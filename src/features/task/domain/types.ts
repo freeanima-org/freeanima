@@ -31,12 +31,14 @@ export type TaskItemCreateInput = {
   title: string;
   content?: string;
   tags?: string[];
-  list_id: number;
+  /** 任务模块必填；与 project_id 互斥 */
+  list_id?: number | null;
   priority?: TaskItemPriority;
   due_at?: string | null;
   remind_at?: string | null;
   sort_order?: number;
-  project_id?: number;
+  /** 项目内必填；与 list_id 互斥 */
+  project_id?: number | null;
   milestone_id?: number;
   client_op_id?: string;
 };
@@ -46,7 +48,7 @@ export type TaskItemUpdateInput = {
   title?: string;
   content?: string;
   tags?: string[];
-  list_id?: number;
+  list_id?: number | null;
   project_id?: number | null;
   milestone_id?: number | null;
   priority?: TaskItemPriority;

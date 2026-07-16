@@ -106,7 +106,10 @@ export async function fetchTaskItems(listId: number): Promise<TaskItemRow[]> {
   if (isTempId(listId) || !isHubFetchAvailable()) {
     return (await readCachedTaskItems(resolveHubCacheScope(), listId)) ?? [];
   }
-  const data = await hub().call("task.list", withSubjectKind({ list_id: listId, status: "all" }));
+  const data = await hub().call(
+    "tasklist.item.list",
+    withSubjectKind({ list_id: listId, status: "all" }),
+  );
   return data.items;
 }
 
@@ -114,7 +117,7 @@ export async function fetchTaskItemsByFilters(
   filters: TaskItemSearchFilters,
 ): Promise<TaskItemRow[]> {
   if (!isHubFetchAvailable()) return [];
-  const data = await hub().call("task.list", withSubjectKind({ filters }));
+  const data = await hub().call("tasklist.item.list", withSubjectKind({ filters }));
   return data.items;
 }
 
@@ -187,8 +190,6 @@ export async function updateTaskItem(
       | "tags"
       | "priority"
       | "due_at"
-      | "list_id"
-      | "project_id"
       | "milestone_id"
       | "status"
       | "sort_order"
@@ -197,6 +198,30 @@ export async function updateTaskItem(
 ): Promise<TaskItemRow> {
   ensureTaskOfflineModule();
   return offlineUpdateTaskItem(id, patch);
+}
+
+export async function moveTaskItemToList(
+  id: number,
+  listId: number,
+  sortOrder?: number,
+): Promise<TaskItemRow> {
+  ensureTaskOfflineModule();
+  return offlineUpdateTaskItem(id, {
+    list_id: listId,
+    ...(sortOrder !== undefined ? { sort_order: sortOrder } : {}),
+  });
+}
+
+export async function moveTaskItemToProject(
+  id: number,
+  projectId: number,
+  sortOrder?: number,
+): Promise<TaskItemRow> {
+  ensureTaskOfflineModule();
+  return offlineUpdateTaskItem(id, {
+    project_id: projectId,
+    ...(sortOrder !== undefined ? { sort_order: sortOrder } : {}),
+  });
 }
 
 export type ProjectPickerRow = { id: number; title: string; status: string };

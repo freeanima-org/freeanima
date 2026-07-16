@@ -1,5 +1,9 @@
 import { launchPomodoroForTask } from "@freeanima/frontend/shell-sdk";
 import {
+  readModuleSelection,
+  writeModuleSelection,
+} from "@freeanima/frontend/shell-sdk/module-selection.ts";
+import {
   SubjectScopeToggle,
   useHubConnection,
   useNetworkOnline,
@@ -21,7 +25,6 @@ import {
   ContextMenu,
   ModuleScopeBar,
   QuickAddBar,
-  TaskItemListView,
   useDetailPanelState,
 } from "@freeanima/frontend/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
@@ -45,6 +48,7 @@ import { ProjectDetailHeader } from "./components/ProjectDetailHeader.tsx";
 import { ProjectDndRoot } from "./components/ProjectDndRoot.tsx";
 import { ProjectSidebar } from "./components/ProjectSidebar.tsx";
 import { ProjectTaskDetailPanel } from "./components/ProjectTaskDetailPanel.tsx";
+import { ProjectTaskList } from "./components/ProjectTaskList.tsx";
 import type { ProjectDragEndAction } from "./lib/resolve-project-drag-end.ts";
 import { sortOrderUpdates } from "./lib/reorder.ts";
 import {
@@ -56,14 +60,12 @@ import {
   deleteProjectApi,
   deleteProjectFolderApi,
   deleteProjectTask,
-  fetchDefaultTaskListId,
   fetchMilestones,
   fetchProjectFolders,
   fetchProjectTasks,
   fetchProjects,
   fetchProjectsForMove,
   fetchTaskListsForMove,
-  moveTaskToBacklog,
   moveTaskToProject,
   moveProjectTaskToList,
   patchMilestoneApi,
@@ -123,6 +125,7 @@ export function ProjectApp() {
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
+  const [showInactive, setShowInactive] = useState(false);
   const [milestones, setMilestones] = useState<MilestoneRow[]>([]);
   const [tasks, setTasks] = useState<TaskItemRow[]>([]);
 
@@ -184,6 +187,9 @@ export function ProjectApp() {
     [projects, selectedProjectId],
   );
 
+  const activeProjects = useMemo(() => projects.filter((p) => p.status === "active"), [projects]);
+  const inactiveProjects = useMemo(() => projects.filter((p) => p.status !== "active"), [projects]);
+
   const reload = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -194,6 +200,20 @@ export function ProjectApp() {
       ]);
       setFolders(folderRows);
       setProjects(projectRows);
+
+      const stored = readModuleSelection("project", { subjectKind });
+      const active = projectRows.filter((p) => p.status === "active");
+      const pickId =
+        stored != null && projectRows.some((p) => p.id === stored)
+          ? stored
+          : (active[0]?.id ?? projectRows[0]?.id ?? null);
+      setSelectedProjectId((prev) => {
+        if (prev != null && projectRows.some((p) => p.id === prev)) return prev;
+        return pickId;
+      });
+      if (pickId != null && projectRows.some((p) => p.id === pickId && p.status !== "active")) {
+        setShowInactive(true);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -220,18 +240,24 @@ export function ProjectApp() {
   }, [selectedProjectId, subjectKind]);
 
   useEffect(() => {
-    void reload();
-    setSelectedProjectId(null);
     setSelectedFolderId(null);
     resetDetail();
+    void reload();
   }, [reload, resetDetail, subjectKind]);
 
   useEffect(() => {
     void reloadProjectDetail();
   }, [reloadProjectDetail]);
 
+  useEffect(() => {
+    if (selectedProjectId != null && selectedProject?.status !== "active") {
+      setShowInactive(true);
+    }
+  }, [selectedProjectId, selectedProject?.status]);
+
   const handleSelectProject = (id: number) => {
     setSelectedProjectId(id);
+    writeModuleSelection("project", id, { subjectKind });
     setSelectedFolderId(null);
     closeTaskDetail({ discard: true });
     if (useDrawer) setListOpen(false);
@@ -264,6 +290,7 @@ export function ProjectApp() {
     setCreateProjectCriteria("");
     setCreateProjectOpen(false);
     setSelectedProjectId(item.id);
+    writeModuleSelection("project", item.id, { subjectKind });
     await reload();
   };
 
@@ -287,11 +314,30 @@ export function ProjectApp() {
     if (selectedProjectId == null) return;
     const title = quickTaskTitle.trim();
     if (!title) return;
-    const list_id = await fetchDefaultTaskListId(subjectKind);
-    await createProjectTask(subjectKind, { title, list_id, project_id: selectedProjectId });
+    const pending = tasks.filter((t) => t.status === "pending");
+    await createProjectTask(subjectKind, {
+      title,
+      project_id: selectedProjectId,
+      sort_order: pending.length,
+    });
     setQuickTaskTitle("");
     await reloadProjectDetail();
     await reload();
+  };
+
+  const persistProjectTaskOrder = async (orderedPending: TaskItemRow[]) => {
+    const completed = tasks.filter((t) => t.status === "completed");
+    const merged = [...orderedPending, ...completed];
+    setTasks(merged.map((item, index) => ({ ...item, sort_order: index })));
+    const updates = sortOrderUpdates(orderedPending);
+    try {
+      await Promise.all(
+        updates.map((u) => updateProjectTask(subjectKind, u.id, { sort_order: u.sort_order })),
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      await reloadProjectDetail();
+    }
   };
 
   const handleToggleComplete = async (item: TaskItemRow) => {
@@ -301,13 +347,6 @@ export function ProjectApp() {
         : await completeProjectTask(subjectKind, item.id);
     setTasks((prev) => prev.map((t) => (t.id === saved.id ? saved : t)));
     applySavedItem(saved);
-  };
-
-  const handleMoveToBacklog = async (item: TaskItemRow) => {
-    await moveTaskToBacklog(subjectKind, item.id);
-    setTasks((prev) => prev.filter((t) => t.id !== item.id));
-    if (detailItem?.id === item.id) closeTaskDetail();
-    await reload();
   };
 
   const handleDeleteTask = async (item: TaskItemRow) => {
@@ -392,7 +431,6 @@ export function ProjectApp() {
         onToggleComplete: () => void handleToggleComplete(item),
         onMoveToList: () => void openMoveToListPicker(item),
         onMoveToProject: () => void openMoveToProjectPicker(item),
-        onMoveToBacklog: () => void handleMoveToBacklog(item),
         onDelete: () => void handleDeleteTask(item),
       };
       if (item.status === "pending") {
@@ -652,7 +690,10 @@ export function ProjectApp() {
                 <ProjectSidebar
                   subjectKind={subjectKind}
                   folders={folders}
-                  projects={projects}
+                  projects={activeProjects}
+                  inactiveProjects={inactiveProjects}
+                  showInactive={showInactive}
+                  onToggleShowInactive={setShowInactive}
                   selectedProjectId={selectedProjectId}
                   selectedFolderId={selectedFolderId}
                   newFolderName={newFolderName}
@@ -686,18 +727,19 @@ export function ProjectApp() {
           middle={
             selectedProject ? (
               <div className="flex h-full min-h-0 flex-col">
-                <TaskItemListView<TaskItemRow>
+                <ProjectTaskList
                   items={tasks}
                   activeItemId={detailItem?.id ?? null}
                   useActionSheet={useActionSheet}
-                  longPressEnabled={useActionSheet}
                   disabled={writesDisabled}
+                  writesDisabled={writesDisabled}
                   onToggleComplete={(item) => void handleToggleComplete(item)}
                   onEdit={openTaskDetail}
                   onOpenItemMenu={openTaskMenuSheet}
                   onOpenItemContextMenu={(e, item) =>
                     openContextMenuAt(e, { kind: "task", item, x: 0, y: 0 })
                   }
+                  onReorderPending={(ordered) => void persistProjectTaskOrder(ordered)}
                 />
                 <QuickAddBar
                   value={quickTaskTitle}
@@ -758,11 +800,6 @@ export function ProjectApp() {
         onSelect={(projectId) => {
           if (moveToProjectItem == null) return;
           void handleMoveTaskToProject(moveToProjectItem.id, projectId);
-        }}
-        onMoveToBacklog={() => {
-          if (moveToProjectItem == null) return;
-          void handleMoveToBacklog(moveToProjectItem);
-          closeMoveToProjectPicker();
         }}
         onClose={closeMoveToProjectPicker}
       />
@@ -928,7 +965,7 @@ export function ProjectApp() {
         title="删除项目"
         description={
           deleteProjectTarget
-            ? `删除项目「${deleteProjectTarget.title}」？任务将移回清单。`
+            ? `删除项目「${deleteProjectTarget.title}」？任务将移到收件箱（默认清单）。`
             : undefined
         }
         confirmLabel="删除"

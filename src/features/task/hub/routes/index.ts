@@ -45,6 +45,18 @@ export const taskHubRoutes = bindHubRouteHandlers(taskMethodDefs, {
       omitUndefined(input),
       ctxAuth(ctx),
     ),
+  "tasklist.item.list": async (deps, input, ctx) =>
+    service.serviceTasklistItemList(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
+  "tasklist.item.create": async (deps, input, ctx) =>
+    service.serviceTasklistItemCreate(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
   "smartlist.list": async (deps, input, ctx) =>
     service.serviceSmartlistList(
       depsOf(deps).runtime.runtimeDeps(),
@@ -69,16 +81,32 @@ export const taskHubRoutes = bindHubRouteHandlers(taskMethodDefs, {
       omitUndefined(input),
       ctxAuth(ctx),
     ),
-  "task.list": async (deps, input, ctx) =>
-    service.serviceTaskList(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input), ctxAuth(ctx)),
-  "task.create": async (deps, input, ctx) =>
-    service.serviceTaskCreate(
+  "project.item.list": async (deps, input, ctx) =>
+    service.serviceProjectItemList(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
+  "project.item.create": async (deps, input, ctx) =>
+    service.serviceProjectItemCreate(
       depsOf(deps).runtime.runtimeDeps(),
       omitUndefined(input),
       ctxAuth(ctx),
     ),
   "task.patch": async (deps, input, ctx) =>
     service.serviceTaskPatch(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
+  "task.moveToProject": async (deps, input, ctx) =>
+    service.serviceTaskMoveToProject(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
+  "task.moveToList": async (deps, input, ctx) =>
+    service.serviceTaskMoveToList(
       depsOf(deps).runtime.runtimeDeps(),
       omitUndefined(input),
       ctxAuth(ctx),

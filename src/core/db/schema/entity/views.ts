@@ -77,7 +77,7 @@ export type EntityRow = {
 
 /**
  * 列表 / filter_only / get 查询列：不含 fts_segmented / search_embedding / search_fts，
- * 避免远程 PG 传输大字段拖慢 task.list 等热路径。
+ * 避免远程 PG 传输大字段拖慢 tasklist.item.list 等热路径。
  */
 export const entityRowSelectColumns = {
   id: entities.id,

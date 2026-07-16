@@ -29,7 +29,10 @@ function sortByUpdatedDesc(items: PomodoroTaskPickRow[]): PomodoroTaskPickRow[] 
 }
 
 export async function fetchRecentPendingTasksForPicker(): Promise<PomodoroTaskPickRow[]> {
-  const data = await hub().call("task.list", withSubjectKind({ status: "pending", limit: 50 }));
+  const data = await hub().call(
+    "tasklist.item.list",
+    withSubjectKind({ status: "pending", limit: 50 }),
+  );
   const items = (data.items ?? []) as PomodoroTaskPickRow[];
   return sortByUpdatedDesc(items).slice(0, PICK_LIMIT);
 }
@@ -49,7 +52,10 @@ export async function resolveTaskTitleForPicker(taskId: number): Promise<string 
   const hit = recent.find((row) => row.id === taskId);
   if (hit) return hit.title;
 
-  const data = await hub().call("task.list", withSubjectKind({ status: "all", limit: 200 }));
+  const data = await hub().call(
+    "tasklist.item.list",
+    withSubjectKind({ status: "all", limit: 200 }),
+  );
   const items = (data.items ?? []) as PomodoroTaskPickRow[];
   return items.find((row) => row.id === taskId)?.title ?? null;
 }

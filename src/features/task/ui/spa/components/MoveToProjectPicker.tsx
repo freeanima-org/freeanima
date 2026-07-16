@@ -16,7 +16,6 @@ type MoveToProjectPickerProps = {
   currentProjectId: number | null;
   title?: string;
   onSelect: (projectId: number) => void;
-  onMoveToBacklog?: () => void;
   onClose: () => void;
 };
 
@@ -26,7 +25,6 @@ export function MoveToProjectPicker({
   currentProjectId,
   title = "移动到项目",
   onSelect,
-  onMoveToBacklog,
   onClose,
 }: MoveToProjectPickerProps) {
   const mobileLayout = useMobileLayout();
@@ -107,13 +105,6 @@ export function MoveToProjectPicker({
             <li className="text-muted-foreground px-3 py-4 text-sm">没有匹配的项目</li>
           ) : null}
         </ul>
-        {onMoveToBacklog && currentProjectId != null ? (
-          <div className="border-t p-2">
-            <Button type="button" variant="outline" className="w-full" onClick={onMoveToBacklog}>
-              移回清单（Backlog）
-            </Button>
-          </div>
-        ) : null}
         <div className="border-t p-2">
           <Button type="button" variant="ghost" className="w-full" onClick={onClose}>
             取消

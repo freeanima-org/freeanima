@@ -2,7 +2,9 @@ import {
   MILESTONE_COMPONENT,
   PROJECT_COMPONENT,
   TASK_ITEM_COMPONENT,
+  TASK_LIST_COMPONENT,
   asProject,
+  asTaskList,
 } from "@freeanima/core/db/schema/entity";
 import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/core/db/pg/entity";
 import { omitUndefined } from "@freeanima/core/util";
@@ -23,6 +25,23 @@ import type {
   ProjectUpdateInput,
 } from "./types.ts";
 
+async function resolveDefaultListId(worldId: number): Promise<number> {
+  const rows = await listEntities({
+    world_id: worldId,
+    primary_component: TASK_LIST_COMPONENT,
+    limit: 200,
+  });
+  for (const row of rows) {
+    const parsed = asTaskList(row);
+    if (!parsed) continue;
+    if (parsed.is_default && !parsed.is_folder) return parsed.id;
+  }
+  for (const row of rows) {
+    const parsed = asTaskList(row);
+    if (parsed && !parsed.is_folder) return parsed.id;
+  }
+  throw new Error("default task list not available");
+}
 async function countTasksForProject(projectId: number, worldId: number): Promise<number> {
   const result = await searchEntities({
     world_id: worldId,
@@ -72,6 +91,7 @@ function toProjectRow(
 }
 
 export async function releaseTasksFromProject(worldId: number, projectId: number): Promise<void> {
+  const defaultListId = await resolveDefaultListId(worldId);
   const result = await searchEntities({
     world_id: worldId,
     primary_component: TASK_ITEM_COMPONENT,
@@ -82,7 +102,7 @@ export async function releaseTasksFromProject(worldId: number, projectId: number
   for (const row of result.results) {
     await updateEntity({
       id: row.id,
-      body: { project_id: null, milestone_id: null },
+      body: { project_id: null, milestone_id: null, list_id: defaultListId },
     });
   }
 }
@@ -243,7 +263,7 @@ export async function updateProject(
   const nextStatus = input.status ?? parsedExisting.status;
   const wasTerminal = TERMINAL_STATUSES.has(parsedExisting.status);
   const isTerminal = TERMINAL_STATUSES.has(nextStatus);
-  if (!wasTerminal && isTerminal && input.release_tasks !== false) {
+  if (!wasTerminal && isTerminal && input.release_tasks === true) {
     await releaseTasksFromProject(worldId, input.id);
   }
 

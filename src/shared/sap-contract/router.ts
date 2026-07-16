@@ -35,6 +35,14 @@ import type {
   TasklistPatchOutput,
   TasklistDeleteInput,
   TasklistDeleteOutput,
+  TasklistItemListInput,
+  TasklistItemListOutput,
+  TasklistItemCreateInput,
+  TasklistItemCreateOutput,
+  ProjectItemListInput,
+  ProjectItemListOutput,
+  ProjectItemCreateInput,
+  ProjectItemCreateOutput,
   SmartlistListInput,
   SmartlistListOutput,
   SmartlistCreateInput,
@@ -43,10 +51,10 @@ import type {
   SmartlistPatchOutput,
   SmartlistDeleteInput,
   SmartlistDeleteOutput,
-  TaskListInput,
-  TaskListOutput,
-  TaskCreateInput,
-  TaskCreateOutput,
+  TaskMoveToListInput,
+  TaskMoveToListOutput,
+  TaskMoveToProjectInput,
+  TaskMoveToProjectOutput,
   TaskPatchInput,
   TaskPatchOutput,
   TaskCompleteInput,
@@ -188,13 +196,17 @@ export const SAP_METHODS = [
   "tasklist.create",
   "tasklist.patch",
   "tasklist.delete",
+  "tasklist.item.list",
+  "tasklist.item.create",
   "smartlist.list",
   "smartlist.create",
   "smartlist.patch",
   "smartlist.delete",
-  "task.list",
-  "task.create",
+  "project.item.list",
+  "project.item.create",
   "task.patch",
+  "task.moveToProject",
+  "task.moveToList",
   "task.complete",
   "task.uncomplete",
   "task.delete",
@@ -273,13 +285,17 @@ export type SapRouterInputs = {
   "tasklist.create": TasklistCreateInput;
   "tasklist.patch": TasklistPatchInput;
   "tasklist.delete": TasklistDeleteInput;
+  "tasklist.item.list": TasklistItemListInput;
+  "tasklist.item.create": TasklistItemCreateInput;
   "smartlist.list": SmartlistListInput;
   "smartlist.create": SmartlistCreateInput;
   "smartlist.patch": SmartlistPatchInput;
   "smartlist.delete": SmartlistDeleteInput;
-  "task.list": TaskListInput;
-  "task.create": TaskCreateInput;
+  "project.item.list": ProjectItemListInput;
+  "project.item.create": ProjectItemCreateInput;
   "task.patch": TaskPatchInput;
+  "task.moveToProject": TaskMoveToProjectInput;
+  "task.moveToList": TaskMoveToListInput;
   "task.complete": TaskCompleteInput;
   "task.uncomplete": TaskUncompleteInput;
   "task.delete": TaskDeleteInput;
@@ -356,13 +372,17 @@ export type SapRouterOutputs = {
   "tasklist.create": TasklistCreateOutput;
   "tasklist.patch": TasklistPatchOutput;
   "tasklist.delete": TasklistDeleteOutput;
+  "tasklist.item.list": TasklistItemListOutput;
+  "tasklist.item.create": TasklistItemCreateOutput;
   "smartlist.list": SmartlistListOutput;
   "smartlist.create": SmartlistCreateOutput;
   "smartlist.patch": SmartlistPatchOutput;
   "smartlist.delete": SmartlistDeleteOutput;
-  "task.list": TaskListOutput;
-  "task.create": TaskCreateOutput;
+  "project.item.list": ProjectItemListOutput;
+  "project.item.create": ProjectItemCreateOutput;
   "task.patch": TaskPatchOutput;
+  "task.moveToProject": TaskMoveToProjectOutput;
+  "task.moveToList": TaskMoveToListOutput;
   "task.complete": TaskCompleteOutput;
   "task.uncomplete": TaskUncompleteOutput;
   "task.delete": TaskDeleteOutput;
