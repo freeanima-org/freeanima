@@ -1,5 +1,3 @@
-import { Button } from "@freeanima/frontend/ui-kit";
-import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
 import {
   isSwitchableChannel,
   resolveNativePackagedKind,
@@ -9,7 +7,12 @@ import {
 } from "@freeanima/frontend/shell-sdk/app-update";
 import type { BuildChannel } from "@freeanima/frontend/shell-sdk/build-meta";
 import { resolveAboutNativeBuildMeta } from "@freeanima/frontend/shell-sdk/native-build-meta.resolve";
-import { useEffect, useRef, useState, type JSX } from "react";
+import {
+  dismissShellToast,
+  showShellToast,
+  SHELL_TOAST_IDS,
+} from "@freeanima/frontend/ui-kit/composite";
+import { useEffect, useRef, useState } from "react";
 
 import { m } from "@paraglide/messages";
 
@@ -35,6 +38,15 @@ function writeDismissedKey(key: string): void {
   }
 }
 
+function formatUpdateErrorMessage(err: unknown): string {
+  const message = err instanceof Error ? err.message : String(err);
+  const detail = m.ui_shell_update_failed_detail({ message });
+  if (window.satelliteShell?.isElectron) {
+    return `${detail} ${m.ui_shell_update_log_hint()}`;
+  }
+  return detail;
+}
+
 export const SHELL_UPDATE_CHECK_EVENT = "freeanima:shell-update-check";
 
 export type ShellUpdateRequestDetail = {
@@ -48,16 +60,7 @@ export function requestShellUpdateCheck(detail?: ShellUpdateRequestDetail): void
 
 type Phase = "idle" | "checking" | "available" | "applying" | "failed" | "latest" | "none";
 
-function formatUpdateErrorMessage(err: unknown): string {
-  const message = err instanceof Error ? err.message : String(err);
-  const detail = m.ui_shell_update_failed_detail({ message });
-  if (window.satelliteShell?.isElectron) {
-    return `${detail} ${m.ui_shell_update_log_hint()}`;
-  }
-  return detail;
-}
-
-export function ShellUpdateBanner(): JSX.Element | null {
+export function ShellUpdateBanner(): null {
   const kind = resolveNativePackagedKind();
   const [phase, setPhase] = useState<Phase>("idle");
   const [update, setUpdate] = useState<Extract<PackagedUpdateResult, { available: true }> | null>(
@@ -144,105 +147,92 @@ export function ShellUpdateBanner(): JSX.Element | null {
     };
   }, [kind]);
 
-  if (!kind) return null;
-  if (phase === "idle" || phase === "checking") {
-    if (phase === "checking") {
-      return (
-        <div className="shrink-0 border-b border-border px-4 py-2">
-          <StatusAlert variant="info">{m.ui_shell_update_check()}…</StatusAlert>
-        </div>
-      );
+  useEffect(() => {
+    if (!kind) {
+      dismissShellToast(SHELL_TOAST_IDS.shellUpdate);
+      return;
     }
-    return null;
-  }
 
-  if (phase === "latest" || phase === "none") {
-    return (
-      <div className="shrink-0 border-b border-border px-4 py-2">
-        <StatusAlert variant="info" className="flex flex-wrap items-center justify-between gap-2">
-          <span>{phase === "none" ? m.ui_shell_update_none() : m.ui_shell_update_latest()}</span>
-          <Button type="button" size="sm" variant="ghost" onClick={() => setPhase("idle")}>
-            {m.ui_common_close()}
-          </Button>
-        </StatusAlert>
-      </div>
-    );
-  }
+    if (phase === "idle" || phase === "checking") {
+      if (phase === "checking") {
+        showShellToast(SHELL_TOAST_IDS.shellUpdate, `${m.ui_shell_update_check()}…`, {
+          duration: 10_000,
+        });
+      } else {
+        dismissShellToast(SHELL_TOAST_IDS.shellUpdate);
+      }
+      return;
+    }
 
-  if (phase === "failed") {
-    return (
-      <div className="shrink-0 border-b border-border px-4 py-2">
-        <StatusAlert
-          variant="warning"
-          className="flex flex-wrap items-center justify-between gap-2"
-        >
-          <span>{error ?? m.ui_shell_update_failed()}</span>
-          <Button type="button" size="sm" variant="ghost" onClick={() => setPhase("idle")}>
-            {m.ui_common_close()}
-          </Button>
-        </StatusAlert>
-      </div>
-    );
-  }
+    if (phase === "latest" || phase === "none") {
+      showShellToast(
+        SHELL_TOAST_IDS.shellUpdate,
+        phase === "none" ? m.ui_shell_update_none() : m.ui_shell_update_latest(),
+        {
+          duration: 8_000,
+          cancel: { label: m.ui_common_close(), onClick: () => setPhase("idle") },
+        },
+      );
+      return;
+    }
 
-  if (phase === "applying") {
-    return (
-      <div className="shrink-0 border-b border-border px-4 py-2">
-        <StatusAlert variant="info">{m.ui_shell_update_applying()}</StatusAlert>
-      </div>
-    );
-  }
+    if (phase === "failed") {
+      showShellToast(SHELL_TOAST_IDS.shellUpdate, error ?? m.ui_shell_update_failed(), {
+        duration: Number.POSITIVE_INFINITY,
+        cancel: { label: m.ui_common_close(), onClick: () => setPhase("idle") },
+      });
+      return;
+    }
 
-  if (!update) return null;
+    if (phase === "applying") {
+      showShellToast(SHELL_TOAST_IDS.shellUpdate, m.ui_shell_update_applying(), {
+        duration: Number.POSITIVE_INFINITY,
+      });
+      return;
+    }
 
-  const title = switching
-    ? m.ui_shell_channel_switch_available({
-        channel: update.track,
-        version: update.remoteVersion,
-      })
-    : m.ui_shell_update_available({ version: update.remoteVersion });
+    if (!update) {
+      dismissShellToast(SHELL_TOAST_IDS.shellUpdate);
+      return;
+    }
 
-  return (
-    <div className="shrink-0 border-b border-border px-4 py-2">
-      <StatusAlert variant="info" className="flex flex-wrap items-center justify-between gap-2">
-        <span>{title}</span>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => {
-              const apply = window.satelliteShell?.applyPackagedUpdate;
-              if (!apply) {
-                setPhase("failed");
-                setError(m.ui_shell_update_failed());
-                return;
-              }
-              setPhase("applying");
-              void apply({
-                assetUrl: update.assetUrl,
-                ...(update.assetSize != null ? { expectedSize: update.assetSize } : {}),
-              }).catch((err) => {
-                setPhase("failed");
-                setError(formatUpdateErrorMessage(err));
-              });
-            }}
-          >
-            {switching ? m.ui_shell_channel_switch_install() : m.ui_shell_update_install()}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            onClick={() => {
-              writeDismissedKey(dismissKey(update));
-              setPhase("idle");
-              setUpdate(null);
-            }}
-          >
-            {m.ui_shell_update_dismiss()}
-          </Button>
-        </div>
-      </StatusAlert>
-    </div>
-  );
+    const title = switching
+      ? m.ui_shell_channel_switch_available({
+          channel: update.track,
+          version: update.remoteVersion,
+        })
+      : m.ui_shell_update_available({ version: update.remoteVersion });
+
+    showShellToast(SHELL_TOAST_IDS.shellUpdate, title, {
+      action: {
+        label: switching ? m.ui_shell_channel_switch_install() : m.ui_shell_update_install(),
+        onClick: () => {
+          const apply = window.satelliteShell?.applyPackagedUpdate;
+          if (!apply) {
+            setPhase("failed");
+            setError(m.ui_shell_update_failed());
+            return;
+          }
+          setPhase("applying");
+          void apply({
+            assetUrl: update.assetUrl,
+            ...(update.assetSize != null ? { expectedSize: update.assetSize } : {}),
+          }).catch((err) => {
+            setPhase("failed");
+            setError(formatUpdateErrorMessage(err));
+          });
+        },
+      },
+      cancel: {
+        label: m.ui_shell_update_dismiss(),
+        onClick: () => {
+          writeDismissedKey(dismissKey(update));
+          setPhase("idle");
+          setUpdate(null);
+        },
+      },
+    });
+  }, [error, kind, phase, switching, update]);
+
+  return null;
 }

@@ -120,23 +120,27 @@ export function resolveShellModuleIdFromPath(pathname: string): ShellModuleId | 
   return null;
 }
 
-export function resolveDefaultVisibleModulePath(visible?: Set<ShellModuleId>): string {
+const MODULE_DEFAULT_PATH: Record<ShellModuleId, string> = {
+  chat: "/chat",
+  tasks: "/tasks",
+  projects: "/projects",
+  pomodoro: "/pomodoro",
+  email: "/email",
+  diary: "/diary",
+  vault: "/vault",
+  dream: "/dream",
+  notifications: "/notifications",
+  console: "/console/dashboard",
+  settings: "/settings",
+};
+
+export function resolveDefaultVisibleModulePath(
+  visible?: Set<ShellModuleId>,
+  order: ShellModuleId[] = SHELL_MODULE_IDS,
+): string {
   const set = visible ?? readShellModuleVisibility();
-  const order: Array<{ id: ShellModuleId; to: string }> = [
-    { id: "chat", to: "/chat" },
-    { id: "tasks", to: "/tasks" },
-    { id: "projects", to: "/projects" },
-    { id: "pomodoro", to: "/pomodoro" },
-    { id: "email", to: "/email" },
-    { id: "diary", to: "/diary" },
-    { id: "vault", to: "/vault" },
-    { id: "dream", to: "/dream" },
-    { id: "notifications", to: "/notifications" },
-    { id: "console", to: "/console/dashboard" },
-    { id: "settings", to: "/settings" },
-  ];
-  for (const item of order) {
-    if (set.has(item.id)) return item.to;
+  for (const id of order) {
+    if (set.has(id)) return MODULE_DEFAULT_PATH[id];
   }
   return "/chat";
 }

@@ -115,6 +115,13 @@ export {
   writeShellModuleVisibility,
 } from "./shell-module-visibility.ts";
 export {
+  normalizeShellModuleOrder,
+  readShellModuleOrder,
+  resetShellModuleOrderForTest,
+  subscribeShellModuleOrder,
+  writeShellModuleOrder,
+} from "./shell-module-order.ts";
+export {
   UserVaultSession,
   VAULT_UI_SCOPE,
   getUserVaultSession,

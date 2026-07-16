@@ -90,3 +90,25 @@ export function filterVisibleNavItems(
 ): ShellNavItem[] {
   return items.filter((item) => visible.has(item.id));
 }
+
+/** 按用户顺序排列后过滤可见模块（Rail / 底栏 / 设置页）。 */
+export function orderedVisibleShellNavItems(
+  visible: Set<ShellModuleId>,
+  order: ShellModuleId[],
+): ShellNavItem[] {
+  const byId = new Map(shellNavItems().map((item) => [item.id, item]));
+  const ordered: ShellNavItem[] = [];
+  const seen = new Set<ShellModuleId>();
+  for (const id of order) {
+    if (!visible.has(id) || seen.has(id)) continue;
+    const item = byId.get(id);
+    if (!item) continue;
+    seen.add(id);
+    ordered.push(item);
+  }
+  for (const item of shellNavItems()) {
+    if (!visible.has(item.id) || seen.has(item.id)) continue;
+    ordered.push(item);
+  }
+  return ordered;
+}

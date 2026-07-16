@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type JSX } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { buildHeadlessChatStreamFlushContext } from "@freeanima/features/chat/ui/spa/lib/offline-stream-adapter.ts";
 import { updateChatSendPayload } from "@freeanima/features/chat/ui/spa/lib/offline-send-store.ts";
 import {
@@ -7,7 +7,6 @@ import {
 } from "@freeanima/frontend/shell-sdk/offline-module-cap";
 import {
   isStaleOutboxOp,
-  removeOutboxOp,
   resetOutboxOpForRetry,
   resolveOutboxScope,
   type OfflineModuleId,
@@ -21,9 +20,13 @@ import {
 import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
 import { reconnectHub, useHubConnection } from "@freeanima/frontend/shell-sdk/react.tsx";
 import type { StreamFlushContext } from "@freeanima/frontend/shell-sdk/offline-module-types";
+import {
+  dismissShellToast,
+  showShellToast,
+  SHELL_TOAST_IDS,
+} from "@freeanima/frontend/ui-kit/composite";
 
 import { m } from "@paraglide/messages";
-import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
 
 import { registerAllOfflineModules } from "./register-offline-modules.ts";
 
@@ -68,7 +71,28 @@ function problemOps(summary: GlobalOutboxSummary): OfflineOutboxOp[] {
   return summary.ops.filter((op) => Boolean(op.lastError) || isStaleOutboxOp(op));
 }
 
-export function OfflineSyncBootstrap(): JSX.Element | null {
+function buildSummaryMessage(summary: GlobalOutboxSummary): string {
+  const parts: string[] = [];
+  if (summary.pending > 0) parts.push(m.ui_offline_sync_pending({ count: summary.pending }));
+  if (summary.failed > 0) parts.push(m.ui_offline_sync_failed({ count: summary.failed }));
+  if (summary.stale > 0) parts.push(m.ui_offline_sync_stale({ count: summary.stale }));
+  return parts.join(" · ");
+}
+
+function buildIssueDescription(issues: OfflineOutboxOp[]): string | undefined {
+  if (issues.length === 0) return undefined;
+  return issues
+    .slice(0, 3)
+    .map((op) => {
+      const label = moduleLabel(op.moduleId);
+      if (op.lastError && op.lastError !== "stale") return `${label}: ${op.lastError}`;
+      if (isStaleOutboxOp(op)) return `${label}: ${m.ui_outbox_stale_hint()}`;
+      return label;
+    })
+    .join("\n");
+}
+
+export function OfflineSyncBootstrap(): null {
   const hubConnection = useHubConnection();
   const [summary, setSummary] = useState<GlobalOutboxSummary>({
     pending: 0,
@@ -117,124 +141,76 @@ export function OfflineSyncBootstrap(): JSX.Element | null {
     void runFlush();
   }, [hubConnection, runFlush]);
 
-  const total = summary.pending + summary.failed + summary.stale;
-  if (total <= 0) return null;
-
-  const issues = problemOps(summary);
-  const variant = summary.failed > 0 || summary.stale > 0 ? "warning" : "info";
-
-  const handleRetryAll = async () => {
+  const handleRetryAll = useCallback(async () => {
     setBusy(true);
     try {
       await reconnectHub();
       const scope = resolveOutboxScope();
-      for (const op of issues) {
+      for (const op of problemOps(summary)) {
         await resetOutboxOpForRetry(scope, op.id);
       }
       await runFlush({ forceRetry: true });
     } finally {
       setBusy(false);
     }
-  };
+  }, [runFlush, summary]);
 
-  const handleRetryOp = async (op: OfflineOutboxOp) => {
-    setBusy(true);
-    try {
-      const scope = resolveOutboxScope();
-      const forceTail = op.moduleId === "chat" && isStaleOutboxOp(op);
-      await resetOutboxOpForRetry(scope, op.id);
-      if (forceTail) {
-        await updateChatSendPayload(op.id, { force_tail: true }, scope);
+  const handleRetryOp = useCallback(
+    async (op: OfflineOutboxOp) => {
+      setBusy(true);
+      try {
+        const scope = resolveOutboxScope();
+        const forceTail = op.moduleId === "chat" && isStaleOutboxOp(op);
+        await resetOutboxOpForRetry(scope, op.id);
+        if (forceTail) {
+          await updateChatSendPayload(op.id, { force_tail: true }, scope);
+        }
+        await flushOfflineModule(op.moduleId, scope, {
+          ...resolveFlushOptions(forceTail),
+          forceRetry: true,
+        });
+        refreshSummary();
+      } finally {
+        setBusy(false);
       }
-      await flushOfflineModule(op.moduleId, scope, {
-        ...resolveFlushOptions(forceTail),
-        forceRetry: true,
-      });
-      refreshSummary();
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleDiscardOp = async (op: OfflineOutboxOp) => {
-    await removeOutboxOp(resolveOutboxScope(), op.id);
-    refreshSummary();
-  };
-
-  return (
-    <div className="shrink-0 border-b border-border px-4 py-2">
-      <StatusAlert variant={variant}>
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-col gap-0.5 text-sm">
-              {summary.pending > 0 ? (
-                <span>{m.ui_offline_sync_pending({ count: summary.pending })}</span>
-              ) : null}
-              {summary.failed > 0 ? (
-                <span>{m.ui_offline_sync_failed({ count: summary.failed })}</span>
-              ) : null}
-              {summary.stale > 0 ? (
-                <span>{m.ui_offline_sync_stale({ count: summary.stale })}</span>
-              ) : null}
-            </div>
-            <button
-              type="button"
-              className="text-xs underline disabled:opacity-50"
-              disabled={busy}
-              onClick={() => {
-                void handleRetryAll();
-              }}
-            >
-              {m.ui_offline_sync_retry_all()}
-            </button>
-          </div>
-
-          {issues.length > 0 ? (
-            <ul className="flex flex-col gap-2 text-xs">
-              {issues.slice(0, 8).map((op) => (
-                <li
-                  key={op.id}
-                  className="flex flex-wrap items-start justify-between gap-2 rounded-md border border-border/60 px-2 py-1.5"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="font-medium">
-                      {moduleLabel(op.moduleId)} · {op.method}
-                    </div>
-                    {op.lastError && op.lastError !== "stale" ? (
-                      <div className="mt-0.5 break-words opacity-80">{op.lastError}</div>
-                    ) : isStaleOutboxOp(op) ? (
-                      <div className="mt-0.5 opacity-80">{m.ui_outbox_stale_hint()}</div>
-                    ) : null}
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <button
-                      type="button"
-                      className="underline disabled:opacity-50"
-                      disabled={busy}
-                      onClick={() => {
-                        void handleRetryOp(op);
-                      }}
-                    >
-                      {isStaleOutboxOp(op) && op.moduleId === "chat"
-                        ? m.ui_outbox_force_send()
-                        : m.ui_offline_sync_retry()}
-                    </button>
-                    <button
-                      type="button"
-                      className="underline disabled:opacity-50"
-                      onClick={() => {
-                        void handleDiscardOp(op);
-                      }}
-                    >
-                      {m.ui_outbox_discard()}
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-      </StatusAlert>
-    </div>
+    },
+    [refreshSummary],
   );
+
+  const total = summary.pending + summary.failed + summary.stale;
+  const issues = problemOps(summary);
+
+  useEffect(() => {
+    if (total <= 0) {
+      dismissShellToast(SHELL_TOAST_IDS.offlineSync);
+      return;
+    }
+
+    const firstIssue = issues[0];
+    const description = buildIssueDescription(issues);
+    showShellToast(SHELL_TOAST_IDS.offlineSync, buildSummaryMessage(summary), {
+      ...(description != null ? { description } : {}),
+      action: {
+        label: m.ui_offline_sync_retry_all(),
+        onClick: () => {
+          if (!busy) void handleRetryAll();
+        },
+      },
+      ...(firstIssue
+        ? {
+            cancel: {
+              label:
+                isStaleOutboxOp(firstIssue) && firstIssue.moduleId === "chat"
+                  ? m.ui_outbox_force_send()
+                  : m.ui_offline_sync_retry(),
+              onClick: () => {
+                if (!busy) void handleRetryOp(firstIssue);
+              },
+            },
+          }
+        : {}),
+    });
+  }, [busy, handleRetryAll, handleRetryOp, issues, summary, total]);
+
+  return null;
 }
