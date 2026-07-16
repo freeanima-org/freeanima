@@ -652,6 +652,8 @@
   "ui_shell_update_dismiss": "Later",
   "ui_shell_update_applying": "Downloading and installing…",
   "ui_shell_update_failed": "Update failed. Please try again.",
+  "ui_shell_update_failed_detail": "Update failed: {message}",
+  "ui_shell_update_log_hint": "See ~/.anima/desktop-shell/shell.log for details.",
   "ui_shell_update_check": "Check for updates",
   "ui_shell_update_latest": "You are on the latest version.",
   "ui_shell_update_none": "No update package for this platform yet.",

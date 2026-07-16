@@ -48,6 +48,15 @@ export function requestShellUpdateCheck(detail?: ShellUpdateRequestDetail): void
 
 type Phase = "idle" | "checking" | "available" | "applying" | "failed" | "latest" | "none";
 
+function formatUpdateErrorMessage(err: unknown): string {
+  const message = err instanceof Error ? err.message : String(err);
+  const detail = m.ui_shell_update_failed_detail({ message });
+  if (window.satelliteShell?.isElectron) {
+    return `${detail} ${m.ui_shell_update_log_hint()}`;
+  }
+  return detail;
+}
+
 export function ShellUpdateBanner(): JSX.Element | null {
   const kind = resolveNativePackagedKind();
   const [phase, setPhase] = useState<Phase>("idle");
@@ -109,10 +118,10 @@ export function ShellUpdateBanner(): JSX.Element | null {
         setUpdate(result);
         setPhase("available");
         setError(null);
-      } catch {
+      } catch (err) {
         if (manual) {
           setPhase("failed");
-          setError(m.ui_shell_update_failed());
+          setError(formatUpdateErrorMessage(err));
         }
       } finally {
         checkingRef.current = false;
@@ -209,9 +218,12 @@ export function ShellUpdateBanner(): JSX.Element | null {
                 return;
               }
               setPhase("applying");
-              void apply({ assetUrl: update.assetUrl }).catch(() => {
+              void apply({
+                assetUrl: update.assetUrl,
+                ...(update.assetSize != null ? { expectedSize: update.assetSize } : {}),
+              }).catch((err) => {
                 setPhase("failed");
-                setError(m.ui_shell_update_failed());
+                setError(formatUpdateErrorMessage(err));
               });
             }}
           >
