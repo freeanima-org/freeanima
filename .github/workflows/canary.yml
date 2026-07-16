@@ -69,3 +69,7 @@ jobs:
         Channel: **canary**. Use in-app / `anima upgrade --channel canary` to follow this track.
     secrets:
       FREEANIMA_CI: ${{ secrets.FREEANIMA_CI }}
+      FREEANIMA_ANDROID_KEYSTORE_BASE64: ${{ secrets.FREEANIMA_ANDROID_KEYSTORE_BASE64 }}
+      FREEANIMA_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.FREEANIMA_ANDROID_KEYSTORE_PASSWORD }}
+      FREEANIMA_ANDROID_KEY_PASSWORD: ${{ secrets.FREEANIMA_ANDROID_KEY_PASSWORD }}
+      FREEANIMA_ANDROID_KEY_ALIAS: ${{ secrets.FREEANIMA_ANDROID_KEY_ALIAS }}

@@ -1,5 +1,8 @@
 apply plugin: 'com.android.application'
 
+def freeanimaKeystorePath = System.getenv("FREEANIMA_ANDROID_KEYSTORE")
+def useFreeanimaSigning = freeanimaKeystorePath != null && file(freeanimaKeystorePath).exists()
+
 android {
     namespace "org.freeanima.app"
     compileSdk rootProject.ext.compileSdkVersion
@@ -16,7 +19,22 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    if (useFreeanimaSigning) {
+        signingConfigs {
+            freeanima {
+                storeFile file(freeanimaKeystorePath)
+                storePassword System.getenv("FREEANIMA_ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("FREEANIMA_ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("FREEANIMA_ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
     buildTypes {
+        debug {
+            if (useFreeanimaSigning) {
+                signingConfig signingConfigs.freeanima
+            }
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

@@ -58,6 +58,7 @@ Non-loopback Hub URL requires token; REST uses `Authorization: Bearer`; SAP send
 | Not Found                              | Avoid legacy paths; use SPA `/web/console/dashboard`                                                                    |
 | TTS / 朗读无声                         | 默认 Edge TTS 需 Hub 出网；Hub 设置 → 语音 → 试听。若用 Web Speech 需 HTTPS 安全上下文                                  |
 | UI 与发版不一致                        | UI 随 **APK**；需重装/发新包。浏览器 Hub `/web` 另有独立部署链                                                          |
+| 安装失败「签名冲突」                   | 已装旧 APK 与新版证书不同；卸载 `FreeAnima` 后重装。CI 固定签名后同 channel 可覆盖升级                                  |
 
 ## Debugging
 
@@ -81,6 +82,8 @@ cd src/app/shell/mobile && bunx cap sync android
 `www/` 含完整 `web/` SPA（gitignore）。前端改动需重新 `build:mobile`（或 sync）再出 APK。
 
 Debug full flow: `bun run debug:android`
+
+**Sideload 升级**：GitHub Release 的 `freeanima-mobile-android.apk`（canary / release）由 CI 用固定 upload 密钥签名，同 channel 内可覆盖安装。若曾安装旧版未固定签名的 APK，或轮换密钥后，需先**卸载** `FreeAnima`（`org.freeanima.app`）再安装。本地 `debug:android` 为 `org.freeanima.app.dev`，与正式包可并存。
 
 Package README: [`src/app/shell/mobile/README.md`](../../src/app/shell/mobile/README.md)
 
