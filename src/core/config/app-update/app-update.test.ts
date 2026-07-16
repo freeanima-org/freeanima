@@ -1,9 +1,89 @@
-import { describe, expect, it } from "bun:test";
+import { afterEach, describe, expect, it } from "bun:test";
+import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
+import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
+
+import { applyStandaloneUpgrade } from "./apply-standalone-upgrade.ts";
 import { commitsMatch, extractReleaseCommit, CANARY_RELEASE_TAG } from "./github-releases.ts";
 import { matchReleaseAsset } from "./release-assets.ts";
 import { resolvePackagedUpdate } from "./resolve-packaged-update.ts";
 import { compareSemver, isSemverNewer, normalizeSemver } from "./semver.ts";
+
+const tempDirs: string[] = [];
+const prevHome = process.env.FREEANIMA_HOME;
+
+afterEach(() => {
+  for (const dir of tempDirs.splice(0)) removeTempDir(dir);
+  if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
+  else process.env.FREEANIMA_HOME = prevHome;
+});
+
+function useTempHome(): string {
+  const home = createTempDir("freeanima-apply-upgrade-");
+  tempDirs.push(home);
+  process.env.FREEANIMA_HOME = home;
+  return home;
+}
+
+async function buildTestTarball(workDir: string): Promise<Buffer> {
+  const pkg = join(workDir, "pkg");
+  mkdirSync(pkg, { recursive: true });
+  const animaPath = join(pkg, "anima");
+  writeFileSync(animaPath, "#!/bin/sh\necho test\n");
+  chmodSync(animaPath, 0o755);
+  const tarball = join(workDir, "anima-linux-x64.tar.gz");
+  const proc = Bun.spawn(["tar", "-czf", tarball, "-C", pkg, "anima"], {
+    stdout: "ignore",
+    stderr: "pipe",
+  });
+  const code = await proc.exited;
+  if (code !== 0) {
+    const err = await new Response(proc.stderr).text();
+    throw new Error(`tar create failed: ${err || code}`);
+  }
+  return readFileSync(tarball);
+}
+
+function releaseJson(tarUrl: string, size?: number) {
+  return {
+    tag_name: "v0.9.0",
+    prerelease: false,
+    draft: false,
+    html_url: "https://github.com/freeanima-org/freeanima/releases/tag/v0.9.0",
+    assets: [
+      {
+        name: "anima-linux-x64.tar.gz",
+        browser_download_url: tarUrl,
+        ...(size != null ? { size } : {}),
+      },
+    ],
+  };
+}
+
+function mockReleaseFetch(tarBytes: Buffer, contentLength?: number): typeof fetch {
+  return (async (url: RequestInfo | URL) => {
+    const u = String(url);
+    if (u.includes("/releases/latest") || u.includes("/releases?")) {
+      return new Response(
+        JSON.stringify(releaseJson("https://example.com/anima-linux-x64.tar.gz")),
+        {
+          status: 200,
+        },
+      );
+    }
+    if (u.includes("anima-linux-x64.tar.gz")) {
+      return new Response(tarBytes, {
+        status: 200,
+        headers: {
+          "content-type": "application/octet-stream",
+          ...(contentLength != null ? { "content-length": String(contentLength) } : {}),
+        },
+      });
+    }
+    return new Response("not found", { status: 404 });
+  }) as unknown as typeof fetch;
+}
 
 describe("semver", () => {
   it("normalizes and compares", () => {
@@ -181,5 +261,166 @@ describe("resolvePackagedUpdate", () => {
       channel: "dev",
     });
     expect(r).toEqual({ available: false, reason: "unsupported_channel" });
+  });
+});
+
+describe("applyStandaloneUpgrade", () => {
+  it("does not call beforeReplace when up_to_date", async () => {
+    useTempHome();
+    const prefix = createTempDir("freeanima-prefix-");
+    tempDirs.push(prefix);
+    let called = false;
+    const fetchImpl = (async () =>
+      new Response(
+        JSON.stringify({
+          tag_name: "v0.8.5",
+          prerelease: false,
+          draft: false,
+          assets: [
+            {
+              name: "anima-linux-x64.tar.gz",
+              browser_download_url: "https://example.com/a.tgz",
+            },
+          ],
+        }),
+        { status: 200 },
+      )) as unknown as typeof fetch;
+
+    const result = await applyStandaloneUpgrade({
+      prefix,
+      localVersion: "0.8.5",
+      channel: "release",
+      fetchOptions: { fetchImpl },
+      beforeReplace: () => {
+        called = true;
+      },
+    });
+
+    expect(result.status).toBe("up_to_date");
+    expect(called).toBe(false);
+  });
+
+  it("does not call beforeReplace when download fails", async () => {
+    useTempHome();
+    const prefix = createTempDir("freeanima-prefix-");
+    tempDirs.push(prefix);
+    let called = false;
+    const fetchImpl = (async (url: RequestInfo | URL) => {
+      const u = String(url);
+      if (u.includes("/releases/latest")) {
+        return new Response(JSON.stringify(releaseJson("https://example.com/missing.tgz")), {
+          status: 200,
+        });
+      }
+      return new Response("not found", { status: 404 });
+    }) as unknown as typeof fetch;
+
+    await expect(
+      applyStandaloneUpgrade({
+        prefix,
+        localVersion: "0.8.5",
+        channel: "release",
+        fetchOptions: { fetchImpl },
+        beforeReplace: () => {
+          called = true;
+        },
+      }),
+    ).rejects.toThrow("下载失败");
+
+    expect(called).toBe(false);
+  });
+
+  it("does not call beforeReplace when tarball is invalid", async () => {
+    useTempHome();
+    const prefix = createTempDir("freeanima-prefix-");
+    tempDirs.push(prefix);
+    let called = false;
+    const fetchImpl = mockReleaseFetch(Buffer.from("not-a-tarball"));
+
+    await expect(
+      applyStandaloneUpgrade({
+        prefix,
+        localVersion: "0.8.5",
+        channel: "release",
+        fetchOptions: { fetchImpl },
+        beforeReplace: () => {
+          called = true;
+        },
+      }),
+    ).rejects.toThrow();
+
+    expect(called).toBe(false);
+  });
+
+  it("calls beforeReplace after staging and replaces anima binary", async () => {
+    useTempHome();
+    const work = createTempDir("freeanima-upgrade-work-");
+    tempDirs.push(work);
+    const prefix = join(work, "standalone");
+    mkdirSync(prefix, { recursive: true });
+    writeFileSync(join(prefix, "anima"), "old-binary\n");
+
+    const tarBytes = await buildTestTarball(work);
+    const fetchImpl = mockReleaseFetch(tarBytes, tarBytes.byteLength);
+    const phases: string[] = [];
+
+    const result = await applyStandaloneUpgrade({
+      prefix,
+      localVersion: "0.8.5",
+      channel: "release",
+      fetchOptions: { fetchImpl },
+      beforeReplace: () => {
+        phases.push("beforeReplace");
+        expect(readFileSync(join(prefix, "anima"), "utf8")).toBe("old-binary\n");
+      },
+    });
+
+    expect(result.status).toBe("upgraded");
+    expect(phases).toEqual(["beforeReplace"]);
+    expect(readFileSync(join(prefix, "anima"), "utf8")).toBe("#!/bin/sh\necho test\n");
+    expect(existsSync(join(prefix, "anima"))).toBe(true);
+  });
+
+  it("rejects download when asset size header mismatches", async () => {
+    useTempHome();
+    const work = createTempDir("freeanima-upgrade-size-");
+    tempDirs.push(work);
+    const prefix = join(work, "standalone");
+    mkdirSync(prefix, { recursive: true });
+    const tarBytes = await buildTestTarball(work);
+    const fetchImpl = (async (url: RequestInfo | URL) => {
+      const u = String(url);
+      if (u.includes("/releases/latest") || u.includes("/releases?")) {
+        return new Response(
+          JSON.stringify(releaseJson("https://example.com/anima-linux-x64.tar.gz", 999)),
+          { status: 200 },
+        );
+      }
+      if (u.includes("anima-linux-x64.tar.gz")) {
+        return new Response(tarBytes, {
+          status: 200,
+          headers: {
+            "content-type": "application/octet-stream",
+            "content-length": String(tarBytes.byteLength),
+          },
+        });
+      }
+      return new Response("not found", { status: 404 });
+    }) as unknown as typeof fetch;
+    let called = false;
+
+    await expect(
+      applyStandaloneUpgrade({
+        prefix,
+        localVersion: "0.8.5",
+        channel: "release",
+        fetchOptions: { fetchImpl },
+        beforeReplace: () => {
+          called = true;
+        },
+      }),
+    ).rejects.toThrow("下载大小不符");
+
+    expect(called).toBe(false);
   });
 });

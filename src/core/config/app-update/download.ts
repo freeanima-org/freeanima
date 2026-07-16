@@ -7,10 +7,11 @@ import { Readable } from "node:stream";
 export async function downloadReleaseAsset(
   url: string,
   destPath: string,
-  opts?: { signal?: AbortSignal; expectedSize?: number },
+  opts?: { signal?: AbortSignal; expectedSize?: number; fetchImpl?: typeof fetch },
 ): Promise<void> {
   await mkdir(dirname(destPath), { recursive: true });
-  const res = await fetch(url, {
+  const fetchImpl = opts?.fetchImpl ?? fetch;
+  const res = await fetchImpl(url, {
     ...(opts?.signal ? { signal: opts.signal } : {}),
     headers: { "User-Agent": "freeanima-app-update", Accept: "application/octet-stream" },
     redirect: "follow",

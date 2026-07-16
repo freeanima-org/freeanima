@@ -112,7 +112,12 @@ Installed standalone (independent prefix, e.g. `~/.anima/standalone`):
 anima upgrade                 # 当前 bake channel 内升级（release：semver；canary：commit）
 anima upgrade --check
 anima upgrade --channel canary   # 切到 / 检查 canary tip
-anima service restart
+```
+
+升级时 Hub 在**下载与校验阶段保持在线**；若 service 原先在运行，仅在替换二进制瞬间短暂停服并自动拉起。未运行 service 时仅覆盖 `prefix/anima`，不会自动启动。
+
+```bash
+anima service restart   # 手动升级二进制后若未自动拉起时使用
 ```
 
 Re-run the curl installer to reinstall/overwrite the same prefix, or from a checkout rebuild and reinstall (never into the repo):

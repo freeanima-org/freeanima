@@ -21,6 +21,7 @@ import {
 import { readAppVersion } from "@freeanima/core/config/version";
 import { getStandaloneRuntimeMeta } from "@freeanima/core/config/standalone-runtime-meta";
 import { resolveMonorepoRoot } from "@freeanima/core/config/repo-root";
+import { isServerAlive } from "@freeanima/platform/alive.ts";
 
 function tryStopService(animaPath: string): void {
   console.error("正在停止 service（若在运行）…");
@@ -112,10 +113,7 @@ export async function runCliUpgrade(opts?: {
   const animaBin = join(prefix, "anima");
   const checkOnly = Boolean(opts?.checkOnly);
 
-  if (!checkOnly) {
-    tryStopService(animaBin);
-  }
-
+  let wasRunning = false;
   const result = await applyStandaloneUpgrade({
     prefix,
     localVersion,
@@ -124,6 +122,10 @@ export async function runCliUpgrade(opts?: {
     intent,
     ...(targetChannel ? { targetChannel } : {}),
     checkOnly,
+    beforeReplace: async () => {
+      wasRunning = isServerAlive() != null;
+      if (wasRunning) tryStopService(animaBin);
+    },
     log: (msg) => console.error(msg),
   });
 
@@ -154,7 +156,7 @@ export async function runCliUpgrade(opts?: {
           ? `已切换到 ${targetChannel} ${result.remoteVersion}（前缀 ${result.prefix}）`
           : `已升级到 ${result.remoteVersion}（前缀 ${result.prefix}）`,
       );
-      tryStartService(join(result.prefix, "anima"));
+      if (wasRunning) tryStartService(join(result.prefix, "anima"));
       exitWith(0);
     default: {
       const _exhaustive: never = result;
