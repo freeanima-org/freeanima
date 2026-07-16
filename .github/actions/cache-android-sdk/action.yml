@@ -1,0 +1,13 @@
+name: Cache Android SDK
+description: 缓存 ~/Android/Sdk（API 35 / build-tools 35.0.0 / cmdline-tools），避免 CI 冷装
+runs:
+  using: composite
+  steps:
+    - name: Cache Android SDK
+      uses: actions/cache@v4
+      with:
+        path: ~/Android/Sdk
+        # 与 setup-android-sdk.sh 安装的包/cmdline-tools 版本对齐；升级 SDK 时改此 key
+        key: android-sdk-${{ runner.os }}-api35-bt35.0.0-cmdline11076708
+        restore-keys: |
+          android-sdk-${{ runner.os }}-

@@ -146,12 +146,24 @@ jobs:
           installer="$(ls src/app/shell/desktop/release/FreeAnima-Desktop-*.exe 2>/dev/null || ls src/app/shell/desktop/release/*.exe | head -1)"
           cp "$installer" dist/freeanima-desktop-windows-x64-setup.exe
 
-      - name: Setup JDK / Android SDK
+      - name: Setup JDK 21
         if: matrix.kind == 'mobile'
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
+          cache: gradle
+          cache-dependency-path: |
+            src/app/shell/mobile/android/**/*.gradle*
+            src/app/shell/mobile/android/gradle/wrapper/gradle-wrapper.properties
+            bun.lock
+
+      - uses: ./.github/actions/cache-android-sdk
+        if: matrix.kind == 'mobile'
+
+      - name: Setup Android SDK
+        if: matrix.kind == 'mobile'
+        run: bash src/app/shell/mobile/scripts/setup-android-sdk.sh
 
       - name: Build Mobile
         if: matrix.kind == 'mobile'
@@ -162,7 +174,6 @@ jobs:
           FREEANIMA_ANDROID_KEY_ALIAS: ${{ secrets.FREEANIMA_ANDROID_KEY_ALIAS }}
         run: |
           set -euo pipefail
-          bash src/app/shell/mobile/scripts/setup-android-sdk.sh
           # shellcheck source=src/app/shell/mobile/scripts/android-env.sh
           source src/app/shell/mobile/scripts/android-env.sh
           # shellcheck source=src/app/shell/mobile/scripts/export-android-signing-env.sh
@@ -171,7 +182,7 @@ jobs:
           cd src/app/shell/mobile
           bunx cap sync android
           cd android
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --build-cache
           mkdir -p "$GITHUB_WORKSPACE/dist"
           cp app/build/outputs/apk/debug/app-debug.apk \
             "$GITHUB_WORKSPACE/dist/freeanima-mobile-android.apk"
