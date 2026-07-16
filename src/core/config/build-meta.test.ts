@@ -105,9 +105,28 @@ describe("build-meta", () => {
       channel: "dev",
       repoRoot: dir,
       includeBuiltAt: false,
+      env: {},
     });
     expect(meta.version).toBe("1.2.3");
     expect(meta.built_at).toBeUndefined();
+  });
+
+  it("createComponentBuildMeta prefers FREEANIMA_BUILD_VERSION via env", () => {
+    const dir = createTempDir("freeanima-build-meta-env-");
+    tempDirs.push(dir);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(
+      join(dir, "package.json"),
+      JSON.stringify({ name: "freeanima", version: "1.2.3" }),
+    );
+    const meta = createComponentBuildMeta({
+      component: "service",
+      channel: "canary",
+      repoRoot: dir,
+      includeBuiltAt: false,
+      env: { FREEANIMA_BUILD_VERSION: "1.2.4-canary+202601010000" },
+    });
+    expect(meta.version).toBe("1.2.4-canary+202601010000");
   });
 
   it("formatBuildMetaLines renders key fields", () => {

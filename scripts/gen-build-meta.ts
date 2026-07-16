@@ -64,7 +64,7 @@ function parseArgs(argv: string[]): {
   }
 
   if (!component || !out) usage();
-  const channel = channelArg ?? resolveBuildChannelFromEnv("release");
+  const channel = channelArg ?? resolveBuildChannelFromEnv("dev");
 
   return {
     component,

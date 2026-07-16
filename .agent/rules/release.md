@@ -39,7 +39,7 @@ bun run anima -- service status   # reads version from status file / health API
 2. Merge PR to `main`（须通过 `Quality`；Blackbox `freeanima/blackbox` 已暂停，见 [`.github/SECRETS.md`](../../.github/SECRETS.md)）
 3. `Release` workflow runs **release-please**: opens or updates a **Release PR** (label `autorelease: pending`), accumulating changelog and version bump since last tag
 4. Release PR runs full CI; **maintainers decide when to release**, merge Release PR
-5. After merge, same workflow: `release_created` → tag `vX.Y.Z`, create GitHub Release → **`build:cli:executable`** → upload `anima-linux-x64.tar.gz`
+5. After merge, same workflow: `release_created` → tag `vX.Y.Z`，create GitHub Release → **`package-artifacts`** 上传 Linux / Desktop / Mobile 三端产物
 
 **Not** one release per `feat`; **one release when Release PR merges** (accumulating multiple commits).
 
@@ -67,12 +67,41 @@ Specify version in commit body with `Release-As: x.y.z` (see [Release Please doc
 
 [`.release-please-manifest.json`](../../.release-please-manifest.json) records current published version; must match latest `v*` tag and root `package.json`; auto-updated by Release Please after release.
 
-## Linux standalone artifact (sole distribution)
+## Packaged artifacts (Release + Canary)
 
-After Release PR merge and `release_created`:
+正式 Release（`vX.Y.Z`）与 canary Pre-release **共用** [`.github/workflows/package-artifacts.yml`](../../.github/workflows/package-artifacts.yml)：在 **ubuntu-latest** 上构建并上传三端产物（Windows Desktop 为 Linux 交叉编译，不再使用 Windows runner）。
 
-1. **`bun run build:cli:executable`** — `Bun.build({ compile })` + plugin 将 migrations / Web dist 以 `with { type: "file" }` 嵌入；产物 `dist/anima-executable/`（`anima` + install-prefix `package.json` / `dist/build-meta.json`）。Web dist 未过期时跳过 `build:web`（`FREEANIMA_FORCE_WEB_BUILD=1` 强制）。
-2. Pack `anima-linux-x64.tar.gz` and upload to the GitHub Release for tag `vX.Y.Z`
+| 产物                     | 文件名（与 updater 匹配）                                   |
+| ------------------------ | ----------------------------------------------------------- |
+| Linux standalone         | `anima-linux-x64.tar.gz`                                    |
+| Desktop Windows NSIS     | `freeanima-desktop-windows-x64-setup.exe`                   |
+| Mobile Android debug APK | `freeanima-mobile-android.apk`（暂不签名，`assembleDebug`） |
+
+差异仅 **channel / 版本号 / 发布目标**：
+
+| 轨          | Workflow                                                                      | 版本                                      | Tag                                 |
+| ----------- | ----------------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------- |
+| **release** | [`release.yml`](../../.github/workflows/release.yml)（Release Please 合并后） | `FREEANIMA_BUILD_VERSION` = tag（去 `v`） | `vX.Y.Z`，`channel=release`         |
+| **canary**  | [`canary.yml`](../../.github/workflows/canary.yml)（`main` push）             | `{nextVersion}-canary+{UTC YYYYMMDDHHmm}` | 滚动 tag `canary`，`channel=canary` |
+
+Canary `nextVersion`：有 open Release PR（`autorelease: pending`）则取其 `package.json.version`，否则回退 [`.release-please-manifest.json`](../../.release-please-manifest.json)。Body 含 `sha: <full>`，供 canary 轨按 commit 检测更新。
+
+手动重打：[`package-manual.yml`](../../.github/workflows/package-manual.yml)。
+
+**本地构建默认 `channel=dev`**（未设 `FREEANIMA_BUILD_CHANNEL` 时）。CI 必须显式设置 `release` / `canary`。构建版本可用 `FREEANIMA_BUILD_VERSION` 覆盖（不改根 `package.json`）。
+
+**分发轨（build-meta `channel`）**：`release` / `canary` / `dev`。`dev` **不可**换轨、不参与 GitHub 包更新；Desktop/Mobile 在 `dev` 下使用独立 appId（`org.freeanima.desktop.dev` / `org.freeanima.app.dev`），避免覆盖正式安装。Standalone / Desktop / Mobile 在轨内检查更新；可在 `release`⇄`canary` 间切换。浏览器仅 PWA，不走 GitHub 包通道。
+
+发布使用组织 secret **`FREEANIMA_CI`**。
+
+## Linux standalone（本地）
+
+After Release PR merge，`package-artifacts` 会执行 `bun run build:cli:executable` 并打包上传。本地：
+
+```bash
+bun run build:cli:executable   # 默认 channel=dev；CI 设 FREEANIMA_BUILD_CHANNEL
+./dist/anima-executable/anima --version
+```
 
 **Runtime install modes:**
 
@@ -83,29 +112,6 @@ After Release PR merge and `release_created`:
 
 There is **no** npm package publish and **no** Docker image publish.
 
-Local rebuild:
-
-```bash
-bun run build:cli:executable
-./dist/anima-executable/anima --version
-```
-
-## Canary 滚动预构建
-
-[`.github/workflows/canary.yml`](../../.github/workflows/canary.yml) 在每次 `main` push（及 `workflow_dispatch`）构建三端产物，滚动更新固定 GitHub Pre-release tag **`canary`**（`prerelease: true`，`make_latest: false`）。
-
-| 产物                     | 文件名（与 updater 匹配）                 |
-| ------------------------ | ----------------------------------------- |
-| Linux standalone         | `anima-linux-x64.tar.gz`                  |
-| Desktop Windows NSIS     | `freeanima-desktop-windows-x64-setup.exe` |
-| Mobile Android debug APK | `freeanima-mobile-android.apk`            |
-
-产物 bake `channel=canary`（环境变量 `FREEANIMA_BUILD_CHANNEL=canary`）。Release body 含 `sha: <full>`，供 canary 轨按 commit 检测更新。
-
-**分发轨（build-meta `channel`）**：`release`（稳定 `v*` Releases） / `canary`（上述滚动轨） / `dev`（本地调试，**不可**换轨、不参与 GitHub 包更新）。Standalone / Desktop / Mobile 在轨内检查更新；可在 `release`⇄`canary` 间切换并安装目标轨 tip。浏览器仅 PWA，不走 GitHub 包通道。
-
-发布 canary 使用组织 secret **`FREEANIMA_CI`**（force-move tag + 更新 Pre-release）。
-
 ## Prohibited
 
 - Do not hardcode `X.Y.Z` in business code; use `import { ANIMA_VERSION } from "@freeanima/platform"` (or expose via health/status).
@@ -115,15 +121,18 @@ bun run build:cli:executable
 
 ## Related Files
 
-| File                              | Role                                                                                     |
-| --------------------------------- | ---------------------------------------------------------------------------------------- |
-| `package.json`                    | Sole version write source (updated by Release PR)                                        |
-| `release-please-config.json`      | Release Please strategy and changelog sections                                           |
-| `.release-please-manifest.json`   | Published version manifest                                                               |
-| `.github/workflows/release.yml`   | release-please + Linux standalone upload                                                 |
-| `.github/workflows/canary.yml`    | main 滚动 canary Pre-release（CLI / Desktop / Mobile）                                   |
-| `scripts/build-cli-executable.ts` | Standalone build                                                                         |
-| `CHANGELOG.md`                    | New version section appended on Release PR merge; excluded from oxfmt (`*` list markers) |
+| File                                      | Role                                                                                     |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `package.json`                            | Sole version write source (updated by Release PR)                                        |
+| `release-please-config.json`              | Release Please strategy and changelog sections                                           |
+| `.release-please-manifest.json`           | Published version manifest                                                               |
+| `.github/workflows/release.yml`           | release-please + 调用 package-artifacts                                                  |
+| `.github/workflows/canary.yml`            | main 滚动 canary Pre-release                                                             |
+| `.github/workflows/package-artifacts.yml` | 共用三端打包（Linux / Desktop 交叉 / Mobile debug APK）                                  |
+| `.github/workflows/package-manual.yml`    | 手动重打                                                                                 |
+| `scripts/resolve-canary-version.ts`       | canary 版本串                                                                            |
+| `scripts/build-cli-executable.ts`         | Standalone build                                                                         |
+| `CHANGELOG.md`                            | New version section appended on Release PR merge; excluded from oxfmt (`*` list markers) |
 
 ## Repository Settings (Maintainers)
 

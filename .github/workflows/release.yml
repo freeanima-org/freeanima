@@ -27,34 +27,20 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
-  publish-standalone:
-    name: Publish Linux standalone
+  package:
+    name: Package release
     needs: release-please
     if: needs.release-please.outputs.release_created == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: ${{ needs.release-please.outputs.tag_name }}
-          fetch-depth: 0
-          persist-credentials: false
-
-      - uses: ./.github/actions/setup-bun
-      - uses: ./.github/actions/setup-anima-home
-
-      - run: bun run build:cli:executable
-
-      - name: Pack Linux x64 artifact
-        run: |
-          cd dist/anima-executable
-          tar -czf ../../anima-linux-x64.tar.gz anima
-          ls -lh ../../anima-linux-x64.tar.gz
-
-      - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ needs.release-please.outputs.tag_name }}
-          files: anima-linux-x64.tar.gz
-          fail_on_unmatched_files: true
+    uses: ./.github/workflows/package-artifacts.yml
+    with:
+      channel: release
+      # tag_name 带 v 前缀；构建侧 resolveBuildVersionFromEnv 会去掉
+      version: ${{ needs.release-please.outputs.tag_name }}
+      ref: ${{ needs.release-please.outputs.tag_name }}
+      publish_tag: ${{ needs.release-please.outputs.tag_name }}
+      prerelease: false
+      make_latest: true
+      move_tag: false
+      # 不传 release_body，保留 Release Please changelog
+    secrets:
+      FREEANIMA_CI: ${{ secrets.FREEANIMA_CI }}
