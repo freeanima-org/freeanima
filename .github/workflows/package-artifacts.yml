@@ -155,6 +155,13 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+          cache: gradle
+          cache-dependency-path: |
+            src/app/shell/mobile/android/**/*.gradle*
+            src/app/shell/mobile/android/gradle/wrapper/gradle-wrapper.properties
+            bun.lock
+
+      - uses: ./.github/actions/cache-android-sdk
 
       - name: Setup Android SDK
         run: bash src/app/shell/mobile/scripts/setup-android-sdk.sh
@@ -175,7 +182,7 @@ jobs:
           cd src/app/shell/mobile
           bunx cap sync android
           cd android
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --build-cache
           mkdir -p "$GITHUB_WORKSPACE/dist"
           cp app/build/outputs/apk/debug/app-debug.apk \
             "$GITHUB_WORKSPACE/dist/freeanima-mobile-android.apk"
