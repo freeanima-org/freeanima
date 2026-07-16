@@ -224,7 +224,8 @@ function buildElectronBuilderOptions(
 }
 
 function buildElectronBuilderCliArgs(opts: CliOptions): string[] {
-  const args: string[] = [];
+  // CI 下 electron-builder 会因检测到 CI 隐式 publish；产物由 workflow 单独上传 Release
+  const args: string[] = ["--publish", "never"];
   if (opts.dir) args.push("--dir");
   if (opts.x64) args.push("--x64");
   if (opts.win !== undefined) {
