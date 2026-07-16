@@ -4,6 +4,10 @@ import { join } from "node:path";
 
 import { applyStandaloneUpgrade } from "@freeanima/core/config/app-update/apply-standalone-upgrade";
 import {
+  isGithubReleaseProxyId,
+  type GithubReleaseProxyId,
+} from "@freeanima/core/config/app-update/github-release-proxy";
+import {
   isSwitchableChannel,
   normalizeBuildChannel,
   type BuildChannel,
@@ -49,6 +53,8 @@ export async function runCliUpgrade(opts?: {
   checkOnly?: boolean;
   /** 目标轨：省略则通道内更新；指定则换轨（check 时仅报告） */
   channel?: string;
+  /** 公共 GitHub Release 反代；默认直连 */
+  proxy?: string;
 }): Promise<void> {
   const kind = getCliInstallKind(opts?.scriptPath);
   if (kind !== "standalone") {
@@ -84,6 +90,18 @@ export async function runCliUpgrade(opts?: {
       `当前 channel 为 ${bakedChannel}，无法从 GitHub 升级。请安装 release 或 canary 独立包后再试。`,
     );
     exitWith(1);
+  }
+
+  let proxy: GithubReleaseProxyId = "none";
+  if (opts?.proxy != null && opts.proxy.trim() !== "") {
+    const raw = opts.proxy.trim();
+    if (!isGithubReleaseProxyId(raw)) {
+      console.error(
+        `无效 --proxy（须为 none | ghproxy-net | gh-proxy-com | ghfast-top）：${opts.proxy}`,
+      );
+      exitWith(1);
+    }
+    proxy = raw;
   }
 
   let targetChannel: BuildChannel | undefined;
@@ -122,6 +140,7 @@ export async function runCliUpgrade(opts?: {
     intent,
     ...(targetChannel ? { targetChannel } : {}),
     checkOnly,
+    fetchOptions: { proxy },
     beforeReplace: async () => {
       wasRunning = isServerAlive() != null;
       if (wasRunning) tryStopService(animaBin);
@@ -170,14 +189,19 @@ export function registerUpgradeCommand(program: Command): void {
   program
     .command("upgrade")
     .description(
-      "standalone：从 GitHub Releases 按 channel 升级；--channel release|canary 可换轨；源码/dev 仅打印指引",
+      "standalone：从 GitHub Releases 按 channel 升级；--channel release|canary 可换轨；--proxy 可选公共反代；源码/dev 仅打印指引",
     )
     .option("--check", "仅检查是否有新版本，不下载安装")
     .option("--channel <name>", "release 或 canary（与当前不同时视为换轨）")
-    .action(async (options: { check?: boolean; channel?: string }) => {
+    .option(
+      "--proxy <id>",
+      "none | ghproxy-net | gh-proxy-com | ghfast-top（默认 none，直连 GitHub）",
+    )
+    .action(async (options: { check?: boolean; channel?: string; proxy?: string }) => {
       await runCliUpgrade({
         checkOnly: Boolean(options.check),
         ...(options.channel != null ? { channel: options.channel } : {}),
+        ...(options.proxy != null ? { proxy: options.proxy } : {}),
       });
     });
 }

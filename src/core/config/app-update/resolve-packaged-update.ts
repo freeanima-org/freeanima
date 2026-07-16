@@ -1,5 +1,10 @@
 import type { BuildChannel } from "../build-meta.parse.ts";
 import {
+  applyGithubReleaseProxy,
+  normalizeGithubReleaseProxy,
+  type GithubReleaseProxyId,
+} from "./github-release-proxy.ts";
+import {
   CANARY_RELEASE_TAG,
   commitsMatch,
   extractReleaseCommit,
@@ -81,6 +86,17 @@ async function fetchTrackRelease(
  * - intent=switch：取 `targetChannel` tip，有资产即 available（换轨安装）
  * - channel/target 为 dev 或不合法 → unsupported_channel
  */
+function withProxiedAssetUrl(
+  result: PackagedUpdateResult,
+  proxy: GithubReleaseProxyId,
+): PackagedUpdateResult {
+  if (!result.available) return result;
+  return {
+    ...result,
+    assetUrl: applyGithubReleaseProxy(result.assetUrl, proxy),
+  };
+}
+
 export async function resolvePackagedUpdate(opts: {
   kind: PackagedReleaseKind;
   localVersion: string;
@@ -89,6 +105,8 @@ export async function resolvePackagedUpdate(opts: {
   intent?: "check" | "switch";
   targetChannel?: BuildChannel;
   fetchOptions?: FetchReleaseOptions;
+  /** 与 fetchOptions.proxy 等价；二者皆设时以本字段为准 */
+  proxy?: GithubReleaseProxyId;
 }): Promise<PackagedUpdateResult> {
   const intent = opts.intent ?? "check";
   const trackChannel = intent === "switch" ? (opts.targetChannel ?? opts.channel) : opts.channel;
@@ -99,14 +117,20 @@ export async function resolvePackagedUpdate(opts: {
     return { available: false, reason: "unsupported_channel" };
   }
 
-  const release = await fetchTrackRelease(trackChannel, opts.fetchOptions ?? {});
+  const proxy = normalizeGithubReleaseProxy(opts.proxy ?? opts.fetchOptions?.proxy);
+  const fetchOptions: FetchReleaseOptions = {
+    ...opts.fetchOptions,
+    proxy,
+  };
+
+  const release = await fetchTrackRelease(trackChannel, fetchOptions);
   if (!release) return { available: false, reason: "no_release", track: trackChannel };
 
   const base = availableFromRelease(release, opts.kind, trackChannel);
   if (!base.available) return base;
 
   if (intent === "switch") {
-    return base;
+    return withProxiedAssetUrl(base, proxy);
   }
 
   if (trackChannel === "release") {
@@ -119,7 +143,7 @@ export async function resolvePackagedUpdate(opts: {
         ...(base.remoteCommit ? { remoteCommit: base.remoteCommit } : {}),
       };
     }
-    return base;
+    return withProxiedAssetUrl(base, proxy);
   }
 
   // canary：commit 不同即有更新；无法解析远端 commit 时仍提示（避免永远 up_to_date）
@@ -133,5 +157,5 @@ export async function resolvePackagedUpdate(opts: {
       track: trackChannel,
     };
   }
-  return base;
+  return withProxiedAssetUrl(base, proxy);
 }

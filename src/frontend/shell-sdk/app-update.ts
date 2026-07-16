@@ -2,6 +2,11 @@
 
 import type { BuildChannel } from "./build-meta.ts";
 import { isSwitchableChannel } from "./build-meta.ts";
+import {
+  applyGithubReleaseProxy,
+  normalizeGithubReleaseProxy,
+  type GithubReleaseProxyId,
+} from "./github-release-proxy.ts";
 
 export type PackagedReleaseKind = "standalone-linux-x64" | "desktop-windows" | "mobile-android";
 
@@ -128,11 +133,15 @@ function assetsFromRelease(release: ReleaseJson): GithubReleaseAsset[] {
 
 async function fetchLatestStableRelease(
   fetchImpl: typeof fetch,
+  proxy: GithubReleaseProxyId,
   signal?: AbortSignal,
 ): Promise<ReleaseJson | null> {
   const headers = githubHeaders();
   const latestRes = await fetchImpl(
-    `https://api.github.com/repos/${FREEANIMA_GITHUB_REPO}/releases/latest`,
+    applyGithubReleaseProxy(
+      `https://api.github.com/repos/${FREEANIMA_GITHUB_REPO}/releases/latest`,
+      proxy,
+    ),
     { headers, ...(signal ? { signal } : {}) } as RequestInit,
   );
   if (latestRes.ok) {
@@ -140,7 +149,10 @@ async function fetchLatestStableRelease(
     if (!j.draft && !j.prerelease) return j;
   }
   const listRes = await fetchImpl(
-    `https://api.github.com/repos/${FREEANIMA_GITHUB_REPO}/releases?per_page=10`,
+    applyGithubReleaseProxy(
+      `https://api.github.com/repos/${FREEANIMA_GITHUB_REPO}/releases?per_page=10`,
+      proxy,
+    ),
     { headers, ...(signal ? { signal } : {}) } as RequestInit,
   );
   if (!listRes.ok) return null;
@@ -152,11 +164,15 @@ async function fetchLatestStableRelease(
 async function fetchReleaseByTag(
   tag: string,
   fetchImpl: typeof fetch,
+  proxy: GithubReleaseProxyId,
   signal?: AbortSignal,
 ): Promise<ReleaseJson | null> {
   const encoded = encodeURIComponent(tag);
   const res = await fetchImpl(
-    `https://api.github.com/repos/${FREEANIMA_GITHUB_REPO}/releases/tags/${encoded}`,
+    applyGithubReleaseProxy(
+      `https://api.github.com/repos/${FREEANIMA_GITHUB_REPO}/releases/tags/${encoded}`,
+      proxy,
+    ),
     { headers: githubHeaders(), ...(signal ? { signal } : {}) } as RequestInit,
   );
   if (!res.ok) return null;
@@ -178,8 +194,10 @@ export async function resolvePackagedUpdate(opts: {
   targetChannel?: BuildChannel;
   signal?: AbortSignal;
   fetchImpl?: typeof fetch;
+  proxy?: GithubReleaseProxyId;
 }): Promise<PackagedUpdateResult> {
   const fetchImpl = opts.fetchImpl ?? fetch;
+  const proxy = normalizeGithubReleaseProxy(opts.proxy);
   const intent = opts.intent ?? "check";
   const trackChannel = intent === "switch" ? (opts.targetChannel ?? opts.channel) : opts.channel;
   if (!isUpdateTrack(trackChannel)) {
@@ -191,8 +209,8 @@ export async function resolvePackagedUpdate(opts: {
 
   const release =
     trackChannel === "canary"
-      ? await fetchReleaseByTag(CANARY_RELEASE_TAG, fetchImpl, opts.signal)
-      : await fetchLatestStableRelease(fetchImpl, opts.signal);
+      ? await fetchReleaseByTag(CANARY_RELEASE_TAG, fetchImpl, proxy, opts.signal)
+      : await fetchLatestStableRelease(fetchImpl, proxy, opts.signal);
   if (!release?.tag_name) {
     return { available: false, reason: "no_release", track: trackChannel };
   }
@@ -214,7 +232,7 @@ export async function resolvePackagedUpdate(opts: {
     available: true,
     remoteVersion: release.tag_name,
     assetName: asset.name,
-    assetUrl: asset.browser_download_url,
+    assetUrl: applyGithubReleaseProxy(asset.browser_download_url, proxy),
     releaseUrl: typeof release.html_url === "string" ? release.html_url : "",
     track: trackChannel,
     ...(asset.size != null ? { assetSize: asset.size } : {}),

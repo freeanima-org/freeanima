@@ -73,7 +73,7 @@ function mockReleaseFetch(tarBytes: Buffer, contentLength?: number): typeof fetc
       );
     }
     if (u.includes("anima-linux-x64.tar.gz")) {
-      return new Response(tarBytes, {
+      return new Response(new Uint8Array(tarBytes), {
         status: 200,
         headers: {
           "content-type": "application/octet-stream",
@@ -397,7 +397,7 @@ describe("applyStandaloneUpgrade", () => {
         );
       }
       if (u.includes("anima-linux-x64.tar.gz")) {
-        return new Response(tarBytes, {
+        return new Response(new Uint8Array(tarBytes), {
           status: 200,
           headers: {
             "content-type": "application/octet-stream",
