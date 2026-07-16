@@ -217,13 +217,22 @@ async function handleGet(args: Record<string, unknown>): Promise<string> {
 async function handleList(args: Record<string, unknown>): Promise<string> {
   const listIdRaw = args.list_id;
   const hasListId = listIdRaw != null && listIdRaw !== "" && Number.isFinite(Number(listIdRaw));
+  const projectIdRaw = args.project_id;
+  const hasProjectId =
+    projectIdRaw != null && projectIdRaw !== "" && Number.isFinite(Number(projectIdRaw));
+  if (hasListId && hasProjectId) {
+    return toolError("project_id and list_id are mutually exclusive");
+  }
+
   const worldId = await resolveTaskToolWorld({
     args,
     ...(hasListId ? { listId: Number(listIdRaw) } : {}),
+    ...(hasProjectId ? { entityId: Number(projectIdRaw) } : {}),
   });
   if (typeof worldId === "string") return worldId;
 
   const listId = hasListId ? Number(listIdRaw) : undefined;
+  const projectId = hasProjectId ? Number(projectIdRaw) : undefined;
   const status =
     args.status === "completed" || args.status === "pending" || args.status === "all"
       ? args.status
@@ -233,6 +242,7 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
 
   const items = await listTaskItems(worldId, {
     ...(listId !== undefined ? { list_id: listId } : {}),
+    ...(projectId !== undefined ? { project_id: projectId } : {}),
     status,
     ...(tags !== undefined ? { tags } : {}),
     limit,
@@ -251,13 +261,22 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
 
   const listIdRaw = args.list_id;
   const hasListId = listIdRaw != null && listIdRaw !== "" && Number.isFinite(Number(listIdRaw));
+  const projectIdRaw = args.project_id;
+  const hasProjectId =
+    projectIdRaw != null && projectIdRaw !== "" && Number.isFinite(Number(projectIdRaw));
+  if (hasListId && hasProjectId) {
+    return toolError("project_id and list_id are mutually exclusive");
+  }
+
   const worldId = await resolveTaskToolWorld({
     args,
     ...(hasListId ? { listId: Number(listIdRaw) } : {}),
+    ...(hasProjectId ? { entityId: Number(projectIdRaw) } : {}),
   });
   if (typeof worldId === "string") return worldId;
 
   const list_id = hasListId ? Number(listIdRaw) : undefined;
+  const project_id = hasProjectId ? Number(projectIdRaw) : undefined;
   const status =
     args.status === "completed" || args.status === "pending" || args.status === "all"
       ? args.status
@@ -273,6 +292,7 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
       omitUndefined({
         query,
         list_id,
+        project_id,
         status,
         limit,
       }),
@@ -310,7 +330,7 @@ const TASK_ITEM_TOOL_NAMES = [
 export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "task",
-    "Task items (CRUD and hybrid search). Load toolset `tasklist` for list management. world_id optional; id/list_id scopes infer world.",
+    "Task items (CRUD and hybrid search). Load toolset `tasklist` for list management. world_id optional; id/list_id/project_id scopes infer world.",
     attachToolReturns(
       [
         {
@@ -412,13 +432,17 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
         {
           name: "task_list",
           description:
-            "List task items with optional list, status, and tag filters. list_id scopes world; omit for caller default world.",
+            "List task items with optional list, project, status, and tag filters. Default (no project_id) is Backlog only. project_id lists in-project tasks; mutually exclusive with list_id. list_id/project_id scopes world; omit for caller default world.",
           exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
               ...WORLD_ID_OPTIONAL,
               list_id: { type: "integer" },
+              project_id: {
+                type: "integer",
+                description: "Filter by project; mutually exclusive with list_id",
+              },
               status: { type: "string", enum: ["pending", "completed", "all"] },
               tags: { type: "array", items: { type: "string" } },
               limit: { type: "integer" },
@@ -430,7 +454,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
         {
           name: "task_search",
           description:
-            "Hybrid search task items by title/content. list_id scopes world; omit list_id to search caller default world.",
+            "Hybrid search task items by title/content. Optional list_id or project_id (mutually exclusive) scopes filter and world; omit both to search caller default world.",
           exposeMcp: true,
           parameters: {
             type: "object",
@@ -440,6 +464,10 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
               list_id: {
                 type: "integer",
                 description: "Optional list id; scopes world when set",
+              },
+              project_id: {
+                type: "integer",
+                description: "Filter by project; mutually exclusive with list_id",
               },
               status: { type: "string", enum: ["pending", "completed", "all"] },
               limit: { type: "integer", description: "Max results, default 30, cap 50" },

@@ -331,6 +331,7 @@ export async function searchTaskItems(
 ): Promise<TaskItemRow[]> {
   const filters: Record<string, unknown> = {};
   if (opts.list_id != null) filters.list_id = opts.list_id;
+  if (opts.project_id != null) filters.project_id = opts.project_id;
   if (opts.status != null && opts.status !== "all") filters.status = opts.status;
 
   const result = await searchEntities({

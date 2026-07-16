@@ -10,6 +10,7 @@ import { runWithToolContext } from "@freeanima/runtime/loop";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { getProfileHopModel } from "@freeanima/platform/config";
 import { registerTaskTools, getDefaultTaskList } from "@freeanima/features/task/domain";
+import { createProject } from "@freeanima/features/project/domain";
 import { getEntity } from "@freeanima/core/db/pg/entity";
 import { getActivePgTestContext, testConv } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
@@ -379,5 +380,71 @@ describePg("tasks tool", () => {
     const parsed = JSON.parse(output) as { ok: boolean; count: number };
     expect(parsed.ok).toBe(true);
     expect(parsed.count).toBeGreaterThanOrEqual(1);
+  });
+
+  it("task_list filters by project_id and rejects list_id combo", async () => {
+    const sid = "sess-task-list-project";
+    await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
+      platform: TEST_SAP_CHAT_PLATFORM,
+    });
+
+    const worldId = testAgentWorldId();
+    const list = await getDefaultTaskList(worldId);
+    const project = await createProject(worldId, {
+      title: "Tool project filter",
+      start_at: "2026-01-01T00:00:00.000Z",
+      end_at: "2026-12-31T00:00:00.000Z",
+      completion_criteria: "Done when listed by project_id",
+    });
+
+    let createdId = 0;
+    await runWithToolContext(
+      sid,
+      async () => {
+        const create = toolSets.getTool("task_create")!;
+        const out = await Promise.resolve(
+          create.handler({
+            title: "In-project task",
+            list_id: list.id,
+            project_id: project.id,
+          }),
+        );
+        createdId = (JSON.parse(out) as { item: { id: number } }).item.id;
+      },
+      { tools: toolSets },
+    );
+
+    let backlogOut = "";
+    let projectOut = "";
+    let conflictOut = "";
+    await runWithToolContext(
+      sid,
+      async () => {
+        const tool = toolSets.getTool("task_list")!;
+        backlogOut = await Promise.resolve(tool.handler({ list_id: list.id }));
+        projectOut = await Promise.resolve(tool.handler({ project_id: project.id }));
+        conflictOut = await Promise.resolve(
+          tool.handler({ project_id: project.id, list_id: list.id }),
+        );
+      },
+      { tools: toolSets },
+    );
+
+    const backlog = JSON.parse(backlogOut) as { items: { id: number }[] };
+    expect(backlog.items.some((item) => item.id === createdId)).toBe(false);
+
+    const byProject = JSON.parse(projectOut) as {
+      ok: boolean;
+      count: number;
+      items: { id: number; title: string; project_id: number | null }[];
+    };
+    expect(byProject.ok).toBe(true);
+    expect(byProject.count).toBe(1);
+    expect(byProject.items[0]?.id).toBe(createdId);
+    expect(byProject.items[0]?.title).toBe("In-project task");
+    expect(byProject.items[0]?.project_id).toBe(project.id);
+
+    const conflict = JSON.parse(conflictOut) as { error?: string };
+    expect(conflict.error).toContain("mutually exclusive");
   });
 });
