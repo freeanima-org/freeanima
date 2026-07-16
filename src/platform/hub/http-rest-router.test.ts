@@ -32,14 +32,14 @@ describe("http-rest-router", () => {
     expect(matchPattern("task/list", "task/list")).toEqual({});
   });
 
-  test("findRoute GET task.list", () => {
-    const match = findRoute("GET", "task/list");
-    expect(match?.entry.hubMethod).toBe("task.list");
+  test("findRoute GET tasklist.item.list", () => {
+    const match = findRoute("GET", "tasklist/item/list");
+    expect(match?.entry.hubMethod).toBe("tasklist.item.list");
   });
 
-  test("findRoute POST task.create", () => {
-    const match = findRoute("POST", "task/create");
-    expect(match?.entry.hubMethod).toBe("task.create");
+  test("findRoute POST tasklist.item.create", () => {
+    const match = findRoute("POST", "tasklist/item/create");
+    expect(match?.entry.hubMethod).toBe("tasklist.item.create");
   });
 
   test("vault.get is POST route", () => {

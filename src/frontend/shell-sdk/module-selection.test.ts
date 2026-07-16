@@ -66,6 +66,13 @@ describe("module-selection", () => {
     });
   });
 
+  test("project 读写 projectId", () => {
+    writeModuleSelection("project", 99, ctx);
+    expect(readModuleSelection("project", ctx)).toBe(99);
+    clearModuleSelection("project", ctx);
+    expect(readModuleSelection("project", ctx)).toBeNull();
+  });
+
   test("email 读写 accountId 与 messageId", () => {
     writeModuleSelection("email", { accountId: 3, messageId: 99 }, ctx);
     expect(readModuleSelection("email", ctx)).toEqual({ accountId: 3, messageId: 99 });

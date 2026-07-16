@@ -93,7 +93,7 @@ export async function fetchProjectTasks(
   subjectKind: SubjectKind,
   projectId: number,
 ): Promise<TaskItemRow[]> {
-  const data = await hub().call("task.list", {
+  const data = await hub().call("project.item.list", {
     subject_kind: subjectKind,
     project_id: projectId,
   });
@@ -102,18 +102,18 @@ export async function fetchProjectTasks(
 
 export async function createProjectTask(
   subjectKind: SubjectKind,
-  input: { title: string; list_id: number; project_id: number },
+  input: { title: string; project_id: number; sort_order?: number },
 ): Promise<TaskItemRow> {
-  const data = await hub().call("task.create", { subject_kind: subjectKind, ...input });
+  const data = await hub().call("project.item.create", { subject_kind: subjectKind, ...input });
   return data.item;
 }
 
 export async function moveTaskToProject(
   subjectKind: SubjectKind,
   taskId: number,
-  projectId: number | null,
+  projectId: number,
 ): Promise<TaskItemRow> {
-  const data = await hub().call("task.patch", {
+  const data = await hub().call("task.moveToProject", {
     subject_kind: subjectKind,
     id: taskId,
     project_id: projectId,
@@ -152,15 +152,6 @@ export async function patchMilestoneApi(
   return data.item;
 }
 
-export async function moveTaskToBacklog(subjectKind: SubjectKind, taskId: number): Promise<void> {
-  await hub().call("task.patch", {
-    subject_kind: subjectKind,
-    id: taskId,
-    project_id: null,
-    milestone_id: null,
-  });
-}
-
 export async function createProjectFolderApi(
   subjectKind: SubjectKind,
   name: string,
@@ -191,7 +182,10 @@ export async function updateProjectTask(
   subjectKind: SubjectKind,
   id: number,
   patch: Partial<
-    Pick<TaskItemRow, "title" | "content" | "tags" | "priority" | "due_at" | "milestone_id">
+    Pick<
+      TaskItemRow,
+      "title" | "content" | "tags" | "priority" | "due_at" | "milestone_id" | "sort_order"
+    >
   >,
 ): Promise<TaskItemRow> {
   const data = await hub().call("task.patch", { subject_kind: subjectKind, id, ...patch });
@@ -218,15 +212,6 @@ export async function deleteProjectTask(subjectKind: SubjectKind, id: number): P
   await hub().call("task.delete", { subject_kind: subjectKind, id });
 }
 
-export async function fetchDefaultTaskListId(subjectKind: SubjectKind): Promise<number> {
-  const data = await hub().call("tasklist.list", { subject_kind: subjectKind });
-  const defaultList = data.lists.find((l) => l.is_default && !l.is_folder);
-  if (defaultList) return defaultList.id;
-  const first = data.lists.find((l) => !l.is_folder && !l.closed);
-  if (!first) throw new Error("no task list available");
-  return first.id;
-}
-
 export async function fetchTaskListsForMove(subjectKind: SubjectKind): Promise<TaskListRow[]> {
   const data = await hub().call("tasklist.list", { subject_kind: subjectKind });
   return data.lists;
@@ -242,11 +227,9 @@ export async function moveProjectTaskToList(
   taskId: number,
   listId: number,
 ): Promise<void> {
-  await hub().call("task.patch", {
+  await hub().call("task.moveToList", {
     subject_kind: subjectKind,
     id: taskId,
     list_id: listId,
-    project_id: null,
-    milestone_id: null,
   });
 }

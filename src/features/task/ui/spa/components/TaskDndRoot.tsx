@@ -262,7 +262,7 @@ export function TaskDndRoot({
         const targetList = listById.get(targetListId);
         const taskIdParsed = parseTaskDndId(activeId);
         const task = taskIdParsed != null ? taskItems.find((i) => i.id === taskIdParsed) : null;
-        const sourceList = task ? listById.get(task.list_id) : null;
+        const sourceList = task?.list_id != null ? listById.get(task.list_id) : null;
         if (sourceList?.closed || targetList?.closed) return;
         if (targetList && !targetList.is_folder) {
           onMoveTaskToList(taskId, targetListId);

@@ -67,12 +67,14 @@ FreeAnima (product tag or top folder name)
 
 When a project reaches a terminal state or is deleted, task handling is explicit:
 
-| Event                | Task behavior (v1 default)                                                                                                                                                                         |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `status → completed` | Prompt: bulk move pending tasks back to Backlog / bulk complete / keep in project. **Default: move back to Backlog** (`project_id` cleared, `milestone_id` cleared, restore `list_id` if retained) |
-| `status → cancelled` | Same as `completed`                                                                                                                                                                                |
-| `status → on_hold`   | Tasks **keep** `project_id`; project UI read-only or degraded edit                                                                                                                                 |
-| Delete project       | All tasks move back to Backlog (not deleted); milestone entities deleted or orphaned per cascade rules                                                                                             |
+| Event                | Task behavior (v1 default)                                                                                                                  |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `status → completed` | **Default: keep in project** (`project_id` retained). Explicit `release_tasks: true` moves pending tasks to the default list (Inbox).       |
+| `status → cancelled` | Same as `completed`                                                                                                                         |
+| `status → on_hold`   | Tasks **keep** `project_id`; project UI read-only or degraded edit                                                                          |
+| Delete project       | All tasks move to the **default list** (`is_default` Inbox): `project_id`/`milestone_id` cleared, `list_id` set; milestone entities deleted |
+
+Inactive projects (`on_hold` / `completed` / `cancelled`) are hidden from the project sidebar by default; toggle **显示非活跃** (same pattern as archived task lists).
 
 Project archive semantics use **`project.status`** (and optional future `archived_at`) — **do not** reuse `task_list.body.closed`. Task-list archive (`closed: true`) remains: sidebar hidden, **mutations forbidden** (`清单已归档`).
 
@@ -108,30 +110,32 @@ Smart Lists and archived lists follow the same module; see [Smart Lists](#smart-
 
 ### Core rule
 
-A task belongs to **one side at a time**: either the task module (Backlog) **or** exactly one project.
+A task belongs to **one side at a time**: either the task module (Backlog) **or** exactly one project. Ownership is **mutually exclusive** on the body fields.
 
-| Action                                 | Effect                                                                                                                            |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Drag task from Backlog into project    | Set `project_id`; task disappears from task-module views                                                                          |
-| Move task from project back to Backlog | Clear `project_id` (and `milestone_id`); task reappears in task module                                                            |
-| Move task project A → project B        | Direct transfer; **clear `milestone_id`** (milestones are project-scoped)                                                         |
-| Global search                          | Matches all tasks; result shows归属 `Backlog / {list name}` or `Project / {project title}`; click navigates to the owning surface |
+| Action                                  | Effect                                                                                                                            |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Drag / move task from Backlog → project | Set `project_id`; **clear `list_id`**; task disappears from task-module views and list counts                                     |
+| Move task from project → list           | Set `list_id` (user picks list); clear `project_id` and `milestone_id` — there is no "restore previous list" / 移回清单           |
+| Move task project A → project B         | Direct transfer; **clear `milestone_id`**; `list_id` stays null                                                                   |
+| Global search                           | Matches all tasks; result shows归属 `Backlog / {list name}` or `Project / {project title}`; click navigates to the owning surface |
 
 ### Data model (extensions to `task_item`)
 
-| Field          | Type             | Rule                                                                                                                                                                                |
-| -------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `list_id`      | `number`         | Required for tasks in Backlog. When in a project: **retain last list id** (recommended) so move-back restores position; alternatively null and restore to default list on move-back |
-| `project_id`   | `number \| null` | Set when task is in a project; null when in Backlog                                                                                                                                 |
-| `milestone_id` | `number \| null` | Optional; must reference a milestone in the **same** project; cleared on cross-project move or move back to Backlog                                                                 |
+| Field          | Type             | Rule                                                                                                        |
+| -------------- | ---------------- | ----------------------------------------------------------------------------------------------------------- |
+| `list_id`      | `number \| null` | Required when in Backlog (`project_id` null). **Null when in a project** — do not retain last list id       |
+| `project_id`   | `number \| null` | Set when task is in a project; null when in Backlog                                                         |
+| `milestone_id` | `number \| null` | Optional; must reference a milestone in the **same** project; cleared on cross-project move or move to list |
 
 **Invariants:**
 
-- Task-module visibility ⇔ `project_id IS NULL`
-- Project-module visibility ⇔ `project_id = {current project}`
+- Exactly one of `list_id` / `project_id` is non-null
+- Task-module visibility ⇔ `project_id IS NULL` (and `list_id` set)
+- Project-module visibility ⇔ `project_id = {current project}` (and `list_id` null)
 - `list_id` must not point at a folder (`task_list.is_folder`)
 - `milestone_id` implies `project_id` is set and matches the milestone's project
 - Deleting a milestone does **not** delete tasks — only clears or invalidates `milestone_id`
+- List `item_count` counts only backlog tasks (`project_id` null) for that `list_id`
 
 Pomodoro focus (`pomodoro_task_focus.body.task_item_id`) is unchanged — focus is by task id regardless of project归属.
 
@@ -324,7 +328,7 @@ All methods optional `subject_kind: user | agent` (default `user`). Transport: `
 | `project.create` | Create project (required schedule + completion criteria)                      |
 | `project.get`    | Project detail + task/milestone counts                                        |
 | `project.patch`  | Update fields or terminal status (with task side-effects per lifecycle table) |
-| `project.delete` | Delete project; tasks return to Backlog                                       |
+| `project.delete` | Delete project; tasks move to default list (Inbox)                            |
 
 ### `milestone.*`
 
@@ -335,14 +339,19 @@ All methods optional `subject_kind: user | agent` (default `user`). Transport: `
 | `milestone.patch`  | Update status, due, order                            |
 | `milestone.delete` | Delete milestone; tasks keep, `milestone_id` cleared |
 
-### Extended task methods
+### Task item Hub methods（归属拆分）
 
-| Method        | Extension                                                            |
-| ------------- | -------------------------------------------------------------------- |
-| `task.list`   | Filter `project_id` or exclude in-project tasks when listing Backlog |
-| `task.create` | Optional `project_id` / `milestone_id`                               |
-| `task.patch`  | `project_id`, `milestone_id`, move between project and Backlog       |
-| `task.search` | Result payload includes project/list attribution                     |
+| Method                                    | Purpose                                                  |
+| ----------------------------------------- | -------------------------------------------------------- |
+| `tasklist.item.list`                      | 任务模块列任务（清单 / Backlog；默认排除项目内）         |
+| `tasklist.item.create`                    | 任务模块建任务（只认 `list_id`，可省略→收件箱）          |
+| `project.item.list`                       | 项目模块列任务（必填 `project_id`）                      |
+| `project.item.create`                     | 项目模块建任务（只认 `project_id`，可选 `milestone_id`） |
+| `task.moveToProject`                      | 显式移入项目（清空 `list_id`）                           |
+| `task.moveToList`                         | 显式移回清单（清空 `project_id` / `milestone_id`）       |
+| `task.patch`                              | 仅内容字段（标题/优先级/截止/`milestone_id` 等）         |
+| `task.search`                             | 跨归属搜索；结果含 project/list 归属                     |
+| `task.complete` / `uncomplete` / `delete` | 按 id 共享操作                                           |
 
 Implementation target: `src/features/project/` (domain + hub + `ui/spa` + `plugin.ts`); schemas under `src/core/db/schema/entity/components/`; SAP frames under `src/shared/sap-contract/frames/`.
 

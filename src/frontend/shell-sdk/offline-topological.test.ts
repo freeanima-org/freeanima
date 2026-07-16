@@ -15,7 +15,7 @@ describe("offline-topological", () => {
     const child: OfflineOutboxOp = {
       id: "c1",
       moduleId: "task",
-      method: "task.create",
+      method: "tasklist.item.create",
       payload: { list_id: -1 },
       dependsOn: [{ tempId: -1, field: "list_id" }],
       createdAt: "2026-01-01T00:00:01.000Z",

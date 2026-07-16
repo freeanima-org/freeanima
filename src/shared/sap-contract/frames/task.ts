@@ -64,7 +64,7 @@ export const taskItemRowSchema = z.object({
   priority: taskPrioritySchema,
   due_at: z.string().nullable(),
   remind_at: z.string().nullable(),
-  list_id: z.number().int().positive(),
+  list_id: z.number().int().positive().nullable(),
   project_id: z.number().int().positive().nullable(),
   milestone_id: z.number().int().positive().nullable(),
   project_title: z.string().nullable().optional(),
@@ -178,7 +178,6 @@ export type SmartlistDeleteOutput = z.infer<typeof smartlistDeleteOutputSchema>;
 export const taskListInputSchema = z.object({
   subject_kind: taskSubjectKindSchema,
   list_id: z.number().int().positive().optional(),
-  project_id: z.number().int().positive().optional(),
   filters: taskItemSearchFiltersSchema.optional(),
   status: taskStatusSchema.or(z.literal("all")).optional(),
   due_today: z.boolean().optional(),
@@ -187,14 +186,46 @@ export const taskListInputSchema = z.object({
   offset: z.number().int().nonnegative().optional(),
 });
 export type TaskListInput = z.infer<typeof taskListInputSchema>;
+/** @deprecated 使用 tasklistItemList*；保留类型别名兼容 */
+export type TasklistItemListInput = TaskListInput;
+export const tasklistItemListInputSchema = taskListInputSchema;
 export const taskListOutputSchema = z.object({ items: z.array(taskItemRowSchema) });
 export type TaskListOutput = z.infer<typeof taskListOutputSchema>;
+export const tasklistItemListOutputSchema = taskListOutputSchema;
+export type TasklistItemListOutput = TaskListOutput;
 
-export const taskCreateInputSchema = z.object({
+export const projectItemListInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+  project_id: z.number().int().positive(),
+  status: taskStatusSchema.or(z.literal("all")).optional(),
+  limit: z.number().int().positive().optional(),
+  offset: z.number().int().nonnegative().optional(),
+});
+export type ProjectItemListInput = z.infer<typeof projectItemListInputSchema>;
+export const projectItemListOutputSchema = z.object({ items: z.array(taskItemRowSchema) });
+export type ProjectItemListOutput = z.infer<typeof projectItemListOutputSchema>;
+
+/** 任务模块建任务：只认 list_id（省略则默认收件箱） */
+export const tasklistItemCreateInputSchema = z.object({
   subject_kind: taskSubjectKindSchema,
   title: z.string().min(1),
-  list_id: z.number().int().positive(),
-  project_id: z.number().int().positive().optional(),
+  list_id: z.number().int().positive().optional(),
+  content: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  priority: taskPrioritySchema.optional(),
+  due_at: z.string().nullable().optional(),
+  sort_order: z.number().int().optional(),
+  client_op_id: z.string().min(1).optional(),
+});
+export type TasklistItemCreateInput = z.infer<typeof tasklistItemCreateInputSchema>;
+export const tasklistItemCreateOutputSchema = z.object({ item: taskItemRowSchema });
+export type TasklistItemCreateOutput = z.infer<typeof tasklistItemCreateOutputSchema>;
+
+/** 项目模块建任务：只认 project_id */
+export const projectItemCreateInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+  title: z.string().min(1),
+  project_id: z.number().int().positive(),
   milestone_id: z.number().int().positive().optional(),
   content: z.string().optional(),
   tags: z.array(z.string()).optional(),
@@ -203,23 +234,51 @@ export const taskCreateInputSchema = z.object({
   sort_order: z.number().int().optional(),
   client_op_id: z.string().min(1).optional(),
 });
-export type TaskCreateInput = z.infer<typeof taskCreateInputSchema>;
-export const taskCreateOutputSchema = z.object({ item: taskItemRowSchema });
-export type TaskCreateOutput = z.infer<typeof taskCreateOutputSchema>;
+export type ProjectItemCreateInput = z.infer<typeof projectItemCreateInputSchema>;
+export const projectItemCreateOutputSchema = z.object({ item: taskItemRowSchema });
+export type ProjectItemCreateOutput = z.infer<typeof projectItemCreateOutputSchema>;
 
+/** @deprecated 请用 tasklist.item.create / project.item.create */
+export const taskCreateInputSchema = tasklistItemCreateInputSchema;
+export type TaskCreateInput = TasklistItemCreateInput;
+export const taskCreateOutputSchema = tasklistItemCreateOutputSchema;
+export type TaskCreateOutput = TasklistItemCreateOutput;
+
+export const taskMoveToProjectInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+  id: z.number().int().positive(),
+  project_id: z.number().int().positive(),
+  sort_order: z.number().int().optional(),
+  client_op_id: z.string().min(1).optional(),
+});
+export type TaskMoveToProjectInput = z.infer<typeof taskMoveToProjectInputSchema>;
+export const taskMoveToProjectOutputSchema = z.object({ item: taskItemRowSchema });
+export type TaskMoveToProjectOutput = z.infer<typeof taskMoveToProjectOutputSchema>;
+
+export const taskMoveToListInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+  id: z.number().int().positive(),
+  list_id: z.number().int().positive(),
+  sort_order: z.number().int().optional(),
+  client_op_id: z.string().min(1).optional(),
+});
+export type TaskMoveToListInput = z.infer<typeof taskMoveToListInputSchema>;
+export const taskMoveToListOutputSchema = z.object({ item: taskItemRowSchema });
+export type TaskMoveToListOutput = z.infer<typeof taskMoveToListOutputSchema>;
+
+/** 共享内容字段 patch；归属变更请用 task.moveToProject / task.moveToList */
 export const taskPatchInputSchema = z.object({
   subject_kind: taskSubjectKindSchema,
   id: z.number().int().positive(),
   title: z.string().min(1).optional(),
-  list_id: z.number().int().positive().optional(),
-  project_id: z.number().int().positive().nullable().optional(),
-  milestone_id: z.number().int().positive().nullable().optional(),
   content: z.string().optional(),
   tags: z.array(z.string()).optional(),
   priority: taskPrioritySchema.optional(),
   due_at: z.string().nullable().optional(),
+  remind_at: z.string().nullable().optional(),
   sort_order: z.number().int().optional(),
   status: taskStatusSchema.optional(),
+  milestone_id: z.number().int().positive().nullable().optional(),
   client_op_id: z.string().min(1).optional(),
 });
 export type TaskPatchInput = z.infer<typeof taskPatchInputSchema>;

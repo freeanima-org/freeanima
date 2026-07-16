@@ -1,4 +1,4 @@
-import type { CSSProperties, MouseEvent, ReactNode, Ref } from "react";
+import type { CSSProperties, MouseEvent, Ref } from "react";
 
 import { Button } from "../components/ui/button.tsx";
 import { Checkbox } from "../components/ui/checkbox.tsx";
@@ -15,7 +15,9 @@ export type TaskItemRowViewProps = {
   useActionSheet: boolean;
   secondaryLine?: string | null;
   showEntityId?: boolean;
-  dragHandle?: ReactNode;
+  /** 整行拖拽：dnd-kit attributes + listeners（勿再用独立手柄） */
+  dragAttributes?: Record<string, unknown>;
+  dragListeners?: Record<string, unknown>;
   rowRef?: Ref<HTMLLIElement>;
   rowStyle?: CSSProperties;
   dragging?: boolean;
@@ -37,7 +39,8 @@ export function TaskItemRowView({
   useActionSheet,
   secondaryLine,
   showEntityId = false,
-  dragHandle,
+  dragAttributes,
+  dragListeners,
   rowRef,
   rowStyle,
   dragging = false,
@@ -62,14 +65,25 @@ export function TaskItemRowView({
     onContextMenu(e);
   };
 
+  const canDrag = dragListeners != null && !selectionMode && !disabled;
+
+  const handleSelectClick = (e: { shiftKey: boolean; preventDefault?: () => void }) => {
+    e.preventDefault?.();
+    onSelectItem?.(e.shiftKey);
+  };
+
   return (
     <li
       ref={rowRef}
       style={rowStyle}
+      role={selectionMode ? "option" : undefined}
+      aria-selected={selectionMode ? selected : undefined}
       className={[
         "hover:bg-muted group flex min-h-11 items-center gap-1 rounded-lg px-1 py-1",
+        canDrag ? "cursor-grab active:cursor-grabbing select-none" : "",
+        selectionMode ? "cursor-pointer select-none" : "",
         dragging ? "opacity-50" : "",
-        selected ? "bg-primary/10" : "",
+        selected ? "bg-primary/20 ring-primary/40 ring-1 ring-inset" : "",
         active && !selected ? "ring-primary/30 bg-primary/5 ring-1 ring-inset" : "",
       ].join(" ")}
       onContextMenu={handleContextMenu}
@@ -77,25 +91,42 @@ export function TaskItemRowView({
       onTouchEnd={longPress.onTouchEnd}
       onTouchMove={longPress.onTouchMove}
       onTouchCancel={longPress.onTouchEnd}
+      onClick={
+        selectionMode
+          ? (e) => {
+              handleSelectClick(e);
+            }
+          : undefined
+      }
+      {...(canDrag && dragAttributes ? dragAttributes : {})}
+      {...(canDrag && dragListeners ? dragListeners : {})}
     >
-      {dragHandle}
-      <Checkbox
-        checked={selectionMode ? selected : item.status === "completed"}
-        disabled={disabled}
-        onClick={(e) => {
-          if (selectionMode) {
-            e.preventDefault();
-            onSelectItem?.(e.shiftKey);
-          }
-        }}
-        {...(selectionMode ? {} : { onCheckedChange: () => onToggleComplete() })}
-      />
+      {selectionMode ? (
+        <span
+          className={[
+            "mx-1 flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+            selected ? "border-primary bg-primary" : "border-muted-foreground/35 bg-transparent",
+          ].join(" ")}
+          aria-hidden
+        >
+          {selected ? <span className="bg-primary-foreground block size-2 rounded-full" /> : null}
+        </span>
+      ) : (
+        <Checkbox
+          checked={item.status === "completed"}
+          disabled={disabled}
+          onPointerDown={(e) => e.stopPropagation()}
+          onCheckedChange={() => onToggleComplete()}
+        />
+      )}
       <button
         type="button"
         className="flex min-w-0 flex-1 items-center gap-2 py-2 text-left text-sm"
         onClick={(e) => {
-          if (selectionMode) onSelectItem?.(e.shiftKey);
-          else onEdit();
+          if (selectionMode) {
+            e.stopPropagation();
+            handleSelectClick(e);
+          } else onEdit();
         }}
       >
         {!selectionMode && secondaryLine == null ? (
@@ -142,6 +173,7 @@ export function TaskItemRowView({
           className="shrink-0"
           aria-label="任务操作"
           disabled={disabled}
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
             onOpenMenu();

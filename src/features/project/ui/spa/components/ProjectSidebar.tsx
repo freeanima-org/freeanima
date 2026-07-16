@@ -1,7 +1,7 @@
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Button, Input } from "@freeanima/frontend/ui-kit";
+import { Button, Checkbox, Input } from "@freeanima/frontend/ui-kit";
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
 
 import type { ProjectFolderRow, ProjectRow } from "../lib/api.ts";
@@ -23,6 +23,9 @@ type ProjectSidebarProps = {
   subjectKind: string;
   folders: ProjectFolderRow[];
   projects: ProjectRow[];
+  inactiveProjects: ProjectRow[];
+  showInactive: boolean;
+  onToggleShowInactive: (show: boolean) => void;
   selectedProjectId: number | null;
   selectedFolderId: number | null;
   newFolderName: string;
@@ -229,6 +232,64 @@ function SortableTreeRow({
   );
 }
 
+function InactiveProjectRow({
+  project,
+  selected,
+  useActionSheet,
+  writesDisabled,
+  onSelect,
+  onOpenMenu,
+  onContextMenu,
+  onEdit,
+}: {
+  project: ProjectRow;
+  selected: boolean;
+  useActionSheet: boolean;
+  writesDisabled: boolean;
+  onSelect: () => void;
+  onOpenMenu: () => void;
+  onContextMenu: (e: MouseEvent) => void;
+  onEdit: () => void;
+}) {
+  return (
+    <div
+      className={[
+        "group flex min-h-11 items-center gap-0.5 rounded-lg py-1 pr-1 text-sm opacity-70",
+        selected ? "bg-primary/15 font-medium opacity-100" : "hover:bg-muted",
+      ].join(" ")}
+      onContextMenu={onContextMenu}
+      onDoubleClick={useActionSheet ? undefined : onEdit}
+    >
+      <span className="min-w-6 shrink-0" aria-hidden />
+      <button
+        type="button"
+        className="flex min-w-0 flex-1 items-center gap-1 truncate py-2 text-left"
+        onClick={onSelect}
+      >
+        <span className="truncate">{project.title}</span>
+        <span className="text-muted-foreground shrink-0 text-xs">{project.status}</span>
+        <span className="text-muted-foreground shrink-0 text-xs">{project.task_count}</span>
+      </button>
+      {useActionSheet ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          className="shrink-0"
+          aria-label="操作"
+          disabled={writesDisabled}
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenMenu();
+          }}
+        >
+          ⋯
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
 export function ProjectSidebar(props: ProjectSidebarProps) {
   const { dragging, overRoot } = useProjectDndUi();
   const { setNodeRef: setProjectRootRef } = useDroppable({ id: PROJECT_ROOT_DND_ID });
@@ -311,6 +372,33 @@ export function ProjectSidebar(props: ProjectSidebarProps) {
               onEditProject={props.onEditProject}
             />
           ))}
+          {props.inactiveProjects.length > 0 ? (
+            <div className="border/60 mt-2 space-y-1 border-t pt-2">
+              <label className="text-muted-foreground flex cursor-pointer select-none items-center gap-2 px-1 py-1 text-xs">
+                <Checkbox
+                  className="size-3.5"
+                  checked={props.showInactive}
+                  onCheckedChange={(checked) => props.onToggleShowInactive(checked === true)}
+                />
+                显示非活跃
+              </label>
+              {props.showInactive
+                ? props.inactiveProjects.map((project) => (
+                    <InactiveProjectRow
+                      key={project.id}
+                      project={project}
+                      selected={props.selectedProjectId === project.id}
+                      useActionSheet={props.useActionSheet}
+                      writesDisabled={props.writesDisabled}
+                      onSelect={() => props.onSelectProject(project.id)}
+                      onOpenMenu={() => props.onOpenProjectMenu(project)}
+                      onContextMenu={(e) => props.onProjectContextMenu(e, project)}
+                      onEdit={() => props.onEditProject(project)}
+                    />
+                  ))
+                : null}
+            </div>
+          ) : null}
         </SortableContext>
       </div>
       <div className="shrink-0 space-y-2 border-t border-base-300 pt-2">

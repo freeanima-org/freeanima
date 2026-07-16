@@ -296,6 +296,7 @@ export async function countEntitiesByBodyListId(listId: number, world_id: number
         eq(entities.world_id, world_id),
         eq(entities.primary_component, "task_item"),
         sql`${entities.body}->>'list_id' = ${String(listId)}`,
+        sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
       ),
     );
   return Number(row?.value ?? 0);
@@ -303,7 +304,7 @@ export async function countEntitiesByBodyListId(listId: number, world_id: number
 
 const pendingTaskItemStatusWhere = sql`COALESCE(${entities.body}->>'status', '') <> ${"completed"}`;
 
-/** 非 completed 的 task_item 计数（与清单 item_count 语义一致） */
+/** 非 completed 的 task_item 计数（与清单 item_count 语义一致；排除项目内任务） */
 export async function countPendingTaskItemsByListId(
   listId: number,
   world_id: number,
@@ -317,6 +318,7 @@ export async function countPendingTaskItemsByListId(
         eq(entities.world_id, world_id),
         eq(entities.primary_component, "task_item"),
         sql`${entities.body}->>'list_id' = ${String(listId)}`,
+        sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
         pendingTaskItemStatusWhere,
       ),
     );
@@ -339,6 +341,7 @@ export async function countPendingTaskItemsGroupedByListId(
       and(
         eq(entities.world_id, world_id),
         eq(entities.primary_component, "task_item"),
+        sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
         pendingTaskItemStatusWhere,
       ),
     )

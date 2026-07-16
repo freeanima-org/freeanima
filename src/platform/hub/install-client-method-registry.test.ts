@@ -17,7 +17,7 @@ describe("ensureClientHubMethodRegistry", () => {
     expect(isHubMethod("pomodoro.focus.list")).toBe(false);
     ensureClientHubMethodRegistry();
     expect(isHubMethod("pomodoro.focus.list")).toBe(true);
-    expect(isHubMethod("task.list")).toBe(true);
+    expect(isHubMethod("tasklist.item.list")).toBe(true);
     expect(isHubMethod("conversation.list")).toBe(true);
   });
 });

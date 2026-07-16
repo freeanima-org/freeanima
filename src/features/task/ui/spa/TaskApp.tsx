@@ -61,7 +61,6 @@ import {
   reopenTaskList,
   searchTaskItems,
   fetchProjectsForMove,
-  updateTaskItem as patchTaskItem,
   uncompleteTaskItem,
   updateSmartList,
   updateTaskItem,
@@ -86,7 +85,7 @@ import {
   useTaskActionSheet,
 } from "./lib/platform.ts";
 import { readTaskSelectionFromUrl, writeTaskSelectionToUrl } from "./lib/task-selection-url.ts";
-import { moveTaskItemsToList } from "./lib/move-items.ts";
+import { moveTaskItemsToList, moveTaskItemsToProject } from "./lib/move-items.ts";
 import { taskAttributionLabel } from "./lib/task-attribution.ts";
 import { applyShiftRangeSelect } from "./lib/range-select.ts";
 import { resolveTaskSelection } from "./lib/resolve-task-selection.ts";
@@ -152,7 +151,7 @@ export function TaskApp() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedItemIds, setSelectedItemIds] = useState<Set<number>>(() => new Set());
   const [movePickerItemIds, setMovePickerItemIds] = useState<number[] | null>(null);
-  const [moveProjectItemId, setMoveProjectItemId] = useState<number | null>(null);
+  const [moveProjectItemIds, setMoveProjectItemIds] = useState<number[] | null>(null);
   const [projectsForMove, setProjectsForMove] = useState<
     Array<{ id: number; title: string; status: string }>
   >([]);
@@ -177,7 +176,7 @@ export function TaskApp() {
     isDirty: isTaskItemDirty,
     isEqual: isTaskItemEqual,
     autoSaveDebounceMs: 700,
-    compactSheetEnabled: movePickerItemIds == null,
+    compactSheetEnabled: movePickerItemIds == null && moveProjectItemIds == null,
     persistItem: (snapshot) =>
       updateTaskItem(snapshot.id, {
         title: snapshot.title,
@@ -714,14 +713,16 @@ export function TaskApp() {
   };
 
   const openMoveProjectPicker = useCallback(
-    async (itemId: number) => {
+    async (itemIds: number | number[]) => {
+      const ids = Array.isArray(itemIds) ? itemIds : [itemIds];
+      if (ids.length === 0) return;
       setSheetMenu(null);
       setItemMenu(null);
       setListMenu(null);
       closeDetailSheet();
       try {
         setProjectsForMove(await fetchProjectsForMove());
-        setMoveProjectItemId(itemId);
+        setMoveProjectItemIds(ids);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       }
@@ -730,27 +731,18 @@ export function TaskApp() {
   );
 
   const closeMoveProjectPicker = useCallback(() => {
-    setMoveProjectItemId(null);
+    setMoveProjectItemIds(null);
   }, []);
 
-  const handleMoveItemToProject = async (itemId: number, projectId: number) => {
+  const handleMoveItemsToProject = async (itemIds: number[], projectId: number) => {
+    if (itemIds.length === 0) return;
     try {
-      await patchTaskItem(itemId, { project_id: projectId, milestone_id: null });
+      await moveTaskItemsToProject(itemIds, projectId);
       closeMoveProjectPicker();
-      await reloadCurrentItems();
+      exitSelectionMode();
+      await Promise.all([reloadCurrentItems(), loadLists()]);
       if (searchActive) await refreshSearchHits();
-      if (detailItem?.id === itemId) closeDetailSheet();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    }
-  };
-
-  const handleMoveItemToBacklog = async (itemId: number) => {
-    try {
-      await patchTaskItem(itemId, { project_id: null, milestone_id: null });
-      closeMoveProjectPicker();
-      await reloadCurrentItems();
-      if (searchActive) await refreshSearchHits();
+      if (detailItem != null && itemIds.includes(detailItem.id)) closeDetailSheet();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
@@ -806,7 +798,9 @@ export function TaskApp() {
     (item: TaskItemRow) =>
       searchActive
         ? taskAttributionLabel(item)
-        : (listNameById.get(item.list_id) ?? `#${item.list_id}`),
+        : item.list_id != null
+          ? (listNameById.get(item.list_id) ?? `#${item.list_id}`)
+          : "—",
     [searchActive, listNameById],
   );
   const allVisibleItems = searchActive ? searchHits : items;
@@ -904,7 +898,6 @@ export function TaskApp() {
     onToggleComplete: toggleComplete,
     onMoveTo: (item: TaskItemRow) => openMovePickerForItems([item.id]),
     onMoveToProject: (item: TaskItemRow) => void openMoveProjectPicker(item.id),
-    onMoveToBacklog: (item: TaskItemRow) => void handleMoveItemToBacklog(item.id),
     onDelete: handleDeleteItem,
   };
 
@@ -922,14 +915,24 @@ export function TaskApp() {
         {selectionMode ? "取消" : "选择"}
       </Button>
       {selectionMode && selectedItemIds.size > 0 ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => openMovePickerForItems(Array.from(selectedItemIds))}
-        >
-          移动
-        </Button>
+        <>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => openMovePickerForItems(Array.from(selectedItemIds))}
+          >
+            移动到清单
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => void openMoveProjectPicker(Array.from(selectedItemIds))}
+          >
+            移入项目
+          </Button>
+        </>
       ) : null}
     </>
   );
@@ -1228,9 +1231,17 @@ export function TaskApp() {
                         <Button
                           type="button"
                           size="sm"
+                          variant="outline"
                           onClick={() => openMovePickerForItems(Array.from(selectedItemIds))}
                         >
-                          移动到…
+                          移动到清单
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => void openMoveProjectPicker(Array.from(selectedItemIds))}
+                        >
+                          移入项目
                         </Button>
                         <Button type="button" variant="ghost" size="sm" onClick={exitSelectionMode}>
                           取消
@@ -1395,22 +1406,23 @@ export function TaskApp() {
       />
 
       <MoveToProjectPicker
-        open={moveProjectItemId != null}
+        open={moveProjectItemIds != null}
         projects={projectsForMove}
+        title={
+          moveProjectItemIds != null && moveProjectItemIds.length > 1
+            ? `移入项目（${moveProjectItemIds.length} 项）`
+            : "移动到项目"
+        }
         currentProjectId={
-          moveProjectItemId != null
-            ? (items.find((i) => i.id === moveProjectItemId)?.project_id ??
-              searchHits.find((i) => i.id === moveProjectItemId)?.project_id ??
+          moveProjectItemIds != null && moveProjectItemIds.length === 1
+            ? (items.find((i) => i.id === moveProjectItemIds[0])?.project_id ??
+              searchHits.find((i) => i.id === moveProjectItemIds[0])?.project_id ??
               null)
             : null
         }
         onSelect={(projectId) => {
-          if (moveProjectItemId == null) return;
-          void handleMoveItemToProject(moveProjectItemId, projectId);
-        }}
-        onMoveToBacklog={() => {
-          if (moveProjectItemId == null) return;
-          void handleMoveItemToBacklog(moveProjectItemId);
+          if (moveProjectItemIds == null) return;
+          void handleMoveItemsToProject(moveProjectItemIds, projectId);
         }}
         onClose={closeMoveProjectPicker}
       />

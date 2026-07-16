@@ -56,19 +56,6 @@ function SortableTaskRow({
     disabled: selectionMode || !sortable,
   });
 
-  const dragHandle =
-    !selectionMode && sortable ? (
-      <button
-        type="button"
-        title="拖拽排序或拖到左侧清单"
-        className="text-foreground/40 hover:text-foreground flex min-h-11 min-w-8 shrink-0 cursor-grab items-center justify-center select-none active:cursor-grabbing"
-        {...attributes}
-        {...listeners}
-      >
-        ⋮⋮
-      </button>
-    ) : null;
-
   return (
     <TaskItemRowView
       item={item}
@@ -78,7 +65,9 @@ function SortableTaskRow({
       useActionSheet={useActionSheet}
       secondaryLine={listName}
       showEntityId={!selectionMode}
-      dragHandle={dragHandle}
+      {...(sortable && !selectionMode
+        ? { dragAttributes: { ...attributes }, dragListeners: { ...listeners } }
+        : {})}
       rowRef={setNodeRef}
       rowStyle={{
         transform: CSS.Transform.toString(transform),

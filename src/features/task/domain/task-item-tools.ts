@@ -37,6 +37,8 @@ async function resolveListId(worldId: number, raw: unknown): Promise<number | nu
 async function handleCreate(args: Record<string, unknown>): Promise<string> {
   const listIdRaw = args.list_id;
   const hasListId = listIdRaw != null && listIdRaw !== "";
+  const projectIdRaw = args.project_id;
+  const hasProjectId = projectIdRaw != null && projectIdRaw !== "";
   const worldId = await resolveTaskToolWorld({
     args,
     ...(hasListId ? { listId: Number(listIdRaw) } : {}),
@@ -47,8 +49,15 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
   const title = String(args.title ?? "").trim();
   if (!title) return toolError("title is required");
 
-  const listId = await resolveListId(worldId, args.list_id);
-  if (listId == null) return toolError("task list not available");
+  // 省略 list_id/project_id → 默认清单（Backlog）；二者都传则互斥错误
+  if (hasListId && hasProjectId) {
+    return toolError("list_id and project_id are mutually exclusive");
+  }
+
+  const listId = hasProjectId
+    ? null
+    : await resolveListId(worldId, hasListId ? args.list_id : null);
+  if (!hasProjectId && listId == null) return toolError("task list not available");
 
   const priority = parsePriority(args.priority);
   if (args.priority != null && args.priority !== "" && !priority) {
@@ -60,11 +69,7 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
   const remindAt =
     args.remind_at != null && args.remind_at !== "" ? String(args.remind_at).trim() : null;
   const content = args.content != null ? String(args.content) : "";
-  const projectIdRaw = args.project_id;
-  const project_id =
-    projectIdRaw != null && projectIdRaw !== "" && Number.isFinite(Number(projectIdRaw))
-      ? Number(projectIdRaw)
-      : undefined;
+  const project_id = hasProjectId ? Number(projectIdRaw) : undefined;
   const milestoneIdRaw = args.milestone_id;
   const milestone_id =
     milestoneIdRaw != null && milestoneIdRaw !== "" && Number.isFinite(Number(milestoneIdRaw))
@@ -335,7 +340,8 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
       [
         {
           name: "task_create",
-          description: "Create a task item in a list (default list when list_id omitted)",
+          description:
+            "Create a task in a list (default inbox when list_id omitted) or in a project (project_id). list_id and project_id are mutually exclusive. Hub 入口：清单侧 tasklist.item.create；项目侧 project.item.create。",
           exposeMcp: true,
           parameters: {
             type: "object",
@@ -348,8 +354,14 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
                 items: { type: "string" },
                 description: "Optional tags",
               },
-              list_id: { type: "integer", description: "Target list id (default inbox)" },
-              project_id: { type: "integer", description: "Assign to project (optional)" },
+              list_id: {
+                type: "integer",
+                description: "Target list id (default inbox); exclusive with project_id",
+              },
+              project_id: {
+                type: "integer",
+                description: "Create in project (clears list affiliation); exclusive with list_id",
+              },
               milestone_id: { type: "integer", description: "Link to milestone in project" },
               priority: { type: "string", enum: TASK_PRIORITIES },
               due_at: { type: "string", description: "Due time ISO8601" },

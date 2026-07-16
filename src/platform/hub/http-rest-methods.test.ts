@@ -13,25 +13,27 @@ describe("http-rest feature methods", () => {
     initHubRouter();
   });
 
-  test("buildHubRestRequest GET task.list", () => {
+  test("buildHubRestRequest GET tasklist.item.list", () => {
     const { url, init } = buildHubRestRequest(
       "http://127.0.0.1:2658",
-      "task.list",
+      "tasklist.item.list",
       { subject_kind: "user", list_id: 1 },
       "fa_at_test",
     );
-    expect(url).toBe("http://127.0.0.1:2658/hub/rpc/v1/task/list?subject_kind=user&list_id=1");
+    expect(url).toBe(
+      "http://127.0.0.1:2658/hub/rpc/v1/tasklist/item/list?subject_kind=user&list_id=1",
+    );
     expect(init.method).toBe("GET");
     expect((init.headers as Record<string, string>).Authorization).toBe("Bearer fa_at_test");
   });
 
-  test("buildHubRestRequest POST task.create", () => {
-    const { url, init } = buildHubRestRequest("http://127.0.0.1:2658", "task.create", {
+  test("buildHubRestRequest POST tasklist.item.create", () => {
+    const { url, init } = buildHubRestRequest("http://127.0.0.1:2658", "tasklist.item.create", {
       subject_kind: "user",
       title: "x",
       list_id: 1,
     });
-    expect(url).toBe("http://127.0.0.1:2658/hub/rpc/v1/task/create");
+    expect(url).toBe("http://127.0.0.1:2658/hub/rpc/v1/tasklist/item/create");
     expect(init.method).toBe("POST");
     expect(init.body).toBe(JSON.stringify({ subject_kind: "user", title: "x", list_id: 1 }));
   });
@@ -57,13 +59,13 @@ describe("http-rest feature methods", () => {
     expect(init.body).toBe(JSON.stringify({ subject_kind: "user" }));
   });
 
-  test("buildHubRestRequest GET task.list with filters object", () => {
-    const { url } = buildHubRestRequest("http://127.0.0.1:2658", "task.list", {
+  test("buildHubRestRequest GET tasklist.item.list with filters object", () => {
+    const { url } = buildHubRestRequest("http://127.0.0.1:2658", "tasklist.item.list", {
       subject_kind: "user",
       filters: { status: "pending", in_backlog: true },
     });
     const parsed = new URL(url);
-    expect(parsed.pathname).toBe("/hub/rpc/v1/task/list");
+    expect(parsed.pathname).toBe("/hub/rpc/v1/tasklist/item/list");
     expect(parsed.searchParams.get("subject_kind")).toBe("user");
     expect(JSON.parse(parsed.searchParams.get("filters") ?? "")).toEqual({
       status: "pending",
@@ -97,7 +99,7 @@ describe("http-rest feature methods", () => {
   });
 
   test("isNonJsonHubHttpMethod feature methods", () => {
-    expect(isNonJsonHubHttpMethod("task.list")).toBe(false);
+    expect(isNonJsonHubHttpMethod("tasklist.item.list")).toBe(false);
     expect(isNonJsonHubHttpMethod("companion.model.upload")).toBe(true);
   });
 });

@@ -9,9 +9,11 @@ describe("http-rest-auth", () => {
     ).toBe(true);
   });
 
-  test("task.list requires auth", () => {
+  test("tasklist.item.list requires auth", () => {
     expect(
-      isOptionalAuthHubHttpRequest(new Request("http://127.0.0.1:2658/hub/rpc/v1/task/list")),
+      isOptionalAuthHubHttpRequest(
+        new Request("http://127.0.0.1:2658/hub/rpc/v1/tasklist/item/list"),
+      ),
     ).toBe(false);
   });
 

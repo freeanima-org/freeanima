@@ -6,20 +6,28 @@ import {
   tasklistCreateInputSchema,
   tasklistListInputSchema,
   tasklistPatchInputSchema,
-  taskListInputSchema,
-  taskCreateInputSchema,
+  tasklistItemListInputSchema,
+  tasklistItemCreateInputSchema,
+  projectItemCreateInputSchema,
+  taskMoveToProjectInputSchema,
+  taskMoveToListInputSchema,
 } from "@freeanima/shared/sap-contract";
 
 describe("task SAP procedures", () => {
-  it("registers tasklist.* task.* and smartlist.* methods", () => {
+  it("registers tasklist.* project.item.* task.* and smartlist.* methods", () => {
     expect(SAP_METHODS).toContain("tasklist.list");
     expect(SAP_METHODS).toContain("tasklist.create");
+    expect(SAP_METHODS).toContain("tasklist.item.list");
+    expect(SAP_METHODS).toContain("tasklist.item.create");
     expect(SAP_METHODS).toContain("smartlist.list");
     expect(SAP_METHODS).toContain("smartlist.create");
     expect(SAP_METHODS).toContain("smartlist.patch");
     expect(SAP_METHODS).toContain("smartlist.delete");
-    expect(SAP_METHODS).toContain("task.list");
-    expect(SAP_METHODS).toContain("task.create");
+    expect(SAP_METHODS).toContain("project.item.list");
+    expect(SAP_METHODS).toContain("project.item.create");
+    expect(SAP_METHODS).toContain("task.moveToProject");
+    expect(SAP_METHODS).toContain("task.moveToList");
+    expect(SAP_METHODS).toContain("task.patch");
     expect(SAP_METHODS).toContain("task.complete");
     expect(SAP_METHODS).toContain("task.delete");
   });
@@ -32,10 +40,15 @@ describe("task SAP procedures", () => {
       title: "我的清单",
       filters: { status: "pending" },
     });
-    taskListInputSchema.parse({ list_id: 1, status: "pending" });
-    taskListInputSchema.parse({ filters: { status: "completed", completed_on: "today" } });
-    taskListInputSchema.parse({ filters: { status: "pending", list_ids: [1, 2] } });
-    taskCreateInputSchema.parse({ title: "写文档", list_id: 2 });
+    tasklistItemListInputSchema.parse({ list_id: 1, status: "pending" });
+    tasklistItemListInputSchema.parse({
+      filters: { status: "completed", completed_on: "today" },
+    });
+    tasklistItemListInputSchema.parse({ filters: { status: "pending", list_ids: [1, 2] } });
+    tasklistItemCreateInputSchema.parse({ title: "写文档", list_id: 2 });
+    projectItemCreateInputSchema.parse({ title: "项目任务", project_id: 3 });
+    taskMoveToProjectInputSchema.parse({ id: 1, project_id: 9 });
+    taskMoveToListInputSchema.parse({ id: 1, list_id: 2 });
     tasklistCreateInputSchema.parse({ name: "工作", is_folder: true, parent_id: 10 });
     tasklistPatchInputSchema.parse({ id: 3, parent_id: null, is_folder: false });
   });

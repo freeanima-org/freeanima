@@ -8,6 +8,7 @@ import {
   deleteTaskList,
   deleteSmartList,
   ensureDefaultTaskListForWorld,
+  getDefaultTaskList,
   listSmartListsMerged,
   listTaskItems,
   listTaskLists,
@@ -187,12 +188,12 @@ export async function serviceSmartlistDelete(
   return { ok: true as const };
 }
 
-export async function serviceTaskList(
+/** 任务模块列任务（Backlog / 清单）；不含项目内任务（默认 in_backlog） */
+export async function serviceTasklistItemList(
   deps: RuntimeDeps,
   input: {
     subject_kind?: SubjectKind;
     list_id?: number;
-    project_id?: number;
     filters?: TaskItemSearchFilters;
     status?: "pending" | "completed" | "all";
     due_today?: boolean;
@@ -206,16 +207,12 @@ export async function serviceTaskList(
   if (input.list_id != null && input.filters != null) {
     throw new Error("list_id and filters are mutually exclusive");
   }
-  if (input.project_id != null && input.list_id != null) {
-    throw new Error("project_id and list_id are mutually exclusive");
-  }
   const worldId = await taskWorldIdForAuth(auth, input.subject_kind);
   await ensureDefaultTaskListForWorld(worldId);
   const items = await listTaskItems(
     worldId,
     omitUndefined({
       list_id: input.list_id,
-      project_id: input.project_id,
       filters: input.filters,
       status: input.filters == null ? (input.status ?? "all") : undefined,
       due_today: input.filters == null ? input.due_today : undefined,
@@ -227,13 +224,63 @@ export async function serviceTaskList(
   return { items };
 }
 
-export async function serviceTaskCreate(
+/** 项目模块列任务 */
+export async function serviceProjectItemList(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    project_id: number;
+    status?: "pending" | "completed" | "all";
+    limit?: number;
+    offset?: number;
+  },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const worldId = await taskWorldIdForAuth(auth, input.subject_kind);
+  const items = await listTaskItems(
+    worldId,
+    omitUndefined({
+      project_id: input.project_id,
+      status: input.status ?? "all",
+      limit: input.limit,
+      offset: input.offset,
+    }),
+  );
+  return { items };
+}
+
+/** 任务模块建任务；省略 list_id 时落到默认收件箱 */
+export async function serviceTasklistItemCreate(
   deps: RuntimeDeps,
   input: {
     subject_kind?: SubjectKind;
     title: string;
-    list_id: number;
-    project_id?: number;
+    list_id?: number;
+    content?: string;
+    tags?: string[];
+    priority?: "high" | "medium" | "low" | "none";
+    due_at?: string | null;
+    sort_order?: number;
+    client_op_id?: string;
+  },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const { subject_kind, list_id, ...rest } = input;
+  const worldId = await taskWorldIdForAuth(auth, subject_kind);
+  const resolvedListId = list_id ?? (await getDefaultTaskList(worldId)).id;
+  const item = await createTaskItem(worldId, { ...rest, list_id: resolvedListId });
+  return { item };
+}
+
+/** 项目模块建任务 */
+export async function serviceProjectItemCreate(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    title: string;
+    project_id: number;
     milestone_id?: number;
     content?: string;
     tags?: string[];
@@ -250,19 +297,19 @@ export async function serviceTaskCreate(
   return { item };
 }
 
+/** 共享内容字段 patch；归属请用 moveToProject / moveToList */
 export async function serviceTaskPatch(
   deps: RuntimeDeps,
   input: {
     subject_kind?: SubjectKind;
     id: number;
     title?: string;
-    list_id?: number;
-    project_id?: number | null;
     milestone_id?: number | null;
     content?: string;
     tags?: string[];
     priority?: "high" | "medium" | "low" | "none";
     due_at?: string | null;
+    remind_at?: string | null;
     sort_order?: number;
     status?: "pending" | "completed";
   },
@@ -271,6 +318,46 @@ export async function serviceTaskPatch(
   assertPg(deps);
   const { id, subject_kind, ...patch } = input;
   const item = await updateTaskItem(await taskWorldIdForAuth(auth, subject_kind), { id, ...patch });
+  if (!item) throw new Error("NOT_FOUND");
+  return { item };
+}
+
+export async function serviceTaskMoveToProject(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    id: number;
+    project_id: number;
+    sort_order?: number;
+  },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const { id, subject_kind, project_id, sort_order } = input;
+  const item = await updateTaskItem(
+    await taskWorldIdForAuth(auth, subject_kind),
+    omitUndefined({ id, project_id, sort_order }),
+  );
+  if (!item) throw new Error("NOT_FOUND");
+  return { item };
+}
+
+export async function serviceTaskMoveToList(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    id: number;
+    list_id: number;
+    sort_order?: number;
+  },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const { id, subject_kind, list_id, sort_order } = input;
+  const item = await updateTaskItem(
+    await taskWorldIdForAuth(auth, subject_kind),
+    omitUndefined({ id, list_id, sort_order }),
+  );
   if (!item) throw new Error("NOT_FOUND");
   return { item };
 }
