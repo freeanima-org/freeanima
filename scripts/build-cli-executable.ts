@@ -11,7 +11,7 @@
  */
 import { $ } from "bun";
 import { Glob } from "bun";
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 import {
@@ -30,9 +30,6 @@ const EMBEDS_MODULE = join(ROOT, "src/app/cli/standalone-embeds.ts");
 const MIGRATIONS_DIR = join(ROOT, "src/core/migrations");
 const WEB_DIST_DIR = join(ROOT, "src/app/shell/web/dist");
 const WEB_DIST_INDEX = join(WEB_DIST_DIR, "index.html");
-const ROOT_PKG = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf-8")) as {
-  version: string;
-};
 
 async function ensureWebDist(): Promise<void> {
   const force = process.env.FREEANIMA_FORCE_WEB_BUILD === "1";
@@ -100,13 +97,14 @@ async function main(): Promise<void> {
   await ensureWebDist();
 
   console.log("resolving service build-meta for embed…");
-  const channel = resolveBuildChannelFromEnv("release");
+  const channel = resolveBuildChannelFromEnv("dev");
   const buildMeta = createComponentBuildMeta({
     component: "service",
     channel,
     repoRoot: ROOT,
     includeBuiltAt: true,
   });
+  const embedVersion = buildMeta.version;
 
   const files = [...listMigrationEmbeds(), ...listWebEmbeds()];
   const outfile = join(OUT_DIR, "anima");
@@ -120,7 +118,7 @@ async function main(): Promise<void> {
       createStandaloneEmbedPlugin({
         embedsModulePath: EMBEDS_MODULE,
         files,
-        version: ROOT_PKG.version,
+        version: embedVersion,
         buildMeta,
       }),
     ],

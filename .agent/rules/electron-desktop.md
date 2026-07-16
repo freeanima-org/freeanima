@@ -26,10 +26,12 @@
 
 ```bash
 bun test src/app/shell/desktop/build-electron.test.ts
-bun run package:windows   # 或 CI desktop-shell-release
+bun run package:windows   # Linux 交叉编译；CI 见 package-artifacts.yml
 ```
 
 Windows 安装包需在目标机 **冷启动** 验证一次（无开发用 node_modules）。
+
+本地未设 `FREEANIMA_BUILD_CHANNEL` 时默认为 **`dev`**（独立 `appId` `org.freeanima.desktop.dev` / 显示名 `FreeAnima Desktop Dev`），避免覆盖正式安装。CI 显式设 `canary` / `release`。
 
 ## 安装器（Windows NSIS）
 
@@ -40,9 +42,10 @@ Windows 安装包需在目标机 **冷启动** 验证一次（无开发用 node_
 
 ## 相关文件
 
-| 文件                                          | 作用                                             |
-| --------------------------------------------- | ------------------------------------------------ |
-| `build-electron.ts`                           | esbuild 配置、vendor 构建、electron-builder 调用 |
-| `electron-main-bundle-assert.ts`              | main.cjs 不变量                                  |
-| `electron-builder.yml`                        | 打进 asar 的文件清单（无 node_modules）          |
-| `.github/workflows/desktop-shell-release.yml` | Release 构建                                     |
+| 文件                                      | 作用                                             |
+| ----------------------------------------- | ------------------------------------------------ |
+| `build-electron.ts`                       | esbuild 配置、vendor 构建、electron-builder 调用 |
+| `electron-main-bundle-assert.ts`          | main.cjs 不变量                                  |
+| `electron-builder.yml`                    | 打进 asar 的文件清单（无 node_modules）          |
+| `.github/workflows/package-artifacts.yml` | canary/release 共用打包（Linux 交叉编 Windows）  |
+| `.github/workflows/package-manual.yml`    | 手动重打                                         |

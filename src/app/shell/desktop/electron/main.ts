@@ -346,7 +346,7 @@ function setCompanionVisible(visible: boolean): boolean {
 function createTray(): void {
   const icon = loadAppIcon("32x32.png");
   tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon);
-  tray.setToolTip("FreeAnima Desktop");
+  tray.setToolTip(app.getName());
   const menu = Menu.buildFromTemplate([
     { label: "打开主窗口", click: () => openMainWindow() },
     { type: "separator" },
@@ -443,7 +443,7 @@ async function bootstrap(): Promise<void> {
     const msg = error instanceof Error ? error.message : String(error);
     logLine(`startup failed: ${msg}`);
     dialog.showErrorBox(
-      "FreeAnima Desktop",
+      app.getName(),
       `启动失败：${msg}\n\n日志：~/.anima/desktop-shell/shell.log`,
     );
     app.quit();

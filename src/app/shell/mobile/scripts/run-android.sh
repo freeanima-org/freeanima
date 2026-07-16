@@ -31,4 +31,14 @@ echo ">>> 安装 APK..."
 adb install -r "$APK"
 
 echo ">>> 启动 APP..."
-adb shell am start -n org.freeanima.app/.MainActivity
+# applicationId 可能因 FREEANIMA_BUILD_CHANNEL=dev 变为 org.freeanima.app.dev
+APP_ID="$(
+  node -e "
+    const fs=require('fs');
+    const p='${ROOT}/android/app/build.gradle';
+    const m=fs.readFileSync(p,'utf8').match(/applicationId\\s+\\\"([^\\\"]+)\\\"/);
+    if(!m) process.exit(1);
+    process.stdout.write(m[1]);
+  "
+)"
+adb shell am start -n "${APP_ID}/.MainActivity"

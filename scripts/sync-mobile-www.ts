@@ -51,8 +51,7 @@ function writeRootRedirect(): void {
 }
 
 function writeNativeBuildMeta(): void {
-  const fallback = process.env.MOBILE_DEBUG === "1" ? "dev" : "release";
-  const channel = resolveBuildChannelFromEnv(fallback);
+  const channel = resolveBuildChannelFromEnv("dev");
   const meta = resolveNativeBuildMeta({
     shell: "mobile",
     channel,

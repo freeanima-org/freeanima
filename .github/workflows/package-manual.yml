@@ -1,0 +1,171 @@
+# 手动重打桌面 / 三端产物（交叉编译）。正式发版由 release.yml → package-artifacts 完成。
+name: Package (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 构建 channel
+        required: true
+        default: release
+        type: choice
+        options:
+          - release
+          - canary
+          - dev
+      version:
+        description: 版本号（如 0.9.1 或 0.9.1-canary+202607161200；留空则用 package.json / FREEANIMA_BUILD_VERSION 逻辑）
+        required: false
+        type: string
+      ref:
+        description: 构建 git ref（留空则当前默认分支 tip）
+        required: false
+        type: string
+      publish:
+        description: 是否上传到 GitHub Release（需 publish_tag）
+        required: false
+        type: boolean
+        default: false
+      publish_tag:
+        description: 上传目标 tag（publish=true 时必填）
+        required: false
+        type: string
+
+concurrency:
+  group: package-manual-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    name: Resolve inputs
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.out.outputs.version }}
+      ref: ${{ steps.out.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          fetch-depth: 0
+
+      - name: Resolve version / ref
+        id: out
+        run: |
+          set -euo pipefail
+          sha="$(git rev-parse HEAD)"
+          echo "ref=$sha" >> "$GITHUB_OUTPUT"
+          if [ -n "${{ inputs.version }}" ]; then
+            ver="${{ inputs.version }}"
+            ver="${ver#v}"
+          else
+            ver="$(node -p "require('./package.json').version")"
+          fi
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+
+  package:
+    name: Package
+    needs: resolve
+    if: inputs.publish == true && inputs.publish_tag != ''
+    uses: ./.github/workflows/package-artifacts.yml
+    with:
+      channel: ${{ inputs.channel }}
+      version: ${{ needs.resolve.outputs.version }}
+      ref: ${{ needs.resolve.outputs.ref }}
+      publish_tag: ${{ inputs.publish_tag }}
+      prerelease: ${{ inputs.channel != 'release' }}
+      make_latest: ${{ inputs.channel == 'release' }}
+      move_tag: ${{ inputs.publish_tag == 'canary' }}
+      release_name: ${{ inputs.publish_tag }}
+      release_body: |
+        Manual package build.
+
+        channel: `${{ inputs.channel }}`
+        version: `${{ needs.resolve.outputs.version }}`
+        sha: `${{ needs.resolve.outputs.ref }}`
+    secrets:
+      FREEANIMA_CI: ${{ secrets.FREEANIMA_CI }}
+
+  # publish=false 时只构建并上传 artifact，不挂 Release
+  build-only:
+    name: Build only (${{ matrix.label }})
+    needs: resolve
+    if: inputs.publish != true
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Linux standalone
+            kind: linux
+          - label: Desktop Windows
+            kind: desktop
+          - label: Mobile Android
+            kind: mobile
+    permissions:
+      contents: read
+    env:
+      FREEANIMA_BUILD_CHANNEL: ${{ inputs.channel }}
+      FREEANIMA_BUILD_VERSION: ${{ needs.resolve.outputs.version }}
+      DESKTOP_SHELL_VERSION: ${{ needs.resolve.outputs.version }}
+      DESKTOP_SHELL_BUILD_PROFILE: release
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.ref }}
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-bun
+
+      - uses: ./.github/actions/setup-anima-home
+        if: matrix.kind == 'linux'
+
+      - name: Build Linux
+        if: matrix.kind == 'linux'
+        run: |
+          set -euo pipefail
+          bun run build:cli:executable
+          cd dist/anima-executable
+          tar -czf ../../anima-linux-x64.tar.gz anima
+
+      - name: Build Desktop
+        if: matrix.kind == 'desktop'
+        run: |
+          set -euo pipefail
+          bun run setup:fbx
+          bun test src/app/shell/desktop/build-electron.test.ts
+          bun run package:windows
+          mkdir -p dist
+          installer="$(ls src/app/shell/desktop/release/FreeAnima-Desktop-*.exe 2>/dev/null || ls src/app/shell/desktop/release/*.exe | head -1)"
+          cp "$installer" dist/freeanima-desktop-windows-x64-setup.exe
+
+      - name: Setup JDK / Android SDK
+        if: matrix.kind == 'mobile'
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Build Mobile
+        if: matrix.kind == 'mobile'
+        run: |
+          set -euo pipefail
+          bash src/app/shell/mobile/scripts/setup-android-sdk.sh
+          # shellcheck source=src/app/shell/mobile/scripts/android-env.sh
+          source src/app/shell/mobile/scripts/android-env.sh
+          bun run build:mobile
+          cd src/app/shell/mobile
+          bunx cap sync android
+          cd android
+          ./gradlew assembleDebug
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          cp app/build/outputs/apk/debug/app-debug.apk \
+            "$GITHUB_WORKSPACE/dist/freeanima-mobile-android.apk"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: manual-${{ matrix.kind }}
+          path: |
+            anima-linux-x64.tar.gz
+            dist/freeanima-desktop-windows-x64-setup.exe
+            dist/freeanima-mobile-android.apk
+          if-no-files-found: ignore

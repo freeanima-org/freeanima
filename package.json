@@ -75,7 +75,7 @@
     "dev:service": "bun -e \"console.warn('[deprecated] dev:service → dev:hub');\" && bun run dev:hub",
     "dev:console": "bun run dev:web",
     "dev:web": "bun run paraglide:compile && cd src/app/shell/web && vite",
-    "build:web": "bun run paraglide:compile && cd src/app/shell/web && vite build && bun ../../../../scripts/gen-build-meta.ts --component web --channel release --out dist/build-meta.json",
+    "build:web": "bun run paraglide:compile && cd src/app/shell/web && vite build && bun ../../../../scripts/gen-build-meta.ts --component web --out dist/build-meta.json",
     "test": "bun run test:unit && bun run test:integration",
     "test:unit": "bun test src --pass-with-no-tests",
     "test:integration": "bun scripts/run-integration-tests.ts",

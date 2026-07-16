@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
-import { readAppVersion } from "./version.ts";
+import { resolveBuildVersionFromEnv } from "./resolve-build-version.ts";
 
 export type {
   BuildChannel,
@@ -128,7 +128,8 @@ export function resolveBuildChannelFromEnv(
 }
 
 export function createComponentBuildMeta(input: CreateComponentBuildMetaInput): ComponentBuildMeta {
-  const version = input.version?.trim() || readAppVersion(input.repoRoot);
+  const version =
+    input.version?.trim() || resolveBuildVersionFromEnv(input.repoRoot, input.env ?? process.env);
   const git = resolveGitBuildInfo({
     ...(input.repoRoot ? { repoRoot: input.repoRoot } : {}),
     ...(input.env ? { env: input.env } : {}),

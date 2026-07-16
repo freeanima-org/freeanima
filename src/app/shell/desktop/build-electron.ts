@@ -8,6 +8,8 @@ import type { CliOptions } from "electron-builder";
 import { buildCompanionApp } from "@freeanima/satellites/companion/lib/exports/build.ts";
 import { nativeBuildMetaDefine } from "@freeanima/frontend/shell-sdk/native-build-meta";
 import { resolveBuildChannelFromEnv } from "@freeanima/core/config/build-meta";
+import { resolveBuildVersionFromEnv } from "@freeanima/core/config/resolve-build-version";
+import { resolveDesktopShellIdentity } from "@freeanima/core/config/shell-identity";
 import { resolveNativeBuildMeta } from "../shared/resolve-native-build-meta.ts";
 import { assertElectronMainBundle } from "./electron-main-bundle-assert.ts";
 
@@ -76,7 +78,7 @@ export function getElectronPreloadBundleOptions(opts?: {
   profile?: BuildProfile;
   version?: string;
 }): esbuild.BuildOptions {
-  const channel = resolveBuildChannelFromEnv(opts?.profile === "release" ? "release" : "dev");
+  const channel = resolveBuildChannelFromEnv("dev");
   const nativeMeta = resolveNativeBuildMeta({
     shell: "desktop",
     channel,
@@ -118,20 +120,11 @@ function parsePlatformArg(): BuildElectronOptions["platform"] | undefined {
   return undefined;
 }
 
-function readRootPackageVersion(): string {
-  const rootPkg = JSON.parse(readFileSync(join(REPO_ROOT, "package.json"), "utf-8")) as {
-    version?: string;
-  };
-  const version = rootPkg.version?.trim();
-  if (!version) throw new Error("根 package.json 缺少 version");
-  return version;
-}
-
 function resolveBuildVersion(explicit?: string): string {
   const fromEnv = process.env.DESKTOP_SHELL_VERSION?.trim();
   const raw = explicit?.trim() || fromEnv;
   if (raw) return raw.replace(/^v/i, "");
-  return readRootPackageVersion();
+  return resolveBuildVersionFromEnv(REPO_ROOT);
 }
 
 function copyDist(src: string, dest: string): void {
@@ -205,10 +198,15 @@ function buildElectronBuilderOptions(
   platform: string,
   profile: BuildProfile,
   version: string,
+  channel: ReturnType<typeof resolveBuildChannelFromEnv>,
 ): CliOptions {
+  const identity = resolveDesktopShellIdentity(channel);
   const opts: CliOptions = {
     config: {
       extends: join(SHELL_ROOT, "electron-builder.yml"),
+      appId: identity.appId,
+      productName: identity.productName,
+      executableName: identity.executableName,
       extraMetadata: { version },
     },
     projectDir: SHELL_ROOT,
@@ -248,12 +246,26 @@ function buildElectronBuilderCliArgs(opts: CliOptions): string[] {
     }
   }
   const cfg = opts.config;
-  const version =
-    cfg && typeof cfg === "object" && "extraMetadata" in cfg
-      ? (cfg as { extraMetadata?: { version?: string } }).extraMetadata?.version
-      : undefined;
-  if (typeof version === "string" && version.length > 0) {
-    args.push(`-c.extraMetadata.version=${version}`);
+  if (cfg && typeof cfg === "object") {
+    const c = cfg as {
+      appId?: string;
+      productName?: string;
+      executableName?: string;
+      extraMetadata?: { version?: string };
+    };
+    if (typeof c.appId === "string" && c.appId.length > 0) {
+      args.push(`-c.appId=${c.appId}`);
+    }
+    if (typeof c.productName === "string" && c.productName.length > 0) {
+      args.push(`-c.productName=${c.productName}`);
+    }
+    if (typeof c.executableName === "string" && c.executableName.length > 0) {
+      args.push(`-c.executableName=${c.executableName}`);
+    }
+    const version = c.extraMetadata?.version;
+    if (typeof version === "string" && version.length > 0) {
+      args.push(`-c.extraMetadata.version=${version}`);
+    }
   }
   return args;
 }
@@ -290,12 +302,13 @@ export async function buildDesktopShellElectron(opts: BuildElectronOptions = {})
   const sourcemap = profile !== "release";
   await buildVendorAssets({ minify, sourcemap });
   const version = resolveBuildVersion(opts.version);
+  const channel = resolveBuildChannelFromEnv("dev");
   await bundleElectronMain(sourcemap, profile, version);
   if (fullClean) {
     cleanReleaseDir();
   }
 
-  runElectronBuilderViaNode(buildElectronBuilderOptions(platform, profile, version));
+  runElectronBuilderViaNode(buildElectronBuilderOptions(platform, profile, version, channel));
   console.log("[desktop-shell] build complete");
 }
 

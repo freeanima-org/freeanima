@@ -1,0 +1,232 @@
+# 可复用打包流水线：Linux standalone + Desktop Windows（Linux 交叉）+ Mobile APK
+# canary / release 共用；差异由 inputs（channel、version、publish_tag、prerelease）表达。
+name: Package artifacts
+
+on:
+  workflow_call:
+    inputs:
+      channel:
+        description: release | canary | dev
+        required: true
+        type: string
+      version:
+        description: 完整版本串（如 0.9.1 或 0.9.1-canary+202607161200）
+        required: true
+        type: string
+      ref:
+        description: 构建 git ref / SHA
+        required: true
+        type: string
+      publish_tag:
+        description: 挂载产物的 Git tag
+        required: true
+        type: string
+      prerelease:
+        description: 是否标记为 Pre-release
+        required: false
+        type: boolean
+        default: false
+      make_latest:
+        description: 是否设为 latest
+        required: false
+        type: boolean
+        default: true
+      release_name:
+        description: GitHub Release 标题
+        required: false
+        type: string
+        default: ""
+      release_body:
+        description: GitHub Release body（可含多行）
+        required: false
+        type: string
+        default: ""
+      move_tag:
+        description: 是否 force-move publish_tag 到构建 SHA（canary 滚动 tag）
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      FREEANIMA_CI:
+        required: true
+
+env:
+  FREEANIMA_BUILD_CHANNEL: ${{ inputs.channel }}
+  FREEANIMA_BUILD_VERSION: ${{ inputs.version }}
+  DESKTOP_SHELL_VERSION: ${{ inputs.version }}
+  DESKTOP_SHELL_BUILD_PROFILE: release
+
+jobs:
+  linux-standalone:
+    name: Linux standalone
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-bun
+      - uses: ./.github/actions/setup-anima-home
+
+      - name: Build Linux standalone
+        run: bun run build:cli:executable
+
+      - name: Pack artifact
+        run: |
+          set -euo pipefail
+          cd dist/anima-executable
+          tar -czf ../../anima-linux-x64.tar.gz anima
+          ls -lh ../../anima-linux-x64.tar.gz
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: package-linux-standalone
+          path: anima-linux-x64.tar.gz
+          if-no-files-found: error
+
+  desktop-windows:
+    name: Desktop Windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-bun
+
+      - name: 安装 companion FBX 工具
+        run: bun run setup:fbx
+
+      - name: 校验 Electron main bundle 不变量
+        run: bun test src/app/shell/desktop/build-electron.test.ts
+
+      - name: 构建 FreeAnima Desktop（Linux 交叉编译）
+        run: bun run package:windows
+
+      - name: 收集安装包
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          installer="$(ls src/app/shell/desktop/release/FreeAnima-Desktop-*.exe 2>/dev/null || ls src/app/shell/desktop/release/*.exe | head -1)"
+          cp "$installer" dist/freeanima-desktop-windows-x64-setup.exe
+          ls -la dist/
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: package-desktop-windows
+          path: dist/freeanima-desktop-windows-x64-setup.exe
+          if-no-files-found: error
+
+  mobile-android:
+    name: Mobile Android
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-bun
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Setup Android SDK
+        run: bash src/app/shell/mobile/scripts/setup-android-sdk.sh
+
+      - name: Build debug APK
+        run: |
+          set -euo pipefail
+          # shellcheck source=src/app/shell/mobile/scripts/android-env.sh
+          source src/app/shell/mobile/scripts/android-env.sh
+          bun run build:mobile
+          cd src/app/shell/mobile
+          bunx cap sync android
+          cd android
+          ./gradlew assembleDebug
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          cp app/build/outputs/apk/debug/app-debug.apk \
+            "$GITHUB_WORKSPACE/dist/freeanima-mobile-android.apk"
+          ls -lh "$GITHUB_WORKSPACE/dist/freeanima-mobile-android.apk"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: package-mobile-android
+          path: dist/freeanima-mobile-android.apk
+          if-no-files-found: error
+
+  publish:
+    name: Publish GitHub Release assets
+    needs: [linux-standalone, desktop-windows, mobile-android]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+          token: ${{ secrets.FREEANIMA_CI }}
+
+      - uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -la artifacts/
+
+      - name: Resolve build SHA
+        id: build
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Move publish tag
+        if: inputs.move_tag
+        run: |
+          set -euo pipefail
+          git tag -f "${{ inputs.publish_tag }}" "${{ steps.build.outputs.sha }}"
+          git push -f origin "refs/tags/${{ inputs.publish_tag }}"
+
+      - name: Publish / update Release (set body)
+        if: inputs.release_body != ''
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ inputs.publish_tag }}
+          name: ${{ inputs.release_name != '' && inputs.release_name || inputs.publish_tag }}
+          prerelease: ${{ inputs.prerelease }}
+          make_latest: ${{ inputs.make_latest }}
+          target_commitish: ${{ steps.build.outputs.sha }}
+          token: ${{ secrets.FREEANIMA_CI }}
+          body: ${{ inputs.release_body }}
+          files: |
+            artifacts/anima-linux-x64.tar.gz
+            artifacts/freeanima-desktop-windows-x64-setup.exe
+            artifacts/freeanima-mobile-android.apk
+          fail_on_unmatched_files: true
+
+      - name: Publish / update Release (preserve body)
+        if: inputs.release_body == ''
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ inputs.publish_tag }}
+          name: ${{ inputs.release_name != '' && inputs.release_name || inputs.publish_tag }}
+          prerelease: ${{ inputs.prerelease }}
+          make_latest: ${{ inputs.make_latest }}
+          target_commitish: ${{ steps.build.outputs.sha }}
+          token: ${{ secrets.FREEANIMA_CI }}
+          files: |
+            artifacts/anima-linux-x64.tar.gz
+            artifacts/freeanima-desktop-windows-x64-setup.exe
+            artifacts/freeanima-mobile-android.apk
+          fail_on_unmatched_files: true
