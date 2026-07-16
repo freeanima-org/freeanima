@@ -115,6 +115,8 @@ jobs:
           fetch-depth: 0
 
       - uses: ./.github/actions/setup-bun
+      - uses: ./.github/actions/cache-electron-builder
+        if: matrix.kind == 'desktop'
 
       - uses: ./.github/actions/setup-anima-home
         if: matrix.kind == 'linux'
@@ -129,6 +131,8 @@ jobs:
 
       - name: Build Desktop
         if: matrix.kind == 'desktop'
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
         run: |
           set -euo pipefail
           bun run setup:fbx
