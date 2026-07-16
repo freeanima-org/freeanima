@@ -16,7 +16,14 @@ describe("splitTextForHubSpeech", () => {
     expect(splitTextForHubSpeech(text)).toEqual([text]);
   });
 
-  it("超过 20 字即开始分段，首段不超过 200", () => {
+  it("略超 20 字的短句也不强制切开", () => {
+    const text = `${"甲".repeat(21)}。${"乙".repeat(30)}`;
+    expect(text.length).toBeGreaterThan(20);
+    expect(text.length).toBeLessThanOrEqual(MIN_HUB_TTS_SPLIT_LEN);
+    expect(splitTextForHubSpeech(text)).toEqual([text]);
+  });
+
+  it("超过首段上限才分段，首段不超过 200", () => {
     const long = `${"甲".repeat(80)}。${"乙".repeat(300)}。${"丙".repeat(600)}。`;
     const chunks = splitTextForHubSpeech(long);
     expect(chunks.length).toBeGreaterThan(1);
@@ -24,11 +31,16 @@ describe("splitTextForHubSpeech", () => {
     expect(chunks[0]).toBe(`${"甲".repeat(80)}。`);
   });
 
-  it("无标点时首段尽量小并拆成多段", () => {
+  it("无标点且不超过首段上限时保持单段", () => {
     const text = "甲".repeat(50);
+    expect(splitTextForHubSpeech(text)).toEqual([text]);
+  });
+
+  it("无标点超首段上限时按上限切开", () => {
+    const text = "甲".repeat(FIRST_HUB_TTS_CHUNK_MAX + 50);
     const chunks = splitTextForHubSpeech(text);
     expect(chunks.length).toBeGreaterThan(1);
-    expect(chunks[0]?.length ?? 0).toBeLessThan(text.length);
+    expect(chunks[0]?.length ?? 0).toBe(FIRST_HUB_TTS_CHUNK_MAX);
     expect(chunks.join("")).toBe(text);
   });
 

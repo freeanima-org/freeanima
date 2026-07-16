@@ -63,19 +63,8 @@ function takeTierChunk(remaining: string, tier: ChunkTier, preferEarly: boolean)
   const trimmed = remaining.trimStart();
   if (!trimmed) return "";
 
-  if (trimmed.length <= tier.max) {
-    if (preferEarly && trimmed.length > MIN_HUB_TTS_SPLIT_LEN) {
-      const earlyEnd = findCutIndex(trimmed, { min: 1, max: tier.max }, true);
-      if (earlyEnd < trimmed.length) {
-        return trimmed.slice(0, earlyEnd).trim();
-      }
-      const cut = Math.max(MIN_HUB_TTS_SPLIT_LEN + 1, Math.floor(trimmed.length / 2));
-      if (cut < trimmed.length) {
-        return trimmed.slice(0, cut).trim();
-      }
-    }
-    return trimmed;
-  }
+  // 未超本段上限则整段保留；仅长文本才按句读/上限切开（首段 preferEarly 缩短首音延迟）
+  if (trimmed.length <= tier.max) return trimmed;
 
   const cut = findCutIndex(trimmed, tier, preferEarly);
   return trimmed.slice(0, cut).trim();
