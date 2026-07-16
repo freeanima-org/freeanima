@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # 安装 Android SDK（API 35）到 ~/Android/Sdk；Debian/Ubuntu 需已装 openjdk-21-jdk
+# 已安装的包会跳过 sdkmanager，便于 CI 命中 SDK 缓存后快速 no-op
 set -e
 SDK="${ANDROID_HOME:-$HOME/Android/Sdk}"
 mkdir -p "$SDK/cmdline-tools"
@@ -19,15 +20,24 @@ export ANDROID_HOME="$SDK"
 export ANDROID_SDK_ROOT="$SDK"
 export PATH="$SDK/cmdline-tools/latest/bin:$SDK/platform-tools:$PATH"
 
-echo "Accepting licenses..."
-yes | sdkmanager --licenses >/dev/null 2>&1 || true
+need_install=0
+[ -d "$SDK/platform-tools" ] || need_install=1
+[ -d "$SDK/platforms/android-35" ] || need_install=1
+[ -d "$SDK/build-tools/35.0.0" ] || need_install=1
 
-echo "Installing platform-tools, android-35, build-tools 35.0.0..."
-sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+if [ "$need_install" -eq 1 ]; then
+  echo "Accepting licenses..."
+  yes | sdkmanager --licenses >/dev/null 2>&1 || true
+
+  echo "Installing platform-tools, android-35, build-tools 35.0.0..."
+  sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+else
+  echo "Android SDK packages already present, skipping sdkmanager install"
+fi
 
 PROP="$(cd "$(dirname "$0")/../android" && pwd)/local.properties"
 printf 'sdk.dir=%s\n' "$SDK" >"$PROP"
 echo "Wrote $PROP"
 
 sdkmanager --list_installed | grep -E 'platform-tools|android-35|build-tools;35' || true
-echo "Done. Source: source satellites/app-mobile/scripts/android-env.sh"
+echo "Done. Source: source src/app/shell/mobile/scripts/android-env.sh"
