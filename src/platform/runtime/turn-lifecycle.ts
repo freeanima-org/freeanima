@@ -183,6 +183,12 @@ export async function runSimpleTurn(
     }
     const evalResult = await evaluateGoalAfterTurn(goalDeps, conversationId, msgs);
     if (evalResult.action !== "continue") {
+      if (evalResult.displayHint) {
+        await deps.conversation.appendMessage?.(
+          { role: "assistant", content: evalResult.displayHint },
+          conversationId,
+        );
+      }
       break goalLoop;
     }
     effective = await deps.conversation.beginTurnFast(conversationId, evalResult.continuePrompt);
@@ -371,6 +377,26 @@ export async function* runExclusiveStreamTurn(
             buffer.push({ event: "content_replace", data: { content: displayContent } });
             signalReady();
           }
+          await new Promise<void>((resolve) => {
+            setImmediate(resolve);
+          });
+          await finalizeTurn(deps, conversationId, msgs, effective, model, functions);
+
+          let evalResult: Awaited<ReturnType<typeof evaluateGoalAfterTurn>> | undefined;
+          if (!(await shouldSkipGoalEvaluate(goalDeps, conversationId, msgs))) {
+            evalResult = await evaluateGoalAfterTurn(goalDeps, conversationId, msgs);
+          }
+
+          // 终态提示须在 done 之前落库+推流，否则 UI 在 done 后清空 stream / reload 会丢提示
+          if (evalResult?.displayHint && evalResult.action !== "continue") {
+            await deps.conversation.appendMessage?.(
+              { role: "assistant", content: evalResult.displayHint },
+              conversationId,
+            );
+            buffer.push({ event: "token", data: { content: `\n${evalResult.displayHint}\n` } });
+            signalReady();
+          }
+
           if (pendingDone) {
             buffer.push(pendingDone);
             signalReady();
@@ -378,28 +404,21 @@ export async function* runExclusiveStreamTurn(
             buffer.push({ event: "done", data: {} });
             signalReady();
           }
-          await new Promise<void>((resolve) => {
-            setImmediate(resolve);
-          });
-          await finalizeTurn(deps, conversationId, msgs, effective, model, functions);
 
-          if (!(await shouldSkipGoalEvaluate(goalDeps, conversationId, msgs))) {
-            const evalResult = await evaluateGoalAfterTurn(goalDeps, conversationId, msgs);
+          if (evalResult?.action === "continue") {
             if (evalResult.displayHint) {
               buffer.push({ event: "token", data: { content: `\n${evalResult.displayHint}\n` } });
               signalReady();
             }
-            if (evalResult.action === "continue") {
-              effective = await deps.conversation.beginTurnFast(
-                conversationId,
-                evalResult.continuePrompt,
-              );
-              const prepared = await deps.conversation.beginTurnPrepare(conversationId);
-              msgs = prepared[0];
-              functions = prepared[1];
-              retried = false;
-              continue goalLoop;
-            }
+            effective = await deps.conversation.beginTurnFast(
+              conversationId,
+              evalResult.continuePrompt,
+            );
+            const prepared = await deps.conversation.beginTurnPrepare(conversationId);
+            msgs = prepared[0];
+            functions = prepared[1];
+            retried = false;
+            continue goalLoop;
           }
         }
         break goalLoop;

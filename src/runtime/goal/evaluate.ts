@@ -6,11 +6,13 @@ import { judgeGoal } from "@freeanima/core/llm/goal-judge";
 import { PROFILE_GOAL_JUDGE } from "@freeanima/core/provider";
 import type { ConversationPort } from "@freeanima/core/tool/conversation-port.ts";
 import type { LlmRuntime } from "@freeanima/core/llm";
+import type { Logger } from "@freeanima/kernel/logging";
 
 import {
   formatGoalAchievedMessage,
   formatGoalContinuePrompt,
   formatGoalExhaustedMessage,
+  formatGoalJudgeFailedMessage,
 } from "./prompts.ts";
 import { patchConversationGoal, readConversationGoal } from "./store.ts";
 
@@ -18,6 +20,7 @@ export type GoalRuntimeDeps = {
   conversation: ConversationPort;
   llm: LlmRuntime;
   config: AnimaConfig;
+  logger: Logger;
 };
 
 export type GoalEvaluateResult =
@@ -96,26 +99,38 @@ export async function evaluateGoalAfterTurn(
     { runtime: deps.llm, model },
   );
 
-  let done = false;
-  let reason = "";
-  if (judge.ok) {
-    done = judge.done;
-    reason = judge.reason;
-  } else {
-    reason = judge.error;
+  // Judge 基础设施失败：paused + 落库提示，避免 active 但不续跑的「装死」态
+  if (!judge.ok) {
+    deps.logger.warn("goal judge failed; pausing auto-continue", {
+      conversationId,
+      error: judge.error,
+      turn_count: goal.turn_count,
+      max_turns: goal.max_turns,
+      model,
+    });
+    const failed = conversationGoalSchema.parse({
+      ...goal,
+      status: "paused",
+      last_judge_reason: judge.error,
+    });
+    await patchConversationGoal(deps.conversation, conversationId, failed);
+    return {
+      action: "stop",
+      displayHint: formatGoalJudgeFailedMessage(judge.error),
+    };
   }
 
-  if (done) {
+  if (judge.done) {
     const completed = conversationGoalSchema.parse({
       ...goal,
       status: "completed",
-      last_judge_reason: reason,
+      last_judge_reason: judge.reason,
       completed_at: new Date().toISOString(),
     });
     await patchConversationGoal(deps.conversation, conversationId, completed);
     return {
       action: "stop",
-      displayHint: formatGoalAchievedMessage(reason),
+      displayHint: formatGoalAchievedMessage(judge.reason),
     };
   }
 
@@ -123,7 +138,7 @@ export async function evaluateGoalAfterTurn(
   const updated = conversationGoalSchema.parse({
     ...goal,
     turn_count: nextCount,
-    last_judge_reason: reason,
+    last_judge_reason: judge.reason,
   });
   await patchConversationGoal(deps.conversation, conversationId, updated);
 
@@ -139,7 +154,7 @@ export async function evaluateGoalAfterTurn(
     };
   }
 
-  const continuePrompt = formatGoalContinuePrompt(nextCount, goal.max_turns, reason);
+  const continuePrompt = formatGoalContinuePrompt(nextCount, goal.max_turns, judge.reason);
   return {
     action: "continue",
     continuePrompt,
@@ -149,11 +164,12 @@ export async function evaluateGoalAfterTurn(
 
 export function toGoalRuntimeDeps(deps: {
   conversation: ConversationPort;
-  engine: { llm: LlmRuntime; config: { data: AnimaConfig } };
+  engine: { llm: LlmRuntime; config: { data: AnimaConfig }; logger: Logger };
 }): GoalRuntimeDeps {
   return {
     conversation: deps.conversation,
     llm: deps.engine.llm,
     config: deps.engine.config.data,
+    logger: deps.engine.logger.with({ component: "goal" }),
   };
 }

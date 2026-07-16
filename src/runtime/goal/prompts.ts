@@ -22,6 +22,12 @@ export function formatGoalExhaustedMessage(maxTurns: number): string {
   return `⊙ Goal turn budget exhausted (${maxTurns}/${maxTurns})`;
 }
 
+/** Judge 调用/解析失败：暂停自动续跑，避免装死（active 但不续跑） */
+export function formatGoalJudgeFailedMessage(error: string): string {
+  const detail = error.trim() || "unknown error";
+  return `⊙ Goal paused: judge failed (${detail}). Use \`/goal resume\` to retry.`;
+}
+
 export function formatGoalSetMessage(maxTurns: number): string {
   return `⊙ Goal set (${maxTurns}-turn budget)`;
 }
