@@ -681,6 +681,11 @@ type ParaglideMessageExports = {
   readonly ui_shell_update_latest: ParaglideMessageFn;
   readonly ui_shell_update_log_hint: ParaglideMessageFn;
   readonly ui_shell_update_none: ParaglideMessageFn;
+  readonly ui_shell_update_proxy_gh_proxy_com: ParaglideMessageFn;
+  readonly ui_shell_update_proxy_ghfast_top: ParaglideMessageFn;
+  readonly ui_shell_update_proxy_ghproxy_net: ParaglideMessageFn;
+  readonly ui_shell_update_proxy_label: ParaglideMessageFn;
+  readonly ui_shell_update_proxy_none: ParaglideMessageFn;
 };
 
 declare module "@paraglide/messages" {
@@ -1365,4 +1370,9 @@ declare module "*/messages/paraglide/messages.js" {
   export const ui_shell_update_latest: ParaglideMessageFn;
   export const ui_shell_update_log_hint: ParaglideMessageFn;
   export const ui_shell_update_none: ParaglideMessageFn;
+  export const ui_shell_update_proxy_gh_proxy_com: ParaglideMessageFn;
+  export const ui_shell_update_proxy_ghfast_top: ParaglideMessageFn;
+  export const ui_shell_update_proxy_ghproxy_net: ParaglideMessageFn;
+  export const ui_shell_update_proxy_label: ParaglideMessageFn;
+  export const ui_shell_update_proxy_none: ParaglideMessageFn;
 }

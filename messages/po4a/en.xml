@@ -672,7 +672,14 @@ Digital Humans</msg>
   <msg id="ui_shell_update_check">Check for updates</msg>
   <msg id="ui_shell_update_dismiss">Later</msg>
   <msg id="ui_shell_update_failed">Update failed. Please try again.</msg>
+  <msg id="ui_shell_update_failed_detail">Update failed: {message}</msg>
   <msg id="ui_shell_update_install">Update now</msg>
   <msg id="ui_shell_update_latest">You are on the latest version.</msg>
+  <msg id="ui_shell_update_log_hint">See ~/.anima/desktop-shell/shell.log for details.</msg>
   <msg id="ui_shell_update_none">No update package for this platform yet.</msg>
+  <msg id="ui_shell_update_proxy_gh_proxy_com">gh-proxy.com</msg>
+  <msg id="ui_shell_update_proxy_ghfast_top">ghfast.top</msg>
+  <msg id="ui_shell_update_proxy_ghproxy_net">ghproxy.net</msg>
+  <msg id="ui_shell_update_proxy_label">Download proxy</msg>
+  <msg id="ui_shell_update_proxy_none">Direct (GitHub)</msg>
 </messages>

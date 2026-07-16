@@ -5,11 +5,13 @@
 # Usage:
 #   curl -fsSL https://freeanima.com/install | bash
 #   curl -fsSL https://freeanima.com/install | CHANNEL=canary bash
+#   curl -fsSL https://freeanima.com/install | PROXY=ghproxy-net bash
 #   curl -fsSL https://raw.githubusercontent.com/freeanima-org/freeanima/main/scripts/install.sh | bash
 #
 # Env:
 #   CHANNEL=release|canary   (default: release)
 #   VERSION=vX.Y.Z           (optional pin; implies release-style tag download)
+#   PROXY=none|ghproxy-net|gh-proxy-com|ghfast-top  (default: none；公共 GitHub 反代)
 #   FREEANIMA_INSTALL_PREFIX (default: ~/.anima/standalone)
 #   FREEANIMA_HOME           (data dir root; default: ~/.anima — used for bin shim)
 set -euo pipefail
@@ -53,6 +55,7 @@ require_cmd mv
 
 CHANNEL="${CHANNEL:-release}"
 VERSION="${VERSION:-}"
+PROXY="${PROXY:-none}"
 HOME_DIR="${HOME:?HOME 未设置}"
 ANIMA_HOME="${FREEANIMA_HOME:-${HOME_DIR}/.anima}"
 PREFIX="${FREEANIMA_INSTALL_PREFIX:-${ANIMA_HOME}/standalone}"
@@ -62,6 +65,18 @@ case "$CHANNEL" in
   release | canary) ;;
   *)
     error "无效 CHANNEL（须为 release 或 canary）: ${CHANNEL}"
+    ;;
+esac
+
+# 与 core/shell-sdk github-release-proxy.ts id 表一致
+PROXY_PREFIX=""
+case "$PROXY" in
+  none) PROXY_PREFIX="" ;;
+  ghproxy-net) PROXY_PREFIX="https://ghproxy.net/" ;;
+  gh-proxy-com) PROXY_PREFIX="https://gh-proxy.com/" ;;
+  ghfast-top) PROXY_PREFIX="https://ghfast.top/" ;;
+  *)
+    error "无效 PROXY（须为 none | ghproxy-net | gh-proxy-com | ghfast-top）: ${PROXY}"
     ;;
 esac
 
@@ -86,6 +101,23 @@ normalize_tag() {
   else
     printf '%s' "$raw"
   fi
+}
+
+# 套公共反代前缀（已带同一前缀则幂等）
+apply_proxy() {
+  local url="$1"
+  if [[ -z "$PROXY_PREFIX" ]]; then
+    printf '%s\n' "$url"
+    return 0
+  fi
+  case "$url" in
+    "${PROXY_PREFIX}"*)
+      printf '%s\n' "$url"
+      ;;
+    *)
+      printf '%s%s\n' "$PROXY_PREFIX" "$url"
+      ;;
+  esac
 }
 
 # Extract browser_download_url for ASSET_NAME from GitHub release JSON on stdin.
@@ -120,7 +152,7 @@ sys.exit(2)
 }
 
 resolve_download_url() {
-  local api_url fallback_url tag json_tmp http_code
+  local api_url fallback_url tag json_tmp http_code url
 
   if [[ -n "$VERSION" ]]; then
     tag="$(normalize_tag "$VERSION")"
@@ -136,6 +168,8 @@ resolve_download_url() {
     fallback_url="${GITHUB_DL}/latest/download/${ASSET_NAME}"
   fi
 
+  api_url="$(apply_proxy "$api_url")"
+
   json_tmp="$(mktemp)"
   http_code="$(
     curl -sS -L -w '%{http_code}' -o "$json_tmp" \
@@ -150,14 +184,14 @@ resolve_download_url() {
   if [[ "$http_code" == "200" ]]; then
     if url="$(extract_asset_url <"$json_tmp")"; then
       rm -f "$json_tmp"
-      printf '%s\n' "$url"
+      apply_proxy "$url"
       return 0
     fi
   fi
   rm -f "$json_tmp"
 
   info "GitHub API 未返回 ${ASSET_NAME}，回退直链（tag=${tag}）"
-  printf '%s\n' "$fallback_url"
+  apply_proxy "$fallback_url"
 }
 
 TMPDIR_INSTALL="$(mktemp -d)"
@@ -166,7 +200,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-info "channel=${CHANNEL}${VERSION:+ version=${VERSION}} → prefix=${PREFIX}"
+info "channel=${CHANNEL}${VERSION:+ version=${VERSION}} proxy=${PROXY} → prefix=${PREFIX}"
 DOWNLOAD_URL="$(resolve_download_url)"
 info "下载 ${DOWNLOAD_URL}"
 
@@ -233,5 +267,5 @@ printf '\n'
 info "下一步（本脚本不写配置、不起服务）："
 printf '  1. 配置 ~/.anima/config.yaml（至少 database.url）— 见 https://freeanima.com/docs/guide/install/\n'
 printf '  2. anima service start\n'
-printf '  3. 之后升级: anima upgrade   # 或 anima upgrade --channel canary\n'
+printf '  3. 之后升级: anima upgrade   # 或 anima upgrade --channel canary [--proxy ghproxy-net]\n'
 printf '\n'

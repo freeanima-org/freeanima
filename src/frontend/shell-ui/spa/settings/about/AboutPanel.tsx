@@ -15,6 +15,14 @@ import {
 } from "@freeanima/frontend/shell-sdk/app-update";
 import { parseComponentBuildMeta } from "@freeanima/frontend/shell-sdk/build-meta";
 import {
+  GITHUB_RELEASE_PROXY_IDS,
+  type GithubReleaseProxyId,
+} from "@freeanima/frontend/shell-sdk/github-release-proxy";
+import {
+  readGithubReleaseProxyPref,
+  writeGithubReleaseProxyPref,
+} from "@freeanima/frontend/shell-sdk/github-release-proxy-prefs";
+import {
   NATIVE_BUILD_META_CHANGED_EVENT,
   resolveAboutNativeBuildMeta,
 } from "@freeanima/frontend/shell-sdk/native-build-meta.resolve";
@@ -23,6 +31,25 @@ import { parseWebUiConfigJson } from "@freeanima/frontend/shell-sdk/web-ui-confi
 import { m } from "@paraglide/messages";
 import { requestShellUpdateCheck } from "../../ShellUpdateBanner.tsx";
 
+const proxySelectClassName =
+  "border-input flex h-8 min-w-[10rem] rounded-md border bg-transparent px-2 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30";
+
+function proxyOptionLabel(id: GithubReleaseProxyId): string {
+  switch (id) {
+    case "none":
+      return m.ui_shell_update_proxy_none();
+    case "ghproxy-net":
+      return m.ui_shell_update_proxy_ghproxy_net();
+    case "gh-proxy-com":
+      return m.ui_shell_update_proxy_gh_proxy_com();
+    case "ghfast-top":
+      return m.ui_shell_update_proxy_ghfast_top();
+    default: {
+      const _exhaustive: never = id;
+      return _exhaustive;
+    }
+  }
+}
 function isNativeShellRuntime(): boolean {
   return Boolean(window.satelliteShell?.isElectron || window.satelliteShell?.isNativeShell);
 }
@@ -179,6 +206,9 @@ export default function AboutPanel() {
   const [webBuild, setWebBuild] = useState<ComponentBuildMeta | null | undefined>(undefined);
   const [nativeBuild, setNativeBuild] = useState<ComponentBuildMeta | null | undefined>(undefined);
   const [nativeSection, setNativeSection] = useState<"pending" | "show" | "hide">("pending");
+  const [updateProxy, setUpdateProxy] = useState<GithubReleaseProxyId>(() =>
+    readGithubReleaseProxyPref(),
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -192,7 +222,6 @@ export default function AboutPanel() {
       cancelled = true;
     };
   }, []);
-
   useEffect(() => {
     let cancelled = false;
 
@@ -248,7 +277,29 @@ export default function AboutPanel() {
 
   return (
     <div className="space-y-4 max-w-3xl">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        {canCheckNative ? (
+          <label className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground whitespace-nowrap">
+              {m.ui_shell_update_proxy_label()}
+            </span>
+            <select
+              className={proxySelectClassName}
+              value={updateProxy}
+              onChange={(e) => {
+                const next = e.target.value as GithubReleaseProxyId;
+                setUpdateProxy(next);
+                writeGithubReleaseProxyPref(next);
+              }}
+            >
+              {GITHUB_RELEASE_PROXY_IDS.map((id) => (
+                <option key={id} value={id}>
+                  {proxyOptionLabel(id)}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         {canCheckNative ? (
           <Button type="button" size="sm" onClick={() => requestShellUpdateCheck()}>
             {m.ui_shell_update_check()}
@@ -278,7 +329,7 @@ export default function AboutPanel() {
             {m.ui_shell_update_check()}
           </Button>
         ) : null}
-      </div>
+      </div>{" "}
       <BuildMetaGroup
         title={m.settings_about_group_service()}
         meta={serviceAbout?.meta}

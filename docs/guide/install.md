@@ -47,6 +47,13 @@ curl -fsSL https://freeanima.com/install | CHANNEL=canary bash
 curl -fsSL https://freeanima.com/install | VERSION=v0.8.5 bash
 ```
 
+国内网络可指定公共 GitHub 反代（`PROXY=none|ghproxy-net|gh-proxy-com|ghfast-top`，默认 `none`）：
+
+```bash
+curl -fsSL https://freeanima.com/install | PROXY=ghproxy-net bash
+curl -fsSL https://freeanima.com/install | CHANNEL=canary PROXY=ghfast-top bash
+```
+
 可选环境变量：`FREEANIMA_INSTALL_PREFIX`（默认 `~/.anima/standalone`）、`FREEANIMA_HOME`（默认 `~/.anima`，决定 `bin` shim 位置）。
 
 备用（不依赖站点发布）：
@@ -112,6 +119,8 @@ Installed standalone (independent prefix, e.g. `~/.anima/standalone`):
 anima upgrade                 # 当前 bake channel 内升级（release：semver；canary：commit）
 anima upgrade --check
 anima upgrade --channel canary   # 切到 / 检查 canary tip
+anima upgrade --proxy ghproxy-net
+anima upgrade --check --channel canary --proxy ghfast-top
 ```
 
 升级时 Hub 在**下载与校验阶段保持在线**；若 service 原先在运行，仅在替换二进制瞬间短暂停服并自动拉起。未运行 service 时仅覆盖 `prefix/anima`，不会自动启动。

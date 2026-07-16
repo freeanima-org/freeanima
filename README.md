@@ -72,6 +72,8 @@ anima --version
 # Canary / pin:
 # curl -fsSL https://freeanima.com/install | CHANNEL=canary bash
 # curl -fsSL https://freeanima.com/install | VERSION=v0.8.5 bash
+# GitHub 公共反代（国内网络）:
+# curl -fsSL https://freeanima.com/install | PROXY=ghproxy-net bash
 ```
 
 Then configure `~/.anima/config.yaml` (at least `database.url`) and run `anima service start`. See [`docs/guide/install.md`](docs/guide/install.md), [`docs/guide/database.md`](docs/guide/database.md), [`docs/guide/security.md`](docs/guide/security.md).

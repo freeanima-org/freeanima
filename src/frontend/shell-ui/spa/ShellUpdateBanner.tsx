@@ -6,6 +6,7 @@ import {
   type UpdateTrack,
 } from "@freeanima/frontend/shell-sdk/app-update";
 import type { BuildChannel } from "@freeanima/frontend/shell-sdk/build-meta";
+import { readGithubReleaseProxyPref } from "@freeanima/frontend/shell-sdk/github-release-proxy-prefs";
 import { resolveAboutNativeBuildMeta } from "@freeanima/frontend/shell-sdk/native-build-meta.resolve";
 import {
   dismissShellToast,
@@ -15,7 +16,6 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import { m } from "@paraglide/messages";
-
 const DISMISS_KEY = "freeanima.shell-update.dismissed-key";
 
 function dismissKey(update: Extract<PackagedUpdateResult, { available: true }>): string {
@@ -99,6 +99,7 @@ export function ShellUpdateBanner(): null {
           ...(localCommit ? { localCommit } : {}),
           intent,
           ...(targetChannel ? { targetChannel } : {}),
+          proxy: readGithubReleaseProxyPref(),
         });
         if (!result.available) {
           if (manual) {

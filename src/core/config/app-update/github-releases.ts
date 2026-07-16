@@ -1,3 +1,8 @@
+import {
+  applyGithubReleaseProxy,
+  normalizeGithubReleaseProxy,
+  type GithubReleaseProxyId,
+} from "./github-release-proxy.ts";
 import type { GithubReleaseAsset } from "./release-assets.ts";
 
 export const FREEANIMA_GITHUB_REPO = "freeanima-org/freeanima";
@@ -19,7 +24,17 @@ export type FetchReleaseOptions = {
   includePrerelease?: boolean;
   signal?: AbortSignal;
   fetchImpl?: typeof fetch;
+  /** 公共 gh-proxy；默认直连 */
+  proxy?: GithubReleaseProxyId;
 };
+
+function resolveProxy(options: FetchReleaseOptions): GithubReleaseProxyId {
+  return normalizeGithubReleaseProxy(options.proxy);
+}
+
+function proxiedGithubApiUrl(path: string, proxy: GithubReleaseProxyId): string {
+  return applyGithubReleaseProxy(`https://api.github.com${path}`, proxy);
+}
 
 function githubHeaders(): Record<string, string> {
   return {
@@ -87,8 +102,9 @@ export async function fetchLatestRelease(
   const repo = options.repo ?? FREEANIMA_GITHUB_REPO;
   const fetchImpl = options.fetchImpl ?? fetch;
   const headers = githubHeaders();
+  const proxy = resolveProxy(options);
 
-  const latestRes = await fetchImpl(`https://api.github.com/repos/${repo}/releases/latest`, {
+  const latestRes = await fetchImpl(proxiedGithubApiUrl(`/repos/${repo}/releases/latest`, proxy), {
     headers,
     ...(options.signal ? { signal: options.signal } : {}),
   } as RequestInit);
@@ -99,10 +115,13 @@ export async function fetchLatestRelease(
     }
   }
 
-  const listRes = await fetchImpl(`https://api.github.com/repos/${repo}/releases?per_page=10`, {
-    headers,
-    ...(options.signal ? { signal: options.signal } : {}),
-  } as RequestInit);
+  const listRes = await fetchImpl(
+    proxiedGithubApiUrl(`/repos/${repo}/releases?per_page=10`, proxy),
+    {
+      headers,
+      ...(options.signal ? { signal: options.signal } : {}),
+    } as RequestInit,
+  );
   if (!listRes.ok) return null;
   const list = (await listRes.json()) as unknown;
   if (!Array.isArray(list)) return null;
@@ -123,10 +142,14 @@ export async function fetchReleaseByTag(
   const repo = options.repo ?? FREEANIMA_GITHUB_REPO;
   const fetchImpl = options.fetchImpl ?? fetch;
   const encoded = encodeURIComponent(tag);
-  const res = await fetchImpl(`https://api.github.com/repos/${repo}/releases/tags/${encoded}`, {
-    headers: githubHeaders(),
-    ...(options.signal ? { signal: options.signal } : {}),
-  } as RequestInit);
+  const proxy = resolveProxy(options);
+  const res = await fetchImpl(
+    proxiedGithubApiUrl(`/repos/${repo}/releases/tags/${encoded}`, proxy),
+    {
+      headers: githubHeaders(),
+      ...(options.signal ? { signal: options.signal } : {}),
+    } as RequestInit,
+  );
   if (!res.ok) return null;
   const release = parseGithubRelease(await res.json());
   if (!release || release.draft) return null;
