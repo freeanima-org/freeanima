@@ -2,7 +2,15 @@
 # 安装 Android SDK（API 35）到 ~/Android/Sdk；Debian/Ubuntu 需已装 openjdk-21-jdk
 # 已安装的包会跳过 sdkmanager，便于 CI 命中 SDK 缓存后快速 no-op
 set -e
-SDK="${ANDROID_HOME:-$HOME/Android/Sdk}"
+
+# GitHub Actions runner 常预置 ANDROID_HOME（如 /usr/local/lib/android/sdk）；
+# CI 固定用 ~/Android/Sdk，与 .github/actions/cache-android-sdk 路径对齐。
+if [ -n "${GITHUB_ACTIONS:-}" ]; then
+  SDK="$HOME/Android/Sdk"
+else
+  SDK="${ANDROID_HOME:-$HOME/Android/Sdk}"
+fi
+
 mkdir -p "$SDK/cmdline-tools"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
@@ -19,6 +27,13 @@ fi
 export ANDROID_HOME="$SDK"
 export ANDROID_SDK_ROOT="$SDK"
 export PATH="$SDK/cmdline-tools/latest/bin:$SDK/platform-tools:$PATH"
+
+if [ -n "${GITHUB_ENV:-}" ]; then
+  {
+    echo "ANDROID_HOME=$SDK"
+    echo "ANDROID_SDK_ROOT=$SDK"
+  } >>"$GITHUB_ENV"
+fi
 
 need_install=0
 [ -d "$SDK/platform-tools" ] || need_install=1
@@ -37,7 +52,7 @@ fi
 
 PROP="$(cd "$(dirname "$0")/../android" && pwd)/local.properties"
 printf 'sdk.dir=%s\n' "$SDK" >"$PROP"
-echo "Wrote $PROP"
+echo "Wrote $PROP (sdk.dir=$SDK)"
 
 sdkmanager --list_installed | grep -E 'platform-tools|android-35|build-tools;35' || true
 echo "Done. Source: source src/app/shell/mobile/scripts/android-env.sh"
