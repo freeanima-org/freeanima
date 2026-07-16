@@ -42,7 +42,7 @@ jobs:
       - name: Build Linux standalone
         run: bun run build:cli:executable
       - name: Smoke standalone
-        run: ./dist/anima-executable/anima --version
+        run: bun scripts/smoke-standalone-tiktoken.ts
       - run: bun scripts/run-ci-tests.ts
       - name: Upload coverage report
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository

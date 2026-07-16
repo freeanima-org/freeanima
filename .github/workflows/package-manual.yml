@@ -130,6 +130,7 @@ jobs:
         run: |
           set -euo pipefail
           bun run build:cli:executable
+          bun scripts/smoke-standalone-tiktoken.ts
           cd dist/anima-executable
           tar -czf ../../anima-linux-x64.tar.gz anima
 

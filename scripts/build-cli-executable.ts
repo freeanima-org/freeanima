@@ -11,8 +11,8 @@
  */
 import { $ } from "bun";
 import { Glob } from "bun";
-import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { cpSync, existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 import {
   createComponentBuildMeta,
@@ -22,6 +22,11 @@ import {
   createStandaloneEmbedPlugin,
   type StandaloneEmbedInput,
 } from "./standalone-embed-plugin.ts";
+import {
+  assertStandaloneBinaryHasNoTiktokenBuildPath,
+  createTiktokenWasmPlugin,
+  resolveTiktokenWasmPath,
+} from "./tiktoken-wasm-plugin.ts";
 
 const ROOT = join(import.meta.dir, "..");
 const OUT_DIR = join(ROOT, "dist/anima-executable");
@@ -108,8 +113,13 @@ async function main(): Promise<void> {
 
   const files = [...listMigrationEmbeds(), ...listWebEmbeds()];
   const outfile = join(OUT_DIR, "anima");
+  const tiktokenPackageWasm = resolveTiktokenWasmPath(ROOT);
+  const tiktokenPackageDir = dirname(tiktokenPackageWasm);
+  // staging：避免 type:file 把 node_modules/tiktoken 绝对路径字符串打进二进制
+  const stagedWasm = join(OUT_DIR, "tiktoken_bg.wasm");
+  cpSync(tiktokenPackageWasm, stagedWasm);
   console.log(
-    `compiling single-file standalone → ${outfile} (${files.length} embedded files + runtime meta)`,
+    `compiling single-file standalone → ${outfile} (${files.length} embedded files + runtime meta + tiktoken wasm)`,
   );
 
   const result = await Bun.build({
@@ -121,6 +131,7 @@ async function main(): Promise<void> {
         version: embedVersion,
         buildMeta,
       }),
+      createTiktokenWasmPlugin(stagedWasm),
     ],
     compile: {
       outfile,
@@ -133,6 +144,9 @@ async function main(): Promise<void> {
     }
     throw new Error("Bun.build --compile failed");
   }
+
+  assertStandaloneBinaryHasNoTiktokenBuildPath(outfile, tiktokenPackageDir);
+  rmSync(stagedWasm, { force: true });
 
   console.log(`executable ready: ${outfile}`);
   console.log(`  try: ${outfile} --version`);
