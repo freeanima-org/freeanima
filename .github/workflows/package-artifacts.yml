@@ -49,6 +49,14 @@ on:
     secrets:
       FREEANIMA_CI:
         required: true
+      FREEANIMA_ANDROID_KEYSTORE_BASE64:
+        required: true
+      FREEANIMA_ANDROID_KEYSTORE_PASSWORD:
+        required: true
+      FREEANIMA_ANDROID_KEY_PASSWORD:
+        required: true
+      FREEANIMA_ANDROID_KEY_ALIAS:
+        required: true
 
 env:
   FREEANIMA_BUILD_CHANNEL: ${{ inputs.channel }}
@@ -149,10 +157,17 @@ jobs:
         run: bash src/app/shell/mobile/scripts/setup-android-sdk.sh
 
       - name: Build debug APK
+        env:
+          FREEANIMA_ANDROID_KEYSTORE_BASE64: ${{ secrets.FREEANIMA_ANDROID_KEYSTORE_BASE64 }}
+          FREEANIMA_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.FREEANIMA_ANDROID_KEYSTORE_PASSWORD }}
+          FREEANIMA_ANDROID_KEY_PASSWORD: ${{ secrets.FREEANIMA_ANDROID_KEY_PASSWORD }}
+          FREEANIMA_ANDROID_KEY_ALIAS: ${{ secrets.FREEANIMA_ANDROID_KEY_ALIAS }}
         run: |
           set -euo pipefail
           # shellcheck source=src/app/shell/mobile/scripts/android-env.sh
           source src/app/shell/mobile/scripts/android-env.sh
+          # shellcheck source=src/app/shell/mobile/scripts/export-android-signing-env.sh
+          source src/app/shell/mobile/scripts/export-android-signing-env.sh
           bun run build:mobile
           cd src/app/shell/mobile
           bunx cap sync android
