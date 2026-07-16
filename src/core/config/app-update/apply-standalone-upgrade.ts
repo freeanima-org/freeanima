@@ -31,6 +31,8 @@ export type ApplyStandaloneUpgradeOptions = {
   targetChannel?: BuildChannel;
   /** 仅检查，不下载 */
   checkOnly?: boolean;
+  /** 原子替换前回调（由 CLI 按需停 service） */
+  beforeReplace?: () => void | Promise<void>;
   signal?: AbortSignal;
   fetchOptions?: Parameters<typeof resolvePackagedUpdate>[0]["fetchOptions"];
   log?: (msg: string) => void;
@@ -42,6 +44,11 @@ export type ApplyStandaloneUpgradeResult =
   | { status: "no_asset"; remoteVersion?: string }
   | { status: "would_upgrade"; remoteVersion: string; assetUrl: string }
   | { status: "upgraded"; remoteVersion: string; prefix: string };
+
+type StagedTarball = {
+  stagedAnimaPath: string;
+  cleanup: () => void;
+};
 
 function relinkBinShim(prefix: string): void {
   const binDir = defaultAnimaBinDir();
@@ -62,48 +69,53 @@ function findAnimaInExtract(extractDir: string): string {
   throw new Error("tarball 中未找到 anima 可执行文件");
 }
 
-/** 解压 tarball 并仅替换 prefix/anima（单文件） */
-async function extractAndReplaceAnima(
-  tarballPath: string,
+/** 解压 tarball 到 staging 并校验 anima 可执行文件存在 */
+async function stageStandaloneTarball(tarballPath: string): Promise<StagedTarball> {
+  const extractDir = mkdtempSync(join(tmpdir(), "anima-upgrade-"));
+  const proc = Bun.spawn(["tar", "-xzf", tarballPath, "-C", extractDir], {
+    stdout: "ignore",
+    stderr: "pipe",
+  });
+  const code = await proc.exited;
+  if (code !== 0) {
+    const err = await new Response(proc.stderr).text();
+    rmSync(extractDir, { recursive: true, force: true });
+    throw new Error(`tar 解压失败: ${err || code}`);
+  }
+
+  const stagedAnimaPath = findAnimaInExtract(extractDir);
+  return {
+    stagedAnimaPath,
+    cleanup: () => rmSync(extractDir, { recursive: true, force: true }),
+  };
+}
+
+/** 从 staging 原子替换 prefix/anima（单文件） */
+function commitStandaloneReplace(
+  stagedAnimaPath: string,
   prefix: string,
   log: (msg: string) => void,
-): Promise<void> {
-  const extractDir = mkdtempSync(join(tmpdir(), "anima-upgrade-"));
-  try {
-    const proc = Bun.spawn(["tar", "-xzf", tarballPath, "-C", extractDir], {
-      stdout: "ignore",
-      stderr: "pipe",
-    });
-    const code = await proc.exited;
-    if (code !== 0) {
-      const err = await new Response(proc.stderr).text();
-      throw new Error(`tar 解压失败: ${err || code}`);
-    }
+): void {
+  mkdirSync(prefix, { recursive: true });
+  const destAnima = join(prefix, "anima");
+  const destAnimaNew = join(prefix, "anima.new");
 
-    const newAnima = findAnimaInExtract(extractDir);
-    mkdirSync(prefix, { recursive: true });
-    const destAnima = join(prefix, "anima");
-    const destAnimaNew = join(prefix, "anima.new");
-
-    cpSync(newAnima, destAnimaNew);
-    chmodSync(destAnimaNew, 0o755);
-    if (existsSync(destAnima)) {
-      try {
-        renameSync(destAnima, join(prefix, "anima.old"));
-      } catch {
-        rmSync(destAnima, { force: true });
-      }
+  cpSync(stagedAnimaPath, destAnimaNew);
+  chmodSync(destAnimaNew, 0o755);
+  if (existsSync(destAnima)) {
+    try {
+      renameSync(destAnima, join(prefix, "anima.old"));
+    } catch {
+      rmSync(destAnima, { force: true });
     }
-    renameSync(destAnimaNew, destAnima);
-    rmSync(join(prefix, "anima.old"), { force: true });
-    // 清理旧旁路布局残留（若有）
-    rmSync(join(prefix, "package.json"), { force: true });
-    rmSync(join(prefix, "dist"), { recursive: true, force: true });
-    relinkBinShim(prefix);
-    log(`已覆盖安装单文件: ${destAnima}`);
-  } finally {
-    rmSync(extractDir, { recursive: true, force: true });
   }
+  renameSync(destAnimaNew, destAnima);
+  rmSync(join(prefix, "anima.old"), { force: true });
+  // 清理旧旁路布局残留（若有）
+  rmSync(join(prefix, "package.json"), { force: true });
+  rmSync(join(prefix, "dist"), { recursive: true, force: true });
+  relinkBinShim(prefix);
+  log(`已覆盖安装单文件: ${destAnima}`);
 }
 
 export async function applyStandaloneUpgrade(
@@ -152,15 +164,19 @@ export async function applyStandaloneUpgrade(
 
   const tmp = mkdtempSync(join(tmpdir(), "anima-dl-"));
   const tarball = join(tmp, update.assetName);
+  let staged: StagedTarball | undefined;
   try {
     log(`下载 ${update.assetUrl} …`);
-    await downloadReleaseAsset(
-      update.assetUrl,
-      tarball,
-      opts.signal ? { signal: opts.signal } : undefined,
-    );
-    await extractAndReplaceAnima(tarball, opts.prefix, log);
+    await downloadReleaseAsset(update.assetUrl, tarball, {
+      ...(opts.signal ? { signal: opts.signal } : {}),
+      ...(update.assetSize != null ? { expectedSize: update.assetSize } : {}),
+      ...(opts.fetchOptions?.fetchImpl ? { fetchImpl: opts.fetchOptions.fetchImpl } : {}),
+    });
+    staged = await stageStandaloneTarball(tarball);
+    await opts.beforeReplace?.();
+    commitStandaloneReplace(staged.stagedAnimaPath, opts.prefix, log);
   } finally {
+    staged?.cleanup();
     rmSync(tmp, { recursive: true, force: true });
   }
 
