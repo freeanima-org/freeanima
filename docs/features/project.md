@@ -178,11 +178,11 @@ Aligned with [entity-model Shell scope](../concepts/entity-model.md#shell-ui-glo
 
 ## Search and LLM tools
 
-| Surface                         | v1 behavior                                                                                                                     |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `task.search` / `entity_search` | Include `project_id`, `project_title`, `list_name` in results                                                                   |
-| ToolSet `project`               | CRUD for folders, projects, milestones (load via `toolset_load`)                                                                |
-| ToolSet `task`                  | `task.create` with `project_id` either rejected or auto-assigns to project; `task.patch` supports `project_id` / `milestone_id` |
+| Surface                         | v1 behavior                                                                                                                                                                               |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `task.search` / `entity_search` | Include `project_id`, `project_title`, `list_name` in results                                                                                                                             |
+| ToolSet `project`               | CRUD for folders, projects, milestones (load via `toolset_load`)                                                                                                                          |
+| ToolSet `task`                  | `task_create` / `task_update` support `project_id` / `milestone_id`; `task_list` / `task_search` filter by `project_id` (mutually exclusive with `list_id`; default list is Backlog only) |
 
 ---
 

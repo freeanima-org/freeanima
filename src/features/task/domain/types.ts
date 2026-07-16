@@ -59,6 +59,7 @@ export type TaskItemUpdateInput = {
 export type TaskItemSearchOpts = {
   query: string;
   list_id?: number;
+  project_id?: number;
   status?: "pending" | "completed" | "all";
   limit?: number;
 };
