@@ -298,7 +298,7 @@ Session Goal is an **in-process autonomous loop** at the Estate / orchestration 
 | Persistence  | `conversations.goal` JSONB      | `conversations.acp_tasks`             |
 | Continuation | Same SSE stream, turn budget    | Independent message after task update |
 
-Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User messages preempt the loop; `/goal pause` stops auto-continue without clearing state. See [`goal.md`](../features/goal.md).
+Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the goal is **paused** (warn logged + status line in chat). User messages preempt the loop; `/goal pause` / `/goal resume` control auto-continue without clearing state. See [`goal.md`](../features/goal.md).
 
 ## Client UI（web/dist SSOT + 原生壳打包）
 

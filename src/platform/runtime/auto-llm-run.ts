@@ -139,14 +139,32 @@ async function evaluateGoalForAutoLlm(
     { runtime: deps.engine.llm, model },
   );
 
-  const reason = judge.ok ? judge.reason : judge.error;
-  if (judge.ok && judge.done) {
+  if (!judge.ok) {
+    deps.engine.logger
+      .with({ component: "goal" })
+      .warn("goal judge failed; pausing auto-continue", {
+        error: judge.error,
+        turn_count: goal.turn_count,
+        max_turns: goal.max_turns,
+        model,
+      });
+    return {
+      action: "stop",
+      goal: conversationGoalSchema.parse({
+        ...goal,
+        status: "paused",
+        last_judge_reason: judge.error,
+      }),
+    };
+  }
+
+  if (judge.done) {
     return {
       action: "stop",
       goal: conversationGoalSchema.parse({
         ...goal,
         status: "completed",
-        last_judge_reason: reason,
+        last_judge_reason: judge.reason,
         completed_at: formatCstIso(),
       }),
     };
@@ -156,7 +174,7 @@ async function evaluateGoalForAutoLlm(
   const updated = conversationGoalSchema.parse({
     ...goal,
     turn_count: nextCount,
-    last_judge_reason: reason,
+    last_judge_reason: judge.reason,
   });
   if (nextCount >= goal.max_turns) {
     return {
@@ -168,7 +186,7 @@ async function evaluateGoalForAutoLlm(
   return {
     action: "continue",
     goal: updated,
-    continuePrompt: formatGoalContinuePrompt(nextCount, goal.max_turns, reason),
+    continuePrompt: formatGoalContinuePrompt(nextCount, goal.max_turns, judge.reason),
   };
 }
 

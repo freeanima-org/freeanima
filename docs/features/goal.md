@@ -33,11 +33,13 @@ Session Goal lets you set a persistent objective for a single conversation. Afte
 
 - **Pass**: assistant clearly confirms completion, shows final deliverable, or states blocker needing user input (reason explains).
 - **Fail**: vague progress, plan only without evidence; implied completion does not count.
-- **Fail-open**: judge call or parse failure treated as incomplete; turn budget prevents deadlock.
+- **Judge unavailable**: call or parse failure **pauses** the goal (`status: paused`), logs a warn, and appends a visible status line to the conversation (not a continue prompt). Use `/goal resume` to retry. Check `/goal status` for `last_judge_reason`.
 
 ## Configuration
 
 Optional `goal_judge` in `~/.anima/config.yaml` `llm.profiles` (see [`config.example.yaml`](../../config.example.yaml)). Falls back to `llm.default_profile` when unset.
+
+Judge calls use OpenAI-compatible `response_format: json_object` and `thinking: { type: "disabled" }` (via `params.extra`), plus `maxOutputTokens: 2048`. Prefer a model/gateway that supports JSON mode; unsupported endpoints will fail the judge call and pause the goal.
 
 ## vs ACP
 

@@ -30,6 +30,20 @@ const GOAL_JUDGE_JSON_SCHEMA = {
   reason: "string",
 } as const;
 
+/**
+ * OpenAI-compatible JSON mode（经 params.extra 透传）。
+ * 关闭 thinking：短 JSON 判定不需要推理，且 thinking 常与 content 共用 max_tokens。
+ * maxOutputTokens 仍留余量，兼容忽略 thinking 开关的网关。
+ */
+export const GOAL_JUDGE_REQUEST_PARAMS = {
+  maxOutputTokens: 2048,
+  temperature: 0.2,
+  extra: {
+    response_format: { type: "json_object" },
+    thinking: { type: "disabled" },
+  },
+} as const;
+
 function formatGoalJudgeUser(input: GoalJudgeInput): string {
   const lines = [`Goal: ${input.goal}`];
   if (input.subgoals.length > 0) {
@@ -45,12 +59,33 @@ function formatGoalJudgeUser(input: GoalJudgeInput): string {
   return lines.join("\n");
 }
 
+function stripJudgeWrappers(raw: string): string {
+  let text = raw.trim();
+  // ```json ... ``` or ``` ... ```
+  const fenced = /^```(?:json)?\s*\r?\n?([\s\S]*?)\r?\n?```$/i.exec(text);
+  if (fenced?.[1] !== undefined) {
+    text = fenced[1].trim();
+  }
+  // '''...''' or """..."""
+  if (
+    (text.startsWith("'''") && text.endsWith("'''") && text.length >= 6) ||
+    (text.startsWith('"""') && text.endsWith('"""') && text.length >= 6)
+  ) {
+    text = text.slice(3, -3).trim();
+  }
+  return text;
+}
+
 export function parseGoalJudgeOutput(raw: string): GoalJudgeResult {
-  const trimmed = raw.trim();
+  const trimmed = stripJudgeWrappers(raw);
   const start = trimmed.indexOf("{");
   const end = trimmed.lastIndexOf("}");
   if (start === -1 || end === -1 || end < start) {
-    return { ok: false, error: "judge output is not JSON" };
+    const preview = trimmed.replace(/\s+/g, " ").slice(0, 80);
+    return {
+      ok: false,
+      error: preview ? `judge output is not JSON: ${preview}` : "judge output is not JSON",
+    };
   }
   try {
     const parsed = JSON.parse(trimmed.slice(start, end + 1)) as Record<string, unknown>;
@@ -84,10 +119,21 @@ export async function judgeGoal(
         profileId: PROFILE_GOAL_JUDGE,
         runtime: opts?.runtime,
         model: opts?.model,
-        requestParams: { maxOutputTokens: 256, temperature: 0.2 },
+        requestParams: { ...GOAL_JUDGE_REQUEST_PARAMS },
       }),
     );
-    return parseGoalJudgeOutput(String(resp.content ?? ""));
+    const content = String(resp.content ?? "");
+    const parsed = parseGoalJudgeOutput(content);
+    if (parsed.ok) return parsed;
+    const hadReasoning = Boolean(String(resp.reasoning ?? "").trim());
+    // 推理模型 content 空、reasoning 有内容：多半是 max_tokens 被 thinking 占满
+    if (!content.trim() && hadReasoning) {
+      return {
+        ok: false,
+        error: `${parsed.error} (empty content, reasoning present; likely maxOutputTokens exhausted by thinking)`,
+      };
+    }
+    return parsed;
   } catch (e) {
     return { ok: false, error: String(e) };
   }
