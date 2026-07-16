@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # 供 build/install 脚本 source；SDK 由 setup-android-sdk.sh 安装到默认路径
-export ANDROID_HOME="${ANDROID_HOME:-$HOME/Android/Sdk}"
+# CI 固定 ~/Android/Sdk（与 cache-android-sdk / setup-android-sdk.sh 对齐，忽略 runner 预置路径）
+if [ -n "${GITHUB_ACTIONS:-}" ]; then
+  export ANDROID_HOME="$HOME/Android/Sdk"
+else
+  export ANDROID_HOME="${ANDROID_HOME:-$HOME/Android/Sdk}"
+fi
 export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
 export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
 
