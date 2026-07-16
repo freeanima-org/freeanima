@@ -668,6 +668,8 @@
   "ui_shell_update_dismiss": "稍后",
   "ui_shell_update_applying": "正在下载并安装…",
   "ui_shell_update_failed": "更新失败，请重试。",
+  "ui_shell_update_failed_detail": "更新失败：{message}",
+  "ui_shell_update_log_hint": "详见 ~/.anima/desktop-shell/shell.log。",
   "ui_shell_update_check": "检查更新",
   "ui_shell_update_latest": "当前已是最新版本。",
   "ui_shell_update_none": "当前平台暂无可用安装包。",

@@ -676,8 +676,10 @@ type ParaglideMessageExports = {
   readonly ui_shell_update_check: ParaglideMessageFn;
   readonly ui_shell_update_dismiss: ParaglideMessageFn;
   readonly ui_shell_update_failed: ParaglideMessageFn;
+  readonly ui_shell_update_failed_detail: ParaglideMessageFn;
   readonly ui_shell_update_install: ParaglideMessageFn;
   readonly ui_shell_update_latest: ParaglideMessageFn;
+  readonly ui_shell_update_log_hint: ParaglideMessageFn;
   readonly ui_shell_update_none: ParaglideMessageFn;
 };
 
@@ -1358,7 +1360,9 @@ declare module "*/messages/paraglide/messages.js" {
   export const ui_shell_update_check: ParaglideMessageFn;
   export const ui_shell_update_dismiss: ParaglideMessageFn;
   export const ui_shell_update_failed: ParaglideMessageFn;
+  export const ui_shell_update_failed_detail: ParaglideMessageFn;
   export const ui_shell_update_install: ParaglideMessageFn;
   export const ui_shell_update_latest: ParaglideMessageFn;
+  export const ui_shell_update_log_hint: ParaglideMessageFn;
   export const ui_shell_update_none: ParaglideMessageFn;
 }
