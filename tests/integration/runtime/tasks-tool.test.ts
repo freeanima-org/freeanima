@@ -405,7 +405,6 @@ describePg("tasks tool", () => {
         const out = await Promise.resolve(
           create.handler({
             title: "In-project task",
-            list_id: list.id,
             project_id: project.id,
           }),
         );
