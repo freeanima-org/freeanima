@@ -1,6 +1,10 @@
 import { describe, expect, test } from "bun:test";
 
 import { mergeComponentBody, validateEntityBody, validatePrimaryComponentBody } from "./body.ts";
+import { CONTENT_BLOCK_COMPONENT } from "./components/content-block.ts";
+import { LIMBIC_COMPONENT } from "./components/limbic.ts";
+import { NARRATIVE_COMPONENT } from "./components/narrative.ts";
+import { SEMANTIC_REF_COMPONENT } from "./components/semantic-ref.ts";
 import { TASK_ITEM_COMPONENT } from "./components/task-item.ts";
 
 describe("validateEntityBody", () => {
@@ -36,5 +40,67 @@ describe("validateEntityBody", () => {
       [TASK_ITEM_COMPONENT],
     );
     expect(merged.status).toBe("completed");
+  });
+
+  test("accepts content_block body", () => {
+    const body = validatePrimaryComponentBody(CONTENT_BLOCK_COMPONENT, {
+      block_type: "text",
+      parent_id: 10,
+      sort_order: 0,
+    });
+    expect(body.block_type).toBe("text");
+    expect(body.parent_id).toBe(10);
+    expect(body.url).toBeNull();
+  });
+
+  test("rejects invalid content_block block_type", () => {
+    expect(() =>
+      validatePrimaryComponentBody(CONTENT_BLOCK_COMPONENT, {
+        block_type: "markdown",
+        parent_id: 10,
+        sort_order: 0,
+      }),
+    ).toThrow(/invalid body for component content_block/);
+  });
+
+  test("accepts content_block with limbic and narrative tags", () => {
+    const body = validateEntityBody(
+      [CONTENT_BLOCK_COMPONENT, LIMBIC_COMPONENT, NARRATIVE_COMPONENT],
+      {
+        block_type: "text",
+        parent_id: 10,
+        sort_order: 1,
+        valence: 0.2,
+        arousal: 0.5,
+        intensity: 0.7,
+        significance: "milestone",
+      },
+    );
+    expect(body.block_type).toBe("text");
+    expect(body.valence).toBe(0.2);
+    expect(body.significance).toBe("milestone");
+  });
+
+  test("accepts content_block with semantic_ref", () => {
+    const body = validateEntityBody([CONTENT_BLOCK_COMPONENT, SEMANTIC_REF_COMPONENT], {
+      block_type: "text",
+      parent_id: 10,
+      sort_order: 0,
+      semantic_memory_id: "sm-1",
+    });
+    expect(body.semantic_memory_id).toBe("sm-1");
+  });
+
+  test("rejects limbic out of range on multi-tag body", () => {
+    expect(() =>
+      validateEntityBody([CONTENT_BLOCK_COMPONENT, LIMBIC_COMPONENT], {
+        block_type: "text",
+        parent_id: 10,
+        sort_order: 0,
+        valence: 2,
+        arousal: 0.5,
+        intensity: 0.5,
+      }),
+    ).toThrow(/invalid body for component limbic/);
   });
 });

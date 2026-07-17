@@ -11,11 +11,15 @@ import {
 } from "./pomodoro-task-focus.ts";
 import { POMODORO_ACTIVE_COMPONENT, pomodoroActiveBodySchema } from "./pomodoro-active.ts";
 import { AGENT_CONFIG_COMPONENT, agentConfigBodySchema } from "./agent-config.ts";
+import { CONTENT_BLOCK_COMPONENT, contentBlockBodySchema } from "./content-block.ts";
 import { DIARY_ENTRY_COMPONENT, diaryEntryBodySchema } from "./diary-entry.ts";
 import { DREAM_ENTRY_COMPONENT, dreamEntryBodySchema } from "./dream-entry.ts";
 import { EMAIL_ACCOUNT_COMPONENT, emailAccountBodySchema } from "./email-account.ts";
 import { EMAIL_MESSAGE_COMPONENT, emailMessageBodySchema } from "./email-message.ts";
 import { EMAIL_THREAD_COMPONENT, emailThreadBodySchema } from "./email-thread.ts";
+import { LIMBIC_COMPONENT, limbicBodySchema } from "./limbic.ts";
+import { NARRATIVE_COMPONENT, narrativeBodySchema } from "./narrative.ts";
+import { SEMANTIC_REF_COMPONENT, semanticRefBodySchema } from "./semantic-ref.ts";
 import { TASK_ITEM_COMPONENT, taskItemBodySchema } from "./task-item.ts";
 import { TASK_LIST_COMPONENT, taskListBodySchema } from "./task-list.ts";
 import { SMART_LIST_COMPONENT, smartListBodySchema } from "./smart-list.ts";
@@ -37,6 +41,10 @@ export const COMPONENT_IDS = [
   MILESTONE_COMPONENT,
   DIARY_ENTRY_COMPONENT,
   DREAM_ENTRY_COMPONENT,
+  CONTENT_BLOCK_COMPONENT,
+  LIMBIC_COMPONENT,
+  NARRATIVE_COMPONENT,
+  SEMANTIC_REF_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
   EMAIL_THREAD_COMPONENT,
   EMAIL_MESSAGE_COMPONENT,
@@ -65,6 +73,10 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [MILESTONE_COMPONENT]: milestoneBodySchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntryBodySchema,
   [DREAM_ENTRY_COMPONENT]: dreamEntryBodySchema,
+  [CONTENT_BLOCK_COMPONENT]: contentBlockBodySchema,
+  [LIMBIC_COMPONENT]: limbicBodySchema,
+  [NARRATIVE_COMPONENT]: narrativeBodySchema,
+  [SEMANTIC_REF_COMPONENT]: semanticRefBodySchema,
   [EMAIL_ACCOUNT_COMPONENT]: emailAccountBodySchema,
   [EMAIL_THREAD_COMPONENT]: emailThreadBodySchema,
   [EMAIL_MESSAGE_COMPONENT]: emailMessageBodySchema,
@@ -98,6 +110,10 @@ export * from "./project.ts";
 export * from "./milestone.ts";
 export * from "./diary-entry.ts";
 export * from "./dream-entry.ts";
+export * from "./content-block.ts";
+export * from "./limbic.ts";
+export * from "./narrative.ts";
+export * from "./semantic-ref.ts";
 export * from "./email-account.ts";
 export * from "./email-thread.ts";
 export * from "./email-message.ts";
