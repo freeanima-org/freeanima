@@ -5,7 +5,10 @@ import { defineConfig, mergeConfig, type Plugin } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import { createComponentBuildMeta } from "../vite-config-imports.ts";
 import {
+  createHubDevProxyMap,
   createShellViteInlineConfig,
+  quietBenignWsProxyErrorsPlugin,
+  resolveProxyHubUrl,
   shellBridgeHtmlPlugin,
   shellEntryFileNames,
 } from "../vite-config-imports.ts";
@@ -21,8 +24,9 @@ const REPO_ROOT = join(PKG_DIR, "..", "..", "..", "..");
 const SPA_DIR = join(PKG_DIR, "spa");
 const DIST_DIR = join(PKG_DIR, "dist");
 
+const PROXY_HUB = resolveProxyHubUrl();
 /** 仅 Vite proxy 目标；浏览器 hub_url 用页面 origin */
-const PROXY_HUB_URL = (process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658").replace(/\/$/, "");
+const PROXY_HUB_URL = PROXY_HUB.url;
 const PORT = Number(process.env.WEB_DEV_PORT ?? process.env.SHELL_DEV_PORT ?? DEFAULT_WEB_DEV_PORT);
 
 function readUiVersion(): string {
@@ -90,11 +94,15 @@ function webDevPlugin(): Plugin {
         const httpsOn = Boolean(server.config.server.https);
         const scheme = httpsOn ? "https" : "http";
         console.log(
-          `[dev:web] proxy→${PROXY_HUB_URL} · ${scheme}://127.0.0.1:${port}/web/chat · Console /web/console/dashboard`,
+          `[dev:web] proxy→${PROXY_HUB_URL} (${PROXY_HUB.source}) · ${scheme}://127.0.0.1:${port}/web/chat · Console /web/console/dashboard`,
         );
-        if (!process.env.FREEANIMA_URL) {
+        if (PROXY_HUB.source === "default") {
           console.warn(
-            "[dev:web] FREEANIMA_URL unset; proxy defaults to http://127.0.0.1:2658 — set FREEANIMA_URL to your dev:hub port",
+            "[dev:web] FREEANIMA_URL unset and no server.status.json — proxy defaults to http://127.0.0.1:2658; set FREEANIMA_URL or run just dev / dev:hub",
+          );
+        } else if (PROXY_HUB.source === "status") {
+          console.info(
+            "[dev:web] FREEANIMA_URL unset; using Hub port from ~/.anima/server.status.json",
           );
         }
       });
@@ -214,17 +222,14 @@ export default defineConfig(({ command, mode }) => {
   }
 
   return mergeConfig(inline, {
-    plugins: [webDevPlugin()],
+    plugins: [quietBenignWsProxyErrorsPlugin(), webDevPlugin()],
     server: {
       host: "0.0.0.0",
       port: PORT,
       strictPort: false,
       allowedHosts: true,
       ...(https ? { https } : {}),
-      proxy: {
-        "/hub": { target: PROXY_HUB_URL, changeOrigin: true, ws: true },
-        "/mcp": { target: PROXY_HUB_URL, changeOrigin: true, ws: true },
-      },
+      proxy: createHubDevProxyMap(PROXY_HUB_URL),
     },
   });
 });

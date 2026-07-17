@@ -6,3 +6,8 @@ export { nativeBuildMetaDefine } from "../../frontend/shell-sdk/native-build-met
 export { shellEntryFileNames } from "../../frontend/shell-ui/vite/entry-file-names.ts";
 export { createShellViteInlineConfig } from "../../frontend/shell-ui/vite/run-build.ts";
 export { shellBridgeHtmlPlugin } from "../../frontend/shell-ui/vite/shell-bridge-html.ts";
+export {
+  createHubDevProxyMap,
+  quietBenignWsProxyErrorsPlugin,
+  resolveProxyHubUrl,
+} from "./hub-dev-proxy.ts";
