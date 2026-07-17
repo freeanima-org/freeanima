@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { hasFinePointerCapability } from "./shell-capability.ts";
+import { hasEnterToSendCapability, hasFinePointerCapability } from "./shell-capability.ts";
+import { canOpenHubSettings, getShellKind, type ShellRuntimeKind } from "./shell-runtime.ts";
 
 /** 精确指针能力（右键菜单）；与视口布局正交 */
 export function useFinePointerCapability(): boolean {
@@ -36,4 +37,46 @@ export function useContextMenuCapability(): boolean {
 /** 是否以 ActionSheet / 长按替代右键（`hasTouchPrimaryCapability` 的 React 封装） */
 export function useActionSheetCapability(): boolean {
   return useTouchPrimaryCapability();
+}
+
+/** Enter 发送（pointer）vs 换行（touch）；与布局/壳正交 */
+export function useEnterToSendCapability(): boolean {
+  const [enterToSend, setEnterToSend] = useState(() => hasEnterToSendCapability());
+
+  useEffect(() => {
+    const sync = () => setEnterToSend(hasEnterToSendCapability());
+    sync();
+    const mqFine = window.matchMedia("(pointer: fine)");
+    const mqHover = window.matchMedia("(hover: hover)");
+    mqFine.addEventListener("change", sync);
+    mqHover.addEventListener("change", sync);
+    return () => {
+      mqFine.removeEventListener("change", sync);
+      mqHover.removeEventListener("change", sync);
+    };
+  }, []);
+
+  return enterToSend;
+}
+
+/** 壳子维 kind（web / capacitor / electron） */
+export function useShellKind(): ShellRuntimeKind {
+  const [kind, setKind] = useState(() => getShellKind());
+
+  useEffect(() => {
+    setKind(getShellKind());
+  }, []);
+
+  return kind;
+}
+
+/** 是否展示「打开 Hub 设置」 */
+export function useOpenHubSettingsCapability(): boolean {
+  const [open, setOpen] = useState(() => canOpenHubSettings());
+
+  useEffect(() => {
+    setOpen(canOpenHubSettings());
+  }, []);
+
+  return open;
 }

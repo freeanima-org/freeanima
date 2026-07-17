@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 
 import {
-  isMobileLayoutViewport,
+  isCompactLayoutViewport,
   isThreeColumnWideViewport,
-  MOBILE_LAYOUT_MQ,
+  COMPACT_LAYOUT_MQ,
   THREE_COLUMN_WIDE_MQ,
 } from "./viewport.ts";
 
 export type ThreeColumnLayoutMode = "compact" | "medium" | "wide";
 
 export function readThreeColumnLayoutMode(): ThreeColumnLayoutMode {
-  if (isMobileLayoutViewport()) return "compact";
+  if (isCompactLayoutViewport()) return "compact";
   if (isThreeColumnWideViewport()) return "wide";
   return "medium";
 }
@@ -20,7 +20,7 @@ export function useThreeColumnLayoutMode(): ThreeColumnLayoutMode {
   const [mode, setMode] = useState<ThreeColumnLayoutMode>(() => readThreeColumnLayoutMode());
 
   useEffect(() => {
-    const mobileMq = window.matchMedia(MOBILE_LAYOUT_MQ);
+    const mobileMq = window.matchMedia(COMPACT_LAYOUT_MQ);
     const wideMq = window.matchMedia(THREE_COLUMN_WIDE_MQ);
     const sync = () => setMode(readThreeColumnLayoutMode());
     sync();

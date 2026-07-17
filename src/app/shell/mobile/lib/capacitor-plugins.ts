@@ -1,6 +1,6 @@
 import {
   isCapacitorNativePlatform,
-  isMobileCapacitorShellCandidate,
+  isCapacitorShellCandidate,
 } from "@freeanima/frontend/shell-sdk/capacitor-runtime.ts";
 
 export type CapacitorNativeBridge = {
@@ -52,8 +52,8 @@ export function readPinnedCapacitorNativeBridge(): CapacitorNativeBridge | null 
 }
 
 /** 移动壳 WebView（含远程 Hub 页）应能走原生桥，勿依赖 @capacitor/* 静态 import。 */
-export function isMobileCapacitorBridgeExpected(): boolean {
-  return isMobileCapacitorShellCandidate() || isCapacitorNativePlatform();
+export function isCapacitorBridgeExpected(): boolean {
+  return isCapacitorShellCandidate() || isCapacitorNativePlatform();
 }
 
 export function hasCapacitorNativeBridge(): boolean {

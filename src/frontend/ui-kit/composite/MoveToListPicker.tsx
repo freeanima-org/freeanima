@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { Button, Input } from "../components/ui/index.ts";
-import { useMobileLayout } from "../layout/index.ts";
+import { useCompactLayout } from "../layout/index.ts";
 import {
   buildListTree,
   flattenVisibleTree,
@@ -204,7 +204,7 @@ export function MoveToListPicker<T extends TaskListRowLike>({
   onSelect,
   onClose,
 }: MoveToListPickerProps<T>) {
-  const mobileLayout = useMobileLayout();
+  const mobileLayout = useCompactLayout();
   const [visible, setVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 

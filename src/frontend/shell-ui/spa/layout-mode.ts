@@ -1,6 +1,6 @@
 /** 布局层粗档：移动布局 vs 桌面布局，仅视口断点（与壳能力解耦） */
 import { useEffect, useState } from "react";
-import { MOBILE_LAYOUT_MQ } from "@freeanima/frontend/ui-kit/layout";
+import { COMPACT_LAYOUT_MQ } from "@freeanima/frontend/ui-kit/layout";
 
 export type LayoutMode = "compact" | "expanded";
 
@@ -49,7 +49,7 @@ export function detectLayoutMode(configLayoutMode?: LayoutMode | null): LayoutMo
   return resolveLayoutMode({
     layoutOverride: readLayoutOverrideFromLocation(),
     configLayoutMode: configLayoutMode ?? fromWindow ?? null,
-    isNarrowViewport: readMedia(MOBILE_LAYOUT_MQ),
+    isNarrowViewport: readMedia(COMPACT_LAYOUT_MQ),
   });
 }
 
@@ -64,7 +64,7 @@ export function useLayoutMode(configLayoutMode?: LayoutMode | null): LayoutMode 
   useEffect(() => {
     const sync = () => setMode(detectLayoutMode(configLayoutMode));
     sync();
-    const mq = window.matchMedia(MOBILE_LAYOUT_MQ);
+    const mq = window.matchMedia(COMPACT_LAYOUT_MQ);
     mq.addEventListener("change", sync);
     window.addEventListener("resize", sync);
     return () => {

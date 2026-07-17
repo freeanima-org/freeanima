@@ -33,3 +33,11 @@ export function hasFinePointerCapability(): boolean {
 export function hasTouchPrimaryCapability(): boolean {
   return !hasFinePointerCapability();
 }
+
+/**
+ * Enter 发送（pointer）vs Enter 换行（touch）。
+ * 仅交互维；与布局断点、壳类型无关——iPad 宽屏仍换行。
+ */
+export function hasEnterToSendCapability(): boolean {
+  return hasFinePointerCapability();
+}

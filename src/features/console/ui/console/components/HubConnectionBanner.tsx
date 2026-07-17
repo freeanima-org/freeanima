@@ -1,4 +1,5 @@
 import { Button } from "@freeanima/frontend/ui-kit";
+import { canOpenHubSettings } from "@freeanima/frontend/shell-sdk/shell-runtime.ts";
 import { m } from "@freeanima/features/console/ui/console/lib/i18n.ts";
 import type { HubRpcConnectionState } from "@freeanima/features/console/ui/console/hooks/useHubRpcConnectivity.ts";
 
@@ -14,8 +15,7 @@ function openHubSettingsIfAvailable(): void {
 export function HubConnectionBanner({ state, onRetry }: Props) {
   if (state === "connected") return null;
 
-  const nativeShell = Boolean(window.satelliteShell?.isNativeShell);
-  const electronShell = Boolean(window.satelliteShell?.isElectron);
+  const showHubSettings = canOpenHubSettings();
 
   return (
     <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2 bg-warning/15 border-b border-yellow-500/50/30 text-sm">
@@ -23,7 +23,7 @@ export function HubConnectionBanner({ state, onRetry }: Props) {
         {state === "connecting" ? m.console_common_connecting() : m.console_hub_disconnected()}
       </span>
       <div className="flex items-center gap-1">
-        {nativeShell || electronShell ? (
+        {showHubSettings ? (
           <Button
             type="button"
             variant="ghost"

@@ -1,7 +1,4 @@
-import {
-  isCapacitorNativePlatform,
-  isMobileCapacitorShellCandidate,
-} from "@freeanima/frontend/shell-sdk/capacitor-runtime.ts";
+import { isCapacitorShellRuntime } from "@freeanima/frontend/shell-sdk/alert/resolve-platform.ts";
 import { createWebAlertBackend } from "@freeanima/frontend/shell-sdk/alert/web-backend.ts";
 import type {
   AlertBackend,
@@ -28,12 +25,9 @@ let channelReady = false;
 
 type LocalNotificationsApi = CapacitorLocalNotificationsApi;
 
-export function isMobileShellRuntime(): boolean {
-  return Boolean(
-    window.satelliteShell?.isNativeShell ||
-    isCapacitorNativePlatform() ||
-    isMobileCapacitorShellCandidate(),
-  );
+/** Capacitor 打包壳（含候选）；与 `isCapacitorShellRuntime` 同义 */
+export function isCapacitorPackagedShell(): boolean {
+  return isCapacitorShellRuntime();
 }
 
 export function mapLocalNotificationPermission(display: string | undefined): AlertPermissionState {
@@ -53,7 +47,7 @@ export function tagToNotificationId(tag: string): number {
 }
 
 async function resolveLocalNotificationsApi(): Promise<LocalNotificationsApi | null> {
-  if (!isMobileShellRuntime()) return null;
+  if (!isCapacitorPackagedShell()) return null;
 
   pinCapacitorNativeBridge();
   const immediate = createLocalNotificationsApiFromNativeBridge();

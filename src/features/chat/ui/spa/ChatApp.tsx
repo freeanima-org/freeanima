@@ -45,14 +45,20 @@ import {
   subscribeConversationUpdates,
 } from "@freeanima/features/chat/ui/spa/lib/api.ts";
 import { runBootstrapConversation } from "@freeanima/features/chat/ui/spa/lib/bootstrap-conversation.ts";
-import { ListDetailLayout, useDrawerNav, useMobileLayout } from "@freeanima/frontend/ui-kit/layout";
+import {
+  ListDetailLayout,
+  useDrawerNav,
+  useCompactLayout,
+} from "@freeanima/frontend/ui-kit/layout";
 import { omitUndefined } from "@freeanima/core/util";
 import {
   reconnectHub,
   useActionSheetCapability,
   useContextMenuCapability,
+  useEnterToSendCapability,
   useHubConnection,
   useNetworkOnline,
+  useOpenHubSettingsCapability,
 } from "@freeanima/frontend/shell-sdk/react.tsx";
 import { initAppLocale, m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@freeanima/features/chat/ui/spa/lib/input-draft.ts";
@@ -236,11 +242,10 @@ export function ChatApp() {
   const [debugViewerOpen, setDebugViewerOpen] = useState(false);
   const [llmDebugSnapshots, setLlmDebugSnapshots] = useState<LlmDebugSnapshots | null>(null);
   const pendingRecoveryKeyRef = useRef<string | null>(null);
-  const nativeShell = Boolean(getSatelliteShell()?.isNativeShell);
-  const isElectron = Boolean(getSatelliteShell()?.isElectron);
-  const mobileLayout = useMobileLayout();
-  /** 手机 / 窄视口 / 移动壳：Enter 换行；桌面浏览器与 Electron 仍 Enter 发送 */
-  const enterToSend = !mobileLayout && (!nativeShell || isElectron);
+  const mobileLayout = useCompactLayout();
+  /** Enter 发送：仅交互维（pointer）；与布局/壳正交 */
+  const enterToSend = useEnterToSendCapability();
+  const canOpenHubSettingsUi = useOpenHubSettingsCapability();
   const useActionSheet = useActionSheetCapability();
   const contextMenuEnabled = useContextMenuCapability();
   const drawerNav = useDrawerNav();
@@ -249,7 +254,7 @@ export function ChatApp() {
     enabled: drawerNav && !sidebarOpen,
     onOpen: openSidebar,
   });
-  const keyboardInset = useKeyboardInset(nativeShell);
+  const keyboardInset = useKeyboardInset();
   const {
     toggle: toggleSpeech,
     stop: stopSpeech,
@@ -1238,12 +1243,12 @@ export function ChatApp() {
           <p className="text-sm text-destructive">{error}</p>
           <p className="text-xs text-muted-foreground">
             {getSatelliteShell()?.hubWsUrl
-              ? nativeShell
+              ? canOpenHubSettingsUi
                 ? "请确认 Hub 已运行，或在设置中检查 Hub 地址。"
                 : "请确认 Hub 已运行（anima service start）。"
               : "请确认 Hub 已运行，且 chat dev server 提供 /config.json。"}
           </p>
-          {nativeShell ? (
+          {canOpenHubSettingsUi ? (
             <Button type="button" size="sm" onClick={openHubSettingsIfAvailable}>
               Hub 设置
             </Button>
@@ -1287,7 +1292,7 @@ export function ChatApp() {
         >
           {m.console_common_new_conversation()}
         </Button>
-        {nativeShell ? (
+        {canOpenHubSettingsUi ? (
           <Button
             type="button"
             variant="ghost"

@@ -39,40 +39,18 @@
 
 - `bun run stylelint`：DaisyUI 遗留 token + 主题色裸 `var()`（见根目录 `stylelint.config.js`）
 
-## 平台：布局层 × 能力层（正交）
+## 平台（壳子 × 布局 × 交互）
 
-两个维度**独立**，可组合（例：iPad 宽屏 = **桌面布局** + **触摸能力**）。
+三维度正交标准与 API → [**`ui-dimensions.md`**](ui-dimensions.md)。本文件只保留 DaisyUI / 基元约定。
 
-### 布局层（仅视口断点）
+速记：
 
-| 档位      | 视口           | API                                   | 效果                      |
-| --------- | -------------- | ------------------------------------- | ------------------------- |
-| 移动布局  | `< 768px`      | `useLayoutMode()` → compact           | 底栏 + drawer             |
-| 桌面布局  | `≥ 768px`      | expanded                              | 左侧 Rail                 |
-| 三栏·两列 | `768px–1027px` | `useThreeColumnLayoutMode()` → medium | 清单 drawer + 中/详情两列 |
-| 三栏·三列 | `≥ 1028px`     | `useThreeColumnLayoutMode()` → wide   | 清单 + 中栏 + 详情并列    |
-
-- Shell 导航 IA：**必须** `detectLayoutMode()` / `useDrawerNav()` 分支；**禁止**用 `isElectron` / `isNativeShell` 锁 Shell 布局
-- 设置页 chrome：`detectPlatform()` 跟布局粗档（compact → mobile tabs，expanded → desktop 侧栏）
-
-### 能力层（终端 / 主输入，与视口无关）
-
-| API                           | 含义                                 |
-| ----------------------------- | ------------------------------------ |
-| `hasFinePointerCapability()`  | 鼠标/触控板主输入 → 右键 ContextMenu |
-| `hasTouchPrimaryCapability()` | 触摸主输入 → ActionSheet / 长按      |
-| `satelliteShell.primaryInput` | 可选显式覆盖（`pointer` \| `touch`） |
-
-默认推断：Electron → pointer；Capacitor → touch；Web → `(pointer: fine)` + `(hover: hover)`。
-
-**禁止**用布局断点（如 `<768`）推断右键/长按；**禁止**仅用 `isElectron` 推断布局。
-
-- 产品模块统一使用 `@freeanima/shell-sdk/react`：`useContextMenuCapability()` / `useActionSheetCapability()`；浮动菜单与 ActionSheet 用 `@freeanima/ui-kit/composite` 的 `ContextMenu` / `ActionSheet`；长按触发用 `useLongPress`
-- 多列布局（`ThreeColumnLayout` / `ListDetailLayout`）传 `columnSplitKey` 可在中/宽屏拖拽列分割，宽度持久化 `localStorage`（`freeanima:column-splits:<key>`）
-
-- 存储、IPC、settings registry、滑动手势等同属能力层（`satelliteShell`）
-- Shell 模块可见性：设置 → 模块，**localStorage**（`shell-module-visibility.ts`）；`chat` / `settings` 不可关
-- `ListDetailLayout` drawer 颜色在 TSX 用 `bg-background`、`bg-black/55` 等 class，不在 `shared-safe-area.css` 写背景
+- 布局：`useLayoutMode` / `useCompactLayout` / `useDrawerNav`（视口断点）
+- 交互：`useContextMenuCapability` / `useActionSheetCapability` / `useEnterToSendCapability`
+- 壳：`getShellKind` / `canOpenHubSettings`；**禁止**用 `isElectron` 锁主布局
+- 多列布局可传 `columnSplitKey` 拖拽列宽（`freeanima:column-splits:<key>`）
+- Shell 模块可见性：`shell-module-visibility.ts`；`chat` / `settings` 不可关
+- `ListDetailLayout` drawer 颜色用 Tailwind class，不在 `shared-safe-area.css` 写主题色
 
 ## 禁止
 

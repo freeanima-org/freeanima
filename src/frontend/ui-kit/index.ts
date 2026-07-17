@@ -8,11 +8,11 @@ export { ListDetailLayout } from "./layout/index.ts";
 export type { ListDetailLayoutProps, ListDetailListContext } from "./layout/index.ts";
 export {
   COMPACT_LAYOUT_MAX_PX,
+  COMPACT_LAYOUT_MQ,
   EXPANDED_LAYOUT_MQ,
-  isMobileLayoutViewport,
-  isNativeShell,
-  MOBILE_LAYOUT_MQ,
+  isCompactLayoutViewport,
   ThreeColumnLayout,
+  useCompactLayout,
   useDrawerNav,
   useThreeColumnLayoutMode,
 } from "./layout/index.ts";

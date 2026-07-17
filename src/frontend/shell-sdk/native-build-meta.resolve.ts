@@ -2,7 +2,7 @@ import type { ComponentBuildMeta } from "./build-meta.ts";
 import { readCapacitorBundledJson } from "./capacitor-local-asset.ts";
 import {
   isCapacitorNativePlatform,
-  isMobileCapacitorShellCandidate,
+  isCapacitorShellCandidate,
   waitForCapacitorNativePlatform,
 } from "./capacitor-runtime.ts";
 import { readNativeBuildMetaFromDefine } from "./native-build-meta.read.ts";
@@ -51,7 +51,7 @@ function attachNativeBuildToSatelliteShell(meta: ComponentBuildMeta): void {
 
 /** 设置 → 关于：解析 native shell 构建信息（Capacitor 远程 Hub UI 从 APK 资产 / Preferences 读取） */
 export async function resolveAboutNativeBuildMeta(): Promise<ComponentBuildMeta | null> {
-  if (!isMobileCapacitorShellCandidate() && !isCapacitorNativePlatform()) {
+  if (!isCapacitorShellCandidate() && !isCapacitorNativePlatform()) {
     const fromShellOnly = readNativeBuildFromSatelliteShell();
     return fromShellOnly ?? null;
   }

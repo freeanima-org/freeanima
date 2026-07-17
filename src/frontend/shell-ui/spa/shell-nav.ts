@@ -1,7 +1,5 @@
-/** 原生壳（Capacitor）使用 hash 路由（#/chat） */
-export function isNativeShellNavigation(): boolean {
-  return Boolean(window.satelliteShell?.isNativeShell);
-}
+/** 原生壳导航：委托 shell-sdk 壳子维 API */
+export { shouldUseNativeShellNavigation as isNativeShellNavigation } from "@freeanima/frontend/shell-sdk/shell-runtime.ts";
 
 export function navigateShellModule(
   navigate: (opts: { to: string }) => unknown,

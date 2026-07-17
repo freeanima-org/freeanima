@@ -17,6 +17,7 @@ import {
 
 import { notifyDebugConfigChanged } from "../debug-config-events.ts";
 import { resolveShellRouterBasepath } from "../router-basepath.ts";
+import { shouldUseNativeShellNavigation } from "@freeanima/frontend/shell-sdk/shell-runtime.ts";
 
 type Props = {
   fields: SettingsFormFields;
@@ -115,13 +116,13 @@ export function FormRenderer({
       onEnterAfterSave();
       return;
     }
-    if (platform === "mobile" || window.satelliteShell?.isNativeShell) {
+    if (shouldUseNativeShellNavigation()) {
       await navigate({ to: "/chat" as never });
       return;
     }
     const base = resolveShellRouterBasepath() ?? "";
     window.location.href = `${base}/chat`;
-  }, [navigate, onEnterAfterSave, persist, platform]);
+  }, [navigate, onEnterAfterSave, persist]);
 
   const testConnection = useCallback(async () => {
     if (!store.test) return;

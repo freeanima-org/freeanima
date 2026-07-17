@@ -89,14 +89,14 @@ Engine stays horizontal: `src/kernel/`, `src/core/`, `src/runtime/`, `src/platfo
 
 ### Platform UI layering (legacy paths — migrating to features/\*)
 
-| Layer              | Platform-native?             | Location (current → target)                                            | 数据通道                                |
-| ------------------ | ---------------------------- | ---------------------------------------------------------------------- | --------------------------------------- |
-| Shell / capability | Yes                          | `src/app/shell/desktop`, `src/app/shell/mobile`, companion, Hub wiring | preload/IPC                             |
-| Shared SPA shell   | Branch on `detectPlatform()` | `src/frontend/shell-ui`                                                | Hub RPC（Feature RPC）                  |
-| Console 前端       | Shell embed                  | `src/features/console`（UI + `plugin.hub.rpc`）                        | Hub RPC（WS + HTTP POST `/hub/rpc/v1`） |
-| 卫星应用           | Sidecar only                 | `src/satellites/companion`                                             | Hub RPC + SAP attach                    |
+| Layer            | Platform-native?                   | Location (current → target)                                            | 数据通道                                |
+| ---------------- | ---------------------------------- | ---------------------------------------------------------------------- | --------------------------------------- |
+| Shell（壳子维）  | Yes                                | `src/app/shell/desktop`, `src/app/shell/mobile`, companion, Hub wiring | preload/IPC                             |
+| Shared SPA shell | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/shell-ui`                                                | Hub RPC（Feature RPC）                  |
+| Console 前端     | Shell embed                        | `src/features/console`（UI + `plugin.hub.rpc`）                        | Hub RPC（WS + HTTP POST `/hub/rpc/v1`） |
+| 卫星应用         | Sidecar only                       | `src/satellites/companion`                                             | Hub RPC + SAP attach                    |
 
-Nav and primary layouts **must use `detectPlatform()`** (Electron / native shell), not viewport breakpoints alone. Responsive CSS is for desktop window resize only.
+导航与主布局**必须**用 `useLayoutMode()` / 视口断点（布局维），**禁止**用 `isElectron` / `getShellKind()` 锁 Shell 布局。交互（右键/长按/Enter）用 shell-sdk 交互 API。三维度标准 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
 
 **边界**：`shell-ui` 与 `src/features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Hub；**SAP attach / tool.\*** 协议由 companion 等卫星 sidecar 使用。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。
 
@@ -330,7 +330,7 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 | 中   | 1024–1279px | `expanded` 桌面布局 | 顶栏全模块  | 两栏并列 |
 | 宽   | ≥1280px     | `expanded` 桌面布局 | 顶栏全模块  | 三栏并列 |
 
-`resolveLayoutMode()`：窄 → `compact`，中宽 → `expanded`（URL / `config.json` 可覆盖）。`detectPlatform()` 跟布局粗档（设置页 chrome），settings 字段差异仍由能力层 `resolveShellBindings()` 决定。
+`resolveLayoutMode()`：窄 → `compact`，中宽 → `expanded`（URL / `config.json` 可覆盖）。`detectSettingsChromePlatform()` 跟布局粗档（设置页 chrome）；settings 字段差异由壳子维 `resolveShellBindings()` / `getShellKind()` 决定。
 
 | 客户端       | UI 加载                                                        | 壳发版                          |
 | ------------ | -------------------------------------------------------------- | ------------------------------- |

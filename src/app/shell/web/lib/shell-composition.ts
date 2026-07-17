@@ -1,28 +1,19 @@
-import {
-  isCapacitorNativePlatform,
-  isMobileCapacitorShellCandidate,
-} from "@freeanima/frontend/shell-sdk/capacitor-runtime.ts";
 import type { SettingsBinding } from "@freeanima/frontend/shell-sdk/settings";
+import {
+  detectShellRuntimeKind,
+  getShellKind,
+  type ShellRuntimeKind,
+} from "@freeanima/frontend/shell-sdk/shell-runtime.ts";
 
 import { createWebSettingsBindings } from "./settings-registry.ts";
 import { createWebSettingsStores } from "./settings-stores.ts";
 
-export type ShellRuntimeKind = "electron" | "capacitor" | "web";
+export type { ShellRuntimeKind };
+export { detectShellRuntimeKind, getShellKind };
 
-/** 能力层壳类型：跟 satelliteShell / Capacitor 原生桥，不跟手机 UA（phone ≠ Capacitor）。 */
-export function detectShellRuntimeKind(): ShellRuntimeKind {
-  if (window.satelliteShell?.isElectron) return "electron";
-  if (window.satelliteShell?.isNativeShell || isCapacitorNativePlatform()) {
-    return "capacitor";
-  }
-  // 薄壳首页尚未注入 satelliteShell 时：localhost / capacitor:// 仍可能是 Capacitor
-  if (isMobileCapacitorShellCandidate()) return "capacitor";
-  return "web";
-}
-
-/** 按运行时壳类型解析 settings bindings（能力轴；布局由 layoutMode 独立决定） */
+/** 按运行时壳类型解析 settings bindings（壳子维；布局由 layoutMode 独立决定） */
 export async function resolveShellBindings(): Promise<SettingsBinding[]> {
-  const kind = detectShellRuntimeKind();
+  const kind = getShellKind();
   if (kind === "electron") {
     const [
       { createDesktopSettingsApis },

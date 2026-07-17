@@ -73,7 +73,7 @@ export function disableMobileDebugConsole(): void {
   vConsoleInstance = null;
 }
 
-export function isMobileDebugConsoleEnabled(): boolean {
+export function isNativeDebugConsoleEnabled(): boolean {
   return vConsoleInstance != null;
 }
 

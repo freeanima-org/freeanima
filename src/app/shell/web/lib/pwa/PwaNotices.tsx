@@ -1,4 +1,4 @@
-import { MOBILE_LAYOUT_MQ } from "@freeanima/frontend/ui-kit/layout";
+import { COMPACT_LAYOUT_MQ } from "@freeanima/frontend/ui-kit/layout";
 import {
   dismissShellToast,
   showShellToast,
@@ -17,7 +17,7 @@ import {
 function isCompactInstallContext(): boolean {
   if (typeof window === "undefined" || !window.matchMedia) return false;
   if (isStandalonePwa()) return true;
-  return window.matchMedia(MOBILE_LAYOUT_MQ).matches;
+  return window.matchMedia(COMPACT_LAYOUT_MQ).matches;
 }
 
 /** 开发态清掉同 origin 上遗留的 SW / Cache，避免旧 bundle 劫持 HMR */
