@@ -3,7 +3,7 @@ import { Button, Card, CardContent, CardHeader, CardTitle } from "@freeanima/fro
 import type { ComponentBuildMeta } from "@freeanima/frontend/shell-sdk/build-meta";
 import {
   isCapacitorNativePlatform,
-  isMobileCapacitorShellCandidate,
+  isCapacitorShellCandidate,
 } from "@freeanima/frontend/shell-sdk/capacitor-runtime";
 import { resolveHubApiOrigin } from "@freeanima/frontend/shell-sdk/hub-api-origin";
 import { hubHealthProbeUrl } from "@freeanima/shared/hub-rpc";
@@ -55,7 +55,7 @@ function isNativeShellRuntime(): boolean {
 }
 
 function showNativeAboutSection(): boolean {
-  return isNativeShellRuntime() || isCapacitorNativePlatform() || isMobileCapacitorShellCandidate();
+  return isNativeShellRuntime() || isCapacitorNativePlatform() || isCapacitorShellCandidate();
 }
 
 function formatBuiltAt(iso: string): string {

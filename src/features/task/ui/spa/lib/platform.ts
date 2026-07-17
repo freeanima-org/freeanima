@@ -1,18 +1,30 @@
-/** 浏览器 Web 壳（dev:web 等），非 desktop/mobile 原生壳 */
-export function isWebShell(): boolean {
-  return typeof window !== "undefined" && !window.satelliteShell?.isNativeShell;
-}
-
-export {
-  isMobileLayoutViewport,
-  isNativeShell,
+import {
+  isCompactLayoutViewport,
+  useCompactLayout,
   useDrawerNav,
-  useMobileLayout,
 } from "@freeanima/frontend/ui-kit/layout";
-
-export {
+import {
+  getShellKind,
+  isNativeShell,
   useActionSheetCapability as useTaskActionSheet,
   useContextMenuCapability,
   useFinePointerCapability,
   useTouchPrimaryCapability,
 } from "@freeanima/frontend/shell-sdk/react.tsx";
+
+/** 纯浏览器 Web 壳（非 Electron / Capacitor） */
+export function isWebShell(): boolean {
+  return getShellKind() === "web";
+}
+
+export {
+  getShellKind,
+  isCompactLayoutViewport,
+  isNativeShell,
+  useCompactLayout,
+  useDrawerNav,
+  useContextMenuCapability,
+  useFinePointerCapability,
+  useTaskActionSheet,
+  useTouchPrimaryCapability,
+};

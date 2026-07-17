@@ -66,6 +66,7 @@ function createSatelliteShell(
 ): SatelliteShellApi {
   return {
     isElectron: true,
+    primaryInput: "pointer",
     ...(NATIVE_BUILD ? { nativeBuild: NATIVE_BUILD } : {}),
     ...hubFields,
     windowRole,

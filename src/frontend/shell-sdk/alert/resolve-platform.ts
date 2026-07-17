@@ -1,7 +1,4 @@
-import {
-  isCapacitorNativePlatform,
-  isMobileCapacitorShellCandidate,
-} from "../capacitor-runtime.ts";
+import { isCapacitorNativePlatform, isCapacitorShellCandidate } from "../capacitor-runtime.ts";
 import type { AlertBackend, AlertPlatform } from "./types.ts";
 
 /** 与壳层 Alert 注册逻辑一致：用于设置页展示与兜底注册判断（不跟手机 UA）。 */
@@ -9,7 +6,7 @@ export function isCapacitorShellRuntime(): boolean {
   return Boolean(
     window.satelliteShell?.isNativeShell ||
     isCapacitorNativePlatform() ||
-    isMobileCapacitorShellCandidate(),
+    isCapacitorShellCandidate(),
   );
 }
 

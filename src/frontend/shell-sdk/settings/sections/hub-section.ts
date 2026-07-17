@@ -59,7 +59,7 @@ export const hubSettingsSection: SettingsSection = {
   description:
     "本机保存，用于连接 Hub 的地址与 API Token。首次使用请运行 anima token create 并在下方填写 Hub API Token。",
   platforms: {
-    // Web 壳层 detectPlatform() 为 desktop；字段与 mobile 相同（无开机自启动）
+    // Web 壳层 detectSettingsChromePlatform() 为 desktop；字段与 mobile 相同（无开机自启动）
     desktop: { kind: "form", fields: hubFields },
     mobile: { kind: "form", fields: hubFields },
   },

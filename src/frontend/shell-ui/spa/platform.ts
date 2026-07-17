@@ -1,4 +1,5 @@
 import type { SettingsPlatform } from "@freeanima/frontend/shell-sdk/settings";
+import { getShellKind } from "@freeanima/frontend/shell-sdk/shell-runtime.ts";
 
 import { detectLayoutMode, type LayoutMode } from "./layout-mode.ts";
 
@@ -12,17 +13,15 @@ export function resolveSettingsChromePlatform(ctx: PlatformDetectContext): Setti
   return "desktop";
 }
 
-import { isCapacitorNativePlatform } from "@freeanima/frontend/shell-sdk/capacitor-runtime.ts";
-
-/** 设置 section 列表与字段：跟壳能力层（Electron→desktop，Capacitor→mobile），不跟视口布局 */
+/** 设置 section 列表与字段：跟壳子维（Electron→desktop，Capacitor→mobile），不跟视口布局 */
 export function resolveSettingsContentPlatform(): SettingsPlatform {
-  const shell = typeof window !== "undefined" ? window.satelliteShell : undefined;
-  if (shell?.isElectron) return "desktop";
-  if (shell?.isNativeShell || isCapacitorNativePlatform()) return "mobile";
+  const kind = getShellKind();
+  if (kind === "capacitor") return "mobile";
   return "desktop";
 }
 
-export function detectPlatform(): SettingsPlatform {
+/** 设置页 chrome 平台（布局维） */
+export function detectSettingsChromePlatform(): SettingsPlatform {
   return resolveSettingsChromePlatform({ layoutMode: detectLayoutMode() });
 }
 

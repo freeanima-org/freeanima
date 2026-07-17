@@ -1,6 +1,6 @@
 import {
   hasCapacitorNativeBridge,
-  isMobileCapacitorBridgeExpected,
+  isCapacitorBridgeExpected,
   pinCapacitorNativeBridge,
 } from "./capacitor-plugins.ts";
 
@@ -10,7 +10,7 @@ export const CAPACITOR_BRIDGE_TIMEOUT_MS = 3_000;
 export async function waitForCapacitorBridge(
   timeoutMs = CAPACITOR_BRIDGE_TIMEOUT_MS,
 ): Promise<void> {
-  if (!isMobileCapacitorBridgeExpected()) return;
+  if (!isCapacitorBridgeExpected()) return;
 
   pinCapacitorNativeBridge();
   if (hasCapacitorNativeBridge()) return;
@@ -24,7 +24,7 @@ export async function waitForCapacitorBridge(
     });
   }
 
-  if (isMobileCapacitorBridgeExpected()) {
+  if (isCapacitorBridgeExpected()) {
     throw new Error("Capacitor 原生桥接初始化超时（缺少 nativePromise）");
   }
 }

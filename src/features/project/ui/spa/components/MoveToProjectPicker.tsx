@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { Button, Input } from "@freeanima/frontend/ui-kit";
-import { useMobileLayout } from "@freeanima/frontend/ui-kit/layout";
+import { useCompactLayout } from "@freeanima/frontend/ui-kit/layout";
 
 type ProjectPickerRow = {
   id: number;
@@ -27,7 +27,7 @@ export function MoveToProjectPicker({
   onSelect,
   onClose,
 }: MoveToProjectPickerProps) {
-  const mobileLayout = useMobileLayout();
+  const mobileLayout = useCompactLayout();
   const [visible, setVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 

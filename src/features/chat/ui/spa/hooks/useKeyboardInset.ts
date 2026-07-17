@@ -1,5 +1,6 @@
 import { Keyboard } from "@capacitor/keyboard";
 import { isCapacitorNativePlatform } from "@freeanima/frontend/shell-sdk/capacitor-runtime";
+import { getShellKind } from "@freeanima/frontend/shell-sdk/shell-runtime.ts";
 import { useEffect, useState } from "react";
 
 import {
@@ -12,7 +13,12 @@ function readInnerHeight(): number {
   return typeof window !== "undefined" ? window.innerHeight : 0;
 }
 
-export function useKeyboardInset(nativeShell: boolean): number {
+function shouldListenNativeKeyboard(): boolean {
+  return getShellKind() === "capacitor" && isCapacitorNativePlatform();
+}
+
+/** 虚拟键盘 inset；壳适配在 hook 内自判，调用方不传壳 flag */
+export function useKeyboardInset(): number {
   const [vvInset, setVvInset] = useState(0);
   const [nativeHeight, setNativeHeight] = useState(0);
   const [baselineInnerHeight, setBaselineInnerHeight] = useState(readInnerHeight);
@@ -35,7 +41,7 @@ export function useKeyboardInset(nativeShell: boolean): number {
   }, []);
 
   useEffect(() => {
-    if (!nativeShell || !isCapacitorNativePlatform()) return;
+    if (!shouldListenNativeKeyboard()) return;
     let showListener: { remove: () => Promise<void> } | undefined;
     let hideListener: { remove: () => Promise<void> } | undefined;
     void (async () => {
@@ -53,7 +59,7 @@ export function useKeyboardInset(nativeShell: boolean): number {
       void showListener?.remove();
       void hideListener?.remove();
     };
-  }, [nativeShell]);
+  }, []);
 
   const layoutShrink = computeLayoutShrink(baselineInnerHeight, innerHeight);
   return mergeKeyboardInset(vvInset, nativeHeight, layoutShrink);

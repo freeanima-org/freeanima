@@ -65,17 +65,14 @@ type CapacitorNativeInvoker = (
 ) => Promise<unknown>;
 
 export async function shouldProbeHubHealthViaCapacitorHttp(hubUrl: string): Promise<boolean> {
-  const {
-    isCapacitorNativePlatform,
-    isMobileCapacitorShellCandidate,
-    waitForCapacitorNativePlatform,
-  } = await import("./capacitor-runtime.ts");
+  const { isCapacitorNativePlatform, isCapacitorShellCandidate, waitForCapacitorNativePlatform } =
+    await import("./capacitor-runtime.ts");
   let native = isCapacitorNativePlatform();
   if (
     !native &&
     typeof window !== "undefined" &&
     window.satelliteShell?.isNativeShell &&
-    isMobileCapacitorShellCandidate()
+    isCapacitorShellCandidate()
   ) {
     native = await waitForCapacitorNativePlatform(1_500);
   }

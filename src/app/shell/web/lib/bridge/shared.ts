@@ -1,7 +1,7 @@
 import type { WebUiConfigJson } from "@freeanima/frontend/shell-sdk/web-ui-config";
-import { isMobileCapacitorShellCandidate } from "@freeanima/frontend/shell-sdk/capacitor-runtime";
+import { isCapacitorShellCandidate } from "@freeanima/frontend/shell-sdk/capacitor-runtime";
 
-export { isMobileCapacitorShellCandidate };
+export { isCapacitorShellCandidate };
 
 export type ShellBridgeWindow = Window & {
   __freeanimaShellBridge?: { ready: Promise<void> };

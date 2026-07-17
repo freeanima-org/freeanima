@@ -2,6 +2,7 @@ import {
   reconnectHub,
   useHubConnection,
   useNetworkOnline,
+  useOpenHubSettingsCapability,
 } from "@freeanima/frontend/shell-sdk/react.tsx";
 import {
   dismissShellToast,
@@ -21,7 +22,7 @@ export function ShellConnectivityBar(): null {
   const networkOnline = useNetworkOnline();
   const hubConnection = useHubConnection();
   const reconnectingRef = useRef(false);
-  const nativeShell = Boolean(window.satelliteShell?.isNativeShell);
+  const canOpenHubSettings = useOpenHubSettingsCapability();
 
   const notice = resolveConnectivityNotice({ networkOnline, hubConnection });
 
@@ -54,7 +55,7 @@ export function ShellConnectivityBar(): null {
           });
         },
       },
-      ...(nativeShell
+      ...(canOpenHubSettings
         ? {
             cancel: {
               label: "Hub 设置",
@@ -63,7 +64,7 @@ export function ShellConnectivityBar(): null {
           }
         : {}),
     });
-  }, [hubConnection, nativeShell, notice]);
+  }, [canOpenHubSettings, hubConnection, notice]);
 
   return null;
 }

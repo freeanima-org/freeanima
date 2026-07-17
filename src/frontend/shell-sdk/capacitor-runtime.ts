@@ -26,7 +26,7 @@ export function hasCapacitorNativePromise(): boolean {
 /** 等待 Capacitor 注入 nativePromise（远程 Hub 页上 @capacitor/core 可能晚于 shell-bridge）。 */
 export async function waitForCapacitorNativePromise(timeoutMs = 3_000): Promise<boolean> {
   if (hasCapacitorNativePromise()) return true;
-  if (!isMobileCapacitorShellCandidate()) return false;
+  if (!isCapacitorShellCandidate()) return false;
 
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -53,7 +53,7 @@ export function isCapacitorNativePlatform(): boolean {
  * - **禁止**仅凭远程 Hub 上的手机 UA 判为壳：普通 Safari/Chrome 直连 `/web` 必须走 Web bridge
  *   （能力层跟壳，不跟 UA；布局轴另由 viewport 决定）
  */
-export function isMobileCapacitorShellCandidate(): boolean {
+export function isCapacitorShellCandidate(): boolean {
   const w = runtimeWindow();
   if (!w || w.satelliteShell?.isElectron) return false;
   if (isCapacitorNativePlatform()) return true;
@@ -68,7 +68,7 @@ export function isMobileCapacitorShellCandidate(): boolean {
 /** 远程 Hub 页上 @capacitor/core 动态加载后 window.Capacitor 才可用 */
 export async function waitForCapacitorNativePlatform(timeoutMs = 3_000): Promise<boolean> {
   if (isCapacitorNativePlatform()) return true;
-  if (!isMobileCapacitorShellCandidate()) return false;
+  if (!isCapacitorShellCandidate()) return false;
 
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {

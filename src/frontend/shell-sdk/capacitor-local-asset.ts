@@ -1,7 +1,7 @@
 import {
   hasCapacitorNativePromise,
   isCapacitorNativePlatform,
-  isMobileCapacitorShellCandidate,
+  isCapacitorShellCandidate,
   waitForCapacitorNativePromise,
 } from "./capacitor-runtime.ts";
 
@@ -28,7 +28,7 @@ export function resolveCapacitorBundledAssetUrl(assetPath: string): string {
     scheme = cap?.config?.iosScheme?.trim() || DEFAULT_CAPACITOR_SCHEME;
   } else if (platform === "android") {
     scheme = cap?.config?.androidScheme?.trim() || DEFAULT_ANDROID_CAPACITOR_SCHEME;
-  } else if (isMobileCapacitorShellCandidate()) {
+  } else if (isCapacitorShellCandidate()) {
     // 远程 Hub 页上 window.Capacitor 可能尚未注入；Android 薄壳默认可读 http://localhost 资产
     scheme = cap?.config?.androidScheme?.trim() || DEFAULT_ANDROID_CAPACITOR_SCHEME;
   } else {
@@ -88,7 +88,7 @@ function isCapacitorBundledAssetFetchAllowed(): boolean {
 }
 
 export async function readCapacitorBundledJson(assetPath: string): Promise<unknown | undefined> {
-  if (!isMobileCapacitorShellCandidate() && !isCapacitorNativePlatform()) return undefined;
+  if (!isCapacitorShellCandidate() && !isCapacitorNativePlatform()) return undefined;
   const primaryUrl = resolveCapacitorBundledAssetUrl(assetPath);
   const urls = [primaryUrl];
   const alternate = alternateCapacitorAssetUrl(primaryUrl);
@@ -113,7 +113,7 @@ const CAPACITOR_BOOTSTRAP_PROBE_PATH = "/native-build-meta.json";
  */
 export async function detectCapacitorShellForBootstrap(): Promise<boolean> {
   if (isCapacitorNativePlatform()) return true;
-  if (!isMobileCapacitorShellCandidate()) return false;
+  if (!isCapacitorShellCandidate()) return false;
 
   // 远程 Hub 页跨域 fetch localhost 会 CORS 失败；Capacitor 8 以 nativePromise 为准。
   if (hasCapacitorNativePromise()) return true;

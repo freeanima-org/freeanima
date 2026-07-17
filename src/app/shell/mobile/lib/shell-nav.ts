@@ -1,10 +1,10 @@
+import { shouldUseNativeShellNavigation } from "@freeanima/frontend/shell-sdk/shell-runtime.ts";
+
 /** 移动壳使用 hash 路由（#/chat），避免 Capacitor 对 /chat 等路径返回 404 */
-export function isNativeShellNavigation(): boolean {
-  return Boolean(window.satelliteShell?.isNativeShell);
-}
+export { shouldUseNativeShellNavigation as isNativeShellNavigation } from "@freeanima/frontend/shell-sdk/shell-runtime.ts";
 
 export function readShellPath(): string {
-  if (isNativeShellNavigation() || window.location.hash.startsWith("#/")) {
+  if (shouldUseNativeShellNavigation() || window.location.hash.startsWith("#/")) {
     const hash = window.location.hash.replace(/^#/, "");
     return hash.startsWith("/") ? hash : `/${hash}`;
   }
@@ -13,7 +13,7 @@ export function readShellPath(): string {
 
 export function replaceShellPath(path: string): void {
   const target = path.startsWith("/") ? path : `/${path}`;
-  if (isNativeShellNavigation()) {
+  if (shouldUseNativeShellNavigation()) {
     const nextHash = `#${target}`;
     if (window.location.hash === nextHash) return;
     window.location.hash = nextHash;

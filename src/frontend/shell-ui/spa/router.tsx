@@ -9,10 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { useMemo } from "react";
 
-import {
-  isCapacitorNativePlatform,
-  isMobileCapacitorShellCandidate,
-} from "@freeanima/frontend/shell-sdk/capacitor-runtime.ts";
+import { shouldUseNativeShellNavigation } from "@freeanima/frontend/shell-sdk/shell-runtime.ts";
 
 import { shellLazyRoute } from "./lazy-route.tsx";
 import { loadConsoleShellRoute } from "./features/feature-shell-routes.ts";
@@ -103,16 +100,8 @@ const routeTree = rootRoute.addChildren([
   ]),
 ]);
 
-/** Capacitor：用 hash 路由（无 SPA fallback）；document 已在 /web/，勿再叠 basepath */
-function shouldUseNativeHashHistory(): boolean {
-  if (typeof window === "undefined") return false;
-  if (window.satelliteShell?.isNativeShell) return true;
-  // 仅真壳 / 薄壳候选；手机浏览器直连 Hub 走 path 路由
-  return isCapacitorNativePlatform() || isMobileCapacitorShellCandidate();
-}
-
 function createShellRouterInstance() {
-  const nativeHash = shouldUseNativeHashHistory();
+  const nativeHash = shouldUseNativeShellNavigation();
   const basepath = resolveShellRouterBasepath();
   return createRouter({
     routeTree,

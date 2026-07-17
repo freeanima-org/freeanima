@@ -1,11 +1,11 @@
 import { detectCapacitorShellForBootstrap } from "@freeanima/frontend/shell-sdk/capacitor-local-asset";
 import { isCapacitorShellRuntime } from "@freeanima/frontend/shell-sdk/alert/resolve-platform.ts";
 import { registerAlertBackend } from "@freeanima/frontend/shell-sdk/alert";
-import { isMobileCapacitorShellCandidate } from "@freeanima/frontend/shell-sdk/capacitor-runtime.ts";
+import { isCapacitorShellCandidate } from "@freeanima/frontend/shell-sdk/capacitor-runtime.ts";
 
 /** 按运行时注册本机 Alert backend（不跨端）。 */
 export async function registerShellAlertBackend(): Promise<void> {
-  if (window.satelliteShell?.isNativeShell || isMobileCapacitorShellCandidate()) {
+  if (window.satelliteShell?.isNativeShell || isCapacitorShellCandidate()) {
     const { pinCapacitorNativeBridge } =
       await import("@freeanima/app/shell/mobile/lib/capacitor-plugins.ts");
     const { waitForCapacitorBridge } =

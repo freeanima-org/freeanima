@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from "bun:test";
 
-import { isCapacitorNativePlatform, isMobileCapacitorShellCandidate } from "./capacitor-runtime.ts";
+import { isCapacitorNativePlatform, isCapacitorShellCandidate } from "./capacitor-runtime.ts";
 
-describe("isMobileCapacitorShellCandidate", () => {
+describe("isCapacitorShellCandidate", () => {
   afterEach(() => {
     delete (globalThis as { window?: Window }).window;
   });
@@ -13,7 +13,7 @@ describe("isMobileCapacitorShellCandidate", () => {
       location: { origin: "https://hub.example.com" },
     } as unknown as Window;
 
-    expect(isMobileCapacitorShellCandidate()).toBe(false);
+    expect(isCapacitorShellCandidate()).toBe(false);
   });
 
   it("手机浏览器直连远程 Hub 不为 Capacitor 候选", () => {
@@ -23,7 +23,7 @@ describe("isMobileCapacitorShellCandidate", () => {
     } as unknown as Window;
 
     expect(isCapacitorNativePlatform()).toBe(false);
-    expect(isMobileCapacitorShellCandidate()).toBe(false);
+    expect(isCapacitorShellCandidate()).toBe(false);
   });
 
   it("薄壳 localhost + 移动 UA 仍为候选（无 window.Capacitor）", () => {
@@ -33,7 +33,7 @@ describe("isMobileCapacitorShellCandidate", () => {
     } as unknown as Window;
 
     expect(isCapacitorNativePlatform()).toBe(false);
-    expect(isMobileCapacitorShellCandidate()).toBe(true);
+    expect(isCapacitorShellCandidate()).toBe(true);
   });
 
   it("远程 Hub + nativePromise 视为真壳", () => {
@@ -46,7 +46,7 @@ describe("isMobileCapacitorShellCandidate", () => {
     } as unknown as Window;
 
     expect(isCapacitorNativePlatform()).toBe(true);
-    expect(isMobileCapacitorShellCandidate()).toBe(true);
+    expect(isCapacitorShellCandidate()).toBe(true);
   });
 
   it("isNativeShell 视为候选", () => {
@@ -56,6 +56,6 @@ describe("isMobileCapacitorShellCandidate", () => {
       satelliteShell: { isNativeShell: true, isElectron: false },
     } as unknown as Window;
 
-    expect(isMobileCapacitorShellCandidate()).toBe(true);
+    expect(isCapacitorShellCandidate()).toBe(true);
   });
 });

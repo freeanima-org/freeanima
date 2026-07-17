@@ -1,14 +1,30 @@
 export { SubjectScopeProvider, useSubjectScope } from "./subject-scope-react.tsx";
 export { SubjectToggle } from "./SubjectToggle.tsx";
 export { SubjectScopeToggle } from "./SubjectScopeToggle.tsx";
-export { hasFinePointerCapability, hasTouchPrimaryCapability } from "./shell-capability.ts";
+export {
+  hasEnterToSendCapability,
+  hasFinePointerCapability,
+  hasTouchPrimaryCapability,
+} from "./shell-capability.ts";
 export type { PrimaryInputKind } from "./shell-capability.ts";
 export {
   useActionSheetCapability,
   useContextMenuCapability,
+  useEnterToSendCapability,
   useFinePointerCapability,
+  useOpenHubSettingsCapability,
+  useShellKind,
   useTouchPrimaryCapability,
 } from "./shell-capability-react.tsx";
+export {
+  canOpenHubSettings,
+  detectShellRuntimeKind,
+  getShellKind,
+  isNativeShell,
+  isPackagedShell,
+  shouldUseNativeShellNavigation,
+} from "./shell-runtime.ts";
+export type { ShellRuntimeKind } from "./shell-runtime.ts";
 export {
   useSetShellModuleVisibility,
   useShellModuleVisibility,

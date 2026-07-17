@@ -29,13 +29,12 @@ export {
 } from "./three-column-container-mode.ts";
 export {
   COMPACT_LAYOUT_MAX_PX,
+  COMPACT_LAYOUT_MQ,
   EXPANDED_LAYOUT_MQ,
-  MOBILE_LAYOUT_MQ,
   THREE_COLUMN_WIDE_MIN_PX,
   THREE_COLUMN_WIDE_MQ,
-  isMobileLayoutViewport,
-  isNativeShell,
+  isCompactLayoutViewport,
   isThreeColumnWideViewport,
+  useCompactLayout,
   useDrawerNav,
-  useMobileLayout,
 } from "./viewport.ts";

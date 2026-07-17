@@ -102,6 +102,7 @@ function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
   return {
     isElectron: false,
     isNativeShell: true,
+    primaryInput: "touch",
     ...apiFields,
     windowRole: null,
     apiOrigin: null,
@@ -129,6 +130,7 @@ export function createMobileShellStub(): SatelliteShellApi {
   return {
     isElectron: false,
     isNativeShell: true,
+    primaryInput: "touch",
     hubUrl: "",
     hubWsUrl: "",
     windowRole: null,

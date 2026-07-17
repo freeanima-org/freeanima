@@ -1,6 +1,7 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import { BrandLockup } from "@freeanima/frontend/ui-kit";
+import { isPackagedShell } from "@freeanima/frontend/shell-sdk/shell-runtime.ts";
 import { HubConnectionBanner } from "@freeanima/features/console/ui/console/components/HubConnectionBanner.tsx";
 import { ResponsiveSidebarLayout } from "@freeanima/features/console/ui/console/components/ResponsiveSidebarLayout.tsx";
 import { useHubRpcConnectivity } from "@freeanima/features/console/ui/console/hooks/useHubRpcConnectivity.ts";
@@ -43,7 +44,7 @@ function ConsoleSidebarNav() {
 
 function ConsoleLayout() {
   const shell = window.satelliteShell;
-  const probeEnabled = Boolean(shell?.isNativeShell || shell?.isElectron);
+  const probeEnabled = isPackagedShell();
   const { state, retry } = useHubRpcConnectivity(probeEnabled);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const headerTitle = useMemo(() => {

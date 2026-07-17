@@ -1,7 +1,7 @@
 import { waitForCapacitorBridge } from "./capacitor-ready.ts";
 import {
   createPreferencesApiFromNativeBridge,
-  isMobileCapacitorBridgeExpected,
+  isCapacitorBridgeExpected,
   pinCapacitorNativeBridge,
   type CapacitorPreferencesApi,
 } from "./capacitor-plugins.ts";
@@ -22,7 +22,7 @@ async function resolvePreferencesApi(): Promise<CapacitorPreferencesApi> {
   let api = createPreferencesApiFromNativeBridge();
   if (api) return api;
 
-  if (isMobileCapacitorBridgeExpected()) {
+  if (isCapacitorBridgeExpected()) {
     try {
       await waitForCapacitorBridge();
     } catch {

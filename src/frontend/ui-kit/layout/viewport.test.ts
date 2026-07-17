@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it } from "bun:test";
 
-import { isMobileLayoutViewport, isNativeShell, MOBILE_LAYOUT_MQ } from "./viewport.ts";
-import { windowWithSatelliteShell } from "./window-shell.ts";
+import { COMPACT_LAYOUT_MQ, isCompactLayoutViewport } from "./viewport.ts";
 
 const hasWindow = typeof globalThis.window !== "undefined";
 
@@ -11,31 +10,17 @@ describe("layout viewport", () => {
     return;
   }
 
-  const win = windowWithSatelliteShell();
-  const originalShell = win.satelliteShell;
   const originalMatchMedia = window.matchMedia;
 
   afterEach(() => {
-    if (originalShell !== undefined) {
-      win.satelliteShell = originalShell;
-    } else {
-      delete win.satelliteShell;
-    }
     window.matchMedia = originalMatchMedia;
   });
 
-  it("MOBILE_LAYOUT_MQ matches task/chat breakpoint", () => {
-    expect(MOBILE_LAYOUT_MQ).toBe("(max-width: 767px)");
+  it("COMPACT_LAYOUT_MQ matches task/chat breakpoint", () => {
+    expect(COMPACT_LAYOUT_MQ).toBe("(max-width: 767px)");
   });
 
-  it("isNativeShell reads satelliteShell flag", () => {
-    win.satelliteShell = { isNativeShell: true };
-    expect(isNativeShell()).toBe(true);
-    delete win.satelliteShell;
-    expect(isNativeShell()).toBe(false);
-  });
-
-  it("isMobileLayoutViewport uses matchMedia", () => {
+  it("isCompactLayoutViewport uses matchMedia", () => {
     window.matchMedia = ((query: string) =>
       ({
         matches: query.includes("767px"),
@@ -47,6 +32,6 @@ describe("layout viewport", () => {
         removeListener: () => {},
         dispatchEvent: () => false,
       }) satisfies MediaQueryList) as typeof window.matchMedia;
-    expect(isMobileLayoutViewport()).toBe(true);
+    expect(isCompactLayoutViewport()).toBe(true);
   });
 });
