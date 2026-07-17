@@ -86,6 +86,16 @@ export function extractReleaseCommit(release: {
   return undefined;
 }
 
+/** 从 body 中的 `version: …` 提取完整版本串（如 `0.9.1-canary+YYYYMMDDHHmm`） */
+export function extractReleaseVersion(release: { body?: string }): string | undefined {
+  const body = release.body ?? "";
+  const m = body.match(/\bversion:\s*`?([^\s`\n]+)`?/i);
+  if (!m?.[1]) return undefined;
+  const v = m[1].trim().replace(/^v/i, "");
+  if (!v || v === "canary") return undefined;
+  return v;
+}
+
 /** 本地与远端 commit 是否视为同一 tip（短/长 SHA 前缀匹配） */
 export function commitsMatch(local?: string, remote?: string): boolean {
   if (!local || !remote) return false;

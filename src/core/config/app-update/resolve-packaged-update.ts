@@ -8,13 +8,14 @@ import {
   CANARY_RELEASE_TAG,
   commitsMatch,
   extractReleaseCommit,
+  extractReleaseVersion,
   fetchLatestRelease,
   fetchReleaseByTag,
   type FetchReleaseOptions,
   type GithubRelease,
 } from "./github-releases.ts";
 import { matchReleaseAsset, type PackagedReleaseKind } from "./release-assets.ts";
-import { isSemverNewer } from "./semver.ts";
+import { isCanaryVersionNewer, isConcreteCanaryVersion, isSemverNewer } from "./semver.ts";
 
 /** 参与 GitHub 包更新的分发轨 */
 export type UpdateTrack = "release" | "canary";
@@ -42,25 +43,33 @@ export function isUpdateTrack(channel: BuildChannel): channel is UpdateTrack {
   return channel === "release" || channel === "canary";
 }
 
+function resolveRemoteVersion(release: GithubRelease, track: UpdateTrack): string {
+  if (track === "canary") {
+    return extractReleaseVersion(release) ?? release.tag_name;
+  }
+  return release.tag_name;
+}
+
 function availableFromRelease(
   release: GithubRelease,
   kind: PackagedReleaseKind,
   track: UpdateTrack,
 ): PackagedUpdateResult {
   const remoteCommit = extractReleaseCommit(release);
+  const remoteVersion = resolveRemoteVersion(release, track);
   const asset = matchReleaseAsset(kind, release.assets);
   if (!asset) {
     return {
       available: false,
       reason: "no_asset",
-      remoteVersion: release.tag_name,
+      remoteVersion,
       track,
       ...(remoteCommit ? { remoteCommit } : {}),
     };
   }
   return {
     available: true,
-    remoteVersion: release.tag_name,
+    remoteVersion,
     assetName: asset.name,
     assetUrl: asset.browser_download_url,
     releaseUrl: release.html_url,
@@ -146,7 +155,23 @@ export async function resolvePackagedUpdate(opts: {
     return withProxiedAssetUrl(base, proxy);
   }
 
-  // canary：commit 不同即有更新；无法解析远端 commit 时仍提示（避免永远 up_to_date）
+  // canary：优先比较完整版本串；无法解析时回退 commit；皆不可比则仍提示有更新
+  if (
+    isConcreteCanaryVersion(base.remoteVersion) &&
+    isConcreteCanaryVersion(opts.localVersion)
+  ) {
+    if (!isCanaryVersionNewer(base.remoteVersion, opts.localVersion)) {
+      return {
+        available: false,
+        reason: "up_to_date",
+        remoteVersion: base.remoteVersion,
+        track: trackChannel,
+        ...(base.remoteCommit ? { remoteCommit: base.remoteCommit } : {}),
+      };
+    }
+    return withProxiedAssetUrl(base, proxy);
+  }
+
   const remoteCommit = base.remoteCommit;
   if (remoteCommit && commitsMatch(opts.localCommit, remoteCommit)) {
     return {

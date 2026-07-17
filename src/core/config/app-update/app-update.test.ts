@@ -5,10 +5,18 @@ import { join } from "node:path";
 import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
 
 import { applyStandaloneUpgrade } from "./apply-standalone-upgrade.ts";
-import { commitsMatch, extractReleaseCommit, CANARY_RELEASE_TAG } from "./github-releases.ts";
+import { commitsMatch, extractReleaseCommit, extractReleaseVersion, CANARY_RELEASE_TAG } from "./github-releases.ts";
 import { matchReleaseAsset } from "./release-assets.ts";
 import { resolvePackagedUpdate } from "./resolve-packaged-update.ts";
-import { compareSemver, isSemverNewer, normalizeSemver } from "./semver.ts";
+import {
+  compareCanaryVersion,
+  compareSemver,
+  extractBuildStamp,
+  isCanaryVersionNewer,
+  isConcreteCanaryVersion,
+  isSemverNewer,
+  normalizeSemver,
+} from "./semver.ts";
 
 const tempDirs: string[] = [];
 const prevHome = process.env.FREEANIMA_HOME;
@@ -93,6 +101,21 @@ describe("semver", () => {
     expect(isSemverNewer("0.9.0", "0.8.5")).toBe(true);
     expect(isSemverNewer("0.8.5", "0.8.5")).toBe(false);
   });
+
+  it("compares canary build stamps after base semver", () => {
+    expect(extractBuildStamp("0.9.1-canary+202607160848")).toBe("202607160848");
+    expect(isConcreteCanaryVersion("0.9.1-canary+202607160949")).toBe(true);
+    expect(isConcreteCanaryVersion("canary")).toBe(false);
+    expect(compareCanaryVersion("0.9.1-canary+202607160949", "0.9.1-canary+202607160848")).toBe(1);
+    expect(compareCanaryVersion("0.9.1-canary+202607160848", "0.9.1-canary+202607160949")).toBe(-1);
+    expect(compareCanaryVersion("0.9.2-canary+202607160848", "0.9.1-canary+202607160949")).toBe(1);
+    expect(isCanaryVersionNewer("0.9.1-canary+202607160949", "0.9.1-canary+202607160848")).toBe(
+      true,
+    );
+    expect(isCanaryVersionNewer("0.9.1-canary+202607160848", "0.9.1-canary+202607160848")).toBe(
+      false,
+    );
+  });
 });
 
 describe("matchReleaseAsset", () => {
@@ -112,7 +135,7 @@ describe("matchReleaseAsset", () => {
   });
 });
 
-describe("extractReleaseCommit / commitsMatch", () => {
+describe("extractReleaseCommit / extractReleaseVersion / commitsMatch", () => {
   it("parses sha from target_commitish or body", () => {
     expect(extractReleaseCommit({ target_commitish: "abc1234def" })).toBe("abc1234def");
     expect(extractReleaseCommit({ target_commitish: "main" })).toBeUndefined();
@@ -121,6 +144,18 @@ describe("extractReleaseCommit / commitsMatch", () => {
     );
     expect(commitsMatch("deadbeef", "deadbeefcafebabe")).toBe(true);
     expect(commitsMatch("aaaa", "bbbb")).toBe(false);
+  });
+
+  it("parses version from release body", () => {
+    expect(
+      extractReleaseVersion({
+        body: "Rolling\n\nversion: `0.9.1-canary+202607160949`\nsha: `abc`\n",
+      }),
+    ).toBe("0.9.1-canary+202607160949");
+    expect(extractReleaseVersion({ body: "version: 0.9.1-canary+202607160848\n" })).toBe(
+      "0.9.1-canary+202607160848",
+    );
+    expect(extractReleaseVersion({ body: "no version here" })).toBeUndefined();
   });
 });
 
@@ -182,7 +217,59 @@ describe("resolvePackagedUpdate", () => {
     });
   });
 
-  it("uses canary tag and commit comparison", async () => {
+  it("uses canary version string comparison when body has version", async () => {
+    const sha = "0123456789abcdef0123456789abcdef01234567";
+    const remoteVer = "0.9.1-canary+202607160949";
+    const release = {
+      tag_name: CANARY_RELEASE_TAG,
+      prerelease: true,
+      draft: false,
+      html_url: "https://github.com/freeanima-org/freeanima/releases/tag/canary",
+      target_commitish: sha,
+      body: `version: \`${remoteVer}\`\nsha: \`${sha}\``,
+      assets: [
+        {
+          name: "anima-linux-x64.tar.gz",
+          browser_download_url: "https://example.com/canary.tgz",
+        },
+      ],
+    };
+    const fetchImpl = (async (url: RequestInfo | URL) => {
+      const u = String(url);
+      if (u.includes("/releases/tags/canary")) {
+        return new Response(JSON.stringify(release), { status: 200 });
+      }
+      return new Response("{}", { status: 404 });
+    }) as unknown as typeof fetch;
+
+    const newer = await resolvePackagedUpdate({
+      kind: "standalone-linux-x64",
+      localVersion: "0.9.1-canary+202607160848",
+      channel: "canary",
+      localCommit: sha, // same commit must not block when stamp is newer
+      fetchOptions: { fetchImpl },
+    });
+    expect(newer.available).toBe(true);
+    if (newer.available) {
+      expect(newer.remoteVersion).toBe(remoteVer);
+      expect(newer.remoteCommit).toBe(sha);
+    }
+
+    const sameStamp = await resolvePackagedUpdate({
+      kind: "standalone-linux-x64",
+      localVersion: remoteVer,
+      channel: "canary",
+      localCommit: "aaaaaaaa", // different commit ignored when versions equal
+      fetchOptions: { fetchImpl },
+    });
+    expect(sameStamp.available).toBe(false);
+    if (!sameStamp.available) {
+      expect(sameStamp.reason).toBe("up_to_date");
+      expect(sameStamp.remoteVersion).toBe(remoteVer);
+    }
+  });
+
+  it("falls back to commit comparison when body has no version", async () => {
     const sha = "0123456789abcdef0123456789abcdef01234567";
     const release = {
       tag_name: CANARY_RELEASE_TAG,
