@@ -15,6 +15,7 @@ import {
   getDefaultTaskList,
   listTaskItems,
   listTaskLists,
+  listTaskListStats,
   reopenTaskList,
   updateTaskItem,
   updateTaskList,
@@ -44,7 +45,8 @@ describePg("entity task PG", () => {
     const worldId = testUserWorldId();
     const list = await createTaskList(worldId, { name: "工作" });
     expect(list.name).toBe("工作");
-    expect(list.item_count).toBe(0);
+    expect(list.item_count).toBeUndefined();
+    expect(await listTaskListStats(worldId)).toContainEqual({ id: list.id, item_count: 0 });
 
     const item = await createTaskItem(worldId, {
       title: "写文档",
@@ -98,7 +100,8 @@ describePg("entity task PG", () => {
     expect(items[0]?.title).toBe("买菜");
 
     const lists = await listTaskLists(worldId);
-    expect(lists.find((l) => l.id === list.id)?.item_count).toBe(1);
+    expect(lists.find((l) => l.id === list.id)?.item_count).toBeUndefined();
+    expect(await listTaskListStats(worldId)).toContainEqual({ id: list.id, item_count: 1 });
   });
 
   it("closes and reopens task lists; default list cannot be closed", async () => {
@@ -145,7 +148,7 @@ describePg("entity task PG", () => {
     const folder = await createTaskList(worldId, { name: "工作", is_folder: true });
     expect(folder.is_folder).toBe(true);
     expect(folder.parent_id).toBeNull();
-    expect(folder.item_count).toBe(0);
+    expect(folder.item_count).toBeUndefined();
 
     const childList = await createTaskList(worldId, { name: "项目A", parent_id: folder.id });
     expect(childList.parent_id).toBe(folder.id);

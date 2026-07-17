@@ -99,8 +99,8 @@ describePg("entity search PG", () => {
     const newer = await createDiaryEntry(
       { worldId },
       {
-        title: "排序测试专用项目总结",
-        content: "阶段复盘",
+        title: "近期总结",
+        content: "阶段复盘旁注 排序测试专用项目",
         entry_at: "2026-06-01T12:00:00+08:00",
       },
     );
@@ -108,7 +108,7 @@ describePg("entity search PG", () => {
     const domain = await searchDiaryEntries({ worldId }, { query: "排序测试专用项目", limit: 10 });
     expect(domain.map((row) => row.id)).toContain(older.id);
     expect(domain.map((row) => row.id)).toContain(newer.id);
-    // 更贴 query 的块正文应排在前面
+    // 更贴 query 的块正文应排在前面（标题不再参与 diary hybrid）
     expect(domain[0]?.id).toBe(older.id);
   });
 

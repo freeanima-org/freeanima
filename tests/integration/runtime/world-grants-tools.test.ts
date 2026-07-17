@@ -152,8 +152,11 @@ describePg("world grants tools", () => {
       },
       { tools: toolSets },
     );
-    const parsed = JSON.parse(getAfter) as { ok: boolean; item: { content: string } };
+    const parsed = JSON.parse(getAfter) as {
+      ok: boolean;
+      item: { blocks: Array<{ content: string }> };
+    };
     expect(parsed.ok).toBe(true);
-    expect(parsed.item.content).toContain("agent via write grant");
+    expect(parsed.item.blocks.map((b) => b.content).join("\n")).toContain("agent via write grant");
   });
 });
