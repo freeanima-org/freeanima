@@ -1,4 +1,13 @@
-import { Button, Input, Label, Textarea } from "@freeanima/frontend/ui-kit";
+import { CalendarIcon } from "lucide-react";
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+  Input,
+  Textarea,
+} from "@freeanima/frontend/ui-kit";
 
 import type { EntryDraft } from "../lib/entry-draft-dirty.ts";
 
@@ -15,6 +24,15 @@ function saveStatusLabel(status: EntrySaveStatus): string {
     default:
       return "";
   }
+}
+
+function formatEntryDateChip(dateLocal: string): string {
+  if (!dateLocal) return "日期";
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateLocal);
+  if (!match) return dateLocal;
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  return `${month}月${day}日`;
 }
 
 export function EntryEditor({
@@ -36,38 +54,54 @@ export function EntryEditor({
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
-      <div className="flex w-full shrink-0 flex-col gap-1.5">
-        <Label className="text-xs">日期</Label>
-        <Input
-          type="date"
-          className="h-8 w-full"
-          value={draft.entryDateLocal}
-          onChange={(e) => onDraftChange({ ...draft, entryDateLocal: e.target.value })}
-          required
-          disabled={readOnly}
-        />
+      <div className="flex shrink-0 items-center gap-1">
+        {readOnly ? (
+          <span className="text-muted-foreground inline-flex h-8 items-center gap-1.5 px-2 text-sm">
+            <CalendarIcon className="size-4 shrink-0" />
+            {formatEntryDateChip(draft.entryDateLocal)}
+          </span>
+        ) : (
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground h-8 gap-1.5 px-2 font-normal"
+                aria-label="日期"
+              >
+                <CalendarIcon className="size-4 shrink-0" />
+                <span>{formatEntryDateChip(draft.entryDateLocal)}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              className="w-56 p-3"
+              onCloseAutoFocus={(e) => e.preventDefault()}
+            >
+              <DropdownMenuLabel className="px-0 pt-0">日期</DropdownMenuLabel>
+              <div onPointerDown={(e) => e.stopPropagation()}>
+                <Input
+                  type="date"
+                  className="h-8 w-full"
+                  value={draft.entryDateLocal}
+                  onChange={(e) => onDraftChange({ ...draft, entryDateLocal: e.target.value })}
+                  required
+                />
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-1.5">
-        <Label className="shrink-0 text-xs">正文</Label>
-        <Textarea
-          className="min-h-0 w-full flex-1 resize-none font-mono text-sm leading-relaxed"
-          value={draft.content}
-          onChange={(e) => onDraftChange({ ...draft, content: e.target.value })}
-          placeholder="写点什么…"
-          readOnly={readOnly}
-        />
-      </div>
-
-      <div className="flex w-full shrink-0 flex-col gap-1.5">
-        <Label className="text-xs">标签（逗号分隔，可选）</Label>
-        <Input
-          className="h-8 w-full"
-          value={draft.tagsText}
-          onChange={(e) => onDraftChange({ ...draft, tagsText: e.target.value })}
-          readOnly={readOnly}
-        />
-      </div>
+      <Textarea
+        className="min-h-0 w-full flex-1 resize-none border-0 bg-transparent px-0 font-mono text-sm leading-relaxed shadow-none focus-visible:ring-0"
+        value={draft.content}
+        onChange={(e) => onDraftChange({ ...draft, content: e.target.value })}
+        placeholder="写点什么…"
+        aria-label="正文"
+        readOnly={readOnly}
+      />
 
       <div className="flex shrink-0 flex-wrap items-center gap-2 pt-1">
         {!readOnly && onDelete ? (

@@ -167,7 +167,6 @@ export function TaskApp() {
     detailOpen,
     saveStatus: detailSaveStatus,
     openDetail: openTaskDetail,
-    closeDetail: closeTaskDetail,
     closeDetailSheet,
     handleDetailOpenChange,
     resetDetail,
@@ -1153,7 +1152,6 @@ export function TaskApp() {
             columnSplitKey="task"
             listTitle="任务"
             middleTitle={middleTitle}
-            detailTitle={detailItem?.title ?? "任务详情"}
             listOpen={sidebarOpen}
             onListOpenChange={setSidebarOpen}
             listToggleAriaLabel="打开清单"
@@ -1368,10 +1366,6 @@ export function TaskApp() {
                 <TaskDetailPanel
                   item={detailItem}
                   onChange={setDetailItem}
-                  onCancel={() => closeTaskDetail({ discard: true })}
-                  onStartPomodoro={(item) =>
-                    launchPomodoroForTask({ id: item.id, title: item.title })
-                  }
                   saveStatus={detailSaveStatus}
                 />
               ) : (

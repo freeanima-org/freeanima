@@ -12,7 +12,8 @@ export type ThreeColumnLayoutProps = {
   layoutMode: ThreeColumnLayoutMode;
   listTitle?: string;
   middleTitle: ReactNode;
-  detailTitle: ReactNode;
+  /** 省略或空字符串时不渲染详情栏顶栏标题（Sheet 仍保留 sr-only 标题） */
+  detailTitle?: ReactNode;
   list: ReactNode;
   middle: ReactNode;
   detail: ReactNode;
@@ -26,6 +27,12 @@ export type ThreeColumnLayoutProps = {
   /** 设置后在中/宽屏启用列宽拖拽，宽度持久化到 localStorage */
   columnSplitKey?: string;
 };
+
+function hasVisibleDetailTitle(title: ReactNode | undefined): boolean {
+  if (title == null || title === false) return false;
+  if (typeof title === "string") return title.trim() !== "";
+  return true;
+}
 
 const LIST_DEFAULT_PX = 256;
 const MIDDLE_DEFAULT_PX = 320;
@@ -140,15 +147,15 @@ export function ThreeColumnLayout({
     </>
   );
 
-  const detailHeader = (
-    <header className="border flex shrink-0 items-center border-b px-4 py-3">
-      <h2 className="min-w-0 flex-1 truncate text-lg font-semibold">{detailTitle}</h2>
-    </header>
-  );
+  const showDetailHeader = hasVisibleDetailTitle(detailTitle);
 
   const detailPanel = (
     <>
-      {detailHeader}
+      {showDetailHeader ? (
+        <header className="border flex shrink-0 items-center border-b px-4 py-3">
+          <h2 className="min-w-0 flex-1 truncate text-lg font-semibold">{detailTitle}</h2>
+        </header>
+      ) : null}
       <div className="flex min-h-0 flex-1 flex-col">{detail}</div>
     </>
   );
@@ -195,10 +202,13 @@ export function ThreeColumnLayout({
         <Sheet open={detailOpen} onOpenChange={onDetailOpenChange}>
           <SheetContent
             side="bottom"
+            showCloseButton={false}
             className="flex h-[85dvh] max-h-[85dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-full"
           >
-            <SheetHeader className="border shrink-0 border-b px-4 py-3">
-              <SheetTitle className="truncate">{detailTitle}</SheetTitle>
+            <SheetHeader
+              className={showDetailHeader ? "border shrink-0 border-b px-4 py-3" : "sr-only"}
+            >
+              <SheetTitle className="truncate">{detailTitle ?? "详情"}</SheetTitle>
             </SheetHeader>
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{detail}</div>
           </SheetContent>

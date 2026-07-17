@@ -706,7 +706,6 @@ export function ProjectApp() {
           columnSplitKey="project"
           listTitle="项目"
           middleTitle={selectedProject?.title ?? "选择项目"}
-          detailTitle={detailItem?.title ?? "任务详情"}
           listOpen={listOpen}
           onListOpenChange={setListOpen}
           listToggleAriaLabel="打开项目树"
@@ -856,7 +855,6 @@ export function ProjectApp() {
               <ProjectTaskDetailPanel
                 item={detailItem}
                 onChange={setDetailItem}
-                onCancel={() => closeTaskDetail({ discard: true })}
                 saveStatus={detailSaveStatus}
               />
             ) : (
