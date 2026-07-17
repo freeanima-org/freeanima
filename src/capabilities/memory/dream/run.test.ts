@@ -76,7 +76,7 @@ mock.module("@freeanima/core/db/pg/limbic-memory", () => ({
 }));
 mock.module("@freeanima/core/db/pg/conversation", () => ({
   listConversationIdsUpdatedBetween: listConversationIdsUpdatedBetweenMock,
-  listMessages: listMessagesMock,
+  listRecentMessages: listMessagesMock,
 }));
 
 afterEach(() => {
