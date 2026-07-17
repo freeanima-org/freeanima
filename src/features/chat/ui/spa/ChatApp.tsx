@@ -14,9 +14,15 @@ import {
   Switch,
   Textarea,
 } from "@freeanima/frontend/ui-kit";
-import { ConfirmDialog, ActionSheet, ContextMenu } from "@freeanima/frontend/ui-kit/composite";
+import {
+  ConfirmDialog,
+  ActionSheet,
+  ContextMenu,
+  toast,
+} from "@freeanima/frontend/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
 import { AcpProgressDock } from "@freeanima/features/chat/ui/spa/components/AcpProgressDock.tsx";
+import { SlashCommandResultPanel } from "@freeanima/features/chat/ui/spa/components/SlashCommandResultPanel.tsx";
 import { ToolBlockBubble } from "@freeanima/features/chat/ui/spa/components/ToolBlockBubble.tsx";
 import {
   ChatMessageBubble,
@@ -35,6 +41,7 @@ import {
   listConversationCommands,
   loadConfig,
   rollbackBeforeLastUserMessage,
+  runConversationCommand,
   subscribeConversationUpdates,
 } from "@freeanima/features/chat/ui/spa/lib/api.ts";
 import { runBootstrapConversation } from "@freeanima/features/chat/ui/spa/lib/bootstrap-conversation.ts";
@@ -220,6 +227,11 @@ export function ChatApp() {
   const [commandList, setCommandList] = useState<CommandItem[]>([]);
   const [selectedCmdIdx, setSelectedCmdIdx] = useState(0);
   const [clarifyPending, setClarifyPending] = useState<ClarifyPending | null>(null);
+  const [slashResult, setSlashResult] = useState<{
+    command: string;
+    text: string;
+    loading?: boolean;
+  } | null>(null);
   const [llmDebugEnabled, setLlmDebugEnabled] = useState(false);
   const [debugViewerOpen, setDebugViewerOpen] = useState(false);
   const [llmDebugSnapshots, setLlmDebugSnapshots] = useState<LlmDebugSnapshots | null>(null);
@@ -550,6 +562,7 @@ export function ChatApp() {
     writeConversationToUrl(currentId);
     writeModuleSelection("chat", currentId);
     setInputText(loadInputDraft(currentId));
+    setSlashResult(null);
     stickToBottomRef.current = true;
     requestAnimationFrame(() => {
       resizeInput();
@@ -1057,6 +1070,39 @@ export function ChatApp() {
     const originConversationId = conversationId;
     let claimedOpId: string | null = null;
     try {
+      if (text.startsWith("/") && canSendOnline) {
+        setInputText("");
+        saveInputDraft(originConversationId, "");
+        requestAnimationFrame(resizeInput);
+        const cmdName = text.slice(1).split(/\s+/).filter(Boolean)[0] ?? "";
+        setSlashResult({ command: cmdName, text: "", loading: true });
+        try {
+          const result = await runConversationCommand(originConversationId, text);
+          if (result.delivery === "message") {
+            // 续流型（/retry、/goal <描述>）：改走 message.send
+            setSlashResult(null);
+          } else if (result.delivery === "rpc") {
+            if (result.ux === "panel") {
+              setSlashResult({ command: result.command, text: result.text });
+            } else if (result.ux === "toast") {
+              setSlashResult(null);
+              toast(result.text, { duration: 4000 });
+            } else {
+              setSlashResult(null);
+            }
+            return;
+          } else {
+            setSlashResult(null);
+            toast("Unexpected slash command response", { duration: 5000 });
+            return;
+          }
+        } catch (e) {
+          setSlashResult(null);
+          toast(e instanceof Error ? e.message : String(e), { duration: 5000 });
+          return;
+        }
+      }
+
       const expectedTailPos = await resolveExpectedTailPos(originConversationId, canSendOnline);
       const entry = await useOutboxStore
         .getState()
@@ -1065,9 +1111,11 @@ export function ChatApp() {
       claimChatSend(entry.clientOpId);
       claimedOpId = entry.clientOpId;
 
-      setInputText("");
-      saveInputDraft(originConversationId, "");
-      requestAnimationFrame(resizeInput);
+      if (!text.startsWith("/") || !canSendOnline) {
+        setInputText("");
+        saveInputDraft(originConversationId, "");
+        requestAnimationFrame(resizeInput);
+      }
       appendItem({
         type: "message",
         role: "user",
@@ -1094,13 +1142,42 @@ export function ChatApp() {
     if (!item || item.conversationId !== currentId) return;
 
     sendingRef.current = true;
-    appendItemForConversation(item.conversationId, {
-      type: "message",
-      role: "user",
-      content: item.text,
-    });
-    scrollDown();
     try {
+      if (item.text.startsWith("/") && canSendOnline) {
+        const cmdName = item.text.slice(1).split(/\s+/).filter(Boolean)[0] ?? "";
+        setSlashResult({ command: cmdName, text: "", loading: true });
+        try {
+          const result = await runConversationCommand(item.conversationId, item.text);
+          if (result.delivery === "message") {
+            setSlashResult(null);
+          } else if (result.delivery === "rpc") {
+            if (result.ux === "panel") {
+              setSlashResult({ command: result.command, text: result.text });
+            } else if (result.ux === "toast") {
+              setSlashResult(null);
+              toast(result.text, { duration: 4000 });
+            } else {
+              setSlashResult(null);
+            }
+            return;
+          } else {
+            setSlashResult(null);
+            toast("Unexpected slash command response", { duration: 5000 });
+            return;
+          }
+        } catch (e) {
+          setSlashResult(null);
+          toast(e instanceof Error ? e.message : String(e), { duration: 5000 });
+          return;
+        }
+      }
+
+      appendItemForConversation(item.conversationId, {
+        type: "message",
+        role: "user",
+        content: item.text,
+      });
+      scrollDown();
       await dispatchSend(item.text, item.conversationId);
     } finally {
       sendingRef.current = false;
@@ -1306,6 +1383,18 @@ export function ChatApp() {
             {acpDock ? (
               <div className="shrink-0 px-4 pt-3">
                 <AcpProgressDock dock={acpDock} />
+              </div>
+            ) : null}
+
+            {slashResult ? (
+              <div className="shrink-0 px-4 pt-3">
+                <SlashCommandResultPanel
+                  command={slashResult.command}
+                  text={slashResult.text}
+                  {...(slashResult.loading ? { loading: true } : {})}
+                  onClose={() => setSlashResult(null)}
+                  renderMd={renderMd}
+                />
               </div>
             ) : null}
 

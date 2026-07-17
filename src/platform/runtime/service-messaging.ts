@@ -6,11 +6,12 @@ import {
   isRestartResult,
   isUpgradeResult,
   commandNeedsPreAck,
+  commandNeedsMessageDelivery,
   formatCommandPreAck,
   formatCommandStreamPreAck,
   ensureCommandResultText,
 } from "@freeanima/platform/slash-commands";
-import type { CommandDef } from "@freeanima/platform/slash-commands";
+import type { CommandDef, CommandUx } from "@freeanima/platform/slash-commands";
 import { messageIncoming, turnAfterComplete } from "@freeanima/core/hooks/conversation";
 import { headOkStepData } from "@freeanima/kernel/hooks";
 import type { StoredMessage as Message } from "@freeanima/core/db/domain";
@@ -133,7 +134,7 @@ export async function executeCommand(
     platform?: string;
     origin_extra?: Record<string, unknown>;
   },
-): Promise<{ text: string; data: unknown; found: boolean }> {
+): Promise<{ text: string; data: unknown; found: boolean; ux?: CommandUx }> {
   const conversationId = params.conversation_id;
   const platform = params.platform ?? "gateway";
   const text = params.text.trim();
@@ -146,6 +147,7 @@ export async function executeCommand(
         text: `❌ Unknown command: ${cmdName}. Type /help for available commands.`,
         data: null,
         found: true,
+        ux: "toast",
       };
     }
     return { text: "", data: null, found: false };
@@ -178,9 +180,10 @@ export async function executeCommand(
         text: combined || ensureCommandResultText("", cmd),
         data: result.data,
         found: true,
+        ...(result.ux !== undefined ? { ux: result.ux } : {}),
       };
     } catch (e) {
-      return { text: `⚠️ ${e}`, data: result.data, found: true };
+      return { text: `⚠️ ${e}`, data: result.data, found: true, ux: "toast" };
     }
   }
 
@@ -194,9 +197,10 @@ export async function executeCommand(
         text: combined || ensureCommandResultText("", cmd),
         data: result.data,
         found: true,
+        ...(result.ux !== undefined ? { ux: result.ux } : {}),
       };
     } catch (e) {
-      return { text: `⚠️ ${e}`, data: result.data, found: true };
+      return { text: `⚠️ ${e}`, data: result.data, found: true, ux: "toast" };
     }
   }
 
@@ -211,6 +215,7 @@ export async function executeCommand(
       text: ensureCommandResultText(result.text, cmd),
       data: result.data,
       found: true,
+      ux: result.ux ?? "toast",
     };
   }
 
@@ -218,9 +223,81 @@ export async function executeCommand(
     text: ensureCommandResultText(result.text, cmd),
     data: result.data ?? null,
     found: true,
+    ux: result.ux ?? "panel",
   };
 }
 
+export type ConversationCommandRpcResult =
+  | { delivery: "message" }
+  | {
+      delivery: "rpc";
+      ux: CommandUx;
+      text: string;
+      command: string;
+    };
+
+/**
+ * Chat terminal slash path: run without message stream, or ask client to use message.send.
+ */
+export async function runConversationCommand(
+  deps: FullRuntimeDeps,
+  msgDeps: MessagingDeps,
+  params: {
+    conversation_id: string;
+    text: string;
+    platform?: string;
+    origin_extra?: Record<string, unknown>;
+  },
+): Promise<ConversationCommandRpcResult> {
+  const conversationId = params.conversation_id;
+  const platform = params.platform ?? "chat";
+  const text = params.text.trim();
+  const [cmd, args] = resolveCommand(text, platform);
+
+  if (!cmd) {
+    if (text.startsWith("/")) {
+      const cmdName = text.split(/\s/)[0] ?? "/?";
+      return {
+        delivery: "rpc",
+        ux: "toast",
+        text: `❌ Unknown command: ${cmdName}. Type /help for available commands.`,
+        command: cmdName.replace(/^\//, "") || "?",
+      };
+    }
+    return { delivery: "message" };
+  }
+
+  if (commandNeedsMessageDelivery(cmd, args)) {
+    return { delivery: "message" };
+  }
+
+  if (!(await deps.conversation.conversationExists(conversationId))) {
+    return {
+      delivery: "rpc",
+      ux: "toast",
+      text: `Conversation not found: ${conversationId}`,
+      command: cmd.name,
+    };
+  }
+
+  const executed = await executeCommand(
+    deps,
+    msgDeps,
+    omitUndefined({
+      conversation_id: conversationId,
+      text,
+      platform,
+      origin_extra: params.origin_extra,
+    }),
+  );
+
+  return {
+    delivery: "rpc",
+    ux: executed.ux ?? "panel",
+    text: executed.text,
+    command: cmd.name,
+  };
+}
 export async function* sendMessageStream(
   deps: FullRuntimeDeps,
   msgDeps: MessagingDeps,

@@ -289,8 +289,17 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     text: string;
     platform?: string;
     origin_extra?: Record<string, unknown>;
-  }): Promise<{ text: string; data: unknown; found: boolean }> {
+  }) {
     return messaging.executeCommand(this.fullDeps(), this.messagingDeps(), params);
+  }
+
+  runConversationCommand(params: {
+    conversation_id: string;
+    text: string;
+    platform?: string;
+    origin_extra?: Record<string, unknown>;
+  }): Promise<messaging.ConversationCommandRpcResult> {
+    return messaging.runConversationCommand(this.fullDeps(), this.messagingDeps(), params);
   }
 
   getConversationInfo(conversationId: string, platform = ""): Promise<Record<string, unknown>> {

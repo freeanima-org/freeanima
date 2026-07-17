@@ -83,14 +83,15 @@ function webDevPlugin(): Plugin {
   };
 }
 
-function webPwaPlugin(): Plugin[] {
-  const skipPwa = process.env.FREEANIMA_WEB_SKIP_PWA === "1";
+function webPwaPlugin(options?: { disable?: boolean }): Plugin[] {
+  const skipPwa = Boolean(options?.disable) || process.env.FREEANIMA_WEB_SKIP_PWA === "1";
   return VitePWA({
     disable: skipPwa,
     registerType: "prompt",
     injectRegister: false,
     scope: "/web/",
     base: "/web/",
+    // 开发 serve 已整插件 disable；保留 false 防止误开
     devOptions: {
       enabled: false,
     },
@@ -162,10 +163,15 @@ export default defineConfig(({ command, mode }) => {
     },
   });
 
-  const skipPwa = process.env.FREEANIMA_WEB_SKIP_PWA === "1";
-  inline.plugins = [...(inline.plugins ?? []), ...webPwaPlugin()];
+  // 开发 serve 禁用 PWA，避免历史 SW 缓存旧 JS（HMR 被劫持）
+  const skipPwa = isServe || process.env.FREEANIMA_WEB_SKIP_PWA === "1";
+  inline.plugins = [...(inline.plugins ?? []), ...webPwaPlugin({ disable: skipPwa })];
   if (skipPwa) {
-    console.info("[build:web] FREEANIMA_WEB_SKIP_PWA=1 — VitePWA disabled");
+    console.info(
+      isServe
+        ? "[dev:web] VitePWA disabled (dev serve — no SW)"
+        : "[build:web] FREEANIMA_WEB_SKIP_PWA=1 — VitePWA disabled",
+    );
   }
 
   if (!isServe) {

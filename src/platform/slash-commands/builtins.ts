@@ -40,7 +40,15 @@ function conv() {
   return getAppRuntime().conversation;
 }
 
-function cmdHelp(ctx: CommandContext): string {
+function asPanel(text: string): CommandResult {
+  return { text, ux: "panel" };
+}
+
+function asToast(text: string): CommandResult {
+  return { text, ux: "toast" };
+}
+
+function cmdHelp(ctx: CommandContext): CommandResult {
   const available = listCommandDefsForPlatform(ctx.platform);
   const conversationCmds = available.filter((c) => (c.scope ?? "conversation") === "conversation");
   const globalCmds = available.filter((c) => c.scope === "global");
@@ -58,7 +66,7 @@ function cmdHelp(ctx: CommandContext): string {
       lines.push(`  • \`/${cmd.name}\` — ${cmd.description}`);
     }
   }
-  return lines.join("\n");
+  return asPanel(lines.join("\n"));
 }
 
 async function cmdNew(ctx: CommandContext): Promise<CommandResult> {
@@ -72,15 +80,16 @@ async function cmdNew(ctx: CommandContext): Promise<CommandResult> {
   }
   return {
     text: `🆕 New conversation created (${sid.slice(0, 8)}...)`,
+    ux: "toast",
     data: { new_conversation_id: sid },
   };
 }
 
-async function cmdToolDisplay(ctx: CommandContext): Promise<string> {
+async function cmdToolDisplay(ctx: CommandContext): Promise<CommandResult> {
   const cfg = getAppRuntime().engine.config.data;
   const meta = await conv().loadConversationMeta(ctx.conversationId);
   if (!isConversationMeta(meta)) {
-    return "⚠️ Current conversation does not exist.";
+    return asToast("⚠️ Current conversation does not exist.");
   }
 
   const sub = ctx.args[0]?.trim();
@@ -88,106 +97,111 @@ async function cmdToolDisplay(ctx: CommandContext): Promise<string> {
     const effective = resolveToolDisplayMode(meta, cfg);
     const source =
       typeof meta.gateway_tool_display === "string" ? "conversation override" : "global default";
-    return `🔧 Tool display: \`${effective}\` (${source})`;
+    return asPanel(`🔧 Tool display: \`${effective}\` (${source})`);
   }
 
   if (sub.toLowerCase() === "reset") {
     await conv().updateConversationMetaField(ctx.conversationId, {
       gateway_tool_display: undefined,
     });
-    return `✅ Cleared conversation tool display override (using global default: \`name\`)`;
+    return asToast(
+      `✅ Cleared conversation tool display override (using global default: \`name\`)`,
+    );
   }
 
   const mode = parseToolDisplayMode(sub);
   if (!mode) {
-    return `⚠️ Unknown level. Available: ${formatToolDisplayHelp()}`;
+    return asPanel(`⚠️ Unknown level. Available: ${formatToolDisplayHelp()}`);
   }
 
   await conv().updateConversationMetaField(ctx.conversationId, { gateway_tool_display: mode });
-  return `✅ Tool display set to \`${mode}\` for this conversation`;
+  return asToast(`✅ Tool display set to \`${mode}\` for this conversation`);
 }
 
 function cmdRetry(_ctx: CommandContext): CommandResult {
   return { text: "", data: { action: "retry" } };
 }
 
-async function cmdGoal(ctx: CommandContext): Promise<string | CommandResult> {
+async function cmdGoal(ctx: CommandContext): Promise<CommandResult> {
   const sub = ctx.args[0]?.trim().toLowerCase();
   if (sub === "status") {
     const goal = await readConversationGoal(conv(), ctx.conversationId);
-    if (!goal) return "No active goal. Use `/goal <description>` to set one.";
-    return formatGoalStatus(goal);
+    if (!goal) return asPanel("No active goal. Use `/goal <description>` to set one.");
+    return asPanel(formatGoalStatus(goal));
   }
   if (sub === "pause") {
     const goal = await pauseConversationGoal(conv(), ctx.conversationId);
-    if (!goal) return "No goal to pause.";
-    return "⏸ Goal paused (state preserved). Use `/goal resume` to continue auto-run.";
+    if (!goal) return asToast("No goal to pause.");
+    return asToast("⏸ Goal paused (state preserved). Use `/goal resume` to continue auto-run.");
   }
   if (sub === "resume") {
     const goal = await resumeConversationGoal(conv(), ctx.conversationId);
-    if (!goal) return "No paused goal to resume.";
-    return "▶ Goal resumed.";
+    if (!goal) return asToast("No paused goal to resume.");
+    return asToast("▶ Goal resumed.");
   }
   if (sub === "clear") {
     await clearGoal(conv(), ctx.conversationId);
-    return "🗑 Goal cleared.";
+    return asToast("🗑 Goal cleared.");
   }
 
   const description = ctx.args.join(" ").trim();
   if (!description) {
-    return "Usage: `/goal <description>` | `/goal status` | `/goal pause` | `/goal resume` | `/goal clear`";
+    return asPanel(
+      "Usage: `/goal <description>` | `/goal status` | `/goal pause` | `/goal resume` | `/goal clear`",
+    );
   }
 
   const goal = await setConversationGoal(conv(), ctx.conversationId, description);
   const prompt = formatGoalStartPrompt(description);
   return {
     text: formatGoalSetMessage(goal.max_turns),
+    ux: "toast",
     data: { action: "goal_start", prompt },
   };
 }
 
-async function cmdSubgoal(ctx: CommandContext): Promise<string> {
+async function cmdSubgoal(ctx: CommandContext): Promise<CommandResult> {
   const sub = ctx.args[0]?.trim().toLowerCase();
   const goal = await readConversationGoal(conv(), ctx.conversationId);
-  if (!goal) return "No active goal. Set one with `/goal <description>` first.";
+  if (!goal) return asToast("No active goal. Set one with `/goal <description>` first.");
 
   if (!sub) {
-    return formatSubgoalList(goal);
+    return asPanel(formatSubgoalList(goal));
   }
   if (sub === "clear") {
     await clearSubgoals(conv(), ctx.conversationId);
-    return "🗑 Subgoals cleared.";
+    return asToast("🗑 Subgoals cleared.");
   }
   if (sub === "remove") {
     const idx = Number.parseInt(ctx.args[1] ?? "", 10);
     if (!Number.isFinite(idx) || idx < 1) {
-      return "Usage: `/subgoal remove <N>` (1-based index)";
+      return asPanel("Usage: `/subgoal remove <N>` (1-based index)");
     }
     const updated = await removeSubgoal(conv(), ctx.conversationId, idx);
-    if (!updated) return "No goal.";
-    return formatSubgoalList(updated);
+    if (!updated) return asToast("No goal.");
+    return asPanel(formatSubgoalList(updated));
   }
 
   const condition = ctx.args.join(" ").trim();
   if (!condition) {
-    return "Usage: `/subgoal <condition>` | `/subgoal remove <N>` | `/subgoal clear`";
+    return asPanel("Usage: `/subgoal <condition>` | `/subgoal remove <N>` | `/subgoal clear`");
   }
   const updated = await addSubgoal(conv(), ctx.conversationId, condition);
-  if (!updated) return "➕ Subgoal added.";
-  return `➕ Subgoal added.\n\n${formatSubgoalList(updated)}`;
+  if (!updated) return asToast("➕ Subgoal added.");
+  return asPanel(`➕ Subgoal added.\n\n${formatSubgoalList(updated)}`);
 }
 
-async function cmdCancel(ctx: CommandContext): Promise<string> {
+async function cmdCancel(ctx: CommandContext): Promise<CommandResult> {
   const pending = await readAwaitingClarify(conv(), ctx.conversationId);
-  if (!pending) return "No pending questions to answer.";
+  if (!pending) return asToast("No pending questions to answer.");
   await clearAwaitingClarify(conv(), ctx.conversationId);
-  return "Question cancelled, you can continue the conversation.";
+  return asToast("Question cancelled, you can continue the conversation.");
 }
 
-async function cmdRebuildConversationCache(ctx: CommandContext): Promise<string> {
+async function cmdRebuildConversationCache(ctx: CommandContext): Promise<CommandResult> {
   const meta = await conv().loadConversationMeta(ctx.conversationId);
   if (!isConversationMeta(meta)) {
-    return "⚠️ Current conversation does not exist, cannot rebuild conversation cache.";
+    return asToast("⚠️ Current conversation does not exist, cannot rebuild conversation cache.");
   }
   try {
     const { cachedCount, promoted, systemPromptLength } = await conv().rebuildConversationCache(
@@ -195,77 +209,79 @@ async function cmdRebuildConversationCache(ctx: CommandContext): Promise<string>
     );
     const promotedText =
       promoted.length > 0 ? ` (+${promoted.length} promoted: ${promoted.join(", ")})` : "";
-    return (
+    return asPanel(
       `✅ Rebuilt conversation cache\n` +
-      `cached_toolsets: ${cachedCount}${promotedText}\n` +
-      `system_prompt: ${systemPromptLength} chars`
+        `cached_toolsets: ${cachedCount}${promotedText}\n` +
+        `system_prompt: ${systemPromptLength} chars`,
     );
   } catch (e) {
-    return `⚠️ Failed to rebuild conversation cache: ${String(e)}`;
+    return asToast(`⚠️ Failed to rebuild conversation cache: ${String(e)}`);
   }
 }
 
-async function cmdStats(ctx: CommandContext): Promise<string> {
+async function cmdStats(ctx: CommandContext): Promise<CommandResult> {
   if (ctx.args[0] === "--all" || ctx.args[0] === "-a") {
-    return statsReport(null, { allConversations: true });
+    return asPanel(await statsReport(null, { allConversations: true }));
   }
-  return statsReport(ctx.conversationId);
+  return asPanel(await statsReport(ctx.conversationId));
 }
 
-async function cmdCwd(ctx: CommandContext): Promise<string> {
+async function cmdCwd(ctx: CommandContext): Promise<CommandResult> {
   if (ctx.args.length === 0) {
     const cwd = await conv().getConversationCwd(ctx.conversationId);
-    return `📁 Current working directory: ${cwd ?? "(not set)"}`;
+    return asPanel(`📁 Current working directory: ${cwd ?? "(not set)"}`);
   }
   const newCwd = ctx.args.join(" ");
   try {
     const resolved = await conv().setConversationCwd(ctx.conversationId, newCwd);
-    return `✅ Working directory switched to: ${resolved}\n(if AGENTS.md exists, content injected into system prompt)`;
+    return asToast(
+      `✅ Working directory switched to: ${resolved}\n(if AGENTS.md exists, content injected into system prompt)`,
+    );
   } catch (e) {
-    return `❌ ${e instanceof Error ? e.message : String(e)}`;
+    return asToast(`❌ ${e instanceof Error ? e.message : String(e)}`);
   }
 }
 
-async function cmdTitle(ctx: CommandContext): Promise<string> {
+async function cmdTitle(ctx: CommandContext): Promise<CommandResult> {
   if (ctx.args.length === 0) {
     const title = await conv().getConversationTitle(ctx.conversationId);
-    return `📝 Current title: ${title || "(empty)"}`;
+    return asPanel(`📝 Current title: ${title || "(empty)"}`);
   }
   const newTitle = ctx.args.join(" ").slice(0, 50);
   await conv().setConversationTitle(ctx.conversationId, newTitle);
-  return `✅ Title updated: ${newTitle}`;
+  return asToast(`✅ Title updated: ${newTitle}`);
 }
 
-async function cmdSethome(ctx: CommandContext): Promise<string> {
+async function cmdSethome(ctx: CommandContext): Promise<CommandResult> {
   const extra = ctx.origin_extra;
   if (!extra) {
-    return "⚠️ /sethome only works in Discord or WeChat chat.";
+    return asToast("⚠️ /sethome only works in Discord or WeChat chat.");
   }
 
   if (ctx.platform === "discord") {
     const channelId = String(extra.channel_id ?? "").trim();
     if (!channelId) {
-      return "⚠️ Cannot identify current Discord channel.";
+      return asToast("⚠️ Cannot identify current Discord channel.");
     }
     const threadId = String(extra.thread_id ?? "").trim();
     await setHomeChannel("discord", channelId, threadId || undefined);
     const where = threadId ? `channel ${channelId} / thread ${threadId}` : `channel ${channelId}`;
-    return `✅ Set Discord home channel to ${where}(cron delivery etc. will default here)`;
+    return asToast(`✅ Set Discord home channel to ${where}(cron delivery etc. will default here)`);
   }
 
   if (ctx.platform === "weixin") {
     const peerId = String(extra.weixin_peer_id ?? "").trim();
     if (!peerId) {
-      return "⚠️ Cannot identify current WeChat session.";
+      return asToast("⚠️ Cannot identify current WeChat session.");
     }
     await setHomeChannel("weixin", peerId);
-    return `✅ Set WeChat home channel to ${peerId}(cron delivery etc. will default here)`;
+    return asToast(`✅ Set WeChat home channel to ${peerId}(cron delivery etc. will default here)`);
   }
 
-  return "⚠️ /sethome only works in Discord or WeChat chat.";
+  return asToast("⚠️ /sethome only works in Discord or WeChat chat.");
 }
 
-async function cmdCompress(ctx: CommandContext): Promise<string> {
+async function cmdCompress(ctx: CommandContext): Promise<CommandResult> {
   const force = ctx.args.includes("--force") || ctx.args.includes("-f");
   const r = (await conv().recompressConversation(ctx.conversationId, { force })) as Record<
     string,
@@ -273,7 +289,7 @@ async function cmdCompress(ctx: CommandContext): Promise<string> {
   > &
     CompressionAnalysis & { updated?: boolean };
   if (!r.enabled) {
-    return "Session compression not enabled (config.yaml → compression.enabled)";
+    return asToast("Session compression not enabled (config.yaml → compression.enabled)");
   }
   const cfg = getCompressionConfig();
   const lines = [
@@ -281,7 +297,7 @@ async function cmdCompress(ctx: CommandContext): Promise<string> {
     `l2: ${r.l2 ?? "—"}  l3: ${r.l3 ?? "(none, below compression threshold)"}`,
     ...formatCompressionDiagnostics(r, cfg, { includeStorageSummary: true }),
   ];
-  return lines.join("\n");
+  return asPanel(lines.join("\n"));
 }
 
 async function reloadMaskSideEffects(conversationId: string): Promise<void> {
@@ -289,17 +305,17 @@ async function reloadMaskSideEffects(conversationId: string): Promise<void> {
   await conv().rebuildConversationCache(conversationId);
 }
 
-async function cmdMask(ctx: CommandContext): Promise<string> {
+async function cmdMask(ctx: CommandContext): Promise<CommandResult> {
   const sub = ctx.args[0]?.toLowerCase();
   const meta = await conv().loadConversationMeta(ctx.conversationId);
   if (!isConversationMeta(meta)) {
-    return "⚠️ Current conversation does not exist, cannot set capability mask.";
+    return asToast("⚠️ Current conversation does not exist, cannot set capability mask.");
   }
 
   if (sub === "set") {
     const preset = ctx.args[1]?.trim();
     if (!preset) {
-      return "Usage: `/mask set <preset-name>`";
+      return asPanel("Usage: `/mask set <preset-name>`");
     }
     const { masks, engine } = getAppRuntime();
     if (!masks.get(preset)) {
@@ -307,26 +323,30 @@ async function cmdMask(ctx: CommandContext): Promise<string> {
         .list()
         .map((m) => m.name)
         .join(", ");
-      return `⚠️ Unknown mask '${preset}'. Available: ${known || "(none)"}`;
+      return asToast(`⚠️ Unknown mask '${preset}'. Available: ${known || "(none)"}`);
     }
     await conv().updateConversationMetaField(ctx.conversationId, {
       capability_mask: { presets: [preset] },
     });
     await reloadMaskSideEffects(ctx.conversationId);
     const resolved = resolveMaskPresets([preset], masks, engine.catalog.toolSets);
-    return `✅ Set capability mask '${preset}' (${resolved.allowed_tools.length} tools). Compressed and rebuilt conversation cache.`;
+    return asToast(
+      `✅ Set capability mask '${preset}' (${resolved.allowed_tools.length} tools). Compressed and rebuilt conversation cache.`,
+    );
   }
 
   if (sub === "clear") {
     await conv().updateConversationMetaField(ctx.conversationId, { capability_mask: undefined });
     await reloadMaskSideEffects(ctx.conversationId);
-    return "✅ Removed capability mask, restored full capabilities. Compressed and rebuilt conversation cache.";
+    return asToast(
+      "✅ Removed capability mask, restored full capabilities. Compressed and rebuilt conversation cache.",
+    );
   }
 
   if (sub === "show") {
     const presets = meta.capability_mask?.presets ?? [];
     if (presets.length === 0) {
-      return "ℹ️ Current conversation has no capability mask (full capabilities).";
+      return asPanel("ℹ️ Current conversation has no capability mask (full capabilities).");
     }
     const { masks, engine } = getAppRuntime();
     const resolved = resolveMaskPresets(presets, masks, engine.catalog.toolSets);
@@ -334,34 +354,38 @@ async function cmdMask(ctx: CommandContext): Promise<string> {
       resolved.allowed_tools.length <= 12
         ? resolved.allowed_tools.join(", ")
         : `${resolved.allowed_tools.slice(0, 12).join(", ")}… (total ${resolved.allowed_tools.length})`;
-    return [
-      `🎭 Capability mask: ${presets.join(", ")}`,
-      `Allowed tools: ${preview || "(none)"}`,
-    ].join("\n");
+    return asPanel(
+      [`🎭 Capability mask: ${presets.join(", ")}`, `Allowed tools: ${preview || "(none)"}`].join(
+        "\n",
+      ),
+    );
   }
 
-  return "Usage: `/mask set <preset>` | `/mask clear` | `/mask show`";
+  return asPanel("Usage: `/mask set <preset>` | `/mask clear` | `/mask show`");
 }
 
-function cmdRestart(_ctx: CommandContext): CommandResult | string {
+function cmdRestart(_ctx: CommandContext): CommandResult {
   if (getAppRuntime().isShuttingDown()) {
-    return "Service is already restarting…";
+    return asToast("Service is already restarting…");
   }
   return {
     text: "🔄 Restarting service (waiting for in-flight conversations to flush)…",
+    ux: "toast",
     data: { action: "restart" },
   };
 }
 
-function cmdUpgrade(_ctx: CommandContext): CommandResult | string {
+function cmdUpgrade(_ctx: CommandContext): CommandResult {
   if (getAppRuntime().isShuttingDown()) {
-    return "Service is already restarting…";
+    return asToast("Service is already restarting…");
   }
   const kind = getCliInstallKind();
   if (kind === "standalone") {
-    return "请在终端执行 `anima upgrade`（从 GitHub Releases 下载并覆盖独立安装前缀），完成后 `anima service restart`。";
+    return asPanel(
+      "请在终端执行 `anima upgrade`（从 GitHub Releases 下载并覆盖独立安装前缀），完成后 `anima service restart`。",
+    );
   }
-  return `⛔ ${CLI_UPGRADE_HINT_SOURCE}`;
+  return asPanel(`⛔ ${CLI_UPGRADE_HINT_SOURCE}`);
 }
 
 export function registerBuiltins(): void {

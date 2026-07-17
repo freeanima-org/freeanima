@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
   commandAvailableForPlatform,
+  commandNeedsMessageDelivery,
   commandNeedsPreAck,
   ensureCommandResultText,
   formatCommandPreAck,
@@ -80,5 +81,23 @@ describe("command response ack helpers", () => {
   it("ensureCommandResultText fills empty output", () => {
     expect(ensureCommandResultText("", helpCmd)).toBe("✅ /help 已完成");
     expect(ensureCommandResultText("ok", helpCmd)).toBe("ok");
+  });
+});
+
+describe("commandNeedsMessageDelivery", () => {
+  const retryCmd: CommandDef = { name: "retry", description: "retry", handler: () => "" };
+  const goalCmd: CommandDef = { name: "goal", description: "goal", handler: () => "" };
+  const helpCmd: CommandDef = { name: "help", description: "help", handler: () => "" };
+
+  it("routes retry and goal start to message delivery", () => {
+    expect(commandNeedsMessageDelivery(retryCmd, [])).toBe(true);
+    expect(commandNeedsMessageDelivery(goalCmd, ["ship", "it"])).toBe(true);
+  });
+
+  it("keeps goal status/pause and help on terminal rpc", () => {
+    expect(commandNeedsMessageDelivery(goalCmd, ["status"])).toBe(false);
+    expect(commandNeedsMessageDelivery(goalCmd, ["pause"])).toBe(false);
+    expect(commandNeedsMessageDelivery(goalCmd, [])).toBe(false);
+    expect(commandNeedsMessageDelivery(helpCmd, [])).toBe(false);
   });
 });

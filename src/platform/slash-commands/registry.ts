@@ -11,8 +11,13 @@ export type CommandContext = {
   origin_extra?: Record<string, unknown>;
 };
 
+/** How Chat should present a terminal slash result (gateways ignore this). */
+export type CommandUx = "panel" | "toast" | "none";
+
 export type CommandResult = {
   text: string;
+  /** Chat presentation; default panel when omitted / string handler return */
+  ux?: CommandUx;
   data?:
     | CommandRetryData
     | CommandGoalStartData
@@ -106,8 +111,22 @@ export function resolveCommand(text: string, platform: string): [CommandDef | nu
 
 export async function executeCommand(cmd: CommandDef, ctx: CommandContext): Promise<CommandResult> {
   const raw = await cmd.handler(ctx);
-  if (typeof raw === "string") return { text: raw };
-  return raw;
+  if (typeof raw === "string") return { text: raw, ux: "panel" };
+  return { ...raw, ux: raw.ux ?? "panel" };
+}
+
+/**
+ * Whether Chat should use message.send (streaming turn) instead of terminal RPC.
+ * Must not run the handler — used to avoid blocking collectStreamReply on RPC.
+ */
+export function commandNeedsMessageDelivery(cmd: CommandDef, args: string[]): boolean {
+  if (cmd.name === "retry" || cmd.name === "regenerate") return true;
+  if (cmd.name === "goal") {
+    const sub = args[0]?.trim().toLowerCase();
+    if (sub === "status" || sub === "pause" || sub === "resume" || sub === "clear") return false;
+    return Boolean(args.join(" ").trim());
+  }
+  return false;
 }
 
 export function isRetryResult(result: CommandResult): result is CommandResult & {

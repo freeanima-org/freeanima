@@ -18,6 +18,8 @@ import {
   conversationTailInputSchema,
   conversationTailOutputSchema,
   conversationUnarchiveInputSchema,
+  conversationCommandInputSchema,
+  conversationCommandOutputSchema,
 } from "@freeanima/shared/sap-contract/frames/conversation";
 import {
   messageInterruptInputSchema,
@@ -92,6 +94,12 @@ export const chatMethodDefs = {
   "conversation.commands": defineHubMethod({
     input: conversationCommandsInputSchema,
     output: conversationCommandsOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "conversation.command": defineHubMethod({
+    input: conversationCommandInputSchema,
+    output: conversationCommandOutputSchema,
+    // 与 conversation.commands 一致走 HTTP，避免卫星默认 WS 时调试困难
     meta: dualTransportMeta(true),
   }),
   "message.send": defineHubMethod({
