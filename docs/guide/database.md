@@ -21,6 +21,14 @@ database:
 
 Production **must** set `database.url`. Prefer Vault or `env()` for passwords instead of plaintext in config. Path conventions: [`security.md`](security.md#credential-responsibilities).
 
+Optional pool overrides（见 [`src/core/db/pg/client.ts`](../../src/core/db/pg/client.ts)）:
+
+| Env                              | Default | Notes                                                                     |
+| -------------------------------- | ------- | ------------------------------------------------------------------------- |
+| `FREEANIMA_PG_POOL_MAX`          | `10`    | 连接池上限，对齐部署 `max_connections`                                    |
+| `FREEANIMA_PG_POOL_IDLE_TIMEOUT` | `0`     | 秒；`0` = 关闭。Bun ≤1.3.14 勿设 `30`（会误杀长查询，见 troubleshooting） |
+| `FREEANIMA_PG_POOL_MAX_LIFETIME` | `0`     | 秒；`0` = 不限制连接寿命                                                  |
+
 ## Local Install (Debian)
 
 ```bash
@@ -87,10 +95,11 @@ pre-commit `test:changed` does **not** run integration tests.
 
 ## Troubleshooting
 
-| Symptom                     | Check                                                                       |
-| --------------------------- | --------------------------------------------------------------------------- |
-| Service fails on DB connect | `database.url`; PostgreSQL running; pass credentials readable               |
-| Migration fails             | Extensions installed; DB user has DDL privileges                            |
-| FTS / keyword recall empty  | `ensure-pg-extensions.sql` applied (`pg_trgm`); jieba/FTS rebuild if needed |
+| Symptom                                             | Check                                                                                                                                                                   |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Service fails on DB connect                         | `database.url`; PostgreSQL running; pass credentials readable                                                                                                           |
+| `Idle timeout reached after 30s` on startup/migrate | Bun ≤1.3.14 会误杀进行中查询（[oven-sh/bun#30646](https://github.com/oven-sh/bun/issues/30646)）。确保 `FREEANIMA_PG_POOL_IDLE_TIMEOUT=0`（默认）或临时导出该变量后重启 |
+| Migration fails                                     | Extensions installed; DB user has DDL privileges；HNSW / 大批量 backfill 可能很慢，勿与上述 idle timeout 混淆                                                           |
+| FTS / keyword recall empty                          | `ensure-pg-extensions.sql` applied (`pg_trgm`); jieba/FTS rebuild if needed                                                                                             |
 
 More deployment security: [`security.md`](security.md).

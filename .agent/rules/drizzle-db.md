@@ -16,6 +16,8 @@ Repository query patterns for `@freeanima/core/db/pg`. Schema DDL and migrations
 
 Driver: `drizzle-orm/bun-sql/postgres` via [`src/core/db/pg/client.ts`](../../src/core/db/pg/client.ts).
 
+Pool（`FREEANIMA_PG_POOL_*`）：`idleTimeout` **默认 0**。Bun ≤1.3.14 会把进行中的查询误杀为 `ERR_POSTGRES_IDLE_TIMEOUT`（[oven-sh/bun#30646](https://github.com/oven-sh/bun/issues/30646)）；勿在未确认 Bun 已修复前把默认改回 30。
+
 PG repository 实现位于 `src/core/db/pg/`（按域分子目录）；schema / row 类型 SSOT 在 `@freeanima/core/db`。`src/capabilities/*` 可直接 import `@freeanima/core/db/pg/*` 与 `@freeanima/core/db/schema`（见 [`code-layers.md`](code-layers.md)）。
 
 ---
