@@ -13,12 +13,13 @@ import { z } from "zod";
 
 import { ApiHandlerError } from "./errors.ts";
 import { consoleCtx } from "./runtime.ts";
+import { probeDiscordBotToken, probeWeixinIlinkToken } from "./config-test-gateway-probes.ts";
 
 const TEST_TIMEOUT_MS = 15_000;
 const MASKED_SECRET = "***";
 
 export const configTestConnectionInputSchema = z.object({
-  service: z.enum(["firecrawl", "camofox", "embedding", "llm_provider"]),
+  service: z.enum(["firecrawl", "camofox", "embedding", "llm_provider", "discord", "weixin"]),
   config: z.record(z.string(), z.unknown()).optional(),
   provider_id: z.string().min(1).optional(),
 });
@@ -268,6 +269,57 @@ async function testLlmProvider(
   }
 }
 
+async function testDiscord(draft: Record<string, unknown>): Promise<ConfigTestConnectionResult> {
+  const saved = asRecord(runtimeConfig().discord);
+  if (draft.enabled === false || (draft.enabled === undefined && saved.enabled === false)) {
+    return failure("Discord 已禁用");
+  }
+  let token = "";
+  try {
+    token = await resolveConfigString(draft.token, saved.token);
+  } catch (err) {
+    return failure(err instanceof Error ? err.message : String(err));
+  }
+  if (!token) return failure("请填写 discord.token 或配置 env/vault 引用");
+
+  const started = Date.now();
+  try {
+    const { tag } = await probeDiscordBotToken(token);
+    return success(`Discord 连接成功（${tag}）`, Date.now() - started, { bot: tag });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return failure(`Discord 连接失败：${msg}`);
+  }
+}
+
+async function testWeixin(draft: Record<string, unknown>): Promise<ConfigTestConnectionResult> {
+  const saved = asRecord(runtimeConfig().weixin);
+  if (draft.enabled === false || (draft.enabled === undefined && saved.enabled === false)) {
+    return failure("微信网关已禁用");
+  }
+  let token = "";
+  try {
+    token = await resolveConfigString(draft.token, saved.token);
+  } catch (err) {
+    return failure(err instanceof Error ? err.message : String(err));
+  }
+  if (!token) {
+    const envToken = process.env.WEIXIN_ILINK_TOKEN?.trim() ?? "";
+    token = envToken;
+  }
+  if (!token) return failure("请填写 weixin.token、env/vault 引用，或设置 WEIXIN_ILINK_TOKEN");
+
+  const baseUrl = pickConfigString(draft.base_url, saved.base_url);
+  const started = Date.now();
+  try {
+    const { base_url } = await probeWeixinIlinkToken(token, baseUrl || undefined);
+    return success("微信 iLink 连接成功", Date.now() - started, { base_url });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return failure(`微信连接失败：${msg}`);
+  }
+}
+
 export async function testConfigConnection(
   input: ConfigTestConnectionInput,
 ): Promise<ConfigTestConnectionResult> {
@@ -291,6 +343,10 @@ export async function testConfigConnection(
       }
       return testLlmProvider(parsed.provider_id.trim(), draft);
     }
+    case "discord":
+      return testDiscord(draft);
+    case "weixin":
+      return testWeixin(draft);
     default:
       throw new ApiHandlerError(400, `未知服务：${parsed.service satisfies never}`);
   }

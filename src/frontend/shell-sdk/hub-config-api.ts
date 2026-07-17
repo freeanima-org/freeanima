@@ -26,7 +26,13 @@ export async function restartHubService(): Promise<void> {
   await satelliteHubRpcCall("status.restart", {});
 }
 
-export type HubConfigTestService = "firecrawl" | "camofox" | "embedding" | "llm_provider";
+export type HubConfigTestService =
+  | "firecrawl"
+  | "camofox"
+  | "embedding"
+  | "llm_provider"
+  | "discord"
+  | "weixin";
 
 export type HubConfigTestConnectionResult = {
   ok: boolean;

@@ -31,15 +31,16 @@ function buildCredentials(data: Record<string, unknown>, source: string): Weixin
   };
 }
 
-/** config.yaml `weixin` section or env WEIXIN_ILINK_TOKEN */
+/** Hub runtime `weixin` section or env WEIXIN_ILINK_TOKEN；`enabled: false` 时不加载 */
 export function loadWeixinCredentials(): WeixinCredentials | null {
   try {
     const cfg = getActiveRuntimeConfig().data as Record<string, unknown>;
     const weixin = (cfg.weixin ?? {}) as Record<string, unknown>;
+    if (weixin.enabled === false) return null;
     const tokenEnv = process.env.WEIXIN_ILINK_TOKEN?.trim();
     const token = String(weixin.token ?? tokenEnv ?? "").trim();
     if (!token) return null;
-    return buildCredentials({ ...weixin, token }, "config");
+    return buildCredentials({ ...weixin, token }, "runtime config");
   } catch {
     return null;
   }

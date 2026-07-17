@@ -34,6 +34,8 @@ bun run memory:sample -- --hub-url http://127.0.0.1:2658 --stage full
 | **Monorepo / worktree** | `bun run dev:hub` (optional `--port`; source `anima` has **no** `service` command) |
 | **Standalone install**  | `anima service start` / `stop` / `status` (systemd user unit)                      |
 
+Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.md)。
+
 ## Common commands
 
 ```bash

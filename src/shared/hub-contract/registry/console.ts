@@ -58,7 +58,7 @@ const sleepCycleBodySchema = z.object({
 });
 const configSectionParamSchema = z.object({ section: z.string().min(1) });
 const configTestConnectionInputSchema = z.object({
-  service: z.enum(["firecrawl", "camofox", "embedding", "llm_provider"]),
+  service: z.enum(["firecrawl", "camofox", "embedding", "llm_provider", "discord", "weixin"]),
   config: z.record(z.string(), z.unknown()).optional(),
   provider_id: z.string().min(1).optional(),
 });

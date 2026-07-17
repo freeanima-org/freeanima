@@ -172,10 +172,52 @@ export const modelsConfigSchema = z.record(z.string(), modelEntrySchema);
 
 const sectionSchema = z.object({}).passthrough();
 
-const gatewayConfigSchema = z
+/** 与 gateway tool-display 模式对齐（core 不依赖 platform） */
+export const gatewayToolDisplaySchema = z.enum([
+  "hidden",
+  "count",
+  "name",
+  "name_args_truncated",
+  "name_args_full",
+  "name_args_result_full",
+]);
+
+export const gatewayConfigSchema = z
   .object({
-    tool_display: z.string().optional(),
+    tool_display: gatewayToolDisplaySchema.optional(),
   })
+  .passthrough()
+  .optional();
+
+/** Discord 网关段；passthrough 保留未接线旧字段 */
+export const discordConfigSchema = z
+  .object({
+    enabled: z.boolean().optional(),
+    token: z.string().optional(),
+    require_mention: z.boolean().optional(),
+    free_response_channels: z.string().optional(),
+    allowed_channels: z.string().optional(),
+    auto_thread: z.boolean().optional(),
+    thread_require_mention: z.boolean().optional(),
+    slash_commands: z.boolean().optional(),
+    slash_commands_guild_id: z.string().optional(),
+    session_handoff_on_new: z.boolean().optional(),
+    home_channel: z.string().optional(),
+    home_thread_id: z.string().optional(),
+  })
+  .passthrough()
+  .optional();
+
+export const weixinConfigSchema = z
+  .object({
+    enabled: z.boolean().optional(),
+    token: z.string().optional(),
+    base_url: z.string().optional(),
+    user_id: z.string().optional(),
+    account_id: z.string().optional(),
+    session_handoff_on_new: z.boolean().optional(),
+  })
+  .passthrough()
   .optional();
 
 const autoLlmConfigSchema = z
@@ -186,6 +228,9 @@ const autoLlmConfigSchema = z
   .optional();
 
 export type AutoLlmConfigInput = z.infer<typeof autoLlmConfigSchema>;
+export type DiscordConfigInput = z.infer<typeof discordConfigSchema>;
+export type WeixinConfigInput = z.infer<typeof weixinConfigSchema>;
+export type GatewayConfigInput = z.infer<typeof gatewayConfigSchema>;
 
 export const animaConfigSchema = z
   .object({
@@ -209,8 +254,8 @@ export const animaConfigSchema = z
     redis: redisConfigSchema,
     gateway: gatewayConfigSchema,
     auto_llm: autoLlmConfigSchema,
-    discord: sectionSchema.optional(),
-    weixin: sectionSchema.optional(),
+    discord: discordConfigSchema,
+    weixin: weixinConfigSchema,
     push: sectionSchema.optional(),
     http: httpConfigSchema,
     web: webConfigSchema,

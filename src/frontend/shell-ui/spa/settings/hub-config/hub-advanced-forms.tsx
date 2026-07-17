@@ -3,11 +3,15 @@ import {
   HubConfigRecordEntryEditor,
   hubConfigBoolField,
   hubConfigNumberField,
+  hubConfigSelectClassName,
   hubConfigTextField,
   hubConfigTransportField,
 } from "./hub-config-field-helpers.tsx";
 
 export const ADVANCED_SECTIONS = [
+  "gateway",
+  "discord",
+  "weixin",
   "firecrawl",
   "browser",
   "embedding",
@@ -24,6 +28,13 @@ export const ADVANCED_SECTIONS = [
 export const HUB_CONFIG_RECORD_SECTIONS = ["models", "mcp_servers", "acp_agents"] as const;
 
 export type AdvancedSectionId = (typeof ADVANCED_SECTIONS)[number];
+
+/** Shell 侧边栏标题；未列出的段用 section id */
+export const ADVANCED_SECTION_TITLES: Partial<Record<AdvancedSectionId, string>> = {
+  gateway: "网关",
+  discord: "Discord",
+  weixin: "微信",
+};
 
 export type HubConfigRecordSectionId = (typeof HUB_CONFIG_RECORD_SECTIONS)[number];
 
@@ -331,6 +342,150 @@ function AutoLlmForm({
   );
 }
 
+const GATEWAY_TOOL_DISPLAY_OPTIONS = [
+  "",
+  "hidden",
+  "count",
+  "name",
+  "name_args_truncated",
+  "name_args_full",
+  "name_args_result_full",
+] as const;
+
+function GatewayForm({
+  value,
+  onChange,
+}: {
+  value: Record<string, unknown>;
+  onChange: (v: Record<string, unknown>) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div className="space-y-1">
+        <Label className="text-sm">tool_display</Label>
+        <select
+          className={hubConfigSelectClassName}
+          value={String(value.tool_display ?? "")}
+          onChange={(e) =>
+            onChange({
+              ...value,
+              tool_display: e.target.value || undefined,
+            })
+          }
+        >
+          {GATEWAY_TOOL_DISPLAY_OPTIONS.map((opt) => (
+            <option key={opt || "default"} value={opt}>
+              {opt || "（默认 name）"}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-muted-foreground">网关通道工具消息展示模式；会话 slash 可覆盖</p>
+      </div>
+    </div>
+  );
+}
+
+function DiscordForm({
+  value,
+  onChange,
+}: {
+  value: Record<string, unknown>;
+  onChange: (v: Record<string, unknown>) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      {hubConfigBoolField("启用", value.enabled !== false, (enabled) =>
+        onChange({ ...value, enabled }),
+      )}
+      {hubConfigTextField(
+        "token",
+        String(value.token ?? ""),
+        (v) => onChange({ ...value, token: v }),
+        {
+          type: "password",
+          hint: '明文、vault("id","field") 或 env("KEY")',
+        },
+      )}
+      {hubConfigBoolField("require_mention", value.require_mention !== false, (v) =>
+        onChange({ ...value, require_mention: v }),
+      )}
+      {hubConfigTextField(
+        "free_response_channels",
+        String(value.free_response_channels ?? ""),
+        (v) => onChange({ ...value, free_response_channels: v }),
+        { hint: "频道 ID，逗号分隔；这些频道可不 @ 就回复" },
+      )}
+      {hubConfigTextField(
+        "allowed_channels",
+        String(value.allowed_channels ?? ""),
+        (v) => onChange({ ...value, allowed_channels: v }),
+        { hint: "白名单频道 ID，逗号分隔；空=不限制" },
+      )}
+      {hubConfigBoolField("auto_thread", value.auto_thread !== false, (v) =>
+        onChange({ ...value, auto_thread: v }),
+      )}
+      {hubConfigBoolField("thread_require_mention", Boolean(value.thread_require_mention), (v) =>
+        onChange({ ...value, thread_require_mention: v }),
+      )}
+      {hubConfigBoolField("slash_commands", value.slash_commands !== false, (v) =>
+        onChange({ ...value, slash_commands: v }),
+      )}
+      {hubConfigTextField(
+        "slash_commands_guild_id",
+        String(value.slash_commands_guild_id ?? ""),
+        (v) => onChange({ ...value, slash_commands_guild_id: v }),
+        { hint: "空=全局注册（传播较慢）；填 guild 则即时生效" },
+      )}
+      {hubConfigBoolField("session_handoff_on_new", value.session_handoff_on_new !== false, (v) =>
+        onChange({ ...value, session_handoff_on_new: v }),
+      )}
+      {hubConfigTextField("home_channel", String(value.home_channel ?? ""), (v) =>
+        onChange({ ...value, home_channel: v }),
+      )}
+      {hubConfigTextField("home_thread_id", String(value.home_thread_id ?? ""), (v) =>
+        onChange({ ...value, home_thread_id: v }),
+      )}
+    </div>
+  );
+}
+
+function WeixinForm({
+  value,
+  onChange,
+}: {
+  value: Record<string, unknown>;
+  onChange: (v: Record<string, unknown>) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      {hubConfigBoolField("启用", value.enabled !== false, (enabled) =>
+        onChange({ ...value, enabled }),
+      )}
+      {hubConfigTextField(
+        "token",
+        String(value.token ?? ""),
+        (v) => onChange({ ...value, token: v }),
+        {
+          type: "password",
+          hint: "明文、vault/env 引用，或环境变量 WEIXIN_ILINK_TOKEN",
+        },
+      )}
+      {hubConfigTextField("base_url", String(value.base_url ?? ""), (v) =>
+        onChange({ ...value, base_url: v }),
+      )}
+      {hubConfigTextField("user_id", String(value.user_id ?? ""), (v) =>
+        onChange({ ...value, user_id: v }),
+      )}
+      {hubConfigTextField("account_id", String(value.account_id ?? ""), (v) =>
+        onChange({ ...value, account_id: v }),
+      )}
+      {hubConfigBoolField("session_handoff_on_new", Boolean(value.session_handoff_on_new), (v) =>
+        onChange({ ...value, session_handoff_on_new: v }),
+      )}
+    </div>
+  );
+}
+
 export function AdvancedSectionForm({
   section,
   value,
@@ -341,6 +496,12 @@ export function AdvancedSectionForm({
   onChange: (v: Record<string, unknown>) => void;
 }) {
   switch (section) {
+    case "gateway":
+      return <GatewayForm value={value} onChange={onChange} />;
+    case "discord":
+      return <DiscordForm value={value} onChange={onChange} />;
+    case "weixin":
+      return <WeixinForm value={value} onChange={onChange} />;
     case "firecrawl":
       return <FirecrawlForm value={value} onChange={onChange} />;
     case "browser":

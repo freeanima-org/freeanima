@@ -53,11 +53,13 @@ function isAdvancedSectionKey(key: HubConfigSectionKey): key is AdvancedSectionI
 }
 
 const ADVANCED_TEST_SERVICES: Partial<
-  Record<AdvancedSectionId, "firecrawl" | "camofox" | "embedding">
+  Record<AdvancedSectionId, "firecrawl" | "camofox" | "embedding" | "discord" | "weixin">
 > = {
   firecrawl: "firecrawl",
   browser: "camofox",
   embedding: "embedding",
+  discord: "discord",
+  weixin: "weixin",
 };
 
 function advancedTestConfig(
