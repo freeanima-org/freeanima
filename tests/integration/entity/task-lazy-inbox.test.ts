@@ -46,4 +46,24 @@ describePg("ensureDefaultTaskListForWorld", () => {
     const list = await getDefaultTaskList(worldId);
     expect(list.is_default).toBe(true);
   });
+
+  it("concurrent ensure creates only one default inbox", async () => {
+    const worldId = testUserWorldId();
+    const before = await listTaskLists(worldId);
+    expect(before.filter((l) => l.is_default)).toHaveLength(0);
+
+    const results = await Promise.all([
+      ensureDefaultTaskListForWorld(worldId),
+      ensureDefaultTaskListForWorld(worldId),
+      ensureDefaultTaskListForWorld(worldId),
+      ensureDefaultTaskListForWorld(worldId),
+    ]);
+
+    const ids = new Set(results.map((r) => r.id));
+    expect(ids.size).toBe(1);
+
+    const lists = await listTaskLists(worldId);
+    expect(lists.filter((l) => l.is_default)).toHaveLength(1);
+    expect(lists.find((l) => l.is_default)?.id).toBe(results[0]?.id);
+  });
 });

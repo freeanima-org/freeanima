@@ -10,6 +10,12 @@ export type DatabaseUrlResolver = () => string | null;
 
 export type Db = BunSQLDatabase<DbRelations>;
 
+/** `db.transaction` 回调内的客户端 */
+export type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
+
+/** 顶层 Db 或事务客户端（insert/select 同一表面） */
+export type DbSession = Db | DbTransaction;
+
 export type SqlClient = SQL;
 
 let databaseUrlResolver: DatabaseUrlResolver | null = null;

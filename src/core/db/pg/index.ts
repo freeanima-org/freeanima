@@ -9,8 +9,11 @@ export {
   type DatabaseConfig,
   type DatabaseUrlResolver,
   type Db,
+  type DbSession,
+  type DbTransaction,
   type SqlClient,
 } from "./client.ts";
+export { withAdvisoryXactLock } from "./advisory-lock.ts";
 export { pingDatabase, type DatabasePingStatus } from "./health.ts";
 export { EntitySearchScopeError, resolvePublicAccessibleWorldIds } from "./entity/index.ts";
 export { messagesForCompress } from "./queries/messages-for-compress.ts";

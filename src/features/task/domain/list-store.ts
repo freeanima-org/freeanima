@@ -4,6 +4,7 @@ import {
   type TaskListBody,
 } from "@freeanima/core/db/schema/entity";
 import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/core/db/pg/entity";
+import { withAdvisoryXactLock, type DbSession } from "@freeanima/core/db/pg";
 import { omitUndefined } from "@freeanima/core/util";
 import {
   countPendingTaskItemsByListId,
@@ -23,6 +24,9 @@ import type {
   TaskListSearchOpts,
   TaskListUpdateInput,
 } from "./types.ts";
+
+/** PG advisory lock namespace：同 world 默认收件箱 ensure 互斥 */
+const ADVISORY_LOCK_TASK_LIST_DEFAULT = "freeanima:task_list_default";
 
 export const ARCHIVED_TASK_LIST_ERROR = "清单已归档";
 
@@ -206,47 +210,65 @@ export async function assertListAcceptsTasks(listId: number, worldId: number): P
 
 /** 按 world 懒创建默认 Inbox（幂等）；不拉全量清单计数 */
 export async function ensureDefaultTaskListForWorld(worldId: number): Promise<TaskListRow> {
-  const rows = await listEntities({
-    world_id: worldId,
-    primary_component: TASK_LIST_COMPONENT,
-    limit: 200,
-  });
-  const existingRow = rows.find((row) => row.body.is_default === true);
-  if (existingRow) {
-    const parsed = asTaskList(existingRow);
-    if (!parsed) throw new Error("default task list body invalid");
-    const is_folder = parsed.is_folder ?? false;
-    const item_count = is_folder ? 0 : await countItemsForList(parsed.id, worldId);
-    return toListRow(parsed, {
-      created_at: existingRow.created_at,
-      updated_at: existingRow.updated_at,
-      item_count,
-    });
-  }
+  const existing = await findDefaultTaskListRow(worldId);
+  if (existing) return existing;
 
-  const body: TaskListBody = {
-    sort_order: 0,
-    closed: false,
-    color: null,
-    is_default: true,
-    is_folder: false,
-    parent_id: null,
-    client_op_id: null,
-  };
-  const row = await createEntity({
-    type: "content",
-    world_id: worldId,
-    components: [TASK_LIST_COMPONENT],
-    primary_component: TASK_LIST_COMPONENT,
-    title: "收件箱",
-    body,
+  return withAdvisoryXactLock(ADVISORY_LOCK_TASK_LIST_DEFAULT, worldId, async (tx) => {
+    const again = await findDefaultTaskListRow(worldId, tx);
+    if (again) return again;
+
+    const body: TaskListBody = {
+      sort_order: 0,
+      closed: false,
+      color: null,
+      is_default: true,
+      is_folder: false,
+      parent_id: null,
+      client_op_id: null,
+    };
+    const row = await createEntity(
+      {
+        type: "content",
+        world_id: worldId,
+        components: [TASK_LIST_COMPONENT],
+        primary_component: TASK_LIST_COMPONENT,
+        title: "收件箱",
+        body,
+      },
+      tx,
+    );
+    const parsed = asTaskList(row);
+    if (!parsed) throw new Error("failed to create default task list");
+    return toListRow(parsed, {
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      item_count: 0,
+    });
   });
-  const parsed = asTaskList(row);
-  if (!parsed) throw new Error("failed to create default task list");
+}
+
+async function findDefaultTaskListRow(
+  worldId: number,
+  session?: DbSession,
+): Promise<TaskListRow | null> {
+  const rows = await listEntities(
+    {
+      world_id: worldId,
+      primary_component: TASK_LIST_COMPONENT,
+      limit: 200,
+    },
+    session,
+  );
+  const existingRow = rows.find((row) => row.body.is_default === true);
+  if (!existingRow) return null;
+  const parsed = asTaskList(existingRow);
+  if (!parsed) throw new Error("default task list body invalid");
+  const is_folder = parsed.is_folder ?? false;
+  const item_count = is_folder ? 0 : await countItemsForList(parsed.id, worldId);
   return toListRow(parsed, {
-    created_at: row.created_at,
-    updated_at: row.updated_at,
-    item_count: 0,
+    created_at: existingRow.created_at,
+    updated_at: existingRow.updated_at,
+    item_count,
   });
 }
 
