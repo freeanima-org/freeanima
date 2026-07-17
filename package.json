@@ -1,6 +1,6 @@
 {
   "name": "freeanima",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "devDependencies": {
     "@capacitor/cli": "^8.4.2",
     "@commitlint/cli": "^21.2.1",
