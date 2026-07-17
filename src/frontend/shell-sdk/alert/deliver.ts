@@ -1,4 +1,12 @@
-import type { AlertBackend, AlertContext, AlertPayload, AlertPermissionState } from "./types.ts";
+import type {
+  AlertBackend,
+  AlertContext,
+  AlertPayload,
+  AlertPermissionState,
+  AlertScheduleDurability,
+  AlertScheduleKey,
+  AlertScheduleResult,
+} from "./types.ts";
 
 let backend: AlertBackend | null = null;
 
@@ -41,6 +49,10 @@ export async function requestAlertPermission(): Promise<AlertPermissionState> {
   return backend.requestPermission();
 }
 
+export function getAlertScheduleDurability(): AlertScheduleDurability {
+  return backend?.scheduleDurability ?? "none";
+}
+
 export async function deliverAlert(payload: AlertPayload, ctx?: AlertContext): Promise<void> {
   if (!backend) return;
 
@@ -54,4 +66,24 @@ export async function deliverAlert(payload: AlertPayload, ctx?: AlertContext): P
   if (!effective.silent) {
     await backend.show(effective);
   }
+}
+
+/**
+ * 预登记本机提醒。同 tag replace。
+ * 不应用 `suppressOsWhenFocused`（关窗后仍需响）。
+ * 返回 null 表示无 backend 或 durability 为 none。
+ */
+export async function scheduleLocalAlert(
+  payload: AlertPayload,
+  at: Date,
+): Promise<AlertScheduleResult | null> {
+  if (!backend) return null;
+  if (backend.scheduleDurability === "none") return null;
+  return backend.schedule(payload, at);
+}
+
+/** 取消预登记；无 backend 或无匹配项时幂等成功。 */
+export async function cancelScheduledAlert(key: AlertScheduleKey): Promise<void> {
+  if (!backend) return;
+  await backend.cancel(key);
 }

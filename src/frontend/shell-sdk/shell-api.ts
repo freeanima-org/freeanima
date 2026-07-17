@@ -31,6 +31,10 @@ export type ShellNativeAlertPayload = {
 
 export type ShellNativeAlertPermission = "granted" | "denied" | "unsupported";
 
+export type ShellNativeAlertScheduleResult = { id: string };
+
+export type ShellNativeAlertCancelKey = { id?: string; tag?: string };
+
 /** 通用壳层桥接（Electron preload / Capacitor 注入 window.satelliteShell） */
 export type SatelliteShellApi = {
   isElectron: boolean;
@@ -69,6 +73,11 @@ export type SatelliteShellApi = {
   /** 原生壳 OS 通知（Electron 主进程 / Capacitor Local Notifications） */
   showNativeAlert?: (payload: ShellNativeAlertPayload) => Promise<void>;
   requestNativeAlertPermission?: () => Promise<ShellNativeAlertPermission>;
+  /** 预登记本机提醒；与 cancelNativeAlert 成对 */
+  scheduleNativeAlert?: (
+    payload: ShellNativeAlertPayload & { at: Date | number },
+  ) => Promise<ShellNativeAlertScheduleResult>;
+  cancelNativeAlert?: (key: ShellNativeAlertCancelKey) => Promise<void>;
   /** 原生壳：确认后下载 Releases 产物并覆盖安装（Desktop NSIS / Mobile APK） */
   applyPackagedUpdate?: (opts: { assetUrl: string; expectedSize?: number }) => Promise<void>;
 };

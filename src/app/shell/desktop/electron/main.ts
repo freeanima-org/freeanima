@@ -21,7 +21,7 @@ import {
   startCompanionCursorPoll,
 } from "./companion-host.ts";
 import { registerInstanceStoreIpc } from "./instance-store-ipc.ts";
-import { registerAlertIpc } from "./alert-ipc.ts";
+import { clearAllScheduledNativeAlerts, registerAlertIpc } from "./alert-ipc.ts";
 import { attachWindowDevTools } from "./devtools.ts";
 import { syncLaunchAtLoginFromStore } from "./launch-at-login.ts";
 import { logLine } from "./log.ts";
@@ -494,6 +494,7 @@ app.on("before-quit", (event) => {
   if (quitInProgress) return;
   event.preventDefault();
   quitInProgress = true;
+  clearAllScheduledNativeAlerts();
   void releaseInstallLocks().finally(() => {
     app.exit(0);
   });

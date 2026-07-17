@@ -113,6 +113,20 @@ function createSatelliteShell(
       ipcRenderer.invoke("shell:alert:request-permission") as Promise<
         "granted" | "denied" | "unsupported"
       >,
+    scheduleNativeAlert: async (payload) => {
+      const atMs = payload.at instanceof Date ? payload.at.getTime() : Number(payload.at);
+      return ipcRenderer.invoke("shell:alert:schedule", {
+        title: payload.title,
+        ...(payload.body !== undefined ? { body: payload.body } : {}),
+        ...(payload.tag !== undefined ? { tag: payload.tag } : {}),
+        ...(payload.silent === true ? { silent: true } : {}),
+        ...(payload.requireInteraction === true ? { requireInteraction: true } : {}),
+        atMs,
+      }) as Promise<{ id: string }>;
+    },
+    cancelNativeAlert: async (key) => {
+      await ipcRenderer.invoke("shell:alert:cancel", key ?? {});
+    },
     applyPackagedUpdate: async ({ assetUrl, expectedSize }) => {
       await ipcRenderer.invoke("shell:apply-packaged-update", {
         assetUrl,

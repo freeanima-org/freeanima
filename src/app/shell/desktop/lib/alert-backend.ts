@@ -3,11 +3,28 @@ import type {
   AlertBackend,
   AlertPayload,
   AlertPermissionState,
+  AlertScheduleKey,
+  AlertScheduleResult,
 } from "@freeanima/frontend/shell-sdk/alert/types.ts";
 
 function shellNativeAlertAvailable(): boolean {
   const shell = window.satelliteShell;
   return Boolean(shell?.isElectron && shell.showNativeAlert && shell.requestNativeAlertPermission);
+}
+
+function shellScheduleAvailable(): boolean {
+  const shell = window.satelliteShell;
+  return Boolean(shell?.scheduleNativeAlert && shell.cancelNativeAlert);
+}
+
+function toNativePayload(payload: AlertPayload) {
+  return {
+    title: payload.title,
+    ...(payload.body !== undefined ? { body: payload.body } : {}),
+    ...(payload.tag !== undefined ? { tag: payload.tag } : {}),
+    ...(payload.silent === true ? { silent: true } : {}),
+    ...(payload.requireInteraction === true ? { requireInteraction: true } : {}),
+  };
 }
 
 /** Desktop 壳：优先 Electron 主进程 OS 原生通知，开发回退 Web Notification API。 */
@@ -31,8 +48,13 @@ export function createDesktopAlertBackend(): AlertBackend {
     };
   }
 
+  const scheduleAlert = shell.scheduleNativeAlert;
+  const cancelAlert = shell.cancelNativeAlert;
+  const useNativeSchedule = shellScheduleAvailable() && scheduleAlert && cancelAlert;
+
   return {
     platform: "desktop",
+    scheduleDurability: useNativeSchedule ? "process" : webFallback.scheduleDurability,
     readPermission(): Promise<AlertPermissionState> {
       if (shellNativeAlertAvailable()) {
         return requestPerm().then((result) => {
@@ -50,13 +72,20 @@ export function createDesktopAlertBackend(): AlertBackend {
       return "unsupported";
     },
     async show(payload: AlertPayload): Promise<void> {
-      await showAlert({
-        title: payload.title,
-        ...(payload.body !== undefined ? { body: payload.body } : {}),
-        ...(payload.tag !== undefined ? { tag: payload.tag } : {}),
-        ...(payload.silent === true ? { silent: true } : {}),
-        ...(payload.requireInteraction === true ? { requireInteraction: true } : {}),
-      });
+      await showAlert(toNativePayload(payload));
+    },
+    async schedule(payload: AlertPayload, at: Date): Promise<AlertScheduleResult> {
+      if (useNativeSchedule && scheduleAlert) {
+        return scheduleAlert({ ...toNativePayload(payload), at });
+      }
+      return webFallback.schedule(payload, at);
+    },
+    async cancel(key: AlertScheduleKey): Promise<void> {
+      if (useNativeSchedule && cancelAlert) {
+        await cancelAlert(key);
+        return;
+      }
+      await webFallback.cancel(key);
     },
     ...(webFallback.playSound !== undefined ? { playSound: webFallback.playSound } : {}),
   };

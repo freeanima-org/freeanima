@@ -1,10 +1,26 @@
 /// <reference lib="dom" />
-import type { AlertBackend, AlertPermissionState, AlertPayload } from "./types.ts";
+import type {
+  AlertBackend,
+  AlertPermissionState,
+  AlertPayload,
+  AlertScheduleKey,
+  AlertScheduleResult,
+} from "./types.ts";
 
 let audioContext: AudioContext | null = null;
 
 /** 持有引用，避免 Notification 被 GC 后立即关闭（常见 Web 通知不显示原因）。 */
 const liveNotifications = new Map<string, Notification>();
+
+type PendingSchedule = {
+  id: string;
+  tag: string;
+  timer: ReturnType<typeof setTimeout>;
+};
+
+const pendingByTag = new Map<string, PendingSchedule>();
+const pendingById = new Map<string, PendingSchedule>();
+let scheduleSeq = 0;
 
 function notificationSupported(): boolean {
   return typeof Notification !== "undefined";
@@ -85,9 +101,24 @@ function showWebNotification(payload: AlertPayload): Promise<void> {
   });
 }
 
+function forgetPending(entry: PendingSchedule): void {
+  pendingByTag.delete(entry.tag);
+  pendingById.delete(entry.id);
+}
+
+async function cancelPending(key: AlertScheduleKey): Promise<void> {
+  const byId = key.id ? pendingById.get(key.id) : undefined;
+  const byTag = key.tag ? pendingByTag.get(key.tag) : undefined;
+  const entry = byId ?? byTag;
+  if (!entry) return;
+  clearTimeout(entry.timer);
+  forgetPending(entry);
+}
+
 export function createWebAlertBackend(): AlertBackend {
-  return {
+  const backend: AlertBackend = {
     platform: "web",
+    scheduleDurability: "process",
     async readPermission(): Promise<AlertPermissionState> {
       if (!notificationSupported()) return "unsupported";
       if (Notification.permission === "granted") return "granted";
@@ -107,7 +138,32 @@ export function createWebAlertBackend(): AlertBackend {
       return showWebNotification(payload);
     },
     playSound: playBeep,
+    async schedule(payload: AlertPayload, at: Date): Promise<AlertScheduleResult> {
+      const tag = payload.tag ?? `freeanima:alert:${Date.now()}`;
+      await cancelPending({ tag });
+
+      const id = `web:${++scheduleSeq}:${tag}`;
+      const delay = Math.max(0, at.getTime() - Date.now());
+      const timer = setTimeout(() => {
+        const current = pendingById.get(id);
+        if (!current) return;
+        forgetPending(current);
+        void backend.show({ ...payload, tag }).catch(() => {
+          /* 到期展示失败忽略 */
+        });
+        if (payload.sound) playBeep();
+      }, delay);
+
+      const entry: PendingSchedule = { id, tag, timer };
+      pendingByTag.set(tag, entry);
+      pendingById.set(id, entry);
+      return { id };
+    },
+    cancel(key: AlertScheduleKey): Promise<void> {
+      return cancelPending(key);
+    },
   };
+  return backend;
 }
 
 /** @internal 测试用 */
@@ -116,4 +172,9 @@ export function resetLiveWebNotificationsForTest(): void {
     n.close();
   }
   liveNotifications.clear();
+  for (const entry of pendingById.values()) {
+    clearTimeout(entry.timer);
+  }
+  pendingByTag.clear();
+  pendingById.clear();
 }

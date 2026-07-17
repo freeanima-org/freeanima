@@ -10,28 +10,51 @@ title: Notifications
 
 PG-backed in-app inbox for **user** and **agent** subjects (entity model). Cron results, task due reminders, and LLM tools write here; Shell UI lists and marks read via SAP.
 
-## Alert（瞬时提醒，本机-only）
+## Alert（本机提醒，本机-only）
 
-**不走 Hub RPC、不写 PG、不跨设备同步。** 各 shell 端在启动时注册 `AlertBackend`（web / desktop / mobile），Feature 调用 `deliverAlert()` 使用**当前设备**系统通知通道。
+**不走 Hub RPC、不写 PG、不跨设备同步。** 各 shell 端在启动时注册 `AlertBackend`（web / desktop / mobile）。Feature 通过 `shell-sdk/alert` 使用**当前设备**系统通知通道。
 
-**例外（Hub 同步，非 Alert）**：番茄钟**运行中活跃态**（`pomodoro_active` entity + `pomodoro.active.*` RPC）在 user/agent world 间 **last-write-wins 同步**，便于多端继续同一计时；**阶段结束系统通知仍仅本机** `deliverAlert()`，不在其他设备弹出。多端同步靠 `pomodoro.active.put` / `clear` 成功后的 Hub WS 事件 `pomodoro.active.changed`（按 `subject_kind` fan-out）；客户端在重连与页面可见时再 `active.get` 一次兜底，**不作周期轮询**。
+Alert 分两档（同一契约，成对）：
+
+| 档         | API                                           | 含义                             |
+| ---------- | --------------------------------------------- | -------------------------------- |
+| **即时**   | `deliverAlert` / `AlertBackend.show`          | 现在立刻弹                       |
+| **预登记** | `scheduleLocalAlert` / `cancelScheduledAlert` | 在未来时刻本机弹；**必须可取消** |
+
+硬约束：**schedule ⊕ cancel 成对**。只登记不能取消 = 不可用（暂停/手动中止后仍会到点骚扰）。同 `tag` 再 `schedule` = replace（先 cancel 再登记）；`cancel` 对不存在的 id/tag **幂等成功**。
+
+**不是** Hub 后台进程 / Inbox。任务到期「inbox→本机弹」可后续复用同一 `schedule` API。
+
+### 三壳 durability
+
+| 壳          | `scheduleDurability` | 预登记存活边界                                            |
+| ----------- | -------------------- | --------------------------------------------------------- |
+| **mobile**  | `os`                 | 杀进程后 OS 仍可按 `at` 弹出（Local Notifications）       |
+| **desktop** | `process`            | 应用未退出（托盘存活）即可；关主窗口仍响；`quit` 后不保证 |
+| **web**     | `process`（页进程）  | **best-effort**：标签页存活才准；关标签即丢               |
+
+### 番茄钟
+
+**例外（Hub 同步，非 Alert）**：运行中活跃态（`pomodoro_active` + `pomodoro.active.*`）跨端 **last-write-wins**；**阶段结束系统通知仍仅本机**。多端同步靠 `put` / `clear` 后的 `pomodoro.active.changed`；重连与页面可见时 `active.get` 兜底，**不作周期轮询**。
+
+阶段开始 / 继续时 `scheduleLocalAlert`（`phaseEndsAt`）；暂停、**手动取消进行中会话**（`runPhaseAbort`）、阶段完成等路径 `cancelScheduledAlert`。状态机推进仍由 `PomodoroShellWatcher`（或重开后 catch-up）负责；预登记只保证提醒。
 
 | 事件                      | Inbox |               Alert               | SSOT                |
 | ------------------------- | :---: | :-------------------------------: | ------------------- |
 | 任务到期/提醒             |   ✓   | 可选（后续：本机读 inbox 后弹窗） | `task_item` + inbox |
 | Agent `notification_send` |   ✓   |               可选                | inbox               |
 | Chat 新消息               |   ✗   |             ✓（后续）             | `conversation`      |
-| 番茄钟阶段结束            |   ✗   |                 ✓                 | `pomodoro_session`  |
+| 番茄钟阶段结束            |   ✗   |      ✓（预登记 + 即时兜底）       | `pomodoro_session`  |
 
 番茄钟阶段结束**不写 inbox**；会话历史由 `pomodoro_session` entity 承担。
 
 实现：`src/frontend/shell-sdk/alert/` + 各端 backend。
 
-| 端          | 通道                                                                                                                                                              |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **desktop** | Electron 主进程 `Notification`（IPC `shell:alert:show`）→ OS 原生通知                                                                                             |
-| **web**     | Web Notification API                                                                                                                                              |
-| **mobile**  | Capacitor **Local Notifications**；本地 bundled SPA 上 `bootstrap-capacitor` 注入 `satelliteShell.showNativeAlert`（localhost 同源，不依赖 Web Notification API） |
+| 端          | 即时通道                                                 | 预登记                                                                |
+| ----------- | -------------------------------------------------------- | --------------------------------------------------------------------- |
+| **desktop** | Electron 主进程 `Notification`（IPC `shell:alert:show`） | 主进程 timer（`shell:alert:schedule` / `cancel`）；`before-quit` 清表 |
+| **web**     | Web Notification API                                     | 页内 `setTimeout`（best-effort）                                      |
+| **mobile**  | Capacitor Local Notifications（`showNativeAlert`）       | 同一插件 `schedule({ at })` + `cancel`                                |
 
 ---
 
