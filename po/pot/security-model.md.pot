@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-06 11:54+0800\n"
+"POT-Creation-Date: 2026-07-17 22:43+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -64,14 +64,14 @@ msgstr ""
 #: docs/sap/security-model.md:37
 #, no-wrap
 msgid ""
-"| Control                       | Status                                                 |\n"
-"| ----------------------------- | ------------------------------------------------------ |\n"
-"| TLS on Hub RPC                | Optional; remote access via Tunnel + HTTPS/WSS         |\n"
-"| Token on Hub RPC `connect`    | **Yes** — service API token (`verifyServiceApiToken`)  |\n"
-"| Origin check on WebSocket     | **None**                                               |\n"
-"| SAP attach for instance scope | **Yes** — `tool.*` requires `sap.attach`               |\n"
-"| Session-scoped tool routing   | **Yes** — [strict routing](tools.md)                   |\n"
-"| Credential values in frames   | **No** — secrets stay in Vault; LLM sees metadata only |\n"
+"| Control                       | Status                                                                |\n"
+"| ----------------------------- | --------------------------------------------------------------------- |\n"
+"| TLS on Hub RPC                | Optional; LAN / local HTTPS (`http.tls`) or self-hosted reverse proxy |\n"
+"| Token on Hub RPC `connect`    | **Yes** — service API token (`verifyServiceApiToken`)                 |\n"
+"| Origin check on WebSocket     | **None**                                                              |\n"
+"| SAP attach for instance scope | **Yes** — `tool.*` requires `sap.attach`                              |\n"
+"| Session-scoped tool routing   | **Yes** — [strict routing](tools.md)                                  |\n"
+"| Credential values in frames   | **No** — secrets stay in Vault; LLM sees metadata only                |\n"
 msgstr ""
 
 #. type: Plain text
@@ -96,9 +96,10 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/security-model.md:44
 msgid ""
-"Operational guidance: bind Hub to loopback; rotate service tokens; do not "
-"expose port 2658 to untrusted networks without Tunnel + Access. See "
-"[security guide](../guide/security.md)."
+"Operational guidance: bind Hub to loopback by default; rotate service "
+"tokens; do not expose port 2658 to untrusted networks without TLS "
+"termination and token-protected clients. See [security guide](../guide/"
+"security.md)."
 msgstr ""
 
 #. type: Title ##

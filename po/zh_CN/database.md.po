@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-06 11:54+0800\n"
+"POT-Creation-Date: 2026-07-17 22:43+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,14 +16,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/features/companion.md:119 docs/features/mobile-app.md:52
-#: docs/guide/database.md:88 docs/guide/remote-access.md:177
+#: docs/features/companion.md:144 docs/features/mobile-app.md:49
+#: docs/guide/database.md:88 docs/guide/remote-access.md:192
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/database.md:1 messages/po4a/en.xml:580
+#: docs/guide/database.md:1 messages/po4a/en.xml:612
 #, no-wrap
 msgid "Database"
 msgstr "数据库"
@@ -277,13 +277,19 @@ msgstr "pre-commit 的 `test:changed` **不会**运行集成测试。"
 
 #. type: Plain text
 #: docs/guide/database.md:95
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Symptom                     | Check                                                          |\n"
+#| "| --------------------------- | -------------------------------------------------------------- |\n"
+#| "| Service fails on DB connect | `database.url`; PostgreSQL running; pass credentials readable  |\n"
+#| "| Migration fails             | Extensions installed; DB user has DDL privileges               |\n"
+#| "| FTS / vector recall empty   | `ensure-pg-extensions.sql` applied; `embedding` config enabled |\n"
 msgid ""
-"| Symptom                     | Check                                                          |\n"
-"| --------------------------- | -------------------------------------------------------------- |\n"
-"| Service fails on DB connect | `database.url`; PostgreSQL running; pass credentials readable  |\n"
-"| Migration fails             | Extensions installed; DB user has DDL privileges               |\n"
-"| FTS / vector recall empty   | `ensure-pg-extensions.sql` applied; `embedding` config enabled |\n"
+"| Symptom                     | Check                                                                       |\n"
+"| --------------------------- | --------------------------------------------------------------------------- |\n"
+"| Service fails on DB connect | `database.url`; PostgreSQL running; pass credentials readable               |\n"
+"| Migration fails             | Extensions installed; DB user has DDL privileges                            |\n"
+"| FTS / keyword recall empty  | `ensure-pg-extensions.sql` applied (`pg_trgm`); jieba/FTS rebuild if needed |\n"
 msgstr ""
 "| 现象                        | 排查                                                           |\n"
 "| --------------------------- | -------------------------------------------------------------- |\n"

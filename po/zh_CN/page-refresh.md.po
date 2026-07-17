@@ -1,0 +1,158 @@
+# Chinese translations for wv package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the wv package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: wv 53\n"
+"POT-Creation-Date: 2026-07-17 22:43+0800\n"
+"PO-Revision-Date: 2026-07-17 22:43+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Yaml Front Matter Hash Value: title
+#: docs/features/page-refresh.md:1
+#, fuzzy, no-wrap
+#| msgid "Self layer refresh"
+msgid "Page refresh"
+msgstr "自我层刷新"
+
+#. type: Title #
+#: docs/features/page-refresh.md:5
+#, no-wrap
+msgid "Page refresh (sync vs refresh)"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/page-refresh.md:8
+msgid ""
+"Satellite UI keeps data fresh with two distinct verbs. Do not conflate them "
+"with PWA / installer “reload”, which updates shell assets only."
+msgstr ""
+
+#. type: Title ##
+#: docs/features/page-refresh.md:9
+#, no-wrap
+msgid "Verbs"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/page-refresh.md:15
+#, no-wrap
+msgid ""
+"| Verb        | When                                                       | What happens                                                                                                                   |\n"
+"| ----------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |\n"
+"| **sync**    | Hub reconnect, tab visible again, Offline sync toast retry | Flush outbox; modules that flushed call `refreshAll` (see [offline platform](../guide/offline-platform.md))                    |\n"
+"| **refresh** | Header **Refresh** button or touch pull-to-refresh         | Re-run the page’s `reload*` / list fetch (online `withOfflineCache` already network-fetches). Same handler for button and pull |\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/features/page-refresh.md:16
+#, fuzzy, no-wrap
+#| msgid "Core Principles"
+msgid "Principles"
+msgstr "核心原则"
+
+#. type: Bullet: '- '
+#: docs/features/page-refresh.md:22
+msgid ""
+"**Limited auto**: keep sync + existing live channels (chat `stream.*`, "
+"`conversation.updated`, `pomodoro.active.changed`). No global list polling. "
+"No unconditional `refreshAll` of every module on visibility when the outbox "
+"is empty."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/page-refresh.md:22
+msgid ""
+"**Manual refresh required** on product list surfaces so multi-device / agent "
+"edits can be pulled on demand."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/page-refresh.md:22
+msgid ""
+"**Interaction dimension** (see [ui-dimensions](../../.agent/rules/ui-"
+"dimensions.md)): pointer uses a header button; touch also gets pull-to-"
+"refresh on the primary list. Shell kind does not lock the affordance."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/page-refresh.md:22
+msgid ""
+"**Out of scope**: Hub fan-out for every CRUD entity; React Query; turning "
+"the offline-sync toast into a page refresh control."
+msgstr ""
+
+#. type: Title ##
+#: docs/features/page-refresh.md:23
+#, fuzzy, no-wrap
+#| msgid "Message"
+msgid "Page tiers"
+msgstr "消息"
+
+#. type: Plain text
+#: docs/features/page-refresh.md:34
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Structure                                | Role                                                                                                                            |\n"
+#| "| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |\n"
+#| "| Memory system                            | The digital life's \"home\"                                                                                                       |\n"
+#| "| Self layer (six blocks)                  | Persistent definition of \"who I am\"                                                                                             |\n"
+#| "| Tools (local / MCP / ACP)                | \"Limbs\" for perception and action                                                                                               |\n"
+#| "| pass credentials                         | Lifeline (injected at runtime, never plaintext)                                                                                 |\n"
+#| "| Gateway                                  | Ears and mouth (Discord / WeChat / **Console)                                                                                       |\n"
+#| "| EventBus                                 | Async notification transport (Redis queue); sleep uses Pipeline Runner, not EventBus — see [`architecture.md`](architecture.md) |\n"
+#| "| Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                      |\n"
+msgid ""
+"| Tier             | Pages                             | Auto                                                                   | Manual                                    |\n"
+"| ---------------- | --------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------- |\n"
+"| A Stream         | Chat                              | SAP stream + recovery poll                                             | Header refresh (existing)                 |\n"
+"| B Tier2 CRUD     | Task, Project, Diary              | Mount / selection cache-first; local write reload; sync → `refreshAll` | Header + pull-to-refresh                  |\n"
+"| C Hybrid         | Pomodoro                          | `pomodoro.active.changed`                                              | Offline `refreshAll` for config/stats     |\n"
+"| D Tier1 snapshot | Email, Notification, Dream, Vault | Mount / dependency load                                                | Header refresh (pull on list where wired) |\n"
+"| E Console        | Ops lists                         | Load on enter                                                          | Explicit refresh (existing)               |\n"
+"| F Settings       | Shell settings                    | Load on open                                                           | Re-read after save                        |\n"
+"| G Shell update   | PWA / installer                   | Update check                                                           | Reload / install ≠ business refresh       |\n"
+msgstr ""
+"| 结构                           | 角色                                                                                                                          |\n"
+"| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |\n"
+"| Memory system                    | 数字生命的“家”                                                                                                               |\n"
+"| Self layer（六个区块）           | “我是谁”的持久定义                                                                                                           |\n"
+"| Tools（local / MCP / ACP）       | 用于感知与行动的“肢体”                                                                                                       |\n"
+"| pass credentials                 | 生命线（运行时注入，绝不明文）                                                                                               |\n"
+"| Gateway                          | 耳朵与嘴巴（Discord / WeChat / **Console）                                                                                       |\n"
+"| EventBus                         | 异步通知传输（Redis 队列）；睡眠使用 Pipeline Runner，而非 EventBus——见 [`architecture.md`](architecture.md)                |\n"
+"| `AGENTS.md` 等项目叙事文件       | 项目上下文的锚点                                                                                                             |\n"
+
+#. type: Title ##
+#: docs/features/page-refresh.md:35
+#, fuzzy, no-wrap
+#| msgid "Documentation Index"
+msgid "Implementation notes"
+msgstr "文档索引"
+
+#. type: Bullet: '- '
+#: docs/features/page-refresh.md:39
+msgid ""
+"Shared pull gesture: `@freeanima/frontend/ui-kit/composite` `PullToRefresh` "
+"(touch-only; ignore starts near the left edge to avoid drawer swipe "
+"conflicts)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/page-refresh.md:39
+msgid "Copy: `m.console_common_refresh` / `m.console_common_refreshing`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/page-refresh.md:39
+msgid ""
+"Follow-up (not required here): soft refresh of the focused module only on "
+"visibility with an empty outbox."
+msgstr ""

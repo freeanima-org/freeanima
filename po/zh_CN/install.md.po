@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-11 11:39+0800\n"
+"POT-Creation-Date: 2026-07-17 22:43+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,17 +16,20 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:607
+#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:618
 #, no-wrap
 msgid "Installation"
 msgstr "安装"
 
 #. type: Plain text
 #: docs/guide/install.md:9
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "> Deploy FreeAnima on your machine — npm CLI, Docker Compose, or from source.\n"
+#| "> After install: [`security.md`](security.md) (credentials, bind address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`](service.md) (runtime commands) · [`remote-access.md`](remote-access.md) (Cloudflare Tunnel).\n"
 msgid ""
-"> Deploy FreeAnima on your machine — npm CLI, Docker Compose, or from source.\n"
-"> After install: [`security.md`](security.md) (credentials, bind address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`](service.md) (runtime commands) · [`remote-access.md`](remote-access.md) (Cloudflare Tunnel).\n"
+"> Deploy FreeAnima on your machine — from source, or with a Linux standalone executable.\n"
+"> After install: [`security.md`](security.md) (credentials, bind address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`](service.md) (runtime commands) · [`remote-access.md`](remote-access.md) (Service API Token / LAN).\n"
 msgstr ""
 "> 在本机部署逸灵风 — npm CLI、Docker Compose 或从源码安装。\n"
 "> 安装后：[`security.md`](security.md)（凭证、绑定地址）· [`database.md`](database.md)（PostgreSQL）· [`service.md`](service.md)（运行时命令）。\n"
@@ -38,14 +41,19 @@ msgid "Choose a path"
 msgstr "选择安装方式"
 
 #. type: Plain text
-#: docs/guide/install.md:17
-#, no-wrap
+#: docs/guide/install.md:16
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Path               | Best for                                   | PostgreSQL  | Redis                  | Secrets                       |\n"
+#| "| ------------------ | ------------------------------------------ | ----------- | ---------------------- | ----------------------------- |\n"
+#| "| **npm CLI**        | Day-to-day self-hosting on your OS         | You install | Optional (recommended) | Vault / `env()` (recommended) |\n"
+#| "| **Docker Compose** | Quick trial, minimal host setup            | Bundled     | Bundled                | `.env` env vars               |\n"
+#| "| **Source**         | Contributors, bleeding-edge, custom builds | You install | Optional (recommended) | Vault / `env()` (recommended) |\n"
 msgid ""
-"| Path               | Best for                                   | PostgreSQL  | Redis                  | Secrets                       |\n"
-"| ------------------ | ------------------------------------------ | ----------- | ---------------------- | ----------------------------- |\n"
-"| **npm CLI**        | Day-to-day self-hosting on your OS         | You install | Optional (recommended) | Vault / `env()` (recommended) |\n"
-"| **Docker Compose** | Quick trial, minimal host setup            | Bundled     | Bundled                | `.env` env vars               |\n"
-"| **Source**         | Contributors, bleeding-edge, custom builds | You install | Optional (recommended) | Vault / `env()` (recommended) |\n"
+"| Path           | Best for                                  | Bun on host | PostgreSQL  | Redis                  | Secrets                       |\n"
+"| -------------- | ----------------------------------------- | ----------- | ----------- | ---------------------- | ----------------------------- |\n"
+"| **Source**     | Contributors, day-to-day development      | Required    | You install | Optional (recommended) | Vault / `env()` (recommended) |\n"
+"| **Standalone** | Production / self-host without a checkout | Not needed  | You install | Optional (recommended) | Vault / `env()` (recommended) |\n"
 msgstr ""
 "| 路径               | 适用场景                                   | PostgreSQL  | Redis                  | 密钥                          |\n"
 "| ------------------ | ------------------------------------------ | ----------- | ---------------------- | ----------------------------- |\n"
@@ -55,33 +63,46 @@ msgstr ""
 
 #
 #. type: Plain text
-#: docs/guide/install.md:19
+#: docs/guide/install.md:18
+#, fuzzy
+#| msgid ""
+#| "All paths run the same `anima service` runtime (Hub REST `/api` + Hub RPC "
+#| "`/hub/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. "
+#| "Redis powers EventBus and task context; it **degrades silently** when "
+#| "unavailable — Docker and production setups should still run it."
 msgid ""
-"All paths run the same `anima service` runtime (Hub REST `/api` + Hub RPC `/"
+"Both paths run the same `anima service` runtime (Hub REST `/api` + Hub RPC `/"
 "hub/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis "
 "powers EventBus and task context; it **degrades silently** when unavailable "
-"— Docker and production setups should still run it."
+"— production setups should still run it."
 msgstr ""
 "所有路径运行相同的 `anima service` 运行时（Hub REST `/api` + SAP `/sap/v1` + "
 "engine）。带 **pgvector** 的 PostgreSQL **必需**。Redis 支撑 EventBus 与任务"
 "上下文，不可用时**静默降级** — Docker 与生产环境仍应运行 Redis。"
 
 #. type: Title ##
-#: docs/guide/install.md:20
+#: docs/guide/install.md:19
 #, no-wrap
 msgid "Shared prerequisites"
 msgstr "共用前置条件"
 
 #. type: Plain text
-#: docs/guide/install.md:28
-#, no-wrap
+#: docs/guide/install.md:27
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Component      | Version / notes                                                                                                                       |\n"
+#| "| -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |\n"
+#| "| **Bun**        | >= 1.3.14 — required for npm CLI and source installs ([bun.sh](https://bun.sh))                                                       |\n"
+#| "| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md)                                                  |\n"
+#| "| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                                         |\n"
+#| "| **Vault**      | Recommended for npm/source — API keys and DB URLs stay out of config files ([`security.md`](security.md#credential-responsibilities)) |\n"
 msgid ""
-"| Component      | Version / notes                                                                                                                       |\n"
-"| -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| **Bun**        | >= 1.3.14 — required for npm CLI and source installs ([bun.sh](https://bun.sh))                                                       |\n"
-"| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md)                                                  |\n"
-"| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                                         |\n"
-"| **Vault**      | Recommended for npm/source — API keys and DB URLs stay out of config files ([`security.md`](security.md#credential-responsibilities)) |\n"
+"| Component      | Version / notes                                                                                                        |\n"
+"| -------------- | ---------------------------------------------------------------------------------------------------------------------- |\n"
+"| **Bun**        | >= 1.3.14 — required for **source** installs ([bun.sh](https://bun.sh)); not required for standalone binaries          |\n"
+"| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md)                                   |\n"
+"| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                          |\n"
+"| **Vault**      | Recommended — API keys and DB URLs stay out of config files ([`security.md`](security.md#credential-responsibilities)) |\n"
 msgstr ""
 "| 组件           | 版本 / 说明                                                                                                                           |\n"
 "| -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |\n"
@@ -91,7 +112,7 @@ msgstr ""
 "| **Vault**      | npm/源码推荐 — API 密钥与 DB URL 不写入配置文件（[`security.md`](security.md#credential-responsibilities)）                          |\n"
 
 #. type: Plain text
-#: docs/guide/install.md:30
+#: docs/guide/install.md:29
 msgid ""
 "Data directory: `~/.anima/` (override with `FREEANIMA_HOME`). Back it up "
 "with your database."
@@ -99,77 +120,160 @@ msgstr ""
 "数据目录：`~/.anima/`（可用 `FREEANIMA_HOME` 覆盖）。请与数据库一并备份。"
 
 #. type: Title ##
-#: docs/guide/install.md:33
+#: docs/guide/install.md:32
 #, no-wrap
-msgid "npm CLI"
-msgstr "npm CLI"
+msgid "Standalone (Linux x64)"
+msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:36
+#: docs/guide/install.md:35
 msgid ""
-"The published package is [`@freeanima/cli`](https://www.npmjs.com/package/"
-"@freeanima/cli) on npm. The binary is `anima`; runtime is Bun (not Node)."
+"Release publishes 三端产物（与 canary 对称）：`anima-linux-x64.tar.gz`、"
+"`freeanima-desktop-windows-x64-setup.exe`、`freeanima-mobile-android.apk`"
+"（CI 固定 upload 签名；本地 `debug:android` 仍为默认 debug 签名）。"
+"Standalone tarball 内含单文件可执行文件 `anima`；版本、service build-meta、"
+"migrations 与 Web UI 均嵌入该二进制。"
 msgstr ""
-"npm 上的发布包为 [`@freeanima/cli`](https://www.npmjs.com/package/@freeanima/"
-"cli)。二进制名为 `anima`；运行时为 Bun（非 Node）。"
 
 #. type: Title ###
-#: docs/guide/install.md:37
+#: docs/guide/install.md:36
 #, no-wrap
-msgid "1. Install Bun and the CLI"
-msgstr "1. 安装 Bun 与 CLI"
+msgid "1. Install (recommended)"
+msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:39
+#: docs/guide/install.md:38
 #, no-wrap
 msgid ""
-"# Install Bun (https://bun.sh/docs/installation)\n"
-"curl -fsSL https://bun.sh/install | bash\n"
-"\n"
-"# Global CLI from npm registry\n"
-"bun install -g @freeanima/cli\n"
-"\n"
-"# Verify\n"
-"anima --help\n"
+"curl -fsSL https://freeanima.com/install | bash\n"
+"anima --version   # e.g. 0.8.5 (standalone) · release\n"
 msgstr ""
-"# Install Bun (https://bun.sh/docs/installation)\n"
-"curl -fsSL https://bun.sh/install | bash\n"
-"\n"
-"# Global CLI from npm registry\n"
-"bun install -g @freeanima/cli\n"
-"\n"
-"# Verify\n"
-"anima --help\n"
+
+#. type: Plain text
+#: docs/guide/install.md:44
+msgid "Canary（`main` 滚动 Pre-release tag `canary`）或 pin 版本："
+msgstr ""
+
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:45
+#, no-wrap
+msgid ""
+"curl -fsSL https://freeanima.com/install | CHANNEL=canary bash\n"
+"curl -fsSL https://freeanima.com/install | VERSION=v0.8.5 bash\n"
+msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:51
 msgid ""
-"You can also use `npm install -g @freeanima/cli`, but `anima` still invokes "
-"Bun — ensure `bun` is on your `PATH`."
+"国内网络可指定公共 GitHub 反代（`PROXY=none|ghproxy-net|gh-proxy-com|ghfast-"
+"top`，默认 `none`）："
 msgstr ""
-"也可使用 `npm install -g @freeanima/cli`，但 `anima` 仍调用 Bun — 请确保 "
-"`bun` 在 `PATH` 中。"
+
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:52
+#, no-wrap
+msgid ""
+"curl -fsSL https://freeanima.com/install | PROXY=ghproxy-net bash\n"
+"curl -fsSL https://freeanima.com/install | CHANNEL=canary PROXY=ghfast-top bash\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/install.md:58
+msgid ""
+"可选环境变量：`FREEANIMA_INSTALL_PREFIX`（默认 `~/.anima/standalone`）、"
+"`FREEANIMA_HOME`（默认 `~/.anima`，决定 `bin` shim 位置）。"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/install.md:60
+msgid "备用（不依赖站点发布）："
+msgstr ""
+
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:61
+#, fuzzy, no-wrap
+#| msgid ""
+#| "git clone https://github.com/freeanima-org/freeanima.git\n"
+#| "cd freeanima\n"
+#| "bun install\n"
+msgid "curl -fsSL https://raw.githubusercontent.com/freeanima-org/freeanima/main/scripts/install.sh | bash\n"
+msgstr ""
+"git clone https://github.com/freeanima-org/freeanima.git\n"
+"cd freeanima\n"
+"bun install\n"
+
+#. type: Plain text
+#: docs/guide/install.md:66
+msgid ""
+"Install prefix 只需要 **一个** `anima` 文件。Do not unpack into a git "
+"checkout. Ensure `~/.anima/bin` is on `PATH`."
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/install.md:68
+msgid "Manual unpack (same layout as the installer):"
+msgstr ""
+
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:69
+#, no-wrap
+msgid ""
+"mkdir -p ~/.anima/standalone && cd ~/.anima/standalone\n"
+"tar -xzf /path/to/anima-linux-x64.tar.gz\n"
+"mkdir -p ~/.anima/bin && ln -sf \"$PWD/anima\" ~/.anima/bin/anima\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/install.md:76
+msgid ""
+"Or from a checkout: `just install-cli` (builds then installs to the same "
+"default prefix)."
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/install.md:78
+msgid "Installed standalone 可用内置升级换轨："
+msgstr ""
+
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:79
+#, no-wrap
+msgid ""
+"anima upgrade --channel canary   # 跟随 canary tip\n"
+"anima upgrade --channel release  # 切回稳定轨 tip\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/install.md:85
+#, no-wrap
+msgid "**Mobile Android APK**（`freeanima-mobile-android.apk`）：从 GitHub Release（`canary` 或版本 tag）下载 sideload。CI 使用固定 upload 签名，同 channel 内可覆盖升级。若曾安装旧版未固定签名的包，或密钥轮换后，需先卸载 `FreeAnima`（`org.freeanima.app`）再安装。\n"
+msgstr ""
 
 #. type: Title ###
-#: docs/guide/install.md:52
+#: docs/guide/install.md:86
 #, no-wrap
 msgid "2. Configure"
 msgstr "2. 配置"
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:54
-#, no-wrap
+#: docs/guide/install.md:88
+#, fuzzy, no-wrap
+#| msgid ""
+#| "mkdir -p ~/.anima\n"
+#| "chmod 700 ~/.anima\n"
+#| "cp config.example.yaml ~/.anima/config.yaml   # from repo clone, or write manually\n"
 msgid ""
 "mkdir -p ~/.anima\n"
 "chmod 700 ~/.anima\n"
-"cp config.example.yaml ~/.anima/config.yaml   # from repo clone, or write manually\n"
+"# copy config.example.yaml from the repo, or write manually\n"
+"cp /path/to/freeanima-checkout/config.example.yaml ~/.anima/config.yaml\n"
 msgstr ""
 "mkdir -p ~/.anima\n"
 "chmod 700 ~/.anima\n"
 "cp config.example.yaml ~/.anima/config.yaml   # from repo clone, or write manually\n"
 
 #. type: Plain text
-#: docs/guide/install.md:61
+#: docs/guide/install.md:96
 #, fuzzy
 #| msgid "Minimum production settings in `~/.anima/config.yaml`:"
 msgid ""
@@ -177,78 +281,46 @@ msgid ""
 msgstr "`~/.anima/config.yaml` 最低生产配置："
 
 #. type: Bullet: '- '
-#: docs/guide/install.md:63
+#: docs/guide/install.md:99
 msgid "**`database.url`** — PostgreSQL connection string (required)"
 msgstr "**`database.url`** — PostgreSQL 连接字符串（必需）"
 
+#. type: Bullet: '- '
+#: docs/guide/install.md:99
+msgid ""
+"**`web.enabled`** — Hub hosts `/web/*` when dist exists (optional; defaults "
+"to on if omitted)"
+msgstr ""
+
 #. type: Plain text
-#: docs/guide/install.md:65
+#: docs/guide/install.md:101
 #, no-wrap
-msgid "**Runtime settings** (LLM providers, compression, MCP, etc.) are stored in PostgreSQL (`hub_runtime_config`). Edit them in the Shell app under **Settings → Hub 服务 → 服务配置**. Legacy `llm` / `compression` blocks left in `config.yaml` are **ignored** at startup (remove them from YAML after migrating settings in the Shell).\n"
+msgid "**Runtime settings** (LLM providers, compression, MCP, etc.) are stored in PostgreSQL (`hub_runtime_config`). Edit them in the Shell app under **Settings → Hub 服务 → 服务配置**.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:67
-msgid "Prefer Vault or `env()` for secrets:"
-msgstr "密钥优先使用 Vault 或 `env()`："
-
-#. type: Fenced code block (bash)
-#: docs/guide/install.md:68
-#, no-wrap
+#: docs/guide/install.md:103
+#, fuzzy
+#| msgid ""
+#| "Production **must** set `database.url`. Prefer Vault or `env()` for "
+#| "passwords instead of plaintext in config. Path conventions: "
+#| "[`security.md`](security.md#credential-responsibilities)."
 msgid ""
-"# Shell /vault (User or Agent library), or env vars for headless Hub\n"
-"export OPENAI_API_KEY=sk-…\n"
+"Prefer Vault or `env()` for secrets. See [`security.md`]"
+"(security.md#credential-responsibilities)."
 msgstr ""
-"# Shell /vault（User 或 Agent 库），或无头 Hub 使用环境变量\n"
-"export OPENAI_API_KEY=sk-…\n"
-
-#. type: Plain text
-#: docs/guide/install.md:74
-msgid ""
-"Then reference them in config, e.g. `api_key: vault(\"123\", \"token\")` or "
-"`api_key: env(\"OPENAI_API_KEY\")`, and `database.url: "
-"env(\"DATABASE_URL\")`. See [`security.md`](security.md#credential-"
-"responsibilities)."
-msgstr ""
-"然后在配置中引用，例如 `api_key: vault(\"123\", \"token\")` 或 `api_key: "
-"env(\"OPENAI_API_KEY\")`，以及 `database.url: env(\"DATABASE_URL\")`。见 "
-"[`security.md`](security.md#credential-responsibilities)。"
-
-#. type: Plain text
-#: docs/guide/install.md:76
-msgid ""
-"PostgreSQL setup (Debian helper, extensions, migrations): [`database.md`]"
-"(database.md)."
-msgstr ""
-"PostgreSQL 安装（Debian 辅助脚本、扩展、迁移）：[`database.md`]"
-"(database.md)。"
-
-#. type: Plain text
-#: docs/guide/install.md:78
-msgid ""
-"Optional Redis block in config (defaults shown in `config.example.yaml`):"
-msgstr "配置中可选 Redis 块（默认值见 `config.example.yaml`）："
-
-#. type: Fenced code block (yaml)
-#: docs/guide/install.md:79
-#, no-wrap
-msgid ""
-"redis:\n"
-"  host: 127.0.0.1\n"
-"  port: 6379\n"
-msgstr ""
-"redis:\n"
-"  host: 127.0.0.1\n"
-"  port: 6379\n"
+"生产环境**必须**设置 `database.url`。密码优先使用 Vault 或 `env()`，避免在配"
+"置中明文存放。路径约定见 [`security.md`](security.md#credential-"
+"responsibilities)。"
 
 #. type: Title ###
-#: docs/guide/install.md:85
+#: docs/guide/install.md:104
 #, no-wrap
 msgid "3. Start the service"
 msgstr "3. 启动服务"
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:87
+#: docs/guide/install.md:106
 #, no-wrap
 msgid ""
 "anima service start              # background (systemd user unit when available)\n"
@@ -261,305 +333,127 @@ msgstr ""
 
 #
 #. type: Plain text
-#: docs/guide/install.md:94
-msgid ""
-"Default bind: `127.0.0.1:2658`（Hub API：`/api`，Hub RPC：`/hub/rpc/v1`）。"
-msgstr "默认绑定：`127.0.0.1:2658`（Hub API：`/api`，SAP：`/sap/v1`）。"
-
-#. type: Plain text
-#: docs/guide/install.md:96
+#: docs/guide/install.md:113
 #, fuzzy
 #| msgid ""
-#| "Use **src/app/shell/desktop** or **src/app/shell/mobile** for UI (Chat + "
-#| "**Console bundled). Browser local dev: `bun run dev:web` (Vite HMR; Hub "
-#| "must be running)."
+#| "Default bind: `127.0.0.1:2658`（Hub API：`/api`，Hub RPC：`/hub/rpc/"
+#| "v1`）。"
 msgid ""
-"Use **src/app/shell/desktop** or **src/app/shell/mobile** for UI (Chat + "
-"Console bundled). Browser local dev: `bun run dev:web` (Vite HMR; Hub must "
-"be running)."
-msgstr ""
-"UI 请用 **src/app/shell/desktop** 或 **src/app/shell/mobile**（捆绑聊天室 + "
-"管理台）。浏览器本地开发：`bun run dev:web`（Vite HMR；需 Hub 已运行）。"
-
-#. type: Plain text
-#: docs/guide/install.md:98
-msgid ""
-"Schema migrations run automatically on startup when `database.url` is set."
-msgstr "设置 `database.url` 后，启动时会自动运行 schema 迁移。"
+"Default bind: `127.0.0.1:2658`（Hub API：`/api`，Hub RPC：`/hub/rpc/v1`；Web "
+"UI：`/web/*` when `config.yaml` `web.enabled`)."
+msgstr "默认绑定：`127.0.0.1:2658`（Hub API：`/api`，SAP：`/sap/v1`）。"
 
 #. type: Title ###
-#: docs/guide/install.md:99 docs/guide/install.md:158
+#: docs/guide/install.md:114
 #, no-wrap
 msgid "4. Upgrade"
 msgstr "4. 升级"
 
-#. type: Fenced code block (bash)
-#: docs/guide/install.md:101
-#, no-wrap
-msgid "anima upgrade\n"
-msgstr "anima upgrade\n"
-
 #. type: Plain text
-#: docs/guide/install.md:106
-msgid ""
-"Upgrades the global `@freeanima/cli` package from the npm registry, then "
-"restart the service if needed (`anima service restart` or `/restart` in "
-"chat)."
-msgstr ""
-"从 npm registry 升级全局 `@freeanima/cli`，必要时重启服务（`anima service "
-"restart` 或聊天中 `/restart`）。"
-
-#. type: Title ##
-#: docs/guide/install.md:109
-#, no-wrap
-msgid "Docker Compose"
-msgstr "Docker Compose"
-
-#. type: Plain text
-#: docs/guide/install.md:112
-msgid ""
-"Recommended for a **quick trial** with PostgreSQL, Redis, and the service in "
-"one stack. The image installs `@freeanima/cli` globally and listens on "
-"`0.0.0.0:2658` inside the container."
-msgstr ""
-"推荐用于**快速试用** — 一个栈内包含 PostgreSQL、Redis 与服务。镜像全局安装 "
-"`@freeanima/cli`，容器内监听 `0.0.0.0:2658`。"
-
-#. type: Title ###
-#: docs/guide/install.md:113
-#, no-wrap
-msgid "1. Prepare environment"
-msgstr "1. 准备环境"
-
-#. type: Plain text
-#: docs/guide/install.md:116
-msgid ""
-"From the repository root (or any directory with `docker-compose.yml` and "
-"`.env.example`):"
-msgstr ""
-"在仓库根目录（或任何包含 `docker-compose.yml` 与 `.env.example` 的目录）："
-
-#. type: Fenced code block (bash)
 #: docs/guide/install.md:117
-#, no-wrap
-msgid "cp .env.example .env\n"
-msgstr "cp .env.example .env\n"
-
-#. type: Plain text
-#: docs/guide/install.md:122
-msgid "Edit `.env`:"
-msgstr "编辑 `.env`："
-
-#. type: Plain text
-#: docs/guide/install.md:130
-#, no-wrap
-msgid ""
-"| Variable          | Required | Description                                           |\n"
-"| ----------------- | -------- | ----------------------------------------------------- |\n"
-"| `PG_PASSWORD`     | yes      | PostgreSQL password for user/db `freeanima`           |\n"
-"| `OPENAI_API_KEY`  | yes      | LLM API key (injected into config template)           |\n"
-"| `OPENAI_BASE_URL` | no       | Default `https://api.openai.com/v1`                   |\n"
-"| `OPENAI_MODEL`    | no       | Default `gpt-4o-mini`                                 |\n"
-"| `ANIMA_PORT`      | no       | Host port mapped to container `2658` (default `2658`) |\n"
+msgid "Installed standalone (independent prefix, e.g. `~/.anima/standalone`):"
 msgstr ""
-"| 变量              | 必需     | 说明                                                  |\n"
-"| ----------------- | -------- | ----------------------------------------------------- |\n"
-"| `PG_PASSWORD`     | 是       | PostgreSQL 用户/库 `freeanima` 的密码                 |\n"
-"| `OPENAI_API_KEY`  | 是       | LLM API 密钥（注入配置模板）                          |\n"
-"| `OPENAI_BASE_URL` | 否       | 默认 `https://api.openai.com/v1`                      |\n"
-"| `OPENAI_MODEL`    | 否       | 默认 `gpt-4o-mini`                                    |\n"
-"| `ANIMA_PORT`      | 否       | 映射到容器 `2658` 的主机端口（默认 `2658`）           |\n"
-
-#. type: Title ###
-#: docs/guide/install.md:131
-#, no-wrap
-msgid "2. Start the stack"
-msgstr "2. 启动栈"
 
 #. type: Fenced code block (bash)
+#: docs/guide/install.md:118
+#, no-wrap
+msgid ""
+"anima upgrade                 # 当前 bake channel 内升级（release：semver；canary：commit）\n"
+"anima upgrade --check\n"
+"anima upgrade --channel canary   # 切到 / 检查 canary tip\n"
+"anima upgrade --proxy ghproxy-net\n"
+"anima upgrade --check --channel canary --proxy ghfast-top\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/install.md:127
+msgid ""
+"升级时 Hub 在**下载与校验阶段保持在线**；若 service 原先在运行，仅在替换二进"
+"制瞬间短暂停服并自动拉起。未运行 service 时仅覆盖 `prefix/anima`，不会自动启"
+"动。"
+msgstr ""
+
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:128
+#, no-wrap
+msgid "anima service restart   # 手动升级二进制后若未自动拉起时使用\n"
+msgstr ""
+
+#. type: Plain text
 #: docs/guide/install.md:133
-#, no-wrap
-msgid "docker compose up --build\n"
-msgstr "docker compose up --build\n"
-
-#. type: Plain text
-#: docs/guide/install.md:138
-msgid "Services:"
-msgstr "服务："
-
-#. type: Bullet: '- '
-#: docs/guide/install.md:142
-msgid "**postgres** — `pgvector/pgvector:pg17`, database `freeanima`"
-msgstr "**postgres** — `pgvector/pgvector:pg17`，数据库 `freeanima`"
-
-#. type: Bullet: '- '
-#: docs/guide/install.md:142
-msgid "**redis** — `redis:7-alpine`"
-msgstr "**redis** — `redis:7-alpine`"
-
-#. type: Bullet: '- '
-#: docs/guide/install.md:142
 msgid ""
-"**freeanima** — `ghcr.io/freeanima-org/freeanima:latest` (built locally on "
-"first `--build`)"
+"Re-run the curl installer to reinstall/overwrite the same prefix, or from a "
+"checkout rebuild and reinstall (never into the repo):"
 msgstr ""
-"**freeanima** — `ghcr.io/freeanima-org/freeanima:latest`（首次 `--build` 时本"
-"地构建）"
-
-#. type: Plain text
-#: docs/guide/install.md:144
-msgid ""
-"On first start, `docker/entrypoint.sh` copies `docker/config.docker.yaml` to "
-"`$FREEANIMA_HOME/config.yaml` if missing. Persistent volumes: `pgdata`, "
-"`anima_data`."
-msgstr ""
-"首次启动时，`docker/entrypoint.sh` 若缺少配置会将 `docker/"
-"config.docker.yaml` 复制到 `$FREEANIMA_HOME/config.yaml`。持久卷：`pgdata`、"
-"`anima_data`。"
-
-#. type: Title ###
-#: docs/guide/install.md:145
-#, no-wrap
-msgid "3. Access Hub API"
-msgstr "3. 访问 Hub API"
-
-#. type: Fenced code block (text)
-#: docs/guide/install.md:147
-#, fuzzy, no-wrap
-#| msgid "http://127.0.0.1:2658/api/health\n"
-msgid "http://127.0.0.1:2658/hub/rpc/v1/health/probe\n"
-msgstr "http://127.0.0.1:2658/api/health\n"
-
-#. type: Plain text
-#: docs/guide/install.md:152
-#, fuzzy
-#| msgid ""
-#| "Use `src/app/shell/desktop` or `src/app/shell/mobile` clients for UI "
-#| "(bundled shell with `/chat`, `/tasks`, `/admin`, etc.)."
-msgid ""
-"Use `src/app/shell/desktop` or `src/app/shell/mobile` clients for UI "
-"(bundled shell with `/chat`, `/tasks`, `/console`, etc.)."
-msgstr ""
-"UI 请用 src/app/shell/desktop 或 src/app/shell/mobile 客户端（bundled shell，"
-"含 `/chat`、`/tasks`、`/admin` 等）。"
-
-#. type: Bullet: '- '
-#: docs/guide/install.md:155
-#, fuzzy
-#| msgid ""
-#| "Hub API (health): `http://127.0.0.1:2658/api/health` (Hub does **not** "
-#| "host Console UI)"
-msgid ""
-"Hub API (health): `http://127.0.0.1:2658/hub/rpc/v1/health/probe` (Hub does "
-"**not** host Console UI)"
-msgstr ""
-"Hub API（health）：`http://127.0.0.1:2658/api/health`（Hub **不**托管 "
-"**Console UI）"
-
-#. type: Bullet: '- '
-#: docs/guide/install.md:155
-#, fuzzy
-#| msgid ""
-#| "Local Web shell dev: `bun run dev:web` → **Console: `http://"
-#| "127.0.0.1:4173/web/console/dashboard`"
-msgid ""
-"Local Web shell dev: `bun run dev:web` → Console: `http://127.0.0.1:4173/web/"
-"console/dashboard`"
-msgstr ""
-"本地 Web shell 开发：`bun run dev:web` → 管理台：`http://127.0.0.1:4173/web/"
-"admin/dashboard`"
-
-#. type: Plain text
-#: docs/guide/install.md:157
-msgid "(Use `ANIMA_PORT` if you changed the host mapping.)"
-msgstr "（若更改了主机映射，请使用 `ANIMA_PORT`。）"
-
-#. type: Plain text
-#: docs/guide/install.md:161
-msgid "On the **host** (not inside the container):"
-msgstr "在**主机**上（非容器内）："
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:162
+#: docs/guide/install.md:134
 #, no-wrap
-msgid ""
-"docker compose pull\n"
-"docker compose up -d\n"
+msgid "just install-cli\n"
 msgstr ""
-"docker compose pull\n"
-"docker compose up -d\n"
 
 #. type: Plain text
-#: docs/guide/install.md:168
-msgid ""
-"`anima upgrade` and `/upgrade` inside the container only print this guidance."
-msgstr "容器内的 `anima upgrade` 与 `/upgrade` 仅打印此说明。"
-
-#. type: Plain text
-#: docs/guide/install.md:170
-msgid ""
-"Images are published to `ghcr.io/freeanima-org/freeanima` on each release "
-"tag."
-msgstr "每个 release tag 会发布镜像到 `ghcr.io/freeanima-org/freeanima`。"
+#: docs/guide/install.md:139
+msgid "`dist/anima-executable/` is build staging only — not a runtime prefix."
+msgstr ""
 
 #. type: Title ###
-#: docs/guide/install.md:171
+#: docs/guide/install.md:140
 #, no-wrap
-msgid "Docker notes"
-msgstr "Docker 说明"
-
-#. type: Bullet: '- '
-#: docs/guide/install.md:176
-msgid ""
-"Secrets live in `.env` — do not commit `.env` to git. For production, prefer "
-"Vault / `env()` on the host instead of plaintext keys in `.env`."
+msgid "Build from a checkout"
 msgstr ""
-"密钥存放在 `.env` — 勿将 `.env` 提交到 git。生产环境优先在主机使用 Vault / "
-"`env()`，而非 `.env` 明文密钥。"
 
-#. type: Bullet: '- '
-#: docs/guide/install.md:176
+#. type: Plain text
+#: docs/guide/install.md:143
 msgid ""
-"The container binds `0.0.0.0` — restrict access with firewall or reverse "
-"proxy auth before exposing beyond localhost ([`security.md`](security.md))."
+"Always runs `build:web` before compiling the binary (embeds current Web "
+"dist):"
 msgstr ""
-"容器绑定 `0.0.0.0` — 暴露到 localhost 之外前请用防火墙或反向代理认证限制访问"
-"（[`security.md`](security.md)）。"
 
-#. type: Bullet: '- '
-#: docs/guide/install.md:176
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:144
+#, no-wrap
 msgid ""
-"pass is **not** used inside the default Compose stack; LLM and DB secrets "
-"come from environment variable expansion in `docker/config.docker.yaml`."
+"bun run build:cli:executable\n"
+"# → dist/anima-executable/ (staging)\n"
+"just install-cli\n"
+"# → ~/.anima/standalone/ + ~/.anima/bin/anima\n"
+"anima --version\n"
 msgstr ""
-"默认 Compose 栈内**不使用** pass；LLM 与 DB 密钥来自 `docker/"
-"config.docker.yaml` 中的环境变量展开。"
+
+#. type: Plain text
+#: docs/guide/install.md:153
+msgid ""
+"Override prefix: `FREEANIMA_INSTALL_PREFIX=/opt/freeanima just install-cli` "
+"or `bun scripts/install-cli.ts --prefix /opt/freeanima --skip-build`."
+msgstr ""
 
 #. type: Title ##
-#: docs/guide/install.md:179
+#: docs/guide/install.md:156
 #, no-wrap
 msgid "Source (repository)"
 msgstr "源码（仓库）"
 
 #. type: Plain text
-#: docs/guide/install.md:182
+#: docs/guide/install.md:159
 msgid "For development, unreleased fixes, or running from a git checkout."
 msgstr "用于开发、未发布修复或从 git checkout 运行。"
 
 #. type: Title ###
-#: docs/guide/install.md:183
+#: docs/guide/install.md:160
 #, no-wrap
 msgid "1. Clone and install dependencies"
 msgstr "1. 克隆并安装依赖"
 
 #. type: Plain text
-#: docs/guide/install.md:186
-#, no-wrap
-msgid "**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended)\n"
+#: docs/guide/install.md:163
+#, fuzzy, no-wrap
+#| msgid "**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended)\n"
+msgid "**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended) · [just](https://github.com/casey/just) (for `just install-cli`)\n"
 msgstr "**前置条件：** Bun >= 1.3.14 · PostgreSQL（pgvector）· Redis（推荐）· Vault（推荐）\n"
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:187
+#: docs/guide/install.md:164
 #, no-wrap
 msgid ""
 "git clone https://github.com/freeanima-org/freeanima.git\n"
@@ -571,34 +465,19 @@ msgstr ""
 "bun install\n"
 
 #. type: Title ###
-#: docs/guide/install.md:193
+#: docs/guide/install.md:170
 #, no-wrap
-msgid "2. Expose the `anima` command"
-msgstr "2. 暴露 `anima` 命令"
-
-#. type: Plain text
-#: docs/guide/install.md:196
-msgid ""
-"Link the workspace CLI into your Bun global bin (editable without rebuild):"
-msgstr "将工作区 CLI link 到 Bun 全局 bin（可编辑、无需重建）："
-
-#. type: Fenced code block (bash)
-#: docs/guide/install.md:197
-#, no-wrap
-msgid ""
-"bun run link:global\n"
-"anima --help\n"
+msgid "2. Run the CLI from the checkout"
 msgstr ""
-"bun run link:global\n"
-"anima --help\n"
 
 #. type: Plain text
-#: docs/guide/install.md:203
-msgid "Alternatively, use the repo binary directly:"
-msgstr "或直接使用仓库二进制："
+#: docs/guide/install.md:173
+msgid ""
+"Do **not** symlink source `cli.ts` into a global bin. Use package scripts:"
+msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:204
+#: docs/guide/install.md:174
 #, fuzzy, no-wrap
 #| msgid ""
 #| "bun run anima -- --help\n"
@@ -606,69 +485,47 @@ msgstr "或直接使用仓库二进制："
 #| "bun app/cli/cli.ts --help\n"
 msgid ""
 "bun run anima -- --help\n"
-"# or\n"
-"bun src/app/cli/cli.ts --help\n"
+"bun run service start --foreground\n"
 msgstr ""
 "bun run anima -- --help\n"
 "# or\n"
 "bun app/cli/cli.ts --help\n"
 
 #. type: Plain text
-#: docs/guide/install.md:211
-msgid "For a publish-shaped local install (closer to npm users):"
-msgstr "若要接近 npm 用户的发布形态本地安装："
+#: docs/guide/install.md:180
+msgid ""
+"To install a **standalone** binary into an independent prefix (default "
+"`~/.anima/standalone`) for a PATH `anima` command:"
+msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:212
-#, fuzzy, no-wrap
-#| msgid ""
-#| "bun run install:cli:local\n"
-#| "# equivalent: bun run build:cli && bun install -g \"$PWD/app/cli/publish\"\n"
+#: docs/guide/install.md:181
+#, no-wrap
 msgid ""
-"bun run install:cli:local\n"
-"# equivalent: bun run build:cli && bun install -g \"$PWD/src/app/cli/publish\"\n"
+"just install-cli\n"
+"# ensure ~/.anima/bin is on PATH\n"
+"anima --version\n"
 msgstr ""
-"bun run install:cli:local\n"
-"# equivalent: bun run build:cli && bun install -g \"$PWD/app/cli/publish\"\n"
-
-#. type: Plain text
-#: docs/guide/install.md:218
-#, fuzzy
-#| msgid ""
-#| "`bun install -g ./app/cli/publish` from the repo root is not supported; "
-#| "use `bun run install:cli:local` (cleans broken global deps, then pack + "
-#| "install tarball)."
-msgid ""
-"`bun install -g ./src/app/cli/publish` from the repo root is not supported; "
-"use `bun run install:cli:local` (cleans broken global deps, then pack + "
-"install tarball)."
-msgstr ""
-"不支持在仓库根目录执行 `bun install -g ./app/cli/publish`；请使用 `bun run "
-"install:cli:local`（清理损坏的全局依赖后，再 pack 并安装 tarball）。"
 
 #. type: Title ###
-#: docs/guide/install.md:219
+#: docs/guide/install.md:187
 #, no-wrap
 msgid "3. Configure and start"
 msgstr "3. 配置并启动"
 
-#. type: Plain text
-#: docs/guide/install.md:222
-msgid ""
-"Same as npm CLI — `~/.anima/config.yaml`, PostgreSQL, optional Redis and "
-"Vault:"
-msgstr ""
-"与 npm CLI 相同 — `~/.anima/config.yaml`、PostgreSQL、可选 Redis 与 Vault："
-
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:223
-#, no-wrap
+#: docs/guide/install.md:189
+#, fuzzy, no-wrap
+#| msgid ""
+#| "mkdir -p ~/.anima\n"
+#| "cp config.example.yaml ~/.anima/config.yaml\n"
+#| "# configure database + LLM (see database.md, security.md)\n"
+#| "\n"
+#| "anima service start --foreground\n"
 msgid ""
 "mkdir -p ~/.anima\n"
 "cp config.example.yaml ~/.anima/config.yaml\n"
 "# configure database + LLM (see database.md, security.md)\n"
-"\n"
-"anima service start --foreground\n"
 msgstr ""
 "mkdir -p ~/.anima\n"
 "cp config.example.yaml ~/.anima/config.yaml\n"
@@ -677,57 +534,93 @@ msgstr ""
 "anima service start --foreground\n"
 
 #. type: Plain text
-#: docs/guide/install.md:232
-msgid "Frontend hot reload (Vite HMR — Hub must already be running):"
+#: docs/guide/install.md:196
+#, no-wrap
+msgid "**Dev** (Hub + Vite HMR; never auto-builds Web). Prefer `just dev` for multi-worktree:\n"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:233
+#: docs/guide/install.md:197
 #, no-wrap
 msgid ""
-"anima service start --foreground   # terminal 1: Hub REST + SAP\n"
-"bun run dev:web                    # terminal 2: http://127.0.0.1:4173/web/chat · Console /web/console/dashboard\n"
+"just dev            # Hub random ≥10000 + Web from :5000; FREEANIMA_URL wires Vite proxy only\n"
+"# or two terminals:\n"
+"bun run dev:hub     # random ≥10000 (not production 2658); writes ~/.anima/dev-web.token\n"
+"FREEANIMA_URL=http://127.0.0.1:<hub-port> bun run dev:web   # default :5000; browser Hub = page origin\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/install.md:205
+msgid ""
+"Browser Web defaults Hub URL to the **page origin** (same in production Hub-"
+"hosted `/web` and Vite). Dev injects Service API Token from `dev-web.token` "
+"automatically. If `http.tls.enabled` / `DEV_HTTPS=1`, Vite serves HTTPS "
+"using `~/.anima/tls` (Hub stays plain HTTP)."
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/install.md:207
+#, no-wrap
+msgid "**Source deploy** (Hub hosts `/web/*` when `config.yaml` `web.enabled`): build Web first, then start — startup does not run `build:web`. Source-tree `anima` has no `service` command.\n"
+msgstr ""
+
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:208
+#, no-wrap
+msgid ""
+"bun run build:web\n"
+"bun run dev:hub\n"
+"# UI: http://127.0.0.1:2658/web/chat\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/install.md:238
+#: docs/guide/install.md:214
 #, no-wrap
 msgid "4. Development checks"
 msgstr "4. 开发检查"
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:240
+#: docs/guide/install.md:216
 #, fuzzy, no-wrap
 #| msgid ""
 #| "bun run check    # typecheck + lint + dep-check + format + changed unit tests\n"
 #| "bun run test     # full unit + integration (integration uses Docker for temp PG)\n"
 msgid ""
 "bun run check    # typecheck + lint + format + changed unit tests\n"
-"bun run test     # full unit + integration (integration uses Docker for temp PG)\n"
+"bun run test     # full unit + integration (integration may use Docker for temp PG)\n"
 msgstr ""
 "bun run check    # typecheck + lint + dep-check + format + changed unit tests\n"
 "bun run test     # full unit + integration (integration uses Docker for temp PG)\n"
 
 #. type: Plain text
-#: docs/guide/install.md:246
-#, no-wrap
-msgid "**link:global** (`bun run link:global`): upgrade manually — `git pull`, `bun install`, then restart the service. `anima upgrade` and `/upgrade` print instructions only.\n"
-msgstr "**link:global**（`bun run link:global`）：手动升级——`git pull`、`bun install`，然后重启服务。`anima upgrade` 与 `/upgrade` 仅打印说明。\n"
-
-#. type: Plain text
-#: docs/guide/install.md:248
-#, no-wrap
-msgid "**Local pack** (`bun run install:cli:local`): `anima upgrade` runs `git pull` and reinstalls the local pack from the repo.\n"
-msgstr "**Local pack**（`bun run install:cli:local`）：`anima upgrade` 执行 `git pull` 并从仓库重装本地 pack。\n"
+#: docs/guide/install.md:222
+#, fuzzy
+#| msgid ""
+#| "**link:global** (`bun run link:global`): upgrade manually — `git pull`, "
+#| "`bun install`, then restart the service. `anima upgrade` and `/upgrade` "
+#| "print instructions only.\n"
+msgid ""
+"Upgrade manually: `git pull`, `bun install`, then restart the service. "
+"`anima upgrade` / `/upgrade` print instructions only."
+msgstr ""
+"**link:global**（`bun run link:global`）：手动升级——`git pull`、`bun "
+"install`，然后重启服务。`anima upgrade` 与 `/upgrade` 仅打印说明。\n"
 
 #. type: Title ##
-#: docs/guide/install.md:251
+#: docs/guide/install.md:225
 #, no-wrap
 msgid "Verify installation"
 msgstr "验证安装"
 
+#. type: Plain text
+#: docs/guide/install.md:228
+msgid ""
+"Requires the **standalone** `anima` binary (`anima service` is not on the "
+"source-tree CLI)."
+msgstr ""
+
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:253
+#: docs/guide/install.md:229
 #, no-wrap
 msgid ""
 "anima service start\n"
@@ -739,7 +632,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:263
+#: docs/guide/install.md:239
 msgid ""
 "If status fails, check PostgreSQL connectivity, that migrations completed "
 "([`database.md`](database.md#troubleshooting)), and that a valid Service API "
@@ -749,13 +642,13 @@ msgstr ""
 "(database.md#troubleshooting)），以及是否已配置有效的 Service API Token。"
 
 #. type: Title ##
-#: docs/guide/install.md:264
+#: docs/guide/install.md:240
 #, no-wrap
 msgid "Next steps"
 msgstr "后续步骤"
 
 #. type: Bullet: '1. '
-#: docs/guide/install.md:270
+#: docs/guide/install.md:246
 #, fuzzy
 #| msgid ""
 #| "**Security** — Vault / `env()` for secrets, `chmod 700 ~/.anima`, do not "
@@ -768,20 +661,20 @@ msgstr ""
 "**Console（[`security.md`](security.md)）"
 
 #. type: Bullet: '2. '
-#: docs/guide/install.md:270
+#: docs/guide/install.md:246
 #, fuzzy
 #| msgid ""
 #| "**Remote access** — optional Cloudflare Tunnel + Service API Token for "
 #| "personal mobile/remote **Console ([`remote-access.md`](remote-access.md))"
 msgid ""
-"**Remote access** — optional Cloudflare Tunnel + Service API Token for "
-"personal mobile/remote Console ([`remote-access.md`](remote-access.md))"
+"**Remote access** — Service API Token + LAN / local HTTPS for personal "
+"mobile/remote Console ([`remote-access.md`](remote-access.md))"
 msgstr ""
 "**远程访问** — 可选 Cloudflare Tunnel + Service API Token，用于个人移动/远程"
 "管理台（[`remote-access.md`](remote-access.md)）"
 
 #. type: Bullet: '3. '
-#: docs/guide/install.md:270
+#: docs/guide/install.md:246
 msgid ""
 "**Database** — backups, extensions, manual migrations if needed "
 "([`database.md`](database.md))"
@@ -789,13 +682,13 @@ msgstr ""
 "**数据库** — 备份、扩展、必要时手动迁移（[`database.md`](database.md)）"
 
 #. type: Bullet: '4. '
-#: docs/guide/install.md:270
+#: docs/guide/install.md:246
 msgid ""
 "**Operations** — start/stop, memory metrics ([`service.md`](service.md))"
 msgstr "**运维** — 启停、内存指标（[`service.md`](service.md)）"
 
 #. type: Bullet: '5. '
-#: docs/guide/install.md:270
+#: docs/guide/install.md:246
 msgid ""
 "**Architecture** — memory pipeline, self layer, tools ([`../concepts/"
 "architecture.md`](../concepts/architecture.md))"

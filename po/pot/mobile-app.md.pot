@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-11 11:39+0800\n"
+"POT-Creation-Date: 2026-07-17 22:43+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,15 +17,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/features/companion.md:144 docs/features/mobile-app.md:52
-#: docs/guide/database.md:88 docs/guide/remote-access.md:221
+#: docs/features/companion.md:144 docs/features/mobile-app.md:49
+#: docs/guide/database.md:88 docs/guide/remote-access.md:192
 #, no-wrap
 msgid "Troubleshooting"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/features/mobile-app.md:1 docs/features/mobile-app.md:5
-#: messages/po4a/en.xml:610
+#: messages/po4a/en.xml:621
 #, no-wrap
 msgid "Mobile app (Android)"
 msgstr ""
@@ -33,7 +33,7 @@ msgstr ""
 #. type: Plain text
 #: docs/features/mobile-app.md:7
 #, no-wrap
-msgid "> Capacitor **薄壳** + Hub `/web/*` 远程 UI（与浏览器/PWA 同一产物）。  \n"
+msgid "> Capacitor 壳 + **安装包内** `web/dist`（与浏览器/PWA 同源产物；本地加载）。  \n"
 msgstr ""
 
 #. type: Plain text
@@ -52,13 +52,13 @@ msgstr ""
 #: docs/features/mobile-app.md:19
 #, no-wrap
 msgid ""
-"| Item       | Description                                              |\n"
-"| ---------- | -------------------------------------------------------- |\n"
-"| Platform   | **Android only** sideload (APK); iOS later               |\n"
-"| UI         | bootstrap → Hub `/web/*`（与浏览器/PWA 同一产物）        |\n"
-"| Modules    | Chat + Console（Hub 托管 shell-ui）                      |\n"
-"| Hub config | APP **Hub settings**（Preferences）或 bootstrap 首次配置 |\n"
-"| Hub duties | Hub RPC REST `/hub/rpc/v1` + WebSocket at `/hub/rpc/v1`  |\n"
+"| Item       | Description                                                 |\n"
+"| ---------- | ----------------------------------------------------------- |\n"
+"| Platform   | **Android only** sideload (APK); iOS later                  |\n"
+"| UI         | APK 内 `www/web`（`build:web` → `sync-mobile-www`）         |\n"
+"| Modules    | Chat + Console（本地 shell-ui）                             |\n"
+"| Hub config | APP **设置 → 连接**（Preferences）；无独立 bootstrap Hub 页 |\n"
+"| Hub duties | Hub RPC REST `/hub/rpc/v1` + WebSocket；**不**托管壳内 SPA  |\n"
 msgstr ""
 
 #. type: Title ##
@@ -73,36 +73,34 @@ msgstr ""
 msgid ""
 "flowchart LR\n"
 "  Phone[Android WebView]\n"
-"  Bootstrap[bootstrap 薄壳]\n"
-"  Shell[shell-ui SPA]\n"
+"  Local[\"www/web 本地 SPA\"]\n"
 "  Chat[\"/web/chat\"]\n"
 "  Console[\"/web/console\"]\n"
 "  Hub[Anima Service]\n"
 "\n"
-"  Phone --> Bootstrap\n"
-"  Bootstrap -->|location.replace| Shell\n"
-"  Shell --> Chat\n"
-"  Shell --> Console\n"
-"  Chat -->|SAP auth_token| Hub\n"
-"  Console -->|REST Bearer| Hub\n"
+"  Phone --> Local\n"
+"  Local --> Chat\n"
+"  Local --> Console\n"
+"  Chat -->|Hub RPC Bearer| Hub\n"
+"  Console -->|Hub RPC Bearer| Hub\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:40
+#: docs/features/mobile-app.md:38
 msgid ""
 "Mobile REST **connects directly** to Hub (no local REST proxy); requires a "
-"**Service API Token** and Hub CORS for Capacitor origin (`http://localhost`；"
+"**Service API Token** and Hub CORS for Capacitor origin（`http://localhost`；"
 "`androidScheme: http`）。"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:41
+#: docs/features/mobile-app.md:39
 #, no-wrap
 msgid "Hub settings"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/features/mobile-app.md:49
+#: docs/features/mobile-app.md:46
 msgid ""
 "Home PC: `anima service start --host 0.0.0.0`, create a Service API Token "
 "(`anima token create --subject-id 1 --name bootstrap`; see [`remote-"
@@ -110,66 +108,65 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/features/mobile-app.md:49
-msgid "(Optional) `anima tunnel setup`; phone uses `https://<your-hostname>`."
+#: docs/features/mobile-app.md:46
+msgid "首次启动未配置 Token → 进入 **设置 → 连接**："
+msgstr ""
+
+#. type: Bullet: '   - '
+#: docs/features/mobile-app.md:46
+msgid ""
+"Hub URL（`http://<PC-IP>:2658` 或本地 HTTPS `https://<host>:2659`；勿用 "
+"`127.0.0.1`）"
+msgstr ""
+
+#. type: Bullet: '   - '
+#: docs/features/mobile-app.md:46
+msgid "Service API Token (`fa_at_...`)"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/features/mobile-app.md:49
-msgid "APP → **Hub settings** (`/settings`):"
-msgstr ""
-
-#. type: Bullet: '   - '
-#: docs/features/mobile-app.md:49
-msgid "Hub URL (Tunnel domain or `http://<PC-IP>:2658`; not `127.0.0.1`)"
-msgstr ""
-
-#. type: Bullet: '   - '
-#: docs/features/mobile-app.md:49
-msgid "Service API Token (`fa_at_...`, printed once at creation)"
-msgstr ""
-
-#. type: Bullet: '4. '
-#: docs/features/mobile-app.md:49
-msgid "**Test connection** → **Save and enter** → 跳转 Hub `/web/chat`。"
+#: docs/features/mobile-app.md:46
+msgid "**测试连接** → **保存并进入** → 本地 `/web/chat`。"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:51
+#: docs/features/mobile-app.md:48
 msgid ""
 "Non-loopback Hub URL requires token; REST uses `Authorization: Bearer`; SAP "
 "sends `auth_token` in `connect` frame."
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:64
+#: docs/features/mobile-app.md:63
 #, no-wrap
 msgid ""
-"| Symptom                                | Common cause                                                                                                                                                                                                                    |\n"
-"| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| Keyboard covers chat input             | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes                                                                                                                                 |\n"
-"| Chat input unresponsive                | No selected conversation (first install should auto-create); or SAP disconnected                                                                                                                                                |\n"
-"| Console load failed / Failed to fetch  | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header                                                                                                                                      |\n"
-"| 测试连接「网络错误」、浏览器同地址正常 | Bootstrap 在 `https://localhost`，WebView 会拦截跨域/混合内容 fetch；需 **Capacitor 原生 HTTP**（`CapacitorHttp`）或先 HTTP 进 Hub 再测。HTTPS 另需 APK 信任用户 CA（`network_security_config` + 安装 `rootCA.pem` 后重装 APK） |\n"
-"| ZeroTier / 虚拟网卡 IP                 | 确认手机 ZeroTier 在线；Hub `http.host: 0.0.0.0`；`allowed_hosts` 含该 IP；壳层 Hub URL **勿带尾斜杠**，HTTP 用 `:2658`                                                                                                         |\n"
-"| Not Found                              | Avoid legacy paths like `/console`/dashboard/index.html`; use SPA `/web/console/dashboard`                                                                                                                                      |\n"
-"| TTS / 朗读无声                         | 默认 Edge TTS 需 Hub 出网；Hub 设置 → 语音 → 试听。若用 Web Speech 需 HTTPS 安全上下文                                                                                                                                          |\n"
-"| Mobile UI 与浏览器不一致               | 确认 WebView 地址为 `{hub}/web/*`（非 `https://localhost`）；Hub 需部署最新 `build:web`                                                                                                                                         |\n"
+"| Symptom                                         | Common cause                                                                                                             |\n"
+"| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |\n"
+"| Keyboard covers chat input                      | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes                          |\n"
+"| Chat input unresponsive                         | No selected conversation (first install should auto-create); or SAP disconnected                                         |\n"
+"| Console load failed / Failed to fetch           | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header                               |\n"
+"| 测试连接「网络错误」、浏览器同地址正常          | 需 **Capacitor 原生 HTTP**（`CapacitorHttp`）或可信 HTTPS；自签 CA 另需 APK 信任用户 CA                                  |\n"
+"| 连接测试成功，但压缩/LLM 等报 `config.get` 超时 | 旧路径经 WebSocket 拉全量配置且 3s 超时；现已改为 `config.getSection` + HTTP 双传输。仍超时则查 WS 半开连接或 Hub 不可达 |\n"
+"| ZeroTier / 虚拟网卡 IP                          | 确认手机 ZeroTier 在线；Hub `http.host: 0.0.0.0`；`allowed_hosts` 含该 IP；壳层 Hub URL **勿带尾斜杠**，HTTP 用 `:2658`  |\n"
+"| Not Found                                       | Avoid legacy paths; use SPA `/web/console/dashboard`                                                                     |\n"
+"| TTS / 朗读无声                                  | 默认 Edge TTS 需 Hub 出网；Hub 设置 → 语音 → 试听。若用 Web Speech 需 HTTPS 安全上下文                                   |\n"
+"| UI 与发版不一致                                 | UI 随 **APK**；需重装/发新包。浏览器 Hub `/web` 另有独立部署链                                                           |\n"
+"| 安装失败「签名冲突」                            | 已装旧 APK 与新版证书不同；卸载 `FreeAnima` 后重装。CI 固定签名后同 channel 可覆盖升级                                   |\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:65
+#: docs/features/mobile-app.md:64
 #, no-wrap
 msgid "Debugging"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:68
+#: docs/features/mobile-app.md:67
 msgid "Settings → **Debug** (desktop and mobile share shell-ui panel):"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:74
+#: docs/features/mobile-app.md:73
 #, no-wrap
 msgid ""
 "| Capability | Desktop           | Mobile                                      |\n"
@@ -180,20 +177,20 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:76
+#: docs/features/mobile-app.md:75
 msgid ""
-"`bun run debug:android`：bootstrap debug APK（不压缩 + sourcemap），UI 从 "
-"Hub `/web/*` 加载；inspect 目标为 Hub 页面。"
+"`bun run debug:android`：`build:mobile:debug` + 安装；inspect 目标为本地 "
+"SPA。"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:77
+#: docs/features/mobile-app.md:76
 #, no-wrap
 msgid "Build and sideload"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/features/mobile-app.md:79
+#: docs/features/mobile-app.md:78
 #, no-wrap
 msgid ""
 "bun run build:mobile\n"
@@ -201,41 +198,46 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:85
+#: docs/features/mobile-app.md:84
 msgid ""
-"`www/` 仅含 bootstrap（Hub 配置 + 跳转），APK 体积小。UI 随 Hub "
-"`build:web` / `anima upgrade` 更新，无需为前端改动重装 APK（Capacitor 插件变"
-"更除外）。"
+"`www/` 含完整 `web/` SPA（gitignore）。前端改动需重新 `build:mobile`（或 "
+"sync）再出 APK。"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:87
+#: docs/features/mobile-app.md:86
 msgid "Debug full flow: `bun run debug:android`"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:89
+#: docs/features/mobile-app.md:88
+#, no-wrap
+msgid "**Sideload 升级**：GitHub Release 的 `freeanima-mobile-android.apk`（canary / release）由 CI 用固定 upload 密钥签名，同 channel 内可覆盖安装。若曾安装旧版未固定签名的 APK，或轮换密钥后，需先**卸载** `FreeAnima`（`org.freeanima.app`）再安装。本地 `debug:android` 为 `org.freeanima.app.dev`，与正式包可并存。\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/mobile-app.md:90
 msgid ""
 "Package README: [`src/app/shell/mobile/README.md`](../../src/app/shell/"
 "mobile/README.md)"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:90
+#: docs/features/mobile-app.md:91
 #, no-wrap
 msgid "vs desktop shell"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:99
+#: docs/features/mobile-app.md:100
 #, no-wrap
 msgid ""
-"|              | Electron `src/app/shell/desktop`                | Capacitor `src/app/shell/mobile`             |\n"
-"| ------------ | ----------------------------------------------- | -------------------------------------------- |\n"
-"| Injection    | preload → `window.satelliteShell`               | Hub SPA `bootstrap-capacitor` → API          |\n"
-"| Hub config   | Hub settings → `~/.anima-desktop/settings.json` | bootstrap / Hub settings → Preferences       |\n"
-"| Debug/Sentry | Settings → Debug → same file `debug`            | Settings → Debug → Preferences               |\n"
-"| REST         | Direct `hubUrl/hub/rpc/v1/*` (Bearer)           | Direct `hubUrl/hub/rpc/v1/*` (CORS + Bearer) |\n"
-"| instance_id  | File `~/.anima/satellites/chat/`                | Preferences                                  |\n"
-"| Content      | chat + admin + companion                        | chat + admin（Hub `/web/*`）                 |\n"
+"|              | Electron `src/app/shell/desktop`      | Capacitor `src/app/shell/mobile`             |\n"
+"| ------------ | ------------------------------------- | -------------------------------------------- |\n"
+"| Injection    | preload → `window.satelliteShell`     | Hub SPA `bootstrap-capacitor` → API          |\n"
+"| Hub config   | 设置 → 连接 → 桌面 prefs              | 设置 → 连接 → Preferences                    |\n"
+"| Debug/Sentry | Settings → Debug                      | Settings → Debug                             |\n"
+"| REST         | Direct `hubUrl/hub/rpc/v1/*` (Bearer) | Direct `hubUrl/hub/rpc/v1/*` (CORS + Bearer) |\n"
+"| instance_id  | File `~/.anima/satellites/chat/`      | Preferences                                  |\n"
+"| Content      | 安装包内 web/dist + companion         | 安装包内 web/dist                            |\n"
 msgstr ""

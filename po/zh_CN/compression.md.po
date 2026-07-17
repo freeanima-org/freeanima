@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-27 14:50+0800\n"
+"POT-Creation-Date: 2026-07-17 22:43+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/compression.md:1 messages/po4a/en.xml:529
+#: docs/concepts/compression.md:1 messages/po4a/en.xml:610
 #, no-wrap
 msgid "Compression"
 msgstr "压缩"
@@ -97,7 +97,7 @@ msgstr ""
 "压缩路径：用量超过阈值时，较早消息移入 summary/slim；摘要文本异步更新。"
 
 #. type: Title ##
-#: docs/concepts/compression.md:32
+#: docs/concepts/compression.md:32 docs/features/goal.md:40
 #, no-wrap
 msgid "Configuration"
 msgstr "配置"
@@ -162,38 +162,53 @@ msgstr ""
 #. type: Title ###
 #: docs/concepts/compression.md:59
 #, no-wrap
+msgid "Token counting"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/compression.md:62
+msgid ""
+"Compression and embedding batch packing use **heuristic token estimates** "
+"(`tokenx` in-process, id `__estimate__:tokenx`), not full HuggingFace "
+"vocabularies. Counts are approximate (good enough for budget triggers and "
+"chunk sizing); they are not provider-billing exact."
+msgstr ""
+
+#. type: Title ###
+#: docs/concepts/compression.md:63
+#, no-wrap
 msgid "Context window resolution (token mode)"
 msgstr "上下文窗口解析（token 模式）"
 
 #. type: Plain text
-#: docs/concepts/compression.md:62
+#: docs/concepts/compression.md:66
 msgid "Priority when estimating compression budget:"
 msgstr "估算压缩预算时的优先级："
 
 #. type: Bullet: '1. '
-#: docs/concepts/compression.md:67
+#: docs/concepts/compression.md:71
 msgid "`models.<model>.context_window` in `config.yaml`"
 msgstr "`config.yaml` 中的 `models.<model>.context_window`"
 
 #. type: Bullet: '2. '
-#: docs/concepts/compression.md:67
+#: docs/concepts/compression.md:71
 msgid "`compression.default_context_window` (applies to all models)"
 msgstr "`compression.default_context_window`（适用于所有模型）"
 
 #. type: Bullet: '3. '
-#: docs/concepts/compression.md:67
+#: docs/concepts/compression.md:71
 msgid ""
 "Provider `/models` catalog `contextWindow` (when Hub has registered lookup)"
 msgstr "Provider `/models` 目录中的 `contextWindow`（Hub 已注册 lookup 时）"
 
 #. type: Bullet: '4. '
-#: docs/concepts/compression.md:67
+#: docs/concepts/compression.md:71
 msgid ""
 "Message-count fallback (`max_rounds` thresholds) when none of the above apply"
 msgstr "以上皆无时的消息数回退（`max_rounds` 阈值）"
 
 #. type: Plain text
-#: docs/concepts/compression.md:69
+#: docs/concepts/compression.md:73
 msgid ""
 "Per-model config always wins over dynamically fetched catalog values; "
 "catalog is read-only and never written back to `config.yaml`."
@@ -201,25 +216,25 @@ msgstr ""
 "按模型配置始终优先于动态获取的目录值；目录只读，不会写回 `config.yaml`。"
 
 #. type: Plain text
-#: docs/concepts/compression.md:71
+#: docs/concepts/compression.md:75
 msgid ""
 "Without any context window source, compression falls back to message-count "
 "triggers."
 msgstr "无任何上下文窗口来源时，压缩回退到按消息数触发。"
 
 #. type: Plain text
-#: docs/concepts/compression.md:73
+#: docs/concepts/compression.md:77
 msgid "Force compression in chat: `/compress` (`--force` ignores hysteresis)."
 msgstr "在对话中强制压缩：`/compress`（`--force` 忽略迟滞）。"
 
 #. type: Title ##
-#: docs/concepts/compression.md:74
+#: docs/concepts/compression.md:78
 #, no-wrap
 msgid "Relationship to Memory Pipeline"
 msgstr "与记忆管道的关系"
 
 #. type: Plain text
-#: docs/concepts/compression.md:76
+#: docs/concepts/compression.md:80
 msgid ""
 "Compression and light/deep sleep run **independently**: compression manages "
 "the current conversation's LLM window; memory extraction runs nightly from "

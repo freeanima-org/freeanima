@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-10 23:57+0800\n"
+"POT-Creation-Date: 2026-07-17 22:43+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -177,16 +177,24 @@ msgstr ""
 #: docs/features/project.md:76
 #, no-wrap
 msgid ""
-"| Event                | Task behavior (v1 default)                                                                                                                                                                         |\n"
-"| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| `status → completed` | Prompt: bulk move pending tasks back to Backlog / bulk complete / keep in project. **Default: move back to Backlog** (`project_id` cleared, `milestone_id` cleared, restore `list_id` if retained) |\n"
-"| `status → cancelled` | Same as `completed`                                                                                                                                                                                |\n"
-"| `status → on_hold`   | Tasks **keep** `project_id`; project UI read-only or degraded edit                                                                                                                                 |\n"
-"| Delete project       | All tasks move back to Backlog (not deleted); milestone entities deleted or orphaned per cascade rules                                                                                             |\n"
+"| Event                | Task behavior (v1 default)                                                                                                                  |\n"
+"| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| `status → completed` | **Default: keep in project** (`project_id` retained). Explicit `release_tasks: true` moves pending tasks to the default list (Inbox).       |\n"
+"| `status → cancelled` | Same as `completed`                                                                                                                         |\n"
+"| `status → on_hold`   | Tasks **keep** `project_id`; project UI read-only or degraded edit                                                                          |\n"
+"| Delete project       | All tasks move to the **default list** (`is_default` Inbox): `project_id`/`milestone_id` cleared, `list_id` set; milestone entities deleted |\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/features/project.md:78
+msgid ""
+"Inactive projects (`on_hold` / `completed` / `cancelled`) are hidden from "
+"the project sidebar by default; toggle **显示非活跃** (same pattern as "
+"archived task lists)."
+msgstr ""
+
+#. type: Plain text
+#: docs/features/project.md:80
 msgid ""
 "Project archive semantics use **`project.status`** (and optional future "
 "`archived_at`) — **do not** reuse `task_list.body.closed`. Task-list archive "
@@ -195,19 +203,19 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:80
+#: docs/features/project.md:82
 #, no-wrap
 msgid "**[v2+]** Archived project context marks weak reference chains; file co-archive is user-explicit.\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/features/project.md:81
+#: docs/features/project.md:83
 #, no-wrap
 msgid "Contents inside a project"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:88
+#: docs/features/project.md:90
 #, no-wrap
 msgid ""
 "| Type              | Description                                  | Ownership                                           |\n"
@@ -218,20 +226,20 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/project.md:91
+#: docs/features/project.md:93
 #, no-wrap
 msgid "Backlog / task module (`/tasks`)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:94
+#: docs/features/project.md:96
 msgid ""
 "The **task module** is the existing `/tasks` Shell route: multiple "
 "`task_list`s, folder tree, Smart Lists, and archived lists."
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:102
+#: docs/features/project.md:104
 #, no-wrap
 msgid ""
 "| Rule          | Detail                                                                                                                                                      |\n"
@@ -244,117 +252,132 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:104
+#: docs/features/project.md:106
 msgid ""
 "Smart Lists and archived lists follow the same module; see [Smart Lists]"
 "(#smart-lists)."
 msgstr ""
 
 #. type: Title ##
-#: docs/features/project.md:107
+#: docs/features/project.md:109
 #, no-wrap
 msgid "Task ownership (task module ↔ project)"
 msgstr ""
 
 #. type: Title ###
-#: docs/features/project.md:109
+#: docs/features/project.md:111
 #, no-wrap
 msgid "Core rule"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:112
+#: docs/features/project.md:114
 msgid ""
 "A task belongs to **one side at a time**: either the task module (Backlog) "
-"**or** exactly one project."
+"**or** exactly one project. Ownership is **mutually exclusive** on the body "
+"fields."
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:119
+#: docs/features/project.md:121
 #, no-wrap
 msgid ""
-"| Action                                 | Effect                                                                                                                            |\n"
-"| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| Drag task from Backlog into project    | Set `project_id`; task disappears from task-module views                                                                          |\n"
-"| Move task from project back to Backlog | Clear `project_id` (and `milestone_id`); task reappears in task module                                                            |\n"
-"| Move task project A → project B        | Direct transfer; **clear `milestone_id`** (milestones are project-scoped)                                                         |\n"
-"| Global search                          | Matches all tasks; result shows归属 `Backlog / {list name}` or `Project / {project title}`; click navigates to the owning surface |\n"
+"| Action                                  | Effect                                                                                                                            |\n"
+"| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| Drag / move task from Backlog → project | Set `project_id`; **clear `list_id`**; task disappears from task-module views and list counts                                     |\n"
+"| Move task from project → list           | Set `list_id` (user picks list); clear `project_id` and `milestone_id` — there is no \"restore previous list\" / 移回清单           |\n"
+"| Move task project A → project B         | Direct transfer; **clear `milestone_id`**; `list_id` stays null                                                                   |\n"
+"| Global search                           | Matches all tasks; result shows归属 `Backlog / {list name}` or `Project / {project title}`; click navigates to the owning surface |\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/features/project.md:120
+#: docs/features/project.md:122
 #, no-wrap
 msgid "Data model (extensions to `task_item`)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:127
+#: docs/features/project.md:129
 #, no-wrap
 msgid ""
-"| Field          | Type             | Rule                                                                                                                                                                                |\n"
-"| -------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| `list_id`      | `number`         | Required for tasks in Backlog. When in a project: **retain last list id** (recommended) so move-back restores position; alternatively null and restore to default list on move-back |\n"
-"| `project_id`   | `number \\| null` | Set when task is in a project; null when in Backlog                                                                                                                                 |\n"
-"| `milestone_id` | `number \\| null` | Optional; must reference a milestone in the **same** project; cleared on cross-project move or move back to Backlog                                                                 |\n"
+"| Field          | Type             | Rule                                                                                                        |\n"
+"| -------------- | ---------------- | ----------------------------------------------------------------------------------------------------------- |\n"
+"| `list_id`      | `number \\| null` | Required when in Backlog (`project_id` null). **Null when in a project** — do not retain last list id       |\n"
+"| `project_id`   | `number \\| null` | Set when task is in a project; null when in Backlog                                                         |\n"
+"| `milestone_id` | `number \\| null` | Optional; must reference a milestone in the **same** project; cleared on cross-project move or move to list |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:129
+#: docs/features/project.md:131
 #, no-wrap
 msgid "**Invariants:**\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/project.md:135
-msgid "Task-module visibility ⇔ `project_id IS NULL`"
+#: docs/features/project.md:139
+msgid "Exactly one of `list_id` / `project_id` is non-null"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/project.md:135
-msgid "Project-module visibility ⇔ `project_id = {current project}`"
+#: docs/features/project.md:139
+msgid "Task-module visibility ⇔ `project_id IS NULL` (and `list_id` set)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/project.md:135
+#: docs/features/project.md:139
+msgid ""
+"Project-module visibility ⇔ `project_id = {current project}` (and `list_id` "
+"null)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/project.md:139
 msgid "`list_id` must not point at a folder (`task_list.is_folder`)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/project.md:135
+#: docs/features/project.md:139
 msgid ""
 "`milestone_id` implies `project_id` is set and matches the milestone's "
 "project"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/project.md:135
+#: docs/features/project.md:139
 msgid ""
 "Deleting a milestone does **not** delete tasks — only clears or invalidates "
 "`milestone_id`"
 msgstr ""
 
+#. type: Bullet: '- '
+#: docs/features/project.md:139
+msgid ""
+"List `item_count` counts only backlog tasks (`project_id` null) for that "
+"`list_id`"
+msgstr ""
+
 #. type: Plain text
-#: docs/features/project.md:137
+#: docs/features/project.md:141
 msgid ""
 "Pomodoro focus (`pomodoro_task_focus.body.task_item_id`) is unchanged — "
 "focus is by task id regardless of project归属."
 msgstr ""
 
 #. type: Title ##
-#: docs/features/project.md:140
+#: docs/features/project.md:144
 #, no-wrap
 msgid "Smart Lists"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:143
+#: docs/features/project.md:147
 msgid ""
 "Existing `smart_list` entities and built-in presets (Today, Tomorrow, etc.) "
 "remain in the task module."
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:149
+#: docs/features/project.md:153
 #, no-wrap
 msgid ""
 "| Rule          | Detail                                                                                                               |\n"
@@ -365,20 +388,20 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/project.md:152
+#: docs/features/project.md:156
 #, no-wrap
 msgid "Milestones (`milestone`)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:155
+#: docs/features/project.md:159
 msgid ""
 "Time anchors **inside** a project. Milestones do **not** own tasks — tasks "
 "may optionally link via `task_item.body.milestone_id`."
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:162
+#: docs/features/project.md:166
 #, no-wrap
 msgid ""
 "| Field        | Detail                                              |\n"
@@ -390,98 +413,98 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:164
+#: docs/features/project.md:168
 #, no-wrap
 msgid "**Delayed:** auto when `due_at < now` and `status != completed`; manual override allowed.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:166
+#: docs/features/project.md:170
 msgid ""
 "Unlike OKR Key Results (end-of-period assessment), milestones are marked "
 "**during** execution (\"where we are on the way\")."
 msgstr ""
 
 #. type: Title ##
-#: docs/features/project.md:169
+#: docs/features/project.md:173
 #, no-wrap
 msgid "Subject scope (User / Agent)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:172
+#: docs/features/project.md:176
 msgid ""
 "Aligned with [entity-model Shell scope](../concepts/entity-model.md#shell-ui-"
 "global-subject-scope):"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/project.md:176
+#: docs/features/project.md:180
 msgid ""
 "`project_folder`, `project`, and `milestone` live in the **current subject's "
 "default private world**"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/project.md:176
+#: docs/features/project.md:180
 msgid ""
 "Hub RPC methods accept optional `subject_kind: user | agent` (default "
 "`user`, same as tasks)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/project.md:176
+#: docs/features/project.md:180
 msgid "**v1:** no cross user/agent world sharing for projects"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/project.md:179
+#: docs/features/project.md:183
 #, no-wrap
 msgid "Search and LLM tools"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:186
+#: docs/features/project.md:190
 #, no-wrap
 msgid ""
-"| Surface                         | v1 behavior                                                                                                                     |\n"
-"| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| `task.search` / `entity_search` | Include `project_id`, `project_title`, `list_name` in results                                                                   |\n"
-"| ToolSet `project`               | CRUD for folders, projects, milestones (load via `toolset_load`)                                                                |\n"
-"| ToolSet `task`                  | `task.create` with `project_id` either rejected or auto-assigns to project; `task.patch` supports `project_id` / `milestone_id` |\n"
+"| Surface                         | v1 behavior                                                                                                                                                                               |\n"
+"| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| `task.search` / `entity_search` | Include `project_id`, `project_title`, `list_name` in results                                                                                                                             |\n"
+"| ToolSet `project`               | CRUD for folders, projects, milestones (load via `toolset_load`)                                                                                                                          |\n"
+"| ToolSet `task`                  | `task_create` / `task_update` support `project_id` / `milestone_id`; `task_list` / `task_search` filter by `project_id` (mutually exclusive with `list_id`; default list is Backlog only) |\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/project.md:189
+#: docs/features/project.md:193
 #, no-wrap
 msgid "[v2+] OKR and products"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:192
+#: docs/features/project.md:196
 #, no-wrap
 msgid "**OKR** sits above projects: an Objective splits into Key Results; KRs land via one or more projects. OKR answers _why_ and _how much_; projects answer _how_ and _when_.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:194
+#: docs/features/project.md:198
 #, no-wrap
 msgid "**Product** is a ongoing namespace (e.g. \"FreeAnima\") — not a project, does not end or archive. **v1:** use `project.body.product_tag?: string` or top-level folder naming; no separate product entity.\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/project.md:197
+#: docs/features/project.md:201
 #, no-wrap
 msgid "[v2+] Linked entities (external references)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:200
+#: docs/features/project.md:204
 msgid "Projects may weak-link independent entities:"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:207
+#: docs/features/project.md:211
 #, no-wrap
 msgid ""
 "| Entity       | Relation        | Notes                                                                  |\n"
@@ -493,7 +516,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:209
+#: docs/features/project.md:213
 msgid ""
 "Same diary may link to multiple projects. Requires future "
 "`memory_references` / relationship table per [entity-model](../concepts/"
@@ -501,13 +524,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/project.md:212
+#: docs/features/project.md:216
 #, no-wrap
 msgid "[v2+] Materials and files"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:215
+#: docs/features/project.md:219
 msgid ""
 "Files and photos are global assets with project as one reference entry. "
 "Deleting a project does not delete files. Archive behavior for references is "
@@ -515,13 +538,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/project.md:218
+#: docs/features/project.md:222
 #, no-wrap
 msgid "Relationship to the task module"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:225
+#: docs/features/project.md:229
 #, no-wrap
 msgid ""
 "| Aspect       | Decision                                                                 |\n"
@@ -532,13 +555,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/project.md:228
+#: docs/features/project.md:232
 #, no-wrap
 msgid "UI (v1)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:234
+#: docs/features/project.md:238
 #, no-wrap
 msgid ""
 "| Route       | Layout                                                                   |\n"
@@ -548,95 +571,95 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:236
+#: docs/features/project.md:240
 msgid "Both inherit Shell **User / Agent** toggle via `subject_kind`."
 msgstr ""
 
 #. type: Title ##
-#: docs/features/project.md:239
+#: docs/features/project.md:243
 #, no-wrap
 msgid "Migration (v1)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/project.md:244
+#: docs/features/project.md:248
 msgid ""
 "Existing tasks: `project_id` and `milestone_id` absent / null — behavior "
 "unchanged"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/project.md:244
+#: docs/features/project.md:248
 msgid "No backfill beyond new optional JSONB fields on `task_item.body`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/project.md:244
+#: docs/features/project.md:248
 msgid ""
 "New components registered in entity component index; no legacy table "
 "migration"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/project.md:247
+#: docs/features/project.md:251
 #, no-wrap
 msgid "Non-goals (v1)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:250
+#: docs/features/project.md:254
 msgid "Explicit **out of scope** for the first implementation:"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/project.md:257
+#: docs/features/project.md:261
 msgid "OKR entities and KR → project mapping"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/project.md:257
+#: docs/features/project.md:261
 msgid "Gantt / Kanban (including folder-level cross-project views)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/project.md:257
+#: docs/features/project.md:261
 msgid "Notes, clips, file/photo library and project material uploads"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/project.md:257
+#: docs/features/project.md:261
 msgid "Cross-entity reference UI and archived reference context"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/project.md:257
+#: docs/features/project.md:261
 msgid "Console admin surfaces for projects"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/project.md:257
+#: docs/features/project.md:261
 msgid "Cross user/agent world project sharing"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/project.md:260
+#: docs/features/project.md:264
 #, no-wrap
 msgid "Data model appendix"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:263
+#: docs/features/project.md:267
 msgid "Entity type: `content`. Text fields use entity columns where noted."
 msgstr ""
 
 #. type: Title ###
-#: docs/features/project.md:264
+#: docs/features/project.md:268
 #, no-wrap
 msgid "`project_folder`"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:271
+#: docs/features/project.md:275
 #, no-wrap
 msgid ""
 "| Location | Field        | Type           | Notes                   |\n"
@@ -647,13 +670,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/features/project.md:272
+#: docs/features/project.md:276
 #, no-wrap
 msgid "`project`"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:285
+#: docs/features/project.md:289
 #, no-wrap
 msgid ""
 "| Location | Field                 | Type           | Notes                                               |\n"
@@ -670,13 +693,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/features/project.md:286
+#: docs/features/project.md:290
 #, no-wrap
 msgid "`milestone`"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:295
+#: docs/features/project.md:299
 #, no-wrap
 msgid ""
 "| Location | Field        | Type   | Notes                                                  |\n"
@@ -689,13 +712,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/features/project.md:296
+#: docs/features/project.md:300
 #, no-wrap
 msgid "`task_item` (extensions)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:303
+#: docs/features/project.md:307
 #, no-wrap
 msgid ""
 "| Location | Field          | Type           | Notes                                                                |\n"
@@ -706,26 +729,40 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/project.md:306
+#: docs/features/project.md:310
+#, no-wrap
+msgid "Offline (Tier 2-CRUD)"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/project.md:313
+msgid ""
+"卫星壳 Project UI 走 IndexedDB 快照 + outbox（与 Diary / Task 同级）。写 RPC "
+"支持可选 `client_op_id` 幂等；详见 [`offline-platform.md`](../guide/offline-"
+"platform.md)。"
+msgstr ""
+
+#. type: Title ##
+#: docs/features/project.md:316
 #, no-wrap
 msgid "Hub RPC methods (v1)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:309
+#: docs/features/project.md:319
 msgid ""
 "All methods optional `subject_kind: user | agent` (default `user`). "
 "Transport: `POST|WS /hub/rpc/v1`."
 msgstr ""
 
 #. type: Title ###
-#: docs/features/project.md:310
+#: docs/features/project.md:320
 #, no-wrap
 msgid "`projectfolder.*`"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:318
+#: docs/features/project.md:328
 #, no-wrap
 msgid ""
 "| Method                 | Purpose                                                      |\n"
@@ -737,13 +774,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/features/project.md:319
+#: docs/features/project.md:329
 #, no-wrap
 msgid "`project.*`"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:328
+#: docs/features/project.md:338
 #, no-wrap
 msgid ""
 "| Method           | Purpose                                                                       |\n"
@@ -752,17 +789,17 @@ msgid ""
 "| `project.create` | Create project (required schedule + completion criteria)                      |\n"
 "| `project.get`    | Project detail + task/milestone counts                                        |\n"
 "| `project.patch`  | Update fields or terminal status (with task side-effects per lifecycle table) |\n"
-"| `project.delete` | Delete project; tasks return to Backlog                                       |\n"
+"| `project.delete` | Delete project; tasks move to default list (Inbox)                            |\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/features/project.md:329
+#: docs/features/project.md:339
 #, no-wrap
 msgid "`milestone.*`"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:337
+#: docs/features/project.md:347
 #, no-wrap
 msgid ""
 "| Method             | Purpose                                              |\n"
@@ -774,25 +811,30 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/features/project.md:338
+#: docs/features/project.md:348
 #, no-wrap
-msgid "Extended task methods"
+msgid "Task item Hub methods（归属拆分）"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:346
+#: docs/features/project.md:361
 #, no-wrap
 msgid ""
-"| Method        | Extension                                                            |\n"
-"| ------------- | -------------------------------------------------------------------- |\n"
-"| `task.list`   | Filter `project_id` or exclude in-project tasks when listing Backlog |\n"
-"| `task.create` | Optional `project_id` / `milestone_id`                               |\n"
-"| `task.patch`  | `project_id`, `milestone_id`, move between project and Backlog       |\n"
-"| `task.search` | Result payload includes project/list attribution                     |\n"
+"| Method                                    | Purpose                                                  |\n"
+"| ----------------------------------------- | -------------------------------------------------------- |\n"
+"| `tasklist.item.list`                      | 任务模块列任务（清单 / Backlog；默认排除项目内）         |\n"
+"| `tasklist.item.create`                    | 任务模块建任务（只认 `list_id`，可省略→收件箱）          |\n"
+"| `project.item.list`                       | 项目模块列任务（必填 `project_id`）                      |\n"
+"| `project.item.create`                     | 项目模块建任务（只认 `project_id`，可选 `milestone_id`） |\n"
+"| `task.moveToProject`                      | 显式移入项目（清空 `list_id`）                           |\n"
+"| `task.moveToList`                         | 显式移回清单（清空 `project_id` / `milestone_id`）       |\n"
+"| `task.patch`                              | 仅内容字段（标题/优先级/截止/`milestone_id` 等）         |\n"
+"| `task.search`                             | 跨归属搜索；结果含 project/list 归属                     |\n"
+"| `task.complete` / `uncomplete` / `delete` | 按 id 共享操作                                           |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:348
+#: docs/features/project.md:363
 msgid ""
 "Implementation target: `src/features/project/` (domain + hub + `ui/spa` + "
 "`plugin.ts`); schemas under `src/core/db/schema/entity/components/`; SAP "
@@ -800,7 +842,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/project.md:349
+#: docs/features/project.md:364
 msgid ""
 "See also [entity-model — Project module](../concepts/entity-model.md#project-"
 "module-v1-spec)."

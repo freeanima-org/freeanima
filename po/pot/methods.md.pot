@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-06 11:54+0800\n"
+"POT-Creation-Date: 2026-07-17 22:43+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -77,7 +77,7 @@ msgid "Session"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/methods.md:44
+#: docs/sap/methods.md:45
 #, no-wrap
 msgid ""
 "| Method                    | Schema                                                               | Hub behavior                                                                                                |\n"
@@ -88,17 +88,18 @@ msgid ""
 "| `conversation.patchTitle` | `session.ts`                                                         | Updates conversation title                                                                                  |\n"
 "| `conversation.subscribe`  | `session.ts`                                                         | Subscribes to `conversation.updated` events for one conversation                                            |\n"
 "| `conversation.commands`   | `session.ts`                                                         | Lists slash commands for a platform                                                                         |\n"
+"| `conversation.command`    | `session.ts`                                                         | Run terminal slash (Chat); `{ delivery: \"rpc\", ux, text }` or `{ delivery: \"message\" }` for stream turns    |\n"
 "| `conversation.acpDock`    | [`acp.ts`](../../src/shared/sap-contract/frames/acp.ts)              | ACP dock operations for a conversation                                                                      |\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/sap/methods.md:45
+#: docs/sap/methods.md:46
 #, no-wrap
 msgid "`conversation.create` platform binding"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/methods.md:48
+#: docs/sap/methods.md:49
 msgid ""
 "Hub resolves `platform` from input or `formatSapPlatform(app_id, "
 "instance_id)` → `sap:{app_slug}:{instance_id}` (e.g. "
@@ -106,35 +107,35 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/methods.md:52
+#: docs/sap/methods.md:53
 msgid "`satellite_app_id` — normalized app slug"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/methods.md:52
+#: docs/sap/methods.md:53
 msgid "`satellite_instance_id` — instance id from connect context"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/methods.md:52
+#: docs/sap/methods.md:53
 msgid ""
 "Optional: `workspace_root`, `workspace_gitignore`, `workspace_show_hidden`, "
 "`capability_mask`"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/methods.md:54
+#: docs/sap/methods.md:55
 msgid "This binding is required for [strict tool routing](tools.md)."
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/methods.md:55
+#: docs/sap/methods.md:56
 #, no-wrap
 msgid "Message"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/methods.md:60
+#: docs/sap/methods.md:61
 #, no-wrap
 msgid ""
 "| Method         | Schema                                                          | Returns                                        |\n"
@@ -143,27 +144,27 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/methods.md:62
+#: docs/sap/methods.md:63
 msgid ""
 "Payload: `conversation_id`, `message` (user text). Hub bridges runtime "
 "stream to SAP `stream.*` events — see [events.md](events.md)."
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/sap/methods.md:63 messages/po4a/en.xml:568
+#: docs/sap/methods.md:64 messages/po4a/en.xml:578
 #, no-wrap
 msgid "Terminal"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/methods.md:66
+#: docs/sap/methods.md:67
 msgid ""
 "Hub-side PTY sessions. Events: `terminal.ready`, `terminal.output`, "
 "`terminal.exit`, `terminal.error`."
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/methods.md:73
+#: docs/sap/methods.md:74
 #, no-wrap
 msgid ""
 "| Method            | Schema                                                                                                    |\n"
@@ -175,13 +176,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/methods.md:74
+#: docs/sap/methods.md:75
 #, no-wrap
 msgid "Tool (Satellite → Hub)"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/methods.md:82
+#: docs/sap/methods.md:83
 #, no-wrap
 msgid ""
 "| Method            | Direction       | Role                                          |\n"
@@ -193,35 +194,35 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/methods.md:84
+#: docs/sap/methods.md:85
 msgid ""
 "`tool.call` is an **event**, not RPC — see [tools.md](tools.md) and "
 "[events.md](events.md)."
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/methods.md:85
+#: docs/sap/methods.md:86
 #, no-wrap
 msgid "Request context"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/methods.md:88
+#: docs/sap/methods.md:89
 msgid "Every RPC handler receives `SapRequestContext`:"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/methods.md:91
+#: docs/sap/methods.md:92
 msgid "`app_id`, `instance_id` from the connect handshake"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/methods.md:91
+#: docs/sap/methods.md:92
 msgid "`sendEvent(method, payload)` — push async events on the same WebSocket"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/methods.md:92
+#: docs/sap/methods.md:93
 msgid ""
 "Implementations: [`src/platform/sap/ws-server.ts`](../../src/platform/sap/ws-"
 "server.ts) `createSapServerHandlers`."

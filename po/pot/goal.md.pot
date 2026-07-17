@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-29 14:22+0800\n"
+"POT-Creation-Date: 2026-07-17 22:43+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,14 +17,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title #
-#: docs/concepts/architecture.md:259 docs/features/goal.md:1
+#: docs/concepts/architecture.md:293 docs/features/goal.md:1
 #: docs/features/goal.md:5
 #, no-wrap
 msgid "Session Goal"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/compression.md:32 docs/features/goal.md:38
+#: docs/concepts/compression.md:32 docs/features/goal.md:40
 #, no-wrap
 msgid "Configuration"
 msgstr ""
@@ -61,105 +61,122 @@ msgid ""
 "| `/subgoal clear`       | Clear all subgoals                                    |\n"
 msgstr ""
 
+#. type: Plain text
+#: docs/features/goal.md:24
+#, no-wrap
+msgid "On **Chat**, terminal commands (`/goal status`, pause/resume/clear, `/subgoal` list, etc.) run via Hub RPC `conversation.command` and show in a result panel or toast — they do not flash through the message stream. Setting a goal (`/goal <description>`) and `/retry` still use `message.send` so the LLM turn streams into the conversation. Discord/Weixin keep the existing slash → stream reply path.\n"
+msgstr ""
+
 #. type: Title ##
-#: docs/features/goal.md:23
+#: docs/features/goal.md:25
 #, no-wrap
 msgid "Workflow"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/features/goal.md:31
+#: docs/features/goal.md:33
 msgid ""
 "User runs `/goal …` → writes `conversations.goal` and triggers engine run."
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/features/goal.md:31
+#: docs/features/goal.md:33
 msgid ""
 "After each assistant reply → **goal judge** reads goal, subgoals, recent "
 "dialogue, last reply."
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/features/goal.md:31
+#: docs/features/goal.md:33
 msgid "Judge outputs strict JSON: `{\"done\": boolean, \"reason\": \"...\"}`."
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/features/goal.md:31
+#: docs/features/goal.md:33
 msgid ""
 "`done: false` → inject user-role continuation (e.g. `↻ Continuing toward "
 "goal (3/20): …`), continue next turn in same SSE stream."
 msgstr ""
 
 #. type: Bullet: '5. '
-#: docs/features/goal.md:31
+#: docs/features/goal.md:33
 msgid "`done: true` → mark completed, stop continuation."
 msgstr ""
 
 #. type: Bullet: '6. '
-#: docs/features/goal.md:31
+#: docs/features/goal.md:33
 msgid ""
 "User message mid-run preempts current continuation; after that turn, re-"
 "judge; continues if not paused."
 msgstr ""
 
 #. type: Title ##
-#: docs/features/goal.md:32
+#: docs/features/goal.md:34
 #, no-wrap
 msgid "Judge conservative policy"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/goal.md:37
+#: docs/features/goal.md:39
 msgid ""
 "**Pass**: assistant clearly confirms completion, shows final deliverable, or "
 "states blocker needing user input (reason explains)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/goal.md:37
+#: docs/features/goal.md:39
 msgid ""
 "**Fail**: vague progress, plan only without evidence; implied completion "
 "does not count."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/goal.md:37
+#: docs/features/goal.md:39
 msgid ""
-"**Fail-open**: judge call or parse failure treated as incomplete; turn "
-"budget prevents deadlock."
+"**Judge unavailable**: call or parse failure **pauses** the goal (`status: "
+"paused`), logs a warn, and appends a visible status line to the conversation "
+"(not a continue prompt). Use `/goal resume` to retry. Check `/goal status` "
+"for `last_judge_reason`."
 msgstr ""
 
 #. type: Plain text
-#: docs/features/goal.md:41
+#: docs/features/goal.md:43
 msgid ""
 "Optional `goal_judge` in `~/.anima/config.yaml` `llm.profiles` (see "
 "[`config.example.yaml`](../../config.example.yaml)). Falls back to "
 "`llm.default_profile` when unset."
 msgstr ""
 
+#. type: Plain text
+#: docs/features/goal.md:45
+msgid ""
+"Judge calls use OpenAI-compatible `response_format: json_object` and "
+"`thinking: { type: \"disabled\" }` (via `params.extra`), plus "
+"`maxOutputTokens: 2048`. Prefer a model/gateway that supports JSON mode; "
+"unsupported endpoints will fail the judge call and pause the goal."
+msgstr ""
+
 #. type: Title ##
-#: docs/features/goal.md:42
+#: docs/features/goal.md:46
 #, no-wrap
 msgid "vs ACP"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/goal.md:46
+#: docs/features/goal.md:50
 msgid ""
 "**Goal**: in-conversation synchronous continuation loop; orchestrated by "
 "platform turn lifecycle."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/goal.md:46
+#: docs/features/goal.md:50
 msgid ""
 "**ACP**: external agent async task; callback triggers separate turn on "
 "completion."
 msgstr ""
 
 #. type: Plain text
-#: docs/features/goal.md:47
+#: docs/features/goal.md:51
 msgid "See [`architecture.md`](../concepts/architecture.md#session-goal)."
 msgstr ""

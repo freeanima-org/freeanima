@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-10 23:57+0800\n"
+"POT-Creation-Date: 2026-07-17 22:43+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -194,8 +194,8 @@ msgstr ""
 #: docs/sap/hub-rpc.md:65
 msgid ""
 "Bundled clients read the token from `window.satelliteShell.remoteAuth.token` "
-"(shell bridge), configured in client **Hub settings** (`/setup` or settings "
-"panel). Hub `/web/config.json` does not include tokens."
+"(shell bridge), configured in client **Hub settings** (`/settings`). Hub `/"
+"web/config.json` does not include tokens."
 msgstr ""
 
 #. type: Title ##
@@ -271,7 +271,7 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/sap/hub-rpc.md:91 docs/sap/transport.md:99 messages/po4a/en.xml:144
+#: docs/sap/hub-rpc.md:91 docs/sap/transport.md:99 messages/po4a/en.xml:147
 #, no-wrap
 msgid "Reconnect"
 msgstr ""

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-10 23:57+0800\n"
+"POT-Creation-Date: 2026-07-17 22:43+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,8 +22,8 @@ msgid "Core Principles"
 msgstr "核心原则"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/memory.md:1 messages/po4a/en.xml:216 messages/po4a/en.xml:375
-#: messages/po4a/en.xml:608
+#: docs/concepts/memory.md:1 messages/po4a/en.xml:219 messages/po4a/en.xml:380
+#: messages/po4a/en.xml:619
 #, no-wrap
 msgid "Memory"
 msgstr "记忆体系"
@@ -409,14 +409,21 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/memory.md:152
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| `memory_type`      | Notes                                                                        |\n"
+#| "| ------------------ | ---------------------------------------------------------------------------- |\n"
+#| "| `semantic`         | Facts, preferences, experiences, etc.                                        |\n"
+#| "| `session`          | Historical conversation snippets                                             |\n"
+#| "| `limbic`           | Emotional memory body (hybrid FTS + trgm + vector)                           |\n"
+#| "| `autobiographical` | Narrative title + content snippet (hybrid FTS + trgm + vector on title+body) |\n"
 msgid ""
-"| `memory_type`      | Notes                                                                        |\n"
-"| ------------------ | ---------------------------------------------------------------------------- |\n"
-"| `semantic`         | Facts, preferences, experiences, etc.                                        |\n"
-"| `session`          | Historical conversation snippets                                             |\n"
-"| `limbic`           | Emotional memory body (hybrid FTS + trgm + vector)                           |\n"
-"| `autobiographical` | Narrative title + content snippet (hybrid FTS + trgm + vector on title+body) |\n"
+"| `memory_type`      | Notes                                                               |\n"
+"| ------------------ | ------------------------------------------------------------------- |\n"
+"| `semantic`         | Facts, preferences, experiences, etc.                               |\n"
+"| `session`          | Historical conversation snippets                                    |\n"
+"| `limbic`           | Emotional memory body (hybrid FTS + trgm)                           |\n"
+"| `autobiographical` | Narrative title + content snippet (hybrid FTS + trgm on title+body) |\n"
 msgstr ""
 "| `memory_type`      | 说明                                                                         |\n"
 "| ------------------ | ---------------------------------------------------------------------------- |\n"
@@ -435,8 +442,8 @@ msgstr ""
 #: docs/concepts/memory.md:156
 msgid ""
 "Before each user-facing turn, the runtime searches **semantic memory only** "
-"from the latest user message (hybrid FTS + trgm + vector), then injects top-"
-"N hits as a **runtime-only** `role: assistant` message (`name: "
+"from the latest user message (hybrid FTS + trgm), then injects top-N hits as "
+"a **runtime-only** `role: assistant` message (`name: "
 "passive_memory_context`) immediately before that user message. Not persisted "
 "to PG; not counted as a memory reference."
 msgstr ""
@@ -464,19 +471,36 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/memory.md:162
 msgid ""
+"The conversation `system_prompt` column is a **session snapshot**. After "
+"each **CST 02:00** boundary (aligned with the sleep-cycle cron), the next "
+"user message rebuilds it in full (resident memory, world/channel context, "
+"toolsets, self layer, project `AGENTS.md`) via `ensureSystemPromptFresh` in "
+"`beginTurnPrepare`; mid-turn tool loops are not interrupted."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/memory.md:164
+msgid ""
 "Configure under `memory.passive_recall` (`enabled`, `limit`, `min_score`, "
 "`min_relative_score`, `max_chars`, `exclude_resident`). Skipped for cron / "
 "background sessions."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:164
-#, no-wrap
-msgid "**Index columns (PG):** `semantic_memory` and `messages` use `fts_segmented` (optional jieba) → generated `content_fts` (tsvector, keyword FTS) plus async `content_embedding` (pgvector, semantic similarity). `limbic_memory` and `autobiographical_memory` follow the same pattern; autobiographical index text is `title + newline + content`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only). `content_fts` is never written by application code — PostgreSQL generates it from `fts_segmented` or raw content.\n"
+#: docs/concepts/memory.md:166
+#, fuzzy, no-wrap
+#| msgid "**Index columns (PG):** `semantic_memory` and `messages` use `fts_segmented` (optional jieba) → generated `content_fts` (tsvector, keyword FTS) plus async `content_embedding` (pgvector, semantic similarity). `limbic_memory` and `autobiographical_memory` follow the same pattern; autobiographical index text is `title + newline + content`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only). `content_fts` is never written by application code — PostgreSQL generates it from `fts_segmented` or raw content.\n"
+msgid "**Index columns (PG):** `semantic_memory` and `messages` use `fts_segmented` (optional jieba) → generated `content_fts` (tsvector, keyword FTS) plus async `content_embedding` (pgvector; written for future use, not used in retrieval). Limbic / autobiographical / dream narratives live as `entities` `content_block`s (with `limbic` / `narrative` / `dream` tags) under dated `diary_entry`; they use entity `fts_segmented` / `search_embedding`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only). `content_fts` is never written by application code — PostgreSQL generates it from `fts_segmented` or raw content.\n"
 msgstr "**索引列（PG）：** `semantic_memory` 与 `messages` 使用 `fts_segmented`（可选 jieba）→ 生成的 `content_fts`（tsvector、关键词 FTS）加异步 `content_embedding`（pgvector、语义相似度）。`limbic_memory` 与 `autobiographical_memory` 同模式；自传体索引文本为 `title + newline + content`。jieba 在 insert 前同步运行（失败 → null，行仍写入）；embedding 在 insert 后异步运行（失败仅记日志）。应用代码从不写入 `content_fts`——PostgreSQL 从 `fts_segmented` 或原始 content 生成。\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:166
+#: docs/concepts/memory.md:168
+#, no-wrap
+msgid "**Hybrid retrieval:** FTS and trigram branches run in **one parallel wave**, then merge with Reciprocal Rank Fusion (RRF). Keyword/FTS relevance is prioritized; vector similarity is not part of retrieval (avoids low-relevance semantic neighbors).\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/memory.md:170
 msgid ""
 "Resident memory injected via system prompt: **up to 40 pinned** + **most-"
 "referenced top N** (default N=20). Each line carries a citation marker "
@@ -486,25 +510,25 @@ msgstr ""
 "N=20）。每行携带引用标记 `[[f-000001-abcd]]`（仅 ID，无语言前缀）。"
 
 #. type: Plain text
-#: docs/concepts/memory.md:168
+#: docs/concepts/memory.md:172
 #, no-wrap
 msgid "**Citation obligation:** whenever an assistant reply uses semantic memory—resident list, `memory_recall` / `memory_semantic_search` semantic hits, or prior message markers—it must append each cited `[[f-id]]` at the **end of the reply body**. Use the inline marker or `semantic_memory_id` from tool results. Session, limbic, and autobiographical hits do not use this marker.\n"
 msgstr "**引用义务：** 助手回复若使用语义记忆——常驻列表、`memory_recall` / `memory_semantic_search` 的语义命中，或历史消息中的标记——须在**回复正文末尾**追加每条被引用的 `[[f-id]]`。可使用行内标记或工具结果中的 `semantic_memory_id`。会话、感性、自传体命中不使用此标记。\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:170
+#: docs/concepts/memory.md:174
 #, no-wrap
 msgid "**Where the rule is communicated:** global system prompt `memory-citation` section; `memory_recall` and `memory_semantic_search` tool descriptions. Tool response JSON is not modified for this.\n"
 msgstr "**规则传达位置：** 全局系统提示的 `memory-citation` 小节；`memory_recall` 与 `memory_semantic_search` 工具描述。工具返回 JSON 不为此修改。\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:172
+#: docs/concepts/memory.md:176
 #, no-wrap
 msgid "**What counts as a reference:** only `[[f-id]]` markers in **user/assistant** message bodies are parsed into `memory_references` and contribute to `reference_count`. Tool returns (including `semantic_memory_id` fields) are **not** references. Bare `f-id` text without `[[ ]]` is also not counted.\n"
 msgstr "**何谓引用：** 仅 **user/assistant** 消息正文中的 `[[f-id]]` 标记会解析进 `memory_references` 并计入 `reference_count`。工具返回（含 `semantic_memory_id` 字段）**不算**引用。无 `[[ ]]` 包裹的裸 `f-id` 文本也不计入。\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:174
+#: docs/concepts/memory.md:178
 msgid ""
 "Nightly sleep-cycle step `memory-ref-sync` full-calibrates counts from "
 "messages. Excess pinned entries are truncated at read time with a warn log; "
@@ -516,13 +540,13 @@ msgstr ""
 "条）。"
 
 #. type: Title ##
-#: docs/concepts/memory.md:177
+#: docs/concepts/memory.md:181
 #, no-wrap
 msgid "V. Relationship to Hindsight"
 msgstr "五、与 Hindsight 的关系"
 
 #. type: Plain text
-#: docs/concepts/memory.md:187
+#: docs/concepts/memory.md:191
 #, no-wrap
 msgid ""
 "| Dimension         | Hindsight                                  | FreeAnima v3                                       |\n"
@@ -544,7 +568,7 @@ msgstr ""
 "| 归属         | Vectorize 平台                         | **伙伴与 Agent 共享**                    |\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:188
+#: docs/concepts/memory.md:192
 #, no-wrap
 msgid "**Our stance:** Do not copy Hindsight, do not connect to Hindsight services. Digest its design ideas into FreeAnima's own memory system. Limbic memory is not an add-on—it is a core need of digital life.\n"
 msgstr "**我们的立场：** 不复制 Hindsight，不接入 Hindsight 服务。将其设计理念消化吸收，融入逸灵风自己的记忆体系。感性记忆不是附加功能——它是数字生命的核心需求。\n"
