@@ -34,7 +34,7 @@
 
 ## 复合组件
 
-从 `@freeanima/ui-kit/composite` 导入：`ConfirmDialog`、`ActionSheet`、`EmptyState`、`StatusAlert`。
+从 `@freeanima/ui-kit/composite` 导入：`ConfirmDialog`、`ActionSheet`、`EmptyState`、`StatusAlert`、`PullToRefresh`。
 
 ## 静态检查
 

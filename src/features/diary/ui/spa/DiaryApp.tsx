@@ -15,8 +15,10 @@ import {
 } from "./lib/api.ts";
 import { mergeDraftAfterSave } from "@freeanima/frontend/ui-kit/lib/merge-draft-after-save.ts";
 import { Button, Input, Spinner } from "@freeanima/frontend/ui-kit";
+import { PullToRefresh } from "@freeanima/frontend/ui-kit/composite";
 import { ListDetailLayout } from "@freeanima/frontend/ui-kit/layout";
 import { PlusIcon } from "lucide-react";
+import { m } from "@paraglide/messages";
 
 import { EntryEditor, type EntrySaveStatus } from "./components/EntryEditor.tsx";
 import { EntryTimeline, findEntryByDayLocal } from "./components/EntryTimeline.tsx";
@@ -59,6 +61,7 @@ export function DiaryApp() {
   const [draftBaseline, setDraftBaseline] = useState<EntryDraft | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<EntrySaveStatus>("idle");
@@ -111,6 +114,16 @@ export function DiaryApp() {
       setLoading(false);
     }
   }, [searchQuery, subjectKind]);
+
+  const handleManualRefresh = useCallback(async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      await reload();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshing, reload]);
 
   useEffect(() => {
     registerDiaryOfflineModule();
@@ -438,14 +451,27 @@ export function DiaryApp() {
     <div className="flex h-full min-h-0 min-w-0 flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <SubjectScopeToggle />
-        <Button
-          type="button"
-          size="sm"
-          disabled={writesDisabled || creating}
-          onClick={handleNewEntry}
-        >
-          {creating ? "新建中…" : "新建"}
-        </Button>
+        <div className="flex shrink-0 items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2"
+            disabled={refreshing || loading}
+            aria-label={m.console_common_refresh()}
+            onClick={() => void handleManualRefresh()}
+          >
+            {refreshing ? <Spinner className="size-3.5" /> : m.console_common_refresh()}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            disabled={writesDisabled || creating}
+            onClick={handleNewEntry}
+          >
+            {creating ? "新建中…" : "新建"}
+          </Button>
+        </div>
       </div>
       <Input
         type="search"
@@ -459,9 +485,13 @@ export function DiaryApp() {
         <p className="text-muted-foreground text-xs">{pendingOps} 项待同步</p>
       ) : null}
       {loading ? <Spinner className="size-4" /> : null}
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <PullToRefresh
+        className="min-h-0 flex-1"
+        disabled={refreshing || loading}
+        onRefresh={handleManualRefresh}
+      >
         <EntryTimeline items={entries} selectedId={selectedId} onSelect={selectEntryById} />
-      </div>
+      </PullToRefresh>
     </div>
   );
 

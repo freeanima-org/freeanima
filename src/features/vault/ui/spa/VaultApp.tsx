@@ -10,6 +10,7 @@ import {
 import { Button, Card, CardContent, Input, Spinner, Textarea } from "@freeanima/frontend/ui-kit";
 import { EmptyState, StatusAlert } from "@freeanima/frontend/ui-kit/composite";
 import { ListDetailLayout } from "@freeanima/frontend/ui-kit/layout";
+import { m } from "@paraglide/messages";
 import type {
   VaultItemDetailRowPayload,
   VaultItemMetaRowPayload,
@@ -434,9 +435,10 @@ export function VaultApp() {
           size="sm"
           variant="outline"
           disabled={loading}
+          aria-label={m.console_common_refresh()}
           onClick={() => void reload()}
         >
-          刷新
+          {loading ? <Spinner className="size-4" /> : m.console_common_refresh()}
         </Button>
       </div>
 
