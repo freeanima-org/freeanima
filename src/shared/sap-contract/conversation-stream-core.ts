@@ -169,13 +169,17 @@ export async function sapCreateConversation(
 export async function sapGetStoredMessages(
   client: SapClient,
   conversationId: string,
-  opts?: { offset?: number; limit?: number },
+  opts?: { offset?: number; limit?: number; before_pos?: number },
 ) {
-  return client.request("conversation.messages", {
-    conversation_id: conversationId,
-    offset: opts?.offset,
-    limit: opts?.limit,
-  });
+  return client.request(
+    "conversation.messages",
+    omitUndefined({
+      conversation_id: conversationId,
+      offset: opts?.offset,
+      limit: opts?.limit,
+      before_pos: opts?.before_pos,
+    }),
+  );
 }
 
 export async function sapPatchConversationTitle(

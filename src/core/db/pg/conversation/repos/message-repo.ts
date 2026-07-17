@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, lt, lte, sql } from "drizzle-orm";
 import type { ConversationMessage, StoredMessage } from "@freeanima/core/db/domain";
 import type { MessageRowView } from "../types.ts";
 
@@ -259,6 +259,23 @@ export async function listRecentMessages(
     .orderBy(desc(messages.pos))
     .limit(safeLimit);
   return rows.map((r) => rowToMessage(r));
+}
+
+/** Chat 向上分页：pos < beforePos，取最近 limit 条后升序返回 */
+export async function listMessagesBeforePos(
+  conversation_id: string,
+  beforePos: number,
+  limit: number,
+): Promise<ConversationMessage[]> {
+  const db = getDb();
+  const safeLimit = Math.max(1, limit);
+  const rows = await db
+    .select()
+    .from(messages)
+    .where(and(eq(messages.conversation_id, conversation_id), lt(messages.pos, beforePos)))
+    .orderBy(desc(messages.pos))
+    .limit(safeLimit);
+  return rows.map((r) => rowToMessage(r)).toReversed();
 }
 
 export async function listMessagesByPosRange(

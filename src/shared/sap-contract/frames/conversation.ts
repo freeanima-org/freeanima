@@ -50,6 +50,8 @@ export const conversationMessagesInputSchema = z.object({
   conversation_id: z.string().min(1),
   offset: z.number().int().min(0).optional(),
   limit: z.number().int().min(1).max(500).optional(),
+  /** Chat 向上加载：取 pos < before_pos 的最近 limit 条；与 offset 互斥（Chat 不传 offset） */
+  before_pos: z.number().int().min(0).optional(),
 });
 
 export const conversationTailInputSchema = z.object({

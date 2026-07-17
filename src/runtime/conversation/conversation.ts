@@ -13,6 +13,7 @@ export {
   conversationExists,
   load,
   loadMessagePage,
+  loadMessagesBeforePos,
   countMessages,
   countUserMessages,
   loadForRuntime,

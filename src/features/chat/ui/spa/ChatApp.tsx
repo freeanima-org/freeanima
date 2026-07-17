@@ -165,6 +165,9 @@ export function ChatApp() {
   const currentId = useConversationsStore((s) => s.currentId);
   const display = useConversationsStore((s) => s.display);
   const messagesLoading = useConversationsStore((s) => s.loading);
+  const loadingOlder = useConversationsStore((s) => s.loadingOlder);
+  const hasMoreBefore = useConversationsStore((s) => s.hasMoreBefore);
+  const loadOlderMessages = useConversationsStore((s) => s.loadOlderMessages);
   const fetchConversations = useConversationsStore((s) => s.fetchConversations);
   const selectConversation = useConversationsStore((s) => s.selectConversation);
   const newConversationFn = useConversationsStore((s) => s.newConversation);
@@ -557,10 +560,29 @@ export function ChatApp() {
     const onScroll = () => {
       const threshold = 96;
       stickToBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+      if (el.scrollTop < threshold && hasMoreBefore && !loadingOlder && !messagesLoading) {
+        const prevHeight = el.scrollHeight;
+        void loadOlderMessages().then((didLoad) => {
+          if (!didLoad) return;
+          requestAnimationFrame(() => {
+            const area = msgAreaRef.current;
+            if (!area) return;
+            area.scrollTop += area.scrollHeight - prevHeight;
+          });
+        });
+      }
     };
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
-  }, [currentId]);
+  }, [currentId, hasMoreBefore, loadingOlder, messagesLoading, loadOlderMessages]);
+
+  /** 首屏内容不足一屏时继续向上取，直到撑满或无更早消息 */
+  useEffect(() => {
+    const el = msgAreaRef.current;
+    if (!el || !currentId || messagesLoading || loadingOlder || !hasMoreBefore) return;
+    if (el.scrollHeight > el.clientHeight + 8) return;
+    void loadOlderMessages();
+  }, [currentId, display.length, hasMoreBefore, loadingOlder, messagesLoading, loadOlderMessages]);
 
   useEffect(() => {
     if (!currentId) return;
@@ -1407,6 +1429,11 @@ export function ChatApp() {
               ref={msgAreaRef}
               className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4 space-y-4"
             >
+              {currentId && loadingOlder ? (
+                <div className="flex justify-center py-2">
+                  <Spinner className="size-4" />
+                </div>
+              ) : null}
               {!currentId ? (
                 <div className="flex flex-col items-center justify-center h-full gap-3 text-foreground/40 text-sm">
                   <p>{m.console_chat_select_conversation()}</p>

@@ -1,8 +1,14 @@
-import type { ConversationAcpDockSnapshot, ConversationListItem, StreamApiEvent } from "./types.ts";
+import type {
+  ConversationAcpDockSnapshot,
+  ConversationListItem,
+  DisplayItem,
+  StreamApiEvent,
+} from "./types.ts";
 import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
 import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 import { getChatSapClient, chatPlatform } from "./sap-client.ts";
 import { m } from "./i18n.ts";
+import { omitUndefined } from "@freeanima/core/util";
 
 type SubscribeCallbacks<T> = {
   onData?: (data: T) => void;
@@ -66,13 +72,36 @@ export async function getConversationTail(conversationId: string) {
   return hub().call("conversation.tail", { conversation_id: conversationId });
 }
 
-export async function getStoredMessages(conversationId: string, offset = 0, limit = 500) {
+export type StoredMessagesOpts = {
+  limit?: number;
+  before_pos?: number;
+};
+
+export type StoredMessagesResponse = {
+  conversation_id?: string;
+  display?: DisplayItem[];
+  total?: number;
+  offset?: number;
+  limit?: number | null;
+  from_pos?: number;
+  to_pos?: number;
+  has_more_before?: boolean;
+};
+
+/** Chat 消息分页：不传 offset（服务端尾页）；向上加载传 before_pos */
+export async function getStoredMessages(
+  conversationId: string,
+  opts?: StoredMessagesOpts,
+): Promise<StoredMessagesResponse> {
   requireHubFetch("conversation.messages");
-  return hub().call("conversation.messages", {
-    conversation_id: conversationId,
-    offset,
-    limit,
-  });
+  return hub().call(
+    "conversation.messages",
+    omitUndefined({
+      conversation_id: conversationId,
+      limit: opts?.limit,
+      before_pos: opts?.before_pos,
+    }),
+  ) as Promise<StoredMessagesResponse>;
 }
 
 export async function setConversationTitle(conversationId: string, title: string) {

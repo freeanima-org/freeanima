@@ -30,4 +30,10 @@ export type MessagesDisplay = {
   total?: number;
   offset?: number;
   limit?: number | null;
+  /** 本页最小 pos（原始消息）；Chat 分页游标 */
+  from_pos?: number;
+  /** 本页最大 pos（原始消息） */
+  to_pos?: number;
+  /** 是否还有更早消息可加载 */
+  has_more_before?: boolean;
 };
