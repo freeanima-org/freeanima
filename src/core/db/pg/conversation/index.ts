@@ -46,6 +46,7 @@ export {
   lastMessageTimestamp,
   listMessages,
   listRecentMessages,
+  listMessagesBeforePos,
   listMessagesByPosRange,
   listMessagesPage,
 } from "./repos/message-repo.ts";

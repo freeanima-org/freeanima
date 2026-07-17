@@ -1,5 +1,6 @@
 import { omitUndefined } from "@freeanima/core/util";
 import { isConversationMeta } from "@freeanima/core/db/domain";
+import type { StoredMessage } from "@freeanima/core/db/domain";
 import { resolveDefaultConversationToolSets } from "@freeanima/core/tool";
 import { getProfileHopModel } from "@freeanima/platform/config";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
@@ -125,26 +126,91 @@ export async function getMessages(
   deps: RuntimeDeps,
   conversationId: string,
   platform = "",
-  opts?: { offset?: number; limit?: number | null },
+  opts?: { offset?: number; limit?: number | null; before_pos?: number },
 ): Promise<MessagesDisplay> {
   if (!(await deps.conversation.conversationExists(conversationId))) {
     throw new Error(`Conversation not found: ${conversationId}`);
   }
   await checkPlatform(deps, { platform }, conversationId);
-  const offset = Math.max(0, opts?.offset ?? 0);
   const limit = Math.max(1, opts?.limit ?? 500);
-  const [total, page] = await Promise.all([
-    deps.conversation.countMessages(conversationId),
-    deps.conversation.loadMessagePage(conversationId, offset, limit),
-  ]);
+  const total = await deps.conversation.countMessages(conversationId);
+
+  let page: StoredMessage[];
+  let offset: number;
+
+  if (opts?.before_pos != null) {
+    page = await deps.conversation.loadMessagesBeforePos(conversationId, opts.before_pos, limit);
+    offset = 0;
+  } else if (opts?.offset != null) {
+    offset = Math.max(0, opts.offset);
+    page = await deps.conversation.loadMessagePage(conversationId, offset, limit);
+  } else {
+    // Chat 首屏：尾页（最近 limit 条）
+    offset = Math.max(0, total - limit);
+    page = await deps.conversation.loadMessagePage(conversationId, offset, limit);
+  }
+
+  page = await expandLeadingToolBoundary(deps, conversationId, page);
+
+  if (opts?.offset == null) {
+    // 尾页 / before_pos：扩窗后按窗口长度回写 offset（Console 显式 offset 保持原值）
+    offset = Math.max(0, total - page.length);
+  }
+
+  const from_pos = pageMinPos(page);
+  const to_pos = pageMaxPos(page);
+  const has_more_before =
+    from_pos != null
+      ? (await deps.conversation.loadMessagesBeforePos(conversationId, from_pos, 1)).length > 0
+      : false;
+
   const full = buildMessagesDisplay(page);
-  return {
+  return omitUndefined({
     conversation_id: conversationId,
     display: full,
     total,
     offset,
     limit,
-  };
+    from_pos: from_pos ?? undefined,
+    to_pos: to_pos ?? undefined,
+    has_more_before,
+  });
+}
+
+function pageMinPos(page: StoredMessage[]): number | null {
+  let min: number | null = null;
+  for (const m of page) {
+    if (typeof m.pos !== "number") continue;
+    if (min == null || m.pos < min) min = m.pos;
+  }
+  return min;
+}
+
+function pageMaxPos(page: StoredMessage[]): number | null {
+  let max: number | null = null;
+  for (const m of page) {
+    if (typeof m.pos !== "number") continue;
+    if (max == null || m.pos > max) max = m.pos;
+  }
+  return max;
+}
+
+/** 页首若为孤立 tool 行，向更早扩窗直到非 tool 或会话起点 */
+async function expandLeadingToolBoundary(
+  deps: RuntimeDeps,
+  conversationId: string,
+  page: StoredMessage[],
+): Promise<StoredMessage[]> {
+  const out = [...page];
+  while (out.length > 0 && out[0]?.role === "tool") {
+    const pos = out[0].pos;
+    if (typeof pos !== "number") break;
+    const prev = await deps.conversation.loadMessagesBeforePos(conversationId, pos, 1);
+    const prevMsg = prev[0];
+    if (!prevMsg) break;
+    out.unshift(prevMsg);
+  }
+  return out;
 }
 
 export async function setConversationTitle(

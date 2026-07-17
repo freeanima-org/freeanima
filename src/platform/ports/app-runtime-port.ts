@@ -89,7 +89,7 @@ export type AppRuntimeConversationPort = {
   getMessages(
     conversationId: string,
     platform?: string,
-    opts?: { offset?: number; limit?: number | null },
+    opts?: { offset?: number; limit?: number | null; before_pos?: number },
   ): Promise<unknown>;
   setConversationTitle(conversationId: string, title: string, platform: string): Promise<unknown>;
 };

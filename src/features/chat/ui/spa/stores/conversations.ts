@@ -9,6 +9,7 @@ import {
   createConversation,
   deleteConversation as deleteConversationApi,
   getStoredMessages,
+  type StoredMessagesResponse,
   interruptMessageStream,
   listConversations,
   setConversationTitle,
@@ -26,11 +27,17 @@ import { getConversationTail } from "@freeanima/features/chat/ui/spa/lib/api.ts"
 import { sortConversationsByUpdatedAt } from "@freeanima/features/chat/ui/spa/lib/sort-conversations.ts";
 import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";
 
+/** Chat 首屏 / 向上加载每页原始消息条数 */
+export const CHAT_MESSAGES_PAGE_SIZE = 100;
+
 type ConversationsState = {
   conversations: ConversationListItem[];
   currentId: string | null;
   display: DisplayItem[];
   loading: boolean;
+  loadingOlder: boolean;
+  hasMoreBefore: boolean;
+  fromPos: number | null;
   showArchived: boolean;
   tailPosByConversation: Record<string, number>;
   fetchConversations: () => Promise<ConversationListItem[]>;
@@ -50,10 +57,21 @@ type ConversationsState = {
   removeDisplayByClientOpId: (clientOpId: string) => void;
   refreshMessages: (conversationId: string, baselineCount: number) => Promise<boolean>;
   reloadConversationIfCurrent: (conversationId: string) => Promise<void>;
+  loadOlderMessages: () => Promise<boolean>;
   patchProgressLine: (text: string, messageId?: string) => void;
   cacheTailPos: (conversationId: string, tailPos: number) => void;
   resolveExpectedTailPos: (conversationId: string, online: boolean) => Promise<number>;
 };
+
+function applyMessagesPage(
+  resp: StoredMessagesResponse,
+): Pick<ConversationsState, "display" | "hasMoreBefore" | "fromPos"> {
+  return {
+    display: resp.display ?? [],
+    hasMoreBefore: resp.has_more_before === true,
+    fromPos: typeof resp.from_pos === "number" ? resp.from_pos : null,
+  };
+}
 
 async function maybeInterruptStream(conversationId: string): Promise<void> {
   const { streaming, streamingConversationId } = useChatStore.getState();
@@ -88,6 +106,9 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
   currentId: null,
   display: [],
   loading: false,
+  loadingOlder: false,
+  hasMoreBefore: false,
+  fromPos: null,
   showArchived: false,
   tailPosByConversation: {},
 
@@ -138,7 +159,13 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
   },
 
   async selectConversation(id) {
-    set({ currentId: id, loading: true });
+    set({
+      currentId: id,
+      loading: true,
+      hasMoreBefore: false,
+      fromPos: null,
+      loadingOlder: false,
+    });
     const scope = resolveHubCacheScope();
     const cached = await readCachedMessages(scope, id);
     if (cached) {
@@ -149,10 +176,10 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
       return;
     }
     try {
-      const resp = await getStoredMessages(id);
-      const display = (resp as { display?: DisplayItem[] }).display ?? [];
-      set({ display, loading: false });
-      void writeCachedMessages(scope, id, display);
+      const resp = await getStoredMessages(id, { limit: CHAT_MESSAGES_PAGE_SIZE });
+      const page = applyMessagesPage(resp);
+      set({ ...page, loading: false });
+      void writeCachedMessages(scope, id, page.display);
       void get().resolveExpectedTailPos(id, true);
     } catch (e) {
       console.error("selectSession messages:", e);
@@ -250,13 +277,13 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
   async refreshMessages(conversationId, baselineCount) {
     const scope = resolveHubCacheScope();
     try {
-      const resp = await getStoredMessages(conversationId);
-      const display = (resp as { display?: DisplayItem[] }).display ?? [];
-      const hasReply = hasNewAssistantReply(display, baselineCount);
+      const resp = await getStoredMessages(conversationId, { limit: CHAT_MESSAGES_PAGE_SIZE });
+      const page = applyMessagesPage(resp);
+      const hasReply = hasNewAssistantReply(page.display, baselineCount);
       if (get().currentId === conversationId) {
-        set({ display });
+        set(page);
       }
-      void writeCachedMessages(scope, conversationId, display);
+      void writeCachedMessages(scope, conversationId, page.display);
       void get().resolveExpectedTailPos(conversationId, true);
       return hasReply;
     } catch (e) {
@@ -269,13 +296,48 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
     if (get().currentId !== conversationId) return;
     const scope = resolveHubCacheScope();
     try {
-      const resp = await getStoredMessages(conversationId);
-      const display = (resp as { display?: DisplayItem[] }).display ?? [];
-      set({ display });
-      void writeCachedMessages(scope, conversationId, display);
+      const resp = await getStoredMessages(conversationId, { limit: CHAT_MESSAGES_PAGE_SIZE });
+      const page = applyMessagesPage(resp);
+      set(page);
+      void writeCachedMessages(scope, conversationId, page.display);
       void get().resolveExpectedTailPos(conversationId, true);
     } catch (e) {
       console.error("reloadSessionIfCurrent:", e);
+    }
+  },
+
+  async loadOlderMessages() {
+    const { currentId, hasMoreBefore, fromPos, loadingOlder, loading } = get();
+    if (!currentId || !hasMoreBefore || fromPos == null || loadingOlder || loading) {
+      return false;
+    }
+    if (!isHubFetchAvailable()) return false;
+    set({ loadingOlder: true });
+    try {
+      const resp = await getStoredMessages(currentId, {
+        limit: CHAT_MESSAGES_PAGE_SIZE,
+        before_pos: fromPos,
+      });
+      const older = resp.display ?? [];
+      if (get().currentId !== currentId) {
+        set({ loadingOlder: false });
+        return false;
+      }
+      const nextFromPos = typeof resp.from_pos === "number" ? resp.from_pos : fromPos;
+      const nextHasMore = resp.has_more_before === true;
+      set({
+        display: [...older, ...get().display],
+        fromPos: nextFromPos,
+        hasMoreBefore: nextHasMore,
+        loadingOlder: false,
+      });
+      const scope = resolveHubCacheScope();
+      void writeCachedMessages(scope, currentId, get().display);
+      return older.length > 0;
+    } catch (e) {
+      console.error("loadOlderMessages:", e);
+      set({ loadingOlder: false });
+      return false;
     }
   },
 

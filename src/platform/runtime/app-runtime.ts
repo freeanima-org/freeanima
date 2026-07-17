@@ -313,7 +313,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
   getMessages(
     conversationId: string,
     platform = "",
-    opts?: { offset?: number; limit?: number | null },
+    opts?: { offset?: number; limit?: number | null; before_pos?: number },
   ) {
     return conversations.getMessages(this.runtimeDeps(), conversationId, platform, opts);
   }

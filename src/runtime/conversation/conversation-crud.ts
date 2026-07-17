@@ -28,6 +28,7 @@ import {
   loadMetaWithRouting,
   loadMessagesForRuntimeWithRouting,
   loadMessagesPageWithRouting,
+  loadMessagesBeforePosWithRouting,
   loadMessagesWithRouting,
   loadConversationToolsWithRouting,
   countMessagesWithRouting,
@@ -180,6 +181,14 @@ export async function loadMessagePage(
   limit: number,
 ): Promise<Message[]> {
   return loadMessagesPageWithRouting(conversationId, offset, limit);
+}
+
+export async function loadMessagesBeforePos(
+  conversationId: string,
+  beforePos: number,
+  limit: number,
+): Promise<Message[]> {
+  return loadMessagesBeforePosWithRouting(conversationId, beforePos, limit);
 }
 
 export async function countMessages(conversationId: string): Promise<number> {

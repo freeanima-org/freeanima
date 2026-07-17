@@ -97,6 +97,7 @@ export const chatHubRoutes = bindHubRouteHandlers(chatMethodDefs, {
       omitUndefined({
         offset: input.offset,
         limit: input.limit,
+        before_pos: input.before_pos,
       }),
     );
     return messages as SapRouterOutputs["conversation.messages"];

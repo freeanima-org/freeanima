@@ -19,6 +19,7 @@ import {
   listMessages,
   listMessagesByPosRange,
   listMessagesPage,
+  listMessagesBeforePos,
   nextMessagePos,
   getMaxMessagePos,
   findUserMessageByClientOpId,
@@ -120,6 +121,14 @@ export async function loadMessagesPageWithRouting(
   limit: number,
 ): Promise<StoredMessage[]> {
   return listMessagesPage(conversationId, offset, limit);
+}
+
+export async function loadMessagesBeforePosWithRouting(
+  conversationId: string,
+  beforePos: number,
+  limit: number,
+): Promise<StoredMessage[]> {
+  return listMessagesBeforePos(conversationId, beforePos, limit);
 }
 
 export async function countMessagesWithRouting(conversationId: string): Promise<number> {
