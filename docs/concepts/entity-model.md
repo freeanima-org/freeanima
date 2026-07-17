@@ -206,10 +206,10 @@ Legacy pass (`~/.password-store`) is **not** deleted on disk; migrate entries ma
 
 Entity **list** (deterministic browse) and **search** (relevance ranking) are separate ports:
 
-| Port                      | Role                                                                  |
-| ------------------------- | --------------------------------------------------------------------- |
-| `EntityStorePort.list`    | Structural filters; stable sort                                       |
-| `EntitySearchPort.search` | Hard filters + optional text query; hybrid FTS/trigram/vector via RRF |
+| Port                      | Role                                                           |
+| ------------------------- | -------------------------------------------------------------- |
+| `EntityStorePort.list`    | Structural filters; stable sort                                |
+| `EntitySearchPort.search` | Hard filters + optional text query; hybrid FTS/trigram via RRF |
 
 **Scope:** default `world_id`; `global: true` requires an explicit accessible-world allowlist (`resolveWorldsAccessibleBySubject`: public + owned private + grant-readable worlds).
 

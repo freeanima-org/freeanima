@@ -1,10 +1,9 @@
-import { and, asc, desc, eq, getColumns, isNotNull, sql } from "drizzle-orm";
+import { and, desc, eq, getColumns, sql } from "drizzle-orm";
 import { getActiveRuntimeConfig, getFtsTrgmMinSimilarity } from "@freeanima/core/config";
 import { autobiographicalDocKey } from "@freeanima/core/util";
 import { autobiographicalMemory } from "@freeanima/core/db/schema";
 import type { AutobiographicalStatus } from "@freeanima/core/db/pg/autobiographical-memory/types";
 
-import { formatPgVector } from "../embedding/format.ts";
 import { getDb } from "../client.ts";
 import { buildFtsTsQuery } from "./query.ts";
 
@@ -81,41 +80,6 @@ export async function searchAutobiographicalMemoryTrgm(
       ),
     )
     .orderBy(desc(rankExpr))
-    .limit(limit);
-
-  return rows.map((r) => ({
-    ...r,
-    docKey: autobiographicalDocKey(r.id),
-    rank: Number(r.rank),
-  }));
-}
-
-export type VectorAutobiographicalHit = typeof autobiographicalMemory.$inferSelect & {
-  docKey: string;
-  rank: number;
-};
-
-export async function searchAutobiographicalMemoryVector(
-  queryEmbedding: number[],
-  opts?: { limit?: number; status?: AutobiographicalStatus },
-): Promise<VectorAutobiographicalHit[]> {
-  if (queryEmbedding.length === 0) return [];
-
-  const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
-  const status = opts?.status ?? "active";
-  const queryVec = formatPgVector(queryEmbedding);
-  const db = getDb();
-  const distanceExpr = sql`${autobiographicalMemory.content_embedding} <=> ${queryVec}::vector`;
-  const rankExpr = sql<number>`1 - (${distanceExpr})`.as("rank");
-
-  const rows = await db
-    .select({
-      ...getColumns(autobiographicalMemory),
-      rank: rankExpr,
-    })
-    .from(autobiographicalMemory)
-    .where(and(isNotNull(autobiographicalMemory.content_embedding), statusCondition(status)))
-    .orderBy(asc(distanceExpr))
     .limit(limit);
 
   return rows.map((r) => ({

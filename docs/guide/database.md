@@ -87,10 +87,10 @@ pre-commit `test:changed` does **not** run integration tests.
 
 ## Troubleshooting
 
-| Symptom                     | Check                                                          |
-| --------------------------- | -------------------------------------------------------------- |
-| Service fails on DB connect | `database.url`; PostgreSQL running; pass credentials readable  |
-| Migration fails             | Extensions installed; DB user has DDL privileges               |
-| FTS / vector recall empty   | `ensure-pg-extensions.sql` applied; `embedding` config enabled |
+| Symptom                     | Check                                                                       |
+| --------------------------- | --------------------------------------------------------------------------- |
+| Service fails on DB connect | `database.url`; PostgreSQL running; pass credentials readable               |
+| Migration fails             | Extensions installed; DB user has DDL privileges                            |
+| FTS / keyword recall empty  | `ensure-pg-extensions.sql` applied (`pg_trgm`); jieba/FTS rebuild if needed |
 
 More deployment security: [`security.md`](security.md).

@@ -5,11 +5,9 @@ import type {
 import { getActiveRuntimeConfig, getFtsTrgmFallbackWhenHitsLt } from "@freeanima/core/config";
 import { autobiographicalDocKey, rrfMerge } from "@freeanima/core/util";
 
-import { embedQueryText } from "../embedding/query.ts";
 import {
   searchAutobiographicalMemoryFtsRaw,
   searchAutobiographicalMemoryTrgm,
-  searchAutobiographicalMemoryVector,
 } from "./autobiographical-search-raw.ts";
 
 function candidateLimit(requested: number, ftsCount: number): number {
@@ -32,25 +30,18 @@ export async function hybridSearchAutobiographicalMemory(
   const status = opts?.status ?? "active";
 
   const pool = candidateLimit(limit, 0);
-  const vectorBranch = embedQueryText(q).then((queryEmbedding) =>
-    queryEmbedding
-      ? searchAutobiographicalMemoryVector(queryEmbedding, { limit: pool, status })
-      : Promise.resolve([]),
-  );
-  const [ftsHits, trgmHits, vectorHits] = await Promise.all([
+  const [ftsHits, trgmHits] = await Promise.all([
     searchAutobiographicalMemoryFtsRaw(q, {
       limit: pool,
       status,
     }),
     searchAutobiographicalMemoryTrgm(q, { limit: pool, status }),
-    vectorBranch,
   ]);
 
   const ftsRanked = ftsHits.map((h) => ({ ...h, docKey: autobiographicalDocKey(h.id) }));
   const trgmRanked = trgmHits.map((h) => ({ ...h, docKey: h.docKey }));
-  const vectorRanked = vectorHits.map((h) => ({ ...h, docKey: h.docKey }));
 
-  const merged = rrfMerge([ftsRanked, trgmRanked, vectorRanked], { limit: pool });
+  const merged = rrfMerge([ftsRanked, trgmRanked], { limit: pool });
   return merged.slice(0, limit).map((row) => ({
     ...row,
     rank: row.score,

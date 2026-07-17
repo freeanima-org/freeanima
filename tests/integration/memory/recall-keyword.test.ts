@@ -22,11 +22,11 @@ function fixedEmbedding(value = 0.25): number[] {
   return Array.from({ length: SEMANTIC_EMBEDDING_DIMENSIONS }, () => value);
 }
 
-describePg("recall vector PG", () => {
+describePg("recall keyword-first PG", () => {
   const prev = process.env.FREEANIMA_HOME;
 
   beforeEach(async () => {
-    await beginIntegrationCase("freeanima-recall-vector-");
+    await beginIntegrationCase("freeanima-recall-keyword-");
     registerEmbedTextFn(async () => fixedEmbedding());
   });
 
@@ -36,17 +36,18 @@ describePg("recall vector PG", () => {
     await restoreIntegrationHome(prev);
   });
 
-  it("vector path: recall when embeddings align (no literal FTS match)", async () => {
+  it("does not recall on embedding-only similarity without keyword/trgm match", async () => {
     const targetId = await createSemanticMemory({
-      content: "Memory consolidation relies on sleep mechanisms running in the background",
+      content: "Memory consolidation relies on nocturnal processes running in the background",
       type: "world",
     });
 
     await awaitPendingEmbeddingsForTest();
     await rebuildAllFtsSegments();
 
-    const hits = await searchSemanticMemoryFts("sleep mechanism", { limit: 5 });
-    expect(hits.some((h) => h.id === targetId)).toBe(true);
+    // Same fixed embedding as the stored row, but no lexical overlap with content
+    const hits = await searchSemanticMemoryFts("photosynthesis chlorophyll", { limit: 5 });
+    expect(hits.some((h) => h.id === targetId)).toBe(false);
   });
 
   afterAll(async () => {

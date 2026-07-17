@@ -143,16 +143,16 @@ Conversion from working memory to long-term memory is handled by the sleep mecha
 
 `memory_recall(query)` parallel four-source recall, returns unified `results[]` (default Top 10), distinguished by `memory_type`:
 
-| `memory_type`      | Notes                                                                        |
-| ------------------ | ---------------------------------------------------------------------------- |
-| `semantic`         | Facts, preferences, experiences, etc.                                        |
-| `session`          | Historical conversation snippets                                             |
-| `limbic`           | Emotional memory body (hybrid FTS + trgm + vector)                           |
-| `autobiographical` | Narrative title + content snippet (hybrid FTS + trgm + vector on title+body) |
+| `memory_type`      | Notes                                                               |
+| ------------------ | ------------------------------------------------------------------- |
+| `semantic`         | Facts, preferences, experiences, etc.                               |
+| `session`          | Historical conversation snippets                                    |
+| `limbic`           | Emotional memory body (hybrid FTS + trgm)                           |
+| `autobiographical` | Narrative title + content snippet (hybrid FTS + trgm on title+body) |
 
 ### ✅ Passive semantic recall (auto-inject)
 
-Before each user-facing turn, the runtime searches **semantic memory only** from the latest user message (hybrid FTS + trgm + vector), then injects top-N hits as a **runtime-only** `role: assistant` message (`name: passive_memory_context`) immediately before that user message. Not persisted to PG; not counted as a memory reference.
+Before each user-facing turn, the runtime searches **semantic memory only** from the latest user message (hybrid FTS + trgm), then injects top-N hits as a **runtime-only** `role: assistant` message (`name: passive_memory_context`) immediately before that user message. Not persisted to PG; not counted as a memory reference.
 
 - **Resident memory** (system prompt): pinned + high-reference anchors, session snapshot
 - **Passive recall**: query-relevant semantic hits for the current message
@@ -162,9 +162,9 @@ The conversation `system_prompt` column is a **session snapshot**. After each **
 
 Configure under `memory.passive_recall` (`enabled`, `limit`, `min_score`, `min_relative_score`, `max_chars`, `exclude_resident`). Skipped for cron / background sessions.
 
-**Index columns (PG):** `semantic_memory` and `messages` use `fts_segmented` (optional jieba) → generated `content_fts` (tsvector, keyword FTS) plus async `content_embedding` (pgvector, semantic similarity). `limbic_memory` and `autobiographical_memory` follow the same pattern; autobiographical index text is `title + newline + content`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only). `content_fts` is never written by application code — PostgreSQL generates it from `fts_segmented` or raw content.
+**Index columns (PG):** `semantic_memory` and `messages` use `fts_segmented` (optional jieba) → generated `content_fts` (tsvector, keyword FTS) plus async `content_embedding` (pgvector; written for future use, not used in retrieval). `limbic_memory` and `autobiographical_memory` follow the same pattern; autobiographical index text is `title + newline + content`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only). `content_fts` is never written by application code — PostgreSQL generates it from `fts_segmented` or raw content.
 
-**Hybrid retrieval:** FTS, trigram, and vector branches run in **one parallel wave** (vector depends on query embedding). Query embedding uses `embedding.query_timeout_ms` (default **800ms**), independent of write-path `embedding.timeout_ms` (default 60s). On timeout or upstream error, the vector branch is skipped (fail-open) and results still merge from FTS ∪ trigram — so a stuck embed service does not block the chat turn for tens of seconds.
+**Hybrid retrieval:** FTS and trigram branches run in **one parallel wave**, then merge with Reciprocal Rank Fusion (RRF). Keyword/FTS relevance is prioritized; vector similarity is not part of retrieval (avoids low-relevance semantic neighbors).
 
 Resident memory injected via system prompt: **up to 40 pinned** + **most-referenced top N** (default N=20). Each line carries a citation marker `[[f-000001-abcd]]` (ID only, no language prefix).
 
