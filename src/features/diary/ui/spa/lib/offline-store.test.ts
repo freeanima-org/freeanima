@@ -1,21 +1,28 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 
 import { writeOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache";
+import { setIdMapping } from "@freeanima/frontend/shell-sdk/offline-id-map";
 import {
   enqueueOutboxOp,
+  listOutboxOps,
   resolveOutboxScope,
   setOfflineOutboxBackendForTests,
 } from "@freeanima/frontend/shell-sdk/offline-outbox";
 import { resetOfflineModuleRegistryForTests } from "@freeanima/frontend/shell-sdk/offline-module-registry";
+import { resetTempIdAllocatorForTests } from "@freeanima/frontend/shell-sdk/offline-temp-id";
 
 import type { DiaryEntryRow } from "./format-diary.ts";
-import { offlineCreateDiaryEntry, reconcileServerDiaryList } from "./offline-store.ts";
+import {
+  offlineCreateDiaryEntry,
+  offlineUpdateDiaryEntry,
+  reconcileServerDiaryList,
+} from "./offline-store.ts";
 
-function row(id: number, entryAt: string): DiaryEntryRow {
+function row(id: number, entryAt: string, content = ""): DiaryEntryRow {
   return {
     id,
     title: `t${id}`,
-    content: "",
+    content,
     summary: "",
     entry_at: entryAt,
     tags: [],
@@ -28,6 +35,7 @@ describe("reconcileServerDiaryList", () => {
   beforeEach(() => {
     setOfflineOutboxBackendForTests(new Map());
     resetOfflineModuleRegistryForTests();
+    resetTempIdAllocatorForTests();
   });
 
   it("保留 outbox 中仍未同步的 temp 条目，避免被服务器列表覆盖丢失", async () => {
@@ -67,6 +75,7 @@ describe("offlineCreateDiaryEntry validation", () => {
   beforeEach(() => {
     setOfflineOutboxBackendForTests(new Map());
     resetOfflineModuleRegistryForTests();
+    resetTempIdAllocatorForTests();
   });
 
   it("拒绝空标题，避免产生服务端必然拒绝的 outbox op", async () => {
@@ -85,5 +94,38 @@ describe("offlineCreateDiaryEntry validation", () => {
         entry_at: "  ",
       }),
     ).rejects.toThrow("diary entry_at is required");
+  });
+});
+
+describe("offlineUpdateDiaryEntry temp id resolve", () => {
+  beforeEach(() => {
+    setOfflineOutboxBackendForTests(new Map());
+    resetOfflineModuleRegistryForTests();
+    resetTempIdAllocatorForTests();
+  });
+
+  it("create flush 后本地只剩 server id 时，仍可用 temp id 更新", async () => {
+    const scope = resolveOutboxScope();
+    const created = await offlineCreateDiaryEntry("user", {
+      title: "2026/7/12",
+      content: "",
+      entry_at: "2026-07-12T12:00:00+08:00",
+    });
+    expect(created.id).toBeLessThan(0);
+
+    const serverId = 99;
+    await setIdMapping(scope, "diary", created.id, serverId);
+    // 模拟 flush + refreshAll：本地列表只剩 server id
+    await writeOfflineCache(scope, "diary", "list:user", [
+      row(serverId, "2026-07-12T12:00:00+08:00", ""),
+    ]);
+
+    const updated = await offlineUpdateDiaryEntry("user", created.id, { content: "hello" });
+    expect(updated.id).toBe(serverId);
+    expect(updated.content).toBe("hello");
+
+    const ops = await listOutboxOps(scope, "diary");
+    const patch = ops.find((op) => op.method === "diary.patch");
+    expect(patch?.payload.id).toBe(serverId);
   });
 });

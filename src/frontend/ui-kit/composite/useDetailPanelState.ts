@@ -93,12 +93,14 @@ export function useDetailPanelState<T extends { id: number }>({
           setBaseline(synced);
           setItem((draft) => {
             if (!draft) return synced;
-            return mergeDraftAfterSave({
+            const merged = mergeDraftAfterSave({
               current: draft,
               savingSnapshot,
               synced,
               isEqual,
             }).draft;
+            // 离线 create flush 后 synced.id 可能已从 temp 变为 server id
+            return merged.id === synced.id ? merged : { ...merged, id: synced.id };
           });
         }
         onSaved?.(saved);
@@ -190,8 +192,16 @@ export function useDetailPanelState<T extends { id: number }>({
   const applySavedItem = useCallback(
     (saved: T) => {
       const synced = cloneItem(saved);
-      setItem((prev) => (prev?.id === saved.id ? synced : prev));
-      setBaseline((prev) => (prev?.id === saved.id ? synced : prev));
+      setItem((prev) => {
+        if (!prev) return prev;
+        if (prev.id === saved.id || prev.id < 0) return synced;
+        return prev;
+      });
+      setBaseline((prev) => {
+        if (!prev) return prev;
+        if (prev.id === saved.id || prev.id < 0) return synced;
+        return prev;
+      });
     },
     [cloneItem],
   );

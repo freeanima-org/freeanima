@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/shell-sdk/react.tsx";
+import { subscribeIdMappings } from "@freeanima/frontend/shell-sdk/offline-id-map";
 import { registerDiaryOfflineModule } from "./lib/offline-store.ts";
 import { countDiaryPendingOps } from "./lib/api.ts";
 import { mergeDraftAfterSave } from "@freeanima/frontend/ui-kit/lib/merge-draft-after-save.ts";
@@ -93,6 +94,23 @@ export function DiaryApp() {
   }, []);
 
   useEffect(() => {
+    return subscribeIdMappings((event) => {
+      if (event.moduleId !== "diary") return;
+      const { tempId, serverId } = event;
+      setEntries((prev) => {
+        let changed = false;
+        const next = prev.map((e) => {
+          if (e.id !== tempId) return e;
+          changed = true;
+          return { ...e, id: serverId };
+        });
+        return changed ? sortEntries(next) : prev;
+      });
+      setSelectedId((prev) => (prev === tempId ? serverId : prev));
+    });
+  }, []);
+
+  useEffect(() => {
     void countDiaryPendingOps().then(setPendingOps);
     const timer = window.setInterval(() => {
       void countDiaryPendingOps().then(setPendingOps);
@@ -142,7 +160,14 @@ export function DiaryApp() {
         entry_at: dateLocalToEntryAtIso(savingSnapshot.entryDateLocal),
         tags: parseTagsText(savingSnapshot.tagsText),
       });
-      setEntries((prev) => sortEntries(prev.map((e) => (e.id === item.id ? item : e))));
+      setEntries((prev) => {
+        const next = prev.filter((e) => e.id !== selectedEntry.id && e.id !== item.id);
+        next.push(item);
+        return sortEntries(next);
+      });
+      if (selectedIdRef.current === selectedEntry.id && selectedEntry.id !== item.id) {
+        setSelectedId(item.id);
+      }
       const synced = entryDraftFromRow(item);
       setDraftBaseline(synced);
       setDraft((current) => {
