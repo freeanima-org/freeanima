@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  CONTENT_BLOCK_COMPONENT,
   DIARY_ENTRY_COMPONENT,
   DREAM_ENTRY_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
@@ -18,6 +19,7 @@ import {
   VAULT_ITEM_COMPONENT,
   vaultItemTypeSchema,
 } from "./components/index.ts";
+import { contentBlockSearchFiltersSchema } from "./content-block-search-filters.ts";
 import { taskItemSearchFiltersSchema } from "./task-item-search-filters.ts";
 
 export {
@@ -26,6 +28,12 @@ export {
   taskRelativeDaySchema,
   type TaskItemSearchFilters,
 } from "./task-item-search-filters.ts";
+
+export {
+  contentBlockSearchFiltersSchema,
+  parseContentBlockSearchFilters,
+  type ContentBlockSearchFilters,
+} from "./content-block-search-filters.ts";
 
 export const emailAccountSearchFiltersSchema = z
   .object({
@@ -290,6 +298,7 @@ export const ENTITY_SEARCH_FILTER_COMPONENTS = {
   [PROJECT_FOLDER_COMPONENT]: projectFolderSearchFiltersSchema,
   [PROJECT_COMPONENT]: projectSearchFiltersSchema,
   [MILESTONE_COMPONENT]: milestoneSearchFiltersSchema,
+  [CONTENT_BLOCK_COMPONENT]: contentBlockSearchFiltersSchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntrySearchFiltersSchema,
   [DREAM_ENTRY_COMPONENT]: dreamEntrySearchFiltersSchema,
   [EMAIL_ACCOUNT_COMPONENT]: emailAccountSearchFiltersSchema,

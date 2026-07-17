@@ -1,11 +1,13 @@
 import { and, eq, gte, inArray, lte, sql, type SQL } from "drizzle-orm";
 import {
+  CONTENT_BLOCK_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
   EMAIL_MESSAGE_COMPONENT,
   EMAIL_THREAD_COMPONENT,
   entities,
   DIARY_ENTRY_COMPONENT,
   DREAM_ENTRY_COMPONENT,
+  parseContentBlockSearchFilters,
   parseDiaryEntrySearchFilters,
   parseDreamEntrySearchFilters,
   parseEmailAccountSearchFilters,
@@ -273,6 +275,22 @@ function buildDreamEntryBodyConditions(
   return conditions;
 }
 
+function buildContentBlockBodyConditions(
+  filters: ReturnType<typeof parseContentBlockSearchFilters>,
+): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.parent_id != null) {
+    conditions.push(sql`${entities.body}->>'parent_id' = ${String(filters.parent_id)}`);
+  }
+  if (filters.block_type) {
+    conditions.push(sql`${entities.body}->>'block_type' = ${filters.block_type}`);
+  }
+  if (filters.client_op_id) {
+    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+  }
+  return conditions;
+}
+
 function buildEmailAccountBodyConditions(
   filters: ReturnType<typeof parseEmailAccountSearchFilters>,
 ): SQL[] {
@@ -368,6 +386,9 @@ export function buildComponentFilterConditions(opts: EntitySearchOpts): SQL[] {
   }
   if (component === TASK_LIST_COMPONENT) {
     return buildTaskListBodyConditions(parseTaskListSearchFilters(filters));
+  }
+  if (component === CONTENT_BLOCK_COMPONENT) {
+    return buildContentBlockBodyConditions(parseContentBlockSearchFilters(filters));
   }
   if (component === DIARY_ENTRY_COMPONENT) {
     return buildDiaryEntryBodyConditions(parseDiaryEntrySearchFilters(filters));

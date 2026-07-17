@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
 import {
+  parseContentBlockSearchFilters,
   parseDiaryEntrySearchFilters,
   parsePomodoroSessionSearchFilters,
   parseTaskItemSearchFilters,
@@ -45,6 +46,14 @@ describe("parseDiaryEntrySearchFilters", () => {
     expect(() => parseDiaryEntrySearchFilters({ foo: "bar" })).toThrow(
       /invalid diary_entry filters/,
     );
+  });
+});
+
+describe("parseContentBlockSearchFilters", () => {
+  it("accepts content_block filter shape via search-filters barrel", () => {
+    const parsed = parseContentBlockSearchFilters({ parent_id: 3, block_type: "image" });
+    expect(parsed.parent_id).toBe(3);
+    expect(parsed.block_type).toBe("image");
   });
 });
 

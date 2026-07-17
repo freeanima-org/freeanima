@@ -1,4 +1,5 @@
 import { registerClarifyTool } from "@freeanima/capabilities/tools/clarify";
+import { registerContentBlockTools } from "@freeanima/features/content-block/domain";
 import { registerDiaryTools } from "@freeanima/features/diary/domain";
 import { registerDreamTools } from "@freeanima/features/dream/domain";
 import { registerPomodoroTools } from "@freeanima/features/pomodoro/domain";
@@ -51,6 +52,7 @@ export function registerServiceTools(opts: {
   registerNotificationTools(opts.toolSets);
   registerTaskTools(opts.toolSets);
   registerProjectTools(opts.toolSets);
+  registerContentBlockTools(opts.toolSets);
   registerDiaryTools(opts.toolSets);
   registerDreamTools(opts.toolSets);
   registerPomodoroTools(opts.toolSets);
