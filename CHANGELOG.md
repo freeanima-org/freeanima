@@ -3,6 +3,76 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.9.1](https://github.com/freeanima-org/freeanima/compare/v0.9.0...v0.9.1) (2026-07-17)
+
+
+### Features
+
+* **alert:** 三壳统一本机预登记 Alert（schedule⊕cancel） ([61c3369](https://github.com/freeanima-org/freeanima/commit/61c3369c05eda076dc801003fedfb8d34d835732))
+* **chat:** slash 终端结果走 RPC 面板/toast，开发禁用 PWA ([e983b2a](https://github.com/freeanima-org/freeanima/commit/e983b2a357b023315b9f9a373ab66c9e6b8ba12b))
+* **chat:** 聊天室消息尾页分页与向上加载历史 ([c1bca48](https://github.com/freeanima-org/freeanima/commit/c1bca48aff29671eff15f580d21af94d0b4613bc))
+* **dev:** 多 worktree 本地开发 DX 与 Just 入口精简 ([0a43c1c](https://github.com/freeanima-org/freeanima/commit/0a43c1cc917cb64478fb053245c8440a124cae44))
+* **diary:** 升级为容器 + text content_block 模型 ([e1ae68f](https://github.com/freeanima-org/freeanima/commit/e1ae68f4f97ff037c85da365347b96c07eebb9ec))
+* **entity:** 实现 content_block ToolSet（CRUD/检索/排序） ([da0137f](https://github.com/freeanima-org/freeanima/commit/da0137f9675c560d727ecc34b63ee333942653e4))
+* **entity:** 注册 content_block 与语义组件模型 ([10f1240](https://github.com/freeanima-org/freeanima/commit/10f124097e70794f7b6f275246243196ca2c6696))
+* **gateway:** 消息网关配置化与连接探测 ([bb30652](https://github.com/freeanima-org/freeanima/commit/bb3065224b425436391bd13cb818edb797705084))
+* **memory:** 将 limbic/narrative/dream 迁入日记 content_block ([cdc4d6e](https://github.com/freeanima-org/freeanima/commit/cdc4d6ef0ad14e71d7af31bc24474e38586c0c76))
+* **memory:** 将 semantic_memory 迁入 entities 并统一 anima 引用 ([82b4128](https://github.com/freeanima-org/freeanima/commit/82b4128c992df9e62a4f192c2be3582b725c0f80))
+* **project:** 接入 Tier 2-CRUD 离线优先 ([c173cf3](https://github.com/freeanima-org/freeanima/commit/c173cf37a0d752056ae66868559b0432b07a3eed))
+* **shell:** 引入 Anima URI 与 entity overlay，并接入任务/番茄钟 ([7c230cb](https://github.com/freeanima-org/freeanima/commit/7c230cbdb578d696448deabae3ab6129bd213b16))
+* **shell:** 模块排序、底栏满铺与 sonner 状态提示 ([603fe9e](https://github.com/freeanima-org/freeanima/commit/603fe9e641cf4f8790c9574616304e692652f227))
+* **task/project:** 侧栏统计、隐藏已完成与移动端手势/弹窗优化 ([62d8d44](https://github.com/freeanima-org/freeanima/commit/62d8d442710aba20c4dc103314b190cb197dde92))
+* **task:** 任务归属互斥并拆分清单/项目 Hub 入口 ([4acdaa7](https://github.com/freeanima-org/freeanima/commit/4acdaa768366da8f52557d6852334dbe9aa63710))
+* **ui:** 任务详情按滴答清单瘦身并精简关于页 ([72e560b](https://github.com/freeanima-org/freeanima/commit/72e560bd08832d5a937192fad157261ad9aa37bb))
+* **ui:** 增加多套强调色主题以便区分环境 ([1feffbe](https://github.com/freeanima-org/freeanima/commit/1feffbe3b16bda340f0acb1443f0ffe4353985e1))
+* **ui:** 建立壳子/布局/交互三维度正交标准并收敛 API ([cb59bc5](https://github.com/freeanima-org/freeanima/commit/cb59bc54a14f30e60b44396d73c19e9e10c4fab5))
+* **ui:** 统一产品页手动刷新与下拉刷新 ([c35158d](https://github.com/freeanima-org/freeanima/commit/c35158dd6b766d7a8aa237d7b7569860442d4300))
+* **update:** 支持 GitHub Release 公共代理下载 ([cbc1d2d](https://github.com/freeanima-org/freeanima/commit/cbc1d2d18b7c59a1ad632aa2753d9ddeaaa52225))
+
+
+### Bug Fixes
+
+* **ci:** 对齐 Android SDK 缓存路径与 runner 预置 ANDROID_HOME ([7ffee85](https://github.com/freeanima-org/freeanima/commit/7ffee853addd6643aaa4a94f7e457b0aada14349))
+* **cli:** 修复 standalone 缺少 tiktoken_bg.wasm 导致启动失败 ([fae9659](https://github.com/freeanima-org/freeanima/commit/fae9659b6b39d5512e798bde22b057197f400122))
+* **cli:** 将 StartLimitIntervalSec 移到 systemd [Unit] 段 ([662717c](https://github.com/freeanima-org/freeanima/commit/662717c5a330bcd2dc8af401164f7bc60490e1b3))
+* **config:** 已知运行时段未写入时 getSection 返回空对象 ([d5aa85a](https://github.com/freeanima-org/freeanima/commit/d5aa85a94c0feb9b0651b9e34d03b6b1c5abfcc2))
+* **db:** 加速记忆迁移消息替换并延长 Hub 探活 ([8541305](https://github.com/freeanima-org/freeanima/commit/8541305df2720a772915cdb1c3206d56290310c1))
+* **db:** 默认关闭 PG idleTimeout，避免 Bun 误杀长迁移 ([ba0793e](https://github.com/freeanima-org/freeanima/commit/ba0793edef3ff6f255c61e3c9f9fcb546a9e2587))
+* **desktop:** 修复 Windows 自动更新在删旧版后中断 ([a479b58](https://github.com/freeanima-org/freeanima/commit/a479b58f578721d6f8ad913f3cf69edeb047631e))
+* **dev:** 降噪 Vite Hub WS 代理良性断开并自动解析 Hub 端口 ([c9da389](https://github.com/freeanima-org/freeanima/commit/c9da389e91f1466ac86610d0a7c9ff9e67ed6464))
+* **goal:** judge 失败时暂停并关闭推理，避免续跑死循环 ([fb5192d](https://github.com/freeanima-org/freeanima/commit/fb5192d39122216e4e7f10ddda1acad43b47d7aa))
+* **llm:** 会话标题生成关闭 thinking，避免输出预算被推理占满 ([4a5cdd0](https://github.com/freeanima-org/freeanima/commit/4a5cdd08ac0244ffe8cf9fb8acb7969e6ea098e3))
+* **mobile:** CI 固定 Android upload 签名以支持 canary 覆盖升级 ([0440c78](https://github.com/freeanima-org/freeanima/commit/0440c78c72f7eb761f102211e3aa29a7ee444894))
+* **offline:** 收紧 temp-id 生命周期契约，修复日记/任务保存失败 ([cf8c4ca](https://github.com/freeanima-org/freeanima/commit/cf8c4ca5c3c4edfbc2f3916b0555b4cf41cc5cae))
+* **project:** 接入 milestone 搜索过滤并修复壳 Tailwind [@source](https://github.com/source) ([c1f4474](https://github.com/freeanima-org/freeanima/commit/c1f4474e5c888cbe10dc637ef38054f76f53cf2e))
+* **search:** hybrid 检索去掉向量通道，优先关键词匹配 ([aea881e](https://github.com/freeanima-org/freeanima/commit/aea881e97871ef29493238ac9c4dc96126fc1628))
+* **shell:** 切换 user/agent 时同步清空项目与保险库选中态 ([48bb905](https://github.com/freeanima-org/freeanima/commit/48bb9051f11c088d6e500f848eacb820e2dd3a37))
+* **shell:** 手机 Hub 设置改用 HTTP 按段拉取配置 ([eb7f9a0](https://github.com/freeanima-org/freeanima/commit/eb7f9a0698dc762d8df9c547b914a3d2bf8bbbaa))
+* **speech:** 提高 Hub TTS 分段门槛，避免短句被强制切开 ([8240969](https://github.com/freeanima-org/freeanima/commit/82409697726b4e2b9518a26154db6571e7f6ee0b))
+* **task:** toolset 支持按 project_id 列任务与搜索 ([f0407b0](https://github.com/freeanima-org/freeanima/commit/f0407b063d97594157bf86d1cda2d543817d8946))
+* **task:** 用 PG advisory lock 防止并发创建重复默认收件箱 ([4c11c2d](https://github.com/freeanima-org/freeanima/commit/4c11c2d729e490f88fa59792057f739e7630d772))
+* **test:** 对齐 semantic_memory entity 化后的集成断言 ([1eac92c](https://github.com/freeanima-org/freeanima/commit/1eac92c285868dd3473904073ada7748235efb01))
+* **test:** 项目任务创建不再同时传 list_id ([7d53d17](https://github.com/freeanima-org/freeanima/commit/7d53d172cadeea0de82562184f3b8f095047e20e))
+* **update:** canary 按完整版本串比较并对齐 Android versionCode ([2c62d82](https://github.com/freeanima-org/freeanima/commit/2c62d82956a4acd62aaa64685fea3edc3dd79b2b))
+* **upgrade:** standalone 升级改为先下载校验再停服替换 ([6914a46](https://github.com/freeanima-org/freeanima/commit/6914a46d21883877e3f0acce2af11488f4f0afea))
+
+
+### Performance
+
+* **ci:** 缓存 Android SDK/Gradle 并加速 Mobile 打包 ([0781a7e](https://github.com/freeanima-org/freeanima/commit/0781a7e9db560e5e5fcf172faaa7b36f021cd5c6))
+
+
+### Miscellaneous
+
+* **i18n:** 补全 UI 中文译文并同步 po4a 目录 ([85917a3](https://github.com/freeanima-org/freeanima/commit/85917a3e4ac8fd28e64f97c57136276ca2fd5a96))
+* 修复 app-update 格式以通过 pre-commit ([25c1c2c](https://github.com/freeanima-org/freeanima/commit/25c1c2cb2d054e78c5bc46969a31241def283c0c))
+
+
+### CI
+
+* **build:** 统一 canary/release 三端打包并默认 dev channel ([79c8d89](https://github.com/freeanima-org/freeanima/commit/79c8d89a155e6779e6c5096c924c9f6338f4e609))
+* **desktop:** 缓存 electron-builder 工具以加速 Windows 交叉打包 ([c02559b](https://github.com/freeanima-org/freeanima/commit/c02559b5f38d730f023fcbf1303daa447d3a8140))
+
 ## [0.9.0](https://github.com/freeanima-org/freeanima/compare/v0.8.5...v0.9.0) (2026-07-15)
 
 
