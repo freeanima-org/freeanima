@@ -38,3 +38,23 @@ export function formatDue(due: string | null): string {
   if (Number.isNaN(d.getTime())) return due;
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
+
+/** 详情顶栏截止 chip：如「7月13日」或「7月13日, 延期4天」 */
+export function formatDueChip(due: string | null | undefined): {
+  label: string;
+  overdue: boolean;
+} {
+  if (!due) return { label: "截止日期", overdue: false };
+  const d = new Date(due);
+  if (Number.isNaN(d.getTime())) return { label: "截止日期", overdue: false };
+
+  const dateLabel = `${d.getMonth() + 1}月${d.getDate()}日`;
+  const startToday = new Date();
+  startToday.setHours(0, 0, 0, 0);
+  const startDue = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diffDays = Math.floor((startToday.getTime() - startDue.getTime()) / 86_400_000);
+  if (diffDays > 0) {
+    return { label: `${dateLabel}, 延期${diffDays}天`, overdue: true };
+  }
+  return { label: dateLabel, overdue: false };
+}

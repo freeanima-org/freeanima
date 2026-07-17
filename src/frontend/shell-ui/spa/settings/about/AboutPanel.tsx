@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@freeanima/frontend/ui-kit";
 import type { ComponentBuildMeta } from "@freeanima/frontend/shell-sdk/build-meta";
-import {
-  isCapacitorNativePlatform,
-  isCapacitorShellCandidate,
-} from "@freeanima/frontend/shell-sdk/capacitor-runtime";
 import { resolveHubApiOrigin } from "@freeanima/frontend/shell-sdk/hub-api-origin";
 import { hubHealthProbeUrl } from "@freeanima/shared/hub-rpc";
 import {
@@ -26,6 +22,7 @@ import {
   NATIVE_BUILD_META_CHANGED_EVENT,
   resolveAboutNativeBuildMeta,
 } from "@freeanima/frontend/shell-sdk/native-build-meta.resolve";
+import { getShellKind, isPackagedShell } from "@freeanima/frontend/shell-sdk/shell-runtime.ts";
 import { parseWebUiConfigJson } from "@freeanima/frontend/shell-sdk/web-ui-config";
 
 import { m } from "@paraglide/messages";
@@ -49,13 +46,6 @@ function proxyOptionLabel(id: GithubReleaseProxyId): string {
       return _exhaustive;
     }
   }
-}
-function isNativeShellRuntime(): boolean {
-  return Boolean(window.satelliteShell?.isElectron || window.satelliteShell?.isNativeShell);
-}
-
-function showNativeAboutSection(): boolean {
-  return isNativeShellRuntime() || isCapacitorNativePlatform() || isCapacitorShellCandidate();
 }
 
 function formatBuiltAt(iso: string): string {
@@ -87,15 +77,6 @@ function BuildMetaRows({
   }
   if (meta.git?.commit) {
     rows.push({ label: m.settings_about_field_commit(), value: meta.git.commit });
-  }
-  if (meta.git?.branch) {
-    rows.push({ label: m.settings_about_field_branch(), value: meta.git.branch });
-  }
-  if (meta.git?.dirty != null) {
-    rows.push({
-      label: m.settings_about_field_dirty(),
-      value: meta.git.dirty ? m.settings_about_dirty_yes() : m.settings_about_dirty_no(),
-    });
   }
   if (meta.component === "service" && startedAt) {
     rows.push({
@@ -202,8 +183,11 @@ async function fetchWebBuildMeta(): Promise<ComponentBuildMeta | null> {
 }
 
 export default function AboutPanel() {
+  const showWebSection = getShellKind() === "web";
   const [serviceAbout, setServiceAbout] = useState<ServiceAboutInfo | undefined>(undefined);
-  const [webBuild, setWebBuild] = useState<ComponentBuildMeta | null | undefined>(undefined);
+  const [webBuild, setWebBuild] = useState<ComponentBuildMeta | null | undefined>(
+    showWebSection ? undefined : null,
+  );
   const [nativeBuild, setNativeBuild] = useState<ComponentBuildMeta | null | undefined>(undefined);
   const [nativeSection, setNativeSection] = useState<"pending" | "show" | "hide">("pending");
   const [updateProxy, setUpdateProxy] = useState<GithubReleaseProxyId>(() =>
@@ -215,13 +199,16 @@ export default function AboutPanel() {
     void fetchServiceAboutInfo().then((value) => {
       if (!cancelled) setServiceAbout(value);
     });
-    void fetchWebBuildMeta().then((value) => {
-      if (!cancelled) setWebBuild(value);
-    });
+    if (showWebSection) {
+      void fetchWebBuildMeta().then((value) => {
+        if (!cancelled) setWebBuild(value);
+      });
+    }
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [showWebSection]);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -243,7 +230,7 @@ export default function AboutPanel() {
         }
       }
       if (cancelled) return;
-      if (!showNativeAboutSection()) {
+      if (!isPackagedShell()) {
         setNativeSection("hide");
         setNativeBuild(null);
         return;
@@ -263,10 +250,6 @@ export default function AboutPanel() {
   }, []);
 
   const showNative = nativeSection !== "hide";
-  const isBrowserWeb =
-    typeof window !== "undefined" &&
-    !window.satelliteShell?.isElectron &&
-    !window.satelliteShell?.isNativeShell;
   const canCheckNative = resolveNativePackagedKind() != null;
   const nativeChannel = nativeBuild?.channel;
   const canSwitchChannel =
@@ -317,7 +300,7 @@ export default function AboutPanel() {
             {m.ui_shell_channel_switch({ channel: switchTarget })}
           </Button>
         ) : null}
-        {isBrowserWeb ? (
+        {showWebSection ? (
           <Button
             type="button"
             size="sm"
@@ -336,11 +319,13 @@ export default function AboutPanel() {
         loading={serviceAbout === undefined}
         {...(serviceAbout?.startedAt ? { startedAt: serviceAbout.startedAt } : {})}
       />
-      <BuildMetaGroup
-        title={m.settings_about_group_web()}
-        meta={webBuild}
-        loading={webBuild === undefined}
-      />
+      {showWebSection ? (
+        <BuildMetaGroup
+          title={m.settings_about_group_web()}
+          meta={webBuild}
+          loading={webBuild === undefined}
+        />
+      ) : null}
       {showNative ? (
         <BuildMetaGroup
           title={m.settings_about_group_native()}

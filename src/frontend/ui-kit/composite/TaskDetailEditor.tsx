@@ -1,18 +1,23 @@
 import type { ReactNode } from "react";
+import { CalendarIcon, FlagIcon } from "lucide-react";
 
-import { Input } from "../components/ui/input.tsx";
+import { Button } from "../components/ui/button.tsx";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/select.tsx";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu.tsx";
+import { Input } from "../components/ui/input.tsx";
 import { Textarea } from "../components/ui/textarea.tsx";
 import { DatePickerInput } from "../form/DatePickerInput.tsx";
-import { FormFieldLabel, FormFieldset } from "../form/FormFieldset.tsx";
 import { TimePickerInput } from "../form/TimePickerInput.tsx";
+import { cn } from "../lib/utils.ts";
 import {
+  formatDueChip,
   isoToDateLocalValue,
   isoToTimeLocalValue,
   mergeDateTimeLocal,
@@ -22,101 +27,159 @@ import type { TaskItemDisplay, TaskItemPriority } from "../lib/task-item-display
 export type TaskDetailEditorProps<T extends TaskItemDisplay = TaskItemDisplay> = {
   item: T;
   onChange: (item: T) => void;
+  /** @deprecated 不再显示图例 */
   legend?: string;
   titleExtra?: ReactNode;
   children?: ReactNode;
 };
 
+const PRIORITY_LABEL: Record<TaskItemPriority, string> = {
+  none: "无",
+  low: "低",
+  medium: "中",
+  high: "高",
+};
+
+function priorityFlagClass(priority: TaskItemPriority): string {
+  switch (priority) {
+    case "high":
+      return "text-destructive";
+    case "medium":
+      return "text-amber-500";
+    case "low":
+      return "text-sky-500";
+    default:
+      return "text-muted-foreground";
+  }
+}
+
 export function TaskDetailEditor<T extends TaskItemDisplay>({
   item,
   onChange,
-  legend = "详情",
   titleExtra,
   children,
 }: TaskDetailEditorProps<T>) {
+  const dueChip = formatDueChip(item.due_at);
+  const datePart = isoToDateLocalValue(item.due_at);
+  const timePart = isoToTimeLocalValue(item.due_at);
+
   return (
-    <FormFieldset legend={legend} bordered={false} className="gap-3 p-4">
-      <div>
-        <FormFieldLabel>标题</FormFieldLabel>
+    <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
+      <div className="flex shrink-0 items-center gap-1">
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "h-8 max-w-[min(100%,16rem)] gap-1.5 px-2 font-normal",
+                dueChip.overdue ? "text-destructive" : "text-muted-foreground",
+                item.due_at && !dueChip.overdue ? "text-foreground" : null,
+              )}
+              aria-label="截止日期"
+            >
+              <CalendarIcon className="size-4 shrink-0" />
+              <span className="truncate">{dueChip.label}</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="start"
+            className="w-72 p-3"
+            onCloseAutoFocus={(e) => e.preventDefault()}
+          >
+            <DropdownMenuLabel className="px-0 pt-0">截止日期</DropdownMenuLabel>
+            <div className="flex flex-col gap-2" onPointerDown={(e) => e.stopPropagation()}>
+              <DatePickerInput
+                className="w-full"
+                value={datePart}
+                aria-label="截止日期"
+                onChange={(nextDate) =>
+                  onChange({
+                    ...item,
+                    due_at: mergeDateTimeLocal(nextDate, timePart),
+                  })
+                }
+              />
+              <TimePickerInput
+                className="w-full"
+                value={timePart}
+                disabled={!datePart}
+                aria-label="截止时间"
+                onChange={(nextTime) =>
+                  onChange({
+                    ...item,
+                    due_at: mergeDateTimeLocal(datePart, nextTime),
+                  })
+                }
+              />
+              {item.due_at ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="self-start"
+                  onClick={() => onChange({ ...item, due_at: null })}
+                >
+                  清除
+                </Button>
+              ) : null}
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className={cn("ml-auto", priorityFlagClass(item.priority))}
+              aria-label={`优先级：${PRIORITY_LABEL[item.priority]}`}
+            >
+              <FlagIcon
+                className="size-4"
+                fill={item.priority === "none" ? "none" : "currentColor"}
+              />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-36">
+            <DropdownMenuLabel>优先级</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuRadioGroup
+              value={item.priority}
+              onValueChange={(value) => onChange({ ...item, priority: value as TaskItemPriority })}
+            >
+              {(Object.keys(PRIORITY_LABEL) as TaskItemPriority[]).map((value) => (
+                <DropdownMenuRadioItem key={value} value={value}>
+                  {PRIORITY_LABEL[value]}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <div className="shrink-0">
         <Input
-          className="w-full"
+          className="border-0 bg-transparent px-0 text-lg font-semibold shadow-none focus-visible:ring-0"
           value={item.title}
+          placeholder="标题"
+          aria-label="标题"
           onChange={(e) => onChange({ ...item, title: e.target.value })}
         />
         {titleExtra}
       </div>
-      <div>
-        <FormFieldLabel>优先级</FormFieldLabel>
-        <Select
-          value={item.priority}
-          onValueChange={(value) => onChange({ ...item, priority: value as TaskItemPriority })}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">无</SelectItem>
-            <SelectItem value="low">低</SelectItem>
-            <SelectItem value="medium">中</SelectItem>
-            <SelectItem value="high">高</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div>
-        <FormFieldLabel>截止日期</FormFieldLabel>
-        <div className="flex gap-2">
-          <DatePickerInput
-            className="min-w-0 flex-1"
-            value={isoToDateLocalValue(item.due_at)}
-            aria-label="截止日期"
-            onChange={(datePart) =>
-              onChange({
-                ...item,
-                due_at: mergeDateTimeLocal(datePart, isoToTimeLocalValue(item.due_at)),
-              })
-            }
-          />
-          <TimePickerInput
-            className="w-32 shrink-0"
-            value={isoToTimeLocalValue(item.due_at)}
-            disabled={!isoToDateLocalValue(item.due_at)}
-            aria-label="截止时间"
-            onChange={(timePart) =>
-              onChange({
-                ...item,
-                due_at: mergeDateTimeLocal(isoToDateLocalValue(item.due_at), timePart),
-              })
-            }
-          />
-        </div>
-      </div>
-      <div>
-        <FormFieldLabel>内容</FormFieldLabel>
-        <Textarea
-          className="w-full"
-          rows={6}
-          value={item.content}
-          onChange={(e) => onChange({ ...item, content: e.target.value })}
-        />
-      </div>
-      <div>
-        <FormFieldLabel>标签</FormFieldLabel>
-        <Input
-          className="w-full"
-          placeholder="逗号分隔"
-          value={item.tags.join(", ")}
-          onChange={(e) =>
-            onChange({
-              ...item,
-              tags: e.target.value
-                .split(",")
-                .map((s) => s.trim())
-                .filter(Boolean),
-            })
-          }
-        />
-      </div>
-      {children}
-    </FormFieldset>
+
+      <Textarea
+        className="field-sizing-fixed min-h-0 w-full flex-1 resize-none overflow-y-auto border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+        value={item.content}
+        placeholder="描述"
+        aria-label="描述"
+        onChange={(e) => onChange({ ...item, content: e.target.value })}
+      />
+
+      {children ? <div className="shrink-0">{children}</div> : null}
+    </div>
   );
 }
