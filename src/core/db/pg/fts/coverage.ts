@@ -1,5 +1,5 @@
 import { and, eq, isNotNull, sql } from "drizzle-orm";
-import { entities, messages, semanticMemory } from "@freeanima/core/db/schema";
+import { entities, messages, SEMANTIC_MEMORY_COMPONENT } from "@freeanima/core/db/schema";
 
 import { getDb } from "../client.ts";
 
@@ -50,13 +50,17 @@ export async function getFtsCoverageStats(): Promise<FtsCoverageStats> {
     db
       .select({
         total: sql<number>`count(*)::int`,
-        fts: sql<number>`count(*) FILTER (WHERE ${semanticMemory.content_fts} IS NOT NULL)::int`,
-        segmented: sql<number>`count(*) FILTER (WHERE nullif(btrim(${semanticMemory.fts_segmented}), '') IS NOT NULL)::int`,
-        embedding: sql<number>`count(*) FILTER (WHERE ${semanticMemory.content_embedding} IS NOT NULL)::int`,
+        fts: sql<number>`count(*) FILTER (WHERE ${entities.search_fts} IS NOT NULL)::int`,
+        segmented: sql<number>`count(*) FILTER (WHERE nullif(btrim(${entities.fts_segmented}), '') IS NOT NULL)::int`,
+        embedding: sql<number>`count(*) FILTER (WHERE ${entities.search_embedding} IS NOT NULL)::int`,
       })
-      .from(semanticMemory)
+      .from(entities)
       .where(
-        and(eq(semanticMemory.status, "active"), sql`length(btrim(${semanticMemory.content})) > 0`),
+        and(
+          eq(entities.primary_component, SEMANTIC_MEMORY_COMPONENT),
+          sql`${entities.body}->>'status' = 'active'`,
+          sql`length(btrim(${entities.content})) > 0`,
+        ),
       ),
     db
       .select({

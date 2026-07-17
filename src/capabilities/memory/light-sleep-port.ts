@@ -9,7 +9,7 @@ export type LightSleepEngineInput = {
 export type LightSleepEngineResult = {
   summary: string;
   tool_calls: number;
-  semantic_memory_ids: string[];
+  semantic_memory_ids: number[];
   limbic_memory_ids: string[];
 };
 

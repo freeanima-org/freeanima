@@ -11,7 +11,7 @@ export type AutobiographicalMemoryCreateInput = {
   significance?: AutobiographicalSignificance;
   period_start?: string | null;
   period_end?: string | null;
-  source_semantic_memory?: string[];
+  source_semantic_memory?: number[];
   source_conversations?: string[];
   id?: string;
 };

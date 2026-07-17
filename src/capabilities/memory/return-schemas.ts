@@ -1,8 +1,8 @@
 import { defineToolReturn, type ToolReturnContractFields, z } from "@freeanima/core/tool";
 
 const semanticMemoryResultSchema = z.object({
-  id: z.string(),
-  semantic_memory_id: z.string(),
+  id: z.number().int().positive(),
+  semantic_memory_id: z.number().int().positive(),
   type: z.string(),
   content: z.string(),
   pinned: z.boolean(),
@@ -16,7 +16,7 @@ const memoryRecallHitSchema = z.discriminatedUnion("memory_type", [
   z.object({
     memory_type: z.literal("semantic"),
     score: z.number(),
-    semantic_memory_id: z.string(),
+    semantic_memory_id: z.number().int().positive(),
     type: z.string(),
     pinned: z.boolean(),
     content: z.string(),
@@ -58,50 +58,50 @@ const memoryRecallHitSchema = z.discriminatedUnion("memory_type", [
 const rememberReturnSchema = z.object({
   ok: z.boolean(),
   action: z.string(),
-  semantic_memory_id: z.string(),
-  fact_id: z.string(),
+  semantic_memory_id: z.number().int().positive(),
+  fact_id: z.number().int().positive(),
 });
 
 export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
   memory_semantic_create: defineToolReturn({
     schema: z.object({
       ok: z.literal(true),
-      id: z.string(),
-      semantic_memory_id: z.string(),
+      id: z.number().int().positive(),
+      semantic_memory_id: z.number().int().positive(),
       action: z.literal("create"),
     }),
     example: {
       ok: true,
-      id: "sm-001",
-      semantic_memory_id: "sm-001",
+      id: 1001,
+      semantic_memory_id: 1001,
       action: "create",
     },
   }),
   memory_semantic_update: defineToolReturn({
     schema: z.object({
       ok: z.literal(true),
-      id: z.string(),
-      semantic_memory_id: z.string(),
+      id: z.number().int().positive(),
+      semantic_memory_id: z.number().int().positive(),
       action: z.literal("update"),
     }),
     example: {
       ok: true,
-      id: "sm-001",
-      semantic_memory_id: "sm-001",
+      id: 1001,
+      semantic_memory_id: 1001,
       action: "update",
     },
   }),
   memory_semantic_deprecate: defineToolReturn({
     schema: z.object({
       ok: z.literal(true),
-      id: z.string(),
-      semantic_memory_id: z.string(),
+      id: z.number().int().positive(),
+      semantic_memory_id: z.number().int().positive(),
       action: z.literal("deprecate"),
     }),
     example: {
       ok: true,
-      id: "sm-001",
-      semantic_memory_id: "sm-001",
+      id: 1001,
+      semantic_memory_id: 1001,
       action: "deprecate",
     },
   }),
@@ -116,8 +116,8 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       count: 1,
       results: [
         {
-          id: "sm-001",
-          semantic_memory_id: "sm-001",
+          id: 1001,
+          semantic_memory_id: 1001,
           type: "preference",
           content: "Prefers concise reply style",
           pinned: false,
@@ -181,7 +181,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
           valence: z.number().nullable(),
           arousal: z.number().nullable(),
           source_segment: z.string().nullable(),
-          semantic_memory_ids: z.array(z.string()),
+          semantic_memory_ids: z.array(z.number().int().positive()),
           created_at: z.string(),
         }),
       ),
@@ -200,7 +200,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
           valence: 0.8,
           arousal: 0.7,
           source_segment: "early",
-          semantic_memory_ids: ["sm-001"],
+          semantic_memory_ids: [1001],
           created_at: "2026-06-10T10:00:00+08:00",
         },
       ],
@@ -216,7 +216,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       valence: z.number().nullable(),
       arousal: z.number().nullable(),
       source_segment: z.string().nullable(),
-      semantic_memory_ids: z.array(z.string()),
+      semantic_memory_ids: z.array(z.number().int().positive()),
       created_at: z.string(),
     }),
     example: {
@@ -228,7 +228,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       valence: 0.8,
       arousal: 0.7,
       source_segment: "early",
-      semantic_memory_ids: ["sm-001"],
+      semantic_memory_ids: [1001],
       created_at: "2026-06-10T10:00:00+08:00",
     },
   }),
@@ -245,7 +245,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
           valence: z.number().nullable(),
           arousal: z.number().nullable(),
           source_segment: z.string().nullable(),
-          semantic_memory_ids: z.array(z.string()),
+          semantic_memory_ids: z.array(z.number().int().positive()),
           created_at: z.string(),
         }),
       ),
@@ -262,7 +262,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
           valence: 0.8,
           arousal: 0.7,
           source_segment: "early",
-          semantic_memory_ids: ["sm-001"],
+          semantic_memory_ids: [1001],
           created_at: "2026-06-10T10:00:00+08:00",
         },
       ],
@@ -273,8 +273,8 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
     example: {
       ok: true,
       action: "create",
-      semantic_memory_id: "sm-001",
-      fact_id: "sm-001",
+      semantic_memory_id: 1001,
+      fact_id: 1001,
     },
   }),
   memory_recall: defineToolReturn({
@@ -291,7 +291,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
         {
           memory_type: "semantic",
           score: 0.85,
-          semantic_memory_id: "sm-001",
+          semantic_memory_id: 1001,
           type: "observation",
           pinned: false,
           content: "Conversation compression strategy prefers concise summaries",

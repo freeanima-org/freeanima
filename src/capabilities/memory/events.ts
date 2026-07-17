@@ -5,7 +5,7 @@ export type ConversationUpdatedPayload = {
 };
 
 export type SemanticMemoryUpdatedPayload = {
-  semantic_memory_ids?: string[];
+  semantic_memory_ids?: number[];
 };
 
 export type TestPingPayload = Record<string, unknown>;

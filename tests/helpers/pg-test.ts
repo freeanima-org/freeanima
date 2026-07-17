@@ -55,10 +55,7 @@ async function clearPgTables(sql: SqlClient, config: Config): Promise<void> {
   await sql`DELETE FROM memory_references`;
   await sql`DELETE FROM messages`;
   await sql`DELETE FROM conversations`;
-  await sql`DELETE FROM semantic_memory`;
   await sql`DELETE FROM self_blocks`;
-  await sql`DELETE FROM autobiographical_memory`;
-  await sql`DELETE FROM limbic_memory`;
   await sql`DELETE FROM service_api_tokens`;
   await sql`DELETE FROM entities`;
   await ensureIntegrationWorldContext(config);

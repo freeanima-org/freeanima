@@ -72,5 +72,5 @@ export async function listAutobiographicalMemories(body: AutobiographicalMemoryL
 
 export async function updateSemanticMemoryPinned(body: SemanticMemoryPinBody) {
   const parsed = semanticMemoryPinBodySchema.parse(body);
-  return consoleCtx().updateSemanticMemoryPinned(parsed.id.trim(), parsed.pinned);
+  return consoleCtx().updateSemanticMemoryPinned(parsed.id, parsed.pinned);
 }

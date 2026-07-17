@@ -91,9 +91,9 @@ export function parseSemanticRef(raw: unknown): ContentBlockSemanticRefInput | n
   if (raw === undefined) return undefined;
   if (raw === null) return null;
   if (typeof raw !== "object" || Array.isArray(raw)) return null;
-  const id = String((raw as Record<string, unknown>).semantic_memory_id ?? "").trim();
-  if (!id) return null;
-  return { semantic_memory_id: id };
+  const id = Number((raw as Record<string, unknown>).entity_id);
+  if (!Number.isInteger(id) || id <= 0) return null;
+  return { entity_id: id };
 }
 
 export function blockPayload(item: ContentBlockRow) {

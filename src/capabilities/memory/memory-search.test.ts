@@ -8,10 +8,10 @@ import { registerToolConversationResolver } from "@freeanima/capabilities/memory
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { runWithToolContext, getToolConversationId } from "@freeanima/core/tool";
 
-const rows = new Map<string, SemanticMemoryRow>();
+const rows = new Map<number, SemanticMemoryRow>();
 let nextId = 1;
 
-function rowFromCreate(input: SemanticMemoryCreateInput, id: string): SemanticMemoryRow {
+function rowFromCreate(input: SemanticMemoryCreateInput, id: number): SemanticMemoryRow {
   const now = new Date("2026-01-01T00:00:00.000Z");
   return {
     id,
@@ -23,25 +23,27 @@ function rowFromCreate(input: SemanticMemoryCreateInput, id: string): SemanticMe
     observed_at: input.observed_at ? new Date(input.observed_at) : null,
     occurred_at: input.occurred_at ?? null,
     status: "active",
-    content_embedding: null,
-    content_fts: null,
-    fts_segmented: null,
+    world_id: 1,
     created_at: now,
     updated_at: now,
   };
 }
 
 const createSemanticMemoryMock = mock(async (input: SemanticMemoryCreateInput) => {
-  const id = `f-${String(nextId++).padStart(6, "0")}-abcd`;
+  const id = nextId++;
   rows.set(id, rowFromCreate(input, id));
   return id;
 });
 
-const getSemanticMemoryMock = mock(async (id: string) => rows.get(id) ?? null);
+const getSemanticMemoryMock = mock(async (id: string | number) => {
+  const n = typeof id === "number" ? id : Number(id);
+  return rows.get(n) ?? null;
+});
 
 const updateSemanticMemoryMock = mock(
-  async (input: { id: string; source_conversations?: string[] }) => {
-    const row = rows.get(input.id);
+  async (input: { id: string | number; source_conversations?: string[] }) => {
+    const n = typeof input.id === "number" ? input.id : Number(input.id);
+    const row = rows.get(n);
     if (!row) return null;
     if (input.source_conversations !== undefined) {
       row.source_conversations = input.source_conversations;
@@ -136,7 +138,7 @@ describe("memory search", () => {
     let createdSources: string[] | undefined;
     createSemanticMemoryMock.mockImplementation(async (input) => {
       createdSources = input.source_conversations;
-      const id = `f-${String(nextId++).padStart(6, "0")}-abcd`;
+      const id = nextId++;
       rows.set(id, rowFromCreate(input, id));
       return id;
     });

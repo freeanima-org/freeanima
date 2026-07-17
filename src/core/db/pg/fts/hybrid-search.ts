@@ -7,7 +7,7 @@ import {
 } from "@freeanima/core/config";
 import { and, sql } from "drizzle-orm";
 import { union } from "drizzle-orm/pg-core";
-import { semanticMemory } from "@freeanima/core/db/schema";
+import { entities } from "@freeanima/core/db/schema";
 import { omitUndefined, rrfMerge, messageDocKey, semanticMemoryDocKey } from "@freeanima/core/util";
 
 import { getDb } from "../client.ts";
@@ -48,7 +48,6 @@ export async function hybridSearchSemanticMemory(
     source_conversations: opts?.source_conversations,
   });
 
-  // Keyword-first: FTS ∥ trgm → RRF（检索侧不再走向量）
   const pool = candidateLimit(fetchLimit, 0);
   const [ftsHits, trgmHits] = await Promise.all([
     searchSemanticMemoryFtsRaw(q, {
@@ -124,25 +123,24 @@ export async function hybridCountSemanticMemory(
 
   const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
   const ftsBranch = db
-    .select({ id: semanticMemory.id })
-    .from(semanticMemory)
+    .select({ id: entities.id })
+    .from(entities)
     .where(
       and(
-        sql`${semanticMemory.content_fts} @@ ${tsqueryExpr}`,
+        sql`${entities.search_fts} @@ ${tsqueryExpr}`,
         ...(semanticConditions.length > 0 ? semanticConditions : []),
       ),
     );
   const trgmBranch = db
-    .select({ id: semanticMemory.id })
-    .from(semanticMemory)
+    .select({ id: entities.id })
+    .from(entities)
     .where(
       and(
-        sql`word_similarity(${semanticMemory.content}, ${q}) >= ${minSim}`,
+        sql`word_similarity(${entities.content}, ${q}) >= ${minSim}`,
         ...(semanticConditions.length > 0 ? semanticConditions : []),
       ),
     );
 
-  // COUNT 仅走 FTS∪trgm
   const merged = union(ftsBranch, trgmBranch).as("merged");
   const rows = await db.select({ n: sql<number>`count(*)::int` }).from(merged);
   return Number(rows[0]?.n ?? 0);

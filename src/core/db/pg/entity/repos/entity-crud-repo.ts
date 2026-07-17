@@ -61,9 +61,11 @@ export async function createEntity(
       summary,
       content,
       body,
+      pinned: input.pinned ?? false,
+      reference_count: input.reference_count ?? 0,
       fts_segmented,
-      created_at: now,
-      updated_at: now,
+      created_at: input.created_at ?? now,
+      updated_at: input.updated_at ?? input.created_at ?? now,
     })
     .returning(entityRowSelectColumns);
   if (!row) throw new Error("entity insert failed");
@@ -160,6 +162,8 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
   if (input.summary !== undefined) patch.summary = nextSummary;
   if (input.content !== undefined) patch.content = nextContent;
   if (input.world_id !== undefined) patch.world_id = input.world_id;
+  if (input.pinned !== undefined) patch.pinned = input.pinned;
+  if (input.reference_count !== undefined) patch.reference_count = input.reference_count;
 
   const textChanged =
     input.title !== undefined ||

@@ -28,6 +28,7 @@ import {
   ChatMessageBubble,
   findLastUserMessageIndex,
 } from "@freeanima/features/chat/ui/spa/components/ChatMessageBubble.tsx";
+import { openEntityResource } from "@freeanima/frontend/shell-ui/spa/features/open-entity-resource.ts";
 import { ConversationListItem as ConversationListRow } from "@freeanima/features/chat/ui/spa/components/ConversationListItem.tsx";
 import { useAcpProgressDock } from "@freeanima/features/chat/ui/spa/hooks/useAcpProgressDock.ts";
 import { useEdgeSwipeOpen } from "@freeanima/features/chat/ui/spa/hooks/useEdgeSwipeOpen.ts";
@@ -1606,6 +1607,16 @@ export function ChatApp() {
                         <div
                           className="md-content min-w-0 max-w-full"
                           dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
+                          onClick={(e) => {
+                            const target = e.target as HTMLElement | null;
+                            const anchor = target?.closest?.(
+                              "a[data-anima-uri]",
+                            ) as HTMLAnchorElement | null;
+                            if (!anchor) return;
+                            e.preventDefault();
+                            const uri = anchor.getAttribute("data-anima-uri");
+                            if (uri) void openEntityResource(uri);
+                          }}
                         />
                       </ChatMessageBubble>
                       <MessageActionBar
@@ -1659,6 +1670,16 @@ export function ChatApp() {
                       <div
                         className="md-content"
                         dangerouslySetInnerHTML={{ __html: renderMd(streamText) }}
+                        onClick={(e) => {
+                          const target = e.target as HTMLElement | null;
+                          const anchor = target?.closest?.(
+                            "a[data-anima-uri]",
+                          ) as HTMLAnchorElement | null;
+                          if (!anchor) return;
+                          e.preventDefault();
+                          const uri = anchor.getAttribute("data-anima-uri");
+                          if (uri) void openEntityResource(uri);
+                        }}
                       />
                       <Spinner className="mt-1 size-3" />
                     </div>

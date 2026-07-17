@@ -10,22 +10,22 @@ describe("applyDeepSleepToolResult", () => {
     applyDeepSleepToolResult(
       log,
       "memory_semantic_deprecate",
-      JSON.stringify({ ok: true, semantic_memory_id: "f-000001" }),
+      JSON.stringify({ ok: true, semantic_memory_id: 1001 }),
     );
-    expect(log.deprecatedIds).toEqual(["f-000001"]);
+    expect(log.deprecatedIds).toEqual(["1001"]);
 
     applyDeepSleepToolResult(
       log,
       "memory_semantic_merge",
       JSON.stringify({
         ok: true,
-        id: "f-000099",
-        deprecated_ids: ["f-000010", "f-000011"],
+        id: 1099,
+        deprecated_ids: [1010, 1011],
       }),
     );
-    expect(log.addedIds).toContain("f-000099");
-    expect(log.deprecatedIds).toContain("f-000010");
-    expect(log.deprecatedIds).toContain("f-000011");
+    expect(log.addedIds).toContain("1099");
+    expect(log.deprecatedIds).toContain("1010");
+    expect(log.deprecatedIds).toContain("1011");
   });
 
   test("ignores tool errors", () => {

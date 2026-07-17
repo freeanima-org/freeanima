@@ -34,7 +34,7 @@ function sortSemanticForAutobiography(a: SemanticMemoryRow, b: SemanticMemoryRow
   const aPriority = AUTOBIOGRAPHY_SEMANTIC_TYPES.has(a.type) ? 0 : 1;
   const bPriority = AUTOBIOGRAPHY_SEMANTIC_TYPES.has(b.type) ? 0 : 1;
   if (aPriority !== bPriority) return aPriority - bPriority;
-  return a.id.localeCompare(b.id);
+  return a.id - b.id;
 }
 
 export function formatSemanticMemoriesForAutobiography(rows: SemanticMemoryRow[]): string {
@@ -130,9 +130,9 @@ Using "Today's dialogue", semantic memories, and limbic memories above, decide w
 
 async function mergeSemanticRowsForSessions(
   conversationIds: string[],
-  stageSemanticIds: string[],
+  stageSemanticIds: number[],
 ): Promise<SemanticMemoryRow[]> {
-  const byId = new Map<string, SemanticMemoryRow>();
+  const byId = new Map<number, SemanticMemoryRow>();
   for (const row of await listSemanticMemoryBySourceSessions(conversationIds, {
     status: "active",
   })) {
@@ -178,7 +178,7 @@ export function buildAutobiographyUserMessages(
 
 export async function buildLightSleepAutobiographyUserMessages(
   conversationIds: string[],
-  stageSemanticIds: string[],
+  stageSemanticIds: number[],
   stageLimbicIds: string[],
   precomputedBlocks?: LightSleepConversationBlock[],
 ): Promise<string[]> {

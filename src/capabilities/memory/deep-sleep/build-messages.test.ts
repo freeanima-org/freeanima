@@ -18,7 +18,7 @@ mock.module("@freeanima/core/db/pg/semantic-memory", () => ({
 }));
 
 function makeRow(
-  id: string,
+  id: number,
   status: "active" | "deprecated",
   overrides?: Partial<SemanticMemoryRow>,
 ): SemanticMemoryRow {
@@ -33,9 +33,7 @@ function makeRow(
     occurred_at: null,
     status,
     reference_count: 0,
-    content_embedding: null,
-    content_fts: null,
-    fts_segmented: null,
+    world_id: 1,
     created_at: now,
     updated_at: now,
     ...overrides,
@@ -48,13 +46,13 @@ describe("deep sleep build-messages", () => {
   });
 
   it("formatAllMemoriesMessage reports active row count in heading", () => {
-    const active = [makeRow("a-1", "active"), makeRow("a-2", "active")];
+    const active = [makeRow(96085, "active"), makeRow(14119, "active")];
     const { text } = formatAllMemoriesMessage(active);
     expect(text).toContain("# All semantic memories (2 active entries)");
   });
 
   it("fetchAllActiveMemories uses listActive and excludes deprecated rows", async () => {
-    const rows = [makeRow("a-1", "active"), makeRow("a-2", "active"), makeRow("d-1", "deprecated")];
+    const rows = [makeRow(96085, "active"), makeRow(14119, "active"), makeRow(95605, "deprecated")];
     listActiveSemanticMemoryMock.mockImplementation(async () =>
       rows.filter((r) => r.status === "active"),
     );
@@ -68,7 +66,7 @@ describe("deep sleep build-messages", () => {
   });
 
   it("buildDeepSleepMessages includes pin_maintenance round instructions", () => {
-    const active = [makeRow("a-1", "active")];
+    const active = [makeRow(96085, "active")];
     const { instructionText } = buildDeepSleepMessages(active, "pin_maintenance", {
       entries: {},
       addedIds: [],
@@ -81,7 +79,7 @@ describe("deep sleep build-messages", () => {
 
   it("buildDeepSleepMessages split round uses candidate heading", () => {
     const longContent = "Alice lives in Shanghai. She works at Tencent. She likes Python.";
-    const candidate = makeRow("a-1", "active", { content: longContent });
+    const candidate = makeRow(96085, "active", { content: longContent });
     const { allMemoriesText, instructionText } = buildDeepSleepMessages(
       [candidate],
       "split",
@@ -93,8 +91,8 @@ describe("deep sleep build-messages", () => {
   });
 
   it("filterSplitCandidates excludes short single-sentence entries", () => {
-    const short = makeRow("a-1", "active", { content: "short fact" });
-    const long = makeRow("a-2", "active", {
+    const short = makeRow(96085, "active", { content: "short fact" });
+    const long = makeRow(14119, "active", {
       content: "Alice lives in Shanghai. She works at Tencent and likes Python very much.",
       updated_at: new Date("2026-06-12T10:00:00.000Z"),
     });
@@ -103,11 +101,11 @@ describe("deep sleep build-messages", () => {
   });
 
   it("filterSplitCandidates incremental requires recent updated", () => {
-    const recent = makeRow("a-1", "active", {
+    const recent = makeRow(96085, "active", {
       content: "First fact here. Second fact there. Third fact also included for length.",
       updated_at: new Date("2026-06-12T11:00:00.000Z"),
     });
-    const stale = makeRow("a-2", "active", {
+    const stale = makeRow(14119, "active", {
       content: "Old fact one. Old fact two. Old fact three with enough length here.",
       updated_at: new Date("2026-06-01T10:00:00.000Z"),
       observed_at: new Date("2026-06-12T11:00:00.000Z"),
@@ -118,8 +116,8 @@ describe("deep sleep build-messages", () => {
 
   it("hasRecentMemoryUpdates uses updated only", () => {
     const now = new Date("2026-06-12T12:00:00.000Z");
-    const recent = makeRow("a-1", "active", { updated_at: new Date("2026-06-12T11:00:00.000Z") });
-    const staleObserved = makeRow("a-2", "active", {
+    const recent = makeRow(96085, "active", { updated_at: new Date("2026-06-12T11:00:00.000Z") });
+    const staleObserved = makeRow(14119, "active", {
       updated_at: new Date("2026-06-01T10:00:00.000Z"),
       observed_at: new Date("2026-06-12T11:00:00.000Z"),
     });
@@ -129,7 +127,7 @@ describe("deep sleep build-messages", () => {
   });
 
   it("formatSplitCandidatesMessage reports candidate vs total counts", () => {
-    const candidate = makeRow("a-1", "active", {
+    const candidate = makeRow(96085, "active", {
       content: "Line one. Line two. Line three with enough length.",
     });
     const { text } = formatSplitCandidatesMessage([candidate], 10);

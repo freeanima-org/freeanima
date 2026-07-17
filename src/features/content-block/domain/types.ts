@@ -16,7 +16,7 @@ export type ContentBlockNarrativeInput = {
 };
 
 export type ContentBlockSemanticRefInput = {
-  semantic_memory_id: string;
+  entity_id: number;
 };
 
 export type ContentBlockDreamInput = {

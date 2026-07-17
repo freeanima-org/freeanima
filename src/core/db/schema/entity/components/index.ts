@@ -19,6 +19,7 @@ import { EMAIL_MESSAGE_COMPONENT, emailMessageBodySchema } from "./email-message
 import { EMAIL_THREAD_COMPONENT, emailThreadBodySchema } from "./email-thread.ts";
 import { LIMBIC_COMPONENT, limbicBodySchema } from "./limbic.ts";
 import { NARRATIVE_COMPONENT, narrativeBodySchema } from "./narrative.ts";
+import { SEMANTIC_MEMORY_COMPONENT, semanticMemoryBodySchema } from "./semantic-memory.ts";
 import { SEMANTIC_REF_COMPONENT, semanticRefBodySchema } from "./semantic-ref.ts";
 import { TASK_ITEM_COMPONENT, taskItemBodySchema } from "./task-item.ts";
 import { TASK_LIST_COMPONENT, taskListBodySchema } from "./task-list.ts";
@@ -44,6 +45,7 @@ export const COMPONENT_IDS = [
   LIMBIC_COMPONENT,
   NARRATIVE_COMPONENT,
   DREAM_COMPONENT,
+  SEMANTIC_MEMORY_COMPONENT,
   SEMANTIC_REF_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
   EMAIL_THREAD_COMPONENT,
@@ -76,6 +78,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [LIMBIC_COMPONENT]: limbicBodySchema,
   [NARRATIVE_COMPONENT]: narrativeBodySchema,
   [DREAM_COMPONENT]: dreamBodySchema,
+  [SEMANTIC_MEMORY_COMPONENT]: semanticMemoryBodySchema,
   [SEMANTIC_REF_COMPONENT]: semanticRefBodySchema,
   [EMAIL_ACCOUNT_COMPONENT]: emailAccountBodySchema,
   [EMAIL_THREAD_COMPONENT]: emailThreadBodySchema,
@@ -114,6 +117,7 @@ export * from "./content-block.ts";
 export * from "./limbic.ts";
 export * from "./narrative.ts";
 export * from "./semantic-ref.ts";
+export * from "./semantic-memory.ts";
 export * from "./email-account.ts";
 export * from "./email-thread.ts";
 export * from "./email-message.ts";

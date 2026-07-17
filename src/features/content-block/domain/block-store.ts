@@ -115,6 +115,8 @@ function mapHit(row: {
   summary: string;
   components: string[];
   body: Record<string, unknown>;
+  pinned: boolean;
+  reference_count: number;
   created_at: Date;
   updated_at: Date;
   primary_component: string;
@@ -130,6 +132,8 @@ function mapHit(row: {
     content: row.content,
     summary: row.summary,
     body: row.body,
+    pinned: row.pinned,
+    reference_count: row.reference_count,
     created_at: row.created_at,
     updated_at: row.updated_at,
   });
@@ -173,7 +177,7 @@ function semanticBodyFields(input: {
     if (input.narrative.status !== undefined) out.status = input.narrative.status;
   }
   if (input.semantic_ref) {
-    out.semantic_memory_id = input.semantic_ref.semantic_memory_id;
+    out.entity_id = input.semantic_ref.entity_id;
   }
   if (input.dream) {
     out.source_limbic_ids = input.dream.source_limbic_ids ?? [];
@@ -335,7 +339,7 @@ export async function updateContentBlock(
   }
   if (input.semantic_ref !== undefined) {
     if (input.semantic_ref) {
-      bodyPatch.semantic_memory_id = input.semantic_ref.semantic_memory_id;
+      bodyPatch.entity_id = input.semantic_ref.entity_id;
     }
   }
 

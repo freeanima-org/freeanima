@@ -1,7 +1,7 @@
 export type MemoryRecallHit = {
   memory_type: string;
   score: number;
-  semantic_memory_id?: string;
+  semantic_memory_id?: number;
   type?: string;
   pinned?: boolean;
   content?: string;

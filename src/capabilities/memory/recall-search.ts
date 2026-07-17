@@ -23,7 +23,7 @@ export type MemoryRecallHitType = "semantic" | "conversation" | "limbic" | "auto
 export type SemanticRecallHit = {
   memory_type: "semantic";
   score: number;
-  semantic_memory_id: string;
+  semantic_memory_id: number;
   type: string;
   pinned: boolean;
   content: string;

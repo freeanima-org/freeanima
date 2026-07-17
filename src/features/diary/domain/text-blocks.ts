@@ -45,6 +45,8 @@ function mapHit(row: {
   summary: string;
   components: string[];
   body: Record<string, unknown>;
+  pinned?: boolean;
+  reference_count?: number;
   created_at: Date;
   updated_at: Date;
   primary_component: string;
@@ -60,6 +62,8 @@ function mapHit(row: {
     content: row.content,
     summary: row.summary,
     body: row.body,
+    pinned: row.pinned ?? false,
+    reference_count: row.reference_count ?? 0,
     created_at: row.created_at,
     updated_at: row.updated_at,
   });

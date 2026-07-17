@@ -49,9 +49,9 @@ function flushPending(): void {
   });
 }
 
-/** Async write semantic_memory embedding (failure logged only) */
-export function scheduleSemanticMemoryEmbedding(id: string, content: string): void {
-  enqueue({ kind: "semantic_memory", id, content });
+/** Async write semantic_memory entity embedding (failure logged only) */
+export function scheduleSemanticMemoryEmbedding(id: string | number, content: string): void {
+  scheduleEntityEmbedding(Number(id), content);
 }
 
 /** Async write messages embedding (failure logged only) */

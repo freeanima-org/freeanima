@@ -101,9 +101,9 @@ export type AppRuntimeMemoryPort = {
   countSemanticMemory(): Promise<{ index_rows: number }>;
   listSemanticMemories(opts?: Record<string, unknown>): Promise<unknown>;
   updateSemanticMemoryPinned(
-    id: string,
+    id: number | string,
     pinned: boolean,
-  ): Promise<{ ok: true; id: string; pinned: boolean }>;
+  ): Promise<{ ok: true; id: number; pinned: boolean }>;
   listLimbicMemories(opts?: Record<string, unknown>): Promise<unknown>;
   listAutobiographicalMemories(opts?: Record<string, unknown>): Promise<unknown>;
   getFtsStatus(): Promise<unknown>;

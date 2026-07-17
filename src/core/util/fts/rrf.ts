@@ -33,7 +33,7 @@ export function rrfMerge<T extends RrfHit>(
   return limit ? merged.slice(0, limit) : merged;
 }
 
-export function semanticMemoryDocKey(id: string): string {
+export function semanticMemoryDocKey(id: string | number): string {
   return `sm:${id}`;
 }
 

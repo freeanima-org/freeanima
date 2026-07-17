@@ -132,13 +132,22 @@ function handleStreamEvent(
 
 function renderMd(text: string): string {
   if (!text) return "";
+  let html: string;
   try {
-    return marked.parse(text, { breaks: true, gfm: true }) as string;
+    html = marked.parse(text, { breaks: true, gfm: true }) as string;
   } catch {
     const div = document.createElement("div");
     div.textContent = text;
-    return div.innerHTML;
+    html = div.innerHTML;
   }
+  // `[[anima:id]]` / `[[anima:id?component=…]]` → clickable anchors for openEntityResource
+  return html.replace(
+    /\[\[anima:(\d+)((?:\?[^\]]*)?)\]\]/gi,
+    (_full, id: string, query: string) => {
+      const href = `anima:${id}${query ?? ""}`;
+      return `<a href="${href}" data-anima-uri="${href}" class="link link-hover font-mono text-xs">[[anima:${id}${query ?? ""}]]</a>`;
+    },
+  );
 }
 
 async function waitForAssistantViaSessionEvents(

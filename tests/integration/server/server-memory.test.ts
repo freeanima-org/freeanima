@@ -146,8 +146,8 @@ describePg("server memory API", () => {
 
     const ctx = getActivePgTestContext();
     if (!ctx) throw new Error("PG test context missing");
-    await ctx.sql`UPDATE semantic_memory SET reference_count = ${1} WHERE id = ${lowId}`;
-    await ctx.sql`UPDATE semantic_memory SET reference_count = ${5} WHERE id = ${highId}`;
+    await ctx.sql`UPDATE entities SET reference_count = ${1} WHERE id = ${lowId} AND primary_component = 'semantic_memory'`;
+    await ctx.sql`UPDATE entities SET reference_count = ${5} WHERE id = ${highId} AND primary_component = 'semantic_memory'`;
 
     const browseByRefs = await getAppRuntime().listSemanticMemories({
       sort_by: "reference_count",
@@ -155,10 +155,10 @@ describePg("server memory API", () => {
     });
     const probeIds = browseByRefs.items
       .filter((row: { content: string }) => row.content.includes("unique-sort-token"))
-      .map((row: { id: string }) => row.id);
+      .map((row: { id: number }) => row.id);
     expect(probeIds.indexOf(highId)).toBeLessThan(probeIds.indexOf(lowId));
     expect(
-      browseByRefs.items.find((row: { id: string }) => row.id === highId)?.reference_count,
+      browseByRefs.items.find((row: { id: number }) => row.id === highId)?.reference_count,
     ).toBe(5);
 
     const searched = await getAppRuntime().listSemanticMemories({

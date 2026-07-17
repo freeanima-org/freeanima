@@ -1,10 +1,5 @@
-import { and, eq, inArray, ne, sql as drizzleSql } from "drizzle-orm";
-import {
-  memoryReferences,
-  messages,
-  semanticMemory,
-  conversations,
-} from "@freeanima/core/db/schema";
+import { and, eq, inArray, sql as drizzleSql } from "drizzle-orm";
+import { memoryReferences, messages, entities, conversations } from "@freeanima/core/db/schema";
 import { formatCstIso } from "@freeanima/core/util";
 import type { RecordMessageReferencesInput } from "../types.ts";
 import {
@@ -18,68 +13,55 @@ const REF_INSERT_CHUNK = 100;
 
 export async function recordMessageReferences(
   input: RecordMessageReferencesInput,
-): Promise<string[]> {
-  const semantic_memory_ids = [...new Set(parseMemoryReferenceMarkers(input.content))];
-  if (semantic_memory_ids.length === 0) return [];
+): Promise<number[]> {
+  const entity_ids = [...new Set(parseMemoryReferenceMarkers(input.content))];
+  if (entity_ids.length === 0) return [];
   if (input.skip_reference_count) return [];
 
   const created_at = input.created_at ? new Date(input.created_at) : new Date(formatCstIso());
   const db = getDb();
 
   const existingRows = await db
-    .select({ id: semanticMemory.id })
-    .from(semanticMemory)
-    .where(inArray(semanticMemory.id, semantic_memory_ids));
+    .select({ id: entities.id })
+    .from(entities)
+    .where(inArray(entities.id, entity_ids));
   const existingIds = existingRows.map((r) => r.id);
   if (existingIds.length === 0) return [];
 
   const inserted = await db
     .insert(memoryReferences)
     .values(
-      existingIds.map((semantic_memory_id) => ({
+      existingIds.map((entity_id) => ({
         message_id: input.message_id,
-        semantic_memory_id,
+        entity_id,
         conversation_id: input.conversation_id,
         created_at,
       })),
     )
     .onConflictDoNothing({
-      target: [memoryReferences.message_id, memoryReferences.semantic_memory_id],
+      target: [memoryReferences.message_id, memoryReferences.entity_id],
     })
-    .returning({ semantic_memory_id: memoryReferences.semantic_memory_id });
+    .returning({ entity_id: memoryReferences.entity_id });
 
   if (inserted.length === 0) return [];
 
-  const recordedIds = inserted.map((r) => r.semantic_memory_id);
+  const recordedIds = inserted.map((r) => r.entity_id);
 
-  const priorRows = await db
-    .select({ semantic_memory_id: memoryReferences.semantic_memory_id })
-    .from(memoryReferences)
-    .where(
-      and(
-        eq(memoryReferences.conversation_id, input.conversation_id),
-        inArray(memoryReferences.semantic_memory_id, recordedIds),
-        ne(memoryReferences.message_id, input.message_id),
-      ),
-    );
-  const hasPrior = new Set(priorRows.map((r) => r.semantic_memory_id));
-  const firstHits = recordedIds.filter((id) => !hasPrior.has(id));
-  if (firstHits.length === 0) return recordedIds;
-
+  // 每条消息计一次：无同 conversation 去重
   const weight = memoryReferenceWeight(created_at);
   const now = new Date(formatCstIso());
   await db
-    .update(semanticMemory)
+    .update(entities)
     .set({
-      reference_count: drizzleSql`${semanticMemory.reference_count} + ${weight}`,
+      reference_count: drizzleSql`${entities.reference_count} + ${weight}`,
       updated_at: now,
     })
-    .where(inArray(semanticMemory.id, firstHits));
+    .where(inArray(entities.id, recordedIds));
 
   return recordedIds;
 }
 
-/** Rescan `[[f-xxx]]` in message bodies, rebuild memory_references (full calibration) */
+/** Rescan `[[anima:id]]` in message bodies, rebuild memory_references (full calibration) */
 export async function rebuildMemoryReferencesFromMessages(): Promise<number> {
   const db = getDb();
 
@@ -102,44 +84,43 @@ export async function rebuildMemoryReferencesFromMessages(): Promise<number> {
 
   type PendingRef = {
     message_id: string;
-    semantic_memory_id: string;
+    entity_id: number;
     conversation_id: string;
     created_at: Date;
   };
   const pending: PendingRef[] = [];
-  const markerIds = new Set<string>();
+  const markerIds = new Set<number>();
 
   for (const row of rows) {
-    const semantic_memory_ids = parseMemoryReferenceMarkers(row.content);
-    if (semantic_memory_ids.length === 0) continue;
+    const entity_ids = parseMemoryReferenceMarkers(row.content);
+    if (entity_ids.length === 0) continue;
     const created_at = row.timestamp ? new Date(row.timestamp) : new Date(formatCstIso());
-    for (const semantic_memory_id of semantic_memory_ids) {
-      markerIds.add(semantic_memory_id);
+    for (const entity_id of entity_ids) {
+      markerIds.add(entity_id);
       pending.push({
         message_id: row.id,
-        semantic_memory_id,
+        entity_id,
         conversation_id: row.conversation_id,
         created_at,
       });
     }
   }
 
-  const validIds = new Set<string>();
+  const validIds = new Set<number>();
   if (markerIds.size > 0) {
     const idList = [...markerIds];
     for (let i = 0; i < idList.length; i += REF_INSERT_CHUNK) {
       const chunk = idList.slice(i, i + REF_INSERT_CHUNK);
       const existing = await db
-        .select({ id: semanticMemory.id })
-        .from(semanticMemory)
-        .where(inArray(semanticMemory.id, chunk));
+        .select({ id: entities.id })
+        .from(entities)
+        .where(inArray(entities.id, chunk));
       for (const row of existing) validIds.add(row.id);
     }
   }
 
-  const toInsert = pending.filter((p) => validIds.has(p.semantic_memory_id));
+  const toInsert = pending.filter((p) => validIds.has(p.entity_id));
 
-  // 差分重建：先落新表数据前清空；短事务降低与在线写窗口的重叠
   await db.transaction(async (tx) => {
     await tx.delete(memoryReferences);
     for (let i = 0; i < toInsert.length; i += REF_INSERT_CHUNK) {
@@ -149,7 +130,7 @@ export async function rebuildMemoryReferencesFromMessages(): Promise<number> {
         .insert(memoryReferences)
         .values(chunk)
         .onConflictDoNothing({
-          target: [memoryReferences.message_id, memoryReferences.semantic_memory_id],
+          target: [memoryReferences.message_id, memoryReferences.entity_id],
         });
     }
   });
@@ -162,42 +143,39 @@ export async function syncAllReferenceCounts(): Promise<{ updated: number; rebui
   const db = getDb();
   const now = new Date(formatCstIso());
 
-  // 单语句：全表 reference_count 按 dedupe+衰减 CTE 写回；无命中者置 0
-  await db.update(semanticMemory).set({
+  // 全表按 memory_references 重算（每条引用计一次 + 30 天权重）；无引用者置 0
+  await db.update(entities).set({
     reference_count: drizzleSql`COALESCE((
-      WITH deduped AS (
-        SELECT DISTINCT ON (conversation_id, semantic_memory_id)
-          conversation_id,
-          semantic_memory_id,
-          created_at
-        FROM memory_references
-        WHERE semantic_memory_id = ${semanticMemory.id}
-        ORDER BY conversation_id, semantic_memory_id, created_at DESC
-      )
       SELECT SUM(
         CASE
-          WHEN created_at >= NOW() - INTERVAL '30 days' THEN 2.0
+          WHEN mr.created_at >= NOW() - INTERVAL '30 days' THEN 2.0
           ELSE 1.0
         END
       )::float8
-      FROM deduped
+      FROM memory_references mr
+      WHERE mr.entity_id = ${entities.id}
     ), 0)`,
     updated_at: now,
   });
 
   const countRows = await db
     .select({ count: drizzleSql<number>`count(*)::int` })
-    .from(semanticMemory)
-    .where(drizzleSql`${semanticMemory.reference_count} > 0`);
+    .from(entities)
+    .where(drizzleSql`${entities.reference_count} > 0`);
 
   return { updated: Number(countRows[0]?.count ?? 0), rebuilt };
 }
 
-export async function countReferencesBySemanticMemory(semantic_memory_id: string): Promise<number> {
+export async function countReferencesBySemanticMemory(entity_id: number): Promise<number> {
   const db = getDb();
   const rows = await db
     .select({ count: drizzleSql<number>`count(*)::int` })
     .from(memoryReferences)
-    .where(eq(memoryReferences.semantic_memory_id, semantic_memory_id));
+    .where(eq(memoryReferences.entity_id, entity_id));
   return Number(rows[0]?.count ?? 0);
+}
+
+/** @deprecated alias */
+export async function countReferencesByEntity(entity_id: number): Promise<number> {
+  return countReferencesBySemanticMemory(entity_id);
 }

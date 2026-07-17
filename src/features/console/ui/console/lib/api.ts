@@ -274,7 +274,7 @@ export async function listSemanticMemories(input: {
   }
 }
 
-export async function updateSemanticMemoryPinned(input: { id: string; pinned: boolean }) {
+export async function updateSemanticMemoryPinned(input: { id: number; pinned: boolean }) {
   return hubCall(hub().call("memory.semanticPin", input));
 }
 

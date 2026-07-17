@@ -148,15 +148,17 @@ describePg("FTS rebuild embedding PG", () => {
     });
 
     await awaitPendingEmbeddingsForTest();
-    await ctx!.sql`UPDATE semantic_memory SET content_embedding = NULL WHERE id = ${id}`;
+    await ctx!.sql`UPDATE entities SET search_embedding = NULL WHERE id = ${id}`;
 
     const result = await rebuildAllFtsSegments({ onlyMissing: true });
-    expect(result.embeddings?.semantic_memory).toBeGreaterThanOrEqual(1);
+    expect(
+      result.embeddings?.semantic_memory ?? result.embeddings?.entities ?? 0,
+    ).toBeGreaterThanOrEqual(1);
 
-    const rows = await ctx!.sql<{ content_embedding: string | null }[]>`
-      SELECT content_embedding::text AS content_embedding FROM semantic_memory WHERE id = ${id}
+    const rows = await ctx!.sql<{ search_embedding: string | null }[]>`
+      SELECT search_embedding::text AS search_embedding FROM entities WHERE id = ${id}
     `;
-    expect(rows[0]?.content_embedding).not.toBeNull();
+    expect(rows[0]?.search_embedding).not.toBeNull();
   });
 
   it("onlyMissing=true skips message rows with empty payload content", async () => {

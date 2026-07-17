@@ -50,7 +50,9 @@ function brickToRow(b: MemoryBrickRow): AutobiographicalMemoryRow {
     significance,
     period_start: b.body.period_start == null ? null : String(b.body.period_start),
     period_end: b.body.period_end == null ? null : String(b.body.period_end),
-    source_facts: Array.isArray(facts) ? facts.map(String) : [],
+    source_facts: Array.isArray(facts)
+      ? facts.map((v) => Number(v)).filter((n) => Number.isInteger(n) && n > 0)
+      : [],
     source_conversations: Array.isArray(convs) ? convs.map(String) : [],
     status,
     created_at: new Date(b.created_at),
@@ -143,7 +145,7 @@ export async function listAutobiographicalMemoryCreatedSince(
 }
 
 export async function listAutobiographicalMemoryBySourceSemanticMemory(
-  ids: string[],
+  ids: number[],
   opts: { limit?: number } = {},
 ): Promise<AutobiographicalMemoryRow[]> {
   if (ids.length === 0) return [];

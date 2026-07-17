@@ -1,5 +1,5 @@
 import { sql, type SQL } from "drizzle-orm";
-import { bigint, index, jsonb, pgTable, text, vector } from "drizzle-orm/pg-core";
+import { bigint, boolean, index, jsonb, pgTable, real, text, vector } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
 import { pgTimestamptz } from "../columns/pg-timestamptz.ts";
@@ -22,6 +22,10 @@ export const entities = pgTable(
     summary: text("summary").notNull().default(""),
     content: text("content").notNull().default(""),
     body: jsonb("body").notNull().default({}),
+    /** Entity-level pin（任意 primary_component） */
+    pinned: boolean("pinned").notNull().default(false),
+    /** Entity-level citation weight sum（[[anima:id]]） */
+    reference_count: real("reference_count").notNull().default(0),
     fts_segmented: text("fts_segmented"),
     search_embedding: vector("search_embedding", { dimensions: SEMANTIC_EMBEDDING_DIMENSIONS }),
     search_fts: tsvector("search_fts").generatedAlwaysAs(
@@ -50,6 +54,13 @@ export const entities = pgTable(
     index("idx_entities_world_primary_component").on(t.world_id, t.primary_component),
     index("idx_entities_components").using("gin", t.components),
     index("idx_entities_search_fts").using("gin", t.search_fts),
+    index("idx_entities_pinned").on(t.pinned),
+    index("idx_entities_primary_reference_count").on(t.primary_component, t.reference_count.desc()),
+    index("idx_entities_primary_pinned_updated").on(
+      t.primary_component,
+      t.pinned,
+      t.updated_at.desc(),
+    ),
     // HNSW / gin_trgm / body 表达式索引：见 migrations 追加 SQL（drizzle-kit 难表达 opclass / partial）
   ],
 );

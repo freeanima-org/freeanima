@@ -1,10 +1,62 @@
 import type { SemanticFtsHit } from "@freeanima/core/db/schema/rows";
-import { and, desc, eq, getColumns, notLike, sql } from "drizzle-orm";
-import { messages, semanticMemory } from "@freeanima/core/db/schema";
+import type { EntityRow } from "@freeanima/core/db/schema/entity";
+import { and, desc, eq, notLike, sql } from "drizzle-orm";
+import { entities, messages } from "@freeanima/core/db/schema";
 
 import { getDb } from "../client.ts";
 import { buildSemanticConditions } from "../semantic-memory/repos/semantic-filters.ts";
+import { entityToSemanticMemoryRow } from "../semantic-memory/map-row.ts";
 import { buildFtsTsQuery } from "./query.ts";
+
+const semanticSelect = {
+  id: entities.id,
+  type: entities.type,
+  world_id: entities.world_id,
+  components: entities.components,
+  primary_component: entities.primary_component,
+  title: entities.title,
+  summary: entities.summary,
+  content: entities.content,
+  body: entities.body,
+  pinned: entities.pinned,
+  reference_count: entities.reference_count,
+  created_at: entities.created_at,
+  updated_at: entities.updated_at,
+} as const;
+
+function mapHit(row: {
+  id: number;
+  type: string;
+  world_id: number;
+  components: string[];
+  primary_component: string;
+  title: string;
+  summary: string;
+  content: string;
+  body: unknown;
+  pinned: boolean;
+  reference_count: number;
+  created_at: Date;
+  updated_at: Date;
+  rank: number;
+}): SemanticFtsHit {
+  const entityRow: EntityRow = {
+    id: row.id,
+    type: row.type as EntityRow["type"],
+    world_id: row.world_id,
+    components: [...row.components],
+    primary_component: row.primary_component,
+    title: row.title ?? "",
+    summary: row.summary ?? "",
+    content: row.content ?? "",
+    body: (row.body ?? {}) as Record<string, unknown>,
+    pinned: row.pinned ?? false,
+    reference_count: row.reference_count ?? 0,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
+  return { ...entityToSemanticMemoryRow(entityRow), rank: Number(row.rank) };
+}
 
 export async function searchSemanticMemoryFtsRaw(
   query: string,
@@ -29,25 +81,23 @@ export async function searchSemanticMemoryFtsRaw(
 
   const db = getDb();
   const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
-  const rankExpr = sql<number>`ts_rank_cd(${semanticMemory.content_fts}, ${tsqueryExpr}, 32)`.as(
-    "rank",
-  );
+  const rankExpr = sql<number>`ts_rank_cd(${entities.search_fts}, ${tsqueryExpr}, 32)`.as("rank");
   const conditions = [
-    sql`${semanticMemory.content_fts} @@ ${tsqueryExpr}`,
+    sql`${entities.search_fts} @@ ${tsqueryExpr}`,
     ...buildSemanticConditions({ types, status, source_conversations }),
   ];
 
   const rows = await db
     .select({
-      ...getColumns(semanticMemory),
+      ...semanticSelect,
       rank: rankExpr,
     })
-    .from(semanticMemory)
+    .from(entities)
     .where(and(...conditions))
     .orderBy(desc(rankExpr))
     .limit(limit);
 
-  return rows.map((r) => ({ ...r, rank: Number(r.rank) }));
+  return rows.map(mapHit);
 }
 
 export async function searchMessagesFtsRaw(

@@ -12,6 +12,10 @@ export type EntityCreateInput = {
   summary?: string;
   content?: string;
   body: Record<string, unknown>;
+  pinned?: boolean;
+  reference_count?: number;
+  created_at?: Date;
+  updated_at?: Date;
 };
 
 export type EntityUpdateInput = {
@@ -22,6 +26,8 @@ export type EntityUpdateInput = {
   summary?: string;
   content?: string;
   body?: Record<string, unknown>;
+  pinned?: boolean;
+  reference_count?: number;
 };
 
 export type EntityListOpts = {

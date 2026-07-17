@@ -56,8 +56,12 @@ Each displayable component may `registerEntityOverlay(component, OverlayComponen
 ## Out of scope (for now)
 
 - OS protocol / intent handlers for `anima:`
-- Non-entity resources (conversation, semantic memory, …)
+- Non-entity resources (conversation, …)
 - Storing Anima URI strings in FK fields
 - Full Markdown click interception in Chat
 
 See also [`entity-model.md`](entity-model.md).
+
+## Memory citations
+
+Assistant/user message bodies cite entities with `[[anima:{id}]]` or `[[anima:{id}?component=semantic_memory]]`. Chat Markdown turns these into clickable anchors that call `openEntityResource` (default overlay for `semantic_memory`).
