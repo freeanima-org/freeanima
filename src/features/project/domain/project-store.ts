@@ -42,16 +42,6 @@ async function resolveDefaultListId(worldId: number): Promise<number> {
   }
   throw new Error("default task list not available");
 }
-async function countTasksForProject(projectId: number, worldId: number): Promise<number> {
-  const result = await searchEntities({
-    world_id: worldId,
-    primary_component: TASK_ITEM_COMPONENT,
-    filters: { project_id: projectId },
-    limit: 500,
-    mode: "filter_only",
-  });
-  return result.results.length;
-}
 
 async function countMilestonesForProject(projectId: number, worldId: number): Promise<number> {
   const rows = await listEntities({
@@ -67,7 +57,6 @@ function toProjectRow(
   meta: {
     created_at: Date;
     updated_at: Date;
-    task_count: number;
     milestone_count: number;
   },
 ): ProjectRow {
@@ -83,7 +72,6 @@ function toProjectRow(
     product_tag: row.product_tag ?? null,
     sort_order: row.sort_order ?? 0,
     linked_diary_ids: row.linked_diary_ids ?? [],
-    task_count: meta.task_count,
     milestone_count: meta.milestone_count,
     created_at: meta.created_at.toISOString(),
     updated_at: meta.updated_at.toISOString(),
@@ -154,13 +142,11 @@ export async function listProjects(
     if (!parsed) continue;
     if (opts.folder_id !== undefined && (parsed.folder_id ?? null) !== opts.folder_id) continue;
     if (opts.status != null && parsed.status !== opts.status) continue;
-    const task_count = await countTasksForProject(parsed.id, worldId);
     const milestone_count = await countMilestonesForProject(parsed.id, worldId);
     projects.push(
       toProjectRow(parsed, {
         created_at: row.created_at,
         updated_at: row.updated_at,
-        task_count,
         milestone_count,
       }),
     );
@@ -174,12 +160,10 @@ export async function getProject(worldId: number, id: number): Promise<ProjectRo
   await assertEntityInWorld(id, worldId);
   const parsed = asProject(row);
   if (!parsed) return null;
-  const task_count = await countTasksForProject(parsed.id, worldId);
   const milestone_count = await countMilestonesForProject(parsed.id, worldId);
   return toProjectRow(parsed, {
     created_at: row.created_at,
     updated_at: row.updated_at,
-    task_count,
     milestone_count,
   });
 }
@@ -200,12 +184,10 @@ async function findProjectByClientOpId(
   if (!row) return null;
   const parsed = asProject(row);
   if (!parsed) return null;
-  const task_count = await countTasksForProject(parsed.id, worldId);
   const milestone_count = await countMilestonesForProject(parsed.id, worldId);
   return toProjectRow(parsed, {
     created_at: row.created_at,
     updated_at: row.updated_at,
-    task_count,
     milestone_count,
   });
 }
@@ -247,7 +229,6 @@ export async function createProject(
   return toProjectRow(parsed, {
     created_at: row.created_at,
     updated_at: row.updated_at,
-    task_count: 0,
     milestone_count: 0,
   });
 }
@@ -300,12 +281,10 @@ export async function updateProject(
 
   const parsed = asProject(row);
   if (!parsed) return null;
-  const task_count = await countTasksForProject(parsed.id, worldId);
   const milestone_count = await countMilestonesForProject(parsed.id, worldId);
   return toProjectRow(parsed, {
     created_at: row.created_at,
     updated_at: row.updated_at,
-    task_count,
     milestone_count,
   });
 }

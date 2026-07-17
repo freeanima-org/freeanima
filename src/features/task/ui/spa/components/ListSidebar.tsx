@@ -137,8 +137,10 @@ function SortableTreeRow({
           <span className="mr-1 shrink-0" aria-hidden>
             📁
           </span>
-          <span className="truncate">{list.name}</span>
-          <EntityIdLabel id={list.id} />
+          <span className="min-w-0 flex-1 truncate">{list.name}</span>
+          <span className="ml-auto flex shrink-0 items-center gap-1.5">
+            <EntityIdLabel id={list.id} />
+          </span>
         </button>
       ) : (
         <button
@@ -149,9 +151,11 @@ function SortableTreeRow({
             onSelectList();
           }}
         >
-          <span className="truncate">{list.name}</span>
-          <EntityIdLabel id={list.id} />
-          <span className="text-muted-foreground shrink-0 text-xs">{list.item_count}</span>
+          <span className="min-w-0 flex-1 truncate">{list.name}</span>
+          <span className="ml-auto flex shrink-0 items-center gap-1.5 tabular-nums">
+            <EntityIdLabel id={list.id} />
+            <span className="text-muted-foreground text-xs">{list.item_count}</span>
+          </span>
         </button>
       )}
       {useActionSheet ? (
@@ -211,14 +215,18 @@ function ClosedListRow({
             <span className="mr-1 shrink-0" aria-hidden>
               📁
             </span>
-            <span className="truncate">{list.name}</span>
-            <EntityIdLabel id={list.id} />
+            <span className="min-w-0 flex-1 truncate">{list.name}</span>
+            <span className="ml-auto flex shrink-0 items-center gap-1.5">
+              <EntityIdLabel id={list.id} />
+            </span>
           </>
         ) : (
           <>
-            <span className="truncate">{list.name}</span>
-            <EntityIdLabel id={list.id} />
-            <span className="text-muted-foreground shrink-0 text-xs">{list.item_count}</span>
+            <span className="min-w-0 flex-1 truncate">{list.name}</span>
+            <span className="ml-auto flex shrink-0 items-center gap-1.5 tabular-nums">
+              <EntityIdLabel id={list.id} />
+              <span className="text-muted-foreground text-xs">{list.item_count}</span>
+            </span>
           </>
         )}
       </button>

@@ -31,6 +31,8 @@ import type { ConversationAcpDockInput, ConversationAcpDockOutput } from "./fram
 import type {
   TasklistListInput,
   TasklistListOutput,
+  TasklistStatsInput,
+  TasklistStatsOutput,
   TasklistCreateInput,
   TasklistCreateOutput,
   TasklistPatchInput,
@@ -47,6 +49,8 @@ import type {
   ProjectItemCreateOutput,
   SmartlistListInput,
   SmartlistListOutput,
+  SmartlistStatsInput,
+  SmartlistStatsOutput,
   SmartlistCreateInput,
   SmartlistCreateOutput,
   SmartlistPatchInput,
@@ -196,12 +200,14 @@ export const SAP_METHODS = [
   "message.send",
   "message.interrupt",
   "tasklist.list",
+  "tasklist.stats",
   "tasklist.create",
   "tasklist.patch",
   "tasklist.delete",
   "tasklist.item.list",
   "tasklist.item.create",
   "smartlist.list",
+  "smartlist.stats",
   "smartlist.create",
   "smartlist.patch",
   "smartlist.delete",
@@ -286,12 +292,14 @@ export type SapRouterInputs = {
   "message.send": MessageSendInput;
   "message.interrupt": MessageInterruptInput;
   "tasklist.list": TasklistListInput;
+  "tasklist.stats": TasklistStatsInput;
   "tasklist.create": TasklistCreateInput;
   "tasklist.patch": TasklistPatchInput;
   "tasklist.delete": TasklistDeleteInput;
   "tasklist.item.list": TasklistItemListInput;
   "tasklist.item.create": TasklistItemCreateInput;
   "smartlist.list": SmartlistListInput;
+  "smartlist.stats": SmartlistStatsInput;
   "smartlist.create": SmartlistCreateInput;
   "smartlist.patch": SmartlistPatchInput;
   "smartlist.delete": SmartlistDeleteInput;
@@ -374,12 +382,14 @@ export type SapRouterOutputs = {
   "message.send": MessageSendOutput;
   "message.interrupt": MessageInterruptOutput;
   "tasklist.list": TasklistListOutput;
+  "tasklist.stats": TasklistStatsOutput;
   "tasklist.create": TasklistCreateOutput;
   "tasklist.patch": TasklistPatchOutput;
   "tasklist.delete": TasklistDeleteOutput;
   "tasklist.item.list": TasklistItemListOutput;
   "tasklist.item.create": TasklistItemCreateOutput;
   "smartlist.list": SmartlistListOutput;
+  "smartlist.stats": SmartlistStatsOutput;
   "smartlist.create": SmartlistCreateOutput;
   "smartlist.patch": SmartlistPatchOutput;
   "smartlist.delete": SmartlistDeleteOutput;

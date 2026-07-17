@@ -7,7 +7,6 @@ const projectRowSchema = z.object({
   start_at: z.string(),
   end_at: z.string(),
   folder_id: z.number().nullable(),
-  task_count: z.number(),
   milestone_count: z.number(),
 });
 
@@ -32,7 +31,6 @@ const exampleProject = {
   start_at: "2026-07-01T00:00:00+08:00",
   end_at: "2026-12-31T00:00:00+08:00",
   folder_id: null,
-  task_count: 3,
   milestone_count: 2,
 };
 

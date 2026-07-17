@@ -48,7 +48,8 @@ export const taskListRowSchema = z.object({
   is_default: z.boolean(),
   is_folder: z.boolean(),
   parent_id: z.number().int().positive().nullable(),
-  item_count: z.number().int().nonnegative(),
+  /** 次要数据：仅 tasklist.stats 返回；list/create/patch 省略 */
+  item_count: z.number().int().nonnegative().optional(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -86,6 +87,21 @@ export const tasklistListOutputSchema = z.object({
   lists: z.array(taskListRowSchema),
 });
 export type TasklistListOutput = z.infer<typeof tasklistListOutputSchema>;
+
+export const tasklistStatsInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+  include_closed: z.boolean().optional(),
+});
+export type TasklistStatsInput = z.infer<typeof tasklistStatsInputSchema>;
+export const tasklistStatsOutputSchema = z.object({
+  counts: z.array(
+    z.object({
+      id: z.number().int().positive(),
+      item_count: z.number().int().nonnegative(),
+    }),
+  ),
+});
+export type TasklistStatsOutput = z.infer<typeof tasklistStatsOutputSchema>;
 
 export const tasklistCreateInputSchema = z.object({
   subject_kind: taskSubjectKindSchema,
@@ -145,6 +161,20 @@ export const smartlistListOutputSchema = z.object({
   smart_lists: z.array(smartListRowSchema),
 });
 export type SmartlistListOutput = z.infer<typeof smartlistListOutputSchema>;
+
+export const smartlistStatsInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+});
+export type SmartlistStatsInput = z.infer<typeof smartlistStatsInputSchema>;
+export const smartlistStatsCountSchema = z.object({
+  id: z.number().int().positive().optional(),
+  preset: smartListPresetSchema.optional(),
+  item_count: z.number().int().nonnegative(),
+});
+export const smartlistStatsOutputSchema = z.object({
+  counts: z.array(smartlistStatsCountSchema),
+});
+export type SmartlistStatsOutput = z.infer<typeof smartlistStatsOutputSchema>;
 
 export const smartlistCreateInputSchema = z.object({
   subject_kind: taskSubjectKindSchema,

@@ -24,7 +24,6 @@ const taskListSchema = z.object({
   is_default: z.boolean(),
   is_folder: z.boolean(),
   parent_id: z.number().nullable(),
-  item_count: z.number(),
 });
 
 const exampleItem = {
@@ -51,7 +50,6 @@ const exampleList = {
   is_default: true,
   is_folder: false,
   parent_id: null,
-  item_count: 1,
 };
 
 export const TASK_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {

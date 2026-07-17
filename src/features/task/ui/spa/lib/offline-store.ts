@@ -39,8 +39,24 @@ import {
 
 const MODULE_ID = "task";
 
-type TaskListRow = TaskListRowPayload;
+type TaskListRow = Omit<TaskListRowPayload, "item_count"> & { item_count: number };
 type TaskItemRow = TaskItemRowPayload;
+
+function normalizeListRow(list: TaskListRowPayload): TaskListRow {
+  return {
+    id: list.id,
+    name: list.name,
+    sort_order: list.sort_order,
+    closed: list.closed,
+    color: list.color,
+    is_default: list.is_default,
+    is_folder: list.is_folder,
+    parent_id: list.parent_id,
+    item_count: list.item_count ?? 0,
+    created_at: list.created_at,
+    updated_at: list.updated_at,
+  };
+}
 
 function subjectPayload(): { subject_kind: ReturnType<typeof getSubjectKind> } {
   return { subject_kind: getSubjectKind() };
@@ -278,8 +294,10 @@ async function mergeServerTaskLists(
 }
 
 /** 供 cache-first 读路径在写回服务器列表前调用，合并未同步的 temp 清单。 */
-export async function reconcileServerTaskLists(serverLists: TaskListRow[]): Promise<TaskListRow[]> {
-  return mergeServerTaskLists(resolveOutboxScope(), serverLists);
+export async function reconcileServerTaskLists(
+  serverLists: TaskListRowPayload[],
+): Promise<TaskListRow[]> {
+  return mergeServerTaskLists(resolveOutboxScope(), serverLists.map(normalizeListRow));
 }
 
 async function upsertLocalItem(scope: string, item: TaskItemRow): Promise<void> {
@@ -306,7 +324,7 @@ async function adjustListItemCount(scope: string, listId: number, delta: number)
   if (idx < 0) return;
   const list = lists[idx];
   if (!list || list.is_folder) return;
-  lists[idx] = { ...list, item_count: Math.max(0, list.item_count + delta) };
+  lists[idx] = { ...list, item_count: Math.max(0, (list.item_count ?? 0) + delta) };
   await writeLocalLists(scope, lists);
 }
 
@@ -478,7 +496,7 @@ export const taskRpcAdapter: RpcModuleAdapter = {
         ...subjectPayload(),
         include_closed: true,
       });
-      const merged = await mergeServerTaskLists(scope, data.lists);
+      const merged = await mergeServerTaskLists(scope, data.lists.map(normalizeListRow));
       await writeLocalLists(scope, merged);
       for (const list of merged) {
         if (!list.is_folder && !cachedListIds.includes(list.id)) cachedListIds.push(list.id);

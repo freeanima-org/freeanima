@@ -214,9 +214,11 @@ export function SmartListEditorDialog({
                             onCheckedChange={() => toggleListId(list.id)}
                           />
                           <span className="min-w-0 flex-1 truncate">{list.name}</span>
-                          <span className="text-muted-foreground shrink-0 text-xs">
-                            {list.item_count}
-                          </span>
+                          {list.item_count != null ? (
+                            <span className="text-muted-foreground shrink-0 text-xs">
+                              {list.item_count}
+                            </span>
+                          ) : null}
                         </label>
                       </li>
                     ),

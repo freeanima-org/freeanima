@@ -80,7 +80,7 @@ export function TaskItemRowView({
       aria-selected={selectionMode ? selected : undefined}
       className={[
         "hover:bg-muted group flex min-h-11 items-center gap-1 rounded-lg px-1 py-1",
-        canDrag ? "cursor-grab active:cursor-grabbing select-none" : "",
+        canDrag ? "touch-pan-y cursor-grab active:cursor-grabbing select-none" : "",
         selectionMode ? "cursor-pointer select-none" : "",
         dragging ? "opacity-50" : "",
         selected ? "bg-primary/20 ring-primary/40 ring-1 ring-inset" : "",

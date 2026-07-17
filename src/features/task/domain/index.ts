@@ -41,6 +41,8 @@ export {
   type SmartListUpdateInput,
 } from "./smart-list-store.ts";
 
+export { listTaskListStats, listSmartListStats } from "./stats-store.ts";
+
 export {
   BUILTIN_SMART_LIST_DEFINITIONS,
   DEFAULT_SMART_LIST_PRESET,

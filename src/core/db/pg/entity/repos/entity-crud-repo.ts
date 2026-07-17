@@ -361,3 +361,35 @@ export async function countPendingTaskItemsGroupedByListId(
   }
   return map;
 }
+
+/** 一次查出 world 内各 project_id 的 pending task 数 */
+export async function countPendingTaskItemsGroupedByProjectId(
+  world_id: number,
+): Promise<Map<number, number>> {
+  const db = getDb();
+  const projectIdExpr = sql<string>`${entities.body}->>'project_id'`;
+  const rows = await db
+    .select({
+      project_id: projectIdExpr,
+      value: count(),
+    })
+    .from(entities)
+    .where(
+      and(
+        eq(entities.world_id, world_id),
+        eq(entities.primary_component, "task_item"),
+        sql`${entities.body}->>'project_id' IS NOT NULL`,
+        sql`${entities.body}->>'project_id' <> ''`,
+        pendingTaskItemStatusWhere,
+      ),
+    )
+    .groupBy(projectIdExpr);
+
+  const map = new Map<number, number>();
+  for (const row of rows) {
+    const id = Number(row.project_id);
+    if (!Number.isFinite(id) || id <= 0) continue;
+    map.set(id, Number(row.value));
+  }
+  return map;
+}

@@ -7,8 +7,6 @@ import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/core/db
 import { withAdvisoryXactLock, type DbSession } from "@freeanima/core/db/pg";
 import { omitUndefined } from "@freeanima/core/util";
 import {
-  countPendingTaskItemsByListId,
-  countPendingTaskItemsGroupedByListId,
   createEntity,
   deleteEntity,
   deleteTaskItemsByListId,
@@ -45,13 +43,9 @@ function resolveClosed(body: Record<string, unknown>): boolean {
   return body.closed === true;
 }
 
-async function countItemsForList(listId: number, worldId: number): Promise<number> {
-  return countPendingTaskItemsByListId(listId, worldId);
-}
-
 function toListRow(
   row: NonNullable<ReturnType<typeof asTaskList>>,
-  meta: { created_at: Date; updated_at: Date; item_count: number },
+  meta: { created_at: Date; updated_at: Date },
 ): TaskListRow {
   const is_folder = row.is_folder ?? false;
   return {
@@ -63,7 +57,6 @@ function toListRow(
     is_default: row.is_default ?? false,
     is_folder,
     parent_id: row.parent_id ?? null,
-    item_count: is_folder ? 0 : meta.item_count,
     created_at: meta.created_at.toISOString(),
     updated_at: meta.updated_at.toISOString(),
   };
@@ -242,7 +235,6 @@ export async function ensureDefaultTaskListForWorld(worldId: number): Promise<Ta
     return toListRow(parsed, {
       created_at: row.created_at,
       updated_at: row.updated_at,
-      item_count: 0,
     });
   });
 }
@@ -263,12 +255,9 @@ async function findDefaultTaskListRow(
   if (!existingRow) return null;
   const parsed = asTaskList(existingRow);
   if (!parsed) throw new Error("default task list body invalid");
-  const is_folder = parsed.is_folder ?? false;
-  const item_count = is_folder ? 0 : await countItemsForList(parsed.id, worldId);
   return toListRow(parsed, {
     created_at: existingRow.created_at,
     updated_at: existingRow.updated_at,
-    item_count,
   });
 }
 
@@ -281,19 +270,15 @@ export async function listTaskLists(
     primary_component: TASK_LIST_COMPONENT,
     limit: 200,
   });
-  const counts = await countPendingTaskItemsGroupedByListId(worldId);
   const lists: TaskListRow[] = [];
   for (const row of rows) {
     const parsed = asTaskList(row);
     if (!parsed) continue;
     if (!opts?.includeClosed && (parsed.closed ?? false)) continue;
-    const is_folder = parsed.is_folder ?? false;
-    const item_count = is_folder ? 0 : (counts.get(parsed.id) ?? 0);
     lists.push(
       toListRow(parsed, {
         created_at: row.created_at,
         updated_at: row.updated_at,
-        item_count,
       }),
     );
   }
@@ -316,12 +301,9 @@ async function findTaskListByClientOpId(
   if (!row) return null;
   const parsed = asTaskList(row);
   if (!parsed) return null;
-  const is_folder = parsed.is_folder ?? false;
-  const item_count = is_folder ? 0 : await countItemsForList(parsed.id, worldId);
   return toListRow(parsed, {
     created_at: row.created_at,
     updated_at: row.updated_at,
-    item_count,
   });
 }
 
@@ -370,7 +352,6 @@ export async function createTaskList(
   return toListRow(parsed, {
     created_at: row.created_at,
     updated_at: row.updated_at,
-    item_count: 0,
   });
 }
 
@@ -430,12 +411,9 @@ export async function updateTaskList(
 
   const parsed = asTaskList(row);
   if (!parsed) return null;
-  const is_folder = parsed.is_folder ?? false;
-  const item_count = is_folder ? 0 : await countItemsForList(parsed.id, worldId);
   return toListRow(parsed, {
     created_at: row.created_at,
     updated_at: row.updated_at,
-    item_count,
   });
 }
 
@@ -481,19 +459,15 @@ export async function searchTaskLists(
     include_count: false,
   });
 
-  const counts = await countPendingTaskItemsGroupedByListId(worldId);
   const lists: TaskListRow[] = [];
   for (const row of result.results) {
     const parsed = asTaskList(row);
     if (!parsed) continue;
     if (!opts.includeClosed && (parsed.closed ?? false)) continue;
-    const is_folder = parsed.is_folder ?? false;
-    const item_count = is_folder ? 0 : (counts.get(parsed.id) ?? 0);
     lists.push(
       toListRow(parsed, {
         created_at: row.created_at,
         updated_at: row.updated_at,
-        item_count,
       }),
     );
   }

@@ -37,6 +37,7 @@ function parseTaskDndId(id: string | number): number | null {
 type ProjectTaskListProps = {
   items: TaskItemRow[];
   activeItemId?: number | null;
+  hideCompleted?: boolean;
   useActionSheet: boolean;
   disabled?: boolean;
   writesDisabled?: boolean;
@@ -102,6 +103,7 @@ function SortableProjectTaskRow({
 export function ProjectTaskList({
   items,
   activeItemId,
+  hideCompleted = false,
   useActionSheet,
   disabled = false,
   writesDisabled = false,
@@ -113,6 +115,7 @@ export function ProjectTaskList({
 }: ProjectTaskListProps) {
   const pending = useMemo(() => items.filter((i) => i.status === "pending"), [items]);
   const completed = useMemo(() => items.filter((i) => i.status === "completed"), [items]);
+  const showCompleted = !hideCompleted && completed.length > 0;
   const [activeDrag, setActiveDrag] = useState<TaskItemRow | null>(null);
 
   const sortable = !writesDisabled && !disabled;
@@ -174,7 +177,7 @@ export function ProjectTaskList({
             ))}
           </ul>
         </SortableContext>
-        {completed.length > 0 ? (
+        {showCompleted ? (
           <>
             <div className="text-muted-foreground mt-3 mb-1 px-1 text-xs font-medium uppercase">
               已完成

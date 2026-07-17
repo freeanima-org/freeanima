@@ -2,12 +2,13 @@ import {
   DndContext,
   DragOverlay,
   MeasuringStrategy,
-  PointerSensor,
+  MouseSensor,
   TouchSensor,
   useDndMonitor,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragMoveEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -28,6 +29,9 @@ import {
   type FolderDropIntent,
 } from "../lib/resolve-list-drag-end.ts";
 
+/** 水平位移超过此值且大于垂直位移时，才视为「拖向侧栏」 */
+const SIDEBAR_OPEN_DELTA_X = 24;
+
 type TaskDndRootProps = {
   lists: TaskListRow[];
   pendingItems: TaskItemRow[];
@@ -38,7 +42,8 @@ type TaskDndRootProps = {
   onPlaceList: (listId: number, parentId: number | null, ordered: TaskListRow[]) => void;
   onReorderPending: (ordered: TaskItemRow[]) => void;
   onMoveTaskToList: (taskId: number, listId: number) => void;
-  onTaskDragStart?: () => void;
+  /** 确认水平拖任务意图后再调用（避免垂直滚动误开 drawer） */
+  onTaskDragTowardSidebar?: () => void;
 };
 
 type TaskDndUiState = {
@@ -161,7 +166,7 @@ export function TaskDndRoot({
   onPlaceList,
   onReorderPending,
   onMoveTaskToList,
-  onTaskDragStart,
+  onTaskDragTowardSidebar,
 }: TaskDndRootProps) {
   const [activeTask, setActiveTask] = useState<TaskItemRow | null>(null);
   const [activeList, setActiveList] = useState<TaskListRow | null>(null);
@@ -172,6 +177,7 @@ export function TaskDndRoot({
   const [overListRoot, setOverListRoot] = useState(false);
   const [folderDropIntent, setFolderDropIntent] = useState<FolderDropIntent | null>(null);
   const pointerYRef = useRef<number | null>(null);
+  const sidebarOpenFiredRef = useRef(false);
 
   const listById = useMemo(() => new Map(lists.map((l) => [l.id, l])), [lists]);
 
@@ -184,13 +190,14 @@ export function TaskDndRoot({
   );
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
       activationConstraint: { distance: 8 },
     }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 350, tolerance: 12 } }),
   );
 
   const handleDragStart = (event: DragStartEvent) => {
+    sidebarOpenFiredRef.current = false;
     const listId = parseListDndId(event.active.id);
     if (listId != null) {
       setActiveList(listById.get(listId) ?? null);
@@ -202,7 +209,16 @@ export function TaskDndRoot({
     const item = taskItems.find((i) => i.id === taskId) ?? null;
     setActiveTask(item);
     setActiveList(null);
-    onTaskDragStart?.();
+  };
+
+  const handleDragMove = (event: DragMoveEvent) => {
+    if (sidebarOpenFiredRef.current) return;
+    if (!isTaskDndId(event.active.id)) return;
+    const { x, y } = event.delta;
+    if (Math.abs(x) < SIDEBAR_OPEN_DELTA_X) return;
+    if (Math.abs(x) <= Math.abs(y)) return;
+    sidebarOpenFiredRef.current = true;
+    onTaskDragTowardSidebar?.();
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -289,6 +305,7 @@ export function TaskDndRoot({
         droppable: { strategy: MeasuringStrategy.Always },
       }}
       onDragStart={handleDragStart}
+      onDragMove={handleDragMove}
       onDragEnd={handleDragEnd}
       onDragCancel={() => {
         setActiveTask(null);

@@ -39,11 +39,11 @@ export function MilestoneDialog({
 }: MilestoneDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md safe-area-pt safe-area-pb">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[min(100dvh,40rem)] max-w-md flex-col gap-3 overflow-hidden safe-area-pt safe-area-pb">
+        <DialogHeader className="shrink-0">
           <DialogTitle>里程碑</DialogTitle>
         </DialogHeader>
-        <ul className="max-h-64 space-y-2 overflow-y-auto">
+        <ul className="min-h-0 flex-1 space-y-2 overflow-y-auto">
           {milestones.map((m) => (
             <li key={m.id} className="rounded border border-base-300 px-3 py-2 text-sm">
               <div className="font-medium">{m.title}</div>
@@ -69,7 +69,7 @@ export function MilestoneDialog({
             <li className="text-muted-foreground text-sm">暂无里程碑</li>
           ) : null}
         </ul>
-        <div className="space-y-2 border-t border-base-300 pt-3">
+        <div className="shrink-0 space-y-2 border-t border-base-300 pt-3">
           <div>
             <FormFieldLabel>标题</FormFieldLabel>
             <Input

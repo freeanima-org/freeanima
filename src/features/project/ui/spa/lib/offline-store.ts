@@ -155,7 +155,7 @@ async function adjustProjectTaskCount(
   if (idx < 0) return;
   const project = projects[idx];
   if (!project) return;
-  projects[idx] = { ...project, task_count: Math.max(0, project.task_count + delta) };
+  projects[idx] = { ...project, task_count: Math.max(0, (project.task_count ?? 0) + delta) };
   await writeLocalProjects(scope, projects);
 }
 

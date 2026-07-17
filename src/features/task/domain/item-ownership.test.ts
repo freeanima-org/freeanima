@@ -234,11 +234,10 @@ describe("updateProject terminal release_tasks", () => {
     const { updateProject } = await import("@freeanima/features/project/domain/project-store.ts");
     await updateProject(1, { id: 10, status: "completed" });
 
-    // release 会 search project tasks；默认不释放则不应因 release 再搜（countTasks 会搜一次）
+    // 默认不释放：不应 search project tasks（task_count 已迁至 project.stats）
     const projectTaskSearches = searchSpy.mock.calls.filter(
       (c) => (c[0] as { filters?: { project_id?: number } }).filters?.project_id === 10,
     );
-    // countTasksForProject 仍会 search 一次；release 不会额外 updateEntity for tasks
-    expect(projectTaskSearches.length).toBeGreaterThanOrEqual(1);
+    expect(projectTaskSearches.length).toBe(0);
   });
 });

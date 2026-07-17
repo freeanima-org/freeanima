@@ -7,6 +7,7 @@ import { subscribeIdMappings } from "@freeanima/frontend/shell-sdk/offline-id-ma
 import { SubjectScopeToggle, useSubjectScope } from "@freeanima/frontend/shell-sdk/react.tsx";
 import {
   Button,
+  Checkbox,
   Dialog,
   DialogContent,
   DialogFooter,
@@ -60,6 +61,7 @@ import {
   deleteProjectTask,
   fetchMilestones,
   fetchProjectFolders,
+  fetchProjectStats,
   fetchProjectTasks,
   fetchProjects,
   fetchProjectsForMove,
@@ -84,7 +86,11 @@ import {
   buildProjectTaskMenuItems,
   type ProjectMenuItem,
 } from "./lib/project-menus.ts";
-import { folderIdForNewProject } from "./lib/project-tree.ts";
+import {
+  folderIdForNewProject,
+  readHideCompleted,
+  writeHideCompleted,
+} from "./lib/project-tree.ts";
 import { dateLocalToIso, todayDateLocalValue } from "./lib/format-task.ts";
 import {
   useActionSheetCapability,
@@ -126,6 +132,7 @@ export function ProjectApp() {
   const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [showInactive, setShowInactive] = useState(false);
+  const [hideCompleted, setHideCompleted] = useState(() => readHideCompleted(subjectKind));
   const [milestones, setMilestones] = useState<MilestoneRow[]>([]);
   const [tasks, setTasks] = useState<TaskItemRow[]>([]);
   const [selectionSubjectKind, setSelectionSubjectKind] = useState(subjectKind);
@@ -296,20 +303,35 @@ export function ProjectApp() {
         fetchProjectFolders(subjectKind),
         fetchProjects(subjectKind),
       ]);
+      let projectsWithCounts = projectRows;
+      try {
+        const stats = await fetchProjectStats(subjectKind);
+        if (stats.size > 0) {
+          projectsWithCounts = projectRows.map((p) => ({
+            ...p,
+            task_count: stats.get(p.id) ?? p.task_count ?? 0,
+          }));
+        }
+      } catch {
+        // stats 为次要数据，失败时保留 list 默认 0
+      }
       setFolders(folderRows);
-      setProjects(projectRows);
+      setProjects(projectsWithCounts);
 
       const stored = readModuleSelection("project", { subjectKind });
-      const active = projectRows.filter((p) => p.status === "active");
+      const active = projectsWithCounts.filter((p) => p.status === "active");
       const pickId =
-        stored != null && projectRows.some((p) => p.id === stored)
+        stored != null && projectsWithCounts.some((p) => p.id === stored)
           ? stored
-          : (active[0]?.id ?? projectRows[0]?.id ?? null);
+          : (active[0]?.id ?? projectsWithCounts[0]?.id ?? null);
       setSelectedProjectId((prev) => {
-        if (prev != null && projectRows.some((p) => p.id === prev)) return prev;
+        if (prev != null && projectsWithCounts.some((p) => p.id === prev)) return prev;
         return pickId;
       });
-      if (pickId != null && projectRows.some((p) => p.id === pickId && p.status !== "active")) {
+      if (
+        pickId != null &&
+        projectsWithCounts.some((p) => p.id === pickId && p.status !== "active")
+      ) {
         setShowInactive(true);
       }
     } catch (err) {
@@ -336,6 +358,10 @@ export function ProjectApp() {
       setError(err instanceof Error ? err.message : String(err));
     }
   }, [selectedProjectId, subjectKind]);
+
+  useEffect(() => {
+    setHideCompleted(readHideCompleted(subjectKind));
+  }, [subjectKind]);
 
   useEffect(() => {
     resetDetail();
@@ -823,9 +849,21 @@ export function ProjectApp() {
           middle={
             selectedProject ? (
               <div className="flex h-full min-h-0 flex-col">
+                <label className="text-muted-foreground flex shrink-0 items-center gap-2 px-3 py-2 text-xs">
+                  <Checkbox
+                    checked={hideCompleted}
+                    onCheckedChange={(checked) => {
+                      const next = checked === true;
+                      setHideCompleted(next);
+                      writeHideCompleted(subjectKind, next);
+                    }}
+                  />
+                  隐藏已完成
+                </label>
                 <ProjectTaskList
                   items={tasks}
                   activeItemId={detailItem?.id ?? null}
+                  hideCompleted={hideCompleted}
                   useActionSheet={useActionSheet}
                   disabled={writesDisabled}
                   writesDisabled={writesDisabled}

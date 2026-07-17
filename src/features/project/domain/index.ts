@@ -28,6 +28,8 @@ export {
   assertProjectActive,
 } from "./project-store.ts";
 
+export { listProjectTaskStats } from "./stats-store.ts";
+
 export {
   listMilestones,
   createMilestone,
