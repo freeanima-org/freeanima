@@ -52,6 +52,42 @@ export function isSemverNewer(remote: string, local: string): boolean {
   return compareSemver(remote, local) > 0;
 }
 
+/** 提取 `+YYYYMMDDHHmm` build stamp；无则 undefined */
+export function extractBuildStamp(raw: string): string | undefined {
+  const m = raw
+    .trim()
+    .replace(/^v/i, "")
+    .match(/\+(\d{12})\b/);
+  return m?.[1];
+}
+
+/** 是否为可参与 canary 版本比较的具体版本串 */
+export function isConcreteCanaryVersion(raw: string): boolean {
+  const s = raw.trim().replace(/^v/i, "");
+  if (!s || s === "canary") return false;
+  return /^\d+\.\d+/.test(s);
+}
+
+/** 先主.次.修订，再比 `+YYYYMMDDHHmm`；无 stamp 视为更旧 */
+export function compareCanaryVersion(a: string, b: string): number {
+  const sem = compareSemver(a, b);
+  if (sem !== 0) return sem;
+  const sa = extractBuildStamp(a);
+  const sb = extractBuildStamp(b);
+  if (sa && sb) {
+    if (sa < sb) return -1;
+    if (sa > sb) return 1;
+    return 0;
+  }
+  if (sa && !sb) return 1;
+  if (!sa && sb) return -1;
+  return 0;
+}
+
+export function isCanaryVersionNewer(remote: string, local: string): boolean {
+  return compareCanaryVersion(remote, local) > 0;
+}
+
 export function matchReleaseAsset(
   kind: PackagedReleaseKind,
   assets: readonly GithubReleaseAsset[],
@@ -107,6 +143,16 @@ export function extractReleaseCommit(release: {
   const m = body.match(/\bsha[:\s]+`?([0-9a-f]{7,40})`?/i);
   if (m?.[1]) return m[1].toLowerCase();
   return undefined;
+}
+
+/** 从 body 中的 `version: …` 提取完整版本串 */
+export function extractReleaseVersion(release: { body?: string }): string | undefined {
+  const body = release.body ?? "";
+  const m = body.match(/\bversion:\s*`?([^\s`\n]+)`?/i);
+  if (!m?.[1]) return undefined;
+  const v = m[1].trim().replace(/^v/i, "");
+  if (!v || v === "canary") return undefined;
+  return v;
 }
 
 export function commitsMatch(local?: string, remote?: string): boolean {
@@ -216,13 +262,17 @@ export async function resolvePackagedUpdate(opts: {
   }
 
   const remoteCommit = extractReleaseCommit(release);
+  const remoteVersion =
+    trackChannel === "canary"
+      ? (extractReleaseVersion(release) ?? release.tag_name)
+      : release.tag_name;
   const assets = assetsFromRelease(release);
   const asset = matchReleaseAsset(opts.kind, assets);
   if (!asset) {
     return {
       available: false,
       reason: "no_asset",
-      remoteVersion: release.tag_name,
+      remoteVersion,
       track: trackChannel,
       ...(remoteCommit ? { remoteCommit } : {}),
     };
@@ -230,7 +280,7 @@ export async function resolvePackagedUpdate(opts: {
 
   const available: Extract<PackagedUpdateResult, { available: true }> = {
     available: true,
-    remoteVersion: release.tag_name,
+    remoteVersion,
     assetName: asset.name,
     assetUrl: applyGithubReleaseProxy(asset.browser_download_url, proxy),
     releaseUrl: typeof release.html_url === "string" ? release.html_url : "",
@@ -243,6 +293,23 @@ export async function resolvePackagedUpdate(opts: {
 
   if (trackChannel === "release") {
     if (!isSemverNewer(available.remoteVersion, opts.localVersion)) {
+      return {
+        available: false,
+        reason: "up_to_date",
+        remoteVersion: available.remoteVersion,
+        track: trackChannel,
+        ...(remoteCommit ? { remoteCommit } : {}),
+      };
+    }
+    return available;
+  }
+
+  // canary：优先比较完整版本串；无法解析时回退 commit
+  if (
+    isConcreteCanaryVersion(available.remoteVersion) &&
+    isConcreteCanaryVersion(opts.localVersion)
+  ) {
+    if (!isCanaryVersionNewer(available.remoteVersion, opts.localVersion)) {
       return {
         available: false,
         reason: "up_to_date",

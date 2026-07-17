@@ -59,4 +59,20 @@ describe("computeAndroidVersionCode", () => {
     expect(code).toBeGreaterThan(900_000_000);
     expect(String(code).startsWith("901")).toBe(true);
   });
+
+  it("prefers +YYYYMMDDHHmm over wall-clock now", () => {
+    const laterWall = new Date(Date.UTC(2026, 6, 16, 10, 0));
+    const fromStamp = computeAndroidVersionCode("0.9.1-canary+202607160848", {
+      channel: "canary",
+      now: laterWall,
+    });
+    const expected = computeAndroidVersionCode("0.9.1-canary", {
+      channel: "canary",
+      now: new Date(Date.UTC(2026, 6, 16, 8, 48)),
+    });
+    expect(fromStamp).toBe(expected);
+    expect(fromStamp).toBeLessThan(
+      computeAndroidVersionCode("0.9.1-canary+202607160949", { channel: "canary" }),
+    );
+  });
 });
