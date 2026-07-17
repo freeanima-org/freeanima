@@ -64,6 +64,9 @@ describe("systemd unit", () => {
     expect(unit).toContain("RestartSec=180");
     expect(unit).toContain("StartLimitIntervalSec=0");
     expect(unit).toContain("WantedBy=default.target");
+    // StartLimit* 须在 [Unit]（systemd 新版本在 [Service] 会告警并忽略）
+    const unitSec = unit.slice(unit.indexOf("[Unit]"), unit.indexOf("[Service]"));
+    expect(unitSec).toContain("StartLimitIntervalSec=0");
   });
 
   it("unit allows time for graceful shutdown", () => {

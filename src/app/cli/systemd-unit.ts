@@ -28,6 +28,8 @@ export function renderSystemdUnit(
   return `[Unit]
 Description=FreeAnima stack（Hub + optional Web）
 After=network.target
+# 0 = never give up restarting on consecutive failures (only systemctl stop can stop)
+StartLimitIntervalSec=${SYSTEMD_START_LIMIT_INTERVAL_SEC}
 
 [Service]
 Type=simple
@@ -37,7 +39,6 @@ ExecStart=${execStart}
 # Always restart except on systemctl stop; wait ${SYSTEMD_RESTART_SEC}s before restart
 Restart=always
 RestartSec=${SYSTEMD_RESTART_SEC}
-StartLimitIntervalSec=${SYSTEMD_START_LIMIT_INTERVAL_SEC}
 TimeoutStopSec=120
 
 [Install]
