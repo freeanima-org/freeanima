@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-11 00:01+0800\n"
+"POT-Creation-Date: 2026-07-17 22:43+0800\n"
 "PO-Revision-Date: 2026-07-10 23:57+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -16,7 +16,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/features/chat.md:1 messages/po4a/en.xml:359 messages/po4a/en.xml:364
+#: docs/features/chat.md:1 messages/po4a/en.xml:365 messages/po4a/en.xml:370
+#: messages/po4a/en.xml:652
 #, no-wrap
 msgid "Chat"
 msgstr "聊天室"
@@ -97,23 +98,43 @@ msgid "流错误 `code`："
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/chat.md:32
+#: docs/features/chat.md:31
 msgid "`tail_conflict` — CAS 失败"
 msgstr ""
 
+#. type: Plain text
+#: docs/features/chat.md:33
+msgid "幂等短路（`client_op_id` 已提供时）："
+msgstr ""
+
 #. type: Bullet: '- '
-#: docs/features/chat.md:32
-msgid "幂等已完成时直接 `accepted` + `done`"
+#: docs/features/chat.md:36
+msgid ""
+"turn **已完成**（该 user 后已有非空 assistant）→ 直接 `accepted` + `done`"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/chat.md:36
+msgid ""
+"turn **进行中**（同 `client_op_id` 已占用）→ 直接 `accepted` + `done`，**不 "
+"preempt / 不重跑**（避免弱网下在线发送与 outbox flush 并发触发两轮）"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/chat.md:38
+msgid ""
+"客户端：在线 `dispatchSend` 期间对 outbox op 做进程内 claim，flush preflight "
+"跳过已 claim 的条目；`flushOfflineModule` 与全局 sync 共用锁。"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/chat.md:33
+#: docs/features/chat.md:39
 #, no-wrap
 msgid "与 Tier 2 离线平台"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/chat.md:35
+#: docs/features/chat.md:41
 msgid ""
 "Outbox 布局与 [`shell-sdk/offline-outbox`](../../src/frontend/shell-sdk/"
 "offline-outbox.ts) 对齐；Chat flush 走 WS 流式 `message.send`，非通用 "

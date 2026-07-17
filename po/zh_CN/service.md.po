@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-11 11:39+0800\n"
+"POT-Creation-Date: 2026-07-17 22:43+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/service.md:1 messages/po4a/en.xml:625
+#: docs/guide/service.md:1 messages/po4a/en.xml:636
 #, no-wrap
 msgid "Service"
 msgstr "服务"
@@ -100,7 +100,7 @@ msgstr ""
 msgid ""
 "curl -s -H \"Authorization: Bearer <fa_at_...>\" http://127.0.0.1:2658/hub/rpc/v1/status/get | jq '.memory_kb, .memory_detail'\n"
 "grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f 'anima service' | head -1)/status\n"
-"bun run memory:sample -- --hub-url http://127.0.0.1:2658 --stage full\n"
+"just memory-sample -- --hub-url http://127.0.0.1:2658 --stage full\n"
 msgstr ""
 "curl -s -H \"Authorization: Bearer <fa_at_...>\" http://127.0.0.1:2658/api/status | jq '.memory_kb, .memory_detail'\n"
 "grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f 'anima service' | head -1)/status\n"
@@ -108,12 +108,48 @@ msgstr ""
 
 #. type: Title ##
 #: docs/guide/service.md:30
+#, fuzzy, no-wrap
+#| msgid "Development and run"
+msgid "Development vs production"
+msgstr "开发与运行"
+
+#. type: Plain text
+#: docs/guide/service.md:36
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Capability        | Description                                                                                            |\n"
+#| "| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
+#| "| `memory_recall`   | Four sources: semantic / conversation / limbic / autobiographical; Top N; conversation returns snippet |\n"
+#| "| `sessions_search` | Session message search; returns snippet (not full content)                                             |\n"
+#| "| `memory_remember` | Semantic memory CRUD during conversation                                                               |\n"
+#| "| Resident memory   | System prompt injection (not recall)                                                                   |\n"
+msgid ""
+"| Mode                    | How to run Hub                                                                                                                   |\n"
+"| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| **Monorepo / worktree** | `bun run dev:hub` (default random port ≥10000; optional `--port` / `--strict-port`; source `anima` has **no** `service` command) |\n"
+"| **Standalone install**  | `anima service start` / `stop` / `status` (systemd user unit; **2658** / TLS **2659**)                                           |\n"
+msgstr ""
+"| 能力              | 说明                                                                                                   |\n"
+"| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
+"| `memory_recall`   | 四源：semantic / conversation / limbic / autobiographical；Top N；conversation 返回 snippet            |\n"
+"| `sessions_search` | 会话消息搜索；返回 snippet（非全文）                                                                   |\n"
+"| `memory_remember` | 对话中语义记忆 CRUD                                                                                    |\n"
+"| Resident memory   | system prompt 注入（非 recall）                                                                        |\n"
+
+#. type: Plain text
+#: docs/guide/service.md:38
+msgid ""
+"Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.md)。"
+msgstr ""
+
+#. type: Title ##
+#: docs/guide/service.md:39
 #, no-wrap
 msgid "Common commands"
 msgstr "常用命令"
 
 #. type: Fenced code block (bash)
-#: docs/guide/service.md:32
+#: docs/guide/service.md:41
 #, fuzzy, no-wrap
 #| msgid ""
 #| "anima service start          # background (systemd user unit when available)\n"
@@ -123,12 +159,18 @@ msgstr "常用命令"
 #| "anima service restart\n"
 #| "anima web start --foreground # standalone Web static server (default :2659; production: web.enabled + service stack)\n"
 msgid ""
+"# --- standalone install CLI only ---\n"
 "anima service start          # background (systemd user unit when available)\n"
 "anima service start --foreground\n"
 "anima service status\n"
 "anima service stop\n"
 "anima service restart\n"
 "anima web start --foreground # standalone Web static server (default :2660; production: web.enabled + service stack)\n"
+"\n"
+"# --- monorepo / worktree ---\n"
+"just dev                     # Hub (≥10000) + Vite Web (≥5000); proxy via FREEANIMA_URL\n"
+"bun run dev:hub              # Hub foreground; default random ≥10000; skip Hub TLS (Vite may HTTPS)\n"
+"bun run dev:web              # Vite HMR from :5000 (set FREEANIMA_URL to Hub); browser hub = page origin\n"
 msgstr ""
 "anima service start          # background (systemd user unit when available)\n"
 "anima service start --foreground\n"
@@ -138,39 +180,75 @@ msgstr ""
 "anima web start --foreground # standalone Web static server (default :2659; production: web.enabled + service stack)\n"
 
 #. type: Plain text
-#: docs/guide/service.md:42
+#: docs/guide/service.md:57
+#, fuzzy
+#| msgid ""
+#| "`anima.service` is a **single-unit stack**: Hub (`:2658`, REST + SAP + "
+#| "bundled `/web` when `web.enabled`) + optional Tunnel (cloudflared) "
+#| "managed by one foreground supervisor. Legacy `anima-tunnel.service` is "
+#| "disabled on next `service start`."
 msgid ""
 "`anima.service` is a **single-unit stack**: Hub (`:2658`, REST + SAP + "
-"bundled `/web` when `web.enabled`) + optional Tunnel (cloudflared) managed "
-"by one foreground supervisor. Legacy `anima-tunnel.service` is disabled on "
-"next `service start`."
+"bundled `/web` when `web.enabled` and dist exists) managed by one foreground "
+"supervisor."
 msgstr ""
 "`anima.service` 是**单单元栈**：Hub（`:2658`）+ 可选 Web（`:2659`）+ 可选 "
 "Tunnel（cloudflared），由同一前台 supervisor 管理。下次 `service start` 时会"
 "禁用旧版 `anima-tunnel.service`。"
 
 #. type: Plain text
-#: docs/guide/service.md:44
+#: docs/guide/service.md:59
+#, no-wrap
+msgid "**Web build is never triggered by `service start` / `anima web start`.** Paths:\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/service.md:65
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Capability        | Description                                                                                            |\n"
+#| "| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
+#| "| `memory_recall`   | Four sources: semantic / conversation / limbic / autobiographical; Top N; conversation returns snippet |\n"
+#| "| `sessions_search` | Session message search; returns snippet (not full content)                                             |\n"
+#| "| `memory_remember` | Semantic memory CRUD during conversation                                                               |\n"
+#| "| Resident memory   | System prompt injection (not recall)                                                                   |\n"
+msgid ""
+"| Mode               | When to `build:web`                          | UI                                                      |\n"
+"| ------------------ | -------------------------------------------- | ------------------------------------------------------- |\n"
+"| Standalone release | Forced during `bun run build:cli:executable` | Embedded, served at `/web/*`                            |\n"
+"| Source deploy      | Run `bun run build:web` before start         | Hub `/web/*` when `web.enabled`                         |\n"
+"| Dev                | Not required                                 | `just dev` / `dev:hub` + `dev:web` → Web **:5000+** HMR |\n"
+msgstr ""
+"| 能力              | 说明                                                                                                   |\n"
+"| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
+"| `memory_recall`   | 四源：semantic / conversation / limbic / autobiographical；Top N；conversation 返回 snippet            |\n"
+"| `sessions_search` | 会话消息搜索；返回 snippet（非全文）                                                                   |\n"
+"| `memory_remember` | 对话中语义记忆 CRUD                                                                                    |\n"
+"| Resident memory   | system prompt 注入（非 recall）                                                                        |\n"
+
+#. type: Plain text
+#: docs/guide/service.md:67
 #, fuzzy, no-wrap
 #| msgid "When `web.enabled: true`, the stack serves browser Web UI at `http://<host>:2658/web/*` from Hub (no separate API proxy). Clients store Hub URL and **Service API Token** (`fa_at_...`) in **Hub settings**. For standalone static hosting without the Hub process, use `anima web start --foreground` (default `:2659`).\n"
-msgid "When `web.enabled: true`, the stack serves browser Web UI at `http://<host>:2658/web/*` from Hub (no separate API proxy). Clients store Hub URL and **Service API Token** (`fa_at_...`) in **Hub settings**. For standalone static hosting without the Hub process, use `anima web start --foreground` (default `:2660`). Optional Hub native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)).\n"
+msgid "When `config.yaml` has `web.enabled: true` (absent defaults to on) and `src/app/shell/web/dist` (or embedded dist) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Hub (no separate API proxy). Clients store Hub URL and **Service API Token** (`fa_at_...`) in **Hub settings**. For standalone static hosting without the Hub process, use `anima web start --foreground` (default `:2660`) after dist exists. Optional Hub native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `dev:hub` skips Hub TLS and lets Vite terminate HTTPS when enabled.\n"
 msgstr "启用 `web.enabled: true` 时，栈由 Hub 在 `http://<host>:2658/web/*` 提供浏览器 Web UI（无独立 API 代理）。客户端在 **Hub 设置** 中保存 Hub URL 与**服务 API 令牌**（`fa_at_...`）。若无需 Hub 进程单独托管静态资源，使用 `anima web start --foreground`（默认 `:2659`）。\n"
 
 #. type: Plain text
-#: docs/guide/service.md:46
+#: docs/guide/service.md:69
 #, fuzzy, no-wrap
 #| msgid "**Startup order:** Hub must pass `GET /api/health` (`status: ok`) before Tunnel sidecars start (`serve()` `onReady` → stack supervisor). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).\n"
-msgid "**Startup order:** Hub must pass `GET /hub/rpc/v1/health/probe` (`status: ok`) before Tunnel sidecars start (`serve()` `onReady` → stack supervisor). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).\n"
+msgid "**Startup order:** Hub must pass `GET /hub/rpc/v1/health/probe` (`status: ok`) before `serve()` `onReady` sidecars/hooks run. SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).\n"
 msgstr "**启动顺序：** Hub 须先通过 `GET /api/health`（`status: ok`），再启动 Web/Tunnel 边车（`serve()` `onReady` → 栈 supervisor）。SAP 断线由 `@freeanima/sap-contract` 传输层自动重试（指数退避）。\n"
 
 #. type: Plain text
-#: docs/guide/service.md:48
-#, no-wrap
-msgid "**UI access (two modes):**\n"
+#: docs/guide/service.md:71
+#, fuzzy, no-wrap
+#| msgid "**UI access (two modes):**\n"
+msgid "**UI access:**\n"
 msgstr "**UI 访问（两种模式）：**\n"
 
 #. type: Bullet: '- '
-#: docs/guide/service.md:51
+#: docs/guide/service.md:74
 #, fuzzy
 #| msgid ""
 #| "**Desktop / mobile bundled shell:** Chat and **Console at `/chat`, `/"
@@ -185,16 +263,15 @@ msgstr ""
 "`/chat`、`/console/*`（除非 `web.enabled`，否则不由 Hub `:2658` 提供）。"
 
 #. type: Bullet: '- '
-#: docs/guide/service.md:51
+#: docs/guide/service.md:74
 msgid ""
-"**`web.enabled: true`:** browser UI at `http://<host>:2658/web/*` from Hub "
-"(see paragraph above)."
+"**`config.yaml` `web.enabled: true`:** browser UI at `http://<host>:2658/web/"
+"*` from Hub when dist is present (see table above). `web` is bootstrap (not "
+"PG). Default Hub URL in `/web/config.json` is the **page origin**."
 msgstr ""
-"**`web.enabled: true`：** 浏览器 UI 由 Hub 在 `http://<host>:2658/web/*` 提供"
-"（见上文）。"
 
 #. type: Bullet: '- '
-#: docs/guide/service.md:51
+#: docs/guide/service.md:74
 #, fuzzy
 #| msgid ""
 #| "**Local Web dev (`bun run dev:web`):** Vite on `:4173` with base `/web/` "
@@ -202,9 +279,10 @@ msgstr ""
 #| "web/admin/dashboard`; Hub still provides REST `/api/*` and Hub RPC `/hub/"
 #| "rpc/v1`."
 msgid ""
-"**Local Web dev (`bun run dev:web`):** Vite on `:4173` with base `/web/` — "
-"Chat `http://127.0.0.1:4173/web/chat`, Console `http://127.0.0.1:4173/web/"
-"console/dashboard`; Hub serves Hub RPC REST + WS at `/hub/rpc/v1`."
+"**Local Web dev (`bun run dev:web`):** Vite from `:5000` with base `/web/` — "
+"Chat `http://127.0.0.1:5000/web/chat`, Console `…/web/console/dashboard`; `/"
+"hub` and `/mcp` proxied to `FREEANIMA_URL`. Browser Hub defaults to page "
+"origin; `dev:hub` auto-fills token via `~/.anima/dev-web.token`."
 msgstr ""
 "**本地 Web 开发（`bun run dev:web`）：** Vite 运行在 `:4173`，base 为 `/web/`"
 "——聊天室 `http://127.0.0.1:4173/web/chat`，管理台 `http://127.0.0.1:4173/web/"

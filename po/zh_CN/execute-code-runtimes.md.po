@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-02 20:01+0800\n"
+"POT-Creation-Date: 2026-07-17 22:43+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,14 +16,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:94 docs/tools/execute-code-runtimes.md:9
+#: docs/concepts/architecture.md:121 docs/tools/execute-code-runtimes.md:9
 #, no-wrap
 msgid "Background"
 msgstr "背景"
 
 #. type: Content of: <messages><msg>
 #: docs/guide/security.md:1 docs/tools/execute-code-runtimes.md:60
-#: messages/po4a/en.xml:584 messages/po4a/en.xml:587
+#: messages/po4a/en.xml:631 messages/po4a/en.xml:634
 #, no-wrap
 msgid "Security"
 msgstr "安全"
@@ -64,14 +64,21 @@ msgstr "与 terminal 的分工"
 
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:21
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "|           | `execute_code`                               | `terminal`                              |\n"
+#| "| --------- | -------------------------------------------- | --------------------------------------- |\n"
+#| "| Execution | No shell, fixed runtime                      | shell=true                              |\n"
+#| "| Best for  | Short scripts, data processing, logic checks | System commands, pipes, git, long tasks |\n"
+#| "| Output    | 50KB cap, configurable timeout               | Same limits but more freedom            |\n"
+#| "| Security  | Smaller surface (no shell injection)         | Larger surface                          |\n"
 msgid ""
-"|           | `execute_code`                               | `terminal`                              |\n"
-"| --------- | -------------------------------------------- | --------------------------------------- |\n"
-"| Execution | No shell, fixed runtime                      | shell=true                              |\n"
-"| Best for  | Short scripts, data processing, logic checks | System commands, pipes, git, long tasks |\n"
-"| Output    | 50KB cap, configurable timeout               | Same limits but more freedom            |\n"
-"| Security  | Smaller surface (no shell injection)         | Larger surface                          |\n"
+"|           | `execute_code`                               | `terminal`                                                               |\n"
+"| --------- | -------------------------------------------- | ------------------------------------------------------------------------ |\n"
+"| Execution | No shell, fixed runtime                      | Default `shell=false` (argv); `shell=true` needs `FREEANIMA_ALLOW_SHELL` |\n"
+"| Best for  | Short scripts, data processing, logic checks | System commands, git, long tasks; pipes only with ALLOW_SHELL            |\n"
+"| Output    | 50KB cap, configurable timeout               | Same limits                                                              |\n"
+"| Security  | No shell injection; **not** a FS sandbox     | Catastrophic command hard deny + workdir path policy; still ≠ OS sandbox |\n"
 msgstr ""
 "|           | `execute_code`                               | `terminal`                              |\n"
 "| --------- | -------------------------------------------- | --------------------------------------- |\n"
@@ -173,28 +180,35 @@ msgid "Disabled runtimes return a clear error listing available runtimes."
 msgstr "禁用的运行时会返回明确错误，并列出可用运行时。"
 
 #. type: Bullet: '- '
-#: docs/tools/execute-code-runtimes.md:65
+#: docs/tools/execute-code-runtimes.md:66
 msgid "Always `shell: false` (see [`security.md`](../guide/security.md))"
 msgstr "始终 `shell: false`（见 [`security.md`](../guide/security.md)）"
 
 #. type: Bullet: '- '
-#: docs/tools/execute-code-runtimes.md:65
+#: docs/tools/execute-code-runtimes.md:66
 msgid "Timeout and output size limits match current implementation"
 msgstr "超时与输出大小限制与当前实现一致"
 
 #. type: Bullet: '- '
-#: docs/tools/execute-code-runtimes.md:65
+#: docs/tools/execute-code-runtimes.md:66
 msgid "**Do not** auto-guess runtime from code content"
 msgstr "**不要**根据代码内容自动猜测运行时"
 
-#. type: Title ##
+#. type: Bullet: '- '
 #: docs/tools/execute-code-runtimes.md:66
+msgid ""
+"JS runtimes can still import `node:fs`—terminal command hard denies do "
+"**not** apply inside `code_execute`"
+msgstr ""
+
+#. type: Title ##
+#: docs/tools/execute-code-runtimes.md:67
 #, no-wrap
 msgid "Credential Injection (Planned)"
 msgstr "凭证注入（规划中）"
 
 #. type: Plain text
-#: docs/tools/execute-code-runtimes.md:69
+#: docs/tools/execute-code-runtimes.md:70
 msgid ""
 "Architecture allows credential path injection in `execute_code` environments "
 "— **not yet implemented**. See [Issue #40](https://github.com/freeanima-org/"
@@ -204,7 +218,7 @@ msgstr ""
 "(https://github.com/freeanima-org/freeanima/issues/40)。"
 
 #. type: Plain text
-#: docs/tools/execute-code-runtimes.md:70
+#: docs/tools/execute-code-runtimes.md:71
 msgid ""
 "Credential values are never exposed to the LLM; injected from Vault at "
 "runtime — no vault CLI inside runtimes."

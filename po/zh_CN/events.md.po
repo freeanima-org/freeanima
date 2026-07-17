@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-06 11:54+0800\n"
+"POT-Creation-Date: 2026-07-17 22:43+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -202,38 +202,54 @@ msgid "Session events"
 msgstr "会话事件"
 
 #. type: Plain text
-#: docs/sap/events.md:74
-#, no-wrap
+#: docs/sap/events.md:75
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Method                 | When                           | Payload           |\n"
+#| "| ---------------------- | ------------------------------ | ----------------- |\n"
+#| "| `conversation.updated` | After `conversation.subscribe` | `conversation_id` |\n"
 msgid ""
-"| Method                 | When                           | Payload           |\n"
-"| ---------------------- | ------------------------------ | ----------------- |\n"
-"| `conversation.updated` | After `conversation.subscribe` | `conversation_id` |\n"
+"| Method                    | When                                  | Payload                          |\n"
+"| ------------------------- | ------------------------------------- | -------------------------------- |\n"
+"| `conversation.updated`    | After `conversation.subscribe`        | `conversation_id`                |\n"
+"| `pomodoro.active.changed` | After `pomodoro.active.put` / `clear` | `subject_kind`, `active` \\| null |\n"
 msgstr ""
 "| 方法                   | 时机                           | Payload           |\n"
 "| ---------------------- | ------------------------------ | ----------------- |\n"
 "| `conversation.updated` | `conversation.subscribe` 之后  | `conversation_id` |\n"
 
 #. type: Plain text
-#: docs/sap/events.md:76
+#: docs/sap/events.md:77
 #, fuzzy
 #| msgid ""
 #| "Bridged from runtime conversation watch in [`platform/src/sap/stream-"
 #| "bridge.ts`](../../platform/src/sap/stream-bridge.ts)."
 msgid ""
-"Bridged from runtime conversation watch in [`src/platform/sap/stream-"
-"bridge.ts`](../../src/platform/sap/stream-bridge.ts)."
+"`conversation.updated` is bridged from the runtime conversation watch in "
+"[`src/platform/sap/stream-bridge.ts`](../../src/platform/sap/stream-"
+"bridge.ts)."
 msgstr ""
 "由 [`platform/src/sap/stream-bridge.ts`](../../platform/src/sap/stream-"
 "bridge.ts)  中的 runtime 会话监视桥接。"
 
+#. type: Plain text
+#: docs/sap/events.md:79
+msgid ""
+"`pomodoro.active.changed` is fan-out by Hub session registry keyed on "
+"`auth.subject_type` ([`src/platform/sap/hub-session-registry.ts`](../../src/"
+"platform/sap/hub-session-registry.ts)); payload schema: "
+"`pomodoroActiveChangedEventSchema` in [`frames/pomodoro.ts`](../../src/"
+"shared/sap-contract/frames/pomodoro.ts)."
+msgstr ""
+
 #. type: Title ##
-#: docs/sap/events.md:77
+#: docs/sap/events.md:80
 #, no-wrap
 msgid "Terminal events"
 msgstr "终端事件"
 
 #. type: Plain text
-#: docs/sap/events.md:85
+#: docs/sap/events.md:88
 #, no-wrap
 msgid ""
 "| Method            | Payload highlights           |\n"
@@ -251,7 +267,7 @@ msgstr ""
 "| `terminal.error`  | `terminal_id`、错误消息      |\n"
 
 #. type: Plain text
-#: docs/sap/events.md:87
+#: docs/sap/events.md:90
 #, fuzzy
 #| msgid ""
 #| "Constants: `TERMINAL_EVENT_METHODS` in [`frames/terminal.ts`](../../"
@@ -264,13 +280,13 @@ msgstr ""
 "terminal.ts)  中的 `TERMINAL_EVENT_METHODS`。"
 
 #. type: Title ##
-#: docs/sap/events.md:88
+#: docs/sap/events.md:91
 #, no-wrap
 msgid "Tool events"
 msgstr "工具事件"
 
 #. type: Plain text
-#: docs/sap/events.md:93
+#: docs/sap/events.md:96
 #, no-wrap
 msgid ""
 "| Method      | Direction       | Role                            |\n"
@@ -282,7 +298,7 @@ msgstr ""
 "| `tool.call` | Hub → Satellite | 执行已注册的本地工具            |\n"
 
 #. type: Plain text
-#: docs/sap/events.md:95
+#: docs/sap/events.md:98
 #, fuzzy
 #| msgid ""
 #| "Payload schema: `toolCallPayloadSchema` in [`frames/tool.ts`](../../"
@@ -299,7 +315,7 @@ msgstr ""
 "`local_name`、`args`、`conversation_id`，以及可选的 `workspace_root`。"
 
 #. type: Plain text
-#: docs/sap/events.md:97
+#: docs/sap/events.md:100
 msgid ""
 "Satellite must reply with `tool.result` or `tool.error` RPC using the same "
 "`call_id`."
@@ -307,13 +323,13 @@ msgstr ""
 "Satellite 必须使用相同 `call_id` 以 `tool.result` 或 `tool.error` RPC 回复。"
 
 #. type: Title ##
-#: docs/sap/events.md:98
+#: docs/sap/events.md:101
 #, no-wrap
 msgid "Lifecycle events"
 msgstr "生命周期事件"
 
 #. type: Plain text
-#: docs/sap/events.md:102
+#: docs/sap/events.md:105
 #, no-wrap
 msgid ""
 "| Method      | Direction | Role                                         |\n"
