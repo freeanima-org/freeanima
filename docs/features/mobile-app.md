@@ -48,17 +48,18 @@ Non-loopback Hub URL requires token; REST uses `Authorization: Bearer`; SAP send
 
 ## Troubleshooting
 
-| Symptom                                | Common cause                                                                                                            |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Keyboard covers chat input             | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes                         |
-| Chat input unresponsive                | No selected conversation (first install should auto-create); or SAP disconnected                                        |
-| Console load failed / Failed to fetch  | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header                              |
-| 测试连接「网络错误」、浏览器同地址正常 | 需 **Capacitor 原生 HTTP**（`CapacitorHttp`）或可信 HTTPS；自签 CA 另需 APK 信任用户 CA                                 |
-| ZeroTier / 虚拟网卡 IP                 | 确认手机 ZeroTier 在线；Hub `http.host: 0.0.0.0`；`allowed_hosts` 含该 IP；壳层 Hub URL **勿带尾斜杠**，HTTP 用 `:2658` |
-| Not Found                              | Avoid legacy paths; use SPA `/web/console/dashboard`                                                                    |
-| TTS / 朗读无声                         | 默认 Edge TTS 需 Hub 出网；Hub 设置 → 语音 → 试听。若用 Web Speech 需 HTTPS 安全上下文                                  |
-| UI 与发版不一致                        | UI 随 **APK**；需重装/发新包。浏览器 Hub `/web` 另有独立部署链                                                          |
-| 安装失败「签名冲突」                   | 已装旧 APK 与新版证书不同；卸载 `FreeAnima` 后重装。CI 固定签名后同 channel 可覆盖升级                                  |
+| Symptom                                         | Common cause                                                                                                             |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Keyboard covers chat input                      | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes                          |
+| Chat input unresponsive                         | No selected conversation (first install should auto-create); or SAP disconnected                                         |
+| Console load failed / Failed to fetch           | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header                               |
+| 测试连接「网络错误」、浏览器同地址正常          | 需 **Capacitor 原生 HTTP**（`CapacitorHttp`）或可信 HTTPS；自签 CA 另需 APK 信任用户 CA                                  |
+| 连接测试成功，但压缩/LLM 等报 `config.get` 超时 | 旧路径经 WebSocket 拉全量配置且 3s 超时；现已改为 `config.getSection` + HTTP 双传输。仍超时则查 WS 半开连接或 Hub 不可达 |
+| ZeroTier / 虚拟网卡 IP                          | 确认手机 ZeroTier 在线；Hub `http.host: 0.0.0.0`；`allowed_hosts` 含该 IP；壳层 Hub URL **勿带尾斜杠**，HTTP 用 `:2658`  |
+| Not Found                                       | Avoid legacy paths; use SPA `/web/console/dashboard`                                                                     |
+| TTS / 朗读无声                                  | 默认 Edge TTS 需 Hub 出网；Hub 设置 → 语音 → 试听。若用 Web Speech 需 HTTPS 安全上下文                                   |
+| UI 与发版不一致                                 | UI 随 **APK**；需重装/发新包。浏览器 Hub `/web` 另有独立部署链                                                           |
+| 安装失败「签名冲突」                            | 已装旧 APK 与新版证书不同；卸载 `FreeAnima` 后重装。CI 固定签名后同 channel 可覆盖升级                                   |
 
 ## Debugging
 

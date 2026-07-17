@@ -1,29 +1,38 @@
-import { satelliteHubRpcCall } from "./hub-rpc-call.ts";
+import { getBundledHubClient } from "@freeanima/shared/hub-client";
+
+import { resolveHubApiFetch } from "./hub-api-fetch.ts";
+
+function hub() {
+  return getBundledHubClient({
+    profile: "satellite",
+    fetch: resolveHubApiFetch() as typeof fetch,
+  });
+}
 
 export async function fetchHubConfig(): Promise<Record<string, unknown>> {
-  return satelliteHubRpcCall<Record<string, unknown>>("config.get", {});
+  return (await hub().call("config.get", {})) as Record<string, unknown>;
 }
 
 export async function fetchHubConfigSection(section: string): Promise<unknown> {
-  return satelliteHubRpcCall("config.getSection", { section });
+  return hub().call("config.getSection", { section });
 }
 
 export async function patchHubConfigSection(
   section: string,
   patch: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  return satelliteHubRpcCall<Record<string, unknown>>("config.patchSection", { section, patch });
+  return (await hub().call("config.patchSection", { section, patch })) as Record<string, unknown>;
 }
 
 export async function replaceHubConfigSection(
   section: string,
   value: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  return satelliteHubRpcCall<Record<string, unknown>>("config.replaceSection", { section, value });
+  return (await hub().call("config.replaceSection", { section, value })) as Record<string, unknown>;
 }
 
 export async function restartHubService(): Promise<void> {
-  await satelliteHubRpcCall("status.restart", {});
+  await hub().call("status.restart", {});
 }
 
 export type HubConfigTestService =
@@ -46,5 +55,5 @@ export async function testHubConfigConnection(input: {
   config?: Record<string, unknown>;
   provider_id?: string;
 }): Promise<HubConfigTestConnectionResult> {
-  return satelliteHubRpcCall<HubConfigTestConnectionResult>("config.testConnection", input);
+  return (await hub().call("config.testConnection", input)) as HubConfigTestConnectionResult;
 }
