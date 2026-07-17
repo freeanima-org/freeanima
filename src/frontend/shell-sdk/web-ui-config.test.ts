@@ -23,4 +23,14 @@ describe("parseWebUiConfigJson", () => {
     expect(cfg?.min_shell_version).toBe("0.8.0");
     expect(cfg?.layout_mode).toBe("compact");
   });
+
+  test("解析 optional remote_auth_token", () => {
+    const cfg = parseWebUiConfigJson({
+      app_id: "chat",
+      hub_url: "",
+      hub_ws_url: "",
+      remote_auth_token: " fa_at_x ",
+    });
+    expect(cfg?.remote_auth_token).toBe("fa_at_x");
+  });
 });

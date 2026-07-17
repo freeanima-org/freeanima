@@ -6,6 +6,7 @@ import {
 } from "@freeanima/core/db/pg/service-api-token";
 import { logComponent } from "@freeanima/platform/logging";
 
+import { ensureDevWebTokenFile } from "./dev-web-token.ts";
 import { startupLog } from "./status.ts";
 
 export type ServiceApiTokensPhaseResult = Record<string, never>;
@@ -19,18 +20,19 @@ export async function bootServiceApiTokensPhase(
 
   if (existing > 0) {
     startupLog(`Service API tokens ready (${existing} active)`);
-    return {};
+  } else {
+    const ctx = await resolveAndBindWorldContext(config.data);
+    const result = await createServiceApiTokenWithSecret({
+      subject_id: ctx.user_subject_id,
+      name: "bootstrap",
+    });
+    startupLog(`Created service API bootstrap token (id=${result.token.id})`);
+    logComponent("startup").info(
+      "已自动创建 bootstrap Service API Token；请在客户端 Hub 设置中配置（明文仅此次输出到终端）",
+    );
+    console.log(result.plaintext);
   }
 
-  const ctx = await resolveAndBindWorldContext(config.data);
-  const result = await createServiceApiTokenWithSecret({
-    subject_id: ctx.user_subject_id,
-    name: "bootstrap",
-  });
-  startupLog(`Created service API bootstrap token (id=${result.token.id})`);
-  logComponent("startup").info(
-    "已自动创建 bootstrap Service API Token；请在客户端 Hub 设置中配置（明文仅此次输出到终端）",
-  );
-  console.log(result.plaintext);
+  await ensureDevWebTokenFile(config);
   return {};
 }

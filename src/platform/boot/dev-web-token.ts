@@ -1,0 +1,78 @@
+import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
+
+import { PATHS } from "@freeanima/core/config";
+import { resolveAndBindWorldContext } from "@freeanima/core/config/world-context";
+import {
+  createServiceApiTokenWithSecret,
+  listServiceApiTokensBySubject,
+  revokeServiceApiToken,
+} from "@freeanima/core/db/pg/service-api-token";
+import type { RuntimeConfigStore } from "@freeanima/platform/config";
+import { logComponent } from "@freeanima/platform/logging";
+
+import { startupLog } from "./status.ts";
+
+export const DEV_WEB_TOKEN_NAME = "dev-web";
+export const FREEANIMA_DEV_HUB_ENV = "FREEANIMA_DEV_HUB";
+
+export function isDevHubProcess(): boolean {
+  return process.env[FREEANIMA_DEV_HUB_ENV] === "1";
+}
+
+export function readDevWebTokenFile(): string | null {
+  const fromEnv = process.env.FREEANIMA_DEV_TOKEN?.trim();
+  if (fromEnv) return fromEnv;
+  try {
+    if (!existsSync(PATHS.devWebTokenFile)) return null;
+    const raw = readFileSync(PATHS.devWebTokenFile, "utf-8").trim();
+    return raw || null;
+  } catch {
+    return null;
+  }
+}
+
+function writeDevWebTokenFile(plaintext: string): void {
+  mkdirSync(dirname(PATHS.devWebTokenFile), { recursive: true });
+  writeFileSync(PATHS.devWebTokenFile, `${plaintext}\n`, { encoding: "utf-8", mode: 0o600 });
+  try {
+    chmodSync(PATHS.devWebTokenFile, 0o600);
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * 确保 `dev-web` token 明文在 PATHS.devWebTokenFile（仅 FREEANIMA_DEV_HUB=1）。
+ * 文件已有内容则复用；否则 revoke 旧同名 token 后新建。
+ */
+export async function ensureDevWebTokenFile(config: RuntimeConfigStore): Promise<void> {
+  if (!isDevHubProcess()) return;
+
+  const existingFile = readDevWebTokenFile();
+  if (existingFile) {
+    if (process.env.FREEANIMA_DEV_TOKEN?.trim()) {
+      writeDevWebTokenFile(existingFile);
+    }
+    startupLog(`dev-web token ready (${PATHS.devWebTokenFile})`);
+    return;
+  }
+
+  const ctx = await resolveAndBindWorldContext(config.data);
+  const existing = await listServiceApiTokensBySubject(ctx.user_subject_id);
+  for (const row of existing) {
+    if (row.name === DEV_WEB_TOKEN_NAME && !row.revoked_at) {
+      await revokeServiceApiToken(row.id);
+    }
+  }
+
+  const result = await createServiceApiTokenWithSecret({
+    subject_id: ctx.user_subject_id,
+    name: DEV_WEB_TOKEN_NAME,
+  });
+  writeDevWebTokenFile(result.plaintext);
+  startupLog(`Wrote dev-web token → ${PATHS.devWebTokenFile}`);
+  logComponent("startup").info(
+    "dev:hub 已写入 Web 自动填充 token（仅本机文件；Vite serve 会注入 config.json）",
+  );
+}

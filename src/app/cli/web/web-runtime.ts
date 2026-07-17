@@ -40,7 +40,8 @@ export function isWebProcessAlive(): number | null {
 export async function resolveDefaultHubUrlForWeb(): Promise<string> {
   const publicUrl = loadBootstrapConfig().web?.public_url?.trim();
   if (publicUrl) return publicUrl.replace(/\/$/, "");
-  return (process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658").replace(/\/$/, "");
+  // 空 = sidecar 按请求 origin 生成（与 Hub 托管 /web 一致）
+  return "";
 }
 
 export type StartWebServerOptions = {
@@ -70,8 +71,12 @@ export async function startWebServer(
       portAttempts: bindPort === port ? 3 : 1,
       runtime: {
         appId: "chat",
-        hubUrl,
-        hubWsUrl: resolveHubRpcWsUrl(hubUrl),
+        ...(hubUrl
+          ? {
+              hubUrl,
+              hubWsUrl: resolveHubRpcWsUrl(hubUrl),
+            }
+          : {}),
       },
       pidFile: opts.writePid === false ? undefined : PATHS.webPidFile,
     }),

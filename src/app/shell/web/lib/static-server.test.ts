@@ -33,6 +33,29 @@ describe("startWebStaticServer", () => {
     await handle.close();
   });
 
+  test("config.json uses request origin when hubUrl omitted", async () => {
+    const dist = mkdtempSync(join(tmpdir(), "web-dist-"));
+    writeFileSync(join(dist, "index.html"), "<html>ok</html>");
+
+    const handle = await startWebStaticServer({
+      distDir: dist,
+      host: "127.0.0.1",
+      port: 0,
+      runtime: { appId: "chat" },
+    });
+
+    try {
+      const port = handle.port;
+      const cfg = (await fetch(`http://127.0.0.1:${port}/web/config.json`).then((r) =>
+        r.json(),
+      )) as { hub_url?: string; hub_ws_url?: string };
+      expect(cfg.hub_url).toBe(`http://127.0.0.1:${port}`);
+      expect(cfg.hub_ws_url).toBe(`ws://127.0.0.1:${port}/hub/rpc/v1`);
+    } finally {
+      await handle.close();
+    }
+  });
+
   test("falls back to index.html for deep console routes and serves root assets", async () => {
     const dist = mkdtempSync(join(tmpdir(), "web-dist-"));
     const indexHtml =

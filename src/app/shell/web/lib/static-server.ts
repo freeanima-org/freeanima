@@ -79,11 +79,14 @@ function createShellStaticFetch(
     }
 
     if (pathname === `${WEB_PREFIX}/config.json`) {
+      const origin = new URL(req.url).origin;
+      const hubUrl = (runtime?.hubUrl?.trim() || origin).replace(/\/$/, "");
+      const hubWsUrl = runtime?.hubWsUrl?.trim() || `${hubUrl.replace(/^http/, "ws")}/hub/rpc/v1`;
       return new Response(
         JSON.stringify({
           app_id: runtime?.appId ?? "chat",
-          hub_url: runtime?.hubUrl ?? "",
-          hub_ws_url: runtime?.hubWsUrl ?? "",
+          hub_url: hubUrl,
+          hub_ws_url: hubWsUrl,
           ui_version: runtime?.uiVersion,
           min_shell_version: runtime?.minShellVersion,
         }),

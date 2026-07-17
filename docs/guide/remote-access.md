@@ -149,7 +149,7 @@ Settings (all clients):
 1. **Hub URL** — e.g. `http://192.168.1.10:2658` or `https://<lan-host>:2659` (Hub root, **without** `/web`)
 2. **Hub API Token** — `fa_at_...` from `anima token create`
 
-Browser Web: `/web/config.json` sets default Hub to the page origin; first visit still requires saving token in settings.
+Browser Web: `/web/config.json` defaults Hub to the **page origin** (production Hub-hosted `/web` and Vite `dev:web`). Source `dev:hub` writes `~/.anima/dev-web.token`; Vite injects it as `remote_auth_token` so the first visit need not paste a token. Production Hub never puts tokens in `config.json` — use `anima token create` and Hub settings.
 
 Flow: open Hub settings → fill → **Test connection** → Save. Desktop requires **restart desktop shell** after save.
 

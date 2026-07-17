@@ -12,6 +12,11 @@ import { tryResolveWebDistDir } from "../web/dist-path.ts";
 export type ServiceStackOptions = {
   host: string;
   port: number;
+  /**
+   * 为 true 时跳过 Hub TLS listen（即使 config.yaml http.tls.enabled）。
+   * 源码 `dev:hub` 使用：HTTPS 由 Vite 终止，Hub 只听明文高位口。
+   */
+  skipTls?: boolean;
 };
 
 /** Hub 就绪后打印 Web 托管提示（无 sidecar） */
@@ -68,7 +73,12 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
     await import("@freeanima/features/console/hub/console-api");
 
   const bindHosts = parseBindHosts(options.host);
-  const tlsListen = await resolveHubTlsListenConfig(bootstrapHttp, bindHosts);
+  const tlsListen = options.skipTls
+    ? null
+    : await resolveHubTlsListenConfig(bootstrapHttp, bindHosts);
+  if (options.skipTls && bootstrapHttp?.tls?.enabled) {
+    console.log("[stack] skipTls：不绑 Hub TLS（开发由 Vite HTTPS 终止；Hub 仅明文 HTTP）");
+  }
 
   await serve(options.host, options.port, {
     foreground: true,

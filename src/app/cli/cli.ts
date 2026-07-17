@@ -17,8 +17,8 @@ if (argv.includes("-V") || argv.includes("--version")) {
     const args = argv.slice(2).filter((a) => a !== "--");
     if (args[0] === "service") {
       console.error("`anima service` is only available in the standalone install CLI.");
-      console.error("For monorepo / worktree Hub: bun run dev:hub");
-      console.error("  e.g. bun run dev:hub -- --port 2701");
+      console.error("For monorepo / worktree Hub: bun run dev:hub (or just dev)");
+      console.error("  e.g. bun run dev:hub -- --port 12001");
       process.exit(1);
     }
   }

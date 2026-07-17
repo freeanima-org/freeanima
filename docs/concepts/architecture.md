@@ -208,8 +208,9 @@ anima service start --foreground # foreground (logs to stdout; systemd unit uses
 anima service status
 
 # monorepo / worktree
-bun run dev:hub                  # Hub foreground (optional -- --port 2701)
-bun run dev:web                  # browser shell Vite HMR :4173 (Hub must be running)
+just dev                         # Hub (≥10000) + Vite Web (≥5000)
+bun run dev:hub                  # Hub foreground (default random ≥10000; not 2658)
+bun run dev:web                  # browser shell Vite HMR from :5000 (set FREEANIMA_URL)
 bun run build:web                # source deploy / Hub /web: build dist before start
 ```
 
