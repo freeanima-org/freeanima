@@ -88,6 +88,26 @@ export async function fetchProjectFolders(subjectKind: SubjectKind): Promise<Pro
   });
 }
 
+function withDefaultProjectTaskCount(projects: ProjectRow[]): ProjectRow[] {
+  return projects.map((p) => ({
+    id: p.id,
+    title: p.title,
+    content: p.content,
+    folder_id: p.folder_id,
+    start_at: p.start_at,
+    end_at: p.end_at,
+    completion_criteria: p.completion_criteria,
+    status: p.status,
+    product_tag: p.product_tag,
+    sort_order: p.sort_order,
+    task_count: p.task_count ?? 0,
+    milestone_count: p.milestone_count,
+    linked_diary_ids: p.linked_diary_ids,
+    created_at: p.created_at,
+    updated_at: p.updated_at,
+  }));
+}
+
 export async function fetchProjects(
   subjectKind: SubjectKind,
   folderId?: number | null,
@@ -96,13 +116,13 @@ export async function fetchProjects(
   if (folderId !== undefined) {
     if (!isHubFetchAvailable()) {
       const cached = (await readCachedProjects(scope)) ?? [];
-      return cached.filter((p) => (p.folder_id ?? null) === folderId);
+      return withDefaultProjectTaskCount(cached.filter((p) => (p.folder_id ?? null) === folderId));
     }
     const data = await hub().call("project.list", {
       subject_kind: subjectKind,
       folder_id: folderId,
     });
-    return data.projects;
+    return withDefaultProjectTaskCount(data.projects);
   }
   return withOfflineCache({
     scope,
@@ -110,11 +130,17 @@ export async function fetchProjects(
     id: "projects",
     fetch: async () => {
       const data = await hub().call("project.list", { subject_kind: subjectKind });
-      return data.projects;
+      return withDefaultProjectTaskCount(data.projects);
     },
     reconcile: (projects) => reconcileServerProjects(projects),
     offlineError: "project.list unavailable offline",
   });
+}
+
+export async function fetchProjectStats(subjectKind: SubjectKind): Promise<Map<number, number>> {
+  if (!isHubFetchAvailable()) return new Map();
+  const data = await hub().call("project.stats", { subject_kind: subjectKind });
+  return new Map(data.counts.map((row) => [row.id, row.task_count]));
 }
 
 export async function fetchProject(subjectKind: SubjectKind, id: number): Promise<ProjectRow> {
@@ -308,7 +334,19 @@ export async function deleteProjectTask(_subjectKind: SubjectKind, id: number): 
 export async function fetchTaskListsForMove(subjectKind: SubjectKind): Promise<TaskListRow[]> {
   if (!isHubFetchAvailable()) return [];
   const data = await hub().call("tasklist.list", { subject_kind: subjectKind });
-  return data.lists;
+  return data.lists.map((list) => ({
+    id: list.id,
+    name: list.name,
+    sort_order: list.sort_order,
+    closed: list.closed,
+    color: list.color,
+    is_default: list.is_default,
+    is_folder: list.is_folder,
+    parent_id: list.parent_id,
+    item_count: list.item_count ?? 0,
+    created_at: list.created_at,
+    updated_at: list.updated_at,
+  }));
 }
 
 export async function fetchProjectsForMove(subjectKind: SubjectKind): Promise<ProjectPickerRow[]> {

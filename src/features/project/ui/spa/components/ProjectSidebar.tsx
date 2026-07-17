@@ -2,6 +2,7 @@ import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Button, Checkbox, Input } from "@freeanima/frontend/ui-kit";
+import { EntityIdLabel } from "@freeanima/frontend/ui-kit/composite";
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
 
 import type { ProjectFolderRow, ProjectRow } from "../lib/api.ts";
@@ -208,8 +209,11 @@ function SortableTreeRow({
         className="flex min-w-0 flex-1 items-center gap-1 truncate py-2 text-left"
         onClick={() => onSelectProject(project.id)}
       >
-        <span className="truncate">{project.title}</span>
-        <span className="text-muted-foreground shrink-0 text-xs">{project.task_count}</span>
+        <span className="min-w-0 flex-1 truncate">{project.title}</span>
+        <span className="ml-auto flex shrink-0 items-center gap-1.5 tabular-nums">
+          <EntityIdLabel id={project.id} />
+          <span className="text-muted-foreground text-xs">{project.task_count ?? 0}</span>
+        </span>
       </button>
       {useActionSheet ? (
         <Button
@@ -266,9 +270,12 @@ function InactiveProjectRow({
         className="flex min-w-0 flex-1 items-center gap-1 truncate py-2 text-left"
         onClick={onSelect}
       >
-        <span className="truncate">{project.title}</span>
-        <span className="text-muted-foreground shrink-0 text-xs">{project.status}</span>
-        <span className="text-muted-foreground shrink-0 text-xs">{project.task_count}</span>
+        <span className="min-w-0 flex-1 truncate">{project.title}</span>
+        <span className="ml-auto flex shrink-0 items-center gap-1.5 tabular-nums">
+          <EntityIdLabel id={project.id} />
+          <span className="text-muted-foreground text-xs">{project.status}</span>
+          <span className="text-muted-foreground text-xs">{project.task_count ?? 0}</span>
+        </span>
       </button>
       {useActionSheet ? (
         <Button

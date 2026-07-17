@@ -105,6 +105,24 @@ export function writeExpandedProjectFolders(subjectKind: string, ids: Set<number
   }
 }
 
+const HIDE_COMPLETED_KEY_PREFIX = "freeanima.project.hide-completed";
+
+export function readHideCompleted(subjectKind: string): boolean {
+  try {
+    return localStorage.getItem(`${HIDE_COMPLETED_KEY_PREFIX}:${subjectKind}`) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function writeHideCompleted(subjectKind: string, hide: boolean): void {
+  try {
+    localStorage.setItem(`${HIDE_COMPLETED_KEY_PREFIX}:${subjectKind}`, hide ? "1" : "0");
+  } catch {
+    // ignore
+  }
+}
+
 export function folderIdForNewProject(
   selectedProjectId: number | null,
   selectedFolderId: number | null,

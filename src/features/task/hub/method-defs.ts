@@ -5,6 +5,8 @@ import {
   tasklistDeleteOutputSchema,
   tasklistListInputSchema,
   tasklistListOutputSchema,
+  tasklistStatsInputSchema,
+  tasklistStatsOutputSchema,
   tasklistPatchInputSchema,
   tasklistPatchOutputSchema,
   tasklistItemListInputSchema,
@@ -17,6 +19,8 @@ import {
   projectItemCreateOutputSchema,
   smartlistListInputSchema,
   smartlistListOutputSchema,
+  smartlistStatsInputSchema,
+  smartlistStatsOutputSchema,
   smartlistCreateInputSchema,
   smartlistCreateOutputSchema,
   smartlistPatchInputSchema,
@@ -47,6 +51,11 @@ export const taskMethodDefs = {
     output: tasklistListOutputSchema,
     meta: dualTransportMeta(true),
   }),
+  "tasklist.stats": defineHubMethod({
+    input: tasklistStatsInputSchema,
+    output: tasklistStatsOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
   "tasklist.create": defineHubMethod({
     input: tasklistCreateInputSchema,
     output: tasklistCreateOutputSchema,
@@ -75,6 +84,11 @@ export const taskMethodDefs = {
   "smartlist.list": defineHubMethod({
     input: smartlistListInputSchema,
     output: smartlistListOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "smartlist.stats": defineHubMethod({
+    input: smartlistStatsInputSchema,
+    output: smartlistStatsOutputSchema,
     meta: dualTransportMeta(true),
   }),
   "smartlist.create": defineHubMethod({

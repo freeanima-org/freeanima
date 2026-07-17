@@ -56,9 +56,11 @@ import {
   deleteTaskItem,
   deleteTaskList,
   fetchSmartLists,
+  fetchSmartListStats,
   fetchTaskItems,
   fetchTaskItemsByFilters,
   fetchTaskLists,
+  fetchTaskListStats,
   reopenTaskList,
   searchTaskItems,
   fetchProjectsForMove,
@@ -126,6 +128,7 @@ export function TaskApp() {
 
   const [lists, setLists] = useState<TaskListRow[]>([]);
   const [smartLists, setSmartLists] = useState<SmartListRow[]>([]);
+  const [smartListCounts, setSmartListCounts] = useState<Map<string, number>>(() => new Map());
   const [items, setItems] = useState<TaskItemRow[]>([]);
   const [selection, setSelection] = useState<TaskModuleSelection | null>(null);
   const [loading, setLoading] = useState(true);
@@ -276,7 +279,23 @@ export function TaskApp() {
         fetchSmartLists(),
       ]);
       if (generation !== listsLoadGenRef.current) return rows;
-      const merged = await reconcileServerTaskLists(rows);
+      let merged = await reconcileServerTaskLists(rows);
+      try {
+        const [listStats, smartStats] = await Promise.all([
+          fetchTaskListStats({ includeClosed: true }),
+          fetchSmartListStats(),
+        ]);
+        if (generation !== listsLoadGenRef.current) return rows;
+        if (listStats.size > 0) {
+          merged = merged.map((list) => ({
+            ...list,
+            item_count: list.is_folder ? 0 : (listStats.get(list.id) ?? list.item_count),
+          }));
+        }
+        setSmartListCounts(smartStats);
+      } catch {
+        // stats 为次要数据
+      }
       setLists(merged);
       setSmartLists(smartRows);
       void writeCachedTaskLists(scope, merged);
@@ -1142,7 +1161,7 @@ export function TaskApp() {
         }
         onReorderPending={(ordered) => void persistItemOrder(ordered)}
         onMoveTaskToList={(taskId, listId) => void handleMoveItemsToList([taskId], listId)}
-        onTaskDragStart={() => {
+        onTaskDragTowardSidebar={() => {
           if (useDrawer) setSidebarOpen(true);
         }}
       >
@@ -1186,6 +1205,7 @@ export function TaskApp() {
                       selectedKey={selection?.kind === "smart_list" ? selection.key : null}
                       defaultInboxId={defaultInboxId}
                       inboxItemCount={inboxItemCount}
+                      itemCounts={smartListCounts}
                       inboxSelected={inboxSelected}
                       onSelectSmartList={selectSmartList}
                       onSelectInbox={selectInbox}
@@ -1195,6 +1215,7 @@ export function TaskApp() {
                     <CustomSmartListSection
                       smartLists={smartLists}
                       selectedKey={selection?.kind === "smart_list" ? selection.key : null}
+                      itemCounts={smartListCounts}
                       inboxSelected={inboxSelected}
                       onSelectSmartList={selectSmartList}
                       onCreateSmartList={() => setSmartListEditor(null)}
@@ -1256,7 +1277,7 @@ export function TaskApp() {
                         此清单已归档，无法添加新任务。可在清单菜单中取消归档。
                       </div>
                     ) : null}
-                    <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
+                    <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto px-2 py-2">
                       {displayPending.length === 0 && displayCompleted.length === 0 ? (
                         <EmptyState
                           message={

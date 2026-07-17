@@ -12,6 +12,8 @@ import {
   listSmartListsMerged,
   listTaskItems,
   listTaskLists,
+  listTaskListStats,
+  listSmartListStats,
   searchTaskItems,
   uncompleteTaskItem,
   updateTaskItem,
@@ -65,6 +67,21 @@ export async function serviceTasklistList(
     omitUndefined({ includeClosed: input?.include_closed }),
   );
   return { lists };
+}
+
+export async function serviceTasklistStats(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; include_closed?: boolean } | undefined,
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const worldId = await taskWorldIdForAuth(auth, input?.subject_kind);
+  await ensureDefaultTaskListForWorld(worldId);
+  const counts = await listTaskListStats(
+    worldId,
+    omitUndefined({ includeClosed: input?.include_closed }),
+  );
+  return { counts };
 }
 
 export async function serviceTasklistCreate(
@@ -138,6 +155,18 @@ export async function serviceSmartlistList(
   await ensureDefaultTaskListForWorld(worldId);
   const smart_lists = await listSmartListsMerged(worldId);
   return { smart_lists };
+}
+
+export async function serviceSmartlistStats(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind } | undefined,
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const worldId = await taskWorldIdForAuth(auth, input?.subject_kind);
+  await ensureDefaultTaskListForWorld(worldId);
+  const counts = await listSmartListStats(worldId);
+  return { counts };
 }
 
 export async function serviceSmartlistCreate(

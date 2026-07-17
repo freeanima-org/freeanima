@@ -33,3 +33,4 @@ export { QuickAddBar } from "./QuickAddBar.tsx";
 export { ModuleScopeBar } from "./ModuleScopeBar.tsx";
 export { MoveToListPicker } from "./MoveToListPicker.tsx";
 export type { MoveToListPickerProps } from "./MoveToListPicker.tsx";
+export { EntityIdLabel } from "./EntityIdLabel.tsx";

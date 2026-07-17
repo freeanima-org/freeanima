@@ -49,6 +49,34 @@ export type TaskListRow = {
 
 export type TaskItemRow = TaskItemRowPayload;
 
+function normalizeTaskListRow(list: {
+  id: number;
+  name: string;
+  sort_order: number;
+  closed: boolean;
+  color: string | null;
+  is_default: boolean;
+  is_folder: boolean;
+  parent_id: number | null;
+  item_count?: number | undefined;
+  created_at: string;
+  updated_at: string;
+}): TaskListRow {
+  return {
+    id: list.id,
+    name: list.name,
+    sort_order: list.sort_order,
+    closed: list.closed,
+    color: list.color,
+    is_default: list.is_default,
+    is_folder: list.is_folder,
+    parent_id: list.parent_id,
+    item_count: list.item_count ?? 0,
+    created_at: list.created_at,
+    updated_at: list.updated_at,
+  };
+}
+
 function hub() {
   return getTypedSatelliteHubClient();
 }
@@ -65,7 +93,29 @@ export async function fetchTaskLists(opts?: { includeClosed?: boolean }): Promis
     "tasklist.list",
     withSubjectKind({ include_closed: opts?.includeClosed }),
   );
-  return data.lists;
+  return data.lists.map(normalizeTaskListRow);
+}
+
+export async function fetchTaskListStats(opts?: {
+  includeClosed?: boolean;
+}): Promise<Map<number, number>> {
+  if (!isHubFetchAvailable()) return new Map();
+  const data = await hub().call(
+    "tasklist.stats",
+    withSubjectKind({ include_closed: opts?.includeClosed }),
+  );
+  return new Map(data.counts.map((row) => [row.id, row.item_count]));
+}
+
+export async function fetchSmartListStats(): Promise<Map<string, number>> {
+  if (!isHubFetchAvailable()) return new Map();
+  const data = await hub().call("smartlist.stats", withSubjectKind({}));
+  const map = new Map<string, number>();
+  for (const row of data.counts) {
+    if (row.preset != null) map.set(row.preset, row.item_count);
+    else if (row.id != null) map.set(`id:${row.id}`, row.item_count);
+  }
+  return map;
 }
 
 export async function createTaskList(input: {

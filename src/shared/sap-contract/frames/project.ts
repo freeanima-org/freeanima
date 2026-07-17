@@ -29,7 +29,8 @@ export const projectRowSchema = z.object({
   status: projectStatusSchema,
   product_tag: z.string().nullable(),
   sort_order: z.number().int(),
-  task_count: z.number().int().nonnegative(),
+  /** 次要数据：仅 project.stats 返回；list/get/create/patch 省略 */
+  task_count: z.number().int().nonnegative().optional(),
   milestone_count: z.number().int().nonnegative(),
   linked_diary_ids: z.array(z.number().int().positive()),
   created_at: z.string(),
@@ -100,6 +101,22 @@ export const projectListInputSchema = z.object({
 export type ProjectListInput = z.infer<typeof projectListInputSchema>;
 export const projectListOutputSchema = z.object({ projects: z.array(projectRowSchema) });
 export type ProjectListOutput = z.infer<typeof projectListOutputSchema>;
+
+export const projectStatsInputSchema = z.object({
+  subject_kind: projectSubjectKindSchema,
+  folder_id: z.number().int().positive().nullable().optional(),
+  status: projectStatusSchema.optional(),
+});
+export type ProjectStatsInput = z.infer<typeof projectStatsInputSchema>;
+export const projectStatsOutputSchema = z.object({
+  counts: z.array(
+    z.object({
+      id: z.number().int().positive(),
+      task_count: z.number().int().nonnegative(),
+    }),
+  ),
+});
+export type ProjectStatsOutput = z.infer<typeof projectStatsOutputSchema>;
 
 export const projectCreateInputSchema = z.object({
   subject_kind: projectSubjectKindSchema,

@@ -16,6 +16,8 @@ import {
   projectGetOutputSchema,
   projectListInputSchema,
   projectListOutputSchema,
+  projectStatsInputSchema,
+  projectStatsOutputSchema,
   projectPatchInputSchema,
   projectPatchOutputSchema,
   projectfolderCreateInputSchema,
@@ -52,6 +54,11 @@ export const projectMethodDefs = {
   "project.list": defineHubMethod({
     input: projectListInputSchema,
     output: projectListOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "project.stats": defineHubMethod({
+    input: projectStatsInputSchema,
+    output: projectStatsOutputSchema,
     meta: dualTransportMeta(true),
   }),
   "project.create": defineHubMethod({

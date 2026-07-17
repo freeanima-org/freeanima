@@ -47,6 +47,12 @@ export const projectHubRoutes = bindHubRouteHandlers(projectMethodDefs, {
       omitUndefined(input),
       ctxAuth(ctx),
     ),
+  "project.stats": async (deps, input, ctx) =>
+    service.serviceProjectStats(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
   "project.create": async (deps, input, ctx) =>
     service.serviceProjectCreate(
       depsOf(deps).runtime.runtimeDeps(),

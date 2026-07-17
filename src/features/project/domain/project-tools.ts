@@ -61,7 +61,6 @@ function projectPayload(row: Awaited<ReturnType<typeof getProject>> & object) {
     start_at: row.start_at,
     end_at: row.end_at,
     folder_id: row.folder_id,
-    task_count: row.task_count,
     milestone_count: row.milestone_count,
   };
 }

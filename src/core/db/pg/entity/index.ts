@@ -12,6 +12,7 @@ export {
   countEntitiesByBodyListId,
   countPendingTaskItemsByListId,
   countPendingTaskItemsGroupedByListId,
+  countPendingTaskItemsGroupedByProjectId,
 } from "./repos/entity-crud-repo.ts";
 export {
   searchEntities,

@@ -9,7 +9,7 @@ export type TaskListRowLike = {
   closed: boolean;
   is_folder: boolean;
   parent_id: number | null;
-  item_count: number;
+  item_count?: number;
 };
 
 export type ListTreeNode<T extends TaskListRowLike = TaskListRowLike> = {

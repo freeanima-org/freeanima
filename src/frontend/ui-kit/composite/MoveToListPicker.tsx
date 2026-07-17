@@ -96,7 +96,9 @@ function TreePickerRows<T extends TaskListRowLike>({
               }}
             >
               <span className="min-w-0 flex-1 truncate">{listPathLabel(allLists, list.id)}</span>
-              <span className="text-muted-foreground shrink-0 text-xs">{list.item_count}</span>
+              {list.item_count != null ? (
+                <span className="text-muted-foreground shrink-0 text-xs">{list.item_count}</span>
+              ) : null}
             </button>
           </li>
         ))}
@@ -152,7 +154,9 @@ function TreePickerRows<T extends TaskListRowLike>({
               }}
             >
               <span className="min-w-0 flex-1 truncate">{list.name}</span>
-              <span className="text-muted-foreground shrink-0 text-xs">{list.item_count}</span>
+              {list.item_count != null ? (
+                <span className="text-muted-foreground shrink-0 text-xs">{list.item_count}</span>
+              ) : null}
             </button>
           </li>
         );

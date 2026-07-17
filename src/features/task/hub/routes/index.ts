@@ -27,6 +27,12 @@ export const taskHubRoutes = bindHubRouteHandlers(taskMethodDefs, {
       omitUndefined(input),
       ctxAuth(ctx),
     ),
+  "tasklist.stats": async (deps, input, ctx) =>
+    service.serviceTasklistStats(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
   "tasklist.create": async (deps, input, ctx) =>
     service.serviceTasklistCreate(
       depsOf(deps).runtime.runtimeDeps(),
@@ -59,6 +65,12 @@ export const taskHubRoutes = bindHubRouteHandlers(taskMethodDefs, {
     ),
   "smartlist.list": async (deps, input, ctx) =>
     service.serviceSmartlistList(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
+  "smartlist.stats": async (deps, input, ctx) =>
+    service.serviceSmartlistStats(
       depsOf(deps).runtime.runtimeDeps(),
       omitUndefined(input),
       ctxAuth(ctx),

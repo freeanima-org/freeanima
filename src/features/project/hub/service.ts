@@ -17,6 +17,7 @@ import {
   listMilestones,
   listProjectFolders,
   listProjects,
+  listProjectTaskStats,
   updateMilestone,
   updateProject,
   updateProjectFolder,
@@ -130,6 +131,24 @@ export async function serviceProjectList(
     omitUndefined({ folder_id: input.folder_id, status: input.status }),
   );
   return { projects };
+}
+
+export async function serviceProjectStats(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    folder_id?: number | null;
+    status?: ProjectStatus;
+  },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const worldId = await projectWorldIdForAuth(auth, input.subject_kind);
+  const counts = await listProjectTaskStats(
+    worldId,
+    omitUndefined({ folder_id: input.folder_id, status: input.status }),
+  );
+  return { counts };
 }
 
 export async function serviceProjectCreate(
