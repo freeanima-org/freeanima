@@ -11,6 +11,7 @@ import {
   deleteEntity,
   getEntity,
   listEntities,
+  searchEntities,
   updateEntity,
 } from "@freeanima/core/db/pg/entity";
 
@@ -72,10 +73,33 @@ export async function listMilestones(worldId: number, projectId: number): Promis
     .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
 }
 
+async function findMilestoneByClientOpId(
+  worldId: number,
+  clientOpId: string,
+): Promise<MilestoneRow | null> {
+  const result = await searchEntities({
+    world_id: worldId,
+    primary_component: MILESTONE_COMPONENT,
+    filters: { client_op_id: clientOpId },
+    limit: 1,
+    mode: "filter_only",
+    include_count: false,
+  });
+  const row = result.results[0];
+  if (!row) return null;
+  const parsed = asMilestone(row);
+  if (!parsed) return null;
+  return toMilestoneRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+}
+
 export async function createMilestone(
   worldId: number,
   input: MilestoneCreateInput,
 ): Promise<MilestoneRow> {
+  if (input.client_op_id) {
+    const existing = await findMilestoneByClientOpId(worldId, input.client_op_id);
+    if (existing) return existing;
+  }
   await assertProjectActive(input.project_id, worldId);
   await assertSameWorldReferent(input.project_id, input.project_id);
   const existing = await listMilestones(worldId, input.project_id);
@@ -90,6 +114,7 @@ export async function createMilestone(
       due_at: input.due_at,
       status: "pending" as const,
       sort_order: input.sort_order ?? existing.length,
+      client_op_id: input.client_op_id ?? null,
     },
   });
   const parsed = asMilestone(row);

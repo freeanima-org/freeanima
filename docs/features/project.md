@@ -307,6 +307,12 @@ Entity type: `content`. Text fields use entity columns where noted.
 
 ---
 
+## Offline (Tier 2-CRUD)
+
+卫星壳 Project UI 走 IndexedDB 快照 + outbox（与 Diary / Task 同级）。写 RPC 支持可选 `client_op_id` 幂等；详见 [`offline-platform.md`](../guide/offline-platform.md)。
+
+---
+
 ## Hub RPC methods (v1)
 
 All methods optional `subject_kind: user | agent` (default `user`). Transport: `POST|WS /hub/rpc/v1`.

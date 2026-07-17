@@ -8,7 +8,37 @@ import type {
 } from "@freeanima/shared/sap-contract/frames/project";
 import type { TaskItemRowPayload } from "@freeanima/shared/sap-contract/frames/task";
 
+import { resolveHubCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
+import { withOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache-first";
+import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
+import { isTempId } from "@freeanima/frontend/shell-sdk/offline-temp-id";
 import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
+
+import {
+  offlineCreateMilestone,
+  offlineCreateProject,
+  offlineCreateProjectFolder,
+  offlineCreateProjectTask,
+  offlineDeleteProject,
+  offlineDeleteProjectFolder,
+  offlineDeleteProjectTask,
+  offlineMoveProjectTaskToList,
+  offlineMoveTaskToProject,
+  offlineUpdateMilestone,
+  offlineUpdateProject,
+  offlineUpdateProjectFolder,
+  offlineUpdateProjectTask,
+  reconcileServerMilestones,
+  reconcileServerProjectFolders,
+  reconcileServerProjectItems,
+  reconcileServerProjects,
+  registerProjectOfflineModule,
+} from "./offline-store.ts";
+import {
+  readCachedMilestones,
+  readCachedProjectItems,
+  readCachedProjects,
+} from "./offline-cache.ts";
 
 export type ProjectFolderRow = ProjectFolderRowPayload;
 export type ProjectRow = ProjectRowPayload;
@@ -31,33 +61,75 @@ export type TaskListRow = {
 
 export type ProjectPickerRow = { id: number; title: string; status: string };
 
+let projectModuleRegistered = false;
+
+function ensureProjectOfflineModule(): void {
+  if (projectModuleRegistered) return;
+  registerProjectOfflineModule();
+  projectModuleRegistered = true;
+}
+
 function hub() {
   return getTypedSatelliteHubClient();
 }
 
 export async function fetchProjectFolders(subjectKind: SubjectKind): Promise<ProjectFolderRow[]> {
-  const data = await hub().call("projectfolder.list", { subject_kind: subjectKind });
-  return data.folders;
+  const scope = resolveHubCacheScope();
+  return withOfflineCache({
+    scope,
+    namespace: "project",
+    id: "folders",
+    fetch: async () => {
+      const data = await hub().call("projectfolder.list", { subject_kind: subjectKind });
+      return data.folders;
+    },
+    reconcile: (folders) => reconcileServerProjectFolders(folders),
+    offlineError: "projectfolder.list unavailable offline",
+  });
 }
 
 export async function fetchProjects(
   subjectKind: SubjectKind,
   folderId?: number | null,
 ): Promise<ProjectRow[]> {
-  const data = await hub().call("project.list", {
-    subject_kind: subjectKind,
-    ...(folderId !== undefined ? { folder_id: folderId } : {}),
+  const scope = resolveHubCacheScope();
+  if (folderId !== undefined) {
+    if (!isHubFetchAvailable()) {
+      const cached = (await readCachedProjects(scope)) ?? [];
+      return cached.filter((p) => (p.folder_id ?? null) === folderId);
+    }
+    const data = await hub().call("project.list", {
+      subject_kind: subjectKind,
+      folder_id: folderId,
+    });
+    return data.projects;
+  }
+  return withOfflineCache({
+    scope,
+    namespace: "project",
+    id: "projects",
+    fetch: async () => {
+      const data = await hub().call("project.list", { subject_kind: subjectKind });
+      return data.projects;
+    },
+    reconcile: (projects) => reconcileServerProjects(projects),
+    offlineError: "project.list unavailable offline",
   });
-  return data.projects;
 }
 
 export async function fetchProject(subjectKind: SubjectKind, id: number): Promise<ProjectRow> {
+  if (isTempId(id) || !isHubFetchAvailable()) {
+    const cached = (await readCachedProjects(resolveHubCacheScope())) ?? [];
+    const found = cached.find((p) => p.id === id);
+    if (!found) throw new Error("project not found locally");
+    return found;
+  }
   const data = await hub().call("project.get", { subject_kind: subjectKind, id });
   return data.item;
 }
 
 export async function createProjectApi(
-  subjectKind: SubjectKind,
+  _subjectKind: SubjectKind,
   input: {
     title: string;
     start_at: string;
@@ -66,63 +138,85 @@ export async function createProjectApi(
     folder_id?: number | null;
   },
 ): Promise<ProjectRow> {
-  const data = await hub().call("project.create", { subject_kind: subjectKind, ...input });
-  return data.item;
+  ensureProjectOfflineModule();
+  return offlineCreateProject(input);
 }
 
 export async function fetchMilestones(
   subjectKind: SubjectKind,
   projectId: number,
 ): Promise<MilestoneRow[]> {
-  const data = await hub().call("milestone.list", {
-    subject_kind: subjectKind,
-    project_id: projectId,
+  const scope = resolveHubCacheScope();
+  if (isTempId(projectId) || !isHubFetchAvailable()) {
+    return (await readCachedMilestones(scope, projectId)) ?? [];
+  }
+  return withOfflineCache({
+    scope,
+    namespace: "project",
+    id: `milestones:${projectId}`,
+    fetch: async () => {
+      const data = await hub().call("milestone.list", {
+        subject_kind: subjectKind,
+        project_id: projectId,
+      });
+      return data.milestones;
+    },
+    reconcile: (milestones) => reconcileServerMilestones(projectId, milestones),
+    offlineError: "milestone.list unavailable offline",
   });
-  return data.milestones;
 }
 
 export async function createMilestoneApi(
-  subjectKind: SubjectKind,
+  _subjectKind: SubjectKind,
   input: { project_id: number; title: string; due_at: string },
 ): Promise<MilestoneRow> {
-  const data = await hub().call("milestone.create", { subject_kind: subjectKind, ...input });
-  return data.item;
+  ensureProjectOfflineModule();
+  return offlineCreateMilestone(input);
 }
 
 export async function fetchProjectTasks(
   subjectKind: SubjectKind,
   projectId: number,
 ): Promise<TaskItemRow[]> {
-  const data = await hub().call("project.item.list", {
-    subject_kind: subjectKind,
-    project_id: projectId,
+  const scope = resolveHubCacheScope();
+  if (isTempId(projectId) || !isHubFetchAvailable()) {
+    return (await readCachedProjectItems(scope, projectId)) ?? [];
+  }
+  return withOfflineCache({
+    scope,
+    namespace: "project",
+    id: `items:${projectId}`,
+    fetch: async () => {
+      const data = await hub().call("project.item.list", {
+        subject_kind: subjectKind,
+        project_id: projectId,
+      });
+      return data.items;
+    },
+    reconcile: (items) => reconcileServerProjectItems(projectId, items),
+    offlineError: "project.item.list unavailable offline",
   });
-  return data.items;
 }
 
 export async function createProjectTask(
-  subjectKind: SubjectKind,
+  _subjectKind: SubjectKind,
   input: { title: string; project_id: number; sort_order?: number },
 ): Promise<TaskItemRow> {
-  const data = await hub().call("project.item.create", { subject_kind: subjectKind, ...input });
-  return data.item;
+  ensureProjectOfflineModule();
+  return offlineCreateProjectTask(input);
 }
 
 export async function moveTaskToProject(
-  subjectKind: SubjectKind,
+  _subjectKind: SubjectKind,
   taskId: number,
   projectId: number,
 ): Promise<TaskItemRow> {
-  const data = await hub().call("task.moveToProject", {
-    subject_kind: subjectKind,
-    id: taskId,
-    project_id: projectId,
-  });
-  return data.item;
+  ensureProjectOfflineModule();
+  return offlineMoveTaskToProject(taskId, projectId);
 }
 
 export async function patchProjectApi(
-  subjectKind: SubjectKind,
+  _subjectKind: SubjectKind,
   id: number,
   patch: {
     status?: ProjectRow["status"];
@@ -135,51 +229,49 @@ export async function patchProjectApi(
     sort_order?: number;
   },
 ): Promise<ProjectRow> {
-  const data = await hub().call("project.patch", { subject_kind: subjectKind, id, ...patch });
-  return data.item;
+  ensureProjectOfflineModule();
+  return offlineUpdateProject(id, patch);
 }
 
-export async function deleteProjectApi(subjectKind: SubjectKind, id: number): Promise<void> {
-  await hub().call("project.delete", { subject_kind: subjectKind, id });
+export async function deleteProjectApi(_subjectKind: SubjectKind, id: number): Promise<void> {
+  ensureProjectOfflineModule();
+  return offlineDeleteProject(id);
 }
 
 export async function patchMilestoneApi(
-  subjectKind: SubjectKind,
+  _subjectKind: SubjectKind,
   id: number,
   patch: { status?: MilestoneRow["status"]; title?: string; due_at?: string },
 ): Promise<MilestoneRow> {
-  const data = await hub().call("milestone.patch", { subject_kind: subjectKind, id, ...patch });
-  return data.item;
+  ensureProjectOfflineModule();
+  return offlineUpdateMilestone(id, patch);
 }
 
 export async function createProjectFolderApi(
-  subjectKind: SubjectKind,
+  _subjectKind: SubjectKind,
   name: string,
   parentId?: number | null,
 ): Promise<ProjectFolderRow> {
-  const data = await hub().call("projectfolder.create", {
-    subject_kind: subjectKind,
-    name,
-    parent_id: parentId ?? null,
-  });
-  return data.item;
+  ensureProjectOfflineModule();
+  return offlineCreateProjectFolder({ name, parent_id: parentId ?? null });
 }
 
 export async function patchProjectFolderApi(
-  subjectKind: SubjectKind,
+  _subjectKind: SubjectKind,
   id: number,
   patch: { name?: string; parent_id?: number | null; sort_order?: number },
 ): Promise<ProjectFolderRow> {
-  const data = await hub().call("projectfolder.patch", { subject_kind: subjectKind, id, ...patch });
-  return data.item;
+  ensureProjectOfflineModule();
+  return offlineUpdateProjectFolder(id, patch);
 }
 
-export async function deleteProjectFolderApi(subjectKind: SubjectKind, id: number): Promise<void> {
-  await hub().call("projectfolder.delete", { subject_kind: subjectKind, id });
+export async function deleteProjectFolderApi(_subjectKind: SubjectKind, id: number): Promise<void> {
+  ensureProjectOfflineModule();
+  return offlineDeleteProjectFolder(id);
 }
 
 export async function updateProjectTask(
-  subjectKind: SubjectKind,
+  _subjectKind: SubjectKind,
   id: number,
   patch: Partial<
     Pick<
@@ -188,48 +280,49 @@ export async function updateProjectTask(
     >
   >,
 ): Promise<TaskItemRow> {
-  const data = await hub().call("task.patch", { subject_kind: subjectKind, id, ...patch });
-  return data.item;
+  ensureProjectOfflineModule();
+  return offlineUpdateProjectTask(id, patch);
 }
 
 export async function completeProjectTask(
-  subjectKind: SubjectKind,
+  _subjectKind: SubjectKind,
   id: number,
 ): Promise<TaskItemRow> {
-  const data = await hub().call("task.complete", { subject_kind: subjectKind, id });
-  return data.item;
+  ensureProjectOfflineModule();
+  return offlineUpdateProjectTask(id, { status: "completed" });
 }
 
 export async function uncompleteProjectTask(
-  subjectKind: SubjectKind,
+  _subjectKind: SubjectKind,
   id: number,
 ): Promise<TaskItemRow> {
-  const data = await hub().call("task.uncomplete", { subject_kind: subjectKind, id });
-  return data.item;
+  ensureProjectOfflineModule();
+  return offlineUpdateProjectTask(id, { status: "pending" });
 }
 
-export async function deleteProjectTask(subjectKind: SubjectKind, id: number): Promise<void> {
-  await hub().call("task.delete", { subject_kind: subjectKind, id });
+export async function deleteProjectTask(_subjectKind: SubjectKind, id: number): Promise<void> {
+  ensureProjectOfflineModule();
+  return offlineDeleteProjectTask(id);
 }
 
 export async function fetchTaskListsForMove(subjectKind: SubjectKind): Promise<TaskListRow[]> {
+  if (!isHubFetchAvailable()) return [];
   const data = await hub().call("tasklist.list", { subject_kind: subjectKind });
   return data.lists;
 }
 
 export async function fetchProjectsForMove(subjectKind: SubjectKind): Promise<ProjectPickerRow[]> {
-  const data = await hub().call("project.list", { subject_kind: subjectKind });
-  return data.projects.map((p) => ({ id: p.id, title: p.title, status: p.status }));
+  const projects = await fetchProjects(subjectKind);
+  return projects.map((p) => ({ id: p.id, title: p.title, status: p.status }));
 }
 
 export async function moveProjectTaskToList(
-  subjectKind: SubjectKind,
+  _subjectKind: SubjectKind,
   taskId: number,
   listId: number,
 ): Promise<void> {
-  await hub().call("task.moveToList", {
-    subject_kind: subjectKind,
-    id: taskId,
-    list_id: listId,
-  });
+  ensureProjectOfflineModule();
+  return offlineMoveProjectTaskToList(taskId, listId);
 }
+
+export { countProjectPendingOps } from "./offline-store.ts";

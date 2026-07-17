@@ -10,6 +10,7 @@ export type ProjectFolderCreateInput = {
   name: string;
   parent_id?: number | null;
   sort_order?: number;
+  client_op_id?: string;
 };
 
 export type ProjectFolderUpdateInput = {
@@ -28,6 +29,7 @@ export type ProjectCreateInput = {
   folder_id?: number | null;
   product_tag?: string;
   sort_order?: number;
+  client_op_id?: string;
 };
 
 export type ProjectUpdateInput = {
@@ -55,6 +57,7 @@ export type MilestoneCreateInput = {
   title: string;
   due_at: string;
   sort_order?: number;
+  client_op_id?: string;
 };
 
 export type MilestoneUpdateInput = {

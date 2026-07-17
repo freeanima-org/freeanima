@@ -1,6 +1,7 @@
 import { registerChatOfflineModule } from "@freeanima/features/chat/ui/spa/lib/offline-stream-adapter.ts";
 import { registerDiaryOfflineModule } from "@freeanima/features/diary/ui/spa/lib/offline-store.ts";
 import { registerPomodoroOfflineModule } from "@freeanima/features/pomodoro/ui/spa/lib/pomodoro-offline-adapter.ts";
+import { registerProjectOfflineModule } from "@freeanima/features/project/ui/spa/lib/offline-store.ts";
 import { registerTaskOfflineModule } from "@freeanima/features/task/ui/spa/lib/offline-store.ts";
 
 let registered = false;
@@ -12,6 +13,7 @@ export function registerAllOfflineModules(): void {
   registerChatOfflineModule();
   registerDiaryOfflineModule();
   registerTaskOfflineModule();
+  registerProjectOfflineModule();
   registerPomodoroOfflineModule();
 }
 

@@ -3,12 +3,8 @@ import {
   readModuleSelection,
   writeModuleSelection,
 } from "@freeanima/frontend/shell-sdk/module-selection.ts";
-import {
-  SubjectScopeToggle,
-  useHubConnection,
-  useNetworkOnline,
-  useSubjectScope,
-} from "@freeanima/frontend/shell-sdk/react.tsx";
+import { subscribeIdMappings } from "@freeanima/frontend/shell-sdk/offline-id-map";
+import { SubjectScopeToggle, useSubjectScope } from "@freeanima/frontend/shell-sdk/react.tsx";
 import {
   Button,
   Dialog,
@@ -36,6 +32,8 @@ import {
   useThreeColumnLayoutMode,
 } from "@freeanima/frontend/ui-kit/layout";
 import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react";
+
+import { registerProjectOfflineModule } from "./lib/offline-store.ts";
 
 import { MilestoneDialog } from "./components/MilestoneDialog.tsx";
 import { MoveToListPicker } from "@freeanima/frontend/ui-kit/composite";
@@ -109,13 +107,15 @@ function menuToSheet(items: ProjectMenuItem[]): ActionSheetItem[] {
 
 export function ProjectApp() {
   const { kind: subjectKind } = useSubjectScope();
-  const networkOnline = useNetworkOnline();
-  const hubConnection = useHubConnection();
-  const writesDisabled = !networkOnline || hubConnection !== "connected";
+  const writesDisabled = false;
   const contextMenuEnabled = useContextMenuCapability();
   const useActionSheet = useActionSheetCapability();
   const useDrawer = useDrawerNav();
   const layoutMode = useThreeColumnLayoutMode();
+
+  useEffect(() => {
+    registerProjectOfflineModule();
+  }, []);
 
   const [listOpen, setListOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -182,6 +182,94 @@ export function ProjectApp() {
       setTasks((prev) => prev.map((t) => (t.id === saved.id ? saved : t)));
     },
   });
+
+  useEffect(() => {
+    return subscribeIdMappings((event) => {
+      if (event.moduleId !== "project") return;
+      const { tempId, serverId } = event;
+      const remapId = (id: number) => (id === tempId ? serverId : id);
+
+      setFolders((prev) => {
+        let changed = false;
+        const next = prev.map((row) => {
+          if (row.id !== tempId && row.parent_id !== tempId) return row;
+          changed = true;
+          return {
+            ...row,
+            id: remapId(row.id),
+            parent_id: row.parent_id === tempId ? serverId : row.parent_id,
+          };
+        });
+        return changed ? next : prev;
+      });
+
+      setProjects((prev) => {
+        let changed = false;
+        const next = prev.map((row) => {
+          if (row.id !== tempId && row.folder_id !== tempId) return row;
+          changed = true;
+          return {
+            ...row,
+            id: remapId(row.id),
+            folder_id: row.folder_id === tempId ? serverId : row.folder_id,
+          };
+        });
+        return changed ? next : prev;
+      });
+
+      setMilestones((prev) => {
+        let changed = false;
+        const next = prev.map((row) => {
+          if (row.id !== tempId && row.project_id !== tempId) return row;
+          changed = true;
+          return {
+            ...row,
+            id: remapId(row.id),
+            project_id: row.project_id === tempId ? serverId : row.project_id,
+          };
+        });
+        return changed ? next : prev;
+      });
+
+      setTasks((prev) => {
+        let changed = false;
+        const next = prev.map((row) => {
+          if (row.id !== tempId && row.project_id !== tempId && row.milestone_id !== tempId) {
+            return row;
+          }
+          changed = true;
+          return {
+            ...row,
+            id: remapId(row.id),
+            project_id: row.project_id === tempId ? serverId : row.project_id,
+            milestone_id: row.milestone_id === tempId ? serverId : row.milestone_id,
+          };
+        });
+        return changed ? next : prev;
+      });
+
+      setSelectedFolderId((prev) => (prev === tempId ? serverId : prev));
+      setSelectedProjectId((prev) => {
+        if (prev === tempId) {
+          writeModuleSelection("project", serverId, { subjectKind });
+          return serverId;
+        }
+        return prev;
+      });
+      setDetailItem((prev) => {
+        if (!prev) return prev;
+        if (prev.id !== tempId && prev.project_id !== tempId && prev.milestone_id !== tempId) {
+          return prev;
+        }
+        return {
+          ...prev,
+          id: remapId(prev.id),
+          project_id: prev.project_id === tempId ? serverId : prev.project_id,
+          milestone_id: prev.milestone_id === tempId ? serverId : prev.milestone_id,
+        };
+      });
+    });
+  }, [setDetailItem, subjectKind]);
 
   const [contextMenu, setContextMenu] = useState<MenuState | null>(null);
   const [sheetItems, setSheetItems] = useState<ActionSheetItem[] | null>(null);

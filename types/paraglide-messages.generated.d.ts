@@ -655,6 +655,7 @@ type ParaglideMessageExports = {
   readonly ui_offline_sync_module_chat: ParaglideMessageFn;
   readonly ui_offline_sync_module_diary: ParaglideMessageFn;
   readonly ui_offline_sync_module_pomodoro: ParaglideMessageFn;
+  readonly ui_offline_sync_module_project: ParaglideMessageFn;
   readonly ui_offline_sync_module_task: ParaglideMessageFn;
   readonly ui_offline_sync_pending: ParaglideMessageFn;
   readonly ui_offline_sync_retry: ParaglideMessageFn;
@@ -1347,6 +1348,7 @@ declare module "*/messages/paraglide/messages.js" {
   export const ui_offline_sync_module_chat: ParaglideMessageFn;
   export const ui_offline_sync_module_diary: ParaglideMessageFn;
   export const ui_offline_sync_module_pomodoro: ParaglideMessageFn;
+  export const ui_offline_sync_module_project: ParaglideMessageFn;
   export const ui_offline_sync_module_task: ParaglideMessageFn;
   export const ui_offline_sync_pending: ParaglideMessageFn;
   export const ui_offline_sync_retry: ParaglideMessageFn;

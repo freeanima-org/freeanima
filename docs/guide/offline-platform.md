@@ -9,7 +9,7 @@ FreeAnima 卫星壳离线能力分三层：
 | 层级          | 能力                      | 模块                                   |
 | ------------- | ------------------------- | -------------------------------------- |
 | Tier 1        | IndexedDB 只读快照        | Email、Notification、Console、Dream 等 |
-| Tier 2-CRUD   | outbox + 乐观 KV          | Diary、Task                            |
+| Tier 2-CRUD   | outbox + 乐观 KV          | Diary、Task、Project                   |
 | Tier 2-Hybrid | outbox + localStorage LWW | Pomodoro（active 计时）                |
 | Tier 2-Stream | SAP 流式 flush            | Chat send                              |
 
@@ -35,7 +35,7 @@ FreeAnima 卫星壳离线能力分三层：
 
 写 RPC 可选 `client_op_id`；flush 重试使用同一 id；create 响应含完整 `item` 供 id-map 写入。
 
-**在线也走 outbox**：Diary / Task 的写路径（含 create）始终先写本地 KV + outbox，再 `scheduleFlush`；并非「仅离线才排队」。
+**在线也走 outbox**：Diary / Task / Project 的写路径（含 create）始终先写本地 KV + outbox，再 `scheduleFlush`；并非「仅离线才排队」。
 
 ## Temp id 生命周期契约（Tier 2-CRUD）
 

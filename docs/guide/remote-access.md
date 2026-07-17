@@ -30,8 +30,8 @@ title: Remote access
 - **更新**：Hub 部署新 Web 静态产物后，已安装 PWA 会提示「新版本可用」；点击重新加载后生效（不会自动刷新）。壳层 JS 由 Workbox precache，生产环境会定期/`visibilitychange` 时 `registration.update()`。`/web/config.json` 始终 `no-store`（Hub URL 动态）。Desktop/Mobile 不走 SW；升级见 Releases 安装包检测（设置 → 关于「检查更新」）。
 - **离线边界（两层）**：
   - **壳层（SW）**：仅缓存 JS/CSS/HTML 等静态资源，保证断网时页面框架可加载。
-  - **业务快照（IndexedDB）**：Chat / Task / Notification / Diary / Email / Dream / Pomodoro（config/历史）及 Console 部分只读页由 `shell-sdk/offline-cache` 做 cache-first；**Tier 2 可写**模块（Diary、Task、Chat send、Pomodoro outbox）离线可编辑，恢复在线后 outbox flush；详见 [`offline-platform.md`](offline-platform.md)。
-- **离线边界**：浏览器 `offline` 时 Tier 1 模块只读展示快照；**offlineWritable** 模块（Diary、Task、Chat、Pomodoro）仍可本地编辑并排队待同步。
+  - **业务快照（IndexedDB）**：Chat / Task / Project / Notification / Diary / Email / Dream / Pomodoro（config/历史）及 Console 部分只读页由 `shell-sdk/offline-cache` 做 cache-first；**Tier 2 可写**模块（Diary、Task、Project、Chat send、Pomodoro outbox）离线可编辑，恢复在线后 outbox flush；详见 [`offline-platform.md`](offline-platform.md)。
+- **离线边界**：浏览器 `offline` 时 Tier 1 模块只读展示快照；**offlineWritable** 模块（Diary、Task、Project、Chat、Pomodoro）仍可本地编辑并排队待同步。
 - **存储**：SW 缓存、localStorage（Hub 设置）、IndexedDB（业务快照）互不冲突；清除站点数据会同时删除三者。
 
 Registry 标记 `auth: optional` 的 Hub RPC 方法（如 `health.probe`、`tls.ca.*`）与 CORS 预检可不带 Bearer；其余 `/hub/rpc/v1/*` 与 MCP 须 Bearer。
