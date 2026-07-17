@@ -176,6 +176,21 @@ export const chatHubRoutes = bindHubRouteHandlers(chatMethodDefs, {
       }),
     );
   },
+  "conversation.command": async (deps, input, ctx) => {
+    const sapCtx = ctxOf(ctx);
+    const platform = await resolveConversationPlatform(depsOf(deps), input.conversation_id);
+    return depsOf(deps).runtime.runConversationCommand(
+      omitUndefined({
+        conversation_id: input.conversation_id,
+        text: input.text,
+        platform,
+        origin_extra: {
+          app_id: sapCtx.app_id,
+          instance_id: sapCtx.instance_id,
+        },
+      }),
+    );
+  },
   "message.send": async (deps, input, ctx) => {
     const sapCtx = ctxOf(ctx);
     const streamId = randomUUID();

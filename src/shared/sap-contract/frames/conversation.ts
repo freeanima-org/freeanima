@@ -133,3 +133,24 @@ export const conversationCommandsOutputSchema = z.object({
 });
 
 export type ConversationCommandsOutput = z.infer<typeof conversationCommandsOutputSchema>;
+
+export const conversationCommandInputSchema = z.object({
+  conversation_id: z.string().min(1),
+  text: z.string().min(1),
+});
+
+export type ConversationCommandInput = z.infer<typeof conversationCommandInputSchema>;
+
+export const conversationCommandOutputSchema = z.discriminatedUnion("delivery", [
+  z.object({
+    delivery: z.literal("message"),
+  }),
+  z.object({
+    delivery: z.literal("rpc"),
+    ux: z.enum(["panel", "toast", "none"]),
+    text: z.string(),
+    command: z.string(),
+  }),
+]);
+
+export type ConversationCommandOutput = z.infer<typeof conversationCommandOutputSchema>;

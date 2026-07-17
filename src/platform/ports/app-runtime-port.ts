@@ -41,7 +41,16 @@ export type AppRuntimeMessagingPort = {
     text: string;
     platform?: string;
     origin_extra?: Record<string, unknown>;
-  }): Promise<{ text: string; data: unknown; found: boolean }>;
+  }): Promise<{ text: string; data: unknown; found: boolean; ux?: "panel" | "toast" | "none" }>;
+  runConversationCommand(params: {
+    conversation_id: string;
+    text: string;
+    platform?: string;
+    origin_extra?: Record<string, unknown>;
+  }): Promise<
+    | { delivery: "message" }
+    | { delivery: "rpc"; ux: "panel" | "toast" | "none"; text: string; command: string }
+  >;
   sendMessageStream(
     conversationId: string,
     message: string,

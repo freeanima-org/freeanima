@@ -15,6 +15,7 @@ import { animaConfigSchema } from "@freeanima/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
 import { getAcpManager } from "@freeanima/capabilities/acp";
 import { registerBuiltins } from "@freeanima/platform/slash-commands";
+import * as goal from "@freeanima/runtime/goal";
 import * as turnLifecycle from "./turn-lifecycle.ts";
 
 const catalog = createEngineCatalog();
@@ -150,5 +151,86 @@ describe("sendMessageStream slash commands", () => {
     expect(tokens[0]).toContain("压缩");
     expect(handlerStarted).toBe(true);
     expect(tokens.some((t) => t.includes("Updated compression") || t.includes("l2"))).toBe(true);
+  });
+});
+
+describe("runConversationCommand Chat RPC", () => {
+  const restores: Array<{ mockRestore: () => void }> = [];
+
+  afterEach(() => {
+    for (const spy of restores) spy.mockRestore();
+    restores.length = 0;
+  });
+
+  function mockConversationBasics(platform = "chat"): void {
+    restores.push(
+      spyOn(conv, "conversationExists").mockResolvedValue(true),
+      spyOn(conv, "assertConversationPlatform").mockResolvedValue(),
+      spyOn(conv, "loadConversationMeta").mockResolvedValue({
+        role: "conversation_meta",
+        model: "test-model",
+        cached_toolsets: [],
+        functions: [],
+        timestamp: new Date().toISOString(),
+        platform,
+      }),
+    );
+  }
+
+  it("/help returns delivery rpc with panel ux", async () => {
+    mockConversationBasics();
+    const app = await wireTestRuntime();
+    const result = await app.runConversationCommand({
+      conversation_id: "test-sid",
+      text: "/help",
+      platform: "chat",
+    });
+    expect(result.delivery).toBe("rpc");
+    if (result.delivery !== "rpc") return;
+    expect(result.ux).toBe("panel");
+    expect(result.command).toBe("help");
+    expect(result.text).toContain("Available commands");
+  });
+
+  it("/retry returns delivery message without executing stream", async () => {
+    mockConversationBasics();
+    const app = await wireTestRuntime();
+    const result = await app.runConversationCommand({
+      conversation_id: "test-sid",
+      text: "/retry",
+      platform: "chat",
+    });
+    expect(result).toEqual({ delivery: "message" });
+  });
+
+  it("/goal <desc> returns delivery message; /goal pause returns toast rpc", async () => {
+    mockConversationBasics();
+    restores.push(
+      spyOn(goal, "pauseConversationGoal").mockResolvedValue({
+        description: "ship",
+        status: "paused",
+        turn_count: 1,
+        max_turns: 20,
+        subgoals: [],
+      } as never),
+    );
+    const app = await wireTestRuntime();
+
+    const start = await app.runConversationCommand({
+      conversation_id: "test-sid",
+      text: "/goal ship the feature",
+      platform: "chat",
+    });
+    expect(start).toEqual({ delivery: "message" });
+
+    const pause = await app.runConversationCommand({
+      conversation_id: "test-sid",
+      text: "/goal pause",
+      platform: "chat",
+    });
+    expect(pause.delivery).toBe("rpc");
+    if (pause.delivery !== "rpc") return;
+    expect(pause.ux).toBe("toast");
+    expect(pause.text).toContain("paused");
   });
 });

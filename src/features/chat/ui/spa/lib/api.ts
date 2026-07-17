@@ -155,6 +155,30 @@ export async function listConversationCommands(opts?: { all?: boolean }) {
   });
 }
 
+export type ConversationCommandResult =
+  | { delivery: "message" }
+  | { delivery: "rpc"; ux: "panel" | "toast" | "none"; text: string; command: string };
+
+/** Terminal slash path (panel / toast); may redirect to message.send via delivery: message */
+export async function runConversationCommand(
+  conversationId: string,
+  text: string,
+): Promise<ConversationCommandResult> {
+  requireHubFetch("conversation.command");
+  const raw = await hub().call(
+    "conversation.command",
+    {
+      conversation_id: conversationId,
+      text,
+    },
+    { transport: "http" },
+  );
+  if (raw && typeof raw === "object" && "delivery" in raw) {
+    return raw as ConversationCommandResult;
+  }
+  throw new Error("conversation.command returned invalid payload");
+}
+
 export function subscribeMessageStream(
   input: {
     conversationId: string;

@@ -71,6 +71,8 @@ export {
   conversationCommandsInputSchema,
   conversationCommandsOutputSchema,
   conversationCommandItemSchema,
+  conversationCommandInputSchema,
+  conversationCommandOutputSchema,
 } from "./frames/conversation.ts";
 export type {
   ConversationCreateInput,
@@ -88,6 +90,8 @@ export type {
   ConversationCommandsInput,
   ConversationCommandsOutput,
   ConversationCommandItem,
+  ConversationCommandInput,
+  ConversationCommandOutput,
 } from "./frames/conversation.ts";
 
 export {

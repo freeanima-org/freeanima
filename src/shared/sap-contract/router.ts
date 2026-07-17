@@ -22,6 +22,8 @@ import type {
   ConversationSubscribeInput,
   ConversationCommandsInput,
   ConversationCommandsOutput,
+  ConversationCommandInput,
+  ConversationCommandOutput,
   ConversationTailInput,
   ConversationTailOutput,
 } from "./frames/conversation.ts";
@@ -190,6 +192,7 @@ export const SAP_METHODS = [
   "conversation.subscribe",
   "conversation.acpDock",
   "conversation.commands",
+  "conversation.command",
   "message.send",
   "message.interrupt",
   "tasklist.list",
@@ -279,6 +282,7 @@ export type SapRouterInputs = {
   "conversation.subscribe": ConversationSubscribeInput;
   "conversation.acpDock": ConversationAcpDockInput;
   "conversation.commands": ConversationCommandsInput;
+  "conversation.command": ConversationCommandInput;
   "message.send": MessageSendInput;
   "message.interrupt": MessageInterruptInput;
   "tasklist.list": TasklistListInput;
@@ -366,6 +370,7 @@ export type SapRouterOutputs = {
   "conversation.subscribe": { ok: true };
   "conversation.acpDock": ConversationAcpDockOutput;
   "conversation.commands": ConversationCommandsOutput;
+  "conversation.command": ConversationCommandOutput;
   "message.send": MessageSendOutput;
   "message.interrupt": MessageInterruptOutput;
   "tasklist.list": TasklistListOutput;
