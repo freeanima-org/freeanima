@@ -7,6 +7,17 @@ import type { LlmRuntime } from "./llm-stack.ts";
 /** Title is at most 50 chars; cap generation budget tightly. */
 export const SESSION_TITLE_MAX_OUTPUT_TOKENS = 30;
 
+/**
+ * 关闭 thinking：短标题不需要推理，且 thinking 常与 content 共用 max_tokens。
+ * 兼容忽略 thinking 开关的网关（仍靠 maxOutputTokens 收紧）。
+ */
+export const SESSION_TITLE_REQUEST_PARAMS = {
+  maxOutputTokens: SESSION_TITLE_MAX_OUTPUT_TOKENS,
+  extra: {
+    thinking: { type: "disabled" },
+  },
+} as const;
+
 const SESSION_TITLE_INSTRUCTION = `You label chat threads in a sidebar (like ChatGPT or WeChat). Read ONLY the user's first message.
 
 Write a short TOPIC label (at most 50 characters) in the same language as the user.
@@ -96,7 +107,7 @@ export async function generateConversationTitle(
         profileId: PROFILE_SUMMARY,
         runtime: opts?.runtime,
         model: opts?.model,
-        requestParams: { maxOutputTokens: SESSION_TITLE_MAX_OUTPUT_TOKENS },
+        requestParams: SESSION_TITLE_REQUEST_PARAMS,
       }),
     );
     const title = extractTitleFromCompletion(resp);

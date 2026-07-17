@@ -5,6 +5,7 @@ import {
   generateConversationTitle,
   sanitizeConversationTitle,
   SESSION_TITLE_MAX_OUTPUT_TOKENS,
+  SESSION_TITLE_REQUEST_PARAMS,
 } from "./conversation-title.ts";
 import { PROFILE_SUMMARY } from "@freeanima/core/provider";
 
@@ -55,7 +56,8 @@ describe("generateConversationTitle", () => {
     expect(String(messages[0]?.content)).toContain("sidebar");
     expect(messages[1]).toEqual({ role: "user", content: "The login page throws 500" });
     expect(opts?.profileId).toBe(PROFILE_SUMMARY);
-    expect(opts?.requestParams).toEqual({ maxOutputTokens: SESSION_TITLE_MAX_OUTPUT_TOKENS });
+    expect(opts?.requestParams).toEqual(SESSION_TITLE_REQUEST_PARAMS);
+    expect(SESSION_TITLE_REQUEST_PARAMS.extra.thinking).toEqual({ type: "disabled" });
     expect(SESSION_TITLE_MAX_OUTPUT_TOKENS).toBe(30);
   });
 
