@@ -17,6 +17,8 @@ DO $$
 DECLARE
   agent_world_id bigint;
   r RECORD;
+  map_row RECORD;
+  new_content text;
 BEGIN
   SELECT COALESCE(
     NULLIF(a.body->>'default_private_world_id', '')::bigint,
@@ -143,21 +145,26 @@ BEGIN
       AND e.body->>'semantic_memory_id' = m.old_id;
 
     -- 历史消息正文 [[f-xxx]] → [[anima:id]]
-    FOR r IN SELECT old_id, new_id FROM semantic_memory_id_map LOOP
-      UPDATE "messages"
-      SET payload = jsonb_set(
-        payload,
-        '{content}',
-        to_jsonb(
-          replace(
-            payload->>'content',
-            '[[' || r.old_id || ']]',
-            '[[anima:' || r.new_id::text || ']]'
-          )
-        )
-      )
-      WHERE payload->>'role' IN ('user', 'assistant')
-        AND payload->>'content' LIKE '%[[' || r.old_id || ']]%';
+    -- 按「含 [[ 的消息」外层循环（每条最多 UPDATE 一次），避免按 legacy_id 反复全表扫 messages
+    FOR r IN
+      SELECT m.id AS message_id, m.payload->>'content' AS content
+      FROM "messages" m
+      WHERE m.payload->>'role' IN ('user', 'assistant')
+        AND m.payload->>'content' LIKE '%[[%'
+    LOOP
+      new_content := r.content;
+      FOR map_row IN SELECT old_id, new_id FROM semantic_memory_id_map LOOP
+        new_content := replace(
+          new_content,
+          '[[' || map_row.old_id || ']]',
+          '[[anima:' || map_row.new_id::text || ']]'
+        );
+      END LOOP;
+      IF new_content IS DISTINCT FROM r.content THEN
+        UPDATE "messages"
+        SET payload = jsonb_set(payload, '{content}', to_jsonb(new_content))
+        WHERE id = r.message_id;
+      END IF;
     END LOOP;
   END IF;
 END $$;--> statement-breakpoint

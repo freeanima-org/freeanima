@@ -8,6 +8,16 @@ export type WaitForHubReadyOptions = {
   intervalMs?: number;
 };
 
+/** 启动探活默认 15min：慢迁移（HNSW / 记忆 backfill）常超过旧的 2min 窗口 */
+export const DEFAULT_HUB_READY_TIMEOUT_MS = 900_000;
+
+function resolveHubReadyTimeoutMs(override?: number): number {
+  if (typeof override === "number" && Number.isFinite(override) && override > 0) return override;
+  const raw = Number.parseInt(process.env.FREEANIMA_HUB_READY_TIMEOUT_MS ?? "", 10);
+  if (Number.isFinite(raw) && raw > 0) return raw;
+  return DEFAULT_HUB_READY_TIMEOUT_MS;
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
@@ -26,7 +36,7 @@ export async function waitForHubReady(
   port: number,
   opts?: WaitForHubReadyOptions,
 ): Promise<boolean> {
-  const timeoutMs = opts?.timeoutMs ?? 120_000;
+  const timeoutMs = resolveHubReadyTimeoutMs(opts?.timeoutMs);
   const intervalMs = opts?.intervalMs ?? 500;
   const probeHost = resolveProbeHost(host);
   const deadline = Date.now() + timeoutMs;
@@ -40,7 +50,7 @@ export async function waitForHubReady(
 }
 
 export async function waitForHubReadyOrWarn(host: string, port: number): Promise<boolean> {
-  const timeoutMs = 120_000;
+  const timeoutMs = resolveHubReadyTimeoutMs();
   const intervalMs = 500;
   const probeHost = resolveProbeHost(host);
   const deadline = Date.now() + timeoutMs;
@@ -59,7 +69,7 @@ export async function waitForHubReadyOrWarn(host: string, port: number): Promise
 
     const now = Date.now();
     if (!waited) {
-      writeStatusLine("info", "等待 Hub 就绪…");
+      writeStatusLine("info", "等待 Hub 就绪（含数据库迁移）…");
       waited = true;
       lastProgressAt = now;
     } else if (now - lastProgressAt >= 5000) {
@@ -71,8 +81,12 @@ export async function waitForHubReadyOrWarn(host: string, port: number): Promise
     await sleep(intervalMs);
   }
 
-  writeStatusLine("warning", "Hub health check timed out; managed satellites not started");
-  writeStatusLine("info", "Try: anima service restart");
-  writeStatusLine("info", "See: journalctl --user -u anima -n 30 --no-pager");
+  writeStatusLine(
+    "warning",
+    `Hub 在 ${Math.round(timeoutMs / 1000)}s 内未就绪（可能仍在跑迁移，或已退出）`,
+  );
+  writeStatusLine("info", "Check: journalctl --user -u anima -n 50 --no-pager");
+  writeStatusLine("info", "Check: anima service status");
+  writeStatusLine("info", "Try: anima service restart（勿在迁移进行中 stop）");
   return false;
 }
