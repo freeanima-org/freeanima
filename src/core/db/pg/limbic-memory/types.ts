@@ -1,4 +1,4 @@
-import type { LimbicKind } from "@freeanima/core/db/schema";
+import type { LimbicKind } from "@freeanima/core/db/schema/entity";
 import type { LimbicMemoryRow } from "@freeanima/core/db/schema/rows";
 
 export type { LimbicKind, LimbicMemoryRow };

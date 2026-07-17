@@ -1,10 +1,6 @@
-import { arrayOverlaps, eq, inArray } from "drizzle-orm";
-import {
-  autobiographicalMemory,
-  limbicMemory,
-  semanticMemory,
-  conversations,
-} from "@freeanima/core/db/schema";
+import { and, arrayOverlaps, eq, inArray, sql } from "drizzle-orm";
+import { LIMBIC_COMPONENT, NARRATIVE_COMPONENT } from "@freeanima/core/db/schema/entity";
+import { entities, semanticMemory, conversations } from "@freeanima/core/db/schema";
 
 import { getDb } from "../../client.ts";
 import { listCronSessionIds } from "./conversation-repo.ts";
@@ -30,7 +26,14 @@ export async function purgeCronConversations(): Promise<PurgeCronConversationsRe
   const idSet = new Set<string>(ids);
   const db = getDb();
 
-  await db.delete(limbicMemory).where(inArray(limbicMemory.conversation_id, ids));
+  await db
+    .delete(entities)
+    .where(
+      and(
+        sql`${entities.components} @> ARRAY[${LIMBIC_COMPONENT}]::text[]`,
+        sql`${entities.body}->>'conversation_id' = ANY(${ids})`,
+      ),
+    );
 
   const semanticRows = await db
     .select({ id: semanticMemory.id, source_conversations: semanticMemory.source_conversations })
@@ -45,20 +48,27 @@ export async function purgeCronConversations(): Promise<PurgeCronConversationsRe
       .where(eq(semanticMemory.id, row.id));
   }
 
-  const autoRows = await db
-    .select({
-      id: autobiographicalMemory.id,
-      source_conversations: autobiographicalMemory.source_conversations,
-    })
-    .from(autobiographicalMemory)
-    .where(arrayOverlaps(autobiographicalMemory.source_conversations, ids));
-  for (const row of autoRows) {
-    const next = stripIdsFromArray(row.source_conversations ?? [], idSet);
-    if (next.length === (row.source_conversations ?? []).length) continue;
+  const narrativeRows = await db
+    .select({ id: entities.id, body: entities.body })
+    .from(entities)
+    .where(
+      and(
+        sql`${entities.components} @> ARRAY[${NARRATIVE_COMPONENT}]::text[]`,
+        sql`(${entities.body}->'source_conversations') ?| ${ids}`,
+      ),
+    );
+  for (const row of narrativeRows) {
+    const body = (row.body ?? {}) as Record<string, unknown>;
+    const raw = body.source_conversations;
+    const convs = Array.isArray(raw) ? raw.map(String) : [];
+    const next = stripIdsFromArray(convs, idSet);
+    if (next.length === convs.length) continue;
     await db
-      .update(autobiographicalMemory)
-      .set({ source_conversations: next })
-      .where(eq(autobiographicalMemory.id, row.id));
+      .update(entities)
+      .set({
+        body: sql`${entities.body} || ${JSON.stringify({ source_conversations: next })}::jsonb`,
+      })
+      .where(eq(entities.id, row.id));
   }
 
   const deletedRows = await db

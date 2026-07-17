@@ -13,7 +13,7 @@ import { POMODORO_ACTIVE_COMPONENT, pomodoroActiveBodySchema } from "./pomodoro-
 import { AGENT_CONFIG_COMPONENT, agentConfigBodySchema } from "./agent-config.ts";
 import { CONTENT_BLOCK_COMPONENT, contentBlockBodySchema } from "./content-block.ts";
 import { DIARY_ENTRY_COMPONENT, diaryEntryBodySchema } from "./diary-entry.ts";
-import { DREAM_ENTRY_COMPONENT, dreamEntryBodySchema } from "./dream-entry.ts";
+import { DREAM_COMPONENT, dreamBodySchema } from "./dream.ts";
 import { EMAIL_ACCOUNT_COMPONENT, emailAccountBodySchema } from "./email-account.ts";
 import { EMAIL_MESSAGE_COMPONENT, emailMessageBodySchema } from "./email-message.ts";
 import { EMAIL_THREAD_COMPONENT, emailThreadBodySchema } from "./email-thread.ts";
@@ -40,10 +40,10 @@ export const COMPONENT_IDS = [
   PROJECT_COMPONENT,
   MILESTONE_COMPONENT,
   DIARY_ENTRY_COMPONENT,
-  DREAM_ENTRY_COMPONENT,
   CONTENT_BLOCK_COMPONENT,
   LIMBIC_COMPONENT,
   NARRATIVE_COMPONENT,
+  DREAM_COMPONENT,
   SEMANTIC_REF_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
   EMAIL_THREAD_COMPONENT,
@@ -72,10 +72,10 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [PROJECT_COMPONENT]: projectBodySchema,
   [MILESTONE_COMPONENT]: milestoneBodySchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntryBodySchema,
-  [DREAM_ENTRY_COMPONENT]: dreamEntryBodySchema,
   [CONTENT_BLOCK_COMPONENT]: contentBlockBodySchema,
   [LIMBIC_COMPONENT]: limbicBodySchema,
   [NARRATIVE_COMPONENT]: narrativeBodySchema,
+  [DREAM_COMPONENT]: dreamBodySchema,
   [SEMANTIC_REF_COMPONENT]: semanticRefBodySchema,
   [EMAIL_ACCOUNT_COMPONENT]: emailAccountBodySchema,
   [EMAIL_THREAD_COMPONENT]: emailThreadBodySchema,
@@ -109,7 +109,7 @@ export * from "./project-folder.ts";
 export * from "./project.ts";
 export * from "./milestone.ts";
 export * from "./diary-entry.ts";
-export * from "./dream-entry.ts";
+export * from "./dream.ts";
 export * from "./content-block.ts";
 export * from "./limbic.ts";
 export * from "./narrative.ts";

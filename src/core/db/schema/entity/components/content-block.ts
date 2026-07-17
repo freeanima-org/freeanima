@@ -15,7 +15,7 @@ export type ContentBlockType = z.infer<typeof contentBlockTypeSchema>;
 
 export const contentBlockBodySchema = z.object({
   block_type: contentBlockTypeSchema,
-  /** 容器 entity id（diary_entry；未来 dream_entry / note） */
+  /** 容器 entity id（diary_entry；未来 note） */
   parent_id: z.number().int().positive(),
   sort_order: z.number().int(),
   /** 非 text 类型的资源定位；text 可空 */

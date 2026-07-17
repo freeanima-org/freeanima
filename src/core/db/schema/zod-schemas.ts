@@ -13,12 +13,6 @@ import {
   conversationStagedToolsetsSchema,
   conversationTodoStoreSchema,
 } from "./jsonb/index.ts";
-import {
-  autobiographicalMemory,
-  autobiographicalSignificanceSchema,
-  autobiographicalStatusSchema,
-} from "./autobiographical-memory.ts";
-import { limbicKindSchema, limbicMemory } from "./limbic-memory.ts";
 import { messages } from "./messages.ts";
 import { semanticMemory, semanticMemoryTypeSchema } from "./semantic-memory.ts";
 import { selfBlockKeySchema, selfBlocks } from "./self-layer.ts";
@@ -74,30 +68,3 @@ export const selfBlocksInsertSchema = createInsertSchema(selfBlocks, selfBlocksR
 
 export type SelfBlocksSelect = z.infer<typeof selfBlocksSelectSchema>;
 export type SelfBlocksInsert = z.infer<typeof selfBlocksInsertSchema>;
-
-const autobiographicalMemoryRefine = {
-  significance: autobiographicalSignificanceSchema,
-  status: autobiographicalStatusSchema,
-};
-
-export const autobiographicalMemorySelectSchema = createSelectSchema(
-  autobiographicalMemory,
-  autobiographicalMemoryRefine,
-);
-export const autobiographicalMemoryInsertSchema = createInsertSchema(
-  autobiographicalMemory,
-  autobiographicalMemoryRefine,
-);
-
-export type AutobiographicalMemorySelect = z.infer<typeof autobiographicalMemorySelectSchema>;
-export type AutobiographicalMemoryInsert = z.infer<typeof autobiographicalMemoryInsertSchema>;
-
-const limbicMemoryRefine = {
-  kind: limbicKindSchema,
-};
-
-export const limbicMemorySelectSchema = createSelectSchema(limbicMemory, limbicMemoryRefine);
-export const limbicMemoryInsertSchema = createInsertSchema(limbicMemory, limbicMemoryRefine);
-
-export type LimbicMemorySelect = z.infer<typeof limbicMemorySelectSchema>;
-export type LimbicMemoryInsert = z.infer<typeof limbicMemoryInsertSchema>;

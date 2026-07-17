@@ -5,6 +5,7 @@ title: Dream
 # Dream Mechanism
 
 > Nightly creative narratives generated after light sleep; not factual memory.
+> Persisted as a **`content_block`** with semantic component **`dream`**, parented to the agent world's dated **`diary_entry`**.
 
 ## Overview
 
@@ -12,52 +13,53 @@ Dreaming is the digital life's **imaginative** counterpart to memory consolidati
 
 ## Trigger
 
-| Condition                                                            | Result                     |
-| -------------------------------------------------------------------- | -------------------------- |
-| No limbic memory with `intensity > 0.5` in the day's creation window | Skip (`no_strong_emotion`) |
-| Dream already exists for that day                                    | Skip (`already_dreamed`)   |
-| At least one strong limbic anchor produced that day                  | Generate dream             |
+| Condition                                                           | Result                     |
+| ------------------------------------------------------------------- | -------------------------- |
+| No limbic brick with `intensity > 0.5` in the day's creation window | Skip (`no_strong_emotion`) |
+| Dream block already exists for that day's diary                     | Skip (`already_dreamed`)   |
+| At least one strong limbic anchor produced that day                 | Generate dream             |
 
 Trigger is **purely emotion-driven** (no random dice). Session activity is **not** required; episodic fragments may be empty.
 
 ## Input
 
-1. **Emotional tone** — top 3 `limbic_memory` rows whose `created_at` falls in `[conversation day 00:00 CST, next day 06:00 CST)` (covers daytime writes and ~02:00 light-sleep extraction), where `intensity > 0.5`, ordered by intensity descending.
-2. **Episodic fragments** — random sample of user/assistant messages from the day's sessions (conversation archive), capped ~4k chars; omitted when no sessions were updated that day.
+1. **Emotional tone** — top 3 limbic `content_block`s whose `created_at` falls in `[conversation day 00:00 CST, next day 06:00 CST)` where `intensity > 0.5`.
+2. **Episodic fragments** — random sample of user/assistant messages from the day's sessions, capped ~4k chars.
 
 Light sleep stage 2 must complete first so limbic anchors exist.
 
 ## Output
 
-- Persisted as **`dream_entry`** entity in the agent subject's **default private world** (`primary_component=dream_entry`; one row per CST calendar day via `body.dream_day`).
-- Legacy `dream_memory` table is backfilled and dropped in Drizzle migration.
+- Ensure agent default private world diary for CST `dream_day` (create empty shell if missing).
+- Insert `content_block` (`block_type: text`) with components `content_block` + `dream`.
 - Append-only; content is not updated after creation.
-- Does **not** create notification inbox entries (see [`notifications.md`](notifications.md)).
+- Does **not** create notification inbox entries.
+
+Legacy `dream_memory` / `dream_entry` rows are backfilled and removed in Drizzle migration `20260717180000_memory_bricks_to_diary`.
 
 ## Orchestration
 
-Sleep-cycle DAG node `dream`:
+Sleep-cycle DAG node `dream` (unchanged topology):
 
 ```text
 light-sleep
   ├─► deep-sleep ──► memory-ref-sync
-  ├─► dream        (parallel with deep-sleep / self-layer-refresh)
+  ├─► dream        (parallel)
   └─► self-layer-refresh
 ```
 
-LLM call uses `PROFILE_REFLECT` with elevated temperature (~1.1), **no tools**, single completion.
-
 ## Tools & UI
 
-| Surface                                             | Purpose              |
-| --------------------------------------------------- | -------------------- |
-| `dream_read` tool                                   | Read stored dream    |
-| Shell `/dream` (Hub RPC `dream.list` / `dream.get`) | Browse dream history |
+| Surface                                                | Purpose                                     |
+| ------------------------------------------------------ | ------------------------------------------- |
+| `diary_get` / `content_block_list` (`component=dream`) | Read dream narrative                        |
+| Shell `/diary`                                         | Browse dream blocks labeled「梦境」（只读） |
+
+No independent `/dream` Shell module or `dream` ToolSet.
 
 ## Design Notes
 
 - Dreams are **not** injected into system prompt or resident memory.
 - Accuracy is explicitly **not** a goal; association and metaphor are.
-- Dreams persist in PG regardless of Redis availability.
 
-See also: [`sleep.md`](sleep.md), [`memory.md`](memory.md).
+See also: [`sleep.md`](sleep.md), [`memory.md`](memory.md), [`entity-model.md`](entity-model.md).

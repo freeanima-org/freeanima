@@ -240,10 +240,6 @@ type ParaglideMessageExports = {
   readonly console_dashboard_tools_registered: ParaglideMessageFn;
   readonly console_dashboard_uptime: ParaglideMessageFn;
   readonly console_dashboard_version: ParaglideMessageFn;
-  readonly console_dream_desc: ParaglideMessageFn;
-  readonly console_dream_empty: ParaglideMessageFn;
-  readonly console_dream_source_conversations: ParaglideMessageFn;
-  readonly console_dream_source_limbic: ParaglideMessageFn;
   readonly console_email_address: ParaglideMessageFn;
   readonly console_email_back_accounts: ParaglideMessageFn;
   readonly console_email_date: ParaglideMessageFn;
@@ -382,7 +378,6 @@ type ParaglideMessageExports = {
   readonly console_nav_cron: ParaglideMessageFn;
   readonly console_nav_dashboard: ParaglideMessageFn;
   readonly console_nav_diary: ParaglideMessageFn;
-  readonly console_nav_dream: ParaglideMessageFn;
   readonly console_nav_email: ParaglideMessageFn;
   readonly console_nav_fts: ParaglideMessageFn;
   readonly console_nav_group_capabilities: ParaglideMessageFn;
@@ -939,10 +934,6 @@ declare module "*/messages/paraglide/messages.js" {
   export const console_dashboard_tools_registered: ParaglideMessageFn;
   export const console_dashboard_uptime: ParaglideMessageFn;
   export const console_dashboard_version: ParaglideMessageFn;
-  export const console_dream_desc: ParaglideMessageFn;
-  export const console_dream_empty: ParaglideMessageFn;
-  export const console_dream_source_conversations: ParaglideMessageFn;
-  export const console_dream_source_limbic: ParaglideMessageFn;
   export const console_email_address: ParaglideMessageFn;
   export const console_email_back_accounts: ParaglideMessageFn;
   export const console_email_date: ParaglideMessageFn;
@@ -1081,7 +1072,6 @@ declare module "*/messages/paraglide/messages.js" {
   export const console_nav_cron: ParaglideMessageFn;
   export const console_nav_dashboard: ParaglideMessageFn;
   export const console_nav_diary: ParaglideMessageFn;
-  export const console_nav_dream: ParaglideMessageFn;
   export const console_nav_email: ParaglideMessageFn;
   export const console_nav_fts: ParaglideMessageFn;
   export const console_nav_group_capabilities: ParaglideMessageFn;

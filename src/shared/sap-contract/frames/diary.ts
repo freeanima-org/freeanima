@@ -8,6 +8,7 @@ export const diaryTextBlockSchema = z.object({
   sort_order: z.number().int(),
   parent_id: z.number().int().positive(),
   client_op_id: z.string().nullable(),
+  components: z.array(z.string()).default([]),
   created_at: z.string(),
   updated_at: z.string(),
 });

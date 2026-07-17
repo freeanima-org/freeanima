@@ -235,10 +235,6 @@
   <msg id="console_dashboard_tools_registered">Registered</msg>
   <msg id="console_dashboard_uptime">Uptime</msg>
   <msg id="console_dashboard_version">Version</msg>
-  <msg id="console_dream_desc">Browse dream_memory (creative nightly narratives from the dream mechanism; not factual records).</msg>
-  <msg id="console_dream_empty">No dreams recorded yet.</msg>
-  <msg id="console_dream_source_conversations">Episodic conversations</msg>
-  <msg id="console_dream_source_limbic">Limbic sources</msg>
   <msg id="console_email_address">Address</msg>
   <msg id="console_email_back_accounts">← Back to accounts</msg>
   <msg id="console_email_date">Date:</msg>
@@ -377,7 +373,6 @@
   <msg id="console_nav_cron">⏰ Cron</msg>
   <msg id="console_nav_dashboard">📊 Dashboard</msg>
   <msg id="console_nav_diary">📔 Diary</msg>
-  <msg id="console_nav_dream">🌙 Dreams</msg>
   <msg id="console_nav_email">📧 Email</msg>
   <msg id="console_nav_fts">🔍 Full-Text Search</msg>
   <msg id="console_nav_group_capabilities">Capabilities</msg>

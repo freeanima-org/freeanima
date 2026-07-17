@@ -9,5 +9,5 @@ export {
   listAutobiographicalMemoryBySourceSemanticMemory,
   listAutobiographicalMemoryBySourceSessions,
   listAutobiographicalMemory,
-} from "./repos/autobiographical-crud-repo.ts";
-export { searchAutobiographicalMemoryFts } from "./repos/autobiographical-fts-repo.ts";
+  searchAutobiographicalMemoryFts,
+} from "./adapter.ts";

@@ -192,7 +192,7 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
     const tag = parseSemanticComponent(args.component);
     if (!tag) {
       return toolError(
-        `invalid component: ${args.component} (expected limbic|narrative|semantic_ref)`,
+        `invalid component: ${args.component} (expected limbic|narrative|semantic_ref|dream)`,
       );
     }
     component = tag;
@@ -242,7 +242,7 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
     const tag = parseSemanticComponent(args.component);
     if (!tag) {
       return toolError(
-        `invalid component: ${args.component} (expected limbic|narrative|semantic_ref)`,
+        `invalid component: ${args.component} (expected limbic|narrative|semantic_ref|dream)`,
       );
     }
     component = tag;
@@ -362,13 +362,13 @@ const SEMANTIC_REF_PARAM = {
 export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "content-block",
-    "Content blocks (CRUD, container list, semantic-component filter, reorder). parent_id scopes to diary_entry/dream_entry container.",
+    "Content blocks (CRUD, container list, semantic-component filter, reorder). parent_id scopes to diary_entry container.",
     attachToolReturns(
       [
         {
           name: "content_block_create",
           description:
-            "Create a content_block under a container (parent_id = diary_entry or dream_entry). Optional limbic/narrative/semantic_ref attach semantic components.",
+            "Create a content_block under a container (parent_id = diary_entry). Optional limbic/narrative/semantic_ref/dream attach semantic components.",
           exposeMcp: true,
           parameters: {
             type: "object",
@@ -439,7 +439,7 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
         {
           name: "content_block_list",
           description:
-            "List content_blocks under a container (parent_id required), ordered by sort_order. Optional block_type / component (limbic|narrative|semantic_ref) filters.",
+            "List content_blocks under a container (parent_id required), ordered by sort_order. Optional block_type / component (limbic|narrative|semantic_ref|dream) filters.",
           exposeMcp: true,
           parameters: {
             type: "object",

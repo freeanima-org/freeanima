@@ -281,8 +281,8 @@ export const limbicSearchToolDefs: ToolDef[] = [
       const limit = Math.max(1, Math.min(100, args.limit !== undefined ? Number(args.limit) : 20));
 
       try {
-        const rows = await listLimbicMemoryBySession(conversationId, { limit });
-        const hits = rows.map((r) => ({
+        const rows = await listLimbicMemoryBySession(conversationId);
+        const hits = rows.slice(0, limit).map((r) => ({
           limbic_memory_id: r.id,
           kind: r.kind,
           content: r.content,

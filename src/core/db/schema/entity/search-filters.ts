@@ -3,7 +3,6 @@ import { z } from "zod";
 import {
   CONTENT_BLOCK_COMPONENT,
   DIARY_ENTRY_COMPONENT,
-  DREAM_ENTRY_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
   EMAIL_MESSAGE_COMPONENT,
   EMAIL_THREAD_COMPONENT,
@@ -123,27 +122,6 @@ export function parseDiaryEntrySearchFilters(
   const parsed = diaryEntrySearchFiltersSchema.safeParse(raw);
   if (!parsed.success) {
     throw new Error(`invalid diary_entry filters: ${parsed.error.message}`);
-  }
-  return parsed.data;
-}
-
-export const dreamEntrySearchFiltersSchema = z
-  .object({
-    dream_day: z.string().optional(),
-    dream_after: z.string().optional(),
-    dream_before: z.string().optional(),
-  })
-  .strict();
-
-export type DreamEntrySearchFilters = z.infer<typeof dreamEntrySearchFiltersSchema>;
-
-export function parseDreamEntrySearchFilters(
-  raw: Record<string, unknown> | undefined,
-): DreamEntrySearchFilters {
-  if (!raw || Object.keys(raw).length === 0) return {};
-  const parsed = dreamEntrySearchFiltersSchema.safeParse(raw);
-  if (!parsed.success) {
-    throw new Error(`invalid dream_entry filters: ${parsed.error.message}`);
   }
   return parsed.data;
 }
@@ -300,7 +278,6 @@ export const ENTITY_SEARCH_FILTER_COMPONENTS = {
   [MILESTONE_COMPONENT]: milestoneSearchFiltersSchema,
   [CONTENT_BLOCK_COMPONENT]: contentBlockSearchFiltersSchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntrySearchFiltersSchema,
-  [DREAM_ENTRY_COMPONENT]: dreamEntrySearchFiltersSchema,
   [EMAIL_ACCOUNT_COMPONENT]: emailAccountSearchFiltersSchema,
   [EMAIL_THREAD_COMPONENT]: emailThreadSearchFiltersSchema,
   [EMAIL_MESSAGE_COMPONENT]: emailMessageSearchFiltersSchema,

@@ -1,4 +1,8 @@
-import type { ContentBlockType, NarrativeSignificance } from "@freeanima/core/db/schema/entity";
+import type {
+  ContentBlockType,
+  NarrativeSignificance,
+  NarrativeStatus,
+} from "@freeanima/core/db/schema/entity";
 
 export type ContentBlockLimbicInput = {
   valence: number;
@@ -8,10 +12,16 @@ export type ContentBlockLimbicInput = {
 
 export type ContentBlockNarrativeInput = {
   significance?: NarrativeSignificance;
+  status?: NarrativeStatus;
 };
 
 export type ContentBlockSemanticRefInput = {
   semantic_memory_id: string;
+};
+
+export type ContentBlockDreamInput = {
+  source_limbic_ids?: string[];
+  source_conversation_ids?: string[];
 };
 
 export type ContentBlockRow = {
@@ -28,6 +38,7 @@ export type ContentBlockRow = {
   limbic: ContentBlockLimbicInput | null;
   narrative: ContentBlockNarrativeInput | null;
   semantic_ref: ContentBlockSemanticRefInput | null;
+  dream: ContentBlockDreamInput | null;
   created_at: string;
   updated_at: string;
 };
@@ -44,6 +55,7 @@ export type ContentBlockCreateInput = {
   limbic?: ContentBlockLimbicInput;
   narrative?: ContentBlockNarrativeInput;
   semantic_ref?: ContentBlockSemanticRefInput;
+  dream?: ContentBlockDreamInput;
 };
 
 export type ContentBlockUpdateInput = {
@@ -59,12 +71,13 @@ export type ContentBlockUpdateInput = {
   limbic?: ContentBlockLimbicInput | null;
   narrative?: ContentBlockNarrativeInput | null;
   semantic_ref?: ContentBlockSemanticRefInput | null;
+  dream?: ContentBlockDreamInput | null;
 };
 
 export type ContentBlockListOpts = {
   parent_id: number;
   block_type?: ContentBlockType;
-  /** 按语义组件 tag 过滤，如 limbic / narrative / semantic_ref */
+  /** 按语义组件 tag 过滤，如 limbic / narrative / dream / semantic_ref */
   component?: string;
   limit?: number;
   offset?: number;

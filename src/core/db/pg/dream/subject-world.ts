@@ -1,5 +1,1 @@
-import { resolveSubjectWorldId } from "@freeanima/core/config";
-
-export async function resolveDreamWorldId(): Promise<number> {
-  return resolveSubjectWorldId("agent");
-}
+export { resolveMemoryBrickWorldId as resolveDreamWorldId } from "@freeanima/core/db/pg/memory-brick";

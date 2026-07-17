@@ -1,6 +1,7 @@
 import type { ContentBlockType } from "@freeanima/core/db/schema/entity";
 import {
   contentBlockTypeSchema,
+  DREAM_COMPONENT,
   LIMBIC_COMPONENT,
   NARRATIVE_COMPONENT,
   SEMANTIC_REF_COMPONENT,
@@ -19,6 +20,7 @@ export const SEMANTIC_COMPONENT_TAGS = [
   LIMBIC_COMPONENT,
   NARRATIVE_COMPONENT,
   SEMANTIC_REF_COMPONENT,
+  DREAM_COMPONENT,
 ] as const;
 
 export function parseWorldId(raw: unknown): number | null {

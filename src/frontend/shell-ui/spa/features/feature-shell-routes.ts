@@ -57,12 +57,6 @@ export function registerFeaturePluginShellRoutes(): void {
       load: lazyNamedComponent(() => import("@freeanima/features/diary/ui/spa"), "DiaryApp"),
     },
     {
-      featureId: "dream",
-      path: "/dream",
-      navLabel: "Dream",
-      load: lazyNamedComponent(() => import("@freeanima/features/dream/ui/spa"), "DreamApp"),
-    },
-    {
       featureId: "email",
       path: "/email",
       navLabel: "Email",

@@ -1,9 +1,9 @@
 import {
   autobiographicalSignificanceSchema,
   autobiographicalStatusSchema,
-} from "@freeanima/core/db/schema/autobiographical-memory.ts";
+  limbicKindSchema,
+} from "@freeanima/core/db/schema/entity";
 import { clarifyItemSchema } from "@freeanima/core/db/schema/jsonb/conversation-meta-jsonb.ts";
-import { limbicKindSchema } from "@freeanima/core/db/schema/limbic-memory.ts";
 import {
   semanticMemoryStatusSchema,
   semanticMemoryTypeSchema,

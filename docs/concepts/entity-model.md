@@ -108,16 +108,15 @@ LLM ToolSets: `@freeanima/feature-task/domain` — `task` (item CRUD + `task_sea
 
 Hub startup binds **`ResolvedWorldContext`** (`hub().call("worlds.context")` / `GET /hub/rpc/v1/worlds/context`). The product shell exposes a **single User / Agent toggle** in the module header — not an arbitrary `world_id` picker. Selection maps to `user_world_id` / `agent_world_id` and persists in `sessionStorage` for the tab.
 
-| Surface          | World binding                                                           | Control                        |
-| ---------------- | ----------------------------------------------------------------------- | ------------------------------ |
-| Shell header     | `user_world_id` or `agent_world_id`                                     | global **User / Agent** toggle |
-| `/tasks`         | follows shell scope via SAP `subject_kind`                              | none (inherits header)         |
-| `/projects`      | follows shell scope via SAP `subject_kind`                              | none (inherits header)         |
-| `/email`         | follows shell scope via SAP `subject_kind`                              | none (inherits header)         |
-| `/notifications` | `recipient_kind` + subject entity id                                    | none (inherits header)         |
-| `/diary`         | subject default private world via `subject_kind`                        | none (inherits header)         |
-| `/dream`         | agent default private world (Shell fixed); LLM tool optional `world_id` | none (inherits header)         |
-| `/vault`         | default **user** library; optional Agent view                           | User: master password lock     |
+| Surface          | World binding                                    | Control                        |
+| ---------------- | ------------------------------------------------ | ------------------------------ |
+| Shell header     | `user_world_id` or `agent_world_id`              | global **User / Agent** toggle |
+| `/tasks`         | follows shell scope via SAP `subject_kind`       | none (inherits header)         |
+| `/projects`      | follows shell scope via SAP `subject_kind`       | none (inherits header)         |
+| `/email`         | follows shell scope via SAP `subject_kind`       | none (inherits header)         |
+| `/notifications` | `recipient_kind` + subject entity id             | none (inherits header)         |
+| `/diary`         | subject default private world via `subject_kind` | none (inherits header)         |
+| `/vault`         | default **user** library; optional Agent view    | User: master password lock     |
 
 SAP task/email methods accept optional `subject_kind` (defaults: task `user`, email `agent`). Satellites read the shell scope via **`useSubjectScope()`** from `@freeanima/shell-sdk`; Hub REST entity search uses **`resolveWorldIdForSubject()`** with the same scope.
 
@@ -175,42 +174,41 @@ Reusable content bricks for **containers** (diary, notes, …). `block_type` is 
 | ------- | -------------- | --------------- |
 | Block   | `type=content` | `content_block` |
 
-| Body / column     | Role                                                                       |
-| ----------------- | -------------------------------------------------------------------------- |
-| `body.block_type` | `text` \| `image` \| `audio` \| `video` \| `link_card` \| `file`           |
-| `body.parent_id`  | Container entity id (near-term: `diary_entry`; later: `dream_entry`, note) |
-| `body.sort_order` | View order; blocks have no semantic precedence                             |
-| `body.url`        | Resource locator for non-text types; null for text                         |
-| `content` column  | Text body or media caption                                                 |
+| Body / column     | Role                                                             |
+| ----------------- | ---------------------------------------------------------------- |
+| `body.block_type` | `text` \| `image` \| `audio` \| `video` \| `link_card` \| `file` |
+| `body.parent_id`  | Container entity id (`diary_entry`; later: note)                 |
+| `body.sort_order` | View order; blocks have no semantic precedence                   |
+| `body.url`        | Resource locator for non-text types; null for text               |
+| `content` column  | Text body or media caption                                       |
 
 Optional semantic components on the same row (`components[]`; fields merge into flat `body`):
 
-| Component      | `body` fields                                              |
-| -------------- | ---------------------------------------------------------- |
-| `limbic`       | `valence` (-1..1), `arousal` (0..1), `intensity` (0..1)    |
-| `narrative`    | `significance`: `normal` \| `milestone` \| `turning_point` |
-| `semantic_ref` | `semantic_memory_id`                                       |
+| Component      | `body` fields                                                                    |
+| -------------- | -------------------------------------------------------------------------------- |
+| `limbic`       | `valence`, `arousal`, `intensity`, optional provenance (`kind`, `legacy_id`, …)  |
+| `narrative`    | `significance`, optional `period_*` / `status` / `legacy_id`                     |
+| `dream`        | `source_limbic_ids`, `source_conversation_ids`, `episodic_snippets`, `legacy_id` |
+| `semantic_ref` | `semantic_memory_id`                                                             |
 
-**Container end-state:** `diary_entry` is container + text `content_block`s (`parent_id` points at the entry). `dream_entry` will follow the same pattern later — do **not** register a separate `dream` semantic component, and do **not** replace `dream_entry` with `content_block`.
+**Container end-state:** `diary_entry` is the only content-block container. Dream / limbic / autobiographical memories are `content_block` rows with the matching semantic tag under the dated diary for that CST day (agent default private world for sleep writes).
 
-- **LLM:** ToolSet `content-block` (`@freeanima/features/content-block/domain`) — `content_block_create` / `update` / `delete` / `get` / `list` / `search` / `reorder`. `list` requires container `parent_id`; optional `component=limbic|narrative|semantic_ref` filters semantic tags; `reorder` batch-updates `sort_order`. Optional `world_id`; `parent_id` / block `id` infer world.
+- **LLM:** ToolSet `content-block` (`@freeanima/features/content-block/domain`) — `content_block_create` / `update` / `delete` / `get` / `list` / `search` / `reorder`. `list` requires container `parent_id`; optional `component=limbic|narrative|semantic_ref|dream` filters semantic tags; `reorder` batch-updates `sort_order`. Optional `world_id`; `parent_id` / block `id` infer world.
 - **Search filters:** `parent_id`, `block_type`, `client_op_id` (whitelist shared by `entity_search` / store).
-- **Follow-up:** dream containerization; legacy memory-table migrations.
 
-## Dream module
+## Dream (sleep pipeline)
 
-Nightly creative narratives (append-only, one per CST calendar day):
+Nightly creative narratives (append-only, at most one dream block per diary day):
 
-| Concept | Entity         | Component     |
-| ------- | -------------- | ------------- |
-| Entry   | `type=content` | `dream_entry` |
+| Concept | Entity         | Components                |
+| ------- | -------------- | ------------------------- |
+| Dream   | `type=content` | `content_block` + `dream` |
 
-Entries live in the **agent** subject's **`default_private_world_id`**. `body.dream_day` is the unique key per world; narrative text uses entity `content`; optional `body.source_limbic_ids`, `body.source_conversation_ids`, `body.episodic_snippets`.
+Writes go to the **agent** subject's **`default_private_world_id`**: ensure that day's `diary_entry`, then insert a text `content_block` tagged `dream`. Calendar day comes from the parent diary `entry_at` (CST), not a `dream_day` body field.
 
-- **Hub RPC:** `dream.list`, `dream.get` (bundled shell; no `subject_kind` — always agent world).
-- **UI:** shell `/dream` (`@freeanima/satellite-dream`).
-- **LLM:** ToolSet `dream` — `dream_read`; optional `world_id` (Shell UI stays agent-scoped).
-- **Future:** Same brick model as diary — upgrade to a content_block container (keep `dream_entry`; do not retire it).
+- **Read:** `diary_get` / `content_block_list` / `content_block_search` with `component=dream`.
+- **UI:** Shell `/diary` shows dream blocks with a read-only「梦境」label (no independent `/dream` module).
+- **LLM:** No dedicated `dream` ToolSet; sleep `runDream` still generates blocks.
 
 See [`docs/concepts/dream.md`](dream.md).
 
@@ -256,17 +254,17 @@ See memory hybrid search in [`memory.md`](memory.md) for FTS operator syntax; en
 
 **FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run Console **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.
 
-## Future migration map (not executed yet)
+## Future migration map
 
-| Legacy table                 | Target                                                                                                                     |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `dream_memory`               | `dream_entry` (done); then container + content_blocks (keep `dream_entry`; do not retire)                                  |
-| `semantic_memory`            | `content_block` + `semantic_ref`                                                                                           |
-| `autobiographical_memory`    | `content_block` + `narrative` (parented to dated `diary_entry`)                                                            |
-| `limbic_memory`              | `content_block` + `limbic` (parented to dated `diary_entry`)                                                               |
-| `diary_entry` single body    | Container + child `content_block`s (**done**; migration clears container `content`)                                        |
-| `tasks` (legacy)             | `task_item` (when explicitly migrated)                                                                                     |
-| `config.yaml email.accounts` | `email_account` (see [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts)) |
-| `memory_references`          | relationship table (future)                                                                                                |
+| Legacy table                   | Target                                                                                                                     |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `dream_memory` / `dream_entry` | `content_block` + `dream`（parent = dated `diary_entry`；**done**；独立 `/dream` UI / ToolSet 已退役）                     |
+| `semantic_memory`              | `content_block` + `semantic_ref`                                                                                           |
+| `autobiographical_memory`      | `content_block` + `narrative`（parent = dated `diary_entry`；**done**）                                                    |
+| `limbic_memory`                | `content_block` + `limbic`（parent = dated `diary_entry`；**done**）                                                       |
+| `diary_entry` single body      | Container + child `content_block`s (**done**; migration clears container `content`)                                        |
+| `tasks` (legacy)               | `task_item` (when explicitly migrated)                                                                                     |
+| `config.yaml email.accounts`   | `email_account` (see [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts)) |
+| `memory_references`            | relationship table (future)                                                                                                |
 
 See [`architecture.md`](architecture.md) for cognitive-layer context.

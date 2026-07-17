@@ -4,7 +4,6 @@ import { chatHubRoutes } from "@freeanima/features/chat/hub/routes/index.ts";
 import { companionHubRoutes } from "@freeanima/features/companion/hub/routes/index.ts";
 import { consoleHubRoutes } from "@freeanima/features/console/hub/routes/index.ts";
 import { diaryHubRoutes } from "@freeanima/features/diary/hub/routes/index.ts";
-import { dreamHubRoutes } from "@freeanima/features/dream/hub/routes/index.ts";
 import { emailHubRoutes } from "@freeanima/features/email/hub/routes/index.ts";
 import { mcpHubRoutes } from "@freeanima/features/mcp/hub/routes/index.ts";
 import { notificationHubRoutes } from "@freeanima/features/notification/hub/routes/index.ts";
@@ -23,7 +22,6 @@ const featureRouteBundles = [
   vaultHubRoutes,
   emailHubRoutes,
   diaryHubRoutes,
-  dreamHubRoutes,
   pomodoroHubRoutes,
   notificationHubRoutes,
   companionHubRoutes,
@@ -40,7 +38,6 @@ export type HubMethodInputs = InferHubInputs<typeof chatHubRoutes> &
   InferHubInputs<typeof vaultHubRoutes> &
   InferHubInputs<typeof emailHubRoutes> &
   InferHubInputs<typeof diaryHubRoutes> &
-  InferHubInputs<typeof dreamHubRoutes> &
   InferHubInputs<typeof pomodoroHubRoutes> &
   InferHubInputs<typeof notificationHubRoutes> &
   InferHubInputs<typeof companionHubRoutes> &
@@ -54,7 +51,6 @@ export type HubMethodOutputs = InferHubOutputs<typeof chatHubRoutes> &
   InferHubOutputs<typeof vaultHubRoutes> &
   InferHubOutputs<typeof emailHubRoutes> &
   InferHubOutputs<typeof diaryHubRoutes> &
-  InferHubOutputs<typeof dreamHubRoutes> &
   InferHubOutputs<typeof pomodoroHubRoutes> &
   InferHubOutputs<typeof notificationHubRoutes> &
   InferHubOutputs<typeof companionHubRoutes> &

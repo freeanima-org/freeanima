@@ -13,7 +13,7 @@ const listLimbicMemoryByCreatedBetweenMock = mock(
   async (..._args: unknown[]) => [] as LimbicMemoryRow[],
 );
 const listConversationIdsUpdatedBetweenMock = mock(async () => ["s1"]);
-const listMessagesMock = mock(async () => [
+const listRecentMessagesMock = mock(async () => [
   {
     role: "user",
     content: "hello dream",
@@ -26,7 +26,7 @@ mock.module("@freeanima/core/db/pg/limbic-memory", () => ({
 }));
 mock.module("@freeanima/core/db/pg/conversation", () => ({
   listConversationIdsUpdatedBetween: listConversationIdsUpdatedBetweenMock,
-  listMessages: listMessagesMock,
+  listRecentMessages: listRecentMessagesMock,
 }));
 
 function limbicRow(id: string, intensity: number, conversationId = "s1"): LimbicMemoryRow {
@@ -41,7 +41,6 @@ function limbicRow(id: string, intensity: number, conversationId = "s1"): Limbic
     source_segment: null,
     semantic_memory_ids: [],
     content_embedding: null,
-    content_fts: null,
     fts_segmented: null,
     created_at: new Date("2026-06-14T10:00:00+08:00"),
   };
@@ -63,13 +62,13 @@ describe("gatherDreamInput", () => {
   beforeEach(() => {
     listLimbicMemoryByCreatedBetweenMock.mockClear();
     listConversationIdsUpdatedBetweenMock.mockClear();
-    listMessagesMock.mockClear();
+    listRecentMessagesMock.mockClear();
   });
 
   afterEach(() => {
     listLimbicMemoryByCreatedBetweenMock.mockClear();
     listConversationIdsUpdatedBetweenMock.mockClear();
-    listMessagesMock.mockClear();
+    listRecentMessagesMock.mockClear();
   });
 
   it("returns top limbic rows above intensity threshold by created_at window", async () => {
@@ -81,12 +80,12 @@ describe("gatherDreamInput", () => {
     ];
 
     listLimbicMemoryByCreatedBetweenMock.mockImplementation((async (
-      fromIso: string,
-      toIso: string,
+      from: Date,
+      to: Date,
       opts?: { minIntensity?: number; limit?: number },
     ) => {
-      expect(fromIso).toBe("2026-06-14T00:00:00+08:00");
-      expect(toIso).toBe("2026-06-15T06:00:00+08:00");
+      expect(from.toISOString()).toBe(new Date("2026-06-14T00:00:00+08:00").toISOString());
+      expect(to.toISOString()).toBe(new Date("2026-06-15T06:00:00+08:00").toISOString());
       expect(opts?.minIntensity).toBe(DREAM_MIN_INTENSITY);
       return limbicRows
         .filter((r) => r.intensity > (opts?.minIntensity ?? 0))
@@ -102,15 +101,15 @@ describe("gatherDreamInput", () => {
 
   it("has no dream fuel when limbic below threshold", async () => {
     listLimbicMemoryByCreatedBetweenMock.mockImplementation((async (
-      _fromIso: string,
-      _toIso: string,
+      _from: Date,
+      _to: Date,
       opts?: { minIntensity?: number },
     ) => {
       const min = opts?.minIntensity ?? 0;
       const row = limbicRow("low", 0.3);
       return row.intensity > min ? [row] : [];
     }) as never);
-    listMessagesMock.mockImplementation(async () => []);
+    listRecentMessagesMock.mockImplementation(async () => []);
 
     const input = await gatherDreamInput({ day: "2026-06-14" });
     expect(input.limbicMemories).toEqual([]);
@@ -120,7 +119,7 @@ describe("gatherDreamInput", () => {
   it("loads limbic even when no sessions updated that day", async () => {
     listLimbicMemoryByCreatedBetweenMock.mockImplementation(async () => [limbicRow("a", 0.8)]);
     listConversationIdsUpdatedBetweenMock.mockImplementation(async () => []);
-    listMessagesMock.mockImplementation(async () => []);
+    listRecentMessagesMock.mockImplementation(async () => []);
 
     const input = await gatherDreamInput({ day: "2026-06-14" });
     expect(input.conversationIds).toEqual([]);

@@ -38,13 +38,14 @@ describe("http-rest feature methods", () => {
     expect(init.body).toBe(JSON.stringify({ subject_kind: "user", title: "x", list_id: 1 }));
   });
 
-  test("buildHubRestRequest GET dream.get uses query not path id", () => {
-    const http = getHubMethodDef("dream.get").meta.http!;
-    expect(http.pathParams ?? []).toEqual([]);
-    const { url } = buildHubRestRequest("http://127.0.0.1:2658", "dream.get", {
-      day: "2026-07-10",
+  test("buildHubRestRequest GET diary.get path id", () => {
+    const http = getHubMethodDef("diary.get").meta.http!;
+    expect(http.pathParams ?? []).toEqual(["id"]);
+    const { url } = buildHubRestRequest("http://127.0.0.1:2658", "diary.get", {
+      subject_kind: "agent",
+      id: 1,
     });
-    expect(url).toBe("http://127.0.0.1:2658/hub/rpc/v1/dream/get?day=2026-07-10");
+    expect(url).toBe("http://127.0.0.1:2658/hub/rpc/v1/diary/get/1?subject_kind=agent");
   });
 
   test("buildHubRestRequest POST vault.get path id", () => {

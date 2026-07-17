@@ -1,7 +1,6 @@
 import { chatMethodDefs } from "@freeanima/features/chat/hub/method-defs.ts";
 import { companionMethodDefs } from "@freeanima/features/companion/hub/method-defs.ts";
 import { diaryMethodDefs } from "@freeanima/features/diary/hub/method-defs.ts";
-import { dreamMethodDefs } from "@freeanima/features/dream/hub/method-defs.ts";
 import { emailMethodDefs } from "@freeanima/features/email/hub/method-defs.ts";
 import { mcpMethodDefs } from "@freeanima/features/mcp/hub/method-defs.ts";
 import { notificationMethodDefs } from "@freeanima/features/notification/hub/method-defs.ts";
@@ -18,7 +17,6 @@ export const FEATURE_METHOD_DEFS = {
   ...vaultMethodDefs,
   ...emailMethodDefs,
   ...diaryMethodDefs,
-  ...dreamMethodDefs,
   ...pomodoroMethodDefs,
   ...notificationMethodDefs,
   ...companionMethodDefs,

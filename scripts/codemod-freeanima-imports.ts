@@ -65,7 +65,6 @@ const PREFIX_REWRITES: [string, string][] = [
   ["@freeanima/hub-rpc", "@freeanima/shared/hub-rpc"],
   ["@freeanima/vault-crypto", "@freeanima/shared/vault-crypto"],
   ["@freeanima/feature-diary", "@freeanima/features/diary/domain"],
-  ["@freeanima/feature-dream", "@freeanima/features/dream/domain"],
   ["@freeanima/feature-email", "@freeanima/features/email/domain"],
   ["@freeanima/feature-vault", "@freeanima/features/vault/domain"],
   ["@freeanima/feature-task", "@freeanima/features/task/domain"],
