@@ -61,6 +61,7 @@ import {
   fetchSmartListStats,
   fetchTaskItems,
   fetchTaskItemsByFilters,
+  fetchTaskItemById,
   fetchTaskLists,
   fetchTaskListStats,
   reopenTaskList,
@@ -90,6 +91,7 @@ import {
   useTaskActionSheet,
 } from "./lib/platform.ts";
 import { readTaskSelectionFromUrl, writeTaskSelectionToUrl } from "./lib/task-selection-url.ts";
+import { readTaskItemFromUrl, writeTaskItemToUrl } from "./lib/task-item-url.ts";
 import { moveTaskItemsToList, moveTaskItemsToProject } from "./lib/move-items.ts";
 import { taskAttributionLabel } from "./lib/task-attribution.ts";
 import { applyShiftRangeSelect } from "./lib/range-select.ts";
@@ -190,6 +192,7 @@ export function TaskApp() {
         tags: snapshot.tags,
         priority: snapshot.priority,
         due_at: snapshot.due_at,
+        status: snapshot.status,
       }),
     onSaved: (saved) => {
       setItems((prev) => {
@@ -220,6 +223,54 @@ export function TaskApp() {
       setError(err instanceof Error ? err.message : String(err));
     },
   });
+
+  const appliedItemUrlRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!webShell) return;
+    if (detailItem) {
+      writeTaskItemToUrl({ itemId: detailItem.id, present: "overlay" });
+      appliedItemUrlRef.current = detailItem.id;
+    } else if (appliedItemUrlRef.current != null) {
+      writeTaskItemToUrl(null);
+      appliedItemUrlRef.current = null;
+    }
+  }, [detailItem, webShell]);
+
+  useEffect(() => {
+    if (!webShell) return;
+    const fromUrl = readTaskItemFromUrl();
+    if (!fromUrl) return;
+    if (detailItem?.id === fromUrl.itemId) {
+      appliedItemUrlRef.current = fromUrl.itemId;
+      return;
+    }
+    if (appliedItemUrlRef.current === fromUrl.itemId && detailItem == null) return;
+
+    const local =
+      items.find((row) => row.id === fromUrl.itemId) ??
+      searchHits.find((row) => row.id === fromUrl.itemId);
+    if (local) {
+      openTaskDetail(local);
+      appliedItemUrlRef.current = fromUrl.itemId;
+      return;
+    }
+
+    let cancelled = false;
+    void fetchTaskItemById(fromUrl.itemId).then((row) => {
+      if (cancelled) return;
+      if (row) {
+        openTaskDetail(row);
+        appliedItemUrlRef.current = fromUrl.itemId;
+      } else {
+        writeTaskItemToUrl(null);
+        appliedItemUrlRef.current = null;
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [webShell, items, searchHits, detailItem, openTaskDetail]);
 
   const persistSelection = useCallback(
     (next: TaskModuleSelection) => {

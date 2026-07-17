@@ -33,4 +33,8 @@ describe("isTaskItemDirty", () => {
   it("标签顺序变更时返回 true", () => {
     expect(isTaskItemDirty({ ...base, tags: ["b", "a"] }, base)).toBe(true);
   });
+
+  it("完成状态变更时返回 true", () => {
+    expect(isTaskItemDirty({ ...base, status: "completed" }, base)).toBe(true);
+  });
 });

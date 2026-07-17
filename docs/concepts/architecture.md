@@ -77,6 +77,10 @@ Structured business data (tasks, notes, email accounts/messages, future memory m
 
 Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-backed); legacy Console email route removed.
 
+### Anima URI (Shell locator)
+
+Entity deep links / overlay / clipboard use **Anima URI** (`anima:{id}?component=…&present=…`). Structured persistence still uses numeric entity ids. See [`anima-uri.md`](anima-uri.md).
+
 ### Repository layout (Phase 0 — revised)
 
 Target layout is **feature modules** under `src/features/<slug>/` (UI + protocol + Hub adapter + domain + `plugin.ts`). Console is renamed **console** and uses the **same module shape** as chat/task — not a separate admin-\* stack. `src/satellites/` is legacy naming; do not add new products there.
