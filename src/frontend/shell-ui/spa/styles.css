@@ -1,16 +1,7 @@
 @import "tailwindcss";
 @import "@freeanima/frontend/ui-kit/styles/globals.css";
-@source "./**/*.{tsx,ts}";
-@source "../../ui-kit/**/*.{tsx,ts}";
-@source "../../shell-sdk/**/*.{tsx,ts}";
-@source "../../../../src/features/chat/ui/spa/**/*.{tsx,ts}";
-@source "../../../../src/features/task/ui/spa/**/*.{tsx,ts}";
-@source "../../../../src/features/diary/ui/spa/**/*.{tsx,ts}";
-@source "../../../../src/features/vault/ui/spa/**/*.{tsx,ts}";
-@source "../../../../src/features/console/ui/console/**/*.{tsx,ts}";
-@source "../../../../src/features/email/ui/spa/**/*.{tsx,ts}";
-@source "../../../../src/features/dream/ui/spa/**/*.{tsx,ts}";
-@source "../../../../src/features/notification/ui/spa/**/*.{tsx,ts}";
+/* 扫整个 src：壳 + ui-kit + 各 feature SPA；避免按 feature 漏登 @source */
+@source "../../../../src/**/*.{tsx,ts}";
 @import "@freeanima/frontend/ui-kit/styles.css";
 
 :root {

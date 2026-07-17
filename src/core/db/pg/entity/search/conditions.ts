@@ -7,14 +7,20 @@ import {
   entities,
   DIARY_ENTRY_COMPONENT,
   DREAM_ENTRY_COMPONENT,
+  MILESTONE_COMPONENT,
+  PROJECT_COMPONENT,
+  PROJECT_FOLDER_COMPONENT,
   parseContentBlockSearchFilters,
   parseDiaryEntrySearchFilters,
   parseDreamEntrySearchFilters,
   parseEmailAccountSearchFilters,
   parseEmailMessageSearchFilters,
   parseEmailThreadSearchFilters,
+  parseMilestoneSearchFilters,
   parsePomodoroSessionSearchFilters,
   parsePomodoroTaskFocusSearchFilters,
+  parseProjectFolderSearchFilters,
+  parseProjectSearchFilters,
   parseTaskItemSearchFilters,
   POMODORO_SESSION_COMPONENT,
   POMODORO_TASK_FOCUS_COMPONENT,
@@ -234,6 +240,34 @@ function buildTaskListBodyConditions(
   return conditions;
 }
 
+function buildProjectFolderBodyConditions(
+  filters: ReturnType<typeof parseProjectFolderSearchFilters>,
+): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.client_op_id) {
+    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+  }
+  return conditions;
+}
+
+function buildProjectBodyConditions(filters: ReturnType<typeof parseProjectSearchFilters>): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.client_op_id) {
+    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+  }
+  return conditions;
+}
+
+function buildMilestoneBodyConditions(
+  filters: ReturnType<typeof parseMilestoneSearchFilters>,
+): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.client_op_id) {
+    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+  }
+  return conditions;
+}
+
 function buildDiaryEntryBodyConditions(
   filters: ReturnType<typeof parseDiaryEntrySearchFilters>,
 ): SQL[] {
@@ -386,6 +420,15 @@ export function buildComponentFilterConditions(opts: EntitySearchOpts): SQL[] {
   }
   if (component === TASK_LIST_COMPONENT) {
     return buildTaskListBodyConditions(parseTaskListSearchFilters(filters));
+  }
+  if (component === PROJECT_FOLDER_COMPONENT) {
+    return buildProjectFolderBodyConditions(parseProjectFolderSearchFilters(filters));
+  }
+  if (component === PROJECT_COMPONENT) {
+    return buildProjectBodyConditions(parseProjectSearchFilters(filters));
+  }
+  if (component === MILESTONE_COMPONENT) {
+    return buildMilestoneBodyConditions(parseMilestoneSearchFilters(filters));
   }
   if (component === CONTENT_BLOCK_COMPONENT) {
     return buildContentBlockBodyConditions(parseContentBlockSearchFilters(filters));

@@ -13,15 +13,15 @@
 
 **示例**：chat、task、email、diary、notification、vault、dream
 
-| 层                                        | 必须改                                                             |
-| ----------------------------------------- | ------------------------------------------------------------------ |
-| `src/core/db`                             | entity component 或专用表 + migration                              |
-| `src/features/<slug>/domain`              | 域逻辑 SSOT                                                        |
-| `sap-contract`                            | `feature-rpc/frames/<domain>.ts` + router 子集                     |
-| `src/features/<slug>/hub/routes/index.ts` | Hub RPC handler（`defineHubRoute`）                                |
-| `src/features/<slug>/ui`                  | 产品 UI（`@freeanima/feature-<slug>/ui/*`）                        |
-| `platform`                                | `src/features/<slug>/plugin.ts` 注册 + 必要时 `service-*` 薄适配   |
-| `shell-ui`                                | 路由 lazy-load `@freeanima/feature-<slug>/ui/spa`（不写 SAP wire） |
+| 层                                        | 必须改                                                                                                                        |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `src/core/db`                             | entity component 或专用表 + migration                                                                                         |
+| `src/features/<slug>/domain`              | 域逻辑 SSOT                                                                                                                   |
+| `sap-contract`                            | `feature-rpc/frames/<domain>.ts` + router 子集                                                                                |
+| `src/features/<slug>/hub/routes/index.ts` | Hub RPC handler（`defineHubRoute`）                                                                                           |
+| `src/features/<slug>/ui`                  | 产品 UI（`@freeanima/feature-<slug>/ui/*`）                                                                                   |
+| `platform`                                | `src/features/<slug>/plugin.ts` 注册 + 必要时 `service-*` 薄适配                                                              |
+| `shell-ui`                                | 路由 lazy-load `@freeanima/feature-<slug>/ui/spa`（不写 SAP wire）；壳 CSS 已 `@source` 整棵 `src`，一般不必再按 feature 登记 |
 
 **不要**：在 `shell-ui` 内 `import @freeanima/sap-contract`；在 capabilities 内 import platform；新建 `satellite-*` 做 chat/task 等产品面。
 
