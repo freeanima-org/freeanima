@@ -191,3 +191,12 @@ export {
   subscribePomodoroSync,
 } from "./pomodoro-sync-local.ts";
 export type { PomodoroSyncMeta, PomodoroSyncSnapshot } from "./pomodoro-sync-local.ts";
+
+export type { AnimaPresent, AnimaUriRef, ParseAnimaUriResult } from "./anima-uri.ts";
+export {
+  animaUriToShellPath,
+  defaultPresentForComponent,
+  formatAnimaUri,
+  navigateAnimaUri,
+  parseAnimaUri,
+} from "./anima-uri.ts";

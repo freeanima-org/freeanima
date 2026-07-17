@@ -82,6 +82,10 @@ Legacy SQL bootstrap seeds (public world id=1, Inbox id=2) are removed by migrat
 - **`world_id`** is the sole namespace key; access boundary is inherited from the owning world.
 - Content entities do not store a separate owner column.
 
+### UI location: Anima URI
+
+Shell UI locates entities with **Anima URI** (`anima:{id}?component=…`), not by storing URI strings in PG. FK fields remain numeric ids (e.g. `task_item_id`). Omitting `component` defaults to this entity’s `primary_component` when opening. See [`anima-uri.md`](anima-uri.md) — especially **Layering vs persistence**.
+
 ## Task module (first consumer)
 
 TickTick-style lists and items map to:

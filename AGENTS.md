@@ -88,6 +88,7 @@ bun run build:web
 | [`.agent/rules/`](.agent/rules/README.md)                                      | Implementation constraints (layers, tests, coding, DB, packages) |
 | [GitHub Issues](https://github.com/freeanima-org/freeanima/issues)             | Actionable tasks and discussions                                 |
 | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)               | Architecture principles and direction                            |
+| [`docs/concepts/anima-uri.md`](docs/concepts/anima-uri.md)                     | Anima URI（entity 定位 / overlay；id 入库、URI 在 UI）           |
 | [`docs/concepts/repository-topology.md`](docs/concepts/repository-topology.md) | Repo layout Phase 0 audit; shared/frontend migration target      |
 | [`docs/concepts/`](docs/concepts/)                                             | Core concepts (memory, self layer, etc.)                         |
 | [`docs/guide/`](docs/guide/)                                                   | Usage and maintenance (security, database ops)                   |

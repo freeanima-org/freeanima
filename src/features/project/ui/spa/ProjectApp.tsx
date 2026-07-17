@@ -187,6 +187,7 @@ export function ProjectApp() {
         tags: snapshot.tags,
         priority: snapshot.priority,
         due_at: snapshot.due_at,
+        status: snapshot.status,
       }),
     onSaved: (saved) => {
       setTasks((prev) => prev.map((t) => (t.id === saved.id ? saved : t)));

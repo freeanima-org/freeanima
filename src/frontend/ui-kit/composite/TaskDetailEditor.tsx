@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { CalendarIcon, FlagIcon } from "lucide-react";
 
 import { Button } from "../components/ui/button.tsx";
+import { Checkbox } from "../components/ui/checkbox.tsx";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,10 +63,22 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
   const dueChip = formatDueChip(item.due_at);
   const datePart = isoToDateLocalValue(item.due_at);
   const timePart = isoToTimeLocalValue(item.due_at);
+  const completed = item.status === "completed";
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
       <div className="flex shrink-0 items-center gap-1">
+        <Checkbox
+          checked={completed}
+          aria-label={completed ? "标记为未完成" : "标记为已完成"}
+          onCheckedChange={(checked) =>
+            onChange({
+              ...item,
+              status: checked === true ? "completed" : "pending",
+            })
+          }
+        />
+
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button
@@ -162,7 +175,10 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
 
       <div className="shrink-0">
         <Input
-          className="border-0 bg-transparent px-0 text-lg font-semibold shadow-none focus-visible:ring-0"
+          className={cn(
+            "border-0 bg-transparent px-0 text-lg font-semibold shadow-none focus-visible:ring-0",
+            completed ? "line-through opacity-60" : null,
+          )}
           value={item.title}
           placeholder="标题"
           aria-label="标题"

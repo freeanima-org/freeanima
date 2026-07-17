@@ -302,7 +302,14 @@ export async function updateProjectTask(
   patch: Partial<
     Pick<
       TaskItemRow,
-      "title" | "content" | "tags" | "priority" | "due_at" | "milestone_id" | "sort_order"
+      | "title"
+      | "content"
+      | "tags"
+      | "priority"
+      | "due_at"
+      | "milestone_id"
+      | "sort_order"
+      | "status"
     >
   >,
 ): Promise<TaskItemRow> {

@@ -15,6 +15,7 @@ import { blockNativeDialogs, ConfirmPromptHost } from "@freeanima/frontend/ui-ki
 import { ShellRouterProvider } from "./router.tsx";
 import { ShellNoticeWatchers, ShellToaster } from "./ShellNoticeHost.tsx";
 import { setShellAppBindings, ShellAppProvider } from "./shell-app-context.tsx";
+import { EntityOverlayHost } from "./features/EntityOverlayHost.tsx";
 
 type ShellBridgeWindow = Window & {
   __freeanimaShellBridge?: { ready: Promise<void> };
@@ -176,6 +177,7 @@ function ShellAppTree({
   return (
     <ShellAppProvider bindings={bindings}>
       <ConfirmPromptHost />
+      <EntityOverlayHost />
       <ShellToaster />
       <ShellNoticeWatchers />
       {noticeWatchers}

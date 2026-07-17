@@ -33,6 +33,7 @@ export function isTaskItemDisplayEqual(a: TaskItemDisplay, b: TaskItemDisplay): 
   return (
     a.title === b.title &&
     a.content === b.content &&
+    a.status === b.status &&
     a.priority === b.priority &&
     a.due_at === b.due_at &&
     a.tags.length === b.tags.length &&

@@ -26,6 +26,7 @@ import {
   Spinner,
   Switch,
 } from "@freeanima/frontend/ui-kit";
+import { openEntityResource } from "@freeanima/frontend/shell-ui/spa/features/open-entity-resource.ts";
 import { randomUuid } from "@freeanima/shared/sap-contract";
 
 import { TaskPickerDialog } from "./components/TaskPickerDialog.tsx";
@@ -80,6 +81,14 @@ function formatDurationMs(ms: number): string {
   return `${min} 分钟`;
 }
 
+function openTaskItemOverlay(taskItemId: number): void {
+  void openEntityResource({
+    id: taskItemId,
+    component: "task_item",
+    present: "overlay",
+  });
+}
+
 function SessionHistory({
   items,
   focusBySessionId,
@@ -103,11 +112,25 @@ function SessionHistory({
             </div>
             {segments.length > 0 ? (
               <ul className="text-muted-foreground mt-1 space-y-0.5 text-xs">
-                {segments.map((segment) => (
-                  <li key={segment.id}>
-                    任务 #{segment.task_item_id ?? "—"} · {formatDurationMs(segment.duration_ms)}
-                  </li>
-                ))}
+                {segments.map((segment) => {
+                  const taskId = segment.task_item_id;
+                  return (
+                    <li key={segment.id} className="flex flex-wrap items-center gap-1">
+                      {taskId != null ? (
+                        <button
+                          type="button"
+                          className="text-primary hover:underline"
+                          onClick={() => openTaskItemOverlay(taskId)}
+                        >
+                          任务 #{taskId}
+                        </button>
+                      ) : (
+                        <span>任务 #—</span>
+                      )}
+                      <span>· {formatDurationMs(segment.duration_ms)}</span>
+                    </li>
+                  );
+                })}
               </ul>
             ) : null}
           </li>
@@ -432,13 +455,29 @@ export function PomodoroApp() {
                 type="button"
                 variant="outline"
                 className="min-w-0 flex-1 justify-start"
-                disabled={Boolean(active) && !canPickTaskWhileActive}
-                onClick={() => setTaskPickerOpen(true)}
+                disabled={Boolean(active) && !canPickTaskWhileActive && taskItemId == null}
+                onClick={() => {
+                  if (taskItemId != null) {
+                    openTaskItemOverlay(taskItemId);
+                    return;
+                  }
+                  if (!active || canPickTaskWhileActive) setTaskPickerOpen(true);
+                }}
               >
                 <span className="truncate">
                   {linkedTaskTitle ?? (taskItemId != null ? `任务 #${taskItemId}` : "点击选择任务")}
                 </span>
               </Button>
+              {taskItemId != null && (!active || canPickTaskWhileActive) ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setTaskPickerOpen(true)}
+                >
+                  更换
+                </Button>
+              ) : null}
               {taskItemId != null && (!active || canPickTaskWhileActive) ? (
                 <Button
                   type="button"

@@ -171,6 +171,16 @@ export async function fetchTaskItemsByFilters(
   return data.items;
 }
 
+/** Resolve a single task by id (best-effort list scan; used by Anima URI overlay). */
+export async function fetchTaskItemById(id: number): Promise<TaskItemRow | null> {
+  if (!isHubFetchAvailable()) return null;
+  const data = await hub().call(
+    "tasklist.item.list",
+    withSubjectKind({ status: "all", limit: 200 }),
+  );
+  return data.items.find((row) => row.id === id) ?? null;
+}
+
 export async function fetchSmartLists(): Promise<SmartListRow[]> {
   if (!isHubFetchAvailable()) return [];
   const data = await hub().call("smartlist.list", withSubjectKind({}));

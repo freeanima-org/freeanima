@@ -120,3 +120,8 @@ export function ShellRouterProvider() {
 }
 
 export { registerShellFeatureRoutes, listShellFeatureRoutes } from "./features/shell-registry.ts";
+export {
+  openEntityResource,
+  setAnimaUriPrimaryComponentResolver,
+} from "./features/open-entity-resource.ts";
+export { registerEntityOverlay, getEntityOverlay } from "./features/entity-overlay-registry.ts";
