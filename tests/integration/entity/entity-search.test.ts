@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, it } from "bun:test";
 
-import { TASK_ITEM_COMPONENT, DIARY_ENTRY_COMPONENT } from "@freeanima/core/db/schema/entity";
+import { TASK_ITEM_COMPONENT } from "@freeanima/core/db/schema/entity";
 import { createTaskItem, createTaskList, searchTaskItems } from "@freeanima/features/task/domain";
 import { createDiaryEntry, searchDiaryEntries } from "@freeanima/features/diary/domain";
 import { EntitySearchScopeError, searchEntities } from "@freeanima/core/db/pg/entity";
@@ -86,9 +86,9 @@ describePg("entity search PG", () => {
     expect(domain.map((row) => row.id)).toEqual(raw.results.map((row) => row.id));
   });
 
-  it("searchDiaryEntries preserves hybrid relevance order", async () => {
+  it("searchDiaryEntries finds entries via text block hybrid search", async () => {
     const worldId = testUserWorldId();
-    await createDiaryEntry(
+    const older = await createDiaryEntry(
       { worldId },
       {
         title: "旧日回忆",
@@ -96,7 +96,7 @@ describePg("entity search PG", () => {
         entry_at: "2020-01-01T12:00:00+08:00",
       },
     );
-    await createDiaryEntry(
+    const newer = await createDiaryEntry(
       { worldId },
       {
         title: "排序测试专用项目总结",
@@ -105,15 +105,11 @@ describePg("entity search PG", () => {
       },
     );
 
-    const raw = await searchEntities({
-      world_id: worldId,
-      primary_component: DIARY_ENTRY_COMPONENT,
-      query: "排序测试专用项目",
-      mode: "hybrid",
-      limit: 10,
-    });
     const domain = await searchDiaryEntries({ worldId }, { query: "排序测试专用项目", limit: 10 });
-    expect(domain.map((row) => row.id)).toEqual(raw.results.map((row) => row.id));
+    expect(domain.map((row) => row.id)).toContain(older.id);
+    expect(domain.map((row) => row.id)).toContain(newer.id);
+    // 更贴 query 的块正文应排在前面
+    expect(domain[0]?.id).toBe(older.id);
   });
 
   it("createDiaryEntry with client_op_id is idempotent (client_op_id filter lookup)", async () => {

@@ -1,4 +1,4 @@
-import type { DiaryEntryRow, DiarySubjectKind } from "./format-diary.ts";
+import type { DiaryEntryRow, DiarySubjectKind, DiaryTextBlock } from "./format-diary.ts";
 import {
   readOfflineCache,
   resolveHubCacheScope,
@@ -10,8 +10,12 @@ import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 
 import {
   offlineAppendDiaryEntry,
+  offlineCreateDiaryBlock,
   offlineCreateDiaryEntry,
+  offlineDeleteDiaryBlock,
   offlineDeleteDiaryEntry,
+  offlineReorderDiaryBlocks,
+  offlineUpdateDiaryBlock,
   offlineUpdateDiaryEntry,
   reconcileServerDiaryList,
   registerDiaryOfflineModule,
@@ -125,7 +129,7 @@ export async function appendDiaryEntry(
 export async function updateDiaryEntry(
   subjectKind: DiarySubjectKind,
   id: number,
-  patch: Partial<Pick<DiaryEntryRow, "title" | "content" | "summary" | "entry_at" | "tags">>,
+  patch: Partial<Pick<DiaryEntryRow, "title" | "summary" | "entry_at" | "tags">>,
 ): Promise<DiaryEntryRow> {
   ensureDiaryOfflineModule();
   return offlineUpdateDiaryEntry(subjectKind, id, patch);
@@ -134,6 +138,43 @@ export async function updateDiaryEntry(
 export async function deleteDiaryEntry(subjectKind: DiarySubjectKind, id: number): Promise<void> {
   ensureDiaryOfflineModule();
   return offlineDeleteDiaryEntry(subjectKind, id);
+}
+
+export async function createDiaryBlock(
+  subjectKind: DiarySubjectKind,
+  parentId: number,
+  content: string,
+  sortOrder?: number,
+): Promise<DiaryTextBlock> {
+  ensureDiaryOfflineModule();
+  return offlineCreateDiaryBlock(subjectKind, parentId, content, sortOrder);
+}
+
+export async function updateDiaryBlock(
+  subjectKind: DiarySubjectKind,
+  id: number,
+  patch: { content?: string; sort_order?: number },
+): Promise<DiaryTextBlock> {
+  ensureDiaryOfflineModule();
+  return offlineUpdateDiaryBlock(subjectKind, id, patch);
+}
+
+export async function deleteDiaryBlock(
+  subjectKind: DiarySubjectKind,
+  parentId: number,
+  blockId: number,
+): Promise<void> {
+  ensureDiaryOfflineModule();
+  return offlineDeleteDiaryBlock(subjectKind, parentId, blockId);
+}
+
+export async function reorderDiaryBlocks(
+  subjectKind: DiarySubjectKind,
+  parentId: number,
+  items: Array<{ id: number; sort_order: number }>,
+): Promise<DiaryTextBlock[]> {
+  ensureDiaryOfflineModule();
+  return offlineReorderDiaryBlocks(subjectKind, parentId, items);
 }
 
 export { countDiaryPendingOps } from "./offline-store.ts";

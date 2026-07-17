@@ -1,6 +1,14 @@
 import {
   diaryAppendInputSchema,
   diaryAppendOutputSchema,
+  diaryBlockCreateInputSchema,
+  diaryBlockCreateOutputSchema,
+  diaryBlockDeleteInputSchema,
+  diaryBlockDeleteOutputSchema,
+  diaryBlockPatchInputSchema,
+  diaryBlockPatchOutputSchema,
+  diaryBlockReorderInputSchema,
+  diaryBlockReorderOutputSchema,
   diaryCreateInputSchema,
   diaryCreateOutputSchema,
   diaryDeleteInputSchema,
@@ -52,5 +60,25 @@ export const diaryMethodDefs = {
     input: diarySearchInputSchema,
     output: diarySearchOutputSchema,
     meta: dualTransportMeta(true),
+  }),
+  "diary.blockCreate": defineHubMethod({
+    input: diaryBlockCreateInputSchema,
+    output: diaryBlockCreateOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "diary.blockPatch": defineHubMethod({
+    input: diaryBlockPatchInputSchema,
+    output: diaryBlockPatchOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "diary.blockDelete": defineHubMethod({
+    input: diaryBlockDeleteInputSchema,
+    output: diaryBlockDeleteOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "diary.blockReorder": defineHubMethod({
+    input: diaryBlockReorderInputSchema,
+    output: diaryBlockReorderOutputSchema,
+    meta: dualTransportMeta(false),
   }),
 } as const;

@@ -18,14 +18,14 @@ import {
   reconcileServerDiaryList,
 } from "./offline-store.ts";
 
-function row(id: number, entryAt: string, content = ""): DiaryEntryRow {
+function row(id: number, entryAt: string): DiaryEntryRow {
   return {
     id,
     title: `t${id}`,
-    content,
     summary: "",
     entry_at: entryAt,
     tags: [],
+    blocks: [],
     created_at: entryAt,
     updated_at: entryAt,
   };
@@ -104,25 +104,23 @@ describe("offlineUpdateDiaryEntry temp id resolve", () => {
     resetTempIdAllocatorForTests();
   });
 
-  it("create flush 后本地只剩 server id 时，仍可用 temp id 更新", async () => {
+  it("create flush 后本地只剩 server id 时，仍可用 temp id 更新元数据", async () => {
     const scope = resolveOutboxScope();
     const created = await offlineCreateDiaryEntry("user", {
       title: "2026/7/12",
-      content: "",
       entry_at: "2026-07-12T12:00:00+08:00",
     });
     expect(created.id).toBeLessThan(0);
 
     const serverId = 99;
     await setIdMapping(scope, "diary", created.id, serverId);
-    // 模拟 flush + refreshAll：本地列表只剩 server id
     await writeOfflineCache(scope, "diary", "list:user", [
-      row(serverId, "2026-07-12T12:00:00+08:00", ""),
+      row(serverId, "2026-07-12T12:00:00+08:00"),
     ]);
 
-    const updated = await offlineUpdateDiaryEntry("user", created.id, { content: "hello" });
+    const updated = await offlineUpdateDiaryEntry("user", created.id, { tags: ["日常"] });
     expect(updated.id).toBe(serverId);
-    expect(updated.content).toBe("hello");
+    expect(updated.tags).toEqual(["日常"]);
 
     const ops = await listOutboxOps(scope, "diary");
     const patch = ops.find((op) => op.method === "diary.patch");

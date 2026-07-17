@@ -53,7 +53,6 @@ describePg("content_block tool", () => {
       { worldId },
       {
         entry_at: "2026-07-17T10:00:00+08:00",
-        content: "日记容器",
         title: "容器日",
       },
     );

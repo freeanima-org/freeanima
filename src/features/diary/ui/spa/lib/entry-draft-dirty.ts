@@ -1,23 +1,58 @@
-import type { DiaryEntryRow } from "./format-diary.ts";
+import type { DiaryEntryRow, DiaryTextBlock } from "./format-diary.ts";
 import { isoToDateLocalValue } from "./format-diary.ts";
 
-export type EntryDraft = {
+export type BlockDraft = {
+  id: number;
   content: string;
+  sort_order: number;
+  client_op_id: string | null;
+};
+
+export type EntryDraft = {
+  blocks: BlockDraft[];
   entryDateLocal: string;
   tagsText: string;
 };
 
+export function blockDraftFromRow(block: DiaryTextBlock): BlockDraft {
+  return {
+    id: block.id,
+    content: block.content,
+    sort_order: block.sort_order,
+    client_op_id: block.client_op_id,
+  };
+}
+
 export function entryDraftFromRow(entry: DiaryEntryRow): EntryDraft {
   return {
-    content: entry.content,
+    blocks: entry.blocks
+      .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id)
+      .map(blockDraftFromRow),
     entryDateLocal: isoToDateLocalValue(entry.entry_at),
     tagsText: entry.tags.join(", "),
   };
 }
 
+function blocksEqual(a: BlockDraft[], b: BlockDraft[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) {
+    const left = a[i];
+    const right = b[i];
+    if (!left || !right) return false;
+    if (
+      left.id !== right.id ||
+      left.content !== right.content ||
+      left.sort_order !== right.sort_order
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
 export function isEntryDraftDirty(draft: EntryDraft, baseline: EntryDraft): boolean {
   return (
-    draft.content !== baseline.content ||
+    !blocksEqual(draft.blocks, baseline.blocks) ||
     draft.entryDateLocal !== baseline.entryDateLocal ||
     draft.tagsText !== baseline.tagsText
   );
@@ -25,6 +60,10 @@ export function isEntryDraftDirty(draft: EntryDraft, baseline: EntryDraft): bool
 
 export function isEntryDraftEqual(a: EntryDraft, b: EntryDraft): boolean {
   return !isEntryDraftDirty(a, b);
+}
+
+export function isEntryMetaDirty(draft: EntryDraft, baseline: EntryDraft): boolean {
+  return draft.entryDateLocal !== baseline.entryDateLocal || draft.tagsText !== baseline.tagsText;
 }
 
 export function parseTagsText(tagsText: string): string[] {

@@ -98,6 +98,14 @@ import type {
 import type {
   DiaryAppendInput,
   DiaryAppendOutput,
+  DiaryBlockCreateInput,
+  DiaryBlockCreateOutput,
+  DiaryBlockDeleteInput,
+  DiaryBlockDeleteOutput,
+  DiaryBlockPatchInput,
+  DiaryBlockPatchOutput,
+  DiaryBlockReorderInput,
+  DiaryBlockReorderOutput,
   DiaryCreateInput,
   DiaryCreateOutput,
   DiaryDeleteInput,
@@ -227,6 +235,10 @@ export const SAP_METHODS = [
   "diary.delete",
   "diary.get",
   "diary.search",
+  "diary.blockCreate",
+  "diary.blockPatch",
+  "diary.blockDelete",
+  "diary.blockReorder",
   "dream.list",
   "dream.get",
   "vault.list",
@@ -319,6 +331,10 @@ export type SapRouterInputs = {
   "diary.delete": DiaryDeleteInput;
   "diary.get": DiaryGetInput;
   "diary.search": DiarySearchInput;
+  "diary.blockCreate": DiaryBlockCreateInput;
+  "diary.blockPatch": DiaryBlockPatchInput;
+  "diary.blockDelete": DiaryBlockDeleteInput;
+  "diary.blockReorder": DiaryBlockReorderInput;
   "dream.list": DreamListInput;
   "dream.get": DreamGetInput;
   "vault.list": VaultListInput;
@@ -409,6 +425,10 @@ export type SapRouterOutputs = {
   "diary.delete": DiaryDeleteOutput;
   "diary.get": DiaryGetOutput;
   "diary.search": DiarySearchOutput;
+  "diary.blockCreate": DiaryBlockCreateOutput;
+  "diary.blockPatch": DiaryBlockPatchOutput;
+  "diary.blockDelete": DiaryBlockDeleteOutput;
+  "diary.blockReorder": DiaryBlockReorderOutput;
   "dream.list": DreamListOutput;
   "dream.get": DreamGetOutput;
   "vault.list": VaultListOutput;

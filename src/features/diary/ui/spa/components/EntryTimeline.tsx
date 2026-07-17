@@ -4,19 +4,12 @@ import {
   dateLocalToEntryAtIso,
   defaultEntryDateLocal,
   entryDayKey,
+  entryPreviewText,
   formatEntryDate,
   isoToDateLocalValue,
 } from "../lib/format-diary.ts";
 
 type DayGroup = { label: string; item: DiaryEntryRow };
-
-function contentPreview(content: string): string {
-  const line = content
-    .split("\n")
-    .map((s) => s.trim())
-    .find(Boolean);
-  return line ?? "（空）";
-}
 
 function groupLabel(dayKey: string): string {
   const today = defaultEntryDateLocal();
@@ -73,7 +66,7 @@ export function EntryTimeline({
         >
           <div className="text-xs font-semibold text-muted-foreground truncate">{group.label}</div>
           <div className="text-sm text-muted-foreground mt-1 line-clamp-2 break-words">
-            {contentPreview(group.item.content)}
+            {entryPreviewText(group.item)}
           </div>
         </button>
       ))}

@@ -4,16 +4,16 @@ title: Diary
 
 # Diary
 
-Structured diary for users and Agents, based on the [Unified Entity Model](../concepts/entity-model.md) `diary_entry` component.
+Structured diary for users and Agents, based on the [Unified Entity Model](../concepts/entity-model.md) `diary_entry` **container** plus child `content_block` (text) bricks.
 
 ## vs memory system
 
-| Capability | Diary                             | Autobiographical memory                    |
-| ---------- | --------------------------------- | ------------------------------------------ |
-| Source     | User / Agent **writes actively**  | **Extracted** from dialogue in light sleep |
-| Storage    | `entities` + `diary_entry`        | `autobiographical_memory` table            |
-| Editing    | Update and delete allowed         | append-only                                |
-| Namespace  | subject **default private world** | Digital-life memory pipeline               |
+| Capability | Diary                                              | Autobiographical memory                    |
+| ---------- | -------------------------------------------------- | ------------------------------------------ |
+| Source     | User / Agent **writes actively**                   | **Extracted** from dialogue in light sleep |
+| Storage    | `entities` + `diary_entry` + child `content_block` | `autobiographical_memory` table            |
+| Editing    | Update and delete allowed                          | append-only                                |
+| Namespace  | subject **default private world**                  | Digital-life memory pipeline               |
 
 ## User / Agent isolation
 
@@ -21,34 +21,50 @@ Structured diary for users and Agents, based on the [Unified Entity Model](../co
 - Shell header **User / Agent** toggle selects which subject's diary to view (see [`entity-model.md`](../concepts/entity-model.md) global Subject scope).
 - LLM tools (ToolSet `diary`) default to the **caller subject's private world** (conversation LLM → agent world); optional **`world_id`** overrides (e.g. `user_world_id` from system prompt).
 
+## Data shape
+
+**Container** (`diary_entry`):
+
+- `body.entry_at` — ISO 8601, when the diary entry occurred (**unique per day** per subject private world)
+- `body.tags` — optional tags
+- `title` / `summary` — entity columns
+- container **`content` is not used for body text** (kept empty after migration)
+
+**Blocks** (`content_block`, `block_type: text`):
+
+- `body.parent_id` → diary entry id
+- `body.sort_order` — view order (no semantic precedence)
+- text lives in the block's `content` column
+
+One-shot migration: Hub `runMigrations` moves legacy diary `content` into the first text block and clears the container column.
+
 ## Agent tools (ToolSet `diary`)
 
-Load via `toolset_load` with `diary`. Tools locate entries by **`date` (YYYY-MM-DD)**; **default today** (CST noon `…T12:00:00+08:00`); **no `diary_create`** — use `diary_append` (creates empty shell for the day if missing, then appends). All tools accept optional **`world_id`**.
+Load via `toolset_load` with `diary`. Tools locate entries by **`date` (YYYY-MM-DD)**；**default today** (CST noon `…T12:00:00+08:00`)；**no `diary_create`** — use `diary_append` (creates empty shell for the day if missing, then adds a **new text block**). All tools accept optional **`world_id`**.
 
-| Tool           | Description                                                                                     |
-| -------------- | ----------------------------------------------------------------------------------------------- |
-| `diary_append` | Append body for date (`\n\n` separator); create shell if missing; `tags` only on shell creation |
-| `diary_update` | Replace full entry or fields by date (not append)                                               |
-| `diary_get`    | Read entry for date; error if not found                                                         |
-| `diary_delete` | Delete entry for date; returns `{ ok, action, date }`                                           |
-| `diary_list`   | List / date filter                                                                              |
-| `diary_search` | Hybrid search                                                                                   |
+| Tool           | Description                                                                     |
+| -------------- | ------------------------------------------------------------------------------- |
+| `diary_append` | New text block for date; create shell if missing; `tags` only on shell creation |
+| `diary_update` | Update entry **metadata** (title/summary/tags) by date — not body text          |
+| `diary_get`    | Read entry + `blocks` for date; error if not found                              |
+| `diary_delete` | Delete entry for date (cascades child blocks); returns `{ ok, action, date }`   |
+| `diary_list`   | List / date filter (+ blocks)                                                   |
+| `diary_search` | Hybrid search over **text blocks**, returns matching diary entries              |
 
-**vs SAP/UI**: Shell `/diary` and human editing use SAP `diary.create` / `diary.patch` etc., located by entity **`id`**; Agent ToolSet is LLM-only and uses **`date`** uniformly.
+Fine-grained block CRUD / reorder: ToolSet `content-block`.
+
+**vs SAP/UI**: Shell `/diary` uses SAP `diary.*` / `diary.block*` located by entity **`id`**; Agent ToolSet uses **`date`** uniformly.
 
 ## SAP methods
 
 UI satellite `@freeanima/satellite-diary` (`/diary`) calls SAP:
 
 - `diary.list` / `diary.create` / `diary.append` / `diary.patch` / `diary.delete` / `diary.get` / `diary.search`
+- `diary.blockCreate` / `diary.blockPatch` / `diary.blockDelete` / `diary.blockReorder` (text only)
 
 All methods require `subject_kind: user | agent`.
 
-## Data shape
-
-`diary_entry` body:
-
-- `entry_at` — ISO 8601, when the diary entry occurred (**unique per day** per subject private world)
-- `tags` — optional tags
-
-Title, summary, body use entity columns `title` / `summary` / `content`.
+- `diary.create` optional `content` → first text block (container `content` stays empty)
+- `diary.append` → new trailing text block
+- `diary.patch` → container metadata only
+- `diary.delete` → cascade-delete child blocks

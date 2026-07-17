@@ -2,25 +2,31 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/shell-sdk/react.tsx";
 import { subscribeIdMappings } from "@freeanima/frontend/shell-sdk/offline-id-map";
 import { registerDiaryOfflineModule } from "./lib/offline-store.ts";
-import { countDiaryPendingOps } from "./lib/api.ts";
+import {
+  countDiaryPendingOps,
+  createDiaryBlock,
+  createDiaryEntry,
+  deleteDiaryBlock,
+  fetchDiaryEntries,
+  reorderDiaryBlocks,
+  searchDiaryEntries,
+  updateDiaryBlock,
+  updateDiaryEntry,
+} from "./lib/api.ts";
 import { mergeDraftAfterSave } from "@freeanima/frontend/ui-kit/lib/merge-draft-after-save.ts";
 import { Button, Input, Spinner } from "@freeanima/frontend/ui-kit";
 import { ListDetailLayout } from "@freeanima/frontend/ui-kit/layout";
+import { PlusIcon } from "lucide-react";
 
 import { EntryEditor, type EntrySaveStatus } from "./components/EntryEditor.tsx";
 import { EntryTimeline, findEntryByDayLocal } from "./components/EntryTimeline.tsx";
 import {
-  createDiaryEntry,
-  deleteDiaryEntry,
-  fetchDiaryEntries,
-  searchDiaryEntries,
-  updateDiaryEntry,
-} from "./lib/api.ts";
-import {
   entryDraftFromRow,
   isEntryDraftDirty,
   isEntryDraftEqual,
+  isEntryMetaDirty,
   parseTagsText,
+  type BlockDraft,
   type EntryDraft,
 } from "./lib/entry-draft-dirty.ts";
 import type { DiaryEntryRow } from "./lib/format-diary.ts";
@@ -30,10 +36,17 @@ import {
   formatEntryDate,
   titleFromDateLocal,
 } from "./lib/format-diary.ts";
+import { sortOrderUpdates } from "./lib/reorder.ts";
 import { subscribeShellConfigChanges } from "@freeanima/shared/sap-contract";
 
 function sortEntries(items: DiaryEntryRow[]): DiaryEntryRow[] {
   return items.toSorted((a, b) => b.entry_at.localeCompare(a.entry_at));
+}
+
+function applyEntryToList(prev: DiaryEntryRow[], item: DiaryEntryRow): DiaryEntryRow[] {
+  const next = prev.filter((e) => e.id !== item.id);
+  next.push(item);
+  return sortEntries(next);
 }
 
 export function DiaryApp() {
@@ -81,6 +94,16 @@ export function DiaryApp() {
         setSelectedId(null);
         setDraft(null);
         setDraftBaseline(null);
+      } else if (currentSelectedId != null) {
+        const fresh = items.find((e) => e.id === currentSelectedId);
+        if (fresh) {
+          const nextDraft = entryDraftFromRow(fresh);
+          setDraftBaseline(nextDraft);
+          setDraft((current) => {
+            if (!current || !isEntryDraftDirty(current, nextDraft)) return nextDraft;
+            return current;
+          });
+        }
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -100,13 +123,40 @@ export function DiaryApp() {
       setEntries((prev) => {
         let changed = false;
         const next = prev.map((e) => {
-          if (e.id !== tempId) return e;
-          changed = true;
-          return { ...e, id: serverId };
+          if (e.id === tempId) {
+            changed = true;
+            return {
+              ...e,
+              id: serverId,
+              blocks: e.blocks.map((b) => ({ ...b, parent_id: serverId })),
+            };
+          }
+          const blocks = e.blocks.map((b) => (b.id === tempId ? { ...b, id: serverId } : b));
+          if (blocks.some((b, i) => b.id !== e.blocks[i]?.id)) {
+            changed = true;
+            return { ...e, blocks };
+          }
+          return e;
         });
         return changed ? sortEntries(next) : prev;
       });
       setSelectedId((prev) => (prev === tempId ? serverId : prev));
+      setDraft((prev) => {
+        if (!prev) return prev;
+        if (!prev.blocks.some((b) => b.id === tempId)) return prev;
+        return {
+          ...prev,
+          blocks: prev.blocks.map((b) => (b.id === tempId ? { ...b, id: serverId } : b)),
+        };
+      });
+      setDraftBaseline((prev) => {
+        if (!prev) return prev;
+        if (!prev.blocks.some((b) => b.id === tempId)) return prev;
+        return {
+          ...prev,
+          blocks: prev.blocks.map((b) => (b.id === tempId ? { ...b, id: serverId } : b)),
+        };
+      });
     });
   }, []);
 
@@ -153,22 +203,83 @@ export function DiaryApp() {
     setSaving(true);
     setSaveStatus("saving");
     try {
-      const item = await updateDiaryEntry(subjectKind, selectedEntry.id, {
-        title: titleFromDateLocal(savingSnapshot.entryDateLocal),
-        summary: "",
-        content: savingSnapshot.content,
-        entry_at: dateLocalToEntryAtIso(savingSnapshot.entryDateLocal),
-        tags: parseTagsText(savingSnapshot.tagsText),
-      });
-      setEntries((prev) => {
-        const next = prev.filter((e) => e.id !== selectedEntry.id && e.id !== item.id);
-        next.push(item);
-        return sortEntries(next);
-      });
-      if (selectedIdRef.current === selectedEntry.id && selectedEntry.id !== item.id) {
-        setSelectedId(item.id);
+      let entry = selectedEntry;
+
+      if (isEntryMetaDirty(savingSnapshot, draftBaseline)) {
+        entry = await updateDiaryEntry(subjectKind, selectedEntry.id, {
+          title: titleFromDateLocal(savingSnapshot.entryDateLocal),
+          summary: "",
+          entry_at: dateLocalToEntryAtIso(savingSnapshot.entryDateLocal),
+          tags: parseTagsText(savingSnapshot.tagsText),
+        });
       }
-      const synced = entryDraftFromRow(item);
+
+      const baselineById = new Map(draftBaseline.blocks.map((b) => [b.id, b]));
+      const draftIds = new Set(savingSnapshot.blocks.map((b) => b.id));
+
+      for (const base of draftBaseline.blocks) {
+        if (!draftIds.has(base.id)) {
+          await deleteDiaryBlock(subjectKind, entry.id, base.id);
+        }
+      }
+
+      const nextBlocks: BlockDraft[] = [];
+      for (const block of savingSnapshot.blocks) {
+        const base = baselineById.get(block.id);
+        if (!base) {
+          const created = await createDiaryBlock(
+            subjectKind,
+            entry.id,
+            block.content,
+            block.sort_order,
+          );
+          nextBlocks.push({
+            id: created.id,
+            content: created.content,
+            sort_order: created.sort_order,
+            client_op_id: created.client_op_id,
+          });
+          continue;
+        }
+        if (base.content !== block.content) {
+          const updated = await updateDiaryBlock(subjectKind, block.id, {
+            content: block.content,
+          });
+          nextBlocks.push({
+            id: updated.id,
+            content: updated.content,
+            sort_order: block.sort_order,
+            client_op_id: updated.client_op_id,
+          });
+        } else {
+          nextBlocks.push(block);
+        }
+      }
+
+      const ordered = nextBlocks.map((b, index) => ({ ...b, sort_order: index }));
+      const reorderPatch = sortOrderUpdates(ordered);
+      if (reorderPatch.length > 0) {
+        await reorderDiaryBlocks(subjectKind, entry.id, reorderPatch);
+      }
+
+      entry = {
+        ...entry,
+        blocks: ordered.map((b) => ({
+          id: b.id,
+          content: b.content,
+          sort_order: b.sort_order,
+          parent_id: entry.id,
+          client_op_id: b.client_op_id,
+          created_at: selectedEntry.created_at,
+          updated_at: new Date().toISOString(),
+        })),
+      };
+
+      setEntries((prev) => applyEntryToList(prev, entry));
+      if (selectedIdRef.current === selectedEntry.id && selectedEntry.id !== entry.id) {
+        setSelectedId(entry.id);
+      }
+      const synced = entryDraftFromRow(entry);
       setDraftBaseline(synced);
       setDraft((current) => {
         if (!current) return synced;
@@ -211,7 +322,6 @@ export function DiaryApp() {
       const item = await createDiaryEntry(subjectKind, {
         title: titleFromDateLocal(today),
         summary: "",
-        content: "",
         entry_at: dateLocalToEntryAtIso(today),
         tags: [],
       });
@@ -259,7 +369,6 @@ export function DiaryApp() {
         initialTodayOpenedRef.current = true;
         return;
       }
-      // 创建进行中或 Hub 未连接时不标记完成，以便稍后重试
       if (!writesDisabled && !creating) {
         initialTodayOpenedRef.current = true;
       }
@@ -297,6 +406,23 @@ export function DiaryApp() {
       await openTodayEntry();
     })();
   }, [creating, flushDraftSave, openTodayEntry, writesDisabled]);
+
+  const handleAddBlock = useCallback(() => {
+    if (!draft) return;
+    const nextOrder = draft.blocks.length;
+    setDraft({
+      ...draft,
+      blocks: [
+        ...draft.blocks,
+        {
+          id: -Date.now(),
+          content: "",
+          sort_order: nextOrder,
+          client_op_id: null,
+        },
+      ],
+    });
+  }, [draft]);
 
   useEffect(() => {
     if (!selectedEntry || !draft || !draftBaseline || writesDisabled) return;
@@ -341,38 +467,7 @@ export function DiaryApp() {
 
   const detailPane =
     selectedEntry && draft && draftBaseline ? (
-      <EntryEditor
-        draft={draft}
-        onDraftChange={setDraft}
-        saveStatus={saveStatus}
-        readOnly={writesDisabled}
-        onCancel={() => {
-          setDraft({ ...draftBaseline });
-          setSelectedId(null);
-          setDraft(null);
-          setDraftBaseline(null);
-          setSaveStatus("idle");
-        }}
-        onDelete={() => {
-          void (async () => {
-            if (!selectedEntry) return;
-            setSaving(true);
-            setError("");
-            try {
-              await deleteDiaryEntry(subjectKind, selectedEntry.id);
-              setEntries((prev) => prev.filter((e) => e.id !== selectedEntry.id));
-              setSelectedId(null);
-              setDraft(null);
-              setDraftBaseline(null);
-              setSaveStatus("idle");
-            } catch (e) {
-              setError(e instanceof Error ? e.message : String(e));
-            } finally {
-              setSaving(false);
-            }
-          })();
-        }}
-      />
+      <EntryEditor draft={draft} onDraftChange={setDraft} readOnly={writesDisabled} />
     ) : (
       <div className="text-muted-foreground flex h-full min-h-0 items-center justify-center text-sm">
         选择条目或新建日记
@@ -381,9 +476,27 @@ export function DiaryApp() {
 
   const detailTitle = selectedEntry ? formatEntryDate(selectedEntry.entry_at) : "日记";
 
+  const detailActions =
+    selectedEntry && draft && !writesDisabled ? (
+      <div className="flex items-center gap-2">
+        {saveStatus === "saving" ? (
+          <span className="text-muted-foreground text-xs">保存中…</span>
+        ) : saveStatus === "saved" ? (
+          <span className="text-muted-foreground text-xs">已保存</span>
+        ) : saveStatus === "error" ? (
+          <span className="text-destructive text-xs">保存失败</span>
+        ) : null}
+        <Button type="button" variant="ghost" size="sm" onClick={handleAddBlock}>
+          <PlusIcon className="size-3.5" />
+          添加块
+        </Button>
+      </div>
+    ) : null;
+
   return (
     <ListDetailLayout
       detailTitle={detailTitle}
+      detailActions={detailActions}
       listTitle="日记"
       columnSplitKey="diary"
       defaultListWidthPx={320}

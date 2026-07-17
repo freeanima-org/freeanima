@@ -7,9 +7,19 @@ const baseEntry: DiaryEntryRow = {
   id: 1,
   title: "2026-01-01",
   summary: "",
-  content: "正文",
   entry_at: "2026-01-01T12:00:00+08:00",
   tags: ["a", "b"],
+  blocks: [
+    {
+      id: 10,
+      content: "正文",
+      sort_order: 0,
+      parent_id: 1,
+      client_op_id: null,
+      created_at: "2026-01-01T00:00:00.000Z",
+      updated_at: "2026-01-01T00:00:00.000Z",
+    },
+  ],
   created_at: "2026-01-01T00:00:00.000Z",
   updated_at: "2026-01-01T00:00:00.000Z",
 };
@@ -17,7 +27,7 @@ const baseEntry: DiaryEntryRow = {
 describe("entryDraftFromRow", () => {
   it("从条目生成 draft", () => {
     expect(entryDraftFromRow(baseEntry)).toEqual({
-      content: "正文",
+      blocks: [{ id: 10, content: "正文", sort_order: 0, client_op_id: null }],
       entryDateLocal: "2026-01-01",
       tagsText: "a, b",
     });
@@ -28,11 +38,19 @@ describe("isEntryDraftDirty", () => {
   const baseline = entryDraftFromRow(baseEntry);
 
   it("未修改时返回 false", () => {
-    expect(isEntryDraftDirty({ ...baseline }, baseline)).toBe(false);
+    expect(isEntryDraftDirty({ ...baseline, blocks: [...baseline.blocks] }, baseline)).toBe(false);
   });
 
-  it("正文变更时返回 true", () => {
-    expect(isEntryDraftDirty({ ...baseline, content: "新正文" }, baseline)).toBe(true);
+  it("正文块变更时返回 true", () => {
+    expect(
+      isEntryDraftDirty(
+        {
+          ...baseline,
+          blocks: [{ ...baseline.blocks[0]!, content: "新正文" }],
+        },
+        baseline,
+      ),
+    ).toBe(true);
   });
 
   it("日期变更时返回 true", () => {

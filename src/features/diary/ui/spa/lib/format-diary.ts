@@ -1,12 +1,22 @@
 export type DiarySubjectKind = "user" | "agent";
 
+export type DiaryTextBlock = {
+  id: number;
+  content: string;
+  sort_order: number;
+  parent_id: number;
+  client_op_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type DiaryEntryRow = {
   id: number;
   title: string;
   summary: string;
-  content: string;
   entry_at: string;
   tags: string[];
+  blocks: DiaryTextBlock[];
   created_at: string;
   updated_at: string;
 };
@@ -52,4 +62,16 @@ export function defaultEntryDateLocal(): string {
 /** entity.title 与日期对齐，供搜索与兼容旧数据 */
 export function titleFromDateLocal(dateLocal: string): string {
   return formatEntryDate(dateLocalToEntryAtIso(dateLocal));
+}
+
+export function entryPreviewText(entry: DiaryEntryRow): string {
+  const blocks = entry.blocks.toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
+  for (const block of blocks) {
+    const line = block.content
+      .split("\n")
+      .map((s) => s.trim())
+      .find(Boolean);
+    if (line) return line;
+  }
+  return "（空）";
 }

@@ -1,23 +1,43 @@
 import { defineToolReturn, type ToolReturnContractFields, z } from "@freeanima/core/tool";
 
+const diaryTextBlockSchema = z.object({
+  id: z.number(),
+  content: z.string(),
+  sort_order: z.number(),
+  parent_id: z.number(),
+  client_op_id: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
 const diaryEntrySchema = z.object({
   id: z.number(),
   title: z.string(),
   summary: z.string(),
-  content: z.string(),
   entry_at: z.string(),
   tags: z.array(z.string()),
+  blocks: z.array(diaryTextBlockSchema),
   created_at: z.string(),
   updated_at: z.string(),
 });
+
+const exampleBlock = {
+  id: 101,
+  content: "第一段",
+  sort_order: 0,
+  parent_id: 42,
+  client_op_id: null,
+  created_at: "2026-06-29T20:00:00+08:00",
+  updated_at: "2026-06-29T20:00:00+08:00",
+};
 
 const exampleEntry = {
   id: 42,
   title: "今日记录",
   summary: "",
-  content: "第一段\n\n第二段",
   entry_at: "2026-06-29T20:00:00+08:00",
   tags: ["日常"],
+  blocks: [exampleBlock, { ...exampleBlock, id: 102, content: "第二段", sort_order: 1 }],
   created_at: "2026-06-29T20:00:00+08:00",
   updated_at: "2026-06-29T21:00:00+08:00",
 };
