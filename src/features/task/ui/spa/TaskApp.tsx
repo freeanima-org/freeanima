@@ -6,6 +6,7 @@ import {
 } from "@freeanima/frontend/shell-sdk";
 import type { TaskModuleSelection } from "@freeanima/frontend/shell-sdk";
 import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
+import { subscribeIdMappings } from "@freeanima/frontend/shell-sdk/offline-id-map";
 import { isTempId } from "@freeanima/frontend/shell-sdk/offline-temp-id";
 import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/shell-sdk/react.tsx";
 import {
@@ -186,8 +187,29 @@ export function TaskApp() {
         due_at: snapshot.due_at,
       }),
     onSaved: (saved) => {
-      setItems((prev) => prev.map((row) => (row.id === saved.id ? saved : row)));
-      setSearchHits((prev) => prev.map((row) => (row.id === saved.id ? saved : row)));
+      setItems((prev) => {
+        const hasSavedId = prev.some((row) => row.id === saved.id);
+        if (hasSavedId) return prev.map((row) => (row.id === saved.id ? saved : row));
+        // flush 后列表可能仍短暂握着 temp id：用当前详情 id 对齐替换
+        return prev.map((row) =>
+          detailItem != null && row.id === detailItem.id
+            ? saved
+            : row.id === saved.id
+              ? saved
+              : row,
+        );
+      });
+      setSearchHits((prev) => {
+        const hasSavedId = prev.some((row) => row.id === saved.id);
+        if (hasSavedId) return prev.map((row) => (row.id === saved.id ? saved : row));
+        return prev.map((row) =>
+          detailItem != null && row.id === detailItem.id
+            ? saved
+            : row.id === saved.id
+              ? saved
+              : row,
+        );
+      });
     },
     onPersistError: (err) => {
       setError(err instanceof Error ? err.message : String(err));
@@ -307,6 +329,88 @@ export function TaskApp() {
   useEffect(() => {
     registerTaskOfflineModule();
   }, []);
+
+  useEffect(() => {
+    return subscribeIdMappings((event) => {
+      if (event.moduleId !== "task") return;
+      const { tempId, serverId } = event;
+
+      const remapId = (id: number) => (id === tempId ? serverId : id);
+
+      setLists((prev) => {
+        let changed = false;
+        const next = prev.map((row) => {
+          if (row.id !== tempId && row.parent_id !== tempId) return row;
+          changed = true;
+          return {
+            ...row,
+            id: remapId(row.id),
+            parent_id: row.parent_id === tempId ? serverId : row.parent_id,
+          };
+        });
+        return changed ? next : prev;
+      });
+
+      setItems((prev) => {
+        let changed = false;
+        const next = prev.map((row) => {
+          if (row.id !== tempId && row.list_id !== tempId) return row;
+          changed = true;
+          return {
+            ...row,
+            id: remapId(row.id),
+            list_id: row.list_id === tempId ? serverId : row.list_id,
+          };
+        });
+        return changed ? next : prev;
+      });
+
+      setSearchHits((prev) => {
+        let changed = false;
+        const next = prev.map((row) => {
+          if (row.id !== tempId && row.list_id !== tempId) return row;
+          changed = true;
+          return {
+            ...row,
+            id: remapId(row.id),
+            list_id: row.list_id === tempId ? serverId : row.list_id,
+          };
+        });
+        return changed ? next : prev;
+      });
+
+      setDetailItem((prev) => {
+        if (!prev) return prev;
+        if (prev.id !== tempId && prev.list_id !== tempId) return prev;
+        return {
+          ...prev,
+          id: remapId(prev.id),
+          list_id: prev.list_id === tempId ? serverId : prev.list_id,
+        };
+      });
+
+      setSelectedItemIds((prev) => {
+        if (!prev.has(tempId)) return prev;
+        const next = new Set(prev);
+        next.delete(tempId);
+        next.add(serverId);
+        return next;
+      });
+
+      setSelectedFolderId((prev) => (prev === tempId ? serverId : prev));
+
+      setSelection((prev) => {
+        if (prev == null || prev.kind !== "list" || prev.id !== tempId) return prev;
+        return { ...prev, id: serverId };
+      });
+
+      setItemMenu((prev) =>
+        prev && prev.itemId === tempId ? { ...prev, itemId: serverId } : prev,
+      );
+      setMovePickerItemIds((prev) => (prev?.includes(tempId) ? prev.map(remapId) : prev));
+      setMoveProjectItemIds((prev) => (prev?.includes(tempId) ? prev.map(remapId) : prev));
+    });
+  }, [setDetailItem]);
 
   useEffect(() => {
     listsLoadGenRef.current += 1;

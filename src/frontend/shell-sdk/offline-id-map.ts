@@ -9,8 +9,41 @@ import {
 import type { OfflineModuleId } from "./offline-outbox.ts";
 import { setSatelliteOfflineCacheBackendForTests } from "./offline-cache.ts";
 
+export type IdMappingEvent = {
+  scope: string;
+  moduleId: OfflineModuleId;
+  tempId: number;
+  serverId: number;
+};
+
+type IdMappingListener = (event: IdMappingEvent) => void;
+
+const listeners = new Set<IdMappingListener>();
+
 function idMapKey(scope: string, moduleId: OfflineModuleId, tempId: number): string {
   return `${scope}|${moduleId}|${tempId}`;
+}
+
+function emitIdMapping(event: IdMappingEvent): void {
+  for (const listener of listeners) {
+    try {
+      listener(event);
+    } catch {
+      /* listener 不得打断写路径 */
+    }
+  }
+}
+
+/** 订阅 temp→server id 映射写入；返回取消订阅函数。 */
+export function subscribeIdMappings(listener: IdMappingListener): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+export function resetIdMappingListenersForTests(): void {
+  listeners.clear();
 }
 
 export async function setIdMapping(
@@ -20,6 +53,7 @@ export async function setIdMapping(
   serverId: number,
 ): Promise<void> {
   await offlineDbPut(OFFLINE_ID_MAP_STORE, idMapKey(scope, moduleId, tempId), serverId);
+  emitIdMapping({ scope, moduleId, tempId, serverId });
 }
 
 export async function getIdMapping(

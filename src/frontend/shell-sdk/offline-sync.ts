@@ -24,9 +24,34 @@ export type FlushModuleOptions = {
 };
 
 let flushing = false;
+/** flush 锁持有期间有新请求进来时置位，finally 里再跑一轮。 */
+let pendingRerun = false;
+let pendingRerunScope: string | null = null;
+let pendingRerunOpts: FlushModuleOptions | null = null;
+let pendingRerunAll = false;
+let pendingRerunAllOpts:
+  | (FlushModuleOptions & {
+      streamContextByModule?: Partial<Record<"chat", StreamFlushContext>>;
+    })
+  | null = null;
+let pendingRerunModuleId: OfflineModuleId | null = null;
 
 export function isOfflineSyncFlushing(): boolean {
   return flushing;
+}
+
+/** compact 后删除未进入结果集的原始 op，避免孤儿 patch/append 留在 IDB。 */
+async function removeAbsorbedOutboxOps(
+  scope: string,
+  original: OfflineOutboxOp[],
+  compacted: OfflineOutboxOp[],
+): Promise<void> {
+  const kept = new Set(compacted.map((op) => op.id));
+  for (const op of original) {
+    if (!kept.has(op.id)) {
+      await removeOutboxOp(scope, op.id);
+    }
+  }
 }
 
 async function flushRpcModule(
@@ -36,6 +61,9 @@ async function flushRpcModule(
   opts?: FlushModuleOptions,
 ): Promise<void> {
   let compacted = adapter.compactOutbox ? adapter.compactOutbox(ops) : ops;
+  if (adapter.compactOutbox) {
+    await removeAbsorbedOutboxOps(scope, ops, compacted);
+  }
   compacted = sortOutboxOps(compacted, adapter.ordering);
 
   for (const op of compacted) {
@@ -123,18 +151,83 @@ export async function recordFlushIdMapping(
   await setIdMapping(scope, moduleId, tempId, serverId);
 }
 
+function markPendingRerunModule(
+  moduleId: OfflineModuleId,
+  scope: string,
+  opts?: FlushModuleOptions,
+): void {
+  pendingRerun = true;
+  pendingRerunModuleId = moduleId;
+  pendingRerunScope = scope;
+  pendingRerunOpts = opts ?? null;
+}
+
+function markPendingRerunAll(
+  scope: string,
+  opts?: FlushModuleOptions & {
+    streamContextByModule?: Partial<Record<"chat", StreamFlushContext>>;
+  },
+): void {
+  pendingRerun = true;
+  pendingRerunAll = true;
+  pendingRerunScope = scope;
+  pendingRerunAllOpts = opts ?? null;
+}
+
+async function drainPendingRerun(): Promise<void> {
+  while (pendingRerun) {
+    pendingRerun = false;
+    const scope = pendingRerunScope;
+    if (!scope || !isHubFetchAvailable()) {
+      pendingRerunAll = false;
+      pendingRerunModuleId = null;
+      pendingRerunScope = null;
+      pendingRerunOpts = null;
+      pendingRerunAllOpts = null;
+      return;
+    }
+
+    if (pendingRerunAll) {
+      const opts = pendingRerunAllOpts;
+      pendingRerunAll = false;
+      pendingRerunModuleId = null;
+      pendingRerunScope = null;
+      pendingRerunOpts = null;
+      pendingRerunAllOpts = null;
+      await flushAllOfflineModules(scope, opts ?? undefined);
+      continue;
+    }
+
+    const moduleId = pendingRerunModuleId;
+    const opts = pendingRerunOpts;
+    pendingRerunModuleId = null;
+    pendingRerunScope = null;
+    pendingRerunOpts = null;
+    if (moduleId) {
+      await flushOfflineModule(moduleId, scope, opts ?? undefined);
+    }
+  }
+}
+
 export async function flushOfflineModule(
   moduleId: OfflineModuleId,
   scope: string,
   opts?: FlushModuleOptions,
 ): Promise<void> {
   // 与 flushAllOfflineModules 共用锁，避免 ChatApp 与 OfflineSyncBootstrap 并发 flush 同一条
-  if (flushing || !isHubFetchAvailable()) return;
+  if (!isHubFetchAvailable()) return;
+  if (flushing) {
+    markPendingRerunModule(moduleId, scope, opts);
+    return;
+  }
   const adapter = getOfflineModule(moduleId);
   if (!adapter) return;
 
   const ops = await listOutboxOps(scope, moduleId);
-  if (ops.length === 0) return;
+  if (ops.length === 0) {
+    await drainPendingRerun();
+    return;
+  }
 
   flushing = true;
   try {
@@ -147,6 +240,7 @@ export async function flushOfflineModule(
     await flushRpcModule(adapter, scope, ops, opts);
   } finally {
     flushing = false;
+    await drainPendingRerun();
   }
 }
 
@@ -156,7 +250,11 @@ export async function flushAllOfflineModules(
     streamContextByModule?: Partial<Record<"chat", StreamFlushContext>>;
   },
 ): Promise<void> {
-  if (flushing || !isHubFetchAvailable()) return;
+  if (!isHubFetchAvailable()) return;
+  if (flushing) {
+    markPendingRerunAll(scope, opts);
+    return;
+  }
   flushing = true;
   try {
     for (const adapter of listOfflineModules()) {
@@ -175,6 +273,7 @@ export async function flushAllOfflineModules(
     }
   } finally {
     flushing = false;
+    await drainPendingRerun();
   }
 }
 
@@ -185,4 +284,15 @@ export function subscribeOfflineSyncTriggers(onFlush: () => void): () => void {
   };
   document.addEventListener("visibilitychange", onVisible);
   return () => document.removeEventListener("visibilitychange", onVisible);
+}
+
+/** 测试用：重置 flush 锁与尾触发状态。 */
+export function resetOfflineSyncStateForTests(): void {
+  flushing = false;
+  pendingRerun = false;
+  pendingRerunScope = null;
+  pendingRerunOpts = null;
+  pendingRerunAll = false;
+  pendingRerunAllOpts = null;
+  pendingRerunModuleId = null;
 }

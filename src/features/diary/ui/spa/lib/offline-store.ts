@@ -3,7 +3,7 @@ import {
   resolveHubCacheScope,
   writeOfflineCache,
 } from "@freeanima/frontend/shell-sdk/offline-cache";
-import { resolveIdFields } from "@freeanima/frontend/shell-sdk/offline-id-map";
+import { getIdMapping, resolveIdFields } from "@freeanima/frontend/shell-sdk/offline-id-map";
 import {
   registerOfflineModule,
   registerOfflineModuleCap,
@@ -20,7 +20,11 @@ import {
   flushOfflineModule,
   recordFlushIdMapping,
 } from "@freeanima/frontend/shell-sdk/offline-sync";
-import { allocateTempId, isTempId } from "@freeanima/frontend/shell-sdk/offline-temp-id";
+import {
+  allocateTempId,
+  isTempId,
+  seedTempIdAllocatorFromIdMap,
+} from "@freeanima/frontend/shell-sdk/offline-temp-id";
 import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 import { randomUuid } from "@freeanima/shared/sap-contract";
 
@@ -81,6 +85,60 @@ async function removeLocalEntry(
     subjectKind,
     list.filter((e) => e.id !== id),
   );
+}
+
+/** create flush 后把本地 temp 行改写成 server id，避免 UI 仍握 temp 时 lookup 失败。 */
+async function rewriteLocalEntryId(
+  scope: string,
+  subjectKind: DiarySubjectKind,
+  tempId: number,
+  serverId: number,
+  serverRow?: DiaryEntryRow,
+): Promise<void> {
+  const list = await readLocalList(scope, subjectKind);
+  const existing = list.find((e) => e.id === tempId);
+  const rewritten: DiaryEntryRow = serverRow
+    ? { ...serverRow }
+    : existing
+      ? { ...existing, id: serverId }
+      : {
+          id: serverId,
+          title: "",
+          content: "",
+          summary: "",
+          entry_at: new Date().toISOString(),
+          tags: [],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+  const next = list.filter((e) => e.id !== tempId && e.id !== serverId);
+  next.unshift(rewritten);
+  await writeLocalList(scope, subjectKind, next);
+  await writeOfflineCache(scope, NAMESPACE, entryCacheId(subjectKind, serverId), rewritten);
+}
+
+/** lookup 前把 temp id 解析为 server id（若已映射）。 */
+async function resolveEntityId(scope: string, id: number): Promise<number> {
+  if (!isTempId(id)) return id;
+  const mapped = await getIdMapping(scope, MODULE_ID, id);
+  return mapped ?? id;
+}
+
+async function findLocalEntry(
+  scope: string,
+  subjectKind: DiarySubjectKind,
+  id: number,
+): Promise<DiaryEntryRow | undefined> {
+  const resolvedId = await resolveEntityId(scope, id);
+  const list = await readLocalList(scope, subjectKind);
+  return (
+    list.find((e) => e.id === resolvedId) ??
+    (resolvedId !== id ? list.find((e) => e.id === id) : undefined)
+  );
+}
+
+async function ensureAllocatorSeeded(scope: string): Promise<void> {
+  await seedTempIdAllocatorFromIdMap(scope, MODULE_ID);
 }
 
 function scheduleFlush(scope: string): void {
@@ -198,7 +256,10 @@ async function flushDiaryOp(
       item?: DiaryEntryRow;
     };
     if (op.tempEntityId != null && op.method === "diary.create" && result.item?.id) {
+      const subjectKind =
+        op.payload.subject_kind === "agent" ? ("agent" as const) : ("user" as const);
       await recordFlushIdMapping(scope, MODULE_ID, op.tempEntityId, result.item.id);
+      await rewriteLocalEntryId(scope, subjectKind, op.tempEntityId, result.item.id, result.item);
     }
     return { status: "done" };
   } catch (e) {
@@ -234,6 +295,7 @@ export const diaryRpcAdapter: RpcModuleAdapter = {
 export function registerDiaryOfflineModule(): void {
   registerOfflineModule(diaryRpcAdapter);
   registerOfflineModuleCap(MODULE_ID, { offlineWritable: true });
+  void ensureAllocatorSeeded(resolveOutboxScope()).catch(() => {});
 }
 
 export async function offlineCreateDiaryEntry(
@@ -251,6 +313,7 @@ export async function offlineCreateDiaryEntry(
   if (!input.entry_at.trim()) throw new Error("diary entry_at is required");
 
   const scope = resolveOutboxScope();
+  await ensureAllocatorSeeded(scope);
   const tempId = allocateTempId(scope, MODULE_ID);
   const opId = randomUuid();
   const now = new Date().toISOString();
@@ -288,9 +351,9 @@ export async function offlineUpdateDiaryEntry(
   patch: Partial<Pick<DiaryEntryRow, "title" | "content" | "summary" | "entry_at" | "tags">>,
 ): Promise<DiaryEntryRow> {
   const scope = resolveOutboxScope();
-  const list = await readLocalList(scope, subjectKind);
-  const existing = list.find((e) => e.id === id);
+  const existing = await findLocalEntry(scope, subjectKind, id);
   if (!existing) throw new Error("diary entry not found locally");
+  const resolvedId = existing.id;
 
   const now = new Date().toISOString();
   const updated: DiaryEntryRow = {
@@ -307,7 +370,7 @@ export async function offlineUpdateDiaryEntry(
     method: "diary.patch",
     payload: {
       subject_kind: subjectKind,
-      id,
+      id: resolvedId,
       client_op_id: opId,
       ...patch,
     },
@@ -323,9 +386,9 @@ export async function offlineAppendDiaryEntry(
   content: string,
 ): Promise<DiaryEntryRow> {
   const scope = resolveOutboxScope();
-  const list = await readLocalList(scope, subjectKind);
-  const existing = list.find((e) => e.id === id);
+  const existing = await findLocalEntry(scope, subjectKind, id);
   if (!existing) throw new Error("diary entry not found locally");
+  const resolvedId = existing.id;
 
   const fragment = content.trim();
   const nextContent = existing.content.trim()
@@ -342,7 +405,7 @@ export async function offlineAppendDiaryEntry(
     method: "diary.append",
     payload: {
       subject_kind: subjectKind,
-      id,
+      id: resolvedId,
       content: fragment,
       client_op_id: opId,
     },
@@ -357,12 +420,20 @@ export async function offlineDeleteDiaryEntry(
   id: number,
 ): Promise<void> {
   const scope = resolveOutboxScope();
-  await removeLocalEntry(scope, subjectKind, id);
+  const existing = await findLocalEntry(scope, subjectKind, id);
+  const resolvedId = existing?.id ?? (await resolveEntityId(scope, id));
+  await removeLocalEntry(scope, subjectKind, resolvedId);
+  if (resolvedId !== id) await removeLocalEntry(scope, subjectKind, id);
 
-  if (isTempId(id)) {
+  if (isTempId(resolvedId) || isTempId(id)) {
+    const tempIds = new Set([id, resolvedId].filter(isTempId));
     const ops = await listOutboxOps(scope, MODULE_ID);
     for (const op of ops) {
-      if (op.tempEntityId === id || op.payload.id === id) {
+      if (
+        (typeof op.tempEntityId === "number" && tempIds.has(op.tempEntityId)) ||
+        (typeof op.payload.id === "number" &&
+          (tempIds.has(op.payload.id) || op.payload.id === resolvedId))
+      ) {
         await removeOutboxOp(scope, op.id);
       }
     }
@@ -374,7 +445,7 @@ export async function offlineDeleteDiaryEntry(
     id: opId,
     moduleId: MODULE_ID,
     method: "diary.delete",
-    payload: { subject_kind: subjectKind, id, client_op_id: opId },
+    payload: { subject_kind: subjectKind, id: resolvedId, client_op_id: opId },
     createdAt: new Date().toISOString(),
   });
   scheduleFlush(scope);
