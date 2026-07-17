@@ -189,7 +189,9 @@ Optional semantic components on the same row (`components[]`; fields merge into 
 
 **Container end-state:** `diary_entry` and `dream_entry` both become container + blocks (`parent_id` points at the entry). Dream identity is the `dream_entry` container — do **not** register a separate `dream` semantic component, and do **not** replace `dream_entry` with `content_block`.
 
-Schemas are registered; ToolSet / diary·dream containerization / legacy memory-table migrations are follow-up milestone work.
+- **LLM:** ToolSet `content-block` (`@freeanima/features/content-block/domain`) — `content_block_create` / `update` / `delete` / `get` / `list` / `search` / `reorder`. `list` requires container `parent_id`; optional `component=limbic|narrative|semantic_ref` filters semantic tags; `reorder` batch-updates `sort_order`. Optional `world_id`; `parent_id` / block `id` infer world.
+- **Search filters:** `parent_id`, `block_type`, `client_op_id` (whitelist shared by `entity_search` / store).
+- **Follow-up:** diary·dream containerization (existing entry `content` → first text block), legacy memory-table migrations.
 
 ## Dream module
 
