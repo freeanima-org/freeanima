@@ -6,7 +6,7 @@ import { StatusAlert, showConfirm } from "@freeanima/frontend/ui-kit/composite";
 import { FormToggle } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
 import type { SettingsPanelProps } from "@freeanima/frontend/shell-sdk/settings";
 import {
-  fetchHubConfig,
+  fetchHubConfigSection,
   patchHubConfigSection,
   replaceHubConfigSection,
   restartHubService,
@@ -90,25 +90,38 @@ export default function HubConfigSectionPanel({ configKey }: Props) {
   const load = useCallback(async () => {
     setError("");
     try {
-      const data = await fetchHubConfig();
-      setConfig(data ?? {});
-      const safe = data ?? {};
-      const comp = (safe.compression ?? {}) as Record<string, unknown>;
-      setCompression({
-        enabled: comp.enabled !== false,
-        max_rounds: typeof comp.max_rounds === "number" ? comp.max_rounds : 50,
-        reserved_tokens: typeof comp.reserved_tokens === "number" ? comp.reserved_tokens : 8192,
-      });
-      const mem = (safe.memory as Record<string, unknown> | undefined)?.passive_recall as
-        | Record<string, unknown>
-        | undefined;
-      setMemoryRecall({
-        enabled: mem?.enabled !== false,
-        limit: typeof mem?.limit === "number" ? mem.limit : 5,
-        max_chars: typeof mem?.max_chars === "number" ? mem.max_chars : 2000,
-      });
-      if (isAdvancedSectionKey(configKey)) {
-        setAdvancedDraft(readAdvancedSectionDraft(safe[configKey]));
+      const section = await fetchHubConfigSection(configKey);
+      const asRecord =
+        section && typeof section === "object" && !Array.isArray(section)
+          ? (section as Record<string, unknown>)
+          : {};
+
+      if (configKey === "compression") {
+        setCompression({
+          enabled: asRecord.enabled !== false,
+          max_rounds: typeof asRecord.max_rounds === "number" ? asRecord.max_rounds : 50,
+          reserved_tokens:
+            typeof asRecord.reserved_tokens === "number" ? asRecord.reserved_tokens : 8192,
+        });
+        setConfig({});
+      } else if (configKey === "memory") {
+        const recall = asRecord.passive_recall as Record<string, unknown> | undefined;
+        setMemoryRecall({
+          enabled: recall?.enabled !== false,
+          limit: typeof recall?.limit === "number" ? recall.limit : 5,
+          max_chars: typeof recall?.max_chars === "number" ? recall.max_chars : 2000,
+        });
+        setConfig({});
+      } else if (configKey === "llm") {
+        setConfig(asRecord);
+      } else if (configKey === "tts") {
+        // SpeechSettingsTab 从 config.tts 读取
+        setConfig({ tts: section ?? {} });
+      } else if (isAdvancedSectionKey(configKey)) {
+        setAdvancedDraft(readAdvancedSectionDraft(section));
+        setConfig({});
+      } else {
+        setConfig(asRecord);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -250,7 +263,7 @@ export default function HubConfigSectionPanel({ configKey }: Props) {
 
       {configKey === "llm" && config ? (
         <LlmSettingsPanel
-          llmConfig={(config.llm ?? {}) as Record<string, unknown>}
+          llmConfig={config}
           saving={saving}
           onSavingChange={setSaving}
           onError={setError}
