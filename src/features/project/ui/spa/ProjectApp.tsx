@@ -128,6 +128,16 @@ export function ProjectApp() {
   const [showInactive, setShowInactive] = useState(false);
   const [milestones, setMilestones] = useState<MilestoneRow[]>([]);
   const [tasks, setTasks] = useState<TaskItemRow[]>([]);
+  const [selectionSubjectKind, setSelectionSubjectKind] = useState(subjectKind);
+
+  // subject 切换时在 render 阶段清空选中，避免详情 effect 用旧 ID 打到新 world
+  if (selectionSubjectKind !== subjectKind) {
+    setSelectionSubjectKind(subjectKind);
+    setSelectedFolderId(null);
+    setSelectedProjectId(null);
+    setMilestones([]);
+    setTasks([]);
+  }
 
   const [newFolderName, setNewFolderName] = useState("");
   const [newProjectTitle, setNewProjectTitle] = useState("");
@@ -240,7 +250,6 @@ export function ProjectApp() {
   }, [selectedProjectId, subjectKind]);
 
   useEffect(() => {
-    setSelectedFolderId(null);
     resetDetail();
     void reload();
   }, [reload, resetDetail, subjectKind]);
