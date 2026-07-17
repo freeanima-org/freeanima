@@ -9,7 +9,6 @@ import {
 import { entities, TASK_ITEM_COMPONENT } from "@freeanima/core/db/schema";
 import { and, asc, count, desc, sql } from "drizzle-orm";
 
-import { embedQueryText } from "../../embedding/query.ts";
 import { getDb } from "../../client.ts";
 import {
   buildEntitySearchWhere,
@@ -19,7 +18,6 @@ import {
 } from "./conditions.ts";
 import { buildEntitySnippet, searchEntitiesFtsRaw } from "./entity-fts-raw.ts";
 import { searchEntitiesTrgm } from "./entity-trgm-search.ts";
-import { searchEntitiesVector } from "./entity-vector-search.ts";
 
 function candidateLimit(requested: number, ftsCount: number): number {
   const fallback = getFtsTrgmFallbackWhenHitsLt(getActiveRuntimeConfig().data);
@@ -85,25 +83,18 @@ async function searchHybrid(opts: EntitySearchOpts): Promise<EntitySearchHit[]> 
   const searchOpts = { ...opts, query: q };
 
   const pool = candidateLimit(fetchLimit, 0);
-  const vectorBranch = embedQueryText(q).then((queryEmbedding) =>
-    queryEmbedding
-      ? searchEntitiesVector(queryEmbedding, { ...searchOpts, limit: pool })
-      : Promise.resolve([]),
-  );
-  const [ftsHits, trgmHits, vectorHits] = await Promise.all([
+  const [ftsHits, trgmHits] = await Promise.all([
     searchEntitiesFtsRaw(q, {
       ...searchOpts,
       limit: pool,
     }),
     searchEntitiesTrgm(q, { ...searchOpts, limit: pool }),
-    vectorBranch,
   ]);
 
   const ftsRanked = ftsHits.map((h) => ({ ...h, docKey: entityDocKey(h.id) }));
   const trgmRanked = trgmHits.map((h) => ({ ...h, docKey: h.docKey }));
-  const vectorRanked = vectorHits.map((h) => ({ ...h, docKey: h.docKey }));
 
-  const merged = rrfMerge([ftsRanked, trgmRanked, vectorRanked], { limit: pool });
+  const merged = rrfMerge([ftsRanked, trgmRanked], { limit: pool });
   const hybridHits = merged.slice(offset, offset + limit).map((row) => {
     const {
       docKey: _docKey,

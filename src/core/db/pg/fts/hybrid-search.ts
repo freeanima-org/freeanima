@@ -10,13 +10,11 @@ import { union } from "drizzle-orm/pg-core";
 import { semanticMemory } from "@freeanima/core/db/schema";
 import { omitUndefined, rrfMerge, messageDocKey, semanticMemoryDocKey } from "@freeanima/core/util";
 
-import { embedQueryText } from "../embedding/query.ts";
 import { getDb } from "../client.ts";
 import { buildSemanticConditions } from "../semantic-memory/repos/semantic-filters.ts";
 import { buildFtsTsQuery } from "./query.ts";
 import { searchMessagesTrgm, searchSemanticMemoryTrgm } from "./trgm-search.ts";
 import { searchSemanticMemoryFtsRaw, searchMessagesFtsRaw } from "./hybrid-raw.ts";
-import { searchMessagesVector, searchSemanticMemoryVector } from "./vector-search.ts";
 
 function candidateLimit(requested: number, ftsCount: number): number {
   const fallback = getFtsTrgmFallbackWhenHitsLt(getActiveRuntimeConfig().data);
@@ -50,17 +48,9 @@ export async function hybridSearchSemanticMemory(
     source_conversations: opts?.source_conversations,
   });
 
-  // Single-wave parallel: FTS ∥ trgm ∥ (embed → vector); optimistic pool (no wait on FTS hits)
+  // Keyword-first: FTS ∥ trgm → RRF（检索侧不再走向量）
   const pool = candidateLimit(fetchLimit, 0);
-  const vectorBranch = embedQueryText(q).then((queryEmbedding) =>
-    queryEmbedding
-      ? searchSemanticMemoryVector(queryEmbedding, {
-          ...filterOpts,
-          limit: pool,
-        })
-      : Promise.resolve([]),
-  );
-  const [ftsHits, trgmHits, vectorHits] = await Promise.all([
+  const [ftsHits, trgmHits] = await Promise.all([
     searchSemanticMemoryFtsRaw(q, {
       ...filterOpts,
       limit: pool,
@@ -69,14 +59,12 @@ export async function hybridSearchSemanticMemory(
       ...filterOpts,
       limit: pool,
     }),
-    vectorBranch,
   ]);
 
   const ftsRanked = ftsHits.map((h) => ({ ...h, docKey: semanticMemoryDocKey(h.id) }));
   const trgmRanked = trgmHits.map((h) => ({ ...h, docKey: h.docKey }));
-  const vectorRanked = vectorHits.map((h) => ({ ...h, docKey: h.docKey }));
 
-  const merged = rrfMerge([ftsRanked, trgmRanked, vectorRanked], { limit: pool });
+  const merged = rrfMerge([ftsRanked, trgmRanked], { limit: pool });
   return merged.slice(offset, offset + limit).map(({ docKey, score, rank: _ftsRank, ...row }) => ({
     ...row,
     rank: score,
@@ -93,19 +81,13 @@ export async function hybridSearchMessages(
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));
 
   const pool = candidateLimit(limit, 0);
-  const vectorBranch = embedQueryText(q).then((queryEmbedding) =>
-    queryEmbedding
-      ? searchMessagesVector(queryEmbedding, { ...opts, limit: pool })
-      : Promise.resolve([]),
-  );
-  const [ftsHits, trgmHits, vectorHits] = await Promise.all([
+  const [ftsHits, trgmHits] = await Promise.all([
     searchMessagesFtsRaw(q, { ...opts, limit: pool }),
     searchMessagesTrgm(q, { ...opts, limit: pool }),
-    vectorBranch,
   ]);
 
   const ftsRanked = ftsHits.map((h) => ({ ...h, docKey: messageDocKey(h.id) }));
-  const merged = rrfMerge([ftsRanked, trgmHits, vectorHits], { limit: pool });
+  const merged = rrfMerge([ftsRanked, trgmHits], { limit: pool });
 
   return merged.slice(0, limit).map((row) => ({
     message_id: row.id,
@@ -160,7 +142,7 @@ export async function hybridCountSemanticMemory(
       ),
     );
 
-  // COUNT 仅走 FTS∪trgm；不再把「有 embedding」当作命中（会严重偏大且全表扫）
+  // COUNT 仅走 FTS∪trgm
   const merged = union(ftsBranch, trgmBranch).as("merged");
   const rows = await db.select({ n: sql<number>`count(*)::int` }).from(merged);
   return Number(rows[0]?.n ?? 0);
