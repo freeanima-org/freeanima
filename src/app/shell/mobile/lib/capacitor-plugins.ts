@@ -17,6 +17,7 @@ export type CapacitorLocalNotificationsApi = {
   checkPermissions(): Promise<{ display: string }>;
   requestPermissions(): Promise<{ display: string }>;
   schedule(options: { notifications: unknown[] }): Promise<void>;
+  cancel?(options: { notifications: Array<{ id: number }> }): Promise<void>;
   createChannel?(options: {
     id: string;
     name: string;
@@ -83,6 +84,8 @@ export function createLocalNotificationsApiFromNativeBridge(): CapacitorLocalNot
     requestPermissions: () => invokeNative("LocalNotifications", "requestPermissions"),
     schedule: (options) =>
       invokeNative("LocalNotifications", "schedule", options).then(() => undefined),
+    cancel: (options) =>
+      invokeNative("LocalNotifications", "cancel", options).then(() => undefined),
     createChannel: (options) =>
       invokeNative("LocalNotifications", "createChannel", options).then(() => undefined),
   };

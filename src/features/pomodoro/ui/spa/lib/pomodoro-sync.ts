@@ -14,10 +14,16 @@ import {
   clearPomodoroActiveRemote,
   completePomodoroSession,
   fetchPomodoroActive,
+  fetchPomodoroConfig,
   putPomodoroActiveRemote,
   type PomodoroConfigRow,
   type PomodoroSubjectKind,
 } from "./api.ts";
+import {
+  cancelPomodoroPhaseAlert,
+  pomodoroPhaseAlertTag,
+  syncPomodoroPhaseLocalAlert,
+} from "./pomodoro-phase-alert.ts";
 import {
   enqueuePomodoroSessionAbort,
   enqueuePomodoroSessionComplete,
@@ -50,10 +56,22 @@ export function markPhaseHandled(state: PomodoroActiveState): boolean {
   return true;
 }
 
+async function resolveAlertConfig(
+  subjectKind: PomodoroSubjectKind,
+  explicit?: PomodoroConfigRow | null,
+): Promise<PomodoroConfigRow | null> {
+  if (explicit !== undefined) return explicit;
+  try {
+    return await fetchPomodoroConfig(subjectKind);
+  } catch {
+    return null;
+  }
+}
+
 export async function applyPomodoroActive(
   next: PomodoroActiveState | null,
   subjectKind: PomodoroSubjectKind,
-  opts?: { skipRemote?: boolean },
+  opts?: { skipRemote?: boolean; alertConfig?: PomodoroConfigRow | null },
 ): Promise<void> {
   const prev = readPomodoroActiveState(undefined, subjectKind);
   const updatedAtMs = Date.now();
@@ -65,6 +83,10 @@ export async function applyPomodoroActive(
           updated_at_ms: updatedAtMs,
         };
   applyLocalPomodoroActive(next, subjectKind, meta);
+
+  const alertConfig = await resolveAlertConfig(subjectKind, opts?.alertConfig);
+  await syncPomodoroPhaseLocalAlert(prev, next, alertConfig);
+
   if (opts?.skipRemote) return;
 
   if (next == null) {
@@ -144,7 +166,10 @@ export async function pullPomodoroActive(subjectKind: PomodoroSubjectKind): Prom
     const local = readPomodoroActiveState(undefined, subjectKind);
     const localMeta = getPomodoroSyncMeta(subjectKind);
     const merged = mergeRemoteActive(remote, local, localMeta);
+    const prev = local;
     applyLocalPomodoroActive(merged.active, subjectKind, merged.meta);
+    const alertConfig = await resolveAlertConfig(subjectKind);
+    await syncPomodoroPhaseLocalAlert(prev, merged.active, alertConfig);
   } catch {
     /* 保留本地 */
   }
@@ -155,14 +180,19 @@ export function applyPomodoroActiveChangedEvent(
   subjectKind: PomodoroSubjectKind,
   remote: Parameters<typeof mergeRemoteActive>[0],
 ): void {
+  const prev = readPomodoroActiveState(undefined, subjectKind);
   if (remote == null) {
     applyLocalPomodoroActive(null, subjectKind, null);
+    void syncPomodoroPhaseLocalAlert(prev, null, null);
     return;
   }
-  const local = readPomodoroActiveState(undefined, subjectKind);
+  const local = prev;
   const localMeta = getPomodoroSyncMeta(subjectKind);
   const merged = mergeRemoteActive(remote, local, localMeta);
   applyLocalPomodoroActive(merged.active, subjectKind, merged.meta);
+  void resolveAlertConfig(subjectKind).then((config) =>
+    syncPomodoroPhaseLocalAlert(prev, merged.active, config),
+  );
 }
 
 async function persistPhaseEnd(
@@ -184,6 +214,7 @@ async function persistPhaseEnd(
     else await enqueuePomodoroSessionComplete(subjectKind, payload);
   }
 }
+
 export async function runPhaseComplete(options: {
   state: PomodoroActiveState;
   config: PomodoroConfigRow;
@@ -193,11 +224,15 @@ export async function runPhaseComplete(options: {
   const { state, config, subjectKind, deliverAlerts = true } = options;
   if (!markPhaseHandled(state)) return "duplicate";
 
+  const completedTag = pomodoroPhaseAlertTag(state);
+  /* 撤掉本阶段预登记，避免与即时 deliver 双弹；页存活时由 deliver 兜底 */
+  await cancelPomodoroPhaseAlert(state);
+
   const transition = nextPhaseAfterComplete(config, state.phase, state.completedWorkInCycle);
   const autoStart = shouldAutoStartNext(config, state.phase);
 
   if (!autoStart) {
-    await applyPomodoroActive(null, subjectKind);
+    await applyPomodoroActive(null, subjectKind, { alertConfig: config });
   } else {
     await applyPomodoroActive(
       startPhaseState(
@@ -208,6 +243,7 @@ export async function runPhaseComplete(options: {
         transition.completedWorkInCycle,
       ),
       subjectKind,
+      { alertConfig: config },
     );
   }
 
@@ -218,7 +254,7 @@ export async function runPhaseComplete(options: {
       {
         title: `${phaseLabel(state.phase)}结束`,
         body: state.phase === "work" ? "休息一下" : "准备下一轮专注",
-        tag: `pomodoro:${state.sessionLocalId}:${state.phase}`,
+        tag: completedTag,
         sound: config.sound_enabled,
         silent: !config.notify_on_phase_end,
       },
@@ -234,7 +270,8 @@ export async function runPhaseAbort(options: {
   subjectKind: PomodoroSubjectKind;
 }): Promise<void> {
   const { state, subjectKind } = options;
-  await applyPomodoroActive(null, subjectKind);
+  await cancelPomodoroPhaseAlert(state);
+  await applyPomodoroActive(null, subjectKind, { alertConfig: null });
   await persistPhaseEnd(state, subjectKind, true);
 }
 

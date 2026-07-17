@@ -48,6 +48,7 @@ import {
   runPhaseAbort,
   runPhaseComplete,
 } from "./lib/pomodoro-sync.ts";
+import { syncPomodoroPhaseLocalAlert } from "./lib/pomodoro-phase-alert.ts";
 import {
   createInitialActiveState,
   pauseActiveState,
@@ -256,6 +257,7 @@ export function PomodoroApp() {
           sessionLocalId: randomUuid(),
         }),
         subjectKind,
+        { alertConfig: config },
       );
     }
   }, [loading, config, active, subjectKind, navTick]);
@@ -301,6 +303,7 @@ export function PomodoroApp() {
         sessionLocalId: randomUuid(),
       }),
       subjectKind,
+      { alertConfig: config },
     );
   };
 
@@ -309,6 +312,7 @@ export function PomodoroApp() {
     void applyPomodoroActive(
       active.runState === "paused" ? resumeActiveState(active) : pauseActiveState(active),
       subjectKind,
+      config ? { alertConfig: config } : undefined,
     );
   };
 
@@ -336,12 +340,15 @@ export function PomodoroApp() {
     if (!config) return;
     if (!hubOnline) {
       await enqueuePomodoroConfigUpdate(subjectKind, patch);
-      setConfig({ ...config, ...patch });
+      const next = { ...config, ...patch };
+      setConfig(next);
+      if (active) await syncPomodoroPhaseLocalAlert(active, active, next);
       return;
     }
     try {
       const next = await updatePomodoroConfig(subjectKind, patch);
       setConfig(next);
+      if (active) await syncPomodoroPhaseLocalAlert(active, active, next);
     } catch (e) {
       setError(String(e instanceof Error ? e.message : e));
     }
