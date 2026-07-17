@@ -10,6 +10,8 @@ export type WebUiConfigJson = {
   web_build?: ComponentBuildMeta;
   min_shell_version?: string;
   layout_mode?: "compact" | "expanded";
+  /** 仅 Vite `dev:web` 注入；生产 Hub 托管永不下发 */
+  remote_auth_token?: string;
 };
 
 export function parseWebUiConfigJson(raw: unknown): WebUiConfigJson | null {
@@ -21,6 +23,8 @@ export function parseWebUiConfigJson(raw: unknown): WebUiConfigJson | null {
   const layoutRaw = o.layout_mode;
   const layout_mode = layoutRaw === "compact" || layoutRaw === "expanded" ? layoutRaw : undefined;
   const webBuild = parseComponentBuildMeta(o.web_build);
+  const remoteAuth =
+    typeof o.remote_auth_token === "string" ? o.remote_auth_token.trim() : undefined;
   return {
     app_id: appId,
     hub_url: hubUrl,
@@ -29,5 +33,6 @@ export function parseWebUiConfigJson(raw: unknown): WebUiConfigJson | null {
     ...(webBuild ? { web_build: webBuild } : {}),
     ...(typeof o.min_shell_version === "string" ? { min_shell_version: o.min_shell_version } : {}),
     ...(layout_mode ? { layout_mode } : {}),
+    ...(remoteAuth ? { remote_auth_token: remoteAuth } : {}),
   };
 }

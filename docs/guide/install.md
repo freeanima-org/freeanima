@@ -192,12 +192,16 @@ cp config.example.yaml ~/.anima/config.yaml
 # configure database + LLM (see database.md, security.md)
 ```
 
-**Dev** (Hub + Vite HMR; never auto-builds Web):
+**Dev** (Hub + Vite HMR; never auto-builds Web). Prefer `just dev` for multi-worktree:
 
 ```bash
-bun run dev:hub     # terminal 1: Hub REST + SAP (optional -- --port 2701)
-bun run dev:web     # terminal 2: http://127.0.0.1:4173/web/chat · Console /web/console/dashboard
+just dev            # Hub random ≥10000 + Web from :5000; FREEANIMA_URL wires Vite proxy only
+# or two terminals:
+bun run dev:hub     # random ≥10000 (not production 2658); writes ~/.anima/dev-web.token
+FREEANIMA_URL=http://127.0.0.1:<hub-port> bun run dev:web   # default :5000; browser Hub = page origin
 ```
+
+Browser Web defaults Hub URL to the **page origin** (same in production Hub-hosted `/web` and Vite). Dev injects Service API Token from `dev-web.token` automatically. If `http.tls.enabled` / `DEV_HTTPS=1`, Vite serves HTTPS using `~/.anima/tls` (Hub stays plain HTTP).
 
 **Source deploy** (Hub hosts `/web/*` when `config.yaml` `web.enabled`): build Web first, then start — startup does not run `build:web`. Source-tree `anima` has no `service` command.
 

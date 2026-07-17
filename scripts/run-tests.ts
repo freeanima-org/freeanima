@@ -4,7 +4,7 @@ import { collectCoverageShards } from "./coverage-collect.ts";
 const label = "coverage:cobertura";
 
 if (!process.argv.includes("--coverage")) {
-  console.error("[run-tests] only supports --coverage (invoked by coverage:cobertura)");
+  console.error("[run-tests] only supports --coverage (invoked by just coverage-cobertura)");
   process.exit(1);
 }
 

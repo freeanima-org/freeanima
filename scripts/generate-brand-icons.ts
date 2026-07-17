@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
  * 从 brand/app-icon.png SSOT 生成各端图标与 splash。
- * 修改 logo 后运行：bun run brand:icons
+ * 修改 logo 后运行：just brand-icons
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";

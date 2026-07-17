@@ -2,10 +2,10 @@
 /**
  * Sample anima service process RSS (VmRSS) and Hub RPC status.get snapshot.
  *
- *   bun run memory:sample -- --label idle
- *   bun run memory:sample -- --pid 12345 --label after-chat
- *   bun run memory:sample -- --hub-url http://127.0.0.1:2658
- *   bun run memory:sample -- --hub-url http://127.0.0.1:2658 --stage full
+ *   just memory-sample -- --label idle
+ *   just memory-sample -- --pid 12345 --label after-chat
+ *   just memory-sample -- --hub-url http://127.0.0.1:2658
+ *   just memory-sample -- --hub-url http://127.0.0.1:2658 --stage full
  */
 
 import { readFileSync } from "node:fs";

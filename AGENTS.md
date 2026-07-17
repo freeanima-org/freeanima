@@ -46,29 +46,34 @@ How agents should _shape_ changes. Hard checks and conventions → [`.agent/rule
 
 ## Common commands
 
-```bash
-bun install && bun run check # before PR: typecheck + lint + format + test:changed
-bun run lint # oxlint + oxlint-tsgolint（.oxlintrc.json options.typeAware）
-bun run lint:fix
-bun run test:changed # local / pre-commit (unit changed only)
-bun run test:unit # all unit tests
-bun run test:integration # integration (tests/integration/)
-bun run test # unit + integration（串行）
-bun run dev:hub # 源码起 Hub（前台，可 --port；不经 anima service）；启动不自动 build Web
-bun run dev:web # 浏览器全壳层开发（Vite HMR :4173；需 Hub 已运行）
-# anima service … # 仅 standalone 安装版 CLI（源码 anima 无此子命令）
-bun run build:web # 源码部署 / 托管 /web 前构建（可用 FREEANIMA_WEB_SKIP_PWA=1 跳过 SW；standalone 打包若 dist 未过期会跳过）
-# anima vault list # agent vault item metadata; use Shell /vault for User library
+日常优先 `just`（见根目录 [`Justfile`](Justfile)；`just --list`）。`package.json` scripts 只保留 CI / husky / 构建链所需入口。
 
-# PG schema changes (must generate snapshot.json; see .agent/rules/coding.md)
-DATABASE_URL="…" bunx drizzle-kit generate --config src/core/drizzle.config.ts
-DATABASE_URL="…" bunx drizzle-kit migrate --config src/core/drizzle.config.ts
+```bash
+bun install
+just                  # 列出配方
+just dev              # Hub（≥10000）+ Web（:5000）；多 worktree 友好
+just hub / just web   # 分进程
+just check            # PR 前质量门禁
+just test / just test-changed
+just fmt / just lint-fix
+just db-generate / just db-migrate   # 需 DATABASE_URL
+just build-web / just install-cli
+just memory-sample -- --hub-url http://127.0.0.1:<hub> --stage full
+
+# CI / hook 仍用 bun run（勿删这些 package.json 名）
+bun run check
+bun run typecheck && bun run lint && bun run test:changed
+bun run dev:hub && bun run dev:web
+bun run build:web
+# anima service … # 仅 standalone 安装版 CLI
 ```
 
-- Hub API：`http://127.0.0.1:2658/hub/rpc/v1`（开发用 `dev:hub`；生产用 standalone `anima service`；`web.enabled` 且已有 dist 时托管 `/web/*`）
+- Hub API（**生产**）：`http://127.0.0.1:2658/hub/rpc/v1`（standalone `anima service`；`web.enabled` 且已有 dist 时托管 `/web/*`）
+- Hub API（**源码/dev:hub**）：默认随机 **≥10000**（避开 2658/2659）；多 worktree 并行友好
 - Web 形态：standalone / 源码部署须先有 `build:web`（打包时强制；源码部署手动）；dev 用 `dev:hub` + `dev:web`（HMR，不依赖落盘）
 - 桌面/移动/浏览器开发客户端：聊天室 + 管理台 UI 在 `src/app/shell/desktop` / `mobile` / `web`（web 仅本地调试）
-- Dev UI：`bun run dev:web` → `http://127.0.0.1:4173/web/chat`（Console：`/web/console/dashboard`）
+- Dev UI：`bun run dev:web` → `http://127.0.0.1:5000/web/chat`（Console：`/web/console/dashboard`）；浏览器默认 Hub = **页面 origin**（Vite `/hub` proxy）；`dev:hub` 自动写入 `~/.anima/dev-web.token` 供 Vite 注入 token
+- 开发 TLS：若 `http.tls.enabled` / `DEV_HTTPS=1`，由 **Vite HTTPS** 终止（复用 `~/.anima/tls`），Hub 仅明文
 - Release: [`.agent/rules/release.md`](.agent/rules/release.md)
 - PG ops (install, backup): [`docs/guide/database.md`](docs/guide/database.md)
 - Remote access (Service API Token / LAN): [`docs/guide/remote-access.md`](docs/guide/remote-access.md)

@@ -64,21 +64,41 @@ export async function fetchWebUiConfig(): Promise<WebUiConfigJson | null> {
 
 export type WebUiBootstrapConfig = {
   hubUrl: string;
+  /** 空 hub_url 或与页面 origin 相同时 true：用页面 origin，忽略旧 localStorage hub */
+  sameOrigin: boolean;
+  remoteAuthToken?: string;
 };
 
+/** Web UI 默认 Hub = 当前页面 origin（生产 Hub 托管与 Vite 开发统一） */
 export function applyWebUiConfig(cfg: WebUiConfigJson | null): WebUiBootstrapConfig {
-  const fallback = (
-    typeof __WEB_DEFAULT_HUB_URL__ !== "undefined"
-      ? __WEB_DEFAULT_HUB_URL__
-      : "http://127.0.0.1:2658"
+  const pageOrigin = typeof window !== "undefined" ? window.location.origin.replace(/\/$/, "") : "";
+  const compileFallback = (
+    typeof __WEB_DEFAULT_HUB_URL__ !== "undefined" ? __WEB_DEFAULT_HUB_URL__ : ""
   ).replace(/\/$/, "");
-  if (!cfg) return { hubUrl: fallback };
-  const meta: NonNullable<Window["__freeanimaWebUiConfig"]> = {};
-  if (cfg.layout_mode) meta.layout_mode = cfg.layout_mode;
-  if (cfg.ui_version) meta.ui_version = cfg.ui_version;
-  if (cfg.web_build) meta.web_build = cfg.web_build;
-  if (cfg.min_shell_version) meta.min_shell_version = cfg.min_shell_version;
-  window.__freeanimaWebUiConfig = meta;
-  const runtimeHub = cfg.hub_url?.trim().replace(/\/$/, "");
-  return { hubUrl: runtimeHub || fallback };
+
+  if (cfg) {
+    const meta: NonNullable<Window["__freeanimaWebUiConfig"]> = {};
+    if (cfg.layout_mode) meta.layout_mode = cfg.layout_mode;
+    if (cfg.ui_version) meta.ui_version = cfg.ui_version;
+    if (cfg.web_build) meta.web_build = cfg.web_build;
+    if (cfg.min_shell_version) meta.min_shell_version = cfg.min_shell_version;
+    window.__freeanimaWebUiConfig = meta;
+  }
+
+  const runtimeHub = cfg?.hub_url?.trim().replace(/\/$/, "") ?? "";
+  const remoteAuthToken = cfg?.remote_auth_token?.trim() || undefined;
+
+  if (!runtimeHub || (pageOrigin && runtimeHub === pageOrigin)) {
+    return {
+      hubUrl: pageOrigin || runtimeHub || compileFallback,
+      sameOrigin: true,
+      ...(remoteAuthToken ? { remoteAuthToken } : {}),
+    };
+  }
+
+  return {
+    hubUrl: runtimeHub,
+    sameOrigin: false,
+    ...(remoteAuthToken ? { remoteAuthToken } : {}),
+  };
 }

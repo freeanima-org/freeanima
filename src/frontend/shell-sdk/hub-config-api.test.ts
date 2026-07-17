@@ -9,6 +9,12 @@ mock.module("@freeanima/shared/hub-client", () => ({
 
 mock.module("./hub-api-fetch.ts", () => ({
   resolveHubApiFetch: () => globalThis.fetch,
+  resolveBinarySafeHubFetch: () => globalThis.fetch,
+  resolveHubApiUrl: (path: string) => {
+    const normalized = path.startsWith("/") ? path : `/${path}`;
+    return `http://127.0.0.1:2658${normalized}`;
+  },
+  readStoredHubUrl: () => null,
 }));
 
 afterAll(() => {

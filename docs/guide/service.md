@@ -24,15 +24,15 @@ Verify from the shell (business API requires a Service API Token — see [`remot
 ```bash
 curl -s -H "Authorization: Bearer <fa_at_...>" http://127.0.0.1:2658/hub/rpc/v1/status/get | jq '.memory_kb, .memory_detail'
 grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f 'anima service' | head -1)/status
-bun run memory:sample -- --hub-url http://127.0.0.1:2658 --stage full
+just memory-sample -- --hub-url http://127.0.0.1:2658 --stage full
 ```
 
 ## Development vs production
 
-| Mode                    | How to run Hub                                                                     |
-| ----------------------- | ---------------------------------------------------------------------------------- |
-| **Monorepo / worktree** | `bun run dev:hub` (optional `--port`; source `anima` has **no** `service` command) |
-| **Standalone install**  | `anima service start` / `stop` / `status` (systemd user unit)                      |
+| Mode                    | How to run Hub                                                                                                                   |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Monorepo / worktree** | `bun run dev:hub` (default random port ≥10000; optional `--port` / `--strict-port`; source `anima` has **no** `service` command) |
+| **Standalone install**  | `anima service start` / `stop` / `status` (systemd user unit; **2658** / TLS **2659**)                                           |
 
 Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.md)。
 
@@ -48,26 +48,27 @@ anima service restart
 anima web start --foreground # standalone Web static server (default :2660; production: web.enabled + service stack)
 
 # --- monorepo / worktree ---
-bun run dev:hub              # Hub foreground (never auto-builds Web); e.g. -- --port 2701
-bun run dev:web              # Vite HMR on :4173 (Hub must already be running)
+just dev                     # Hub (≥10000) + Vite Web (≥5000); proxy via FREEANIMA_URL
+bun run dev:hub              # Hub foreground; default random ≥10000; skip Hub TLS (Vite may HTTPS)
+bun run dev:web              # Vite HMR from :5000 (set FREEANIMA_URL to Hub); browser hub = page origin
 ```
 
 `anima.service` is a **single-unit stack**: Hub (`:2658`, REST + SAP + bundled `/web` when `web.enabled` and dist exists) managed by one foreground supervisor.
 
 **Web build is never triggered by `service start` / `anima web start`.** Paths:
 
-| Mode               | When to `build:web`                          | UI                                                  |
-| ------------------ | -------------------------------------------- | --------------------------------------------------- |
-| Standalone release | Forced during `bun run build:cli:executable` | Embedded, served at `/web/*`                        |
-| Source deploy      | Run `bun run build:web` before start         | Hub `/web/*` when `web.enabled`                     |
-| Dev                | Not required                                 | `bun run dev:hub` + `bun run dev:web` → `:4173` HMR |
+| Mode               | When to `build:web`                          | UI                                                      |
+| ------------------ | -------------------------------------------- | ------------------------------------------------------- |
+| Standalone release | Forced during `bun run build:cli:executable` | Embedded, served at `/web/*`                            |
+| Source deploy      | Run `bun run build:web` before start         | Hub `/web/*` when `web.enabled`                         |
+| Dev                | Not required                                 | `just dev` / `dev:hub` + `dev:web` → Web **:5000+** HMR |
 
-When `config.yaml` has `web.enabled: true` (absent defaults to on) and `src/app/shell/web/dist` (or embedded dist) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Hub (no separate API proxy). Clients store Hub URL and **Service API Token** (`fa_at_...`) in **Hub settings**. For standalone static hosting without the Hub process, use `anima web start --foreground` (default `:2660`) after dist exists. Optional Hub native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)).
+When `config.yaml` has `web.enabled: true` (absent defaults to on) and `src/app/shell/web/dist` (or embedded dist) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Hub (no separate API proxy). Clients store Hub URL and **Service API Token** (`fa_at_...`) in **Hub settings**. For standalone static hosting without the Hub process, use `anima web start --foreground` (default `:2660`) after dist exists. Optional Hub native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `dev:hub` skips Hub TLS and lets Vite terminate HTTPS when enabled.
 
 **Startup order:** Hub must pass `GET /hub/rpc/v1/health/probe` (`status: ok`) before `serve()` `onReady` sidecars/hooks run. SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).
 
 **UI access:**
 
 - **Desktop / mobile bundled shell:** Chat and Console at `/chat`, `/console`/\*`inside the Electron/Capacitor app (not served from Hub`:2658`unless`web.enabled`).
-- **`config.yaml` `web.enabled: true`:** browser UI at `http://<host>:2658/web/*` from Hub when dist is present (see table above). `web` is bootstrap (not PG).
-- **Local Web dev (`bun run dev:web`):** Vite on `:4173` with base `/web/` — Chat `http://127.0.0.1:4173/web/chat`, Console `http://127.0.0.1:4173/web/console/dashboard`; Hub serves Hub RPC REST + WS at `/hub/rpc/v1`.
+- **`config.yaml` `web.enabled: true`:** browser UI at `http://<host>:2658/web/*` from Hub when dist is present (see table above). `web` is bootstrap (not PG). Default Hub URL in `/web/config.json` is the **page origin**.
+- **Local Web dev (`bun run dev:web`):** Vite from `:5000` with base `/web/` — Chat `http://127.0.0.1:5000/web/chat`, Console `…/web/console/dashboard`; `/hub` and `/mcp` proxied to `FREEANIMA_URL`. Browser Hub defaults to page origin; `dev:hub` auto-fills token via `~/.anima/dev-web.token`.

@@ -3,20 +3,27 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, mergeConfig, type Plugin } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
-import { createComponentBuildMeta, resolveHubRpcWsUrl } from "../vite-config-imports.ts";
+import { createComponentBuildMeta } from "../vite-config-imports.ts";
 import {
   createShellViteInlineConfig,
   shellBridgeHtmlPlugin,
   shellEntryFileNames,
 } from "../vite-config-imports.ts";
+import {
+  DEFAULT_WEB_DEV_PORT,
+  readDevWebTokenPlaintext,
+  resolveDevWebHttps,
+  shouldEnableDevWebHttps,
+} from "./dev-https.ts";
 
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(PKG_DIR, "..", "..", "..", "..");
 const SPA_DIR = join(PKG_DIR, "spa");
 const DIST_DIR = join(PKG_DIR, "dist");
 
-const HUB_URL = (process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658").replace(/\/$/, "");
-const PORT = Number(process.env.WEB_DEV_PORT ?? process.env.SHELL_DEV_PORT ?? 4173);
+/** 仅 Vite proxy 目标；浏览器 hub_url 用页面 origin */
+const PROXY_HUB_URL = (process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658").replace(/\/$/, "");
+const PORT = Number(process.env.WEB_DEV_PORT ?? process.env.SHELL_DEV_PORT ?? DEFAULT_WEB_DEV_PORT);
 
 function readUiVersion(): string {
   try {
@@ -50,16 +57,19 @@ function webDevPlugin(): Plugin {
       server.middlewares.use((req, res, next) => {
         const path = req.url?.split("?")[0];
         if (path === "/web/config.json") {
+          const token = readDevWebTokenPlaintext();
           res.setHeader("Content-Type", "application/json; charset=utf-8");
           res.setHeader("Cache-Control", "no-store");
           res.end(
             JSON.stringify({
               app_id: "chat",
-              hub_url: HUB_URL,
-              hub_ws_url: resolveHubRpcWsUrl(HUB_URL),
+              // 空 = 浏览器用 location.origin（经 Vite /hub proxy）
+              hub_url: "",
+              hub_ws_url: "",
               ui_version: UI_VERSION,
               web_build: DEV_WEB_BUILD,
               min_shell_version: "0.8.0",
+              ...(token ? { remote_auth_token: token } : {}),
             }),
           );
           return;
@@ -74,10 +84,19 @@ function webDevPlugin(): Plugin {
       server.httpServer?.once("listening", () => {
         const addr = server.httpServer?.address();
         const port =
-          addr && typeof addr === "object" ? addr.port : Number(process.env.WEB_DEV_PORT ?? 4173);
+          addr && typeof addr === "object"
+            ? addr.port
+            : Number(process.env.WEB_DEV_PORT ?? DEFAULT_WEB_DEV_PORT);
+        const httpsOn = Boolean(server.config.server.https);
+        const scheme = httpsOn ? "https" : "http";
         console.log(
-          `[dev:web] Hub ${HUB_URL} · http://127.0.0.1:${port}/web/chat · Console /web/console/dashboard`,
+          `[dev:web] proxy→${PROXY_HUB_URL} · ${scheme}://127.0.0.1:${port}/web/chat · Console /web/console/dashboard`,
         );
+        if (!process.env.FREEANIMA_URL) {
+          console.warn(
+            "[dev:web] FREEANIMA_URL unset; proxy defaults to http://127.0.0.1:2658 — set FREEANIMA_URL to your dev:hub port",
+          );
+        }
       });
     },
   };
@@ -158,7 +177,8 @@ export default defineConfig(({ command, mode }) => {
       "shell-bridge": join(PKG_DIR, "spa", "shell-bridge.ts"),
     },
     define: {
-      __WEB_DEFAULT_HUB_URL__: JSON.stringify(HUB_URL),
+      // Web 默认同源；编译期常量仅作极端回退（Electron 等非 Web 路径）
+      __WEB_DEFAULT_HUB_URL__: JSON.stringify(""),
       __WEB_UI_VERSION__: JSON.stringify(UI_VERSION),
     },
   });
@@ -186,6 +206,13 @@ export default defineConfig(({ command, mode }) => {
     return inline;
   }
 
+  const https = resolveDevWebHttps();
+  if (shouldEnableDevWebHttps() && !https) {
+    console.warn(
+      "[dev:web] http.tls / DEV_HTTPS 已启用但缺少 ~/.anima/tls/{cert,key}.pem — 以 HTTP 启动",
+    );
+  }
+
   return mergeConfig(inline, {
     plugins: [webDevPlugin()],
     server: {
@@ -193,9 +220,10 @@ export default defineConfig(({ command, mode }) => {
       port: PORT,
       strictPort: false,
       allowedHosts: true,
+      ...(https ? { https } : {}),
       proxy: {
-        "/hub": { target: HUB_URL, changeOrigin: true, ws: true },
-        "/mcp": { target: HUB_URL, changeOrigin: true, ws: true },
+        "/hub": { target: PROXY_HUB_URL, changeOrigin: true, ws: true },
+        "/mcp": { target: PROXY_HUB_URL, changeOrigin: true, ws: true },
       },
     },
   });

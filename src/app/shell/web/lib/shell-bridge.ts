@@ -13,7 +13,7 @@ async function bootstrapShellBridge(): Promise<void> {
 
   try {
     const cfg = await fetchWebUiConfig();
-    const { hubUrl: defaultHubUrl } = applyWebUiConfig(cfg);
+    const { hubUrl: defaultHubUrl, sameOrigin, remoteAuthToken } = applyWebUiConfig(cfg);
 
     if (window.satelliteShell?.isElectron) {
       const { bootstrapElectronBridge } = await import("./bridge/bootstrap-web.ts");
@@ -25,11 +25,17 @@ async function bootstrapShellBridge(): Promise<void> {
       } catch (err) {
         console.warn("[shell-bridge] Capacitor bootstrap 失败，回退 Web bridge", err);
         const { bootstrapWebBridge } = await import("./bridge/bootstrap-web.ts");
-        await bootstrapWebBridge(defaultHubUrl);
+        await bootstrapWebBridge(defaultHubUrl, {
+          sameOrigin,
+          ...(remoteAuthToken ? { remoteAuthToken } : {}),
+        });
       }
     } else {
       const { bootstrapWebBridge } = await import("./bridge/bootstrap-web.ts");
-      await bootstrapWebBridge(defaultHubUrl);
+      await bootstrapWebBridge(defaultHubUrl, {
+        sameOrigin,
+        ...(remoteAuthToken ? { remoteAuthToken } : {}),
+      });
     }
 
     registerVaultRpcHandlers();
