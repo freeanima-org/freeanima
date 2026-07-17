@@ -12,6 +12,7 @@ import {
 } from "@freeanima/core/db/pg/conversation";
 import {
   countReferencesBySemanticMemory,
+  formatMemoryReferenceMarker,
   syncAllReferenceCounts,
 } from "@freeanima/core/db/pg/memory-reference";
 import {
@@ -52,27 +53,29 @@ describePg("memory_references PG", () => {
     const conversationId = "memref-session-1";
     await seedSessionMeta(conversationId);
 
+    const marker = formatMemoryReferenceMarker(memoryId);
     await appendMessage(conversationId, {
       role: "assistant",
-      content: `See [[${memoryId}]] for details`,
+      content: `See ${marker} for details`,
       pos: 1,
       timestamp: new Date().toISOString(),
     });
     await appendMessage(conversationId, {
       role: "assistant",
-      content: `Again [[${memoryId}]]`,
+      content: `Again ${marker}`,
       pos: 2,
       timestamp: new Date().toISOString(),
     });
 
     let row = await getSemanticMemory(memoryId);
-    expect(row?.reference_count).toBe(2);
+    // 每条消息计一次 × 近 30 天权重 2；同 conversation 不去重
+    expect(row?.reference_count).toBe(4);
     expect(await countReferencesBySemanticMemory(memoryId)).toBe(2);
 
     const sync = await syncAllReferenceCounts();
     expect(sync.updated).toBe(1);
     row = await getSemanticMemory(memoryId);
-    expect(row?.reference_count).toBe(2);
+    expect(row?.reference_count).toBe(4);
   });
 
   it("listResident returns pinned + reference-count top N", async () => {
@@ -84,7 +87,7 @@ describePg("memory_references PG", () => {
     await seedSessionMeta(conversationId);
     await appendMessage(conversationId, {
       role: "assistant",
-      content: `[[${hotId}]]`,
+      content: formatMemoryReferenceMarker(hotId),
       pos: 1,
     });
 
@@ -130,7 +133,7 @@ describePg("memory_references PG", () => {
     await seedSessionMeta(conversationId);
     await appendMessage(conversationId, {
       role: "user",
-      content: `[[${memoryId}]]`,
+      content: formatMemoryReferenceMarker(memoryId),
       pos: 1,
     });
 

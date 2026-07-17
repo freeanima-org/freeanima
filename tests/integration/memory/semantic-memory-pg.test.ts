@@ -35,7 +35,8 @@ describePg("semantic_memory PG", () => {
       type: "preference",
       pinned: true,
     });
-    expect(id).toMatch(/^f-\d{6}-[0-9a-f]{4}$/);
+    expect(typeof id).toBe("number");
+    expect(id).toBeGreaterThan(0);
 
     const loaded = await getSemanticMemory(id);
     expect(loaded?.content).toContain("Freeanima");

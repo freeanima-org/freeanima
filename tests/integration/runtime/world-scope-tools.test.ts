@@ -128,10 +128,14 @@ describePg("world scope tools", () => {
       },
       { tools: toolSets },
     );
-    const agentParsed = JSON.parse(agentGet) as { ok: boolean; item: { content: string } };
+    const agentParsed = JSON.parse(agentGet) as {
+      ok: boolean;
+      item: { blocks: Array<{ content: string }> };
+    };
     expect(agentParsed.ok).toBe(true);
-    expect(agentParsed.item.content).toContain("agent diary note");
-    expect(agentParsed.item.content).not.toContain("user diary note");
+    const agentText = agentParsed.item.blocks.map((b) => b.content).join("\n");
+    expect(agentText).toContain("agent diary note");
+    expect(agentText).not.toContain("user diary note");
 
     let userGet = "";
     await runWithToolContext(
@@ -144,9 +148,12 @@ describePg("world scope tools", () => {
       },
       { tools: toolSets, callerAuth: userCallerAuth() },
     );
-    const userParsed = JSON.parse(userGet) as { ok: boolean; item: { content: string } };
+    const userParsed = JSON.parse(userGet) as {
+      ok: boolean;
+      item: { blocks: Array<{ content: string }> };
+    };
     expect(userParsed.ok).toBe(true);
-    expect(userParsed.item.content).toContain("user diary note");
+    expect(userParsed.item.blocks.map((b) => b.content).join("\n")).toContain("user diary note");
   });
 
   it("dream brick under diary scopes by world_id", async () => {

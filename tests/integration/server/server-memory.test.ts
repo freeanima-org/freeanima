@@ -33,8 +33,7 @@ describePg("server memory API", () => {
   });
 
   it("listMemoryFiles returns objects with name and content", async () => {
-    await createSemanticMemory({
-      id: "f-000001-abcd",
+    const id = await createSemanticMemory({
       content: "test semantic memory",
     });
     const { files } = await getAppRuntime().listMemoryFiles();
@@ -43,7 +42,7 @@ describePg("server memory API", () => {
     expect(memory).toBeDefined();
     expect(memory!.content).toContain("Memory notes");
     expect(typeof memory!.size).toBe("number");
-    expect(files.some((f: { name: string }) => f.name.startsWith("f-"))).toBe(true);
+    expect(files.some((f: { name: string }) => f.name === `${id}.md`)).toBe(true);
   });
 
   it("memorySearch returns structured semantic memory and PG dialogue hits", async () => {
