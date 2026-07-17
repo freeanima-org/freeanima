@@ -2,8 +2,11 @@ import { describe, expect, it } from "bun:test";
 import {
   SAP_METHODS,
   diaryAppendInputSchema,
+  diaryBlockCreateInputSchema,
+  diaryBlockReorderInputSchema,
   diaryCreateInputSchema,
   diaryListInputSchema,
+  diaryPatchInputSchema,
 } from "@freeanima/shared/sap-contract";
 
 describe("diary SAP procedures", () => {
@@ -15,6 +18,10 @@ describe("diary SAP procedures", () => {
     expect(SAP_METHODS).toContain("diary.delete");
     expect(SAP_METHODS).toContain("diary.get");
     expect(SAP_METHODS).toContain("diary.search");
+    expect(SAP_METHODS).toContain("diary.blockCreate");
+    expect(SAP_METHODS).toContain("diary.blockPatch");
+    expect(SAP_METHODS).toContain("diary.blockDelete");
+    expect(SAP_METHODS).toContain("diary.blockReorder");
   });
 
   it("validates diary procedure inputs", () => {
@@ -23,11 +30,26 @@ describe("diary SAP procedures", () => {
       subject_kind: "agent",
       title: "今日思考",
       entry_at: "2026-06-29T20:00:00+08:00",
+      content: "首段",
     });
     diaryAppendInputSchema.parse({
       subject_kind: "agent",
       id: 1,
-      content: "追加段落",
+      content: "追加块",
+    });
+    diaryPatchInputSchema.parse({
+      subject_kind: "user",
+      id: 1,
+      tags: ["日常"],
+    });
+    diaryBlockCreateInputSchema.parse({
+      subject_kind: "user",
+      parent_id: 1,
+      content: "新块",
+    });
+    diaryBlockReorderInputSchema.parse({
+      subject_kind: "user",
+      items: [{ id: 2, sort_order: 0 }],
     });
   });
 });

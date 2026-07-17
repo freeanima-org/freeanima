@@ -43,11 +43,8 @@ async function handleAppend(args: Record<string, unknown>): Promise<string> {
 
 async function handleUpdate(args: Record<string, unknown>): Promise<string> {
   const hasPatch =
-    args.content !== undefined ||
-    args.tags !== undefined ||
-    args.title !== undefined ||
-    args.summary !== undefined;
-  if (!hasPatch) return toolError("at least one of content, tags, title, summary is required");
+    args.tags !== undefined || args.title !== undefined || args.summary !== undefined;
+  if (!hasPatch) return toolError("at least one of tags, title, summary is required");
 
   const ctx = await storeContext(args, "write");
   if (typeof ctx === "string") return ctx;
@@ -61,7 +58,6 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
       omitUndefined({
         date: resolved.dateKey,
         title: args.title !== undefined ? String(args.title) : undefined,
-        content: args.content !== undefined ? String(args.content) : undefined,
         summary: args.summary !== undefined ? String(args.summary) : undefined,
         tags: parseTags(args.tags),
       }),
@@ -180,14 +176,14 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
         {
           name: "diary_append",
           description:
-            "Append text to a diary entry for date (creates empty entry if missing; default date is today)",
+            "Append a new text block to a diary entry for date (creates empty entry if missing; default date is today)",
           exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
               ...WORLD_ID_OPTIONAL,
               date: { type: "string", description: "YYYY-MM-DD; defaults to today" },
-              content: { type: "string", description: "Text to append" },
+              content: { type: "string", description: "Text for the new block" },
               tags: {
                 type: "array",
                 items: { type: "string" },
@@ -200,7 +196,8 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "diary_update",
-          description: "Replace diary fields for a date (default today; not append)",
+          description:
+            "Update diary entry metadata for a date (title/summary/tags; default today). Body text: use diary_append or content-block tools",
           exposeMcp: true,
           parameters: {
             type: "object",
@@ -208,7 +205,6 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
               ...WORLD_ID_OPTIONAL,
               date: { type: "string", description: "YYYY-MM-DD; defaults to today" },
               title: { type: "string" },
-              content: { type: "string" },
               summary: { type: "string" },
               tags: { type: "array", items: { type: "string" } },
             },

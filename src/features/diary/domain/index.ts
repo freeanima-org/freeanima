@@ -19,4 +19,11 @@ export {
   updateDiaryEntry,
   updateDiaryEntryByDate,
 } from "./entry-store.ts";
+export {
+  createDiaryTextBlock,
+  deleteDiaryTextBlock,
+  listDiaryTextBlocks,
+  reorderDiaryTextBlocks,
+  updateDiaryTextBlock,
+} from "./text-blocks.ts";
 export { registerDiaryTools } from "./tools.ts";

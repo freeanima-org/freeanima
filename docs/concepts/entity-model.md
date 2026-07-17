@@ -155,11 +155,11 @@ Structured journal entries for **user** and **agent** subjects:
 | ------- | -------------- | ------------- |
 | Entry   | `type=content` | `diary_entry` |
 
-Entries live in each subject's **`default_private_world_id`**. `body.entry_at` is the timeline sort key; `title` / `summary` / `content` use entity columns; optional `body.tags`.
+Entries live in each subject's **`default_private_world_id`**. `body.entry_at` is the timeline sort key; optional `body.tags`. **Body text lives in child `content_block` rows** (`block_type: text`, `parent_id` → entry); the container entity `content` column is unused (empty after one-shot migration).
 
-- **SAP:** `diary.*` methods — all take `subject_kind: user | agent` (including `diary.append`).
-- **UI:** shell `/diary` (`@freeanima/satellite-diary`).
-- **LLM:** ToolSet `diary` — caller subject private world by default; optional `world_id`.
+- **SAP:** `diary.*` + `diary.block*` — all take `subject_kind: user | agent`. `diary.append` adds a new text block; `diary.patch` updates metadata only; delete cascades blocks.
+- **UI:** shell `/diary` — multi text-block editor with drag reorder.
+- **LLM:** ToolSet `diary` — caller subject private world by default; optional `world_id`. Block-level edits also via ToolSet `content-block`.
 
 See [`docs/features/diary.md`](../features/diary.md).
 
@@ -187,11 +187,11 @@ Optional semantic components on the same row (`components[]`; fields merge into 
 | `narrative`    | `significance`: `normal` \| `milestone` \| `turning_point` |
 | `semantic_ref` | `semantic_memory_id`                                       |
 
-**Container end-state:** `diary_entry` and `dream_entry` both become container + blocks (`parent_id` points at the entry). Dream identity is the `dream_entry` container — do **not** register a separate `dream` semantic component, and do **not** replace `dream_entry` with `content_block`.
+**Container end-state:** `diary_entry` is container + text `content_block`s (`parent_id` points at the entry). `dream_entry` will follow the same pattern later — do **not** register a separate `dream` semantic component, and do **not** replace `dream_entry` with `content_block`.
 
 - **LLM:** ToolSet `content-block` (`@freeanima/features/content-block/domain`) — `content_block_create` / `update` / `delete` / `get` / `list` / `search` / `reorder`. `list` requires container `parent_id`; optional `component=limbic|narrative|semantic_ref` filters semantic tags; `reorder` batch-updates `sort_order`. Optional `world_id`; `parent_id` / block `id` infer world.
 - **Search filters:** `parent_id`, `block_type`, `client_op_id` (whitelist shared by `entity_search` / store).
-- **Follow-up:** diary·dream containerization (existing entry `content` → first text block), legacy memory-table migrations.
+- **Follow-up:** dream containerization; legacy memory-table migrations.
 
 ## Dream module
 
@@ -260,7 +260,7 @@ See memory hybrid search in [`memory.md`](memory.md) for FTS operator syntax; en
 | `semantic_memory`            | `content_block` + `semantic_ref`                                                                                           |
 | `autobiographical_memory`    | `content_block` + `narrative` (parented to dated `diary_entry`)                                                            |
 | `limbic_memory`              | `content_block` + `limbic` (parented to dated `diary_entry`)                                                               |
-| `diary_entry` single body    | Container + child `content_block`s (existing `content` → first text block)                                                 |
+| `diary_entry` single body    | Container + child `content_block`s (**done**; migration clears container `content`)                                        |
 | `tasks` (legacy)             | `task_item` (when explicitly migrated)                                                                                     |
 | `config.yaml email.accounts` | `email_account` (see [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts)) |
 | `memory_references`          | relationship table (future)                                                                                                |

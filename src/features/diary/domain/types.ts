@@ -1,18 +1,31 @@
 export type DiarySubjectKind = "user" | "agent";
 
+/** diary 容器下的 text content_block（UI/SAP/Tool 共用精简形状） */
+export type DiaryTextBlock = {
+  id: number;
+  content: string;
+  sort_order: number;
+  parent_id: number;
+  client_op_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type DiaryEntryRow = {
   id: number;
   title: string;
   summary: string;
-  content: string;
   entry_at: string;
   tags: string[];
+  /** 正文块；list/search 会批量挂载，create/get/append 必带 */
+  blocks: DiaryTextBlock[];
   created_at: string;
   updated_at: string;
 };
 
 export type DiaryEntryCreateInput = {
   title: string;
+  /** 若有则建首条 text block；不写容器 content */
   content?: string;
   summary?: string;
   entry_at: string;
@@ -23,7 +36,6 @@ export type DiaryEntryCreateInput = {
 export type DiaryEntryUpdateInput = {
   id: number;
   title?: string;
-  content?: string;
   summary?: string;
   entry_at?: string;
   tags?: string[];
@@ -32,6 +44,7 @@ export type DiaryEntryUpdateInput = {
 export type DiaryEntryAppendInput = {
   id: number;
   content: string;
+  client_op_id?: string;
 };
 
 export type DiaryEntryAppendByDateInput = {
@@ -43,7 +56,6 @@ export type DiaryEntryAppendByDateInput = {
 export type DiaryEntryUpdateByDateInput = {
   date?: string;
   title?: string;
-  content?: string;
   summary?: string;
   tags?: string[];
 };
@@ -62,6 +74,24 @@ export type DiaryEntrySearchOpts = {
   entry_before?: string;
   tags?: string[];
   limit?: number;
+};
+
+export type DiaryTextBlockCreateInput = {
+  parent_id: number;
+  content: string;
+  sort_order?: number;
+  client_op_id?: string;
+};
+
+export type DiaryTextBlockUpdateInput = {
+  id: number;
+  content?: string;
+  sort_order?: number;
+};
+
+export type DiaryTextBlockReorderItem = {
+  id: number;
+  sort_order: number;
 };
 
 export type DiaryStoreContext = {

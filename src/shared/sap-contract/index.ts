@@ -274,6 +274,7 @@ export type {
 
 export {
   diaryEntryRowSchema,
+  diaryTextBlockSchema,
   diaryListInputSchema,
   diaryListOutputSchema,
   diaryCreateInputSchema,
@@ -288,9 +289,18 @@ export {
   diaryGetOutputSchema,
   diarySearchInputSchema,
   diarySearchOutputSchema,
+  diaryBlockCreateInputSchema,
+  diaryBlockCreateOutputSchema,
+  diaryBlockPatchInputSchema,
+  diaryBlockPatchOutputSchema,
+  diaryBlockDeleteInputSchema,
+  diaryBlockDeleteOutputSchema,
+  diaryBlockReorderInputSchema,
+  diaryBlockReorderOutputSchema,
 } from "./frames/diary.ts";
 export type {
   DiaryEntryRowPayload,
+  DiaryTextBlockPayload,
   DiaryListInput,
   DiaryListOutput,
   DiaryCreateInput,
@@ -305,6 +315,14 @@ export type {
   DiaryGetOutput,
   DiarySearchInput,
   DiarySearchOutput,
+  DiaryBlockCreateInput,
+  DiaryBlockCreateOutput,
+  DiaryBlockPatchInput,
+  DiaryBlockPatchOutput,
+  DiaryBlockDeleteInput,
+  DiaryBlockDeleteOutput,
+  DiaryBlockReorderInput,
+  DiaryBlockReorderOutput,
 } from "./frames/diary.ts";
 
 export {

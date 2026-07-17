@@ -19,7 +19,7 @@ export const diaryHubRoutes = bindHubRouteHandlers(diaryMethodDefs, {
   "diary.create": async (deps, input) =>
     service.serviceDiaryCreate(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
   "diary.append": async (deps, input) =>
-    service.serviceDiaryAppend(depsOf(deps).runtime.runtimeDeps(), input),
+    service.serviceDiaryAppend(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
   "diary.patch": async (deps, input) =>
     service.serviceDiaryPatch(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
   "diary.delete": async (deps, input) =>
@@ -28,4 +28,12 @@ export const diaryHubRoutes = bindHubRouteHandlers(diaryMethodDefs, {
     service.serviceDiaryGet(depsOf(deps).runtime.runtimeDeps(), input),
   "diary.search": async (deps, input) =>
     service.serviceDiarySearch(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
+  "diary.blockCreate": async (deps, input) =>
+    service.serviceDiaryBlockCreate(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
+  "diary.blockPatch": async (deps, input) =>
+    service.serviceDiaryBlockPatch(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
+  "diary.blockDelete": async (deps, input) =>
+    service.serviceDiaryBlockDelete(depsOf(deps).runtime.runtimeDeps(), input),
+  "diary.blockReorder": async (deps, input) =>
+    service.serviceDiaryBlockReorder(depsOf(deps).runtime.runtimeDeps(), input),
 });
