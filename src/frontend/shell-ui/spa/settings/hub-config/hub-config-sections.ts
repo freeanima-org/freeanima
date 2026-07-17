@@ -6,7 +6,11 @@ import type {
   SettingsSection,
 } from "@freeanima/frontend/shell-sdk/settings";
 
-import { ADVANCED_SECTIONS, type AdvancedSectionId } from "./hub-advanced-forms.tsx";
+import {
+  ADVANCED_SECTIONS,
+  ADVANCED_SECTION_TITLES,
+  type AdvancedSectionId,
+} from "./hub-advanced-forms.tsx";
 
 export type HubConfigSectionKey = "compression" | "memory" | "llm" | "tts" | AdvancedSectionId;
 
@@ -20,7 +24,7 @@ const HUB_CONFIG_SECTION_DEFS: Array<{ id: HubConfigSectionKey; title: string; o
   { id: "tts", title: "语音", order: 53 },
   ...ADVANCED_SECTIONS.map((id, index) => ({
     id,
-    title: id,
+    title: ADVANCED_SECTION_TITLES[id] ?? id,
     order: 54 + index,
   })),
 ];

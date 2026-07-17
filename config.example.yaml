@@ -31,4 +31,5 @@ database:
 # --- 以下运行时段请通过 Shell「Hub 服务设置」编辑；勿再写入 config.yaml ---
 #
 # llm / compression / memory / mcp_servers / acp_agents / embedding / web / worlds …
+# 消息网关：gateway / discord / weixin（见 docs/guide/message-gateway.md）
 # 完整示例见仓库 git 历史中的 config.example.yaml（迁移前版本）
