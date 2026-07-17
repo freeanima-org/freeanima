@@ -109,6 +109,55 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* 暗色底强调色变体：用 data-color-theme 区分本机/远端等环境（非 DaisyUI data-theme） */
+.dark[data-color-theme="ocean"] {
+  --primary: oklch(0.72 0.14 230);
+  --primary-foreground: oklch(0.18 0.04 230);
+  --ring: oklch(0.62 0.14 230);
+  --accent: oklch(0.28 0.05 230);
+  --accent-foreground: oklch(0.92 0.04 230);
+  --sidebar-primary: oklch(0.65 0.16 230);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-ring: oklch(0.62 0.14 230);
+  --chart-1: oklch(0.65 0.16 230);
+}
+
+.dark[data-color-theme="forest"] {
+  --primary: oklch(0.74 0.15 155);
+  --primary-foreground: oklch(0.18 0.04 155);
+  --ring: oklch(0.62 0.14 155);
+  --accent: oklch(0.28 0.05 155);
+  --accent-foreground: oklch(0.92 0.04 155);
+  --sidebar-primary: oklch(0.66 0.16 155);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-ring: oklch(0.62 0.14 155);
+  --chart-1: oklch(0.66 0.16 155);
+}
+
+.dark[data-color-theme="sunset"] {
+  --primary: oklch(0.78 0.15 55);
+  --primary-foreground: oklch(0.22 0.05 55);
+  --ring: oklch(0.68 0.14 55);
+  --accent: oklch(0.3 0.06 55);
+  --accent-foreground: oklch(0.94 0.04 55);
+  --sidebar-primary: oklch(0.72 0.16 55);
+  --sidebar-primary-foreground: oklch(0.18 0.04 55);
+  --sidebar-ring: oklch(0.68 0.14 55);
+  --chart-1: oklch(0.72 0.16 55);
+}
+
+.dark[data-color-theme="violet"] {
+  --primary: oklch(0.72 0.16 300);
+  --primary-foreground: oklch(0.18 0.04 300);
+  --ring: oklch(0.62 0.15 300);
+  --accent: oklch(0.28 0.06 300);
+  --accent-foreground: oklch(0.92 0.04 300);
+  --sidebar-primary: oklch(0.65 0.18 300);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-ring: oklch(0.62 0.15 300);
+  --chart-1: oklch(0.65 0.18 300);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
