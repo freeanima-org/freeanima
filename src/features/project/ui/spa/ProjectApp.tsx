@@ -21,6 +21,7 @@ import {
   ConfirmDialog,
   ContextMenu,
   ModuleScopeBar,
+  PullToRefresh,
   QuickAddBar,
   useDetailPanelState,
 } from "@freeanima/frontend/ui-kit/composite";
@@ -32,6 +33,7 @@ import {
   useDrawerNav,
   useThreeColumnLayoutMode,
 } from "@freeanima/frontend/ui-kit/layout";
+import { m } from "@paraglide/messages";
 import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react";
 
 import { registerProjectOfflineModule } from "./lib/offline-store.ts";
@@ -125,6 +127,7 @@ export function ProjectApp() {
 
   const [listOpen, setListOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
 
   const [folders, setFolders] = useState<ProjectFolderRow[]>([]);
@@ -295,51 +298,54 @@ export function ProjectApp() {
   const activeProjects = useMemo(() => projects.filter((p) => p.status === "active"), [projects]);
   const inactiveProjects = useMemo(() => projects.filter((p) => p.status !== "active"), [projects]);
 
-  const reload = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const [folderRows, projectRows] = await Promise.all([
-        fetchProjectFolders(subjectKind),
-        fetchProjects(subjectKind),
-      ]);
-      let projectsWithCounts = projectRows;
+  const reload = useCallback(
+    async (opts?: { quiet?: boolean }) => {
+      if (!opts?.quiet) setLoading(true);
+      setError("");
       try {
-        const stats = await fetchProjectStats(subjectKind);
-        if (stats.size > 0) {
-          projectsWithCounts = projectRows.map((p) => ({
-            ...p,
-            task_count: stats.get(p.id) ?? p.task_count ?? 0,
-          }));
+        const [folderRows, projectRows] = await Promise.all([
+          fetchProjectFolders(subjectKind),
+          fetchProjects(subjectKind),
+        ]);
+        let projectsWithCounts = projectRows;
+        try {
+          const stats = await fetchProjectStats(subjectKind);
+          if (stats.size > 0) {
+            projectsWithCounts = projectRows.map((p) => ({
+              ...p,
+              task_count: stats.get(p.id) ?? p.task_count ?? 0,
+            }));
+          }
+        } catch {
+          // stats 为次要数据，失败时保留 list 默认 0
         }
-      } catch {
-        // stats 为次要数据，失败时保留 list 默认 0
-      }
-      setFolders(folderRows);
-      setProjects(projectsWithCounts);
+        setFolders(folderRows);
+        setProjects(projectsWithCounts);
 
-      const stored = readModuleSelection("project", { subjectKind });
-      const active = projectsWithCounts.filter((p) => p.status === "active");
-      const pickId =
-        stored != null && projectsWithCounts.some((p) => p.id === stored)
-          ? stored
-          : (active[0]?.id ?? projectsWithCounts[0]?.id ?? null);
-      setSelectedProjectId((prev) => {
-        if (prev != null && projectsWithCounts.some((p) => p.id === prev)) return prev;
-        return pickId;
-      });
-      if (
-        pickId != null &&
-        projectsWithCounts.some((p) => p.id === pickId && p.status !== "active")
-      ) {
-        setShowInactive(true);
+        const stored = readModuleSelection("project", { subjectKind });
+        const active = projectsWithCounts.filter((p) => p.status === "active");
+        const pickId =
+          stored != null && projectsWithCounts.some((p) => p.id === stored)
+            ? stored
+            : (active[0]?.id ?? projectsWithCounts[0]?.id ?? null);
+        setSelectedProjectId((prev) => {
+          if (prev != null && projectsWithCounts.some((p) => p.id === prev)) return prev;
+          return pickId;
+        });
+        if (
+          pickId != null &&
+          projectsWithCounts.some((p) => p.id === pickId && p.status !== "active")
+        ) {
+          setShowInactive(true);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+      } finally {
+        if (!opts?.quiet) setLoading(false);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setLoading(false);
-    }
-  }, [subjectKind]);
+    },
+    [subjectKind],
+  );
 
   const reloadProjectDetail = useCallback(async () => {
     if (selectedProjectId == null) {
@@ -358,6 +364,17 @@ export function ProjectApp() {
       setError(err instanceof Error ? err.message : String(err));
     }
   }, [selectedProjectId, subjectKind]);
+
+  const handleManualRefresh = useCallback(async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      await reload({ quiet: true });
+      await reloadProjectDetail();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshing, reload, reloadProjectDetail]);
 
   useEffect(() => {
     setHideCompleted(readHideCompleted(subjectKind));
@@ -738,55 +755,68 @@ export function ProjectApp() {
           detailOpen={detailOpen}
           onDetailOpenChange={handleDetailOpenChange}
           middleActions={
-            selectedProject ? (
-              <>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={writesDisabled}
-                  onClick={() => setMilestoneOpen(true)}
-                >
-                  里程碑 ({selectedProject.milestone_count})
-                </Button>
-                {selectedProject.status === "active" ? (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={writesDisabled}
-                      onClick={() => void handleProjectStatus("on_hold")}
-                    >
-                      搁置
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={writesDisabled}
-                      onClick={() => void handleProjectStatus("completed")}
-                    >
-                      完成
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={writesDisabled}
-                      onClick={() => void handleProjectStatus("cancelled")}
-                    >
-                      取消
-                    </Button>
-                  </>
-                ) : (
+            <>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 shrink-0 px-2"
+                disabled={refreshing || loading}
+                aria-label={m.console_common_refresh()}
+                onClick={() => void handleManualRefresh()}
+              >
+                {refreshing ? <Spinner className="size-3.5" /> : m.console_common_refresh()}
+              </Button>
+              {selectedProject ? (
+                <>
                   <Button
                     size="sm"
                     variant="outline"
                     disabled={writesDisabled}
-                    onClick={() => void handleProjectStatus("active")}
+                    onClick={() => setMilestoneOpen(true)}
                   >
-                    重新激活
+                    里程碑 ({selectedProject.milestone_count})
                   </Button>
-                )}
-              </>
-            ) : null
+                  {selectedProject.status === "active" ? (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={writesDisabled}
+                        onClick={() => void handleProjectStatus("on_hold")}
+                      >
+                        搁置
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={writesDisabled}
+                        onClick={() => void handleProjectStatus("completed")}
+                      >
+                        完成
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={writesDisabled}
+                        onClick={() => void handleProjectStatus("cancelled")}
+                      >
+                        取消
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={writesDisabled}
+                      onClick={() => void handleProjectStatus("active")}
+                    >
+                      重新激活
+                    </Button>
+                  )}
+                </>
+              ) : null}
+            </>
           }
           middleHeaderExtra={
             selectedProject ? (
@@ -860,21 +890,27 @@ export function ProjectApp() {
                   />
                   隐藏已完成
                 </label>
-                <ProjectTaskList
-                  items={tasks}
-                  activeItemId={detailItem?.id ?? null}
-                  hideCompleted={hideCompleted}
-                  useActionSheet={useActionSheet}
-                  disabled={writesDisabled}
-                  writesDisabled={writesDisabled}
-                  onToggleComplete={(item) => void handleToggleComplete(item)}
-                  onEdit={openTaskDetail}
-                  onOpenItemMenu={openTaskMenuSheet}
-                  onOpenItemContextMenu={(e, item) =>
-                    openContextMenuAt(e, { kind: "task", item, x: 0, y: 0 })
-                  }
-                  onReorderPending={(ordered) => void persistProjectTaskOrder(ordered)}
-                />
+                <PullToRefresh
+                  className="min-h-0 flex-1"
+                  disabled={refreshing || loading}
+                  onRefresh={handleManualRefresh}
+                >
+                  <ProjectTaskList
+                    items={tasks}
+                    activeItemId={detailItem?.id ?? null}
+                    hideCompleted={hideCompleted}
+                    useActionSheet={useActionSheet}
+                    disabled={writesDisabled}
+                    writesDisabled={writesDisabled}
+                    onToggleComplete={(item) => void handleToggleComplete(item)}
+                    onEdit={openTaskDetail}
+                    onOpenItemMenu={openTaskMenuSheet}
+                    onOpenItemContextMenu={(e, item) =>
+                      openContextMenuAt(e, { kind: "task", item, x: 0, y: 0 })
+                    }
+                    onReorderPending={(ordered) => void persistProjectTaskOrder(ordered)}
+                  />
+                </PullToRefresh>
                 <QuickAddBar
                   value={quickTaskTitle}
                   onChange={setQuickTaskTitle}

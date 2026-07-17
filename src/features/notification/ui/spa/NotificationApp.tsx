@@ -9,6 +9,7 @@ import {
   CardContent,
   Spinner,
 } from "@freeanima/frontend/ui-kit";
+import { m } from "@paraglide/messages";
 
 import {
   listNotifications,
@@ -181,9 +182,10 @@ export function NotificationApp() {
           variant="ghost"
           size="sm"
           disabled={loading}
+          aria-label={m.console_common_refresh()}
           onClick={() => void fetchList(offset)}
         >
-          刷新
+          {loading ? m.console_common_refreshing() : m.console_common_refresh()}
         </Button>
       </div>
 

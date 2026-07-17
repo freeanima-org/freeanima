@@ -155,7 +155,7 @@ export function ProjectTaskList({
       onDragEnd={handleDragEnd}
       onDragCancel={() => setActiveDrag(null)}
     >
-      <div className="min-h-0 flex-1 overflow-y-auto px-1">
+      <div className="px-1">
         <SortableContext
           items={pending.map((i) => taskDndId(i.id))}
           strategy={verticalListSortingStrategy}

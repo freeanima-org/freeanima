@@ -28,10 +28,12 @@ import {
   ContextMenu,
   EmptyState,
   ModuleScopeBar,
+  PullToRefresh,
   QuickAddBar,
   useDetailPanelState,
 } from "@freeanima/frontend/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
+import { m } from "@paraglide/messages";
 import { CompletedTaskList } from "./components/CompletedTaskList.tsx";
 import { ListSidebar } from "./components/ListSidebar.tsx";
 import { ListEditorDialog } from "./components/ListEditorDialog.tsx";
@@ -132,6 +134,7 @@ export function TaskApp() {
   const [items, setItems] = useState<TaskItemRow[]>([]);
   const [selection, setSelection] = useState<TaskModuleSelection | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [newListName, setNewListName] = useState("");
   const [newFolderName, setNewFolderName] = useState("");
@@ -343,6 +346,19 @@ export function TaskApp() {
       setLoading(false);
     }
   }, [loadLists]);
+
+  const handleManualRefresh = useCallback(async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    setError("");
+    try {
+      await Promise.all([loadLists(), reloadCurrentItems()]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setRefreshing(false);
+    }
+  }, [loadLists, refreshing, reloadCurrentItems]);
 
   useEffect(() => {
     registerTaskOfflineModule();
@@ -1179,6 +1195,17 @@ export function TaskApp() {
             middleActions={
               <>
                 {showMiddleContent ? selectionToolbar : null}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 shrink-0 px-2"
+                  disabled={refreshing || loading}
+                  aria-label={m.console_common_refresh()}
+                  onClick={() => void handleManualRefresh()}
+                >
+                  {refreshing ? <Spinner className="size-3.5" /> : m.console_common_refresh()}
+                </Button>
                 {loading || searching ? <Spinner className="size-4" /> : null}
               </>
             }
@@ -1277,7 +1304,12 @@ export function TaskApp() {
                         此清单已归档，无法添加新任务。可在清单菜单中取消归档。
                       </div>
                     ) : null}
-                    <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto px-2 py-2">
+                    <PullToRefresh
+                      className="min-h-0 flex-1"
+                      contentClassName="touch-pan-y px-2 py-2"
+                      disabled={refreshing || loading}
+                      onRefresh={handleManualRefresh}
+                    >
                       {displayPending.length === 0 && displayCompleted.length === 0 ? (
                         <EmptyState
                           message={
@@ -1344,7 +1376,7 @@ export function TaskApp() {
                           onLongPressSelect={enterSelectionWithItem}
                         />
                       ) : null}
-                    </div>
+                    </PullToRefresh>
 
                     {selectionMode && selectedItemIds.size > 0 ? (
                       <div className="border bg-muted/95 safe-area-pb flex shrink-0 items-center gap-2 border-t p-3">

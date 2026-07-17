@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, AlertDescription, Button, Input, Spinner } from "@freeanima/frontend/ui-kit";
-import { EmptyState, StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { EmptyState, PullToRefresh, StatusAlert } from "@freeanima/frontend/ui-kit/composite";
 import {
   ThreeColumnLayout,
   useDrawerNav,
@@ -13,6 +13,7 @@ import {
   SubjectScopeToggle,
 } from "@freeanima/frontend/shell-sdk/react.tsx";
 import { readModuleSelection, writeModuleSelection } from "@freeanima/frontend/shell-sdk";
+import { m } from "@paraglide/messages";
 
 import { EmailMessageDetail } from "./components/EmailMessageDetail.tsx";
 import {
@@ -52,6 +53,7 @@ export function EmailApp() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [listOpen, setListOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [listLoading, setListLoading] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -78,7 +80,9 @@ export function EmailApp() {
         if (row.unread && !writesDisabled) {
           try {
             await markEmailMessageRead(row.id);
-            setMessages((prev) => prev.map((m) => (m.id === row.id ? { ...m, unread: false } : m)));
+            setMessages((prev) =>
+              prev.map((item) => (item.id === message.id ? { ...item, unread: false } : item)),
+            );
           } catch (markErr) {
             console.warn("markEmailMessageRead failed:", markErr);
           }
@@ -116,7 +120,7 @@ export function EmailApp() {
 
         const storedMessage =
           stored?.messageId != null
-            ? messageRows.find((m) => m.id === stored.messageId)
+            ? messageRows.find((row) => row.id === stored.messageId)
             : undefined;
 
         if (storedMessage) {
@@ -150,6 +154,25 @@ export function EmailApp() {
       setListLoading(false);
     }
   }, []);
+
+  const handleManualRefresh = useCallback(async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      if (activeAccountId != null) {
+        const rows = await fetchEmailAccounts();
+        const enabled = rows.filter((a) => a.enabled);
+        setAccounts(enabled);
+        await loadMessages(activeAccountId);
+      } else {
+        await loadAccounts();
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setRefreshing(false);
+    }
+  }, [activeAccountId, loadAccounts, loadMessages, refreshing]);
 
   useEffect(() => {
     setActiveAccountId(null);
@@ -287,49 +310,61 @@ export function EmailApp() {
         <div className="text-muted-foreground flex flex-1 items-center justify-center p-8 text-sm">
           选择邮箱账户查看收件箱
         </div>
-      ) : listLoading ? (
+      ) : listLoading && messages.length === 0 ? (
         <div className="flex flex-1 items-center justify-center p-4">
           <Spinner className="size-4" />
         </div>
       ) : messages.length === 0 ? (
-        <EmptyState
-          message="暂无邮件。点击「同步」从 IMAP 拉取。"
-          className="items-start flex-1 p-4 text-left"
-        />
+        <PullToRefresh
+          className="min-h-0 flex-1"
+          disabled={refreshing || listLoading}
+          onRefresh={handleManualRefresh}
+        >
+          <EmptyState
+            message="暂无邮件。点击「同步」从 IMAP 拉取。"
+            className="items-start flex-1 p-4 text-left"
+          />
+        </PullToRefresh>
       ) : (
-        <ul className="divide-border min-h-0 flex-1 divide-y overflow-y-auto">
-          {messages.map((message) => (
-            <li key={message.id}>
-              <button
-                type="button"
-                className={`hover:bg-muted/60 w-full px-3 py-3 text-left ${
-                  selectedMessageId === message.id
-                    ? "bg-primary/10 ring-primary/30 ring-1 ring-inset"
-                    : ""
-                }`}
-                onClick={() => void openMessage(message)}
-              >
-                <div className="flex items-start gap-2">
-                  {message.unread ? (
-                    <span className="bg-primary mt-1 inline-block h-2 w-2 shrink-0 rounded-full" />
-                  ) : (
-                    <span className="mt-1 inline-block h-2 w-2 shrink-0" />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate font-medium">{message.subject || "(无主题)"}</div>
-                    <div className="text-muted-foreground truncate text-xs">{message.from}</div>
-                    <div className="text-muted-foreground mt-1 truncate text-xs">
-                      {message.preview}
+        <PullToRefresh
+          className="min-h-0 flex-1"
+          disabled={refreshing || listLoading}
+          onRefresh={handleManualRefresh}
+        >
+          <ul className="divide-border divide-y">
+            {messages.map((message) => (
+              <li key={message.id}>
+                <button
+                  type="button"
+                  className={`hover:bg-muted/60 w-full px-3 py-3 text-left ${
+                    selectedMessageId === message.id
+                      ? "bg-primary/10 ring-primary/30 ring-1 ring-inset"
+                      : ""
+                  }`}
+                  onClick={() => void openMessage(message)}
+                >
+                  <div className="flex items-start gap-2">
+                    {message.unread ? (
+                      <span className="bg-primary mt-1 inline-block h-2 w-2 shrink-0 rounded-full" />
+                    ) : (
+                      <span className="mt-1 inline-block h-2 w-2 shrink-0" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-medium">{message.subject || "(无主题)"}</div>
+                      <div className="text-muted-foreground truncate text-xs">{message.from}</div>
+                      <div className="text-muted-foreground mt-1 truncate text-xs">
+                        {message.preview}
+                      </div>
+                    </div>
+                    <div className="text-muted-foreground shrink-0 text-[10px]">
+                      {formatWhen(message.sent_at)}
                     </div>
                   </div>
-                  <div className="text-muted-foreground shrink-0 text-[10px]">
-                    {formatWhen(message.sent_at)}
-                  </div>
-                </div>
-              </button>
-            </li>
-          ))}
-        </ul>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </PullToRefresh>
       )}
     </div>
   );
@@ -355,6 +390,17 @@ export function EmailApp() {
           middleActions={
             <>
               <SubjectScopeToggle />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 shrink-0 px-2"
+                disabled={refreshing || loading}
+                aria-label={m.console_common_refresh()}
+                onClick={() => void handleManualRefresh()}
+              >
+                {refreshing ? <Spinner className="size-3.5" /> : m.console_common_refresh()}
+              </Button>
               {activeAccount ? (
                 <>
                   {listLoading || searching ? <Spinner className="size-4" /> : null}

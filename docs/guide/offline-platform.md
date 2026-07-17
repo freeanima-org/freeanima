@@ -58,3 +58,7 @@ Pomodoro（Hybrid）不使用 temp entity id，不受本契约约束；session �
 5. 更新 `docs/guide/remote-access.md`
 
 冲突策略：单设备；flush 后 refreshAll，以 Hub 为准。
+
+## Sync vs page refresh
+
+`offline-sync` / `OfflineSyncBootstrap` 负责 **sync**（重连与可见时 flush + 有 outbox 模块的 `refreshAll`）。用户点「刷新」或下拉刷新是 **refresh**（当前页重新拉取视图），二者职责分离。产品页矩阵与交互约定见 [`docs/features/page-refresh.md`](../features/page-refresh.md)。
