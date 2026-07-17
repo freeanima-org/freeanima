@@ -31,7 +31,7 @@ export const semanticMemoryListBodySchema = memoryListPaginationSchema.extend({
 });
 
 export const semanticMemoryPinBodySchema = z.object({
-  id: z.string().min(1),
+  id: z.number().int().positive(),
   pinned: z.boolean(),
 });
 

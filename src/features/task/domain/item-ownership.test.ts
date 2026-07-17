@@ -16,6 +16,8 @@ function entityRow(id: number, primary: string, body: Record<string, unknown>, t
     summary: "",
     content: "",
     body,
+    pinned: false,
+    reference_count: 0,
     created_at: new Date("2026-01-01T00:00:00Z"),
     updated_at: new Date("2026-01-01T00:00:00Z"),
   };

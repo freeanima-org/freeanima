@@ -16,7 +16,7 @@ const narrativeSchema = z
 
 const semanticRefSchema = z
   .object({
-    semantic_memory_id: z.string(),
+    entity_id: z.number().int().positive(),
   })
   .nullable();
 

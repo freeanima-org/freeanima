@@ -68,7 +68,7 @@ describePg("self layer PG", () => {
       title: "First boundary test",
       content: "I realized that saying no is also a choice.",
       significance: "turning_point",
-      source_semantic_memory: ["f-000001-abcd"],
+      source_semantic_memory: [1001],
     });
     expect(id.length).toBeGreaterThan(0);
 

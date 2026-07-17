@@ -14,7 +14,7 @@ import {
   conversationTodoStoreSchema,
 } from "./jsonb/index.ts";
 import { messages } from "./messages.ts";
-import { semanticMemory, semanticMemoryTypeSchema } from "./semantic-memory.ts";
+import { semanticMemoryTypeSchema, semanticMemoryStatusSchema } from "./semantic-memory.ts";
 import { selfBlockKeySchema, selfBlocks } from "./self-layer.ts";
 import { conversations } from "./conversations.ts";
 
@@ -49,12 +49,26 @@ export type ConversationInsert = z.infer<typeof conversationInsertSchema>;
 export type MessageSelect = z.infer<typeof messageSelectSchema>;
 export type MessageInsert = z.infer<typeof messageInsertSchema>;
 
-const semanticMemoryRefine = {
+/** HTTP / tool validation for semantic memory entity rows. */
+export const semanticMemorySelectSchema = z.object({
+  id: z.number().int().positive(),
   type: semanticMemoryTypeSchema,
-};
-
-export const semanticMemorySelectSchema = createSelectSchema(semanticMemory, semanticMemoryRefine);
-export const semanticMemoryInsertSchema = createInsertSchema(semanticMemory, semanticMemoryRefine);
+  pinned: z.boolean(),
+  content: z.string(),
+  source_conversations: z.array(z.string()),
+  observed_at: z.coerce.date().nullable(),
+  occurred_at: z.string().nullable(),
+  status: semanticMemoryStatusSchema,
+  reference_count: z.number(),
+  created_at: z.coerce.date(),
+  updated_at: z.coerce.date(),
+  world_id: z.number().int().positive().optional(),
+  legacy_id: z.string().optional(),
+});
+export const semanticMemoryInsertSchema = semanticMemorySelectSchema.partial().extend({
+  content: z.string(),
+  type: semanticMemoryTypeSchema.optional(),
+});
 
 export type SemanticMemorySelect = z.infer<typeof semanticMemorySelectSchema>;
 export type SemanticMemoryInsert = z.infer<typeof semanticMemoryInsertSchema>;

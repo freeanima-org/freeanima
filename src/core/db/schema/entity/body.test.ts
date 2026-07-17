@@ -87,9 +87,9 @@ describe("validateEntityBody", () => {
       block_type: "text",
       parent_id: 10,
       sort_order: 0,
-      semantic_memory_id: "sm-1",
+      entity_id: 42,
     });
-    expect(body.semantic_memory_id).toBe("sm-1");
+    expect(body.entity_id).toBe(42);
   });
 
   test("accepts content_block with dream tag", () => {

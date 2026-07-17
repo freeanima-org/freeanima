@@ -11,7 +11,7 @@ export type LimbicMemoryCreateInput = {
   arousal?: number | null;
   intensity?: number;
   source_segment?: string | null;
-  semantic_memory_ids?: string[];
+  semantic_memory_ids?: number[];
   id?: string;
 };
 

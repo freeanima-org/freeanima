@@ -267,7 +267,7 @@ export const consoleHubRoutes = mergeFeatureRoutes([
     "memory.semanticPin",
     consoleMethodDefs["memory.semanticPin"],
     wrapConsoleLegacyHandler((payload) =>
-      updateSemanticMemoryPinned(payload as { id: string; pinned: boolean }),
+      updateSemanticMemoryPinned(payload as { id: number; pinned: boolean }),
     ),
   ),
   defineHubRouteFromDef(

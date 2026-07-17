@@ -138,20 +138,17 @@ export async function listSemanticMemories(
 
 export async function updateSemanticMemoryPinned(
   _deps: RuntimeDeps,
-  id: string,
+  id: number | string,
   pinned: boolean,
-): Promise<{ ok: true; id: string; pinned: boolean }> {
-  const memoryId = id.trim();
-  if (!memoryId) throw new Error("id is required");
-
-  const existing = await getSemanticMemory(memoryId);
-  if (!existing) throw new Error(`Memory not found: ${memoryId}`);
+): Promise<{ ok: true; id: number; pinned: boolean }> {
+  const existing = await getSemanticMemory(id);
+  if (!existing) throw new Error(`Memory not found: ${id}`);
   if (existing.status !== "active") {
-    throw new Error(`Only active memories can be pinned: ${memoryId}`);
+    throw new Error(`Only active memories can be pinned: ${id}`);
   }
 
-  await updateSemanticMemory({ id: memoryId, pinned });
-  return { ok: true, id: memoryId, pinned };
+  await updateSemanticMemory({ id: existing.id, pinned });
+  return { ok: true, id: existing.id, pinned };
 }
 
 export async function listLimbicMemories(

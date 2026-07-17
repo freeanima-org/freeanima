@@ -5,13 +5,13 @@ const created: SemanticMemoryCreateInput[] = [];
 
 const createSemanticMemoryMock = mock(async (row: SemanticMemoryCreateInput) => {
   created.push(row);
-  return "f-new-id";
+  return 9001;
 });
 
-const getSemanticMemoryMock = mock(async (id: string) => {
-  if (id === "f-a") {
+const getSemanticMemoryMock = mock(async (id: number) => {
+  if (id === 1) {
     return {
-      id: "f-a",
+      id: 1,
       content: "A",
       type: "world",
       pinned: false,
@@ -24,9 +24,9 @@ const getSemanticMemoryMock = mock(async (id: string) => {
       updated_at: new Date("2026-01-01T00:00:00.000Z"),
     };
   }
-  if (id === "f-b") {
+  if (id === 2) {
     return {
-      id: "f-b",
+      id: 2,
       content: "B",
       type: "world",
       pinned: false,
@@ -98,12 +98,12 @@ describe("memory_semantic_merge occurred_at", () => {
     expect(mergeDef).toBeDefined();
 
     const raw = await mergeDef!.handler({
-      source_ids: ["f-a", "f-b"],
+      source_ids: [1, 2],
       target_content: "merged content",
     });
     const parsed = JSON.parse(raw) as {
       merged_occurred_at: string | null;
-      id: string;
+      id: number;
     };
 
     expect(parsed.merged_occurred_at).toBe("2024 Winter");
@@ -113,7 +113,7 @@ describe("memory_semantic_merge occurred_at", () => {
   it("target_occurred_at overrides programmatic merge", async () => {
     const mergeDef = semanticMemoryToolDefs.find((d) => d.name === "memory_semantic_merge");
     const raw = await mergeDef!.handler({
-      source_ids: ["f-a", "f-b"],
+      source_ids: [1, 2],
       target_content: "merged content",
       target_occurred_at: "2026 Summer",
     });

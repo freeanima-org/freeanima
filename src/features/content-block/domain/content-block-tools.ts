@@ -354,9 +354,9 @@ const SEMANTIC_REF_PARAM = {
   type: "object",
   description: "Optional semantic_ref component; null clears on update",
   properties: {
-    semantic_memory_id: { type: "string" },
+    entity_id: { type: "integer", description: "entities.id (primary_component=semantic_memory)" },
   },
-  required: ["semantic_memory_id"],
+  required: ["entity_id"],
 } as const;
 
 export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {

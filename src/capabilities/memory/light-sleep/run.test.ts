@@ -27,7 +27,7 @@ const listMessagesMock = mock(async () => [
 ]);
 const listSemanticMemoryBySourceSessionsMock = mock(async () => [
   {
-    id: "f-000001-abcd",
+    id: 1001,
     content: "I helped Zhang San complete a refactor",
     type: "experience",
     pinned: false,
@@ -36,6 +36,7 @@ const listSemanticMemoryBySourceSessionsMock = mock(async () => [
     observed_at: new Date("2026-06-08T10:00:00+08:00"),
     occurred_at: null,
     status: "active",
+    world_id: 1,
     created_at: new Date("2026-01-01T00:00:00.000Z"),
     updated_at: new Date("2026-01-01T00:00:00.000Z"),
   } as SemanticMemoryRow,
@@ -50,14 +51,14 @@ const listLimbicMemoryBySessionMock = mock(async () => [
     content: "I felt a strong sense of accomplishment",
     intensity: 0.8,
     source_segment: "late",
-    semantic_memory_ids: ["f-000001-abcd"],
+    semantic_memory_ids: [1001],
     content_embedding: null,
     content_fts: null,
     fts_segmented: null,
     created_at: new Date("2026-06-08T11:00:00+08:00"),
   } as LimbicMemoryRow,
 ]);
-const getLimbicMemoryMock = mock(async (id: string) =>
+const getLimbicMemoryMock = mock(async (id: string | number) =>
   id === "limbic-new"
     ? ({
         id,
@@ -76,8 +77,8 @@ const getLimbicMemoryMock = mock(async (id: string) =>
       } as LimbicMemoryRow)
     : null,
 );
-const getSemanticMemoryMock = mock(async (id: string) =>
-  id === "f-000001-abcd"
+const getSemanticMemoryMock = mock(async (id: string | number) =>
+  id === 1001 || id === "1001"
     ? ({
         id,
         content: "I helped Zhang San complete a refactor",
@@ -88,6 +89,7 @@ const getSemanticMemoryMock = mock(async (id: string) =>
         observed_at: new Date("2026-06-08T10:00:00+08:00"),
         occurred_at: null,
         status: "active",
+        world_id: 1,
         created_at: new Date("2026-01-01T00:00:00.000Z"),
         updated_at: new Date("2026-01-01T00:00:00.000Z"),
       } as SemanticMemoryRow)
@@ -131,12 +133,12 @@ describe("light-sleep build-messages", () => {
   it("buildLightSleepAutobiographyUserMessages includes dialogue, semantic, limbic, and existing autobiography", async () => {
     const messages = await buildLightSleepAutobiographyUserMessages(
       ["s-1"],
-      ["f-000001-abcd"],
+      [1001],
       ["limbic-new"],
     );
     expect(messages).toHaveLength(5);
     expect(messages[0]).toContain("# Today's dialogue");
-    expect(messages[1]).toContain("f-000001-abcd");
+    expect(messages[1]).toContain('"id":1001');
     expect(messages[1]).toContain("experience");
     expect(messages[2]).toContain("limbic-1");
     expect(messages[2]).toContain("limbic-new");

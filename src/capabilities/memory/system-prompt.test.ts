@@ -46,7 +46,7 @@ describe("system-prompt", () => {
   it("resident memory segment includes second-person frame and code fence", async () => {
     listResidentSemanticMemoryMock.mockImplementation((async () => [
       {
-        id: "f-000000-abcd",
+        id: 42,
         content: "I like testing",
         type: "fact",
         pinned: true,
@@ -66,7 +66,7 @@ describe("system-prompt", () => {
     expect(parts.resident).toContain(RESIDENT_MEMORY_SYSTEM_FRAME);
     expect(parts.resident).toContain("## Resident memory");
     expect(parts.resident).toContain("```md");
-    expect(parts.resident).toContain("- 📌 [[f-000000-abcd]] I like testing");
+    expect(parts.resident).toContain("- 📌 [[anima:42]] I like testing");
     expect(parts.resident).not.toContain(MEMORY_REFERENCE_CITATION_RULE);
   });
 

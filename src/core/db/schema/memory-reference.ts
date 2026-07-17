@@ -1,13 +1,13 @@
-import { index, pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { bigint, index, pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
 
 import { messages } from "./messages.ts";
-import { semanticMemory } from "./semantic-memory.ts";
+import { entities } from "./entity/entity.ts";
 import { conversations } from "./conversations.ts";
 
-/** `[[f-xxx]]` reference records in message body (cascade invalidate on conversation delete) */
+/** `[[anima:{id}]]` reference records in message body (cascade invalidate on conversation delete) */
 export const memoryReferences = pgTable(
   "memory_references",
   {
@@ -15,9 +15,9 @@ export const memoryReferences = pgTable(
     message_id: text("message_id")
       .notNull()
       .references(() => messages.id, { onDelete: "cascade" }),
-    semantic_memory_id: text("semantic_memory_id")
+    entity_id: bigint("entity_id", { mode: "number" })
       .notNull()
-      .references(() => semanticMemory.id, { onDelete: "cascade" }),
+      .references(() => entities.id, { onDelete: "cascade" }),
     conversation_id: text("conversation_id")
       .notNull()
       .references(() => conversations.id, { onDelete: "cascade" }),
@@ -26,9 +26,9 @@ export const memoryReferences = pgTable(
       .default(sql`now()`),
   },
   (t) => [
-    index("idx_memory_references_semantic_memory_id").on(t.semantic_memory_id),
+    index("idx_memory_references_entity_id").on(t.entity_id),
     index("idx_memory_references_conversation_id").on(t.conversation_id),
     index("idx_memory_references_created_at").on(t.created_at),
-    uniqueIndex("memory_references_message_memory_uidx").on(t.message_id, t.semantic_memory_id),
+    uniqueIndex("memory_references_message_entity_uidx").on(t.message_id, t.entity_id),
   ],
 );

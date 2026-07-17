@@ -1,23 +1,17 @@
 import { eq, sql } from "drizzle-orm";
-import { messages, semanticMemory } from "@freeanima/core/db/schema";
+import { messages } from "@freeanima/core/db/schema";
 
 import { getDb } from "../client.ts";
 import { formatPgVector } from "./format.ts";
-import { setEntityEmbedding } from "./entity-embedding.ts";
+import { clearEntityEmbedding, setEntityEmbedding } from "./entity-embedding.ts";
 
 /** content kept for call-site symmetry; row is keyed by id only (avoids JS trim vs PG btrim mismatch). */
 export async function setSemanticMemoryEmbedding(
   id: string,
-  _content: string,
+  content: string,
   embedding: number[],
 ): Promise<boolean> {
-  const db = getDb();
-  const rows = await db
-    .update(semanticMemory)
-    .set({ content_embedding: sql`${formatPgVector(embedding)}::vector` })
-    .where(eq(semanticMemory.id, id))
-    .returning({ id: semanticMemory.id });
-  return rows.length > 0;
+  return setEntityEmbedding(Number(id), content, embedding);
 }
 
 export async function setMessageEmbedding(
@@ -51,8 +45,7 @@ export async function setAutobiographicalMemoryEmbedding(
 }
 
 export async function clearSemanticMemoryEmbedding(id: string): Promise<void> {
-  const db = getDb();
-  await db.update(semanticMemory).set({ content_embedding: null }).where(eq(semanticMemory.id, id));
+  await clearEntityEmbedding(Number(id));
 }
 
 export { clearEntityEmbedding } from "./entity-embedding.ts";

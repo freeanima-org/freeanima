@@ -16,6 +16,7 @@ const ANIMA_SCHEME = "anima:";
 const DEFAULT_PRESENT_BY_COMPONENT: Record<string, AnimaPresent> = {
   task_item: "overlay",
   task_list: "navigate",
+  semantic_memory: "overlay",
 };
 
 export function defaultPresentForComponent(component: string | undefined): AnimaPresent {

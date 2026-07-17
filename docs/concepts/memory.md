@@ -119,7 +119,7 @@ Definition: Memory of "what I felt"—not objective fact, not behavioral record,
 
 ### 4. Procedural Memory
 
-**Storage:** procedural knowledge lives in `semantic_memory` with `memory_type = procedural` (see §2 Semantic Memory table) — not a separate PG table.
+**Storage:** procedural knowledge lives in `entities`/`semantic_memory` component with `memory_type = procedural` (see §2 Semantic Memory table) — not a separate PG table.
 
 **Evolution path:** three-stage maturation from declarative knowledge → dynamic skills → crystallized instincts (CLI / MCP / automation scripts).
 
@@ -162,17 +162,17 @@ The conversation `system_prompt` column is a **session snapshot**. After each **
 
 Configure under `memory.passive_recall` (`enabled`, `limit`, `min_score`, `min_relative_score`, `max_chars`, `exclude_resident`). Skipped for cron / background sessions.
 
-**Index columns (PG):** `semantic_memory` and `messages` use `fts_segmented` (optional jieba) → generated `content_fts` (tsvector, keyword FTS) plus async `content_embedding` (pgvector; written for future use, not used in retrieval). Limbic / autobiographical / dream narratives live as `entities` `content_block`s (with `limbic` / `narrative` / `dream` tags) under dated `diary_entry`; they use entity `fts_segmented` / `search_embedding`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only). `content_fts` is never written by application code — PostgreSQL generates it from `fts_segmented` or raw content.
+**Index columns (PG):** semantic memory rows are `entities` with `primary_component=semantic_memory` (shared `fts_segmented` → generated `search_fts`, async `search_embedding`). Conversation `messages` use `fts_segmented` → `content_fts` plus async `content_embedding`. Limbic / autobiographical / dream narratives live as `entities` `content_block`s (with `limbic` / `narrative` / `dream` tags) under dated `diary_entry`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only).
 
 **Hybrid retrieval:** FTS and trigram branches run in **one parallel wave**, then merge with Reciprocal Rank Fusion (RRF). Keyword/FTS relevance is prioritized; vector similarity is not part of retrieval (avoids low-relevance semantic neighbors).
 
-Resident memory injected via system prompt: **up to 40 pinned** + **most-referenced top N** (default N=20). Each line carries a citation marker `[[f-000001-abcd]]` (ID only, no language prefix).
+Resident memory injected via system prompt: **up to 40 pinned** + **most-referenced top N** (default N=20). Each line carries a citation marker `[[anima:42]]` (ID only, no language prefix).
 
-**Citation obligation:** whenever an assistant reply uses semantic memory—resident list, `memory_recall` / `memory_semantic_search` semantic hits, or prior message markers—it must append each cited `[[f-id]]` at the **end of the reply body**. Use the inline marker or `semantic_memory_id` from tool results. Session, limbic, and autobiographical hits do not use this marker.
+**Citation obligation:** whenever an assistant reply uses semantic memory—resident list, `memory_recall` / `memory_semantic_search` semantic hits, or prior message markers—it must append each cited `[[anima:id]]` at the **end of the reply body**. Use the inline marker or `semantic_memory_id` from tool results. Session, limbic, and autobiographical hits do not use this marker.
 
 **Where the rule is communicated:** global system prompt `memory-citation` section; `memory_recall` and `memory_semantic_search` tool descriptions. Tool response JSON is not modified for this.
 
-**What counts as a reference:** only `[[f-id]]` markers in **user/assistant** message bodies are parsed into `memory_references` and contribute to `reference_count`. Tool returns (including `semantic_memory_id` fields) are **not** references. Bare `f-id` text without `[[ ]]` is also not counted.
+**What counts as a reference:** only `[[anima:id]]` markers in **user/assistant** message bodies are parsed into `memory_references` and contribute to `entities.reference_count`. Tool returns (including `semantic_memory_id` fields) are **not** references. Bare numeric ids without `[[anima:…]]` are also not counted. Each citing message increments the weight (no per-conversation first-hit dedupe).
 
 Nightly sleep-cycle step `memory-ref-sync` full-calibrates counts from messages. Excess pinned entries are truncated at read time with a warn log; deep sleep round 4 reviews pin quality (runtime still caps resident pinned at 40 on read).
 

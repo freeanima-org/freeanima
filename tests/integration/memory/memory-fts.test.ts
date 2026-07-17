@@ -141,7 +141,7 @@ describePg("memory PG FTS", () => {
       content: "用户对退烧与注意力方向摇摆相关话题保持热情",
       type: "observation",
     });
-    expect(semanticId.length).toBeGreaterThan(0);
+    expect(semanticId).toBeGreaterThan(0);
 
     const messageHits = await searchMessagesFts(query, { limit: 5 });
     const semanticHits = await searchSemanticMemoryFts(query, { limit: 5 });

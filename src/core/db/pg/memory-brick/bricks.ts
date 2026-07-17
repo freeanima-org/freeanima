@@ -43,7 +43,7 @@ export type LimbicBrickCreateInput = {
   kind?: LimbicKind;
   conversation_id?: string;
   source_segment?: string | null;
-  semantic_memory_ids?: string[];
+  semantic_memory_ids?: number[];
   legacy_id?: string;
   /** CST YYYY-MM-DD；缺省用现在 */
   day?: string;
@@ -56,7 +56,7 @@ export type NarrativeBrickCreateInput = {
   significance?: NarrativeSignificance;
   period_start?: string | null;
   period_end?: string | null;
-  source_facts?: string[];
+  source_facts?: number[];
   source_conversations?: string[];
   status?: NarrativeStatus;
   legacy_id?: string;
@@ -82,6 +82,8 @@ function mapBrick(row: {
   summary: string;
   components: string[];
   body: Record<string, unknown>;
+  pinned: boolean;
+  reference_count: number;
   created_at: Date;
   updated_at: Date;
   primary_component: string;
@@ -97,6 +99,8 @@ function mapBrick(row: {
     content: row.content,
     summary: row.summary,
     body: row.body,
+    pinned: row.pinned,
+    reference_count: row.reference_count,
     created_at: row.created_at,
     updated_at: row.updated_at,
   });

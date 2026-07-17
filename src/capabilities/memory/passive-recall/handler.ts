@@ -46,8 +46,8 @@ export function createPassiveMemoryRecallHandler() {
 
     if (config.exclude_resident && hits.length > 0) {
       const resident = await listResidentSemanticMemory(RESIDENT_TOP_N);
-      const residentIds = new Set(resident.map((row) => row.id.toLowerCase()));
-      hits = hits.filter((hit) => !residentIds.has(hit.semantic_memory_id.toLowerCase()));
+      const residentIds = new Set(resident.map((row) => row.id));
+      hits = hits.filter((hit) => !residentIds.has(hit.semantic_memory_id));
     }
 
     if (hits.length === 0) return;

@@ -36,13 +36,15 @@ const SEMANTIC_MEMORY_WRITE_TOOLS = new Set([
   "memory_remember",
 ]);
 
-function extractSemanticMemoryId(toolName: string, content: string): string | null {
+function extractSemanticMemoryId(toolName: string, content: string): number | null {
   if (!SEMANTIC_MEMORY_WRITE_TOOLS.has(toolName)) return null;
   try {
     const parsed = JSON.parse(content) as Record<string, unknown>;
     if (parsed.error) return null;
-    const id = String(parsed.semantic_memory_id ?? parsed.id ?? parsed.fact_id ?? "").trim();
-    return id || null;
+    const raw = parsed.semantic_memory_id ?? parsed.id ?? parsed.fact_id;
+    const n = typeof raw === "number" ? raw : Number(String(raw ?? "").trim());
+    if (!Number.isInteger(n) || n <= 0) return null;
+    return n;
   } catch {
     return null;
   }
@@ -106,7 +108,7 @@ async function runLightSleepTurn(
   deps: FullRuntimeDeps,
   input: LightSleepEngineInput,
 ): Promise<LightSleepEngineResult> {
-  const semanticMemoryIds: string[] = [];
+  const semanticMemoryIds: number[] = [];
   const limbicMemoryIds: string[] = [];
   const { summary, toolCalls } = await runSleepStream(deps, input, {
     runKind: "light-sleep",

@@ -62,13 +62,30 @@ async function handleCreateSemanticMemory(args: Record<string, unknown>): Promis
   return toolResult({ ok: true, id, semantic_memory_id: id, action: "create" });
 }
 
-function resolveSemanticMemoryId(args: Record<string, unknown>): string {
-  return String(args.semantic_memory_id ?? args.fact_id ?? args.id ?? "").trim();
+function resolveSemanticMemoryId(args: Record<string, unknown>): number | null {
+  const raw = args.semantic_memory_id ?? args.fact_id ?? args.id;
+  if (raw == null || raw === "") return null;
+  const n = typeof raw === "number" ? raw : Number(String(raw).trim());
+  if (!Number.isInteger(n) || n <= 0) return null;
+  return n;
+}
+
+/** Parse `source_ids` for merge: number[] or string[] of positive integers. */
+function parseSemanticMemoryIds(value: unknown): number[] | undefined {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) return [];
+  const out: number[] = [];
+  for (const item of value) {
+    const n = typeof item === "number" ? item : Number(String(item).trim());
+    if (!Number.isInteger(n) || n <= 0) continue;
+    out.push(n);
+  }
+  return out;
 }
 
 function rememberResult(
   action: string,
-  semanticMemoryId: string,
+  semanticMemoryId: number,
   extra?: Record<string, unknown>,
 ): string {
   return toolResult({
@@ -82,7 +99,7 @@ function rememberResult(
 
 async function handleUpdateSemanticMemory(args: Record<string, unknown>): Promise<string> {
   const semanticMemoryId = resolveSemanticMemoryId(args);
-  if (!semanticMemoryId) return toolError("semantic_memory_id is required");
+  if (semanticMemoryId == null) return toolError("semantic_memory_id is required");
 
   const existing = await getSemanticMemory(semanticMemoryId);
   if (!existing) return toolError(`Memory not found: ${semanticMemoryId}`);
@@ -116,7 +133,7 @@ async function handleUpdateSemanticMemory(args: Record<string, unknown>): Promis
 
 async function handleDeprecateSemanticMemory(args: Record<string, unknown>): Promise<string> {
   const semanticMemoryId = resolveSemanticMemoryId(args);
-  if (!semanticMemoryId) return toolError("semantic_memory_id is required");
+  if (semanticMemoryId == null) return toolError("semantic_memory_id is required");
   const ok = await deprecateSemanticMemory(semanticMemoryId);
   if (!ok) return toolError(`Memory not found: ${semanticMemoryId}`);
   return toolResult({
@@ -171,7 +188,7 @@ async function handleSearchSemanticMemory(args: Record<string, unknown>): Promis
 }
 
 async function handleMergeSemanticMemories(args: Record<string, unknown>): Promise<string> {
-  const sourceIds = parseStringArray(args.source_ids);
+  const sourceIds = parseSemanticMemoryIds(args.source_ids);
   if (!sourceIds || sourceIds.length === 0) {
     return toolError("source_ids is required (non-empty array)");
   }
@@ -186,7 +203,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
 
   // Look up all source memories
   const sources: {
-    id: string;
+    id: number;
     source_conversations: string[];
     observed_at: string | null;
     occurred_at: string | null;
@@ -250,7 +267,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
   );
 
   // Deprecate all source memories
-  const deprecatedIds: string[] = [];
+  const deprecatedIds: number[] = [];
   for (const s of sources) {
     const ok = await deprecateSemanticMemory(s.id);
     if (ok) deprecatedIds.push(s.id);
@@ -281,7 +298,7 @@ function resolveObservedAt(
 export async function createSemanticMemoryFromArgs(
   args: Record<string, unknown>,
   defaults?: { source_conversations?: string[]; observed_at?: string },
-): Promise<string> {
+): Promise<number> {
   const content = String(args.content ?? "").trim();
   if (!content) throw new Error("content is required");
 
@@ -335,7 +352,7 @@ export const semanticMemoryToolDefs: ToolDef[] = [
     parameters: {
       type: "object",
       properties: {
-        id: { type: "string", description: "Memory ID" },
+        id: { type: "number", description: "Memory entity id" },
         content: { type: "string", description: "New memory body" },
         type: { type: "string", enum: [...MEMORY_TYPES], description: "Memory type" },
         pinned: { type: "boolean", description: "Whether pinned" },
@@ -361,7 +378,7 @@ export const semanticMemoryToolDefs: ToolDef[] = [
     parameters: {
       type: "object",
       properties: {
-        id: { type: "string", description: "Memory ID" },
+        id: { type: "number", description: "Memory entity id" },
       },
       required: ["id"],
     },
@@ -407,8 +424,8 @@ export const semanticMemoryToolDefs: ToolDef[] = [
       properties: {
         source_ids: {
           type: "array",
-          items: { type: "string" },
-          description: "Source memory IDs to merge (at least 2)",
+          items: { type: "number" },
+          description: "Source memory entity ids to merge (at least 2)",
         },
         target_content: { type: "string", description: "Merged memory body" },
         target_type: { type: "string", enum: [...MEMORY_TYPES], description: "Merged memory type" },

@@ -1,13 +1,31 @@
 import type { SemanticFtsHit } from "@freeanima/core/db/schema/rows";
-import { and, desc, eq, getColumns, isNotNull, notLike, sql } from "drizzle-orm";
+import type { EntityRow } from "@freeanima/core/db/schema/entity";
+import { and, desc, eq, isNotNull, notLike, sql } from "drizzle-orm";
 import { getActiveRuntimeConfig, getFtsTrgmMinSimilarity } from "@freeanima/core/config";
 import { messageDocKey, semanticMemoryDocKey } from "@freeanima/core/util";
-import { messages, semanticMemory } from "@freeanima/core/db/schema";
+import { entities, messages } from "@freeanima/core/db/schema";
 
 import { getDb } from "../client.ts";
 import { buildSemanticConditions } from "../semantic-memory/repos/semantic-filters.ts";
+import { entityToSemanticMemoryRow } from "../semantic-memory/map-row.ts";
 
 export type TrgmSemanticHit = SemanticFtsHit & { docKey: string };
+
+const semanticSelect = {
+  id: entities.id,
+  type: entities.type,
+  world_id: entities.world_id,
+  components: entities.components,
+  primary_component: entities.primary_component,
+  title: entities.title,
+  summary: entities.summary,
+  content: entities.content,
+  body: entities.body,
+  pinned: entities.pinned,
+  reference_count: entities.reference_count,
+  created_at: entities.created_at,
+  updated_at: entities.updated_at,
+} as const;
 
 export async function searchSemanticMemoryTrgm(
   query: string,
@@ -29,27 +47,45 @@ export async function searchSemanticMemoryTrgm(
     opts?.source_conversations?.map((s) => s.trim()).filter(Boolean) ?? [];
 
   const db = getDb();
-  const rankExpr = sql<number>`similarity(${semanticMemory.content}, ${q})`.as("rank");
+  const rankExpr = sql<number>`similarity(${entities.content}, ${q})`.as("rank");
   const conditions = [
-    sql`word_similarity(${semanticMemory.content}, ${q}) >= ${minSim}`,
+    sql`word_similarity(${entities.content}, ${q}) >= ${minSim}`,
     ...buildSemanticConditions({ types, status, source_conversations }),
   ];
 
   const rows = await db
     .select({
-      ...getColumns(semanticMemory),
+      ...semanticSelect,
       rank: rankExpr,
     })
-    .from(semanticMemory)
+    .from(entities)
     .where(and(...conditions))
     .orderBy(desc(rankExpr))
     .limit(limit);
 
-  return rows.map((r) => ({
-    ...r,
-    docKey: semanticMemoryDocKey(r.id),
-    rank: Number(r.rank),
-  }));
+  return rows.map((r) => {
+    const entityRow: EntityRow = {
+      id: r.id,
+      type: r.type as EntityRow["type"],
+      world_id: r.world_id,
+      components: [...r.components],
+      primary_component: r.primary_component,
+      title: r.title ?? "",
+      summary: r.summary ?? "",
+      content: r.content ?? "",
+      body: (r.body ?? {}) as Record<string, unknown>,
+      pinned: r.pinned ?? false,
+      reference_count: r.reference_count ?? 0,
+      created_at: r.created_at,
+      updated_at: r.updated_at,
+    };
+    const mapped = entityToSemanticMemoryRow(entityRow);
+    return {
+      ...mapped,
+      docKey: semanticMemoryDocKey(mapped.id),
+      rank: Number(r.rank),
+    };
+  });
 }
 
 export type TrgmMessageHit = {

@@ -7,7 +7,7 @@ import type { SemanticRecallHit } from "../recall-search.ts";
 export { PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME };
 
 export const PASSIVE_MEMORY_CONTEXT_HEAD =
-  "以下是与当前用户消息相关的语义记忆。有依据时使用，并在回复末尾引用 [[f-id]]。";
+  "以下是与当前用户消息相关的语义记忆。有依据时使用，并在回复末尾引用 [[anima:id]]。";
 
 export const PASSIVE_MEMORY_CONTEXT_FENCE = "memory";
 

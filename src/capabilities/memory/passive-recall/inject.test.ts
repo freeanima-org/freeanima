@@ -12,7 +12,7 @@ import {
 } from "./inject.ts";
 import { stripTimePrefixFromUserContent } from "./query.ts";
 
-const sampleHit = (id: string, content: string): SemanticRecallHit => ({
+const sampleHit = (id: number, content: string): SemanticRecallHit => ({
   memory_type: "semantic",
   score: 0.8,
   semantic_memory_id: id,
@@ -38,11 +38,8 @@ describe("stripTimePrefixFromUserContent", () => {
 
 describe("passive recall inject", () => {
   it("formats memory block with citation markers", () => {
-    const block = formatPassiveMemoryBlock(
-      [sampleHit("f-000001-abcd", "Alice lives in Shanghai")],
-      500,
-    );
-    expect(block).toContain("[[f-000001-abcd]] Alice lives in Shanghai");
+    const block = formatPassiveMemoryBlock([sampleHit(4057, "Alice lives in Shanghai")], 500);
+    expect(block).toContain("[[anima:4057]] Alice lives in Shanghai");
     expect(block).toContain("```memory");
   });
 
@@ -52,7 +49,7 @@ describe("passive recall inject", () => {
       { role: "assistant", content: "ok" },
       { role: "user", content: "current" },
     ];
-    manifestPassiveMemoryContext(messages, [sampleHit("f-000002-beef", "prefers TS")], 2000);
+    manifestPassiveMemoryContext(messages, [sampleHit(1291, "prefers TS")], 2000);
     expect(messages).toHaveLength(4);
     const injected = messages[2];
     expect(injected?.role).toBe("assistant");
@@ -83,7 +80,7 @@ describe("passive recall inject", () => {
     const messages: StoredMessage[] = [{ role: "user", content: "q" }];
     manifestPassiveMemoryContext(
       messages,
-      [sampleHit("f-000003-cafe", "a very long semantic memory content")],
+      [sampleHit(2028, "a very long semantic memory content")],
       5,
     );
     expect(messages).toHaveLength(1);

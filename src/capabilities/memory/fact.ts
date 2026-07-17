@@ -7,7 +7,7 @@ export function createSemanticMemory(partial: {
   content: string;
   type?: string;
   pinned?: boolean;
-  id?: string;
+  id?: number;
   source_conversations?: string[];
   observed_at?: string | Date | null;
   occurred_at?: string | null;
@@ -24,7 +24,7 @@ export function createSemanticMemory(partial: {
         ? new Date(partial.observed_at)
         : now;
   return {
-    id: partial.id ?? "",
+    id: partial.id ?? 0,
     type: normalizeSemanticMemoryType(partial.type),
     pinned: partial.pinned ?? false,
     content: partial.content.trim(),

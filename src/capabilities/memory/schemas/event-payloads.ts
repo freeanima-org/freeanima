@@ -5,7 +5,7 @@ export const conversationUpdatedPayloadSchema = z
   .passthrough();
 
 export const semanticMemoryUpdatedPayloadSchema = z
-  .object({ semantic_memory_ids: z.array(z.string()).optional() })
+  .object({ semantic_memory_ids: z.array(z.number().int().positive()).optional() })
   .passthrough();
 
 export const testPingPayloadSchema = z.record(z.string(), z.unknown());

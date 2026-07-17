@@ -14,7 +14,9 @@ export type SemanticMemoryCreateInput = {
   content: string;
   type?: string;
   pinned?: boolean;
-  id?: string;
+  /** @deprecated ignored — entity ids are identity-generated */
+  id?: string | number;
+  world_id?: number;
   source_conversations?: string[];
   observed_at?: string | Date | null;
   occurred_at?: string | null;
@@ -25,7 +27,7 @@ export type SemanticMemoryCreateInput = {
 
 /** Overlay update: only passed fields change; source_conversations [] clears */
 export type SemanticMemoryUpdateInput = {
-  id: string;
+  id: string | number;
   content?: string;
   type?: string;
   pinned?: boolean;
@@ -49,7 +51,7 @@ export type SemanticMemorySearchOpts = {
 
 /** HTTP / tool validation for semantic memory rows (subset of table columns). */
 export const semanticMemoryRowSchema = z.object({
-  id: z.string(),
+  id: z.number().int().positive(),
   type: z.string(),
   pinned: z.boolean(),
   content: z.string(),
@@ -60,6 +62,7 @@ export const semanticMemoryRowSchema = z.object({
   reference_count: z.number(),
   created_at: z.coerce.date(),
   updated_at: z.coerce.date(),
+  world_id: z.number().int().positive().optional(),
 });
 
 export type SemanticMemoryRowSchema = z.infer<typeof semanticMemoryRowSchema>;

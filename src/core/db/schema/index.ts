@@ -22,10 +22,9 @@ export * from "./zod-schemas.ts";
 
 import { conversations } from "./conversations.ts";
 import { messages } from "./messages.ts";
-import { semanticMemory } from "./semantic-memory.ts";
 
 /** Drizzle 1.0: relations required config for drizzle() */
-export const relations = defineRelations({ conversations, messages, semanticMemory }, (r) => ({
+export const relations = defineRelations({ conversations, messages }, (r) => ({
   conversations: {
     messages: r.many.messages({
       from: r.conversations.id,

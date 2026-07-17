@@ -36,6 +36,8 @@ Component fields live in **`body` JSONB** at the top level. **`primary_component
 | `primary_component`             | Main component for module routing            |
 | `title` / `summary` / `content` | Shared text columns (all components may use) |
 | `body`                          | JSONB component payload                      |
+| `pinned`                        | Entity-level pin（任意 component）           |
+| `reference_count`               | `[[anima:id]]` 引用权重和                    |
 | `created_at` / `updated_at`     | Timestamps                                   |
 
 **Not in v0.8 bootstrap:** relationship table, World nesting/mount, graph DB (PostgreSQL AGE). Subject↔world grants live in `world_config.grants` (no separate permission table).
@@ -184,12 +186,13 @@ Reusable content bricks for **containers** (diary, notes, …). `block_type` is 
 
 Optional semantic components on the same row (`components[]`; fields merge into flat `body`):
 
-| Component      | `body` fields                                                                    |
-| -------------- | -------------------------------------------------------------------------------- |
-| `limbic`       | `valence`, `arousal`, `intensity`, optional provenance (`kind`, `legacy_id`, …)  |
-| `narrative`    | `significance`, optional `period_*` / `status` / `legacy_id`                     |
-| `dream`        | `source_limbic_ids`, `source_conversation_ids`, `episodic_snippets`, `legacy_id` |
-| `semantic_ref` | `semantic_memory_id`                                                             |
+| Component         | `body` fields                                                                                       |
+| ----------------- | --------------------------------------------------------------------------------------------------- |
+| `limbic`          | `valence`, `arousal`, `intensity`, optional provenance (`kind`, `legacy_id`, …)                     |
+| `narrative`       | `significance`, optional `period_*` / `status` / `legacy_id`                                        |
+| `dream`           | `source_limbic_ids`, `source_conversation_ids`, `episodic_snippets`, `legacy_id`                    |
+| `semantic_ref`    | `entity_id`（指向 `primary_component=semantic_memory` 的 entity）                                   |
+| `semantic_memory` | `memory_kind`, `status`, `source_conversations`, `observed_at`, `occurred_at`, optional `legacy_id` |
 
 **Container end-state:** `diary_entry` is the only content-block container. Dream / limbic / autobiographical memories are `content_block` rows with the matching semantic tag under the dated diary for that CST day (agent default private world for sleep writes).
 
@@ -259,7 +262,7 @@ See memory hybrid search in [`memory.md`](memory.md) for FTS operator syntax; en
 | Legacy table                   | Target                                                                                                                     |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
 | `dream_memory` / `dream_entry` | `content_block` + `dream`（parent = dated `diary_entry`；**done**；独立 `/dream` UI / ToolSet 已退役）                     |
-| `semantic_memory`              | `content_block` + `semantic_ref`                                                                                           |
+| `semantic_memory`              | `primary_component=semantic_memory`（独立 entity；**done**）                                                               |
 | `autobiographical_memory`      | `content_block` + `narrative`（parent = dated `diary_entry`；**done**）                                                    |
 | `limbic_memory`                | `content_block` + `limbic`（parent = dated `diary_entry`；**done**）                                                       |
 | `diary_entry` single body      | Container + child `content_block`s (**done**; migration clears container `content`)                                        |

@@ -20,7 +20,7 @@ export const narrativeBodySchema = z.object({
   significance: narrativeSignificanceSchema.default("normal"),
   period_start: z.string().nullable().optional(),
   period_end: z.string().nullable().optional(),
-  source_facts: z.array(z.string()).default([]).optional(),
+  source_facts: z.array(z.number().int().positive()).default([]).optional(),
   source_conversations: z.array(z.string()).default([]).optional(),
   status: narrativeStatusSchema.default("active").optional(),
   legacy_id: z.string().optional(),

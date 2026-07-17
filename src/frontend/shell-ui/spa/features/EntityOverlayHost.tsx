@@ -1,10 +1,11 @@
 import { useEffect, useState, type JSX } from "react";
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@freeanima/frontend/ui-kit";
+import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 
 import { getEntityOverlay } from "./entity-overlay-registry.ts";
 import {
   bindOpenEntityResourceToWindow,
+  setAnimaUriPrimaryComponentResolver,
   setEntityOverlayOpener,
   type EntityOverlayOpenRequest,
 } from "./open-entity-resource.ts";
@@ -15,8 +16,23 @@ export function EntityOverlayHost(): JSX.Element | null {
   useEffect(() => {
     setEntityOverlayOpener((next) => setReq(next));
     bindOpenEntityResourceToWindow();
+    setAnimaUriPrimaryComponentResolver(async (id) => {
+      try {
+        const raw: unknown = await getTypedSatelliteHubClient().call("memory.semanticList", {
+          status: "all",
+          limit: 100,
+          offset: 0,
+        });
+        const items = (raw as { items?: Array<{ id: number }> }).items ?? [];
+        if (items.some((item) => item.id === id)) return "semantic_memory";
+      } catch {
+        // ignore — caller will require explicit component
+      }
+      return null;
+    });
     return () => {
       setEntityOverlayOpener(null);
+      setAnimaUriPrimaryComponentResolver(null);
     };
   }, []);
 

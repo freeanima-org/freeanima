@@ -30,7 +30,9 @@ function brickToRow(b: MemoryBrickRow): LimbicMemoryRow {
     content: b.content,
     intensity: Number(b.body.intensity ?? 0.5),
     source_segment: b.body.source_segment == null ? null : String(b.body.source_segment),
-    semantic_memory_ids: Array.isArray(semantic) ? semantic.map(String) : [],
+    semantic_memory_ids: Array.isArray(semantic)
+      ? semantic.map((v) => Number(v)).filter((n) => Number.isInteger(n) && n > 0)
+      : [],
     created_at: new Date(b.created_at),
     fts_segmented: null,
     content_embedding: null,

@@ -9,10 +9,15 @@ import { createLimbicMemory } from "@freeanima/core/db/pg/limbic-memory";
 
 const LIMBIC_KINDS = ["conversation_mood", "turning_point", "spike"] as const;
 
-function parseStringArray(value: unknown): string[] | undefined {
+function parseNumberArray(value: unknown): number[] | undefined {
   if (value === undefined) return undefined;
   if (!Array.isArray(value)) return [];
-  return value.map((v) => String(v).trim()).filter(Boolean);
+  const out: number[] = [];
+  for (const v of value) {
+    const n = typeof v === "number" ? v : Number(String(v).trim());
+    if (Number.isInteger(n) && n > 0) out.push(n);
+  }
+  return out;
 }
 
 function parseOptionalFloat(value: unknown): number | null | undefined {
@@ -53,7 +58,7 @@ export const limbicMemoryToolDefs: ToolDef[] = [
         },
         semantic_memory_ids: {
           type: "array",
-          items: { type: "string" },
+          items: { type: "number" },
           description: "Linked semantic_memory ids (often from phase 1 output)",
         },
       },
@@ -88,7 +93,7 @@ export const limbicMemoryToolDefs: ToolDef[] = [
         arousal: parseOptionalFloat(args.arousal),
         intensity,
         source_segment: args.source_segment !== undefined ? String(args.source_segment) : undefined,
-        semantic_memory_ids: parseStringArray(args.semantic_memory_ids),
+        semantic_memory_ids: parseNumberArray(args.semantic_memory_ids),
       });
 
       try {

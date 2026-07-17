@@ -1,6 +1,10 @@
-import { and, arrayOverlaps, eq, inArray, sql } from "drizzle-orm";
-import { LIMBIC_COMPONENT, NARRATIVE_COMPONENT } from "@freeanima/core/db/schema/entity";
-import { entities, semanticMemory, conversations } from "@freeanima/core/db/schema";
+import { and, eq, inArray, sql } from "drizzle-orm";
+import {
+  LIMBIC_COMPONENT,
+  NARRATIVE_COMPONENT,
+  SEMANTIC_MEMORY_COMPONENT,
+} from "@freeanima/core/db/schema/entity";
+import { entities, conversations } from "@freeanima/core/db/schema";
 
 import { getDb } from "../../client.ts";
 import { listCronSessionIds } from "./conversation-repo.ts";
@@ -36,16 +40,26 @@ export async function purgeCronConversations(): Promise<PurgeCronConversationsRe
     );
 
   const semanticRows = await db
-    .select({ id: semanticMemory.id, source_conversations: semanticMemory.source_conversations })
-    .from(semanticMemory)
-    .where(arrayOverlaps(semanticMemory.source_conversations, ids));
+    .select({ id: entities.id, body: entities.body })
+    .from(entities)
+    .where(
+      and(
+        eq(entities.primary_component, SEMANTIC_MEMORY_COMPONENT),
+        sql`(${entities.body}->'source_conversations') ?| ${ids}`,
+      ),
+    );
   for (const row of semanticRows) {
-    const next = stripIdsFromArray(row.source_conversations ?? [], idSet);
-    if (next.length === (row.source_conversations ?? []).length) continue;
+    const body = (row.body ?? {}) as Record<string, unknown>;
+    const raw = body.source_conversations;
+    const convs = Array.isArray(raw) ? raw.map(String) : [];
+    const next = stripIdsFromArray(convs, idSet);
+    if (next.length === convs.length) continue;
     await db
-      .update(semanticMemory)
-      .set({ source_conversations: next })
-      .where(eq(semanticMemory.id, row.id));
+      .update(entities)
+      .set({
+        body: sql`${entities.body} || ${JSON.stringify({ source_conversations: next })}::jsonb`,
+      })
+      .where(eq(entities.id, row.id));
   }
 
   const narrativeRows = await db

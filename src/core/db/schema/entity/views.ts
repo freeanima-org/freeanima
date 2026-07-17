@@ -71,6 +71,8 @@ export type EntityRow = {
   summary: string;
   content: string;
   body: Record<string, unknown>;
+  pinned: boolean;
+  reference_count: number;
   created_at: Date;
   updated_at: Date;
 };
@@ -89,6 +91,8 @@ export const entityRowSelectColumns = {
   summary: entities.summary,
   content: entities.content,
   body: entities.body,
+  pinned: entities.pinned,
+  reference_count: entities.reference_count,
   created_at: entities.created_at,
   updated_at: entities.updated_at,
 } as const;
@@ -103,6 +107,8 @@ export const entityListSelectColumns = {
   title: entities.title,
   summary: entities.summary,
   body: entities.body,
+  pinned: entities.pinned,
+  reference_count: entities.reference_count,
   created_at: entities.created_at,
   updated_at: entities.updated_at,
 } as const;
@@ -124,6 +130,8 @@ export function mapEntityRow(
     summary: row.summary ?? "",
     content: row.content ?? "",
     body: (row.body ?? {}) as Record<string, unknown>,
+    pinned: row.pinned ?? false,
+    reference_count: row.reference_count ?? 0,
     created_at: row.created_at,
     updated_at: row.updated_at,
   };

@@ -14,7 +14,8 @@ export const limbicBodySchema = z.object({
   kind: limbicKindSchema.optional(),
   conversation_id: z.string().optional(),
   source_segment: z.string().nullable().optional(),
-  semantic_memory_ids: z.array(z.string()).default([]).optional(),
+  /** entities.id（primary_component=semantic_memory） */
+  semantic_memory_ids: z.array(z.number().int().positive()).default([]).optional(),
   legacy_id: z.string().optional(),
 });
 

@@ -36,9 +36,10 @@ describe("content-block tool helpers", () => {
       significance: "milestone",
     });
     expect(parseNarrative({ significance: "nope" })).toBeNull();
-    expect(parseSemanticRef({ semantic_memory_id: "sm-1" })).toEqual({
-      semantic_memory_id: "sm-1",
+    expect(parseSemanticRef({ entity_id: 42 })).toEqual({
+      entity_id: 42,
     });
-    expect(parseSemanticRef({ semantic_memory_id: "" })).toBeNull();
+    expect(parseSemanticRef({ entity_id: 0 })).toBeNull();
+    expect(parseSemanticRef({ entity_id: "x" })).toBeNull();
   });
 });
