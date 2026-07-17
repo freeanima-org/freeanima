@@ -609,6 +609,12 @@ type ParaglideMessageExports = {
   readonly settings_about_loading: ParaglideMessageFn;
   readonly settings_about_title: ParaglideMessageFn;
   readonly settings_about_unavailable: ParaglideMessageFn;
+  readonly settings_appearance_hint: ParaglideMessageFn;
+  readonly settings_appearance_theme_forest: ParaglideMessageFn;
+  readonly settings_appearance_theme_neutral: ParaglideMessageFn;
+  readonly settings_appearance_theme_ocean: ParaglideMessageFn;
+  readonly settings_appearance_theme_sunset: ParaglideMessageFn;
+  readonly settings_appearance_theme_violet: ParaglideMessageFn;
   readonly sidebar_architecture: ParaglideMessageFn;
   readonly sidebar_compression: ParaglideMessageFn;
   readonly sidebar_concepts: ParaglideMessageFn;
@@ -1302,6 +1308,12 @@ declare module "*/messages/paraglide/messages.js" {
   export const settings_about_loading: ParaglideMessageFn;
   export const settings_about_title: ParaglideMessageFn;
   export const settings_about_unavailable: ParaglideMessageFn;
+  export const settings_appearance_hint: ParaglideMessageFn;
+  export const settings_appearance_theme_forest: ParaglideMessageFn;
+  export const settings_appearance_theme_neutral: ParaglideMessageFn;
+  export const settings_appearance_theme_ocean: ParaglideMessageFn;
+  export const settings_appearance_theme_sunset: ParaglideMessageFn;
+  export const settings_appearance_theme_violet: ParaglideMessageFn;
   export const sidebar_architecture: ParaglideMessageFn;
   export const sidebar_compression: ParaglideMessageFn;
   export const sidebar_concepts: ParaglideMessageFn;

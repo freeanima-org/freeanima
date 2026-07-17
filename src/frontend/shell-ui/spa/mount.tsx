@@ -8,6 +8,7 @@ import {
 } from "react";
 import { createRoot } from "react-dom/client";
 import { Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
+import { applyColorTheme, readColorTheme } from "@freeanima/frontend/shell-sdk/color-theme";
 import type { SettingsBinding } from "@freeanima/frontend/shell-sdk/settings";
 import { blockNativeDialogs, ConfirmPromptHost } from "@freeanima/frontend/ui-kit/composite";
 
@@ -184,6 +185,7 @@ function ShellAppTree({
 }
 
 export async function mountShellUi(opts: MountShellUiOptions): Promise<void> {
+  applyColorTheme(readColorTheme());
   setShellAppBindings(opts.bindings);
 
   const bridge = (window as ShellBridgeWindow).__freeanimaShellBridge;

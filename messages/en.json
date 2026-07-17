@@ -684,5 +684,11 @@
   "settings_about_dirty_yes": "Modified",
   "settings_about_dirty_no": "Clean",
   "settings_about_loading": "Loading…",
-  "settings_about_unavailable": "Unavailable"
+  "settings_about_unavailable": "Unavailable",
+  "settings_appearance_hint": "Pick an accent color so you can tell environments apart at a glance. Saved on this device only.",
+  "settings_appearance_theme_neutral": "Neutral",
+  "settings_appearance_theme_ocean": "Ocean",
+  "settings_appearance_theme_forest": "Forest",
+  "settings_appearance_theme_sunset": "Sunset",
+  "settings_appearance_theme_violet": "Violet"
 }

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-17 14:29+0800\n"
+"POT-Creation-Date: 2026-07-17 15:19+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,13 +17,13 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/architecture.md:1 docs/features/companion.md:11
-#: messages/po4a/en.xml:608
+#: messages/po4a/en.xml:614
 #, no-wrap
 msgid "Architecture"
 msgstr "架构"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/compression.md:1 messages/po4a/en.xml:609
+#: docs/concepts/compression.md:1 messages/po4a/en.xml:615
 #, no-wrap
 msgid "Compression"
 msgstr "压缩"
@@ -36,8 +36,8 @@ msgstr "梦境"
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/dream.md:9 docs/concepts/sleep.md:9
-#: docs/guide/remote-access.md:10 messages/po4a/en.xml:621
-#: messages/po4a/en.xml:628
+#: docs/guide/remote-access.md:10 messages/po4a/en.xml:627
+#: messages/po4a/en.xml:634
 #, no-wrap
 msgid "Overview"
 msgstr "概述"
@@ -69,14 +69,14 @@ msgid "Search"
 msgstr "查询"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/identity.md:1 messages/po4a/en.xml:616
+#: docs/concepts/identity.md:1 messages/po4a/en.xml:622
 #, no-wrap
 msgid "Identity"
 msgstr "身份定位"
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/memory.md:1 messages/po4a/en.xml:219 messages/po4a/en.xml:385
-#: messages/po4a/en.xml:618
+#: messages/po4a/en.xml:624
 #, no-wrap
 msgid "Memory"
 msgstr "记忆体系"
@@ -90,83 +90,83 @@ msgstr "通知"
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/notifications.md:109 messages/po4a/en.xml:17
-#: messages/po4a/en.xml:179 messages/po4a/en.xml:631 messages/po4a/en.xml:638
+#: messages/po4a/en.xml:179 messages/po4a/en.xml:637 messages/po4a/en.xml:644
 #, no-wrap
 msgid "Tools"
 msgstr "工具"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/recall-flow.md:1 messages/po4a/en.xml:623
+#: docs/concepts/recall-flow.md:1 messages/po4a/en.xml:629
 #, no-wrap
 msgid "Recall Flow"
 msgstr "回忆流程"
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:5
-#: messages/po4a/en.xml:634
+#: messages/po4a/en.xml:640
 #, no-wrap
 msgid "Self Layer"
 msgstr "自我层"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/sleep.md:1 messages/po4a/en.xml:636
+#: docs/concepts/sleep.md:1 messages/po4a/en.xml:642
 #, no-wrap
 msgid "Sleep"
 msgstr "睡眠机制"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/time-perception.md:1 messages/po4a/en.xml:637
+#: docs/concepts/time-perception.md:1 messages/po4a/en.xml:643
 #, no-wrap
 msgid "Time Perception"
 msgstr "时间感知"
 
 #. type: Content of: <messages><msg>
 #: docs/features/chat.md:1 messages/po4a/en.xml:369 messages/po4a/en.xml:374
-#: messages/po4a/en.xml:651
+#: messages/po4a/en.xml:657
 #, no-wrap
 msgid "Chat"
 msgstr "聊天室"
 
 #. type: Content of: <messages><msg>
-#: docs/features/companion.md:57 messages/po4a/en.xml:613
+#: docs/features/companion.md:57 messages/po4a/en.xml:619
 #, no-wrap
 msgid "Features"
 msgstr "功能"
 
 #. type: Content of: <messages><msg>
-#: docs/features/diary.md:1 docs/features/diary.md:5 messages/po4a/en.xml:652
+#: docs/features/diary.md:1 docs/features/diary.md:5 messages/po4a/en.xml:658
 #, no-wrap
 msgid "Diary"
 msgstr "日记"
 
 #. type: Content of: <messages><msg>
 #: docs/features/mobile-app.md:1 docs/features/mobile-app.md:5
-#: messages/po4a/en.xml:620
+#: messages/po4a/en.xml:626
 #, no-wrap
 msgid "Mobile app (Android)"
 msgstr "移动端 APP（Android）"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/database.md:1 messages/po4a/en.xml:611
+#: docs/guide/database.md:1 messages/po4a/en.xml:617
 #, no-wrap
 msgid "Database"
 msgstr "数据库"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:617
+#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:623
 #, no-wrap
 msgid "Installation"
 msgstr "安装"
 
 #. type: Content of: <messages><msg>
 #: docs/guide/security.md:1 docs/tools/execute-code-runtimes.md:60
-#: messages/po4a/en.xml:630 messages/po4a/en.xml:633
+#: messages/po4a/en.xml:636 messages/po4a/en.xml:639
 #, no-wrap
 msgid "Security"
 msgstr "安全"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/service.md:1 messages/po4a/en.xml:635
+#: docs/guide/service.md:1 messages/po4a/en.xml:641
 #, no-wrap
 msgid "Service"
 msgstr "服务"
@@ -185,7 +185,7 @@ msgstr "终端"
 
 #. type: Content of: <messages><msg>
 #: docs/sap/satellite-guide.md:1 docs/sap/satellite-guide.md:5
-#: messages/po4a/en.xml:629
+#: messages/po4a/en.xml:635
 #, no-wrap
 msgid "Satellite Guide"
 msgstr "卫星指南"
@@ -310,7 +310,7 @@ msgstr "显示已归档"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:23 messages/po4a/en.xml:98 messages/po4a/en.xml:524
-#: messages/po4a/en.xml:641
+#: messages/po4a/en.xml:647
 #, no-wrap
 msgid "Close"
 msgstr "关闭"
@@ -732,7 +732,7 @@ msgid "Rebuild runs in the background; you may close this page."
 msgstr "后台运行中，可关闭页面；刷新统计可查看覆盖度变化。"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:94 messages/po4a/en.xml:640
+#: messages/po4a/en.xml:94 messages/po4a/en.xml:646
 #, no-wrap
 msgid "Cancel"
 msgstr "取消"
@@ -774,7 +774,7 @@ msgid "Config"
 msgstr "配置"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:102 messages/po4a/en.xml:642
+#: messages/po4a/en.xml:102 messages/po4a/en.xml:648
 #, no-wrap
 msgid "OK"
 msgstr "确定"
@@ -1182,7 +1182,7 @@ msgid "Table"
 msgstr "表"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:174 messages/po4a/en.xml:655
+#: messages/po4a/en.xml:174 messages/po4a/en.xml:660
 #, no-wrap
 msgid "Task"
 msgstr "任务"
@@ -3227,7 +3227,7 @@ msgid "GitHub"
 msgstr "GitHub"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:559 messages/po4a/en.xml:615
+#: messages/po4a/en.xml:559 messages/po4a/en.xml:621
 #, no-wrap
 msgid "Home"
 msgstr "首页"
@@ -3485,334 +3485,364 @@ msgid "Unavailable"
 msgstr "无可用世界"
 
 #. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:608
+#, no-wrap
+msgid "Pick an accent color so you can tell environments apart at a glance. Saved on this device only."
+msgstr "选择一种强调色，便于一眼区分不同环境。仅保存在本机。"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:609
+#, no-wrap
+msgid "Forest"
+msgstr "森林"
+
+#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:610
+#, no-wrap
+msgid "Neutral"
+msgstr "中性"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:611
+#, no-wrap
+msgid "Ocean"
+msgstr "海洋"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:612
+#, no-wrap
+msgid "Sunset"
+msgstr "日落"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:613
+#, no-wrap
+msgid "Violet"
+msgstr "紫罗兰"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:616
 #, no-wrap
 msgid "Concepts"
 msgstr "概念"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:612
+#: messages/po4a/en.xml:618
 #, no-wrap
 msgid "Documentation"
 msgstr "文档"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:614
+#: messages/po4a/en.xml:620
 #, no-wrap
 msgid "Guide"
 msgstr "指南"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:619
+#: messages/po4a/en.xml:625
 #, no-wrap
 msgid "Migration Plan"
 msgstr "迁移计划"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:622
+#: messages/po4a/en.xml:628
 #, no-wrap
 msgid "Probe Architecture"
 msgstr "探针架构"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:624
+#: messages/po4a/en.xml:630
 #, no-wrap
 msgid "Runtimes"
 msgstr "运行时"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:625
+#: messages/po4a/en.xml:631
 #, no-wrap
 msgid "SAP"
 msgstr "SAP"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:626
+#: messages/po4a/en.xml:632
 #, no-wrap
 msgid "Events"
 msgstr "事件"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:627
+#: messages/po4a/en.xml:633
 #, no-wrap
 msgid "RPC Methods"
 msgstr "RPC 方法"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:632
+#: messages/po4a/en.xml:638
 #, no-wrap
 msgid "Transport"
 msgstr "传输"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:639
+#: messages/po4a/en.xml:645
 #, no-wrap
 msgid "Versioning"
 msgstr "发版"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:643
+#: messages/po4a/en.xml:649
 #, no-wrap
 msgid "Notice"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:644
+#: messages/po4a/en.xml:650
 #, no-wrap
 msgid "\"{section}\" was saved to the Hub database. Restart the service now to apply changes?"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:645
+#: messages/po4a/en.xml:651
 #, fuzzy, no-wrap
 #| msgid "Restart service"
 msgid "Restart service?"
 msgstr "重启服务"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:646
+#: messages/po4a/en.xml:652
 #, no-wrap
 msgid "You are offline. Live Hub features are unavailable; cached data may still be shown where available."
 msgstr "当前处于离线状态，Hub 实时功能不可用；部分页面可能仍显示已缓存的数据。"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:647
+#: messages/po4a/en.xml:653
 #, no-wrap
 msgid " · Showing cached data"
 msgstr " · 显示缓存数据"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:648
+#: messages/po4a/en.xml:654
 #, no-wrap
 msgid "Offline read-only — edits are disabled until you're back online."
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:649
+#: messages/po4a/en.xml:655
 #, no-wrap
 msgid "Offline snapshot · updated {time}"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:650
+#: messages/po4a/en.xml:656
 #, no-wrap
 msgid "{count} sync failed"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:653
+#: messages/po4a/en.xml:659
 #, no-wrap
 msgid "Pomodoro"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:654
-#, no-wrap
-msgid "Project"
-msgstr "项目"
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:656
+#: messages/po4a/en.xml:661
 #, no-wrap
 msgid "{count} items pending sync"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:657
+#: messages/po4a/en.xml:662
 #, no-wrap
 msgid "Retry"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:658
+#: messages/po4a/en.xml:663
 #, no-wrap
 msgid "Reconnect and retry all"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:659
+#: messages/po4a/en.xml:664
 #, fuzzy, no-wrap
 #| msgid "{count} tools"
 msgid "{count} conflicts"
 msgstr "{count} 个工具"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:660
+#: messages/po4a/en.xml:665
 #, no-wrap
 msgid "Discard"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:661
+#: messages/po4a/en.xml:666
 #, fuzzy, no-wrap
 #| msgid "Load failed"
 msgid "Send failed"
 msgstr "加载失败"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:662
+#: messages/po4a/en.xml:667
 #, fuzzy, no-wrap
 #| msgid "Send now"
 msgid "Send anyway"
 msgstr "立即发送"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:663
+#: messages/po4a/en.xml:668
 #, no-wrap
 msgid "Pending send"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:664
+#: messages/po4a/en.xml:669
 #, fuzzy, no-wrap
 #| msgid "Out of Scope"
 msgid "Out of date"
 msgstr "不在范围内"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:665
+#: messages/po4a/en.xml:670
 #, fuzzy, no-wrap
 #| msgid "Conversation (optional)"
 msgid "Conversation continued on another device"
 msgstr "对话（可选）"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:666
+#: messages/po4a/en.xml:671
 #, no-wrap
 msgid "Install"
 msgstr "安装"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:667
+#: messages/po4a/en.xml:672
 #, no-wrap
 msgid "Install FreeAnima on your home screen for quick access."
 msgstr "将 FreeAnima 添加到主屏幕，便于快速访问。"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:668
+#: messages/po4a/en.xml:673
 #, no-wrap
 msgid "App shell is ready for offline use. Hub data still requires a connection."
 msgstr "应用界面已可离线打开；Hub 数据仍需联网。"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:669
+#: messages/po4a/en.xml:674
 #, no-wrap
 msgid "A new version is available."
 msgstr "有新版本可用。"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:670
+#: messages/po4a/en.xml:675
 #, no-wrap
 msgid "Reload"
 msgstr "重新加载"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:671
+#: messages/po4a/en.xml:676
 #, no-wrap
 msgid "Switch to {channel}"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:672
+#: messages/po4a/en.xml:677
 #, no-wrap
 msgid "Install {channel} build ({version})?"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:673
+#: messages/po4a/en.xml:678
 #, no-wrap
 msgid "Switch channel"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:674
+#: messages/po4a/en.xml:679
 #, no-wrap
 msgid "Downloading and installing…"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:675
+#: messages/po4a/en.xml:680
 #, fuzzy, no-wrap
 #| msgid "A new version is available."
 msgid "A new app version ({version}) is available."
 msgstr "有新版本可用。"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:676
+#: messages/po4a/en.xml:681
 #, no-wrap
 msgid "Check for updates"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:677
+#: messages/po4a/en.xml:682
 #, no-wrap
 msgid "Later"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:678
+#: messages/po4a/en.xml:683
 #, no-wrap
 msgid "Update failed. Please try again."
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:679
+#: messages/po4a/en.xml:684
 #, fuzzy, no-wrap
 #| msgid "Operation failed: {detail}"
 msgid "Update failed: {message}"
 msgstr "操作失败: {detail}"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:680
+#: messages/po4a/en.xml:685
 #, fuzzy, no-wrap
 #| msgid "Updated"
 msgid "Update now"
 msgstr "更新时间"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:681
+#: messages/po4a/en.xml:686
 #, no-wrap
 msgid "You are on the latest version."
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:682
+#: messages/po4a/en.xml:687
 #, no-wrap
 msgid "See ~/.anima/desktop-shell/shell.log for details."
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:683
+#: messages/po4a/en.xml:688
 #, no-wrap
 msgid "No update package for this platform yet."
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:684
+#: messages/po4a/en.xml:689
 #, no-wrap
 msgid "gh-proxy.com"
 msgstr "gh-proxy.com"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:685
+#: messages/po4a/en.xml:690
 #, no-wrap
 msgid "ghfast.top"
 msgstr "ghfast.top"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:686
+#: messages/po4a/en.xml:691
 #, no-wrap
 msgid "ghproxy.net"
 msgstr "ghproxy.net"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:687
+#: messages/po4a/en.xml:692
 #, no-wrap
 msgid "Download proxy"
 msgstr "下载代理"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:688
+#: messages/po4a/en.xml:693
 #, no-wrap
 msgid "Direct (GitHub)"
 msgstr "直连（GitHub）"

@@ -605,6 +605,12 @@ Digital Humans</msg>
   <msg id="settings_about_loading">Loading…</msg>
   <msg id="settings_about_title">About</msg>
   <msg id="settings_about_unavailable">Unavailable</msg>
+  <msg id="settings_appearance_hint">Pick an accent color so you can tell environments apart at a glance. Saved on this device only.</msg>
+  <msg id="settings_appearance_theme_forest">Forest</msg>
+  <msg id="settings_appearance_theme_neutral">Neutral</msg>
+  <msg id="settings_appearance_theme_ocean">Ocean</msg>
+  <msg id="settings_appearance_theme_sunset">Sunset</msg>
+  <msg id="settings_appearance_theme_violet">Violet</msg>
   <msg id="sidebar_architecture">Architecture</msg>
   <msg id="sidebar_compression">Compression</msg>
   <msg id="sidebar_concepts">Concepts</msg>

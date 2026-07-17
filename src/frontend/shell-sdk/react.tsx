@@ -30,6 +30,7 @@ export {
   useShellModuleVisibility,
 } from "./shell-module-visibility-react.tsx";
 export { useSetShellModuleOrder, useShellModuleOrder } from "./shell-module-order-react.tsx";
+export { useColorTheme, useSetColorTheme } from "./color-theme-react.tsx";
 export { useNetworkOnline } from "./use-network-status.ts";
 export { useHubConnection } from "./use-hub-connection.ts";
 export { reconnectHub } from "./hub-connection.ts";

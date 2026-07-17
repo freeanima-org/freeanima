@@ -114,6 +114,18 @@ export {
   subscribeShellModuleVisibility,
   writeShellModuleVisibility,
 } from "./shell-module-visibility.ts";
+export type { ColorThemeId } from "./color-theme.ts";
+export {
+  COLOR_THEME_IDS,
+  COLOR_THEME_SWATCH,
+  DEFAULT_COLOR_THEME,
+  applyColorTheme,
+  parseColorTheme,
+  readColorTheme,
+  resetColorThemeForTest,
+  subscribeColorTheme,
+  writeColorTheme,
+} from "./color-theme.ts";
 export {
   normalizeShellModuleOrder,
   readShellModuleOrder,
