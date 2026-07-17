@@ -5,7 +5,12 @@ import { join } from "node:path";
 import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
 
 import { applyStandaloneUpgrade } from "./apply-standalone-upgrade.ts";
-import { commitsMatch, extractReleaseCommit, extractReleaseVersion, CANARY_RELEASE_TAG } from "./github-releases.ts";
+import {
+  commitsMatch,
+  extractReleaseCommit,
+  extractReleaseVersion,
+  CANARY_RELEASE_TAG,
+} from "./github-releases.ts";
 import { matchReleaseAsset } from "./release-assets.ts";
 import { resolvePackagedUpdate } from "./resolve-packaged-update.ts";
 import {
