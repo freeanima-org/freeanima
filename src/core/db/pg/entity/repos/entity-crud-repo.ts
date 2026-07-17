@@ -13,7 +13,7 @@ import type { EntityCreateInput, EntityListOpts, EntityRow, EntityUpdateInput } 
 
 import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { scheduleEntityEmbedding, clearEntityEmbedding } from "../../embedding/entity-embedding.ts";
-import { getDb } from "../../client.ts";
+import { getDb, type DbSession } from "../../client.ts";
 
 function mapRow(row: EntityRowSelect | typeof entities.$inferSelect): EntityRow {
   return mapEntityRow(row);
@@ -35,7 +35,10 @@ function normalizeCreate(input: EntityCreateInput) {
   };
 }
 
-export async function createEntity(input: EntityCreateInput): Promise<EntityRow> {
+export async function createEntity(
+  input: EntityCreateInput,
+  session?: DbSession,
+): Promise<EntityRow> {
   const { type, primary, components, body, title, summary, content } = normalizeCreate(input);
   const now = new Date();
   const indexText = entitySearchTextForWrite({
@@ -46,7 +49,7 @@ export async function createEntity(input: EntityCreateInput): Promise<EntityRow>
     primary_component: primary,
   });
   const fts_segmented = await resolveFtsSegmentedForWrite(indexText);
-  const db = getDb();
+  const db = session ?? getDb();
   const [row] = await db
     .insert(entities)
     .values({
@@ -262,8 +265,11 @@ function buildListConditions(opts?: Omit<EntityListOpts, "offset" | "limit">) {
   return conditions.length > 0 ? and(...conditions) : undefined;
 }
 
-export async function listEntities(opts?: EntityListOpts): Promise<EntityRow[]> {
-  const db = getDb();
+export async function listEntities(
+  opts?: EntityListOpts,
+  session?: DbSession,
+): Promise<EntityRow[]> {
+  const db = session ?? getDb();
   const limit = Math.max(1, Math.min(500, opts?.limit ?? 100));
   const offset = Math.max(0, opts?.offset ?? 0);
   const where = buildListConditions(opts);

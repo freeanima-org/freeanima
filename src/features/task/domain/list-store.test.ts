@@ -123,4 +123,43 @@ describe("listTaskLists", () => {
     expect(inbox.is_default).toBe(true);
     expect(inbox.item_count).toBe(2);
   });
+
+  test("ensure 无默认箱时在 advisory lock 内 createEntity", async () => {
+    const entityMod = await import("@freeanima/core/db/pg/entity");
+    const pgMod = await import("@freeanima/core/db/pg");
+    spyOn(pgMod, "withAdvisoryXactLock").mockImplementation(async (_ns, _key, fn) =>
+      fn(null as never),
+    );
+    spyOn(entityMod, "listEntities").mockResolvedValue([]);
+    const createdAt = new Date("2026-01-02T00:00:00Z");
+    const create = spyOn(entityMod, "createEntity").mockResolvedValue({
+      id: 99,
+      type: "content",
+      world_id: 1,
+      primary_component: TASK_LIST_COMPONENT,
+      components: [TASK_LIST_COMPONENT],
+      title: "收件箱",
+      summary: "",
+      content: "",
+      body: {
+        sort_order: 0,
+        closed: false,
+        color: null,
+        is_default: true,
+        is_folder: false,
+        parent_id: null,
+      },
+      created_at: createdAt,
+      updated_at: createdAt,
+    });
+
+    const { ensureDefaultTaskListForWorld } = await import("./list-store.ts");
+    const inbox = await ensureDefaultTaskListForWorld(1);
+
+    expect(pgMod.withAdvisoryXactLock).toHaveBeenCalled();
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(create.mock.calls[0]?.[1]).toBeNull();
+    expect(inbox.id).toBe(99);
+    expect(inbox.is_default).toBe(true);
+  });
 });
