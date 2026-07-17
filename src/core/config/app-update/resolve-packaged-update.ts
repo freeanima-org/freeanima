@@ -156,10 +156,7 @@ export async function resolvePackagedUpdate(opts: {
   }
 
   // canary：优先比较完整版本串；无法解析时回退 commit；皆不可比则仍提示有更新
-  if (
-    isConcreteCanaryVersion(base.remoteVersion) &&
-    isConcreteCanaryVersion(opts.localVersion)
-  ) {
+  if (isConcreteCanaryVersion(base.remoteVersion) && isConcreteCanaryVersion(opts.localVersion)) {
     if (!isCanaryVersionNewer(base.remoteVersion, opts.localVersion)) {
       return {
         available: false,
