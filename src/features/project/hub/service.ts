@@ -66,6 +66,7 @@ export async function serviceProjectfolderCreate(
     name: string;
     parent_id?: number | null;
     sort_order?: number;
+    client_op_id?: string;
   },
   auth: VerifiedServiceApiToken,
 ) {
@@ -143,6 +144,7 @@ export async function serviceProjectCreate(
     folder_id?: number | null;
     product_tag?: string;
     sort_order?: number;
+    client_op_id?: string;
   },
   auth: VerifiedServiceApiToken,
 ) {
@@ -223,6 +225,7 @@ export async function serviceMilestoneCreate(
     title: string;
     due_at: string;
     sort_order?: number;
+    client_op_id?: string;
   },
   auth: VerifiedServiceApiToken,
 ) {

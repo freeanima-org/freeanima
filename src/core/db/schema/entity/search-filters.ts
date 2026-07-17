@@ -7,9 +7,12 @@ import {
   EMAIL_MESSAGE_COMPONENT,
   EMAIL_THREAD_COMPONENT,
   emailDirectionSchema,
+  MILESTONE_COMPONENT,
   pomodoroPhaseSchema,
   POMODORO_SESSION_COMPONENT,
   POMODORO_TASK_FOCUS_COMPONENT,
+  PROJECT_COMPONENT,
+  PROJECT_FOLDER_COMPONENT,
   TASK_ITEM_COMPONENT,
   TASK_LIST_COMPONENT,
   VAULT_ITEM_COMPONENT,
@@ -224,9 +227,69 @@ export function parseTaskListSearchFilters(
   return parsed.data;
 }
 
+export const projectFolderSearchFiltersSchema = z
+  .object({
+    client_op_id: z.string().min(1).optional(),
+  })
+  .strict();
+
+export type ProjectFolderSearchFilters = z.infer<typeof projectFolderSearchFiltersSchema>;
+
+export function parseProjectFolderSearchFilters(
+  raw: Record<string, unknown> | undefined,
+): ProjectFolderSearchFilters {
+  if (!raw || Object.keys(raw).length === 0) return {};
+  const parsed = projectFolderSearchFiltersSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(`invalid project_folder filters: ${parsed.error.message}`);
+  }
+  return parsed.data;
+}
+
+export const projectSearchFiltersSchema = z
+  .object({
+    client_op_id: z.string().min(1).optional(),
+  })
+  .strict();
+
+export type ProjectSearchFilters = z.infer<typeof projectSearchFiltersSchema>;
+
+export function parseProjectSearchFilters(
+  raw: Record<string, unknown> | undefined,
+): ProjectSearchFilters {
+  if (!raw || Object.keys(raw).length === 0) return {};
+  const parsed = projectSearchFiltersSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(`invalid project filters: ${parsed.error.message}`);
+  }
+  return parsed.data;
+}
+
+export const milestoneSearchFiltersSchema = z
+  .object({
+    client_op_id: z.string().min(1).optional(),
+  })
+  .strict();
+
+export type MilestoneSearchFilters = z.infer<typeof milestoneSearchFiltersSchema>;
+
+export function parseMilestoneSearchFilters(
+  raw: Record<string, unknown> | undefined,
+): MilestoneSearchFilters {
+  if (!raw || Object.keys(raw).length === 0) return {};
+  const parsed = milestoneSearchFiltersSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(`invalid milestone filters: ${parsed.error.message}`);
+  }
+  return parsed.data;
+}
+
 export const ENTITY_SEARCH_FILTER_COMPONENTS = {
   [TASK_ITEM_COMPONENT]: taskItemSearchFiltersSchema,
   [TASK_LIST_COMPONENT]: taskListSearchFiltersSchema,
+  [PROJECT_FOLDER_COMPONENT]: projectFolderSearchFiltersSchema,
+  [PROJECT_COMPONENT]: projectSearchFiltersSchema,
+  [MILESTONE_COMPONENT]: milestoneSearchFiltersSchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntrySearchFiltersSchema,
   [DREAM_ENTRY_COMPONENT]: dreamEntrySearchFiltersSchema,
   [EMAIL_ACCOUNT_COMPONENT]: emailAccountSearchFiltersSchema,

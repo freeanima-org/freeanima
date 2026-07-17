@@ -11,6 +11,7 @@ import {
   deleteEntity,
   getEntity,
   listEntities,
+  searchEntities,
   updateEntity,
 } from "@freeanima/core/db/pg/entity";
 
@@ -123,10 +124,33 @@ export async function listProjectFolders(worldId: number): Promise<ProjectFolder
     .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
 }
 
+async function findProjectFolderByClientOpId(
+  worldId: number,
+  clientOpId: string,
+): Promise<ProjectFolderRow | null> {
+  const result = await searchEntities({
+    world_id: worldId,
+    primary_component: PROJECT_FOLDER_COMPONENT,
+    filters: { client_op_id: clientOpId },
+    limit: 1,
+    mode: "filter_only",
+    include_count: false,
+  });
+  const row = result.results[0];
+  if (!row) return null;
+  const parsed = asProjectFolder(row);
+  if (!parsed) return null;
+  return toFolderRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+}
+
 export async function createProjectFolder(
   worldId: number,
   input: ProjectFolderCreateInput,
 ): Promise<ProjectFolderRow> {
+  if (input.client_op_id) {
+    const existing = await findProjectFolderByClientOpId(worldId, input.client_op_id);
+    if (existing) return existing;
+  }
   if (input.parent_id != null) {
     const parent = await getEntity(input.parent_id);
     if (!parent || parent.primary_component !== PROJECT_FOLDER_COMPONENT) {
@@ -144,6 +168,7 @@ export async function createProjectFolder(
     body: {
       parent_id: input.parent_id ?? null,
       sort_order: input.sort_order ?? siblings.length,
+      client_op_id: input.client_op_id ?? null,
     },
   });
   const parsed = asProjectFolder(row);

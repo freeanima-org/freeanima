@@ -60,6 +60,8 @@ function moduleLabel(moduleId: OfflineModuleId): string {
       return m.ui_offline_sync_module_diary();
     case "task":
       return m.ui_offline_sync_module_task();
+    case "project":
+      return m.ui_offline_sync_module_project();
     case "pomodoro":
       return m.ui_offline_sync_module_pomodoro();
     default:

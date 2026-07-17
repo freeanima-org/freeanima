@@ -10,6 +10,7 @@ export const milestoneBodySchema = z.object({
   due_at: z.string(),
   status: milestoneStatusSchema.default("pending"),
   sort_order: z.number().int().optional(),
+  client_op_id: z.string().min(1).nullable().default(null),
 });
 
 export type MilestoneBody = z.infer<typeof milestoneBodySchema>;

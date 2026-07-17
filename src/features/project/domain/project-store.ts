@@ -184,10 +184,40 @@ export async function getProject(worldId: number, id: number): Promise<ProjectRo
   });
 }
 
+async function findProjectByClientOpId(
+  worldId: number,
+  clientOpId: string,
+): Promise<ProjectRow | null> {
+  const result = await searchEntities({
+    world_id: worldId,
+    primary_component: PROJECT_COMPONENT,
+    filters: { client_op_id: clientOpId },
+    limit: 1,
+    mode: "filter_only",
+    include_count: false,
+  });
+  const row = result.results[0];
+  if (!row) return null;
+  const parsed = asProject(row);
+  if (!parsed) return null;
+  const task_count = await countTasksForProject(parsed.id, worldId);
+  const milestone_count = await countMilestonesForProject(parsed.id, worldId);
+  return toProjectRow(parsed, {
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    task_count,
+    milestone_count,
+  });
+}
+
 export async function createProject(
   worldId: number,
   input: ProjectCreateInput,
 ): Promise<ProjectRow> {
+  if (input.client_op_id) {
+    const existing = await findProjectByClientOpId(worldId, input.client_op_id);
+    if (existing) return existing;
+  }
   if (input.folder_id != null) {
     await assertProjectFolderExists(input.folder_id, worldId);
   }
@@ -209,6 +239,7 @@ export async function createProject(
       product_tag: input.product_tag,
       sort_order: input.sort_order ?? siblings.length,
       linked_diary_ids: [],
+      client_op_id: input.client_op_id ?? null,
     },
   });
   const parsed = asProject(row);

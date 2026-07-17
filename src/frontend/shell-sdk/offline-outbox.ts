@@ -11,7 +11,14 @@ import {
 
 type MemoryBackend = Map<string, unknown>;
 
-export type OfflineModuleId = "chat" | "diary" | "pomodoro" | "task" | "dream" | (string & {});
+export type OfflineModuleId =
+  | "chat"
+  | "diary"
+  | "pomodoro"
+  | "task"
+  | "project"
+  | "dream"
+  | (string & {});
 
 /** 自动 flush 达到该次数后停止重试，需用户手动重试或丢弃。 */
 export const OFFLINE_OUTBOX_MAX_ATTEMPTS = 5;

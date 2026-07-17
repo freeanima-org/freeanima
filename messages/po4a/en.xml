@@ -20,6 +20,9 @@
   <msg id="chat_llm_debug_turns">Message turns</msg>
   <msg id="chat_llm_debug_view">View</msg>
   <msg id="chat_show_archived">Show archived</msg>
+  <msg id="chat_slash_result_close">Close</msg>
+  <msg id="chat_slash_result_loading">Running…</msg>
+  <msg id="chat_slash_result_title">Command result</msg>
   <msg id="chat_speech_insecure_context">Web Speech requires HTTPS; use Edge TTS or open Hub over HTTPS</msg>
   <msg id="chat_speech_play">Read aloud</msg>
   <msg id="chat_speech_playback_failed">Speech playback failed</msg>
@@ -648,6 +651,7 @@ Digital Humans</msg>
   <msg id="ui_offline_sync_module_chat">Chat</msg>
   <msg id="ui_offline_sync_module_diary">Diary</msg>
   <msg id="ui_offline_sync_module_pomodoro">Pomodoro</msg>
+  <msg id="ui_offline_sync_module_project">Project</msg>
   <msg id="ui_offline_sync_module_task">Task</msg>
   <msg id="ui_offline_sync_pending">{count} items pending sync</msg>
   <msg id="ui_offline_sync_retry">Retry</msg>

@@ -644,6 +644,7 @@
   "ui_offline_sync_module_chat": "Chat",
   "ui_offline_sync_module_diary": "Diary",
   "ui_offline_sync_module_task": "Task",
+  "ui_offline_sync_module_project": "Project",
   "ui_offline_sync_module_pomodoro": "Pomodoro",
   "ui_pwa_install_action": "Install",
   "ui_pwa_install_prompt": "Install FreeAnima on your home screen for quick access.",

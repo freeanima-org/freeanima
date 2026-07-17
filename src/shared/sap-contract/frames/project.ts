@@ -65,6 +65,7 @@ export const projectfolderCreateInputSchema = z.object({
   name: z.string().min(1),
   parent_id: z.number().int().positive().nullable().optional(),
   sort_order: z.number().int().optional(),
+  client_op_id: z.string().min(1).optional(),
 });
 export type ProjectfolderCreateInput = z.infer<typeof projectfolderCreateInputSchema>;
 export const projectfolderCreateOutputSchema = z.object({ item: projectFolderRowSchema });
@@ -76,6 +77,7 @@ export const projectfolderPatchInputSchema = z.object({
   name: z.string().min(1).optional(),
   parent_id: z.number().int().positive().nullable().optional(),
   sort_order: z.number().int().optional(),
+  client_op_id: z.string().min(1).optional(),
 });
 export type ProjectfolderPatchInput = z.infer<typeof projectfolderPatchInputSchema>;
 export const projectfolderPatchOutputSchema = z.object({ item: projectFolderRowSchema });
@@ -84,6 +86,7 @@ export type ProjectfolderPatchOutput = z.infer<typeof projectfolderPatchOutputSc
 export const projectfolderDeleteInputSchema = z.object({
   subject_kind: projectSubjectKindSchema,
   id: z.number().int().positive(),
+  client_op_id: z.string().min(1).optional(),
 });
 export type ProjectfolderDeleteInput = z.infer<typeof projectfolderDeleteInputSchema>;
 export const projectfolderDeleteOutputSchema = z.object({ ok: z.literal(true) });
@@ -108,6 +111,7 @@ export const projectCreateInputSchema = z.object({
   folder_id: z.number().int().positive().nullable().optional(),
   product_tag: z.string().optional(),
   sort_order: z.number().int().optional(),
+  client_op_id: z.string().min(1).optional(),
 });
 export type ProjectCreateInput = z.infer<typeof projectCreateInputSchema>;
 export const projectCreateOutputSchema = z.object({ item: projectRowSchema });
@@ -135,6 +139,7 @@ export const projectPatchInputSchema = z.object({
   sort_order: z.number().int().optional(),
   release_tasks: z.boolean().optional(),
   linked_diary_ids: z.array(z.number().int().positive()).optional(),
+  client_op_id: z.string().min(1).optional(),
 });
 export type ProjectPatchInput = z.infer<typeof projectPatchInputSchema>;
 export const projectPatchOutputSchema = z.object({ item: projectRowSchema });
@@ -143,6 +148,7 @@ export type ProjectPatchOutput = z.infer<typeof projectPatchOutputSchema>;
 export const projectDeleteInputSchema = z.object({
   subject_kind: projectSubjectKindSchema,
   id: z.number().int().positive(),
+  client_op_id: z.string().min(1).optional(),
 });
 export type ProjectDeleteInput = z.infer<typeof projectDeleteInputSchema>;
 export const projectDeleteOutputSchema = z.object({ ok: z.literal(true) });
@@ -162,6 +168,7 @@ export const milestoneCreateInputSchema = z.object({
   title: z.string().min(1),
   due_at: z.string().min(1),
   sort_order: z.number().int().optional(),
+  client_op_id: z.string().min(1).optional(),
 });
 export type MilestoneCreateInput = z.infer<typeof milestoneCreateInputSchema>;
 export const milestoneCreateOutputSchema = z.object({ item: milestoneRowSchema });
@@ -174,6 +181,7 @@ export const milestonePatchInputSchema = z.object({
   due_at: z.string().optional(),
   status: milestoneStatusSchema.optional(),
   sort_order: z.number().int().optional(),
+  client_op_id: z.string().min(1).optional(),
 });
 export type MilestonePatchInput = z.infer<typeof milestonePatchInputSchema>;
 export const milestonePatchOutputSchema = z.object({ item: milestoneRowSchema });
