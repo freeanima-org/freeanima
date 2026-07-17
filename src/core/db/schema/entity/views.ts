@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { entities, entityTypeSchema, type EntitySelect } from "./entity.ts";
 import {
+  CONTENT_BLOCK_COMPONENT,
   DIARY_ENTRY_COMPONENT,
   DREAM_ENTRY_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
@@ -21,6 +22,7 @@ import {
   POMODORO_TASK_FOCUS_COMPONENT,
   POMODORO_ACTIVE_COMPONENT,
   WORLD_CONFIG_COMPONENT,
+  contentBlockBodySchema,
   diaryEntryBodySchema,
   dreamEntryBodySchema,
   emailAccountBodySchema,
@@ -40,6 +42,7 @@ import {
   pomodoroTaskFocusBodySchema,
   pomodoroActiveBodySchema,
   worldConfigBodySchema,
+  type ContentBlockBody,
   type DiaryEntryBody,
   type DreamEntryBody,
   type EmailAccountBody,
@@ -168,6 +171,16 @@ export function asDiaryEntry(
 ): (DiaryEntryBody & { id: number; title: string; content: string; summary: string }) | null {
   if (row.primary_component !== DIARY_ENTRY_COMPONENT) return null;
   const parsed = diaryEntryBodySchema.safeParse(row.body);
+  return parsed.success
+    ? { id: row.id, title: row.title, content: row.content, summary: row.summary, ...parsed.data }
+    : null;
+}
+
+export function asContentBlock(
+  row: EntityRow,
+): (ContentBlockBody & { id: number; title: string; content: string; summary: string }) | null {
+  if (row.primary_component !== CONTENT_BLOCK_COMPONENT) return null;
+  const parsed = contentBlockBodySchema.safeParse(row.body);
   return parsed.success
     ? { id: row.id, title: row.title, content: row.content, summary: row.summary, ...parsed.data }
     : null;

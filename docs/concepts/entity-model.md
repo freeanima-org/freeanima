@@ -163,6 +163,34 @@ Entries live in each subject's **`default_private_world_id`**. `body.entry_at` i
 
 See [`docs/features/diary.md`](../features/diary.md).
 
+## Content block
+
+Reusable content bricks for **containers** (diary, notes, …). `block_type` is technical only; semantics attach via `components[]` tags (not a nested JSONB `components` column — tags stay `text[]`, fields merge flat into `body`).
+
+| Concept | Entity         | Component       |
+| ------- | -------------- | --------------- |
+| Block   | `type=content` | `content_block` |
+
+| Body / column     | Role                                                                       |
+| ----------------- | -------------------------------------------------------------------------- |
+| `body.block_type` | `text` \| `image` \| `audio` \| `video` \| `link_card` \| `file`           |
+| `body.parent_id`  | Container entity id (near-term: `diary_entry`; later: `dream_entry`, note) |
+| `body.sort_order` | View order; blocks have no semantic precedence                             |
+| `body.url`        | Resource locator for non-text types; null for text                         |
+| `content` column  | Text body or media caption                                                 |
+
+Optional semantic components on the same row (`components[]`; fields merge into flat `body`):
+
+| Component      | `body` fields                                              |
+| -------------- | ---------------------------------------------------------- |
+| `limbic`       | `valence` (-1..1), `arousal` (0..1), `intensity` (0..1)    |
+| `narrative`    | `significance`: `normal` \| `milestone` \| `turning_point` |
+| `semantic_ref` | `semantic_memory_id`                                       |
+
+**Container end-state:** `diary_entry` and `dream_entry` both become container + blocks (`parent_id` points at the entry). Dream identity is the `dream_entry` container — do **not** register a separate `dream` semantic component, and do **not** replace `dream_entry` with `content_block`.
+
+Schemas are registered; ToolSet / diary·dream containerization / legacy memory-table migrations are follow-up milestone work.
+
 ## Dream module
 
 Nightly creative narratives (append-only, one per CST calendar day):
@@ -176,6 +204,7 @@ Entries live in the **agent** subject's **`default_private_world_id`**. `body.dr
 - **Hub RPC:** `dream.list`, `dream.get` (bundled shell; no `subject_kind` — always agent world).
 - **UI:** shell `/dream` (`@freeanima/satellite-dream`).
 - **LLM:** ToolSet `dream` — `dream_read`; optional `world_id` (Shell UI stays agent-scoped).
+- **Future:** Same brick model as diary — upgrade to a content_block container (keep `dream_entry`; do not retire it).
 
 See [`docs/concepts/dream.md`](dream.md).
 
@@ -225,10 +254,11 @@ See memory hybrid search in [`memory.md`](memory.md) for FTS operator syntax; en
 
 | Legacy table                 | Target                                                                                                                     |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `dream_memory`               | `dream_entry` (agent world; migration backfill + DROP)                                                                     |
-| `semantic_memory`            | `content` + memory component                                                                                               |
-| `autobiographical_memory`    | `content` + narrative component                                                                                            |
-| `limbic_memory`              | `content` + limbic component                                                                                               |
+| `dream_memory`               | `dream_entry` (done); then container + content_blocks (keep `dream_entry`; do not retire)                                  |
+| `semantic_memory`            | `content_block` + `semantic_ref`                                                                                           |
+| `autobiographical_memory`    | `content_block` + `narrative` (parented to dated `diary_entry`)                                                            |
+| `limbic_memory`              | `content_block` + `limbic` (parented to dated `diary_entry`)                                                               |
+| `diary_entry` single body    | Container + child `content_block`s (existing `content` → first text block)                                                 |
 | `tasks` (legacy)             | `task_item` (when explicitly migrated)                                                                                     |
 | `config.yaml email.accounts` | `email_account` (see [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts)) |
 | `memory_references`          | relationship table (future)                                                                                                |
