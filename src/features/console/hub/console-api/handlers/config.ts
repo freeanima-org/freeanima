@@ -1,4 +1,4 @@
-import { isBootstrapConfigKey } from "@freeanima/core/config";
+import { isBootstrapConfigKey, isRuntimeConfigSectionKey } from "@freeanima/core/config";
 import { sanitizeConfigForApi, isPatchableRuntimeConfig } from "@freeanima/platform/config";
 import { ApiHandlerError } from "./errors.ts";
 import { consoleCtx } from "./runtime.ts";
@@ -24,13 +24,17 @@ export function getHubConfigSection(section: string) {
   }
   const cfg = consoleCtx().getConfig().config;
   const value = cfg[section];
-  if (value === undefined) {
-    throw new ApiHandlerError(404, `配置段不存在: ${section}`, {
-      code: "config_section_not_found",
-      params: { section },
-    });
+  if (value !== undefined) {
+    return value;
   }
-  return value;
+  // 已知可选段从未写入 PG → 空对象（与旧全量 get + ?? {} 一致）
+  if (isRuntimeConfigSectionKey(section)) {
+    return {};
+  }
+  throw new ApiHandlerError(404, `配置段不存在: ${section}`, {
+    code: "config_section_not_found",
+    params: { section },
+  });
 }
 
 export async function patchHubConfigSection(section: string, patch: Record<string, unknown>) {
