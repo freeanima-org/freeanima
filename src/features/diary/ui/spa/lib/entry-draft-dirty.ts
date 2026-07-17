@@ -6,6 +6,7 @@ export type BlockDraft = {
   content: string;
   sort_order: number;
   client_op_id: string | null;
+  components: string[];
 };
 
 export type EntryDraft = {
@@ -20,6 +21,7 @@ export function blockDraftFromRow(block: DiaryTextBlock): BlockDraft {
     content: block.content,
     sort_order: block.sort_order,
     client_op_id: block.client_op_id,
+    components: block.components ?? [],
   };
 }
 

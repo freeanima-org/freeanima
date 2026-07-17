@@ -6,6 +6,7 @@ export type DiaryTextBlock = {
   sort_order: number;
   parent_id: number;
   client_op_id: string | null;
+  components: string[];
   created_at: string;
   updated_at: string;
 };

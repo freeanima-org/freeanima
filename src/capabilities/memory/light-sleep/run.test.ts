@@ -104,6 +104,7 @@ mock.module("@freeanima/core/db/pg/conversation", () => ({
 mock.module("@freeanima/core/db/pg/semantic-memory", () => ({
   listSemanticMemoryBySourceSessions: listSemanticMemoryBySourceSessionsMock,
   getSemanticMemory: getSemanticMemoryMock,
+  listResidentSemanticMemory: mock(async () => []),
 }));
 mock.module("@freeanima/core/db/pg/limbic-memory", () => ({
   listLimbicMemoryBySession: listLimbicMemoryBySessionMock,

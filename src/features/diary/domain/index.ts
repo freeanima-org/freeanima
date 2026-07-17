@@ -9,6 +9,7 @@ export {
   deleteDiaryEntry,
   deleteDiaryEntryByDate,
   entryDayKey,
+  ensureDiaryEntryForDay,
   findDiaryEntryByDay,
   getDiaryEntry,
   getDiaryEntryByDate,

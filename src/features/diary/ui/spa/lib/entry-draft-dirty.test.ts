@@ -16,6 +16,7 @@ const baseEntry: DiaryEntryRow = {
       sort_order: 0,
       parent_id: 1,
       client_op_id: null,
+      components: [],
       created_at: "2026-01-01T00:00:00.000Z",
       updated_at: "2026-01-01T00:00:00.000Z",
     },
@@ -27,7 +28,7 @@ const baseEntry: DiaryEntryRow = {
 describe("entryDraftFromRow", () => {
   it("从条目生成 draft", () => {
     expect(entryDraftFromRow(baseEntry)).toEqual({
-      blocks: [{ id: 10, content: "正文", sort_order: 0, client_op_id: null }],
+      blocks: [{ id: 10, content: "正文", sort_order: 0, client_op_id: null, components: [] }],
       entryDateLocal: "2026-01-01",
       tagsText: "a, b",
     });

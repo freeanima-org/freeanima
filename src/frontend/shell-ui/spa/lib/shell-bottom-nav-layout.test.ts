@@ -23,7 +23,6 @@ const sampleItems = [
   mockItem("tasks", "任务"),
   mockItem("email", "邮件"),
   mockItem("diary", "日记"),
-  mockItem("dream", "梦境"),
   mockItem("notifications", "通知"),
   mockItem("vault", "Vault"),
   mockItem("console", "仪表盘"),
@@ -38,10 +37,10 @@ const elevenItems = [
   mockItem("email", "邮件"),
   mockItem("diary", "日记"),
   mockItem("vault", "Vault"),
-  mockItem("dream", "梦境"),
   mockItem("notifications", "通知"),
   mockItem("console", "仪表盘"),
   mockItem("settings", "设置"),
+  mockItem("pomodoro", "番茄钟2"),
 ];
 
 describe("layoutShellBottomNavItems", () => {

@@ -326,21 +326,6 @@ export type {
 } from "./frames/diary.ts";
 
 export {
-  dreamEntryRowSchema,
-  dreamListInputSchema,
-  dreamListOutputSchema,
-  dreamGetInputSchema,
-  dreamGetOutputSchema,
-} from "./frames/dream.ts";
-export type {
-  DreamEntryRowPayload,
-  DreamListInput,
-  DreamListOutput,
-  DreamGetInput,
-  DreamGetOutput,
-} from "./frames/dream.ts";
-
-export {
   vaultItemTypeSchema,
   vaultItemMetaRowSchema,
   vaultItemRowSchema,

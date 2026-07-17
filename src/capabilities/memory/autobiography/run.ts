@@ -1,7 +1,7 @@
 import { logCapability as logComponent } from "@freeanima/core/config";
 import type { AutobiographicalMemoryRow } from "@freeanima/core/db/schema/rows";
 import type { AutobiographicalSignificance } from "@freeanima/core/db/pg/autobiographical-memory/types";
-import { autobiographicalSignificanceSchema } from "@freeanima/core/db/schema";
+import { autobiographicalSignificanceSchema } from "@freeanima/core/db/schema/entity";
 import { formatCstIso, omitUndefined } from "@freeanima/core/util";
 import { listActiveAutobiographicalMemory } from "@freeanima/core/db/pg/autobiographical-memory";
 import { searchSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";

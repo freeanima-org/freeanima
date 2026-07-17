@@ -8,12 +8,14 @@ Structured diary for users and Agents, based on the [Unified Entity Model](../co
 
 ## vs memory system
 
-| Capability | Diary                                              | Autobiographical memory                    |
-| ---------- | -------------------------------------------------- | ------------------------------------------ |
-| Source     | User / Agent **writes actively**                   | **Extracted** from dialogue in light sleep |
-| Storage    | `entities` + `diary_entry` + child `content_block` | `autobiographical_memory` table            |
-| Editing    | Update and delete allowed                          | append-only                                |
-| Namespace  | subject **default private world**                  | Digital-life memory pipeline               |
+| Capability | Diary                                              | Memory bricks (limbic / narrative / dream)                               |
+| ---------- | -------------------------------------------------- | ------------------------------------------------------------------------ |
+| Source     | User / Agent **writes actively**                   | Sleep pipeline / memory tools                                            |
+| Storage    | `entities` + `diary_entry` + child `content_block` | Same diary containers + semantic tags (`limbic` / `narrative` / `dream`) |
+| Editing    | Plain text blocks updateable                       | Semantic bricks append-only / soft-deprecate                             |
+| Namespace  | subject **default private world**                  | Agent private world for sleep-written bricks                             |
+
+Diary UI labels semantic bricks（梦境 / 情绪 / 自传）as read-only sections in the day entry.
 
 ## User / Agent isolation
 

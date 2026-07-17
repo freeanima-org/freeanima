@@ -2,7 +2,10 @@ import { afterAll, beforeEach, describe, expect, mock, test } from "bun:test";
 
 const call = mock((_method: string, _payload?: unknown) => Promise.resolve({}));
 
+const hubClientActual = await import("@freeanima/shared/hub-client");
+
 mock.module("@freeanima/shared/hub-client", () => ({
+  ...hubClientActual,
   getBundledHubClient: () => ({ call }),
   resetBundledHubClientForTests: () => undefined,
 }));

@@ -10,7 +10,7 @@ import { runWithToolContext } from "@freeanima/runtime/loop";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { getProfileHopModel } from "@freeanima/platform/config";
 import { registerDiaryTools } from "@freeanima/features/diary/domain";
-import { registerDreamTools } from "@freeanima/features/dream/domain";
+import { registerContentBlockTools } from "@freeanima/features/content-block/domain";
 import { createDreamEntry } from "@freeanima/core/db/pg/dream";
 import { registerEmailTools } from "@freeanima/features/email/domain";
 import { createEmailAccount } from "@freeanima/features/email/domain";
@@ -57,7 +57,7 @@ describePg("world scope tools", () => {
     toolSets = new ToolSetRegistry();
     await beginIntegrationCase("anima-world-scope-");
     registerDiaryTools(toolSets);
-    registerDreamTools(toolSets);
+    registerContentBlockTools(toolSets);
     registerEmailTools(toolSets, {
       sendEmail: async () => ({
         ok: true as const,
@@ -149,7 +149,7 @@ describePg("world scope tools", () => {
     expect(userParsed.item.content).toContain("user diary note");
   });
 
-  it("dream_read scopes by world_id", async () => {
+  it("dream brick under diary scopes by world_id", async () => {
     const sid = "sess-dream-world";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
@@ -168,20 +168,29 @@ describePg("world scope tools", () => {
     await runWithToolContext(
       sid,
       async () => {
-        const tool = toolSets.getTool("dream_read")!;
-        agentOut = await Promise.resolve(tool.handler({ day: "2026-07-02" }));
+        const tool = toolSets.getTool("diary_get")!;
+        agentOut = await Promise.resolve(tool.handler({ date: "2026-07-02" }));
       },
       { tools: toolSets },
     );
-    expect(JSON.parse(agentOut).content).toBe("agent dream");
+    const agentParsed = JSON.parse(agentOut) as {
+      ok: boolean;
+      item: { blocks: Array<{ content: string; components: string[] }> };
+    };
+    expect(agentParsed.ok).toBe(true);
+    expect(
+      agentParsed.item.blocks.some(
+        (b) => b.components.includes("dream") && b.content === "agent dream",
+      ),
+    ).toBe(true);
 
     let userOut = "";
     await runWithToolContext(
       sid,
       async () => {
-        const tool = toolSets.getTool("dream_read")!;
+        const tool = toolSets.getTool("diary_get")!;
         userOut = await Promise.resolve(
-          tool.handler({ day: "2026-07-02", world_id: testUserWorldId() }),
+          tool.handler({ date: "2026-07-02", world_id: testUserWorldId() }),
         );
       },
       {
@@ -189,7 +198,16 @@ describePg("world scope tools", () => {
         callerAuth: userCallerAuth(),
       },
     );
-    expect(JSON.parse(userOut).content).toBe("user dream");
+    const userParsed = JSON.parse(userOut) as {
+      ok: boolean;
+      item: { blocks: Array<{ content: string; components: string[] }> };
+    };
+    expect(userParsed.ok).toBe(true);
+    expect(
+      userParsed.item.blocks.some(
+        (b) => b.components.includes("dream") && b.content === "user dream",
+      ),
+    ).toBe(true);
   });
 
   it("email_list_accounts scopes by world_id", async () => {

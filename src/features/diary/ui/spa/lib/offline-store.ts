@@ -351,6 +351,7 @@ export async function offlineCreateDiaryEntry(
           sort_order: 0,
           parent_id: tempId,
           client_op_id: null,
+          components: [],
           created_at: now,
           updated_at: now,
         },
@@ -438,6 +439,7 @@ export async function offlineAppendDiaryEntry(
     sort_order: last ? last.sort_order + 1 : 0,
     parent_id: resolvedId,
     client_op_id: null,
+    components: [],
     created_at: now,
     updated_at: now,
   };
@@ -486,6 +488,7 @@ export async function offlineCreateDiaryBlock(
     sort_order: sortOrder ?? (last ? last.sort_order + 1 : 0),
     parent_id: resolvedParentId,
     client_op_id: opId,
+    components: [],
     created_at: now,
     updated_at: now,
   };

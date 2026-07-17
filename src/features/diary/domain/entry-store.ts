@@ -12,6 +12,7 @@ import {
   searchEntities,
   updateEntity,
 } from "@freeanima/core/db/pg/entity";
+import { ensureDiaryEntryForDay as ensureDiaryEntryForDayCore } from "@freeanima/core/db/pg/diary";
 
 import {
   createDiaryTextBlock,
@@ -72,6 +73,17 @@ function sortByEntryAtDesc(a: DiaryEntryRow, b: DiaryEntryRow): number {
 
 export function entryDayKey(entryAt: string): string {
   return entryAt.trim().slice(0, 10);
+}
+
+/** 同 world 按 CST 日 ensure diary；无则建空壳 */
+export async function ensureDiaryEntryForDay(
+  ctx: DiaryStoreContext,
+  day: string,
+): Promise<DiaryEntryRow> {
+  const ensured = await ensureDiaryEntryForDayCore(ctx.worldId, day);
+  const existing = await getDiaryEntry(ctx, ensured.id);
+  if (!existing) throw new Error(`diary entry missing after ensure: ${ensured.id}`);
+  return existing;
 }
 
 function dayRangeFilters(day: string): { entry_after: string; entry_before: string } {

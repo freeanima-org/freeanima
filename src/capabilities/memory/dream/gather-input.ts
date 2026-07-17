@@ -127,8 +127,8 @@ export async function gatherDreamInput(opts?: GatherDreamInputOpts): Promise<Dre
   const limbicRange = limbicCreatedRange(range);
   const conversationIds = await listConversationIdsUpdatedBetween(range.fromIso, range.toIso);
   const limbicMemories = await listLimbicMemoryByCreatedBetween(
-    limbicRange.fromIso,
-    limbicRange.toIso,
+    new Date(limbicRange.fromIso),
+    new Date(limbicRange.toIso),
     {
       minIntensity: DREAM_MIN_INTENSITY,
       limit: DREAM_LIMBIC_LIMIT,

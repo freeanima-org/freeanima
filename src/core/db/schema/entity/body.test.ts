@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { mergeComponentBody, validateEntityBody, validatePrimaryComponentBody } from "./body.ts";
 import { CONTENT_BLOCK_COMPONENT } from "./components/content-block.ts";
+import { DREAM_COMPONENT } from "./components/dream.ts";
 import { LIMBIC_COMPONENT } from "./components/limbic.ts";
 import { NARRATIVE_COMPONENT } from "./components/narrative.ts";
 import { SEMANTIC_REF_COMPONENT } from "./components/semantic-ref.ts";
@@ -89,6 +90,18 @@ describe("validateEntityBody", () => {
       semantic_memory_id: "sm-1",
     });
     expect(body.semantic_memory_id).toBe("sm-1");
+  });
+
+  test("accepts content_block with dream tag", () => {
+    const body = validateEntityBody([CONTENT_BLOCK_COMPONENT, DREAM_COMPONENT], {
+      block_type: "text",
+      parent_id: 10,
+      sort_order: 0,
+      source_limbic_ids: ["1"],
+      source_conversation_ids: [],
+      episodic_snippets: [],
+    });
+    expect(body.source_limbic_ids).toEqual(["1"]);
   });
 
   test("rejects limbic out of range on multi-tag body", () => {

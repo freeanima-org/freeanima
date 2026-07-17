@@ -120,12 +120,6 @@ import type {
   DiarySearchOutput,
 } from "./frames/diary.ts";
 import type {
-  DreamGetInput,
-  DreamGetOutput,
-  DreamListInput,
-  DreamListOutput,
-} from "./frames/dream.ts";
-import type {
   CompanionConfigGetInput,
   CompanionConfigGetOutput,
   CompanionConfigUpdateInput,
@@ -239,8 +233,6 @@ export const SAP_METHODS = [
   "diary.blockPatch",
   "diary.blockDelete",
   "diary.blockReorder",
-  "dream.list",
-  "dream.get",
   "vault.list",
   "vault.get",
   "vault.create",
@@ -335,8 +327,6 @@ export type SapRouterInputs = {
   "diary.blockPatch": DiaryBlockPatchInput;
   "diary.blockDelete": DiaryBlockDeleteInput;
   "diary.blockReorder": DiaryBlockReorderInput;
-  "dream.list": DreamListInput;
-  "dream.get": DreamGetInput;
   "vault.list": VaultListInput;
   "vault.get": VaultGetInput;
   "vault.create": VaultCreateInput;
@@ -429,8 +419,6 @@ export type SapRouterOutputs = {
   "diary.blockPatch": DiaryBlockPatchOutput;
   "diary.blockDelete": DiaryBlockDeleteOutput;
   "diary.blockReorder": DiaryBlockReorderOutput;
-  "dream.list": DreamListOutput;
-  "dream.get": DreamGetOutput;
   "vault.list": VaultListOutput;
   "vault.get": VaultGetOutput;
   "vault.create": VaultCreateOutput;

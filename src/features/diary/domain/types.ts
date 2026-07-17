@@ -7,6 +7,8 @@ export type DiaryTextBlock = {
   sort_order: number;
   parent_id: number;
   client_op_id: string | null;
+  /** entity.components；含 dream/limbic/narrative 等语义 tag */
+  components: string[];
   created_at: string;
   updated_at: string;
 };

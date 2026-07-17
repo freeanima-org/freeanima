@@ -15,8 +15,9 @@ describe("content-block tool helpers", () => {
     expect(parseBlockType("markdown")).toBeNull();
   });
 
-  it("parseSemanticComponent accepts limbic/narrative/semantic_ref", () => {
+  it("parseSemanticComponent accepts limbic/narrative/semantic_ref/dream", () => {
     expect(parseSemanticComponent("limbic")).toBe("limbic");
+    expect(parseSemanticComponent("dream")).toBe("dream");
     expect(parseSemanticComponent("task_item")).toBeNull();
   });
 

@@ -23,7 +23,7 @@ import type {
 
 function toTextBlock(
   row: NonNullable<ReturnType<typeof asContentBlock>>,
-  meta: { created_at: Date; updated_at: Date },
+  meta: { created_at: Date; updated_at: Date; components: string[] },
 ): DiaryTextBlock | null {
   if (row.block_type !== "text") return null;
   return {
@@ -32,6 +32,7 @@ function toTextBlock(
     sort_order: row.sort_order,
     parent_id: row.parent_id,
     client_op_id: row.client_op_id,
+    components: meta.components,
     created_at: meta.created_at.toISOString(),
     updated_at: meta.updated_at.toISOString(),
   };
@@ -63,7 +64,11 @@ function mapHit(row: {
     updated_at: row.updated_at,
   });
   if (!parsed) return null;
-  return toTextBlock(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+  return toTextBlock(parsed, {
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    components: row.components,
+  });
 }
 
 async function assertDiaryContainer(parentId: number, worldId: number): Promise<void> {

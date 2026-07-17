@@ -8,7 +8,6 @@ import {
   Lock,
   Mail,
   MessageSquare,
-  Moon,
   Settings,
   Timer,
 } from "lucide-react";
@@ -65,7 +64,6 @@ export function shellNavItems(): ShellNavItem[] {
     navItem("email", "/email", "/email", shellNavLabel(m.console_nav_email), Mail),
     navItem("diary", "/diary", "/diary", shellNavLabel(m.console_nav_diary), BookOpen),
     navItem("vault", "/vault", "/vault", shellNavLabel(m.console_nav_vault), Lock),
-    navItem("dream", "/dream", "/dream", shellNavLabel(m.console_nav_dream), Moon),
     navItem(
       "notifications",
       "/notifications",

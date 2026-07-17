@@ -1,10 +1,9 @@
-import type {
-  AutobiographicalSignificance,
-  AutobiographicalStatus,
-} from "@freeanima/core/db/schema";
+import type { NarrativeSignificance, NarrativeStatus } from "@freeanima/core/db/schema/entity";
 import type { AutobiographicalMemoryRow } from "@freeanima/core/db/schema/rows";
 
-export type { AutobiographicalSignificance, AutobiographicalStatus, AutobiographicalMemoryRow };
+export type AutobiographicalSignificance = NarrativeSignificance;
+export type AutobiographicalStatus = NarrativeStatus;
+export type { AutobiographicalMemoryRow };
 
 export type AutobiographicalMemoryCreateInput = {
   title: string;
@@ -12,7 +11,6 @@ export type AutobiographicalMemoryCreateInput = {
   significance?: AutobiographicalSignificance;
   period_start?: string | null;
   period_end?: string | null;
-  /** Maps to PG column `source_facts` */
   source_semantic_memory?: string[];
   source_conversations?: string[];
   id?: string;

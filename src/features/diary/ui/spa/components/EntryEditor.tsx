@@ -40,44 +40,56 @@ function SortableBlock({
     transition,
     opacity: isDragging ? 0.7 : 1,
   };
+  const isDream = block.components.includes("dream");
+  const isLimbic = block.components.includes("limbic");
+  const isNarrative = block.components.includes("narrative");
+  const semanticLabel = isDream ? "梦境" : isLimbic ? "情绪" : isNarrative ? "自传" : null;
+  const blockReadOnly = readOnly || semanticLabel != null;
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="group border-border/60 flex gap-1 rounded-md border border-transparent px-1 py-1 hover:border-border"
+      className="group border-border/60 flex flex-col gap-1 rounded-md border border-transparent px-1 py-1 hover:border-border"
     >
-      {!readOnly ? (
-        <button
-          type="button"
-          className="text-muted-foreground mt-2 h-6 w-6 shrink-0 cursor-grab touch-none opacity-0 group-hover:opacity-100"
-          aria-label="拖拽排序"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVerticalIcon className="size-4" />
-        </button>
+      {semanticLabel ? (
+        <span className="text-muted-foreground px-1 text-xs font-medium tracking-wide">
+          {semanticLabel}
+        </span>
       ) : null}
-      <Textarea
-        className="min-h-16 w-full flex-1 resize-none border-0 bg-transparent px-0 font-mono text-sm leading-relaxed shadow-none focus-visible:ring-0"
-        value={block.content}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="写点什么…"
-        aria-label="正文块"
-        readOnly={readOnly}
-      />
-      {!readOnly ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground mt-1 h-7 w-7 shrink-0 p-0 opacity-0 group-hover:opacity-100"
-          aria-label="删除块"
-          onClick={onDelete}
-        >
-          <Trash2Icon className="size-3.5" />
-        </Button>
-      ) : null}
+      <div className="flex gap-1">
+        {!blockReadOnly ? (
+          <button
+            type="button"
+            className="text-muted-foreground mt-2 h-6 w-6 shrink-0 cursor-grab touch-none opacity-0 group-hover:opacity-100"
+            aria-label="拖拽排序"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVerticalIcon className="size-4" />
+          </button>
+        ) : null}
+        <Textarea
+          className="min-h-16 w-full flex-1 resize-none border-0 bg-transparent px-0 font-mono text-sm leading-relaxed shadow-none focus-visible:ring-0"
+          value={block.content}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="写点什么…"
+          aria-label={semanticLabel ? `${semanticLabel}块` : "正文块"}
+          readOnly={blockReadOnly}
+        />
+        {!blockReadOnly ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground mt-1 h-7 w-7 shrink-0 p-0 opacity-0 group-hover:opacity-100"
+            aria-label="删除块"
+            onClick={onDelete}
+          >
+            <Trash2Icon className="size-3.5" />
+          </Button>
+        ) : null}
+      </div>
     </div>
   );
 }

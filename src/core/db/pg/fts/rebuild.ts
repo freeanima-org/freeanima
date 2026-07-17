@@ -1,11 +1,5 @@
 import { and, asc, eq, gt, isNotNull, isNull, sql as drizzleSql, type SQL } from "drizzle-orm";
-import {
-  autobiographicalMemory,
-  entities,
-  limbicMemory,
-  messages,
-  semanticMemory,
-} from "@freeanima/core/db/schema";
+import { entities, messages, semanticMemory } from "@freeanima/core/db/schema";
 import { entitySearchTextForWrite } from "@freeanima/core/db/schema/entity";
 
 import {
@@ -20,7 +14,6 @@ import { EMBEDDING_QUEUE_FLUSH_THRESHOLD } from "../embedding/batch-pack.ts";
 import { embedAndStoreJobs } from "../embedding/embed-jobs.ts";
 import { getEmbedTextFn } from "../embedding/runtime.ts";
 import { getDb } from "../client.ts";
-import { autobiographicalIndexText } from "./memory-index-text.ts";
 import { segmentForFts } from "./segment.ts";
 import type { FtsRebuildOptions, FtsRebuildPhase } from "./rebuild-types.ts";
 
@@ -56,16 +49,6 @@ function idCursorCondition(_onlyMissing: boolean, lastId: string): SQL | undefin
 function messageIdCursorCondition(_onlyMissing: boolean, lastId: string): SQL | undefined {
   if (!lastId) return undefined;
   return gt(messages.id, lastId);
-}
-
-function limbicIdCursorCondition(_onlyMissing: boolean, lastId: string): SQL | undefined {
-  if (!lastId) return undefined;
-  return gt(limbicMemory.id, lastId);
-}
-
-function autobiographicalIdCursorCondition(_onlyMissing: boolean, lastId: string): SQL | undefined {
-  if (!lastId) return undefined;
-  return gt(autobiographicalMemory.id, lastId);
 }
 
 function entityIdCursorCondition(_onlyMissing: boolean, lastId: number): SQL | undefined {
@@ -360,173 +343,26 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
   return updated;
 }
 
-async function countLimbicMemorySegmentedTargets(onlyMissing: boolean): Promise<number> {
-  const db = getDb();
-  const conditions = [drizzleSql`length(btrim(${limbicMemory.content})) > 0`];
-  if (onlyMissing) {
-    conditions.push(drizzleSql`nullif(btrim(${limbicMemory.fts_segmented}), '') IS NULL`);
-  }
-  const rows = await db
-    .select({ n: drizzleSql<number>`count(*)::int` })
-    .from(limbicMemory)
-    .where(and(...conditions));
-  return Number(rows[0]?.n ?? 0);
-}
-
-async function countAutobiographicalMemorySegmentedTargets(onlyMissing: boolean): Promise<number> {
-  const db = getDb();
-  const conditions = [
-    eq(autobiographicalMemory.status, "active"),
-    drizzleSql`length(btrim(${autobiographicalMemory.content})) > 0`,
-  ];
-  if (onlyMissing) {
-    conditions.push(drizzleSql`nullif(btrim(${autobiographicalMemory.fts_segmented}), '') IS NULL`);
-  }
-  const rows = await db
-    .select({ n: drizzleSql<number>`count(*)::int` })
-    .from(autobiographicalMemory)
-    .where(and(...conditions));
-  return Number(rows[0]?.n ?? 0);
-}
-
-async function countLimbicMemoryEmbeddingTargets(onlyMissing: boolean): Promise<number> {
-  const db = getDb();
-  const conditions = [drizzleSql`length(btrim(${limbicMemory.content})) > 0`];
-  if (onlyMissing) conditions.push(isNull(limbicMemory.content_embedding));
-  const rows = await db
-    .select({ n: drizzleSql<number>`count(*)::int` })
-    .from(limbicMemory)
-    .where(and(...conditions));
-  return Number(rows[0]?.n ?? 0);
-}
-
-async function countAutobiographicalMemoryEmbeddingTargets(onlyMissing: boolean): Promise<number> {
-  const db = getDb();
-  const conditions = [
-    eq(autobiographicalMemory.status, "active"),
-    drizzleSql`length(btrim(${autobiographicalMemory.content})) > 0`,
-  ];
-  if (onlyMissing) conditions.push(isNull(autobiographicalMemory.content_embedding));
-  const rows = await db
-    .select({ n: drizzleSql<number>`count(*)::int` })
-    .from(autobiographicalMemory)
-    .where(and(...conditions));
-  return Number(rows[0]?.n ?? 0);
-}
-
 async function rebuildLimbicMemoryFtsSegmented(
-  useJieba: boolean,
-  opts: FtsRebuildOptions,
+  _useJieba: boolean,
+  _opts: FtsRebuildOptions,
 ): Promise<number> {
-  const onlyMissing = opts.onlyMissing ?? false;
-  const total = useJieba ? await countLimbicMemorySegmentedTargets(onlyMissing) : 0;
-  if (useJieba) {
-    report(opts.onProgress, "limbic_memory_segmented", "limbic_memory", 0, total);
-  }
-  if (!useJieba || total === 0) return 0;
-
-  const db = getDb();
-  let updated = 0;
-  let lastId = "";
-
-  for (;;) {
-    const baseConditions = [drizzleSql`length(btrim(${limbicMemory.content})) > 0`];
-    if (onlyMissing) {
-      baseConditions.push(drizzleSql`nullif(btrim(${limbicMemory.fts_segmented}), '') IS NULL`);
-    }
-    const cursorCond = limbicIdCursorCondition(onlyMissing, lastId);
-    if (cursorCond) baseConditions.push(cursorCond);
-
-    const rows = await db
-      .select({ id: limbicMemory.id, content: limbicMemory.content })
-      .from(limbicMemory)
-      .where(and(...baseConditions))
-      .orderBy(asc(limbicMemory.id))
-      .limit(REBUILD_DB_PAGE_SIZE);
-    if (rows.length === 0) break;
-
-    for (const row of rows) {
-      const fts_segmented = await segmentForFts(row.content);
-      await db.update(limbicMemory).set({ fts_segmented }).where(eq(limbicMemory.id, row.id));
-      updated += 1;
-      report(opts.onProgress, "limbic_memory_segmented", "limbic_memory", updated, total);
-      lastId = row.id;
-    }
-
-    if (!onlyMissing && rows.length < REBUILD_DB_PAGE_SIZE) break;
-  }
-
-  return updated;
+  return 0;
 }
 
 async function rebuildAutobiographicalMemoryFtsSegmented(
-  useJieba: boolean,
-  opts: FtsRebuildOptions,
+  _useJieba: boolean,
+  _opts: FtsRebuildOptions,
 ): Promise<number> {
-  const onlyMissing = opts.onlyMissing ?? false;
-  const total = useJieba ? await countAutobiographicalMemorySegmentedTargets(onlyMissing) : 0;
-  if (useJieba) {
-    report(
-      opts.onProgress,
-      "autobiographical_memory_segmented",
-      "autobiographical_memory",
-      0,
-      total,
-    );
-  }
-  if (!useJieba || total === 0) return 0;
+  return 0;
+}
 
-  const db = getDb();
-  let updated = 0;
-  let lastId = "";
+async function rebuildLimbicMemoryEmbeddings(_opts: FtsRebuildOptions): Promise<number> {
+  return 0;
+}
 
-  for (;;) {
-    const baseConditions = [
-      eq(autobiographicalMemory.status, "active"),
-      drizzleSql`length(btrim(${autobiographicalMemory.content})) > 0`,
-    ];
-    if (onlyMissing) {
-      baseConditions.push(
-        drizzleSql`nullif(btrim(${autobiographicalMemory.fts_segmented}), '') IS NULL`,
-      );
-    }
-    const cursorCond = autobiographicalIdCursorCondition(onlyMissing, lastId);
-    if (cursorCond) baseConditions.push(cursorCond);
-
-    const rows = await db
-      .select({
-        id: autobiographicalMemory.id,
-        title: autobiographicalMemory.title,
-        content: autobiographicalMemory.content,
-      })
-      .from(autobiographicalMemory)
-      .where(and(...baseConditions))
-      .orderBy(asc(autobiographicalMemory.id))
-      .limit(REBUILD_DB_PAGE_SIZE);
-    if (rows.length === 0) break;
-
-    for (const row of rows) {
-      const indexText = autobiographicalIndexText(row.title, row.content);
-      const fts_segmented = indexText ? await segmentForFts(indexText) : null;
-      await db
-        .update(autobiographicalMemory)
-        .set({ fts_segmented })
-        .where(eq(autobiographicalMemory.id, row.id));
-      updated += 1;
-      report(
-        opts.onProgress,
-        "autobiographical_memory_segmented",
-        "autobiographical_memory",
-        updated,
-        total,
-      );
-      lastId = row.id;
-    }
-
-    if (!onlyMissing && rows.length < REBUILD_DB_PAGE_SIZE) break;
-  }
-
-  return updated;
+async function rebuildAutobiographicalMemoryEmbeddings(_opts: FtsRebuildOptions): Promise<number> {
+  return 0;
 }
 
 async function rebuildEntitiesFtsSegmented(
@@ -589,101 +425,6 @@ async function rebuildEntitiesFtsSegmented(
     }
 
     if (!onlyMissing && rows.length < REBUILD_DB_PAGE_SIZE) break;
-  }
-
-  return updated;
-}
-
-async function rebuildLimbicMemoryEmbeddings(opts: FtsRebuildOptions): Promise<number> {
-  if (!getEmbedTextFn()) return 0;
-
-  const onlyMissing = opts.onlyMissing ?? false;
-  const total = await countLimbicMemoryEmbeddingTargets(onlyMissing);
-  report(opts.onProgress, "limbic_memory_embedding", "limbic_memory", 0, total);
-  if (total === 0) return 0;
-
-  const db = getDb();
-  let updated = 0;
-  let lastId = "";
-
-  for (;;) {
-    const baseConditions = [drizzleSql`length(btrim(${limbicMemory.content})) > 0`];
-    if (onlyMissing) baseConditions.push(isNull(limbicMemory.content_embedding));
-    const cursorCond = limbicIdCursorCondition(onlyMissing, lastId);
-    if (cursorCond) baseConditions.push(cursorCond);
-
-    const rows = await db
-      .select({ id: limbicMemory.id, content: limbicMemory.content })
-      .from(limbicMemory)
-      .where(and(...baseConditions))
-      .orderBy(asc(limbicMemory.id))
-      .limit(REBUILD_EMBEDDING_PAGE_SIZE);
-    if (rows.length === 0) break;
-
-    const row = rows[0];
-    if (!row) break;
-    const stored = await embedRebuildRow("limbic_memory_embedding", {
-      kind: "limbic_memory",
-      id: row.id,
-      content: row.content,
-    });
-    updated += stored;
-    report(opts.onProgress, "limbic_memory_embedding", "limbic_memory", updated, total);
-    lastId = row.id;
-  }
-
-  return updated;
-}
-
-async function rebuildAutobiographicalMemoryEmbeddings(opts: FtsRebuildOptions): Promise<number> {
-  if (!getEmbedTextFn()) return 0;
-
-  const onlyMissing = opts.onlyMissing ?? false;
-  const total = await countAutobiographicalMemoryEmbeddingTargets(onlyMissing);
-  report(opts.onProgress, "autobiographical_memory_embedding", "autobiographical_memory", 0, total);
-  if (total === 0) return 0;
-
-  const db = getDb();
-  let updated = 0;
-  let lastId = "";
-
-  for (;;) {
-    const baseConditions = [
-      eq(autobiographicalMemory.status, "active"),
-      drizzleSql`length(btrim(${autobiographicalMemory.content})) > 0`,
-    ];
-    if (onlyMissing) baseConditions.push(isNull(autobiographicalMemory.content_embedding));
-    const cursorCond = autobiographicalIdCursorCondition(onlyMissing, lastId);
-    if (cursorCond) baseConditions.push(cursorCond);
-
-    const rows = await db
-      .select({
-        id: autobiographicalMemory.id,
-        title: autobiographicalMemory.title,
-        content: autobiographicalMemory.content,
-      })
-      .from(autobiographicalMemory)
-      .where(and(...baseConditions))
-      .orderBy(asc(autobiographicalMemory.id))
-      .limit(REBUILD_EMBEDDING_PAGE_SIZE);
-    if (rows.length === 0) break;
-
-    const row = rows[0];
-    if (!row) break;
-    const stored = await embedRebuildRow("autobiographical_memory_embedding", {
-      kind: "autobiographical_memory",
-      id: row.id,
-      content: autobiographicalIndexText(row.title, row.content),
-    });
-    updated += stored;
-    report(
-      opts.onProgress,
-      "autobiographical_memory_embedding",
-      "autobiographical_memory",
-      updated,
-      total,
-    );
-    lastId = row.id;
   }
 
   return updated;

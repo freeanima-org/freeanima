@@ -196,7 +196,7 @@ export async function memoryRecallSearch(
     searchSemanticMemoryFts(q, { limit: pool }),
     searchDialogue(q, { limit: pool }).catch(() => []),
     searchLimbicMemoryFts(q, { limit: pool }).catch(() => []),
-    searchAutobiographicalMemoryFts(q, { limit: pool, status: "active" }).catch(() => []),
+    searchAutobiographicalMemoryFts(q, { limit: pool }).catch(() => []),
   ]);
 
   const semanticList: RecallCandidate[] = semanticRows.map((row) => ({

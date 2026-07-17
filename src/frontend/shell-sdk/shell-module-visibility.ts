@@ -8,7 +8,6 @@ export type ShellModuleId =
   | "email"
   | "diary"
   | "vault"
-  | "dream"
   | "notifications"
   | "console"
   | "settings";
@@ -21,7 +20,6 @@ export const SHELL_MODULE_IDS: ShellModuleId[] = [
   "email",
   "diary",
   "vault",
-  "dream",
   "notifications",
   "console",
   "settings",
@@ -113,7 +111,6 @@ export function resolveShellModuleIdFromPath(pathname: string): ShellModuleId | 
   if (path.startsWith("/email")) return "email";
   if (path.startsWith("/diary")) return "diary";
   if (path.startsWith("/vault")) return "vault";
-  if (path.startsWith("/dream")) return "dream";
   if (path.startsWith("/notifications")) return "notifications";
   if (path.startsWith("/console")) return "console";
   if (path.startsWith("/settings")) return "settings";
@@ -128,7 +125,6 @@ const MODULE_DEFAULT_PATH: Record<ShellModuleId, string> = {
   email: "/email",
   diary: "/diary",
   vault: "/vault",
-  dream: "/dream",
   notifications: "/notifications",
   console: "/console/dashboard",
   settings: "/settings",

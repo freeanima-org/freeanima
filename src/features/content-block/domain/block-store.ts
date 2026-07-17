@@ -1,11 +1,12 @@
 import {
   CONTENT_BLOCK_COMPONENT,
   DIARY_ENTRY_COMPONENT,
-  DREAM_ENTRY_COMPONENT,
+  DREAM_COMPONENT,
   LIMBIC_COMPONENT,
   NARRATIVE_COMPONENT,
   SEMANTIC_REF_COMPONENT,
   asContentBlock,
+  dreamBodySchema,
   limbicBodySchema,
   narrativeBodySchema,
   semanticRefBodySchema,
@@ -24,6 +25,7 @@ import { omitUndefined } from "@freeanima/core/util";
 
 import type {
   ContentBlockCreateInput,
+  ContentBlockDreamInput,
   ContentBlockLimbicInput,
   ContentBlockListOpts,
   ContentBlockNarrativeInput,
@@ -34,29 +36,48 @@ import type {
   ContentBlockUpdateInput,
 } from "./types.ts";
 
-const CONTAINER_COMPONENTS = new Set<string>([DIARY_ENTRY_COMPONENT, DREAM_ENTRY_COMPONENT]);
+const CONTAINER_COMPONENTS = new Set<string>([DIARY_ENTRY_COMPONENT]);
 
 async function assertContainer(parentId: number, worldId: number): Promise<void> {
   const parent = await getEntity(parentId);
   if (!parent || !CONTAINER_COMPONENTS.has(parent.primary_component)) {
-    throw new Error("parent must be diary_entry or dream_entry");
+    throw new Error("parent must be diary_entry");
   }
   await assertEntityInWorld(parentId, worldId);
 }
 
 function readLimbic(body: Record<string, unknown>): ContentBlockLimbicInput | null {
   const parsed = limbicBodySchema.safeParse(body);
-  return parsed.success ? parsed.data : null;
+  if (!parsed.success) return null;
+  return {
+    valence: parsed.data.valence,
+    arousal: parsed.data.arousal,
+    intensity: parsed.data.intensity,
+  };
 }
 
 function readNarrative(body: Record<string, unknown>): ContentBlockNarrativeInput | null {
   const parsed = narrativeBodySchema.safeParse(body);
-  return parsed.success ? { significance: parsed.data.significance } : null;
+  if (!parsed.success) return null;
+  return omitUndefined({
+    significance: parsed.data.significance,
+    status: parsed.data.status,
+  });
 }
 
 function readSemanticRef(body: Record<string, unknown>): ContentBlockSemanticRefInput | null {
   const parsed = semanticRefBodySchema.safeParse(body);
   return parsed.success ? parsed.data : null;
+}
+
+function readDream(body: Record<string, unknown>): ContentBlockDreamInput | null {
+  const parsed = dreamBodySchema.safeParse(body);
+  return parsed.success
+    ? {
+        source_limbic_ids: parsed.data.source_limbic_ids,
+        source_conversation_ids: parsed.data.source_conversation_ids,
+      }
+    : null;
 }
 
 function toBlockRow(
@@ -66,6 +87,7 @@ function toBlockRow(
   const hasLimbic = meta.components.includes(LIMBIC_COMPONENT);
   const hasNarrative = meta.components.includes(NARRATIVE_COMPONENT);
   const hasSemanticRef = meta.components.includes(SEMANTIC_REF_COMPONENT);
+  const hasDream = meta.components.includes(DREAM_COMPONENT);
   return {
     id: row.id,
     title: row.title,
@@ -80,6 +102,7 @@ function toBlockRow(
     limbic: hasLimbic ? readLimbic(meta.body) : null,
     narrative: hasNarrative ? readNarrative(meta.body) : null,
     semantic_ref: hasSemanticRef ? readSemanticRef(meta.body) : null,
+    dream: hasDream ? readDream(meta.body) : null,
     created_at: meta.created_at.toISOString(),
     updated_at: meta.updated_at.toISOString(),
   };
@@ -123,11 +146,13 @@ function buildComponents(input: {
   limbic?: ContentBlockLimbicInput | null;
   narrative?: ContentBlockNarrativeInput | null;
   semantic_ref?: ContentBlockSemanticRefInput | null;
+  dream?: ContentBlockDreamInput | null;
 }): string[] {
   const tags: string[] = [CONTENT_BLOCK_COMPONENT];
   if (input.limbic) tags.push(LIMBIC_COMPONENT);
   if (input.narrative) tags.push(NARRATIVE_COMPONENT);
   if (input.semantic_ref) tags.push(SEMANTIC_REF_COMPONENT);
+  if (input.dream) tags.push(DREAM_COMPONENT);
   return tags;
 }
 
@@ -135,6 +160,7 @@ function semanticBodyFields(input: {
   limbic?: ContentBlockLimbicInput | null;
   narrative?: ContentBlockNarrativeInput | null;
   semantic_ref?: ContentBlockSemanticRefInput | null;
+  dream?: ContentBlockDreamInput | null;
 }): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   if (input.limbic) {
@@ -144,9 +170,15 @@ function semanticBodyFields(input: {
   }
   if (input.narrative) {
     out.significance = input.narrative.significance ?? "normal";
+    if (input.narrative.status !== undefined) out.status = input.narrative.status;
   }
   if (input.semantic_ref) {
     out.semantic_memory_id = input.semantic_ref.semantic_memory_id;
+  }
+  if (input.dream) {
+    out.source_limbic_ids = input.dream.source_limbic_ids ?? [];
+    out.source_conversation_ids = input.dream.source_conversation_ids ?? [];
+    out.episodic_snippets = [];
   }
   return out;
 }
@@ -262,14 +294,24 @@ export async function updateContentBlock(
         ? readSemanticRef(existing.body)
         : null
       : input.semantic_ref;
+  const nextDream =
+    input.dream === undefined
+      ? existing.components.includes(DREAM_COMPONENT)
+        ? readDream(existing.body)
+        : null
+      : input.dream;
 
   const componentsChanged =
-    input.limbic !== undefined || input.narrative !== undefined || input.semantic_ref !== undefined;
+    input.limbic !== undefined ||
+    input.narrative !== undefined ||
+    input.semantic_ref !== undefined ||
+    input.dream !== undefined;
   const nextComponents = componentsChanged
     ? buildComponents({
         limbic: nextLimbic,
         narrative: nextNarrative,
         semantic_ref: nextSemanticRef,
+        dream: nextDream,
       })
     : existing.components;
 
@@ -309,6 +351,7 @@ export async function updateContentBlock(
           limbic: nextLimbic,
           narrative: nextNarrative,
           semantic_ref: nextSemanticRef,
+          dream: nextDream,
         }),
       }
     : Object.keys(bodyPatch).length > 0

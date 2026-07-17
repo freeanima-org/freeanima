@@ -251,6 +251,7 @@ export function DiaryApp() {
             content: created.content,
             sort_order: created.sort_order,
             client_op_id: created.client_op_id,
+            components: created.components ?? [],
           });
           continue;
         }
@@ -263,6 +264,7 @@ export function DiaryApp() {
             content: updated.content,
             sort_order: block.sort_order,
             client_op_id: updated.client_op_id,
+            components: updated.components ?? block.components,
           });
         } else {
           nextBlocks.push(block);
@@ -283,6 +285,7 @@ export function DiaryApp() {
           sort_order: b.sort_order,
           parent_id: entry.id,
           client_op_id: b.client_op_id,
+          components: b.components ?? [],
           created_at: selectedEntry.created_at,
           updated_at: new Date().toISOString(),
         })),
@@ -432,6 +435,7 @@ export function DiaryApp() {
           content: "",
           sort_order: nextOrder,
           client_op_id: null,
+          components: [],
         },
       ],
     });

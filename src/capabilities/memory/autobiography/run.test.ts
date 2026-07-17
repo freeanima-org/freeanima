@@ -26,7 +26,6 @@ function makeRow(
     status: "active",
     fts_segmented: null,
     content_embedding: null,
-    content_fts: null,
     created_at: updated,
     updated_at: updated,
     ...overrides,
