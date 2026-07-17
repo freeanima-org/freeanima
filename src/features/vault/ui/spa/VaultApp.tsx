@@ -177,6 +177,15 @@ export function VaultApp() {
   );
   const [userSetupMode, setUserSetupMode] = useState(false);
   const [detailSecrets, setDetailSecrets] = useState("");
+  const [selectionSubjectKind, setSelectionSubjectKind] = useState(subjectKind);
+
+  // subject 切换时在 render 阶段清空选中，避免详情 effect 用旧 ID 打到新 world
+  if (selectionSubjectKind !== subjectKind) {
+    setSelectionSubjectKind(subjectKind);
+    setSelectedId(null);
+    setDetailSecrets("");
+    setCreating(false);
+  }
 
   const session = useMemo(() => getUserVaultSession(), []);
   const isUserVault = subjectKind === "user";
