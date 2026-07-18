@@ -41,6 +41,7 @@ type ProjectTaskListProps = {
   useActionSheet: boolean;
   disabled?: boolean;
   writesDisabled?: boolean;
+  tagTitleById?: ReadonlyMap<number, string> | null;
   onToggleComplete: (item: TaskItemRow) => void;
   onEdit: (item: TaskItemRow) => void;
   onOpenItemMenu: (item: TaskItemRow) => void;
@@ -54,6 +55,7 @@ function SortableProjectTaskRow({
   disabled,
   sortable,
   useActionSheet,
+  tagTitleById = null,
   onToggleComplete,
   onEdit,
   onOpenMenu,
@@ -64,6 +66,7 @@ function SortableProjectTaskRow({
   disabled: boolean;
   sortable: boolean;
   useActionSheet: boolean;
+  tagTitleById?: ReadonlyMap<number, string> | null;
   onToggleComplete: () => void;
   onEdit: () => void;
   onOpenMenu: () => void;
@@ -81,6 +84,7 @@ function SortableProjectTaskRow({
       disabled={disabled}
       useActionSheet={useActionSheet}
       showEntityId
+      tagTitleById={tagTitleById}
       {...(sortable && !disabled
         ? { dragAttributes: { ...attributes }, dragListeners: { ...listeners } }
         : {})}
@@ -107,6 +111,7 @@ export function ProjectTaskList({
   useActionSheet,
   disabled = false,
   writesDisabled = false,
+  tagTitleById = null,
   onToggleComplete,
   onEdit,
   onOpenItemMenu,
@@ -169,6 +174,7 @@ export function ProjectTaskList({
                 disabled={disabled}
                 sortable={sortable}
                 useActionSheet={useActionSheet}
+                tagTitleById={tagTitleById}
                 onToggleComplete={() => onToggleComplete(item)}
                 onEdit={() => onEdit(item)}
                 onOpenMenu={() => onOpenItemMenu(item)}
@@ -191,6 +197,7 @@ export function ProjectTaskList({
                   disabled={disabled}
                   useActionSheet={useActionSheet}
                   showEntityId
+                  tagTitleById={tagTitleById}
                   longPressEnabled={useActionSheet}
                   onToggleComplete={() => onToggleComplete(item)}
                   onEdit={() => onEdit(item)}
@@ -210,6 +217,7 @@ export function ProjectTaskList({
               item={activeDrag}
               useActionSheet={false}
               showEntityId
+              tagTitleById={tagTitleById}
               onToggleComplete={() => {}}
               onEdit={() => {}}
               onOpenMenu={() => {}}

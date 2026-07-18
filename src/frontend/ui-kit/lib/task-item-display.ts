@@ -47,3 +47,35 @@ export function isTaskItemDisplayDirty(
 ): boolean {
   return !isTaskItemDisplayEqual(current, baseline);
 }
+
+/** 列表行标签条默认最多展示的 chip 数；超出显示 +N */
+export const TASK_ROW_TAG_MAX_VISIBLE = 2;
+
+/** 从 tag_ids + 标题映射解析可读标签名（缺失 id 跳过） */
+export function resolveTaskTagTitles(
+  tagIds: readonly number[],
+  titleById: ReadonlyMap<number, string> | null | undefined,
+): string[] {
+  if (!titleById || tagIds.length === 0) return [];
+  const out: string[] = [];
+  for (const id of tagIds) {
+    const title = titleById.get(id);
+    if (title) out.push(title);
+  }
+  return out;
+}
+
+/** 行内展示：可见标题 + 溢出数量 */
+export function splitTaskTagTitlesForDisplay(
+  titles: readonly string[],
+  maxVisible: number = TASK_ROW_TAG_MAX_VISIBLE,
+): { visible: string[]; overflowCount: number } {
+  const limit = Math.max(0, maxVisible);
+  if (titles.length <= limit) {
+    return { visible: [...titles], overflowCount: 0 };
+  }
+  return {
+    visible: titles.slice(0, limit),
+    overflowCount: titles.length - limit,
+  };
+}

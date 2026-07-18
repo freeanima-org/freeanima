@@ -94,6 +94,7 @@ import {
   useContextMenuCapability,
 } from "@freeanima/frontend/shell-sdk/react.tsx";
 import { cloneTaskItem, isTaskItemDirty, isTaskItemEqual } from "./lib/task-detail-dirty.ts";
+import { fetchTags } from "@freeanima/features/tag/ui/spa/lib/api.ts";
 
 type MenuState =
   | { kind: "folder"; x: number; y: number; folder: ProjectFolderRow }
@@ -132,6 +133,7 @@ export function ProjectApp() {
   const [showInactive, setShowInactive] = useState(false);
   const [hideCompleted, setHideCompleted] = useState(() => readHideCompleted(subjectKind));
   const [tasks, setTasks] = useState<TaskItemRow[]>([]);
+  const [tagPool, setTagPool] = useState<Array<{ id: number; title: string }>>([]);
   const [selectionSubjectKind, setSelectionSubjectKind] = useState(subjectKind);
 
   // subject 切换时在 render 阶段清空选中，避免详情 effect 用旧 ID 打到新 world
@@ -347,6 +349,25 @@ export function ProjectApp() {
   useEffect(() => {
     setHideCompleted(readHideCompleted(subjectKind));
   }, [subjectKind]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchTags()
+      .then((tags) => {
+        if (!cancelled) setTagPool(tags.map((t) => ({ id: t.id, title: t.title })));
+      })
+      .catch(() => {
+        if (!cancelled) setTagPool([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [subjectKind]);
+
+  const tagTitleById = useMemo(
+    () => new Map(tagPool.map((t) => [t.id, t.title] as const)),
+    [tagPool],
+  );
 
   useEffect(() => {
     resetDetail();
@@ -860,6 +881,7 @@ export function ProjectApp() {
                     useActionSheet={useActionSheet}
                     disabled={writesDisabled}
                     writesDisabled={writesDisabled}
+                    tagTitleById={tagTitleById}
                     onToggleComplete={(item) => void handleToggleComplete(item)}
                     onEdit={openTaskDetail}
                     onOpenItemMenu={openTaskMenuSheet}

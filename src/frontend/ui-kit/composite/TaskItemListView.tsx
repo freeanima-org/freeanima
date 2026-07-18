@@ -13,6 +13,7 @@ export type TaskItemListViewProps<T extends TaskItemDisplay = TaskItemDisplay> =
   longPressEnabled?: boolean;
   secondaryLineForItem?: (item: T) => string | null;
   showEntityId?: boolean;
+  tagTitleById?: ReadonlyMap<number, string> | null;
   onToggleComplete: (item: T) => void;
   onEdit: (item: T) => void;
   onOpenItemMenu: (item: T) => void;
@@ -29,6 +30,7 @@ export function TaskItemListView<T extends TaskItemDisplay>(props: TaskItemListV
     longPressEnabled = true,
     secondaryLineForItem,
     showEntityId = false,
+    tagTitleById = null,
     onToggleComplete,
     onEdit,
     onOpenItemMenu,
@@ -53,6 +55,7 @@ export function TaskItemListView<T extends TaskItemDisplay>(props: TaskItemListV
             useActionSheet={useActionSheet}
             longPressEnabled={longPressEnabled}
             showEntityId={showEntityId}
+            tagTitleById={tagTitleById}
             secondaryLine={secondaryLineForItem?.(item) ?? null}
             onToggleComplete={() => onToggleComplete(item)}
             onEdit={() => onEdit(item)}
@@ -77,6 +80,7 @@ export function TaskItemListView<T extends TaskItemDisplay>(props: TaskItemListV
                 useActionSheet={useActionSheet}
                 longPressEnabled={longPressEnabled}
                 showEntityId={showEntityId}
+                tagTitleById={tagTitleById}
                 secondaryLine={secondaryLineForItem?.(item) ?? null}
                 onToggleComplete={() => onToggleComplete(item)}
                 onEdit={() => onEdit(item)}
