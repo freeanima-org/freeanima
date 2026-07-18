@@ -83,4 +83,22 @@ describe("resolveTaskSelection", () => {
     });
     expect(sel).toEqual({ kind: "smart_list", key: "due_today" });
   });
+
+  test("preferUrl 时恢复 search", () => {
+    const sel = resolveTaskSelection(lists, smartLists, {
+      stored: { kind: "list", id: 2 },
+      urlSelection: { kind: "search" },
+      preferUrl: true,
+    });
+    expect(sel).toEqual({ kind: "search" });
+  });
+
+  test("stored 为 search 时忽略并回退", () => {
+    const sel = resolveTaskSelection(lists, smartLists, {
+      stored: { kind: "search" },
+      urlSelection: null,
+      preferUrl: false,
+    });
+    expect(sel).toEqual({ kind: "smart_list", key: "due_today" });
+  });
 });

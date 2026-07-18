@@ -8,6 +8,20 @@ import { readTaskSelectionFromUrl } from "./task-selection-url.ts";
 import { resolveDefaultListId } from "./resolve-list.ts";
 import type { TaskListRow } from "./api.ts";
 
+function tryResolveCandidate(
+  lists: TaskListRow[],
+  smartLists: SmartListRow[],
+  candidate: TaskModuleSelection,
+): TaskModuleSelection | null {
+  if (candidate.kind === "search") return { kind: "search" };
+  if (candidate.kind === "list") {
+    const row = lists.find((l) => l.id === candidate.id && !l.is_folder);
+    return row ? { kind: "list", id: candidate.id } : null;
+  }
+  const row = findSmartListRowByKey(smartLists, candidate.key);
+  return row ? { kind: "smart_list", key: candidate.key } : null;
+}
+
 export function resolveTaskSelection(
   lists: TaskListRow[],
   smartLists: SmartListRow[],
@@ -17,49 +31,20 @@ export function resolveTaskSelection(
     preferUrl: boolean;
   },
 ): TaskModuleSelection {
-  const tryList = (id: number | null | undefined): TaskModuleSelection | null => {
-    if (id == null) return null;
-    const row = lists.find((l) => l.id === id && !l.is_folder);
-    return row ? { kind: "list", id } : null;
-  };
+  const candidates: TaskModuleSelection[] = [];
+  if (options.preferUrl && options.urlSelection) candidates.push(options.urlSelection);
+  if (options.stored && options.stored.kind !== "search") candidates.push(options.stored);
+  if (!options.preferUrl && options.urlSelection) candidates.push(options.urlSelection);
 
-  const trySmartList = (key: string | null | undefined): TaskModuleSelection | null => {
-    if (!key) return null;
-    const row = findSmartListRowByKey(smartLists, key);
-    return row ? { kind: "smart_list", key } : null;
-  };
-
-  if (options.preferUrl && options.urlSelection) {
-    if (options.urlSelection.kind === "list") {
-      const fromUrl = tryList(options.urlSelection.id);
-      if (fromUrl) return fromUrl;
-    } else {
-      const fromUrl = trySmartList(options.urlSelection.key);
-      if (fromUrl) return fromUrl;
-    }
+  for (const candidate of candidates) {
+    const resolved = tryResolveCandidate(lists, smartLists, candidate);
+    if (resolved) return resolved;
   }
 
-  if (options.stored) {
-    if (options.stored.kind === "list") {
-      const fromStored = tryList(options.stored.id);
-      if (fromStored) return fromStored;
-    } else {
-      const fromStored = trySmartList(options.stored.key);
-      if (fromStored) return fromStored;
-    }
-  }
-
-  if (!options.preferUrl && options.urlSelection) {
-    if (options.urlSelection.kind === "list") {
-      const fromUrl = tryList(options.urlSelection.id);
-      if (fromUrl) return fromUrl;
-    } else {
-      const fromUrl = trySmartList(options.urlSelection.key);
-      if (fromUrl) return fromUrl;
-    }
-  }
-
-  const fallbackSmart = trySmartList(DEFAULT_SMART_LIST_KEY);
+  const fallbackSmart = tryResolveCandidate(lists, smartLists, {
+    kind: "smart_list",
+    key: DEFAULT_SMART_LIST_KEY,
+  });
   if (fallbackSmart) return fallbackSmart;
 
   const defaultListId = resolveDefaultListId(lists);
@@ -80,6 +65,7 @@ export function parseStoredTaskSelection(raw: unknown): TaskModuleSelection | nu
   if (obj.kind === "smart_list" && typeof obj.key === "string" && obj.key.trim()) {
     return { kind: "smart_list", key: obj.key.trim() };
   }
+  if (obj.kind === "search") return { kind: "search" };
   return null;
 }
 

@@ -2,7 +2,8 @@ import type { SmartListRow } from "./api.ts";
 
 export type TaskModuleSelection =
   | { kind: "smart_list"; key: string }
-  | { kind: "list"; id: number };
+  | { kind: "list"; id: number }
+  | { kind: "search" };
 
 export const DEFAULT_SMART_LIST_KEY = "due_today";
 
