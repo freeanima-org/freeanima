@@ -314,36 +314,49 @@ export async function ensureBuiltinCronJobsRegistered(): Promise<void> {
   await ensureBuiltinCronJobs();
 }
 
+function mapCommandInfo(c: {
+  name: string;
+  description: string;
+  scope?: string;
+  platforms?: string[];
+  subcommands?: { name: string; description: string }[];
+}): {
+  name: string;
+  description: string;
+  scope: string;
+  platforms: string[] | null;
+  subcommands?: { name: string; description: string }[];
+} {
+  return {
+    name: c.name,
+    description: c.description,
+    scope: c.scope ?? "conversation",
+    platforms: c.platforms?.length ? [...c.platforms] : null,
+    ...(c.subcommands?.length ? { subcommands: c.subcommands.map((s) => ({ ...s })) } : {}),
+  };
+}
+
 export function listCommands(opts?: { platform?: string; all?: boolean }): {
   commands: {
     name: string;
     description: string;
     scope: string;
     platforms: string[] | null;
+    subcommands?: { name: string; description: string }[];
   }[];
   platform?: string;
 } {
   if (opts?.all) {
     const defs = listCommandDefs();
     return {
-      commands: defs.map((c) => ({
-        name: c.name,
-        description: c.description,
-        scope: c.scope ?? "conversation",
-        platforms: c.platforms?.length ? [...c.platforms] : null,
-      })),
+      commands: defs.map(mapCommandInfo),
     };
   }
   const platform = opts?.platform?.trim();
   if (!platform) throw new Error("platform is required when all is not true");
   const defs = listCommandDefsForPlatform(platform);
   return {
-    commands: defs.map((c) => ({
-      name: c.name,
-      description: c.description,
-      scope: c.scope ?? "conversation",
-      platforms: c.platforms?.length ? [...c.platforms] : null,
-    })),
+    commands: defs.map(mapCommandInfo),
     platform,
   };
 }

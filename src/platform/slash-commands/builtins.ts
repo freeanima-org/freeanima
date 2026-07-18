@@ -415,12 +415,22 @@ export function registerBuiltins(): void {
     description: "Set or manage conversation goal (auto-continue until done or budget exhausted)",
     handler: cmdGoal,
     scope: "conversation",
+    subcommands: [
+      { name: "status", description: "View goal, subgoals, turn count, judge reason" },
+      { name: "pause", description: "Pause auto-continue (state preserved)" },
+      { name: "resume", description: "Resume a paused goal" },
+      { name: "clear", description: "Clear the current goal" },
+    ],
   });
   registerCommand({
     name: "subgoal",
     description: "Add or manage subgoals for the current conversation goal",
     handler: cmdSubgoal,
     scope: "conversation",
+    subcommands: [
+      { name: "remove", description: "Remove subgoal N (1-based): /subgoal remove <N>" },
+      { name: "clear", description: "Clear all subgoals" },
+    ],
   });
   registerCommand({
     name: "cancel",
@@ -476,6 +486,11 @@ export function registerBuiltins(): void {
     handler: cmdMask,
     scope: "conversation",
     platforms: [CHAT_PLATFORM_PATTERN],
+    subcommands: [
+      { name: "set", description: "Apply a mask preset: /mask set <preset>" },
+      { name: "clear", description: "Remove capability mask" },
+      { name: "show", description: "Show current capability mask" },
+    ],
   });
   registerCommand({
     name: "tooldisplay",
@@ -484,6 +499,9 @@ export function registerBuiltins(): void {
     aliases: ["tool-display"],
     scope: "conversation",
     platforms: ["discord", "weixin"],
+    subcommands: [
+      { name: "reset", description: "Clear conversation override (use global default)" },
+    ],
   });
   registerCommand({
     name: "restart",

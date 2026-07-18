@@ -6,7 +6,9 @@ import {
   ensureCommandResultText,
   formatCommandPreAck,
   formatCommandStreamPreAck,
+  getCommand,
   platformMatchesCommandPattern,
+  registerCommand,
   type CommandDef,
 } from "./registry.ts";
 
@@ -99,5 +101,24 @@ describe("commandNeedsMessageDelivery", () => {
     expect(commandNeedsMessageDelivery(goalCmd, ["pause"])).toBe(false);
     expect(commandNeedsMessageDelivery(goalCmd, [])).toBe(false);
     expect(commandNeedsMessageDelivery(helpCmd, [])).toBe(false);
+  });
+});
+
+describe("CommandDef.subcommands", () => {
+  it("stores discrete subcommands on registerCommand", () => {
+    registerCommand({
+      name: "__test_with_subs",
+      description: "test",
+      handler: () => "",
+      hidden: true,
+      subcommands: [
+        { name: "status", description: "View status" },
+        { name: "clear", description: "Clear" },
+      ],
+    });
+    expect(getCommand("__test_with_subs")?.subcommands?.map((s) => s.name)).toEqual([
+      "status",
+      "clear",
+    ]);
   });
 });
