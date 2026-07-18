@@ -11,7 +11,7 @@ describe("moveTaskItemsToProject", () => {
       id: 1,
       title: "t",
       content: "",
-      tags: [],
+      tag_ids: [],
       status: "pending",
       priority: "none",
       due_at: null,

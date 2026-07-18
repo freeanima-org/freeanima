@@ -4,11 +4,14 @@ import {
   MILESTONE_COMPONENT,
   PROJECT_COMPONENT,
   PROJECT_FOLDER_COMPONENT,
+  TAG_COMPONENT,
+  TASK_ITEM_COMPONENT,
 } from "@freeanima/core/db/schema";
 
 import {
   buildCjkOrderedCharRegexPattern,
   buildComponentFilterConditions,
+  buildEntitySearchConditions,
   normalizeEntitySearchQuery,
 } from "./conditions.ts";
 
@@ -33,4 +36,29 @@ test("buildComponentFilterConditions accepts client_op_id for project entities",
     });
     expect(conditions).toHaveLength(1);
   }
+});
+
+test("buildComponentFilterConditions accepts client_op_id for tag", () => {
+  const conditions = buildComponentFilterConditions({
+    component: TAG_COMPONENT,
+    filters: { client_op_id: "op-tag" },
+  });
+  expect(conditions).toHaveLength(1);
+});
+
+test("buildEntitySearchConditions includes top-level tag_ids", () => {
+  const conditions = buildEntitySearchConditions({
+    world_id: 1,
+    primary_component: TASK_ITEM_COMPONENT,
+    tag_ids: [10, 20],
+  });
+  expect(conditions.length).toBeGreaterThanOrEqual(2);
+});
+
+test("buildComponentFilterConditions accepts task_item tag_ids", () => {
+  const conditions = buildComponentFilterConditions({
+    component: TASK_ITEM_COMPONENT,
+    filters: { tag_ids: [3] },
+  });
+  expect(conditions).toHaveLength(1);
 });

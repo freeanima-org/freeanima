@@ -72,14 +72,18 @@ export function TaskEntityOverlay({ id }: EntityOverlayProps): JSX.Element {
           setItem(next);
           if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
           saveTimerRef.current = setTimeout(() => {
-            void updateTaskItem(next.id, {
-              title: next.title,
-              content: next.content,
-              tags: next.tags,
-              priority: next.priority,
-              due_at: next.due_at,
-              status: next.status,
-            }).catch((err) => {
+            void updateTaskItem(
+              next.id,
+              {
+                title: next.title,
+                content: next.content,
+                tag_ids: next.tag_ids,
+                priority: next.priority,
+                due_at: next.due_at,
+                status: next.status,
+              },
+              { seed: next },
+            ).catch((err) => {
               setError(err instanceof Error ? err.message : String(err));
             });
           }, 700);

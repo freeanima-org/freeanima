@@ -48,6 +48,7 @@ import { SortableTaskList } from "./components/SortableTaskList.tsx";
 import { TaskDetailPanel } from "./components/TaskDetailPanel.tsx";
 import { TaskDndRoot } from "./components/TaskDndRoot.tsx";
 import { ThreeColumnLayout } from "@freeanima/frontend/ui-kit/layout";
+import { fetchTags } from "@freeanima/features/tag/ui/spa/lib/api.ts";
 import {
   completeTaskItem,
   createSmartList,
@@ -71,6 +72,7 @@ import {
   updateSmartList,
   updateTaskItem,
   updateTaskList,
+  seedLocalTaskItems,
   type SmartListRow,
   type TaskItemRow,
   type TaskListRow,
@@ -145,6 +147,8 @@ export function TaskApp() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchHits, setSearchHits] = useState<TaskItemRow[]>([]);
   const [searching, setSearching] = useState(false);
+  const [tagFilterId, setTagFilterId] = useState<number | null>(null);
+  const [tagPool, setTagPool] = useState<Array<{ id: number; title: string }>>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [listEditor, setListEditor] = useState<TaskListRow | null>(null);
@@ -186,14 +190,18 @@ export function TaskApp() {
     autoSaveDebounceMs: 700,
     compactSheetEnabled: movePickerItemIds == null && moveProjectItemIds == null,
     persistItem: (snapshot) =>
-      updateTaskItem(snapshot.id, {
-        title: snapshot.title,
-        content: snapshot.content,
-        tags: snapshot.tags,
-        priority: snapshot.priority,
-        due_at: snapshot.due_at,
-        status: snapshot.status,
-      }),
+      updateTaskItem(
+        snapshot.id,
+        {
+          title: snapshot.title,
+          content: snapshot.content,
+          tag_ids: snapshot.tag_ids,
+          priority: snapshot.priority,
+          due_at: snapshot.due_at,
+          status: snapshot.status,
+        },
+        { seed: snapshot },
+      ),
     onSaved: (saved) => {
       setItems((prev) => {
         const hasSavedId = prev.some((row) => row.id === saved.id);
@@ -236,6 +244,21 @@ export function TaskApp() {
       appliedItemUrlRef.current = null;
     }
   }, [detailItem, webShell]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setTagFilterId(null);
+    void fetchTags()
+      .then((tags) => {
+        if (!cancelled) setTagPool(tags.map((t) => ({ id: t.id, title: t.title })));
+      })
+      .catch(() => {
+        if (!cancelled) setTagPool([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [subjectKind]);
 
   useEffect(() => {
     if (!webShell) return;
@@ -291,6 +314,7 @@ export function TaskApp() {
       const rows = await fetchTaskItemsByFilters(filters);
       if (generation !== itemsLoadGenRef.current) return;
       setItems(rows);
+      void seedLocalTaskItems(rows);
     } catch {
       if (generation !== itemsLoadGenRef.current) return;
       setItems([]);
@@ -541,7 +565,10 @@ export function TaskApp() {
     setSearching(true);
     const timer = setTimeout(() => {
       void searchTaskItems({ query: q, limit: 30 })
-        .then(setSearchHits)
+        .then((rows) => {
+          setSearchHits(rows);
+          void seedLocalTaskItems(rows);
+        })
         .catch((err) => {
           setError(err instanceof Error ? err.message : String(err));
           setSearchHits([]);
@@ -555,7 +582,9 @@ export function TaskApp() {
     const q = searchQuery.trim();
     if (!q) return;
     try {
-      setSearchHits(await searchTaskItems({ query: q, limit: 30 }));
+      const rows = await searchTaskItems({ query: q, limit: 30 });
+      setSearchHits(rows);
+      void seedLocalTaskItems(rows);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
@@ -958,15 +987,20 @@ export function TaskApp() {
   // 保留文件夹供树形展示；MoveToListPicker 不会把文件夹当作可选目标
   const moveTargetLists = useMemo(() => lists.filter((l) => !l.closed), [lists]);
   const listNameById = useMemo(() => new Map(lists.map((l) => [l.id, l.name])), [lists]);
-  const pendingItems = items.filter((i) => i.status === "pending");
-  const completedItems = items.filter((i) => i.status === "completed");
-  const searchPending = searchHits.filter((i) => i.status === "pending");
-  const searchCompleted = searchHits.filter((i) => i.status === "completed");
+  const matchTag = useCallback(
+    (row: TaskItemRow) => tagFilterId == null || row.tag_ids.includes(tagFilterId),
+    [tagFilterId],
+  );
+  const pendingItems = items.filter((i) => i.status === "pending" && matchTag(i));
+  const completedItems = items.filter((i) => i.status === "completed" && matchTag(i));
+  const searchPending = searchHits.filter((i) => i.status === "pending" && matchTag(i));
+  const searchCompleted = searchHits.filter((i) => i.status === "completed" && matchTag(i));
+  const taggedItems = items.filter(matchTag);
   const displayPending = searchActive ? searchPending : smartListCompletedOnly ? [] : pendingItems;
   const displayCompleted = searchActive
     ? searchCompleted
     : smartListCompletedOnly
-      ? items
+      ? taggedItems
       : completedItems;
   const showCompletedSection =
     !smartListCompletedOnly && (searchActive || selection?.kind === "list");
@@ -992,7 +1026,7 @@ export function TaskApp() {
           : "—",
     [searchActive, listNameById],
   );
-  const allVisibleItems = searchActive ? searchHits : items;
+  const allVisibleItems = (searchActive ? searchHits : items).filter(matchTag);
   const selectableOrder = useMemo(() => allVisibleItems.map((i) => i.id), [allVisibleItems]);
 
   const handleSelectItem = (itemId: number, shiftKey: boolean) => {
@@ -1262,12 +1296,30 @@ export function TaskApp() {
             }
             middleHeaderExtra={
               showMiddleContent ? (
-                <Input
-                  className="h-8 w-full max-w-md"
-                  placeholder="搜索全部清单…"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+                <div className="flex w-full max-w-md items-center gap-2">
+                  <Input
+                    className="h-8 flex-1"
+                    placeholder="搜索全部清单…"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <select
+                    className="border-input bg-background h-8 max-w-36 rounded-md border px-2 text-xs"
+                    value={tagFilterId ?? ""}
+                    aria-label="按标签筛选"
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setTagFilterId(v ? Number(v) : null);
+                    }}
+                  >
+                    <option value="">全部标签</option>
+                    {tagPool.map((tag) => (
+                      <option key={tag.id} value={tag.id}>
+                        {tag.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               ) : null
             }
             list={

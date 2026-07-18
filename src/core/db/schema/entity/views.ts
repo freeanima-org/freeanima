@@ -13,6 +13,7 @@ import {
   PROJECT_FOLDER_COMPONENT,
   PROJECT_COMPONENT,
   MILESTONE_COMPONENT,
+  TAG_COMPONENT,
   VAULT_CONFIG_COMPONENT,
   VAULT_ITEM_COMPONENT,
   COMPANION_PROFILE_COMPONENT,
@@ -32,6 +33,7 @@ import {
   projectFolderBodySchema,
   projectBodySchema,
   milestoneBodySchema,
+  tagBodySchema,
   vaultConfigBodySchema,
   vaultItemBodySchema,
   companionProfileBodySchema,
@@ -51,6 +53,7 @@ import {
   type ProjectFolderBody,
   type ProjectBody,
   type MilestoneBody,
+  type TagBody,
   type VaultConfigBody,
   type VaultItemBody,
   type CompanionProfileBody,
@@ -73,6 +76,7 @@ export type EntityRow = {
   body: Record<string, unknown>;
   pinned: boolean;
   reference_count: number;
+  tag_ids: number[];
   created_at: Date;
   updated_at: Date;
 };
@@ -93,6 +97,7 @@ export const entityRowSelectColumns = {
   body: entities.body,
   pinned: entities.pinned,
   reference_count: entities.reference_count,
+  tag_ids: entities.tag_ids,
   created_at: entities.created_at,
   updated_at: entities.updated_at,
 } as const;
@@ -109,6 +114,7 @@ export const entityListSelectColumns = {
   body: entities.body,
   pinned: entities.pinned,
   reference_count: entities.reference_count,
+  tag_ids: entities.tag_ids,
   created_at: entities.created_at,
   updated_at: entities.updated_at,
 } as const;
@@ -132,6 +138,7 @@ export function mapEntityRow(
     body: (row.body ?? {}) as Record<string, unknown>,
     pinned: row.pinned ?? false,
     reference_count: row.reference_count ?? 0,
+    tag_ids: [...(row.tag_ids ?? [])],
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
@@ -298,5 +305,11 @@ export function asMilestone(
 ): (MilestoneBody & { id: number; title: string }) | null {
   if (row.primary_component !== MILESTONE_COMPONENT) return null;
   const parsed = milestoneBodySchema.safeParse(row.body);
+  return parsed.success ? { id: row.id, title: row.title, ...parsed.data } : null;
+}
+
+export function asTag(row: EntityRow): (TagBody & { id: number; title: string }) | null {
+  if (row.primary_component !== TAG_COMPONENT) return null;
+  const parsed = tagBodySchema.safeParse(row.body);
   return parsed.success ? { id: row.id, title: row.title, ...parsed.data } : null;
 }

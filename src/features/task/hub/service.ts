@@ -226,7 +226,7 @@ export async function serviceTasklistItemList(
     filters?: TaskItemSearchFilters;
     status?: "pending" | "completed" | "all";
     due_today?: boolean;
-    tags?: string[];
+    tag_ids?: number[];
     limit?: number;
     offset?: number;
   },
@@ -245,7 +245,7 @@ export async function serviceTasklistItemList(
       filters: input.filters,
       status: input.filters == null ? (input.status ?? "all") : undefined,
       due_today: input.filters == null ? input.due_today : undefined,
-      tags: input.filters == null ? input.tags : undefined,
+      tag_ids: input.filters == null ? input.tag_ids : undefined,
       limit: input.limit,
       offset: input.offset,
     }),
@@ -287,7 +287,7 @@ export async function serviceTasklistItemCreate(
     title: string;
     list_id?: number;
     content?: string;
-    tags?: string[];
+    tag_ids?: number[];
     priority?: "high" | "medium" | "low" | "none";
     due_at?: string | null;
     sort_order?: number;
@@ -312,7 +312,7 @@ export async function serviceProjectItemCreate(
     project_id: number;
     milestone_id?: number;
     content?: string;
-    tags?: string[];
+    tag_ids?: number[];
     priority?: "high" | "medium" | "low" | "none";
     due_at?: string | null;
     sort_order?: number;
@@ -335,7 +335,7 @@ export async function serviceTaskPatch(
     title?: string;
     milestone_id?: number | null;
     content?: string;
-    tags?: string[];
+    tag_ids?: number[];
     priority?: "high" | "medium" | "low" | "none";
     due_at?: string | null;
     remind_at?: string | null;

@@ -51,12 +51,12 @@ describePg("entity task PG", () => {
     const item = await createTaskItem(worldId, {
       title: "写文档",
       content: "第一章草稿",
-      tags: ["文档", "优先"],
+      tag_ids: [],
       list_id: list.id,
     });
     expect(item.title).toBe("写文档");
     expect(item.content).toBe("第一章草稿");
-    expect(item.tags).toEqual(["文档", "优先"]);
+    expect(item.tag_ids).toEqual([]);
     expect(item.status).toBe("pending");
     expect(item.list_id).toBe(list.id);
 
@@ -83,7 +83,6 @@ describePg("entity task PG", () => {
     const second = await createTaskItem(worldId, {
       title: "运动",
       list_id: list.id,
-      tags: ["健康"],
     });
 
     let items = await listTaskItems(worldId, { list_id: list.id, status: "pending" });
@@ -91,9 +90,6 @@ describePg("entity task PG", () => {
 
     const done = await completeTaskItem(worldId, second.id);
     expect(done?.status).toBe("completed");
-
-    items = await listTaskItems(worldId, { list_id: list.id, status: "pending", tags: ["健康"] });
-    expect(items).toHaveLength(0);
 
     items = await listTaskItems(worldId, { list_id: list.id, status: "pending" });
     expect(items).toHaveLength(1);

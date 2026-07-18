@@ -1,11 +1,13 @@
 import {
   TASK_ITEM_COMPONENT,
+  TAG_COMPONENT,
   asTaskItem,
   asMilestone,
   asProject,
   MILESTONE_COMPONENT,
   PROJECT_COMPONENT,
   TASK_LIST_COMPONENT,
+  type EntityRow,
 } from "@freeanima/core/db/schema/entity";
 import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/core/db/pg/entity";
 import { formatCstIso, omitUndefined } from "@freeanima/core/util";
@@ -55,28 +57,37 @@ async function assertMilestoneInProjectForTask(
   }
 }
 
-function normalizeTags(tags: string[] | undefined): string[] {
-  if (!tags?.length) return [];
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const raw of tags) {
-    const tag = raw.trim();
-    if (!tag || seen.has(tag)) continue;
-    seen.add(tag);
-    out.push(tag);
+function normalizeTagIds(tagIds: number[] | undefined): number[] {
+  if (!tagIds?.length) return [];
+  const seen = new Set<number>();
+  const out: number[] = [];
+  for (const raw of tagIds) {
+    const id = Math.floor(Number(raw));
+    if (!Number.isFinite(id) || id <= 0 || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
   }
   return out;
 }
 
-function toItemRow(
-  row: NonNullable<ReturnType<typeof asTaskItem>>,
-  meta: { created_at: Date; updated_at: Date },
-): TaskItemRow {
+async function assertTagIdsInWorld(worldId: number, tagIds: number[]): Promise<void> {
+  for (const id of tagIds) {
+    const row = await getEntity(id);
+    if (!row || row.primary_component !== TAG_COMPONENT) {
+      throw new Error(`tag not found: ${id}`);
+    }
+    await assertEntityInWorld(id, worldId);
+  }
+}
+
+function toItemRow(entity: EntityRow): TaskItemRow {
+  const row = asTaskItem(entity);
+  if (!row) throw new Error("invalid task_item row");
   return {
     id: row.id,
     title: row.title,
     content: row.content,
-    tags: row.tags ?? [],
+    tag_ids: [...(entity.tag_ids ?? [])],
     status: row.status,
     priority: row.priority,
     due_at: row.due_at ?? null,
@@ -86,8 +97,8 @@ function toItemRow(
     milestone_id: row.milestone_id ?? null,
     sort_order: row.sort_order ?? 0,
     completed_at: row.completed_at ?? null,
-    created_at: meta.created_at.toISOString(),
-    updated_at: meta.updated_at.toISOString(),
+    created_at: entity.created_at.toISOString(),
+    updated_at: entity.updated_at.toISOString(),
   };
 }
 
@@ -101,17 +112,21 @@ export async function listTaskItems(
     if (opts.list_id != null) filters.list_id = opts.list_id;
     if (opts.status != null) filters.status = opts.status;
     if (opts.due_today) filters.due_today = true;
-    if (opts.tags?.length) filters.tags = opts.tags;
+    if (opts.tag_ids?.length) filters.tag_ids = opts.tag_ids;
     if (opts.project_id != null) filters.project_id = opts.project_id;
     else if (opts.in_backlog !== false) filters.in_backlog = true;
   } else if (opts.filters.project_id == null && opts.filters.in_backlog !== false) {
     filters.in_backlog = true;
   }
 
+  const topLevelTagIds =
+    opts.tag_ids ?? (opts.filters?.tag_ids?.length ? opts.filters.tag_ids : undefined);
+
   const result = await searchEntities({
     world_id: worldId,
     primary_component: TASK_ITEM_COMPONENT,
     ...(Object.keys(filters).length > 0 ? { filters } : {}),
+    ...(topLevelTagIds?.length ? { tag_ids: topLevelTagIds } : {}),
     limit: opts.limit ?? 500,
     offset: opts.offset ?? 0,
     mode: "filter_only",
@@ -120,10 +135,11 @@ export async function listTaskItems(
 
   return result.results
     .map((row) => {
-      const parsed = asTaskItem(row);
-      return parsed
-        ? toItemRow(parsed, { created_at: row.created_at, updated_at: row.updated_at })
-        : null;
+      try {
+        return toItemRow(row);
+      } catch {
+        return null;
+      }
     })
     .filter((row): row is TaskItemRow => row != null)
     .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
@@ -143,9 +159,11 @@ async function findTaskItemByClientOpId(
   });
   const row = result.results[0];
   if (!row) return null;
-  const parsed = asTaskItem(row);
-  if (!parsed) return null;
-  return toItemRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+  try {
+    return toItemRow(row);
+  } catch {
+    return null;
+  }
 }
 
 export async function createTaskItem(
@@ -172,7 +190,8 @@ export async function createTaskItem(
       await assertMilestoneInProjectForTask(input.milestone_id, input.project_id, worldId);
     }
   }
-  const tags = normalizeTags(input.tags);
+  const tagIds = normalizeTagIds(input.tag_ids);
+  await assertTagIdsInWorld(worldId, tagIds);
   const listId = hasProject ? null : (input.list_id as number);
   const projectId = hasProject ? (input.project_id as number) : null;
   const body = {
@@ -180,7 +199,7 @@ export async function createTaskItem(
     priority: input.priority ?? "none",
     list_id: listId,
     sort_order: input.sort_order ?? 0,
-    tags,
+    tags: [] as string[],
     due_at: input.due_at ?? null,
     remind_at: input.remind_at ?? null,
     completed_at: null,
@@ -197,11 +216,11 @@ export async function createTaskItem(
     title: input.title.trim(),
     content: input.content?.trim() ?? "",
     body,
+    tag_ids: tagIds,
   });
 
-  const parsed = asTaskItem(row);
-  if (!parsed) throw new Error("task item create failed");
-  return toItemRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+  if (!asTaskItem(row)) throw new Error("task item create failed");
+  return toItemRow(row);
 }
 
 export async function updateTaskItem(
@@ -268,10 +287,15 @@ export async function updateTaskItem(
   if (input.due_at !== undefined) bodyPatch.due_at = input.due_at;
   if (input.remind_at !== undefined) bodyPatch.remind_at = input.remind_at;
   if (input.sort_order !== undefined) bodyPatch.sort_order = input.sort_order;
-  if (input.tags !== undefined) bodyPatch.tags = normalizeTags(input.tags);
   if (input.status !== undefined) {
     bodyPatch.status = input.status;
     bodyPatch.completed_at = input.status === "completed" ? formatCstIso(new Date()) : null;
+  }
+
+  let nextTagIds: number[] | undefined;
+  if (input.tag_ids !== undefined) {
+    nextTagIds = normalizeTagIds(input.tag_ids);
+    await assertTagIdsInWorld(worldId, nextTagIds);
   }
 
   const row = await updateEntity(
@@ -280,14 +304,16 @@ export async function updateTaskItem(
       title: input.title,
       content: input.content,
       body: Object.keys(bodyPatch).length > 0 ? bodyPatch : undefined,
+      tag_ids: nextTagIds,
     }),
   );
   if (!row) return null;
 
-  const parsed = asTaskItem(row);
-  return parsed
-    ? toItemRow(parsed, { created_at: row.created_at, updated_at: row.updated_at })
-    : null;
+  try {
+    return toItemRow(row);
+  } catch {
+    return null;
+  }
 }
 
 export async function completeTaskItem(worldId: number, id: number): Promise<TaskItemRow | null> {
@@ -367,10 +393,11 @@ export async function searchTaskItems(
 
   const rows = result.results
     .map((row) => {
-      const parsed = asTaskItem(row);
-      return parsed
-        ? toItemRow(parsed, { created_at: row.created_at, updated_at: row.updated_at })
-        : null;
+      try {
+        return toItemRow(row);
+      } catch {
+        return null;
+      }
     })
     .filter((row): row is TaskItemRow => row != null);
   return enrichTaskItemsWithAttribution(rows);

@@ -103,11 +103,8 @@ async function main(): Promise<void> {
     const defaultList = await getDefaultTaskList(worldId);
 
     const existing = await listTaskItems(worldId, { status: "all", limit: 5000 });
-    const migrated = new Set(
-      existing.flatMap((item) =>
-        item.tags.filter((t) => t.startsWith("legacy:")).map((t) => t.slice("legacy:".length)),
-      ),
-    );
+    // 旧版用 body.tags 里的 legacy:<id> 去重；任务已改 tag_ids，归档脚本不再依赖字符串标签
+    const migrated = new Set(existing.map((item) => String(item.id)));
 
     let created = 0;
     let skipped = 0;

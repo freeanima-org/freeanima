@@ -11,6 +11,14 @@ export function pgTextArray(values: readonly string[]): SQL {
   )}]::text[]`;
 }
 
+/** 展开为 `ARRAY[$1,$2,…]::bigint[]`，供 `@>` / `&&` 等使用。 */
+export function pgBigintArray(values: readonly number[]): SQL {
+  return drizzleSql`ARRAY[${drizzleSql.join(
+    values.map((v) => drizzleSql`${v}`),
+    drizzleSql`, `,
+  )}]::bigint[]`;
+}
+
 /** `AND sm.type = ?` or `AND sm.type = ANY(?)`. */
 export function pgSemanticTypeFilter(types: readonly string[]) {
   if (types.length === 0) return drizzleSql``;

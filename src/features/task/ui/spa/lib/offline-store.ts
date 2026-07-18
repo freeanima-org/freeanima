@@ -1,4 +1,5 @@
 import { getSubjectKind } from "@freeanima/frontend/shell-sdk";
+import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
 import { getIdMapping, resolveIdFields } from "@freeanima/frontend/shell-sdk/offline-id-map";
 import {
   registerOfflineModule,
@@ -190,7 +191,7 @@ async function rewriteLocalItemId(
             id: serverId,
             title: "",
             content: "",
-            tags: [],
+            tag_ids: [],
             status: "pending",
             priority: "none",
             due_at: null,
@@ -306,6 +307,89 @@ async function upsertLocalItem(scope: string, item: TaskItemRow): Promise<void> 
   const next = items.filter((row) => row.id !== item.id);
   next.push(item);
   await writeLocalItems(scope, item.list_id, next);
+}
+
+/**
+ * 智能清单 / 搜索等非 list 缓存路径拉到的任务，写入对应 list 的本地缓存，
+ * 以便后续详情编辑可走 outbox。
+ */
+export async function seedLocalTaskItems(items: TaskItemRow[]): Promise<void> {
+  const scope = resolveOutboxScope();
+  for (const item of items) {
+    if (item.list_id == null || isTempId(item.list_id)) continue;
+    await upsertLocalItem(scope, item);
+  }
+}
+
+type TaskItemContentPatch = Partial<
+  Pick<
+    TaskItemRow,
+    | "title"
+    | "content"
+    | "tag_ids"
+    | "priority"
+    | "due_at"
+    | "list_id"
+    | "project_id"
+    | "milestone_id"
+    | "status"
+    | "sort_order"
+  >
+>;
+
+export type OfflineUpdateTaskItemOpts = {
+  /** 本地未命中时先写入再走 outbox（例如智能清单详情里的内存行） */
+  seed?: TaskItemRow;
+};
+
+/** 本地无缓存且在线时直写 Hub，并把结果补进本地。 */
+async function patchTaskItemDirectHub(
+  scope: string,
+  id: number,
+  patch: TaskItemContentPatch,
+): Promise<TaskItemRow> {
+  if (!isHubFetchAvailable()) {
+    throw new Error("task item not found locally");
+  }
+  const entityId = await resolveEntityId(scope, id);
+  if (isTempId(entityId)) {
+    throw new Error("task item not found locally");
+  }
+
+  const hub = getTypedSatelliteHubClient();
+  const opId = randomUuid();
+  const movingToProject = typeof patch.project_id === "number";
+  const movingToList = !movingToProject && patch.list_id != null;
+
+  let result: { item: TaskItemRow };
+  if (movingToProject) {
+    result = await hub.call("task.moveToProject", {
+      ...subjectPayload(),
+      id: entityId,
+      client_op_id: opId,
+      project_id: patch.project_id as number,
+      ...(patch.sort_order !== undefined ? { sort_order: patch.sort_order } : {}),
+    });
+  } else if (movingToList) {
+    result = await hub.call("task.moveToList", {
+      ...subjectPayload(),
+      id: entityId,
+      client_op_id: opId,
+      list_id: patch.list_id as number,
+      ...(patch.sort_order !== undefined ? { sort_order: patch.sort_order } : {}),
+    });
+  } else {
+    const { list_id: _listId, project_id: _projectId, ...contentPatch } = patch;
+    result = await hub.call("task.patch", {
+      ...subjectPayload(),
+      id: entityId,
+      client_op_id: opId,
+      ...contentPatch,
+    });
+  }
+
+  await upsertLocalItem(scope, result.item);
+  return result.item;
 }
 
 async function removeLocalItem(scope: string, listId: number, id: number): Promise<void> {
@@ -660,7 +744,7 @@ export async function offlineCreateTaskItem(input: {
   title: string;
   list_id: number;
   content?: string;
-  tags?: string[];
+  tag_ids?: number[];
   priority?: TaskItemRow["priority"];
   due_at?: string | null;
   sort_order?: number;
@@ -677,7 +761,7 @@ export async function offlineCreateTaskItem(input: {
     id: tempId,
     title,
     content: input.content?.trim() ?? "",
-    tags: input.tags ?? [],
+    tag_ids: input.tag_ids ?? [],
     status: "pending",
     priority: input.priority ?? "none",
     due_at: input.due_at ?? null,
@@ -705,7 +789,7 @@ export async function offlineCreateTaskItem(input: {
       title: row.title,
       list_id: row.list_id,
       content: row.content,
-      tags: row.tags,
+      tag_ids: row.tag_ids,
       priority: row.priority,
       due_at: row.due_at,
       sort_order: row.sort_order,
@@ -728,25 +812,19 @@ export async function offlineCreateTaskItem(input: {
 
 export async function offlineUpdateTaskItem(
   id: number,
-  patch: Partial<
-    Pick<
-      TaskItemRow,
-      | "title"
-      | "content"
-      | "tags"
-      | "priority"
-      | "due_at"
-      | "list_id"
-      | "project_id"
-      | "milestone_id"
-      | "status"
-      | "sort_order"
-    >
-  >,
+  patch: TaskItemContentPatch,
+  opts?: OfflineUpdateTaskItemOpts,
 ): Promise<TaskItemRow> {
   const scope = resolveOutboxScope();
-  const found = await findLocalItem(scope, id);
-  if (!found) throw new Error("task item not found locally");
+  let found = await findLocalItem(scope, id);
+  if (!found && opts?.seed != null) {
+    const seedId = await resolveEntityId(scope, opts.seed.id);
+    await upsertLocalItem(scope, { ...opts.seed, id: seedId });
+    found = await findLocalItem(scope, id);
+  }
+  if (!found) {
+    return patchTaskItemDirectHub(scope, id, patch);
+  }
   const existing = found.item;
   const sourceListId = found.listId;
 

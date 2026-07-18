@@ -348,7 +348,7 @@ async function rewriteLocalItemId(
             id: serverId,
             title: "",
             content: "",
-            tags: [],
+            tag_ids: [],
             status: "pending",
             priority: "none",
             due_at: null,
@@ -1053,7 +1053,7 @@ export async function offlineCreateProjectTask(input: {
     id: tempId,
     title,
     content: "",
-    tags: [],
+    tag_ids: [],
     status: "pending",
     priority: "none",
     due_at: null,
@@ -1103,7 +1103,7 @@ export async function offlineUpdateProjectTask(
       TaskItemRow,
       | "title"
       | "content"
-      | "tags"
+      | "tag_ids"
       | "priority"
       | "due_at"
       | "milestone_id"
@@ -1262,7 +1262,7 @@ export async function offlineMoveTaskToProject(
       id: taskId,
       title: "",
       content: "",
-      tags: [],
+      tag_ids: [],
       status: "pending",
       priority: "none",
       due_at: null,

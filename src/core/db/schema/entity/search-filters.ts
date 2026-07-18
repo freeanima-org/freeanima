@@ -8,6 +8,7 @@ import {
   EMAIL_THREAD_COMPONENT,
   emailDirectionSchema,
   MILESTONE_COMPONENT,
+  TAG_COMPONENT,
   pomodoroPhaseSchema,
   POMODORO_SESSION_COMPONENT,
   POMODORO_TASK_FOCUS_COMPONENT,
@@ -19,6 +20,7 @@ import {
   vaultItemTypeSchema,
 } from "./components/index.ts";
 import { contentBlockSearchFiltersSchema } from "./content-block-search-filters.ts";
+import { tagSearchFiltersSchema } from "./tag-search-filters.ts";
 import { taskItemSearchFiltersSchema } from "./task-item-search-filters.ts";
 
 export {
@@ -33,6 +35,12 @@ export {
   parseContentBlockSearchFilters,
   type ContentBlockSearchFilters,
 } from "./content-block-search-filters.ts";
+
+export {
+  parseTagSearchFilters,
+  tagSearchFiltersSchema,
+  type TagSearchFilters,
+} from "./tag-search-filters.ts";
 
 export const emailAccountSearchFiltersSchema = z
   .object({
@@ -276,6 +284,7 @@ export const ENTITY_SEARCH_FILTER_COMPONENTS = {
   [PROJECT_FOLDER_COMPONENT]: projectFolderSearchFiltersSchema,
   [PROJECT_COMPONENT]: projectSearchFiltersSchema,
   [MILESTONE_COMPONENT]: milestoneSearchFiltersSchema,
+  [TAG_COMPONENT]: tagSearchFiltersSchema,
   [CONTENT_BLOCK_COMPONENT]: contentBlockSearchFiltersSchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntrySearchFiltersSchema,
   [EMAIL_ACCOUNT_COMPONENT]: emailAccountSearchFiltersSchema,

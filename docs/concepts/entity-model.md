@@ -27,18 +27,19 @@ Component fields live in **`body` JSONB** at the top level. **`primary_component
 
 ## `entities` table
 
-| Column                          | Role                                         |
-| ------------------------------- | -------------------------------------------- |
-| `id`                            | `bigint` identity — global numeric ID        |
-| `type`                          | One of four entity types                     |
-| `world_id`                      | Native owning World (FK → `entities.id`)     |
-| `components`                    | `text[]` component tags                      |
-| `primary_component`             | Main component for module routing            |
-| `title` / `summary` / `content` | Shared text columns (all components may use) |
-| `body`                          | JSONB component payload                      |
-| `pinned`                        | Entity-level pin（任意 component）           |
-| `reference_count`               | `[[anima:id]]` 引用权重和                    |
-| `created_at` / `updated_at`     | Timestamps                                   |
+| Column                          | Role                                                        |
+| ------------------------------- | ----------------------------------------------------------- |
+| `id`                            | `bigint` identity — global numeric ID                       |
+| `type`                          | One of four entity types                                    |
+| `world_id`                      | Native owning World (FK → `entities.id`)                    |
+| `components`                    | `text[]` component tags                                     |
+| `primary_component`             | Main component for module routing                           |
+| `title` / `summary` / `content` | Shared text columns (all components may use)                |
+| `body`                          | JSONB component payload                                     |
+| `pinned`                        | Entity-level pin（任意 component）                          |
+| `reference_count`               | `[[anima:id]]` 引用权重和                                   |
+| `tag_ids`                       | 关联 `primary_component=tag` 的 entity id 数组（per-World） |
+| `created_at` / `updated_at`     | Timestamps                                                  |
 
 **Not in v0.8 bootstrap:** relationship table, World nesting/mount, graph DB (PostgreSQL AGE). Subject↔world grants live in `world_config.grants` (no separate permission table).
 
@@ -98,7 +99,7 @@ TickTick-style lists and items map to:
 | List        | `type=content` | `task_list`    |
 | Item (task) | `type=content` | `task_item`    |
 
-Items reference their list via `body.list_id` (entity id). Task items store **title** and **content** on entity columns; **tags** live in `body.tags`. Each world gets a **default list** (`is_default: true`, name e.g.「收件箱」) **lazily** on first task use (`ensureDefaultTaskListForWorld`); it cannot be deleted or archived but may be renamed. List **`body.closed: true`** means archived: hidden from the main sidebar by default (`tasklist.list` unless `include_closed`), restorable via `tasklist.patch({ closed: false })`; contained task items are kept.
+Items reference their list via `body.list_id` (entity id). Task items store **title** and **content** on entity columns; **tags** 使用顶层 `tag_ids`（指向同 World 的 `tag` entity，见下节）。各模块遗留的 `body.tags` 字符串数组不再作为任务试点读写路径。Each world gets a **default list** (`is_default: true`, name e.g.「收件箱」) **lazily** on first task use (`ensureDefaultTaskListForWorld`); it cannot be deleted or archived but may be renamed. List **`body.closed: true`** means archived: hidden from the main sidebar by default (`tasklist.list` unless `include_closed`), restorable via `tasklist.patch({ closed: false })`; contained task items are kept.
 
 Task/list **LLM 工具**默认在 **agent subject 专属 private world** 操作，多数调用可省略 `world_id`；按 `id` / `list_id` 操作时从实体反查 world 并校验 caller 权限。**MCP** 工具默认 scope 为 token 绑定 subject 的 private world。Shell SAP/REST 仍通过 `subject_kind` 选择 user/agent world（见下表）。
 
@@ -123,6 +124,22 @@ Hub startup binds **`ResolvedWorldContext`** (`hub().call("worlds.context")` / `
 SAP task/email methods accept optional `subject_kind` (defaults: task `user`, email `agent`). Satellites read the shell scope via **`useSubjectScope()`** from `@freeanima/shell-sdk`; Hub REST entity search uses **`resolveWorldIdForSubject()`** with the same scope.
 
 Future multi-world browse (e.g. diary calendar aggregation across worlds) should add **module-scoped** filters or Console tooling — not a speculative arbitrary world picker.
+
+## Tag module（轻语义）
+
+标签是独立 content entity，**per-World 扁平池**（无 scope/命名空间、无层级、无全局池）：
+
+| Concept | Entity         | Component |
+| ------- | -------------- | --------- |
+| Tag     | `type=content` | `tag`     |
+
+- **名称**在 entity `title`；body 仅 `sort_order` / `client_op_id`
+- 任意 content entity 通过顶层 **`tag_ids`** 挂载标签；含义由「实体类型 + 标签」组合自然产生（不做语义空间区分）
+- 同 World 内 title（trim 后）唯一；删除标签时从该 World 所有实体的 `tag_ids` 剔除
+- **Hub RPC：** `tag.list` / `tag.search` / `tag.create` / `tag.patch` / `tag.delete` / `tag.setOnEntity`
+- **LLM ToolSet：** `tag`（`tag_list` / `tag_search` / `tag_create` / `tag_update` / `tag_delete` / `tag_set_on_entity`）
+- **搜索：** `EntitySearchOpts.tag_ids`（或 `task_item` filters.`tag_ids`）为数组包含过滤（AND）
+- **UI 试点：** 任务详情 TagPicker + 列表按标签筛选；其他模块后续接入
 
 ## Project module (v1 spec)
 
@@ -249,7 +266,7 @@ Entity **list** (deterministic browse) and **search** (relevance ranking) are se
 
 **Scope:** default `world_id`; `global: true` requires an explicit accessible-world allowlist (`resolveWorldsAccessibleBySubject`: public + owned private + grant-readable worlds).
 
-**Component filters:** whitelisted per `primary_component` (e.g. `task_item`: `status`, `list_id`, `tags`, `due_today`). Arbitrary JSONPath is forbidden.
+**Component filters:** whitelisted per `primary_component` (e.g. `task_item`: `status`, `list_id`, `tag_ids`, `due_today`). Top-level `tag_ids` filter applies across components. Arbitrary JSONPath is forbidden.
 
 **Tools / API:** `entity_search` (LLM/MCP) and `hub().call("entity.searchGet")` / `hub().call("entity.searchPost")` (REST `GET /hub/rpc/v1/entity/searchGet` | `POST /hub/rpc/v1/entity/searchPost`) share `EntitySearchPort`. Task UI search box uses the same Hub RPC endpoint.
 

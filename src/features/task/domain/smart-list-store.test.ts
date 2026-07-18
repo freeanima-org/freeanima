@@ -21,6 +21,7 @@ describe("listSmartListsMerged", () => {
         body: { sort_order: 20, filters: { status: "pending", priority: "high" } },
         pinned: false,
         reference_count: 0,
+        tag_ids: [],
         created_at: new Date("2024-06-01T00:00:00.000Z"),
         updated_at: new Date("2024-06-01T00:00:00.000Z"),
       },

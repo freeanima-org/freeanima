@@ -19,14 +19,17 @@ import {
   parsePomodoroTaskFocusSearchFilters,
   parseProjectFolderSearchFilters,
   parseProjectSearchFilters,
+  parseTagSearchFilters,
   parseTaskItemSearchFilters,
   POMODORO_SESSION_COMPONENT,
   POMODORO_TASK_FOCUS_COMPONENT,
+  TAG_COMPONENT,
   parseTaskListSearchFilters,
   TASK_ITEM_COMPONENT,
   TASK_LIST_COMPONENT,
   type EntityType,
 } from "@freeanima/core/db/schema";
+import { pgBigintArray } from "../../utils/pg-sql.ts";
 import type { EntitySearchOpts } from "../types.ts";
 
 export class EntitySearchScopeError extends Error {
@@ -176,6 +179,9 @@ function buildTaskItemBodyConditions(
       conditions.push(sql`${entities.body}->'tags' ? ${tag}`);
     }
   }
+  if (filters.tag_ids?.length) {
+    conditions.push(sql`${entities.tag_ids} @> ${pgBigintArray(filters.tag_ids)}`);
+  }
   if (filters.due_today) {
     conditions.push(
       sql`(${entities.body}->>'due_at')::timestamptz::date = (now() AT TIME ZONE 'Asia/Shanghai')::date`,
@@ -259,6 +265,14 @@ function buildProjectBodyConditions(filters: ReturnType<typeof parseProjectSearc
 function buildMilestoneBodyConditions(
   filters: ReturnType<typeof parseMilestoneSearchFilters>,
 ): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.client_op_id) {
+    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+  }
+  return conditions;
+}
+
+function buildTagBodyConditions(filters: ReturnType<typeof parseTagSearchFilters>): SQL[] {
   const conditions: SQL[] = [];
   if (filters.client_op_id) {
     conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
@@ -412,6 +426,9 @@ export function buildComponentFilterConditions(opts: EntitySearchOpts): SQL[] {
   if (component === MILESTONE_COMPONENT) {
     return buildMilestoneBodyConditions(parseMilestoneSearchFilters(filters));
   }
+  if (component === TAG_COMPONENT) {
+    return buildTagBodyConditions(parseTagSearchFilters(filters));
+  }
   if (component === CONTENT_BLOCK_COMPONENT) {
     return buildContentBlockBodyConditions(parseContentBlockSearchFilters(filters));
   }
@@ -466,6 +483,9 @@ export function buildEntitySearchConditions(opts: EntitySearchOpts): SQL[] {
   }
   if (opts.updated_before) {
     conditions.push(lte(entities.updated_at, new Date(opts.updated_before)));
+  }
+  if (opts.tag_ids?.length) {
+    conditions.push(sql`${entities.tag_ids} @> ${pgBigintArray(opts.tag_ids)}`);
   }
 
   conditions.push(...buildComponentFilterConditions(opts));

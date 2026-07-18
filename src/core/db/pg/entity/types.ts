@@ -14,6 +14,7 @@ export type EntityCreateInput = {
   body: Record<string, unknown>;
   pinned?: boolean;
   reference_count?: number;
+  tag_ids?: number[];
   created_at?: Date;
   updated_at?: Date;
 };
@@ -28,6 +29,7 @@ export type EntityUpdateInput = {
   body?: Record<string, unknown>;
   pinned?: boolean;
   reference_count?: number;
+  tag_ids?: number[];
 };
 
 export type EntityListOpts = {
@@ -56,6 +58,8 @@ export type EntitySearchOpts = {
   component?: string;
   /** 组件 Profile 白名单 filters（如 task_item.status） */
   filters?: Record<string, unknown>;
+  /** 顶层 tag_ids 包含过滤（AND：须同时包含所列 id） */
+  tag_ids?: number[];
   created_after?: string;
   created_before?: string;
   updated_after?: string;

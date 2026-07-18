@@ -1,15 +1,15 @@
 import { describe, expect, it } from "bun:test";
 
-import type { TaskItemRow } from "./api.ts";
 import { isTaskItemDirty } from "./task-detail-dirty.ts";
+import type { TaskItemRow } from "./api.ts";
 
 const base: TaskItemRow = {
   id: 1,
-  title: "标题",
-  content: "内容",
-  tags: ["a", "b"],
+  title: "t",
+  content: "c",
+  tag_ids: [1, 2],
   status: "pending",
-  priority: "medium",
+  priority: "none",
   due_at: null,
   remind_at: null,
   list_id: 10,
@@ -22,19 +22,11 @@ const base: TaskItemRow = {
 };
 
 describe("isTaskItemDirty", () => {
-  it("未修改时返回 false", () => {
-    expect(isTaskItemDirty(base, { ...base, tags: [...base.tags] })).toBe(false);
+  it("same tag_ids order is clean", () => {
+    expect(isTaskItemDirty(base, { ...base, tag_ids: [...base.tag_ids] })).toBe(false);
   });
 
-  it("标题变更时返回 true", () => {
-    expect(isTaskItemDirty({ ...base, title: "新标题" }, base)).toBe(true);
-  });
-
-  it("标签顺序变更时返回 true", () => {
-    expect(isTaskItemDirty({ ...base, tags: ["b", "a"] }, base)).toBe(true);
-  });
-
-  it("完成状态变更时返回 true", () => {
-    expect(isTaskItemDirty({ ...base, status: "completed" }, base)).toBe(true);
+  it("reordered tag_ids is dirty", () => {
+    expect(isTaskItemDirty({ ...base, tag_ids: [2, 1] }, base)).toBe(true);
   });
 });

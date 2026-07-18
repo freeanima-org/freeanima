@@ -134,6 +134,7 @@ function mapHit(row: {
     body: row.body,
     pinned: row.pinned,
     reference_count: row.reference_count,
+    tag_ids: [],
     created_at: row.created_at,
     updated_at: row.updated_at,
   });

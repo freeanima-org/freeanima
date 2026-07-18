@@ -18,7 +18,7 @@ import { TASK_TOOL_RETURNS } from "./return-schemas.ts";
 import {
   itemPayload,
   parsePriority,
-  parseTags,
+  parseTagIds,
   TASK_PRIORITIES,
   WORLD_ID_TOOL_PROPERTY,
 } from "./task-tool-helpers.ts";
@@ -64,7 +64,7 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
     return toolError(`invalid priority: ${args.priority}`);
   }
 
-  const tags = parseTags(args.tags);
+  const tagIds = parseTagIds(args.tag_ids);
   const dueAt = args.due_at != null && args.due_at !== "" ? String(args.due_at).trim() : null;
   const remindAt =
     args.remind_at != null && args.remind_at !== "" ? String(args.remind_at).trim() : null;
@@ -82,7 +82,7 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
       omitUndefined({
         title,
         content,
-        tags,
+        tag_ids: tagIds,
         list_id: listId,
         priority,
         due_at: dueAt,
@@ -107,9 +107,9 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
   const patch: TaskItemUpdateInput = { id };
   if (args.title !== undefined) patch.title = String(args.title);
   if (args.content !== undefined) patch.content = String(args.content);
-  if (args.tags !== undefined) {
-    const tags = parseTags(args.tags);
-    if (tags !== undefined) patch.tags = tags;
+  if (args.tag_ids !== undefined) {
+    const tagIds = parseTagIds(args.tag_ids);
+    if (tagIds !== undefined) patch.tag_ids = tagIds;
   }
   if (args.list_id !== undefined) {
     const listId = Number(args.list_id);
@@ -203,7 +203,7 @@ async function handleGet(args: Record<string, unknown>): Promise<string> {
     id: parsed.id,
     title: parsed.title,
     content: parsed.content,
-    tags: parsed.tags ?? [],
+    tag_ids: [...(row.tag_ids ?? [])],
     status: parsed.status,
     priority: parsed.priority,
     due_at: parsed.due_at ?? null,
@@ -242,14 +242,14 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
     args.status === "completed" || args.status === "pending" || args.status === "all"
       ? args.status
       : "pending";
-  const tags = parseTags(args.tags);
+  const tagIds = parseTagIds(args.tag_ids);
   const limit = typeof args.limit === "number" ? args.limit : 50;
 
   const items = await listTaskItems(worldId, {
     ...(listId !== undefined ? { list_id: listId } : {}),
     ...(projectId !== undefined ? { project_id: projectId } : {}),
     status,
-    ...(tags !== undefined ? { tags } : {}),
+    ...(tagIds !== undefined ? { tag_ids: tagIds } : {}),
     limit,
   });
   return toolResult({
@@ -349,10 +349,10 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
               ...WORLD_ID_OPTIONAL,
               title: { type: "string", description: "Task title" },
               content: { type: "string", description: "Task body / details" },
-              tags: {
+              tag_ids: {
                 type: "array",
-                items: { type: "string" },
-                description: "Optional tags",
+                items: { type: "integer" },
+                description: "Optional tag entity ids (same world)",
               },
               list_id: {
                 type: "integer",
@@ -381,7 +381,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
               id: { type: "integer" },
               title: { type: "string" },
               content: { type: "string" },
-              tags: { type: "array", items: { type: "string" } },
+              tag_ids: { type: "array", items: { type: "integer" } },
               list_id: { type: "integer" },
               project_id: {
                 type: "integer",
@@ -456,7 +456,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
                 description: "Filter by project; mutually exclusive with list_id",
               },
               status: { type: "string", enum: ["pending", "completed", "all"] },
-              tags: { type: "array", items: { type: "string" } },
+              tag_ids: { type: "array", items: { type: "integer" } },
               limit: { type: "integer" },
             },
             required: [],

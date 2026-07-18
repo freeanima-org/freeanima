@@ -9,6 +9,7 @@ import { mcpHubRoutes } from "@freeanima/features/mcp/hub/routes/index.ts";
 import { notificationHubRoutes } from "@freeanima/features/notification/hub/routes/index.ts";
 import { pomodoroHubRoutes } from "@freeanima/features/pomodoro/hub/routes/index.ts";
 import { projectHubRoutes } from "@freeanima/features/project/hub/routes/index.ts";
+import { tagHubRoutes } from "@freeanima/features/tag/hub/routes/index.ts";
 import { taskHubRoutes } from "@freeanima/features/task/hub/routes/index.ts";
 import { vaultHubRoutes } from "@freeanima/features/vault/hub/routes/index.ts";
 
@@ -19,6 +20,7 @@ const featureRouteBundles = [
   chatHubRoutes,
   taskHubRoutes,
   projectHubRoutes,
+  tagHubRoutes,
   vaultHubRoutes,
   emailHubRoutes,
   diaryHubRoutes,
@@ -35,6 +37,7 @@ export const hubRouter = mergeHubRouteBundles(featureRouteBundles);
 export type HubMethodInputs = InferHubInputs<typeof chatHubRoutes> &
   InferHubInputs<typeof taskHubRoutes> &
   InferHubInputs<typeof projectHubRoutes> &
+  InferHubInputs<typeof tagHubRoutes> &
   InferHubInputs<typeof vaultHubRoutes> &
   InferHubInputs<typeof emailHubRoutes> &
   InferHubInputs<typeof diaryHubRoutes> &
@@ -48,6 +51,7 @@ export type HubMethodInputs = InferHubInputs<typeof chatHubRoutes> &
 export type HubMethodOutputs = InferHubOutputs<typeof chatHubRoutes> &
   InferHubOutputs<typeof taskHubRoutes> &
   InferHubOutputs<typeof projectHubRoutes> &
+  InferHubOutputs<typeof tagHubRoutes> &
   InferHubOutputs<typeof vaultHubRoutes> &
   InferHubOutputs<typeof emailHubRoutes> &
   InferHubOutputs<typeof diaryHubRoutes> &
