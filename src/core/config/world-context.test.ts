@@ -6,18 +6,15 @@ import {
   getResolvedWorldContext,
   resetResolvedWorldContextForTest,
   resolveSubjectWorldId,
-} from "./world-context.ts";
+} from "./resolved-world-context.ts";
 import type { AnimaConfig } from "./schemas/config.ts";
 
 describe("resolveWorldSubjectIds", () => {
-  it("defaults to user=1 agent=2", () => {
+  it("returns empty when unset", () => {
     const config = {
       llm: { default_profile: "chat", providers: {}, profiles: {} },
     } as AnimaConfig;
-    expect(resolveWorldSubjectIds(config)).toEqual({
-      user_subject_id: 1,
-      agent_subject_id: 2,
-    });
+    expect(resolveWorldSubjectIds(config)).toEqual({});
   });
 
   it("prefers worlds section over notifications", () => {
@@ -29,6 +26,16 @@ describe("resolveWorldSubjectIds", () => {
     expect(resolveWorldSubjectIds(config)).toEqual({
       user_subject_id: 5,
       agent_subject_id: 6,
+    });
+  });
+
+  it("allows partial worlds override", () => {
+    const config = {
+      llm: { default_profile: "chat", providers: {}, profiles: {} },
+      worlds: { user_subject_id: 5 },
+    } as AnimaConfig;
+    expect(resolveWorldSubjectIds(config)).toEqual({
+      user_subject_id: 5,
     });
   });
 });

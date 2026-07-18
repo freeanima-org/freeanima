@@ -296,25 +296,27 @@ function AcpAgentsForm({
   );
 }
 
+function formatWorldSubjectId(value: unknown): string {
+  return typeof value === "number" && value > 0 ? String(value) : "启动后自动绑定";
+}
+
 function WorldsForm({
   value,
-  onChange,
 }: {
   value: Record<string, unknown>;
   onChange: (v: Record<string, unknown>) => void;
 }) {
   return (
     <div className="space-y-4">
-      {hubConfigNumberField(
-        "user_subject_id",
-        typeof value.user_subject_id === "number" ? value.user_subject_id : "",
-        (v) => onChange({ ...value, user_subject_id: v === "" ? undefined : v }),
-      )}
-      {hubConfigNumberField(
-        "agent_subject_id",
-        typeof value.agent_subject_id === "number" ? value.agent_subject_id : "",
-        (v) => onChange({ ...value, agent_subject_id: v === "" ? undefined : v }),
-      )}
+      <p className="text-xs text-muted-foreground">由 Hub 启动自动绑定；无需手动维护。</p>
+      <div className="space-y-1">
+        <Label className="text-sm">user_subject_id</Label>
+        <p className="text-sm font-mono">{formatWorldSubjectId(value.user_subject_id)}</p>
+      </div>
+      <div className="space-y-1">
+        <Label className="text-sm">agent_subject_id</Label>
+        <p className="text-sm font-mono">{formatWorldSubjectId(value.agent_subject_id)}</p>
+      </div>
     </div>
   );
 }

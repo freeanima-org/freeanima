@@ -103,6 +103,7 @@ async function main(): Promise<void> {
       ["user", user_subject_id],
       ["agent", agent_subject_id],
     ] as const) {
+      if (subjectId == null) continue;
       const subject = byId.get(subjectId);
       if (!subject) {
         issues.push({
