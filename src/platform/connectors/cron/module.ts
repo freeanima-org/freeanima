@@ -77,6 +77,7 @@ export function rowToPatch(job: CronJob): CronJobUpdateInput {
 export async function ensureBuiltinCronJobs(): Promise<void> {
   await _ensureBuiltinSleepCycleCronJob();
   await _ensureBuiltinTaskRemindersCronJob();
+  await ensureBuiltinEnvHealthCronJob();
 }
 
 async function _ensureBuiltinSleepCycleCronJob(): Promise<void> {
@@ -103,6 +104,21 @@ async function _ensureBuiltinTaskRemindersCronJob(): Promise<void> {
     prompt: "",
     no_agent: true,
     timeout_sec: 600,
+  });
+  const job = await getJob(id);
+  if (!job || !handles) return;
+  if (scheduleChanged) handles.reregister(job);
+}
+
+async function ensureBuiltinEnvHealthCronJob(): Promise<void> {
+  const id = "builtin-env-health";
+  const scheduleChanged = await upsertBuiltinCronJob({
+    id,
+    name: "env-health",
+    schedule: "*/5 * * * *",
+    prompt: "",
+    no_agent: true,
+    timeout_sec: 120,
   });
   const job = await getJob(id);
   if (!job || !handles) return;

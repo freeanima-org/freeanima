@@ -33,4 +33,9 @@ export function registerBootCronHandlers(engine: Engine): void {
     const { runTaskReminderScan } = await import("./task-reminder-handler.ts");
     return runTaskReminderScan();
   });
+
+  registerCronBuiltinHandler("builtin-env-health", async () => {
+    const { runEnvHealthScan } = await import("./env-health-handler.ts");
+    return runEnvHealthScan();
+  });
 }

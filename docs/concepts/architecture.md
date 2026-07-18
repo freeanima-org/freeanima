@@ -140,6 +140,12 @@ Scene awareness is **soft** — it adjusts tone, distance, memory recall bias, a
 
 **Operation:** Runs continuously without explicit switch commands. Inferred from dialogue, time, frequency, etc. See [`time-perception.md`](time-perception.md).
 
+### Environment + health baseline
+
+**Question: what is my host / runtime quiet state?**
+
+Distinct from scene awareness: banded host and process markers (disk, RSS, deps, MCP/ACP) live as a **session-static** system-prompt copy, with **event-level** Inbox notifications on change. See [`environment-awareness.md`](environment-awareness.md).
+
 ### Capability Mask
 
 **Question: what tools and data can I use right now?**

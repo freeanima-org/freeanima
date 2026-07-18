@@ -42,12 +42,12 @@ FreeAnima Storage Architecture
 
 ### Not in the Self Layer
 
-| Content                                        | Belongs to                              |
-| ---------------------------------------------- | --------------------------------------- |
-| **Detailed** autobiographical narrative        | Memory layer (autobiographical entries) |
-| Other-models (cognition of partner and others) | Memory layer (semantic memory)          |
-| Runtime state / health perception              | Not yet implemented; see Issue #44      |
-| Concrete tool / skill inventory                | Estate layer                            |
+| Content                                        | Belongs to                                                                       |
+| ---------------------------------------------- | -------------------------------------------------------------------------------- |
+| **Detailed** autobiographical narrative        | Memory layer (autobiographical entries)                                          |
+| Other-models (cognition of partner and others) | Memory layer (semantic memory)                                                   |
+| Runtime state / health perception              | Estate / env-health — see [`environment-awareness.md`](environment-awareness.md) |
+| Concrete tool / skill inventory                | Estate layer                                                                     |
 
 ---
 
@@ -70,10 +70,14 @@ See [`sleep.md`](sleep.md).
 Assembly order:
 
 1. Self layer (six blocks)
-2. Resident memory (pinned facts)
-3. Project context (session working directory AGENTS.md if present)
+2. World / channel / toolsets (runtime hooks)
+3. Environment + health baseline (static session copy; see [`environment-awareness.md`](environment-awareness.md))
+4. Resident memory (pinned facts)
+5. Project context (session working directory AGENTS.md if present)
 
 Self layer and resident memory use a second-person instruction skeleton wrapping first-person self-statement content, so the LLM clearly understands "this is self-layer content you must follow."
+
+Live environment/health **changes** are not rewritten into an existing session prompt; they surface as Inbox notifications (event-level).
 
 Maintenance: self-layer tools in Console, or direct edits via CLI / Console UI.
 

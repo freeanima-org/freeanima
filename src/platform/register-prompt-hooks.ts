@@ -44,6 +44,24 @@ export function registerChannelSystemPromptHook(registry: HookRegistry): void {
   });
 }
 
+export function registerEnvHealthSystemPromptHook(registry: HookRegistry): void {
+  registry.on(systemPromptBuild, async () => {
+    const { buildEnvHealthPromptSectionContent } = await import("./runtime/env-health/prompt.ts");
+    try {
+      const content = await buildEnvHealthPromptSectionContent();
+      if (!content.trim()) return { status: "ok" };
+      return {
+        status: "ok",
+        data: {
+          sections: [{ id: "env-health-baseline", content, order: 15 }],
+        },
+      };
+    } catch {
+      return { status: "ok" };
+    }
+  });
+}
+
 export function registerSystemPromptHooks(opts: {
   hookRegistry: HookRegistry;
   getToolRegistry: () => ToolSetRegistry;
@@ -52,4 +70,5 @@ export function registerSystemPromptHooks(opts: {
   registerWorldContextSystemPromptHook(opts.hookRegistry);
   registerToolsetSystemPromptHooks(opts.hookRegistry, opts.getToolRegistry);
   registerChannelSystemPromptHook(opts.hookRegistry);
+  registerEnvHealthSystemPromptHook(opts.hookRegistry);
 }
