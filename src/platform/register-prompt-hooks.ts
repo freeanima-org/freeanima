@@ -62,6 +62,25 @@ export function registerEnvHealthSystemPromptHook(registry: HookRegistry): void 
   });
 }
 
+export function registerUserActivityStatsSystemPromptHook(registry: HookRegistry): void {
+  registry.on(systemPromptBuild, async () => {
+    const { buildUserActivityStatsPromptSectionContent } =
+      await import("./runtime/user-activity-stats/prompt.ts");
+    try {
+      const content = await buildUserActivityStatsPromptSectionContent();
+      if (!content.trim()) return { status: "ok" };
+      return {
+        status: "ok",
+        data: {
+          sections: [{ id: "user-activity-stats", content, order: 16 }],
+        },
+      };
+    } catch {
+      return { status: "ok" };
+    }
+  });
+}
+
 export function registerSystemPromptHooks(opts: {
   hookRegistry: HookRegistry;
   getToolRegistry: () => ToolSetRegistry;
@@ -71,4 +90,5 @@ export function registerSystemPromptHooks(opts: {
   registerToolsetSystemPromptHooks(opts.hookRegistry, opts.getToolRegistry);
   registerChannelSystemPromptHook(opts.hookRegistry);
   registerEnvHealthSystemPromptHook(opts.hookRegistry);
+  registerUserActivityStatsSystemPromptHook(opts.hookRegistry);
 }

@@ -10,9 +10,9 @@ describe("redis KV", () => {
 
   it("Graceful degradation when initRedis not called", async () => {
     resetRedisForTest();
-    await expect(redisSet("k", "v", 60)).resolves.toBeUndefined();
+    await expect(redisSet("k", "v", 60)).resolves.toBe(false);
     await expect(redisGet("k")).resolves.toBeNull();
-    await expect(redisDel("k")).resolves.toBeUndefined();
+    await expect(redisDel("k")).resolves.toBe(false);
     await expect(redisScanEntries("test-kv:*")).resolves.toEqual([]);
   });
 
@@ -40,12 +40,12 @@ describe("redis KV", () => {
       },
     } as unknown as RedisClient);
 
-    await redisSet("test-kv:session:a:b", "hello", 60);
+    expect(await redisSet("test-kv:session:a:b", "hello", 60)).toBe(true);
     expect(await redisGet("test-kv:session:a:b")).toBe("hello");
     expect(await redisScanEntries("test-kv:session:*")).toEqual([
       { key: "test-kv:session:a:b", value: "hello" },
     ]);
-    await redisDel("test-kv:session:a:b");
+    expect(await redisDel("test-kv:session:a:b")).toBe(true);
     expect(await redisGet("test-kv:session:a:b")).toBeNull();
   });
 });

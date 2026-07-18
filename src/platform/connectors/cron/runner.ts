@@ -153,13 +153,16 @@ async function runJobInternal(job: CronJob): Promise<void> {
   let outputText = "";
 
   if (job.no_agent) {
-    const builtinOutput = job.builtin ? await runCronBuiltinHandler(job.id) : null;
+    // 按 job.id 查找已注册 handler（不依赖 DB builtin 标志；旧行可能 builtin=false）
+    const builtinOutput = await runCronBuiltinHandler(job.id);
     if (builtinOutput != null) {
       outputText = builtinOutput.slice(0, 10_000);
     } else if (job.script) {
       outputText = runScript(job.script, job.timeout_sec);
     } else {
-      throw new Error("no_agent=True requires a script or registered builtin handler");
+      throw new Error(
+        `no_agent=True requires a script or registered builtin handler (job=${job.id})`,
+      );
     }
   } else {
     let context = "";

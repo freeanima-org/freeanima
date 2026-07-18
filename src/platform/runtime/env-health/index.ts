@@ -13,7 +13,9 @@ export {
 } from "./format.ts";
 export type { EnvHealthBaselineStore } from "./baseline.ts";
 export {
+  ENV_HEALTH_BASELINE_KV_KEY,
   baselineFilePath,
+  createBaselineStore,
   createFileBaselineStore,
   getBaselineStore,
   resetBaselineMemoryCacheForTests,
