@@ -11,6 +11,7 @@ import { ToolSetRegistry } from "@freeanima/core/tool";
 import { getProfileHopModel } from "@freeanima/platform/config";
 import { registerTaskTools, getDefaultTaskList } from "@freeanima/features/task/domain";
 import { createProject } from "@freeanima/features/project/domain";
+import { createTag } from "@freeanima/features/tag/domain";
 import { getEntity } from "@freeanima/core/db/pg/entity";
 import { getActivePgTestContext, testConv } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
@@ -47,7 +48,9 @@ describePg("tasks tool", () => {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
 
-    const defaultList = await getDefaultTaskList(testAgentWorldId());
+    const worldId = testAgentWorldId();
+    const defaultList = await getDefaultTaskList(worldId);
+    const work = await createTag(worldId, { title: "work" });
 
     let output = "";
     await runWithToolContext(
@@ -59,7 +62,7 @@ describePg("tasks tool", () => {
             title: "Discuss UI plan",
             priority: "high",
             content: "Details here",
-            tags: ["work"],
+            tag_ids: [work.id],
           }),
         );
       },
@@ -72,7 +75,7 @@ describePg("tasks tool", () => {
         id: number;
         title: string;
         content: string;
-        tags: string[];
+        tag_ids: number[];
         status: string;
         priority: string;
         list_id: number;
@@ -81,7 +84,7 @@ describePg("tasks tool", () => {
     expect(parsed.ok).toBe(true);
     expect(parsed.item.title).toBe("Discuss UI plan");
     expect(parsed.item.content).toBe("Details here");
-    expect(parsed.item.tags).toEqual(["work"]);
+    expect(parsed.item.tag_ids).toEqual([work.id]);
     expect(parsed.item.status).toBe("pending");
     expect(parsed.item.priority).toBe("high");
     expect(parsed.item.list_id).toBe(defaultList.id);
