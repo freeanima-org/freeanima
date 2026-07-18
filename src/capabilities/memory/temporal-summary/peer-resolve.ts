@@ -54,7 +54,8 @@ export async function resolvePeerTimelineInjects(opts: {
       try {
         summary = await summarizeTemporalText({
           selfContent: opts.selfContent,
-          instruction: "将多段他会话客观摘要合并为一条时段合摘要。保持客观、无差别。",
+          instruction:
+            "将多段他会话客观摘要合并为一条时段合摘要。保持客观、无差别；压缩重复细节，只保留事件主题与结果。",
           material: sources
             .toSorted((a, b) => a.conversation_id.localeCompare(b.conversation_id))
             .map((s) => `[${s.conversation_id}]\n${s.summary}`)

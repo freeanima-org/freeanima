@@ -47,7 +47,7 @@ export async function runTemporalSummaryDay(opts: {
   try {
     content = await summarizeTemporalText({
       selfContent: opts.selfContent,
-      instruction: `请为 ${range.day}（CST）生成全局客观天摘要：覆盖当日各用户对话中实际发生的事，无差别、不抒情。`,
+      instruction: `请为 ${range.day}（CST）生成全局客观天摘要：覆盖当日各会话实际发生的事件主题与结果；无差别、不抒情，勿日志级细碎复述。`,
       material,
       maxChars: opts.config.global_day_max_chars,
     });
