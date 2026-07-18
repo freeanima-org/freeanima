@@ -249,14 +249,7 @@ export async function updateTaskItem(
   patch: Partial<
     Pick<
       TaskItemRow,
-      | "title"
-      | "content"
-      | "tag_ids"
-      | "priority"
-      | "due_at"
-      | "milestone_id"
-      | "status"
-      | "sort_order"
+      "title" | "content" | "tag_ids" | "priority" | "due_at" | "status" | "sort_order"
     >
   >,
   opts?: OfflineUpdateTaskItemOpts,

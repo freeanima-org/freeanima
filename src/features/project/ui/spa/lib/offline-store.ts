@@ -26,13 +26,11 @@ import { omitUndefined } from "@freeanima/core/util";
 import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 import { randomUuid } from "@freeanima/shared/sap-contract";
 
-import type { MilestoneRow, ProjectFolderRow, ProjectRow, TaskItemRow } from "./api.ts";
+import type { ProjectFolderRow, ProjectRow, TaskItemRow } from "./api.ts";
 import {
-  readCachedMilestones,
   readCachedProjectFolders,
   readCachedProjectItems,
   readCachedProjects,
-  writeCachedMilestones,
   writeCachedProjectFolders,
   writeCachedProjectItems,
   writeCachedProjects,
@@ -60,19 +58,6 @@ async function readLocalProjects(scope: string): Promise<ProjectRow[]> {
 async function writeLocalProjects(scope: string, projects: ProjectRow[]): Promise<void> {
   const sorted = projects.toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
   await writeCachedProjects(scope, sorted);
-}
-
-async function readLocalMilestones(scope: string, projectId: number): Promise<MilestoneRow[]> {
-  return (await readCachedMilestones(scope, projectId)) ?? [];
-}
-
-async function writeLocalMilestones(
-  scope: string,
-  projectId: number,
-  milestones: MilestoneRow[],
-): Promise<void> {
-  const sorted = milestones.toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
-  await writeCachedMilestones(scope, projectId, sorted);
 }
 
 async function readLocalItems(scope: string, projectId: number): Promise<TaskItemRow[]> {
@@ -116,15 +101,7 @@ async function removeLocalProject(scope: string, id: number): Promise<void> {
     scope,
     projects.filter((row) => row.id !== id),
   );
-  await writeCachedMilestones(scope, id, []);
   await writeCachedProjectItems(scope, id, []);
-}
-
-async function upsertLocalMilestone(scope: string, milestone: MilestoneRow): Promise<void> {
-  const milestones = await readLocalMilestones(scope, milestone.project_id);
-  const next = milestones.filter((row) => row.id !== milestone.id);
-  next.push(milestone);
-  await writeLocalMilestones(scope, milestone.project_id, next);
 }
 
 async function upsertLocalItem(scope: string, item: TaskItemRow): Promise<void> {
@@ -156,24 +133,6 @@ async function adjustProjectTaskCount(
   const project = projects[idx];
   if (!project) return;
   projects[idx] = { ...project, task_count: Math.max(0, (project.task_count ?? 0) + delta) };
-  await writeLocalProjects(scope, projects);
-}
-
-async function adjustProjectMilestoneCount(
-  scope: string,
-  projectId: number,
-  delta: number,
-): Promise<void> {
-  if (delta === 0) return;
-  const projects = await readLocalProjects(scope);
-  const idx = projects.findIndex((row) => row.id === projectId);
-  if (idx < 0) return;
-  const project = projects[idx];
-  if (!project) return;
-  projects[idx] = {
-    ...project,
-    milestone_count: Math.max(0, project.milestone_count + delta),
-  };
   await writeLocalProjects(scope, projects);
 }
 
@@ -255,12 +214,10 @@ async function rewriteLocalProjectId(
           folder_id: null,
           start_at: new Date().toISOString(),
           end_at: new Date().toISOString(),
-          completion_criteria: "",
           status: "active",
           product_tag: null,
           sort_order: 0,
           task_count: 0,
-          milestone_count: 0,
           linked_diary_ids: [],
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -268,16 +225,6 @@ async function rewriteLocalProjectId(
   const next = projects.filter((row) => row.id !== tempId && row.id !== serverId);
   next.push(rewritten);
   await writeLocalProjects(scope, next);
-
-  const milestones = await readLocalMilestones(scope, tempId);
-  if (milestones.length > 0) {
-    await writeLocalMilestones(
-      scope,
-      serverId,
-      milestones.map((row) => ({ ...row, project_id: serverId })),
-    );
-    await writeCachedMilestones(scope, tempId, []);
-  }
 
   const items = await readLocalItems(scope, tempId);
   if (items.length > 0) {
@@ -288,45 +235,6 @@ async function rewriteLocalProjectId(
     );
     await writeCachedProjectItems(scope, tempId, []);
   }
-}
-
-async function rewriteLocalMilestoneId(
-  scope: string,
-  tempId: number,
-  serverId: number,
-  serverRow?: MilestoneRow,
-): Promise<void> {
-  const projects = await readLocalProjects(scope);
-  for (const project of projects) {
-    const milestones = await readLocalMilestones(scope, project.id);
-    const existing = milestones.find((row) => row.id === tempId);
-    if (!existing && !serverRow) continue;
-    const rewritten: MilestoneRow = serverRow
-      ? { ...serverRow }
-      : existing
-        ? { ...existing, id: serverId }
-        : {
-            id: serverId,
-            title: "",
-            project_id: project.id,
-            due_at: new Date().toISOString(),
-            status: "pending",
-            sort_order: 0,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
-    const next = milestones.filter((row) => row.id !== tempId && row.id !== serverId);
-    next.push(rewritten);
-    await writeLocalMilestones(scope, project.id, next);
-
-    const items = await readLocalItems(scope, project.id);
-    const remapped = items.map((row) =>
-      row.milestone_id === tempId ? { ...row, milestone_id: serverId } : row,
-    );
-    await writeLocalItems(scope, project.id, remapped);
-    return;
-  }
-  if (serverRow) await upsertLocalMilestone(scope, serverRow);
 }
 
 async function rewriteLocalItemId(
@@ -355,7 +263,6 @@ async function rewriteLocalItemId(
             remind_at: null,
             list_id: null,
             project_id: project.id,
-            milestone_id: null,
             sort_order: 0,
             completed_at: null,
             created_at: new Date().toISOString(),
@@ -432,9 +339,7 @@ async function applyPendingProjectPatches(
       ...(typeof patch.title === "string" ? { title: patch.title } : {}),
       ...(typeof patch.start_at === "string" ? { start_at: patch.start_at } : {}),
       ...(typeof patch.end_at === "string" ? { end_at: patch.end_at } : {}),
-      ...(typeof patch.completion_criteria === "string"
-        ? { completion_criteria: patch.completion_criteria }
-        : {}),
+      ...(typeof patch.content === "string" ? { content: patch.content } : {}),
       ...(typeof patch.status === "string" ? { status: patch.status as ProjectRow["status"] } : {}),
       ...(typeof patch.sort_order === "number" ? { sort_order: patch.sort_order } : {}),
       ...(patch.folder_id === null || typeof patch.folder_id === "number"
@@ -443,22 +348,6 @@ async function applyPendingProjectPatches(
     });
   }
   return [...byId.values()].toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
-}
-
-async function mergeServerMilestones(
-  scope: string,
-  projectId: number,
-  serverMilestones: MilestoneRow[],
-): Promise<MilestoneRow[]> {
-  const tempIds = await pendingTempIds(scope, ["milestone.create"]);
-  if (tempIds.size === 0) return serverMilestones;
-  const local = await readLocalMilestones(scope, projectId);
-  const serverIds = new Set(serverMilestones.map((row) => row.id));
-  const pendingTemps = local.filter((row) => tempIds.has(row.id) && !serverIds.has(row.id));
-  if (pendingTemps.length === 0) return serverMilestones;
-  return [...pendingTemps, ...serverMilestones].toSorted(
-    (a, b) => a.sort_order - b.sort_order || a.id - b.id,
-  );
 }
 
 async function mergeServerItems(
@@ -485,13 +374,6 @@ export async function reconcileServerProjectFolders(
 
 export async function reconcileServerProjects(serverProjects: ProjectRow[]): Promise<ProjectRow[]> {
   return mergeServerProjects(resolveOutboxScope(), serverProjects);
-}
-
-export async function reconcileServerMilestones(
-  projectId: number,
-  serverMilestones: MilestoneRow[],
-): Promise<MilestoneRow[]> {
-  return mergeServerMilestones(resolveOutboxScope(), projectId, serverMilestones);
 }
 
 export async function reconcileServerProjectItems(
@@ -534,7 +416,6 @@ export function compactProjectOutbox(ops: OfflineOutboxOp[]): OfflineOutboxOp[] 
     if (
       (op.method === "projectfolder.create" ||
         op.method === "project.create" ||
-        op.method === "milestone.create" ||
         op.method === "project.item.create") &&
       op.tempEntityId != null
     ) {
@@ -554,7 +435,6 @@ export function compactProjectOutbox(ops: OfflineOutboxOp[]): OfflineOutboxOp[] 
     if (
       op.method === "projectfolder.patch" ||
       op.method === "project.patch" ||
-      op.method === "milestone.patch" ||
       op.method === "task.patch"
     ) {
       const id = op.payload.id;
@@ -580,7 +460,7 @@ async function flushProjectOp(
   const hub = getTypedSatelliteHubClient();
   try {
     const result = (await hub.call(op.method as "project.create", op.payload as never)) as {
-      item?: ProjectFolderRow | ProjectRow | MilestoneRow | TaskItemRow;
+      item?: ProjectFolderRow | ProjectRow | TaskItemRow;
       ok?: true;
     };
     if (op.tempEntityId != null && result.item?.id) {
@@ -598,13 +478,6 @@ async function flushProjectOp(
           op.tempEntityId,
           result.item.id,
           result.item as ProjectRow,
-        );
-      } else if (op.method === "milestone.create") {
-        await rewriteLocalMilestoneId(
-          scope,
-          op.tempEntityId,
-          result.item.id,
-          result.item as MilestoneRow,
         );
       } else if (op.method === "project.item.create") {
         await rewriteLocalItemId(
@@ -628,7 +501,7 @@ export const projectRpcAdapter: RpcModuleAdapter = {
   ordering: "topological",
   compactOutbox: compactProjectOutbox,
   resolvePayloadIds: (payload, idMap) =>
-    resolveIdFields(payload, idMap, ["id", "folder_id", "parent_id", "project_id", "milestone_id"]),
+    resolveIdFields(payload, idMap, ["id", "folder_id", "parent_id", "project_id"]),
   flushOp: async (op, ctx) => flushProjectOp(op, ctx.scope),
   refreshAll: async (scope) => {
     const hub = getTypedSatelliteHubClient();
@@ -656,16 +529,6 @@ export const projectRpcAdapter: RpcModuleAdapter = {
 
     for (const projectId of new Set(cachedProjectIds)) {
       if (isTempId(projectId)) continue;
-      try {
-        const milestoneData = await hub.call("milestone.list", {
-          ...subjectPayload(),
-          project_id: projectId,
-        });
-        const merged = await mergeServerMilestones(scope, projectId, milestoneData.milestones);
-        await writeLocalMilestones(scope, projectId, merged);
-      } catch {
-        /* keep local snapshot */
-      }
       try {
         const itemData = await hub.call("project.item.list", {
           ...subjectPayload(),
@@ -805,7 +668,7 @@ export async function offlineCreateProject(input: {
   title: string;
   start_at: string;
   end_at: string;
-  completion_criteria: string;
+  content?: string;
   folder_id?: number | null;
 }): Promise<ProjectRow> {
   const title = input.title.trim();
@@ -816,20 +679,18 @@ export async function offlineCreateProject(input: {
   const tempId = allocateTempId(scope, MODULE_ID);
   const opId = randomUuid();
   const now = new Date().toISOString();
-  const criteria = input.completion_criteria.trim();
+  const content = input.content?.trim() ?? "";
   const row: ProjectRow = {
     id: tempId,
     title,
-    content: criteria,
+    content,
     folder_id: input.folder_id ?? null,
     start_at: input.start_at,
     end_at: input.end_at,
-    completion_criteria: criteria,
     status: "active",
     product_tag: null,
     sort_order: 0,
     task_count: 0,
-    milestone_count: 0,
     linked_diary_ids: [],
     created_at: now,
     updated_at: now,
@@ -846,7 +707,7 @@ export async function offlineCreateProject(input: {
       title: row.title,
       start_at: row.start_at,
       end_at: row.end_at,
-      completion_criteria: row.completion_criteria,
+      content: row.content || undefined,
       folder_id: row.folder_id,
     }),
     tempEntityId: tempId,
@@ -873,7 +734,7 @@ export async function offlineUpdateProject(
     title?: string;
     start_at?: string;
     end_at?: string;
-    completion_criteria?: string;
+    content?: string;
     folder_id?: number | null;
     sort_order?: number;
   },
@@ -890,7 +751,6 @@ export async function offlineUpdateProject(
   const updated: ProjectRow = {
     ...existing,
     ...patch,
-    content: patch.completion_criteria ?? existing.content,
     updated_at: now,
   };
   await upsertLocalProject(scope, updated);
@@ -945,97 +805,6 @@ export async function offlineDeleteProject(id: number): Promise<void> {
   scheduleFlush(scope);
 }
 
-export async function offlineCreateMilestone(input: {
-  project_id: number;
-  title: string;
-  due_at: string;
-}): Promise<MilestoneRow> {
-  const title = input.title.trim();
-  if (title.length === 0) throw new Error("milestone title is required");
-
-  const scope = resolveOutboxScope();
-  await ensureAllocatorSeeded(scope);
-  const tempId = allocateTempId(scope, MODULE_ID);
-  const opId = randomUuid();
-  const now = new Date().toISOString();
-  const row: MilestoneRow = {
-    id: tempId,
-    title,
-    project_id: input.project_id,
-    due_at: input.due_at,
-    status: "pending",
-    sort_order: 0,
-    created_at: now,
-    updated_at: now,
-  };
-  await upsertLocalMilestone(scope, row);
-  await adjustProjectMilestoneCount(scope, input.project_id, 1);
-
-  const baseOp = {
-    id: opId,
-    moduleId: MODULE_ID,
-    method: "milestone.create",
-    payload: {
-      ...subjectPayload(),
-      client_op_id: opId,
-      project_id: row.project_id,
-      title: row.title,
-      due_at: row.due_at,
-    },
-    tempEntityId: tempId,
-    createdAt: now,
-  } satisfies OfflineOutboxOp;
-
-  if (isTempId(input.project_id)) {
-    await enqueueOutboxOp(scope, {
-      ...baseOp,
-      dependsOn: [{ tempId: input.project_id, field: "project_id" }],
-    });
-  } else {
-    await enqueueOutboxOp(scope, baseOp);
-  }
-  scheduleFlush(scope);
-  return row;
-}
-
-export async function offlineUpdateMilestone(
-  id: number,
-  patch: Partial<Pick<MilestoneRow, "status" | "title" | "due_at">>,
-): Promise<MilestoneRow> {
-  const scope = resolveOutboxScope();
-  const projects = await readLocalProjects(scope);
-  const resolvedId = await resolveEntityId(scope, id);
-  let existing: MilestoneRow | undefined;
-  for (const project of projects) {
-    const milestones = await readLocalMilestones(scope, project.id);
-    existing =
-      milestones.find((row) => row.id === resolvedId) ??
-      (resolvedId !== id ? milestones.find((row) => row.id === id) : undefined);
-    if (existing) break;
-  }
-  if (!existing) throw new Error("milestone not found locally");
-
-  const now = new Date().toISOString();
-  const updated: MilestoneRow = { ...existing, ...patch, updated_at: now };
-  await upsertLocalMilestone(scope, updated);
-
-  const opId = randomUuid();
-  await enqueueOutboxOp(scope, {
-    id: opId,
-    moduleId: MODULE_ID,
-    method: "milestone.patch",
-    payload: omitUndefined({
-      ...subjectPayload(),
-      id: existing.id,
-      client_op_id: opId,
-      ...patch,
-    }),
-    createdAt: now,
-  });
-  scheduleFlush(scope);
-  return updated;
-}
-
 export async function offlineCreateProjectTask(input: {
   title: string;
   project_id: number;
@@ -1060,7 +829,6 @@ export async function offlineCreateProjectTask(input: {
     remind_at: null,
     list_id: null,
     project_id: input.project_id,
-    milestone_id: null,
     sort_order: input.sort_order ?? 0,
     completed_at: null,
     created_at: now,
@@ -1101,14 +869,7 @@ export async function offlineUpdateProjectTask(
   patch: Partial<
     Pick<
       TaskItemRow,
-      | "title"
-      | "content"
-      | "tag_ids"
-      | "priority"
-      | "due_at"
-      | "milestone_id"
-      | "sort_order"
-      | "status"
+      "title" | "content" | "tag_ids" | "priority" | "due_at" | "sort_order" | "status"
     >
   >,
 ): Promise<TaskItemRow> {
@@ -1254,7 +1015,6 @@ export async function offlineMoveTaskToProject(
       ...found.item,
       list_id: null,
       project_id: projectId,
-      milestone_id: null,
       updated_at: now,
     };
   } else {
@@ -1269,7 +1029,6 @@ export async function offlineMoveTaskToProject(
       remind_at: null,
       list_id: null,
       project_id: projectId,
-      milestone_id: null,
       sort_order: 0,
       completed_at: null,
       created_at: now,

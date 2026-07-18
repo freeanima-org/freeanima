@@ -2,7 +2,6 @@ import type { NotificationRecipientKind } from "@freeanima/shared/sap-contract/f
 
 export type SubjectKind = NotificationRecipientKind;
 import type {
-  MilestoneRowPayload,
   ProjectFolderRowPayload,
   ProjectRowPayload,
 } from "@freeanima/shared/sap-contract/frames/project";
@@ -15,7 +14,6 @@ import { isTempId } from "@freeanima/frontend/shell-sdk/offline-temp-id";
 import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 
 import {
-  offlineCreateMilestone,
   offlineCreateProject,
   offlineCreateProjectFolder,
   offlineCreateProjectTask,
@@ -24,25 +22,18 @@ import {
   offlineDeleteProjectTask,
   offlineMoveProjectTaskToList,
   offlineMoveTaskToProject,
-  offlineUpdateMilestone,
   offlineUpdateProject,
   offlineUpdateProjectFolder,
   offlineUpdateProjectTask,
-  reconcileServerMilestones,
   reconcileServerProjectFolders,
   reconcileServerProjectItems,
   reconcileServerProjects,
   registerProjectOfflineModule,
 } from "./offline-store.ts";
-import {
-  readCachedMilestones,
-  readCachedProjectItems,
-  readCachedProjects,
-} from "./offline-cache.ts";
+import { readCachedProjectItems, readCachedProjects } from "./offline-cache.ts";
 
 export type ProjectFolderRow = ProjectFolderRowPayload;
 export type ProjectRow = ProjectRowPayload;
-export type MilestoneRow = MilestoneRowPayload;
 export type TaskItemRow = TaskItemRowPayload;
 
 export type TaskListRow = {
@@ -96,12 +87,10 @@ function withDefaultProjectTaskCount(projects: ProjectRow[]): ProjectRow[] {
     folder_id: p.folder_id,
     start_at: p.start_at,
     end_at: p.end_at,
-    completion_criteria: p.completion_criteria,
     status: p.status,
     product_tag: p.product_tag,
     sort_order: p.sort_order,
     task_count: p.task_count ?? 0,
-    milestone_count: p.milestone_count,
     linked_diary_ids: p.linked_diary_ids,
     created_at: p.created_at,
     updated_at: p.updated_at,
@@ -160,44 +149,12 @@ export async function createProjectApi(
     title: string;
     start_at: string;
     end_at: string;
-    completion_criteria: string;
+    content?: string;
     folder_id?: number | null;
   },
 ): Promise<ProjectRow> {
   ensureProjectOfflineModule();
   return offlineCreateProject(input);
-}
-
-export async function fetchMilestones(
-  subjectKind: SubjectKind,
-  projectId: number,
-): Promise<MilestoneRow[]> {
-  const scope = resolveHubCacheScope();
-  if (isTempId(projectId) || !isHubFetchAvailable()) {
-    return (await readCachedMilestones(scope, projectId)) ?? [];
-  }
-  return withOfflineCache({
-    scope,
-    namespace: "project",
-    id: `milestones:${projectId}`,
-    fetch: async () => {
-      const data = await hub().call("milestone.list", {
-        subject_kind: subjectKind,
-        project_id: projectId,
-      });
-      return data.milestones;
-    },
-    reconcile: (milestones) => reconcileServerMilestones(projectId, milestones),
-    offlineError: "milestone.list unavailable offline",
-  });
-}
-
-export async function createMilestoneApi(
-  _subjectKind: SubjectKind,
-  input: { project_id: number; title: string; due_at: string },
-): Promise<MilestoneRow> {
-  ensureProjectOfflineModule();
-  return offlineCreateMilestone(input);
 }
 
 export async function fetchProjectTasks(
@@ -250,7 +207,7 @@ export async function patchProjectApi(
     title?: string;
     start_at?: string;
     end_at?: string;
-    completion_criteria?: string;
+    content?: string;
     folder_id?: number | null;
     sort_order?: number;
   },
@@ -262,15 +219,6 @@ export async function patchProjectApi(
 export async function deleteProjectApi(_subjectKind: SubjectKind, id: number): Promise<void> {
   ensureProjectOfflineModule();
   return offlineDeleteProject(id);
-}
-
-export async function patchMilestoneApi(
-  _subjectKind: SubjectKind,
-  id: number,
-  patch: { status?: MilestoneRow["status"]; title?: string; due_at?: string },
-): Promise<MilestoneRow> {
-  ensureProjectOfflineModule();
-  return offlineUpdateMilestone(id, patch);
 }
 
 export async function createProjectFolderApi(
@@ -302,14 +250,7 @@ export async function updateProjectTask(
   patch: Partial<
     Pick<
       TaskItemRow,
-      | "title"
-      | "content"
-      | "tag_ids"
-      | "priority"
-      | "due_at"
-      | "milestone_id"
-      | "sort_order"
-      | "status"
+      "title" | "content" | "tag_ids" | "priority" | "due_at" | "sort_order" | "status"
     >
   >,
 ): Promise<TaskItemRow> {

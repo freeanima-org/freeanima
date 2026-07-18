@@ -8,6 +8,7 @@ import {
   DialogTitle,
   Input,
   Label,
+  Textarea,
 } from "@freeanima/frontend/ui-kit";
 
 import type { ProjectFolderRow, ProjectRow } from "../lib/api.ts";
@@ -22,7 +23,11 @@ type ProjectEditorDialogProps = {
   target: ProjectEditorTarget | null;
   folders: ProjectFolderRow[];
   onClose: () => void;
-  onSave: (input: { name: string; folderId: number | null }) => void | Promise<void>;
+  onSave: (input: {
+    name: string;
+    folderId: number | null;
+    content?: string;
+  }) => void | Promise<void>;
 };
 
 export function ProjectEditorDialog({
@@ -34,6 +39,7 @@ export function ProjectEditorDialog({
 }: ProjectEditorDialogProps) {
   const [name, setName] = useState("");
   const [folderId, setFolderId] = useState<number | null>(null);
+  const [content, setContent] = useState("");
   const [saving, setSaving] = useState(false);
 
   const folderOptions = useMemo(() => {
@@ -52,9 +58,11 @@ export function ProjectEditorDialog({
     if (target.kind === "folder") {
       setName(target.folder.name);
       setFolderId(target.folder.parent_id ?? null);
+      setContent("");
     } else {
       setName(target.project.title);
       setFolderId(target.project.folder_id ?? null);
+      setContent(target.project.content ?? "");
     }
     setSaving(false);
   }, [open, target]);
@@ -64,7 +72,11 @@ export function ProjectEditorDialog({
     if (!trimmed || target == null || saving) return;
     setSaving(true);
     try {
-      await onSave({ name: trimmed, folderId });
+      if (target.kind === "project") {
+        await onSave({ name: trimmed, folderId, content: content.trim() });
+      } else {
+        await onSave({ name: trimmed, folderId });
+      }
       onClose();
     } finally {
       setSaving(false);
@@ -89,11 +101,22 @@ export function ProjectEditorDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") void handleSave();
+                if (e.key === "Enter" && target?.kind === "folder") void handleSave();
               }}
               focusOnMount
             />
           </div>
+          {target?.kind === "project" ? (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="project-edit-content">背景说明</Label>
+              <Textarea
+                id="project-edit-content"
+                value={content}
+                rows={4}
+                onChange={(e) => setContent(e.target.value)}
+              />
+            </div>
+          ) : null}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="project-edit-folder">{folderLabel}</Label>
             <select

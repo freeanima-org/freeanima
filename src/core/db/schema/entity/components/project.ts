@@ -9,7 +9,6 @@ export const projectBodySchema = z.object({
   folder_id: z.number().int().positive().nullable().optional(),
   start_at: z.string(),
   end_at: z.string(),
-  completion_criteria: z.string().optional(),
   status: projectStatusSchema.default("active"),
   product_tag: z.string().optional(),
   sort_order: z.number().int().optional(),

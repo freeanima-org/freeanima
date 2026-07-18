@@ -67,7 +67,6 @@ export const taskItemRowSchema = z.object({
   remind_at: z.string().nullable(),
   list_id: z.number().int().positive().nullable(),
   project_id: z.number().int().positive().nullable(),
-  milestone_id: z.number().int().positive().nullable(),
   project_title: z.string().nullable().optional(),
   list_name: z.string().nullable().optional(),
   sort_order: z.number().int(),
@@ -256,7 +255,6 @@ export const projectItemCreateInputSchema = z.object({
   subject_kind: taskSubjectKindSchema,
   title: z.string().min(1),
   project_id: z.number().int().positive(),
-  milestone_id: z.number().int().positive().optional(),
   content: z.string().optional(),
   tag_ids: z.array(z.number().int().positive()).optional(),
   priority: taskPrioritySchema.optional(),
@@ -308,7 +306,6 @@ export const taskPatchInputSchema = z.object({
   remind_at: z.string().nullable().optional(),
   sort_order: z.number().int().optional(),
   status: taskStatusSchema.optional(),
-  milestone_id: z.number().int().positive().nullable().optional(),
   client_op_id: z.string().min(1).optional(),
 });
 export type TaskPatchInput = z.infer<typeof taskPatchInputSchema>;

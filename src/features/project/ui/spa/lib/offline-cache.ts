@@ -1,6 +1,6 @@
 import { readOfflineCache, writeOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache";
 
-import type { MilestoneRow, ProjectFolderRow, ProjectRow, TaskItemRow } from "./api.ts";
+import type { ProjectFolderRow, ProjectRow, TaskItemRow } from "./api.ts";
 
 export { resolveHubCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
 
@@ -25,22 +25,6 @@ export async function readCachedProjects(scope: string): Promise<ProjectRow[] | 
 
 export async function writeCachedProjects(scope: string, projects: ProjectRow[]): Promise<void> {
   await writeOfflineCache(scope, NAMESPACE, "projects", projects);
-}
-
-export async function readCachedMilestones(
-  scope: string,
-  projectId: number,
-): Promise<MilestoneRow[] | null> {
-  const raw = await readOfflineCache<MilestoneRow[]>(scope, NAMESPACE, `milestones:${projectId}`);
-  return Array.isArray(raw) ? raw : null;
-}
-
-export async function writeCachedMilestones(
-  scope: string,
-  projectId: number,
-  milestones: MilestoneRow[],
-): Promise<void> {
-  await writeOfflineCache(scope, NAMESPACE, `milestones:${projectId}`, milestones);
 }
 
 export async function readCachedProjectItems(

@@ -151,9 +151,8 @@ Project management uses a **separate folder tree** from task-list folders. Tasks
 | -------------- | -------------- | ---------------- |
 | Project folder | `type=content` | `project_folder` |
 | Project        | `type=content` | `project`        |
-| Milestone      | `type=content` | `milestone`      |
 
-`task_item.body.project_id` and optional `milestone_id` link items to projects. Smart Lists in the task module default to tasks with no `project_id`. Shell route `/projects`; Hub RPC `projectfolder.*`, `project.*`, `milestone.*`, `project.item.*`；跨边界归属用 `task.moveToProject` / `task.moveToList`。
+`task_item.body.project_id` links items to a project. Optional project background notes use entity `content` (not `body`). Smart Lists in the task module default to tasks with no `project_id`. Shell route `/projects`; Hub RPC `projectfolder.*`, `project.*`, `project.item.*`；跨边界归属用 `task.moveToProject` / `task.moveToList`。
 
 Full spec: [`docs/features/project.md`](../features/project.md).
 

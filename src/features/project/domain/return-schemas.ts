@@ -7,15 +7,6 @@ const projectRowSchema = z.object({
   start_at: z.string(),
   end_at: z.string(),
   folder_id: z.number().nullable(),
-  milestone_count: z.number(),
-});
-
-const milestoneRowSchema = z.object({
-  id: z.number(),
-  title: z.string(),
-  project_id: z.number(),
-  due_at: z.string(),
-  status: z.string(),
 });
 
 const folderRowSchema = z.object({
@@ -31,15 +22,6 @@ const exampleProject = {
   start_at: "2026-07-01T00:00:00+08:00",
   end_at: "2026-12-31T00:00:00+08:00",
   folder_id: null,
-  milestone_count: 2,
-};
-
-const exampleMilestone = {
-  id: 10,
-  title: "里程碑 1",
-  project_id: 1,
-  due_at: "2026-08-01T00:00:00+08:00",
-  status: "pending",
 };
 
 export const PROJECT_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
@@ -67,27 +49,6 @@ export const PROJECT_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
   project_delete: defineToolReturn({
     schema: z.object({ ok: z.literal(true), action: z.literal("delete") }),
     example: { ok: true, action: "delete" },
-  }),
-  milestone_list: defineToolReturn({
-    schema: z.object({
-      ok: z.literal(true),
-      action: z.literal("list"),
-      count: z.number(),
-      milestones: z.array(milestoneRowSchema),
-    }),
-    example: { ok: true, action: "list", count: 1, milestones: [exampleMilestone] },
-  }),
-  milestone_create: defineToolReturn({
-    schema: z.object({
-      ok: z.literal(true),
-      action: z.literal("create"),
-      item: milestoneRowSchema,
-    }),
-    example: { ok: true, action: "create", item: exampleMilestone },
-  }),
-  milestone_patch: defineToolReturn({
-    schema: z.object({ ok: z.literal(true), action: z.literal("patch"), item: milestoneRowSchema }),
-    example: { ok: true, action: "patch", item: exampleMilestone },
   }),
   projectfolder_list: defineToolReturn({
     schema: z.object({

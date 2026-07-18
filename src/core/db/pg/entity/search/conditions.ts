@@ -6,7 +6,6 @@ import {
   EMAIL_THREAD_COMPONENT,
   entities,
   DIARY_ENTRY_COMPONENT,
-  MILESTONE_COMPONENT,
   PROJECT_COMPONENT,
   PROJECT_FOLDER_COMPONENT,
   parseContentBlockSearchFilters,
@@ -14,7 +13,6 @@ import {
   parseEmailAccountSearchFilters,
   parseEmailMessageSearchFilters,
   parseEmailThreadSearchFilters,
-  parseMilestoneSearchFilters,
   parsePomodoroSessionSearchFilters,
   parsePomodoroTaskFocusSearchFilters,
   parseProjectFolderSearchFilters,
@@ -262,16 +260,6 @@ function buildProjectBodyConditions(filters: ReturnType<typeof parseProjectSearc
   return conditions;
 }
 
-function buildMilestoneBodyConditions(
-  filters: ReturnType<typeof parseMilestoneSearchFilters>,
-): SQL[] {
-  const conditions: SQL[] = [];
-  if (filters.client_op_id) {
-    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
-  }
-  return conditions;
-}
-
 function buildTagBodyConditions(filters: ReturnType<typeof parseTagSearchFilters>): SQL[] {
   const conditions: SQL[] = [];
   if (filters.client_op_id) {
@@ -422,9 +410,6 @@ export function buildComponentFilterConditions(opts: EntitySearchOpts): SQL[] {
   }
   if (component === PROJECT_COMPONENT) {
     return buildProjectBodyConditions(parseProjectSearchFilters(filters));
-  }
-  if (component === MILESTONE_COMPONENT) {
-    return buildMilestoneBodyConditions(parseMilestoneSearchFilters(filters));
   }
   if (component === TAG_COMPONENT) {
     return buildTagBodyConditions(parseTagSearchFilters(filters));

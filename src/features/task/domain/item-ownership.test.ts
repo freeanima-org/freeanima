@@ -66,7 +66,6 @@ describe("updateTaskItem ownership XOR", () => {
             folder_id: null,
             start_at: "2026-01-01T00:00:00+08:00",
             end_at: "2026-12-31T00:00:00+08:00",
-            completion_criteria: "done",
             status: "active",
             sort_order: 0,
             linked_diary_ids: [],
@@ -166,7 +165,6 @@ describe("releaseTasksFromProject", () => {
       entityRow(5, TASK_ITEM_COMPONENT, {
         list_id: 2,
         project_id: null,
-        milestone_id: null,
         status: "pending",
         priority: "none",
         tags: [],
@@ -179,7 +177,7 @@ describe("releaseTasksFromProject", () => {
     await releaseTasksFromProject(1, 10);
     expect(updateSpy).toHaveBeenCalledWith({
       id: 5,
-      body: { project_id: null, milestone_id: null, list_id: 2 },
+      body: { project_id: null, list_id: 2 },
     });
   });
 });
@@ -199,7 +197,6 @@ describe("updateProject terminal release_tasks", () => {
           folder_id: null,
           start_at: "2026-01-01T00:00:00+08:00",
           end_at: "2026-12-31T00:00:00+08:00",
-          completion_criteria: "done",
           status: "active",
           sort_order: 0,
           linked_diary_ids: [],
@@ -216,7 +213,6 @@ describe("updateProject terminal release_tasks", () => {
           folder_id: null,
           start_at: "2026-01-01T00:00:00+08:00",
           end_at: "2026-12-31T00:00:00+08:00",
-          completion_criteria: "done",
           status: "completed",
           sort_order: 0,
           linked_diary_ids: [],

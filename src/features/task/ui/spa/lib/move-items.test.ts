@@ -18,7 +18,6 @@ describe("moveTaskItemsToProject", () => {
       remind_at: null,
       list_id: null,
       project_id: 9,
-      milestone_id: null,
       sort_order: 0,
       completed_at: null,
       created_at: "",

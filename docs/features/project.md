@@ -4,15 +4,18 @@ title: Project Management
 
 # Project Management (spec v0.2)
 
-Structured project management for FreeAnima, based on the [Unified Entity Model](../concepts/entity-model.md). **v1** delivers: project folder tree, project entity, task ownership migration, and milestones. OKR, cross-entity links, Gantt/Kanban, and file assets are **[v2+]** (see [Non-goals (v1)](#non-goals-v1)).
+Structured project management for FreeAnima, based on the [Unified Entity Model](../concepts/entity-model.md).
+
+**Model note (v0.2 simplified):** Milestones and required completion criteria were removed. Projects keep schedule + terminal status; optional background notes live in entity `content` (edited in the project edit dialog only). Tasks link to projects via `body.project_id` only.
+
+**v1** delivers: project folder tree, project entity, and task ownership migration. OKR, cross-entity links, Gantt/Kanban, and file assets are **[v2+]** (see [Non-goals (v1)](#non-goals-v1)).
 
 ## Concept hierarchy
 
 ```text
 project_folder (organizational tree, independent from task_list folders)
  └── project (leaf — cannot nest)
-      ├── milestone (time anchors inside the project)
-      └── task_item (via body.project_id; optional body.milestone_id)
+      └── task_item (via body.project_id)
 task module (/tasks) — lists, smart lists, backlog tasks (body.project_id empty)
 ```
 
@@ -27,7 +30,7 @@ Independent folder hierarchy for project management only — **not shared** with
 | Rule             | Detail                                                                                                   |
 | ---------------- | -------------------------------------------------------------------------------------------------------- |
 | Nesting          | Unlimited depth; pure organization                                                                       |
-| No lifecycle     | No start/end dates, completion criteria, or terminal status                                              |
+| No lifecycle     | No start/end dates or terminal status                                                                    |
 | Parent           | `body.parent_id` → another `project_folder` entity id, or `null` at root                                 |
 | Cycle prevention | Same as task-list folders — nesting must not form cycles                                                 |
 | Delete           | Recursively removes sub-folders; contained projects get `folder_id: null` (projects are **not** deleted) |
@@ -50,29 +53,31 @@ FreeAnima (product tag or top folder name)
 
 ### Basic attributes
 
-| Rule                | Detail                                                                                                    |
-| ------------------- | --------------------------------------------------------------------------------------------------------- |
-| Leaf node           | Projects **cannot nest**. Use `project_folder` for grouping                                               |
-| Schedule            | **Required** `start_at` and `end_at` (or explicit end condition encoded as `end_at`) at create time       |
-| Completion criteria | **Required** at create — what counts as "done" (stored in entity `content` or `body.completion_criteria`) |
-| Terminal status     | `completed` / `cancelled` / `on_hold` (plus default `active`)                                             |
+| Rule            | Detail                                                                                              |
+| --------------- | --------------------------------------------------------------------------------------------------- |
+| Leaf node       | Projects **cannot nest**. Use `project_folder` for grouping                                         |
+| Schedule        | **Required** `start_at` and `end_at` (or explicit end condition encoded as `end_at`) at create time |
+| Background      | Optional entity `content` — project background / notes; **not** shown in list or task detail panes  |
+| Terminal status | `completed` / `cancelled` / `on_hold` (plus default `active`)                                       |
+
+Edit **background notes** only in the **project edit dialog** (`ProjectEditorDialog`). The create dialog collects title + schedule only; the main project view shows dates in the header and tasks in the list — not `content`.
 
 **Not a project:**
 
 - Ongoing product maintenance (no defined end)
-- Ad-hoc chores such as "clean fridge compressor" (no planned schedule or completion criteria — stays in the task module)
+- Ad-hoc chores such as "clean fridge compressor" (no planned schedule — stays in the task module)
 - `task_list` folders or multiple task lists (those belong to the **task module**, not project management)
 
 ### Project lifecycle and tasks
 
 When a project reaches a terminal state or is deleted, task handling is explicit:
 
-| Event                | Task behavior (v1 default)                                                                                                                  |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `status → completed` | **Default: keep in project** (`project_id` retained). Explicit `release_tasks: true` moves pending tasks to the default list (Inbox).       |
-| `status → cancelled` | Same as `completed`                                                                                                                         |
-| `status → on_hold`   | Tasks **keep** `project_id`; project UI read-only or degraded edit                                                                          |
-| Delete project       | All tasks move to the **default list** (`is_default` Inbox): `project_id`/`milestone_id` cleared, `list_id` set; milestone entities deleted |
+| Event                | Task behavior (v1 default)                                                                                                            |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `status → completed` | **Default: keep in project** (`project_id` retained). Explicit `release_tasks: true` moves pending tasks to the default list (Inbox). |
+| `status → cancelled` | Same as `completed`                                                                                                                   |
+| `status → on_hold`   | Tasks **keep** `project_id`; project UI read-only or degraded edit                                                                    |
+| Delete project       | All tasks move to the **default list** (`is_default` Inbox): `project_id` cleared, `list_id` set                                      |
 
 Inactive projects (`on_hold` / `completed` / `cancelled`) are hidden from the project sidebar by default; toggle **显示非活跃** (same pattern as archived task lists).
 
@@ -115,17 +120,16 @@ A task belongs to **one side at a time**: either the task module (Backlog) **or*
 | Action                                  | Effect                                                                                                                            |
 | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | Drag / move task from Backlog → project | Set `project_id`; **clear `list_id`**; task disappears from task-module views and list counts                                     |
-| Move task from project → list           | Set `list_id` (user picks list); clear `project_id` and `milestone_id` — there is no "restore previous list" / 移回清单           |
-| Move task project A → project B         | Direct transfer; **clear `milestone_id`**; `list_id` stays null                                                                   |
+| Move task from project → list           | Set `list_id` (user picks list); clear `project_id` — there is no "restore previous list" / 移回清单                              |
+| Move task project A → project B         | Direct transfer; `list_id` stays null                                                                                             |
 | Global search                           | Matches all tasks; result shows归属 `Backlog / {list name}` or `Project / {project title}`; click navigates to the owning surface |
 
 ### Data model (extensions to `task_item`)
 
-| Field          | Type             | Rule                                                                                                        |
-| -------------- | ---------------- | ----------------------------------------------------------------------------------------------------------- |
-| `list_id`      | `number \| null` | Required when in Backlog (`project_id` null). **Null when in a project** — do not retain last list id       |
-| `project_id`   | `number \| null` | Set when task is in a project; null when in Backlog                                                         |
-| `milestone_id` | `number \| null` | Optional; must reference a milestone in the **same** project; cleared on cross-project move or move to list |
+| Field        | Type             | Rule                                                                                                  |
+| ------------ | ---------------- | ----------------------------------------------------------------------------------------------------- |
+| `list_id`    | `number \| null` | Required when in Backlog (`project_id` null). **Null when in a project** — do not retain last list id |
+| `project_id` | `number \| null` | Set when task is in a project; null when in Backlog                                                   |
 
 **Invariants:**
 
@@ -133,8 +137,6 @@ A task belongs to **one side at a time**: either the task module (Backlog) **or*
 - Task-module visibility ⇔ `project_id IS NULL` (and `list_id` set)
 - Project-module visibility ⇔ `project_id = {current project}` (and `list_id` null)
 - `list_id` must not point at a folder (`task_list.is_folder`)
-- `milestone_id` implies `project_id` is set and matches the milestone's project
-- Deleting a milestone does **not** delete tasks — only clears or invalidates `milestone_id`
 - List `item_count` counts only backlog tasks (`project_id` null) for that `list_id`
 
 Pomodoro focus (`pomodoro_task_focus.body.task_item_id`) is unchanged — focus is by task id regardless of project归属.
@@ -153,28 +155,11 @@ Existing `smart_list` entities and built-in presets (Today, Tomorrow, etc.) rema
 
 ---
 
-## Milestones (`milestone`)
-
-Time anchors **inside** a project. Milestones do **not** own tasks — tasks may optionally link via `task_item.body.milestone_id`.
-
-| Field        | Detail                                              |
-| ------------ | --------------------------------------------------- |
-| `project_id` | Parent project entity id                            |
-| `due_at`     | ISO 8601 deadline                                   |
-| `status`     | `pending` / `in_progress` / `completed` / `delayed` |
-| `sort_order` | Order within the project                            |
-
-**Delayed:** auto when `due_at < now` and `status != completed`; manual override allowed.
-
-Unlike OKR Key Results (end-of-period assessment), milestones are marked **during** execution ("where we are on the way").
-
----
-
 ## Subject scope (User / Agent)
 
 Aligned with [entity-model Shell scope](../concepts/entity-model.md#shell-ui-global-subject-scope):
 
-- `project_folder`, `project`, and `milestone` live in the **current subject's default private world**
+- `project_folder` and `project` live in the **current subject's default private world**
 - Hub RPC methods accept optional `subject_kind: user | agent` (default `user`, same as tasks)
 - **v1:** no cross user/agent world sharing for projects
 
@@ -182,11 +167,11 @@ Aligned with [entity-model Shell scope](../concepts/entity-model.md#shell-ui-glo
 
 ## Search and LLM tools
 
-| Surface                         | v1 behavior                                                                                                                                                                               |
-| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `task.search` / `entity_search` | Include `project_id`, `project_title`, `list_name` in results                                                                                                                             |
-| ToolSet `project`               | CRUD for folders, projects, milestones (load via `toolset_load`)                                                                                                                          |
-| ToolSet `task`                  | `task_create` / `task_update` support `project_id` / `milestone_id`; `task_list` / `task_search` filter by `project_id` (mutually exclusive with `list_id`; default list is Backlog only) |
+| Surface                         | v1 behavior                                                                                                                                                              |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `task.search` / `entity_search` | Include `project_id`, `project_title`, `list_name` in results                                                                                                            |
+| ToolSet `project`               | CRUD for folders and projects (load via `toolset_load`); `project_create` / `project_patch` accept optional `content` for background notes                               |
+| ToolSet `task`                  | `task_create` / `task_update` support `project_id`; `task_list` / `task_search` filter by `project_id` (mutually exclusive with `list_id`; default list is Backlog only) |
 
 ---
 
@@ -231,10 +216,12 @@ Files and photos are global assets with project as one reference entry. Deleting
 
 ## UI (v1)
 
-| Route       | Layout                                                                   |
-| ----------- | ------------------------------------------------------------------------ |
-| `/projects` | Three columns: project folder tree + project detail (tasks) + milestones |
-| `/tasks`    | Unchanged; hides `project_id` tasks                                      |
+| Route       | Layout                                                                                                                            |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `/projects` | Folder tree + project task list + task detail pane (responsive `ThreeColumnLayout`); **no** milestone column or milestone dialogs |
+| `/tasks`    | Unchanged; hides `project_id` tasks                                                                                               |
+
+Project **background notes** (`entity.content`) are edited in the project edit dialog only — not in the sidebar, project header, or task list.
 
 Both inherit Shell **User / Agent** toggle via `subject_kind`.
 
@@ -242,9 +229,9 @@ Both inherit Shell **User / Agent** toggle via `subject_kind`.
 
 ## Migration (v1)
 
-- Existing tasks: `project_id` and `milestone_id` absent / null — behavior unchanged
-- No backfill beyond new optional JSONB fields on `task_item.body`
-- New components registered in entity component index; no legacy table migration
+- Existing tasks: `project_id` absent / null — behavior unchanged
+- **Simplified model migration:** drops `milestone` entities, clears `task_item.body.milestone_id`, removes `project.body.completion_criteria`; when `entity.content` is empty, backfills from former `completion_criteria`
+- New components registered in entity component index
 
 ---
 
@@ -275,35 +262,23 @@ Entity type: `content`. Text fields use entity columns where noted.
 
 ### `project`
 
-| Location | Field                 | Type           | Notes                                               |
-| -------- | --------------------- | -------------- | --------------------------------------------------- |
-| entity   | `title`               | string         | Project name                                        |
-| entity   | `content`             | string         | Completion criteria (or body field below)           |
-| body     | `folder_id`           | number \| null | Parent folder                                       |
-| body     | `start_at`            | string         | ISO 8601                                            |
-| body     | `end_at`              | string         | ISO 8601                                            |
-| body     | `completion_criteria` | string         | Optional if using entity `content`                  |
-| body     | `status`              | enum           | `active` \| `completed` \| `cancelled` \| `on_hold` |
-| body     | `product_tag`         | string         | Optional v1 product label                           |
-| body     | `sort_order`          | number         | Among siblings in folder                            |
-
-### `milestone`
-
-| Location | Field        | Type   | Notes                                                  |
-| -------- | ------------ | ------ | ------------------------------------------------------ |
-| entity   | `title`      | string | Milestone name                                         |
-| body     | `project_id` | number | Parent project                                         |
-| body     | `due_at`     | string | ISO 8601                                               |
-| body     | `status`     | enum   | `pending` \| `in_progress` \| `completed` \| `delayed` |
-| body     | `sort_order` | number | Within project                                         |
+| Location | Field         | Type           | Notes                                                |
+| -------- | ------------- | -------------- | ---------------------------------------------------- |
+| entity   | `title`       | string         | Project name                                         |
+| entity   | `content`     | string         | Optional background / notes (edit dialog only in UI) |
+| body     | `folder_id`   | number \| null | Parent folder                                        |
+| body     | `start_at`    | string         | ISO 8601                                             |
+| body     | `end_at`      | string         | ISO 8601                                             |
+| body     | `status`      | enum           | `active` \| `completed` \| `cancelled` \| `on_hold`  |
+| body     | `product_tag` | string         | Optional v1 product label                            |
+| body     | `sort_order`  | number         | Among siblings in folder                             |
 
 ### `task_item` (extensions)
 
-| Location | Field          | Type           | Notes                                                                |
-| -------- | -------------- | -------------- | -------------------------------------------------------------------- |
-| body     | `project_id`   | number \| null | Set when in project                                                  |
-| body     | `milestone_id` | number \| null | Optional; same project as `project_id`                               |
-| body     | `list_id`      | number         | Existing; see [Task ownership](#task-ownership-task-module--project) |
+| Location | Field        | Type           | Notes                                                                |
+| -------- | ------------ | -------------- | -------------------------------------------------------------------- |
+| body     | `project_id` | number \| null | Set when in project                                                  |
+| body     | `list_id`    | number         | Existing; see [Task ownership](#task-ownership-task-module--project) |
 
 ---
 
@@ -328,36 +303,28 @@ All methods optional `subject_kind: user | agent` (default `user`). Transport: `
 
 ### `project.*`
 
-| Method           | Purpose                                                                       |
-| ---------------- | ----------------------------------------------------------------------------- |
-| `project.list`   | List projects (`folder_id?`, `status?`)                                       |
-| `project.create` | Create project (required schedule + completion criteria)                      |
-| `project.get`    | Project detail + task/milestone counts                                        |
-| `project.patch`  | Update fields or terminal status (with task side-effects per lifecycle table) |
-| `project.delete` | Delete project; tasks move to default list (Inbox)                            |
-
-### `milestone.*`
-
-| Method             | Purpose                                              |
-| ------------------ | ---------------------------------------------------- |
-| `milestone.list`   | List by `project_id`                                 |
-| `milestone.create` | Create milestone                                     |
-| `milestone.patch`  | Update status, due, order                            |
-| `milestone.delete` | Delete milestone; tasks keep, `milestone_id` cleared |
+| Method           | Purpose                                                                                       |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| `project.list`   | List projects (`folder_id?`, `status?`)                                                       |
+| `project.stats`  | Per-project `task_count` for sidebar badges (`folder_id?`, `status?`)                         |
+| `project.create` | Create project (required `title`, `start_at`, `end_at`; optional `content`, `folder_id`, …)   |
+| `project.get`    | Project detail                                                                                |
+| `project.patch`  | Update fields (including optional `content`), terminal status, or `release_tasks` side-effect |
+| `project.delete` | Delete project; tasks move to default list (Inbox)                                            |
 
 ### Task item Hub methods（归属拆分）
 
-| Method                                    | Purpose                                                  |
-| ----------------------------------------- | -------------------------------------------------------- |
-| `tasklist.item.list`                      | 任务模块列任务（清单 / Backlog；默认排除项目内）         |
-| `tasklist.item.create`                    | 任务模块建任务（只认 `list_id`，可省略→收件箱）          |
-| `project.item.list`                       | 项目模块列任务（必填 `project_id`）                      |
-| `project.item.create`                     | 项目模块建任务（只认 `project_id`，可选 `milestone_id`） |
-| `task.moveToProject`                      | 显式移入项目（清空 `list_id`）                           |
-| `task.moveToList`                         | 显式移回清单（清空 `project_id` / `milestone_id`）       |
-| `task.patch`                              | 仅内容字段（标题/优先级/截止/`milestone_id` 等）         |
-| `task.search`                             | 跨归属搜索；结果含 project/list 归属                     |
-| `task.complete` / `uncomplete` / `delete` | 按 id 共享操作                                           |
+| Method                                    | Purpose                                          |
+| ----------------------------------------- | ------------------------------------------------ |
+| `tasklist.item.list`                      | 任务模块列任务（清单 / Backlog；默认排除项目内） |
+| `tasklist.item.create`                    | 任务模块建任务（只认 `list_id`，可省略→收件箱）  |
+| `project.item.list`                       | 项目模块列任务（必填 `project_id`）              |
+| `project.item.create`                     | 项目模块建任务（只认 `project_id`）              |
+| `task.moveToProject`                      | 显式移入项目（清空 `list_id`）                   |
+| `task.moveToList`                         | 显式移回清单（清空 `project_id`）                |
+| `task.patch`                              | 仅内容字段（标题/优先级/截止等；不含归属）       |
+| `task.search`                             | 跨归属搜索；结果含 project/list 归属             |
+| `task.complete` / `uncomplete` / `delete` | 按 id 共享操作                                   |
 
 Implementation target: `src/features/project/` (domain + hub + `ui/spa` + `plugin.ts`); schemas under `src/core/db/schema/entity/components/`; SAP frames under `src/shared/sap-contract/frames/`.
 

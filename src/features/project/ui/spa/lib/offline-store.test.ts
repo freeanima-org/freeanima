@@ -28,12 +28,10 @@ function project(partial: Partial<ProjectRow> & Pick<ProjectRow, "id" | "title">
     folder_id: null,
     start_at: "2026-07-15T00:00:00.000Z",
     end_at: "2026-07-22T00:00:00.000Z",
-    completion_criteria: "done",
     status: "active",
     product_tag: null,
     sort_order: 0,
     task_count: 0,
-    milestone_count: 0,
     linked_diary_ids: [],
     created_at: "2026-07-15T00:00:00.000Z",
     updated_at: "2026-07-15T00:00:00.000Z",
@@ -52,7 +50,6 @@ function item(
     due_at: null,
     remind_at: null,
     list_id: null,
-    milestone_id: null,
     sort_order: 0,
     completed_at: null,
     created_at: "2026-07-15T00:00:00.000Z",
@@ -111,7 +108,6 @@ describe("offlineCreateProject dependsOn folder", () => {
       title: "proj",
       start_at: "2026-07-15T00:00:00.000Z",
       end_at: "2026-07-22T00:00:00.000Z",
-      completion_criteria: "done",
       folder_id: folderRow.id,
     });
     expect(created.id).toBeLessThan(0);

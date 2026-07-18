@@ -228,30 +228,6 @@ export async function deleteTaskItemsByListId(
   return deleted;
 }
 
-/** 清除所有引用某 milestone 的 task_item.milestone_id */
-export async function clearTaskItemMilestoneId(
-  world_id: number,
-  milestone_id: number,
-): Promise<number> {
-  const db = getDb();
-  const now = new Date();
-  const rows = await db
-    .update(entities)
-    .set({
-      body: sql`${entities.body} || '{"milestone_id": null}'::jsonb`,
-      updated_at: now,
-    })
-    .where(
-      and(
-        eq(entities.world_id, world_id),
-        eq(entities.primary_component, "task_item"),
-        sql`${entities.body}->>'milestone_id' = ${String(milestone_id)}`,
-      ),
-    )
-    .returning({ id: entities.id });
-  return rows.length;
-}
-
 function buildListConditions(opts?: Omit<EntityListOpts, "offset" | "limit">) {
   const conditions = [];
   if (opts?.world_id != null) {

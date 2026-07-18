@@ -38,7 +38,6 @@ import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "reac
 
 import { registerProjectOfflineModule } from "./lib/offline-store.ts";
 
-import { MilestoneDialog } from "./components/MilestoneDialog.tsx";
 import { MoveToListPicker } from "@freeanima/frontend/ui-kit/composite";
 import { MoveToProjectPicker } from "./components/MoveToProjectPicker.tsx";
 import {
@@ -54,14 +53,12 @@ import type { ProjectDragEndAction } from "./lib/resolve-project-drag-end.ts";
 import { sortOrderUpdates } from "./lib/reorder.ts";
 import {
   completeProjectTask,
-  createMilestoneApi,
   createProjectApi,
   createProjectFolderApi,
   createProjectTask,
   deleteProjectApi,
   deleteProjectFolderApi,
   deleteProjectTask,
-  fetchMilestones,
   fetchProjectFolders,
   fetchProjectStats,
   fetchProjectTasks,
@@ -70,12 +67,10 @@ import {
   fetchTaskListsForMove,
   moveTaskToProject,
   moveProjectTaskToList,
-  patchMilestoneApi,
   patchProjectApi,
   patchProjectFolderApi,
   uncompleteProjectTask,
   updateProjectTask,
-  type MilestoneRow,
   type ProjectFolderRow,
   type ProjectRow,
   type ProjectPickerRow,
@@ -136,7 +131,6 @@ export function ProjectApp() {
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [showInactive, setShowInactive] = useState(false);
   const [hideCompleted, setHideCompleted] = useState(() => readHideCompleted(subjectKind));
-  const [milestones, setMilestones] = useState<MilestoneRow[]>([]);
   const [tasks, setTasks] = useState<TaskItemRow[]>([]);
   const [selectionSubjectKind, setSelectionSubjectKind] = useState(subjectKind);
 
@@ -145,7 +139,6 @@ export function ProjectApp() {
     setSelectionSubjectKind(subjectKind);
     setSelectedFolderId(null);
     setSelectedProjectId(null);
-    setMilestones([]);
     setTasks([]);
   }
 
@@ -154,16 +147,11 @@ export function ProjectApp() {
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
   const [createProjectStart, setCreateProjectStart] = useState("");
   const [createProjectEnd, setCreateProjectEnd] = useState("");
-  const [createProjectCriteria, setCreateProjectCriteria] = useState("");
   const [quickTaskTitle, setQuickTaskTitle] = useState("");
 
   const [editorTarget, setEditorTarget] = useState<ProjectEditorTarget | null>(null);
   const [childFolderParentId, setChildFolderParentId] = useState<number | null>(null);
   const [childFolderName, setChildFolderName] = useState("");
-
-  const [milestoneOpen, setMilestoneOpen] = useState(false);
-  const [newMilestoneTitle, setNewMilestoneTitle] = useState("");
-  const [newMilestoneDue, setNewMilestoneDue] = useState("");
 
   const {
     item: detailItem,
@@ -228,24 +216,10 @@ export function ProjectApp() {
         return changed ? next : prev;
       });
 
-      setMilestones((prev) => {
-        let changed = false;
-        const next = prev.map((row) => {
-          if (row.id !== tempId && row.project_id !== tempId) return row;
-          changed = true;
-          return {
-            ...row,
-            id: remapId(row.id),
-            project_id: row.project_id === tempId ? serverId : row.project_id,
-          };
-        });
-        return changed ? next : prev;
-      });
-
       setTasks((prev) => {
         let changed = false;
         const next = prev.map((row) => {
-          if (row.id !== tempId && row.project_id !== tempId && row.milestone_id !== tempId) {
+          if (row.id !== tempId && row.project_id !== tempId) {
             return row;
           }
           changed = true;
@@ -253,7 +227,6 @@ export function ProjectApp() {
             ...row,
             id: remapId(row.id),
             project_id: row.project_id === tempId ? serverId : row.project_id,
-            milestone_id: row.milestone_id === tempId ? serverId : row.milestone_id,
           };
         });
         return changed ? next : prev;
@@ -269,14 +242,13 @@ export function ProjectApp() {
       });
       setDetailItem((prev) => {
         if (!prev) return prev;
-        if (prev.id !== tempId && prev.project_id !== tempId && prev.milestone_id !== tempId) {
+        if (prev.id !== tempId && prev.project_id !== tempId) {
           return prev;
         }
         return {
           ...prev,
           id: remapId(prev.id),
           project_id: prev.project_id === tempId ? serverId : prev.project_id,
-          milestone_id: prev.milestone_id === tempId ? serverId : prev.milestone_id,
         };
       });
     });
@@ -350,16 +322,11 @@ export function ProjectApp() {
 
   const reloadProjectDetail = useCallback(async () => {
     if (selectedProjectId == null) {
-      setMilestones([]);
       setTasks([]);
       return;
     }
     try {
-      const [ms, ts] = await Promise.all([
-        fetchMilestones(subjectKind, selectedProjectId),
-        fetchProjectTasks(subjectKind, selectedProjectId),
-      ]);
-      setMilestones(ms);
+      const ts = await fetchProjectTasks(subjectKind, selectedProjectId);
       setTasks(ts);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -415,20 +382,17 @@ export function ProjectApp() {
     const title = newProjectTitle.trim();
     const start_at = dateLocalToIso(createProjectStart);
     const end_at = dateLocalToIso(createProjectEnd);
-    const completion_criteria = createProjectCriteria.trim();
-    if (!title || !start_at || !end_at || !completion_criteria) return;
+    if (!title || !start_at || !end_at) return;
     const folder_id = folderIdForNewProject(selectedProjectId, selectedFolderId, projects);
     const item = await createProjectApi(subjectKind, {
       title,
       start_at,
       end_at,
-      completion_criteria,
       folder_id,
     });
     setNewProjectTitle("");
     setCreateProjectStart("");
     setCreateProjectEnd("");
-    setCreateProjectCriteria("");
     setCreateProjectOpen(false);
     setSelectedProjectId(item.id);
     writeModuleSelection("project", item.id, { subjectKind });
@@ -597,7 +561,7 @@ export function ProjectApp() {
     setEditorTarget({ kind: "project", project });
   };
 
-  const saveEditor = async (input: { name: string; folderId: number | null }) => {
+  const saveEditor = async (input: { name: string; folderId: number | null; content?: string }) => {
     if (editorTarget == null) return;
     if (editorTarget.kind === "folder") {
       await patchProjectFolderApi(subjectKind, editorTarget.folder.id, {
@@ -608,6 +572,7 @@ export function ProjectApp() {
       await patchProjectApi(subjectKind, editorTarget.project.id, {
         title: input.name,
         folder_id: input.folderId,
+        ...(input.content !== undefined ? { content: input.content } : {}),
       });
     }
     await reload();
@@ -770,14 +735,6 @@ export function ProjectApp() {
               </Button>
               {selectedProject ? (
                 <>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={writesDisabled}
-                    onClick={() => setMilestoneOpen(true)}
-                  >
-                    里程碑 ({selectedProject.milestone_count})
-                  </Button>
                   {selectedProject.status === "active" ? (
                     <>
                       <Button
@@ -1014,14 +971,6 @@ export function ProjectApp() {
                 />
               </div>
             </div>
-            <div>
-              <FormFieldLabel>完成标准</FormFieldLabel>
-              <Input
-                value={createProjectCriteria}
-                onChange={(e) => setCreateProjectCriteria(e.target.value)}
-                placeholder="完成标准"
-              />
-            </div>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setCreateProjectOpen(false)}>
@@ -1032,8 +981,7 @@ export function ProjectApp() {
                 writesDisabled ||
                 !newProjectTitle.trim() ||
                 !createProjectStart ||
-                !createProjectEnd ||
-                !createProjectCriteria.trim()
+                !createProjectEnd
               }
               onClick={() => void handleCreateProject()}
             >
@@ -1080,39 +1028,6 @@ export function ProjectApp() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <MilestoneDialog
-        open={milestoneOpen}
-        onOpenChange={setMilestoneOpen}
-        milestones={milestones}
-        newTitle={newMilestoneTitle}
-        newDue={newMilestoneDue}
-        writesDisabled={writesDisabled}
-        onNewTitleChange={setNewMilestoneTitle}
-        onNewDueChange={setNewMilestoneDue}
-        onCreate={() => {
-          if (selectedProjectId == null) return;
-          const title = newMilestoneTitle.trim();
-          const due_at = dateLocalToIso(newMilestoneDue);
-          if (!title || !due_at) return;
-          void createMilestoneApi(subjectKind, {
-            project_id: selectedProjectId,
-            title,
-            due_at,
-          }).then(() => {
-            setNewMilestoneTitle("");
-            setNewMilestoneDue("");
-            void reloadProjectDetail();
-            void reload();
-          });
-        }}
-        onStatusChange={(id, status) => {
-          void patchMilestoneApi(subjectKind, id, { status }).then(() => {
-            void reloadProjectDetail();
-            void reload();
-          });
-        }}
-      />
 
       <ConfirmDialog
         open={deleteFolderTarget != null}

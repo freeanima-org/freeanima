@@ -310,7 +310,6 @@ export async function serviceProjectItemCreate(
     subject_kind?: SubjectKind;
     title: string;
     project_id: number;
-    milestone_id?: number;
     content?: string;
     tag_ids?: number[];
     priority?: "high" | "medium" | "low" | "none";
@@ -333,7 +332,6 @@ export async function serviceTaskPatch(
     subject_kind?: SubjectKind;
     id: number;
     title?: string;
-    milestone_id?: number | null;
     content?: string;
     tag_ids?: number[];
     priority?: "high" | "medium" | "low" | "none";

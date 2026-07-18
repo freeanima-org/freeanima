@@ -69,20 +69,4 @@ export const projectHubRoutes = bindHubRouteHandlers(projectMethodDefs, {
     ),
   "project.delete": async (deps, input, ctx) =>
     service.serviceProjectDelete(depsOf(deps).runtime.runtimeDeps(), input, ctxAuth(ctx)),
-  "milestone.list": async (deps, input, ctx) =>
-    service.serviceMilestoneList(depsOf(deps).runtime.runtimeDeps(), input, ctxAuth(ctx)),
-  "milestone.create": async (deps, input, ctx) =>
-    service.serviceMilestoneCreate(
-      depsOf(deps).runtime.runtimeDeps(),
-      omitUndefined(input),
-      ctxAuth(ctx),
-    ),
-  "milestone.patch": async (deps, input, ctx) =>
-    service.serviceMilestonePatch(
-      depsOf(deps).runtime.runtimeDeps(),
-      omitUndefined(input),
-      ctxAuth(ctx),
-    ),
-  "milestone.delete": async (deps, input, ctx) =>
-    service.serviceMilestoneDelete(depsOf(deps).runtime.runtimeDeps(), input, ctxAuth(ctx)),
 });

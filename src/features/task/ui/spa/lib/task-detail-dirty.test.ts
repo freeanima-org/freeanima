@@ -14,7 +14,6 @@ const base: TaskItemRow = {
   remind_at: null,
   list_id: 10,
   project_id: null,
-  milestone_id: null,
   sort_order: 0,
   completed_at: null,
   created_at: "2026-01-01T00:00:00.000Z",
