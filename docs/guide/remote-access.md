@@ -118,21 +118,23 @@ http:
 - **`auto: true`**（默认）：首次启动在 `~/.anima/tls/` 自动生成 cert/key（优先 **mkcert**，否则 **openssl 自签**）；SAN 含 `localhost`、`127.0.0.1`、`::1`、`http.host` 中的 bind 地址（跳过 `0.0.0.0`）及 **`http.allowed_hosts`**。配置变更导致 SAN 不足时，**重启 Hub 会自动删除旧证书并重签**（`auto: false` 时仅告警，不覆盖手动证书）。
 - **探活**：`anima service status` 与 `GET /hub/rpc/v1/health/probe` 仍走 HTTP `:2658`。
 
-#### mkcert 根 CA 导入手机（可选）
+#### mkcert root CA on clients (optional)
 
-Hub 服务器证书在 Hub 机器上；手机浏览器/APK 无警告访问须在各设备安装 **mkcert 根 CA**（`rootCA.pem`，非 `cert.pem`）：
+The Hub server certificate lives on the Hub host. Browsers, **desktop shell**, and mobile APKs need the **mkcert root CA** (`rootCA.pem`, not `cert.pem`) in the OS trust store for HTTPS `:2659` without warnings:
 
-- **设置 → 连接**（`/web/settings?section=hub`）：页面底部提供 **rootCA.pem 下载**与 **二维码**（二维码指向 HTTP `:2658` 下载链接，便于未信任 HTTPS 时扫码）。
-- 若 HTTPS 页面脚本仍报错，请先用 **`http://<host>:2658/web/settings?section=hub`** 打开设置页。
+- **Settings → Connection** (`/web/settings?section=hub`): download **rootCA.pem** and a **QR code** (QR points at the HTTP `:2658` download URL so you can scan before trusting HTTPS).
+- If HTTPS pages still fail to load scripts, open settings via **`http://<host>:2658/web/settings?section=hub`** first.
 
 ```bash
-mkcert -CAROOT   # 查看 rootCA.pem 路径
+mkcert -CAROOT   # path to rootCA.pem on the Hub host
+mkcert -install  # trust that CA on the Hub host itself
 ```
 
-- **iOS**：AirDrop/邮件传 `rootCA.pem` → 安装描述文件 → **设置 → 通用 → 关于本机 → 证书信任设置** → 启用完全信任。
-- **Android**：可选转 DER 后 **设置 → 安全 → 安装 CA 证书**。
+- **Desktop shell**: install `rootCA.pem` into the **OS** trust store (same machine as the desktop app). The Electron main process merges system CAs into Node TLS at startup so **Test connection** and companion Hub HTTPS/WSS match Chromium. On the Hub host after `mkcert -install`, no extra step is usually needed.
+- **iOS**: AirDrop/email `rootCA.pem` → install the profile → **Settings → General → About → Certificate Trust Settings** → enable full trust.
+- **Android**: optionally convert to DER, then **Settings → Security → Install CA certificate**. Capacitor APKs also need a build that trusts user CAs.
 
-日常手机访问可用 **HTTP `:2658`（局域网）** 或 **HTTPS `:2659`（装 CA 后）**；公网场景请自建反向代理或 VPN。Capacitor APK 对 user CA 的支持因平台/构建而异。
+Daily LAN access: **HTTP `:2658`** or **HTTPS `:2659` (after CA trust)**; for the public Internet use your own reverse proxy or VPN.
 
 ## 2. Client configuration
 

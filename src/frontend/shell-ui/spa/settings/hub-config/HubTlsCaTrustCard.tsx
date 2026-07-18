@@ -47,9 +47,9 @@ export function HubTlsCaTrustCard({ hubUrl }: Props) {
         <div className="space-y-1">
           <h3 className="text-sm font-medium">局域网 HTTPS 信任</h3>
           <p className="text-xs text-muted-foreground">
-            其他设备访问 <code className="text-xs">https://…:2659</code> 时若控制台报「SSL
-            certificate error when fetching the script」，须先安装 Hub 的 mkcert 根 CA。请用{" "}
-            <strong>HTTP 端口</strong> 下载（下方链接已自动使用{" "}
+            桌面壳 / 手机访问 <code className="text-xs">https://…:2659</code>{" "}
+            时若「测试连接」失败或控制台报证书错误，须先将 Hub 的 mkcert 根 CA
+            装入本机系统信任库。请用 <strong>HTTP 端口</strong> 下载（下方链接已自动使用{" "}
             <code className="text-xs">:2658</code>）。
           </p>
         </div>

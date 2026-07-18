@@ -29,16 +29,31 @@ function probeAbortSignal(timeoutMs: number, external?: AbortSignal): AbortSigna
   return controller.signal;
 }
 
-function probeFetchErrorMessage(err: unknown, hubUrl?: string): string {
+function isElectronShellRuntime(): boolean {
+  if (typeof process !== "undefined" && Boolean(process.versions?.electron)) return true;
+  return Boolean(
+    (globalThis as { satelliteShell?: { isElectron?: boolean } }).satelliteShell?.isElectron,
+  );
+}
+
+function isNativeMobileShellRuntime(): boolean {
+  return Boolean(
+    (globalThis as { satelliteShell?: { isNativeShell?: boolean } }).satelliteShell?.isNativeShell,
+  );
+}
+
+/** 供单测；将 fetch/网络失败映射为设置页可读文案 */
+export function formatHubHealthProbeFetchError(err: unknown, hubUrl?: string): string {
   if (err instanceof DOMException && err.name === "TimeoutError") {
     return "连接超时";
   }
   if (err instanceof TypeError) {
-    const nativeShell =
-      typeof globalThis !== "undefined" &&
-      (globalThis as { satelliteShell?: { isNativeShell?: boolean } }).satelliteShell
-        ?.isNativeShell;
     const httpsHub = hubUrl?.trim().toLowerCase().startsWith("https://");
+    const electronShell = isElectronShellRuntime();
+    const nativeShell = isNativeMobileShellRuntime();
+    if (electronShell && httpsHub) {
+      return "网络错误：桌面壳 HTTPS 需在本机信任 Hub 的 mkcert 根 CA（设置页下载 rootCA.pem 并导入系统），或暂用 http://…:2658";
+    }
     if (nativeShell && httpsHub) {
       return "网络错误：壳层内 HTTPS 需在手机「设置 → 安全」安装 mkcert 根 CA（rootCA.pem），并重新安装 APK；或暂用 http://…:2658";
     }
@@ -82,7 +97,7 @@ export async function probeHubHealthUrl(
     }
     return (await res.json()) as HubHealthBody;
   } catch (err) {
-    throw new Error(probeFetchErrorMessage(err, hubUrl), { cause: err });
+    throw new Error(formatHubHealthProbeFetchError(err, hubUrl), { cause: err });
   }
 }
 
