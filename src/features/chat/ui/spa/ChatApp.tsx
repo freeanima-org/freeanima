@@ -104,10 +104,15 @@ import {
   mergeOutboxStatusIntoDisplay,
   stripRedundantOptimisticDisplay,
 } from "@freeanima/features/chat/ui/spa/lib/outbox-display-sync.ts";
+import {
+  buildSlashMenuEntries,
+  type SlashCommandItem,
+  type SlashMenuEntry,
+} from "@freeanima/features/chat/ui/spa/lib/slash-command-menu.ts";
 
 initAppLocale();
 
-type CommandItem = { name: string; description?: string };
+type CommandItem = SlashCommandItem;
 type ClarifyPending = {
   items: Array<{ question: string; choices?: string[] }>;
   timeout_sec?: number;
@@ -379,21 +384,20 @@ export function ChatApp() {
   const INPUT_MIN_HEIGHT_PX = 36;
   const INPUT_MAX_HEIGHT_PX = 192;
 
-  const slashPrefix = useMemo(() => {
-    if (!inputText.startsWith("/")) return null;
-    const body = inputText.slice(1);
-    if (body.includes(" ")) return null;
-    return body.toLowerCase();
-  }, [inputText]);
+  const slashMenuEntries = useMemo(
+    () => buildSlashMenuEntries(inputText, commandList),
+    [inputText, commandList],
+  );
 
-  const filteredCommands = useMemo(() => {
-    if (slashPrefix == null) return [];
-    return commandList.filter((c) => c.name.toLowerCase().startsWith(slashPrefix));
-  }, [commandList, slashPrefix]);
-
-  const showCmdMenu = filteredCommands.length > 0;
+  const showCmdMenu = slashMenuEntries.length > 0;
   /** 窄视口/手机：菜单随输入区文档流展开，避免 absolute + 祖先 overflow-hidden 在软键盘顶起时被裁切 */
   const cmdMenuInFlow = mobileLayout;
+
+  useEffect(() => {
+    setSelectedCmdIdx((i) =>
+      slashMenuEntries.length === 0 ? 0 : Math.min(i, slashMenuEntries.length - 1),
+    );
+  }, [slashMenuEntries]);
 
   const mergedDisplay = useMemo((): DisplayItem[] => {
     if (!currentId) return display;
@@ -659,8 +663,8 @@ export function ChatApp() {
     el.style.height = `${next}px`;
   };
 
-  const applyCommand = (cmd: CommandItem) => {
-    setInputText(`/${cmd.name} `);
+  const applyMenuEntry = (entry: SlashMenuEntry) => {
+    setInputText(entry.insertText);
     setSelectedCmdIdx(0);
     requestAnimationFrame(() => {
       resizeInput();
@@ -1221,7 +1225,7 @@ export function ChatApp() {
     if (showCmdMenu) {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setSelectedCmdIdx((i) => Math.min(i + 1, filteredCommands.length - 1));
+        setSelectedCmdIdx((i) => Math.min(i + 1, slashMenuEntries.length - 1));
         return;
       }
       if (e.key === "ArrowUp") {
@@ -1231,8 +1235,8 @@ export function ChatApp() {
       }
       if ((e.key === "Tab" || e.key === "Enter") && !e.shiftKey && !e.nativeEvent.isComposing) {
         e.preventDefault();
-        const cmd = filteredCommands[selectedCmdIdx];
-        if (cmd) applyCommand(cmd);
+        const entry = slashMenuEntries[selectedCmdIdx];
+        if (entry) applyMenuEntry(entry);
         return;
       }
       if (e.key === "Escape") {
@@ -1761,21 +1765,21 @@ export function ChatApp() {
                           : "absolute bottom-full left-0 right-0 z-10",
                       ].join(" ")}
                     >
-                      {filteredCommands.map((cmd, i) => (
+                      {slashMenuEntries.map((entry, i) => (
                         <li
-                          key={cmd.name}
+                          key={entry.label}
                           className={[
                             "px-3 py-2 text-sm cursor-pointer flex items-baseline gap-2 hover:bg-muted",
                             i === selectedCmdIdx ? "bg-primary/15" : "",
                           ].join(" ")}
                           onPointerDown={(e) => {
                             e.preventDefault();
-                            applyCommand(cmd);
+                            applyMenuEntry(entry);
                           }}
                         >
-                          <span className="font-mono font-medium shrink-0">/{cmd.name}</span>
+                          <span className="font-mono font-medium shrink-0">{entry.label}</span>
                           <span className="text-xs text-muted-foreground truncate">
-                            {cmd.description}
+                            {entry.description}
                           </span>
                         </li>
                       ))}

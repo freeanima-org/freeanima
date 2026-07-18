@@ -16,6 +16,7 @@ export type ServiceCommandInfo = {
   scope?: string;
   hidden?: boolean;
   platforms?: string[] | null;
+  subcommands?: { name: string; description: string }[];
 };
 
 /** 生命周期与并发控制 */

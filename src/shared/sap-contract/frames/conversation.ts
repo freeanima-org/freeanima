@@ -125,6 +125,7 @@ export const conversationCommandItemSchema = z.object({
   description: z.string(),
   scope: z.string(),
   platforms: z.array(z.string()).nullable(),
+  subcommands: z.array(z.object({ name: z.string(), description: z.string() })).optional(),
 });
 
 export type ConversationCommandItem = z.infer<typeof conversationCommandItemSchema>;

@@ -34,6 +34,12 @@ export type CommandHandler = (
 /** conversation-scoped: affects current conversation; global: cross-conversation / platform-level (e.g. help, new) */
 export type CommandScope = "conversation" | "global";
 
+/** Declared first-token subcommands for Chat autocomplete / listings. */
+export type CommandSubcommandDef = {
+  name: string;
+  description: string;
+};
+
 export type CommandDef = {
   name: string;
   description: string;
@@ -44,6 +50,8 @@ export type CommandDef = {
   scope?: CommandScope;
   /** whitelist; unset means all platforms; entries may use `*` glob (e.g. `sap:chat:*`) */
   platforms?: string[];
+  /** Optional discrete subcommands (e.g. `/goal status`); free-text args are not listed. */
+  subcommands?: CommandSubcommandDef[];
 };
 
 const GLOB_ESCAPE_RE = /[.+?^${}()|[\]\\]/g;

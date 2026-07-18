@@ -39,7 +39,7 @@ flowchart TB
 | `conversation.messages`   | `session.ts`                                                         | Message history with `offset` / `limit`                                                                     |
 | `conversation.patchTitle` | `session.ts`                                                         | Updates conversation title                                                                                  |
 | `conversation.subscribe`  | `session.ts`                                                         | Subscribes to `conversation.updated` events for one conversation                                            |
-| `conversation.commands`   | `session.ts`                                                         | Lists slash commands for a platform                                                                         |
+| `conversation.commands`   | `session.ts`                                                         | Lists slash commands for a platform (optional `subcommands` for Chat autocomplete)                          |
 | `conversation.command`    | `session.ts`                                                         | Run terminal slash (Chat); `{ delivery: "rpc", ux, text }` or `{ delivery: "message" }` for stream turns    |
 | `conversation.acpDock`    | [`acp.ts`](../../src/shared/sap-contract/frames/acp.ts)              | ACP dock operations for a conversation                                                                      |
 
