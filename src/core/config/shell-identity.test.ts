@@ -1,6 +1,9 @@
 import { describe, expect, it } from "bun:test";
 
-import { computeAndroidVersionCode } from "./android-version-code.ts";
+import {
+  ANDROID_VERSION_CODE_GENERATION_FLOOR,
+  computeAndroidVersionCode,
+} from "./android-version-code.ts";
 import { formatCanaryVersion } from "./canary-version.ts";
 import { resolveBuildVersionFromEnv } from "./resolve-build-version.ts";
 import { resolveDesktopShellIdentity, resolveMobileShellIdentity } from "./shell-identity.ts";
@@ -45,19 +48,47 @@ describe("shell-identity", () => {
 });
 
 describe("computeAndroidVersionCode", () => {
-  it("uses base code for plain release semver", () => {
-    expect(computeAndroidVersionCode("0.9.0", { channel: "release" })).toBe(900);
+  it("uses base code for plain semver without channel", () => {
     expect(computeAndroidVersionCode("1.2.3")).toBe(10203);
   });
 
-  it("embeds timestamp stamp for canary/dev", () => {
+  it("uses generation floor + clock for release channel", () => {
+    const now = new Date(Date.UTC(2026, 6, 16, 2, 16)); // 2026-07-16T02:16Z
+    const code = computeAndroidVersionCode("0.9.0", { channel: "release", now });
+    expect(code).toBeGreaterThan(ANDROID_VERSION_CODE_GENERATION_FLOOR);
+    expect(code % 2).toBe(1); // release bit
+  });
+
+  it("embeds timestamp for canary/dev above generation floor", () => {
     const now = new Date(Date.UTC(2026, 6, 16, 2, 16)); // 2026-07-16T02:16Z
     const code = computeAndroidVersionCode("0.9.1-canary+202607160216", {
       channel: "canary",
       now,
     });
-    expect(code).toBeGreaterThan(900_000_000);
-    expect(String(code).startsWith("901")).toBe(true);
+    expect(code).toBeGreaterThan(ANDROID_VERSION_CODE_GENERATION_FLOOR);
+    expect(code % 2).toBe(0);
+  });
+
+  it("keeps canary monotonic across the old 1e6-minute wrap", () => {
+    const beforeWrap = computeAndroidVersionCode("0.8.5-canary+202511250000", {
+      channel: "canary",
+    });
+    const afterWrap = computeAndroidVersionCode("0.8.5-canary+202607180000", {
+      channel: "canary",
+    });
+    expect(afterWrap).toBeGreaterThan(beforeWrap);
+    // 旧公式回绕后 after < before；新公式须仍高于旧包天花板（~base*1e6+1e6）
+    expect(afterWrap).toBeGreaterThan(805_999_999);
+  });
+
+  it("allows release to supersede canary at the same build minute", () => {
+    const now = new Date(Date.UTC(2026, 6, 18, 12, 0));
+    const canary = computeAndroidVersionCode("0.9.1-canary+202607181200", {
+      channel: "canary",
+      now,
+    });
+    const release = computeAndroidVersionCode("0.9.1", { channel: "release", now });
+    expect(release).toBe(canary + 1);
   });
 
   it("prefers +YYYYMMDDHHmm over wall-clock now", () => {
