@@ -18,7 +18,7 @@ export function getHubConfig() {
 
 export function getHubConfigSection(section: string) {
   if (isBootstrapConfigKey(section)) {
-    throw new ApiHandlerError(400, `段 ${section} 为平台冷启动配置，非 Hub 服务配置`, {
+    throw new ApiHandlerError(400, `段 ${section} 为平台冷启动配置，非栖息地运行时配置`, {
       code: "config_bootstrap_section",
     });
   }
@@ -39,7 +39,7 @@ export function getHubConfigSection(section: string) {
 
 export async function patchHubConfigSection(section: string, patch: Record<string, unknown>) {
   if (isBootstrapConfigKey(section)) {
-    throw new ApiHandlerError(400, `段 ${section} 为平台冷启动配置，非 Hub 服务配置`, {
+    throw new ApiHandlerError(400, `段 ${section} 为平台冷启动配置，非栖息地运行时配置`, {
       code: "config_bootstrap_section",
     });
   }
@@ -50,7 +50,7 @@ export async function patchHubConfigSection(section: string, patch: Record<strin
 
 export async function replaceHubConfigSection(section: string, value: Record<string, unknown>) {
   if (isBootstrapConfigKey(section)) {
-    throw new ApiHandlerError(400, `段 ${section} 为平台冷启动配置，非 Hub 服务配置`, {
+    throw new ApiHandlerError(400, `段 ${section} 为平台冷启动配置，非栖息地运行时配置`, {
       code: "config_bootstrap_section",
     });
   }

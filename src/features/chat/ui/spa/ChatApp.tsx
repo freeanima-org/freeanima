@@ -1271,13 +1271,13 @@ export function ChatApp() {
           <p className="text-xs text-muted-foreground">
             {getSatelliteShell()?.hubWsUrl
               ? canOpenHubSettingsUi
-                ? "请确认 Hub 已运行，或在设置中检查 Hub 地址。"
-                : "请确认 Hub 已运行（anima service start）。"
-              : "请确认 Hub 已运行，且 chat dev server 提供 /config.json。"}
+                ? "请确认栖息地已运行，或在设置中检查栖息地地址。"
+                : "请确认栖息地已运行（anima service start）。"
+              : "请确认栖息地已运行，且 chat dev server 提供 /config.json。"}
           </p>
           {canOpenHubSettingsUi ? (
             <Button type="button" size="sm" onClick={openHubSettingsIfAvailable}>
-              Hub 设置
+              连接设置
             </Button>
           ) : null}
         </div>

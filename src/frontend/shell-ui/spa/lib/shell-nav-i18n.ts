@@ -75,7 +75,7 @@ export function shellNavItems(): ShellNavItem[] {
       "console",
       "/console/dashboard",
       "/console",
-      shellNavLabel(m.console_nav_dashboard),
+      shellNavLabel(m.console_nav),
       LayoutDashboard,
     ),
     navItem("settings", "/settings", "/settings", shellNavLabel(m.console_nav_settings), Settings),

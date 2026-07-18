@@ -36,7 +36,7 @@ export async function patchRuntimeConfigSection(
   patch: Record<string, unknown>,
 ): Promise<void> {
   if (isBootstrapConfigKey(section)) {
-    throw new Error(`bootstrap 段 ${section} 为平台冷启动配置，非 Hub 服务配置`);
+    throw new Error(`bootstrap 段 ${section} 为平台冷启动配置，非栖息地运行时配置`);
   }
 
   try {
@@ -58,7 +58,7 @@ export async function replaceRuntimeConfigSection(
   value: Record<string, unknown>,
 ): Promise<void> {
   if (isBootstrapConfigKey(section)) {
-    throw new Error(`bootstrap 段 ${section} 为平台冷启动配置，非 Hub 服务配置`);
+    throw new Error(`bootstrap 段 ${section} 为平台冷启动配置，非栖息地运行时配置`);
   }
 
   try {

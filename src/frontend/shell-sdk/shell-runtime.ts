@@ -39,7 +39,7 @@ export function isPackagedShell(): boolean {
 }
 
 /**
- * 是否展示「打开 Hub 设置」。
+ * 是否展示「打开 连接设置」。
  * 优先检测 `openHubSettings`；否则 packaged shell 视为可打开。
  */
 export function canOpenHubSettings(): boolean {

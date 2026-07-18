@@ -5,7 +5,7 @@
 
 ## Global view
 
-`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: 源码用 `bun run dev:hub` 起 Bun Hub；standalone 安装版用 `anima service`（Hub RPC REST/WS `/hub/rpc/v1` + MCP `/mcp` + engine）；UI 由 `src/app/shell/desktop` / `src/app/shell/mobile` bundled 提供。
+`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: product name for the long-running process is **Habitat**（栖息地）; Shell / MCP are **Portal**（入口）. Source: `bun run dev:hub`; standalone: `anima service`（wire still Hub RPC `/hub/rpc/v1` + MCP `/mcp` + engine）; UI from `src/app/shell/desktop` / `mobile`. Naming: [`docs/concepts/architecture.md`](docs/concepts/architecture.md) Product naming + [`i18n/glossary.md`](i18n/glossary.md).
 
 | Capability     | Highlights                                                                                                                                                                                                          |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -22,6 +22,7 @@
 Directional heuristics for _what_ FreeAnima should feel like. Mechanisms and cognitive architecture live in [`docs/concepts/`](docs/concepts/) — related, but not a 1:1 rule list.
 
 - **Platform-native UX** — Mobile and desktop are **separate interaction and layout designs**, not one responsive skin stretched across form factors. Shared contracts (API, SAP, settings keys) may exist; presentation and interaction patterns should fit each platform. **Three orthogonal dimensions**（详见 [`.agent/rules/ui-dimensions.md`](.agent/rules/ui-dimensions.md)）：**壳子**（`getShellKind` / `satelliteShell`：存储、IPC、通知等原生能力）、**布局**（视口-only：`< md` → `compact` 底栏+drawer；`≥ md` → `expanded` 左栏+三栏）、**交互**（`pointer`/`touch`：右键 vs 长按、Enter 发送等）。壳**不**锁布局（Electron 窄窗可用底栏；Capacitor iPad 宽屏可用左栏）。`detectSettingsChromePlatform()` 仅设置页 chrome（tabs vs 侧栏），跟布局粗档。Phone 通常窄，但 **phone ≠ 窄布局**。
+- **Habitat & Portal** — User copy: **栖息地 / Habitat** = long-running place (multi digital life + human assets); **入口 / Portal** = Shell、MCP 等外部连接。Wire 仍可写 Hub（`/hub/rpc/v1`）。见 [`docs/concepts/architecture.md`](docs/concepts/architecture.md) Product naming、[`i18n/glossary.md`](i18n/glossary.md)。
 - **Concept convergence over feature sprawl** — As capabilities grow, **resist cognitive overload**: keep a small set of core concepts visible and stable; new features should map onto existing mental models rather than multiplying parallel abstractions in the UI.
 
 ## Code implementation principles

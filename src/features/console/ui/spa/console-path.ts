@@ -8,6 +8,13 @@ export function resolveConsoleSubpath(shellPathname: string): string {
   return rest.startsWith("/") ? rest : `/${rest}`;
 }
 
+/** Embedded console inner route → shell path under `/console`. */
+export function consoleSubpathToShellPath(consoleSubpath: string): string {
+  const path = consoleSubpath.startsWith("/") ? consoleSubpath : `/${consoleSubpath}`;
+  if (path === "/" || path === "") return "/console/dashboard";
+  return `/console${path}`;
+}
+
 function shellBasepathFromViteBase(baseUrl: string): string | undefined {
   const raw = baseUrl.replace(/\/$/, "");
   if (!raw || raw === "." || !raw.startsWith("/")) return undefined;

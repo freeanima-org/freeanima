@@ -3,7 +3,7 @@ import { describe, expect, test } from "bun:test";
 import { desktopGeneralSettingsSection, hubSettingsSection } from "./hub-section.ts";
 
 describe("hub settings sections", () => {
-  test("hub section exposes Hub 连接 fields on desktop and mobile", () => {
+  test("hub section exposes 连接栖息地 fields on desktop and mobile", () => {
     expect(hubSettingsSection.title).toBe("连接");
     expect(hubSettingsSection.platforms.mobile?.kind).toBe("form");
     const desktop = hubSettingsSection.platforms.desktop;

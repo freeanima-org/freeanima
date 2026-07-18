@@ -153,7 +153,7 @@ export function FormRenderer({
       {sectionId === "hub" && error?.includes("连接") ? (
         <Alert variant="info" className="text-sm">
           请确认 Hub 已启动（<code className="text-xs">anima service start --host 0.0.0.0</code>
-          ）、客户端 Hub 设置中的 Service API Token（<code className="text-xs">fa_at_...</code>
+          ）、客户端连接设置中的 Service API Token（<code className="text-xs">fa_at_...</code>
           ）有效；详见项目文档 remote-access。
         </Alert>
       ) : null}

@@ -31,7 +31,7 @@ export function HubConnectionBanner({ state, onRetry }: Props) {
             className="h-7 text-xs"
             onClick={openHubSettingsIfAvailable}
           >
-            Hub 设置
+            连接设置
           </Button>
         ) : null}
         <Button

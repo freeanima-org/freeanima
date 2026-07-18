@@ -16,4 +16,9 @@ describe("resolveConsoleSubpath", () => {
     expect(resolveConsoleSubpath("/tasks")).toBe("/dashboard");
     expect(resolveConsoleSubpath("/chat")).toBe("/dashboard");
   });
+
+  it("maps nested console routes", () => {
+    expect(resolveConsoleSubpath("/console/mcp")).toBe("/mcp");
+    expect(resolveConsoleSubpath("/web/console/cron")).toBe("/cron");
+  });
 });

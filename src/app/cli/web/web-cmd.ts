@@ -45,7 +45,7 @@ export async function runWebCommand(args: WebCommandArgs): Promise<void> {
     console.log(
       `Web UI · http://${handle.host === "0.0.0.0" ? "127.0.0.1" : handle.host}:${handle.port}/web/chat`,
     );
-    writeStatusLine("info", "Hub 地址与 token 请在设置页配置");
+    writeStatusLine("info", "栖息地地址与 token 请在设置页配置");
     await waitForShutdown(handle);
     return;
   }

@@ -36,9 +36,9 @@ export default function HubConnectionSettingsPanel({ platform, store }: Settings
     <div className="space-y-6">
       {gateMode ? (
         <header className="space-y-2">
-          <h2 className="text-lg font-semibold">连接 FreeAnima Hub</h2>
+          <h2 className="text-lg font-semibold">连接 FreeAnima 栖息地</h2>
           <p className="text-sm text-muted-foreground">
-            首次使用请填写 Hub 地址与 API Token，保存后进入应用。
+            首次使用请填写栖息地地址与 API Token，保存后进入应用。
           </p>
         </header>
       ) : null}

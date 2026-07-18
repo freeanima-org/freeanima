@@ -234,7 +234,7 @@ export async function loadConfig() {
   }
 
   if (shell?.isNativeShell) {
-    throw new Error("Hub 未配置，请先在设置中填写 Hub 地址与 Token");
+    throw new Error("Hub 未配置，请先在设置中填写 栖息地地址与 Token");
   }
 
   const res = await fetch("/config.json");

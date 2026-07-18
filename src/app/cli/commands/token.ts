@@ -34,7 +34,7 @@ export function registerTokenCommand(program: Command): void {
           "ok",
           `已创建 token id=${result.token.id} subject_id=${result.token.subject_id} name=${result.token.name}`,
         );
-        writeStatusLine("hint", "请在客户端 Hub 设置中配置 Service API Token");
+        writeStatusLine("hint", "请在客户端连接设置中配置 Service API Token");
       } catch (e) {
         printCliError(e);
         process.exit(1);
