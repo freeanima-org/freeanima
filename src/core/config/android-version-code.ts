@@ -1,9 +1,19 @@
 /**
- * 从版本串解析 Android versionCode。
- * - release（纯 X.Y.Z）：major*10000 + minor*100 + patch
- * - canary/dev（含 prerelease / build meta）：在 base 上叠加 UTC 时间戳分钟，避免同 base 多次安装被拒
- * - 有 `+YYYYMMDDHHmm` 时优先用该 stamp 作为时钟源（与 versionName 对齐），否则回退墙钟
+ * 从版本串 / channel 解析 Android versionCode（须落在 int32，且可覆盖安装）。
+ *
+ * 现行公式（generation floor 起）：
+ * - 以 UTC 分钟为主序（优先版本串 `+YYYYMMDDHHmm`，否则 `opts.now` / 墙钟）
+ * - 同一分钟内 release = canary/dev + 1，便于从 canary 切到同次构建窗口的 release
+ *
+ * 旧公式 `base*1e6+(minutes%1e6)` 约在 2025-11 后 stamp 回绕，且 release 仅为
+ * `base`，远小于 canary，会触发系统「已安装更新的版本」。floor 高于旧 0.x
+ * canary 包，使新包可覆盖已装设备。
  */
+
+const VERSION_CODE_EPOCH_MS = Date.UTC(2024, 0, 1);
+
+/** 高于旧 canary（base×1e6+stamp，0.x 下约 < 1e9）的世代地板 */
+export const ANDROID_VERSION_CODE_GENERATION_FLOOR = 1_200_000_000;
 
 /** 解析版本串中的 `+YYYYMMDDHHmm` 为 UTC Date；失败返回 undefined */
 export function parseVersionBuildStampDate(version: string): Date | undefined {
@@ -24,29 +34,34 @@ export function parseVersionBuildStampDate(version: string): Date | undefined {
   return date;
 }
 
-export function computeAndroidVersionCode(
-  version: string,
-  opts?: { now?: Date; channel?: "release" | "canary" | "dev" },
-): number {
+function parseSemverBase(version: string): number {
   const s = version.trim().replace(/^v/i, "");
   const m = s.match(/^(\d+)(?:\.(\d+))?(?:\.(\d+))?/);
   const major = Number.parseInt(m?.[1] ?? "0", 10) || 0;
   const minor = Number.parseInt(m?.[2] ?? "0", 10) || 0;
   const patch = Number.parseInt(m?.[3] ?? "0", 10) || 0;
-  const base = major * 10_000 + minor * 100 + patch;
+  return major * 10_000 + minor * 100 + patch;
+}
 
+export function computeAndroidVersionCode(
+  version: string,
+  opts?: { now?: Date; channel?: "release" | "canary" | "dev" },
+): number {
+  const s = version.trim().replace(/^v/i, "");
   const channel = opts?.channel;
-  const needsStamp =
+  const useClock =
     channel === "canary" ||
     channel === "dev" ||
-    /[-+]/.test(s); /* 有 prerelease/build meta 也按 stamp */
+    channel === "release" ||
+    /[-+]/.test(s); /* 有 prerelease/build meta 也按时钟 */
 
-  if (!needsStamp) return base;
+  if (!useClock) {
+    // 无 channel 的纯 semver：保留可读 base（非 CI 同步路径）
+    return parseSemverBase(s);
+  }
 
   const now = parseVersionBuildStampDate(s) ?? opts?.now ?? new Date();
-  // 相对 2024-01-01 UTC 的分钟数，保证单调且落入 int 安全范围
-  const epoch = Date.UTC(2024, 0, 1);
-  const minutes = Math.floor((now.getTime() - epoch) / 60_000);
-  const stamp = Math.max(0, minutes) % 1_000_000;
-  return base * 1_000_000 + stamp;
+  const minutes = Math.max(0, Math.floor((now.getTime() - VERSION_CODE_EPOCH_MS) / 60_000));
+  const releaseBit = channel === "release" ? 1 : 0;
+  return ANDROID_VERSION_CODE_GENERATION_FLOOR + minutes * 2 + releaseBit;
 }
