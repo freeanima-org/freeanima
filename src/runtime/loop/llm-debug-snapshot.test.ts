@@ -19,6 +19,20 @@ describe("buildLlmDebugSnapshot", () => {
     expect(snapshot.invoke.turns).toEqual([{ role: "user", content: "hello" }]);
   });
 
+  it("still surfaces system prompt when a runtime inject precedes it", () => {
+    const messages: StoredMessage[] = [
+      {
+        role: "assistant",
+        name: "temporal_summary_peers",
+        content: "peer rollup",
+      },
+      { role: "system", content: "global system" },
+      { role: "user", content: "hello" },
+    ];
+    const snapshot = buildLlmDebugSnapshot(messages, [], "gpt-test", 0, "initial");
+    expect(snapshot.invoke.system_prompt).toBe("global system");
+  });
+
   it("detects passive memory runtime injection", () => {
     const messages: StoredMessage[] = [
       { role: "system", content: "global" },

@@ -11,6 +11,7 @@ type ParaglideMessageExports = {
   readonly chat_delete_confirm: ParaglideMessageFn;
   readonly chat_llm_debug_description: ParaglideMessageFn;
   readonly chat_llm_debug_empty: ParaglideMessageFn;
+  readonly chat_llm_debug_loading: ParaglideMessageFn;
   readonly chat_llm_debug_model: ParaglideMessageFn;
   readonly chat_llm_debug_passive_hint: ParaglideMessageFn;
   readonly chat_llm_debug_passive_missing: ParaglideMessageFn;
@@ -610,6 +611,8 @@ type ParaglideMessageExports = {
   readonly settings_appearance_theme_ocean: ParaglideMessageFn;
   readonly settings_appearance_theme_sunset: ParaglideMessageFn;
   readonly settings_appearance_theme_violet: ParaglideMessageFn;
+  readonly settings_chat_llm_debug_hint: ParaglideMessageFn;
+  readonly settings_chat_llm_debug_label: ParaglideMessageFn;
   readonly sidebar_architecture: ParaglideMessageFn;
   readonly sidebar_compression: ParaglideMessageFn;
   readonly sidebar_concepts: ParaglideMessageFn;
@@ -705,6 +708,7 @@ declare module "*/messages/paraglide/messages.js" {
   export const chat_delete_confirm: ParaglideMessageFn;
   export const chat_llm_debug_description: ParaglideMessageFn;
   export const chat_llm_debug_empty: ParaglideMessageFn;
+  export const chat_llm_debug_loading: ParaglideMessageFn;
   export const chat_llm_debug_model: ParaglideMessageFn;
   export const chat_llm_debug_passive_hint: ParaglideMessageFn;
   export const chat_llm_debug_passive_missing: ParaglideMessageFn;
@@ -1304,6 +1308,8 @@ declare module "*/messages/paraglide/messages.js" {
   export const settings_appearance_theme_ocean: ParaglideMessageFn;
   export const settings_appearance_theme_sunset: ParaglideMessageFn;
   export const settings_appearance_theme_violet: ParaglideMessageFn;
+  export const settings_chat_llm_debug_hint: ParaglideMessageFn;
+  export const settings_chat_llm_debug_label: ParaglideMessageFn;
   export const sidebar_architecture: ParaglideMessageFn;
   export const sidebar_compression: ParaglideMessageFn;
   export const sidebar_concepts: ParaglideMessageFn;

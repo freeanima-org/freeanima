@@ -30,6 +30,45 @@ export const messageInterruptOutputSchema = z.object({
 
 export type MessageInterruptOutput = z.infer<typeof messageInterruptOutputSchema>;
 
+export const llmDebugGetInputSchema = z.object({
+  conversation_id: z.string().min(1),
+});
+
+export type LlmDebugGetInput = z.infer<typeof llmDebugGetInputSchema>;
+
+const llmDebugSnapshotSchema = z
+  .object({
+    phase: z.enum(["initial", "final"]),
+    turn_index: z.number(),
+    model: z.string(),
+    tool_count: z.number(),
+    tools: z.array(
+      z.object({
+        name: z.string(),
+        description: z.string().optional(),
+      }),
+    ),
+    invoke: z.object({
+      system_prompt: z.string().optional(),
+      turns: z.array(z.record(z.string(), z.unknown())),
+    }),
+    runtime_injections: z
+      .object({
+        passive_memory_context: z.boolean().optional(),
+        notification_context: z.boolean().optional(),
+      })
+      .optional(),
+  })
+  .passthrough();
+
+export const llmDebugGetOutputSchema = z.object({
+  initial: llmDebugSnapshotSchema.optional(),
+  final: llmDebugSnapshotSchema.optional(),
+  updated_at: z.string().optional(),
+});
+
+export type LlmDebugGetOutput = z.infer<typeof llmDebugGetOutputSchema>;
+
 export const streamEventMethods = [
   "stream.accepted",
   "stream.token",

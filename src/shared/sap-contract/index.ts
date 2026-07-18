@@ -399,6 +399,8 @@ export {
   messageSendOutputSchema,
   messageInterruptInputSchema,
   messageInterruptOutputSchema,
+  llmDebugGetInputSchema,
+  llmDebugGetOutputSchema,
   mapStreamApiEventToSap,
   mapRuntimeStreamEventToSap,
   mapSapStreamMethodToApi,
@@ -409,6 +411,8 @@ export type {
   MessageSendOutput,
   MessageInterruptInput,
   MessageInterruptOutput,
+  LlmDebugGetInput,
+  LlmDebugGetOutput,
   StreamApiLikeEvent,
   StreamEventMethod,
 } from "./frames/message.ts";

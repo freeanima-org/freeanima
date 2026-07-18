@@ -502,12 +502,13 @@
   "chat_speech_insecure_context": "Web Speech requires HTTPS; use Edge TTS or open the Service over HTTPS",
   "chat_unarchive": "Unarchive",
   "chat_llm_debug_title": "LLM debug",
-  "chat_llm_debug_description": "Enable Debug, send a message, then open View. Data clears on refresh.",
+  "chat_llm_debug_description": "Enable in Settings → Chat, send a message, then open Debug. Snapshots are cached on the Habitat for 10 minutes.",
   "chat_llm_debug_toggle": "Debug",
-  "chat_llm_debug_view": "View",
+  "chat_llm_debug_view": "Debug",
+  "chat_llm_debug_loading": "Loading debug snapshot…",
   "chat_llm_debug_tab_initial": "First call",
   "chat_llm_debug_tab_final": "Last call",
-  "chat_llm_debug_empty": "Enable Debug and send a message to capture snapshots.",
+  "chat_llm_debug_empty": "No cached snapshot for this conversation. Send a message with LLM debug enabled, then open Debug again.",
   "chat_llm_debug_model": "Model",
   "chat_llm_debug_turn_index": "Turn",
   "chat_llm_debug_tool_count": "Tools",
@@ -685,5 +686,7 @@
   "settings_appearance_theme_ocean": "Ocean",
   "settings_appearance_theme_forest": "Forest",
   "settings_appearance_theme_sunset": "Sunset",
-  "settings_appearance_theme_violet": "Violet"
+  "settings_appearance_theme_violet": "Violet",
+  "settings_chat_llm_debug_label": "Enable LLM debug",
+  "settings_chat_llm_debug_hint": "When on, each send captures invoke snapshots on the Habitat (Redis, 10 min TTL). Open Debug in Chat to fetch — not streamed over the wire."
 }

@@ -7,6 +7,7 @@ import { companionHubSettingsSection } from "@freeanima/satellites/companion/spa
 import { shellModulesSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/modules-section.ts";
 import { aboutSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/about/about-section.ts";
 import { appearanceSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/appearance/appearance-section.ts";
+import { chatSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/chat/chat-section.ts";
 import { alertSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/alert/alert-settings-section.ts";
 import { hubConfigSettingsBindings } from "@freeanima/frontend/shell-ui/spa/settings/hub-config/hub-config-sections.ts";
 
@@ -20,6 +21,7 @@ export function createDesktopSettingsBindings(
   return [
     { section: shellModulesSettingsSection },
     { section: appearanceSettingsSection },
+    { section: chatSettingsSection },
     { section: alertSettingsSection },
     { section: desktopGeneralSettingsSection, store: stores.hub },
     { section: companionClientSettingsSection, store: stores.companionShell },
