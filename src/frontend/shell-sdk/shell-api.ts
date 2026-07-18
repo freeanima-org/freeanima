@@ -55,7 +55,7 @@ export type SatelliteShellApi = {
   /** companion sidecar HTTP 根；其他前端为 null */
   apiOrigin?: string | null;
   createFileInstanceStore(appId: string): SapInstanceStore;
-  /** 移动端：打开 Hub 设置页 */
+  /** 移动端：打开 连接设置页 */
   openHubSettings?: () => void;
   setClickThrough?: (ignore: boolean) => Promise<void>;
   setPointerActive?: (active: boolean) => Promise<void>;

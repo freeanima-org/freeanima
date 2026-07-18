@@ -18,7 +18,7 @@ export function normalizeShellClientConfig(input: {
 }): ShellClientConfig {
   const hubUrl = input.hubUrl.trim().replace(/\/$/, "");
   const remoteAuthToken = input.remoteAuthToken.trim();
-  if (!hubUrl) throw new Error("Hub 地址不能为空");
+  if (!hubUrl) throw new Error("栖息地地址不能为空");
   return { hubUrl, remoteAuthToken };
 }
 

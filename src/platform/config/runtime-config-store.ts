@@ -48,7 +48,7 @@ export class RuntimeConfigStore extends Config implements PatchableRuntimeConfig
 
   async patchSection(section: string, patch: Record<string, unknown>): Promise<RuntimeConfig> {
     if (isBootstrapConfigKey(section)) {
-      throw new Error(`bootstrap 段 ${section} 为平台冷启动配置，非 Hub 服务配置`);
+      throw new Error(`bootstrap 段 ${section} 为平台冷启动配置，非栖息地运行时配置`);
     }
     const document = await patchHubRuntimeConfigSection(section, patch);
     const next = parseRuntimeConfig(document);
@@ -58,7 +58,7 @@ export class RuntimeConfigStore extends Config implements PatchableRuntimeConfig
 
   async replaceSection(section: string, value: Record<string, unknown>): Promise<RuntimeConfig> {
     if (isBootstrapConfigKey(section)) {
-      throw new Error(`bootstrap 段 ${section} 为平台冷启动配置，非 Hub 服务配置`);
+      throw new Error(`bootstrap 段 ${section} 为平台冷启动配置，非栖息地运行时配置`);
     }
     const document = await replaceHubRuntimeConfigSection(section, value);
     const next = parseRuntimeConfig(document);

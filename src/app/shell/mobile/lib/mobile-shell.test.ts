@@ -8,7 +8,7 @@ test("normalizeHubUrl 补全 scheme 并去尾斜杠", () => {
 });
 
 test("normalizeHubUrl 拒绝空值", () => {
-  expect(() => normalizeHubUrl("  ")).toThrow("Hub 地址不能为空");
+  expect(() => normalizeHubUrl("  ")).toThrow("栖息地地址不能为空");
 });
 
 test("createMobileShellStub 标记 isNativeShell", () => {

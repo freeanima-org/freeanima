@@ -6,22 +6,42 @@ title: Architecture
 
 System-level constraints and long-lived design principles.
 
+## Product naming (Habitat / Portal)
+
+User-facing product terms (Chinese in [`i18n/glossary.md`](../../i18n/glossary.md)):
+
+| Role                                  | English          | Chinese    | Meaning                                                                                                                         |
+| ------------------------------------- | ---------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Long-running process / connect target | **Habitat**      | **栖息地** | One process hosts **multiple digital lives** (`agent` subjects) and **human assets** (`user`); connect / token / restart target |
+| External connectors (class)           | **Portal**       | **入口**   | Shell, MCP clients, and similar ways in; not the Habitat itself                                                                 |
+| Shell                                 | **Shell**        | **壳**     | A Portal (desktop / mobile / web window; SSH-like)                                                                              |
+| Admin / inspect UI (legacy Console)   | **Habitat** (UI) | **栖息地** | Area under `/console/*`; "Open Habitat" vs "Connect to Habitat"                                                                 |
+| Admin home page                       | **Dashboard**    | **仪表盘** | `/console/dashboard` only; other console routes keep their own labels                                                           |
+| Message bridges                       | **Gateway**      | Gateway    | Discord / WeChat — **not** a Portal                                                                                             |
+| Wire / code legacy                    | **Hub**          | —          | Paths such as `/hub/rpc/v1`, `hubUrl`, `dev:hub` — keep until a migration task                                                  |
+
+Verbs: **connect to Habitat** (URL + token); **open Habitat** (admin UI); **reach via a Portal** (Shell / MCP).
+
+Estate **Body** (VM / OS / network under the four-layer model) is the cognitive "what I run on" for a subject — **not** the Habitat process name.
+
+### Hub configuration (SSOT)
+
+User copy says Habitat; storage and RPC identifiers may still say `hub_*` until migrated.
+
+| Layer         | Storage                                                     | Who reads/writes                                             |
+| ------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
+| **Bootstrap** | `~/.anima/config.yaml` (`database`, `http`, `redis`, `web`) | `platform/boot` only; install/ops edit YAML                  |
+| **Runtime**   | PostgreSQL `hub_runtime_config`                             | Engine, tools, Shell Habitat settings, Habitat UI `config.*` |
+
 ## Core Principles
 
 - The memory system may be layered internally, but the LLM sees a single entry point
 - Memory orchestration is built into the runtime; the LLM does not control memory pipelines
 - Credential management is a first-class system concern
-- Hub **runtime configuration** (LLM, compression, integrations) is persisted in PostgreSQL (`hub_runtime_config`); `~/.anima/config.yaml` holds **bootstrap** only (`database`, `http`, `redis`, `web`) for cold start — not editable via Shell or Console API
-- Hub **may start without LLM** configured; first-time setup happens in Shell **设置 → Hub 服务** (persist to PG), then restart Hub so registries rebuild. Missing `llm` must not block cold start.
-- Whether Hub hosts browser `/web/*` is **`config.yaml` `web.enabled`** (bootstrap; absent defaults to on when dist exists). Do not put this switch in PG — empty runtime would otherwise block the Settings UI that configures that runtime.
+- Habitat **runtime configuration** (LLM, compression, integrations) is persisted in PostgreSQL (`hub_runtime_config`); `~/.anima/config.yaml` holds **bootstrap** only (`database`, `http`, `redis`, `web`) for cold start — not editable via Shell or Habitat UI API
+- Habitat **may start without LLM** configured; first-time setup happens in Shell **Settings → Habitat** (persist to PG), then restart Habitat so registries rebuild. Missing `llm` must not block cold start.
+- Whether Habitat hosts browser `/web/*` is **`config.yaml` `web.enabled`** (bootstrap; absent defaults to on when dist exists). Do not put this switch in PG — empty runtime would otherwise block the Settings UI that configures that runtime.
 - **Asset management** is a first-class system concern
-
-### Hub configuration (SSOT)
-
-| Layer         | Storage                                                     | Who reads/writes                                          |
-| ------------- | ----------------------------------------------------------- | --------------------------------------------------------- |
-| **Bootstrap** | `~/.anima/config.yaml` (`database`, `http`, `redis`, `web`) | `platform/boot` only; install/ops edit YAML               |
-| **Runtime**   | PostgreSQL `hub_runtime_config`                             | Engine, tools, Shell **Hub 服务设置**, Console `config.*` |
 
 Bootstrap and runtime are **not merged** into a single config object. CLI cold paths connect via internal `withPlatformDb` and receive **runtime only**. Legacy runtime keys in `config.yaml` are ignored (optional startup warn).
 
@@ -58,6 +78,7 @@ A digital life is structured from the inside out. Each layer answers a different
 │ ④ Estate                                       │
 │    "What do I have / rely on?"                  │
 │    ├── Body: VM / OS / network / toolchains    │
+│    │   (Estate cognitive body — not Habitat)   │
 │    ├── Internal assets: notes, projects, code  │
 │    └── External assets: email, accounts, creds│
 │    Credentials: see "Credential System" below  │

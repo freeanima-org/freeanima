@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-17 22:43+0800\n"
+"POT-Creation-Date: 2026-07-18 16:50+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,181 +15,6 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/architecture.md:1 docs/features/companion.md:11
-#: messages/po4a/en.xml:609
-#, no-wrap
-msgid "Architecture"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/compression.md:1 messages/po4a/en.xml:610
-#, no-wrap
-msgid "Compression"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:1 messages/po4a/en.xml:457
-#, no-wrap
-msgid "Dream"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:10 docs/concepts/sleep.md:9
-#: docs/guide/remote-access.md:10 messages/po4a/en.xml:622
-#: messages/po4a/en.xml:629
-#, no-wrap
-msgid "Overview"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:14 messages/po4a/en.xml:461
-#, no-wrap
-msgid "Trigger"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:31 messages/po4a/en.xml:61
-#, no-wrap
-msgid "Output"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/entity-model.md:80 messages/po4a/en.xml:278
-#: messages/po4a/en.xml:330
-#, no-wrap
-msgid "Content"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/entity-model.md:238 messages/po4a/en.xml:146
-#: messages/po4a/en.xml:158 messages/po4a/en.xml:564
-#, no-wrap
-msgid "Search"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/identity.md:1 messages/po4a/en.xml:617
-#, no-wrap
-msgid "Identity"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/memory.md:1 messages/po4a/en.xml:219 messages/po4a/en.xml:380
-#: messages/po4a/en.xml:619
-#, no-wrap
-msgid "Memory"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/notifications.md:1 docs/concepts/notifications.md:5
-#: messages/po4a/en.xml:389
-#, no-wrap
-msgid "Notifications"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/notifications.md:132 messages/po4a/en.xml:17
-#: messages/po4a/en.xml:179 messages/po4a/en.xml:632 messages/po4a/en.xml:639
-#, no-wrap
-msgid "Tools"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/recall-flow.md:1 messages/po4a/en.xml:624
-#, no-wrap
-msgid "Recall Flow"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:5
-#: messages/po4a/en.xml:635
-#, no-wrap
-msgid "Self Layer"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/sleep.md:1 messages/po4a/en.xml:637
-#, no-wrap
-msgid "Sleep"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/time-perception.md:1 messages/po4a/en.xml:638
-#, no-wrap
-msgid "Time Perception"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/features/chat.md:1 messages/po4a/en.xml:365 messages/po4a/en.xml:370
-#: messages/po4a/en.xml:652
-#, no-wrap
-msgid "Chat"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/features/companion.md:57 messages/po4a/en.xml:614
-#, no-wrap
-msgid "Features"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/features/diary.md:1 docs/features/diary.md:5 messages/po4a/en.xml:653
-#, no-wrap
-msgid "Diary"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/features/mobile-app.md:1 docs/features/mobile-app.md:5
-#: messages/po4a/en.xml:621
-#, no-wrap
-msgid "Mobile app (Android)"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/guide/database.md:1 messages/po4a/en.xml:612
-#, no-wrap
-msgid "Database"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:618
-#, no-wrap
-msgid "Installation"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/guide/security.md:1 docs/tools/execute-code-runtimes.md:60
-#: messages/po4a/en.xml:631 messages/po4a/en.xml:634
-#, no-wrap
-msgid "Security"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/guide/service.md:1 messages/po4a/en.xml:636
-#, no-wrap
-msgid "Service"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/sap/hub-rpc.md:91 docs/sap/transport.md:99 messages/po4a/en.xml:147
-#, no-wrap
-msgid "Reconnect"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/sap/methods.md:64 messages/po4a/en.xml:578
-#, no-wrap
-msgid "Terminal"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: docs/sap/satellite-guide.md:1 docs/sap/satellite-guide.md:5
-#: messages/po4a/en.xml:630
-#, no-wrap
-msgid "Satellite Guide"
-msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:3
@@ -276,6 +101,13 @@ msgid "Debug"
 msgstr ""
 
 #. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:17 messages/po4a/en.xml:179 messages/po4a/en.xml:632
+#: messages/po4a/en.xml:639
+#, no-wrap
+msgid "Tools"
+msgstr ""
+
+#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:18
 #, no-wrap
 msgid "Tool list"
@@ -327,7 +159,7 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:26
 #, no-wrap
-msgid "Web Speech requires HTTPS; use Edge TTS or open Hub over HTTPS"
+msgid "Web Speech requires HTTPS; use Edge TTS or open the Service over HTTPS"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -532,6 +364,12 @@ msgstr ""
 #: messages/po4a/en.xml:60
 #, no-wrap
 msgid "Metadata"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:61
+#, no-wrap
+msgid "Output"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -1033,6 +871,18 @@ msgid "Processing day"
 msgstr ""
 
 #. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:146 messages/po4a/en.xml:158 messages/po4a/en.xml:564
+#, no-wrap
+msgid "Search"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:147
+#, no-wrap
+msgid "Reconnect"
+msgstr ""
+
+#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:148
 #, no-wrap
 msgid "Refresh"
@@ -1411,6 +1261,12 @@ msgid "{servers} servers · {connected} connected · {connecting} connecting · 
 msgstr ""
 
 #. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:219 messages/po4a/en.xml:380 messages/po4a/en.xml:619
+#, no-wrap
+msgid "Memory"
+msgstr ""
+
+#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:220
 #, no-wrap
 msgid "Memory desk"
@@ -1683,7 +1539,7 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:266
 #, no-wrap
-msgid "It will not be shown again. Paste into client Hub settings (Hub API Token)."
+msgid "It will not be shown again. Paste into client connection settings (Service API Token)."
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -1743,7 +1599,13 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:277
 #, no-wrap
-msgid "Hub API tokens — {subject}"
+msgid "Service API tokens — {subject}"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:278 messages/po4a/en.xml:330
+#, no-wrap
+msgid "Content"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -2211,7 +2073,13 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:364 messages/po4a/en.xml:366 messages/po4a/en.xml:499
 #, no-wrap
-msgid "Console"
+msgid "Habitat"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:365 messages/po4a/en.xml:370 messages/po4a/en.xml:652
+#, no-wrap
+msgid "Chat"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -2329,6 +2197,12 @@ msgid "🧠 Memory Desk"
 msgstr ""
 
 #. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:389
+#, no-wrap
+msgid "Notifications"
+msgstr ""
+
+#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:390
 #, no-wrap
 msgid "🍅 Pomodoro"
@@ -2415,7 +2289,7 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:405
 #, no-wrap
-msgid "SAP satellite apps connected to this Hub (read-only)."
+msgid "SAP satellite apps connected to this Service (read-only)."
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -2677,6 +2551,12 @@ msgid "{index}. {round} ({count} tool calls)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:457
+#, no-wrap
+msgid "Dream"
+msgstr ""
+
+#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:459
 #, no-wrap
 msgid "Memory ref sync"
@@ -2686,6 +2566,12 @@ msgstr ""
 #: messages/po4a/en.xml:460
 #, no-wrap
 msgid "Self layer refresh"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:461
+#, no-wrap
+msgid "Trigger"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -3309,6 +3195,12 @@ msgid "Show header"
 msgstr ""
 
 #. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:578
+#, no-wrap
+msgid "Terminal"
+msgstr ""
+
+#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:579
 #, no-wrap
 msgid "Collapse conversation list"
@@ -3341,7 +3233,7 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:584
 #, no-wrap
-msgid "Open Console config"
+msgid "Open Habitat config"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -3417,9 +3309,9 @@ msgid "Native shell"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:598
+#: messages/po4a/en.xml:598 messages/po4a/en.xml:636
 #, no-wrap
-msgid "Hub service"
+msgid "Service"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -3477,9 +3369,27 @@ msgid "Violet"
 msgstr ""
 
 #. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:609
+#, no-wrap
+msgid "Architecture"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:610
+#, no-wrap
+msgid "Compression"
+msgstr ""
+
+#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:611
 #, no-wrap
 msgid "Concepts"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:612
+#, no-wrap
+msgid "Database"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -3489,9 +3399,27 @@ msgid "Documentation"
 msgstr ""
 
 #. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:614
+#, no-wrap
+msgid "Features"
+msgstr ""
+
+#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:615
 #, no-wrap
 msgid "Guide"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:617
+#, no-wrap
+msgid "Identity"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:618
+#, no-wrap
+msgid "Installation"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -3501,9 +3429,27 @@ msgid "Migration Plan"
 msgstr ""
 
 #. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:621
+#, no-wrap
+msgid "Mobile app (Android)"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:622 messages/po4a/en.xml:629
+#, no-wrap
+msgid "Overview"
+msgstr ""
+
+#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:623
 #, no-wrap
 msgid "Probe Architecture"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:624
+#, no-wrap
+msgid "Recall Flow"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -3531,9 +3477,39 @@ msgid "RPC Methods"
 msgstr ""
 
 #. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:630
+#, no-wrap
+msgid "Satellite Guide"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:631 messages/po4a/en.xml:634
+#, no-wrap
+msgid "Security"
+msgstr ""
+
+#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:633
 #, no-wrap
 msgid "Transport"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:635
+#, no-wrap
+msgid "Self Layer"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:637
+#, no-wrap
+msgid "Sleep"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:638
+#, no-wrap
+msgid "Time Perception"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -3551,19 +3527,19 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:645
 #, no-wrap
-msgid "\"{section}\" was saved to the Hub database. Restart the service now to apply changes?"
+msgid "\"{section}\" was saved to the Habitat database. Restart the habitat now to apply changes?"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:646
 #, no-wrap
-msgid "Restart service?"
+msgid "Restart habitat?"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:647
 #, no-wrap
-msgid "You are offline. Live Hub features are unavailable; cached data may still be shown where available."
+msgid "You are offline. Live Service features are unavailable; cached data may still be shown where available."
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -3588,6 +3564,12 @@ msgstr ""
 #: messages/po4a/en.xml:651
 #, no-wrap
 msgid "{count} sync failed"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:653
+#, no-wrap
+msgid "Diary"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -3677,7 +3659,7 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:669
 #, no-wrap
-msgid "App shell is ready for offline use. Hub data still requires a connection."
+msgid "App shell is ready for offline use. Service data still requires a connection."
 msgstr ""
 
 #. type: Content of: <messages><msg>

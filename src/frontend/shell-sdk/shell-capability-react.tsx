@@ -70,7 +70,7 @@ export function useShellKind(): ShellRuntimeKind {
   return kind;
 }
 
-/** 是否展示「打开 Hub 设置」 */
+/** 是否展示「打开 连接设置」 */
 export function useOpenHubSettingsCapability(): boolean {
   const [open, setOpen] = useState(() => canOpenHubSettings());
 

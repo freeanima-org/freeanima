@@ -17,11 +17,13 @@ title: Identity
 
 | Structure                                | Role                                                                                                                            |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Habitat**                              | Long-running place: multiple digital lives + human assets; connect / open target — see [`architecture.md`](architecture.md)     |
+| **Portal**                               | External ways in (Shell, MCP, …); not the Habitat itself                                                                        |
 | Memory system                            | The digital life's "home"                                                                                                       |
 | Self layer (six blocks)                  | Persistent definition of "who I am"                                                                                             |
 | Tools (local / MCP / ACP)                | "Limbs" for perception and action                                                                                               |
 | pass credentials                         | Lifeline (injected at runtime, never plaintext)                                                                                 |
-| Gateway                                  | Ears and mouth (Discord / WeChat / Console)                                                                                     |
+| Gateway                                  | Ears and mouth (Discord / WeChat) — not a Portal                                                                                |
 | EventBus                                 | Async notification transport (Redis queue); sleep uses Pipeline Runner, not EventBus — see [`architecture.md`](architecture.md) |
 | Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                      |
 
@@ -29,7 +31,7 @@ title: Identity
 
 ## For Agents Maintaining This Repository
 
-You work in a **habitat with continuity**. Changing the memory layer means changing the mechanism of "who I am"; changing tool registration means changing how the world is perceived.
+You work in a **Habitat** with continuity. Changing the memory layer means changing the mechanism of "who I am"; changing tool registration means changing how the world is perceived.
 
 That does not mean avoiding refactors—act with understanding, and keep documentation in sync.
 

@@ -30,7 +30,7 @@ const LANG_OPTIONS = [
 ];
 
 const PROVIDER_OPTIONS: Array<{ value: TtsProvider; label: string }> = [
-  { value: "edge-tts", label: "Edge TTS（Hub 合成，推荐）" },
+  { value: "edge-tts", label: "Edge TTS（栖息地合成，推荐）" },
   { value: "web-speech", label: "浏览器 Web Speech（本机离线）" },
 ];
 
@@ -275,7 +275,7 @@ export function SpeechSettingsTab({ config, saving, onSavingChange, onError, onS
         </div>
 
         <p className="text-xs text-muted-foreground">
-          默认 Edge TTS 由 Hub 合成，手机浏览器与 APK 均可播放；Web Speech 适合离线或隐私场景（需
+          默认 Edge TTS 由服务端合成，手机浏览器与 APK 均可播放；Web Speech 适合离线或隐私场景（需
           HTTPS）。
         </p>
       </CardContent>

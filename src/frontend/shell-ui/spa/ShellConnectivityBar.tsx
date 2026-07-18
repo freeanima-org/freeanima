@@ -58,7 +58,7 @@ export function ShellConnectivityBar(): null {
       ...(canOpenHubSettings
         ? {
             cancel: {
-              label: "Hub 设置",
+              label: "连接设置",
               onClick: openHubSettingsIfAvailable,
             },
           }

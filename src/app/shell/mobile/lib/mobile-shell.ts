@@ -31,11 +31,11 @@ export type ShellSnapshot = {
 
 export function normalizeHubUrl(raw: string): string {
   const trimmed = raw.trim().replace(/\/$/, "");
-  if (!trimmed) throw new Error("Hub 地址不能为空");
+  if (!trimmed) throw new Error("栖息地地址不能为空");
   const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `http://${trimmed}`;
   const url = new URL(withScheme);
   if (url.protocol !== "http:" && url.protocol !== "https:") {
-    throw new Error("Hub 地址须为 http:// 或 https://");
+    throw new Error("栖息地地址须为 http:// 或 https://");
   }
   return `${url.protocol}//${url.host}`;
 }

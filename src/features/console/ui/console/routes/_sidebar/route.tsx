@@ -1,6 +1,5 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
-import { BrandLockup } from "@freeanima/frontend/ui-kit";
 import { isPackagedShell } from "@freeanima/frontend/shell-sdk/shell-runtime.ts";
 import { HubConnectionBanner } from "@freeanima/features/console/ui/console/components/HubConnectionBanner.tsx";
 import { ResponsiveSidebarLayout } from "@freeanima/features/console/ui/console/components/ResponsiveSidebarLayout.tsx";
@@ -68,8 +67,9 @@ function ConsoleLayout() {
       {probeEnabled ? <HubConnectionBanner state={state} onRetry={() => void retry()} /> : null}
       <div className="flex-1 min-h-0">
         <ResponsiveSidebarLayout
-          title={<BrandLockup name={m.console_brand()} subtitle={m.console_nav()} logoSize={22} />}
+          title={m.console_title()}
           headerTitle={headerTitle}
+          showSidebarHeader={false}
           sidebar={() => <ConsoleSidebarNav />}
         >
           <Outlet />

@@ -125,7 +125,7 @@ export function registerShellClientIpc(
           .trim()
           .replace(/\/$/, "");
         const token = String(raw.remoteAuthToken ?? "").trim();
-        if (!hubUrl) throw new Error("Hub 地址不能为空");
+        if (!hubUrl) throw new Error("栖息地地址不能为空");
         await testHubHealthConnection(hubUrl, token || undefined);
         return true;
       }

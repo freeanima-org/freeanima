@@ -52,15 +52,15 @@ export function formatHubHealthProbeFetchError(err: unknown, hubUrl?: string): s
     const electronShell = isElectronShellRuntime();
     const nativeShell = isNativeMobileShellRuntime();
     if (electronShell && httpsHub) {
-      return "网络错误：桌面壳 HTTPS 需在本机信任 Hub 的 mkcert 根 CA（设置页下载 rootCA.pem 并导入系统），或暂用 http://…:2658";
+      return "网络错误：桌面壳 HTTPS 需在本机信任栖息地的 mkcert 根 CA（设置页下载 rootCA.pem 并导入系统），或暂用 http://…:2658";
     }
     if (nativeShell && httpsHub) {
       return "网络错误：壳层内 HTTPS 需在手机「设置 → 安全」安装 mkcert 根 CA（rootCA.pem），并重新安装 APK；或暂用 http://…:2658";
     }
     if (nativeShell) {
-      return "网络错误（请检查 Hub 地址、ZeroTier 是否在线，以及 Hub 是否监听 0.0.0.0）";
+      return "网络错误（请检查栖息地地址、ZeroTier 是否在线，以及栖息地是否监听 0.0.0.0）";
     }
-    return "网络错误（请检查 Hub 地址与网络）";
+    return "网络错误（请检查 栖息地地址与网络）";
   }
   if (err instanceof Error && err.message) return err.message;
   return "连接失败";

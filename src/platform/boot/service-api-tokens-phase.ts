@@ -28,7 +28,7 @@ export async function bootServiceApiTokensPhase(
     });
     startupLog(`Created service API bootstrap token (id=${result.token.id})`);
     logComponent("startup").info(
-      "已自动创建 bootstrap Service API Token；请在客户端 Hub 设置中配置（明文仅此次输出到终端）",
+      "已自动创建 bootstrap Service API Token；请在客户端连接设置中配置（明文仅此次输出到终端）",
     );
     console.log(result.plaintext);
   }
