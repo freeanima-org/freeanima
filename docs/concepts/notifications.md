@@ -81,12 +81,13 @@ Legacy `notifications.user_subject_id` / `agent_subject_id` are still read as fa
 
 Each row stores `recipient_kind` (`user` | `agent`) and `recipient_id` (entity id string from `ResolvedWorldContext`).
 
-| Writer                                  | Typical recipient                          |
-| --------------------------------------- | ------------------------------------------ |
-| Cron success (when `notify_on_success`) | **both** user + agent                      |
-| Cron failure                            | **both** user + agent                      |
-| Task due reminder                       | user                                       |
-| `notification_send` tool                | user / agent / both; optional `subject_id` |
+| Writer                                  | Typical recipient                            |
+| --------------------------------------- | -------------------------------------------- |
+| Cron success (when `notify_on_success`) | **both** user + agent                        |
+| Cron failure                            | **both** user + agent                        |
+| Task due reminder                       | user                                         |
+| Env/health baseline change              | **both** user + agent (`builtin-env-health`) |
+| `notification_send` tool                | user / agent / both; optional `subject_id`   |
 
 Dream pipeline **does not** create notifications (reminder removed).
 
