@@ -34,6 +34,25 @@ export function formatSapPlatform(appId: string, instanceId: string): string {
   return `sap:${app_slug}:${instance_id_norm}`;
 }
 
+/**
+ * Resolve list/create platform: explicit input wins; otherwise SAP identity.
+ * Empty REST ctx (`app_id`/`instance_id` "") must NOT become `"sap::"`.
+ */
+export function resolveDefaultSapPlatform(
+  platform: string | undefined,
+  appId: string,
+  instanceId: string,
+): string | undefined {
+  if (platform !== undefined) {
+    const trimmed = platform.trim();
+    return trimmed || undefined;
+  }
+  if (appId.trim() && instanceId.trim()) {
+    return formatSapPlatform(appId, instanceId);
+  }
+  return undefined;
+}
+
 export function isSapPlatform(platform: string): boolean {
   return platform.startsWith("sap:") && parseSapPlatform(platform).ok;
 }

@@ -5,5 +5,6 @@ export * from "@freeanima/shared/sap-contract/frames/acp";
 export {
   formatSapPlatform,
   normalizeAppSlug,
+  resolveDefaultSapPlatform,
   type SapRequestContext,
 } from "@freeanima/shared/sap-contract";
