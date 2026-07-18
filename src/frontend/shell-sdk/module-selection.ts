@@ -13,7 +13,8 @@ export type EmailModuleSelection = {
 
 export type TaskModuleSelection =
   | { kind: "smart_list"; key: string }
-  | { kind: "list"; id: number };
+  | { kind: "list"; id: number }
+  | { kind: "search" };
 
 export type ModuleSelectionContext = {
   hubScope?: string;
@@ -64,6 +65,7 @@ function parseTasksValue(raw: string | null): TaskModuleSelection | null {
     if (obj.kind === "smart_list" && typeof obj.key === "string" && obj.key.trim()) {
       return { kind: "smart_list", key: obj.key.trim() };
     }
+    // search 不持久化；旧数据若误写则忽略
   } catch {
     const id = Number(raw);
     if (Number.isInteger(id) && id > 0) return { kind: "list", id };
@@ -175,6 +177,14 @@ export function writeModuleSelection(
         (value.kind === "list" || value.kind === "smart_list")
       ) {
         store.setItem(key, JSON.stringify(value));
+      } else if (
+        value != null &&
+        typeof value === "object" &&
+        "kind" in value &&
+        value.kind === "search"
+      ) {
+        // search 为临时态：不写入、也不清除已保存的清单/智能清单
+        return;
       } else {
         store.removeItem(key);
       }

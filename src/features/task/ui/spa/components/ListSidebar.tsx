@@ -3,6 +3,7 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-
 import { CSS } from "@dnd-kit/utilities";
 import { Button, Checkbox, Input } from "@freeanima/frontend/ui-kit";
 import { useDrawerNav } from "@freeanima/frontend/ui-kit/layout";
+import { SearchIcon } from "lucide-react";
 import { useEffect, useMemo, useState, type MouseEvent, type ReactNode } from "react";
 
 import { LIST_ROOT_DND_ID, listDndId } from "../lib/dnd-ids.ts";
@@ -26,12 +27,14 @@ type ListSidebarProps = {
   showClosed: boolean;
   selectedListId: number | null;
   selectedFolderId: number | null;
+  searchSelected?: boolean;
   newListName: string;
   newFolderName: string;
   useActionSheet: boolean;
   onToggleShowClosed: () => void;
   onSelectList: (id: number) => void;
   onSelectFolder: (id: number) => void;
+  onSelectSearch?: () => void;
   onCreateList: () => void;
   onCreateFolder: () => void;
   onNewListNameChange: (value: string) => void;
@@ -292,12 +295,14 @@ export function ListSidebar({
   showClosed,
   selectedListId,
   selectedFolderId,
+  searchSelected = false,
   newListName,
   newFolderName,
   useActionSheet,
   onToggleShowClosed,
   onSelectList,
   onSelectFolder,
+  onSelectSearch,
   onCreateList,
   onCreateFolder,
   onNewListNameChange,
@@ -351,6 +356,23 @@ export function ListSidebar({
         strategy={verticalListSortingStrategy}
       >
         <div className="flex-1 overflow-y-auto">
+          {onSelectSearch ? (
+            <div className="p-2 pb-0">
+              <button
+                type="button"
+                className={[
+                  "hover:bg-muted flex min-h-11 w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm",
+                  searchSelected ? "bg-primary/15 font-medium" : "",
+                ].join(" ")}
+                aria-label="搜索"
+                aria-pressed={searchSelected}
+                onClick={onSelectSearch}
+              >
+                <SearchIcon className="size-4 shrink-0" aria-hidden />
+                <span className="min-w-0 flex-1 truncate">搜索</span>
+              </button>
+            </div>
+          ) : null}
           {builtinSmartListSection}
           {customSmartListSection}
           <div className="border-t p-2">

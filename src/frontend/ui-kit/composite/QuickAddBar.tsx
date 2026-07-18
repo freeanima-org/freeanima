@@ -8,6 +8,8 @@ type QuickAddBarProps = {
   placeholder?: string;
   disabled?: boolean;
   submitLabel?: string;
+  /** 默认底部栏（border-t）；顶部放置时传 className 覆盖边框方向 */
+  className?: string;
 };
 
 export function QuickAddBar({
@@ -17,9 +19,10 @@ export function QuickAddBar({
   placeholder = "添加任务，Enter 确认",
   disabled = false,
   submitLabel = "添加",
+  className = "border safe-area-pb flex shrink-0 gap-2 border-t p-3",
 }: QuickAddBarProps) {
   return (
-    <div className="border safe-area-pb flex shrink-0 gap-2 border-t p-3">
+    <div className={className}>
       <Input
         className="min-w-0 flex-1"
         placeholder={placeholder}

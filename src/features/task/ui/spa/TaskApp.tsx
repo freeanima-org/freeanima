@@ -98,6 +98,7 @@ import { moveTaskItemsToList, moveTaskItemsToProject } from "./lib/move-items.ts
 import { taskAttributionLabel } from "./lib/task-attribution.ts";
 import { applyShiftRangeSelect } from "./lib/range-select.ts";
 import { resolveTaskSelection } from "./lib/resolve-task-selection.ts";
+import { resolveSmartListDueAt } from "./lib/resolve-smart-list-due.ts";
 import { resolveDefaultListId } from "./lib/resolve-list.ts";
 import {
   allowsSmartListQuickAdd,
@@ -297,7 +298,10 @@ export function TaskApp() {
 
   const persistSelection = useCallback(
     (next: TaskModuleSelection) => {
-      writeModuleSelection("tasks", next);
+      // search 为临时态：写 URL，但不覆盖 localStorage 中的清单/智能清单
+      if (next.kind !== "search") {
+        writeModuleSelection("tasks", next);
+      }
       if (webShell) writeTaskSelectionToUrl(next);
     },
     [webShell],
@@ -394,7 +398,7 @@ export function TaskApp() {
   }, [persistSelection, webShell]);
 
   const reloadCurrentItems = useCallback(async () => {
-    if (selection == null) return;
+    if (selection == null || selection.kind === "search") return;
     if (selection.kind === "list") {
       await loadItems(selection.id);
     } else {
@@ -427,13 +431,23 @@ export function TaskApp() {
     setRefreshing(true);
     setError("");
     try {
-      await Promise.all([loadLists(), reloadCurrentItems()]);
+      if (selection?.kind === "search") {
+        await loadLists();
+        const q = searchQuery.trim();
+        if (q) {
+          const rows = await searchTaskItems({ query: q, limit: 30 });
+          setSearchHits(rows);
+          void seedLocalTaskItems(rows);
+        }
+      } else {
+        await Promise.all([loadLists(), reloadCurrentItems()]);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setRefreshing(false);
     }
-  }, [loadLists, refreshing, reloadCurrentItems]);
+  }, [loadLists, refreshing, reloadCurrentItems, searchQuery, selection?.kind]);
 
   useEffect(() => {
     registerTaskOfflineModule();
@@ -536,6 +550,13 @@ export function TaskApp() {
 
   useEffect(() => {
     if (selection == null) return;
+    if (selection.kind === "search") {
+      setSelectionMode(false);
+      setSelectedItemIds(new Set());
+      selectionAnchorRef.current = null;
+      resetDetail();
+      return;
+    }
     const run = async () => {
       if (selection.kind === "list") {
         await loadItems(selection.id);
@@ -556,6 +577,7 @@ export function TaskApp() {
   }, [selection, smartLists, loadItems, loadItemsByFilters, resetDetail]);
 
   useEffect(() => {
+    if (selection?.kind !== "search") return;
     const q = searchQuery.trim();
     if (!q) {
       setSearchHits([]);
@@ -576,7 +598,7 @@ export function TaskApp() {
         .finally(() => setSearching(false));
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, selection?.kind]);
 
   const refreshSearchHits = useCallback(async () => {
     const q = searchQuery.trim();
@@ -590,12 +612,20 @@ export function TaskApp() {
     }
   }, [searchQuery]);
 
-  const searchActive = searchQuery.trim().length > 0;
+  const searchMode = selection?.kind === "search";
+  const searchActive = searchMode;
 
   const applySelection = (next: TaskModuleSelection) => {
     setSelection(next);
     persistSelection(next);
     if (useDrawer) setSidebarOpen(false);
+  };
+
+  const selectSearch = () => {
+    setSelectedFolderId(null);
+    setSearchQuery("");
+    setSearchHits([]);
+    applySelection({ kind: "search" });
   };
 
   const selectSmartList = (row: SmartListRow) => {
@@ -850,7 +880,17 @@ export function TaskApp() {
     if (targetListId == null) return;
     try {
       const pending = items.filter((i) => i.status === "pending");
-      await createTaskItem({ title, list_id: targetListId, sort_order: pending.length });
+      let due_at: string | null = null;
+      if (selection?.kind === "smart_list") {
+        const row = findSmartListRowByKey(smartLists, selection.key);
+        if (row) due_at = resolveSmartListDueAt(row.filters);
+      }
+      await createTaskItem({
+        title,
+        list_id: targetListId,
+        sort_order: pending.length,
+        ...(due_at ? { due_at } : {}),
+      });
       setQuickTitle("");
       await Promise.all([reloadCurrentItems(), loadLists()]);
     } catch (err) {
@@ -1007,13 +1047,16 @@ export function TaskApp() {
   const itemsSortable = !searchActive && !smartListMode;
   const showListNameColumn = searchActive || smartListMode;
   const middleTitle =
-    selection?.kind === "smart_list"
-      ? (activeSmartListRow?.title ?? "智能清单")
-      : inboxSelected
-        ? "收件箱"
-        : (selectedList?.name ?? "任务");
+    selection?.kind === "search"
+      ? "搜索"
+      : selection?.kind === "smart_list"
+        ? (activeSmartListRow?.title ?? "智能清单")
+        : inboxSelected
+          ? "收件箱"
+          : (selectedList?.name ?? "任务");
   const canQuickAdd =
     selection != null &&
+    selection.kind !== "search" &&
     (selection.kind === "list"
       ? selectedList != null && !selectedList.closed
       : activeSmartListRow != null && allowsSmartListQuickAdd(activeSmartListRow.filters));
@@ -1297,12 +1340,14 @@ export function TaskApp() {
             middleHeaderExtra={
               showMiddleContent ? (
                 <div className="flex w-full max-w-md items-center gap-2">
-                  <Input
-                    className="h-8 flex-1"
-                    placeholder="搜索全部清单…"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
+                  {searchMode ? (
+                    <Input
+                      className="h-8 flex-1"
+                      placeholder="搜索全部清单…"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  ) : null}
                   <select
                     className="border-input bg-background h-8 max-w-36 rounded-md border px-2 text-xs"
                     value={tagFilterId ?? ""}
@@ -1359,12 +1404,14 @@ export function TaskApp() {
                   showClosed={showClosed}
                   selectedListId={listSidebarSelectedId}
                   selectedFolderId={selectedFolderId}
+                  searchSelected={searchMode}
                   newListName={newListName}
                   newFolderName={newFolderName}
                   useActionSheet={useActionSheet}
                   onToggleShowClosed={() => setShowClosed((v) => !v)}
                   onSelectList={selectList}
                   onSelectFolder={selectFolder}
+                  onSelectSearch={selectSearch}
                   onCreateList={() => void handleCreateList()}
                   onCreateFolder={() => void handleCreateFolder()}
                   onNewListNameChange={setNewListName}
@@ -1407,6 +1454,39 @@ export function TaskApp() {
                         此清单已归档，无法添加新任务。可在清单菜单中取消归档。
                       </div>
                     ) : null}
+                    {selectionMode && selectedItemIds.size > 0 ? (
+                      <div className="border bg-muted/95 flex shrink-0 items-center gap-2 border-b p-3">
+                        <span className="text-muted-foreground min-w-0 flex-1 text-sm">
+                          已选 {selectedItemIds.size} 项
+                        </span>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openMovePickerForItems(Array.from(selectedItemIds))}
+                        >
+                          移动到清单
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => void openMoveProjectPicker(Array.from(selectedItemIds))}
+                        >
+                          移入项目
+                        </Button>
+                        <Button type="button" variant="ghost" size="sm" onClick={exitSelectionMode}>
+                          取消
+                        </Button>
+                      </div>
+                    ) : searchActive || !canQuickAdd ? null : (
+                      <QuickAddBar
+                        value={quickTitle}
+                        onChange={setQuickTitle}
+                        disabled={writesDisabled}
+                        onSubmit={() => void handleQuickAdd()}
+                        className="border flex shrink-0 gap-2 border-b p-3"
+                      />
+                    )}
                     <PullToRefresh
                       className="min-h-0 flex-1"
                       contentClassName="touch-pan-y px-2 py-2"
@@ -1416,7 +1496,11 @@ export function TaskApp() {
                       {displayPending.length === 0 && displayCompleted.length === 0 ? (
                         <EmptyState
                           message={
-                            searchActive ? "全部清单中无匹配任务" : "暂无任务，在下方快速添加"
+                            searchActive
+                              ? searchQuery.trim()
+                                ? "全部清单中无匹配任务"
+                                : "输入关键词搜索全部清单"
+                              : "暂无任务，在上方快速添加"
                           }
                           className="px-2"
                         />
@@ -1480,39 +1564,6 @@ export function TaskApp() {
                         />
                       ) : null}
                     </PullToRefresh>
-
-                    {selectionMode && selectedItemIds.size > 0 ? (
-                      <div className="border bg-muted/95 safe-area-pb flex shrink-0 items-center gap-2 border-t p-3">
-                        <span className="text-muted-foreground min-w-0 flex-1 text-sm">
-                          已选 {selectedItemIds.size} 项
-                        </span>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openMovePickerForItems(Array.from(selectedItemIds))}
-                        >
-                          移动到清单
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={() => void openMoveProjectPicker(Array.from(selectedItemIds))}
-                        >
-                          移入项目
-                        </Button>
-                        <Button type="button" variant="ghost" size="sm" onClick={exitSelectionMode}>
-                          取消
-                        </Button>
-                      </div>
-                    ) : searchActive || !canQuickAdd ? null : (
-                      <QuickAddBar
-                        value={quickTitle}
-                        onChange={setQuickTitle}
-                        disabled={writesDisabled}
-                        onSubmit={() => void handleQuickAdd()}
-                      />
-                    )}
                   </>
                 ) : null}
               </div>
