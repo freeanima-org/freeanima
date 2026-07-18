@@ -1,8 +1,18 @@
 import { describe, expect, test } from "bun:test";
+import { sql } from "drizzle-orm";
 
-import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter } from "./pg-sql.ts";
+import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter, pgTextArray } from "./pg-sql.ts";
 
 describe("pg-sql", () => {
+  test("pgTextArray expands scalars into ARRAY[…]::text[]", () => {
+    expect(pgTextArray(["s1", "s2"])).toEqual(
+      sql`ARRAY[${sql.join(
+        ["s1", "s2"].map((v) => sql`${v}`),
+        sql`, `,
+      )}]::text[]`,
+    );
+  });
+
   test("pgSemanticTypeFilter empty returns blank fragment", () => {
     expect(pgSemanticTypeFilter([]).queryChunks).toHaveLength(0);
   });

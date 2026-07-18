@@ -31,7 +31,21 @@ test("buildSemanticStatusCondition active vs all", () => {
 
 test("buildSemanticSourceConversationsCondition requires non-empty conversations", () => {
   expect(buildSemanticSourceConversationsCondition([])).toBeUndefined();
-  expect(buildSemanticSourceConversationsCondition(["s1"])).toBeDefined();
+  const single = buildSemanticSourceConversationsCondition(["s1"]);
+  expect(single).toBeDefined();
+  expect(single).toEqual(
+    sql`(${entities.body}->'source_conversations') ?| ${sql`ARRAY[${sql.join(
+      ["s1"].map((v) => sql`${v}`),
+      sql`, `,
+    )}]::text[]`}`,
+  );
+  const multi = buildSemanticSourceConversationsCondition(["s1", "s2"]);
+  expect(multi).toEqual(
+    sql`(${entities.body}->'source_conversations') ?| ${sql`ARRAY[${sql.join(
+      ["s1", "s2"].map((v) => sql`${v}`),
+      sql`, `,
+    )}]::text[]`}`,
+  );
 });
 
 test("buildSemanticConditions composes filters", () => {
