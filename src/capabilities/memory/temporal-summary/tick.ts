@@ -103,7 +103,8 @@ export async function runTemporalSummaryTick(opts: {
     try {
       summary = await summarizeTemporalText({
         selfContent: opts.selfContent,
-        instruction: "请对本段会话新增消息做客观、无差别的增量摘要（不抒情、不挑选「是否重要」）。",
+        instruction:
+          "请对本段会话新增消息做客观、无差别的事件级增量摘要：写主题与结果，勿流水账复述逐步操作或内部 ID。",
         material:
           day.chunks.length > 0
             ? `【已有摘要】\n${day.chunks.map((c) => c.summary).join("\n---\n")}\n\n【新增消息】\n${material}`
@@ -187,7 +188,7 @@ async function warmClosedPeerRolls(opts: {
         const summary = await summarizeTemporalText({
           selfContent: opts.selfContent,
           instruction:
-            "将多段他会话客观摘要合并为一条时段合摘要。保持客观、无差别；不要点名无关细节堆砌。",
+            "将多段他会话客观摘要合并为一条时段合摘要。保持客观、无差别；压缩重复细节，只保留事件主题与结果。",
           material: peerSources
             .toSorted((a, b) => a.conversation_id.localeCompare(b.conversation_id))
             .map((s) => `[${s.conversation_id}]\n${s.summary}`)

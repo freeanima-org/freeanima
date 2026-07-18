@@ -20,7 +20,7 @@ title: Temporal Summary
 | Storage        | `diary_entry` + blocks | Global → entity; today per-conversation → `conversations.temporal_day` |
 | Primary reader | `/diary` UI            | System prompt (yesterday+) / timeline inject (today peers)             |
 
-LLM compression still applies (char caps); “objective” means no intentional “worth remembering” filter.
+LLM compression still applies (char caps). **Objective ≠ exhaustive log replay**: cover events without an editorial “worth remembering” filter, but write **event-level** digests (themes + outcomes). Omit internal IDs, step-by-step tool/config actions, and per-notification timestamps unless essential to understand what happened.
 
 ## Storage layers
 

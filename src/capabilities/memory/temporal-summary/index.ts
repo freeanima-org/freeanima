@@ -24,6 +24,11 @@ export {
   type TemporalSummaryConfigInput,
 } from "./config.ts";
 export {
+  summarizeTemporalText,
+  stripTemporalSummaryPreamble,
+  temporalSummaryOutputConstraints,
+} from "./summarize.ts";
+export {
   runTemporalSummaryTick,
   type PeerRollCache,
   type TemporalSummaryTickResult,
