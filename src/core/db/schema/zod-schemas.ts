@@ -5,6 +5,7 @@ import {
   acpTasksSchema,
   awaitingClarifySchema,
   compressionJsonSchema,
+  temporalDayJsonSchema,
   messagePayloadSchema,
   platformInfoSchema,
   conversationCachedToolsetsSchema,
@@ -21,6 +22,7 @@ import { conversations } from "./conversations.ts";
 const conversationJsonbRefine = {
   platform_info: platformInfoSchema.nullable(),
   compression: compressionJsonSchema.nullable(),
+  temporal_day: temporalDayJsonSchema.nullable(),
   todos: conversationTodoStoreSchema,
   awaiting_clarify: awaitingClarifySchema.nullable(),
   acp_tasks: acpTasksSchema.nullable(),

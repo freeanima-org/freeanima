@@ -11,6 +11,7 @@ const baseRow = {
   system_prompt_built_at: null,
   platform_info: null,
   compression: null,
+  temporal_day: null,
   todos: { items: [], next_id: 1 },
   awaiting_clarify: null,
   acp_tasks: null,

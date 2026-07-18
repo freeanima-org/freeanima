@@ -19,15 +19,16 @@ Sleep is the digital life's memory consolidation mechanism—analogous to human 
 
 ## Current State
 
-| Mechanism              | Status         | Notes                                                             |
-| ---------------------- | -------------- | ----------------------------------------------------------------- |
-| Sleep cycle pipeline   | ✅ Implemented | Single cron `builtin-sleep-cycle` @ 02:00                         |
-| Session cleanup        | ✅ Implemented | Step `conversation-cleanup` before light-sleep in sleep-cycle DAG |
-| Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                             |
-| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep                         |
-| Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on deep-sleep                     |
-| Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh`, after light-sleep                      |
-| Dream (in-cycle)       | ✅ Implemented | Step `dream`, depends on light-sleep; parallel with deep-sleep    |
+| Mechanism              | Status         | Notes                                                                                                       |
+| ---------------------- | -------------- | ----------------------------------------------------------------------------------------------------------- |
+| Sleep cycle pipeline   | ✅ Implemented | Single cron `builtin-sleep-cycle` @ 02:00                                                                   |
+| Session cleanup        | ✅ Implemented | Step `conversation-cleanup` before light-sleep in sleep-cycle DAG                                           |
+| Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                                                                       |
+| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep                                                                   |
+| Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on deep-sleep                                                               |
+| Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh`, after light-sleep                                                                |
+| Dream (in-cycle)       | ✅ Implemented | Step `dream`, depends on light-sleep; parallel with deep-sleep                                              |
+| Temporal summary       | ✅ Implemented | Steps `temporal-summary-day` / `temporal-summary-cascade`; see [`temporal-summary.md`](temporal-summary.md) |
 
 ## Orchestration
 
@@ -104,9 +105,11 @@ DAG (macro layer):
 ```text
 conversation-cleanup
   └─► light-sleep
-        ├─► deep-sleep ──► memory-ref-sync (optional step)
-        ├─► dream (optional step)
-        └─► self-layer-refresh (optional step)
+        ├─► deep-sleep ──► memory-ref-sync
+        │              └─► temporal-summary-cascade
+        ├─► dream
+        ├─► self-layer-refresh
+        └─► temporal-summary-day
 ```
 
 ### Session cleanup (pre-light-sleep)

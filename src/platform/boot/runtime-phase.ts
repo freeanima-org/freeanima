@@ -11,6 +11,7 @@ import { registerSystemPromptHooks } from "../register-prompt-hooks.ts";
 import {
   registerNotificationInject,
   registerMemoryPassiveRecallHook,
+  registerTemporalSummaryPeerInject,
   registerServiceMemoryBus,
   registerServiceStores,
 } from "../register.ts";
@@ -74,6 +75,7 @@ export async function bootRuntimePhase(
   registerServiceStores(runtime.fullDeps(), engine.config);
   registerNotificationInject({ kernel });
   registerMemoryPassiveRecallHook({ kernel });
+  registerTemporalSummaryPeerInject({ kernel });
   registerServiceMemoryBus({ kernel });
   invalidateSelfLayerPromptCache();
   await loadSelfLayerPrompt();

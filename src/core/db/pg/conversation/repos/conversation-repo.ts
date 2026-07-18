@@ -85,6 +85,7 @@ export async function getConversationMetaLite(
       system_prompt_built_at: conversations.system_prompt_built_at,
       platform_info: conversations.platform_info,
       compression: conversations.compression,
+      temporal_day: conversations.temporal_day,
       todos: conversations.todos,
       awaiting_clarify: conversations.awaiting_clarify,
       acp_tasks: conversations.acp_tasks,

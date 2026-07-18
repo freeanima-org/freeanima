@@ -27,6 +27,7 @@ import { SMART_LIST_COMPONENT, smartListBodySchema } from "./smart-list.ts";
 import { PROJECT_FOLDER_COMPONENT, projectFolderBodySchema } from "./project-folder.ts";
 import { PROJECT_COMPONENT, projectBodySchema } from "./project.ts";
 import { TAG_COMPONENT, tagBodySchema } from "./tag.ts";
+import { TEMPORAL_SUMMARY_COMPONENT, temporalSummaryBodySchema } from "./temporal-summary.ts";
 import { USER_CONFIG_COMPONENT, userConfigBodySchema } from "./user-config.ts";
 import { WORLD_CONFIG_COMPONENT, worldConfigBodySchema } from "./world-config.ts";
 
@@ -47,6 +48,7 @@ export const COMPONENT_IDS = [
   DREAM_COMPONENT,
   SEMANTIC_MEMORY_COMPONENT,
   SEMANTIC_REF_COMPONENT,
+  TEMPORAL_SUMMARY_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
   EMAIL_THREAD_COMPONENT,
   EMAIL_MESSAGE_COMPONENT,
@@ -80,6 +82,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [DREAM_COMPONENT]: dreamBodySchema,
   [SEMANTIC_MEMORY_COMPONENT]: semanticMemoryBodySchema,
   [SEMANTIC_REF_COMPONENT]: semanticRefBodySchema,
+  [TEMPORAL_SUMMARY_COMPONENT]: temporalSummaryBodySchema,
   [EMAIL_ACCOUNT_COMPONENT]: emailAccountBodySchema,
   [EMAIL_THREAD_COMPONENT]: emailThreadBodySchema,
   [EMAIL_MESSAGE_COMPONENT]: emailMessageBodySchema,
@@ -118,6 +121,7 @@ export * from "./limbic.ts";
 export * from "./narrative.ts";
 export * from "./semantic-ref.ts";
 export * from "./semantic-memory.ts";
+export * from "./temporal-summary.ts";
 export * from "./email-account.ts";
 export * from "./email-thread.ts";
 export * from "./email-message.ts";

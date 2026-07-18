@@ -21,6 +21,11 @@ import {
   type DreamEngineInput,
   type DreamEngineResult,
 } from "@freeanima/capabilities/memory/dream-engine-port";
+import {
+  registerTemporalSummaryEngine,
+  type TemporalSummaryEngineInput,
+  type TemporalSummaryEngineResult,
+} from "@freeanima/capabilities/memory/temporal-summary";
 import { omitUndefined } from "@freeanima/core/util";
 
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
@@ -179,10 +184,31 @@ async function runDreamTurn(
   return { content: result.output.trim() };
 }
 
-/** Register light/deep/autobiography/dream LLM engines */
+async function runTemporalSummaryTurn(
+  deps: FullRuntimeDeps,
+  input: TemporalSummaryEngineInput,
+): Promise<TemporalSummaryEngineResult> {
+  const result = await runAutoLlm(deps, {
+    runName: "temporal-summary",
+    runKind: "temporal-summary",
+    systemPrompt: input.systemPrompt,
+    userMessages: [input.userMessage],
+    model: getProfileHopModel(deps.engine.config.data, PROFILE_REFLECT),
+    toolNames: [],
+    maxTurns: 1,
+    metadata: { temporal_summary: true },
+  });
+  if (result.status === "error") {
+    throw new Error(result.error ?? "temporal summary LLM failed");
+  }
+  return { content: result.output.trim() };
+}
+
+/** Register light/deep/autobiography/dream/temporal-summary LLM engines */
 export function registerMemoryEngineWires(deps: FullRuntimeDeps): void {
   registerLightSleepEngine((input) => runLightSleepTurn(deps, input));
   registerDeepSleepEngine((input) => runDeepSleepTurn(deps, input));
   registerAutobiographyEngine((input) => runAutobiographyTurn(deps, input));
   registerDreamEngine((input) => runDreamTurn(deps, input));
+  registerTemporalSummaryEngine((input) => runTemporalSummaryTurn(deps, input));
 }

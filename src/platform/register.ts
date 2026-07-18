@@ -3,6 +3,7 @@ export {
   registerServiceIntegrations,
   registerNotificationInject,
   registerMemoryPassiveRecallHook,
+  registerTemporalSummaryPeerInject,
   startAcpProgressTicker,
 } from "./register-integrations.ts";
 export { registerServiceMemoryBus } from "./register-memory.ts";

@@ -7,6 +7,7 @@ import { LIMBIC_COMPONENT } from "./components/limbic.ts";
 import { NARRATIVE_COMPONENT } from "./components/narrative.ts";
 import { SEMANTIC_REF_COMPONENT } from "./components/semantic-ref.ts";
 import { TASK_ITEM_COMPONENT } from "./components/task-item.ts";
+import { TEMPORAL_SUMMARY_COMPONENT } from "./components/temporal-summary.ts";
 
 describe("validateEntityBody", () => {
   test("accepts valid task_item body", () => {
@@ -115,5 +116,14 @@ describe("validateEntityBody", () => {
         intensity: 0.5,
       }),
     ).toThrow(/invalid body for component limbic/);
+  });
+
+  test("accepts temporal_summary body", () => {
+    expect(
+      validateEntityBody([TEMPORAL_SUMMARY_COMPONENT], {
+        window: "day",
+        period_start: "2026-07-18",
+      }),
+    ).toMatchObject({ window: "day", period_start: "2026-07-18" });
   });
 });

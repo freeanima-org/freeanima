@@ -284,6 +284,7 @@ See memory hybrid search in [`memory.md`](memory.md) for FTS operator syntax; en
 | `autobiographical_memory`      | `content_block` + `narrative`（parent = dated `diary_entry`；**done**）                                                    |
 | `limbic_memory`                | `content_block` + `limbic`（parent = dated `diary_entry`；**done**）                                                       |
 | `diary_entry` single body      | Container + child `content_block`s (**done**; migration clears container `content`)                                        |
+| Global temporal digests        | `primary_component=temporal_summary`（day/month/year；见 [`temporal-summary.md`](temporal-summary.md)）                    |
 | `tasks` (legacy)               | `task_item` (when explicitly migrated)                                                                                     |
 | `config.yaml email.accounts`   | `email_account` (see [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts)) |
 | `memory_references`            | relationship table (future)                                                                                                |

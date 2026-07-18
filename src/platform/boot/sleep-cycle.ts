@@ -11,6 +11,8 @@ export const SLEEP_STEP_IDS = {
   dream: "dream",
   memoryRefSync: "memory-ref-sync",
   selfLayerRefresh: "self-layer-refresh",
+  temporalSummaryDay: "temporal-summary-day",
+  temporalSummaryCascade: "temporal-summary-cascade",
 } as const;
 
 /**
@@ -44,6 +46,18 @@ export const sleepCycleDefinition: PipelineDefinition = {
       id: SLEEP_STEP_IDS.selfLayerRefresh,
       handler: SLEEP_STEP_IDS.selfLayerRefresh,
       dependsOn: [SLEEP_STEP_IDS.lightSleep],
+      optional: true,
+    },
+    {
+      id: SLEEP_STEP_IDS.temporalSummaryDay,
+      handler: SLEEP_STEP_IDS.temporalSummaryDay,
+      dependsOn: [SLEEP_STEP_IDS.lightSleep],
+      optional: true,
+    },
+    {
+      id: SLEEP_STEP_IDS.temporalSummaryCascade,
+      handler: SLEEP_STEP_IDS.temporalSummaryCascade,
+      dependsOn: [SLEEP_STEP_IDS.deepSleep],
       optional: true,
     },
     {

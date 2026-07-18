@@ -1,0 +1,18 @@
+import { createEnginePort } from "../engine-port-registry.ts";
+
+export type TemporalSummaryEngineInput = {
+  systemPrompt: string;
+  userMessage: string;
+};
+
+export type TemporalSummaryEngineResult = {
+  content: string;
+};
+
+const port = createEnginePort<TemporalSummaryEngineInput, TemporalSummaryEngineResult>(
+  "Temporal summary LLM",
+);
+
+export const registerTemporalSummaryEngine = port.register.bind(port);
+export const resetTemporalSummaryEngineForTests = port.resetForTests.bind(port);
+export const runTemporalSummaryEngine = port.run.bind(port);

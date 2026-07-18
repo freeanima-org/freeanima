@@ -4,6 +4,7 @@ import { getAcpManager } from "@freeanima/capabilities/acp";
 import { registerClarifyHooks } from "@freeanima/capabilities/tools/clarify";
 import { createAcpProgressDelivery } from "./acp-progress-delivery.ts";
 import { createAcpTaskQueryPort } from "./acp-task-query.ts";
+import { createTemporalPeerInjectHandler } from "./runtime/temporal-summary-inject.ts";
 import type { Kernel } from "@freeanima/kernel";
 import type { Config } from "@freeanima/core/config";
 import { beforeLlmCall } from "@freeanima/core/hooks/loop";
@@ -47,6 +48,11 @@ export function registerNotificationInject(opts: { kernel: Kernel }): void {
 /** Register passive semantic memory recall beforeLlmCall hook */
 export function registerMemoryPassiveRecallHook(opts: { kernel: Kernel }): void {
   registerPassiveRecall(opts);
+}
+
+/** Register temporal-summary peer timeline inject beforeLlmCall hook */
+export function registerTemporalSummaryPeerInject(opts: { kernel: Kernel }): void {
+  opts.kernel.hookRegistry.on(beforeLlmCall, createTemporalPeerInjectHandler());
 }
 
 /** Start ACP progress polling after service startup */

@@ -81,6 +81,27 @@ export function registerUserActivityStatsSystemPromptHook(registry: HookRegistry
   });
 }
 
+export function registerTemporalSummarySystemPromptHook(registry: HookRegistry): void {
+  registry.on(systemPromptBuild, async () => {
+    try {
+      const { getActiveRuntimeConfig } = await import("@freeanima/core/config");
+      const { buildTemporalSummarySystemSection, resolveTemporalSummaryConfig } =
+        await import("@freeanima/capabilities/memory/temporal-summary");
+      const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
+      const content = await buildTemporalSummarySystemSection(config);
+      if (!content.trim()) return { status: "ok" };
+      return {
+        status: "ok",
+        data: {
+          sections: [{ id: "temporal-summary", content, order: 20 }],
+        },
+      };
+    } catch {
+      return { status: "ok" };
+    }
+  });
+}
+
 export function registerSystemPromptHooks(opts: {
   hookRegistry: HookRegistry;
   getToolRegistry: () => ToolSetRegistry;
@@ -91,4 +112,5 @@ export function registerSystemPromptHooks(opts: {
   registerChannelSystemPromptHook(opts.hookRegistry);
   registerEnvHealthSystemPromptHook(opts.hookRegistry);
   registerUserActivityStatsSystemPromptHook(opts.hookRegistry);
+  registerTemporalSummarySystemPromptHook(opts.hookRegistry);
 }

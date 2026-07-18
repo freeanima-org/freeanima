@@ -118,6 +118,7 @@ export function conversationMetaToInsert(
       Object.keys(extra).length > 0 ? extra : undefined,
     ),
     compression: compressionParsed,
+    temporal_day: null,
     todos,
     awaiting_clarify: awaitingParsed,
     acp_tasks: acpParsed,
