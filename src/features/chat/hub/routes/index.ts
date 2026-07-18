@@ -9,6 +9,7 @@ import type { SapRouterOutputs } from "@freeanima/shared/sap-contract";
 import {
   formatSapPlatform,
   normalizeAppSlug,
+  resolveDefaultSapPlatform,
   type SapRequestContext,
 } from "../../protocol/index.ts";
 import { chatMethodDefs } from "../method-defs.ts";
@@ -68,7 +69,7 @@ export const chatHubRoutes = bindHubRouteHandlers(chatMethodDefs, {
   },
   "conversation.list": async (deps, input, ctx) => {
     const sapCtx = ctxOf(ctx);
-    const platform = input.platform ?? formatSapPlatform(sapCtx.app_id, sapCtx.instance_id);
+    const platform = resolveDefaultSapPlatform(input.platform, sapCtx.app_id, sapCtx.instance_id);
     const serviceSessions = await loadServiceSessions();
     const result = await serviceSessions.listConversations(
       depsOf(deps).runtime.runtimeDeps(),
@@ -168,7 +169,7 @@ export const chatHubRoutes = bindHubRouteHandlers(chatMethodDefs, {
   },
   "conversation.commands": async (_deps, input, ctx) => {
     const sapCtx = ctxOf(ctx);
-    const platform = input.platform ?? formatSapPlatform(sapCtx.app_id, sapCtx.instance_id);
+    const platform = resolveDefaultSapPlatform(input.platform, sapCtx.app_id, sapCtx.instance_id);
     const serviceStatus = await loadServiceStatus();
     return serviceStatus.listCommands(
       omitUndefined({

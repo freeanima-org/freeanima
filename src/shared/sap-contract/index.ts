@@ -18,6 +18,7 @@ export {
   isSapPrefixedToolName,
   sapToolsetId,
   formatSapPlatform,
+  resolveDefaultSapPlatform,
   isSapPlatform,
   parseSapPlatform,
   isValidSapInstanceId,

@@ -365,7 +365,10 @@ export const consoleMethodDefs = {
     meta: dualTransportMeta(true),
   }),
   "conversation.adminListAll": defineHubMethod({
-    input: emptyInputSchema,
+    input: z.object({
+      offset: z.coerce.number().int().min(0).optional(),
+      limit: z.coerce.number().int().min(1).optional(),
+    }),
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),

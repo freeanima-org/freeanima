@@ -477,7 +477,16 @@ export const consoleHubRoutes = mergeFeatureRoutes([
   defineHubRouteFromDef(
     "conversation.adminListAll",
     consoleMethodDefs["conversation.adminListAll"],
-    wrapConsoleLegacyHandler(() => listConversations(undefined, { offset: 0, limit: 10_000 })),
+    wrapConsoleLegacyHandler((payload) => {
+      const { offset, limit } = payload as { offset?: number; limit?: number };
+      return listConversations(
+        undefined,
+        omitUndefined({
+          offset: offset ?? 0,
+          limit: limit ?? 10_000,
+        }),
+      );
+    }),
   ),
   defineHubRouteFromDef(
     "conversation.adminCreate",

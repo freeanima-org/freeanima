@@ -28,22 +28,31 @@ export function resetApiClientCache(): void {
   resetHubFetchCache();
 }
 
-export async function listConversations(opts?: {
-  platform?: string;
-  offset?: number;
-  limit?: number;
-}) {
+export async function listConversations(opts?: { offset?: number; limit?: number }) {
+  // 运维面必须走 adminListAll：conversation.list 会按 SAP 上下文默认 platform，
+  // Console HTTP REST 的 app_id/instance_id 为空时会落到 "sap::" 过滤，列表恒为空。
   const raw = await hub().call(
-    "conversation.list",
+    "conversation.adminListAll",
     omitUndefined({
-      platform: opts?.platform,
       offset: opts?.offset,
       limit: opts?.limit,
     }),
   );
+  const rows = (
+    raw as {
+      conversations: Array<{
+        conversation_id: string;
+        title?: string;
+        platform?: string;
+        updated_at?: string;
+        archived_at?: string | null;
+      }>;
+      total?: number;
+    }
+  ).conversations;
   const total = (raw as { total?: number }).total;
   return reviveDates({
-    conversations: raw.conversations.map(
+    conversations: rows.map(
       (s): ConversationSummary => ({
         id: s.conversation_id,
         title: s.title ?? "",

@@ -11,6 +11,7 @@ import {
   normalizeInstanceId,
   parseSapPlatform,
   parseSapToolName,
+  resolveDefaultSapPlatform,
 } from "./naming.ts";
 import { assertSapInstanceId, generateSapInstanceIdCandidate } from "./instance-id.ts";
 
@@ -32,6 +33,14 @@ describe("sap naming", () => {
       expect(parsed.value.app_slug).toBe("companion");
       expect(parsed.value.instance_id_norm).toBe("k7m");
     }
+  });
+
+  it("resolveDefaultSapPlatform skips empty REST sap ctx", () => {
+    expect(resolveDefaultSapPlatform(undefined, "", "")).toBeUndefined();
+    expect(resolveDefaultSapPlatform(undefined, "  ", "")).toBeUndefined();
+    expect(resolveDefaultSapPlatform(undefined, "companion", "k7m")).toBe("sap:companion:k7m");
+    expect(resolveDefaultSapPlatform("chat", "", "")).toBe("chat");
+    expect(resolveDefaultSapPlatform("  ", "companion", "k7m")).toBeUndefined();
   });
 
   it("validates hub instance ids", () => {
