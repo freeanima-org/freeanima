@@ -7,6 +7,9 @@
 #   WEB_DEV_PORT  Vite 起始端口（默认 5000；占用则 Vite 自增）
 #   FREEANIMA_URL 由本脚本写入，仅作 Vite /hub|/mcp proxy 目标
 set -euo pipefail
+# 后台 job 各自成进程组（pgid == 首进程 pid），便于 Ctrl+C / EXIT 时整组杀掉，
+# 避免只 kill「bun run」包装进程而留下 dev-hub / vite 孙进程。
+set -m
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
@@ -31,8 +34,12 @@ bun run dev:web &
 web_pid=$!
 
 cleanup() {
-  kill "$hub_pid" "$web_pid" 2>/dev/null || true
+  trap - EXIT INT TERM
+  # 负 pid = 杀整个进程组（含 bun run → bun/node 孙进程）
+  kill -TERM -- -"$hub_pid" -"$web_pid" 2>/dev/null || true
   wait "$hub_pid" "$web_pid" 2>/dev/null || true
+  # 仍存活则强杀（个别子进程忽略 TERM 时）
+  kill -KILL -- -"$hub_pid" -"$web_pid" 2>/dev/null || true
 }
 trap cleanup EXIT INT TERM
 
