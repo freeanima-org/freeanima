@@ -1,5 +1,6 @@
 import { eq, inArray, sql as drizzleSql, type SQL } from "drizzle-orm";
 import { SEMANTIC_MEMORY_COMPONENT, entities } from "@freeanima/core/db/schema";
+import { pgTextArray } from "../../utils/pg-sql.ts";
 
 export function buildSemanticTypeCondition(types: readonly string[]): SQL | undefined {
   if (types.length === 0) return undefined;
@@ -26,10 +27,7 @@ export function buildSemanticSourceConversationsCondition(
 ): SQL | undefined {
   if (source_conversations.length === 0) return undefined;
   const ids = [...source_conversations];
-  return drizzleSql`EXISTS (
-    SELECT 1 FROM jsonb_array_elements_text(COALESCE(${entities.body}->'source_conversations', '[]'::jsonb)) AS e(val)
-    WHERE e.val = ANY(${ids})
-  )`;
+  return drizzleSql`(${entities.body}->'source_conversations') ?| ${pgTextArray(ids)}`;
 }
 
 export function buildSemanticPrimaryCondition(): SQL {

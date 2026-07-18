@@ -40,7 +40,7 @@ android: _deps
 
 # ─── 质量门禁 ───────────────────────────────────────────────────────
 
-# PR 前：typecheck + lint + import-depth + stylelint + format + test:changed
+# PR 前：typecheck + lint + import-depth + pg-sql-arrays + stylelint + format + test:changed
 check: _deps
   bun run check
 

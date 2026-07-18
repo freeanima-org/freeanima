@@ -13,6 +13,7 @@ import {
   findSemanticMemoryByContent,
   getSemanticMemory,
   listResidentSemanticMemory,
+  listSemanticMemoryBySourceSessions,
   searchSemanticMemory,
   searchSemanticMemoryFts,
   updateSemanticMemory,
@@ -103,6 +104,41 @@ describePg("semantic_memory PG", () => {
     const page2 = await searchSemanticMemory({ query: "offset probe", limit: 1, offset: 1 });
     expect(page2.length).toBe(1);
     expect(page2[0]?.id).not.toBe(page[0]?.id);
+  });
+
+  it("listSemanticMemoryBySourceSessions matches single and multi ids", async () => {
+    const idA = await createSemanticMemory({
+      content: "source session probe A",
+      type: "world",
+      source_conversations: ["20260715_200624_d0d8"],
+    });
+    const idB = await createSemanticMemory({
+      content: "source session probe B",
+      type: "world",
+      source_conversations: ["sess-b", "sess-c"],
+    });
+    await createSemanticMemory({
+      content: "source session probe unrelated",
+      type: "world",
+      source_conversations: ["other-sess"],
+    });
+
+    const single = await listSemanticMemoryBySourceSessions(["20260715_200624_d0d8"], {
+      status: "active",
+    });
+    expect(single.map((r) => r.id)).toContain(idA);
+    expect(single.every((r) => r.source_conversations.includes("20260715_200624_d0d8"))).toBe(true);
+
+    const multi = await listSemanticMemoryBySourceSessions(["sess-b", "sess-c"], {
+      status: "active",
+    });
+    expect(multi.map((r) => r.id)).toContain(idB);
+    expect(
+      multi.every(
+        (r) =>
+          r.source_conversations.includes("sess-b") || r.source_conversations.includes("sess-c"),
+      ),
+    ).toBe(true);
   });
 
   afterAll(async () => {
