@@ -85,6 +85,7 @@ function mapBrowseRow(row: {
     body: (row.body ?? {}) as Record<string, unknown>,
     pinned: row.pinned ?? false,
     reference_count: row.reference_count ?? 0,
+    tag_ids: [],
     created_at: row.created_at,
     updated_at: row.updated_at,
   };

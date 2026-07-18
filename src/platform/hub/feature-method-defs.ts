@@ -6,6 +6,7 @@ import { mcpMethodDefs } from "@freeanima/features/mcp/hub/method-defs.ts";
 import { notificationMethodDefs } from "@freeanima/features/notification/hub/method-defs.ts";
 import { pomodoroMethodDefs } from "@freeanima/features/pomodoro/hub/method-defs.ts";
 import { projectMethodDefs } from "@freeanima/features/project/hub/method-defs.ts";
+import { tagMethodDefs } from "@freeanima/features/tag/hub/method-defs.ts";
 import { taskMethodDefs } from "@freeanima/features/task/hub/method-defs.ts";
 import { vaultMethodDefs } from "@freeanima/features/vault/hub/method-defs.ts";
 
@@ -14,6 +15,7 @@ export const FEATURE_METHOD_DEFS = {
   ...chatMethodDefs,
   ...taskMethodDefs,
   ...projectMethodDefs,
+  ...tagMethodDefs,
   ...vaultMethodDefs,
   ...emailMethodDefs,
   ...diaryMethodDefs,

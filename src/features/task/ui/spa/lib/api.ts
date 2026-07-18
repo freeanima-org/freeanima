@@ -19,8 +19,12 @@ import {
   offlineUpdateTaskItem,
   offlineUpdateTaskList,
   registerTaskOfflineModule,
+  seedLocalTaskItems,
+  type OfflineUpdateTaskItemOpts,
 } from "./offline-store.ts";
 import { readCachedTaskItems, readCachedTaskLists } from "./offline-cache.ts";
+
+export { seedLocalTaskItems };
 
 let taskModuleRegistered = false;
 
@@ -231,7 +235,7 @@ export async function createTaskItem(input: {
   title: string;
   list_id: number;
   content?: string;
-  tags?: string[];
+  tag_ids?: number[];
   priority?: TaskItemRow["priority"];
   due_at?: string | null;
   sort_order?: number;
@@ -247,7 +251,7 @@ export async function updateTaskItem(
       TaskItemRow,
       | "title"
       | "content"
-      | "tags"
+      | "tag_ids"
       | "priority"
       | "due_at"
       | "milestone_id"
@@ -255,9 +259,10 @@ export async function updateTaskItem(
       | "sort_order"
     >
   >,
+  opts?: OfflineUpdateTaskItemOpts,
 ): Promise<TaskItemRow> {
   ensureTaskOfflineModule();
-  return offlineUpdateTaskItem(id, patch);
+  return offlineUpdateTaskItem(id, patch, opts);
 }
 
 export async function moveTaskItemToList(

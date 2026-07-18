@@ -63,6 +63,7 @@ export async function createEntity(
       body,
       pinned: input.pinned ?? false,
       reference_count: input.reference_count ?? 0,
+      tag_ids: input.tag_ids ?? [],
       fts_segmented,
       created_at: input.created_at ?? now,
       updated_at: input.updated_at ?? input.created_at ?? now,
@@ -101,6 +102,7 @@ export async function createEntityAtId(input: EntityCreateAtIdInput): Promise<En
       summary,
       content,
       body,
+      tag_ids: input.tag_ids ?? [],
       fts_segmented,
       created_at: now,
       updated_at: now,
@@ -164,6 +166,7 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
   if (input.world_id !== undefined) patch.world_id = input.world_id;
   if (input.pinned !== undefined) patch.pinned = input.pinned;
   if (input.reference_count !== undefined) patch.reference_count = input.reference_count;
+  if (input.tag_ids !== undefined) patch.tag_ids = input.tag_ids;
 
   const textChanged =
     input.title !== undefined ||

@@ -304,7 +304,7 @@ export async function updateProjectTask(
       TaskItemRow,
       | "title"
       | "content"
-      | "tags"
+      | "tag_ids"
       | "priority"
       | "due_at"
       | "milestone_id"

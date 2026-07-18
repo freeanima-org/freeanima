@@ -26,6 +26,8 @@ export const entities = pgTable(
     pinned: boolean("pinned").notNull().default(false),
     /** Entity-level citation weight sum（[[anima:id]]） */
     reference_count: real("reference_count").notNull().default(0),
+    /** 关联 tag entity id（primary_component=tag）；per-World 标签池 */
+    tag_ids: bigint("tag_ids", { mode: "number" }).array().notNull().default([]),
     fts_segmented: text("fts_segmented"),
     search_embedding: vector("search_embedding", { dimensions: SEMANTIC_EMBEDDING_DIMENSIONS }),
     search_fts: tsvector("search_fts").generatedAlwaysAs(
@@ -61,6 +63,7 @@ export const entities = pgTable(
       t.pinned,
       t.updated_at.desc(),
     ),
+    index("idx_entities_tag_ids").using("gin", t.tag_ids),
     // HNSW / gin_trgm / body 表达式索引：见 migrations 追加 SQL（drizzle-kit 难表达 opclass / partial）
   ],
 );

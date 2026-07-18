@@ -6,7 +6,7 @@ export type TaskItemDisplay = {
   id: number;
   title: string;
   content: string;
-  tags: string[];
+  tag_ids: number[];
   status: TaskItemStatus;
   priority: TaskItemPriority;
   due_at: string | null;
@@ -26,7 +26,7 @@ export function priorityDot(priority: TaskItemPriority): string {
 }
 
 export function cloneTaskItemDisplay<T extends TaskItemDisplay>(item: T): T {
-  return { ...item, tags: [...item.tags] };
+  return { ...item, tag_ids: [...item.tag_ids] };
 }
 
 export function isTaskItemDisplayEqual(a: TaskItemDisplay, b: TaskItemDisplay): boolean {
@@ -36,8 +36,8 @@ export function isTaskItemDisplayEqual(a: TaskItemDisplay, b: TaskItemDisplay): 
     a.status === b.status &&
     a.priority === b.priority &&
     a.due_at === b.due_at &&
-    a.tags.length === b.tags.length &&
-    a.tags.every((t, i) => t === b.tags[i])
+    a.tag_ids.length === b.tag_ids.length &&
+    a.tag_ids.every((t, i) => t === b.tag_ids[i])
   );
 }
 

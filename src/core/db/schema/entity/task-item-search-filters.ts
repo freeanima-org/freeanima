@@ -13,7 +13,9 @@ export const taskItemSearchFiltersSchema = z
     list_ids: z.array(z.number().int().positive()).min(1).optional(),
     status: z.union([taskItemStatusSchema, z.literal("all")]).optional(),
     priority: taskItemPrioritySchema.optional(),
+    /** @deprecated 字符串标签；任务试点改用顶层 / filters.tag_ids */
     tags: z.array(z.string()).optional(),
+    tag_ids: z.array(z.number().int().positive()).optional(),
     due_today: z.boolean().optional(),
     due_before: z.string().optional(),
     due_after: z.string().optional(),

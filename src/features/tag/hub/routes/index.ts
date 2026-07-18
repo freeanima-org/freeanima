@@ -1,0 +1,44 @@
+import { omitUndefined } from "@freeanima/core/util";
+import type { SapRequestContext } from "@freeanima/shared/sap-contract";
+import { bindHubRouteHandlers } from "@freeanima/shared/hub-contract/route.ts";
+
+import { tagMethodDefs } from "../method-defs.ts";
+import type { RuntimeDeps } from "../runtime-deps.ts";
+import * as service from "../service.ts";
+
+type TagSapServerDeps = {
+  runtime: {
+    runtimeDeps(): RuntimeDeps;
+  };
+};
+
+function depsOf(deps: unknown): TagSapServerDeps {
+  return deps as TagSapServerDeps;
+}
+
+function ctxAuth(ctx: unknown) {
+  return (ctx as SapRequestContext).auth;
+}
+
+export const tagHubRoutes = bindHubRouteHandlers(tagMethodDefs, {
+  "tag.list": async (deps, input, ctx) =>
+    service.serviceTagList(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input), ctxAuth(ctx)),
+  "tag.search": async (deps, input, ctx) =>
+    service.serviceTagSearch(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
+  "tag.create": async (deps, input, ctx) =>
+    service.serviceTagCreate(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
+  "tag.patch": async (deps, input, ctx) =>
+    service.serviceTagPatch(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input), ctxAuth(ctx)),
+  "tag.delete": async (deps, input, ctx) =>
+    service.serviceTagDelete(depsOf(deps).runtime.runtimeDeps(), input, ctxAuth(ctx)),
+  "tag.setOnEntity": async (deps, input, ctx) =>
+    service.serviceTagSetOnEntity(depsOf(deps).runtime.runtimeDeps(), input, ctxAuth(ctx)),
+});

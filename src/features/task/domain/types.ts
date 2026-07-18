@@ -30,7 +30,7 @@ export type TaskListUpdateInput = {
 export type TaskItemCreateInput = {
   title: string;
   content?: string;
-  tags?: string[];
+  tag_ids?: number[];
   /** 任务模块必填；与 project_id 互斥 */
   list_id?: number | null;
   priority?: TaskItemPriority;
@@ -47,7 +47,7 @@ export type TaskItemUpdateInput = {
   id: number;
   title?: string;
   content?: string;
-  tags?: string[];
+  tag_ids?: number[];
   list_id?: number | null;
   project_id?: number | null;
   milestone_id?: number | null;
@@ -80,7 +80,7 @@ export type TaskItemListOpts = {
   list_id?: number;
   status?: "pending" | "completed" | "all";
   due_today?: boolean;
-  tags?: string[];
+  tag_ids?: number[];
   project_id?: number;
   in_backlog?: boolean;
   filters?: TaskItemSearchFilters;

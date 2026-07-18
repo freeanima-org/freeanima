@@ -76,6 +76,7 @@ export async function searchSemanticMemoryTrgm(
       body: (r.body ?? {}) as Record<string, unknown>,
       pinned: r.pinned ?? false,
       reference_count: r.reference_count ?? 0,
+      tag_ids: [],
       created_at: r.created_at,
       updated_at: r.updated_at,
     };

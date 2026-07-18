@@ -20,16 +20,15 @@ export const WORLD_ID_TOOL_PROPERTY = {
   description: "Owning world id (see system prompt: user_world_id / agent_world_id)",
 } as const;
 
-export function parseTags(raw: unknown): string[] | undefined {
+export function parseTagIds(raw: unknown): number[] | undefined {
   if (raw == null) return undefined;
-  if (Array.isArray(raw)) return raw.map((v) => String(v));
-  if (typeof raw === "string") {
-    return raw
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
+  if (!Array.isArray(raw)) return undefined;
+  const out: number[] = [];
+  for (const item of raw) {
+    const id = Number(item);
+    if (Number.isFinite(id) && id > 0) out.push(Math.floor(id));
   }
-  return undefined;
+  return out;
 }
 
 export function itemPayload(item: TaskItemRow) {
@@ -37,7 +36,7 @@ export function itemPayload(item: TaskItemRow) {
     id: item.id,
     title: item.title,
     content: item.content,
-    tags: item.tags,
+    tag_ids: item.tag_ids,
     status: item.status,
     priority: item.priority,
     due_at: item.due_at,

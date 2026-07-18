@@ -184,7 +184,7 @@ export function ProjectApp() {
       updateProjectTask(subjectKind, snapshot.id, {
         title: snapshot.title,
         content: snapshot.content,
-        tags: snapshot.tags,
+        tag_ids: snapshot.tag_ids,
         priority: snapshot.priority,
         due_at: snapshot.due_at,
         status: snapshot.status,

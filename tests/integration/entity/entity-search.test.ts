@@ -2,6 +2,7 @@ import { afterEach, beforeEach, expect, it } from "bun:test";
 
 import { TASK_ITEM_COMPONENT } from "@freeanima/core/db/schema/entity";
 import { createTaskItem, createTaskList, searchTaskItems } from "@freeanima/features/task/domain";
+import { createTag } from "@freeanima/features/tag/domain";
 import { createDiaryEntry, searchDiaryEntries } from "@freeanima/features/diary/domain";
 import { EntitySearchScopeError, searchEntities } from "@freeanima/core/db/pg/entity";
 import { describePg } from "../../helpers/pg-test-gate.ts";
@@ -24,16 +25,18 @@ describePg("entity search PG", () => {
     await restoreIntegrationHome(prev);
   });
 
-  it("filters task_item by status and tags in SQL", async () => {
+  it("filters task_item by tag_ids in SQL", async () => {
     const worldId = testUserWorldId();
     const list = await createTaskList(worldId, { name: "搜索测试" });
-    await createTaskItem(worldId, { title: "部署上线", tags: ["工作"], list_id: list.id });
-    await createTaskItem(worldId, { title: "买菜", tags: ["生活"], list_id: list.id });
+    const work = await createTag(worldId, { title: "工作" });
+    const life = await createTag(worldId, { title: "生活" });
+    await createTaskItem(worldId, { title: "部署上线", tag_ids: [work.id], list_id: list.id });
+    await createTaskItem(worldId, { title: "买菜", tag_ids: [life.id], list_id: list.id });
 
     const hits = await searchEntities({
       world_id: worldId,
       primary_component: TASK_ITEM_COMPONENT,
-      filters: { tags: ["工作"] },
+      tag_ids: [work.id],
       mode: "filter_only",
     });
     expect(hits.results.some((r) => r.title === "部署上线")).toBe(true);

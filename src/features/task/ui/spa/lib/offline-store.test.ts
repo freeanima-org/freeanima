@@ -39,7 +39,7 @@ function item(
 ): TaskItemRow {
   return {
     content: "",
-    tags: [],
+    tag_ids: [],
     status: "pending",
     priority: "none",
     due_at: null,
@@ -159,5 +159,27 @@ describe("offlineUpdateTaskItem temp id resolve", () => {
     const ops = await listOutboxOps(scope, "task");
     const patch = ops.find((op) => op.method === "task.patch");
     expect(patch?.payload.id).toBe(serverId);
+  });
+
+  it("本地缓存未命中时可用 seed 写入后再 patch（智能清单场景）", async () => {
+    const scope = resolveOutboxScope();
+    const listId = 17;
+    await writeOfflineCache(scope, "tasks", "lists", [list({ id: listId, name: "testlist2" })]);
+    // 故意不写 items 缓存，模拟智能清单只拉了内存行
+
+    const seed = item({
+      id: 53,
+      title: "33",
+      list_id: listId,
+      tag_ids: [],
+    });
+    const updated = await offlineUpdateTaskItem(53, { tag_ids: [1, 2] }, { seed });
+    expect(updated.id).toBe(53);
+    expect(updated.tag_ids).toEqual([1, 2]);
+
+    const ops = await listOutboxOps(scope, "task");
+    const patch = ops.find((op) => op.method === "task.patch");
+    expect(patch?.payload.id).toBe(53);
+    expect(patch?.payload.tag_ids).toEqual([1, 2]);
   });
 });
