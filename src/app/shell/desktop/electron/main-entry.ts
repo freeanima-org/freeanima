@@ -14,5 +14,9 @@ if (quitForInstall) {
     void app.whenReady().then(() => app.exit(0));
   }
 } else {
-  void import("./main.ts");
+  // 须在 main 内任何 Hub HTTPS/WSS 之前合并 OS CA（mkcert rootCA）
+  void import("./trust-system-ca.ts").then(({ applyTrustSystemCaAtStartup }) => {
+    applyTrustSystemCaAtStartup();
+    return import("./main.ts");
+  });
 }

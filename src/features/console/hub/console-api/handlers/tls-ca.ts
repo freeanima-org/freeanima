@@ -73,7 +73,7 @@ export async function getTlsCaInfo(request: Request): Promise<TlsCaInfoResponse>
       ...(qr_data_url ? { qr_data_url } : {}),
       filename: "rootCA.pem",
       install_hint:
-        "在手机/其他设备上安装此 mkcert 根 CA 后，再访问 HTTPS 端口即可消除证书警告与脚本加载错误。iOS 还需在「证书信任设置」中启用完全信任。",
+        "在桌面/手机等客户端的操作系统中安装此 mkcert 根 CA 后，再访问 HTTPS 端口即可消除证书警告、桌面壳「测试连接」失败与脚本加载错误。iOS 还需在「证书信任设置」中启用完全信任。",
     };
   }
 

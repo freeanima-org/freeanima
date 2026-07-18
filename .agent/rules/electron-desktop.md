@@ -40,12 +40,20 @@ Windows 安装包需在目标机 **冷启动** 验证一次（无开发用 node_
 - 首次启动未配置 Hub API Token：打开 `/settings`（连接），companion SAP **延后连接**（有 token 后再 `reconnectCompanionSap`）。
 - 主窗口 UI：默认本地 `vendor/shell-ui`（来自 `web/dist`）；调试用 `DESKTOP_SHELL_VITE_URL` 或 `DESKTOP_UI_MODE=remote`。
 
+## 主进程 TLS（mkcert / 系统 CA）
+
+Node 默认信任库**不含** OS 证书。Hub `http.tls` + mkcert 时，主进程 `fetch` / WSS（`shell:settings:test`、companion）会证书校验失败，而渲染进程（Chromium）在系统已信任 rootCA 后可通。
+
+- **启动最早**：`electron/main-entry.ts` 在加载 `main.ts` 前调用 `applyTrustSystemCaAtStartup()`（`trust-system-ca.ts`：`tls.getCACertificates('system'|'bundled')` → `setDefaultCACertificates`）。
+- 客户端仍须把 Hub 的 `rootCA.pem` 装进 **OS** 信任库（或 Hub 本机 `mkcert -install`）；见 [`docs/guide/remote-access.md`](../../docs/guide/remote-access.md)。
+
 ## 相关文件
 
 | 文件                                      | 作用                                             |
 | ----------------------------------------- | ------------------------------------------------ |
 | `build-electron.ts`                       | esbuild 配置、vendor 构建、electron-builder 调用 |
 | `electron-main-bundle-assert.ts`          | main.cjs 不变量                                  |
+| `electron/trust-system-ca.ts`             | 主进程合并 OS CA（mkcert HTTPS）                 |
 | `electron-builder.yml`                    | 打进 asar 的文件清单（无 node_modules）          |
 | `.github/workflows/package-artifacts.yml` | canary/release 共用打包（Linux 交叉编 Windows）  |
 | `.github/workflows/package-manual.yml`    | 手动重打                                         |
