@@ -5,7 +5,6 @@ import { notificationRecipientKindSchema } from "./notification.ts";
 const projectSubjectKindSchema = notificationRecipientKindSchema.default("user");
 
 export const projectStatusSchema = z.enum(["active", "completed", "cancelled", "on_hold"]);
-export const milestoneStatusSchema = z.enum(["pending", "in_progress", "completed", "delayed"]);
 
 export const projectFolderRowSchema = z.object({
   id: z.number().int().positive(),
@@ -25,32 +24,17 @@ export const projectRowSchema = z.object({
   folder_id: z.number().int().positive().nullable(),
   start_at: z.string(),
   end_at: z.string(),
-  completion_criteria: z.string(),
   status: projectStatusSchema,
   product_tag: z.string().nullable(),
   sort_order: z.number().int(),
   /** 次要数据：仅 project.stats 返回；list/get/create/patch 省略 */
   task_count: z.number().int().nonnegative().optional(),
-  milestone_count: z.number().int().nonnegative(),
   linked_diary_ids: z.array(z.number().int().positive()),
   created_at: z.string(),
   updated_at: z.string(),
 });
 
 export type ProjectRowPayload = z.infer<typeof projectRowSchema>;
-
-export const milestoneRowSchema = z.object({
-  id: z.number().int().positive(),
-  title: z.string(),
-  project_id: z.number().int().positive(),
-  due_at: z.string(),
-  status: milestoneStatusSchema,
-  sort_order: z.number().int(),
-  created_at: z.string(),
-  updated_at: z.string(),
-});
-
-export type MilestoneRowPayload = z.infer<typeof milestoneRowSchema>;
 
 export const projectfolderListInputSchema = z.object({
   subject_kind: projectSubjectKindSchema,
@@ -123,7 +107,6 @@ export const projectCreateInputSchema = z.object({
   title: z.string().min(1),
   start_at: z.string().min(1),
   end_at: z.string().min(1),
-  completion_criteria: z.string().min(1),
   content: z.string().optional(),
   folder_id: z.number().int().positive().nullable().optional(),
   product_tag: z.string().optional(),
@@ -148,7 +131,6 @@ export const projectPatchInputSchema = z.object({
   title: z.string().min(1).optional(),
   start_at: z.string().optional(),
   end_at: z.string().optional(),
-  completion_criteria: z.string().optional(),
   content: z.string().optional(),
   folder_id: z.number().int().positive().nullable().optional(),
   product_tag: z.string().nullable().optional(),
@@ -170,44 +152,3 @@ export const projectDeleteInputSchema = z.object({
 export type ProjectDeleteInput = z.infer<typeof projectDeleteInputSchema>;
 export const projectDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type ProjectDeleteOutput = z.infer<typeof projectDeleteOutputSchema>;
-
-export const milestoneListInputSchema = z.object({
-  subject_kind: projectSubjectKindSchema,
-  project_id: z.number().int().positive(),
-});
-export type MilestoneListInput = z.infer<typeof milestoneListInputSchema>;
-export const milestoneListOutputSchema = z.object({ milestones: z.array(milestoneRowSchema) });
-export type MilestoneListOutput = z.infer<typeof milestoneListOutputSchema>;
-
-export const milestoneCreateInputSchema = z.object({
-  subject_kind: projectSubjectKindSchema,
-  project_id: z.number().int().positive(),
-  title: z.string().min(1),
-  due_at: z.string().min(1),
-  sort_order: z.number().int().optional(),
-  client_op_id: z.string().min(1).optional(),
-});
-export type MilestoneCreateInput = z.infer<typeof milestoneCreateInputSchema>;
-export const milestoneCreateOutputSchema = z.object({ item: milestoneRowSchema });
-export type MilestoneCreateOutput = z.infer<typeof milestoneCreateOutputSchema>;
-
-export const milestonePatchInputSchema = z.object({
-  subject_kind: projectSubjectKindSchema,
-  id: z.number().int().positive(),
-  title: z.string().min(1).optional(),
-  due_at: z.string().optional(),
-  status: milestoneStatusSchema.optional(),
-  sort_order: z.number().int().optional(),
-  client_op_id: z.string().min(1).optional(),
-});
-export type MilestonePatchInput = z.infer<typeof milestonePatchInputSchema>;
-export const milestonePatchOutputSchema = z.object({ item: milestoneRowSchema });
-export type MilestonePatchOutput = z.infer<typeof milestonePatchOutputSchema>;
-
-export const milestoneDeleteInputSchema = z.object({
-  subject_kind: projectSubjectKindSchema,
-  id: z.number().int().positive(),
-});
-export type MilestoneDeleteInput = z.infer<typeof milestoneDeleteInputSchema>;
-export const milestoneDeleteOutputSchema = z.object({ ok: z.literal(true) });
-export type MilestoneDeleteOutput = z.infer<typeof milestoneDeleteOutputSchema>;

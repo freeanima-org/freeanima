@@ -2,9 +2,7 @@ import {
   TASK_ITEM_COMPONENT,
   TAG_COMPONENT,
   asTaskItem,
-  asMilestone,
   asProject,
-  MILESTONE_COMPONENT,
   PROJECT_COMPONENT,
   TASK_LIST_COMPONENT,
   type EntityRow,
@@ -38,22 +36,6 @@ async function assertProjectActiveForTask(projectId: number, worldId: number): P
   if (!parsed) throw new Error("project not found");
   if (parsed.status === "on_hold") {
     throw new Error("project is on hold");
-  }
-}
-
-async function assertMilestoneInProjectForTask(
-  milestoneId: number,
-  projectId: number,
-  worldId: number,
-): Promise<void> {
-  const row = await getEntity(milestoneId);
-  if (!row || row.primary_component !== MILESTONE_COMPONENT) {
-    throw new Error("milestone not found");
-  }
-  await assertEntityInWorld(milestoneId, worldId);
-  const parsed = asMilestone(row);
-  if (!parsed || parsed.project_id !== projectId) {
-    throw new Error("milestone does not belong to project");
   }
 }
 
@@ -94,7 +76,6 @@ function toItemRow(entity: EntityRow): TaskItemRow {
     remind_at: row.remind_at ?? null,
     list_id: row.list_id ?? null,
     project_id: row.project_id ?? null,
-    milestone_id: row.milestone_id ?? null,
     sort_order: row.sort_order ?? 0,
     completed_at: row.completed_at ?? null,
     created_at: entity.created_at.toISOString(),
@@ -186,9 +167,6 @@ export async function createTaskItem(
   }
   if (input.project_id != null) {
     await assertProjectActiveForTask(input.project_id, worldId);
-    if (input.milestone_id != null) {
-      await assertMilestoneInProjectForTask(input.milestone_id, input.project_id, worldId);
-    }
   }
   const tagIds = normalizeTagIds(input.tag_ids);
   await assertTagIdsInWorld(worldId, tagIds);
@@ -205,7 +183,6 @@ export async function createTaskItem(
     completed_at: null,
     client_op_id: input.client_op_id ?? null,
     project_id: projectId,
-    ...(input.milestone_id != null && hasProject ? { milestone_id: input.milestone_id } : {}),
   };
 
   const row = await createEntity({
@@ -252,7 +229,6 @@ export async function updateTaskItem(
     await assertSameWorldReferent(input.id, input.list_id);
     bodyPatch.list_id = input.list_id;
     bodyPatch.project_id = null;
-    bodyPatch.milestone_id = null;
   }
   if (input.project_id !== undefined) {
     if (input.project_id != null) {
@@ -260,27 +236,10 @@ export async function updateTaskItem(
       await assertSameWorldReferent(input.id, input.project_id);
       bodyPatch.project_id = input.project_id;
       bodyPatch.list_id = null;
-      if (input.project_id !== parsedExisting.project_id) {
-        bodyPatch.milestone_id = null;
-      }
     } else if (input.list_id === undefined) {
       throw new Error("list_id required when leaving project");
     } else {
       bodyPatch.project_id = null;
-      bodyPatch.milestone_id = null;
-    }
-  }
-  if (input.milestone_id !== undefined) {
-    const projectId =
-      input.project_id !== undefined ? input.project_id : (parsedExisting.project_id ?? null);
-    if (input.milestone_id != null) {
-      if (projectId == null) {
-        throw new Error("milestone requires project_id");
-      }
-      await assertMilestoneInProjectForTask(input.milestone_id, projectId, worldId);
-      bodyPatch.milestone_id = input.milestone_id;
-    } else if (bodyPatch.milestone_id === undefined) {
-      bodyPatch.milestone_id = null;
     }
   }
   if (input.priority !== undefined) bodyPatch.priority = input.priority;

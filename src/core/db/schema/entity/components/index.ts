@@ -26,7 +26,6 @@ import { TASK_LIST_COMPONENT, taskListBodySchema } from "./task-list.ts";
 import { SMART_LIST_COMPONENT, smartListBodySchema } from "./smart-list.ts";
 import { PROJECT_FOLDER_COMPONENT, projectFolderBodySchema } from "./project-folder.ts";
 import { PROJECT_COMPONENT, projectBodySchema } from "./project.ts";
-import { MILESTONE_COMPONENT, milestoneBodySchema } from "./milestone.ts";
 import { TAG_COMPONENT, tagBodySchema } from "./tag.ts";
 import { USER_CONFIG_COMPONENT, userConfigBodySchema } from "./user-config.ts";
 import { WORLD_CONFIG_COMPONENT, worldConfigBodySchema } from "./world-config.ts";
@@ -40,7 +39,6 @@ export const COMPONENT_IDS = [
   TASK_ITEM_COMPONENT,
   PROJECT_FOLDER_COMPONENT,
   PROJECT_COMPONENT,
-  MILESTONE_COMPONENT,
   TAG_COMPONENT,
   DIARY_ENTRY_COMPONENT,
   CONTENT_BLOCK_COMPONENT,
@@ -74,7 +72,6 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [TASK_ITEM_COMPONENT]: taskItemBodySchema,
   [PROJECT_FOLDER_COMPONENT]: projectFolderBodySchema,
   [PROJECT_COMPONENT]: projectBodySchema,
-  [MILESTONE_COMPONENT]: milestoneBodySchema,
   [TAG_COMPONENT]: tagBodySchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntryBodySchema,
   [CONTENT_BLOCK_COMPONENT]: contentBlockBodySchema,
@@ -113,7 +110,6 @@ export * from "./smart-list.ts";
 export * from "./task-item.ts";
 export * from "./project-folder.ts";
 export * from "./project.ts";
-export * from "./milestone.ts";
 export * from "./tag.ts";
 export * from "./diary-entry.ts";
 export * from "./dream.ts";

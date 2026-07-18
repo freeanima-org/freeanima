@@ -45,7 +45,6 @@ function item(
     due_at: null,
     remind_at: null,
     project_id: null,
-    milestone_id: null,
     sort_order: 0,
     completed_at: null,
     created_at: "2026-07-15T00:00:00.000Z",

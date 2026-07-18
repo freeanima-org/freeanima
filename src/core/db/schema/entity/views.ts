@@ -12,7 +12,6 @@ import {
   SMART_LIST_COMPONENT,
   PROJECT_FOLDER_COMPONENT,
   PROJECT_COMPONENT,
-  MILESTONE_COMPONENT,
   TAG_COMPONENT,
   VAULT_CONFIG_COMPONENT,
   VAULT_ITEM_COMPONENT,
@@ -32,7 +31,6 @@ import {
   smartListBodySchema,
   projectFolderBodySchema,
   projectBodySchema,
-  milestoneBodySchema,
   tagBodySchema,
   vaultConfigBodySchema,
   vaultItemBodySchema,
@@ -52,7 +50,6 @@ import {
   type SmartListBody,
   type ProjectFolderBody,
   type ProjectBody,
-  type MilestoneBody,
   type TagBody,
   type VaultConfigBody,
   type VaultItemBody,
@@ -298,14 +295,6 @@ export function asProject(
   return parsed.success
     ? { id: row.id, title: row.title, content: row.content, ...parsed.data }
     : null;
-}
-
-export function asMilestone(
-  row: EntityRow,
-): (MilestoneBody & { id: number; title: string }) | null {
-  if (row.primary_component !== MILESTONE_COMPONENT) return null;
-  const parsed = milestoneBodySchema.safeParse(row.body);
-  return parsed.success ? { id: row.id, title: row.title, ...parsed.data } : null;
 }
 
 export function asTag(row: EntityRow): (TagBody & { id: number; title: string }) | null {

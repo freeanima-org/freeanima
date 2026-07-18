@@ -5,15 +5,12 @@ import type { ToolSetRegistry } from "@freeanima/core/tool";
 import type { ProjectStatus } from "@freeanima/core/db/schema/entity";
 
 import {
-  createMilestone,
   createProject,
   createProjectFolder,
   deleteProject,
   getProject,
-  listMilestones,
   listProjectFolders,
   listProjects,
-  updateMilestone,
   updateProject,
 } from "./index.ts";
 import { PROJECT_TOOL_RETURNS } from "./return-schemas.ts";
@@ -61,7 +58,6 @@ function projectPayload(row: Awaited<ReturnType<typeof getProject>> & object) {
     start_at: row.start_at,
     end_at: row.end_at,
     folder_id: row.folder_id,
-    milestone_count: row.milestone_count,
   };
 }
 
@@ -75,7 +71,7 @@ async function resolveWorld(
 export function registerProjectTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "project",
-    "Project management: folders, projects, milestones. Load toolset `task` for task items.",
+    "Project management: folders and projects. Load toolset `task` for task items.",
     attachToolReturns(
       [
         {
@@ -128,7 +124,7 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "project_create",
-          description: "Create a project with schedule and completion criteria",
+          description: "Create a project with schedule; optional content for background notes",
           exposeMcp: true,
           parameters: {
             type: "object",
@@ -137,11 +133,11 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
               title: { type: "string" },
               start_at: { type: "string" },
               end_at: { type: "string" },
-              completion_criteria: { type: "string" },
+              content: { type: "string", description: "Project background / notes" },
               folder_id: { type: "integer" },
               product_tag: { type: "string" },
             },
-            required: ["title", "start_at", "end_at", "completion_criteria"],
+            required: ["title", "start_at", "end_at"],
           },
           handler: async (args) => {
             const worldId = await resolveWorld(args, "write");
@@ -155,7 +151,7 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
                   title,
                   start_at: String(args.start_at),
                   end_at: String(args.end_at),
-                  completion_criteria: String(args.completion_criteria),
+                  content: args.content != null ? String(args.content) : undefined,
                   folder_id:
                     args.folder_id != null && args.folder_id !== ""
                       ? Number(args.folder_id)
@@ -171,7 +167,7 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "project_patch",
-          description: "Update project fields or terminal status",
+          description: "Update project fields, content, or terminal status",
           exposeMcp: true,
           parameters: {
             type: "object",
@@ -179,6 +175,7 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
               ...WORLD_ID_OPTIONAL,
               id: { type: "integer" },
               title: { type: "string" },
+              content: { type: "string", description: "Project background / notes" },
               status: { type: "string", enum: ["active", "completed", "cancelled", "on_hold"] },
               linked_diary_ids: { type: "array", items: { type: "integer" } },
             },
@@ -198,6 +195,7 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
                 omitUndefined({
                   id,
                   title: args.title != null ? String(args.title) : undefined,
+                  content: args.content != null ? String(args.content) : undefined,
                   status: args.status != null ? String(args.status) : undefined,
                   linked_diary_ids: Array.isArray(args.linked_diary_ids)
                     ? args.linked_diary_ids.map((v) => Number(v)).filter((n) => n > 0)
@@ -231,127 +229,6 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
             const ok = await deleteProject(worldId, id);
             if (!ok) return toolError(`project not found: ${id}`);
             return toolResult({ ok: true, action: "delete" });
-          },
-        },
-        {
-          name: "milestone_list",
-          description: "List milestones for a project",
-          exposeMcp: true,
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              project_id: { type: "integer" },
-            },
-            required: ["project_id"],
-          },
-          handler: async (args) => {
-            const projectId = Number(args.project_id);
-            const worldId = await resolveProjectToolWorld({ args, entityId: projectId });
-            if (typeof worldId === "string") return worldId;
-            const milestones = await listMilestones(worldId, projectId);
-            return toolResult({
-              ok: true,
-              action: "list",
-              count: milestones.length,
-              milestones: milestones.map((m) => ({
-                id: m.id,
-                title: m.title,
-                project_id: m.project_id,
-                due_at: m.due_at,
-                status: m.status,
-              })),
-            });
-          },
-        },
-        {
-          name: "milestone_create",
-          description: "Create a milestone in a project",
-          exposeMcp: true,
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              project_id: { type: "integer" },
-              title: { type: "string" },
-              due_at: { type: "string" },
-            },
-            required: ["project_id", "title", "due_at"],
-          },
-          handler: async (args) => {
-            const projectId = Number(args.project_id);
-            const worldId = await resolveProjectToolWorld({
-              args,
-              entityId: projectId,
-              access: "write",
-            });
-            if (typeof worldId === "string") return worldId;
-            try {
-              const item = await createMilestone(worldId, {
-                project_id: projectId,
-                title: String(args.title),
-                due_at: String(args.due_at),
-              });
-              return toolResult({
-                ok: true,
-                action: "create",
-                item: {
-                  id: item.id,
-                  title: item.title,
-                  project_id: item.project_id,
-                  due_at: item.due_at,
-                  status: item.status,
-                },
-              });
-            } catch (e) {
-              return toolError(String(e instanceof Error ? e.message : e));
-            }
-          },
-        },
-        {
-          name: "milestone_patch",
-          description: "Update milestone status or due date",
-          exposeMcp: true,
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              id: { type: "integer" },
-              title: { type: "string" },
-              due_at: { type: "string" },
-              status: { type: "string", enum: ["pending", "in_progress", "completed", "delayed"] },
-            },
-            required: ["id"],
-          },
-          handler: async (args) => {
-            const id = Number(args.id);
-            const worldId = await resolveProjectToolWorld({
-              args,
-              entityId: id,
-              access: "write",
-            });
-            if (typeof worldId === "string") return worldId;
-            const item = await updateMilestone(
-              worldId,
-              omitUndefined({
-                id,
-                title: args.title != null ? String(args.title) : undefined,
-                due_at: args.due_at != null ? String(args.due_at) : undefined,
-                status: args.status != null ? String(args.status) : undefined,
-              }) as Parameters<typeof updateMilestone>[1],
-            );
-            if (!item) return toolError(`milestone not found: ${id}`);
-            return toolResult({
-              ok: true,
-              action: "patch",
-              item: {
-                id: item.id,
-                title: item.title,
-                project_id: item.project_id,
-                due_at: item.due_at,
-                status: item.status,
-              },
-            });
           },
         },
         {

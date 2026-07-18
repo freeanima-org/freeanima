@@ -198,7 +198,6 @@ async function rewriteLocalItemId(
             remind_at: null,
             list_id: list.id,
             project_id: null,
-            milestone_id: null,
             sort_order: 0,
             completed_at: null,
             created_at: new Date().toISOString(),
@@ -331,7 +330,6 @@ type TaskItemContentPatch = Partial<
     | "due_at"
     | "list_id"
     | "project_id"
-    | "milestone_id"
     | "status"
     | "sort_order"
   >
@@ -768,7 +766,6 @@ export async function offlineCreateTaskItem(input: {
     remind_at: null,
     list_id: input.list_id,
     project_id: null,
-    milestone_id: null,
     sort_order: input.sort_order ?? 0,
     completed_at: null,
     created_at: now,
@@ -845,10 +842,6 @@ export async function offlineUpdateTaskItem(
     ...patch,
     list_id: nextListId,
     project_id: nextProjectId,
-    milestone_id:
-      movingToProject || patch.project_id === null || patch.list_id != null
-        ? (patch.milestone_id ?? null)
-        : (patch.milestone_id ?? existing.milestone_id),
     status: nextStatus,
     completed_at:
       patch.status === "completed"

@@ -6,7 +6,6 @@ export {
   updateEntity,
   deleteEntity,
   deleteTaskItemsByListId,
-  clearTaskItemMilestoneId,
   listEntities,
   countEntities,
   countEntitiesByBodyListId,

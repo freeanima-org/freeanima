@@ -7,18 +7,14 @@ import type { SapRequestAuthContext } from "@freeanima/shared/sap-contract";
 import type { ProjectStatus } from "@freeanima/core/db/schema/entity";
 
 import {
-  createMilestone,
   createProject,
   createProjectFolder,
-  deleteMilestone,
   deleteProject,
   deleteProjectFolder,
   getProject,
-  listMilestones,
   listProjectFolders,
   listProjects,
   listProjectTaskStats,
-  updateMilestone,
   updateProject,
   updateProjectFolder,
 } from "../domain/index.ts";
@@ -158,7 +154,6 @@ export async function serviceProjectCreate(
     title: string;
     start_at: string;
     end_at: string;
-    completion_criteria: string;
     content?: string;
     folder_id?: number | null;
     product_tag?: string;
@@ -192,7 +187,6 @@ export async function serviceProjectPatch(
     title?: string;
     start_at?: string;
     end_at?: string;
-    completion_criteria?: string;
     content?: string;
     folder_id?: number | null;
     product_tag?: string | null;
@@ -219,70 +213,6 @@ export async function serviceProjectDelete(
 ) {
   assertPg(deps);
   const ok = await deleteProject(await projectWorldIdForAuth(auth, input.subject_kind), input.id);
-  if (!ok) throw new Error("NOT_FOUND");
-  return { ok: true as const };
-}
-
-export async function serviceMilestoneList(
-  deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; project_id: number },
-  auth: VerifiedServiceApiToken,
-) {
-  assertPg(deps);
-  const milestones = await listMilestones(
-    await projectWorldIdForAuth(auth, input.subject_kind),
-    input.project_id,
-  );
-  return { milestones };
-}
-
-export async function serviceMilestoneCreate(
-  deps: RuntimeDeps,
-  input: {
-    subject_kind?: SubjectKind;
-    project_id: number;
-    title: string;
-    due_at: string;
-    sort_order?: number;
-    client_op_id?: string;
-  },
-  auth: VerifiedServiceApiToken,
-) {
-  assertPg(deps);
-  const { subject_kind, ...createInput } = input;
-  const item = await createMilestone(await projectWorldIdForAuth(auth, subject_kind), createInput);
-  return { item };
-}
-
-export async function serviceMilestonePatch(
-  deps: RuntimeDeps,
-  input: {
-    subject_kind?: SubjectKind;
-    id: number;
-    title?: string;
-    due_at?: string;
-    status?: "pending" | "in_progress" | "completed" | "delayed";
-    sort_order?: number;
-  },
-  auth: VerifiedServiceApiToken,
-) {
-  assertPg(deps);
-  const { id, subject_kind, ...patch } = input;
-  const item = await updateMilestone(await projectWorldIdForAuth(auth, subject_kind), {
-    id,
-    ...patch,
-  });
-  if (!item) throw new Error("NOT_FOUND");
-  return { item };
-}
-
-export async function serviceMilestoneDelete(
-  deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
-  auth: VerifiedServiceApiToken,
-) {
-  assertPg(deps);
-  const ok = await deleteMilestone(await projectWorldIdForAuth(auth, input.subject_kind), input.id);
   if (!ok) throw new Error("NOT_FOUND");
   return { ok: true as const };
 }

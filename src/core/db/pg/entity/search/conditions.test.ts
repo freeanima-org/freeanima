@@ -1,7 +1,6 @@
 import { expect, test } from "bun:test";
 
 import {
-  MILESTONE_COMPONENT,
   PROJECT_COMPONENT,
   PROJECT_FOLDER_COMPONENT,
   TAG_COMPONENT,
@@ -29,7 +28,7 @@ test("buildCjkOrderedCharRegexPattern matches skipped middle chars", () => {
 });
 
 test("buildComponentFilterConditions accepts client_op_id for project entities", () => {
-  for (const component of [MILESTONE_COMPONENT, PROJECT_COMPONENT, PROJECT_FOLDER_COMPONENT]) {
+  for (const component of [PROJECT_COMPONENT, PROJECT_FOLDER_COMPONENT]) {
     const conditions = buildComponentFilterConditions({
       component,
       filters: { client_op_id: "op-1" },

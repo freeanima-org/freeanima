@@ -40,10 +40,6 @@ export function ProjectDetailHeader({
           />
         </div>
       </div>
-      <div>
-        <FormFieldLabel>完成标准</FormFieldLabel>
-        <p className="text-sm">{project.completion_criteria}</p>
-      </div>
     </div>
   );
 }

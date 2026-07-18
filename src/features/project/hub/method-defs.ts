@@ -1,13 +1,5 @@
 import { defineHubMethod, dualTransportMeta } from "@freeanima/shared/hub-contract";
 import {
-  milestoneCreateInputSchema,
-  milestoneCreateOutputSchema,
-  milestoneDeleteInputSchema,
-  milestoneDeleteOutputSchema,
-  milestoneListInputSchema,
-  milestoneListOutputSchema,
-  milestonePatchInputSchema,
-  milestonePatchOutputSchema,
   projectCreateInputSchema,
   projectCreateOutputSchema,
   projectDeleteInputSchema,
@@ -79,26 +71,6 @@ export const projectMethodDefs = {
   "project.delete": defineHubMethod({
     input: projectDeleteInputSchema,
     output: projectDeleteOutputSchema,
-    meta: dualTransportMeta(false),
-  }),
-  "milestone.list": defineHubMethod({
-    input: milestoneListInputSchema,
-    output: milestoneListOutputSchema,
-    meta: dualTransportMeta(true),
-  }),
-  "milestone.create": defineHubMethod({
-    input: milestoneCreateInputSchema,
-    output: milestoneCreateOutputSchema,
-    meta: dualTransportMeta(false),
-  }),
-  "milestone.patch": defineHubMethod({
-    input: milestonePatchInputSchema,
-    output: milestonePatchOutputSchema,
-    meta: dualTransportMeta(false),
-  }),
-  "milestone.delete": defineHubMethod({
-    input: milestoneDeleteInputSchema,
-    output: milestoneDeleteOutputSchema,
     meta: dualTransportMeta(false),
   }),
 } as const;

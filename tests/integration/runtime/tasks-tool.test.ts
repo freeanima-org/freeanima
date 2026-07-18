@@ -394,7 +394,6 @@ describePg("tasks tool", () => {
       title: "Tool project filter",
       start_at: "2026-01-01T00:00:00.000Z",
       end_at: "2026-12-31T00:00:00.000Z",
-      completion_criteria: "Done when listed by project_id",
     });
 
     let createdId = 0;
