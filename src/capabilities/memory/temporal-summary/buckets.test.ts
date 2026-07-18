@@ -61,4 +61,22 @@ describe("timeline inject", () => {
     );
     expect(messages[3]?.role).toBe("user");
   });
+
+  it("never inserts peer block before leading system prompt", () => {
+    const messages: StoredMessage[] = [
+      { role: "system", content: "global system" },
+      { role: "user", content: "hi", timestamp: "2026-07-18T07:00:00.000Z" },
+    ];
+    const injects: TimelinePeerInject[] = [
+      // at 早于任何带时间戳消息 → 旧逻辑会 splice(0)，盖住 system
+      { at: "2026-07-18T01:00:00.000Z", content: "early peers" },
+    ];
+    injectTemporalPeerRollups(messages, injects);
+    expect(messages[0]?.role).toBe("system");
+    expect(messages[1]?.role).toBe("assistant");
+    expect(messages[1] && "name" in messages[1] ? messages[1].name : "").toBe(
+      "temporal_summary_peers",
+    );
+    expect(messages[2]?.role).toBe("user");
+  });
 });

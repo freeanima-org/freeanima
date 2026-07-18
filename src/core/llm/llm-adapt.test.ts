@@ -51,15 +51,23 @@ describe("storedMessagesToInvokeInput", () => {
     expect(turns.map((t) => t.role)).toEqual(["user", "assistant"]);
   });
 
-  it("drops unnamed non-leading system messages from turns", () => {
+  it("folds unnamed non-leading system into systemPrompt (runtime inject before system)", () => {
     const messages: StoredMessage[] = [
+      {
+        role: "assistant",
+        name: "temporal_summary_peers",
+        content: "peer rollup",
+      },
+      { role: "system", content: "You are helpful" },
       { role: "user", content: "hi" },
-      { role: "system", content: "injected" },
       { role: "assistant", content: "ok" },
     ];
     const { turns, systemPrompt } = storedMessagesToInvokeInput(messages);
-    expect(systemPrompt).toBeUndefined();
-    expect(turns.map((t) => t.role)).toEqual(["user", "assistant"]);
+    expect(systemPrompt).toBe("You are helpful");
+    expect(turns.map((t) => t.role)).toEqual(["assistant", "user", "assistant"]);
+    expect(turns[0] && "name" in turns[0] ? turns[0].name : undefined).toBe(
+      "temporal_summary_peers",
+    );
   });
 
   it("forwards passive memory as assistant turn before provider invoke", () => {

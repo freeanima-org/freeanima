@@ -30,9 +30,25 @@ function messageTimeMs(msg: StoredMessage): number | null {
   return Number.isNaN(ms) ? null : ms;
 }
 
+/** 勿插到 leading system 之前，否则 storedMessagesToInvokeInput 抽不到 systemPrompt。 */
+function minInsertIndexAfterLeadingSystem(messages: StoredMessage[]): number {
+  let i = 0;
+  while (i < messages.length) {
+    const msg = messages[i];
+    if (!msg) break;
+    if (msg.role === "conversation_meta" || msg.role === "system") {
+      i += 1;
+      continue;
+    }
+    break;
+  }
+  return i;
+}
+
 /**
  * Insert peer rollup blocks at chronological positions (runtime-only).
  * Deterministic: sorted by (at, content); inserts after last message with t <= at.
+ * Never inserts before leading system / conversation_meta.
  */
 export function injectTemporalPeerRollups(
   messages: StoredMessage[],
@@ -49,12 +65,13 @@ export function injectTemporalPeerRollups(
   for (const inj of ordered) {
     const atMs = Date.parse(inj.at);
     if (Number.isNaN(atMs)) continue;
-    let insertAt = 0;
+    const minAt = minInsertIndexAfterLeadingSystem(messages);
+    let insertAt = minAt;
     for (let i = 0; i < messages.length; i++) {
       const msg = messages[i];
       if (!msg) continue;
       const t = messageTimeMs(msg);
-      if (t != null && t <= atMs) insertAt = i + 1;
+      if (t != null && t <= atMs) insertAt = Math.max(minAt, i + 1);
     }
     const manifest: AssistantMessage = {
       role: "assistant",

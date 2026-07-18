@@ -12,6 +12,7 @@ import {
   resolveDefaultSapPlatform,
   type SapRequestContext,
 } from "../../protocol/index.ts";
+import { loadLlmDebugCache } from "../llm-debug-cache.ts";
 import { chatMethodDefs } from "../method-defs.ts";
 import { chatSessionPumps } from "../session-pumps.ts";
 import { pumpMessageStream, pumpSessionUpdates, resolveConversationPlatform } from "../stream.ts";
@@ -216,5 +217,14 @@ export const chatHubRoutes = bindHubRouteHandlers(chatMethodDefs, {
   "message.interrupt": async (deps, input) => {
     depsOf(deps).runtime.interruptSessionStream(input.conversation_id);
     return { ok: true as const };
+  },
+  "llm_debug.get": async (_deps, input) => {
+    const cached = await loadLlmDebugCache(input.conversation_id);
+    if (!cached) return {};
+    return {
+      ...(cached.initial ? { initial: cached.initial } : {}),
+      ...(cached.final ? { final: cached.final } : {}),
+      ...(cached.updated_at ? { updated_at: cached.updated_at } : {}),
+    };
   },
 });

@@ -22,6 +22,8 @@ import {
   conversationCommandOutputSchema,
 } from "@freeanima/shared/sap-contract/frames/conversation";
 import {
+  llmDebugGetInputSchema,
+  llmDebugGetOutputSchema,
   messageInterruptInputSchema,
   messageInterruptOutputSchema,
   messageSendInputSchema,
@@ -111,5 +113,10 @@ export const chatMethodDefs = {
     input: messageInterruptInputSchema,
     output: messageInterruptOutputSchema,
     meta: wsOnlyMeta(),
+  }),
+  "llm_debug.get": defineHubMethod({
+    input: llmDebugGetInputSchema,
+    output: llmDebugGetOutputSchema,
+    meta: dualTransportMeta(true),
   }),
 } as const;

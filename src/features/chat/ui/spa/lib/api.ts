@@ -227,6 +227,20 @@ export async function interruptMessageStream(conversationId: string): Promise<vo
   await client.request("message.interrupt", { conversation_id: conversationId });
 }
 
+export async function fetchLlmDebug(conversationId: string): Promise<{
+  initial?: import("@freeanima/features/chat/ui/spa/lib/types.ts").LlmDebugSnapshotPayload;
+  final?: import("@freeanima/features/chat/ui/spa/lib/types.ts").LlmDebugSnapshotPayload;
+  updated_at?: string;
+}> {
+  const raw = await hub().call("llm_debug.get", { conversation_id: conversationId });
+  if (!raw || typeof raw !== "object") return {};
+  return raw as {
+    initial?: import("@freeanima/features/chat/ui/spa/lib/types.ts").LlmDebugSnapshotPayload;
+    final?: import("@freeanima/features/chat/ui/spa/lib/types.ts").LlmDebugSnapshotPayload;
+    updated_at?: string;
+  };
+}
+
 export async function loadConfig() {
   const shell = window.satelliteShell;
   if (shell?.hubWsUrl) {

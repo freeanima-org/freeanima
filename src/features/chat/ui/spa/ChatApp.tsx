@@ -11,7 +11,6 @@ import {
   DialogTitle,
   Input,
   Spinner,
-  Switch,
   Textarea,
 } from "@freeanima/frontend/ui-kit";
 import {
@@ -39,6 +38,7 @@ import {
   pollUntilAssistantReply,
 } from "@freeanima/features/chat/ui/spa/lib/display-recovery.ts";
 import {
+  fetchLlmDebug,
   listConversationCommands,
   loadConfig,
   rollbackBeforeLastUserMessage,
@@ -55,6 +55,7 @@ import { omitUndefined } from "@freeanima/core/util";
 import {
   reconnectHub,
   useActionSheetCapability,
+  useChatLlmDebugEnabled,
   useContextMenuCapability,
   useEnterToSendCapability,
   useHubConnection,
@@ -80,7 +81,6 @@ import {
 import { MessageActionBar } from "@freeanima/features/chat/ui/spa/components/MessageActionBar.tsx";
 import { useSpeechPlayback } from "@freeanima/features/chat/ui/spa/hooks/useSpeechPlayback.ts";
 import { markdownToPlainText } from "@freeanima/features/chat/ui/spa/lib/speech/plain-text.ts";
-import { VaultUnlockButton } from "@freeanima/features/chat/ui/spa/components/VaultUnlockButton.tsx";
 import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";
 import { useConversationsStore } from "@freeanima/features/chat/ui/spa/stores/conversations.ts";
 import { useOutboxStore } from "@freeanima/features/chat/ui/spa/stores/outbox.ts";
@@ -247,8 +247,9 @@ export function ChatApp() {
     text: string;
     loading?: boolean;
   } | null>(null);
-  const [llmDebugEnabled, setLlmDebugEnabled] = useState(false);
+  const llmDebugEnabled = useChatLlmDebugEnabled();
   const [debugViewerOpen, setDebugViewerOpen] = useState(false);
+  const [llmDebugLoading, setLlmDebugLoading] = useState(false);
   const [llmDebugSnapshots, setLlmDebugSnapshots] = useState<LlmDebugSnapshots | null>(null);
   const pendingRecoveryKeyRef = useRef<string | null>(null);
   const mobileLayout = useCompactLayout();
@@ -558,6 +559,37 @@ export function ChatApp() {
   useEffect(() => {
     stopSpeech();
   }, [currentId, stopSpeech]);
+
+  useEffect(() => {
+    if (!llmDebugEnabled) {
+      setDebugViewerOpen(false);
+      setLlmDebugSnapshots(null);
+    }
+  }, [llmDebugEnabled]);
+
+  /** 打开调试面板时再拉取 Redis 缓存（按会话） */
+  useEffect(() => {
+    if (!debugViewerOpen || !llmDebugEnabled || !currentId) return;
+    let cancelled = false;
+    setLlmDebugLoading(true);
+    void fetchLlmDebug(currentId)
+      .then((data) => {
+        if (cancelled) return;
+        setLlmDebugSnapshots({
+          ...(data.initial ? { initial: data.initial } : {}),
+          ...(data.final ? { final: data.final } : {}),
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setLlmDebugSnapshots(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLlmDebugLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [debugViewerOpen, llmDebugEnabled, currentId]);
 
   useEffect(() => {
     const el = msgAreaRef.current;
@@ -903,10 +935,6 @@ export function ChatApp() {
       const isViewingOrigin = () =>
         useConversationsStore.getState().currentId === originConversationId;
 
-      if (llmDebugEnabled) {
-        setLlmDebugSnapshots(null);
-      }
-
       if (sendMeta?.clientOpId) {
         claimChatSend(sendMeta.clientOpId);
         patchDisplayByClientOpId(sendMeta.clientOpId, { sendStatus: "sending" });
@@ -976,15 +1004,15 @@ export function ChatApp() {
               void fetchConversations();
               if (isViewingOrigin()) scrollDown();
               void flushQueueRef.current(originConversationId);
-            },
-            onLlmDebug: (snapshot) => {
-              if (!llmDebugEnabled) return;
-              setLlmDebugSnapshots((prev) => {
-                const next = { ...prev };
-                if (snapshot.phase === "initial") next.initial = snapshot;
-                else next.final = snapshot;
-                return next;
-              });
+              // 面板已打开时补拉最新缓存（发送过程不推流）
+              if (llmDebugEnabled && debugViewerOpen && isViewingOrigin()) {
+                void fetchLlmDebug(originConversationId).then((data) => {
+                  setLlmDebugSnapshots({
+                    ...(data.initial ? { initial: data.initial } : {}),
+                    ...(data.final ? { final: data.final } : {}),
+                  });
+                });
+              }
             },
           },
           buildSendOpts(sendMeta, llmDebugEnabled, () => {
@@ -1002,6 +1030,7 @@ export function ChatApp() {
     [
       appendItemForConversation,
       clarifyPending,
+      debugViewerOpen,
       llmDebugEnabled,
       outboxAckEntry,
       outboxSetEntryStatus,
@@ -1299,7 +1328,6 @@ export function ChatApp() {
         </Button>
         <span className="truncate text-sm font-medium">{headerTitle}</span>
         <span className="flex-1" />
-        <VaultUnlockButton conversationId={currentId} className="h-7" />
         <Button
           type="button"
           variant="ghost"
@@ -1330,35 +1358,24 @@ export function ChatApp() {
             Hub
           </Button>
         ) : null}
-        <label className="flex h-7 shrink-0 cursor-pointer select-none items-center gap-1.5 px-1">
-          <Switch
-            checked={llmDebugEnabled}
-            onCheckedChange={(checked) => {
-              const enabled = checked === true;
-              if (!enabled) {
-                setLlmDebugSnapshots(null);
+        {llmDebugEnabled ? (
+          <Button
+            type="button"
+            variant={debugViewerOpen ? "secondary" : "ghost"}
+            size="sm"
+            className="h-7 px-2"
+            disabled={!currentId || llmDebugLoading}
+            onClick={() => {
+              if (debugViewerOpen) {
                 setDebugViewerOpen(false);
+                return;
               }
-              setLlmDebugEnabled(enabled);
+              setDebugViewerOpen(true);
             }}
-            aria-label={m.chat_llm_debug_toggle()}
-          />
-          <span
-            className={`text-xs ${llmDebugEnabled ? "font-medium text-foreground" : "text-muted-foreground"}`}
           >
-            {m.chat_llm_debug_toggle()}
-          </span>
-        </label>
-        <Button
-          type="button"
-          variant={debugViewerOpen ? "secondary" : "ghost"}
-          size="sm"
-          className="h-7 px-2"
-          disabled={!llmDebugSnapshots?.initial && !llmDebugSnapshots?.final}
-          onClick={() => setDebugViewerOpen((open) => !open)}
-        >
-          {m.chat_llm_debug_view()}
-        </Button>
+            {llmDebugLoading ? m.chat_llm_debug_loading() : m.chat_llm_debug_view()}
+          </Button>
+        ) : null}
       </header>
       {showOfflineCachedHint ? (
         <p className="shrink-0 border-b border px-3 py-1 text-xs text-muted-foreground">
@@ -1827,6 +1844,7 @@ export function ChatApp() {
           open={debugViewerOpen}
           onClose={() => setDebugViewerOpen(false)}
           snapshots={llmDebugSnapshots}
+          loading={llmDebugLoading}
         />
       </div>
 

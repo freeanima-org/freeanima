@@ -30,29 +30,30 @@ export type InvokeMessageInput = {
   systemPrompt?: string;
 };
 
-/** StoredMessage[] → LlmTurnMessage + separate systemPrompt (strip leading system) */
+/**
+ * StoredMessage[] → LlmTurnMessage + separate systemPrompt。
+ * 无名 system → systemPrompt（不限是否 leading，避免 runtime 注入插到 system 前时丢提示词）；
+ * 具名 runtime system → turns。
+ */
 export function storedMessagesToInvokeInput(messages: StoredMessage[]): InvokeMessageInput {
   const repaired = repairToolLoopMessages(messages);
   const systemParts: string[] = [];
   const turns: LlmTurnMessage[] = [];
-  let pastLeadingSystem = false;
 
   for (const msg of repaired) {
     if (msg.role === "conversation_meta") continue;
-    if (!pastLeadingSystem && msg.role === "system") {
-      systemParts.push(msg.content);
+    if (msg.role === "system") {
+      if (isRuntimeSystemTurn(msg)) {
+        turns.push({
+          role: "system",
+          content: msg.content,
+          ...(msg.name ? { name: msg.name } : {}),
+        });
+      } else if (msg.content) {
+        systemParts.push(msg.content);
+      }
       continue;
     }
-    pastLeadingSystem = true;
-    if (msg.role === "system" && isRuntimeSystemTurn(msg)) {
-      turns.push({
-        role: "system",
-        content: msg.content,
-        ...(msg.name ? { name: msg.name } : {}),
-      });
-      continue;
-    }
-    if (msg.role === "system") continue;
     if (msg.role === "assistant") {
       const normalized = normalizeAssistantTurn(msg);
       if (normalized) turns.push(normalized);

@@ -2,6 +2,7 @@ import { debugSettingsSection, type SettingsBinding } from "@freeanima/frontend/
 import { shellModulesSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/modules-section.ts";
 import { aboutSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/about/about-section.ts";
 import { appearanceSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/appearance/appearance-section.ts";
+import { chatSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/chat/chat-section.ts";
 import { alertSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/alert/alert-settings-section.ts";
 import { hubConnectionSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/hub-config/hub-connection-section.ts";
 import { hubConfigSettingsBindings } from "@freeanima/frontend/shell-ui/spa/settings/hub-config/hub-config-sections.ts";
@@ -23,6 +24,7 @@ export function createBrowserLikeSettingsBindings(
   return [
     { section: shellModulesSettingsSection },
     { section: appearanceSettingsSection },
+    { section: chatSettingsSection },
     { section: alertSettingsSection },
     { section: hubConnectionSettingsSection, store: stores.hub },
     ...hubConfigSettingsBindings,

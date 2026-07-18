@@ -1,8 +1,7 @@
+import type { ReactNode } from "react";
 import {
   Badge,
   Button,
-  Card,
-  CardContent,
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
@@ -21,31 +20,63 @@ type LlmDebugPanelProps = {
   open: boolean;
   onClose: () => void;
   snapshots: LlmDebugSnapshots | null;
+  loading?: boolean;
 };
 
-function TurnRow({
-  turn,
-  index,
-}: {
-  turn: LlmDebugSnapshotPayload["invoke"]["turns"][number];
-  index: number;
-}) {
+type TurnPreview = LlmDebugSnapshotPayload["invoke"]["turns"][number];
+type ToolPreview = LlmDebugSnapshotPayload["tools"][number];
+
+function NestedSection({ title, children }: { title: ReactNode; children: ReactNode }) {
+  return (
+    <Collapsible>
+      <CollapsibleTrigger className="text-sm font-medium hover:underline">
+        {title}
+      </CollapsibleTrigger>
+      <CollapsibleContent className="mt-2 space-y-1 pl-2">{children}</CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+function ToolRow({ tool }: { tool: ToolPreview }) {
+  return (
+    <Collapsible>
+      <CollapsibleTrigger className="w-full rounded border px-2 py-1 text-left text-xs font-mono font-medium hover:bg-muted/40">
+        {tool.name}
+      </CollapsibleTrigger>
+      <CollapsibleContent className="mt-1 px-2 pb-1">
+        {tool.description ? (
+          <p className="text-xs text-muted-foreground whitespace-pre-wrap">{tool.description}</p>
+        ) : (
+          <p className="text-xs text-muted-foreground">—</p>
+        )}
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+function TurnRow({ turn, index }: { turn: TurnPreview; index: number }) {
   const isPassive = turn.role === "assistant" && turn.name === "passive_memory_context";
   const isNotification = turn.role === "assistant" && turn.name === "notification_context";
   const highlight = isPassive || isNotification;
 
   return (
-    <Card className={highlight ? "border-primary/60 bg-primary/5 py-0" : "py-0"}>
-      <CardContent className="space-y-1 px-3 py-2 text-xs">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-mono text-muted-foreground">#{index + 1}</span>
-          <Badge variant="outline">{turn.role}</Badge>
-          {turn.name ? (
-            <Badge variant={highlight ? "default" : "secondary"}>{turn.name}</Badge>
-          ) : null}
-        </div>
+    <Collapsible>
+      <CollapsibleTrigger
+        className={
+          highlight
+            ? "flex w-full flex-wrap items-center gap-2 rounded border border-primary/60 bg-primary/5 px-2 py-1.5 text-left text-xs hover:bg-primary/10"
+            : "flex w-full flex-wrap items-center gap-2 rounded border px-2 py-1.5 text-left text-xs hover:bg-muted/40"
+        }
+      >
+        <span className="font-mono text-muted-foreground">#{index + 1}</span>
+        <Badge variant="outline">{turn.role}</Badge>
+        {turn.name ? (
+          <Badge variant={highlight ? "default" : "secondary"}>{turn.name}</Badge>
+        ) : null}
+      </CollapsibleTrigger>
+      <CollapsibleContent className="mt-1 space-y-1 px-1 pb-1">
         {turn.content ? (
-          <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words font-mono text-[11px] leading-relaxed">
+          <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words rounded border bg-muted/30 p-2 font-mono text-[11px] leading-relaxed">
             {turn.content}
           </pre>
         ) : null}
@@ -62,8 +93,11 @@ function TurnRow({
             ))}
           </div>
         ) : null}
-      </CardContent>
-    </Card>
+        {!turn.content && !turn.tool_calls?.length ? (
+          <p className="px-1 text-xs text-muted-foreground">—</p>
+        ) : null}
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 
@@ -108,49 +142,35 @@ function SnapshotView({ snapshot }: { snapshot: LlmDebugSnapshotPayload | undefi
         </div>
       ) : null}
 
+      <NestedSection title={m.chat_llm_debug_system_prompt()}>
+        {snapshot.invoke.system_prompt ? (
+          <pre className="max-h-56 overflow-auto whitespace-pre-wrap rounded border bg-muted/30 p-2 font-mono text-[11px]">
+            {snapshot.invoke.system_prompt}
+          </pre>
+        ) : (
+          <p className="text-xs text-muted-foreground">—</p>
+        )}
+      </NestedSection>
+
       {snapshot.tools.length > 0 ? (
-        <Collapsible defaultOpen={snapshot.tools.length <= 8}>
-          <CollapsibleTrigger className="text-sm font-medium hover:underline">
-            {m.chat_llm_debug_tools()} ({snapshot.tools.length})
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-2 max-h-40 space-y-1 overflow-auto">
-            {snapshot.tools.map((tool) => (
-              <div key={tool.name} className="rounded border px-2 py-1 text-xs">
-                <div className="font-mono font-medium">{tool.name}</div>
-                {tool.description ? (
-                  <p className="text-muted-foreground">{tool.description}</p>
-                ) : null}
-              </div>
-            ))}
-          </CollapsibleContent>
-        </Collapsible>
+        <NestedSection title={`${m.chat_llm_debug_tools()} (${snapshot.tools.length})`}>
+          {snapshot.tools.map((tool) => (
+            <ToolRow key={tool.name} tool={tool} />
+          ))}
+        </NestedSection>
       ) : null}
 
-      {snapshot.invoke.system_prompt ? (
-        <Collapsible>
-          <CollapsibleTrigger className="text-sm font-medium hover:underline">
-            {m.chat_llm_debug_system_prompt()}
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-2">
-            <pre className="max-h-56 overflow-auto whitespace-pre-wrap rounded border bg-muted/30 p-2 font-mono text-[11px]">
-              {snapshot.invoke.system_prompt}
-            </pre>
-          </CollapsibleContent>
-        </Collapsible>
-      ) : null}
-
-      <div className="space-y-2">
-        <p className="text-sm font-medium">{m.chat_llm_debug_turns()}</p>
+      <NestedSection title={`${m.chat_llm_debug_turns()} (${snapshot.invoke.turns.length})`}>
         {snapshot.invoke.turns.map((turn, index) => (
           <TurnRow key={`${turn.role}-${turn.name ?? ""}-${index}`} turn={turn} index={index} />
         ))}
-      </div>
+      </NestedSection>
     </div>
   );
 }
 
 /** 非模态侧栏：不遮挡聊天输入，可与发消息并行使用 */
-export function LlmDebugPanel({ open, onClose, snapshots }: LlmDebugPanelProps) {
+export function LlmDebugPanel({ open, onClose, snapshots, loading }: LlmDebugPanelProps) {
   if (!open) return null;
 
   return (
@@ -171,18 +191,22 @@ export function LlmDebugPanel({ open, onClose, snapshots }: LlmDebugPanelProps) 
         </Button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
-        <Tabs defaultValue="initial">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="initial">{m.chat_llm_debug_tab_initial()}</TabsTrigger>
-            <TabsTrigger value="final">{m.chat_llm_debug_tab_final()}</TabsTrigger>
-          </TabsList>
-          <TabsContent value="initial" className="mt-3">
-            <SnapshotView snapshot={snapshots?.initial} />
-          </TabsContent>
-          <TabsContent value="final" className="mt-3">
-            <SnapshotView snapshot={snapshots?.final} />
-          </TabsContent>
-        </Tabs>
+        {loading ? (
+          <p className="text-sm text-muted-foreground">{m.chat_llm_debug_loading()}</p>
+        ) : (
+          <Tabs defaultValue="initial">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="initial">{m.chat_llm_debug_tab_initial()}</TabsTrigger>
+              <TabsTrigger value="final">{m.chat_llm_debug_tab_final()}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="initial" className="mt-3">
+              <SnapshotView snapshot={snapshots?.initial} />
+            </TabsContent>
+            <TabsContent value="final" className="mt-3">
+              <SnapshotView snapshot={snapshots?.final} />
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </aside>
   );

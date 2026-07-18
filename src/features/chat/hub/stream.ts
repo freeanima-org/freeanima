@@ -2,6 +2,8 @@ import { isConversationMeta } from "@freeanima/core/db/domain";
 import type { SapRequestContext } from "@freeanima/shared/sap-contract";
 import type { SapServerDeps } from "@freeanima/platform/sap/types";
 
+import { rememberLlmDebugFromStreamPayload } from "./llm-debug-cache.ts";
+
 async function loadStreamBridge() {
   return import("@freeanima/platform/sap/stream-bridge");
 }
@@ -40,6 +42,14 @@ export async function pumpMessageStream(
       streamId,
       deps.runtime.sendMessageStream(conversationId, message, platform, originExtra),
     )) {
+      // 快照入 Redis，不推给客户端（打开调试面板时再 llm_debug.get）
+      if (mapped.method === "stream.llm_debug") {
+        await rememberLlmDebugFromStreamPayload(
+          conversationId,
+          mapped.payload as Record<string, unknown>,
+        );
+        continue;
+      }
       ctx.sendEvent(mapped.method, mapped.payload);
     }
   } catch (e) {
