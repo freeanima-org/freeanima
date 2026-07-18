@@ -29,6 +29,7 @@ import {
 } from "@freeanima/platform/connectors/cron";
 import { getActivePgTestContext } from "../../helpers/pg-test.ts";
 import { listNotifications } from "@freeanima/core/db/pg/notifications";
+import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
 import { wireServicePorts } from "@freeanima/platform";
 import { FileConfig } from "@freeanima/platform/config/file-config.ts";
 import { createServiceKernel } from "@freeanima/platform/bootstrap";
@@ -92,10 +93,6 @@ describePg("cron", () => {
   it("notifyCronResult respects notify_on_success on success", async () => {
     const pg = getActivePgTestContext()!;
     if (!(pg.config instanceof FileConfig)) throw new Error("expected FileConfig");
-    pg.config.patchSection("notifications", {
-      user_subject_id: 2,
-      agent_subject_id: 1,
-    });
 
     const kernel = createServiceKernel(pg.config);
     const conversation = createConversationService(pg.engine.catalog.toolSets);
@@ -153,9 +150,10 @@ describePg("cron", () => {
       error: "err",
     });
 
+    const userSubjectId = String(getResolvedWorldContext().user_subject_id);
     const userRows = await listNotifications({
       recipient_kind: "user",
-      recipient_id: "2",
+      recipient_id: userSubjectId,
       read_filter: "all",
     });
     expect(userRows.some((row) => row.source_ref === "t-loud:ok")).toBe(true);

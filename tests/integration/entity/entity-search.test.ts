@@ -91,28 +91,28 @@ describePg("entity search PG", () => {
 
   it("searchDiaryEntries finds entries via text block hybrid search", async () => {
     const worldId = testUserWorldId();
-    const older = await createDiaryEntry(
+    // 精确整句命中应优于「query + 长尾巴」弱命中（标题不再参与 diary hybrid）
+    const exact = await createDiaryEntry(
       { worldId },
       {
         title: "旧日回忆",
-        content: "排序测试专用项目启动记录",
+        content: "排序测试专用项目",
         entry_at: "2020-01-01T12:00:00+08:00",
       },
     );
-    const newer = await createDiaryEntry(
+    const weak = await createDiaryEntry(
       { worldId },
       {
         title: "近期总结",
-        content: "阶段复盘旁注 排序测试专用项目",
+        content: "阶段复盘旁注与其他日常琐事，文末略提排序测试专用项目启动与收尾说明",
         entry_at: "2026-06-01T12:00:00+08:00",
       },
     );
 
     const domain = await searchDiaryEntries({ worldId }, { query: "排序测试专用项目", limit: 10 });
-    expect(domain.map((row) => row.id)).toContain(older.id);
-    expect(domain.map((row) => row.id)).toContain(newer.id);
-    // 更贴 query 的块正文应排在前面（标题不再参与 diary hybrid）
-    expect(domain[0]?.id).toBe(older.id);
+    expect(domain.map((row) => row.id)).toContain(exact.id);
+    expect(domain.map((row) => row.id)).toContain(weak.id);
+    expect(domain[0]?.id).toBe(exact.id);
   });
 
   it("createDiaryEntry with client_op_id is idempotent (client_op_id filter lookup)", async () => {
