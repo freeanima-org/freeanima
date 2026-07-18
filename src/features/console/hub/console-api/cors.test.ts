@@ -1,6 +1,8 @@
 import { describe, it, expect } from "bun:test";
 import {
+  applyCorsToResponse,
   corsAllowOrigin,
+  corsPreflightResponse,
   isBundledClientOrigin,
   setExtraCorsOriginsForTests,
   resetCorsOriginCacheForTests,
@@ -29,5 +31,23 @@ describe("corsAllowOrigin", () => {
     setExtraCorsOriginsForTests(["https://app.anima.example.com"]);
     expect(corsAllowOrigin("https://app.anima.example.com")).toBe("https://app.anima.example.com");
     resetCorsOriginCacheForTests();
+  });
+});
+
+describe("cors conditional GET headers", () => {
+  it("preflight allows If-None-Match", () => {
+    const res = corsPreflightResponse("http://127.0.0.1:5000");
+    expect(res?.headers.get("Access-Control-Allow-Headers")).toContain("If-None-Match");
+  });
+
+  it("applyCorsToResponse exposes ETag", () => {
+    const req = new Request("http://127.0.0.1:2658/hub/rpc/v1/status", {
+      headers: { Origin: "http://127.0.0.1:5000" },
+    });
+    const res = applyCorsToResponse(
+      req,
+      new Response(null, { status: 304, headers: { ETag: '"x"' } }),
+    );
+    expect(res.headers.get("Access-Control-Expose-Headers")).toContain("ETag");
   });
 });

@@ -72,6 +72,17 @@ export function applyCorsToResponse(req: Request, res: Response): Response {
   headers.set("Access-Control-Allow-Credentials", "true");
   const vary = headers.get("Vary");
   headers.set("Vary", vary ? `${vary}, Origin` : "Origin");
+  const expose = headers.get("Access-Control-Expose-Headers");
+  if (!expose) {
+    headers.set("Access-Control-Expose-Headers", "ETag");
+  } else if (
+    !expose
+      .split(",")
+      .map((h) => h.trim().toLowerCase())
+      .includes("etag")
+  ) {
+    headers.set("Access-Control-Expose-Headers", `${expose}, ETag`);
+  }
   return new Response(res.body, {
     status: res.status,
     statusText: res.statusText,
@@ -89,7 +100,7 @@ export function corsPreflightResponse(origin: string | null): Response | null {
       "Access-Control-Allow-Credentials": "true",
       "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
       "Access-Control-Allow-Headers":
-        "Content-Type, Authorization, X-Requested-With, Accept, Cache-Control",
+        "Content-Type, Authorization, X-Requested-With, Accept, Cache-Control, If-None-Match",
       "Access-Control-Max-Age": "86400",
       Vary: "Origin",
     },

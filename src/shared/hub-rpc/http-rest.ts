@@ -113,6 +113,8 @@ function buildRestPath(
 
 export type BuildHubRestRequestOptions = {
   body?: BodyInit;
+  /** GET 条件请求：对应 If-None-Match */
+  ifNoneMatch?: string;
 };
 
 export function hubRestUrl(
@@ -149,6 +151,9 @@ export function buildHubRestRequest(
 
   if (http.verb === "GET") {
     appendPayloadToQuery(url.searchParams, payload, omitKeys);
+    if (options?.ifNoneMatch?.trim()) {
+      headers["If-None-Match"] = options.ifNoneMatch.trim();
+    }
     return { url: url.toString(), init: { method: "GET", headers } };
   }
 
@@ -225,6 +230,10 @@ export async function fetchHubRestRaw(
 }
 
 export async function parseHubRestResponse(res: Response): Promise<unknown> {
+  if (res.status === 304) {
+    throw new Error("HTTP 304 Not Modified");
+  }
+
   const text = await res.text();
   let parsed: unknown;
   try {

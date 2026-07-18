@@ -4,9 +4,11 @@ import { getHubMethodDef } from "@freeanima/shared/hub-contract";
 
 import {
   appendPayloadToQuery,
+  buildHubRestRequest,
   hubRpcRestPrefix,
   hubRestUrl,
   isNonJsonHubHttpMethod,
+  parseHubRestResponse,
   parseQueryToPayload,
 } from "./http-rest.ts";
 
@@ -45,5 +47,17 @@ describe("http-rest", () => {
 
   test("isNonJsonHubHttpMethod console methods", () => {
     expect(isNonJsonHubHttpMethod("tls.ca")).toBe(true);
+  });
+
+  test("buildHubRestRequest sets If-None-Match for GET", () => {
+    const { init } = buildHubRestRequest("http://127.0.0.1:2658", "status.get", {}, undefined, {
+      ifNoneMatch: '"abc"',
+    });
+    expect(init.method).toBe("GET");
+    expect((init.headers as Record<string, string>)["If-None-Match"]).toBe('"abc"');
+  });
+
+  test("parseHubRestResponse rejects 304", async () => {
+    await expect(parseHubRestResponse(new Response(null, { status: 304 }))).rejects.toThrow(/304/);
   });
 });
