@@ -1,10 +1,36 @@
-import { describe, expect, it } from "bun:test";
+import { afterEach, describe, expect, it } from "bun:test";
 
 import { resolveNotificationRecipients } from "./notifications.ts";
+import {
+  bindResolvedWorldContext,
+  resetResolvedWorldContextForTest,
+} from "./resolved-world-context.ts";
 import type { AnimaConfig } from "./schemas/config.ts";
 
 describe("resolveNotificationRecipients", () => {
-  it("uses configured subject entity ids from worlds", () => {
+  afterEach(() => {
+    resetResolvedWorldContextForTest();
+  });
+
+  it("uses ResolvedWorldContext when bound", () => {
+    bindResolvedWorldContext({
+      user_subject_id: 10,
+      agent_subject_id: 20,
+      user_world_id: 11,
+      agent_world_id: 21,
+    });
+    const config = {
+      llm: { default_profile: "chat", providers: {}, profiles: {} },
+      worlds: { user_subject_id: 2, agent_subject_id: 1 },
+    } as AnimaConfig;
+
+    expect(resolveNotificationRecipients(config)).toEqual({
+      user: { kind: "user", id: "10" },
+      agent: { kind: "agent", id: "20" },
+    });
+  });
+
+  it("uses configured subject entity ids from worlds when unbound", () => {
     const config = {
       llm: { default_profile: "chat", providers: {}, profiles: {} },
       worlds: { user_subject_id: 2, agent_subject_id: 1 },
@@ -16,7 +42,7 @@ describe("resolveNotificationRecipients", () => {
     });
   });
 
-  it("falls back to legacy notifications section", () => {
+  it("falls back to legacy notifications section when unbound", () => {
     const config = {
       llm: { default_profile: "chat", providers: {}, profiles: {} },
       notifications: { user_subject_id: 3, agent_subject_id: 4 },
@@ -28,14 +54,11 @@ describe("resolveNotificationRecipients", () => {
     });
   });
 
-  it("defaults to user=1 agent=2 when unset", () => {
+  it("throws when unset and unbound", () => {
     const config = {
       llm: { default_profile: "chat", providers: {}, profiles: {} },
     } as AnimaConfig;
 
-    expect(resolveNotificationRecipients(config)).toEqual({
-      user: { kind: "user", id: "1" },
-      agent: { kind: "agent", id: "2" },
-    });
+    expect(() => resolveNotificationRecipients(config)).toThrow(/未解析/);
   });
 });

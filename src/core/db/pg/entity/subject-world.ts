@@ -202,6 +202,22 @@ async function ensureSubjectAtId(
   return createSubjectRowAtId(id, expectedType, defaultSubjectTitle(expectedType));
 }
 
+/** 有配置 id 则 ensure 固定 id；否则取同 type 最小 id，没有则 next-id 创建 */
+async function resolveOrCreateSubject(
+  expectedType: "user" | "agent",
+  configuredId?: number,
+): Promise<EntityRow> {
+  if (configuredId != null) {
+    return ensureSubjectAtId(configuredId, expectedType, { bootstrapWorld: false });
+  }
+
+  const existing = await listEntities({ type: expectedType, limit: 1 });
+  if (existing[0]) {
+    return existing[0];
+  }
+  return createSubjectNextId(expectedType, defaultSubjectTitle(expectedType));
+}
+
 export type EnsuredWorldSubjects = {
   user_subject_id: number;
   agent_subject_id: number;
@@ -224,16 +240,14 @@ function readSubjectWorldId(subject: EntityRow): number {
 export async function ensureWorldSubjects(config: RuntimeConfig): Promise<EnsuredWorldSubjects> {
   const { user_subject_id, agent_subject_id } = resolveWorldSubjectIds(config);
 
-  const userSubject = await ensureSubjectAtId(user_subject_id, "user", { bootstrapWorld: false });
-  const agentSubject = await ensureSubjectAtId(agent_subject_id, "agent", {
-    bootstrapWorld: false,
-  });
+  const userSubject = await resolveOrCreateSubject("user", user_subject_id);
+  const agentSubject = await resolveOrCreateSubject("agent", agent_subject_id);
 
   await ensureDefaultPrivateWorldOnSubject(userSubject);
   await ensureDefaultPrivateWorldOnSubject(agentSubject);
 
-  const userRefreshed = await getEntity(user_subject_id);
-  const agentRefreshed = await getEntity(agent_subject_id);
+  const userRefreshed = await getEntity(userSubject.id);
+  const agentRefreshed = await getEntity(agentSubject.id);
   if (!userRefreshed || !agentRefreshed) {
     throw new EntitySubjectBootstrapError("subject disappeared after default world bootstrap");
   }
