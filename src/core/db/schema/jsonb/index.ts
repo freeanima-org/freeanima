@@ -31,5 +31,11 @@ export {
 export * from "./conversation-jsonb.ts";
 export { clarifyItemSchema, todoItemSchema, todoStatusSchema } from "./conversation-meta-jsonb.ts";
 export { compressionJsonSchema, type CompressionJson } from "./compression.ts";
+export {
+  temporalDayChunkSchema,
+  temporalDayJsonSchema,
+  type TemporalDayChunk,
+  type TemporalDayJson,
+} from "./temporal-day.ts";
 export { normalizePgTimestamp } from "./timestamp.ts";
 export { capabilityMaskSchema, type CapabilityMaskJson } from "./capability-mask.ts";

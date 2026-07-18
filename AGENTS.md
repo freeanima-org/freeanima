@@ -92,6 +92,7 @@ bun run build:web
 | [`docs/concepts/environment-awareness.md`](docs/concepts/environment-awareness.md) | Environment + health baseline (session prompt + change notify)   |
 | [`docs/concepts/anima-uri.md`](docs/concepts/anima-uri.md)                         | Anima URI（entity 定位 / overlay；id 入库、URI 在 UI）           |
 | [`docs/concepts/repository-topology.md`](docs/concepts/repository-topology.md)     | Repo layout Phase 0 audit; shared/frontend migration target      |
+| [`docs/concepts/temporal-summary.md`](docs/concepts/temporal-summary.md)           | Objective time digests (day/month/year; peer rollup)             |
 | [`docs/concepts/`](docs/concepts/)                                                 | Core concepts (memory, self layer, etc.)                         |
 | [`docs/guide/`](docs/guide/)                                                       | Usage and maintenance (security, database ops)                   |
 | [`docs/features/`](docs/features/)                                                 | Major product capabilities                                       |

@@ -13,6 +13,7 @@ import type {
   ConversationStagedToolsetsJson,
   ConversationTodosJson,
 } from "./jsonb/conversation-jsonb.ts";
+import type { TemporalDayJson } from "./jsonb/temporal-day.ts";
 
 export const conversations = pgTable(
   "conversations",
@@ -26,6 +27,8 @@ export const conversations = pgTable(
     system_prompt_built_at: pgTimestamptz("system_prompt_built_at"),
     platform_info: jsonb("platform_info").$type<PlatformInfo | null>(),
     compression: jsonb("compression").$type<CompressionJson | null>(),
+    /** 当天对话级时间摘要 chunks（操作态，不可引用） */
+    temporal_day: jsonb("temporal_day").$type<TemporalDayJson | null>(),
     todos: jsonb("todos")
       .$type<ConversationTodosJson>()
       .notNull()

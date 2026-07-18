@@ -38,4 +38,9 @@ export function registerBootCronHandlers(engine: Engine): void {
     const { runEnvHealthScan } = await import("./env-health-handler.ts");
     return runEnvHealthScan();
   });
+
+  registerCronBuiltinHandler("builtin-temporal-summary-tick", async () => {
+    const { runTemporalSummaryTickHandler } = await import("./temporal-summary-handler.ts");
+    return runTemporalSummaryTickHandler();
+  });
 }

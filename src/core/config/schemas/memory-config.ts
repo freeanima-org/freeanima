@@ -14,6 +14,19 @@ export const passiveRecallConfigSchema = z.object({
 export const memoryConfigSchema = z
   .object({
     passive_recall: passiveRecallConfigSchema.optional(),
+    temporal_summary: z
+      .object({
+        enabled: z.boolean().optional(),
+        chunk_max_chars: z.number().int().positive().optional(),
+        peer_roll_max_chars: z.number().int().positive().optional(),
+        global_day_max_chars: z.number().int().positive().optional(),
+        month_max_chars: z.number().int().positive().optional(),
+        year_max_chars: z.number().int().positive().optional(),
+        system_prompt_max_chars: z.number().int().positive().optional(),
+        redis_key_prefix: z.string().optional(),
+        peer_roll_ttl_seconds: z.number().int().positive().optional(),
+      })
+      .optional(),
   })
   .passthrough();
 

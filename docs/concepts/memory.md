@@ -6,6 +6,7 @@ title: Memory
 
 > The digital life's memory system, mapped from human cognitive psychology (Atkinson-Shiffrin model, Tulving memory taxonomy).
 > Light/deep sleep crons: [`sleep.md`](sleep.md).
+> Objective time digests (not memory taxonomy): [`temporal-summary.md`](temporal-summary.md).
 > Inspired by [Hindsight](https://arxiv.org/abs/2512.12818), with FreeAnima's unique limbic memory dimension retained and strengthened.
 
 ## Core Principles

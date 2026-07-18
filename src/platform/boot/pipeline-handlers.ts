@@ -2,7 +2,13 @@ import { omitUndefined } from "@freeanima/core/util";
 import { runLightSleep } from "@freeanima/capabilities/memory/light-sleep/run";
 import { runDeepSleep } from "@freeanima/capabilities/memory/deep-sleep/run";
 import { runDream } from "@freeanima/capabilities/memory/dream/run";
+import {
+  resolveTemporalSummaryConfig,
+  runTemporalSummaryCascade,
+  runTemporalSummaryDay,
+} from "@freeanima/capabilities/memory/temporal-summary";
 import { cstDayRange, syncSemanticMemoryReferenceCounts } from "@freeanima/capabilities/memory";
+import { getActiveRuntimeConfig } from "@freeanima/core/config";
 import {
   invalidateSelfLayerPromptCache,
   loadSelfLayerPrompt,
@@ -98,6 +104,34 @@ export function registerSleepPipeline(engine: Engine): void {
     invalidateSelfLayerPromptCache();
     await loadSelfLayerPrompt();
     return { ok: true, output: { refreshed: true } };
+  });
+
+  runner.registerStep(SLEEP_STEP_IDS.temporalSummaryDay, async (ctx) => {
+    const selfContent = await loadSelfLayerPrompt();
+    const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
+    const result = await runTemporalSummaryDay(
+      omitUndefined({ day: ctx.day, selfContent, config }),
+    );
+    if (result.skipped) {
+      return { ok: true, skipped: result.skipped, output: result };
+    }
+    return result.ok
+      ? { ok: true, output: result }
+      : { ok: false, output: result, error: result.summary };
+  });
+
+  runner.registerStep(SLEEP_STEP_IDS.temporalSummaryCascade, async (ctx) => {
+    const selfContent = await loadSelfLayerPrompt();
+    const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
+    const result = await runTemporalSummaryCascade(
+      omitUndefined({ day: ctx.day, selfContent, config }),
+    );
+    if (result.skipped) {
+      return { ok: true, skipped: result.skipped, output: result };
+    }
+    return result.ok
+      ? { ok: true, output: result }
+      : { ok: false, output: result, error: result.summary };
   });
 
   runner.registerStep(SLEEP_STEP_IDS.memoryRefSync, async () => {

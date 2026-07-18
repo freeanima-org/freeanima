@@ -118,3 +118,16 @@ export {
 } from "./dream/gather-input.ts";
 export { readDreamState, recordDreamRun, type DreamState } from "./dream/state.ts";
 export { registerMemoryLimbicTools } from "./memory-limbic.ts";
+export {
+  resolveTemporalSummaryConfig,
+  registerTemporalSummaryEngine,
+  resetTemporalSummaryEngineForTests,
+  runTemporalSummaryTick,
+  runTemporalSummaryDay,
+  runTemporalSummaryCascade,
+  buildTemporalSummarySystemSection,
+  peerRollSourcesFp,
+  peerRollRedisKey,
+  injectTemporalPeerRollups,
+  TEMPORAL_SUMMARY_PEERS_ASSISTANT_NAME,
+} from "./temporal-summary/index.ts";
