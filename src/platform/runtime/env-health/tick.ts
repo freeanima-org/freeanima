@@ -63,11 +63,11 @@ export async function runEnvHealthTick(deps: EnvHealthTickDeps): Promise<EnvHeal
     });
   }
 
-  const baseline = store.load();
+  const baseline = await store.load();
   const diff = diffMarkers(current, baseline);
 
   if (baseline == null) {
-    store.save(current);
+    await store.save(current);
     return { ok: true, action: "baseline_init" };
   }
 
@@ -80,7 +80,7 @@ export async function runEnvHealthTick(deps: EnvHealthTickDeps): Promise<EnvHeal
   const port = deps.notification;
 
   if (!port) {
-    store.save(current);
+    await store.save(current);
     return {
       ok: false,
       action: "skipped",
@@ -98,7 +98,7 @@ export async function runEnvHealthTick(deps: EnvHealthTickDeps): Promise<EnvHeal
   ]);
 
   if (userExists && agentExists) {
-    store.save(current);
+    await store.save(current);
     return {
       ok: true,
       action: "deduped",
@@ -137,7 +137,7 @@ export async function runEnvHealthTick(deps: EnvHealthTickDeps): Promise<EnvHeal
     });
   }
 
-  store.save(current);
+  await store.save(current);
   return {
     ok: true,
     action: "notified",

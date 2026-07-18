@@ -77,6 +77,10 @@ export async function upsertBuiltinCronJob(row: CronJobBuiltinUpsertInput): Prom
       set: {
         name: row.name,
         schedule: row.schedule,
+        // 纠偏：旧行可能 builtin=false / no_agent 被改写，导致 no_agent 无 handler 失败
+        builtin: true,
+        no_agent: row.no_agent ?? true,
+        timeout_sec: row.timeout_sec ?? 1800,
         updated_at: now,
       },
     });

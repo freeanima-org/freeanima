@@ -26,7 +26,7 @@ export type CronJobCreateInput = {
   notify_on_success?: boolean;
 };
 
-/** Built-in job upsert: update name/schedule only; do not overwrite runtime fields */
+/** Built-in job upsert: update name/schedule/builtin/no_agent/timeout；不覆盖 run_count 等运行时字段 */
 export type CronJobBuiltinUpsertInput = {
   id: string;
   name: string;

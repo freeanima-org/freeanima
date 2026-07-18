@@ -8,7 +8,7 @@ import type { EnvHealthMarkers } from "./types.ts";
  */
 export async function loadOrCollectBaselineMarkers(): Promise<EnvHealthMarkers> {
   const store = getBaselineStore();
-  const existing = store.load();
+  const existing = await store.load();
   if (existing) return existing;
 
   const { collectMarkers } = await import("./markers.ts");
@@ -17,7 +17,7 @@ export async function loadOrCollectBaselineMarkers(): Promise<EnvHealthMarkers> 
     startTimeSec: runtime.start_time,
     deps: getRuntimeDeps(),
   });
-  store.save(markers);
+  await store.save(markers);
   return markers;
 }
 

@@ -25,6 +25,14 @@ export {
   deleteStaleConversations,
   isCronSession,
 } from "./repos/conversation-repo.ts";
+export {
+  aggregateUserActivityStats,
+  emptyUserActivityStats,
+  type ActivityWindowBound,
+  type ActivityWindowCounts,
+  type ActivityWindowId,
+  type UserActivityStats,
+} from "./repos/user-activity-stats-repo.ts";
 export { purgeCronConversations } from "./repos/purge-cron-conversations.ts";
 export {
   appendMessage,

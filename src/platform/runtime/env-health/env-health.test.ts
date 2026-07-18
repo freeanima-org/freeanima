@@ -32,8 +32,8 @@ function sampleMarkers(overrides: Partial<EnvHealthMarkers> = {}): EnvHealthMark
 function memoryStore(initial: EnvHealthMarkers | null = null): EnvHealthBaselineStore {
   let value = initial;
   return {
-    load: () => value,
-    save: (m) => {
+    load: async () => value,
+    save: async (m) => {
       value = m;
     },
   };
@@ -136,7 +136,7 @@ describe("env-health tick", () => {
     });
     expect(result.action).toBe("baseline_init");
     expect(port.created).toHaveLength(0);
-    expect(store.load()).toEqual(current);
+    expect(await store.load()).toEqual(current);
   });
 
   it("stays quiet when unchanged", async () => {
@@ -170,7 +170,7 @@ describe("env-health tick", () => {
     expect(port.created.map((c) => c.recipient_kind).toSorted()).toEqual(["agent", "user"]);
     expect(port.created[0]?.source_kind).toBe("system");
     expect(port.created[0]?.source_ref).toBe(result.source_ref);
-    expect(store.load()).toEqual(next);
+    expect(await store.load()).toEqual(next);
   });
 
   it("dedupes when both recipients already have source_ref", async () => {
@@ -194,6 +194,6 @@ describe("env-health tick", () => {
     });
     expect(result.action).toBe("deduped");
     expect(port.created).toHaveLength(0);
-    expect(store.load()).toEqual(next);
+    expect(await store.load()).toEqual(next);
   });
 });
