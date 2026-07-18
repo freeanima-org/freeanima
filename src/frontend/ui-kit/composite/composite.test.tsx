@@ -13,6 +13,7 @@ const { ConfirmDialog } = await import("./ConfirmDialog.tsx");
 const { ActionSheet } = await import("./ActionSheet.tsx");
 const { EmptyState } = await import("./EmptyState.tsx");
 const { StatusAlert } = await import("./StatusAlert.tsx");
+const { TaskItemTagStrip } = await import("./TaskItemTagStrip.tsx");
 
 describe("composite components", () => {
   it("ConfirmDialog renders nothing when closed", () => {
@@ -76,5 +77,18 @@ describe("composite components", () => {
     );
     expect(html).toContain("Heads up");
     expect(html).toContain('role="alert"');
+  });
+
+  it("TaskItemTagStrip renders overflow +N", () => {
+    const html = renderToStaticMarkup(
+      createElement(TaskItemTagStrip, { titles: ["alpha", "beta", "gamma"] }),
+    );
+    expect(html).toContain("alpha");
+    expect(html).toContain("beta");
+    expect(html).toContain("+1");
+    expect(html).toContain("overflow-hidden");
+    // 溢出标签仅出现在 title/aria-label，不作为第三个 chip
+    expect(html).toContain('title="alpha、beta、gamma"');
+    expect(html.match(/>gamma</g) ?? []).toHaveLength(0);
   });
 });

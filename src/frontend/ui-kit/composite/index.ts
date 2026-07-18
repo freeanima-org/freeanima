@@ -18,6 +18,8 @@ export { useLongPress } from "./useLongPress.ts";
 export type { LongPressCoords, LongPressHandlers, UseLongPressOptions } from "./useLongPress.ts";
 export { TaskItemRowView } from "./TaskItemRowView.tsx";
 export type { TaskItemRowViewProps } from "./TaskItemRowView.tsx";
+export { TaskItemTagStrip } from "./TaskItemTagStrip.tsx";
+export type { TaskItemTagStripProps } from "./TaskItemTagStrip.tsx";
 export { TaskItemListView } from "./TaskItemListView.tsx";
 export type { TaskItemListViewProps } from "./TaskItemListView.tsx";
 export { TaskDetailEditor } from "./TaskDetailEditor.tsx";

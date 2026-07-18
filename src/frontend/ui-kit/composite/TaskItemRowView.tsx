@@ -3,7 +3,12 @@ import type { CSSProperties, MouseEvent, Ref } from "react";
 import { Button } from "../components/ui/button.tsx";
 import { Checkbox } from "../components/ui/checkbox.tsx";
 import { formatDue } from "../lib/datetime-local.ts";
-import { priorityDot, type TaskItemDisplay } from "../lib/task-item-display.ts";
+import {
+  priorityDot,
+  resolveTaskTagTitles,
+  type TaskItemDisplay,
+} from "../lib/task-item-display.ts";
+import { TaskItemTagStrip } from "./TaskItemTagStrip.tsx";
 import { useLongPress } from "./useLongPress.ts";
 
 export type TaskItemRowViewProps = {
@@ -15,6 +20,8 @@ export type TaskItemRowViewProps = {
   useActionSheet: boolean;
   secondaryLine?: string | null;
   showEntityId?: boolean;
+  /** id → 标题；用于行内展示标签（缺省不渲染标签条） */
+  tagTitleById?: ReadonlyMap<number, string> | null;
   /** 整行拖拽：dnd-kit attributes + listeners（勿再用独立手柄） */
   dragAttributes?: Record<string, unknown>;
   dragListeners?: Record<string, unknown>;
@@ -39,6 +46,7 @@ export function TaskItemRowView({
   useActionSheet,
   secondaryLine,
   showEntityId = false,
+  tagTitleById = null,
   dragAttributes,
   dragListeners,
   rowRef,
@@ -66,6 +74,7 @@ export function TaskItemRowView({
   };
 
   const canDrag = dragListeners != null && !selectionMode && !disabled;
+  const tagTitles = resolveTaskTagTitles(item.tag_ids, tagTitleById);
 
   const handleSelectClick = (e: { shiftKey: boolean; preventDefault?: () => void }) => {
     e.preventDefault?.();
@@ -141,6 +150,10 @@ export function TaskItemRowView({
           >
             {item.title}
           </span>
+          <TaskItemTagStrip
+            titles={tagTitles}
+            {...(item.status === "completed" ? { className: "opacity-60" } : {})}
+          />
           {secondaryLine ? (
             <span className="text-muted-foreground block truncate text-xs">{secondaryLine}</span>
           ) : null}

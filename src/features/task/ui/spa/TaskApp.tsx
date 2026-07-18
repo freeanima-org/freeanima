@@ -1027,6 +1027,10 @@ export function TaskApp() {
   // 保留文件夹供树形展示；MoveToListPicker 不会把文件夹当作可选目标
   const moveTargetLists = useMemo(() => lists.filter((l) => !l.closed), [lists]);
   const listNameById = useMemo(() => new Map(lists.map((l) => [l.id, l.name])), [lists]);
+  const tagTitleById = useMemo(
+    () => new Map(tagPool.map((t) => [t.id, t.title] as const)),
+    [tagPool],
+  );
   const matchTag = useCallback(
     (row: TaskItemRow) => tagFilterId == null || row.tag_ids.includes(tagFilterId),
     [tagFilterId],
@@ -1521,6 +1525,7 @@ export function TaskApp() {
                           useActionSheet={useActionSheet}
                           selectionMode={selectionMode}
                           selectedIds={selectedItemIds}
+                          tagTitleById={tagTitleById}
                           onToggleComplete={(item) => void toggleComplete(item)}
                           onEdit={openTaskDetail}
                           onOpenItemMenu={openItemMenuSheet}
@@ -1537,6 +1542,7 @@ export function TaskApp() {
                           useActionSheet={useActionSheet}
                           selectionMode={selectionMode}
                           selectedIds={selectedItemIds}
+                          tagTitleById={tagTitleById}
                           onToggleComplete={(item) => void toggleComplete(item)}
                           onEdit={openTaskDetail}
                           onOpenItemMenu={openItemMenuSheet}
@@ -1555,6 +1561,7 @@ export function TaskApp() {
                           useActionSheet={useActionSheet}
                           selectionMode={selectionMode}
                           selectedIds={selectedItemIds}
+                          tagTitleById={tagTitleById}
                           onToggleComplete={(item) => void toggleComplete(item)}
                           onEdit={openTaskDetail}
                           onOpenItemMenu={openItemMenuSheet}

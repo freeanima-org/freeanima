@@ -1,27 +1,30 @@
 import {
-  DetailPanelShell,
-  TaskDetailEditor,
+  TaskDetailPanel,
   type DetailSaveStatus,
-} from "@freeanima/frontend/ui-kit/composite";
-
-import type { TaskItemRow } from "../lib/api.ts";
+  type TaskDetailPanelProps,
+} from "@freeanima/features/task/ui/spa/components/TaskDetailPanel.tsx";
+import type { TaskItemRowPayload } from "@freeanima/shared/sap-contract/frames/task.ts";
 
 export type { DetailSaveStatus };
 
-type ProjectTaskDetailPanelProps = {
-  item: TaskItemRow;
-  onChange: (item: TaskItemRow) => void;
-  saveStatus?: DetailSaveStatus;
-};
+type ProjectTaskDetailPanelProps<T extends TaskItemRowPayload = TaskItemRowPayload> = Pick<
+  TaskDetailPanelProps<T>,
+  "item" | "onChange" | "saveStatus"
+>;
 
-export function ProjectTaskDetailPanel({
+/** 项目任务详情：复用清单侧 TaskDetailPanel，关闭冗余归属行 */
+export function ProjectTaskDetailPanel<T extends TaskItemRowPayload>({
   item,
   onChange,
   saveStatus = "idle",
-}: ProjectTaskDetailPanelProps) {
+}: ProjectTaskDetailPanelProps<T>) {
   return (
-    <DetailPanelShell saveStatus={saveStatus}>
-      <TaskDetailEditor item={item} onChange={onChange} />
-    </DetailPanelShell>
+    <TaskDetailPanel
+      item={item}
+      onChange={onChange}
+      saveStatus={saveStatus}
+      showAttribution={false}
+      showPomodoroFocus
+    />
   );
 }

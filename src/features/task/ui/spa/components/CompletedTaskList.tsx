@@ -14,6 +14,7 @@ type CompletedTaskListProps = {
   useActionSheet: boolean;
   selectionMode: boolean;
   selectedIds: ReadonlySet<number>;
+  tagTitleById?: ReadonlyMap<number, string> | null;
   onToggleComplete: (item: TaskItemRow) => void;
   onEdit: (item: TaskItemRow) => void;
   onOpenItemMenu: (item: TaskItemRow) => void;
@@ -30,6 +31,7 @@ function CompletedDraggableRow({
   active,
   selectionMode,
   selected,
+  tagTitleById = null,
   onToggleComplete,
   onEdit,
   onOpenMenu,
@@ -44,6 +46,7 @@ function CompletedDraggableRow({
   active: boolean;
   selectionMode: boolean;
   selected: boolean;
+  tagTitleById?: ReadonlyMap<number, string> | null;
   onToggleComplete: () => void;
   onEdit: () => void;
   onOpenMenu: () => void;
@@ -65,6 +68,7 @@ function CompletedDraggableRow({
       useActionSheet={useActionSheet}
       secondaryLine={listName}
       showEntityId={!selectionMode}
+      tagTitleById={tagTitleById}
       {...(sortable && !selectionMode
         ? { dragAttributes: { ...attributes }, dragListeners: { ...listeners } }
         : {})}
@@ -89,6 +93,7 @@ export function CompletedTaskList({
   useActionSheet,
   selectionMode,
   selectedIds,
+  tagTitleById = null,
   onToggleComplete,
   onEdit,
   onOpenItemMenu,
@@ -126,6 +131,7 @@ export function CompletedTaskList({
               useActionSheet={useActionSheet}
               selectionMode={selectionMode}
               selected={selectedIds.has(item.id)}
+              tagTitleById={tagTitleById}
               onToggleComplete={() => onToggleComplete(item)}
               onEdit={() => onEdit(item)}
               onOpenMenu={() => onOpenItemMenu(item)}
