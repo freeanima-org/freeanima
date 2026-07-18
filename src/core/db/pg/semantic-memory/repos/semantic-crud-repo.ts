@@ -1,4 +1,4 @@
-import { and, desc, eq, sql as drizzleSql, type SQL } from "drizzle-orm";
+import { and, desc, eq, sql as drizzleSql } from "drizzle-orm";
 import {
   SEMANTIC_MEMORY_COMPONENT,
   entities,
@@ -30,6 +30,10 @@ import {
   parseSemanticMemoryId,
   toObservedAtIso,
 } from "../map-row.ts";
+import {
+  buildSemanticSourceConversationsCondition,
+  buildSemanticStatusCondition,
+} from "./semantic-filters.ts";
 
 function normalizeStatus(raw: string | undefined | null): string {
   const parsed = semanticMemoryStatusSchema.safeParse(String(raw ?? "active").trim());
@@ -95,13 +99,6 @@ function mapDbRow(row: SemanticSelectRow): SemanticMemoryRow {
     updated_at: row.updated_at,
   };
   return entityToSemanticMemoryRow(entityRow);
-}
-
-function sourceConversationsOverlap(ids: string[]): SQL {
-  return drizzleSql`EXISTS (
-    SELECT 1 FROM jsonb_array_elements_text(COALESCE(${entities.body}->'source_conversations', '[]'::jsonb)) AS e(val)
-    WHERE e.val = ANY(${ids})
-  )`;
 }
 
 export async function createSemanticMemory(row: SemanticMemoryCreateInput): Promise<number> {
@@ -297,13 +294,12 @@ export async function listSemanticMemoryBySourceSessions(
   if (ids.length === 0) return [];
 
   const status = opts?.status ?? "active";
-  const conditions = [
-    eq(entities.primary_component, SEMANTIC_MEMORY_COMPONENT),
-    sourceConversationsOverlap(ids),
-  ];
-  if (status !== "all") {
-    conditions.push(drizzleSql`${entities.body}->>'status' = ${status}`);
-  }
+  const sourceCond = buildSemanticSourceConversationsCondition(ids);
+  if (!sourceCond) return [];
+
+  const conditions = [eq(entities.primary_component, SEMANTIC_MEMORY_COMPONENT), sourceCond];
+  const statusCond = buildSemanticStatusCondition(status);
+  if (statusCond) conditions.push(statusCond);
 
   const db = getDb();
   const rows = await db

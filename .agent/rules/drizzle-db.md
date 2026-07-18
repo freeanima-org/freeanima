@@ -37,6 +37,29 @@ For complex multi-branch SQL (e.g. hybrid count with `UNION`), prefer Drizzle `u
 
 Do **not** use `drizzleSql.raw` with user-controlled input.
 
+### Bun SQL `text[]` / array operators
+
+`drizzle-orm/bun-sql` **不能**把 JS `string[]` 可靠绑成 PostgreSQL `text[]`。在 `sql` / `drizzleSql` 片段里写 `ANY(${ids})`、`?| ${ids}`、`?& ${ids}`、`&& ${ids}`（`ids: string[]`）会把参数绑成标量，运行时报错（典型：`op ANY/ALL (array) requires array on right side`）。
+
+| Prefer                                                                         | When                               |
+| ------------------------------------------------------------------------------ | ---------------------------------- |
+| `inArray(column, ids)`                                                         | 普通列 IN / = ANY（Tier 1）        |
+| `pgTextArray(ids)` → [`utils/pg-sql.ts`](../../src/core/db/pg/utils/pg-sql.ts) | 必须在 `sql` 里用 `ANY` / jsonb `? | `/ array`&&` |
+| `IN (${sql.join(ids.map((id) => sql`${id}`), sql`, `)})`                       | 标量展开，无数组参数               |
+| `ARRAY[${one}]::text[]`                                                        | 单元素字面量（如 `components @>`） |
+
+```typescript
+// bad
+sql`e.val = ANY(${ids})`;
+sql`(${entities.body}->'source_conversations') ?| ${ids}`;
+
+// good
+sql`e.val = ANY(${pgTextArray(ids)})`;
+sql`(${entities.body}->'source_conversations') ?| ${pgTextArray(ids)}`;
+```
+
+静态检查：`bun run pg-sql-arrays`（`scripts/check-pg-sql-arrays.ts`，纳入 `bun run check`）。
+
 ---
 
 ## Type safety
@@ -83,6 +106,7 @@ Link to source — do not maintain function inventories here.
 | Simple CRUD (select / insert / update / delete) | [`semantic-crud-repo.ts`](../../src/core/db/pg/semantic-memory/repos/semantic-crud-repo.ts) — `createSemanticMemory`                                                    |
 | Count via ORM                                   | [`message-repo.ts`](../../src/core/db/pg/conversation/repos/message-repo.ts) — `countMessages`                                                                          |
 | Dynamic filters (`buildListConditions` + `and`) | [`entity-crud-repo.ts`](../../src/core/db/pg/entity/repos/entity-crud-repo.ts); [`semantic-filters.ts`](../../src/core/db/pg/semantic-memory/repos/semantic-filters.ts) |
+| Bun-safe `text[]` (`pgTextArray`)               | [`utils/pg-sql.ts`](../../src/core/db/pg/utils/pg-sql.ts) — `ANY` / jsonb `?                                                                                            | `/ array`&&` |
 | FTS / hybrid search (sql subquery in ORM)       | [`fts/hybrid-raw.ts`](../../src/core/db/pg/fts/hybrid-raw.ts), [`fts/hybrid-search.ts`](../../src/core/db/pg/fts/hybrid-search.ts)                                      |
 | Entity hybrid search (`searchEntities`)         | [`entity/search/entity-search-repo.ts`](../../src/core/db/pg/entity/search/entity-search-repo.ts) — FTS + trgm + vector → RRF                                           |
 | Conversation meta transform                     | [`conversation/transform.ts`](../../src/core/db/pg/conversation/transform.ts)                                                                                           |
@@ -109,6 +133,7 @@ Table shapes: [`src/core/db/schema/`](../../src/core/db/schema/). Row / input ty
 
 - `db.execute` anywhere under `src/core/db/pg/` or `tests/integration/`
 - `drizzleSql.raw` with user-controlled input
+- 在 `sql` 片段中把 JS `string[]` 直接绑给 `ANY` / `?|` / `?&` / array `&&`（须 `pgTextArray` 或标量展开；见上节）
 - `WHERE true ${rawFragment}` string stitching — use `and(...conditions)` (legacy repos may still use fragments; migrate when touched)
 - Hand-written row struct types duplicated across repo files
 - Trivial `mapXxxRow` mappers for 1:1 schema rows (normalize in repo only when enum/legacy field rename required)
@@ -124,3 +149,4 @@ When adding or changing PG queries:
 3. Is row type derived from `$inferSelect` (± computed fields)?
 4. Are timestamps `Date` via `pgTimestamptz`?
 5. Integration test needed for new PG operators or driver-sensitive array/vector casts?
+6. 若 `sql` 使用 `ANY` / `?|` / array `&&`：是否经 `pgTextArray` 或标量展开（勿裸绑 `string[]`）？

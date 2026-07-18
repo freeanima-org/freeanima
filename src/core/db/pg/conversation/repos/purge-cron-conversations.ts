@@ -7,6 +7,7 @@ import {
 import { entities, conversations } from "@freeanima/core/db/schema";
 
 import { getDb } from "../../client.ts";
+import { pgTextArray } from "../../utils/pg-sql.ts";
 import { listCronSessionIds } from "./conversation-repo.ts";
 
 export type PurgeCronConversationsResult = {
@@ -35,7 +36,7 @@ export async function purgeCronConversations(): Promise<PurgeCronConversationsRe
     .where(
       and(
         sql`${entities.components} @> ARRAY[${LIMBIC_COMPONENT}]::text[]`,
-        sql`${entities.body}->>'conversation_id' = ANY(${ids})`,
+        sql`${entities.body}->>'conversation_id' = ANY(${pgTextArray(ids)})`,
       ),
     );
 
@@ -45,7 +46,7 @@ export async function purgeCronConversations(): Promise<PurgeCronConversationsRe
     .where(
       and(
         eq(entities.primary_component, SEMANTIC_MEMORY_COMPONENT),
-        sql`(${entities.body}->'source_conversations') ?| ${ids}`,
+        sql`(${entities.body}->'source_conversations') ?| ${pgTextArray(ids)}`,
       ),
     );
   for (const row of semanticRows) {
@@ -68,7 +69,7 @@ export async function purgeCronConversations(): Promise<PurgeCronConversationsRe
     .where(
       and(
         sql`${entities.components} @> ARRAY[${NARRATIVE_COMPONENT}]::text[]`,
-        sql`(${entities.body}->'source_conversations') ?| ${ids}`,
+        sql`(${entities.body}->'source_conversations') ?| ${pgTextArray(ids)}`,
       ),
     );
   for (const row of narrativeRows) {

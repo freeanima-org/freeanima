@@ -56,10 +56,11 @@
   "scripts": {
     "anima": "bun src/app/cli/cli.ts",
     "prepare": "husky || true",
-    "check": "bun run typecheck && bun run lint && bun run import-depth && bun run stylelint && bun run format && bun run test:changed",
+    "check": "bun run typecheck && bun run lint && bun run import-depth && bun run pg-sql-arrays && bun run stylelint && bun run format && bun run test:changed",
     "typecheck": "bunx tsgo -p tsconfig.json",
     "lint": "oxlint .",
     "import-depth": "bun scripts/check-import-depth.ts",
+    "pg-sql-arrays": "bun scripts/check-pg-sql-arrays.ts --self-test && bun scripts/check-pg-sql-arrays.ts",
     "stylelint": "stylelint \"src/frontend/**/spa/**/*.css\" \"src/frontend/**/lib/**/*.css\" \"src/features/**/ui/**/*.css\" \"src/satellites/**/spa/**/*.css\" \"src/app/shell/desktop/**/spa/**/*.css\" \"src/app/shell/web/**/spa/**/*.css\"",
     "format": "oxfmt --check .",
     "test": "bun run test:unit && bun run test:integration",
