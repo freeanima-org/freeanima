@@ -13,6 +13,7 @@ import { appendPayloadToQuery, parseQueryToPayload } from "@freeanima/shared/hub
 import type { SapRequestAuthContext, SapRequestContext } from "@freeanima/shared/sap-contract";
 
 import { hubDispatch } from "./dispatch.ts";
+import { jsonResponseWithConditionalGet } from "./http-conditional.ts";
 import type { SapServerDeps } from "../sap/types.ts";
 
 /** 与 console-api handlers/errors 对齐；platform 不依赖 feature-console */
@@ -218,6 +219,9 @@ export async function handleHttpHubRestRequest(
     }
     if (result instanceof Response) {
       return result;
+    }
+    if (verb === "GET") {
+      return jsonResponseWithConditionalGet(req, JSON.stringify(result));
     }
     return Response.json(result, {
       status: 200,

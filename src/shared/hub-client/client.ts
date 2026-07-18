@@ -70,9 +70,17 @@ function isReadMethod(method: HubMethod): boolean {
   );
 }
 
+type ConditionalGetCacheEntry = { etag: string; body: unknown };
+
+function conditionalGetCacheKey(method: string, payload: Record<string, unknown>): string {
+  return `${method}\0${JSON.stringify(payload)}`;
+}
+
 export function createHubClient(options: HubClientOptions) {
   const profile = options.profile ?? "satellite";
   const httpFetch = options.fetch ?? globalThis.fetch;
+  /** GET JSON 条件请求：同 method+payload 记忆 ETag 与正文 */
+  const conditionalGetCache = new Map<string, ConditionalGetCacheEntry>();
 
   async function callViaWs<K extends HubMethod>(
     method: K,
@@ -91,18 +99,31 @@ export function createHubClient(options: HubClientOptions) {
       throw new Error(`hub method ${method} requires callRaw() for non-JSON HTTP`);
     }
     const recordPayload = (payload ?? {}) as Record<string, unknown>;
+    const cacheKey = conditionalGetCacheKey(method, recordPayload);
+    const cached = conditionalGetCache.get(cacheKey);
     const { url, init } = buildHubRestRequest(
       options.httpOrigin,
       method,
       recordPayload,
       options.authToken,
+      cached?.etag ? { ifNoneMatch: cached.etag } : undefined,
     );
     const res = await httpFetch(url, {
       ...init,
       ...(signal !== undefined ? { signal } : {}),
     });
-    const result = await parseHubRestResponse(res);
     const def = getHubMethodDef(method);
+    if (res.status === 304) {
+      if (!cached) {
+        throw new Error(`HTTP 304 Not Modified without local cache for ${method}`);
+      }
+      return def.output.parse(cached.body) as HubMethodOutputs[K];
+    }
+    const result = await parseHubRestResponse(res);
+    const etag = res.headers.get("ETag");
+    if (etag) {
+      conditionalGetCache.set(cacheKey, { etag, body: result });
+    }
     return def.output.parse(result) as HubMethodOutputs[K];
   }
 
