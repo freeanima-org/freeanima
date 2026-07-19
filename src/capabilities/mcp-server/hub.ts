@@ -4,7 +4,9 @@ import type { VerifiedServiceApiToken } from "@freeanima/core/db/pg/service-api-
 import {
   handlerResultToMcpContent,
   runWithToolContext,
+  toolError,
   toolParametersToMcpInputSchema,
+  validateToolArgs,
   type ToolSetRegistry,
 } from "@freeanima/core/tool";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
@@ -50,9 +52,13 @@ function createMcpServer(deps: McpHubDeps, callCtx?: McpCallContext): Server {
         isError: true,
       };
     }
+    const validated = validateToolArgs(tool.parameters, args);
+    if (!validated.ok) {
+      return handlerResultToMcpContent(toolError(validated.error));
+    }
     const sessionId = randomUUID();
     const callerAuth = callCtx?.callerAuth ?? undefined;
-    const text = await runWithToolContext(`mcp:${sessionId}`, () => tool.handler(args), {
+    const text = await runWithToolContext(`mcp:${sessionId}`, () => tool.handler(validated.data), {
       tools: deps.toolSets,
       contextKind: "auto_llm",
       ...(callerAuth ? { callerAuth } : {}),

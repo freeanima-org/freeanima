@@ -17,6 +17,7 @@ export {
   toolErrorSchema,
 } from "./json-util.ts";
 export type { ParsedToolResult, ToolErrorResult } from "./json-util.ts";
+export { validateToolArgs } from "./validate-args.ts";
 export type { ToolArgsRecord } from "./tool-json.ts";
 export { ToolSetRegistry, mcpToolSetId, acpToolSetId } from "./toolset.ts";
 export {

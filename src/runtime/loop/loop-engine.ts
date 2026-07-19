@@ -1,4 +1,4 @@
-import { parseToolArgs, toolError, toolResult } from "@freeanima/core/tool";
+import { parseToolArgs, toolError, toolResult, validateToolArgs } from "@freeanima/core/tool";
 import {
   getActiveRuntimeConfig,
   getProfileHopModel,
@@ -469,19 +469,24 @@ export async function* runStream(
           } else if (!argsResult.ok) {
             result = toolError(argsResult.error);
           } else {
-            try {
-              result = await Promise.resolve(tool.handler(fnArgs));
-              if (typeof result !== "string") result = toolResult(result);
-              failureCounts.delete(fnName);
-            } catch (exc) {
-              result = toolResult({ error: `${fnName} failed: ${exc}` });
-              const count = (failureCounts.get(fnName) ?? 0) + 1;
-              failureCounts.set(fnName, count);
-              if (count >= HARD) {
-                throw new Error(
-                  `Tool '${fnName}' failed ${count} times consecutively. Last: ${exc}`,
-                  { cause: exc },
-                );
+            const validated = validateToolArgs(tool.parameters, fnArgs);
+            if (!validated.ok) {
+              result = toolError(validated.error);
+            } else {
+              try {
+                result = await Promise.resolve(tool.handler(validated.data));
+                if (typeof result !== "string") result = toolResult(result);
+                failureCounts.delete(fnName);
+              } catch (exc) {
+                result = toolResult({ error: `${fnName} failed: ${exc}` });
+                const count = (failureCounts.get(fnName) ?? 0) + 1;
+                failureCounts.set(fnName, count);
+                if (count >= HARD) {
+                  throw new Error(
+                    `Tool '${fnName}' failed ${count} times consecutively. Last: ${exc}`,
+                    { cause: exc },
+                  );
+                }
               }
             }
           }
